@@ -6,6 +6,7 @@ import {
   LabeledList,
   ProgressBar,
   Section,
+  Stack,
   Table,
 } from '../../tgui/components';
 import { Window } from '../../tgui/layouts';
@@ -14,24 +15,97 @@ export const HelmComputer = (props, context) => {
   const { act, data, config } = useBackend(context);
   const { mapRef, isViewer } = data;
   return (
-    <Window width={870} height={708} resizable>
-      <div className="CameraConsole__left">
-        <Window.Content>
-          {!isViewer && <ShipControlContent />}
-          <ShipContent />
-          <SharedContent />
-        </Window.Content>
-      </div>
-      <div className="CameraConsole__right">
-        <ByondUi
-          className="CameraConsole__map"
-          params={{
-            id: mapRef,
-            type: 'map',
-          }}
-        />
-      </div>
+    <Window width={900} height={900} resizable>
+      <Window.Content>
+        <Stack vertical>
+          <Stack.Item textAlign={'center'}>
+            <SharedContent />
+          </Stack.Item>
+          <Stack.Item>
+            <Stack fill textAlign={'center'}>
+              <Section title="Map" width={'70%'} fill>
+                <Stack.Item>
+                  <ByondUi
+                    className="CameraConsole__map"
+                    height="610px"
+                    params={{
+                      id: mapRef,
+                      type: 'map',
+                    }}
+                  />
+                </Stack.Item>
+              </Section>
+              <Section title="Controls" width={'30%'}>
+                <Stack vertical>
+                  <Stack.Item>
+                    <ShipControlContent />
+                  </Stack.Item>
+
+                  <Stack.Item>
+                    <Radar />
+                  </Stack.Item>
+
+                  <Stack.Item>
+                    <ShipContent />
+                  </Stack.Item>
+                </Stack>
+              </Section>
+            </Stack>
+          </Stack.Item>
+        </Stack>
+      </Window.Content>
     </Window>
+  );
+};
+
+const Radar = (context) => {
+  const { act, data } = useBackend(context);
+  const { isViewer = [], otherInfo = [] } = data;
+  return (
+    <Section>
+      <Table>
+        <Table.Row bold>
+          <Table.Cell>Name</Table.Cell>
+          <Table.Cell>Integrity</Table.Cell>
+          {!isViewer && <Table.Cell>Act</Table.Cell>}
+        </Table.Row>
+        {otherInfo.map((ship) => (
+          <Table.Row key={ship.name}>
+            <Table.Cell>{ship.name}</Table.Cell>
+            <Table.Cell>
+              {!!ship.integrity && (
+                <ProgressBar
+                  ranges={{
+                    good: [51, 100],
+                    average: [26, 50],
+                    bad: [0, 25],
+                  }}
+                  maxValue={100}
+                  value={ship.integrity}
+                />
+              )}
+            </Table.Cell>
+            {!isViewer && (
+              <Table.Cell>
+                <Button
+                  tooltip="Interact"
+                  tooltipPosition="left"
+                  icon="circle"
+                  disabled={
+                    isViewer || data.speed > 0 || data.state !== 'flying'
+                  }
+                  onClick={() =>
+                    act('act_overmap', {
+                      ship_to_act: ship.ref,
+                    })
+                  }
+                />
+              </Table.Cell>
+            )}
+          </Table.Row>
+        ))}
+      </Table>
+    </Section>
   );
 };
 
@@ -39,125 +113,54 @@ const SharedContent = (props, context) => {
   const { act, data } = useBackend(context);
   const { isViewer, integrity, shipInfo = [], otherInfo = [] } = data;
   return (
-    <>
-      <Section
-        title={
-          <Button.Input
-            content={shipInfo.name}
-            currentValue={shipInfo.name}
-            disabled={isViewer}
-            onCommit={(e, value) =>
-              act('rename_ship', {
-                newName: value,
-              })
-            }
+    <Section
+      title={
+        <Button.Input
+          content={shipInfo.name}
+          currentValue={shipInfo.name}
+          disabled={isViewer}
+          onCommit={(e, value) =>
+            act('rename_ship', {
+              newName: value,
+            })
+          }
+        />
+      }
+      buttons={
+        <Button
+          tooltip="Refresh Ship Stats"
+          tooltipPosition="left"
+          icon="sync"
+          disabled={isViewer}
+          onClick={() => act('reload_ship')}
+        />
+      }
+    >
+      <LabeledList>
+        <LabeledList.Item label="Class">{shipInfo.class}</LabeledList.Item>
+        <LabeledList.Item label="Integrity">
+          <ProgressBar
+            ranges={{
+              good: [51, 100],
+              average: [26, 50],
+              bad: [0, 25],
+            }}
+            maxValue={100}
+            value={integrity}
           />
-        }
-        buttons={
-          <Button
-            tooltip="Refresh Ship Stats"
-            tooltipPosition="left"
-            icon="sync"
-            disabled={isViewer}
-            onClick={() => act('reload_ship')}
-          />
-        }
-      >
-        <LabeledList>
-          <LabeledList.Item label="Class">{shipInfo.class}</LabeledList.Item>
-          <LabeledList.Item label="Integrity">
-            <ProgressBar
-              ranges={{
-                good: [51, 100],
-                average: [26, 50],
-                bad: [0, 25],
-              }}
-              maxValue={100}
-              value={integrity}
-            />
+        </LabeledList.Item>
+        <LabeledList.Item label="Sensor Range">
+          <ProgressBar value={shipInfo.sensor_range} minValue={1} maxValue={8}>
+            <AnimatedNumber value={shipInfo.sensor_range} />
+          </ProgressBar>
+        </LabeledList.Item>
+        {shipInfo.mass && (
+          <LabeledList.Item label="Mass">
+            {shipInfo.mass + 'tonnes'}
           </LabeledList.Item>
-          <LabeledList.Item label="Sensor Range">
-            <ProgressBar
-              value={shipInfo.sensor_range}
-              minValue={1}
-              maxValue={8}
-            >
-              <AnimatedNumber value={shipInfo.sensor_range} />
-            </ProgressBar>
-          </LabeledList.Item>
-          {shipInfo.mass && (
-            <LabeledList.Item label="Mass">
-              {shipInfo.mass + 'tonnes'}
-            </LabeledList.Item>
-          )}
-        </LabeledList>
-      </Section>
-      <Section
-        title="Factions"
-        buttons={
-          <>
-            <Button
-              tooltip="Toggle KOS"
-              tooltipPosition="left"
-              icon="fas fa-skull"
-              disabled={isViewer}
-              onClick={() => act('toggle_kos')}
-            />
-            <Button
-              tooltip="Toggle Default"
-              tooltipPosition="left"
-              icon="fas fa-flag"
-              disabled={isViewer}
-              onClick={() => act('return')}
-            />
-          </>
-        }
-      />
-      <Section title="Radar">
-        <Table>
-          <Table.Row bold>
-            <Table.Cell>Name</Table.Cell>
-            <Table.Cell>Integrity</Table.Cell>
-            {!isViewer && <Table.Cell>Act</Table.Cell>}
-          </Table.Row>
-          {otherInfo.map((ship) => (
-            <Table.Row key={ship.name}>
-              <Table.Cell>{ship.name}</Table.Cell>
-              <Table.Cell>
-                {!!ship.integrity && (
-                  <ProgressBar
-                    ranges={{
-                      good: [51, 100],
-                      average: [26, 50],
-                      bad: [0, 25],
-                    }}
-                    maxValue={100}
-                    value={ship.integrity}
-                  />
-                )}
-              </Table.Cell>
-              {!isViewer && (
-                <Table.Cell>
-                  <Button
-                    tooltip="Interact"
-                    tooltipPosition="left"
-                    icon="circle"
-                    disabled={
-                      isViewer || data.speed > 0 || data.state !== 'flying'
-                    }
-                    onClick={() =>
-                      act('act_overmap', {
-                        ship_to_act: ship.ref,
-                      })
-                    }
-                  />
-                </Table.Cell>
-              )}
-            </Table.Row>
-          ))}
-        </Table>
-      </Section>
-    </>
+        )}
+      </LabeledList>
+    </Section>
   );
 };
 
@@ -328,37 +331,41 @@ const ShipControlContent = (props, context) => {
     southwest: 2 + 8,
   };
   return (
-    <Section
-      title="Navigation"
-      buttons={
-        <>
-          <Button
-            tooltip="Undock"
-            tooltipPosition="left"
-            icon="sign-out-alt"
-            disabled={data.state !== 'idle'}
-            onClick={() => act('undock')}
-          />
-          <Button
-            tooltip="Dock in Empty Space"
-            tooltipPosition="left"
-            icon="sign-in-alt"
-            disabled={data.state !== 'flying'}
-            onClick={() => act('dock_empty')}
-          />
-          <Button
-            tooltip={calibrating ? 'Cancel Jump' : 'Bluespace Jump'}
-            tooltipPosition="left"
-            icon={calibrating ? 'times' : 'angle-double-right'}
-            color={calibrating ? 'bad' : undefined}
-            disabled={data.state !== 'flying'}
-            onClick={() => act('bluespace_jump')}
-          />
-        </>
-      }
-    >
+    <Section title="Navigation">
       {data.state === 'idle' && <div className="NoticeBox">Ship Docked.</div>}
       <Table collapsing>
+        <Table.Row height={2}>
+          <Table.Cell width={1}>
+            <Button
+              tooltip="Undock"
+              tooltipPosition="right"
+              icon="sign-out-alt"
+              disabled={data.state !== 'idle'}
+              onClick={() => act('undock')}
+            />
+          </Table.Cell>
+
+          <Table.Cell width={1}>
+            <Button
+              tooltip="Dock in Empty Space"
+              tooltipPosition="right"
+              icon="sign-in-alt"
+              disabled={data.state !== 'flying'}
+              onClick={() => act('dock_empty')}
+            />
+          </Table.Cell>
+
+          <Table.Cell width={1}>
+            <Button
+              tooltip={calibrating ? 'Cancel Jump' : 'Bluespace Jump'}
+              tooltipPosition="right"
+              icon={calibrating ? 'times' : 'angle-double-right'}
+              color={calibrating ? 'bad' : undefined}
+              disabled={data.state !== 'flying'}
+              onClick={() => act('bluespace_jump')}
+            />
+          </Table.Cell>
+        </Table.Row>
         <Table.Row height={1}>
           <Table.Cell width={1}>
             <Button
