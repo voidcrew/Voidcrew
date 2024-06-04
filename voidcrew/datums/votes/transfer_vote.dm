@@ -7,7 +7,7 @@
 		CHOICE_TRANSFER,
 		CHOICE_CONTINUE,
 	)
-	message = "Vote for crew transfer."
+	default_message = "Vote for crew transfer."
 
 /datum/vote/transfer_vote/toggle_votable(mob/toggler)
 	if(!toggler)
@@ -28,10 +28,10 @@
 		return FALSE
 
 	if(!forced && !CONFIG_GET(flag/allow_vote_transfer))
-		message = "Transfer voting is disabled by server configuration settings."
+		default_message = "Transfer voting is disabled by server configuration settings."
 		return FALSE
 
-	message = initial(message)
+	default_message = initial(default_message)
 	return TRUE
 
 /datum/vote/transfer_vote/get_vote_result(list/non_voters)

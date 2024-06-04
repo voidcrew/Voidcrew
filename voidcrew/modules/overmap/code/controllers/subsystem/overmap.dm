@@ -110,9 +110,13 @@ SUBSYSTEM_DEF(overmap)
 		else
 			overmap_turf.ChangeTurf(/turf/open/overmap)
 		var/area/old_area = get_area(overmap_turf)
-		old_area.turfs_to_uncontain += overmap_turf
-		overmap_area.contents += overmap_turf
-		overmap_area.contained_turfs += overmap_turf
+		// old_area.turfs_to_uncontain += overmap_turf
+		// overmap_area.contents += overmap_turf
+		// overmap_area.contained_turfs += overmap_turf
+		LISTASSERTLEN(old_area.turfs_to_uncontain_by_zlevel, OVERMAP_Z_LEVEL, list())
+		LISTASSERTLEN(overmap_area.turfs_by_zlevel, OVERMAP_Z_LEVEL, list())
+		old_area.turfs_to_uncontain_by_zlevel[OVERMAP_Z_LEVEL] += overmap_turf
+		overmap_area.turfs_by_zlevel[OVERMAP_Z_LEVEL] += overmap_turf
 	overmap_area.reg_in_areas_in_z()
 	// not actually the centre but close enough
 	overmap_centre = get_turf(locate((OVERMAP_LEFT_SIDE_COORD + ((OVERMAP_SIZE - 1) / 2)) - 1, (OVERMAP_SOUTH_SIDE_COORD + ((OVERMAP_SIZE - 1) / 2)) - 1, OVERMAP_Z_LEVEL))

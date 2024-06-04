@@ -69,12 +69,9 @@
 /obj/structure/spawner/cave/interact(mob/living/carbon/human/user)
 	if(!istype(user))
 		return
-	if(obj_flags & IN_USE)
-		return
 	if(uses == 0)
 		to_chat(user, "<span class='warning'>There's nothing left to loot!</span>")
 		return
-	obj_flags |= IN_USE
 	to_chat(user, "<span class='warning'>You start searching the [name] for anything useful...</span>")
 	if(do_after(user, 40, target = src))
 		if(prob(bite_chance))
@@ -94,7 +91,6 @@
 				to_chat(user, "<span class='warning'>You didn't find anything, maybe try looking again?")
 	else
 		to_chat(user, "<span class='warning'><b>Your search was interrupted!</b></span>")
-	obj_flags &= ~IN_USE
 
 /obj/structure/spawner/cave/beach
 	name = "oak barrel"

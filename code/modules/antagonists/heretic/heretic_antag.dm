@@ -54,6 +54,8 @@
 	var/static/list/scribing_tools = typecacheof(list(/obj/item/pen, /obj/item/toy/crayon))
 	/// A blacklist of turfs we cannot scribe on.
 	var/static/list/blacklisted_rune_turfs = typecacheof(list(/turf/open/space, /turf/open/openspace, /turf/open/lava, /turf/open/chasm))
+	/// Controls what types of turf we can spread rust to, increases as we unlock more powerful rust abilites
+	var/rust_strength = 0
 	/// Static list of what each path converts to in the UI (colors are TGUI colors)
 	var/static/list/path_to_ui_color = list(
 		PATH_START = "grey",
@@ -202,7 +204,7 @@
 	if(give_objectives)
 		forge_primary_objectives()
 
-	owner.current.playsound_local(get_turf(owner.current), 'sound/ambience/antag/ecult_op.ogg', 100, FALSE, pressure_affected = FALSE, use_reverb = FALSE)//subject to change
+	owner.current.playsound_local(get_turf(owner.current), 'sound/ambience/antag/heretic/heretic_gain.ogg', 100, FALSE, pressure_affected = FALSE, use_reverb = FALSE)
 
 	for(var/starting_knowledge in GLOB.heretic_start_knowledge)
 		gain_knowledge(starting_knowledge)
@@ -231,7 +233,6 @@
 	RegisterSignal(our_mob, COMSIG_MOB_ITEM_AFTERATTACK, PROC_REF(on_item_afterattack))
 	RegisterSignal(our_mob, COMSIG_MOB_LOGIN, PROC_REF(fix_influence_network))
 	RegisterSignal(our_mob, COMSIG_LIVING_POST_FULLY_HEAL, PROC_REF(after_fully_healed))
-	RegisterSignal(our_mob, COMSIG_LIVING_CULT_SACRIFICED, PROC_REF(on_cult_sacrificed))
 
 /datum/antagonist/heretic/remove_innate_effects(mob/living/mob_override)
 	var/mob/living/our_mob = mob_override || owner.current
@@ -247,7 +248,6 @@
 		COMSIG_MOB_ITEM_AFTERATTACK,
 		COMSIG_MOB_LOGIN,
 		COMSIG_LIVING_POST_FULLY_HEAL,
-		COMSIG_LIVING_CULT_SACRIFICED
 	))
 
 /datum/antagonist/heretic/on_body_transfer(mob/living/old_body, mob/living/new_body)
@@ -352,7 +352,7 @@
 	else
 		drawing_effect = new(target_turf, rune_colour)
 
-	if(!do_after(user, drawing_time, target_turf, extra_checks = additional_checks))
+	if(!do_after(user, drawing_time, target_turf, extra_checks = additional_checks, hidden = TRUE))
 		target_turf.balloon_alert(user, "interrupted!")
 		new /obj/effect/temp_visual/drawing_heretic_rune/fail(target_turf, rune_colour)
 		qdel(drawing_effect)
@@ -394,15 +394,6 @@
 	if(heal_flags & (HEAL_REFRESH_ORGANS|HEAL_ADMIN))
 		var/datum/heretic_knowledge/living_heart/heart_knowledge = get_knowledge(/datum/heretic_knowledge/living_heart)
 		heart_knowledge.on_research(source, src)
-
-/// Signal proc for [COMSIG_LIVING_CULT_SACRIFICED] to reward cultists for sacrificing a heretic
-/datum/antagonist/heretic/proc/on_cult_sacrificed(mob/living/source, list/invokers)
-	SIGNAL_HANDLER
-
-	new /obj/item/cult_bastard(source.loc)
-	for(var/mob/living/cultist as anything in invokers)
-		to_chat(cultist, span_cultlarge("\"A follower of the forgotten gods! You must be rewarded for such a valuable sacrifice.\""))
-	return SILENCE_SACRIFICE_MESSAGE
 
 /**
  * Create our objectives for our heretic.
@@ -671,6 +662,14 @@
  */
 /datum/antagonist/heretic/proc/get_knowledge(wanted)
 	return researched_knowledge[wanted]
+
+/// Makes our heretic more able to rust things.
+/// if side_path_only is set to TRUE, this function does nothing for rust heretics.
+/datum/antagonist/heretic/proc/increase_rust_strength(side_path_only=FALSE)
+	if(side_path_only && get_knowledge(/datum/heretic_knowledge/limited_amount/starting/base_rust))
+		return
+
+	rust_strength++
 
 /**
  * Get a list of all rituals this heretic can invoke on a rune.

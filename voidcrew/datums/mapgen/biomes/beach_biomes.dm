@@ -39,7 +39,6 @@
 		/mob/living/simple_animal/pet/cat/cak/beach = 1,
 		/mob/living/simple_animal/butterfly/beach = 4,
 		/mob/living/simple_animal/hostile/retaliate/snake/beach = 5,
-		/mob/living/simple_animal/slime/random/beach = 3,
 		/mob/living/simple_animal/hostile/poison/bees/toxin/beach = 3
 	)
 	mob_spawn_chance = 2
