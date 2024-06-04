@@ -92,7 +92,7 @@
 		desc = "An ammunition printer covered in rust. It's out of juice!"
 		used = TRUE
 
-/obj/structure/ammo_printer/AltClick(mob/user)
+/obj/structure/ammo_printer/click_alt(mob/user)
 	if(inserted_gun)
 		inserted_gun.forceMove(src.loc)
 		inserted_gun = null

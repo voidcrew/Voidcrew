@@ -1,6 +1,6 @@
 #define BP_MAX_ROOM_SIZE 300
 
-/obj/item/areaeditor/shuttle
+/obj/item/blueprints/shuttle
 	name = "shuttle expansion permit"
 	desc = "A set of paperwork which is used to expand flyable shuttles."
 	color = COLOR_ASSEMBLY_WHITE
@@ -11,7 +11,7 @@
 	///Last time an area was created by a mob plus a short cooldown period
 	var/create_area_cooldown
 
-/obj/item/areaeditor/shuttle/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+/obj/item/blueprints/shuttle/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	. = ..()
 	if(istype(target, /obj/machinery/computer/helm))
 		var/obj/machinery/computer/helm/H = target
@@ -19,14 +19,14 @@
 			var/obj/structure/overmap/ship/S = H.current_ship
 			target_shuttle = S.shuttle
 
-/obj/item/areaeditor/shuttle/attack_self(mob/user)
+/obj/item/blueprints/shuttle/attack_self(mob/user)
 	. = ..()
 	var/datum/browser/popup = new(user, "blueprints", "[src]", 700, 500)
 	popup.set_content(.)
 	popup.open()
 	onclose(user, "blueprints")
 
-/obj/item/areaeditor/shuttle/Topic(href, href_list)
+/obj/item/blueprints/shuttle/Topic(href, href_list)
 	if(!usr.can_perform_action(src) || usr != loc)
 		usr << browse(null, "window=blueprints")
 		return TRUE
@@ -43,10 +43,9 @@
 		in_use = TRUE
 		create_shuttle_area(usr)
 		in_use = FALSE
-	updateUsrDialog()
 
 // Virtually a copy of create_area() with specialized behaviour
-/obj/item/areaeditor/shuttle/proc/create_shuttle_area(mob/creator)
+/obj/item/blueprints/shuttle/proc/create_shuttle_area(mob/creator)
 	// Passed into the above proc as list/break_if_found
 	var/static/area_or_turf_fail_types = typecacheof(list(
 		/turf/open/space,

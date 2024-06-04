@@ -1460,6 +1460,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-dom@npm:^18.2.17":
+  version: 18.3.0
+  resolution: "@types/react-dom@npm:18.3.0"
+  dependencies:
+    "@types/react": "npm:*"
+  checksum: 10c0/6c90d2ed72c5a0e440d2c75d99287e4b5df3e7b011838cdc03ae5cd518ab52164d86990e73246b9d812eaf02ec351d74e3b4f5bd325bf341e13bf980392fd53b
+  languageName: node
+  linkType: hard
+
 "@types/react-dom@npm:^18.2.24":
   version: 18.2.24
   resolution: "@types/react-dom@npm:18.2.24"
@@ -1476,6 +1485,16 @@ __metadata:
     "@types/prop-types": "npm:*"
     csstype: "npm:^3.0.2"
   checksum: 10c0/347e38b4c5dc20d50ff71bf04b7caaef490e5ff695e74a0088a13fbb2a0c5d125a5ecfd142adfa30f0176da0e2734942c91ba61d95ce269c43b3265bd7379361
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^18.2.39":
+  version: 18.3.3
+  resolution: "@types/react@npm:18.3.3"
+  dependencies:
+    "@types/prop-types": "npm:*"
+    csstype: "npm:^3.0.2"
+  checksum: 10c0/fe455f805c5da13b89964c3d68060cebd43e73ec15001a68b34634604a78140e6fc202f3f61679b9d809dde6d7a7c2cb3ed51e0fd1462557911db09879b55114
   languageName: node
   linkType: hard
 
@@ -2994,7 +3013,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dateformat@npm:^4.6.3":
+"dateformat@npm:^4.5.1, dateformat@npm:^4.6.3":
   version: 4.6.3
   resolution: "dateformat@npm:4.6.3"
   checksum: 10c0/e2023b905e8cfe2eb8444fb558562b524807a51cdfe712570f360f873271600b5c94aebffaf11efb285e2c072264a7cf243eadb68f3eba0f8cc85fb86cd25df6
@@ -3143,6 +3162,13 @@ __metadata:
   dependencies:
     webidl-conversions: "npm:^7.0.0"
   checksum: 10c0/774277cd9d4df033f852196e3c0077a34dbd15a96baa4d166e0e47138a80f4c0bdf0d94e4703e6ff5883cec56bb821a6fff84402d8a498e31de7c87eb932a294
+  languageName: node
+  linkType: hard
+
+"dompurify@npm:^2.3.1":
+  version: 2.5.5
+  resolution: "dompurify@npm:2.5.5"
+  checksum: 10c0/2e280e88c632bcee232b9be07fbe4f910f0d28278c79bfdb93c873e9c3418008123cb28b4ca6ada1d25efac7f632f85c3c59ba6b3cff3b89410aedf58dc16173
   languageName: node
   linkType: hard
 
@@ -4765,14 +4791,14 @@ __metadata:
 "inferno-shared@npm:7.4.11":
   version: 7.4.11
   resolution: "inferno-shared@npm:7.4.11"
-  checksum: 48b453fb11d7126d30668e3d74ccc4a4f00f9f7b191d27eded2138acc0cd07c02d14c1c936319b5b25bf46f7476b480938337ec7a64b932b2949b73c968ae52a
+  checksum: 10c0/af9ed654fa4427f6a7aa868100d15dcae0a883c31495c24bf53e258b6b204d4b3fdb18976528fd27ad4d30fde5519bd6bcbf1f061bb9a6f6a0ae7f2338dda20c
   languageName: node
   linkType: hard
 
 "inferno-vnode-flags@npm:7.4.11, inferno-vnode-flags@npm:^7.4.8":
   version: 7.4.11
   resolution: "inferno-vnode-flags@npm:7.4.11"
-  checksum: 8a2f1d8d546b99c14c31a25a88ac45f076be9ac630202f898c49140aa420cf2c96d871fcc3f8e5813d5176d569a40c3fd1727198edf46306de3a989fe85176ab
+  checksum: 10c0/58f2283a658ad971141c597b5d52328826d7ca9e8522e185740e5ea2aeafd8f93002d7b1f69ee4be7353da878259572b477ae5c78188222744433e0497000c65
   languageName: node
   linkType: hard
 
@@ -4780,10 +4806,10 @@ __metadata:
   version: 7.4.11
   resolution: "inferno@npm:7.4.11"
   dependencies:
-    inferno-shared: 7.4.11
-    inferno-vnode-flags: 7.4.11
-    opencollective-postinstall: ^2.0.3
-  checksum: 1651aad357995170c135520ff09d6e24311e05f0b0736b66d50dba5e68ff521b6c9dff13eec64effd6b79455d39f06176f0a5be50a1aaa979384721ae9b9862c
+    inferno-shared: "npm:7.4.11"
+    inferno-vnode-flags: "npm:7.4.11"
+    opencollective-postinstall: "npm:^2.0.3"
+  checksum: 10c0/2c6091046f91f3c3cbf855d0c25f668d453be623f89b5ace36961a2b535604d78349a06836852be79f94638a2223c83ea8553d35af3d4b70a5dd7fef870f127c
   languageName: node
   linkType: hard
 
@@ -6147,7 +6173,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:^4.3.0":
+"marked@npm:^4.0.10, marked@npm:^4.3.0":
   version: 4.3.0
   resolution: "marked@npm:4.3.0"
   bin:
@@ -6706,7 +6732,7 @@ __metadata:
   resolution: "opencollective-postinstall@npm:2.0.3"
   bin:
     opencollective-postinstall: index.js
-  checksum: 0a68c5cef135e46d11e665d5077398285d1ce5311c948e8327b435791c409744d4a6bb9c55bd6507fb5f2ef34b0ad920565adcdaf974cbdae701aead6f32b396
+  checksum: 10c0/0a68c5cef135e46d11e665d5077398285d1ce5311c948e8327b435791c409744d4a6bb9c55bd6507fb5f2ef34b0ad920565adcdaf974cbdae701aead6f32b396
   languageName: node
   linkType: hard
 
@@ -8862,18 +8888,18 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "voidcrew_tgui@workspace:packages/voidcrew_tgui"
   dependencies:
-    "@popperjs/core": ^2.9.3
-    "@types/react": ^18.2.39
-    "@types/react-dom": ^18.2.17
+    "@popperjs/core": "npm:^2.9.3"
+    "@types/react": "npm:^18.2.39"
+    "@types/react-dom": "npm:^18.2.17"
     common: "workspace:*"
-    dateformat: ^4.5.1
-    dompurify: ^2.3.1
-    inferno: ^7.4.8
-    inferno-vnode-flags: ^7.4.8
-    js-yaml: ^4.1.0
-    marked: ^4.0.10
-    react: ^18.2.0
-    react-dom: ^18.2.0
+    dateformat: "npm:^4.5.1"
+    dompurify: "npm:^2.3.1"
+    inferno: "npm:^7.4.8"
+    inferno-vnode-flags: "npm:^7.4.8"
+    js-yaml: "npm:^4.1.0"
+    marked: "npm:^4.0.10"
+    react: "npm:^18.2.0"
+    react-dom: "npm:^18.2.0"
     tgui: "workspace:*"
     tgui-dev-server: "workspace:*"
     tgui-polyfill: "workspace:*"

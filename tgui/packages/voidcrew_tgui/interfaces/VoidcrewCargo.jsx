@@ -12,7 +12,7 @@ import {
   Tabs,
 } from '../../tgui/components';
 import { formatMoney } from '../../tgui/format';
-import { CargoCatalog } from '../../tgui/interfaces/Cargo.jsx';
+import { CargoCatalog } from '../../tgui/interfaces/Cargo/CargoCatalog.tsx';
 import { Window } from '../../tgui/layouts';
 
 export const VoidcrewCargo = (props, context) => {

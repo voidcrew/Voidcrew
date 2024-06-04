@@ -50,7 +50,7 @@
 			return
 	return ..()
 
-/obj/machinery/computer/nanite_cloud_controller/AltClick(mob/user)
+/obj/machinery/computer/nanite_cloud_controller/click_alt(mob/user)
 	if(disk && user.can_perform_action(src, ALLOW_SILICON_REACH))
 		to_chat(user, span_notice("You take out [disk] from [src]."))
 		eject(user)
