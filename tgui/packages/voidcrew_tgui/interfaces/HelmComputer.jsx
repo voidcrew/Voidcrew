@@ -37,15 +37,13 @@ export const HelmComputer = (props, context) => {
               </Section>
               <Section title="Controls" width={'30%'}>
                 <Stack vertical>
-                  <Stack>
-                    <Stack.Item>
-                      <ShipControlContent />
-                    </Stack.Item>
+                  <Stack.Item>
+                    <ShipControlContent />
+                  </Stack.Item>
 
-                    <Stack.Item pl={2}>
-                      <Radar />
-                    </Stack.Item>
-                  </Stack>
+                  <Stack.Item>
+                    <Radar />
+                  </Stack.Item>
 
                   <Stack.Item>
                     <ShipContent />
@@ -66,29 +64,46 @@ const Radar = (context) => {
   return (
     <Section>
       <Table>
-        {otherInfo.map((info) => (
-          <Table.Row key={info.name} height={4}>
-            <Table.Cell bold>Location:</Table.Cell>
-            <Table.Cell textAlign="center">{info.name}</Table.Cell>
+        <Table.Row bold>
+          <Table.Cell>Name</Table.Cell>
+          <Table.Cell>Integrity</Table.Cell>
+          {!isViewer && <Table.Cell>Act</Table.Cell>}
+        </Table.Row>
+        {otherInfo.map((ship) => (
+          <Table.Row key={ship.name}>
+            <Table.Cell>{ship.name}</Table.Cell>
+            <Table.Cell>
+              {!!ship.integrity && (
+                <ProgressBar
+                  ranges={{
+                    good: [51, 100],
+                    average: [26, 50],
+                    bad: [0, 25],
+                  }}
+                  maxValue={100}
+                  value={ship.integrity}
+                />
+              )}
+            </Table.Cell>
+            {!isViewer && (
+              <Table.Cell>
+                <Button
+                  tooltip="Interact"
+                  tooltipPosition="left"
+                  icon="circle"
+                  disabled={
+                    isViewer || data.speed > 0 || data.state !== 'flying'
+                  }
+                  onClick={() =>
+                    act('act_overmap', {
+                      ship_to_act: ship.ref,
+                    })
+                  }
+                />
+              </Table.Cell>
+            )}
           </Table.Row>
         ))}
-
-        <Table.Row bold>
-          {!isViewer && <Table.Cell>Act:</Table.Cell>}
-          <Table.Cell textAlign="center">
-            <Button
-              tooltip="Interact"
-              tooltipPosition="left"
-              icon="circle"
-              disabled={isViewer || data.speed > 0 || data.state !== 'flying'}
-              onClick={() =>
-                act('act_overmap', {
-                  ship_to_act: ship.ref,
-                })
-              }
-            />
-          </Table.Cell>
-        </Table.Row>
       </Table>
     </Section>
   );
@@ -134,7 +149,7 @@ const SharedContent = (props, context) => {
             value={integrity}
           />
         </LabeledList.Item>
-        {/* <LabeledList.Item label="Sensor Range">
+        <LabeledList.Item label="Sensor Range">
           <ProgressBar value={shipInfo.sensor_range} minValue={1} maxValue={8}>
             <AnimatedNumber value={shipInfo.sensor_range} />
           </ProgressBar>
@@ -143,7 +158,7 @@ const SharedContent = (props, context) => {
           <LabeledList.Item label="Mass">
             {shipInfo.mass + 'tonnes'}
           </LabeledList.Item>
-        )} */}
+        )}
       </LabeledList>
     </Section>
   );
@@ -281,7 +296,7 @@ const ShipContent = (props, context) => {
                 </Table.Cell>
               </Table.Row>
             ))}
-          {/* <Table.Row>
+          <Table.Row>
             <Table.Cell>Est burn:</Table.Cell>
             <Table.Cell>
               <AnimatedNumber
@@ -292,7 +307,7 @@ const ShipContent = (props, context) => {
               />
               spM/burn
             </Table.Cell>
-          </Table.Row> */}
+          </Table.Row>
         </Table>
       </Section>
     </>
