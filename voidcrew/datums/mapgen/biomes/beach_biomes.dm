@@ -40,7 +40,7 @@
 		/mob/living/simple_animal/butterfly/beach = 4,
 		/mob/living/simple_animal/hostile/retaliate/snake/beach = 5,
 		/mob/living/basic/slime/random/beach = 3,
-		/mob/living/simple_animal/hostile/bee/toxin/beach = 3
+		/mob/living/basic/bee/toxin = 3
 	)
 	mob_spawn_chance = 2
 	feature_spawn_chance = 0.1

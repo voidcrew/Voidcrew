@@ -578,7 +578,7 @@
 	var/fuel_avg = 0
 	var/engine_amnt = 0
 	for(var/obj/machinery/power/shuttle_engine/ship/E in shuttle.engine_list)
-		if(!E.enabled)
+		if(!E.enabled || E.thruster_active == 0)
 			continue
 		fuel_avg += E.return_fuel() / E.return_fuel_cap()
 		engine_amnt++
@@ -712,7 +712,7 @@
 		calculate_mass()
 	calculate_avg_fuel()
 	for(var/obj/machinery/power/shuttle_engine/ship/E in shuttle.engine_list)
-		if(!E.enabled)
+		if(!E.enabled || E.thruster_active == 0)
 			continue
 		thrust_used += E.burn_engine(percentage)
 	est_thrust = thrust_used //cheeky way of rechecking the thrust, check it every time it's used

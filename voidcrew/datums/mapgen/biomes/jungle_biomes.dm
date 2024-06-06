@@ -102,7 +102,7 @@
 		///obj/structure/flora/ash/space/voidmelon = 1
 	)
 	mob_spawn_chance = 1
-	mob_spawn_list = list(/mob/living/simple_animal/hostile/bee/toxin = 1, /mob/living/simple_animal/hostile/mushroom = 1, /mob/living/basic/slime/pet = 1)
+	mob_spawn_list = list(/mob/living/basic/bee/toxin = 1, /mob/living/simple_animal/hostile/mushroom = 1, /mob/living/basic/slime/pet = 1)
 
 /datum/biome/cave/lush/bright
 	open_turf_types = list(/turf/open/misc/grass/jungle/lit = 12, /turf/open/water/jungle/lit = 1)
