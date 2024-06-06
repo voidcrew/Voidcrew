@@ -6,8 +6,8 @@ import {
   LabeledList,
   ProgressBar,
   Section,
-  Table,
   Stack,
+  Table,
 } from '../../tgui/components';
 import { Window } from '../../tgui/layouts';
 
