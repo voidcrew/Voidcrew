@@ -18,7 +18,7 @@
 	flora_spawn_chance = 30
 	open_turf_types = list(/turf/open/misc/grass/jungle = 1, /turf/open/misc/dirt/jungle/dark = 9)
 	mob_spawn_chance = 0.6
-	mob_spawn_list = list(/mob/living/simple_animal/hostile/gorilla/beach = 1, /mob/living/carbon/human/species/monkey = 3)
+	mob_spawn_list = list(/mob/living/basic/gorilla/beach = 1, /mob/living/carbon/human/species/monkey = 3)
 
 /datum/biome/jungle/plains
 	open_turf_types = list(/turf/open/misc/grass/jungle/lit = 1)
@@ -58,7 +58,7 @@
 		/obj/structure/flora/ash/whitesands/puce = 1
 	)
 	mob_spawn_chance = 1
-	mob_spawn_list = list(/mob/living/simple_animal/hostile/asteroid/wolf/random = 1, /mob/living/basic/bat = 1, /mob/living/simple_animal/hostile/retaliate/snake)
+	mob_spawn_list = list(/mob/living/basic/mining/wolf/random = 1, /mob/living/basic/bat = 1, /mob/living/simple_animal/hostile/retaliate/snake)
 	feature_spawn_chance = 1
 //	feature_spawn_list = list(/obj/item/pickaxe/rusted = 1, /obj/structure/closet/crate/grave/lead_researcher = 1, /obj/structure/closet/crate/grave = 1, /obj/item/shovel = 1, /obj/structure/closet/crate/secure/loot = 1)
 
@@ -102,12 +102,12 @@
 		///obj/structure/flora/ash/space/voidmelon = 1
 	)
 	mob_spawn_chance = 1
-	mob_spawn_list = list(/mob/living/simple_animal/hostile/poison/bees/toxin = 1, /mob/living/simple_animal/hostile/mushroom = 1, /mob/living/simple_animal/slime/pet = 1)
+	mob_spawn_list = list(/mob/living/basic/bee/toxin = 1, /mob/living/simple_animal/hostile/mushroom = 1, /mob/living/basic/slime/pet = 1)
 
 /datum/biome/cave/lush/bright
 	open_turf_types = list(/turf/open/misc/grass/jungle/lit = 12, /turf/open/water/jungle/lit = 1)
 	flora_spawn_chance = 40
 	mob_spawn_chance = 1
-	mob_spawn_list = list(/mob/living/basic/lightgeist = 1)
+	mob_spawn_list = list(/mob/living/basic/slime/random = 1, /mob/living/basic/lightgeist = 1)
 	feature_spawn_chance = 0.1
 	feature_spawn_list = list(/obj/item/rod_of_asclepius = 1)

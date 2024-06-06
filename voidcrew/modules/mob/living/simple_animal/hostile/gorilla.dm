@@ -1,2 +1,2 @@
-/mob/living/simple_animal/hostile/gorilla/beach
+/mob/living/basic/gorilla/beach
 	faction = list("jungle", "beach")

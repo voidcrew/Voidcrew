@@ -74,9 +74,6 @@
 	icon_state = "sand"
 	base_icon_state = "sand"
 
-/turf/open/misc/asteroid/sand/beach/broken_states()
-	return list("sand_dug")
-
 /turf/open/misc/asteroid/sand/beach/Initialize(mapload, inherited_virtual_z)
 	. = ..()
 	icon_state = "[base_icon_state]"
@@ -90,9 +87,6 @@
 	icon_state = "light_sand"
 	planetary_atmos = TRUE
 	base_icon_state = "light_sand"
-
-/turf/open/misc/asteroid/sand/beach/dense/broken_states()
-	return list("light_sand_dug")
 
 /turf/open/misc/asteroid/sand/beach/dense/lit
 	light_range = 2

@@ -3,14 +3,16 @@
 	desc = "You spot something glimmering from within. Maybe you can reach in and try to grab it?"
 	icon = 'voidcrew/icons/obj/animal_spawner.dmi'
 	icon_state = "cave_den"
-	mob_types = list(/mob/living/simple_animal/hostile/bear/cave)
+	mob_types = list(/mob/living/basic/bear/cave)
 	max_mobs = 2
 	max_integrity = 650
 	spawn_time = 300
 	faction = list(FACTION_WASTELAND)
+	var/in_use = FALSE
 	var/uses = 6
 	var/bite_chance = 15
 	var/success_chance = 80
+
 	var/caveloot = list(
 		/obj/item/stack/spacecash/c1000 = 10,
 		/obj/item/stack/spacecash/c10000 = 1,
@@ -69,9 +71,12 @@
 /obj/structure/spawner/cave/interact(mob/living/carbon/human/user)
 	if(!istype(user))
 		return
+	if(in_use)
+		return
 	if(uses == 0)
 		to_chat(user, "<span class='warning'>There's nothing left to loot!</span>")
 		return
+	in_use = TRUE
 	to_chat(user, "<span class='warning'>You start searching the [name] for anything useful...</span>")
 	if(do_after(user, 40, target = src))
 		if(prob(bite_chance))
@@ -91,6 +96,7 @@
 				to_chat(user, "<span class='warning'>You didn't find anything, maybe try looking again?")
 	else
 		to_chat(user, "<span class='warning'><b>Your search was interrupted!</b></span>")
+	in_use = FALSE
 
 /obj/structure/spawner/cave/beach
 	name = "oak barrel"

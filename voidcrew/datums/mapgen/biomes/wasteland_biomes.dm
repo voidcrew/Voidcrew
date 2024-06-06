@@ -28,7 +28,7 @@
 		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger = 5,
 		/mob/living/basic/giant_spider/wasteland = 1,
 		/mob/living/basic/giant_spider/tarantula/wasteland = 1,
-		/mob/living/simple_animal/hostile/asteroid/hivelord/legion/wasteland = 3
+		/mob/living/basic/mining/legion/wasteland = 3
 	)
 
 /datum/biome/wasteland/plains
@@ -66,7 +66,7 @@
 	mob_spawn_list = list(
 		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter = 10,
 		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger = 7,
-		/mob/living/simple_animal/hostile/hivebot/rapid/wasteland = 5,
+		/mob/living/basic/hivebot/rapid/wasteland = 5,
 		/mob/living/basic/giant_spider/wasteland = 1,
 		/mob/living/basic/giant_spider/tarantula/wasteland = 1
 	)
@@ -94,8 +94,8 @@
 	)
 	mob_spawn_chance = 10
 	mob_spawn_list = list(
-		/mob/living/simple_animal/hostile/asteroid/hivelord/legion/wasteland = 15,
-		/mob/living/simple_animal/hostile/asteroid/hivelord/legion/crystal/wasteland = 1,
+		/mob/living/basic/mining/legion/wasteland = 15,
+		/mob/living/basic/mining/legion/crystal/wasteland = 1,
 		/mob/living/simple_animal/hostile/asteroid/basilisk/watcher/forgotten/wasteland = 1
 	)
 
@@ -105,7 +105,7 @@
 	mob_spawn_chance = 1
 	mob_spawn_list = list(
 		/mob/living/basic/wumborian_fugu/wasteland = 15,
-		/mob/living/simple_animal/hostile/asteroid/wolf/wasteland/random = 15,
+		/mob/living/basic/mining/wolf/wasteland/random = 15,
 		/obj/structure/spawner/ice_moon/demonic_portal/blobspore = 1,
 		/obj/structure/spawner/ice_moon/demonic_portal/hivebot = 1
 	)
@@ -186,7 +186,7 @@
 		/mob/living/simple_animal/hostile/blob/blobbernaut/independent/wasteland = 1,
 		/mob/living/simple_animal/hostile/asteroid/basilisk/watcher/magmawing/wasteland = 4,
 		/mob/living/basic/mining/goldgrub = 3,
-		/mob/living/simple_animal/hostile/asteroid/hivelord/legion/wasteland = 3,
+		/mob/living/basic/mining/legion/wasteland = 3,
 		/obj/structure/spawner/ice_moon/demonic_portal/blobspore = 1,
 		/obj/structure/spawner/ice_moon/demonic_portal/hivebot = 1
 	)

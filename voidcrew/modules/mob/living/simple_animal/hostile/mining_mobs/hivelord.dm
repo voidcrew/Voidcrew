@@ -1,13 +1,13 @@
-/mob/living/simple_animal/hostile/asteroid/hivelord/legion/wasteland
+/mob/living/basic/mining/legion/wasteland
 	faction = list(FACTION_WASTELAND)
 
 /mob/living/simple_animal/hostile/big_legion/wasteland
 	faction = list(FACTION_WASTELAND)
 
-/mob/living/simple_animal/hostile/asteroid/hivelord/legion/crystal/wasteland
+/mob/living/basic/mining/legion/crystal/wasteland
 	faction = list(FACTION_WASTELAND)
 
-/mob/living/simple_animal/hostile/asteroid/hivelord/beach
+/mob/living/basic/mining/hivelord/beach
 	name = "crystal hivelord"
 	icon = 'voidcrew/icons/mob/beach/beach_hivelord.dmi'
 	icon_state = "hivelord"
@@ -17,11 +17,10 @@
 	faction = list(FACTION_BEACH, FACTION_CRYSTAL)
 	//loot = list(/obj/item/strange_crystal)
 
-/mob/living/simple_animal/hostile/asteroid/hivelordbrood/beach
+/mob/living/basic/hivelord_brood/beach
 	icon = 'voidcrew/icons/mob/beach/beach_hivelord.dmi'
 	icon_state = "hivelord_tentacle"
 	icon_living = "hivelord_tentacle"
-	icon_aggro = "hivelord_tentacle"
 	icon_dead = "hivelord_tentacle"
 	icon_gib = "syndicate_gib"
 	pixel_x = 6

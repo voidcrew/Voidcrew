@@ -1,4 +1,4 @@
-/mob/living/simple_animal/hostile/blob/blobspore/wasteland
+/mob/living/basic/blob_minion/spore/wasteland
 	faction = list(FACTION_WASTELAND)
 	maxHealth = 70
 	health = 70

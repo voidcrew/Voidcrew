@@ -217,6 +217,7 @@
 
 /datum/nanite_program/defib/on_trigger(comm_message)
 	host_mob.notify_revival("Your heart is being defibrillated by nanites. Re-enter your corpse if you want to be revived!")
+	host_mob.grab_ghost()
 	addtimer(CALLBACK(src, PROC_REF(zap)), 50)
 
 /datum/nanite_program/defib/proc/check_revivable()

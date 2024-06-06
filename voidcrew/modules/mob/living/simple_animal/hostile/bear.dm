@@ -1,4 +1,4 @@
-/mob/living/simple_animal/hostile/bear/cave
+/mob/living/basic/bear/cave
 	name = "brown bear"
 	desc = "A ferocious brown bear, ready to maul."
 	icon = 'icons/mob/simple/animal.dmi'
