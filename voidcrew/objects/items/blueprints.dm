@@ -19,31 +19,6 @@
 			var/obj/structure/overmap/ship/S = H.current_ship
 			target_shuttle = S.shuttle
 
-/obj/item/blueprints/shuttle/attack_self(mob/user)
-	. = ..()
-	var/datum/browser/popup = new(user, "blueprints", "[src]", 700, 500)
-	popup.set_content(.)
-	popup.open()
-	onclose(user, "blueprints")
-
-/obj/item/blueprints/shuttle/Topic(href, href_list)
-	if(!usr.can_perform_action(src) || usr != loc)
-		usr << browse(null, "window=blueprints")
-		return TRUE
-	if(href_list["create_area"])
-		if(in_use)
-			return
-		if(!target_shuttle)
-			to_chat(usr, "<span class='warning'>You need to designate a shuttle to expand by linking the helm console to these plans.</span>")
-			return
-		var/area/A = get_area(usr)
-		if(A.area_flags & NOTELEPORT)
-			to_chat(usr, "<span class='warning'>You cannot edit restricted areas.</span>")
-			return
-		in_use = TRUE
-		create_shuttle_area(usr)
-		in_use = FALSE
-
 // Virtually a copy of create_area() with specialized behaviour
 /obj/item/blueprints/shuttle/proc/create_shuttle_area(mob/creator)
 	// Passed into the above proc as list/break_if_found

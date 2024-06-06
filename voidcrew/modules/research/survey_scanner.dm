@@ -72,8 +72,8 @@
 	. = ..()
 	for(var/obj/item/stock_parts/matter_bin/matterbins in component_parts)
 		research_power = matterbins.rating
-	for(var/obj/item/stock_parts/servo in component_parts)
-		research_gain = ((servo.rating * 100) / 2) //50, 100, 150, 200
+	for(var/obj/item/stock_parts/servo/manipulators in component_parts)
+		research_gain = ((manipulators.rating * 100) / 2) //50, 100, 150, 200
 
 	//power usage is cut, not increased.
 	var/parts_energy_rating = 0

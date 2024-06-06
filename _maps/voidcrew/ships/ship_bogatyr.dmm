@@ -600,7 +600,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/bogatyr/bridge)
 "AV" = (
-/mob/living/simple_animal/hostile/asteroid/wolf{
+/mob/living/basic/mining/wolf{
 	faction = list("neutral");
 	name = "Anastasia"
 	},

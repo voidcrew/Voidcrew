@@ -19,7 +19,7 @@
 	)
 	mob_spawn_chance = 4
 	mob_spawn_list = list(
-		/mob/living/basic/mining/goliath = 50,
+		/obj/effect/spawner/random/lavaland_mob/goliath = 50,
 
 		/mob/living/basic/mining/watcher = 40,
 		/mob/living/basic/mining/legion = 30,
@@ -125,7 +125,7 @@
 	closed_turf_types = list(/turf/closed/mineral/random/volcanic = 1)
 	mob_spawn_chance = 4
 	mob_spawn_list = list(
-		/mob/living/basic/mining/goliath = 50,
+		/obj/effect/spawner/random/lavaland_mob/goliath = 50,
 		/mob/living/basic/mining/watcher = 40,
 		/mob/living/basic/mining/legion = 30,
 		/mob/living/basic/mining/goldgrub = 10

@@ -63,16 +63,6 @@
 		else if(istype(R, /datum/map_template/ruin/reebe))
 			yellow_ruins_templates[R.name] = R
 
-/datum/controller/subsystem/mapping/generate_linkages_for_z_level(z_level)
-	if(!isnum(z_level) || z_level <= 0)
-		return FALSE
-
-	if(multiz_levels.len < z_level)
-		multiz_levels.len = z_level
-
-	// TODO - MULTI-Z
-	multiz_levels[z_level] = list()
-
 /datum/controller/subsystem/mapping/setup_map_transitions()
 	return
 
@@ -102,10 +92,3 @@
 
 /datum/controller/subsystem/mapping/get_station_center()
 	return SSovermap.overmap_centre || locate(OVERMAP_LEFT_SIDE_COORD, OVERMAP_NORTH_SIDE_COORD, OVERMAP_Z_LEVEL)
-
-// Todo I guess
-// /datum/controller/subsystem/mapping/get_turf_above(turf/T)
-// 	return SSovermap.calculate_turf_above(T)
-
-// /datum/controller/subsystem/mapping/get_turf_below(turf/T)
-// 	return SSovermap.calculate_turf_below(T)

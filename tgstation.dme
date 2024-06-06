@@ -6445,7 +6445,6 @@
 #include "voidcrew\modules\research\designs\medical_designs.dm"
 #include "voidcrew\modules\research\designs\sleeper.dm"
 #include "voidcrew\modules\research\edits\_experiments.dm"
-#include "voidcrew\modules\research\edits\_production.dm"
 #include "voidcrew\modules\research\edits\_rd_consoles.dm"
 #include "voidcrew\modules\research\edits\_techweb.dm"
 #include "voidcrew\modules\research\edits\dna_console.dm"

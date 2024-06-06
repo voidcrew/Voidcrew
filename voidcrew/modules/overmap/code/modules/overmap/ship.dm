@@ -635,7 +635,7 @@
 	var/heading = get_heading()
 	if(!(direction in GLOB.cardinals))
 		acceleration *= 0.5 //Makes it so going diagonally isn't 2x as efficient
-	if(heading && (direction & DIRFLIP(heading))) //This is so if you burn in the opposite direction you're moving, you can actually reach zero
+	if(heading && (direction & REVERSE_DIR(heading))) //This is so if you burn in the opposite direction you're moving, you can actually reach zero
 		if(EWCOMPONENT(direction))
 			acceleration = min(acceleration, abs(speed[1]))
 		else
