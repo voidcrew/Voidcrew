@@ -237,18 +237,18 @@
 /datum/techweb_node/adv_surgery/New()
 	. = ..()
 	design_ids += list(
-		"surgery_adv_dissection",
+		"surgery_oldstation_dissection_advanced",
 	)
 
 /datum/techweb_node/exp_surgery/New()
 	. = ..()
 	design_ids += list(
-		"surgery_exp_dissection",
+		"surgery_oldstation_dissection_superior",
 	)
 
 /datum/techweb_node/alien_surgery/New()
 	. = ..()
 	design_ids += list(
-		"surgery_ext_dissection",
+		"surgery_oldstation_dissection_elite",
 	)
 

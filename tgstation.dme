@@ -6467,7 +6467,7 @@
 #include "voidcrew\modules\shuttle\ship_parts\spawners.dm"
 #include "voidcrew\modules\shuttle\ship_parts\user_client.dm"
 #include "voidcrew\modules\shuttle\ship_parts\user_prefs.dm"
-#include "voidcrew\modules\surgery\dissection.dm"
+#include "voidcrew\modules\surgery\experimental_dissection.dm"
 #include "voidcrew\modules\teams\_team.dm"
 #include "voidcrew\modules\vehicles\atv.dm"
 #include "voidcrew\modules\vending\_vending.dm"

@@ -1,3 +1,6 @@
+/obj/item/research_notes
+	desc = "Valuable scientific data. Use it in an RD console to generate research points."
+
 //research notes for ruins
 /obj/item/research_notes/loot
 	origin_type = "exotic particle physics"
