@@ -699,28 +699,31 @@
  * * n_dir - The direction to move in
  */
 /obj/structure/overmap/ship/proc/burn_engines(n_dir = null, percentage = 100)
-	// if(!n_dir)
-	// 	decelerate(acceleration_speed * (percentage / 100))
-	// else
-	// 	accelerate(n_dir, acceleration_speed * (percentage / 100))
 	if(state != OVERMAP_SHIP_FLYING)
 		return
 
+	// Decelerate without using fuel
+	if(!n_dir) {
+		decelerate(acceleration_speed * (percentage / 100))
+		return
+	}
+
 	var/thrust_used = 0 //The amount of thrust that the engines will provide with one burn
 	refresh_engines()
+
 	if(!mass)
 		calculate_mass()
 	calculate_avg_fuel()
+
 	for(var/obj/machinery/power/shuttle_engine/ship/E in shuttle.engine_list)
 		if(!E.enabled || E.thruster_active == 0)
 			continue
 		thrust_used += E.burn_engine(percentage)
 	est_thrust = thrust_used //cheeky way of rechecking the thrust, check it every time it's used
 	thrust_used = thrust_used / max(mass * 100, 1) //do not know why this minimum check is here, but I clearly ran into an issue here before
+
 	if(n_dir)
 		accelerate(n_dir, thrust_used)
-	else
-		decelerate(thrust_used)
 
 #undef SHIP_SIZE_THRESHOLD
 

@@ -150,9 +150,13 @@
 	if(default_deconstruction_crowbar(I))
 		return
 	if(istype(I, /obj/item/tank/internals))
+		if (fuel_tank)
+			try_put_in_hand(fuel_tank, user)
+			fuel_tank = null
 		user.transferItemToLoc(I, src)
 		fuel_tank = I
-	return ..()
+	else
+		return ..()
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/click_alt(mob/living/L)
 	. = ..()
