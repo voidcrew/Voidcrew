@@ -150,9 +150,21 @@
 	if(default_deconstruction_crowbar(I))
 		return
 	if(istype(I, /obj/item/tank/internals))
+		if (fuel_tank)
+			try_put_in_hand(fuel_tank, user)
+			fuel_tank = null
 		user.transferItemToLoc(I, src)
 		fuel_tank = I
-	return ..()
+		// if (fuel_tank == null)
+		// 	user.transferItemToLoc(I, src)
+		// 	fuel_tank = I
+		// 	balloon_alert(user, "tank inserted")
+		// else
+		// 	user.put_in_hands(fuel_tank)
+		// 	user.transferItemToLoc(I, src)
+		// 	balloon_alert(user, "tank replaced")
+	else
+		return ..()
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/click_alt(mob/living/L)
 	. = ..()
