@@ -155,14 +155,6 @@
 			fuel_tank = null
 		user.transferItemToLoc(I, src)
 		fuel_tank = I
-		// if (fuel_tank == null)
-		// 	user.transferItemToLoc(I, src)
-		// 	fuel_tank = I
-		// 	balloon_alert(user, "tank inserted")
-		// else
-		// 	user.put_in_hands(fuel_tank)
-		// 	user.transferItemToLoc(I, src)
-		// 	balloon_alert(user, "tank replaced")
 	else
 		return ..()
 
