@@ -71,12 +71,12 @@
 	if(!source_code_hdd.stored_research.can_afford(list(TECHWEB_POINT_TYPE_GENERIC = RESEARCH_STOLEN_PER_THEFT)))
 		balloon_alert(thief, "not enough points to steal!")
 		return
+	balloon_alert(thief, "attempting to steal research points!")
 	if(!do_after(thief, (10 SECONDS), src))
 		balloon_alert(thief, "interrupted!")
 		return
-
 	source_code_hdd.stored_research.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = RESEARCH_STOLEN_PER_THEFT))
-	new /obj/item/research_notes(loc, RESEARCH_STOLEN_PER_THEFT, "stolen")
+	new /obj/item/research_notes(loc, RESEARCH_STOLEN_PER_THEFT, "thievery")
 
 #undef RESEARCH_STOLEN_PER_THEFT
 
