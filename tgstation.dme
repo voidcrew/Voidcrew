@@ -6456,6 +6456,7 @@
 #include "voidcrew\modules\shuttle\boards.dm"
 #include "voidcrew\modules\shuttle\design.dm"
 #include "voidcrew\modules\shuttle\emergency.dm"
+#include "voidcrew\modules\shuttle\navigation_computer.dm"
 #include "voidcrew\modules\shuttle\engine\electric.dm"
 #include "voidcrew\modules\shuttle\engine\fuel.dm"
 #include "voidcrew\modules\shuttle\engine\liquid.dm"

@@ -112,20 +112,24 @@
 
 	var/prev_state = acting.state
 	acting.state = OVERMAP_SHIP_ACTING //This is so the controls are locked while loading the level to give both a sense of confirmation and to prevent people from moving the ship
+	balloon_alert(user, "starting docking process..")
 	. = load_level(acting.shuttle)
 	if(.)
 		acting.state = prev_state
 		concerned = FALSE
 	else
 		var/dock_to_use = null
-		if(!reserve_dock.get_docked() && !first_dock_taken)
-			dock_to_use = reserve_dock //This assigns what port the shuttle will eventually try to dock into, but it does not immediately update the port's docked status
-			first_dock_taken = TRUE
-			acting.dock_index = 1
-		else if(!reserve_dock_secondary.get_docked() && !second_dock_taken)
-			dock_to_use = reserve_dock_secondary
-			second_dock_taken = TRUE
-			acting.dock_index = 2
+		if (acting.shuttle.port_destinations)
+			dock_to_use = acting.shuttle.port_destinations
+		else
+			if(!reserve_dock.get_docked() && !first_dock_taken)
+				dock_to_use = reserve_dock //This assigns what port the shuttle will eventually try to dock into, but it does not immediately update the port's docked status
+				first_dock_taken = TRUE
+				acting.dock_index = 1
+			else if(!reserve_dock_secondary.get_docked() && !second_dock_taken)
+				dock_to_use = reserve_dock_secondary
+				second_dock_taken = TRUE
+				acting.dock_index = 2
 		if(!dock_to_use)
 			acting.state = prev_state
 			concerned = FALSE

@@ -354,14 +354,16 @@
   * * dock_to_use - The [/obj/docking_port/mobile] to dock to.
   */
 /obj/structure/overmap/ship/proc/dock(obj/structure/overmap/to_dock, obj/docking_port/stationary/dock_to_use)
+	var/dock_time = 9 SECONDS
 	refresh_engines()
 	// Voidcrew Edit: removes throw equation "THROW" = FLOOR(est_thrust / 200, 1)
 	//shuttle.movement_force = list("KNOCKDOWN" = FLOOR(est_thrust / 50, 1), "THROW" = 0)
 	shuttle.request(dock_to_use)
 
-	priority_announce("Beginning docking procedures. Completion in [(shuttle.callTime + 1 SECONDS)/10] seconds.", "Docking Announcement", sender_override = name)
+	priority_announce("Beginning docking procedures. Completion in 10 seconds.", "Docking Announcement", sender_override = name)
 	docked = to_dock //this wasnt getting updated at all before which is strange
-	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), shuttle.callTime + 1 SECONDS)
+	shuttle.setTimer(dock_time)
+	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), dock_time + 1 SECONDS)
 	state = OVERMAP_SHIP_DOCKING
 	return "Commencing docking..."
 
@@ -437,7 +439,7 @@
   * Called after the shuttle docks, and finishes the transfer to the new location.
   */
 /obj/structure/overmap/ship/proc/complete_dock(datum/weakref/to_dock)
-	var/old_loc = loc
+	// var/old_loc = loc
 	switch(state)
 		if(OVERMAP_SHIP_DOCKING) //so that the shuttle is truly docked first
 			if(shuttle.mode == SHUTTLE_CALL || shuttle.mode == SHUTTLE_IDLE)
@@ -461,10 +463,14 @@
 					S.shuttle.shuttle_areas -= shuttle.shuttle_areas
 					adjust_speed(S.speed[1], S.speed[2])
 				forceMove(get_turf(loc))
-				if(istype(old_loc, /obj/structure/overmap/planet))
-					var/obj/structure/overmap/planet/D = old_loc
-					INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/structure/overmap/planet, unload_level))
+
+				// Uncomment to enable planet deletion when undocking
+				// if(istype(old_loc, /obj/structure/overmap/planet))
+					// var/obj/structure/overmap/planet/D = old_loc
+					// INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/structure/overmap/planet, unload_level))
+
 				state = OVERMAP_SHIP_FLYING
+
 				//if(repair_timer)
 					//deltimer(repair_timer)
 				//addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/structure/overmap/ship, tick_autopilot)), 5 SECONDS) //TODO: Improve this SOMEHOW
