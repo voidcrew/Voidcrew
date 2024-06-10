@@ -89,13 +89,96 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingTurf(turf/T, list/overlappers)
 	. = ..()
-	if (istype(get_area(T), /area/ruin))
-		return SHUTTLE_DOCKER_BLOCKED
+
+	// Won't land on any area that isn't overmap_encounter (Player areas or ruins)
+	if (!istype(get_area(T), /area/overmap_encounter))
+		return SHUTTLE_DOCKER_BLOCKED_BY_AREA
+
+	// Allows you to restrict landing on certain mobs
+	var/list/blacklisted_mobs = list(
+		/mob/living/simple_animal/hostile/megafauna
+	)
+
+	if (T.contents.len)
+		for (var/content in T.contents)
+			for (var/mob in blacklisted_mobs)
+				if (istype(content, mob))
+					return SHUTTLE_DOCKER_BLOCKED_BY_MEGAFAUNA
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/placeLandingSpot()
-	. = ..()
-	var/obj/docking_port/mobile/voidcrew/mobile_port = SSshuttle.get_containing_shuttle(src)
-	mobile_port.port_destinations = my_port
+	if(designating_target_loc || !current_user)
+		return
+
+	var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
+	var/landing_clear = checkLandingSpot()
+	if(designate_time && (landing_clear != SHUTTLE_DOCKER_BLOCKED))
+		to_chat(current_user, span_warning("Targeting transit location, please wait [DisplayTimeText(designate_time)]..."))
+		designating_target_loc = the_eye.loc
+		var/wait_completed = do_after(current_user, designate_time, designating_target_loc, timed_action_flags = IGNORE_HELD_ITEM, extra_checks = CALLBACK(src, TYPE_PROC_REF(/obj/machinery/computer/camera_advanced/shuttle_docker, canDesignateTarget)))
+		designating_target_loc = null
+		if(!current_user)
+			return
+		if(!wait_completed)
+			to_chat(current_user, span_warning("Operation aborted."))
+			return
+		landing_clear = checkLandingSpot()
+
+	if(landing_clear != SHUTTLE_DOCKER_LANDING_CLEAR)
+		switch(landing_clear)
+			if(SHUTTLE_DOCKER_BLOCKED_BY_AREA)
+				to_chat(current_user, span_warning("Landing zone has an unnatural structure inside of it. Please designate another location."))
+			if(SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT)
+				to_chat(current_user, span_warning("Unknown object detected in landing zone. Please designate another location."))
+			if(SHUTTLE_DOCKER_BLOCKED_BY_MEGAFAUNA)
+				to_chat(current_user, span_warning("Giant biological entity is blocking the landing zone. Please designate another location."))
+			if(SHUTTLE_DOCKER_BLOCKED)
+				to_chat(current_user, span_warning("Invalid transit location."))
+		return
+
+	///Make one use port that deleted after fly off, to don't lose info that need on to properly fly off.
+	if(my_port?.get_docked())
+		my_port.unregister()
+		my_port.delete_after = TRUE
+		my_port.shuttle_id = null
+		my_port.name = "Old [my_port.name]"
+		my_port = null
+
+	if(!my_port)
+		my_port = new()
+		my_port.unregister()
+		my_port.name = shuttlePortName
+		my_port.shuttle_id = shuttlePortId
+		my_port.height = shuttle_port.height
+		my_port.width = shuttle_port.width
+		my_port.dheight = shuttle_port.dheight
+		my_port.dwidth = shuttle_port.dwidth
+		my_port.hidden = shuttle_port.hidden
+		my_port.register(TRUE)
+	my_port.setDir(the_eye.dir)
+	my_port.forceMove(locate(eyeobj.x - x_offset, eyeobj.y - y_offset, eyeobj.z))
+
+	if(current_user.client)
+		current_user.client.images -= the_eye.placed_images
+
+	LAZYCLEARLIST(the_eye.placed_images)
+
+	for(var/image/place_spots as anything in the_eye.placement_images)
+		var/image/newI = image('icons/effects/alphacolors.dmi', the_eye.loc, "blue")
+		newI.loc = place_spots.loc //It is highly unlikely that any landing spot including a null tile will get this far, but better safe than sorry.
+		newI.layer = NAVIGATION_EYE_LAYER
+		SET_PLANE_EXPLICIT(newI, ABOVE_GAME_PLANE, place_spots)
+		newI.mouse_opacity = 0
+		the_eye.placed_images += newI
+
+	if(current_user.client)
+		current_user.client.images += the_eye.placed_images
+		to_chat(current_user, span_notice("Transit location designated."))
+
+	// Set our port destination with the custom port so we can dock on the custom port
+	ship_port.port_destinations = my_port
+
+	return TRUE
+
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/remove_old_ports(port_id)
 	jump_to_ports = list()
@@ -103,20 +186,6 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/add_jumpable_port(port_id)
 	jump_to_ports = list(port_id)
 	jump_to_ports[port_id] = TRUE
-
-// /obj/machinery/computer/camera_advanced/shuttle_docker/survey/give_eye_control(mob/user)
-// 	..()
-// 	if(!QDELETED(user) && user.client)
-// 		var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
-// 		var/list/to_add = list()
-// 		to_add += the_eye.placement_images
-// 		to_add += the_eye.placed_images
-// 		if(!see_hidden)
-// 			to_add += SSshuttle.hidden_shuttle_turf_images
-
-// 		user.client.images += to_add
-// 		user.client.view_size.setTo(view_range)
-// 		the_eye.setLoc(docking_location)
 
 /datum/action/innate/shuttledocker_place/voidcrew
 	scaling = 3

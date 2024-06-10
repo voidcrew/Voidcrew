@@ -118,4 +118,14 @@
 	icon_state = "object"
 	spawn_rate = -1
 
+// /datum/overmap/planet/dbug
+// 	name = "strange debug planet"
+// 	desc = "A very weak energy signal originating from a planet with lots of seismic and debug activity."
+// 	color = COLOR_ORANGE
 
+// 	ruin_type = ZTRAIT_LAVA_RUINS
+// 	mapgen = /datum/map_generator/planet_generator/lava
+// 	target_area = /area/overmap_encounter/planetoid/lava
+// 	surface = /turf/open/misc/asteroid/basalt/lava_land_surface
+// 	weather_controller_type = /datum/weather/ash_storm
+// 	planet_template = /datum/planet/lava

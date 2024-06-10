@@ -1,6 +1,9 @@
 //Shuttle unlocks
 #define SHUTTLE_UNLOCK_EMAGGED "emagged"
 
+#define SHUTTLE_DOCKER_BLOCKED_BY_MEGAFAUNA 4
+#define SHUTTLE_DOCKER_BLOCKED_BY_AREA 5
+
 // max reserve shuttle dock size defines
 
 // neither of the shuttle's dimensions should exceed this size if it is to dock at encounters
