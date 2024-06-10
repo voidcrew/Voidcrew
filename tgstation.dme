@@ -6247,6 +6247,7 @@
 #include "voidcrew\_strings\star_names.dm"
 #include "voidcrew\area\ship_areas.dm"
 #include "voidcrew\datums\map_zones.dm"
+#include "voidcrew\datums\actions\action.dm"
 #include "voidcrew\datums\mapgen\BeachGenerator.dm"
 #include "voidcrew\datums\mapgen\LavaGenerator.dm"
 #include "voidcrew\datums\mapgen\PlanetGenerator.dm"
