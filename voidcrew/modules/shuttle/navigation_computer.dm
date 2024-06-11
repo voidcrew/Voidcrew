@@ -9,14 +9,18 @@
 	whitelist_turfs = list()
 	var/obj/docking_port/mobile/voidcrew/ship_port
 	var/turf/docking_location
+	var/icon_scaling_amount = 3
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Initialize(mapload)
 	. = ..()
 
 	actions = list()
-	actions += new /datum/action/innate/shuttledocker_rotate/voidcrew(src)
-	actions += new /datum/action/innate/shuttledocker_place/voidcrew(src)
-	actions += new /datum/action/innate/camera_off/voidcrew(src)
+	actions += new /datum/action/innate/shuttledocker_rotate(src)
+	actions += new /datum/action/innate/shuttledocker_place(src)
+	actions += new /datum/action/innate/camera_off(src)
+	// actions += new /datum/action/innate/shuttledocker_rotate/voidcrew(src)
+	// actions += new /datum/action/innate/shuttledocker_place/voidcrew(src)
+	// actions += new /datum/action/innate/camera_off/voidcrew(src)
 
 	set_init_ports()
 
@@ -187,17 +191,45 @@
 	jump_to_ports = list(port_id)
 	jump_to_ports[port_id] = TRUE
 
-/datum/action/innate/shuttledocker_place/voidcrew
-	scaling = 3
-	offset_x = 7
-	offset_y = 54
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/set_scaling(var/mob/living/user, scaling_integer)
+	if(!user)
+		return
+	if(!scaling_integer)
+		return
+	var/datum/action_group/group = user.hud_used.listed_actions
+	if (group)
+		for (var/atom/movable/screen/movable/action_button/action in group.actions)
+			// Scale up icons for our enhanced shuttle view
+			action.scale_to(scaling_integer,scaling_integer)
 
-/datum/action/innate/shuttledocker_rotate/voidcrew
-	scaling = 3
-	offset_x = 10
-	offset_y = 54
+		group.scale_x = scaling_integer
+		group.scale_y = scaling_integer
+		group.refresh_actions()
 
-/datum/action/innate/camera_off/voidcrew
-	scaling = 3
-	offset_x = 13
-	offset_y = 54
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/give_eye_control(mob/user)
+	..()
+	if(!QDELETED(user) && user.client)
+		set_scaling(user, icon_scaling_amount)
+		var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
+		var/list/to_add = list()
+		to_add += the_eye.placement_images
+		to_add += the_eye.placed_images
+		if(!see_hidden)
+			to_add += SSshuttle.hidden_shuttle_turf_images
+
+		user.client.images += to_add
+		user.client.view_size.setTo(view_range)
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/remove_eye_control(mob/living/user)
+	..()
+	if(!QDELETED(user) && user.client)
+		set_scaling(user, 1)
+		var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
+		var/list/to_remove = list()
+		to_remove += the_eye.placement_images
+		to_remove += the_eye.placed_images
+		if(!see_hidden)
+			to_remove += SSshuttle.hidden_shuttle_turf_images
+
+		user.client.images -= to_remove
+		user.client.view_size.resetToDefault()
