@@ -10,7 +10,6 @@
 	var/obj/docking_port/mobile/voidcrew/ship_port
 	var/turf/docking_location
 	var/icon_scaling_amount = 3
-
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Initialize(mapload)
 	. = ..()
 
@@ -91,20 +90,64 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingTurf(turf/T, list/overlappers)
 	. = ..()
 
-	// Won't land on any area that isn't overmap_encounter (Player areas or ruins)
-	if (!istype(get_area(T), /area/overmap_encounter))
+	if(!T)
+		return SHUTTLE_DOCKER_BLOCKED
+
+	var/list/blacklisted_mob_types = list(/mob/living/simple_animal/hostile/megafauna)
+
+	var/allowed_mob = TRUE
+	for(var/mob in T.contents)
+		for(var/bad_mob in blacklisted_mob_types)
+			if(istype(mob, bad_mob))
+				allowed_mob = FALSE
+	if(allowed_mob == FALSE)
+		return SHUTTLE_DOCKER_BLOCKED_BY_MEGAFAUNA
+
+	// Won't land on any area that isn't set in our whitelist
+	var/list/whitelisted_areas = list(/area/overmap_encounter, /area/space)
+	var/allowed_area = FALSE
+
+	for (var/whitelisted_area in whitelisted_areas)
+		if (istype(get_area(T), whitelisted_area))
+			allowed_area = TRUE
+
+	if(allowed_area == FALSE)
 		return SHUTTLE_DOCKER_BLOCKED_BY_AREA
 
-	// Allows you to restrict landing on certain mobs
-	var/list/blacklisted_mobs = list(
-		/mob/living/simple_animal/hostile/megafauna
-	)
 
-	if (T.contents.len)
-		for (var/content in T.contents)
-			for (var/mob in blacklisted_mobs)
-				if (istype(content, mob))
-					return SHUTTLE_DOCKER_BLOCKED_BY_MEGAFAUNA
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingSpot()
+	var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
+	var/turf/eyeturf = get_turf(the_eye)
+	if(!eyeturf)
+		return SHUTTLE_DOCKER_BLOCKED
+	if(!eyeturf.z || SSmapping.level_has_any_trait(eyeturf.z, locked_traits))
+		return SHUTTLE_DOCKER_BLOCKED
+
+	. = SHUTTLE_DOCKER_LANDING_CLEAR
+	var/list/bounds = shuttle_port.return_coords(the_eye.x - x_offset, the_eye.y - y_offset, the_eye.dir)
+	var/list/overlappers = SSshuttle.get_dock_overlap(bounds[1], bounds[2], bounds[3], bounds[4], the_eye.z)
+	var/list/image_cache = the_eye.placement_images
+	for(var/i in 1 to image_cache.len)
+		var/image/I = image_cache[i]
+		var/list/coords = image_cache[I]
+		var/turf/T = locate(eyeturf.x + coords[1], eyeturf.y + coords[2], eyeturf.z)
+		I.loc = T
+		switch(checkLandingTurf(T, overlappers))
+			if(SHUTTLE_DOCKER_LANDING_CLEAR)
+				I.icon_state = "green"
+			if(SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT)
+				I.icon_state = "green"
+				if(. == SHUTTLE_DOCKER_LANDING_CLEAR)
+					. = SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT
+			if(SHUTTLE_DOCKER_BLOCKED_BY_AREA)
+				I.icon_state = "red"
+				. = SHUTTLE_DOCKER_BLOCKED_BY_AREA
+			if(SHUTTLE_DOCKER_BLOCKED_BY_MEGAFAUNA)
+				I.icon_state = "red"
+				. = SHUTTLE_DOCKER_BLOCKED_BY_MEGAFAUNA
+			else
+				I.icon_state = "red"
+				. = SHUTTLE_DOCKER_BLOCKED
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/placeLandingSpot()
 	if(designating_target_loc || !current_user)
@@ -201,18 +244,13 @@
 
 	for (var/datum/action_group/button_group in button_group_list)
 
-		log_admin("Button group: [button_group]")
-
 		// Scale out action buttons
 		for (var/atom/movable/screen/scaleable_action in button_group.actions)
-			log_admin("Action: [scaleable_action.name]")
 			scaleable_action.scale_to(scaling_integer, scaling_integer)
 
 		// Set scaling values for the groups (used in refresh_actions)
 		button_group.scale_x = scaling_integer
 		button_group.scale_y = scaling_integer
-
-		log_admin("Group scale values: X - [button_group.scale_x] / Y - [button_group.scale_y]")
 
 		// Refresh our actions with their new values
 		button_group.refresh_actions()
