@@ -28,7 +28,7 @@
 	var/coord_col_offset = 4 + 2 * (visual_column + 1)
 
 	if(!isnull(scale_x) && scale_x != 1)
-		coord_col = "+[visual_column * scale_x]"
+		coord_col = "+[(visual_column * scale_x) + 1]"
 		coord_col_offset = coord_col_offset * scale_x
 	if(!isnull(scale_y) && scale_y != 1)
 		coord_row = visual_row ? "-[visual_row * scale_y]" : "-[scale_y]"
@@ -48,7 +48,6 @@
 
 	if (!isnull(scale_x) && scale_x != 1)
 		palette.screen_loc = ui_action_palette_offset_with_scale(scale_x, actions_above)
-		log_admin("Palette screen loc [palette.screen_loc]")
 	else
 		palette.screen_loc = ui_action_palette_offset(actions_above)
 

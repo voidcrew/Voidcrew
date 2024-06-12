@@ -194,28 +194,35 @@
 	if(!scaling_integer)
 		return
 
-	var/datum/action_group/group = user.hud_used.listed_actions
-	if (group)
-		for (var/atom/movable/screen/movable/action_button/action in group.actions)
-			// Scale up icons for our enhanced shuttle view
-			action.scale_to(scaling_integer,scaling_integer)
+	var/list/datum/action_group/button_group_list = list(
+		user.hud_used.listed_actions,
+		user.hud_used.palette_actions
+	)
 
-		group.scale_x = scaling_integer
-		group.scale_y = scaling_integer
-		group.refresh_actions()
+	for (var/datum/action_group/button_group in button_group_list)
 
-	var/atom/movable/screen/button_palette/palette_button = user.hud_used.toggle_palette
-	var/datum/action_group/palette/palette_group = user.hud_used.palette_actions
+		log_admin("Button group: [button_group]")
 
-	palette_button.scale_to(scaling_integer,scaling_integer)
+		// Scale out action buttons
+		for (var/atom/movable/screen/scaleable_action in button_group.actions)
+			log_admin("Action: [scaleable_action.name]")
+			scaleable_action.scale_to(scaling_integer, scaling_integer)
 
-	// Set the palette scaling variables which are used by
-	palette_group.scale_x = scaling_integer
-	palette_group.scale_y = scaling_integer
+		// Set scaling values for the groups (used in refresh_actions)
+		button_group.scale_x = scaling_integer
+		button_group.scale_y = scaling_integer
 
-	var/list/default_loc_split = splittext(ui_action_palette, ",")
-	if (scaling_integer != 1)
-		palette_button.screen_loc = "WEST+[scaling_integer]:[23 * scaling_integer],[default_loc_split[2]]"
+		log_admin("Group scale values: X - [button_group.scale_x] / Y - [button_group.scale_y]")
+
+		// Refresh our actions with their new values
+		button_group.refresh_actions()
+
+	// Floating actions isn't an action group so handle it differently (why tho)
+	for (var/atom/movable/screen/movable/floating_button in user.hud_used.floating_actions)
+		floating_button.scale_to(scaling_integer, scaling_integer)
+
+	// Update the size of the toggle palette
+	user.hud_used.toggle_palette.scale_to(scaling_integer, scaling_integer)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/give_eye_control(mob/user)
 	..()

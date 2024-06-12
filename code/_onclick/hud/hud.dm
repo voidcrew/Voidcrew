@@ -767,7 +767,7 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	if(!length(actions))
 		palette.set_expanded(FALSE)
 
-///COMMENTING OUT BECAUSE MODULARIZATION IS FUCKING HARD
+///Commenting out due to this being replaced in 'voidcrew\edits\_onclick\hud' and the return ..() requirement
 // /datum/action_group/palette/refresh_actions()
 // 	var/atom/movable/screen/button_palette/palette = owner.toggle_palette
 // 	var/atom/movable/screen/palette_scroll/scroll_down = owner.palette_down
