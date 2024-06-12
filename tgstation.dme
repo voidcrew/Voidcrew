@@ -6231,6 +6231,7 @@
 #include "interface\fonts\tiny_unicode.dm"
 #include "interface\fonts\vcr_osd_mono.dm"
 #include "voidcrew\_DEFINES\flags.dm"
+#include "voidcrew\_DEFINES\hud.dm"
 #include "voidcrew\_DEFINES\keybindings.dm"
 #include "voidcrew\_DEFINES\maps.dm"
 #include "voidcrew\_DEFINES\maths.dm"

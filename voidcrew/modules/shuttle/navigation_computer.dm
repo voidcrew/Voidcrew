@@ -18,9 +18,6 @@
 	actions += new /datum/action/innate/shuttledocker_rotate(src)
 	actions += new /datum/action/innate/shuttledocker_place(src)
 	actions += new /datum/action/innate/camera_off(src)
-	// actions += new /datum/action/innate/shuttledocker_rotate/voidcrew(src)
-	// actions += new /datum/action/innate/shuttledocker_place/voidcrew(src)
-	// actions += new /datum/action/innate/camera_off/voidcrew(src)
 
 	set_init_ports()
 
@@ -191,11 +188,12 @@
 	jump_to_ports = list(port_id)
 	jump_to_ports[port_id] = TRUE
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/set_scaling(var/mob/living/user, scaling_integer)
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/set_action_scaling(var/mob/living/user, scaling_integer)
 	if(!user)
 		return
 	if(!scaling_integer)
 		return
+
 	var/datum/action_group/group = user.hud_used.listed_actions
 	if (group)
 		for (var/atom/movable/screen/movable/action_button/action in group.actions)
@@ -206,10 +204,22 @@
 		group.scale_y = scaling_integer
 		group.refresh_actions()
 
+	var/atom/movable/screen/button_palette/palette_button = user.hud_used.toggle_palette
+	var/datum/action_group/palette/palette_group = user.hud_used.palette_actions
+
+	palette_button.scale_to(scaling_integer,scaling_integer)
+
+	// Set the palette scaling variables which are used by
+	palette_group.scale_x = scaling_integer
+	palette_group.scale_y = scaling_integer
+
+	var/list/default_loc_split = splittext(ui_action_palette, ",")
+	if (scaling_integer != 1)
+		palette_button.screen_loc = "WEST+[scaling_integer]:[23 * scaling_integer],[default_loc_split[2]]"
+
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/give_eye_control(mob/user)
 	..()
 	if(!QDELETED(user) && user.client)
-		set_scaling(user, icon_scaling_amount)
 		var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
 		var/list/to_add = list()
 		to_add += the_eye.placement_images
@@ -219,11 +229,11 @@
 
 		user.client.images += to_add
 		user.client.view_size.setTo(view_range)
+		set_action_scaling(user, icon_scaling_amount)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/remove_eye_control(mob/living/user)
 	..()
 	if(!QDELETED(user) && user.client)
-		set_scaling(user, 1)
 		var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
 		var/list/to_remove = list()
 		to_remove += the_eye.placement_images
@@ -233,3 +243,4 @@
 
 		user.client.images -= to_remove
 		user.client.view_size.resetToDefault()
+		set_action_scaling(user, 1)
