@@ -10,6 +10,8 @@
 	var/obj/docking_port/mobile/voidcrew/ship_port
 	var/turf/docking_location
 	var/icon_scaling_amount = 3
+	var/list/blacklisted_mob_types = list(/mob/living/simple_animal/hostile/megafauna)
+	var/list/whitelisted_areas = list(/area/overmap_encounter, /area/space)
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Initialize(mapload)
 	. = ..()
 
@@ -41,9 +43,8 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/attack_hand(mob/user, list/modifiers)
 	refresh()
 	if (!jump_to_ports.len)
-		balloon_alert(user, "no planets in orbit!")
+		balloon_alert(user, "ship is not in orbit!")
 		return
-		. = ..()
 	if(.)
 		return
 	if(!can_use(user))
@@ -86,6 +87,8 @@
 	else
 		give_eye_control(L)
 		eyeobj.setLoc(eyeobj.loc)
+	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(docked))
+	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(undocked))
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingTurf(turf/T, list/overlappers)
 	. = ..()
@@ -93,7 +96,6 @@
 	if(!T)
 		return SHUTTLE_DOCKER_BLOCKED
 
-	var/list/blacklisted_mob_types = list(/mob/living/simple_animal/hostile/megafauna)
 
 	var/allowed_mob = TRUE
 	for(var/mob in T.contents)
@@ -104,7 +106,6 @@
 		return SHUTTLE_DOCKER_BLOCKED_BY_MEGAFAUNA
 
 	// Won't land on any area that isn't set in our whitelist
-	var/list/whitelisted_areas = list(/area/overmap_encounter, /area/space)
 	var/allowed_area = FALSE
 
 	for (var/whitelisted_area in whitelisted_areas)
@@ -218,7 +219,7 @@
 		current_user.client.images += the_eye.placed_images
 		to_chat(current_user, span_notice("Transit location designated."))
 
-	// Set our port destination with the custom port so we can dock on the custom port
+	// Set our port destination with the custom port so we can dock on it
 	ship_port.port_destinations = my_port
 
 	return TRUE
@@ -226,6 +227,7 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/remove_old_ports(port_id)
 	jump_to_ports = list()
+	ship_port.port_destinations = null
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/add_jumpable_port(port_id)
 	jump_to_ports = list(port_id)
@@ -289,3 +291,22 @@
 		user.client.images -= to_remove
 		user.client.view_size.resetToDefault()
 		set_action_scaling(user, 1)
+		UnregisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_DOCKED)
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/docked()
+	SIGNAL_HANDLER
+	remove_eye_control(current_user)
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/undocked()
+	SIGNAL_HANDLER
+	remove_old_ports(my_port)
+	my_port.unregister()
+	// my_port.delete_after = TRUE
+	// my_port.shuttle_id = null
+	// my_port.name = "Old [my_port.name]"
+	// my_port = null
+	qdel(my_port)
+	var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
+	LAZYCLEARLIST(the_eye.placed_images)
+	UnregisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED)
+

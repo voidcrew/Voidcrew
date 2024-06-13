@@ -454,6 +454,7 @@
 					S.shuttle.shuttle_areas |= shuttle.shuttle_areas
 				forceMove(docking_target)
 				state = OVERMAP_SHIP_IDLE
+				SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_DOCKED)
 			else
 				addtimer(CALLBACK(src, PROC_REF(complete_dock), to_dock), 1 SECONDS) //This should never happen, yet it does sometimes.
 		if(OVERMAP_SHIP_UNDOCKING)
@@ -470,7 +471,7 @@
 					// INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/structure/overmap/planet, unload_level))
 
 				state = OVERMAP_SHIP_FLYING
-
+				SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_UNDOCKED)
 				//if(repair_timer)
 					//deltimer(repair_timer)
 				//addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/structure/overmap/ship, tick_autopilot)), 5 SECONDS) //TODO: Improve this SOMEHOW

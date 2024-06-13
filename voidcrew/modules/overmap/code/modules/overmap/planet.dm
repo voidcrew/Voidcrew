@@ -56,10 +56,8 @@
 	if(EWCOMPONENT(shuttle.port_direction))
 		shuttle_true_height = shuttle.width
 		shuttle_true_width = shuttle.height
-
 	// the dir the stationary port should be facing (note that it points inwards)
 	var/final_facing_dir = angle2dir(dir2angle(shuttle_true_height > shuttle_true_width ? EAST : NORTH)+dir2angle(shuttle.port_direction)+180)
-
 	var/list/old_corners = dock_to_adjust.return_coords() // coords for "bottom left" / "top right" of dock's covered area, rotated by dock's current dir
 	var/list/new_dock_location // TBD coords of the new location
 	if(final_facing_dir == dock_to_adjust.dir)
@@ -118,9 +116,12 @@
 		acting.state = prev_state
 		concerned = FALSE
 	else
+		var/is_survey = FALSE
 		var/dock_to_use = null
+		// Port destinations are set by our survey console
 		if (acting.shuttle.port_destinations)
 			dock_to_use = acting.shuttle.port_destinations
+			is_survey = TRUE
 		else
 			if(!reserve_dock.get_docked() && !first_dock_taken)
 				dock_to_use = reserve_dock //This assigns what port the shuttle will eventually try to dock into, but it does not immediately update the port's docked status
@@ -135,7 +136,9 @@
 			concerned = FALSE
 			to_chat(user, "<span class='notice'>All potential docking locations occupied.</span>")
 			return
-		adjust_dock_to_shuttle(dock_to_use, acting.shuttle)
+
+		if(!is_survey)
+			adjust_dock_to_shuttle(dock_to_use, acting.shuttle)
 		to_chat(user, "<span class='notice'>[acting.dock(src, dock_to_use)]</span>") //If a value is returned from load_level(), say that, otherwise, commence docking
 	concerned = FALSE
 	// For request docking

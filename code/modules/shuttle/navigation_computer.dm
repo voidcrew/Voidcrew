@@ -109,31 +109,33 @@
 				I.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 				the_eye.placement_images[I] = list(x_off, y_off)
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/give_eye_control(mob/user)
-	..()
-	if(!QDELETED(user) && user.client)
-		var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
-		var/list/to_add = list()
-		to_add += the_eye.placement_images
-		to_add += the_eye.placed_images
-		if(!see_hidden)
-			to_add += SSshuttle.hidden_shuttle_turf_images
+// Commenting out do to overwriting this in 'voidcrew\modules\shuttle\navigation_computer.dm'
 
-		user.client.images += to_add
-		user.client.view_size.setTo(view_range)
+// /obj/machinery/computer/camera_advanced/shuttle_docker/give_eye_control(mob/user)
+// 	..()
+// 	if(!QDELETED(user) && user.client)
+// 		var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
+// 		var/list/to_add = list()
+// 		to_add += the_eye.placement_images
+// 		to_add += the_eye.placed_images
+// 		if(!see_hidden)
+// 			to_add += SSshuttle.hidden_shuttle_turf_images
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/remove_eye_control(mob/living/user)
-	..()
-	if(!QDELETED(user) && user.client)
-		var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
-		var/list/to_remove = list()
-		to_remove += the_eye.placement_images
-		to_remove += the_eye.placed_images
-		if(!see_hidden)
-			to_remove += SSshuttle.hidden_shuttle_turf_images
+// 		user.client.images += to_add
+// 		user.client.view_size.setTo(view_range)
 
-		user.client.images -= to_remove
-		user.client.view_size.resetToDefault()
+// /obj/machinery/computer/camera_advanced/shuttle_docker/remove_eye_control(mob/living/user)
+// 	..()
+// 	if(!QDELETED(user) && user.client)
+// 		var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
+// 		var/list/to_remove = list()
+// 		to_remove += the_eye.placement_images
+// 		to_remove += the_eye.placed_images
+// 		if(!see_hidden)
+// 			to_remove += SSshuttle.hidden_shuttle_turf_images
+
+// 		user.client.images -= to_remove
+// 		user.client.view_size.resetToDefault()
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/proc/placeLandingSpot()
 	if(designating_target_loc || !current_user)
