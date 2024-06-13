@@ -67,55 +67,55 @@
 	SIGNAL_HANDLER
 
 
-// /obj/machinery/computer/camera_advanced/shuttle_docker/survey/attack_hand(mob/user, list/modifiers)
-// 	refresh()
-// 	if (!jump_to_ports.len)
-// 		balloon_alert(user, "ship is not in orbit!")
-// 		return
-// 	if(.)
-// 		return
-// 	if(!can_use(user))
-// 		return
-// 	if(isnull(user.client))
-// 		return
-// 	if(!QDELETED(current_user))
-// 		to_chat(user, span_warning("The console is already in use!"))
-// 		return
-// 	var/mob/living/L = user
-// 	if(!eyeobj)
-// 		CreateEye()
-// 	if(!eyeobj) //Eye creation failed
-// 		return
-// 	if(!eyeobj.eye_initialized)
-// 		var/camera_location
-// 		var/turf/myturf = docking_location
-// 		if(eyeobj.use_static != FALSE)
-// 			if((!length(z_lock) || (myturf.z in z_lock)) && GLOB.cameranet.checkTurfVis(myturf))
-// 				camera_location = myturf
-// 			else
-// 				for(var/obj/machinery/camera/C as anything in GLOB.cameranet.cameras)
-// 					if(!C.can_use() || length(z_lock) && !(C.z in z_lock))
-// 						continue
-// 					var/list/network_overlap = networks & C.network
-// 					if(length(network_overlap))
-// 						camera_location = get_turf(C)
-// 						break
-// 		else
-// 			camera_location = myturf
-// 			if(length(z_lock) && !(myturf.z in z_lock))
-// 				camera_location = locate(round(world.maxx/2), round(world.maxy/2), z_lock[1])
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/attack_hand(mob/user, list/modifiers)
+	refresh()
+	if (!jump_to_ports.len)
+		balloon_alert(user, "ship is not in orbit!")
+		return
+	if(.)
+		return
+	if(!can_use(user))
+		return
+	if(isnull(user.client))
+		return
+	if(!QDELETED(current_user))
+		to_chat(user, span_warning("The console is already in use!"))
+		return
+	var/mob/living/L = user
+	if(!eyeobj)
+		CreateEye()
+	if(!eyeobj) //Eye creation failed
+		return
+	if(!eyeobj.eye_initialized)
+		var/camera_location
+		var/turf/myturf = docking_location
+		if(eyeobj.use_static != FALSE)
+			if((!length(z_lock) || (myturf.z in z_lock)) && GLOB.cameranet.checkTurfVis(myturf))
+				camera_location = myturf
+			else
+				for(var/obj/machinery/camera/C as anything in GLOB.cameranet.cameras)
+					if(!C.can_use() || length(z_lock) && !(C.z in z_lock))
+						continue
+					var/list/network_overlap = networks & C.network
+					if(length(network_overlap))
+						camera_location = get_turf(C)
+						break
+		else
+			camera_location = myturf
+			if(length(z_lock) && !(myturf.z in z_lock))
+				camera_location = locate(round(world.maxx/2), round(world.maxy/2), z_lock[1])
 
-// 		if(camera_location)
-// 			eyeobj.eye_initialized = TRUE
-// 			give_eye_control(L)
-// 			eyeobj.setLoc(camera_location)
-// 		else
-// 			unset_machine()
-// 	else
-// 		give_eye_control(L)
-// 		eyeobj.setLoc(eyeobj.loc)
-// 	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(docked))
-// 	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(undocked))
+		if(camera_location)
+			eyeobj.eye_initialized = TRUE
+			give_eye_control(L)
+			eyeobj.setLoc(camera_location)
+		else
+			unset_machine()
+	else
+		give_eye_control(L)
+		eyeobj.setLoc(eyeobj.loc)
+	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(docked))
+	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(undocked))
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingTurf(turf/T, list/overlappers)
 	. = ..()
