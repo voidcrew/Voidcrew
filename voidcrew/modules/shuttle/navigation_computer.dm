@@ -1,3 +1,8 @@
+/obj/item/circuitboard/computer/survey_shuttle_docker
+	name = "Shuttle Controller"
+	build_path = /obj/machinery/computer/camera_advanced/shuttle_docker/survey
+	greyscale_colors = CIRCUIT_COLOR_SECURITY
+
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey
 	name = "Planet survey computer"
 	desc = "Used to survey planets and allow you to land anywhere on them."
@@ -5,13 +10,30 @@
 	x_offset = 0
 	y_offset = -5
 	see_hidden = TRUE
-	circuit = /obj/item/circuitboard/computer/syndicate_shuttle_docker
+	circuit = /obj/item/circuitboard/computer/survey_shuttle_docker
 	whitelist_turfs = list()
 	var/obj/docking_port/mobile/voidcrew/ship_port
 	var/turf/docking_location
 	var/icon_scaling_amount = 3
 	var/list/blacklisted_mob_types = list(/mob/living/simple_animal/hostile/megafauna)
 	var/list/whitelisted_areas = list(/area/overmap_encounter, /area/space)
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_interact(mob/user, datum/tgui/ui)
+	. = ..()
+	if(!ship_port.current_ship)
+		return FALSE
+
+	ui = SStgui.try_update_ui(user, src, ui)
+	ship_port.current_ship.update_screen()
+
+	if(!ui)
+		ship_port.current_ship.cam_screen.display_to(user)
+		user.client.register_map_obj(ship_port.current_ship.cam_screen)
+		user.client.register_map_obj(ship_port.current_ship.cam_background)
+
+		ui = new(user, src, "HelmComputer", name)
+		ui.open()
+
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Initialize(mapload)
 	. = ..()
 
@@ -33,6 +55,7 @@
 		if (ship_port.current_ship.close_overmap_objects)
 			for (var/obj/structure/overmap/object in ship_port.current_ship.close_overmap_objects)
 				if (istype(object, /obj/structure/overmap/planet))
+					RegisterSignal(object, COMSIG_VOIDCREW_PLANET_LOADING, PROC_REF(survey_planet))
 					var/obj/structure/overmap/planet/planet = object
 					if (planet.reserve_dock)
 						add_jumpable_port(planet.reserve_dock.shuttle_id)
@@ -40,55 +63,59 @@
 		else
 			remove_old_ports()
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/attack_hand(mob/user, list/modifiers)
-	refresh()
-	if (!jump_to_ports.len)
-		balloon_alert(user, "ship is not in orbit!")
-		return
-	if(.)
-		return
-	if(!can_use(user))
-		return
-	if(isnull(user.client))
-		return
-	if(!QDELETED(current_user))
-		to_chat(user, span_warning("The console is already in use!"))
-		return
-	var/mob/living/L = user
-	if(!eyeobj)
-		CreateEye()
-	if(!eyeobj) //Eye creation failed
-		return
-	if(!eyeobj.eye_initialized)
-		var/camera_location
-		var/turf/myturf = docking_location
-		if(eyeobj.use_static != FALSE)
-			if((!length(z_lock) || (myturf.z in z_lock)) && GLOB.cameranet.checkTurfVis(myturf))
-				camera_location = myturf
-			else
-				for(var/obj/machinery/camera/C as anything in GLOB.cameranet.cameras)
-					if(!C.can_use() || length(z_lock) && !(C.z in z_lock))
-						continue
-					var/list/network_overlap = networks & C.network
-					if(length(network_overlap))
-						camera_location = get_turf(C)
-						break
-		else
-			camera_location = myturf
-			if(length(z_lock) && !(myturf.z in z_lock))
-				camera_location = locate(round(world.maxx/2), round(world.maxy/2), z_lock[1])
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/survey_planet(obj/structure/overmap/planet/surveyed_planet)
+	SIGNAL_HANDLER
 
-		if(camera_location)
-			eyeobj.eye_initialized = TRUE
-			give_eye_control(L)
-			eyeobj.setLoc(camera_location)
-		else
-			unset_machine()
-	else
-		give_eye_control(L)
-		eyeobj.setLoc(eyeobj.loc)
-	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(docked))
-	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(undocked))
+
+// /obj/machinery/computer/camera_advanced/shuttle_docker/survey/attack_hand(mob/user, list/modifiers)
+// 	refresh()
+// 	if (!jump_to_ports.len)
+// 		balloon_alert(user, "ship is not in orbit!")
+// 		return
+// 	if(.)
+// 		return
+// 	if(!can_use(user))
+// 		return
+// 	if(isnull(user.client))
+// 		return
+// 	if(!QDELETED(current_user))
+// 		to_chat(user, span_warning("The console is already in use!"))
+// 		return
+// 	var/mob/living/L = user
+// 	if(!eyeobj)
+// 		CreateEye()
+// 	if(!eyeobj) //Eye creation failed
+// 		return
+// 	if(!eyeobj.eye_initialized)
+// 		var/camera_location
+// 		var/turf/myturf = docking_location
+// 		if(eyeobj.use_static != FALSE)
+// 			if((!length(z_lock) || (myturf.z in z_lock)) && GLOB.cameranet.checkTurfVis(myturf))
+// 				camera_location = myturf
+// 			else
+// 				for(var/obj/machinery/camera/C as anything in GLOB.cameranet.cameras)
+// 					if(!C.can_use() || length(z_lock) && !(C.z in z_lock))
+// 						continue
+// 					var/list/network_overlap = networks & C.network
+// 					if(length(network_overlap))
+// 						camera_location = get_turf(C)
+// 						break
+// 		else
+// 			camera_location = myturf
+// 			if(length(z_lock) && !(myturf.z in z_lock))
+// 				camera_location = locate(round(world.maxx/2), round(world.maxy/2), z_lock[1])
+
+// 		if(camera_location)
+// 			eyeobj.eye_initialized = TRUE
+// 			give_eye_control(L)
+// 			eyeobj.setLoc(camera_location)
+// 		else
+// 			unset_machine()
+// 	else
+// 		give_eye_control(L)
+// 		eyeobj.setLoc(eyeobj.loc)
+// 	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(docked))
+// 	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(undocked))
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingTurf(turf/T, list/overlappers)
 	. = ..()
@@ -180,13 +207,13 @@
 				to_chat(current_user, span_warning("Invalid transit location."))
 		return
 
-	///Make one use port that deleted after fly off, to don't lose info that need on to properly fly off.
-	if(my_port?.get_docked())
-		my_port.unregister()
-		my_port.delete_after = TRUE
-		my_port.shuttle_id = null
-		my_port.name = "Old [my_port.name]"
-		my_port = null
+	// ///Make one use port that deleted after fly off, to don't lose info that need on to properly fly off.
+	// if(my_port?.get_docked())
+	// 	my_port.unregister()
+	// 	my_port.delete_after = TRUE
+	// 	my_port.shuttle_id = null
+	// 	my_port.name = "Old [my_port.name]"
+	// 	my_port = null
 
 	if(!my_port)
 		my_port = new()
@@ -301,11 +328,8 @@
 	SIGNAL_HANDLER
 	remove_old_ports(my_port)
 	my_port.unregister()
-	// my_port.delete_after = TRUE
-	// my_port.shuttle_id = null
-	// my_port.name = "Old [my_port.name]"
-	// my_port = null
 	qdel(my_port)
+	my_port = null
 	var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
 	LAZYCLEARLIST(the_eye.placed_images)
 	UnregisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED)

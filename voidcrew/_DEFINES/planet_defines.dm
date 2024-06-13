@@ -1,0 +1,1 @@
+#define COMSIG_VOIDCREW_PLANET_LOADING "voidcrew_planet_loading"

@@ -18,6 +18,7 @@
 	var/obj/docking_port/stationary/reserve_dock_secondary
 	///If the level should be preserved. Useful for if you want to build an autismfort or something.
 	var/preserve_level = FALSE
+	var/loaded = FALSE
 
 	/// Which docking port the ship is occupying
 	var/dock_index
@@ -29,14 +30,15 @@
 /obj/structure/overmap/planet/proc/load_level(obj/docking_port/mobile/visiting_shuttle)
 	if(mapzone)
 		return
-	//if(!COOLDOWN_FINISHED(SSovermap, encounter_cooldown))
-		//return "WARNING! Stellar interference is restricting flight in this area. Interference should pass in [COOLDOWN_TIMELEFT(SSovermap, encounter_cooldown) / 10] seconds."
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADING, TRUE)
+	// if(!COOLDOWN_FINISHED(SSovermap, encounter_cooldown))
+	// 	return "WARNING! Stellar interference is restricting flight in this area. Interference should pass in [COOLDOWN_TIMELEFT(SSovermap, encounter_cooldown) / 10] seconds."
 	var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(planet, TRUE, ruin_type = template)
 	mapzone = dynamic_encounter_values[1]
 	reserve_dock = dynamic_encounter_values[2]
 	reserve_dock_secondary = dynamic_encounter_values[3]
-
-
+	loaded = TRUE
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADING, FALSE)
 
 /obj/structure/overmap/planet/attack_ghost(mob/user)
 	if(reserve_dock)
