@@ -5,6 +5,8 @@ import {
   Button,
   Collapsible,
   LabeledList,
+  NoticeBox,
+  ProgressBar,
   Section,
   Stack,
   Tabs,
@@ -22,6 +24,7 @@ type SurveyedPlanets = {
 
 interface Data {
   currentPlanet?: string;
+  shipMoving: number;
   surveyStatus: 'unsurveyed' | 'complete' | 'in-progress' | 'planetless';
   surveyedPlanets: SurveyedPlanets;
 }
@@ -33,8 +36,8 @@ export const SurveyComputer = (props, context) => {
 
   return (
     <Window width={540} height={587} title="Orbital Survey Computer">
-      <Window.Content scrollable>
-        <Stack fill>
+      <Window.Content scrollable fitted fillPositionedParent>
+        <Stack fill scrollable fillPositionedParent>
           <Stack.Item>
             <Section fill>
               <Collapsible>
@@ -92,7 +95,7 @@ export const SurveyComputer = (props, context) => {
             </Section>
           </Stack.Item>
           <Stack.Item width="100%">
-            <Section fill width="100%">
+            <Section height="100%" fill width="100%">
               {tab === 1 ? (
                 <Surveying />
               ) : tab === 2 ? (
@@ -126,7 +129,7 @@ const Banking = (props, context) => {
 
 const Surveying = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { surveyStatus, currentPlanet } = data;
+  const { surveyStatus, shipMoving } = data;
 
   interface Option {
     state: 'unsurveyed' | 'complete' | 'in-progress' | 'planetless';
@@ -193,6 +196,20 @@ const Surveying = (props, context) => {
           content={currentOption && currentOption.content}
         />
       </Stack.Item>
+      {surveyStatus === 'in-progress' ? (
+        <Stack.Item>
+          <ProgressBar
+            mt={1.3}
+            maxWidth="40%"
+            value={0.7}
+            ranges={{
+              good: [0.7, 1],
+              average: [0.4, 0.7],
+              bad: [0, 0.4],
+            }}
+          />
+        </Stack.Item>
+      ) : undefined}
     </Stack>
   );
 };
@@ -200,106 +217,86 @@ const Surveying = (props, context) => {
 const Planets = (props, context) => {
   const { act, data } = useBackend<Data>();
   const { surveyStatus, surveyedPlanets, currentPlanet } = data;
+
   const [planetTab, setPlanetTab] = useState(0);
   const selectedPlanet =
     planetTab === 0
       ? undefined
       : Object.entries(surveyedPlanets)[planetTab - 1];
   return (
-    <Section title="Planet Info" fontSize={1.5} textAlign="center">
-      <Stack>
-        <Stack.Item fontSize={1}>
-          <Collapsible>
-            <Tabs vertical>
-              <Stack vertical>
-                <Stack.Item pt={1}>
-                  <Stack vertical>
-                    <Stack.Item fontSize={0.8}>Current</Stack.Item>
-                    <Stack.Divider />
-                    <Stack.Item>
-                      {Object.entries(surveyedPlanets).map((entry, index) => {
-                        return entry[0] === currentPlanet ? (
-                          <Tabs.Tab
-                            key={entry[0]}
-                            selected={planetTab === index + 1}
-                            onClick={() => {
-                              entry[0] !== currentPlanet
-                                ? setPlanetTab(index + 1)
-                                : surveyStatus === 'complete'
-                                  ? setPlanetTab(index + 1)
-                                  : act('error');
-                            }}
-                          >
-                            {entry[0]}
-                          </Tabs.Tab>
-                        ) : undefined;
-                      })}
-                    </Stack.Item>
-                  </Stack>
-                </Stack.Item>
-                <Stack.Item>
-                  <Stack vertical>
-                    <Stack.Item fontSize={0.8}>Other</Stack.Item>
-                    <Stack.Divider />
-                    <Stack.Item>
-                      {Object.entries(surveyedPlanets).map((entry, index) => {
-                        return entry[0] !== currentPlanet ? (
-                          <Tabs.Tab
-                            key={entry[0]}
-                            selected={planetTab === index + 1}
-                            onClick={() => {
-                              setPlanetTab(index + 1);
-                            }}
-                          >
-                            {entry[0]}
-                          </Tabs.Tab>
-                        ) : undefined;
-                      })}
-                    </Stack.Item>
-                  </Stack>
-                </Stack.Item>
-              </Stack>
-            </Tabs>
-            {/* <Tabs vertical>
+    <Stack fill textAlign="center">
+      <Stack.Item>
+        <Collapsible open>
+          <Stack fill vertical verticalAlign="middle" textAlign="center">
+            <Section title="Current" mt={0.1} pb={0} mb={0}>
+              <Stack.Item>
+                <Tabs vertical pb={0} mb={0}>
+                  {Object.entries(surveyedPlanets).map((entry, index) => {
+                    return entry[0] === currentPlanet ? (
+                      <Tabs.Tab
+                        key={entry[0]}
+                        selected={planetTab === index + 1}
+                        onClick={() => {
+                          entry[0] !== currentPlanet
+                            ? setPlanetTab(index + 1)
+                            : surveyStatus === 'complete'
+                              ? setPlanetTab(index + 1)
+                              : act('error');
+                        }}
+                      >
+                        {entry[0]}
+                      </Tabs.Tab>
+                    ) : undefined;
+                  })}
+                </Tabs>
+              </Stack.Item>
+            </Section>
+            <Section title="Other">
+              <Stack.Item>
+                <Tabs vertical>
+                  {Object.entries(surveyedPlanets).map((entry, index) => {
+                    return entry[0] !== currentPlanet ? (
+                      <Tabs.Tab
+                        key={entry[0]}
+                        selected={planetTab === index + 1}
+                        onClick={() => {
+                          setPlanetTab(index + 1);
+                        }}
+                      >
+                        {entry[0]}
+                      </Tabs.Tab>
+                    ) : undefined;
+                  })}
+                </Tabs>
+              </Stack.Item>
+            </Section>
+          </Stack>
+        </Collapsible>
+      </Stack.Item>
 
-              {Object.entries(surveyedPlanets).map((entry, index) => {
+      <Stack.Divider />
+
+      <Stack.Item grow>
+        <Section title="Planet Info" textAlign="center" fill>
+          {selectedPlanet ? (
+            <LabeledList key={selectedPlanet[0]}>
+              {Object.entries(selectedPlanet[1]).map((prop) => {
                 return (
-                  <Tabs.Tab
-                    key={entry[0]}
-                    textColor={entry[0] === currentPlanet ? 'white' : 'grey'}
-                    selected={planetTab === index + 1}
-                    onClick={() => {
-                      setPlanetTab(index + 1);
-                    }}
+                  <LabeledList.Item
+                    textAlign="center"
+                    key={prop[0]}
+                    label={prop[0]}
                   >
-                    {entry[0] === currentPlanet ? 'Current planet' : entry[0]}
-                  </Tabs.Tab>
+                    {prop[1]}
+                  </LabeledList.Item>
                 );
               })}
-            </Tabs> */}
-          </Collapsible>
-        </Stack.Item>
-        <Stack.Divider />
-        <Stack.Item fontSize={1.1} width="60%">
-          <Stack vertical>
-            <Stack.Item>
-              {selectedPlanet ? (
-                <LabeledList key={selectedPlanet[0]}>
-                  {Object.entries(selectedPlanet[1]).map((prop) => {
-                    return (
-                      <LabeledList.Item key={prop[0]} label={prop[0]}>
-                        {prop[1]}
-                      </LabeledList.Item>
-                    );
-                  })}
-                </LabeledList>
-              ) : (
-                <>Select a planet from the dropdown</>
-              )}
-            </Stack.Item>
-          </Stack>
-        </Stack.Item>
-      </Stack>
-    </Section>
+            </LabeledList>
+          ) : (
+            <NoticeBox info>Select a planet from the dropdown menu</NoticeBox>
+          )}
+        </Section>
+      </Stack.Item>
+    </Stack>
   );
 };

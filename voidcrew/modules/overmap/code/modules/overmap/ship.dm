@@ -714,6 +714,8 @@
 	if(state != OVERMAP_SHIP_FLYING)
 		return
 
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_MOVED)
+
 	// Decelerate without using fuel
 	if(!n_dir) {
 		decelerate(acceleration_speed * (percentage / 100))
