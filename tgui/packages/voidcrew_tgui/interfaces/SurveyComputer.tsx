@@ -1,58 +1,305 @@
+import { useState } from 'react';
+
 import { useBackend } from '../../tgui/backend';
-import { Button, Section, Stack } from '../../tgui/components';
+import {
+  Button,
+  Collapsible,
+  LabeledList,
+  Section,
+  Stack,
+  Tabs,
+} from '../../tgui/components';
 import { Window } from '../../tgui/layouts';
 
+interface SurveyedPlanet {
+  loaded: number;
+  visited: number;
+}
+
+type SurveyedPlanets = {
+  [key: string]: SurveyedPlanet;
+};
+
+interface Data {
+  currentPlanet?: string;
+  surveyStatus: 'unsurveyed' | 'complete' | 'in-progress' | 'planetless';
+  surveyedPlanets: SurveyedPlanets;
+}
+
 export const SurveyComputer = (props, context) => {
-  const { act, data } = useBackend();
-  const {
-    type,
-    loaded,
-    hostilityLevel,
-    infoLevel,
-    weather,
-    mobTypes,
-    atmosType,
-    visited,
-    megafauna,
-    playerList,
-    surveyStatus,
-  } = data;
+  const { act, data } = useBackend<Data>();
+  const { surveyStatus } = data;
+  const [tab, setTab] = useState(1);
+
   return (
-    <Window width={390} height={587}>
-      <Window.Content />
+    <Window width={540} height={587} title="Orbital Survey Computer">
       <Window.Content scrollable>
-        <SurveyButton />
+        <Stack fill>
+          <Stack.Item>
+            <Section fill>
+              <Collapsible>
+                <Tabs vertical>
+                  <Tabs.Tab
+                    icon="rocket"
+                    mt={1}
+                    mb={1}
+                    selected={tab === 1}
+                    key={1}
+                    onClick={() => {
+                      setTab(1);
+                    }}
+                  >
+                    Surveying
+                  </Tabs.Tab>
+                  <Tabs.Tab
+                    icon="globe"
+                    mt={1}
+                    mb={1}
+                    selected={tab === 2}
+                    key={2}
+                    onClick={() => {
+                      setTab(2);
+                    }}
+                  >
+                    Planets
+                  </Tabs.Tab>
+                  <Tabs.Tab
+                    icon="dollar-sign"
+                    mt={1}
+                    mb={1}
+                    selected={tab === 3}
+                    key={3}
+                    onClick={() => {
+                      setTab(3);
+                    }}
+                  >
+                    Banking
+                  </Tabs.Tab>
+                  <Tabs.Tab
+                    icon="flask"
+                    mt={1}
+                    mb={1}
+                    selected={tab === 4}
+                    key={4}
+                    onClick={() => {
+                      setTab(4);
+                    }}
+                  >
+                    Research
+                  </Tabs.Tab>
+                </Tabs>
+              </Collapsible>
+            </Section>
+          </Stack.Item>
+          <Stack.Item width="100%">
+            <Section fill width="100%">
+              {tab === 1 ? (
+                <Surveying />
+              ) : tab === 2 ? (
+                <Planets />
+              ) : tab === 3 ? (
+                <Banking />
+              ) : (
+                <Research />
+              )}
+            </Section>
+          </Stack.Item>
+        </Stack>
       </Window.Content>
     </Window>
   );
 };
 
-export const SurveyButton = (props, context) => {
-  const { act, data, config } = useBackend();
+const Research = (props, context) => {
+  const { act, data } = useBackend<Data>();
   const { surveyStatus } = data;
+
+  return <Section title="Research" />;
+};
+
+const Banking = (props, context) => {
+  const { act, data } = useBackend<Data>();
+  const { surveyStatus, surveyedPlanets } = data;
+
+  return <Section title="Banking">BREAK DA BANK</Section>;
+};
+
+const Surveying = (props, context) => {
+  const { act, data } = useBackend<Data>();
+  const { surveyStatus, currentPlanet } = data;
+
+  interface Option {
+    state: 'unsurveyed' | 'complete' | 'in-progress' | 'planetless';
+    content: string;
+    color?: string;
+    action?: string;
+    disabled?: boolean;
+    tooltip?: string;
+  }
+
+  const options: Option[] = [
+    {
+      content: 'Start survey',
+      state: 'unsurveyed',
+      color: 'blue',
+      action: 'survey',
+    },
+    {
+      content: 'In progress',
+      state: 'in-progress',
+      color: 'yellow',
+    },
+    { content: 'Open map', state: 'complete', color: 'green', action: 'map' },
+    {
+      content: 'Start survey',
+      state: 'planetless',
+      disabled: true,
+      tooltip: 'not orbiting any planets',
+    },
+  ];
+
+  const currentOption = options.find(
+    (opt) => opt.state === surveyStatus,
+  ) as Option;
+
   return (
-    <Section title="Survey status" textAlign="center">
-      <Stack vertical>
-        <Stack.Item fontSize={1.5}>Status: {surveyStatus}</Stack.Item>
-        <Stack.Item>
-          <Button
-            tooltip="Begin survey"
-            // tooltipPosition="right"
-            // icon="sign-out-alt"
-            fluid
-            color="blue"
-            lineHeight={5}
-            align="center"
-            // selected
-            icon="globe"
-            content="Begin Survey"
-          />
+    <Stack vertical fill textAlign="center">
+      <Stack.Item>
+        <Button
+          lineHeight={3}
+          ml="10%"
+          color={
+            currentOption && currentOption.color
+              ? currentOption.color
+              : undefined
+          }
+          mr="10%"
+          mt="30%"
+          width="80%"
+          icon="globe"
+          verticalAlignContent="middle"
+          fontSize={3}
+          tooltip={
+            currentOption && currentOption.tooltip
+              ? currentOption.tooltip
+              : undefined
+          }
+          disabled={currentOption && currentOption.disabled ? true : false}
+          onClick={() => {
+            currentOption && currentOption.action
+              ? act(currentOption.action)
+              : undefined;
+          }}
+          content={currentOption && currentOption.content}
+        />
+      </Stack.Item>
+    </Stack>
+  );
+};
+
+const Planets = (props, context) => {
+  const { act, data } = useBackend<Data>();
+  const { surveyStatus, surveyedPlanets, currentPlanet } = data;
+  const [planetTab, setPlanetTab] = useState(0);
+  const selectedPlanet =
+    planetTab === 0
+      ? undefined
+      : Object.entries(surveyedPlanets)[planetTab - 1];
+  return (
+    <Section title="Planet Info" fontSize={1.5} textAlign="center">
+      <Stack>
+        <Stack.Item fontSize={1}>
+          <Collapsible>
+            <Tabs vertical>
+              <Stack vertical>
+                <Stack.Item pt={1}>
+                  <Stack vertical>
+                    <Stack.Item fontSize={0.8}>Current</Stack.Item>
+                    <Stack.Divider />
+                    <Stack.Item>
+                      {Object.entries(surveyedPlanets).map((entry, index) => {
+                        return entry[0] === currentPlanet ? (
+                          <Tabs.Tab
+                            key={entry[0]}
+                            selected={planetTab === index + 1}
+                            onClick={() => {
+                              entry[0] !== currentPlanet
+                                ? setPlanetTab(index + 1)
+                                : surveyStatus === 'complete'
+                                  ? setPlanetTab(index + 1)
+                                  : act('error');
+                            }}
+                          >
+                            {entry[0]}
+                          </Tabs.Tab>
+                        ) : undefined;
+                      })}
+                    </Stack.Item>
+                  </Stack>
+                </Stack.Item>
+                <Stack.Item>
+                  <Stack vertical>
+                    <Stack.Item fontSize={0.8}>Other</Stack.Item>
+                    <Stack.Divider />
+                    <Stack.Item>
+                      {Object.entries(surveyedPlanets).map((entry, index) => {
+                        return entry[0] !== currentPlanet ? (
+                          <Tabs.Tab
+                            key={entry[0]}
+                            selected={planetTab === index + 1}
+                            onClick={() => {
+                              setPlanetTab(index + 1);
+                            }}
+                          >
+                            {entry[0]}
+                          </Tabs.Tab>
+                        ) : undefined;
+                      })}
+                    </Stack.Item>
+                  </Stack>
+                </Stack.Item>
+              </Stack>
+            </Tabs>
+            {/* <Tabs vertical>
+
+              {Object.entries(surveyedPlanets).map((entry, index) => {
+                return (
+                  <Tabs.Tab
+                    key={entry[0]}
+                    textColor={entry[0] === currentPlanet ? 'white' : 'grey'}
+                    selected={planetTab === index + 1}
+                    onClick={() => {
+                      setPlanetTab(index + 1);
+                    }}
+                  >
+                    {entry[0] === currentPlanet ? 'Current planet' : entry[0]}
+                  </Tabs.Tab>
+                );
+              })}
+            </Tabs> */}
+          </Collapsible>
+        </Stack.Item>
+        <Stack.Divider />
+        <Stack.Item fontSize={1.1} width="60%">
+          <Stack vertical>
+            <Stack.Item>
+              {selectedPlanet ? (
+                <LabeledList key={selectedPlanet[0]}>
+                  {Object.entries(selectedPlanet[1]).map((prop) => {
+                    return (
+                      <LabeledList.Item key={prop[0]} label={prop[0]}>
+                        {prop[1]}
+                      </LabeledList.Item>
+                    );
+                  })}
+                </LabeledList>
+              ) : (
+                <>Select a planet from the dropdown</>
+              )}
+            </Stack.Item>
+          </Stack>
         </Stack.Item>
       </Stack>
     </Section>
   );
-};
-
-export const SurveyResults = (props, context) => {
-  const { act, data } = useBackend();
 };

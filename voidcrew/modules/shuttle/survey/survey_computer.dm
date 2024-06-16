@@ -1,5 +1,5 @@
 /obj/machinery/computer/survey
-	name = "system survey computer"
+	name = "Planetary survey computer"
 	icon_screen = "docking"
 	icon_keyboard = "rd_key"
 	light_color = LIGHT_COLOR_PURPLE
@@ -15,7 +15,11 @@
 	var/megafauna
 	var/player_list
 	var/object_loaded
+	var/survey_status
 
+/obj/item/circuitboard/computer/survey
+	name = "Survey computer board"
+	build_path = /obj/machinery/computer/survey
 
 /obj/machinery/computer/survey/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
@@ -28,7 +32,7 @@
   var/list/data = list()
   data["type"] = object_type // The type of overmap object we're surveying
   data["loaded"] = object_loaded
-  data["hostilityLevel"] = hostility
+  data["hostilityLevel"] = hostility /* Tranquil, cautious, hazardous, lethal */
   data["infoLevel"] = info_level
   data["weather"] = weather
   data["mobTypes"] = mob_types
@@ -43,7 +47,3 @@
 	. = ..()
 	if(.)
 		return
-
-/obj/item/circuitboard/computer/survey
-	name = "Survey computer board"
-	build_path = /obj/machinery/computer/survey

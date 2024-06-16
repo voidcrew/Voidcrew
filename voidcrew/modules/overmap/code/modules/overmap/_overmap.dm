@@ -11,6 +11,7 @@
 
 	///List of other overmap objects in the same tile
 	var/list/close_overmap_objects
+	var/visited = FALSE
 
 
 // voidcrew TODO: add the rest of overmap shit later

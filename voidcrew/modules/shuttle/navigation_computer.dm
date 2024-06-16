@@ -17,22 +17,14 @@
 	var/icon_scaling_amount = 3
 	var/list/blacklisted_mob_types = list(/mob/living/simple_animal/hostile/megafauna)
 	var/list/whitelisted_areas = list(/area/overmap_encounter, /area/space)
-
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_interact(mob/user, datum/tgui/ui)
-	. = ..()
-	if(!ship_port.current_ship)
-		return FALSE
-
-	ui = SStgui.try_update_ui(user, src, ui)
-	ship_port.current_ship.update_screen()
-
-	if(!ui)
-		ship_port.current_ship.cam_screen.display_to(user)
-		user.client.register_map_obj(ship_port.current_ship.cam_screen)
-		user.client.register_map_obj(ship_port.current_ship.cam_background)
-
-		ui = new(user, src, "HelmComputer", name)
-		ui.open()
+	var/datum/looping_sound/sonar/soundloop
+	var/info_level
+	var/ui_user
+	var/survey_in_progress = FALSE
+	var/surveyed_planets = list()
+	var/surveyed_planets_data = list()
+	var/survey_value
+	var/gathered_loot = FALSE
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Initialize(mapload)
 	. = ..()
@@ -50,24 +42,227 @@
 		shuttleId = ship_port.shuttle_id
 		shuttlePortId = "[ship_port.shuttle_id]_custom"
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/refresh(mob/user)
+	soundloop = new(src)
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/Destroy()
+	. = ..()
+	QDEL_NULL(soundloop)
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/attack_hand(mob/user, list/modifiers)
+	ui_interact(user)
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_interact(mob/user, datum/tgui/ui)
+	. = ..()
+	ui_user = user
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "SurveyComputer", name)
+		ui.open()
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_status(obj/structure/overmap/planet/planet)
+	if(!planet)
+		return "planetless"
+	if (survey_in_progress)
+		return "in-progress"
+	if (planet.loaded)
+		var/already_surveyed = FALSE
+		for(var/surveying_planet in surveyed_planets)
+			if (surveying_planet == planet)
+				already_surveyed = TRUE
+		if(already_surveyed)
+			return "complete"
+	return "unsurveyed"
+
+// /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/add_planet_data(var/obj/structure/overmap/planet/planet)
+// 	var/list/planet_data = list()
+// 	planet_data["ref_id"] = ref(planet)
+// 	planet_data["visited"] = planet.visited
+// 	planet_data["loaded"] = planet.loaded
+// 	return planet_data
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/create_planet_data_list(var/obj/structure/overmap/planet/planet)
+	var/list/planet_data = list()
+	planet_data["ref_id"] = ref(planet)
+	planet_data["visited"] = planet.visited
+	planet_data["loaded"] = planet.loaded
+	return planet_data
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/add_planet_to_data_list(var/obj/structure/overmap/planet/surveyed_planet)
+	if(!surveyed_planet)
+		return null
+	var/planet_name = surveyed_planet.name
+	var/surveyed_planet_ref = ref(surveyed_planet)
+	var/planet_data = create_planet_data_list(surveyed_planet)
+
+	if (planet_name in surveyed_planets_data)
+		if(surveyed_planet_ref == surveyed_planets_data[planet_name]["ref_id"])
+			surveyed_planets_data[planet_name] = planet_data
+		else
+			var/i = 1
+			while(i)
+				planet_name = "[planet_name] [i]"
+				if (!(planet_name in surveyed_planets_data))
+					surveyed_planets_data[planet_name] = planet_data
+					break
+				else
+
+					if(surveyed_planet_ref == surveyed_planets_data[planet_name]["ref_id"])
+						surveyed_planets_data[planet_name] = planet_data
+						break
+					else
+						i++
+	else
+		surveyed_planets_data[planet_name] = planet_data
+
+	return planet_name
+
+// /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_surveyed_planets(var/obj/structure/overmap/planet/planet)
+// 	var/list/surveyed_planets_data = list()
+
+// 	if (length(surveyed_planets) >= 1)
+// 		for (var/obj/structure/overmap/planet/surveyed_planet in surveyed_planets)
+// 			var/current_planet_ref = ref(surveyed_planet)
+// 			var/planet_data = create_planet_data_list(surveyed_planet)
+// 			if (surveyed_planet.name in surveyed_planets_data)
+// 				if(current_planet_ref == surveyed_planets_data[surveyed_planet.name]["ref_id"])
+// 					surveyed_planets_data[surveyed_planet.name] = planet_data
+// 				else
+// 					var/i = 1
+// 					while(i)
+// 						var/new_name = "[surveyed_planet.name] [i]"
+// 						if (!(new_name in surveyed_planets_data))
+// 							surveyed_planets_data[new_name] = planet_data
+// 							break
+// 						else
+
+// 							if(current_planet_ref == surveyed_planets_data[new_name]["ref_id"])
+// 								surveyed_planets_data[new_name] = planet_data
+// 								break
+// 							else
+// 								i++
+// 			else
+// 				surveyed_planets_data[surveyed_planet.name] = planet_data
+// 	return surveyed_planets_data
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_data(mob/user)
+	var/list/data = list()
+	var/planet = get_current_planet()
+	var/status = get_survey_status(planet)
+	data["surveyStatus"] = status
+	data["currentPlanet"] = add_planet_to_data_list(planet)
+	data["surveyedPlanets"] = surveyed_planets_data
+
+	return data
+
+
+// /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_data(mob/user)
+// 	var/list/data = list()
+// 	var/possible_planet = get_current_planet()
+// 	if(isnull(possible_planet) | !possible_planet)
+// 		// data["type"] = null // The type of overmap object we're surveying
+// 		// data["loaded"] = null
+// 		// data["playerCount"] = null
+// 		// data["visited"] = null
+// 		data["surveyStatus"] = "planetless"
+// 	else
+// 		var/obj/structure/overmap/planet/planet = possible_planet
+// 		var/current_survey_status = get_survey_status(planet)
+// 		log_admin("Current survey status: [current_survey_status]")
+// 		var/current_planet_ref = ref(planet)
+// 		data["surveyStatus"] = current_survey_status
+// 		data["x"] = "[get_survey_status(planet)]"
+
+// 		if (length(surveyed_planets_data) >= 1)
+// 			if (planet.name in surveyed_planets_data)
+// 				var/ref_id = surveyed_planets_data[planet.name]["ref_id"]
+// 				if(ref_id == current_planet_ref)
+// 					add_planet_data(planet, surveyed_planets_data) // Update in place
+// 				else
+// 					var/i = 1
+// 					while (i <= 5)
+// 						var/new_name = "[planet.name] [i]"
+// 						if (!(new_name in surveyed_planets_data))
+// 							if (current_survey_status == "complete")
+// 								add_planet_data(planet, surveyed_planets_data, new_name)
+// 							break
+// 						else
+// 							ref_id = surveyed_planets_data[new_name]["ref_id"]
+// 							if(ref_id == current_planet_ref)
+// 								add_planet_data(planet, surveyed_planets_data, new_name) // Update in place
+// 								break
+// 							else
+// 								i++
+// 					return
+// 			else
+// 				if (current_survey_status == "complete")
+// 					add_planet_data(planet, surveyed_planets_data)
+// 		else
+// 			if (current_survey_status == "complete")
+// 				add_planet_data(planet, surveyed_planets_data)
+
+// 	data["surveyedPlanets"] = surveyed_planets_data
+// 	data["gatheredLoot"] = gathered_loot
+
+// 	return data
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_act(action, params)
+	. = ..()
+	if(.)
+		return
+	switch(action)
+		if("survey")
+			survey_planet(ui_user)
+		if("map")
+			playsound(src, 'sound/machines/pda_button1.ogg', 100)
+			activate_survey_map(ui_user)
+		if("reward")
+			print_survey_notes(params["level"])
+		if("error")
+			playsound(src, 'sound/machines/terminal_error.ogg', 100)
+	return TRUE
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_current_planet()
 	if (ship_port)
 		if (ship_port.current_ship.close_overmap_objects)
 			for (var/obj/structure/overmap/object in ship_port.current_ship.close_overmap_objects)
 				if (istype(object, /obj/structure/overmap/planet))
-					RegisterSignal(object, COMSIG_VOIDCREW_PLANET_LOADING, PROC_REF(survey_planet))
 					var/obj/structure/overmap/planet/planet = object
-					if (planet.reserve_dock)
-						add_jumpable_port(planet.reserve_dock.shuttle_id)
-						docking_location = planet.reserve_dock.loc
-		else
-			remove_old_ports()
+					return planet
+	return null
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/survey_planet(obj/structure/overmap/planet/surveyed_planet)
-	SIGNAL_HANDLER
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/survey_planet(mob/user)
+
+	var/obj/structure/overmap/planet/planet = get_current_planet()
+	if (!planet || isnull(planet))
+		playsound(src, 'sound/machines/terminal_error.ogg', 100)
+		balloon_alert(user, "no planet found")
+		return
+
+	// Set our survey status to loading
+	gathered_loot = FALSE
+	soundloop.start()
+	survey_in_progress = TRUE
+
+	// Check if planet is loaded
+	var/loaded = planet.loaded
+	if (!loaded)
+		RegisterSignal(planet, COMSIG_VOIDCREW_PLANET_LOADED, PROC_REF(planet_loaded))
+		INVOKE_ASYNC(planet, TYPE_PROC_REF(/obj/structure/overmap/planet, load_level))
+		return
+	else
+		// addtimer(CALLBACK(src, PROC_REF(planet_loaded), planet), 60 SECONDS)
+		addtimer(CALLBACK(src, PROC_REF(planet_loaded), planet), 3 SECONDS) // SETTING DEBUG TIMER FOR NOW, REMOVE ME BEFORE MERGING
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/planet_loaded(obj/structure/overmap/planet/planet)
+	soundloop.stop()
+	UnregisterSignal(planet, COMSIG_VOIDCREW_PLANET_LOADED)
+	surveyed_planets += planet
+	survey_in_progress = FALSE
+
+	return
 
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/attack_hand(mob/user, list/modifiers)
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/activate_survey_map(mob/user)
 	refresh()
 	if (!jump_to_ports.len)
 		balloon_alert(user, "ship is not in orbit!")
@@ -116,6 +311,10 @@
 		eyeobj.setLoc(eyeobj.loc)
 	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(docked))
 	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(undocked))
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/print_survey_notes()
+	new /obj/item/research_notes/loot/small(src.loc)
+	gathered_loot = TRUE
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingTurf(turf/T, list/overlappers)
 	. = ..()
@@ -206,14 +405,6 @@
 			if(SHUTTLE_DOCKER_BLOCKED)
 				to_chat(current_user, span_warning("Invalid transit location."))
 		return
-
-	// ///Make one use port that deleted after fly off, to don't lose info that need on to properly fly off.
-	// if(my_port?.get_docked())
-	// 	my_port.unregister()
-	// 	my_port.delete_after = TRUE
-	// 	my_port.shuttle_id = null
-	// 	my_port.name = "Old [my_port.name]"
-	// 	my_port = null
 
 	if(!my_port)
 		my_port = new()
@@ -319,6 +510,7 @@
 		user.client.view_size.resetToDefault()
 		set_action_scaling(user, 1)
 		UnregisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_DOCKED)
+		QDEL_NULL(eyeobj)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/docked()
 	SIGNAL_HANDLER
@@ -333,4 +525,13 @@
 	var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
 	LAZYCLEARLIST(the_eye.placed_images)
 	UnregisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED)
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/refresh(mob/user)
+	var/obj/structure/overmap/planet/planet = get_current_planet()
+	if (!planet || isnull(planet))
+		remove_old_ports()
+		return
+	if (planet.reserve_dock)
+		add_jumpable_port(planet.reserve_dock.shuttle_id)
+		docking_location = planet.reserve_dock.loc
 

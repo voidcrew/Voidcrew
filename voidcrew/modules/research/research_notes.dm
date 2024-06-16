@@ -19,3 +19,9 @@
 
 /obj/item/research_notes/loot/genius//have a very good reason to give this one out
 	value = 10000
+
+/obj/item/research_notes/loot/custom
+	value = 1
+
+/obj/item/research_notes/loot/custom/proc/set_value(custom_value)
+	value = custom_value

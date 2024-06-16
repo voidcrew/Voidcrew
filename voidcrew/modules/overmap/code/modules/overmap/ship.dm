@@ -96,6 +96,10 @@
 	/// The background of the map, usually doesn't do anything, but this is here so ships can customize the background ig?
 	var/atom/movable/screen/background/cam_background
 
+	/// A list of surveyed planets
+	var/list/surveyed_planets = list()
+	var/list/looted_planets = list()
+
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
 	if(!template) //no template, don't load
@@ -365,6 +369,7 @@
 	shuttle.setTimer(dock_time)
 	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), dock_time + 1 SECONDS)
 	state = OVERMAP_SHIP_DOCKING
+	to_dock.visited = TRUE
 	return "Commencing docking..."
 
 /**
