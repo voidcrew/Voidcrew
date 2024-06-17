@@ -6,7 +6,6 @@ import {
   Collapsible,
   LabeledList,
   NoticeBox,
-  ProgressBar,
   Section,
   Stack,
   Tabs,
@@ -23,10 +22,13 @@ type SurveyedPlanets = {
 };
 
 interface Data {
+  bankedCash: number;
+  bankedPoints: number;
   currentPlanet?: string;
   shipMoving: number;
-  surveyStatus: 'unsurveyed' | 'complete' | 'in-progress' | 'planetless';
   surveyedPlanets: SurveyedPlanets;
+  surveyStatus: 'unsurveyed' | 'complete' | 'in-progress' | 'planetless';
+  surveyValue: { cash: number; points: number };
 }
 
 export const SurveyComputer = (props, context) => {
@@ -115,21 +117,90 @@ export const SurveyComputer = (props, context) => {
 
 const Research = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { surveyStatus } = data;
+  const { bankedPoints, surveyStatus } = data;
 
-  return <Section title="Research" />;
+  return (
+    <Stack vertical>
+      <Stack.Item>
+        <Section title="Research" textAlign="center" />
+      </Stack.Item>
+
+      <Stack.Item>
+        <Button
+          lineHeight={3}
+          // color={currentOption.color ? currentOption.color : undefined}
+          ml="10%"
+          mr="10%"
+          fluid
+          mt="10%"
+          mb="10%"
+          textAlign="center"
+          icon="print"
+          fontSize={3}
+          // tooltip={currentOption.tooltip ? currentOption.tooltip : undefined}
+          disabled={!bankedPoints || bankedPoints === 0 ? true : false}
+          onClick={() => {
+            act('printResearch');
+          }}
+        >
+          {' '}
+          Print
+        </Button>
+      </Stack.Item>
+      <Stack.Item>
+        <NoticeBox textAlign="center" success>
+          You currently have {bankedPoints} research points to print
+        </NoticeBox>
+      </Stack.Item>
+    </Stack>
+  );
 };
 
 const Banking = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { surveyStatus, surveyedPlanets } = data;
+  const { bankedCash, surveyStatus, surveyedPlanets } = data;
 
-  return <Section title="Banking">BREAK DA BANK</Section>;
+  return (
+    <Stack vertical>
+      <Stack.Item>
+        <Section title="Banking" textAlign="center" />
+      </Stack.Item>
+
+      <Stack.Item>
+        <Button
+          lineHeight={3}
+          // color={currentOption.color ? currentOption.color : undefined}
+          ml="10%"
+          textAlign="center"
+          mr="10%"
+          fluid
+          mt="10%"
+          mb="10%"
+          icon="dollar-sign"
+          fontSize={3}
+          // tooltip={currentOption.tooltip ? currentOption.tooltip : undefined}
+          disabled={!bankedCash || bankedCash === 0 ? true : false}
+          onClick={() => {
+            act('cashOut');
+          }}
+        >
+          {' '}
+          Withdrawal
+        </Button>
+      </Stack.Item>
+      <Stack.Item>
+        <NoticeBox textAlign="center" success>
+          You currently have ${bankedCash} to withdrawal
+        </NoticeBox>
+      </Stack.Item>
+    </Stack>
+  );
 };
 
 const Surveying = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { surveyStatus, shipMoving } = data;
+  const { bankedCash, bankedPoints, surveyValue, surveyStatus, shipMoving } =
+    data;
 
   interface Option {
     state: 'unsurveyed' | 'complete' | 'in-progress' | 'planetless';
@@ -146,6 +217,10 @@ const Surveying = (props, context) => {
       state: 'unsurveyed',
       color: 'blue',
       action: 'survey',
+      tooltip:
+        surveyValue && surveyValue.points && surveyValue.cash
+          ? `Value: ${surveyValue.points} points | ${surveyValue.cash} credits`
+          : undefined,
     },
     {
       content: 'In progress',
@@ -165,51 +240,56 @@ const Surveying = (props, context) => {
     (opt) => opt.state === surveyStatus,
   ) as Option;
 
+  const notices: string[] = [];
+
+  if (shipMoving === 0) {
+    notices.push('Ship is currently moving, surveying disabled');
+  }
+
+  if (bankedPoints && bankedPoints !== 0) {
+    notices.push(`You have ${bankedPoints} research points to print`);
+  }
+
+  if (bankedCash && bankedCash !== 0) {
+    notices.push(`You have ${bankedCash} credits to cash out`);
+  }
+
   return (
     <Stack vertical fill textAlign="center">
-      <Stack.Item>
+      <Stack.Item height="20%" pb={0} mb={0}>
+        <Collapsible
+          title="Notices"
+          lineHeight={2}
+          icon={notices.length > 0 ? 'triangle-exclamation' : 'check'}
+        >
+          {notices.length > 0
+            ? notices.map((notice, index) => {
+                return <NoticeBox key={index}>{notice}</NoticeBox>;
+              })
+            : undefined}
+        </Collapsible>
+      </Stack.Item>
+      <Stack.Item height="80%" grow>
         <Button
           lineHeight={3}
+          color={currentOption.color ? currentOption.color : undefined}
           ml="10%"
-          color={
-            currentOption && currentOption.color
-              ? currentOption.color
-              : undefined
-          }
           mr="10%"
-          mt="30%"
-          width="80%"
+          fluid
+          mt="10%"
+          mb="10%"
           icon="globe"
-          verticalAlignContent="middle"
           fontSize={3}
-          tooltip={
-            currentOption && currentOption.tooltip
-              ? currentOption.tooltip
-              : undefined
+          tooltip={currentOption.tooltip ? currentOption.tooltip : undefined}
+          disabled={
+            shipMoving === 0 ? true : currentOption.disabled ? true : false
           }
-          disabled={currentOption && currentOption.disabled ? true : false}
           onClick={() => {
-            currentOption && currentOption.action
-              ? act(currentOption.action)
-              : undefined;
+            currentOption.action ? act(currentOption.action) : undefined;
           }}
-          content={currentOption && currentOption.content}
+          content={currentOption.content}
         />
       </Stack.Item>
-      {surveyStatus === 'in-progress' ? (
-        <Stack.Item>
-          <ProgressBar
-            mt={1.3}
-            maxWidth="40%"
-            value={0.7}
-            ranges={{
-              good: [0.7, 1],
-              average: [0.4, 0.7],
-              bad: [0, 0.4],
-            }}
-          />
-        </Stack.Item>
-      ) : undefined}
     </Stack>
   );
 };
@@ -226,7 +306,7 @@ const Planets = (props, context) => {
   return (
     <Stack fill textAlign="center">
       <Stack.Item>
-        <Collapsible open>
+        <Collapsible>
           <Stack fill vertical verticalAlign="middle" textAlign="center">
             <Section title="Current" mt={0.1} pb={0} mb={0}>
               <Stack.Item>

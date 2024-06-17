@@ -18,15 +18,18 @@
 	var/list/blacklisted_mob_types = list(/mob/living/simple_animal/hostile/megafauna)
 	var/list/whitelisted_areas = list(/area/overmap_encounter, /area/space)
 	var/datum/looping_sound/sonar/soundloop
-	var/info_level
 	var/ui_user
 	var/survey_in_progress = FALSE
 	var/surveyed_planets = list()
 	var/surveyed_planets_data = list()
 	var/survey_value
-	var/gathered_loot = FALSE
 	var/survey_timer
-	var/survey_progress
+	var/banked_points = 0
+	var/banked_cash = 0
+	var/list/banking = list()
+	var/default_survey_research_points = 500
+	var/default_survey_cash_reward = 500
+
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Initialize(mapload)
 	. = ..()
@@ -61,6 +64,38 @@
 		ui = new(user, src, "SurveyComputer", name)
 		ui.open()
 
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_data(mob/user)
+	var/list/data = list()
+	var/planet = get_current_planet()
+	var/status = get_survey_status(planet)
+	data["surveyStatus"] = status
+	data["currentPlanet"] = add_planet_to_data_list(planet)
+	data["surveyedPlanets"] = surveyed_planets_data
+	data["shipMoving"] = ship_port.current_ship.is_still()
+	data["bankedPoints"] = banked_points
+	data["bankedCash"] = banked_cash
+	data["surveyValue"] = get_survey_value(planet)
+	return data
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_act(action, params)
+	. = ..()
+	if(.)
+		return
+	switch(action)
+		if("survey")
+			survey_planet(ui_user)
+		if("map")
+			playsound(src, 'sound/machines/pda_button1.ogg', 100)
+			activate_survey_map(ui_user)
+		if("printResearch")
+			print_survey_notes()
+		if("cashOut")
+			cash_out()
+		if("error")
+			playsound(src, 'sound/machines/terminal_error.ogg', 100)
+
+	return TRUE
+
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_status(obj/structure/overmap/planet/planet)
 	if(!planet)
 		return "planetless"
@@ -75,72 +110,28 @@
 			return "complete"
 	return "unsurveyed"
 
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/create_planet_data_list(var/obj/structure/overmap/planet/planet)
-	var/list/planet_data = list()
-	planet_data["ref_id"] = ref(planet)
-	planet_data["visited"] = planet.visited
-	planet_data["loaded"] = planet.loaded
-	return planet_data
-
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/add_planet_to_data_list(var/obj/structure/overmap/planet/surveyed_planet)
-	if(!surveyed_planet)
-		return null
-	var/planet_name = surveyed_planet.name
-	var/surveyed_planet_ref = ref(surveyed_planet)
-	var/planet_data = create_planet_data_list(surveyed_planet)
-	if(get_survey_status(surveyed_planet) == "complete")
-		if (planet_name in surveyed_planets_data)
-			if(surveyed_planet_ref == surveyed_planets_data[planet_name]["ref_id"])
-				surveyed_planets_data[planet_name] = planet_data
-			else
-				var/i = 1
-				while(i)
-					planet_name = "[planet_name] [i]"
-					if (!(planet_name in surveyed_planets_data))
-						surveyed_planets_data[planet_name] = planet_data
-						break
-					else
-
-						if(surveyed_planet_ref == surveyed_planets_data[planet_name]["ref_id"])
-							surveyed_planets_data[planet_name] = planet_data
-							break
-						else
-							i++
-		else
-			surveyed_planets_data[planet_name] = planet_data
-	return planet_name
-
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_data(mob/user)
-	var/list/data = list()
-	var/planet = get_current_planet()
-	var/status = get_survey_status(planet)
-	data["surveyStatus"] = status
-	data["currentPlanet"] = add_planet_to_data_list(planet)
-	data["surveyedPlanets"] = surveyed_planets_data
-	data["shipMoving"] = ship_port.current_ship.is_still()
-	data["surveyProgress"] = survey_progress
-	return data
-
-/obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_act(action, params)
-	. = ..()
-	if(.)
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_value(obj/structure/overmap/planet/planet)
+	if(!planet)
 		return
-	switch(action)
-		if("survey")
-			survey_planet(ui_user)
-		if("map")
-			playsound(src, 'sound/machines/pda_button1.ogg', 100)
-			activate_survey_map(ui_user)
-		if("reward")
-			print_survey_notes(params["level"])
-		if("error")
-			playsound(src, 'sound/machines/terminal_error.ogg', 100)
-	return TRUE
+
+	var/point_list = list()
+	var/cash = default_survey_cash_reward
+	var/points = default_survey_research_points
+
+	// Still needs logic for planet hostility
+	if (!planet.surveyed)
+		cash += 500
+		points += 750
+
+	point_list["cash"] = cash
+	point_list["points"] = points
+	return point_list
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_current_planet()
 	if (ship_port)
 		if (ship_port.current_ship.close_overmap_objects)
 			for (var/obj/structure/overmap/object in ship_port.current_ship.close_overmap_objects)
+				// if (!istype(object, /obj/structure/overmap/planet/empty)) TEMPORARILY DISABLING FOR DEBUGGING / TESTING ENABLE BEFORE MERGE
 				if (istype(object, /obj/structure/overmap/planet))
 					var/obj/structure/overmap/planet/planet = object
 					return planet
@@ -155,7 +146,6 @@
 		return
 
 	// Set our survey status to loading
-	gathered_loot = FALSE
 	soundloop.start()
 	survey_in_progress = TRUE
 
@@ -187,11 +177,49 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/planet_loaded(obj/structure/overmap/planet/planet)
 	soundloop.stop()
 	UnregisterSignal(planet, COMSIG_VOIDCREW_PLANET_LOADED)
+	var/list/values = get_survey_value(planet)
+	banked_points += values["points"]
+	banked_cash += values["cash"]
 	surveyed_planets += planet
 	survey_in_progress = FALSE
-
+	planet.surveyed = TRUE
 	return
 
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/create_planet_data_list(var/obj/structure/overmap/planet/planet)
+	var/list/planet_data = list()
+	planet_data["ref_id"] = ref(planet)
+	planet_data["visited"] = planet.visited
+	planet_data["loaded"] = planet.loaded
+	return planet_data
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/add_planet_to_data_list(var/obj/structure/overmap/planet/surveyed_planet)
+	if(!surveyed_planet)
+		return null
+	var/planet_name = surveyed_planet.name
+	var/surveyed_planet_ref = ref(surveyed_planet)
+	var/planet_data = create_planet_data_list(surveyed_planet)
+	if(get_survey_status(surveyed_planet) == "complete")
+		if (planet_name in surveyed_planets_data)
+			if(surveyed_planet_ref == surveyed_planets_data[planet_name]["ref_id"])
+				surveyed_planets_data[planet_name] = planet_data
+			else
+				var/i = 1
+				while(i)
+					var/new_name = "[planet_name] [i]"
+					if (!(new_name in surveyed_planets_data))
+						surveyed_planets_data[new_name] = planet_data
+						break
+					else
+
+						if(surveyed_planet_ref == surveyed_planets_data[new_name]["ref_id"])
+							surveyed_planets_data[new_name] = planet_data
+							planet_name = new_name
+							break
+						else
+							i++
+		else
+			surveyed_planets_data[planet_name] = planet_data
+	return planet_name
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/activate_survey_map(mob/user)
 	refresh()
@@ -244,8 +272,52 @@
 	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(undocked))
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/print_survey_notes()
-	new /obj/item/research_notes/loot/small(src.loc)
-	gathered_loot = TRUE
+	playsound(src, 'sound/items/taperecorder/taperecorder_print.ogg', 60)
+	new /obj/item/research_notes/loot/custom(src.loc, banked_points, "survey results")
+	banked_points = 0
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/cash_out()
+	if(banked_cash == 0)
+		return
+
+	var remaining_amount = banked_cash
+	banked_cash = 0
+
+	var/list/bill_types = list(
+		/obj/item/stack/spacecash/c10000,
+		/obj/item/stack/spacecash/c1000,
+		/obj/item/stack/spacecash/c500,
+		/obj/item/stack/spacecash/c200,
+		/obj/item/stack/spacecash/c100,
+		/obj/item/stack/spacecash/c50,
+		/obj/item/stack/spacecash/c20,
+		/obj/item/stack/spacecash/c10,
+		/obj/item/stack/spacecash/c1
+	)
+	var/list/bill_values = list(
+		10000,
+		1000,
+		500,
+		200,
+		100,
+		50,
+		20,
+		10,
+		1
+	)
+
+	playsound(src, 'sound/items/taperecorder/taperecorder_print.ogg', 60)
+	var/obj/item/stack/spacecash/bill
+	var/bill_value
+
+	for (var/i = 1, i <= bill_types.len, i++)
+		bill_value = bill_values[i]
+		while (remaining_amount >= bill_value)
+			remaining_amount -= bill_value
+			bill = bill_types[i]
+			playsound(src, 'sound/items/handling/paper_drop.ogg', 60)
+			new bill(src.loc)
+			sleep(1 SECONDS)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingTurf(turf/T, list/overlappers)
 	. = ..()
