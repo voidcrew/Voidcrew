@@ -4,6 +4,7 @@ import { useBackend } from '../../tgui/backend';
 import {
   Button,
   Collapsible,
+  Dropdown,
   LabeledList,
   NoticeBox,
   Section,
@@ -26,23 +27,101 @@ interface Data {
   bankedPoints: number;
   currentPlanet?: string;
   shipMoving: number;
+  surveyResearchTiers:
+    | ('basic' | 'advanced' | 'superior' | 'elite')[]
+    | undefined;
   surveyedPlanets: SurveyedPlanets;
   surveyStatus: 'unsurveyed' | 'complete' | 'in-progress' | 'planetless';
   surveyValue: { cash: number; points: number };
+  theme?: string;
 }
+
+interface ColorScheme {
+  buttonText?: string;
+  button?: string;
+  collapsible?: string;
+  collapsibleText?: string;
+  notice?: string;
+  noticeText?: string;
+}
+
+interface Theme {
+  default: ColorScheme;
+  syndicate: ColorScheme;
+  cardgame: ColorScheme;
+  outrun: ColorScheme;
+  dark: ColorScheme;
+  terminal: ColorScheme;
+}
+
+const getThemeColors = (theme: string): ColorScheme | undefined => {
+  let colorScheme: ColorScheme | undefined;
+  switch (theme) {
+    case 'syndicate': {
+      colorScheme = {
+        collapsible: 'Darkred',
+        notice: 'Firebrick',
+        button: 'red',
+      };
+      break;
+    }
+    case 'cardtable': {
+      colorScheme = {
+        notice: '#381608',
+        noticeText: 'white',
+      };
+      break;
+    }
+    case 'ntos_synth': {
+      colorScheme = {
+        notice: 'Blueviolet',
+        noticeText: '#5edba5',
+      };
+      break;
+    }
+    case 'ntos_terminal': {
+      colorScheme = {
+        notice: '#0a4d13',
+        noticeText: '#6ae27a',
+        button: '#0a4d13',
+      };
+      break;
+    }
+    case 'ntOS95': {
+      colorScheme = {
+        notice: 'grey',
+        noticeText: 'white',
+      };
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+  return colorScheme;
+};
 
 export const SurveyComputer = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { surveyStatus } = data;
+  const { theme } = data;
   const [tab, setTab] = useState(1);
 
+  const currentThemeColors = theme ? getThemeColors(theme) : undefined;
   return (
-    <Window width={540} height={587} title="Orbital Survey Computer">
+    <Window
+      width={540}
+      height={587}
+      theme={theme}
+      title="Orbital Survey Computer"
+    >
       <Window.Content scrollable fitted fillPositionedParent>
         <Stack fill scrollable fillPositionedParent>
           <Stack.Item>
             <Section fill>
-              <Collapsible>
+              <Collapsible
+                backgroundColor={currentThemeColors?.collapsible}
+                textColor={currentThemeColors?.collapsibleText}
+              >
                 <Tabs vertical>
                   <Tabs.Tab
                     icon="rocket"
@@ -115,97 +194,20 @@ export const SurveyComputer = (props, context) => {
   );
 };
 
-const Research = (props, context) => {
-  const { act, data } = useBackend<Data>();
-  const { bankedPoints, surveyStatus } = data;
-
-  return (
-    <Stack vertical>
-      <Stack.Item>
-        <Section title="Research" textAlign="center" />
-      </Stack.Item>
-
-      <Stack.Item>
-        <Button
-          lineHeight={3}
-          // color={currentOption.color ? currentOption.color : undefined}
-          ml="10%"
-          mr="10%"
-          fluid
-          mt="10%"
-          mb="10%"
-          textAlign="center"
-          icon="print"
-          fontSize={3}
-          // tooltip={currentOption.tooltip ? currentOption.tooltip : undefined}
-          disabled={!bankedPoints || bankedPoints === 0 ? true : false}
-          onClick={() => {
-            act('printResearch');
-          }}
-        >
-          {' '}
-          Print
-        </Button>
-      </Stack.Item>
-      <Stack.Item>
-        <NoticeBox textAlign="center" success>
-          You currently have {bankedPoints} research points to print
-        </NoticeBox>
-      </Stack.Item>
-    </Stack>
-  );
-};
-
-const Banking = (props, context) => {
-  const { act, data } = useBackend<Data>();
-  const { bankedCash, surveyStatus, surveyedPlanets } = data;
-
-  return (
-    <Stack vertical>
-      <Stack.Item>
-        <Section title="Banking" textAlign="center" />
-      </Stack.Item>
-
-      <Stack.Item>
-        <Button
-          lineHeight={3}
-          // color={currentOption.color ? currentOption.color : undefined}
-          ml="10%"
-          textAlign="center"
-          mr="10%"
-          fluid
-          mt="10%"
-          mb="10%"
-          icon="dollar-sign"
-          fontSize={3}
-          // tooltip={currentOption.tooltip ? currentOption.tooltip : undefined}
-          disabled={!bankedCash || bankedCash === 0 ? true : false}
-          onClick={() => {
-            act('cashOut');
-          }}
-        >
-          {' '}
-          Withdrawal
-        </Button>
-      </Stack.Item>
-      <Stack.Item>
-        <NoticeBox textAlign="center" success>
-          You currently have ${bankedCash} to withdrawal
-        </NoticeBox>
-      </Stack.Item>
-    </Stack>
-  );
-};
-
 const Surveying = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { bankedCash, bankedPoints, surveyValue, surveyStatus, shipMoving } =
-    data;
+  const {
+    bankedCash,
+    theme,
+    bankedPoints,
+    surveyValue,
+    surveyStatus,
+    shipMoving,
+  } = data;
 
   interface Option {
     state: 'unsurveyed' | 'complete' | 'in-progress' | 'planetless';
     content: string;
-    color?: string;
     action?: string;
     disabled?: boolean;
     tooltip?: string;
@@ -215,7 +217,6 @@ const Surveying = (props, context) => {
     {
       content: 'Start survey',
       state: 'unsurveyed',
-      color: 'blue',
       action: 'survey',
       tooltip:
         surveyValue && surveyValue.points && surveyValue.cash
@@ -225,9 +226,12 @@ const Surveying = (props, context) => {
     {
       content: 'In progress',
       state: 'in-progress',
-      color: 'yellow',
     },
-    { content: 'Open map', state: 'complete', color: 'green', action: 'map' },
+    {
+      content: 'Open map',
+      state: 'complete',
+      action: 'map',
+    },
     {
       content: 'Start survey',
       state: 'planetless',
@@ -254,25 +258,43 @@ const Surveying = (props, context) => {
     notices.push(`You have ${bankedCash} credits to cash out`);
   }
 
+  let currentThemeColors = theme ? getThemeColors(theme) : undefined;
+  let selectedTheme;
   return (
     <Stack vertical fill textAlign="center">
       <Stack.Item height="20%" pb={0} mb={0}>
-        <Collapsible
-          title="Notices"
-          lineHeight={2}
-          icon={notices.length > 0 ? 'triangle-exclamation' : 'check'}
-        >
-          {notices.length > 0
-            ? notices.map((notice, index) => {
-                return <NoticeBox key={index}>{notice}</NoticeBox>;
-              })
-            : undefined}
-        </Collapsible>
+        <Stack>
+          <Stack.Item grow>
+            <Collapsible
+              open
+              title="Notices"
+              backgroundColor={currentThemeColors?.collapsible}
+              textColor={currentThemeColors?.collapsibleText}
+              lineHeight={2}
+              icon={notices.length > 0 ? 'triangle-exclamation' : 'check'}
+            >
+              {notices.length > 0
+                ? notices.map((notice, index) => {
+                    return (
+                      <NoticeBox
+                        backgroundColor={currentThemeColors?.notice}
+                        textColor={currentThemeColors?.noticeText}
+                        key={index}
+                      >
+                        {notice}
+                      </NoticeBox>
+                    );
+                  })
+                : undefined}
+            </Collapsible>
+          </Stack.Item>
+        </Stack>
       </Stack.Item>
       <Stack.Item height="80%" grow>
         <Button
           lineHeight={3}
-          color={currentOption.color ? currentOption.color : undefined}
+          backgroundColor={currentThemeColors?.button}
+          textColor={currentThemeColors?.buttonText}
           ml="10%"
           mr="10%"
           fluid
@@ -290,23 +312,98 @@ const Surveying = (props, context) => {
           content={currentOption.content}
         />
       </Stack.Item>
+      <Stack.Item>
+        <Stack fill>
+          <Stack.Item width="90%" />
+          <Stack.Item>
+            <Dropdown
+              onSelected={(value) => {
+                selectedTheme = value;
+                act('setTheme', { theme: value });
+              }}
+              backgroundColor={currentThemeColors?.collapsible}
+              color={currentThemeColors?.button}
+              options={[
+                'default',
+                'cardtable',
+                'malfunction',
+                'ntOS95',
+                'ntos_synth',
+                'ntos_terminal',
+                'syndicate',
+                'wizard',
+              ]}
+              selected={selectedTheme}
+              displayText={'Theme'}
+            />
+          </Stack.Item>
+        </Stack>
+      </Stack.Item>
     </Stack>
   );
 };
 
 const Planets = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { surveyStatus, surveyedPlanets, currentPlanet } = data;
+  const {
+    surveyStatus,
+    theme,
+    surveyedPlanets,
+    currentPlanet,
+    surveyResearchTiers,
+  } = data;
 
   const [planetTab, setPlanetTab] = useState(0);
   const selectedPlanet =
     planetTab === 0
       ? undefined
       : Object.entries(surveyedPlanets)[planetTab - 1];
+  const selectedPlanetName = selectedPlanet?.[0];
+  const selectedPlanetData = selectedPlanet?.[1];
+
+  let basicData = surveyResearchTiers?.includes('basic')
+    ? {
+        Name: selectedPlanet?.[0],
+      }
+    : undefined;
+  if (basicData && Object.entries(basicData).length === 0) {
+    basicData = undefined;
+  }
+
+  let advancedData = surveyResearchTiers?.includes('advanced')
+    ? { name: 'blah' }
+    : undefined;
+  if (advancedData && Object.entries(advancedData).length === 0) {
+    advancedData = undefined;
+  }
+
+  let superiorData = surveyResearchTiers?.includes('superior')
+    ? {
+        Activity: selectedPlanetData?.visited
+          ? 'Previous shuttle activity detected'
+          : 'No previous shuttle activity detected',
+      }
+    : undefined;
+  if (superiorData && Object.entries(superiorData).length === 0) {
+    superiorData = undefined;
+  }
+
+  let eliteData = surveyResearchTiers?.includes('elite')
+    ? { name: 'test' }
+    : undefined;
+  if (eliteData && Object.entries(eliteData).length === 0) {
+    eliteData = undefined;
+  }
+
+  let currentThemeColors = theme ? getThemeColors(theme) : undefined;
+
   return (
     <Stack fill textAlign="center">
       <Stack.Item>
-        <Collapsible>
+        <Collapsible
+          backgroundColor={currentThemeColors?.collapsible}
+          textColor={currentThemeColors?.collapsibleText}
+        >
           <Stack fill vertical verticalAlign="middle" textAlign="center">
             <Section title="Current" mt={0.1} pb={0} mb={0}>
               <Stack.Item>
@@ -357,25 +454,179 @@ const Planets = (props, context) => {
       <Stack.Divider />
 
       <Stack.Item grow>
-        <Section title="Planet Info" textAlign="center" fill>
-          {selectedPlanet ? (
-            <LabeledList key={selectedPlanet[0]}>
-              {Object.entries(selectedPlanet[1]).map((prop) => {
-                return (
-                  <LabeledList.Item
-                    textAlign="center"
-                    key={prop[0]}
-                    label={prop[0]}
-                  >
-                    {prop[1]}
-                  </LabeledList.Item>
-                );
-              })}
-            </LabeledList>
-          ) : (
-            <NoticeBox info>Select a planet from the dropdown menu</NoticeBox>
-          )}
-        </Section>
+        {selectedPlanet ? (
+          <Stack vertical scrollable>
+            <Stack.Item>
+              <Collapsible
+                backgroundColor={currentThemeColors?.collapsible}
+                textColor={currentThemeColors?.collapsibleText}
+                title="help"
+                open
+              >
+                <NoticeBox
+                  backgroundColor={currentThemeColors?.notice}
+                  textColor={currentThemeColors?.noticeText}
+                >
+                  Information about a planet only updates while in orbit.
+                </NoticeBox>
+                <NoticeBox
+                  backgroundColor={currentThemeColors?.notice}
+                  textColor={currentThemeColors?.noticeText}
+                >
+                  Certain details are only available after researching the
+                  proper survey tech.
+                </NoticeBox>
+              </Collapsible>
+            </Stack.Item>
+            <Stack.Divider />
+            <Stack.Item grow>
+              <LabeledList>
+                {basicData
+                  ? Object.entries(basicData).map((planetData, index) => {
+                      return planetData ? (
+                        <LabeledList.Item
+                          labelWrap
+                          label={planetData[0]}
+                          key={planetData[0]}
+                        >
+                          {planetData[1]}
+                        </LabeledList.Item>
+                      ) : undefined;
+                    })
+                  : undefined}
+                {advancedData
+                  ? Object.entries(advancedData).map((planetData, index) => {
+                      return planetData ? (
+                        <LabeledList.Item
+                          labelWrap
+                          label={planetData[0]}
+                          key={planetData[0]}
+                        >
+                          {planetData[1]}
+                        </LabeledList.Item>
+                      ) : undefined;
+                    })
+                  : undefined}
+                {superiorData
+                  ? Object.entries(superiorData).map((planetData, index) => {
+                      return planetData ? (
+                        <LabeledList.Item
+                          labelWrap
+                          label={planetData[0]}
+                          key={planetData[0]}
+                        >
+                          {planetData[1]}
+                        </LabeledList.Item>
+                      ) : undefined;
+                    })
+                  : undefined}
+                {eliteData
+                  ? Object.entries(eliteData).map((planetData, index) => {
+                      return planetData ? (
+                        <LabeledList.Item
+                          labelWrap
+                          label={planetData[0]}
+                          key={planetData[0]}
+                        >
+                          {planetData[1]}
+                        </LabeledList.Item>
+                      ) : undefined;
+                    })
+                  : undefined}
+              </LabeledList>
+            </Stack.Item>
+          </Stack>
+        ) : (
+          <NoticeBox
+            backgroundColor={currentThemeColors?.notice}
+            textColor={currentThemeColors?.noticeText}
+          >
+            Select a planet from the dropdown menu
+          </NoticeBox>
+        )}
+      </Stack.Item>
+    </Stack>
+  );
+};
+
+const Banking = (props, context) => {
+  const { act, data } = useBackend<Data>();
+  const { bankedCash, surveyStatus, surveyedPlanets, theme } = data;
+  let currentThemeColors = theme ? getThemeColors(theme) : undefined;
+
+  return (
+    <Stack vertical>
+      <Stack.Item>
+        <Button
+          lineHeight={3}
+          backgroundColor={currentThemeColors?.button}
+          textColor={currentThemeColors?.buttonText}
+          ml="10%"
+          textAlign="center"
+          mr="10%"
+          fluid
+          mt="10%"
+          mb="10%"
+          icon="dollar-sign"
+          fontSize={3}
+          disabled={!bankedCash || bankedCash === 0 ? true : false}
+          onClick={() => {
+            act('cashOut');
+          }}
+        >
+          Withdrawal
+        </Button>
+      </Stack.Item>
+      <Stack.Item>
+        <NoticeBox
+          textAlign="center"
+          backgroundColor={currentThemeColors?.notice}
+          textColor={currentThemeColors?.noticeText}
+        >
+          You currently have ${bankedCash} to withdrawal
+        </NoticeBox>
+      </Stack.Item>
+    </Stack>
+  );
+};
+
+const Research = (props, context) => {
+  const { act, data } = useBackend<Data>();
+  const { bankedPoints, surveyStatus, theme } = data;
+  let currentThemeColors = theme ? getThemeColors(theme) : undefined;
+
+  return (
+    <Stack vertical>
+      <Stack.Item>
+        <Button
+          lineHeight={3}
+          ml="10%"
+          mr="10%"
+          fluid
+          mt="10%"
+          mb="10%"
+          textAlign="center"
+          backgroundColor={currentThemeColors?.button}
+          textColor={currentThemeColors?.buttonText}
+          icon="print"
+          fontSize={3}
+          disabled={!bankedPoints || bankedPoints === 0 ? true : false}
+          onClick={() => {
+            act('printResearch');
+          }}
+        >
+          {' '}
+          Print
+        </Button>
+      </Stack.Item>
+      <Stack.Item>
+        <NoticeBox
+          backgroundColor={currentThemeColors?.notice}
+          textColor={currentThemeColors?.noticeText}
+          textAlign="center"
+        >
+          You currently have {bankedPoints} research points to print
+        </NoticeBox>
       </Stack.Item>
     </Stack>
   );

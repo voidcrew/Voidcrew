@@ -29,7 +29,8 @@
 	var/list/banking = list()
 	var/default_survey_research_points = 500
 	var/default_survey_cash_reward = 500
-
+	var/datum/techweb/linked_techweb
+	var/theme
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Initialize(mapload)
 	. = ..()
@@ -48,6 +49,47 @@
 		shuttlePortId = "[ship_port.shuttle_id]_custom"
 
 	soundloop = new(src)
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/unsync_research_servers()
+	if(linked_techweb)
+		linked_techweb.connected_machines -= src
+		linked_techweb = null
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/multitool_act(mob/living/user, obj/item/multitool/tool)
+	if(!QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb))
+		if(linked_techweb)
+			if(linked_techweb == tool.buffer)
+				say("Already linked!")
+				return
+			unsync_research_servers()
+
+		linked_techweb = tool.buffer
+		linked_techweb.connected_machines += src //connect new one
+		say("Linked to Server!")
+		return TRUE
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_research_tiers()
+	if(!linked_techweb)
+		return
+	var/list/research_tiers = list("survey_console_simple", "survey_console_advanced", "survey_console_superior", "survey_console_elite")
+	var/list/found_tiers = list()
+	for(var/node_id in linked_techweb.researched_nodes)
+		if(node_id in research_tiers)
+			var/tier_type
+			switch(node_id)
+				if("survey_console_simple")
+					tier_type = "basic"
+				if("survey_console_advanced")
+					tier_type = "advanced"
+				if("survey_console_superior")
+					tier_type = "superior"
+				if("survey_console_elite")
+					tier_type = "elite"
+				else
+					tier_type = "basic"
+
+			found_tiers += tier_type
+	return found_tiers
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Destroy()
 	. = ..()
@@ -75,6 +117,8 @@
 	data["bankedPoints"] = banked_points
 	data["bankedCash"] = banked_cash
 	data["surveyValue"] = get_survey_value(planet)
+	data["surveyResearchTiers"] = get_survey_research_tiers()
+	data["theme"] = theme
 	return data
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_act(action, params)
@@ -91,6 +135,8 @@
 			print_survey_notes()
 		if("cashOut")
 			cash_out()
+		if("setTheme")
+			theme = params["theme"]
 		if("error")
 			playsound(src, 'sound/machines/terminal_error.ogg', 100)
 

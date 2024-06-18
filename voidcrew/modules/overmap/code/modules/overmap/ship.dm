@@ -96,9 +96,7 @@
 	/// The background of the map, usually doesn't do anything, but this is here so ships can customize the background ig?
 	var/atom/movable/screen/background/cam_background
 
-	/// A list of surveyed planets
-	var/list/surveyed_planets = list()
-	var/list/looted_planets = list()
+	var/obj/machinery/computer/camera_advanced/shuttle_docker/survey_console
 
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()

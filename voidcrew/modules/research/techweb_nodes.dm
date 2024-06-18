@@ -252,3 +252,35 @@
 		"surgery_oldstation_dissection_elite",
 	)
 
+/datum/techweb_node/survey_console_information
+	starting_node = TRUE
+	hidden = FALSE
+	id = "survey_console_simple"
+	display_name = "Survey console info level: simple"
+	description = "The first tier of information for the survey console"
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
+
+/datum/techweb_node/survey_console_information_advanced
+	starting_node = FALSE
+	id = "survey_console_advanced"
+	display_name = "Survey console info level: advanced"
+	description = "The first tier of information for the survey console"
+	prereq_ids = list("survey_console_simple")
+	// prereq_ids = list("planet_ice", "planet_desert") etc
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
+
+/datum/techweb_node/survey_console_information_superior
+	id = "survey_console_superior"
+	starting_node = FALSE
+	display_name = "Survey console info level: superior"
+	description = "The first tier of information for the survey console"
+	prereq_ids = list("survey_console_advanced")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
+
+/datum/techweb_node/survey_console_information_elite
+	id = "survey_console_elite"
+	starting_node = FALSE
+	display_name = "Survey console info level: elite"
+	description = "The first tier of information for the survey console"
+	prereq_ids = list("survey_console_superior")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 20000)
