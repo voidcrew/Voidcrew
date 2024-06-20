@@ -299,8 +299,6 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/create_planet_data_list(var/obj/structure/overmap/planet/planet)
 
 	var/list/planet_data = list()
-
-	////// NEED TO FIGURE OUT HOW TO CHECK IF DATA ALREADY EXISTS AND THEN USE IT IF IT DOES
 	if (length(surveyed_planets_data))
 		for(var/sd in surveyed_planets_data)
 			if (surveyed_planets_data[sd]["ref_id"] == ref(planet))
