@@ -205,7 +205,7 @@ SUBSYSTEM_DEF(overmap)
 			new event_type(turf_to_spawn)
 
 /datum/controller/subsystem/overmap/proc/setup_planets()
-	var/list/planets = list()
+	var/list/datum/overmap/planet/planets = list()
 	for(var/datum/overmap/planet/planet_type as anything in subtypesof(/datum/overmap/planet))
 		if(initial(planet_type.spawn_rate) > 0)
 			planets += planet_type
@@ -225,7 +225,7 @@ SUBSYSTEM_DEF(overmap)
 			orbits -= "[selected_orbit]" // this one is full
 			continue
 
-		var/planet_type = pick(planets)
+		var/datum/overmap/planet/planet_type = pick(planets)
 		var/obj/structure/overmap/planet/planet_to_spawn = new
 		planet_to_spawn.planet = planet_type
 		planet_to_spawn.forceMove(turf_for_planet)

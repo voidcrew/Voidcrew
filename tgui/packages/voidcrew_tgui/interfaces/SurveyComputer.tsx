@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useBackend } from '../../tgui/backend';
 import {
+  Box,
   Button,
   Collapsible,
   Dropdown,
@@ -16,6 +17,8 @@ import { Window } from '../../tgui/layouts';
 interface SurveyedPlanet {
   loaded: number;
   visited: number;
+  testAdvData: string;
+  testEliteData: string;
 }
 
 type SurveyedPlanets = {
@@ -27,12 +30,10 @@ interface Data {
   bankedPoints: number;
   currentPlanet?: string;
   shipMoving: number;
-  surveyResearchTiers:
-    | ('basic' | 'advanced' | 'superior' | 'elite')[]
-    | undefined;
   surveyedPlanets: SurveyedPlanets;
   surveyStatus: 'unsurveyed' | 'complete' | 'in-progress' | 'planetless';
   surveyValue: { cash: number; points: number };
+  surveyDataDisk: number;
   theme?: string;
 }
 
@@ -171,6 +172,18 @@ export const SurveyComputer = (props, context) => {
                   >
                     Research
                   </Tabs.Tab>
+                  <Tabs.Tab
+                    icon="wrench"
+                    mt={1}
+                    mb={1}
+                    selected={tab === 5}
+                    key={5}
+                    onClick={() => {
+                      setTab(5);
+                    }}
+                  >
+                    Settings
+                  </Tabs.Tab>
                 </Tabs>
               </Collapsible>
             </Section>
@@ -183,8 +196,10 @@ export const SurveyComputer = (props, context) => {
                 <Planets />
               ) : tab === 3 ? (
                 <Banking />
-              ) : (
+              ) : tab === 4 ? (
                 <Research />
+              ) : (
+                <Settings />
               )}
             </Section>
           </Stack.Item>
@@ -261,6 +276,57 @@ const Surveying = (props, context) => {
   let currentThemeColors = theme ? getThemeColors(theme) : undefined;
   let selectedTheme;
   return (
+    // <Box>
+    //   <Stack vertical>
+    //     <Stack.Item>
+    //       <Collapsible
+    //         align="center"
+    //         open
+    //         title="Notices"
+    //         backgroundColor={currentThemeColors?.collapsible}
+    //         textColor={currentThemeColors?.collapsibleText}
+    //         lineHeight={2}
+    //         icon={notices.length > 0 ? 'triangle-exclamation' : 'check'}
+    //       >
+    //         {notices.length > 0
+    //           ? notices.map((notice, index) => {
+    //               return (
+    //                 <NoticeBox
+    //                   backgroundColor={currentThemeColors?.notice}
+    //                   align="center"
+    //                   textColor={currentThemeColors?.noticeText}
+    //                   key={index}
+    //                 >
+    //                   {notice}
+    //                 </NoticeBox>
+    //               );
+    //             })
+    //           : undefined}
+    //       </Collapsible>
+    //     </Stack.Item>
+    //     <Stack.Item align="center">
+    //       <Button
+    //         lineHeight={3}
+    //         backgroundColor={currentThemeColors?.button}
+    //         textColor={currentThemeColors?.buttonText}
+    //         minWidth={30}
+    //         textAlign="center"
+    //         icon="globe"
+    //         fontSize={3}
+    //         tooltip={currentOption.tooltip ? currentOption.tooltip : undefined}
+    //         disabled={
+    //           shipMoving === 0 ? true : currentOption.disabled ? true : false
+    //         }
+    //         onClick={() => {
+    //           currentOption.action ? act(currentOption.action) : undefined;
+    //         }}
+    //       >
+    //         {currentOption.content}
+    //       </Button>
+    //     </Stack.Item>
+    //   </Stack>
+    // </Box>
+
     <Stack vertical fill textAlign="center">
       <Stack.Item height="20%" pb={0} mb={0}>
         <Stack>
@@ -290,16 +356,21 @@ const Surveying = (props, context) => {
           </Stack.Item>
         </Stack>
       </Stack.Item>
-      <Stack.Item height="80%" grow>
+      <Stack.Item height="60%" grow>
         <Button
           lineHeight={3}
           backgroundColor={currentThemeColors?.button}
           textColor={currentThemeColors?.buttonText}
-          ml="10%"
-          mr="10%"
-          fluid
-          mt="10%"
-          mb="10%"
+          // ml="10%"
+          // mr="10%"
+          // fluid
+          // mb="10%"
+          // pr="30%"
+          // pl="30%"
+          // width="60%"
+          // mt="10%"
+          minWidth={30}
+          textAlign="center"
           icon="globe"
           fontSize={3}
           tooltip={currentOption.tooltip ? currentOption.tooltip : undefined}
@@ -309,35 +380,9 @@ const Surveying = (props, context) => {
           onClick={() => {
             currentOption.action ? act(currentOption.action) : undefined;
           }}
-          content={currentOption.content}
-        />
-      </Stack.Item>
-      <Stack.Item>
-        <Stack fill>
-          <Stack.Item width="90%" />
-          <Stack.Item>
-            <Dropdown
-              onSelected={(value) => {
-                selectedTheme = value;
-                act('setTheme', { theme: value });
-              }}
-              backgroundColor={currentThemeColors?.collapsible}
-              color={currentThemeColors?.button}
-              options={[
-                'default',
-                'cardtable',
-                'malfunction',
-                'ntOS95',
-                'ntos_synth',
-                'ntos_terminal',
-                'syndicate',
-                'wizard',
-              ]}
-              selected={selectedTheme}
-              displayText={'Theme'}
-            />
-          </Stack.Item>
-        </Stack>
+        >
+          {currentOption.content}
+        </Button>
       </Stack.Item>
     </Stack>
   );
@@ -345,13 +390,7 @@ const Surveying = (props, context) => {
 
 const Planets = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const {
-    surveyStatus,
-    theme,
-    surveyedPlanets,
-    currentPlanet,
-    surveyResearchTiers,
-  } = data;
+  const { surveyStatus, theme, surveyedPlanets, currentPlanet } = data;
 
   const [planetTab, setPlanetTab] = useState(0);
   const selectedPlanet =
@@ -361,39 +400,26 @@ const Planets = (props, context) => {
   const selectedPlanetName = selectedPlanet?.[0];
   const selectedPlanetData = selectedPlanet?.[1];
 
-  let basicData = surveyResearchTiers?.includes('basic')
-    ? {
-        Name: selectedPlanet?.[0],
-      }
-    : undefined;
-  if (basicData && Object.entries(basicData).length === 0) {
-    basicData = undefined;
-  }
-
-  let advancedData = surveyResearchTiers?.includes('advanced')
-    ? { name: 'blah' }
-    : undefined;
-  if (advancedData && Object.entries(advancedData).length === 0) {
-    advancedData = undefined;
-  }
-
-  let superiorData = surveyResearchTiers?.includes('superior')
-    ? {
-        Activity: selectedPlanetData?.visited
-          ? 'Previous shuttle activity detected'
-          : 'No previous shuttle activity detected',
-      }
-    : undefined;
-  if (superiorData && Object.entries(superiorData).length === 0) {
-    superiorData = undefined;
-  }
-
-  let eliteData = surveyResearchTiers?.includes('elite')
-    ? { name: 'test' }
-    : undefined;
-  if (eliteData && Object.entries(eliteData).length === 0) {
-    eliteData = undefined;
-  }
+  const planetData = {
+    // name
+    ...(selectedPlanetName ? { Name: selectedPlanetName } : undefined),
+    // visited
+    ...(selectedPlanetData?.visited
+      ? {
+          Activity: selectedPlanetData.visited
+            ? 'Previous shuttle activity detected'
+            : 'No previous shuttle activity detected',
+        }
+      : undefined),
+    // Test advanced data
+    ...(selectedPlanetData?.testAdvData
+      ? { TestAdv: selectedPlanetData?.testAdvData }
+      : undefined),
+    // Test elite data
+    ...(selectedPlanetData?.testEliteData
+      ? { TestElite: selectedPlanetData?.testEliteData }
+      : undefined),
+  };
 
   let currentThemeColors = theme ? getThemeColors(theme) : undefined;
 
@@ -481,58 +507,17 @@ const Planets = (props, context) => {
             <Stack.Divider />
             <Stack.Item grow>
               <LabeledList>
-                {basicData
-                  ? Object.entries(basicData).map((planetData, index) => {
-                      return planetData ? (
-                        <LabeledList.Item
-                          labelWrap
-                          label={planetData[0]}
-                          key={planetData[0]}
-                        >
-                          {planetData[1]}
-                        </LabeledList.Item>
-                      ) : undefined;
-                    })
-                  : undefined}
-                {advancedData
-                  ? Object.entries(advancedData).map((planetData, index) => {
-                      return planetData ? (
-                        <LabeledList.Item
-                          labelWrap
-                          label={planetData[0]}
-                          key={planetData[0]}
-                        >
-                          {planetData[1]}
-                        </LabeledList.Item>
-                      ) : undefined;
-                    })
-                  : undefined}
-                {superiorData
-                  ? Object.entries(superiorData).map((planetData, index) => {
-                      return planetData ? (
-                        <LabeledList.Item
-                          labelWrap
-                          label={planetData[0]}
-                          key={planetData[0]}
-                        >
-                          {planetData[1]}
-                        </LabeledList.Item>
-                      ) : undefined;
-                    })
-                  : undefined}
-                {eliteData
-                  ? Object.entries(eliteData).map((planetData, index) => {
-                      return planetData ? (
-                        <LabeledList.Item
-                          labelWrap
-                          label={planetData[0]}
-                          key={planetData[0]}
-                        >
-                          {planetData[1]}
-                        </LabeledList.Item>
-                      ) : undefined;
-                    })
-                  : undefined}
+                {Object.entries(planetData).map((planetData, index) => {
+                  return planetData ? (
+                    <LabeledList.Item
+                      labelWrap
+                      label={planetData[0]}
+                      key={planetData[0]}
+                    >
+                      {planetData[1]}
+                    </LabeledList.Item>
+                  ) : undefined;
+                })}
               </LabeledList>
             </Stack.Item>
           </Stack>
@@ -629,5 +614,96 @@ const Research = (props, context) => {
         </NoticeBox>
       </Stack.Item>
     </Stack>
+  );
+};
+
+const Settings = (props, context) => {
+  const { act, data } = useBackend<Data>();
+  const { surveyDataDisk, bankedPoints, surveyStatus, theme } = data;
+  let currentThemeColors = theme ? getThemeColors(theme) : undefined;
+  let selectedTheme;
+  return (
+    <Box align="center" pl={2} pr={2}>
+      <Section title="Data disk settings" fontSize={2}>
+        <Box>
+          <Button
+            lineHeight={2}
+            backgroundColor={currentThemeColors?.button}
+            textColor={currentThemeColors?.buttonText}
+            textAlign="center"
+            icon="download"
+            fontSize={2}
+            onClick={() => {
+              act('loadData');
+            }}
+            tooltip={surveyDataDisk ? undefined : 'no disk loaded'}
+            disabled={surveyDataDisk ? false : true}
+          >
+            Load
+          </Button>
+          <Button
+            lineHeight={2}
+            backgroundColor={currentThemeColors?.button}
+            textColor={currentThemeColors?.buttonText}
+            textAlign="center"
+            icon="arrow-up-from-bracket"
+            fontSize={2}
+            onClick={() => {
+              act('saveData');
+            }}
+            tooltip={surveyDataDisk ? undefined : 'no disk loaded'}
+            disabled={surveyDataDisk ? false : true}
+          >
+            Save
+          </Button>
+          <Button
+            lineHeight={2}
+            backgroundColor={currentThemeColors?.button}
+            textColor={currentThemeColors?.buttonText}
+            textAlign="center"
+            icon="eject"
+            fontSize={2}
+            tooltip={surveyDataDisk ? undefined : 'no disk loaded'}
+            onClick={() => {
+              act('eject');
+            }}
+            disabled={surveyDataDisk ? false : true}
+          >
+            Eject
+          </Button>
+        </Box>
+      </Section>
+      <Section title="Other settings" fontSize={2}>
+        <Stack fontSize={1.5}>
+          <Stack.Item grow />
+          <Stack.Item minWidth="40%" maxWidth="50%" grow>
+            {' '}
+            <Dropdown
+              onSelected={(value) => {
+                selectedTheme = value;
+                act('setTheme', { theme: value });
+              }}
+              backgroundColor={currentThemeColors?.collapsible}
+              color={currentThemeColors?.button}
+              width="100%"
+              fontSize={1}
+              options={[
+                'default',
+                'cardtable',
+                'malfunction',
+                'ntOS95',
+                'ntos_synth',
+                'ntos_terminal',
+                'syndicate',
+                'wizard',
+              ]}
+              selected={selectedTheme}
+              displayText={'Theme'}
+            />
+          </Stack.Item>
+          <Stack.Item grow />
+        </Stack>
+      </Section>
+    </Box>
   );
 };

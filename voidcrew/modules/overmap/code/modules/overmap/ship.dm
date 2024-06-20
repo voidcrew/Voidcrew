@@ -96,7 +96,7 @@
 	/// The background of the map, usually doesn't do anything, but this is here so ships can customize the background ig?
 	var/atom/movable/screen/background/cam_background
 
-	var/obj/machinery/computer/camera_advanced/shuttle_docker/survey_console
+	var/datum/weakref/survey_console
 
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()

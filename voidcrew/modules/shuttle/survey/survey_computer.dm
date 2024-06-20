@@ -31,6 +31,8 @@
 	var/default_survey_cash_reward = 500
 	var/datum/techweb/linked_techweb
 	var/theme
+	var/attached_to_ship = FALSE
+	var/obj/item/disk/survey_data_disk/survey_disk
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Initialize(mapload)
 	. = ..()
@@ -43,8 +45,9 @@
 	set_init_ports()
 
 	ship_port = SSshuttle.get_containing_shuttle(src)
-
-	if (ship_port)
+	if (ship_port.current_ship && !ship_port.current_ship.survey_console)
+		ship_port.current_ship.survey_console = WEAKREF(src)
+		attached_to_ship = TRUE
 		shuttleId = ship_port.shuttle_id
 		shuttlePortId = "[ship_port.shuttle_id]_custom"
 
@@ -93,10 +96,38 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Destroy()
 	. = ..()
-	QDEL_NULL(soundloop)
+	var/datum/weakref/ship_link = ship_port.current_ship.survey_console
+	if(!ship_link.resolve() || src == ship_link.resolve())
+		ship_port.current_ship.survey_console = null
+		attached_to_ship = FALSE
+	if(survey_disk)
+		survey_disk.forceMove(get_turf(src))
+		survey_disk = null
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/attack_hand(mob/user, list/modifiers)
+	if(!attached_to_ship)
+		balloon_alert(user, "can't connect to shuttle.")
+		to_chat(user, "Could not connect survey console to the shuttle network. Perhaps there is already a survey console on this ship?")
+		return
 	ui_interact(user)
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/attackby(obj/item/D, mob/user, params)
+	if(istype(D, /obj/item/disk))
+		if(istype(D, /obj/item/disk/survey_data_disk))
+			if(survey_disk)
+				to_chat(user, span_warning("A survey data disk is already loaded!"))
+				return
+			if(!user.transferItemToLoc(D, src))
+				to_chat(user, span_warning("[D] is stuck to your hand!"))
+				return
+			survey_disk = D
+		else
+			to_chat(user, span_warning("Survey console cannot accept disks in that format."))
+			return
+		playsound(src, "sound/machines/terminal_insert_disc.ogg", 80)
+		to_chat(user, span_notice("You insert [D] into \the [src]!"))
+		return
+	return ..()
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
@@ -117,8 +148,9 @@
 	data["bankedPoints"] = banked_points
 	data["bankedCash"] = banked_cash
 	data["surveyValue"] = get_survey_value(planet)
-	data["surveyResearchTiers"] = get_survey_research_tiers()
 	data["theme"] = theme
+	data["surveyDataDisk"] = survey_disk ? TRUE : FALSE
+
 	return data
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_act(action, params)
@@ -137,6 +169,12 @@
 			cash_out()
 		if("setTheme")
 			theme = params["theme"]
+		if("saveData")
+			save_survey_data()
+		if("loadData")
+			load_survey_data()
+		if("eject")
+			eject_disk()
 		if("error")
 			playsound(src, 'sound/machines/terminal_error.ogg', 100)
 
@@ -220,6 +258,33 @@
 		survey_in_progress = FALSE
 
 
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/load_survey_data()
+	if(!survey_disk)
+		return
+	if(survey_disk.surveyed_planets)
+		surveyed_planets |= survey_disk.surveyed_planets
+	if(survey_disk.surveyed_planets_data)
+		for(var/surveyed_planet in survey_disk.surveyed_planets_data)
+			surveyed_planets_data[surveyed_planet] = survey_disk.surveyed_planets_data[surveyed_planet]
+	playsound(src, "sound/machines/high_tech_confirm.ogg", 40)
+	balloon_alert(ui_user, "data downloaded from disk")
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/save_survey_data()
+	if(!survey_disk)
+		return
+	survey_disk.surveyed_planets |= surveyed_planets
+	for(var/surveyed_planet in surveyed_planets_data)
+		survey_disk.surveyed_planets_data[surveyed_planet] = surveyed_planets_data[surveyed_planet]
+	playsound(src, "sound/machines/terminal_alert.ogg", 40)
+	balloon_alert(ui_user, "data saved to disk")
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/eject_disk()
+	if(survey_disk)
+		survey_disk.forceMove(get_turf(src))
+		survey_disk = null
+		playsound(src, "sound/machines/eject.ogg", 40)
+		balloon_alert(ui_user, "disk ejected")
+
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/planet_loaded(obj/structure/overmap/planet/planet)
 	soundloop.stop()
 	UnregisterSignal(planet, COMSIG_VOIDCREW_PLANET_LOADED)
@@ -232,9 +297,30 @@
 	return
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/create_planet_data_list(var/obj/structure/overmap/planet/planet)
+
 	var/list/planet_data = list()
+
+	////// NEED TO FIGURE OUT HOW TO CHECK IF DATA ALREADY EXISTS AND THEN USE IT IF IT DOES
+	if (length(surveyed_planets_data))
+		for(var/sd in surveyed_planets_data)
+			if (surveyed_planets_data[sd]["ref_id"] == ref(planet))
+				planet_data = surveyed_planets_data[sd]
+				break
+
+	var/list/survey_research_tiers = get_survey_research_tiers()
+	if("basic" in survey_research_tiers)
+		planet_data["name"] = planet.name
+
+	if("advanced" in survey_research_tiers)
+		planet_data["testAdvData"] = "test"
+
+	if("superior" in survey_research_tiers)
+		planet_data["visited"] = planet.visited
+
+	if("elite" in survey_research_tiers)
+		planet_data["testEliteData"] = "test"
+
 	planet_data["ref_id"] = ref(planet)
-	planet_data["visited"] = planet.visited
 	planet_data["loaded"] = planet.loaded
 	return planet_data
 
