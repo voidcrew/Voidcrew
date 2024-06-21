@@ -45,11 +45,13 @@
 	set_init_ports()
 
 	ship_port = SSshuttle.get_containing_shuttle(src)
-	if (ship_port.current_ship && !ship_port.current_ship.survey_console)
-		ship_port.current_ship.survey_console = WEAKREF(src)
-		attached_to_ship = TRUE
-		shuttleId = ship_port.shuttle_id
-		shuttlePortId = "[ship_port.shuttle_id]_custom"
+	if (ship_port.current_ship)
+		surveyed_planets = ship_port.current_ship.surveyed_planets
+		if(!ship_port.current_ship.survey_console)
+			ship_port.current_ship.survey_console = WEAKREF(src)
+			attached_to_ship = TRUE
+			shuttleId = ship_port.shuttle_id
+			shuttlePortId = "[ship_port.shuttle_id]_custom"
 
 	soundloop = new(src)
 
@@ -292,6 +294,7 @@
 	banked_points += values["points"]
 	banked_cash += values["cash"]
 	surveyed_planets += planet
+	ship_port.current_ship.surveyed_planets = surveyed_planets
 	survey_in_progress = FALSE
 	planet.surveyed = TRUE
 	return

@@ -97,6 +97,7 @@
 	var/atom/movable/screen/background/cam_background
 
 	var/datum/weakref/survey_console
+	var/list/surveyed_planets = list()
 
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
