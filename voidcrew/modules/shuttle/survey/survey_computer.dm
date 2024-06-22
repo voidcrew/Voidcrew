@@ -1,12 +1,12 @@
 /obj/item/circuitboard/computer/survey_shuttle_docker
-	name = "Shuttle Controller"
+	name = "Orbital survey console board"
 	build_path = /obj/machinery/computer/camera_advanced/shuttle_docker/survey
 	greyscale_colors = CIRCUIT_COLOR_SECURITY
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey
-	name = "Planet survey computer"
-	desc = "Used to survey planets and allow you to land anywhere on them."
-	view_range = 20
+	name = "Orbital survey console"
+	desc = "Gather data, earn research points, and control how your ship docks on celestial objects around the void."
+	view_range = 10
 	x_offset = 0
 	y_offset = -5
 	see_hidden = TRUE
@@ -14,12 +14,13 @@
 	whitelist_turfs = list()
 	var/obj/docking_port/mobile/voidcrew/ship_port
 	var/turf/docking_location
-	var/icon_scaling_amount = 3
+	var/icon_scaling_amount = 2
 	var/list/blacklisted_mob_types = list(/mob/living/simple_animal/hostile/megafauna)
 	var/list/whitelisted_areas = list(/area/overmap_encounter, /area/space)
 	var/datum/looping_sound/sonar/soundloop
 	var/ui_user
 	var/survey_in_progress = FALSE
+	// Need to eventually convert all this data to a datum
 	var/surveyed_planets = list()
 	var/surveyed_planets_data = list()
 	var/survey_value
@@ -33,6 +34,9 @@
 	var/theme
 	var/attached_to_ship = FALSE
 	var/obj/item/disk/survey_data_disk/survey_disk
+	var/mapping_enabled = FALSE
+	var/mob_sight = FALSE
+	var/obj_sight = FALSE
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Initialize(mapload)
 	. = ..()
@@ -82,14 +86,21 @@
 		if(node_id in research_tiers)
 			var/tier_type
 			switch(node_id)
-				if("survey_console_simple")
-					tier_type = "basic"
 				if("survey_console_advanced")
 					tier_type = "advanced"
+					mapping_enabled = TRUE
+					view_range = 10
+					icon_scaling_amount = 2
 				if("survey_console_superior")
 					tier_type = "superior"
+					obj_sight = TRUE
+					view_range = 15
+					icon_scaling_amount = 2.5
 				if("survey_console_elite")
 					tier_type = "elite"
+					mob_sight = TRUE
+					view_range = 20
+					icon_scaling_amount = 3
 				else
 					tier_type = "basic"
 
@@ -152,6 +163,7 @@
 	data["surveyValue"] = get_survey_value(planet)
 	data["theme"] = theme
 	data["surveyDataDisk"] = survey_disk ? TRUE : FALSE
+	data["mappingEnabled"] = mapping_enabled
 
 	return data
 
@@ -205,10 +217,19 @@
 	var/points = default_survey_research_points
 
 	// Still needs logic for planet hostility
+	var/list/survey_research_tiers = get_survey_research_tiers()
 	if (!planet.surveyed)
+		cash += 250
+		points += 250
+	if("elite" in survey_research_tiers)
+		cash += 2000
+		points += 2000
+	else if("superior" in survey_research_tiers)
+		cash += 1000
+		points += 1000
+	else if("advanced" in survey_research_tiers)
 		cash += 500
-		points += 750
-
+		points += 500
 	point_list["cash"] = cash
 	point_list["points"] = points
 	return point_list
@@ -309,8 +330,7 @@
 				break
 
 	var/list/survey_research_tiers = get_survey_research_tiers()
-	if("basic" in survey_research_tiers)
-		planet_data["name"] = planet.name
+	planet_data["name"] = planet.name
 
 	if("advanced" in survey_research_tiers)
 		planet_data["testAdvData"] = "test"
@@ -630,6 +650,10 @@
 
 		user.client.images += to_add
 		user.client.view_size.setTo(view_range)
+		if(obj_sight)
+			user.add_sight(SEE_OBJS)
+		if(mob_sight)
+			user.add_sight(SEE_MOBS)
 		set_action_scaling(user, icon_scaling_amount)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/remove_eye_control(mob/living/user)

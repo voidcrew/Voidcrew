@@ -29,6 +29,7 @@ interface Data {
   bankedCash: number;
   bankedPoints: number;
   currentPlanet?: string;
+  mappingEnabled?: number;
   shipMoving: number;
   surveyedPlanets: SurveyedPlanets;
   surveyStatus: 'unsurveyed' | 'complete' | 'in-progress' | 'planetless';
@@ -215,6 +216,7 @@ const Surveying = (props, context) => {
     bankedCash,
     theme,
     bankedPoints,
+    mappingEnabled,
     surveyValue,
     surveyStatus,
     shipMoving,
@@ -246,6 +248,8 @@ const Surveying = (props, context) => {
       content: 'Open map',
       state: 'complete',
       action: 'map',
+      disabled: mappingEnabled ? false : true,
+      tooltip: mappingEnabled ? undefined : 'Mapping is not yet unlocked',
     },
     {
       content: 'Start survey',
@@ -276,57 +280,6 @@ const Surveying = (props, context) => {
   let currentThemeColors = theme ? getThemeColors(theme) : undefined;
   let selectedTheme;
   return (
-    // <Box>
-    //   <Stack vertical>
-    //     <Stack.Item>
-    //       <Collapsible
-    //         align="center"
-    //         open
-    //         title="Notices"
-    //         backgroundColor={currentThemeColors?.collapsible}
-    //         textColor={currentThemeColors?.collapsibleText}
-    //         lineHeight={2}
-    //         icon={notices.length > 0 ? 'triangle-exclamation' : 'check'}
-    //       >
-    //         {notices.length > 0
-    //           ? notices.map((notice, index) => {
-    //               return (
-    //                 <NoticeBox
-    //                   backgroundColor={currentThemeColors?.notice}
-    //                   align="center"
-    //                   textColor={currentThemeColors?.noticeText}
-    //                   key={index}
-    //                 >
-    //                   {notice}
-    //                 </NoticeBox>
-    //               );
-    //             })
-    //           : undefined}
-    //       </Collapsible>
-    //     </Stack.Item>
-    //     <Stack.Item align="center">
-    //       <Button
-    //         lineHeight={3}
-    //         backgroundColor={currentThemeColors?.button}
-    //         textColor={currentThemeColors?.buttonText}
-    //         minWidth={30}
-    //         textAlign="center"
-    //         icon="globe"
-    //         fontSize={3}
-    //         tooltip={currentOption.tooltip ? currentOption.tooltip : undefined}
-    //         disabled={
-    //           shipMoving === 0 ? true : currentOption.disabled ? true : false
-    //         }
-    //         onClick={() => {
-    //           currentOption.action ? act(currentOption.action) : undefined;
-    //         }}
-    //       >
-    //         {currentOption.content}
-    //       </Button>
-    //     </Stack.Item>
-    //   </Stack>
-    // </Box>
-
     <Stack vertical fill textAlign="center">
       <Stack.Item height="20%" pb={0} mb={0}>
         <Stack>
@@ -361,14 +314,6 @@ const Surveying = (props, context) => {
           lineHeight={3}
           backgroundColor={currentThemeColors?.button}
           textColor={currentThemeColors?.buttonText}
-          // ml="10%"
-          // mr="10%"
-          // fluid
-          // mb="10%"
-          // pr="30%"
-          // pl="30%"
-          // width="60%"
-          // mt="10%"
           minWidth={30}
           textAlign="center"
           icon="globe"
