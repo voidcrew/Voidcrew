@@ -19,11 +19,11 @@
 	///If the level should be preserved. Useful for if you want to build an autismfort or something.
 	var/preserve_level = FALSE
 	var/loaded = FALSE
-	var/surveyed = FALSE
 	var/loading = FALSE
-
+	var/visited = FALSE
 	/// Which docking port the ship is occupying
 	var/dock_index
+	var/datum/weather/weather_type
 
 /**
   * Load a level for a ship that's visiting the level.
@@ -43,6 +43,7 @@
 	reserve_dock = dynamic_encounter_values[2]
 	reserve_dock_secondary = dynamic_encounter_values[3]
 	loaded = TRUE
+	loading = FALSE
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADED, TRUE)
 
 /obj/structure/overmap/planet/attack_ghost(mob/user)

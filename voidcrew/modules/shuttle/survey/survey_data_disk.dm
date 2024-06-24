@@ -4,5 +4,4 @@
 	desc = "A disk for storing data captured during surveys. Can be shared with other survey computers."
 	icon_state = "datadisk5"
 	custom_materials = list(/datum/material/iron=SMALL_MATERIAL_AMOUNT * 3, /datum/material/glass=SMALL_MATERIAL_AMOUNT)
-	var/list/surveyed_planets = list()
-	var/list/surveyed_planets_data = list()
+	var/datum/survey_research/data

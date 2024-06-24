@@ -298,6 +298,12 @@
 						calibrate_jump()
 						return
 				if("dock_empty")
+					if(length(current_ship.close_overmap_objects))
+						for(var/obj/structure/overmap/o in current_ship.close_overmap_objects)
+							if(!istype(o, /obj/structure/overmap/planet/empty) || !istype(o, /obj/structure/overmap/ship))
+								playsound(src, 'sound/machines/terminal_error.ogg', 20)
+								balloon_alert(usr, "something is in the way!")
+								return
 					say(current_ship.dock_in_empty_space(usr))
 					return
 		if(OVERMAP_SHIP_IDLE)

@@ -32,7 +32,7 @@ interface Data {
   mappingEnabled?: number;
   shipMoving: number;
   surveyedPlanets: SurveyedPlanets;
-  surveyStatus: 'unsurveyed' | 'complete' | 'in-progress' | 'planetless';
+  surveyStatus: 'unsurveyed' | 'complete' | 'in-progress' | 'no-orbit';
   surveyValue: { cash: number; points: number };
   surveyDataDisk: number;
   theme?: string;
@@ -223,7 +223,7 @@ const Surveying = (props, context) => {
   } = data;
 
   interface Option {
-    state: 'unsurveyed' | 'complete' | 'in-progress' | 'planetless';
+    state: 'unsurveyed' | 'complete' | 'in-progress' | 'no-orbit';
     content: string;
     action?: string;
     disabled?: boolean;
@@ -243,6 +243,7 @@ const Surveying = (props, context) => {
     {
       content: 'In progress',
       state: 'in-progress',
+      disabled: true,
     },
     {
       content: 'Open map',
@@ -253,7 +254,8 @@ const Surveying = (props, context) => {
     },
     {
       content: 'Start survey',
-      state: 'planetless',
+      // state: 'planetless',
+      state: 'no-orbit',
       disabled: true,
       tooltip: 'not orbiting any planets',
     },

@@ -11,6 +11,7 @@
 	icon_state = "meteor1"
 	spread_chance = 50
 	chain_rate = 4
+	var/mineral_types = list(/datum/material/gold, /datum/material/iron, /datum/material/silver)
 
 /obj/structure/overmap/event/meteor/Initialize(mapload)
 	. = ..()
@@ -24,12 +25,14 @@
 	name = "asteroid storm (majour)"
 	spread_chance = 25
 	chain_rate = 6
+	mineral_types = list(/datum/material/diamond, /datum/material/uranium, /datum/material/bluespace)
 
 /obj/structure/overmap/event/emp
 	name = "ion storm (moderate)"
 	icon_state = "ion1"
 	spread_chance = 20
 	chain_rate = 2
+	var/intensity = 1
 
 /obj/structure/overmap/event/emp/Initialize(mapload)
 	. = ..()
@@ -38,16 +41,19 @@
 /obj/structure/overmap/event/emp/minor
 	name = "ion storm (minor)"
 	chain_rate = 1
+	intensity = 1
 
 /obj/structure/overmap/event/emp/majour
 	name = "ion storm (majour)"
 	chain_rate = 4
+	intensity = 2
 
 /obj/structure/overmap/event/electric
 	name = "electrical storm (moderate)"
 	icon_state = "electrical1"
 	spread_chance = 30
 	chain_rate = 3
+	var/intensity = 1
 
 /obj/structure/overmap/event/electric/Initialize(mapload)
 	. = ..()
@@ -57,11 +63,13 @@
 	name = "electrical storm (minor)"
 	spread_chance = 40
 	chain_rate = 2
+	intensity = 1
 
 /obj/structure/overmap/event/electric/majour
 	name = "electrical storm (majour)"
 	spread_chance = 15
 	chain_rate = 6
+	intensity = 2
 
 /obj/structure/overmap/event/nebula
 	name = "nebula"
@@ -69,6 +77,7 @@
 	chain_rate = 8
 	spread_chance = 75
 	opacity = TRUE
+	var/datum/gas/gas_type = "plasma"
 
 // voidcrew TODO: reimplement wormholes once ships are working again
 

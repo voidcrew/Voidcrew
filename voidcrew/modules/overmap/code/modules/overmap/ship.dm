@@ -97,7 +97,8 @@
 	var/atom/movable/screen/background/cam_background
 
 	var/datum/weakref/survey_console
-	var/list/surveyed_planets = list()
+	var/datum/survey_research/survey_data
+	// var/list/surveyed_planets = list()
 
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
@@ -136,6 +137,7 @@
 		update_screen()
 
 	SSovermap.simulated_ships += src
+	survey_data = new()
 
 /obj/structure/overmap/ship/Destroy()
 	source_template = null
@@ -368,7 +370,9 @@
 	shuttle.setTimer(dock_time)
 	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), dock_time + 1 SECONDS)
 	state = OVERMAP_SHIP_DOCKING
-	to_dock.visited = TRUE
+	if(istype(to_dock, /obj/structure/overmap/planet))
+		var/obj/structure/overmap/planet/current_planet = to_dock
+		current_planet.visited = TRUE
 	return "Commencing docking..."
 
 /**
