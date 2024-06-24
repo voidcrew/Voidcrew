@@ -24,11 +24,27 @@
 	var/list/celestial_lists_map = list(
 		/obj/structure/overmap/event/nebula = "nebulas",
 		/obj/structure/overmap/event/meteor = "asteroids",
+		/obj/structure/overmap/event/meteor/minor = "asteroids",
+		/obj/structure/overmap/event/meteor/majour = "asteroids",
 		/obj/structure/overmap/event/electric = "electric_storms",
+		/obj/structure/overmap/event/electric/minor = "electric_storms",
+		/obj/structure/overmap/event/electric/majour = "electric_storms",
 		/obj/structure/overmap/event/emp = "emp_storms",
+		/obj/structure/overmap/event/emp/minor = "emp_storms",
+		/obj/structure/overmap/event/emp/majour = "emp_storms",
 		/obj/structure/overmap/star = "stars",
+		/obj/structure/overmap/star/big = "stars",
+		/obj/structure/overmap/star/medium = "stars",
 		/obj/structure/overmap/planet/empty = "planets", // DEBUG
 		/obj/structure/overmap/planet = "planets",
+		/obj/structure/overmap/planet/asteroid = "planets",
+		/obj/structure/overmap/planet/beach = "planets",
+		/obj/structure/overmap/planet/energy_signal = "planets",
+		/obj/structure/overmap/planet/ice = "planets",
+		/obj/structure/overmap/planet/jungle = "planets",
+		/obj/structure/overmap/planet/lava = "planets",
+		/obj/structure/overmap/planet/reebe = "planets",
+		/obj/structure/overmap/planet/wasteland = "planets",
 	)
 	var/list/ui_survey_data
 	var/survey_value
@@ -85,9 +101,9 @@
 		var/i = 1
 		for(var/datum/surveyed_celestial_object/nebula/nebula_data in data.nebulas)
 			var/nebula = list()
-			nebula["ref_id"] = ref(nebula_data.overmap_object)
-			nebula["gas_type"] = nebula_data.gas_type.name
-			ui_survey_data["nebulas"]["[nebula_data.overmap_object.name] [i]"] = nebula
+			nebula["ref_id"] = nebula_data.ref_id
+			nebula["gas_type"] = nebula_data.gas_type
+			ui_survey_data["nebulas"]["[nebula_data.object_name] [i]"] = nebula
 			i++
 
 	if(length(data.asteroids))
@@ -95,14 +111,14 @@
 		for(var/datum/surveyed_celestial_object/asteroid/asteroid_data in data.asteroids)
 			var/asteroid = list()
 
-			asteroid["ref_id"] = ref(asteroid_data.overmap_object)
+			asteroid["ref_id"] = asteroid_data.ref_id
 
 			var/list/minerals = list()
 			for(var/datum/material/m in asteroid_data.minerals)
 				minerals += m.name
 			asteroid["minerals"] = minerals
 
-			ui_survey_data["asteroids"]["[asteroid_data.overmap_object.name] [i]"] += asteroid
+			ui_survey_data["asteroids"]["[asteroid_data.object_name] [i]"] += asteroid
 			i++
 
 	if(length(data.electric_storms))
@@ -110,10 +126,10 @@
 		for(var/datum/surveyed_celestial_object/electric_storm/electric_data in data.electric_storms)
 			var/electric_storm = list()
 
-			electric_storm["ref_id"] = ref(electric_data.overmap_object)
+			electric_storm["ref_id"] = electric_data.ref_id
 			electric_storm["intensity"] = electric_data.intensity
 
-			ui_survey_data["electric_storms"]["[electric_data.overmap_object.name] [i]"] += electric_storm
+			ui_survey_data["electric_storms"]["[electric_data.object_name] [i]"] += electric_storm
 			i++
 
 	if(length(data.emp_storms))
@@ -121,10 +137,10 @@
 		for(var/datum/surveyed_celestial_object/emp_storm/emp_data in data.emp_storms)
 			var/emp_storm = list()
 
-			emp_storm["ref_id"] = ref(emp_data.overmap_object)
+			emp_storm["ref_id"] = emp_data.ref_id
 			emp_storm["intensity"] = emp_data.intensity
 
-			ui_survey_data["emp_storms"]["[emp_data.overmap_object.name] [i]"] += emp_storm
+			ui_survey_data["emp_storms"]["[emp_data.object_name] [i]"] += emp_storm
 			i++
 
 	if(length(data.planets))
@@ -135,7 +151,7 @@
 			planet["visited"] = planet_data.visited
 			planet["weather_type"] = planet_data.weather_type.name
 			planet["living_players"] = planet_data.living_player_count
-			ui_survey_data["planets"]["[planet_data.overmap_object.name] [i]"] += planet
+			ui_survey_data["planets"]["[planet_data.object_name] [i]"] += planet
 			i++
 			// Need to add mineral types property to planets
 			// var/list/minerals = list()
@@ -155,7 +171,7 @@
 		for(var/datum/surveyed_celestial_object/star/star_data in data.stars)
 			var/star = list()
 			star["star_type"] = star_data.star_type
-			ui_survey_data["stars"]["[star_data.overmap_object.name] [i]"] += star
+			ui_survey_data["stars"]["[star_data.object_name] [i]"] += star
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/update_survey_data()
 	var/obj/structure/overmap/current_object = get_current_celestial_object()
@@ -166,7 +182,7 @@
 
 			// Locate in survey data
 			for(var/datum/surveyed_celestial_object/planet/planet_data in data.planets)
-				if(planet == planet_data.overmap_object)
+				if(ref(planet) == planet_data.ref_id)
 					// Things to update
 					planet_data.visited = planet.visited
 
@@ -282,7 +298,7 @@
 	var/list/data = list()
 	var/obj/structure/overmap/celestial_object = get_current_celestial_object()
 	data["surveyStatus"] = get_survey_status(celestial_object)
-	data["currentCelestial"] = celestial_object.name
+	data["currentCelestial"] = celestial_object ? celestial_object.name : null
 	data["shipMoving"] = ship_port.current_ship.is_still()
 	data["bankedPoints"] = banked_points
 	data["bankedCash"] = banked_cash
@@ -315,8 +331,8 @@
 			theme = params["theme"]
 		if("saveData")
 			save_survey_data()
-		// if("downloadData")
-		// 	download_survey_data()
+		if("downloadData")
+			download_survey_data()
 		if("refresh")
 			update_survey_data()
 		if("eject")
@@ -344,8 +360,11 @@
 		return "in-progress"
 
 	var/already_surveyed = FALSE
-	for(var/datum/surveyed_celestial_object/celestial in data.[celestial_lists_map[object.type]])
-		if (celestial.overmap_object == object)
+	var/current_celestial_type = celestial_lists_map[object.type]
+	if(!current_celestial_type)
+		log_admin("Not found [object.type]")
+	for(var/datum/surveyed_celestial_object/celestial in data.[current_celestial_type])
+		if (celestial.ref_id == ref(object))
 			already_surveyed = TRUE
 	if(already_surveyed)
 		return "complete"
@@ -391,13 +410,12 @@
 			var/list/nebula_ui = list()
 
 			// Set celestial object data
-			// nebula_data.overmap_object = WEAKREF(current_nebula)
-			nebula_data.overmap_object = current_nebula
+			nebula_data.ref_id = ref(current_nebula)
 			nebula_data.gas_type = current_nebula.gas_type
 
 			// Set UI data
 			nebula_ui["ref_id"] = ref(current_nebula)
-			nebula_ui["gas_type"] = nebula_data.gas_type.name
+			nebula_ui["gas_type"] = nebula_data.gas_type
 			var/nebula_name = current_nebula.name
 			var/i = 0
 			while(i)
@@ -418,8 +436,7 @@
 			var/list/asteroid_ui = list()
 
 			// Set celestial object data
-			// asteroid_data.overmap_object = WEAKREF(current_asteroid)
-			asteroid_data.overmap_object = current_asteroid
+			asteroid_data.ref_id = ref(current_asteroid)
 			asteroid_data.minerals = current_asteroid.mineral_types
 
 			// Set UI data
@@ -448,8 +465,7 @@
 			var/list/electric_ui = list()
 
 			// Set celestial object data
-			// electric_data.overmap_object = WEAKREF(current_electric)
-			electric_data.overmap_object = current_electric
+			electric_data.ref_id = ref(current_electric)
 			electric_data.intensity = current_electric.intensity
 
 			// Set UI data
@@ -475,8 +491,7 @@
 			var/list/emp_ui = list()
 
 			// Set celestial object data
-			// emp_data.overmap_object = WEAKREF(current_emp)
-			emp_data.overmap_object = current_emp
+			emp_data.ref_id = ref(current_emp)
 			emp_data.intensity = current_emp.intensity
 
 			// Set UI data
@@ -502,8 +517,7 @@
 			var/planet_ui = list()
 
 			// Set celestial object data
-			// planet_data.overmap_object = WEAKREF(current_planet)
-			planet_data.overmap_object = current_planet
+			planet_data.ref_id = ref(current_planet)
 			planet_data.weather_type = current_planet.weather_type
 			var/datum/space_level/level = current_planet.mapzone.z_levels[1]
 			if(level && level.z_value)
@@ -541,7 +555,7 @@
 			var/planet_ui = list()
 
 			// Set celestial object data
-			planet_data.overmap_object = current_planet
+			planet_data.ref_id = ref(current_planet)
 			planet_data.weather_type = current_planet.weather_type
 			var/datum/space_level/level = current_planet.mapzone.z_levels[1]
 			if(level && level.z_value)
@@ -574,8 +588,7 @@
 		if(/obj/structure/overmap/star)
 			var/obj/structure/overmap/star/current_star = object
 			var/datum/surveyed_celestial_object/star/star = new()
-			// star.overmap_object = WEAKREF(current_star)
-			star.overmap_object = current_star
+			star.ref_id = ref(current_star)
 			current_star.surveyed = TRUE
 			data["stars"] += star
 
@@ -662,30 +675,225 @@
 	if(!survey_disk)
 		return
 
-	var/datum/survey_research/new_research = new()
-	// Copy all survey data to our new datum
-	new_research.nebulas = data.nebulas
-	new_research.asteroids = data.asteroids
-	new_research.electric_storms = data.electric_storms
-	new_research.emp_storms = data.emp_storms
-	new_research.planets = data.planets
-	new_research.stars = data.stars
+	if(!data)
+		return
+
+	var/celestial_types = list(
+		"nebulas",
+		"asteroids",
+		"electric_storms",
+		"emp_storms",
+		"planets",
+		"stars",
+	)
+
+	for(var/celestial_type in celestial_types)
+		for(var/datum/surveyed_celestial_object/celestial_data in data.[celestial_type])
+			// Create a placeholder celestial var
+			var/datum/surveyed_celestial_object/celestial
+
+			// Check to see if our celestial is already in our disk's survey data
+			for(var/datum/surveyed_celestial_object/existing_celestial in survey_disk.data.[celestial_type])
+				if(existing_celestial.ref_id == celestial_data.ref_id || existing_celestial == celestial_data)
+					celestial = existing_celestial
+
+			// If it isn't, instantiate it
+			if(!celestial)
+				celestial = new()
+
+			// Copy data from our survey console's celestial to our disk
+			celestial_data.copy(celestial)
+			survey_disk.data.[celestial_type] |= celestial
 
 
-	survey_disk.data = new_research
+
+
+
+	// for(var/datum/surveyed_celestial_object/nebula/nebula_data in data.nebulas)
+	// 	// Create a placeholder celestial var
+	// 	var/datum/surveyed_celestial_object/nebula/nebula
+
+	// 	// Check to see if our celestial is already in our disk's survey data
+	// 	for(var/datum/surveyed_celestial_object/nebula/existing_nebula in survey_disk.data.nebulas)
+	// 		if(existing_nebula.ref_id == nebula_data.ref_id || existing_nebula == nebula_data)
+	// 			nebula = existing_nebula
+
+	// 	// If it isn't, instantiate it
+	// 	if(!nebula)
+	// 		nebula = new()
+
+	// 	// Copy data from our survey console's celestial to our disk
+	// 	nebula_data.copy(nebula)
+	// 	survey_disk.data.nebulas |= nebula
+
+	// for(var/datum/surveyed_celestial_object/asteroid/asteroid_data in data.asteroids)
+	// 	// Create a placeholder celestial var
+	// 	var/datum/surveyed_celestial_object/asteroid/asteroid
+
+	// 	// Check to see if our celestial is already in our disk's survey data
+	// 	for(var/datum/surveyed_celestial_object/asteroid/existing_asteroid in survey_disk.data.asteroids)
+	// 		if(existing_asteroid.ref_id == asteroid_data.ref_id || existing_asteroid == asteroid_data)
+	// 			asteroid = existing_asteroid
+
+	// 	// If it isn't, instantiate it
+	// 	if(!asteroid)
+	// 		asteroid = new()
+
+	// 	// Copy data from our survey console's celestial to our disk
+	// 	asteroid_data.copy(asteroid)
+	// 	survey_disk.data.asteroids |= asteroid
+
+	// for(var/datum/surveyed_celestial_object/electric_storm/electric_storm_data in data.electric_storms)
+	// 	// Create a placeholder celestial var
+	// 	var/datum/surveyed_celestial_object/electric_storm/electric_storm
+
+	// 	// Check to see if our celestial is already in our disk's survey data
+	// 	for(var/datum/surveyed_celestial_object/electric_storm/existing_electric_storm in survey_disk.data.electric_storms)
+	// 		if(existing_electric_storm.ref_id == electric_storm_data.ref_id || existing_electric_storm == electric_storm_data)
+	// 			electric_storm = existing_electric_storm
+
+	// 	// If it isn't, instantiate it
+	// 	if(!electric_storm)
+	// 		electric_storm = new()
+
+	// 	// Copy data from our survey console's celestial to our disk
+	// 	electric_storm_data.copy(electric_storm)
+	// 	survey_disk.data.electric_storms |= electric_storm
+
+	// for(var/datum/surveyed_celestial_object/emp_storm/emp_storm_data in data.emp_storms)
+	// 	// Create a placeholder celestial var
+	// 	var/datum/surveyed_celestial_object/emp_storm/emp_storm
+
+	// 	// Check to see if our celestial is already in our disk's survey data
+	// 	for(var/datum/surveyed_celestial_object/emp_storm/existing_emp_storm in survey_disk.data.emp_storms)
+	// 		if(existing_emp_storm.ref_id == emp_storm_data.ref_id || existing_emp_storm == emp_storm_data)
+	// 			emp_storm = existing_emp_storm
+
+	// 	// If it isn't, instantiate it
+	// 	if(!emp_storm)
+	// 		emp_storm = new()
+
+	// 	// Copy data from our survey console's celestial to our disk
+	// 	emp_storm_data.copy(emp_storm)
+	// 	survey_disk.data.emp_storms |= emp_storm
+
+	// for(var/datum/surveyed_celestial_object/planet/planet_data in data.planets)
+	// 	// Create a placeholder celestial var
+	// 	var/datum/surveyed_celestial_object/planet/planet
+
+	// 	// Check to see if our celestial is already in our disk's survey data
+	// 	for(var/datum/surveyed_celestial_object/planet/existing_planet in survey_disk.data.planets)
+	// 		if(existing_planet.ref_id == planet_data.ref_id || existing_planet == planet_data)
+	// 			planet = existing_planet
+
+	// 	// If it isn't, instantiate it
+	// 	if(!planet)
+	// 		planet = new()
+
+	// 	// Copy data from our survey console's celestial to our disk
+	// 	planet_data.copy(planet)
+	// 	survey_disk.data.planets |= planet
+
+	// for(var/datum/surveyed_celestial_object/star/star_data in data.stars)
+	// 	// Create a placeholder celestial var
+	// 	var/datum/surveyed_celestial_object/star/star
+
+	// 	// Check to see if our celestial is already in our disk's survey data
+	// 	for(var/datum/surveyed_celestial_object/star/existing_star in survey_disk.data.stars)
+	// 		if(existing_star.ref_id == star_data.ref_id || existing_star == star_data)
+	// 			star = existing_star
+
+	// 	// If it isn't, instantiate it
+	// 	if(!star)
+	// 		star = new()
+
+	// 	// Copy data from our survey console's celestial to our disk
+	// 	star_data.copy(star)
+	// 	survey_disk.data.stars |= star
+
 	playsound(src, "sound/machines/terminal_alert.ogg", 40)
 	balloon_alert(ui_user, "data saved to disk")
 
 
-// /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/download_survey_data()
-// 	if(!survey_disk)
-// 		return
-// 	if(survey_disk.data)
-// 		playsound(src, "sound/machines/high_tech_confirm.ogg", 40)
-// 		balloon_alert(ui_user, "data downloaded from disk")
-// 	else
-// 		playsound(src, 'sound/machines/terminal_error.ogg', 50)
-// 		balloon_alert(ui_user, "no data to download")
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/download_survey_data()
+	if(!survey_disk)
+		return
+	if(survey_disk.data)
+		if(length(survey_disk.data.nebulas))
+			for(var/datum/surveyed_celestial_object/nebula/new_nebula_data in survey_disk.data.nebulas)
+				if(length(data.nebulas))
+					for(var/datum/surveyed_celestial_object/nebula/existing_nebula_data in data.nebulas)
+						if(existing_nebula_data.ref_id == new_nebula_data.ref_id)
+							existing_nebula_data.gas_type = new_nebula_data.gas_type
+						else
+							var/datum/surveyed_celestial_object/nebula/nebula = new()
+							nebula.ref_id = new_nebula_data.ref_id
+							nebula.gas_type = new_nebula_data.gas_type
+
+		if(length(survey_disk.data.asteroids))
+			for(var/datum/surveyed_celestial_object/asteroid/new_asteroid_data in survey_disk.data.asteroids)
+				if(length(data.asteroids))
+					for(var/datum/surveyed_celestial_object/asteroid/existing_asteroid_data in data.asteroids)
+						if(existing_asteroid_data.ref_id == new_asteroid_data.ref_id)
+							existing_asteroid_data.minerals = new_asteroid_data.minerals
+						else
+							var/datum/surveyed_celestial_object/asteroid/asteroid = new()
+							asteroid.ref_id = new_asteroid_data.ref_id
+							asteroid.minerals = new_asteroid_data.minerals
+
+		if(length(survey_disk.data.electric_storms))
+			for(var/datum/surveyed_celestial_object/electric_storm/new_electric_storm_data in survey_disk.data.electric_storms)
+				if(length(data.electric_storms))
+					for(var/datum/surveyed_celestial_object/electric_storm/existing_electric_storm_data in data.electric_storms)
+						if(existing_electric_storm_data.ref_id == new_electric_storm_data.ref_id)
+							existing_electric_storm_data.intensity = new_electric_storm_data.intensity
+						else
+							var/datum/surveyed_celestial_object/electric_storm/electric_storm = new()
+							electric_storm.ref_id = new_electric_storm_data.ref_id
+							electric_storm.intensity = new_electric_storm_data.intensity
+
+		if(length(survey_disk.data.emp_storms))
+			for(var/datum/surveyed_celestial_object/emp_storm/new_emp_storm_data in survey_disk.data.emp_storms)
+				if(length(data.emp_storms))
+					for(var/datum/surveyed_celestial_object/emp_storm/existing_emp_storm_data in data.emp_storms)
+						if(existing_emp_storm_data.ref_id == new_emp_storm_data.ref_id)
+							existing_emp_storm_data.intensity = new_emp_storm_data.intensity
+						else
+							var/datum/surveyed_celestial_object/emp_storm/emp_storm = new()
+							emp_storm.ref_id = new_emp_storm_data.ref_id
+							emp_storm.intensity = new_emp_storm_data.intensity
+
+		if(length(survey_disk.data.planets))
+			for(var/datum/surveyed_celestial_object/planet/new_planet_data in survey_disk.data.planets)
+				if(length(data.planets))
+					for(var/datum/surveyed_celestial_object/planet/existing_planet_data in data.planets)
+						if(existing_planet_data.ref_id == new_planet_data.ref_id)
+							existing_planet_data.visited = new_planet_data.visited
+							existing_planet_data.living_player_count = new_planet_data.living_player_count
+							existing_planet_data.weather_type = new_planet_data.weather_type
+						else
+							var/datum/surveyed_celestial_object/planet/planet = new()
+							planet.ref_id = new_planet_data.ref_id
+							planet.visited = new_planet_data.visited
+							planet.living_player_count = new_planet_data.living_player_count
+							planet.weather_type = new_planet_data.weather_type
+
+		if(length(survey_disk.data.stars))
+			for(var/datum/surveyed_celestial_object/star/new_star_data in survey_disk.data.stars)
+				if(length(data.stars))
+					for(var/datum/surveyed_celestial_object/star/existing_star_data in data.stars)
+						if(existing_star_data.ref_id == new_star_data.ref_id)
+							existing_star_data.star_type = new_star_data.star_type
+						else
+							var/datum/surveyed_celestial_object/star/star = new()
+							star.ref_id = new_star_data.ref_id
+							star.star_type = new_star_data.star_type
+
+		playsound(src, "sound/machines/high_tech_confirm.ogg", 40)
+		balloon_alert(ui_user, "data downloaded from disk")
+	else
+		playsound(src, 'sound/machines/terminal_error.ogg', 50)
+		balloon_alert(ui_user, "no data to download")
 
 // /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/load_survey_data()
 // 	if(!survey_disk)

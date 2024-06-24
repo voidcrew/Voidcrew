@@ -254,7 +254,6 @@ const Surveying = (props, context) => {
     },
     {
       content: 'Start survey',
-      // state: 'planetless',
       state: 'no-orbit',
       disabled: true,
       tooltip: 'not orbiting any planets',
