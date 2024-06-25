@@ -14,25 +14,54 @@ import {
 } from '../../tgui/components';
 import { Window } from '../../tgui/layouts';
 
-interface SurveyedPlanet {
-  loaded: number;
-  visited: number;
-  testAdvData: string;
-  testEliteData: string;
+interface BaseSurveyData {
+  ref_id: string;
+  object_name: string;
 }
 
-type SurveyedPlanets = {
-  [key: string]: SurveyedPlanet;
-};
+interface Nebula extends BaseSurveyData {
+  gas_type: string;
+}
+
+interface Asteroid extends BaseSurveyData {
+  minerals: string[];
+}
+
+interface ElectricStorm extends BaseSurveyData {
+  intensity: number;
+}
+
+interface EmpStorm extends BaseSurveyData {
+  intensity: number;
+}
+
+interface Planet extends BaseSurveyData {
+  visited: number;
+  weather_type: string;
+  living_player_count: number;
+}
+
+interface Star extends BaseSurveyData {
+  star_type: string;
+}
+
+interface SurveyData {
+  nebulas: Nebula[];
+  asteroids: Asteroid[];
+  electric_storms: ElectricStorm[];
+  emp_storms: EmpStorm[];
+  planets: Planet[];
+  stars: Star[];
+}
 
 interface Data {
   bankedCash: number;
   bankedPoints: number;
-  currentPlanet?: string;
+  currentCelestial: string;
+  surveyData: SurveyData;
   mappingEnabled?: number;
   shipMoving: number;
-  surveyedPlanets: SurveyedPlanets;
-  surveyStatus: 'unsurveyed' | 'complete' | 'in-progress' | 'no-orbit';
+  surveyStatus?: 'unsurveyed' | 'complete' | 'in-progress' | 'no-orbit';
   surveyValue: { cash: number; points: number };
   surveyDataDisk: number;
   theme?: string;
@@ -45,6 +74,8 @@ interface ColorScheme {
   collapsibleText?: string;
   notice?: string;
   noticeText?: string;
+  // tab?: string
+  // tabText?: string
 }
 
 interface Theme {
@@ -105,10 +136,11 @@ const getThemeColors = (theme: string): ColorScheme | undefined => {
 
 export const SurveyComputer = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { theme } = data;
+  const { theme, currentCelestial } = data;
   const [tab, setTab] = useState(1);
 
   const currentThemeColors = theme ? getThemeColors(theme) : undefined;
+
   return (
     <Window
       width={540}
@@ -124,68 +156,150 @@ export const SurveyComputer = (props, context) => {
                 backgroundColor={currentThemeColors?.collapsible}
                 textColor={currentThemeColors?.collapsibleText}
               >
-                <Tabs vertical>
-                  <Tabs.Tab
-                    icon="rocket"
+                <Stack vertical>
+                  <Section
+                    title="Software"
+                    textAlign="center"
                     mt={1}
-                    mb={1}
-                    selected={tab === 1}
-                    key={1}
-                    onClick={() => {
-                      setTab(1);
-                    }}
-                  >
-                    Surveying
-                  </Tabs.Tab>
-                  <Tabs.Tab
-                    icon="globe"
-                    mt={1}
-                    mb={1}
-                    selected={tab === 2}
-                    key={2}
-                    onClick={() => {
-                      setTab(2);
-                    }}
-                  >
-                    Planets
-                  </Tabs.Tab>
-                  <Tabs.Tab
-                    icon="dollar-sign"
-                    mt={1}
-                    mb={1}
-                    selected={tab === 3}
-                    key={3}
-                    onClick={() => {
-                      setTab(3);
-                    }}
-                  >
-                    Banking
-                  </Tabs.Tab>
-                  <Tabs.Tab
-                    icon="flask"
-                    mt={1}
-                    mb={1}
-                    selected={tab === 4}
-                    key={4}
-                    onClick={() => {
-                      setTab(4);
-                    }}
-                  >
-                    Research
-                  </Tabs.Tab>
-                  <Tabs.Tab
-                    icon="wrench"
-                    mt={1}
-                    mb={1}
-                    selected={tab === 5}
-                    key={5}
-                    onClick={() => {
-                      setTab(5);
-                    }}
-                  >
-                    Settings
-                  </Tabs.Tab>
-                </Tabs>
+                    mb={0}
+                    pb={0}
+                  />
+                  <Stack.Item mt={0} pt={0}>
+                    {' '}
+                    <Tabs vertical verticalAlign="middle">
+                      <Tabs.Tab
+                        icon="rocket"
+                        mt={1}
+                        mb={1}
+                        selected={tab === 1}
+                        key={1}
+                        onClick={() => {
+                          setTab(1);
+                        }}
+                      >
+                        Surveying
+                      </Tabs.Tab>
+                      <Tabs.Tab
+                        icon="dollar-sign"
+                        mt={1}
+                        mb={1}
+                        selected={tab === 8}
+                        key={8}
+                        onClick={() => {
+                          setTab(8);
+                        }}
+                      >
+                        Banking
+                      </Tabs.Tab>
+                      <Tabs.Tab
+                        icon="flask"
+                        mt={1}
+                        mb={1}
+                        selected={tab === 9}
+                        key={9}
+                        onClick={() => {
+                          setTab(9);
+                        }}
+                      >
+                        Research
+                      </Tabs.Tab>
+                      <Tabs.Tab
+                        icon="wrench"
+                        mt={1}
+                        mb={1}
+                        selected={tab === 10}
+                        key={10}
+                        onClick={() => {
+                          setTab(10);
+                        }}
+                      >
+                        Settings
+                      </Tabs.Tab>
+                    </Tabs>
+                  </Stack.Item>
+                  <Section
+                    title="Celestials"
+                    textAlign="center"
+                    mb={0}
+                    pb={0}
+                  />
+                  <Stack.Item pt={0} mt={0}>
+                    <Tabs vertical verticalAlign="middle">
+                      <Tabs.Tab
+                        icon="globe"
+                        mt={1}
+                        mb={1}
+                        selected={tab === 2}
+                        key={2}
+                        onClick={() => {
+                          setTab(2);
+                        }}
+                      >
+                        Planets
+                      </Tabs.Tab>
+                      <Tabs.Tab
+                        icon="atom"
+                        mt={1}
+                        mb={1}
+                        selected={tab === 3}
+                        key={3}
+                        onClick={() => {
+                          setTab(3);
+                        }}
+                      >
+                        Nebulas
+                      </Tabs.Tab>
+                      <Tabs.Tab
+                        icon="bolt"
+                        mt={1}
+                        mb={1}
+                        selected={tab === 4}
+                        key={4}
+                        onClick={() => {
+                          setTab(4);
+                        }}
+                      >
+                        Electric Storms
+                      </Tabs.Tab>
+                      <Tabs.Tab
+                        icon="power-off"
+                        mt={1}
+                        mb={1}
+                        selected={tab === 5}
+                        key={5}
+                        onClick={() => {
+                          setTab(5);
+                        }}
+                      >
+                        EMP Storms
+                      </Tabs.Tab>
+                      <Tabs.Tab
+                        icon="meteor"
+                        mt={1}
+                        mb={1}
+                        selected={tab === 6}
+                        key={6}
+                        onClick={() => {
+                          setTab(6);
+                        }}
+                      >
+                        Asteroids
+                      </Tabs.Tab>
+                      <Tabs.Tab
+                        icon="sun"
+                        mt={1}
+                        mb={1}
+                        selected={tab === 7}
+                        key={7}
+                        onClick={() => {
+                          setTab(7);
+                        }}
+                      >
+                        Stars
+                      </Tabs.Tab>
+                    </Tabs>
+                  </Stack.Item>
+                </Stack>
               </Collapsible>
             </Section>
           </Stack.Item>
@@ -196,8 +310,18 @@ export const SurveyComputer = (props, context) => {
               ) : tab === 2 ? (
                 <Planets />
               ) : tab === 3 ? (
-                <Banking />
+                <Nebulas />
               ) : tab === 4 ? (
+                <ElectricStorms />
+              ) : tab === 5 ? (
+                <ElectroMagneticStorms />
+              ) : tab === 6 ? (
+                <Asteroids />
+              ) : tab === 7 ? (
+                <Stars />
+              ) : tab === 8 ? (
+                <Banking />
+              ) : tab === 9 ? (
                 <Research />
               ) : (
                 <Settings />
@@ -260,9 +384,13 @@ const Surveying = (props, context) => {
     },
   ];
 
-  const currentOption = options.find(
-    (opt) => opt.state === surveyStatus,
-  ) as Option;
+  let currentOption = options.find((opt) => opt.state === surveyStatus) as
+    | Option
+    | undefined;
+
+  if (currentOption === undefined) {
+    currentOption = options[3];
+  }
 
   const notices: string[] = [];
 
@@ -336,13 +464,13 @@ const Surveying = (props, context) => {
 
 const Planets = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { surveyStatus, theme, surveyedPlanets, currentPlanet } = data;
+  const { surveyStatus, theme, surveyData, currentCelestial } = data;
 
   const [planetTab, setPlanetTab] = useState(0);
   const selectedPlanet =
     planetTab === 0
       ? undefined
-      : Object.entries(surveyedPlanets)[planetTab - 1];
+      : Object.entries(surveyData.planets)[planetTab - 1];
   const selectedPlanetName = selectedPlanet?.[0];
   const selectedPlanetData = selectedPlanet?.[1];
 
@@ -356,14 +484,6 @@ const Planets = (props, context) => {
             ? 'Previous shuttle activity detected'
             : 'No previous shuttle activity detected',
         }
-      : undefined),
-    // Test advanced data
-    ...(selectedPlanetData?.testAdvData
-      ? { TestAdv: selectedPlanetData?.testAdvData }
-      : undefined),
-    // Test elite data
-    ...(selectedPlanetData?.testEliteData
-      ? { TestElite: selectedPlanetData?.testEliteData }
       : undefined),
   };
 
@@ -380,13 +500,13 @@ const Planets = (props, context) => {
             <Section title="Current" mt={0.1} pb={0} mb={0}>
               <Stack.Item>
                 <Tabs vertical pb={0} mb={0}>
-                  {Object.entries(surveyedPlanets).map((entry, index) => {
-                    return entry[0] === currentPlanet ? (
+                  {Object.entries(surveyData.planets).map((entry, index) => {
+                    return entry[1].ref_id === currentCelestial ? (
                       <Tabs.Tab
                         key={entry[0]}
                         selected={planetTab === index + 1}
                         onClick={() => {
-                          entry[0] !== currentPlanet
+                          entry[1].ref_id !== currentCelestial
                             ? setPlanetTab(index + 1)
                             : surveyStatus === 'complete'
                               ? setPlanetTab(index + 1)
@@ -401,23 +521,21 @@ const Planets = (props, context) => {
               </Stack.Item>
             </Section>
             <Section title="Other">
-              <Stack.Item>
-                <Tabs vertical>
-                  {Object.entries(surveyedPlanets).map((entry, index) => {
-                    return entry[0] !== currentPlanet ? (
-                      <Tabs.Tab
-                        key={entry[0]}
-                        selected={planetTab === index + 1}
-                        onClick={() => {
-                          setPlanetTab(index + 1);
-                        }}
-                      >
-                        {entry[0]}
-                      </Tabs.Tab>
-                    ) : undefined;
-                  })}
-                </Tabs>
-              </Stack.Item>
+              <Tabs vertical>
+                {Object.entries(surveyData.planets).map((entry, index) => {
+                  return entry[1].ref_id !== currentCelestial ? (
+                    <Tabs.Tab
+                      key={entry[0]}
+                      selected={planetTab === index + 1}
+                      onClick={() => {
+                        setPlanetTab(index + 1);
+                      }}
+                    >
+                      {entry[0]}
+                    </Tabs.Tab>
+                  ) : undefined;
+                })}
+              </Tabs>
             </Section>
           </Stack>
         </Collapsible>
@@ -432,15 +550,9 @@ const Planets = (props, context) => {
               <Collapsible
                 backgroundColor={currentThemeColors?.collapsible}
                 textColor={currentThemeColors?.collapsibleText}
-                title="help"
+                title="extra"
                 open
               >
-                <NoticeBox
-                  backgroundColor={currentThemeColors?.notice}
-                  textColor={currentThemeColors?.noticeText}
-                >
-                  Information about a planet only updates while in orbit.
-                </NoticeBox>
                 <NoticeBox
                   backgroundColor={currentThemeColors?.notice}
                   textColor={currentThemeColors?.noticeText}
@@ -448,6 +560,13 @@ const Planets = (props, context) => {
                   Certain details are only available after researching the
                   proper survey tech.
                 </NoticeBox>
+                <Button
+                  width="70%"
+                  icon="arrows-rotate"
+                  onClick={() => act('refresh')}
+                >
+                  Refresh information
+                </Button>
               </Collapsible>
             </Stack.Item>
             <Stack.Divider />
@@ -473,6 +592,681 @@ const Planets = (props, context) => {
             textColor={currentThemeColors?.noticeText}
           >
             Select a planet from the dropdown menu
+          </NoticeBox>
+        )}
+      </Stack.Item>
+    </Stack>
+  );
+};
+
+const Nebulas = (props, context) => {
+  const { act, data } = useBackend<Data>();
+  const { surveyStatus, theme, surveyData, currentCelestial } = data;
+
+  const [tab, setTab] = useState(0);
+  const selected =
+    tab === 0 ? undefined : Object.entries(surveyData.nebulas)[tab - 1];
+  const selectedName = selected?.[0];
+  const selectedData = selected?.[1];
+
+  const celestialData = {
+    // name
+    ...(selectedName ? { Name: selectedName } : undefined),
+    // visited
+    ...(selectedData?.gas_type
+      ? {
+          'Gas type': selectedData.gas_type,
+        }
+      : undefined),
+  };
+
+  let currentThemeColors = theme ? getThemeColors(theme) : undefined;
+
+  return (
+    <Stack fill textAlign="center">
+      <Stack.Item>
+        <Collapsible
+          backgroundColor={currentThemeColors?.collapsible}
+          textColor={currentThemeColors?.collapsibleText}
+        >
+          <Stack fill vertical verticalAlign="middle" textAlign="center">
+            <Section title="Current" mt={0.1} pb={0} mb={0}>
+              <Stack.Item>
+                <Tabs vertical pb={0} mb={0}>
+                  {Object.entries(surveyData.nebulas).map((entry, index) => {
+                    return entry[1].ref_id === currentCelestial ? (
+                      <Tabs.Tab
+                        key={entry[0]}
+                        selected={tab === index + 1}
+                        onClick={() => {
+                          entry[1].ref_id !== currentCelestial
+                            ? setTab(index + 1)
+                            : surveyStatus === 'complete'
+                              ? setTab(index + 1)
+                              : act('error');
+                        }}
+                      >
+                        {entry[0]}
+                      </Tabs.Tab>
+                    ) : undefined;
+                  })}
+                </Tabs>
+              </Stack.Item>
+            </Section>
+            <Section title="Other">
+              <Tabs vertical>
+                {Object.entries(surveyData.nebulas).map((entry, index) => {
+                  return entry[1].ref_id !== currentCelestial ? (
+                    <Tabs.Tab
+                      key={entry[0]}
+                      selected={tab === index + 1}
+                      onClick={() => {
+                        setTab(index + 1);
+                      }}
+                    >
+                      {entry[0]}
+                    </Tabs.Tab>
+                  ) : undefined;
+                })}
+              </Tabs>
+            </Section>
+          </Stack>
+        </Collapsible>
+      </Stack.Item>
+
+      <Stack.Divider />
+
+      <Stack.Item grow>
+        {selected ? (
+          <Stack vertical scrollable>
+            <Stack.Item>
+              <Collapsible
+                backgroundColor={currentThemeColors?.collapsible}
+                textColor={currentThemeColors?.collapsibleText}
+                title="extra"
+                open
+              >
+                <NoticeBox
+                  backgroundColor={currentThemeColors?.notice}
+                  textColor={currentThemeColors?.noticeText}
+                >
+                  Certain details are only available after researching the
+                  proper survey tech.
+                </NoticeBox>
+                <Button
+                  width="70%"
+                  icon="arrows-rotate"
+                  onClick={() => act('refresh')}
+                >
+                  Refresh information
+                </Button>
+              </Collapsible>
+            </Stack.Item>
+            <Stack.Divider />
+            <Stack.Item grow>
+              <LabeledList>
+                {Object.entries(celestialData).map((celestialData, index) => {
+                  return celestialData ? (
+                    <LabeledList.Item
+                      labelWrap
+                      label={celestialData[0]}
+                      key={celestialData[0]}
+                    >
+                      {celestialData[1]}
+                    </LabeledList.Item>
+                  ) : undefined;
+                })}
+              </LabeledList>
+            </Stack.Item>
+          </Stack>
+        ) : (
+          <NoticeBox
+            backgroundColor={currentThemeColors?.notice}
+            textColor={currentThemeColors?.noticeText}
+          >
+            Select a nebula from the dropdown menu
+          </NoticeBox>
+        )}
+      </Stack.Item>
+    </Stack>
+  );
+};
+
+const ElectricStorms = (props, context) => {
+  const { act, data } = useBackend<Data>();
+  const { surveyStatus, theme, surveyData, currentCelestial } = data;
+
+  const [tab, setTab] = useState(0);
+  const selected =
+    tab === 0 ? undefined : Object.entries(surveyData.electric_storms)[tab - 1];
+  const selectedName = selected?.[0];
+  const selectedData = selected?.[1];
+
+  const celestialData = {
+    // name
+    ...(selectedName ? { Name: selectedName } : undefined),
+    // visited
+    ...(selectedData?.intensity
+      ? {
+          Intensity:
+            selectedData.intensity === 1
+              ? 'Weak electric storm detected'
+              : 'Powerful electric storm detected',
+        }
+      : undefined),
+  };
+
+  let currentThemeColors = theme ? getThemeColors(theme) : undefined;
+
+  return (
+    <Stack fill textAlign="center">
+      <Stack.Item>
+        <Collapsible
+          backgroundColor={currentThemeColors?.collapsible}
+          textColor={currentThemeColors?.collapsibleText}
+        >
+          <Stack fill vertical verticalAlign="middle" textAlign="center">
+            <Section title="Current" mt={0.1} pb={0} mb={0}>
+              <Stack.Item>
+                <Tabs vertical pb={0} mb={0}>
+                  {Object.entries(surveyData.electric_storms).map(
+                    (entry, index) => {
+                      return entry[1].ref_id === currentCelestial ? (
+                        <Tabs.Tab
+                          key={entry[0]}
+                          selected={tab === index + 1}
+                          onClick={() => {
+                            entry[1].ref_id !== currentCelestial
+                              ? setTab(index + 1)
+                              : surveyStatus === 'complete'
+                                ? setTab(index + 1)
+                                : act('error');
+                          }}
+                        >
+                          {entry[0]}
+                        </Tabs.Tab>
+                      ) : undefined;
+                    },
+                  )}
+                </Tabs>
+              </Stack.Item>
+            </Section>
+            <Section title="Other">
+              <Tabs vertical>
+                {Object.entries(surveyData.electric_storms).map(
+                  (entry, index) => {
+                    return entry[1].ref_id !== currentCelestial ? (
+                      <Tabs.Tab
+                        key={entry[0]}
+                        selected={tab === index + 1}
+                        onClick={() => {
+                          setTab(index + 1);
+                        }}
+                      >
+                        {entry[0]}
+                      </Tabs.Tab>
+                    ) : undefined;
+                  },
+                )}
+              </Tabs>
+            </Section>
+          </Stack>
+        </Collapsible>
+      </Stack.Item>
+
+      <Stack.Divider />
+
+      <Stack.Item grow>
+        {selected ? (
+          <Stack vertical scrollable>
+            <Stack.Item>
+              <Collapsible
+                backgroundColor={currentThemeColors?.collapsible}
+                textColor={currentThemeColors?.collapsibleText}
+                title="extra"
+                open
+              >
+                <NoticeBox
+                  backgroundColor={currentThemeColors?.notice}
+                  textColor={currentThemeColors?.noticeText}
+                >
+                  Certain details are only available after researching the
+                  proper survey tech.
+                </NoticeBox>
+                <Button
+                  width="70%"
+                  icon="arrows-rotate"
+                  onClick={() => act('refresh')}
+                >
+                  Refresh information
+                </Button>
+              </Collapsible>
+            </Stack.Item>
+            <Stack.Divider />
+            <Stack.Item grow>
+              <LabeledList>
+                {Object.entries(celestialData).map((celestialData, index) => {
+                  return celestialData ? (
+                    <LabeledList.Item
+                      labelWrap
+                      label={celestialData[0]}
+                      key={celestialData[0]}
+                    >
+                      {celestialData[1]}
+                    </LabeledList.Item>
+                  ) : undefined;
+                })}
+              </LabeledList>
+            </Stack.Item>
+          </Stack>
+        ) : (
+          <NoticeBox
+            backgroundColor={currentThemeColors?.notice}
+            textColor={currentThemeColors?.noticeText}
+          >
+            Select an electric storm from the dropdown menu
+          </NoticeBox>
+        )}
+      </Stack.Item>
+    </Stack>
+  );
+};
+
+const ElectroMagneticStorms = (props, context) => {
+  const { act, data } = useBackend<Data>();
+  const { surveyStatus, theme, surveyData, currentCelestial } = data;
+
+  const [tab, setTab] = useState(0);
+  const selected =
+    tab === 0 ? undefined : Object.entries(surveyData.emp_storms)[tab - 1];
+  const selectedName = selected?.[0];
+  const selectedData = selected?.[1];
+
+  const celestialData = {
+    // name
+    ...(selectedName ? { Name: selectedName } : undefined),
+    // visited
+    ...(selectedData?.intensity
+      ? {
+          Intensity:
+            selectedData.intensity === 1
+              ? 'Weak emp storm detected'
+              : 'Powerful emp storm detected',
+        }
+      : undefined),
+  };
+
+  let currentThemeColors = theme ? getThemeColors(theme) : undefined;
+
+  return (
+    <Stack fill textAlign="center">
+      <Stack.Item>
+        <Collapsible
+          backgroundColor={currentThemeColors?.collapsible}
+          textColor={currentThemeColors?.collapsibleText}
+        >
+          <Stack fill vertical verticalAlign="middle" textAlign="center">
+            <Section title="Current" mt={0.1} pb={0} mb={0}>
+              <Stack.Item>
+                <Tabs vertical pb={0} mb={0}>
+                  {Object.entries(surveyData.emp_storms).map((entry, index) => {
+                    return entry[1].ref_id === currentCelestial ? (
+                      <Tabs.Tab
+                        key={entry[0]}
+                        selected={tab === index + 1}
+                        onClick={() => {
+                          entry[1].ref_id !== currentCelestial
+                            ? setTab(index + 1)
+                            : surveyStatus === 'complete'
+                              ? setTab(index + 1)
+                              : act('error');
+                        }}
+                      >
+                        {entry[0]}
+                      </Tabs.Tab>
+                    ) : undefined;
+                  })}
+                </Tabs>
+              </Stack.Item>
+            </Section>
+            <Section title="Other">
+              <Tabs vertical>
+                {Object.entries(surveyData.emp_storms).map((entry, index) => {
+                  return entry[1].ref_id !== currentCelestial ? (
+                    <Tabs.Tab
+                      key={entry[0]}
+                      selected={tab === index + 1}
+                      onClick={() => {
+                        setTab(index + 1);
+                      }}
+                    >
+                      {entry[0]}
+                    </Tabs.Tab>
+                  ) : undefined;
+                })}
+              </Tabs>
+            </Section>
+          </Stack>
+        </Collapsible>
+      </Stack.Item>
+
+      <Stack.Divider />
+
+      <Stack.Item grow>
+        {selected ? (
+          <Stack vertical scrollable>
+            <Stack.Item>
+              <Collapsible
+                backgroundColor={currentThemeColors?.collapsible}
+                textColor={currentThemeColors?.collapsibleText}
+                title="extra"
+                open
+              >
+                <NoticeBox
+                  backgroundColor={currentThemeColors?.notice}
+                  textColor={currentThemeColors?.noticeText}
+                >
+                  Certain details are only available after researching the
+                  proper survey tech.
+                </NoticeBox>
+                <Button
+                  width="70%"
+                  icon="arrows-rotate"
+                  onClick={() => act('refresh')}
+                >
+                  Refresh information
+                </Button>
+              </Collapsible>
+            </Stack.Item>
+            <Stack.Divider />
+            <Stack.Item grow>
+              <LabeledList>
+                {Object.entries(celestialData).map((celestialData, index) => {
+                  return celestialData ? (
+                    <LabeledList.Item
+                      labelWrap
+                      label={celestialData[0]}
+                      key={celestialData[0]}
+                    >
+                      {celestialData[1]}
+                    </LabeledList.Item>
+                  ) : undefined;
+                })}
+              </LabeledList>
+            </Stack.Item>
+          </Stack>
+        ) : (
+          <NoticeBox
+            backgroundColor={currentThemeColors?.notice}
+            textColor={currentThemeColors?.noticeText}
+          >
+            Select an electromagnetic storm from the dropdown menu
+          </NoticeBox>
+        )}
+      </Stack.Item>
+    </Stack>
+  );
+};
+
+const Asteroids = (props, context) => {
+  const { act, data } = useBackend<Data>();
+  const { surveyStatus, theme, surveyData, currentCelestial } = data;
+
+  const [tab, setTab] = useState(0);
+  const selected =
+    tab === 0 ? undefined : Object.entries(surveyData.asteroids)[tab - 1];
+  const selectedName = selected?.[0];
+  const selectedData = selected?.[1];
+
+  const celestialData = {
+    // name
+    ...(selectedName ? { Name: selectedName } : undefined),
+    // visited
+    ...(selectedData?.minerals
+      ? {
+          'Resource types': selectedData.minerals,
+        }
+      : undefined),
+  };
+
+  let currentThemeColors = theme ? getThemeColors(theme) : undefined;
+
+  return (
+    <Stack fill textAlign="center">
+      <Stack.Item>
+        <Collapsible
+          backgroundColor={currentThemeColors?.collapsible}
+          textColor={currentThemeColors?.collapsibleText}
+        >
+          <Stack fill vertical verticalAlign="middle" textAlign="center">
+            <Section title="Current" mt={0.1} pb={0} mb={0}>
+              <Stack.Item>
+                <Tabs vertical pb={0} mb={0}>
+                  {Object.entries(surveyData.asteroids).map((entry, index) => {
+                    return entry[1].ref_id === currentCelestial ? (
+                      <Tabs.Tab
+                        key={entry[0]}
+                        selected={tab === index + 1}
+                        onClick={() => {
+                          entry[1].ref_id !== currentCelestial
+                            ? setTab(index + 1)
+                            : surveyStatus === 'complete'
+                              ? setTab(index + 1)
+                              : act('error');
+                        }}
+                      >
+                        {entry[0]}
+                      </Tabs.Tab>
+                    ) : undefined;
+                  })}
+                </Tabs>
+              </Stack.Item>
+            </Section>
+            <Section title="Other">
+              <Tabs vertical>
+                {Object.entries(surveyData.asteroids).map((entry, index) => {
+                  return entry[1].ref_id !== currentCelestial ? (
+                    <Tabs.Tab
+                      key={entry[0]}
+                      selected={tab === index + 1}
+                      onClick={() => {
+                        setTab(index + 1);
+                      }}
+                    >
+                      {entry[0]}
+                    </Tabs.Tab>
+                  ) : undefined;
+                })}
+              </Tabs>
+            </Section>
+          </Stack>
+        </Collapsible>
+      </Stack.Item>
+
+      <Stack.Divider />
+
+      <Stack.Item grow>
+        {selected ? (
+          <Stack vertical scrollable>
+            <Stack.Item>
+              <Collapsible
+                backgroundColor={currentThemeColors?.collapsible}
+                textColor={currentThemeColors?.collapsibleText}
+                title="extra"
+                open
+              >
+                <NoticeBox
+                  backgroundColor={currentThemeColors?.notice}
+                  textColor={currentThemeColors?.noticeText}
+                >
+                  Certain details are only available after researching the
+                  proper survey tech.
+                </NoticeBox>
+                <Button
+                  width="70%"
+                  icon="arrows-rotate"
+                  onClick={() => act('refresh')}
+                >
+                  Refresh information
+                </Button>
+              </Collapsible>
+            </Stack.Item>
+            <Stack.Divider />
+            <Stack.Item grow>
+              <LabeledList>
+                {Object.entries(celestialData).map((celestialData, index) => {
+                  return celestialData ? (
+                    <LabeledList.Item
+                      labelWrap
+                      label={celestialData[0]}
+                      key={celestialData[0]}
+                    >
+                      {celestialData[1]}
+                    </LabeledList.Item>
+                  ) : undefined;
+                })}
+              </LabeledList>
+            </Stack.Item>
+          </Stack>
+        ) : (
+          <NoticeBox
+            backgroundColor={currentThemeColors?.notice}
+            textColor={currentThemeColors?.noticeText}
+          >
+            Select an asteroid from the dropdown menu
+          </NoticeBox>
+        )}
+      </Stack.Item>
+    </Stack>
+  );
+};
+
+const Stars = (props, context) => {
+  const { act, data } = useBackend<Data>();
+  const { surveyStatus, theme, surveyData, currentCelestial } = data;
+
+  const [tab, setTab] = useState(0);
+  const selected =
+    tab === 0 ? undefined : Object.entries(surveyData.stars)[tab - 1];
+  const selectedName = selected?.[0];
+  const selectedData = selected?.[1];
+
+  const celestialData = {
+    // name
+    ...(selectedName ? { Name: selectedName } : undefined),
+    // visited
+    ...(selectedData?.star_type
+      ? {
+          Type: selectedData.star_type,
+        }
+      : undefined),
+  };
+
+  let currentThemeColors = theme ? getThemeColors(theme) : undefined;
+
+  return (
+    <Stack fill textAlign="center">
+      <Stack.Item>
+        <Collapsible
+          backgroundColor={currentThemeColors?.collapsible}
+          textColor={currentThemeColors?.collapsibleText}
+        >
+          <Stack fill vertical verticalAlign="middle" textAlign="center">
+            <Section title="Current" mt={0.1} pb={0} mb={0}>
+              <Stack.Item>
+                <Tabs vertical pb={0} mb={0}>
+                  {Object.entries(surveyData.stars).map((entry, index) => {
+                    return entry[1].ref_id === currentCelestial ? (
+                      <Tabs.Tab
+                        key={entry[0]}
+                        selected={tab === index + 1}
+                        onClick={() => {
+                          entry[1].ref_id !== currentCelestial
+                            ? setTab(index + 1)
+                            : surveyStatus === 'complete'
+                              ? setTab(index + 1)
+                              : act('error');
+                        }}
+                      >
+                        {entry[0]}
+                      </Tabs.Tab>
+                    ) : undefined;
+                  })}
+                </Tabs>
+              </Stack.Item>
+            </Section>
+            <Section title="Other">
+              <Tabs vertical>
+                {Object.entries(surveyData.stars).map((entry, index) => {
+                  return entry[1].ref_id !== currentCelestial ? (
+                    <Tabs.Tab
+                      key={entry[0]}
+                      selected={tab === index + 1}
+                      onClick={() => {
+                        setTab(index + 1);
+                      }}
+                    >
+                      {entry[0]}
+                    </Tabs.Tab>
+                  ) : undefined;
+                })}
+              </Tabs>
+            </Section>
+          </Stack>
+        </Collapsible>
+      </Stack.Item>
+
+      <Stack.Divider />
+
+      <Stack.Item grow>
+        {selected ? (
+          <Stack vertical scrollable>
+            <Stack.Item>
+              <Collapsible
+                backgroundColor={currentThemeColors?.collapsible}
+                textColor={currentThemeColors?.collapsibleText}
+                title="extra"
+                open
+              >
+                <NoticeBox
+                  backgroundColor={currentThemeColors?.notice}
+                  textColor={currentThemeColors?.noticeText}
+                >
+                  Certain details are only available after researching the
+                  proper survey tech.
+                </NoticeBox>
+                <Button
+                  width="70%"
+                  icon="arrows-rotate"
+                  onClick={() => act('refresh')}
+                >
+                  Refresh information
+                </Button>
+              </Collapsible>
+            </Stack.Item>
+            <Stack.Divider />
+            <Stack.Item grow>
+              <LabeledList>
+                {Object.entries(celestialData).map((celestialData, index) => {
+                  return celestialData ? (
+                    <LabeledList.Item
+                      labelWrap
+                      label={celestialData[0]}
+                      key={celestialData[0]}
+                    >
+                      {celestialData[1]}
+                    </LabeledList.Item>
+                  ) : undefined;
+                })}
+              </LabeledList>
+            </Stack.Item>
+          </Stack>
+        ) : (
+          <NoticeBox
+            backgroundColor={currentThemeColors?.notice}
+            textColor={currentThemeColors?.noticeText}
+          >
+            Select a star from the dropdown menu
           </NoticeBox>
         )}
       </Stack.Item>
