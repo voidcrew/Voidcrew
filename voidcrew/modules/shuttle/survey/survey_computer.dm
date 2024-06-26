@@ -78,6 +78,7 @@
 			unsync_research_servers()
 
 		linked_techweb = tool.buffer
+		linked_techweb.survey_data = data
 		linked_techweb.connected_machines += src //connect new one
 		say("Linked to Server!")
 		return TRUE

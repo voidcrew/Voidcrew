@@ -6452,6 +6452,7 @@
 #include "voidcrew\modules\research\edits\_production.dm"
 #include "voidcrew\modules\research\edits\_rd_consoles.dm"
 #include "voidcrew\modules\research\edits\_techweb.dm"
+#include "voidcrew\modules\research\edits\_techweb_node.dm"
 #include "voidcrew\modules\research\edits\dna_console.dm"
 #include "voidcrew\modules\research\edits\handheld_scanner.dm"
 #include "voidcrew\modules\research\edits\mech_fabricator.dm"

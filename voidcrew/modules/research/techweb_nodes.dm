@@ -275,6 +275,7 @@
 		"survey_console_rewards_upgrade_advanced",
 		"survey_console_information_upgrade_advanced",
 	)
+	required_surveyed_objects = list(nebulas = 1)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
 
 
@@ -290,6 +291,7 @@
 		"survey_console_information_upgrade_superior",
 		"survey_map_range_upg_superior"
 	)
+	required_surveyed_objects = list(emp_storms = 1)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
 
 /datum/techweb_node/survey_console_elite
@@ -303,4 +305,5 @@
 		 "survey_console_information_upgrade_elite",
 		 "survey_map_range_upg_elite"
 	)
+	required_surveyed_objects = list(stars = 1)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 20000)
