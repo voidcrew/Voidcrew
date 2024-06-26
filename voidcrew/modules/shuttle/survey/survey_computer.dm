@@ -158,11 +158,12 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_data(mob/user)
 	var/list/tgui_data = list()
 	var/obj/structure/overmap/celestial_object = get_current_celestial_object()
-	var/list/current_celestial = celestial_object ? list() : null
-	current_celestial["ref_id"] = celestial_object ? ref(celestial_object) : null
-	current_celestial["type"] = celestial_object ? celestial_object.type : null
+	// var/list/current_celestial = celestial_object ? list() : null
+	// current_celestial["ref_id"] = celestial_object ? ref(celestial_object) : null
+	// current_celestial["type"] = celestial_object ? data.get_related_celestial_list(celestial_object.type) : null
 	tgui_data["surveyStatus"] = get_survey_status(celestial_object)
-	tgui_data["currentCelestial"] = current_celestial
+	tgui_data["currentCelestialRef"] = celestial_object ? ref(celestial_object) : null
+	tgui_data["currentCelestialType"] = celestial_object ? data.get_related_celestial_list(celestial_object.type) : null
 	tgui_data["shipMoving"] = ship_port.current_ship.is_still()
 	tgui_data["bankedPoints"] = banked_points
 	tgui_data["bankedCash"] = banked_cash

@@ -57,7 +57,8 @@ interface SurveyData {
 interface Data {
   bankedCash: number;
   bankedPoints: number;
-  currentCelestial: string;
+  currentCelestialRef: string;
+  currentCelestialType: string;
   surveyData: SurveyData;
   mappingEnabled?: number;
   shipMoving: number;
@@ -136,7 +137,7 @@ const getThemeColors = (theme: string): ColorScheme | undefined => {
 
 export const SurveyComputer = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { theme, currentCelestial } = data;
+  const { theme, currentCelestialRef, currentCelestialType } = data;
   const [tab, setTab] = useState(1);
 
   const currentThemeColors = theme ? getThemeColors(theme) : undefined;
@@ -229,6 +230,12 @@ export const SurveyComputer = (props, context) => {
                         icon="globe"
                         mt={1}
                         mb={1}
+                        textColor={
+                          currentCelestialType &&
+                          currentCelestialType === 'planets'
+                            ? 'green'
+                            : undefined
+                        }
                         selected={tab === 2}
                         key={2}
                         onClick={() => {
@@ -241,6 +248,12 @@ export const SurveyComputer = (props, context) => {
                         icon="atom"
                         mt={1}
                         mb={1}
+                        textColor={
+                          currentCelestialType &&
+                          currentCelestialType === 'nebulas'
+                            ? 'green'
+                            : undefined
+                        }
                         selected={tab === 3}
                         key={3}
                         onClick={() => {
@@ -253,6 +266,12 @@ export const SurveyComputer = (props, context) => {
                         icon="bolt"
                         mt={1}
                         mb={1}
+                        textColor={
+                          currentCelestialType &&
+                          currentCelestialType === 'electric_storms'
+                            ? 'green'
+                            : undefined
+                        }
                         selected={tab === 4}
                         key={4}
                         onClick={() => {
@@ -265,6 +284,12 @@ export const SurveyComputer = (props, context) => {
                         icon="power-off"
                         mt={1}
                         mb={1}
+                        textColor={
+                          currentCelestialType &&
+                          currentCelestialType === 'emp_storms'
+                            ? 'green'
+                            : undefined
+                        }
                         selected={tab === 5}
                         key={5}
                         onClick={() => {
@@ -277,6 +302,12 @@ export const SurveyComputer = (props, context) => {
                         icon="meteor"
                         mt={1}
                         mb={1}
+                        textColor={
+                          currentCelestialType &&
+                          currentCelestialType === 'asteroids'
+                            ? 'green'
+                            : undefined
+                        }
                         selected={tab === 6}
                         key={6}
                         onClick={() => {
@@ -289,6 +320,12 @@ export const SurveyComputer = (props, context) => {
                         icon="sun"
                         mt={1}
                         mb={1}
+                        textColor={
+                          currentCelestialType &&
+                          currentCelestialType === 'stars'
+                            ? 'green'
+                            : undefined
+                        }
                         selected={tab === 7}
                         key={7}
                         onClick={() => {
@@ -464,7 +501,7 @@ const Surveying = (props, context) => {
 
 const Planets = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { surveyStatus, theme, surveyData, currentCelestial } = data;
+  const { surveyStatus, theme, surveyData, currentCelestialRef } = data;
 
   const [planetTab, setPlanetTab] = useState(0);
   const selectedPlanet =
@@ -501,12 +538,12 @@ const Planets = (props, context) => {
               <Stack.Item>
                 <Tabs vertical pb={0} mb={0}>
                   {Object.entries(surveyData.planets).map((entry, index) => {
-                    return entry[1].ref_id === currentCelestial ? (
+                    return entry[1].ref_id === currentCelestialRef ? (
                       <Tabs.Tab
                         key={entry[0]}
                         selected={planetTab === index + 1}
                         onClick={() => {
-                          entry[1].ref_id !== currentCelestial
+                          entry[1].ref_id !== currentCelestialRef
                             ? setPlanetTab(index + 1)
                             : surveyStatus === 'complete'
                               ? setPlanetTab(index + 1)
@@ -523,7 +560,7 @@ const Planets = (props, context) => {
             <Section title="Other">
               <Tabs vertical>
                 {Object.entries(surveyData.planets).map((entry, index) => {
-                  return entry[1].ref_id !== currentCelestial ? (
+                  return entry[1].ref_id !== currentCelestialRef ? (
                     <Tabs.Tab
                       key={entry[0]}
                       selected={planetTab === index + 1}
@@ -601,7 +638,7 @@ const Planets = (props, context) => {
 
 const Nebulas = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { surveyStatus, theme, surveyData, currentCelestial } = data;
+  const { surveyStatus, theme, surveyData, currentCelestialRef } = data;
 
   const [tab, setTab] = useState(0);
   const selected =
@@ -634,12 +671,12 @@ const Nebulas = (props, context) => {
               <Stack.Item>
                 <Tabs vertical pb={0} mb={0}>
                   {Object.entries(surveyData.nebulas).map((entry, index) => {
-                    return entry[1].ref_id === currentCelestial ? (
+                    return entry[1].ref_id === currentCelestialRef ? (
                       <Tabs.Tab
                         key={entry[0]}
                         selected={tab === index + 1}
                         onClick={() => {
-                          entry[1].ref_id !== currentCelestial
+                          entry[1].ref_id !== currentCelestialRef
                             ? setTab(index + 1)
                             : surveyStatus === 'complete'
                               ? setTab(index + 1)
@@ -656,7 +693,7 @@ const Nebulas = (props, context) => {
             <Section title="Other">
               <Tabs vertical>
                 {Object.entries(surveyData.nebulas).map((entry, index) => {
-                  return entry[1].ref_id !== currentCelestial ? (
+                  return entry[1].ref_id !== currentCelestialRef ? (
                     <Tabs.Tab
                       key={entry[0]}
                       selected={tab === index + 1}
@@ -734,7 +771,7 @@ const Nebulas = (props, context) => {
 
 const ElectricStorms = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { surveyStatus, theme, surveyData, currentCelestial } = data;
+  const { surveyStatus, theme, surveyData, currentCelestialRef } = data;
 
   const [tab, setTab] = useState(0);
   const selected =
@@ -771,12 +808,12 @@ const ElectricStorms = (props, context) => {
                 <Tabs vertical pb={0} mb={0}>
                   {Object.entries(surveyData.electric_storms).map(
                     (entry, index) => {
-                      return entry[1].ref_id === currentCelestial ? (
+                      return entry[1].ref_id === currentCelestialRef ? (
                         <Tabs.Tab
                           key={entry[0]}
                           selected={tab === index + 1}
                           onClick={() => {
-                            entry[1].ref_id !== currentCelestial
+                            entry[1].ref_id !== currentCelestialRef
                               ? setTab(index + 1)
                               : surveyStatus === 'complete'
                                 ? setTab(index + 1)
@@ -795,7 +832,7 @@ const ElectricStorms = (props, context) => {
               <Tabs vertical>
                 {Object.entries(surveyData.electric_storms).map(
                   (entry, index) => {
-                    return entry[1].ref_id !== currentCelestial ? (
+                    return entry[1].ref_id !== currentCelestialRef ? (
                       <Tabs.Tab
                         key={entry[0]}
                         selected={tab === index + 1}
@@ -874,7 +911,7 @@ const ElectricStorms = (props, context) => {
 
 const ElectroMagneticStorms = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { surveyStatus, theme, surveyData, currentCelestial } = data;
+  const { surveyStatus, theme, surveyData, currentCelestialRef } = data;
 
   const [tab, setTab] = useState(0);
   const selected =
@@ -910,12 +947,12 @@ const ElectroMagneticStorms = (props, context) => {
               <Stack.Item>
                 <Tabs vertical pb={0} mb={0}>
                   {Object.entries(surveyData.emp_storms).map((entry, index) => {
-                    return entry[1].ref_id === currentCelestial ? (
+                    return entry[1].ref_id === currentCelestialRef ? (
                       <Tabs.Tab
                         key={entry[0]}
                         selected={tab === index + 1}
                         onClick={() => {
-                          entry[1].ref_id !== currentCelestial
+                          entry[1].ref_id !== currentCelestialRef
                             ? setTab(index + 1)
                             : surveyStatus === 'complete'
                               ? setTab(index + 1)
@@ -932,7 +969,7 @@ const ElectroMagneticStorms = (props, context) => {
             <Section title="Other">
               <Tabs vertical>
                 {Object.entries(surveyData.emp_storms).map((entry, index) => {
-                  return entry[1].ref_id !== currentCelestial ? (
+                  return entry[1].ref_id !== currentCelestialRef ? (
                     <Tabs.Tab
                       key={entry[0]}
                       selected={tab === index + 1}
@@ -1010,7 +1047,7 @@ const ElectroMagneticStorms = (props, context) => {
 
 const Asteroids = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { surveyStatus, theme, surveyData, currentCelestial } = data;
+  const { surveyStatus, theme, surveyData, currentCelestialRef } = data;
 
   const [tab, setTab] = useState(0);
   const selected =
@@ -1043,12 +1080,12 @@ const Asteroids = (props, context) => {
               <Stack.Item>
                 <Tabs vertical pb={0} mb={0}>
                   {Object.entries(surveyData.asteroids).map((entry, index) => {
-                    return entry[1].ref_id === currentCelestial ? (
+                    return entry[1].ref_id === currentCelestialRef ? (
                       <Tabs.Tab
                         key={entry[0]}
                         selected={tab === index + 1}
                         onClick={() => {
-                          entry[1].ref_id !== currentCelestial
+                          entry[1].ref_id !== currentCelestialRef
                             ? setTab(index + 1)
                             : surveyStatus === 'complete'
                               ? setTab(index + 1)
@@ -1065,7 +1102,7 @@ const Asteroids = (props, context) => {
             <Section title="Other">
               <Tabs vertical>
                 {Object.entries(surveyData.asteroids).map((entry, index) => {
-                  return entry[1].ref_id !== currentCelestial ? (
+                  return entry[1].ref_id !== currentCelestialRef ? (
                     <Tabs.Tab
                       key={entry[0]}
                       selected={tab === index + 1}
@@ -1143,7 +1180,7 @@ const Asteroids = (props, context) => {
 
 const Stars = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { surveyStatus, theme, surveyData, currentCelestial } = data;
+  const { surveyStatus, theme, surveyData, currentCelestialRef } = data;
 
   const [tab, setTab] = useState(0);
   const selected =
@@ -1176,12 +1213,12 @@ const Stars = (props, context) => {
               <Stack.Item>
                 <Tabs vertical pb={0} mb={0}>
                   {Object.entries(surveyData.stars).map((entry, index) => {
-                    return entry[1].ref_id === currentCelestial ? (
+                    return entry[1].ref_id === currentCelestialRef ? (
                       <Tabs.Tab
                         key={entry[0]}
                         selected={tab === index + 1}
                         onClick={() => {
-                          entry[1].ref_id !== currentCelestial
+                          entry[1].ref_id !== currentCelestialRef
                             ? setTab(index + 1)
                             : surveyStatus === 'complete'
                               ? setTab(index + 1)
@@ -1198,7 +1235,7 @@ const Stars = (props, context) => {
             <Section title="Other">
               <Tabs vertical>
                 {Object.entries(surveyData.stars).map((entry, index) => {
-                  return entry[1].ref_id !== currentCelestial ? (
+                  return entry[1].ref_id !== currentCelestialRef ? (
                     <Tabs.Tab
                       key={entry[0]}
                       selected={tab === index + 1}
@@ -1276,7 +1313,7 @@ const Stars = (props, context) => {
 
 const Banking = (props, context) => {
   const { act, data } = useBackend<Data>();
-  const { bankedCash, surveyStatus, surveyedPlanets, theme } = data;
+  const { bankedCash, theme } = data;
   let currentThemeColors = theme ? getThemeColors(theme) : undefined;
 
   return (
