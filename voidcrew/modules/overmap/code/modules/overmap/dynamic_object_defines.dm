@@ -60,9 +60,6 @@
 /obj/structure/overmap/planet/wasteland
 	planet = /datum/overmap/planet/wasteland
 
-// /obj/structure/overmap/planet/debug
-// 	planet = /datum/overmap/planet/debug
-
 /obj/structure/overmap/planet/empty
 	planet = /datum/overmap/planet/empty
 

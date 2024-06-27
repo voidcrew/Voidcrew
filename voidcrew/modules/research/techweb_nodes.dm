@@ -269,7 +269,6 @@
 	display_name = "Survey console advanced upgrades"
 	description = "Your shuttle can now land directly on planets."
 	prereq_ids = list("survey_console")
-	// prereq_ids = list("planet_ice", "planet_desert") etc
 	design_ids = list(
 		"survey_ship_docking",
 		"survey_console_rewards_upgrade_advanced",

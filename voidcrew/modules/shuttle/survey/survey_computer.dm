@@ -33,6 +33,7 @@
 	var/mapping_enabled = FALSE
 	var/mob_sight = FALSE
 	var/obj_sight = FALSE
+	var/debug_mode = FALSE
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Initialize(mapload)
 	. = ..()
@@ -49,7 +50,6 @@
 	if (ship_port.current_ship)
 
 		data = ship_port.current_ship.survey_data
-		// import_ui_survey_data()
 
 		if(!ship_port.current_ship.survey_console)
 			ship_port.current_ship.survey_console = WEAKREF(src)
@@ -159,9 +159,6 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_data(mob/user)
 	var/list/tgui_data = list()
 	var/obj/structure/overmap/celestial_object = get_current_celestial_object()
-	// var/list/current_celestial = celestial_object ? list() : null
-	// current_celestial["ref_id"] = celestial_object ? ref(celestial_object) : null
-	// current_celestial["type"] = celestial_object ? data.get_related_celestial_list(celestial_object.type) : null
 	tgui_data["surveyStatus"] = get_survey_status(celestial_object)
 	tgui_data["currentCelestialRef"] = celestial_object ? ref(celestial_object) : null
 	tgui_data["currentCelestialType"] = celestial_object ? data.get_related_celestial_list(celestial_object.type) : null
@@ -210,8 +207,10 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_current_celestial_object()
 	var/list/blacklisted_types = list(
-		/obj/structure/overmap/ship
+		/obj/structure/overmap/ship,
 	)
+	if(!debug_mode)
+		blacklisted_types += /obj/structure/overmap/planet/empty
 	if (ship_port)
 		if (ship_port.current_ship.close_overmap_objects)
 			for (var/obj/structure/overmap/object in ship_port.current_ship.close_overmap_objects)
@@ -258,8 +257,7 @@
 			INVOKE_ASYNC(planet, TYPE_PROC_REF(/obj/structure/overmap/planet, load_level))
 			return
 
-	// survey_timer = addtimer(CALLBACK(src, PROC_REF(celestial_object_loaded), current_object), 60 SECONDS, TIMER_STOPPABLE)
-	survey_timer = addtimer(CALLBACK(src, PROC_REF(complete_survey), current_object), 3 SECONDS, TIMER_STOPPABLE) // DEBUG TIME VALUE
+	survey_timer = addtimer(CALLBACK(src, PROC_REF(complete_survey), current_object), (debug_mode ? 1 : 60) SECONDS, TIMER_STOPPABLE)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/complete_survey(obj/structure/overmap/object)
 	soundloop.stop()

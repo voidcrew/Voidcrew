@@ -29,15 +29,12 @@
   * Load a level for a ship that's visiting the level.
   * * visiting shuttle - The docking port of the shuttle visiting the level.
   */
-// /obj/structure/overmap/planet/proc/load_level(obj/docking_port/mobile/visiting_shuttle)
 /obj/structure/overmap/planet/proc/load_level()
 	if(mapzone)
 		return
 	if(loading)
 		return
 	loading = TRUE
-	// if(!COOLDOWN_FINISHED(SSovermap, encounter_cooldown))
-	// 	return "WARNING! Stellar interference is restricting flight in this area. Interference should pass in [COOLDOWN_TIMELEFT(SSovermap, encounter_cooldown) / 10] seconds."
 	var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(planet, TRUE, ruin_type = template)
 	mapzone = dynamic_encounter_values[1]
 	reserve_dock = dynamic_encounter_values[2]

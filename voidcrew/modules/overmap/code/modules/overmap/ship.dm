@@ -98,7 +98,6 @@
 
 	var/datum/weakref/survey_console
 	var/datum/survey_research/survey_data
-	// var/list/surveyed_planets = list()
 
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
@@ -447,6 +446,7 @@
   * Called after the shuttle docks, and finishes the transfer to the new location.
   */
 /obj/structure/overmap/ship/proc/complete_dock(datum/weakref/to_dock)
+	// Commented out as it was being used by deleting planets during undock
 	// var/old_loc = loc
 	switch(state)
 		if(OVERMAP_SHIP_DOCKING) //so that the shuttle is truly docked first

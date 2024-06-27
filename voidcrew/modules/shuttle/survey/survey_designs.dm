@@ -42,14 +42,6 @@
 	research_icon = 'voidcrew/icons/effects/overmap.dmi'
 	research_icon_state = "globe"
 
-// View range upgrades
-// /datum/design/survey_map_range_upg_adv
-// 	name = "Survey mapping upgrade - Advanced view range"
-// 	desc = "Upgrades your survey mapping system to have a larger field of view"
-// 	id = "survey_map_range_upg_adv"
-// 	research_icon = 'voidcrew/icons/effects/overmap.dmi'
-// 	research_icon_state = "globe"
-
 /datum/design/survey_map_range_upg_superior
 	name = "Survey mapping upgrade - Superior view range"
 	desc = "Upgrades your survey mapping system to have a larger field of view"
