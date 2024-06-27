@@ -18,25 +18,30 @@
 	var/obj/docking_port/stationary/reserve_dock_secondary
 	///If the level should be preserved. Useful for if you want to build an autismfort or something.
 	var/preserve_level = FALSE
-
+	var/loaded = FALSE
+	var/loading = FALSE
+	var/visited = FALSE
 	/// Which docking port the ship is occupying
 	var/dock_index
+	var/datum/weather/weather_type
 
 /**
   * Load a level for a ship that's visiting the level.
   * * visiting shuttle - The docking port of the shuttle visiting the level.
   */
-/obj/structure/overmap/planet/proc/load_level(obj/docking_port/mobile/visiting_shuttle)
+/obj/structure/overmap/planet/proc/load_level()
 	if(mapzone)
 		return
-	//if(!COOLDOWN_FINISHED(SSovermap, encounter_cooldown))
-		//return "WARNING! Stellar interference is restricting flight in this area. Interference should pass in [COOLDOWN_TIMELEFT(SSovermap, encounter_cooldown) / 10] seconds."
+	if(loading)
+		return
+	loading = TRUE
 	var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(planet, TRUE, ruin_type = template)
 	mapzone = dynamic_encounter_values[1]
 	reserve_dock = dynamic_encounter_values[2]
 	reserve_dock_secondary = dynamic_encounter_values[3]
-
-
+	loaded = TRUE
+	loading = FALSE
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADED, TRUE)
 
 /obj/structure/overmap/planet/attack_ghost(mob/user)
 	if(reserve_dock)
@@ -56,10 +61,8 @@
 	if(EWCOMPONENT(shuttle.port_direction))
 		shuttle_true_height = shuttle.width
 		shuttle_true_width = shuttle.height
-
 	// the dir the stationary port should be facing (note that it points inwards)
 	var/final_facing_dir = angle2dir(dir2angle(shuttle_true_height > shuttle_true_width ? EAST : NORTH)+dir2angle(shuttle.port_direction)+180)
-
 	var/list/old_corners = dock_to_adjust.return_coords() // coords for "bottom left" / "top right" of dock's covered area, rotated by dock's current dir
 	var/list/new_dock_location // TBD coords of the new location
 	if(final_facing_dir == dock_to_adjust.dir)
@@ -112,26 +115,35 @@
 
 	var/prev_state = acting.state
 	acting.state = OVERMAP_SHIP_ACTING //This is so the controls are locked while loading the level to give both a sense of confirmation and to prevent people from moving the ship
+	balloon_alert(user, "starting docking process..")
 	. = load_level(acting.shuttle)
 	if(.)
 		acting.state = prev_state
 		concerned = FALSE
 	else
+		var/is_survey = FALSE
 		var/dock_to_use = null
-		if(!reserve_dock.get_docked() && !first_dock_taken)
-			dock_to_use = reserve_dock //This assigns what port the shuttle will eventually try to dock into, but it does not immediately update the port's docked status
-			first_dock_taken = TRUE
-			acting.dock_index = 1
-		else if(!reserve_dock_secondary.get_docked() && !second_dock_taken)
-			dock_to_use = reserve_dock_secondary
-			second_dock_taken = TRUE
-			acting.dock_index = 2
+		// Port destinations are set by our survey console
+		if (acting.shuttle.port_destinations)
+			dock_to_use = acting.shuttle.port_destinations
+			is_survey = TRUE
+		else
+			if(!reserve_dock.get_docked() && !first_dock_taken)
+				dock_to_use = reserve_dock //This assigns what port the shuttle will eventually try to dock into, but it does not immediately update the port's docked status
+				first_dock_taken = TRUE
+				acting.dock_index = 1
+			else if(!reserve_dock_secondary.get_docked() && !second_dock_taken)
+				dock_to_use = reserve_dock_secondary
+				second_dock_taken = TRUE
+				acting.dock_index = 2
 		if(!dock_to_use)
 			acting.state = prev_state
 			concerned = FALSE
 			to_chat(user, "<span class='notice'>All potential docking locations occupied.</span>")
 			return
-		adjust_dock_to_shuttle(dock_to_use, acting.shuttle)
+
+		if(!is_survey)
+			adjust_dock_to_shuttle(dock_to_use, acting.shuttle)
 		to_chat(user, "<span class='notice'>[acting.dock(src, dock_to_use)]</span>") //If a value is returned from load_level(), say that, otherwise, commence docking
 	concerned = FALSE
 	// For request docking

@@ -1,6 +1,7 @@
 /obj/structure/overmap/star
 	/// Datum containing all of the information for the star
 	var/datum/overmap/star/star_datum = /datum/overmap/star
+	var/star_type = "basic"
 
 /obj/structure/overmap/star/Initialize(mapload)
 	. = ..()

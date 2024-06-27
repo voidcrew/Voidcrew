@@ -767,28 +767,29 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	if(!length(actions))
 		palette.set_expanded(FALSE)
 
-/datum/action_group/palette/refresh_actions()
-	var/atom/movable/screen/button_palette/palette = owner.toggle_palette
-	var/atom/movable/screen/palette_scroll/scroll_down = owner.palette_down
-	var/atom/movable/screen/palette_scroll/scroll_up = owner.palette_up
+///Commenting out due to this being replaced in 'voidcrew\edits\_onclick\hud' and the return ..() requirement
+// /datum/action_group/palette/refresh_actions()
+// 	var/atom/movable/screen/button_palette/palette = owner.toggle_palette
+// 	var/atom/movable/screen/palette_scroll/scroll_down = owner.palette_down
+// 	var/atom/movable/screen/palette_scroll/scroll_up = owner.palette_up
 
-	var/actions_above = round((owner.listed_actions.size() - 1) / owner.listed_actions.column_max)
-	north_offset = initial(north_offset) + actions_above
+// 	var/actions_above = round((owner.listed_actions.size() - 1) / owner.listed_actions.column_max)
+// 	north_offset = initial(north_offset) + actions_above
 
-	palette.screen_loc = ui_action_palette_offset(actions_above)
-	var/action_count = length(owner?.mymob?.actions)
-	var/our_row_count = round((length(actions) - 1) / column_max)
-	if(!action_count)
-		palette.screen_loc = null
+// 	palette.screen_loc = ui_action_palette_offset(actions_above)
+// 	var/action_count = length(owner?.mymob?.actions)
+// 	var/our_row_count = round((length(actions) - 1) / column_max)
+// 	if(!action_count)
+// 		palette.screen_loc = null
 
-	if(palette.expanded && action_count && our_row_count >= max_rows)
-		scroll_down.screen_loc = ui_palette_scroll_offset(actions_above)
-		scroll_up.screen_loc = ui_palette_scroll_offset(actions_above)
-	else
-		scroll_down.screen_loc = null
-		scroll_up.screen_loc = null
+// 	if(palette.expanded && action_count && our_row_count >= max_rows)
+// 		scroll_down.screen_loc = ui_palette_scroll_offset(actions_above)
+// 		scroll_up.screen_loc = ui_palette_scroll_offset(actions_above)
+// 	else
+// 		scroll_down.screen_loc = null
+// 		scroll_up.screen_loc = null
 
-	return ..()
+// 	return ..()
 
 /datum/action_group/palette/ButtonNumberToScreenCoords(number, landing)
 	var/atom/movable/screen/button_palette/palette = owner.toggle_palette

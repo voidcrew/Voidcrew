@@ -117,5 +117,3 @@
 	color = null
 	icon_state = "object"
 	spawn_rate = -1
-
-

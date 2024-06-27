@@ -252,3 +252,57 @@
 		"surgery_oldstation_dissection_elite",
 	)
 
+/datum/techweb_node/survey_console
+	id = "survey_console"
+	display_name = "Orbital survey console"
+	design_ids = list(
+		"survey_console_board",
+		"survey_console_rewards_upgrade_basic",
+		"survey_console_information_upgrade_basic"
+	)
+	prereq_ids = list("base")
+	description = "Wait, there's stuff out here?!"
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
+
+/datum/techweb_node/survey_console_advanced
+	id = "survey_console_advanced"
+	display_name = "Survey console advanced upgrades"
+	description = "Your shuttle can now land directly on planets."
+	prereq_ids = list("survey_console")
+	design_ids = list(
+		"survey_ship_docking",
+		"survey_console_rewards_upgrade_advanced",
+		"survey_console_information_upgrade_advanced",
+	)
+	required_surveyed_objects = list(planets = 1, nebulas = 3, electric_storms = 1)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
+
+
+/datum/techweb_node/survey_console_superior
+	id = "survey_console_superior"
+	display_name = "Survey console superior upgrades"
+	description = "You've seen much. Maybe you can share your findings with others?"
+	prereq_ids = list("survey_console_advanced")
+	design_ids = list(
+		"survey_data_disk",
+		"survey_map_obj_sight",
+		"survey_console_rewards_upgrade_superior",
+		"survey_console_information_upgrade_superior",
+		"survey_map_range_upg_superior"
+	)
+	required_surveyed_objects = list(emp_storms = 3, electric_storms = 3, planets = 3)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
+
+/datum/techweb_node/survey_console_elite
+	id = "survey_console_elite"
+	display_name = "Survey console elite upgrades"
+	description = "You know everything. You see everything. No one is outside your reach, nor hidden from your sight."
+	prereq_ids = list("survey_console_superior")
+	design_ids = list(
+		 "survey_map_mob_sight",
+		 "survey_console_rewards_upgrade_elite",
+		 "survey_console_information_upgrade_elite",
+		 "survey_map_range_upg_elite"
+	)
+	required_surveyed_objects = list(stars = 1, planets = 5, asteroids = 2)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 20000)
