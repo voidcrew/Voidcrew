@@ -466,12 +466,10 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/download_survey_data()
 	if(!survey_disk)
 		return
-	if(!survey_disk.data)
-		return
 
 	for(var/datum/surveyed_celestial_object/nebula/celestial_data in survey_disk.data.survey_objects_by_type["nebulas"])
 		// Create a placeholder celestial var
-		var/datum/surveyed_celestial_object/celestial
+		var/datum/surveyed_celestial_object/nebula/celestial
 
 		// Check to see if our celestial is already in our disk's survey data
 		for(var/datum/surveyed_celestial_object/nebula/existing_celestial in data.survey_objects_by_type["nebulas"])
@@ -482,13 +480,13 @@
 		if(!celestial)
 			celestial = new()
 
-		// Copy data from our survey console's celestial to our disk
+		// Copy data from our disk to our survey console
 		celestial_data.copy(celestial)
 		data.survey_objects_by_type["nebulas"] |= celestial
 
 	for(var/datum/surveyed_celestial_object/asteroid/celestial_data in survey_disk.data.survey_objects_by_type["asteroids"])
 		// Create a placeholder celestial var
-		var/datum/surveyed_celestial_object/celestial
+		var/datum/surveyed_celestial_object/asteroid/celestial
 
 		// Check to see if our celestial is already in our disk's survey data
 		for(var/datum/surveyed_celestial_object/asteroid/existing_celestial in data.survey_objects_by_type["asteroids"])
@@ -499,13 +497,13 @@
 		if(!celestial)
 			celestial = new()
 
-		// Copy data from our survey console's celestial to our disk
+		// Copy data from our disk to our survey console
 		celestial_data.copy(celestial)
 		data.survey_objects_by_type["asteroids"] |= celestial
 
 	for(var/datum/surveyed_celestial_object/electric_storm/celestial_data in survey_disk.data.survey_objects_by_type["electric_storms"])
 		// Create a placeholder celestial var
-		var/datum/surveyed_celestial_object/celestial
+		var/datum/surveyed_celestial_object/electric_storm/celestial
 
 		// Check to see if our celestial is already in our disk's survey data
 		for(var/datum/surveyed_celestial_object/electric_storm/existing_celestial in data.survey_objects_by_type["electric_storms"])
@@ -516,13 +514,13 @@
 		if(!celestial)
 			celestial = new()
 
-		// Copy data from our survey console's celestial to our disk
+		// Copy data from our disk to our survey console
 		celestial_data.copy(celestial)
 		data.survey_objects_by_type["electric_storms"] |= celestial
 
 	for(var/datum/surveyed_celestial_object/emp_storm/celestial_data in survey_disk.data.survey_objects_by_type["emp_storms"])
 		// Create a placeholder celestial var
-		var/datum/surveyed_celestial_object/celestial
+		var/datum/surveyed_celestial_object/emp_storm/celestial
 
 		// Check to see if our celestial is already in our disk's survey data
 		for(var/datum/surveyed_celestial_object/emp_storm/existing_celestial in data.survey_objects_by_type["emp_storms"])
@@ -533,13 +531,13 @@
 		if(!celestial)
 			celestial = new()
 
-		// Copy data from our survey console's celestial to our disk
+		// Copy data from our disk to our survey console
 		celestial_data.copy(celestial)
 		data.survey_objects_by_type["emp_storms"] |= celestial
 
 	for(var/datum/surveyed_celestial_object/planet/celestial_data in survey_disk.data.survey_objects_by_type["planets"])
 		// Create a placeholder celestial var
-		var/datum/surveyed_celestial_object/celestial
+		var/datum/surveyed_celestial_object/planet/celestial
 
 		// Check to see if our celestial is already in our disk's survey data
 		for(var/datum/surveyed_celestial_object/planet/existing_celestial in data.survey_objects_by_type["planets"])
@@ -550,13 +548,13 @@
 		if(!celestial)
 			celestial = new()
 
-		// Copy data from our survey console's celestial to our disk
+		// Copy data from our disk to our survey console
 		celestial_data.copy(celestial)
 		data.survey_objects_by_type["planets"] |= celestial
 
 	for(var/datum/surveyed_celestial_object/star/celestial_data in survey_disk.data.survey_objects_by_type["stars"])
 		// Create a placeholder celestial var
-		var/datum/surveyed_celestial_object/celestial
+		var/datum/surveyed_celestial_object/star/celestial
 
 		// Check to see if our celestial is already in our disk's survey data
 		for(var/datum/surveyed_celestial_object/star/existing_celestial in data.survey_objects_by_type["stars"])
@@ -567,14 +565,11 @@
 		if(!celestial)
 			celestial = new()
 
-		// Copy data from our survey console's celestial to our disk
+		// Copy data from our disk to our survey console
 		celestial_data.copy(celestial)
 		data.survey_objects_by_type["stars"] |= celestial
 
-
-	playsound(src, "sound/machines/terminal_alert.ogg", 40)
-	balloon_alert(ui_user, "data saved to disk")
-
+	update_static_data(ui_user)
 	playsound(src, "sound/machines/high_tech_confirm.ogg", 40)
 	balloon_alert(ui_user, "data downloaded from disk")
 

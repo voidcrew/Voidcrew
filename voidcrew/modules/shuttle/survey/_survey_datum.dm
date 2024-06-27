@@ -119,7 +119,7 @@
 			if(!celestial)
 				celestial = new()
 			celestial.set_values(object)
-			survey_objects_by_type[related_celestial_list] += celestial
+			survey_objects_by_type[related_celestial_list] |= celestial
 
 		// Asteroids
 		if(/datum/surveyed_celestial_object/asteroid)

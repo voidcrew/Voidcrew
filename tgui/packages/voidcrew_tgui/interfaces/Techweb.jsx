@@ -672,7 +672,7 @@ const TechNode = (props) => {
         </Collapsible>
       )}
       {Object.entries(required_surveyed_objects).length > 0 && (
-        <Collapsible title="Required Surveys">
+        <Collapsible textAlign="center" title="Required Surveys">
           <Stack>
             {Object.entries(required_surveyed_objects).map((obj, index) => {
               return (

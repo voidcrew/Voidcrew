@@ -602,7 +602,7 @@ const Planets = (props, context) => {
                   icon="arrows-rotate"
                   onClick={() => act('refresh')}
                 >
-                  Refresh information
+                  Refresh
                 </Button>
               </Collapsible>
             </Stack.Item>
@@ -717,27 +717,9 @@ const Nebulas = (props, context) => {
         {selected ? (
           <Stack vertical scrollable>
             <Stack.Item>
-              <Collapsible
-                backgroundColor={currentThemeColors?.collapsible}
-                textColor={currentThemeColors?.collapsibleText}
-                title="extra"
-                open
-              >
-                <NoticeBox
-                  backgroundColor={currentThemeColors?.notice}
-                  textColor={currentThemeColors?.noticeText}
-                >
-                  Certain details are only available after researching the
-                  proper survey tech.
-                </NoticeBox>
-                <Button
-                  width="70%"
-                  icon="arrows-rotate"
-                  onClick={() => act('refresh')}
-                >
-                  Refresh information
-                </Button>
-              </Collapsible>
+              <Button fluid icon="arrows-rotate" onClick={() => act('refresh')}>
+                Refresh
+              </Button>
             </Stack.Item>
             <Stack.Divider />
             <Stack.Item grow>
@@ -857,27 +839,9 @@ const ElectricStorms = (props, context) => {
         {selected ? (
           <Stack vertical scrollable>
             <Stack.Item>
-              <Collapsible
-                backgroundColor={currentThemeColors?.collapsible}
-                textColor={currentThemeColors?.collapsibleText}
-                title="extra"
-                open
-              >
-                <NoticeBox
-                  backgroundColor={currentThemeColors?.notice}
-                  textColor={currentThemeColors?.noticeText}
-                >
-                  Certain details are only available after researching the
-                  proper survey tech.
-                </NoticeBox>
-                <Button
-                  width="70%"
-                  icon="arrows-rotate"
-                  onClick={() => act('refresh')}
-                >
-                  Refresh information
-                </Button>
-              </Collapsible>
+              <Button fluid icon="arrows-rotate" onClick={() => act('refresh')}>
+                Refresh
+              </Button>
             </Stack.Item>
             <Stack.Divider />
             <Stack.Item grow>
@@ -993,27 +957,9 @@ const ElectroMagneticStorms = (props, context) => {
         {selected ? (
           <Stack vertical scrollable>
             <Stack.Item>
-              <Collapsible
-                backgroundColor={currentThemeColors?.collapsible}
-                textColor={currentThemeColors?.collapsibleText}
-                title="extra"
-                open
-              >
-                <NoticeBox
-                  backgroundColor={currentThemeColors?.notice}
-                  textColor={currentThemeColors?.noticeText}
-                >
-                  Certain details are only available after researching the
-                  proper survey tech.
-                </NoticeBox>
-                <Button
-                  width="70%"
-                  icon="arrows-rotate"
-                  onClick={() => act('refresh')}
-                >
-                  Refresh information
-                </Button>
-              </Collapsible>
+              <Button fluid icon="arrows-rotate" onClick={() => act('refresh')}>
+                Refresh
+              </Button>
             </Stack.Item>
             <Stack.Divider />
             <Stack.Item grow>
@@ -1126,27 +1072,9 @@ const Asteroids = (props, context) => {
         {selected ? (
           <Stack vertical scrollable>
             <Stack.Item>
-              <Collapsible
-                backgroundColor={currentThemeColors?.collapsible}
-                textColor={currentThemeColors?.collapsibleText}
-                title="extra"
-                open
-              >
-                <NoticeBox
-                  backgroundColor={currentThemeColors?.notice}
-                  textColor={currentThemeColors?.noticeText}
-                >
-                  Certain details are only available after researching the
-                  proper survey tech.
-                </NoticeBox>
-                <Button
-                  width="70%"
-                  icon="arrows-rotate"
-                  onClick={() => act('refresh')}
-                >
-                  Refresh information
-                </Button>
-              </Collapsible>
+              <Button fluid icon="arrows-rotate" onClick={() => act('refresh')}>
+                Refresh
+              </Button>
             </Stack.Item>
             <Stack.Divider />
             <Stack.Item grow>
@@ -1259,27 +1187,9 @@ const Stars = (props, context) => {
         {selected ? (
           <Stack vertical scrollable>
             <Stack.Item>
-              <Collapsible
-                backgroundColor={currentThemeColors?.collapsible}
-                textColor={currentThemeColors?.collapsibleText}
-                title="extra"
-                open
-              >
-                <NoticeBox
-                  backgroundColor={currentThemeColors?.notice}
-                  textColor={currentThemeColors?.noticeText}
-                >
-                  Certain details are only available after researching the
-                  proper survey tech.
-                </NoticeBox>
-                <Button
-                  width="70%"
-                  icon="arrows-rotate"
-                  onClick={() => act('refresh')}
-                >
-                  Refresh information
-                </Button>
-              </Collapsible>
+              <Button fluid icon="arrows-rotate" onClick={() => act('refresh')}>
+                Refresh
+              </Button>
             </Stack.Item>
             <Stack.Divider />
             <Stack.Item grow>
@@ -1411,7 +1321,7 @@ const Settings = (props, context) => {
             icon="download"
             fontSize={2}
             onClick={() => {
-              act('loadData');
+              act('downloadData');
             }}
             tooltip={surveyDataDisk ? undefined : 'no disk loaded'}
             disabled={surveyDataDisk ? false : true}

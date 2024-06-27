@@ -14,7 +14,7 @@
 	. = TRUE
 	if(node.required_surveyed_objects)
 		for(var/object in node.required_surveyed_objects)
-			if(survey_data.survey_objects_by_type[object] < node.required_surveyed_objects[object])
+			if(length(survey_data.survey_objects_by_type[object]) < node.required_surveyed_objects[object])
 				return FALSE
 	return
 
