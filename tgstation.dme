@@ -6345,6 +6345,7 @@
 #include "voidcrew\modules\clothing\under\solgov.dm"
 #include "voidcrew\modules\cryo\console.dm"
 #include "voidcrew\modules\cryo\machine.dm"
+#include "voidcrew\modules\drop_pod\drop_pod.dm"
 #include "voidcrew\modules\food_and_drinks\drinks\bottles.dm"
 #include "voidcrew\modules\mining\equipment\explorer_gear.dm"
 #include "voidcrew\modules\mining\lavaland\ash_flora.dm"
