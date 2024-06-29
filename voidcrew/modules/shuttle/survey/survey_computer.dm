@@ -34,6 +34,8 @@
 	var/mob_sight = FALSE
 	var/obj_sight = FALSE
 	var/debug_mode = FALSE
+	var/list/survey_research_tiers
+	var/mode = "shuttle" // can also be "pod"
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Initialize(mapload)
 	. = ..()
@@ -84,33 +86,41 @@
 		return TRUE
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_research_tiers()
-	if(!linked_techweb)
-		return
 	var/list/research_tiers = list("survey_console_simple", "survey_console_advanced", "survey_console_superior", "survey_console_elite")
 	var/list/found_tiers = list()
-	for(var/node_id in linked_techweb.researched_nodes)
-		if(node_id in research_tiers)
-			var/tier_type
-			switch(node_id)
-				if("survey_console_advanced")
-					tier_type = "advanced"
-					mapping_enabled = TRUE
-					view_range = 10
-					icon_scaling_amount = 2
-				if("survey_console_superior")
-					tier_type = "superior"
-					obj_sight = TRUE
-					view_range = 15
-					icon_scaling_amount = 2.5
-				if("survey_console_elite")
-					tier_type = "elite"
-					mob_sight = TRUE
-					view_range = 20
-					icon_scaling_amount = 3
-				else
-					tier_type = "basic"
+	if(debug_mode)
+		mob_sight = TRUE
+		obj_sight = TRUE
+		view_range = 20
+		icon_scaling_amount = 3
+		mapping_enabled = TRUE
+		found_tiers |= list("advanced", "superior", "elite", "basic")
+	else
+		if(!linked_techweb)
+			return
+		for(var/node_id in linked_techweb.researched_nodes)
+			if(node_id in research_tiers)
+				var/tier_type
+				switch(node_id)
+					if("survey_console_advanced")
+						tier_type = "advanced"
+						mapping_enabled = TRUE
+						view_range = 10
+						icon_scaling_amount = 2
+					if("survey_console_superior")
+						tier_type = "superior"
+						obj_sight = TRUE
+						view_range = 15
+						icon_scaling_amount = 2.5
+					if("survey_console_elite")
+						tier_type = "elite"
+						mob_sight = TRUE
+						view_range = 20
+						icon_scaling_amount = 3
+					else
+						tier_type = "basic"
 
-			found_tiers += tier_type
+				found_tiers += tier_type
 	return found_tiers
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Destroy()
@@ -159,6 +169,7 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/ui_data(mob/user)
 	var/list/tgui_data = list()
 	var/obj/structure/overmap/celestial_object = get_current_celestial_object()
+	survey_research_tiers = get_survey_research_tiers()
 	tgui_data["surveyStatus"] = get_survey_status(celestial_object)
 	tgui_data["currentCelestialRef"] = celestial_object ? ref(celestial_object) : null
 	tgui_data["currentCelestialType"] = celestial_object ? data.get_related_celestial_list(celestial_object.type) : null
@@ -321,7 +332,6 @@
 		cash *= 1.2
 		points *= 1.2
 
-	var/list/survey_research_tiers = get_survey_research_tiers()
 	if("elite" in survey_research_tiers)
 		cash *= 2
 		points *= 2
