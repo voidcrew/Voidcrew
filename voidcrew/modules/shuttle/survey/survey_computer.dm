@@ -126,6 +126,7 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Destroy()
 	. = ..()
 	var/datum/weakref/ship_link = ship_port.current_ship.survey_console
+	unsync_research_servers()
 	if(!ship_link.resolve() || src == ship_link.resolve())
 		ship_port.current_ship.survey_console = null
 		attached_to_ship = FALSE
@@ -699,7 +700,7 @@
 			if(istype(mob, bad_mob))
 				allowed_mob = FALSE
 	if(allowed_mob == FALSE)
-		return SHUTTLE_DOCKER_BLOCKED_BY_MEGAFAUNA
+		return SHUTTLE_DOCKER_BLOCKED_BY_MOB
 
 	// Won't land on any area that isn't set in our whitelist
 	var/allowed_area = FALSE
@@ -739,9 +740,9 @@
 			if(SHUTTLE_DOCKER_BLOCKED_BY_AREA)
 				I.icon_state = "red"
 				. = SHUTTLE_DOCKER_BLOCKED_BY_AREA
-			if(SHUTTLE_DOCKER_BLOCKED_BY_MEGAFAUNA)
+			if(SHUTTLE_DOCKER_BLOCKED_BY_MOB)
 				I.icon_state = "red"
-				. = SHUTTLE_DOCKER_BLOCKED_BY_MEGAFAUNA
+				. = SHUTTLE_DOCKER_BLOCKED_BY_MOB
 			else
 				I.icon_state = "red"
 				. = SHUTTLE_DOCKER_BLOCKED
@@ -770,7 +771,7 @@
 				to_chat(current_user, span_warning("Landing zone has an unnatural structure inside of it. Please designate another location."))
 			if(SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT)
 				to_chat(current_user, span_warning("Unknown object detected in landing zone. Please designate another location."))
-			if(SHUTTLE_DOCKER_BLOCKED_BY_MEGAFAUNA)
+			if(SHUTTLE_DOCKER_BLOCKED_BY_MOB)
 				to_chat(current_user, span_warning("Giant biological entity is blocking the landing zone. Please designate another location."))
 			if(SHUTTLE_DOCKER_BLOCKED)
 				to_chat(current_user, span_warning("Invalid transit location."))

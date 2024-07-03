@@ -5,33 +5,337 @@
 	style = STYLE_CULT
 	var/obj/docking_port/mobile/voidcrew/ship_port
 	var/used = FALSE
+	var/datum/techweb/linked_techweb
+	var/mob/living/ui_user = null
+	var/mob/living/map_user = null
+	var/list/blacklisted_mob_types = list(/mob/living/simple_animal/hostile/megafauna)
+	var/list/whitelisted_areas = list(/area/overmap_encounter, /area/space)
+	var/mob/camera/ai_eye/remote/drop_pod/eyeobj
+	/// List of all actions to give to a user when they're well, granted actions
+	var/list/actions = list()
+	var/list/locked_traits = list(ZTRAIT_RESERVED, ZTRAIT_CENTCOM, ZTRAIT_AWAY)
 
 /obj/structure/closet/supplypod/drop_pod/Initialize(mapload, customStyle)
 	. = ..()
 	ship_port = SSshuttle.get_containing_shuttle(src)
 
-/obj/structure/closet/supplypod/drop_pod/attack_hand(mob/user, list/modifiers)
+/obj/structure/closet/supplypod/drop_pod/Destroy()
 	. = ..()
-	if(used)
-		return
-	choose_drop_location(user)
+	unsync_research_servers()
 
-/obj/structure/closet/supplypod/drop_pod/proc/choose_drop_location(mob/living/user)
+/obj/structure/closet/supplypod/drop_pod/unsync_research_servers()
+	if(linked_techweb)
+		linked_techweb.connected_machines -= src
+		linked_techweb = null
+
+/obj/structure/closet/supplypod/drop_pod/multitool_act(mob/living/user, obj/item/multitool/tool)
+	if(!QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb))
+		if(linked_techweb)
+			if(linked_techweb == tool.buffer)
+				say("Already linked!")
+				return
+			unsync_research_servers()
+
+		linked_techweb = tool.buffer
+		linked_techweb.connected_machines += src //connect new one
+		say("Linked to Server!")
+		return TRUE
+
+/obj/structure/closet/supplypod/drop_pod/ui_interact(mob/user, datum/tgui/ui)
+	. = ..()
+	if((ui_user && ui_user != user) || (map_user && map_user != user))
+		balloon_alert(user, "drop pod in use!")
+		return
+	ui_user = user
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "DropPod", name)
+		ui.open()
+
+/obj/structure/closet/supplypod/drop_pod/ui_close(mob/user)
+	ui_user = null
+	. = ..()
+
+/obj/structure/closet/supplypod/drop_pod/ui_data(mob/user)
+	var/list/tgui_data = list()
+	return tgui_data
+
+/obj/structure/closet/supplypod/drop_pod/ui_static_data(mob/user)
+	. = ..()
+
+	if(linked_techweb)
+		if("survey_console_advanced" in linked_techweb.researched_nodes)
+			.["mappingEnabled"] = TRUE
+		else
+			.["mappingEnabled"] = FALSE
+	else
+		.["mappingEnabled"] = FALSE
+
+	// Has the pod already been launched?
+	.["used"] = used
+
+/obj/structure/closet/supplypod/drop_pod/ui_act(action, params, datum/tgui/ui)
+	. = ..()
+	if(.)
+		return
+	switch(action)
+		if("randomDrop")
+			ui.close()
+			choose_random_drop_location(ui_user)
+		if("map")
+			if(map_user && map_user != ui_user)
+				balloon_alert(ui_user, "map being used")
+				return
+			map_user = ui_user
+			ui.close()
+			activate_map(map_user)
+	return TRUE
+
+/obj/structure/closet/supplypod/drop_pod/proc/get_current_celestial_z_level()
 	if(!ship_port)
 		return
-	var/list/current_overmap_objects = ship_port.current_ship.close_overmap_objects
-
 	var/obj/structure/overmap/planet/current_planet
+	var/list/current_overmap_objects = ship_port.current_ship.close_overmap_objects
 
 	for(var/obj/structure/overmap/object in current_overmap_objects)
 		if(object.type in typesof(/obj/structure/overmap/planet))
 			current_planet = object
+
 	if(!current_planet || !current_planet.mapzone || !(length(current_planet.mapzone.z_levels)))
+		return null
+	var/planet_z_level = current_planet.mapzone.z_levels[1].z_value
+
+	return planet_z_level
+
+/obj/structure/closet/supplypod/drop_pod/proc/can_use(mob/living/user)
+	if(QDELETED(user))
+		return FALSE
+	if(isAdminGhostAI(user))
+		return TRUE
+	if(!isliving(user))
+		return FALSE //no ghosts allowed, sorry
+	return TRUE
+
+/obj/structure/closet/supplypod/drop_pod/proc/activate_map(mob/living/user)
+	if(!can_use(user))
 		return
-	var/planet_z_level = current_planet.mapzone.z_levels[1].z_value // the first z level
+	if(isnull(user.client))
+		return
+	var/planet_z_level = get_current_celestial_z_level()
 	if(!planet_z_level)
 		return
+	var/mob/living/L = user
+	if(!eyeobj)
+		CreateEye()
+	if(!eyeobj) //Eye creation failed
+		return
+	if(!eyeobj.eye_initialized)
+		var/camera_location
+		var/turf/myturf = locate(1, 1, planet_z_level)
 
+		camera_location = myturf
+
+		if(camera_location)
+			eyeobj.eye_initialized = TRUE
+			give_eye_control(L)
+			eyeobj.setLoc(camera_location)
+		else
+			remove_eye_control(L)
+	else
+		give_eye_control(L)
+		eyeobj.setLoc(eyeobj.loc)
+
+/mob/camera/ai_eye/remote/drop_pod
+	visible_icon = FALSE
+	use_static = FALSE
+	var/image/placed_image = null
+	var/image/placement_image = null
+	var/obj/structure/closet/supplypod/drop_pod/pod_origin
+
+/mob/camera/ai_eye/remote/drop_pod/Initialize(mapload, obj/structure/closet/supplypod/drop_pod/origin)
+	src.pod_origin = origin
+	return ..()
+
+/mob/camera/ai_eye/remote/drop_pod/setLoc(turf/destination, force_update = FALSE)
+	. = ..()
+	if(pod_origin)
+		pod_origin.checkLandingSpot(destination)
+	else
+		log_runtime("pod origin was not found")
+
+/obj/structure/closet/supplypod/drop_pod/proc/CreateEye()
+	if(!ship_port)
+		return
+	if(QDELETED(ship_port))
+		ship_port = null
+		return
+	eyeobj = new /mob/camera/ai_eye/remote/drop_pod(null, src)
+	eyeobj.pod_origin = src
+	var/turf/ship_port_location = locate(ship_port.x, ship_port.y, ship_port.z)
+	var/image/I = image('icons/effects/alphacolors.dmi', ship_port_location, "red")
+	if(!I)
+		log_runtime("Could not find image")
+		return
+
+	I.loc = ship_port_location
+	I.layer = ABOVE_NORMAL_TURF_LAYER
+	SET_PLANE_EXPLICIT(I, ABOVE_GAME_PLANE, src)
+	I.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	eyeobj.placement_image = I
+
+/obj/structure/closet/supplypod/drop_pod/proc/placeLandingSpot()
+	if(!map_user)
+		return
+
+	var/turf/target = get_turf(eyeobj)
+	if(!target)
+		return
+	var/landing_clear = checkLandingSpot(target)
+
+	if(landing_clear != SHUTTLE_DOCKER_LANDING_CLEAR)
+		switch(landing_clear)
+			if(SHUTTLE_DOCKER_BLOCKED_BY_AREA)
+				to_chat(map_user, span_warning("Landing zone has an unnatural structure inside of it. Please designate another location."))
+			if(SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT)
+				to_chat(map_user, span_warning("Unknown object detected in landing zone. Please designate another location."))
+			if(SHUTTLE_DOCKER_BLOCKED_BY_MOB)
+				to_chat(map_user, span_warning("Giant biological entity is blocking the landing zone. Please designate another location."))
+			if(SHUTTLE_DOCKER_BLOCKED)
+				to_chat(map_user, span_warning("Invalid transit location."))
+		return
+
+	if(map_user.client)
+		map_user.client.images -= eyeobj.placed_image
+	eyeobj.placed_image = null
+
+	var/image/newI = image('icons/effects/alphacolors.dmi', target.loc, "blue")
+	newI.loc = eyeobj.placement_image.loc
+	newI.layer = NAVIGATION_EYE_LAYER
+	SET_PLANE_EXPLICIT(newI, ABOVE_GAME_PLANE, eyeobj.placement_image)
+	newI.mouse_opacity = 0
+	eyeobj.placed_image = newI
+
+	if(map_user.client)
+		map_user.client.images += eyeobj.placed_image
+		to_chat(map_user, span_notice("Transit location designated."))
+
+	// // Set our port destination with the custom port so we can dock on it
+	// ship_port.port_destinations = my_port
+	remove_eye_control(map_user)
+	eyeobj.placed_image = null
+	map_user.forceMove(src)
+	new /obj/effect/pod_landingzone(target, src)
+	used = TRUE
+	update_static_data(map_user)
+
+/obj/structure/closet/supplypod/drop_pod/proc/checkLandingSpot(turf/eyeturf)
+	if(!eyeturf)
+		return SHUTTLE_DOCKER_BLOCKED
+	if(!eyeturf.z || SSmapping.level_has_any_trait(eyeturf.z, locked_traits))
+		return SHUTTLE_DOCKER_BLOCKED
+
+	. = SHUTTLE_DOCKER_LANDING_CLEAR
+	// var/list/bounds = shuttle_port.return_coords(the_eye.x - x_offset, the_eye.y - y_offset, the_eye.dir)
+	// var/list/overlappers = SSshuttle.get_dock_overlap(bounds[1], bounds[2], bounds[3], bounds[4], the_eye.z)
+	// var/list/image_cache = the_eye.placement_images
+	// for(var/i in 1 to image_cache.len)
+	// var/image/I = image_cache[1]
+	if(!eyeobj.placement_image)
+		log_runtime("No placement image found")
+	var/image/I = eyeobj.placement_image
+	if(!I)
+		log_runtime("I not found x2")
+	var/turf/T = locate(eyeturf.x, eyeturf.y, eyeturf.z)
+	if(!T)
+		log_runtime("Could not find T")
+	I.loc = T
+	switch(checkLandingTurf(T))
+		if(SHUTTLE_DOCKER_LANDING_CLEAR)
+			I.icon_state = "green"
+		// if(SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT)
+		// 	I.icon_state = "green"
+		// 	if(. == SHUTTLE_DOCKER_LANDING_CLEAR)
+		// 		. = SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT
+		if(SHUTTLE_DOCKER_BLOCKED_BY_AREA)
+			I.icon_state = "red"
+			. = SHUTTLE_DOCKER_BLOCKED_BY_AREA
+		if(SHUTTLE_DOCKER_BLOCKED_BY_MOB)
+			I.icon_state = "red"
+			. = SHUTTLE_DOCKER_BLOCKED_BY_MOB
+		else
+			I.icon_state = "red"
+			. = SHUTTLE_DOCKER_BLOCKED
+
+/obj/structure/closet/supplypod/drop_pod/proc/checkLandingTurf(turf/T)
+	. = SHUTTLE_DOCKER_LANDING_CLEAR
+
+	if(!T)
+		return SHUTTLE_DOCKER_BLOCKED
+
+	var/allowed_mob = TRUE
+	for(var/mob in T.contents)
+		for(var/bad_mob in blacklisted_mob_types)
+			if(istype(mob, bad_mob))
+				allowed_mob = FALSE
+	if(allowed_mob == FALSE)
+		return SHUTTLE_DOCKER_BLOCKED_BY_MOB
+
+	// Won't land on any area that isn't set in our whitelist
+	var/allowed_area = FALSE
+
+	for (var/whitelisted_area in whitelisted_areas)
+		if (istype(get_area(T), whitelisted_area))
+			allowed_area = TRUE
+
+	if(allowed_area == FALSE)
+		return SHUTTLE_DOCKER_BLOCKED_BY_AREA
+
+/obj/structure/closet/supplypod/drop_pod/proc/give_eye_control(mob/user)
+	if(isnull(user?.client))
+		return
+	GrantActions(user)
+	eyeobj.eye_user = user
+	eyeobj.name = "Camera Eye ([user.name])"
+	user.remote_control = eyeobj
+	user.reset_perspective(eyeobj)
+	eyeobj.setLoc(eyeobj.loc)
+	user.client.images += eyeobj.placement_image
+	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(check_if_user_in_range))
+
+/obj/structure/closet/supplypod/drop_pod/proc/check_if_user_in_range()
+	SIGNAL_HANDLER
+	remove_eye_control(map_user)
+
+/obj/structure/closet/supplypod/drop_pod/proc/remove_eye_control(mob/living/user)
+	if(isnull(user?.client))
+		return
+
+	UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
+
+	for(var/datum/action/actions_removed as anything in actions)
+		actions_removed.Remove(user)
+	for(var/datum/camerachunk/camerachunks_gone as anything in eyeobj.visibleCameraChunks)
+		camerachunks_gone.remove(eyeobj)
+
+	user.reset_perspective(null)
+	if(eyeobj.visible_icon)
+		user.client.images -= eyeobj.user_image
+	user.client.images -= eyeobj.placed_image
+	user.client.images -= eyeobj.placement_image
+	eyeobj.eye_user = null
+	user.remote_control = null
+	map_user = null
+	playsound(src, 'sound/machines/terminal_off.ogg', 25, FALSE)
+	QDEL_NULL(eyeobj)
+
+/obj/structure/closet/supplypod/drop_pod/proc/GrantActions(mob/living/user)
+	for(var/datum/action/to_grant as anything in actions)
+		to_grant.Grant(user)
+
+/obj/structure/closet/supplypod/drop_pod/proc/choose_random_drop_location(mob/user)
+	var/planet_z_level = get_current_celestial_z_level()
+	if(!planet_z_level)
+		return
 	var/list/area/planet_areas = list()
 	for (var/area/area in SSmapping.areas_in_z["[planet_z_level]"])
 		if (!(area.type in typesof(/area/ruin)))
@@ -56,4 +360,17 @@
 			user.forceMove(src)
 			new /obj/effect/pod_landingzone(target, src)
 			used = TRUE
+			update_static_data(user)
 			return
+
+/datum/action/innate/drop_pod
+	name = "Place"
+	button_icon = 'icons/mob/actions/actions_mecha.dmi'
+	button_icon_state = "mech_zoom_off"
+
+/datum/action/innate/drop_pod/Activate()
+	if(QDELETED(owner) || !isliving(owner))
+		return
+	var/mob/camera/ai_eye/remote/drop_pod/remote_eye = owner.remote_control
+	var/obj/structure/closet/supplypod/drop_pod/origin = remote_eye.pod_origin
+	origin.placeLandingSpot(owner)

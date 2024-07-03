@@ -109,7 +109,7 @@
 				I.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 				the_eye.placement_images[I] = list(x_off, y_off)
 
-// Commenting out do to overwriting this in 'voidcrew\modules\shuttle\navigation_computer.dm'
+// Commenting out do to overwriting this in 'voidcrew\modules\shuttle\survey\survey_computer.dm'
 
 // /obj/machinery/computer/camera_advanced/shuttle_docker/give_eye_control(mob/user)
 // 	..()
