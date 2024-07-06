@@ -4,6 +4,7 @@ import { Window } from '../../tgui/layouts';
 
 interface Data {
   mappingEnabled: number;
+  used: number;
 }
 
 export const DropPod = (props, context) => {
@@ -12,9 +13,17 @@ export const DropPod = (props, context) => {
   return (
     <Window width={300} height={450}>
       <Window.Content>
-        {used}
-        <Button onClick={() => act('randomDrop')}>Random launch</Button>
-        <Button onClick={() => act('map')}>Map</Button>
+        <Button onClick={() => act('open')}>Open</Button>
+        <Button onClick={() => act('closed')}>Close</Button>
+        <Button
+          disabled={used ? true : false}
+          onClick={() => act('randomDrop')}
+        >
+          Random launch
+        </Button>
+        <Button disabled={used ? true : false} onClick={() => act('map')}>
+          Map
+        </Button>
       </Window.Content>
     </Window>
   );

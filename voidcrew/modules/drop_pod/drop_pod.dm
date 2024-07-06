@@ -14,6 +14,8 @@
 	/// List of all actions to give to a user when they're well, granted actions
 	var/list/actions = list()
 	var/list/locked_traits = list(ZTRAIT_RESERVED, ZTRAIT_CENTCOM, ZTRAIT_AWAY)
+	var/enter_time = 2 SECONDS
+	reverse_option_list = list("Mobs"=TRUE,"Objects"=TRUE,"Anchored"=FALSE,"Underfloor"=FALSE,"Wallmounted"=FALSE,"Floors"=FALSE,"Walls"=FALSE, "Mecha"=FALSE)
 
 /obj/structure/closet/supplypod/drop_pod/Initialize(mapload, customStyle)
 	. = ..()
@@ -22,6 +24,13 @@
 /obj/structure/closet/supplypod/drop_pod/Destroy()
 	. = ..()
 	unsync_research_servers()
+
+/obj/structure/closet/supplypod/drop_pod/setClosed() //Ditto
+	opened = FALSE
+	set_density(TRUE)
+	take_contents(src)
+	update_appearance()
+	after_close(null, FALSE)
 
 /obj/structure/closet/supplypod/drop_pod/unsync_research_servers()
 	if(linked_techweb)
@@ -43,6 +52,8 @@
 
 /obj/structure/closet/supplypod/drop_pod/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
+	if(!isliving(user))
+		return
 	if((ui_user && ui_user != user) || (map_user && map_user != user))
 		balloon_alert(user, "drop pod in use!")
 		return
@@ -89,6 +100,59 @@
 			map_user = ui_user
 			ui.close()
 			activate_map(map_user)
+		if("open")
+			open_pod(src, FALSE, FALSE)
+		if("closed")
+			setClosed()
+	return TRUE
+
+/obj/structure/closet/supplypod/drop_pod/insertion_allowed(atom/to_insert)
+	if(to_insert.invisibility == INVISIBILITY_ABSTRACT)
+		return FALSE
+	if(ismob(to_insert))
+		if(!reverse_option_list["Mobs"])
+			return FALSE
+		if(!isliving(to_insert)) //let's not put ghosts or camera mobs inside
+			return FALSE
+		var/mob/living/mob_to_insert = to_insert
+		if(mob_to_insert.anchored || mob_to_insert.incorporeal_move)
+			return FALSE
+		mob_to_insert.stop_pulling()
+
+	else if(isobj(to_insert))
+		var/obj/obj_to_insert = to_insert
+		if(issupplypod(obj_to_insert))
+			return FALSE
+		if(istype(obj_to_insert, /obj/effect/supplypod_smoke))
+			return FALSE
+		if(istype(obj_to_insert, /obj/effect/pod_landingzone))
+			return FALSE
+		if(istype(obj_to_insert, /obj/effect/supplypod_rubble))
+			return FALSE
+
+		if(HAS_TRAIT(obj_to_insert, TRAIT_UNDERFLOOR))
+			return !!reverse_option_list["Underfloor"]
+		if(isProbablyWallMounted(obj_to_insert))
+			return !!reverse_option_list["Wallmounted"]
+
+		if(!obj_to_insert.anchored && reverse_option_list["Unanchored"])
+			return TRUE
+		if(obj_to_insert.anchored && !ismecha(obj_to_insert) && reverse_option_list["Anchored"]) //Mecha are anchored but there is a separate option for them
+			return TRUE
+		if(ismecha(obj_to_insert) && reverse_option_list["Mecha"])
+			return TRUE
+		return TRUE
+
+	else if (isturf(to_insert))
+		if(isfloorturf(to_insert) && reverse_option_list["Floors"])
+			return TRUE
+		if(isfloorturf(to_insert) && !reverse_option_list["Floors"])
+			return FALSE
+		if(isclosedturf(to_insert) && reverse_option_list["Walls"])
+			return TRUE
+		if(isclosedturf(to_insert) && !reverse_option_list["Walls"])
+			return FALSE
+		return FALSE
 	return TRUE
 
 /obj/structure/closet/supplypod/drop_pod/proc/get_current_celestial_z_level()
@@ -160,8 +224,6 @@
 	. = ..()
 	if(pod_origin)
 		pod_origin.checkLandingSpot(destination)
-	else
-		log_runtime("pod origin was not found")
 
 /obj/structure/closet/supplypod/drop_pod/proc/CreateEye()
 	if(!ship_port)
@@ -174,7 +236,6 @@
 	var/turf/ship_port_location = locate(ship_port.x, ship_port.y, ship_port.z)
 	var/image/I = image('icons/effects/alphacolors.dmi', ship_port_location, "red")
 	if(!I)
-		log_runtime("Could not find image")
 		return
 
 	I.loc = ship_port_location
@@ -223,7 +284,7 @@
 	// ship_port.port_destinations = my_port
 	remove_eye_control(map_user)
 	eyeobj.placed_image = null
-	map_user.forceMove(src)
+	// map_user.forceMove(src)
 	new /obj/effect/pod_landingzone(target, src)
 	used = TRUE
 	update_static_data(map_user)
@@ -240,14 +301,8 @@
 	// var/list/image_cache = the_eye.placement_images
 	// for(var/i in 1 to image_cache.len)
 	// var/image/I = image_cache[1]
-	if(!eyeobj.placement_image)
-		log_runtime("No placement image found")
 	var/image/I = eyeobj.placement_image
-	if(!I)
-		log_runtime("I not found x2")
 	var/turf/T = locate(eyeturf.x, eyeturf.y, eyeturf.z)
-	if(!T)
-		log_runtime("Could not find T")
 	I.loc = T
 	switch(checkLandingTurf(T))
 		if(SHUTTLE_DOCKER_LANDING_CLEAR)
@@ -333,13 +388,18 @@
 		to_grant.Grant(user)
 
 /obj/structure/closet/supplypod/drop_pod/proc/choose_random_drop_location(mob/user)
+	if(used)
+		return
 	var/planet_z_level = get_current_celestial_z_level()
 	if(!planet_z_level)
 		return
 	var/list/area/planet_areas = list()
 	for (var/area/area in SSmapping.areas_in_z["[planet_z_level]"])
-		if (!(area.type in typesof(/area/ruin)))
+		if(area.type in typesof(/area/overmap_encounter/planetoid))
 			planet_areas += area
+	if(length(planet_areas) < 1)
+		balloon_alert(user, "nowhere to land")
+		return
 	for (var/i in 1 to 5)
 		var/list/turf_list = get_area_turfs(pick(planet_areas))
 		var/turf/target
@@ -357,7 +417,7 @@
 			if (!target)
 				turf_list.Cut(I, I + 1)
 		if (target)
-			user.forceMove(src)
+			// user.forceMove(src)
 			new /obj/effect/pod_landingzone(target, src)
 			used = TRUE
 			update_static_data(user)
