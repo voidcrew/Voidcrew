@@ -78,7 +78,7 @@
 /area/overmap_encounter
 	name = "\improper Overmap Encounter"
 	icon_state = "away"
-	area_flags = HIDDEN_AREA | UNIQUE_AREA | CAVES_ALLOWED | FLORA_ALLOWED | MOB_SPAWN_ALLOWED | NOTELEPORT
+	area_flags = HIDDEN_AREA | CAVES_ALLOWED | FLORA_ALLOWED | MOB_SPAWN_ALLOWED | NOTELEPORT
 	flags_1 = CAN_BE_DIRTY_1
 	always_unpowered = TRUE
 	power_environ = FALSE
@@ -90,6 +90,18 @@
 	sound_environment = SOUND_ENVIRONMENT_STONEROOM
 	ambientsounds = RUINS
 	outdoors = TRUE
+
+/area/overmap_encounter/reg_in_areas_in_z()
+	if(!has_contained_turfs())
+		return
+	var/list/areas_in_z = SSmapping.areas_in_z
+	update_areasize()
+	if(!z)
+		WARNING("No z found for [src]")
+		return
+	if(!areas_in_z["[z]"])
+		areas_in_z["[z]"] = list()
+	areas_in_z["[z]"] |= src
 
 /area/overmap_encounter/planetoid
 	name = "\improper Unknown Planetoid"

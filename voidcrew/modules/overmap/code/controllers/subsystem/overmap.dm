@@ -373,7 +373,7 @@ SUBSYSTEM_DEF(overmap)
 
 	mapzone.taken = TRUE
 
-	zlevel.fill_in(area_override = target_area)
+	var/area/filled_area = zlevel.fill_in(area_override = target_area)
 
 	if(ruin_type)
 		var/turf/ruin_turf = locate(rand(
@@ -389,6 +389,9 @@ SUBSYSTEM_DEF(overmap)
 	else
 		if (!isnull(mapgen))
 			mapgen.generate_terrain(zlevel.get_block())
+
+	filled_area.reg_in_areas_in_z()
+
 	if(weather_controller_type)
 		new weather_controller_type(mapzone)
 
