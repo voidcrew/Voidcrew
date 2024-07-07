@@ -13,6 +13,7 @@ export const DropPod = (props, context) => {
   return (
     <Window width={300} height={450}>
       <Window.Content>
+        <Button onClick={() => act('teleport')}>Teleport</Button>
         <Button onClick={() => act('open')}>Open</Button>
         <Button onClick={() => act('closed')}>Close</Button>
         <Button

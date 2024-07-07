@@ -16,16 +16,120 @@
 	var/list/locked_traits = list(ZTRAIT_RESERVED, ZTRAIT_CENTCOM, ZTRAIT_AWAY)
 	var/enter_time = 2 SECONDS
 	reverse_option_list = list("Mobs"=TRUE,"Objects"=TRUE,"Anchored"=FALSE,"Underfloor"=FALSE,"Wallmounted"=FALSE,"Floors"=FALSE,"Walls"=FALSE, "Mecha"=FALSE)
+	var/turf/targeted_turf
+	var/obj/machinery/quantumpad/linked_pad
+	var/teleporting = FALSE
+	var/teleport_speed = 3 SECONDS
+	var/teleport_used = FALSE
+
+/obj/structure/closet/supplypod/drop_pod/get_remote_view_fullscreens(mob/user)
+	return
+
+/obj/structure/closet/supplypod/drop_pod/attackby(obj/item/I, mob/user, params)
+	if(I.tool_behaviour == TOOL_CROWBAR)
+		if(opened == FALSE)
+			open_pod(src, FALSE, FALSE)
+			return TRUE
+		else
+			setClosed()
+			return TRUE
+	if(I.tool_behaviour == TOOL_MULTITOOL)
+		if(!multitool_check_buffer(user, I))
+			return
+		var/obj/item/multitool/M = I
+		if(istype(M.buffer, /obj/machinery/quantumpad))
+			linked_pad = M.buffer
+			balloon_alert(user, "data uploaded from buffer")
+			return TRUE
+		else
+			balloon_alert(user, "no quantum pad data found!")
+			return TRUE
+
+	return ..()
+
+// /obj/structure/closet/supplypod/drop_pod/crowbar_act(mob/living/user, obj/item/tool)
+// 	if(!user.combat_mode)
+// 		return
+// 	if(opened == FALSE)
+// 		open_pod(src, FALSE, FALSE)
+// 	else
+// 		setClosed()
+// 	. = ..()
+
+/obj/structure/closet/supplypod/drop_pod/proc/teleport()
+	if(teleport_used)
+		return
+	if(!linked_pad)
+		return
+	playsound(get_turf(src), 'sound/weapons/flash.ogg', 25, TRUE)
+	teleporting = TRUE
+
+	addtimer(CALLBACK(src, PROC_REF(teleport_contents)), teleport_speed)
+
+/obj/structure/closet/supplypod/drop_pod/proc/teleport_contents()
+	// teleporting = FALSE
+	teleport_used = TRUE
+	if(QDELETED(linked_pad) || linked_pad.machine_stat & (BROKEN|NOPOWER))
+		if(ui_user)
+			to_chat(ui_user, span_warning("Linked pad is not responding to ping. Teleport aborted."))
+		return
+	// last_teleport = world.time
+
+	// use a lot of power
+	// use_energy(active_power_usage / power_efficiency)
+	sparks()
+	linked_pad.sparks()
+
+	// flick("qpad-beam", src)
+	playsound(get_turf(src), 'sound/weapons/emitter2.ogg', 25, TRUE)
+	flick("qpad-beam", linked_pad)
+	playsound(get_turf(linked_pad), 'sound/weapons/emitter2.ogg', 25, TRUE)
+	var/list/atom/pod_contents = opened ? get_turf(src) : contents
+	for(var/atom/movable/ROI in pod_contents)
+		if(QDELETED(ROI))
+			continue //sleeps in CHECK_TICK
+
+		// if is anchored, don't let through
+		if(ROI.anchored)
+			continue
+
+		if(isliving(ROI))
+			var/mob/living/living_subject = ROI
+			//only TP living mobs buckled to non anchored items
+			if(living_subject.buckled && living_subject.buckled.anchored)
+				continue
+
+		do_teleport(ROI, get_turf(linked_pad), no_effects = TRUE, channel = TELEPORT_CHANNEL_QUANTUM, forced = TRUE)
+		CHECK_TICK
+
+/obj/structure/closet/supplypod/drop_pod/proc/sparks()
+	var/datum/effect_system/spark_spread/quantum/s = new /datum/effect_system/spark_spread/quantum
+	s.set_up(5, 1, get_turf(src))
+	s.start()
 
 /obj/structure/closet/supplypod/drop_pod/Initialize(mapload, customStyle)
 	. = ..()
 	ship_port = SSshuttle.get_containing_shuttle(src)
+	actions += new /datum/action/innate/drop_pod(src)
+	actions += new /datum/action/innate/drop_pod_close_map(src)
+
+/datum/action/innate/drop_pod_close_map
+	name = "Close Map"
+	button_icon = 'icons/mob/actions/actions_silicon.dmi'
+	button_icon_state = "camera_off"
+
+/datum/action/innate/drop_pod_close_map/Activate()
+	if(!owner || !isliving(owner))
+		return
+	var/mob/camera/ai_eye/remote/drop_pod/remote_eye = owner.remote_control
+	var/obj/structure/closet/supplypod/drop_pod/pod = remote_eye.pod_origin
+	pod.remove_eye_control(owner)
 
 /obj/structure/closet/supplypod/drop_pod/Destroy()
 	. = ..()
 	unsync_research_servers()
 
-/obj/structure/closet/supplypod/drop_pod/setClosed() //Ditto
+/obj/structure/closet/supplypod/drop_pod/setClosed()
 	opened = FALSE
 	set_density(TRUE)
 	take_contents(src)
@@ -104,6 +208,8 @@
 			open_pod(src, FALSE, FALSE)
 		if("closed")
 			setClosed()
+		if("teleport")
+			teleport()
 	return TRUE
 
 /obj/structure/closet/supplypod/drop_pod/insertion_allowed(atom/to_insert)
@@ -265,25 +371,25 @@
 				to_chat(map_user, span_warning("Invalid transit location."))
 		return
 
-	if(map_user.client)
-		map_user.client.images -= eyeobj.placed_image
-	eyeobj.placed_image = null
+	// if(map_user.client)
+	// 	map_user.client.images -= eyeobj.placed_image
+	// eyeobj.placed_image = null
 
-	var/image/newI = image('icons/effects/alphacolors.dmi', target.loc, "blue")
-	newI.loc = eyeobj.placement_image.loc
-	newI.layer = NAVIGATION_EYE_LAYER
-	SET_PLANE_EXPLICIT(newI, ABOVE_GAME_PLANE, eyeobj.placement_image)
-	newI.mouse_opacity = 0
-	eyeobj.placed_image = newI
+	// var/image/newI = image('icons/effects/alphacolors.dmi', target.loc, "blue")
+	// newI.loc = eyeobj.placement_image.loc
+	// newI.layer = NAVIGATION_EYE_LAYER
+	// SET_PLANE_EXPLICIT(newI, ABOVE_GAME_PLANE, eyeobj.placement_image)
+	// newI.mouse_opacity = 0
+	// eyeobj.placed_image = newI
 
-	if(map_user.client)
-		map_user.client.images += eyeobj.placed_image
-		to_chat(map_user, span_notice("Transit location designated."))
+	// if(map_user.client)
+	// 	map_user.client.images += eyeobj.placed_image
+	// 	to_chat(map_user, span_notice("Transit location designated."))
 
-	// // Set our port destination with the custom port so we can dock on it
-	// ship_port.port_destinations = my_port
+	// // // Set our port destination with the custom port so we can dock on it
+	// // ship_port.port_destinations = my_port
+	// eyeobj.placed_image = null
 	remove_eye_control(map_user)
-	eyeobj.placed_image = null
 	// map_user.forceMove(src)
 	new /obj/effect/pod_landingzone(target, src)
 	used = TRUE
@@ -417,7 +523,6 @@
 			if (!target)
 				turf_list.Cut(I, I + 1)
 		if (target)
-			// user.forceMove(src)
 			new /obj/effect/pod_landingzone(target, src)
 			used = TRUE
 			update_static_data(user)
