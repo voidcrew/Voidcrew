@@ -17,6 +17,7 @@
 	var/heat_seed = rand(0, 50000)
 
 	var/string_gen = rustg_cnoise_generate("[initial_closed_chance]", "[smoothing_iterations]", "[birth_limit]", "[death_limit]", "[world.maxx]", "[world.maxy]") //Generate the raw CA data
+	var/area/overmap_encounter/planetoid/cave/cave_area = new
 	for(var/t in turfs)
 		var/turf/gen_turf = t
 		var/drift_x = (gen_turf.x + rand(-BIOME_RANDOM_SQUARE_DRIFT, BIOME_RANDOM_SQUARE_DRIFT)) / perlin_zoom
@@ -74,6 +75,7 @@
 					heat_level = planet_type.biomes[BIOME_HOT_CAVE]
 			selected_cave_biome = heat_level[humidity_level]
 			selected_cave_biome = SSmapping.biomes[selected_cave_biome]
-			selected_cave_biome.generate_caves(gen_turf, string_gen)
+			selected_cave_biome.generate_caves(gen_turf, string_gen, cave_area)
 		CHECK_TICK
+	cave_area.reg_in_areas_in_z()
 
