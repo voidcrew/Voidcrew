@@ -698,10 +698,14 @@
 		soundStartTime = 1
 	if (!pod.effectQuiet && !(pod.pod_flags & FIRST_SOUNDS))
 		addtimer(CALLBACK(src, PROC_REF(playFallingSound)), soundStartTime)
+		addtimer(CALLBACK(src, PROC_REF(playLeavingSound), pod), pod.delays[POD_TRANSIT])
 	addtimer(CALLBACK(src, PROC_REF(beginLaunch), pod.effectCircle), pod.delays[POD_TRANSIT])
 
 /obj/effect/pod_landingzone/proc/playFallingSound()
 	playsound(src, pod.fallingSound, pod.soundVolume, TRUE, 6)
+
+/obj/effect/pod_landingzone/proc/playLeavingSound(obj/structure/closet/supplypod/pod)
+	playsound(get_turf(pod), 'sound/effects/podwoosh.ogg', pod.soundVolume, TRUE, 6)
 
 /obj/effect/pod_landingzone/proc/beginLaunch(effectCircle) //Begin the animation for the pod falling. The effectCircle param determines whether the pod gets to come in from any descent angle
 	pod.addGlow()

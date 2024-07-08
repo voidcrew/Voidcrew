@@ -131,6 +131,7 @@
 
 /obj/structure/closet/supplypod/drop_pod/setClosed()
 	opened = FALSE
+	playsound(src, close_sound, soundVolume*0.75, TRUE, -3)
 	set_density(TRUE)
 	take_contents(src)
 	update_appearance()
@@ -173,6 +174,7 @@
 
 /obj/structure/closet/supplypod/drop_pod/ui_data(mob/user)
 	var/list/tgui_data = list()
+	tgui_data["overPlanet"] = over_planet() ? TRUE : FALSE
 	return tgui_data
 
 /obj/structure/closet/supplypod/drop_pod/ui_static_data(mob/user)
@@ -188,6 +190,7 @@
 
 	// Has the pod already been launched?
 	.["used"] = used
+	.["teleporterLinked"] = linked_pad ? TRUE : FALSE
 
 /obj/structure/closet/supplypod/drop_pod/ui_act(action, params, datum/tgui/ui)
 	. = ..()
@@ -195,18 +198,23 @@
 		return
 	switch(action)
 		if("randomDrop")
+			if(opened)
+				balloon_alert(ui_user, "close doors first!")
+				to_chat(ui_user, text = "cannot launch pod as doors are not closed")
+				return
 			ui.close()
 			choose_random_drop_location(ui_user)
 		if("map")
-			if(map_user && map_user != ui_user)
-				balloon_alert(ui_user, "map being used")
+			if(opened)
+				balloon_alert(ui_user, "close doors first!")
+				to_chat(ui_user, text = "cannot use pod mapping as doors are not closed")
 				return
 			map_user = ui_user
 			ui.close()
 			activate_map(map_user)
 		if("open")
 			open_pod(src, FALSE, FALSE)
-		if("closed")
+		if("close")
 			setClosed()
 		if("teleport")
 			teleport()
@@ -260,6 +268,19 @@
 			return FALSE
 		return FALSE
 	return TRUE
+
+/obj/structure/closet/supplypod/drop_pod/proc/over_planet()
+	if(!ship_port)
+		return
+	var/obj/structure/overmap/planet/current_planet
+	var/list/current_overmap_objects = ship_port.current_ship.close_overmap_objects
+
+	for(var/obj/structure/overmap/object in current_overmap_objects)
+		if(object.type in typesof(/obj/structure/overmap/planet))
+			current_planet = object
+			return current_planet
+
+	return null
 
 /obj/structure/closet/supplypod/drop_pod/proc/get_current_celestial_z_level()
 	if(!ship_port)
