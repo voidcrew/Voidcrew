@@ -103,7 +103,7 @@
 	desc = "A musty barrel. Reach in and unlock its mold-covered mysteries!"
 	icon = 'icons/obj/structures.dmi'
 	icon_state = "barrel"
-	mob_types = list(/mob/living/simple_animal/hostile/pirate/melee/beach, /mob/living/simple_animal/hostile/pirate/ranged/beach)
+	mob_types = list(/mob/living/basic/trooper/pirate/melee/beach, /mob/living/basic/trooper/pirate/ranged/beach)
 	max_mobs = 2
 	max_integrity = 250
 	bite_chance = 0

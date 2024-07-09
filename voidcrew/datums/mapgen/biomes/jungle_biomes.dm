@@ -58,7 +58,7 @@
 		/obj/structure/flora/ash/whitesands/puce = 1
 	)
 	mob_spawn_chance = 1
-	mob_spawn_list = list(/mob/living/basic/mining/wolf/random = 1, /mob/living/basic/bat = 1, /mob/living/simple_animal/hostile/retaliate/snake)
+	mob_spawn_list = list(/mob/living/basic/mining/wolf/random = 1, /mob/living/basic/bat = 1, /mob/living/basic/snake)
 	feature_spawn_chance = 1
 //	feature_spawn_list = list(/obj/item/pickaxe/rusted = 1, /obj/structure/closet/crate/grave/lead_researcher = 1, /obj/structure/closet/crate/grave = 1, /obj/item/shovel = 1, /obj/structure/closet/crate/secure/loot = 1)
 
