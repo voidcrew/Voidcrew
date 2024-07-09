@@ -107,3 +107,5 @@
 			CHECK_TICK
 			if(QDELETED(src))
 				return
+
+	return area_to_use

@@ -9,3 +9,7 @@
 /obj/item/disk/survey_data_disk/Initialize(mapload)
 	. = ..()
 	data = new()
+
+/obj/item/disk/survey_data_disk/Destroy()
+	. = ..()
+	data = null
