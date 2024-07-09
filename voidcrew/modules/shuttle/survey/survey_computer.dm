@@ -180,7 +180,7 @@
 	tgui_data["surveyValue"] = get_survey_value(celestial_object)
 	tgui_data["theme"] = theme
 	tgui_data["surveyDataDisk"] = survey_disk ? TRUE : FALSE
-	tgui_data["mappingEnabled"] = mapping_enabled
+	tgui_data["mappingEnabled"] = istype(celestial_object, /obj/structure/overmap/planet) ? mapping_enabled : FALSE
 
 	return tgui_data
 

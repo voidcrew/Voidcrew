@@ -1,8 +1,13 @@
+#define STYLE_DROPPOD 15
+
 /obj/structure/closet/supplypod/drop_pod
+	name = "orbital drop pod"
+	desc = "A device that lets you travel to celestial objects under your ship"
 	stay_after_drop = TRUE
 	specialised = TRUE
+	icon = 'voidcrew/icons/obj/supplypods.dmi'
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF | UNACIDABLE
-	style = STYLE_CULT
+	style = STYLE_DROPPOD
 	var/obj/docking_port/mobile/voidcrew/ship_port
 	var/used = FALSE
 	var/datum/techweb/linked_techweb
@@ -15,12 +20,45 @@
 	var/list/actions = list()
 	var/list/locked_traits = list(ZTRAIT_RESERVED, ZTRAIT_CENTCOM, ZTRAIT_AWAY)
 	var/enter_time = 2 SECONDS
+	anchorable = TRUE
+	anchored = TRUE
 	reverse_option_list = list("Mobs"=TRUE,"Objects"=TRUE,"Anchored"=FALSE,"Underfloor"=FALSE,"Wallmounted"=FALSE,"Floors"=FALSE,"Walls"=FALSE, "Mecha"=FALSE)
 	var/turf/targeted_turf
 	var/obj/machinery/quantumpad/linked_pad
 	var/teleporting = FALSE
 	var/teleport_speed = 3 SECONDS
 	var/teleport_used = FALSE
+	var/debug_enabled = FALSE
+	density = TRUE
+	var/ignore_next_open = FALSE
+
+/obj/structure/closet/supplypod/drop_pod/advanced
+	name = "advanced orbital drop pod"
+	desc = "An improved drop pod with extra armor and insulation from the outside environment. It doesn't open automatically upon landing."
+	contents_pressure_protection = 1
+	contents_thermal_insulation = 1
+	max_integrity = 600
+
+/datum/crafting_recipe/drop_pod
+	name = "Orbital Drop Pod"
+	result = /obj/structure/closet/supplypod/drop_pod
+	reqs = list(/obj/item/stack/sheet/iron = 30, // the backboard
+				/obj/item/stack/rods = 5)
+	time = 10 SECONDS
+	category = CAT_EQUIPMENT
+
+/datum/crafting_recipe/drop_pod/advanced
+	name = "Advanced Orbital Drop Pod"
+	result = /obj/structure/closet/supplypod/drop_pod/advanced
+	reqs = list(/obj/item/stack/sheet/plasteel = 15,
+				/obj/item/stack/sheet/iron = 15, // the backboard
+				/obj/item/stack/rods = 10)
+
+/obj/structure/closet/supplypod/drop_pod/advanced/open_pod(atom/movable/holder, broken = FALSE, forced = FALSE)
+	if(ignore_next_open)
+		ignore_next_open = FALSE
+		return
+	. = ..()
 
 /obj/structure/closet/supplypod/drop_pod/get_remote_view_fullscreens(mob/user)
 	return
@@ -44,17 +82,11 @@
 		else
 			balloon_alert(user, "no quantum pad data found!")
 			return TRUE
+	if(I.tool_behaviour == TOOL_WRENCH)
+		set_anchored(!anchored)
+		return TRUE
 
 	return ..()
-
-// /obj/structure/closet/supplypod/drop_pod/crowbar_act(mob/living/user, obj/item/tool)
-// 	if(!user.combat_mode)
-// 		return
-// 	if(opened == FALSE)
-// 		open_pod(src, FALSE, FALSE)
-// 	else
-// 		setClosed()
-// 	. = ..()
 
 /obj/structure/closet/supplypod/drop_pod/proc/teleport()
 	if(teleport_used)
@@ -130,6 +162,8 @@
 	unsync_research_servers()
 
 /obj/structure/closet/supplypod/drop_pod/setClosed()
+	if(opened == FALSE)
+		return
 	opened = FALSE
 	playsound(src, close_sound, soundVolume*0.75, TRUE, -3)
 	set_density(TRUE)
@@ -174,19 +208,22 @@
 
 /obj/structure/closet/supplypod/drop_pod/ui_data(mob/user)
 	var/list/tgui_data = list()
-	tgui_data["overPlanet"] = over_planet() ? TRUE : FALSE
+	var/obj/structure/overmap/planet/current_planet = get_current_planet()
+	tgui_data["overPlanet"] = current_planet && current_planet.loaded ? TRUE : FALSE
 	return tgui_data
 
 /obj/structure/closet/supplypod/drop_pod/ui_static_data(mob/user)
 	. = ..()
-
-	if(linked_techweb)
-		if("survey_console_advanced" in linked_techweb.researched_nodes)
-			.["mappingEnabled"] = TRUE
+	if(debug_enabled)
+		.["mappingEnabled"] = TRUE
+	else
+		if(linked_techweb)
+			if("survey_console_advanced" in linked_techweb.researched_nodes)
+				.["mappingEnabled"] = TRUE
+			else
+				.["mappingEnabled"] = FALSE
 		else
 			.["mappingEnabled"] = FALSE
-	else
-		.["mappingEnabled"] = FALSE
 
 	// Has the pod already been launched?
 	.["used"] = used
@@ -218,7 +255,12 @@
 			setClosed()
 		if("teleport")
 			teleport()
+		if("refresh")
+			refresh()
 	return TRUE
+
+/obj/structure/closet/supplypod/drop_pod/proc/refresh()
+	update_static_data(ui_user)
 
 /obj/structure/closet/supplypod/drop_pod/insertion_allowed(atom/to_insert)
 	if(to_insert.invisibility == INVISIBILITY_ABSTRACT)
@@ -239,7 +281,7 @@
 			return FALSE
 		if(istype(obj_to_insert, /obj/effect/supplypod_smoke))
 			return FALSE
-		if(istype(obj_to_insert, /obj/effect/pod_landingzone))
+		if(istype(obj_to_insert, /obj/effect/pod_landingzone/drop_pod))
 			return FALSE
 		if(istype(obj_to_insert, /obj/effect/supplypod_rubble))
 			return FALSE
@@ -269,7 +311,7 @@
 		return FALSE
 	return TRUE
 
-/obj/structure/closet/supplypod/drop_pod/proc/over_planet()
+/obj/structure/closet/supplypod/drop_pod/proc/get_current_planet()
 	if(!ship_port)
 		return
 	var/obj/structure/overmap/planet/current_planet
@@ -277,21 +319,16 @@
 
 	for(var/obj/structure/overmap/object in current_overmap_objects)
 		if(object.type in typesof(/obj/structure/overmap/planet))
-			current_planet = object
-			return current_planet
+			if(istype(object, /obj/structure/overmap/planet/empty))
+				if(debug_enabled)
+					current_planet = object
+					return current_planet
+			else
+				current_planet = object
+				return current_planet
+	return
 
-	return null
-
-/obj/structure/closet/supplypod/drop_pod/proc/get_current_celestial_z_level()
-	if(!ship_port)
-		return
-	var/obj/structure/overmap/planet/current_planet
-	var/list/current_overmap_objects = ship_port.current_ship.close_overmap_objects
-
-	for(var/obj/structure/overmap/object in current_overmap_objects)
-		if(object.type in typesof(/obj/structure/overmap/planet))
-			current_planet = object
-
+/obj/structure/closet/supplypod/drop_pod/proc/get_planet_z(obj/structure/overmap/planet/current_planet)
 	if(!current_planet || !current_planet.mapzone || !(length(current_planet.mapzone.z_levels)))
 		return null
 	var/planet_z_level = current_planet.mapzone.z_levels[1].z_value
@@ -312,8 +349,13 @@
 		return
 	if(isnull(user.client))
 		return
-	var/planet_z_level = get_current_celestial_z_level()
+	var/obj/structure/overmap/planet/current_planet = get_current_planet()
+	if(!current_planet)
+		balloon_alert(user, "no current planet!")
+		return
+	var/planet_z_level = get_planet_z(current_planet)
 	if(!planet_z_level)
+		balloon_alert(user, "planet not surveyed!")
 		return
 	var/mob/living/L = user
 	if(!eyeobj)
@@ -335,6 +377,58 @@
 	else
 		give_eye_control(L)
 		eyeobj.setLoc(eyeobj.loc)
+
+/obj/structure/closet/supplypod/drop_pod/proc/choose_random_drop_location(mob/user)
+	if(used)
+		return
+	var/obj/structure/overmap/planet/current_planet = get_current_planet()
+	if(!current_planet)
+		log_admin("No current planet")
+		return
+	var/planet_z_level = get_planet_z(current_planet)
+	if(!planet_z_level)
+		log_admin("No planet z")
+		return
+	var/list/area/planet_areas = list()
+	for (var/area/area in SSmapping.areas_in_z["[planet_z_level]"])
+		if(area.type in typesof(/area/overmap_encounter/planetoid))
+			planet_areas += area
+	if(length(planet_areas) < 1)
+		if(debug_enabled)
+			if(istype(current_planet, /obj/structure/overmap/planet/empty))
+				var/area/space/space_area = get_area_instance_from_text("/area/space")
+				if(!space_area || !istype(space_area, /area/space))
+					log_admin("Space area not matching up [space_area]")
+				else
+					planet_areas += space_area
+		else
+			balloon_alert(user, "nowhere to land")
+			return
+	for (var/i in 1 to 5)
+		var/list/turf_list = get_area_turfs(pick(planet_areas))
+		var/turf/target
+		while (turf_list.len && !target)
+			var/I = rand(1, turf_list.len)
+			var/turf/checked_turf = turf_list[I]
+			if(debug_enabled)
+				target = checked_turf
+				break
+			if(!checked_turf.density && !isgroundlessturf(checked_turf))
+				var/clear = TRUE
+				for(var/obj/checked_object in checked_turf)
+					if(checked_object.density)
+						clear = FALSE
+						break
+				if(clear)
+					target = checked_turf
+			if (!target)
+				turf_list.Cut(I, I + 1)
+		if (target)
+			set_anchored(TRUE)
+			new /obj/effect/pod_landingzone/drop_pod(target, src)
+			used = TRUE
+			update_static_data(user)
+			return
 
 /mob/camera/ai_eye/remote/drop_pod
 	visible_icon = FALSE
@@ -392,29 +486,28 @@
 				to_chat(map_user, span_warning("Invalid transit location."))
 		return
 
-	// if(map_user.client)
-	// 	map_user.client.images -= eyeobj.placed_image
-	// eyeobj.placed_image = null
-
-	// var/image/newI = image('icons/effects/alphacolors.dmi', target.loc, "blue")
-	// newI.loc = eyeobj.placement_image.loc
-	// newI.layer = NAVIGATION_EYE_LAYER
-	// SET_PLANE_EXPLICIT(newI, ABOVE_GAME_PLANE, eyeobj.placement_image)
-	// newI.mouse_opacity = 0
-	// eyeobj.placed_image = newI
-
-	// if(map_user.client)
-	// 	map_user.client.images += eyeobj.placed_image
-	// 	to_chat(map_user, span_notice("Transit location designated."))
-
-	// // // Set our port destination with the custom port so we can dock on it
-	// // ship_port.port_destinations = my_port
-	// eyeobj.placed_image = null
 	remove_eye_control(map_user)
-	// map_user.forceMove(src)
-	new /obj/effect/pod_landingzone(target, src)
+	set_anchored(TRUE)
+	new /obj/effect/pod_landingzone/drop_pod(target, src)
 	used = TRUE
 	update_static_data(map_user)
+
+/obj/effect/pod_landingzone/drop_pod
+	var/leaving_sound = 'sound/effects/podwoosh.ogg'
+
+/obj/effect/pod_landingzone/drop_pod/endLaunch()
+	if(istype(pod, /obj/structure/closet/supplypod/drop_pod/advanced))
+		var/obj/structure/closet/supplypod/drop_pod/advanced/adv_pod = pod
+		adv_pod.ignore_next_open = TRUE
+	. = ..()
+
+/obj/effect/pod_landingzone/drop_pod/proc/playLeavingSound(obj/structure/closet/supplypod/pod)
+	playsound(get_turf(pod), leaving_sound, pod.soundVolume, TRUE, 6)
+
+/obj/effect/pod_landingzone/drop_pod/beginLaunch(effectCircle)
+	if(!pod.effectQuiet)
+		playLeavingSound(pod)
+	. = ..()
 
 /obj/structure/closet/supplypod/drop_pod/proc/checkLandingSpot(turf/eyeturf)
 	if(!eyeturf)
@@ -481,7 +574,22 @@
 	user.remote_control = eyeobj
 	user.reset_perspective(eyeobj)
 	eyeobj.setLoc(eyeobj.loc)
+	user.set_sight(BLIND | SEE_TURFS)
 	user.client.images += eyeobj.placement_image
+	if(linked_techweb)
+		var/mob_sight = FALSE
+		var/obj_sight = FALSE
+		for(var/node in linked_techweb.researched_nodes)
+			if(node == "survey_console_superior")
+				user.add_sight(SEE_OBJS)
+				obj_sight = TRUE
+
+			if(node == "survey_console_elite")
+				user.add_sight(SEE_MOBS)
+				mob_sight = TRUE
+
+			if(obj_sight && mob_sight)
+				break
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(check_if_user_in_range))
 
 /obj/structure/closet/supplypod/drop_pod/proc/check_if_user_in_range()
@@ -513,41 +621,6 @@
 /obj/structure/closet/supplypod/drop_pod/proc/GrantActions(mob/living/user)
 	for(var/datum/action/to_grant as anything in actions)
 		to_grant.Grant(user)
-
-/obj/structure/closet/supplypod/drop_pod/proc/choose_random_drop_location(mob/user)
-	if(used)
-		return
-	var/planet_z_level = get_current_celestial_z_level()
-	if(!planet_z_level)
-		return
-	var/list/area/planet_areas = list()
-	for (var/area/area in SSmapping.areas_in_z["[planet_z_level]"])
-		if(area.type in typesof(/area/overmap_encounter/planetoid))
-			planet_areas += area
-	if(length(planet_areas) < 1)
-		balloon_alert(user, "nowhere to land")
-		return
-	for (var/i in 1 to 5)
-		var/list/turf_list = get_area_turfs(pick(planet_areas))
-		var/turf/target
-		while (turf_list.len && !target)
-			var/I = rand(1, turf_list.len)
-			var/turf/checked_turf = turf_list[I]
-			if(!checked_turf.density && !isgroundlessturf(checked_turf))
-				var/clear = TRUE
-				for(var/obj/checked_object in checked_turf)
-					if(checked_object.density)
-						clear = FALSE
-						break
-				if(clear)
-					target = checked_turf
-			if (!target)
-				turf_list.Cut(I, I + 1)
-		if (target)
-			new /obj/effect/pod_landingzone(target, src)
-			used = TRUE
-			update_static_data(user)
-			return
 
 /datum/action/innate/drop_pod
 	name = "Place"

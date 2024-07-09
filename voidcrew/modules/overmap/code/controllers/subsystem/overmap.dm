@@ -390,7 +390,8 @@ SUBSYSTEM_DEF(overmap)
 		if (!isnull(mapgen))
 			mapgen.generate_terrain(zlevel.get_block())
 
-	filled_area.reg_in_areas_in_z()
+	if(filled_area)
+		filled_area.reg_in_areas_in_z()
 
 	if(weather_controller_type)
 		new weather_controller_type(mapzone)

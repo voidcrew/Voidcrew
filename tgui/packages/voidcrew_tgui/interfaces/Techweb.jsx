@@ -548,7 +548,11 @@ const TechNode = (props) => {
   let surveyedCount = 0;
   Object.entries(required_surveyed_objects).map((obj) => {
     requiredCount += obj[1];
-    surveyedCount += surveyed_objects[obj[0]];
+    if (surveyed_objects) {
+      if (surveyed_objects[obj[0]]) {
+        surveyedCount += surveyed_objects[obj[0]];
+      }
+    }
   });
 
   const surveyProgress = (
@@ -676,22 +680,37 @@ const TechNode = (props) => {
           <Stack>
             {Object.entries(required_surveyed_objects).map((obj, index) => {
               return (
-                <Stack.Item
-                  width="100%"
-                  // p={1}
-                  // pl={1}
-                  // pr={1}
-                  textAlign="center"
-                  lineHeight={2}
-                  key={obj[0]}
-                  fontSize={1}
-                  backgroundColor={
-                    surveyed_objects[obj[0]] >= obj[1] ? '#4d9121' : '#bd2020'
-                  }
-                >
-                  {obj[0].charAt(0).toUpperCase() +
-                    obj[0].slice(1).replace('_', ' ')}
-                  : {obj[1]}
+                // <Stack.Item
+                //   width="100%"
+                //   textAlign="center"
+                //   lineHeight={2}
+                //   key={obj[0]}
+                //   fontSize={1}
+                //   backgroundColor={
+                //     surveyed_objects
+                //       ? [obj[0]] >= obj[1]
+                //         ? '#4d9121'
+                //         : '#bd2020'
+                //       : '#bd2020'
+                //   }
+                // >
+                //   {obj[0].charAt(0).toUpperCase() +
+                //     obj[0].slice(1).replace('_', ' ')}
+                //   : {obj[1]}
+                // </Stack.Item>
+                <Stack.Item textAlign="center" width="100%" key={obj[0]}>
+                  <ProgressBar
+                    ranges={{
+                      good: [1, Infinity],
+                      average: [0.5, 1],
+                      bad: [-Infinity, 0.5],
+                    }}
+                    value={surveyed_objects[obj[0]] / obj[1]}
+                  >
+                    {obj[0].charAt(0).toUpperCase() +
+                      obj[0].slice(1).replace('_', ' ')}{' '}
+                    ({surveyed_objects[obj[0]]}/{obj[1]}){' '}
+                  </ProgressBar>
                 </Stack.Item>
               );
             })}
