@@ -4,7 +4,7 @@
 
 	feature_spawn_chance = 1
 	feature_spawn_list = list(/obj/structure/geyser/random = 1)
-	mob_spawn_list = list(/mob/living/simple_animal/hostile/asteroid/goliath = 25, /obj/structure/spawner/mining/goliath = 30, \
+	mob_spawn_list = list(/mob/living/basic/mining/goliath/ancient = 25, /obj/structure/spawner/mining/goliath = 30, \
 		/mob/living/simple_animal/hostile/asteroid/basilisk = 25, /obj/structure/spawner/mining = 30, \
 		/mob/living/basic/mining/hivelord = 25, /obj/structure/spawner/mining/hivelord = 30, \
 		SPAWN_MEGAFAUNA = 4, /mob/living/basic/mining/goldgrub = 10)

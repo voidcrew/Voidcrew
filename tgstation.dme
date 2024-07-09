@@ -6360,7 +6360,6 @@
 #include "voidcrew\modules\mob\living\simple_animal\friendly\turtle.dm"
 #include "voidcrew\modules\mob\living\simple_animal\hostile\beachcarp.dm"
 #include "voidcrew\modules\mob\living\simple_animal\hostile\bear.dm"
-#include "voidcrew\modules\mob\living\simple_animal\hostile\bees.dm"
 #include "voidcrew\modules\mob\living\simple_animal\hostile\cat_butcher.dm"
 #include "voidcrew\modules\mob\living\simple_animal\hostile\giant_spider.dm"
 #include "voidcrew\modules\mob\living\simple_animal\hostile\gorilla.dm"

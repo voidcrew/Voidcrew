@@ -159,8 +159,8 @@
 	mob_spawn_chance = 5
 	mob_spawn_list = list(
 		/mob/living/basic/spider/giant/tarantula/wasteland = 1,
-		/mob/living/simple_animal/hostile/asteroid/goliath/beast/wasteland = 20,
-		/mob/living/simple_animal/hostile/asteroid/goliath/beast/ancient/wasteland = 15,
+		/mob/living/basic/mining/goliath/wasteland = 20,
+		/mob/living/basic/mining/goliath/ancient/wasteland = 15,
 		/obj/structure/spawner/ice_moon/demonic_portal/blobspore = 1,
 		/obj/structure/spawner/ice_moon/demonic_portal/hivebot = 1
 	)

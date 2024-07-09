@@ -1,8 +1,8 @@
-/mob/living/simple_animal/hostile/asteroid/goliath/wasteland
+/mob/living/basic/mining/goliath/ancient/wasteland
 	faction = list(FACTION_WASTELAND)
 
-/mob/living/simple_animal/hostile/asteroid/goliath/beast/wasteland
+/mob/living/basic/mining/goliath/wasteland
 	faction = list(FACTION_WASTELAND)
 
-/mob/living/simple_animal/hostile/asteroid/goliath/beast/ancient/wasteland
+/mob/living/basic/mining/goliath/ancient/wasteland
 	faction = list(FACTION_WASTELAND)

@@ -10,4 +10,3 @@
 /mob/living/basic/spider/giant/tarantula/wasteland/Initialize(mapload)
 	. = ..()
 	ai_controller.set_blackboard_key(BB_SPIDER_WEB_ACTION, null)
-

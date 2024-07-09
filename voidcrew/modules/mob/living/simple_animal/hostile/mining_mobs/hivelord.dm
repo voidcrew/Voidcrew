@@ -1,7 +1,7 @@
 /mob/living/basic/mining/legion/wasteland
 	faction = list(FACTION_WASTELAND)
 
-/mob/living/simple_animal/hostile/big_legion/wasteland
+/mob/living/basic/mining/legion/large/wasteland
 	faction = list(FACTION_WASTELAND)
 
 /mob/living/basic/mining/legion/crystal/wasteland
