@@ -236,7 +236,6 @@ SUBSYSTEM_DEF(overmap)
 		planet_to_spawn.desc = planet_info.desc
 		planet_to_spawn.icon_state = planet_info.icon_state
 		planet_to_spawn.color = planet_info.color
-		planet_to_spawn.load_level()
 		qdel(planet_info)
 
 // TODO - MULTI-Z VLEVELS

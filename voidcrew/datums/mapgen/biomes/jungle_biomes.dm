@@ -31,7 +31,7 @@
 	flora_spawn_list = list(/obj/structure/flora/grass/jungle = 1, /obj/structure/flora/grass/jungle/b = 1, /obj/structure/flora/rock/jungle = 1)
 	flora_spawn_chance = 3
 	mob_spawn_chance = 0.05
-	mob_spawn_list = list(/mob/living/basic/giant_spider/tarantula = 1)
+	mob_spawn_list = list(/mob/living/basic/spider/giant/tarantula = 1)
 
 /datum/biome/jungle_wasteland
 	open_turf_types = list(/turf/open/misc/dirt/jungle/wasteland/lit = 1)

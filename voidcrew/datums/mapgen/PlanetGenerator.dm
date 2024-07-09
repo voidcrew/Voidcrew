@@ -17,8 +17,7 @@
 	var/heat_seed = rand(0, 50000)
 
 	var/string_gen = rustg_cnoise_generate("[initial_closed_chance]", "[smoothing_iterations]", "[birth_limit]", "[death_limit]", "[world.maxx]", "[world.maxy]") //Generate the raw CA data
-	for(var/t in turfs)
-		var/turf/gen_turf = t
+	for(var/turf/gen_turf in turfs)
 		var/drift_x = (gen_turf.x + rand(-BIOME_RANDOM_SQUARE_DRIFT, BIOME_RANDOM_SQUARE_DRIFT)) / perlin_zoom
 		var/drift_y = (gen_turf.y + rand(-BIOME_RANDOM_SQUARE_DRIFT, BIOME_RANDOM_SQUARE_DRIFT)) / perlin_zoom
 
@@ -76,4 +75,8 @@
 			selected_cave_biome = SSmapping.biomes[selected_cave_biome]
 			selected_cave_biome.generate_caves(gen_turf, string_gen)
 		CHECK_TICK
+	for(var/turf/gen_turf in turfs)
+		gen_turf.AfterChange(CHANGETURF_IGNORE_AIR)
+		CHECK_TICK
+
 

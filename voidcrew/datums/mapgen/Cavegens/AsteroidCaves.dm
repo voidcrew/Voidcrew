@@ -46,7 +46,6 @@
 			continue
 		turfs_to_gen += T
 		var/area/old_area = get_area(T)
-		asteroid_area.contents += T
 		T.change_area(old_area, asteroid_area)
 
 	return ..(turfs_to_gen)
