@@ -356,19 +356,14 @@ SUBSYSTEM_DEF(overmap)
 		if(ispath(ruin_type))
 			ruin_type = new ruin_type
 
-	var/encounter_name = "Dynamic Overmap Encounter"
-	var/datum/map_zone/mapzone = find_free_mapzone()
+	var/datum/map_zone/mapzone = get_free_mapzone()
 	var/datum/space_level/zlevel
-	if(isnull(mapzone))
-		mapzone = create_map_zone(encounter_name)
-		zlevel = SSmapping.add_new_zlevel(encounter_name, list(ZTRAIT_MINING = TRUE))
-		mapzone.add_space_level(zlevel)
+
+	if(length(mapzone.z_levels) >= 1)
+		zlevel = mapzone.z_levels[1]
 	else
-		if(mapzone.z_levels[1])
-			zlevel = mapzone.z_levels[1]
-		else
-			zlevel = SSmapping.add_new_zlevel(encounter_name, list(ZTRAIT_MINING = TRUE))
-			mapzone.add_space_level(zlevel)
+		zlevel = SSmapping.add_new_zlevel("Dynamic Overmap Encounter", list(ZTRAIT_MINING = TRUE, ZTRAIT_LINKAGE = SELFLOOPING))
+		mapzone.add_space_level(zlevel)
 
 	mapzone.taken = TRUE
 
@@ -376,9 +371,9 @@ SUBSYSTEM_DEF(overmap)
 
 	if(ruin_type)
 		var/turf/ruin_turf = locate(rand(
-			zlevel.low_x+6,
-			zlevel.high_x-ruin_type.width-6),
-			zlevel.high_y-ruin_type.height-6,
+			7,
+			world.maxx-ruin_type.width-6),
+			world.maxy-ruin_type.height-6,
 			zlevel.z_value
 			)
 		ruin_type.load(ruin_turf)
@@ -394,8 +389,8 @@ SUBSYSTEM_DEF(overmap)
 
 	// locates the first dock in the bottom left, accounting for padding and the border
 	var/turf/primary_docking_turf = locate(
-		zlevel.low_x+RESERVE_DOCK_DEFAULT_PADDING+1,
-		zlevel.low_y+RESERVE_DOCK_DEFAULT_PADDING+1,
+		7+RESERVE_DOCK_DEFAULT_PADDING,
+		7+RESERVE_DOCK_DEFAULT_PADDING,
 		zlevel.z_value
 		)
 	// now we need to offset to account for the first dock
@@ -424,15 +419,11 @@ SUBSYSTEM_DEF(overmap)
 
 	return list(mapzone, primary_dock, secondary_dock)
 
-
-/datum/controller/subsystem/overmap/proc/create_map_zone(new_name)
-	return new /datum/map_zone(new_name)
-
-/datum/controller/subsystem/overmap/proc/find_free_mapzone()
-	. = null
+/datum/controller/subsystem/overmap/proc/get_free_mapzone()
 	for(var/datum/map_zone/mapzone as anything in map_zones)
 		if(!mapzone.taken)
 			return(mapzone)
+	return new /datum/map_zone("Dynamic Overmap Encounter")
 
 
 

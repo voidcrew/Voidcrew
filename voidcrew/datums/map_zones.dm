@@ -30,12 +30,6 @@
 	for(var/datum/space_level/zlevel as anything in z_levels)
 		. += zlevel.get_mind_mobs()
 
-/datum/space_level
-	var/low_x
-	var/low_y
-	var/high_x
-	var/high_y
-
 /datum/space_level/proc/get_mind_mobs()
 	. = list()
 	for(var/mob/living/living_mob as anything in GLOB.mob_living_list)
@@ -45,11 +39,7 @@
 			. += living_mob
 
 /datum/space_level/proc/get_block()
-	low_x = 1
-	low_y = 1
-	high_x = world.maxx
-	high_y = world.maxy
-	return block(locate(low_x,low_y,z_value), locate(high_x,high_y,z_value))
+	return block(locate(1,1,z_value), locate(world.maxx,world.maxy,z_value))
 
 /datum/space_level/proc/clear_reservation()
 	var/area/space_area = GLOB.areas_by_type[world.area]
@@ -73,14 +63,6 @@
 
 	for(var/turf/turf as anything in block_turfs)
 		turf.AfterChange(CHANGETURF_IGNORE_AIR)
-
-		// we don't need to smooth anything in the reserve, because it's empty, nor do we need to check its starlight.
-		// only the sides need to do that. this saved ~4-5% of reservation clear times in testing
-		if(turf.x != low_x && turf.x != high_x && turf.y != low_y && turf.y != high_y)
-			continue
-
-		QUEUE_SMOOTH(turf)
-		QUEUE_SMOOTH_NEIGHBORS(turf)
 		CHECK_TICK
 
 /datum/space_level/proc/fill_in(turf/turf_type, area/area_override)
