@@ -104,6 +104,7 @@
 /obj/machinery/computer/camera_advanced/remove_eye_control(mob/living/user)
 	if(isnull(user?.client))
 		return
+
 	for(var/datum/action/actions_removed as anything in actions)
 		actions_removed.Remove(user)
 	for(var/datum/camerachunk/camerachunks_gone as anything in eyeobj.visibleCameraChunks)

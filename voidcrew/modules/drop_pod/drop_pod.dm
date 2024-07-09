@@ -210,6 +210,7 @@
 	var/list/tgui_data = list()
 	var/obj/structure/overmap/planet/current_planet = get_current_planet()
 	tgui_data["overPlanet"] = current_planet && current_planet.loaded ? TRUE : FALSE
+	tgui_data["teleporterUsed"] = teleport_used
 	return tgui_data
 
 /obj/structure/closet/supplypod/drop_pod/ui_static_data(mob/user)

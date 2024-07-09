@@ -680,24 +680,6 @@ const TechNode = (props) => {
           <Stack>
             {Object.entries(required_surveyed_objects).map((obj, index) => {
               return (
-                // <Stack.Item
-                //   width="100%"
-                //   textAlign="center"
-                //   lineHeight={2}
-                //   key={obj[0]}
-                //   fontSize={1}
-                //   backgroundColor={
-                //     surveyed_objects
-                //       ? [obj[0]] >= obj[1]
-                //         ? '#4d9121'
-                //         : '#bd2020'
-                //       : '#bd2020'
-                //   }
-                // >
-                //   {obj[0].charAt(0).toUpperCase() +
-                //     obj[0].slice(1).replace('_', ' ')}
-                //   : {obj[1]}
-                // </Stack.Item>
                 <Stack.Item textAlign="center" width="100%" key={obj[0]}>
                   <ProgressBar
                     ranges={{
