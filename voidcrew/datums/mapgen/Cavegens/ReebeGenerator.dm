@@ -77,7 +77,7 @@
 	flora_spawn_chance = 6
 
 	mob_spawn_list = list(
-		/mob/living/simple_animal/hostile/asteroid/basilisk/watcher/forgotten = 1)
+		/mob/living/basic/mining/watcher/forgotten = 1)
 
 	flora_spawn_list = list(
 		/obj/machinery/power/supermatter_crystal/shard/hugbox = 1,

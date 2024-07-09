@@ -96,7 +96,7 @@
 	mob_spawn_list = list(
 		/mob/living/basic/mining/legion/wasteland = 15,
 		/mob/living/basic/mining/legion/crystal/wasteland = 1,
-		/mob/living/simple_animal/hostile/asteroid/basilisk/watcher/forgotten/wasteland = 1
+		/mob/living/basic/mining/watcher/forgotten/wasteland = 1
 	)
 
 /datum/biome/cave/wasteland
@@ -183,8 +183,8 @@
 	flora_spawn_chance = 30
 	mob_spawn_chance = 5
 	mob_spawn_list = list(
-		/mob/living/simple_animal/hostile/blob/blobbernaut/independent/wasteland = 1,
-		/mob/living/simple_animal/hostile/asteroid/basilisk/watcher/magmawing/wasteland = 4,
+		/mob/living/basic/blob_minion/blobbernaut/wasteland = 1,
+		/mob/living/basic/mining/watcher/magmawing/wasteland = 4,
 		/mob/living/basic/mining/goldgrub = 3,
 		/mob/living/basic/mining/legion/wasteland = 3,
 		/obj/structure/spawner/ice_moon/demonic_portal/blobspore = 1,

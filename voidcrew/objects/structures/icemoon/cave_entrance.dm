@@ -255,7 +255,7 @@
 				new /mob/living/basic/blob_minion/spore/minion/weak(loc)
 			if(prob(10))
 				new /obj/item/gun/medbeam(loc)
-				new /mob/living/simple_animal/hostile/blob/blobbernaut/independent(loc)
+				new /mob/living/basic/blob_minion/blobbernaut(loc)
 			if(prob(35))
 				new /obj/item/defibrillator(loc)
 				new /mob/living/basic/blob_minion/spore/minion/weak(loc)
@@ -294,7 +294,7 @@
 				new /obj/effect/mob_spawn/corpse/human/doctor(loc)
 			new /obj/item/healthanalyzer(loc)
 			//new /turf/open/floor/carpet/nanoweave/beige(loc)
-			new /mob/living/simple_animal/hostile/blob/blobbernaut/independent(loc)
+			new /mob/living/basic/blob_minion/blobbernaut(loc)
 			new /mob/living/basic/blob_minion/spore/minion/weak(loc)
 			new /mob/living/basic/blob_minion/spore/minion/weak(loc)
 		if(7)//teleporty ice world. Incomplete.
