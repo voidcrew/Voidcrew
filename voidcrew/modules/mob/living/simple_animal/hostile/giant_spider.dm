@@ -1,13 +1,12 @@
-/mob/living/basic/giant_spider/tarantula/wasteland
+/mob/living/basic/spider/giant/tarantula/wasteland
 	faction = list(FACTION_WASTELAND)
-/mob/living/basic/giant_spider/wasteland
+/mob/living/basic/spider/giant/wasteland
 	faction = list(FACTION_WASTELAND)
 
-/mob/living/basic/giant_spider/wasteland/Initialize(mapload)
+/mob/living/basic/spider/giant/wasteland/Initialize(mapload)
 	. = ..()
 	ai_controller.set_blackboard_key(BB_SPIDER_WEB_ACTION, null)
 
-/mob/living/basic/giant_spider/tarantula/wasteland/Initialize(mapload)
+/mob/living/basic/spider/giant/tarantula/wasteland/Initialize(mapload)
 	. = ..()
 	ai_controller.set_blackboard_key(BB_SPIDER_WEB_ACTION, null)
-

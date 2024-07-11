@@ -22,11 +22,11 @@
 	)
 	flora_spawn_chance = 25
 	mob_spawn_list = list(
-		/mob/living/simple_animal/butterfly/beach = 1,
+		/mob/living/basic/butterfly/beach = 1,
 		/mob/living/basic/slime/pet/beach = 1,
-		///mob/living/simple_animal/chicken/rabbit/normal/beach = 1,
-		/mob/living/simple_animal/chicken/beach = 1,
-		/mob/living/simple_animal/chick/beach = 1,
+		/mob/living/basic/rabbit/beach = 1,
+		/mob/living/basic/chicken/beach = 1,
+		/mob/living/basic/chick/beach = 1,
 		/mob/living/basic/mouse/beach = 1,
 		/mob/living/basic/cow/beach = 1,
 		/mob/living/basic/deer/beach = 1
@@ -37,8 +37,8 @@
 	flora_spawn_chance = 65
 	mob_spawn_list = list(
 		/mob/living/simple_animal/pet/cat/cak/beach = 1,
-		/mob/living/simple_animal/butterfly/beach = 4,
-		/mob/living/simple_animal/hostile/retaliate/snake/beach = 5,
+		/mob/living/basic/butterfly/beach = 4,
+		/mob/living/basic/snake/beach = 5,
 		/mob/living/basic/slime/random/beach = 3,
 		/mob/living/basic/bee/toxin = 3
 	)
@@ -104,8 +104,8 @@
 		/mob/living/simple_animal/beachcarp/trout = 5,
 		/mob/living/simple_animal/beachcarp/salmon = 5,
 		/mob/living/simple_animal/beachcarp/perch = 5,
-		/mob/living/simple_animal/hostile/pirate/melee/beach/boat = 3,
-		/mob/living/simple_animal/hostile/pirate/ranged/beach/boat = 1
+		/mob/living/basic/trooper/pirate/melee/beach/boat = 3,
+		/mob/living/basic/trooper/pirate/ranged/beach/boat = 1
 	)
 	feature_spawn_chance = 0.1
 	feature_spawn_list = list(
@@ -160,7 +160,7 @@
 	)
 	mob_spawn_chance = 5
 	mob_spawn_list = list(
-		/mob/living/simple_animal/butterfly = 1,
+		/mob/living/basic/butterfly = 1,
 		/mob/living/basic/slime/pet = 1,
 		/mob/living/basic/lightgeist = 1
 	)

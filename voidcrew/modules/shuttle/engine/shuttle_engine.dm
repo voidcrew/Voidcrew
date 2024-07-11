@@ -2,17 +2,7 @@
 	if(!port)
 		return FALSE
 	connected_ship_ref = WEAKREF(port)
-	var/found_engine_in_list = FALSE
-
-	///Shitty deduplicate workaround, only add the engine if it isn't already in the list
-	///I couldn't figure out why this was getting called multiple times, but when I do I will fix it there instead
-	for (var/current_engine in port.engine_list)
-		if (src == current_engine)
-			found_engine_in_list = TRUE
-			return
-	if (found_engine_in_list == FALSE)
-		port.engine_list += src
-
+	port.engine_list |= src
 	port.current_engine_power += engine_power
 	if(mapload)
 		port.initial_engine_power += engine_power

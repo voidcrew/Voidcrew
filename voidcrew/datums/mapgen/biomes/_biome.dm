@@ -32,13 +32,8 @@
 /datum/biome/proc/generate_overworld(var/turf/gen_turf)
 	//TURF SPAWNING
 	var/turf/picked_turf = pickweight(open_turf_types)
-	var/turf/open/new_turf = gen_turf.ChangeTurf(picked_turf, initial(picked_turf.baseturfs), CHANGETURF_IGNORE_AIR|CHANGETURF_RECALC_ADJACENT|CHANGETURF_DEFER_CHANGE)
-	CHECK_TICK
-	gen_turf.AfterChange(CHANGETURF_IGNORE_AIR|CHANGETURF_RECALC_ADJACENT)
-	CHECK_TICK
-
+	var/turf/open/new_turf = gen_turf.ChangeTurf(picked_turf, initial(picked_turf.baseturfs), CHANGETURF_IGNORE_AIR | CHANGETURF_DEFER_CHANGE)
 	generate_features(new_turf)
-
 	CHECK_TICK
 
 /datum/biome/cave/proc/generate_caves(turf/gen_turf, string_gen, area/overmap_encounter/planetoid/cave/new_area)
@@ -53,18 +48,13 @@
 		stored_flags |= NO_RUINS
 
 	var/turf/new_turf = pickweight(closed ? closed_turf_types : open_turf_types)
-	new_turf = gen_turf.ChangeTurf(new_turf, initial(new_turf.baseturfs), CHANGETURF_IGNORE_AIR|CHANGETURF_DEFER_CHANGE)
+	new_turf = gen_turf.ChangeTurf(new_turf, initial(new_turf.baseturfs), CHANGETURF_IGNORE_AIR | CHANGETURF_DEFER_CHANGE)
 	new_turf.flags_1 |= stored_flags
-	CHECK_TICK
-	gen_turf.AfterChange(CHANGETURF_IGNORE_AIR|CHANGETURF_RECALC_ADJACENT)
-
 	CHECK_TICK
 
 	//Overwrite turf areas with cave areas to combat weather
 	var/area/old_area = get_area(new_turf)
-	new_area.contents += new_turf
 	new_turf.change_area(old_area, new_area)
-	CHECK_TICK
 
 	if(!closed)
 		generate_features(new_turf)

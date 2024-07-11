@@ -158,8 +158,7 @@ Always compile, always use that verb, and always make sure that it works for wha
 #define CAMERA_LOCK_CENTCOM 4
 
 //Reserved/Transit turf type
-//VOID EDIT
-#define RESERVED_TURF_TYPE /turf/open/space //What the turf is when not being used
+#define RESERVED_TURF_TYPE /turf/open/space/basic //What the turf is when not being used
 
 //Ruin Generation
 #define PLACEMENT_TRIES 100 //How many times we try to fit the ruin somewhere until giving up (really should just swap to some packing algo)
