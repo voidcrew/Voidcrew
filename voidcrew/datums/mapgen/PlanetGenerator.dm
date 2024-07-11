@@ -76,11 +76,9 @@
 			selected_cave_biome = SSmapping.biomes[selected_cave_biome]
 			selected_cave_biome.generate_caves(gen_turf, string_gen, cave_area)
 		CHECK_TICK
-<<<<<<< HEAD
+
 	cave_area.reg_in_areas_in_z()
 
-=======
 	for(var/turf/gen_turf in turfs)
 		gen_turf.AfterChange(CHANGETURF_IGNORE_AIR)
 		CHECK_TICK
->>>>>>> origin/planet-fixes

@@ -33,6 +33,7 @@
 	//TURF SPAWNING
 	var/turf/picked_turf = pickweight(open_turf_types)
 	var/turf/open/new_turf = gen_turf.ChangeTurf(picked_turf, initial(picked_turf.baseturfs), CHANGETURF_IGNORE_AIR | CHANGETURF_DEFER_CHANGE)
+	gen_turf.AfterChange(CHANGETURF_IGNORE_AIR)
 	generate_features(new_turf)
 	CHECK_TICK
 
@@ -49,6 +50,7 @@
 
 	var/turf/new_turf = pickweight(closed ? closed_turf_types : open_turf_types)
 	new_turf = gen_turf.ChangeTurf(new_turf, initial(new_turf.baseturfs), CHANGETURF_IGNORE_AIR | CHANGETURF_DEFER_CHANGE)
+	new_turf.AfterChange(CHANGETURF_IGNORE_AIR)
 	new_turf.flags_1 |= stored_flags
 	CHECK_TICK
 
