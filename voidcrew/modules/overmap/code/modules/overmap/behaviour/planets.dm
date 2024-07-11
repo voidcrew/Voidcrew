@@ -81,6 +81,15 @@
 	surface = /turf/open/misc/wasteland/lit
 	planet_template = /datum/planet/wasteland
 
+/datum/overmap/planet/debug
+	name = "strange debug planet"
+	desc = "A very weak energy signal originating from a abandoned debug planet."
+	color = COLOR_PURPLE
+	mapgen = /datum/map_generator/planet_generator_debug
+	target_area = /area/overmap_encounter/planetoid/wasteland
+	surface = /turf/open/misc/dirt/jungle
+	planet_template = /datum/planet/debug
+
 /datum/overmap/planet/reebe
 	name = "???"
 	desc = "Some sort of strange portal. Theres no identification of what this is."

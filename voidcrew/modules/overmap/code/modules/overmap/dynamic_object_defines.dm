@@ -60,6 +60,9 @@
 /obj/structure/overmap/planet/wasteland
 	planet = /datum/overmap/planet/wasteland
 
+/obj/structure/overmap/planet/debug
+	planet = /datum/overmap/planet/debug
+
 /obj/structure/overmap/planet/empty
 	planet = /datum/overmap/planet/empty
 
@@ -148,3 +151,8 @@
 	name = "\improper Yellow Space"
 	sound_environment = SOUND_ENVIRONMENT_MOUNTAINS
 	ambientsounds = REEBE
+
+/area/overmap_encounter/planetoid/debug
+	name = "\improper Debug Planetoid"
+	sound_environment = SOUND_ENVIRONMENT_CAVE
+	ambientsounds = MINING

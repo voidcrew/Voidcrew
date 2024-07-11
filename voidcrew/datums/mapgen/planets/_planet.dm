@@ -1,4 +1,6 @@
 /datum/planet
+	var/list/cave_biomes
+	var/list/overworld_biomes
 	var/list/biomes = list(
 		BIOME_COLDEST = list(
 			BIOME_LOWEST_HUMIDITY = /datum/biome/grass,
