@@ -85,8 +85,9 @@
 	name = "strange debug planet"
 	desc = "A very weak energy signal originating from a abandoned debug planet."
 	color = COLOR_PURPLE
+	// ruin_type = ZTRAIT_JUNGLE_RUINS
 	mapgen = /datum/map_generator/planet_generator_debug
-	target_area = /area/overmap_encounter/planetoid/wasteland
+	target_area = /area/overmap_encounter/planetoid/debug
 	surface = /turf/open/misc/dirt/jungle
 	planet_template = /datum/planet/debug
 

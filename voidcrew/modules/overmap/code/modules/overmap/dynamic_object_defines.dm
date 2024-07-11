@@ -156,3 +156,9 @@
 	name = "\improper Debug Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_CAVE
 	ambientsounds = MINING
+	// base_lighting_alpha = 255
+	// base_lighting_color = "#FFFFCC"
+
+/area/overmap_encounter/planetoid/cave/debug
+	// base_lighting_alpha = 255
+	// base_lighting_color = "#1b010f"

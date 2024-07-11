@@ -16,6 +16,7 @@
 	icon_state = "dirt"
 	base_icon_state = "dirt"
 	baseturfs = /turf/open/misc/debug
-	// initial_gas_mix = OPENTURF_LOW_PRESSURE
-	// planetary_atmos = TRUE
-	planetary_atmos = FALSE
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = TRUE
+	light_range = 2
+	light_power = 0.80
