@@ -384,11 +384,9 @@
 		return
 	var/obj/structure/overmap/planet/current_planet = get_current_planet()
 	if(!current_planet)
-		log_admin("No current planet")
 		return
 	var/planet_z_level = get_planet_z(current_planet)
 	if(!planet_z_level)
-		log_admin("No planet z")
 		return
 	var/list/area/planet_areas = list()
 	for (var/area/area in SSmapping.areas_in_z["[planet_z_level]"])
@@ -398,10 +396,7 @@
 		if(debug_enabled)
 			if(istype(current_planet, /obj/structure/overmap/planet/empty))
 				var/area/space/space_area = get_area_instance_from_text("/area/space")
-				if(!space_area || !istype(space_area, /area/space))
-					log_admin("Space area not matching up [space_area]")
-				else
-					planet_areas += space_area
+				planet_areas += space_area
 		else
 			balloon_alert(user, "nowhere to land")
 			return
