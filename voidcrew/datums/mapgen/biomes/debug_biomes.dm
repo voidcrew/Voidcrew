@@ -18,5 +18,7 @@
 	baseturfs = /turf/open/misc/debug
 	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
 	planetary_atmos = TRUE
-	light_range = 2
-	light_power = 0.80
+	// light_range = 0
+	// light_power = 0.80
+	var/delayed_light_range = 2
+	var/delayed_light_power = 0.80

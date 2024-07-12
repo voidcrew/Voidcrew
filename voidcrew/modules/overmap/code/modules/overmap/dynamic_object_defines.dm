@@ -156,9 +156,24 @@
 	name = "\improper Debug Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_CAVE
 	ambientsounds = MINING
-	// base_lighting_alpha = 255
-	// base_lighting_color = "#FFFFCC"
+	map_generator = /datum/map_generator/planet_generator_area
 
-/area/overmap_encounter/planetoid/cave/debug
-	// base_lighting_alpha = 255
-	// base_lighting_color = "#1b010f"
+/area/overmap_encounter/planetoid/debug/proc/enable_lights()
+	for (var/list/zlevel_turfs as anything in get_zlevel_turf_lists())
+		for(var/turf/area_turf as anything in zlevel_turfs)
+			var/turf/open/misc/debug/t = area_turf
+			if(!istype(t, /turf/open/misc/debug))
+				continue
+			if(t.space_lit)
+				continue
+			t.set_light(t.delayed_light_range, t.delayed_light_power, l_on = TRUE)
+		CHECK_TICK
+	CHECK_TICK
+
+/area/overmap_encounter/planetoid/debug/RunTerrainGeneration()
+	if(map_generator)
+		map_generator = new map_generator()
+		var/list/turfs = list()
+		for(var/turf/T in contents)
+			turfs += T
+		map_generator.generate_terrain(turfs, /datum/planet/debug)

@@ -25,8 +25,25 @@
 	load_ship_templates()
 	return ..()
 
+#define INIT_ANNOUNCE(X) to_chat(world, span_boldannounce("[X]")); log_world(X)
 /datum/controller/subsystem/mapping/loadWorld()
 	InitializeDefaultZLevels()
+	var/list/FailedZs = list()
+	for(var/i in 0 to 20)
+		LoadGroup(FailedZs, "Planet [i]", "map_files/voidcrew", "debug.dmm", default_traits = list(ZTRAIT_MINING))
+	if(LAZYLEN(FailedZs)) //but seriously, unless the server's filesystem is messed up this will never happen
+		var/msg = "RED ALERT! The following map files failed to load: [FailedZs[1]]"
+		if(FailedZs.len > 1)
+			for(var/I in 2 to FailedZs.len)
+				msg += ", [FailedZs[I]]"
+		msg += ". Yell at your server host!"
+		INIT_ANNOUNCE(msg)
+#undef INIT_ANNOUNCE
+
+/datum/controller/subsystem/mapping/run_map_terrain_generation()
+	for(var/area/A as anything in GLOB.areas)
+		CHECK_TICK
+		A.RunTerrainGeneration()
 
 /datum/controller/subsystem/mapping/preloadRuinTemplates()
 	. = ..()
