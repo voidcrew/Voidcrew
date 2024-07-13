@@ -93,12 +93,13 @@
 
 	var/string_gen = rustg_cnoise_generate("[initial_closed_chance]", "[smoothing_iterations]", "[birth_limit]", "[death_limit]", "[world.maxx]", "[world.maxy]") //Generate the raw CA data
 
-	var/area/overmap_encounter/planetoid/cave/cave_area = new
+	var/area/overmap_encounter/planetoid/cave/cave_area
 	var/caves = FALSE
 	var/overworld = FALSE
 
 	if (cave_biomes && length(cave_biomes) > 0)
 		caves = TRUE
+		cave_area = new
 	if (overworld_biomes && length(overworld_biomes) > 0)
 		overworld = TRUE
 
@@ -112,10 +113,7 @@
 		var/heat = text2num(rustg_noise_get_at_coordinates("[heat_seed]", "[drift_x]", "[drift_y]"))
 		var/height = text2num(rustg_noise_get_at_coordinates("[height_seed]", "[drift_x]", "[drift_y]"))
 		var/humidity = text2num(rustg_noise_get_at_coordinates("[humidity_seed]", "[drift_x]", "[drift_y]"))
-		var/heat_level
 		var/humidity_level
-		var/datum/biome/selected_biome
-		var/datum/biome/cave/selected_cave_biome
 
 		if(caves)
 			var/area/A = gen_turf.loc
@@ -136,83 +134,98 @@
 
 		if(height <= mountain_height)
 			if(overworld)
-				switch(heat)
-					if(0 to 0.20)
-						heat_level = overworld_biomes[BIOME_COLDEST]
-					if(0.20 to 0.40)
-						heat_level = overworld_biomes[BIOME_COLD]
-					if(0.40 to 0.60)
-						heat_level = overworld_biomes[BIOME_WARM]
-					if(0.60 to 0.65)
-						heat_level = overworld_biomes[BIOME_TEMPERATE]
-					if(0.65 to 0.80)
-						heat_level = overworld_biomes[BIOME_HOT]
-					if(0.80 to 1)
-						heat_level = overworld_biomes[BIOME_HOTTEST]
-				selected_biome = heat_level[humidity_level]
-				selected_biome = SSmapping.biomes[selected_biome]
-				var/turf/picked_turf = pickweight(selected_biome.open_turf_types)
-				picked_turf = new picked_turf(gen_turf)
-				// selected_biome.generate_overworld(gen_turf)
-
+				generate_overworld(heat, humidity_level, gen_turf)
 			else
-				switch(heat)
-					if(0 to 0.25)
-						heat_level = cave_biomes[BIOME_COLDEST_CAVE]
-					if(0.25 to 0.5)
-						heat_level = cave_biomes[BIOME_COLD_CAVE]
-					if(0.5 to 0.75)
-						heat_level = cave_biomes[BIOME_WARM_CAVE]
-					if(0.75 to 1)
-						heat_level = cave_biomes[BIOME_HOT_CAVE]
-				selected_cave_biome = heat_level[humidity_level]
-				selected_cave_biome = SSmapping.biomes[selected_cave_biome]
-				// selected_cave_biome.generate_caves(gen_turf, string_gen, cave_area)
-				var/closed = text2num(string_gen[world.maxx * (gen_turf.y - 1) + gen_turf.x])
-				var/turf/picked_turf = pickweight(closed ? selected_cave_biome.closed_turf_types : selected_cave_biome.open_turf_types)
-				picked_turf = new picked_turf(gen_turf)
-				if(gen_turf.turf_flags & NO_RUINS)
-					picked_turf.turf_flags |= NO_RUINS
-				picked_turf.change_area(get_area(picked_turf), /area/overmap_encounter/planetoid/cave)
+				generate_cave(heat, humidity_level, string_gen, gen_turf, cave_area)
 		else
 			if(caves)
-				switch(heat)
-					if(0 to 0.25)
-						heat_level = cave_biomes[BIOME_COLDEST_CAVE]
-					if(0.25 to 0.5)
-						heat_level = cave_biomes[BIOME_COLD_CAVE]
-					if(0.5 to 0.75)
-						heat_level = cave_biomes[BIOME_WARM_CAVE]
-					if(0.75 to 1)
-						heat_level = cave_biomes[BIOME_HOT_CAVE]
-				selected_cave_biome = heat_level[humidity_level]
-				selected_cave_biome = SSmapping.biomes[selected_cave_biome]
-				var/closed = text2num(string_gen[world.maxx * (gen_turf.y - 1) + gen_turf.x])
-				var/turf/picked_turf = pickweight(closed ? selected_cave_biome.closed_turf_types : selected_cave_biome.open_turf_types)
-				picked_turf = new picked_turf(gen_turf)
-				if(gen_turf.turf_flags & NO_RUINS)
-					picked_turf.turf_flags |= NO_RUINS
+				generate_cave(heat, humidity_level, string_gen, gen_turf, cave_area)
 			else
-				switch(heat)
-					if(0 to 0.20)
-						heat_level = overworld_biomes[BIOME_COLDEST]
-					if(0.20 to 0.40)
-						heat_level = overworld_biomes[BIOME_COLD]
-					if(0.40 to 0.60)
-						heat_level = overworld_biomes[BIOME_WARM]
-					if(0.60 to 0.65)
-						heat_level = overworld_biomes[BIOME_TEMPERATE]
-					if(0.65 to 0.80)
-						heat_level = overworld_biomes[BIOME_HOT]
-					if(0.80 to 1)
-						heat_level = overworld_biomes[BIOME_HOTTEST]
-				selected_biome = heat_level[humidity_level]
-				selected_biome = SSmapping.biomes[selected_biome]
-				var/turf/picked_turf = pickweight(selected_biome.open_turf_types)
-				picked_turf = new picked_turf(gen_turf)
+				generate_overworld(heat, humidity_level, gen_turf)
 		CHECK_TICK
-	cave_area.reg_in_areas_in_z()
+
+	// Add lighting to the external side of caves
+	if(caves)
+		for(var/i in 1 to length(cave_area.turfs_by_zlevel))
+			for(var/turf/cave_turf in cave_area.turfs_by_zlevel[i])
+				var/list/area/adjacent_areas = get_adjacent_open_areas(cave_turf)
+				if(!adjacent_areas)
+					return
+				var/bl_found = FALSE
+				for(var/area/a in adjacent_areas)
+					if(a == cave_area)
+						continue
+					if(a.base_lighting_alpha == 255)
+						bl_found = TRUE
+						break
+
+				if(bl_found)
+					cave_turf.set_light(2, 2, l_on = TRUE)
+
+		cave_area.reg_in_areas_in_z()
 	var/message = "[name] planet generation finished in [(REALTIMEOFDAY - start_time)/10]s!"
 	to_chat(world, span_boldannounce("[message]"))
 	log_world(message)
+
+/datum/map_generator/planet_generator_area/proc/generate_overworld(heat, humidity_level, gen_turf)
+	var/heat_level
+	var/datum/biome/selected_biome
+
+	switch(heat)
+		if(0 to 0.20)
+			heat_level = overworld_biomes[BIOME_COLDEST]
+		if(0.20 to 0.40)
+			heat_level = overworld_biomes[BIOME_COLD]
+		if(0.40 to 0.60)
+			heat_level = overworld_biomes[BIOME_WARM]
+		if(0.60 to 0.65)
+			heat_level = overworld_biomes[BIOME_TEMPERATE]
+		if(0.65 to 0.80)
+			heat_level = overworld_biomes[BIOME_HOT]
+		if(0.80 to 1)
+			heat_level = overworld_biomes[BIOME_HOTTEST]
+	selected_biome = heat_level[humidity_level]
+	selected_biome = SSmapping.biomes[selected_biome]
+	var/turf/picked_turf = pickweight(selected_biome.open_turf_types)
+	picked_turf = new picked_turf(gen_turf)
+
+/datum/map_generator/planet_generator_area/proc/generate_cave(heat, humidity_level, string_gen, turf/gen_turf, cave_area)
+	var/datum/biome/cave/selected_cave_biome
+	var/heat_level
+
+	switch(heat)
+		if(0 to 0.25)
+			heat_level = cave_biomes[BIOME_COLDEST_CAVE]
+		if(0.25 to 0.5)
+			heat_level = cave_biomes[BIOME_COLD_CAVE]
+		if(0.5 to 0.75)
+			heat_level = cave_biomes[BIOME_WARM_CAVE]
+		if(0.75 to 1)
+			heat_level = cave_biomes[BIOME_HOT_CAVE]
+	selected_cave_biome = heat_level[humidity_level]
+	selected_cave_biome = SSmapping.biomes[selected_cave_biome]
+	var/closed = text2num(string_gen[world.maxx * (gen_turf.y - 1) + gen_turf.x])
+	var/turf/picked_turf = pickweight(closed ? selected_cave_biome.closed_turf_types : selected_cave_biome.open_turf_types)
+	picked_turf = new picked_turf(gen_turf)
+	if(gen_turf.turf_flags & NO_RUINS)
+		picked_turf.turf_flags |= NO_RUINS
+	picked_turf.change_area(get_area(picked_turf), cave_area)
+
+	// // while(get_area(picked_turf) != cave_area)
+	// UNTIL(get_area(picked_turf) == cave_area)
+
+	// // Calculate additional lighting
+	// var/list/area/adjacent_areas = get_adjacent_open_areas(picked_turf)
+	// if(!adjacent_areas)
+	// 	return
+	// var/bl_found = FALSE
+	// for(var/area/a in adjacent_areas)
+	// 	if(a == get_area(picked_turf))
+	// 		continue
+	// 	if(a.base_lighting_alpha == 255)
+	// 		bl_found = TRUE
+	// 		break
+
+	// if(bl_found)
+	// 	picked_turf.set_light(2, 2, l_on = TRUE)
 
