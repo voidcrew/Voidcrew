@@ -48,9 +48,6 @@
 /obj/structure/overmap/planet/jungle
 	planet = /datum/overmap/planet/jungle
 
-/obj/structure/overmap/planet/reebe
-	planet = /datum/overmap/planet/reebe
-
 /obj/structure/overmap/planet/asteroid
 	planet = /datum/overmap/planet/asteroid
 
@@ -59,9 +56,6 @@
 
 /obj/structure/overmap/planet/wasteland
 	planet = /datum/overmap/planet/wasteland
-
-/obj/structure/overmap/planet/debug
-	planet = /datum/overmap/planet/debug
 
 /obj/structure/overmap/planet/empty
 	planet = /datum/overmap/planet/empty
@@ -88,7 +82,6 @@
 	power_equip = FALSE
 	power_light = FALSE
 	requires_power = TRUE
-	static_lighting = TRUE
 	luminosity = 0
 	sound_environment = SOUND_ENVIRONMENT_STONEROOM
 	ambientsounds = RUINS
@@ -111,60 +104,61 @@
 	sound_environment = SOUND_ENVIRONMENT_MOUNTAINS
 	has_gravity = STANDARD_GRAVITY
 	always_unpowered = TRUE
+	map_generator = /datum/map_generator/planet_generator
+	base_lighting_alpha = 255
+	base_lighting_color = "#ffffff"
+	static_lighting = FALSE
+	var/planet_type
+
+/area/overmap_encounter/planetoid/RunTerrainGeneration()
+	map_generator = new map_generator()
+	var/list/turfs = list()
+	for(var/turf/T in contents)
+		turfs += T
+	map_generator.generate_terrain(turfs, planet_type)
 
 /area/overmap_encounter/planetoid/cave
 	name = "\improper Mysterious Cave"
 	sound_environment = SOUND_ENVIRONMENT_CAVE
 	ambientsounds = SPOOKY
 	outdoors = FALSE
+	planet_type = /datum/planet/jungle
+	base_lighting_alpha = null
+	base_lighting_color = null
+	static_lighting = TRUE
 
 /area/overmap_encounter/planetoid/lava
 	name = "\improper Volcanic Planetoid"
 	ambientsounds = MINING
+	planet_type = /datum/planet/lava
+	map_generator = /datum/map_generator/planet_generator/lava
+
+/area/overmap_encounter/planetoid/lava/RunTerrainGeneration()
+	planet_type = new /datum/planet/lava
+	. = ..()
 
 /area/overmap_encounter/planetoid/ice
 	name = "\improper Frozen Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_CAVE
 	ambientsounds = SPOOKY
+	planet_type = /datum/planet/snow
+	map_generator = /datum/map_generator/planet_generator/snow
 
 /area/overmap_encounter/planetoid/beach
 	name = "\improper Beach Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_FOREST
 	ambientsounds = BEACH
+	planet_type = /datum/planet/beach
+	map_generator = /datum/map_generator/planet_generator/beach
 
 /area/overmap_encounter/planetoid/jungle
 	name = "\improper Jungle Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_FOREST
 	ambientsounds = AWAY_MISSION
-
-/area/overmap_encounter/planetoid/dynamic
-	name = "\improper Dynamic Planetoid"
-	sound_environment = SOUND_ENVIRONMENT_FOREST
-	ambientsounds = AWAY_MISSION
+	planet_type = /datum/planet/jungle
 
 /area/overmap_encounter/planetoid/wasteland
 	name = "\improper Apocalyptic Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_HANGAR
 	ambientsounds = MINING
-
-/area/overmap_encounter/planetoid/reebe
-	name = "\improper Yellow Space"
-	sound_environment = SOUND_ENVIRONMENT_MOUNTAINS
-	ambientsounds = REEBE
-
-/area/overmap_encounter/planetoid/debug
-	name = "\improper Debug Planetoid"
-	sound_environment = SOUND_ENVIRONMENT_CAVE
-	ambientsounds = MINING
-	map_generator = /datum/map_generator/planet_generator_area
-	base_lighting_alpha = 255
-	base_lighting_color = "#ffffff"
-	static_lighting = FALSE
-
-/area/overmap_encounter/planetoid/debug/RunTerrainGeneration()
-	if(map_generator)
-		map_generator = new map_generator()
-		var/list/turfs = list()
-		for(var/turf/T in contents)
-			turfs += T
-		map_generator.generate_terrain(turfs, /datum/planet/debug)
+	planet_type = /datum/planet/wasteland

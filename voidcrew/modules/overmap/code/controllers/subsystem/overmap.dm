@@ -383,11 +383,11 @@ SUBSYSTEM_DEF(overmap)
 			)
 		ruin_type.load(ruin_turf)
 
-	if (!isnull(mapgen) && (istype(mapgen, /datum/map_generator/planet_generator) || istype(mapgen, /datum/map_generator/planet_generator_debug)) && !isnull(planet_template))
+	if (!isnull(mapgen) && (istype(mapgen, /datum/map_generator/planet_generator)) && !isnull(planet_template))
 		mapgen.generate_terrain(zlevel.get_block(), planet_template)
 	else
 		if (!isnull(mapgen))
-			mapgen.generate_terrain(zlevel.get_block())
+			mapgen.generate_terrain(zlevel.get_block(), planet_template)
 
 	if(filled_area)
 		filled_area.reg_in_areas_in_z()

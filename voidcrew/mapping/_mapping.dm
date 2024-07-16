@@ -29,8 +29,17 @@
 /datum/controller/subsystem/mapping/loadWorld()
 	InitializeDefaultZLevels()
 	var/list/FailedZs = list()
-	for(var/i in 0 to 20)
-		LoadGroup(FailedZs, "Planet [i]", "map_files/voidcrew", "debug.dmm", default_traits = list(ZTRAIT_MINING))
+	var/list/planet_types = list("lava", "ice", "jungle", "beach", "wasteland")
+
+	// for(var/planet_type in planet_types)
+	// 	for(var/i in 0 to 2)
+	// 		LoadGroup(FailedZs, "Planet [planet_type] [i]", "map_files/voidcrew", "[planet_type].dmm", default_traits = list(ZTRAIT_MINING))
+
+	for(var/i in 1 to 15)
+		LoadGroup(FailedZs, "Planet lava 1", "map_files/voidcrew", "lava.dmm", default_traits = list(ZTRAIT_MINING))
+
+	// LoadGroup(FailedZs, "Planet lava 1", "map_files/voidcrew", "lava.dmm", default_traits = list(ZTRAIT_MINING))
+
 	if(LAZYLEN(FailedZs)) //but seriously, unless the server's filesystem is messed up this will never happen
 		var/msg = "RED ALERT! The following map files failed to load: [FailedZs[1]]"
 		if(FailedZs.len > 1)
@@ -44,6 +53,11 @@
 	for(var/area/A as anything in GLOB.areas)
 		CHECK_TICK
 		A.RunTerrainGeneration()
+
+
+// TEMPORARILY EDITING OUT - NEED TO IMPLEMENT
+/datum/controller/subsystem/mapping/run_map_terrain_population()
+	return
 
 /datum/controller/subsystem/mapping/preloadRuinTemplates()
 	. = ..()

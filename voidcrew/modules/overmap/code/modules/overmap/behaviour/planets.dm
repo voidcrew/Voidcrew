@@ -81,28 +81,6 @@
 	surface = /turf/open/misc/wasteland/lit
 	planet_template = /datum/planet/wasteland
 
-/datum/overmap/planet/debug
-	name = "strange debug planet"
-	desc = "A very weak energy signal originating from a abandoned debug planet."
-	color = COLOR_PURPLE
-	// ruin_type = ZTRAIT_JUNGLE_RUINS
-	mapgen = /datum/map_generator/planet_generator_debug
-	target_area = /area/overmap_encounter/planetoid/debug
-	surface = /turf/open/misc/dirt/jungle
-	planet_template = /datum/planet/debug
-
-/datum/overmap/planet/reebe
-	name = "???"
-	desc = "Some sort of strange portal. Theres no identification of what this is."
-	color = COLOR_YELLOW
-	icon_state = "wormhole"
-
-	ruin_type = ZTRAIT_REEBE_RUINS
-	spawn_rate = -1 // disabled because reebe sucks for natural gen
-	mapgen = /datum/map_generator/cave_generator/reebe
-	target_area = /area/overmap_encounter/planetoid/reebe
-	surface = /turf/open/chasm/reebe_void
-
 /datum/overmap/planet/asteroid
 	name = "large asteroid"
 	desc = "A large asteroid with significant traces of minerals."

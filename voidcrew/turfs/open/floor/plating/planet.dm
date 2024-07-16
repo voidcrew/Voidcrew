@@ -77,8 +77,8 @@
 	planetary_atmos = TRUE
 	icon = 'voidcrew/icons/turf/floors/lava_grass_red.dmi'
 	smooth_icon = 'voidcrew/icons/turf/floors/lava_grass_red.dmi'
-	light_power = 1
-	light_range = 2
+	// light_power = 1
+	// light_range = 2
 	gender = PLURAL
 
 /turf/open/misc/grass/lava/orange

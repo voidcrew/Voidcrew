@@ -1,5 +1,5 @@
 /datum/planet/jungle
-	biomes = list(
+	overworld_biomes = list(
 		//NORMAL BIOMES
 		BIOME_COLDEST = list(
 			BIOME_LOWEST_HUMIDITY = /datum/biome/jungle_wasteland,
@@ -43,6 +43,8 @@
 			BIOME_HIGH_HUMIDITY = /datum/biome/jungle/water,
 			BIOME_HIGHEST_HUMIDITY = /datum/biome/jungle/water
 		),
+	)
+	cave_biomes = list(
 		//CAVE BIOMES
 		BIOME_COLDEST_CAVE = list(
 			BIOME_LOWEST_HUMIDITY = /datum/biome/cave/jungle,
