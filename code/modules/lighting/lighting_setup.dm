@@ -7,7 +7,7 @@
 			for(var/turf/area_turf as anything in zlevel_turfs)
 				if(area_turf.space_lit)
 					continue
-				if(area_turf.light_on == 1)
-					new /datum/lighting_object(area_turf)
+				// if(area_turf.light_on == 1)
+				new /datum/lighting_object(area_turf)
 			CHECK_TICK
 		CHECK_TICK

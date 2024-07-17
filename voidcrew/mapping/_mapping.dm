@@ -35,7 +35,7 @@
 	// 	for(var/i in 0 to 2)
 	// 		LoadGroup(FailedZs, "Planet [planet_type] [i]", "map_files/voidcrew", "[planet_type].dmm", default_traits = list(ZTRAIT_MINING))
 
-	for(var/i in 1 to 1)
+	for(var/i in 1 to 15)
 		LoadGroup(FailedZs, "Planet lava 1", "map_files/voidcrew", "lava.dmm", default_traits = list(ZTRAIT_MINING, ZTRAIT_LAVA_RUINS))
 
 	if(LAZYLEN(FailedZs)) //but seriously, unless the server's filesystem is messed up this will never happen

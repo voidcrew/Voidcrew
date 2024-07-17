@@ -105,28 +105,28 @@
 						cave_turf.set_light(1.4, edge_turf_light_power, l_on = TRUE)
 						continue
 
-				var/list/area/nearby_areas = list()
-				for(var/near_turf in nearby_turfs)
-					nearby_areas |= get_area(near_turf)
-				if(length(nearby_areas))
-					var/found_near_area = FALSE
-					for(var/area/nearby_area in nearby_areas)
-						if(!istype(nearby_area, /area/overmap_encounter/planetoid/cave))
-							found_near_area = TRUE
-							break
-					if(found_near_area)
-						cave_turf.set_light(l_on = TRUE)
-						continue
-				var/l_found = FALSE
-				for(var/turf/nearby_turf in nearby_turfs)
-					if(initial(nearby_turf.light_range) > 0)
-						l_found = TRUE
-						break
-				if(l_found)
-					cave_turf.set_light(l_on = TRUE)
-					continue
+				// var/list/area/nearby_areas = list()
+				// for(var/near_turf in nearby_turfs)
+				// 	nearby_areas |= get_area(near_turf)
+				// if(length(nearby_areas))
+				// 	var/found_near_area = FALSE
+				// 	for(var/area/nearby_area in nearby_areas)
+				// 		if(!istype(nearby_area, /area/overmap_encounter/planetoid/cave))
+				// 			found_near_area = TRUE
+				// 			break
+				// 	if(found_near_area)
+				// 		cave_turf.set_light(l_on = TRUE)
+				// 		continue
+				// var/l_found = FALSE
+				// for(var/turf/nearby_turf in nearby_turfs)
+				// 	if(initial(nearby_turf.light_range) > 0)
+				// 		l_found = TRUE
+				// 		break
+				// if(l_found)
+				// 	cave_turf.set_light(l_on = TRUE)
+				// 	continue
 
-				cave_turf.set_light(l_on = FALSE)
+				// cave_turf.set_light(l_on = FALSE)
 				CHECK_TICK
 			CHECK_TICK
 		CHECK_TICK
@@ -206,7 +206,7 @@
 			if(flora_allowed && prob(selected_biome.flora_spawn_chance))
 				var/flora_type = pickweight(selected_biome.flora_spawn_list)
 				var/flora = new flora_type(target_turf)
-				manage_lighting(flora, target_turf)
+				// manage_lighting(flora, target_turf)
 				spawned_something = TRUE
 
 			//FEATURE SPAWNING HERE
@@ -224,7 +224,7 @@
 
 				if(can_spawn)
 					var/feature = new picked_feature(target_turf)
-					manage_lighting(feature, target_turf)
+					// manage_lighting(feature, target_turf)
 					spawned_something = TRUE
 
 		//MOB SPAWNING HERE
@@ -265,7 +265,7 @@
 
 			if(can_spawn)
 				var/m = new picked_mob(target_turf)
-				manage_lighting(m, target_turf)
+				// manage_lighting(m, target_turf)
 				spawned_something = TRUE
 		CHECK_TICK
 
@@ -273,21 +273,20 @@
 	to_chat(world, span_boldannounce("[message]"))
 	log_world(message)
 
-/datum/map_generator/planet_generator/proc/manage_lighting(obj/object, turf/target_turf)
-	if(object.light_on)
-		var/range = 0
-		if(object.light_range > 0)
-			range = round(object.light_range) // Rounding in case of non whole number lighting values
-		else if(istype(object, /obj/structure/spawner))// Spawners use light emitters instead of normal object lighting
-			range = 4
-		else
-			return
+// /datum/map_generator/planet_generator/proc/manage_lighting(obj/object, turf/target_turf)
+// 	if(object.light_on)
+// 		var/range = 0
+// 		if(object.light_range > 0)
+// 			range = round(object.light_range) // Rounding in case of non whole number lighting values
+// 		else if(istype(object, /obj/structure/spawner))// Spawners use light emitters instead of normal object lighting
+// 			range = 4
+// 		else
+// 			return
 
-		var/list/turf/nearby_turfs = RANGE_TURFS(range, target_turf)
-		for(var/turf/nearby_turf in nearby_turfs)
-			var/area/t_area = get_area(nearby_turf)
-			if(!t_area.area_has_base_lighting)
-				// nearby_turf.light_on = TRUE
-				nearby_turf.set_light(l_on = TRUE)
-			else
-				object.set_light(l_on = FALSE)
+// 		var/list/turf/nearby_turfs = RANGE_TURFS(range, target_turf)
+// 		for(var/turf/nearby_turf in nearby_turfs)
+// 			var/area/t_area = get_area(nearby_turf)
+// 			if(!t_area.area_has_base_lighting)
+// 				nearby_turf.set_light(l_on = TRUE)
+// 			else
+// 				object.set_light(l_on = FALSE)
