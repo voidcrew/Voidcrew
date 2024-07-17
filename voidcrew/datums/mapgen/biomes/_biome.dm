@@ -21,6 +21,7 @@
 	var/list/feature_spawn_list
 	var/list/mob_spawn_list
 	var/list/flora_spawn_list
+	var/list/megafauna_spawn_list
 	var/mob_spawn_chance = 6
 	var/flora_spawn_chance = 2
 	var/feature_spawn_chance = 0.1

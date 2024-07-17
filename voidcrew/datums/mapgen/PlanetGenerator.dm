@@ -9,7 +9,7 @@
 	var/birth_limit = 4
 	var/death_limit = 3
 
-	var/edge_turf_light_power = 150
+	var/edge_turf_light_power = 1000
 
 /datum/map_generator/planet_generator/generate_terrain(var/list/turf/turfs, var/datum/planet/planet_type)
 	. = ..()
@@ -33,6 +33,7 @@
 	if (planet_type.cave_biomes && length(planet_type.cave_biomes) > 0)
 		caves = TRUE
 		cave_area = new
+		cave_area.map_generator = src
 	if (planet_type.overworld_biomes && length(planet_type.overworld_biomes) > 0)
 		overworld = TRUE
 
@@ -126,7 +127,9 @@
 					continue
 
 				cave_turf.set_light(l_on = FALSE)
+				CHECK_TICK
 			CHECK_TICK
+		CHECK_TICK
 		cave_area.reg_in_areas_in_z()
 	var/message = "[name] planet generation finished in [(REALTIMEOFDAY - start_time)/10]s!"
 	to_chat(world, span_boldannounce("[message]"))
@@ -153,6 +156,7 @@
 	selected_biome = SSmapping.biomes[selected_biome]
 	var/turf/picked_turf = pickweight(selected_biome.open_turf_types)
 	picked_turf = new picked_turf(gen_turf)
+	picked_turf.generating_biome = selected_biome
 
 /datum/map_generator/planet_generator/proc/generate_cave(heat, humidity_level, string_gen, turf/gen_turf, cave_area, datum/planet/planet_type)
 	var/datum/biome/cave/selected_cave_biome
@@ -175,3 +179,115 @@
 	if(gen_turf.turf_flags & NO_RUINS)
 		picked_turf.turf_flags |= NO_RUINS
 	picked_turf.change_area(get_area(picked_turf), cave_area)
+	picked_turf.generating_biome = selected_cave_biome
+
+/datum/map_generator/planet_generator/populate_terrain(list/turfs)
+
+	var/start_time = REALTIMEOFDAY
+	var/megafauna_spawned = FALSE
+	for(var/turf/target_turf as anything in turfs)
+
+		if(!target_turf.generating_biome)
+			return
+
+		var/datum/biome/selected_biome = target_turf.generating_biome
+		var/flora_allowed = selected_biome.flora_spawn_chance > 0 && length(selected_biome.flora_spawn_list) > 0 ? TRUE : FALSE
+		var/fauna_allowed = selected_biome.mob_spawn_chance > 0 && length(selected_biome.mob_spawn_list) > 0 ? TRUE : FALSE
+		var/feature_allowed = selected_biome.feature_spawn_chance > 0 && length(selected_biome.feature_spawn_list) > 0 ? TRUE : FALSE
+
+		if(!(target_turf.type in selected_biome.open_turf_types)) //only put stuff on open turfs we generated, so closed walls and rivers and stuff are skipped
+			continue
+
+		// If we've spawned something yet
+		var/spawned_something = FALSE
+
+		if(!(target_turf.turf_flags & TURF_BLOCKS_POPULATE_TERRAIN_FLORAFEATURES))
+			//FLORA SPAWNING HERE
+			if(flora_allowed && prob(selected_biome.flora_spawn_chance))
+				var/flora_type = pickweight(selected_biome.flora_spawn_list)
+				var/flora = new flora_type(target_turf)
+				manage_lighting(flora, target_turf)
+				spawned_something = TRUE
+
+			//FEATURE SPAWNING HERE
+			//we may have generated something from the flora list on the target turf, so let's not place
+			//a feature here if that's the case (because it would look stupid)
+			if(feature_allowed && !spawned_something && prob(selected_biome.feature_spawn_chance))
+				var/can_spawn = TRUE
+
+				var/atom/picked_feature = pickweight(selected_biome.feature_spawn_list)
+
+				for(var/obj/structure/existing_feature in range(7, target_turf))
+					if(istype(existing_feature, picked_feature))
+						can_spawn = FALSE
+						break
+
+				if(can_spawn)
+					var/feature = new picked_feature(target_turf)
+					manage_lighting(feature, target_turf)
+					spawned_something = TRUE
+
+		//MOB SPAWNING HERE
+		if(fauna_allowed && !spawned_something && prob(selected_biome.mob_spawn_chance))
+			var/atom/picked_mob = pickweight(selected_biome.mob_spawn_list)
+			if(!picked_mob)
+				continue
+			var/is_megafauna = FALSE
+
+			if(picked_mob == SPAWN_MEGAFAUNA && !megafauna_spawned)
+				picked_mob = pickweight(selected_biome.megafauna_spawn_list)
+				is_megafauna = TRUE
+				megafauna_spawned = TRUE
+			else if(picked_mob == SPAWN_MEGAFAUNA && megafauna_spawned )
+				continue
+
+			var/can_spawn = TRUE
+
+			// prevents spawners being created in each other's collapse range
+			if(istype(picked_mob, /obj/structure/spawner))
+				for(var/obj/structure/spawner/spawn_blocker in range(2, target_turf))
+					can_spawn = FALSE
+					break
+			// if the random is not a tendril (hopefully meaning it is a mob), avoid spawning if there's another one within 12 tiles
+			else
+				var/list/things_in_range = range(12, target_turf)
+				for(var/mob/living/mob_blocker in things_in_range)
+					can_spawn = FALSE
+					break
+				// Also block spawns if there's a random lavaland mob spawner nearby and it's not a mega
+				if(!is_megafauna)
+					can_spawn = can_spawn && !(locate(/obj/effect/spawner) in things_in_range)
+			//if there's a megafauna within standard view don't spawn anything at all (This isn't really consistent, I don't know why we do this. you do you tho)
+			if(can_spawn)
+				for(var/mob/living/simple_animal/hostile/megafauna/found_fauna in range(7, target_turf))
+					can_spawn = FALSE
+					break
+
+			if(can_spawn)
+				var/m = new picked_mob(target_turf)
+				manage_lighting(m, target_turf)
+				spawned_something = TRUE
+		CHECK_TICK
+
+	var/message = "[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!"
+	to_chat(world, span_boldannounce("[message]"))
+	log_world(message)
+
+/datum/map_generator/planet_generator/proc/manage_lighting(obj/object, turf/target_turf)
+	if(object.light_on)
+		var/range = 0
+		if(object.light_range > 0)
+			range = round(object.light_range) // Rounding in case of non whole number lighting values
+		else if(istype(object, /obj/structure/spawner))// Spawners use light emitters instead of normal object lighting
+			range = 4
+		else
+			return
+
+		var/list/turf/nearby_turfs = RANGE_TURFS(range, target_turf)
+		for(var/turf/nearby_turf in nearby_turfs)
+			var/area/t_area = get_area(nearby_turf)
+			if(!t_area.area_has_base_lighting)
+				// nearby_turf.light_on = TRUE
+				nearby_turf.set_light(l_on = TRUE)
+			else
+				object.set_light(l_on = FALSE)

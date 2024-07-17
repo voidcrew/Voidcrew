@@ -110,12 +110,26 @@
 	static_lighting = FALSE
 	var/planet_type
 
+/area/overmap_encounter/planet_ruin
+	name = "\improper Unknown Planetary Ruin"
+	sound_environment = SOUND_ENVIRONMENT_MOUNTAINS
+	has_gravity = STANDARD_GRAVITY
+	always_unpowered = TRUE
+	map_generator = null
+
 /area/overmap_encounter/planetoid/RunTerrainGeneration()
 	map_generator = new map_generator()
 	var/list/turfs = list()
 	for(var/turf/T in contents)
 		turfs += T
 	map_generator.generate_terrain(turfs, planet_type)
+
+/area/overmap_encounter/planetoid/RunTerrainPopulation()
+	if(map_generator)
+		var/list/turfs = list()
+		for(var/turf/T in contents)
+			turfs += T
+		map_generator.populate_terrain(turfs, src)
 
 /area/overmap_encounter/planetoid/cave
 	name = "\improper Mysterious Cave"

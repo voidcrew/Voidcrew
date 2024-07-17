@@ -27,8 +27,8 @@
 	name = "sparse hellish grass"
 	desc = "A sparse patch of grass tinted red."
 	icon = 'voidcrew/icons/obj/flora/hellflora.dmi'
-	light_range = 2
-	light_power = 3
+	// light_range = 2
+	// light_power = 3
 	resistance_flags = LAVA_PROOF
 	gender = PLURAL
 
@@ -36,6 +36,10 @@
 	. = ..()
 	icon_state = "sparsegrass_[rand(1, 3)]"
 	light_color = pick("#e87800", "#780606")
+
+/obj/structure/flora/ausbushes/sparsegrass/hell/cave
+	light_range = 2
+	light_power = 2
 
 /obj/structure/flora/ausbushes/grassybush/hell
 	name = "crimson bush"
@@ -88,13 +92,16 @@
 
 /obj/structure/flora/ausbushes/ywflowers/hell
 	name = "lavablossom"
-	desc = "Some red and orange flowers. They appear to be faintly glowing."
+	desc = "Some red and orange flowers."
 	icon = 'voidcrew/icons/obj/flora/hellflora.dmi'
+	resistance_flags = LAVA_PROOF
+	gender = PLURAL
+
+/obj/structure/flora/ausbushes/ywflowers/hell/cave
+	desc = "Some red and orange flowers. They appear to be faintly glowing."
 	light_color = "#aba507"
 	light_power = 3
 	light_range = 2
-	resistance_flags = LAVA_PROOF
-	gender = PLURAL
 
 /obj/structure/flora/rock/lava
 	name = "lavatic rock"

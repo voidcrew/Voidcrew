@@ -35,10 +35,8 @@
 	// 	for(var/i in 0 to 2)
 	// 		LoadGroup(FailedZs, "Planet [planet_type] [i]", "map_files/voidcrew", "[planet_type].dmm", default_traits = list(ZTRAIT_MINING))
 
-	for(var/i in 1 to 15)
-		LoadGroup(FailedZs, "Planet lava 1", "map_files/voidcrew", "lava.dmm", default_traits = list(ZTRAIT_MINING))
-
-	// LoadGroup(FailedZs, "Planet lava 1", "map_files/voidcrew", "lava.dmm", default_traits = list(ZTRAIT_MINING))
+	for(var/i in 1 to 1)
+		LoadGroup(FailedZs, "Planet lava 1", "map_files/voidcrew", "lava.dmm", default_traits = list(ZTRAIT_MINING, ZTRAIT_LAVA_RUINS))
 
 	if(LAZYLEN(FailedZs)) //but seriously, unless the server's filesystem is messed up this will never happen
 		var/msg = "RED ALERT! The following map files failed to load: [FailedZs[1]]"
@@ -54,14 +52,8 @@
 		CHECK_TICK
 		A.RunTerrainGeneration()
 
-
-// TEMPORARILY EDITING OUT - NEED TO IMPLEMENT
-/datum/controller/subsystem/mapping/run_map_terrain_population()
-	return
-
 /datum/controller/subsystem/mapping/preloadRuinTemplates()
-	. = ..()
-/* This is all taken from parent */
+	/* This is all taken from parent */
 	// Still supporting bans by filename
 	var/list/banned = generateMapList("spaceruinblacklist.txt")
 	if(config.minetype == "lavaland")
@@ -75,9 +67,18 @@
 		if(!initial(ruin_type.id))
 			continue
 		var/datum/map_template/ruin/R = new ruin_type()
+
 		if(banned.Find(R.mappath))
 			continue
-/* Custom code below. */
+
+		map_templates[R.name] = R
+		ruins_templates[R.name] = R
+
+		if (!(R.ruin_type in themed_ruins))
+			themed_ruins[R.ruin_type] = list()
+		themed_ruins[R.ruin_type][R.name] = R
+
+		/* Custom code below. */
 		if(istype(R, /datum/map_template/ruin/lavaland))
 			lava_ruins_templates[R.name] = R
 		else if(istype(R, /datum/map_template/ruin/jungle))
@@ -106,6 +107,25 @@
 	var/datum/gas_mixture/immutable/planetary/lavaland_air = new
 	lavaland_air.parse_string_immutable(LAVALAND_DEFAULT_ATMOS)
 	SSair.planetary[LAVALAND_DEFAULT_ATMOS] = lavaland_air
+
+	var/list/lava_levels = levels_by_trait(ZTRAIT_LAVA_RUINS)
+	if (lava_levels.len)
+		seedRuins(lava_levels, CONFIG_GET(number/lavaland_budget), list(/area/overmap_encounter/planetoid/lava), themed_ruins[ZTRAIT_LAVA_RUINS], clear_below = TRUE, mineral_budget = 15, mineral_budget_update = OREGEN_PRESET_LAVALAND)
+
+/datum/controller/subsystem/mapping/setup_rivers()
+	// Generate mining ruins
+	var/list/lava_ruins = levels_by_trait(ZTRAIT_LAVA_RUINS)
+	for (var/lava_z in lava_ruins)
+		spawn_rivers(lava_z, 4, /turf/open/lava/smooth/lava_land_surface, /area/lavaland/surface/outdoors/unexplored)
+
+	var/list/ice_ruins = levels_by_trait(ZTRAIT_ICE_RUINS)
+	for (var/ice_z in ice_ruins)
+		var/river_type = HAS_TRAIT(SSstation, STATION_TRAIT_FORESTED) ? /turf/open/lava/plasma/ice_moon : /turf/open/openspace/icemoon
+		spawn_rivers(ice_z, 4, river_type, /area/icemoon/surface/outdoors/unexplored/rivers)
+
+	var/list/ice_ruins_underground = levels_by_trait(ZTRAIT_ICE_RUINS_UNDERGROUND)
+	for (var/ice_z in ice_ruins_underground)
+		spawn_rivers(ice_z, 4, level_trait(ice_z, ZTRAIT_BASETURF), /area/icemoon/underground/unexplored/rivers)
 
 /datum/controller/subsystem/mapping/proc/load_ship_templates()
 	SHOULD_CALL_PARENT(TRUE)
