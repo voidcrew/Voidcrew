@@ -21,7 +21,7 @@
 	var/list/wasteland_ruins_templates = list()
 	var/list/yellow_ruins_templates = list()
 
-	var/lava_planet_count = 1
+	var/lava_planet_count = 15
 
 /datum/controller/subsystem/mapping/Initialize(timeofday)
 	load_ship_templates()
@@ -38,7 +38,7 @@
 	// 		LoadGroup(FailedZs, "Planet [planet_type] [i]", "map_files/voidcrew", "[planet_type].dmm", default_traits = list(ZTRAIT_MINING))
 
 	for(var/i in 1 to lava_planet_count)
-		LoadGroup(FailedZs, "Planet lava 1", "map_files/voidcrew", "lava.dmm", traits = list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS)), default_traits = list(ZTRAIT_MINING, ZTRAIT_LAVA_RUINS))
+		LoadGroup(FailedZs, "Planet lava i", "map_files/voidcrew", "lava.dmm", traits = list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS), list(ZTRAIT_=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS)), default_traits = list(ZTRAIT_MINING, ZTRAIT_LAVA_RUINS))
 
 	if(LAZYLEN(FailedZs)) //but seriously, unless the server's filesystem is messed up this will never happen
 		var/msg = "RED ALERT! The following map files failed to load: [FailedZs[1]]"
