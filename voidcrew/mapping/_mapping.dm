@@ -21,6 +21,8 @@
 	var/list/wasteland_ruins_templates = list()
 	var/list/yellow_ruins_templates = list()
 
+	var/lava_planet_count = 1
+
 /datum/controller/subsystem/mapping/Initialize(timeofday)
 	load_ship_templates()
 	return ..()
@@ -35,8 +37,8 @@
 	// 	for(var/i in 0 to 2)
 	// 		LoadGroup(FailedZs, "Planet [planet_type] [i]", "map_files/voidcrew", "[planet_type].dmm", default_traits = list(ZTRAIT_MINING))
 
-	for(var/i in 1 to 15)
-		LoadGroup(FailedZs, "Planet lava 1", "map_files/voidcrew", "lava.dmm", default_traits = list(ZTRAIT_MINING, ZTRAIT_LAVA_RUINS))
+	for(var/i in 1 to lava_planet_count)
+		LoadGroup(FailedZs, "Planet lava 1", "map_files/voidcrew", "lava.dmm", traits = list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS)), default_traits = list(ZTRAIT_MINING, ZTRAIT_LAVA_RUINS))
 
 	if(LAZYLEN(FailedZs)) //but seriously, unless the server's filesystem is messed up this will never happen
 		var/msg = "RED ALERT! The following map files failed to load: [FailedZs[1]]"
@@ -116,16 +118,7 @@
 	// Generate mining ruins
 	var/list/lava_ruins = levels_by_trait(ZTRAIT_LAVA_RUINS)
 	for (var/lava_z in lava_ruins)
-		spawn_rivers(lava_z, 4, /turf/open/lava/smooth/lava_land_surface, /area/lavaland/surface/outdoors/unexplored)
-
-	var/list/ice_ruins = levels_by_trait(ZTRAIT_ICE_RUINS)
-	for (var/ice_z in ice_ruins)
-		var/river_type = HAS_TRAIT(SSstation, STATION_TRAIT_FORESTED) ? /turf/open/lava/plasma/ice_moon : /turf/open/openspace/icemoon
-		spawn_rivers(ice_z, 4, river_type, /area/icemoon/surface/outdoors/unexplored/rivers)
-
-	var/list/ice_ruins_underground = levels_by_trait(ZTRAIT_ICE_RUINS_UNDERGROUND)
-	for (var/ice_z in ice_ruins_underground)
-		spawn_rivers(ice_z, 4, level_trait(ice_z, ZTRAIT_BASETURF), /area/icemoon/underground/unexplored/rivers)
+		spawn_planet_rivers(lava_z, 4, /turf/open/lava/smooth/lava_land_surface, list(/area/overmap_encounter/planetoid/lava, /area/overmap_encounter/planetoid/cave))
 
 /datum/controller/subsystem/mapping/proc/load_ship_templates()
 	SHOULD_CALL_PARENT(TRUE)

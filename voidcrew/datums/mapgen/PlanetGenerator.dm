@@ -11,7 +11,11 @@
 
 	var/edge_turf_light_power = 1000
 
-/datum/map_generator/planet_generator/generate_terrain(var/list/turf/turfs, var/datum/planet/planet_type)
+/obj/effect/dummy/lighting_obj/cave_light
+	light_range = 2
+	light_power = 2
+
+/datum/map_generator/planet_generator/generate_terrain(list/turf/turfs, datum/planet/planet_type)
 	. = ..()
 	if(!planet_type)
 		var/message = "[name] planet generation failed!"
@@ -83,12 +87,9 @@
 		for(var/i in 1 to length(cave_area.turfs_by_zlevel))
 			for(var/turf/cave_turf in cave_area.turfs_by_zlevel[i])
 
-				var/list/nearby_turfs = RANGE_TURFS(2, cave_turf)
 				var/list/adjacent_turfs = RANGE_TURFS(1, cave_turf)
-				if(!nearby_turfs || !length(nearby_turfs) || !adjacent_turfs || !length(adjacent_turfs))
+				if(!adjacent_turfs || !length(adjacent_turfs))
 					return
-
-				cave_turf.should_pass_light_to_child = TRUE
 
 				// if non cave area is directly next to us, we need powerful light
 				var/list/area/adjacent_areas = list()
@@ -96,37 +97,24 @@
 					adjacent_areas |= get_area(near_turf)
 				if(length(adjacent_areas))
 					var/found_adj_area = FALSE
+					var/adj_area_color
 					for(var/area/adjacent_area in adjacent_areas)
 						if(!istype(adjacent_area, /area/overmap_encounter/planetoid/cave))
-							found_adj_area = TRUE
-							break
-
+							// Check if area uses different lighting than ours
+							if(adjacent_area.static_lighting)
+								break
+							else
+								if(adjacent_area.base_lighting_color != cave_area.base_lighting_color)
+									adj_area_color = adjacent_area.base_lighting_color
+									found_adj_area = TRUE
+									break
+								if(adjacent_area.base_lighting_alpha != cave_area.base_lighting_alpha)
+									found_adj_area = TRUE
+									break
 					if(found_adj_area)
-						cave_turf.set_light(1.4, edge_turf_light_power, l_on = TRUE)
+						var/obj/effect/dummy/lighting_obj/cave_light/c_light = new(cave_turf, null, null, adj_area_color)
+						cave_turf.overlay_light = c_light
 						continue
-
-				// var/list/area/nearby_areas = list()
-				// for(var/near_turf in nearby_turfs)
-				// 	nearby_areas |= get_area(near_turf)
-				// if(length(nearby_areas))
-				// 	var/found_near_area = FALSE
-				// 	for(var/area/nearby_area in nearby_areas)
-				// 		if(!istype(nearby_area, /area/overmap_encounter/planetoid/cave))
-				// 			found_near_area = TRUE
-				// 			break
-				// 	if(found_near_area)
-				// 		cave_turf.set_light(l_on = TRUE)
-				// 		continue
-				// var/l_found = FALSE
-				// for(var/turf/nearby_turf in nearby_turfs)
-				// 	if(initial(nearby_turf.light_range) > 0)
-				// 		l_found = TRUE
-				// 		break
-				// if(l_found)
-				// 	cave_turf.set_light(l_on = TRUE)
-				// 	continue
-
-				// cave_turf.set_light(l_on = FALSE)
 				CHECK_TICK
 			CHECK_TICK
 		CHECK_TICK
@@ -188,7 +176,7 @@
 	for(var/turf/target_turf as anything in turfs)
 
 		if(!target_turf.generating_biome)
-			return
+			continue
 
 		var/datum/biome/selected_biome = target_turf.generating_biome
 		var/flora_allowed = selected_biome.flora_spawn_chance > 0 && length(selected_biome.flora_spawn_list) > 0 ? TRUE : FALSE
@@ -206,7 +194,6 @@
 			if(flora_allowed && prob(selected_biome.flora_spawn_chance))
 				var/flora_type = pickweight(selected_biome.flora_spawn_list)
 				var/flora = new flora_type(target_turf)
-				// manage_lighting(flora, target_turf)
 				spawned_something = TRUE
 
 			//FEATURE SPAWNING HERE
@@ -224,7 +211,6 @@
 
 				if(can_spawn)
 					var/feature = new picked_feature(target_turf)
-					// manage_lighting(feature, target_turf)
 					spawned_something = TRUE
 
 		//MOB SPAWNING HERE
@@ -239,7 +225,8 @@
 				is_megafauna = TRUE
 				megafauna_spawned = TRUE
 			else if(picked_mob == SPAWN_MEGAFAUNA && megafauna_spawned )
-				continue
+				while(picked_mob == SPAWN_MEGAFAUNA)
+					picked_mob = pickweight(selected_biome.mob_spawn_list)
 
 			var/can_spawn = TRUE
 
@@ -265,28 +252,9 @@
 
 			if(can_spawn)
 				var/m = new picked_mob(target_turf)
-				// manage_lighting(m, target_turf)
 				spawned_something = TRUE
 		CHECK_TICK
 
 	var/message = "[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!"
 	to_chat(world, span_boldannounce("[message]"))
 	log_world(message)
-
-// /datum/map_generator/planet_generator/proc/manage_lighting(obj/object, turf/target_turf)
-// 	if(object.light_on)
-// 		var/range = 0
-// 		if(object.light_range > 0)
-// 			range = round(object.light_range) // Rounding in case of non whole number lighting values
-// 		else if(istype(object, /obj/structure/spawner))// Spawners use light emitters instead of normal object lighting
-// 			range = 4
-// 		else
-// 			return
-
-// 		var/list/turf/nearby_turfs = RANGE_TURFS(range, target_turf)
-// 		for(var/turf/nearby_turf in nearby_turfs)
-// 			var/area/t_area = get_area(nearby_turf)
-// 			if(!t_area.area_has_base_lighting)
-// 				nearby_turf.set_light(l_on = TRUE)
-// 			else
-// 				object.set_light(l_on = FALSE)

@@ -139,7 +139,6 @@
 	planet_type = /datum/planet/jungle
 	base_lighting_alpha = null
 	base_lighting_color = null
-	static_lighting = TRUE
 
 /area/overmap_encounter/planetoid/lava
 	name = "\improper Volcanic Planetoid"
@@ -149,6 +148,15 @@
 
 /area/overmap_encounter/planetoid/lava/RunTerrainGeneration()
 	planet_type = new /datum/planet/lava
+	. = ..()
+
+/area/overmap_encounter/planetoid/cave/lava
+	name = "\improper Mysterious Lava Cave"
+
+/area/overmap_encounter/planetoid/cave/lava/RunTerrainGeneration()
+	var/datum/planet/lava/cave = new
+	cave.overworld_biomes = list()
+	planet_type = cave
 	. = ..()
 
 /area/overmap_encounter/planetoid/ice
