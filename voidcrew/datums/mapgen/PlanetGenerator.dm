@@ -15,7 +15,7 @@
 	light_range = 2
 	light_power = 2
 
-/datum/map_generator/planet_generator/generate_terrain(list/turf/turfs, datum/planet/planet_type)
+/datum/map_generator/planet_generator/generate_terrain(list/turf/turfs, datum/planet/planet_type, is_cave)
 	. = ..()
 	if(!planet_type)
 		var/message = "[name] planet generation failed!"
@@ -38,8 +38,11 @@
 		caves = TRUE
 		cave_area = new
 		cave_area.map_generator = src
-	if (planet_type.overworld_biomes && length(planet_type.overworld_biomes) > 0)
-		overworld = TRUE
+	// This is needed because planet surfaces start as /area/overmap_encounter/planetoid/planet_type
+	// If we're starting with an /area/overmap_encounter/planetoid/cave, we want to ignore overworld_biomes
+	if(!is_cave)
+		if (planet_type.overworld_biomes && length(planet_type.overworld_biomes) > 0)
+			overworld = TRUE
 
 	if (!caves && !overworld)
 		return
@@ -81,7 +84,6 @@
 			else
 				generate_overworld(heat, humidity_level, gen_turf, planet_type)
 		CHECK_TICK
-
 	// Add lighting to the external side of caves
 	if(caves)
 		for(var/i in 1 to length(cave_area.turfs_by_zlevel))
@@ -102,17 +104,14 @@
 						if(!istype(adjacent_area, /area/overmap_encounter/planetoid/cave))
 							// Check if area uses different lighting than ours
 							if(adjacent_area.static_lighting)
-								break
+								continue
 							else
-								if(adjacent_area.base_lighting_color != cave_area.base_lighting_color)
-									adj_area_color = adjacent_area.base_lighting_color
-									found_adj_area = TRUE
-									break
-								if(adjacent_area.base_lighting_alpha != cave_area.base_lighting_alpha)
-									found_adj_area = TRUE
-									break
+								adj_area_color = adjacent_area.base_lighting_color
+								found_adj_area = TRUE
+								break
 					if(found_adj_area)
-						var/obj/effect/dummy/lighting_obj/cave_light/c_light = new(cave_turf, null, null, adj_area_color)
+						var/obj/effect/dummy/lighting_obj/cave_light/c_light = new(cave_turf)
+						c_light.light_color = adj_area_color
 						cave_turf.overlay_light = c_light
 						continue
 				CHECK_TICK
@@ -166,7 +165,9 @@
 	picked_turf = new picked_turf(gen_turf)
 	if(gen_turf.turf_flags & NO_RUINS)
 		picked_turf.turf_flags |= NO_RUINS
-	picked_turf.change_area(get_area(picked_turf), cave_area)
+	var/turf_area = get_area(picked_turf)
+	if(turf_area != cave_area)
+		picked_turf.change_area(turf_area, cave_area)
 	picked_turf.generating_biome = selected_cave_biome
 
 /datum/map_generator/planet_generator/populate_terrain(list/turfs)
@@ -193,7 +194,7 @@
 			//FLORA SPAWNING HERE
 			if(flora_allowed && prob(selected_biome.flora_spawn_chance))
 				var/flora_type = pickweight(selected_biome.flora_spawn_list)
-				var/flora = new flora_type(target_turf)
+				new flora_type(target_turf)
 				spawned_something = TRUE
 
 			//FEATURE SPAWNING HERE
@@ -204,13 +205,31 @@
 
 				var/atom/picked_feature = pickweight(selected_biome.feature_spawn_list)
 
+				// Don't place duplicate features
 				for(var/obj/structure/existing_feature in range(7, target_turf))
 					if(istype(existing_feature, picked_feature))
 						can_spawn = FALSE
 						break
 
+				// Spawn linked ladders after checks pass
+				if((picked_feature in typesof(/obj/structure/ladder)) && can_spawn)
+					var/turf/turf_below = GET_TURF_BELOW(target_turf)
+					var/turf/turf_above = GET_TURF_ABOVE(target_turf)
+					// Since we aren't doing triple z, no reason to spawn both above and below
+					if(turf_below)
+						// Don't create up/down ladders if the turfs don't exist in our whitelist)
+						if(!turf_below.generating_biome || !(turf_below.type in turf_below.generating_biome.open_turf_types))
+							can_spawn = FALSE
+						else
+							new /obj/structure/ladder/cave(turf_below)
+					else if(turf_above)
+						if(!turf_above.generating_biome || !(turf_above.type in turf_above.generating_biome.open_turf_types))
+							can_spawn = FALSE
+						else
+							new /obj/structure/ladder/cave(turf_above)
+
 				if(can_spawn)
-					var/feature = new picked_feature(target_turf)
+					new picked_feature(target_turf)
 					spawned_something = TRUE
 
 		//MOB SPAWNING HERE
@@ -251,7 +270,7 @@
 					break
 
 			if(can_spawn)
-				var/m = new picked_mob(target_turf)
+				new picked_mob(target_turf)
 				spawned_something = TRUE
 		CHECK_TICK
 

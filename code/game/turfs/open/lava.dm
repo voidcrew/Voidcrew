@@ -4,11 +4,6 @@
  * MAFIA PLASMA LAVA
  */
 
-/obj/effect/dummy/lighting_obj/lava_light
-	light_range = 2
-	light_power = 0.75
-	light_color = "#F98511"
-
 /turf/open/lava
 	name = "lava"
 	icon_state = "lava"
@@ -98,11 +93,10 @@
 		border_turf = TRUE
 
 	if(!border_turf)
-		// set_light(l_on = FALSE)
+		set_light(l_on = FALSE)
 		return
-	var/obj/effect/dummy/lighting_obj/lava_light/l_light = new(src)
-	overlay_light = l_light
-	// set_light(l_on = TRUE)
+
+	set_light(l_on = TRUE)
 
 /turf/open/lava/ChangeTurf(path, list/new_baseturfs, flags)
 	var/turf/result = ..()
@@ -352,9 +346,6 @@
 
 /turf/open/lava/smooth/airless
 	initial_gas_mix = AIRLESS_ATMOS
-
-/obj/effect/dummy/lighting_obj/lava_light/plasma
-	light_color = "#CD4C9F"
 
 /turf/open/lava/plasma
 	name = "liquid plasma"

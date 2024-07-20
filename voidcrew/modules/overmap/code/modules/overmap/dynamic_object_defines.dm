@@ -118,6 +118,7 @@
 	map_generator = null
 
 /area/overmap_encounter/planetoid/RunTerrainGeneration()
+	planet_type = new src.planet_type()
 	map_generator = new map_generator()
 	var/list/turfs = list()
 	for(var/turf/T in contents)
@@ -131,33 +132,14 @@
 			turfs += T
 		map_generator.populate_terrain(turfs, src)
 
-/area/overmap_encounter/planetoid/cave
-	name = "\improper Mysterious Cave"
-	sound_environment = SOUND_ENVIRONMENT_CAVE
-	ambientsounds = SPOOKY
-	outdoors = FALSE
-	planet_type = /datum/planet/jungle
-	base_lighting_alpha = null
-	base_lighting_color = null
-
+// SURFACE AREAS
 /area/overmap_encounter/planetoid/lava
 	name = "\improper Volcanic Planetoid"
 	ambientsounds = MINING
 	planet_type = /datum/planet/lava
 	map_generator = /datum/map_generator/planet_generator/lava
-
-/area/overmap_encounter/planetoid/lava/RunTerrainGeneration()
-	planet_type = new /datum/planet/lava
-	. = ..()
-
-/area/overmap_encounter/planetoid/cave/lava
-	name = "\improper Mysterious Lava Cave"
-
-/area/overmap_encounter/planetoid/cave/lava/RunTerrainGeneration()
-	var/datum/planet/lava/cave = new
-	cave.overworld_biomes = list()
-	planet_type = cave
-	. = ..()
+	base_lighting_color = "#ff9933"
+	base_lighting_alpha = 130
 
 /area/overmap_encounter/planetoid/ice
 	name = "\improper Frozen Planetoid"
@@ -184,3 +166,25 @@
 	sound_environment = SOUND_ENVIRONMENT_HANGAR
 	ambientsounds = MINING
 	planet_type = /datum/planet/wasteland
+
+// CAVE AREAS
+/area/overmap_encounter/planetoid/cave
+	name = "\improper Mysterious Cave"
+	sound_environment = SOUND_ENVIRONMENT_CAVE
+	ambientsounds = SPOOKY
+	outdoors = FALSE
+	base_lighting_alpha = null
+	base_lighting_color = null
+
+// We want to run generate terrain with is_cave set to TRUE for cave areas
+/area/overmap_encounter/planetoid/cave/RunTerrainGeneration()
+	planet_type = new src.planet_type()
+	map_generator = new map_generator()
+	var/list/turfs = list()
+	for(var/turf/T in contents)
+		turfs += T
+	map_generator.generate_terrain(turfs, planet_type, TRUE)
+
+/area/overmap_encounter/planetoid/cave/lava
+	name = "\improper Mysterious Lava Cave"
+	planet_type = /datum/planet/lava

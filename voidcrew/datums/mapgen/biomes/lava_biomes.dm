@@ -1,13 +1,14 @@
 /datum/biome/lavaland
-	open_turf_types = list(/turf/open/misc/asteroid/basalt/lava_land_surface = 1)
-	flora_spawn_chance = 10
-	flora_spawn_list = list(
-		/obj/structure/flora/ausbushes/sparsegrass/hell = 100,
-		/obj/structure/flora/ash/whitesands/fireblossom = 1,
-	)
-	feature_spawn_chance = 5
+	open_turf_types = list(/turf/open/misc/asteroid/basalt/lava_land_surface/planetary = 1)
+	// flora_spawn_chance = 10
+	// flora_spawn_list = list(
+	// 	/obj/structure/flora/ausbushes/sparsegrass/hell = 100,
+	// 	/obj/structure/flora/ash/whitesands/fireblossom = 1,
+	// )
+	feature_spawn_chance = 3
 	feature_spawn_list = list(
 		/obj/structure/flora/rock/hell = 100,
+		/obj/structure/ladder/cave = 5,
 		/obj/structure/elite_tumor = 1,
 		/obj/structure/geyser/random = 5,
 	)
@@ -25,7 +26,7 @@
 	)
 
 /datum/biome/cave/lavaland
-	open_turf_types = list(/turf/open/misc/asteroid/purple = 1)
+	open_turf_types = list(/turf/open/misc/asteroid/basalt/lava_land_surface/planetary = 1)
 	closed_turf_types = list(/turf/closed/mineral/random/volcanic = 10, /turf/closed/mineral/random/high_chance/volcanic = 1)
 	mob_spawn_chance = 3
 	mob_spawn_list = list(
@@ -35,13 +36,14 @@
 		/obj/structure/spawner/planetary/goliath = 5,
 	)
 	feature_spawn_list = list(
-		/obj/structure/flora/rock/hell = 15,
+		/obj/structure/flora/rock/hell = 70,
 		/obj/structure/elite_tumor = 1,
-		/obj/structure/geyser/random = 1,
+		/obj/structure/ladder/cave = 15,
+		/obj/structure/geyser/random = 7,
 	)
 	feature_spawn_chance = 2
-	flora_spawn_chance = 5
-	flora_spawn_list = list(
-		/obj/structure/flora/ausbushes/ywflowers/hell = 1,
-		/obj/structure/flora/ausbushes/sparsegrass/hell = 4,
-	)
+	// flora_spawn_chance = 5
+	// flora_spawn_list = list(
+	// 	/obj/structure/flora/ausbushes/ywflowers/hell = 1,
+	// 	/obj/structure/flora/ausbushes/sparsegrass/hell = 4,
+	// )
