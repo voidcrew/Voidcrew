@@ -22,6 +22,10 @@
 	var/list/yellow_ruins_templates = list()
 
 	var/lava_planet_count = 1
+	var/ice_planet_count = 1
+	var/jungle_planet_count = 1
+	var/beach_planet_count = 1
+	var/wasteland_planet_count = 1
 
 /datum/controller/subsystem/mapping/Initialize(timeofday)
 	load_ship_templates()
@@ -33,12 +37,20 @@
 	var/list/FailedZs = list()
 	var/list/planet_types = list("lava", "ice", "jungle", "beach", "wasteland")
 
-	// for(var/planet_type in planet_types)
-	// 	for(var/i in 0 to 2)
-	// 		LoadGroup(FailedZs, "Planet [planet_type] [i]", "map_files/voidcrew", "[planet_type].dmm", default_traits = list(ZTRAIT_MINING))
-
 	for(var/i in 1 to lava_planet_count)
 		LoadGroup(FailedZs, "Planet lava [i]", "map_files/voidcrew", "lava.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS)))
+
+	for(var/i in 1 to ice_planet_count)
+		LoadGroup(FailedZs, "Planet ice [i]", "map_files/voidcrew", "ice.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS)))
+
+	for(var/i in 1 to jungle_planet_count)
+		LoadGroup(FailedZs, "Planet jungle [i]", "map_files/voidcrew", "jungle.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_JUNGLE_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_JUNGLE_RUINS)))
+
+	for(var/i in 1 to beach_planet_count)
+		LoadGroup(FailedZs, "Planet beach [i]", "map_files/voidcrew", "beach.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_BEACH_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_BEACH_RUINS)))
+
+	for(var/i in 1 to wasteland_planet_count)
+		LoadGroup(FailedZs, "Planet wasteland [i]", "map_files/voidcrew", "wasteland.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_WASTELAND_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_WASTELAND_RUINS)))
 
 	if(LAZYLEN(FailedZs)) //but seriously, unless the server's filesystem is messed up this will never happen
 		var/msg = "RED ALERT! The following map files failed to load: [FailedZs[1]]"
@@ -114,11 +126,30 @@
 	if (lava_levels.len)
 		seedRuins(lava_levels, CONFIG_GET(number/lavaland_budget), list(/area/overmap_encounter/planetoid/lava), themed_ruins[ZTRAIT_LAVA_RUINS], clear_below = TRUE, mineral_budget = 15, mineral_budget_update = OREGEN_PRESET_LAVALAND)
 
+	var/list/ice_levels = levels_by_trait(ZTRAIT_ICE_RUINS)
+	if (ice_levels.len)
+		seedRuins(ice_levels, CONFIG_GET(number/lavaland_budget), list(/area/overmap_encounter/planetoid/ice), themed_ruins[ZTRAIT_ICE_RUINS], clear_below = TRUE, mineral_budget = 15, mineral_budget_update = OREGEN_PRESET_LAVALAND)
+
+	var/list/beach_levels = levels_by_trait(ZTRAIT_BEACH_RUINS)
+	if (beach_levels.len)
+		seedRuins(beach_levels, CONFIG_GET(number/lavaland_budget), list(/area/overmap_encounter/planetoid/beach), themed_ruins[ZTRAIT_BEACH_RUINS], clear_below = TRUE, mineral_budget = 15, mineral_budget_update = OREGEN_PRESET_LAVALAND)
+
+	var/list/jungle_levels = levels_by_trait(ZTRAIT_JUNGLE_RUINS)
+	if (jungle_levels.len)
+		seedRuins(jungle_levels, CONFIG_GET(number/lavaland_budget), list(/area/overmap_encounter/planetoid/jungle), themed_ruins[ZTRAIT_JUNGLE_RUINS], clear_below = TRUE, mineral_budget = 15, mineral_budget_update = OREGEN_PRESET_LAVALAND)
+
+	var/list/wasteland_levels = levels_by_trait(ZTRAIT_WASTELAND_RUINS)
+	if (wasteland_levels.len)
+		seedRuins(wasteland_levels, CONFIG_GET(number/lavaland_budget), list(/area/overmap_encounter/planetoid/wasteland), themed_ruins[ZTRAIT_WASTELAND_RUINS], clear_below = TRUE, mineral_budget = 15, mineral_budget_update = OREGEN_PRESET_LAVALAND)
+
 /datum/controller/subsystem/mapping/setup_rivers()
-	// Generate mining ruins
 	var/list/lava_ruins = levels_by_trait(ZTRAIT_LAVA_RUINS)
 	for (var/lava_z in lava_ruins)
-		spawn_planet_rivers(lava_z, 4, /turf/open/lava/smooth/lava_land_surface, list(/area/overmap_encounter/planetoid/lava, /area/overmap_encounter/planetoid/cave))
+		spawn_planet_rivers(lava_z, 4, /turf/open/lava/smooth/lava_land_surface/planetary, list(/area/overmap_encounter/planetoid/lava, /area/overmap_encounter/planetoid/cave))
+
+	var/list/ice_ruins = levels_by_trait(ZTRAIT_ICE_RUINS)
+	for (var/ice_z in ice_ruins)
+		spawn_planet_rivers(ice_z, 4, /turf/open/lava/plasma/planetary, list(/area/overmap_encounter/planetoid/ice, /area/overmap_encounter/planetoid/cave/ice))
 
 /datum/controller/subsystem/mapping/proc/load_ship_templates()
 	SHOULD_CALL_PARENT(TRUE)

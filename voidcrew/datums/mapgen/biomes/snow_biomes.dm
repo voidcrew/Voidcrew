@@ -120,8 +120,8 @@
 /datum/biome/icey/lake
 	open_turf_types = list(/turf/open/misc/ice = 1)
 
-/datum/biome/plasma
-	open_turf_types = list(/turf/open/lava/plasma/ice_moon = 5, /turf/open/misc/dirt/jungle/dark = 1)
+// /datum/biome/plasma
+// 	open_turf_types = list(/turf/open/lava/plasma/ice_moon = 5, /turf/open/misc/dirt/jungle/dark = 1)
 
 /datum/biome/cave/snow
 	open_turf_types = list(/turf/open/misc/asteroid/snow/breathable = 1)
@@ -156,7 +156,7 @@
 	)
 
 /datum/biome/cave/snow/thawed
-	//open_turf_types = list(/turf/open/floor/plating/ashplanet/rocky = 1)
+	open_turf_types = list(/turf/open/misc/dirt/jungle/dark = 1)
 
 /datum/biome/cave/snow/ice
 	open_turf_types = list(/turf/open/misc/asteroid/snow/breathable = 20, /turf/open/misc/ice = 3)
@@ -188,8 +188,8 @@
 		/obj/structure/spawner/ice_moon/demonic_portal/snowlegion = 1,
 	)
 
-/datum/biome/cave/volcanic/lava
-	open_turf_types = list(/turf/open/lava/smooth = 1)
+// /datum/biome/cave/volcanic/lava
+// 	open_turf_types = list(/turf/open/lava/smooth = 1)
 
-/datum/biome/cave/volcanic/lava/plasma
-	open_turf_types = list(/turf/open/lava/plasma = 7, /turf/open/misc/dirt/jungle/dark = 1)
+// /datum/biome/cave/volcanic/lava/plasma
+// 	open_turf_types = list(/turf/open/lava/plasma = 7, /turf/open/misc/dirt/jungle/dark = 1)

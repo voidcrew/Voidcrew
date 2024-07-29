@@ -9,15 +9,25 @@
 	light_range = 2
 	light_power = 2
 
-/obj/effect/dummy/lighting_obj/lava_light/plasma
-	light_color = "#CD4C9F"
-
 /obj/effect/dummy/lighting_obj/lava_light
 	light_range = 2
-	light_power = 0.75
+	light_power = 2
 	light_color = "#F98511"
 
+/obj/effect/dummy/lighting_obj/lava_light/plasma
+	light_color = "#952CF4"
+	light_range = 1.4
+	light_power = 0.75
+
+/turf/open/lava/plasma/planetary
+	overlay_light = /obj/effect/dummy/lighting_obj/lava_light/plasma
+
+/turf/open/lava/plasma/planetary/Initialize()
+	overlay_light = new src.overlay_light(src)
+	. = ..()
+
 /turf/open/lava/smooth/lava_land_surface/planetary
+	overlay_light = /obj/effect/dummy/lighting_obj/lava_light
 
 /turf/open/lava/smooth/lava_land_surface/planetary/refresh_light()
 	var/border_turf = FALSE
@@ -37,4 +47,5 @@
 
 	if(!border_turf)
 		return
-	overlay_light = new /obj/effect/dummy/lighting_obj/lava_light(src)
+	overlay_light = new src.overlay_light(src)
+

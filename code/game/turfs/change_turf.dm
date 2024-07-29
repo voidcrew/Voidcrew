@@ -79,12 +79,6 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	var/old_rcd_memory = rcd_memory
 	var/old_explosion_throw_details = explosion_throw_details
 	var/old_opacity = opacity
-
-	// VOIDCREW EDITS FOR PLANETARY LIGHTING CONSISTENCY
-	var/old_light_power = light_power
-	var/old_light_color = light_color
-	var/old_pass_lights = should_pass_light_to_child
-
 	// I'm so sorry brother
 	// This is used for a starlight optimization
 	var/old_light_range = light_range
@@ -152,10 +146,6 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		if(!space_lit)
 			// Should have a lighting object if we never had one
 			lighting_object = old_lighting_object || new /datum/lighting_object(src)
-
-			// VOIDCREW EDITS
-			if(old_pass_lights)
-				set_light(old_light_range, old_light_power, old_light_color)
 		else if (old_lighting_object)
 			qdel(old_lighting_object, force = TRUE)
 

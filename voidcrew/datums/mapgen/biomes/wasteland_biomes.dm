@@ -1,5 +1,5 @@
 /datum/biome/wasteland
-	open_turf_types = list(/turf/open/misc/wasteland/lit = 1)
+	open_turf_types = list(/turf/open/misc/wasteland = 1)
 	flora_spawn_list = list(
 		/obj/structure/flora/rock/asteroid = 30,
 		/obj/structure/flora/tree/dead/tall = 10,
@@ -32,13 +32,13 @@
 	)
 
 /datum/biome/wasteland/plains
-	open_turf_types = list(/turf/open/misc/dust/lit = 1)
+	open_turf_types = list(/turf/open/misc/dust = 1)
 	flora_spawn_list = list(/obj/structure/flora/deadgrass/tall = 50, /obj/structure/flora/deadgrass/tall/dense = 5, /obj/structure/flora/rock/wasteland = 1)
 	flora_spawn_chance = 45
 	mob_spawn_chance = 15
 
 /datum/biome/wasteland/forest
-	open_turf_types = list(/turf/open/misc/dirt/dry/lit = 1)
+	open_turf_types = list(/turf/open/misc/dirt/dry = 1)
 	flora_spawn_list = list(
 		/obj/structure/flora/tree/dead/tall = 35,
 		/obj/structure/flora/branches = 10,
@@ -49,7 +49,7 @@
 	flora_spawn_chance = 25
 
 /datum/biome/nuclear
-	open_turf_types = list(/turf/open/misc/asteroid/sand/lit = 5, /turf/open/misc/asteroid/sand/dark/lit = 1)
+	open_turf_types = list(/turf/open/misc/asteroid/sand = 5, /turf/open/misc/asteroid/sand/dark = 1)
 	feature_spawn_chance = 2.5
 	feature_spawn_list = list(
 		/obj/structure/radioactive = 10,
@@ -72,7 +72,7 @@
 	)
 
 /datum/biome/ruins
-	open_turf_types = list(/turf/open/misc/dust/lit = 45, /turf/open/floor/plating/rust = 1)
+	open_turf_types = list(/turf/open/misc/dust = 45, /turf/open/floor/plating/rust = 1)
 	feature_spawn_chance = 5
 	feature_spawn_list = list(
 		/obj/structure/barrel/flaming = 6,

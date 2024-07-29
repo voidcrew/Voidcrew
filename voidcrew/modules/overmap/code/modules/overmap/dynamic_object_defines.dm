@@ -105,7 +105,7 @@
 	has_gravity = STANDARD_GRAVITY
 	always_unpowered = TRUE
 	map_generator = /datum/map_generator/planet_generator
-	base_lighting_alpha = 255
+	base_lighting_alpha = 255 // Do NOT decrease this below 255 unless planet has no cave biomes
 	base_lighting_color = "#ffffff"
 	static_lighting = FALSE
 	var/planet_type
@@ -139,7 +139,6 @@
 	planet_type = /datum/planet/lava
 	map_generator = /datum/map_generator/planet_generator/lava
 	base_lighting_color = "#ff9933"
-	base_lighting_alpha = 130
 
 /area/overmap_encounter/planetoid/ice
 	name = "\improper Frozen Planetoid"
@@ -147,6 +146,7 @@
 	ambientsounds = SPOOKY
 	planet_type = /datum/planet/snow
 	map_generator = /datum/map_generator/planet_generator/snow
+	base_lighting_color = "#a2fff7"
 
 /area/overmap_encounter/planetoid/beach
 	name = "\improper Beach Planetoid"
@@ -154,6 +154,7 @@
 	ambientsounds = BEACH
 	planet_type = /datum/planet/beach
 	map_generator = /datum/map_generator/planet_generator/beach
+	base_lighting_color = "#ffe4bb"
 
 /area/overmap_encounter/planetoid/jungle
 	name = "\improper Jungle Planetoid"
@@ -166,6 +167,7 @@
 	sound_environment = SOUND_ENVIRONMENT_HANGAR
 	ambientsounds = MINING
 	planet_type = /datum/planet/wasteland
+	base_lighting_color = "#f7ecb1"
 
 // CAVE AREAS
 /area/overmap_encounter/planetoid/cave
@@ -173,6 +175,7 @@
 	sound_environment = SOUND_ENVIRONMENT_CAVE
 	ambientsounds = SPOOKY
 	outdoors = FALSE
+	static_lighting = TRUE
 	base_lighting_alpha = null
 	base_lighting_color = null
 
@@ -188,3 +191,19 @@
 /area/overmap_encounter/planetoid/cave/lava
 	name = "\improper Mysterious Lava Cave"
 	planet_type = /datum/planet/lava
+
+/area/overmap_encounter/planetoid/cave/ice
+	name = "\improper Mysterious Ice Cave"
+	planet_type = /datum/planet/snow
+
+/area/overmap_encounter/planetoid/cave/jungle
+	name = "\improper Mysterious Jungle Cave"
+	planet_type = /datum/planet/jungle
+
+/area/overmap_encounter/planetoid/cave/beach
+	name = "\improper Mysterious Beach Cave"
+	planet_type = /datum/planet/beach
+
+/area/overmap_encounter/planetoid/cave/wasteland
+	name = "\improper Mysterious Wasteland Cave"
+	planet_type = /datum/planet/wasteland

@@ -70,7 +70,7 @@
 		BIOME_HOT_CAVE = list(
 			BIOME_LOWEST_HUMIDITY = /datum/biome/cave/snow/thawed,
 			BIOME_LOW_HUMIDITY = /datum/biome/cave/snow/thawed,
-			BIOME_MEDIUM_HUMIDITY = /datum/biome/cave/volcanic/lava/plasma,
+			BIOME_MEDIUM_HUMIDITY = /datum/biome/cave/snow/thawed,
 			BIOME_HIGH_HUMIDITY = /datum/biome/cave/snow/thawed,
 			BIOME_HIGHEST_HUMIDITY = /datum/biome/cave/snow/thawed
 		)
