@@ -205,17 +205,15 @@ SUBSYSTEM_DEF(overmap)
 			new event_type(turf_to_spawn)
 
 /datum/controller/subsystem/overmap/proc/setup_planets()
-	var/list/datum/overmap/planet/planets = list()
-	for(var/datum/overmap/planet/planet_type as anything in subtypesof(/datum/overmap/planet))
-		if(initial(planet_type.spawn_rate) > 0)
-			planets += planet_type
-
+	var/list/planets = SSmapping.planets
+	if(!planets)
+		return
 
 	var/list/orbits = list()
 	for (var/i in 2 to LAZYLEN(radius_tiles))
 		orbits += "[i]"
 
-	for (var/_ in 1 to MAX_OVERMAP_PLANETS_TO_SPAWN)
+	for (var/planet in planets)
 		if (LAZYLEN(orbits) == 0 || !orbits)
 			break // can't fit anymore in
 		var/selected_orbit = text2num(pick(orbits))
@@ -224,8 +222,7 @@ SUBSYSTEM_DEF(overmap)
 		if (!turf_for_planet || !istype(turf_for_planet))
 			orbits -= "[selected_orbit]" // this one is full
 			continue
-
-		var/datum/overmap/planet/planet_type = pick(planets)
+		var/datum/overmap/planet/planet_type = planets[planet]["type"]
 		var/obj/structure/overmap/planet/planet_to_spawn = new
 		planet_to_spawn.planet = planet_type
 		planet_to_spawn.forceMove(turf_for_planet)
@@ -237,6 +234,23 @@ SUBSYSTEM_DEF(overmap)
 		planet_to_spawn.icon_state = planet_info.icon_state
 		planet_to_spawn.color = planet_info.color
 		qdel(planet_info)
+
+		var/datum/map_zone/mapzone = find_free_mapzone()
+		var/datum/space_level/zlevel
+		var/encounter_name = "Dynamic Overmap Encounter"
+		if(isnull(mapzone))
+			mapzone = create_map_zone(encounter_name)
+			zlevel = SSmapping.get_level(planets[planet]["z"])
+			mapzone.add_space_level(zlevel)
+		else
+			if(mapzone.z_levels[1])
+				zlevel = mapzone.z_levels[1]
+			else
+				zlevel = SSmapping.get_level(planets[planet]["z"])
+				mapzone.add_space_level(zlevel)
+
+		mapzone.taken = TRUE
+		planet_to_spawn.mapzone = mapzone
 
 // TODO - MULTI-Z VLEVELS
 /datum/controller/subsystem/overmap/proc/calculate_turf_above(turf/T)

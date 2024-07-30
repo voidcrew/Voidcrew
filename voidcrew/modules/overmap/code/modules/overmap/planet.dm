@@ -47,6 +47,14 @@
 	if(reserve_dock)
 		user.forceMove(get_turf(reserve_dock))
 		return TRUE
+	else if(mapzone)
+		var/datum/space_level/z_level = mapzone.z_levels[1]
+		if(!z_level)
+			return
+		var/planet_turf = locate(round(world.maxx/2), round(world.maxy/2), z_level.z_value)
+		if(!planet_turf)
+			return
+		user.forceMove(get_turf(planet_turf))
 	else
 		return
 
