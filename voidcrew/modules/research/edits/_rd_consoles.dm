@@ -67,17 +67,16 @@
 		"t_disk" = null,
 		"d_disk" = null,
 	)
-	if(stored_research.survey_data)
-		data += list(
-			"surveyed_objects" = list(
-				"nebulas" = length(stored_research.survey_data.survey_objects_by_type["nebulas"]),
-				"asteroids" = length(stored_research.survey_data.survey_objects_by_type["asteroids"]),
-				"electric_storms" = length(stored_research.survey_data.survey_objects_by_type["electric_storms"]),
-				"emp_storms" = length(stored_research.survey_data.survey_objects_by_type["emp_storms"]),
-				"planets" = length(stored_research.survey_data.survey_objects_by_type["planets"]),
-				"stars" = length(stored_research.survey_data.survey_objects_by_type["stars"]),
-			)
+	data += list(
+		"surveyed_objects" = list(
+			"nebulas" = stored_research.survey_data ? length(stored_research.survey_data.survey_objects_by_type["nebulas"]) : 0,
+			"asteroids" = stored_research.survey_data ? length(stored_research.survey_data.survey_objects_by_type["asteroids"]): 0,
+			"electric_storms" = stored_research.survey_data ? length(stored_research.survey_data.survey_objects_by_type["electric_storms"]): 0,
+			"emp_storms" = stored_research.survey_data ? length(stored_research.survey_data.survey_objects_by_type["emp_storms"]): 0,
+			"planets" = stored_research.survey_data ? length(stored_research.survey_data.survey_objects_by_type["planets"]): 0,
+			"stars" = stored_research.survey_data ? length(stored_research.survey_data.survey_objects_by_type["stars"]): 0,
 		)
+	)
 
 	if (t_disk)
 		data["t_disk"] = list (

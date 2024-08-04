@@ -205,6 +205,7 @@ SUBSYSTEM_DEF(overmap)
 			new event_type(turf_to_spawn)
 
 /datum/controller/subsystem/overmap/proc/setup_planets()
+	// Init planets
 	var/list/planets = SSmapping.planets
 	if(!planets)
 		return
@@ -251,6 +252,41 @@ SUBSYSTEM_DEF(overmap)
 
 		mapzone.taken = TRUE
 		planet_to_spawn.mapzone = mapzone
+		planet_to_spawn.loaded = TRUE
+
+	// Midgame planets
+	var/list/datum/overmap/planet/midgame_planets = list()
+	for(var/datum/overmap/planet/planet_type as anything in subtypesof(/datum/overmap/planet))
+		if(initial(planet_type.spawn_rate) > 0)
+			midgame_planets += planet_type
+
+
+	var/list/midgame_orbits = list()
+	for (var/i in 2 to LAZYLEN(radius_tiles))
+		midgame_orbits += "[i]"
+
+	for (var/_ in 1 to MAX_OVERMAP_PLANETS_TO_SPAWN)
+		if (LAZYLEN(midgame_orbits) == 0 || !midgame_orbits)
+			break // can't fit anymore in
+		var/selected_orbit = text2num(pick(midgame_orbits))
+
+		var/turf/turf_for_planet = get_unused_overmap_square_in_radius(selected_orbit)
+		if (!turf_for_planet || !istype(turf_for_planet))
+			midgame_orbits -= "[selected_orbit]" // this one is full
+			continue
+
+		var/datum/overmap/planet/planet_type = pick(midgame_planets)
+		var/obj/structure/overmap/planet/planet_to_spawn = new
+		planet_to_spawn.planet = planet_type
+		planet_to_spawn.forceMove(turf_for_planet)
+
+		// Transfer all of the data from the planet datum onto the planet object
+		var/datum/overmap/planet/planet_info = new planet_to_spawn.planet
+		planet_to_spawn.name = planet_info.name
+		planet_to_spawn.desc = planet_info.desc
+		planet_to_spawn.icon_state = planet_info.icon_state
+		planet_to_spawn.color = planet_info.color
+		qdel(planet_info)
 
 // TODO - MULTI-Z VLEVELS
 /datum/controller/subsystem/overmap/proc/calculate_turf_above(turf/T)
@@ -398,7 +434,7 @@ SUBSYSTEM_DEF(overmap)
 		ruin_type.load(ruin_turf)
 
 	if (!isnull(mapgen) && (istype(mapgen, /datum/map_generator/planet_generator)) && !isnull(planet_template))
-		mapgen.generate_terrain(zlevel.get_block(), planet_template)
+		mapgen.generate_terrain(zlevel.get_block(), planet_template, FALSE, FALSE)
 	else
 		if (!isnull(mapgen))
 			mapgen.generate_terrain(zlevel.get_block(), planet_template)

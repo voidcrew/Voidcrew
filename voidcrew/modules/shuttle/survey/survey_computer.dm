@@ -357,6 +357,7 @@
 		soundloop.stop()
 		playsound(src, 'sound/machines/terminal_error.ogg', 50)
 		survey_in_progress = FALSE
+	remove_old_ports(my_port)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/save_survey_data()
 	if(!survey_disk)
@@ -591,7 +592,7 @@
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/activate_survey_map(mob/user)
 	refresh()
-	if (!jump_to_ports.len)
+	if(length(ship_port.current_ship.close_overmap_objects) == 0)
 		balloon_alert(user, "ship is not in orbit!")
 		return
 	if(.)
@@ -626,7 +627,6 @@
 			camera_location = myturf
 			if(length(z_lock) && !(myturf.z in z_lock))
 				camera_location = locate(round(world.maxx/2), round(world.maxy/2), z_lock[1])
-
 		if(camera_location)
 			eyeobj.eye_initialized = TRUE
 			give_eye_control(L)
@@ -884,11 +884,11 @@
 		user.client.images -= to_remove
 		user.client.view_size.resetToDefault()
 		set_action_scaling(user, 1)
-		UnregisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_DOCKED)
 		QDEL_NULL(eyeobj)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/docked()
 	SIGNAL_HANDLER
+	UnregisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_DOCKED)
 	remove_eye_control(current_user)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/undocked()
@@ -908,7 +908,7 @@
 		if (!planet || isnull(planet))
 			remove_old_ports()
 			return
-		if (planet.reserve_dock)
-			add_jumpable_port(planet.reserve_dock.shuttle_id)
-			docking_location = planet.reserve_dock.loc
+		var/datum/space_level/lvl = planet.mapzone.z_levels[1]
+		docking_location = locate(1, 1, lvl.z_value)
+
 

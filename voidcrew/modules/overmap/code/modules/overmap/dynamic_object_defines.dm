@@ -123,7 +123,7 @@
 	var/list/turfs = list()
 	for(var/turf/T in contents)
 		turfs += T
-	map_generator.generate_terrain(turfs, planet_type)
+	map_generator.generate_terrain(turfs, planet_type, FALSE, TRUE)
 
 /area/overmap_encounter/planetoid/RunTerrainPopulation()
 	if(map_generator)
@@ -186,7 +186,7 @@
 	var/list/turfs = list()
 	for(var/turf/T in contents)
 		turfs += T
-	map_generator.generate_terrain(turfs, planet_type, TRUE)
+	map_generator.generate_terrain(turfs, planet_type, TRUE, TRUE)
 
 /area/overmap_encounter/planetoid/cave/lava
 	name = "\improper Mysterious Lava Cave"

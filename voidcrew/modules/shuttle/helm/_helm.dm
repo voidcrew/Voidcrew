@@ -107,6 +107,7 @@
 	data["eta"] = current_ship.get_eta()
 	data["est_thrust"] = current_ship.est_thrust
 	data["engineInfo"] = list()
+	data["canLand"] = current_ship.shuttle.port_destinations ? TRUE : FALSE
 	for(var/obj/machinery/power/shuttle_engine/ship/E in current_ship.shuttle.engine_list)
 		var/list/engine_data
 		if(!E.thruster_active)

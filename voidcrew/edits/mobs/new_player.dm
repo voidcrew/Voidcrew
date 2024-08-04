@@ -63,10 +63,6 @@
 		to_chat(usr, span_danger("The round is either not ready, or has already finished..."))
 		return
 
-	if(!GLOB.enter_allowed)
-		to_chat(usr, span_notice("There is an administrative lock on entering the game!"))
-		return
-
 	var/relevant_cap
 	var/hpc = CONFIG_GET(number/hard_popcap)
 	var/epc = CONFIG_GET(number/extreme_popcap)

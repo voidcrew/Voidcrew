@@ -92,7 +92,10 @@ const Radar = (context) => {
                   tooltipPosition="left"
                   icon="circle"
                   disabled={
-                    isViewer || data.speed > 0 || data.state !== 'flying'
+                    isViewer ||
+                    data.speed > 0 ||
+                    data.state !== 'flying' ||
+                    data.canLand === 0
                   }
                   onClick={() =>
                     act('act_overmap', {

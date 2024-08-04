@@ -1,4 +1,4 @@
-/obj/structure/shipping_container/MouseDrop_T(obj/structure/closet/crate/dropping, mob/user, params)
+/obj/structure/shipping_container/mouse_drop_receive(obj/structure/closet/crate/dropping, mob/user, params)
 	. = ..()
 	if(!istype(dropping))
 		return

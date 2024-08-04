@@ -1,9 +1,12 @@
-// /datum/controller/subsystem/lighting/Initialize()
-// 	for(var/area/overmap_encounter/planetoid/area in GLOB.areas)
-// 		for(var/turf/turf in area.contents)
-// 			if(turf.light_range > 0 && isnull(turf.overlay_light))
-// 				turf.overlay_light = new /obj/effect/dummy/lighting_obj(turf, turf.light_range, turf.light_power, turf.light_color)
-
-// 		CHECK_TICK
-// 	CHECK_TICK
-// 	. = ..()
+/datum/controller/subsystem/lighting/create_all_lighting_objects()
+	for(var/area/area as anything in GLOB.areas)
+		if(!area.static_lighting)
+			continue
+		for (var/list/zlevel_turfs as anything in area.get_zlevel_turf_lists())
+			for(var/turf/area_turf as anything in zlevel_turfs)
+				if(area_turf.space_lit)
+					continue
+				if(area_turf.light_on)
+					new /datum/lighting_object(area_turf)
+			CHECK_TICK
+		CHECK_TICK

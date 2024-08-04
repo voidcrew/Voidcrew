@@ -229,9 +229,7 @@
 /obj/machinery/nanite_chamber/interact(mob/user)
 	toggle_open(user)
 
-/obj/machinery/nanite_chamber/MouseDrop_T(mob/target, mob/user)
-	if(!user.can_perform_action(src, FORBID_TELEKINESIS_REACH) || !Adjacent(target) || !user.Adjacent(target))
-		return
+/obj/machinery/nanite_chamber/mouse_drop_receive(mob/target, mob/user, params)
 	if(close_machine(target))
 		log_combat(user, target, "inserted", null, "into [src].")
 	add_fingerprint(user)

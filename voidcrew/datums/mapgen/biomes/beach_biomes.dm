@@ -57,7 +57,7 @@
 		/obj/structure/fluff/beach_umbrella = 20,
 		/obj/structure/fluff/beach_umbrella/engine = 18,
 		/obj/item/storage/cans/sixbeer = 2,
-		/obj/item/clothing/mask/cigarette/rollie/cannabis = 2,
+		/obj/item/cigarette/rollie/cannabis = 2,
 		/obj/item/clothing/under/shorts/purple = 4,
 		/obj/item/clothing/under/shorts/red = 4
 	)
