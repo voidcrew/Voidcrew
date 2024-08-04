@@ -445,38 +445,7 @@ SUBSYSTEM_DEF(overmap)
 	if(weather_controller_type)
 		new weather_controller_type(mapzone)
 
-
-	// locates the first dock in the bottom left, accounting for padding and the border
-	var/turf/primary_docking_turf = locate(
-		zlevel.low_x+RESERVE_DOCK_DEFAULT_PADDING+1,
-		zlevel.low_y+RESERVE_DOCK_DEFAULT_PADDING+1,
-		zlevel.z_value
-		)
-	// now we need to offset to account for the first dock
-	var/turf/secondary_docking_turf = locate(
-		primary_docking_turf.x+RESERVE_DOCK_MAX_SIZE_LONG+RESERVE_DOCK_DEFAULT_PADDING,
-		primary_docking_turf.y,
-		primary_docking_turf.z
-		)
-
-	//This check exists because docking ports don't like to be deleted.
-	var/obj/docking_port/stationary/primary_dock = new(primary_docking_turf)
-	primary_dock.dir = NORTH
-	primary_dock.name = "\improper Uncharted Space"
-	primary_dock.height = RESERVE_DOCK_MAX_SIZE_SHORT
-	primary_dock.width = RESERVE_DOCK_MAX_SIZE_LONG
-	primary_dock.dheight = 0
-	primary_dock.dwidth = 0
-
-	var/obj/docking_port/stationary/secondary_dock = new(secondary_docking_turf)
-	secondary_dock.dir = NORTH
-	secondary_dock.name = "\improper Uncharted Space"
-	secondary_dock.height = RESERVE_DOCK_MAX_SIZE_SHORT
-	secondary_dock.width = RESERVE_DOCK_MAX_SIZE_LONG
-	secondary_dock.dheight = 0
-	secondary_dock.dwidth = 0
-
-	return list(mapzone, primary_dock, secondary_dock)
+	return list(mapzone)
 
 
 /datum/controller/subsystem/overmap/proc/create_map_zone(new_name)

@@ -399,25 +399,6 @@
 	return TRUE
 
 /**
-*	To properly fix the bug of two ships docking at the same time causing issues,
-*	we need to keep track of whether or not a ship is requesting to dock at a
-*	port IMMEDIATELY after the command is issued.
-*	This also includes keeping track of when the ship is no longer there, upon which
-*	the bools need to be set to false.
-*	This function should be called whenever an action occurs that would remove a ship from the map
-*/
-/obj/structure/overmap/ship/proc/update_docked_bools()
-	var/obj/structure/overmap/dynamic/dockable_place = docked
-	if (!dockable_place)
-		return
-	if (dock_index == 1)
-		dockable_place.first_dock_taken = FALSE
-		dock_index = 0
-	else if (dock_index == 2)
-		dockable_place.second_dock_taken = FALSE
-		dock_index = 0
-
-/**
   * Undocks the shuttle by launching the shuttle with no destination (this causes it to remain in transit)
   */
 /obj/structure/overmap/ship/proc/undock()
@@ -428,7 +409,6 @@
 		return "Ship not docked!"
 	if(!shuttle)
 		return "Shuttle not found!"
-	update_docked_bools()
 	docked = null
 	shuttle.destination = null
 	shuttle.mode = SHUTTLE_IGNITING
