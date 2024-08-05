@@ -27,6 +27,8 @@
 	. = ..()
 
 /turf/open/lava/smooth/lava_land_surface/planetary
+	light_range = 0
+	light_on = FALSE
 	overlay_light = /obj/effect/dummy/lighting_obj/lava_light
 
 /turf/open/lava/smooth/lava_land_surface/planetary/refresh_light()

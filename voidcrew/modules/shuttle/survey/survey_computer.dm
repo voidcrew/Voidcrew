@@ -36,6 +36,7 @@
 	var/debug_mode = FALSE
 	var/list/survey_research_tiers
 	var/mode = "shuttle" // can also be "pod"
+	var/list/modified_turfs = list()
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/Initialize(mapload)
 	. = ..()
@@ -813,6 +814,84 @@
 
 	return TRUE
 
+/// Sets up lighting around ships when they dock
+/// Converts non static lighting to static lighting and
+/// Ensures lighting objects exist around all nearby turfs
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/setup_lighting()
+	// Time to calculate the area around the ship
+	// So we can convert turfs to static lighting objects
+	// So we don't have awful lighting around ships
+	var/list/coords = my_port.return_coords()
+	var/x1
+	var/y1
+	var/x2
+	var/y2
+
+	// Have to do some convoluted indexing based off the direction of the port
+	switch(my_port.dir)
+		if(1)
+			x1 = coords[1]
+			y1 = coords[4]
+
+			x2 = coords[3]
+			y2 = coords[2]
+		if(2)
+			x1 = coords[3]
+			y1 = coords[2]
+
+			x2 = coords[1]
+			y2 = coords[4]
+		if(4)
+			x1 = coords[1]
+			y1 = coords[2]
+
+			x2 = coords[3]
+			y2 = coords[4]
+		if(8)
+			x1 = coords[3]
+			y1 = coords[4]
+
+			x2 = coords[1]
+			y2 = coords[2]
+
+
+	// Subtract 8 tiles from each corner of our ship so we can
+	// light the area AROUND our ship rather than just our ship
+	// Doing 8 because that's the average max strength of a ship light source
+	var/bottom_left_corner_x = x1 - 8
+	var/bottom_left_corner_y = y2 - 8
+	// Add 16 to width and height to account for the -8 and then another 8 as a buffer
+	var/width = ((x2 - x1) + 1) + 16
+	var/height = (abs(y2 - y1) + 1) + 16
+	var/turf/bottom_corner = locate(bottom_left_corner_x, bottom_left_corner_y, my_port.z)
+
+	// Actually do something with the turfs we found
+	for(var/turf/t as anything in CORNER_BLOCK(bottom_corner, width, height))
+
+		var/area/turf_area = get_area(t)
+		if(istype(turf_area, /area/overmap_encounter/planetoid))
+			// turf, had_light, old_range, old_color, old_power
+			var/list/turf_properties = list(t.light_range, t.light_color, t.light_power, t.lighting_object ? TRUE : FALSE)
+			modified_turfs[t] = turf_properties
+			if(turf_area.static_lighting)
+				if(!t.lighting_object)
+					t.lighting_object = new(t)
+			else
+				if(turf_area.base_lighting_alpha > 0)
+					t.set_light(1.4, 2, turf_area.base_lighting_color, l_on = TRUE)
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/undo_lighting()
+	for(var/turf/t in modified_turfs)
+		var/l_range = modified_turfs[t][1]
+		var/l_color = modified_turfs[t][2]
+		var/l_power = modified_turfs[t][3]
+		var/had_l_object = modified_turfs[t][4]
+		var/area/turf_area = get_area(t)
+		if(istype(turf_area, /area/overmap_encounter/planetoid))
+			t.set_light(l_range, l_power, l_color)
+			if(!had_l_object)
+				t.lighting_object = null
+			modified_turfs -= t
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/remove_old_ports(port_id)
 	jump_to_ports = list()
@@ -889,17 +968,19 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/docked()
 	SIGNAL_HANDLER
 	UnregisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_DOCKED)
+	setup_lighting()
 	remove_eye_control(current_user)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/undocked()
 	SIGNAL_HANDLER
+	UnregisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED)
+	undo_lighting()
 	remove_old_ports(my_port)
 	my_port.unregister()
 	qdel(my_port)
 	my_port = null
 	var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
 	LAZYCLEARLIST(the_eye.placed_images)
-	UnregisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/refresh(mob/user)
 	var/o = get_current_celestial_object()

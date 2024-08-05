@@ -39,7 +39,7 @@
 /turf/open/misc/asteroid/planetary_basalt/lava_land_surface
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
 	planetary_atmos = TRUE
-	baseturfs = /turf/open/lava/smooth/lava_land_surface
+	baseturfs = /turf/open/lava/smooth/lava_land_surface/planetary
 
 /turf/open/misc/asteroid/planetary_basalt/proc/set_basalt_light()
 	var/area/turf_area = get_area(src)
