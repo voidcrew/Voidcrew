@@ -87,10 +87,12 @@
 				generate_cave(heat, humidity_level, string_gen, gen_turf, cave_area, planet_type)
 			else
 				generate_overworld(heat, humidity_level, gen_turf, planet_type)
+		gen_turf.original_area = gen_turf.loc
 		CHECK_TICK
 	// Register cave areas
 	if(caves)
 		cave_area.reg_in_areas_in_z()
+		// Cave lighting
 		for(var/i in 1 to length(cave_area.turfs_by_zlevel))
 			for(var/turf/cave_turf in cave_area.turfs_by_zlevel[i])
 				var/list/adjacent_turfs = RANGE_TURFS(1, cave_turf)
@@ -207,6 +209,7 @@
 	var/turf_area = get_area(picked_turf)
 	if(turf_area != cave_area)
 		picked_turf.change_area(turf_area, cave_area)
+		picked_turf.original_area = cave_area
 	picked_turf.generating_biome = selected_cave_biome
 
 /datum/map_generator/planet_generator/populate_terrain(list/turfs)

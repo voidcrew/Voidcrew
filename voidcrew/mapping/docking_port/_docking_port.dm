@@ -161,3 +161,30 @@
 	for(var/area/area as anything in shuttle_areas)
 		area.area_flags |= VALID_TERRITORY
 	// TODO - UPSTREAM - RECALCULATE BOUNDS
+
+// Used to make sure we don't replace planetary turfs we land on with the incorrect area
+/obj/docking_port/mobile/voidcrew/takeoff(list/old_turfs, list/new_turfs, list/moved_atoms, rotation, movement_direction, old_dock, area/underlying_old_area)
+	for(var/i in 1 to old_turfs.len)
+		var/turf/oldT = old_turfs[i]
+		var/turf/newT = new_turfs[i]
+		var/move_mode = old_turfs[oldT]
+
+		if(move_mode & MOVE_TURF)
+
+			// Prevents us from passing planet turf lights to our ship
+			newT.should_pass_light_to_child = FALSE
+
+			// ship landing first time would mean oldt is ship
+			oldT.onShuttleMove(newT, movement_force, movement_direction) //turfs
+
+		if(move_mode & MOVE_AREA)
+			var/area/shuttle_area = oldT.loc
+			shuttle_area.onShuttleMove(oldT, newT, oldT.original_area ? oldT.original_area : underlying_old_area) //areas
+
+		if(move_mode & MOVE_CONTENTS)
+			for(var/k in oldT)
+				var/atom/movable/moving_atom = k
+				if(moving_atom.loc != oldT) //fix for multi-tile objects
+					continue
+				moving_atom.onShuttleMove(newT, oldT, movement_force, movement_direction, old_dock, src) //atoms
+				moved_atoms[moving_atom] = oldT

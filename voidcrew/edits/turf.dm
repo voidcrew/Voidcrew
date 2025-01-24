@@ -2,6 +2,12 @@
 	var/datum/biome/generating_biome
 	var/overlay_light
 	var/should_pass_light_to_child = FALSE
+	var/area/original_area
+
+/turf/Destroy(force)
+	. = ..()
+	if(overlay_light)
+		qdel(overlay_light)
 
 // Takes almost everything from its Tg parent, adds in lighting pass changes
 /turf/ChangeTurf(path, list/new_baseturfs, flags)
@@ -40,6 +46,7 @@
 	var/old_light_power = light_power
 	var/old_light_color = light_color
 	var/old_pass_lights = should_pass_light_to_child
+	var/area/old_original_area = original_area
 
 	// I'm so sorry brother
 	// This is used for a starlight optimization
@@ -109,9 +116,11 @@
 			// Should have a lighting object if we never had one
 			lighting_object = old_lighting_object || new /datum/lighting_object(src)
 
-			// VOIDCREW EDITS
+			// Allows us to pass in our modified lighting
 			if(old_pass_lights)
 				set_light(old_light_range, old_light_power, old_light_color)
+			if(old_original_area)
+				new_turf.original_area = old_original_area
 		else if (old_lighting_object)
 			qdel(old_lighting_object, force = TRUE)
 
