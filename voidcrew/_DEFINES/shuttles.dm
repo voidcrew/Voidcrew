@@ -3,6 +3,7 @@
 
 #define SHUTTLE_DOCKER_BLOCKED_BY_MOB 4
 #define SHUTTLE_DOCKER_BLOCKED_BY_AREA 5
+#define SHUTTLE_DOCKER_BLOCKED_BY_CAVE 6
 
 // Jump status defines
 #define BS_JUMP_IDLE 0

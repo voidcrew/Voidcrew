@@ -12,11 +12,20 @@
 	see_hidden = TRUE
 	circuit = /obj/item/circuitboard/computer/survey_shuttle_docker
 	whitelist_turfs = list()
+	// var/list/blacklisted_turfs = list(/turf/open/lava)
+	var/list/blacklisted_turfs = list()
 	var/obj/docking_port/mobile/voidcrew/ship_port
 	var/turf/docking_location
 	var/icon_scaling_amount = 2
 	var/list/blacklisted_mob_types = list(/mob/living/simple_animal/hostile/megafauna)
-	var/list/whitelisted_areas = list(/area/overmap_encounter, /area/space)
+	var/list/whitelisted_areas = list(
+		/area/overmap_encounter/planetoid/beach,
+		/area/overmap_encounter/planetoid/ice,
+		/area/overmap_encounter/planetoid/jungle,
+		/area/overmap_encounter/planetoid/lava,
+		/area/overmap_encounter/planetoid/wasteland,
+		/area/space
+	)
 	var/datum/looping_sound/sonar/soundloop
 	var/ui_user
 	var/survey_in_progress = FALSE
@@ -61,6 +70,11 @@
 			shuttlePortId = "[ship_port.shuttle_id]_custom"
 
 	soundloop = new(src)
+
+
+	var/list/planets = SSmapping.planets
+	for (var/planet in planets)
+		z_lock |= planets[planet]["z"]
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/update_survey_data()
 	var/obj/structure/overmap/object = get_current_celestial_object()
@@ -694,6 +708,12 @@
 	if(!T)
 		return SHUTTLE_DOCKER_BLOCKED
 
+	var/found_z = FALSE
+	for(var/locked_z in z_lock)
+		if(T.z == locked_z)
+			found_z = TRUE
+	if(!found_z)
+		return SHUTTLE_DOCKER_BLOCKED
 
 	var/allowed_mob = TRUE
 	for(var/mob in T.contents)
@@ -705,10 +725,14 @@
 
 	// Won't land on any area that isn't set in our whitelist
 	var/allowed_area = FALSE
-
 	for (var/whitelisted_area in whitelisted_areas)
 		if (istype(get_area(T), whitelisted_area))
 			allowed_area = TRUE
+
+	if(length(blacklisted_turfs))
+		for(var/blacklisted_turf in blacklisted_turfs)
+			if(istype(T, blacklisted_turf))
+				return SHUTTLE_DOCKER_BLOCKED
 
 	if(allowed_area == FALSE)
 		return SHUTTLE_DOCKER_BLOCKED_BY_AREA
@@ -744,6 +768,9 @@
 			if(SHUTTLE_DOCKER_BLOCKED_BY_MOB)
 				I.icon_state = "red"
 				. = SHUTTLE_DOCKER_BLOCKED_BY_MOB
+			if(SHUTTLE_DOCKER_BLOCKED_BY_CAVE)
+				I.icon_state = "red"
+				. = SHUTTLE_DOCKER_BLOCKED_BY_CAVE
 			else
 				I.icon_state = "red"
 				. = SHUTTLE_DOCKER_BLOCKED
@@ -770,6 +797,8 @@
 		switch(landing_clear)
 			if(SHUTTLE_DOCKER_BLOCKED_BY_AREA)
 				to_chat(current_user, span_warning("Landing zone has an unnatural structure inside of it. Please designate another location."))
+			if(SHUTTLE_DOCKER_BLOCKED_BY_CAVE)
+				to_chat(current_user, span_warning("The ceiling of a cave is blocking landing. Please designate another location."))
 			if(SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT)
 				to_chat(current_user, span_warning("Unknown object detected in landing zone. Please designate another location."))
 			if(SHUTTLE_DOCKER_BLOCKED_BY_MOB)
@@ -890,7 +919,7 @@
 		if(istype(turf_area, /area/overmap_encounter/planetoid))
 			t.set_light(l_range, l_power, l_color)
 			if(!had_l_object)
-				t.lighting_object = null
+				qdel(t.lighting_object, force = TRUE)
 			modified_turfs -= t
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/remove_old_ports(port_id)

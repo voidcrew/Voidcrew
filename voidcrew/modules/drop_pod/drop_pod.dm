@@ -476,6 +476,8 @@
 		switch(landing_clear)
 			if(SHUTTLE_DOCKER_BLOCKED_BY_AREA)
 				to_chat(map_user, span_warning("Landing zone has an unnatural structure inside of it. Please designate another location."))
+			if(SHUTTLE_DOCKER_BLOCKED_BY_CAVE)
+				to_chat(map_user, span_warning("The ceiling of a cave is blocking landing. Please designate another location."))
 			if(SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT)
 				to_chat(map_user, span_warning("Unknown object detected in landing zone. Please designate another location."))
 			if(SHUTTLE_DOCKER_BLOCKED_BY_MOB)
