@@ -260,11 +260,16 @@
 		// I prefer it to creating 2 extra plane masters however, so it's a cost I'm willing to pay
 		// LU
 		if(use_glow)
-			var/mutable_appearance/glow_overlay = mutable_appearance('icons/effects/glow_weather.dmi', weather_state, overlay_layer, null, ABOVE_LIGHTING_PLANE, 100, offset_const = offset)
+			// var/mutable_appearance/glow_overlay = mutable_appearance('icons/effects/glow_weather.dmi', weather_state, overlay_layer, null, ABOVE_LIGHTING_PLANE, 100, offset_const = offset)
+			// var/mutable_appearance/glow_overlay = mutable_appearance('icons/effects/glow_weather.dmi', weather_state, overlay_layer, null, ABOVE_ABOVE_LIGHTING_PLANE, 100, offset_const = offset)
+			// var/mutable_appearance/glow_overlay = mutable_appearance('icons/effects/glow_weather.dmi', weather_state, overlay_layer, null, EMISSIVE_LAYER_UNBLOCKABLE, 100, offset_const = offset)
+			var/mutable_appearance/glow_overlay = mutable_appearance('icons/effects/glow_weather.dmi', weather_state, overlay_layer, null, EMISSIVE_LAYER_UNBLOCKABLE, 100, offset_const = offset)
 			glow_overlay.color = weather_color
 			gen_overlay_cache += glow_overlay
 
-		var/mutable_appearance/weather_overlay = mutable_appearance('icons/effects/weather_effects.dmi', weather_state, overlay_layer, plane = overlay_plane, offset_const = offset)
+		// var/mutable_appearance/weather_overlay = mutable_appearance('icons/effects/weather_effects.dmi', weather_state, overlay_layer, plane = overlay_plane, offset_const = offset)
+		// var/mutable_appearance/weather_overlay = mutable_appearance('icons/effects/weather_effects.dmi', weather_state, overlay_layer, plane = ABOVE_LIGHTING_PLANE, offset_const = offset)
+		var/mutable_appearance/weather_overlay = mutable_appearance('icons/effects/weather_effects.dmi', weather_state, overlay_layer, plane = EMISSIVE_LAYER_UNBLOCKABLE_2, offset_const = offset)
 		weather_overlay.color = weather_color
 		gen_overlay_cache += weather_overlay
 

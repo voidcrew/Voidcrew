@@ -65,6 +65,9 @@
 ///Things that should render ignoring lighting
 #define ABOVE_LIGHTING_PLANE 17
 
+///Used for weather on static lighting planets
+#define ABOVE_ABOVE_LIGHTING_PLANE
+
 ///---------------- MISC -----------------------
 
 ///Pipecrawling images
@@ -257,6 +260,7 @@
 
 /// The layer you should use if you _really_ don't want an emissive overlay to be blocked.
 #define EMISSIVE_LAYER_UNBLOCKABLE 9999
+#define EMISSIVE_LAYER_UNBLOCKABLE_2 9998
 
 ///--------------- FULLSCREEN IMAGES ------------
 
