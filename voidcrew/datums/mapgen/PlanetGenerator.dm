@@ -103,15 +103,15 @@
 					var/found_adj_area = FALSE
 					var/found_adjacent_cave = FALSE
 					var/adj_area_color
-					var/adj_area_alpha
+					// var/adj_area_alpha
 					for(var/area/adjacent_area in adjacent_areas)
 						if(!istype(adjacent_area, /area/overmap_encounter/planetoid/cave))
 							// Check if area uses different lighting than ours
 							if(adjacent_area.static_lighting)
 								continue
 							else
-								adj_area_color = adjacent_area.base_lighting_color
-								adj_area_alpha = adjacent_area.base_lighting_alpha
+								// adj_area_color = adjacent_area.base_lighting_color
+								// adj_area_alpha = adjacent_area.base_lighting_alpha
 								found_adj_area = TRUE
 								// break
 						else
