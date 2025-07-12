@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:www.byond.com)"
+      "WebFetch(domain:www.byond.com)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

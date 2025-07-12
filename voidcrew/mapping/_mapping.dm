@@ -164,11 +164,11 @@
 /datum/controller/subsystem/mapping/setup_rivers()
 	var/list/lava_ruins = levels_by_trait(ZTRAIT_LAVA_RUINS)
 	for (var/lava_z in lava_ruins)
-		spawn_planet_rivers(lava_z, 4, /turf/open/lava/smooth/lava_land_surface/planetary, list(/area/overmap_encounter/planetoid/lava, /area/overmap_encounter/planetoid/cave))
+		spawn_planet_rivers(lava_z, 4, /turf/open/lava/smooth/lava_land_surface, list(/area/overmap_encounter/planetoid/lava, /area/overmap_encounter/planetoid/cave))
 
 	var/list/ice_ruins = levels_by_trait(ZTRAIT_ICE_RUINS)
 	for (var/ice_z in ice_ruins)
-		spawn_planet_rivers(ice_z, 4, /turf/open/lava/plasma/planetary, list(/area/overmap_encounter/planetoid/ice, /area/overmap_encounter/planetoid/cave/ice))
+		spawn_planet_rivers(ice_z, 4, /turf/open/lava/plasma, list(/area/overmap_encounter/planetoid/ice, /area/overmap_encounter/planetoid/cave/ice))
 
 /datum/controller/subsystem/mapping/proc/load_ship_templates()
 	SHOULD_CALL_PARENT(TRUE)
