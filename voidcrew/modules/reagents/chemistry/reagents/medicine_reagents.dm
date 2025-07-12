@@ -197,9 +197,11 @@
 	..()
 
 /datum/reagent/medicine/puce_essence/on_mob_end_metabolize(mob/living/M)
+	. = ..()
 	M.remove_atom_colour(TEMPORARY_COLOUR_PRIORITY, color)		// Removes temporary (not permanent) puce
 
 /datum/reagent/medicine/puce_essence/overdose_process(mob/living/M)
+	. = ..()
 	M.add_atom_colour(color, FIXED_COLOUR_PRIORITY)		// Eternal puce
 
 /datum/reagent/medicine/chartreuse		// C H A R T R E U S E

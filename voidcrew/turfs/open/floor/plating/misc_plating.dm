@@ -30,9 +30,5 @@
 	barefootstep = FOOTSTEP_GRASS
 	clawfootstep = FOOTSTEP_GRASS
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	layer = HIGH_TURF_LAYER
+	// layer = HIGH_TURF_LAYER
 	gender = PLURAL
-	light_power = 1
-	light_range = 2
-	pixel_x = -9
-	pixel_y = -9

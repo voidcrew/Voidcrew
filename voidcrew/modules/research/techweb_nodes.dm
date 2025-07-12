@@ -1,8 +1,8 @@
 /datum/techweb_node/basic_shuttle_tech
-	id = "basic_shuttle"
+	id = TECHWEB_NODE_BASIC_SHUTTLE
 	display_name = "Basic Shuttle Research"
 	description = "Research the technology required to create and use basic shuttles."
-	prereq_ids = list("bluespace_travel", "adv_engi")
+	prereq_ids = list(TECHWEB_NODE_BLUESPACE_TRAVEL, TECHWEB_NODE_EXP_TOOLS)
 	design_ids = list(
 		"engine_plasma",
 		"engine_ion",
@@ -11,30 +11,30 @@
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
 
 /datum/techweb_node/exp_shuttle_tech
-	id = "exp_shuttle"
+	id = TECHWEB_NODE_EXPERIMENTAL_SHUTTLE
 	display_name = "Experimental Shuttle Research"
 	description = "A bunch of engines and related shuttle parts that are likely not really that useful, but could be in strange situations."
-	prereq_ids = list("basic_shuttle")
+	prereq_ids = list(TECHWEB_NODE_BASIC_SHUTTLE)
 	design_ids = list(
 		"engine_expulsion",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
 
 /datum/techweb_node/survey_scanner
-	id = "survey_scanner"
+	id = TECHWEB_NODE_SURVEY_SCANNER
 	display_name = "Survey Scanners"
 	description = "A machine that allows you to turn power into research points."
-	prereq_ids = list("engineering")
+	prereq_ids = list(TECHWEB_NODE_PARTS_UPG)
 	design_ids = list(
 		"surveyscanner",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
 
 /datum/techweb_node/nanite_base
-	id = "nanite_base"
+	id = TECHWEB_NODE_NANITE_BASIC
 	display_name = "Basic Nanite Programming"
 	description = "The basics of nanite construction and programming."
-	prereq_ids = list("datatheory")
+	prereq_ids = list(TECHWEB_NODE_CYBERNETICS)
 	design_ids = list(
 		"nanite_disk",
 		"nanite_remote",
@@ -60,10 +60,10 @@
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
 
 /datum/techweb_node/nanite_smart
-	id = "nanite_smart"
+	id = TECHWEB_NODE_NANITE_SMART
 	display_name = "Smart Nanite Programming"
 	description = "Nanite programs that require nanites to perform complex actions, act independently, roam or seek targets."
-	prereq_ids = list("nanite_base","robotics")
+	prereq_ids = list(TECHWEB_NODE_NANITE_BASIC, TECHWEB_NODE_ROBOTICS)
 	design_ids = list(
 		"purging_nanites",
 		"metabolic_nanites",
@@ -75,10 +75,10 @@
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 750)
 
 /datum/techweb_node/nanite_mesh
-	id = "nanite_mesh"
+	id = TECHWEB_NODE_NANITE_MESH
 	display_name = "Mesh Nanite Programming"
 	description = "Nanite programs that require static structures and membranes."
-	prereq_ids = list("nanite_base","engineering")
+	prereq_ids = list(TECHWEB_NODE_NANITE_BASIC, TECHWEB_NODE_PARTS_UPG)
 	design_ids = list(
 		"hardening_nanites",
 		"dermal_button_nanites",
@@ -91,6 +91,7 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 750)
 
+// NEED TO FIX ALL NANITE TECH IDS
 /datum/techweb_node/nanite_bio
 	id = "nanite_bio"
 	display_name = "Biological Nanite Programming"
@@ -253,22 +254,22 @@
 	)
 
 /datum/techweb_node/survey_console
-	id = "survey_console"
+	id = TECHWEB_NODE_SURVEY_CONSOLE
 	display_name = "Orbital survey console"
 	design_ids = list(
 		"survey_console_board",
 		"survey_console_rewards_upgrade_basic",
 		"survey_console_information_upgrade_basic"
 	)
-	prereq_ids = list("base")
+	prereq_ids = list(TECHWEB_NODE_FUNDIMENTAL_SCI)
 	description = "Wait, there's stuff out here?!"
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
 
 /datum/techweb_node/survey_console_advanced
-	id = "survey_console_advanced"
+	id = TECHWEB_NODE_SURVEY_CONSOLE_ADV
 	display_name = "Survey console advanced upgrades"
 	description = "Your shuttle can now land directly on planets."
-	prereq_ids = list("survey_console")
+	prereq_ids = list(TECHWEB_NODE_SURVEY_CONSOLE)
 	design_ids = list(
 		"survey_ship_docking",
 		"survey_console_rewards_upgrade_advanced",
@@ -279,10 +280,10 @@
 
 
 /datum/techweb_node/survey_console_superior
-	id = "survey_console_superior"
+	id = TECHWEB_NODE_SURVEY_CONSOLE_SUPERIOR
 	display_name = "Survey console superior upgrades"
 	description = "You've seen much. Maybe you can share your findings with others?"
-	prereq_ids = list("survey_console_advanced")
+	prereq_ids = list(TECHWEB_NODE_SURVEY_CONSOLE_ADV)
 	design_ids = list(
 		"survey_data_disk",
 		"survey_map_obj_sight",
@@ -294,10 +295,10 @@
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
 
 /datum/techweb_node/survey_console_elite
-	id = "survey_console_elite"
+	id = TECHWEB_NODE_SURVEY_CONSOLE_ELITE
 	display_name = "Survey console elite upgrades"
 	description = "You know everything. You see everything. No one is outside your reach, nor hidden from your sight."
-	prereq_ids = list("survey_console_superior")
+	prereq_ids = list(TECHWEB_NODE_SURVEY_CONSOLE_SUPERIOR)
 	design_ids = list(
 		 "survey_map_mob_sight",
 		 "survey_console_rewards_upgrade_elite",

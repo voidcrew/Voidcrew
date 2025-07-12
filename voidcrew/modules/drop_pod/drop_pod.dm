@@ -1,5 +1,3 @@
-#define STYLE_DROPPOD 15
-
 /obj/structure/closet/supplypod/drop_pod
 	name = "orbital drop pod"
 	desc = "A device that lets you travel to celestial objects under your ship"
@@ -7,7 +5,7 @@
 	specialised = TRUE
 	icon = 'voidcrew/icons/obj/supplypods.dmi'
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF | UNACIDABLE
-	style = STYLE_DROPPOD
+	style = /datum/pod_style/drop_pod
 	var/obj/docking_port/mobile/voidcrew/ship_port
 	var/used = FALSE
 	var/datum/techweb/linked_techweb
@@ -63,6 +61,18 @@
 /obj/structure/closet/supplypod/drop_pod/get_remote_view_fullscreens(mob/user)
 	return
 
+/obj/structure/closet/supplypod/drop_pod/multitool_act(mob/living/user, obj/item/multitool/tool)
+	. = NONE
+	if(!tool.buffer)
+		return
+	if(istype(tool.buffer, /obj/machinery/quantumpad))
+		linked_pad = tool.buffer
+		balloon_alert(user, "data uploaded from buffer")
+		return TRUE
+	else
+		balloon_alert(user, "no quantum pad data found!")
+		return TRUE
+
 /obj/structure/closet/supplypod/drop_pod/attackby(obj/item/I, mob/user, params)
 	if(I.tool_behaviour == TOOL_CROWBAR)
 		if(opened == FALSE)
@@ -70,17 +80,6 @@
 			return TRUE
 		else
 			setClosed()
-			return TRUE
-	if(I.tool_behaviour == TOOL_MULTITOOL)
-		if(!multitool_check_buffer(user, I))
-			return
-		var/obj/item/multitool/M = I
-		if(istype(M.buffer, /obj/machinery/quantumpad))
-			linked_pad = M.buffer
-			balloon_alert(user, "data uploaded from buffer")
-			return TRUE
-		else
-			balloon_alert(user, "no quantum pad data found!")
 			return TRUE
 	if(I.tool_behaviour == TOOL_WRENCH)
 		set_anchored(!anchored)
@@ -390,7 +389,10 @@
 		return
 	var/list/area/planet_areas = list()
 	for (var/area/area in SSmapping.areas_in_z["[planet_z_level]"])
-		if(area.type in typesof(/area/overmap_encounter/planetoid))
+		if(istype(area, /area/overmap_encounter/planetoid/cave))
+			continue
+		// if(area.type in typesof(/area/overmap_encounter/planetoid))
+		if(istype(area, /area/overmap_encounter/planetoid))
 			planet_areas += area
 	if(length(planet_areas) < 1)
 		if(debug_enabled)
@@ -401,7 +403,7 @@
 			balloon_alert(user, "nowhere to land")
 			return
 	for (var/i in 1 to 5)
-		var/list/turf_list = get_area_turfs(pick(planet_areas))
+		var/list/turf_list = get_area_turfs(pick(planet_areas), planet_z_level)
 		var/turf/target
 		while (turf_list.len && !target)
 			var/I = rand(1, turf_list.len)
