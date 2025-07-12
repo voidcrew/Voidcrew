@@ -56,7 +56,7 @@
 	ruin_type = ZTRAIT_BEACH_RUINS
 	mapgen = /datum/map_generator/planet_generator/beach
 	target_area = /area/overmap_encounter/planetoid/beach
-	surface = /turf/open/misc/asteroid/sand/beach/lit
+	surface = /turf/open/misc/asteroid/sand/beach
 	planet_template = /datum/planet/beach
 
 /datum/overmap/planet/jungle
@@ -78,7 +78,7 @@
 	ruin_type = ZTRAIT_WASTELAND_RUINS
 	mapgen = /datum/map_generator/planet_generator/lava
 	target_area = /area/overmap_encounter/planetoid/wasteland
-	surface = /turf/open/misc/wasteland/lit
+	surface = /turf/open/misc/wasteland
 	planet_template = /datum/planet/wasteland
 
 /datum/overmap/planet/asteroid
