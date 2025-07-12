@@ -56,7 +56,7 @@
 	ruin_type = ZTRAIT_BEACH_RUINS
 	mapgen = /datum/map_generator/planet_generator/beach
 	target_area = /area/overmap_encounter/planetoid/beach
-	surface = /turf/open/misc/asteroid/sand/beach/lit
+	surface = /turf/open/misc/asteroid/sand/beach
 	planet_template = /datum/planet/beach
 
 /datum/overmap/planet/jungle
@@ -78,20 +78,8 @@
 	ruin_type = ZTRAIT_WASTELAND_RUINS
 	mapgen = /datum/map_generator/planet_generator/lava
 	target_area = /area/overmap_encounter/planetoid/wasteland
-	surface = /turf/open/misc/wasteland/lit
+	surface = /turf/open/misc/wasteland
 	planet_template = /datum/planet/wasteland
-
-/datum/overmap/planet/reebe
-	name = "???"
-	desc = "Some sort of strange portal. Theres no identification of what this is."
-	color = COLOR_YELLOW
-	icon_state = "wormhole"
-
-	ruin_type = ZTRAIT_REEBE_RUINS
-	spawn_rate = -1 // disabled because reebe sucks for natural gen
-	mapgen = /datum/map_generator/cave_generator/reebe
-	target_area = /area/overmap_encounter/planetoid/reebe
-	surface = /turf/open/chasm/reebe_void
 
 /datum/overmap/planet/asteroid
 	name = "large asteroid"

@@ -4,106 +4,84 @@
 	icon = 'voidcrew/icons/obj/flora/hellflora.dmi'
 	icon_state = "hell_bush"
 	density = FALSE
-	light_color = "#e08300"
-	light_power = 2
-	light_range = 3
 	resistance_flags = LAVA_PROOF
 
 /obj/structure/flora/ausbushes/fullgrass/hell
 	name = "thick hellish grass"
 	desc = "A thick patch of grass tinted red."
 	icon = 'voidcrew/icons/obj/flora/hellflora.dmi'
-	light_range = 2
-	light_power = 3
 	resistance_flags = LAVA_PROOF
 	gender = PLURAL
 
 /obj/structure/flora/ausbushes/fullgrass/hell/Initialize()
 	. = ..()
 	icon_state = "fullgrass_[rand(1, 3)]"
-	light_color = pick("#e87800", "#780606")
 
 /obj/structure/flora/ausbushes/sparsegrass/hell
 	name = "sparse hellish grass"
 	desc = "A sparse patch of grass tinted red."
 	icon = 'voidcrew/icons/obj/flora/hellflora.dmi'
-	light_range = 2
-	light_power = 3
 	resistance_flags = LAVA_PROOF
 	gender = PLURAL
 
 /obj/structure/flora/ausbushes/sparsegrass/hell/Initialize()
 	. = ..()
 	icon_state = "sparsegrass_[rand(1, 3)]"
-	light_color = pick("#e87800", "#780606")
+
+/obj/structure/flora/ausbushes/sparsegrass/hell/cave
 
 /obj/structure/flora/ausbushes/grassybush/hell
 	name = "crimson bush"
 	desc = "A crimson bush, native to lava planets."
 	icon = 'voidcrew/icons/obj/flora/hellflora.dmi'
-	light_color = "#c70404"
-	light_range = 2
-	light_power = 3
 	resistance_flags = LAVA_PROOF
 
 /obj/structure/flora/ausbushes/hell
 	name = "smouldering bush"
 	desc = "Some kind of orange plant that appears to be slowly burning."
 	icon = 'voidcrew/icons/obj/flora/hellflora.dmi'
-	light_range = 2
-	light_power = 1
 	resistance_flags = LAVA_PROOF
 
 /obj/structure/flora/ausbushes/hell/Initialize()
 	. = ..()
 	if(icon_state == "firstbush_1")
 		icon_state = "firstbush_[rand(1, 4)]"
-	light_color = pick("#e87800", "#780606")
 
 /obj/structure/flora/ausbushes/fernybush/hell
 	name = "hellish fern"
 	desc = "Some kind of orange fern."
 	icon = 'voidcrew/icons/obj/flora/hellflora.dmi'
-	light_range = 2
-	light_power = 1
 	resistance_flags = LAVA_PROOF
 
 /obj/structure/flora/ausbushes/fernybush/hell/Initialize()
 	. = ..()
 	icon_state = "fernybush_[rand(1, 3)]"
-	light_color = pick("#e87800", "#780606")
 
 /obj/structure/flora/ausbushes/genericbush/hell
 	name = "hellish bush"
 	desc = "A small crimson bush."
 	icon = 'voidcrew/icons/obj/flora/hellflora.dmi'
-	light_range = 2
-	light_power = 2
 	resistance_flags = LAVA_PROOF
 
 /obj/structure/flora/ausbushes/genericbush/hell/Initialize()
 	. = ..()
 	icon_state = "genericbush_[rand(1, 4)]"
-	light_color = pick("#e87800", "#780606")
 
 /obj/structure/flora/ausbushes/ywflowers/hell
 	name = "lavablossom"
-	desc = "Some red and orange flowers. They appear to be faintly glowing."
+	desc = "Some red and orange flowers."
 	icon = 'voidcrew/icons/obj/flora/hellflora.dmi'
-	light_color = "#aba507"
-	light_power = 3
-	light_range = 2
 	resistance_flags = LAVA_PROOF
 	gender = PLURAL
+
+/obj/structure/flora/ausbushes/ywflowers/hell/cave
+	desc = "Some red and orange flowers. They appear to be faintly glowing."
 
 /obj/structure/flora/rock/lava
 	name = "lavatic rock"
 	desc = "A volcanic rock. Lava is gushing from it. "
 	icon = 'voidcrew/icons/obj/flora/lavarocks.dmi'
 	icon_state = "basalt"
-	light_color = "#ab4907"
-	light_power = 3
-	light_range = 2
 
 /obj/structure/flora/rock/pile/lava
 	name = "rock shards"
@@ -111,9 +89,6 @@
 	icon = 'voidcrew/icons/obj/flora/lavarocks.dmi'
 	icon_state = "lavarocks"
 	gender = PLURAL
-	light_color = "#ff8800"
-	light_power = 2
-	light_range = 2
 
 /obj/structure/flora/rock/asteroid
 	name = "pebbles"
@@ -133,9 +108,6 @@
 	desc = "A crimson tree with lava oozing from it, providing a slight glow."
 	icon = 'voidcrew/icons/obj/flora/lavatrees.dmi'
 	pixel_x = -16
-	light_color = LIGHT_COLOR_BLOOD_MAGIC
-	light_range = 2
-	light_power = 0.85
 	resistance_flags = LAVA_PROOF
 
 //Barren tree default (brown)
@@ -260,9 +232,6 @@
 	icon = 'voidcrew/icons/obj/flora/wild.dmi'
 	icon_state = "glowshroom0"
 	base_icon_state = "glowshroom"
-	light_color = LIGHT_COLOR_ELECTRIC_GREEN
-	light_range = 2
-	light_power = 0.85
 
 /obj/structure/flora/glowshroom/Initialize()
 	. = ..()

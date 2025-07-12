@@ -29,33 +29,11 @@
 /turf/open/floor/plating/grass/jungle
 	icon = 'voidcrew/icons/turf/floors/junglegrass.dmi'
 */
-/turf/open/misc/grass/jungle/lit
-	light_range = 2
-	light_power = 1
 
-/turf/open/misc/dirt/jungle/dark/lit
-	light_range = 2
-	light_power = 1
-/turf/open/misc/dirt/jungle/dark/lit
-	light_range = 2
-	light_power = 1
-/turf/open/misc/dirt/jungle/wasteland/lit
-	light_range = 2
-	light_power = 1
-/turf/open/water/jungle/lit
-	light_range = 2
-	light_power = 0.8
-	light_color = LIGHT_COLOR_BLUEGREEN
 /turf/open/misc/dirt/old
 	icon_state = "oldsmoothdirt"
-/turf/open/misc/dirt/old/lit
-	light_power = 1
-	light_range = 2
 /turf/open/misc/dirt/old/dark
 	icon_state =  "oldsmoothdarkdirt"
-/turf/open/misc/dirt/old/dark/lit
-	light_power = 1
-	light_range = 2
 
 /turf/open/misc/dirt/dry
 	icon = 'voidcrew/icons/turf/wasteland.dmi'
@@ -63,9 +41,6 @@
 	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
 	baseturfs = /turf/open/misc/dirt/dry
 
-/turf/open/misc/dirt/dry/lit
-	light_power = 1
-	light_range = 2
 
 /turf/open/misc/grass/lava
 	name = "ungodly grass"
@@ -77,8 +52,6 @@
 	planetary_atmos = TRUE
 	icon = 'voidcrew/icons/turf/floors/lava_grass_red.dmi'
 	smooth_icon = 'voidcrew/icons/turf/floors/lava_grass_red.dmi'
-	light_power = 1
-	light_range = 2
 	gender = PLURAL
 
 /turf/open/misc/grass/lava/orange
@@ -108,9 +81,6 @@
 	. = ..()
 	icon_state = "[base_icon_state][rand(1,33)]"
 
-/turf/open/misc/wasteland/lit
-	light_power = 1
-	light_range = 2
 
 /turf/open/floor/plating/rubble
 	name = "rubble"
@@ -180,6 +150,3 @@
 	. = ..()
 	icon_state = "[base_icon_state][pick("1", "2")]"
 
-/turf/open/misc/dust/lit
-	light_power = 1
-	light_range = 2

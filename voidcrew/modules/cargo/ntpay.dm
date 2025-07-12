@@ -4,9 +4,9 @@
 	///The bank account swiped onto the tablet, saved here.
 	var/obj/item/card/id/inserted_id
 
-/datum/computer_file/program/nt_pay/application_attackby(obj/item/attacking_item, mob/living/user)
-	if(isidcard(attacking_item))
-		inserted_id = attacking_item
+/datum/computer_file/program/nt_pay/application_item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(isidcard(tool))
+		inserted_id = tool
 
 /datum/computer_file/program/nt_pay/ui_data(mob/user)
 	var/list/data = ..()

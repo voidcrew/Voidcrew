@@ -1,5 +1,5 @@
 /datum/biome/wasteland
-	open_turf_types = list(/turf/open/misc/wasteland/lit = 1)
+	open_turf_types = list(/turf/open/misc/wasteland = 1)
 	flora_spawn_list = list(
 		/obj/structure/flora/rock/asteroid = 30,
 		/obj/structure/flora/tree/dead/tall = 10,
@@ -26,19 +26,19 @@
 	mob_spawn_list = list(
 		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter = 5,
 		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger = 5,
-		/mob/living/basic/giant_spider/wasteland = 1,
-		/mob/living/basic/giant_spider/tarantula/wasteland = 1,
+		/mob/living/basic/spider/giant/wasteland = 1,
+		/mob/living/basic/spider/giant/tarantula/wasteland = 1,
 		/mob/living/basic/mining/legion/wasteland = 3
 	)
 
 /datum/biome/wasteland/plains
-	open_turf_types = list(/turf/open/misc/dust/lit = 1)
+	open_turf_types = list(/turf/open/misc/dust = 1)
 	flora_spawn_list = list(/obj/structure/flora/deadgrass/tall = 50, /obj/structure/flora/deadgrass/tall/dense = 5, /obj/structure/flora/rock/wasteland = 1)
 	flora_spawn_chance = 45
 	mob_spawn_chance = 15
 
 /datum/biome/wasteland/forest
-	open_turf_types = list(/turf/open/misc/dirt/dry/lit = 1)
+	open_turf_types = list(/turf/open/misc/dirt/dry = 1)
 	flora_spawn_list = list(
 		/obj/structure/flora/tree/dead/tall = 35,
 		/obj/structure/flora/branches = 10,
@@ -49,7 +49,7 @@
 	flora_spawn_chance = 25
 
 /datum/biome/nuclear
-	open_turf_types = list(/turf/open/misc/asteroid/sand/lit = 5, /turf/open/misc/asteroid/sand/dark/lit = 1)
+	open_turf_types = list(/turf/open/misc/asteroid/sand = 5, /turf/open/misc/asteroid/sand/dark = 1)
 	feature_spawn_chance = 2.5
 	feature_spawn_list = list(
 		/obj/structure/radioactive = 10,
@@ -67,12 +67,12 @@
 		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter = 10,
 		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger = 7,
 		/mob/living/basic/hivebot/rapid/wasteland = 5,
-		/mob/living/basic/giant_spider/wasteland = 1,
-		/mob/living/basic/giant_spider/tarantula/wasteland = 1
+		/mob/living/basic/spider/giant/wasteland = 1,
+		/mob/living/basic/spider/giant/tarantula/wasteland = 1
 	)
 
 /datum/biome/ruins
-	open_turf_types = list(/turf/open/misc/dust/lit = 45, /turf/open/floor/plating/rust = 1)
+	open_turf_types = list(/turf/open/misc/dust = 45, /turf/open/floor/plating/rust = 1)
 	feature_spawn_chance = 5
 	feature_spawn_list = list(
 		/obj/structure/barrel/flaming = 6,
@@ -96,7 +96,7 @@
 	mob_spawn_list = list(
 		/mob/living/basic/mining/legion/wasteland = 15,
 		/mob/living/basic/mining/legion/crystal/wasteland = 1,
-		/mob/living/simple_animal/hostile/asteroid/basilisk/watcher/forgotten/wasteland = 1
+		/mob/living/basic/mining/watcher/forgotten/wasteland = 1
 	)
 
 /datum/biome/cave/wasteland
@@ -158,9 +158,9 @@
 	flora_spawn_chance = 1
 	mob_spawn_chance = 5
 	mob_spawn_list = list(
-		/mob/living/basic/giant_spider/tarantula/wasteland = 1,
-		/mob/living/simple_animal/hostile/asteroid/goliath/beast/wasteland = 20,
-		/mob/living/simple_animal/hostile/asteroid/goliath/beast/ancient/wasteland = 15,
+		/mob/living/basic/spider/giant/tarantula/wasteland = 1,
+		/mob/living/basic/mining/goliath/wasteland = 20,
+		/mob/living/basic/mining/goliath/ancient/wasteland = 15,
 		/obj/structure/spawner/ice_moon/demonic_portal/blobspore = 1,
 		/obj/structure/spawner/ice_moon/demonic_portal/hivebot = 1
 	)
@@ -183,8 +183,8 @@
 	flora_spawn_chance = 30
 	mob_spawn_chance = 5
 	mob_spawn_list = list(
-		/mob/living/simple_animal/hostile/blob/blobbernaut/independent/wasteland = 1,
-		/mob/living/simple_animal/hostile/asteroid/basilisk/watcher/magmawing/wasteland = 4,
+		/mob/living/basic/blob_minion/blobbernaut/wasteland = 1,
+		/mob/living/basic/mining/watcher/magmawing/wasteland = 4,
 		/mob/living/basic/mining/goldgrub = 3,
 		/mob/living/basic/mining/legion/wasteland = 3,
 		/obj/structure/spawner/ice_moon/demonic_portal/blobspore = 1,

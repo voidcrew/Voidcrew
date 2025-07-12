@@ -21,9 +21,6 @@
 	tiled_dirt = FALSE
 	flags_1 = NOJAUNT
 	initial_gas_mix = REEBE_DEFAULT_ATMOS
-	light_range = 2
-	light_power = 0.6
-	light_color = COLOR_VERY_LIGHT_GRAY
 
 /turf/open/chasm/reebe_void/examine(mob/user)
 	. = ..()
@@ -34,17 +31,11 @@
 	icon_state = "reebegame"
 
 /turf/open/floor/bronze/light
-	light_range = 2
-	light_power = 0.6
-	light_color = COLOR_VERY_LIGHT_GRAY
 	initial_gas_mix = REEBE_DEFAULT_ATMOS
 
 /turf/open/floor/grass/fairy/reebe
 	desc = "Strangely glowing grass."
 	initial_gas_mix = REEBE_DEFAULT_ATMOS
-	light_range = 2
-	light_power = 0.6
-	light_color = COLOR_VERY_LIGHT_GRAY
 	baseturfs = /turf/open/chasm/reebe_void
 
 /turf/closed/mineral/random/reebe
@@ -77,7 +68,7 @@
 	flora_spawn_chance = 6
 
 	mob_spawn_list = list(
-		/mob/living/simple_animal/hostile/asteroid/basilisk/watcher/forgotten = 1)
+		/mob/living/basic/mining/watcher/forgotten = 1)
 
 	flora_spawn_list = list(
 		/obj/machinery/power/supermatter_crystal/shard/hugbox = 1,

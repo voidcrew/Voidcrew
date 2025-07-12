@@ -45,9 +45,9 @@
 		/obj/item/survivalcapsule/luxuryelite = 2,
 		/obj/item/storage/box/stockparts/basic = 10,
 		/obj/item/storage/box/stockparts/deluxe = 3,
-		/obj/item/stock_parts/cell/high = 5,
+		/obj/item/stock_parts/power_store/cell/upgraded/plus = 5,
 		///obj/item/strange_crystal = 10,
-		/obj/item/clothing/mask/cigarette/rollie/mindbreaker = 10,
+		/obj/item/cigarette/rollie/mindbreaker = 10,
 		/obj/item/wrench/abductor = 2,
 		/obj/item/clothing/glasses/meson = 10,
 		/obj/item/clothing/suit/utility/radiation = 10,
@@ -103,7 +103,7 @@
 	desc = "A musty barrel. Reach in and unlock its mold-covered mysteries!"
 	icon = 'icons/obj/structures.dmi'
 	icon_state = "barrel"
-	mob_types = list(/mob/living/simple_animal/hostile/pirate/melee/beach, /mob/living/simple_animal/hostile/pirate/ranged/beach)
+	mob_types = list(/mob/living/basic/trooper/pirate/melee/beach, /mob/living/basic/trooper/pirate/ranged/beach)
 	max_mobs = 2
 	max_integrity = 250
 	bite_chance = 0

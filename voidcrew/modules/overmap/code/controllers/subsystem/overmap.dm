@@ -205,17 +205,16 @@ SUBSYSTEM_DEF(overmap)
 			new event_type(turf_to_spawn)
 
 /datum/controller/subsystem/overmap/proc/setup_planets()
-	var/list/datum/overmap/planet/planets = list()
-	for(var/datum/overmap/planet/planet_type as anything in subtypesof(/datum/overmap/planet))
-		if(initial(planet_type.spawn_rate) > 0)
-			planets += planet_type
-
+	// Init planets
+	var/list/planets = SSmapping.planets
+	if(!planets)
+		return
 
 	var/list/orbits = list()
 	for (var/i in 2 to LAZYLEN(radius_tiles))
 		orbits += "[i]"
 
-	for (var/_ in 1 to MAX_OVERMAP_PLANETS_TO_SPAWN)
+	for (var/planet in planets)
 		if (LAZYLEN(orbits) == 0 || !orbits)
 			break // can't fit anymore in
 		var/selected_orbit = text2num(pick(orbits))
@@ -224,8 +223,7 @@ SUBSYSTEM_DEF(overmap)
 		if (!turf_for_planet || !istype(turf_for_planet))
 			orbits -= "[selected_orbit]" // this one is full
 			continue
-
-		var/datum/overmap/planet/planet_type = pick(planets)
+		var/datum/overmap/planet/planet_type = planets[planet]["type"]
 		var/obj/structure/overmap/planet/planet_to_spawn = new
 		planet_to_spawn.planet = planet_type
 		planet_to_spawn.forceMove(turf_for_planet)
@@ -236,8 +234,59 @@ SUBSYSTEM_DEF(overmap)
 		planet_to_spawn.desc = planet_info.desc
 		planet_to_spawn.icon_state = planet_info.icon_state
 		planet_to_spawn.color = planet_info.color
-		// planet_to_spawn.load_level()
 		qdel(planet_info)
+
+		var/datum/map_zone/mapzone = find_free_mapzone()
+		var/datum/space_level/zlevel
+		var/encounter_name = "Dynamic Overmap Encounter"
+		if(isnull(mapzone))
+			mapzone = create_map_zone(encounter_name)
+			zlevel = SSmapping.get_level(planets[planet]["z"])
+			mapzone.add_space_level(zlevel)
+		else
+			if(mapzone.z_levels[1])
+				zlevel = mapzone.z_levels[1]
+			else
+				zlevel = SSmapping.get_level(planets[planet]["z"])
+				mapzone.add_space_level(zlevel)
+
+		mapzone.taken = TRUE
+		planet_to_spawn.mapzone = mapzone
+		planet_to_spawn.loaded = TRUE
+
+	// Midgame planets
+	// var/list/datum/overmap/planet/midgame_planets = list()
+	// for(var/datum/overmap/planet/planet_type as anything in subtypesof(/datum/overmap/planet))
+	// 	if(initial(planet_type.spawn_rate) > 0)
+	// 		midgame_planets += planet_type
+
+
+	// var/list/midgame_orbits = list()
+	// for (var/i in 2 to LAZYLEN(radius_tiles))
+	// 	midgame_orbits += "[i]"
+
+	// for (var/_ in 1 to MAX_OVERMAP_PLANETS_TO_SPAWN)
+	// 	if (LAZYLEN(midgame_orbits) == 0 || !midgame_orbits)
+	// 		break // can't fit anymore in
+	// 	var/selected_orbit = text2num(pick(midgame_orbits))
+
+	// 	var/turf/turf_for_planet = get_unused_overmap_square_in_radius(selected_orbit)
+	// 	if (!turf_for_planet || !istype(turf_for_planet))
+	// 		midgame_orbits -= "[selected_orbit]" // this one is full
+	// 		continue
+
+	// 	var/datum/overmap/planet/planet_type = pick(midgame_planets)
+	// 	var/obj/structure/overmap/planet/planet_to_spawn = new
+	// 	planet_to_spawn.planet = planet_type
+	// 	planet_to_spawn.forceMove(turf_for_planet)
+
+	// 	// Transfer all of the data from the planet datum onto the planet object
+	// 	var/datum/overmap/planet/planet_info = new planet_to_spawn.planet
+	// 	planet_to_spawn.name = planet_info.name
+	// 	planet_to_spawn.desc = planet_info.desc
+	// 	planet_to_spawn.icon_state = planet_info.icon_state
+	// 	planet_to_spawn.color = planet_info.color
+	// 	qdel(planet_info)
 
 // TODO - MULTI-Z VLEVELS
 /datum/controller/subsystem/overmap/proc/calculate_turf_above(turf/T)
@@ -384,11 +433,11 @@ SUBSYSTEM_DEF(overmap)
 			)
 		ruin_type.load(ruin_turf)
 
-	if (!isnull(mapgen) && istype(mapgen, /datum/map_generator/planet_generator) && !isnull(planet_template))
-		mapgen.generate_terrain(zlevel.get_block(), planet_template)
+	if (!isnull(mapgen) && (istype(mapgen, /datum/map_generator/planet_generator)) && !isnull(planet_template))
+		mapgen.generate_terrain(zlevel.get_block(), planet_template, FALSE, FALSE)
 	else
 		if (!isnull(mapgen))
-			mapgen.generate_terrain(zlevel.get_block())
+			mapgen.generate_terrain(zlevel.get_block(), planet_template)
 
 	if(filled_area)
 		filled_area.reg_in_areas_in_z()
@@ -396,38 +445,7 @@ SUBSYSTEM_DEF(overmap)
 	if(weather_controller_type)
 		new weather_controller_type(mapzone)
 
-
-	// locates the first dock in the bottom left, accounting for padding and the border
-	var/turf/primary_docking_turf = locate(
-		zlevel.low_x+RESERVE_DOCK_DEFAULT_PADDING+1,
-		zlevel.low_y+RESERVE_DOCK_DEFAULT_PADDING+1,
-		zlevel.z_value
-		)
-	// now we need to offset to account for the first dock
-	var/turf/secondary_docking_turf = locate(
-		primary_docking_turf.x+RESERVE_DOCK_MAX_SIZE_LONG+RESERVE_DOCK_DEFAULT_PADDING,
-		primary_docking_turf.y,
-		primary_docking_turf.z
-		)
-
-	//This check exists because docking ports don't like to be deleted.
-	var/obj/docking_port/stationary/primary_dock = new(primary_docking_turf)
-	primary_dock.dir = NORTH
-	primary_dock.name = "\improper Uncharted Space"
-	primary_dock.height = RESERVE_DOCK_MAX_SIZE_SHORT
-	primary_dock.width = RESERVE_DOCK_MAX_SIZE_LONG
-	primary_dock.dheight = 0
-	primary_dock.dwidth = 0
-
-	var/obj/docking_port/stationary/secondary_dock = new(secondary_docking_turf)
-	secondary_dock.dir = NORTH
-	secondary_dock.name = "\improper Uncharted Space"
-	secondary_dock.height = RESERVE_DOCK_MAX_SIZE_SHORT
-	secondary_dock.width = RESERVE_DOCK_MAX_SIZE_LONG
-	secondary_dock.dheight = 0
-	secondary_dock.dwidth = 0
-
-	return list(mapzone, primary_dock, secondary_dock)
+	return list(mapzone)
 
 
 /datum/controller/subsystem/overmap/proc/create_map_zone(new_name)

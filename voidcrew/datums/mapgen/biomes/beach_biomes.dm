@@ -1,5 +1,5 @@
 /datum/biome/grass
-	open_turf_types = list(/turf/open/misc/grass/lit = 1)
+	open_turf_types = list(/turf/open/misc/grass = 1)
 	flora_spawn_list = list(
 		/obj/structure/flora/tree/jungle = 1,
 		/obj/structure/flora/ausbushes/brflowers = 1,
@@ -22,11 +22,11 @@
 	)
 	flora_spawn_chance = 25
 	mob_spawn_list = list(
-		/mob/living/simple_animal/butterfly/beach = 1,
+		/mob/living/basic/butterfly/beach = 1,
 		/mob/living/basic/slime/pet/beach = 1,
-		///mob/living/simple_animal/chicken/rabbit/normal/beach = 1,
-		/mob/living/simple_animal/chicken/beach = 1,
-		/mob/living/simple_animal/chick/beach = 1,
+		/mob/living/basic/rabbit/beach = 1,
+		/mob/living/basic/chicken/beach = 1,
+		/mob/living/basic/chick/beach = 1,
 		/mob/living/basic/mouse/beach = 1,
 		/mob/living/basic/cow/beach = 1,
 		/mob/living/basic/deer/beach = 1
@@ -37,8 +37,8 @@
 	flora_spawn_chance = 65
 	mob_spawn_list = list(
 		/mob/living/simple_animal/pet/cat/cak/beach = 1,
-		/mob/living/simple_animal/butterfly/beach = 4,
-		/mob/living/simple_animal/hostile/retaliate/snake/beach = 5,
+		/mob/living/basic/butterfly/beach = 4,
+		/mob/living/basic/snake/beach = 5,
 		/mob/living/basic/slime/random/beach = 3,
 		/mob/living/basic/bee/toxin = 3
 	)
@@ -47,7 +47,7 @@
 	feature_spawn_list = list(/obj/structure/spawner/cave/beach = 1)
 
 /datum/biome/beach
-	open_turf_types = list(/turf/open/misc/asteroid/sand/beach/lit = 1)
+	open_turf_types = list(/turf/open/misc/asteroid/sand/beach = 1)
 	//mob_spawn_list = list(/mob/living/simple_animal/crab/beach = 7, /mob/living/simple_animal/turtle/beach = 4, /mob/living/simple_animal/hostile/retaliate/gator/steppy = 1)
 	mob_spawn_chance = 0.3
 	feature_spawn_chance = 3
@@ -57,7 +57,7 @@
 		/obj/structure/fluff/beach_umbrella = 20,
 		/obj/structure/fluff/beach_umbrella/engine = 18,
 		/obj/item/storage/cans/sixbeer = 2,
-		/obj/item/clothing/mask/cigarette/rollie/cannabis = 2,
+		/obj/item/cigarette/rollie/cannabis = 2,
 		/obj/item/clothing/under/shorts/purple = 4,
 		/obj/item/clothing/under/shorts/red = 4
 	)
@@ -67,7 +67,7 @@
 	flora_spawn_chance = 1
 
 /datum/biome/beach/dense
-	open_turf_types = list(/turf/open/misc/asteroid/sand/beach/dense/lit = 1)
+	open_turf_types = list(/turf/open/misc/asteroid/sand/beach/dense = 1)
 	flora_spawn_list = list(
 		/obj/structure/flora/rock/asteroid = 6,
 		/obj/structure/flora/rock/beach = 1
@@ -104,8 +104,8 @@
 		/mob/living/simple_animal/beachcarp/trout = 5,
 		/mob/living/simple_animal/beachcarp/salmon = 5,
 		/mob/living/simple_animal/beachcarp/perch = 5,
-		/mob/living/simple_animal/hostile/pirate/melee/beach/boat = 3,
-		/mob/living/simple_animal/hostile/pirate/ranged/beach/boat = 1
+		/mob/living/basic/trooper/pirate/melee/beach/boat = 3,
+		/mob/living/basic/trooper/pirate/ranged/beach/boat = 1
 	)
 	feature_spawn_chance = 0.1
 	feature_spawn_list = list(
@@ -129,7 +129,7 @@
 	flora_spawn_list = list(/obj/structure/flora/tree/dead_pine = 1, /obj/structure/flora/rock/beach = 1)
 	flora_spawn_chance = 5
 	feature_spawn_list = list(
-		///obj/structure/destructible/tribal_torch/lit = 7,
+		///obj/structure/destructible/tribal_torch = 7,
 		/obj/structure/spawner/cave/beach = 20,
 		/obj/structure/fermenting_barrel = 10,
 		/obj/vehicle/ridden/lavaboat/dragon = 1,
@@ -141,7 +141,7 @@
 	feature_spawn_chance = 30
 
 /datum/biome/cave/beach/magical
-	open_turf_types = list(/turf/open/misc/grass/lit = 1)
+	open_turf_types = list(/turf/open/misc/grass = 1)
 	flora_spawn_chance = 20
 	flora_spawn_list = list(
 		/obj/structure/flora/ausbushes/grassybush = 1,
@@ -160,7 +160,7 @@
 	)
 	mob_spawn_chance = 5
 	mob_spawn_list = list(
-		/mob/living/simple_animal/butterfly = 1,
+		/mob/living/basic/butterfly = 1,
 		/mob/living/basic/slime/pet = 1,
 		/mob/living/basic/lightgeist = 1
 	)
