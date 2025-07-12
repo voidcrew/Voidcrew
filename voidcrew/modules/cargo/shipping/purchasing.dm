@@ -10,7 +10,7 @@
 
 	var/obj/structure/closet/supplypod/podspawn/pod = podspawn(list(
 		"target" = pod_location,
-		"style" = STYLE_STANDARD,
+		"style" = /datum/pod_style,
 		"spawn" = pick(subtypesof(/obj/structure/shipping_container)),
 	))
 	var/obj/structure/shipping_container/container_holder = locate() in pod.contents

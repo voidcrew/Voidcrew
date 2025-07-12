@@ -1,5 +1,5 @@
 /datum/planet/beach
-	biomes = list(
+	overworld_biomes = list(
 		BIOME_COLDEST = list(
 			BIOME_LOWEST_HUMIDITY = /datum/biome/grass,
 			BIOME_LOW_HUMIDITY = /datum/biome/beach,
@@ -42,6 +42,8 @@
 			BIOME_HIGH_HUMIDITY = /datum/biome/ocean,
 			BIOME_HIGHEST_HUMIDITY = /datum/biome/ocean/deep
 		),
+	)
+	cave_biomes = list(
 		BIOME_COLDEST_CAVE = list(
 			BIOME_LOWEST_HUMIDITY = /datum/biome/cave/beach/cove,
 			BIOME_LOW_HUMIDITY = /datum/biome/cave/beach,

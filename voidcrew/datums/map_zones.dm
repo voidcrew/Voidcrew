@@ -68,12 +68,11 @@
 		turf.empty(RESERVED_TURF_TYPE, RESERVED_TURF_TYPE, null, CHANGETURF_IGNORE_AIR|CHANGETURF_DEFER_CHANGE)
 		// Reset area
 		var/area/old_area = get_area(turf)
-		space_area.contents += turf
 		turf.change_area(old_area, space_area)
 		CHECK_TICK
 
 	for(var/turf/turf as anything in block_turfs)
-		turf.AfterChange(CHANGETURF_IGNORE_AIR|CHANGETURF_RECALC_ADJACENT)
+		turf.AfterChange(CHANGETURF_IGNORE_AIR)
 
 		// we don't need to smooth anything in the reserve, because it's empty, nor do we need to check its starlight.
 		// only the sides need to do that. this saved ~4-5% of reservation clear times in testing
@@ -95,11 +94,11 @@
 	if(area_to_use)
 		for(var/turf/iterated_turf as anything in get_block())
 			var/area/old_area = get_area(iterated_turf)
-			area_to_use.contents += iterated_turf
 			iterated_turf.change_area(old_area, area_to_use)
 			CHECK_TICK
 			if(QDELETED(src))
 				return
+		area_to_use.reg_in_areas_in_z()
 
 	if(turf_type)
 		for(var/turf/iterated_turf as anything in get_block())
