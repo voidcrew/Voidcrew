@@ -166,6 +166,7 @@
 	ambientsounds = SPOOKY
 	outdoors = FALSE
 	static_lighting = TRUE
+	base_lighting_alpha = 0
 
 // We want to run generate terrain with is_cave set to TRUE for cave areas
 /area/overmap_encounter/planetoid/cave/RunTerrainGeneration()
