@@ -33,7 +33,7 @@
 	mapgen = /datum/map_generator/planet_generator/lava
 	target_area = /area/overmap_encounter/planetoid/lava
 	surface = /turf/open/misc/asteroid/basalt/lava_land_surface
-	weather_controller_type = /datum/weather/ash_storm
+	// weather_controller_type = /datum/weather/ash_storm
 	planet_template = /datum/planet/lava
 
 /datum/overmap/planet/ice
@@ -45,7 +45,7 @@
 	mapgen = /datum/map_generator/planet_generator/snow
 	target_area = /area/overmap_encounter/planetoid/ice
 	surface = /turf/open/misc/asteroid/snow/icemoon
-	weather_controller_type = /datum/weather/snow_storm
+	// weather_controller_type = /datum/weather/snow_storm
 	planet_template = /datum/planet/snow
 
 /datum/overmap/planet/beach
