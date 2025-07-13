@@ -9,15 +9,7 @@
 	var/birth_limit = 4
 	var/death_limit = 3
 
-	var/edge_turf_light_power = 1000
 
-/obj/effect/dummy/cave_light
-	name = "cave lighting"
-	desc = "Tell a coder if you're seeing this."
-	icon_state = "nothing"
-	light_range = 0
-	blocks_emissive = EMISSIVE_BLOCK_NONE
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
 /datum/map_generator/planet_generator/generate_terrain(list/turf/turfs, datum/planet/planet_type, is_cave, init_planet)
 	. = ..()
@@ -88,7 +80,7 @@
 			else
 				generate_overworld(heat, humidity_level, gen_turf, planet_type)
 		CHECK_TICK
-	// Register cave areas
+	// Register and light cave areas
 	if(caves)
 		cave_area.reg_in_areas_in_z()
 		for(var/i in 1 to length(cave_area.turfs_by_zlevel))
@@ -116,46 +108,6 @@
 								break
 						else
 							found_adjacent_cave = TRUE
-
-					if(found_adj_area)
-						// Cave turfs look bad with low lighting if there's no adjacent cave turfs
-						if(!found_adjacent_cave)
-							cave_turf.light_power = 2
-						else
-							if(istype(cave_turf, /turf/closed))
-								cave_turf.light_power = 2
-							else
-								cave_turf.light_power = 2
-						cave_turf.light_range = 1.4
-						cave_turf.light_color = adj_area_color
-						cave_turf.light_on = TRUE
-						cave_turf.should_pass_light_to_child = TRUE
-						continue
-
-				var/list/near_turfs = RANGE_TURFS(2, cave_turf)
-				var/list/area/near_areas = list()
-				for(var/near_turf in near_turfs)
-					near_areas |= get_area(near_turf)
-				if(length(near_areas))
-					var/found_near_area = FALSE
-					var/near_area_color
-					var/near_area_alpha
-					for(var/area/near_area in near_areas)
-						if(!istype(near_area, /area/overmap_encounter/planetoid/cave))
-							// Check if area uses different lighting than ours
-							if(near_area.static_lighting)
-								continue
-							else
-								near_area_color = near_area.base_lighting_color
-								near_area_alpha = near_area.base_lighting_alpha
-								found_near_area = TRUE
-								break
-					if(found_near_area)
-						cave_turf.light_on = TRUE
-						cave_turf.light_range = 0
-						cave_turf.should_pass_light_to_child = TRUE
-					else
-						cave_turf.light_on = FALSE
 
 	var/message = "[name] planet generation finished in [(REALTIMEOFDAY - start_time)/10]s!"
 	to_chat(world, span_boldannounce("[message]"))
