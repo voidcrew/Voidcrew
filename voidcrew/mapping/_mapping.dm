@@ -47,29 +47,29 @@
 		var/list/p = list(type = /datum/overmap/planet/lava, z = z_count)
 		planets += list("lava [i]" = p)
 
-	// for(var/i in 1 to ice_planet_count)
-	// 	LoadGroup(FailedZs, "Planet ice [i]", "map_files/voidcrew", "ice.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS)))
-	// 	z_count += 2
-	// 	var/list/p = list(type = /datum/overmap/planet/ice, z = z_count)
-	// 	planets += list("ice [i]" = p)
+	for(var/i in 1 to ice_planet_count)
+		LoadGroup(FailedZs, "Planet ice [i]", "map_files/voidcrew", "ice.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS)))
+		z_count += 2
+		var/list/p = list(type = /datum/overmap/planet/ice, z = z_count)
+		planets += list("ice [i]" = p)
 
-	// for(var/i in 1 to jungle_planet_count)
-	// 	LoadGroup(FailedZs, "Planet jungle [i]", "map_files/voidcrew", "jungle.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_JUNGLE_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_JUNGLE_RUINS)))
-	// 	z_count += 2
-	// 	var/list/p = list(type = /datum/overmap/planet/jungle, z = z_count)
-	// 	planets += list("jungle [i]" = p)
+	for(var/i in 1 to jungle_planet_count)
+		LoadGroup(FailedZs, "Planet jungle [i]", "map_files/voidcrew", "jungle.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_JUNGLE_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_JUNGLE_RUINS)))
+		z_count += 2
+		var/list/p = list(type = /datum/overmap/planet/jungle, z = z_count)
+		planets += list("jungle [i]" = p)
 
-	// for(var/i in 1 to beach_planet_count)
-	// 	LoadGroup(FailedZs, "Planet beach [i]", "map_files/voidcrew", "beach.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_BEACH_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_BEACH_RUINS)))
-	// 	z_count += 2
-	// 	var/list/p = list(type = /datum/overmap/planet/beach, z = z_count)
-	// 	planets += list("beach [i]" = p)
+	for(var/i in 1 to beach_planet_count)
+		LoadGroup(FailedZs, "Planet beach [i]", "map_files/voidcrew", "beach.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_BEACH_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_BEACH_RUINS)))
+		z_count += 2
+		var/list/p = list(type = /datum/overmap/planet/beach, z = z_count)
+		planets += list("beach [i]" = p)
 
-	// for(var/i in 1 to wasteland_planet_count)
-	// 	LoadGroup(FailedZs, "Planet wasteland [i]", "map_files/voidcrew", "wasteland.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_WASTELAND_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_WASTELAND_RUINS)))
-	// 	z_count += 2
-	// 	var/list/p = list(type = /datum/overmap/planet/wasteland, z = z_count)
-	// 	planets += list("wasteland [i]" = p)
+	for(var/i in 1 to wasteland_planet_count)
+		LoadGroup(FailedZs, "Planet wasteland [i]", "map_files/voidcrew", "wasteland.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_WASTELAND_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_WASTELAND_RUINS)))
+		z_count += 2
+		var/list/p = list(type = /datum/overmap/planet/wasteland, z = z_count)
+		planets += list("wasteland [i]" = p)
 
 	if(LAZYLEN(FailedZs)) //but seriously, unless the server's filesystem is messed up this will never happen
 		var/msg = "RED ALERT! The following map files failed to load: [FailedZs[1]]"
