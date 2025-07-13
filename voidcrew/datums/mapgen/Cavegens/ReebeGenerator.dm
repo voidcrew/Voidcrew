@@ -21,9 +21,6 @@
 	tiled_dirt = FALSE
 	flags_1 = NOJAUNT
 	initial_gas_mix = REEBE_DEFAULT_ATMOS
-	light_range = 2
-	light_power = 0.6
-	light_color = COLOR_VERY_LIGHT_GRAY
 
 /turf/open/chasm/reebe_void/examine(mob/user)
 	. = ..()
@@ -34,17 +31,11 @@
 	icon_state = "reebegame"
 
 /turf/open/floor/bronze/light
-	light_range = 2
-	light_power = 0.6
-	light_color = COLOR_VERY_LIGHT_GRAY
 	initial_gas_mix = REEBE_DEFAULT_ATMOS
 
 /turf/open/floor/grass/fairy/reebe
 	desc = "Strangely glowing grass."
 	initial_gas_mix = REEBE_DEFAULT_ATMOS
-	light_range = 2
-	light_power = 0.6
-	light_color = COLOR_VERY_LIGHT_GRAY
 	baseturfs = /turf/open/chasm/reebe_void
 
 /turf/closed/mineral/random/reebe

@@ -1,7 +1,5 @@
 /turf
 	var/datum/biome/generating_biome
-	var/overlay_light
-	var/should_pass_light_to_child = FALSE
 
 // Takes almost everything from its Tg parent, adds in lighting pass changes
 /turf/ChangeTurf(path, list/new_baseturfs, flags)
@@ -35,11 +33,6 @@
 	var/old_rcd_memory = rcd_memory
 	var/old_explosion_throw_details = explosion_throw_details
 	var/old_opacity = opacity
-
-	// VOIDCREW EDITS FOR PLANETARY LIGHTING CONSISTENCY
-	var/old_light_power = light_power
-	var/old_light_color = light_color
-	var/old_pass_lights = should_pass_light_to_child
 
 	// I'm so sorry brother
 	// This is used for a starlight optimization
@@ -109,9 +102,6 @@
 			// Should have a lighting object if we never had one
 			lighting_object = old_lighting_object || new /datum/lighting_object(src)
 
-			// VOIDCREW EDITS
-			if(old_pass_lights)
-				set_light(old_light_range, old_light_power, old_light_color)
 		else if (old_lighting_object)
 			qdel(old_lighting_object, force = TRUE)
 
@@ -147,11 +137,6 @@
 	if(old_opacity != opacity && SSticker)
 		GLOB.cameranet.bareMajorChunkChange(src)
 
-	// We will only run this logic if the tile is not on the prime z layer, since we use area overlays to cover that
-	if(SSmapping.z_level_to_plane_offset[z])
-		var/area/our_area = new_turf.loc
-		if(our_area.lighting_effects)
-			new_turf.add_overlay(our_area.lighting_effects[SSmapping.z_level_to_plane_offset[z] + 1])
 
 	// only queue for smoothing if SSatom initialized us, and we'd be changing smoothing state
 	if(flags_1 & INITIALIZED_1)
