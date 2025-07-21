@@ -429,6 +429,9 @@
 	if(!shuttle)
 		return "Shuttle not found!"
 	update_docked_bools()
+	// Clear port destinations when undocking from empty space to prevent confusion
+	if(istype(docked, /obj/structure/overmap/planet/empty))
+		shuttle.port_destinations = null
 	docked = null
 	shuttle.destination = null
 	shuttle.mode = SHUTTLE_IGNITING
@@ -561,6 +564,23 @@
 	if(!E)
 		E = new(get_turf(src))
 	if(E)
+		// Load the level first to ensure docking ports exist
+		if(!E.loaded && !E.loading)
+			E.load_level()
+		
+		// Wait for level to load
+		if(E.loading)
+			return "Empty space is loading, try again in a moment."
+		
+		// Assign port destinations for this ship to enable helm UI landing
+		if(!shuttle.port_destinations)
+			if(E.reserve_dock && !E.first_dock_taken && !E.reserve_dock.get_docked())
+				shuttle.port_destinations = E.reserve_dock
+			else if(E.reserve_dock_secondary && !E.second_dock_taken && !E.reserve_dock_secondary.get_docked())
+				shuttle.port_destinations = E.reserve_dock_secondary
+			else
+				return "No available docking ports in empty space."
+		
 		return overmap_object_act(user, E)
 
 /**

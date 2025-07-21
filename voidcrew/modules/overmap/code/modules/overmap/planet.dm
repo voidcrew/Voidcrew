@@ -37,6 +37,8 @@
 	loading = TRUE
 	var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(planet, TRUE, ruin_type = template)
 	mapzone = dynamic_encounter_values[1]
+	reserve_dock = dynamic_encounter_values[2]
+	reserve_dock_secondary = dynamic_encounter_values[3]
 	loaded = TRUE
 	loading = FALSE
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADED, TRUE)
