@@ -572,16 +572,119 @@
 		if(E.loading)
 			return "Empty space is loading, try again in a moment."
 		
-		// Assign port destinations for this ship to enable helm UI landing
-		if(!shuttle.port_destinations)
-			if(E.reserve_dock && !E.first_dock_taken && !E.reserve_dock.get_docked())
-				shuttle.port_destinations = E.reserve_dock
-			else if(E.reserve_dock_secondary && !E.second_dock_taken && !E.reserve_dock_secondary.get_docked())
-				shuttle.port_destinations = E.reserve_dock_secondary
-			else
-				return "No available docking ports in empty space."
+		// Assign port destinations and immediately dock
+		var/obj/docking_port/stationary/dock_to_use = null
+		if(E.reserve_dock && !E.first_dock_taken && !E.reserve_dock.get_docked())
+			dock_to_use = E.reserve_dock
+			E.first_dock_taken = TRUE
+			dock_index = 1
+		else if(E.reserve_dock_secondary && !E.second_dock_taken && !E.reserve_dock_secondary.get_docked())
+			dock_to_use = E.reserve_dock_secondary
+			E.second_dock_taken = TRUE
+			dock_index = 2
+		else
+			return "No available docking ports in empty space."
 		
-		return overmap_object_act(user, E)
+		// Set port destinations for helm UI
+		shuttle.port_destinations = dock_to_use
+		
+		// Adjust dock to shuttle size and immediately start docking
+		E.adjust_dock_to_shuttle(dock_to_use, shuttle)
+		return dock(E, dock_to_use)
+
+/**
+  * Ship-to-ship interaction. Creates shared empty space and docks both ships together.
+  * * user - The user that initiated the action
+  * * acting_ship - The ship that initiated the interaction
+  */
+/obj/structure/overmap/ship/ship_act(mob/user, obj/structure/overmap/ship/acting_ship)
+	if(!acting_ship || acting_ship == src)
+		return
+	
+	// Both ships must be still to interact
+	if(!acting_ship.is_still() || !is_still())
+		to_chat(user, "<span class='warning'>Both ships must be stationary to dock together!</span>")
+		return
+	
+	// Both ships must be flying (not already docked)
+	if(acting_ship.state != OVERMAP_SHIP_FLYING || state != OVERMAP_SHIP_FLYING)
+		to_chat(user, "<span class='warning'>Both ships must be undocked to perform ship-to-ship docking!</span>")
+		return
+	
+	// Create or find shared empty space
+	var/obj/structure/overmap/planet/empty/E
+	E = locate() in get_turf(src)
+	if(!E)
+		E = new(get_turf(src))
+	
+	// Load the level first to ensure docking ports exist
+	if(!E.loaded && !E.loading)
+		E.load_level()
+	
+	// Wait for level to load
+	if(E.loading)
+		to_chat(user, "<span class='notice'>Shared docking space is loading, try again in a moment.</span>")
+		return
+	
+	// Assign port destinations for both ships
+	var/assigned_acting_ship = FALSE
+	var/assigned_target_ship = FALSE
+	
+	// Assign docking ports to both ships and immediately dock them
+	var/obj/docking_port/stationary/acting_ship_dock = null
+	var/obj/docking_port/stationary/target_ship_dock = null
+	
+	// Assign first ship to primary dock
+	if(!acting_ship.shuttle.port_destinations && E.reserve_dock && !E.first_dock_taken && !E.reserve_dock.get_docked())
+		acting_ship_dock = E.reserve_dock
+		E.first_dock_taken = TRUE
+		acting_ship.dock_index = 1
+		acting_ship.shuttle.port_destinations = acting_ship_dock
+		assigned_acting_ship = TRUE
+	else if(!acting_ship.shuttle.port_destinations && E.reserve_dock_secondary && !E.second_dock_taken && !E.reserve_dock_secondary.get_docked())
+		acting_ship_dock = E.reserve_dock_secondary
+		E.second_dock_taken = TRUE
+		acting_ship.dock_index = 2
+		acting_ship.shuttle.port_destinations = acting_ship_dock
+		assigned_acting_ship = TRUE
+	else if(acting_ship.shuttle.port_destinations)
+		assigned_acting_ship = TRUE // Already has a destination
+	
+	// Assign second ship to remaining dock
+	if(!shuttle.port_destinations && E.reserve_dock && !E.first_dock_taken && !E.reserve_dock.get_docked())
+		target_ship_dock = E.reserve_dock
+		E.first_dock_taken = TRUE
+		dock_index = 1
+		shuttle.port_destinations = target_ship_dock
+		assigned_target_ship = TRUE
+	else if(!shuttle.port_destinations && E.reserve_dock_secondary && !E.second_dock_taken && !E.reserve_dock_secondary.get_docked())
+		target_ship_dock = E.reserve_dock_secondary
+		E.second_dock_taken = TRUE
+		dock_index = 2
+		shuttle.port_destinations = target_ship_dock
+		assigned_target_ship = TRUE
+	else if(shuttle.port_destinations)
+		assigned_target_ship = TRUE // Already has a destination
+	
+	// Check if both ships got valid port assignments
+	if(!assigned_acting_ship || !assigned_target_ship)
+		to_chat(user, "<span class='warning'>Unable to assign docking ports for ship-to-ship interaction. Not enough available ports.</span>")
+		return
+	
+	// Automatically initiate docking for both ships
+	to_chat(user, "<span class='notice'>Initiating ship-to-ship docking procedures...</span>")
+	
+	// Notify the other ship's crew
+	ship_announce("Another ship has initiated docking procedures. Docking in progress...", "Ship-to-Ship Docking")
+	
+	// Directly dock both ships using the same method as dock_in_empty_space
+	if(acting_ship_dock)
+		E.adjust_dock_to_shuttle(acting_ship_dock, acting_ship.shuttle)
+		acting_ship.dock(E, acting_ship_dock)
+	
+	if(target_ship_dock)
+		E.adjust_dock_to_shuttle(target_ship_dock, shuttle)
+		dock(E, target_ship_dock)
 
 /**
   * Calculates the mass based on the amount of turfs in the shuttle's areas
