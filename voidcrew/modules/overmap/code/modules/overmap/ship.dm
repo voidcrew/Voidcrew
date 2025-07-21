@@ -597,6 +597,15 @@
 		return dock(E, dock_to_use)
 
 /**
+  * Clears pending dock request and timer
+  */
+/obj/structure/overmap/ship/proc/clear_pending_dock()
+	pending_dock = FALSE
+	if(pending_dock_timer)
+		deltimer(pending_dock_timer)
+		pending_dock_timer = null
+
+/**
   * Ship-to-ship interaction. Creates shared empty space and docks both ships together.
   * * user - The user that initiated the action
   * * acting_ship - The ship that initiated the interaction
@@ -680,9 +689,9 @@
 		to_chat(user, "<span class='notice'>Mutual docking request detected. Initiating docking procedures...</span>")
 		log_admin("[key_name(user)] accepted ship-to-ship docking between [acting_ship.name] and [name]")
 
-		// Clear pending status
-		pending_dock = FALSE
-		acting_ship.pending_dock = FALSE
+		// Clear pending status and timers for both ships
+		clear_pending_dock()
+		acting_ship.clear_pending_dock()
 
 		// Both ships dock to empty space
 		dock_in_empty_space(user)
@@ -694,6 +703,10 @@
 			acting_ship.ship_announce("Your ship has requested to dock with [acting_ship.name]. They must also request docking to proceed.", "Docking Request")
 			ship_announce("[name] has requested to dock with your ship. Use your helm console to accept.", "Incoming Docking Request")
 			pending_dock = TRUE
+			
+			// Set a 30 second timer to clear the pending dock request
+			pending_dock_timer = addtimer(CALLBACK(src, PROC_REF(clear_pending_dock)), 30 SECONDS, TIMER_STOPPABLE)
+			ship_announce("Docking request will expire in 30 seconds.", "Docking Request Timer")
 		else
 			to_chat(user, "<span class='warning'>Docking request already pending.</span>")
 /**
@@ -851,6 +864,11 @@
 		return
 
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_MOVED)
+	
+	// Clear any pending dock requests when moving
+	if(pending_dock)
+		clear_pending_dock()
+		ship_announce("Docking request cancelled due to ship movement.", "Docking Cancelled")
 
 	// Decelerate without using fuel
 	if(!n_dir) {
