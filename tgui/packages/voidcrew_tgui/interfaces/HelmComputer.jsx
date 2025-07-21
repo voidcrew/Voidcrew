@@ -299,7 +299,7 @@ const ShipContent = (props, context) => {
                 </Table.Cell>
               </Table.Row>
             ))}
-          <Table.Row>
+          {/* <Table.Row>
             <Table.Cell>Est burn:</Table.Cell>
             <Table.Cell>
               <AnimatedNumber
@@ -310,7 +310,7 @@ const ShipContent = (props, context) => {
               />
               spM/burn
             </Table.Cell>
-          </Table.Row>
+          </Table.Row> */}
         </Table>
       </Section>
     </>

@@ -5,7 +5,10 @@
       "mcp__byond-dm__list_byond_categories",
       "mcp__byond-dm__search_byond_docs",
       "mcp__ide__getDiagnostics",
-      "mcp__byond-dm__get_byond_topic"
+      "mcp__byond-dm__get_byond_topic",
+      "Bash(.BUILD.cmd)",
+      "Bash(BUILD.cmd)",
+      "Bash(cmd.exe:*)"
     ],
     "deny": []
   }
