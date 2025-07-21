@@ -99,6 +99,9 @@
 	var/datum/weakref/survey_console
 	var/datum/survey_research/survey_data
 
+	var/pending_dock = FALSE
+	var/pending_dock_timer
+
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
 	if(!template) //no template, don't load
@@ -364,7 +367,8 @@
 	//shuttle.movement_force = list("KNOCKDOWN" = FLOOR(est_thrust / 50, 1), "THROW" = 0)
 	shuttle.request(dock_to_use)
 
-	priority_announce("Beginning docking procedures. Completion in 10 seconds.", "Docking Announcement", sender_override = name)
+	// priority_announce("Beginning docking procedures. Completion in 10 seconds.", "Docking Announcement", sender_override = name, players = )
+	ship_announce("Beginning docking procedures. Completion in 10 seconds.", "Docking Announcement", TRUE)
 	docked = to_dock //this wasnt getting updated at all before which is strange
 	shuttle.setTimer(dock_time)
 	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), dock_time + 1 SECONDS)
@@ -613,18 +617,18 @@
 
 	// Create or find shared empty space
 	var/obj/structure/overmap/planet/empty/E
-	E = locate() in get_turf(src)
-	if(!E)
-		E = new(get_turf(src))
+	// E = locate() in get_turf(src)
+	// if(!E)
+	// 	E = new(get_turf(src))
 
 	// Load the level first to ensure docking ports exist
-	if(!E.loaded && !E.loading)
-		E.load_level()
+	// if(!E.loaded && !E.loading)
+	// 	E.load_level()
 
 	// Wait for level to load
-	if(E.loading)
-		to_chat(user, "<span class='notice'>Shared docking space is loading, try again in a moment.</span>")
-		return
+	// if(E.loading)
+	// 	to_chat(user, "<span class='notice'>Shared docking space is loading, try again in a moment.</span>")
+	// 	return
 
 	// Assign port destinations for both ships
 	var/assigned_acting_ship = FALSE
@@ -635,58 +639,63 @@
 	var/obj/docking_port/stationary/target_ship_dock = null
 
 	// Assign first ship to primary dock
-	if(!acting_ship.shuttle.port_destinations && E.reserve_dock && !E.first_dock_taken && !E.reserve_dock.get_docked())
-		acting_ship_dock = E.reserve_dock
-		E.first_dock_taken = TRUE
-		acting_ship.dock_index = 1
-		acting_ship.shuttle.port_destinations = acting_ship_dock
-		assigned_acting_ship = TRUE
-	else if(!acting_ship.shuttle.port_destinations && E.reserve_dock_secondary && !E.second_dock_taken && !E.reserve_dock_secondary.get_docked())
-		acting_ship_dock = E.reserve_dock_secondary
-		E.second_dock_taken = TRUE
-		acting_ship.dock_index = 2
-		acting_ship.shuttle.port_destinations = acting_ship_dock
-		assigned_acting_ship = TRUE
-	else if(acting_ship.shuttle.port_destinations)
-		assigned_acting_ship = TRUE // Already has a destination
+	// if(!acting_ship.shuttle.port_destinations && E.reserve_dock && !E.first_dock_taken && !E.reserve_dock.get_docked())
+	// 	acting_ship_dock = E.reserve_dock
+	// 	E.first_dock_taken = TRUE
+	// 	acting_ship.dock_index = 1
+	// 	acting_ship.shuttle.port_destinations = acting_ship_dock
+	// 	assigned_acting_ship = TRUE
+	// else if(!acting_ship.shuttle.port_destinations && E.reserve_dock_secondary && !E.second_dock_taken && !E.reserve_dock_secondary.get_docked())
+	// 	acting_ship_dock = E.reserve_dock_secondary
+	// 	E.second_dock_taken = TRUE
+	// 	acting_ship.dock_index = 2
+	// 	acting_ship.shuttle.port_destinations = acting_ship_dock
+	// 	assigned_acting_ship = TRUE
+	// else if(acting_ship.shuttle.port_destinations)
+	// 	assigned_acting_ship = TRUE // Already has a destination
 
 	// Assign second ship to remaining dock
-	if(!shuttle.port_destinations && E.reserve_dock && !E.first_dock_taken && !E.reserve_dock.get_docked())
-		target_ship_dock = E.reserve_dock
-		E.first_dock_taken = TRUE
-		dock_index = 1
-		shuttle.port_destinations = target_ship_dock
-		assigned_target_ship = TRUE
-	else if(!shuttle.port_destinations && E.reserve_dock_secondary && !E.second_dock_taken && !E.reserve_dock_secondary.get_docked())
-		target_ship_dock = E.reserve_dock_secondary
-		E.second_dock_taken = TRUE
-		dock_index = 2
-		shuttle.port_destinations = target_ship_dock
-		assigned_target_ship = TRUE
-	else if(shuttle.port_destinations)
-		assigned_target_ship = TRUE // Already has a destination
+	// if(!shuttle.port_destinations && E.reserve_dock && !E.first_dock_taken && !E.reserve_dock.get_docked())
+	// 	target_ship_dock = E.reserve_dock
+	// 	E.first_dock_taken = TRUE
+	// 	dock_index = 1
+	// 	shuttle.port_destinations = target_ship_dock
+	// 	assigned_target_ship = TRUE
+	// else if(!shuttle.port_destinations && E.reserve_dock_secondary && !E.second_dock_taken && !E.reserve_dock_secondary.get_docked())
+	// 	target_ship_dock = E.reserve_dock_secondary
+	// 	E.second_dock_taken = TRUE
+	// 	dock_index = 2
+	// 	shuttle.port_destinations = target_ship_dock
+	// 	assigned_target_ship = TRUE
+	// else if(shuttle.port_destinations)
+	// 	assigned_target_ship = TRUE // Already has a destination
 
-	// Check if both ships got valid port assignments
-	if(!assigned_acting_ship || !assigned_target_ship)
-		to_chat(user, "<span class='warning'>Unable to assign docking ports for ship-to-ship interaction. Not enough available ports.</span>")
-		return
+	// // Check if both ships got valid port assignments
+	// if(!assigned_acting_ship || !assigned_target_ship)
+	// 	to_chat(user, "<span class='warning'>Unable to assign docking ports for ship-to-ship interaction. Not enough available ports.</span>")
+	// 	return
 
-	// Automatically initiate docking for both ships
-	// shuttle.current_ship.close_overmap_objects.ship_announce(user, "<span class='notice'>Initiating ship-to-ship docking procedures...</span>")
-	ship_announce("[Name] is requesting to dock.")
-	RegisterSignal(acting_ship, COMSIG_ACCEPTED_DOCK, PROC_REF(accept_dock))
+	// Check if acting ship has already requested docking with us
+	if(acting_ship.pending_dock == TRUE)
+		to_chat(user, "<span class='notice'>Mutual docking request detected. Initiating docking procedures...</span>")
+		log_admin("[key_name(user)] accepted ship-to-ship docking between [acting_ship.name] and [name]")
 
-	// // Directly dock both ships using the same method as dock_in_empty_space
-	// if(acting_ship_dock)
-	// 	E.adjust_dock_to_shuttle(acting_ship_dock, acting_ship.shuttle)
-	// 	acting_ship.dock(E, acting_ship_dock)
+		// Clear pending status
+		pending_dock = FALSE
+		acting_ship.pending_dock = FALSE
 
-	// if(target_ship_dock)
-	// 	E.adjust_dock_to_shuttle(target_ship_dock, shuttle)
-	// 	dock(E, target_ship_dock)
-
-/obj/structure/overmap/ship/proc/accept_dock()
-
+		// Both ships dock to empty space
+		dock_in_empty_space(user)
+		acting_ship.dock_in_empty_space(user)
+	else
+		// First request - set our pending_dock to indicate we want to dock with them
+		if(!pending_dock)
+			log_admin("[key_name(user)] requested ship-to-ship docking from [acting_ship.name] to [name]")
+			acting_ship.ship_announce("Your ship has requested to dock with [acting_ship.name]. They must also request docking to proceed.", "Docking Request")
+			ship_announce("[name] has requested to dock with your ship. Use your helm console to accept.", "Incoming Docking Request")
+			pending_dock = TRUE
+		else
+			to_chat(user, "<span class='warning'>Docking request already pending.</span>")
 /**
   * Calculates the mass based on the amount of turfs in the shuttle's areas
   */
