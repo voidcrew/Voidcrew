@@ -363,11 +363,8 @@
 /obj/structure/overmap/ship/proc/dock(obj/structure/overmap/to_dock, obj/docking_port/stationary/dock_to_use)
 	var/dock_time = 9 SECONDS
 	refresh_engines()
-	// Voidcrew Edit: removes throw equation "THROW" = FLOOR(est_thrust / 200, 1)
-	//shuttle.movement_force = list("KNOCKDOWN" = FLOOR(est_thrust / 50, 1), "THROW" = 0)
 	shuttle.request(dock_to_use)
 
-	// priority_announce("Beginning docking procedures. Completion in 10 seconds.", "Docking Announcement", sender_override = name, players = )
 	ship_announce("Beginning docking procedures. Completion in 10 seconds.", "Docking Announcement", TRUE)
 	docked = to_dock //this wasnt getting updated at all before which is strange
 	shuttle.setTimer(dock_time)
@@ -637,8 +634,7 @@
 
 	// Check if acting ship has already requested docking with us
 	if(acting_ship.pending_dock == TRUE)
-		to_chat(user, "<span class='notice'>Mutual docking request detected. Initiating docking procedures...</span>")
-		log_admin("[key_name(user)] accepted ship-to-ship docking between [acting_ship.name] and [name]")
+		ship_announce(user, "<span class='notice'>Initiating docking procedures with other ship...</span>")
 
 		// Clear pending status and timers for both ships
 		clear_pending_dock()
