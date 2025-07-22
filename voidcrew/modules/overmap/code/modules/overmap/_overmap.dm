@@ -18,6 +18,8 @@
 /obj/structure/overmap/proc/ship_act(mob/user, obj/structure/overmap/ship/acting)
 	to_chat(user, "<span class='notice'>You don't think there's anything you can do here.</span>")
 
+// Empty planets inherit ship_act from parent planet class to enable proper docking
+
 /obj/structure/overmap/Initialize(mapload)
 	. = ..()
 	var/static/list/loc_connections = list(
