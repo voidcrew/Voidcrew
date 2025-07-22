@@ -6,14 +6,24 @@
 	var/datum/map_zone/mapzone
 	///The preset ruin template to load, if/when it is loaded.
 	var/datum/map_template/template
+	///The docking port in the reserve
+	var/obj/docking_port/stationary/reserve_dock
+	///The docking port in the reserve
+	var/obj/docking_port/stationary/reserve_dock_secondary
 	///If the level should be preserved. Useful for if you want to build an autismfort or something.
 	var/preserve_level = FALSE
 	///What kind of planet the level is, if it's a planet at all.
 	var/datum/overmap/planet/planet
+	///Keep track of whether or not the docks have been reserved by a ship. This is required to prevent issues where two ships will attempt to dock in the same place due to unfortunate timing
+	var/first_dock_taken = FALSE
+	var/second_dock_taken = FALSE
 
 /obj/structure/overmap/dynamic/attack_ghost(mob/user)
-	// Need to add logic for forcemove ghost based on event coordinates
-	return
+	if(reserve_dock)
+		user.forceMove(get_turf(reserve_dock))
+		return TRUE
+	else
+		return
 
 /obj/structure/overmap/planet/Initialize(mapload)
 	. = ..()
