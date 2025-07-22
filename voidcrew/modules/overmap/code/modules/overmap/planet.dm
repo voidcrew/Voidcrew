@@ -9,8 +9,15 @@
 	var/datum/map_zone/mapzone
 	///The preset ruin template to load, if/when it is loaded.
 	var/datum/map_template/template
+	///The docking port in the reserve
+	var/obj/docking_port/stationary/reserve_dock
+	///The docking port in the reserve
+	var/obj/docking_port/stationary/reserve_dock_secondary
 	///If the level should be preserved. Useful for if you want to build an autismfort or something.
 	var/preserve_level = FALSE
+	///Keep track of whether or not the docks have been reserved by a ship. This is required to prevent issues where two ships will attempt to dock in the same place due to unfortunate timing
+	var/first_dock_taken = FALSE
+	var/second_dock_taken = FALSE
 	var/loaded = FALSE
 	var/loading = FALSE
 	var/visited = FALSE
@@ -30,12 +37,17 @@
 	loading = TRUE
 	var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(planet, TRUE, ruin_type = template)
 	mapzone = dynamic_encounter_values[1]
+	reserve_dock = dynamic_encounter_values[2]
+	reserve_dock_secondary = dynamic_encounter_values[3]
 	loaded = TRUE
 	loading = FALSE
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADED, TRUE)
 
 /obj/structure/overmap/planet/attack_ghost(mob/user)
-	if(mapzone)
+	if(reserve_dock)
+		user.forceMove(get_turf(reserve_dock))
+		return TRUE
+	else if(mapzone)
 		var/datum/space_level/z_level = mapzone.z_levels[1]
 		if(!z_level)
 			return
@@ -123,6 +135,15 @@
 		if (acting.shuttle.port_destinations)
 			dock_to_use = acting.shuttle.port_destinations
 			is_survey = TRUE
+		else
+			if(!reserve_dock.get_docked() && !first_dock_taken)
+				dock_to_use = reserve_dock //This assigns what port the shuttle will eventually try to dock into, but it does not immediately update the port's docked status
+				first_dock_taken = TRUE
+				acting.dock_index = 1
+			else if(!reserve_dock_secondary.get_docked() && !second_dock_taken)
+				dock_to_use = reserve_dock_secondary
+				second_dock_taken = TRUE
+				acting.dock_index = 2
 		if(!dock_to_use)
 			acting.state = prev_state
 			concerned = FALSE
@@ -144,11 +165,15 @@
 	if(preserve_level || concerned || !mapzone)
 		return
 
+	if(first_dock_taken || second_dock_taken)
+		return
+
 	if(length(mapzone.get_mind_mobs()))
 		return //Dont fuck over stranded people? tbh this shouldn't be called on this condition, instead of bandaiding it inside
 
 	concerned = TRUE //Prevent someone to act with this while it reloads
 
+	remove_docks()
 	remove_mapzone() //Take a lot of time
 /*
 	if(SSovermap.generator_type == OVERMAP_GENERATOR_SOLAR)
@@ -166,4 +191,12 @@
 		mapzone.clear_reservation()
 		mapzone.taken = FALSE
 		mapzone = null
+
+/obj/structure/overmap/planet/proc/remove_docks()
+	if(reserve_dock)
+		qdel(reserve_dock, TRUE)
+		reserve_dock = null
+	if(reserve_dock_secondary)
+		qdel(reserve_dock_secondary, TRUE)
+		reserve_dock_secondary = null
 

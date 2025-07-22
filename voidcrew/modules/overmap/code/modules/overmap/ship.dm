@@ -99,6 +99,9 @@
 	var/datum/weakref/survey_console
 	var/datum/survey_research/survey_data
 
+	var/pending_dock = FALSE
+	var/pending_dock_timer
+
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
 	if(!template) //no template, don't load
@@ -298,7 +301,7 @@
 		if(must_be_same_z_level && crewmate.z != z)
 			continue
 		announce_targets += crewmate
-	priority_announce(message, title, sound || 'sound/ai/default/attention.ogg', null, "[name] Announcement", announce_targets)
+	priority_announce(message, title, sound || 'sound/ai/default/attention.ogg', null, "[name] Announcement", players = announce_targets)
 
 /**
  * Mob death/revive
@@ -360,11 +363,9 @@
 /obj/structure/overmap/ship/proc/dock(obj/structure/overmap/to_dock, obj/docking_port/stationary/dock_to_use)
 	var/dock_time = 9 SECONDS
 	refresh_engines()
-	// Voidcrew Edit: removes throw equation "THROW" = FLOOR(est_thrust / 200, 1)
-	//shuttle.movement_force = list("KNOCKDOWN" = FLOOR(est_thrust / 50, 1), "THROW" = 0)
 	shuttle.request(dock_to_use)
 
-	priority_announce("Beginning docking procedures. Completion in 10 seconds.", "Docking Announcement", sender_override = name)
+	ship_announce("Beginning docking procedures. Completion in 10 seconds.", "Docking Announcement", TRUE)
 	docked = to_dock //this wasnt getting updated at all before which is strange
 	shuttle.setTimer(dock_time)
 	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), dock_time + 1 SECONDS)
@@ -399,6 +400,25 @@
 	return TRUE
 
 /**
+*	To properly fix the bug of two ships docking at the same time causing issues,
+*	we need to keep track of whether or not a ship is requesting to dock at a
+*	port IMMEDIATELY after the command is issued.
+*	This also includes keeping track of when the ship is no longer there, upon which
+*	the bools need to be set to false.
+*	This function should be called whenever an action occurs that would remove a ship from the map
+*/
+/obj/structure/overmap/ship/proc/update_docked_bools()
+	var/obj/structure/overmap/dynamic/dockable_place = docked
+	if (!dockable_place)
+		return
+	if (dock_index == 1)
+		dockable_place.first_dock_taken = FALSE
+		dock_index = 0
+	else if (dock_index == 2)
+		dockable_place.second_dock_taken = FALSE
+		dock_index = 0
+
+/**
   * Undocks the shuttle by launching the shuttle with no destination (this causes it to remain in transit)
   */
 /obj/structure/overmap/ship/proc/undock()
@@ -409,6 +429,10 @@
 		return "Ship not docked!"
 	if(!shuttle)
 		return "Shuttle not found!"
+	update_docked_bools()
+	// Clear port destinations when undocking from empty space to prevent confusion
+	if(istype(docked, /obj/structure/overmap/planet/empty))
+		shuttle.port_destinations = null
 	docked = null
 	shuttle.destination = null
 	shuttle.mode = SHUTTLE_IGNITING
@@ -541,8 +565,97 @@
 	if(!E)
 		E = new(get_turf(src))
 	if(E)
-		return overmap_object_act(user, E)
+		// Load the level first to ensure docking ports exist
+		if(!E.loaded && !E.loading)
+			E.load_level()
 
+		// Wait for level to load
+		if(E.loading)
+			return "Empty space is loading, try again in a moment."
+
+		// Assign port destinations and immediately dock
+		var/obj/docking_port/stationary/dock_to_use = null
+		if(E.reserve_dock && !E.first_dock_taken && !E.reserve_dock.get_docked())
+			dock_to_use = E.reserve_dock
+			E.first_dock_taken = TRUE
+			dock_index = 1
+		else if(E.reserve_dock_secondary && !E.second_dock_taken && !E.reserve_dock_secondary.get_docked())
+			dock_to_use = E.reserve_dock_secondary
+			E.second_dock_taken = TRUE
+			dock_index = 2
+		else
+			return "No available docking ports in empty space."
+
+		// Set port destinations for helm UI
+		shuttle.port_destinations = dock_to_use
+
+		// Adjust dock to shuttle size and immediately start docking
+		E.adjust_dock_to_shuttle(dock_to_use, shuttle)
+		return dock(E, dock_to_use)
+
+/**
+  * Clears pending dock request and timer
+  */
+/obj/structure/overmap/ship/proc/clear_pending_dock()
+	pending_dock = FALSE
+	if(pending_dock_timer)
+		deltimer(pending_dock_timer)
+		pending_dock_timer = null
+
+/**
+  * Ship-to-ship interaction. Creates shared empty space and docks both ships together.
+  * * user - The user that initiated the action
+  * * acting_ship - The ship that initiated the interaction
+  */
+/obj/structure/overmap/ship/ship_act(mob/user, obj/structure/overmap/ship/acting_ship)
+	if(!acting_ship || acting_ship == src)
+		return
+
+	// Both ships must be still to interact
+	if(!acting_ship.is_still() || !is_still())
+		to_chat(user, "<span class='warning'>Both ships must be stationary to dock together!</span>")
+		return
+
+	// Both ships must be flying (not already docked)
+	if(acting_ship.state != OVERMAP_SHIP_FLYING || state != OVERMAP_SHIP_FLYING)
+		to_chat(user, "<span class='warning'>Both ships must be undocked to perform ship-to-ship docking!</span>")
+		return
+
+	// Create or find shared empty space
+	var/obj/structure/overmap/planet/empty/E
+
+	// Assign port destinations for both ships
+	var/assigned_acting_ship = FALSE
+	var/assigned_target_ship = FALSE
+
+	// Assign docking ports to both ships and immediately dock them
+	var/obj/docking_port/stationary/acting_ship_dock = null
+	var/obj/docking_port/stationary/target_ship_dock = null
+
+	// Check if acting ship has already requested docking with us
+	if(acting_ship.pending_dock == TRUE)
+		ship_announce(user, "<span class='notice'>Initiating docking procedures with other ship...</span>")
+
+		// Clear pending status and timers for both ships
+		clear_pending_dock()
+		acting_ship.clear_pending_dock()
+
+		// Both ships dock to empty space
+		dock_in_empty_space(user)
+		acting_ship.dock_in_empty_space(user)
+	else
+		// First request - set our pending_dock to indicate we want to dock with them
+		if(!pending_dock)
+			log_admin("[key_name(user)] requested ship-to-ship docking from [acting_ship.name] to [name]")
+			acting_ship.ship_announce("Your ship has requested to dock with [acting_ship.name]. They must also request docking to proceed.", "Docking Request")
+			ship_announce("[name] has requested to dock with your ship. Use your helm console to accept.", "Incoming Docking Request")
+			pending_dock = TRUE
+
+			// Set a 30 second timer to clear the pending dock request
+			pending_dock_timer = addtimer(CALLBACK(src, PROC_REF(clear_pending_dock)), 30 SECONDS, TIMER_STOPPABLE)
+			ship_announce("Docking request will expire in 30 seconds.", "Docking Request Timer")
+		else
+			to_chat(user, "<span class='warning'>Docking request already pending.</span>")
 /**
   * Calculates the mass based on the amount of turfs in the shuttle's areas
   */
@@ -698,6 +811,11 @@
 		return
 
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_MOVED)
+
+	// Clear any pending dock requests when moving
+	if(pending_dock)
+		clear_pending_dock()
+		ship_announce("Docking request cancelled due to ship movement.", "Docking Cancelled")
 
 	// Decelerate without using fuel
 	if(!n_dir) {
