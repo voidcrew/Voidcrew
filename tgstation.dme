@@ -6559,7 +6559,6 @@
 #include "voidcrew\modules\overmap\code\modules\overmap\planet.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\ship.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\stars.dm"
-#include "voidcrew\modules\overmap\code\modules\overmap\stationary_port.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\behaviour\planets.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\behaviour\stars.dm"
 #include "voidcrew\modules\paperwork\faxes.dm"
