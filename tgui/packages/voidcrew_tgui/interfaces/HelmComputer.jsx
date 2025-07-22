@@ -93,8 +93,6 @@ const Radar = (context) => {
                   icon="circle"
                   disabled={
                     isViewer || data.speed > 0 || data.state !== 'flying'
-                    // ||
-                    // data.canLand === 0
                   }
                   onClick={() =>
                     act('act_overmap', {
@@ -298,7 +296,8 @@ const ShipContent = (props, context) => {
                 </Table.Cell>
               </Table.Row>
             ))}
-          {/* <Table.Row>
+
+          {/* Commenting out for now // <Table.Row>
             <Table.Cell>Est burn:</Table.Cell>
             <Table.Cell>
               <AnimatedNumber
