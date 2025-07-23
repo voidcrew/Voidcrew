@@ -14,4 +14,4 @@
 	default = TRUE
 
 /datum/config_entry/flag/free_ships
-	default = TRUE
+	default = FALSE

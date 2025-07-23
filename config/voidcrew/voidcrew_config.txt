@@ -4,4 +4,4 @@ ALLOW_VOTE_TRANSFER
 
 ## free ships
 
-FREE_SHIPS
+# FREE_SHIPS
