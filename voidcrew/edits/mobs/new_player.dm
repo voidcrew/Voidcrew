@@ -7,7 +7,7 @@
  */
 /mob/dead/new_player/proc/select_ship()
 	var/list/shuttle_choices = list(
-		"Obtain ship" = "Obtain",
+		"Purchase ship" = "Purchase",
 	)
 
 	for(var/obj/structure/overmap/ship/active_ships as anything in SSovermap.simulated_ships)
