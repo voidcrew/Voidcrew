@@ -61,18 +61,6 @@
 /obj/structure/closet/supplypod/drop_pod/get_remote_view_fullscreens(mob/user)
 	return
 
-/obj/structure/closet/supplypod/drop_pod/multitool_act(mob/living/user, obj/item/multitool/tool)
-	. = NONE
-	if(!tool.buffer)
-		return
-	if(istype(tool.buffer, /obj/machinery/quantumpad))
-		linked_pad = tool.buffer
-		balloon_alert(user, "data uploaded from buffer")
-		return TRUE
-	else
-		balloon_alert(user, "no quantum pad data found!")
-		return TRUE
-
 /obj/structure/closet/supplypod/drop_pod/attackby(obj/item/I, mob/user, params)
 	if(I.tool_behaviour == TOOL_CROWBAR)
 		if(opened == FALSE)
@@ -84,7 +72,15 @@
 	if(I.tool_behaviour == TOOL_WRENCH)
 		set_anchored(!anchored)
 		return TRUE
-
+	if(I.tool_behaviour == TOOL_MULTITOOL)
+		var/obj/item/multitool/tool = I
+		if(tool.buffer)
+			linked_pad  = tool.buffer
+			balloon_alert(user, "Data uploaded from buffer")
+			return TRUE
+		else
+			balloon_alert(user, "No quantum pad data found!")
+			return TRUE
 	return ..()
 
 /obj/structure/closet/supplypod/drop_pod/proc/teleport()
