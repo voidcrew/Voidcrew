@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="../../../../" />
+    <link rel="stylesheet" href="dmdoc.css" />
+    <title>&#x2F;obj&#x2F;machinery&#x2F;power&#x2F;shuttle_engine&#x2F;ship - &#x2F;tg&#x2F; Station 13</title>
+</head>
+<body>
+<header>
+    <a href="index.html">&#x2F;tg&#x2F; Station 13</a> -
+    <a href="index.html#modules">Modules</a> -
+    <a href="index.html#types">Types</a>
+ &mdash; <a href="obj/machinery/power/shuttle_engine/ship.html#var">Var Details</a> - <a href="obj/machinery/power/shuttle_engine/ship.html#proc">Proc Details</a></header>
+<main>
+<h1>ship <aside>/<a href="obj.html">obj</a>/<a href="obj/machinery.html">machinery</a>/<a href="obj/machinery/power.html">power</a>/<a href="obj/machinery/power/shuttle_engine.html">shuttle_engine</a>/<a href="obj/machinery/power/shuttle_engine/ship.html">ship</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/shuttle/engine/shuttle_engine.dm#L15">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;shuttle&#x2F;engine&#x2F;shuttle_engine.dm 15"/></a></h1>
+
+<hh2 id="engine-thrusters">Engine Thrusters</hh2>
+<p>The workhorse of any movable ship, these engines (usually) take in some kind fuel and produce thrust to move ships.
+Voidcrew subtype is to add unique icons, and being able to enable/disable it at will.</p><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Vars</h2></td></tr>
+            <tr><th><a href="obj/machinery/power/shuttle_engine/ship.html#var/enabled">enabled</a></th><td>Whether or not the engine is enabled and can be used. Controlled from helm consoles and by hitting with a multitool.</td></tr>
+            <tr><th><a href="obj/machinery/power/shuttle_engine/ship.html#var/engine_power">engine_power</a></th><td>How much thrust this engine generates when burned fully.</td></tr>
+            <tr><th><a href="obj/machinery/power/shuttle_engine/ship.html#var/icon_state_closed">icon_state_closed</a></th><td>The icon when the machine is closed and active.</td></tr>
+            <tr><th><a href="obj/machinery/power/shuttle_engine/ship.html#var/icon_state_off">icon_state_off</a></th><td>The icon when the machine is closed, but NOT active.</td></tr>
+            <tr><th><a href="obj/machinery/power/shuttle_engine/ship.html#var/icon_state_open">icon_state_open</a></th><td>Icon when the machine is screwdrivered open, takes priority over the other two</td></tr>
+            <tr><th><a href="obj/machinery/power/shuttle_engine/ship.html#var/thruster_active">thruster_active</a></th><td>I don't really know what this is but it's used a lot</td></tr><tr><td colspan="2"><h2>Procs</h2></td></tr>
+            <tr><th><a href="obj/machinery/power/shuttle_engine/ship.html#proc/burn_engine">burn_engine</a></th><td>Uses up a specified percentage of the fuel cost, and returns the amount of thrust if successful.</td></tr>
+            <tr><th><a href="obj/machinery/power/shuttle_engine/ship.html#proc/return_fuel">return_fuel</a></th><td>Returns how much &quot;Fuel&quot; is left. (For use with engine displays.)</td></tr>
+            <tr><th><a href="obj/machinery/power/shuttle_engine/ship.html#proc/return_fuel_cap">return_fuel_cap</a></th><td>Returns how much &quot;Fuel&quot; can be held. (For use with engine displays.)</td></tr>
+            <tr><th><a href="obj/machinery/power/shuttle_engine/ship.html#proc/update_engine">update_engine</a></th><td>Updates the engine state.
+All functions should return if the parent function returns false.</td></tr>
+            <tr><th><a href="obj/machinery/power/shuttle_engine/ship.html#proc/update_icon_state">update_icon_state</a></th><td>Updates the engine's icon and engine state.</td></tr></table>
+    <h2 id="var">Var Details</h2><h3 id="var/enabled"><aside class="declaration">var </aside>enabled
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/shuttle/engine/shuttle_engine.dm#L26">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;shuttle&#x2F;engine&#x2F;shuttle_engine.dm 26"/></a></h3>
+        <p>Whether or not the engine is enabled and can be used. Controlled from helm consoles and by hitting with a multitool.</p><h3 id="var/engine_power"><aside class="parent"><a title="/obj/machinery/power/shuttle_engine" href="obj/machinery/power/shuttle_engine.html#var/engine_power">&uarr;</a></aside>engine_power
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/shuttle/engine/shuttle_engine.dm#L23">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;shuttle&#x2F;engine&#x2F;shuttle_engine.dm 23"/></a></h3>
+        <p>How much thrust this engine generates when burned fully.</p><h3 id="var/icon_state_closed"><aside class="declaration">var </aside>icon_state_closed
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/shuttle/engine/shuttle_engine.dm#L33">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;shuttle&#x2F;engine&#x2F;shuttle_engine.dm 33"/></a></h3>
+        <p>The icon when the machine is closed and active.</p><h3 id="var/icon_state_off"><aside class="declaration">var </aside>icon_state_off
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/shuttle/engine/shuttle_engine.dm#L35">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;shuttle&#x2F;engine&#x2F;shuttle_engine.dm 35"/></a></h3>
+        <p>The icon when the machine is closed, but NOT active.</p><h3 id="var/icon_state_open"><aside class="declaration">var </aside>icon_state_open
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/shuttle/engine/shuttle_engine.dm#L31">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;shuttle&#x2F;engine&#x2F;shuttle_engine.dm 31"/></a></h3>
+        <p>Icon when the machine is screwdrivered open, takes priority over the other two</p><h3 id="var/thruster_active"><aside class="declaration">var </aside>thruster_active
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/shuttle/engine/shuttle_engine.dm#L28">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;shuttle&#x2F;engine&#x2F;shuttle_engine.dm 28"/></a></h3>
+        <p>I don't really know what this is but it's used a lot</p><h2 id="proc">Proc Details</h2><h3 id="proc/burn_engine"><aside class="declaration">proc </aside>burn_engine<aside>(percentage) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/shuttle/engine/shuttle_engine.dm#L41">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;shuttle&#x2F;engine&#x2F;shuttle_engine.dm 41"/></a></aside>
+        </h3>
+        <p>Uses up a specified percentage of the fuel cost, and returns the amount of thrust if successful.</p>
+<ul>
+<li>percentage - The percentage of total thrust that should be used</li>
+</ul><h3 id="proc/return_fuel"><aside class="declaration">proc </aside>return_fuel<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/shuttle/engine/shuttle_engine.dm#L49">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;shuttle&#x2F;engine&#x2F;shuttle_engine.dm 49"/></a></aside>
+        </h3>
+        <p>Returns how much &quot;Fuel&quot; is left. (For use with engine displays.)</p><h3 id="proc/return_fuel_cap"><aside class="declaration">proc </aside>return_fuel_cap<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/shuttle/engine/shuttle_engine.dm#L55">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;shuttle&#x2F;engine&#x2F;shuttle_engine.dm 55"/></a></aside>
+        </h3>
+        <p>Returns how much &quot;Fuel&quot; can be held. (For use with engine displays.)</p><h3 id="proc/update_engine"><aside class="declaration">proc </aside>update_engine<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/shuttle/engine/shuttle_engine.dm#L62">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;shuttle&#x2F;engine&#x2F;shuttle_engine.dm 62"/></a></aside>
+        </h3>
+        <p>Updates the engine state.
+All functions should return if the parent function returns false.</p><h3 id="proc/update_icon_state"><aside class="parent"><a title="/atom" href="atom.html#proc/update_icon_state">&uarr;</a></aside>update_icon_state<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/shuttle/engine/shuttle_engine.dm#L69">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;shuttle&#x2F;engine&#x2F;shuttle_engine.dm 69"/></a></aside>
+        </h3>
+        <p>Updates the engine's icon and engine state.</p></main>
+<footer>
+    tgstation.dme
+    <a href="https://github.com/voidcrew/Voidcrew/tree/67c183a5b51c3b5ec3173037a718eea0370bbda2">67c183a</a>
+        (master) &mdash; <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.8.0</a></footer>
+</body>
+</html>

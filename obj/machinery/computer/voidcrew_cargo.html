@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="../../../" />
+    <link rel="stylesheet" href="dmdoc.css" />
+    <title>&#x2F;obj&#x2F;machinery&#x2F;computer&#x2F;voidcrew_cargo - &#x2F;tg&#x2F; Station 13</title>
+</head>
+<body>
+<header>
+    <a href="index.html">&#x2F;tg&#x2F; Station 13</a> -
+    <a href="index.html#modules">Modules</a> -
+    <a href="index.html#types">Types</a>
+ &mdash; <a href="obj/machinery/computer/voidcrew_cargo.html#var">Var Details</a> - <a href="obj/machinery/computer/voidcrew_cargo.html#proc">Proc Details</a></header>
+<main>
+<h1>voidcrew_cargo <aside>/<a href="obj.html">obj</a>/<a href="obj/machinery.html">machinery</a>/<a href="obj/machinery/computer.html">computer</a>/<a href="obj/machinery/computer/voidcrew_cargo.html">voidcrew_cargo</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/cargo/shipping/cargo_console.dm#L4">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;cargo&#x2F;shipping&#x2F;cargo_console.dm 4"/></a></h1>
+
+<p>Computer</p><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Vars</h2></td></tr>
+            <tr><th><a href="obj/machinery/computer/voidcrew_cargo.html#var/bank_account_holder">bank_account_holder</a></th><td>The machine we're connected to that holds our bank account.</td></tr>
+            <tr><th><a href="obj/machinery/computer/voidcrew_cargo.html#var/beacon">beacon</a></th><td>The linked supplypod beacon that will drop/send the cargo container.</td></tr>
+            <tr><th><a href="obj/machinery/computer/voidcrew_cargo.html#var/calling_cooldown">calling_cooldown</a></th><td>Cooldown between calling so you don't repeatedly spawn and delete crates.</td></tr>
+            <tr><th><a href="obj/machinery/computer/voidcrew_cargo.html#var/checkout_list">checkout_list</a></th><td>List of everything we're attempting to purchase.</td></tr><tr><td colspan="2"><h2>Procs</h2></td></tr>
+            <tr><th><a href="obj/machinery/computer/voidcrew_cargo.html#proc/add_item">add_item</a></th><td>BECAON STUFF</td></tr>
+            <tr><th><a href="obj/machinery/computer/voidcrew_cargo.html#proc/name_to_id">name_to_id</a></th><td>Finds an item in the grocery list using their name</td></tr>
+            <tr><th><a href="obj/machinery/computer/voidcrew_cargo.html#proc/remove_item">remove_item</a></th><td>Removes an item from the grocery list</td></tr></table>
+    <h2 id="var">Var Details</h2><h3 id="var/bank_account_holder"><aside class="declaration">var </aside>bank_account_holder
+            <aside>&ndash; /<a href="obj.html">obj</a>/<a href="obj/machinery.html">machinery</a>/<a href="obj/machinery/computer.html">computer</a>/<a href="obj/machinery/computer/bank_machine.html">bank_machine</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/cargo/shipping/cargo_console.dm#L14">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;cargo&#x2F;shipping&#x2F;cargo_console.dm 14"/></a></h3>
+        <p>The machine we're connected to that holds our bank account.</p><h3 id="var/beacon"><aside class="declaration">var </aside>beacon
+            <aside>&ndash; /<a href="obj.html">obj</a>/<a href="obj/item.html">item</a>/<a href="obj/item/supply_beacon.html">supply_beacon</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/cargo/shipping/cargo_console.dm#L12">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;cargo&#x2F;shipping&#x2F;cargo_console.dm 12"/></a></h3>
+        <p>The linked supplypod beacon that will drop/send the cargo container.</p><h3 id="var/calling_cooldown"><aside class="declaration">var </aside>calling_cooldown
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/cargo/shipping/cargo_console.dm#L20">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;cargo&#x2F;shipping&#x2F;cargo_console.dm 20"/></a></h3>
+        <p>Cooldown between calling so you don't repeatedly spawn and delete crates.</p><h3 id="var/checkout_list"><aside class="declaration">var </aside>checkout_list
+            <aside>&ndash; /list/datum/supply_order</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/cargo/shipping/cargo_console.dm#L17">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;cargo&#x2F;shipping&#x2F;cargo_console.dm 17"/></a></h3>
+        <p>List of everything we're attempting to purchase.</p><h2 id="proc">Proc Details</h2><h3 id="proc/add_item"><aside class="declaration">proc </aside>add_item<aside>(params) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/cargo/shipping/cargo_console.dm#L245">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;cargo&#x2F;shipping&#x2F;cargo_console.dm 245"/></a></aside>
+        </h3>
+        <p>BECAON STUFF</p>
+<p>CARGO ORDERING</p>
+<p>DROP POD HANDLING</p>
+<p>Adds an item to the grocery list</p><h3 id="proc/name_to_id"><aside class="declaration">proc </aside>name_to_id<aside>(order_name) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/cargo/shipping/cargo_console.dm#L294">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;cargo&#x2F;shipping&#x2F;cargo_console.dm 294"/></a></aside>
+        </h3>
+        <p>Finds an item in the grocery list using their name</p><h3 id="proc/remove_item"><aside class="declaration">proc </aside>remove_item<aside>(params) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/cargo/shipping/cargo_console.dm#L282">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;cargo&#x2F;shipping&#x2F;cargo_console.dm 282"/></a></aside>
+        </h3>
+        <p>Removes an item from the grocery list</p></main>
+<footer>
+    tgstation.dme
+    <a href="https://github.com/voidcrew/Voidcrew/tree/67c183a5b51c3b5ec3173037a718eea0370bbda2">67c183a</a>
+        (master) &mdash; <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.8.0</a></footer>
+</body>
+</html>

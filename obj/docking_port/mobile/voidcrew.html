@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="../../../" />
+    <link rel="stylesheet" href="dmdoc.css" />
+    <title>&#x2F;obj&#x2F;docking_port&#x2F;mobile&#x2F;voidcrew - &#x2F;tg&#x2F; Station 13</title>
+</head>
+<body>
+<header>
+    <a href="index.html">&#x2F;tg&#x2F; Station 13</a> -
+    <a href="index.html#modules">Modules</a> -
+    <a href="index.html#types">Types</a>
+ &mdash; <a href="obj/docking_port/mobile/voidcrew.html#var">Var Details</a> - <a href="obj/docking_port/mobile/voidcrew.html#proc">Proc Details</a></header>
+<main>
+<h1>voidcrew <aside>/<a href="obj.html">obj</a>/<a href="obj/docking_port.html">docking_port</a>/<a href="obj/docking_port/mobile.html">mobile</a>/<a href="obj/docking_port/mobile/voidcrew.html">voidcrew</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/mapping/docking_port/_docking_port.dm#L4">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;mapping&#x2F;docking_port&#x2F;_docking_port.dm 4"/></a></h1>
+
+<p>The main docking port that all voidcrew ships should be using.</p><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Vars</h2></td></tr>
+            <tr><th><a href="obj/docking_port/mobile/voidcrew.html#var/cached_z_level">cached_z_level</a></th><td>Makes sure we dont run linking logic more than once</td></tr>
+            <tr><th><a href="obj/docking_port/mobile/voidcrew.html#var/current_ship">current_ship</a></th><td>The linked overmap object, if there is one. This is set AFTER Initialize, so do not set machine inits to this.</td></tr>
+            <tr><th><a href="obj/docking_port/mobile/voidcrew.html#var/old_z_level">old_z_level</a></th><td>Cache of the old z level we're on, stored to remove after the shuttle moves.
+We do this because on ship-spawning, the shuttle will move, init atoms, then call after move.
+This means that things that require stuff like stationloving, will not function, as it'll load while there's no station z level to relocate to.</td></tr>
+            <tr><th><a href="obj/docking_port/mobile/voidcrew.html#var/spawn_points">spawn_points</a></th><td>List of spawn points on the ship.</td></tr><tr><td colspan="2"><h2>Procs</h2></td></tr>
+            <tr><th><a href="obj/docking_port/mobile/voidcrew.html#proc/get_all_humans">get_all_humans</a></th><td>##get_all_humans</td></tr>
+            <tr><th><a href="obj/docking_port/mobile/voidcrew.html#proc/link_to_z_level">link_to_z_level</a></th><td>Links to the Z level to ensure that if there are more than one ships on a z level when one leaves it doesnt clear the z trait</td></tr>
+            <tr><th><a href="obj/docking_port/mobile/voidcrew.html#proc/mothball">mothball</a></th><td>Scuttle the ship</td></tr>
+            <tr><th><a href="obj/docking_port/mobile/voidcrew.html#proc/respond_to_z_port_probe">respond_to_z_port_probe</a></th><td>##respond_to_z_port_probe</td></tr>
+            <tr><th><a href="obj/docking_port/mobile/voidcrew.html#proc/unlink_from_z_level">unlink_from_z_level</a></th><td>Unlinks the docking port from the old z level, stored as a var.
+If we don't have one, we will early return, as you haven't moved from anything.
+We will also send a signal to check for other ships on the z-level, to avoid turning
+levels that have another ship on it, into a non-station level, breaking things like stationloving for them.</td></tr></table>
+    <h2 id="var">Var Details</h2><h3 id="var/cached_z_level"><aside class="declaration">var </aside>cached_z_level
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/mapping/docking_port/_docking_port.dm#L9">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;mapping&#x2F;docking_port&#x2F;_docking_port.dm 9"/></a></h3>
+        <p>Makes sure we dont run linking logic more than once</p><h3 id="var/current_ship"><aside class="declaration">var </aside>current_ship
+            <aside>&ndash; /<a href="obj.html">obj</a>/<a href="obj/structure.html">structure</a>/<a href="obj/structure/overmap.html">overmap</a>/<a href="obj/structure/overmap/ship.html">ship</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/mapping/docking_port/_docking_port.dm#L19">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;mapping&#x2F;docking_port&#x2F;_docking_port.dm 19"/></a></h3>
+        <p>The linked overmap object, if there is one. This is set AFTER Initialize, so do not set machine inits to this.</p><h3 id="var/old_z_level"><aside class="declaration">var </aside>old_z_level
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/mapping/docking_port/_docking_port.dm#L16">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;mapping&#x2F;docking_port&#x2F;_docking_port.dm 16"/></a></h3>
+        <p>Cache of the old z level we're on, stored to remove after the shuttle moves.
+We do this because on ship-spawning, the shuttle will move, init atoms, then call after move.
+This means that things that require stuff like stationloving, will not function, as it'll load while there's no station z level to relocate to.</p><h3 id="var/spawn_points"><aside class="declaration">var </aside>spawn_points
+            <aside>&ndash; /list/obj/machinery/cryopod</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/mapping/docking_port/_docking_port.dm#L22">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;mapping&#x2F;docking_port&#x2F;_docking_port.dm 22"/></a></h3>
+        <p>List of spawn points on the ship.</p><h2 id="proc">Proc Details</h2><h3 id="proc/get_all_humans"><aside class="declaration">proc </aside>get_all_humans<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/mapping/docking_port/_docking_port.dm#L107">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;mapping&#x2F;docking_port&#x2F;_docking_port.dm 107"/></a></aside>
+        </h3>
+        <p>##get_all_humans</p>
+<p>Returns a list of all the living humans on the ship, as long as they have a mind and a client.</p><h3 id="proc/link_to_z_level"><aside class="declaration">proc </aside>link_to_z_level<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/mapping/docking_port/_docking_port.dm#L51">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;mapping&#x2F;docking_port&#x2F;_docking_port.dm 51"/></a></aside>
+        </h3>
+        <p>Links to the Z level to ensure that if there are more than one ships on a z level when one leaves it doesnt clear the z trait</p><h3 id="proc/mothball"><aside class="declaration">proc </aside>mothball<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/mapping/docking_port/_docking_port.dm#L126">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;mapping&#x2F;docking_port&#x2F;_docking_port.dm 126"/></a></aside>
+        </h3>
+        <p>Scuttle the ship</p>
+<p>Delete all of the areas, and delete any cryopods</p><h3 id="proc/respond_to_z_port_probe"><aside class="declaration">proc </aside>respond_to_z_port_probe<aside>(/<a href="atom.html">atom</a>/source, /<a href="obj.html">obj</a>/<a href="obj/docking_port.html">docking_port</a>/<a href="obj/docking_port/mobile.html">mobile</a>/<a href="obj/docking_port/mobile/voidcrew.html">voidcrew</a>/leaving, z_level) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/mapping/docking_port/_docking_port.dm#L96">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;mapping&#x2F;docking_port&#x2F;_docking_port.dm 96"/></a></aside>
+        </h3>
+        <p>##respond_to_z_port_probe</p>
+<p>Sent by another docking port
+This is our response, to prevent a level being removed from the list of station areas, if we're still here.
+Args:
+source - The docking port that's leaving
+z_level - the z level that source is leaving from.</p><h3 id="proc/unlink_from_z_level"><aside class="declaration">proc </aside>unlink_from_z_level<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/mapping/docking_port/_docking_port.dm#L68">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;mapping&#x2F;docking_port&#x2F;_docking_port.dm 68"/></a></aside>
+        </h3>
+        <p>Unlinks the docking port from the old z level, stored as a var.
+If we don't have one, we will early return, as you haven't moved from anything.
+We will also send a signal to check for other ships on the z-level, to avoid turning
+levels that have another ship on it, into a non-station level, breaking things like stationloving for them.</p></main>
+<footer>
+    tgstation.dme
+    <a href="https://github.com/voidcrew/Voidcrew/tree/67c183a5b51c3b5ec3173037a718eea0370bbda2">67c183a</a>
+        (master) &mdash; <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.8.0</a></footer>
+</body>
+</html>

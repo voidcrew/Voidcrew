@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="../../" />
+    <link rel="stylesheet" href="dmdoc.css" />
+    <title>&#x2F;datum&#x2F;component&#x2F;nanites - &#x2F;tg&#x2F; Station 13</title>
+</head>
+<body>
+<header>
+    <a href="index.html">&#x2F;tg&#x2F; Station 13</a> -
+    <a href="index.html#modules">Modules</a> -
+    <a href="index.html#types">Types</a>
+ &mdash; <a href="datum/component/nanites.html#var">Var Details</a></header>
+<main>
+<h1>nanites <aside>/<a href="datum.html">datum</a>/<a href="datum/component.html">component</a>/<a href="datum/component/nanites.html">nanites</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L3">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 3"/></a></h1>
+
+<table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Vars</h2></td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/cloud_active">cloud_active</a></th><td>if false, won't sync to the cloud</td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/cloud_id">cloud_id</a></th><td>0 if not connected to the cloud, 1-100 to set a determined cloud backup to draw from</td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/diagnostics">diagnostics</a></th><td>if TRUE, displays program list when scanned by nanite scanners</td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/host_mob">host_mob</a></th><td>The living person these nanites are attached onto</td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/linked_techweb">linked_techweb</a></th><td>The techweb these Nanites are synced to, to generate Nanite research points</td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/max_nanites">max_nanites</a></th><td>maximum amount of nanites someone can have</td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/max_programs">max_programs</a></th><td>How many programs this user can have at once</td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/nanite_volume">nanite_volume</a></th><td>amount of nanites in the system, used as fuel for nanite programs</td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/next_sync">next_sync</a></th><td>How long until the next sync to cloud</td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/programs">programs</a></th><td>All nanite programs in the user</td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/protocols">protocols</a></th><td>Separate list of protocol programs, to avoid looping through the whole programs list when cheking for conflicts</td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/regen_rate">regen_rate</a></th><td>nanites generated per second</td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/safety_threshold">safety_threshold</a></th><td>how low nanites will get before they stop processing/triggering</td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/start_time">start_time</a></th><td>Timestamp to when the nanites were first inserted in the host</td></tr>
+            <tr><th><a href="datum/component/nanites.html#var/stealth">stealth</a></th><td>Prevents nanites from appearing on HUDs and health scans</td></tr></table>
+    <h2 id="var">Var Details</h2><h3 id="var/cloud_active"><aside class="declaration">var </aside>cloud_active
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L20">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 20"/></a></h3>
+        <p>if false, won't sync to the cloud</p><h3 id="var/cloud_id"><aside class="declaration">var </aside>cloud_id
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L18">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 18"/></a></h3>
+        <p>0 if not connected to the cloud, 1-100 to set a determined cloud backup to draw from</p><h3 id="var/diagnostics"><aside class="declaration">var </aside>diagnostics
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L35">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 35"/></a></h3>
+        <p>if TRUE, displays program list when scanned by nanite scanners</p><h3 id="var/host_mob"><aside class="declaration">var </aside>host_mob
+            <aside>&ndash; /<a href="mob.html">mob</a>/<a href="mob/living.html">living</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L7">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 7"/></a></h3>
+        <p>The living person these nanites are attached onto</p><h3 id="var/linked_techweb"><aside class="declaration">var </aside>linked_techweb
+            <aside>&ndash; /<a href="datum.html">datum</a>/<a href="datum/techweb.html">techweb</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L39">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 39"/></a></h3>
+        <p>The techweb these Nanites are synced to, to generate Nanite research points</p><h3 id="var/max_nanites"><aside class="declaration">var </aside>max_nanites
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L12">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 12"/></a></h3>
+        <p>maximum amount of nanites someone can have</p><h3 id="var/max_programs"><aside class="declaration">var </aside>max_programs
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L26">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 26"/></a></h3>
+        <p>How many programs this user can have at once</p><h3 id="var/nanite_volume"><aside class="declaration">var </aside>nanite_volume
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L10">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 10"/></a></h3>
+        <p>amount of nanites in the system, used as fuel for nanite programs</p><h3 id="var/next_sync"><aside class="declaration">var </aside>next_sync
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L22">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 22"/></a></h3>
+        <p>How long until the next sync to cloud</p><h3 id="var/programs"><aside class="declaration">var </aside>programs
+            <aside>&ndash; /list/datum/nanite_program</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L24">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 24"/></a></h3>
+        <p>All nanite programs in the user</p><h3 id="var/protocols"><aside class="declaration">var </aside>protocols
+            <aside>&ndash; /list/datum/nanite_program/protocol</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L29">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 29"/></a></h3>
+        <p>Separate list of protocol programs, to avoid looping through the whole programs list when cheking for conflicts</p><h3 id="var/regen_rate"><aside class="declaration">var </aside>regen_rate
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L14">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 14"/></a></h3>
+        <p>nanites generated per second</p><h3 id="var/safety_threshold"><aside class="declaration">var </aside>safety_threshold
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L16">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 16"/></a></h3>
+        <p>how low nanites will get before they stop processing/triggering</p><h3 id="var/start_time"><aside class="declaration">var </aside>start_time
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L31">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 31"/></a></h3>
+        <p>Timestamp to when the nanites were first inserted in the host</p><h3 id="var/stealth"><aside class="declaration">var </aside>stealth
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/nanite_component.dm#L33">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;nanite_component.dm 33"/></a></h3>
+        <p>Prevents nanites from appearing on HUDs and health scans</p></main>
+<footer>
+    tgstation.dme
+    <a href="https://github.com/voidcrew/Voidcrew/tree/67c183a5b51c3b5ec3173037a718eea0370bbda2">67c183a</a>
+        (master) &mdash; <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.8.0</a></footer>
+</body>
+</html>

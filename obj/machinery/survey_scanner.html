@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="../../" />
+    <link rel="stylesheet" href="dmdoc.css" />
+    <title>&#x2F;obj&#x2F;machinery&#x2F;survey_scanner - &#x2F;tg&#x2F; Station 13</title>
+</head>
+<body>
+<header>
+    <a href="index.html">&#x2F;tg&#x2F; Station 13</a> -
+    <a href="index.html#modules">Modules</a> -
+    <a href="index.html#types">Types</a>
+ &mdash; <a href="obj/machinery/survey_scanner.html#var">Var Details</a> - <a href="obj/machinery/survey_scanner.html#proc">Proc Details</a></header>
+<main>
+<h1>survey_scanner <aside>/<a href="obj.html">obj</a>/<a href="obj/machinery.html">machinery</a>/<a href="obj/machinery/survey_scanner.html">survey_scanner</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/research/survey_scanner.dm#L9">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;research&#x2F;survey_scanner.dm 9"/></a></h1>
+
+<p>Survey scanner</p>
+<p>A machine that generates research points, at the cost of power, instead of forcing
+people to waste their time standing idle with an item in their hand.
+Meant to be a stable way of generating points while encouraging moving to different planets
+Without the cost of doing the same thing on repeat (like dissections).</p><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Vars</h2></td></tr>
+            <tr><th><a href="obj/machinery/survey_scanner.html#var/enabled">enabled</a></th><td>Whether the machine is currently running or not.</td></tr>
+            <tr><th><a href="obj/machinery/survey_scanner.html#var/research_gain">research_gain</a></th><td>The base research points you get, before taking penalty into account.</td></tr>
+            <tr><th><a href="obj/machinery/survey_scanner.html#var/research_power">research_power</a></th><td>The strength of the machine, decreasing point penalty.</td></tr>
+            <tr><th><a href="obj/machinery/survey_scanner.html#var/stored_points">stored_points</a></th><td>Amount of research points we've generated from processing.</td></tr>
+            <tr><th><a href="obj/machinery/survey_scanner.html#var/survey_audio">survey_audio</a></th><td>Looping sound that plays when active.</td></tr>
+            <tr><th><a href="obj/machinery/survey_scanner.html#var/z_level_history">z_level_history</a></th><td>List of all Z levels scanned and how many times.</td></tr><tr><td colspan="2"><h2>Procs</h2></td></tr>
+            <tr><th><a href="obj/machinery/survey_scanner.html#proc/disable">disable</a></th><td>disable()</td></tr>
+            <tr><th><a href="obj/machinery/survey_scanner.html#proc/enable">enable</a></th><td>enable()</td></tr></table>
+    <h2 id="var">Var Details</h2><h3 id="var/enabled"><aside class="declaration">var </aside>enabled
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/research/survey_scanner.dm#L21">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;research&#x2F;survey_scanner.dm 21"/></a></h3>
+        <p>Whether the machine is currently running or not.</p><h3 id="var/research_gain"><aside class="declaration">var </aside>research_gain
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/research/survey_scanner.dm#L27">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;research&#x2F;survey_scanner.dm 27"/></a></h3>
+        <p>The base research points you get, before taking penalty into account.</p><h3 id="var/research_power"><aside class="declaration">var </aside>research_power
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/research/survey_scanner.dm#L25">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;research&#x2F;survey_scanner.dm 25"/></a></h3>
+        <p>The strength of the machine, decreasing point penalty.</p><h3 id="var/stored_points"><aside class="declaration">var </aside>stored_points
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/research/survey_scanner.dm#L29">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;research&#x2F;survey_scanner.dm 29"/></a></h3>
+        <p>Amount of research points we've generated from processing.</p><h3 id="var/survey_audio"><aside class="declaration">var </aside>survey_audio
+            <aside>&ndash; /<a href="datum.html">datum</a>/<a href="datum/looping_sound.html">looping_sound</a>/oven</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/research/survey_scanner.dm#L23">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;research&#x2F;survey_scanner.dm 23"/></a></h3>
+        <p>Looping sound that plays when active.</p><h3 id="var/z_level_history"><aside class="declaration">var </aside>z_level_history
+            <aside>&ndash; /static/list</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/research/survey_scanner.dm#L31">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;research&#x2F;survey_scanner.dm 31"/></a></h3>
+        <p>List of all Z levels scanned and how many times.</p><h2 id="proc">Proc Details</h2><h3 id="proc/disable"><aside class="declaration">proc </aside>disable<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/research/survey_scanner.dm#L175">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;research&#x2F;survey_scanner.dm 175"/></a></aside>
+        </h3>
+        <p>disable()</p>
+<p>ends the processing and power usage, and spits out the points if there's any.</p><h3 id="proc/enable"><aside class="declaration">proc </aside>enable<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/research/survey_scanner.dm#L148">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;research&#x2F;survey_scanner.dm 148"/></a></aside>
+        </h3>
+        <p>enable()</p>
+<p>Turns the machine on to start generating points and consuming power.</p></main>
+<footer>
+    tgstation.dme
+    <a href="https://github.com/voidcrew/Voidcrew/tree/67c183a5b51c3b5ec3173037a718eea0370bbda2">67c183a</a>
+        (master) &mdash; <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.8.0</a></footer>
+</body>
+</html>

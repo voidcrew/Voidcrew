@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="../" />
+    <link rel="stylesheet" href="dmdoc.css" />
+    <title>&#x2F;datum&#x2F;nanite_program - &#x2F;tg&#x2F; Station 13</title>
+</head>
+<body>
+<header>
+    <a href="index.html">&#x2F;tg&#x2F; Station 13</a> -
+    <a href="index.html#modules">Modules</a> -
+    <a href="index.html#types">Types</a>
+ &mdash; <a href="datum/nanite_program.html#var">Var Details</a> - <a href="datum/nanite_program.html#proc">Proc Details</a></header>
+<main>
+<h1>nanite_program <aside>/<a href="datum.html">datum</a>/<a href="datum/nanite_program.html">nanite_program</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L1">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 1"/></a></h1>
+
+<table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Vars</h2></td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/activated">activated</a></th><td>If FALSE, the program won't process, disables passive effects, can't trigger and doesn't consume nanites</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/activation_code">activation_code</a></th><td>Code that activates the program [1-9999]</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/all_rules_required">all_rules_required</a></th><td>Whether all rules are required for positive condition or any of specified</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/can_trigger">can_trigger</a></th><td>If the nanites have a trigger function (used for the programming UI)</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/deactivation_code">deactivation_code</a></th><td>Code that deactivates the program [1-9999]</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/extra_settings">extra_settings</a></th><td>Don't ever override this or I will come to your house and stand menacingly behind a bush</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/host_mob">host_mob</a></th><td>The living host mob of our nanite program.</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/kill_code">kill_code</a></th><td>Code that permanently removes the program [1-9999]</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/next_trigger">next_trigger</a></th><td>World time required for the next trigger activation</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/passive_enabled">passive_enabled</a></th><td>If the nanites have an on/off-style effect, it's tracked by this var</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/program_flags">program_flags</a></th><td>Specific program flags. Options: (NANITE_SHOCK_IMMUNE | NANITE_EMP_IMMUNE)</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/rogue_types">rogue_types</a></th><td>What this can turn into if it glitches.</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/rules">rules</a></th><td>Rules that automatically manage if the program's active without requiring separate sensor programs</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/timer_restart">timer_restart</a></th><td>When deactivated, the program will wait X deciseconds before self-reactivating. Also works if the program begins deactivated.</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/timer_shutdown">timer_shutdown</a></th><td>When activated, the program will wait X deciseconds before self-deactivating. Also works if the program begins activated.</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/timer_trigger">timer_trigger</a></th><td>[Trigger only] While active, the program will attempt to trigger once every x deciseconds.</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/timer_trigger_delay">timer_trigger_delay</a></th><td>[Trigger only] While active, the program will delay trigger signals by X deciseconds.</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/trigger_code">trigger_code</a></th><td>Code that triggers the program (if available) [1-9999]</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/trigger_cooldown">trigger_cooldown</a></th><td>Deciseconds required between each trigger activation</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/trigger_cost">trigger_cost</a></th><td>Amount of nanites required to trigger</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/unique">unique</a></th><td>If there can be more than one copy in the same nanites</td></tr>
+            <tr><th><a href="datum/nanite_program.html#var/use_rate">use_rate</a></th><td>Amount of nanites used while active</td></tr><tr><td colspan="2"><h2>Procs</h2></td></tr>
+            <tr><th><a href="datum/nanite_program.html#proc/copy_extra_settings_to">copy_extra_settings_to</a></th><td>Copy of the list instead of direct reference for obvious reasons</td></tr>
+            <tr><th><a href="datum/nanite_program.html#proc/get_extra_setting_value">get_extra_setting_value</a></th><td>You probably shouldn't be overriding this one, but I'm not a cop.</td></tr>
+            <tr><th><a href="datum/nanite_program.html#proc/get_extra_settings_frontend">get_extra_settings_frontend</a></th><td>Used for getting information about the extra settings to the frontend</td></tr>
+            <tr><th><a href="datum/nanite_program.html#proc/register_extra_settings">register_extra_settings</a></th><td>Register extra settings by overriding this.
+extra_settings[name] = new typepath() for each extra setting</td></tr>
+            <tr><th><a href="datum/nanite_program.html#proc/set_extra_setting">set_extra_setting</a></th><td>You can override this if you need to have special behavior after setting certain settings.</td></tr></table>
+    <h2 id="var">Var Details</h2><h3 id="var/activated"><aside class="declaration">var </aside>activated
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L32">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 32"/></a></h3>
+        <p>If FALSE, the program won't process, disables passive effects, can't trigger and doesn't consume nanites</p><h3 id="var/activation_code"><aside class="declaration">var </aside>activation_code
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L51">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 51"/></a></h3>
+        <p>Code that activates the program [1-9999]</p><h3 id="var/all_rules_required"><aside class="declaration">var </aside>all_rules_required
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L65">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 65"/></a></h3>
+        <p>Whether all rules are required for positive condition or any of specified</p><h3 id="var/can_trigger"><aside class="declaration">var </aside>can_trigger
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L14">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 14"/></a></h3>
+        <p>If the nanites have a trigger function (used for the programming UI)</p><h3 id="var/deactivation_code"><aside class="declaration">var </aside>deactivation_code
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L53">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 53"/></a></h3>
+        <p>Code that deactivates the program [1-9999]</p><h3 id="var/extra_settings"><aside class="declaration">var </aside>extra_settings
+            <aside>&ndash; /list</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L61">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 61"/></a></h3>
+        <p>Don't ever override this or I will come to your house and stand menacingly behind a bush</p><h3 id="var/host_mob"><aside class="declaration">var </aside>host_mob
+            <aside>&ndash; /<a href="mob.html">mob</a>/<a href="mob/living.html">living</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L7">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 7"/></a></h3>
+        <p>The living host mob of our nanite program.</p><h3 id="var/kill_code"><aside class="declaration">var </aside>kill_code
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L55">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 55"/></a></h3>
+        <p>Code that permanently removes the program [1-9999]</p><h3 id="var/next_trigger"><aside class="declaration">var </aside>next_trigger
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L20">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 20"/></a></h3>
+        <p>World time required for the next trigger activation</p><h3 id="var/passive_enabled"><aside class="declaration">var </aside>passive_enabled
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L25">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 25"/></a></h3>
+        <p>If the nanites have an on/off-style effect, it's tracked by this var</p><h3 id="var/program_flags"><aside class="declaration">var </aside>program_flags
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L23">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 23"/></a></h3>
+        <p>Specific program flags. Options: (NANITE_SHOCK_IMMUNE | NANITE_EMP_IMMUNE)</p><h3 id="var/rogue_types"><aside class="declaration">var </aside>rogue_types
+            <aside>&ndash; /list</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L28">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 28"/></a></h3>
+        <p>What this can turn into if it glitches.</p><h3 id="var/rules"><aside class="declaration">var </aside>rules
+            <aside>&ndash; /list/datum/nanite_rule</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L67">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 67"/></a></h3>
+        <p>Rules that automatically manage if the program's active without requiring separate sensor programs</p><h3 id="var/timer_restart"><aside class="declaration">var </aside>timer_restart
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L35">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 35"/></a></h3>
+        <p>When deactivated, the program will wait X deciseconds before self-reactivating. Also works if the program begins deactivated.</p><h3 id="var/timer_shutdown"><aside class="declaration">var </aside>timer_shutdown
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L37">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 37"/></a></h3>
+        <p>When activated, the program will wait X deciseconds before self-deactivating. Also works if the program begins activated.</p><h3 id="var/timer_trigger"><aside class="declaration">var </aside>timer_trigger
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L39">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 39"/></a></h3>
+        <p>[Trigger only] While active, the program will attempt to trigger once every x deciseconds.</p><h3 id="var/timer_trigger_delay"><aside class="declaration">var </aside>timer_trigger_delay
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L41">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 41"/></a></h3>
+        <p>[Trigger only] While active, the program will delay trigger signals by X deciseconds.</p><h3 id="var/trigger_code"><aside class="declaration">var </aside>trigger_code
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L57">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 57"/></a></h3>
+        <p>Code that triggers the program (if available) [1-9999]</p><h3 id="var/trigger_cooldown"><aside class="declaration">var </aside>trigger_cooldown
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L18">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 18"/></a></h3>
+        <p>Deciseconds required between each trigger activation</p><h3 id="var/trigger_cost"><aside class="declaration">var </aside>trigger_cost
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L16">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 16"/></a></h3>
+        <p>Amount of nanites required to trigger</p><h3 id="var/unique"><aside class="declaration">var </aside>unique
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L12">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 12"/></a></h3>
+        <p>If there can be more than one copy in the same nanites</p><h3 id="var/use_rate"><aside class="declaration">var </aside>use_rate
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L10">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 10"/></a></h3>
+        <p>Amount of nanites used while active</p><h2 id="proc">Proc Details</h2><h3 id="proc/copy_extra_settings_to"><aside class="declaration">proc </aside>copy_extra_settings_to<aside>(/<a href="datum.html">datum</a>/<a href="datum/nanite_program.html">nanite_program</a>/target) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L135">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 135"/></a></aside>
+        </h3>
+        <p>Copy of the list instead of direct reference for obvious reasons</p><h3 id="proc/get_extra_setting_value"><aside class="declaration">proc </aside>get_extra_setting_value<aside>(setting) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L122">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 122"/></a></aside>
+        </h3>
+        <p>You probably shouldn't be overriding this one, but I'm not a cop.</p><h3 id="proc/get_extra_settings_frontend"><aside class="declaration">proc </aside>get_extra_settings_frontend<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L127">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 127"/></a></aside>
+        </h3>
+        <p>Used for getting information about the extra settings to the frontend</p><h3 id="proc/register_extra_settings"><aside class="declaration">proc </aside>register_extra_settings<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L113">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 113"/></a></aside>
+        </h3>
+        <p>Register extra settings by overriding this.
+extra_settings[name] = new typepath() for each extra setting</p><h3 id="proc/set_extra_setting"><aside class="declaration">proc </aside>set_extra_setting<aside>(setting, value) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/nanites/code/programs/_programs.dm#L117">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;nanites&#x2F;code&#x2F;programs&#x2F;_programs.dm 117"/></a></aside>
+        </h3>
+        <p>You can override this if you need to have special behavior after setting certain settings.</p></main>
+<footer>
+    tgstation.dme
+    <a href="https://github.com/voidcrew/Voidcrew/tree/67c183a5b51c3b5ec3173037a718eea0370bbda2">67c183a</a>
+        (master) &mdash; <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.8.0</a></footer>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="../../../" />
+    <link rel="stylesheet" href="dmdoc.css" />
+    <title>&#x2F;datum&#x2F;controller&#x2F;subsystem&#x2F;overmap - &#x2F;tg&#x2F; Station 13</title>
+</head>
+<body>
+<header>
+    <a href="index.html">&#x2F;tg&#x2F; Station 13</a> -
+    <a href="index.html#modules">Modules</a> -
+    <a href="index.html#types">Types</a>
+ &mdash; <a href="datum/controller/subsystem/overmap.html#var">Var Details</a> - <a href="datum/controller/subsystem/overmap.html#proc">Proc Details</a></header>
+<main>
+<h1>overmap <aside>/<a href="datum.html">datum</a>/<a href="datum/controller/subsystem.html">controller/subsystem</a>/<a href="datum/controller/subsystem/overmap.html">overmap</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L14">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 14"/></a></h1>
+
+<table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Vars</h2></td></tr>
+            <tr><th><a href="datum/controller/subsystem/overmap.html#var/events">events</a></th><td>List of all events</td></tr>
+            <tr><th><a href="datum/controller/subsystem/overmap.html#var/jump_completion_time">jump_completion_time</a></th><td>Time taken for a bluespace jump to complete after it initiates (in deciseconds)</td></tr>
+            <tr><th><a href="datum/controller/subsystem/overmap.html#var/jump_mode">jump_mode</a></th><td>Current state of the jump</td></tr>
+            <tr><th><a href="datum/controller/subsystem/overmap.html#var/jump_request_time">jump_request_time</a></th><td>Time taken for bluespace jump to begin after it is requested (in deciseconds)</td></tr>
+            <tr><th><a href="datum/controller/subsystem/overmap.html#var/jump_timer">jump_timer</a></th><td>Timer ID of the timer used for telling which stage of an endround &quot;jump&quot; the ships are in</td></tr>
+            <tr><th><a href="datum/controller/subsystem/overmap.html#var/overmap_centre">overmap_centre</a></th><td>Centre of the overmap</td></tr>
+            <tr><th><a href="datum/controller/subsystem/overmap.html#var/radius_tiles">radius_tiles</a></th><td>Map of tiles at each radius around the sun</td></tr>
+            <tr><th><a href="datum/controller/subsystem/overmap.html#var/simulated_ships">simulated_ships</a></th><td>List of all simulated ships</td></tr><tr><td colspan="2"><h2>Procs</h2></td></tr>
+            <tr><th><a href="datum/controller/subsystem/overmap.html#proc/cancel_jump">cancel_jump</a></th><td>##cancel_jump</td></tr>
+            <tr><th><a href="datum/controller/subsystem/overmap.html#proc/get_ruin_list">get_ruin_list</a></th><td>Reserves a square dynamic encounter area, and spawns a ruin in it if one is supplied.</td></tr>
+            <tr><th><a href="datum/controller/subsystem/overmap.html#proc/initiate_jump">initiate_jump</a></th><td>##initiate_jump</td></tr>
+            <tr><th><a href="datum/controller/subsystem/overmap.html#proc/request_jump">request_jump</a></th><td></td></tr>
+            <tr><th><a href="datum/controller/subsystem/overmap.html#proc/set_initial_ship">set_initial_ship</a></th><td>Attempts to set an initial ship template.
+If one is already set, this will return out.
+If a ship is set, initial_ship_template will be set to it, and it will return TRUE, otherwise FALSE.</td></tr>
+            <tr><th><a href="datum/controller/subsystem/overmap.html#proc/spawn_initial_ship">spawn_initial_ship</a></th><td>At the start of the game, we want to make sure there is a ship on the overmap for people to join.
+If there is no default template, we iterate through subtypes and run various checks to see if its a valid ship.
+When we find a valid template we use it to spawn a ship.</td></tr></table>
+    <h2 id="var">Var Details</h2><h3 id="var/events"><aside class="declaration">var </aside>events
+            <aside>&ndash; /list</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L26">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 26"/></a></h3>
+        <p>List of all events</p><h3 id="var/jump_completion_time"><aside class="declaration">var </aside>jump_completion_time
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L40">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 40"/></a></h3>
+        <p>Time taken for a bluespace jump to complete after it initiates (in deciseconds)</p><h3 id="var/jump_mode"><aside class="declaration">var </aside>jump_mode
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L36">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 36"/></a></h3>
+        <p>Current state of the jump</p><h3 id="var/jump_request_time"><aside class="declaration">var </aside>jump_request_time
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L38">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 38"/></a></h3>
+        <p>Time taken for bluespace jump to begin after it is requested (in deciseconds)</p><h3 id="var/jump_timer"><aside class="declaration">var </aside>jump_timer
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L34">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 34"/></a></h3>
+        <p>Timer ID of the timer used for telling which stage of an endround &quot;jump&quot; the ships are in</p><h3 id="var/overmap_centre"><aside class="declaration">var </aside>overmap_centre
+            <aside>&ndash; /<a href="turf.html">turf</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L22">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 22"/></a></h3>
+        <p>Centre of the overmap</p><h3 id="var/radius_tiles"><aside class="declaration">var </aside>radius_tiles
+            <aside>&ndash; /list/turf</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L24">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 24"/></a></h3>
+        <p>Map of tiles at each radius around the sun</p><h3 id="var/simulated_ships"><aside class="declaration">var </aside>simulated_ships
+            <aside>&ndash; /list</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L32">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 32"/></a></h3>
+        <p>List of all simulated ships</p><h2 id="proc">Proc Details</h2><h3 id="proc/cancel_jump"><aside class="declaration">proc </aside>cancel_jump<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L76">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 76"/></a></aside>
+        </h3>
+        <p>##cancel_jump</p>
+<p>Cancels a currently requested bluespace jump.
+Can only be done after the jump has been requested, but before the jump has actually begun.</p><h3 id="proc/get_ruin_list"><aside class="declaration">proc </aside>get_ruin_list<aside>(ruin_type) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L369">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 369"/></a></aside>
+        </h3>
+        <p>Reserves a square dynamic encounter area, and spawns a ruin in it if one is supplied.</p>
+<ul>
+<li>on_planet - If the encounter should be on a generated planet. Required, as it will be otherwise inaccessible.</li>
+<li>target - The ruin to spawn, if any</li>
+<li>ruin_type - The ruin to spawn. Don't pass this argument if you want it to randomly select based on planet type.</li>
+</ul>
+<p>##get_ruin_list</p>
+<p>Returns the SSmapping list of ruins, according to the given desired ruin type</p>
+<p>Arguments:</p>
+<ul>
+<li>ruin_type - a string, depicting the desired ruin type</li>
+</ul><h3 id="proc/initiate_jump"><aside class="declaration">proc </aside>initiate_jump<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L89">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 89"/></a></aside>
+        </h3>
+        <p>##initiate_jump</p>
+<p>Initiates a bluespace jump, ending the round after a delay of jump_completion_time deciseconds.
+This cannot be interrupted by conventional means.</p><h3 id="proc/request_jump"><aside class="declaration">proc </aside>request_jump<aside>(modifier) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L65">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 65"/></a></aside>
+        </h3>
+        <hh2 id="request-jump">request_jump</hh2>
+<p>Requests a bluespace jump, which, after jump_request_time deciseconds, will initiate a bluespace jump.</p>
+<p>Arguments:</p>
+<ul>
+<li>modifiers - (Optional) Modifies the length of the jump request time (defaults to 1)</li>
+</ul><h3 id="proc/set_initial_ship"><aside class="declaration">proc </aside>set_initial_ship<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L328">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 328"/></a></aside>
+        </h3>
+        <p>Attempts to set an initial ship template.
+If one is already set, this will return out.
+If a ship is set, initial_ship_template will be set to it, and it will return TRUE, otherwise FALSE.</p><h3 id="proc/spawn_initial_ship"><aside class="declaration">proc </aside>spawn_initial_ship<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/controllers/subsystem/overmap.dm#L304">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;controllers&#x2F;subsystem&#x2F;overmap.dm 304"/></a></aside>
+        </h3>
+        <p>At the start of the game, we want to make sure there is a ship on the overmap for people to join.
+If there is no default template, we iterate through subtypes and run various checks to see if its a valid ship.
+When we find a valid template we use it to spawn a ship.</p></main>
+<footer>
+    tgstation.dme
+    <a href="https://github.com/voidcrew/Voidcrew/tree/67c183a5b51c3b5ec3173037a718eea0370bbda2">67c183a</a>
+        (master) &mdash; <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.8.0</a></footer>
+</body>
+</html>

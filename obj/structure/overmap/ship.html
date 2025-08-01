@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="../../../" />
+    <link rel="stylesheet" href="dmdoc.css" />
+    <title>&#x2F;obj&#x2F;structure&#x2F;overmap&#x2F;ship - &#x2F;tg&#x2F; Station 13</title>
+</head>
+<body>
+<header>
+    <a href="index.html">&#x2F;tg&#x2F; Station 13</a> -
+    <a href="index.html#modules">Modules</a> -
+    <a href="index.html#types">Types</a>
+ &mdash; <a href="obj/structure/overmap/ship.html#var">Var Details</a> - <a href="obj/structure/overmap/ship.html#proc">Proc Details</a></header>
+<main>
+<h1>ship <aside>/<a href="obj.html">obj</a>/<a href="obj/structure.html">structure</a>/<a href="obj/structure/overmap.html">overmap</a>/<a href="obj/structure/overmap/ship.html">ship</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L8">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 8"/></a></h1>
+
+<table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Vars</h2></td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/acceleration_speed">acceleration_speed</a></th><td>ONLY USED FOR NON-SIMULATED SHIPS. The amount per burn that this ship accelerates</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/avg_fuel_amnt">avg_fuel_amnt</a></th><td>Average fuel fullness percentage</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/cam_background">cam_background</a></th><td>The background of the map, usually doesn't do anything, but this is here so ships can customize the background ig?</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/cam_screen">cam_screen</a></th><td>Stuff needed to render the map
+The actual map screen</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/deletion_timer">deletion_timer</a></th><td>How long until the ship will delete itself.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/display_name">display_name</a></th><td>Name of the Ship with the faction appended to it</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/dock_index">dock_index</a></th><td>Which docking port the ship is occupying</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/docked">docked</a></th><td>The overmap object the ship is docked to, if any</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/est_thrust">est_thrust</a></th><td>Vessel estimated thrust</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/faction_cooldown">faction_cooldown</a></th><td>Cooldown until you can change your faction again controlled by FACTION_COOLDOWN_TIME</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/faction_prefix">faction_prefix</a></th><td>The prefix the shuttle currently possesses</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/job_slot_adjustment_cooldown">job_slot_adjustment_cooldown</a></th><td>Timer between job managing delays</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/job_slots">job_slots</a></th><td>Assoc list of remaining open job slots (job = remaining slots)</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/joining_allowed">joining_allowed</a></th><td>Boolean on whether players are allowed to latejoin into this ship, toggled by the job managing console.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/manifest">manifest</a></th><td>Manifest list of people on the ship</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/map_name">map_name</a></th><td>Name of the ship.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/mass">mass</a></th><td>Vessel approximate mass</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/max_speed">max_speed</a></th><td>Max possible speed (1 tile per second)</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/memo">memo</a></th><td>Short memo of the ship, set by the crew, and shown to latejoiners.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/min_speed">min_speed</a></th><td>Minimum speed. Any lower is rounded down. (0.5 tiles per minute)</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/movement_callback_id">movement_callback_id</a></th><td>Timer ID of the looping movement timer</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/rename_cooldown">rename_cooldown</a></th><td>Cooldown until the ship can be renamed again</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/render_map">render_map</a></th><td><del>If we need to render a map for cameras and helms for this object</del> basically can you look at and use this as a ship or station</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/ship_account">ship_account</a></th><td>Player-facing Ship stuff.
+Shipwide bank account</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/ship_team">ship_team</a></th><td>Voidcrew-unique team we link everyone's mind to.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/shuttle">shuttle</a></th><td>Template and docking port.
+The docking port of the linked shuttle</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/source_template">source_template</a></th><td>The map template the shuttle was spawned from, if it was indeed created from a template. CAN BE NULL (ex. custom-built ships).</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/speed">speed</a></th><td>The current speed in x/y direction in grid squares per minute</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/state">state</a></th><td>Ship states and deletion.
+State of the shuttle: idle, flying, docking, or undocking</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#var/y_thrust">y_thrust</a></th><td>Movement stuff</td></tr><tr><td colspan="2"><h2>Procs</h2></td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/accelerate">accelerate</a></th><td>Change the speed in a specified dir.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/apply_thrust">apply_thrust</a></th><td>Apply thrust to the ship object</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/burn_engines">burn_engines</a></th><td>Burns the engines in one direction, accelerating in that direction.
+Unsimulated ships use the acceleration_speed var, simulated ships check eacch engine's thrust and fuel.
+If no dir variable is provided, it decelerates the vessel.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/calculate_avg_fuel">calculate_avg_fuel</a></th><td>Calculates the average fuel fullness of all engines.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/calculate_mass">calculate_mass</a></th><td>Calculates the mass based on the amount of turfs in the shuttle's areas</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/calculate_thrust">calculate_thrust</a></th><td>Calculates the current thrust of the ship</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/check_loc">check_loc</a></th><td>Proc called after a shuttle is moved, used for checking a ship's location when it's moved manually (E.G. calling the mining shuttle via a console)</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/clear_pending_dock">clear_pending_dock</a></th><td>Clears pending dock request and timer</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/complete_dock">complete_dock</a></th><td>Sets the ship, shuttle, and shuttle areas to a new name.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/decelerate">decelerate</a></th><td>Reduce the speed or stop in all directions.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/destroy_ship">destroy_ship</a></th><td>##destroy_ship</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/do_move">do_move</a></th><td>Fires the ship move loop</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/dock">dock</a></th><td>Docks the shuttle by requesting a port at the requested spot.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/dock_in_empty_space">dock_in_empty_space</a></th><td>Docks to an empty dynamic encounter. Used for intership interaction, structural modifications, and such</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/get_eta">get_eta</a></th><td>Returns the estimated time in deciseconds to the next tile at current speed, or approx. time until reaching the destination when on autopilot</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/get_heading">get_heading</a></th><td>Returns the direction the ship is moving in terms of dirs</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/get_speed">get_speed</a></th><td>Returns the total speed in all directions.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/handle_wraparound">handle_wraparound</a></th><td>Check if the ship is flying into the border of the overmap.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/is_still">is_still</a></th><td>Returns whether or not the ship is moving in any direction.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/manifest_inject">manifest_inject</a></th><td>Bastardized version of GLOB.manifest.manifest_inject, but used per ship</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/on_member_death">on_member_death</a></th><td>Mob death/revive</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/overmap_object_act">overmap_object_act</a></th><td>Acts on the specified option. Used for docking.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/refresh_engines">refresh_engines</a></th><td>Just double checks all the engines on the shuttle</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/reset_thrust">reset_thrust</a></th><td>Resets the ships thrust back to zero</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/ship_act">ship_act</a></th><td>Ship-to-ship interaction. Creates shared empty space and docks both ships together.</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/start_deletion_timer">start_deletion_timer</a></th><td>Start/end deletion timers</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/tick_move">tick_move</a></th><td>Called by /proc/adjust_speed(), this continually moves the ship according to it's speed</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/try_move">try_move</a></th><td>Move the ship object</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/undock">undock</a></th><td>Undocks the shuttle by launching the shuttle with no destination (this causes it to remain in transit)</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/update_docked_bools">update_docked_bools</a></th><td>To properly fix the bug of two ships docking at the same time causing issues,
+we need to keep track of whether or not a ship is requesting to dock at a
+port IMMEDIATELY after the command is issued.
+This also includes keeping track of when the ship is no longer there, upon which
+the bools need to be set to false.
+This function should be called whenever an action occurs that would remove a ship from the map</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/update_screen">update_screen</a></th><td>Updates the screen for the helm console</td></tr>
+            <tr><th><a href="obj/structure/overmap/ship.html#proc/update_ship_color">update_ship_color</a></th><td>Updates the ships icon to make it easier to distinguish between factions</td></tr></table>
+    <h2 id="var">Var Details</h2><h3 id="var/acceleration_speed"><aside class="declaration">var </aside>acceleration_speed
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L51">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 51"/></a></h3>
+        <p>ONLY USED FOR NON-SIMULATED SHIPS. The amount per burn that this ship accelerates</p><h3 id="var/avg_fuel_amnt"><aside class="declaration">var </aside>avg_fuel_amnt
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L80">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 80"/></a></h3>
+        <p>Average fuel fullness percentage</p><h3 id="var/cam_background"><aside class="declaration">var </aside>cam_background
+            <aside>&ndash; /<a href="atom.html">atom</a>/<a href="atom/movable.html">movable</a>/<a href="atom/movable/screen.html">screen</a>/background</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L97">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 97"/></a></h3>
+        <p>The background of the map, usually doesn't do anything, but this is here so ships can customize the background ig?</p><h3 id="var/cam_screen"><aside class="declaration">var </aside>cam_screen
+            <aside>&ndash; /<a href="atom.html">atom</a>/<a href="atom/movable.html">movable</a>/<a href="atom/movable/screen.html">screen</a>/<a href="atom/movable/screen/map_view.html">map_view</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L95">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 95"/></a></h3>
+        <p>Stuff needed to render the map
+The actual map screen</p><h3 id="var/deletion_timer"><aside class="declaration">var </aside>deletion_timer
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L30">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 30"/></a></h3>
+        <p>How long until the ship will delete itself.</p><h3 id="var/display_name"><aside class="declaration">var </aside>display_name
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L28">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 28"/></a></h3>
+        <p>Name of the Ship with the faction appended to it</p><h3 id="var/dock_index"><aside class="declaration">var </aside>dock_index
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L88">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 88"/></a></h3>
+        <p>Which docking port the ship is occupying</p><h3 id="var/docked"><aside class="declaration">var </aside>docked
+            <aside>&ndash; /<a href="obj.html">obj</a>/<a href="obj/structure.html">structure</a>/<a href="obj/structure/overmap.html">overmap</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L60">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 60"/></a></h3>
+        <p>The overmap object the ship is docked to, if any</p><h3 id="var/est_thrust"><aside class="declaration">var </aside>est_thrust
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L78">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 78"/></a></h3>
+        <p>Vessel estimated thrust</p><h3 id="var/faction_cooldown"><aside class="declaration">var </aside>faction_cooldown
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L55">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 55"/></a></h3>
+        <p>Cooldown until you can change your faction again controlled by FACTION_COOLDOWN_TIME</p><h3 id="var/faction_prefix"><aside class="declaration">var </aside>faction_prefix
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L47">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 47"/></a></h3>
+        <p>The prefix the shuttle currently possesses</p><h3 id="var/job_slot_adjustment_cooldown"><aside class="declaration">var </aside>job_slot_adjustment_cooldown
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L58">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 58"/></a></h3>
+        <p>Timer between job managing delays</p><h3 id="var/job_slots"><aside class="declaration">var </aside>job_slots
+            <aside>&ndash; /list</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L64">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 64"/></a></h3>
+        <p>Assoc list of remaining open job slots (job = remaining slots)</p><h3 id="var/joining_allowed"><aside class="declaration">var </aside>joining_allowed
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L43">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 43"/></a></h3>
+        <p>Boolean on whether players are allowed to latejoin into this ship, toggled by the job managing console.</p><h3 id="var/manifest"><aside class="declaration">var </aside>manifest
+            <aside>&ndash; /list</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L62">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 62"/></a></h3>
+        <p>Manifest list of people on the ship</p><h3 id="var/map_name"><aside class="declaration">var </aside>map_name
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L45">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 45"/></a></h3>
+        <p>Name of the ship.</p><h3 id="var/mass"><aside class="declaration">var </aside>mass
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L83">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 83"/></a></h3>
+        <p>Vessel approximate mass</p><h3 id="var/max_speed"><aside class="declaration">var </aside>max_speed
+            <aside>&ndash; /static</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L72">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 72"/></a></h3>
+        <p>Max possible speed (1 tile per second)</p><h3 id="var/memo"><aside class="declaration">var </aside>memo
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L49">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 49"/></a></h3>
+        <p>Short memo of the ship, set by the crew, and shown to latejoiners.</p><h3 id="var/min_speed"><aside class="declaration">var </aside>min_speed
+            <aside>&ndash; /static</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L74">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 74"/></a></h3>
+        <p>Minimum speed. Any lower is rounded down. (0.5 tiles per minute)</p><h3 id="var/movement_callback_id"><aside class="declaration">var </aside>movement_callback_id
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L32">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 32"/></a></h3>
+        <p>Timer ID of the looping movement timer</p><h3 id="var/rename_cooldown"><aside class="declaration">var </aside>rename_cooldown
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L53">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 53"/></a></h3>
+        <p>Cooldown until the ship can be renamed again</p><h3 id="var/render_map"><aside class="declaration">var </aside>render_map
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L90">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 90"/></a></h3>
+        <p><del>If we need to render a map for cameras and helms for this object</del> basically can you look at and use this as a ship or station</p><h3 id="var/ship_account"><aside class="declaration">var </aside>ship_account
+            <aside>&ndash; /<a href="datum.html">datum</a>/<a href="datum/bank_account.html">bank_account</a>/ship</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L38">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 38"/></a></h3>
+        <p>Player-facing Ship stuff.
+Shipwide bank account</p><h3 id="var/ship_team"><aside class="declaration">var </aside>ship_team
+            <aside>&ndash; /<a href="datum.html">datum</a>/<a href="datum/team.html">team</a>/<a href="datum/team/voidcrew.html">voidcrew</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L40">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 40"/></a></h3>
+        <p>Voidcrew-unique team we link everyone's mind to.</p><h3 id="var/shuttle"><aside class="declaration">var </aside>shuttle
+            <aside>&ndash; /<a href="obj.html">obj</a>/<a href="obj/docking_port.html">docking_port</a>/<a href="obj/docking_port/mobile.html">mobile</a>/<a href="obj/docking_port/mobile/voidcrew.html">voidcrew</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L18">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 18"/></a></h3>
+        <p>Template and docking port.
+The docking port of the linked shuttle</p><h3 id="var/source_template"><aside class="declaration">var </aside>source_template
+            <aside>&ndash; /<a href="datum.html">datum</a>/<a href="datum/map_template.html">map_template</a>/<a href="datum/map_template/shuttle.html">shuttle</a>/<a href="datum/map_template/shuttle/voidcrew.html">voidcrew</a></aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L20">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 20"/></a></h3>
+        <p>The map template the shuttle was spawned from, if it was indeed created from a template. CAN BE NULL (ex. custom-built ships).</p><h3 id="var/speed"><aside class="declaration">var </aside>speed
+            <aside>&ndash; /list/list</aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L76">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 76"/></a></h3>
+        <p>The current speed in x/y direction in grid squares per minute</p><h3 id="var/state"><aside class="declaration">var </aside>state
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L26">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 26"/></a></h3>
+        <p>Ship states and deletion.
+State of the shuttle: idle, flying, docking, or undocking</p><h3 id="var/y_thrust"><aside class="declaration">var </aside>y_thrust
+            <aside>&ndash; </aside>
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L69">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 69"/></a></h3>
+        <p>Movement stuff</p><h2 id="proc">Proc Details</h2><h3 id="proc/accelerate"><aside class="declaration">proc </aside>accelerate<aside>(direction, acceleration) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L742">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 742"/></a></aside>
+        </h3>
+        <p>Change the speed in a specified dir.</p>
+<ul>
+<li>direction - dir to accelerate in (NORTH, SOUTH, SOUTHEAST, etc.)</li>
+<li>acceleration - How much to accelerate by</li>
+</ul><h3 id="proc/apply_thrust"><aside class="declaration">proc </aside>apply_thrust<aside>(x, y) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L230">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 230"/></a></aside>
+        </h3>
+        <p>Apply thrust to the ship object</p><h3 id="proc/burn_engines"><aside class="declaration">proc </aside>burn_engines<aside>(n_dir, percentage) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L809">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 809"/></a></aside>
+        </h3>
+        <p>Burns the engines in one direction, accelerating in that direction.
+Unsimulated ships use the acceleration_speed var, simulated ships check eacch engine's thrust and fuel.
+If no dir variable is provided, it decelerates the vessel.</p>
+<ul>
+<li>n_dir - The direction to move in</li>
+</ul><h3 id="proc/calculate_avg_fuel"><aside class="declaration">proc </aside>calculate_avg_fuel<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L685">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 685"/></a></aside>
+        </h3>
+        <p>Calculates the average fuel fullness of all engines.</p><h3 id="proc/calculate_mass"><aside class="declaration">proc </aside>calculate_mass<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L662">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 662"/></a></aside>
+        </h3>
+        <p>Calculates the mass based on the amount of turfs in the shuttle's areas</p><h3 id="proc/calculate_thrust"><aside class="declaration">proc </aside>calculate_thrust<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L246">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 246"/></a></aside>
+        </h3>
+        <p>Calculates the current thrust of the ship</p><h3 id="proc/check_loc"><aside class="declaration">proc </aside>check_loc<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L381">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 381"/></a></aside>
+        </h3>
+        <p>Proc called after a shuttle is moved, used for checking a ship's location when it's moved manually (E.G. calling the mining shuttle via a console)</p><h3 id="proc/clear_pending_dock"><aside class="declaration">proc </aside>clear_pending_dock<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L599">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 599"/></a></aside>
+        </h3>
+        <p>Clears pending dock request and timer</p><h3 id="proc/complete_dock"><aside class="declaration">proc </aside>complete_dock<aside>(/<a href="datum.html">datum</a>/<a href="datum/weakref.html">weakref</a>/to_dock) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L452">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 452"/></a></aside>
+        </h3>
+        <p>Sets the ship, shuttle, and shuttle areas to a new name.</p>
+<p>Called after the shuttle docks, and finishes the transfer to the new location.</p><h3 id="proc/decelerate"><aside class="declaration">proc </aside>decelerate<aside>(acceleration) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L764">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 764"/></a></aside>
+        </h3>
+        <p>Reduce the speed or stop in all directions.</p>
+<ul>
+<li>acceleration - How much to decelerate by</li>
+</ul><h3 id="proc/destroy_ship"><aside class="declaration">proc </aside>destroy_ship<aside>(force) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L286">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 286"/></a></aside>
+        </h3>
+        <p>##destroy_ship</p>
+<p>Deletes the ship, if there's no humans on.</p><h3 id="proc/do_move"><aside class="declaration">proc </aside>do_move<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L237">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 237"/></a></aside>
+        </h3>
+        <p>Fires the ship move loop</p><h3 id="proc/dock"><aside class="declaration">proc </aside>dock<aside>(/<a href="obj.html">obj</a>/<a href="obj/structure.html">structure</a>/<a href="obj/structure/overmap.html">overmap</a>/to_dock, /<a href="obj.html">obj</a>/<a href="obj/docking_port.html">docking_port</a>/<a href="obj/docking_port/stationary.html">stationary</a>/dock_to_use) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L363">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 363"/></a></aside>
+        </h3>
+        <p>Docks the shuttle by requesting a port at the requested spot.</p>
+<ul>
+<li>to_dock - The <a href="obj/structure/overmap.html" title="/obj/structure/overmap">/obj/structure/overmap</a> to dock to.</li>
+<li>dock_to_use - The <a href="obj/docking_port/mobile.html" title="/obj/docking_port/mobile">/obj/docking_port/mobile</a> to dock to.</li>
+</ul><h3 id="proc/dock_in_empty_space"><aside class="declaration">proc </aside>dock_in_empty_space<aside>(/<a href="mob.html">mob</a>/user) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L562">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 562"/></a></aside>
+        </h3>
+        <p>Docks to an empty dynamic encounter. Used for intership interaction, structural modifications, and such</p>
+<ul>
+<li>user - The user that initiated the action</li>
+</ul><h3 id="proc/get_eta"><aside class="declaration">proc </aside>get_eta<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L729">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 729"/></a></aside>
+        </h3>
+        <p>Returns the estimated time in deciseconds to the next tile at current speed, or approx. time until reaching the destination when on autopilot</p><h3 id="proc/get_heading"><aside class="declaration">proc </aside>get_heading<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L712">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 712"/></a></aside>
+        </h3>
+        <p>Returns the direction the ship is moving in terms of dirs</p><h3 id="proc/get_speed"><aside class="declaration">proc </aside>get_speed<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L704">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 704"/></a></aside>
+        </h3>
+        <p>Returns the total speed in all directions.</p>
+<p>The equation for acceleration is as follows:
+60 SECONDS / (1 / ([ship's speed] / ([ship's mass] * 100)))</p><h3 id="proc/handle_wraparound"><aside class="declaration">proc </aside>handle_wraparound<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L782">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 782"/></a></aside>
+        </h3>
+        <p>Check if the ship is flying into the border of the overmap.</p><h3 id="proc/is_still"><aside class="declaration">proc </aside>is_still<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L555">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 555"/></a></aside>
+        </h3>
+        <p>Returns whether or not the ship is moving in any direction.</p><h3 id="proc/manifest_inject"><aside class="declaration">proc </aside>manifest_inject<aside>(/<a href="mob.html">mob</a>/<a href="mob/living.html">living</a>/<a href="mob/living/carbon.html">carbon</a>/<a href="mob/living/carbon/human.html">human</a>/H, /<a href="datum.html">datum</a>/<a href="datum/job.html">job</a>/human_job) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L255">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 255"/></a></aside>
+        </h3>
+        <p>Bastardized version of GLOB.manifest.manifest_inject, but used per ship</p><h3 id="proc/on_member_death"><aside class="declaration">proc </aside>on_member_death<aside>(/<a href="mob.html">mob</a>/<a href="mob/living.html">living</a>/target, gibbed) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L311">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 311"/></a></aside>
+        </h3>
+        <p>Mob death/revive</p>
+<p>Handles when a mob is killed and revived, to check if a ship should be deleted or not.</p><h3 id="proc/overmap_object_act"><aside class="declaration">proc </aside>overmap_object_act<aside>(/<a href="mob.html">mob</a>/user, /<a href="obj.html">obj</a>/<a href="obj/structure.html">structure</a>/<a href="obj/structure/overmap.html">overmap</a>/object, /<a href="obj.html">obj</a>/<a href="obj/structure.html">structure</a>/<a href="obj/structure/overmap.html">overmap</a>/<a href="obj/structure/overmap/ship.html">ship</a>/optional_partner) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L351">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 351"/></a></aside>
+        </h3>
+        <p>Acts on the specified option. Used for docking.</p>
+<ul>
+<li>user - Mob that started the action</li>
+<li>object - Overmap object to act on</li>
+</ul><h3 id="proc/refresh_engines"><aside class="declaration">proc </aside>refresh_engines<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L167">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 167"/></a></aside>
+        </h3>
+        <p>Just double checks all the engines on the shuttle</p><h3 id="proc/reset_thrust"><aside class="declaration">proc </aside>reset_thrust<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L207">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 207"/></a></aside>
+        </h3>
+        <p>Resets the ships thrust back to zero</p><h3 id="proc/ship_act">ship_act<aside>(/<a href="mob.html">mob</a>/user, /<a href="obj.html">obj</a>/<a href="obj/structure.html">structure</a>/<a href="obj/structure/overmap.html">overmap</a>/<a href="obj/structure/overmap/ship.html">ship</a>/acting_ship) 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L610">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 610"/></a></aside>
+        </h3>
+        <p>Ship-to-ship interaction. Creates shared empty space and docks both ships together.</p>
+<ul>
+<li>user - The user that initiated the action</li>
+<li>acting_ship - The ship that initiated the interaction</li>
+</ul><h3 id="proc/start_deletion_timer"><aside class="declaration">proc </aside>start_deletion_timer<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L331">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 331"/></a></aside>
+        </h3>
+        <p>Start/end deletion timers</p>
+<p>Starts and ends the timers to delete the ship</p><h3 id="proc/tick_move"><aside class="declaration">proc </aside>tick_move<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L533">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 533"/></a></aside>
+        </h3>
+        <p>Called by /proc/adjust_speed(), this continually moves the ship according to it's speed</p><h3 id="proc/try_move"><aside class="declaration">proc </aside>try_move<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L219">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 219"/></a></aside>
+        </h3>
+        <p>Move the ship object</p><h3 id="proc/undock"><aside class="declaration">proc </aside>undock<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L424">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 424"/></a></aside>
+        </h3>
+        <p>Undocks the shuttle by launching the shuttle with no destination (this causes it to remain in transit)</p><h3 id="proc/update_docked_bools"><aside class="declaration">proc </aside>update_docked_bools<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L410">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 410"/></a></aside>
+        </h3>
+        <p>To properly fix the bug of two ships docking at the same time causing issues,
+we need to keep track of whether or not a ship is requesting to dock at a
+port IMMEDIATELY after the command is issued.
+This also includes keeping track of when the ship is no longer there, upon which
+the bools need to be set to false.
+This function should be called whenever an action occurs that would remove a ship from the map</p><h3 id="proc/update_screen"><aside class="declaration">proc </aside>update_screen<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L179">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 179"/></a></aside>
+        </h3>
+        <p>Updates the screen for the helm console</p><h3 id="proc/update_ship_color"><aside class="declaration">proc </aside>update_ship_color<aside>() 
+        
+    
+            <a href="https://github.com/voidcrew/Voidcrew/blob/67c183a5b51c3b5ec3173037a718eea0370bbda2/voidcrew/modules/overmap/code/modules/overmap/ship.dm#L196">
+        <img src="git.png" width="16" height="16" title="voidcrew&#x2F;modules&#x2F;overmap&#x2F;code&#x2F;modules&#x2F;overmap&#x2F;ship.dm 196"/></a></aside>
+        </h3>
+        <p>Updates the ships icon to make it easier to distinguish between factions</p></main>
+<footer>
+    tgstation.dme
+    <a href="https://github.com/voidcrew/Voidcrew/tree/67c183a5b51c3b5ec3173037a718eea0370bbda2">67c183a</a>
+        (master) &mdash; <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.8.0</a></footer>
+</body>
+</html>
