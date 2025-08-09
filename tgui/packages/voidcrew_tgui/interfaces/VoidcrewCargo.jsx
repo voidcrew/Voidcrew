@@ -10,8 +10,8 @@ import {
   Stack,
   Table,
   Tabs,
-} from '../../tgui/components';
-import { formatMoney } from '../../tgui/format';
+} from 'tgui-core/components';
+import { formatMoney } from 'tgui-core/format';
 import { CargoCatalog } from '../../tgui/interfaces/Cargo/CargoCatalog.tsx';
 import { Window } from '../../tgui/layouts';
 

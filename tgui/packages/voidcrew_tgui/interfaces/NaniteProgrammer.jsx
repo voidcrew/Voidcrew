@@ -1,5 +1,5 @@
 import { useBackend } from '../../tgui/backend';
-import { Button, Dropdown, Grid, Input, LabeledList, NoticeBox, NumberInput, Section } from '../../tgui/components';
+import { Button, Dropdown, Flex, Input, LabeledList, NoticeBox, NumberInput, Section } from 'tgui-core/components';
 import { Window } from '../../tgui/layouts';
 
 export const NaniteCodes = (props, context) => {
@@ -278,9 +278,9 @@ export const NaniteProgrammerContent = (props, context) => {
         <Button icon="eject" content="Eject" onClick={() => act('eject')} />
       }>
       <Section title="Info" level={2}>
-        <Grid>
-          <Grid.Column>{desc}</Grid.Column>
-          <Grid.Column size={0.7}>
+        <Flex>
+          <Flex.Item>{desc}</Flex.Item>
+          <Flex.Item size={0.7}>
             <LabeledList>
               <LabeledList.Item label="Use Rate">{use_rate}</LabeledList.Item>
               {!!can_trigger && (
@@ -294,8 +294,8 @@ export const NaniteProgrammerContent = (props, context) => {
                 </>
               )}
             </LabeledList>
-          </Grid.Column>
-        </Grid>
+          </Flex.Item>
+        </Flex>
       </Section>
       <Section
         title="Settings"
@@ -310,14 +310,14 @@ export const NaniteProgrammerContent = (props, context) => {
             onClick={() => act('toggle_active')}
           />
         }>
-        <Grid>
-          <Grid.Column>
+        <Flex>
+          <Flex.Item>
             <NaniteCodes />
-          </Grid.Column>
-          <Grid.Column>
+          </Flex.Item>
+          <Flex.Item>
             <NaniteDelays />
-          </Grid.Column>
-        </Grid>
+          </Flex.Item>
+        </Flex>
         {!!has_extra_settings && (
           <Section title="Special" level={3}>
             <LabeledList>

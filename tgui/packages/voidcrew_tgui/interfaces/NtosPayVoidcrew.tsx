@@ -1,5 +1,5 @@
 import { useBackend, useSharedState } from '../../tgui/backend';
-import { Button, NoticeBox, Stack, Table, Tabs } from '../../tgui/components';
+import { Button, NoticeBox, Stack, Table, Tabs } from 'tgui-core/components';
 import { NtosPayContent } from '../../tgui/interfaces/NtosPay';
 import { NtosWindow } from '../../tgui/layouts';
 

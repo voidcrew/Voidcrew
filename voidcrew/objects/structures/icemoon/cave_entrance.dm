@@ -140,7 +140,7 @@
 			visible_message("<span class='userdanger'>You hear phantom whispers. Candlelight and magic ooze through the dying portal.</span>")
 			//playsound(loc,'sound/spookoween/ghost_whisper.ogg', 100, FALSE, 50, TRUE, TRUE)
 			if(prob(15))
-				new /obj/item/organ/internal/heart/cursed/wizard(loc)
+				new /obj/item/organ/heart/cursed/wizard(loc)
 			if(prob(25))
 				new /obj/item/book/granter/action/spell/summonitem(loc)
 				new /mob/living/basic/wizard(loc)
@@ -158,7 +158,7 @@
 				new /mob/living/basic/wizard(loc)
 			if(prob(15))
 				new /obj/item/gun/magic/staff/chaos(loc)
-				new /mob/living/simple_animal/hostile/dark_wizard(loc)
+				//new /mob/living/simple_animal/hostile/dark_wizard(loc) // TODO: Fix wizard spawns
 			if(prob(15))
 				new /obj/item/mjollnir(loc)
 				new /mob/living/basic/wizard(loc)
@@ -179,7 +179,7 @@
 				new /mob/living/basic/wizard(loc)
 			new /obj/item/upgradescroll(loc)
 			new /obj/item/gun/magic/wand/fireball/inert(loc)
-			new /mob/living/simple_animal/hostile/dark_wizard(loc)
+			//new /mob/living/simple_animal/hostile/dark_wizard(loc) // TODO: Fix dark_wizard spawn
 			new /turf/open/floor/wood/ebony(loc)
 		if(5)//syndicate incursion. Again, high-quality loot at low chances, this time with excessive levels of danger
 			visible_message("<span class='userdanger'>Radio chatter echoes out from the portal. Red-garbed figures step through, weapons raised.</span>")
@@ -732,16 +732,16 @@
 				//new /obj/item/circuitboard/machine/plantgenes/vault(loc)
 				new /mob/living/simple_animal/hostile/asteroid/polarbear(loc)
 			if(prob(20))
-				new /obj/item/organ/internal/heart/gland/heal(loc)
+				new /obj/item/organ/heart/gland/heal(loc)
 				new /mob/living/simple_animal/hostile/asteroid/polarbear(loc)
 			if(prob(20))
-				new /obj/item/organ/internal/heart/gland/ventcrawling(loc)
+				new /obj/item/organ/heart/gland/ventcrawling(loc)
 				new /mob/living/simple_animal/hostile/asteroid/polarbear(loc)
 			if(prob(20))
-				new /obj/item/organ/internal/heart/gland/slime(loc)
+				new /obj/item/organ/heart/gland/slime(loc)
 				new /mob/living/simple_animal/hostile/asteroid/polarbear(loc)
 			if(prob(10))
-				new /obj/item/organ/internal/heart/gland/spiderman(loc)
+				new /obj/item/organ/heart/gland/spiderman(loc)
 				new /mob/living/simple_animal/hostile/asteroid/polarbear(loc)
 			if(prob(35))
 				new /obj/item/wrench/abductor(loc)
@@ -775,41 +775,41 @@
 			playsound(loc,'sound/misc/bloblarm.ogg', 120, FALSE, 50, TRUE, TRUE)
 			if(prob(35))
 				new /obj/item/storage/box/rndboards(loc)
-				new /mob/living/simple_animal/hostile/zombie(loc)
+				//new /mob/living/simple_animal/hostile/zombie(loc) // TODO: Fix zombie spawns
 			if(prob(35))
 				new /obj/item/stack/spacecash/c1000(loc)
-				new /mob/living/simple_animal/hostile/zombie(loc)
+				//new /mob/living/simple_animal/hostile/zombie(loc) // TODO: Fix zombie spawns
 			if(prob(25))
 				new /obj/item/storage/box/stockparts/deluxe(loc)
-				new /mob/living/simple_animal/hostile/zombie(loc)
-				new /mob/living/simple_animal/hostile/zombie(loc)
-				new /mob/living/simple_animal/hostile/zombie(loc)
+				//new /mob/living/simple_animal/hostile/zombie(loc) // TODO: Fix zombie spawns
+				//new /mob/living/simple_animal/hostile/zombie(loc) // TODO: Fix zombie spawns
+				//new /mob/living/simple_animal/hostile/zombie(loc) // TODO: Fix zombie spawns
 			else
 				new /obj/item/storage/box/stockparts(loc)
-				new /mob/living/simple_animal/hostile/zombie(loc)
+				//new /mob/living/simple_animal/hostile/zombie(loc) // TODO: Fix zombie spawns
 			if(prob(30))
 				new /obj/item/circuitboard/machine/rdserver/ship(loc)
-				new /mob/living/simple_animal/hostile/zombie(loc)
+				//new /mob/living/simple_animal/hostile/zombie(loc) // TODO: Fix zombie spawns
 			if(prob(35))
 				new /obj/item/research_notes/loot/big(loc)
-				new /mob/living/simple_animal/hostile/zombie(loc)
+				//new /mob/living/simple_animal/hostile/zombie(loc) // TODO: Fix zombie spawns
 			else
 				new /obj/item/research_notes/loot/medium(loc)
 			if(prob(35))
 				new /obj/item/research_notes/loot/medium(loc)
-				new /mob/living/simple_animal/hostile/zombie(loc)
+				//new /mob/living/simple_animal/hostile/zombie(loc) // TODO: Fix zombie spawns
 			else
 				new /obj/item/research_notes/loot/small(loc)
 			if(prob(25))
 				new /obj/item/pneumatic_cannon(loc)
-				new /mob/living/simple_animal/hostile/zombie(loc)
+				//new /mob/living/simple_animal/hostile/zombie(loc) // TODO: Fix zombie spawns
 			if(prob(35))
 				new /obj/item/research_notes/loot/medium(loc)
-				new /mob/living/simple_animal/hostile/zombie(loc)
+				//new /mob/living/simple_animal/hostile/zombie(loc) // TODO: Fix zombie spawns
 			else
 				new /obj/item/research_notes/loot/small(loc)
 			new/turf/open/floor/mineral/titanium/purple(loc)
-			new /mob/living/simple_animal/hostile/zombie(loc)
+			//new /mob/living/simple_animal/hostile/zombie(loc) // TODO: Fix zombie spawn
 		if(24)//Silverback's locker room
 			visible_message("<span class='userdanger'>You catch a glimpse of verdant green. Smells like a locker room.</span>")
 			playsound(loc,'sound/creatures/gorilla.ogg', 75, FALSE, 50, TRUE, TRUE)

@@ -60,10 +60,11 @@ GLOBAL_VAR_INIT(total_runtimes_skipped, 0)
 		return ..()
 
 	if(stack_workaround.Find(E.name))
-		var/list/data = json_decode(stack_workaround.group[1])
-		E.file = data[1]
-		E.line = data[2]
-		E.name = stack_workaround.Replace(E.name, "")
+		if(length(stack_workaround.group) > 0)
+			var/list/data = json_decode(stack_workaround.group[1])
+			E.file = data[1]
+			E.line = data[2]
+			E.name = stack_workaround.Replace(E.name, "")
 
 	var/erroruid = "[E.file][E.line]"
 	var/last_seen = error_last_seen[erroruid]

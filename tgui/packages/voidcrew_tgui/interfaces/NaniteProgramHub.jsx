@@ -1,5 +1,5 @@
-import { map } from 'common/collections';
-
+// import { map } from '../../common/collections';
+import { map } from 'es-toolkit/compat';
 import { useBackend, useSharedState } from '../../tgui/backend';
 import {
   Button,
@@ -8,7 +8,7 @@ import {
   NoticeBox,
   Section,
   Tabs,
-} from '../../tgui/components';
+} from 'tgui-core/components';
 import { Window } from '../../tgui/layouts';
 
 export const NaniteProgramHub = (props, context) => {

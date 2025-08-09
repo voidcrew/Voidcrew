@@ -1,4 +1,4 @@
-import { map, sortBy } from 'common/collections';
+import { map, sortBy } from 'es-toolkit/compat';
 import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../../tgui/backend';
@@ -16,7 +16,7 @@ import {
   Stack,
   Tabs,
   VirtualList,
-} from '../../tgui/components';
+} from 'tgui-core/components';
 import { Experiment } from '../../tgui/interfaces/ExperimentConfigure';
 import { NtosWindow, Window } from '../../tgui/layouts';
 

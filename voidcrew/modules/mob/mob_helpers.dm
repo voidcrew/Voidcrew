@@ -1,5 +1,5 @@
-/mob/common_trait_examine()
-	. = ..()
+/mob/proc/common_trait_examine()
+	//. = ..() // TODO: Fix parent proc
 	if(HAS_TRAIT(src, TRAIT_DISSECTED))
 		var/dissectionmsg = ""
 		if(HAS_TRAIT_FROM(src, TRAIT_DISSECTED,"Extraterrestrial Dissection"))

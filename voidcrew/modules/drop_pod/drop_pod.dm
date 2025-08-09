@@ -13,7 +13,8 @@
 	var/mob/living/map_user = null
 	var/list/blacklisted_mob_types = list(/mob/living/simple_animal/hostile/megafauna)
 	var/list/whitelisted_areas = list(/area/overmap_encounter, /area/space)
-	var/mob/camera/ai_eye/remote/drop_pod/eyeobj
+	var/mob/eye/camera/drop_pod/eyeobj
+	var/eye_initialized = FALSE
 	/// List of all actions to give to a user when they're well, granted actions
 	var/list/actions = list()
 	var/list/locked_traits = list(ZTRAIT_RESERVED, ZTRAIT_CENTCOM, ZTRAIT_AWAY)
@@ -148,7 +149,7 @@
 /datum/action/innate/drop_pod_close_map/Activate()
 	if(!owner || !isliving(owner))
 		return
-	var/mob/camera/ai_eye/remote/drop_pod/remote_eye = owner.remote_control
+	var/mob/eye/camera/drop_pod/remote_eye = owner.remote_control
 	var/obj/structure/closet/supplypod/drop_pod/pod = remote_eye.pod_origin
 	pod.remove_eye_control(owner)
 
@@ -358,14 +359,14 @@
 		CreateEye()
 	if(!eyeobj) //Eye creation failed
 		return
-	if(!eyeobj.eye_initialized)
+	if(!eye_initialized)
 		var/camera_location
 		var/turf/myturf = locate(1, 1, planet_z_level)
 
 		camera_location = myturf
 
 		if(camera_location)
-			eyeobj.eye_initialized = TRUE
+			eye_initialized = TRUE
 			give_eye_control(L)
 			eyeobj.setLoc(camera_location)
 		else
@@ -424,18 +425,17 @@
 			update_static_data(user)
 			return
 
-/mob/camera/ai_eye/remote/drop_pod
-	visible_icon = FALSE
-	use_static = FALSE
+/mob/eye/camera/drop_pod
+	use_visibility = FALSE
 	var/image/placed_image = null
 	var/image/placement_image = null
 	var/obj/structure/closet/supplypod/drop_pod/pod_origin
 
-/mob/camera/ai_eye/remote/drop_pod/Initialize(mapload, obj/structure/closet/supplypod/drop_pod/origin)
+/mob/eye/camera/drop_pod/Initialize(mapload, obj/structure/closet/supplypod/drop_pod/origin)
 	src.pod_origin = origin
 	return ..()
 
-/mob/camera/ai_eye/remote/drop_pod/setLoc(turf/destination, force_update = FALSE)
+/mob/eye/camera/drop_pod/setLoc(turf/destination, force_update = FALSE)
 	. = ..()
 	if(pod_origin)
 		pod_origin.checkLandingSpot(destination)
@@ -446,7 +446,7 @@
 	if(QDELETED(ship_port))
 		ship_port = null
 		return
-	eyeobj = new /mob/camera/ai_eye/remote/drop_pod(null, src)
+	eyeobj = new /mob/eye/camera/drop_pod(null, src)
 	eyeobj.pod_origin = src
 	var/turf/ship_port_location = locate(ship_port.x, ship_port.y, ship_port.z)
 	var/image/I = image('icons/effects/alphacolors.dmi', ship_port_location, "red")
@@ -563,7 +563,6 @@
 	if(isnull(user?.client))
 		return
 	GrantActions(user)
-	eyeobj.eye_user = user
 	eyeobj.name = "Camera Eye ([user.name])"
 	user.remote_control = eyeobj
 	user.reset_perspective(eyeobj)
@@ -598,15 +597,11 @@
 
 	for(var/datum/action/actions_removed as anything in actions)
 		actions_removed.Remove(user)
-	for(var/datum/camerachunk/camerachunks_gone as anything in eyeobj.visibleCameraChunks)
-		camerachunks_gone.remove(eyeobj)
+	eyeobj.clear_camera_chunks()
 
 	user.reset_perspective(null)
-	if(eyeobj.visible_icon)
-		user.client.images -= eyeobj.user_image
 	user.client.images -= eyeobj.placed_image
 	user.client.images -= eyeobj.placement_image
-	eyeobj.eye_user = null
 	user.remote_control = null
 	map_user = null
 	playsound(src, 'sound/machines/terminal_off.ogg', 25, FALSE)
@@ -624,6 +619,6 @@
 /datum/action/innate/drop_pod/Activate()
 	if(QDELETED(owner) || !isliving(owner))
 		return
-	var/mob/camera/ai_eye/remote/drop_pod/remote_eye = owner.remote_control
+	var/mob/eye/camera/drop_pod/remote_eye = owner.remote_control
 	var/obj/structure/closet/supplypod/drop_pod/origin = remote_eye.pod_origin
 	origin.placeLandingSpot(owner)

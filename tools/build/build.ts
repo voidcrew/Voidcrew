@@ -287,7 +287,8 @@ export const BunTarget = new Juke.Target({
   parameters: [CiParameter],
   inputs: ['tgui/**/package.json'],
   executes: () => {
-    return bun('install', '--frozen-lockfile', '--ignore-scripts');
+    // return bun('install', '--frozen-lockfile', '--ignore-scripts');
+    return bun('install', '--ignore-scripts');
   },
 });
 

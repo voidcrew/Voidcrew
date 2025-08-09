@@ -7,7 +7,7 @@ import {
   NumberInput,
   Section,
   Table,
-} from '../../tgui/components';
+} from 'tgui-core/components';
 import { Window } from '../../tgui/layouts';
 
 export const NaniteRemote = (props, context) => {

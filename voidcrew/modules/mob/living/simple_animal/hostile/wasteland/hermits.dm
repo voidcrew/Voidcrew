@@ -22,7 +22,7 @@
 	melee_damage_upper = 10
 	attack_verb_continuous = "punches"
 	attack_verb_simple = "punch"
-	attack_sound = 'sound/weapons/punch1.ogg'
+	attack_sound = 'sound/items/weapons/punch1.ogg'
 	combat_mode = TRUE
 	unsuitable_atmos_damage = 15
 	speak_emote = list(
@@ -63,7 +63,7 @@
 	icon_state = "survivor_hunter"
 	icon_living = "survivor_hunter"
 	projectiletype = null
-	projectilesound = 'sound/weapons/gun/rifle/shot.ogg'
+	projectilesound = 'sound/items/weapons/gun/rifle/shot.ogg'
 	ranged = 1
 	rapid_fire_delay = 6
 	retreat_distance = 5
@@ -81,7 +81,7 @@
 	desc = "The miner's rebellion, though mostly underground, recieved a few good weapon shipments from an off-sector source. You should probably start running."
 	icon_state = "survivor_gunslinger"
 	icon_living = "survivor_gunslinger"
-	projectilesound = 'sound/weapons/gun/smg/shot.ogg'
+	projectilesound = 'sound/items/weapons/gun/smg/shot.ogg'
 	speed = 10
 	rapid = 4
 	rapid_fire_delay = 3

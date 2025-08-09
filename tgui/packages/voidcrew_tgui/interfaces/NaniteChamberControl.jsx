@@ -1,5 +1,5 @@
 import { useBackend } from '../../tgui/backend';
-import { Box, Button, Collapsible, Grid, LabeledList, NoticeBox, NumberInput, Section } from '../../tgui/components';
+import { Box, Button, Collapsible, Flex, LabeledList, NoticeBox, NumberInput, Section } from 'tgui-core/components';
 import { Window } from '../../tgui/layouts';
 
 export const NaniteChamberControl = (props, context) => {
@@ -73,8 +73,8 @@ export const NaniteChamberControlContent = (props, context) => {
                 onClick={() => act('remove_nanites')}
               />
             }>
-            <Grid>
-              <Grid.Column>
+            <Flex>
+              <Flex.Item>
                 <LabeledList>
                   <LabeledList.Item label="Nanite Volume">
                     {nanite_volume}
@@ -83,8 +83,8 @@ export const NaniteChamberControlContent = (props, context) => {
                     {regen_rate}
                   </LabeledList.Item>
                 </LabeledList>
-              </Grid.Column>
-              <Grid.Column>
+              </Flex.Item>
+              <Flex.Item>
                 <LabeledList>
                   <LabeledList.Item label="Safety Threshold">
                     <NumberInput
@@ -115,8 +115,8 @@ export const NaniteChamberControlContent = (props, context) => {
                     />
                   </LabeledList.Item>
                 </LabeledList>
-              </Grid.Column>
-            </Grid>
+              </Flex.Item>
+            </Flex>
           </Section>
           <Section title="Programs" level={2}>
             {mob_programs.map((program) => {
@@ -125,10 +125,10 @@ export const NaniteChamberControlContent = (props, context) => {
               return (
                 <Collapsible key={program.name} title={program.name}>
                   <Section>
-                    <Grid>
-                      <Grid.Column>{program.desc}</Grid.Column>
+                    <Flex>
+                      <Flex.Item grow>{program.desc}</Flex.Item>
                       {scan_level >= 2 && (
-                        <Grid.Column size={0.6}>
+                        <Flex.Item basis="40%">
                           <LabeledList>
                             <LabeledList.Item label="Activation Status">
                               <Box color={program.activated ? 'good' : 'bad'}>
@@ -139,13 +139,13 @@ export const NaniteChamberControlContent = (props, context) => {
                               {program.use_rate}/s
                             </LabeledList.Item>
                           </LabeledList>
-                        </Grid.Column>
+                        </Flex.Item>
                       )}
-                    </Grid>
+                    </Flex>
                     {scan_level >= 2 && (
-                      <Grid>
+                      <Flex>
                         {!!program.can_trigger && (
-                          <Grid.Column>
+                          <Flex.Item>
                             <Section title="Triggers" level={2}>
                               <LabeledList>
                                 <LabeledList.Item label="Trigger Cost">
@@ -166,12 +166,12 @@ export const NaniteChamberControlContent = (props, context) => {
                                 )}
                               </LabeledList>
                             </Section>
-                          </Grid.Column>
+                          </Flex.Item>
                         )}
                         {!!(
                           program.timer_restart || program.timer_shutdown
                         ) && (
-                          <Grid.Column>
+                          <Flex.Item>
                             <Section>
                               <LabeledList>
                                 {/* I mean, bruh, this indentation level
@@ -188,9 +188,9 @@ export const NaniteChamberControlContent = (props, context) => {
                                 )}
                               </LabeledList>
                             </Section>
-                          </Grid.Column>
+                          </Flex.Item>
                         )}
-                      </Grid>
+                      </Flex>
                     )}
                     {scan_level >= 3 && !!program.has_extra_settings && (
                       <Section title="Extra Settings" level={2}>
@@ -206,8 +206,8 @@ export const NaniteChamberControlContent = (props, context) => {
                       </Section>
                     )}
                     {scan_level >= 4 && (
-                      <Grid>
-                        <Grid.Column>
+                      <Flex>
+                        <Flex.Item>
                           <Section title="Codes" level={2}>
                             <LabeledList>
                               {!!program.activation_code && (
@@ -233,17 +233,17 @@ export const NaniteChamberControlContent = (props, context) => {
                                 )}
                             </LabeledList>
                           </Section>
-                        </Grid.Column>
+                        </Flex.Item>
                         {program.has_rules && (
-                          <Grid.Column>
+                          <Flex.Item>
                             <Section title="Rules" level={2}>
                               {rules.map((rule) => (
                                 <Box key={rule.display}>{rule.display}</Box>
                               ))}
                             </Section>
-                          </Grid.Column>
+                          </Flex.Item>
                         )}
-                      </Grid>
+                      </Flex>
                     )}
                   </Section>
                 </Collapsible>

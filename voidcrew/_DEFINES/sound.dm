@@ -15,40 +15,40 @@
 	'sound/ambience/ambiholy.ogg', 'sound/ambience/ambiholy2.ogg', \
 	'sound/ambience/ambiholy3.ogg')
 
-#define HIGHSEC list('sound/ambience/ambidanger.ogg', 'sound/ambience/ambidanger2.ogg')
+#define HIGHSEC list('sound/ambience/misc/ambidanger.ogg', 'sound/ambience/misc/ambidanger2.ogg')
 
 #define RUINS list( \
-	'sound/ambience/ambimine.ogg', 'sound/ambience/ambicave.ogg', \
-	'sound/ambience/ambiruin.ogg', 'sound/ambience/ambiruin2.ogg', \
-	'sound/ambience/ambiruin3.ogg', 'sound/ambience/ambiruin4.ogg', \
-	'sound/ambience/ambiruin5.ogg', 'sound/ambience/ambiruin6.ogg', \
-	'sound/ambience/ambiruin7.ogg', 'sound/ambience/ambidanger.ogg', \
-	'sound/ambience/ambidanger2.ogg', 'sound/ambience/ambitech3.ogg', \
-	'sound/ambience/ambimystery.ogg', 'sound/ambience/ambimaint1.ogg')
+	'sound/ambience/ruin/ambimine.ogg', 'sound/ambience/lavaland/ambicave.ogg', \
+	'sound/ambience/ruin/ambiruin.ogg', 'sound/ambience/ruin/ambiruin2.ogg', \
+	'sound/ambience/ruin/ambiruin3.ogg', 'sound/ambience/ruin/ambiruin4.ogg', \
+	'sound/ambience/ruin/ambiruin5.ogg', 'sound/ambience/ruin/ambiruin6.ogg', \
+	'sound/ambience/ruin/ambiruin7.ogg', 'sound/ambience/misc/ambidanger.ogg', \
+	'sound/ambience/misc/ambidanger2.ogg', 'sound/ambience/engineering/ambitech3.ogg', \
+	'sound/ambience/misc/ambimystery.ogg', 'sound/ambience/maintenance/ambimaint1.ogg')
 
 #define ENGINEERING list( \
-	'sound/ambience/ambisin1.ogg', 'sound/ambience/ambisin2.ogg', \
-	'sound/ambience/ambisin3.ogg', 'sound/ambience/ambisin4.ogg', \
-	'sound/ambience/ambiatmos.ogg', 'sound/ambience/ambiatmos2.ogg', \
-	'sound/ambience/ambitech.ogg', 'sound/ambience/ambitech2.ogg', \
-	'sound/ambience/ambitech3.ogg')
+	'sound/ambience/engineering/ambisin1.ogg', 'sound/ambience/engineering/ambisin2.ogg', \
+	'sound/ambience/engineering/ambisin3.ogg', 'sound/ambience/engineering/ambisin4.ogg', \
+	'sound/ambience/engineering/ambiatmos.ogg', 'sound/ambience/engineering/ambiatmos2.ogg', \
+	'sound/ambience/engineering/ambitech.ogg', 'sound/ambience/engineering/ambitech2.ogg', \
+	'sound/ambience/engineering/ambitech3.ogg')
 
 #define MINING list( \
-	'sound/ambience/ambimine.ogg', 'sound/ambience/ambicave.ogg', \
-	'sound/ambience/ambiruin.ogg', 'sound/ambience/ambiruin2.ogg', \
-	'sound/ambience/ambiruin3.ogg', 'sound/ambience/ambiruin4.ogg', \
-	'sound/ambience/ambiruin5.ogg', 'sound/ambience/ambiruin6.ogg', \
-	'sound/ambience/ambiruin7.ogg', 'sound/ambience/ambidanger.ogg', \
-	'sound/ambience/ambidanger2.ogg', 'sound/ambience/ambimaint1.ogg')
+	'sound/ambience/ruin/ambimine.ogg', 'sound/ambience/lavaland/ambicave.ogg', \
+	'sound/ambience/ruin/ambiruin.ogg', 'sound/ambience/ruin/ambiruin2.ogg', \
+	'sound/ambience/ruin/ambiruin3.ogg', 'sound/ambience/ruin/ambiruin4.ogg', \
+	'sound/ambience/ruin/ambiruin5.ogg', 'sound/ambience/ruin/ambiruin6.ogg', \
+	'sound/ambience/ruin/ambiruin7.ogg', 'sound/ambience/misc/ambidanger.ogg', \
+	'sound/ambience/misc/ambidanger2.ogg', 'sound/ambience/maintenance/ambimaint1.ogg')
 
-#define MEDICAL list('sound/ambience/ambinice.ogg')
+#define MEDICAL list('sound/ambience/medical/ambinice.ogg')
 
 #define SPOOKY list( \
-	'sound/ambience/ambimo1.ogg', 'sound/ambience/ambimo2.ogg', \
-	'sound/ambience/ambiruin7.ogg', 'sound/ambience/ambiruin6.ogg', \
-	'sound/ambience/ambiodd.ogg', 'sound/ambience/ambimystery.ogg')
+	'sound/ambience/medical/ambimo1.ogg', 'sound/ambience/medical/ambimo2.ogg', \
+	'sound/ambience/ruin/ambiruin7.ogg', 'sound/ambience/ruin/ambiruin6.ogg', \
+	'sound/ambience/misc/ambiodd.ogg', 'sound/ambience/misc/ambimystery.ogg')
 
-#define SPACE list('sound/ambience/ambispace.ogg', 'sound/ambience/ambispace2.ogg', 'sound/ambience/title2.ogg', 'sound/ambience/ambiatmos.ogg')
+#define SPACE list('sound/ambience/ambispace.ogg', 'sound/ambience/ambispace2.ogg', 'sound/ambience/title2.ogg', 'sound/ambience/engineering/ambiatmos.ogg')
 
 #define MAINTENANCE list( \
 	'sound/ambience/ambimaint1.ogg', 'sound/ambience/ambimaint2.ogg', \
@@ -58,16 +58,16 @@
 	'sound/ambience/ambitech2.ogg')
 
 #define AWAY_MISSION list( \
-	'sound/ambience/ambitech.ogg', 'sound/ambience/ambitech2.ogg', \
-	'sound/ambience/ambiruin.ogg', 'sound/ambience/ambiruin2.ogg', \
-	'sound/ambience/ambiruin3.ogg', 'sound/ambience/ambiruin4.ogg', \
-	'sound/ambience/ambiruin5.ogg', 'sound/ambience/ambiruin6.ogg', \
-	'sound/ambience/ambiruin7.ogg', 'sound/ambience/ambidanger.ogg', \
+	'sound/ambience/engineering/ambitech.ogg', 'sound/ambience/engineering/ambitech2.ogg', \
+	'sound/ambience/ruin/ambiruin.ogg', 'sound/ambience/ruin/ambiruin2.ogg', \
+	'sound/ambience/ruin/ambiruin3.ogg', 'sound/ambience/ruin/ambiruin4.ogg', \
+	'sound/ambience/ruin/ambiruin5.ogg', 'sound/ambience/ruin/ambiruin6.ogg', \
+	'sound/ambience/ruin/ambiruin7.ogg', 'sound/ambience/ambidanger.ogg', \
 	'sound/ambience/ambidanger2.ogg', 'sound/ambience/ambimaint.ogg', \
-	'sound/ambience/ambiatmos.ogg', 'sound/ambience/ambiatmos2.ogg', \
+	'sound/ambience/engineering/ambiatmos.ogg', 'sound/ambience/engineering/ambiatmos2.ogg', \
 	'sound/ambience/ambiodd.ogg')
 
-#define REEBE list('sound/ambience/ambireebe1.ogg', 'sound/ambience/ambireebe2.ogg', 'sound/ambience/ambireebe3.ogg')
+#define REEBE list('sound/ambience/misc/ambireebe1.ogg', 'sound/ambience/misc/ambireebe2.ogg', 'sound/ambience/misc/ambireebe3.ogg')
 
 #define CREEPY_SOUNDS list( \
 	'sound/effects/ghost.ogg', 'sound/effects/ghost2.ogg', \
@@ -83,5 +83,5 @@
 	'sound/hallucinations/turn_around2.ogg', 'sound/hallucinations/veryfar_noise.ogg', \
 	'sound/hallucinations/wail.ogg')
 
-#define BEACH list('sound/ambience/shore.ogg', 'sound/ambience/seag1.ogg','sound/ambience/seag2.ogg','sound/ambience/seag2.ogg','sound/ambience/ambiodd.ogg','sound/ambience/ambinice.ogg')
+#define BEACH list('sound/ambience/beach/shore.ogg', 'sound/ambience/beach/seag1.ogg','sound/ambience/beach/seag2.ogg','sound/ambience/beach/seag2.ogg','sound/ambience/misc/ambiodd.ogg','sound/ambience/medical/ambinice.ogg')
 

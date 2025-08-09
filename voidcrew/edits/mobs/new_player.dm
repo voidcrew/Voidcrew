@@ -99,7 +99,7 @@
 	SSticker.queued_players -= src
 	SSticker.queue_delay = 4
 
-	if(!SSjob.AssignRole(src, job, TRUE))
+	if(!SSjob.assign_role(src, job, TRUE))
 		tgui_alert(usr, "There was an unexpected error putting you into your requested job. If you cannot join with any job, you should contact an admin.")
 		return FALSE
 
@@ -111,7 +111,7 @@
 		CRASH("Failed to create a character for latejoin.")
 	transfer_character()
 
-	SSjob.EquipRank(character, job, character.client)
+	SSjob.equip_rank(character, job, character.client)
 	job.after_latejoin_spawn(character)
 
 	SSticker.minds += character.mind
@@ -147,7 +147,7 @@
  * Job availability
  */
 /mob/dead/new_player/IsJobUnavailable(rank, obj/structure/overmap/ship/joined_ship, latejoin = FALSE)
-	var/datum/job/job = SSjob.GetJob(rank)
+	var/datum/job/job = SSjob.get_job(rank)
 	if(!job)
 		return JOB_UNAVAILABLE_GENERIC
 	if(joined_ship.job_slots[job] <= 0)

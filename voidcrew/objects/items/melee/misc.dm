@@ -58,7 +58,7 @@
 	icon = 'voidcrew/icons/obj/items_and_weapons.dmi'
 	icon_state = "letter_opener"
 	desc = "A military combat utility survival knife."
-	embed_type = /datum/embed_data/combat_knife
+	embed_type = /datum/embedding/combat_knife
 	force = 15
 	throwforce = 15
 	unique_reskin = list("Traditional" = "letter_opener",

@@ -11,7 +11,7 @@ import {
   Section,
   Stack,
   Tabs,
-} from '../../tgui/components';
+} from 'tgui-core/components';
 import { Window } from '../../tgui/layouts';
 
 interface BaseSurveyData {

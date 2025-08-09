@@ -1,7 +1,6 @@
 /datum/reagent/medicine/trophazole
 	name = "Trophazole"
 	description = "Orginally developed as fitness supplement, this chemical accelerates wound healing and if ingested turns nutriment into healing peptides"
-	reagent_state = LIQUID
 	color = "#FFFF6B"
 	overdose_threshold = 20
 
@@ -15,20 +14,17 @@
 	..()
 	. = 1
 
-/datum/reagent/medicine/trophazole/on_transfer(atom/A, method=INGEST, trans_volume)
-	if(method != INGEST || !iscarbon(A))
-		return
-
-	A.reagents.remove_reagent(/datum/reagent/medicine/trophazole, trans_volume * 0.05)
-	A.reagents.add_reagent(/datum/reagent/medicine/metafactor, trans_volume * 0.25)
-
-	..()
+/datum/reagent/medicine/trophazole/expose_mob(mob/living/exposed_mob, methods = INGEST, reac_volume, show_message = TRUE, touch_protection = 0)
+	. = ..()
+	if((methods & INGEST) && iscarbon(exposed_mob))
+		var/mob/living/carbon/C = exposed_mob
+		C.reagents.remove_reagent(/datum/reagent/medicine/trophazole, reac_volume * 0.05)
+		C.reagents.add_reagent(/datum/reagent/medicine/metafactor, reac_volume * 0.25)
 
 
 /datum/reagent/medicine/rhigoxane
 	name = "Rhigoxane"
 	description = "A second generation burn treatment agent exhibiting a cooling effect that is especially pronounced when deployed as a spray. Its high halogen content helps extinguish fires."
-	reagent_state = LIQUID
 	color = "#F7FFA5"
 	overdose_threshold = 25
 	reagent_weight = 0.6
@@ -59,7 +55,6 @@
 /datum/reagent/medicine/thializid
 	name = "Thializid"
 	description = "A potent antidote for intravenous use with a narrow therapeutic index, it is considered an active prodrug of oxalizid."
-	reagent_state = LIQUID
 	color = "#8CDF24" // heavy saturation to make the color blend better
 	metabolization_rate = 0.75 * REAGENTS_METABOLISM
 	overdose_threshold = 6
@@ -98,7 +93,6 @@
 /datum/reagent/medicine/oxalizid
 	name = "Oxalizid"
 	description = "The active metabolite of thializid. Causes muscle weakness on overdose"
-	reagent_state = LIQUID
 	color = "#DFD54E"
 	metabolization_rate = 0.25 * REAGENTS_METABOLISM
 	overdose_threshold = 25
@@ -131,7 +125,6 @@
 /datum/reagent/medicine/soulus
 	name = "Soulus Dust"
 	description = "Ground legion cores. The dust quickly seals wounds yet slowly causes the tissue to undergo necrosis."
-	reagent_state = SOLID
 	color = "#302f20"
 	metabolization_rate = REAGENTS_METABOLISM * 0.8
 	overdose_threshold = 100
@@ -168,7 +161,6 @@
 /datum/reagent/medicine/soulus/pure
 	name = "Purified Soulus Dust"
 	description = "Ground legion cores."
-	reagent_state = SOLID
 	color = "#302f20"
 	metabolization_rate = REAGENTS_METABOLISM
 	overdose_threshold = 100
@@ -177,7 +169,6 @@
 /datum/reagent/medicine/puce_essence		// P U C E
 	name = "Pucetylline Essence"
 	description = "Ground essence of puce crystals."
-	reagent_state = SOLID
 	color = "#CC8899"
 	metabolization_rate = 2.5 * REAGENTS_METABOLISM
 	overdose_threshold = 30
@@ -207,7 +198,6 @@
 /datum/reagent/medicine/chartreuse		// C H A R T R E U S E
 	name = "Chartreuse Solution"
 	description = "Refined essence of puce crystals."
-	reagent_state = SOLID
 	color = "#DFFF00"
 	metabolization_rate = 2.5 * REAGENTS_METABOLISM
 	overdose_threshold = 30

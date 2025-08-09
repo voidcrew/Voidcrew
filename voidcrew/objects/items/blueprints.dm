@@ -90,7 +90,7 @@
 			return
 		newA = new area_choice
 		newA.setup(str)
-		newA.has_gravity = oldA.has_gravity
+		newA.default_gravity = oldA.default_gravity
 	else
 		newA = area_choice
 

@@ -8,11 +8,8 @@ $include resources.txt
 $include interviews.txt
 $include lua.txt
 $include auxtools.txt
-<<<<<<< HEAD
-$include voidcrew/voidcrew_config.txt
-=======
 $include map_vote.txt
->>>>>>> upstream/master
+$include voidcrew/voidcrew_config.txt
 
 # You can use the @ character at the beginning of a config option to lock it from being edited in-game
 # Example usage:

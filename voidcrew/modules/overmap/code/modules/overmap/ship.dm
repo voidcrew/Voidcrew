@@ -254,7 +254,7 @@
   */
 /obj/structure/overmap/ship/proc/manifest_inject(mob/living/carbon/human/H, datum/job/human_job)
 	set waitfor = FALSE
-	if(H.mind && (H.mind.assigned_role != H.mind.special_role))
+	if(H.mind && !length(H.mind.special_roles)) // Check if not an antag
 		manifest[H.real_name] = human_job
 	register_crewmember(H)
 

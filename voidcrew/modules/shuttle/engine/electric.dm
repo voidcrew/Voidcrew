@@ -42,5 +42,5 @@
 /obj/machinery/power/shuttle_engine/ship/electric/return_fuel_cap()
 	if(length(powernet?.nodes) == 2)
 		for(var/obj/machinery/power/smes/S in powernet.nodes)
-			return S.capacity
+			return S.total_capacity
 	return power_per_burn

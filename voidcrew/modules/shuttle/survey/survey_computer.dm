@@ -610,10 +610,10 @@
 		CreateEye()
 	if(!eyeobj) //Eye creation failed
 		return
-	if(!eyeobj.eye_initialized)
+	if(!eyeobj)
 		var/camera_location
 		var/turf/myturf = docking_location
-		if(eyeobj.use_static != FALSE)
+		if(eyeobj.use_visibility != FALSE)
 			if((!length(z_lock) || (myturf.z in z_lock)) && GLOB.cameranet.checkTurfVis(myturf))
 				camera_location = myturf
 			else
@@ -629,7 +629,6 @@
 			if(length(z_lock) && !(myturf.z in z_lock))
 				camera_location = locate(round(world.maxx/2), round(world.maxy/2), z_lock[1])
 		if(camera_location)
-			eyeobj.eye_initialized = TRUE
 			give_eye_control(L)
 			eyeobj.setLoc(camera_location)
 		else
@@ -715,7 +714,7 @@
 
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingSpot()
-	var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
+	var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
 	var/turf/eyeturf = get_turf(the_eye)
 	if(!eyeturf)
 		return SHUTTLE_DOCKER_BLOCKED
@@ -752,7 +751,7 @@
 	if(designating_target_loc || !current_user)
 		return
 
-	var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
+	var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
 	var/landing_clear = checkLandingSpot()
 	if(designate_time && (landing_clear != SHUTTLE_DOCKER_BLOCKED))
 		to_chat(current_user, span_warning("Targeting transit location, please wait [DisplayTimeText(designate_time)]..."))
@@ -935,7 +934,7 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/give_eye_control(mob/user)
 	..()
 	if(!QDELETED(user) && user.client)
-		var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
+		var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
 		var/list/to_add = list()
 		to_add += the_eye.placement_images
 		to_add += the_eye.placed_images
@@ -953,7 +952,7 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/remove_eye_control(mob/living/user)
 	..()
 	if(!QDELETED(user) && user.client)
-		var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
+		var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
 		var/list/to_remove = list()
 		to_remove += the_eye.placement_images
 		to_remove += the_eye.placed_images
@@ -979,7 +978,7 @@
 	my_port.unregister()
 	qdel(my_port)
 	my_port = null
-	var/mob/camera/ai_eye/remote/shuttle_docker/the_eye = eyeobj
+	var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
 	LAZYCLEARLIST(the_eye.placed_images)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/refresh(mob/user)

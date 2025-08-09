@@ -8,7 +8,11 @@
       "mcp__byond-dm__get_byond_topic",
       "Bash(.BUILD.cmd)",
       "Bash(BUILD.cmd)",
-      "Bash(cmd.exe:*)"
+      "Bash(cmd.exe:*)",
+      "Bash(.\\BUILD.cmd)",
+      "Bash(grep:*)",
+      "Bash(dir:*)",
+      "Bash(bun install:*)"
     ],
     "deny": []
   }

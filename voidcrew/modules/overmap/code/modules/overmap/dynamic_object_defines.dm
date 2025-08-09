@@ -102,7 +102,7 @@
 /area/overmap_encounter/planetoid
 	name = "\improper Unknown Planetoid"
 	sound_environment = SOUND_ENVIRONMENT_MOUNTAINS
-	has_gravity = STANDARD_GRAVITY
+	default_gravity = STANDARD_GRAVITY
 	always_unpowered = TRUE
 	map_generator = /datum/map_generator/planet_generator
 	base_lighting_alpha = 255 // Do NOT decrease this below 255 unless planet has no cave biomes
@@ -113,7 +113,7 @@
 /area/overmap_encounter/planet_ruin
 	name = "\improper Unknown Planetary Ruin"
 	sound_environment = SOUND_ENVIRONMENT_MOUNTAINS
-	has_gravity = STANDARD_GRAVITY
+	default_gravity = STANDARD_GRAVITY
 	always_unpowered = TRUE
 	map_generator = null
 

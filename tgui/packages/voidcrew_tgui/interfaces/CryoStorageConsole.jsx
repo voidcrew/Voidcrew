@@ -5,8 +5,8 @@ import {
   LabeledList,
   Section,
   Table,
-} from '../../tgui/components';
-import { TableCell } from '../../tgui/components/Table';
+} from 'tgui-core/components';
+import { TableCell } from 'tgui-core/components/Table';
 import { Window } from '../../tgui/layouts';
 
 export const CryoStorageConsole = (props, context) => {
@@ -55,7 +55,7 @@ export const CryoStorageConsoleContent = (props, context) => {
         {jobs.map((job) => (
           <Table.Row key={job.name}>
             <Table.Cell>{job.name}</Table.Cell>
-            <TableCell>
+            <Table.Cell>
               <Button
                 content="+"
                 disabled={cooldown > 0 || job.slots >= job.max}
@@ -77,7 +77,7 @@ export const CryoStorageConsoleContent = (props, context) => {
                   })
                 }
               />
-            </TableCell>
+            </Table.Cell>
           </Table.Row>
         ))}
       </Table>

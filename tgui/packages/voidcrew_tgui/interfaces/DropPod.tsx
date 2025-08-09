@@ -1,5 +1,5 @@
 import { useBackend } from '../../tgui/backend';
-import { Button, NoticeBox, Section, Stack } from '../../tgui/components';
+import { Button, NoticeBox, Section, Stack } from 'tgui-core/components';
 import { Window } from '../../tgui/layouts';
 
 interface Data {
