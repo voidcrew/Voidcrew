@@ -1,6 +1,6 @@
 // Carrot
 /obj/item/seeds/carrot
-	name = "pack of carrot seeds"
+	name = "carrot seed pack"
 	desc = "These seeds grow into carrots."
 	icon_state = "seed-carrot"
 	species = "carrot"
@@ -25,7 +25,7 @@
 	juice_typepath = /datum/reagent/consumable/carrotjuice
 	wine_power = 30
 
-/obj/item/food/grown/carrot/attackby(obj/item/I, mob/user, params)
+/obj/item/food/grown/carrot/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
 	if(!I.get_sharpness())
 		return ..()
 
@@ -45,7 +45,7 @@
 
 // Parsnip
 /obj/item/seeds/carrot/parsnip
-	name = "pack of parsnip seeds"
+	name = "parsnip seed pack"
 	desc = "These seeds grow into parsnips."
 	icon_state = "seed-parsnip"
 	species = "parsnip"
@@ -64,7 +64,7 @@
 	juice_typepath = /datum/reagent/consumable/parsnipjuice
 	wine_power = 35
 
-/obj/item/food/grown/parsnip/attackby(obj/item/I, mob/user, params)
+/obj/item/food/grown/parsnip/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
 	if(!I.get_sharpness())
 		return ..()
 
@@ -85,7 +85,7 @@
 
 // Cahn'root
 /obj/item/seeds/carrot/cahnroot
-	name = "pack of cahn'root seeds"
+	name = "cahn'root seed pack"
 	desc = "These seeds grow into cahn'roots."
 	icon_state = "seed-cahn'root"
 	species = "cahn'root"
@@ -110,7 +110,7 @@
 	tastes = list("sweet dirt" = 1)
 	distill_reagent = /datum/reagent/consumable/rootbeer
 
-/obj/item/food/grown/cahnroot/attackby(obj/item/I, mob/user, params)
+/obj/item/food/grown/cahnroot/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
 	if(!I.get_sharpness())
 		return ..()
 
@@ -130,7 +130,7 @@
 
 // White-Beet
 /obj/item/seeds/whitebeet
-	name = "pack of white-beet seeds"
+	name = "white-beet seed pack"
 	desc = "These seeds grow into sugary beet producing plants."
 	icon_state = "seed-whitebeet"
 	species = "whitebeet"
@@ -156,7 +156,7 @@
 
 // Red Beet
 /obj/item/seeds/redbeet
-	name = "pack of redbeet seeds"
+	name = "redbeet seed pack"
 	desc = "These seeds grow into red beet producing plants."
 	icon_state = "seed-redbeet"
 	species = "redbeet"

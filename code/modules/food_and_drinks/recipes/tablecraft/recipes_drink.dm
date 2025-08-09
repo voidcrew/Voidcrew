@@ -1,4 +1,3 @@
-
 // This is the home of drink related tablecrafting recipes, I have opted to only let players bottle fancy boozes to reduce the number of entries.
 
 ///////////////// Booze & Bottles ///////////////////
@@ -7,10 +6,10 @@
 	name = "Lizard Wine"
 	time = 40
 	reqs = list(
-		/obj/item/organ/external/tail/lizard = 1,
+		/obj/item/organ/tail/lizard = 1,
 		/datum/reagent/consumable/ethanol = 100
 	)
-	blacklist = list(/obj/item/organ/external/tail/lizard/fake)
+	blacklist = list(/obj/item/organ/tail/lizard/fake)
 	result = /obj/item/reagent_containers/cup/glass/bottle/lizardwine
 	category = CAT_DRINK
 
@@ -139,8 +138,11 @@
 	result = /obj/item/reagent_containers/cup/glass/bottle/pruno
 	time = 30
 	reqs = list(/obj/item/storage/bag/trash = 1,
-	            /obj/item/food/breadslice/moldy = 1,
-	            /obj/item/food/grown = 4,
-	            /obj/item/food/candy_corn = 2,
-	            /datum/reagent/water = 15)
+		/obj/item/food/breadslice/moldy = 1,
+		/obj/item/food/grown = 4,
+		/obj/item/food/candy_corn = 2,
+		/datum/reagent/water = 15,
+	)
+	//We can't spawn the abstract food/grown path
+	unit_test_spawn_extras = list(/obj/item/food/grown/banana = 4)
 	category = CAT_DRINK

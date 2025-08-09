@@ -103,7 +103,7 @@
 
 /obj/item/toy/singlecard/suicide_act(mob/living/carbon/user)
 	user.visible_message(span_suicide("[user] is slitting [user.p_their()] wrists with \the [src]! It looks like [user.p_they()] [user.p_have()] an unlucky card!"))
-	playsound(src, 'sound/weapons/bladeslice.ogg', 50, TRUE)
+	playsound(src, 'sound/items/weapons/bladeslice.ogg', 50, TRUE)
 	return BRUTELOSS
 
 /**
@@ -147,7 +147,7 @@
 	name = flipped ? cardname : "card"
 	return ..()
 
-/obj/item/toy/singlecard/attackby(obj/item/item, mob/living/user, params, flip_card=FALSE)
+/obj/item/toy/singlecard/attackby(obj/item/item, mob/living/user, list/params, list/attack_modifier, flip_card=FALSE)
 	var/obj/item/toy/singlecard/card
 
 	if(istype(item, /obj/item/toy/cards/deck))
@@ -219,7 +219,7 @@
 		return
 	return ..()
 
-/obj/item/toy/singlecard/attackby_secondary(obj/item/item, mob/living/user, modifiers)
+/obj/item/toy/singlecard/attackby_secondary(obj/item/item, mob/living/user, list/modifiers, list/attack_modifiers)
 	attackby(item, user, modifiers, flip_card=TRUE)
 	return SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN
 

@@ -1,6 +1,6 @@
 // Watermelon
 /obj/item/seeds/watermelon
-	name = "pack of watermelon seeds"
+	name = "watermelon seed pack"
 	desc = "These seeds grow into watermelon plants."
 	icon_state = "seed-watermelon"
 	species = "watermelon"
@@ -40,7 +40,7 @@
 /obj/item/food/grown/watermelon/make_dryable()
 	return //No drying
 
-/obj/item/food/grown/watermelon/attackby(obj/item/I, mob/user, params)
+/obj/item/food/grown/watermelon/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
 	if(!istype(I, /obj/item/kitchen/spoon))
 		return ..()
 
@@ -74,7 +74,7 @@
 
 // Holymelon
 /obj/item/seeds/watermelon/holy
-	name = "pack of holymelon seeds"
+	name = "holymelon seed pack"
 	desc = "These seeds grow into holymelon plants."
 	icon_state = "seed-holymelon"
 	species = "holymelon"
@@ -107,10 +107,10 @@
 
 /obj/item/food/grown/holymelon/make_edible()
 	. = ..()
-	AddComponent(/datum/component/edible, check_liked = CALLBACK(src, PROC_REF(check_holyness)))
+	AddComponentFrom(SOURCE_EDIBLE_INNATE, /datum/component/edible, check_liked = CALLBACK(src, PROC_REF(check_holyness)))
 
 
-/obj/item/food/grown/holymelon/attackby(obj/item/I, mob/user, params)
+/obj/item/food/grown/holymelon/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
 	if(!istype(I, /obj/item/kitchen/spoon))
 		return ..()
 
@@ -159,7 +159,7 @@
 
 /// Barrel melon Seeds
 /obj/item/seeds/watermelon/barrel
-	name = "pack of barrelmelon seeds"
+	name = "barrelmelon seed pack"
 	desc = "These seeds grow into barrelmelon plants."
 	icon_state = "seed-barrelmelon"
 	species = "barrelmelon"
@@ -183,7 +183,7 @@
 /obj/item/food/grown/barrelmelon/make_processable()
 	AddElement(/datum/element/processable, TOOL_KNIFE, /obj/item/food/barrelmelonslice, 5, 20, screentip_verb = "Chop")
 
-/obj/item/food/grown/barrelmelon/attackby(obj/item/I, mob/user, params)
+/obj/item/food/grown/barrelmelon/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
 	if(!istype(I, /obj/item/kitchen/spoon))
 		return ..()
 

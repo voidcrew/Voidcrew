@@ -59,7 +59,7 @@
 /datum/status_effect/bugkiller_death/on_apply()
 	if(owner.stat == DEAD)
 		return FALSE
-	playsound(owner, 'sound/voice/human/malescream_1.ogg', 25, TRUE, extrarange = SILENCED_SOUND_EXTRARANGE, frequency = 5)
+	playsound(owner, 'sound/mobs/humanoids/human/scream/malescream_1.ogg', 25, TRUE, extrarange = SILENCED_SOUND_EXTRARANGE, frequency = 5)
 	to_chat(owner, span_userdanger("The world begins to go dark..."))
 	owner.spasm_animation(spasm_loops)
 	owner.adjust_eye_blur(duration)
@@ -68,6 +68,8 @@
 /datum/status_effect/bugkiller_death/on_remove()
 	if(owner.stat == DEAD || QDELETED(owner))
 		return
+
+	ADD_TRAIT(owner, TRAIT_BUGKILLER_DEATH, REF(src))
 
 	if(isbasicmob(owner))
 		var/mob/living/basic/basic_owner = owner

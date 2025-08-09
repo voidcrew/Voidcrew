@@ -90,7 +90,7 @@
 	var/surfer_quote = "surfing in the USA"
 
 	host_mob.grant_language(/datum/language/beachbum, SPOKEN_LANGUAGE) // can speak but can't understand
-	host_mob.add_blocked_language(subtypesof(/datum/language) - /datum/language/beachbum, LANGUAGE_STONER)
+	host_mob.add_blocked_language(subtypesof(/datum/language) - /datum/language/beachbum, source = LANGUAGE_STONER)
 	TEST_ASSERT_NOTEQUAL(surfer_quote, host_mob.translate_language(host_mob, /datum/language/beachbum, surfer_quote), "Language test failed. Mob was supposed to understand: [surfer_quote]")
 
 	host_mob.grant_language(/datum/language/beachbum, ALL) // can now understand
@@ -237,9 +237,9 @@
 	// Normally speaking, if there isn't a functional telecomms array on the same z-level, then handheld radios
 	// have a short delay before sending the message. We use the centcom frequency to get around this.
 	speaker_radio.set_frequency(FREQ_CENTCOM)
-	speaker_radio.independent = TRUE
+	speaker_radio.special_channels = RADIO_SPECIAL_CENTCOM
 	listener_radio.set_frequency(FREQ_CENTCOM)
-	listener_radio.independent = TRUE
+	listener_radio.special_channels = RADIO_SPECIAL_CENTCOM
 
 	var/pangram_quote = "The quick brown fox jumps over the lazy dog"
 

@@ -34,9 +34,9 @@
 		/obj/item/stack/sheet/plastic = 100,
 		/obj/item/stack/sheet/meat = 100)
 	time = 3.2 SECONDS
-	preop_sound = 'sound/effects/blobattack.ogg'
-	success_sound = 'sound/effects/attackblob.ogg'
-	failure_sound = 'sound/effects/blobattack.ogg'
+	preop_sound = 'sound/effects/blob/blobattack.ogg'
+	success_sound = 'sound/effects/blob/attackblob.ogg'
+	failure_sound = 'sound/effects/blob/blobattack.ogg'
 
 /datum/surgery_step/insert_plastic/preop(mob/user, mob/living/target, target_zone, obj/item/stack/tool, datum/surgery/surgery)
 	display_results(
@@ -116,7 +116,7 @@
 		display_pain(target, "The pain fades, your face feels new and unfamiliar!")
 	if(ishuman(target))
 		var/mob/living/carbon/human/human_target = target
-		human_target.sec_hud_set_ID()
+		human_target.update_ID_card()
 	if(HAS_MIND_TRAIT(user, TRAIT_MORBID) && ishuman(user))
 		var/mob/living/carbon/human/morbid_weirdo = user
 		morbid_weirdo.add_mood_event("morbid_abominable_surgery_success", /datum/mood_event/morbid_abominable_surgery_success)

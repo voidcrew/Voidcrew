@@ -15,7 +15,7 @@
 /obj/effect/beam/singularity_act()
 	return
 
-/obj/effect/beam/singularity_pull()
+/obj/effect/beam/singularity_pull(atom/singularity, current_size)
 	return
 
 /obj/effect/spawner
@@ -87,3 +87,7 @@
 /obj/effect/abstract/marker/intercom
 	name = "intercom range marker"
 	color = COLOR_YELLOW
+
+/obj/effect/abstract/marker/powernet
+	name = "powernet run marker"
+	var/powernet_owner

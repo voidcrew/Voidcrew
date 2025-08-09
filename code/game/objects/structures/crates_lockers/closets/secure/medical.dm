@@ -29,7 +29,7 @@
 	for(var/i in 1 to 3)
 		new /obj/item/tank/internals/anesthetic(src)
 	for(var/i in 1 to 3)
-		new /obj/item/clothing/mask/muzzle/breath(src)
+		new /obj/item/clothing/mask/breath/muzzle(src)
 
 /obj/structure/closet/secure_closet/medical3
 	name = "medical doctor's locker"
@@ -50,8 +50,8 @@
 	req_access = list(ACCESS_PSYCHOLOGY)
 	icon_state = "cabinet"
 	door_anim_time = 0 // no animation
-	open_sound = 'sound/machines/wooden_closet_open.ogg'
-	close_sound = 'sound/machines/wooden_closet_close.ogg'
+	open_sound = 'sound/machines/closet/wooden_closet_open.ogg'
+	close_sound = 'sound/machines/closet/wooden_closet_close.ogg'
 	open_sound_volume = 25
 	close_sound_volume = 50
 

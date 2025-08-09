@@ -4,8 +4,8 @@
 	pass_flags = PASSTABLE | PASSGLASS | PASSGRILLE
 	damage = 20
 	damage_type = BURN
-	hitsound = 'sound/weapons/sear.ogg'
-	hitsound_wall = 'sound/weapons/effects/searwall.ogg'
+	hitsound = 'sound/items/weapons/sear.ogg'
+	hitsound_wall = 'sound/items/weapons/effects/searwall.ogg'
 	armor_flag = LASER
 	eyeblur = 4 SECONDS
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/red_laser
@@ -15,9 +15,9 @@
 	light_color = COLOR_SOFT_RED
 	ricochets_max = 50 //Honk!
 	ricochet_chance = 80
-	reflectable = REFLECT_NORMAL
+	reflectable = TRUE
 	wound_bonus = -20
-	bare_wound_bonus = 10
+	exposed_wound_bonus = 10
 
 
 /obj/projectile/beam/laser
@@ -26,7 +26,7 @@
 	impact_type = /obj/effect/projectile/impact/laser
 	wound_bonus = -20
 	damage = 25
-	bare_wound_bonus = 40
+	exposed_wound_bonus = 40
 
 /obj/projectile/beam/laser/carbine
 	icon_state = "carbine_laser"
@@ -45,18 +45,32 @@
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/red_laser
 	damage = 9
 	wound_bonus = -40
-	speed = 1.1
+	speed = 0.9
 
 //overclocked laser, does a bit more damage but has much higher wound power (-0 vs -20)
 /obj/projectile/beam/laser/hellfire
 	name = "hellfire laser"
+	icon_state = "hellfire"
 	wound_bonus = 0
 	damage = 30
-	speed = 0.6 // higher power = faster, that's how light works right
+	speed = 1.6
+	light_color = "#FF969D"
 
-/obj/projectile/beam/laser/hellfire/Initialize(mapload)
+/obj/projectile/beam/laser/flare
+	name = "flare particle"
+	icon_state = "flare"
+	light_range = 2
+	light_power = 3
+	damage = 20
+	wound_bonus = -15
+	exposed_wound_bonus = 15
+
+/obj/projectile/beam/laser/flare/on_hit(atom/target, blocked, pierce_hit)
 	. = ..()
-	transform *= 2
+	if(!isliving(target))
+		return
+	var/mob/living/designated_target = target
+	designated_target.apply_status_effect(/datum/status_effect/designated_target)
 
 /obj/projectile/beam/laser/heavylaser
 	name = "heavy laser"
@@ -78,15 +92,15 @@
 	name = "low-power laser"
 	icon_state = "laser_musket"
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/purple_laser
-	damage = 25
-	stamina = 40
+	damage = 28
+	stamina = 35
 	light_color = COLOR_STRONG_VIOLET
 	weak_against_armour = TRUE
 
 /obj/projectile/beam/laser/musket/prime
 	name = "mid-power laser"
-	damage = 30
-	stamina = 45
+	damage = 25
+	stamina = 20
 	weak_against_armour = FALSE
 
 /obj/projectile/beam/weak
@@ -104,7 +118,7 @@
 	icon_state = "scatterlaser"
 	damage = 7.5
 	wound_bonus = 5
-	bare_wound_bonus = 5
+	exposed_wound_bonus = 5
 	damage_falloff_tile = -0.45
 	wound_falloff_tile = -2.5
 
@@ -137,7 +151,7 @@
 	damage = 30
 	damage_type = STAMINA
 	armor_flag = ENERGY
-	hitsound = 'sound/weapons/sear_disabler.ogg'
+	hitsound = 'sound/items/weapons/sear_disabler.ogg'
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/blue_laser
 	light_color = LIGHT_COLOR_BLUE
 	tracer_type = /obj/effect/projectile/tracer/disabler
@@ -146,6 +160,17 @@
 
 /obj/projectile/beam/disabler/weak
 	damage = 15
+
+/obj/projectile/beam/disabler/scatter
+	name = "scatter disabler"
+	icon_state = "scatterdisabler"
+	damage = 5.5
+	damage_falloff_tile = -0.5
+	speed = 1.2
+	impact_effect_type = /obj/effect/temp_visual/impact_effect/green_laser
+	tracer_type = /obj/effect/projectile/tracer/xray
+	muzzle_type = /obj/effect/projectile/muzzle/xray
+	impact_type = /obj/effect/projectile/impact/xray
 
 /obj/projectile/beam/disabler/smoothbore
 	name = "unfocused disabler beam"
@@ -197,12 +222,13 @@
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/green_laser
 	light_color = LIGHT_COLOR_GREEN
 	wound_bonus = -40
-	bare_wound_bonus = 70
+	exposed_wound_bonus = 70
 
-/obj/projectile/beam/emitter/singularity_pull()
+/obj/projectile/beam/emitter/singularity_pull(atom/singularity, current_size)
 	return //don't want the emitters to miss
 
 /obj/projectile/beam/emitter/hitscan
+	icon_state = null
 	hitscan = TRUE
 	muzzle_type = /obj/effect/projectile/muzzle/laser/emitter
 	tracer_type = /obj/effect/projectile/tracer/laser/emitter
@@ -246,6 +272,7 @@
 	impact_type = /obj/effect/projectile/impact/laser
 
 /obj/projectile/beam/lasertag/redtag/hitscan
+	icon_state = null
 	hitscan = TRUE
 
 /obj/projectile/beam/lasertag/bluetag
@@ -256,6 +283,7 @@
 	impact_type = /obj/effect/projectile/impact/laser/blue
 
 /obj/projectile/beam/lasertag/bluetag/hitscan
+	icon_state = null
 	hitscan = TRUE
 
 /obj/projectile/magic/shrink/alien

@@ -272,7 +272,7 @@
 	obj_damage = 15
 	speed = 5
 	player_speed_modifier = -4
-	menu_description = "Extremly tanky with very poor offence. Able to self heal and lay reflective silk screens."
+	menu_description = "Extremely tanky with very poor offence. Able to self heal and lay reflective silk screens."
 
 /mob/living/basic/spider/giant/tank/Initialize(mapload)
 	. = ..()
@@ -323,7 +323,7 @@
 	maximum_survivable_temperature = 700
 	unsuitable_cold_damage = 0
 	wound_bonus = 25
-	bare_wound_bonus = 50
+	exposed_wound_bonus = 50
 	sharpness = SHARP_EDGED
 	obj_damage = 60
 	web_speed = 0.25
@@ -608,6 +608,6 @@
 
 /mob/living/basic/spider/giant/sgt_araneus/Initialize(mapload)
 	. = ..()
-	AddElement(/datum/element/pet_bonus, "chitters proudly!")
+	AddElement(/datum/element/pet_bonus, "chitter")
 	AddElement(/datum/element/ai_retaliate)
 	ADD_TRAIT(src, TRAIT_VENTCRAWLER_ALWAYS, INNATE_TRAIT)

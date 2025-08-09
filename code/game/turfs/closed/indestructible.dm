@@ -18,7 +18,7 @@
 /turf/closed/indestructible/singularity_act()
 	return
 
-/turf/closed/indestructible/attackby(obj/item/attacking_item, mob/user, params)
+/turf/closed/indestructible/attackby(obj/item/attacking_item, mob/user, list/modifiers)
 	if(istype(attacking_item, /obj/item/poster) && Adjacent(user))
 		return place_poster(attacking_item, user)
 
@@ -63,6 +63,7 @@
 /turf/closed/indestructible/splashscreen
 	name = "Space Station 13"
 	desc = null
+	baseturfs = /turf/cordon
 	icon = 'icons/blanks/blank_title.png'
 	icon_state = ""
 	pixel_x = -64
@@ -98,11 +99,6 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 /turf/closed/indestructible/splashscreen/examine()
 	desc = pick(strings(SPLASH_FILE, "splashes"))
 	return ..()
-
-/turf/closed/indestructible/start_area
-	name = null
-	desc = null
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
 /turf/closed/indestructible/reinforced
 	name = "reinforced wall"
@@ -141,6 +137,12 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 	smoothing_groups = SMOOTH_GROUP_WALLS + SMOOTH_GROUP_CLOSED_TURFS + SMOOTH_GROUP_SYNDICATE_WALLS
 	canSmoothWith = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS
 
+/turf/closed/indestructible/syndicate/nodiagonal
+	icon = 'icons/turf/walls/plastitanium_wall.dmi'
+	icon_state = "map-shuttle_nd"
+	base_icon_state = "plastitanium_wall"
+	smoothing_flags = SMOOTH_BITMASK
+
 /turf/closed/indestructible/riveted/uranium
 	icon = 'icons/turf/walls/uranium_wall.dmi'
 	icon_state = "uranium_wall-0"
@@ -154,7 +156,7 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 	icon_state = "plastinum_wall-0"
 	base_icon_state = "plastinum_wall"
 	smoothing_flags = SMOOTH_BITMASK | SMOOTH_DIAGONAL_CORNERS
-	smoothing_groups = SMOOTH_GROUP_WALLS + SMOOTH_GROUP_PLASTINUM_WALLS + SMOOTH_GROUP_CLOSED_TURFS
+	smoothing_groups = SMOOTH_GROUP_WALLS + SMOOTH_GROUP_CLOSED_TURFS + SMOOTH_GROUP_PLASTINUM_WALLS
 	canSmoothWith = SMOOTH_GROUP_PLASTINUM_WALLS
 
 /turf/closed/indestructible/riveted/plastinum/nodiagonal
@@ -214,8 +216,8 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 
 /turf/closed/indestructible/fakeglass/Initialize(mapload)
 	. = ..()
-	underlays += mutable_appearance('icons/obj/structures.dmi', "grille", layer - 0.01) //add a grille underlay
-	underlays += mutable_appearance('icons/turf/floors.dmi', "plating", layer - 0.02) //add the plating underlay, below the grille
+	underlays += mutable_appearance('icons/obj/structures.dmi', "grille", layer - 0.01, src) //add a grille underlay
+	underlays += mutable_appearance('icons/turf/floors.dmi', "plating", layer - 0.02, src) //add the plating underlay, below the grille
 
 /turf/closed/indestructible/opsglass
 	name = "window"
@@ -229,9 +231,8 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 
 /turf/closed/indestructible/opsglass/Initialize(mapload)
 	. = ..()
-	icon_state = null
-	underlays += mutable_appearance('icons/obj/structures.dmi', "grille", layer - 0.01)
-	underlays += mutable_appearance('icons/turf/floors.dmi', "plating", layer - 0.02)
+	underlays += mutable_appearance('icons/obj/structures.dmi', "grille", layer - 0.01, src)
+	underlays += mutable_appearance('icons/turf/floors.dmi', "plating", layer - 0.02, src)
 
 /turf/closed/indestructible/fakedoor
 	name = "airlock"
@@ -331,13 +332,22 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 	return TRUE
 
 /turf/closed/indestructible/riveted/hierophant
-	name = "wall"
-	desc = "A wall made out of a strange metal. The squares on it pulse in a predictable pattern."
+	name = "runic wall"
+	desc = "A wall made out of strange stone, runes on its sides pulsating in a rythmic pattern."
 	icon = 'icons/turf/walls/hierophant_wall.dmi'
-	icon_state = "wall"
-	smoothing_flags = SMOOTH_CORNERS
+	icon_state = "hierophant_wall-0"
+	base_icon_state = "hierophant_wall"
+	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = SMOOTH_GROUP_HIERO_WALL
 	canSmoothWith = SMOOTH_GROUP_HIERO_WALL
+
+/turf/closed/indestructible/riveted/hierophant/set_smoothed_icon_state(new_junction)
+	. = ..()
+	update_appearance(UPDATE_OVERLAYS)
+
+/turf/closed/indestructible/riveted/hierophant/update_overlays()
+	. = ..()
+	. += emissive_appearance('icons/turf/walls/hierophant_wall_e.dmi', icon_state, src)
 
 /turf/closed/indestructible/resin
 	name = "resin wall"
@@ -359,7 +369,7 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 
 /turf/closed/indestructible/resin/membrane/Initialize(mapload)
 	. = ..()
-	underlays += mutable_appearance('icons/turf/floors.dmi', "engine") // add the reinforced floor underneath
+	underlays += mutable_appearance('icons/turf/floors.dmi', "engine", layer - 0.01, src) // add the reinforced floor underneath
 
 /turf/closed/indestructible/grille
 	name = "grille"
@@ -369,7 +379,7 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 
 /turf/closed/indestructible/grille/Initialize(mapload)
 	. = ..()
-	underlays += mutable_appearance('icons/turf/floors.dmi', "plating")
+	underlays += mutable_appearance('icons/turf/floors.dmi', "plating", layer - 0.01, src)
 
 /turf/closed/indestructible/meat
 	name = "dense meat wall"

@@ -38,13 +38,14 @@
 
 	job_tone = "honk"
 
-
 /datum/job/clown/after_spawn(mob/living/spawned, client/player_client)
-	. = ..()
-	if(!ishuman(spawned))
-		return
-	spawned.apply_pref_name(/datum/preference/name/clown, player_client)
+	if (ishuman(spawned))
+		spawned.apply_pref_name(/datum/preference/name/clown, player_client)
+		if(check_holidays(APRIL_FOOLS)) // Clown blood is real
+			var/mob/living/carbon/human/human_clown = spawned
+			human_clown.set_blood_type(BLOOD_TYPE_CLOWN)
 
+	return ..()
 
 /datum/outfit/job/clown
 	name = "Clown"
@@ -83,7 +84,7 @@
 	back = /obj/item/mod/control/pre_equipped/cosmohonk
 	internals_slot = ITEM_SLOT_SUITSTORE
 
-/datum/outfit/job/clown/pre_equip(mob/living/carbon/human/H, visualsOnly)
+/datum/outfit/job/clown/pre_equip(mob/living/carbon/human/H, visuals_only)
 	. = ..()
 	if(HAS_TRAIT(SSstation, STATION_TRAIT_BANANIUM_SHIPMENTS))
 		backpack_contents[/obj/item/stack/sheet/mineral/bananium/five] = 1
@@ -93,15 +94,13 @@
 	if(HAS_TRAIT(SSstation, STATION_TRAIT_BANANIUM_SHIPMENTS))
 		. += /obj/item/stack/sheet/mineral/bananium/five
 
-/datum/outfit/job/clown/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE)
+/datum/outfit/job/clown/post_equip(mob/living/carbon/human/H, visuals_only = FALSE)
 	..()
-	if(visualsOnly)
+	if(visuals_only)
 		return
 
 	H.fully_replace_character_name(H.real_name, pick(GLOB.clown_names)) //rename the mob AFTER they're equipped so their ID gets updated properly.
-	H.dna.add_mutation(/datum/mutation/human/clumsy)
-	for(var/datum/mutation/human/clumsy/M in H.dna.mutations)
-		M.mutadone_proof = TRUE
+	H.dna.add_mutation(/datum/mutation/clumsy, MUTATION_SOURCE_CLOWN_CLUMSINESS)
 	var/datum/atom_hud/fan = GLOB.huds[DATA_HUD_FAN]
 	fan.show_to(H)
 	H.faction |= FACTION_CLOWN

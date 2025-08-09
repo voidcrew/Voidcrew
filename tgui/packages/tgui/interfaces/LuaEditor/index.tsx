@@ -1,17 +1,13 @@
-import 'blob-polyfill';
-
 import hljs from 'highlight.js/lib/core';
 import lua from 'highlight.js/lib/languages/lua';
 import {
-  ReactNode,
+  type ReactNode,
   useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
 } from 'react';
-
-import { useBackend } from '../../backend';
 import {
   Box,
   Button,
@@ -22,7 +18,9 @@ import {
   Stack,
   Tabs,
   TextArea,
-} from '../../components';
+} from 'tgui-core/components';
+
+import { useBackend } from '../../backend';
 import { Window } from '../../layouts';
 import { CallModal } from './CallModal';
 import { ChunkViewModal } from './ChunkViewModal';
@@ -30,7 +28,7 @@ import { ListMapper } from './ListMapper';
 import { Log } from './Log';
 import { StateSelectModal } from './StateSelectModal';
 import { TaskManager } from './TaskManager';
-import { CallInfo, LuaEditorData, LuaEditorModal } from './types';
+import type { CallInfo, LuaEditorData, LuaEditorModal } from './types';
 hljs.registerLanguage('lua', lua);
 
 export const LuaEditor = () => {
@@ -43,6 +41,7 @@ export const LuaEditor = () => {
     page,
     pageCount,
     lastError,
+    supressRuntimes,
   } = data;
 
   const modalState = useState<LuaEditorModal>(
@@ -80,28 +79,25 @@ export const LuaEditor = () => {
   const handleSectionScroll = useCallback(() => {
     const scrollableCurrent = sectionRef.current;
     if (scrollableCurrent) {
-      if (
-        !showJumpToBottomButton &&
-        scrollableCurrent.scrollHeight >
-          scrollableCurrent.scrollTop + scrollableCurrent.clientHeight
-      ) {
+      const { scrollHeight, scrollTop, clientHeight } = scrollableCurrent;
+      if (!showJumpToBottomButton && scrollHeight > scrollTop + clientHeight) {
         setShowJumpToBottomButton(true);
       } else if (
         showJumpToBottomButton &&
-        scrollableCurrent.scrollTop + scrollableCurrent.clientHeight >=
-          scrollableCurrent.scrollHeight
+        scrollTop + clientHeight >= scrollHeight
       ) {
         setShowJumpToBottomButton(false);
       }
     }
-  }, [sectionRef]);
+  }, [showJumpToBottomButton, sectionRef]);
+
+  useEffect(handleSectionScroll);
 
   useLayoutEffect(() => {
+    handleSectionScroll();
     window.addEventListener('resize', handleSectionScroll);
     return () => window.removeEventListener('resize', handleSectionScroll);
   }, [handleSectionScroll]);
-
-  useEffect(() => {});
 
   let tabContent: ReactNode;
   switch (activeTab) {
@@ -208,16 +204,17 @@ export const LuaEditor = () => {
           <Stack height="calc(100% - 16px)">
             <Stack.Item grow shrink basis="55%">
               <Stack fill vertical>
-                <Stack.Item shrink basis="100%">
-                  <Section fill pb="16px">
-                    <TextArea
-                      fluid
-                      width="100%"
-                      height="100%"
-                      value={scriptInput}
-                      fontFamily="Consolas"
-                      onChange={(_, value) => setScriptInput(value)}
-                      /* displayedValue={
+                <Stack.Item grow>
+                  <Section fill>
+                    <Stack fill vertical>
+                      <Stack.Item grow>
+                        <TextArea
+                          width="100%"
+                          height="100%"
+                          value={scriptInput}
+                          fontFamily="Consolas"
+                          onChange={setScriptInput}
+                          /* displayedValue={
                           <Box
                             style={{
                               pointerEvents: 'none',
@@ -229,25 +226,30 @@ export const LuaEditor = () => {
                             }}
                           />
                         }*/
-                      onDrop={async (
-                        event: React.DragEvent<HTMLDivElement>,
-                      ) => {
-                        if (event.dataTransfer?.files.length) {
-                          event.preventDefault();
-                          setScriptInput(
-                            await event.dataTransfer.files[0].text(),
-                          );
-                        }
-                      }}
-                    />
-                    <Button
-                      onClick={() => act('runCode', { code: scriptInput })}
-                    >
-                      Run
-                    </Button>
+                          /** @ts-ignore */
+                          onDrop={async (
+                            event: React.DragEvent<HTMLDivElement>,
+                          ) => {
+                            if (event.dataTransfer?.files.length) {
+                              event.preventDefault();
+                              setScriptInput(
+                                await event.dataTransfer.files[0].text(),
+                              );
+                            }
+                          }}
+                        />
+                      </Stack.Item>
+                      <Stack.Item>
+                        <Button
+                          onClick={() => act('runCode', { code: scriptInput })}
+                        >
+                          Run
+                        </Button>
+                      </Stack.Item>
+                    </Stack>
                   </Section>
                 </Stack.Item>
-                <Stack.Item grow>
+                <Stack.Item>
                   <Box bold textColor="red" mb="1rem">
                     {lastError}
                   </Box>
@@ -304,18 +306,23 @@ export const LuaEditor = () => {
                 </Stack>
                 <Stack fill vertical>
                   <Stack.Item grow>
-                    <Box position="relative" width="100%" height="100%">
-                      <Section
-                        title={<Box height="1rem" width="1rem" />}
-                        ref={sectionRef}
-                        fill
-                        scrollable
-                        scrollableHorizontal
-                        onScroll={handleSectionScroll}
-                        buttons={
-                          activeTab === 'log' && (
+                    <Section
+                      title={<Box height="1rem" width="1rem" />}
+                      ref={sectionRef}
+                      fill
+                      scrollable
+                      scrollableHorizontal
+                      onScroll={handleSectionScroll}
+                      buttons={
+                        activeTab === 'log' && (
+                          <Box position="relative" bottom="1.25rem">
+                            <Button.Checkbox
+                              checked={supressRuntimes}
+                              onClick={() => act('toggleSupressRuntimes')}
+                            >
+                              Supress Runtime Logging
+                            </Button.Checkbox>
                             <Button.Confirm
-                              bottom="1.25rem"
                               color="red"
                               tooltip="Delete All Logs"
                               icon="trash-alt"
@@ -323,32 +330,34 @@ export const LuaEditor = () => {
                               confirmContent={null}
                               onClick={() => act('nukeLog')}
                             />
-                          )
-                        }
+                          </Box>
+                        )
+                      }
+                      width="100%"
+                    >
+                      {tabContent}
+                    </Section>
+                    {activeTab === 'log' && showJumpToBottomButton && (
+                      <Flex
+                        position="absolute"
+                        bottom="2.5rem"
                         width="100%"
+                        justify="center"
                       >
-                        {tabContent}
-                      </Section>
-                      {activeTab === 'log' && showJumpToBottomButton && (
-                        <Stack fill justify="space-around" bottom="2rem">
-                          <Stack.Item>
-                            <Button
-                              position="absolute"
-                              icon="arrow-down"
-                              onClick={() => {
-                                const sectionCurrent = sectionRef.current;
-                                if (sectionCurrent) {
-                                  sectionCurrent.scrollTop =
-                                    sectionCurrent.scrollHeight;
-                                }
-                              }}
-                            >
-                              Jump to Bottom
-                            </Button>
-                          </Stack.Item>
-                        </Stack>
-                      )}
-                    </Box>
+                        <Button
+                          icon="arrow-down"
+                          onClick={() => {
+                            const sectionCurrent = sectionRef.current;
+                            if (sectionCurrent) {
+                              sectionCurrent.scrollTop =
+                                sectionCurrent.scrollHeight;
+                            }
+                          }}
+                        >
+                          Jump to Bottom
+                        </Button>
+                      </Flex>
+                    )}
                   </Stack.Item>
                   {activeTab === 'log' && pageCount > 1 && (
                     <Stack.Item>

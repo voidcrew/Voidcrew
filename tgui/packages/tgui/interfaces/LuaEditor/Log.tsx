@@ -1,6 +1,4 @@
-import { Dispatch, SetStateAction } from 'react';
-
-import { useBackend } from '../../backend';
+import type { Dispatch, SetStateAction } from 'react';
 import {
   Box,
   Button,
@@ -8,10 +6,12 @@ import {
   Divider,
   LabeledList,
   Stack,
-} from '../../components';
+} from 'tgui-core/components';
+
+import { useBackend } from '../../backend';
 import { logger } from '../../logging';
 import { ListMapper } from './ListMapper';
-import { LuaEditorData, LuaEditorModal } from './types';
+import type { LuaEditorData, LuaEditorModal } from './types';
 
 const parsePanic = (name, panic_json) => {
   const panic_info = JSON.parse(panic_json);
@@ -120,8 +120,8 @@ export const Log = (props: LogProps) => {
                 }`
               : ''}
             .
-            <Box color="default">
-              {return_values.length ? (
+            {return_values.length ? (
+              <Box color="default">
                 <ListMapper
                   list={return_values}
                   variants={variants}
@@ -135,10 +135,10 @@ export const Log = (props: LogProps) => {
                     })
                   }
                 />
-              ) : (
-                <br />
-              )}
-            </Box>
+              </Box>
+            ) : (
+              <br />
+            )}
           </>
         );
         messageColor = 'green';
@@ -187,7 +187,7 @@ export const Log = (props: LogProps) => {
     if (chunk) {
       output = (
         <>
-          {output}
+          <Box>{output}</Box>
           <Button
             onClick={() => {
               setViewedChunk(chunk);

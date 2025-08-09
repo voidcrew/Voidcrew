@@ -1,6 +1,3 @@
-import { BooleanLike } from 'common/react';
-
-import { useBackend } from '../backend';
 import {
   Box,
   Button,
@@ -9,9 +6,12 @@ import {
   NumberInput,
   Section,
   Stack,
-} from '../components';
+} from 'tgui-core/components';
+import type { BooleanLike } from 'tgui-core/react';
+
+import { useBackend } from '../backend';
 import { NtosWindow } from '../layouts';
-import { NTOSData } from '../layouts/NtosWindow';
+import type { NTOSData } from '../layouts/NtosWindow';
 import { AccessList } from './common/AccessList';
 
 type Data = {
@@ -187,7 +187,7 @@ const IdCardPage = (props) => {
               <Input
                 width="100%"
                 value={id_owner}
-                onChange={(e, value) =>
+                onBlur={(value) =>
                   act('PRG_edit', {
                     name: value,
                   })
@@ -216,7 +216,7 @@ const IdCardPage = (props) => {
                 fluid
                 mt={1}
                 value={id_rank}
-                onChange={(e, value) =>
+                onBlur={(value) =>
                   act('PRG_assign', {
                     assignment: value,
                   })
@@ -236,9 +236,7 @@ const TemplateDropdown = (props) => {
 
   const templateKeys = Object.keys(templates);
 
-  if (!templateKeys.length) {
-    return <> </>;
-  }
+  if (!templateKeys.length) return;
 
   return (
     <Stack>

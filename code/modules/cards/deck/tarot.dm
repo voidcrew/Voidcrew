@@ -40,7 +40,7 @@
 	. = ..()
 	AddComponent( \
 		/datum/component/two_handed, \
-		attacksound = 'sound/items/cardflip.ogg', \
+		attacksound = 'sound/items/cards/cardflip.ogg', \
 		wield_callback = CALLBACK(src, PROC_REF(on_wield)), \
 		unwield_callback = CALLBACK(src, PROC_REF(on_unwield)), \
 	)
@@ -54,7 +54,7 @@
 
 	COOLDOWN_START(src, ghost_alert_cooldown, TAROT_GHOST_TIMER)
 	notify_ghosts(
-		"Someone has begun playing with a [src.name] in [get_area(src)]!",
+		"Someone has begun playing with a [name] in [get_area(src)]!",
 		source = src,
 		header = "Haunted Tarot Deck",
 		ghost_sound = 'sound/effects/ghost2.ogg',

@@ -42,7 +42,7 @@
 
 /obj/item/slime_extract/Initialize(mapload)
 	. = ..()
-	create_reagents(100, INJECTABLE | DRAWABLE)
+	create_reagents(100, INJECTABLE | DRAWABLE | SEALED_CONTAINER)
 
 /**
 * Effect when activated by a Luminescent.
@@ -81,7 +81,7 @@
 	target_slime.applied_crossbreed_amount++
 	qdel(src)
 	to_chat(user, span_notice("You feed the slime [src], [target_slime.applied_crossbreed_amount == 1 ? "starting to mutate its core." : "further mutating its core."]"))
-	playsound(target_slime, 'sound/effects/attackblob.ogg', 50, TRUE)
+	playsound(target_slime, 'sound/effects/blob/attackblob.ogg', 50, TRUE)
 
 	if(target_slime.applied_crossbreed_amount >= SLIME_EXTRACT_CROSSING_REQUIRED)
 		target_slime.spawn_corecross()
@@ -449,7 +449,7 @@
 		if(SLIME_ACTIVATE_MINOR)
 			to_chat(user, span_warning("You vomit slippery oil."))
 			playsound(user, 'sound/effects/splat.ogg', 50, TRUE)
-			new /obj/effect/decal/cleanable/oil/slippery(get_turf(user))
+			new /obj/effect/decal/cleanable/blood/oil/slippery(get_turf(user))
 			return 450
 
 		if(SLIME_ACTIVATE_MAJOR)
@@ -508,7 +508,7 @@
 			to_chat(user, span_warning("You feel your body vibrating..."))
 			if(do_after(user, 2.5 SECONDS, target = user))
 				to_chat(user, span_warning("You teleport!"))
-				do_teleport(user, get_turf(user), 6, asoundin = 'sound/weapons/emitter2.ogg', channel = TELEPORT_CHANNEL_BLUESPACE)
+				do_teleport(user, get_turf(user), 6, asoundin = 'sound/items/weapons/emitter2.ogg', channel = TELEPORT_CHANNEL_BLUESPACE)
 				return 300
 
 		if(SLIME_ACTIVATE_MAJOR)
@@ -524,7 +524,7 @@
 				if(teleport_x && teleport_y && teleport_z)
 					var/turf/T = locate(teleport_x, teleport_y, teleport_z)
 					to_chat(user, span_notice("You snap back to your anchor point!"))
-					do_teleport(user, T,  asoundin = 'sound/weapons/emitter2.ogg', channel = TELEPORT_CHANNEL_BLUESPACE)
+					do_teleport(user, T,  asoundin = 'sound/items/weapons/emitter2.ogg', channel = TELEPORT_CHANNEL_BLUESPACE)
 					return 450
 
 
@@ -606,8 +606,8 @@
 /obj/item/slime_extract/rainbow/activate(mob/living/carbon/human/user, datum/species/jelly/luminescent/species, activation_type)
 	switch(activation_type)
 		if(SLIME_ACTIVATE_MINOR)
-			user.dna.features["mcolor"] = "#[pick("7F", "FF")][pick("7F", "FF")][pick("7F", "FF")]"
-			user.dna.update_uf_block(DNA_MUTANT_COLOR_BLOCK)
+			user.dna.features[FEATURE_MUTANT_COLOR] = "#[pick("7F", "FF")][pick("7F", "FF")][pick("7F", "FF")]"
+			user.dna.update_uf_block(/datum/dna_block/feature/mutant_color)
 			user.updateappearance(mutcolor_update=1)
 			species.update_glow(user)
 			to_chat(user, span_notice("You feel different..."))
@@ -700,7 +700,7 @@
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/slimepotion/slime/sentience/click_alt(mob/living/user)
-	potion_reason = tgui_input_text(user, "Enter reason for offering potion", "Intelligence Potion", potion_reason, multiline = TRUE)
+	potion_reason = tgui_input_text(user, "Enter reason for offering potion", "Intelligence Potion", potion_reason, max_length = MAX_MESSAGE_LEN, multiline = TRUE)
 	return CLICK_ACTION_SUCCESS
 
 /obj/item/slimepotion/slime/sentience/attack(mob/living/dumb_mob, mob/user)
@@ -715,13 +715,10 @@
 	if(!dumb_mob.compare_sentience_type(sentience_type)) // Will also return false if not a basic or simple mob, which are the only two we want anyway
 		balloon_alert(user, "invalid creature!")
 		return
-	if(isnull(potion_reason))
-		balloon_alert(user, "no reason for offering set!")
-		return
 	balloon_alert(user, "offering...")
 	being_used = TRUE
 	var/mob/chosen_one = SSpolling.poll_ghosts_for_target(
-		question = "[span_danger(user.name)] is offering [span_notice(dumb_mob.name)] an intelligence potion! Reason: [span_boldnotice(potion_reason)]",
+		question = "[span_danger(user.name)] is offering [span_notice(dumb_mob.name)] an intelligence potion![potion_reason ? " Reason: [span_boldnotice(potion_reason)]" : ""]",
 		check_jobban = ROLE_SENTIENCE,
 		poll_time = 20 SECONDS,
 		checked_target = dumb_mob,
@@ -739,7 +736,7 @@
 		being_used = FALSE
 		return
 
-	dumb_mob.key = ghost.key
+	dumb_mob.PossessByPlayer(ghost.key)
 	dumb_mob.mind.enslave_mind_to_creator(user)
 	SEND_SIGNAL(dumb_mob, COMSIG_SIMPLEMOB_SENTIENCEPOTION, user)
 
@@ -763,6 +760,11 @@
 	var/obj/item/implant/radio/syndicate/imp = new(src)
 	imp.implant(smart_mob, user)
 	smart_mob.AddComponent(/datum/component/simple_access, list(ACCESS_SYNDICATE, ACCESS_MAINT_TUNNELS))
+
+/obj/item/slimepotion/slime/sentience/nuclear/dangerous_horse
+	name = "dangerous pony potion"
+	desc = "A miraculous chemical mix that grants human like intelligence to pony beings. It has been modified with Syndicate technology to also grant an internal radio implant to the pony and authenticate with identification systems"
+	sentience_type = SENTIENCE_PONY
 
 /obj/item/slimepotion/transference
 	name = "consciousness transference potion"
@@ -899,38 +901,42 @@
 	name = "slime speed potion"
 	desc = "A potent chemical mix that will remove the slowdown from any item."
 	icon = 'icons/obj/medical/chemical.dmi'
-	icon_state = "potyellow"
+	icon_state = "potred"
 
-/obj/item/slimepotion/speed/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+/obj/item/slimepotion/speed/interact_with_atom(obj/interacting_with, mob/living/user, list/modifiers)
 	. = ..()
 	if(. & ITEM_INTERACT_ANY_BLOCKER)
 		return .
 	if(!isobj(interacting_with))
 		to_chat(user, span_warning("The potion can only be used on objects!"))
 		return ITEM_INTERACT_BLOCKING
-	if(SEND_SIGNAL(interacting_with, COMSIG_SPEED_POTION_APPLIED, src, user) & SPEED_POTION_STOP)
-		return ITEM_INTERACT_SUCCESS
+
+	if(HAS_TRAIT(interacting_with, TRAIT_SPEED_POTIONED))
+		to_chat(user, span_warning("[interacting_with] can't be made any faster!"))
+		return ITEM_INTERACT_BLOCKING
+
 	if(isitem(interacting_with))
 		var/obj/item/apply_to = interacting_with
-		if(apply_to.slowdown <= 0 || (apply_to.item_flags & IMMUTABLE_SLOW))
-			to_chat(user, span_warning("The [apply_to] can't be made any faster!"))
+		if(apply_to.slowdown <= 0 || (apply_to.item_flags & IMMUTABLE_SLOW) || HAS_TRAIT(apply_to, TRAIT_NO_SPEED_POTION))
+			if(interacting_with.atom_storage)
+				return NONE // lets us put the potion in the bag
+			to_chat(user, span_warning("[apply_to] can't be made any faster!"))
 			return ITEM_INTERACT_BLOCKING
+
+	if(SEND_SIGNAL(interacting_with, COMSIG_SPEED_POTION_APPLIED, src, user) & SPEED_POTION_STOP)
+		return ITEM_INTERACT_SUCCESS
+
+	if(isitem(interacting_with))
+		var/obj/item/apply_to = interacting_with
 		apply_to.slowdown = 0
 
 	to_chat(user, span_notice("You slather the red gunk over the [interacting_with], making it faster."))
 	interacting_with.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
-	interacting_with.add_atom_colour(COLOR_RED, FIXED_COLOUR_PRIORITY)
+	interacting_with.add_atom_colour(color_transition_filter(COLOR_RED, SATURATION_OVERRIDE), FIXED_COLOUR_PRIORITY)
+	interacting_with.drag_slowdown = 0
+	ADD_TRAIT(interacting_with, TRAIT_SPEED_POTIONED, SLIME_POTION_TRAIT)
 	qdel(src)
 	return ITEM_INTERACT_SUCCESS
-
-/obj/item/slimepotion/speed/storage_insert_on_interaction(datum/storage, atom/storage_holder, mob/user)
-	if(!isitem(storage_holder))
-		return TRUE
-	if(istype(storage_holder, /obj/item/mod/control))
-		var/obj/item/mod/control/mod = storage_holder
-		return mod.slowdown_inactive <= 0
-	var/obj/item/storage_item = storage_holder
-	return storage_item.slowdown <= 0
 
 /obj/item/slimepotion/fireproof
 	name = "slime chill potion"
@@ -957,7 +963,7 @@
 	to_chat(user, span_notice("You slather the blue gunk over the [clothing], fireproofing it."))
 	clothing.name = "fireproofed [clothing.name]"
 	clothing.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
-	clothing.add_atom_colour(COLOR_NAVY, FIXED_COLOUR_PRIORITY)
+	clothing.add_atom_colour(color_transition_filter(COLOR_NAVY, SATURATION_OVERRIDE), FIXED_COLOUR_PRIORITY)
 	clothing.max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	clothing.heat_protection = clothing.body_parts_covered
 	clothing.resistance_flags |= FIRE_PROOF
@@ -970,7 +976,7 @@
 	name = "gender change potion"
 	desc = "An interesting chemical mix that changes the biological gender of what its applied to. Cannot be used on things that lack gender entirely."
 	icon = 'icons/obj/medical/chemical.dmi'
-	icon_state = "potlightpink"
+	icon_state = "potrainbow"
 
 /obj/item/slimepotion/genderchange/attack(mob/living/L, mob/user)
 	if(!istype(L) || L.stat == DEAD)
@@ -992,9 +998,9 @@
 
 /obj/item/slimepotion/slime/renaming
 	name = "renaming potion"
-	desc = "A potion that allows a self-aware being to change what name it subconciously presents to the world."
+	desc = "A potion that allows a self-aware being to change what name it subconsciously presents to the world."
 	icon = 'icons/obj/medical/chemical.dmi'
-	icon_state = "potgreen"
+	icon_state = "potbrown"
 
 	var/being_used = FALSE
 
@@ -1028,7 +1034,7 @@
 	name = "bluespace radio potion"
 	desc = "A strange chemical that grants those who ingest it the ability to broadcast and receive subscape radio waves."
 	icon = 'icons/obj/medical/chemical.dmi'
-	icon_state = "potgrey"
+	icon_state = "potbluespace"
 
 /obj/item/slimepotion/slime/slimeradio/attack(mob/living/radio_head, mob/user)
 	if(!isanimal_or_basicmob(radio_head))

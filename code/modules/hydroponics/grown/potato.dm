@@ -1,6 +1,6 @@
 // Potato
 /obj/item/seeds/potato
-	name = "pack of potato seeds"
+	name = "potato seed pack"
 	desc = "Boil 'em! Mash 'em! Stick 'em in a stew!"
 	icon_state = "seed-potato"
 	species = "potato"
@@ -37,7 +37,7 @@
 	icon_state = "potato_wedges"
 	bite_consumption_mod = 100
 
-/obj/item/food/grown/potato/attackby(obj/item/W, mob/user, params)
+/obj/item/food/grown/potato/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
 	if(W.get_sharpness())
 		to_chat(user, span_notice("You cut the potato into wedges with [W]."))
 		var/obj/item/food/grown/potato/wedges/Wedges = new /obj/item/food/grown/potato/wedges
@@ -50,7 +50,7 @@
 
 // Sweet Potato
 /obj/item/seeds/potato/sweet
-	name = "pack of sweet potato seeds"
+	name = "sweet potato seed pack"
 	desc = "These seeds grow into sweet potato plants."
 	icon_state = "seed-sweetpotato"
 	species = "sweetpotato"

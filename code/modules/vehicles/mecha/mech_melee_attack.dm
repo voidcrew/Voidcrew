@@ -42,9 +42,9 @@
 	mecha_attacker.do_attack_animation(src)
 	switch(mecha_attacker.damtype)
 		if(BRUTE)
-			playsound(src, 'sound/weapons/punch4.ogg', 50, TRUE)
+			playsound(src, 'sound/items/weapons/punch4.ogg', 50, TRUE)
 		if(BURN)
-			playsound(src, 'sound/items/welder.ogg', 50, TRUE)
+			playsound(src, 'sound/items/tools/welder.ogg', 50, TRUE)
 		else
 			return
 	mecha_attacker.visible_message(span_danger("[mecha_attacker] hits [src]!"), span_danger("You hit [src]!"), null, COMBAT_MESSAGE_RANGE)
@@ -72,6 +72,22 @@
 		return
 	return ..()
 
+/obj/vehicle/mech_melee_attack(obj/vehicle/sealed/mecha/mecha_attacker, mob/living/user)
+	if(!user.combat_mode)
+		return FALSE
+
+	mecha_attacker.do_attack_animation(src)
+	switch(mecha_attacker.damtype)
+		if(BRUTE)
+			playsound(src, 'sound/items/weapons/punch4.ogg', 50, TRUE)
+		if(BURN)
+			playsound(src, 'sound/items/tools/welder.ogg', 50, TRUE)
+		else
+			return
+	mecha_attacker.visible_message(span_danger("[mecha_attacker] hits [src]!"), span_danger("You hit [src]!"), null, COMBAT_MESSAGE_RANGE)
+	..()
+	return take_damage(mecha_attacker.force, mecha_attacker.damtype, "melee", FALSE, get_dir(src, mecha_attacker))
+
 /mob/living/mech_melee_attack(obj/vehicle/sealed/mecha/mecha_attacker, mob/living/user)
 	if(istype(user) && !user.combat_mode)
 		step_away(src, mecha_attacker)
@@ -94,7 +110,7 @@
 			else if(mecha_attacker.force > 20 && !IsKnockdown()) // lightweight mechas like gygax
 				mecha_attacker.melee_attack_effect(src, heavy = FALSE)
 			playsound(src, mecha_attacker.brute_attack_sound, 50, TRUE)
-		if(FIRE)
+		if(BURN)
 			playsound(src, mecha_attacker.burn_attack_sound, 50, TRUE)
 		if(TOX)
 			playsound(src, mecha_attacker.tox_attack_sound, 50, TRUE)
@@ -107,7 +123,7 @@
 			return
 
 	var/damage = rand(mecha_attacker.force * 0.5, mecha_attacker.force)
-	if (mecha_attacker.damtype == BRUTE || mecha_attacker.damtype == FIRE)
+	if (mecha_attacker.damtype == BRUTE || mecha_attacker.damtype == BURN)
 		var/def_zone = get_random_valid_zone(user.zone_selected, even_weights = TRUE)
 		var/zone_readable = parse_zone_with_bodypart(def_zone)
 		apply_damage(damage, mecha_attacker.damtype, def_zone, run_armor_check(

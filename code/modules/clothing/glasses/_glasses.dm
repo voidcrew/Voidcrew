@@ -30,7 +30,7 @@
 /obj/item/clothing/glasses/Initialize(mapload)
 	. = ..()
 	if(glass_colour_type)
-		AddElement(/datum/element/wearable_client_colour, glass_colour_type, ITEM_SLOT_EYES, forced = forced_glass_color)
+		AddElement(/datum/element/wearable_client_colour, glass_colour_type, ITEM_SLOT_EYES, GLASSES_TRAIT, forced = forced_glass_color)
 
 /obj/item/clothing/glasses/suicide_act(mob/living/carbon/user)
 	user.visible_message(span_suicide("[user] is stabbing \the [src] into [user.p_their()] eyes! It looks like [user.p_theyre()] trying to commit suicide!"))
@@ -53,7 +53,7 @@
 /obj/item/clothing/glasses/proc/thermal_overload()
 	if(ishuman(src.loc))
 		var/mob/living/carbon/human/H = src.loc
-		var/obj/item/organ/internal/eyes/eyes = H.get_organ_slot(ORGAN_SLOT_EYES)
+		var/obj/item/organ/eyes/eyes = H.get_organ_slot(ORGAN_SLOT_EYES)
 		if(!H.is_blind())
 			if(H.glasses == src)
 				to_chat(H, span_danger("[src] overloads and blinds you!"))
@@ -64,10 +64,10 @@
 
 /obj/item/clothing/glasses/proc/change_glass_color(new_color_type)
 	if(glass_colour_type)
-		RemoveElement(/datum/element/wearable_client_colour, glass_colour_type, ITEM_SLOT_EYES, forced = forced_glass_color)
+		RemoveElement(/datum/element/wearable_client_colour, glass_colour_type, ITEM_SLOT_EYES, GLASSES_TRAIT, forced = forced_glass_color)
 	glass_colour_type = new_color_type
 	if(glass_colour_type)
-		AddElement(/datum/element/wearable_client_colour, glass_colour_type, ITEM_SLOT_EYES, forced = forced_glass_color)
+		AddElement(/datum/element/wearable_client_colour, glass_colour_type, ITEM_SLOT_EYES, GLASSES_TRAIT, forced = forced_glass_color)
 
 /obj/item/clothing/glasses/meson
 	name = "optical meson scanner"
@@ -95,7 +95,6 @@
 	color_cutoffs = list(10, 35, 10)
 	glass_colour_type = /datum/client_colour/glass_colour/lightgreen
 	actions_types = list(/datum/action/item_action/toggle_nv)
-	forced_glass_color = TRUE
 
 /obj/item/clothing/glasses/meson/night/update_icon_state()
 	. = ..()
@@ -112,7 +111,7 @@
 	throw_speed = 4
 	attack_verb_continuous = list("slices")
 	attack_verb_simple = list("slice")
-	hitsound = 'sound/weapons/bladeslice.ogg'
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
 	sharpness = SHARP_EDGED
 
 /obj/item/clothing/glasses/science
@@ -130,10 +129,6 @@
 	fire = 80
 	acid = 100
 
-/obj/item/clothing/glasses/science/item_action_slot_check(slot)
-	if(slot & ITEM_SLOT_EYES)
-		return 1
-
 /obj/item/clothing/glasses/science/suicide_act(mob/living/carbon/user)
 	user.visible_message(span_suicide("[user] is tightening \the [src]'s straps around [user.p_their()] neck! It looks like [user.p_theyre()] trying to commit suicide!"))
 	return OXYLOSS
@@ -147,7 +142,6 @@
 	color_cutoffs = list(30, 5, 15)
 	glass_colour_type = /datum/client_colour/glass_colour/lightpurple
 	actions_types = list(/datum/action/item_action/toggle_nv)
-	forced_glass_color = TRUE
 
 /obj/item/clothing/glasses/science/night/update_icon_state()
 	. = ..()
@@ -164,15 +158,10 @@
 	color_cutoffs = list(10, 25, 10)
 	glass_colour_type = /datum/client_colour/glass_colour/lightgreen
 	actions_types = list(/datum/action/item_action/toggle_nv)
-	forced_glass_color = TRUE
 
 /obj/item/clothing/glasses/night/update_icon_state()
 	. = ..()
 	icon_state = length(color_cutoffs) ? initial(icon_state) : "night_off"
-
-/obj/item/clothing/glasses/night/colorless
-	desc = parent_type::desc + " Now with 50% less green!"
-	forced_glass_color = FALSE
 
 /obj/item/clothing/glasses/eyepatch
 	name = "eyepatch"
@@ -182,11 +171,46 @@
 	inhand_icon_state = null
 	actions_types = list(/datum/action/item_action/flip)
 	dog_fashion = /datum/dog_fashion/head/eyepatch
+	var/flipped = FALSE
 
-/obj/item/clothing/glasses/eyepatch/attack_self(mob/user, modifiers)
+/obj/item/clothing/glasses/eyepatch/click_alt(mob/user)
 	. = ..()
-	icon_state = (icon_state == base_icon_state) ? "[base_icon_state]_flipped" : base_icon_state
+	flip_eyepatch()
+
+/obj/item/clothing/glasses/eyepatch/attack_self(mob/user)
+	. = ..()
+	flip_eyepatch()
+
+/obj/item/clothing/glasses/eyepatch/proc/flip_eyepatch()
+	flipped = !flipped
+	icon_state = flipped ? "[base_icon_state]_flipped" : base_icon_state
+	if (!ismob(loc))
+		return
+	var/mob/user = loc
 	user.update_worn_glasses()
+	if (!ishuman(user))
+		return
+	var/mob/living/carbon/human/human_user = user
+	if (human_user.get_eye_scars() & (flipped ? RIGHT_EYE_SCAR : LEFT_EYE_SCAR))
+		tint = INFINITY
+	else
+		tint = initial(tint)
+	human_user.update_tint()
+
+/obj/item/clothing/glasses/eyepatch/equipped(mob/living/user, slot)
+	if (!ishuman(user))
+		return ..()
+	var/mob/living/carbon/human/human_user = user
+	// lol lmao
+	if (human_user.get_eye_scars() & (flipped ? RIGHT_EYE_SCAR : LEFT_EYE_SCAR))
+		tint = INFINITY
+	else
+		tint = initial(tint)
+	return ..()
+
+/obj/item/clothing/glasses/eyepatch/dropped(mob/living/user)
+	. = ..()
+	tint = initial(tint)
 
 /obj/item/clothing/glasses/eyepatch/medical
 	name = "medical eyepatch"
@@ -224,6 +248,7 @@
 	inhand_icon_state = "headset" // lol
 	lefthand_file = 'icons/mob/inhands/items_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/items_righthand.dmi'
+	clothing_traits = list(TRAIT_NEARSIGHTED_CORRECTED)
 
 /obj/item/clothing/glasses/material
 	name = "optical material scanner"
@@ -251,7 +276,7 @@
 	throw_speed = 4
 	attack_verb_continuous = list("slices")
 	attack_verb_simple = list("slice")
-	hitsound = 'sound/weapons/bladeslice.ogg'
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
 	sharpness = SHARP_EDGED
 	glass_colour_type = /datum/client_colour/glass_colour/lightgreen
 
@@ -384,7 +409,7 @@
 	throw_speed = 4
 	attack_verb_continuous = list("slices")
 	attack_verb_simple = list("slice")
-	hitsound = 'sound/weapons/bladeslice.ogg'
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
 	sharpness = SHARP_EDGED
 
 /obj/item/clothing/glasses/sunglasses/gar/orange
@@ -408,6 +433,12 @@
 	inhand_icon_state = "gar"
 	glass_colour_type = /datum/client_colour/glass_colour/red
 
+/obj/item/clothing/glasses/sunglasses/noir
+	name = "noir glasses"
+	desc = "A pair of sleek, futuristic glasses that allow the wearer to see the world in a different light."
+	glass_colour_type = /datum/client_colour/monochrome/glasses
+	forced_glass_color =  TRUE
+
 ///Syndicate item that upgrades the flash protection of your eyes.
 /obj/item/syndicate_contacts
 	name = "suspicious contact lens case"
@@ -421,7 +452,7 @@
 	if(!user.get_organ_slot(ORGAN_SLOT_EYES))
 		to_chat(user, span_warning("You have no eyes to apply the contacts to!"))
 		return
-	var/obj/item/organ/internal/eyes/eyes = user.get_organ_slot(ORGAN_SLOT_EYES)
+	var/obj/item/organ/eyes/eyes = user.get_organ_slot(ORGAN_SLOT_EYES)
 
 	to_chat(user, span_notice("You begin applying the contact lenses to your eyes..."))
 	if(!do_after(user, 3 SECONDS, src))
@@ -444,8 +475,20 @@
 	visor_vars_to_toggle = VISOR_FLASHPROTECT | VISOR_TINT
 	glass_colour_type = /datum/client_colour/glass_colour/gray
 
-/obj/item/clothing/glasses/welding/attack_self(mob/user)
+/obj/item/clothing/glasses/welding/Initialize(mapload)
+	. = ..()
+	if(!up)
+		AddComponent(/datum/component/adjust_fishing_difficulty, 8)
+
+/obj/item/clothing/glasses/welding/attack_self(mob/living/user)
 	adjust_visor(user)
+
+/obj/item/clothing/glasses/welding/adjust_visor(mob/user)
+	. = ..()
+	if(up)
+		qdel(GetComponent(/datum/component/adjust_fishing_difficulty))
+	else
+		AddComponent(/datum/component/adjust_fishing_difficulty, 8)
 
 /obj/item/clothing/glasses/welding/update_icon_state()
 	. = ..()
@@ -464,6 +507,10 @@
 	flags_cover = GLASSESCOVERSEYES
 	tint = INFINITY // You WILL Be blind, no matter what
 	dog_fashion = /datum/dog_fashion/head
+
+/obj/item/clothing/glasses/blindfold/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/adjust_fishing_difficulty, 8)
 
 /obj/item/clothing/glasses/trickblindfold
 	name = "blindfold"
@@ -614,6 +661,10 @@
 	var/list/hudlist = list(DATA_HUD_MEDICAL_ADVANCED, DATA_HUD_DIAGNOSTIC, DATA_HUD_SECURITY_ADVANCED, DATA_HUD_BOT_PATH)
 	var/xray = FALSE
 
+/obj/item/clothing/glasses/debug/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/adjust_fishing_difficulty, -15)
+
 /obj/item/clothing/glasses/debug/equipped(mob/user, slot)
 	. = ..()
 	if(!(slot & ITEM_SLOT_EYES))
@@ -699,6 +750,10 @@
 	flags_cover = GLASSESCOVERSEYES
 	/// Hallucination datum currently being used for seeing mares
 	var/datum/hallucination/stored_hallucination
+
+/obj/item/clothing/glasses/nightmare_vision/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/adjust_fishing_difficulty, 13)
 
 /obj/item/clothing/glasses/nightmare_vision/Destroy()
 	QDEL_NULL(stored_hallucination)

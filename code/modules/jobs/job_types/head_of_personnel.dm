@@ -41,22 +41,64 @@
 	family_heirlooms = list(/obj/item/reagent_containers/cup/glass/trophy/silver_cup)
 	rpg_title = "Guild Questgiver"
 	job_flags = STATION_JOB_FLAGS | HEAD_OF_STAFF_JOB_FLAGS
+
+	human_authority = JOB_AUTHORITY_HUMANS_ONLY
+
 	voice_of_god_power = 1.4 //Command staff has authority
 
 
 /datum/job/head_of_personnel/get_captaincy_announcement(mob/living/captain)
 	return "Due to staffing shortages, newly promoted Acting Captain [captain.real_name] on deck!"
 
+/datum/job/head_of_personnel/generate_traitor_objective()
+	var/datum/objective/assassinate/captain_replacement/promotion = new()
+	promotion.target = promotion.find_target()
+	if(isnull(promotion.target))
+		qdel(promotion)
+		return null
+
+	promotion.update_explanation_text()
+	return promotion
+
+/// Special assassination objective to kill the cap, take their id, and become the new captain
+/datum/objective/assassinate/captain_replacement
+	name = "replace the captain"
+	admin_grantable = FALSE
+
+/datum/objective/assassinate/captain_replacement/update_explanation_text()
+	. = ..()
+	explanation_text = "Assassinate [target.name], the Captain, and steal [target.p_their()] ID card."
+
+/datum/objective/assassinate/captain_replacement/check_completion()
+	if(completed)
+		return TRUE
+	if(!..())
+		return FALSE
+
+	for(var/datum/mind/hop as anything in get_owners())
+		if(!isliving(hop.current))
+			continue
+
+		if(locate(/obj/item/card/id/advanced/gold) in hop.current.get_all_contents())
+			return TRUE
+
+	return FALSE
+
+/datum/objective/assassinate/captain_replacement/find_target(dupe_search_range, list/blacklist)
+	for(var/datum/mind/fellow_head as anything in SSjob.get_all_heads() - blacklist)
+		if(is_captain_job(fellow_head.assigned_role))
+			return fellow_head
+	return null
 
 /datum/outfit/job/hop
 	name = "Head of Personnel"
 	jobtype = /datum/job/head_of_personnel
 
-	id = /obj/item/card/id/advanced/silver
+	id = /obj/item/card/id/advanced/platinum
 	id_trim = /datum/id_trim/job/head_of_personnel
 	uniform = /obj/item/clothing/under/rank/civilian/head_of_personnel
 	backpack_contents = list(
-		/obj/item/melee/baton/telescopic = 1,
+		/obj/item/melee/baton/telescopic/silver = 1,
 		)
 	belt = /obj/item/modular_computer/pda/heads/hop
 	ears = /obj/item/radio/headset/heads/hop

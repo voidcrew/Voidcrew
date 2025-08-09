@@ -16,26 +16,26 @@
 	. = ..()
 	if(!.) //if the bottle wasn't caught
 		var/mob/thrower = throwingdatum?.get_thrower()
-		smash(hit_atom, thrower, TRUE)
+		smash(hit_atom, thrower, throwingdatum)
 
-/obj/item/reagent_containers/cup/glass/proc/smash(atom/target, mob/thrower, ranged = FALSE, break_top = FALSE)
+/obj/item/reagent_containers/cup/glass/proc/smash(atom/target, mob/thrower, datum/thrownthing/throwingdatum, break_top = FALSE)
 	if(!isGlass)
 		return
 	if(QDELING(src) || !target) //Invalid loc
 		return
-	if(bartender_check(target) && ranged)
+	if(bartender_check(target, thrower) && throwingdatum)
 		return
-	SplashReagents(target, ranged, override_spillable = TRUE)
+	SplashReagents(target, throwingdatum, override_spillable = TRUE)
 	var/obj/item/broken_bottle/B = new (loc)
 	B.mimic_broken(src, target, break_top)
 	qdel(src)
 	target.Bumped(B)
 
-/obj/item/reagent_containers/cup/glass/bullet_act(obj/projectile/P)
+/obj/item/reagent_containers/cup/glass/bullet_act(obj/projectile/proj)
 	. = ..()
 	if(QDELETED(src))
 		return
-	if(P.damage > 0 && P.damage_type == BRUTE)
+	if(proj.damage > 0 && proj.damage_type == BRUTE)
 		var/atom/T = get_turf(src)
 		smash(T)
 
@@ -111,16 +111,28 @@
 	resistance_flags = FREEZE_PROOF
 	isGlass = FALSE
 	drink_type = BREAKFAST
-	var/lid_open = 0
+
+	/// Is our lid currently removed?
+	var/lid_open = FALSE
 
 /obj/item/reagent_containers/cup/glass/coffee/no_lid
 	icon_state = "coffee_empty"
 	list_reagents = null
+	lid_open = TRUE
+
+/obj/item/reagent_containers/cup/glass/coffee/Initialize(mapload)
+	. = ..()
+	register_context()
 
 /obj/item/reagent_containers/cup/glass/coffee/examine(mob/user)
 	. = ..()
 	. += span_notice("Alt-click to toggle cup lid.")
 	return
+
+/obj/item/reagent_containers/cup/glass/coffee/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	context[SCREENTIP_CONTEXT_ALT_LMB] = "[lid_open ? "Add" : "Remove"] Lid"
+	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/reagent_containers/cup/glass/coffee/click_alt(mob/user)
 	lid_open = !lid_open
@@ -226,6 +238,7 @@
 	var/mutable_appearance/cap_overlay
 	var/flip_chance = 10
 	custom_price = PAYCHECK_LOWER * 0.8
+	reagent_container_liquid_sound = SFX_PLASTIC_BOTTLE_LIQUID_SLOSH
 
 /obj/item/reagent_containers/cup/glass/waterbottle/Initialize(mapload)
 	cap_overlay = mutable_appearance(cap_icon, cap_icon_state)
@@ -263,11 +276,12 @@
 			cap_lost = TRUE
 		else
 			to_chat(user, span_notice("You remove the cap from [src]."))
-			playsound(loc, 'sound/effects/can_open1.ogg', 50, TRUE)
+			playsound(loc, 'sound/items/handling/reagent_containers/plastic_bottle/bottle_cap_open.ogg', 50, TRUE)
 	else
 		cap_on = TRUE
 		spillable = FALSE
 		to_chat(user, span_notice("You put the cap on [src]."))
+		playsound(loc, 'sound/items/handling/reagent_containers/plastic_bottle/bottle_cap_close.ogg', 50, TRUE)
 	update_appearance()
 	return CLICK_ACTION_SUCCESS
 
@@ -386,10 +400,10 @@
 		base_container_type = /obj/item/reagent_containers/cup/glass/bottle/juice/smallcarton, \
 	)
 
-/obj/item/reagent_containers/cup/glass/bottle/juice/smallcarton/smash(atom/target, mob/thrower, ranged = FALSE)
-	if(bartender_check(target) && ranged)
+/obj/item/reagent_containers/cup/glass/bottle/juice/smallcarton/smash(atom/target, mob/thrower, datum/thrownthing/throwingdatum, break_top)
+	if(bartender_check(target, thrower) && throwingdatum)
 		return
-	SplashReagents(target, ranged, override_spillable = TRUE)
+	SplashReagents(target, throwingdatum, override_spillable = TRUE)
 	var/obj/item/broken_bottle/bottle_shard = new (loc)
 	bottle_shard.mimic_broken(src, target)
 	qdel(src)
@@ -539,7 +553,7 @@
 
 /obj/item/reagent_containers/cup/glass/mug/britcup
 	name = "cup"
-	desc = "A cup with the british flag emblazoned on it."
+	desc = "A cup with the British flag emblazoned on it."
 	icon = 'icons/obj/drinks/coffee.dmi'
 	icon_state = "britcup_empty"
 	base_icon_state = "britcup"

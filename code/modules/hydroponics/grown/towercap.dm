@@ -1,5 +1,5 @@
 /obj/item/seeds/tower
-	name = "pack of tower-cap mycelium"
+	name = "tower-cap mycelium pack"
 	desc = "This mycelium grows into tower-cap mushrooms."
 	icon_state = "mycelium-tower"
 	species = "towercap"
@@ -20,7 +20,7 @@
 	graft_gene = /datum/plant_gene/trait/plant_type/fungal_metabolism
 
 /obj/item/seeds/tower/steel
-	name = "pack of steel-cap mycelium"
+	name = "steel-cap mycelium pack"
 	desc = "This mycelium grows into steel logs."
 	icon_state = "mycelium-steelcap"
 	species = "steelcap"
@@ -78,7 +78,7 @@
 
 	return NONE
 
-/obj/item/grown/log/attackby(obj/item/attacking_item, mob/user, params)
+/obj/item/grown/log/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
 	if(attacking_item.get_sharpness())
 		var/plank_count = 1
 		if(seed)

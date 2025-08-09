@@ -38,6 +38,12 @@
 	if(faction)
 		faction = string_list(faction)
 
+/obj/effect/mob_spawn/Destroy()
+	spawned_mob_ref = null
+	if(istype(outfit))
+		QDEL_NULL(outfit)
+	return ..()
+
 /// Creates whatever mob the spawner makes. Return FALSE if we want to exit from here without doing that, returning NULL will be logged to admins.
 /obj/effect/mob_spawn/proc/create(mob/mob_possessor, newname)
 	var/mob/living/spawned_mob = new mob_type(get_turf(src)) //living mobs only
@@ -135,13 +141,13 @@
 /obj/effect/mob_spawn/ghost_role/Initialize(mapload)
 	. = ..()
 	SSpoints_of_interest.make_point_of_interest(src)
-	LAZYADD(GLOB.mob_spawners[name], src)
+	LAZYADD(GLOB.mob_spawners[format_text(name)], src)
 
-/obj/effect/mob_spawn/Destroy()
-	var/list/spawners = GLOB.mob_spawners[name]
+/obj/effect/mob_spawn/ghost_role/Destroy()
+	var/list/spawners = GLOB.mob_spawners[format_text(name)]
 	LAZYREMOVE(spawners, src)
 	if(!LAZYLEN(spawners))
-		GLOB.mob_spawners -= name
+		GLOB.mob_spawners -= format_text(name)
 	return ..()
 
 //ATTACK GHOST IGNORING PARENT RETURN VALUE
@@ -236,14 +242,14 @@
 		if(mob_possessor.mind)
 			mob_possessor.mind.transfer_to(spawned_mob, force_key_move = TRUE)
 		else
-			spawned_mob.key = mob_possessor.key
+			spawned_mob.PossessByPlayer(mob_possessor.key)
 	var/datum/mind/spawned_mind = spawned_mob.mind
 	if(spawned_mind)
-		spawned_mob.mind.set_assigned_role_with_greeting(SSjob.GetJobType(spawner_job_path))
+		spawned_mob.mind.set_assigned_role_with_greeting(SSjob.get_job_type(spawner_job_path))
 		spawned_mind.name = spawned_mob.real_name
 
 	if(show_flavor)
-		var/output_message = "<span class='infoplain'><span class='big bold'>[you_are_text]</span></span>"
+		var/output_message = span_infoplain("<span class='big bold'>[you_are_text]</span>")
 		if(flavour_text != "")
 			output_message += "\n<span class='infoplain'><b>[flavour_text]</b></span>"
 		if(important_text != "")
@@ -261,6 +267,7 @@
 
 ///these mob spawn subtypes trigger immediately (New or Initialize) and are not player controlled... since they're dead, you know?
 /obj/effect/mob_spawn/corpse
+	density = FALSE //these are pretty much abstract objects that leave a corpse in their place.
 	///when this mob spawn should auto trigger.
 	var/spawn_when = CORPSE_INSTANT
 
@@ -343,3 +350,16 @@
 //don't use this in subtypes, just add 1000 brute yourself. that being said, this is a type that has 1000 brute. it doesn't really have a home anywhere else, it just needs to exist
 /obj/effect/mob_spawn/corpse/human/damaged
 	brute_damage = 1000
+
+/obj/effect/mob_spawn/cockroach
+	name = "Cockroach Spawner"
+	desc = "A spawner for cockroaches, the most common vermin in the station. Small chance to spawn a bloodroach."
+	mob_type = /mob/living/basic/cockroach
+	var/bloodroach_chance = 1 // 1% chance to spawn a bloodroach
+
+/obj/effect/mob_spawn/cockroach/Initialize(mapload)
+	if(prob(bloodroach_chance))
+		mob_type = /mob/living/basic/cockroach/bloodroach
+	. = ..()
+	INVOKE_ASYNC(src, PROC_REF(create))
+	qdel(src)

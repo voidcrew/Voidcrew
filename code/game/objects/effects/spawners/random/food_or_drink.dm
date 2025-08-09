@@ -59,10 +59,11 @@
 		/obj/item/seeds/seedling = 5,
 		/obj/item/seeds/nettle/death = 1,
 		/obj/item/seeds/plump/walkingmushroom = 1,
-		/obj/item/seeds/cannabis/rainbow = 1,
+		/obj/item/seeds/cannabis/anti = 1,
 		/obj/item/seeds/cannabis/death = 1,
-		/obj/item/seeds/cannabis/white = 1,
+		/obj/item/seeds/cannabis/rainbow = 1,
 		/obj/item/seeds/cannabis/ultimate = 1,
+		/obj/item/seeds/cannabis/white = 1,
 		/obj/item/seeds/kudzu = 1,
 		/obj/item/seeds/angel = 1,
 		/obj/item/seeds/glowshroom/glowcap = 1,
@@ -167,6 +168,7 @@
 		/obj/item/reagent_containers/cup/glass/bottle/lizardwine = 1,
 		/obj/item/reagent_containers/cup/glass/bottle/vodka/badminka = 1,
 		/obj/item/reagent_containers/cup/glass/bottle/trappist = 1,
+		/obj/item/reagent_containers/cup/glass/bottle/rum/aged = 1,
 	)
 
 /obj/effect/spawner/random/food_or_drink/pizzaparty

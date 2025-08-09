@@ -33,10 +33,10 @@
 	default_unfasten_wrench(user, tool)
 	return ITEM_INTERACT_SUCCESS
 
-/obj/structure/statue/attackby(obj/item/W, mob/living/user, params)
+/obj/structure/statue/attackby(obj/item/W, mob/living/user, list/modifiers, list/attack_modifiers)
 	add_fingerprint(user)
 	if(W.tool_behaviour == TOOL_WELDER)
-		if(!W.tool_start_check(user, amount=1))
+		if(!W.tool_start_check(user, amount=1, heat_required = HIGH_TEMPERATURE_REQUIRED))
 			return FALSE
 		user.balloon_alert(user, "slicing apart...")
 		if(W.use_tool(src, user, 40, volume=50))
@@ -54,6 +54,39 @@
 			new custom_material.sheet_type(drop_location(), amount)
 
 //////////////////////////////////////STATUES/////////////////////////////////////////////////////////////
+
+/obj/structure/statue/drake
+	name = "drake statue"
+	desc = "Statue of a lesser drake. Its carved eye sockets glow slightly."
+	icon_state = "drake"
+	anchored = TRUE
+
+/obj/structure/statue/drake/Initialize(mapload)
+	. = ..()
+	if (prob(25))
+		icon_state = "drake_headless"
+		desc = "Statue of a lesser drake. Time has not been kind."
+	update_appearance(UPDATE_OVERLAYS)
+
+/obj/structure/statue/drake/update_overlays()
+	. = ..()
+	if (icon_state == "drake")
+		. += emissive_appearance(icon, "drake_emissive", src)
+
+/obj/structure/statue/dragonman
+	name = "dragonman statue"
+	desc = "Statue of a draconic humanoid warrior. Its glittering eyes seem to follow you around the room."
+	icon_state = "dragonman"
+	anchored = TRUE
+
+/obj/structure/statue/dragonman/Initialize(mapload)
+	. = ..()
+	update_appearance(UPDATE_OVERLAYS)
+
+/obj/structure/statue/dragonman/update_overlays()
+	. = ..()
+	. += emissive_appearance(icon, "dragonman_emissive", src)
+
 ////////////////////////uranium///////////////////////////////////
 
 /obj/structure/statue/uranium
@@ -165,15 +198,15 @@
 	abstract_type = /obj/structure/statue/diamond
 
 /obj/structure/statue/diamond/captain
-	name = "statue of THE captain."
+	name = "statue of THE captain"
 	icon_state = "cap"
 
 /obj/structure/statue/diamond/ai1
-	name = "statue of the AI hologram."
+	name = "statue of the AI hologram"
 	icon_state = "ai1"
 
 /obj/structure/statue/diamond/ai2
-	name = "statue of the AI core."
+	name = "statue of the AI core"
 	icon_state = "ai2"
 
 ////////////////////////bananium///////////////////////////////////////
@@ -265,6 +298,7 @@
 	icon = 'icons/obj/art/statue.dmi'
 	icon_state = "chisel"
 	inhand_icon_state = "screwdriver_nuke"
+	icon_angle = -90
 	lefthand_file = 'icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/tools_righthand.dmi'
 	obj_flags = CONDUCTS_ELECTRICITY
@@ -277,10 +311,10 @@
 	custom_materials = list(/datum/material/iron=SMALL_MATERIAL_AMOUNT*0.75)
 	attack_verb_continuous = list("stabs")
 	attack_verb_simple = list("stab")
-	hitsound = 'sound/weapons/bladeslice.ogg'
-	usesound = list('sound/effects/picaxe1.ogg', 'sound/effects/picaxe2.ogg', 'sound/effects/picaxe3.ogg')
-	drop_sound = 'sound/items/handling/screwdriver_drop.ogg'
-	pickup_sound = 'sound/items/handling/screwdriver_pickup.ogg'
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
+	usesound = list('sound/effects/pickaxe/picaxe1.ogg', 'sound/effects/pickaxe/picaxe2.ogg', 'sound/effects/pickaxe/picaxe3.ogg')
+	drop_sound = 'sound/items/handling/tools/screwdriver_drop.ogg'
+	pickup_sound = 'sound/items/handling/tools/screwdriver_pickup.ogg'
 	sharpness = SHARP_POINTY
 	tool_behaviour = TOOL_RUSTSCRAPER
 	toolspeed = 3 // You're gonna have a bad time
@@ -348,7 +382,7 @@ Moving interrupts
 	//How long whole process takes
 	var/sculpting_time = 30 SECONDS
 	//Single interruptible progress period
-	var/sculpting_period = round(sculpting_time / world.icon_size) //this is just so it reveals pixels line by line for each.
+	var/sculpting_period = round(sculpting_time / ICON_SIZE_Y) //this is just so it reveals pixels line by line for each.
 	var/interrupted = FALSE
 	var/remaining_time = sculpting_time - (prepared_block.completion * sculpting_time)
 
@@ -473,7 +507,7 @@ Moving interrupts
 		return FALSE
 	//No big icon things
 	var/list/icon_dimensions = get_icon_dimensions(target.icon)
-	if(icon_dimensions["width"] != world.icon_size || icon_dimensions["height"] != world.icon_size)
+	if(icon_dimensions["width"] != ICON_SIZE_X || icon_dimensions["height"] != ICON_SIZE_Y)
 		user.balloon_alert(user, "sculpt target is too big!")
 		return FALSE
 	return TRUE
@@ -509,7 +543,7 @@ Moving interrupts
 			remove_filter("partial_uncover")
 			target_appearance_with_filters = null
 		else
-			var/mask_offset = min(world.icon_size,round(completion * world.icon_size))
+			var/mask_offset = min(ICON_SIZE_Y,round(completion * ICON_SIZE_Y))
 			remove_filter("partial_uncover")
 			add_filter("partial_uncover", 1, alpha_mask_filter(icon = white, y = -mask_offset))
 			target_appearance_with_filters.filters = filter(type="alpha",icon=white,y=-mask_offset,flags=MASK_INVERSE)
@@ -557,31 +591,10 @@ Moving interrupts
 /obj/structure/statue/custom/proc/set_visuals(model_appearance)
 	if(content_ma)
 		QDEL_NULL(content_ma)
-	content_ma = new
-	content_ma.appearance = model_appearance
+	content_ma = copy_appearance_filter_overlays(model_appearance)
 	content_ma.pixel_x = 0
 	content_ma.pixel_y = 0
 	content_ma.alpha = 255
-
-	var/static/list/plane_whitelist = list(FLOAT_PLANE, GAME_PLANE, FLOOR_PLANE)
-
-	/// Ideally we'd have knowledge what we're removing but i'd have to be done on target appearance retrieval
-	var/list/overlays_to_keep = list()
-	for(var/mutable_appearance/special_overlay as anything in content_ma.overlays)
-		var/mutable_appearance/real = new()
-		real.appearance = special_overlay
-		if(PLANE_TO_TRUE(real.plane) in plane_whitelist)
-			overlays_to_keep += real
-	content_ma.overlays = overlays_to_keep
-
-	var/list/underlays_to_keep = list()
-	for(var/mutable_appearance/special_underlay as anything in content_ma.underlays)
-		var/mutable_appearance/real = new()
-		real.appearance = special_underlay
-		if(PLANE_TO_TRUE(real.plane) in plane_whitelist)
-			underlays_to_keep += real
-	content_ma.underlays = underlays_to_keep
-
 	content_ma.appearance_flags &= ~KEEP_APART //Don't want this
 	content_ma.filters = filter(type="color",color=greyscale_with_value_bump,space=FILTER_COLOR_HSV)
 	update_content_planes()

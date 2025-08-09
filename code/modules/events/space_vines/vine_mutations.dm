@@ -12,6 +12,20 @@
 	holder.mutations |= src
 	holder.add_atom_colour(hue, FIXED_COLOUR_PRIORITY)
 
+/datum/spacevine_mutation/proc/on_buckle(obj/structure/spacevine/holder, mob/living/buckled)
+	SHOULD_CALL_PARENT(TRUE)
+	buckled.layer = SPACEVINE_MOB_LAYER
+	RegisterSignal(buckled, COMSIG_MOB_UNBUCKLED, PROC_REF(on_unbuckle))
+
+/datum/spacevine_mutation/proc/on_unbuckle(datum/source)
+	SHOULD_CALL_PARENT(TRUE)
+	SIGNAL_HANDLER
+	if(!isliving(source))
+		return
+	var/mob/living/buckled = source
+	buckled.layer = initial(buckled.layer)
+	UnregisterSignal(buckled, COMSIG_MOB_UNBUCKLED)
+
 /datum/spacevine_mutation/proc/process_mutation(obj/structure/spacevine/holder)
 	return
 
@@ -37,9 +51,6 @@
 	return
 
 /datum/spacevine_mutation/proc/on_spread(obj/structure/spacevine/holder, turf/target)
-	return
-
-/datum/spacevine_mutation/proc/on_buckle(obj/structure/spacevine/holder, mob/living/buckled)
 	return
 
 /datum/spacevine_mutation/proc/on_explosion(severity, target, obj/structure/spacevine/holder)
@@ -168,6 +179,7 @@
 
 /// What happens if an aggr spreading vine buckles a mob.
 /datum/spacevine_mutation/aggressive_spread/on_buckle(obj/structure/spacevine/holder, mob/living/buckled)
+	. = ..()
 	aggrospread_act(holder, buckled)
 
 /// Hurts mobs. To be used when a vine with aggressive spread mutation spreads into the mob's tile or buckles them.
@@ -180,7 +192,7 @@
 		if(thorn && prob(40) && !HAS_TRAIT(victim, TRAIT_PIERCEIMMUNE)) //If we found the thorns mutation there is now a chance to get stung instead of lashed or smashed.
 			victim.apply_damage(50, BRUTE, def_zone = limb, wound_bonus = rand(-20,10), sharpness = SHARP_POINTY) //This one gets a bit lower damage because it ignores armor.
 			victim.Stun(1 SECONDS) //Stopped in place for a moment.
-			playsound(living_mob, 'sound/weapons/pierce.ogg', 50, TRUE, -1)
+			playsound(living_mob, 'sound/items/weapons/pierce.ogg', 50, TRUE, -1)
 			living_mob.visible_message(span_danger("[living_mob] is nailed by a sharp thorn!"), \
 			span_userdanger("You are nailed by a sharp thorn!"))
 			log_combat(vine, living_mob, "aggressively pierced") //"Aggressively" for easy ctrl+F'ing in the attack logs.
@@ -188,7 +200,7 @@
 			if(prob(80) && !HAS_TRAIT(victim, TRAIT_PIERCEIMMUNE))
 				victim.apply_damage(60, BRUTE, def_zone = limb, blocked = armor, wound_bonus = rand(-20,10), sharpness = SHARP_EDGED)
 				victim.Knockdown(2 SECONDS)
-				playsound(victim, 'sound/weapons/whip.ogg', 50, TRUE, -1)
+				playsound(victim, 'sound/items/weapons/whip.ogg', 50, TRUE, -1)
 				living_mob.visible_message(span_danger("[living_mob] is lacerated by an outburst of vines!"), \
 				span_userdanger("You are lacerated by an outburst of vines!"))
 				log_combat(vine, living_mob, "aggressively lacerated")
@@ -203,7 +215,7 @@
 				log_combat(vine, living_mob, "aggressively smashed")
 	else //Living but not a carbon? Maybe a silicon? Can't be wounded so have a big chunk of simple bruteloss with no special effects. They can be entangled.
 		living_mob.adjustBruteLoss(75)
-		playsound(living_mob, 'sound/weapons/whip.ogg', 50, TRUE, -1)
+		playsound(living_mob, 'sound/items/weapons/whip.ogg', 50, TRUE, -1)
 		living_mob.visible_message(span_danger("[living_mob] is brutally threshed by [vine]!"), \
 		span_userdanger("You are brutally threshed by [vine]!"))
 		log_combat(vine, living_mob, "aggressively spread into") //You aren't being attacked by the vines. You just happen to stand in their way.

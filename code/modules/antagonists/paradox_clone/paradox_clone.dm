@@ -1,7 +1,7 @@
 /datum/antagonist/paradox_clone
 	name = "\improper Paradox Clone"
 	roundend_category = "Paradox Clone"
-	job_rank = ROLE_PARADOX_CLONE
+	pref_flag = ROLE_PARADOX_CLONE
 	antagpanel_category = ANTAG_GROUP_PARADOX
 	antag_hud_name = "paradox_clone"
 	show_to_ghosts = TRUE
@@ -28,17 +28,6 @@
 
 	return clone_icon
 
-/datum/antagonist/paradox_clone/on_gain()
-	owner.special_role = ROLE_PARADOX_CLONE
-	return ..()
-
-/datum/antagonist/paradox_clone/on_removal()
-	//don't null it if we got a different one added on top, somehow.
-	if(owner.special_role == ROLE_PARADOX_CLONE)
-		owner.special_role = null
-	original_ref = null
-	return ..()
-
 /datum/antagonist/paradox_clone/Destroy()
 	original_ref = null
 	return ..()
@@ -52,7 +41,7 @@
 	kill.update_explanation_text()
 	objectives += kill
 
-	owner.set_assigned_role(SSjob.GetJobType(/datum/job/paradox_clone))
+	owner.set_assigned_role(SSjob.get_job_type(/datum/job/paradox_clone))
 
 	//clone doesnt show up on message lists
 	var/obj/item/modular_computer/pda/messenger = locate() in owner.current
@@ -73,7 +62,7 @@
 	original_mind.quick_copy_all_memories(owner)
 
 /datum/antagonist/paradox_clone/roundend_report_header()
-	return "<span class='header'>A paradox clone appeared on the station!</span><br>"
+	return span_header("A paradox clone appeared on the station!<br>")
 
 /datum/outfit/paradox_clone
 	name = "Paradox Clone (Preview only)"
@@ -94,7 +83,7 @@
 	if(!target?.current)
 		explanation_text = "Free Objective"
 		CRASH("WARNING! [ADMIN_LOOKUPFLW(owner)] paradox clone objectives forged without an original!")
-	explanation_text = "Murder and replace [target.name], the [!target_role_type ? target.assigned_role.title : target.special_role]. Remember, your mission is to blend in, do not kill anyone else unless you have to!"
+	explanation_text = "Murder and replace [target.name], the [!target_role_type ? target.assigned_role.title : english_list(target.get_special_roles())]. Remember, your mission is to blend in, do not kill anyone else unless you have to!"
 
 ///Static bluespace stream used in its ghost poll icon.
 /obj/effect/bluespace_stream
