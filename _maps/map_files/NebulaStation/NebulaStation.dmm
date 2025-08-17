@@ -6789,6 +6789,13 @@
 	dir = 10
 	},
 /area/station/maintenance/aft/lesser)
+"bat" = (
+/obj/structure/hedge,
+/obj/structure/sign/nanotrasen{
+	pixel_y = 32
+	},
+/turf/open/floor/circuit,
+/area/station/ai_monitored/turret_protected/ai_upload)
 "baD" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/green/visible{
 	dir = 1
@@ -10744,6 +10751,14 @@
 	dir = 8
 	},
 /area/station/commons/dorms)
+"bFm" = (
+/obj/machinery/camera/motion/directional/west{
+	c_tag = "Vault - External";
+	use_power = 0;
+	name = "Vault External Camera"
+	},
+/turf/open/space/basic,
+/area/space/nearstation)
 "bFr" = (
 /obj/structure/railing{
 	dir = 8
@@ -19205,6 +19220,15 @@
 /obj/machinery/camera/autoname/directional/east,
 /turf/open/floor/iron,
 /area/station/hallway/primary/aft)
+"cTd" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 5
+	},
+/turf/open/floor/iron/dark,
+/area/station/ai_monitored/turret_protected/ai_upload)
 "cTe" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
@@ -38729,7 +38753,13 @@
 /turf/open/floor/iron,
 /area/station/maintenance/fore/lesser)
 "fNa" = (
-/turf/open/floor/circuit/green,
+/obj/effect/turf_decal/siding/dark{
+	dir = 9
+	},
+/obj/effect/turf_decal/trimline/green/filled/line{
+	dir = 9
+	},
+/turf/open/floor/iron/dark,
 /area/station/ai_monitored/turret_protected/ai_upload)
 "fNd" = (
 /obj/structure/cable,
@@ -42520,7 +42550,6 @@
 /area/station/commons/toilet/restrooms)
 "gnZ" = (
 /obj/effect/turf_decal/box/red,
-/obj/machinery/holopad/secure,
 /obj/structure/cable,
 /turf/open/floor/iron/dark/small,
 /area/station/ai_monitored/turret_protected/ai_upload)
@@ -59425,6 +59454,9 @@
 	},
 /turf/open/floor/plating,
 /area/station/science/ordnance/testlab)
+"iNm" = (
+/turf/open/floor/circuit,
+/area/station/ai_monitored/turret_protected/ai_upload)
 "iNo" = (
 /obj/effect/turf_decal/siding/thinplating_new/light{
 	dir = 4
@@ -66267,6 +66299,7 @@
 /obj/machinery/power/apc/auto_name/directional/east,
 /obj/item/kirbyplants/random,
 /obj/structure/cable,
+/obj/machinery/status_display/ai/directional/north,
 /turf/open/floor/circuit/red,
 /area/station/ai_monitored/turret_protected/ai_upload)
 "jPK" = (
@@ -88314,10 +88347,10 @@
 /turf/open/floor/iron/dark/herringbone,
 /area/station/hallway/secondary/exit/departure_lounge)
 "nhl" = (
-/obj/effect/turf_decal/siding/dark/end{
+/obj/effect/turf_decal/siding/dark{
 	dir = 1
 	},
-/obj/effect/turf_decal/trimline/green/filled/end{
+/obj/effect/turf_decal/trimline/green/filled/warning{
 	dir = 1
 	},
 /turf/open/floor/iron/dark,
@@ -88333,6 +88366,13 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/iron/dark,
 /area/station/service/bar)
+"nhu" = (
+/obj/structure/hedge,
+/obj/structure/sign/nanotrasen{
+	pixel_y = 32
+	},
+/turf/open/floor/circuit/red,
+/area/station/ai_monitored/turret_protected/ai_upload)
 "nhw" = (
 /obj/effect/turf_decal/siding/dark/corner{
 	dir = 1
@@ -115163,19 +115203,8 @@
 /area/station/commons/dorms)
 "rbI" = (
 /obj/effect/turf_decal/siding/dark,
-/obj/effect/turf_decal/siding/dark/corner{
-	dir = 4
-	},
-/obj/effect/turf_decal/siding/dark/corner{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/green/filled/corner{
-	dir = 4
-	},
-/obj/effect/turf_decal/trimline/green/filled/corner{
-	dir = 1
-	},
 /obj/structure/cable,
+/obj/machinery/holopad/secure,
 /turf/open/floor/iron/dark,
 /area/station/ai_monitored/turret_protected/ai_upload)
 "rbJ" = (
@@ -129031,13 +129060,13 @@
 /area/station/maintenance/port/aft)
 "tgE" = (
 /obj/effect/turf_decal/siding/dark,
-/obj/effect/turf_decal/siding/dark{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/green/filled/warning{
-	dir = 1
-	},
 /obj/structure/cable,
+/obj/effect/turf_decal/siding/dark/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/green/filled/corner{
+	dir = 4
+	},
 /turf/open/floor/iron/dark,
 /area/station/ai_monitored/turret_protected/ai_upload)
 "tgF" = (
@@ -129426,6 +129455,7 @@
 	network = list("aiupload")
 	},
 /obj/machinery/firealarm/directional/west,
+/obj/machinery/status_display/ai/directional/north,
 /turf/open/floor/circuit,
 /area/station/ai_monitored/turret_protected/ai_upload)
 "tjx" = (
@@ -132223,6 +132253,9 @@
 /obj/structure/cable,
 /turf/open/floor/iron/dark/textured_edge,
 /area/station/security/prison)
+"tDF" = (
+/turf/open/floor/circuit/red,
+/area/station/ai_monitored/turret_protected/ai_upload)
 "tDJ" = (
 /obj/effect/mapping_helpers/broken_floor,
 /obj/effect/turf_decal/trimline/blue/filled/corner{
@@ -132357,11 +132390,6 @@
 /obj/effect/spawner/structure/window,
 /turf/open/floor/plating,
 /area/station/medical/morgue)
-"tEn" = (
-/obj/structure/hedge,
-/obj/machinery/status_display/ai/directional/north,
-/turf/open/floor/circuit/red,
-/area/station/ai_monitored/turret_protected/ai_upload)
 "tEp" = (
 /obj/structure/filingcabinet/chestdrawer,
 /obj/item/radio/intercom/directional/north,
@@ -139535,10 +139563,10 @@
 /area/station/maintenance/starboard/fore)
 "uKJ" = (
 /obj/effect/turf_decal/siding/dark,
-/obj/effect/turf_decal/siding/dark{
+/obj/effect/turf_decal/siding/dark/corner{
 	dir = 1
 	},
-/obj/effect/turf_decal/trimline/green/filled/warning{
+/obj/effect/turf_decal/trimline/green/filled/corner{
 	dir = 1
 	},
 /turf/open/floor/iron/dark,
@@ -150361,10 +150389,10 @@
 /turf/open/floor/wood/large,
 /area/station/service/library/upper)
 "woC" = (
-/obj/structure/hedge,
 /obj/machinery/flasher/directional/north{
 	id = "AI"
 	},
+/obj/machinery/porta_turret/ai,
 /turf/open/floor/circuit/green,
 /area/station/ai_monitored/turret_protected/ai_upload)
 "woH" = (
@@ -162118,11 +162146,6 @@
 /obj/structure/tank_holder/extinguisher,
 /turf/open/floor/iron/white,
 /area/station/medical/treatment_center)
-"yfi" = (
-/obj/structure/hedge,
-/obj/machinery/status_display/ai/directional/north,
-/turf/open/floor/circuit,
-/area/station/ai_monitored/turret_protected/ai_upload)
 "yfj" = (
 /obj/machinery/atmospherics/pipe/smart/simple/yellow/visible{
 	dir = 10
@@ -214150,7 +214173,7 @@ gym
 gym
 gym
 gym
-gym
+bFm
 gym
 gym
 gym
@@ -214411,7 +214434,7 @@ gym
 gym
 gym
 gym
-irx
+gJT
 irx
 irx
 irx
@@ -214667,9 +214690,9 @@ gym
 gym
 gym
 gym
-gym
 irx
-yfi
+irx
+irx
 tjv
 gpL
 rRA
@@ -214925,8 +214948,8 @@ gym
 gym
 gym
 irx
-irx
-krS
+bat
+iNm
 lJd
 kLP
 czQ
@@ -215697,7 +215720,7 @@ gym
 gym
 irx
 woC
-fNa
+cTd
 tgE
 rop
 hNt
@@ -215953,8 +215976,8 @@ gym
 gym
 gym
 irx
-irx
-amU
+nhu
+tDF
 kBX
 dFl
 cte
@@ -216209,9 +216232,9 @@ gym
 gym
 gym
 gym
-gym
 irx
-tEn
+irx
+irx
 jPI
 pWA
 egi
@@ -216467,7 +216490,7 @@ gym
 gym
 gym
 gym
-irx
+gym
 irx
 irx
 irx
