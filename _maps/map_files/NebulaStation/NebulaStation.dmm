@@ -65255,7 +65255,7 @@
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 1
 	},
-/obj/structure/filingcabinet/filingcabinet,
+/obj/structure/filingcabinet/white,
 /obj/structure/cable,
 /obj/item/radio/intercom/directional/north,
 /obj/machinery/camera/autoname/directional/north,
@@ -136388,7 +136388,7 @@
 /turf/open/floor/iron/dark/herringbone,
 /area/station/ai_monitored/aisat/exterior)
 "ujm" = (
-/obj/structure/filingcabinet/filingcabinet,
+/obj/structure/filingcabinet/white,
 /obj/effect/turf_decal/siding/wood{
 	dir = 9
 	},
