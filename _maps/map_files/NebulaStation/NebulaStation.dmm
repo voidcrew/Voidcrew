@@ -26607,6 +26607,7 @@
 	name = "Unit 3"
 	},
 /obj/effect/turf_decal/tile/dark/diagonal_edge,
+/obj/machinery/duct,
 /turf/open/floor/iron/dark/diagonal,
 /area/station/commons/toilet/restrooms)
 "dXP" = (
@@ -36023,6 +36024,7 @@
 	name = "Unit 2"
 	},
 /obj/effect/turf_decal/tile/dark/diagonal_edge,
+/obj/machinery/duct,
 /turf/open/floor/iron/dark/diagonal,
 /area/station/commons/toilet/restrooms)
 "frS" = (
@@ -47899,6 +47901,7 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/thinplating_new/light/corner,
+/obj/machinery/duct,
 /turf/open/floor/iron/white/herringbone,
 /area/station/commons/toilet/restrooms)
 "hdD" = (
@@ -50088,6 +50091,7 @@
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/duct,
 /turf/open/floor/iron/white/herringbone,
 /area/station/commons/toilet/restrooms)
 "htW" = (
@@ -50593,6 +50597,7 @@
 	name = "Unit 1"
 	},
 /obj/effect/turf_decal/tile/dark/diagonal_edge,
+/obj/machinery/duct,
 /turf/open/floor/iron/dark/diagonal,
 /area/station/commons/toilet/restrooms)
 "hxD" = (
@@ -102050,6 +102055,7 @@
 	dir = 8
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/duct,
 /turf/open/floor/iron/white/herringbone,
 /area/station/commons/toilet/restrooms)
 "pem" = (
@@ -108689,6 +108695,7 @@
 /obj/effect/turf_decal/siding/thinplating_new/light{
 	dir = 4
 	},
+/obj/machinery/duct,
 /turf/open/floor/iron/white/herringbone,
 /area/station/commons/toilet/restrooms)
 "qbN" = (
@@ -157180,6 +157187,7 @@
 	dir = 8
 	},
 /obj/structure/cable,
+/obj/machinery/duct,
 /turf/open/floor/iron/white/herringbone,
 /area/station/commons/toilet/restrooms)
 "xsN" = (
