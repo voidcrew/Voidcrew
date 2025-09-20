@@ -15284,6 +15284,7 @@
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/item/pipe_dispenser,
 /turf/open/floor/engine,
 /area/station/engineering/supermatter/room)
 "cpk" = (
@@ -44750,7 +44751,6 @@
 "gEf" = (
 /obj/structure/table/reinforced,
 /obj/item/t_scanner,
-/obj/item/pipe_dispenser,
 /obj/item/pipe_dispenser,
 /obj/item/storage/belt/utility,
 /obj/effect/turf_decal/bot,
