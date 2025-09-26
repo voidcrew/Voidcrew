@@ -19178,7 +19178,6 @@
 "cRX" = (
 /obj/machinery/light/directional/north,
 /obj/effect/turf_decal/delivery,
-/obj/machinery/bluespace_vendor/directional/north,
 /obj/structure/closet/crate,
 /turf/open/floor/iron/dark/textured_large,
 /area/station/engineering/atmos)
@@ -27435,7 +27434,6 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/bluespace_vendor/directional/south,
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
@@ -29897,11 +29895,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/station/security/checkpoint/engineering)
-"evk" = (
-/obj/machinery/atmospherics/components/unary/bluespace_sender,
-/obj/effect/turf_decal/bot,
-/turf/open/floor/iron/dark/textured_large,
-/area/station/engineering/atmos)
 "evu" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/siding/purple{
@@ -41973,17 +41966,6 @@
 /obj/effect/landmark/start/atmospheric_technician,
 /turf/open/floor/iron/dark/textured,
 /area/station/engineering/atmos/storage/gas)
-"gjm" = (
-/obj/effect/turf_decal/trimline/yellow/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 8
-	},
-/obj/structure/disposalpipe/segment,
-/obj/machinery/bluespace_vendor/directional/west,
-/turf/open/floor/iron,
-/area/station/hallway/primary/aft)
 "gjq" = (
 /obj/effect/turf_decal/trimline/red/line{
 	dir = 8
@@ -49330,7 +49312,6 @@
 /obj/effect/turf_decal/trimline/yellow/line{
 	dir = 4
 	},
-/obj/machinery/bluespace_vendor/directional/south,
 /obj/item/storage/medkit/fire,
 /obj/item/storage/belt/utility,
 /obj/item/lightreplacer{
@@ -59948,7 +59929,6 @@
 /obj/machinery/light/directional/north,
 /obj/effect/turf_decal/delivery,
 /obj/machinery/portable_atmospherics/canister,
-/obj/machinery/bluespace_vendor/directional/north,
 /turf/open/floor/iron/dark/textured_large,
 /area/station/engineering/atmos)
 "iQC" = (
@@ -106797,7 +106777,6 @@
 	pixel_y = 3
 	},
 /obj/item/clothing/shoes/magboots,
-/obj/machinery/bluespace_vendor/directional/north,
 /turf/open/floor/iron/dark/textured,
 /area/station/engineering/engine_smes)
 "pMB" = (
@@ -127467,19 +127446,6 @@
 /obj/structure/flora/bush/lavendergrass/style_random,
 /turf/open/misc/asteroid/airless,
 /area/space/nearstation)
-"sTz" = (
-/obj/effect/turf_decal/tile/neutral{
-	dir = 4
-	},
-/obj/effect/turf_decal/trimline/purple/line{
-	dir = 4
-	},
-/obj/machinery/bluespace_vendor/directional/east,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/disposalpipe/segment,
-/turf/open/floor/iron,
-/area/station/hallway/primary/fore)
 "sTA" = (
 /obj/effect/turf_decal/siding/dark/corner{
 	dir = 8
@@ -145593,7 +145559,6 @@
 	},
 /obj/item/radio/intercom/directional/east,
 /obj/structure/closet/crate/trashcart/laundry,
-/obj/machinery/bluespace_vendor/directional/south,
 /obj/machinery/light/small/directional/east,
 /obj/effect/turf_decal/siding/dark_blue{
 	dir = 8
@@ -159391,7 +159356,6 @@
 "xJr" = (
 /obj/structure/rack,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/bluespace_vendor/directional/north,
 /obj/item/wallframe/digital_clock{
 	pixel_y = 8
 	},
@@ -199186,7 +199150,7 @@ xBV
 qZz
 nzm
 iek
-evk
+bGE
 pbP
 qTF
 hVS
@@ -261868,7 +261832,7 @@ fys
 ddf
 qkZ
 xAh
-gjm
+dIr
 oLT
 dIr
 jEG
@@ -262346,7 +262310,7 @@ xiD
 wAV
 jmZ
 piW
-sTz
+jmZ
 prp
 vvZ
 qpN
