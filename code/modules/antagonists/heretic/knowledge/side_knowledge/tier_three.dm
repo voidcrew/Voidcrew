@@ -1,16 +1,58 @@
-// Sidepaths for knowledge between Void and Blade.
+/*!
+ * Tier 3 knowledge: Summons
+ */
 
-/datum/heretic_knowledge_tree_column/void_to_blade
-	neighbour_type_left = /datum/heretic_knowledge_tree_column/main/void
-	neighbour_type_right = /datum/heretic_knowledge_tree_column/main/blade
+/datum/heretic_knowledge/summon/rusty
+	name = "Rusted Ritual"
+	desc = "Allows you to transmute a pool of vomit, some cable coil, and 10 sheets of iron into a Rust Walker. \
+		Rust Walkers excel at spreading rust and are moderately strong in combat."
+	gain_text = "I combined my knowledge of creation with my desire for corruption. The Marshal knew my name, and the Rusted Hills echoed out."
+	required_atoms = list(
+		/obj/effect/decal/cleanable/vomit = 1,
+		/obj/item/stack/sheet/iron = 10,
+		/obj/item/stack/cable_coil = 15,
+	)
+	mob_to_summon = /mob/living/basic/heretic_summon/rust_walker
+	cost = 2
+	poll_ignore_define = POLL_IGNORE_RUST_SPIRIT
+	drafting_tier = 3
 
-	route = PATH_SIDE
+/datum/heretic_knowledge/summon/maid_in_mirror
+	name = "Maid in the Mirror"
+	desc = "Allows you to transmute five sheets of glass, any suit, and a pair of lungs to create a Maid in the Mirror. \
+			Maid in the Mirrors are decent combatants that can become incorporeal by phasing in and out of the mirror realm, serving as powerful scouts and ambushers. \
+			Their attacks also apply a stack of void chill."
+	gain_text = "Within each reflection, lies a gateway into an unimaginable world of colors never seen and \
+		people never met. The ascent is glass, and the walls are knives. Each step is blood, if you do not have a guide."
 
-	tier1 = /datum/heretic_knowledge/limited_amount/risen_corpse
-	tier2 = /datum/heretic_knowledge/rune_carver
-	tier3 = /datum/heretic_knowledge/summon/maid_in_mirror
+	required_atoms = list(
+		/obj/item/stack/sheet/glass = 5,
+		/obj/item/clothing/suit = 1,
+		/obj/item/organ/lungs = 1,
+	)
+	cost = 2
 
+	mob_to_summon = /mob/living/basic/heretic_summon/maid_in_the_mirror
+	poll_ignore_define = POLL_IGNORE_MAID_IN_MIRROR
+	drafting_tier = 3
 
+/datum/heretic_knowledge/summon/ashy
+	name = "Ashen Ritual"
+	desc = "Allows you to transmute a Bonfire and a book to create an Ash Spirit. \
+		Ash Spirits have a short range jaunt and the ability to cause bleeding in foes at range. \
+		They also have the ability to create a ring of fire around themselves for a length of time. \
+		They have a low amount of health, but will passively recover given enough time to do so."
+	gain_text = "I combined my principle of hunger with my desire for destruction. The Marshal knew my name, and the Nightwatcher gazed on."
+	required_atoms = list(
+		/obj/effect/decal/cleanable/ash = 1,
+		/obj/item/book = 1,
+		/obj/structure/bonfire = 1,
+		)
+	mob_to_summon = /mob/living/basic/heretic_summon/ash_spirit
+	cost = 2
+
+	poll_ignore_define = POLL_IGNORE_ASH_SPIRIT
+	drafting_tier = 3
 
 /// The max health given to Shattered Risen
 #define RISEN_MAX_HEALTH 125
@@ -30,11 +72,10 @@
 		/obj/item/clothing/gloves/latex = 1,
 	)
 	limit = 1
-	cost = 1
-
+	cost = 2
 	research_tree_icon_path = 'icons/ui_icons/antags/heretic/knowledge.dmi'
 	research_tree_icon_state = "ghoul_shattered"
-
+	drafting_tier = 3
 
 /datum/heretic_knowledge/limited_amount/risen_corpse/recipe_snowflake_check(mob/living/user, list/atoms, list/selected_atoms, turf/loc)
 	. = ..()
@@ -116,43 +157,22 @@
 	demolition_mod = 1.5
 	sharpness = SHARP_EDGED
 
-/datum/heretic_knowledge/rune_carver
-	name = "Carving Knife"
-	desc = "Allows you to transmute a knife, a shard of glass, and a piece of paper to create a Carving Knife. \
-		The Carving Knife allows you to etch difficult to see traps that trigger on heathens who walk overhead. \
-		Also makes for a handy throwing weapon."
-	gain_text = "Etched, carved... eternal. There is power hidden in everything. I can unveil it! \
-		I can carve the monolith to reveal the chains!"
+/datum/heretic_knowledge/summon/fire_shark
+	name = "Scorching Shark"
+	desc = "Allows you to transmute a pool of ash, a liver, and a sheet of plasma into a Fire Shark. \
+		Fire Sharks are fast and strong in groups, but die quickly. They are also highly resistant against fire attacks. \
+		Fire Sharks inject phlogiston into its victims and spawn plasma once they die."
+	gain_text = "The cradle of the nebula was cold, but not dead. Light and heat flits even through the deepest darkness, and is hunted by its own predators."
 
 	required_atoms = list(
-		/obj/item/knife = 1,
-		/obj/item/shard = 1,
-		/obj/item/paper = 1,
+		/obj/effect/decal/cleanable/ash = 1,
+		/obj/item/organ/liver = 1,
+		/obj/item/stack/sheet/mineral/plasma = 1,
 	)
-	result_atoms = list(/obj/item/melee/rune_carver)
-	cost = 1
+	mob_to_summon = /mob/living/basic/heretic_summon/fire_shark
+	cost = 2
 
+	poll_ignore_define = POLL_IGNORE_FIRE_SHARK
 
-	research_tree_icon_path = 'icons/obj/antags/eldritch.dmi'
-	research_tree_icon_state = "rune_carver"
-
-/datum/heretic_knowledge/summon/maid_in_mirror
-	name = "Maid in the Mirror"
-	desc = "Allows you to transmute five sheets of titanium, a flash, a suit of armor, and a pair of lungs \
-		to create a Maid in the Mirror. Maid in the Mirrors are decent combatants that can become incorporeal by \
-		phasing in and out of the mirror realm, serving as powerful scouts and ambushers. \
-		However, they are weak to mortal gaze and take damage by being examined."
-	gain_text = "Within each reflection, lies a gateway into an unimaginable world of colors never seen and \
-		people never met. The ascent is glass, and the walls are knives. Each step is blood, if you do not have a guide."
-
-	required_atoms = list(
-		/obj/item/stack/sheet/mineral/titanium = 5,
-		/obj/item/clothing/suit/armor = 1,
-		/obj/item/assembly/flash = 1,
-		/obj/item/organ/lungs = 1,
-	)
-	cost = 1
-
-	mob_to_summon = /mob/living/basic/heretic_summon/maid_in_the_mirror
-	poll_ignore_define = POLL_IGNORE_MAID_IN_MIRROR
-
+	research_tree_icon_dir = EAST
+	drafting_tier = 3
