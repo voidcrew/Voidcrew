@@ -92395,7 +92395,7 @@
 /area/space/nearstation)
 "nMh" = (
 /obj/structure/bonfire/prelit,
-/obj/item/food/kebab,
+/obj/item/food/kebab/monkey,
 /turf/open/misc/asteroid/airless,
 /area/space/nearstation)
 "nMm" = (
