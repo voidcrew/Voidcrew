@@ -10146,6 +10146,9 @@
 	dir = 2
 	},
 /obj/effect/landmark/start/psychologist,
+/obj/machinery/door/airlock/medical{
+	name = "Psychology Lobby"
+	},
 /turf/open/floor/wood/parquet,
 /area/station/medical/psychology)
 "bBl" = (
@@ -78400,9 +78403,6 @@
 /turf/open/floor/iron/dark,
 /area/station/command/bridge)
 "lBR" = (
-/obj/machinery/door/airlock/medical{
-	name = "Psychology Lobby"
-	},
 /obj/effect/turf_decal/tile/blue/fourcorners,
 /obj/machinery/door/firedoor,
 /obj/structure/cable,
@@ -78412,6 +78412,9 @@
 	dir = 4
 	},
 /obj/effect/mapping_helpers/airlock/access/all/medical/paramedic,
+/obj/machinery/door/airlock/medical/glass{
+	name = "Paramedic Dispatch Room"
+	},
 /turf/open/floor/iron/white,
 /area/station/medical/paramedic)
 "lBS" = (
