@@ -83271,7 +83271,7 @@
 /turf/open/floor/iron/dark/textured,
 /area/station/security/checkpoint/medical)
 "mqY" = (
-/obj/structure/no_effect_signpost,
+/obj/structure/signpost,
 /turf/open/misc/asteroid/airless,
 /area/space/nearstation)
 "mqZ" = (
