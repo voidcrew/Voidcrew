@@ -135,7 +135,7 @@
 		return
 	if(!bank_account_holder.synced_bank_account)
 		balloon_alert(usr, "no bank account connected.")
-		usr.playsound_local(src, 'sound/machines/buzz-sigh.ogg', 50, TRUE, -1)
+		usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
 		return
 
 	switch(action)

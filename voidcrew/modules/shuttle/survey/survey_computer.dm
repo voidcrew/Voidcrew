@@ -155,7 +155,7 @@
 		else
 			to_chat(user, span_warning("Survey console cannot accept disks in that format."))
 			return
-		playsound(src, "sound/machines/terminal_insert_disc.ogg", 80)
+		playsound(src, "sound/machines/terminal/terminal_insert_disc.ogg", 80)
 		to_chat(user, span_notice("You insert [D] into \the [src]!"))
 		return
 	return ..()
@@ -197,7 +197,7 @@
 		if("survey")
 			survey_celestial_object(ui_user)
 		if("map")
-			playsound(src, 'sound/machines/pda_button1.ogg', 100)
+			playsound(src, 'sound/machines/pda_button/pda_button1.ogg', 100)
 			activate_survey_map(ui_user)
 		if("printResearch")
 			print_survey_notes()
@@ -214,7 +214,7 @@
 		if("eject")
 			eject_disk()
 		if("error")
-			playsound(src, 'sound/machines/terminal_error.ogg', 100)
+			playsound(src, 'sound/machines/terminal/terminal_error.ogg', 100)
 
 	return TRUE
 
@@ -251,7 +251,7 @@
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/survey_celestial_object(mob/user)
 	var/current_object = get_current_celestial_object()
 	if(!current_object || isnull(current_object))
-		playsound(src, 'sound/machines/terminal_error.ogg', 100)
+		playsound(src, 'sound/machines/terminal/terminal_error.ogg', 100)
 		balloon_alert(user, "no surveyable celestial object found")
 		return
 
@@ -356,7 +356,7 @@
 		UnregisterSignal(object, COMSIG_VOIDCREW_PLANET_LOADED)
 		deltimer(survey_timer)
 		soundloop.stop()
-		playsound(src, 'sound/machines/terminal_error.ogg', 50)
+		playsound(src, 'sound/machines/terminal/terminal_error.ogg', 50)
 		survey_in_progress = FALSE
 	remove_old_ports(my_port)
 
@@ -990,5 +990,3 @@
 			return
 		var/datum/space_level/lvl = planet.mapzone.z_levels[1]
 		docking_location = locate(1, 1, lvl.z_value)
-
-

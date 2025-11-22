@@ -62,10 +62,10 @@
 	'sound/ambience/ruin/ambiruin.ogg', 'sound/ambience/ruin/ambiruin2.ogg', \
 	'sound/ambience/ruin/ambiruin3.ogg', 'sound/ambience/ruin/ambiruin4.ogg', \
 	'sound/ambience/ruin/ambiruin5.ogg', 'sound/ambience/ruin/ambiruin6.ogg', \
-	'sound/ambience/ruin/ambiruin7.ogg', 'sound/ambience/ambidanger.ogg', \
-	'sound/ambience/ambidanger2.ogg', 'sound/ambience/ambimaint.ogg', \
+	'sound/ambience/ruin/ambiruin7.ogg', 'sound/ambience/misc/ambidanger.ogg', \
+	'sound/ambience/misc/ambidanger2.ogg', 'sound/ambience/maintenance/ambimaint.ogg', \
 	'sound/ambience/engineering/ambiatmos.ogg', 'sound/ambience/engineering/ambiatmos2.ogg', \
-	'sound/ambience/ambiodd.ogg')
+	'sound/ambience/misc/ambiodd.ogg')
 
 #define REEBE list('sound/ambience/misc/ambireebe1.ogg', 'sound/ambience/misc/ambireebe2.ogg', 'sound/ambience/misc/ambireebe3.ogg')
 
@@ -84,4 +84,3 @@
 	'sound/hallucinations/wail.ogg')
 
 #define BEACH list('sound/ambience/beach/shore.ogg', 'sound/ambience/beach/seag1.ogg','sound/ambience/beach/seag2.ogg','sound/ambience/beach/seag2.ogg','sound/ambience/misc/ambiodd.ogg','sound/ambience/medical/ambinice.ogg')
-

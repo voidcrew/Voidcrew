@@ -81,7 +81,7 @@
 	if(do_after(user, 40, target = src))
 		if(prob(bite_chance))
 			user.adjustBruteLoss(15)
-			playsound(user.loc, 'sound/weapons/bite.ogg', 50, TRUE, -1)
+			playsound(user.loc, 'sound/items/weapons/bite.ogg', 50, TRUE, -1)
 			to_chat(user, "<span class='alert'>OW! Something bit you!</span>")
 		else
 			if(prob(85))

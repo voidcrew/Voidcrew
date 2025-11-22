@@ -89,7 +89,7 @@
 		return
 	if(!linked_pad)
 		return
-	playsound(get_turf(src), 'sound/weapons/flash.ogg', 25, TRUE)
+	playsound(get_turf(src), 'sound/items/weapons/flash.ogg', 25, TRUE)
 	teleporting = TRUE
 
 	addtimer(CALLBACK(src, PROC_REF(teleport_contents)), teleport_speed)
@@ -109,9 +109,9 @@
 	linked_pad.sparks()
 
 	// flick("qpad-beam", src)
-	playsound(get_turf(src), 'sound/weapons/emitter2.ogg', 25, TRUE)
+	playsound(get_turf(src), 'sound/items/weapons/emitter2.ogg', 25, TRUE)
 	flick("qpad-beam", linked_pad)
-	playsound(get_turf(linked_pad), 'sound/weapons/emitter2.ogg', 25, TRUE)
+	playsound(get_turf(linked_pad), 'sound/items/weapons/emitter2.ogg', 25, TRUE)
 	var/list/atom/pod_contents = opened ? get_turf(src) : contents
 	for(var/atom/movable/ROI in pod_contents)
 		if(QDELETED(ROI))
@@ -604,7 +604,7 @@
 	user.client.images -= eyeobj.placement_image
 	user.remote_control = null
 	map_user = null
-	playsound(src, 'sound/machines/terminal_off.ogg', 25, FALSE)
+	playsound(src, 'sound/machines/terminal/terminal_off.ogg', 25, FALSE)
 	QDEL_NULL(eyeobj)
 
 /obj/structure/closet/supplypod/drop_pod/proc/GrantActions(mob/living/user)

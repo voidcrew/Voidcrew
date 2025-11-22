@@ -4,7 +4,7 @@
 	desc = "An enormous sword used by Nar'Sien cultists to rapidly harvest the souls of non-believers."
 	w_class = WEIGHT_CLASS_HUGE
 	block_chance = 50
-	block_sound = 'sound/weapons/parry.ogg'
+	block_sound = 'sound/items/weapons/parry.ogg'
 	throwforce = 20
 	force = 35
 	armour_penetration = 45
@@ -17,7 +17,7 @@
 	icon = 'icons/obj/weapons/sword.dmi'
 	icon_state = "cultbastard"
 	inhand_icon_state = "cultbastard"
-	hitsound = 'sound/weapons/bladeslice.ogg'
+	hitsound = 'sound/items/weapons/bladeslice.ogg'
 	lefthand_file = 'icons/mob/inhands/64x64_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/64x64_righthand.dmi'
 	inhand_x_dimension = 64

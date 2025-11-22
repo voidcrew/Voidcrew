@@ -301,7 +301,7 @@
 		if(must_be_same_z_level && crewmate.z != z)
 			continue
 		announce_targets += crewmate
-	priority_announce(message, title, sound || 'sound/ai/default/attention.ogg', null, "[name] Announcement", players = announce_targets)
+	priority_announce(message, title, sound || 'sound/announcer/default/attention.ogg', null, "[name] Announcement", players = announce_targets)
 
 /**
  * Mob death/revive

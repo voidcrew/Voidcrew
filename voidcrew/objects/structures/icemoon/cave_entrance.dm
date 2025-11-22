@@ -65,7 +65,7 @@
 			new /turf/open/floor/mineral/bananium(loc)
 		if(2)//basic demonic incursion
 			visible_message("<span class='userdanger'>You glimpse an indescribable abyss in the portal. Horrifying monsters appear in a gout of flame.</span>")
-			playsound(loc,'sound/hallucinations/wail.ogg', 200, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/effects/hallucinations/wail.ogg', 200, FALSE, 50, TRUE, TRUE)
 			if(prob(25))
 				new /obj/item/clothing/glasses/godeye(loc)
 				new /mob/living/basic/migo(loc)
@@ -90,7 +90,7 @@
 			new /turf/open/indestructible/necropolis(loc)
 		if(3)//skeleton/religion association, now accepting YOUR BONES
 			visible_message("<span class='userdanger'>Bones rattle and strained voices chant a forgotten god's name.</span>")
-			playsound(loc,'sound/ambience/ambiholy.ogg', 100, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/ambience/holy/ambiholy.ogg', 100, FALSE, 50, TRUE, TRUE)
 			if(prob(50))
 				new /obj/item/reagent_containers/cup/bottle/potion/flight(loc)
 			else
@@ -184,7 +184,7 @@
 		if(5)//syndicate incursion. Again, high-quality loot at low chances, this time with excessive levels of danger
 			visible_message("<span class='userdanger'>Radio chatter echoes out from the portal. Red-garbed figures step through, weapons raised.</span>")
 			//playsound(loc,'sound/effects/radiohiss.ogg', 200, FALSE, 50, TRUE, TRUE)
-			playsound(loc,'sound/ambience/antag/tatoralert.ogg', 75, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/machines/terminal/terminal_alert.ogg', 75, FALSE, 50, TRUE, TRUE)
 			if(prob(25))
 				if(prob(25))
 					new /obj/item/mod/control/pre_equipped/elite(loc)
@@ -249,7 +249,7 @@
 		if(6)//;HELP BLOB IN MEDICAL
 			visible_message("<span class='userdanger'>You hear a robotic voice saying something about a \"Delta-level biohazard\".</span>")
 			//playsound(loc,'sound/ai/outbreak5.ogg', 100, FALSE, 50, TRUE, TRUE)
-			playsound(loc,'sound/misc/bloblarm.ogg', 50, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/machines/warning-buzzer.ogg', 50, FALSE, 50, TRUE, TRUE)
 			if(prob(35))
 				//new /obj/item/storage/box/hypospray/CMO(loc)
 				new /mob/living/basic/blob_minion/spore/minion/weak(loc)
@@ -299,7 +299,7 @@
 			new /mob/living/basic/blob_minion/spore/minion/weak(loc)
 		if(7)//teleporty ice world. Incomplete.
 			visible_message("<span class='userdanger'>You glimpse a frozen, empty plane. Something stirs in the fractal abyss.</span>")
-			playsound(loc,'sound/ambience/ambisin3.ogg', 150, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/ambience/engineering/ambisin3.ogg', 150, FALSE, 50, TRUE, TRUE)
 			if(prob(35))
 				new /obj/item/warp_cube/red(loc)
 				new /mob/living/basic/mining/ice_demon(loc)
@@ -321,7 +321,7 @@
 			new /turf/open/misc/ice/smooth(loc)
 		if(8)//FUCK FUCK HELP SWARMERS IN VAULT
 			visible_message("<span class='userdanger'>Something beeps. Small, glowing forms spill out of the portal en masse!</span>")
-			playsound(loc,'sound/ambience/ambitech.ogg', 150, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/ambience/engineering/ambitech.ogg', 150, FALSE, 50, TRUE, TRUE)
 			//new /mob/living/simple_animal/hostile/swarmer/ai(loc)
 			//new /mob/living/simple_animal/hostile/swarmer/ai(loc)
 			//new /mob/living/simple_animal/hostile/swarmer/ai(loc)
@@ -367,7 +367,7 @@
 			new /turf/open/floor/circuit/telecomms(loc)
 		if(9)//Literally blood-drunk.
 			visible_message("<span class='userdanger'>Blood sprays from the portal. An ichor-drenched figure steps through!</span>")
-			playsound(loc,'sound/magic/enter_blood.ogg', 150, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/effects/magic/enter_blood.ogg', 150, FALSE, 50, TRUE, TRUE)
 			new /obj/effect/gibspawner/human(loc)
 			new /obj/effect/gibspawner/human(loc)
 			new /obj/effect/gibspawner/human(loc)
@@ -379,7 +379,7 @@
 			new /turf/open/misc/asteroid/basalt(loc)
 		if(10)//Now's your chance to be a [[BIG SHOT]]
 			visible_message("<span class='userdanger'>You hear the sound of big money and bigger avarice.</span>")
-			playsound(loc,'sound/lavaland/cursed_slot_machine_jackpot.ogg', 150, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/machines/lavaland/cursed_slot_machine_jackpot.ogg', 150, FALSE, 50, TRUE, TRUE)
 			new /obj/structure/cursed_slot_machine(loc)
 			if(prob(25))
 				new /obj/item/stack/spacecash/c1000(loc)
@@ -408,7 +408,7 @@
 			new /turf/open/floor/mineral/gold(loc)
 		if(11)//hivebot factory
 			visible_message("<span class='userdanger'>You catch a brief glimpse of a vast production complex. One of the assembly lines outputs through the portal!</span>")
-			playsound(loc,'sound/ambience/antag/clockcultalr.ogg', 100, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/music/antag/clockcultalr.ogg', 100, FALSE, 50, TRUE, TRUE)
 			if(prob(45))
 				//new /obj/item/stack/sheet/mineral/adamantine/ten(loc)
 				//new /obj/item/stack/sheet/mineral/runite/ten(loc)
@@ -480,7 +480,7 @@
 			new /turf/open/floor/circuit/red(loc)
 		if(12)//miner's last moments
 			visible_message("<span class='userdanger'>The familiar sound of an ash storm greets you. A miner steps through the portal, stumbles, and collapses.</span>")
-			playsound(loc,'sound/weather/ashstorm/outside/weak_end.ogg', 150, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/ambience/weather/ashstorm/outside/weak_end.ogg', 150, FALSE, 50, TRUE, TRUE)
 			if(prob(25))
 				new /obj/item/disk/design_disk/modkit_disc/resonator_blast(loc)
 			if(prob(25))
@@ -513,7 +513,7 @@
 			new /turf/open/misc/asteroid/basalt(loc)
 		if(13)//sailing the ocean blue
 			visible_message("<span class='userdanger'>Water pours out of the portal, followed by a strange vessel. It's occupied.</span>")
-			playsound(loc,'sound/ambience/shore.ogg', 150, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/ambience/beach/shore.ogg', 150, FALSE, 50, TRUE, TRUE)
 			new /obj/vehicle/ridden/lavaboat/dragon(loc)
 			new /obj/item/oar(loc)
 			if(prob(50))
@@ -550,7 +550,7 @@
 			new /turf/open/water(loc)
 		if(14)//hydroponics forest
 			visible_message("<span class='userdanger'>You catch a glimpse of a strange forest. Smells like weed and bad choices.</span>")
-			playsound(loc,'sound/ambience/shore.ogg', 150, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/ambience/beach/shore.ogg', 150, FALSE, 50, TRUE, TRUE)
 			if(prob(35))
 				new /obj/item/circuitboard/machine/biogenerator(loc)
 			if(prob(35))
@@ -667,7 +667,7 @@
 			new /turf/open/floor/iron/kitchen_coldroom/freezerfloor(loc)
 		if(18)//legion miniboss
 			visible_message("<span class='userdanger'>The ground quakes. An immense figure reaches through the portal, crouching to squeeze through.</span>")
-			playsound(loc,'sound/magic/knock.ogg', 100, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/effects/magic/knock.ogg', 100, FALSE, 50, TRUE, TRUE)
 			new /mob/living/basic/mining/legion/large(loc)
 			if(prob(50))
 				new /obj/structure/closet/crate/necropolis/tendril(loc)
@@ -772,7 +772,7 @@
 			//new /obj/item/camera/rewind/loot(loc)
 		if(23)//Research & Zombies
 			visible_message("<span class='userdanger'>Flashing lights and quarantine alarms echo through the portal. You smell rotting flesh and plasma.</span>")
-			playsound(loc,'sound/misc/bloblarm.ogg', 120, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/machines/warning-buzzer.ogg', 120, FALSE, 50, TRUE, TRUE)
 			if(prob(35))
 				new /obj/item/storage/box/rndboards(loc)
 				//new /mob/living/simple_animal/hostile/zombie(loc) // TODO: Fix zombie spawns
@@ -812,7 +812,7 @@
 			//new /mob/living/simple_animal/hostile/zombie(loc) // TODO: Fix zombie spawn
 		if(24)//Silverback's locker room
 			visible_message("<span class='userdanger'>You catch a glimpse of verdant green. Smells like a locker room.</span>")
-			playsound(loc,'sound/creatures/gorilla.ogg', 75, FALSE, 50, TRUE, TRUE)
+			playsound(loc,'sound/mobs/non-humanoids/gorilla/gorilla.ogg', 75, FALSE, 50, TRUE, TRUE)
 			new /mob/living/basic/gorilla(loc)
 			new /mob/living/basic/gorilla(loc)
 			if(prob(35))
@@ -850,4 +850,3 @@
 			new /obj/item/sequence_scanner(loc)
 			new /obj/structure/flora/grass/jungle(loc)
 			new /turf/open/misc/grass/jungle(loc)
-

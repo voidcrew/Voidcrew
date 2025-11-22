@@ -187,7 +187,7 @@
 			current_ship?.ship_announce("Bluespace Ionization finalized; preparing to fire Bluespace Pylon.")
 		if(JUMP_STATE_FIRING)
 			jump_state = JUMP_STATE_FINALIZED
-			current_ship?.ship_announce("Bluespace Pylon launched.", sound='sound/magic/lightning_chargeup.ogg')
+			current_ship?.ship_announce("Bluespace Pylon launched.", sound='sound/effects/magic/lightning_chargeup.ogg')
 			addtimer(CALLBACK(src, PROC_REF(do_jump)), 10 SECONDS)
 			return
 	addtimer(CALLBACK(src, PROC_REF(jump_sequence), TRUE), JUMP_CHARGE_DELAY)
@@ -302,7 +302,7 @@
 					if(length(current_ship.close_overmap_objects))
 						for(var/obj/structure/overmap/o in current_ship.close_overmap_objects)
 							if(!istype(o, /obj/structure/overmap/planet/empty) || !istype(o, /obj/structure/overmap/ship))
-								playsound(src, 'sound/machines/terminal_error.ogg', 20)
+								playsound(src, 'sound/machines/terminal/terminal_error.ogg', 20)
 								balloon_alert(usr, "something is in the way!")
 								return
 					say(current_ship.dock_in_empty_space(usr))

@@ -113,7 +113,7 @@
 	var/penalty = (research_power - (z_level_history["[z]"] - 1) * 0.01) // You lose one percent of value each scan.
 	if(!penalty || penalty < 0.20) // If you are below 20% value, do nothing and abort
 		say("Unable to locate valuable information in current sector, scanning stopped.")
-		playsound(src, 'sound/machines/buzz-sigh.ogg', 20)
+		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 20)
 		disable()
 		return
 

@@ -24,21 +24,21 @@
 /obj/structure/ammo_printer/attackby(obj/item/inserted_item, mob/living/user)
 	if(used)
 		to_chat(user, "<span class='warning'>The printer has no power left!</span>")
-		playsound(src, 'sound/machines/uplinkerror.ogg', 25, FALSE)
+		playsound(src, 'sound/machines/uplink/uplinkerror.ogg', 25, FALSE)
 		return
 	if(istype(inserted_item, /obj/item/gun/ballistic))
 		if(inserted_gun)
 			to_chat(user, "<span class='warning'>A weapon is already loaded into the machine!</span>")
-			playsound(src, 'sound/machines/uplinkerror.ogg', 25, FALSE)
+			playsound(src, 'sound/machines/uplink/uplinkerror.ogg', 25, FALSE)
 			return
 		for(var/weapon in blacklist)
 			if(istype(inserted_item, weapon))
 				to_chat(user, "<span class='warning'>The printer cannot work with weapons of this caliber!</span>")
-				playsound(src, 'sound/machines/uplinkerror.ogg', 25, FALSE)
+				playsound(src, 'sound/machines/uplink/uplinkerror.ogg', 25, FALSE)
 				return
 		if(!user.transferItemToLoc(inserted_item, src))
 			to_chat(user, "<span class='warning'>The weapon is stuck to your hand!</span>")
-			playsound(src, 'sound/machines/uplinkerror.ogg', 25, FALSE)
+			playsound(src, 'sound/machines/uplink/uplinkerror.ogg', 25, FALSE)
 			return
 		inserted_gun = inserted_item
 		playsound(src, 'sound/items/deconstruct.ogg', 50, FALSE)
@@ -50,7 +50,7 @@
 		switch(stack.amount)
 			if(0 to 24)
 				to_chat(user, "<span class='warning'>You need to insert 25 metal sheets!</span>")
-				playsound(src, 'sound/machines/uplinkerror.ogg', 25, FALSE)
+				playsound(src, 'sound/machines/uplink/uplinkerror.ogg', 25, FALSE)
 				return
 			if(25)
 				to_chat(user, "<span class='warning'>You insert 25 metal sheets into the machine.</span>")
@@ -65,15 +65,15 @@
 	. = ..()
 	if(used)
 		to_chat(user, "<span class='warning'>The printer has no power left!</span>")
-		playsound(src, 'sound/machines/uplinkerror.ogg', 25, FALSE)
+		playsound(src, 'sound/machines/uplink/uplinkerror.ogg', 25, FALSE)
 		return
 	if(!inserted_gun)
 		to_chat(user, "<span class='warning'>Insert a weapon first!</span>")
-		playsound(src, 'sound/machines/uplinkerror.ogg', 25, FALSE)
+		playsound(src, 'sound/machines/uplink/uplinkerror.ogg', 25, FALSE)
 		return
 	if(!has_metal)
 		to_chat(user, "<span class='warning'>You need to insert 25 metal to operate this printer!</span>")
-		playsound(src, 'sound/machines/uplinkerror.ogg', 25, FALSE)
+		playsound(src, 'sound/machines/uplink/uplinkerror.ogg', 25, FALSE)
 		return
 
 	if(inserted_gun.internal_magazine)
