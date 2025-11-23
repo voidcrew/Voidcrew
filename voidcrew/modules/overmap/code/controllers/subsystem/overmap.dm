@@ -17,6 +17,9 @@ SUBSYSTEM_DEF(overmap)
 	init_order = INIT_ORDER_OVERMAP
 	flags = SS_NO_FIRE
 	runlevels = RUNLEVEL_SETUP | RUNLEVEL_GAME
+	dependencies = list(
+		/datum/controller/subsystem/mapping,
+	)
 
 	/// Centre of the overmap
 	var/turf/overmap_centre

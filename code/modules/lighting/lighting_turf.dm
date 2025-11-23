@@ -105,12 +105,12 @@
 
 	// We will only run this logic on turfs off the prime z layer
 	// Since on the prime z layer, we use an overlay on the area instead, to save time
-	if(SSmapping.z_level_to_plane_offset[z])
+	if(z <= length(SSmapping.z_level_to_plane_offset) && SSmapping.z_level_to_plane_offset[z])
 		var/index = SSmapping.z_level_to_plane_offset[z] + 1
 		//Inherit overlay of new area
-		if(old_area.lighting_effects)
+		if(old_area.lighting_effects && index <= length(old_area.lighting_effects))
 			cut_overlay(old_area.lighting_effects[index])
-		if(new_area.lighting_effects)
+		if(new_area.lighting_effects && index <= length(new_area.lighting_effects))
 			add_overlay(new_area.lighting_effects[index])
 
 	// Manage removing/adding starlight overlays, we'll inherit from the area so we can drop it if the area has it already

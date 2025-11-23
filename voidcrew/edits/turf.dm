@@ -148,10 +148,12 @@
 		GLOB.cameranet.bareMajorChunkChange(src)
 
 	// We will only run this logic if the tile is not on the prime z layer, since we use area overlays to cover that
-	if(SSmapping.z_level_to_plane_offset[z])
+	if(z <= length(SSmapping.z_level_to_plane_offset) && SSmapping.z_level_to_plane_offset[z])
 		var/area/our_area = new_turf.loc
 		if(our_area.lighting_effects)
-			new_turf.add_overlay(our_area.lighting_effects[SSmapping.z_level_to_plane_offset[z] + 1])
+			var/plane_offset = SSmapping.z_level_to_plane_offset[z]
+			if(plane_offset + 1 <= length(our_area.lighting_effects))
+				new_turf.add_overlay(our_area.lighting_effects[plane_offset + 1])
 
 	// only queue for smoothing if SSatom initialized us, and we'd be changing smoothing state
 	if(flags_1 & INITIALIZED_1)
