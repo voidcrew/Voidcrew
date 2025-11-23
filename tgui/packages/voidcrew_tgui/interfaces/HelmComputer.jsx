@@ -12,14 +12,20 @@ import {
 import { Window } from '../../tgui/layouts';
 
 export const HelmComputer = (props, context) => {
+  console.log('HelmComputer rendering, props:', props, 'context:', context);
   const { act, data, config } = useBackend(context);
-  const { mapRef, isViewer } = data;
+  console.log('HelmComputer data:', data, 'config:', config);
+  const { mapRef, isViewer } = data || {};
+  console.log('HelmComputer mapRef:', mapRef, 'isViewer:', isViewer);
+  console.log('About to render Window component');
   return (
     <Window width={900} height={900} resizable>
       <Window.Content>
         <Stack vertical>
           <Stack.Item textAlign={'center'}>
+            {console.log('About to render SharedContent')}
             <SharedContent />
+            {console.log('SharedContent rendered')}
           </Stack.Item>
           <Stack.Item>
             <Stack fill textAlign={'center'}>
@@ -110,8 +116,11 @@ const Radar = (context) => {
 };
 
 const SharedContent = (props, context) => {
+  console.log('SharedContent called, context:', context);
   const { act, data } = useBackend(context);
+  console.log('SharedContent data:', data);
   const { isViewer, integrity, shipInfo = [], otherInfo = [] } = data;
+  console.log('SharedContent shipInfo:', shipInfo, 'type:', typeof shipInfo, 'isArray:', Array.isArray(shipInfo));
   return (
     <Section
       title={
