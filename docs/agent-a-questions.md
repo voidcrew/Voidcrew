@@ -24,7 +24,7 @@ Please check the boxes `[x]` for your preferred options and add any additional c
 **Context:** Brand new players have no unlocked ships. What should they get?
 
 **Options:**
-- [ ] **A. Free starter ships** - 1-2 basic ships unlocked by default (e.g., basic NEU ship)
+- [x] **A. Free starter ships** - 1-2 basic ships unlocked by default (e.g., basic NEU ship)
 - [ ] **B. Free credits/parts** - Enough resources to unlock their first ship immediately (e.g., 1000 credits)
 - [ ] **C. Earn everything** - Nothing free, but can join other players' ships or the initial ship
 - [ ] **D. Join initial ship** - Must join the auto-spawned initial ship until they earn their first unlock
@@ -46,7 +46,7 @@ Please check the boxes `[x]` for your preferred options and add any additional c
 
 **Options:**
 - [ ] **A. Purchaser only** - Only the person who bought the ship converts to antag, others join as normal crew (antag can recruit them manually)
-- [ ] **B. All crew convert** - ALL players who spawn on the antag ship automatically convert to that antag type
+- [x] **B. All crew convert** - ALL players who spawn on the antag ship automatically convert to that antag type
 - [ ] **C. Choice prompt** - Purchaser auto-converts, other crew members get a "Join as Cultist?" prompt
 - [ ] **D. Single-player only** - Antag ships are solo-only, purchaser spawns alone with NPC crew or no crew
 - [ ] **E. Custom solution:** _______________________________________________
@@ -66,7 +66,7 @@ Please check the boxes `[x]` for your preferred options and add any additional c
 **Context:** Currently one ship auto-spawns at round start (NT or Syndicate faction) and everyone can join it. With the new unlock system, what happens to this?
 
 **Options:**
-- [ ] **A. Keep it** - One free ship still spawns every round, players can join it OR spawn their own unlocked ship (choice)
+- [x] **A. Keep it** - One free ship still spawns every round, players can join it OR spawn their own unlocked ship (choice)
 - [ ] **B. Remove it** - Players MUST have unlocked ships to play (requires all players to have starter ships from Question 1)
 - [ ] **C. Hybrid/transition** - Keep it for first few weeks/months while economy establishes, then phase out
 - [ ] **D. Make it special** - Keep it but make it a "community ship" that anyone can join, separate from personal unlocked ships
@@ -88,7 +88,7 @@ Please check the boxes `[x]` for your preferred options and add any additional c
 
 **Options:**
 - [ ] **A. Per-character** - Each character slot has separate progress (Character 1 has different unlocks than Character 2)
-- [ ] **B. Account-wide** - All your characters share unlocks and credits (unlock once, all characters can use)
+- [x] **B. Account-wide** - All your characters share unlocks and credits (unlock once, all characters can use)
 - [ ] **C. Hybrid** - Unlocks are shared account-wide, but credits are per-character
 - [ ] **D. Custom solution:** _______________________________________________
 
@@ -110,7 +110,7 @@ Please check the boxes `[x]` for your preferred options and add any additional c
 
 **Options:**
 - [ ] **A. Generous** - Parts restored + free starter ship unlocks per faction as apology
-- [ ] **B. Strict reset** - Everyone starts from zero, fresh start for all players
+- [x] **B. Strict reset** - Everyone starts from zero, fresh start for all players
 - [ ] **C. Parts only** - Restore the parts they earned, but no automatic unlocks
 - [ ] **D. Credits conversion** - Convert old parts to credits at 500 credits per part
 - [ ] **E. Custom solution:** _______________________________________________
@@ -133,7 +133,7 @@ Please check the boxes `[x]` for your preferred options and add any additional c
 - [ ] **A. Per-skin unlocks** - Default skin is free, each variant skin costs 100 credits to unlock (permanent)
 - [ ] **B. Auto-unlock** - All skins automatically unlocked when you unlock the base ship
 - [ ] **C. Per-round rental** - Skin unlocks are permanent but selecting non-default costs credits each round
-- [ ] **D. Prestige purchases** - Skins are expensive permanent unlocks (500+ credits), cosmetic DLC-style
+- [x] **D. Prestige purchases** - Skins are expensive permanent unlocks (500+ credits), cosmetic DLC-style
 - [ ] **E. Custom solution:** _______________________________________________
 
 **Your choice:** ____

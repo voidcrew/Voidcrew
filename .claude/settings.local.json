@@ -1,21 +1,41 @@
 {
-  "permissions": {
-    "allow": [
-      "WebFetch(domain:www.byond.com)",
-      "mcp__byond-dm__list_byond_categories",
-      "mcp__byond-dm__search_byond_docs",
-      "mcp__ide__getDiagnostics",
-      "mcp__byond-dm__get_byond_topic",
-      "Bash(.BUILD.cmd)",
-      "Bash(BUILD.cmd)",
-      "Bash(cmd.exe:*)",
-      "Bash(.\\BUILD.cmd)",
-      "Bash(grep:*)",
-      "Bash(dir:*)",
-      "Bash(bun install:*)",
-      "mcp__context7__resolve-library-id",
-      "Bash(nul)"
-    ],
-    "deny": []
-  }
+	"permissions": {
+		"allow": [
+			"WebFetch(domain:www.byond.com)",
+			"mcp__byond-dm__list_byond_categories",
+			"mcp__byond-dm__search_byond_docs",
+			"mcp__ide__getDiagnostics",
+			"mcp__byond-dm__get_byond_topic",
+			"Bash(.BUILD.cmd)",
+			"Bash(BUILD.cmd)",
+			"Bash(cmd.exe:*)",
+			"Bash(.\\BUILD.cmd)",
+			"Bash(grep:*)",
+			"Bash(dir:*)",
+			"Bash(bun install:*)",
+			"mcp__context7__resolve-library-id",
+			"Bash(nul)",
+			"mcp__gemini-cli__ask-gemini",
+			"Bash(\"C:\\Users\\isaac\\code\\tg-voidcrew\\ship-system-round3-proposals.md\")",
+			"Bash(\"C:\\Users\\isaac\\code\\tg-voidcrew\\ship-system-user-decisions.md\")",
+			"Bash(\"C:\\Users\\isaac\\code\\tg-voidcrew\\ship-system-round4-consensus.md\")",
+			"mcp__gemini-cli-fixed__ask-gemini",
+			"mcp__gemini-cli-fixed__ping",
+			"Bash(cat:*)",
+			"Bash(\"C:\\Users\\isaac\\code\\tg-voidcrew\\ship-system-round4-consensus-temp.md\")",
+			"Bash(findstr:*)",
+			"Bash(npm install:*)",
+			"mcp__gemini-chat__gemini_chat"
+		],
+		"deny": []
+	},
+	"customInstructions": "## AI Tool Division of Labor\n\n**Claude Code (primary agent):**\n- Complex technical planning and execution\n- Architectural decisions and system design\n- Code implementation and debugging\n- All direct coding tasks\n\n**Gemini (via MCP tool - context-saving assistant):**\n- Large-scale data processing and analysis\n- Document-specific planning and summarization\n- Processing large documentation sets\n- Research assistant to save Claude's context space\n\n**Usage Pattern:** Claude should delegate large document analysis, summarization, and bulk data processing to Gemini to preserve context, while handling all technical implementation and complex architectural planning directly.\n\n## Gemini MCP Server Fix (2025-11-23)\n\n**Problem:** PowerShell doesn't support `<` input redirection like bash, and piping to gemini CLI wasn't working because gemini expects positional prompt arguments, not stdin.\n\n**Solution Applied to ~/code/gemini-mcp-server/index.js:**\n- Changed from: `Get-Content \"file\" | gemini --model $model`\n- Changed to: `$content = Get-Content -Path \"file\" -Raw; gemini --model $model $content`\n- This reads the file into a PowerShell variable using `-Raw` flag and passes it as a positional argument to gemini CLI.\n\n**Key Insight:** The gemini CLI tool accepts prompts as positional arguments (e.g., `gemini \"your prompt here\"`), not via stdin piping. Using Get-Content with -Raw flag preserves newlines and formatting. Never read the files that you sent to gemini to read, as that will fill up your context window. Instead have gemini do it. YOu may need to try multiple times if things fail",
+	"mcpServers": {
+		"claude-chat": {
+			"command": "node",
+			"args": [
+				"C:\\Users\\isaac\\code\\tg-voidcrew\\claude-mcp-server\\index.js"
+			]
+		}
+	}
 }

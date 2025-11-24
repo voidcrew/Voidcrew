@@ -358,7 +358,7 @@ i think a is simplest for now
 **Your Answer:**
 
 ```
-Okay check it - we allow you to purchase custom roles for your ships. They can be applied to any ship, and they have some way to create them through tgui. For any ship you have an upgrade menu. You can upgrade the number of slots for each role. you can also change the roles. there will be pre-determined role types like security and engineering and medical. so you could do 3 security and 0 anything else. each role would spawn with corresponding gear. NOW IMAGINE: You can create a custom role. you can choose equipment for every slot on your character. That equipment is provided from the equipment marketplace - like a full toolbelt for the belt slot or a space helmet for your helmet slot or cat ears for your ear slot. AND CHECK THIS - You will have had to BUY all of that gear from a OOC market that uses your credits. So you want 1 slot for your custom ninja main character and 3 cowboy side slots? Gotta buy the ninja gear for yourself, and the cowboy gear in duplicate for each slot. This would have to be a HEAVY feature with a full ui for this. we're going to steal beestation's monkecoin. its a persistent coin you earn from round ends. we'll expand off that to build this custom slot feature. i downloaded their repo, so we need to expand on this in another document.
+Okay check it - we allow you to purchase custom roles for your ships. They can be applied to any ship, and they have some way to create them through tgui. For any ship you have an upgrade menu. You can upgrade the number of slots for each role. you can also change the roles. there will be pre-determined role types like security and engineering and medical. so you could do 3 security and 0 anything else. each role would spawn with corresponding gear. NOW IMAGINE: You can create a custom role. you can choose equipment for every slot on your character. That equipment is provided from the equipment marketplace - like a full toolbelt for the belt slot or a space helmet for your helmet slot or cat ears for your ear slot. AND CHECK THIS - You will have had to BUY all of that gear from a OOC market that uses your credits. So you want 1 slot for your custom ninja main character and 3 cowboy side slots? Gotta buy the ninja gear for yourself, and the cowboy gear in duplicate for each slot. This would have to be a HEAVY feature with a full ui for this. we're going to steal monkestations's monkecoin. its a persistent coin you earn from round ends. we'll expand off that to build this custom slot feature. i downloaded their repo, so we need to expand on this in another document.
 
 ```
 
@@ -508,7 +508,7 @@ the credits are for now only generated from rounds played. it can be used for pe
 
 - [ ] **A. Values are fine** - Use Agent A's proposals
 - [ ] **B. Adjust specific values** - See table above
-- [ ] **C. Different approach:** We'll we're getting rid of different part tiers, so no different part costs. also no
+- [ ] **C. Different approach:** We're changing from faction ship parts to rarity tiers
 
 ---
 
@@ -518,7 +518,7 @@ the credits are for now only generated from rounds played. it can be used for pe
 
 **Options:**
 
-- [ X ] **A. No restrictions** - Unlimited trading, free market
+- [ ] **A. No restrictions** - Unlimited trading, free market
 
 - [ ] **B. Cooldown** - Can only withdraw 1 part per hour
 
@@ -529,7 +529,7 @@ the credits are for now only generated from rounds played. it can be used for pe
 **Your Answer:**
 
 ```
-
+when in game you find parts and can extract / deposit them. until that point, they are physical items in the world that can be traded or stolen. once they are extracted you cannot pull them out. removal of N key feature
 
 ```
 
@@ -543,10 +543,8 @@ You chose: Round completion + find/craft parts
 
 **Additional details:**
 
-- Round completion base reward: **\_\_\_** credits
-- Credit token loot range: **\_\_\_** to **\_\_\_** credits
-- Crafting part grants: **\_\_\_** credits bonus
-- Selling parts for credits: **\_\_\_** credits per part
+- Round completion base reward: **100** credits
+- Selling parts for credits - varies per part. come up with sane defaults.
 
 **Other earning methods to add?**
 
@@ -554,103 +552,3 @@ You chose: Round completion + find/craft parts
 
 
 ```
-
----
-
-### Q21: Timeline Expectations (Agent D)
-
-**Agent Timeline Comparison:**
-
-- Agent A: 16 weeks total (4 phases)
-- Agent B: 20 weeks total (6 phases, includes testing)
-- Agent C: 10-13 weeks total (4 phases, optimistic)
-- Agent D: Not specified
-
-**Your Timeline Preferences:**
-
-- Phase 0 (Bug fix): **\*\***\_**\*\***
-- Phase 1 (TGUI catalog): **\*\***\_**\*\***
-- Phase 2 (Currency/unlocks): **\*\***\_**\*\***
-- Phase 3 (Customization): **\*\***\_**\*\***
-
-**Are you flexible on timeline or have hard deadlines?**
-
-```
-
-
-```
-
----
-
-## PRIORITY RANKING
-
-**Please rank these question categories by importance (1 = most critical, 5 = least critical):**
-
-- [ ] Parts interpretation & new player experience (Q1-Q3): Rank \_\_\_\_
-- [ ] Antag ships design (Q4-Q5): Rank \_\_\_\_
-- [ ] Persistence architecture (Q6-Q8): Rank \_\_\_\_
-- [ ] Migration & legacy systems (Q9-Q10): Rank \_\_\_\_
-- [ ] Implementation details & balance (Q11-Q21): Rank \_\_\_\_
-
----
-
-## SUMMARY CHECKLIST
-
-**Before agents finalize Round 4 consensus, need answers to:**
-
-### CRITICAL (Must Answer):
-
-- [ ] Q1: Parts interpretation
-- [ ] Q2: New player experience
-- [ ] Q3: Initial ship system
-- [ ] Q4: Antag multi-crew
-- [ ] Q5: Antag unlock model
-- [ ] Q6: Persistence scope
-- [ ] Q7: Database vs savefile
-- [ ] Q8: Faction system
-
-### IMPORTANT (Should Answer):
-
-- [ ] Q9: Legacy parts migration
-- [ ] Q10: Parts system future
-- [ ] Q11: Ship preview generation
-- [ ] Q12: Customization scope
-- [ ] Q13: Ship skins unlock
-- [ ] Q14: Round-end rewards
-- [ ] Q15: Crafting sources
-- [ ] Q16: Edge cases
-- [ ] Q17: Currency trading
-
-### BALANCE (Can Defer):
-
-- [ ] Q18: Economy numbers
-- [ ] Q19: Trading restrictions
-- [ ] Q20: Currency earning details
-- [ ] Q21: Timeline
-
----
-
-## ADDITIONAL QUESTIONS/CONCERNS
-
-**Any other questions or requirements not covered above?**
-
-```
-
-
-
-
-
-
-
-```
-
----
-
-**Once complete, save this file and agents will proceed to Round 4 consensus with your decisions incorporated.**
-
-**Sources:**
-
-- Agent A: agent-a-questions.md (10 questions)
-- Agent C: agent-c-questions.md (10 questions)
-- Agent D: agent-d-questions.md (10 questions)
-- Combined & deduplicated: 21 questions total
