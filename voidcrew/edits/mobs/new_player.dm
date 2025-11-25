@@ -24,21 +24,10 @@
 		return
 
 	if(selected_ship == "Purchase")
-		var/datum/map_template/shuttle/voidcrew/template = SSmapping.ship_purchase_list[tgui_input_list(src, "Please select ship to purchase!", "Welcome, [used_name].", SSmapping.ship_purchase_list)]
-		if(!template)
-			return select_ship()
-		if(!client.remove_ship_cost(initial(template.faction_prefix), initial(template.part_cost)) && !CONFIG_GET(flag/free_ships))
-			tgui_alert(client, "You lack the parts needed to build this ship! (Required: [initial(template.part_cost)] [initial(template.faction_prefix)] part\s)")
-			return
-
-		to_chat(usr, span_danger("Your [initial(template.name)] is being prepared. Please be patient!"))
-		var/obj/structure/overmap/ship/target = SSshuttle.create_ship(template)
-		if(!istype(target))
-			to_chat(usr, span_danger("There was an error loading the ship. Please contact admins!"))
-			return
-		SSblackbox.record_feedback("tally", "ship_purchased", 1, initial(template.name)) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-		if(!AttemptSpawnOnShip(target.job_slots[1], target)) //Try to spawn as the first listed job in the job slots (usually captain)
-			to_chat(usr, span_danger("Ship spawned, but you were unable to be spawned. You can likely try to spawn in the ship through joining normally, but if not, please contact an admin."))
+		// Open the ship catalog in latejoin mode with callback
+		var/datum/callback/cb = CALLBACK(src, PROC_REF(on_ship_catalog_selection))
+		var/datum/ship_catalog_ui/catalog = new(src, latejoin = TRUE, selection_callback = cb)
+		catalog.ui_interact(src)
 		return
 
 	if(selected_ship.memo)
@@ -76,6 +65,24 @@
 			to_chat(usr, span_warning("Server is full."))
 
 	AttemptSpawnOnShip(selected_job, selected_ship)
+
+/**
+ * Callback when player selects a ship from the catalog
+ * The catalog has already handled unlocking/part deduction
+ */
+/mob/dead/new_player/proc/on_ship_catalog_selection(datum/map_template/shuttle/voidcrew/template)
+	if(!template)
+		return select_ship() // Cancelled, return to menu
+
+	to_chat(src, span_danger("Your [template.name] is being prepared. Please be patient!"))
+	var/obj/structure/overmap/ship/target = SSshuttle.create_ship(template)
+	if(!istype(target))
+		to_chat(src, span_danger("There was an error loading the ship. Please contact admins!"))
+		return select_ship()
+
+	SSblackbox.record_feedback("tally", "ship_purchased", 1, template.name)
+	if(!AttemptSpawnOnShip(target.job_slots[1], target))
+		to_chat(src, span_danger("Ship spawned, but you were unable to be spawned. You can likely try to spawn in the ship through joining normally, but if not, please contact an admin."))
 
 /**
  * Join as the given job

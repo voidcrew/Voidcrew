@@ -16,11 +16,13 @@
 // Maximum number of retry attempts for failed transactions (User Q3)
 #define TRANSACTION_MAX_RETRIES 3
 
-// Rarity tier constants (from user decisions)
-#define RARITY_BASIC 1
-#define RARITY_ADVANCED 2
-#define RARITY_RARE 3
-#define RARITY_SUPERIOR 4
+// Rarity tier constants - use string-based system from ship_economy_database.dm
+// These are just aliases for compatibility with old code
+#define TRANSACTION_RARITY_COMMON RARITY_COMMON
+#define TRANSACTION_RARITY_UNCOMMON RARITY_UNCOMMON
+#define TRANSACTION_RARITY_RARE RARITY_RARE
+#define TRANSACTION_RARITY_EPIC RARITY_EPIC
+#define TRANSACTION_RARITY_LEGENDARY RARITY_LEGENDARY
 
 /**
  * Purchase a ship blueprint unlock with transaction safety.
@@ -162,10 +164,10 @@
  * 4. Only delete physical item after confirmed success
  *
  * @param client The client extracting the part
- * @param obj/item/ship_part The physical ship part item to extract
+ * @param obj/item/ship_parts The physical ship part item to extract
  * @return TRUE if extraction successful or queued, FALSE on critical failure
  */
-/proc/extract_part_to_account(client/C, obj/item/ship_part/part)
+/proc/extract_part_to_account(client/C, obj/item/ship_parts/part)
 	if(!C || !part)
 		return FALSE
 
@@ -174,8 +176,8 @@
 		return FALSE
 
 	var/ckey = C.ckey
-	var/part_rarity = part.rarity || RARITY_BASIC
-	var/quantity = part.quantity || 1
+	var/part_rarity = part.part_rarity || RARITY_COMMON
+	var/quantity = 1  // Each ship_parts item represents 1 part
 
 	// Step 1: Attempt to add parts to inventory
 	var/datum/db_query/add_parts_query = SSdbcore.NewQuery(
@@ -254,7 +256,7 @@
 	if(!C || quantity <= 0 || cost <= 0)
 		return FALSE
 
-	if(rarity < RARITY_BASIC || rarity > RARITY_SUPERIOR)
+	if(!(rarity in GLOB.ship_part_rarities))
 		to_chat(C, span_warning("Invalid part rarity."))
 		return FALSE
 
@@ -483,21 +485,16 @@
 
 /**
  * Get human-readable rarity name.
+ * Capitalizes the first letter of the rarity string.
  *
- * @param rarity Rarity tier (1-4)
- * @return String name
+ * @param rarity Rarity tier string (common/uncommon/rare/epic/legendary)
+ * @return Capitalized string name
  */
 /proc/get_rarity_name(rarity)
-	switch(rarity)
-		if(RARITY_BASIC)
-			return "Basic"
-		if(RARITY_ADVANCED)
-			return "Advanced"
-		if(RARITY_RARE)
-			return "Rare"
-		if(RARITY_SUPERIOR)
-			return "Superior"
-	return "Unknown"
+	if(!rarity)
+		return "Unknown"
+	// Capitalize first letter
+	return uppertext(copytext(rarity, 1, 2)) + copytext(rarity, 2)
 
 // ============================================================================
 // PENDING EXTRACTIONS QUEUE PROCESSOR
@@ -572,7 +569,8 @@
 	return processed
 
 #undef TRANSACTION_MAX_RETRIES
-#undef RARITY_BASIC
-#undef RARITY_ADVANCED
-#undef RARITY_RARE
-#undef RARITY_SUPERIOR
+#undef TRANSACTION_RARITY_COMMON
+#undef TRANSACTION_RARITY_UNCOMMON
+#undef TRANSACTION_RARITY_RARE
+#undef TRANSACTION_RARITY_EPIC
+#undef TRANSACTION_RARITY_LEGENDARY

@@ -32,6 +32,9 @@ GLOBAL_LIST_INIT(ship_part_rarities, list(
 	RARITY_LEGENDARY
 ))
 
+// Singleton database access layer
+GLOBAL_DATUM(ship_economy_db, /datum/ship_economy_db)
+
 /**
  * Singleton database access layer for ship economy
  * Access via GLOB.ship_economy_db

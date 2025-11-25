@@ -104,9 +104,22 @@
 
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
-	if(!template) //no template, don't load
-		qdel(src)
+	// Template setup is now handled by setup_from_template() called from create_ship
+	// This allows proper template passing without relying on Initialize arg chain
+	if(template)
+		setup_from_template(template)
+
+/**
+ * Sets up the ship from a template. Called after Initialize.
+ * Returns TRUE on success, FALSE on failure.
+ */
+/obj/structure/overmap/ship/proc/setup_from_template(datum/map_template/shuttle/voidcrew/template)
+	if(!template)
 		return FALSE
+
+	if(source_template) // Already set up
+		return TRUE
+
 	src.source_template = template
 
 	ship_team = new()
@@ -140,6 +153,7 @@
 
 	SSovermap.simulated_ships += src
 	survey_data = new()
+	return TRUE
 
 /obj/structure/overmap/ship/Destroy()
 	source_template = null
