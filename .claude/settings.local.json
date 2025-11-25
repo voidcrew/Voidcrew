@@ -8,7 +8,19 @@
       "WebFetch(domain:byondtools.nexisonline.net)",
       "WebFetch(domain:gitlab.com)",
       "Bash(pip install:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "mcp__dmi-editor__dmi_extract_sprite",
+      "Bash(if [ -d \"C:\\Users\\isaac\\code\\tg-voidcrew\\SQL\\migrations\" ])",
+      "Bash(then echo \"Directory exists\")",
+      "Bash(else echo \"Directory does not exist\")",
+      "Bash(fi)",
+      "Bash(cmd //c:*)",
+      "mcp__MariaDB_Server__execute_sql",
+      "mcp__dmi-editor__dmi_list_states",
+      "mcp__dmi-editor__dmi_add_state",
+      "mcp__dmi-editor__dmi_replace_sprite",
+      "mcp__dmi-editor__dmi_save",
+      "Bash(./BUILD.cmd)"
     ],
     "deny": [],
     "ask": []
