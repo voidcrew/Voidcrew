@@ -215,7 +215,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	chat_toggles = savefile.get_entry("chat_toggles", chat_toggles)
 	toggles = savefile.get_entry("toggles", toggles)
 	ignoring = savefile.get_entry("ignoring", ignoring)
-	ships_owned = savefile.get_entry("ships_owned", ships_owned)
+	// ships_owned removed - now stored in database via GLOB.ship_economy_db
 
 	// OOC commendations
 	hearted_until = savefile.get_entry("hearted_until", hearted_until)

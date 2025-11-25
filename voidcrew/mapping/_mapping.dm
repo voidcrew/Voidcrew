@@ -177,7 +177,19 @@
 		return
 
 	for(var/datum/map_template/shuttle/voidcrew/shuttles as anything in subtypesof(/datum/map_template/shuttle/voidcrew))
-		ship_purchase_list["[initial(shuttles.name)] ([initial(shuttles.faction_prefix)] [initial(shuttles.part_cost)] part\s)"] = shuttles
+		// Calculate rarity tier based on part cost (same logic as in ship template New())
+		var/rarity = "Common"
+		var/part_cost = initial(shuttles.part_cost)
+		if(part_cost >= 10)
+			rarity = "Legendary"
+		else if(part_cost >= 7)
+			rarity = "Epic"
+		else if(part_cost >= 5)
+			rarity = "Rare"
+		else if(part_cost >= 3)
+			rarity = "Uncommon"
+
+		ship_purchase_list["[initial(shuttles.name)] ([rarity] [part_cost] part\s)"] = shuttles
 
 		switch(initial(shuttles.faction_prefix))
 			if(NANOTRASEN_SHIP)
