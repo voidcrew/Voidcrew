@@ -32,8 +32,8 @@ GLOBAL_LIST_INIT(ship_part_rarities, list(
 	RARITY_LEGENDARY
 ))
 
-// Singleton database access layer
-GLOBAL_DATUM(ship_economy_db, /datum/ship_economy_db)
+// Singleton database access layer - initialized automatically on first access
+GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 
 /**
  * Singleton database access layer for ship economy
@@ -56,10 +56,6 @@ GLOBAL_DATUM(ship_economy_db, /datum/ship_economy_db)
  */
 /datum/ship_economy_db/New()
 	. = ..()
-	if(GLOB.ship_economy_db)
-		stack_trace("Attempted to create duplicate ShipEconomyDB singleton")
-		return
-	GLOB.ship_economy_db = src
 
 /**
  * Get account-wide credits for a ckey
@@ -608,8 +604,3 @@ GLOBAL_DATUM(ship_economy_db, /datum/ship_economy_db)
 	unlocks_cache.Cut()
 	cache_times.Cut()
 	log_admin("SHIP_ECONOMY: All caches cleared")
-
-// Initialize singleton on world start
-/hook/startup/proc/init_ship_economy_db()
-	new /datum/ship_economy_db()
-	return TRUE

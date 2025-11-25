@@ -1,17 +1,17 @@
 /**
- * Ship Parts Preferences - Database-backed Rarity System
+ * Ship Economy Round-End Rewards
  *
- * Parts are now stored in the database via GLOB.ship_economy_db
- * The old savefile-based system has been deprecated.
+ * Economy is stored in the database via GLOB.ship_economy_db
  *
- * At round end, players receive a random rarity part as a reward.
+ * Round-End Rewards:
+ * - CREDITS: Given at round-end (base 100, bonuses for performance)
+ * - PARTS: NOT given at round-end - earned through gameplay and battlepass
  */
 
 /**
- * Give a random ship part at round end
- * Weighted by rarity: common is most likely, legendary is rare
+ * Give credits at round end
  */
 /datum/controller/subsystem/ticker/display_report(popcount)
 	. = ..()
 	for(var/client/all_clients as anything in GLOB.clients)
-		all_clients.give_random_ship_part()
+		all_clients.give_round_end_credits()

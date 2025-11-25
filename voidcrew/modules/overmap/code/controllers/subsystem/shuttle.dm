@@ -1,11 +1,22 @@
-/datum/controller/subsystem/shuttle/proc/create_ship(datum/map_template/shuttle/voidcrew/ship_template_to_spawn)
+/datum/controller/subsystem/shuttle/proc/create_ship(ship_template_to_spawn)
 	RETURN_TYPE(/obj/structure/overmap/ship)
 
 	UNTIL(!shuttle_loading)
 	shuttle_loading = TRUE
 
-	// Create template instance first
-	var/datum/map_template/shuttle/voidcrew/template_instance = new ship_template_to_spawn()
+	// Handle both type paths and already-instantiated templates
+	var/datum/map_template/shuttle/voidcrew/template_instance
+	if(istype(ship_template_to_spawn, /datum/map_template/shuttle/voidcrew))
+		// Already an instantiated template object
+		template_instance = ship_template_to_spawn
+	else if(ispath(ship_template_to_spawn, /datum/map_template/shuttle/voidcrew))
+		// It's a type path, instantiate it
+		template_instance = new ship_template_to_spawn()
+	else
+		stack_trace("create_ship called with invalid argument: [ship_template_to_spawn]")
+		shuttle_loading = FALSE
+		return FALSE
+
 	if(!template_instance)
 		stack_trace("Failed to instantiate ship template [ship_template_to_spawn].")
 		shuttle_loading = FALSE

@@ -1,42 +1,75 @@
 /**
  * Ship Parts Client Procs - Database-backed Rarity System
  *
- * These procs manage ship parts for players.
+ * These procs manage ship parts and credits for players.
  * Parts are stored in the database via GLOB.ship_economy_db
+ *
+ * Economy Model:
+ * - CREDITS: Earned at round-end, spent on ships
+ * - PARTS: Found in-game (exploration/loot) or from Battlepass rewards
  */
 
-/// Rarity weights for random part distribution (higher = more common)
-#define RARITY_WEIGHT_COMMON 50
-#define RARITY_WEIGHT_UNCOMMON 30
-#define RARITY_WEIGHT_RARE 15
-#define RARITY_WEIGHT_EPIC 4
-#define RARITY_WEIGHT_LEGENDARY 1
+/// Base credits awarded at round end
+#define ROUND_END_BASE_CREDITS 100
 
 /**
- * Gives a random ship part based on weighted rarity distribution
- * Called at round end to reward players
+ * Gives credits at round end
+ * Parts are NOT given at round-end - they come from in-game loot and battlepass
  */
-/client/proc/give_random_ship_part()
+/client/proc/give_round_end_credits()
 	if(!ckey)
 		return
 
-	// Weighted random selection
-	var/list/rarity_weights = list(
-		RARITY_COMMON = RARITY_WEIGHT_COMMON,
-		RARITY_UNCOMMON = RARITY_WEIGHT_UNCOMMON,
-		RARITY_RARE = RARITY_WEIGHT_RARE,
-		RARITY_EPIC = RARITY_WEIGHT_EPIC,
-		RARITY_LEGENDARY = RARITY_WEIGHT_LEGENDARY
-	)
+	var/credits_earned = ROUND_END_BASE_CREDITS
 
-	var/selected_rarity = pick_weight(rarity_weights)
+	// TODO: Add bonuses based on round performance, survival, objectives, etc.
+	// Example future bonuses:
+	// - Survived the round: +25 credits
+	// - Completed objectives: +50 credits
+	// - Captain/leadership role: +25 credits
 
-	// Add to database
-	if(GLOB.ship_economy_db?.add_part(ckey, selected_rarity, 1, "round_end_reward"))
-		to_chat(usr, span_notice("You have received a [selected_rarity] ship part as a round reward!"))
+	// Add credits to database
+	if(GLOB.ship_economy_db?.add_credits(ckey, credits_earned, "round_end_reward"))
+		to_chat(src, span_notice("You have earned [credits_earned] ship credits for completing the round!"))
 	else
-		to_chat(usr, span_warning("Failed to receive your ship part reward. It will be queued for later."))
-		GLOB.ship_economy_db?.queue_pending_extraction(ckey, selected_rarity, "round_end_[world.realtime]")
+		to_chat(src, span_warning("Failed to receive your credit reward. Please contact an admin."))
+
+/**
+ * Returns the player's current credit balance
+ */
+/client/proc/get_ship_credits()
+	if(!ckey)
+		return 0
+	return GLOB.ship_economy_db?.get_credits(ckey) || 0
+
+/**
+ * Gives a readout of credits and all ship parts owned (from database)
+ */
+/client/proc/list_ship_inventory()
+	if(!ckey)
+		to_chat(src, span_warning("Unable to identify your account!"))
+		return
+
+	// Show credits
+	var/credits = GLOB.ship_economy_db?.get_credits(ckey) || 0
+	to_chat(src, span_boldnotice("Ship Credits: [credits]"))
+
+	// Show parts
+	var/list/parts = GLOB.ship_economy_db?.get_parts(ckey)
+	if(!parts)
+		to_chat(src, span_warning("Unable to retrieve your parts inventory."))
+		return
+
+	to_chat(src, span_boldnotice("Ship Parts:"))
+	var/total = 0
+	for(var/rarity in GLOB.ship_part_rarities)
+		var/count = parts[rarity] || 0
+		if(count > 0)
+			to_chat(src, span_notice("  [count] [rarity]"))
+			total += count
+
+	if(total == 0)
+		to_chat(src, span_notice("  (none)"))
 
 /**
  * Gives a readout of all ship parts owned (from database)

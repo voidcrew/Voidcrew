@@ -66,6 +66,9 @@
 
 	AttemptSpawnOnShip(selected_job, selected_ship)
 
+/// Flag to prevent double-clicking ship spawn
+/mob/dead/new_player/var/spawning_ship = FALSE
+
 /**
  * Callback when player selects a ship from the catalog
  * The catalog has already handled unlocking/part deduction
@@ -74,9 +77,16 @@
 	if(!template)
 		return select_ship() // Cancelled, return to menu
 
-	to_chat(src, span_danger("Your [template.name] is being prepared. Please be patient!"))
+	// Prevent double-click spawning
+	if(spawning_ship)
+		to_chat(src, span_warning("Your ship is already being prepared. Please wait..."))
+		return
+	spawning_ship = TRUE
+
+	to_chat(src, span_notice("Your [template.name] is being prepared. Please be patient!"))
 	var/obj/structure/overmap/ship/target = SSshuttle.create_ship(template)
 	if(!istype(target))
+		spawning_ship = FALSE
 		to_chat(src, span_danger("There was an error loading the ship. Please contact admins!"))
 		return select_ship()
 

@@ -281,17 +281,22 @@
 **Integration Coordinator:** Reward System Integration Agent
 
 **Inputs:**
-- Base round-end reward (1 part + 100 credits)
-- Battlepass level-up rewards
-- Automation production
-- Round performance bonuses
+- Base round-end reward: CREDITS ONLY (no parts at round-end)
+- Battlepass level-up rewards: Parts + Credits
+- In-game acquisition: Parts found through exploration/loot/gameplay
+- Round performance bonuses: Credits
+
+**Part Acquisition Sources:**
+1. **In-game exploration/loot** - Find parts during gameplay (salvage, ruins, events)
+2. **Battlepass rewards** - Earn parts through battlepass progression
+3. **NOT round-end** - Round-end only gives credits
 
 **Tasks:**
 - Unified reward distribution system
 - Prevent double-rewards
 - Ensure fairness
 - Create reward event system
-- Balance total rewards per round
+- Balance credit earning rate vs ship costs
 
 **Output:** Reward system integration document
 

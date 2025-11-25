@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "mcp__MariaDB_Server__list_databases",
-      "mcp__MariaDB_Server__list_tables"
+      "mcp__MariaDB_Server__list_tables",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:byondtools.nexisonline.net)",
+      "WebFetch(domain:gitlab.com)",
+      "Bash(pip install:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []
