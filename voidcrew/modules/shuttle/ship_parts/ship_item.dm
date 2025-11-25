@@ -71,19 +71,3 @@
 	desc = "Legendary quality ship parts. The finest components for the most powerful ships."
 	color = "#ff8000"
 	part_rarity = RARITY_LEGENDARY
-
-// Legacy compatibility - map old faction types to common
-/obj/item/ship_parts/neutral
-	name = "common ship parts"
-	color = "#9d9d9d"
-	part_rarity = RARITY_COMMON
-
-/obj/item/ship_parts/nanotrasen
-	name = "uncommon ship parts"
-	color = "#1eff00"
-	part_rarity = RARITY_UNCOMMON
-
-/obj/item/ship_parts/syndicate
-	name = "rare ship parts"
-	color = "#0070dd"
-	part_rarity = RARITY_RARE
