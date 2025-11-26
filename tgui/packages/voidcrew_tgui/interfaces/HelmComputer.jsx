@@ -51,6 +51,7 @@ export const HelmComputer = (props, context) => {
                     params={{
                       id: mapRef,
                       type: 'map',
+                      zoom: 0,
                     }}
                   />
                 </Stack.Item>
