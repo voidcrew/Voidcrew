@@ -22,13 +22,17 @@
 	var/datum/weakref/attached_heater
 	var/thrust = 0
 
-/obj/machinery/power/shuttle_engine/ship/fueled/burn_engine(percentage = 100)
+/obj/machinery/power/shuttle_engine/ship/fueled/burn_engine(percentage = 100, ship_mass = REFERENCE_SHIP_MASS)
 	..()
 	var/obj/machinery/atmospherics/components/unary/shuttle/heater/resolved_heater = attached_heater.resolve()
 	if(heat_creation)
 		heat_engine()
-	var/to_use = fuel_use * (percentage / 100)
-	return resolved_heater?.consume_fuel(to_use, fuel_type) / to_use * thrust //This proc returns how much was actually burned, so let's use that and multiply it by the thrust to get all the thrust we CAN give.
+	var/mass_multiplier = get_mass_fuel_multiplier(ship_mass)
+	var/to_use = fuel_use * (percentage / 100) * mass_multiplier
+	var/actually_burned = resolved_heater?.consume_fuel(to_use, fuel_type)
+	if(!actually_burned)
+		return 0
+	return (actually_burned / to_use) * thrust //This proc returns how much was actually burned, so let's use that and multiply it by the thrust to get all the thrust we CAN give.
 
 /obj/machinery/power/shuttle_engine/ship/fueled/return_fuel()
 	. = ..()

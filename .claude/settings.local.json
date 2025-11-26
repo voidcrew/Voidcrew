@@ -20,7 +20,13 @@
       "mcp__dmi-editor__dmi_add_state",
       "mcp__dmi-editor__dmi_replace_sprite",
       "mcp__dmi-editor__dmi_save",
-      "Bash(./BUILD.cmd)"
+      "Bash(./BUILD.cmd)",
+      "mcp__gemini-chat__gemini_chat",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "mcp__MariaDB_Server__get_table_schema",
+      "mcp__byond-dm__get_byond_topic",
+      "mcp__byond-dm__search_byond_docs"
     ],
     "deny": [],
     "ask": []
