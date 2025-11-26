@@ -177,16 +177,36 @@
 
 /**
  * Meteor Storm Effect
- * Causes hull breaches and physical damage
+ * Causes hull breaches, physical damage, screen shake, and knockdowns
  */
 /obj/structure/overmap/ship/proc/apply_meteor_damage(obj/structure/overmap/event/meteor/storm)
 	var/damage = 8
+	var/shake_duration = 10
+	var/shake_strength = 2
+	var/knockdown_chance = 20
+	var/knockdown_duration = 2 SECONDS
+
 	if(istype(storm, /obj/structure/overmap/event/meteor/majour))
 		damage = 15
+		shake_duration = 20
+		shake_strength = 4
+		knockdown_chance = 50
+		knockdown_duration = 4 SECONDS
 	else if(istype(storm, /obj/structure/overmap/event/meteor/minor))
 		damage = 4
+		shake_duration = 5
+		shake_strength = 1
+		knockdown_chance = 10
+		knockdown_duration = 1 SECONDS
 
 	receive_damage(damage, "meteor impact")
+
+	// Shake the screen and knock down crew members
+	for(var/mob/living/crew_member in get_all_ship_mobs())
+		shake_camera(crew_member, shake_duration, shake_strength)
+		if(prob(knockdown_chance))
+			crew_member.Knockdown(knockdown_duration)
+			to_chat(crew_member, span_danger("The impact throws you off your feet!"))
 
 	// Create meteor impact effects
 	var/turf/target = get_random_ship_turf()
@@ -230,6 +250,20 @@
 		return null
 
 	return pick(area_turfs)
+
+/**
+ * Gets all living mobs currently on the ship
+ */
+/obj/structure/overmap/ship/proc/get_all_ship_mobs()
+	var/list/mobs = list()
+	if(!shuttle?.shuttle_areas?.len)
+		return mobs
+
+	for(var/area/ship_area as anything in shuttle.shuttle_areas)
+		for(var/mob/living/crew in ship_area)
+			mobs += crew
+
+	return mobs
 
 #undef SHIP_REGEN_INTERVAL
 #undef SHIP_REGEN_AMOUNT
