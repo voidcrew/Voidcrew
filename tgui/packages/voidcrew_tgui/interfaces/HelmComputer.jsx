@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useBackend } from '../../tgui/backend';
 import {
   AnimatedNumber,
@@ -14,6 +15,7 @@ import { Window } from '../../tgui/layouts';
 export const HelmComputer = (props, context) => {
   console.log('HelmComputer rendering, props:', props, 'context:', context);
   const { act, data, config } = useBackend(context);
+  const [mapRefreshKey, setMapRefreshKey] = useState(0);
   console.log('HelmComputer data:', data, 'config:', config);
   const { mapRef, isViewer } = data || {};
   console.log('HelmComputer mapRef:', mapRef, 'isViewer:', isViewer);
@@ -29,9 +31,21 @@ export const HelmComputer = (props, context) => {
           </Stack.Item>
           <Stack.Item>
             <Stack fill textAlign={'center'}>
-              <Section title="Map" width={'70%'} fill>
+              <Section
+                title="Map"
+                width={'70%'}
+                fill
+                buttons={
+                  <Button
+                    icon="sync"
+                    tooltip="Refresh Map"
+                    onClick={() => setMapRefreshKey((k) => k + 1)}
+                  />
+                }
+              >
                 <Stack.Item>
                   <ByondUi
+                    key={`helm-map-${mapRefreshKey}`}
                     className="CameraConsole__map"
                     height="610px"
                     params={{

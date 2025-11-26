@@ -29,6 +29,8 @@
 	var/calibrating = FALSE
 	///holding jump timer ID
 	var/jump_timer
+	/// Last known ship state for detecting changes
+	var/last_ship_state
 
 /obj/machinery/computer/helm/viewscreen
 	name = "ship viewscreen"
@@ -45,14 +47,13 @@
 	if(!current_ship && !attempt_ship_connection(last_resort = TRUE))
 		return FALSE
 
-	ui = SStgui.try_update_ui(user, src, ui)
 	current_ship.update_screen()
 
-	if(!ui)
-		current_ship.cam_screen.display_to(user)
-		user.client.register_map_obj(current_ship.cam_screen)
-		user.client.register_map_obj(current_ship.cam_background)
+	// Always re-display to force client refresh
+	current_ship.cam_screen.display_to(user)
 
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
 		ui = new(user, src, "HelmComputer", name)
 		ui.open()
 
