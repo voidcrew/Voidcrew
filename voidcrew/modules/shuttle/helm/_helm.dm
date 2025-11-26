@@ -47,15 +47,18 @@
 	if(!current_ship && !attempt_ship_connection(last_resort = TRUE))
 		return FALSE
 
-	current_ship.update_screen()
-
-	// Always re-display to force client refresh
-	current_ship.cam_screen.display_to(user)
-
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "HelmComputer", name)
 		ui.open()
+		// Register map after UI opens, passing window so it waits for visibility
+		current_ship.cam_screen.display_to(user, ui.window)
+	else
+		// For existing UI, just refresh the display
+		current_ship.cam_screen.display_to(user)
+
+	// Update screen content after display registration
+	current_ship.update_screen()
 
 /obj/machinery/computer/helm/ui_close(mob/user)
 	. = ..()
