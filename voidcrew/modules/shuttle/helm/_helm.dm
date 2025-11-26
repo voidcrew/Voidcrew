@@ -89,6 +89,7 @@
 	data["thrust"] = current_ship.calculate_thrust()
 	data["integrity"] = current_ship.integrity
 	data["calibrating"] = calibrating
+	data["canThrust"] = current_ship.can_thrust()
 	data["otherInfo"] = list()
 	for (var/obj/structure/overmap/object as anything in current_ship.close_overmap_objects)
 		var/list/other_data = list(

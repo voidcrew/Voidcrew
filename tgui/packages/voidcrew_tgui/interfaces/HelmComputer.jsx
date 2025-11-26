@@ -327,8 +327,9 @@ const ShipContent = (props, context) => {
 // Arrow directional controls
 const ShipControlContent = (props, context) => {
   const { act, data } = useBackend(context);
-  const { calibrating } = data;
+  const { calibrating, canThrust } = data;
   let flyable = data.state === 'flying';
+  let canMove = flyable && canThrust;
   //  DIRECTIONS const idea from Lyra as part of their Haven-Urist project
   const DIRECTIONS = {
     north: 1,
@@ -343,6 +344,9 @@ const ShipControlContent = (props, context) => {
   return (
     <Section title="Navigation">
       {data.state === 'idle' && <div className="NoticeBox">Ship Docked.</div>}
+      {flyable && !canThrust && (
+        <div className="NoticeBox danger">No engine power available!</div>
+      )}
       <Table collapsing>
         <Table.Row height={2}>
           <Table.Cell width={1}>
@@ -382,7 +386,7 @@ const ShipControlContent = (props, context) => {
               icon="arrow-left"
               iconRotation={45}
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.northwest,
@@ -394,7 +398,7 @@ const ShipControlContent = (props, context) => {
             <Button
               icon="arrow-up"
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.north,
@@ -407,7 +411,7 @@ const ShipControlContent = (props, context) => {
               icon="arrow-right"
               iconRotation={-45}
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.northeast,
@@ -421,7 +425,7 @@ const ShipControlContent = (props, context) => {
             <Button
               icon="arrow-left"
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.west,
@@ -442,7 +446,7 @@ const ShipControlContent = (props, context) => {
             <Button
               icon="arrow-right"
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.east,
@@ -457,7 +461,7 @@ const ShipControlContent = (props, context) => {
               icon="arrow-left"
               iconRotation={-45}
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.southwest,
@@ -469,7 +473,7 @@ const ShipControlContent = (props, context) => {
             <Button
               icon="arrow-down"
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.south,
@@ -482,7 +486,7 @@ const ShipControlContent = (props, context) => {
               icon="arrow-right"
               iconRotation={45}
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.southeast,

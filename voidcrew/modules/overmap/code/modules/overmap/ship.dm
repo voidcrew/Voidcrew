@@ -709,6 +709,18 @@
 		return
 	avg_fuel_amnt = round(fuel_avg / engine_amnt * 100)
 
+///Returns TRUE if the ship has at least one working engine with fuel available.
+/obj/structure/overmap/ship/proc/can_thrust()
+	refresh_engines()
+	for(var/obj/machinery/power/shuttle_engine/ship/engine in shuttle.engine_list)
+		if(!engine.enabled || !engine.thruster_active)
+			continue
+		var/fuel = engine.return_fuel()
+		var/fuel_cap = engine.return_fuel_cap()
+		if(fuel > 0 || !fuel_cap)
+			return TRUE
+	return FALSE
+
 /**
   * Returns the total speed in all directions.
   *
@@ -847,8 +859,13 @@
 	for(var/obj/machinery/power/shuttle_engine/ship/E in shuttle.engine_list)
 		if(!E.enabled || E.thruster_active == 0)
 			continue
-		thrust_used += E.burn_engine(percentage)
+		thrust_used += E.burn_engine(percentage, mass)
 	est_thrust = thrust_used //cheeky way of rechecking the thrust, check it every time it's used
+
+	// No thrust means no movement - engines need fuel/power to work
+	if(thrust_used <= 0)
+		return
+
 	thrust_used = thrust_used / max(mass * 100, 1) //do not know why this minimum check is here, but I clearly ran into an issue here before
 
 	if(n_dir)
