@@ -540,6 +540,8 @@
 	if(movement_callback_id)
 		deltimer(movement_callback_id)
 
+	// Check for hazards at the new location
+	check_hazards()
 	//Queue another movement
 	var/current_speed = MAGNITUDE(speed[1], speed[2])
 	if(!current_speed)
