@@ -188,8 +188,6 @@
 	if(!length(loadout_datums))
 		return FALSE
 
-	// Get current gear for on_equip handling
-	var/list/new_contents = character.get_all_gear()
 	var/update = NONE
 
 	for(var/datum/loadout_item/item as anything in loadout_datums)
@@ -198,8 +196,12 @@
 		if(spawned)
 			// Try to put in the appropriate slot
 			if(!character.equip_to_appropriate_slot(spawned))
-				// If can't equip to slot, put in backpack or hands
-				if(!character.put_in_backpack(spawned))
+				// If can't equip to slot, try backpack storage
+				var/stored = FALSE
+				if(character.back?.atom_storage)
+					stored = character.back.atom_storage.attempt_insert(spawned, character, override = TRUE)
+				// If still not stored, put in hands
+				if(!stored)
 					character.put_in_hands(spawned)
 
 			// Handle any special on_equip behavior
