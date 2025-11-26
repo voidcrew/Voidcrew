@@ -192,9 +192,6 @@
 	for(var/turf/visible_turf in visible_things)
 		visible_turfs += visible_turf
 
-	// Debug: show in-game what we're seeing
-	message_admins("update_screen: loc=[loc] turf=[ship_turf] ([ship_turf?.x],[ship_turf?.y],[ship_turf?.z]) turfs_found=[length(visible_turfs)] state=[state]")
-
 	// Handle empty view - show static
 	if(!length(visible_turfs))
 		cam_screen.show_camera_static()
