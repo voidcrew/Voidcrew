@@ -21,6 +21,9 @@
 	///List of spawn points on the ship.
 	var/list/obj/machinery/cryopod/spawn_points = list()
 
+	///The cryo oversight console for this ship (for custom slot swaps)
+	var/obj/machinery/computer/cryopod/cryo_console
+
 /obj/docking_port/mobile/voidcrew/Initialize(mapload)
 	. = ..()
 	RegisterSignal(SSdcs, COMSIG_GLOB_Z_SHIP_PROBE, PROC_REF(respond_to_z_port_probe))
