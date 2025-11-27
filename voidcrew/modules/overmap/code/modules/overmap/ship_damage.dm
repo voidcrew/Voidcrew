@@ -10,10 +10,8 @@
 #define SHIP_REGEN_INTERVAL (30 SECONDS)
 /// How much integrity the ship regenerates per tick
 #define SHIP_REGEN_AMOUNT 2
-/// Minimum integrity before the ship is considered critically damaged
-#define SHIP_CRITICAL_THRESHOLD 25
-/// Maximum integrity
-#define SHIP_MAX_INTEGRITY 100
+/// Minimum integrity percentage before the ship is considered critically damaged
+#define SHIP_CRITICAL_PERCENT 25
 
 /obj/structure/overmap/ship
 	/// Timer ID for the health regeneration loop
@@ -54,10 +52,10 @@
 /obj/structure/overmap/ship/proc/regen_tick()
 	if(in_hazard)
 		return // Don't regen while in a hazard
-	if(integrity >= SHIP_MAX_INTEGRITY)
+	if(integrity >= max_integrity)
 		return // Already at max
 
-	integrity = min(integrity + SHIP_REGEN_AMOUNT, SHIP_MAX_INTEGRITY)
+	integrity = min(integrity + SHIP_REGEN_AMOUNT, max_integrity)
 
 /**
  * Deals damage to the ship's integrity
@@ -72,6 +70,9 @@
 	var/old_integrity = integrity
 	integrity = max(0, integrity - amount)
 
+	var/integrity_percent = round((integrity / max_integrity) * 100)
+	var/old_percent = round((old_integrity / max_integrity) * 100)
+
 	if(!silent)
 		var/severity = "minor"
 		if(amount >= 15)
@@ -79,10 +80,10 @@
 		else if(amount >= 8)
 			severity = "moderate"
 
-		ship_announce("Hull integrity compromised! [severity] [damage_type] damage sustained. Hull at [integrity]%.", "Damage Alert", TRUE, 'sound/machines/warning-buzzer.ogg')
+		ship_announce("Hull integrity compromised! [severity] [damage_type] damage sustained. Hull at [integrity_percent]%.", "Damage Alert", TRUE, 'sound/machines/warning-buzzer.ogg')
 
-	// Check for critical damage threshold crossing
-	if(old_integrity > SHIP_CRITICAL_THRESHOLD && integrity <= SHIP_CRITICAL_THRESHOLD)
+	// Check for critical damage threshold crossing (percentage based)
+	if(old_percent > SHIP_CRITICAL_PERCENT && integrity_percent <= SHIP_CRITICAL_PERCENT)
 		ship_announce("WARNING: Hull integrity critical! Seek repairs immediately!", "Critical Damage", TRUE, 'sound/machines/warning-buzzer.ogg')
 
 	// Check for ship destruction - only trigger once when first reaching 0
@@ -97,7 +98,13 @@
 	if(amount <= 0)
 		return
 
-	integrity = min(integrity + amount, SHIP_MAX_INTEGRITY)
+	integrity = min(integrity + amount, max_integrity)
+
+/**
+ * Returns the current integrity as a percentage
+ */
+/obj/structure/overmap/ship/proc/get_integrity_percent()
+	return round((integrity / max_integrity) * 100)
 
 /**
  * Called when ship integrity reaches 0
@@ -316,7 +323,9 @@
 
 	// Spawn meteor - pass target as second arg (becomes mapload, but meteor still chases it)
 	var/obj/effect/meteor/M = new meteor_type(spawn_turf, target)
+	// Add traits to let it move through hyperspace/cordon areas without being deleted
 	ADD_TRAIT(M, TRAIT_FREE_HYPERSPACE_MOVEMENT, INNATE_TRAIT)
+	ADD_TRAIT(M, TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT, INNATE_TRAIT)
 
 /**
  * Nebula Effect
@@ -366,5 +375,4 @@
 
 #undef SHIP_REGEN_INTERVAL
 #undef SHIP_REGEN_AMOUNT
-#undef SHIP_CRITICAL_THRESHOLD
-#undef SHIP_MAX_INTEGRITY
+#undef SHIP_CRITICAL_PERCENT
