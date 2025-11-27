@@ -15,6 +15,7 @@
 	. = ..()
 	if(!weather_type)
 		weather_type = w_type
+		sound_change_signals = list()
 		for(var/type in typesof(weather_type))
 			sound_change_signals += list(
 				COMSIG_WEATHER_TELEGRAPH(type),
@@ -37,14 +38,18 @@
 /datum/element/weather_listener/proc/handle_z_level_change(datum/source, turf/old_loc, turf/new_loc)
 	SIGNAL_HANDLER
 	var/list/fitting_z_levels = SSmapping.levels_by_trait(weather_trait)
+	log_game("WEATHER_AUDIO DEBUG: [source] z-level change. new_loc z=[new_loc?.z], trait=[weather_trait], fitting_z_levels=[json_encode(fitting_z_levels)]")
 	if(!(new_loc?.z in fitting_z_levels))
+		log_game("WEATHER_AUDIO DEBUG: [source] z-level [new_loc?.z] NOT in fitting z-levels, skipping audio setup")
 		return
+	log_game("WEATHER_AUDIO DEBUG: [source] z-level [new_loc?.z] IS in fitting z-levels! Setting up area_sound_manager. Playlist length=[length(playlist)]")
 	var/datum/component/our_comp = source.AddComponent(\
 		/datum/component/area_sound_manager, \
 		area_loop_pairs = playlist, \
 		remove_on = COMSIG_MOB_LOGOUT, \
 		acceptable_zs = fitting_z_levels, \
 	)
+	log_game("WEATHER_AUDIO DEBUG: [source] area_sound_manager component created: [our_comp]")
 	our_comp.RegisterSignals(SSdcs, sound_change_signals, TYPE_PROC_REF(/datum/component/area_sound_manager, handle_change))
 
 /datum/element/weather_listener/proc/handle_logout(datum/source)
