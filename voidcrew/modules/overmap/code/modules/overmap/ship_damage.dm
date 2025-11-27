@@ -214,13 +214,21 @@
 
 /**
  * Electrical Storm Effect
- * Overloads ship lighting fixtures, causing them to spark and shock nearby crew
- * Similar to revenant overload - lights shoot lightning at nearby victims
+ * Overloads ship lighting fixtures and strikes the ship with real lightning bolts
+ * Lights spark and shock nearby crew, while thunderbolts strike random locations
  */
 /obj/structure/overmap/ship/proc/apply_electrical_storm_damage(obj/structure/overmap/event/electric/storm)
 	var/intensity = storm.intensity
 
 	ship_announce("Electrical storm detected! Lighting systems overloading!", "Electrical Storm Warning", TRUE, 'sound/effects/sparks/sparks1.ogg')
+
+	// Spawn real lightning strikes at random ship locations
+	var/lightning_count = 1 + intensity
+	for(var/i in 1 to lightning_count)
+		var/turf/strike_target = get_random_ship_turf()
+		if(strike_target)
+			// Stagger the strikes for dramatic effect
+			addtimer(CALLBACK(src, PROC_REF(lightning_strike), strike_target), rand(0.5 SECONDS, 3 SECONDS))
 
 	// Find all lights on the ship that are currently on
 	var/list/ship_lights = list()
@@ -253,11 +261,47 @@
 		light_sparks.set_up(4, 0, light)
 		light_sparks.start()
 		light.flicker(10)
-		// Schedule the lightning strike
+		// Schedule the lightning strike from light
 		addtimer(CALLBACK(src, PROC_REF(electrical_storm_shock), light, intensity), rand(1 SECONDS, 2 SECONDS))
 
 	// Trigger immediate mass recalculation
 	calculate_mass()
+
+/**
+ * Spawns a real lightning bolt strike at the target turf
+ * Same effect as rain storm thunder - visual, damage, explosion
+ */
+/obj/structure/overmap/ship/proc/lightning_strike(turf/target)
+	if(!target)
+		return
+
+	// Create the thunderbolt visual effect
+	var/obj/effect/temp_visual/thunderbolt/thunder = new(target)
+	thunder.flash_lighting_fx(6, 2, duration = thunder.duration)
+
+	// Electrocute anyone standing on the turf
+	for(var/mob/living/hit_mob in target)
+		to_chat(hit_mob, span_userdanger("You've been struck by lightning!"))
+		hit_mob.electrocute_act(50, "lightning", flags = SHOCK_TESLA|SHOCK_NOGLOVES)
+
+	// Damage objects on the turf
+	for(var/obj/hit_thing in target)
+		if(QDELETED(hit_thing))
+			continue
+		if(!hit_thing.uses_integrity)
+			continue
+		if(hit_thing.invisibility != INVISIBILITY_NONE)
+			continue
+		if(HAS_TRAIT(hit_thing, TRAIT_UNDERFLOOR))
+			continue
+		hit_thing.take_damage(20, BURN, ENERGY, FALSE)
+
+	// Sound and message
+	playsound(target, 'sound/effects/magic/lightningbolt.ogg', 100, extrarange = 10, falloff_distance = 10)
+	target.visible_message(span_danger("A thunderbolt strikes [target]!"))
+
+	// Small explosion and fire
+	explosion(target, light_impact_range = 1, flame_range = 1, silent = TRUE, adminlog = FALSE)
 
 /**
  * Called after delay - makes a light shoot lightning at nearby crew
