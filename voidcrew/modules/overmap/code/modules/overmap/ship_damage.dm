@@ -214,26 +214,11 @@
 			crew_member.Knockdown(knockdown_duration)
 			to_chat(crew_member, span_danger("The impact throws you off your feet!"))
 
-	// Spawn physical meteors on the ship
+	// Launch meteors from off-screen toward the ship
 	for(var/i in 1 to meteor_count)
-		spawn_meteor_on_ship(meteor_types)
-
-/**
- * Spawns a physical meteor directly on a ship turf and makes it impact immediately
- */
-/obj/structure/overmap/ship/proc/spawn_meteor_on_ship(list/meteor_types)
-	var/turf/target = get_random_ship_turf()
-	if(!target)
-		return
-
-	// Pick meteor type and spawn it directly on the target
-	var/meteor_type = pick_weight(meteor_types)
-	var/obj/effect/meteor/M = new meteor_type(target, target) // spawn at target, aiming at target
-
-	// Make the meteor impact immediately
-	if(M && !QDELETED(M))
-		M.ram_turf(target)
-		M.get_hit()
+		var/turf/target = get_random_ship_turf()
+		if(target)
+			spawn_meteor(meteor_types, pick(GLOB.cardinals), target)
 
 /**
  * Nebula Effect
