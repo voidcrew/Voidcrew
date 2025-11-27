@@ -31,8 +31,6 @@
 	var/jump_timer
 	/// Last known ship state for detecting changes
 	var/last_ship_state
-	/// Timer ID for UI update polling
-	var/ui_update_timer_id
 
 /obj/machinery/computer/helm/viewscreen
 	name = "ship viewscreen"
@@ -54,8 +52,6 @@
 		ui = new(user, src, "HelmComputer", name)
 		ui.open()
 		ui.set_autoupdate(TRUE) // Enable continuous UI updates
-		// Start UI update timer when UI opens
-		start_ui_update_timer()
 		// Register map after UI opens, passing window so it waits for visibility
 		current_ship.cam_screen.display_to(user, ui.window)
 	else
@@ -68,9 +64,6 @@
 /obj/machinery/computer/helm/ui_close(mob/user)
 	. = ..()
 	current_ship.cam_screen.hide_from(user)
-	// Stop UI update timer when UI closes (if no more users)
-	if(!LAZYLEN(open_uis))
-		stop_ui_update_timer()
 /*
 /obj/machinery/computer/helm/ui_act(action, list/params)
 	. = ..()
@@ -169,34 +162,6 @@
 /obj/machinery/computer/helm/LateInitialize()
 	. = ..()
 	attempt_ship_connection()
-
-/obj/machinery/computer/helm/Destroy()
-	stop_ui_update_timer()
-	return ..()
-
-/**
- * Starts the UI update timer - polls every 1 second to refresh UI data
- */
-/obj/machinery/computer/helm/proc/start_ui_update_timer()
-	if(ui_update_timer_id)
-		return // Already running
-	ui_update_timer_id = addtimer(CALLBACK(src, PROC_REF(ui_update_tick)), 1 SECONDS, TIMER_STOPPABLE | TIMER_LOOP)
-
-/**
- * Stops the UI update timer
- */
-/obj/machinery/computer/helm/proc/stop_ui_update_timer()
-	if(ui_update_timer_id)
-		deltimer(ui_update_timer_id)
-		ui_update_timer_id = null
-
-/**
- * Called every second to push UI updates to all open helm UIs
- */
-/obj/machinery/computer/helm/proc/ui_update_tick()
-	if(!current_ship)
-		return
-	SStgui.update_uis(src)
 
 /obj/machinery/computer/helm/proc/calibrate_jump(inline = FALSE)
 	if(jump_allowed < 0)

@@ -1,25 +1,17 @@
 /**
  * Ship Damage System
  *
- * Handles ship integrity, damage from hazards, and health regeneration.
+ * Handles ship integrity and damage from hazards.
  * Ships take damage when flying through dangerous overmap objects like
  * ion storms, electrical storms, and meteor fields.
+ *
+ * Ship health is purely turf-based:
+ * - Damage = turfs being destroyed (explosions, meteors, etc.)
+ * - Repair = turfs being rebuilt (construction)
+ * - SSovermap.fire() calls calculate_mass() every second to update integrity
  */
 
-/// How often the ship regenerates health (in deciseconds)
-#define SHIP_REGEN_INTERVAL (30 SECONDS)
-/// How much integrity the ship regenerates per tick
-#define SHIP_REGEN_AMOUNT 2
-/// Minimum integrity percentage before the ship is considered critically damaged
-#define SHIP_CRITICAL_PERCENT 25
-
 /obj/structure/overmap/ship
-	/// Timer ID for the health regeneration loop
-	var/regen_timer_id
-	/// Timer ID for the mass update loop
-	var/mass_update_timer_id
-	/// Whether the ship is currently taking hazard damage (prevents regen)
-	var/in_hazard = FALSE
 	/// Cooldown for hazard damage ticks
 	COOLDOWN_DECLARE(hazard_damage_cooldown)
 	/// Whether ship integrity has been initialized from mass
@@ -28,14 +20,11 @@
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
 	if(.)
-		start_regen_timer()
-		start_mass_update_timer()
+		// Mass calculation is handled by SSovermap.fire() every second
 		// Register signal listeners for damage feedback
 		RegisterSignal(src, COMSIG_SHIP_DAMAGE_THRESHOLD, PROC_REF(on_damage_threshold))
 
 /obj/structure/overmap/ship/Destroy()
-	stop_regen_timer()
-	stop_mass_update_timer()
 	UnregisterSignal(src, COMSIG_SHIP_DAMAGE_THRESHOLD)
 	return ..()
 
@@ -68,98 +57,6 @@
 			ship_announce("EMERGENCY: Hull breach imminent! Integrity at [display_percent]%! All hands brace for impact!", "EMERGENCY", TRUE, 'sound/machines/engine_alert/engine_alert2.ogg')
 			play_ship_sound('sound/machines/engine_alert/engine_alert2.ogg')
 			shake_ship(25, 4)
-
-/**
- * Starts the health regeneration timer
- */
-/obj/structure/overmap/ship/proc/start_regen_timer()
-	if(regen_timer_id)
-		return
-	regen_timer_id = addtimer(CALLBACK(src, PROC_REF(regen_tick)), SHIP_REGEN_INTERVAL, TIMER_STOPPABLE | TIMER_LOOP)
-
-/**
- * Stops the health regeneration timer
- */
-/obj/structure/overmap/ship/proc/stop_regen_timer()
-	if(regen_timer_id)
-		deltimer(regen_timer_id)
-		regen_timer_id = null
-
-/**
- * Called every SHIP_REGEN_INTERVAL to regenerate ship health
- */
-/obj/structure/overmap/ship/proc/regen_tick()
-	if(in_hazard)
-		return // Don't regen while in a hazard
-	if(integrity >= max_integrity)
-		return // Already at max
-
-	integrity = min(integrity + SHIP_REGEN_AMOUNT, max_integrity)
-
-/**
- * Starts the mass update timer - runs every 0.5 seconds to keep UI in sync
- */
-/obj/structure/overmap/ship/proc/start_mass_update_timer()
-	if(mass_update_timer_id)
-		return
-	mass_update_timer_id = addtimer(CALLBACK(src, PROC_REF(mass_update_tick)), 0.5 SECONDS, TIMER_STOPPABLE | TIMER_LOOP)
-
-/**
- * Stops the mass update timer
- */
-/obj/structure/overmap/ship/proc/stop_mass_update_timer()
-	if(mass_update_timer_id)
-		deltimer(mass_update_timer_id)
-		mass_update_timer_id = null
-
-/**
- * Called every 0.5 seconds to update ship mass/integrity
- */
-/obj/structure/overmap/ship/proc/mass_update_tick()
-	calculate_mass()
-
-/**
- * Deals damage to the ship's integrity
- * @param amount - How much damage to deal
- * @param damage_type - Type of damage for logging/effects
- * @param silent - If TRUE, doesn't announce damage
- */
-/obj/structure/overmap/ship/proc/receive_damage(amount, damage_type = "unknown", silent = FALSE)
-	if(amount <= 0)
-		return
-
-	var/old_integrity = integrity
-	integrity = max(0, integrity - amount)
-
-	var/integrity_percent = round((integrity / max_integrity) * 100)
-	var/old_percent = round((old_integrity / max_integrity) * 100)
-
-	if(!silent)
-		var/severity = "minor"
-		if(amount >= 15)
-			severity = "severe"
-		else if(amount >= 8)
-			severity = "moderate"
-
-		ship_announce("Hull integrity compromised! [severity] [damage_type] damage sustained. Hull at [integrity_percent]%.", "Damage Alert", TRUE, 'sound/machines/warning-buzzer.ogg')
-
-	// Check for critical damage threshold crossing (percentage based)
-	if(old_percent > SHIP_CRITICAL_PERCENT && integrity_percent <= SHIP_CRITICAL_PERCENT)
-		ship_announce("WARNING: Hull integrity critical! Seek repairs immediately!", "Critical Damage", TRUE, 'sound/machines/warning-buzzer.ogg')
-
-	// Check for ship destruction - only trigger once when first reaching 0
-	if(old_integrity > 0 && integrity <= 0)
-		on_ship_destroyed()
-
-/**
- * Repairs the ship's hull integrity
- * @param amount - How much to repair
- */
-/obj/structure/overmap/ship/proc/repair_hull(amount)
-	if(amount <= 0)
-		return
-
-	integrity = min(integrity + amount, max_integrity)
 
 /**
  * Returns the current integrity as a percentage for UI display
@@ -268,10 +165,7 @@
  * Called when the ship enters a tile - checks for hazards
  */
 /obj/structure/overmap/ship/proc/check_hazards()
-	in_hazard = FALSE
-
 	for(var/obj/structure/overmap/event/hazard in loc)
-		in_hazard = TRUE
 		apply_hazard_effect(hazard)
 
 /**
@@ -465,7 +359,3 @@
 /obj/structure/overmap/ship/proc/shake_ship(duration = 10, strength = 2)
 	for(var/mob/living/crew in get_all_ship_mobs())
 		shake_camera(crew, duration, strength)
-
-#undef SHIP_REGEN_INTERVAL
-#undef SHIP_REGEN_AMOUNT
-#undef SHIP_CRITICAL_PERCENT
