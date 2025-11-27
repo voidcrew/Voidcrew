@@ -91,15 +91,20 @@
 	var/list/data = list()
 
 	data["thrust"] = current_ship.calculate_thrust()
-	data["integrity"] = current_ship.integrity
+	data["integrity"] = current_ship.get_integrity_percent()
 	data["shipDisabled"] = current_ship.integrity <= 0
 	data["calibrating"] = calibrating
 	data["canThrust"] = current_ship.can_thrust()
 	data["otherInfo"] = list()
 	for (var/obj/structure/overmap/object as anything in current_ship.close_overmap_objects)
+		var/other_integrity = object.integrity
+		// For ships, use percentage-based integrity
+		if(istype(object, /obj/structure/overmap/ship))
+			var/obj/structure/overmap/ship/other_ship = object
+			other_integrity = other_ship.get_integrity_percent()
 		var/list/other_data = list(
 			name = object.name,
-			integrity = object.integrity,
+			integrity = other_integrity,
 			ref = REF(object)
 		)
 		data["otherInfo"] += list(other_data)

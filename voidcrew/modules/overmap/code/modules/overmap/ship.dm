@@ -700,6 +700,7 @@
 			to_chat(user, "<span class='warning'>Docking request already pending.</span>")
 /**
   * Calculates the mass based on the amount of turfs in the shuttle's areas
+  * Also sets max_integrity based on mass (ship health scales with size)
   */
 /obj/structure/overmap/ship/proc/calculate_mass()
 	. = 0
@@ -707,6 +708,20 @@
 	for(var/shuttleArea in areas)
 		. += length(get_area_turfs(shuttleArea))
 	mass = .
+
+	// Set ship integrity based on mass
+	var/old_max = max_integrity
+	max_integrity = mass
+
+	// Scale integrity proportionally if max changed
+	if(old_max > 0 && max_integrity != old_max)
+		integrity = round((integrity / old_max) * max_integrity)
+	else if(integrity == 0 || integrity == 100) // First time or default value
+		integrity = max_integrity
+
+	// Clamp integrity to valid range
+	integrity = clamp(integrity, 0, max_integrity)
+
 	update_icon_state()
 
 /obj/structure/overmap/ship/update_icon_state()
