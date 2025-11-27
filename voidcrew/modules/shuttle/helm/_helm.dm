@@ -92,7 +92,7 @@
 
 	data["thrust"] = current_ship.calculate_thrust()
 	data["integrity"] = current_ship.get_integrity_percent()
-	data["shipDisabled"] = current_ship.integrity <= 0
+	data["shipDisabled"] = current_ship.get_integrity_percent() <= 50
 	data["calibrating"] = calibrating
 	data["canThrust"] = current_ship.can_thrust()
 	data["otherInfo"] = list()
@@ -274,14 +274,15 @@
 			*/
 		if("reload_ship")
 			reload_ship()
+			current_ship.calculate_mass() // Refresh health based on current turfs
 			update_static_data(usr, ui)
 			return
 		if("reload_engines")
 			current_ship.refresh_engines()
 			return
 
-	// Prevent operation if ship is destroyed
-	if(current_ship.integrity <= 0)
+	// Prevent operation if ship is destroyed (at or below 50% integrity)
+	if(current_ship.get_integrity_percent() <= 50)
 		say("ERROR: Hull integrity critical. All systems offline.")
 		return
 
