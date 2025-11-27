@@ -177,7 +177,7 @@
 
 /**
  * Meteor Storm Effect
- * Launches actual meteors at the ship, causes screen shake and knockdowns
+ * Creates meteor impacts on the ship, causes screen shake and knockdowns
  */
 /obj/structure/overmap/ship/proc/apply_meteor_damage(obj/structure/overmap/event/meteor/storm)
 	var/damage = 5
@@ -185,8 +185,8 @@
 	var/shake_strength = 2
 	var/knockdown_chance = 20
 	var/knockdown_duration = 2 SECONDS
-	var/meteor_count = 1
-	var/list/meteor_types = list(/obj/effect/meteor/dust = 70, /obj/effect/meteor/sand = 30)
+	var/impact_count = 1
+	var/impact_severity = "minor" // minor, moderate, major
 
 	if(istype(storm, /obj/structure/overmap/event/meteor/majour))
 		damage = 10
@@ -194,16 +194,18 @@
 		shake_strength = 4
 		knockdown_chance = 50
 		knockdown_duration = 4 SECONDS
-		meteor_count = rand(2, 4)
-		meteor_types = list(/obj/effect/meteor/medium = 40, /obj/effect/meteor/big = 35, /obj/effect/meteor/flaming = 25)
+		impact_count = rand(2, 4)
+		impact_severity = "major"
 	else if(istype(storm, /obj/structure/overmap/event/meteor/minor))
 		damage = 2
 		shake_duration = 5
 		shake_strength = 1
 		knockdown_chance = 10
 		knockdown_duration = 1 SECONDS
-		meteor_count = 1
-		meteor_types = list(/obj/effect/meteor/dust = 90, /obj/effect/meteor/sand = 10)
+		impact_count = 1
+		impact_severity = "minor"
+	else
+		impact_severity = "moderate"
 
 	receive_damage(damage, "meteor impact")
 
@@ -214,61 +216,51 @@
 			crew_member.Knockdown(knockdown_duration)
 			to_chat(crew_member, span_danger("The impact throws you off your feet!"))
 
-	// Launch actual meteors at the ship
-	for(var/i in 1 to meteor_count)
-		launch_meteor_at_ship(meteor_types)
+	// Create meteor impacts directly on the ship
+	for(var/i in 1 to impact_count)
+		create_meteor_impact(impact_severity)
 
 /**
- * Launches a meteor from space toward a random ship turf
+ * Creates a meteor impact effect directly on a random ship turf
+ * This avoids issues with spawning moving meteors in transit/hyperspace
  */
-/obj/structure/overmap/ship/proc/launch_meteor_at_ship(list/meteor_types)
+/obj/structure/overmap/ship/proc/create_meteor_impact(severity = "moderate")
 	var/turf/target = get_random_ship_turf()
 	if(!target)
 		return
 
-	// Find a space turf to spawn the meteor from
-	var/turf/spawn_turf = get_meteor_spawn_turf(target)
-	if(!spawn_turf)
-		return
+	// Sound effect
+	playsound(target, 'sound/effects/meteorimpact.ogg', 60, TRUE)
 
-	// Pick and spawn the meteor
-	var/meteor_type = pick_weight(meteor_types)
-	new meteor_type(spawn_turf, target)
+	switch(severity)
+		if("minor")
+			// Minor impact - just visual and sound, maybe break a light
+			new /obj/effect/temp_visual/explosion(target)
+			for(var/obj/machinery/light/L in range(2, target))
+				if(prob(30))
+					L.break_light_tube()
 
-/**
- * Gets a space turf near the ship to spawn meteors from
- */
-/obj/structure/overmap/ship/proc/get_meteor_spawn_turf(turf/target)
-	if(!target)
-		return null
+		if("moderate")
+			// Moderate impact - small explosion, can break floor tiles
+			new /obj/effect/temp_visual/explosion(target)
+			if(prob(40) && istype(target, /turf/open/floor))
+				var/turf/open/floor/F = target
+				F.break_tile()
+			// Damage nearby objects
+			for(var/obj/O in range(1, target))
+				if(prob(25))
+					O.take_damage(15, BRUTE)
 
-	var/target_z = target.z
-	var/spawn_distance = 15
-
-	// Try to find a space turf in a random direction from the target
-	var/direction = pick(GLOB.cardinals)
-	var/turf/check_turf
-
-	for(var/dist in spawn_distance to spawn_distance + 10)
-		var/check_x = target.x
-		var/check_y = target.y
-
-		switch(direction)
-			if(NORTH)
-				check_y = min(world.maxy - 5, target.y + dist)
-			if(SOUTH)
-				check_y = max(5, target.y - dist)
-			if(EAST)
-				check_x = min(world.maxx - 5, target.x + dist)
-			if(WEST)
-				check_x = max(5, target.x - dist)
-
-		check_turf = locate(check_x, check_y, target_z)
-		if(check_turf && isspaceturf(check_turf))
-			return check_turf
-
-	// Fallback - just use a turf offset from target
-	return locate(clamp(target.x + 15, 5, world.maxx - 5), clamp(target.y + 15, 5, world.maxy - 5), target_z)
+		if("major")
+			// Major impact - real explosion
+			explosion(target, light_impact_range = 1, flash_range = 2, adminlog = FALSE)
+			// Higher chance to breach hull
+			if(prob(60) && istype(target, /turf/open/floor))
+				var/turf/open/floor/F = target
+				F.break_tile()
+			// Can start fires
+			if(prob(25))
+				new /obj/effect/hotspot(target)
 
 /**
  * Nebula Effect
