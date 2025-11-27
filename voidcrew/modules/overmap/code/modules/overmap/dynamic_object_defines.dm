@@ -60,6 +60,10 @@
 /obj/structure/overmap/planet/empty
 	planet = /datum/overmap/planet/empty
 
+/obj/structure/overmap/planet/crashed_ship
+	planet = /datum/overmap/planet/crashed_ship
+	preserve_level = TRUE // Don't delete crashed ships
+
 /obj/structure/overmap/planet/empty/unload_level()
 	if(preserve_level)
 		return
