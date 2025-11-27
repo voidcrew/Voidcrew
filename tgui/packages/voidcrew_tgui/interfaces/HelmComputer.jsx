@@ -327,8 +327,8 @@ const ShipContent = (props, context) => {
 // Arrow directional controls
 const ShipControlContent = (props, context) => {
   const { act, data } = useBackend(context);
-  const { calibrating } = data;
-  let flyable = data.state === 'flying';
+  const { calibrating, shipDisabled } = data;
+  let flyable = data.state === 'flying' && !shipDisabled;
   //  DIRECTIONS const idea from Lyra as part of their Haven-Urist project
   const DIRECTIONS = {
     north: 1,
@@ -342,7 +342,12 @@ const ShipControlContent = (props, context) => {
   };
   return (
     <Section title="Navigation">
-      {data.state === 'idle' && <div className="NoticeBox">Ship Docked.</div>}
+      {shipDisabled && (
+        <div className="NoticeBox danger">HULL CRITICAL - SYSTEMS OFFLINE</div>
+      )}
+      {data.state === 'idle' && !shipDisabled && (
+        <div className="NoticeBox">Ship Docked.</div>
+      )}
       <Table collapsing>
         <Table.Row height={2}>
           <Table.Cell width={1}>
@@ -350,7 +355,7 @@ const ShipControlContent = (props, context) => {
               tooltip="Undock"
               tooltipPosition="right"
               icon="sign-out-alt"
-              disabled={data.state !== 'idle'}
+              disabled={data.state !== 'idle' || shipDisabled}
               onClick={() => act('undock')}
             />
           </Table.Cell>
@@ -360,7 +365,7 @@ const ShipControlContent = (props, context) => {
               tooltip="Dock in Empty Space"
               tooltipPosition="right"
               icon="sign-in-alt"
-              disabled={data.state !== 'flying'}
+              disabled={!flyable}
               onClick={() => act('dock_empty')}
             />
           </Table.Cell>
@@ -371,7 +376,7 @@ const ShipControlContent = (props, context) => {
               tooltipPosition="right"
               icon={calibrating ? 'times' : 'angle-double-right'}
               color={calibrating ? 'bad' : undefined}
-              disabled={data.state !== 'flying'}
+              disabled={!flyable}
               onClick={() => act('bluespace_jump')}
             />
           </Table.Cell>

@@ -91,10 +91,8 @@
 		/**
 	 * Stuff needed to render the map
 	 */
-	/// The actual map screen
-	var/atom/movable/screen/map_view/cam_screen
-	/// The background of the map, usually doesn't do anything, but this is here so ships can customize the background ig?
-	var/atom/movable/screen/background/cam_background
+	/// The actual map screen (using camera subtype for proper rendering)
+	var/atom/movable/screen/map_view/camera/cam_screen
 
 	var/datum/weakref/survey_console
 	var/datum/survey_research/survey_data
@@ -104,9 +102,22 @@
 
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
-	if(!template) //no template, don't load
-		qdel(src)
+	// Template setup is now handled by setup_from_template() called from create_ship
+	// This allows proper template passing without relying on Initialize arg chain
+	if(template)
+		setup_from_template(template)
+
+/**
+ * Sets up the ship from a template. Called after Initialize.
+ * Returns TRUE on success, FALSE on failure.
+ */
+/obj/structure/overmap/ship/proc/setup_from_template(datum/map_template/shuttle/voidcrew/template)
+	if(!template)
 		return FALSE
+
+	if(source_template) // Already set up
+		return TRUE
+
 	src.source_template = template
 
 	ship_team = new()
@@ -127,19 +138,14 @@
 	if(render_map)	// Initialize map objects
 		map_name = "overmap_[REF(src)]_map"
 
-		cam_screen = new
-		cam_screen.name = "screen"
-		cam_screen.assigned_map = map_name
-		cam_screen.del_on_map_removal = FALSE
-		cam_screen.screen_loc = "[map_name]:1,1"
-
-		cam_background = new
-		cam_background.assigned_map = map_name
-		cam_background.del_on_map_removal = FALSE
+		// Use camera subtype which properly handles cam_background internally
+		cam_screen = new /atom/movable/screen/map_view/camera()
+		cam_screen.generate_view(map_name)
 		update_screen()
 
 	SSovermap.simulated_ships += src
 	survey_data = new()
+	return TRUE
 
 /obj/structure/overmap/ship/Destroy()
 	source_template = null
@@ -150,8 +156,7 @@
 	manifest?.Cut()
 	job_slots?.Cut()
 	QDEL_NULL(ship_team)
-	QDEL_NULL(cam_screen)
-	QDEL_NULL(cam_background)
+	QDEL_NULL(cam_screen) // cam_background is inside cam_screen and deleted with it
 	return ..()
 
 /obj/structure/overmap/ship/attack_ghost(mob/user)
@@ -177,18 +182,27 @@
 
 /// Updates the screen for the helm console
 /obj/structure/overmap/ship/proc/update_screen()
+	if(!cam_screen)
+		return
+
 	var/list/visible_turfs = list()
-	var/list/visible_things = view(SHIP_VIEW_RANGE, src)
+	var/turf/ship_turf = get_turf(src)
+	var/list/visible_things = view(SHIP_VIEW_RANGE, ship_turf)
 
 	for(var/turf/visible_turf in visible_things)
 		visible_turfs += visible_turf
+
+	// Handle empty view - show static
+	if(!length(visible_turfs))
+		cam_screen.show_camera_static()
+		return
 
 	var/list/bbox = get_bbox_of_atoms(visible_turfs)
 	var/size_x = bbox[3] - bbox[1] + 1
 	var/size_y = bbox[4] - bbox[2] + 1
 
-	cam_screen.vis_contents = visible_turfs
-	cam_background.fill_rect(1, 1, size_x, size_y)
+	// Use camera subtype's show_camera method for proper rendering
+	cam_screen.show_camera(visible_turfs, size_x, size_y)
 
 /**
   * Updates the ships icon to make it easier to distinguish between factions
@@ -475,18 +489,23 @@
 					var/obj/structure/overmap/ship/S = loc
 					S.shuttle.shuttle_areas -= shuttle.shuttle_areas
 					adjust_speed(S.speed[1], S.speed[2])
-				forceMove(get_turf(loc))
+				var/turf/target_turf = get_turf(loc)
+				log_shuttle("complete_dock UNDOCKING: Moving ship [src] from [loc] to turf [target_turf]")
+				forceMove(target_turf)
 
 				// Uncomment to enable planet deletion when undocking
 				// if(istype(old_loc, /obj/structure/overmap/planet))
 					// var/obj/structure/overmap/planet/D = old_loc
 					// INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/structure/overmap/planet, unload_level))
+			else
+				log_shuttle("complete_dock UNDOCKING: Ship [src] already on turf [loc]")
 
-				state = OVERMAP_SHIP_FLYING
-				SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_UNDOCKED)
-				//if(repair_timer)
-					//deltimer(repair_timer)
-				//addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/structure/overmap/ship, tick_autopilot)), 5 SECONDS) //TODO: Improve this SOMEHOW
+			// Always set state to FLYING when undocking completes
+			state = OVERMAP_SHIP_FLYING
+			SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_UNDOCKED)
+			//if(repair_timer)
+				//deltimer(repair_timer)
+			//addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/structure/overmap/ship, tick_autopilot)), 5 SECONDS) //TODO: Improve this SOMEHOW
 	calculate_mass()
 	update_screen()
 
@@ -535,13 +554,34 @@
 		deltimer(movement_callback_id)
 		movement_callback_id = null
 		return
-	var/turf/newloc = locate(x + SIGN(speed[1]), y + SIGN(speed[2]), z)
-	Move(newloc)
+
+	var/new_x = x + SIGN(speed[1])
+	var/new_y = y + SIGN(speed[2])
+
+	// Handle wraparound at edges
+	var/low_x = OVERMAP_LEFT_SIDE_COORD + 1  // 2
+	var/high_x = OVERMAP_RIGHT_SIDE_COORD - 1  // 24
+	var/low_y = OVERMAP_SOUTH_SIDE_COORD + 1
+	var/high_y = OVERMAP_NORTH_SIDE_COORD - 1
+
+	if(new_x <= OVERMAP_LEFT_SIDE_COORD)
+		new_x = high_x
+	else if(new_x >= OVERMAP_RIGHT_SIDE_COORD)
+		new_x = low_x
+
+	if(new_y <= OVERMAP_SOUTH_SIDE_COORD)
+		new_y = high_y
+	else if(new_y >= OVERMAP_NORTH_SIDE_COORD)
+		new_y = low_y
+
+	var/turf/newloc = locate(new_x, new_y, z)
+	if(newloc)
+		forceMove(newloc)
+		check_hazards()
+
 	if(movement_callback_id)
 		deltimer(movement_callback_id)
 
-	// Check for hazards at the new location
-	check_hazards()
 	//Queue another movement
 	var/current_speed = MAGNITUDE(speed[1], speed[2])
 	if(!current_speed)
@@ -697,6 +737,18 @@
 		return
 	avg_fuel_amnt = round(fuel_avg / engine_amnt * 100)
 
+///Returns TRUE if the ship has at least one working engine with fuel available.
+/obj/structure/overmap/ship/proc/can_thrust()
+	refresh_engines()
+	for(var/obj/machinery/power/shuttle_engine/ship/engine in shuttle.engine_list)
+		if(!engine.enabled || !engine.thruster_active)
+			continue
+		var/fuel = engine.return_fuel()
+		var/fuel_cap = engine.return_fuel_cap()
+		if(fuel > 0 || !fuel_cap)
+			return TRUE
+	return FALSE
+
 /**
   * Returns the total speed in all directions.
   *
@@ -835,8 +887,13 @@
 	for(var/obj/machinery/power/shuttle_engine/ship/E in shuttle.engine_list)
 		if(!E.enabled || E.thruster_active == 0)
 			continue
-		thrust_used += E.burn_engine(percentage)
+		thrust_used += E.burn_engine(percentage, mass)
 	est_thrust = thrust_used //cheeky way of rechecking the thrust, check it every time it's used
+
+	// No thrust means no movement - engines need fuel/power to work
+	if(thrust_used <= 0)
+		return
+
 	thrust_used = thrust_used / max(mass * 100, 1) //do not know why this minimum check is here, but I clearly ran into an issue here before
 
 	if(n_dir)

@@ -29,6 +29,8 @@
 	var/calibrating = FALSE
 	///holding jump timer ID
 	var/jump_timer
+	/// Last known ship state for detecting changes
+	var/last_ship_state
 
 /obj/machinery/computer/helm/viewscreen
 	name = "ship viewscreen"
@@ -46,15 +48,17 @@
 		return FALSE
 
 	ui = SStgui.try_update_ui(user, src, ui)
-	current_ship.update_screen()
-
 	if(!ui)
-		current_ship.cam_screen.display_to(user)
-		user.client.register_map_obj(current_ship.cam_screen)
-		user.client.register_map_obj(current_ship.cam_background)
-
 		ui = new(user, src, "HelmComputer", name)
 		ui.open()
+		// Register map after UI opens, passing window so it waits for visibility
+		current_ship.cam_screen.display_to(user, ui.window)
+	else
+		// For existing UI, just refresh the display
+		current_ship.cam_screen.display_to(user)
+
+	// Update screen content after display registration
+	current_ship.update_screen()
 
 /obj/machinery/computer/helm/ui_close(mob/user)
 	. = ..()
@@ -88,7 +92,9 @@
 
 	data["thrust"] = current_ship.calculate_thrust()
 	data["integrity"] = current_ship.integrity
+	data["shipDisabled"] = current_ship.integrity <= 0
 	data["calibrating"] = calibrating
+	data["canThrust"] = current_ship.can_thrust()
 	data["otherInfo"] = list()
 	for (var/obj/structure/overmap/object as anything in current_ship.close_overmap_objects)
 		var/list/other_data = list(
@@ -268,6 +274,11 @@
 		if("reload_engines")
 			current_ship.refresh_engines()
 			return
+
+	// Prevent operation if ship is destroyed
+	if(current_ship.integrity <= 0)
+		say("ERROR: Hull integrity critical. All systems offline.")
+		return
 
 	switch(current_ship.state) // Ship state-limited topics
 		if(OVERMAP_SHIP_FLYING)
