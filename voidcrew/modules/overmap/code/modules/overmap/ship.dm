@@ -554,8 +554,30 @@
 		deltimer(movement_callback_id)
 		movement_callback_id = null
 		return
-	var/turf/newloc = locate(x + SIGN(speed[1]), y + SIGN(speed[2]), z)
-	Move(newloc)
+
+	var/new_x = x + SIGN(speed[1])
+	var/new_y = y + SIGN(speed[2])
+
+	// Handle wraparound at edges
+	var/low_x = OVERMAP_LEFT_SIDE_COORD + 1  // 2
+	var/high_x = OVERMAP_RIGHT_SIDE_COORD - 1  // 24
+	var/low_y = OVERMAP_SOUTH_SIDE_COORD + 1
+	var/high_y = OVERMAP_NORTH_SIDE_COORD - 1
+
+	if(new_x <= OVERMAP_LEFT_SIDE_COORD)
+		new_x = high_x
+	else if(new_x >= OVERMAP_RIGHT_SIDE_COORD)
+		new_x = low_x
+
+	if(new_y <= OVERMAP_SOUTH_SIDE_COORD)
+		new_y = high_y
+	else if(new_y >= OVERMAP_NORTH_SIDE_COORD)
+		new_y = low_y
+
+	var/turf/newloc = locate(new_x, new_y, z)
+	if(newloc)
+		forceMove(newloc)
+
 	if(movement_callback_id)
 		deltimer(movement_callback_id)
 
