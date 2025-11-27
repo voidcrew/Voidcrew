@@ -214,27 +214,79 @@
 
 /**
  * Electrical Storm Effect
- * Causes power fluctuations and sparks - can damage equipment and shock crew
- * Hull damage comes from destroyed equipment, detected by calculate_mass()
+ * Overloads ship lighting fixtures, causing them to spark and shock nearby crew
+ * Similar to revenant overload - lights shoot lightning at nearby victims
  */
 /obj/structure/overmap/ship/proc/apply_electrical_storm_damage(obj/structure/overmap/event/electric/storm)
 	var/intensity = storm.intensity
 
-	ship_announce("Electrical storm detected! Power fluctuations imminent.", "Electrical Storm Warning", TRUE, 'sound/effects/sparks/sparks1.ogg')
+	ship_announce("Electrical storm detected! Lighting systems overloading!", "Electrical Storm Warning", TRUE, 'sound/effects/sparks/sparks1.ogg')
 
-	// Create electrical effects at random locations
-	var/spark_count = 3 + (intensity * 3)
-	for(var/i in 1 to spark_count)
-		var/turf/target = get_random_ship_turf()
-		if(target)
-			do_sparks(5, FALSE, target)
-			// Shock nearby mobs
-			if(prob(30 * intensity))
-				for(var/mob/living/victim in range(1, target))
-					victim.electrocute_act(10 * intensity, "electrical storm", flags = SHOCK_NOGLOVES)
+	// Find all lights on the ship that are currently on
+	var/list/ship_lights = list()
+	for(var/area/ship_area as anything in shuttle.shuttle_areas)
+		for(var/obj/machinery/light/light in ship_area)
+			if(light.on)
+				ship_lights += light
+
+	if(!length(ship_lights))
+		// No lights? Just do random sparks
+		for(var/i in 1 to 3)
+			var/turf/target = get_random_ship_turf()
+			if(target)
+				do_sparks(5, FALSE, target)
+		return
+
+	// Overload a number of lights based on intensity
+	var/lights_to_overload = min(length(ship_lights), 3 + (intensity * 2))
+	var/list/chosen_lights = list()
+
+	for(var/i in 1 to lights_to_overload)
+		if(!length(ship_lights))
+			break
+		chosen_lights += pick_n_take(ship_lights)
+
+	// Make lights spark and schedule lightning strikes
+	for(var/obj/machinery/light/light as anything in chosen_lights)
+		light.visible_message(span_boldwarning("[light] suddenly flares brightly and begins to spark!"))
+		var/datum/effect_system/spark_spread/light_sparks = new /datum/effect_system/spark_spread()
+		light_sparks.set_up(4, 0, light)
+		light_sparks.start()
+		light.flicker(10)
+		// Schedule the lightning strike
+		addtimer(CALLBACK(src, PROC_REF(electrical_storm_shock), light, intensity), rand(1 SECONDS, 2 SECONDS))
 
 	// Trigger immediate mass recalculation
 	calculate_mass()
+
+/**
+ * Called after delay - makes a light shoot lightning at nearby crew
+ */
+/obj/structure/overmap/ship/proc/electrical_storm_shock(obj/machinery/light/source_light, intensity)
+	if(QDELETED(source_light))
+		return
+
+	// Chance for this light to actually discharge lightning
+	// Minor/Moderate (intensity 1): 50% chance
+	// Major (intensity 2): 75% chance
+	if(!prob(25 + (intensity * 25)))
+		return
+
+	var/shock_range = 2 + intensity
+	var/shock_damage = 10 + (intensity * 5)
+
+	// Find and shock nearby crew
+	for(var/mob/living/carbon/victim in view(shock_range, source_light))
+		// Draw lightning beam
+		source_light.Beam(victim, icon_state = "lightning[rand(1,12)]", time = 0.5 SECONDS)
+		// Shock them
+		victim.electrocute_act(shock_damage, source_light, flags = SHOCK_NOGLOVES)
+		do_sparks(4, FALSE, victim)
+		playsound(victim, 'sound/effects/magic/lightningshock.ogg', 50, TRUE)
+
+	// Chance to break the light based on intensity
+	if(prob(20 * intensity))
+		source_light.break_light_tube()
 
 /**
  * Meteor Storm Effect
