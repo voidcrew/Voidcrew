@@ -42,13 +42,13 @@
 	var/list/FailedZs = list()
 	var/z_count = 1
 	for(var/i in 1 to lava_planet_count)
-		LoadGroup(FailedZs, "Planet lava [i]", "map_files/voidcrew", "lava.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS)))
+		LoadGroup(FailedZs, "Planet lava [i]", "map_files/voidcrew", "lava.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM)))
 		z_count += 2
 		var/list/p = list(type = /datum/overmap/planet/lava, z = z_count)
 		planets += list("lava [i]" = p)
 
 	for(var/i in 1 to ice_planet_count)
-		LoadGroup(FailedZs, "Planet ice [i]", "map_files/voidcrew", "ice.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS)))
+		LoadGroup(FailedZs, "Planet ice [i]", "map_files/voidcrew", "ice.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM)))
 		z_count += 2
 		var/list/p = list(type = /datum/overmap/planet/ice, z = z_count)
 		planets += list("ice [i]" = p)
