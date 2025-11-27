@@ -304,6 +304,32 @@
 	priority_announce(message, title, sound || 'sound/announcer/default/attention.ogg', null, "[name] Announcement", players = announce_targets)
 
 /**
+ * Broadcasts a message as runechat above the ship on the overmap.
+ * All crew members will see the floating text appear above the ship.
+ */
+/obj/structure/overmap/ship/proc/ship_broadcast_runechat(message)
+	// Create a mutable appearance for the text overlay
+	var/mutable_appearance/text_overlay = new
+	text_overlay.plane = RUNECHAT_PLANE
+	text_overlay.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA | KEEP_APART | RESET_TRANSFORM
+	text_overlay.alpha = 255
+	text_overlay.pixel_y = 32
+	text_overlay.maptext_width = 128
+	text_overlay.maptext_height = 48
+	text_overlay.maptext_x = -48
+	text_overlay.maptext = MAPTEXT("<span style='text-align: center; color: [chat_color || "#FFFFFF"]'>[message]</span>")
+
+	// Add as overlay to ship (visible through cam_screen vis_contents)
+	overlays += text_overlay
+
+	// Remove after delay
+	addtimer(CALLBACK(src, PROC_REF(remove_broadcast_overlay), text_overlay), 3 SECONDS)
+
+/// Removes a broadcast overlay from the ship
+/obj/structure/overmap/ship/proc/remove_broadcast_overlay(mutable_appearance/text_overlay)
+	overlays -= text_overlay
+
+/**
  * Mob death/revive
  *
  * Handles when a mob is killed and revived, to check if a ship should be deleted or not.
