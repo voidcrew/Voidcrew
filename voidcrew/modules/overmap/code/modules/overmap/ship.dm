@@ -700,27 +700,49 @@
 			to_chat(user, "<span class='warning'>Docking request already pending.</span>")
 /**
   * Calculates the mass based on the amount of turfs in the shuttle's areas
-  * Also sets max_integrity based on mass (ship health scales with size)
+  * Ship health is based on current turfs vs original turfs
+  * Losing turfs = losing health, rebuilding = healing
   */
 /obj/structure/overmap/ship/proc/calculate_mass()
 	. = 0
 	var/list/areas = shuttle.shuttle_areas
-	for(var/shuttleArea in areas)
-		. += length(get_area_turfs(shuttleArea))
+	for(var/area/shuttleArea in areas)
+		for(var/turf/T in shuttleArea)
+			// Only count non-space turfs (floors, walls, etc.)
+			if(!isspaceturf(T))
+				.++
+
+	var/old_integrity = integrity
 	mass = .
 
-	// Set ship integrity based on mass
-	var/old_max = max_integrity
-	max_integrity = mass
+	// First calculation - set original mass as max_integrity and start at full health
+	if(!integrity_initialized)
+		max_integrity = mass
+		integrity = mass // Start at 100% health
+		integrity_initialized = TRUE
+	else
+		// Subsequent calculations - health = current turfs (capped at original max)
+		integrity = min(mass, max_integrity)
 
-	// Scale integrity proportionally if max changed
-	if(old_max > 0 && max_integrity != old_max)
-		integrity = round((integrity / old_max) * max_integrity)
-	else if(integrity == 0 || integrity == 100) // First time or default value
-		integrity = max_integrity
+	// Check for critical/destruction thresholds if health dropped
+	if(integrity < old_integrity)
+		// Raw percentages for internal threshold checks
+		var/raw_percent = round((integrity / max_integrity) * 100)
+		var/old_raw_percent = round((old_integrity / max_integrity) * 100)
+		// Scaled percentage for UI/announcements (50% raw = 0% display)
+		var/display_percent = get_integrity_percent()
 
-	// Clamp integrity to valid range
-	integrity = clamp(integrity, 0, max_integrity)
+		// Announce significant damage
+		if(old_integrity - integrity >= 5)
+			ship_announce("Hull damage detected. Integrity at [display_percent]%.", "Damage Report", TRUE)
+
+		// Warning at 75% raw (50% displayed)
+		if(old_raw_percent > 75 && raw_percent <= 75)
+			ship_announce("WARNING: Hull integrity compromised! Integrity at [display_percent]%.", "Damage Warning", TRUE, 'sound/machines/warning-buzzer.ogg')
+
+		// Ship destruction at 50% raw (0% displayed)
+		if(old_raw_percent > 50 && raw_percent <= 50)
+			on_ship_destroyed()
 
 	update_icon_state()
 

@@ -20,6 +20,8 @@
 	var/in_hazard = FALSE
 	/// Cooldown for hazard damage ticks
 	COOLDOWN_DECLARE(hazard_damage_cooldown)
+	/// Whether ship integrity has been initialized from mass
+	var/integrity_initialized = FALSE
 
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
@@ -101,10 +103,15 @@
 	integrity = min(integrity + amount, max_integrity)
 
 /**
- * Returns the current integrity as a percentage
+ * Returns the current integrity as a percentage for UI display
+ * Scaled so 50% actual turfs = 0% displayed, 100% actual = 100% displayed
+ * This way the health bar hits 0% when the ship is destroyed at 50% mass
  */
 /obj/structure/overmap/ship/proc/get_integrity_percent()
-	return round((integrity / max_integrity) * 100)
+	var/raw_percent = (integrity / max_integrity) * 100
+	// Scale 50-100% to 0-100%
+	var/scaled = ((raw_percent - 50) / 50) * 100
+	return round(clamp(scaled, 0, 100))
 
 /**
  * Called when ship integrity reaches 0
@@ -275,21 +282,18 @@
 	if(!shuttle)
 		return
 
-	var/damage = 5
 	var/meteor_type = /obj/effect/meteor/medium
 
 	if(istype(storm, /obj/structure/overmap/event/meteor/majour))
-		damage = 10
 		meteor_type = /obj/effect/meteor/big
 	else if(istype(storm, /obj/structure/overmap/event/meteor/minor))
-		damage = 2
-		// Still use medium meteor for proper sound, just less hull damage
 		meteor_type = /obj/effect/meteor/medium
-
-	receive_damage(damage, "meteor impact")
 
 	// Spawn one meteor aimed at the ship
 	spawn_meteor_at_ship(meteor_type)
+
+	// Recalculate mass after meteor has time to crash through and destroy turfs
+	addtimer(CALLBACK(src, PROC_REF(calculate_mass)), 3 SECONDS)
 
 /**
  * Spawns a single meteor from outside the ship aimed at a random ship turf
@@ -323,9 +327,10 @@
 
 	// Spawn meteor - pass target as second arg (becomes mapload, but meteor still chases it)
 	var/obj/effect/meteor/M = new meteor_type(spawn_turf, target)
-	// Add traits to let it move through hyperspace/cordon areas without being deleted
+	// Add traits to let it move through hyperspace/cordon areas without being deleted or drifted
 	ADD_TRAIT(M, TRAIT_FREE_HYPERSPACE_MOVEMENT, INNATE_TRAIT)
 	ADD_TRAIT(M, TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT, INNATE_TRAIT)
+	ADD_TRAIT(M, TRAIT_HYPERSPACED, INNATE_TRAIT) // Prevent shuttle_cling component
 
 /**
  * Nebula Effect
