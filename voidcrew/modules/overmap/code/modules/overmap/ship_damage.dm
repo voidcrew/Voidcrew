@@ -222,13 +222,19 @@
 
 	ship_announce("Electrical storm detected! Lighting systems overloading!", "Electrical Storm Warning", TRUE, 'sound/effects/sparks/sparks1.ogg')
 
-	// Spawn real lightning strikes at random ship locations
-	var/lightning_count = 1 + intensity
-	for(var/i in 1 to lightning_count)
-		var/turf/strike_target = get_random_ship_turf()
-		if(strike_target)
-			// Stagger the strikes for dramatic effect
-			addtimer(CALLBACK(src, PROC_REF(lightning_strike), strike_target), rand(0.5 SECONDS, 3 SECONDS))
+	// Spawn real lightning strikes - but not on minor storms
+	// Minor: no lightning, Moderate: 1 strike (40% chance each), Major: 2-3 strikes
+	if(!istype(storm, /obj/structure/overmap/event/electric/minor))
+		var/lightning_count = intensity // 1 for moderate, 2 for major
+		for(var/i in 1 to lightning_count)
+			// Moderate storms have lower chance per bolt
+			var/strike_chance = (intensity == 1) ? 40 : 100
+			if(!prob(strike_chance))
+				continue
+			var/turf/strike_target = get_random_ship_turf()
+			if(strike_target)
+				// Stagger the strikes for dramatic effect
+				addtimer(CALLBACK(src, PROC_REF(lightning_strike), strike_target), rand(0.5 SECONDS, 3 SECONDS))
 
 	// Find all lights on the ship that are currently on
 	var/list/ship_lights = list()
