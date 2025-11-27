@@ -177,7 +177,7 @@
 
 /**
  * Meteor Storm Effect
- * Creates meteor impacts on the ship, causes screen shake and knockdowns
+ * Spawns physical meteors directly on ship turfs and makes them impact
  */
 /obj/structure/overmap/ship/proc/apply_meteor_damage(obj/structure/overmap/event/meteor/storm)
 	var/damage = 5
@@ -185,8 +185,8 @@
 	var/shake_strength = 2
 	var/knockdown_chance = 20
 	var/knockdown_duration = 2 SECONDS
-	var/impact_count = 1
-	var/impact_severity = "minor" // minor, moderate, major
+	var/meteor_count = 1
+	var/list/meteor_types = list(/obj/effect/meteor/dust = 80, /obj/effect/meteor/sand = 20)
 
 	if(istype(storm, /obj/structure/overmap/event/meteor/majour))
 		damage = 10
@@ -194,18 +194,16 @@
 		shake_strength = 4
 		knockdown_chance = 50
 		knockdown_duration = 4 SECONDS
-		impact_count = rand(2, 4)
-		impact_severity = "major"
+		meteor_count = rand(2, 4)
+		meteor_types = list(/obj/effect/meteor/medium = 50, /obj/effect/meteor/big = 35, /obj/effect/meteor/flaming = 15)
 	else if(istype(storm, /obj/structure/overmap/event/meteor/minor))
 		damage = 2
 		shake_duration = 5
 		shake_strength = 1
 		knockdown_chance = 10
 		knockdown_duration = 1 SECONDS
-		impact_count = 1
-		impact_severity = "minor"
-	else
-		impact_severity = "moderate"
+		meteor_count = 1
+		meteor_types = list(/obj/effect/meteor/dust = 100)
 
 	receive_damage(damage, "meteor impact")
 
@@ -216,51 +214,26 @@
 			crew_member.Knockdown(knockdown_duration)
 			to_chat(crew_member, span_danger("The impact throws you off your feet!"))
 
-	// Create meteor impacts directly on the ship
-	for(var/i in 1 to impact_count)
-		create_meteor_impact(impact_severity)
+	// Spawn physical meteors on the ship
+	for(var/i in 1 to meteor_count)
+		spawn_meteor_on_ship(meteor_types)
 
 /**
- * Creates a meteor impact effect directly on a random ship turf
- * This avoids issues with spawning moving meteors in transit/hyperspace
+ * Spawns a physical meteor directly on a ship turf and makes it impact immediately
  */
-/obj/structure/overmap/ship/proc/create_meteor_impact(severity = "moderate")
+/obj/structure/overmap/ship/proc/spawn_meteor_on_ship(list/meteor_types)
 	var/turf/target = get_random_ship_turf()
 	if(!target)
 		return
 
-	// Sound effect
-	playsound(target, 'sound/effects/meteorimpact.ogg', 60, TRUE)
+	// Pick meteor type and spawn it directly on the target
+	var/meteor_type = pick_weight(meteor_types)
+	var/obj/effect/meteor/M = new meteor_type(target, target) // spawn at target, aiming at target
 
-	switch(severity)
-		if("minor")
-			// Minor impact - just visual and sound, maybe break a light
-			new /obj/effect/temp_visual/explosion(target)
-			for(var/obj/machinery/light/L in range(2, target))
-				if(prob(30))
-					L.break_light_tube()
-
-		if("moderate")
-			// Moderate impact - small explosion, can break floor tiles
-			new /obj/effect/temp_visual/explosion(target)
-			if(prob(40) && istype(target, /turf/open/floor))
-				var/turf/open/floor/F = target
-				F.break_tile()
-			// Damage nearby objects
-			for(var/obj/O in range(1, target))
-				if(prob(25))
-					O.take_damage(15, BRUTE)
-
-		if("major")
-			// Major impact - real explosion
-			explosion(target, light_impact_range = 1, flash_range = 2, adminlog = FALSE)
-			// Higher chance to breach hull
-			if(prob(60) && istype(target, /turf/open/floor))
-				var/turf/open/floor/F = target
-				F.break_tile()
-			// Can start fires
-			if(prob(25))
-				new /obj/effect/hotspot(target)
+	// Make the meteor impact immediately
+	if(M && !QDELETED(M))
+		M.ram_turf(target)
+		M.get_hit()
 
 /**
  * Nebula Effect
