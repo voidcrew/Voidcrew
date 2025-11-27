@@ -139,6 +139,55 @@
 		crew_member.Knockdown(5 SECONDS)
 		to_chat(crew_member, span_userdanger("The ship shudders violently as critical systems fail!"))
 
+	// Dock into a "crashed ship" location so others can find and help/raid
+	crash_land()
+
+/**
+ * Emergency docks the ship into a crashed ship location on the overmap
+ */
+/obj/structure/overmap/ship/proc/crash_land()
+	if(!shuttle)
+		return
+
+	// Create crashed ship marker at current location
+	var/obj/structure/overmap/planet/crashed_ship/crash_site = new(get_turf(src))
+
+	// Load the level
+	if(!crash_site.loaded && !crash_site.loading)
+		crash_site.load_level()
+
+	// Wait for level to load then dock
+	if(crash_site.loading)
+		addtimer(CALLBACK(src, PROC_REF(finish_crash_land), crash_site), 2 SECONDS)
+		return
+
+	finish_crash_land(crash_site)
+
+/**
+ * Finishes the crash landing after the level loads
+ */
+/obj/structure/overmap/ship/proc/finish_crash_land(obj/structure/overmap/planet/crashed_ship/crash_site)
+	if(!crash_site || !shuttle)
+		return
+
+	// Get a dock
+	var/obj/docking_port/stationary/dock_to_use = null
+	if(crash_site.reserve_dock && !crash_site.first_dock_taken)
+		dock_to_use = crash_site.reserve_dock
+		crash_site.first_dock_taken = TRUE
+		dock_index = 1
+	else if(crash_site.reserve_dock_secondary && !crash_site.second_dock_taken)
+		dock_to_use = crash_site.reserve_dock_secondary
+		crash_site.second_dock_taken = TRUE
+		dock_index = 2
+
+	if(!dock_to_use)
+		return
+
+	shuttle.port_destinations = dock_to_use
+	crash_site.adjust_dock_to_shuttle(dock_to_use, shuttle)
+	dock(crash_site, dock_to_use)
+
 /**
  * Called when the ship enters a tile - checks for hazards
  */
@@ -153,6 +202,12 @@
  * Applies the effect of a hazard to the ship
  */
 /obj/structure/overmap/ship/proc/apply_hazard_effect(obj/structure/overmap/event/hazard)
+	// Meteors always trigger per tile - no cooldown
+	if(istype(hazard, /obj/structure/overmap/event/meteor))
+		apply_meteor_damage(hazard)
+		return
+
+	// Other hazards have a cooldown to prevent spam
 	if(!COOLDOWN_FINISHED(src, hazard_damage_cooldown))
 		return
 
@@ -162,8 +217,6 @@
 		apply_ion_storm_damage(hazard)
 	else if(istype(hazard, /obj/structure/overmap/event/electric))
 		apply_electrical_storm_damage(hazard)
-	else if(istype(hazard, /obj/structure/overmap/event/meteor))
-		apply_meteor_damage(hazard)
 	else if(istype(hazard, /obj/structure/overmap/event/nebula))
 		apply_nebula_effect(hazard)
 
@@ -209,56 +262,61 @@
 
 /**
  * Meteor Storm Effect
- * Causes explosions at random ship locations, shakes screen, knocks down crew
+ * Spawns a single meteor that crashes through the ship
  */
 /obj/structure/overmap/ship/proc/apply_meteor_damage(obj/structure/overmap/event/meteor/storm)
+	if(!shuttle)
+		return
+
 	var/damage = 5
-	var/shake_duration = 10
-	var/shake_strength = 2
-	var/knockdown_chance = 20
-	var/knockdown_duration = 2 SECONDS
-	var/impact_count = 1
-	var/explosion_heavy = FALSE
+	var/meteor_type = /obj/effect/meteor/medium
 
 	if(istype(storm, /obj/structure/overmap/event/meteor/majour))
 		damage = 10
-		shake_duration = 20
-		shake_strength = 4
-		knockdown_chance = 50
-		knockdown_duration = 4 SECONDS
-		impact_count = rand(2, 4)
-		explosion_heavy = TRUE
+		meteor_type = /obj/effect/meteor/big
 	else if(istype(storm, /obj/structure/overmap/event/meteor/minor))
 		damage = 2
-		shake_duration = 5
-		shake_strength = 1
-		knockdown_chance = 10
-		knockdown_duration = 1 SECONDS
-		impact_count = 1
+		// Still use medium meteor for proper sound, just less hull damage
+		meteor_type = /obj/effect/meteor/medium
 
 	receive_damage(damage, "meteor impact")
 
-	// Shake the screen and knock down crew members
-	for(var/mob/living/crew_member in get_all_ship_mobs())
-		shake_camera(crew_member, shake_duration, shake_strength)
-		if(prob(knockdown_chance))
-			crew_member.Knockdown(knockdown_duration)
-			to_chat(crew_member, span_danger("The impact throws you off your feet!"))
+	// Spawn one meteor aimed at the ship
+	spawn_meteor_at_ship(meteor_type)
 
-	// Create explosion effects at random ship locations
-	for(var/i in 1 to impact_count)
-		var/turf/target = get_random_ship_turf()
-		if(target)
-			// Explosion effect with increased flash
-			if(explosion_heavy)
-				explosion(target, heavy_impact_range = 1, light_impact_range = 2, flash_range = 5, adminlog = FALSE)
-				new /obj/effect/hotspot(target)
-			else
-				explosion(target, light_impact_range = 1, flash_range = 4, adminlog = FALSE)
-			// Extra visual effects
-			do_sparks(5, FALSE, target)
-			new /obj/effect/temp_visual/explosion(target)
-			playsound(target, 'sound/effects/meteorimpact.ogg', 60, TRUE)
+/**
+ * Spawns a single meteor from outside the ship aimed at a random ship turf
+ */
+/obj/structure/overmap/ship/proc/spawn_meteor_at_ship(meteor_type)
+	// Pick a random target inside the ship
+	var/turf/target = get_random_ship_turf()
+	if(!target)
+		return
+
+	var/target_z = target.z
+	var/target_x = target.x
+	var/target_y = target.y
+
+	// Pick a random direction and spawn from that side
+	var/turf/spawn_turf
+	var/spawn_distance = 15
+
+	switch(pick(1, 2, 3, 4))
+		if(1) // From North
+			spawn_turf = locate(target_x, target_y + spawn_distance, target_z)
+		if(2) // From South
+			spawn_turf = locate(target_x, target_y - spawn_distance, target_z)
+		if(3) // From East
+			spawn_turf = locate(target_x + spawn_distance, target_y, target_z)
+		if(4) // From West
+			spawn_turf = locate(target_x - spawn_distance, target_y, target_z)
+
+	if(!spawn_turf)
+		return
+
+	// Spawn meteor - pass target as second arg (becomes mapload, but meteor still chases it)
+	var/obj/effect/meteor/M = new meteor_type(spawn_turf, target)
+	ADD_TRAIT(M, TRAIT_FREE_HYPERSPACE_MOVEMENT, INNATE_TRAIT)
 
 /**
  * Nebula Effect
