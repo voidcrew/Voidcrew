@@ -85,8 +85,8 @@
 	if(old_integrity > SHIP_CRITICAL_THRESHOLD && integrity <= SHIP_CRITICAL_THRESHOLD)
 		ship_announce("WARNING: Hull integrity critical! Seek repairs immediately!", "Critical Damage", TRUE, 'sound/machines/warning-buzzer.ogg')
 
-	// Check for ship destruction
-	if(integrity <= 0)
+	// Check for ship destruction - only trigger once when first reaching 0
+	if(old_integrity > 0 && integrity <= 0)
 		on_ship_destroyed()
 
 /**
@@ -101,11 +101,43 @@
 
 /**
  * Called when ship integrity reaches 0
- * Currently just sets integrity to 1 and announces - full destruction can be implemented later
+ * Strands the ship and triggers cascade failures
  */
 /obj/structure/overmap/ship/proc/on_ship_destroyed()
-	integrity = 1 // Prevent actual destruction for now, just leave at 1%
-	ship_announce("EMERGENCY: Hull breach imminent! All systems failing!", "Hull Breach", TRUE, 'sound/machines/warning-buzzer.ogg')
+	// Stop the ship dead
+	speed[1] = 0
+	speed[2] = 0
+	if(movement_callback_id)
+		deltimer(movement_callback_id)
+		movement_callback_id = null
+
+	ship_announce("CATASTROPHIC FAILURE: All systems offline! Hull integrity critical!", "MAYDAY", TRUE, 'sound/machines/warning-buzzer.ogg')
+
+	// Cascade failures - fires, explosions, EMPs throughout the ship
+	var/failure_count = rand(8, 15)
+	for(var/i in 1 to failure_count)
+		var/turf/target = get_random_ship_turf()
+		if(!target)
+			continue
+
+		switch(rand(1, 4))
+			if(1) // Fire
+				new /obj/effect/hotspot(target)
+			if(2) // Explosion
+				explosion(target, light_impact_range = 1, flash_range = 2, adminlog = FALSE)
+			if(3) // EMP
+				empulse(target, 2, 4)
+				playsound(target, 'sound/effects/empulse.ogg', 50, TRUE)
+			if(4) // Sparks
+				do_sparks(5, FALSE, target)
+
+		playsound(target, 'sound/effects/bang.ogg', 50, TRUE)
+
+	// Shake everyone violently and knock them down
+	for(var/mob/living/crew_member in get_all_ship_mobs())
+		shake_camera(crew_member, 30, 5)
+		crew_member.Knockdown(5 SECONDS)
+		to_chat(crew_member, span_userdanger("The ship shudders violently as critical systems fail!"))
 
 /**
  * Called when the ship enters a tile - checks for hazards
@@ -150,9 +182,9 @@
 	for(var/i in 1 to emp_count)
 		var/turf/target = get_random_ship_turf()
 		if(target)
-			// Create EMP effect at that location
+			// empulse handles the visual effect when heavy_range > 1
 			empulse(target, 2 * intensity, 4 * intensity)
-			new /obj/effect/temp_visual/emp(target)
+			playsound(target, 'sound/effects/empulse.ogg', 50, TRUE)
 
 /**
  * Electrical Storm Effect
@@ -177,7 +209,7 @@
 
 /**
  * Meteor Storm Effect
- * Spawns physical meteors directly on ship turfs and makes them impact
+ * Causes explosions at random ship locations, shakes screen, knocks down crew
  */
 /obj/structure/overmap/ship/proc/apply_meteor_damage(obj/structure/overmap/event/meteor/storm)
 	var/damage = 5
@@ -185,8 +217,8 @@
 	var/shake_strength = 2
 	var/knockdown_chance = 20
 	var/knockdown_duration = 2 SECONDS
-	var/meteor_count = 1
-	var/list/meteor_types = list(/obj/effect/meteor/dust = 80, /obj/effect/meteor/sand = 20)
+	var/impact_count = 1
+	var/explosion_heavy = FALSE
 
 	if(istype(storm, /obj/structure/overmap/event/meteor/majour))
 		damage = 10
@@ -194,16 +226,15 @@
 		shake_strength = 4
 		knockdown_chance = 50
 		knockdown_duration = 4 SECONDS
-		meteor_count = rand(2, 4)
-		meteor_types = list(/obj/effect/meteor/medium = 50, /obj/effect/meteor/big = 35, /obj/effect/meteor/flaming = 15)
+		impact_count = rand(2, 4)
+		explosion_heavy = TRUE
 	else if(istype(storm, /obj/structure/overmap/event/meteor/minor))
 		damage = 2
 		shake_duration = 5
 		shake_strength = 1
 		knockdown_chance = 10
 		knockdown_duration = 1 SECONDS
-		meteor_count = 1
-		meteor_types = list(/obj/effect/meteor/dust = 100)
+		impact_count = 1
 
 	receive_damage(damage, "meteor impact")
 
@@ -214,11 +245,20 @@
 			crew_member.Knockdown(knockdown_duration)
 			to_chat(crew_member, span_danger("The impact throws you off your feet!"))
 
-	// Launch meteors from off-screen toward the ship
-	for(var/i in 1 to meteor_count)
+	// Create explosion effects at random ship locations
+	for(var/i in 1 to impact_count)
 		var/turf/target = get_random_ship_turf()
 		if(target)
-			spawn_meteor(meteor_types, pick(GLOB.cardinals), target)
+			// Explosion effect with increased flash
+			if(explosion_heavy)
+				explosion(target, heavy_impact_range = 1, light_impact_range = 2, flash_range = 5, adminlog = FALSE)
+				new /obj/effect/hotspot(target)
+			else
+				explosion(target, light_impact_range = 1, flash_range = 4, adminlog = FALSE)
+			// Extra visual effects
+			do_sparks(5, FALSE, target)
+			new /obj/effect/temp_visual/explosion(target)
+			playsound(target, 'sound/effects/meteorimpact.ogg', 60, TRUE)
 
 /**
  * Nebula Effect
@@ -242,13 +282,15 @@
 	if(!shuttle?.shuttle_areas?.len)
 		return null
 
-	var/area/chosen_area = pick(shuttle.shuttle_areas)
-	var/list/area_turfs = get_area_turfs(chosen_area)
+	// Collect all turfs from all ship areas to ensure we find one
+	var/list/all_turfs = list()
+	for(var/area/ship_area as anything in shuttle.shuttle_areas)
+		all_turfs += get_area_turfs(ship_area)
 
-	if(!length(area_turfs))
+	if(!length(all_turfs))
 		return null
 
-	return pick(area_turfs)
+	return pick(all_turfs)
 
 /**
  * Gets all living mobs currently on the ship
