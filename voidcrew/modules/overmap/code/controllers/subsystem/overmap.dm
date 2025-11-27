@@ -13,9 +13,9 @@ voidcrew TODO:
 
 SUBSYSTEM_DEF(overmap)
 	name = "Overmap"
-	wait = 10
+	wait = 10 // Fires every 1 second (10 deciseconds)
 	init_order = INIT_ORDER_OVERMAP
-	flags = SS_NO_FIRE
+	flags = NONE
 	runlevels = RUNLEVEL_SETUP | RUNLEVEL_GAME
 	dependencies = list(
 		/datum/controller/subsystem/mapping,
@@ -53,6 +53,18 @@ SUBSYSTEM_DEF(overmap)
 	spawn_initial_ship()
 
 	return SS_INIT_SUCCESS
+
+/**
+ * Called every tick (1 second) - updates all ship integrity calculations
+ * This ensures ship health is always current and triggers UI updates via signals
+ */
+/datum/controller/subsystem/overmap/fire(resumed)
+	for(var/obj/structure/overmap/ship/ship as anything in simulated_ships)
+		if(QDELETED(ship))
+			simulated_ships -= ship
+			continue
+		ship.calculate_mass()
+
 /*
  * Bluespace jump procs
  */

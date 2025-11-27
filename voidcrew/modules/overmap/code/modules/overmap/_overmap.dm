@@ -6,7 +6,7 @@
 
 	/// Check that someone already act with this.
 	var/concerned = FALSE
-	///Integrity percentage, do NOT modify. Use [/obj/structure/overmap/proc/receive_damage] instead.
+	/// Current integrity (turf count for ships). Updated by calculate_mass() via SSovermap.
 	var/integrity = 100
 
 	///List of other overmap objects in the same tile
