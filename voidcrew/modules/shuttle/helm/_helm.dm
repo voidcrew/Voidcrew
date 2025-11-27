@@ -31,6 +31,8 @@
 	var/jump_timer
 	/// Last known ship state for detecting changes
 	var/last_ship_state
+	/// Timer ID for UI update polling
+	var/ui_update_timer_id
 
 /obj/machinery/computer/helm/viewscreen
 	name = "ship viewscreen"
@@ -51,6 +53,9 @@
 	if(!ui)
 		ui = new(user, src, "HelmComputer", name)
 		ui.open()
+		ui.set_autoupdate(TRUE) // Enable continuous UI updates
+		// Start UI update timer when UI opens
+		start_ui_update_timer()
 		// Register map after UI opens, passing window so it waits for visibility
 		current_ship.cam_screen.display_to(user, ui.window)
 	else
@@ -63,6 +68,9 @@
 /obj/machinery/computer/helm/ui_close(mob/user)
 	. = ..()
 	current_ship.cam_screen.hide_from(user)
+	// Stop UI update timer when UI closes (if no more users)
+	if(!LAZYLEN(open_uis))
+		stop_ui_update_timer()
 /*
 /obj/machinery/computer/helm/ui_act(action, list/params)
 	. = ..()
@@ -88,7 +96,8 @@
 			current_ship.reset_thrust()
 */
 /obj/machinery/computer/helm/ui_data(mob/user)
-	var/list/data = list()
+	// var/list/data = list()
+	var/list/data = ..()
 
 	data["thrust"] = current_ship.calculate_thrust()
 	data["integrity"] = current_ship.get_integrity_percent()
@@ -161,6 +170,34 @@
 	. = ..()
 	attempt_ship_connection()
 
+/obj/machinery/computer/helm/Destroy()
+	stop_ui_update_timer()
+	return ..()
+
+/**
+ * Starts the UI update timer - polls every 1 second to refresh UI data
+ */
+/obj/machinery/computer/helm/proc/start_ui_update_timer()
+	if(ui_update_timer_id)
+		return // Already running
+	ui_update_timer_id = addtimer(CALLBACK(src, PROC_REF(ui_update_tick)), 1 SECONDS, TIMER_STOPPABLE | TIMER_LOOP)
+
+/**
+ * Stops the UI update timer
+ */
+/obj/machinery/computer/helm/proc/stop_ui_update_timer()
+	if(ui_update_timer_id)
+		deltimer(ui_update_timer_id)
+		ui_update_timer_id = null
+
+/**
+ * Called every second to push UI updates to all open helm UIs
+ */
+/obj/machinery/computer/helm/proc/ui_update_tick()
+	if(!current_ship)
+		return
+	SStgui.update_uis(src)
+
 /obj/machinery/computer/helm/proc/calibrate_jump(inline = FALSE)
 	if(jump_allowed < 0)
 		say("Bluespace Jump Calibration offline. Please contact your system administrator.")
@@ -210,13 +247,15 @@
 /obj/machinery/computer/helm/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
 	if(!istype(port))
 		return
-	current_ship = port.current_ship
+	set_current_ship(port.current_ship)
 
 /**
  * This proc manually rechecks that the helm computer is connected to a proper ship
  */
 /obj/machinery/computer/helm/proc/attempt_ship_connection(last_resort = FALSE)
 	if(current_ship && current_ship.shuttle.z == z)
+		// Already connected, but ensure signal is registered
+		RegisterSignal(current_ship, COMSIG_SHIP_INTEGRITY_CHANGED, PROC_REF(on_ship_integrity_changed), override = TRUE)
 		return TRUE
 
 	var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(src)
@@ -226,8 +265,29 @@
 	if(!port && last_resort) // todo: check for helm being constructed, damn those players
 		stack_trace("Failed to connect a helm to its ship, this is almost certainly a bug!")
 
-	current_ship = port?.current_ship
+	set_current_ship(port?.current_ship)
 	return !!current_ship
+
+/**
+ * Sets the current ship and registers signal listeners
+ */
+/obj/machinery/computer/helm/proc/set_current_ship(obj/structure/overmap/ship/new_ship)
+	// Unregister from old ship
+	if(current_ship)
+		UnregisterSignal(current_ship, COMSIG_SHIP_INTEGRITY_CHANGED)
+
+	current_ship = new_ship
+
+	// Register to new ship for auto UI updates
+	if(current_ship)
+		RegisterSignal(current_ship, COMSIG_SHIP_INTEGRITY_CHANGED, PROC_REF(on_ship_integrity_changed))
+
+/**
+ * Signal handler - refreshes UI when ship integrity changes
+ */
+/obj/machinery/computer/helm/proc/on_ship_integrity_changed(datum/source, new_integrity, max_integrity, display_percent)
+	SIGNAL_HANDLER
+	SStgui.update_uis(src)
 
 /**
  * This proc manually rechecks that the helm computer is connected to a proper ship

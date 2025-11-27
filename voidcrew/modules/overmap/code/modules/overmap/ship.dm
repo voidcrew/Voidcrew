@@ -724,25 +724,43 @@
 		// Subsequent calculations - health = current turfs (capped at original max)
 		integrity = min(mass, max_integrity)
 
-	// Check for critical/destruction thresholds if health dropped
-	if(integrity < old_integrity)
+	// Check for integrity changes and send signals
+	if(integrity != old_integrity)
 		// Raw percentages for internal threshold checks
 		var/raw_percent = round((integrity / max_integrity) * 100)
 		var/old_raw_percent = round((old_integrity / max_integrity) * 100)
 		// Scaled percentage for UI/announcements (50% raw = 0% display)
 		var/display_percent = get_integrity_percent()
 
-		// Announce significant damage
-		if(old_integrity - integrity >= 5)
-			ship_announce("Hull damage detected. Integrity at [display_percent]%.", "Damage Report", TRUE)
+		// Send signal that integrity changed - listeners handle all effects
+		SEND_SIGNAL(src, COMSIG_SHIP_INTEGRITY_CHANGED, integrity, max_integrity, display_percent)
 
-		// Warning at 75% raw (50% displayed)
-		if(old_raw_percent > 75 && raw_percent <= 75)
-			ship_announce("WARNING: Hull integrity compromised! Integrity at [display_percent]%.", "Damage Warning", TRUE, 'sound/machines/warning-buzzer.ogg')
+		// Check thresholds (only when health dropped)
+		if(integrity < old_integrity)
+			// 90% raw (80% displayed) - Minor damage
+			if(old_raw_percent > 90 && raw_percent <= 90)
+				SEND_SIGNAL(src, COMSIG_SHIP_DAMAGE_THRESHOLD, SHIP_THRESHOLD_MINOR, display_percent)
 
-		// Ship destruction at 50% raw (0% displayed)
-		if(old_raw_percent > 50 && raw_percent <= 50)
-			on_ship_destroyed()
+			// 80% raw (60% displayed) - Moderate damage
+			if(old_raw_percent > 80 && raw_percent <= 80)
+				SEND_SIGNAL(src, COMSIG_SHIP_DAMAGE_THRESHOLD, SHIP_THRESHOLD_MODERATE, display_percent)
+
+			// 70% raw (40% displayed) - Serious damage
+			if(old_raw_percent > 70 && raw_percent <= 70)
+				SEND_SIGNAL(src, COMSIG_SHIP_DAMAGE_THRESHOLD, SHIP_THRESHOLD_SERIOUS, display_percent)
+
+			// 60% raw (20% displayed) - Critical damage
+			if(old_raw_percent > 60 && raw_percent <= 60)
+				SEND_SIGNAL(src, COMSIG_SHIP_DAMAGE_THRESHOLD, SHIP_THRESHOLD_CRITICAL, display_percent)
+
+			// 55% raw (10% displayed) - Imminent destruction
+			if(old_raw_percent > 55 && raw_percent <= 55)
+				SEND_SIGNAL(src, COMSIG_SHIP_DAMAGE_THRESHOLD, SHIP_THRESHOLD_EMERGENCY, display_percent)
+
+			// Ship destruction at 50% raw (0% displayed)
+			if(old_raw_percent > 50 && raw_percent <= 50)
+				SEND_SIGNAL(src, COMSIG_SHIP_DESTROYING)
+				on_ship_destroyed()
 
 	update_icon_state()
 

@@ -16,6 +16,8 @@
 /obj/structure/overmap/ship
 	/// Timer ID for the health regeneration loop
 	var/regen_timer_id
+	/// Timer ID for the mass update loop
+	var/mass_update_timer_id
 	/// Whether the ship is currently taking hazard damage (prevents regen)
 	var/in_hazard = FALSE
 	/// Cooldown for hazard damage ticks
@@ -27,10 +29,45 @@
 	. = ..()
 	if(.)
 		start_regen_timer()
+		start_mass_update_timer()
+		// Register signal listeners for damage feedback
+		RegisterSignal(src, COMSIG_SHIP_DAMAGE_THRESHOLD, PROC_REF(on_damage_threshold))
 
 /obj/structure/overmap/ship/Destroy()
 	stop_regen_timer()
+	stop_mass_update_timer()
+	UnregisterSignal(src, COMSIG_SHIP_DAMAGE_THRESHOLD)
 	return ..()
+
+/**
+ * Signal handler for damage thresholds - handles announcements, sounds, and effects
+ */
+/obj/structure/overmap/ship/proc/on_damage_threshold(datum/source, threshold, display_percent)
+	SIGNAL_HANDLER
+
+	switch(threshold)
+		if(SHIP_THRESHOLD_MINOR)
+			ship_announce("Minor hull damage detected. Integrity at [display_percent]%.", "Damage Report", TRUE, 'sound/machines/beep/triple_beep.ogg')
+			play_ship_sound('sound/machines/beep/triple_beep.ogg')
+
+		if(SHIP_THRESHOLD_MODERATE)
+			ship_announce("Moderate hull damage sustained. Integrity at [display_percent]%.", "Damage Alert", TRUE, 'sound/machines/warning-buzzer.ogg')
+			play_ship_sound('sound/machines/warning-buzzer.ogg')
+
+		if(SHIP_THRESHOLD_SERIOUS)
+			ship_announce("WARNING: Serious hull damage! Integrity at [display_percent]%.", "Hull Warning", TRUE, 'sound/machines/warning-buzzer.ogg')
+			play_ship_sound('sound/machines/warning-buzzer.ogg')
+			shake_ship(10, 2)
+
+		if(SHIP_THRESHOLD_CRITICAL)
+			ship_announce("CRITICAL: Hull integrity failing! Integrity at [display_percent]%! Seek immediate repairs!", "Critical Alert", TRUE, 'sound/machines/engine_alert/engine_alert1.ogg')
+			play_ship_sound('sound/machines/engine_alert/engine_alert1.ogg')
+			shake_ship(20, 3)
+
+		if(SHIP_THRESHOLD_EMERGENCY)
+			ship_announce("EMERGENCY: Hull breach imminent! Integrity at [display_percent]%! All hands brace for impact!", "EMERGENCY", TRUE, 'sound/machines/engine_alert/engine_alert2.ogg')
+			play_ship_sound('sound/machines/engine_alert/engine_alert2.ogg')
+			shake_ship(25, 4)
 
 /**
  * Starts the health regeneration timer
@@ -58,6 +95,28 @@
 		return // Already at max
 
 	integrity = min(integrity + SHIP_REGEN_AMOUNT, max_integrity)
+
+/**
+ * Starts the mass update timer - runs every 0.5 seconds to keep UI in sync
+ */
+/obj/structure/overmap/ship/proc/start_mass_update_timer()
+	if(mass_update_timer_id)
+		return
+	mass_update_timer_id = addtimer(CALLBACK(src, PROC_REF(mass_update_tick)), 0.5 SECONDS, TIMER_STOPPABLE | TIMER_LOOP)
+
+/**
+ * Stops the mass update timer
+ */
+/obj/structure/overmap/ship/proc/stop_mass_update_timer()
+	if(mass_update_timer_id)
+		deltimer(mass_update_timer_id)
+		mass_update_timer_id = null
+
+/**
+ * Called every 0.5 seconds to update ship mass/integrity
+ */
+/obj/structure/overmap/ship/proc/mass_update_tick()
+	calculate_mass()
 
 /**
  * Deals damage to the ship's integrity
@@ -156,6 +215,9 @@
 	// Dock into a "crashed ship" location so others can find and help/raid
 	crash_land()
 
+	// Signal that the ship has been destroyed
+	SEND_SIGNAL(src, COMSIG_SHIP_DESTROYED)
+
 /**
  * Emergency docks the ship into a crashed ship location on the overmap
  */
@@ -236,16 +298,16 @@
 
 /**
  * Ion Storm Effect
- * EMPs random areas of the ship and deals moderate hull damage
+ * EMPs random areas of the ship - no direct hull damage, but EMP can destroy electronics
+ * Hull damage comes from destroyed equipment/turfs, detected by calculate_mass()
  */
 /obj/structure/overmap/ship/proc/apply_ion_storm_damage(obj/structure/overmap/event/emp/storm)
 	var/intensity = storm.intensity
-	var/damage = 5 * intensity
-	var/emp_count = 1 + intensity
+	var/emp_count = 2 + (intensity * 2)
 
-	receive_damage(damage, "ion storm")
+	ship_announce("Ion storm interference detected! Electronic systems may be affected.", "Ion Storm Warning", TRUE, 'sound/effects/empulse.ogg')
 
-	// Create EMPs at random locations in the ship
+	// Create EMPs at random locations in the ship - these can destroy equipment
 	for(var/i in 1 to emp_count)
 		var/turf/target = get_random_ship_turf()
 		if(target)
@@ -253,26 +315,32 @@
 			empulse(target, 2 * intensity, 4 * intensity)
 			playsound(target, 'sound/effects/empulse.ogg', 50, TRUE)
 
+	// Trigger immediate mass recalculation to detect any destroyed turfs/equipment
+	calculate_mass()
+
 /**
  * Electrical Storm Effect
- * Causes power fluctuations and sparks, deals light hull damage
+ * Causes power fluctuations and sparks - can damage equipment and shock crew
+ * Hull damage comes from destroyed equipment, detected by calculate_mass()
  */
 /obj/structure/overmap/ship/proc/apply_electrical_storm_damage(obj/structure/overmap/event/electric/storm)
 	var/intensity = storm.intensity
-	var/damage = 3 * intensity
 
-	receive_damage(damage, "electrical storm")
+	ship_announce("Electrical storm detected! Power fluctuations imminent.", "Electrical Storm Warning", TRUE, 'sound/effects/sparks/sparks1.ogg')
 
 	// Create electrical effects at random locations
-	var/spark_count = 2 + (intensity * 2)
+	var/spark_count = 3 + (intensity * 3)
 	for(var/i in 1 to spark_count)
 		var/turf/target = get_random_ship_turf()
 		if(target)
-			do_sparks(3, FALSE, target)
-			// Small chance to shock nearby mobs
-			if(prob(20 * intensity))
+			do_sparks(5, FALSE, target)
+			// Shock nearby mobs
+			if(prob(30 * intensity))
 				for(var/mob/living/victim in range(1, target))
 					victim.electrocute_act(10 * intensity, "electrical storm", flags = SHOCK_NOGLOVES)
+
+	// Trigger immediate mass recalculation
+	calculate_mass()
 
 /**
  * Meteor Storm Effect
@@ -292,7 +360,7 @@
 	// Spawn one meteor aimed at the ship
 	spawn_meteor_at_ship(meteor_type)
 
-	// Recalculate mass after meteor has time to crash through and destroy turfs
+	// Schedule mass recalculation after meteor has time to hit (meteors take a moment to travel)
 	addtimer(CALLBACK(src, PROC_REF(calculate_mass)), 3 SECONDS)
 
 /**
@@ -349,15 +417,19 @@
 
 /**
  * Gets a random turf inside the ship for targeting effects
+ * Uses direct area iteration instead of get_area_turfs() to avoid
+ * returning turfs from other ships with the same area types
  */
 /obj/structure/overmap/ship/proc/get_random_ship_turf()
 	if(!shuttle?.shuttle_areas?.len)
 		return null
 
-	// Collect all turfs from all ship areas to ensure we find one
+	// Collect all turfs from this ship's areas only
+	// We iterate through the area contents directly, not by area type
 	var/list/all_turfs = list()
 	for(var/area/ship_area as anything in shuttle.shuttle_areas)
-		all_turfs += get_area_turfs(ship_area)
+		for(var/turf/T in ship_area)
+			all_turfs += T
 
 	if(!length(all_turfs))
 		return null
@@ -377,6 +449,22 @@
 			mobs += crew
 
 	return mobs
+
+/**
+ * Plays a sound to all mobs on the ship
+ */
+/obj/structure/overmap/ship/proc/play_ship_sound(sound_file, volume = 50)
+	for(var/mob/living/crew in get_all_ship_mobs())
+		SEND_SOUND(crew, sound(sound_file, volume = volume))
+
+/**
+ * Shakes the camera for all mobs on the ship
+ * @param duration - How long to shake (in ticks)
+ * @param strength - How intense the shake is
+ */
+/obj/structure/overmap/ship/proc/shake_ship(duration = 10, strength = 2)
+	for(var/mob/living/crew in get_all_ship_mobs())
+		shake_camera(crew, duration, strength)
 
 #undef SHIP_REGEN_INTERVAL
 #undef SHIP_REGEN_AMOUNT
