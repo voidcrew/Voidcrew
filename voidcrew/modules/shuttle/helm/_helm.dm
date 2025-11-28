@@ -31,6 +31,10 @@
 	var/jump_timer
 	/// Last known ship state for detecting changes
 	var/last_ship_state
+	/// Last known integrity percent for threshold detection
+	var/last_integrity_percent = 100
+	/// Whether we've played the 55% alert already
+	var/played_55_alert = FALSE
 
 /obj/machinery/computer/helm/viewscreen
 	name = "ship viewscreen"
@@ -254,6 +258,17 @@
 /obj/machinery/computer/helm/proc/on_ship_integrity_changed(datum/source, new_integrity, max_integrity, display_percent)
 	SIGNAL_HANDLER
 	SStgui.update_uis(src)
+
+	// Play alert sound when crossing 55% threshold (going down)
+	if(last_integrity_percent > 55 && display_percent <= 55 && !played_55_alert)
+		played_55_alert = TRUE
+		playsound(src, 'sound/effects/alert.ogg', 75, FALSE)
+
+	// Reset the alert flag if we repair above 55%
+	if(display_percent > 55)
+		played_55_alert = FALSE
+
+	last_integrity_percent = display_percent
 
 /**
  * This proc manually rechecks that the helm computer is connected to a proper ship

@@ -107,6 +107,9 @@
 	if(template)
 		setup_from_template(template)
 
+	// Register signal listeners for damage feedback (from ship_damage.dm)
+	RegisterSignal(src, COMSIG_SHIP_DAMAGE_THRESHOLD, PROC_REF(on_damage_threshold))
+
 /**
  * Sets up the ship from a template. Called after Initialize.
  * Returns TRUE on success, FALSE on failure.
@@ -375,19 +378,41 @@
   * * dock_to_use - The [/obj/docking_port/mobile] to dock to.
   */
 /obj/structure/overmap/ship/proc/dock(obj/structure/overmap/to_dock, obj/docking_port/stationary/dock_to_use)
-	var/dock_time = 9 SECONDS
 	refresh_engines()
 	shuttle.request(dock_to_use)
 
-	ship_announce("Beginning docking procedures. Completion in 10 seconds.", "Docking Announcement", TRUE)
-	docked = to_dock //this wasnt getting updated at all before which is strange
-	shuttle.setTimer(dock_time)
-	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), dock_time + 1 SECONDS)
+	docked = to_dock
 	state = OVERMAP_SHIP_DOCKING
+
+	// Check if target is a planet that's still loading
 	if(istype(to_dock, /obj/structure/overmap/planet))
 		var/obj/structure/overmap/planet/current_planet = to_dock
 		current_planet.visited = TRUE
+		if(current_planet.loading)
+			ship_announce("Awaiting destination loading...", "Docking Announcement", TRUE)
+			// Register signal to complete dock when planet finishes loading
+			RegisterSignal(current_planet, COMSIG_VOIDCREW_PLANET_LOADED, PROC_REF(on_planet_loaded))
+			return "Commencing docking, awaiting zone loading..."
+
+	// No loading required, dock immediately
+	ship_announce("Docking now.", "Docking Announcement", TRUE)
+	shuttle.setTimer(1 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), 1 SECONDS)
 	return "Commencing docking..."
+
+/**
+  * Signal handler - completes docking when a planet finishes loading.
+  */
+/obj/structure/overmap/ship/proc/on_planet_loaded(obj/structure/overmap/planet/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_VOIDCREW_PLANET_LOADED)
+
+	if(state != OVERMAP_SHIP_DOCKING || docked != source)
+		return // Ship state changed, abort
+
+	ship_announce("Destination loaded, completing docking.", "Docking Announcement", TRUE)
+	shuttle.setTimer(1 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(source)), 1 SECONDS)
 
 /**
   * Proc called after a shuttle is moved, used for checking a ship's location when it's moved manually (E.G. calling the mining shuttle via a console)
@@ -450,10 +475,12 @@
 	docked = null
 	shuttle.destination = null
 	shuttle.mode = SHUTTLE_IGNITING
-	shuttle.setTimer(shuttle.ignitionTime)
-	priority_announce("Beginning undocking procedures. Completion in [(shuttle.ignitionTime + 1 SECONDS)/10] seconds.", "Docking Announcement", sender_override = name)
-	addtimer(CALLBACK(src, PROC_REF(complete_dock)), shuttle.ignitionTime + 1 SECONDS)
+	shuttle.setTimer(1 SECONDS)
+	priority_announce("Undocking now.", "Docking Announcement", sender_override = name)
+	addtimer(CALLBACK(src, PROC_REF(complete_dock)), 1 SECONDS)
 	state = OVERMAP_SHIP_UNDOCKING
+	// Reset crash flag so ship can crash again if damaged
+	has_crash_landed = FALSE
 	return "Beginning undocking procedures..."
 
 /**
@@ -756,9 +783,15 @@
 	var/list/areas = shuttle.shuttle_areas
 	for(var/area/shuttleArea in areas)
 		for(var/turf/T in shuttleArea)
-			// Only count non-space turfs (floors, walls, etc.)
-			if(!isspaceturf(T))
-				.++
+			if(isspaceturf(T))
+				continue
+			// Tiered health: reinforced walls > walls > floors
+			if(istype(T, /turf/closed/wall/r_wall))
+				. += 3  // Reinforced walls
+			else if(istype(T, /turf/closed/wall))
+				. += 2  // Regular walls
+			else
+				.++  // Floors and other turfs
 
 	var/old_integrity = integrity
 	mass = .
