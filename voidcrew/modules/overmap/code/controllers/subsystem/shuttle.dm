@@ -1,11 +1,40 @@
-/datum/controller/subsystem/shuttle/proc/create_ship(datum/map_template/shuttle/voidcrew/ship_template_to_spawn)
+/datum/controller/subsystem/shuttle/proc/create_ship(ship_template_to_spawn)
 	RETURN_TYPE(/obj/structure/overmap/ship)
 
 	UNTIL(!shuttle_loading)
 	shuttle_loading = TRUE
-	var/obj/structure/overmap/ship/ship_to_spawn = new(SSovermap.get_unused_overmap_square(tries = INFINITY), new ship_template_to_spawn)
-	if(!ship_to_spawn)
+
+	// Handle both type paths and already-instantiated templates
+	var/datum/map_template/shuttle/voidcrew/template_instance
+	if(istype(ship_template_to_spawn, /datum/map_template/shuttle/voidcrew))
+		// Already an instantiated template object
+		template_instance = ship_template_to_spawn
+	else if(ispath(ship_template_to_spawn, /datum/map_template/shuttle/voidcrew))
+		// It's a type path, instantiate it
+		template_instance = new ship_template_to_spawn()
+	else
+		stack_trace("create_ship called with invalid argument: [ship_template_to_spawn]")
+		shuttle_loading = FALSE
+		return FALSE
+
+	if(!template_instance)
+		stack_trace("Failed to instantiate ship template [ship_template_to_spawn].")
+		shuttle_loading = FALSE
+		return FALSE
+
+	// Create ship and set template directly as a workaround for Initialize arg passing
+	var/turf/spawn_loc = SSovermap.get_unused_overmap_square(tries = INFINITY)
+	var/obj/structure/overmap/ship/ship_to_spawn = new(spawn_loc)
+
+	if(!ship_to_spawn || QDELETED(ship_to_spawn))
 		stack_trace("Unable to properly load ship [ship_template_to_spawn].")
+		shuttle_loading = FALSE
+		return FALSE
+
+	// Manually initialize the ship with the template since arg passing through Initialize chain is broken
+	if(!ship_to_spawn.setup_from_template(template_instance))
+		stack_trace("Ship failed to setup from template [ship_template_to_spawn].")
+		qdel(ship_to_spawn)
 		shuttle_loading = FALSE
 		return FALSE
 
@@ -26,10 +55,23 @@
 	SEND_SIGNAL(loaded, COMSIG_VOIDCREW_SHIP_LOADED)
 
 	ship_to_spawn.calculate_mass()
-	// assign landmarks as needed
-	var/turf/safe_turf = get_safe_random_station_turf(loaded.shuttle_areas)
-	new /obj/effect/landmark/blobstart(safe_turf) // Stationloving component
-	new /obj/effect/landmark/observer_start(safe_turf) // Observer and Unit tests
+	// assign landmarks as needed - use shuttle areas or fallback to shuttle location
+	var/turf/safe_turf
+	if(length(loaded.shuttle_areas))
+		safe_turf = get_safe_random_station_turf(loaded.shuttle_areas)
+	if(!safe_turf)
+		// Fallback: find any turf inside the shuttle
+		for(var/area/shuttle_area as anything in loaded.shuttle_areas)
+			var/turf/area_turf = locate() in shuttle_area
+			if(area_turf)
+				safe_turf = area_turf
+				break
+	if(!safe_turf)
+		// Last resort: use the docking port location
+		safe_turf = get_turf(loaded)
+	if(safe_turf)
+		new /obj/effect/landmark/blobstart(safe_turf) // Stationloving component
+		new /obj/effect/landmark/observer_start(safe_turf) // Observer and Unit tests
 
 	return ship_to_spawn
 

@@ -1,18 +1,17 @@
-/datum/preferences
+/**
+ * Ship Economy Round-End Rewards
+ *
+ * Economy is stored in the database via GLOB.ship_economy_db
+ *
+ * Round-End Rewards:
+ * - CREDITS: Given at round-end (base 100, bonuses for performance)
+ * - PARTS: NOT given at round-end - earned through gameplay and battlepass
+ */
 
-	///Ships owned by the owner of the prefs
-	var/list/ships_owned = list(
-		/obj/item/ship_parts/neutral = 0,
-		/obj/item/ship_parts/nanotrasen = 0,
-		/obj/item/ship_parts/syndicate = 0,
-	)
-
-/datum/preferences/proc/save_ships()
-	savefile.set_entry("ships_owned", ships_owned)
-	return TRUE
-
+/**
+ * Give credits at round end
+ */
 /datum/controller/subsystem/ticker/display_report(popcount)
 	. = ..()
 	for(var/client/all_clients as anything in GLOB.clients)
-		all_clients.give_random_ship_part()
-
+		all_clients.give_round_end_credits()

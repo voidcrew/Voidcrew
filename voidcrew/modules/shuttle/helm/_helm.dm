@@ -332,6 +332,18 @@
 		if("reload_engines")
 			current_ship.refresh_engines()
 			return
+		if("typing_sound")
+			playsound(src, pick('sound/machines/terminal/terminal_button01.ogg', 'sound/machines/terminal/terminal_button02.ogg', 'sound/machines/terminal/terminal_button03.ogg', 'sound/machines/terminal/terminal_button04.ogg', 'sound/machines/terminal/terminal_button05.ogg', 'sound/machines/terminal/terminal_button06.ogg', 'sound/machines/terminal/terminal_button07.ogg', 'sound/machines/terminal/terminal_button08.ogg'), 10, TRUE)
+			return
+		if("broadcast")
+			var/message = params["message"]
+			if(!message)
+				return
+			message = trim(message)
+			if(!length(message))
+				return
+			current_ship.ship_broadcast_runechat(message)
+			return
 
 	// Prevent operation if ship is destroyed (at or below 50% integrity)
 	if(current_ship.get_integrity_percent() <= 50)

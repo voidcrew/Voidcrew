@@ -36,12 +36,24 @@
 
 /**
   * Uses up a specified percentage of the fuel cost, and returns the amount of thrust if successful.
+  * Fuel consumption scales with ship mass - heavier ships use more fuel per burn.
   * * percentage - The percentage of total thrust that should be used
+  * * ship_mass - The mass of the ship, used to scale fuel consumption
   */
-/obj/machinery/power/shuttle_engine/ship/proc/burn_engine(percentage = 100)
+/obj/machinery/power/shuttle_engine/ship/proc/burn_engine(percentage = 100, ship_mass = REFERENCE_SHIP_MASS)
 	SHOULD_CALL_PARENT(TRUE)
 	update_appearance(UPDATE_ICON)
 	return FALSE
+
+/**
+  * Helper to calculate the mass multiplier for fuel consumption.
+  * Returns a value >= 1 that scales fuel usage based on ship mass.
+  * * ship_mass - The mass of the ship
+  */
+/obj/machinery/power/shuttle_engine/ship/proc/get_mass_fuel_multiplier(ship_mass)
+	if(ship_mass <= 0)
+		return 1
+	return max(ship_mass / REFERENCE_SHIP_MASS, 0.5) // Minimum 0.5x for very small ships
 
 /**
   * Returns how much "Fuel" is left. (For use with engine displays.)
