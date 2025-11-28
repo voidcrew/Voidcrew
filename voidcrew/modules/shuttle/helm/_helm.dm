@@ -94,6 +94,7 @@
 
 	data["thrust"] = current_ship.calculate_thrust()
 	data["integrity"] = current_ship.get_integrity_percent()
+	data["overhealth"] = current_ship.get_overhealth_percent()
 	data["shipDisabled"] = current_ship.get_integrity_percent() <= 50
 	data["calibrating"] = calibrating
 	data["canThrust"] = current_ship.can_thrust()

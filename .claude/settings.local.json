@@ -14,7 +14,8 @@
       "Bash(dir:*)",
       "Bash(bun install:*)",
       "mcp__context7__resolve-library-id",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(findstr:*)"
     ],
     "deny": []
   }

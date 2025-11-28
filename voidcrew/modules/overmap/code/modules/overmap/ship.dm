@@ -750,6 +750,8 @@
   * Losing turfs = losing health, rebuilding = healing
   */
 /obj/structure/overmap/ship/proc/calculate_mass()
+	if(!shuttle)
+		return 0
 	. = 0
 	var/list/areas = shuttle.shuttle_areas
 	for(var/area/shuttleArea in areas)
@@ -765,10 +767,13 @@
 	if(!integrity_initialized)
 		max_integrity = mass
 		integrity = mass // Start at 100% health
+		overhealth = 0
 		integrity_initialized = TRUE
 	else
 		// Subsequent calculations - health = current turfs (capped at original max)
 		integrity = min(mass, max_integrity)
+		// Overhealth = turfs beyond original ship size (from expansion)
+		overhealth = max(0, mass - max_integrity)
 
 	// Check for integrity changes and send signals
 	if(integrity != old_integrity)

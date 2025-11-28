@@ -13,6 +13,8 @@
 
 /obj/item/blueprints/shuttle/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	. = ..()
+	if(!proximity_flag)
+		return
 	if(istype(target, /obj/machinery/computer/helm))
 		var/obj/machinery/computer/helm/H = target
 		if(istype(H.current_ship, /obj/structure/overmap/ship))
