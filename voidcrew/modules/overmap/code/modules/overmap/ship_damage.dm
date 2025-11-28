@@ -18,46 +18,39 @@
 	var/integrity_initialized = FALSE
 	/// Bonus turfs added through ship expansion (shows as dark green overhealth)
 	var/overhealth = 0
+	/// Whether the ship has already crash landed (prevents multiple crashes)
+	var/has_crash_landed = FALSE
 
-/obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
-	. = ..()
-	if(.)
-		// Mass calculation is handled by SSovermap.fire() every second
-		// Register signal listeners for damage feedback
-		RegisterSignal(src, COMSIG_SHIP_DAMAGE_THRESHOLD, PROC_REF(on_damage_threshold))
-
-/obj/structure/overmap/ship/Destroy()
-	UnregisterSignal(src, COMSIG_SHIP_DAMAGE_THRESHOLD)
-	return ..()
 
 /**
  * Signal handler for damage thresholds - handles announcements, sounds, and effects
  */
 /obj/structure/overmap/ship/proc/on_damage_threshold(datum/source, threshold, display_percent)
 	SIGNAL_HANDLER
+	log_admin("DEBUG VOX: on_damage_threshold called - threshold=[threshold], display_percent=[display_percent]")
 
 	switch(threshold)
 		if(SHIP_THRESHOLD_MINOR)
-			ship_announce("Minor hull damage detected. Integrity at [display_percent]%.", "Damage Report", TRUE, 'sound/machines/beep/triple_beep.ogg')
-			play_ship_sound('sound/machines/beep/triple_beep.ogg')
+			ship_announce("Minor hull damage detected. Integrity at [display_percent]%.", "Damage Report")
+			play_ship_vox(list("attention", "minor", "damage", "detected"))
 
 		if(SHIP_THRESHOLD_MODERATE)
-			ship_announce("Moderate hull damage sustained. Integrity at [display_percent]%.", "Damage Alert", TRUE, 'sound/machines/warning-buzzer.ogg')
-			play_ship_sound('sound/machines/warning-buzzer.ogg')
+			ship_announce("Moderate hull damage sustained. Integrity at [display_percent]%.", "Damage Alert")
+			play_ship_vox(list("warning", "damage", "report", "condition", "yellow"))
 
 		if(SHIP_THRESHOLD_SERIOUS)
-			ship_announce("WARNING: Serious hull damage! Integrity at [display_percent]%.", "Hull Warning", TRUE, 'sound/machines/warning-buzzer.ogg')
-			play_ship_sound('sound/machines/warning-buzzer.ogg')
+			ship_announce("WARNING: Serious hull damage! Integrity at [display_percent]%.", "Hull Warning")
+			play_ship_vox(list("alert", "severe", "damage", "condition", "red"))
 			shake_ship(10, 2)
 
 		if(SHIP_THRESHOLD_CRITICAL)
-			ship_announce("CRITICAL: Hull integrity failing! Integrity at [display_percent]%! Seek immediate repairs!", "Critical Alert", TRUE, 'sound/machines/engine_alert/engine_alert1.ogg')
-			play_ship_sound('sound/machines/engine_alert/engine_alert1.ogg')
+			ship_announce("CRITICAL: Hull integrity failing! Integrity at [display_percent]%! Seek immediate repairs!", "Critical Alert")
+			play_ship_vox(list("critical", "critical", "system", "failure", "immediate", "repair", "required"))
 			shake_ship(20, 3)
 
 		if(SHIP_THRESHOLD_EMERGENCY)
-			ship_announce("EMERGENCY: Hull breach imminent! Integrity at [display_percent]%! All hands brace for impact!", "EMERGENCY", TRUE, 'sound/machines/engine_alert/engine_alert2.ogg')
-			play_ship_sound('sound/machines/engine_alert/engine_alert2.ogg')
+			ship_announce("EMERGENCY: Hull breach imminent! Integrity at [display_percent]%! All hands brace for impact!", "EMERGENCY")
+			play_ship_vox(list("emergency", "emergency", "evacuate", "evacuate"))
 			shake_ship(25, 4)
 
 /**
@@ -80,6 +73,11 @@
  * Strands the ship and triggers cascade failures
  */
 /obj/structure/overmap/ship/proc/on_ship_destroyed()
+	// Prevent multiple crash landings
+	if(has_crash_landed)
+		return
+	has_crash_landed = TRUE
+
 	// Stop the ship dead
 	speed[1] = 0
 	speed[2] = 0
@@ -96,15 +94,12 @@
 		if(!target)
 			continue
 
-		switch(rand(1, 4))
+		switch(rand(1, 3))
 			if(1) // Fire
 				new /obj/effect/hotspot(target)
 			if(2) // Explosion
 				explosion(target, light_impact_range = 1, flash_range = 2, adminlog = FALSE)
-			if(3) // EMP
-				empulse(target, 2, 4)
-				playsound(target, 'sound/effects/empulse.ogg', 50, TRUE)
-			if(4) // Sparks
+			if(3) // Sparks
 				do_sparks(5, FALSE, target)
 
 		playsound(target, 'sound/effects/bang.ogg', 50, TRUE)
@@ -440,15 +435,25 @@
 
 /**
  * Gets all living mobs currently on the ship
+ * First checks registered crew members, then falls back to checking shuttle areas
  */
 /obj/structure/overmap/ship/proc/get_all_ship_mobs()
 	var/list/mobs = list()
-	if(!shuttle?.shuttle_areas?.len)
-		return mobs
 
-	for(var/area/ship_area as anything in shuttle.shuttle_areas)
-		for(var/mob/living/crew in ship_area)
-			mobs += crew
+	// First get registered crew members
+	if(ship_team?.members?.len)
+		for(var/datum/mind/shipmate as anything in ship_team.members)
+			var/mob/living/crewmate = shipmate.current
+			if(!crewmate || !isliving(crewmate))
+				continue
+			mobs += crewmate
+
+	// Also check shuttle areas for any mobs not in the team (visitors, etc)
+	if(shuttle?.shuttle_areas?.len)
+		for(var/area/ship_area as anything in shuttle.shuttle_areas)
+			for(var/mob/living/crew in ship_area)
+				if(!(crew in mobs))
+					mobs += crew
 
 	return mobs
 
@@ -467,3 +472,59 @@
 /obj/structure/overmap/ship/proc/shake_ship(duration = 10, strength = 2)
 	for(var/mob/living/crew in get_all_ship_mobs())
 		shake_camera(crew, duration, strength)
+
+/**
+ * Plays a sequence of VOX words to all mobs on the ship
+ * @param words - List of words to play in sequence
+ */
+/obj/structure/overmap/ship/proc/play_ship_vox(list/words)
+	log_admin("DEBUG VOX: play_ship_vox called with [length(words)] words: [words.Join(", ")]")
+	var/delay = 0
+	for(var/word in words)
+		log_admin("DEBUG VOX: scheduling word '[word]' with delay [delay]")
+		addtimer(CALLBACK(src, PROC_REF(play_vox_word_to_ship), word), delay)
+		delay += 0.5 SECONDS // Small delay between words
+
+/**
+ * Plays a single VOX word to all mobs on the ship
+ */
+/obj/structure/overmap/ship/proc/play_vox_word_to_ship(word)
+	log_admin("DEBUG VOX: play_vox_word_to_ship called with word '[word]'")
+	word = LOWER_TEXT(word)
+	if(!GLOB.vox_sounds[word])
+		log_admin("DEBUG VOX: word '[word]' NOT FOUND in GLOB.vox_sounds")
+		return FALSE
+
+	log_admin("DEBUG VOX: word '[word]' found in GLOB.vox_sounds")
+
+	if(!ship_team)
+		log_admin("DEBUG VOX: ship_team is null")
+		return FALSE
+
+	if(!ship_team.members?.len)
+		log_admin("DEBUG VOX: ship_team.members is empty or null")
+		return FALSE
+
+	log_admin("DEBUG VOX: ship_team.members has [length(ship_team.members)] members")
+
+	var/sound_file = GLOB.vox_sounds[word]
+
+	for(var/datum/mind/shipmate as anything in ship_team.members)
+		log_admin("DEBUG VOX: checking mind [shipmate]")
+		var/mob/living/crew = shipmate.current
+		if(!crew)
+			log_admin("DEBUG VOX: mind has no current mob")
+			continue
+		if(!crew.client)
+			log_admin("DEBUG VOX: [crew] has no client")
+			continue
+		if(!crew.can_hear())
+			log_admin("DEBUG VOX: [crew] cannot hear")
+			continue
+		// Default to 50 if preference not set
+		var/pref_volume = safe_read_pref(crew.client, /datum/preference/numeric/volume/sound_ai_vox) || 50
+		log_admin("DEBUG VOX: playing '[word]' to [crew] at volume [pref_volume]")
+		var/sound/voice = sound(sound_file, wait = 1, channel = CHANNEL_VOX, volume = pref_volume)
+		voice.status = SOUND_STREAM
+		SEND_SOUND(crew, voice)
+	return TRUE
