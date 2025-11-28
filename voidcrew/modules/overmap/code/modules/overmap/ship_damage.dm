@@ -119,7 +119,7 @@
 		return
 
 	// Create crashed ship marker at current location
-	var/obj/structure/overmap/planet/crashed_ship/crash_site = new(get_turf(src))
+	var/obj/structure/overmap/planet/empty/crashed_ship/crash_site = new(get_turf(src))
 
 	// Load the level
 	if(!crash_site.loaded && !crash_site.loading)
@@ -135,7 +135,7 @@
 /**
  * Finishes the crash landing after the level loads
  */
-/obj/structure/overmap/ship/proc/finish_crash_land(obj/structure/overmap/planet/crashed_ship/crash_site)
+/obj/structure/overmap/ship/proc/finish_crash_land(obj/structure/overmap/planet/empty/crashed_ship/crash_site)
 	if(!crash_site || !shuttle)
 		return
 
