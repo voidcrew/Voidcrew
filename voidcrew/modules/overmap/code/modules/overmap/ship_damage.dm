@@ -60,14 +60,10 @@
 
 /**
  * Returns the current integrity as a percentage for UI display
- * Scaled so 50% actual turfs = 0% displayed, 100% actual = 100% displayed
- * This way the health bar hits 0% when the ship is destroyed at 50% mass
+ * Shows actual turf percentage - ship crashes at 50%
  */
 /obj/structure/overmap/ship/proc/get_integrity_percent()
-	var/raw_percent = (integrity / max_integrity) * 100
-	// Scale 50-100% to 0-100%
-	var/scaled = ((raw_percent - 50) / 50) * 100
-	return round(clamp(scaled, 0, 100))
+	return round((integrity / max_integrity) * 100)
 
 /**
  * Called when ship integrity reaches 0
