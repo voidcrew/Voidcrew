@@ -172,6 +172,7 @@ const SharedContent = (props, context) => {
 };
 
 // Custom integrity bar that shows overhealth as dark green
+// Color thresholds: overhealth=dark green, 76-100%=green, 51-75%=yellow, 0-50%=red
 const IntegrityBar = (props) => {
   const { integrity, overhealth = 0 } = props;
 
@@ -180,12 +181,12 @@ const IntegrityBar = (props) => {
   const totalIntegrity = integrity;
 
   // Determine bar color based on base integrity
-  let barColor = 'good';
-  if (baseIntegrity <= 25) {
-    barColor = 'bad';
-  } else if (baseIntegrity <= 50) {
-    barColor = 'average';
-  }
+  // 76-100: green, 51-75: yellow, 0-50: red
+  const getBarColor = (value) => {
+    if (value <= 50) return '#bd2020'; // Red
+    if (value <= 75) return '#d9b804'; // Yellow
+    return '#20b142'; // Green
+  };
 
   // If we have overhealth, show a stacked bar
   if (overhealth > 0) {
@@ -205,7 +206,7 @@ const IntegrityBar = (props) => {
             left: 0,
             height: '100%',
             width: `${(baseIntegrity / maxValue) * 100}%`,
-            backgroundColor: barColor === 'bad' ? '#bd2020' : barColor === 'average' ? '#d9b804' : '#20b142',
+            backgroundColor: getBarColor(baseIntegrity),
             transition: 'width 0.5s ease'
           }} />
           <div style={{
@@ -229,9 +230,9 @@ const IntegrityBar = (props) => {
   return (
     <ProgressBar
       ranges={{
-        good: [51, 100],
-        average: [26, 50],
-        bad: [0, 25],
+        good: [76, 100],
+        average: [51, 75],
+        bad: [0, 50],
       }}
       maxValue={100}
       value={baseIntegrity}
