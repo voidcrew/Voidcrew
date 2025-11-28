@@ -846,6 +846,11 @@
 				SEND_SIGNAL(src, COMSIG_SHIP_DESTROYING)
 				on_ship_destroyed()
 
+		// Check for recovery from crashed state (integrity went back above 50%)
+		if(integrity > old_integrity && has_crash_landed)
+			if(old_raw_percent <= 50 && raw_percent > 50)
+				on_ship_recovered()
+
 	update_icon_state()
 
 /obj/structure/overmap/ship/update_icon_state()
