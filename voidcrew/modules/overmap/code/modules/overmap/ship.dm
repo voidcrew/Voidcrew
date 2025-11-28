@@ -401,19 +401,41 @@
   * * dock_to_use - The [/obj/docking_port/mobile] to dock to.
   */
 /obj/structure/overmap/ship/proc/dock(obj/structure/overmap/to_dock, obj/docking_port/stationary/dock_to_use)
-	var/dock_time = 9 SECONDS
 	refresh_engines()
 	shuttle.request(dock_to_use)
 
-	ship_announce("Beginning docking procedures. Completion in 10 seconds.", "Docking Announcement", TRUE)
-	docked = to_dock //this wasnt getting updated at all before which is strange
-	shuttle.setTimer(dock_time)
-	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), dock_time + 1 SECONDS)
+	docked = to_dock
 	state = OVERMAP_SHIP_DOCKING
+
+	// Check if target is a planet that's still loading
 	if(istype(to_dock, /obj/structure/overmap/planet))
 		var/obj/structure/overmap/planet/current_planet = to_dock
 		current_planet.visited = TRUE
+		if(current_planet.loading)
+			ship_announce("Awaiting destination loading...", "Docking Announcement", TRUE)
+			// Register signal to complete dock when planet finishes loading
+			RegisterSignal(current_planet, COMSIG_VOIDCREW_PLANET_LOADED, PROC_REF(on_planet_loaded))
+			return "Commencing docking, awaiting zone loading..."
+
+	// No loading required, dock immediately
+	ship_announce("Docking now.", "Docking Announcement", TRUE)
+	shuttle.setTimer(1 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), 1 SECONDS)
 	return "Commencing docking..."
+
+/**
+  * Signal handler - completes docking when a planet finishes loading.
+  */
+/obj/structure/overmap/ship/proc/on_planet_loaded(obj/structure/overmap/planet/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_VOIDCREW_PLANET_LOADED)
+
+	if(state != OVERMAP_SHIP_DOCKING || docked != source)
+		return // Ship state changed, abort
+
+	ship_announce("Destination loaded, completing docking.", "Docking Announcement", TRUE)
+	shuttle.setTimer(1 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(source)), 1 SECONDS)
 
 /**
   * Proc called after a shuttle is moved, used for checking a ship's location when it's moved manually (E.G. calling the mining shuttle via a console)
@@ -476,10 +498,12 @@
 	docked = null
 	shuttle.destination = null
 	shuttle.mode = SHUTTLE_IGNITING
-	shuttle.setTimer(shuttle.ignitionTime)
-	priority_announce("Beginning undocking procedures. Completion in [(shuttle.ignitionTime + 1 SECONDS)/10] seconds.", "Docking Announcement", sender_override = name)
-	addtimer(CALLBACK(src, PROC_REF(complete_dock)), shuttle.ignitionTime + 1 SECONDS)
+	shuttle.setTimer(1 SECONDS)
+	priority_announce("Undocking now.", "Docking Announcement", sender_override = name)
+	addtimer(CALLBACK(src, PROC_REF(complete_dock)), 1 SECONDS)
 	state = OVERMAP_SHIP_UNDOCKING
+	// Reset crash flag so ship can crash again if damaged
+	has_crash_landed = FALSE
 	return "Beginning undocking procedures..."
 
 /**
@@ -510,7 +534,9 @@
 			else
 				addtimer(CALLBACK(src, PROC_REF(complete_dock), to_dock), 1 SECONDS) //This should never happen, yet it does sometimes.
 		if(OVERMAP_SHIP_UNDOCKING)
+			var/obj/structure/overmap/old_docked_location = null
 			if(!isturf(loc))
+				old_docked_location = loc
 				if(istype(loc, /obj/structure/overmap/ship)) //Even more hardcoded, even more bad
 					var/obj/structure/overmap/ship/S = loc
 					S.shuttle.shuttle_areas -= shuttle.shuttle_areas
@@ -519,10 +545,10 @@
 				log_shuttle("complete_dock UNDOCKING: Moving ship [src] from [loc] to turf [target_turf]")
 				forceMove(target_turf)
 
-				// Uncomment to enable planet deletion when undocking
-				// if(istype(old_loc, /obj/structure/overmap/planet))
-					// var/obj/structure/overmap/planet/D = old_loc
-					// INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/structure/overmap/planet, unload_level))
+				// Clean up empty space z-levels when undocking if no one is left
+				if(istype(old_docked_location, /obj/structure/overmap/planet/empty))
+					var/obj/structure/overmap/planet/empty/empty_space = old_docked_location
+					INVOKE_ASYNC(empty_space, TYPE_PROC_REF(/obj/structure/overmap/planet/empty, unload_level))
 			else
 				log_shuttle("complete_dock UNDOCKING: Ship [src] already on turf [loc]")
 
@@ -534,6 +560,50 @@
 			//addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/structure/overmap/ship, tick_autopilot)), 5 SECONDS) //TODO: Improve this SOMEHOW
 	calculate_mass()
 	update_screen()
+
+/**
+ * Initializes uninitialized space turfs around the shuttle so they can be built on.
+ * /turf/open/space/basic turfs skip initialization for performance, but that breaks interactions.
+ */
+/obj/structure/overmap/ship/proc/initialize_nearby_space_turfs()
+	if(!shuttle)
+		return
+
+	var/ship_z = shuttle.z
+
+	// Get ship boundaries from shuttle areas
+	var/min_x = INFINITY
+	var/min_y = INFINITY
+	var/max_x = 0
+	var/max_y = 0
+
+	for(var/area/shuttle_area as anything in shuttle.shuttle_areas)
+		for(var/turf/T in shuttle_area)
+			if(T.z != ship_z)
+				continue
+			min_x = min(min_x, T.x)
+			min_y = min(min_y, T.y)
+			max_x = max(max_x, T.x)
+			max_y = max(max_y, T.y)
+
+	if(min_x == INFINITY)
+		return
+
+	// Expand boundaries by 5 tiles
+	var/expanded_min_x = max(1, min_x - 5)
+	var/expanded_min_y = max(1, min_y - 5)
+	var/expanded_max_x = min(world.maxx, max_x + 5)
+	var/expanded_max_y = min(world.maxy, max_y + 5)
+
+	var/list/turfs_to_init = list()
+
+	// Get all turfs in the expanded area and find uninitialized space turfs
+	for(var/turf/open/space/S in block(locate(expanded_min_x, expanded_min_y, ship_z), locate(expanded_max_x, expanded_max_y, ship_z)))
+		if(!(S.flags_1 & INITIALIZED_1))
+			turfs_to_init += S
+
+	if(length(turfs_to_init))
+		SSatoms.InitializeAtoms(turfs_to_init)
 
 /obj/structure/overmap/ship/proc/set_ship_name(new_name, ignore_cooldown = FALSE, bypass_same_name = FALSE)
 	if(bypass_same_name == FALSE)
@@ -603,6 +673,7 @@
 	var/turf/newloc = locate(new_x, new_y, z)
 	if(newloc)
 		forceMove(newloc)
+		check_hazards()
 
 	if(movement_callback_id)
 		deltimer(movement_callback_id)
@@ -725,13 +796,69 @@
 			to_chat(user, "<span class='warning'>Docking request already pending.</span>")
 /**
   * Calculates the mass based on the amount of turfs in the shuttle's areas
+  * Ship health is based on current turfs vs original turfs
+  * Losing turfs = losing health, rebuilding = healing
   */
 /obj/structure/overmap/ship/proc/calculate_mass()
+	if(!shuttle)
+		return 0
 	. = 0
 	var/list/areas = shuttle.shuttle_areas
-	for(var/shuttleArea in areas)
-		. += length(get_area_turfs(shuttleArea))
+	for(var/area/shuttleArea in areas)
+		for(var/turf/T in shuttleArea)
+			if(isspaceturf(T))
+				continue
+			// Tiered health: reinforced walls > walls > floors
+			if(istype(T, /turf/closed/wall/r_wall))
+				. += 3  // Reinforced walls
+			else if(istype(T, /turf/closed/wall))
+				. += 2  // Regular walls
+			else
+				.++  // Floors and other turfs
+
+	var/old_integrity = integrity
 	mass = .
+
+	// First calculation - set original mass as max_integrity and start at full health
+	if(!integrity_initialized)
+		max_integrity = mass
+		integrity = mass // Start at 100% health
+		overhealth = 0
+		integrity_initialized = TRUE
+	else
+		// Subsequent calculations - health = current turfs (capped at original max)
+		integrity = min(mass, max_integrity)
+		// Overhealth = turfs beyond original ship size (from expansion)
+		overhealth = max(0, mass - max_integrity)
+
+	// Check for integrity changes and send signals
+	if(integrity != old_integrity)
+		// Raw percentages for internal threshold checks
+		var/raw_percent = round((integrity / max_integrity) * 100)
+		var/old_raw_percent = round((old_integrity / max_integrity) * 100)
+		// Scaled percentage for UI/announcements (50% raw = 0% display)
+		var/display_percent = get_integrity_percent()
+
+		// Send signal that integrity changed - listeners handle all effects
+		SEND_SIGNAL(src, COMSIG_SHIP_INTEGRITY_CHANGED, integrity, max_integrity, display_percent)
+
+		// Check thresholds (only when health dropped)
+		if(integrity < old_integrity)
+			// 60% raw (20% displayed) - Critical damage - start alert loop
+			if(old_raw_percent > 60 && raw_percent <= 60)
+				start_critical_alert()
+
+			// Ship destruction at 50% raw (0% displayed)
+			if(old_raw_percent > 50 && raw_percent <= 50)
+				stop_critical_alert()
+				on_ship_destroyed()
+
+		// Check for recovery - ship must be repaired to 65% to restart
+		if(integrity > old_integrity && has_crash_landed)
+			if(old_raw_percent < 65 && raw_percent >= 65)
+				stop_critical_alert()
+				on_ship_recovered()
+
 	update_icon_state()
 
 /obj/structure/overmap/ship/update_icon_state()

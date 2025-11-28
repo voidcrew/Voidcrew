@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useBackend } from '../../tgui/backend';
-import { useState } from 'react';
 import {
   AnimatedNumber,
   Button,
@@ -15,21 +14,27 @@ import {
 import { Window } from '../../tgui/layouts';
 
 export const HelmComputer = (props, context) => {
-  console.log('HelmComputer rendering, props:', props, 'context:', context);
   const { act, data, config } = useBackend(context);
   const [mapRefreshKey, setMapRefreshKey] = useState(0);
-  console.log('HelmComputer data:', data, 'config:', config);
-  const { mapRef, isViewer } = data || {};
-  console.log('HelmComputer mapRef:', mapRef, 'isViewer:', isViewer);
-  console.log('About to render Window component');
+  const { mapRef, isViewer, shipCrashed, repairProgress } = data || {};
+
+  // Show crash repair screen if ship is crashed
+  if (shipCrashed) {
+    return (
+      <Window width={500} height={400}>
+        <Window.Content>
+          <CrashRepairScreen repairProgress={repairProgress} />
+        </Window.Content>
+      </Window>
+    );
+  }
+
   return (
     <Window width={900} height={900} resizable>
       <Window.Content>
         <Stack vertical>
           <Stack.Item textAlign={'center'}>
-            {console.log('About to render SharedContent')}
             <SharedContent />
-            {console.log('SharedContent rendered')}
           </Stack.Item>
           <Stack.Item>
             <Stack fill textAlign={'center'}>
@@ -181,11 +186,20 @@ const BroadcastSection = (props, context) => {
 };
 
 const SharedContent = (props, context) => {
-  console.log('SharedContent called, context:', context);
   const { act, data } = useBackend(context);
-  console.log('SharedContent data:', data);
-  const { isViewer, integrity, shipInfo = [], otherInfo = [] } = data;
-  console.log('SharedContent shipInfo:', shipInfo, 'type:', typeof shipInfo, 'isArray:', Array.isArray(shipInfo));
+  const {
+    isViewer,
+    integrity,
+    overhealth = 0,
+    shipInfo = [],
+    otherInfo = [],
+  } = data;
+
+  // Calculate the base integrity (capped at 100) and the maxValue for the bar
+  const baseIntegrity = Math.min(integrity, 100);
+  const totalIntegrity = integrity; // This can be > 100 with overhealth
+  const maxBarValue = Math.max(100, totalIntegrity);
+
   return (
     <Section
       title={
@@ -213,15 +227,7 @@ const SharedContent = (props, context) => {
       <LabeledList>
         <LabeledList.Item label="Class">{shipInfo.class}</LabeledList.Item>
         <LabeledList.Item label="Integrity">
-          <ProgressBar
-            ranges={{
-              good: [51, 100],
-              average: [26, 50],
-              bad: [0, 25],
-            }}
-            maxValue={100}
-            value={integrity}
-          />
+          <IntegrityBar integrity={integrity} overhealth={overhealth} />
         </LabeledList.Item>
         <LabeledList.Item label="Sensor Range">
           <ProgressBar value={shipInfo.sensor_range} minValue={1} maxValue={8}>
@@ -235,6 +241,85 @@ const SharedContent = (props, context) => {
         )}
       </LabeledList>
     </Section>
+  );
+};
+
+// Custom integrity bar that shows overhealth as dark green
+// Color thresholds: overhealth=dark green, 75-100%=green, 61-74%=yellow, 51-60%=red, 0-50%=dark red
+const IntegrityBar = (props) => {
+  const { integrity, overhealth = 0 } = props;
+
+  // Base integrity is capped at 100%
+  const baseIntegrity = Math.min(integrity - overhealth, 100);
+  const totalIntegrity = integrity;
+
+  // Determine bar color based on base integrity
+  // 75-100: green, 61-74: yellow, 51-60: red, 0-50: deep dark red
+  const getBarColor = (value) => {
+    if (value <= 50) return '#4a0000'; // Deep dark red (disabled)
+    if (value <= 60) return '#bd2020'; // Red
+    if (value <= 74) return '#d9b804'; // Yellow
+    return '#20b142'; // Green
+  };
+
+  // If we have overhealth, show a stacked bar
+  if (overhealth > 0) {
+    const maxValue = totalIntegrity;
+    return (
+      <div style={{ position: 'relative', width: '100%' }}>
+        {/* Background bar for total width */}
+        <ProgressBar
+          value={totalIntegrity}
+          maxValue={maxValue}
+          color="transparent"
+        >
+          {/* Stacked bars inside */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              height: '100%',
+              width: `${(baseIntegrity / maxValue) * 100}%`,
+              backgroundColor: getBarColor(baseIntegrity),
+              transition: 'width 0.5s ease',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: `${(baseIntegrity / maxValue) * 100}%`,
+              height: '100%',
+              width: `${(overhealth / maxValue) * 100}%`,
+              backgroundColor: '#0d5c1a', // Dark green for overhealth
+              transition: 'width 0.5s ease',
+            }}
+          />
+          <span style={{ position: 'relative', zIndex: 1 }}>
+            {totalIntegrity}%
+          </span>
+        </ProgressBar>
+      </div>
+    );
+  }
+
+  // No overhealth, use custom colored bar
+  return (
+    <ProgressBar value={baseIntegrity} maxValue={100} color="transparent">
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          height: '100%',
+          width: `${baseIntegrity}%`,
+          backgroundColor: getBarColor(baseIntegrity),
+          transition: 'width 0.5s ease, background-color 0.5s ease',
+        }}
+      />
+      <span style={{ position: 'relative', zIndex: 1 }}>{baseIntegrity}%</span>
+    </ProgressBar>
   );
 };
 
@@ -370,19 +455,6 @@ const ShipContent = (props, context) => {
                 </Table.Cell>
               </Table.Row>
             ))}
-
-          {/* Commenting out for now // <Table.Row>
-            <Table.Cell>Est burn:</Table.Cell>
-            <Table.Cell>
-              <AnimatedNumber
-                value={
-                  600 / (1 / (shipInfo.est_thrust / (shipInfo.mass * 100)))
-                }
-                format={(value) => Math.round(value * 10) / 10}
-              />
-              spM/burn
-            </Table.Cell>
-          </Table.Row> */}
         </Table>
       </Section>
     </>
@@ -392,9 +464,10 @@ const ShipContent = (props, context) => {
 // Arrow directional controls
 const ShipControlContent = (props, context) => {
   const { act, data } = useBackend(context);
-  const { calibrating, canThrust } = data;
-  let flyable = data.state === 'flying';
-  let canMove = flyable && canThrust;
+  const { calibrating, shipDisabled, canThrust } = data;
+  const flyable = data.state === 'flying' && !shipDisabled;
+  const canMove = flyable && canThrust;
+
   //  DIRECTIONS const idea from Lyra as part of their Haven-Urist project
   const DIRECTIONS = {
     north: 1,
@@ -408,7 +481,12 @@ const ShipControlContent = (props, context) => {
   };
   return (
     <Section title="Navigation">
-      {data.state === 'idle' && <div className="NoticeBox">Ship Docked.</div>}
+      {shipDisabled && (
+        <div className="NoticeBox danger">HULL CRITICAL - SYSTEMS OFFLINE</div>
+      )}
+      {data.state === 'idle' && !shipDisabled && (
+        <div className="NoticeBox">Ship Docked.</div>
+      )}
       {flyable && !canThrust && (
         <div className="NoticeBox danger">No engine power available!</div>
       )}
@@ -419,7 +497,7 @@ const ShipControlContent = (props, context) => {
               tooltip="Undock"
               tooltipPosition="right"
               icon="sign-out-alt"
-              disabled={data.state !== 'idle'}
+              disabled={data.state !== 'idle' || shipDisabled}
               onClick={() => act('undock')}
             />
           </Table.Cell>
@@ -429,7 +507,7 @@ const ShipControlContent = (props, context) => {
               tooltip="Dock in Empty Space"
               tooltipPosition="right"
               icon="sign-in-alt"
-              disabled={data.state !== 'flying'}
+              disabled={!flyable}
               onClick={() => act('dock_empty')}
             />
           </Table.Cell>
@@ -440,7 +518,7 @@ const ShipControlContent = (props, context) => {
               tooltipPosition="right"
               icon={calibrating ? 'times' : 'angle-double-right'}
               color={calibrating ? 'bad' : undefined}
-              disabled={data.state !== 'flying'}
+              disabled={!flyable}
               onClick={() => act('bluespace_jump')}
             />
           </Table.Cell>
@@ -561,6 +639,84 @@ const ShipControlContent = (props, context) => {
           </Table.Cell>
         </Table.Row>
       </Table>
+    </Section>
+  );
+};
+
+// Crash repair screen - shown when ship is crashed and needs repair
+const CrashRepairScreen = (props) => {
+  const { repairProgress } = props;
+
+  return (
+    <Section
+      title="SYSTEM FAILURE"
+      style={{
+        textAlign: 'center',
+        height: '100%',
+      }}
+    >
+      <Stack vertical fill>
+        <Stack.Item>
+          <div
+            style={{
+              fontSize: '24px',
+              color: '#ff4444',
+              marginBottom: '20px',
+              fontWeight: 'bold',
+            }}
+          >
+            HULL INTEGRITY CRITICAL
+          </div>
+        </Stack.Item>
+        <Stack.Item>
+          <div
+            style={{
+              fontSize: '16px',
+              color: '#aaaaaa',
+              marginBottom: '30px',
+            }}
+          >
+            Ship systems offline. Repair hull to restore functionality.
+          </div>
+        </Stack.Item>
+        <Stack.Item>
+          <div
+            style={{
+              fontSize: '14px',
+              color: '#888888',
+              marginBottom: '10px',
+            }}
+          >
+            REPAIR PROGRESS
+          </div>
+        </Stack.Item>
+        <Stack.Item>
+          <ProgressBar
+            value={repairProgress}
+            maxValue={100}
+            ranges={{
+              bad: [0, 33],
+              average: [34, 66],
+              good: [67, 100],
+            }}
+          >
+            <span style={{ fontSize: '20px', fontWeight: 'bold' }}>
+              {repairProgress}%
+            </span>
+          </ProgressBar>
+        </Stack.Item>
+        <Stack.Item>
+          <div
+            style={{
+              fontSize: '12px',
+              color: '#666666',
+              marginTop: '20px',
+            }}
+          >
+            Rebuild hull structure to 65% integrity to restore systems
+          </div>
+        </Stack.Item>
+      </Stack>
     </Section>
   );
 };

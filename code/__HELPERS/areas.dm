@@ -130,7 +130,12 @@ GLOBAL_LIST_INIT(typecache_powerfailure_safe_areas, typecacheof(list(
 	var/list/turfs = detect_room(get_turf(creator), area_or_turf_fail_types, BP_MAX_ROOM_SIZE*2)
 	var/turf_count = length(turfs)
 	if(!turf_count)
-		error = "The new area must be completely airtight and not a part of a shuttle."
+		// Check if we're in or adjacent to a shuttle area to give a more helpful error
+		var/area/current_area = get_area(creator)
+		if(istype(current_area, /area/shuttle))
+			error = "You cannot use regular blueprints in a shuttle area. Use a shuttle expansion permit instead."
+		else
+			error = "The new area must be completely airtight and not a part of a shuttle."
 	else if(turf_count > BP_MAX_ROOM_SIZE)
 		error = "The room you're in is too big. It is [turf_count >= BP_MAX_ROOM_SIZE *2 ? "more than 100" : ((turf_count / BP_MAX_ROOM_SIZE)-1)*100]% larger than allowed."
 	if(error)
