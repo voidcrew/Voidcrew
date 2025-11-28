@@ -424,20 +424,26 @@ SUBSYSTEM_DEF(overmap)
 	var/encounter_name = "Dynamic Overmap Encounter"
 	var/datum/map_zone/mapzone = find_free_mapzone()
 	var/datum/space_level/zlevel
+	// ZTRAIT_LINKAGE = UNAFFECTED disables space transitions so construction is allowed
+	var/list/zlevel_traits = list(ZTRAIT_MINING = TRUE, ZTRAIT_LINKAGE = UNAFFECTED)
 	if(isnull(mapzone))
 		mapzone = create_map_zone(encounter_name)
-		zlevel = SSmapping.add_new_zlevel(encounter_name, list(ZTRAIT_MINING = TRUE))
+		zlevel = SSmapping.add_new_zlevel(encounter_name, zlevel_traits)
 		mapzone.add_space_level(zlevel)
 	else
 		if(mapzone.z_levels[1])
 			zlevel = mapzone.z_levels[1]
 		else
-			zlevel = SSmapping.add_new_zlevel(encounter_name, list(ZTRAIT_MINING = TRUE))
+			zlevel = SSmapping.add_new_zlevel(encounter_name, zlevel_traits)
 			mapzone.add_space_level(zlevel)
 
 	mapzone.taken = TRUE
 
 	var/area/filled_area = zlevel.fill_in(area_override = target_area)
+
+	// Initialize space turfs so they can be built on
+	// /turf/open/space/basic turfs skip initialization for performance, but that breaks interactions
+	SSatoms.InitializeAtoms(zlevel.get_block())
 
 	if(ruin_type)
 		var/turf/ruin_turf = locate(rand(
