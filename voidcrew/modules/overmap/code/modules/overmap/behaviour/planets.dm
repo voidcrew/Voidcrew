@@ -109,3 +109,10 @@
 	color = null
 	icon_state = "object"
 	spawn_rate = -1
+
+/datum/overmap/planet/crashed_ship
+	name = "Crashed Ship"
+	desc = "A distress signal is coming from this location. A ship appears to have suffered critical damage."
+	color = "#ff4444"
+	icon_state = "strange_event"
+	spawn_rate = -1

@@ -133,8 +133,6 @@ GLOBAL_LIST_EMPTY(starlight)
 	return attack_hand(user, modifiers)
 
 /turf/open/space/proc/CanBuildHere()
-	if(destination_z)
-		return FALSE
 	return TRUE
 
 /turf/open/space/handle_slip()

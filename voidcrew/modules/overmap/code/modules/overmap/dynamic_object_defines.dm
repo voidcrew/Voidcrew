@@ -60,6 +60,9 @@
 /obj/structure/overmap/planet/empty
 	planet = /datum/overmap/planet/empty
 
+/obj/structure/overmap/planet/empty/crashed_ship
+	planet = /datum/overmap/planet/crashed_ship
+
 /obj/structure/overmap/planet/empty/unload_level()
 	if(preserve_level)
 		return
@@ -70,6 +73,12 @@
 
 	remove_mapzone()
 	qdel(src)
+
+/obj/structure/overmap/planet/empty/remove_mapzone()
+	if(mapzone)
+		mapzone.clear_to_uninitialized_space()
+		mapzone.taken = FALSE
+		mapzone = null
 
 
 /area/overmap_encounter
