@@ -480,11 +480,15 @@
 					S.shuttle.shuttle_areas |= shuttle.shuttle_areas
 				forceMove(docking_target)
 				state = OVERMAP_SHIP_IDLE
+				// Initialize space turfs around the shuttle so they can be built on
+				initialize_nearby_space_turfs()
 				SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_DOCKED)
 			else
 				addtimer(CALLBACK(src, PROC_REF(complete_dock), to_dock), 1 SECONDS) //This should never happen, yet it does sometimes.
 		if(OVERMAP_SHIP_UNDOCKING)
+			var/obj/structure/overmap/old_docked_location = null
 			if(!isturf(loc))
+				old_docked_location = loc
 				if(istype(loc, /obj/structure/overmap/ship)) //Even more hardcoded, even more bad
 					var/obj/structure/overmap/ship/S = loc
 					S.shuttle.shuttle_areas -= shuttle.shuttle_areas
@@ -493,10 +497,10 @@
 				log_shuttle("complete_dock UNDOCKING: Moving ship [src] from [loc] to turf [target_turf]")
 				forceMove(target_turf)
 
-				// Uncomment to enable planet deletion when undocking
-				// if(istype(old_loc, /obj/structure/overmap/planet))
-					// var/obj/structure/overmap/planet/D = old_loc
-					// INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/structure/overmap/planet, unload_level))
+				// Clean up crashed ship z-levels when undocking if no one is left
+				if(istype(old_docked_location, /obj/structure/overmap/planet/empty/crashed_ship))
+					var/obj/structure/overmap/planet/empty/crashed_ship/crash_site = old_docked_location
+					INVOKE_ASYNC(crash_site, TYPE_PROC_REF(/obj/structure/overmap/planet/empty, unload_level))
 			else
 				log_shuttle("complete_dock UNDOCKING: Ship [src] already on turf [loc]")
 
@@ -508,6 +512,65 @@
 			//addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/structure/overmap/ship, tick_autopilot)), 5 SECONDS) //TODO: Improve this SOMEHOW
 	calculate_mass()
 	update_screen()
+
+/**
+ * Initializes uninitialized space turfs around the shuttle so they can be built on.
+ * /turf/open/space/basic turfs skip initialization for performance, but that breaks interactions.
+ */
+/obj/structure/overmap/ship/proc/initialize_nearby_space_turfs()
+	if(!shuttle)
+		log_admin("DEBUG: initialize_nearby_space_turfs - no shuttle")
+		return
+
+	var/list/turfs_to_init = list()
+	// Get all turfs in shuttle areas
+	var/list/shuttle_turfs = list()
+	for(var/area/shuttle_area as anything in shuttle.shuttle_areas)
+		for(var/list/zlevel_turfs as anything in shuttle_area.get_zlevel_turf_lists())
+			shuttle_turfs |= zlevel_turfs
+
+	log_admin("DEBUG: initialize_nearby_space_turfs - shuttle has [length(shuttle.shuttle_areas)] areas, [length(shuttle_turfs)] turfs")
+
+	// Find ship boundaries
+	var/min_x = INFINITY
+	var/max_x = 0
+	var/min_y = INFINITY
+	var/max_y = 0
+	var/ship_z = 0
+	for(var/turf/T as anything in shuttle_turfs)
+		if(T.x < min_x)
+			min_x = T.x
+		if(T.x > max_x)
+			max_x = T.x
+		if(T.y < min_y)
+			min_y = T.y
+		if(T.y > max_y)
+			max_y = T.y
+		ship_z = T.z
+
+	log_admin("DEBUG: Ship boundaries - SW corner: ([min_x],[min_y]), NE corner: ([max_x],[max_y]), Z: [ship_z]")
+
+	// Check a sample turf outside the ship
+	var/turf/sample = locate(min_x - 2, min_y, ship_z)
+	if(sample)
+		log_admin("DEBUG: Sample turf at ([sample.x],[sample.y]): type=[sample.type], initialized=[(sample.flags_1 & INITIALIZED_1) ? "YES" : "NO"]")
+
+	// Find uninitialized space turfs around the shuttle
+	var/space_count = 0
+	var/initialized_count = 0
+	for(var/turf/T as anything in shuttle_turfs)
+		for(var/turf/open/space/S in RANGE_TURFS(5, T))
+			space_count++
+			if(S.flags_1 & INITIALIZED_1)
+				initialized_count++
+			else
+				turfs_to_init |= S
+
+	log_admin("DEBUG: Found [space_count] space turfs in range, [initialized_count] already initialized, [length(turfs_to_init)] to init")
+
+	if(length(turfs_to_init))
+		SSatoms.InitializeAtoms(turfs_to_init)
+		log_admin("DEBUG: Initialized [length(turfs_to_init)] turfs. Sample coords: [turfs_to_init[1].x],[turfs_to_init[1].y],[turfs_to_init[1].z]")
 
 /obj/structure/overmap/ship/proc/set_ship_name(new_name, ignore_cooldown = FALSE, bypass_same_name = FALSE)
 	if(bypass_same_name == FALSE)

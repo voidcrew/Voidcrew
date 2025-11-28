@@ -441,10 +441,6 @@ SUBSYSTEM_DEF(overmap)
 
 	var/area/filled_area = zlevel.fill_in(area_override = target_area)
 
-	// Initialize space turfs so they can be built on
-	// /turf/open/space/basic turfs skip initialization for performance, but that breaks interactions
-	SSatoms.InitializeAtoms(zlevel.get_block())
-
 	if(ruin_type)
 		var/turf/ruin_turf = locate(rand(
 			zlevel.low_x+6,
