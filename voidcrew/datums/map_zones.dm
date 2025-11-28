@@ -22,6 +22,11 @@
 	for(var/datum/space_level/zlevel as anything in z_levels)
 		zlevel.clear_reservation()
 
+/// Clears contents and resets turfs to uninitialized space (for empty space cleanup)
+/datum/map_zone/proc/clear_to_uninitialized_space()
+	for(var/datum/space_level/zlevel as anything in z_levels)
+		zlevel.clear_to_uninitialized_space()
+
 /datum/map_zone/proc/add_space_level(datum/space_level/level)
 	z_levels += level
 
@@ -81,6 +86,32 @@
 
 		QUEUE_SMOOTH(turf)
 		QUEUE_SMOOTH_NEIGHBORS(turf)
+		CHECK_TICK
+
+/// Clears contents and resets turfs to uninitialized /turf/open/space/basic
+/// This bypasses ChangeTurf so turfs remain uninitialized and unbuildable
+/datum/space_level/proc/clear_to_uninitialized_space()
+	var/area/space_area = GLOB.areas_by_type[world.area]
+	var/list/turf/block_turfs = get_block()
+
+	// Delete all contents (except lighting objects, dead mobs, landmarks)
+	var/static/list/ignored_atoms = typecacheof(list(/mob/dead, /obj/effect/landmark, /obj/docking_port))
+	for(var/turf/T as anything in block_turfs)
+		for(var/atom/movable/AM in T.contents)
+			if(AM == T.lighting_object)
+				continue
+			if(ignored_atoms[AM.type])
+				continue
+			qdel(AM)
+
+	// Replace turfs with uninitialized space - bypass ChangeTurf entirely
+	for(var/turf/T as anything in block_turfs)
+		// Reset area first
+		var/area/old_area = get_area(T)
+		if(old_area != space_area)
+			T.change_area(old_area, space_area)
+		// Create uninitialized space turf directly (bypasses ChangeTurf which would init it)
+		new /turf/open/space/basic(T)
 		CHECK_TICK
 
 /datum/space_level/proc/fill_in(turf/turf_type, area/area_override)

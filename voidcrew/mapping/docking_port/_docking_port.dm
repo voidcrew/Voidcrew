@@ -45,6 +45,9 @@
 	unlink_from_z_level()
 	link_to_z_level()
 	recalculate_shuttle_areas() // this also readds VALID_TERRITORY
+	// Initialize space turfs if we're docking to empty space
+	if(current_ship && istype(current_ship.docked, /obj/structure/overmap/planet/empty))
+		current_ship.initialize_nearby_space_turfs()
 	return ..()
 
 /// Links to the Z level to ensure that if there are more than one ships on a z level when one leaves it doesnt clear the z trait
