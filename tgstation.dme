@@ -6940,6 +6940,7 @@
 #include "voidcrew\objects\structures\planet_ladders.dm"
 #include "voidcrew\objects\structures\radioactive.dm"
 #include "voidcrew\objects\structures\spawner.dm"
+#include "voidcrew\objects\structures\abyss_spawner.dm"
 #include "voidcrew\objects\structures\icemoon\cave_entrance.dm"
 #include "voidcrew\turfs\closed\minerals.dm"
 #include "voidcrew\turfs\open\asteroid.dm"
