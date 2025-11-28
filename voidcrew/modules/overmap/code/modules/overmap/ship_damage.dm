@@ -20,23 +20,9 @@
 	var/overhealth = 0
 	/// Whether the ship has already crash landed (prevents multiple crashes)
 	var/has_crash_landed = FALSE
+	/// Timer ID for critical state alert loop
+	var/critical_alert_timer
 
-
-/**
- * Signal handler for damage thresholds - handles announcements, sounds, and effects
- */
-/obj/structure/overmap/ship/proc/on_damage_threshold(datum/source, threshold, display_percent)
-	SIGNAL_HANDLER
-	log_admin("DEBUG VOX: on_damage_threshold called - threshold=[threshold], display_percent=[display_percent]")
-
-	switch(threshold)
-		if(SHIP_THRESHOLD_SERIOUS)
-			play_ship_sound('sound/machines/engine_alert/engine_alert1.ogg')
-			ship_announce("Hull damage detected. [display_percent]% integrity remaining.", "WARNING", FALSE, null)
-
-		if(SHIP_THRESHOLD_EMERGENCY)
-			play_ship_sound('sound/machines/engine_alert/engine_alert1.ogg')
-			play_ship_vox(list("alert", "critical", "damage"))
 
 /**
  * Returns the current integrity as a percentage for UI display
@@ -54,11 +40,38 @@
 	return round((overhealth / max_integrity) * 100)
 
 /**
+ * Starts the critical alert loop - plays warning sound repeatedly
+ */
+/obj/structure/overmap/ship/proc/start_critical_alert()
+	if(critical_alert_timer)
+		return // Already running
+	// Play immediately, then loop every 3 seconds
+
+	play_ship_sound('sound/machines/engine_alert/engine_alert3.ogg', 85)
+	play_ship_vox(list("alert", "critical", "damage"))
+	critical_alert_timer = addtimer(CALLBACK(src, PROC_REF(critical_alert_tick)), 5 SECONDS, TIMER_LOOP | TIMER_STOPPABLE)
+
+/**
+ * Called each tick of the critical alert loop
+ */
+/obj/structure/overmap/ship/proc/critical_alert_tick()
+	play_ship_sound('sound/machines/engine_alert/engine_alert3.ogg', 85)
+	play_ship_vox(list("failure", "immediate"))
+
+/**
+ * Stops the critical alert loop
+ */
+/obj/structure/overmap/ship/proc/stop_critical_alert()
+	if(critical_alert_timer)
+		deltimer(critical_alert_timer)
+		critical_alert_timer = null
+
+/**
  * Called when ship integrity is restored above 50% after a crash
  * Plays boot up sound and announces recovery
  */
 /obj/structure/overmap/ship/proc/on_ship_recovered()
-	play_ship_sound('sound/machines/computer/computer_start.ogg', 45)
+	play_ship_sound('sound/machines/computer/computer_start.ogg', 15)
 	ship_announce("Hull integrity restored. Ship systems operational.", "Systems Online")
 
 /**
@@ -79,19 +92,13 @@
 		movement_callback_id = null
 
 	// Cascade failures - fires, explosions, EMPs throughout the ship
-	var/failure_count = rand(5, 10)
+	var/failure_count = rand(1, 7)
 	for(var/i in 1 to failure_count)
 		var/turf/target = get_random_ship_turf()
 		if(!target)
 			continue
 
-		switch(rand(1, 3))
-			if(1) // Fire
-				new /obj/effect/hotspot(target)
-			if(2) // Explosion
-				explosion(target, 0, 0, light_impact_range = 4, flash_range = 1, adminlog = FALSE)
-			if(3) // Sparks
-				do_sparks(5, FALSE, target)
+		do_sparks(5, FALSE, target)
 
 	// Dock into a "crashed ship" location so others can find and help/raid
 	crash_land()
@@ -108,6 +115,8 @@
 
 	// Create crashed ship marker at current location
 	var/obj/structure/overmap/planet/empty/crashed_ship/crash_site = new(get_turf(src))
+
+	play_ship_sound('sound/items/weapons/mortar_long_whistle.ogg')
 
 	// Load the level
 	if(!crash_site.loaded && !crash_site.loading)
@@ -160,26 +169,10 @@
 	play_ship_sound('sound/effects/explosion/explosioncreak1.ogg', 100)
 
 	// Violent shake
-	shake_ship(30, 5)
+	// shake_ship(30, 5)
 
-	// Shake everyone violently and knock them down
-	for(var/mob/living/crew_member in get_all_ship_mobs())
-		shake_camera(crew_member, 30, 5)
-		crew_member.Knockdown(5 SECONDS)
-		to_chat(crew_member, span_userdanger("The ship shudders violently as critical systems fail!"))
-
-	// Disable all machinery on the ship for 30 seconds
-	var/list/disabled_machines = list()
-	for(var/area/ship_area as anything in shuttle.shuttle_areas)
-		for(var/obj/machinery/M in ship_area)
-			if(M.machine_stat & EMPED)
-				continue // Already disabled
-			M.set_machine_stat(M.machine_stat | EMPED)
-			disabled_machines += M
-
-	// Re-enable machinery after 30 seconds
-	if(length(disabled_machines))
-		addtimer(CALLBACK(src, PROC_REF(restore_ship_systems), disabled_machines), 30 SECONDS)
+	// Fling everything on the ship violently - simulates crash impact
+	crash_throw_contents()
 
 /**
  * Restores ship systems after crash landing
@@ -191,6 +184,40 @@
 		M.set_machine_stat(M.machine_stat & ~EMPED)
 
 	ship_announce("Emergency systems restored. Ship systems coming back online.", "Systems Restored")
+
+/**
+ * Throws all unanchored objects and mobs on the ship during a crash landing
+ * Similar to lateShuttleMove but for crash impacts
+ */
+/obj/structure/overmap/ship/proc/crash_throw_contents(var/throwing_force = 20)
+	if(!shuttle?.shuttle_areas)
+		return
+
+	// var/throw_force = 5 // How far things get thrown (similar to movement_force["THROW"])
+	var/crash_dir = WEST // Always throw to the left
+
+	for(var/area/ship_area as anything in shuttle.shuttle_areas)
+		for(var/atom/movable/AM in ship_area)
+			if(QDELETED(AM))
+				continue
+			if(AM.anchored)
+				continue
+			// Skip intangible things like effects
+			if(AM.pass_flags & PASSGLASS)
+				continue
+
+			// Mobs get extra effects
+			if(isliving(AM))
+				var/mob/living/L = AM
+				shake_camera(L, 30, 5)
+				to_chat(L, span_userdanger("The ship crashes violently, throwing you across the room!"))
+
+			// Throw in the crash direction - based on lateShuttleMove logic
+			var/turf/target = get_edge_target_turf(AM, crash_dir)
+			var/range = throwing_force * 2
+			range = CEILING(rand(range - 1, range + 1), 1)
+			var/speed = max(range / 3, 1)
+			AM.safe_throw_at(target, range, speed, force = MOVE_FORCE_EXTREMELY_STRONG)
 
 /**
  * Called when the ship enters a tile - checks for hazards

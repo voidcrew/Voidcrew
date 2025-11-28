@@ -107,9 +107,6 @@
 	if(template)
 		setup_from_template(template)
 
-	// Register signal listeners for damage feedback (from ship_damage.dm)
-	RegisterSignal(src, COMSIG_SHIP_DAMAGE_THRESHOLD, PROC_REF(on_damage_threshold))
-
 /**
  * Sets up the ship from a template. Called after Initialize.
  * Returns TRUE on success, FALSE on failure.
@@ -821,34 +818,19 @@
 
 		// Check thresholds (only when health dropped)
 		if(integrity < old_integrity)
-			// 90% raw (80% displayed) - Minor damage
-			if(old_raw_percent > 90 && raw_percent <= 90)
-				SEND_SIGNAL(src, COMSIG_SHIP_DAMAGE_THRESHOLD, SHIP_THRESHOLD_MINOR, display_percent)
-
-			// 80% raw (60% displayed) - Moderate damage
-			if(old_raw_percent > 80 && raw_percent <= 80)
-				SEND_SIGNAL(src, COMSIG_SHIP_DAMAGE_THRESHOLD, SHIP_THRESHOLD_MODERATE, display_percent)
-
-			// 70% raw (40% displayed) - Serious damage
-			if(old_raw_percent > 70 && raw_percent <= 70)
-				SEND_SIGNAL(src, COMSIG_SHIP_DAMAGE_THRESHOLD, SHIP_THRESHOLD_SERIOUS, display_percent)
-
-			// 60% raw (20% displayed) - Critical damage
+			// 60% raw (20% displayed) - Critical damage - start alert loop
 			if(old_raw_percent > 60 && raw_percent <= 60)
-				SEND_SIGNAL(src, COMSIG_SHIP_DAMAGE_THRESHOLD, SHIP_THRESHOLD_CRITICAL, display_percent)
-
-			// 55% raw (10% displayed) - Imminent destruction
-			if(old_raw_percent > 55 && raw_percent <= 55)
-				SEND_SIGNAL(src, COMSIG_SHIP_DAMAGE_THRESHOLD, SHIP_THRESHOLD_EMERGENCY, display_percent)
+				start_critical_alert()
 
 			// Ship destruction at 50% raw (0% displayed)
 			if(old_raw_percent > 50 && raw_percent <= 50)
-				SEND_SIGNAL(src, COMSIG_SHIP_DESTROYING)
+				stop_critical_alert()
 				on_ship_destroyed()
 
-		// Check for recovery from crashed state (integrity went back above 50%)
+		// Check for recovery - ship must be repaired to 65% to restart
 		if(integrity > old_integrity && has_crash_landed)
-			if(old_raw_percent <= 50 && raw_percent > 50)
+			if(old_raw_percent < 65 && raw_percent >= 65)
+				stop_critical_alert()
 				on_ship_recovered()
 
 	update_icon_state()

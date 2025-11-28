@@ -99,7 +99,18 @@
 	data["thrust"] = current_ship.calculate_thrust()
 	data["integrity"] = current_ship.get_integrity_percent()
 	data["overhealth"] = current_ship.get_overhealth_percent()
-	data["shipDisabled"] = current_ship.get_integrity_percent() <= 50
+
+	// Calculate raw integrity for crash state checks
+	var/raw_percent = round((current_ship.integrity / current_ship.max_integrity) * 100)
+	data["shipDisabled"] = raw_percent <= 50
+	data["shipCrashed"] = current_ship.has_crash_landed && raw_percent < 65
+
+	// Repair progress: 0% at 50 raw, 100% at 65 raw
+	if(data["shipCrashed"])
+		data["repairProgress"] = clamp(round((raw_percent - 50) / 15 * 100), 0, 100)
+	else
+		data["repairProgress"] = 100
+
 	data["calibrating"] = calibrating
 	data["canThrust"] = current_ship.can_thrust()
 	data["otherInfo"] = list()

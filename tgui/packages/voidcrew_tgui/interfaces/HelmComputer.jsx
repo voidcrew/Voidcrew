@@ -1,4 +1,3 @@
-import { useBackend } from '../../tgui/backend';
 import {
   AnimatedNumber,
   Button,
@@ -9,23 +8,30 @@ import {
   Stack,
   Table,
 } from 'tgui-core/components';
+import { useBackend } from '../../tgui/backend';
 import { Window } from '../../tgui/layouts';
 
 export const HelmComputer = (props, context) => {
-  console.log('HelmComputer rendering, props:', props, 'context:', context);
   const { act, data, config } = useBackend(context);
-  console.log('HelmComputer data:', data, 'config:', config);
-  const { mapRef, isViewer } = data || {};
-  console.log('HelmComputer mapRef:', mapRef, 'isViewer:', isViewer);
-  console.log('About to render Window component');
+  const { mapRef, isViewer, shipCrashed, repairProgress } = data || {};
+
+  // Show crash repair screen if ship is crashed
+  if (shipCrashed) {
+    return (
+      <Window width={500} height={400}>
+        <Window.Content>
+          <CrashRepairScreen repairProgress={repairProgress} />
+        </Window.Content>
+      </Window>
+    );
+  }
+
   return (
     <Window width={900} height={900} resizable>
       <Window.Content>
         <Stack vertical>
           <Stack.Item textAlign={'center'}>
-            {console.log('About to render SharedContent')}
             <SharedContent />
-            {console.log('SharedContent rendered')}
           </Stack.Item>
           <Stack.Item>
             <Stack fill textAlign={'center'}>
@@ -119,8 +125,21 @@ const SharedContent = (props, context) => {
   console.log('SharedContent called, context:', context);
   const { act, data } = useBackend(context);
   console.log('SharedContent data:', data);
-  const { isViewer, integrity, overhealth = 0, shipInfo = [], otherInfo = [] } = data;
-  console.log('SharedContent shipInfo:', shipInfo, 'type:', typeof shipInfo, 'isArray:', Array.isArray(shipInfo));
+  const {
+    isViewer,
+    integrity,
+    overhealth = 0,
+    shipInfo = [],
+    otherInfo = [],
+  } = data;
+  console.log(
+    'SharedContent shipInfo:',
+    shipInfo,
+    'type:',
+    typeof shipInfo,
+    'isArray:',
+    Array.isArray(shipInfo),
+  );
 
   // Calculate the base integrity (capped at 100) and the maxValue for the bar
   const baseIntegrity = Math.min(integrity, 100);
@@ -201,24 +220,28 @@ const IntegrityBar = (props) => {
           color="transparent"
         >
           {/* Stacked bars inside */}
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            height: '100%',
-            width: `${(baseIntegrity / maxValue) * 100}%`,
-            backgroundColor: getBarColor(baseIntegrity),
-            transition: 'width 0.5s ease'
-          }} />
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: `${(baseIntegrity / maxValue) * 100}%`,
-            height: '100%',
-            width: `${(overhealth / maxValue) * 100}%`,
-            backgroundColor: '#0d5c1a', // Dark green for overhealth
-            transition: 'width 0.5s ease'
-          }} />
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              height: '100%',
+              width: `${(baseIntegrity / maxValue) * 100}%`,
+              backgroundColor: getBarColor(baseIntegrity),
+              transition: 'width 0.5s ease',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: `${(baseIntegrity / maxValue) * 100}%`,
+              height: '100%',
+              width: `${(overhealth / maxValue) * 100}%`,
+              backgroundColor: '#0d5c1a', // Dark green for overhealth
+              transition: 'width 0.5s ease',
+            }}
+          />
           <span style={{ position: 'relative', zIndex: 1 }}>
             {totalIntegrity}%
           </span>
@@ -229,23 +252,19 @@ const IntegrityBar = (props) => {
 
   // No overhealth, use custom colored bar
   return (
-    <ProgressBar
-      value={baseIntegrity}
-      maxValue={100}
-      color="transparent"
-    >
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        height: '100%',
-        width: `${baseIntegrity}%`,
-        backgroundColor: getBarColor(baseIntegrity),
-        transition: 'width 0.5s ease, background-color 0.5s ease'
-      }} />
-      <span style={{ position: 'relative', zIndex: 1 }}>
-        {baseIntegrity}%
-      </span>
+    <ProgressBar value={baseIntegrity} maxValue={100} color="transparent">
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          height: '100%',
+          width: `${baseIntegrity}%`,
+          backgroundColor: getBarColor(baseIntegrity),
+          transition: 'width 0.5s ease, background-color 0.5s ease',
+        }}
+      />
+      <span style={{ position: 'relative', zIndex: 1 }}>{baseIntegrity}%</span>
     </ProgressBar>
   );
 };
@@ -405,7 +424,7 @@ const ShipContent = (props, context) => {
 const ShipControlContent = (props, context) => {
   const { act, data } = useBackend(context);
   const { calibrating, shipDisabled } = data;
-  let flyable = data.state === 'flying' && !shipDisabled;
+  const flyable = data.state === 'flying' && !shipDisabled;
   //  DIRECTIONS const idea from Lyra as part of their Haven-Urist project
   const DIRECTIONS = {
     north: 1,
@@ -574,6 +593,73 @@ const ShipControlContent = (props, context) => {
           </Table.Cell>
         </Table.Row>
       </Table>
+    </Section>
+  );
+};
+
+// Crash repair screen - shown when ship is crashed and needs repair
+const CrashRepairScreen = (props) => {
+  const { repairProgress } = props;
+
+  return (
+    <Section
+      title="SYSTEM FAILURE"
+      style={{
+        textAlign: 'center',
+        height: '100%',
+      }}
+    >
+      <Stack vertical fill>
+        <Stack.Item>
+          <div
+            style={{
+              fontSize: '24px',
+              color: '#ff4444',
+              marginBottom: '20px',
+              fontWeight: 'bold',
+            }}
+          >
+            HULL INTEGRITY CRITICAL
+          </div>
+        </Stack.Item>
+        <Stack.Item>
+          <div
+            style={{
+              fontSize: '16px',
+              color: '#aaaaaa',
+              marginBottom: '30px',
+            }}
+          >
+            Ship systems offline. Repair hull to restore functionality.
+          </div>
+        </Stack.Item>
+        <Stack.Item>
+          <div
+            style={{
+              fontSize: '14px',
+              color: '#888888',
+              marginBottom: '10px',
+            }}
+          >
+            REPAIR PROGRESS
+          </div>
+        </Stack.Item>
+        <Stack.Item>
+          <ProgressBar
+            value={repairProgress}
+            maxValue={100}
+            ranges={{
+              bad: [0, 33],
+              average: [34, 66],
+              good: [67, 100],
+            }}
+          >
+            <span style={{ fontSize: '20px', fontWeight: 'bold' }}>
+              {repairProgress}%
+            </span>
+          </ProgressBar>
+        </Stack.Item>
+      </Stack>
     </Section>
   );
 };
