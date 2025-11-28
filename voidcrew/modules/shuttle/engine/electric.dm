@@ -27,10 +27,12 @@
 	. = ..()
 	connect_to_network()
 
-/obj/machinery/power/shuttle_engine/ship/electric/burn_engine(percentage = 100)
+/obj/machinery/power/shuttle_engine/ship/electric/burn_engine(percentage = 100, ship_mass = REFERENCE_SHIP_MASS)
 	. = ..()
-	var/true_percentage = min(newavail() / power_per_burn, percentage / 100)
-	add_delayedload(power_per_burn * true_percentage)
+	var/mass_multiplier = get_mass_fuel_multiplier(ship_mass)
+	var/power_needed = power_per_burn * (percentage / 100) * mass_multiplier
+	var/true_percentage = min(newavail() / power_needed, 1)
+	add_delayedload(power_needed * true_percentage)
 	return engine_power * true_percentage
 
 /obj/machinery/power/shuttle_engine/ship/electric/return_fuel()

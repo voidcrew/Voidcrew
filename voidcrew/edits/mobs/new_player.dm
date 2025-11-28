@@ -24,21 +24,10 @@
 		return
 
 	if(selected_ship == "Purchase")
-		var/datum/map_template/shuttle/voidcrew/template = SSmapping.ship_purchase_list[tgui_input_list(src, "Please select ship to purchase!", "Welcome, [used_name].", SSmapping.ship_purchase_list)]
-		if(!template)
-			return select_ship()
-		if(!client.remove_ship_cost(initial(template.faction_prefix), initial(template.part_cost)) && !CONFIG_GET(flag/free_ships))
-			tgui_alert(client, "You lack the parts needed to build this ship! (Required: [initial(template.part_cost)] [initial(template.faction_prefix)] part\s)")
-			return
-
-		to_chat(usr, span_danger("Your [initial(template.name)] is being prepared. Please be patient!"))
-		var/obj/structure/overmap/ship/target = SSshuttle.create_ship(template)
-		if(!istype(target))
-			to_chat(usr, span_danger("There was an error loading the ship. Please contact admins!"))
-			return
-		SSblackbox.record_feedback("tally", "ship_purchased", 1, initial(template.name)) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-		if(!AttemptSpawnOnShip(target.job_slots[1], target)) //Try to spawn as the first listed job in the job slots (usually captain)
-			to_chat(usr, span_danger("Ship spawned, but you were unable to be spawned. You can likely try to spawn in the ship through joining normally, but if not, please contact an admin."))
+		// Open the ship catalog in latejoin mode with callback
+		var/datum/callback/cb = CALLBACK(src, PROC_REF(on_ship_catalog_selection))
+		var/datum/ship_catalog_ui/catalog = new(src, latejoin = TRUE, selection_callback = cb)
+		catalog.ui_interact(src)
 		return
 
 	if(selected_ship.memo)
@@ -77,6 +66,34 @@
 
 	AttemptSpawnOnShip(selected_job, selected_ship)
 
+/// Flag to prevent double-clicking ship spawn
+/mob/dead/new_player/var/spawning_ship = FALSE
+
+/**
+ * Callback when player selects a ship from the catalog
+ * The catalog has already handled unlocking/part deduction
+ */
+/mob/dead/new_player/proc/on_ship_catalog_selection(datum/map_template/shuttle/voidcrew/template)
+	if(!template)
+		return select_ship() // Cancelled, return to menu
+
+	// Prevent double-click spawning
+	if(spawning_ship)
+		to_chat(src, span_warning("Your ship is already being prepared. Please wait..."))
+		return
+	spawning_ship = TRUE
+
+	to_chat(src, span_notice("Your [template.name] is being prepared. Please be patient!"))
+	var/obj/structure/overmap/ship/target = SSshuttle.create_ship(template)
+	if(!istype(target))
+		spawning_ship = FALSE
+		to_chat(src, span_danger("There was an error loading the ship. Please contact admins!"))
+		return select_ship()
+
+	SSblackbox.record_feedback("tally", "ship_purchased", 1, template.name)
+	if(!AttemptSpawnOnShip(target.job_slots[1], target))
+		to_chat(src, span_danger("Ship spawned, but you were unable to be spawned. You can likely try to spawn in the ship through joining normally, but if not, please contact an admin."))
+
 /**
  * Join as the given job
  */
@@ -111,8 +128,24 @@
 		CRASH("Failed to create a character for latejoin.")
 	transfer_character()
 
+	// Check for custom slot swap on this job (only applies if the spawning player made the swap)
+	var/list/custom_slot_swap = null
+	if(joined_ship.shuttle.cryo_console && character.client?.ckey)
+		custom_slot_swap = joined_ship.shuttle.cryo_console.get_custom_slot_for_job(job)
+		// Only use the swap if this player made it
+		if(custom_slot_swap && custom_slot_swap["ckey"] != character.client.ckey)
+			custom_slot_swap = null
+
 	SSjob.equip_rank(character, job, character.client)
 	job.after_latejoin_spawn(character)
+
+	// Apply custom slot loadout if swapped by this player
+	if(custom_slot_swap)
+		var/slot_index = custom_slot_swap["slot_index"]
+		var/list/custom_loadout = GLOB.custom_slot_manager.get_slot_loadout(character.client.ckey, slot_index)
+		if(length(custom_loadout))
+			apply_custom_slot_loadout(character, custom_loadout)
+			to_chat(character, span_notice("Your custom slot '[custom_slot_swap["slot_name"]]' loadout has been applied."))
 
 	SSticker.minds += character.mind
 	character.client.init_verbs() // init verbs for the late join
@@ -142,6 +175,48 @@
 		joined_ship.end_deletion_timer()
 
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_CREWMEMBER_JOINED, character, job.title)
+
+/**
+ * Apply custom slot loadout items to a character
+ * This is called after normal job equip when a cryo console has swapped the job to use a custom slot
+ */
+/proc/apply_custom_slot_loadout(mob/living/carbon/human/character, list/loadout_list)
+	if(!istype(character) || !length(loadout_list))
+		return FALSE
+
+	var/list/loadout_datums = loadout_list_to_datums(loadout_list)
+	if(!length(loadout_datums))
+		return FALSE
+
+	var/update = NONE
+
+	for(var/datum/loadout_item/item as anything in loadout_datums)
+		// Try to equip each loadout item
+		var/obj/item/spawned = new item.item_path(character.loc)
+		if(spawned)
+			// Try to put in the appropriate slot
+			if(!character.equip_to_appropriate_slot(spawned))
+				// If can't equip to slot, try backpack storage
+				var/stored = FALSE
+				if(character.back?.atom_storage)
+					stored = character.back.atom_storage.attempt_insert(spawned, character, override = TRUE)
+				// If still not stored, put in hands
+				if(!stored)
+					character.put_in_hands(spawned)
+
+			// Handle any special on_equip behavior
+			update |= item.on_equip_item(
+				equipped_item = spawned,
+				preference_source = character.client?.prefs,
+				preference_list = loadout_list,
+				equipper = character,
+				visuals_only = FALSE,
+			)
+
+	if(update)
+		character.update_clothing(update)
+
+	return TRUE
 
 /**
  * Job availability

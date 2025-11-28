@@ -1,18 +1,21 @@
+import { useState } from 'react';
+import { useBackend } from '../../tgui/backend';
 import {
   AnimatedNumber,
   Button,
   ByondUi,
+  Input,
   LabeledList,
   ProgressBar,
   Section,
   Stack,
   Table,
 } from 'tgui-core/components';
-import { useBackend } from '../../tgui/backend';
 import { Window } from '../../tgui/layouts';
 
 export const HelmComputer = (props, context) => {
   const { act, data, config } = useBackend(context);
+  const [mapRefreshKey, setMapRefreshKey] = useState(0);
   const { mapRef, isViewer, shipCrashed, repairProgress } = data || {};
 
   // Show crash repair screen if ship is crashed
@@ -35,14 +38,27 @@ export const HelmComputer = (props, context) => {
           </Stack.Item>
           <Stack.Item>
             <Stack fill textAlign={'center'}>
-              <Section title="Map" width={'70%'} fill>
+              <Section
+                title="Map"
+                width={'70%'}
+                fill
+                buttons={
+                  <Button
+                    icon="sync"
+                    tooltip="Refresh Map"
+                    onClick={() => setMapRefreshKey((k) => k + 1)}
+                  />
+                }
+              >
                 <Stack.Item>
                   <ByondUi
+                    key={`helm-map-${mapRefreshKey}`}
                     className="CameraConsole__map"
                     height="610px"
                     params={{
                       id: mapRef,
                       type: 'map',
+                      zoom: 0,
                     }}
                   />
                 </Stack.Item>
@@ -51,6 +67,10 @@ export const HelmComputer = (props, context) => {
                 <Stack vertical>
                   <Stack.Item>
                     <ShipControlContent />
+                  </Stack.Item>
+
+                  <Stack.Item>
+                    <BroadcastSection />
                   </Stack.Item>
 
                   <Stack.Item>
@@ -121,10 +141,52 @@ const Radar = (context) => {
   );
 };
 
-const SharedContent = (props, context) => {
-  console.log('SharedContent called, context:', context);
+const BroadcastSection = (props, context) => {
   const { act, data } = useBackend(context);
-  console.log('SharedContent data:', data);
+  const { isViewer } = data;
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+
+  const handleBroadcast = () => {
+    if (broadcastMessage && broadcastMessage.trim()) {
+      act('broadcast', { message: broadcastMessage });
+      setBroadcastMessage('');
+    }
+  };
+
+  const handleInput = (value) => {
+    setBroadcastMessage(value);
+    act('typing_sound');
+  };
+
+  return (
+    <Section title="Broadcast">
+      <Stack vertical>
+        <Stack.Item>
+          <Input
+            fluid
+            placeholder="Enter message..."
+            value={broadcastMessage}
+            disabled={isViewer}
+            onChange={handleInput}
+            onEnter={handleBroadcast}
+          />
+        </Stack.Item>
+        <Stack.Item>
+          <Button
+            fluid
+            icon="broadcast-tower"
+            content="Broadcast"
+            disabled={isViewer || !broadcastMessage}
+            onClick={handleBroadcast}
+          />
+        </Stack.Item>
+      </Stack>
+    </Section>
+  );
+};
+
+const SharedContent = (props, context) => {
+  const { act, data } = useBackend(context);
   const {
     isViewer,
     integrity,
@@ -132,14 +194,6 @@ const SharedContent = (props, context) => {
     shipInfo = [],
     otherInfo = [],
   } = data;
-  console.log(
-    'SharedContent shipInfo:',
-    shipInfo,
-    'type:',
-    typeof shipInfo,
-    'isArray:',
-    Array.isArray(shipInfo),
-  );
 
   // Calculate the base integrity (capped at 100) and the maxValue for the bar
   const baseIntegrity = Math.min(integrity, 100);
@@ -401,19 +455,6 @@ const ShipContent = (props, context) => {
                 </Table.Cell>
               </Table.Row>
             ))}
-
-          {/* Commenting out for now // <Table.Row>
-            <Table.Cell>Est burn:</Table.Cell>
-            <Table.Cell>
-              <AnimatedNumber
-                value={
-                  600 / (1 / (shipInfo.est_thrust / (shipInfo.mass * 100)))
-                }
-                format={(value) => Math.round(value * 10) / 10}
-              />
-              spM/burn
-            </Table.Cell>
-          </Table.Row> */}
         </Table>
       </Section>
     </>
@@ -423,8 +464,10 @@ const ShipContent = (props, context) => {
 // Arrow directional controls
 const ShipControlContent = (props, context) => {
   const { act, data } = useBackend(context);
-  const { calibrating, shipDisabled } = data;
+  const { calibrating, shipDisabled, canThrust } = data;
   const flyable = data.state === 'flying' && !shipDisabled;
+  const canMove = flyable && canThrust;
+
   //  DIRECTIONS const idea from Lyra as part of their Haven-Urist project
   const DIRECTIONS = {
     north: 1,
@@ -443,6 +486,9 @@ const ShipControlContent = (props, context) => {
       )}
       {data.state === 'idle' && !shipDisabled && (
         <div className="NoticeBox">Ship Docked.</div>
+      )}
+      {flyable && !canThrust && (
+        <div className="NoticeBox danger">No engine power available!</div>
       )}
       <Table collapsing>
         <Table.Row height={2}>
@@ -483,7 +529,7 @@ const ShipControlContent = (props, context) => {
               icon="arrow-left"
               iconRotation={45}
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.northwest,
@@ -495,7 +541,7 @@ const ShipControlContent = (props, context) => {
             <Button
               icon="arrow-up"
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.north,
@@ -508,7 +554,7 @@ const ShipControlContent = (props, context) => {
               icon="arrow-right"
               iconRotation={-45}
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.northeast,
@@ -522,7 +568,7 @@ const ShipControlContent = (props, context) => {
             <Button
               icon="arrow-left"
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.west,
@@ -543,7 +589,7 @@ const ShipControlContent = (props, context) => {
             <Button
               icon="arrow-right"
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.east,
@@ -558,7 +604,7 @@ const ShipControlContent = (props, context) => {
               icon="arrow-left"
               iconRotation={-45}
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.southwest,
@@ -570,7 +616,7 @@ const ShipControlContent = (props, context) => {
             <Button
               icon="arrow-down"
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.south,
@@ -583,7 +629,7 @@ const ShipControlContent = (props, context) => {
               icon="arrow-right"
               iconRotation={45}
               mb={1}
-              disabled={!flyable}
+              disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
                   dir: DIRECTIONS.southeast,
@@ -658,6 +704,17 @@ const CrashRepairScreen = (props) => {
               {repairProgress}%
             </span>
           </ProgressBar>
+        </Stack.Item>
+        <Stack.Item>
+          <div
+            style={{
+              fontSize: '12px',
+              color: '#666666',
+              marginTop: '20px',
+            }}
+          >
+            Rebuild hull structure to 65% integrity to restore systems
+          </div>
         </Stack.Item>
       </Stack>
     </Section>

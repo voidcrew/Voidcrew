@@ -404,6 +404,7 @@ SUBSYSTEM_DEF(overmap)
 	var/datum/map_generator/mapgen
 	var/area/target_area
 	var/datum/weather/weather_controller_type
+	var/weather_trait
 	var/datum/planet/planet_template
 	if(!isnull(planet_type))
 		planet_type = new planet_type
@@ -412,6 +413,7 @@ SUBSYSTEM_DEF(overmap)
 			mapgen = new planet_type.mapgen
 		target_area = planet_type.target_area
 		weather_controller_type = planet_type.weather_controller_type
+		weather_trait = planet_type.weather_trait
 		if(!(isnull(planet_type.planet_template)))
 			planet_template = new planet_type.planet_template
 		qdel(planet_type)
@@ -426,6 +428,9 @@ SUBSYSTEM_DEF(overmap)
 	var/datum/space_level/zlevel
 	// ZTRAIT_LINKAGE = UNAFFECTED disables space transitions so construction is allowed
 	var/list/zlevel_traits = list(ZTRAIT_MINING = TRUE, ZTRAIT_LINKAGE = UNAFFECTED)
+	if(weather_trait)
+		zlevel_traits[weather_trait] = TRUE
+
 	if(isnull(mapzone))
 		mapzone = create_map_zone(encounter_name)
 		zlevel = SSmapping.add_new_zlevel(encounter_name, zlevel_traits)
@@ -433,6 +438,9 @@ SUBSYSTEM_DEF(overmap)
 	else
 		if(mapzone.z_levels[1])
 			zlevel = mapzone.z_levels[1]
+			// Add weather trait to existing z-level if needed
+			if(weather_trait)
+				SSmapping.z_trait_levels[weather_trait] += list(zlevel.z_value)
 		else
 			zlevel = SSmapping.add_new_zlevel(encounter_name, zlevel_traits)
 			mapzone.add_space_level(zlevel)

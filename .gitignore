@@ -123,6 +123,8 @@ celerybeat-schedule
 # Rope project settings
 .ropeproject
 
+dbconfig.txt
+.vscode/
 
 ### https://raw.github.com/github/gitignore/cc542de017c606138a87ee4880e5f06b3a306def/Global/Windows.gitignore
 
@@ -146,6 +148,7 @@ $RECYCLE.BIN/
 .AppleDouble
 .LSOverride
 
+docs/
 # Icon must end with two \r
 Icon
 
@@ -254,3 +257,5 @@ define_sanity_output.txt
 # Running OpenDream locally
 tgstation.json
 rust_g64.dll
+
+.vscode
