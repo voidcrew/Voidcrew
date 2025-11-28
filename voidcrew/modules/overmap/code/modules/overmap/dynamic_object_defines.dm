@@ -74,6 +74,12 @@
 	remove_mapzone()
 	qdel(src)
 
+/obj/structure/overmap/planet/empty/remove_mapzone()
+	if(mapzone)
+		mapzone.clear_to_uninitialized_space()
+		mapzone.taken = FALSE
+		mapzone = null
+
 
 /area/overmap_encounter
 	name = "\improper Overmap Encounter"
