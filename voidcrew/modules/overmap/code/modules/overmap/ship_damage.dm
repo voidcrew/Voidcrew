@@ -16,6 +16,8 @@
 	COOLDOWN_DECLARE(hazard_damage_cooldown)
 	/// Whether ship integrity has been initialized from mass
 	var/integrity_initialized = FALSE
+	/// Bonus turfs added through ship expansion (shows as dark green overhealth)
+	var/overhealth = 0
 
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
@@ -61,9 +63,17 @@
 /**
  * Returns the current integrity as a percentage for UI display
  * Shows actual turf percentage - ship crashes at 50%
+ * Can exceed 100% if ship has been expanded (overhealth)
  */
 /obj/structure/overmap/ship/proc/get_integrity_percent()
-	return round((integrity / max_integrity) * 100)
+	return round(((integrity + overhealth) / max_integrity) * 100)
+
+/**
+ * Returns just the overhealth portion as a percentage
+ * Used by UI to show the dark green overhealth bar
+ */
+/obj/structure/overmap/ship/proc/get_overhealth_percent()
+	return round((overhealth / max_integrity) * 100)
 
 /**
  * Called when ship integrity reaches 0

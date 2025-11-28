@@ -119,8 +119,14 @@ const SharedContent = (props, context) => {
   console.log('SharedContent called, context:', context);
   const { act, data } = useBackend(context);
   console.log('SharedContent data:', data);
-  const { isViewer, integrity, shipInfo = [], otherInfo = [] } = data;
+  const { isViewer, integrity, overhealth = 0, shipInfo = [], otherInfo = [] } = data;
   console.log('SharedContent shipInfo:', shipInfo, 'type:', typeof shipInfo, 'isArray:', Array.isArray(shipInfo));
+
+  // Calculate the base integrity (capped at 100) and the maxValue for the bar
+  const baseIntegrity = Math.min(integrity, 100);
+  const totalIntegrity = integrity; // This can be > 100 with overhealth
+  const maxBarValue = Math.max(100, totalIntegrity);
+
   return (
     <Section
       title={
@@ -148,15 +154,7 @@ const SharedContent = (props, context) => {
       <LabeledList>
         <LabeledList.Item label="Class">{shipInfo.class}</LabeledList.Item>
         <LabeledList.Item label="Integrity">
-          <ProgressBar
-            ranges={{
-              good: [51, 100],
-              average: [26, 50],
-              bad: [0, 25],
-            }}
-            maxValue={100}
-            value={integrity}
-          />
+          <IntegrityBar integrity={integrity} overhealth={overhealth} />
         </LabeledList.Item>
         <LabeledList.Item label="Sensor Range">
           <ProgressBar value={shipInfo.sensor_range} minValue={1} maxValue={8}>
@@ -170,6 +168,74 @@ const SharedContent = (props, context) => {
         )}
       </LabeledList>
     </Section>
+  );
+};
+
+// Custom integrity bar that shows overhealth as dark green
+const IntegrityBar = (props) => {
+  const { integrity, overhealth = 0 } = props;
+
+  // Base integrity is capped at 100%
+  const baseIntegrity = Math.min(integrity - overhealth, 100);
+  const totalIntegrity = integrity;
+
+  // Determine bar color based on base integrity
+  let barColor = 'good';
+  if (baseIntegrity <= 25) {
+    barColor = 'bad';
+  } else if (baseIntegrity <= 50) {
+    barColor = 'average';
+  }
+
+  // If we have overhealth, show a stacked bar
+  if (overhealth > 0) {
+    const maxValue = totalIntegrity;
+    return (
+      <div style={{ position: 'relative', width: '100%' }}>
+        {/* Background bar for total width */}
+        <ProgressBar
+          value={totalIntegrity}
+          maxValue={maxValue}
+          color="transparent"
+        >
+          {/* Stacked bars inside */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            height: '100%',
+            width: `${(baseIntegrity / maxValue) * 100}%`,
+            backgroundColor: barColor === 'bad' ? '#bd2020' : barColor === 'average' ? '#d9b804' : '#20b142',
+            transition: 'width 0.5s ease'
+          }} />
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: `${(baseIntegrity / maxValue) * 100}%`,
+            height: '100%',
+            width: `${(overhealth / maxValue) * 100}%`,
+            backgroundColor: '#0d5c1a', // Dark green for overhealth
+            transition: 'width 0.5s ease'
+          }} />
+          <span style={{ position: 'relative', zIndex: 1 }}>
+            {totalIntegrity}%
+          </span>
+        </ProgressBar>
+      </div>
+    );
+  }
+
+  // No overhealth, use standard progress bar
+  return (
+    <ProgressBar
+      ranges={{
+        good: [51, 100],
+        average: [26, 50],
+        bad: [0, 25],
+      }}
+      maxValue={100}
+      value={baseIntegrity}
+    />
   );
 };
 
