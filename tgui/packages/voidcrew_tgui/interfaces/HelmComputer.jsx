@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useBackend } from '../../tgui/backend';
+import { useState } from 'react';
 import {
   AnimatedNumber,
   Button,
   ByondUi,
+  Input,
   LabeledList,
   ProgressBar,
   Section,
@@ -60,6 +62,10 @@ export const HelmComputer = (props, context) => {
                 <Stack vertical>
                   <Stack.Item>
                     <ShipControlContent />
+                  </Stack.Item>
+
+                  <Stack.Item>
+                    <BroadcastSection />
                   </Stack.Item>
 
                   <Stack.Item>
@@ -126,6 +132,50 @@ const Radar = (context) => {
           </Table.Row>
         ))}
       </Table>
+    </Section>
+  );
+};
+
+const BroadcastSection = (props, context) => {
+  const { act, data } = useBackend(context);
+  const { isViewer } = data;
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+
+  const handleBroadcast = () => {
+    if (broadcastMessage && broadcastMessage.trim()) {
+      act('broadcast', { message: broadcastMessage });
+      setBroadcastMessage('');
+    }
+  };
+
+  const handleInput = (value) => {
+    setBroadcastMessage(value);
+    act('typing_sound');
+  };
+
+  return (
+    <Section title="Broadcast">
+      <Stack vertical>
+        <Stack.Item>
+          <Input
+            fluid
+            placeholder="Enter message..."
+            value={broadcastMessage}
+            disabled={isViewer}
+            onChange={handleInput}
+            onEnter={handleBroadcast}
+          />
+        </Stack.Item>
+        <Stack.Item>
+          <Button
+            fluid
+            icon="broadcast-tower"
+            content="Broadcast"
+            disabled={isViewer || !broadcastMessage}
+            onClick={handleBroadcast}
+          />
+        </Stack.Item>
+      </Stack>
     </Section>
   );
 };
