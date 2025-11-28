@@ -30,28 +30,13 @@
 	log_admin("DEBUG VOX: on_damage_threshold called - threshold=[threshold], display_percent=[display_percent]")
 
 	switch(threshold)
-		if(SHIP_THRESHOLD_MINOR)
-			ship_announce("Minor hull damage detected. Integrity at [display_percent]%.", "Damage Report")
-			play_ship_vox(list("attention", "minor", "damage", "detected"))
-
-		if(SHIP_THRESHOLD_MODERATE)
-			ship_announce("Moderate hull damage sustained. Integrity at [display_percent]%.", "Damage Alert")
-			play_ship_vox(list("warning", "damage", "report", "condition", "yellow"))
-
 		if(SHIP_THRESHOLD_SERIOUS)
-			ship_announce("WARNING: Serious hull damage! Integrity at [display_percent]%.", "Hull Warning")
-			play_ship_vox(list("alert", "severe", "damage", "condition", "red"))
-			shake_ship(10, 2)
-
-		if(SHIP_THRESHOLD_CRITICAL)
-			ship_announce("CRITICAL: Hull integrity failing! Integrity at [display_percent]%! Seek immediate repairs!", "Critical Alert")
-			play_ship_vox(list("critical", "critical", "system", "failure", "immediate", "repair", "required"))
-			shake_ship(20, 3)
+			play_ship_sound('sound/machines/engine_alert/engine_alert1.ogg')
+			ship_announce("Hull damage detected. [display_percent]% integrity remaining.", "WARNING", FALSE, null)
 
 		if(SHIP_THRESHOLD_EMERGENCY)
-			ship_announce("EMERGENCY: Hull breach imminent! Integrity at [display_percent]%! All hands brace for impact!", "EMERGENCY")
-			play_ship_vox(list("emergency", "emergency", "evacuate", "evacuate"))
-			shake_ship(25, 4)
+			play_ship_sound('sound/machines/engine_alert/engine_alert1.ogg')
+			play_ship_vox(list("alert", "critical", "damage"))
 
 /**
  * Returns the current integrity as a percentage for UI display
@@ -67,6 +52,14 @@
  */
 /obj/structure/overmap/ship/proc/get_overhealth_percent()
 	return round((overhealth / max_integrity) * 100)
+
+/**
+ * Called when ship integrity is restored above 50% after a crash
+ * Plays boot up sound and announces recovery
+ */
+/obj/structure/overmap/ship/proc/on_ship_recovered()
+	play_ship_sound('sound/machines/computer/computer_start.ogg', 45)
+	ship_announce("Hull integrity restored. Ship systems operational.", "Systems Online")
 
 /**
  * Called when ship integrity reaches 0
@@ -85,10 +78,8 @@
 		deltimer(movement_callback_id)
 		movement_callback_id = null
 
-	ship_announce("CATASTROPHIC FAILURE: All systems offline! Hull integrity critical!", "MAYDAY", TRUE, 'sound/machines/warning-buzzer.ogg')
-
 	// Cascade failures - fires, explosions, EMPs throughout the ship
-	var/failure_count = rand(8, 15)
+	var/failure_count = rand(5, 10)
 	for(var/i in 1 to failure_count)
 		var/turf/target = get_random_ship_turf()
 		if(!target)
@@ -98,17 +89,9 @@
 			if(1) // Fire
 				new /obj/effect/hotspot(target)
 			if(2) // Explosion
-				explosion(target, light_impact_range = 1, flash_range = 2, adminlog = FALSE)
+				explosion(target, 0, 0, light_impact_range = 4, flash_range = 1, adminlog = FALSE)
 			if(3) // Sparks
 				do_sparks(5, FALSE, target)
-
-		playsound(target, 'sound/effects/bang.ogg', 50, TRUE)
-
-	// Shake everyone violently and knock them down
-	for(var/mob/living/crew_member in get_all_ship_mobs())
-		shake_camera(crew_member, 30, 5)
-		crew_member.Knockdown(5 SECONDS)
-		to_chat(crew_member, span_userdanger("The ship shudders violently as critical systems fail!"))
 
 	// Dock into a "crashed ship" location so others can find and help/raid
 	crash_land()
@@ -160,7 +143,54 @@
 
 	shuttle.port_destinations = dock_to_use
 	crash_site.adjust_dock_to_shuttle(dock_to_use, shuttle)
+
+	// Register for dock completion signal - effects happen the instant we land
+	RegisterSignal(src, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_crash_dock_complete))
+
 	dock(crash_site, dock_to_use)
+
+/**
+ * Signal handler - crash effects the instant docking completes
+ */
+/obj/structure/overmap/ship/proc/on_crash_dock_complete(datum/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(src, COMSIG_VOIDCREW_SHIP_DOCKED)
+
+	// Play explosion sound to all crew
+	play_ship_sound('sound/effects/explosion/explosioncreak1.ogg', 100)
+
+	// Violent shake
+	shake_ship(30, 5)
+
+	// Shake everyone violently and knock them down
+	for(var/mob/living/crew_member in get_all_ship_mobs())
+		shake_camera(crew_member, 30, 5)
+		crew_member.Knockdown(5 SECONDS)
+		to_chat(crew_member, span_userdanger("The ship shudders violently as critical systems fail!"))
+
+	// Disable all machinery on the ship for 30 seconds
+	var/list/disabled_machines = list()
+	for(var/area/ship_area as anything in shuttle.shuttle_areas)
+		for(var/obj/machinery/M in ship_area)
+			if(M.machine_stat & EMPED)
+				continue // Already disabled
+			M.set_machine_stat(M.machine_stat | EMPED)
+			disabled_machines += M
+
+	// Re-enable machinery after 30 seconds
+	if(length(disabled_machines))
+		addtimer(CALLBACK(src, PROC_REF(restore_ship_systems), disabled_machines), 30 SECONDS)
+
+/**
+ * Restores ship systems after crash landing
+ */
+/obj/structure/overmap/ship/proc/restore_ship_systems(list/machines)
+	for(var/obj/machinery/M as anything in machines)
+		if(QDELETED(M))
+			continue
+		M.set_machine_stat(M.machine_stat & ~EMPED)
+
+	ship_announce("Emergency systems restored. Ship systems coming back online.", "Systems Restored")
 
 /**
  * Called when the ship enters a tile - checks for hazards
