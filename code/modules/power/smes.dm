@@ -70,6 +70,13 @@
 	terminal.master = src
 	update_appearance(UPDATE_OVERLAYS)
 
+	// Connect to powernet if there's a cable under us
+	if(!powernet)
+		var/obj/structure/cable/C = locate() in loc
+		if(!QDELETED(C))
+			cable_layer = C.cable_layer
+			connect_to_network()
+
 /obj/machinery/power/smes/on_construction(mob/user)
 	var/obj/structure/cable/C = locate() in loc
 	if(!QDELETED(C))
