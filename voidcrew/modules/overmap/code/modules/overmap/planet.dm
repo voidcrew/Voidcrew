@@ -30,6 +30,10 @@
   * * visiting shuttle - The docking port of the shuttle visiting the level.
   */
 /obj/structure/overmap/planet/proc/load_level()
+	// If mapzone exists but docks don't (pre-configured planets), create docks
+	if(mapzone && !reserve_dock)
+		create_docking_ports()
+		return
 	if(mapzone)
 		return
 	if(loading)
@@ -42,6 +46,46 @@
 	loaded = TRUE
 	loading = FALSE
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADED, TRUE)
+
+/**
+  * Creates docking ports for an existing mapzone that doesn't have them.
+  * Used for pre-configured planets that have z-levels but no docking ports.
+  */
+/obj/structure/overmap/planet/proc/create_docking_ports()
+	if(!mapzone || !length(mapzone.z_levels))
+		return
+	var/datum/space_level/zlevel = mapzone.z_levels[1]
+	if(!zlevel)
+		return
+
+	// locates the first dock in the bottom left, accounting for padding and the border
+	var/turf/primary_docking_turf = locate(
+		zlevel.low_x + RESERVE_DOCK_DEFAULT_PADDING + 1,
+		zlevel.low_y + RESERVE_DOCK_DEFAULT_PADDING + 1,
+		zlevel.z_value
+	)
+	// now we need to offset to account for the first dock
+	var/turf/secondary_docking_turf = locate(
+		primary_docking_turf.x + RESERVE_DOCK_MAX_SIZE_LONG + RESERVE_DOCK_DEFAULT_PADDING,
+		primary_docking_turf.y,
+		primary_docking_turf.z
+	)
+
+	reserve_dock = new /obj/docking_port/stationary(primary_docking_turf)
+	reserve_dock.dir = NORTH
+	reserve_dock.name = "\improper Uncharted Space"
+	reserve_dock.height = RESERVE_DOCK_MAX_SIZE_SHORT
+	reserve_dock.width = RESERVE_DOCK_MAX_SIZE_LONG
+	reserve_dock.dheight = 0
+	reserve_dock.dwidth = 0
+
+	reserve_dock_secondary = new /obj/docking_port/stationary(secondary_docking_turf)
+	reserve_dock_secondary.dir = NORTH
+	reserve_dock_secondary.name = "\improper Uncharted Space"
+	reserve_dock_secondary.height = RESERVE_DOCK_MAX_SIZE_SHORT
+	reserve_dock_secondary.width = RESERVE_DOCK_MAX_SIZE_LONG
+	reserve_dock_secondary.dheight = 0
+	reserve_dock_secondary.dwidth = 0
 
 /obj/structure/overmap/planet/attack_ghost(mob/user)
 	if(reserve_dock)
