@@ -610,32 +610,14 @@
 		CreateEye()
 	if(!eyeobj) //Eye creation failed
 		return
-	if(!eyeobj)
-		var/camera_location
-		var/turf/myturf = docking_location
-		if(eyeobj.use_visibility != FALSE)
-			if((!length(z_lock) || (myturf.z in z_lock)) && GLOB.cameranet.checkTurfVis(myturf))
-				camera_location = myturf
-			else
-				for(var/obj/machinery/camera/C as anything in GLOB.cameranet.cameras)
-					if(!C.can_use() || length(z_lock) && !(C.z in z_lock))
-						continue
-					var/list/network_overlap = networks & C.network
-					if(length(network_overlap))
-						camera_location = get_turf(C)
-						break
-		else
-			camera_location = myturf
-			if(length(z_lock) && !(myturf.z in z_lock))
-				camera_location = locate(round(world.maxx/2), round(world.maxy/2), z_lock[1])
-		if(camera_location)
-			give_eye_control(L)
-			eyeobj.setLoc(camera_location)
-		else
-			unset_machine()
-	else
-		give_eye_control(L)
-		eyeobj.setLoc(eyeobj.loc)
+
+	// Use the docking_location set by refresh() for camera placement
+	var/turf/camera_location = docking_location
+	if(!camera_location)
+		camera_location = eyeobj.loc
+
+	give_eye_control(L)
+	eyeobj.setLoc(camera_location)
 	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(docked))
 	RegisterSignal(ship_port.current_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(undocked))
 
@@ -988,5 +970,13 @@
 		if (!planet || isnull(planet))
 			remove_old_ports()
 			return
-		var/datum/space_level/lvl = planet.mapzone.z_levels[1]
-		docking_location = locate(1, 1, lvl.z_value)
+		// Ensure planet has docking ports created
+		planet.load_level()
+		if(!planet.mapzone)
+			return
+		// Use the reserve dock location for camera placement
+		if(planet.reserve_dock)
+			docking_location = get_turf(planet.reserve_dock)
+		else
+			var/datum/space_level/lvl = planet.mapzone.z_levels[1]
+			docking_location = locate(1, 1, lvl.z_value)
