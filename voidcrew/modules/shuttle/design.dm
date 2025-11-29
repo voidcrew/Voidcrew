@@ -26,6 +26,16 @@
 	id = "engine_expulsion"
 	build_path = /obj/item/circuitboard/machine/engine/expulsion
 
+/datum/design/board/shuttle/heater
+	name = "Machine Design (Fueled Engine Heater Board)"
+	desc = "The circuit board for a fueled engine heater."
+	id = "shuttle_heater"
+	build_path = /obj/item/circuitboard/machine/shuttle/heater
+	category = list(
+		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+
 /datum/design/board/shuttle/shuttle_helm
 	name = "Computer Design (Shuttle Helm Console)"
 	desc = "Allows for the construction of circuit boards used to pilot a spacecraft."
