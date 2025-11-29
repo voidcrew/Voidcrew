@@ -23,6 +23,7 @@
 	max_integrity = 400
 	armor = list("melee" = 0, "bullet" = 0, "laser" = 0, "energy" = 100, "bomb" = 0, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 30)
 	layer = OBJ_LAYER
+	move_resist = MOVE_RESIST_DEFAULT
 	//showpipe = TRUE // TODO: Fix showpipe
 
 	pipe_flags = PIPING_ONE_PER_TURF | PIPING_DEFAULT_LAYER_ONLY
@@ -35,11 +36,11 @@
 	var/obj/item/tank/fuel_tank
 	var/datum/gas_mixture/air
 
-/obj/machinery/atmospherics/components/unary/shuttle/heater/New()
+/obj/machinery/atmospherics/components/unary/shuttle/heater/Initialize(mapload)
+	initialize_directions = dir // Set pipe direction before parent reads it
 	. = ..()
-	set_init_directions()
+	RefreshParts() // Ensure gas_capacity is set and airs[1] is properly configured
 	update_adjacent_engines()
-	update_gas_stats()
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/Destroy()
 	. = ..()
@@ -138,25 +139,45 @@
 		air_contents.gases[gas_type][MOLES] = clamp(air_contents.gases[gas_type][MOLES] + -amount,0,INFINITY)
 		return min(starting_amt, amount)
 
+/obj/machinery/atmospherics/components/unary/shuttle/heater/screwdriver_act(mob/living/user, obj/item/tool)
+	if(default_deconstruction_screwdriver(user, icon_state_open, icon_state_closed, tool))
+		return ITEM_INTERACT_SUCCESS
+
+/obj/machinery/atmospherics/components/unary/shuttle/heater/wrench_act(mob/living/user, obj/item/tool)
+	if(!panel_open)
+		balloon_alert(user, "open panel first!")
+		return ITEM_INTERACT_SUCCESS
+	var/result = default_unfasten_wrench(user, tool)
+	if(result == SUCCESSFUL_UNFASTEN)
+		change_pipe_connection(!anchored)
+	if(result)
+		return ITEM_INTERACT_SUCCESS
+	return ITEM_INTERACT_BLOCKING
+
+/obj/machinery/atmospherics/components/unary/shuttle/heater/wrench_act_secondary(mob/living/user, obj/item/tool)
+	if(!panel_open)
+		balloon_alert(user, "open panel first!")
+		return ITEM_INTERACT_SUCCESS
+	if(default_change_direction_wrench(user, tool))
+		return ITEM_INTERACT_SUCCESS
+	return ITEM_INTERACT_BLOCKING
+
+/obj/machinery/atmospherics/components/unary/shuttle/heater/crowbar_act(mob/living/user, obj/item/tool)
+	if(default_pry_open(tool))
+		return ITEM_INTERACT_SUCCESS
+	if(default_deconstruction_crowbar(tool))
+		return ITEM_INTERACT_SUCCESS
+
 /obj/machinery/atmospherics/components/unary/shuttle/heater/attackby(obj/item/I, mob/living/user, params)
 	update_adjacent_engines()
-	if(default_deconstruction_screwdriver(user, icon_state_open, icon_state_closed, I))
-		return
-	if(default_pry_open(I))
-		return
-	if(panel_open)
-		if(default_change_direction_wrench(user, I))
-			return
-	if(default_deconstruction_crowbar(I))
-		return
 	if(istype(I, /obj/item/tank/internals))
 		if (fuel_tank)
 			try_put_in_hand(fuel_tank, user)
 			fuel_tank = null
 		user.transferItemToLoc(I, src)
 		fuel_tank = I
-	else
-		return ..()
+		return
+	return ..()
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/click_alt(mob/living/L)
 	. = ..()
@@ -186,4 +207,4 @@
 /obj/machinery/atmospherics/components/unary/shuttle/heater/tank/Initialize()
 	. = ..()
 	fuel_tank = new /obj/item/tank/internals/plasma/full(src)
-	use_tank = TRUE
+	// Defaults to atmos mode; alt-click to switch to the included tank

@@ -29,6 +29,12 @@
 	var/calibrating = FALSE
 	///holding jump timer ID
 	var/jump_timer
+	/// Last known ship state for detecting changes
+	var/last_ship_state
+	/// Last known integrity percent for threshold detection
+	var/last_integrity_percent = 100
+	/// Whether we've played the 55% alert already
+	var/played_55_alert = FALSE
 
 /obj/machinery/computer/helm/viewscreen
 	name = "ship viewscreen"
@@ -46,15 +52,18 @@
 		return FALSE
 
 	ui = SStgui.try_update_ui(user, src, ui)
-	current_ship.update_screen()
-
 	if(!ui)
-		current_ship.cam_screen.display_to(user)
-		user.client.register_map_obj(current_ship.cam_screen)
-		user.client.register_map_obj(current_ship.cam_background)
-
 		ui = new(user, src, "HelmComputer", name)
 		ui.open()
+		ui.set_autoupdate(TRUE) // Enable continuous UI updates
+		// Register map after UI opens, passing window so it waits for visibility
+		current_ship.cam_screen.display_to(user, ui.window)
+	else
+		// For existing UI, just refresh the display
+		current_ship.cam_screen.display_to(user)
+
+	// Update screen content after display registration
+	current_ship.update_screen()
 
 /obj/machinery/computer/helm/ui_close(mob/user)
 	. = ..()
@@ -84,16 +93,36 @@
 			current_ship.reset_thrust()
 */
 /obj/machinery/computer/helm/ui_data(mob/user)
-	var/list/data = list()
+	// var/list/data = list()
+	var/list/data = ..()
 
 	data["thrust"] = current_ship.calculate_thrust()
-	data["integrity"] = current_ship.integrity
+	data["integrity"] = current_ship.get_integrity_percent()
+	data["overhealth"] = current_ship.get_overhealth_percent()
+
+	// Calculate raw integrity for crash state checks
+	var/raw_percent = round((current_ship.integrity / current_ship.max_integrity) * 100)
+	data["shipDisabled"] = raw_percent <= 50
+	data["shipCrashed"] = current_ship.has_crash_landed && raw_percent < 65
+
+	// Repair progress: 0% at 50 raw, 100% at 65 raw
+	if(data["shipCrashed"])
+		data["repairProgress"] = clamp(round((raw_percent - 50) / 15 * 100), 0, 100)
+	else
+		data["repairProgress"] = 100
+
 	data["calibrating"] = calibrating
+	data["canThrust"] = current_ship.can_thrust()
 	data["otherInfo"] = list()
 	for (var/obj/structure/overmap/object as anything in current_ship.close_overmap_objects)
+		var/other_integrity = object.integrity
+		// For ships, use percentage-based integrity
+		if(istype(object, /obj/structure/overmap/ship))
+			var/obj/structure/overmap/ship/other_ship = object
+			other_integrity = other_ship.get_integrity_percent()
 		var/list/other_data = list(
 			name = object.name,
-			integrity = object.integrity,
+			integrity = other_integrity,
 			ref = REF(object)
 		)
 		data["otherInfo"] += list(other_data)
@@ -199,13 +228,15 @@
 /obj/machinery/computer/helm/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
 	if(!istype(port))
 		return
-	current_ship = port.current_ship
+	set_current_ship(port.current_ship)
 
 /**
  * This proc manually rechecks that the helm computer is connected to a proper ship
  */
 /obj/machinery/computer/helm/proc/attempt_ship_connection(last_resort = FALSE)
 	if(current_ship && current_ship.shuttle.z == z)
+		// Already connected, but ensure signal is registered
+		RegisterSignal(current_ship, COMSIG_SHIP_INTEGRITY_CHANGED, PROC_REF(on_ship_integrity_changed), override = TRUE)
 		return TRUE
 
 	var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(src)
@@ -215,8 +246,40 @@
 	if(!port && last_resort) // todo: check for helm being constructed, damn those players
 		stack_trace("Failed to connect a helm to its ship, this is almost certainly a bug!")
 
-	current_ship = port?.current_ship
+	set_current_ship(port?.current_ship)
 	return !!current_ship
+
+/**
+ * Sets the current ship and registers signal listeners
+ */
+/obj/machinery/computer/helm/proc/set_current_ship(obj/structure/overmap/ship/new_ship)
+	// Unregister from old ship
+	if(current_ship)
+		UnregisterSignal(current_ship, COMSIG_SHIP_INTEGRITY_CHANGED)
+
+	current_ship = new_ship
+
+	// Register to new ship for auto UI updates
+	if(current_ship)
+		RegisterSignal(current_ship, COMSIG_SHIP_INTEGRITY_CHANGED, PROC_REF(on_ship_integrity_changed))
+
+/**
+ * Signal handler - refreshes UI when ship integrity changes
+ */
+/obj/machinery/computer/helm/proc/on_ship_integrity_changed(datum/source, new_integrity, max_integrity, display_percent)
+	SIGNAL_HANDLER
+	SStgui.update_uis(src)
+
+	// Play alert sound when crossing 55% threshold (going down)
+	if(last_integrity_percent > 55 && display_percent <= 55 && !played_55_alert)
+		played_55_alert = TRUE
+		playsound(src, 'sound/effects/alert.ogg', 75, FALSE)
+
+	// Reset the alert flag if we repair above 55%
+	if(display_percent > 55)
+		played_55_alert = FALSE
+
+	last_integrity_percent = display_percent
 
 /**
  * This proc manually rechecks that the helm computer is connected to a proper ship
@@ -263,11 +326,29 @@
 			*/
 		if("reload_ship")
 			reload_ship()
+			current_ship.calculate_mass() // Refresh health based on current turfs
 			update_static_data(usr, ui)
 			return
 		if("reload_engines")
 			current_ship.refresh_engines()
 			return
+		if("typing_sound")
+			playsound(src, pick('sound/machines/terminal/terminal_button01.ogg', 'sound/machines/terminal/terminal_button02.ogg', 'sound/machines/terminal/terminal_button03.ogg', 'sound/machines/terminal/terminal_button04.ogg', 'sound/machines/terminal/terminal_button05.ogg', 'sound/machines/terminal/terminal_button06.ogg', 'sound/machines/terminal/terminal_button07.ogg', 'sound/machines/terminal/terminal_button08.ogg'), 10, TRUE)
+			return
+		if("broadcast")
+			var/message = params["message"]
+			if(!message)
+				return
+			message = trim(message)
+			if(!length(message))
+				return
+			current_ship.ship_broadcast_runechat(message)
+			return
+
+	// Prevent operation if ship is destroyed (at or below 50% integrity)
+	if(current_ship.get_integrity_percent() <= 50)
+		say("ERROR: Hull integrity critical. All systems offline.")
+		return
 
 	switch(current_ship.state) // Ship state-limited topics
 		if(OVERMAP_SHIP_FLYING)
@@ -301,7 +382,7 @@
 				if("dock_empty")
 					if(length(current_ship.close_overmap_objects))
 						for(var/obj/structure/overmap/o in current_ship.close_overmap_objects)
-							if(!istype(o, /obj/structure/overmap/planet/empty) || !istype(o, /obj/structure/overmap/ship))
+							if(!istype(o, /obj/structure/overmap/planet/empty) && !istype(o, /obj/structure/overmap/ship))
 								playsound(src, 'sound/machines/terminal/terminal_error.ogg', 20)
 								balloon_alert(usr, "something is in the way!")
 								return

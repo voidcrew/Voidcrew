@@ -13,9 +13,9 @@ voidcrew TODO:
 
 SUBSYSTEM_DEF(overmap)
 	name = "Overmap"
-	wait = 10
+	wait = 10 // Fires every 1 second (10 deciseconds)
 	init_order = INIT_ORDER_OVERMAP
-	flags = SS_NO_FIRE
+	flags = NONE
 	runlevels = RUNLEVEL_SETUP | RUNLEVEL_GAME
 	dependencies = list(
 		/datum/controller/subsystem/mapping,
@@ -53,6 +53,18 @@ SUBSYSTEM_DEF(overmap)
 	spawn_initial_ship()
 
 	return SS_INIT_SUCCESS
+
+/**
+ * Called every tick (1 second) - updates all ship integrity calculations
+ * This ensures ship health is always current and triggers UI updates via signals
+ */
+/datum/controller/subsystem/overmap/fire(resumed)
+	for(var/obj/structure/overmap/ship/ship as anything in simulated_ships)
+		if(QDELETED(ship))
+			simulated_ships -= ship
+			continue
+		ship.calculate_mass()
+
 /*
  * Bluespace jump procs
  */
@@ -392,6 +404,7 @@ SUBSYSTEM_DEF(overmap)
 	var/datum/map_generator/mapgen
 	var/area/target_area
 	var/datum/weather/weather_controller_type
+	var/weather_trait
 	var/datum/planet/planet_template
 	if(!isnull(planet_type))
 		planet_type = new planet_type
@@ -400,6 +413,7 @@ SUBSYSTEM_DEF(overmap)
 			mapgen = new planet_type.mapgen
 		target_area = planet_type.target_area
 		weather_controller_type = planet_type.weather_controller_type
+		weather_trait = planet_type.weather_trait
 		if(!(isnull(planet_type.planet_template)))
 			planet_template = new planet_type.planet_template
 		qdel(planet_type)
@@ -412,15 +426,23 @@ SUBSYSTEM_DEF(overmap)
 	var/encounter_name = "Dynamic Overmap Encounter"
 	var/datum/map_zone/mapzone = find_free_mapzone()
 	var/datum/space_level/zlevel
+	// ZTRAIT_LINKAGE = UNAFFECTED disables space transitions so construction is allowed
+	var/list/zlevel_traits = list(ZTRAIT_MINING = TRUE, ZTRAIT_LINKAGE = UNAFFECTED)
+	if(weather_trait)
+		zlevel_traits[weather_trait] = TRUE
+
 	if(isnull(mapzone))
 		mapzone = create_map_zone(encounter_name)
-		zlevel = SSmapping.add_new_zlevel(encounter_name, list(ZTRAIT_MINING = TRUE))
+		zlevel = SSmapping.add_new_zlevel(encounter_name, zlevel_traits)
 		mapzone.add_space_level(zlevel)
 	else
 		if(mapzone.z_levels[1])
 			zlevel = mapzone.z_levels[1]
+			// Add weather trait to existing z-level if needed
+			if(weather_trait)
+				SSmapping.z_trait_levels[weather_trait] += list(zlevel.z_value)
 		else
-			zlevel = SSmapping.add_new_zlevel(encounter_name, list(ZTRAIT_MINING = TRUE))
+			zlevel = SSmapping.add_new_zlevel(encounter_name, zlevel_traits)
 			mapzone.add_space_level(zlevel)
 
 	mapzone.taken = TRUE

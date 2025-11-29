@@ -24,7 +24,7 @@
 	// This is a balancing act.
 	// Each planet will consume a significant amount of memory,
 	// so we need to be careful about how many starting planets we include
-	var/lava_planet_count = 0
+	var/lava_planet_count = 1
 	var/ice_planet_count = 0
 	var/jungle_planet_count = 0
 	var/beach_planet_count = 0
@@ -42,13 +42,13 @@
 	var/list/FailedZs = list()
 	var/z_count = 1
 	for(var/i in 1 to lava_planet_count)
-		LoadGroup(FailedZs, "Planet lava [i]", "map_files/voidcrew", "lava.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS)))
+		LoadGroup(FailedZs, "Planet lava [i]", "map_files/voidcrew", "lava.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM)))
 		z_count += 2
 		var/list/p = list(type = /datum/overmap/planet/lava, z = z_count)
 		planets += list("lava [i]" = p)
 
 	for(var/i in 1 to ice_planet_count)
-		LoadGroup(FailedZs, "Planet ice [i]", "map_files/voidcrew", "ice.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS)))
+		LoadGroup(FailedZs, "Planet ice [i]", "map_files/voidcrew", "ice.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM)))
 		z_count += 2
 		var/list/p = list(type = /datum/overmap/planet/ice, z = z_count)
 		planets += list("ice [i]" = p)
@@ -177,7 +177,19 @@
 		return
 
 	for(var/datum/map_template/shuttle/voidcrew/shuttles as anything in subtypesof(/datum/map_template/shuttle/voidcrew))
-		ship_purchase_list["[initial(shuttles.name)] ([initial(shuttles.faction_prefix)] [initial(shuttles.part_cost)] part\s)"] = shuttles
+		// Calculate rarity tier based on part cost (same logic as in ship template New())
+		var/rarity = "Common"
+		var/part_cost = initial(shuttles.part_cost)
+		if(part_cost >= 10)
+			rarity = "Legendary"
+		else if(part_cost >= 7)
+			rarity = "Epic"
+		else if(part_cost >= 5)
+			rarity = "Rare"
+		else if(part_cost >= 3)
+			rarity = "Uncommon"
+
+		ship_purchase_list["[initial(shuttles.name)] ([rarity] [part_cost] part\s)"] = shuttles
 
 		switch(initial(shuttles.faction_prefix))
 			if(NANOTRASEN_SHIP)

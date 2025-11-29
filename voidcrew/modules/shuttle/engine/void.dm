@@ -19,6 +19,6 @@
 /obj/machinery/power/shuttle_engine/ship/void/return_fuel_cap()
 	return TRUE
 
-/obj/machinery/power/shuttle_engine/ship/void/burn_engine()
+/obj/machinery/power/shuttle_engine/ship/void/burn_engine(percentage = 100, ship_mass = REFERENCE_SHIP_MASS)
 	SHOULD_CALL_PARENT(FALSE)
-	return engine_power
+	return engine_power // Void engines have infinite fuel, no mass scaling

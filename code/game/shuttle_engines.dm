@@ -4,6 +4,10 @@
 ///How long it takes to weld/unweld an engine in place.
 #define ENGINE_WELDTIME (20 SECONDS)
 
+/// Reference mass for fuel consumption scaling. Ships at this mass use base fuel amounts.
+/// Ships heavier than this use proportionally more fuel per burn.
+#define REFERENCE_SHIP_MASS 100
+
 /obj/machinery/power/shuttle_engine
 	name = "engine"
 	desc = "A bluespace engine used to make shuttles move."

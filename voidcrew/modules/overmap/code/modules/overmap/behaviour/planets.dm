@@ -21,6 +21,8 @@
 	var/turf/surface = /turf/open/space/basic
 	///Weather controller for planet specific weather
 	var/datum/weather/weather_controller_type
+	///Z-level trait for weather audio (e.g. ZTRAIT_ASHSTORM, ZTRAIT_SNOWSTORM)
+	var/weather_trait
 	///A planet template that contains a list of biomes to use
 	var/datum/planet/planet_template
 
@@ -33,7 +35,8 @@
 	mapgen = /datum/map_generator/planet_generator/lava
 	target_area = /area/overmap_encounter/planetoid/lava
 	surface = /turf/open/misc/asteroid/basalt/lava_land_surface
-	// weather_controller_type = /datum/weather/ash_storm
+	weather_controller_type = /datum/weather/ash_storm
+	weather_trait = ZTRAIT_ASHSTORM
 	planet_template = /datum/planet/lava
 
 /datum/overmap/planet/ice
@@ -45,7 +48,8 @@
 	mapgen = /datum/map_generator/planet_generator/snow
 	target_area = /area/overmap_encounter/planetoid/ice
 	surface = /turf/open/misc/asteroid/snow/icemoon
-	// weather_controller_type = /datum/weather/snow_storm
+	weather_controller_type = /datum/weather/snow_storm
+	weather_trait = ZTRAIT_SNOWSTORM
 	planet_template = /datum/planet/snow
 
 /datum/overmap/planet/beach
@@ -104,4 +108,11 @@
 	desc = "A ship appears to be docked here."
 	color = null
 	icon_state = "object"
+	spawn_rate = -1
+
+/datum/overmap/planet/crashed_ship
+	name = "Crashed Ship"
+	desc = "A distress signal is coming from this location. A ship appears to have suffered critical damage."
+	color = "#ff4444"
+	icon_state = "strange_event"
 	spawn_rate = -1

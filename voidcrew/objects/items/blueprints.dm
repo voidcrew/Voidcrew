@@ -13,11 +13,28 @@
 
 /obj/item/blueprints/shuttle/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	. = ..()
+	if(!proximity_flag)
+		return
 	if(istype(target, /obj/machinery/computer/helm))
 		var/obj/machinery/computer/helm/H = target
 		if(istype(H.current_ship, /obj/structure/overmap/ship))
 			var/obj/structure/overmap/ship/S = H.current_ship
 			target_shuttle = S.shuttle
+			playsound(src, 'sound/machines/ping.ogg', 50, TRUE)
+			to_chat(user, span_notice("Blueprints linked to [S.name]. You can now use them to expand the ship."))
+
+/obj/item/blueprints/shuttle/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	if(action == "create_area")
+		if(in_use)
+			return TRUE
+		if(!target_shuttle)
+			to_chat(ui.user, span_warning("You need to link these blueprints to a ship first. Use them on a helm console."))
+			return TRUE
+		in_use = TRUE
+		create_shuttle_area(ui.user)
+		in_use = FALSE
+		return TRUE
+	return ..()
 
 // Virtually a copy of create_area() with specialized behaviour
 /obj/item/blueprints/shuttle/proc/create_shuttle_area(mob/creator)

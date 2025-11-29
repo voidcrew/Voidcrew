@@ -27,20 +27,23 @@
 	. = ..()
 	connect_to_network()
 
-/obj/machinery/power/shuttle_engine/ship/electric/burn_engine(percentage = 100)
+/obj/machinery/power/shuttle_engine/ship/electric/burn_engine(percentage = 100, ship_mass = REFERENCE_SHIP_MASS)
 	. = ..()
-	var/true_percentage = min(newavail() / power_per_burn, percentage / 100)
-	add_delayedload(power_per_burn * true_percentage)
+	var/mass_multiplier = get_mass_fuel_multiplier(ship_mass)
+	var/power_needed = power_per_burn * (percentage / 100) * mass_multiplier
+	var/available_power = max(avail(), newavail())
+	var/true_percentage = min(available_power / power_needed, 1)
+	add_delayedload(power_needed * true_percentage)
 	return engine_power * true_percentage
 
 /obj/machinery/power/shuttle_engine/ship/electric/return_fuel()
-	if(length(powernet?.nodes) == 2)
+	if(length(powernet?.nodes) >= 1)
 		for(var/obj/machinery/power/smes/S in powernet.nodes)
-			return S.charge
-	return newavail()
+			return S.total_charge()
+	return avail()
 
 /obj/machinery/power/shuttle_engine/ship/electric/return_fuel_cap()
-	if(length(powernet?.nodes) == 2)
+	if(length(powernet?.nodes) >= 1)
 		for(var/obj/machinery/power/smes/S in powernet.nodes)
 			return S.total_capacity
 	return power_per_burn
