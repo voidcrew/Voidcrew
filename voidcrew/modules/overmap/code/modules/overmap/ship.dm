@@ -10,6 +10,7 @@
 	desc = "A spacefaring vessel."
 	icon_state = "ship"
 	base_icon_state = "ship" //Prefix of all the icons used by the ship. (ex. [base_icon_state]_moving)
+	layer = ABOVE_MOB_LAYER // Render ships above other overmap objects in popup map views
 
 	/**
 	 * Template and docking port.

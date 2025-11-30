@@ -3,6 +3,9 @@
 	desc = "An unknown celestial object."
 	icon = 'voidcrew/modules/overmap/icons/effects/overmap.dmi'
 	icon_state = "object"
+	// Disable emissive blockers - they cause visual artifacts (duplication, color inversion)
+	// when viewed through popup map views like the helm console
+	blocks_emissive = EMISSIVE_BLOCK_NONE
 
 	/// Check that someone already act with this.
 	var/concerned = FALSE

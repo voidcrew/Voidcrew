@@ -122,6 +122,8 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 			rarity_tier = "rare"
 		else if(template.part_cost >= 3)
 			rarity_tier = "uncommon"
+		else if(template.part_cost <= 0)
+			rarity_tier = "free"
 
 		// Build parts requirement list
 		var/list/parts_required = list()
@@ -320,6 +322,8 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 		rarity_tier = "rare"
 	else if(template.part_cost >= 3)
 		rarity_tier = "uncommon"
+	else if(template.part_cost <= 0)
+		rarity_tier = "free"
 
 	var/list/requirements = list()
 	if(template.part_cost > 0)

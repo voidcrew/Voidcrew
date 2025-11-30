@@ -13,6 +13,7 @@ import { useBackend } from '../backend';
 import { Window } from '../layouts';
 
 type PartsInventory = {
+  free: number;
   common: number;
   uncommon: number;
   rare: number;
@@ -50,6 +51,7 @@ type ShipEntry = {
 };
 
 const RARITY_COLORS = {
+  free: '#00ff88',
   common: '#9d9d9d',
   uncommon: '#1eff00',
   rare: '#0070dd',
@@ -57,7 +59,7 @@ const RARITY_COLORS = {
   legendary: '#ff8000',
 };
 
-const RARITY_ORDER = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+const RARITY_ORDER = ['free', 'common', 'uncommon', 'rare', 'epic', 'legendary'];
 
 export const ShipCatalog = (props) => {
   const { act, data } = useBackend<ShipCatalogData>();
