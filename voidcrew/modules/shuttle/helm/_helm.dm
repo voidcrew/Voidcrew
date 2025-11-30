@@ -173,7 +173,23 @@
 	)
 	data["canFly"] = TRUE
 
+	// Check if user is a crew member of this ship
+	data["isNotCrew"] = !is_crew_member(user)
+
 	return data
+
+/**
+ * Checks if the given user is a member of this ship's crew
+ */
+/obj/machinery/computer/helm/proc/is_crew_member(mob/user)
+	if(!ismob(user))
+		return FALSE
+	var/mob/living/living_user = user
+	if(!istype(living_user) || !living_user.mind)
+		return FALSE
+	if(!current_ship?.ship_team)
+		return TRUE // No ship team set up, allow access
+	return (living_user.mind in current_ship.ship_team.members)
 
 /obj/machinery/computer/helm/LateInitialize()
 	. = ..()
@@ -295,6 +311,10 @@
 	if(.)
 		return
 	if(viewer)
+		return
+	// Server-side crew check as safety net
+	if(!is_crew_member(usr))
+		say("ERROR: Access denied. Crew authorization required.")
 		return
 	switch(action) // Universal topics
 		if("rename_ship")

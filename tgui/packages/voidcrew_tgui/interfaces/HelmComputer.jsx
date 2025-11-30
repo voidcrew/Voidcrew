@@ -16,7 +16,9 @@ import { Window } from '../../tgui/layouts';
 export const HelmComputer = (props, context) => {
   const { act, data, config } = useBackend(context);
   const [mapRefreshKey, setMapRefreshKey] = useState(0);
-  const { mapRef, isViewer, shipCrashed, repairProgress } = data || {};
+  const { mapRef, isViewer, isNotCrew, shipCrashed, repairProgress } = data || {};
+  // Controls are disabled if viewer mode OR not a crew member
+  const isDisabled = isViewer || isNotCrew;
 
   // Show crash repair screen if ship is crashed
   if (shipCrashed) {
@@ -92,14 +94,15 @@ export const HelmComputer = (props, context) => {
 
 const Radar = (context) => {
   const { act, data } = useBackend(context);
-  const { isViewer = [], otherInfo = [] } = data;
+  const { isViewer, isNotCrew, otherInfo = [] } = data;
+  const isDisabled = isViewer || isNotCrew;
   return (
     <Section>
       <Table>
         <Table.Row bold>
           <Table.Cell>Name</Table.Cell>
           <Table.Cell>Integrity</Table.Cell>
-          {!isViewer && <Table.Cell>Act</Table.Cell>}
+          {!isDisabled && <Table.Cell>Act</Table.Cell>}
         </Table.Row>
         {otherInfo.map((ship) => (
           <Table.Row key={ship.name}>
@@ -117,14 +120,14 @@ const Radar = (context) => {
                 />
               )}
             </Table.Cell>
-            {!isViewer && (
+            {!isDisabled && (
               <Table.Cell>
                 <Button
                   tooltip="Interact"
                   tooltipPosition="left"
                   icon="circle"
                   disabled={
-                    isViewer || data.speed > 0 || data.state !== 'flying'
+                    isDisabled || data.speed > 0 || data.state !== 'flying'
                   }
                   onClick={() =>
                     act('act_overmap', {
@@ -143,7 +146,8 @@ const Radar = (context) => {
 
 const BroadcastSection = (props, context) => {
   const { act, data } = useBackend(context);
-  const { isViewer } = data;
+  const { isViewer, isNotCrew } = data;
+  const isDisabled = isViewer || isNotCrew;
   const [broadcastMessage, setBroadcastMessage] = useState('');
 
   const handleBroadcast = () => {
@@ -166,7 +170,7 @@ const BroadcastSection = (props, context) => {
             fluid
             placeholder="Enter message..."
             value={broadcastMessage}
-            disabled={isViewer}
+            disabled={isDisabled}
             onChange={handleInput}
             onEnter={handleBroadcast}
           />
@@ -176,7 +180,7 @@ const BroadcastSection = (props, context) => {
             fluid
             icon="broadcast-tower"
             content="Broadcast"
-            disabled={isViewer || !broadcastMessage}
+            disabled={isDisabled || !broadcastMessage}
             onClick={handleBroadcast}
           />
         </Stack.Item>
@@ -189,11 +193,13 @@ const SharedContent = (props, context) => {
   const { act, data } = useBackend(context);
   const {
     isViewer,
+    isNotCrew,
     integrity,
     overhealth = 0,
     shipInfo = [],
     otherInfo = [],
   } = data;
+  const isDisabled = isViewer || isNotCrew;
 
   // Calculate the base integrity (capped at 100) and the maxValue for the bar
   const baseIntegrity = Math.min(integrity, 100);
@@ -206,7 +212,7 @@ const SharedContent = (props, context) => {
         <Button.Input
           content={shipInfo.name}
           currentValue={shipInfo.name}
-          disabled={isViewer}
+          disabled={isDisabled}
           onCommit={(e, value) =>
             act('rename_ship', {
               newName: value,
@@ -219,7 +225,7 @@ const SharedContent = (props, context) => {
           tooltip="Refresh Ship Stats"
           tooltipPosition="left"
           icon="sync"
-          disabled={isViewer}
+          disabled={isDisabled}
           onClick={() => act('reload_ship')}
         />
       }
@@ -328,6 +334,7 @@ const ShipContent = (props, context) => {
   const { act, data } = useBackend(context);
   const {
     isViewer,
+    isNotCrew,
     engineInfo,
     shipInfo,
     speed,
@@ -338,6 +345,7 @@ const ShipContent = (props, context) => {
     dock_request,
     dock_req_name,
   } = data;
+  const isDisabled = isViewer || isNotCrew;
   return (
     <>
       {!!dock_request && (
@@ -347,13 +355,13 @@ const ShipContent = (props, context) => {
               <Button
                 content="Accept"
                 color="good"
-                disabled={isViewer}
+                disabled={isDisabled}
                 onClick={() => act('dock_req_success')}
               />
               <Button
                 content="Decline"
                 color="bad"
-                disabled={isViewer}
+                disabled={isDisabled}
                 onClick={() => act('dock_req_failure')}
               />
             </LabeledList.Item>
@@ -400,7 +408,7 @@ const ShipContent = (props, context) => {
             tooltip="Refresh Engine"
             tooltipPosition="left"
             icon="sync"
-            disabled={isViewer}
+            disabled={isDisabled}
             onClick={() => act('reload_engines')}
           />
         }
@@ -422,7 +430,7 @@ const ShipContent = (props, context) => {
                     }
                     color={engine.enabled && 'good'}
                     icon={engine.enabled ? 'toggle-on' : 'toggle-off'}
-                    disabled={isViewer}
+                    disabled={isDisabled}
                     tooltip="Toggle Engine"
                     tooltipPosition="right"
                     onClick={() =>
@@ -464,8 +472,9 @@ const ShipContent = (props, context) => {
 // Arrow directional controls
 const ShipControlContent = (props, context) => {
   const { act, data } = useBackend(context);
-  const { calibrating, shipDisabled, canThrust } = data;
-  const flyable = data.state === 'flying' && !shipDisabled;
+  const { calibrating, shipDisabled, canThrust, isViewer, isNotCrew } = data;
+  const isDisabled = isViewer || isNotCrew;
+  const flyable = data.state === 'flying' && !shipDisabled && !isDisabled;
   const canMove = flyable && canThrust;
 
   //  DIRECTIONS const idea from Lyra as part of their Haven-Urist project
@@ -481,13 +490,16 @@ const ShipControlContent = (props, context) => {
   };
   return (
     <Section title="Navigation">
-      {shipDisabled && (
+      {!!isNotCrew && (
+        <div className="NoticeBox danger">CREW AUTHORIZATION REQUIRED</div>
+      )}
+      {!!shipDisabled && !isNotCrew && (
         <div className="NoticeBox danger">HULL CRITICAL - SYSTEMS OFFLINE</div>
       )}
-      {data.state === 'idle' && !shipDisabled && (
+      {data.state === 'idle' && !shipDisabled && !isNotCrew && (
         <div className="NoticeBox">Ship Docked.</div>
       )}
-      {flyable && !canThrust && (
+      {!!flyable && !canThrust && (
         <div className="NoticeBox danger">No engine power available!</div>
       )}
       <Table collapsing>
@@ -497,7 +509,7 @@ const ShipControlContent = (props, context) => {
               tooltip="Undock"
               tooltipPosition="right"
               icon="sign-out-alt"
-              disabled={data.state !== 'idle' || shipDisabled}
+              disabled={data.state !== 'idle' || shipDisabled || isDisabled}
               onClick={() => act('undock')}
             />
           </Table.Cell>
