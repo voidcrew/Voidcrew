@@ -69739,9 +69739,7 @@
 /obj/machinery/light_switch/directional/south{
 	pixel_x = -6
 	},
-/obj/machinery/camera/autoname/directional/south{
-	dir = 5
-	},
+/obj/machinery/camera/autoname/directional/south,
 /turf/open/floor/carpet,
 /area/station/command/meeting_room)
 "knt" = (
@@ -71930,9 +71928,7 @@
 /obj/item/stack/medical/suture,
 /obj/item/stack/medical/suture,
 /obj/machinery/airalarm/directional/west,
-/obj/machinery/camera/autoname/directional/north{
-	network = list("ss13","medbay")
-	},
+/obj/machinery/camera/autoname/directional/west,
 /turf/open/floor/iron/white,
 /area/station/medical/medbay/lobby)
 "kCp" = (
@@ -136468,9 +136464,7 @@
 	dir = 4
 	},
 /obj/structure/table/reinforced/rglass,
-/obj/machinery/camera/autoname/directional/east{
-	dir = 6
-	},
+/obj/machinery/camera/autoname/directional/east,
 /turf/open/floor/iron/dark,
 /area/station/command/bridge)
 "uiG" = (
@@ -149549,7 +149543,6 @@
 	dir = 8
 	},
 /obj/machinery/camera/autoname/directional/south{
-	dir = 5;
 	network = list("prison")
 	},
 /obj/machinery/processor,
