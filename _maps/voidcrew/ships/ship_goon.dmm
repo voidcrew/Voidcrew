@@ -22,7 +22,6 @@
 	name = "Emergency Shuttle Airlock"
 	},
 /obj/structure/fans/tiny,
-/obj/machinery/door/firedoor,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/goon/commons)
 "bd" = (
@@ -71,6 +70,10 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/goon/commons)
+"dP" = (
+/obj/structure/closet/supplypod/drop_pod,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons)
 "eC" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -112,7 +115,7 @@
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/goon/engineering)
 "hg" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 4
 	},
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
@@ -224,7 +227,6 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/door/firedoor,
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/goon/bridge)
 "ra" = (
@@ -280,7 +282,6 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/goon/engineering)
@@ -469,7 +470,6 @@
 "JH" = (
 /obj/structure/table/reinforced,
 /obj/structure/window/reinforced/spawner/directional/south,
-/obj/item/areaeditor/shuttle,
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/goon/bridge)
 "JP" = (
@@ -477,7 +477,7 @@
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/medbay)
 "JX" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 4
 	},
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
@@ -604,7 +604,6 @@
 /area/shuttle/voidcrew/goon/commons)
 "WD" = (
 /obj/structure/table,
-/obj/item/storage/backpack/duffelbag/med/surgery,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/medbay)
 "Xh" = (
@@ -667,7 +666,6 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/medbay)
@@ -790,14 +788,14 @@ Ix
 aq
 wf
 ds
-dI
+Ix
 Ea
 Rw
 at
 "}
 (10,1,1) = {"
 at
-Ea
+dP
 Ea
 eC
 eC

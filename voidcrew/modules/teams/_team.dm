@@ -4,7 +4,6 @@
 /datum/team/voidcrew
 	show_roundend_report = TRUE
 	var/obj/structure/overmap/ship/ship
-	var/faction_prefix
 
 /datum/team/voidcrew/add_member(datum/mind/new_member)
 	if(!new_member.ship_team)
