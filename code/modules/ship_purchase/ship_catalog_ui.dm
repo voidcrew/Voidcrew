@@ -128,8 +128,8 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 		if(template.part_cost > 0)
 			parts_required[rarity_tier] = template.part_cost
 
-		// Extract faction from faction_prefix
-		var/faction = template.faction_prefix || FACTION_NEUTRAL
+		// Faction (default to neutral - faction system not yet implemented on ships)
+		var/faction = FACTION_NEUTRAL
 
 		// Build job list for display
 		var/list/jobs = list()

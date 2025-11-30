@@ -9,11 +9,13 @@
 			name = "IRA Leader",
 			officer = TRUE,
 			outfit = /datum/outfit/job/assistant/provo,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "IRA Member",
 			outfit = /datum/outfit/job/assistant/provo,
+			category = JOB_CAT_ASSISTANT,
 			slots = 5,
 		),
 	)

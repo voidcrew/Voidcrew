@@ -38,6 +38,13 @@
 
 /obj/docking_port/mobile/voidcrew/calculate_docking_port_information(datum/map_template/shuttle/loading_from)
 	. = ..()
+	// Re-populate shuttle_areas after dimensions are set (Initialize runs before dimensions are known)
+	if(!length(shuttle_areas))
+		var/list/all_turfs = return_ordered_turfs(x, y, z, dir)
+		for(var/turf/curT as anything in all_turfs)
+			var/area/cur_area = curT.loc
+			if(istype(cur_area, area_type))
+				shuttle_areas[cur_area] = TRUE
 	link_to_z_level()
 
 /obj/docking_port/mobile/voidcrew/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)

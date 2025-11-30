@@ -2,7 +2,6 @@
 	name = "Geneva-class Search and Rescue Vessel"
 	suffix = "syndicate_geneva"
 	short_name = "Geneva-class"
-	faction_prefix = SYNDICATE_SHIP
 	part_cost = 3
 
 	job_slots = list(
@@ -10,31 +9,37 @@
 			name = "Chief Medical Officer",
 			officer = TRUE,
 			outfit = /datum/outfit/job/cmo/syndicate,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Medical Doctor",
 			outfit = /datum/outfit/job/doctor/syndicate,
+			category = JOB_CAT_MEDICAL,
 			slots = 2,
 		),
 		list(
 			name = "Botanist",
 			outfit = /datum/outfit/job/botanist/syndicate,
+			category = JOB_CAT_SERVICE,
 			slots = 1,
 		),
 		list(
 			name = "Station Engineer",
 			outfit = /datum/outfit/job/engineer/syndicate,
+			category = JOB_CAT_ENGINEERING,
 			slots = 2,
 		),
 		list(
 			name = "Rescue Specialist",
 			outfit = /datum/outfit/job/miner/syndicate,
+			category = JOB_CAT_CARGO,
 			slots = 2,
 		),
 		list(
 			name = "Paramedic",
 			outfit = /datum/outfit/job/paramedic/syndicate/gorlex,
+			category = JOB_CAT_MEDICAL,
 			slots = 1,
 		),
 	)

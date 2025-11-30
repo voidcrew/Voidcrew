@@ -9,31 +9,37 @@
 			name = "Captain",
 			officer = TRUE,
 			outfit = /datum/outfit/job/captain,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Uchenyy",
 			outfit = /datum/outfit/job/scientist,
+			category = JOB_CAT_SCIENCE,
 			slots = 1,
 		),
 		list(
 			name = "Shakhter",
 			outfit = /datum/outfit/job/miner,
+			category = JOB_CAT_CARGO,
 			slots = 2,
 		),
 		list(
 			name = "Vrach",
 			outfit = /datum/outfit/job/doctor,
+			category = JOB_CAT_MEDICAL,
 			slots = 1,
 		),
 		list(
 			name = "Gruzovoy Tekhnik",
 			outfit = /datum/outfit/job/cargo_tech,
+			category = JOB_CAT_CARGO,
 			slots = 1,
 		),
 		list(
 			name = "Pomoshchnik",
 			outfit = /datum/outfit/job/assistant,
+			category = JOB_CAT_ASSISTANT,
 			slots = 4,
 		),
 	)

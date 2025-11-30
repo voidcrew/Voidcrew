@@ -9,36 +9,43 @@
 			name = "Alchemist",
 			officer = TRUE,
 			outfit = /datum/outfit/job/bartender,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Gastronomer",
 			outfit = /datum/outfit/job/cook,
+			category = JOB_CAT_SERVICE,
 			slots = 1,
 		),
 		list(
 			name = "Lorekeeper",
 			outfit = /datum/outfit/job/curator,
+			category = JOB_CAT_SERVICE,
 			slots = 1,
 		),
 		list(
 			name = "Geomancer",
 			outfit = /datum/outfit/job/miner,
+			category = JOB_CAT_CARGO,
 			slots = 1,
 		),
 		list(
 			name = "Allomancer",
 			outfit = /datum/outfit/job/engineer,
+			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Scholar",
 			outfit = /datum/outfit/job/scientist,
+			category = JOB_CAT_SCIENCE,
 			slots = 1,
 		),
 		list(
 			name = "Apprentice",
 			outfit = /datum/outfit/job/assistant,
+			category = JOB_CAT_ASSISTANT,
 			slots = 3,
 		),
 	)

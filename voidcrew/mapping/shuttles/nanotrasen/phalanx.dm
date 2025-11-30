@@ -2,7 +2,6 @@
 	name = "Phalanx-Class Super Battlecruiser"
 	suffix = "nano_phalanx"
 	short_name = "Phalanx-Class"
-	faction_prefix = NANOTRASEN_SHIP
 	part_cost = 3
 
 	job_slots = list(
@@ -10,41 +9,49 @@
 			name = "Captain",
 			officer = TRUE,
 			outfit = /datum/outfit/job/captain,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Chaplain",
 			outfit = /datum/outfit/job/chaplain,
+			category = JOB_CAT_SERVICE,
 			slots = 1,
 		),
 		list(
 			name = "Station Engineer",
 			outfit = /datum/outfit/job/engineer,
+			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Atmospheric Technician",
 			outfit = /datum/outfit/job/atmos,
+			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Medical Doctor",
 			outfit = /datum/outfit/job/doctor,
+			category = JOB_CAT_MEDICAL,
 			slots = 2,
 		),
 		list(
 			name = "Cook",
 			outfit = /datum/outfit/job/cook,
+			category = JOB_CAT_SERVICE,
 			slots = 1,
 		),
 		list(
 			name = "Security Officer",
 			outfit = /datum/outfit/job/security,
+			category = JOB_CAT_SECURITY,
 			slots = 10,
 		),
 		list(
 			name = "Assistant",
 			outfit = /datum/outfit/job/assistant,
+			category = JOB_CAT_ASSISTANT,
 			slots = 3,
 		),
 	)

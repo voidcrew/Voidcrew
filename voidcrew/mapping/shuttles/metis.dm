@@ -9,26 +9,31 @@
 			name = "Extraterrestrial Exploratory Project Supervisor",
 			officer = TRUE,
 			outfit = /datum/outfit/job/rd,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Invertebrate Xenofauna Morphology Analyst",
 			outfit = /datum/outfit/job/scientist,
+			category = JOB_CAT_SCIENCE,
 			slots = 4,
 		),
 		list(
 			name = "Mechatronic Hydraulics Calibration Engineer",
 			outfit = /datum/outfit/job/roboticist,
+			category = JOB_CAT_SCIENCE,
 			slots = 1,
 		),
 		list(
 			name = "Ionic Dynamo Engineer",
 			outfit = /datum/outfit/job/engineer,
+			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Percussive Acquisitions-Focused Minerologist",
 			outfit = /datum/outfit/job/miner,
+			category = JOB_CAT_CARGO,
 			slots = 2,
 		),
 	)

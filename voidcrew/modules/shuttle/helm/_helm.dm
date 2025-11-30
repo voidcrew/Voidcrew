@@ -101,7 +101,7 @@
 	data["overhealth"] = current_ship.get_overhealth_percent()
 
 	// Calculate raw integrity for crash state checks
-	var/raw_percent = round((current_ship.integrity / current_ship.max_integrity) * 100)
+	var/raw_percent = current_ship.max_integrity > 0 ? round((current_ship.integrity / current_ship.max_integrity) * 100) : 100
 	data["shipDisabled"] = raw_percent <= 50
 	data["shipCrashed"] = current_ship.has_crash_landed && raw_percent < 65
 

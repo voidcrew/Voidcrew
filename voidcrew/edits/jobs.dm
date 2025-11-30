@@ -1,6 +1,8 @@
 /datum/job
 	///Whether the job is an 'Officer', the leader of the ship.
 	var/officer = FALSE
+	///The job category for ship role preferences (JOB_CAT_COMMAND, JOB_CAT_ENGINEERING, etc.)
+	var/job_category
 
 /**
  * Gets the job slots from our initial ship template, and verifies if that job is available.

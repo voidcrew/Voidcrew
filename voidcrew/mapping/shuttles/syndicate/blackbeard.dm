@@ -2,7 +2,6 @@
 	name = "Blackbeard-class Heavy Boarder"
 	suffix = "syndicate_blackbeard"
 	short_name = "Blackbeard-Class"
-	faction_prefix = SYNDICATE_SHIP
 	part_cost = 1
 
 	job_slots = list(
@@ -10,16 +9,19 @@
 			name = "Syndicate Strike Captain",
 			officer = TRUE,
 			outfit = /datum/outfit/job/captain/syndicate,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Medical Doctor",
 			outfit = /datum/outfit/job/doctor/syndicate,
+			category = JOB_CAT_MEDICAL,
 			slots = 1,
 		),
 		list(
 			name = "Syndicate Marine",
 			outfit = /datum/outfit/job/assistant/syndicate,
+			category = JOB_CAT_ASSISTANT,
 			slots = 4,
 		),
 	)

@@ -2,7 +2,6 @@
 	name = "Hyena-class Wrecking Tug"
 	suffix = "syndicate_hyena"
 	short_name = "Hyena-Class"
-	faction_prefix = SYNDICATE_SHIP
 	part_cost = 2
 
 	job_slots = list(
@@ -10,31 +9,37 @@
 			name = "Captain",
 			officer = TRUE,
 			outfit = /datum/outfit/job/captain/syndicate,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Foreman",
 			outfit = /datum/outfit/job/ce/syndicate,
+			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Mechanic",
 			outfit = /datum/outfit/job/engineer/syndicate,
+			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Atmospheric Mechanic",
 			outfit = /datum/outfit/job/atmos/syndicate,
+			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Wrecker",
 			outfit = /datum/outfit/job/miner/syndicate,
+			category = JOB_CAT_CARGO,
 			slots = 2,
 		),
 		list(
 			name = "Junior Agent",
 			outfit = /datum/outfit/job/assistant/syndicate,
+			category = JOB_CAT_ASSISTANT,
 			slots = 3,
 		),
 	)
