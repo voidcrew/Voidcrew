@@ -6,6 +6,15 @@
 #define JUMP_CHARGE_DELAY (20 SECONDS)
 #define JUMP_CHARGEUP_TIME (3 MINUTES)
 
+/datum/armor/computer_helm
+	melee = 50
+	bullet = 30
+	laser = 30
+	energy = 30
+	bomb = 50
+	fire = 80
+	acid = 70
+
 /obj/machinery/computer/helm
 	name = "helm control console"
 	desc = "Used to view or control the ship."
@@ -14,6 +23,9 @@
 	icon_keyboard = "tech_key"
 	circuit = /obj/item/circuitboard/computer/shuttle/helm
 	light_color = LIGHT_COLOR_FLARE
+	// Helm consoles are critical ship infrastructure - make them tough
+	max_integrity = 500
+	armor_type = /datum/armor/computer_helm
 
 	/// The ship we reside on for ease of access
 	var/obj/structure/overmap/ship/current_ship //voidcrew todo: ship functionality
@@ -173,7 +185,23 @@
 	)
 	data["canFly"] = TRUE
 
+	// Check if user is a crew member of this ship
+	data["isNotCrew"] = !is_crew_member(user)
+
 	return data
+
+/**
+ * Checks if the given user is a member of this ship's crew
+ */
+/obj/machinery/computer/helm/proc/is_crew_member(mob/user)
+	if(!ismob(user))
+		return FALSE
+	var/mob/living/living_user = user
+	if(!istype(living_user) || !living_user.mind)
+		return FALSE
+	if(!current_ship?.ship_team)
+		return TRUE // No ship team set up, allow access
+	return (living_user.mind in current_ship.ship_team.members)
 
 /obj/machinery/computer/helm/LateInitialize()
 	. = ..()
@@ -295,6 +323,10 @@
 	if(.)
 		return
 	if(viewer)
+		return
+	// Server-side crew check as safety net
+	if(!is_crew_member(usr))
+		say("ERROR: Access denied. Crew authorization required.")
 		return
 	switch(action) // Universal topics
 		if("rename_ship")
