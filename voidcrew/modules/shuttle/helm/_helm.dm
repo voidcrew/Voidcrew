@@ -6,6 +6,15 @@
 #define JUMP_CHARGE_DELAY (20 SECONDS)
 #define JUMP_CHARGEUP_TIME (3 MINUTES)
 
+/datum/armor/computer_helm
+	melee = 50
+	bullet = 30
+	laser = 30
+	energy = 30
+	bomb = 50
+	fire = 80
+	acid = 70
+
 /obj/machinery/computer/helm
 	name = "helm control console"
 	desc = "Used to view or control the ship."
@@ -14,6 +23,9 @@
 	icon_keyboard = "tech_key"
 	circuit = /obj/item/circuitboard/computer/shuttle/helm
 	light_color = LIGHT_COLOR_FLARE
+	// Helm consoles are critical ship infrastructure - make them tough
+	max_integrity = 500
+	armor_type = /datum/armor/computer_helm
 
 	/// The ship we reside on for ease of access
 	var/obj/structure/overmap/ship/current_ship //voidcrew todo: ship functionality
