@@ -8,11 +8,13 @@
 			name = "Head Assistant",
 			officer = TRUE,
 			outfit = /datum/outfit/job/assistant/corporate,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Assistant",
 			outfit = /datum/outfit/job/assistant,
+			category = JOB_CAT_ASSISTANT,
 			slots = 7,
 		),
 	)

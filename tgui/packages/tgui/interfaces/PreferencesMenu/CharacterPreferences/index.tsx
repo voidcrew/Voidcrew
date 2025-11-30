@@ -7,16 +7,16 @@ import { PageButton } from '../components/PageButton';
 import type { PreferencesMenuData } from '../types';
 import { AntagsPage } from './AntagsPage';
 import { CustomSlotsPage } from './CustomSlotsPage';
-import { JobsPage } from './JobsPage';
 import { LoadoutPage } from './loadout';
 import { MainPage } from './MainPage';
 import { QuirksPage } from './QuirksPage';
+import { ShipCategoriesPage } from './ShipCategoriesPage';
 import { SpeciesPage } from './SpeciesPage';
 
 enum Page {
   Antags,
   Main,
-  Jobs,
+  ShipCategories,
   Species,
   Quirks,
   Loadout,
@@ -62,8 +62,8 @@ export function CharacterPreferenceWindow(props) {
     case Page.Antags:
       pageContents = <AntagsPage />;
       break;
-    case Page.Jobs:
-      pageContents = <JobsPage />;
+    case Page.ShipCategories:
+      pageContents = <ShipCategoriesPage />;
       break;
     case Page.Main:
       pageContents = (
@@ -138,14 +138,10 @@ export function CharacterPreferenceWindow(props) {
           <Stack.Item grow>
             <PageButton
               currentPage={currentPage}
-              page={Page.Jobs}
+              page={Page.ShipCategories}
               setPage={setCurrentPage}
             >
-              {/*
-                    Fun fact: This isn't "Jobs" so that it intentionally
-                    catches your eyes, because it's really important!
-                  */}
-              Occupations
+              Ship Roles
             </PageButton>
           </Stack.Item>
 

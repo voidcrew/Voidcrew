@@ -3,8 +3,6 @@
 	prefix = "_maps/voidcrew/ships/"
 	port_id = "ship"
 
-	///The prefix signifying the ship's faction
-	var/faction_prefix = NEUTRAL_SHIP
 	///Short name of the ship
 	var/short_name
 	///Cost of the ship
@@ -31,7 +29,6 @@
 		rarity = "uncommon"
 	else
 		rarity = "common"
-	name = "[faction_prefix] [name]"
 
 /datum/map_template/shuttle/voidcrew/proc/assemble_job_slots()
 	var/list/job_list = list()
@@ -47,8 +44,7 @@
 		job_slot.outfit = job_outfit
 		job_slot.job_flags = JOB_CREW_MANIFEST|JOB_EQUIP_RANK|JOB_NEW_PLAYER_JOINABLE|JOB_CREW_MEMBER|JOB_ASSIGN_QUIRKS|JOB_CAN_BE_INTERN
 		job_slot.supervisors = "\the [job_slots[1]["name"]]"
-		if(faction_prefix != NEUTRAL_SHIP)
-			job_slot.faction = faction_prefix
+		job_slot.job_category = job_definition["category"]
 
 		job_list[job_slot] = initial_slots
 

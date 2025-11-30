@@ -122,14 +122,16 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 			rarity_tier = "rare"
 		else if(template.part_cost >= 3)
 			rarity_tier = "uncommon"
+		else if(template.part_cost <= 0)
+			rarity_tier = "free"
 
 		// Build parts requirement list
 		var/list/parts_required = list()
 		if(template.part_cost > 0)
 			parts_required[rarity_tier] = template.part_cost
 
-		// Extract faction from faction_prefix
-		var/faction = template.faction_prefix || FACTION_NEUTRAL
+		// Faction (default to neutral - faction system not yet implemented on ships)
+		var/faction = FACTION_NEUTRAL
 
 		// Build job list for display
 		var/list/jobs = list()
@@ -320,6 +322,8 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 		rarity_tier = "rare"
 	else if(template.part_cost >= 3)
 		rarity_tier = "uncommon"
+	else if(template.part_cost <= 0)
+		rarity_tier = "free"
 
 	var/list/requirements = list()
 	if(template.part_cost > 0)

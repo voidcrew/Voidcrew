@@ -38,7 +38,7 @@
 		shuttle_loading = FALSE
 		return FALSE
 
-	SSair.can_fire = FALSE // fuck you
+	SSair.can_fire = FALSE
 	var/obj/docking_port/mobile/voidcrew/loaded = action_load(ship_to_spawn.source_template)
 	SSair.can_fire = TRUE
 	shuttle_loading = FALSE
@@ -55,6 +55,7 @@
 	SEND_SIGNAL(loaded, COMSIG_VOIDCREW_SHIP_LOADED)
 
 	ship_to_spawn.calculate_mass()
+
 	// assign landmarks as needed - use shuttle areas or fallback to shuttle location
 	var/turf/safe_turf
 	if(length(loaded.shuttle_areas))

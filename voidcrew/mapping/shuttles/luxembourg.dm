@@ -9,36 +9,43 @@
 			name = "Quartermaster",
 			officer = TRUE,
 			outfit = /datum/outfit/job/quartermaster,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Cargo Technician",
 			outfit = /datum/outfit/job/cargo_tech,
+			category = JOB_CAT_CARGO,
 			slots = 2,
 		),
 		list(
 			name = "Station Engineer",
 			outfit = /datum/outfit/job/engineer,
+			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Atmospheric Technician",
 			outfit = /datum/outfit/job/atmos,
+			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Bartender",
 			outfit = /datum/outfit/job/bartender,
+			category = JOB_CAT_SERVICE,
 			slots = 1,
 		),
 		list(
 			name = "Medical Doctor",
 			outfit = /datum/outfit/job/doctor,
+			category = JOB_CAT_MEDICAL,
 			slots = 1,
 		),
 		list(
 			name = "Assistant",
 			outfit = /datum/outfit/job/assistant,
+			category = JOB_CAT_ASSISTANT,
 			slots = 3,
 		),
 	)

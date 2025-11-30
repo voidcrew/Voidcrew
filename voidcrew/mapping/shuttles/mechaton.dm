@@ -9,26 +9,31 @@
 			name = "Research Director",
 			officer = TRUE,
 			outfit = /datum/outfit/job/rd,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Scientist",
 			outfit = /datum/outfit/job/scientist,
+			category = JOB_CAT_SCIENCE,
 			slots = 2,
 		),
 		list(
 			name = "Roboticist",
 			outfit = /datum/outfit/job/roboticist,
+			category = JOB_CAT_SCIENCE,
 			slots = 2,
 		),
 		list(
 			name = "Atmospheric Technician",
 			outfit = /datum/outfit/job/atmos,
+			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Geneticist",
 			outfit = /datum/outfit/job/geneticist,
+			category = JOB_CAT_SCIENCE,
 			slots = 2,
 		),
 	)

@@ -2,7 +2,6 @@
 	name = "Thunderbird-class Emergency military vessel"
 	suffix = "nano_thunderbird"
 	short_name = "Thunderbird-Class"
-	faction_prefix = NANOTRASEN_SHIP
 	part_cost = 2
 
 	job_slots = list(
@@ -10,31 +9,37 @@
 			name = "Captain",
 			officer = TRUE,
 			outfit = /datum/outfit/job/captain,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Station Engineer",
 			outfit = /datum/outfit/job/engineer,
+			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Atmospheric Technician",
 			outfit = /datum/outfit/job/atmos,
+			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Scientist",
 			outfit = /datum/outfit/job/scientist,
+			category = JOB_CAT_SCIENCE,
 			slots = 2,
 		),
 		list(
 			name = "Medical Doctor",
 			outfit = /datum/outfit/job/doctor,
+			category = JOB_CAT_MEDICAL,
 			slots = 2,
 		),
 		list(
 			name = "Security Officer",
 			outfit = /datum/outfit/job/security,
+			category = JOB_CAT_SECURITY,
 			slots = 2,
 		),
 	)

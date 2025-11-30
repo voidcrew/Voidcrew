@@ -9,26 +9,31 @@
 			name = "Chief Executive Officer",
 			officer = TRUE,
 			outfit = /datum/outfit/job/captain/corporate,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Chief Supply Officer",
 			outfit = /datum/outfit/job/quartermaster/corporate,
+			category = JOB_CAT_CARGO,
 			slots = 1,
 		),
 		list(
 			name = "Corporate Security",
 			outfit = /datum/outfit/job/security/corporate,
+			category = JOB_CAT_SECURITY,
 			slots = 2,
 		),
 		list(
 			name = "Contracted Engineer",
 			outfit = /datum/outfit/job/engineer/corporate,
+			category = JOB_CAT_ENGINEERING,
 			slots = 2,
 		),
 		list(
 			name = "Business Associate",
 			outfit = /datum/outfit/job/assistant/corporate,
+			category = JOB_CAT_ASSISTANT,
 			slots = 3,
 		),
 	)

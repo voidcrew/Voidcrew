@@ -184,6 +184,9 @@ export type PreferencesMenuData = {
   name_to_use: string;
 
   window: PrefsWindow;
+
+  // Voidcrew ship category preferences (from middleware ui_data)
+  ship_category_preferences?: Record<string, JobPriority>;
 };
 
 export type ServerData = {
@@ -202,5 +205,9 @@ export type ServerData = {
     loadout_tabs: LoadoutCategory[];
   };
   species: Record<string, Species>;
+  // Voidcrew ship categories (from middleware constant data)
+  ship_categories?: {
+    ship_categories: string[];
+  };
   [otherKey: string]: unknown;
 };

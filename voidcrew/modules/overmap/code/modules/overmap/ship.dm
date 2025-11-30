@@ -10,6 +10,7 @@
 	desc = "A spacefaring vessel."
 	icon_state = "ship"
 	base_icon_state = "ship" //Prefix of all the icons used by the ship. (ex. [base_icon_state]_moving)
+	layer = ABOVE_MOB_LAYER // Render ships above other overmap objects in popup map views
 
 	/**
 	 * Template and docking port.
@@ -43,16 +44,12 @@
 	var/joining_allowed = TRUE
 	///Name of the ship.
 	var/map_name
-	/// The prefix the shuttle currently possesses
-	var/faction_prefix
 	///Short memo of the ship, set by the crew, and shown to latejoiners.
 	var/memo
 	///ONLY USED FOR NON-SIMULATED SHIPS. The amount per burn that this ship accelerates
 	var/acceleration_speed = 0.02
 	///Cooldown until the ship can be renamed again
 	COOLDOWN_DECLARE(rename_cooldown)
-	/// Cooldown until you can change your faction again controlled by FACTION_COOLDOWN_TIME
-	COOLDOWN_DECLARE(faction_cooldown)
 
 	///Timer between job managing delays
 	COOLDOWN_DECLARE(job_slot_adjustment_cooldown)
@@ -122,8 +119,6 @@
 
 	ship_team = new()
 	ship_team.name = template.name
-	faction_prefix = template.faction_prefix
-	ship_team.faction_prefix = faction_prefix
 	ship_team.ship = src
 
 	//now build the job slots.
@@ -133,7 +128,6 @@
 	ship_account = new(newname = ship_team.name, job = job_slots[1], player_account = FALSE)
 
 	display_name = template.name
-	update_ship_color()
 
 	if(render_map)	// Initialize map objects
 		map_name = "overmap_[REF(src)]_map"
@@ -204,18 +198,6 @@
 	// Use camera subtype's show_camera method for proper rendering
 	cam_screen.show_camera(visible_turfs, size_x, size_y)
 
-/**
-  * Updates the ships icon to make it easier to distinguish between factions
-  */
-/obj/structure/overmap/ship/proc/update_ship_color()
-	switch(faction_prefix)
-		if(SYNDICATE_SHIP)
-			color = "#F10303"
-		if(NANOTRASEN_SHIP)
-			color = "#115188"
-		if(NEUTRAL_SHIP)
-			color = "#DDDDDD"
-	add_atom_colour(color, FIXED_COLOUR_PRIORITY)
 
 /// Resets the ships thrust back to zero
 /obj/structure/overmap/ship/proc/reset_thrust()
@@ -288,9 +270,6 @@
 
 	crewmate.mind.wipe_memory() //clears ALL memories, but currently all they have is their old bank account.
 	crewmate.mind.assigned_role.paycheck_department = ship_team.name
-
-	//Adds a faction hud to a newplayer documentation in _HELPERS/game.dm
-//	add_faction_hud(FACTION_HUD_GENERAL, faction_prefix, crewmate)
 
 /**
  * ##destroy_ship
@@ -615,8 +594,8 @@
 		priority_announce("The [name] has been renamed to the [new_name].", "Docking Announcement", sender_override = display_name)
 	message_admins("[key_name_admin(usr)] renamned vessel '[name]' to '[new_name]'")
 	name = new_name
-	shuttle.name = "[faction_prefix] [new_name]"
-	display_name = "[faction_prefix] [name]"
+	shuttle.name = new_name
+	display_name = name
 	if(!ignore_cooldown)
 		COOLDOWN_START(src, rename_cooldown, 5 MINUTES)
 	for(var/area/shuttle_area as anything in shuttle.shuttle_areas)
@@ -832,7 +811,7 @@
 		overhealth = max(0, mass - max_integrity)
 
 	// Check for integrity changes and send signals
-	if(integrity != old_integrity)
+	if(integrity != old_integrity && max_integrity > 0)
 		// Raw percentages for internal threshold checks
 		var/raw_percent = round((integrity / max_integrity) * 100)
 		var/old_raw_percent = round((old_integrity / max_integrity) * 100)

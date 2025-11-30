@@ -2,7 +2,6 @@
 	name = "Bead-class Corporate Frigate"
 	suffix = "nano_bead"
 	short_name = "Bead-Class"
-	faction_prefix = NANOTRASEN_SHIP
 	part_cost = 1
 
 	job_slots = list(
@@ -10,21 +9,25 @@
 			name = "Captain",
 			officer = TRUE,
 			outfit = /datum/outfit/job/captain,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Station Engineer",
 			outfit = /datum/outfit/job/engineer,
+			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Atmospheric Technician",
 			outfit = /datum/outfit/job/atmos,
+			category = JOB_CAT_ENGINEERING,
 			slots = 1,
 		),
 		list(
 			name = "Security Officer",
 			outfit = /datum/outfit/job/security,
+			category = JOB_CAT_SECURITY,
 			slots = 3,
 		),
 	)

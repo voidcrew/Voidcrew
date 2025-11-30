@@ -9,21 +9,25 @@
 			name = "Chief Medical Officer",
 			officer = TRUE,
 			outfit = /datum/outfit/job/cmo,
+			category = JOB_CAT_COMMAND,
 			slots = 1,
 		),
 		list(
 			name = "Medical Doctor",
 			outfit = /datum/outfit/job/doctor,
+			category = JOB_CAT_MEDICAL,
 			slots = 3,
 		),
 		list(
 			name = "Paramedic",
 			outfit = /datum/outfit/job/paramedic,
+			category = JOB_CAT_MEDICAL,
 			slots = 2,
 		),
 		list(
 			name = "Assistant",
 			outfit = /datum/outfit/job/assistant,
+			category = JOB_CAT_ASSISTANT,
 			slots = 3,
 		),
 	)

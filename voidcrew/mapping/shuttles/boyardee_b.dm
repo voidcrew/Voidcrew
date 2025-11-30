@@ -9,26 +9,31 @@
 			name = "Clown",
 			officer = TRUE,
 			outfit = /datum/outfit/job/clown,
+			category = JOB_CAT_SERVICE,
 			slots = 1,
 		),
 		list(
 			name = "Cook",
 			outfit = /datum/outfit/job/cook,
+			category = JOB_CAT_SERVICE,
 			slots = 2,
 		),
 		list(
 			name = "Bartender",
 			outfit = /datum/outfit/job/bartender,
+			category = JOB_CAT_SERVICE,
 			slots = 1,
 		),
 		list(
 			name = "Janitor",
 			outfit = /datum/outfit/job/janitor,
+			category = JOB_CAT_SERVICE,
 			slots = 1,
 		),
 		list(
 			name = "Security Officer",
 			outfit = /datum/outfit/job/security,
+			category = JOB_CAT_SECURITY,
 			slots = 2,
 		),
 	)

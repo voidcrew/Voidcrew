@@ -30,6 +30,8 @@
  * Can exceed 100% if ship has been expanded (overhealth)
  */
 /obj/structure/overmap/ship/proc/get_integrity_percent()
+	if(max_integrity <= 0)
+		return 100
 	return round(((integrity + overhealth) / max_integrity) * 100)
 
 /**
@@ -37,6 +39,8 @@
  * Used by UI to show the dark green overhealth bar
  */
 /obj/structure/overmap/ship/proc/get_overhealth_percent()
+	if(max_integrity <= 0)
+		return 0
 	return round((overhealth / max_integrity) * 100)
 
 /**

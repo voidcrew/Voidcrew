@@ -9,11 +9,13 @@
 			name = "Mime",
 			officer = TRUE,
 			outfit = /datum/outfit/job/mime,
+			category = JOB_CAT_SERVICE,
 			slots = 1,
 		),
 		list(
 			name = "Clown",
 			outfit = /datum/outfit/job/clown,
+			category = JOB_CAT_SERVICE,
 			slots = 7,
 		),
 	)

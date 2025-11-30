@@ -5,10 +5,6 @@
 /datum/controller/subsystem/mapping
 	///List of all ships that can be purchased.
 	var/list/datum/map_template/shuttle/voidcrew/ship_purchase_list = list()
-	///List of all Nanotrasen ships, one is randomly selected to spawn at start.
-	var/list/datum/map_template/shuttle/voidcrew/nt_ship_list = list()
-	///List of all Syndicate ships, one is randomly selected to spawn at start.
-	var/list/datum/map_template/shuttle/voidcrew/syn_ship_list = list()
 
 	/**
 	 * RUIN TEMPLATES
@@ -24,7 +20,7 @@
 	// This is a balancing act.
 	// Each planet will consume a significant amount of memory,
 	// so we need to be careful about how many starting planets we include
-	var/lava_planet_count = 1
+	var/lava_planet_count = 0
 	var/ice_planet_count = 0
 	var/jungle_planet_count = 0
 	var/beach_planet_count = 0
@@ -190,12 +186,6 @@
 			rarity = "Uncommon"
 
 		ship_purchase_list["[initial(shuttles.name)] ([rarity] [part_cost] part\s)"] = shuttles
-
-		switch(initial(shuttles.faction_prefix))
-			if(NANOTRASEN_SHIP)
-				nt_ship_list[initial(shuttles.name)] = shuttles
-			if(SYNDICATE_SHIP)
-				syn_ship_list[initial(shuttles.name)] = shuttles
 
 /datum/controller/subsystem/mapping/get_station_center()
 	return SSovermap.overmap_centre || locate(OVERMAP_LEFT_SIDE_COORD, OVERMAP_NORTH_SIDE_COORD, OVERMAP_Z_LEVEL)
