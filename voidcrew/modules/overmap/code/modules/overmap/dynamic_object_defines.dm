@@ -67,8 +67,12 @@
 	if(preserve_level)
 		return
 
+	// Don't unload if any ships are still docked here
+	if(first_dock_taken || second_dock_taken)
+		return
+
 	// Duplicate code grrr
-	if(length(mapzone.get_mind_mobs()))
+	if(length(mapzone?.get_mind_mobs()))
 		return //Dont fuck over stranded people? tbh this shouldn't be called on this condition, instead of bandaiding it inside
 
 	remove_mapzone()

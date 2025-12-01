@@ -117,6 +117,12 @@
 	if(!shuttle)
 		return
 
+	// Don't crash land if already docked (e.g., ship-to-ship docking)
+	// The other ship can help/rescue without needing to create a crash site
+	if(state == OVERMAP_SHIP_IDLE || state == OVERMAP_SHIP_DOCKING)
+		ship_announce("Ship critically damaged! Emergency systems holding. Seek immediate repairs.", "CRITICAL DAMAGE")
+		return
+
 	// Create crashed ship marker at current location
 	var/obj/structure/overmap/planet/empty/crashed_ship/crash_site = new(get_turf(src))
 
