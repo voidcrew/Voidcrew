@@ -8,3 +8,7 @@
 #define TECHWEB_NODE_NANITE_BASIC "nanite_base"
 #define TECHWEB_NODE_NANITE_SMART "nanite_smart"
 #define TECHWEB_NODE_NANITE_MESH "nanite_mesh"
+
+// Ship Combat
+#define TECHWEB_NODE_SHIP_COMBAT "ship_combat"
+#define TECHWEB_NODE_SHIP_COMBAT_ADVANCED "ship_combat_advanced"
