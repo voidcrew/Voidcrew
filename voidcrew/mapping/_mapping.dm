@@ -20,11 +20,11 @@
 	// This is a balancing act.
 	// Each planet will consume a significant amount of memory,
 	// so we need to be careful about how many starting planets we include
-	var/lava_planet_count = 0
-	var/ice_planet_count = 0
-	var/jungle_planet_count = 0
-	var/beach_planet_count = 0
-	var/wasteland_planet_count = 0
+	var/lava_planet_count = 1
+	var/ice_planet_count = 1
+	var/jungle_planet_count = 1
+	var/beach_planet_count = 1
+	var/wasteland_planet_count = 1
 
 	var/list/planets = list()
 
