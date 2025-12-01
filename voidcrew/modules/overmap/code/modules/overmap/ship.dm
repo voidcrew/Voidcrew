@@ -720,6 +720,120 @@
 		pending_dock_timer = null
 
 /**
+  * Docks two ships directly exit-to-exit. Creates a shared empty space zone
+  * and positions the docking ports so the ships' exits face each other.
+  * * other_ship - The other ship to dock with
+  * * user - The user who initiated the docking
+  * Returns an error string on failure, null on success.
+  */
+/obj/structure/overmap/ship/proc/dock_ships_directly(obj/structure/overmap/ship/other_ship, mob/user)
+	if(!other_ship || !shuttle || !other_ship.shuttle)
+		return "Invalid ships for docking."
+
+	// Create or find shared empty space
+	var/obj/structure/overmap/planet/empty/E = locate() in get_turf(src)
+	if(!E)
+		E = new(get_turf(src))
+
+	// Load the level first to ensure docking ports exist
+	if(!E.loaded && !E.loading)
+		E.load_level()
+
+	// Wait for level to load
+	if(E.loading)
+		return "Empty space is loading, try again in a moment."
+
+	if(!E.reserve_dock || !E.reserve_dock_secondary)
+		return "No docking ports available in empty space."
+
+	// Check dock availability
+	if(E.first_dock_taken || E.reserve_dock.get_docked())
+		return "Primary docking port already in use."
+	if(E.second_dock_taken || E.reserve_dock_secondary.get_docked())
+		return "Secondary docking port already in use."
+
+	// Mark both docks as taken
+	E.first_dock_taken = TRUE
+	E.second_dock_taken = TRUE
+	dock_index = 1
+	other_ship.dock_index = 2
+
+	// Position docks for exit-to-exit docking
+	position_docks_for_direct_docking(E, E.reserve_dock, E.reserve_dock_secondary, shuttle, other_ship.shuttle)
+
+	// Set port destinations for helm UI
+	shuttle.port_destinations = E.reserve_dock
+	other_ship.shuttle.port_destinations = E.reserve_dock_secondary
+
+	// Dock both ships
+	dock(E, E.reserve_dock)
+	other_ship.dock(E, E.reserve_dock_secondary)
+
+	return null
+
+/**
+  * Positions two stationary docks so that two shuttles will dock exit-to-exit (airlocks touching).
+  * * empty_planet - The empty space planet (for calling adjust_dock_to_shuttle)
+  * * dock_a - First stationary dock (for shuttle_a)
+  * * dock_b - Second stationary dock (for shuttle_b)
+  * * shuttle_a - First shuttle's mobile dock
+  * * shuttle_b - Second shuttle's mobile dock
+  */
+/obj/structure/overmap/ship/proc/position_docks_for_direct_docking(obj/structure/overmap/planet/empty/empty_planet, obj/docking_port/stationary/dock_a, obj/docking_port/stationary/dock_b, obj/docking_port/mobile/shuttle_a, obj/docking_port/mobile/shuttle_b)
+	// For ship-to-ship docking, we need both shuttles to fit in the same area
+	// First, move dock_a to the center of the z-level with plenty of clearance
+	var/datum/map_zone/mapzone = empty_planet.mapzone
+	if(!mapzone || !length(mapzone.z_levels))
+		log_shuttle("WARNING: No mapzone for ship-to-ship docking")
+		return
+	var/datum/space_level/zlevel = mapzone.z_levels[1]
+
+	// Calculate center position - use world.maxx/maxy as bounds since space_level doesn't track exact bounds
+	// The z-level should be large enough for both shuttles
+	var/center_x = round(world.maxx / 2)
+	var/center_y = round(world.maxy / 2)
+
+	// Position dock_a at center, let adjust_dock_to_shuttle handle orientation
+	dock_a.forceMove(locate(center_x, center_y, zlevel.z_value))
+	empty_planet.adjust_dock_to_shuttle(dock_a, shuttle_a)
+
+	// For exit-to-exit docking, dock_b faces OPPOSITE to dock_a
+	// Set direction first so the shuttle body extends correctly
+	dock_b.dir = REVERSE_DIR(dock_a.dir)
+
+	// Size dock_b to fit shuttle_b (use max of dimensions for safety)
+	var/shuttle_max_dim = max(shuttle_b.width, shuttle_b.height)
+	dock_b.width = shuttle_max_dim
+	dock_b.height = shuttle_max_dim
+
+	// Calculate offsets to center shuttle_b within dock area
+	dock_b.dwidth = round((dock_b.width - shuttle_b.width) / 2) + shuttle_b.dwidth
+	dock_b.dheight = round((dock_b.height - shuttle_b.height) / 2) + shuttle_b.dheight
+
+	// Position dock_b adjacent to dock_a (1 tile apart for airlocks to touch)
+	// dock_a.dir points INTO shuttle_a, shuttle_a extends in REVERSE_DIR(dock_a.dir)
+	// dock_b should be in that direction so shuttles face each other
+	var/offset_dir = REVERSE_DIR(dock_a.dir)
+	var/dock_b_x = dock_a.x
+	var/dock_b_y = dock_a.y
+
+	switch(offset_dir)
+		if(NORTH)
+			dock_b_y = dock_a.y + 1
+		if(SOUTH)
+			dock_b_y = dock_a.y - 1
+		if(EAST)
+			dock_b_x = dock_a.x + 1
+		if(WEST)
+			dock_b_x = dock_a.x - 1
+
+	var/turf/new_loc = locate(dock_b_x, dock_b_y, dock_a.z)
+	if(new_loc)
+		dock_b.forceMove(new_loc)
+	else
+		log_shuttle("WARNING: Could not position dock_b at ([dock_b_x], [dock_b_y]) for ship-to-ship docking")
+
+/**
   * Ship-to-ship interaction. Creates shared empty space and docks both ships together.
   * * user - The user that initiated the action
   * * acting_ship - The ship that initiated the interaction
@@ -738,39 +852,36 @@
 		to_chat(user, "<span class='warning'>Both ships must be undocked to perform ship-to-ship docking!</span>")
 		return
 
-	// Create or find shared empty space
-	var/obj/structure/overmap/planet/empty/E
-
-	// Assign port destinations for both ships
-	var/assigned_acting_ship = FALSE
-	var/assigned_target_ship = FALSE
-
-	// Assign docking ports to both ships and immediately dock them
-	var/obj/docking_port/stationary/acting_ship_dock = null
-	var/obj/docking_port/stationary/target_ship_dock = null
-
-	// Check if acting ship has already requested docking with us
-	if(acting_ship.pending_dock == TRUE)
-		ship_announce(user, "<span class='notice'>Initiating docking procedures with other ship...</span>")
+	// Check if the target (src) already sent a request to acting_ship
+	// If src.pending_dock is TRUE, it means src previously requested to dock with someone
+	// and now acting_ship is requesting back - this completes the handshake
+	if(pending_dock == TRUE)
+		ship_announce("Initiating docking procedures with [acting_ship.name]...", "Docking")
+		acting_ship.ship_announce("Initiating docking procedures with [name]...", "Docking")
 
 		// Clear pending status and timers for both ships
 		clear_pending_dock()
 		acting_ship.clear_pending_dock()
 
-		// Both ships dock to empty space
-		dock_in_empty_space(user)
-		acting_ship.dock_in_empty_space(user)
+		// Dock both ships directly exit-to-exit
+		var/result = dock_ships_directly(acting_ship, user)
+		if(result)
+			to_chat(user, "<span class='warning'>[result]</span>")
 	else
-		// First request - set our pending_dock to indicate we want to dock with them
-		if(!pending_dock)
+		// First request - acting_ship wants to dock with src (target)
+		// Set pending_dock on acting_ship to mark that it's waiting for a response
+		if(!acting_ship.pending_dock)
 			log_admin("[key_name(user)] requested ship-to-ship docking from [acting_ship.name] to [name]")
-			acting_ship.ship_announce("Your ship has requested to dock with [acting_ship.name]. They must also request docking to proceed.", "Docking Request")
-			ship_announce("[name] has requested to dock with your ship. Use your helm console to accept.", "Incoming Docking Request")
-			pending_dock = TRUE
+			// Announce to the acting ship (the one making the request)
+			acting_ship.ship_announce("Your ship has requested to dock with [name]. They must also request docking to proceed.", "Docking Request")
+			// Announce to the target ship (src) that they have an incoming request
+			ship_announce("[acting_ship.name] has requested to dock with your ship. Use your helm console to accept.", "Incoming Docking Request")
+			// Set pending on acting_ship - this marks that acting_ship is waiting for src to respond
+			acting_ship.pending_dock = TRUE
 
-			// Set a 30 second timer to clear the pending dock request
-			pending_dock_timer = addtimer(CALLBACK(src, PROC_REF(clear_pending_dock)), 30 SECONDS, TIMER_STOPPABLE)
-			ship_announce("Docking request will expire in 30 seconds.", "Docking Request Timer")
+			// Set a 30 second timer to clear the pending dock request on acting_ship
+			acting_ship.pending_dock_timer = addtimer(CALLBACK(acting_ship, PROC_REF(clear_pending_dock)), 30 SECONDS, TIMER_STOPPABLE)
+			acting_ship.ship_announce("Docking request will expire in 30 seconds.", "Docking Request Timer")
 		else
 			to_chat(user, "<span class='warning'>Docking request already pending.</span>")
 /**
