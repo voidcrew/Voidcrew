@@ -30,3 +30,8 @@
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
 	planetary_atmos = TRUE
 	baseturfs = /turf/open/lava/smooth/lava_land_surface/planetary
+
+/turf/open/misc/asteroid/planetary_basalt/lava_land_surface/lit
+	light_power = 0.75
+	light_range = 2
+	light_color = "#F98511"
