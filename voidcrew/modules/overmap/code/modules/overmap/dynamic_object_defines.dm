@@ -118,9 +118,7 @@
 	default_gravity = STANDARD_GRAVITY
 	always_unpowered = TRUE
 	map_generator = /datum/map_generator/planet_generator
-	base_lighting_alpha = 255 // Do NOT decrease this below 255 unless planet has no cave biomes
-	base_lighting_color = "#ffffff"
-	static_lighting = FALSE
+	static_lighting = TRUE
 	var/planet_type
 
 /area/overmap_encounter/planet_ruin
@@ -151,7 +149,6 @@
 	ambientsounds = MINING
 	planet_type = /datum/planet/lava
 	map_generator = /datum/map_generator/planet_generator/lava
-	base_lighting_color = "#ff9933"
 
 /area/overmap_encounter/planetoid/ice
 	name = "\improper Frozen Planetoid"
@@ -159,7 +156,6 @@
 	ambientsounds = SPOOKY
 	planet_type = /datum/planet/snow
 	map_generator = /datum/map_generator/planet_generator/snow
-	base_lighting_color = "#a2fff7"
 
 /area/overmap_encounter/planetoid/beach
 	name = "\improper Beach Planetoid"
@@ -167,7 +163,6 @@
 	ambientsounds = BEACH
 	planet_type = /datum/planet/beach
 	map_generator = /datum/map_generator/planet_generator/beach
-	base_lighting_color = "#ffe4bb"
 
 /area/overmap_encounter/planetoid/jungle
 	name = "\improper Jungle Planetoid"
@@ -180,7 +175,6 @@
 	sound_environment = SOUND_ENVIRONMENT_HANGAR
 	ambientsounds = MINING
 	planet_type = /datum/planet/wasteland
-	base_lighting_color = "#f7ecb1"
 
 // CAVE AREAS
 /area/overmap_encounter/planetoid/cave
@@ -188,9 +182,6 @@
 	sound_environment = SOUND_ENVIRONMENT_CAVE
 	ambientsounds = SPOOKY
 	outdoors = FALSE
-	static_lighting = TRUE
-	base_lighting_alpha = null
-	base_lighting_color = null
 
 // We want to run generate terrain with is_cave set to TRUE for cave areas
 /area/overmap_encounter/planetoid/cave/RunTerrainGeneration()

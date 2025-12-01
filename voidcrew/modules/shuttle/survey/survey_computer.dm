@@ -848,18 +848,12 @@
 
 	// Actually do something with the turfs we found
 	for(var/turf/t as anything in CORNER_BLOCK(bottom_corner, width, height))
-
 		var/area/turf_area = get_area(t)
 		if(istype(turf_area, /area/overmap_encounter/planetoid))
-			// turf, had_light, old_range, old_color, old_power
 			var/list/turf_properties = list(t.light_range, t.light_color, t.light_power, t.lighting_object ? TRUE : FALSE)
 			modified_turfs[t] = turf_properties
-			if(turf_area.static_lighting)
-				if(!t.lighting_object)
-					t.lighting_object = new(t)
-			else
-				if(turf_area.base_lighting_alpha > 0)
-					t.set_light(1.4, 2, turf_area.base_lighting_color, l_on = TRUE)
+			if(!t.lighting_object)
+				t.lighting_object = new(t)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/undo_lighting()
 	for(var/turf/t in modified_turfs)

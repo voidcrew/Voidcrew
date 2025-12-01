@@ -1,5 +1,5 @@
 /datum/biome/grass
-	open_turf_types = list(/turf/open/misc/grass = 1)
+	open_turf_types = list(/turf/open/misc/grass/lit = 1)
 	flora_spawn_list = list(
 		/obj/structure/flora/tree/jungle = 1,
 		/obj/structure/flora/ausbushes/brflowers = 1,
@@ -47,7 +47,7 @@
 	feature_spawn_list = list(/obj/structure/spawner/cave/beach = 1)
 
 /datum/biome/beach
-	open_turf_types = list(/turf/open/misc/asteroid/sand/beach = 1)
+	open_turf_types = list(/turf/open/misc/asteroid/sand/beach/lit = 1)
 	//mob_spawn_list = list(/mob/living/simple_animal/crab/beach = 7, /mob/living/simple_animal/turtle/beach = 4, /mob/living/simple_animal/hostile/retaliate/gator/steppy = 1)
 	mob_spawn_chance = 0.3
 	feature_spawn_chance = 3
@@ -67,7 +67,7 @@
 	flora_spawn_chance = 1
 
 /datum/biome/beach/dense
-	open_turf_types = list(/turf/open/misc/asteroid/sand/beach/dense = 1)
+	open_turf_types = list(/turf/open/misc/asteroid/sand/beach/dense/lit = 1)
 	flora_spawn_list = list(
 		/obj/structure/flora/rock/asteroid = 6,
 		/obj/structure/flora/rock/beach = 1

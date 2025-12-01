@@ -27,8 +27,8 @@
 	var/datum/planet/planet_template
 
 /datum/overmap/planet/lava
-	name = "strange lava planet"
-	desc = "A very weak energy signal originating from a planet with lots of seismic and volcanic activity."
+	name = "Lava Planet"
+	desc = "A planet with lots of seismic and volcanic activity."
 	color = COLOR_ORANGE
 
 	ruin_type = ZTRAIT_LAVA_RUINS
@@ -40,8 +40,8 @@
 	planet_template = /datum/planet/lava
 
 /datum/overmap/planet/ice
-	name = "strange ice planet"
-	desc = "A very weak energy signal originating from a planet with traces of water and extremely low temperatures."
+	name = "Frozen Planet"
+	desc = "A planet with traces of water and extremely low temperatures."
 	color = COLOR_BLUE_LIGHT
 
 	ruin_type = ZTRAIT_ICE_RUINS
@@ -53,8 +53,8 @@
 	planet_template = /datum/planet/snow
 
 /datum/overmap/planet/beach
-	name = "strange beach planet"
-	desc = "A very weak energy signal originating from a planet with many traces of fish."
+	name = "Oceanic Planet"
+	desc = "A planet with many traces of fish."
 	color = COLOR_NAVY
 
 	ruin_type = ZTRAIT_BEACH_RUINS
@@ -66,8 +66,8 @@
 	planet_template = /datum/planet/beach
 
 /datum/overmap/planet/jungle
-	name = "strange jungle planet"
-	desc = "A very weak energy signal originating from a planet teeming with life."
+	name = "Tropical Planet"
+	desc = "A planet teeming with life."
 	color = COLOR_LIME
 
 	ruin_type = ZTRAIT_JUNGLE_RUINS
@@ -79,8 +79,8 @@
 	planet_template = /datum/planet/jungle
 
 /datum/overmap/planet/wasteland
-	name = "strange apocalyptic planet"
-	desc = "A very weak energy signal originating from a abandoned industrial planet."
+	name = "Apocalyptic Planet"
+	desc = "An abandoned industrial planet."
 	color = COLOR_BEIGE
 
 	ruin_type = ZTRAIT_WASTELAND_RUINS
