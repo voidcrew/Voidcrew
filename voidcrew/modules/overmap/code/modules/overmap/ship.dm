@@ -96,6 +96,8 @@
 
 	var/pending_dock = FALSE
 	var/pending_dock_timer
+	/// The ship we sent a docking request to (if any)
+	var/obj/structure/overmap/ship/pending_dock_target
 
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
@@ -470,16 +472,19 @@
 		return "Ship not docked!"
 	if(!shuttle)
 		return "Shuttle not found!"
-	update_docked_bools()
+	// Don't clear dock flags here - wait until shuttle has actually moved in complete_dock
+	// Otherwise the z-level might be unloaded while we're still on it
 	// Clear port destinations when undocking from empty space to prevent confusion
 	if(istype(docked, /obj/structure/overmap/planet/empty))
 		shuttle.port_destinations = null
+	// Store docked location for complete_dock to use, then clear it
+	var/obj/structure/overmap/undock_from = docked
 	docked = null
 	shuttle.destination = null
 	shuttle.mode = SHUTTLE_IGNITING
 	shuttle.setTimer(1 SECONDS)
 	priority_announce("Undocking now.", "Docking Announcement", sender_override = name)
-	addtimer(CALLBACK(src, PROC_REF(complete_dock)), 1 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(undock_from)), 1 SECONDS)
 	state = OVERMAP_SHIP_UNDOCKING
 	// Reset crash flag so ship can crash again if damaged
 	has_crash_landed = FALSE
@@ -513,9 +518,9 @@
 			else
 				addtimer(CALLBACK(src, PROC_REF(complete_dock), to_dock), 1 SECONDS) //This should never happen, yet it does sometimes.
 		if(OVERMAP_SHIP_UNDOCKING)
-			var/obj/structure/overmap/old_docked_location = null
+			// Get the location we're undocking from (passed via weakref from undock())
+			var/obj/structure/overmap/old_docked_location = to_dock?.resolve()
 			if(!isturf(loc))
-				old_docked_location = loc
 				if(istype(loc, /obj/structure/overmap/ship)) //Even more hardcoded, even more bad
 					var/obj/structure/overmap/ship/S = loc
 					S.shuttle.shuttle_areas -= shuttle.shuttle_areas
@@ -523,13 +528,31 @@
 				var/turf/target_turf = get_turf(loc)
 				log_shuttle("complete_dock UNDOCKING: Moving ship [src] from [loc] to turf [target_turf]")
 				forceMove(target_turf)
-
-				// Clean up empty space z-levels when undocking if no one is left
-				if(istype(old_docked_location, /obj/structure/overmap/planet/empty))
-					var/obj/structure/overmap/planet/empty/empty_space = old_docked_location
-					INVOKE_ASYNC(empty_space, TYPE_PROC_REF(/obj/structure/overmap/planet/empty, unload_level))
 			else
 				log_shuttle("complete_dock UNDOCKING: Ship [src] already on turf [loc]")
+
+			// Now that the ship has moved, clear dock flags on the old location
+			// This must happen AFTER move but BEFORE unload_level check
+			// Note: Both /obj/structure/overmap/dynamic and /obj/structure/overmap/planet have dock flags
+			if(istype(old_docked_location, /obj/structure/overmap/dynamic))
+				var/obj/structure/overmap/dynamic/dockable_place = old_docked_location
+				if(dock_index == 1)
+					dockable_place.first_dock_taken = FALSE
+				else if(dock_index == 2)
+					dockable_place.second_dock_taken = FALSE
+				dock_index = 0
+			else if(istype(old_docked_location, /obj/structure/overmap/planet))
+				var/obj/structure/overmap/planet/planet_place = old_docked_location
+				if(dock_index == 1)
+					planet_place.first_dock_taken = FALSE
+				else if(dock_index == 2)
+					planet_place.second_dock_taken = FALSE
+				dock_index = 0
+
+			// Clean up empty space z-levels when undocking if no one is left
+			if(istype(old_docked_location, /obj/structure/overmap/planet/empty))
+				var/obj/structure/overmap/planet/empty/empty_space = old_docked_location
+				INVOKE_ASYNC(empty_space, TYPE_PROC_REF(/obj/structure/overmap/planet/empty, unload_level))
 
 			// Always set state to FLYING when undocking completes
 			state = OVERMAP_SHIP_FLYING
@@ -715,6 +738,7 @@
   */
 /obj/structure/overmap/ship/proc/clear_pending_dock()
 	pending_dock = FALSE
+	pending_dock_target = null
 	if(pending_dock_timer)
 		deltimer(pending_dock_timer)
 		pending_dock_timer = null
@@ -852,10 +876,17 @@
 		to_chat(user, "<span class='warning'>Both ships must be undocked to perform ship-to-ship docking!</span>")
 		return
 
+	// Check if acting_ship is clicking on a ship it already requested to dock with
+	// If so, cancel the request
+	if(acting_ship.pending_dock && acting_ship.pending_dock_target == src)
+		acting_ship.clear_pending_dock()
+		acting_ship.ship_announce("Docking request to [name] has been cancelled.", "Docking Cancelled")
+		ship_announce("[acting_ship.name] has cancelled their docking request.", "Docking Cancelled")
+		return
+
 	// Check if the target (src) already sent a request to acting_ship
-	// If src.pending_dock is TRUE, it means src previously requested to dock with someone
-	// and now acting_ship is requesting back - this completes the handshake
-	if(pending_dock == TRUE)
+	// If src.pending_dock is TRUE and target is acting_ship, complete the handshake
+	if(pending_dock && pending_dock_target == acting_ship)
 		ship_announce("Initiating docking procedures with [acting_ship.name]...", "Docking")
 		acting_ship.ship_announce("Initiating docking procedures with [name]...", "Docking")
 
@@ -868,22 +899,27 @@
 		if(result)
 			to_chat(user, "<span class='warning'>[result]</span>")
 	else
-		// First request - acting_ship wants to dock with src (target)
-		// Set pending_dock on acting_ship to mark that it's waiting for a response
-		if(!acting_ship.pending_dock)
-			log_admin("[key_name(user)] requested ship-to-ship docking from [acting_ship.name] to [name]")
-			// Announce to the acting ship (the one making the request)
-			acting_ship.ship_announce("Your ship has requested to dock with [name]. They must also request docking to proceed.", "Docking Request")
-			// Announce to the target ship (src) that they have an incoming request
-			ship_announce("[acting_ship.name] has requested to dock with your ship. Use your helm console to accept.", "Incoming Docking Request")
-			// Set pending on acting_ship - this marks that acting_ship is waiting for src to respond
-			acting_ship.pending_dock = TRUE
+		// If acting_ship already has a pending request to a DIFFERENT ship, cancel it first
+		if(acting_ship.pending_dock && acting_ship.pending_dock_target != src)
+			var/obj/structure/overmap/ship/old_target = acting_ship.pending_dock_target
+			acting_ship.clear_pending_dock()
+			acting_ship.ship_announce("Docking request to [old_target?.name] has been cancelled.", "Docking Cancelled")
+			if(old_target)
+				old_target.ship_announce("[acting_ship.name] has cancelled their docking request.", "Docking Cancelled")
 
-			// Set a 30 second timer to clear the pending dock request on acting_ship
-			acting_ship.pending_dock_timer = addtimer(CALLBACK(acting_ship, PROC_REF(clear_pending_dock)), 30 SECONDS, TIMER_STOPPABLE)
-			acting_ship.ship_announce("Docking request will expire in 30 seconds.", "Docking Request Timer")
-		else
-			to_chat(user, "<span class='warning'>Docking request already pending.</span>")
+		// New request - acting_ship wants to dock with src (target)
+		log_admin("[key_name(user)] requested ship-to-ship docking from [acting_ship.name] to [name]")
+		// Announce to the acting ship (the one making the request)
+		acting_ship.ship_announce("Your ship has requested to dock with [name]. They must also request docking to proceed.", "Docking Request")
+		// Announce to the target ship (src) that they have an incoming request
+		ship_announce("[acting_ship.name] has requested to dock with your ship. Use your helm console to accept.", "Incoming Docking Request")
+		// Set pending on acting_ship - this marks that acting_ship is waiting for src to respond
+		acting_ship.pending_dock = TRUE
+		acting_ship.pending_dock_target = src
+
+		// Set a 30 second timer to clear the pending dock request on acting_ship
+		acting_ship.pending_dock_timer = addtimer(CALLBACK(acting_ship, PROC_REF(clear_pending_dock)), 30 SECONDS, TIMER_STOPPABLE)
+		acting_ship.ship_announce("Docking request will expire in 30 seconds.", "Docking Request Timer")
 /**
   * Calculates the mass based on the amount of turfs in the shuttle's areas
   * Ship health is based on current turfs vs original turfs
