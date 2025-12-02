@@ -1,4 +1,5 @@
 /turf/open/misc/asteroid/snow/breathable
+	initial_gas_mix = FROZEN_ATMOS
 	planetary_atmos = TRUE
 	slowdown = 0
 
