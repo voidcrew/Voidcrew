@@ -45,6 +45,7 @@
 	w_class = WEIGHT_CLASS_HUGE
 	damage = MISSILE_DAMAGE_HEAVY
 	explosion_devastation = 1
+	explosion_block = 6
 	explosion_heavy = 4
 	explosion_light = 6
 	explosion_flame = 3

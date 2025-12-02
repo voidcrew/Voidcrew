@@ -18,12 +18,11 @@
 /datum/techweb_node/ship_combat_advanced
 	id = TECHWEB_NODE_SHIP_COMBAT_ADVANCED
 	display_name = "Advanced Ship Combat"
-	description = "Advanced ship combat technology including cloaking devices, multi-missile launchers, interdictors, and heavy ordnance."
+	description = "Advanced ship combat technology including cloaking devices, multi-missile launchers, and heavy ordnance."
 	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
 	design_ids = list(
 		"ship_cloak_device",
 		"ship_hellfire_launcher",
-		"ship_interdictor",
 		"ship_missile_heavy",
 		"ship_missile_emp",
 		"ship_missile_incendiary",
@@ -73,16 +72,6 @@
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
-
-/datum/design/board/ship_interdictor
-	name = "Ship Interdictor Board"
-	desc = "Allows for the construction of a ship interdictor that can force nearby ships to dock."
-	id = "ship_interdictor"
-	build_path = /obj/item/circuitboard/machine/ship_combat/interdictor
-	category = list(
-		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
-	)
-	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_SECURITY
 
 // ========== MISSILE DESIGNS ==========
 

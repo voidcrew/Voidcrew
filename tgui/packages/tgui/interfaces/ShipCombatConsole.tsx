@@ -40,6 +40,12 @@ type Data = {
   launchers: Launcher[];
   launchers_ready: number;
   launchers_total: number;
+  // Interdictor data
+  interdiction_active: BooleanLike;
+  interdiction_progress: number;
+  interdict_cooldown_active: BooleanLike;
+  interdict_cooldown_remaining: number;
+  target_same_tile: BooleanLike;
 };
 
 export const ShipCombatConsole = (props) => {
@@ -47,7 +53,7 @@ export const ShipCombatConsole = (props) => {
   const { connected } = data;
 
   return (
-    <Window width={500} height={550} title="Ship Combat Console">
+    <Window width={500} height={650} title="Ship Combat Console">
       <Window.Content>
         <Stack fill vertical>
           {!connected ? (
@@ -64,6 +70,9 @@ export const ShipCombatConsole = (props) => {
               </Stack.Item>
               <Stack.Item>
                 <TargetSection />
+              </Stack.Item>
+              <Stack.Item>
+                <InterdictorSection />
               </Stack.Item>
               <Stack.Item grow>
                 <LauncherSection />
@@ -153,6 +162,84 @@ const TargetSection = () => {
       >
         Activate Targeting
       </Button>
+    </Section>
+  );
+};
+
+const InterdictorSection = () => {
+  const { act, data } = useBackend<Data>();
+  const {
+    target_ref,
+    target_same_tile,
+    interdiction_active,
+    interdiction_progress,
+    interdict_cooldown_active,
+    interdict_cooldown_remaining,
+  } = data;
+
+  // Can interdict if: target selected, on same tile, not already interdicting, not on cooldown
+  const canInterdict =
+    target_ref && target_same_tile && !interdiction_active && !interdict_cooldown_active;
+
+  return (
+    <Section title="Interdictor">
+      {interdiction_active ? (
+        <>
+          <Box mb={1} fontSize="14px" textAlign="center" color="bad">
+            INTERDICTION IN PROGRESS
+          </Box>
+          <ProgressBar
+            value={interdiction_progress / 100}
+            ranges={{
+              bad: [0, 0.4],
+              average: [0.4, 0.8],
+              good: [0.8, 1],
+            }}
+          >
+            Locking... {interdiction_progress}%
+          </ProgressBar>
+          <Box mt={1}>
+            <Button
+              fluid
+              icon="times"
+              color="bad"
+              onClick={() => act('cancel_interdict')}
+            >
+              Cancel Interdiction
+            </Button>
+          </Box>
+        </>
+      ) : interdict_cooldown_active ? (
+        <>
+          <Box mb={1} textAlign="center" color="label">
+            Interdictor Recharging
+          </Box>
+          <ProgressBar
+            value={1 - interdict_cooldown_remaining / 3000}
+            ranges={{
+              bad: [0, 0.4],
+              average: [0.4, 0.8],
+              good: [0.8, 1],
+            }}
+          >
+            {Math.ceil(interdict_cooldown_remaining / 10)}s remaining
+          </ProgressBar>
+        </>
+      ) : (
+        <Button
+          fluid
+          icon="satellite-dish"
+          color="red"
+          disabled={!canInterdict}
+          onClick={() => act('start_interdict')}
+        >
+          {!target_ref
+            ? 'Select a Target'
+            : !target_same_tile
+              ? 'Target Not In Range (Same Tile)'
+              : 'INTERDICT TARGET'}
+        </Button>
+      )}
     </Section>
   );
 };

@@ -29,10 +29,10 @@
 #define MISSILE_SPEED 2
 
 /// Default explosion ranges for missile impact (standard missile)
-#define MISSILE_EXPLOSION_DEVASTATION 0
-#define MISSILE_EXPLOSION_HEAVY 2
-#define MISSILE_EXPLOSION_LIGHT 3
-#define MISSILE_EXPLOSION_FLAME 2
+#define MISSILE_EXPLOSION_DEVASTATION 1
+#define MISSILE_EXPLOSION_HEAVY 3
+#define MISSILE_EXPLOSION_LIGHT 5
+#define MISSILE_EXPLOSION_FLAME 3
 
 // ========== LAUNCHER DEFINES ==========
 
@@ -63,3 +63,6 @@
 
 /// Power draw when interdicting
 #define INTERDICTOR_POWER_ACTIVE 300
+
+/// Cooldown before interdicted ship can undock (30 seconds)
+#define INTERDICTOR_UNDOCK_LOCKOUT 30 SECONDS

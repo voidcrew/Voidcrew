@@ -62,6 +62,16 @@
 	/// Are we currently in attack mode (camera view)?
 	var/attack_mode = FALSE
 
+	// ===== INTERDICTOR VARIABLES =====
+	/// Is interdiction currently active?
+	var/interdiction_active = FALSE
+	/// Progress of the interdiction (0-100)
+	var/interdiction_progress = 0
+	/// Timer ID for processing interdiction
+	var/interdiction_timer
+	/// Cooldown between interdiction attempts
+	COOLDOWN_DECLARE(interdict_cooldown)
+
 /obj/machinery/computer/camera_advanced/ship_combat/Initialize(mapload)
 	. = ..()
 	// Add our custom actions
@@ -72,6 +82,7 @@
 	reticle = new(null, src)
 
 /obj/machinery/computer/camera_advanced/ship_combat/Destroy()
+	cancel_interdiction()
 	clear_target()
 	for(var/datum/weakref/ref in linked_launchers)
 		var/obj/machinery/ship_combat/missile_launcher/launcher = ref.resolve()
@@ -202,6 +213,18 @@
 	data["launchers_ready"] = ready_count
 	data["launchers_total"] = total_count
 
+	// Interdictor data
+	data["interdiction_active"] = interdiction_active
+	data["interdiction_progress"] = interdiction_progress
+	data["interdict_cooldown_active"] = !COOLDOWN_FINISHED(src, interdict_cooldown)
+	data["interdict_cooldown_remaining"] = COOLDOWN_TIMELEFT(src, interdict_cooldown)
+
+	// Check if target is on same tile (required for interdiction)
+	var/target_same_tile = FALSE
+	if(target_ship && current_ship)
+		target_same_tile = (get_turf(target_ship) == get_turf(current_ship))
+	data["target_same_tile"] = target_same_tile
+
 	return data
 
 /obj/machinery/computer/camera_advanced/ship_combat/ui_act(action, list/params, datum/tgui/ui)
@@ -242,6 +265,13 @@
 
 		if("fire_all")
 			fire_all(ui.user)
+			return TRUE
+
+		if("start_interdict")
+			return start_interdiction(ui.user)
+
+		if("cancel_interdict")
+			cancel_interdiction()
 			return TRUE
 
 	return FALSE
@@ -604,6 +634,159 @@
 	status["ready"] = ready_count
 	status["total"] = total_count
 	return status
+
+// ========== INTERDICTION ==========
+
+/// Starts the interdiction process
+/obj/machinery/computer/camera_advanced/ship_combat/proc/start_interdiction(mob/user)
+	if(machine_stat & (BROKEN|NOPOWER))
+		if(user)
+			to_chat(user, span_warning("[src] is not operational!"))
+		return FALSE
+
+	if(!current_ship)
+		if(user)
+			to_chat(user, span_warning("[src] is not connected to ship systems!"))
+		return FALSE
+
+	if(interdiction_active)
+		if(user)
+			to_chat(user, span_warning("Interdiction already in progress!"))
+		return FALSE
+
+	if(!COOLDOWN_FINISHED(src, interdict_cooldown))
+		if(user)
+			to_chat(user, span_warning("Interdictor is recharging! Available in [DisplayTimeText(COOLDOWN_TIMELEFT(src, interdict_cooldown))]."))
+		return FALSE
+
+	if(!target_ship)
+		if(user)
+			to_chat(user, span_warning("No target selected!"))
+		return FALSE
+
+	// Verify target is on the same tile
+	if(get_turf(target_ship) != get_turf(current_ship))
+		if(user)
+			to_chat(user, span_warning("Target ship is not on the same tile! Move closer to interdict."))
+		return FALSE
+
+	// Verify target is still flying
+	if(target_ship.state != OVERMAP_SHIP_FLYING)
+		if(user)
+			to_chat(user, span_warning("Target ship cannot be interdicted!"))
+		return FALSE
+
+	// Start interdiction
+	interdiction_active = TRUE
+	interdiction_progress = 0
+
+	// Apply slowdown to target
+	target_ship.speed_multiplier = INTERDICTOR_SPEED_REDUCTION
+
+	// Send signal and alert target crew
+	SEND_SIGNAL(target_ship, COMSIG_SHIP_INTERDICTED, src)
+	target_ship.ship_announce("WARNING: YOUR SHIP IS BEING INTERDICTED! ENGINES AT [INTERDICTOR_SPEED_REDUCTION * 100]% EFFICIENCY!", "INTERDICTION ALERT", sound('sound/effects/alert.ogg'))
+
+	// Alert our crew
+	if(user)
+		to_chat(user, span_notice("Interdiction lock initiated on [target_ship.display_name]. Locking on..."))
+	current_ship.ship_announce("Interdiction lock initiated on [target_ship.display_name].", "Interdictor")
+
+	// Start processing
+	interdiction_timer = addtimer(CALLBACK(src, PROC_REF(process_interdiction)), 0.5 SECONDS, TIMER_STOPPABLE | TIMER_LOOP)
+
+	return TRUE
+
+/// Called every 0.5 seconds during interdiction
+/obj/machinery/computer/camera_advanced/ship_combat/proc/process_interdiction()
+	if(!interdiction_active)
+		return
+
+	if(machine_stat & (BROKEN|NOPOWER))
+		cancel_interdiction("Interdictor lost power!")
+		return
+
+	if(!target_ship)
+		cancel_interdiction("Target lost!")
+		return
+
+	// Check if target escaped (moved to different tile)
+	if(get_turf(target_ship) != get_turf(current_ship))
+		cancel_interdiction("Target escaped interdiction range!")
+		return
+
+	// Check if target is no longer flying (already docked somewhere)
+	if(target_ship.state != OVERMAP_SHIP_FLYING)
+		cancel_interdiction("Target is no longer flying!")
+		return
+
+	// Increment progress (10% per 0.5 seconds = 5 seconds total)
+	interdiction_progress += 10
+
+	if(interdiction_progress >= 100)
+		complete_interdiction()
+
+/// Cancels the interdiction process
+/obj/machinery/computer/camera_advanced/ship_combat/proc/cancel_interdiction(reason)
+	if(!interdiction_active)
+		return
+
+	interdiction_active = FALSE
+	interdiction_progress = 0
+
+	if(interdiction_timer)
+		deltimer(interdiction_timer)
+		interdiction_timer = null
+
+	// Remove slowdown from target
+	if(target_ship)
+		target_ship.speed_multiplier = 1
+		SEND_SIGNAL(target_ship, COMSIG_SHIP_INTERDICTION_ENDED)
+		target_ship.ship_announce("Interdiction lock broken. Engines restored to full power.", "Interdiction Ended")
+
+	if(reason && current_ship)
+		current_ship.ship_announce("[reason]", "Interdiction Failed")
+
+/// Completes interdiction and forces docking
+/obj/machinery/computer/camera_advanced/ship_combat/proc/complete_interdiction()
+	if(!interdiction_active)
+		return
+
+	if(!target_ship)
+		cancel_interdiction("Target lost at final moment!")
+		return
+
+	interdiction_active = FALSE
+	interdiction_progress = 100
+
+	if(interdiction_timer)
+		deltimer(interdiction_timer)
+		interdiction_timer = null
+
+	// Remove slowdown
+	target_ship.speed_multiplier = 1
+	SEND_SIGNAL(target_ship, COMSIG_SHIP_INTERDICTION_ENDED)
+
+	// Announce success
+	current_ship.ship_announce("Interdiction complete! Forcing [target_ship.display_name] to dock!", "Interdiction Success")
+	target_ship.ship_announce("INTERDICTION COMPLETE! Forced docking initiated!", "INTERDICTION ALERT")
+
+	// Apply undock lockout to target ship BEFORE docking
+	COOLDOWN_START(target_ship, interdiction_undock_lockout, INTERDICTOR_UNDOCK_LOCKOUT)
+
+	// Force dock the ships together
+	var/result = current_ship.dock_ships_directly(target_ship, null)
+	if(result)
+		// Docking failed for some reason
+		current_ship.ship_announce("Forced docking failed: [result]", "Docking Error")
+		target_ship.ship_announce("Forced docking failed. Engines restored.", "Interdiction Ended")
+	else
+		// Success - play alarm on target ship and notify of lockout
+		playsound(src, 'sound/machines/airlock/airlockopen.ogg', 50, TRUE)
+		target_ship.ship_announce("Undocking systems locked for [DisplayTimeText(INTERDICTOR_UNDOCK_LOCKOUT)]!", "SYSTEMS LOCKED")
+
+	// Start cooldown
+	COOLDOWN_START(src, interdict_cooldown, INTERDICTOR_COOLDOWN)
 
 // ========== TARGETING RETICLE ==========
 

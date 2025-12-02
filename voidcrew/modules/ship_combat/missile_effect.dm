@@ -112,12 +112,21 @@
 	return ..()
 
 /obj/effect/ship_missile/Bump(atom/A)
-	. = ..()
 	// Ignore collisions with other missiles
 	if(istype(A, /obj/effect/ship_missile))
-		return
-	if(A && !exploded)
+		return ..()
+
+	// If we hit something dense, we need to explode ON it, not next to it in space
+	if(A && A.density && !exploded)
+		// Get the turf of the thing we hit
+		var/turf/impact_turf = get_turf(A)
+		if(impact_turf)
+			// Force move to that turf so the explosion epicenter is on the ship
+			forceMove(impact_turf)
 		impact()
+		return
+
+	return ..()
 
 /// Start chasing the target turf
 /obj/effect/ship_missile/proc/chase_target(atom/chasing)

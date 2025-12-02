@@ -101,6 +101,8 @@
 
 	/// Speed multiplier for external effects like interdiction (1 = normal, 0.5 = half speed)
 	var/speed_multiplier = 1
+	/// Cooldown preventing undocking after being interdicted
+	COOLDOWN_DECLARE(interdiction_undock_lockout)
 
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
@@ -475,6 +477,9 @@
 		return "Ship not docked!"
 	if(!shuttle)
 		return "Shuttle not found!"
+	// Check interdiction undock lockout
+	if(!COOLDOWN_FINISHED(src, interdiction_undock_lockout))
+		return "Undocking systems locked! [DisplayTimeText(COOLDOWN_TIMELEFT(src, interdiction_undock_lockout))] remaining."
 	// Don't clear dock flags here - wait until shuttle has actually moved in complete_dock
 	// Otherwise the z-level might be unloaded while we're still on it
 	// Clear port destinations when undocking from empty space to prevent confusion
