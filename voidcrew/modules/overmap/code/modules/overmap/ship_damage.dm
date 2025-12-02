@@ -336,6 +336,9 @@
 	for(var/obj/structure/overmap/event/hazard in loc)
 		apply_hazard_effect(hazard)
 
+	// Check proximity to sun
+	check_sun_proximity()
+
 /**
  * Applies the effect of a hazard to the ship
  */
@@ -695,3 +698,124 @@
 		voice.status = SOUND_STREAM
 		SEND_SOUND(crew, voice)
 	return TRUE
+
+/**
+ * Sun Proximity Check
+ * Calculates manhattan distance from the sun and applies appropriate effects
+ * 0 = death, 1 = fires + extreme heat, 2 = medium heat, 3+ = reset to normal
+ */
+/obj/structure/overmap/ship/proc/check_sun_proximity()
+	var/turf/sun_turf = SSovermap.overmap_centre
+	var/turf/ship_turf = get_turf(src)
+	if(!sun_turf || !ship_turf)
+		return
+
+	// Manhattan distance from sun center
+	var/distance = abs(ship_turf.x - sun_turf.x) + abs(ship_turf.y - sun_turf.y)
+
+	switch(distance)
+		if(0)
+			// Direct collision with sun - everything burns
+			on_sun_collision()
+		if(1)
+			// Adjacent to sun - fires and extreme heat
+			apply_sun_heat(10)
+			apply_sun_fires(6)
+		if(2)
+			// Close - medium heat, no fires
+			apply_sun_heat(4)
+		else
+			// Safe distance - reset temperature to normal
+			apply_sun_heat(0)
+
+/**
+ * Sun Heat Effect
+ * Adjusts temperature of ALL turfs on the ship based on sun proximity
+ * intensity > 0 = heating toward dangerous temps
+ * intensity = 0 = reset to room temperature
+ */
+/obj/structure/overmap/ship/proc/apply_sun_heat(intensity = 0)
+	if(!shuttle?.shuttle_areas?.len)
+		return
+
+	// Target temperature based on intensity
+	// T20C (293K) is comfortable room temperature
+	// Higher intensity = hotter target
+	var/target_temp
+	var/temp_change
+	if(intensity > 0)
+		target_temp = T20C + (intensity * 40)  // intensity 10 = 693K, intensity 4 = 453K
+		temp_change = intensity * 15  // How fast we heat up
+	else
+		target_temp = T20C  // Reset to room temperature
+		temp_change = 30  // Cool down fairly quickly
+
+	for(var/area/ship_area as anything in shuttle.shuttle_areas)
+		for(var/turf/T in ship_area)
+			var/datum/gas_mixture/air = T.return_air()
+			if(!air)
+				continue
+
+			if(air.temperature < target_temp)
+				// Heating up toward target
+				air.temperature = min(air.temperature + temp_change, target_temp)
+			else if(air.temperature > target_temp)
+				// Cooling down toward target
+				air.temperature = max(air.temperature - temp_change, target_temp)
+
+/**
+ * Sun Fire Effect
+ * Spawns fires on the ship based on intensity
+ * Uses the standard 3-second hazard cooldown to prevent spam
+ */
+/obj/structure/overmap/ship/proc/apply_sun_fires(fire_count = 1)
+	if(!COOLDOWN_FINISHED(src, hazard_damage_cooldown))
+		return
+	COOLDOWN_START(src, hazard_damage_cooldown, 3 SECONDS)
+
+	// Announce based on severity
+	if(fire_count >= 6)
+		ship_announce("DANGER: Extreme solar radiation! Fires detected!", "THERMAL EMERGENCY")
+	else if(fire_count >= 3)
+		ship_announce("Warning: High solar radiation! Hull temperature rising.", "Thermal Alert")
+
+	for(var/i in 1 to fire_count)
+		var/turf/target = get_random_ship_turf()
+		if(!target)
+			continue
+
+		// Chance to start fires based on count (more fires = more likely each spawns)
+		if(prob(15 * fire_count))
+			new /obj/effect/hotspot(target)
+
+	// Recalculate mass in case equipment was destroyed by heat
+	addtimer(CALLBACK(src, PROC_REF(calculate_mass)), 2 SECONDS)
+
+/**
+ * Sun Collision - Everything Burns
+ * Triggers when ship flies directly into the sun
+ * Sets all crew on fire, maxes out ship temperature, fires on every turf
+ * No explosions - just let it burn
+ */
+/obj/structure/overmap/ship/proc/on_sun_collision()
+	if(!shuttle?.shuttle_areas?.len)
+		return
+
+	ship_announce("SOLAR IMMERSION DETECTED.", "EMERGENCY")
+	play_ship_sound('sound/machines/engine_alert/engine_alert3.ogg', 100)
+
+	// Set all crew members on fire
+	for(var/mob/living/crew in get_all_ship_mobs())
+		crew.adjust_fire_stacks(20)
+		crew.ignite_mob()
+
+	// Max out temperature and set fires on every turf
+	for(var/area/ship_area as anything in shuttle.shuttle_areas)
+		for(var/turf/T in ship_area)
+			// Max temperature
+			var/datum/gas_mixture/air = T.return_air()
+			if(air)
+				air.temperature = FIRE_MINIMUM_TEMPERATURE_TO_SPREAD + 1000  // ~1473K
+
+			// Fire on this turf
+			new /obj/effect/hotspot(T)
