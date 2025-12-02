@@ -35,7 +35,7 @@
 	flora_spawn_chance = 30
 
 /datum/biome/snow/thawed
-	open_turf_types = list(/turf/open/misc/dirt/jungle/dark/lit = 1)
+	open_turf_types = list(/turf/open/misc/dirt/snow/lit = 1)
 	flora_spawn_chance = 40
 	flora_spawn_list = list(
 		/obj/structure/flora/ausbushes/fullgrass = 1,
@@ -156,7 +156,7 @@
 	)
 
 /datum/biome/cave/snow/thawed
-	open_turf_types = list(/turf/open/misc/dirt/jungle/dark = 1)
+	open_turf_types = list(/turf/open/misc/dirt/snow = 1)
 
 /datum/biome/cave/snow/ice
 	open_turf_types = list(/turf/open/misc/asteroid/snow/breathable = 20, /turf/open/misc/ice = 3)
