@@ -80,12 +80,20 @@
 		update_appearance()
 		return
 
-	// Multitool linking
+	// Multitool linking - add to launcher buffer list
 	if(istype(W, /obj/item/multitool))
 		var/obj/item/multitool/tool = W
-		tool.set_buffer(src)
-		balloon_alert(user, "launcher buffered")
-		to_chat(user, span_notice("You buffer [src] to the multitool. Use it on a combat console to link."))
+		// Initialize the launcher buffer list if needed
+		if(!islist(tool.buffer))
+			tool.buffer = list()
+		var/list/launcher_buffer = tool.buffer
+		// Check if already in buffer
+		if(src in launcher_buffer)
+			balloon_alert(user, "already buffered")
+			return
+		launcher_buffer += src
+		balloon_alert(user, "launcher buffered ([length(launcher_buffer)])")
+		to_chat(user, span_notice("You buffer [src] to the multitool. [length(launcher_buffer)] launcher(s) buffered. Use on a combat console to link all."))
 		return
 
 	// Standard deconstruction
@@ -382,12 +390,20 @@
 		update_appearance()
 		return
 
-	// Multitool linking
+	// Multitool linking - add to launcher buffer list
 	if(istype(W, /obj/item/multitool))
 		var/obj/item/multitool/tool = W
-		tool.set_buffer(src)
-		balloon_alert(user, "launcher buffered")
-		to_chat(user, span_notice("You buffer [src] to the multitool. Use it on a combat console to link."))
+		// Initialize the launcher buffer list if needed
+		if(!islist(tool.buffer))
+			tool.buffer = list()
+		var/list/launcher_buffer = tool.buffer
+		// Check if already in buffer
+		if(src in launcher_buffer)
+			balloon_alert(user, "already buffered")
+			return
+		launcher_buffer += src
+		balloon_alert(user, "launcher buffered ([length(launcher_buffer)])")
+		to_chat(user, span_notice("You buffer [src] to the multitool. [length(launcher_buffer)] launcher(s) buffered. Use on a combat console to link all."))
 		return
 
 	// Standard deconstruction

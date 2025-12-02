@@ -16,3 +16,9 @@
 
 /// Sent when ship has been destroyed and is crash landing: ()
 #define COMSIG_SHIP_DESTROYED "ship_destroyed"
+
+/// Sent when a ship is being interdicted: (obj/machinery/ship_combat/interdictor/source)
+#define COMSIG_SHIP_INTERDICTED "ship_interdicted"
+
+/// Sent when interdiction on a ship ends (completed or cancelled): ()
+#define COMSIG_SHIP_INTERDICTION_ENDED "ship_interdiction_ended"

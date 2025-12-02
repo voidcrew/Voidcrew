@@ -99,6 +99,9 @@
 	/// The ship we sent a docking request to (if any)
 	var/obj/structure/overmap/ship/pending_dock_target
 
+	/// Speed multiplier for external effects like interdiction (1 = normal, 0.5 = half speed)
+	var/speed_multiplier = 1
+
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
 	// Template setup is now handled by setup_from_template() called from create_ship
@@ -1173,6 +1176,9 @@
 		return
 
 	thrust_used = thrust_used / max(mass * 100, 1) //do not know why this minimum check is here, but I clearly ran into an issue here before
+
+	// Apply speed multiplier (for effects like interdiction)
+	thrust_used *= speed_multiplier
 
 	if(n_dir)
 		accelerate(n_dir, thrust_used)

@@ -118,10 +118,13 @@
 
 // ========== CREW MEMBERSHIP CHECK ==========
 
-/// Checks if the given user is a member of this ship's crew
+/// Checks if the given user is a member of this ship's crew (admin ghosts with AI interact bypass)
 /obj/machinery/computer/camera_advanced/ship_combat/proc/is_crew_member(mob/user)
 	if(!ismob(user))
 		return FALSE
+	// Admin ghosts with AI interact toggle have access
+	if(isAdminGhostAI(user))
+		return TRUE
 	var/mob/living/living_user = user
 	if(!istype(living_user) || !living_user.mind)
 		return FALSE
@@ -336,6 +339,45 @@
 		balloon_alert(user, "nothing buffered")
 		return ITEM_INTERACT_BLOCKING
 
+	// Handle list of launchers (new behavior)
+	if(islist(tool.buffer))
+		var/list/launcher_buffer = tool.buffer
+		if(!length(launcher_buffer))
+			balloon_alert(user, "nothing buffered")
+			return ITEM_INTERACT_BLOCKING
+
+		var/linked_count = 0
+		var/already_linked_count = 0
+		for(var/obj/machinery/ship_combat/missile_launcher/launcher in launcher_buffer)
+			// Check if already linked
+			var/already_linked = FALSE
+			for(var/datum/weakref/ref in linked_launchers)
+				if(ref.resolve() == launcher)
+					already_linked = TRUE
+					already_linked_count++
+					break
+			if(already_linked)
+				continue
+
+			// Link the launcher
+			if(launcher.link_console(src))
+				linked_launchers += WEAKREF(launcher)
+				linked_count++
+
+		// Clear the buffer after linking
+		launcher_buffer.Cut()
+
+		if(linked_count > 0)
+			balloon_alert(user, "[linked_count] launcher(s) linked")
+			to_chat(user, span_notice("Linked [linked_count] launcher(s) to [src]. Total launchers: [length(linked_launchers)]"))
+		else if(already_linked_count > 0)
+			balloon_alert(user, "all already linked")
+		else
+			balloon_alert(user, "no valid launchers")
+
+		return ITEM_INTERACT_SUCCESS
+
+	// Handle single launcher (legacy behavior / backwards compatibility)
 	if(!istype(tool.buffer, /obj/machinery/ship_combat/missile_launcher))
 		balloon_alert(user, "invalid device")
 		return ITEM_INTERACT_BLOCKING

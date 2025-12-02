@@ -35,8 +35,8 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	damage = MISSILE_DAMAGE_LIGHT
 	explosion_heavy = 1
-	explosion_light = 3
-	explosion_flame = 4
+	explosion_light = 2
+	explosion_flame = 1
 
 /obj/item/ship_combat_missile/heavy
 	name = "heavy ship missile"
@@ -44,10 +44,10 @@
 	icon_state = "srm-8"
 	w_class = WEIGHT_CLASS_HUGE
 	damage = MISSILE_DAMAGE_HEAVY
-	explosion_devastation = 2
-	explosion_heavy = 3
-	explosion_light = 5
-	explosion_flame = 6
+	explosion_devastation = 1
+	explosion_heavy = 4
+	explosion_light = 6
+	explosion_flame = 3
 
 /obj/item/ship_combat_missile/incendiary
 	name = "incendiary ship missile"

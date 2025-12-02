@@ -18,13 +18,12 @@
 #define COMSIG_SHIP_HAZARD_TRIGGERED "ship_hazard_triggered"
 
 // ========== MISSILE DEFINES ==========
-
-/// Base damage for standard missiles
-#define MISSILE_DAMAGE_STANDARD 50
-/// Base damage for heavy missiles
-#define MISSILE_DAMAGE_HEAVY 100
 /// Base damage for light missiles
-#define MISSILE_DAMAGE_LIGHT 25
+#define MISSILE_DAMAGE_LIGHT 200
+/// Base damage for standard missiles
+#define MISSILE_DAMAGE_STANDARD 400
+/// Base damage for heavy missiles
+#define MISSILE_DAMAGE_HEAVY 600
 
 /// Missile flight speed (tiles per decisecond, similar to meteors)
 #define MISSILE_SPEED 2
@@ -50,3 +49,17 @@
 
 /// Camera view size for targeting
 #define COMBAT_CAMERA_VIEW_RANGE 7
+
+// ========== INTERDICTOR DEFINES ==========
+
+/// Time to lock on to a target ship (5 seconds)
+#define INTERDICTOR_LOCK_TIME 5 SECONDS
+
+/// Cooldown between interdiction attempts (5 minutes)
+#define INTERDICTOR_COOLDOWN 5 MINUTES
+
+/// Speed multiplier applied to interdicted ships (50% speed)
+#define INTERDICTOR_SPEED_REDUCTION 0.5
+
+/// Power draw when interdicting
+#define INTERDICTOR_POWER_ACTIVE 300
