@@ -7,21 +7,6 @@
 	if(mapload)
 		port.initial_engine_power += engine_power
 
-/obj/machinery/power/shuttle_engine/ship/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
-	. = ..()
-	if(. == FALSE)
-		return
-	// Register with the ship as critical infrastructure
-	if(istype(port) && port.current_ship)
-		port.current_ship.register_engine(src)
-
-/// Override to unregister from ship infrastructure when disconnecting
-/obj/machinery/power/shuttle_engine/ship/unsync_ship()
-	var/obj/docking_port/mobile/voidcrew/port = connected_ship_ref?.resolve()
-	if(istype(port) && port.current_ship)
-		port.current_ship.unregister_engine(src)
-	return ..()
-
 /**
   * ## Engine Thrusters
   * The workhorse of any movable ship, these engines (usually) take in some kind fuel and produce thrust to move ships.

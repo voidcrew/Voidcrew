@@ -263,9 +263,8 @@
  */
 /obj/machinery/computer/helm/proc/attempt_ship_connection(last_resort = FALSE)
 	if(current_ship && current_ship.shuttle.z == z)
-		// Already connected, but ensure signal and infrastructure registration
+		// Already connected, but ensure signal is registered
 		RegisterSignal(current_ship, COMSIG_SHIP_INTEGRITY_CHANGED, PROC_REF(on_ship_integrity_changed), override = TRUE)
-		current_ship.register_helm(src)
 		return TRUE
 
 	var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(src)
@@ -285,14 +284,12 @@
 	// Unregister from old ship
 	if(current_ship)
 		UnregisterSignal(current_ship, COMSIG_SHIP_INTEGRITY_CHANGED)
-		current_ship.unregister_helm(src)
 
 	current_ship = new_ship
 
-	// Register to new ship for auto UI updates and as critical infrastructure
+	// Register to new ship for auto UI updates
 	if(current_ship)
 		RegisterSignal(current_ship, COMSIG_SHIP_INTEGRITY_CHANGED, PROC_REF(on_ship_integrity_changed))
-		current_ship.register_helm(src)
 
 /**
  * Signal handler - refreshes UI when ship integrity changes

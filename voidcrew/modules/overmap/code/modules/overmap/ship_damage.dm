@@ -23,24 +23,6 @@
 	/// Timer ID for critical state alert loop
 	var/critical_alert_timer
 
-	/**
-	 * Critical Infrastructure Tracking
-	 * Helm console and engines contribute to ship integrity.
-	 * Losing these causes significant integrity penalties.
-	 */
-	/// The ship's helm console (only one counts for integrity)
-	var/obj/machinery/computer/helm/ship_helm
-	/// List of engines on this ship
-	var/list/obj/machinery/power/shuttle_engine/ship/ship_engines = list()
-	/// Original count of engines at initialization
-	var/initial_engine_count = 0
-	/// Whether infrastructure has been initialized
-	var/infrastructure_initialized = FALSE
-	/// Health points contributed by having a helm console (binary - has or doesn't)
-	var/static/helm_health_value = 25
-	/// Health points contributed by each engine
-	var/static/engine_health_value = 10
-
 
 /**
  * Returns the current integrity as a percentage for UI display
@@ -87,88 +69,6 @@
 	if(critical_alert_timer)
 		deltimer(critical_alert_timer)
 		critical_alert_timer = null
-
-/**
- * Registers a helm console as critical infrastructure
- * Only the first helm to register counts for integrity purposes
- */
-/obj/structure/overmap/ship/proc/register_helm(obj/machinery/computer/helm/console)
-	if(!console)
-		return
-	if(ship_helm)
-		return // Already have a helm registered
-	ship_helm = console
-	RegisterSignal(console, COMSIG_QDELETING, PROC_REF(on_helm_destroyed))
-
-/**
- * Unregisters a helm console
- */
-/obj/structure/overmap/ship/proc/unregister_helm(obj/machinery/computer/helm/console)
-	if(!console || ship_helm != console)
-		return
-	UnregisterSignal(console, COMSIG_QDELETING)
-	ship_helm = null
-
-/**
- * Called when the helm console is destroyed
- */
-/obj/structure/overmap/ship/proc/on_helm_destroyed(obj/machinery/computer/helm/console)
-	SIGNAL_HANDLER
-	if(ship_helm != console)
-		return
-	ship_helm = null
-	if(infrastructure_initialized)
-		ship_announce("Warning: Helm console destroyed. Ship control systems compromised.", "Infrastructure Damage")
-
-/**
- * Registers an engine as critical infrastructure
- * Called when engine connects to shuttle
- */
-/obj/structure/overmap/ship/proc/register_engine(obj/machinery/power/shuttle_engine/ship/engine)
-	if(!engine || (engine in ship_engines))
-		return
-	ship_engines += engine
-	RegisterSignal(engine, COMSIG_QDELETING, PROC_REF(on_engine_destroyed))
-
-/**
- * Unregisters an engine
- */
-/obj/structure/overmap/ship/proc/unregister_engine(obj/machinery/power/shuttle_engine/ship/engine)
-	if(!engine || !(engine in ship_engines))
-		return
-	ship_engines -= engine
-	UnregisterSignal(engine, COMSIG_QDELETING)
-
-/**
- * Called when an engine is destroyed
- */
-/obj/structure/overmap/ship/proc/on_engine_destroyed(obj/machinery/power/shuttle_engine/ship/engine)
-	SIGNAL_HANDLER
-	ship_engines -= engine
-	// Immediate integrity recalculation will happen on next SSovermap tick
-	if(initial_engine_count > 0 && infrastructure_initialized)
-		ship_announce("Warning: Engine destroyed. Propulsion capacity reduced.", "Infrastructure Damage")
-
-/**
- * Calculates the health contribution from critical infrastructure
- * Returns the current infrastructure health value
- */
-/obj/structure/overmap/ship/proc/calculate_infrastructure_health()
-	var/health = 0
-	if(ship_helm)
-		health += helm_health_value
-	health += length(ship_engines) * engine_health_value
-	return health
-
-/**
- * Calculates the maximum infrastructure health (at initialization)
- * Returns the max infrastructure health value
- */
-/obj/structure/overmap/ship/proc/calculate_max_infrastructure_health()
-	var/health = 0
-	health += helm_health_value // Always count helm as part of max (ships should have one)
-	health += initial_engine_count * engine_health_value
-	return health
 
 /**
  * Called when ship integrity is restored above 50% after a crash

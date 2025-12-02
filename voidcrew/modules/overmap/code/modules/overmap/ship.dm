@@ -922,9 +922,8 @@
 		acting_ship.ship_announce("Docking request will expire in 30 seconds.", "Docking Request Timer")
 /**
   * Calculates the mass based on the amount of turfs in the shuttle's areas
-  * and critical infrastructure (helm consoles, engines).
-  * Ship health is based on current turfs + infrastructure vs original values
-  * Losing turfs or infrastructure = losing health, rebuilding = healing
+  * Ship health is based on current turfs vs original turfs
+  * Losing turfs = losing health, rebuilding = healing
   */
 /obj/structure/overmap/ship/proc/calculate_mass()
 	if(!shuttle)
@@ -943,25 +942,17 @@
 			else
 				.++  // Floors and other turfs
 
-	// Add infrastructure health contribution
-	var/infrastructure_health = calculate_infrastructure_health()
-	. += infrastructure_health
-
 	var/old_integrity = integrity
 	mass = .
 
 	// First calculation - set original mass as max_integrity and start at full health
 	if(!integrity_initialized)
-		// Initialize infrastructure counts for max health calculation
-		if(!infrastructure_initialized)
-			initial_engine_count = length(ship_engines)
-			infrastructure_initialized = TRUE
 		max_integrity = mass
 		integrity = mass // Start at 100% health
 		overhealth = 0
 		integrity_initialized = TRUE
 	else
-		// Subsequent calculations - health = current turfs + infrastructure (capped at original max)
+		// Subsequent calculations - health = current turfs (capped at original max)
 		integrity = min(mass, max_integrity)
 		// Overhealth = turfs beyond original ship size (from expansion)
 		overhealth = max(0, mass - max_integrity)
