@@ -20321,6 +20321,7 @@
 /obj/effect/turf_decal/trimline/dark/corner{
 	dir = 4
 	},
+/obj/structure/sign/warning/secure_area/directional/north,
 /turf/open/floor/iron/dark,
 /area/station/command)
 "dbh" = (
@@ -28988,6 +28989,7 @@
 "enK" = (
 /obj/effect/turf_decal/stripes/line,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/green/visible,
+/obj/structure/sign/warning/radiation/directional/south,
 /turf/open/floor/engine,
 /area/station/engineering/supermatter/room)
 "enS" = (
@@ -52933,6 +52935,9 @@
 	dir = 10
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/secure_area/directional/south{
+	pixel_x = -32
+	},
 /turf/open/floor/plating/airless,
 /area/station/science/ordnance/bomb)
 "hOZ" = (
@@ -58882,10 +58887,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/iron/dark/smooth_edge,
 /area/station/service/hydroponics)
-"iHK" = (
-/obj/structure/sign/warning/secure_area,
-/turf/closed/wall/r_wall,
-/area/station/command/vault)
 "iHR" = (
 /obj/structure/broken_flooring/singular/directional/north,
 /obj/structure/curtain/cloth{
@@ -64789,10 +64790,6 @@
 /obj/machinery/computer/security/telescreen/rd/directional/north,
 /turf/open/floor/iron/dark/textured,
 /area/station/command/heads_quarters/rd)
-"jCi" = (
-/obj/structure/sign/warning/radiation,
-/turf/closed/wall/r_wall,
-/area/station/engineering/supermatter)
 "jCl" = (
 /obj/machinery/door/airlock/security/glass{
 	name = "Security Desk"
@@ -71949,13 +71946,6 @@
 /obj/machinery/camera/autoname/directional/west,
 /turf/open/floor/iron/white,
 /area/station/medical/medbay/lobby)
-"kCp" = (
-/obj/structure/sign/warning/secure_area{
-	desc = "A warning sign which reads 'SERVER ROOM'.";
-	name = "SERVER ROOM"
-	},
-/turf/closed/wall/r_wall,
-/area/station/science/server)
 "kCq" = (
 /obj/structure/grille,
 /obj/structure/lattice,
@@ -73498,13 +73488,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/dark/small,
 /area/station/security/execution/transfer)
-"kNp" = (
-/obj/structure/sign/warning/secure_area{
-	desc = "A warning sign which reads 'BOMB RANGE";
-	name = "BOMB RANGE"
-	},
-/turf/closed/wall,
-/area/station/science/ordnance/bomb)
 "kNt" = (
 /obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/trimline/brown,
@@ -84670,7 +84653,6 @@
 /obj/structure/fence{
 	dir = 4
 	},
-/obj/structure/sign/warning/secure_area,
 /turf/open/floor/plating,
 /area/station/maintenance/aft/greater)
 "mBl" = (
@@ -88206,6 +88188,7 @@
 /obj/structure/flora/rock/pile/jungle/style_random,
 /obj/structure/bed/dogbed,
 /obj/structure/marker_beacon/lime,
+/obj/structure/sign/warning/secure_area/directional/north,
 /turf/open/floor/grass,
 /area/station/maintenance/aft/greater)
 "ndj" = (
@@ -91933,6 +91916,9 @@
 	dir = 6
 	},
 /obj/effect/decal/cleanable/glass,
+/obj/structure/sign/warning/secure_area/directional/south{
+	pixel_x = 32
+	},
 /turf/open/floor/plating/airless,
 /area/station/science/ordnance/bomb)
 "nHv" = (
@@ -92560,6 +92546,9 @@
 	},
 /obj/effect/turf_decal/trimline/dark_red/filled/warning{
 	dir = 5
+	},
+/obj/structure/sign/warning/secure_area/directional/north{
+	pixel_x = 32
 	},
 /turf/open/floor/plating/airless,
 /area/station/science/ordnance/bomb)
@@ -100174,6 +100163,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/general/hidden,
 /obj/effect/mapping_helpers/airlock/access/all/science/rd,
 /obj/structure/plasticflaps/kitchen,
+/obj/structure/sign/warning/secure_area/directional/north,
 /turf/open/floor/iron/dark,
 /area/station/science/server)
 "oQc" = (
@@ -114289,6 +114279,9 @@
 /obj/effect/decal/cleanable/cobweb,
 /obj/structure/broken_flooring/singular{
 	dir = 4
+	},
+/obj/structure/sign/warning/secure_area/directional/north{
+	pixel_x = -32
 	},
 /turf/open/floor/plating/airless,
 /area/station/science/ordnance/bomb)
@@ -192502,7 +192495,7 @@ ukX
 lxu
 lcj
 enK
-jCi
+bdQ
 bdQ
 iHt
 rAE
@@ -199619,7 +199612,7 @@ hFb
 cWB
 hrq
 wRM
-kCp
+pzy
 oQa
 pzy
 pzy
@@ -213015,7 +213008,7 @@ eJN
 mMZ
 pZo
 lMc
-iHK
+gwv
 dbg
 mfR
 mxG
@@ -217088,11 +217081,11 @@ gym
 gym
 gym
 gJT
-kNp
+eoO
 hJX
 faj
 hJX
-kNp
+eoO
 gJT
 gym
 gym
@@ -218630,11 +218623,11 @@ gym
 gym
 gym
 gym
-kNp
+eoO
 hJX
 kvJ
 hJX
-kNp
+eoO
 gym
 gym
 gym
