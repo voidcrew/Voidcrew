@@ -11,7 +11,6 @@
 	design_ids = list(
 		"ship_combat_console",
 		"ship_missile_launcher",
-		"ship_shield_satellite",
 		"ship_missile_standard",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
@@ -19,10 +18,11 @@
 /datum/techweb_node/ship_combat_advanced
 	id = TECHWEB_NODE_SHIP_COMBAT_ADVANCED
 	display_name = "Advanced Ship Combat"
-	description = "Advanced ship combat technology including cloaking devices and heavy ordnance."
+	description = "Advanced ship combat technology including cloaking devices, multi-missile launchers, and heavy ordnance."
 	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
 	design_ids = list(
 		"ship_cloak_device",
+		"ship_hellfire_launcher",
 		"ship_missile_heavy",
 		"ship_missile_emp",
 		"ship_missile_incendiary",
@@ -35,7 +35,7 @@
 	name = "Ship Combat Console Board"
 	desc = "Allows for the construction of a ship combat console for tactical warfare."
 	id = "ship_combat_console"
-	build_path = /obj/item/circuitboard/computer/ship_combat
+	build_path = /obj/item/circuitboard/computer/ship_combat_console
 	category = list(
 		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_ENGINEERING
 	)
@@ -53,15 +53,15 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY
 
-/datum/design/board/ship_shield_satellite
-	name = "Ship Shield Satellite Board"
-	desc = "Allows for the construction of a defensive shield satellite."
-	id = "ship_shield_satellite"
-	build_path = /obj/item/circuitboard/machine/ship_combat/ship_shield
+/datum/design/board/ship_hellfire_launcher
+	name = "Hellfire Missile Launcher Board"
+	desc = "Allows for the construction of an advanced multi-missile launcher system capable of devastating barrages."
+	id = "ship_hellfire_launcher"
+	build_path = /obj/item/circuitboard/machine/ship_combat/missile_launcher/hellfire
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
 
 /datum/design/board/ship_cloak_device
 	name = "Cloaking Device Board"

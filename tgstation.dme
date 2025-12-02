@@ -6949,7 +6949,7 @@
 #include "voidcrew\modules\ship_combat\missile_item.dm"
 #include "voidcrew\modules\ship_combat\missile_launcher.dm"
 #include "voidcrew\modules\ship_combat\research.dm"
-#include "voidcrew\modules\ship_combat\ship_shield.dm"
+#include "voidcrew\modules\ship_combat\ship_shieldgen.dm"
 #include "voidcrew\modules\store\loadout_integration.dm"
 #include "voidcrew\modules\store\purchasable_loadout_items.dm"
 #include "voidcrew\modules\surgery\experimental_dissection.dm"

@@ -1,307 +1,225 @@
-import { useState } from 'react';
-import { useBackend } from '../backend';
+import { type BooleanLike } from 'tgui-core/react';
 import {
-  AnimatedNumber,
+  Box,
   Button,
-  ByondUi,
+  Divider,
   LabeledList,
+  NoticeBox,
   ProgressBar,
   Section,
   Stack,
   Table,
 } from 'tgui-core/components';
+
+import { useBackend } from '../backend';
 import { Window } from '../layouts';
+
+type NearbyShip = {
+  name: string;
+  ref: string;
+};
 
 type Launcher = {
   id: string;
   name: string;
-  loaded: boolean;
+  loaded: BooleanLike;
   missile_name: string | null;
   missile_damage: number | null;
-  ready: boolean;
-  cooldown: boolean;
+  ready: BooleanLike;
+  cooldown: BooleanLike;
   cooldown_time: number;
 };
 
-type Target = {
-  name: string;
-  integrity: number;
-  ref: string;
-};
-
 type Data = {
-  shipName: string;
-  shipIntegrity: number;
-  hasTarget: boolean;
-  targetName: string | null;
-  targetIntegrity: number | null;
-  hasTargetTurf: boolean;
-  targetMapRef: string;
-  availableTargets: Target[];
+  connected: BooleanLike;
+  ship_name: string | null;
+  cloak_active: BooleanLike;
+  target_name: string | null;
+  target_ref: string | null;
+  nearby_ships: NearbyShip[];
   launchers: Launcher[];
-  cloakActive: boolean;
-  mapRef: string;
+  launchers_ready: number;
+  launchers_total: number;
 };
 
-export const ShipCombatConsole = () => {
-  const { act, data } = useBackend<Data>();
-  const [mapRefreshKey, setMapRefreshKey] = useState(0);
-
-  const {
-    shipName,
-    shipIntegrity,
-    hasTarget,
-    targetName,
-    targetIntegrity,
-    hasTargetTurf,
-    targetMapRef,
-    availableTargets = [],
-    launchers = [],
-    cloakActive,
-  } = data;
+export const ShipCombatConsole = (props) => {
+  const { data } = useBackend<Data>();
+  const { connected } = data;
 
   return (
-    <Window width={1000} height={700} resizable>
+    <Window width={500} height={550} title="Ship Combat Console">
       <Window.Content>
-        <Stack fill>
-          {/* Left Panel - Target Camera and Targeting */}
-          <Stack.Item grow={2}>
-            <Stack vertical fill>
-              {/* Target Camera View */}
+        <Stack fill vertical>
+          {!connected ? (
+            <Stack.Item>
+              <NoticeBox danger>
+                Not connected to ship systems. Ensure the console is installed
+                on a valid ship.
+              </NoticeBox>
+            </Stack.Item>
+          ) : (
+            <>
+              <Stack.Item>
+                <StatusSection />
+              </Stack.Item>
+              <Stack.Item>
+                <TargetSection />
+              </Stack.Item>
               <Stack.Item grow>
-                <Section
-                  title="Target View"
-                  fill
-                  buttons={
-                    <>
-                      <Button
-                        icon="sync"
-                        tooltip="Refresh Camera"
-                        onClick={() => {
-                          act('refresh_camera');
-                          setMapRefreshKey((k) => k + 1);
-                        }}
-                      />
-                      {hasTarget && (
-                        <Button
-                          icon="times"
-                          color="bad"
-                          tooltip="Clear Target"
-                          onClick={() => act('clear_target')}
-                        />
-                      )}
-                    </>
-                  }
-                >
-                  {hasTarget ? (
-                    <ByondUi
-                      key={`combat-map-${mapRefreshKey}`}
-                      className="CameraConsole__map"
-                      height="400px"
-                      params={{
-                        id: targetMapRef,
-                        type: 'map',
-                        zoom: 0,
-                      }}
-                    />
-                  ) : (
-                    <Stack fill vertical justify="center" align="center">
-                      <Stack.Item fontSize="1.5em" color="label">
-                        No Target Selected
-                      </Stack.Item>
-                      <Stack.Item color="gray">
-                        Select a target from the radar to view
-                      </Stack.Item>
-                    </Stack>
-                  )}
-                </Section>
+                <LauncherSection />
               </Stack.Item>
-
-              {/* Target Info */}
-              {hasTarget && (
-                <Stack.Item>
-                  <Section title={`Target: ${targetName}`}>
-                    <LabeledList>
-                      <LabeledList.Item label="Integrity">
-                        <ProgressBar
-                          value={targetIntegrity! / 100}
-                          ranges={{
-                            good: [0.6, Infinity],
-                            average: [0.3, 0.6],
-                            bad: [-Infinity, 0.3],
-                          }}
-                        >
-                          <AnimatedNumber value={targetIntegrity} />%
-                        </ProgressBar>
-                      </LabeledList.Item>
-                      <LabeledList.Item label="Impact Point">
-                        {hasTargetTurf ? (
-                          <span style={{ color: '#4caf50' }}>Selected</span>
-                        ) : (
-                          <span style={{ color: '#f44336' }}>
-                            Click on camera to select
-                          </span>
-                        )}
-                      </LabeledList.Item>
-                    </LabeledList>
-                  </Section>
-                </Stack.Item>
-              )}
-            </Stack>
-          </Stack.Item>
-
-          {/* Right Panel - Ship Status, Radar, Launchers */}
-          <Stack.Item grow={1}>
-            <Stack vertical fill>
-              {/* Ship Status */}
-              <Stack.Item>
-                <Section title={`Ship: ${shipName}`}>
-                  <LabeledList>
-                    <LabeledList.Item label="Hull Integrity">
-                      <ProgressBar
-                        value={shipIntegrity / 100}
-                        ranges={{
-                          good: [0.6, Infinity],
-                          average: [0.3, 0.6],
-                          bad: [-Infinity, 0.3],
-                        }}
-                      >
-                        <AnimatedNumber value={shipIntegrity} />%
-                      </ProgressBar>
-                    </LabeledList.Item>
-                    <LabeledList.Item label="Cloak Status">
-                      {cloakActive ? (
-                        <span style={{ color: '#4caf50' }}>ACTIVE</span>
-                      ) : (
-                        <span style={{ color: '#9e9e9e' }}>Inactive</span>
-                      )}
-                    </LabeledList.Item>
-                  </LabeledList>
-                </Section>
-              </Stack.Item>
-
-              {/* Radar - Available Targets */}
-              <Stack.Item>
-                <Section title="Radar">
-                  {availableTargets.length > 0 ? (
-                    <Table>
-                      <Table.Row header>
-                        <Table.Cell>Ship</Table.Cell>
-                        <Table.Cell>Integrity</Table.Cell>
-                        <Table.Cell>Action</Table.Cell>
-                      </Table.Row>
-                      {availableTargets.map((target) => (
-                        <Table.Row key={target.ref}>
-                          <Table.Cell>{target.name}</Table.Cell>
-                          <Table.Cell>
-                            <ProgressBar
-                              value={target.integrity / 100}
-                              ranges={{
-                                good: [0.6, Infinity],
-                                average: [0.3, 0.6],
-                                bad: [-Infinity, 0.3],
-                              }}
-                            >
-                              {target.integrity}%
-                            </ProgressBar>
-                          </Table.Cell>
-                          <Table.Cell>
-                            <Button
-                              icon="crosshairs"
-                              tooltip="Target"
-                              onClick={() =>
-                                act('select_target', { ref: target.ref })
-                              }
-                            />
-                          </Table.Cell>
-                        </Table.Row>
-                      ))}
-                    </Table>
-                  ) : (
-                    <span style={{ color: 'gray' }}>No ships in range</span>
-                  )}
-                </Section>
-              </Stack.Item>
-
-              {/* Missile Launchers */}
-              <Stack.Item grow>
-                <Section title="Missile Launchers" fill scrollable>
-                  {launchers.length > 0 ? (
-                    <Stack vertical>
-                      {launchers.map((launcher) => (
-                        <Stack.Item key={launcher.id}>
-                          <Section
-                            title={launcher.name}
-                            buttons={
-                              <Button
-                                icon="rocket"
-                                content="Fire"
-                                disabled={
-                                  !launcher.ready ||
-                                  !hasTarget ||
-                                  !hasTargetTurf
-                                }
-                                color={
-                                  launcher.ready && hasTarget && hasTargetTurf
-                                    ? 'red'
-                                    : undefined
-                                }
-                                onClick={() =>
-                                  act('fire_launcher', { id: launcher.id })
-                                }
-                              />
-                            }
-                          >
-                            <LabeledList>
-                              <LabeledList.Item label="Status">
-                                {launcher.loaded ? (
-                                  <span style={{ color: '#4caf50' }}>
-                                    Loaded: {launcher.missile_name}
-                                  </span>
-                                ) : (
-                                  <span style={{ color: '#f44336' }}>Empty</span>
-                                )}
-                              </LabeledList.Item>
-                              {launcher.loaded && (
-                                <LabeledList.Item label="Damage">
-                                  {launcher.missile_damage}
-                                </LabeledList.Item>
-                              )}
-                              {launcher.cooldown && (
-                                <LabeledList.Item label="Cooldown">
-                                  <span style={{ color: '#ff9800' }}>
-                                    Reloading...
-                                  </span>
-                                </LabeledList.Item>
-                              )}
-                            </LabeledList>
-                          </Section>
-                        </Stack.Item>
-                      ))}
-                    </Stack>
-                  ) : (
-                    <span style={{ color: 'gray' }}>
-                      No launchers linked. Use a multitool to link launchers.
-                    </span>
-                  )}
-                </Section>
-              </Stack.Item>
-
-              {/* Fire All Button */}
-              <Stack.Item>
-                <Button
-                  fluid
-                  icon="bomb"
-                  content="Fire All Launchers"
-                  disabled={!hasTarget || !hasTargetTurf}
-                  color={hasTarget && hasTargetTurf ? 'red' : undefined}
-                  onClick={() => act('fire_all')}
-                />
-              </Stack.Item>
-            </Stack>
-          </Stack.Item>
+            </>
+          )}
         </Stack>
       </Window.Content>
     </Window>
+  );
+};
+
+const StatusSection = () => {
+  const { data } = useBackend<Data>();
+  const { ship_name, cloak_active, target_name } = data;
+
+  return (
+    <Section title="Status">
+      <LabeledList>
+        <LabeledList.Item label="Ship">
+          {ship_name || 'Unknown'}
+        </LabeledList.Item>
+        <LabeledList.Item label="Cloak">
+          {cloak_active ? (
+            <Box color="good">Active</Box>
+          ) : (
+            <Box color="label">Inactive</Box>
+          )}
+        </LabeledList.Item>
+        <LabeledList.Item label="Target">
+          {target_name ? (
+            <Box color="bad">{target_name}</Box>
+          ) : (
+            <Box color="label">None</Box>
+          )}
+        </LabeledList.Item>
+      </LabeledList>
+    </Section>
+  );
+};
+
+const TargetSection = () => {
+  const { act, data } = useBackend<Data>();
+  const { nearby_ships, target_name, target_ref } = data;
+
+  return (
+    <Section
+      scrollable
+      title="Nearby Ships"
+      buttons={
+        target_name && (
+          <Button
+            icon="times"
+            color="bad"
+            onClick={() => act('clear_target')}
+          >
+            Clear
+          </Button>
+        )
+      }
+    >
+      {nearby_ships.length === 0 ? (
+        <NoticeBox>No ships detected in range</NoticeBox>
+      ) : (
+        <Stack vertical>
+          {nearby_ships.map((ship) => (
+            <Stack.Item key={ship.ref}>
+              <Button
+                fluid
+                icon="crosshairs"
+                selected={target_ref === ship.ref}
+                onClick={() => act('select_target', { ref: ship.ref })}
+              >
+                {ship.name}
+              </Button>
+            </Stack.Item>
+          ))}
+        </Stack>
+      )}
+      <Divider />
+      <Button
+        fluid
+        icon="crosshairs"
+        color="red"
+        disabled={!target_name}
+        onClick={() => act('activate')}
+      >
+        Activate Targeting
+      </Button>
+    </Section>
+  );
+};
+
+const LauncherSection = () => {
+  const { data } = useBackend<Data>();
+  const { launchers, launchers_ready, launchers_total } = data;
+
+  // Count total loaded missiles
+  const missilesLoaded = launchers.filter((l) => l.loaded).length;
+
+  return (
+    <Section
+      fill
+      scrollable
+      title="Missile Launchers"
+      buttons={
+        <Box>
+          {missilesLoaded} missiles | {launchers_ready}/{launchers_total} ready
+        </Box>
+      }
+    >
+      {launchers.length === 0 ? (
+        <NoticeBox>
+          No launchers linked. Use a multitool to link missile launchers.
+        </NoticeBox>
+      ) : (
+        <Table>
+          <Table.Row header>
+            <Table.Cell>Launcher</Table.Cell>
+            <Table.Cell>Missile</Table.Cell>
+            <Table.Cell>Status</Table.Cell>
+          </Table.Row>
+          {launchers.map((launcher) => (
+            <Table.Row key={launcher.id}>
+              <Table.Cell>{launcher.id}</Table.Cell>
+              <Table.Cell>
+                {launcher.loaded ? (
+                  <Box color="good">
+                    {launcher.missile_name} ({launcher.missile_damage} dmg)
+                  </Box>
+                ) : (
+                  <Box color="bad">Empty</Box>
+                )}
+              </Table.Cell>
+              <Table.Cell>
+                {launcher.ready ? (
+                  <Box color="good">Ready</Box>
+                ) : launcher.cooldown ? (
+                  <ProgressBar
+                    value={1 - launcher.cooldown_time / 50}
+                    ranges={{
+                      good: [0.8, 1],
+                      average: [0.4, 0.8],
+                      bad: [0, 0.4],
+                    }}
+                  >
+                    Cooling
+                  </ProgressBar>
+                ) : (
+                  <Box color="bad">Not Ready</Box>
+                )}
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table>
+      )}
+    </Section>
   );
 };

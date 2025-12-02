@@ -73,24 +73,14 @@
 	)
 	crate_name = "missile launcher kit"
 
-/datum/supply_pack/ship_combat/shield_kit
-	name = "Shield Satellite Kit"
-	desc = "Contains two ship shield satellite circuit boards for \
-		establishing defensive perimeters."
-	cost = CARGO_CRATE_VALUE * 10
-	contains = list(/obj/item/circuitboard/machine/ship_combat/ship_shield = 2)
-	crate_name = "shield satellite kit"
-
 /datum/supply_pack/ship_combat/combat_starter
 	name = "Ship Combat Starter Pack"
 	desc = "Everything you need to get started with ship combat: \
-		a combat console board, launcher board, two shield boards, \
-		and four standard missiles."
-	cost = CARGO_CRATE_VALUE * 20
+		a combat console board, launcher board, and four standard missiles."
+	cost = CARGO_CRATE_VALUE * 15
 	contains = list(
-		/obj/item/circuitboard/computer/ship_combat = 1,
+		/obj/item/circuitboard/computer/ship_combat_console = 1,
 		/obj/item/circuitboard/machine/ship_combat/missile_launcher = 1,
-		/obj/item/circuitboard/machine/ship_combat/ship_shield = 2,
 		/obj/item/ship_combat_missile = 4,
 	)
 	crate_name = "ship combat starter pack"

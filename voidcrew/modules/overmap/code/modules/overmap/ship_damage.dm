@@ -240,6 +240,9 @@
  * Applies the effect of a hazard to the ship
  */
 /obj/structure/overmap/ship/proc/apply_hazard_effect(obj/structure/overmap/event/hazard)
+	// Send signal that we've entered a hazard (decloaks ship, etc.)
+	SEND_SIGNAL(src, COMSIG_SHIP_HAZARD_TRIGGERED, hazard)
+
 	// Meteors always trigger per tile - no cooldown
 	if(istype(hazard, /obj/structure/overmap/event/meteor))
 		apply_meteor_damage(hazard)

@@ -8,14 +8,14 @@
 /// Sent when a missile impacts a ship: (obj/effect/ship_missile/missile, turf/impact_turf)
 #define COMSIG_SHIP_MISSILE_IMPACT "ship_missile_impact"
 
-/// Sent when a ship's shields are hit: (obj/effect/ship_missile/missile)
-#define COMSIG_SHIP_SHIELD_HIT "ship_shield_hit"
-
 /// Sent when a ship fires any weapon (used for cloaking decloak): ()
 #define COMSIG_SHIP_WEAPON_FIRED "ship_weapon_fired"
 
 /// Sent when a ship's cloak status changes: (cloaked)
 #define COMSIG_SHIP_CLOAK_CHANGED "ship_cloak_changed"
+
+/// Sent when a ship enters an overmap hazard event: (obj/structure/overmap/event/hazard)
+#define COMSIG_SHIP_HAZARD_TRIGGERED "ship_hazard_triggered"
 
 // ========== MISSILE DEFINES ==========
 
@@ -29,10 +29,10 @@
 /// Missile flight speed (tiles per decisecond, similar to meteors)
 #define MISSILE_SPEED 2
 
-/// Explosion ranges for missile impact
+/// Default explosion ranges for missile impact (standard missile)
 #define MISSILE_EXPLOSION_DEVASTATION 0
-#define MISSILE_EXPLOSION_HEAVY 1
-#define MISSILE_EXPLOSION_LIGHT 2
+#define MISSILE_EXPLOSION_HEAVY 2
+#define MISSILE_EXPLOSION_LIGHT 3
 #define MISSILE_EXPLOSION_FLAME 2
 
 // ========== LAUNCHER DEFINES ==========
@@ -42,11 +42,6 @@
 
 /// Power draw when firing
 #define MISSILE_LAUNCHER_POWER_FIRE 500
-
-// ========== SHIELD DEFINES ==========
-
-/// Range at which ship shields can intercept missiles
-#define SHIP_SHIELD_RANGE 3
 
 // ========== COMBAT CONSOLE DEFINES ==========
 

@@ -1,12 +1,12 @@
 // Ship Combat Missile Effect
 // Flying missile projectile that travels toward a target turf
-// Based on meteor movement patterns for consistency
+// Based on meteor movement patterns - spawns at edge of target ship and flies in
 
 /obj/effect/ship_missile
 	name = "ship missile"
 	desc = "A ship-to-ship missile streaking through space."
-	icon = 'icons/obj/weapons/guns/ammo.dmi'
-	icon_state = "rocketwarhead"
+	icon = 'voidcrew/icons/obj/supplypods.dmi'
+	icon_state = "missile"
 	density = TRUE
 	anchored = TRUE
 	pass_flags = PASSTABLE
@@ -37,9 +37,21 @@
 	/// Have we already exploded?
 	var/exploded = FALSE
 
+/obj/effect/ship_missile/New()
+	// Add hyperspace traits in New() BEFORE the object is placed on the turf
+	// This is critical because transit turfs check for TRAIT_HYPERSPACED on COMSIG_ATOM_ENTERED
+	// which fires before Initialize() runs
+	ADD_TRAIT(src, TRAIT_FREE_HYPERSPACE_MOVEMENT, INNATE_TRAIT)
+	ADD_TRAIT(src, TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT, INNATE_TRAIT)
+	ADD_TRAIT(src, TRAIT_HYPERSPACED, INNATE_TRAIT)
+	return ..()
+
 /obj/effect/ship_missile/Initialize(mapload, turf/target, obj/structure/overmap/ship/target_ship_ref, obj/structure/overmap/ship/source_ship_ref, missile_damage, dev_range, heavy_range, light_range, flame_range)
 	. = ..()
+
+	// Store our starting z-level (we're spawned directly at our start position by the launcher)
 	z_original = z
+
 	target_turf = target
 	target_ship = target_ship_ref
 	source_ship = source_ship_ref
@@ -56,8 +68,6 @@
 	if(!isnull(flame_range))
 		explosion_flame = flame_range
 
-	// Visual spinning
-	SpinAnimation()
 
 	// Start moving toward target
 	if(target_turf)
@@ -82,8 +92,8 @@
 	if(QDELETED(src))
 		return
 
-	// Check if we've reached our target or left the z-level
-	if(z != z_original)
+	// Check if we've left the z-level (but only after we've been set up)
+	if(z_original && z != z_original)
 		qdel(src)
 		return
 
@@ -95,8 +105,17 @@
 /obj/effect/ship_missile/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
 	return TRUE // Don't drift
 
+/// Allow other missiles to pass through us - prevents missile-on-missile collisions
+/obj/effect/ship_missile/CanAllowThrough(atom/movable/mover, border_dir)
+	if(istype(mover, /obj/effect/ship_missile))
+		return TRUE
+	return ..()
+
 /obj/effect/ship_missile/Bump(atom/A)
 	. = ..()
+	// Ignore collisions with other missiles
+	if(istype(A, /obj/effect/ship_missile))
+		return
 	if(A && !exploded)
 		impact()
 
@@ -128,7 +147,7 @@
 	if(target_ship)
 		SEND_SIGNAL(target_ship, COMSIG_SHIP_MISSILE_IMPACT, src, impact_loc)
 
-	// Create explosion
+	// Create explosion - ignorecap = TRUE so ship missiles bypass the server bomb cap
 	explosion(
 		impact_loc,
 		devastation_range = explosion_devastation,
@@ -137,6 +156,7 @@
 		flame_range = explosion_flame,
 		flash_range = explosion_light + 1,
 		adminlog = TRUE,
+		ignorecap = TRUE,
 		explosion_cause = src
 	)
 
@@ -175,6 +195,7 @@
 		flame_range = 0,
 		flash_range = 3,
 		adminlog = TRUE,
+		ignorecap = TRUE,
 		explosion_cause = src
 	)
 
