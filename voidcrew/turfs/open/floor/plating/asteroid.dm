@@ -1,8 +1,18 @@
 /turf/open/misc/asteroid/snow/breathable
+	initial_gas_mix = FROZEN_ATMOS
 	planetary_atmos = TRUE
 	slowdown = 0
 
 /turf/open/misc/asteroid/snow/breathable/lit
+	light_range = 2
+	light_power = 1
+
+/turf/open/misc/dirt/snow
+	name = "snowy dirt"
+	initial_gas_mix = FROZEN_ATMOS
+	planetary_atmos = TRUE
+
+/turf/open/misc/dirt/snow/lit
 	light_range = 2
 	light_power = 1
 
