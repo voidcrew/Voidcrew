@@ -196,6 +196,9 @@
 /obj/machinery/computer/helm/proc/is_crew_member(mob/user)
 	if(!ismob(user))
 		return FALSE
+	// Allow admin ghosts with AI interaction enabled
+	if(isAdminGhostAI(user))
+		return TRUE
 	var/mob/living/living_user = user
 	if(!istype(living_user) || !living_user.mind)
 		return FALSE
