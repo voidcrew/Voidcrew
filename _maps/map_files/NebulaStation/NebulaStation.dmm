@@ -61002,7 +61002,7 @@
 	pixel_x = -6;
 	pixel_y = 8
 	},
-/obj/item/stamp{
+/obj/item/stamp/granted{
 	pixel_x = -6
 	},
 /turf/open/floor/iron/dark,
@@ -79753,7 +79753,7 @@
 	pixel_x = 7;
 	pixel_y = 14
 	},
-/obj/item/stamp{
+/obj/item/stamp/granted{
 	pixel_x = 7;
 	pixel_y = 7
 	},
