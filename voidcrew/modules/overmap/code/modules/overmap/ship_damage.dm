@@ -111,7 +111,7 @@
 	SEND_SIGNAL(src, COMSIG_SHIP_DESTROYED)
 
 /**
- * Emergency docks the ship into a crashed ship location on the overmap
+ * Emergency docks the ship - either onto a planet if above one, or creates a crash site
  */
 /obj/structure/overmap/ship/proc/crash_land()
 	if(!shuttle)
@@ -123,7 +123,23 @@
 		ship_announce("Ship critically damaged! Emergency systems holding. Seek immediate repairs.", "CRITICAL DAMAGE")
 		return
 
-	// Create crashed ship marker at current location
+	// Check if we're above a planet - if so, crash onto it
+	// First check close_overmap_objects (tracked when objects share a tile)
+	for(var/obj/structure/overmap/planet/planet_below in close_overmap_objects)
+		if(istype(planet_below, /obj/structure/overmap/planet/empty))
+			continue
+		crash_land_on_planet(planet_below)
+		return
+	// Also check turf contents directly
+	var/turf/our_turf = get_turf(src)
+	if(our_turf)
+		for(var/obj/structure/overmap/planet/planet_below in our_turf.contents)
+			if(istype(planet_below, /obj/structure/overmap/planet/empty))
+				continue
+			crash_land_on_planet(planet_below)
+			return
+
+	// No planet - create crashed ship marker at current location
 	var/obj/structure/overmap/planet/empty/crashed_ship/crash_site = new(get_turf(src))
 
 	play_ship_sound('sound/items/weapons/mortar_long_whistle.ogg')
@@ -138,6 +154,73 @@
 		return
 
 	finish_crash_land(crash_site)
+
+/**
+ * Crash lands the ship onto an existing planet at a random location
+ * Doesn't care about docking ports - just slams down wherever
+ */
+/obj/structure/overmap/ship/proc/crash_land_on_planet(obj/structure/overmap/planet/planet)
+	if(!planet || !shuttle)
+		return
+
+	ship_announce("EMERGENCY: Crash landing on [planet.name]!", "MAYDAY")
+	play_ship_sound('sound/items/weapons/mortar_long_whistle.ogg')
+
+	// Load the planet if not already loaded
+	if(!planet.loaded && !planet.loading)
+		planet.load_level()
+
+	// Wait for level to load then dock
+	if(planet.loading)
+		addtimer(CALLBACK(src, PROC_REF(finish_crash_land_on_planet), planet), 2 SECONDS)
+		return
+
+	finish_crash_land_on_planet(planet)
+
+/**
+ * Finishes the crash landing onto a planet - picks a random spot and slams down
+ */
+/obj/structure/overmap/ship/proc/finish_crash_land_on_planet(obj/structure/overmap/planet/planet)
+	if(!planet || !shuttle || !planet.mapzone)
+		return
+
+	// Get the planet's z-level
+	var/datum/space_level/zlevel = planet.mapzone.z_levels[1]
+	if(!zlevel)
+		return
+
+	// Find a random spot on the planet that can fit the shuttle
+	// Add some padding from edges to avoid clipping off the map
+	var/padding = max(shuttle.width, shuttle.height) + 5
+	var/target_x = rand(zlevel.low_x + padding, zlevel.low_x + world.maxx - padding)
+	var/target_y = rand(zlevel.low_y + padding, zlevel.low_y + world.maxy - padding)
+	var/turf/crash_turf = locate(target_x, target_y, zlevel.z_value)
+
+	if(!crash_turf)
+		return
+
+	// Create a temporary docking port at the crash site
+	var/obj/docking_port/stationary/crash_dock = new(crash_turf)
+	crash_dock.dir = shuttle.dir
+	crash_dock.name = "Crash Site"
+	crash_dock.height = shuttle.height
+	crash_dock.width = shuttle.width
+	crash_dock.dheight = shuttle.dheight
+	crash_dock.dwidth = shuttle.dwidth
+
+	// Force dock - don't care what's there, we're crashing
+	shuttle.initiate_docking(crash_dock, shuttle.dir, force = TRUE)
+
+	// Update ship state
+	forceMove(planet)
+	state = OVERMAP_SHIP_IDLE
+	docked = planet
+
+	// Clean up the temporary dock
+	qdel(crash_dock)
+
+	// Crash effects
+	on_crash_dock_complete()
 
 /**
  * Finishes the crash landing after the level loads
@@ -545,10 +628,8 @@
  * @param words - List of words to play in sequence
  */
 /obj/structure/overmap/ship/proc/play_ship_vox(list/words)
-	log_admin("DEBUG VOX: play_ship_vox called with [length(words)] words: [words.Join(", ")]")
 	var/delay = 0
 	for(var/word in words)
-		log_admin("DEBUG VOX: scheduling word '[word]' with delay [delay]")
 		addtimer(CALLBACK(src, PROC_REF(play_vox_word_to_ship), word), delay)
 		delay += 0.5 SECONDS // Small delay between words
 
@@ -556,41 +637,28 @@
  * Plays a single VOX word to all mobs on the ship
  */
 /obj/structure/overmap/ship/proc/play_vox_word_to_ship(word)
-	log_admin("DEBUG VOX: play_vox_word_to_ship called with word '[word]'")
 	word = LOWER_TEXT(word)
 	if(!GLOB.vox_sounds[word])
-		log_admin("DEBUG VOX: word '[word]' NOT FOUND in GLOB.vox_sounds")
 		return FALSE
 
-	log_admin("DEBUG VOX: word '[word]' found in GLOB.vox_sounds")
-
 	if(!ship_team)
-		log_admin("DEBUG VOX: ship_team is null")
 		return FALSE
 
 	if(!ship_team.members?.len)
-		log_admin("DEBUG VOX: ship_team.members is empty or null")
 		return FALSE
-
-	log_admin("DEBUG VOX: ship_team.members has [length(ship_team.members)] members")
 
 	var/sound_file = GLOB.vox_sounds[word]
 
 	for(var/datum/mind/shipmate as anything in ship_team.members)
-		log_admin("DEBUG VOX: checking mind [shipmate]")
 		var/mob/living/crew = shipmate.current
 		if(!crew)
-			log_admin("DEBUG VOX: mind has no current mob")
 			continue
 		if(!crew.client)
-			log_admin("DEBUG VOX: [crew] has no client")
 			continue
 		if(!crew.can_hear())
-			log_admin("DEBUG VOX: [crew] cannot hear")
 			continue
 		// Default to 50 if preference not set
 		var/pref_volume = safe_read_pref(crew.client, /datum/preference/numeric/volume/sound_ai_vox) || 50
-		log_admin("DEBUG VOX: playing '[word]' to [crew] at volume [pref_volume]")
 		var/sound/voice = sound(sound_file, wait = 1, channel = CHANNEL_VOX, volume = pref_volume)
 		voice.status = SOUND_STREAM
 		SEND_SOUND(crew, voice)
