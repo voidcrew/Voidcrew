@@ -565,10 +565,19 @@
 			// Always set state to FLYING when undocking completes
 			state = OVERMAP_SHIP_FLYING
 			SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_UNDOCKED)
+			// Force refresh close_overmap_objects for all ships on this turf
+			var/turf/our_turf = get_turf(src)
+			if(our_turf)
+				for(var/obj/structure/overmap/other in our_turf)
+					if(other == src)
+						continue
+					LAZYOR(other.close_overmap_objects, src)
+					LAZYOR(close_overmap_objects, other)
 			//if(repair_timer)
 				//deltimer(repair_timer)
 			//addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/structure/overmap/ship, tick_autopilot)), 5 SECONDS) //TODO: Improve this SOMEHOW
 	calculate_mass()
+	update_appearance(UPDATE_ICON_STATE)
 	update_screen()
 
 /**

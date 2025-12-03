@@ -25,6 +25,8 @@
 	. = ..()
 	launcher_id = "[rand(1000, 9999)]"
 	name = "[initial(name)] ([launcher_id])"
+	// Try to auto-link to a combat console on the same ship after a short delay
+	addtimer(CALLBACK(src, PROC_REF(attempt_auto_link)), 2 SECONDS)
 
 /obj/machinery/ship_combat/missile_launcher/Destroy()
 	if(loaded_missile)
@@ -150,6 +152,43 @@
 	SIGNAL_HANDLER
 	linked_console_ref = null
 
+/// Attempts to auto-link to a combat console on the same ship
+/obj/machinery/ship_combat/missile_launcher/proc/attempt_auto_link()
+	// Already linked
+	if(linked_console_ref?.resolve())
+		return
+
+	// Find what ship we're on by checking areas
+	var/area/our_area = get_area(src)
+	if(!our_area)
+		return
+
+	var/obj/structure/overmap/ship/our_ship
+	for(var/obj/structure/overmap/ship/S in SSovermap.simulated_ships)
+		if(!S.shuttle)
+			continue
+		if(our_area in S.shuttle.shuttle_areas)
+			our_ship = S
+			break
+
+	if(!our_ship)
+		return
+
+	// Find a combat console on this ship
+	for(var/area/ship_area in our_ship.shuttle.shuttle_areas)
+		for(var/obj/machinery/computer/camera_advanced/ship_combat/console in ship_area)
+			// Found one - link to it
+			if(link_console(console))
+				// Also add ourselves to the console's launcher list
+				var/already_linked = FALSE
+				for(var/datum/weakref/ref in console.linked_launchers)
+					if(ref.resolve() == src)
+						already_linked = TRUE
+						break
+				if(!already_linked)
+					console.linked_launchers += WEAKREF(src)
+				return
+
 // ========== FIRING ==========
 
 /// Attempts to fire the loaded missile at the target turf
@@ -179,7 +218,8 @@
 		loaded_missile.explosion_devastation,
 		loaded_missile.explosion_heavy,
 		loaded_missile.explosion_light,
-		loaded_missile.explosion_flame
+		loaded_missile.explosion_flame,
+		loaded_missile.missile_icon_state
 	)
 
 	// Consume the loaded missile
@@ -311,241 +351,4 @@
 	req_components = list(
 		/datum/stock_part/servo = 2,
 		/datum/stock_part/capacitor = 1,
-	)
-
-// ========================================
-// HELLFIRE MISSILE LAUNCHER
-// An upgraded launcher that holds and fires multiple missiles at once
-// ========================================
-
-/obj/machinery/ship_combat/missile_launcher/hellfire
-	name = "hellfire missile launcher"
-	desc = "An advanced multi-missile launcher system. Can load and fire multiple missiles simultaneously for devastating barrages."
-	icon_state = "heater" // TODO: unique icon
-	circuit = /obj/item/circuitboard/machine/ship_combat/missile_launcher/hellfire
-
-	/// Maximum number of missiles this launcher can hold
-	var/max_missiles = 4
-	/// List of loaded missiles
-	var/list/obj/item/ship_combat_missile/loaded_missiles = list()
-
-/obj/machinery/ship_combat/missile_launcher/hellfire/Initialize(mapload)
-	. = ..()
-	loaded_missiles = list()
-
-/obj/machinery/ship_combat/missile_launcher/hellfire/Destroy()
-	QDEL_LIST(loaded_missiles)
-	return ..()
-
-/obj/machinery/ship_combat/missile_launcher/hellfire/examine(mob/user)
-	. = list()
-	. += ..() // Get base examine text from /obj level
-	. += span_notice("Launcher ID: [launcher_id]")
-	. += span_notice("Missiles loaded: [length(loaded_missiles)]/[max_missiles]")
-	if(length(loaded_missiles))
-		for(var/obj/item/ship_combat_missile/missile in loaded_missiles)
-			. += span_notice("  - [missile.name] ([missile.damage] damage)")
-	else
-		. += span_warning("No missiles loaded.")
-	var/obj/machinery/computer/camera_advanced/ship_combat/linked_console = linked_console_ref?.resolve()
-	if(linked_console)
-		. += span_notice("Linked to: [linked_console]")
-	else
-		. += span_warning("Not linked to a combat console. Use a multitool to link.")
-	if(!COOLDOWN_FINISHED(src, fire_cooldown))
-		. += span_warning("Reloading: [DisplayTimeText(COOLDOWN_TIMELEFT(src, fire_cooldown))]")
-
-/obj/machinery/ship_combat/missile_launcher/hellfire/update_overlays()
-	. = ..()
-	// Show missile count indicator
-	if(length(loaded_missiles) >= 1)
-		. += mutable_appearance('icons/obj/weapons/guns/ammo.dmi', "84mm-heap")
-	if(length(loaded_missiles) >= 2)
-		. += mutable_appearance('icons/effects/effects.dmi', "yourselfl") // glow effect for more missiles
-	if(!COOLDOWN_FINISHED(src, fire_cooldown))
-		. += mutable_appearance('icons/effects/effects.dmi', "sparks")
-
-// ========== LOADING MECHANICS ==========
-
-/obj/machinery/ship_combat/missile_launcher/hellfire/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
-	// Loading a missile
-	if(istype(W, /obj/item/ship_combat_missile))
-		if(machine_stat & BROKEN)
-			to_chat(user, span_warning("[src] is broken!"))
-			return
-		if(!anchored)
-			to_chat(user, span_warning("[src] isn't secured to the deck!"))
-			return
-		if(length(loaded_missiles) >= max_missiles)
-			to_chat(user, span_warning("[src] is fully loaded! ([max_missiles]/[max_missiles] missiles)"))
-			return
-		if(!user.transferItemToLoc(W, src))
-			return
-
-		loaded_missiles += W
-		user.visible_message(
-			span_notice("[user] loads [W] into [src]."),
-			span_notice("You load [W] into [src]. ([length(loaded_missiles)]/[max_missiles])")
-		)
-		update_appearance()
-		return
-
-	// Multitool linking - add to launcher buffer list
-	if(istype(W, /obj/item/multitool))
-		var/obj/item/multitool/tool = W
-		// Initialize the launcher buffer list if needed
-		if(!islist(tool.buffer))
-			tool.buffer = list()
-		var/list/launcher_buffer = tool.buffer
-		// Check if already in buffer
-		if(src in launcher_buffer)
-			balloon_alert(user, "already buffered")
-			return
-		launcher_buffer += src
-		balloon_alert(user, "launcher buffered ([length(launcher_buffer)])")
-		to_chat(user, span_notice("You buffer [src] to the multitool. [length(launcher_buffer)] launcher(s) buffered. Use on a combat console to link all."))
-		return
-
-	// Standard deconstruction
-	if(!length(loaded_missiles))
-		if(default_deconstruction_screwdriver(user, icon_state, icon_state, W))
-			return
-	if(default_deconstruction_crowbar(W))
-		return
-	return
-
-/obj/machinery/ship_combat/missile_launcher/hellfire/on_deconstruction(disassembled)
-	for(var/obj/item/ship_combat_missile/missile in loaded_missiles)
-		missile.forceMove(drop_location())
-	loaded_missiles.Cut()
-
-// ========== UNLOADING ==========
-
-/obj/machinery/ship_combat/missile_launcher/hellfire/attack_hand(mob/user, list/modifiers)
-	if(machine_stat & (BROKEN|NOPOWER))
-		return ..()
-
-	if(!length(loaded_missiles))
-		to_chat(user, span_warning("No missiles to remove."))
-		return
-
-	var/obj/item/ship_combat_missile/missile = loaded_missiles[length(loaded_missiles)]
-	loaded_missiles -= missile
-	user.put_in_hands(missile)
-	user.visible_message(
-		span_notice("[user] removes [missile] from [src]."),
-		span_notice("You remove [missile] from [src]. ([length(loaded_missiles)]/[max_missiles] remaining)")
-	)
-	update_appearance()
-
-// ========== FIRING ==========
-
-/// Fires ALL loaded missiles at the target
-/obj/machinery/ship_combat/missile_launcher/hellfire/fire(turf/target, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/source_ship, mob/user)
-	if(!can_fire())
-		return FALSE
-
-	if(!target)
-		if(user)
-			to_chat(user, span_warning("No target selected!"))
-		return FALSE
-
-	var/turf/spawn_turf = get_missile_spawn_turf(target, target_ship)
-	if(!spawn_turf)
-		spawn_turf = target
-
-	// Stagger offsets for spread pattern (3 wide x 2 tall)
-	var/list/stagger_offsets = list(
-		list(0, 0),    // center
-		list(-1, 0),   // left
-		list(1, 0),    // right
-		list(0, 1),    // up
-	)
-
-	var/missiles_fired = 0
-	var/offset_index = 1
-	for(var/obj/item/ship_combat_missile/missile in loaded_missiles)
-		// Get staggered target position
-		var/list/offset = stagger_offsets[offset_index]
-		var/turf/offset_target = locate(target.x + offset[1], target.y + offset[2], target.z)
-		if(!offset_target)
-			offset_target = target
-
-		new missile.missile_effect_type(
-			spawn_turf,
-			offset_target,
-			target_ship,
-			source_ship,
-			missile.damage,
-			missile.explosion_devastation,
-			missile.explosion_heavy,
-			missile.explosion_light,
-			missile.explosion_flame
-		)
-		missiles_fired++
-
-		// Cycle through offsets
-		offset_index++
-		if(offset_index > length(stagger_offsets))
-			offset_index = 1
-
-	// Consume all missiles
-	QDEL_LIST(loaded_missiles)
-	loaded_missiles = list()
-
-	// Start cooldown (longer for hellfire)
-	COOLDOWN_START(src, fire_cooldown, MISSILE_LAUNCHER_COOLDOWN * 1.5)
-
-	// Use more power
-	use_energy(MISSILE_LAUNCHER_POWER_FIRE * missiles_fired)
-
-	// Play sound
-	playsound(src, 'sound/vehicles/rocketlaunch.ogg', 100, TRUE)
-
-	// Visual feedback
-	visible_message(span_danger("[src] unleashes a barrage of [missiles_fired] missiles!"))
-	if(user)
-		to_chat(user, span_danger("Hellfire barrage away! [missiles_fired] missiles launched at [target_ship ? target_ship.name : "unknown"]!"))
-
-	update_appearance()
-	return TRUE
-
-/// Checks if the launcher can fire
-/obj/machinery/ship_combat/missile_launcher/hellfire/can_fire()
-	if(machine_stat & (BROKEN|NOPOWER))
-		return FALSE
-	if(!anchored)
-		return FALSE
-	if(!length(loaded_missiles))
-		return FALSE
-	if(!COOLDOWN_FINISHED(src, fire_cooldown))
-		return FALSE
-	return TRUE
-
-/// Returns status info for the combat console UI
-/obj/machinery/ship_combat/missile_launcher/hellfire/get_status()
-	var/total_damage = 0
-	for(var/obj/item/ship_combat_missile/missile in loaded_missiles)
-		total_damage += missile.damage
-	return list(
-		"id" = launcher_id,
-		"name" = name,
-		"loaded" = !!length(loaded_missiles),
-		"missile_name" = length(loaded_missiles) ? "[length(loaded_missiles)]x missiles" : null,
-		"missile_damage" = total_damage,
-		"ready" = can_fire(),
-		"cooldown" = !COOLDOWN_FINISHED(src, fire_cooldown),
-		"cooldown_time" = COOLDOWN_TIMELEFT(src, fire_cooldown),
-	)
-
-// ========== CIRCUIT BOARD ==========
-
-/obj/item/circuitboard/machine/ship_combat/missile_launcher/hellfire
-	name = "Hellfire Missile Launcher"
-	greyscale_colors = CIRCUIT_COLOR_SECURITY
-	build_path = /obj/machinery/ship_combat/missile_launcher/hellfire
-	req_components = list(
-		/datum/stock_part/servo = 4,
-		/datum/stock_part/capacitor = 2,
-		/datum/stock_part/micro_laser = 2,
 	)

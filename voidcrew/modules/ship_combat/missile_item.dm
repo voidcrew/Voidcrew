@@ -20,6 +20,8 @@
 	var/explosion_flame = 2
 	/// The missile effect type spawned when fired
 	var/missile_effect_type = /obj/effect/ship_missile
+	/// Icon state for the flying missile effect
+	var/missile_icon_state = "missile"
 
 /obj/item/ship_combat_missile/examine(mob/user)
 	. = ..()
@@ -37,6 +39,7 @@
 	explosion_heavy = 1
 	explosion_light = 2
 	explosion_flame = 1
+	missile_icon_state = "smissile"
 
 /obj/item/ship_combat_missile/heavy
 	name = "heavy ship missile"
@@ -49,15 +52,6 @@
 	explosion_heavy = 4
 	explosion_light = 6
 	explosion_flame = 3
-
-/obj/item/ship_combat_missile/incendiary
-	name = "incendiary ship missile"
-	desc = "A ship-to-ship missile with an incendiary payload. Sets the impact area ablaze."
-	icon_state = "incendiary-ammo"
-	damage = MISSILE_DAMAGE_LIGHT
-	explosion_heavy = 0
-	explosion_light = 1
-	explosion_flame = 5
 
 /obj/item/ship_combat_missile/emp
 	name = "EMP ship missile"

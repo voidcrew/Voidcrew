@@ -149,6 +149,11 @@
 	data["est_thrust"] = current_ship.est_thrust
 	data["engineInfo"] = list()
 	data["canLand"] = current_ship.shuttle.port_destinations ? TRUE : FALSE
+
+	// Interdiction undock lockout data
+	data["undockLocked"] = !COOLDOWN_FINISHED(current_ship, interdiction_undock_lockout)
+	data["undockLockoutRemaining"] = COOLDOWN_TIMELEFT(current_ship, interdiction_undock_lockout)
+
 	for(var/obj/machinery/power/shuttle_engine/ship/E in current_ship.shuttle.engine_list)
 		var/list/engine_data
 		if(!E.thruster_active)

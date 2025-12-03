@@ -18,16 +18,22 @@
 /datum/techweb_node/ship_combat_advanced
 	id = TECHWEB_NODE_SHIP_COMBAT_ADVANCED
 	display_name = "Advanced Ship Combat"
-	description = "Advanced ship combat technology including cloaking devices, multi-missile launchers, and heavy ordnance."
+	description = "Advanced ship combat technology including cloaking devices and heavy ordnance."
 	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
 	design_ids = list(
 		"ship_cloak_device",
-		"ship_hellfire_launcher",
 		"ship_missile_heavy",
 		"ship_missile_emp",
-		"ship_missile_incendiary",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+/datum/techweb_node/ship_combat_interdictor
+	id = TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR
+	display_name = "Ship Interdiction Systems"
+	description = "Advanced interdiction technology that allows disabling enemy ship engines and forcing them to dock. Requires linking the combat console to the research network."
+	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT_ADVANCED)
+	design_ids = list()
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
 // ========== COMPUTER BOARD DESIGNS ==========
 
@@ -53,16 +59,6 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY
 
-/datum/design/board/ship_hellfire_launcher
-	name = "Hellfire Missile Launcher Board"
-	desc = "Allows for the construction of an advanced multi-missile launcher system capable of devastating barrages."
-	id = "ship_hellfire_launcher"
-	build_path = /obj/item/circuitboard/machine/ship_combat/missile_launcher/hellfire
-	category = list(
-		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
-	)
-	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
-
 /datum/design/board/ship_cloak_device
 	name = "Cloaking Device Board"
 	desc = "Allows for the construction of a ship cloaking device."
@@ -82,8 +78,10 @@
 	build_type = PROTOLATHE | AWAY_LATHE
 	build_path = /obj/item/ship_combat_missile
 	materials = list(
-		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 4,
-		/datum/material/plasma = SHEET_MATERIAL_AMOUNT,
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 45,
+		/datum/material/plasma = SHEET_MATERIAL_AMOUNT * 20,
+		/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 5,
+		/datum/material/uranium = SHEET_MATERIAL_AMOUNT * 5,
 	)
 	category = list(
 		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO
@@ -96,9 +94,10 @@
 	id = "ship_missile_heavy"
 	build_path = /obj/item/ship_combat_missile/heavy
 	materials = list(
-		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 8,
-		/datum/material/plasma = SHEET_MATERIAL_AMOUNT * 2,
-		/datum/material/uranium = SHEET_MATERIAL_AMOUNT,
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 60,
+		/datum/material/plasma = SHEET_MATERIAL_AMOUNT * 20,
+		/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 10,
+		/datum/material/uranium = SHEET_MATERIAL_AMOUNT * 15,
 	)
 
 /datum/design/ship_missile/emp
@@ -107,17 +106,8 @@
 	id = "ship_missile_emp"
 	build_path = /obj/item/ship_combat_missile/emp
 	materials = list(
-		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 3,
-		/datum/material/plasma = SHEET_MATERIAL_AMOUNT,
-		/datum/material/uranium = SHEET_MATERIAL_AMOUNT * 2,
-	)
-
-/datum/design/ship_missile/incendiary
-	name = "Incendiary Ship Missile"
-	desc = "A missile with an incendiary payload that sets the target ablaze."
-	id = "ship_missile_incendiary"
-	build_path = /obj/item/ship_combat_missile/incendiary
-	materials = list(
-		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 3,
-		/datum/material/plasma = SHEET_MATERIAL_AMOUNT * 3,
+		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 35,
+		/datum/material/plasma = SHEET_MATERIAL_AMOUNT * 10,
+		/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 5,
+		/datum/material/bluespace = SHEET_MATERIAL_AMOUNT * 20,
 	)

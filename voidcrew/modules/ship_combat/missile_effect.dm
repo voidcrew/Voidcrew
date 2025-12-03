@@ -46,7 +46,7 @@
 	ADD_TRAIT(src, TRAIT_HYPERSPACED, INNATE_TRAIT)
 	return ..()
 
-/obj/effect/ship_missile/Initialize(mapload, turf/target, obj/structure/overmap/ship/target_ship_ref, obj/structure/overmap/ship/source_ship_ref, missile_damage, dev_range, heavy_range, light_range, flame_range)
+/obj/effect/ship_missile/Initialize(mapload, turf/target, obj/structure/overmap/ship/target_ship_ref, obj/structure/overmap/ship/source_ship_ref, missile_damage, dev_range, heavy_range, light_range, flame_range, missile_icon)
 	. = ..()
 
 	// Store our starting z-level (we're spawned directly at our start position by the launcher)
@@ -67,6 +67,8 @@
 		explosion_light = light_range
 	if(!isnull(flame_range))
 		explosion_flame = flame_range
+	if(missile_icon)
+		icon_state = missile_icon
 
 
 	// Start moving toward target

@@ -25,8 +25,8 @@
 /// Base damage for heavy missiles
 #define MISSILE_DAMAGE_HEAVY 600
 
-/// Missile flight speed (tiles per decisecond, similar to meteors)
-#define MISSILE_SPEED 2
+/// Missile flight speed (delay in deciseconds per tile - lower = faster)
+#define MISSILE_SPEED 0.5
 
 /// Default explosion ranges for missile impact (standard missile)
 #define MISSILE_EXPLOSION_DEVASTATION 1
@@ -44,8 +44,11 @@
 
 // ========== COMBAT CONSOLE DEFINES ==========
 
-/// Range at which ships can be targeted (in overmap tiles)
-#define COMBAT_TARGETING_RANGE 1
+/// Range at which ships can be detected on sensors (in overmap tiles)
+#define COMBAT_TARGETING_RANGE 3
+
+/// Range at which missile lock can be activated (in overmap tiles)
+#define COMBAT_MISSILE_LOCK_RANGE 2
 
 /// Camera view size for targeting
 #define COMBAT_CAMERA_VIEW_RANGE 7
@@ -66,3 +69,9 @@
 
 /// Cooldown before interdicted ship can undock (30 seconds)
 #define INTERDICTOR_UNDOCK_LOCKOUT 30 SECONDS
+
+/// Range at which interdiction can be started (in overmap tiles)
+#define INTERDICTOR_RANGE 2
+
+/// Range at which force dock can be used (in overmap tiles, must be same tile)
+#define INTERDICTOR_FORCE_DOCK_RANGE 0

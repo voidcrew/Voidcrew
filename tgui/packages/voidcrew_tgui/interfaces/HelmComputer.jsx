@@ -472,7 +472,15 @@ const ShipContent = (props, context) => {
 // Arrow directional controls
 const ShipControlContent = (props, context) => {
   const { act, data } = useBackend(context);
-  const { calibrating, shipDisabled, canThrust, isViewer, isNotCrew } = data;
+  const {
+    calibrating,
+    shipDisabled,
+    canThrust,
+    isViewer,
+    isNotCrew,
+    undockLocked,
+    undockLockoutRemaining,
+  } = data;
   const isDisabled = isViewer || isNotCrew;
   const flyable = data.state === 'flying' && !shipDisabled && !isDisabled;
   const canMove = flyable && canThrust;
@@ -506,10 +514,19 @@ const ShipControlContent = (props, context) => {
         <Table.Row height={2}>
           <Table.Cell width={1}>
             <Button
-              tooltip="Undock"
+              tooltip={
+                undockLocked
+                  ? `Undocking locked - ${Math.ceil(undockLockoutRemaining / 10)}s remaining (interdiction)`
+                  : 'Undock'
+              }
               tooltipPosition="right"
               icon="sign-out-alt"
-              disabled={data.state !== 'idle' || shipDisabled || isDisabled}
+              disabled={
+                data.state !== 'idle' ||
+                shipDisabled ||
+                isDisabled ||
+                undockLocked
+              }
               onClick={() => act('undock')}
             />
           </Table.Cell>
