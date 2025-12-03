@@ -111,7 +111,7 @@
 	SEND_SIGNAL(src, COMSIG_SHIP_DESTROYED)
 
 /**
- * Emergency docks the ship into a crashed ship location on the overmap
+ * Emergency docks the ship - either onto a planet if above one, or creates a crash site
  */
 /obj/structure/overmap/ship/proc/crash_land()
 	if(!shuttle)
@@ -123,7 +123,23 @@
 		ship_announce("Ship critically damaged! Emergency systems holding. Seek immediate repairs.", "CRITICAL DAMAGE")
 		return
 
-	// Create crashed ship marker at current location
+	// Check if we're above a planet - if so, crash onto it
+	// First check close_overmap_objects (tracked when objects share a tile)
+	for(var/obj/structure/overmap/planet/planet_below in close_overmap_objects)
+		if(istype(planet_below, /obj/structure/overmap/planet/empty))
+			continue
+		crash_land_on_planet(planet_below)
+		return
+	// Also check turf contents directly
+	var/turf/our_turf = get_turf(src)
+	if(our_turf)
+		for(var/obj/structure/overmap/planet/planet_below in our_turf.contents)
+			if(istype(planet_below, /obj/structure/overmap/planet/empty))
+				continue
+			crash_land_on_planet(planet_below)
+			return
+
+	// No planet - create crashed ship marker at current location
 	var/obj/structure/overmap/planet/empty/crashed_ship/crash_site = new(get_turf(src))
 
 	play_ship_sound('sound/items/weapons/mortar_long_whistle.ogg')
@@ -138,6 +154,73 @@
 		return
 
 	finish_crash_land(crash_site)
+
+/**
+ * Crash lands the ship onto an existing planet at a random location
+ * Doesn't care about docking ports - just slams down wherever
+ */
+/obj/structure/overmap/ship/proc/crash_land_on_planet(obj/structure/overmap/planet/planet)
+	if(!planet || !shuttle)
+		return
+
+	ship_announce("EMERGENCY: Crash landing on [planet.name]!", "MAYDAY")
+	play_ship_sound('sound/items/weapons/mortar_long_whistle.ogg')
+
+	// Load the planet if not already loaded
+	if(!planet.loaded && !planet.loading)
+		planet.load_level()
+
+	// Wait for level to load then dock
+	if(planet.loading)
+		addtimer(CALLBACK(src, PROC_REF(finish_crash_land_on_planet), planet), 2 SECONDS)
+		return
+
+	finish_crash_land_on_planet(planet)
+
+/**
+ * Finishes the crash landing onto a planet - picks a random spot and slams down
+ */
+/obj/structure/overmap/ship/proc/finish_crash_land_on_planet(obj/structure/overmap/planet/planet)
+	if(!planet || !shuttle || !planet.mapzone)
+		return
+
+	// Get the planet's z-level
+	var/datum/space_level/zlevel = planet.mapzone.z_levels[1]
+	if(!zlevel)
+		return
+
+	// Find a random spot on the planet that can fit the shuttle
+	// Add some padding from edges to avoid clipping off the map
+	var/padding = max(shuttle.width, shuttle.height) + 5
+	var/target_x = rand(zlevel.low_x + padding, zlevel.low_x + world.maxx - padding)
+	var/target_y = rand(zlevel.low_y + padding, zlevel.low_y + world.maxy - padding)
+	var/turf/crash_turf = locate(target_x, target_y, zlevel.z_value)
+
+	if(!crash_turf)
+		return
+
+	// Create a temporary docking port at the crash site
+	var/obj/docking_port/stationary/crash_dock = new(crash_turf)
+	crash_dock.dir = shuttle.dir
+	crash_dock.name = "Crash Site"
+	crash_dock.height = shuttle.height
+	crash_dock.width = shuttle.width
+	crash_dock.dheight = shuttle.dheight
+	crash_dock.dwidth = shuttle.dwidth
+
+	// Force dock - don't care what's there, we're crashing
+	shuttle.initiate_docking(crash_dock, shuttle.dir, force = TRUE)
+
+	// Update ship state
+	forceMove(planet)
+	state = OVERMAP_SHIP_IDLE
+	docked = planet
+
+	// Clean up the temporary dock
+	qdel(crash_dock)
+
+	// Crash effects
+	on_crash_dock_complete()
 
 /**
  * Finishes the crash landing after the level loads
@@ -235,9 +318,6 @@
 /obj/structure/overmap/ship/proc/check_hazards()
 	for(var/obj/structure/overmap/event/hazard in loc)
 		apply_hazard_effect(hazard)
-
-	// Check proximity to sun
-	check_sun_proximity()
 
 /**
  * Applies the effect of a hazard to the ship
@@ -548,10 +628,8 @@
  * @param words - List of words to play in sequence
  */
 /obj/structure/overmap/ship/proc/play_ship_vox(list/words)
-	log_admin("DEBUG VOX: play_ship_vox called with [length(words)] words: [words.Join(", ")]")
 	var/delay = 0
 	for(var/word in words)
-		log_admin("DEBUG VOX: scheduling word '[word]' with delay [delay]")
 		addtimer(CALLBACK(src, PROC_REF(play_vox_word_to_ship), word), delay)
 		delay += 0.5 SECONDS // Small delay between words
 
@@ -559,163 +637,29 @@
  * Plays a single VOX word to all mobs on the ship
  */
 /obj/structure/overmap/ship/proc/play_vox_word_to_ship(word)
-	log_admin("DEBUG VOX: play_vox_word_to_ship called with word '[word]'")
 	word = LOWER_TEXT(word)
 	if(!GLOB.vox_sounds[word])
-		log_admin("DEBUG VOX: word '[word]' NOT FOUND in GLOB.vox_sounds")
 		return FALSE
 
-	log_admin("DEBUG VOX: word '[word]' found in GLOB.vox_sounds")
-
 	if(!ship_team)
-		log_admin("DEBUG VOX: ship_team is null")
 		return FALSE
 
 	if(!ship_team.members?.len)
-		log_admin("DEBUG VOX: ship_team.members is empty or null")
 		return FALSE
-
-	log_admin("DEBUG VOX: ship_team.members has [length(ship_team.members)] members")
 
 	var/sound_file = GLOB.vox_sounds[word]
 
 	for(var/datum/mind/shipmate as anything in ship_team.members)
-		log_admin("DEBUG VOX: checking mind [shipmate]")
 		var/mob/living/crew = shipmate.current
 		if(!crew)
-			log_admin("DEBUG VOX: mind has no current mob")
 			continue
 		if(!crew.client)
-			log_admin("DEBUG VOX: [crew] has no client")
 			continue
 		if(!crew.can_hear())
-			log_admin("DEBUG VOX: [crew] cannot hear")
 			continue
 		// Default to 50 if preference not set
 		var/pref_volume = safe_read_pref(crew.client, /datum/preference/numeric/volume/sound_ai_vox) || 50
-		log_admin("DEBUG VOX: playing '[word]' to [crew] at volume [pref_volume]")
 		var/sound/voice = sound(sound_file, wait = 1, channel = CHANNEL_VOX, volume = pref_volume)
 		voice.status = SOUND_STREAM
 		SEND_SOUND(crew, voice)
 	return TRUE
-
-/**
- * Sun Proximity Check
- * Calculates manhattan distance from the sun and applies appropriate effects
- * 0 = death, 1 = fires + extreme heat, 2 = medium heat, 3+ = reset to normal
- */
-/obj/structure/overmap/ship/proc/check_sun_proximity()
-	var/turf/sun_turf = SSovermap.overmap_centre
-	var/turf/ship_turf = get_turf(src)
-	if(!sun_turf || !ship_turf)
-		return
-
-	// Manhattan distance from sun center
-	var/distance = abs(ship_turf.x - sun_turf.x) + abs(ship_turf.y - sun_turf.y)
-
-	switch(distance)
-		if(0)
-			// Direct collision with sun - everything burns
-			on_sun_collision()
-		if(1)
-			// Adjacent to sun - fires and extreme heat
-			apply_sun_heat(10)
-			apply_sun_fires(6)
-		if(2)
-			// Close - medium heat, no fires
-			apply_sun_heat(4)
-		else
-			// Safe distance - reset temperature to normal
-			apply_sun_heat(0)
-
-/**
- * Sun Heat Effect
- * Adjusts temperature of ALL turfs on the ship based on sun proximity
- * intensity > 0 = heating toward dangerous temps
- * intensity = 0 = reset to room temperature
- */
-/obj/structure/overmap/ship/proc/apply_sun_heat(intensity = 0)
-	if(!shuttle?.shuttle_areas?.len)
-		return
-
-	// Target temperature based on intensity
-	// T20C (293K) is comfortable room temperature
-	// Higher intensity = hotter target
-	var/target_temp
-	var/temp_change
-	if(intensity > 0)
-		target_temp = T20C + (intensity * 40)  // intensity 10 = 693K, intensity 4 = 453K
-		temp_change = intensity * 15  // How fast we heat up
-	else
-		target_temp = T20C  // Reset to room temperature
-		temp_change = 30  // Cool down fairly quickly
-
-	for(var/area/ship_area as anything in shuttle.shuttle_areas)
-		for(var/turf/T in ship_area)
-			var/datum/gas_mixture/air = T.return_air()
-			if(!air)
-				continue
-
-			if(air.temperature < target_temp)
-				// Heating up toward target
-				air.temperature = min(air.temperature + temp_change, target_temp)
-			else if(air.temperature > target_temp)
-				// Cooling down toward target
-				air.temperature = max(air.temperature - temp_change, target_temp)
-
-/**
- * Sun Fire Effect
- * Spawns fires on the ship based on intensity
- * Uses the standard 3-second hazard cooldown to prevent spam
- */
-/obj/structure/overmap/ship/proc/apply_sun_fires(fire_count = 1)
-	if(!COOLDOWN_FINISHED(src, hazard_damage_cooldown))
-		return
-	COOLDOWN_START(src, hazard_damage_cooldown, 3 SECONDS)
-
-	// Announce based on severity
-	if(fire_count >= 6)
-		ship_announce("DANGER: Extreme solar radiation! Fires detected!", "THERMAL EMERGENCY")
-	else if(fire_count >= 3)
-		ship_announce("Warning: High solar radiation! Hull temperature rising.", "Thermal Alert")
-
-	for(var/i in 1 to fire_count)
-		var/turf/target = get_random_ship_turf()
-		if(!target)
-			continue
-
-		// Chance to start fires based on count (more fires = more likely each spawns)
-		if(prob(15 * fire_count))
-			new /obj/effect/hotspot(target)
-
-	// Recalculate mass in case equipment was destroyed by heat
-	addtimer(CALLBACK(src, PROC_REF(calculate_mass)), 2 SECONDS)
-
-/**
- * Sun Collision - Everything Burns
- * Triggers when ship flies directly into the sun
- * Sets all crew on fire, maxes out ship temperature, fires on every turf
- * No explosions - just let it burn
- */
-/obj/structure/overmap/ship/proc/on_sun_collision()
-	if(!shuttle?.shuttle_areas?.len)
-		return
-
-	ship_announce("SOLAR IMMERSION DETECTED.", "EMERGENCY")
-	play_ship_sound('sound/machines/engine_alert/engine_alert3.ogg', 100)
-
-	// Set all crew members on fire
-	for(var/mob/living/crew in get_all_ship_mobs())
-		crew.adjust_fire_stacks(20)
-		crew.ignite_mob()
-
-	// Max out temperature and set fires on every turf
-	for(var/area/ship_area as anything in shuttle.shuttle_areas)
-		for(var/turf/T in ship_area)
-			// Max temperature
-			var/datum/gas_mixture/air = T.return_air()
-			if(air)
-				air.temperature = FIRE_MINIMUM_TEMPERATURE_TO_SPREAD + 1000  // ~1473K
-
-			// Fire on this turf
-			new /obj/effect/hotspot(T)

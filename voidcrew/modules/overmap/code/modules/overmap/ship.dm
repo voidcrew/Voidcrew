@@ -934,6 +934,10 @@
 		for(var/turf/T in shuttleArea)
 			if(isspaceturf(T))
 				continue
+			// Only count actual shuttle turfs (have baseturf_skipover/shuttle in baseturfs)
+			// This prevents planet/ruin turfs from being counted after crash landing
+			if(!isshuttleturf(T))
+				continue
 			// Tiered health: reinforced walls > walls > floors
 			if(istype(T, /turf/closed/wall/r_wall))
 				. += 3  // Reinforced walls
