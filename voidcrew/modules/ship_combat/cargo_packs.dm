@@ -31,14 +31,6 @@
 	contains = list(/obj/item/ship_combat_missile/heavy = 2)
 	crate_name = "heavy missiles crate"
 
-/datum/supply_pack/ship_combat/missiles_incendiary
-	name = "Incendiary Missiles Crate"
-	desc = "A crate containing three incendiary missiles. \
-		Sets the impact area ablaze."
-	cost = CARGO_CRATE_VALUE * 12
-	contains = list(/obj/item/ship_combat_missile/incendiary = 3)
-	crate_name = "incendiary missiles crate"
-
 /datum/supply_pack/ship_combat/missiles_emp
 	name = "EMP Missiles Crate"
 	desc = "A crate containing three EMP missiles. \
@@ -50,13 +42,12 @@
 /datum/supply_pack/ship_combat/missiles_mixed
 	name = "Mixed Missiles Crate"
 	desc = "A crate containing an assortment of missiles: \
-		two standard, one heavy, one EMP, and one incendiary."
+		two standard, one heavy, and one EMP."
 	cost = CARGO_CRATE_VALUE * 14
 	contains = list(
 		/obj/item/ship_combat_missile = 2,
 		/obj/item/ship_combat_missile/heavy = 1,
 		/obj/item/ship_combat_missile/emp = 1,
-		/obj/item/ship_combat_missile/incendiary = 1,
 	)
 	crate_name = "mixed missiles crate"
 

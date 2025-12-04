@@ -70,6 +70,17 @@
 	if(missile_icon)
 		icon_state = missile_icon
 
+	// Rotate to face the target direction
+	if(target_turf)
+		var/turf/our_turf = get_turf(src)
+		if(our_turf)
+			var/angle = get_angle(our_turf, target_turf)
+			// The missile sprite points up (north) by default, so we rotate from that
+			// get_angle returns 0 for north, 90 for east, etc.
+			// We need to rotate clockwise by the angle (subtract 90 because sprite faces up)
+			var/matrix/M = matrix()
+			M.Turn(angle)
+			transform = M
 
 	// Start moving toward target
 	if(target_turf)

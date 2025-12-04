@@ -49,8 +49,8 @@
 /obj/machinery/computer/camera_advanced/ship_combat
 	name = "ship combat console"
 	desc = "A tactical combat console for ship-to-ship warfare. Link missile launchers with a multitool, select a target ship, then use the targeting system to aim and fire."
-	icon_screen = "tactical"
-	icon_keyboard = "security_key"
+	icon_screen = "ratvar1"
+	icon_keyboard = "ratvar_key1"
 	circuit = /obj/item/circuitboard/computer/ship_combat_console
 	light_color = LIGHT_COLOR_INTENSE_RED
 	networks = list() // We don't use the camera network
@@ -671,19 +671,52 @@
 			return "EMP"
 	return "Unknown"
 
-/// Cycles to the next missile type filter
-/obj/machinery/computer/camera_advanced/ship_combat/proc/cycle_missile_type(mob/user)
-	var/current_index = missile_types.Find(selected_missile_type)
-	if(!current_index)
-		current_index = 1
-	current_index++
-	if(current_index > length(missile_types))
-		current_index = 1
-	selected_missile_type = missile_types[current_index]
+/// Opens a radial menu for selecting missile type filter
+/obj/machinery/computer/camera_advanced/ship_combat/proc/open_missile_type_menu(mob/user)
+	if(!user)
+		return
 
-	var/type_name = get_missile_type_name(selected_missile_type)
-	if(user)
-		to_chat(user, span_notice("Missile filter: [type_name]"))
+	// Build radial menu options
+	var/list/options = list()
+
+	// "Any" option
+	var/image/any_image = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_cancel")
+	options["Any"] = any_image
+
+	// Light missile
+	var/image/light_image = image(icon = 'icons/obj/weapons/guns/ammo.dmi', icon_state = "low_yield_rocket")
+	options["Light"] = light_image
+
+	// Standard missile
+	var/image/standard_image = image(icon = 'icons/obj/weapons/guns/ammo.dmi', icon_state = "84mm-heap")
+	options["Standard"] = standard_image
+
+	// Heavy missile
+	var/image/heavy_image = image(icon = 'icons/obj/weapons/guns/ammo.dmi', icon_state = "srm-8")
+	options["Heavy"] = heavy_image
+
+	// EMP missile
+	var/image/emp_image = image(icon = 'icons/obj/weapons/guns/ammo.dmi', icon_state = "disruptor-ammo")
+	options["EMP"] = emp_image
+
+	var/pick = show_radial_menu(user, src, options, require_near = FALSE, tooltips = TRUE)
+	if(!pick)
+		return
+
+	// Map selection to type path
+	switch(pick)
+		if("Any")
+			selected_missile_type = null
+		if("Light")
+			selected_missile_type = /obj/item/ship_combat_missile/light
+		if("Standard")
+			selected_missile_type = /obj/item/ship_combat_missile
+		if("Heavy")
+			selected_missile_type = /obj/item/ship_combat_missile/heavy
+		if("EMP")
+			selected_missile_type = /obj/item/ship_combat_missile/emp
+
+	to_chat(user, span_notice("Missile filter: [pick]"))
 
 	// Update the action button
 	for(var/datum/action/innate/ship_combat/cycle_missile_type/action in actions)
@@ -1053,7 +1086,7 @@
 // ========== ACTION BUTTONS ==========
 
 /datum/action/innate/ship_combat
-	button_icon = 'icons/mob/actions/actions_items.dmi'
+	button_icon = 'icons/mob/actions/actions_mecha.dmi'
 	check_flags = NONE
 	var/obj/machinery/computer/camera_advanced/ship_combat/console
 
@@ -1072,7 +1105,7 @@
 /datum/action/innate/ship_combat/fire_missile
 	name = "Fire Missile"
 	desc = "Fire one missile at the targeted location."
-	button_icon_state = "rocket"
+	button_icon_state = "mech_zoom_off"
 
 /datum/action/innate/ship_combat/fire_missile/Activate()
 	if(!console || !isliving(owner))
@@ -1083,23 +1116,23 @@
 /datum/action/innate/ship_combat/fire_all
 	name = "Fire All Missiles"
 	desc = "Fire all ready missiles at the targeted location."
-	button_icon_state = "yourstation"
+	button_icon_state = "mech_zoom_on"
 
 /datum/action/innate/ship_combat/fire_all/Activate()
 	if(!console || !isliving(owner))
 		return
 	console.fire_all(owner)
 
-// Cycle missile type filter
+// Select missile type filter
 /datum/action/innate/ship_combat/cycle_missile_type
 	name = "Missile: Any"
-	desc = "Cycle through missile type filters. Only fire selected missile types."
-	button_icon_state = "sniper_zoom"
+	desc = "Select which missile type to fire."
+	button_icon_state = "mech_cycle_equip_on"
 
 /datum/action/innate/ship_combat/cycle_missile_type/Activate()
 	if(!console || !isliving(owner))
 		return
-	console.cycle_missile_type(owner)
+	console.open_missile_type_menu(owner)
 
 /datum/action/innate/ship_combat/cycle_missile_type/proc/update_name()
 	if(!console)
@@ -1112,7 +1145,8 @@
 /datum/action/innate/ship_combat/exit_targeting
 	name = "Exit Targeting"
 	desc = "Exit the targeting system and return to normal view."
-	button_icon_state = "yourstation"
+	button_icon = "icons/mob/actions/actions_silicon.dmi"
+	button_icon_state = "camera_off"
 
 /datum/action/innate/ship_combat/exit_targeting/Activate()
 	if(!console || !isliving(owner))
