@@ -47109,7 +47109,7 @@
 /turf/open/floor/iron/white,
 /area/station/medical/abandoned)
 "gWm" = (
-/obj/machinery/computer/rdconsole,
+/obj/machinery/computer/rdconsole/unlocked,
 /obj/machinery/button/door/directional/north{
 	id = "rdrnd";
 	name = "Research and Development Containment Control";
@@ -108555,7 +108555,7 @@
 /turf/open/floor/iron/dark,
 /area/station/medical/storage)
 "pYN" = (
-/obj/machinery/computer/rdconsole,
+/obj/machinery/computer/rdconsole/unlocked,
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
@@ -130490,7 +130490,7 @@
 /obj/effect/turf_decal/tile/purple/half/contrasted{
 	dir = 4
 	},
-/obj/machinery/computer/rdconsole{
+/obj/machinery/computer/rdconsole/unlocked{
 	dir = 8
 	},
 /obj/effect/turf_decal/trimline/purple/line{
