@@ -7,6 +7,7 @@
 		emp_storms = list(),
 		planets = list(),
 		stars = list(),
+		space_ruins = list(),
 	)
 
 /datum/surveyed_celestial_object
@@ -27,6 +28,11 @@
 
 /datum/surveyed_celestial_object/star
 	var/star_type
+
+/datum/surveyed_celestial_object/space_ruin
+	var/ruin_category
+	var/true_name
+	var/visited = FALSE
 
 /datum/surveyed_celestial_object/planet
 	var/visited = FALSE
@@ -69,6 +75,12 @@
 	. = ..()
 	new_object.star_type = star_type
 
+/datum/surveyed_celestial_object/space_ruin/copy(var/datum/surveyed_celestial_object/space_ruin/new_object)
+	. = ..()
+	new_object.ruin_category = ruin_category
+	new_object.true_name = true_name
+	new_object.visited = visited
+
 /// SET VALUES SECTION
 /datum/surveyed_celestial_object/proc/set_values(var/obj/structure/overmap/object)
 	ref_id = ref(object)
@@ -103,6 +115,13 @@
 	. = ..()
 	star_type = object.star_type
 
+/datum/surveyed_celestial_object/space_ruin/set_values(var/obj/structure/overmap/space_ruin/object)
+	. = ..()
+	ruin_category = object.ruin_category
+	true_name = object.true_name
+	visited = object.visited
+	// Trigger the ruin's on_surveyed to reveal its true nature
+	object.on_surveyed()
 
 /// HELPER PROCS SECTION
 /datum/survey_research/proc/update_survey_data(var/obj/structure/overmap/object)
@@ -176,6 +195,17 @@
 			celestial.set_values(object)
 			survey_objects_by_type[related_celestial_list] |= celestial
 
+		// Space Ruins
+		if(/datum/surveyed_celestial_object/space_ruin)
+			var/datum/surveyed_celestial_object/space_ruin/celestial
+			for(var/datum/surveyed_celestial_object/space_ruin/surveyed_ruin in survey_objects_by_type[related_celestial_list])
+				if(surveyed_ruin.ref_id == ref(object))
+					celestial = surveyed_ruin
+			if(!celestial)
+				celestial = new()
+			celestial.set_values(object)
+			survey_objects_by_type[related_celestial_list] |= celestial
+
 /datum/survey_research/proc/get_related_celestial_list(type)
 	if(type == /obj/structure/overmap/event/nebula)
 		return "nebulas"
@@ -189,6 +219,8 @@
 		return "planets"
 	if(type in typesof(/obj/structure/overmap/star))
 		return "stars"
+	if(type in typesof(/obj/structure/overmap/space_ruin))
+		return "space_ruins"
 
 /datum/survey_research/proc/get_related_celestial(type)
 	if(type in typesof(/obj/structure/overmap/event/nebula))
@@ -203,6 +235,8 @@
 		return /datum/surveyed_celestial_object/planet
 	if(type in typesof(/obj/structure/overmap/star))
 		return /datum/surveyed_celestial_object/star
+	if(type in typesof(/obj/structure/overmap/space_ruin))
+		return /datum/surveyed_celestial_object/space_ruin
 
 /datum/survey_research/proc/tgui_serialize()
 	var/list/data = list(
@@ -212,6 +246,7 @@
 		emp_storms = list(),
 		planets = list(),
 		stars = list(),
+		space_ruins = list(),
 	)
 
 	for(var/datum/surveyed_celestial_object/nebula/object in survey_objects_by_type["nebulas"])
@@ -269,6 +304,17 @@
 		)
 		var/object_name = get_unique_name(data["stars"], tgui["object_name"])
 		data["stars"][object_name] = tgui
+
+	for(var/datum/surveyed_celestial_object/space_ruin/object in survey_objects_by_type["space_ruins"])
+		var/list/tgui = list(
+			ref_id = object.ref_id,
+			object_name = object.object_name,
+			ruin_category = object.ruin_category,
+			true_name = object.true_name,
+			visited = object.visited,
+		)
+		var/object_name = get_unique_name(data["space_ruins"], tgui["object_name"])
+		data["space_ruins"][object_name] = tgui
 
 	return data
 
