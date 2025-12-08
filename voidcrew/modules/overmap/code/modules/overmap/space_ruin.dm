@@ -150,11 +150,10 @@
 			loading = FALSE
 			return
 
-	// Calculate reservation size: ruin size + reasonable buffer for docking on two sides
-	// Use a smaller buffer than full planets since space ruins are typically smaller
-	var/dock_buffer = 30 // Space for a reasonably sized ship to dock
-	var/reserve_width = ruin_template.width + (dock_buffer * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
-	var/reserve_height = ruin_template.height + (dock_buffer * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
+	// Calculate reservation size: ruin size + buffer for docking on two sides
+	// Use the same dock sizes as planets to support large ships
+	var/reserve_width = ruin_template.width + (RESERVE_DOCK_MAX_SIZE_LONG * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
+	var/reserve_height = ruin_template.height + (RESERVE_DOCK_MAX_SIZE_SHORT * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
 
 	// Request a turf reservation instead of a full z-level
 	reservation = SSmapping.request_turf_block_reservation(reserve_width, reserve_height, 1)
@@ -165,30 +164,51 @@
 	var/turf/bottom_left = reservation.bottom_left_turfs[1]
 
 	// Load the ruin with buffer space around it
-	var/ruin_x = bottom_left.x + dock_buffer + RESERVE_DOCK_DEFAULT_PADDING
-	var/ruin_y = bottom_left.y + dock_buffer + RESERVE_DOCK_DEFAULT_PADDING
+	var/ruin_x = bottom_left.x + RESERVE_DOCK_MAX_SIZE_LONG + RESERVE_DOCK_DEFAULT_PADDING
+	var/ruin_y = bottom_left.y + RESERVE_DOCK_MAX_SIZE_SHORT + RESERVE_DOCK_DEFAULT_PADDING
 	var/turf/ruin_turf = locate(ruin_x, ruin_y, bottom_left.z)
 
-	ruin_template.load(ruin_turf)
+	// Try to load the ruin, handle failures gracefully
+	var/load_success = FALSE
+	try
+		load_success = ruin_template.load(ruin_turf)
+	catch(var/exception/e)
+		log_mapping("SPACE RUIN: Failed to load '[ruin_template.name]': [e]")
+		load_success = FALSE
 
-	// Create docking ports on opposite sides of the ruin
+	if(!load_success)
+		// Clean up the reservation if loading failed
+		qdel(reservation)
+		reservation = null
+		loading = FALSE
+		return
+
+	// Create docking ports on opposite sides of the ruin (same size as planets)
 	var/turf/primary_dock_turf = locate(
 		bottom_left.x + RESERVE_DOCK_DEFAULT_PADDING,
 		bottom_left.y + RESERVE_DOCK_DEFAULT_PADDING,
 		bottom_left.z
 	)
 	reserve_dock = new /obj/docking_port/stationary(primary_dock_turf)
-	reserve_dock.width = dock_buffer
-	reserve_dock.height = dock_buffer
+	reserve_dock.dir = NORTH
+	reserve_dock.name = "\improper Space Ruin"
+	reserve_dock.width = RESERVE_DOCK_MAX_SIZE_LONG
+	reserve_dock.height = RESERVE_DOCK_MAX_SIZE_SHORT
+	reserve_dock.dheight = 0
+	reserve_dock.dwidth = 0
 
 	var/turf/secondary_dock_turf = locate(
-		bottom_left.x + reserve_width - dock_buffer - RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.y + reserve_height - dock_buffer - RESERVE_DOCK_DEFAULT_PADDING,
+		bottom_left.x + reserve_width - RESERVE_DOCK_MAX_SIZE_LONG - RESERVE_DOCK_DEFAULT_PADDING,
+		bottom_left.y + reserve_height - RESERVE_DOCK_MAX_SIZE_SHORT - RESERVE_DOCK_DEFAULT_PADDING,
 		bottom_left.z
 	)
 	reserve_dock_secondary = new /obj/docking_port/stationary(secondary_dock_turf)
-	reserve_dock_secondary.width = dock_buffer
-	reserve_dock_secondary.height = dock_buffer
+	reserve_dock_secondary.dir = NORTH
+	reserve_dock_secondary.name = "\improper Space Ruin"
+	reserve_dock_secondary.width = RESERVE_DOCK_MAX_SIZE_LONG
+	reserve_dock_secondary.height = RESERVE_DOCK_MAX_SIZE_SHORT
+	reserve_dock_secondary.dheight = 0
+	reserve_dock_secondary.dwidth = 0
 
 	loaded = TRUE
 	loading = FALSE
@@ -237,7 +257,8 @@
 		return
 
 	var/is_survey = FALSE
-	var/dock_to_use = null
+	var/obj/docking_port/stationary/dock_to_use = null
+	var/selected_dock_index = 0
 
 	// Port destinations are set by survey console
 	if(acting.shuttle.port_destinations)
@@ -246,12 +267,10 @@
 	else
 		if(!reserve_dock.get_docked() && !first_dock_taken)
 			dock_to_use = reserve_dock
-			first_dock_taken = TRUE
-			acting.dock_index = 1
+			selected_dock_index = 1
 		else if(!reserve_dock_secondary.get_docked() && !second_dock_taken)
 			dock_to_use = reserve_dock_secondary
-			second_dock_taken = TRUE
-			acting.dock_index = 2
+			selected_dock_index = 2
 
 	if(!dock_to_use)
 		acting.state = prev_state
@@ -259,8 +278,25 @@
 		to_chat(user, span_notice("All potential docking locations occupied."))
 		return
 
+	// Adjust dock and check if shuttle can fit BEFORE committing to docking
 	if(!is_survey)
 		adjust_dock_to_shuttle(dock_to_use, acting.shuttle)
+
+	// Check if shuttle can actually fit in the dock
+	if(acting.shuttle.height > dock_to_use.height || acting.shuttle.width > dock_to_use.width)
+		acting.state = prev_state
+		concerned = FALSE
+		to_chat(user, span_warning("Ship is too large to dock at this location."))
+		return
+
+	// Now that we know docking will work, set the flags
+	if(selected_dock_index == 1)
+		first_dock_taken = TRUE
+		acting.dock_index = 1
+	else if(selected_dock_index == 2)
+		second_dock_taken = TRUE
+		acting.dock_index = 2
+
 	to_chat(user, span_notice("[acting.dock(src, dock_to_use)]"))
 
 	concerned = FALSE
@@ -295,8 +331,6 @@
 		dock_to_adjust.width = dock_height_store
 
 	dock_to_adjust.dir = final_facing_dir
-	if(shuttle.height > dock_to_adjust.height || shuttle.width > dock_to_adjust.width)
-		CRASH("Shuttle cannot fit in dock!")
 
 	var/new_dheight = round((dock_to_adjust.height-shuttle.height)/2) + shuttle.dheight
 	var/new_dwidth = round((dock_to_adjust.width-shuttle.width)/2) + shuttle.dwidth
