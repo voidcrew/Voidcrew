@@ -10,7 +10,7 @@
 	name = "tactical targeting system"
 	visible_to_user = TRUE
 	use_visibility = FALSE // Don't check camera network - we view ships directly
-	sight = SEE_TURFS // Only see turfs, not mobs
+	sight = SEE_TURFS | SEE_OBJS // See turfs and objects, not mobs
 	/// Reference to our console
 	var/obj/machinery/computer/camera_advanced/ship_combat/console
 	/// The ship we're allowed to view
@@ -57,9 +57,9 @@
 		if(use_visibility)
 			update_visibility()
 
-/// Override to only show turfs - BLIND flag blocks everything, SEE_TURFS lets turfs through
+/// Override to show turfs and objects but not mobs
 /mob/eye/camera/remote/ship_combat/update_remote_sight(mob/user)
-	user.set_sight(SEE_TURFS | BLIND)
+	user.set_sight(SEE_TURFS | SEE_OBJS | BLIND)
 	return TRUE
 
 /mob/eye/camera/remote/ship_combat/setLoc(turf/destination, force_update = FALSE)
@@ -86,8 +86,8 @@
 /obj/machinery/computer/camera_advanced/ship_combat
 	name = "ship combat console"
 	desc = "A tactical combat console for ship-to-ship warfare. Link missile launchers with a multitool, select a target ship, then use the targeting system to aim and fire."
-	icon_screen = null // We handle this ourselves to enable rotation
-	icon_keyboard = null // We handle this ourselves to enable rotation
+	icon_screen = "generic"
+	icon_keyboard = "generic_key"
 	circuit = /obj/item/circuitboard/computer/ship_combat_console
 	light_color = LIGHT_COLOR_INTENSE_RED
 	networks = list() // We don't use the camera network
@@ -155,21 +155,6 @@
 	QDEL_NULL(reticle)
 	current_ship = null
 	return ..()
-
-/obj/machinery/computer/camera_advanced/ship_combat/update_overlays()
-	. = ..()
-	// Don't show screen/keyboard if broken or unpowered
-	if(machine_stat & (BROKEN|NOPOWER))
-		return
-
-	// Add keyboard overlay (rotates with console due to KEEP_TOGETHER)
-	. += mutable_appearance(icon, "ratvar_key1")
-
-	// Add screen overlay (rotates with console due to KEEP_TOGETHER)
-	. += mutable_appearance(icon, "ratvar1")
-
-	// Add emissive glow for screen - but this one WON'T rotate (that's fine for glow)
-	. += emissive_appearance(icon, "ratvar1", src)
 
 /obj/machinery/computer/camera_advanced/ship_combat/examine(mob/user)
 	. = ..()
@@ -452,8 +437,8 @@
 		user.client.screen += reticle
 	// Update reticle position
 	update_reticle()
-	// Hide mobs and objects - BLIND blocks everything, SEE_TURFS shows only structural view
-	user.set_sight(SEE_TURFS | BLIND)
+	// Show turfs and objects but hide mobs
+	user.set_sight(SEE_TURFS | SEE_OBJS | BLIND)
 
 /// Override to allow removing eye control from non-living mobs (admin ghosts)
 /obj/machinery/computer/camera_advanced/ship_combat/remove_eye_control(mob/user)
@@ -539,6 +524,13 @@
 	to_chat(user, span_notice("Exiting attack mode."))
 
 // ========== MULTITOOL LINKING ==========
+
+/obj/machinery/computer/camera_advanced/ship_combat/attackby(obj/item/W, mob/user, list/modifiers)
+	if(istype(W, /obj/item/multitool))
+		var/result = multitool_act(user, W)
+		if(result)
+			return
+	return ..()
 
 /obj/machinery/computer/camera_advanced/ship_combat/multitool_act(mob/living/user, obj/item/multitool/tool)
 	if(!istype(tool))
@@ -728,7 +720,7 @@
 		return null
 	return get_turf(eyeobj)
 
-/// Fire at the current target location with all ready launchers
+/// Fire at the current target location with all missiles from all launchers
 /obj/machinery/computer/camera_advanced/ship_combat/proc/fire_all(mob/user)
 	if(!attack_mode)
 		to_chat(user, span_warning("Enter attack mode first!"))
@@ -739,16 +731,6 @@
 		if(user)
 			to_chat(user, span_warning("No target selected!"))
 		return 0
-
-	// Count ready launchers first so we can spread them out
-	var/list/ready_launchers = list()
-	for(var/datum/weakref/ref in linked_launchers)
-		var/obj/machinery/ship_combat/missile_launcher/launcher = ref.resolve()
-		if(!launcher)
-			linked_launchers -= ref
-			continue
-		if(launcher.can_fire())
-			ready_launchers += launcher
 
 	// Build list of staggered SPAWN positions (missiles converge on same target)
 	// Spread missiles in a grid pattern at their spawn point
@@ -766,18 +748,27 @@
 
 	var/fired_count = 0
 	var/offset_index = 1
-	for(var/obj/machinery/ship_combat/missile_launcher/launcher in ready_launchers)
-		// Get spawn offset for this missile
-		var/list/offset = stagger_offsets[offset_index]
 
-		// Fire at the SAME target, but with staggered spawn positions
-		if(launcher.fire(target_turf, target_ship, current_ship, user, offset[1], offset[2], selected_missile_direction))
-			fired_count++
+	// Fire ALL missiles from ALL launchers
+	for(var/datum/weakref/ref in linked_launchers)
+		var/obj/machinery/ship_combat/missile_launcher/launcher = ref.resolve()
+		if(!launcher)
+			linked_launchers -= ref
+			continue
 
-		// Cycle through offsets
-		offset_index++
-		if(offset_index > length(stagger_offsets))
-			offset_index = 1
+		// Keep firing from this launcher until it's empty
+		while(launcher.can_fire())
+			// Get spawn offset for this missile
+			var/list/offset = stagger_offsets[offset_index]
+
+			// Fire at the SAME target, but with staggered spawn positions
+			if(launcher.fire(target_turf, target_ship, current_ship, user, offset[1], offset[2], selected_missile_direction))
+				fired_count++
+
+			// Cycle through offsets
+			offset_index++
+			if(offset_index > length(stagger_offsets))
+				offset_index = 1
 
 	// Firing breaks cloak
 	if(fired_count > 0 && current_ship)
@@ -833,7 +824,7 @@
 			to_chat(user, span_warning("No launchers ready to fire!"))
 	return FALSE
 
-/// Opens a radial menu to select which missile type to fire
+/// Opens a selection menu to choose which missile type to fire
 /obj/machinery/computer/camera_advanced/ship_combat/proc/open_missile_radial(mob/user)
 	// Get available missile types from loaded launchers
 	var/list/available_types = list()
@@ -851,20 +842,13 @@
 		to_chat(user, span_warning("No missiles loaded in any launcher!"))
 		return
 
-	// Build radial options
-	var/list/options = list()
-
-	// Always add "Any" option
-	options["Any"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_center")
-
-	// Add each available type (payload_type is already a readable name like "light", "heavy", "EMP")
+	// Build selection options - capitalize for display
+	var/list/options = list("Any")
 	for(var/payload_type in available_types)
-		var/icon_state = get_missile_type_icon(payload_type)
-		options[capitalize(payload_type)] = image(icon = 'icons/obj/weapons/guns/ammo.dmi', icon_state = icon_state)
+		options += capitalize(payload_type)
 
-	// Show radial on the eye if in attack mode, otherwise on console
-	var/atom/radial_anchor = attack_mode && eyeobj ? eyeobj : src
-	var/choice = show_radial_menu(user, radial_anchor, options, require_near = FALSE, tooltips = TRUE)
+	// Use tgui_input_list which works reliably with camera eye control
+	var/choice = tgui_input_list(user, "Select missile type to fire:", "Missile Selection", options)
 	if(!choice)
 		return
 
@@ -891,33 +875,31 @@
 			return "84mm-heap"
 	return "84mm-heap"
 
-/// Opens a radial menu to select missile approach direction
+/// Opens a selection menu to choose missile approach direction
 /obj/machinery/computer/camera_advanced/ship_combat/proc/open_direction_radial(mob/user)
-	var/list/options = list()
+	var/list/options = list("Auto", "North", "South", "East", "West")
 
-	// Direction options with arrow icons
-	options["North"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_up")
-	options["South"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_down")
-	options["East"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_right")
-	options["West"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_left")
-
-	// Show radial on the eye if in attack mode, otherwise on console
-	var/atom/radial_anchor = attack_mode && eyeobj ? eyeobj : src
-	var/choice = show_radial_menu(user, radial_anchor, options, require_near = FALSE, tooltips = TRUE)
+	// Use tgui_input_list which works reliably with camera eye control
+	var/choice = tgui_input_list(user, "Select direction missiles approach from:", "Missile Direction", options)
 	if(!choice)
 		return
 
 	switch(choice)
+		if("Auto")
+			selected_missile_direction = null
+			to_chat(user, span_notice("Missiles will approach from the closest edge to target."))
 		if("North")
 			selected_missile_direction = NORTH
+			to_chat(user, span_notice("Missiles will approach from the North."))
 		if("South")
 			selected_missile_direction = SOUTH
+			to_chat(user, span_notice("Missiles will approach from the South."))
 		if("East")
 			selected_missile_direction = EAST
+			to_chat(user, span_notice("Missiles will approach from the East."))
 		if("West")
 			selected_missile_direction = WEST
-
-	to_chat(user, span_notice("Missiles will approach from the [choice]."))
+			to_chat(user, span_notice("Missiles will approach from the West."))
 
 /// Get status of all linked launchers
 /obj/machinery/computer/camera_advanced/ship_combat/proc/get_launcher_status()
@@ -1185,9 +1167,10 @@
 
 /atom/movable/screen/ship_combat/targeting_reticle
 	name = "targeting reticle"
-	icon_state = "movemarker" // Using existing marker, can be replaced with custom
+	icon_state = "selector"
 	screen_loc = "CENTER"
 	color = "#ff0000"
+	plane = HUD_PLANE
 	layer = ABOVE_MOB_LAYER
 
 /atom/movable/screen/ship_combat/targeting_reticle/Initialize(mapload, obj/machinery/computer/camera_advanced/ship_combat/console)

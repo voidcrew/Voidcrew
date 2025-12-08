@@ -52,7 +52,6 @@
 /obj/item/bombcore/missile/light
 	name = "light missile warhead"
 	desc = "A smaller warhead for missiles. Less damage but cheaper to produce."
-	icon_state = "dvoid-core" // Smaller looking core
 	payload_type = "light"
 	ship_damage = MISSILE_DAMAGE_LIGHT
 	missile_icon_state = "smissile"
@@ -65,7 +64,6 @@
 /obj/item/bombcore/missile/heavy
 	name = "heavy missile warhead"
 	desc = "A massive warhead for missiles. Devastating damage but expensive."
-	icon_state = "dvoid-core-charged" // Looks more dangerous
 	w_class = WEIGHT_CLASS_BULKY
 	payload_type = "heavy"
 	ship_damage = MISSILE_DAMAGE_HEAVY
@@ -78,7 +76,6 @@
 /obj/item/bombcore/missile/emp
 	name = "EMP missile warhead"
 	desc = "An electromagnetic pulse warhead. Disables electronics on impact."
-	icon_state = "dvoid-rift" // Energy-looking
 	payload_type = "EMP"
 	ship_damage = MISSILE_DAMAGE_LIGHT
 	missile_effect_type = /obj/effect/ship_missile/emp
@@ -191,8 +188,9 @@
 	desc = "An unwired missile frame. Use cable coil to wire it up."
 	icon = 'voidcrew/icons/obj/supplypods.dmi'
 	icon_state = "missile_nowire"
+	drag_slowdown = 1.5
 	pixel_x = -16 // 2x1 sprite offset
-	pixel_y = -32 // Vertically center the tall sprite on its tile
+	pixel_y = -16 // Vertically center the tall sprite on its tile
 	anchored = FALSE
 	density = FALSE
 	max_integrity = 100
@@ -209,6 +207,10 @@
 
 /obj/structure/ship_missile/Initialize(mapload)
 	. = ..()
+	// Rotate 90 degrees to lay on its side
+	var/matrix/M = matrix()
+	M.Turn(90)
+	transform = M
 	update_appearance()
 
 // ========== PRE-ARMED MISSILE SUBTYPES ==========

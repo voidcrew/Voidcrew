@@ -212,6 +212,10 @@
 	if(first_dock_taken || second_dock_taken)
 		return
 
+	// Check if any ships are still docked inside (catches race conditions with async unload)
+	for(var/obj/structure/overmap/ship/docked_ship in contents)
+		return
+
 	if(length(mapzone.get_mind_mobs()))
 		return //Dont fuck over stranded people? tbh this shouldn't be called on this condition, instead of bandaiding it inside
 

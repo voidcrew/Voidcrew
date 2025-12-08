@@ -91,7 +91,7 @@
 		return
 
 	// Verify everything is still valid
-	if(QDELETED(missile) || !Adjacent(missile))
+	if(QDELETED(missile) || !Adjacent(user) || !user.Adjacent(missile))
 		return
 	if(length(loaded_missiles) >= max_missiles)
 		return
@@ -332,7 +332,7 @@
 	return TRUE
 
 /// Calculates where to spawn a missile - outside the target ship, in the transit space
-/// approach_dir: If provided, missiles spawn from this direction. Otherwise auto-calculated.
+/// approach_dir: If provided, missiles spawn from this direction. Otherwise auto-calculated based on target position.
 /obj/machinery/ship_combat/missile_launcher/proc/get_missile_spawn_turf(turf/target, obj/structure/overmap/ship/tgt_ship, approach_dir = null)
 	if(!target)
 		return null
@@ -357,8 +357,25 @@
 	var/spawn_x = target.x
 	var/spawn_y = target.y
 
-	// Use provided direction, or pick random if none specified
-	var/dir = approach_dir || pick(GLOB.cardinals)
+	// Calculate direction if not provided - spawn from the closest edge to the target
+	var/dir = approach_dir
+	if(!dir)
+		// Find ship center
+		var/center_x = (min_x + max_x) / 2
+		var/center_y = (min_y + max_y) / 2
+
+		// Calculate offset from center
+		var/offset_x = target.x - center_x
+		var/offset_y = target.y - center_y
+
+		// Pick direction based on which axis has greater offset
+		// Missile comes FROM the direction the target is offset toward
+		if(abs(offset_x) > abs(offset_y))
+			// Target is more to the left or right
+			dir = (offset_x > 0) ? EAST : WEST
+		else
+			// Target is more to the top or bottom
+			dir = (offset_y > 0) ? NORTH : SOUTH
 
 	// Spawn missiles from the selected direction
 	switch(dir)
