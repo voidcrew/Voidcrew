@@ -20,9 +20,46 @@
 	. = ..()
 	console = origin
 
-/// Override to only apply SEE_TURFS, no other sight flags
-/mob/eye/camera/remote/ship_combat/update_remote_sight(mob/living/user)
-	user.set_sight(SEE_TURFS)
+/// Override Destroy to handle non-living mobs (admin ghosts)
+/mob/eye/camera/remote/ship_combat/Destroy()
+	var/mob/user = user_ref?.resolve()
+	if(console && user)
+		console.remove_eye_control(user)
+	assign_user(null)
+	console = null
+	target_ship = null
+	return ..()
+
+/// Override to allow assigning non-living mobs (admin ghosts)
+/mob/eye/camera/remote/ship_combat/assign_user(mob/new_user)
+	var/mob/old_user = user_ref?.resolve()
+	SEND_SIGNAL(src, COMSIG_REMOTE_CAMERA_ASSIGN_USER, new_user, old_user)
+	if(old_user)
+		old_user.remote_control = null
+		old_user.reset_perspective(null)
+		name = initial(src.name)
+
+		var/client/old_user_client = GetViewerClient()
+		if(user_image && old_user_client)
+			old_user_client.images -= user_image
+		clear_camera_chunks()
+
+	user_ref = WEAKREF(new_user)
+
+	if(new_user)
+		new_user.remote_control = src
+		new_user.reset_perspective(src)
+		name = "Camera Eye ([new_user.name])"
+
+		var/client/new_user_client = GetViewerClient()
+		if(user_image && new_user_client)
+			new_user_client.images += user_image
+		if(use_visibility)
+			update_visibility()
+
+/// Override to only show turfs - BLIND flag blocks everything, SEE_TURFS lets turfs through
+/mob/eye/camera/remote/ship_combat/update_remote_sight(mob/user)
+	user.set_sight(SEE_TURFS | BLIND)
 	return TRUE
 
 /mob/eye/camera/remote/ship_combat/setLoc(turf/destination, force_update = FALSE)
@@ -49,11 +86,12 @@
 /obj/machinery/computer/camera_advanced/ship_combat
 	name = "ship combat console"
 	desc = "A tactical combat console for ship-to-ship warfare. Link missile launchers with a multitool, select a target ship, then use the targeting system to aim and fire."
-	icon_screen = "ratvar1"
-	icon_keyboard = "ratvar_key1"
+	icon_screen = null // We handle this ourselves to enable rotation
+	icon_keyboard = null // We handle this ourselves to enable rotation
 	circuit = /obj/item/circuitboard/computer/ship_combat_console
 	light_color = LIGHT_COLOR_INTENSE_RED
 	networks = list() // We don't use the camera network
+	appearance_flags = KEEP_TOGETHER
 
 	/// Our ship reference
 	var/obj/structure/overmap/ship/current_ship
@@ -67,6 +105,10 @@
 	var/atom/movable/screen/ship_combat/targeting_reticle/reticle
 	/// Are we currently in attack mode (camera view)?
 	var/attack_mode = FALSE
+	/// Currently selected missile type filter (null = fire any)
+	var/selected_missile_type
+	/// Selected direction for missile approach (NORTH, SOUTH, EAST, WEST, or null for auto)
+	var/selected_missile_direction
 
 	// ===== INTERDICTOR VARIABLES =====
 	/// Is interdiction currently active (slowing target)?
@@ -90,25 +132,15 @@
 	/// Debug: Force unlock interdictor
 	var/debug_interdictor = FALSE
 
-	// ===== MISSILE TYPE SELECTION =====
-	/// Currently selected missile type filter (null = any missile)
-	var/selected_missile_type = null
-	/// List of available missile types for cycling
-	var/static/list/missile_types = list(
-		null,  // Any
-		/obj/item/ship_combat_missile/light,
-		/obj/item/ship_combat_missile,  // Standard
-		/obj/item/ship_combat_missile/heavy,
-		/obj/item/ship_combat_missile/emp,
-	)
+	jump_action = null
 
 /obj/machinery/computer/camera_advanced/ship_combat/Initialize(mapload)
 	. = ..()
 	// Add our custom actions
+	actions += new /datum/action/innate/ship_combat/select_missile(src)
+	actions += new /datum/action/innate/ship_combat/select_direction(src)
 	actions += new /datum/action/innate/ship_combat/fire_missile(src)
 	actions += new /datum/action/innate/ship_combat/fire_all(src)
-	actions += new /datum/action/innate/ship_combat/cycle_missile_type(src)
-	actions += new /datum/action/innate/ship_combat/exit_targeting(src)
 
 	reticle = new(null, src)
 
@@ -123,6 +155,21 @@
 	QDEL_NULL(reticle)
 	current_ship = null
 	return ..()
+
+/obj/machinery/computer/camera_advanced/ship_combat/update_overlays()
+	. = ..()
+	// Don't show screen/keyboard if broken or unpowered
+	if(machine_stat & (BROKEN|NOPOWER))
+		return
+
+	// Add keyboard overlay (rotates with console due to KEEP_TOGETHER)
+	. += mutable_appearance(icon, "ratvar_key1")
+
+	// Add screen overlay (rotates with console due to KEEP_TOGETHER)
+	. += mutable_appearance(icon, "ratvar1")
+
+	// Add emissive glow for screen - but this one WON'T rotate (that's fine for glow)
+	. += emissive_appearance(icon, "ratvar1", src)
 
 /obj/machinery/computer/camera_advanced/ship_combat/examine(mob/user)
 	. = ..()
@@ -172,6 +219,19 @@
 			return TRUE
 	update_unlocked_upgrades()
 	return (upgrade_id in unlocked_upgrades)
+
+// ========== GHOST ADMIN OVERRIDES ==========
+
+/obj/machinery/computer/camera_advanced/ship_combat/can_use(mob/user)
+	// Allow admin ghosts with AI interact
+	if(isAdminGhostAI(user))
+		return TRUE
+	return ..()
+
+/// Override to allow granting actions to non-living mobs (admin ghosts)
+/obj/machinery/computer/camera_advanced/ship_combat/GrantActions(mob/user)
+	for(var/datum/action/to_grant as anything in actions)
+		to_grant.Grant(user)
 
 // ========== SHIP CONNECTION ==========
 
@@ -392,12 +452,24 @@
 		user.client.screen += reticle
 	// Update reticle position
 	update_reticle()
+	// Hide mobs and objects - BLIND blocks everything, SEE_TURFS shows only structural view
+	user.set_sight(SEE_TURFS | BLIND)
 
-/obj/machinery/computer/camera_advanced/ship_combat/remove_eye_control(mob/living/user)
+/// Override to allow removing eye control from non-living mobs (admin ghosts)
+/obj/machinery/computer/camera_advanced/ship_combat/remove_eye_control(mob/user)
 	UnregisterSignal(user, COMSIG_MOB_CLICKON)
-	if(user.client)
+	if(user?.client)
 		user.client.screen -= reticle
-	return ..()
+		user.client.view_size.unsupress()
+
+	for(var/datum/action/actions_removed as anything in actions)
+		actions_removed.Remove(user)
+
+	if(eyeobj)
+		eyeobj.assign_user(null)
+	current_user = null
+
+	playsound(src, 'sound/machines/terminal/terminal_off.ogg', 25, FALSE)
 
 // ========== ATTACK MODE ==========
 
@@ -656,80 +728,6 @@
 		return null
 	return get_turf(eyeobj)
 
-/// Returns the display name for a missile type path
-/obj/machinery/computer/camera_advanced/ship_combat/proc/get_missile_type_name(missile_type)
-	if(!missile_type)
-		return "Any"
-	switch(missile_type)
-		if(/obj/item/ship_combat_missile/light)
-			return "Light"
-		if(/obj/item/ship_combat_missile)
-			return "Standard"
-		if(/obj/item/ship_combat_missile/heavy)
-			return "Heavy"
-		if(/obj/item/ship_combat_missile/emp)
-			return "EMP"
-	return "Unknown"
-
-/// Opens a radial menu for selecting missile type filter
-/obj/machinery/computer/camera_advanced/ship_combat/proc/open_missile_type_menu(mob/user)
-	if(!user)
-		return
-
-	// Build radial menu options
-	var/list/options = list()
-
-	// "Any" option
-	var/image/any_image = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_cancel")
-	options["Any"] = any_image
-
-	// Light missile
-	var/image/light_image = image(icon = 'icons/obj/weapons/guns/ammo.dmi', icon_state = "low_yield_rocket")
-	options["Light"] = light_image
-
-	// Standard missile
-	var/image/standard_image = image(icon = 'icons/obj/weapons/guns/ammo.dmi', icon_state = "84mm-heap")
-	options["Standard"] = standard_image
-
-	// Heavy missile
-	var/image/heavy_image = image(icon = 'icons/obj/weapons/guns/ammo.dmi', icon_state = "srm-8")
-	options["Heavy"] = heavy_image
-
-	// EMP missile
-	var/image/emp_image = image(icon = 'icons/obj/weapons/guns/ammo.dmi', icon_state = "disruptor-ammo")
-	options["EMP"] = emp_image
-
-	var/pick = show_radial_menu(user, src, options, require_near = FALSE, tooltips = TRUE)
-	if(!pick)
-		return
-
-	// Map selection to type path
-	switch(pick)
-		if("Any")
-			selected_missile_type = null
-		if("Light")
-			selected_missile_type = /obj/item/ship_combat_missile/light
-		if("Standard")
-			selected_missile_type = /obj/item/ship_combat_missile
-		if("Heavy")
-			selected_missile_type = /obj/item/ship_combat_missile/heavy
-		if("EMP")
-			selected_missile_type = /obj/item/ship_combat_missile/emp
-
-	to_chat(user, span_notice("Missile filter: [pick]"))
-
-	// Update the action button
-	for(var/datum/action/innate/ship_combat/cycle_missile_type/action in actions)
-		action.update_name()
-
-/// Checks if a launcher's missile matches the current filter
-/obj/machinery/computer/camera_advanced/ship_combat/proc/launcher_matches_filter(obj/machinery/ship_combat/missile_launcher/launcher)
-	if(!selected_missile_type)
-		return TRUE // No filter, accept any
-	if(!launcher.loaded_missile)
-		return FALSE
-	return istype(launcher.loaded_missile, selected_missile_type)
-
 /// Fire at the current target location with all ready launchers
 /obj/machinery/computer/camera_advanced/ship_combat/proc/fire_all(mob/user)
 	if(!attack_mode)
@@ -742,36 +740,38 @@
 			to_chat(user, span_warning("No target selected!"))
 		return 0
 
-	// Count ready launchers first so we can spread them out (filtered by missile type)
+	// Count ready launchers first so we can spread them out
 	var/list/ready_launchers = list()
 	for(var/datum/weakref/ref in linked_launchers)
 		var/obj/machinery/ship_combat/missile_launcher/launcher = ref.resolve()
 		if(!launcher)
 			linked_launchers -= ref
 			continue
-		if(launcher.can_fire() && launcher_matches_filter(launcher))
+		if(launcher.can_fire())
 			ready_launchers += launcher
 
-	// Build list of staggered target positions (3 wide x 2 tall spread)
+	// Build list of staggered SPAWN positions (missiles converge on same target)
+	// Spread missiles in a grid pattern at their spawn point
 	var/list/stagger_offsets = list(
 		list(0, 0),    // center
-		list(-1, 0),   // left
-		list(1, 0),    // right
-		list(0, 1),    // up
-		list(-1, 1),   // up-left
-		list(1, 1),    // up-right
+		list(-3, 0),   // left
+		list(3, 0),    // right
+		list(0, 3),    // up
+		list(-3, 3),   // up-left
+		list(3, 3),    // up-right
+		list(0, -3),   // down
+		list(-3, -3),  // down-left
+		list(3, -3),   // down-right
 	)
 
 	var/fired_count = 0
 	var/offset_index = 1
 	for(var/obj/machinery/ship_combat/missile_launcher/launcher in ready_launchers)
-		// Get staggered target position
+		// Get spawn offset for this missile
 		var/list/offset = stagger_offsets[offset_index]
-		var/turf/staggered_target = locate(target_turf.x + offset[1], target_turf.y + offset[2], target_turf.z)
-		if(!staggered_target)
-			staggered_target = target_turf
 
-		if(launcher.fire(staggered_target, target_ship, current_ship, user))
+		// Fire at the SAME target, but with staggered spawn positions
+		if(launcher.fire(target_turf, target_ship, current_ship, user, offset[1], offset[2], selected_missile_direction))
 			fired_count++
 
 		// Cycle through offsets
@@ -788,7 +788,7 @@
 
 	return fired_count
 
-/// Fire the first ready launcher (filtered by selected missile type)
+/// Fire the first ready launcher (optionally filtered by selected missile type)
 /obj/machinery/computer/camera_advanced/ship_combat/proc/fire_one(mob/user)
 	if(!attack_mode)
 		to_chat(user, span_warning("Enter attack mode first!"))
@@ -807,9 +807,18 @@
 			continue
 		if(!launcher.can_fire())
 			continue
-		if(!launcher_matches_filter(launcher))
-			continue
-		if(launcher.fire(target_turf, target_ship, current_ship, user))
+		// Filter by selected missile type if set - find matching missile index
+		var/missile_index = 1
+		if(selected_missile_type && length(launcher.loaded_missiles))
+			missile_index = 0
+			for(var/i in 1 to length(launcher.loaded_missiles))
+				var/list/missile_data = launcher.loaded_missiles[i]
+				if(missile_data["payload_type"] == selected_missile_type)
+					missile_index = i
+					break
+			if(!missile_index)
+				continue // No matching missile in this launcher
+		if(launcher.fire(target_turf, target_ship, current_ship, user, approach_dir = selected_missile_direction, missile_index = missile_index))
 			// Firing breaks cloak
 			if(current_ship)
 				SEND_SIGNAL(current_ship, COMSIG_SHIP_WEAPON_FIRED)
@@ -818,9 +827,97 @@
 			return TRUE
 
 	if(user)
-		var/type_name = get_missile_type_name(selected_missile_type)
-		to_chat(user, span_warning("No [type_name] launchers ready to fire!"))
+		if(selected_missile_type)
+			to_chat(user, span_warning("No [selected_missile_type] missiles ready to fire!"))
+		else
+			to_chat(user, span_warning("No launchers ready to fire!"))
 	return FALSE
+
+/// Opens a radial menu to select which missile type to fire
+/obj/machinery/computer/camera_advanced/ship_combat/proc/open_missile_radial(mob/user)
+	// Get available missile types from loaded launchers
+	var/list/available_types = list()
+	for(var/datum/weakref/ref in linked_launchers)
+		var/obj/machinery/ship_combat/missile_launcher/launcher = ref.resolve()
+		if(!launcher || !length(launcher.loaded_missiles))
+			continue
+		// Check all missiles in this launcher
+		for(var/list/missile_data in launcher.loaded_missiles)
+			var/payload_type = missile_data["payload_type"]
+			if(payload_type && !(payload_type in available_types))
+				available_types += payload_type
+
+	if(!length(available_types))
+		to_chat(user, span_warning("No missiles loaded in any launcher!"))
+		return
+
+	// Build radial options
+	var/list/options = list()
+
+	// Always add "Any" option
+	options["Any"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_center")
+
+	// Add each available type (payload_type is already a readable name like "light", "heavy", "EMP")
+	for(var/payload_type in available_types)
+		var/icon_state = get_missile_type_icon(payload_type)
+		options[capitalize(payload_type)] = image(icon = 'icons/obj/weapons/guns/ammo.dmi', icon_state = icon_state)
+
+	// Show radial on the eye if in attack mode, otherwise on console
+	var/atom/radial_anchor = attack_mode && eyeobj ? eyeobj : src
+	var/choice = show_radial_menu(user, radial_anchor, options, require_near = FALSE, tooltips = TRUE)
+	if(!choice)
+		return
+
+	if(choice == "Any")
+		selected_missile_type = null
+		to_chat(user, span_notice("Will fire any available missile."))
+	else
+		// Convert back to lowercase payload_type
+		selected_missile_type = lowertext(choice)
+		to_chat(user, span_notice("Will fire [choice] missiles."))
+
+/// Gets an icon state for a payload type
+/obj/machinery/computer/camera_advanced/ship_combat/proc/get_missile_type_icon(payload_type)
+	switch(payload_type)
+		if("light")
+			return "low_yield_rocket"
+		if("standard")
+			return "84mm-heap"
+		if("heavy")
+			return "srm-8"
+		if("EMP")
+			return "disruptor-ammo"
+		if("chemical")
+			return "84mm-heap"
+	return "84mm-heap"
+
+/// Opens a radial menu to select missile approach direction
+/obj/machinery/computer/camera_advanced/ship_combat/proc/open_direction_radial(mob/user)
+	var/list/options = list()
+
+	// Direction options with arrow icons
+	options["North"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_up")
+	options["South"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_down")
+	options["East"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_right")
+	options["West"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_left")
+
+	// Show radial on the eye if in attack mode, otherwise on console
+	var/atom/radial_anchor = attack_mode && eyeobj ? eyeobj : src
+	var/choice = show_radial_menu(user, radial_anchor, options, require_near = FALSE, tooltips = TRUE)
+	if(!choice)
+		return
+
+	switch(choice)
+		if("North")
+			selected_missile_direction = NORTH
+		if("South")
+			selected_missile_direction = SOUTH
+		if("East")
+			selected_missile_direction = EAST
+		if("West")
+			selected_missile_direction = WEST
+
+	to_chat(user, span_notice("Missiles will approach from the [choice]."))
 
 /// Get status of all linked launchers
 /obj/machinery/computer/camera_advanced/ship_combat/proc/get_launcher_status()
@@ -908,9 +1005,10 @@
 		target_ship.speed[1] *= INTERDICTOR_SPEED_REDUCTION
 		target_ship.speed[2] *= INTERDICTOR_SPEED_REDUCTION
 
-	// Register for target deletion and movement
+	// Register for target deletion and movement (both ships)
 	RegisterSignal(interdicted_ship, COMSIG_QDELETING, PROC_REF(on_interdicted_ship_deleted))
 	RegisterSignal(interdicted_ship, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(on_interdicted_ship_moved))
+	RegisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(on_our_ship_moved))
 
 	// Create the interdiction beam on the overmap between the two ships
 	if(current_ship && target_ship)
@@ -946,6 +1044,15 @@
 /// Called when the interdicted ship moves - check if they escaped range
 /obj/machinery/computer/camera_advanced/ship_combat/proc/on_interdicted_ship_moved(datum/source)
 	SIGNAL_HANDLER
+	check_interdiction_range()
+
+/// Called when our ship moves - check if we left interdiction range
+/obj/machinery/computer/camera_advanced/ship_combat/proc/on_our_ship_moved(datum/source)
+	SIGNAL_HANDLER
+	check_interdiction_range()
+
+/// Checks if interdiction should be cancelled due to range
+/obj/machinery/computer/camera_advanced/ship_combat/proc/check_interdiction_range()
 	if(!interdiction_active || !interdicted_ship || !current_ship)
 		return
 
@@ -967,6 +1074,10 @@
 
 	// Remove the interdiction beam
 	QDEL_NULL(interdiction_beam)
+
+	// Unregister signal from our ship
+	if(current_ship)
+		UnregisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_MOVED)
 
 	// Remove slowdown from target and restore normal lighting
 	if(interdicted_ship)
@@ -1025,6 +1136,8 @@
 	// Cancel interdiction (removes slowdown, beam, and emergency lights)
 	interdiction_active = FALSE
 	QDEL_NULL(interdiction_beam)
+	if(current_ship)
+		UnregisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_MOVED)
 	UnregisterSignal(interdicted_ship, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
 	interdicted_ship.speed_multiplier = 1
 	set_ship_emergency_lights(interdicted_ship, FALSE)
@@ -1101,6 +1214,28 @@
 		return FALSE
 	return ..()
 
+// Select missile type
+/datum/action/innate/ship_combat/select_missile
+	name = "Select Missile"
+	desc = "Select which type of missile to fire from loaded launchers."
+	button_icon_state = "mech_cycle_equip_off"
+
+/datum/action/innate/ship_combat/select_missile/Activate()
+	if(!console || !ismob(owner))
+		return
+	console.open_missile_radial(owner)
+
+// Select missile approach direction
+/datum/action/innate/ship_combat/select_direction
+	name = "Select Direction"
+	desc = "Select which direction missiles will approach from."
+	button_icon_state = "mech_view_stats"
+
+/datum/action/innate/ship_combat/select_direction/Activate()
+	if(!console || !ismob(owner))
+		return
+	console.open_direction_radial(owner)
+
 // Fire single missile
 /datum/action/innate/ship_combat/fire_missile
 	name = "Fire Missile"
@@ -1108,7 +1243,7 @@
 	button_icon_state = "mech_zoom_off"
 
 /datum/action/innate/ship_combat/fire_missile/Activate()
-	if(!console || !isliving(owner))
+	if(!console || !ismob(owner))
 		return
 	console.fire_one(owner)
 
@@ -1119,39 +1254,9 @@
 	button_icon_state = "mech_zoom_on"
 
 /datum/action/innate/ship_combat/fire_all/Activate()
-	if(!console || !isliving(owner))
+	if(!console || !ismob(owner))
 		return
 	console.fire_all(owner)
-
-// Select missile type filter
-/datum/action/innate/ship_combat/cycle_missile_type
-	name = "Missile: Any"
-	desc = "Select which missile type to fire."
-	button_icon_state = "mech_cycle_equip_on"
-
-/datum/action/innate/ship_combat/cycle_missile_type/Activate()
-	if(!console || !isliving(owner))
-		return
-	console.open_missile_type_menu(owner)
-
-/datum/action/innate/ship_combat/cycle_missile_type/proc/update_name()
-	if(!console)
-		return
-	var/type_name = console.get_missile_type_name(console.selected_missile_type)
-	name = "Missile: [type_name]"
-	build_all_button_icons(UPDATE_BUTTON_NAME)
-
-// Exit targeting
-/datum/action/innate/ship_combat/exit_targeting
-	name = "Exit Targeting"
-	desc = "Exit the targeting system and return to normal view."
-	button_icon = "icons/mob/actions/actions_silicon.dmi"
-	button_icon_state = "camera_off"
-
-/datum/action/innate/ship_combat/exit_targeting/Activate()
-	if(!console || !isliving(owner))
-		return
-	console.exit_attack_mode(owner)
 
 // ========== CIRCUIT BOARD ==========
 

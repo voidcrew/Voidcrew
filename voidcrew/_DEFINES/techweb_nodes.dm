@@ -11,5 +11,6 @@
 
 // Ship Combat
 #define TECHWEB_NODE_SHIP_COMBAT "ship_combat"
+#define TECHWEB_NODE_SHIP_COMBAT_ORDNANCE "ship_combat_ordnance"
 #define TECHWEB_NODE_SHIP_COMBAT_ADVANCED "ship_combat_advanced"
 #define TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR "ship_combat_interdictor"

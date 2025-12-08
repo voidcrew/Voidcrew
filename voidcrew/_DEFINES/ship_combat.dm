@@ -18,6 +18,13 @@
 #define COMSIG_SHIP_HAZARD_TRIGGERED "ship_hazard_triggered"
 
 // ========== MISSILE DEFINES ==========
+/// Missile construction states
+#define MISSILE_STATE_UNWIRED 0
+#define MISSILE_STATE_WIRED 1
+#define MISSILE_STATE_TRACKING 2
+#define MISSILE_STATE_PAYLOAD 3
+#define MISSILE_STATE_ARMED 4
+
 /// Base damage for light missiles
 #define MISSILE_DAMAGE_LIGHT 200
 /// Base damage for standard missiles
@@ -35,9 +42,6 @@
 #define MISSILE_EXPLOSION_FLAME 3
 
 // ========== LAUNCHER DEFINES ==========
-
-/// Cooldown between missile fires (in deciseconds)
-#define MISSILE_LAUNCHER_COOLDOWN 5 SECONDS
 
 /// Power draw when firing
 #define MISSILE_LAUNCHER_POWER_FIRE 500

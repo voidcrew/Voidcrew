@@ -75,11 +75,11 @@
 		var/turf/our_turf = get_turf(src)
 		if(our_turf)
 			var/angle = get_angle(our_turf, target_turf)
-			// The missile sprite points up (north) by default, so we rotate from that
+			// The missile sprite points down (south) by default
 			// get_angle returns 0 for north, 90 for east, etc.
-			// We need to rotate clockwise by the angle (subtract 90 because sprite faces up)
+			// Add 180 to flip the sprite to face the target
 			var/matrix/M = matrix()
-			M.Turn(angle)
+			M.Turn(angle + 180)
 			transform = M
 
 	// Start moving toward target
@@ -223,6 +223,67 @@
 
 	// EMP pulse
 	empulse(impact_loc, 2, 4)
+
+	// Screen shake for nearby players
+	for(var/mob/living/victim in range(7, impact_loc))
+		shake_camera(victim, 2, 1)
+
+	qdel(src)
+
+// ========== CHEMICAL MISSILE VARIANT ==========
+
+/obj/effect/ship_missile/chemical
+	name = "chemical ship missile"
+	desc = "A chemical warhead missile streaking through space."
+	/// List of reagent holders from the payload's beakers
+	var/list/datum/reagents/payload_reagents = list()
+	/// Splash radius
+	var/affected_area = 5
+	/// Temperature added to reagents on impact
+	var/ignition_temp = 100
+
+/obj/effect/ship_missile/chemical/Initialize(mapload, turf/target, obj/structure/overmap/ship/target_ship_ref, obj/structure/overmap/ship/source_ship_ref, missile_damage, dev_range, heavy_range, light_range, flame_range, missile_icon, list/chem_reagents, chem_area, chem_temp)
+	. = ..()
+	if(chem_reagents)
+		payload_reagents = chem_reagents
+	if(chem_area)
+		affected_area = chem_area
+	if(chem_temp)
+		ignition_temp = chem_temp
+
+/obj/effect/ship_missile/chemical/impact()
+	if(exploded)
+		return
+	exploded = TRUE
+
+	var/turf/impact_loc = get_turf(src)
+
+	// Play impact sound
+	playsound(impact_loc, impact_sound, 60, TRUE)
+
+	// Send impact signal
+	if(target_ship)
+		SEND_SIGNAL(target_ship, COMSIG_SHIP_MISSILE_IMPACT, src, impact_loc)
+
+	// Create small explosion first
+	explosion(
+		impact_loc,
+		devastation_range = 0,
+		heavy_impact_range = 0,
+		light_impact_range = explosion_light,
+		flame_range = 0,
+		flash_range = 2,
+		adminlog = TRUE,
+		ignorecap = TRUE,
+		explosion_cause = src
+	)
+
+	// Then do the chemical splash if we have reagents
+	if(length(payload_reagents))
+		// Create a temporary reagent holder for the splash proc
+		var/datum/reagents/holder = new(1000)
+		holder.my_atom = src
+		chem_splash(impact_loc, holder, affected_area, payload_reagents, ignition_temp, 1)
 
 	// Screen shake for nearby players
 	for(var/mob/living/victim in range(7, impact_loc))
