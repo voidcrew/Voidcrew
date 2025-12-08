@@ -313,6 +313,10 @@
 			points = 1000,
 			cash = 1000
 		),
+		space_ruin = list(
+			points = 300,
+			cash = 300
+		),
 	)
 
 	var/point_list = list()
@@ -469,6 +473,22 @@
 		celestial_data.copy(celestial)
 		survey_disk.data.survey_objects_by_type["stars"] |= celestial
 
+	for(var/datum/surveyed_celestial_object/space_ruin/celestial_data in data.survey_objects_by_type["space_ruins"])
+		// Create a placeholder celestial var
+		var/datum/surveyed_celestial_object/space_ruin/celestial
+
+		// Check to see if our celestial is already in our disk's survey data
+		for(var/datum/surveyed_celestial_object/space_ruin/existing_celestial in survey_disk.data.survey_objects_by_type["space_ruins"])
+			if(existing_celestial.ref_id == celestial_data.ref_id || existing_celestial == celestial_data)
+				celestial = existing_celestial
+
+		// If it isn't, instantiate it
+		if(!celestial)
+			celestial = new()
+
+		// Copy data from our survey console's celestial to our disk
+		celestial_data.copy(celestial)
+		survey_disk.data.survey_objects_by_type["space_ruins"] |= celestial
 
 	playsound(src, "sound/machines/terminal_alert.ogg", 40)
 	balloon_alert(ui_user, "data saved to disk")
@@ -579,6 +599,23 @@
 		// Copy data from our disk to our survey console
 		celestial_data.copy(celestial)
 		data.survey_objects_by_type["stars"] |= celestial
+
+	for(var/datum/surveyed_celestial_object/space_ruin/celestial_data in survey_disk.data.survey_objects_by_type["space_ruins"])
+		// Create a placeholder celestial var
+		var/datum/surveyed_celestial_object/space_ruin/celestial
+
+		// Check to see if our celestial is already in our disk's survey data
+		for(var/datum/surveyed_celestial_object/space_ruin/existing_celestial in data.survey_objects_by_type["space_ruins"])
+			if(existing_celestial.ref_id == celestial_data.ref_id || existing_celestial == celestial_data)
+				celestial = existing_celestial
+
+		// If it isn't, instantiate it
+		if(!celestial)
+			celestial = new()
+
+		// Copy data from our disk to our survey console
+		celestial_data.copy(celestial)
+		data.survey_objects_by_type["space_ruins"] |= celestial
 
 	update_static_data(ui_user)
 	playsound(src, "sound/machines/high_tech_confirm.ogg", 40)

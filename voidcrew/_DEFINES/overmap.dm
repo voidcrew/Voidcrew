@@ -17,3 +17,9 @@
 #define OVERMAP_SHIP_ACTING "acting"
 #define OVERMAP_SHIP_DOCKING "docking"
 #define OVERMAP_SHIP_UNDOCKING "undocking"
+
+// Space ruin spawning configuration
+/// Maximum number of space ruins to spawn on the overmap
+#define MAX_OVERMAP_SPACE_RUINS 8
+/// Minimum number of space ruins to spawn
+#define MIN_OVERMAP_SPACE_RUINS 4

@@ -50,6 +50,7 @@ SUBSYSTEM_DEF(overmap)
 	setup_sun()
 	setup_dangers()
 	setup_planets()
+	setup_space_ruins()
 	spawn_initial_ship()
 
 	return SS_INIT_SUCCESS
@@ -310,6 +311,83 @@ SUBSYSTEM_DEF(overmap)
 // TODO - MULTI-Z VLEVELS
 /datum/controller/subsystem/overmap/proc/calculate_turf_below(turf/T)
 	return
+
+/**
+ * Sets up space ruins on the overmap as mysterious signals
+ * Randomly selects from available space ruin templates and places them in various orbits
+ */
+/datum/controller/subsystem/overmap/proc/setup_space_ruins()
+	// Get available space ruin templates
+	var/list/available_ruins = SSmapping.space_ruins_templates
+	if(!available_ruins || !length(available_ruins))
+		log_mapping("SSovermap: No space ruins available to spawn")
+		return
+
+	// Build list of orbits to use
+	var/list/orbits = list()
+	for(var/i in 2 to LAZYLEN(radius_tiles))
+		orbits += "[i]"
+
+	// Determine how many ruins to spawn
+	var/ruins_to_spawn = rand(MIN_OVERMAP_SPACE_RUINS, MAX_OVERMAP_SPACE_RUINS)
+
+	// Convert template list to a pickable list
+	var/list/ruin_pool = list()
+	for(var/ruin_id in available_ruins)
+		var/datum/map_template/ruin/space/ruin = available_ruins[ruin_id]
+		if(istype(ruin) && !ruin.unpickable)
+			ruin_pool += ruin
+
+	if(!length(ruin_pool))
+		log_mapping("SSovermap: No pickable space ruins in pool")
+		return
+
+	var/list/used_ruins = list() // Track which ruins we've already spawned (for allow_duplicates check)
+
+	for(var/i in 1 to ruins_to_spawn)
+		if(!length(orbits))
+			break // No more space in orbits
+
+		// Pick a random orbit
+		var/selected_orbit = text2num(pick(orbits))
+
+		// Find an unused tile in this orbit
+		var/turf/turf_for_ruin = get_unused_overmap_square_in_radius(selected_orbit)
+		if(!turf_for_ruin || !istype(turf_for_ruin))
+			orbits -= "[selected_orbit]" // This orbit is full
+			continue
+
+		// Pick a ruin template (respecting allow_duplicates)
+		var/datum/map_template/ruin/space/selected_ruin
+		var/list/pickable_ruins = ruin_pool.Copy()
+
+		// Remove already-used ruins that don't allow duplicates
+		for(var/datum/map_template/ruin/space/ruin in pickable_ruins)
+			if(!ruin.allow_duplicates && (ruin in used_ruins))
+				pickable_ruins -= ruin
+
+		if(!length(pickable_ruins))
+			break // No more ruins to pick from
+
+		// Use weighted selection based on placement_weight if available
+		var/list/weighted_ruins = list()
+		for(var/datum/map_template/ruin/space/ruin in pickable_ruins)
+			weighted_ruins[ruin] = ruin.placement_weight || 1
+		selected_ruin = pick_weight(weighted_ruins)
+
+		if(!selected_ruin)
+			continue
+
+		// Create the space ruin overmap object and set its template
+		var/obj/structure/overmap/space_ruin/new_ruin = new(turf_for_ruin)
+		new_ruin.set_ruin_template(selected_ruin)
+
+		// Track that we've used this ruin
+		used_ruins += selected_ruin
+
+		log_mapping("SSovermap: Spawned space ruin '[selected_ruin.name]' at orbit [selected_orbit]")
+
+	log_mapping("SSovermap: Finished spawning [length(used_ruins)] space ruins")
 
 /**
  * At the start of the game, we want to make sure there is a ship on the overmap for people to join.
