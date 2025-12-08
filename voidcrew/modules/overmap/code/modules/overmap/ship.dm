@@ -554,6 +554,17 @@
 				var/obj/structure/overmap/planet/empty/empty_space = old_docked_location
 				INVOKE_ASYNC(empty_space, TYPE_PROC_REF(/obj/structure/overmap/planet/empty, unload_level))
 
+			// Handle space ruin dock flags and cleanup
+			if(istype(old_docked_location, /obj/structure/overmap/space_ruin))
+				var/obj/structure/overmap/space_ruin/ruin_place = old_docked_location
+				if(dock_index == 1)
+					ruin_place.first_dock_taken = FALSE
+				else if(dock_index == 2)
+					ruin_place.second_dock_taken = FALSE
+				dock_index = 0
+				// Check if we should unload and respawn (small delay to ensure ship is fully moved)
+				addtimer(CALLBACK(ruin_place, TYPE_PROC_REF(/obj/structure/overmap/space_ruin, check_and_respawn)), 0.5 SECONDS)
+
 			// Always set state to FLYING when undocking completes
 			state = OVERMAP_SHIP_FLYING
 			SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_UNDOCKED)
