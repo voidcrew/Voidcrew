@@ -798,18 +798,11 @@
 			continue
 		if(!launcher.can_fire())
 			continue
-		// Filter by selected missile type if set - find matching missile index
-		var/missile_index = 1
-		if(selected_missile_type && length(launcher.loaded_missiles))
-			missile_index = 0
-			for(var/i in 1 to length(launcher.loaded_missiles))
-				var/list/missile_data = launcher.loaded_missiles[i]
-				if(missile_data["payload_type"] == selected_missile_type)
-					missile_index = i
-					break
-			if(!missile_index)
-				continue // No matching missile in this launcher
-		if(launcher.fire(target_turf, target_ship, current_ship, user, approach_dir = selected_missile_direction, missile_index = missile_index))
+		// Filter by selected missile type if set
+		if(selected_missile_type && launcher.loaded_missile)
+			if(launcher.loaded_missile["payload_type"] != selected_missile_type)
+				continue // Missile type doesn't match
+		if(launcher.fire(target_turf, target_ship, current_ship, user, approach_dir = selected_missile_direction))
 			// Firing breaks cloak
 			if(current_ship)
 				SEND_SIGNAL(current_ship, COMSIG_SHIP_WEAPON_FIRED)
@@ -830,13 +823,11 @@
 	var/list/available_types = list()
 	for(var/datum/weakref/ref in linked_launchers)
 		var/obj/machinery/ship_combat/missile_launcher/launcher = ref.resolve()
-		if(!launcher || !length(launcher.loaded_missiles))
+		if(!launcher?.loaded_missile)
 			continue
-		// Check all missiles in this launcher
-		for(var/list/missile_data in launcher.loaded_missiles)
-			var/payload_type = missile_data["payload_type"]
-			if(payload_type && !(payload_type in available_types))
-				available_types += payload_type
+		var/payload_type = launcher.loaded_missile["payload_type"]
+		if(payload_type && !(payload_type in available_types))
+			available_types += payload_type
 
 	if(!length(available_types))
 		to_chat(user, span_warning("No missiles loaded in any launcher!"))

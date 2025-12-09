@@ -5,18 +5,17 @@
 
 /obj/machinery/ship_combat/missile_launcher
 	name = "missile launcher"
-	desc = "A ship-mounted missile launcher system. Drag armed missiles onto it to load, then link to a combat console with a multitool. Holds up to 4 missiles."
+	desc = "A ship-mounted missile launcher system. Drag an armed missile onto it to load, then link to a combat console with a multitool."
 	icon = 'voidcrew/icons/obj/machines/missile_launcher.dmi'
-	icon_state = "0"
+	icon_state = "unloaded"
 	density = TRUE
 	anchored = TRUE
 	power_channel = AREA_USAGE_EQUIP
 	circuit = /obj/item/circuitboard/machine/ship_combat/missile_launcher
-
-	/// List of loaded missile data (each entry is a list of missile properties)
-	var/list/loaded_missiles = list()
-	/// Maximum number of missiles that can be loaded
-	var/max_missiles = 4
+	pixel_x = -16
+	pixel_y = -16
+	/// Loaded missile data (list of missile properties, or null if empty)
+	var/list/loaded_missile
 	/// Reference to our linked combat console
 	var/datum/weakref/linked_console_ref
 	/// Our unique ID for console linking
@@ -32,19 +31,17 @@
 	addtimer(CALLBACK(src, PROC_REF(attempt_auto_link)), 2 SECONDS)
 
 /obj/machinery/ship_combat/missile_launcher/Destroy()
-	loaded_missiles.Cut()
+	loaded_missile = null
 	unlink_console()
 	return ..()
 
 /obj/machinery/ship_combat/missile_launcher/examine(mob/user)
 	. = ..()
 	. += span_notice("Launcher ID: [launcher_id]")
-	. += span_notice("Missiles: [length(loaded_missiles)]/[max_missiles]")
-	if(length(loaded_missiles))
-		for(var/list/missile_data in loaded_missiles)
-			. += span_notice(" - [missile_data["name"]]: [missile_data["damage"]] damage")
+	if(loaded_missile)
+		. += span_notice("Loaded: [loaded_missile["name"]] ([loaded_missile["damage"]] damage)")
 	else
-		. += span_warning("No missiles loaded. Drag armed missiles onto the launcher.")
+		. += span_warning("No missile loaded. Drag an armed missile onto the launcher.")
 	var/obj/machinery/computer/camera_advanced/ship_combat/linked_console = linked_console_ref?.resolve()
 	if(linked_console)
 		. += span_notice("Linked to: [linked_console]")
@@ -53,7 +50,7 @@
 
 /obj/machinery/ship_combat/missile_launcher/update_icon_state()
 	. = ..()
-	icon_state = "[length(loaded_missiles)]"
+	icon_state = loaded_missile ? "loaded" : "unloaded"
 
 // ========== LOADING MECHANICS ==========
 
@@ -71,8 +68,8 @@
 	if(!anchored)
 		to_chat(user, span_warning("[src] isn't secured to the deck!"))
 		return
-	if(length(loaded_missiles) >= max_missiles)
-		to_chat(user, span_warning("[src] is fully loaded!"))
+	if(loaded_missile)
+		to_chat(user, span_warning("[src] already has a missile loaded!"))
 		return
 	if(missile.construction_state != MISSILE_STATE_ARMED)
 		to_chat(user, span_warning("[missile] isn't armed! It needs a payload."))
@@ -93,19 +90,18 @@
 	// Verify everything is still valid
 	if(QDELETED(missile) || !Adjacent(user) || !user.Adjacent(missile))
 		return
-	if(length(loaded_missiles) >= max_missiles)
+	if(loaded_missile)
 		return
 	if(missile.construction_state != MISSILE_STATE_ARMED)
 		return
 
-	// Load the missile - store both the fire data and the name
-	var/list/missile_data = missile.get_fire_data()
-	missile_data["name"] = missile.name
-	loaded_missiles += list(missile_data)
+	// Load the missile - store fire data and name
+	loaded_missile = missile.get_fire_data()
+	loaded_missile["name"] = missile.name
 
 	user.visible_message(
 		span_notice("[user] loads [missile] into [src]."),
-		span_notice("You load [missile] into [src]. ([length(loaded_missiles)]/[max_missiles])")
+		span_notice("You load [missile] into [src].")
 	)
 	playsound(src, 'sound/machines/click.ogg', 50, TRUE)
 
@@ -131,7 +127,7 @@
 		return
 
 	// Standard deconstruction - only allow if empty
-	if(!length(loaded_missiles))
+	if(!loaded_missile)
 		if(default_deconstruction_screwdriver(user, icon_state, icon_state, W))
 			return
 	if(default_deconstruction_crowbar(W))
@@ -139,8 +135,8 @@
 	return ..()
 
 /obj/machinery/ship_combat/missile_launcher/on_deconstruction(disassembled)
-	// Loaded missiles are just lost on deconstruction
-	loaded_missiles.Cut()
+	// Loaded missile is just lost on deconstruction
+	loaded_missile = null
 
 // ========== UNLOADING ==========
 
@@ -149,21 +145,18 @@
 	if(.)
 		return
 
-	if(!length(loaded_missiles))
-		to_chat(user, span_warning("No missiles loaded."))
+	if(!loaded_missile)
+		to_chat(user, span_warning("No missile loaded."))
 		return
 
 	// Create a new armed missile with the stored warhead data
-	to_chat(user, span_notice("You begin removing a missile from [src]..."))
+	to_chat(user, span_notice("You begin removing the missile from [src]..."))
 
 	if(!do_after(user, 2 SECONDS, src))
 		return
 
-	if(!length(loaded_missiles))
+	if(!loaded_missile)
 		return
-
-	// Get the last loaded missile data
-	var/list/missile_data = loaded_missiles[length(loaded_missiles)]
 
 	// Spawn a new armed missile structure
 	var/obj/structure/ship_missile/new_missile = new(drop_location())
@@ -172,7 +165,7 @@
 	new_missile.tracking = new /obj/item/electronics/ship_missile_tracking(new_missile)
 
 	// Create the appropriate warhead (bomb core)
-	var/effect_type = missile_data["effect_type"]
+	var/effect_type = loaded_missile["effect_type"]
 	var/warhead_type
 	if(effect_type == /obj/effect/ship_missile/emp)
 		warhead_type = /obj/item/bombcore/missile/emp
@@ -180,7 +173,7 @@
 		warhead_type = /obj/item/bombcore/missile/chemical
 	else
 		// Determine by damage
-		var/damage = missile_data["damage"]
+		var/damage = loaded_missile["damage"]
 		switch(damage)
 			if(MISSILE_DAMAGE_LIGHT)
 				warhead_type = /obj/item/bombcore/missile/light
@@ -193,12 +186,12 @@
 	new_missile.construction_state = MISSILE_STATE_ARMED
 	new_missile.update_appearance()
 
-	// Remove from loaded missiles
-	loaded_missiles.len--
+	// Clear the loaded missile
+	loaded_missile = null
 
 	user.visible_message(
 		span_notice("[user] removes a missile from [src]."),
-		span_notice("You remove a missile from [src]. ([length(loaded_missiles)]/[max_missiles])")
+		span_notice("You remove the missile from [src].")
 	)
 	update_appearance()
 
@@ -263,11 +256,10 @@
 
 // ========== FIRING ==========
 
-/// Attempts to fire a loaded missile at the target turf
+/// Attempts to fire the loaded missile at the target turf
 /// spawn_offset_x/y are used to stagger missile spawn positions for volleys
 /// approach_dir is the direction missiles come FROM (NORTH means missiles come from north, fly south)
-/// missile_index specifies which missile to fire (1-based index, default 1 = first missile)
-/obj/machinery/ship_combat/missile_launcher/proc/fire(turf/target, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/source_ship, mob/user, spawn_offset_x = 0, spawn_offset_y = 0, approach_dir = null, missile_index = 1)
+/obj/machinery/ship_combat/missile_launcher/proc/fire(turf/target, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/source_ship, mob/user, spawn_offset_x = 0, spawn_offset_y = 0, approach_dir = null)
 	if(!can_fire())
 		return FALSE
 
@@ -275,13 +267,6 @@
 		if(user)
 			to_chat(user, span_warning("No target selected!"))
 		return FALSE
-
-	// Validate missile index
-	if(missile_index < 1 || missile_index > length(loaded_missiles))
-		missile_index = 1
-
-	// Get the specified missile
-	var/list/missile_data = loaded_missiles[missile_index]
 
 	// Calculate spawn position on the target ship's z-level
 	// The missile will spawn outside the target ship and fly in
@@ -297,25 +282,25 @@
 			spawn_turf = offset_turf
 
 	// Create missile effect using stored data
-	var/effect_type = missile_data["effect_type"]
+	var/effect_type = loaded_missile["effect_type"]
 	new effect_type(
 		spawn_turf,
 		target,
 		target_ship,
 		source_ship,
-		missile_data["damage"],
-		missile_data["devastation"],
-		missile_data["heavy"],
-		missile_data["light"],
-		missile_data["flame"],
-		missile_data["icon_state"],
-		missile_data["chem_reagents"],  // For chemical missiles
-		missile_data["chem_area"],
-		missile_data["chem_temp"]
+		loaded_missile["damage"],
+		loaded_missile["devastation"],
+		loaded_missile["heavy"],
+		loaded_missile["light"],
+		loaded_missile["flame"],
+		loaded_missile["icon_state"],
+		loaded_missile["chem_reagents"],  // For chemical missiles
+		loaded_missile["chem_area"],
+		loaded_missile["chem_temp"]
 	)
 
-	// Remove the fired missile from the list
-	loaded_missiles.Cut(missile_index, missile_index + 1)
+	// Clear the loaded missile
+	loaded_missile = null
 
 	// Use power
 	use_energy(MISSILE_LAUNCHER_POWER_FIRE)
@@ -404,20 +389,18 @@
 		return FALSE
 	if(!anchored)
 		return FALSE
-	if(!length(loaded_missiles))
+	if(!loaded_missile)
 		return FALSE
 	return TRUE
 
 /// Returns status info for the combat console UI
 /obj/machinery/ship_combat/missile_launcher/proc/get_status()
-	var/list/first_missile = length(loaded_missiles) ? loaded_missiles[1] : null
 	return list(
 		"id" = launcher_id,
 		"name" = name,
-		"loaded" = length(loaded_missiles),
-		"max_missiles" = max_missiles,
-		"missile_name" = first_missile ? first_missile["name"] : null,
-		"missile_damage" = first_missile ? first_missile["damage"] : null,
+		"loaded" = loaded_missile ? 1 : 0,
+		"missile_name" = loaded_missile ? loaded_missile["name"] : null,
+		"missile_damage" = loaded_missile ? loaded_missile["damage"] : null,
 		"ready" = can_fire(),
 	)
 

@@ -190,8 +190,9 @@
 	icon_state = "missile_nowire"
 	drag_slowdown = 1.5
 	pixel_x = -16 // 2x1 sprite offset
-	pixel_y = -16 // Vertically center the tall sprite on its tile
+	pixel_y = -16 // tically center the tall sprite on its tile
 	anchored = FALSE
+	dir = 4
 	density = FALSE
 	max_integrity = 100
 	/// Current construction state
