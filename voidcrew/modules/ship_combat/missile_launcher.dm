@@ -5,11 +5,12 @@
 
 /obj/machinery/ship_combat/missile_launcher
 	name = "missile launcher"
-	desc = "A ship-mounted missile launcher system. Drag an armed missile onto it to load, then link to a combat console with a multitool."
+	desc = "A ship-mounted missile launcher system. Drag an armed missile onto it to load, then link to a combat console with a multitool. Use a wrench to secure or unsecure."
 	icon = 'voidcrew/icons/obj/machines/missile_launcher.dmi'
 	icon_state = "unloaded"
 	density = TRUE
 	anchored = TRUE
+	drag_slowdown = 2  // Heavy machinery
 	power_channel = AREA_USAGE_EQUIP
 	circuit = /obj/item/circuitboard/machine/ship_combat/missile_launcher
 	pixel_x = -16
@@ -114,6 +115,15 @@
 	// Delete the missile structure
 	qdel(missile)
 	update_appearance()
+
+// Wrench to anchor/unanchor
+/obj/machinery/ship_combat/missile_launcher/wrench_act(mob/living/user, obj/item/tool)
+	. = ITEM_INTERACT_BLOCKING
+	if(loaded_missile)
+		to_chat(user, span_warning("Unload the missile first!"))
+		return
+	default_unfasten_wrench(user, tool)
+	return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/ship_combat/missile_launcher/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
 	// Multitool linking - store self in buffer
