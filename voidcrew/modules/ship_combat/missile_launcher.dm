@@ -80,6 +80,11 @@
 		to_chat(user, span_warning("[missile] has no valid payload!"))
 		return
 
+	// If this is a chemical missile, move the grenade into the launcher to protect it from qdel
+	var/obj/item/grenade/chem_grenade/extracted_grenade = fire_data["grenade"]
+	if(extracted_grenade)
+		extracted_grenade.forceMove(src)  // Move into launcher - hidden from view and safe from missile qdel
+
 	to_chat(user, span_notice("You begin loading [missile] into [src]..."))
 	playsound(src, 'sound/machines/terminal/terminal_insert_disc.ogg', 50, TRUE)
 
@@ -95,8 +100,9 @@
 	if(missile.construction_state != MISSILE_STATE_ARMED)
 		return
 
-	// Load the missile - store fire data and name
-	loaded_missile = missile.get_fire_data()
+	// Load the missile - use the fire_data we already got (don't call get_fire_data again!)
+	// For chemical grenades, get_fire_data extracts the grenade, so calling it twice would fail
+	loaded_missile = fire_data
 	loaded_missile["name"] = missile.name
 
 	user.visible_message(
@@ -110,21 +116,14 @@
 	update_appearance()
 
 /obj/machinery/ship_combat/missile_launcher/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
-	// Multitool linking - add to launcher buffer list
+	// Multitool linking - store self in buffer
 	if(istype(W, /obj/item/multitool))
 		var/obj/item/multitool/tool = W
-		// Initialize the launcher buffer list if needed
-		if(!islist(tool.buffer))
-			tool.buffer = list()
-		var/list/launcher_buffer = tool.buffer
-		// Check if already in buffer
-		if(src in launcher_buffer)
-			balloon_alert(user, "already buffered")
-			return
-		launcher_buffer += src
-		balloon_alert(user, "launcher buffered ([length(launcher_buffer)])")
-		to_chat(user, span_notice("You buffer [src] to the multitool. [length(launcher_buffer)] launcher(s) buffered. Use on a combat console to link all."))
-		return
+		// Store just this launcher in the buffer (single item, not list)
+		tool.buffer = src
+		balloon_alert(user, "launcher buffered")
+		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a combat console to link."))
+		return TRUE
 
 	// Standard deconstruction - only allow if empty
 	if(!loaded_missile)
@@ -165,12 +164,20 @@
 	new_missile.tracking = new /obj/item/electronics/ship_missile_tracking(new_missile)
 
 	// Create the appropriate warhead (bomb core)
+	// Note: Chemical missiles use grenades which can't be recreated from stored data
 	var/effect_type = loaded_missile["effect_type"]
 	var/warhead_type
 	if(effect_type == /obj/effect/ship_missile/emp)
 		warhead_type = /obj/item/bombcore/missile/emp
 	else if(effect_type == /obj/effect/ship_missile/chemical)
-		warhead_type = /obj/item/bombcore/missile/chemical
+		// Chemical grenades can't be recreated - their reagents are unique
+		// The missile is unloadable but will be empty (just the frame)
+		to_chat(user, span_warning("The chemical payload cannot be recovered - the grenade was consumed."))
+		new_missile.construction_state = MISSILE_STATE_TRACKING
+		new_missile.update_appearance()
+		loaded_missile = null
+		update_appearance()
+		return
 	else
 		// Determine by damage
 		var/damage = loaded_missile["damage"]
@@ -283,6 +290,7 @@
 
 	// Create missile effect using stored data
 	var/effect_type = loaded_missile["effect_type"]
+	var/obj/item/grenade/chem_grenade/grenade_to_pass = loaded_missile["grenade"]
 	new effect_type(
 		spawn_turf,
 		target,
@@ -294,9 +302,7 @@
 		loaded_missile["light"],
 		loaded_missile["flame"],
 		loaded_missile["icon_state"],
-		loaded_missile["chem_reagents"],  // For chemical missiles
-		loaded_missile["chem_area"],
-		loaded_missile["chem_temp"]
+		grenade_to_pass,  // For chemical missiles - pass the actual grenade
 	)
 
 	// Clear the loaded missile
@@ -317,7 +323,7 @@
 	return TRUE
 
 /// Calculates where to spawn a missile - outside the target ship, in the transit space
-/// approach_dir: If provided, missiles spawn from this direction. Otherwise auto-calculated based on target position.
+/// approach_dir: If provided, missiles spawn from this direction. Otherwise auto-calculated to find a clear path.
 /obj/machinery/ship_combat/missile_launcher/proc/get_missile_spawn_turf(turf/target, obj/structure/overmap/ship/tgt_ship, approach_dir = null)
 	if(!target)
 		return null
@@ -342,25 +348,10 @@
 	var/spawn_x = target.x
 	var/spawn_y = target.y
 
-	// Calculate direction if not provided - spawn from the closest edge to the target
+	// Calculate direction if not provided - find a clear path through hull breaches
 	var/dir = approach_dir
 	if(!dir)
-		// Find ship center
-		var/center_x = (min_x + max_x) / 2
-		var/center_y = (min_y + max_y) / 2
-
-		// Calculate offset from center
-		var/offset_x = target.x - center_x
-		var/offset_y = target.y - center_y
-
-		// Pick direction based on which axis has greater offset
-		// Missile comes FROM the direction the target is offset toward
-		if(abs(offset_x) > abs(offset_y))
-			// Target is more to the left or right
-			dir = (offset_x > 0) ? EAST : WEST
-		else
-			// Target is more to the top or bottom
-			dir = (offset_y > 0) ? NORTH : SOUTH
+		dir = find_clear_approach_direction(target, min_x, max_x, min_y, max_y, spawn_dist)
 
 	// Spawn missiles from the selected direction
 	switch(dir)
@@ -382,6 +373,99 @@
 			spawn_y = target.y
 
 	return locate(spawn_x, spawn_y, target.z)
+
+/// Finds the best approach direction for a missile to reach an interior target
+/// Checks each cardinal direction for a clear line-of-sight path (through hull breaches)
+/// Returns a direction constant (NORTH, SOUTH, EAST, WEST)
+/obj/machinery/ship_combat/missile_launcher/proc/find_clear_approach_direction(turf/target, min_x, max_x, min_y, max_y, spawn_dist)
+	var/list/directions = list(NORTH, SOUTH, EAST, WEST)
+	var/list/clear_directions = list()
+
+	// Check each direction for a clear path
+	for(var/check_dir in directions)
+		var/spawn_x = target.x
+		var/spawn_y = target.y
+
+		switch(check_dir)
+			if(NORTH)
+				spawn_y = max_y + spawn_dist
+			if(SOUTH)
+				spawn_y = min_y - spawn_dist
+			if(EAST)
+				spawn_x = max_x + spawn_dist
+			if(WEST)
+				spawn_x = min_x - spawn_dist
+
+		var/turf/spawn_turf = locate(spawn_x, spawn_y, target.z)
+		if(!spawn_turf)
+			continue
+
+		// Check if path from spawn to target is clear (no dense walls blocking)
+		if(check_path_clear(spawn_turf, target))
+			clear_directions += check_dir
+
+	// If we found clear paths, pick the best one
+	if(length(clear_directions))
+		// Prefer the direction closest to the target's offset from ship center
+		var/center_x = (min_x + max_x) / 2
+		var/center_y = (min_y + max_y) / 2
+		var/offset_x = target.x - center_x
+		var/offset_y = target.y - center_y
+
+		// Check if our preferred direction is clear
+		var/preferred_dir
+		if(abs(offset_x) > abs(offset_y))
+			preferred_dir = (offset_x > 0) ? EAST : WEST
+		else
+			preferred_dir = (offset_y > 0) ? NORTH : SOUTH
+
+		if(preferred_dir in clear_directions)
+			return preferred_dir
+
+		// Otherwise return the first clear direction
+		return clear_directions[1]
+
+	// No clear paths found - fall back to the original logic (closest edge)
+	var/center_x = (min_x + max_x) / 2
+	var/center_y = (min_y + max_y) / 2
+	var/offset_x = target.x - center_x
+	var/offset_y = target.y - center_y
+
+	if(abs(offset_x) > abs(offset_y))
+		return (offset_x > 0) ? EAST : WEST
+	else
+		return (offset_y > 0) ? NORTH : SOUTH
+
+/// Checks if there's a clear line-of-sight path between two turfs
+/// Returns TRUE if the path is clear (no dense walls), FALSE otherwise
+/obj/machinery/ship_combat/missile_launcher/proc/check_path_clear(turf/start, turf/end)
+	if(!start || !end)
+		return FALSE
+
+	// Get all turfs in the line from start to end
+	var/list/path_turfs = get_line(start, end)
+
+	for(var/turf/T in path_turfs)
+		// Skip the start and end turfs
+		if(T == start || T == end)
+			continue
+
+		// Check if this turf itself is dense (like a wall turf)
+		if(T.density)
+			return FALSE
+
+		// Check for dense objects on this turf (walls, airlocks, etc)
+		for(var/obj/O in T)
+			// Skip objects that missiles can pass through
+			if(!O.density)
+				continue
+			// Windows and grilles can be broken through - consider them passable
+			if(istype(O, /obj/structure/window) || istype(O, /obj/structure/grille))
+				continue
+			// Dense object blocks the path
+			return FALSE
+
+	return TRUE
 
 /// Checks if the launcher can fire
 /obj/machinery/ship_combat/missile_launcher/proc/can_fire()

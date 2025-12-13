@@ -168,12 +168,5 @@
 		/datum/material/bluespace = SHEET_MATERIAL_AMOUNT * 20,
 	)
 
-/datum/design/ship_missile_warhead/chemical
-	name = "Chemical Missile Warhead"
-	desc = "An empty warhead casing that accepts beakers. Fill with reagents and they'll splash on impact."
-	id = "ship_missile_warhead_chemical"
-	build_path = /obj/item/bombcore/missile/chemical
-	materials = list(
-		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 15,
-		/datum/material/plasma = SHEET_MATERIAL_AMOUNT * 30,
-	)
+// Chemical missiles now use standard chemical grenades inserted into missile frames
+// No separate warhead needed - players build grenades and insert them directly

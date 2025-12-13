@@ -55,13 +55,8 @@
 	contains = list(/obj/item/bombcore/missile/emp = 3)
 	crate_name = "EMP warheads crate"
 
-/datum/supply_pack/ship_combat/warhead_chemical
-	name = "Chemical Warheads Crate"
-	desc = "A crate containing three chemical missile warheads. \
-		Load with beakers to create chemical splash weapons."
-	cost = CARGO_CRATE_VALUE * 8
-	contains = list(/obj/item/bombcore/missile/chemical = 3)
-	crate_name = "chemical warheads crate"
+// Chemical missiles now use standard chemical grenades - no cargo pack needed
+// Players order grenade casings from Science/Medical cargo and build their own
 
 /datum/supply_pack/ship_combat/missiles_kit
 	name = "Missile Assembly Kit"

@@ -96,90 +96,6 @@
 		qdel(loc)
 	qdel(src)
 
-/obj/item/bombcore/missile/chemical
-	name = "chemical missile warhead"
-	desc = "An empty chemical warhead casing. Insert up to two beakers or bottles, then load into a missile frame. On impact, the reagents will mix and splash over a wide area."
-	icon = 'icons/obj/weapons/grenade.dmi'
-	icon_state = "chemg"
-	payload_type = "chemical"
-	ship_damage = MISSILE_DAMAGE_LIGHT
-	missile_effect_type = /obj/effect/ship_missile/chemical
-	insert_time = 4 SECONDS
-	range_heavy = 0
-	range_medium = 0
-	range_light = 1
-	range_flame = 0
-	/// Beakers inserted into this warhead
-	var/list/obj/item/beakers = list()
-	/// Max beakers allowed
-	var/max_beakers = 2
-	/// Splash radius on impact
-	var/affected_area = 5
-	/// Temperature added to reagents on impact
-	var/ignition_temp = 100
-
-/obj/item/bombcore/missile/chemical/Destroy()
-	QDEL_LIST(beakers)
-	return ..()
-
-/obj/item/bombcore/missile/chemical/examine(mob/user)
-	. = ..()
-	if(!length(beakers))
-		. += span_notice("It's empty. Use beakers or bottles on it to load reagents.")
-	else
-		. += span_notice("Contains [length(beakers)]/[max_beakers] containers:")
-		for(var/obj/item/container in beakers)
-			if(container.reagents)
-				. += span_notice("- [container.name]: [container.reagents.total_volume]u")
-	. += span_notice("Splash radius: [affected_area] tiles")
-
-/obj/item/bombcore/missile/chemical/attackby(obj/item/W, mob/user, list/modifiers)
-	// Insert beakers/bottles
-	if(istype(W, /obj/item/reagent_containers/cup/beaker) || istype(W, /obj/item/reagent_containers/cup/bottle))
-		if(length(beakers) >= max_beakers)
-			to_chat(user, span_warning("[src] can't hold any more containers!"))
-			return
-		if(!user.transferItemToLoc(W, src))
-			return
-		beakers += W
-		to_chat(user, span_notice("You insert [W] into [src]. ([length(beakers)]/[max_beakers])"))
-		playsound(src, 'sound/machines/click.ogg', 50, TRUE)
-		update_appearance()
-		return
-
-	// Crowbar to remove beakers
-	if(W.tool_behaviour == TOOL_CROWBAR)
-		if(!length(beakers))
-			to_chat(user, span_warning("[src] has no containers to remove!"))
-			return
-		to_chat(user, span_notice("You pry the containers out of [src]."))
-		for(var/obj/item/container in beakers)
-			container.forceMove(drop_location())
-		beakers.Cut()
-		update_appearance()
-		return
-
-	return ..()
-
-/obj/item/bombcore/missile/chemical/update_icon_state()
-	. = ..()
-	if(length(beakers))
-		icon_state = "chemg_locked"
-	else
-		icon_state = "chemg"
-
-/obj/item/bombcore/missile/chemical/Exited(atom/movable/gone, direction)
-	. = ..()
-	beakers -= gone
-
-/obj/item/bombcore/missile/chemical/detonate()
-	// Chemical splash instead of explosion - handled by missile effect
-	// Small explosion for physical impact
-	explosion(src, 0, 0, range_light, range_flame)
-	if(loc && istype(loc, /obj/structure/ship_missile))
-		qdel(loc)
-	qdel(src)
-
 // ========== MISSILE FRAME ==========
 // The missile body that components are installed into
 
@@ -201,6 +117,8 @@
 	var/obj/item/electronics/ship_missile_tracking/tracking
 	/// The bomb core (warhead) installed in this missile
 	var/obj/item/bombcore/missile/warhead
+	/// Chemical grenade payload (alternative to warhead for chemical missiles)
+	var/obj/item/grenade/chem_grenade/chemical_grenade
 	/// Time to load this missile into a launcher
 	var/load_time = 4 SECONDS
 	/// Whether this missile has already detonated (prevents double explosions)
@@ -245,27 +163,34 @@
 		QDEL_NULL(tracking)
 	if(warhead)
 		QDEL_NULL(warhead)
+	if(chemical_grenade)
+		QDEL_NULL(chemical_grenade)
 	return ..()
 
 // Armed missiles explode when destroyed
 /obj/structure/ship_missile/atom_destruction(damage_flag)
-	if(construction_state == MISSILE_STATE_ARMED && warhead && !detonated)
+	if(construction_state == MISSILE_STATE_ARMED && (warhead || chemical_grenade) && !detonated)
 		detonate()
 	return ..()
 
-/// Detonates the missile using the bomb core's detonation
+/// Detonates the missile using the bomb core's detonation or grenade
 /obj/structure/ship_missile/proc/detonate()
 	if(detonated)
 		return
 	detonated = TRUE
-	if(!warhead)
-		return
 
 	visible_message(span_userdanger("[src] detonates!"))
 	playsound(src, 'sound/effects/explosion/explosion1.ogg', 100, TRUE)
 
-	// Use the bomb core's detonation - it will handle cleanup
-	warhead.detonate()
+	// Use the bomb core's detonation if present
+	if(warhead)
+		warhead.detonate()
+		return
+
+	// Use the chemical grenade's detonation if present
+	if(chemical_grenade)
+		chemical_grenade.detonate()
+		return
 
 /obj/structure/ship_missile/examine(mob/user)
 	. = ..()
@@ -274,16 +199,18 @@
 			. += span_notice("It needs to be wired up.")
 		if(MISSILE_STATE_WIRED)
 			. += span_notice("It needs a tracking circuit installed.")
-			. += span_notice("Use a tracking circuit on it.")
 		if(MISSILE_STATE_TRACKING)
-			. += span_notice("It's ready for a warhead.")
-			. += span_notice("Use a missile warhead on it.")
+			. += span_notice("It needs a warhead or chemical grenade!")
 		if(MISSILE_STATE_PAYLOAD)
-			. += span_notice("It has [warhead] installed.")
-			. += span_notice("Use a screwdriver to seal it.")
+			if(warhead)
+				. += span_notice("It has [warhead] installed.")
+			else if(chemical_grenade)
+				. += span_notice("It has [chemical_grenade] installed.")
 		if(MISSILE_STATE_ARMED)
-			. += span_notice("It's armed with [warhead].")
-			. += span_notice("Damage: [warhead.ship_damage]")
+			if(warhead)
+				. += span_notice("It's armed with [warhead].")
+			else if(chemical_grenade)
+				. += span_notice("It's armed with [chemical_grenade].")
 	. += span_warning("It looks heavy.")
 
 /obj/structure/ship_missile/update_name(updates)
@@ -292,6 +219,8 @@
 		if(MISSILE_STATE_ARMED)
 			if(warhead)
 				name = "[warhead.payload_type] missile"
+			else if(chemical_grenade)
+				name = "chemical missile"
 			else
 				name = "armed missile"
 		else
@@ -301,9 +230,9 @@
 	. = ..()
 	switch(construction_state)
 		if(MISSILE_STATE_UNWIRED)
-			desc = "An unwired missile frame. Use cable coil to wire it up."
+			desc = "An unwired missile frame."
 		if(MISSILE_STATE_WIRED)
-			desc = "A wired missile frame. Needs a tracking circuit."
+			desc = "A wired missile frame. Missing a tracking circuit."
 		if(MISSILE_STATE_TRACKING)
 			desc = "A missile frame with tracking installed. Ready for a warhead."
 		if(MISSILE_STATE_PAYLOAD)
@@ -426,6 +355,44 @@
 		playsound(src, 'sound/machines/click.ogg', 50, TRUE)
 		return
 
+	// Inserting chemical grenade as payload
+	if(istype(W, /obj/item/grenade/chem_grenade))
+		if(construction_state < MISSILE_STATE_TRACKING)
+			if(construction_state == MISSILE_STATE_UNWIRED)
+				to_chat(user, span_warning("[src] needs to be wired first!"))
+			else
+				to_chat(user, span_warning("[src] needs a tracking circuit installed first!"))
+			return
+		if(construction_state >= MISSILE_STATE_PAYLOAD)
+			to_chat(user, span_warning("[src] already has a payload installed!"))
+			return
+
+		var/obj/item/grenade/chem_grenade/grenade = W
+		if(grenade.stage != GRENADE_READY)
+			to_chat(user, span_warning("The grenade must be fully assembled and locked first!"))
+			return
+
+		to_chat(user, span_notice("You begin inserting [grenade] into [src]..."))
+
+		if(!do_after(user, 4 SECONDS, src))
+			to_chat(user, span_warning("You stop inserting the grenade."))
+			return
+
+		if(construction_state != MISSILE_STATE_TRACKING)
+			return
+		if(QDELETED(grenade) || grenade.loc != user)
+			return
+
+		if(!user.transferItemToLoc(grenade, src))
+			return
+
+		chemical_grenade = grenade
+		construction_state = MISSILE_STATE_PAYLOAD
+		update_appearance()
+		to_chat(user, span_notice("You insert [chemical_grenade] into [src]. Use a screwdriver to seal it."))
+		playsound(src, 'sound/machines/click.ogg', 50, TRUE)
+		return
+
 	// Wirecutters to remove wiring
 	if(W.tool_behaviour == TOOL_WIRECUTTER)
 		if(construction_state == MISSILE_STATE_UNWIRED)
@@ -474,17 +441,22 @@
 			to_chat(user, span_warning("[src] has no tracking circuit to remove!"))
 		return
 
-	// Crowbar to remove warhead
+	// Crowbar to remove warhead or grenade
 	if(W.tool_behaviour == TOOL_CROWBAR)
 		if(construction_state == MISSILE_STATE_ARMED)
 			to_chat(user, span_warning("[src] is sealed! Use a screwdriver to unseal it first."))
 			return
 		if(construction_state != MISSILE_STATE_PAYLOAD)
-			to_chat(user, span_warning("[src] has no warhead to remove!"))
+			to_chat(user, span_warning("[src] has no payload to remove!"))
 			return
-		to_chat(user, span_notice("You pry out [warhead] from [src]."))
-		warhead.forceMove(drop_location())
-		warhead = null
+		if(warhead)
+			to_chat(user, span_notice("You pry out [warhead] from [src]."))
+			warhead.forceMove(drop_location())
+			warhead = null
+		else if(chemical_grenade)
+			to_chat(user, span_notice("You pry out [chemical_grenade] from [src]."))
+			chemical_grenade.forceMove(drop_location())
+			chemical_grenade = null
 		construction_state = MISSILE_STATE_TRACKING
 		update_appearance()
 		return
@@ -511,8 +483,32 @@
 
 /// Returns data for the missile launcher to use when firing
 /obj/structure/ship_missile/proc/get_fire_data()
-	if(construction_state != MISSILE_STATE_ARMED || !warhead)
+	if(construction_state != MISSILE_STATE_ARMED)
 		return null
+
+	// Chemical grenade payload - pass the grenade itself so it can detonate natively
+	if(chemical_grenade)
+		// Remove grenade reference from missile so Destroy() doesn't qdel it
+		// The caller (launcher) is responsible for moving the grenade out of the missile's contents
+		var/obj/item/grenade/chem_grenade/grenade = chemical_grenade
+		chemical_grenade = null
+		var/list/data = list(
+			"effect_type" = /obj/effect/ship_missile/chemical,
+			"payload_type" = "chemical",
+			"damage" = MISSILE_DAMAGE_LIGHT,
+			"devastation" = 0,
+			"heavy" = 0,
+			"light" = 1,
+			"flame" = 0,
+			"icon_state" = "smissile",
+			"grenade" = grenade,  // Pass the actual grenade for native detonation
+		)
+		return data
+
+	// Standard bomb core warhead
+	if(!warhead)
+		return null
+
 	var/list/data = list(
 		"effect_type" = warhead.missile_effect_type,
 		"payload_type" = warhead.payload_type,
@@ -523,20 +519,6 @@
 		"flame" = warhead.range_flame,
 		"icon_state" = warhead.missile_icon_state,
 	)
-
-	// Add chemical warhead data if applicable
-	if(istype(warhead, /obj/item/bombcore/missile/chemical))
-		var/obj/item/bombcore/missile/chemical/chem_warhead = warhead
-		// Copy the reagents for later use
-		var/list/datum/reagents/reagent_copies = list()
-		for(var/obj/item/container in chem_warhead.beakers)
-			if(container.reagents && container.reagents.total_volume > 0)
-				var/datum/reagents/copy = new(container.reagents.maximum_volume)
-				container.reagents.trans_to(copy, container.reagents.total_volume, no_react = TRUE)
-				reagent_copies += copy
-		data["chem_reagents"] = reagent_copies
-		data["chem_area"] = chem_warhead.affected_area
-		data["chem_temp"] = chem_warhead.ignition_temp
 
 	// Add EMP data if applicable
 	if(istype(warhead, /obj/item/bombcore/missile/emp))

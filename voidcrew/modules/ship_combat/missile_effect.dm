@@ -235,21 +235,19 @@
 /obj/effect/ship_missile/chemical
 	name = "chemical ship missile"
 	desc = "A chemical warhead missile streaking through space."
-	/// List of reagent holders from the payload's beakers
-	var/list/datum/reagents/payload_reagents = list()
-	/// Splash radius
-	var/affected_area = 5
-	/// Temperature added to reagents on impact
-	var/ignition_temp = 100
+	/// The grenade payload to detonate on impact
+	var/obj/item/grenade/chem_grenade/payload_grenade
 
-/obj/effect/ship_missile/chemical/Initialize(mapload, turf/target, obj/structure/overmap/ship/target_ship_ref, obj/structure/overmap/ship/source_ship_ref, missile_damage, dev_range, heavy_range, light_range, flame_range, missile_icon, list/chem_reagents, chem_area, chem_temp)
+/obj/effect/ship_missile/chemical/Initialize(mapload, turf/target, obj/structure/overmap/ship/target_ship_ref, obj/structure/overmap/ship/source_ship_ref, missile_damage, dev_range, heavy_range, light_range, flame_range, missile_icon, obj/item/grenade/chem_grenade/grenade)
 	. = ..()
-	if(chem_reagents)
-		payload_reagents = chem_reagents
-	if(chem_area)
-		affected_area = chem_area
-	if(chem_temp)
-		ignition_temp = chem_temp
+	if(grenade)
+		payload_grenade = grenade
+		// Move the grenade into the missile so it travels with us
+		grenade.forceMove(src)
+
+/obj/effect/ship_missile/chemical/Destroy()
+	payload_grenade = null
+	return ..()
 
 /obj/effect/ship_missile/chemical/impact()
 	if(exploded)
@@ -278,12 +276,11 @@
 		explosion_cause = src
 	)
 
-	// Then do the chemical splash if we have reagents
-	if(length(payload_reagents))
-		// Create a temporary reagent holder for the splash proc
-		var/datum/reagents/holder = new(1000)
-		holder.my_atom = src
-		chem_splash(impact_loc, holder, affected_area, payload_reagents, ignition_temp, 1)
+	// Detonate the chemical grenade at the impact location
+	if(payload_grenade && !QDELETED(payload_grenade))
+		// Move grenade to impact location and trigger native detonation
+		payload_grenade.forceMove(impact_loc)
+		payload_grenade.detonate()
 
 	// Screen shake for nearby players
 	for(var/mob/living/victim in range(7, impact_loc))
