@@ -9,6 +9,7 @@ import {
   NoticeBox,
   ProgressBar,
   Section,
+  Slider,
   Stack,
 } from 'tgui-core/components';
 
@@ -37,6 +38,12 @@ type Data = {
   cloak_active: BooleanLike;
   target_name: string | null;
   target_ref: string | null;
+  // Targeting lock-in-progress data
+  is_targeting: BooleanLike;
+  targeting_ship_name: string | null;
+  targeting_ship_ref: string | null;
+  targeting_progress: number;
+  targeting_time_remaining: number;
   nearby_ships: NearbyShip[];
   launchers: Launcher[];
   launchers_ready: number;
@@ -48,9 +55,25 @@ type Data = {
   target_in_interdict_range: BooleanLike;
   target_in_force_dock_range: BooleanLike;
   target_in_missile_range: BooleanLike;
+  // Shield data
+  shield_linked: BooleanLike;
+  shield_unlocked: BooleanLike;
+  shield_active: BooleanLike;
+  shield_broken: BooleanLike;
+  shield_health: number;
+  shield_max_health: number;
+  shield_overhealth: number;
+  shield_power_allocation: number;
+  shield_regen_rate: number;
+  shield_power_draw: number;
+  shield_efficiency: number;
+  shield_cooldown_active: BooleanLike;
+  shield_cooldown_remaining: number;
+  // Admin
   is_admin: BooleanLike;
   debug_mode: BooleanLike;
   debug_interdictor: BooleanLike;
+  debug_shields: BooleanLike;
 };
 
 export const ShipCombatConsole = () => {
@@ -58,7 +81,7 @@ export const ShipCombatConsole = () => {
   const { connected, is_admin } = data;
 
   return (
-    <Window width={420} height={580} title="Ship Combat">
+    <Window width={420} height={700} title="Ship Combat">
       <Window.Content>
         {!connected ? (
           <NoticeBox danger>
@@ -68,6 +91,9 @@ export const ShipCombatConsole = () => {
           <Stack fill vertical>
             <Stack.Item>
               <TargetingPanel />
+            </Stack.Item>
+            <Stack.Item>
+              <ShieldsPanel />
             </Stack.Item>
             <Stack.Item>
               <WeaponsPanel />
@@ -95,6 +121,10 @@ const TargetingPanel = () => {
     target_ref,
     nearby_ships,
     target_in_missile_range,
+    is_targeting,
+    targeting_ship_name,
+    targeting_progress,
+    targeting_time_remaining,
   } = data;
 
   return (
@@ -112,6 +142,46 @@ const TargetingPanel = () => {
       }
     >
       <Stack vertical>
+        {/* Targeting Lock In Progress */}
+        {!!is_targeting && (
+          <Stack.Item>
+            <Box
+              p={1}
+              mb={1}
+              backgroundColor="rgba(255, 165, 0, 0.2)"
+              style={{ borderRadius: '4px' }}
+            >
+              <Stack vertical>
+                <Stack.Item>
+                  <Stack align="center" justify="center">
+                    <Stack.Item>
+                      <Icon name="spinner" spin color="average" mr={1} />
+                    </Stack.Item>
+                    <Stack.Item>
+                      <Box bold color="average">
+                        ACQUIRING LOCK: {targeting_ship_name}
+                      </Box>
+                    </Stack.Item>
+                    <Stack.Item ml={2}>
+                      <Button
+                        icon="times"
+                        color="transparent"
+                        tooltip="Cancel targeting"
+                        onClick={() => act('cancel_targeting')}
+                      />
+                    </Stack.Item>
+                  </Stack>
+                </Stack.Item>
+                <Stack.Item>
+                  <ProgressBar value={targeting_progress / 100} color="average">
+                    {targeting_time_remaining.toFixed(1)}s remaining
+                  </ProgressBar>
+                </Stack.Item>
+              </Stack>
+            </Box>
+          </Stack.Item>
+        )}
+
         {/* Current Target Display */}
         <Stack.Item>
           <Box
@@ -185,6 +255,222 @@ const TargetingPanel = () => {
                 ? 'Out of Range'
                 : 'ENGAGE'}
           </Button>
+        </Stack.Item>
+      </Stack>
+    </Section>
+  );
+};
+
+const ShieldsPanel = () => {
+  const { act, data } = useBackend<Data>();
+  const {
+    shield_linked,
+    shield_unlocked,
+    shield_active,
+    shield_broken,
+    shield_health,
+    shield_max_health,
+    shield_overhealth,
+    shield_power_allocation,
+    shield_regen_rate,
+    shield_power_draw,
+    shield_efficiency,
+    shield_cooldown_active,
+    shield_cooldown_remaining,
+  } = data;
+
+  // Not unlocked via research
+  if (!shield_unlocked) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="shield-halved" mr={1} />
+            Shields
+          </Box>
+        }
+      >
+        <Box color="label" textAlign="center">
+          <Icon name="lock" mr={1} />
+          Research Required
+        </Box>
+      </Section>
+    );
+  }
+
+  // No generator linked
+  if (!shield_linked) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="shield-halved" mr={1} />
+            Shields
+          </Box>
+        }
+      >
+        <Box color="label" textAlign="center">
+          <Icon name="unlink" mr={1} />
+          No Shield Generator Linked
+        </Box>
+      </Section>
+    );
+  }
+
+  // Calculate health percentage for display
+  const healthPercent = shield_max_health
+    ? shield_health / shield_max_health
+    : 0;
+  const powerPercent = (shield_power_allocation ?? 1) * 100;
+
+  // Cooldown display
+  if (shield_broken && shield_cooldown_active) {
+    const cooldownSeconds = Math.ceil((shield_cooldown_remaining || 0) / 10);
+    const cooldownProgress = 1 - (shield_cooldown_remaining || 0) / 600; // 60 second base cooldown
+
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="shield-halved" mr={1} />
+            Shields
+          </Box>
+        }
+        buttons={
+          <Box color="bad" fontSize="11px">
+            OFFLINE
+          </Box>
+        }
+      >
+        <Stack vertical>
+          <Stack.Item>
+            <NoticeBox danger>
+              <Icon name="triangle-exclamation" mr={1} />
+              SHIELDS COLLAPSED
+            </NoticeBox>
+          </Stack.Item>
+          <Stack.Item>
+            <ProgressBar
+              value={cooldownProgress}
+              ranges={{
+                bad: [0, 0.4],
+                average: [0.4, 0.8],
+                good: [0.8, 1],
+              }}
+            >
+              Recharging - {cooldownSeconds}s
+            </ProgressBar>
+          </Stack.Item>
+          <Stack.Item>
+            <Box color="label" fontSize="11px" textAlign="center">
+              Power: {powerPercent.toFixed(0)}% | Adjust power allocation while
+              waiting
+            </Box>
+          </Stack.Item>
+          <Stack.Item>
+            <Slider
+              key="shield-power-cooldown"
+              value={powerPercent}
+              minValue={0}
+              maxValue={200}
+              step={10}
+              stepPixelSize={4}
+              format={(v) => `${v}%`}
+              onChange={(e, value) => act('set_shield_power', { power: value })}
+            />
+          </Stack.Item>
+        </Stack>
+      </Section>
+    );
+  }
+
+  return (
+    <Section
+      title={
+        <Box inline>
+          <Icon name="shield-halved" mr={1} />
+          Shields
+        </Box>
+      }
+      buttons={
+        <Box
+          color={
+            shield_active ? 'good' : powerPercent === 0 ? 'label' : 'average'
+          }
+          fontSize="11px"
+        >
+          {shield_active ? 'ACTIVE' : powerPercent === 0 ? 'OFF' : 'CHARGING'}
+        </Box>
+      }
+    >
+      <Stack vertical>
+        {/* Health Bar */}
+        <Stack.Item>
+          <Box mb={0.5} fontSize="11px" color="label">
+            Shield Health
+          </Box>
+          <ProgressBar
+            value={healthPercent}
+            ranges={{
+              bad: [0, 0.25],
+              average: [0.25, 0.5],
+              good: [0.5, 1],
+            }}
+          >
+            <Box inline>
+              {shield_health || 0} / {shield_max_health || 0}
+              {shield_overhealth > 0 && (
+                <Box inline color="cyan" ml={1}>
+                  (+{shield_overhealth} overhealth)
+                </Box>
+              )}
+            </Box>
+          </ProgressBar>
+        </Stack.Item>
+
+        {/* Power Allocation Slider */}
+        <Stack.Item>
+          <Box mb={0.5} fontSize="11px" color="label">
+            Power Allocation ({powerPercent.toFixed(0)}%)
+            {powerPercent === 0 && (
+              <Box inline color="bad" ml={1}>
+                - Shields disabled
+              </Box>
+            )}
+            {powerPercent > 100 && (
+              <Box inline color="cyan" ml={1}>
+                - Generating overhealth
+              </Box>
+            )}
+          </Box>
+          <Slider
+            key="shield-power-normal"
+            value={powerPercent}
+            minValue={0}
+            maxValue={200}
+            step={10}
+            stepPixelSize={4}
+            format={(v) => `${v}%`}
+            onChange={(e, value) => act('set_shield_power', { power: value })}
+          />
+        </Stack.Item>
+
+        {/* Stats Row */}
+        <Stack.Item>
+          <Stack fontSize="11px" color="label" mt={0.5}>
+            <Stack.Item grow>
+              <Icon name="bolt" mr={0.5} />
+              {shield_power_draw || 0}W
+            </Stack.Item>
+            <Stack.Item grow>
+              <Icon name="arrow-up" mr={0.5} />
+              {shield_regen_rate || 0}/s
+            </Stack.Item>
+            <Stack.Item grow>
+              <Icon name="gauge-high" mr={0.5} />
+              {shield_efficiency || 0}% eff.
+            </Stack.Item>
+          </Stack>
         </Stack.Item>
       </Stack>
     </Section>
@@ -424,7 +710,7 @@ const LaunchersPanel = () => {
 
 const DebugPanel = () => {
   const { act, data } = useBackend<Data>();
-  const { debug_mode, debug_interdictor } = data;
+  const { debug_mode, debug_interdictor, debug_shields } = data;
 
   return (
     <Collapsible title="Admin Debug" color="purple">
@@ -440,15 +726,26 @@ const DebugPanel = () => {
             </Button>
           </LabeledList.Item>
           {!!debug_mode && (
-            <LabeledList.Item label="Interdictor">
-              <Button
-                icon={debug_interdictor ? 'check-square' : 'square'}
-                color={debug_interdictor ? 'good' : 'default'}
-                onClick={() => act('toggle_debug_interdictor')}
-              >
-                {debug_interdictor ? 'Unlocked' : 'Locked'}
-              </Button>
-            </LabeledList.Item>
+            <>
+              <LabeledList.Item label="Interdictor">
+                <Button
+                  icon={debug_interdictor ? 'check-square' : 'square'}
+                  color={debug_interdictor ? 'good' : 'default'}
+                  onClick={() => act('toggle_debug_interdictor')}
+                >
+                  {debug_interdictor ? 'Unlocked' : 'Locked'}
+                </Button>
+              </LabeledList.Item>
+              <LabeledList.Item label="Shields">
+                <Button
+                  icon={debug_shields ? 'check-square' : 'square'}
+                  color={debug_shields ? 'good' : 'default'}
+                  onClick={() => act('toggle_debug_shields')}
+                >
+                  {debug_shields ? 'Unlocked' : 'Locked'}
+                </Button>
+              </LabeledList.Item>
+            </>
           )}
         </LabeledList>
       </Section>

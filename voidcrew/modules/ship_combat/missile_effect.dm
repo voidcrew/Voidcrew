@@ -111,6 +111,7 @@
 		return
 
 	// Check if we've hit the target turf
+	// Shield walls will physically intercept via Bump() if shields are active
 	var/turf/current = get_turf(src)
 	if(current == target_turf)
 		impact()
@@ -129,17 +130,22 @@
 	if(istype(A, /obj/effect/ship_missile))
 		return ..()
 
+	// Call parent first - this triggers Bumped() on whatever we hit
+	// Shield walls use Bumped() to absorb damage and set exploded = TRUE
+	. = ..()
+
+	// If already handled by shield wall (exploded flag set), don't explode again
+	if(exploded || QDELETED(src))
+		return
+
 	// If we hit something dense, we need to explode ON it, not next to it in space
-	if(A && A.density && !exploded)
+	if(A && A.density)
 		// Get the turf of the thing we hit
 		var/turf/impact_turf = get_turf(A)
 		if(impact_turf)
 			// Force move to that turf so the explosion epicenter is on the ship
 			forceMove(impact_turf)
 		impact()
-		return
-
-	return ..()
 
 /// Start chasing the target turf
 /obj/effect/ship_missile/proc/chase_target(atom/chasing)
@@ -155,19 +161,16 @@
 		impact()
 
 /// Called when the missile reaches its target or hits something
+/// Shield walls physically intercept missiles via Bump() before this is called
 /obj/effect/ship_missile/proc/impact()
 	if(exploded)
 		return
-	exploded = TRUE
 
 	var/turf/impact_loc = get_turf(src)
+	exploded = TRUE
 
 	// Play impact sound
 	playsound(impact_loc, impact_sound, 60, TRUE)
-
-	// Send impact signal
-	if(target_ship)
-		SEND_SIGNAL(target_ship, COMSIG_SHIP_MISSILE_IMPACT, src, impact_loc)
 
 	// Create explosion - ignorecap = TRUE so ship missiles bypass the server bomb cap
 	explosion(
@@ -197,16 +200,12 @@
 /obj/effect/ship_missile/emp/impact()
 	if(exploded)
 		return
-	exploded = TRUE
 
 	var/turf/impact_loc = get_turf(src)
+	exploded = TRUE
 
 	// Play impact sound
 	playsound(impact_loc, impact_sound, 60, TRUE)
-
-	// Send impact signal
-	if(target_ship)
-		SEND_SIGNAL(target_ship, COMSIG_SHIP_MISSILE_IMPACT, src, impact_loc)
 
 	// Create smaller explosion
 	explosion(
@@ -252,16 +251,12 @@
 /obj/effect/ship_missile/chemical/impact()
 	if(exploded)
 		return
-	exploded = TRUE
 
 	var/turf/impact_loc = get_turf(src)
+	exploded = TRUE
 
 	// Play impact sound
 	playsound(impact_loc, impact_sound, 60, TRUE)
-
-	// Send impact signal
-	if(target_ship)
-		SEND_SIGNAL(target_ship, COMSIG_SHIP_MISSILE_IMPACT, src, impact_loc)
 
 	// Create small explosion first
 	explosion(

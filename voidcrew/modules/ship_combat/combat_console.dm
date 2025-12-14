@@ -95,10 +95,20 @@
 
 	/// Our ship reference
 	var/obj/structure/overmap/ship/current_ship
-	/// Currently targeted enemy ship
+	/// Currently targeted enemy ship (fully locked)
 	var/obj/structure/overmap/ship/target_ship
+	/// Ship we're currently acquiring a lock on
+	var/obj/structure/overmap/ship/targeting_ship
+	/// Are we currently acquiring a target lock?
+	var/is_targeting = FALSE
+	/// World time when targeting started
+	var/targeting_start_time
+	/// Timer ID for the targeting process
+	var/targeting_timer_id
 	/// List of linked missile launchers (weakrefs)
 	var/list/linked_launchers = list()
+	/// Linked shield generator (weakref)
+	var/datum/weakref/linked_shield_ref
 	/// Is cloaking device active on our ship?
 	var/cloak_active = FALSE
 	/// The targeting reticle shown on screen
@@ -131,6 +141,8 @@
 	var/debug_mode = FALSE
 	/// Debug: Force unlock interdictor
 	var/debug_interdictor = FALSE
+	/// Debug: Force unlock shields
+	var/debug_shields = FALSE
 
 	jump_action = null
 
@@ -145,6 +157,7 @@
 	reticle = new(null, src)
 
 /obj/machinery/computer/camera_advanced/ship_combat/Destroy()
+	cancel_targeting()
 	cancel_interdiction()
 	clear_target()
 	for(var/datum/weakref/ref in linked_launchers)
@@ -190,6 +203,7 @@
 	var/list/upgrade_nodes = list(
 		TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR,
 		TECHWEB_NODE_SHIP_COMBAT_ADVANCED,
+		TECHWEB_NODE_SHIP_COMBAT_SHIELDS,
 	)
 
 	for(var/node_id in linked_techweb.researched_nodes)
@@ -201,6 +215,8 @@
 	// Debug mode overrides
 	if(debug_mode)
 		if(upgrade_id == TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR && debug_interdictor)
+			return TRUE
+		if(upgrade_id == TECHWEB_NODE_SHIP_COMBAT_SHIELDS && debug_shields)
 			return TRUE
 	update_unlocked_upgrades()
 	return (upgrade_id in unlocked_upgrades)
@@ -292,6 +308,20 @@
 	data["target_name"] = target_ship?.display_name
 	data["target_ref"] = target_ship ? REF(target_ship) : null
 
+	// Targeting lock-in-progress data
+	data["is_targeting"] = is_targeting
+	data["targeting_ship_name"] = targeting_ship?.display_name
+	data["targeting_ship_ref"] = targeting_ship ? REF(targeting_ship) : null
+	if(is_targeting && targeting_start_time)
+		var/elapsed = world.time - targeting_start_time
+		var/progress = min(100, (elapsed / COMBAT_TARGETING_TIME) * 100)
+		var/remaining = max(0, COMBAT_TARGETING_TIME - elapsed)
+		data["targeting_progress"] = progress
+		data["targeting_time_remaining"] = remaining / 10 // Convert to seconds
+	else
+		data["targeting_progress"] = 0
+		data["targeting_time_remaining"] = 0
+
 	// Get nearby ships within sensor range (3 tiles)
 	var/list/nearby_ships = list()
 	if(current_ship)
@@ -349,11 +379,30 @@
 	data["target_in_force_dock_range"] = target_in_force_dock_range
 	data["target_in_missile_range"] = target_in_missile_range
 
+	// Shield data
+	var/obj/machinery/ship_combat/shield_generator/shield = linked_shield_ref?.resolve()
+	data["shield_linked"] = !!shield
+	data["shield_unlocked"] = has_upgrade(TECHWEB_NODE_SHIP_COMBAT_SHIELDS)
+	if(shield)
+		var/list/shield_status = shield.get_status()
+		data["shield_active"] = shield_status["active"]
+		data["shield_broken"] = shield_status["broken"]
+		data["shield_health"] = shield_status["health"]
+		data["shield_max_health"] = shield_status["max_health"]
+		data["shield_overhealth"] = shield_status["overhealth"]
+		data["shield_power_allocation"] = shield_status["power_allocation"]
+		data["shield_regen_rate"] = shield_status["regen_rate"]
+		data["shield_power_draw"] = shield_status["power_draw"]
+		data["shield_efficiency"] = shield_status["efficiency"]
+		data["shield_cooldown_active"] = shield_status["cooldown_active"]
+		data["shield_cooldown_remaining"] = shield_status["cooldown_remaining"]
+
 	// Debug mode data (admin only)
 	var/is_admin = check_rights_for(user?.client, R_ADMIN, FALSE)
 	data["is_admin"] = is_admin
 	data["debug_mode"] = debug_mode
 	data["debug_interdictor"] = debug_interdictor
+	data["debug_shields"] = debug_shields
 
 	return data
 
@@ -379,7 +428,12 @@
 			return TRUE
 
 		if("clear_target")
+			cancel_targeting()
 			clear_target()
+			return TRUE
+
+		if("cancel_targeting")
+			cancel_targeting()
 			return TRUE
 
 		if("activate")
@@ -407,6 +461,18 @@
 		if("force_dock")
 			return force_dock_target(ui.user)
 
+		// Shield power allocation (0-200%)
+		if("set_shield_power")
+			var/obj/machinery/ship_combat/shield_generator/shield = linked_shield_ref?.resolve()
+			if(!shield)
+				return FALSE
+			var/new_power = params["power"]
+			if(!isnum(new_power))
+				return FALSE
+			// Convert from percentage (0-200) to multiplier (0-2)
+			shield.set_power_allocation(new_power / 100)
+			return TRUE
+
 		// Debug actions (admin only)
 		if("toggle_debug")
 			if(!check_rights_for(ui.user?.client, R_ADMIN, FALSE))
@@ -418,6 +484,12 @@
 			if(!check_rights_for(ui.user?.client, R_ADMIN, FALSE))
 				return FALSE
 			debug_interdictor = !debug_interdictor
+			return TRUE
+
+		if("toggle_debug_shields")
+			if(!check_rights_for(ui.user?.client, R_ADMIN, FALSE))
+				return FALSE
+			debug_shields = !debug_shields
 			return TRUE
 
 	return FALSE
@@ -620,33 +692,189 @@
 
 		return ITEM_INTERACT_SUCCESS
 
+	// Handle shield generator linking
+	if(istype(tool.buffer, /obj/machinery/ship_combat/shield_generator))
+		var/obj/machinery/ship_combat/shield_generator/gen = tool.buffer
+
+		// Check if already linked
+		var/obj/machinery/ship_combat/shield_generator/current_shield = linked_shield_ref?.resolve()
+		if(current_shield == gen)
+			balloon_alert(user, "already linked")
+			return ITEM_INTERACT_BLOCKING
+
+		// Link the generator
+		if(link_shield_generator(gen))
+			balloon_alert(user, "shield generator linked")
+			to_chat(user, span_notice("Linked [gen] to [src]."))
+		else
+			balloon_alert(user, "link failed")
+
+		return ITEM_INTERACT_SUCCESS
+
 	// Not something we handle, let parent try
 	return ..()
 
+/// Links a shield generator to this console
+/obj/machinery/computer/camera_advanced/ship_combat/proc/link_shield_generator(obj/machinery/ship_combat/shield_generator/gen)
+	if(!gen)
+		return FALSE
+
+	// Unlink any existing generator
+	var/obj/machinery/ship_combat/shield_generator/old_gen = linked_shield_ref?.resolve()
+	if(old_gen)
+		old_gen.unlink_console()
+
+	linked_shield_ref = WEAKREF(gen)
+
+	// Link to our ship
+	if(current_ship)
+		gen.link_ship(current_ship)
+
+	return TRUE
+
 // ========== TARGET SELECTION ==========
 
-/// Sets a new target ship
-/obj/machinery/computer/camera_advanced/ship_combat/proc/set_target_ship(obj/structure/overmap/ship/new_target, mob/user)
+/// Starts the targeting process for a new ship (takes time and warns the target)
+/obj/machinery/computer/camera_advanced/ship_combat/proc/start_targeting(obj/structure/overmap/ship/new_target, mob/user)
 	if(new_target == current_ship)
 		if(user)
 			to_chat(user, span_warning("Cannot target your own ship!"))
 		return FALSE
 
-	clear_target()
-	target_ship = new_target
+	// Cancel any existing targeting
+	cancel_targeting()
 
-	if(target_ship)
-		RegisterSignal(target_ship, COMSIG_QDELETING, PROC_REF(on_target_deleted))
-
-		// Set the eye's allowed ship if it exists
-		var/mob/eye/camera/remote/ship_combat/combat_eye = eyeobj
-		if(combat_eye)
-			combat_eye.target_ship = target_ship
-
+	// If we already have this ship locked, no need to re-target
+	if(target_ship == new_target)
 		if(user)
-			to_chat(user, span_notice("Target acquired: [target_ship.display_name]. Use 'Attack' to enter targeting mode."))
+			to_chat(user, span_notice("Already have target lock on [new_target.display_name]."))
+		return FALSE
+
+	// Start the targeting process
+	targeting_ship = new_target
+	is_targeting = TRUE
+	targeting_start_time = world.time
+
+	// Register for target deletion and movement during targeting
+	RegisterSignal(targeting_ship, COMSIG_QDELETING, PROC_REF(on_targeting_ship_deleted))
+	RegisterSignal(targeting_ship, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(on_targeting_ship_moved))
+	if(current_ship)
+		RegisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(on_our_ship_moved_targeting))
+
+	// Warn the target ship
+	SEND_SIGNAL(targeting_ship, COMSIG_SHIP_BEING_TARGETED, current_ship)
+	targeting_ship.ship_announce("WARNING: HOSTILE TARGETING DETECTED! A ship is acquiring weapons lock!", "THREAT ALERT", FALSE, sound('sound/effects/alert.ogg'))
+
+	// Notify our crew
+	if(user)
+		to_chat(user, span_notice("Acquiring target lock on [targeting_ship.display_name]... ([COMBAT_TARGETING_TIME / 10] seconds)"))
+
+	// Start the targeting timer
+	targeting_timer_id = addtimer(CALLBACK(src, PROC_REF(complete_targeting), user), COMBAT_TARGETING_TIME, TIMER_STOPPABLE)
 
 	return TRUE
+
+/// Called when targeting timer completes - finalizes the target lock
+/obj/machinery/computer/camera_advanced/ship_combat/proc/complete_targeting(mob/user)
+	if(!is_targeting || !targeting_ship)
+		return FALSE
+
+	var/obj/structure/overmap/ship/locked_target = targeting_ship
+
+	// Clean up targeting state
+	UnregisterSignal(targeting_ship, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
+	if(current_ship)
+		UnregisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_MOVED)
+	is_targeting = FALSE
+	targeting_ship = null
+	targeting_timer_id = null
+	targeting_start_time = null
+
+	// Clear any previous target
+	clear_target()
+
+	// Set the new target
+	target_ship = locked_target
+	RegisterSignal(target_ship, COMSIG_QDELETING, PROC_REF(on_target_deleted))
+
+	// Set the eye's allowed ship if it exists
+	var/mob/eye/camera/remote/ship_combat/combat_eye = eyeobj
+	if(combat_eye)
+		combat_eye.target_ship = target_ship
+
+	// Notify the target ship that lock is complete
+	SEND_SIGNAL(target_ship, COMSIG_SHIP_TARGETING_STOPPED, current_ship)
+	target_ship.ship_announce("WEAPONS LOCK CONFIRMED! Hostile ship has missile lock on this vessel!", "TARGET LOCK", FALSE, sound('sound/effects/alert.ogg'))
+
+	// Notify our crew
+	if(user)
+		to_chat(user, span_danger("Target lock acquired on [target_ship.display_name]! Use 'Attack' to enter targeting mode."))
+	current_ship?.ship_announce("Target lock acquired: [target_ship.display_name]", "Targeting System")
+
+	return TRUE
+
+/// Cancels an in-progress targeting attempt
+/obj/machinery/computer/camera_advanced/ship_combat/proc/cancel_targeting()
+	if(!is_targeting)
+		return
+
+	// Stop the timer
+	if(targeting_timer_id)
+		deltimer(targeting_timer_id)
+		targeting_timer_id = null
+
+	// Unregister movement signal from our ship
+	if(current_ship)
+		UnregisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_MOVED)
+
+	// Notify the target they're no longer being targeted
+	if(targeting_ship)
+		SEND_SIGNAL(targeting_ship, COMSIG_SHIP_TARGETING_STOPPED, current_ship)
+		targeting_ship.ship_announce("Hostile targeting signal lost.", "Threat Alert")
+		UnregisterSignal(targeting_ship, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
+
+	is_targeting = FALSE
+	targeting_ship = null
+	targeting_start_time = null
+
+/// Called when the target ship moves during targeting - check range
+/obj/machinery/computer/camera_advanced/ship_combat/proc/on_targeting_ship_moved(datum/source)
+	SIGNAL_HANDLER
+	check_targeting_range()
+
+/// Called when our ship moves during targeting - check range
+/obj/machinery/computer/camera_advanced/ship_combat/proc/on_our_ship_moved_targeting(datum/source)
+	SIGNAL_HANDLER
+	check_targeting_range()
+
+/// Checks if targeting should be cancelled due to range
+/obj/machinery/computer/camera_advanced/ship_combat/proc/check_targeting_range()
+	if(!is_targeting || !targeting_ship || !current_ship)
+		return
+
+	var/turf/our_turf = get_turf(current_ship)
+	var/turf/target_turf = get_turf(targeting_ship)
+	if(!our_turf || !target_turf)
+		return
+
+	var/distance = get_dist(our_turf, target_turf)
+	if(distance > COMBAT_TARGETING_RANGE)
+		var/target_name = targeting_ship.display_name
+		cancel_targeting()
+		if(current_user)
+			to_chat(current_user, span_warning("Target lock lost - [target_name] moved out of sensor range!"))
+		current_ship?.ship_announce("Target lock failed - target escaped sensor range.", "Targeting System")
+
+/// Called when the ship we're targeting is deleted mid-lock
+/obj/machinery/computer/camera_advanced/ship_combat/proc/on_targeting_ship_deleted(datum/source)
+	SIGNAL_HANDLER
+	cancel_targeting()
+	if(current_user)
+		to_chat(current_user, span_danger("Target lost!"))
+
+/// Sets a new target ship (legacy - now just calls start_targeting)
+/obj/machinery/computer/camera_advanced/ship_combat/proc/set_target_ship(obj/structure/overmap/ship/new_target, mob/user)
+	return start_targeting(new_target, user)
 
 /// Gets a turf at the target ship's mobile docking port
 /obj/machinery/computer/camera_advanced/ship_combat/proc/get_target_ship_port_turf()

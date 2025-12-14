@@ -14,6 +14,12 @@
 /// Sent when a ship's cloak status changes: (cloaked)
 #define COMSIG_SHIP_CLOAK_CHANGED "ship_cloak_changed"
 
+/// Sent when a ship starts being targeted: (obj/structure/overmap/ship/attacker)
+#define COMSIG_SHIP_BEING_TARGETED "ship_being_targeted"
+
+/// Sent when a ship is no longer being targeted (lock broken or completed): (obj/structure/overmap/ship/attacker)
+#define COMSIG_SHIP_TARGETING_STOPPED "ship_targeting_stopped"
+
 /// Sent when a ship enters an overmap hazard event: (obj/structure/overmap/event/hazard)
 #define COMSIG_SHIP_HAZARD_TRIGGERED "ship_hazard_triggered"
 
@@ -54,6 +60,9 @@
 /// Range at which missile lock can be activated (in overmap tiles)
 #define COMBAT_MISSILE_LOCK_RANGE 2
 
+/// Time it takes to acquire a target lock (in deciseconds)
+#define COMBAT_TARGETING_TIME 5 SECONDS
+
 /// Camera view size for targeting
 #define COMBAT_CAMERA_VIEW_RANGE 7
 
@@ -79,3 +88,40 @@
 
 /// Range at which force dock can be used (in overmap tiles, must be same tile)
 #define INTERDICTOR_FORCE_DOCK_RANGE 0
+
+// ========== SHIELD DEFINES ==========
+
+/// Base shield health (before stock part modifiers)
+#define SHIP_SHIELD_BASE_HEALTH 1000
+/// Base shield regeneration per second
+#define SHIP_SHIELD_BASE_REGEN 2
+/// Cooldown after shields break before reactivation (60 seconds)
+#define SHIP_SHIELD_BROKEN_COOLDOWN 60 SECONDS
+/// Minimum power allocation (0% = shields off)
+#define SHIP_SHIELD_MIN_POWER_MULT 0
+/// Maximum power allocation (200%)
+#define SHIP_SHIELD_MAX_POWER_MULT 2
+/// Power draw per unit of ship mass
+#define SHIP_SHIELD_POWER_PER_MASS 0.5
+
+// Stock part multipliers (per tier above 1)
+/// Capacitor: +50% max shield health per tier
+#define SHIELD_CAPACITOR_HEALTH_MULT 0.5
+/// Micro-laser: +30% base regen rate per tier
+#define SHIELD_LASER_REGEN_MULT 0.3
+/// Servo: -15% power consumption per tier
+#define SHIELD_SERVO_EFFICIENCY_MULT 0.15
+
+// ========== SHIELD SIGNALS ==========
+
+/// Sent when shields absorb damage: (damage_absorbed, turf/impact_location)
+#define COMSIG_SHIP_SHIELD_HIT "ship_shield_hit"
+/// Sent when shields break (health reaches 0)
+#define COMSIG_SHIP_SHIELD_BROKEN "ship_shield_broken"
+/// Sent when shields shut down due to power loss
+#define COMSIG_SHIP_SHIELD_POWERDOWN "ship_shield_powerdown"
+/// Sent when shields are reactivated after cooldown
+#define COMSIG_SHIP_SHIELD_RESTORED "ship_shield_restored"
+
+/// Return value to cancel missile impact (missile was blocked by shields)
+#define COMSIG_CANCEL_MISSILE_IMPACT (1<<0)

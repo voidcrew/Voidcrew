@@ -20,12 +20,11 @@
 /datum/techweb_node/ship_combat_ordnance
 	id = TECHWEB_NODE_SHIP_COMBAT_ORDNANCE
 	display_name = "Ship Ordnance"
-	description = "Standard and specialized missile warheads for ship combat."
+	description = "Standard and specialized missile warheads for ship combat. Chemical missiles use standard grenades inserted into missile frames."
 	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
 	design_ids = list(
 		"ship_missile_warhead_standard",
 		"ship_missile_warhead_emp",
-		"ship_missile_warhead_chemical",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
@@ -48,6 +47,16 @@
 	design_ids = list()
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
+/datum/techweb_node/ship_combat_shields
+	id = TECHWEB_NODE_SHIP_COMBAT_SHIELDS
+	display_name = "Ship Shield Systems"
+	description = "Deflector shield technology that protects ships from missiles and meteors. Power requirements scale with ship size."
+	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
+	design_ids = list(
+		"ship_shield_generator",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
 // ========== COMPUTER BOARD DESIGNS ==========
 
 /datum/design/board/ship_combat_console
@@ -58,7 +67,7 @@
 	category = list(
 		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_ENGINEERING
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
 
 // ========== MACHINE BOARD DESIGNS ==========
 
@@ -70,7 +79,7 @@
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design/board/ship_cloak_device
 	name = "Cloaking Device Board"
@@ -81,6 +90,18 @@
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design/board/ship_shield_generator
+	name = "Shield Generator Board"
+	desc = "Allows for the construction of a ship shield generator."
+	id = "ship_shield_generator"
+	research_icon = 'icons/obj/machines/shield_generator.dmi'
+	research_icon_state = "shield_wall_gen"
+	build_path = /obj/item/circuitboard/machine/ship_combat/shield_generator
+	category = list(
+		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
 
 // ========== MISSILE FRAME DESIGN ==========
 
@@ -97,7 +118,9 @@
 	category = list(
 		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_ENGINEERING
+	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+	research_icon = 'voidcrew/icons/obj/supplypods.dmi'
+	research_icon_state = "missile_nowire"
 
 // ========== MISSILE TRACKING CIRCUIT DESIGN ==========
 
@@ -115,7 +138,7 @@
 	category = list(
 		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_ENGINEERING
+	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 
 // ========== MISSILE WARHEAD DESIGNS (BOMB CORES) ==========
 
@@ -133,7 +156,7 @@
 	category = list(
 		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO
 	)
-	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_ENGINEERING
+	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 
 /datum/design/ship_missile_warhead/light
 	name = "Light Missile Warhead"

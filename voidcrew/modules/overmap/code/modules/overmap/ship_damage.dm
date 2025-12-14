@@ -514,7 +514,8 @@
 	addtimer(CALLBACK(src, PROC_REF(calculate_mass)), 3 SECONDS)
 
 /**
- * Spawns a single meteor from outside the ship aimed at a random ship turf
+ * Spawns a single meteor from the edge of the virtual level aimed at a random ship turf
+ * Shield walls will physically intercept the meteor if shields are active
  */
 /obj/structure/overmap/ship/proc/spawn_meteor_at_ship(meteor_type)
 	// Pick a random target inside the ship
@@ -522,23 +523,44 @@
 	if(!target)
 		return
 
-	var/target_z = target.z
-	var/target_x = target.x
-	var/target_y = target.y
-
-	// Pick a random direction and spawn from that side
+	// Get the virtual level bounds from the turf reservation
+	var/datum/turf_reservation/reservation = SSmapping.get_reservation_from_turf(target)
 	var/turf/spawn_turf
-	var/spawn_distance = 15
 
-	switch(pick(1, 2, 3, 4))
-		if(1) // From North
-			spawn_turf = locate(target_x, target_y + spawn_distance, target_z)
-		if(2) // From South
-			spawn_turf = locate(target_x, target_y - spawn_distance, target_z)
-		if(3) // From East
-			spawn_turf = locate(target_x + spawn_distance, target_y, target_z)
-		if(4) // From West
-			spawn_turf = locate(target_x - spawn_distance, target_y, target_z)
+	if(reservation && length(reservation.bottom_left_turfs) && length(reservation.top_right_turfs))
+		// Use the reservation bounds to spawn at the edge of the virtual level
+		var/turf/bottom_left = reservation.bottom_left_turfs[1]
+		var/turf/top_right = reservation.top_right_turfs[1]
+
+		// Add small padding from the cordon edge
+		var/padding = 3
+		var/min_x = bottom_left.x + padding
+		var/min_y = bottom_left.y + padding
+		var/max_x = top_right.x - padding
+		var/max_y = top_right.y - padding
+
+		// Pick a random edge to spawn from
+		switch(pick(1, 2, 3, 4))
+			if(1) // From North edge
+				spawn_turf = locate(rand(min_x, max_x), max_y, target.z)
+			if(2) // From South edge
+				spawn_turf = locate(rand(min_x, max_x), min_y, target.z)
+			if(3) // From East edge
+				spawn_turf = locate(max_x, rand(min_y, max_y), target.z)
+			if(4) // From West edge
+				spawn_turf = locate(min_x, rand(min_y, max_y), target.z)
+	else
+		// Fallback for non-reserved turfs - use fixed distance
+		var/spawn_distance = 15
+		switch(pick(1, 2, 3, 4))
+			if(1) // From North
+				spawn_turf = locate(target.x, target.y + spawn_distance, target.z)
+			if(2) // From South
+				spawn_turf = locate(target.x, target.y - spawn_distance, target.z)
+			if(3) // From East
+				spawn_turf = locate(target.x + spawn_distance, target.y, target.z)
+			if(4) // From West
+				spawn_turf = locate(target.x - spawn_distance, target.y, target.z)
 
 	if(!spawn_turf)
 		return
@@ -549,6 +571,17 @@
 	ADD_TRAIT(M, TRAIT_FREE_HYPERSPACE_MOVEMENT, INNATE_TRAIT)
 	ADD_TRAIT(M, TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT, INNATE_TRAIT)
 	ADD_TRAIT(M, TRAIT_HYPERSPACED, INNATE_TRAIT) // Prevent shuttle_cling component
+
+/**
+ * Returns the shield damage for a given meteor type
+ * Direct 1:1 damage transfer - no multipliers
+ */
+/obj/structure/overmap/ship/proc/get_meteor_shield_damage(meteor_type)
+	if(ispath(meteor_type, /obj/effect/meteor/big))
+		return 600
+	else if(ispath(meteor_type, /obj/effect/meteor/medium))
+		return 400
+	return 200  // Small/default
 
 /**
  * Nebula Effect

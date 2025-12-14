@@ -263,7 +263,7 @@
 	)
 	prereq_ids = list(TECHWEB_NODE_FUNDIMENTAL_SCI)
 	description = "Wait, there's stuff out here?!"
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 40)
 
 /datum/techweb_node/survey_console_advanced
 	id = TECHWEB_NODE_SURVEY_CONSOLE_ADV
