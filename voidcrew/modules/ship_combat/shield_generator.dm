@@ -52,7 +52,7 @@
 	var/list/obj/structure/ship_shield_wall/shield_walls = list()
 
 	/// Debug logging for shield direction calculations
-	var/debug_shield_directions = FALSE
+	var/debug_shield_directions = TRUE
 
 /obj/machinery/ship_combat/shield_generator/Initialize(mapload)
 	. = ..()
@@ -599,9 +599,16 @@
 	var/list/ship_areas = ship.shuttle.shuttle_areas
 	var/list/boundary = get_ship_boundary_turfs()
 
-	// First pass: spawn shields on all detected boundary turfs
+	// Filter boundary to only include turfs where we'll actually spawn shields
+	// This excludes turfs inside ship areas (hull breaches) so direction calculations are correct
+	var/list/spawnable_boundary = list()
 	for(var/turf/T in boundary)
-		var/wall_dir = get_wall_direction(T, ship_areas, boundary)
+		if(!(get_area(T) in ship_areas))
+			spawnable_boundary += T
+
+	// First pass: spawn shields on all spawnable boundary turfs
+	for(var/turf/T in spawnable_boundary)
+		var/wall_dir = get_wall_direction(T, ship_areas, spawnable_boundary)
 		var/obj/structure/ship_shield_wall/wall = new(T)
 		wall.generator_ref = WEAKREF(src)
 		wall.setDir(wall_dir)
@@ -610,7 +617,7 @@
 	// Second pass: build snake chains for TRUE diagonal ship edges
 	// Detect diagonal edges by checking boundary turfs where ship is in 2 perpendicular cardinal directions
 	var/list/processed_chain_starts = list()  // Track which chains we've started
-	for(var/turf/T in boundary)
+	for(var/turf/T in spawnable_boundary)
 		// Skip if already part of a chain
 		if(T in processed_chain_starts)
 			continue
@@ -652,7 +659,7 @@
 
 		for(var/check_dir in cardinal_components)
 			var/turf/adj_boundary = get_step(T, check_dir)
-			if(!adj_boundary || !(adj_boundary in boundary))
+			if(!adj_boundary || !(adj_boundary in spawnable_boundary))
 				continue
 
 			// Check if this adjacent boundary ALSO has diagonal ship config
@@ -680,7 +687,7 @@
 			continue
 
 		// Build the snake chain extending into space
-		build_diagonal_shield_chain(chain_start, diagonal_dir, boundary)
+		build_diagonal_shield_chain(chain_start, diagonal_dir, spawnable_boundary)
 
 	// Third pass: validate all shield connections and fix any mismatches
 	validate_shield_connections()
@@ -750,11 +757,18 @@
 					use_first_move = TRUE
 				break
 
+	// Get ship areas to avoid spawning inside ship
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	var/list/ship_areas = ship?.shuttle?.shuttle_areas
+
 	for(var/i in 1 to max_iterations)
 		if(!current || !isspaceturf(current))
 			break
 		// Stop if we've reached an existing boundary turf
 		if(current in boundary)
+			break
+		// Never spawn shields inside ship areas
+		if(ship_areas && (get_area(current) in ship_areas))
 			break
 		// Stop if there's already a shield here
 		var/already_has_shield = FALSE
