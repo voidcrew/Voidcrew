@@ -52,7 +52,7 @@
 	var/list/obj/structure/ship_shield_wall/shield_walls = list()
 
 	/// Debug logging for shield direction calculations
-	var/debug_shield_directions = TRUE
+	var/debug_shield_directions = FALSE
 
 /obj/machinery/ship_combat/shield_generator/Initialize(mapload)
 	. = ..()
@@ -950,8 +950,10 @@
 	if(shield_health <= 0)
 		shield_health = max_shield_health * 0.5
 
-	// Spawn physical shield walls at ship boundary
-	spawn_shield_walls()
+	// Only spawn shield walls if no other generator on this ship has them
+	// This prevents duplicate overlapping walls
+	if(!ship_has_active_shield_walls())
+		spawn_shield_walls()
 
 	update_appearance()
 	playsound(src, 'sound/machines/computer/computer_start.ogg', 50, TRUE)
@@ -959,7 +961,9 @@
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
 		SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_RESTORED)
-		ship.ship_announce("Shields online.", "Shield Status")
+		// Only announce if this is the first generator coming online
+		if(count_active_generators() == 1)
+			ship.ship_announce("Shields online.", "Shield Status")
 
 /// Deactivates shields (called when power_allocation set to 0)
 /obj/machinery/ship_combat/shield_generator/proc/deactivate_shields()
@@ -968,8 +972,10 @@
 
 	active = FALSE
 
-	// Remove physical shield walls
-	destroy_shield_walls()
+	// Only remove shield walls if no other active generators on this ship
+	// Another generator might still be keeping the shield up
+	if(count_active_generators() == 0)
+		destroy_all_ship_shield_walls()
 
 	update_appearance()
 	playsound(src, 'sound/machines/terminal/terminal_off.ogg', 25, FALSE)
@@ -988,9 +994,6 @@
 	var/cooldown_time = SHIP_SHIELD_BROKEN_COOLDOWN * get_cooldown_modifier()
 	COOLDOWN_START(src, reactivation_cooldown, cooldown_time)
 
-	// Remove all shield walls at once
-	destroy_shield_walls()
-
 	update_appearance()
 
 	// Visual and audio effects on ship boundary
@@ -1001,8 +1004,14 @@
 
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
-		SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_BROKEN)
-		ship.ship_announce("WARNING: Shields collapsed! Reactivation available in [DisplayTimeText(cooldown_time)].", "Shield Alert", TRUE, 'sound/machines/engine_alert/engine_alert3.ogg')
+		// Only remove walls and announce collapse if ALL generators are down
+		if(count_active_generators() == 0)
+			destroy_all_ship_shield_walls()
+			SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_BROKEN)
+			ship.ship_announce("WARNING: Shields collapsed! Reactivation available in [DisplayTimeText(cooldown_time)].", "Shield Alert", TRUE, 'sound/machines/engine_alert/engine_alert3.ogg')
+		else
+			// Just announce this generator broke, but shields still up
+			ship.ship_announce("Shield generator damaged! [count_active_generators()] generator(s) remaining.", "Shield Alert")
 
 /// Called when shields shut down due to power loss
 /obj/machinery/ship_combat/shield_generator/proc/power_loss_shutdown()
@@ -1010,9 +1019,6 @@
 		return
 
 	active = FALSE
-
-	// Remove all shield walls at once
-	destroy_shield_walls()
 
 	update_appearance()
 
@@ -1024,8 +1030,41 @@
 
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
-		SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_POWERDOWN)
-		ship.ship_announce("Shields offline - insufficient power.", "Shield Alert")
+		// Only remove walls if no other active generators
+		if(count_active_generators() == 0)
+			destroy_all_ship_shield_walls()
+			SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_POWERDOWN)
+			ship.ship_announce("Shields offline - insufficient power.", "Shield Alert")
+
+/// Returns the count of active shield generators on this ship (excluding self if inactive)
+/obj/machinery/ship_combat/shield_generator/proc/count_active_generators()
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	if(!ship)
+		return 0
+	var/count = 0
+	for(var/obj/machinery/ship_combat/shield_generator/gen in ship.linked_shield_generators)
+		if(gen.is_shield_active())
+			count++
+	return count
+
+/// Returns TRUE if any generator on this ship already has shield walls spawned
+/obj/machinery/ship_combat/shield_generator/proc/ship_has_active_shield_walls()
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	if(!ship)
+		return FALSE
+	for(var/obj/machinery/ship_combat/shield_generator/gen in ship.linked_shield_generators)
+		if(gen != src && length(gen.shield_walls))
+			return TRUE
+	return FALSE
+
+/// Destroys all shield walls from all generators on this ship
+/obj/machinery/ship_combat/shield_generator/proc/destroy_all_ship_shield_walls()
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	if(!ship)
+		destroy_shield_walls()
+		return
+	for(var/obj/machinery/ship_combat/shield_generator/gen in ship.linked_shield_generators)
+		gen.destroy_shield_walls()
 
 // ========== DAMAGE HANDLING ==========
 
@@ -1108,7 +1147,7 @@
 		return
 	unlink_ship()
 	linked_ship_ref = WEAKREF(ship)
-	ship.linked_shield_generator = src
+	ship.linked_shield_generators |= src  // Add to list (|= avoids duplicates)
 	update_ship_mass()
 	// Register for docking signals
 	RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_ship_docked))
@@ -1122,8 +1161,7 @@
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
 		UnregisterSignal(ship, list(COMSIG_VOIDCREW_SHIP_DOCKED, COMSIG_VOIDCREW_SHIP_UNDOCKED))
-		if(ship.linked_shield_generator == src)
-			ship.linked_shield_generator = null
+		ship.linked_shield_generators -= src  // Remove from list
 	linked_ship_ref = null
 
 /// Returns TRUE if the ship is currently docked

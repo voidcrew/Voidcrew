@@ -6,7 +6,7 @@
 	name = "shield impact"
 	desc = "A ripple of energy across the ship's shields."
 	icon = 'icons/effects/effects.dmi'
-	icon_state = "shield-old"
+	icon_state = "blueshatter"
 	color = "#4488ff"  // Blue tint
 	duration = 8
 	alpha = 200

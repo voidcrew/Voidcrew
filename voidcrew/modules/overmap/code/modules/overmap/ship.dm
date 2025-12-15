@@ -79,8 +79,8 @@
 	///Vessel approximate mass
 	var/mass
 
-	/// Linked shield generator for ship defense
-	var/obj/machinery/ship_combat/shield_generator/linked_shield_generator
+	/// Linked shield generators for ship defense (multiple generators stack)
+	var/list/obj/machinery/ship_combat/shield_generator/linked_shield_generators = list()
 
 	/// Which docking port the ship is occupying
 	var/dock_index
