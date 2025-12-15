@@ -31,22 +31,27 @@
 		return
 
 	var/damage = 0
+	var/shield_mult = 1  // Shield damage multiplier based on damage source
 	var/turf/impact_loc = get_turf(src)
 
 	// Determine damage based on what hit us and destroy the projectile
 	if(istype(AM, /obj/effect/ship_missile))
 		var/obj/effect/ship_missile/missile = AM
 		damage = missile.damage
+		shield_mult = SHIELD_DAMAGE_MULT_MISSILE  // Missiles do reduced shield damage
 		// Mark as exploded so it doesn't detonate, then delete
 		missile.exploded = TRUE
 		qdel(missile)
 	else if(istype(AM, /obj/effect/meteor))
 		var/obj/effect/meteor/meteor = AM
 		damage = get_meteor_damage(meteor)
+		shield_mult = SHIELD_DAMAGE_MULT_METEOR  // Meteors do normal shield damage
 		// Destroy the meteor - it was absorbed by shields
 		qdel(meteor)
 
 	if(damage > 0)
+		// Apply shield damage multiplier
+		damage *= shield_mult
 		// Distribute damage across all active generators on the ship
 		var/obj/structure/overmap/ship/ship = gen.linked_ship_ref?.resolve()
 		if(ship && length(ship.linked_shield_generators))
@@ -80,3 +85,25 @@
 
 // NO CanAllowThrough() - blocks EVERYTHING including people
 // Players must turn shields off to enter/exit ship
+
+/// Handles laser damage to the shield (called by laser beam effects)
+/// Returns TRUE if shields absorbed the damage
+/obj/structure/ship_shield_wall/proc/absorb_laser_damage(damage, turf/impact_loc)
+	var/obj/machinery/ship_combat/shield_generator/gen = generator_ref?.resolve()
+	if(!gen)
+		return FALSE
+
+	if(!impact_loc)
+		impact_loc = get_turf(src)
+
+	// Apply laser shield damage multiplier (lasers are effective against shields)
+	damage *= SHIELD_DAMAGE_MULT_LASER
+
+	// Distribute damage across all active generators on the ship
+	var/obj/structure/overmap/ship/ship = gen.linked_ship_ref?.resolve()
+	if(ship && length(ship.linked_shield_generators))
+		distribute_damage_to_generators(ship, damage, impact_loc)
+	else
+		gen.absorb_damage(damage, impact_loc)
+
+	return TRUE

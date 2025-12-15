@@ -1,0 +1,536 @@
+// Ship Combat Laser Beam Effect
+// Visual beam that travels from off-screen to target like missiles/meteors
+// Uses the same pathfinding logic as missiles to find holes in the ship
+// Creates visible beam segments using bsa_beam and beam_splash_e end cap
+
+/// The main laser beam controller - spawns at the turret, calculates path, creates visuals
+/obj/effect/ship_laser_beam
+	name = "laser beam"
+	desc = "A powerful laser beam."
+	icon = 'icons/effects/beam.dmi'
+	icon_state = "bsa_beam"
+	layer = ABOVE_MOB_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	anchored = TRUE
+	invisibility = INVISIBILITY_ABSTRACT  // Controller is invisible
+
+	/// The target turf we're aiming at
+	var/turf/target_turf
+	/// The ship we're targeting
+	var/obj/structure/overmap/ship/target_ship
+	/// The ship that fired us
+	var/obj/structure/overmap/ship/source_ship
+	/// Damage to deal
+	var/damage = LASER_DAMAGE_BASE
+	/// Power level (0.25 to 2.0) - affects wall damage
+	var/power_level = 1
+	/// List of beam segment effects we've created
+	var/list/beam_segments = list()
+	/// The end cap effect
+	var/obj/effect/temp_visual/ship_laser_splash/end_cap
+	/// Direction the beam is coming from
+	var/approach_direction
+	/// Spread offset for multi-laser volleys (-2, -1, 0, 1, 2, etc.)
+	var/spread_offset = 0
+	/// Spread distance in tiles between each laser
+	var/spread_distance = 2
+
+/obj/effect/ship_laser_beam/Initialize(mapload, turf/target, obj/structure/overmap/ship/target_ship_ref, obj/structure/overmap/ship/source_ship_ref, laser_damage, laser_spread_offset = 0, laser_power_level = 1)
+	. = ..()
+
+	target_turf = target
+	target_ship = target_ship_ref
+	source_ship = source_ship_ref
+	spread_offset = laser_spread_offset
+	power_level = laser_power_level
+
+	if(laser_damage)
+		damage = laser_damage
+
+	// Fire the laser after a short delay to allow positioning
+	addtimer(CALLBACK(src, PROC_REF(fire_laser)), 0.1 SECONDS)
+
+/obj/effect/ship_laser_beam/Destroy()
+	// Clean up beam segments
+	for(var/obj/effect/segment in beam_segments)
+		qdel(segment)
+	beam_segments.Cut()
+	end_cap = null
+	target_turf = null
+	target_ship = null
+	source_ship = null
+	return ..()
+
+/// Calculates spawn position outside the target ship using missile-style pathfinding
+/obj/effect/ship_laser_beam/proc/get_laser_spawn_turf()
+	if(!target_turf)
+		return null
+
+	// Get ship bounds from the docking port
+	var/min_x = target_turf.x
+	var/max_x = target_turf.x
+	var/min_y = target_turf.y
+	var/max_y = target_turf.y
+
+	if(target_ship?.shuttle)
+		var/list/bounds = target_ship.shuttle.return_coords()
+		if(bounds?.len >= 4)
+			min_x = min(bounds[1], bounds[3])
+			max_x = max(bounds[1], bounds[3])
+			min_y = min(bounds[2], bounds[4])
+			max_y = max(bounds[2], bounds[4])
+
+	// How far outside the ship to spawn
+	var/spawn_dist = 10
+
+	// Find the best approach direction (looking for holes like missiles do)
+	approach_direction = find_clear_approach_direction(target_turf, min_x, max_x, min_y, max_y, spawn_dist)
+
+	var/spawn_x = target_turf.x
+	var/spawn_y = target_turf.y
+
+	// Spawn from the selected direction (all beams use same path, pixel offset handles spread)
+	switch(approach_direction)
+		if(NORTH)
+			spawn_y = max_y + spawn_dist
+		if(SOUTH)
+			spawn_y = min_y - spawn_dist
+		if(EAST)
+			spawn_x = max_x + spawn_dist
+		if(WEST)
+			spawn_x = min_x - spawn_dist
+
+	return locate(spawn_x, spawn_y, target_turf.z)
+
+/// Finds the best approach direction for the laser (same logic as missiles)
+/obj/effect/ship_laser_beam/proc/find_clear_approach_direction(turf/target, min_x, max_x, min_y, max_y, spawn_dist)
+	var/list/directions = list(NORTH, SOUTH, EAST, WEST)
+	var/list/clear_directions = list()
+
+	// Check each direction for a clear path
+	for(var/check_dir in directions)
+		var/spawn_x = target.x
+		var/spawn_y = target.y
+
+		switch(check_dir)
+			if(NORTH)
+				spawn_y = max_y + spawn_dist
+			if(SOUTH)
+				spawn_y = min_y - spawn_dist
+			if(EAST)
+				spawn_x = max_x + spawn_dist
+			if(WEST)
+				spawn_x = min_x - spawn_dist
+
+		var/turf/spawn_turf = locate(spawn_x, spawn_y, target.z)
+		if(!spawn_turf)
+			continue
+
+		// Check if path from spawn to target is clear
+		if(check_path_clear(spawn_turf, target))
+			clear_directions += check_dir
+
+	// If we found clear paths, pick the best one
+	if(length(clear_directions))
+		var/center_x = (min_x + max_x) / 2
+		var/center_y = (min_y + max_y) / 2
+		var/offset_x = target.x - center_x
+		var/offset_y = target.y - center_y
+
+		var/preferred_dir
+		if(abs(offset_x) > abs(offset_y))
+			preferred_dir = (offset_x > 0) ? EAST : WEST
+		else
+			preferred_dir = (offset_y > 0) ? NORTH : SOUTH
+
+		if(preferred_dir in clear_directions)
+			return preferred_dir
+
+		return clear_directions[1]
+
+	// No clear paths - fall back to closest edge
+	var/center_x = (min_x + max_x) / 2
+	var/center_y = (min_y + max_y) / 2
+	var/offset_x = target.x - center_x
+	var/offset_y = target.y - center_y
+
+	if(abs(offset_x) > abs(offset_y))
+		return (offset_x > 0) ? EAST : WEST
+	else
+		return (offset_y > 0) ? NORTH : SOUTH
+
+/// Checks if there's a clear line-of-sight path between two turfs
+/// Lasers can pass through windows, grilles, tables, and railings
+/obj/effect/ship_laser_beam/proc/check_path_clear(turf/start, turf/end)
+	if(!start || !end)
+		return FALSE
+
+	var/list/path_turfs = get_line(start, end)
+
+	for(var/turf/T in path_turfs)
+		if(T == start || T == end)
+			continue
+
+		if(T.density)
+			return FALSE
+
+		for(var/obj/O in T)
+			if(!O.density)
+				continue
+			// Lasers pass through glass/windows
+			if(istype(O, /obj/structure/window))
+				continue
+			// Lasers pass through grilles
+			if(istype(O, /obj/structure/grille))
+				continue
+			// Lasers pass through tables
+			if(istype(O, /obj/structure/table))
+				continue
+			// Lasers pass through railings
+			if(istype(O, /obj/structure/railing))
+				continue
+			// Dense object blocks the path
+			return FALSE
+
+	return TRUE
+
+/// Fires the laser beam towards the target
+/obj/effect/ship_laser_beam/proc/fire_laser()
+	if(!target_turf || QDELETED(src))
+		qdel(src)
+		return
+
+	// Get spawn position using missile-style pathfinding
+	var/turf/start_turf = get_laser_spawn_turf()
+	if(!start_turf)
+		qdel(src)
+		return
+
+	// Get the path from start to target
+	var/list/path = get_line(start_turf, target_turf)
+	if(!length(path))
+		qdel(src)
+		return
+
+	// Check for obstacles along the path (shields, walls, dense objects)
+	// Lasers can pass through: glass, grilles, tables (like normal laser projectiles)
+	var/turf/impact_turf = target_turf
+	var/hit_shield = FALSE
+	var/hit_obstacle = FALSE
+	var/obj/structure/ship_shield_wall/shield_hit
+
+	for(var/turf/T in path)
+		// Skip the starting turf
+		if(T == start_turf)
+			continue
+
+		// Check for shield walls first (highest priority)
+		for(var/obj/structure/ship_shield_wall/wall in T)
+			shield_hit = wall
+			impact_turf = T
+			hit_shield = TRUE
+			break
+		if(hit_shield)
+			break
+
+		// Check if the turf itself is dense (walls)
+		if(T.density)
+			impact_turf = T
+			hit_obstacle = TRUE
+			break
+
+		// Check for dense objects that would block lasers
+		for(var/obj/O in T)
+			if(!O.density)
+				continue
+			// Lasers pass through glass/windows
+			if(istype(O, /obj/structure/window))
+				continue
+			// Lasers pass through grilles
+			if(istype(O, /obj/structure/grille))
+				continue
+			// Lasers pass through tables
+			if(istype(O, /obj/structure/table))
+				continue
+			// Lasers pass through railings
+			if(istype(O, /obj/structure/railing))
+				continue
+			// Dense object blocks the laser
+			impact_turf = T
+			hit_obstacle = TRUE
+			break
+		if(hit_obstacle)
+			break
+
+	// Create beam segments from start to impact
+	var/beam_angle = create_beam_visuals(start_turf, impact_turf)
+
+	// Create end cap at impact point (using same angle as beam)
+	create_end_cap(impact_turf, beam_angle)
+
+	// Play firing sound at impact location
+	playsound(impact_turf, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE)
+
+	// Damage everything along the beam path (mobs and objects)
+	damage_along_path(start_turf, impact_turf)
+
+	// Deal final impact damage based on what we hit
+	if(hit_shield && shield_hit)
+		// Hit shields - they absorb with laser multiplier
+		shield_hit.absorb_laser_damage(damage, impact_turf)
+		// Visual effect at shield impact
+		new /obj/effect/temp_visual/ship_laser_hit_shield(impact_turf)
+		playsound(impact_turf, 'sound/vehicles/mecha/mech_shield_deflect.ogg', 60, TRUE)
+	else
+		// Hit the ship/obstacle - deal damage at impact point
+		impact_ship(impact_turf)
+
+	// Clean up after beam fades (beam segments have their own duration)
+	QDEL_IN(src, 10)
+
+/// Creates the visual beam segments along the path
+/// Returns the beam angle for use by the end cap
+/obj/effect/ship_laser_beam/proc/create_beam_visuals(turf/start, turf/end)
+	// Calculate the angle for rotation first
+	var/angle = get_angle(start, end)
+
+	var/list/path = get_line(start, end)
+	if(!length(path))
+		return angle
+
+	// Calculate pixel offset perpendicular to beam direction for spread effect
+	// spread_offset is -2, -1, 0, 1, 2 etc. Multiply by pixels per offset
+	var/pixels_per_spread = 4
+	var/pixel_offset_x = 0
+	var/pixel_offset_y = 0
+
+	// Offset perpendicular to approach direction
+	switch(approach_direction)
+		if(NORTH, SOUTH)  // Beam travels vertically, offset horizontally
+			pixel_offset_x = spread_offset * pixels_per_spread
+		if(EAST, WEST)  // Beam travels horizontally, offset vertically
+			pixel_offset_y = spread_offset * pixels_per_spread
+
+	// Create a beam segment on each turf along the path
+	for(var/turf/T in path)
+		// Don't put beam on the final impact turf (that gets the splash)
+		if(T == end)
+			continue
+		var/obj/effect/temp_visual/ship_laser_segment/segment = new(T)
+		segment.pixel_x = pixel_offset_x
+		segment.pixel_y = pixel_offset_y
+		segment.set_beam_angle(angle)
+		beam_segments += segment
+
+	// Return the angle so end cap can use the same rotation
+	return angle
+
+/// Creates the end cap splash effect at the impact point
+/obj/effect/ship_laser_beam/proc/create_end_cap(turf/impact_loc, beam_angle)
+	if(!impact_loc)
+		return
+
+	end_cap = new /obj/effect/temp_visual/ship_laser_splash(impact_loc)
+
+	// Apply same pixel offset as beam segments for alignment
+	var/pixels_per_spread = 4
+	switch(approach_direction)
+		if(NORTH, SOUTH)
+			end_cap.pixel_x += spread_offset * pixels_per_spread
+		if(EAST, WEST)
+			end_cap.pixel_y += spread_offset * pixels_per_spread
+
+	// Use the same angle as the beam segments so they align
+	end_cap.set_splash_angle(beam_angle)
+
+/// Damages all mobs and objects along the beam path
+/obj/effect/ship_laser_beam/proc/damage_along_path(turf/start, turf/end)
+	if(!start || !end)
+		return
+
+	var/list/path_turfs = get_line(start, end)
+
+	for(var/turf/T in path_turfs)
+		// Skip the starting turf (outside the ship)
+		if(T == start)
+			continue
+		// Skip the end turf - that gets handled by impact_ship()
+		if(T == end)
+			continue
+
+		// Damage all mobs and objects on this turf
+		for(var/atom/movable/AM in T)
+			if(isliving(AM))
+				var/mob/living/victim = AM
+				victim.adjustFireLoss(damage * 0.5)
+				to_chat(victim, span_userdanger("A ship laser burns through you!"))
+			else if(isobj(AM))
+				var/obj/O = AM
+				// Don't damage things lasers pass through (windows, grilles, tables, railings)
+				if(istype(O, /obj/structure/window))
+					continue
+				if(istype(O, /obj/structure/grille))
+					continue
+				if(istype(O, /obj/structure/table))
+					continue
+				if(istype(O, /obj/structure/railing))
+					continue
+				O.take_damage(damage, BURN, LASER)
+
+/// Deals damage to the ship at the impact location
+/obj/effect/ship_laser_beam/proc/impact_ship(turf/impact_loc)
+	if(!impact_loc)
+		return
+
+	// Visual effect
+	new /obj/effect/temp_visual/ship_laser_hit(impact_loc)
+
+	// Play impact sound
+	playsound(impact_loc, 'sound/effects/sparks/sparks1.ogg', 80, TRUE)
+
+	// Deal damage to objects/mobs at impact location
+	for(var/atom/movable/AM in impact_loc)
+		if(isliving(AM))
+			var/mob/living/victim = AM
+			victim.adjustFireLoss(damage * 0.5)
+			to_chat(victim, span_userdanger("You're hit by a ship laser!"))
+		else if(isobj(AM))
+			var/obj/O = AM
+			O.take_damage(damage, BURN, LASER)
+
+	// Damage walls/turfs based on power level
+	// At low power (below 150%), minimal wall damage
+	// At high power (150%+), significant wall damage that scales with power
+	if(impact_loc.density)
+		var/wall_damage = 0
+		if(power_level >= 1.5)
+			// High power mode: walls take significant damage
+			// At 150% power: 1.5x base damage
+			// At 200% power: 3x base damage (scales quadratically for dramatic effect)
+			var/power_bonus = (power_level - 1) * 2  // 0.5 at 150%, 1.0 at 200%
+			wall_damage = damage * (1 + power_bonus)
+		else
+			// Low power: only 10% damage to walls
+			wall_damage = damage * 0.1
+
+		if(wall_damage > 0)
+			impact_loc.take_damage(wall_damage, BURN, LASER)
+
+	// Small fire effect
+	new /obj/effect/hotspot(impact_loc)
+
+	// Screen shake for nearby players - stronger at high power
+	var/shake_intensity = power_level >= 1.5 ? 2 : 1
+	for(var/mob/living/victim in range(5, impact_loc))
+		shake_camera(victim, shake_intensity, shake_intensity)
+
+// ========== BEAM SEGMENT EFFECT ==========
+
+/// Individual beam segment using bsa_beam icon state
+/obj/effect/temp_visual/ship_laser_segment
+	name = "laser beam"
+	icon = 'icons/effects/beam.dmi'
+	icon_state = "bsa_beam"
+	duration = 8
+	layer = ABOVE_MOB_LAYER
+	plane = GAME_PLANE
+	light_range = 2
+	light_power = 1
+	light_color = "#ff3300"
+
+/obj/effect/temp_visual/ship_laser_segment/Initialize(mapload)
+	. = ..()
+	// Fade out animation
+	animate(src, alpha = 0, time = duration, easing = EASE_OUT)
+
+/// Sets the rotation angle for the beam segment
+/obj/effect/temp_visual/ship_laser_segment/proc/set_beam_angle(angle)
+	var/matrix/M = matrix()
+	// Scale longer (1.5x) to ensure segments overlap and form continuous beam
+	// This is needed because diagonal beams would otherwise have gaps between tiles
+	M.Scale(1.5, 1)
+	M.Turn(angle)
+	transform = M
+
+// ========== BEAM SPLASH (END CAP) EFFECT ==========
+
+/// End cap splash effect using beam_splash_e
+/obj/effect/temp_visual/ship_laser_splash
+	name = "laser impact"
+	icon = 'icons/effects/beam_splash.dmi'
+	icon_state = "beam_splash_e"
+	duration = 8
+	layer = ABOVE_MOB_LAYER
+	plane = GAME_PLANE
+	light_range = 3
+	light_power = 1.5
+	light_color = "#ff6600"
+
+
+/obj/effect/temp_visual/ship_laser_splash/Initialize(mapload)
+	. = ..()
+	// Flash and fade animation
+	animate(src, alpha = 0, time = duration, easing = EASE_OUT)
+
+/// Sets the rotation angle and position offset for the splash based on beam direction
+/obj/effect/temp_visual/ship_laser_splash/proc/set_splash_angle(angle)
+	var/matrix/M = matrix()
+	M.Turn(angle + 90)  // Rotate 90 degrees to align splash icon with beam direction
+	transform = M
+
+	// Apply pixel offsets to align the splash with the beam based on direction
+	// The splash icon's anchor point shifts when rotated, so we compensate
+	// Angle 0 = beam traveling east (splash should be on west side of tile)
+	// Angle 90 = beam traveling south
+	// Angle 180 = beam traveling west
+	// Angle 270 = beam traveling north
+	var/normalized_angle = SIMPLIFY_DEGREES(angle)
+	switch(normalized_angle)
+		if(0 to 44, 316 to 360)  // Beam coming from west, traveling east
+			pixel_x = -8
+			pixel_y = 0
+		if(45 to 134)  // Beam coming from north, traveling south
+			pixel_x = 0
+			pixel_y = 0  // South works correctly
+		if(135 to 224)  // Beam coming from east, traveling west
+			pixel_x = 8
+			pixel_y = 0
+		if(225 to 315)  // Beam coming from south, traveling north
+			pixel_x = 0
+			pixel_y = -16
+
+// ========== OTHER VISUAL EFFECTS ==========
+
+/// Blue flash when laser hits shields
+/obj/effect/temp_visual/ship_laser_hit_shield
+	name = "shield impact"
+	desc = "A flash of energy as the laser hits the shields."
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "shield-flash"
+	color = "#00ffff"
+	duration = 6
+	alpha = 255
+	layer = ABOVE_MOB_LAYER
+	plane = GAME_PLANE
+
+/obj/effect/temp_visual/ship_laser_hit_shield/Initialize(mapload)
+	. = ..()
+	animate(src, alpha = 0, time = duration, easing = EASE_OUT)
+
+/// Red/orange flash when laser hits ship hull
+/obj/effect/temp_visual/ship_laser_hit
+	name = "laser impact"
+	desc = "Superheated metal from a laser strike."
+	icon = 'icons/effects/fire.dmi'
+	icon_state = "fire"
+	color = "#ff6600"
+	duration = 10
+	alpha = 255
+	layer = ABOVE_MOB_LAYER
+	plane = GAME_PLANE
+
+/obj/effect/temp_visual/ship_laser_hit/Initialize(mapload)
+	. = ..()
+	var/matrix/M = matrix()
+	M.Scale(1.5, 1.5)
+	animate(src, transform = M, alpha = 0, time = duration, easing = EASE_OUT)

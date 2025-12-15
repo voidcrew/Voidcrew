@@ -57,6 +57,16 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
+/datum/techweb_node/ship_combat_lasers
+	id = TECHWEB_NODE_SHIP_COMBAT_LASERS
+	display_name = "Ship Laser Systems"
+	description = "Directed energy weapons that are highly effective against shields. Power level can be adjusted via the combat console."
+	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
+	design_ids = list(
+		"ship_laser_turret",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
 // ========== COMPUTER BOARD DESIGNS ==========
 
 /datum/design/board/ship_combat_console
@@ -98,6 +108,16 @@
 	research_icon = 'icons/obj/machines/shield_generator.dmi'
 	research_icon_state = "shield_wall_gen"
 	build_path = /obj/item/circuitboard/machine/ship_combat/shield_generator
+	category = list(
+		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
+
+/datum/design/board/ship_laser_turret
+	name = "Laser Turret Board"
+	desc = "Allows for the construction of a ship-mounted laser turret. Highly effective against shields."
+	id = "ship_laser_turret"
+	build_path = /obj/item/circuitboard/machine/ship_combat/laser_turret
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
 	)

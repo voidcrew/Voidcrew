@@ -107,8 +107,12 @@
 	var/targeting_timer_id
 	/// List of linked missile launchers (weakrefs)
 	var/list/linked_launchers = list()
+	/// List of linked laser turrets (weakrefs)
+	var/list/linked_turrets = list()
 	/// Linked shield generator (weakref)
 	var/datum/weakref/linked_shield_ref
+	/// Global power level for all turrets (0.25 to 2.0)
+	var/turret_power_level = 1
 	/// Is cloaking device active on our ship?
 	var/cloak_active = FALSE
 	/// The targeting reticle shown on screen
@@ -153,6 +157,9 @@
 	actions += new /datum/action/innate/ship_combat/select_direction(src)
 	actions += new /datum/action/innate/ship_combat/fire_missile(src)
 	actions += new /datum/action/innate/ship_combat/fire_all(src)
+	actions += new /datum/action/innate/ship_combat/fire_laser(src)
+	actions += new /datum/action/innate/ship_combat/fire_all_lasers(src)
+	actions += new /datum/action/innate/ship_combat/adjust_laser_power(src)
 
 	reticle = new(null, src)
 
@@ -165,6 +172,11 @@
 		if(launcher)
 			launcher.unlink_console()
 	linked_launchers.Cut()
+	for(var/datum/weakref/ref in linked_turrets)
+		var/obj/machinery/ship_combat/laser_turret/turret = ref.resolve()
+		if(turret)
+			turret.unlink_console()
+	linked_turrets.Cut()
 	QDEL_NULL(reticle)
 	current_ship = null
 	return ..()
@@ -172,6 +184,7 @@
 /obj/machinery/computer/camera_advanced/ship_combat/examine(mob/user)
 	. = ..()
 	. += span_notice("Linked launchers: [length(linked_launchers)]")
+	. += span_notice("Linked laser turrets: [length(linked_turrets)]")
 	if(target_ship)
 		. += span_notice("Current target: [target_ship.display_name]")
 	else
@@ -357,6 +370,24 @@
 	data["launchers_ready"] = ready_count
 	data["launchers_total"] = total_count
 
+	// Get laser turret status
+	var/list/turrets = list()
+	var/turrets_ready_count = 0
+	var/turrets_total_count = 0
+	for(var/datum/weakref/ref in linked_turrets)
+		var/obj/machinery/ship_combat/laser_turret/turret = ref.resolve()
+		if(!turret)
+			linked_turrets -= ref
+			continue
+		turrets_total_count++
+		if(turret.can_fire())
+			turrets_ready_count++
+		turrets += list(turret.get_status())
+	data["turrets"] = turrets
+	data["turrets_ready"] = turrets_ready_count
+	data["turrets_total"] = turrets_total_count
+	data["turret_power_level"] = turret_power_level
+
 	// Interdictor data
 	data["interdiction_active"] = interdiction_active
 	data["interdict_cooldown_active"] = !COOLDOWN_FINISHED(src, interdict_cooldown)
@@ -380,7 +411,6 @@
 	data["target_in_missile_range"] = target_in_missile_range
 
 	// Shield data - aggregate from all generators on the ship
-	var/obj/machinery/ship_combat/shield_generator/shield = linked_shield_ref?.resolve()
 	var/has_any_generators = current_ship && length(current_ship.linked_shield_generators)
 	data["shield_linked"] = has_any_generators
 	data["shield_unlocked"] = has_upgrade(TECHWEB_NODE_SHIP_COMBAT_SHIELDS)
@@ -475,6 +505,29 @@
 			var/power_mult = new_power / 100
 			for(var/obj/machinery/ship_combat/shield_generator/gen in current_ship.linked_shield_generators)
 				gen.set_power_allocation(power_mult)
+			return TRUE
+
+		// Laser turret power allocation (25-200%) - applies to ALL turrets
+		if("set_turret_power")
+			var/new_power = params["power"]
+			if(!isnum(new_power))
+				return FALSE
+			// Convert from percentage (25-200) to multiplier (0.25-2) and apply to all turrets
+			turret_power_level = clamp(new_power / 100, LASER_POWER_MIN, LASER_POWER_MAX)
+			for(var/datum/weakref/ref in linked_turrets)
+				var/obj/machinery/ship_combat/laser_turret/turret = ref.resolve()
+				if(turret)
+					turret.set_power_level(turret_power_level)
+			return TRUE
+
+		// Fire one laser at current target
+		if("fire_laser")
+			fire_laser_one(ui.user)
+			return TRUE
+
+		// Fire all lasers at current target
+		if("fire_all_lasers")
+			fire_all_lasers(ui.user)
 			return TRUE
 
 		// Debug actions (admin only)
@@ -710,6 +763,27 @@
 		if(link_shield_generator(gen))
 			balloon_alert(user, "shield generator linked")
 			to_chat(user, span_notice("Linked [gen] to [src]."))
+		else
+			balloon_alert(user, "link failed")
+
+		return ITEM_INTERACT_SUCCESS
+
+	// Handle laser turret linking
+	if(istype(tool.buffer, /obj/machinery/ship_combat/laser_turret))
+		var/obj/machinery/ship_combat/laser_turret/turret = tool.buffer
+
+		// Check if already linked
+		for(var/datum/weakref/ref in linked_turrets)
+			if(ref.resolve() == turret)
+				balloon_alert(user, "already linked")
+				return ITEM_INTERACT_BLOCKING
+
+		// Link the turret
+		if(turret.link_console(src))
+			linked_turrets += WEAKREF(turret)
+			turret.set_power_level(turret_power_level)  // Apply current power level
+			balloon_alert(user, "turret linked")
+			to_chat(user, span_notice("Linked [turret] to [src]. Total turrets: [length(linked_turrets)]"))
 		else
 			balloon_alert(user, "link failed")
 
@@ -1104,6 +1178,100 @@
 		else
 			to_chat(user, span_warning("No launchers ready to fire!"))
 	return FALSE
+
+/// Fire one ready laser turret at the current target location
+/obj/machinery/computer/camera_advanced/ship_combat/proc/fire_laser_one(mob/user)
+	if(!attack_mode)
+		to_chat(user, span_warning("Enter attack mode first!"))
+		return FALSE
+
+	var/turf/target_turf = get_target_turf()
+	if(!target_ship || !target_turf)
+		if(user)
+			to_chat(user, span_warning("No target selected!"))
+		return FALSE
+
+	for(var/datum/weakref/ref in linked_turrets)
+		var/obj/machinery/ship_combat/laser_turret/turret = ref.resolve()
+		if(!turret)
+			linked_turrets -= ref
+			continue
+		if(!turret.can_fire())
+			continue
+		if(turret.fire(target_turf, target_ship, current_ship, user))
+			return TRUE
+
+	if(user)
+		to_chat(user, span_warning("No laser turrets ready to fire!"))
+	return FALSE
+
+/// Fire all ready laser turrets at the current target location
+/// Lasers are spread out at their spawn point but converge on the same target
+/obj/machinery/computer/camera_advanced/ship_combat/proc/fire_all_lasers(mob/user)
+	if(!attack_mode)
+		to_chat(user, span_warning("Enter attack mode first!"))
+		return 0
+
+	var/turf/target_turf = get_target_turf()
+	if(!target_ship || !target_turf)
+		if(user)
+			to_chat(user, span_warning("No target selected!"))
+		return 0
+
+	// First, collect all ready turrets
+	var/list/ready_turrets = list()
+	for(var/datum/weakref/ref in linked_turrets)
+		var/obj/machinery/ship_combat/laser_turret/turret = ref.resolve()
+		if(!turret)
+			linked_turrets -= ref
+			continue
+		if(!turret.can_fire())
+			continue
+		ready_turrets += turret
+
+	if(!length(ready_turrets))
+		if(user)
+			to_chat(user, span_warning("No laser turrets ready to fire!"))
+		return 0
+
+	// Calculate spread offsets centered around 0
+	// For N turrets: offsets are -(N-1)/2, ..., -1, 0, 1, ..., (N-1)/2
+	// This ensures beams spread symmetrically and converge on target
+	var/turret_count = length(ready_turrets)
+	var/half_count = (turret_count - 1) / 2
+
+	var/fired_count = 0
+	var/turret_index = 0
+	for(var/obj/machinery/ship_combat/laser_turret/turret in ready_turrets)
+		// Calculate spread offset: goes from -half_count to +half_count
+		var/spread_offset = turret_index - half_count
+		if(turret.fire(target_turf, target_ship, current_ship, user, spread_offset))
+			fired_count++
+		turret_index++
+
+	if(user && fired_count > 0)
+		to_chat(user, span_danger("Fired [fired_count] laser[fired_count > 1 ? "s" : ""]!"))
+
+	return fired_count
+
+/// Opens a power level selection for laser turrets
+/obj/machinery/computer/camera_advanced/ship_combat/proc/open_laser_power_radial(mob/user)
+	var/list/options = list("25%", "50%", "75%", "100%", "125%", "150%", "175%", "200%")
+
+	var/choice = tgui_input_list(user, "Select laser power level:", "Laser Power", options)
+	if(!choice)
+		return
+
+	var/new_level = text2num(choice) / 100
+	turret_power_level = clamp(new_level, LASER_POWER_MIN, LASER_POWER_MAX)
+
+	// Apply to all linked turrets
+	for(var/datum/weakref/ref in linked_turrets)
+		var/obj/machinery/ship_combat/laser_turret/turret = ref.resolve()
+		if(turret)
+			turret.set_power_level(turret_power_level)
+
+	to_chat(user, span_notice("Laser power set to [choice]. Damage: [round(LASER_DAMAGE_BASE * turret_power_level)], Power/shot: [round(LASER_POWER_BASE * turret_power_level)]W"))
 
 /// Opens a selection menu to choose which missile type to fire
 /obj/machinery/computer/camera_advanced/ship_combat/proc/open_missile_radial(mob/user)
@@ -1519,6 +1687,40 @@
 	if(!console || !ismob(owner))
 		return
 	console.fire_all(owner)
+
+// Fire single laser
+/datum/action/innate/ship_combat/fire_laser
+	name = "Fire Laser"
+	desc = "Fire one laser turret at the targeted location."
+	button_icon_state = "laser"
+	button_icon = 'voidcrew/icons/mob/actions/ship_combat.dmi'
+
+/datum/action/innate/ship_combat/fire_laser/Activate()
+	if(!console || !ismob(owner))
+		return
+	console.fire_laser_one(owner)
+
+// Fire all lasers
+/datum/action/innate/ship_combat/fire_all_lasers
+	name = "Fire All Lasers"
+	desc = "Fire all ready laser turrets at the targeted location."
+	button_icon_state = "mech_air_on"
+
+/datum/action/innate/ship_combat/fire_all_lasers/Activate()
+	if(!console || !ismob(owner))
+		return
+	console.fire_all_lasers(owner)
+
+// Adjust laser power
+/datum/action/innate/ship_combat/adjust_laser_power
+	name = "Laser Power"
+	desc = "Adjust power level for all laser turrets. Higher power = more damage but more power usage."
+	button_icon_state = "mech_internals_on"
+
+/datum/action/innate/ship_combat/adjust_laser_power/Activate()
+	if(!console || !ismob(owner))
+		return
+	console.open_laser_power_radial(owner)
 
 // ========== CIRCUIT BOARD ==========
 

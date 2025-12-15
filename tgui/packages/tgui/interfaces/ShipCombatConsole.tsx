@@ -32,6 +32,17 @@ type Launcher = {
   cooldown_time: number;
 };
 
+type Turret = {
+  id: string;
+  name: string;
+  power_level: number;
+  damage: number;
+  cooldown: number;
+  power_per_shot: number;
+  ready: BooleanLike;
+  cooldown_remaining: number;
+};
+
 type Data = {
   connected: BooleanLike;
   ship_name: string | null;
@@ -48,6 +59,11 @@ type Data = {
   launchers: Launcher[];
   launchers_ready: number;
   launchers_total: number;
+  // Laser turret data
+  turrets: Turret[];
+  turrets_ready: number;
+  turrets_total: number;
+  turret_power_level: number;
   interdiction_active: BooleanLike;
   interdict_cooldown_active: BooleanLike;
   interdict_cooldown_remaining: number;
@@ -81,7 +97,7 @@ export const ShipCombatConsole = () => {
   const { connected, is_admin } = data;
 
   return (
-    <Window width={420} height={700} title="Ship Combat">
+    <Window width={420} height={800} title="Ship Combat">
       <Window.Content>
         {!connected ? (
           <NoticeBox danger>
@@ -97,6 +113,9 @@ export const ShipCombatConsole = () => {
             </Stack.Item>
             <Stack.Item>
               <WeaponsPanel />
+            </Stack.Item>
+            <Stack.Item>
+              <TurretsPanel />
             </Stack.Item>
             <Stack.Item grow>
               <LaunchersPanel />
@@ -620,6 +639,120 @@ const WeaponsPanel = () => {
                 </Stack.Item>
               )}
             </Stack>
+          </Stack.Item>
+        </Stack>
+      )}
+    </Section>
+  );
+};
+
+const TurretsPanel = () => {
+  const { act, data } = useBackend<Data>();
+  const { turrets, turrets_ready, turrets_total, turret_power_level } = data;
+
+  const powerPercent = (turret_power_level ?? 1) * 100;
+
+  return (
+    <Section
+      title={
+        <Box inline>
+          <Icon name="bolt" mr={1} />
+          Laser Turrets
+        </Box>
+      }
+      buttons={
+        <Box color="label" fontSize="11px">
+          {turrets_ready}/{turrets_total} ready
+        </Box>
+      }
+    >
+      {turrets.length === 0 ? (
+        <Box color="label" textAlign="center" py={1}>
+          <Icon name="unlink" mr={1} />
+          No turrets linked
+        </Box>
+      ) : (
+        <Stack vertical>
+          {/* Power Slider */}
+          <Stack.Item>
+            <Box mb={0.5} fontSize="11px" color="label">
+              Power Level ({powerPercent.toFixed(0)}%)
+              {powerPercent > 100 && (
+                <Box inline color="orange" ml={1}>
+                  - High power mode
+                </Box>
+              )}
+            </Box>
+            <Slider
+              value={powerPercent}
+              minValue={25}
+              maxValue={200}
+              step={25}
+              stepPixelSize={8}
+              format={(v) => `${v}%`}
+              onChange={(e, value) => act('set_turret_power', { power: value })}
+            />
+          </Stack.Item>
+
+          {/* Stats Row */}
+          <Stack.Item>
+            <Stack fontSize="11px" color="label" mt={0.5}>
+              <Stack.Item grow>
+                <Icon name="crosshairs" mr={0.5} />
+                {Math.round(50 * turret_power_level)} dmg
+              </Stack.Item>
+              <Stack.Item grow>
+                <Icon name="bolt" mr={0.5} />
+                {Math.round(200 * turret_power_level)}W/shot
+              </Stack.Item>
+              <Stack.Item grow>
+                <Icon name="shield-halved" mr={0.5} color="cyan" />
+                1.5x vs shields
+              </Stack.Item>
+            </Stack>
+          </Stack.Item>
+
+          {/* Turret List */}
+          <Stack.Item>
+            <Collapsible title={`Turret Status (${turrets.length})`}>
+              <Stack vertical>
+                {turrets.map((turret) => (
+                  <Stack.Item key={turret.id}>
+                    <Stack align="center" py={0.5}>
+                      <Stack.Item basis="60px">
+                        <Box color="label" fontSize="11px">
+                          {turret.id}
+                        </Box>
+                      </Stack.Item>
+                      <Stack.Item grow>
+                        <Box color="cyan" fontSize="12px">
+                          {turret.damage} dmg
+                          <Box as="span" color="label" ml={1}>
+                            ({turret.power_per_shot}W)
+                          </Box>
+                        </Box>
+                      </Stack.Item>
+                      <Stack.Item basis="70px">
+                        {turret.ready ? (
+                          <Box color="good" textAlign="right">
+                            <Icon name="check" /> Ready
+                          </Box>
+                        ) : (
+                          <ProgressBar
+                            value={1 - turret.cooldown_remaining / turret.cooldown}
+                            ranges={{
+                              good: [0.8, 1],
+                              average: [0.4, 0.8],
+                              bad: [0, 0.4],
+                            }}
+                          />
+                        )}
+                      </Stack.Item>
+                    </Stack>
+                  </Stack.Item>
+                ))}
+              </Stack>
+            </Collapsible>
           </Stack.Item>
         </Stack>
       )}

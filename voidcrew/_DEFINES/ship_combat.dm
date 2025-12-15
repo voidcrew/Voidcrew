@@ -126,3 +126,40 @@
 
 /// Return value to cancel missile impact (missile was blocked by shields)
 #define COMSIG_CANCEL_MISSILE_IMPACT (1<<0)
+
+// ========== LASER TURRET DEFINES ==========
+
+/// Base laser damage at 100% power
+#define LASER_DAMAGE_BASE 50
+/// Base power draw per shot at 100% power
+#define LASER_POWER_BASE 200
+/// Minimum power level (25%)
+#define LASER_POWER_MIN 0.25
+/// Maximum power level (200%)
+#define LASER_POWER_MAX 2
+/// Cooldown between shots in deciseconds at 100% power
+#define LASER_COOLDOWN_BASE 2 SECONDS
+/// Power draw when idle (just to stay linked)
+#define LASER_IDLE_POWER 50
+
+// Laser stock part multipliers (per tier above 1)
+/// Micro-laser: +25% damage per tier
+#define LASER_MICROLASER_DAMAGE_MULT 0.25
+/// Capacitor: -15% power consumption per tier
+#define LASER_CAPACITOR_EFFICIENCY_MULT 0.15
+/// Servo: -10% cooldown per tier
+#define LASER_SERVO_COOLDOWN_MULT 0.10
+
+// ========== SHIELD DAMAGE MULTIPLIERS ==========
+
+/// Missiles deal reduced damage to shields (50%)
+#define SHIELD_DAMAGE_MULT_MISSILE 0.5
+/// Lasers deal increased damage to shields (150%)
+#define SHIELD_DAMAGE_MULT_LASER 1.5
+/// Meteors deal normal damage to shields (100%)
+#define SHIELD_DAMAGE_MULT_METEOR 1.0
+
+// ========== LASER SIGNALS ==========
+
+/// Sent when a laser turret fires: (obj/machinery/ship_combat/laser_turret/turret, turf/target)
+#define COMSIG_SHIP_LASER_FIRED "ship_laser_fired"

@@ -2,7 +2,8 @@
 // Provides ship-to-ship combat functionality including:
 // - Combat console for targeting and firing
 // - Missile items and launchers
-// - Ship shield satellites
+// - Laser turrets (effective against shields, adjustable power)
+// - Ship shield generators
 // - Cloaking devices
 
 // This file serves as the module entry point
