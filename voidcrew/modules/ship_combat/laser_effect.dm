@@ -267,8 +267,8 @@
 	// Create end cap at impact point (using same angle as beam)
 	create_end_cap(impact_turf, beam_angle, is_multi_beam)
 
-	// Play firing sound at impact location
-	playsound(impact_turf, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE)
+	// Play firing sound at impact location (extrarange and ignore_walls so it's audible from inside the ship)
+	playsound(impact_turf, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE, extrarange = 20, ignore_walls = TRUE)
 
 	// Damage everything along the beam path (mobs and objects)
 	damage_along_path(start_turf, impact_turf)
@@ -279,7 +279,7 @@
 		shield_hit.absorb_laser_damage(damage, impact_turf)
 		// Visual effect at shield impact
 		new /obj/effect/temp_visual/ship_laser_hit_shield(impact_turf)
-		playsound(impact_turf, 'sound/vehicles/mecha/mech_shield_deflect.ogg', 60, TRUE)
+		playsound(impact_turf, 'sound/vehicles/mecha/mech_shield_deflect.ogg', 80, TRUE, extrarange = 20, ignore_walls = TRUE)
 	else
 		// Hit the ship/obstacle - deal damage at impact point
 		impact_ship(impact_turf)
@@ -356,11 +356,8 @@
 	if(!impact_loc)
 		return
 
-	// Visual effect
-	new /obj/effect/temp_visual/ship_laser_hit(impact_loc)
-
-	// Play impact sound
-	playsound(impact_loc, 'sound/effects/sparks/sparks1.ogg', 80, TRUE)
+	// Play impact sound (extrarange and ignore_walls so it's audible from inside the ship)
+	playsound(impact_loc, 'sound/effects/sparks/sparks1.ogg', 80, TRUE, extrarange = 20, ignore_walls = TRUE)
 
 	// Deal damage to objects/mobs at impact location
 	for(var/atom/movable/AM in impact_loc)
@@ -427,7 +424,7 @@
 	var/matrix/M = matrix()
 	// Scale longer (1.5x) to ensure segments overlap and form continuous beam
 	// This is needed because diagonal beams would otherwise have gaps between tiles
-	M.Scale(1.5, 1)
+	// M.Scale(1.5, 1)
 	M.Turn(angle)
 	transform = M
 
@@ -444,6 +441,7 @@
 	light_range = 3
 	light_power = 1.5
 	light_color = "#ff6600"
+	randomdir = FALSE
 	/// Whether this is a multi-beam impact (stored for animation after angle set)
 	var/is_multi_beam = FALSE
 
@@ -455,37 +453,14 @@
 		icon_state = "impact_plasmacutter"
 		light_range = 4
 		light_power = 2
+	// Fade out animation
+	animate(src, alpha = 0, time = duration, easing = EASE_OUT)
 
-/// Sets the rotation angle for the impact effect to align with beam direction
+/// Sets the rotation angle for the impact effect to face towards the beam's source
 /obj/effect/temp_visual/ship_laser_impact/proc/set_impact_angle(angle)
 	var/matrix/M = matrix()
-	M.Turn(angle + 90)  // Rotate to align with beam direction
+	M.Turn(angle)
 	transform = M
-
-	// Apply pixel offsets to compensate for rotation shifting the visual center
-	var/normalized_angle = SIMPLIFY_DEGREES(angle)
-	switch(normalized_angle)
-		if(160 to 200)  // Beam traveling south (from north)
-			pixel_x = 0
-			pixel_y = 0
-		if(0 to 20, 340 to 360)  // Beam traveling north (from south)
-			pixel_x = 0
-			pixel_y = -16
-		if(70 to 110)  // Beam traveling east (from west)
-			pixel_x = 0
-			pixel_y = -16
-		if(250 to 290)  // Beam traveling west (from east)
-			pixel_x = 0
-			pixel_y = -16
-		else
-			pixel_x = 0
-			pixel_y = -8  // Default offset for diagonal angles
-
-	// Now apply the scale and fade animation on top of the rotation
-	var/matrix/anim_matrix = matrix()
-	anim_matrix.Turn(angle + 90)
-	anim_matrix.Scale(1.5, 1.5)
-	animate(src, transform = anim_matrix, alpha = 0, time = duration, easing = EASE_OUT)
 
 // ========== OTHER VISUAL EFFECTS ==========
 
@@ -520,5 +495,162 @@
 /obj/effect/temp_visual/ship_laser_hit/Initialize(mapload)
 	. = ..()
 	var/matrix/M = matrix()
-	M.Scale(1.5, 1.5)
-	animate(src, transform = M, alpha = 0, time = duration, easing = EASE_OUT)
+	M.Turn(90)
+	// M.Scale(1.5, 1.5)
+	animate(src, alpha = 0, time = duration, easing = EASE_OUT)
+
+// ========== TURRET MUZZLE FLASH EFFECT ==========
+
+/// Muzzle flash effect for turret firing - rotates to match turret direction
+/obj/effect/temp_visual/turret_muzzle_flash
+	name = "muzzle flash"
+	icon = 'icons/obj/weapons/guns/projectiles_muzzle.dmi'
+	icon_state = "muzzle_omni"
+	duration = 4
+	layer = ABOVE_ALL_MOB_LAYER
+	plane = ABOVE_GAME_PLANE
+	light_range = 3
+	light_power = 2
+	light_color = "#ff6600"
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	randomdir = FALSE
+
+/obj/effect/temp_visual/turret_muzzle_flash/Initialize(mapload, direction = SOUTH)
+	. = ..()
+	// Rotate based on direction (sprite default faces NORTH)
+	var/angle
+	switch(direction)
+		if(NORTH)
+			angle = 0
+		if(SOUTH)
+			angle = 180
+		if(EAST)
+			angle = 90
+		if(WEST)
+			angle = -90
+		else
+			angle = 0
+	var/matrix/M = matrix()
+	M.Turn(angle)
+	transform = M
+	// Quick fade out
+	animate(src, alpha = 0, time = duration, easing = EASE_OUT)
+
+// ========== TURRET FIRING VISUAL EFFECT ==========
+// Purely cosmetic laser that fires from the turret - does not collide or damage anything
+// Visible over everything, passes through walls
+
+/// Creates a visual-only laser beam from a turret in the direction it's facing
+/// This is purely cosmetic - it doesn't collide with anything or deal damage
+/obj/effect/temp_visual/turret_laser_visual
+	name = "laser beam"
+	icon = 'icons/obj/weapons/guns/projectiles_tracer.dmi'
+	icon_state = "beam_omni"
+	duration = 8
+	layer = ABOVE_ALL_MOB_LAYER
+	plane = ABOVE_GAME_PLANE
+	light_range = 2
+	light_power = 1
+	light_color = "#ff3300"
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	randomdir = FALSE
+	/// Direction to fire (NORTH, SOUTH, EAST, WEST)
+	var/fire_dir = SOUTH
+	/// Whether this is a multi-beam effect
+	var/is_multi_beam = FALSE
+	/// List of beam segments we've created
+	var/list/beam_segments = list()
+
+/obj/effect/temp_visual/turret_laser_visual/Initialize(mapload, direction = SOUTH, multi_beam = FALSE)
+	. = ..()
+	fire_dir = direction
+	is_multi_beam = multi_beam
+	// Make controller invisible - segments are visible
+	invisibility = INVISIBILITY_ABSTRACT
+	// Create the beam after short delay
+	addtimer(CALLBACK(src, PROC_REF(create_beam)), 0.1 SECONDS)
+
+/obj/effect/temp_visual/turret_laser_visual/Destroy()
+	for(var/obj/effect/segment in beam_segments)
+		qdel(segment)
+	beam_segments.Cut()
+	return ..()
+
+/// Creates the visual beam segments extending from the turret
+/obj/effect/temp_visual/turret_laser_visual/proc/create_beam()
+	var/turf/start_turf = get_turf(src)
+	if(!start_turf)
+		return
+
+	// Calculate the angle based on direction
+	var/angle
+	switch(fire_dir)
+		if(NORTH)
+			angle = 0
+		if(SOUTH)
+			angle = 180
+		if(EAST)
+			angle = 90
+		if(WEST)
+			angle = -90
+		else
+			angle = 0
+
+	// Get step direction offsets and calculate distance to map edge
+	var/dx = 0
+	var/dy = 0
+	var/max_distance = 0
+	switch(fire_dir)
+		if(NORTH)
+			dy = 1
+			max_distance = world.maxy - start_turf.y
+		if(SOUTH)
+			dy = -1
+			max_distance = start_turf.y - 1
+		if(EAST)
+			dx = 1
+			max_distance = world.maxx - start_turf.x
+		if(WEST)
+			dx = -1
+			max_distance = start_turf.x - 1
+
+	// Create beam segments extending to the edge of the map
+	var/turf/current = start_turf
+	for(var/i in 1 to max_distance)
+		var/turf/next = locate(current.x + dx, current.y + dy, current.z)
+		if(!next)
+			break
+		current = next
+
+		var/obj/effect/temp_visual/turret_laser_segment/segment = new(current, is_multi_beam)
+		segment.set_beam_angle(angle)
+		beam_segments += segment
+
+/// Individual segment for turret visual beam - purely cosmetic
+/obj/effect/temp_visual/turret_laser_segment
+	name = "laser beam"
+	icon = 'icons/obj/weapons/guns/projectiles_tracer.dmi'
+	icon_state = "beam_omni"
+	duration = 8
+	layer = ABOVE_ALL_MOB_LAYER
+	plane = ABOVE_GAME_PLANE
+	light_range = 2
+	light_power = 1
+	light_color = "#ff3300"
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	randomdir = FALSE
+
+/obj/effect/temp_visual/turret_laser_segment/Initialize(mapload, multi_beam = FALSE)
+	. = ..()
+	if(multi_beam)
+		icon_state = "plasmacutter"
+		light_range = 3
+		light_power = 1.5
+	// Fade out animation
+	animate(src, alpha = 0, time = duration, easing = EASE_OUT)
+
+/// Sets the rotation angle for the beam segment
+/obj/effect/temp_visual/turret_laser_segment/proc/set_beam_angle(angle)
+	var/matrix/M = matrix()
+	M.Turn(angle)
+	transform = M

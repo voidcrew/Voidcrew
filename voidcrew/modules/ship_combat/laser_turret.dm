@@ -203,10 +203,6 @@
 	if(linked_console_ref?.resolve())
 		return
 
-	// Only auto-link if on exterior of ship
-	if(!is_on_exterior())
-		return
-
 	// Find what ship we're on by checking areas
 	var/area/our_area = get_area(src)
 	if(!our_area)
@@ -335,8 +331,12 @@
 			time = 0.5 SECONDS,
 		)
 
-	// Play sound
-	playsound(src, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE)
+	// Create visual effects at the turret (purely cosmetic, visible to crew)
+	new /obj/effect/temp_visual/turret_muzzle_flash(get_turf(src), dir)
+	new /obj/effect/temp_visual/turret_laser_visual(get_turf(src), dir, multi_beam)
+
+	// Play sound (extrarange and ignore_walls so it's audible from inside the ship)
+	playsound(src, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE, extrarange = 20, ignore_walls = TRUE)
 
 	// Visual feedback
 	visible_message(span_danger("[src] fires a laser beam!"))

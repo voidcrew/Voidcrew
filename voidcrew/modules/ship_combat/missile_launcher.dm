@@ -355,8 +355,8 @@
 	// Use power
 	use_energy(MISSILE_LAUNCHER_POWER_FIRE)
 
-	// Play sound
-	playsound(src, 'sound/vehicles/rocketlaunch.ogg', 80, TRUE)
+	// Play sound (extrarange and ignore_walls so it's audible from inside the ship)
+	playsound(src, 'sound/vehicles/rocketlaunch.ogg', 80, TRUE, extrarange = 20, ignore_walls = TRUE)
 
 	// Visual feedback
 	visible_message(span_danger("[src] fires a missile!"))

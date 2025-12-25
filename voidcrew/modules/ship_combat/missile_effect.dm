@@ -169,8 +169,8 @@
 	var/turf/impact_loc = get_turf(src)
 	exploded = TRUE
 
-	// Play impact sound
-	playsound(impact_loc, impact_sound, 60, TRUE)
+	// Play impact sound (extrarange and ignore_walls so it's audible from inside the ship)
+	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 30, ignore_walls = TRUE)
 
 	// Create explosion - ignorecap = TRUE so ship missiles bypass the server bomb cap
 	explosion(
@@ -204,8 +204,8 @@
 	var/turf/impact_loc = get_turf(src)
 	exploded = TRUE
 
-	// Play impact sound
-	playsound(impact_loc, impact_sound, 60, TRUE)
+	// Play impact sound (extrarange and ignore_walls so it's audible from inside the ship)
+	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 30, ignore_walls = TRUE)
 
 	// Create smaller explosion
 	explosion(
@@ -255,8 +255,8 @@
 	var/turf/impact_loc = get_turf(src)
 	exploded = TRUE
 
-	// Play impact sound
-	playsound(impact_loc, impact_sound, 60, TRUE)
+	// Play impact sound (extrarange and ignore_walls so it's audible from inside the ship)
+	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 30, ignore_walls = TRUE)
 
 	// Create small explosion first
 	explosion(

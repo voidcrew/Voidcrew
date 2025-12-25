@@ -40,6 +40,7 @@ type Turret = {
   cooldown: number;
   power_per_shot: number;
   ready: BooleanLike;
+  on_exterior: BooleanLike;
   cooldown_remaining: number;
   cell_charge: number;
   cell_max: number;
@@ -773,22 +774,39 @@ const TurretsPanel = () => {
               <Stack vertical>
                 {turrets.map((turret) => (
                   <Stack.Item key={turret.id}>
-                    <Stack align="center" py={0.5}>
+                    <Stack
+                      align="center"
+                      py={0.5}
+                      style={{
+                        opacity: turret.on_exterior ? 1 : 0.5,
+                      }}
+                    >
                       <Stack.Item basis="60px">
                         <Box color="label" fontSize="11px">
                           {turret.id}
                         </Box>
                       </Stack.Item>
                       <Stack.Item grow>
-                        <Box color="cyan" fontSize="12px">
-                          {turret.damage} dmg
-                          <Box as="span" color="label" ml={1}>
-                            ({turret.power_per_shot}W)
+                        {turret.on_exterior ? (
+                          <Box color="cyan" fontSize="12px">
+                            {turret.damage} dmg
+                            <Box as="span" color="label" ml={1}>
+                              ({turret.power_per_shot}W)
+                            </Box>
                           </Box>
-                        </Box>
+                        ) : (
+                          <Box color="bad" fontSize="12px">
+                            <Icon name="triangle-exclamation" mr={0.5} />
+                            Not on exterior
+                          </Box>
+                        )}
                       </Stack.Item>
                       <Stack.Item basis="70px">
-                        {turret.ready ? (
+                        {!turret.on_exterior ? (
+                          <Box color="bad" textAlign="right">
+                            Disabled
+                          </Box>
+                        ) : turret.ready ? (
                           <Box color="good" textAlign="right">
                             <Icon name="check" /> Ready
                           </Box>

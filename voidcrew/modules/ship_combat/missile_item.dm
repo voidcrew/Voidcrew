@@ -180,7 +180,7 @@
 	detonated = TRUE
 
 	visible_message(span_userdanger("[src] detonates!"))
-	playsound(src, 'sound/effects/explosion/explosion1.ogg', 100, TRUE)
+	playsound(src, 'sound/effects/explosion/explosion1.ogg', 100, TRUE, extrarange = 30, ignore_walls = TRUE)
 
 	// Use the bomb core's detonation if present
 	if(warhead)

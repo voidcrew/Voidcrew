@@ -35,8 +35,10 @@
 	var/mob/old_user = user_ref?.resolve()
 	SEND_SIGNAL(src, COMSIG_REMOTE_CAMERA_ASSIGN_USER, new_user, old_user)
 	if(old_user)
-		old_user.remote_control = null
+		// Reset perspective BEFORE clearing remote_control
+		// This prevents TGUI from closing when it checks ui_state
 		old_user.reset_perspective(null)
+		old_user.remote_control = null
 		name = initial(src.name)
 
 		var/client/old_user_client = GetViewerClient()
@@ -149,10 +151,12 @@
 	var/debug_shields = FALSE
 
 	jump_action = null
+	off_action = null  // We use TGUI to exit attack mode, not the parent's camera_off action
 
 /obj/machinery/computer/camera_advanced/ship_combat/Initialize(mapload)
 	. = ..()
 	// Add our custom actions
+	actions += new /datum/action/innate/ship_combat/exit_camera(src)  // Exit first so it's easily accessible
 	actions += new /datum/action/innate/ship_combat/select_missile(src)
 	actions += new /datum/action/innate/ship_combat/select_direction(src)
 	actions += new /datum/action/innate/ship_combat/fire_missile(src)
@@ -240,6 +244,10 @@
 	// Allow admin ghosts with AI interact
 	if(isAdminGhostAI(user))
 		return TRUE
+	// Allow the current camera user to keep using the console while in attack mode
+	// This prevents process() from kicking them out due to distance checks
+	if(attack_mode && current_user == user && eyeobj && user.remote_control == eyeobj)
+		return TRUE
 	return ..()
 
 /// Override to allow granting actions to non-living mobs (admin ghosts)
@@ -315,6 +323,13 @@
 	if(eyeobj && user.remote_control == eyeobj)
 		return GLOB.always_state
 	return GLOB.default_state
+
+/obj/machinery/computer/camera_advanced/ship_combat/ui_status(mob/user, datum/ui_state/state)
+	// When user is viewing through our camera eye, always allow interaction
+	// This bypasses the stored ui_state which may be outdated
+	if(eyeobj && user.remote_control == eyeobj)
+		return UI_INTERACTIVE
+	return ..()  // Fall back to normal state-based checks
 
 /obj/machinery/computer/camera_advanced/ship_combat/ui_data(mob/user)
 	var/list/data = list()
@@ -599,6 +614,7 @@
 	if(eyeobj)
 		eyeobj.assign_user(null)
 	current_user = null
+	attack_mode = FALSE  // Ensure attack mode is reset when eye control is removed
 
 	playsound(src, 'sound/machines/terminal/terminal_off.ogg', 25, FALSE)
 
@@ -663,7 +679,9 @@
 	attack_mode = FALSE
 	if(current_user == user)
 		remove_eye_control(user)
-		unset_machine()
+		// Don't call unset_machine() - it would double-call remove_eye_control
+		// and end_processing, which can cause UI issues
+		end_processing()
 	to_chat(user, span_notice("Exiting attack mode."))
 
 // ========== MULTITOOL LINKING ==========
@@ -1256,12 +1274,15 @@
 	// Use the first turret to actually fire, but drain power and start cooldown on ALL turrets
 	var/obj/machinery/ship_combat/laser_turret/primary_turret = ready_turrets[1]
 
-	// Drain power and start cooldown on all turrets
+	// Drain power, start cooldown, and create visual effects on all turrets
 	for(var/obj/machinery/ship_combat/laser_turret/turret in ready_turrets)
 		var/power_needed = turret.get_power_per_shot()
 		turret.cell?.use(power_needed)
 		COOLDOWN_START(turret, fire_cooldown, turret.get_effective_cooldown())
 		turret.update_appearance()
+		// Create visual effects at each turret
+		new /obj/effect/temp_visual/turret_muzzle_flash(get_turf(turret), turret.dir)
+		new /obj/effect/temp_visual/turret_laser_visual(get_turf(turret), turret.dir, is_multi_beam)
 
 	// Fire a single combined beam from the primary turret
 	// Skip the normal fire() power/cooldown handling since we did it manually
@@ -1286,8 +1307,8 @@
 			time = 0.5 SECONDS,
 		)
 
-	// Play sound
-	playsound(primary_turret, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE)
+	// Play sound (extrarange and ignore_walls so it's audible from inside the ship)
+	playsound(primary_turret, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE, extrarange = 20, ignore_walls = TRUE)
 
 	// Visual feedback
 	primary_turret.visible_message(span_danger("[turret_count > 1 ? "Multiple turrets fire" : "[primary_turret] fires"] a [is_multi_beam ? "concentrated" : ""] laser beam!"))
@@ -1770,6 +1791,24 @@
 	if(!console || !ismob(owner))
 		return
 	console.open_laser_power_radial(owner)
+
+// Exit camera mode - doesn't inherit attack_mode check from parent
+/datum/action/innate/ship_combat/exit_camera
+	name = "Exit Camera"
+	desc = "Exit the targeting camera and return to normal view."
+	button_icon_state = "camera_off"
+	button_icon = 'icons/mob/actions/actions_silicon.dmi'
+
+/datum/action/innate/ship_combat/exit_camera/IsAvailable(feedback = FALSE)
+	// Override parent's check - exit should always be available when granted
+	if(!console || QDELETED(console))
+		return FALSE
+	return TRUE
+
+/datum/action/innate/ship_combat/exit_camera/Activate()
+	if(!console || !ismob(owner))
+		return
+	console.exit_attack_mode(owner)
 
 // ========== CIRCUIT BOARD ==========
 
