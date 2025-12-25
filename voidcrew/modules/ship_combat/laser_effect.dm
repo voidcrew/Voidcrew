@@ -1,14 +1,15 @@
 // Ship Combat Laser Beam Effect
 // Visual beam that travels from off-screen to target like missiles/meteors
 // Uses the same pathfinding logic as missiles to find holes in the ship
-// Creates visible beam segments using bsa_beam and beam_splash_e end cap
+// Uses projectiles_tracer.dmi sprites: beam_omni for single, plasmacutter for multi
+// Uses projectiles_impact.dmi sprites: impact_omni for single, impact_plasmacutter for multi
 
 /// The main laser beam controller - spawns at the turret, calculates path, creates visuals
 /obj/effect/ship_laser_beam
 	name = "laser beam"
 	desc = "A powerful laser beam."
-	icon = 'icons/effects/beam.dmi'
-	icon_state = "bsa_beam"
+	icon = 'icons/obj/weapons/guns/projectiles_tracer.dmi'
+	icon_state = "beam_omni"
 	layer = ABOVE_MOB_LAYER
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	anchored = TRUE
@@ -27,22 +28,20 @@
 	/// List of beam segment effects we've created
 	var/list/beam_segments = list()
 	/// The end cap effect
-	var/obj/effect/temp_visual/ship_laser_splash/end_cap
+	var/obj/effect/temp_visual/ship_laser_impact/end_cap
 	/// Direction the beam is coming from
 	var/approach_direction
-	/// Spread offset for multi-laser volleys (-2, -1, 0, 1, 2, etc.)
-	var/spread_offset = 0
-	/// Spread distance in tiles between each laser
-	var/spread_distance = 2
+	/// Whether this is a multi-beam (combined fire from multiple turrets)
+	var/is_multi_beam = FALSE
 
-/obj/effect/ship_laser_beam/Initialize(mapload, turf/target, obj/structure/overmap/ship/target_ship_ref, obj/structure/overmap/ship/source_ship_ref, laser_damage, laser_spread_offset = 0, laser_power_level = 1)
+/obj/effect/ship_laser_beam/Initialize(mapload, turf/target, obj/structure/overmap/ship/target_ship_ref, obj/structure/overmap/ship/source_ship_ref, laser_damage, laser_power_level = 1, multi_beam = FALSE)
 	. = ..()
 
 	target_turf = target
 	target_ship = target_ship_ref
 	source_ship = source_ship_ref
-	spread_offset = laser_spread_offset
 	power_level = laser_power_level
+	is_multi_beam = multi_beam
 
 	if(laser_damage)
 		damage = laser_damage
@@ -263,10 +262,10 @@
 			break
 
 	// Create beam segments from start to impact
-	var/beam_angle = create_beam_visuals(start_turf, impact_turf)
+	var/beam_angle = create_beam_visuals(start_turf, impact_turf, is_multi_beam)
 
 	// Create end cap at impact point (using same angle as beam)
-	create_end_cap(impact_turf, beam_angle)
+	create_end_cap(impact_turf, beam_angle, is_multi_beam)
 
 	// Play firing sound at impact location
 	playsound(impact_turf, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE)
@@ -290,7 +289,7 @@
 
 /// Creates the visual beam segments along the path
 /// Returns the beam angle for use by the end cap
-/obj/effect/ship_laser_beam/proc/create_beam_visuals(turf/start, turf/end)
+/obj/effect/ship_laser_beam/proc/create_beam_visuals(turf/start, turf/end, multi_beam = FALSE)
 	// Calculate the angle for rotation first
 	var/angle = get_angle(start, end)
 
@@ -298,50 +297,24 @@
 	if(!length(path))
 		return angle
 
-	// Calculate pixel offset perpendicular to beam direction for spread effect
-	// spread_offset is -2, -1, 0, 1, 2 etc. Multiply by pixels per offset
-	var/pixels_per_spread = 4
-	var/pixel_offset_x = 0
-	var/pixel_offset_y = 0
-
-	// Offset perpendicular to approach direction
-	switch(approach_direction)
-		if(NORTH, SOUTH)  // Beam travels vertically, offset horizontally
-			pixel_offset_x = spread_offset * pixels_per_spread
-		if(EAST, WEST)  // Beam travels horizontally, offset vertically
-			pixel_offset_y = spread_offset * pixels_per_spread
-
 	// Create a beam segment on each turf along the path
 	for(var/turf/T in path)
-		// Don't put beam on the final impact turf (that gets the splash)
+		// Don't put beam on the final impact turf (that gets the impact effect)
 		if(T == end)
 			continue
-		var/obj/effect/temp_visual/ship_laser_segment/segment = new(T)
-		segment.pixel_x = pixel_offset_x
-		segment.pixel_y = pixel_offset_y
+		var/obj/effect/temp_visual/ship_laser_segment/segment = new(T, multi_beam)
 		segment.set_beam_angle(angle)
 		beam_segments += segment
 
 	// Return the angle so end cap can use the same rotation
 	return angle
 
-/// Creates the end cap splash effect at the impact point
-/obj/effect/ship_laser_beam/proc/create_end_cap(turf/impact_loc, beam_angle)
+/// Creates the impact effect at the impact point
+/obj/effect/ship_laser_beam/proc/create_end_cap(turf/impact_loc, beam_angle, multi_beam = FALSE)
 	if(!impact_loc)
 		return
 
-	end_cap = new /obj/effect/temp_visual/ship_laser_splash(impact_loc)
-
-	// Apply same pixel offset as beam segments for alignment
-	var/pixels_per_spread = 4
-	switch(approach_direction)
-		if(NORTH, SOUTH)
-			end_cap.pixel_x += spread_offset * pixels_per_spread
-		if(EAST, WEST)
-			end_cap.pixel_y += spread_offset * pixels_per_spread
-
-	// Use the same angle as the beam segments so they align
-	end_cap.set_splash_angle(beam_angle)
+	end_cap = new /obj/effect/temp_visual/ship_laser_impact(impact_loc, multi_beam)
 
 /// Damages all mobs and objects along the beam path
 /obj/effect/ship_laser_beam/proc/damage_along_path(turf/start, turf/end)
@@ -426,11 +399,11 @@
 
 // ========== BEAM SEGMENT EFFECT ==========
 
-/// Individual beam segment using bsa_beam icon state
+/// Individual beam segment - uses beam_omni for single, plasmacutter for multi
 /obj/effect/temp_visual/ship_laser_segment
 	name = "laser beam"
-	icon = 'icons/effects/beam.dmi'
-	icon_state = "bsa_beam"
+	icon = 'icons/obj/weapons/guns/projectiles_tracer.dmi'
+	icon_state = "beam_omni"
 	duration = 8
 	layer = ABOVE_MOB_LAYER
 	plane = GAME_PLANE
@@ -438,8 +411,13 @@
 	light_power = 1
 	light_color = "#ff3300"
 
-/obj/effect/temp_visual/ship_laser_segment/Initialize(mapload)
+/obj/effect/temp_visual/ship_laser_segment/Initialize(mapload, multi_beam = FALSE)
 	. = ..()
+	// Use plasmacutter sprite for multi-beam (combined turret fire)
+	if(multi_beam)
+		icon_state = "plasmacutter"
+		light_range = 3
+		light_power = 1.5
 	// Fade out animation
 	animate(src, alpha = 0, time = duration, easing = EASE_OUT)
 
@@ -452,13 +430,13 @@
 	M.Turn(angle)
 	transform = M
 
-// ========== BEAM SPLASH (END CAP) EFFECT ==========
+// ========== BEAM IMPACT EFFECT ==========
 
-/// End cap splash effect using beam_splash_e
-/obj/effect/temp_visual/ship_laser_splash
+/// Impact effect - uses impact_omni for single, impact_plasmacutter for multi
+/obj/effect/temp_visual/ship_laser_impact
 	name = "laser impact"
-	icon = 'icons/effects/beam_splash.dmi'
-	icon_state = "beam_splash_e"
+	icon = 'icons/obj/weapons/guns/projectiles_impact.dmi'
+	icon_state = "impact_omni"
 	duration = 8
 	layer = ABOVE_MOB_LAYER
 	plane = GAME_PLANE
@@ -466,38 +444,17 @@
 	light_power = 1.5
 	light_color = "#ff6600"
 
-
-/obj/effect/temp_visual/ship_laser_splash/Initialize(mapload)
+/obj/effect/temp_visual/ship_laser_impact/Initialize(mapload, multi_beam = FALSE)
 	. = ..()
-	// Flash and fade animation
-	animate(src, alpha = 0, time = duration, easing = EASE_OUT)
-
-/// Sets the rotation angle and position offset for the splash based on beam direction
-/obj/effect/temp_visual/ship_laser_splash/proc/set_splash_angle(angle)
+	// Use plasmacutter impact sprite for multi-beam
+	if(multi_beam)
+		icon_state = "impact_plasmacutter"
+		light_range = 4
+		light_power = 2
+	// Flash and fade animation with scale up
 	var/matrix/M = matrix()
-	M.Turn(angle + 90)  // Rotate 90 degrees to align splash icon with beam direction
-	transform = M
-
-	// Apply pixel offsets to compensate for rotation shifting the visual center
-	// South-traveling beam (angle ~180) works with no offset
-	// Other directions need compensation
-	var/normalized_angle = SIMPLIFY_DEGREES(angle)
-	switch(normalized_angle)
-		if(160 to 200)  // Beam traveling south (from north) - WORKS
-			pixel_x = 0
-			pixel_y = 0
-		if(0 to 20, 340 to 360)  // Beam traveling north (from south)
-			pixel_x = 0
-			pixel_y = -16
-		if(70 to 110)  // Beam traveling east (from west)
-			pixel_x = 0
-			pixel_y = -16
-		if(250 to 290)  // Beam traveling west (from east)
-			pixel_x = 0
-			pixel_y = -16
-		else
-			pixel_x = 0
-			pixel_y = -8  // Default offset for diagonal angles
+	M.Scale(1.5, 1.5)
+	animate(src, transform = M, alpha = 0, time = duration, easing = EASE_OUT)
 
 // ========== OTHER VISUAL EFFECTS ==========
 
@@ -517,12 +474,12 @@
 	. = ..()
 	animate(src, alpha = 0, time = duration, easing = EASE_OUT)
 
-/// Red/orange flash when laser hits ship hull
+/// Red/orange flash when laser hits ship hull (legacy, now using ship_laser_impact)
 /obj/effect/temp_visual/ship_laser_hit
 	name = "laser impact"
 	desc = "Superheated metal from a laser strike."
-	icon = 'icons/effects/fire.dmi'
-	icon_state = "fire"
+	icon = 'icons/obj/weapons/guns/projectiles_impact.dmi'
+	icon_state = "impact_omni"
 	color = "#ff6600"
 	duration = 10
 	alpha = 255

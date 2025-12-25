@@ -45,3 +45,13 @@
 		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_ENGINEERING
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+
+/datum/design/board/shuttle/ship_construction
+	name = "Computer Design (Ship Construction Console)"
+	desc = "Allows for the construction of circuit boards used for ship modifications."
+	id = "ship_construction"
+	build_path = /obj/item/circuitboard/computer/ship_construction
+	category = list(
+		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE

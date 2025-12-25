@@ -1212,8 +1212,8 @@
 		to_chat(user, span_warning("No laser turrets ready to fire!"))
 	return FALSE
 
-/// Fire all ready laser turrets at the current target location
-/// Lasers are spread out at their spawn point but converge on the same target
+/// Fire all ready laser turrets as a single combined beam at the current target
+/// Combines damage from all ready turrets into one powerful multi-beam shot
 /obj/machinery/computer/camera_advanced/ship_combat/proc/fire_all_lasers(mob/user)
 	if(!attack_mode)
 		to_chat(user, span_warning("Enter attack mode first!"))
@@ -1225,8 +1225,9 @@
 			to_chat(user, span_warning("No target selected!"))
 		return 0
 
-	// First, collect all ready turrets
+	// Collect all ready turrets and calculate combined damage
 	var/list/ready_turrets = list()
+	var/combined_damage = 0
 	for(var/datum/weakref/ref in linked_turrets)
 		var/obj/machinery/ship_combat/laser_turret/turret = ref.resolve()
 		if(!turret)
@@ -1235,31 +1236,64 @@
 		if(!turret.can_fire())
 			continue
 		ready_turrets += turret
+		combined_damage += turret.get_effective_damage()
 
 	if(!length(ready_turrets))
 		if(user)
 			to_chat(user, span_warning("No laser turrets ready to fire!"))
 		return 0
 
-	// Calculate spread offsets centered around 0
-	// For N turrets: offsets are -(N-1)/2, ..., -1, 0, 1, ..., (N-1)/2
-	// This ensures beams spread symmetrically and converge on target
 	var/turret_count = length(ready_turrets)
-	var/half_count = (turret_count - 1) / 2
+	var/is_multi_beam = turret_count > 1
 
-	var/fired_count = 0
-	var/turret_index = 0
+	// Use the first turret to actually fire, but drain power and start cooldown on ALL turrets
+	var/obj/machinery/ship_combat/laser_turret/primary_turret = ready_turrets[1]
+
+	// Drain power and start cooldown on all turrets
 	for(var/obj/machinery/ship_combat/laser_turret/turret in ready_turrets)
-		// Calculate spread offset: goes from -half_count to +half_count
-		var/spread_offset = turret_index - half_count
-		if(turret.fire(target_turf, target_ship, current_ship, user, spread_offset))
-			fired_count++
-		turret_index++
+		var/power_needed = turret.get_power_per_shot()
+		turret.cell?.use(power_needed)
+		COOLDOWN_START(turret, fire_cooldown, turret.get_effective_cooldown())
+		turret.update_appearance()
 
-	if(user && fired_count > 0)
-		to_chat(user, span_danger("Fired [fired_count] laser[fired_count > 1 ? "s" : ""]!"))
+	// Fire a single combined beam from the primary turret
+	// Skip the normal fire() power/cooldown handling since we did it manually
+	new /obj/effect/ship_laser_beam(
+		get_turf(primary_turret),
+		target_turf,
+		target_ship,
+		current_ship,
+		combined_damage,
+		primary_turret.power_level,
+		is_multi_beam,
+	)
 
-	return fired_count
+	// Create visual beam on the overmap between ships
+	if(current_ship && target_ship)
+		current_ship.Beam(
+			target_ship,
+			icon_state = is_multi_beam ? "plasmacutter" : "beam_omni",
+			icon = 'icons/obj/weapons/guns/projectiles_tracer.dmi',
+			beam_color = "#ff3300",
+			emissive = TRUE,
+			time = 0.5 SECONDS,
+		)
+
+	// Play sound
+	playsound(primary_turret, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE)
+
+	// Visual feedback
+	primary_turret.visible_message(span_danger("[turret_count > 1 ? "Multiple turrets fire" : "[primary_turret] fires"] a [is_multi_beam ? "concentrated" : ""] laser beam!"))
+
+	// Firing breaks cloak
+	if(current_ship)
+		SEND_SIGNAL(current_ship, COMSIG_SHIP_WEAPON_FIRED)
+		SEND_SIGNAL(current_ship, COMSIG_SHIP_LASER_FIRED, primary_turret, target_ship)
+
+	if(user)
+		to_chat(user, span_danger("Fired [turret_count] turret[turret_count > 1 ? "s" : ""] as combined beam! ([round(combined_damage)] damage)"))
+
+	return turret_count
 
 /// Opens a power level selection for laser turrets
 /obj/machinery/computer/camera_advanced/ship_combat/proc/open_laser_power_radial(mob/user)

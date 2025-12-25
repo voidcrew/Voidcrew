@@ -50,3 +50,7 @@
 /obj/item/circuitboard/computer/shuttle/helm
 	name = "Shuttle Helm"
 	build_path = /obj/machinery/computer/helm
+
+/obj/item/circuitboard/computer/ship_construction
+	name = "Ship Construction Console"
+	build_path = /obj/machinery/computer/camera_advanced/base_construction/ship

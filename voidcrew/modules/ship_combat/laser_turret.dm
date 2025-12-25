@@ -250,8 +250,9 @@
 
 /// Fires the laser at the target turf
 /// Returns TRUE if fired successfully
-/// spread_offset: For multi-laser volleys, offsets the beam start position perpendicular to the firing direction
-/obj/machinery/ship_combat/laser_turret/proc/fire(turf/target, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/source_ship, mob/user, spread_offset = 0)
+/// multi_beam: If TRUE, uses multi-beam sprites (for combined turret fire)
+/// override_damage: If provided, uses this damage value instead of calculating from turret stats
+/obj/machinery/ship_combat/laser_turret/proc/fire(turf/target, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/source_ship, mob/user, multi_beam = FALSE, override_damage = 0)
 	if(!can_fire())
 		return FALSE
 
@@ -273,8 +274,8 @@
 	// Start cooldown
 	COOLDOWN_START(src, fire_cooldown, get_effective_cooldown())
 
-	// Calculate damage
-	var/damage = get_effective_damage()
+	// Calculate damage - use override if provided (for combined fire)
+	var/damage = override_damage > 0 ? override_damage : get_effective_damage()
 
 	// Create the laser beam effect - it will handle hitting shields or the target
 	new /obj/effect/ship_laser_beam(
@@ -283,9 +284,20 @@
 		target_ship,
 		source_ship,
 		damage,
-		spread_offset,
 		power_level,
+		multi_beam,
 	)
+
+	// Create visual beam on the overmap between ships
+	if(source_ship && target_ship)
+		source_ship.Beam(
+			target_ship,
+			icon_state = multi_beam ? "plasmacutter" : "beam_omni",
+			icon = 'icons/obj/weapons/guns/projectiles_tracer.dmi',
+			beam_color = "#ff3300",
+			emissive = TRUE,
+			time = 0.5 SECONDS,
+		)
 
 	// Play sound
 	playsound(src, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE)

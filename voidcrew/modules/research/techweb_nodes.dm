@@ -7,6 +7,7 @@
 		"engine_plasma",
 		"engine_ion",
 		"shuttle_helm",
+		"ship_construction",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
 
