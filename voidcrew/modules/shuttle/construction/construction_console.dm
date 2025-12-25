@@ -191,6 +191,11 @@
 	// Recalculate dimensions
 	port.calculate_docking_port_information()
 
+	// Clear cached transit dock so it regenerates with new orientation
+	if(!QDELETED(port.assigned_transit))
+		qdel(port.assigned_transit, force = TRUE)
+		port.assigned_transit = null
+
 	last_operation_message = "Docking port relocated successfully. Changes will take effect on next dock."
 	last_operation_success = TRUE
 	return TRUE
