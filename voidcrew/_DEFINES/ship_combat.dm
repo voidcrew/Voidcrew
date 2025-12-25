@@ -132,7 +132,7 @@
 /// Base laser damage at 100% power
 #define LASER_DAMAGE_BASE 50
 /// Base power draw per shot at 100% power
-#define LASER_POWER_BASE 200
+#define LASER_POWER_BASE 2000
 /// Minimum power level (25%)
 #define LASER_POWER_MIN 0.25
 /// Maximum power level (200%)
@@ -141,12 +141,14 @@
 #define LASER_COOLDOWN_BASE 2 SECONDS
 /// Power draw when idle (just to stay linked)
 #define LASER_IDLE_POWER 50
+/// Base charge rate from powernet to cell (power per second)
+#define LASER_CHARGE_RATE_BASE 100
 
 // Laser stock part multipliers (per tier above 1)
 /// Micro-laser: +25% damage per tier
 #define LASER_MICROLASER_DAMAGE_MULT 0.25
-/// Capacitor: -15% power consumption per tier
-#define LASER_CAPACITOR_EFFICIENCY_MULT 0.15
+/// Capacitor: +25% charge rate per tier
+#define LASER_CAPACITOR_CHARGE_MULT 0.25
 /// Servo: -10% cooldown per tier
 #define LASER_SERVO_COOLDOWN_MULT 0.10
 

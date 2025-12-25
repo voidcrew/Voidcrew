@@ -478,26 +478,26 @@
 	M.Turn(angle + 90)  // Rotate 90 degrees to align splash icon with beam direction
 	transform = M
 
-	// Apply pixel offsets to align the splash with the beam based on direction
-	// The splash icon's anchor point shifts when rotated, so we compensate
-	// Angle 0 = beam traveling east (splash should be on west side of tile)
-	// Angle 90 = beam traveling south
-	// Angle 180 = beam traveling west
-	// Angle 270 = beam traveling north
+	// Apply pixel offsets to compensate for rotation shifting the visual center
+	// South-traveling beam (angle ~180) works with no offset
+	// Other directions need compensation
 	var/normalized_angle = SIMPLIFY_DEGREES(angle)
 	switch(normalized_angle)
-		if(0 to 44, 316 to 360)  // Beam coming from west, traveling east
-			pixel_x = -8
-			pixel_y = 0
-		if(45 to 134)  // Beam coming from north, traveling south
+		if(160 to 200)  // Beam traveling south (from north) - WORKS
 			pixel_x = 0
-			pixel_y = 0  // South works correctly
-		if(135 to 224)  // Beam coming from east, traveling west
-			pixel_x = 8
 			pixel_y = 0
-		if(225 to 315)  // Beam coming from south, traveling north
+		if(0 to 20, 340 to 360)  // Beam traveling north (from south)
 			pixel_x = 0
 			pixel_y = -16
+		if(70 to 110)  // Beam traveling east (from west)
+			pixel_x = 0
+			pixel_y = -16
+		if(250 to 290)  // Beam traveling west (from east)
+			pixel_x = 0
+			pixel_y = -16
+		else
+			pixel_x = 0
+			pixel_y = -8  // Default offset for diagonal angles
 
 // ========== OTHER VISUAL EFFECTS ==========
 

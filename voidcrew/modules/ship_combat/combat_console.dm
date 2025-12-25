@@ -327,8 +327,9 @@
 	data["targeting_ship_ref"] = targeting_ship ? REF(targeting_ship) : null
 	if(is_targeting && targeting_start_time)
 		var/elapsed = world.time - targeting_start_time
-		var/progress = min(100, (elapsed / COMBAT_TARGETING_TIME) * 100)
-		var/remaining = max(0, COMBAT_TARGETING_TIME - elapsed)
+		var/total_time = COMBAT_TARGETING_TIME // Evaluate macro fully before division
+		var/progress = min(100, (elapsed / total_time) * 100)
+		var/remaining = max(0, total_time - elapsed)
 		data["targeting_progress"] = progress
 		data["targeting_time_remaining"] = remaining / 10 // Convert to seconds
 	else
@@ -374,6 +375,8 @@
 	var/list/turrets = list()
 	var/turrets_ready_count = 0
 	var/turrets_total_count = 0
+	var/turret_power_available = 0
+	var/turret_power_max = 0
 	for(var/datum/weakref/ref in linked_turrets)
 		var/obj/machinery/ship_combat/laser_turret/turret = ref.resolve()
 		if(!turret)
@@ -382,11 +385,15 @@
 		turrets_total_count++
 		if(turret.can_fire())
 			turrets_ready_count++
+		turret_power_available += turret.get_cell_charge()
+		turret_power_max += turret.get_cell_max()
 		turrets += list(turret.get_status())
 	data["turrets"] = turrets
 	data["turrets_ready"] = turrets_ready_count
 	data["turrets_total"] = turrets_total_count
 	data["turret_power_level"] = turret_power_level
+	data["turret_power_available"] = round(turret_power_available)
+	data["turret_power_max"] = round(turret_power_max)
 
 	// Interdictor data
 	data["interdiction_active"] = interdiction_active

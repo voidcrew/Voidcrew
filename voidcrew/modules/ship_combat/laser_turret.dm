@@ -3,16 +3,20 @@
 // Must be linked to a combat console via multitool
 // Power level is adjustable via the console
 // Primarily effective against shields
+// Has internal power cell that charges from powernet
 
 /obj/machinery/ship_combat/laser_turret
 	name = "laser turret"
-	desc = "A ship-mounted laser weapon system. Effective against shields. Link to a combat console with a multitool and control power levels from there."
+	desc = "A ship-mounted laser weapon system. Effective against shields. Link to a combat console with a multitool and control power levels from there. Has an internal power cell that can be replaced."
 	icon = 'icons/obj/weapons/turrets.dmi'
 	icon_state = "standard_off"
 	density = TRUE
 	anchored = TRUE
 	power_channel = AREA_USAGE_EQUIP
 	circuit = /obj/item/circuitboard/machine/ship_combat/laser_turret
+	/// How much power we draw from the grid to charge our cell per process tick
+	idle_power_usage = BASE_MACHINE_IDLE_CONSUMPTION
+	active_power_usage = BASE_MACHINE_ACTIVE_CONSUMPTION * 2
 
 	/// Reference to our linked combat console
 	var/datum/weakref/linked_console_ref
@@ -22,32 +26,75 @@
 	var/power_level = 1
 	/// Calculated damage (from base + parts + power level)
 	var/current_damage = LASER_DAMAGE_BASE
-	/// Calculated power efficiency multiplier (from parts, 0-1 range, lower = more efficient)
-	var/power_efficiency = 1
 	/// Calculated cooldown multiplier (from parts, 0-1 range, lower = faster)
 	var/cooldown_mult = 1
 	/// Cooldown between shots
 	COOLDOWN_DECLARE(fire_cooldown)
+	/// Our internal power cell
+	var/obj/item/stock_parts/power_store/cell/cell
+	/// How much power we transfer from powernet to cell per second (affected by capacitor upgrades)
+	var/charge_rate = LASER_CHARGE_RATE_BASE
+	/// Whether we had enough power to fire last tick (for detecting power loss)
+	var/had_power = FALSE
 
 /obj/machinery/ship_combat/laser_turret/Initialize(mapload)
 	. = ..()
 	turret_id = "[rand(1000, 9999)]"
 	name = "[initial(name)] ([turret_id])"
 	RefreshParts()
+	// Initialize power state based on cell
+	had_power = cell && cell.charge >= get_power_per_shot()
 	// Try to auto-link to a combat console on the same ship after a short delay
 	addtimer(CALLBACK(src, PROC_REF(attempt_auto_link)), 2 SECONDS)
 
 /obj/machinery/ship_combat/laser_turret/Destroy()
 	unlink_console()
+	cell = null  // Cell is part of component_parts, will be handled by parent
 	return ..()
+
+/obj/machinery/ship_combat/laser_turret/process(seconds_per_tick)
+	// Check for power state transitions
+	var/has_power_now = cell && cell.charge >= get_power_per_shot()
+	if(had_power && !has_power_now)
+		// Lost power - play shutdown sound
+		playsound(src, 'sound/items/xbow_lock.ogg', 50, TRUE)
+		visible_message(span_warning("[src] powers down - insufficient charge."))
+		update_appearance()
+	else if(!had_power && has_power_now)
+		// Gained power - play power up sound
+		playsound(src, 'sound/items/eshield_recharge.ogg', 50, TRUE)
+		update_appearance()
+	had_power = has_power_now
+
+	// Charge our internal cell from the powernet
+	if(!cell)
+		return
+	if(machine_stat & (BROKEN|NOPOWER))
+		return
+	if(cell.charge >= cell.maxcharge)
+		return  // Already full
+
+	// Calculate how much to charge this tick
+	var/charge_amount = charge_rate * seconds_per_tick
+	var/needed = min(charge_amount, cell.maxcharge - cell.charge)
+
+	// Try to draw power from the grid
+	if(use_energy(needed))
+		cell.charge = min(cell.charge + needed, cell.maxcharge)
 
 /obj/machinery/ship_combat/laser_turret/RefreshParts()
 	. = ..()
 
 	// Reset to base values
 	current_damage = LASER_DAMAGE_BASE
-	power_efficiency = 1
+	charge_rate = LASER_CHARGE_RATE_BASE
 	cooldown_mult = 1
+
+	// Find the power cell from component parts
+	cell = null
+	for(var/obj/item/stock_parts/power_store/cell/found_cell in component_parts)
+		cell = found_cell
+		break
 
 	// Apply stock part modifiers
 	// Each part tier above 1 adds a bonus
@@ -55,13 +102,12 @@
 		current_damage += LASER_DAMAGE_BASE * LASER_MICROLASER_DAMAGE_MULT * (laser.tier - 1)
 
 	for(var/datum/stock_part/capacitor/cap in component_parts)
-		power_efficiency -= LASER_CAPACITOR_EFFICIENCY_MULT * (cap.tier - 1)
+		charge_rate += LASER_CHARGE_RATE_BASE * LASER_CAPACITOR_CHARGE_MULT * (cap.tier - 1)
 
 	for(var/datum/stock_part/servo/servo in component_parts)
 		cooldown_mult -= LASER_SERVO_COOLDOWN_MULT * (servo.tier - 1)
 
-	// Clamp values to prevent negative/zero
-	power_efficiency = max(power_efficiency, 0.1)
+	// Clamp values
 	cooldown_mult = max(cooldown_mult, 0.3)
 
 /obj/machinery/ship_combat/laser_turret/examine(mob/user)
@@ -70,11 +116,18 @@
 	. += span_notice("Power Level: [round(power_level * 100)]%")
 	. += span_notice("Damage: [round(get_effective_damage())]")
 	. += span_notice("Cooldown: [round(get_effective_cooldown() / 10, 0.1)]s")
-	. += span_notice("Power per Shot: [round(get_power_per_shot())]W")
+	. += span_notice("Power per Shot: [round(get_power_per_shot())]")
+	. += span_notice("Charge Rate: [round(charge_rate)]/s")
+	if(cell)
+		. += span_notice("Cell Charge: [round(cell.charge)]/[cell.maxcharge] ([round(cell.percent())]%)")
+	else
+		. += span_warning("No power cell installed!")
 	if(can_fire())
 		. += span_notice("Status: READY")
 	else if(!COOLDOWN_FINISHED(src, fire_cooldown))
 		. += span_warning("Recharging: [round(COOLDOWN_TIMELEFT(src, fire_cooldown) / 10, 0.1)]s remaining")
+	else if(!cell || cell.charge < get_power_per_shot())
+		. += span_warning("Status: INSUFFICIENT POWER")
 	else if(machine_stat & NOPOWER)
 		. += span_warning("Status: NO POWER")
 	else if(!anchored)
@@ -91,6 +144,8 @@
 		icon_state = "standard_broken"
 	else if(machine_stat & (NOPOWER))
 		icon_state = "standard_off"
+	else if(!cell || cell.charge < get_power_per_shot())
+		icon_state = "standard_off"
 	else if(!COOLDOWN_FINISHED(src, fire_cooldown))
 		icon_state = "standard_lethal"
 	else
@@ -102,13 +157,21 @@
 /obj/machinery/ship_combat/laser_turret/proc/get_effective_damage()
 	return current_damage * power_level
 
-/// Returns the power draw per shot based on power level and efficiency
+/// Returns the power draw per shot based on power level
 /obj/machinery/ship_combat/laser_turret/proc/get_power_per_shot()
-	return LASER_POWER_BASE * power_level * power_efficiency
+	return LASER_POWER_BASE * power_level
 
 /// Returns the cooldown time based on parts
 /obj/machinery/ship_combat/laser_turret/proc/get_effective_cooldown()
 	return LASER_COOLDOWN_BASE * cooldown_mult
+
+/// Returns the current cell charge
+/obj/machinery/ship_combat/laser_turret/proc/get_cell_charge()
+	return cell?.charge || 0
+
+/// Returns the max cell charge
+/obj/machinery/ship_combat/laser_turret/proc/get_cell_max()
+	return cell?.maxcharge || 0
 
 // ========== CONSOLE LINKING ==========
 
@@ -179,6 +242,10 @@
 		return FALSE
 	if(!COOLDOWN_FINISHED(src, fire_cooldown))
 		return FALSE
+	if(!cell)
+		return FALSE
+	if(cell.charge < get_power_per_shot())
+		return FALSE
 	return TRUE
 
 /// Fires the laser at the target turf
@@ -193,12 +260,15 @@
 			to_chat(user, span_warning("No target selected!"))
 		return FALSE
 
-	// Use power for the shot
+	// Use power from internal cell
 	var/power_needed = get_power_per_shot()
-	if(!use_energy(power_needed))
+	if(!cell || cell.charge < power_needed)
 		if(user)
-			to_chat(user, span_warning("[src] doesn't have enough power!"))
+			to_chat(user, span_warning("[src] doesn't have enough power! ([round(cell?.charge || 0)]/[round(power_needed)] required)"))
 		return FALSE
+
+	// Drain the cell
+	cell.use(power_needed)
 
 	// Start cooldown
 	COOLDOWN_START(src, fire_cooldown, get_effective_cooldown())
@@ -248,6 +318,8 @@
 		"power_per_shot" = round(get_power_per_shot()),
 		"ready" = can_fire(),
 		"cooldown_remaining" = COOLDOWN_FINISHED(src, fire_cooldown) ? 0 : round(COOLDOWN_TIMELEFT(src, fire_cooldown) / 10, 0.1),
+		"cell_charge" = round(cell?.charge || 0),
+		"cell_max" = round(cell?.maxcharge || 0),
 	)
 
 // ========== TOOL INTERACTIONS ==========
@@ -285,4 +357,5 @@
 		/datum/stock_part/micro_laser = 2,
 		/datum/stock_part/capacitor = 1,
 		/datum/stock_part/servo = 1,
+		/obj/item/stock_parts/power_store/cell = 1,
 	)

@@ -41,6 +41,8 @@ type Turret = {
   power_per_shot: number;
   ready: BooleanLike;
   cooldown_remaining: number;
+  cell_charge: number;
+  cell_max: number;
 };
 
 type Data = {
@@ -64,6 +66,8 @@ type Data = {
   turrets_ready: number;
   turrets_total: number;
   turret_power_level: number;
+  turret_power_available: number;
+  turret_power_max: number;
   interdiction_active: BooleanLike;
   interdict_cooldown_active: BooleanLike;
   interdict_cooldown_remaining: number;
@@ -192,7 +196,7 @@ const TargetingPanel = () => {
                   </Stack>
                 </Stack.Item>
                 <Stack.Item>
-                  <ProgressBar value={targeting_progress / 100} color="average">
+                  <ProgressBar value={(targeting_progress || 0) / 100} color="blue">
                     {targeting_time_remaining.toFixed(1)}s remaining
                   </ProgressBar>
                 </Stack.Item>
@@ -648,9 +652,17 @@ const WeaponsPanel = () => {
 
 const TurretsPanel = () => {
   const { act, data } = useBackend<Data>();
-  const { turrets, turrets_ready, turrets_total, turret_power_level } = data;
+  const {
+    turrets,
+    turrets_ready,
+    turrets_total,
+    turret_power_level,
+    turret_power_available,
+    turret_power_max,
+  } = data;
 
   const powerPercent = (turret_power_level ?? 1) * 100;
+  const powerRatio = turret_power_max > 0 ? turret_power_available / turret_power_max : 0;
 
   return (
     <Section
@@ -673,7 +685,25 @@ const TurretsPanel = () => {
         </Box>
       ) : (
         <Stack vertical>
-          {/* Power Slider */}
+          {/* Total Power Bar */}
+          <Stack.Item>
+            <Box mb={0.5} fontSize="11px" color="label">
+              <Icon name="battery-half" mr={0.5} />
+              Available Power
+            </Box>
+            <ProgressBar
+              value={powerRatio}
+              ranges={{
+                bad: [0, 0.25],
+                average: [0.25, 0.5],
+                good: [0.5, 1],
+              }}
+            >
+              {turret_power_available} / {turret_power_max}
+            </ProgressBar>
+          </Stack.Item>
+
+          {/* Power Level Slider */}
           <Stack.Item>
             <Box mb={0.5} fontSize="11px" color="label">
               Power Level ({powerPercent.toFixed(0)}%)
@@ -703,7 +733,7 @@ const TurretsPanel = () => {
               </Stack.Item>
               <Stack.Item grow>
                 <Icon name="bolt" mr={0.5} />
-                {Math.round(200 * turret_power_level)}W/shot
+                {Math.round(2000 * turret_power_level)}W/shot
               </Stack.Item>
               <Stack.Item grow>
                 <Icon name="shield-halved" mr={0.5} color="cyan" />
