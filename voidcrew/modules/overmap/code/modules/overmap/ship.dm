@@ -549,10 +549,8 @@
 					planet_place.second_dock_taken = FALSE
 				dock_index = 0
 
-			// Clean up empty space z-levels when undocking if no one is left
-			if(istype(old_docked_location, /obj/structure/overmap/planet/empty))
-				var/obj/structure/overmap/planet/empty/empty_space = old_docked_location
-				INVOKE_ASYNC(empty_space, TYPE_PROC_REF(/obj/structure/overmap/planet/empty, unload_level))
+			// Note: Empty space cleanup is now handled via COMSIG_VOIDCREW_SHIP_UNDOCKED signal
+			// registered in /obj/structure/overmap/planet/empty/Entered()
 
 			// Handle space ruin dock flags and cleanup
 			if(istype(old_docked_location, /obj/structure/overmap/space_ruin))

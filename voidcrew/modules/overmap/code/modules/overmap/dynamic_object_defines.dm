@@ -59,24 +59,58 @@
 
 /obj/structure/overmap/planet/empty
 	planet = /datum/overmap/planet/empty
+	/// How many times we've tried to unload this level
+	var/unload_attempts = 0
+	/// Maximum number of unload retry attempts
+	var/max_unload_attempts = 5
+	/// Delay between unload retries in seconds
+	var/unload_retry_delay = 10 SECONDS
 
 /obj/structure/overmap/planet/empty/crashed_ship
 	planet = /datum/overmap/planet/crashed_ship
 
+/obj/structure/overmap/planet/empty/Entered(atom/movable/arrived, atom/old_loc, list/atom/old_locs)
+	. = ..()
+	if(istype(arrived, /obj/structure/overmap/ship))
+		// Register for undock signal so we can clean up when the ship leaves
+		RegisterSignal(arrived, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(on_ship_undocked))
+
+// Note: We don't override Exited() because the ship exits BEFORE the undock signal fires
+// The signal handler in on_ship_undocked() cleans up the registration
+
+/// Signal handler - called when a ship that was docked here finishes undocking
+/obj/structure/overmap/planet/empty/proc/on_ship_undocked(obj/structure/overmap/ship/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_VOIDCREW_SHIP_UNDOCKED)
+	// Reset retry counter for this undock attempt
+	unload_attempts = 0
+	// Use a 3 second delay to ensure the shuttle has fully entered transit
+	addtimer(CALLBACK(src, PROC_REF(try_unload_level)), 3 SECONDS)
+
+/// Attempts to unload the level, retrying if conditions aren't met
+/obj/structure/overmap/planet/empty/proc/try_unload_level()
+	if(unload_level())
+		return // Success, level unloaded
+	// Failed - retry if we haven't hit max attempts
+	unload_attempts++
+	if(unload_attempts < max_unload_attempts)
+		addtimer(CALLBACK(src, PROC_REF(try_unload_level)), unload_retry_delay)
+
 /obj/structure/overmap/planet/empty/unload_level()
 	if(preserve_level)
-		return
+		return TRUE // Return TRUE to stop retries - this is intentional
 
 	// Don't unload if any ships are still docked here
 	if(first_dock_taken || second_dock_taken)
-		return
+		return FALSE
 
-	// Duplicate code grrr
+	// Don't unload if there are still living mobs with minds
 	if(length(mapzone?.get_mind_mobs()))
-		return //Dont fuck over stranded people? tbh this shouldn't be called on this condition, instead of bandaiding it inside
+		return FALSE
 
 	remove_mapzone()
 	qdel(src)
+	return TRUE
 
 /obj/structure/overmap/planet/empty/remove_mapzone()
 	if(mapzone)
