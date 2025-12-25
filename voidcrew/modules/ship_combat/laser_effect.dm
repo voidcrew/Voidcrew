@@ -511,7 +511,7 @@
 	name = "muzzle flash"
 	icon = 'icons/obj/weapons/guns/projectiles_muzzle.dmi'
 	icon_state = "muzzle_omni"
-	duration = 4
+	duration = 8
 	layer = ABOVE_ALL_MOB_LAYER
 	plane = ABOVE_GAME_PLANE
 	light_range = 3
@@ -528,7 +528,7 @@
 	switch(direction)
 		if(NORTH)
 			angle = 0
-			pixel_y = 18
+			pixel_y = 29
 			pixel_x = 0
 		if(SOUTH)
 			angle = 180
@@ -536,12 +536,12 @@
 			pixel_x = 0
 		if(EAST)
 			angle = 90
-			pixel_x = 16
-			pixel_y = 4
+			pixel_x = 24
+			pixel_y = 5
 		if(WEST)
 			angle = -90
-			pixel_x = -16
-			pixel_y = 4
+			pixel_x = -24
+			pixel_y = 5
 		else
 			angle = 0
 	var/matrix/M = matrix()
@@ -574,11 +574,29 @@
 	var/is_multi_beam = FALSE
 	/// List of beam segments we've created
 	var/list/beam_segments = list()
+	/// Pixel X offset for beam origin (perpendicular offset applied to all segments)
+	var/beam_offset_x = 0
+	/// Pixel Y offset for beam origin (perpendicular offset applied to all segments)
+	var/beam_offset_y = 0
 
 /obj/effect/temp_visual/turret_laser_visual/Initialize(mapload, direction = SOUTH, multi_beam = FALSE)
 	. = ..()
 	fire_dir = direction
 	is_multi_beam = multi_beam
+	// Set beam origin offsets based on direction (to align with turret barrel)
+	switch(direction)
+		if(NORTH)
+			beam_offset_x = 0
+			beam_offset_y = 29
+		if(SOUTH)
+			beam_offset_x = 0
+			beam_offset_y = -14
+		if(EAST)
+			beam_offset_x = 24
+			beam_offset_y = 5
+		if(WEST)
+			beam_offset_x = -24
+			beam_offset_y = 5
 	// Make controller invisible - segments are visible
 	invisibility = INVISIBILITY_ABSTRACT
 	// Create the beam after short delay
@@ -610,33 +628,43 @@
 		else
 			angle = 0
 
-	// Get step direction offsets and calculate distance to map edge
+	// Get virtual level bounds (the playable area, not the whole map)
+	var/datum/virtual_level/vlevel = SSmapping.get_virtual_level(start_turf.z)
+	var/min_x = vlevel?.low_x || 1
+	var/max_x = vlevel?.high_x || world.maxx
+	var/min_y = vlevel?.low_y || 1
+	var/max_y = vlevel?.high_y || world.maxy
+
+	// Get step direction offsets and calculate distance to virtual level boundary
 	var/dx = 0
 	var/dy = 0
 	var/max_distance = 0
 	switch(fire_dir)
 		if(NORTH)
 			dy = 1
-			max_distance = world.maxy - start_turf.y
+			max_distance = max_y - start_turf.y
 		if(SOUTH)
 			dy = -1
-			max_distance = start_turf.y - 1
+			max_distance = start_turf.y - min_y
 		if(EAST)
 			dx = 1
-			max_distance = world.maxx - start_turf.x
+			max_distance = max_x - start_turf.x
 		if(WEST)
 			dx = -1
-			max_distance = start_turf.x - 1
+			max_distance = start_turf.x - min_x
 
-	// Create beam segments extending to the edge of the map
+	// Create beam segments extending to the virtual level boundary
 	var/turf/current = start_turf
 	for(var/i in 1 to max_distance)
 		var/turf/next = locate(current.x + dx, current.y + dy, current.z)
 		if(!next)
 			break
+		// Stop at cordon turfs (virtual level boundary)
+		if(istype(next, /turf/cordon))
+			break
 		current = next
 
-		var/obj/effect/temp_visual/turret_laser_segment/segment = new(current, is_multi_beam)
+		var/obj/effect/temp_visual/turret_laser_segment/segment = new(current, is_multi_beam, beam_offset_x, beam_offset_y)
 		segment.set_beam_angle(angle)
 		beam_segments += segment
 
@@ -654,12 +682,15 @@
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	randomdir = FALSE
 
-/obj/effect/temp_visual/turret_laser_segment/Initialize(mapload, multi_beam = FALSE)
+/obj/effect/temp_visual/turret_laser_segment/Initialize(mapload, multi_beam = FALSE, offset_x = 0, offset_y = 0)
 	. = ..()
 	if(multi_beam)
 		icon_state = "plasmacutter"
 		light_range = 3
 		light_power = 1.5
+	// Apply pixel offsets (to align beam with turret barrel)
+	pixel_x = offset_x
+	pixel_y = offset_y
 	// Fade out animation
 	animate(src, alpha = 0, time = duration, easing = EASE_OUT)
 

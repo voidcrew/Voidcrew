@@ -385,16 +385,16 @@
 	return ITEM_INTERACT_SUCCESS
 
 // Alt+click to rotate when unwrenched
-/obj/machinery/ship_combat/laser_turret/AltClick(mob/user)
-	. = ..()
+/obj/machinery/ship_combat/laser_turret/click_alt(mob/user)
 	if(!user.can_perform_action(src, NEED_HANDS))
-		return
+		return CLICK_ACTION_BLOCKING
 	if(anchored)
 		to_chat(user, span_warning("Unwrench [src] first to rotate it!"))
-		return
+		return CLICK_ACTION_BLOCKING
 	// Rotate through cardinal directions
 	setDir(turn(dir, -90))
 	balloon_alert(user, "rotated [dir2text(dir)]")
+	return CLICK_ACTION_SUCCESS
 
 /obj/machinery/ship_combat/laser_turret/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
 	// Multitool linking - store self in buffer
