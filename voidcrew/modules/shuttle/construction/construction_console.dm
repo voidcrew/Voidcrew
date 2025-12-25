@@ -539,10 +539,20 @@
 
 	var/fans_removed = 0
 	var/fans_added = 0
+	var/fans_preserved = 0
 
-	// Remove all existing tiny fans in shuttle areas
+	// Remove all existing tiny fans in shuttle areas (except those on blast doors)
 	for(var/area/shuttle_area as anything in port.shuttle_areas)
 		for(var/obj/structure/fans/tiny/fan in shuttle_area)
+			var/turf/fan_turf = get_turf(fan)
+			// Preserve fans on blast doors (poddoors)
+			var/on_blast_door = FALSE
+			for(var/obj/machinery/door/poddoor/door in fan_turf)
+				on_blast_door = TRUE
+				break
+			if(on_blast_door)
+				fans_preserved++
+				continue
 			qdel(fan)
 			fans_removed++
 
@@ -560,7 +570,8 @@
 			new /obj/structure/fans/tiny(airlock_turf)
 			fans_added++
 
-	last_operation_message = "Fans reset: [fans_removed] removed, [fans_added] added to edge airlocks."
+	var/preserved_msg = fans_preserved ? ", [fans_preserved] preserved on blast doors" : ""
+	last_operation_message = "Fans reset: [fans_removed] removed, [fans_added] added to edge airlocks[preserved_msg]."
 	last_operation_success = TRUE
 	return TRUE
 
