@@ -80,6 +80,7 @@
 /// Ship-specific RCD deconstruct action
 /datum/action/innate/construction/ship/deconstruct
 	name = "Deconstruct"
+	button_icon = 'icons/mob/actions/actions_shuttle.dmi'
 	button_icon_state = "delete"
 
 /datum/action/innate/construction/ship/deconstruct/Activate()
