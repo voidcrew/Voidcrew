@@ -2,17 +2,78 @@
  * Ship Construction Console
  *
  * A console for managing ship construction and modifications.
- * Currently supports docking port relocation - additional features planned.
+ * Inherits from the base construction console to provide RCD-based building
+ * within shuttle areas and one tile adjacent (for expansion).
+ *
+ * Features:
+ * - Remote construction drone control
+ * - RCD building within shuttle and adjacent tiles
+ * - Automatic shuttle expansion when building adjacent
+ * - Automatic shuttle shrinking when deconstructing
+ * - Docking port relocation
+ * - Ore silo resource link
  */
 
-/obj/machinery/computer/ship_construction
+/// How much material per RCD unit when using silo link (1/4 sheet per unit)
+#define SHIP_RCD_SILO_USE_AMOUNT (SHEET_MATERIAL_AMOUNT / 4)
+
+// ============================================
+// Ship Internal RCD - bypasses account checks
+// ============================================
+
+/// Ship-specific internal RCD that bypasses ore silo account checks
+/// This is needed because remote construction doesn't have a user with an ID card
+/obj/item/construction/rcd/internal/ship
+	name = "ship internal RCD"
+
+/// Override to bypass account check when using silo - ships use SILICON_OVERRIDE
+/obj/item/construction/rcd/internal/ship/useResource(amount, mob/user)
+	if(!silo_mats || !silo_link)
+		return ..()
+
+	if(!silo_mats.mat_container)
+		if(user)
+			balloon_alert(user, "no silo detected!")
+		return FALSE
+
+	if(!silo_mats.mat_container.has_enough_of_material(/datum/material/iron, amount * SHIP_RCD_SILO_USE_AMOUNT))
+		if(user)
+			balloon_alert(user, "not enough silo material!")
+		return FALSE
+
+	// Use SILICON_OVERRIDE to bypass account check for ship construction
+	var/list/user_data = ID_DATA(user)
+	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
+	silo_mats.use_materials(list(/datum/material/iron = SHIP_RCD_SILO_USE_AMOUNT), multiplier = amount, action = "build", name = "ship construction", user_data = user_data)
+	return TRUE
+
+/// Override to bypass account check when checking resources
+/obj/item/construction/rcd/internal/ship/checkResource(amount, mob/user)
+	if(!silo_mats || !silo_mats.mat_container || !silo_link)
+		return ..()
+
+	// Use SILICON_OVERRIDE to bypass account check for ship construction
+	var/list/user_data = ID_DATA(user)
+	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
+	if(!silo_mats.can_use_resource(user_data = user_data))
+		return FALSE
+	. = silo_mats.mat_container.has_enough_of_material(/datum/material/iron, amount * SHIP_RCD_SILO_USE_AMOUNT)
+	if(!. && user)
+		balloon_alert(user, "low ammo!")
+		if(has_ammobar)
+			flick("[icon_state]_empty", src)
+	return .
+
+/obj/machinery/computer/camera_advanced/base_construction/ship
 	name = "ship construction console"
-	desc = "A console for managing ship construction and modifications. Currently supports docking port relocation."
+	desc = "A console for managing ship construction and modifications. Control a remote drone to build and modify your ship."
 	icon = 'voidcrew/modules/shuttle/icons/computer.dmi'
 	icon_screen = "navigation"
 	icon_keyboard = "tech_key"
 	circuit = /obj/item/circuitboard/computer/ship_construction
 	light_color = LIGHT_COLOR_CYAN
+	// Ships don't use camera networks - the drone doesn't need visibility checks
+	networks = list()
 
 	/// The ship we are connected to
 	var/obj/structure/overmap/ship/current_ship
@@ -21,19 +82,139 @@
 	/// Whether the last operation succeeded
 	var/last_operation_success = TRUE
 
-/obj/machinery/computer/ship_construction/LateInitialize()
+// ============================================
+// Initialization
+// ============================================
+
+/obj/machinery/computer/camera_advanced/base_construction/ship/Initialize(mapload)
+	// Create ship-specific internal RCD with silo link capability
+	// Uses /ship subtype to bypass ore silo account checks
+	internal_rcd = new /obj/item/construction/rcd/internal/ship(src)
+	internal_rcd.construction_upgrades |= RCD_UPGRADE_SILO_LINK
+	// Add the remote materials component to the RCD so it can link to a silo
+	// The silo_mats needs to be added after setting the upgrade flag
+	internal_rcd.silo_mats = internal_rcd.AddComponent(/datum/component/remote_materials, mapload, FALSE)
+	. = ..()
+
+/// Forward multitool interactions to the internal RCD for silo linking
+/obj/machinery/computer/camera_advanced/base_construction/ship/multitool_act(mob/living/user, obj/item/multitool/M)
+	. = ..()
+	if(!internal_rcd?.silo_mats)
+		return .
+
+	// Forward the multitool interaction to the internal RCD's remote_materials component
+	if(!QDELETED(M.buffer) && istype(M.buffer, /obj/machinery/ore_silo))
+		var/obj/machinery/ore_silo/silo = M.buffer
+		if(internal_rcd.silo_mats.silo == silo)
+			to_chat(user, span_warning("[src]'s RCD is already connected to [silo]."))
+			return ITEM_INTERACT_SUCCESS
+
+		internal_rcd.silo_mats.disconnect()
+		silo.connect_receptacle(internal_rcd.silo_mats, internal_rcd)
+		internal_rcd.silo_link = TRUE  // Enable silo link mode
+		to_chat(user, span_notice("You connect [src]'s RCD to [silo]."))
+		return ITEM_INTERACT_SUCCESS
+
+	return .
+
+/obj/machinery/computer/camera_advanced/base_construction/ship/LateInitialize()
 	. = ..()
 	attempt_ship_connection()
 
-/obj/machinery/computer/ship_construction/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
+/obj/machinery/computer/camera_advanced/base_construction/ship/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
 	if(!istype(port))
 		return
 	current_ship = port.current_ship
 
+/obj/machinery/computer/camera_advanced/base_construction/ship/populate_actions_list()
+	actions += new /datum/action/innate/construction/ship/configure_mode(src)
+	actions += new /datum/action/innate/construction/ship/build(src)
+
+/// Override to show UI instead of immediately entering construction mode
+/// We skip the camera_advanced parent's attack_hand which would enter camera mode
+/obj/machinery/computer/camera_advanced/base_construction/ship/attack_hand(mob/user, list/modifiers)
+	// Do basic machinery interaction check (skip camera_advanced parent)
+	if(machine_stat & (NOPOWER|BROKEN))
+		return
+	// Open the UI instead of entering camera mode
+	ui_interact(user)
+
+/// Actually enter construction mode - called from UI button
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/enter_construction_mode(mob/user)
+	if(!can_use(user))
+		return FALSE
+	if(isnull(user.client))
+		return FALSE
+	if(!QDELETED(current_user))
+		to_chat(user, span_warning("The console is already in use!"))
+		return FALSE
+
+	var/turf/spawn_spot = find_spawn_spot()
+	if(!spawn_spot)
+		to_chat(user, span_warning("Unable to find a valid location to deploy the construction drone."))
+		return FALSE
+
+	if(!CreateEye())
+		return FALSE
+
+	give_eye_control(user)
+	eyeobj.setLoc(spawn_spot, TRUE)
+	return TRUE
+
+/obj/machinery/computer/camera_advanced/base_construction/ship/restock_materials()
+	if(internal_rcd)
+		internal_rcd.matter = internal_rcd.max_matter
+
+/obj/machinery/computer/camera_advanced/base_construction/ship/find_spawn_spot()
+	var/obj/docking_port/mobile/port = get_docking_port()
+	if(!port)
+		return get_turf(src)
+
+	// Find a valid turf within the shuttle to spawn the drone
+	for(var/area/shuttle_area as anything in port.shuttle_areas)
+		for(var/turf/T in shuttle_area)
+			if(!T.density && !T.is_blocked_turf())
+				return T
+
+	return get_turf(src)
+
+/obj/machinery/computer/camera_advanced/base_construction/ship/CreateEye()
+	var/turf/spawn_spot = find_spawn_spot()
+	if(!spawn_spot)
+		return FALSE
+	eyeobj = new /mob/eye/camera/remote/base_construction/ship(spawn_spot, src)
+	return TRUE
+
+/obj/machinery/computer/camera_advanced/base_construction/ship/can_use(mob/living/user)
+	. = ..()
+	if(!.)
+		return FALSE
+
+	// Must be connected to a ship
+	if(!current_ship && !attempt_ship_connection())
+		to_chat(user, span_warning("No ship connection established."))
+		return FALSE
+
+	// Must be a crew member
+	if(!is_crew_member(user))
+		to_chat(user, span_warning("Access denied. Crew authorization required."))
+		return FALSE
+
+	// Must be docked to use construction features
+	if(!can_operate())
+		to_chat(user, span_warning("Ship must be docked to use construction features."))
+		return FALSE
+
+	return TRUE
+
+// ============================================
+// Ship Connection
+// ============================================
+
 /**
  * Attempts to connect this console to its containing ship
  */
-/obj/machinery/computer/ship_construction/proc/attempt_ship_connection()
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/attempt_ship_connection()
 	if(current_ship)
 		return TRUE
 
@@ -47,7 +228,7 @@
 /**
  * Checks if the given user is a member of this ship's crew
  */
-/obj/machinery/computer/ship_construction/proc/is_crew_member(mob/user)
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/is_crew_member(mob/user)
 	if(!ismob(user))
 		return FALSE
 	// Allow admin ghosts with AI interaction enabled
@@ -63,7 +244,7 @@
 /**
  * Checks if the console can perform operations (ship must be docked)
  */
-/obj/machinery/computer/ship_construction/proc/can_operate()
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/can_operate()
 	if(!current_ship)
 		return FALSE
 	return current_ship.state == OVERMAP_SHIP_IDLE
@@ -71,15 +252,189 @@
 /**
  * Gets the docking port for the current ship
  */
-/obj/machinery/computer/ship_construction/proc/get_docking_port()
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_docking_port()
 	if(!current_ship)
 		return null
 	return current_ship.shuttle
 
+// ============================================
+// Location Validation
+// ============================================
+
+/**
+ * Checks if a turf is within the shuttle's areas
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/is_in_shuttle_area(turf/T)
+	var/obj/docking_port/mobile/port = get_docking_port()
+	if(!port)
+		return FALSE
+
+	var/area/target_area = get_area(T)
+	return (target_area in port.shuttle_areas)
+
+/**
+ * Checks if a turf is adjacent to the shuttle (cardinally)
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/is_adjacent_to_shuttle(turf/T)
+	var/obj/docking_port/mobile/port = get_docking_port()
+	if(!port)
+		return FALSE
+
+	for(var/check_dir in GLOB.cardinals)
+		var/turf/adjacent = get_step(T, check_dir)
+		if(get_area(adjacent) in port.shuttle_areas)
+			return TRUE
+
+	return FALSE
+
+/**
+ * Checks if a turf is a valid area type for expansion building
+ * (space or planetoid, not ruin, not other shuttle)
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/is_valid_expansion_area(turf/T)
+	var/area/target_area = get_area(T)
+
+	// Must be space or planetoid area
+	if(!istype(target_area, /area/space) && !istype(target_area, /area/overmap_encounter/planetoid))
+		return FALSE
+
+	// NOT a ruin area
+	if(istype(target_area, /area/ruin))
+		return FALSE
+
+	// NOT another shuttle
+	if(isshuttleturf(T))
+		return FALSE
+
+	return TRUE
+
+/**
+ * Checks if the drone can move to a destination turf
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/can_move_to(turf/T)
+	if(!T)
+		return FALSE
+
+	// Always allow movement within shuttle
+	if(is_in_shuttle_area(T))
+		return TRUE
+
+	// Allow movement to adjacent tiles if they're valid expansion areas
+	if(is_adjacent_to_shuttle(T) && is_valid_expansion_area(T))
+		return TRUE
+
+	return FALSE
+
+/**
+ * Checks if building is allowed at a specific turf
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/can_build_at(turf/T)
+	if(!T)
+		return FALSE
+
+	var/obj/docking_port/mobile/port = get_docking_port()
+	if(!port)
+		return FALSE
+
+	// Always allow building within shuttle
+	if(is_in_shuttle_area(T))
+		return TRUE
+
+	// For adjacent tiles, additional checks apply
+	if(!is_adjacent_to_shuttle(T))
+		return FALSE
+
+	// Must not be a dense turf (wall)
+	if(T.density)
+		return FALSE
+
+	// Must be a valid expansion area
+	if(!is_valid_expansion_area(T))
+		return FALSE
+
+	return TRUE
+
+// ============================================
+// Shuttle Expansion
+// ============================================
+
+/**
+ * Expands the shuttle to include a new turf
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/expand_shuttle_to_turf(turf/T, mob/user)
+	var/obj/docking_port/mobile/port = get_docking_port()
+	if(!port)
+		return FALSE
+
+	// Don't expand if already in shuttle
+	if(is_in_shuttle_area(T))
+		return FALSE
+
+	// Check if adding this turf would exceed max dimensions
+	if(!check_expansion_dimensions(T, port, user))
+		return FALSE
+
+	// Use the existing expand_shuttle helper
+	var/list/turfs = list()
+	turfs[T] = TRUE
+	expand_shuttle(user, port, turfs, list())
+
+	return TRUE
+
+/**
+ * Checks if adding a turf would exceed shuttle dimension limits
+ * Returns TRUE if expansion is allowed, FALSE if it would exceed limits
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/check_expansion_dimensions(turf/new_turf, obj/docking_port/mobile/port)
+	if(!port)
+		return FALSE
+
+	// Get current shuttle bounds
+	var/list/bounds = port.return_coords()
+	var/x0 = bounds[1]
+	var/y0 = bounds[2]
+	var/x1 = bounds[3]
+	var/y1 = bounds[4]
+
+	// Calculate new bounds if we add this turf
+	var/new_x0 = min(x0, new_turf.x)
+	var/new_y0 = min(y0, new_turf.y)
+	var/new_x1 = max(x1, new_turf.x)
+	var/new_y1 = max(y1, new_turf.y)
+
+	// Calculate new dimensions
+	var/new_width = new_x1 - new_x0 + 1
+	var/new_height = new_y1 - new_y0 + 1
+
+	// Check against voidcrew dimension limits
+	// Neither dimension can exceed RESERVE_DOCK_MAX_SIZE_LONG (56)
+	if(new_width > RESERVE_DOCK_MAX_SIZE_LONG || new_height > RESERVE_DOCK_MAX_SIZE_LONG)
+		return FALSE
+
+	// Only one dimension can exceed RESERVE_DOCK_MAX_SIZE_SHORT (40)
+	if(new_width > RESERVE_DOCK_MAX_SIZE_SHORT && new_height > RESERVE_DOCK_MAX_SIZE_SHORT)
+		return FALSE
+
+	return TRUE
+
+/**
+ * Cleans up empty shuttle turfs after deconstruction
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/cleanup_deconstructed_turfs()
+	var/obj/docking_port/mobile/port = get_docking_port()
+	if(!port)
+		return
+
+	clear_empty_shuttle_turfs(port)
+
+// ============================================
+// Mobile Port Relocation
+// ============================================
+
 /**
  * Checks if an airlock is on the edge of the shuttle (has adjacent non-shuttle turf)
  */
-/obj/machinery/computer/ship_construction/proc/is_edge_airlock(obj/machinery/door/airlock/airlock, obj/docking_port/mobile/port)
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/is_edge_airlock(obj/machinery/door/airlock/airlock, obj/docking_port/mobile/port)
 	var/turf/airlock_turf = get_turf(airlock)
 	if(!airlock_turf)
 		return FALSE
@@ -98,7 +453,7 @@
 /**
  * Gets a list of all valid edge airlocks on this ship
  */
-/obj/machinery/computer/ship_construction/proc/get_valid_airlocks()
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_valid_airlocks()
 	var/list/valid_airlocks = list()
 
 	var/obj/docking_port/mobile/port = get_docking_port()
@@ -117,7 +472,7 @@
 /**
  * Gets information about the current docking port location
  */
-/obj/machinery/computer/ship_construction/proc/get_current_docking_port_info()
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_current_docking_port_info()
 	var/obj/docking_port/mobile/port = get_docking_port()
 	if(!port)
 		return null
@@ -134,7 +489,7 @@
 /**
  * Relocates the docking port to a new airlock
  */
-/obj/machinery/computer/ship_construction/proc/relocate_docking_port(obj/machinery/door/airlock/new_airlock)
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/relocate_docking_port(obj/machinery/door/airlock/new_airlock)
 	if(!can_operate())
 		last_operation_message = "Cannot modify ship while in flight."
 		last_operation_success = FALSE
@@ -204,9 +559,9 @@
 // TGUI Integration
 // ============================================
 
-/obj/machinery/computer/ship_construction/ui_interact(mob/user, datum/tgui/ui)
-	. = ..()
+/obj/machinery/computer/camera_advanced/base_construction/ship/ui_interact(mob/user, datum/tgui/ui)
 	if(!current_ship && !attempt_ship_connection())
+		to_chat(user, span_warning("No ship connection."))
 		return FALSE
 
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -215,7 +570,7 @@
 		ui.open()
 		ui.set_autoupdate(TRUE)
 
-/obj/machinery/computer/ship_construction/ui_data(mob/user)
+/obj/machinery/computer/camera_advanced/base_construction/ship/ui_data(mob/user)
 	var/list/data = list()
 
 	data["canOperate"] = can_operate()
@@ -223,6 +578,22 @@
 	data["isNotCrew"] = !is_crew_member(user)
 	data["lastMessage"] = last_operation_message
 	data["lastSuccess"] = last_operation_success
+
+	// RCD info - show silo materials when using silo link, otherwise internal matter
+	if(internal_rcd)
+		if(internal_rcd.silo_link && internal_rcd.silo_mats?.mat_container)
+			// Show silo iron as RCD-equivalent units
+			data["rcdMatter"] = internal_rcd.get_silo_iron()
+			data["rcdMaxMatter"] = 0  // Silo has no max, hide the max display
+			data["usingSilo"] = TRUE
+		else
+			data["rcdMatter"] = internal_rcd.matter
+			data["rcdMaxMatter"] = internal_rcd.max_matter
+			data["usingSilo"] = FALSE
+	else
+		data["rcdMatter"] = 0
+		data["rcdMaxMatter"] = 0
+		data["usingSilo"] = FALSE
 
 	// Current docking port info
 	data["currentPort"] = get_current_docking_port_info()
@@ -246,16 +617,19 @@
 		))
 	data["airlocks"] = airlock_data
 
+	// Check if user is in construction mode (controlling drone)
+	data["isInConstructionMode"] = (eyeobj && user.remote_control == eyeobj)
+
 	return data
 
-/obj/machinery/computer/ship_construction/ui_static_data(mob/user)
+/obj/machinery/computer/camera_advanced/base_construction/ship/ui_static_data(mob/user)
 	var/list/data = list()
 
 	data["shipName"] = current_ship ? current_ship.display_name : null
 
 	return data
 
-/obj/machinery/computer/ship_construction/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+/obj/machinery/computer/camera_advanced/base_construction/ship/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(.)
 		return
@@ -276,6 +650,12 @@
 			return TRUE
 		if("clear_message")
 			last_operation_message = ""
+			return TRUE
+		if("enter_construction_mode")
+			if(!can_operate())
+				to_chat(usr, span_warning("Ship must be docked to enter construction mode."))
+				return TRUE
+			enter_construction_mode(usr)
 			return TRUE
 
 	return FALSE

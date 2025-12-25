@@ -53,4 +53,4 @@
 
 /obj/item/circuitboard/computer/ship_construction
 	name = "Ship Construction Console"
-	build_path = /obj/machinery/computer/ship_construction
+	build_path = /obj/machinery/computer/camera_advanced/base_construction/ship
