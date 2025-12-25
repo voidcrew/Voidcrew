@@ -43,6 +43,8 @@
 		. += span_notice("Loaded: [loaded_missile["name"]] ([loaded_missile["damage"]] damage)")
 	else
 		. += span_warning("No missile loaded. Drag an armed missile onto the launcher.")
+	if(!is_on_exterior())
+		. += span_warning("NOT ON EXTERIOR - Must be adjacent to outside of ship to fire!")
 	var/obj/machinery/computer/camera_advanced/ship_combat/linked_console = linked_console_ref?.resolve()
 	if(linked_console)
 		. += span_notice("Linked to: [linked_console]")
@@ -240,6 +242,10 @@
 	if(linked_console_ref?.resolve())
 		return
 
+	// Only auto-link if on exterior of ship
+	if(!is_on_exterior())
+		return
+
 	// Find what ship we're on by checking areas
 	var/area/our_area = get_area(src)
 	if(!our_area)
@@ -272,6 +278,34 @@
 				return
 
 // ========== FIRING ==========
+
+/// Checks if this weapon is on the exterior of the ship (adjacent to non-shuttle-area tile)
+/// Weapons must be on the exterior to fire - they need line of sight to space/outside
+/obj/machinery/ship_combat/missile_launcher/proc/is_on_exterior()
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		return FALSE
+
+	// Get the shuttle areas for our ship
+	var/area/our_area = get_area(src)
+	var/list/shuttle_areas
+	for(var/obj/structure/overmap/ship/S in SSovermap.simulated_ships)
+		if(!S.shuttle)
+			continue
+		if(our_area in S.shuttle.shuttle_areas)
+			shuttle_areas = S.shuttle.shuttle_areas
+			break
+
+	// Check all adjacent tiles (including diagonals)
+	for(var/turf/T in range(1, our_turf))
+		if(T == our_turf)
+			continue
+		var/area/tile_area = get_area(T)
+		// If adjacent tile is not in shuttle areas, we're on exterior
+		if(!tile_area || !(tile_area in shuttle_areas))
+			return TRUE
+
+	return FALSE
 
 /// Attempts to fire the loaded missile at the target turf
 /// spawn_offset_x/y are used to stagger missile spawn positions for volleys
@@ -485,6 +519,8 @@
 		return FALSE
 	if(!loaded_missile)
 		return FALSE
+	if(!is_on_exterior())
+		return FALSE
 	return TRUE
 
 /// Returns status info for the combat console UI
@@ -496,6 +532,7 @@
 		"missile_name" = loaded_missile ? loaded_missile["name"] : null,
 		"missile_damage" = loaded_missile ? loaded_missile["damage"] : null,
 		"ready" = can_fire(),
+		"on_exterior" = is_on_exterior(),
 	)
 
 // ========== CIRCUIT BOARD ==========

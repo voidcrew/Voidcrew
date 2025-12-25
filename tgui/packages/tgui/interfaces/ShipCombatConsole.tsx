@@ -49,6 +49,8 @@ type Data = {
   connected: BooleanLike;
   ship_name: string | null;
   cloak_active: BooleanLike;
+  attack_mode: BooleanLike;
+  is_in_attack_mode: BooleanLike;
   target_name: string | null;
   target_ref: string | null;
   // Targeting lock-in-progress data
@@ -148,6 +150,7 @@ const TargetingPanel = () => {
     targeting_ship_name,
     targeting_progress,
     targeting_time_remaining,
+    is_in_attack_mode,
   } = data;
 
   return (
@@ -262,22 +265,44 @@ const TargetingPanel = () => {
           )}
         </Stack.Item>
 
-        {/* Engage Button */}
+        {/* Attack Mode Indicator */}
+        {!!is_in_attack_mode && (
+          <Stack.Item>
+            <NoticeBox warning>
+              <Icon name="crosshairs" mr={1} />
+              TARGETING ACTIVE - Move view to aim, use action buttons to fire
+            </NoticeBox>
+          </Stack.Item>
+        )}
+
+        {/* Engage/Exit Button */}
         <Stack.Item mt={1}>
-          <Button
-            fluid
-            bold
-            icon="rocket"
-            color="red"
-            disabled={!target_name || !target_in_missile_range}
-            onClick={() => act('activate')}
-          >
-            {!target_name
-              ? 'Select Target'
-              : !target_in_missile_range
-                ? 'Out of Range'
-                : 'ENGAGE'}
-          </Button>
+          {is_in_attack_mode ? (
+            <Button
+              fluid
+              bold
+              icon="times"
+              color="grey"
+              onClick={() => act('deactivate')}
+            >
+              EXIT TARGETING
+            </Button>
+          ) : (
+            <Button
+              fluid
+              bold
+              icon="rocket"
+              color="red"
+              disabled={!target_name || !target_in_missile_range}
+              onClick={() => act('activate')}
+            >
+              {!target_name
+                ? 'Select Target'
+                : !target_in_missile_range
+                  ? 'Out of Range'
+                  : 'ENGAGE'}
+            </Button>
+          )}
         </Stack.Item>
       </Stack>
     </Section>

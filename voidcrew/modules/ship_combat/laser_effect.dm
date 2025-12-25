@@ -315,6 +315,7 @@
 		return
 
 	end_cap = new /obj/effect/temp_visual/ship_laser_impact(impact_loc, multi_beam)
+	end_cap.set_impact_angle(beam_angle)
 
 /// Damages all mobs and objects along the beam path
 /obj/effect/ship_laser_beam/proc/damage_along_path(turf/start, turf/end)
@@ -443,18 +444,48 @@
 	light_range = 3
 	light_power = 1.5
 	light_color = "#ff6600"
+	/// Whether this is a multi-beam impact (stored for animation after angle set)
+	var/is_multi_beam = FALSE
 
 /obj/effect/temp_visual/ship_laser_impact/Initialize(mapload, multi_beam = FALSE)
 	. = ..()
+	is_multi_beam = multi_beam
 	// Use plasmacutter impact sprite for multi-beam
 	if(multi_beam)
 		icon_state = "impact_plasmacutter"
 		light_range = 4
 		light_power = 2
-	// Flash and fade animation with scale up
+
+/// Sets the rotation angle for the impact effect to align with beam direction
+/obj/effect/temp_visual/ship_laser_impact/proc/set_impact_angle(angle)
 	var/matrix/M = matrix()
-	M.Scale(1.5, 1.5)
-	animate(src, transform = M, alpha = 0, time = duration, easing = EASE_OUT)
+	M.Turn(angle + 90)  // Rotate to align with beam direction
+	transform = M
+
+	// Apply pixel offsets to compensate for rotation shifting the visual center
+	var/normalized_angle = SIMPLIFY_DEGREES(angle)
+	switch(normalized_angle)
+		if(160 to 200)  // Beam traveling south (from north)
+			pixel_x = 0
+			pixel_y = 0
+		if(0 to 20, 340 to 360)  // Beam traveling north (from south)
+			pixel_x = 0
+			pixel_y = -16
+		if(70 to 110)  // Beam traveling east (from west)
+			pixel_x = 0
+			pixel_y = -16
+		if(250 to 290)  // Beam traveling west (from east)
+			pixel_x = 0
+			pixel_y = -16
+		else
+			pixel_x = 0
+			pixel_y = -8  // Default offset for diagonal angles
+
+	// Now apply the scale and fade animation on top of the rotation
+	var/matrix/anim_matrix = matrix()
+	anim_matrix.Turn(angle + 90)
+	anim_matrix.Scale(1.5, 1.5)
+	animate(src, transform = anim_matrix, alpha = 0, time = duration, easing = EASE_OUT)
 
 // ========== OTHER VISUAL EFFECTS ==========
 

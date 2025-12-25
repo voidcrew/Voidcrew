@@ -310,6 +310,10 @@
 		ui.open()
 
 /obj/machinery/computer/camera_advanced/ship_combat/ui_state(mob/user)
+	// Allow UI interaction while in camera mode (attack mode)
+	// Server-side crew checks are still enforced in ui_act
+	if(eyeobj && user.remote_control == eyeobj)
+		return GLOB.always_state
 	return GLOB.default_state
 
 /obj/machinery/computer/camera_advanced/ship_combat/ui_data(mob/user)
@@ -318,6 +322,8 @@
 	data["connected"] = !!current_ship
 	data["ship_name"] = current_ship?.display_name
 	data["cloak_active"] = cloak_active
+	data["attack_mode"] = attack_mode
+	data["is_in_attack_mode"] = (eyeobj && user.remote_control == eyeobj)
 	data["target_name"] = target_ship?.display_name
 	data["target_ref"] = target_ship ? REF(target_ship) : null
 
@@ -483,6 +489,10 @@
 			enter_attack_mode(ui.user)
 			return TRUE
 
+		if("deactivate")
+			exit_attack_mode(ui.user)
+			return TRUE
+
 		if("fire_missile")
 			fire_one(ui.user)
 			return TRUE
@@ -640,9 +650,6 @@
 		return FALSE
 
 	attack_mode = TRUE
-
-	// Close all UIs for this user before entering camera mode
-	SStgui.close_user_uis(user)
 
 	// Give control and move to target
 	give_eye_control(user)
@@ -1745,7 +1752,8 @@
 /datum/action/innate/ship_combat/fire_all_lasers
 	name = "Fire All Lasers"
 	desc = "Fire all ready laser turrets at the targeted location."
-	button_icon_state = "mech_air_on"
+	button_icon_state = "lasers"
+	button_icon = 'voidcrew/icons/mob/actions/ship_combat.dmi'
 
 /datum/action/innate/ship_combat/fire_all_lasers/Activate()
 	if(!console || !ismob(owner))

@@ -124,6 +124,8 @@
 		. += span_warning("No power cell installed!")
 	if(can_fire())
 		. += span_notice("Status: READY")
+	else if(!is_on_exterior())
+		. += span_warning("Status: NOT ON EXTERIOR - Must be adjacent to outside of ship!")
 	else if(!COOLDOWN_FINISHED(src, fire_cooldown))
 		. += span_warning("Recharging: [round(COOLDOWN_TIMELEFT(src, fire_cooldown) / 10, 0.1)]s remaining")
 	else if(!cell || cell.charge < get_power_per_shot())
@@ -201,6 +203,10 @@
 	if(linked_console_ref?.resolve())
 		return
 
+	// Only auto-link if on exterior of ship
+	if(!is_on_exterior())
+		return
+
 	// Find what ship we're on by checking areas
 	var/area/our_area = get_area(src)
 	if(!our_area)
@@ -234,6 +240,34 @@
 
 // ========== FIRING ==========
 
+/// Checks if this weapon is on the exterior of the ship (adjacent to non-shuttle-area tile)
+/// Weapons must be on the exterior to fire - they need line of sight to space/outside
+/obj/machinery/ship_combat/laser_turret/proc/is_on_exterior()
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		return FALSE
+
+	// Get the shuttle areas for our ship
+	var/area/our_area = get_area(src)
+	var/list/shuttle_areas
+	for(var/obj/structure/overmap/ship/S in SSovermap.simulated_ships)
+		if(!S.shuttle)
+			continue
+		if(our_area in S.shuttle.shuttle_areas)
+			shuttle_areas = S.shuttle.shuttle_areas
+			break
+
+	// Check all adjacent tiles (including diagonals)
+	for(var/turf/T in range(1, our_turf))
+		if(T == our_turf)
+			continue
+		var/area/tile_area = get_area(T)
+		// If adjacent tile is not in shuttle areas, we're on exterior
+		if(!tile_area || !(tile_area in shuttle_areas))
+			return TRUE
+
+	return FALSE
+
 /// Checks if the turret can fire
 /obj/machinery/ship_combat/laser_turret/proc/can_fire()
 	if(machine_stat & (BROKEN|NOPOWER))
@@ -245,6 +279,8 @@
 	if(!cell)
 		return FALSE
 	if(cell.charge < get_power_per_shot())
+		return FALSE
+	if(!is_on_exterior())
 		return FALSE
 	return TRUE
 
@@ -329,6 +365,7 @@
 		"cooldown" = round(get_effective_cooldown() / 10, 0.1),
 		"power_per_shot" = round(get_power_per_shot()),
 		"ready" = can_fire(),
+		"on_exterior" = is_on_exterior(),
 		"cooldown_remaining" = COOLDOWN_FINISHED(src, fire_cooldown) ? 0 : round(COOLDOWN_TIMELEFT(src, fire_cooldown) / 10, 0.1),
 		"cell_charge" = round(cell?.charge || 0),
 		"cell_max" = round(cell?.maxcharge || 0),
