@@ -479,6 +479,31 @@
 	return FALSE
 
 /**
+ * Checks if the docking port is on the edge of the shuttle
+ * The docking port must have non-shuttle area in the direction it faces for docking to work
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/is_docking_port_on_edge()
+	var/obj/docking_port/mobile/port = get_docking_port()
+	if(!port)
+		return FALSE
+
+	var/turf/port_turf = get_turf(port)
+	if(!port_turf)
+		return FALSE
+
+	// The docking port's dir points INTO the ship
+	// So the docking entrance is in the REVERSE direction
+	var/docking_dir = REVERSE_DIR(port.dir)
+
+	// Check if the tile in the docking direction is outside the shuttle
+	var/turf/dock_facing_turf = get_step(port_turf, docking_dir)
+	if(!dock_facing_turf)
+		return TRUE // Edge of map, technically on edge
+
+	var/area/facing_area = get_area(dock_facing_turf)
+	return !(facing_area in port.shuttle_areas)
+
+/**
  * Gets a list of all valid edge airlocks on this ship
  */
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_valid_airlocks()
@@ -496,6 +521,48 @@
 				valid_airlocks += airlock
 
 	return valid_airlocks
+
+/**
+ * Resets tiny fans - removes all existing fans and adds new ones to all edge airlocks
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/reset_fans()
+	if(!can_operate())
+		last_operation_message = "Cannot modify ship while in flight."
+		last_operation_success = FALSE
+		return FALSE
+
+	var/obj/docking_port/mobile/port = get_docking_port()
+	if(!port)
+		last_operation_message = "No shuttle detected."
+		last_operation_success = FALSE
+		return FALSE
+
+	var/fans_removed = 0
+	var/fans_added = 0
+
+	// Remove all existing tiny fans in shuttle areas
+	for(var/area/shuttle_area as anything in port.shuttle_areas)
+		for(var/obj/structure/fans/tiny/fan in shuttle_area)
+			qdel(fan)
+			fans_removed++
+
+	// Add new tiny fans to all edge airlocks
+	for(var/obj/machinery/door/airlock/airlock in get_valid_airlocks())
+		var/turf/airlock_turf = get_turf(airlock)
+		if(!airlock_turf)
+			continue
+		// Check if there's already a fan here (shouldn't be after removal, but safety check)
+		var/has_fan = FALSE
+		for(var/obj/structure/fans/tiny/existing in airlock_turf)
+			has_fan = TRUE
+			break
+		if(!has_fan)
+			new /obj/structure/fans/tiny(airlock_turf)
+			fans_added++
+
+	last_operation_message = "Fans reset: [fans_removed] removed, [fans_added] added to edge airlocks."
+	last_operation_success = TRUE
+	return TRUE
 
 /**
  * Gets information about the current docking port location
@@ -641,6 +708,7 @@
 
 	// Current docking port info
 	data["currentPort"] = get_current_docking_port_info()
+	data["dockingPortOnEdge"] = is_docking_port_on_edge()
 
 	// Get the current port turf for comparison
 	var/turf/current_port_turf = get_turf(port)
@@ -700,6 +768,9 @@
 				to_chat(usr, span_warning("Ship must be docked to enter construction mode."))
 				return TRUE
 			enter_construction_mode(usr)
+			return TRUE
+		if("reset_fans")
+			reset_fans()
 			return TRUE
 
 	return FALSE

@@ -81,7 +81,7 @@
 /datum/action/innate/construction/ship/deconstruct
 	name = "Deconstruct"
 	button_icon = 'icons/mob/actions/actions_shuttle.dmi'
-	button_icon_state = "delete"
+	button_icon_state = "clear_turf"
 
 /datum/action/innate/construction/ship/deconstruct/Activate()
 	if(..())
@@ -90,6 +90,17 @@
 		return
 	var/turf/target_turf = get_turf(remote_eye)
 	var/atom/rcd_target = target_turf
+
+	// Check for indestructible objects blocking deconstruction (blast doors, r-walls, etc.)
+	for(var/obj/blocker in target_turf)
+		if(blocker.resistance_flags & INDESTRUCTIBLE)
+			remote_eye.balloon_alert(owner, "blocked by [blocker.name]!")
+			return
+
+	// Also check if the turf itself is indestructible
+	if(target_turf.resistance_flags & INDESTRUCTIBLE)
+		remote_eye.balloon_alert(owner, "can't deconstruct that!")
+		return
 
 	// Find structures that can be deconstructed
 	for(var/obj/S in target_turf)

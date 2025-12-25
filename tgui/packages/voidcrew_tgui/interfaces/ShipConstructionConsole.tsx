@@ -37,6 +37,7 @@ interface Data {
   lastMessage: string;
   lastSuccess: boolean;
   currentPort: PortData | null;
+  dockingPortOnEdge: boolean;
   airlocks: AirlockData[];
   rcdMatter: number;
   rcdMaxMatter: number;
@@ -60,6 +61,7 @@ export const ShipConstructionConsole = () => {
     lastMessage,
     lastSuccess,
     currentPort,
+    dockingPortOnEdge,
     airlocks,
     rcdMatter,
     rcdMaxMatter,
@@ -129,10 +131,12 @@ export const ShipConstructionConsole = () => {
                 shipName={shipName}
                 shipState={shipState}
                 canOperate={canOperate}
+                isNotCrew={isNotCrew}
                 rcdMatter={rcdMatter}
                 rcdMaxMatter={rcdMaxMatter}
                 usingSilo={usingSilo}
                 currentPort={currentPort}
+                dockingPortOnEdge={dockingPortOnEdge}
                 shipWidth={shipWidth}
                 shipHeight={shipHeight}
                 maxDimensionLong={maxDimensionLong}
@@ -168,10 +172,12 @@ interface OverviewTabProps {
   shipName: string;
   shipState: string;
   canOperate: boolean;
+  isNotCrew: boolean;
   rcdMatter: number;
   rcdMaxMatter: number;
   usingSilo: boolean;
   currentPort: PortData | null;
+  dockingPortOnEdge: boolean;
   shipWidth: number;
   shipHeight: number;
   maxDimensionLong: number;
@@ -179,14 +185,17 @@ interface OverviewTabProps {
 }
 
 const OverviewTab = (props: OverviewTabProps) => {
+  const { act } = useBackend();
   const {
     shipName,
     shipState,
     canOperate,
+    isNotCrew,
     rcdMatter,
     rcdMaxMatter,
     usingSilo,
     currentPort,
+    dockingPortOnEdge,
     shipWidth,
     shipHeight,
     maxDimensionLong,
@@ -275,17 +284,49 @@ const OverviewTab = (props: OverviewTabProps) => {
       <Stack.Item>
         <Section title="Current Docking Port">
           {currentPort ? (
-            <LabeledList>
-              <LabeledList.Item label="Position">
-                ({currentPort.x}, {currentPort.y})
-              </LabeledList.Item>
-              <LabeledList.Item label="Direction">
-                {currentPort.dir}
-              </LabeledList.Item>
-            </LabeledList>
+            <>
+              <LabeledList>
+                <LabeledList.Item label="Position">
+                  ({currentPort.x}, {currentPort.y})
+                </LabeledList.Item>
+                <LabeledList.Item label="Direction">
+                  {currentPort.dir}
+                </LabeledList.Item>
+                <LabeledList.Item label="Status">
+                  {dockingPortOnEdge ? (
+                    <span style={{ color: '#6c6' }}>On edge - OK</span>
+                  ) : (
+                    <span style={{ color: '#c66' }}>Blocked!</span>
+                  )}
+                </LabeledList.Item>
+              </LabeledList>
+              {!dockingPortOnEdge && (
+                <NoticeBox danger mt={1}>
+                  WARNING: You have built past your docking port! Docking may
+                  fail. Use Port Relocation to move the docking port to an edge
+                  airlock.
+                </NoticeBox>
+              )}
+            </>
           ) : (
             <NoticeBox>No docking port detected</NoticeBox>
           )}
+        </Section>
+      </Stack.Item>
+
+      <Stack.Item>
+        <Section title="Ship Maintenance">
+          <Stack vertical>
+            <Stack.Item>
+              <Button
+                icon="fan"
+                content="Reset Fans"
+                tooltip="Removes all tiny fans and adds new ones to all external airlocks"
+                disabled={!canOperate || isNotCrew}
+                onClick={() => act('reset_fans')}
+              />
+            </Stack.Item>
+          </Stack>
         </Section>
       </Stack.Item>
 
