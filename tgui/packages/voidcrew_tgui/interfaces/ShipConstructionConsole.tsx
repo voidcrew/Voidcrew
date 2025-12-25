@@ -42,6 +42,10 @@ interface Data {
   rcdMaxMatter: number;
   usingSilo: boolean;
   isInConstructionMode: boolean;
+  shipWidth: number;
+  shipHeight: number;
+  maxDimensionLong: number;
+  maxDimensionShort: number;
 }
 
 type TabType = 'overview' | 'construction' | 'relocation';
@@ -61,6 +65,10 @@ export const ShipConstructionConsole = () => {
     rcdMaxMatter,
     usingSilo,
     isInConstructionMode,
+    shipWidth,
+    shipHeight,
+    maxDimensionLong,
+    maxDimensionShort,
   } = data;
 
   const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -125,6 +133,10 @@ export const ShipConstructionConsole = () => {
                 rcdMaxMatter={rcdMaxMatter}
                 usingSilo={usingSilo}
                 currentPort={currentPort}
+                shipWidth={shipWidth}
+                shipHeight={shipHeight}
+                maxDimensionLong={maxDimensionLong}
+                maxDimensionShort={maxDimensionShort}
               />
             )}
             {activeTab === 'construction' && (
@@ -160,6 +172,10 @@ interface OverviewTabProps {
   rcdMaxMatter: number;
   usingSilo: boolean;
   currentPort: PortData | null;
+  shipWidth: number;
+  shipHeight: number;
+  maxDimensionLong: number;
+  maxDimensionShort: number;
 }
 
 const OverviewTab = (props: OverviewTabProps) => {
@@ -171,6 +187,10 @@ const OverviewTab = (props: OverviewTabProps) => {
     rcdMaxMatter,
     usingSilo,
     currentPort,
+    shipWidth,
+    shipHeight,
+    maxDimensionLong,
+    maxDimensionShort,
   } = props;
 
   return (
@@ -183,6 +203,43 @@ const OverviewTab = (props: OverviewTabProps) => {
             </LabeledList.Item>
             <LabeledList.Item label="Console Status">
               {canOperate ? 'Ready' : 'Operations Unavailable'}
+            </LabeledList.Item>
+          </LabeledList>
+        </Section>
+      </Stack.Item>
+
+      <Stack.Item>
+        <Section title="Ship Dimensions">
+          <LabeledList>
+            <LabeledList.Item label="Width">
+              <ProgressBar
+                value={shipWidth}
+                maxValue={maxDimensionLong}
+                ranges={{
+                  good: [0, maxDimensionShort],
+                  average: [maxDimensionShort, maxDimensionLong],
+                  bad: [maxDimensionLong, Infinity],
+                }}
+              >
+                {shipWidth} / {maxDimensionLong}
+              </ProgressBar>
+            </LabeledList.Item>
+            <LabeledList.Item label="Height">
+              <ProgressBar
+                value={shipHeight}
+                maxValue={maxDimensionLong}
+                ranges={{
+                  good: [0, maxDimensionShort],
+                  average: [maxDimensionShort, maxDimensionLong],
+                  bad: [maxDimensionLong, Infinity],
+                }}
+              >
+                {shipHeight} / {maxDimensionLong}
+              </ProgressBar>
+            </LabeledList.Item>
+            <LabeledList.Item label="Limit Note" color="label">
+              Max {maxDimensionLong}. Only one dimension may exceed{' '}
+              {maxDimensionShort}.
             </LabeledList.Item>
           </LabeledList>
         </Section>

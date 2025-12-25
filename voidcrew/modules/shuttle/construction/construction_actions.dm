@@ -77,6 +77,56 @@
 		// Expand shuttle to include the new turf
 		ship_console.expand_shuttle_to_turf(target_turf, owner)
 
+/// Ship-specific RCD deconstruct action
+/datum/action/innate/construction/ship/deconstruct
+	name = "Deconstruct"
+	button_icon_state = "delete"
+
+/datum/action/innate/construction/ship/deconstruct/Activate()
+	if(..())
+		return
+	if(!check_spot())
+		return
+	var/turf/target_turf = get_turf(remote_eye)
+	var/atom/rcd_target = target_turf
+
+	// Find structures that can be deconstructed
+	for(var/obj/S in target_turf)
+		if(LAZYLEN(S.rcd_vals(owner, base_console.internal_rcd)))
+			rcd_target = S
+
+	owner.changeNext_move(CLICK_CD_RANGE)
+	check_rcd()
+
+	// Temporarily set RCD to deconstruct mode
+	var/old_mode = base_console.internal_rcd.mode
+	base_console.internal_rcd.mode = RCD_DECONSTRUCT
+
+	// Check if we can deconstruct this target
+	var/list/rcd_results = rcd_target.rcd_vals(owner, base_console.internal_rcd)
+	if(!rcd_results)
+		base_console.internal_rcd.mode = old_mode
+		remote_eye.balloon_alert(owner, "can't deconstruct that!")
+		return
+
+	var/cost = rcd_results["cost"]
+	if(!base_console.internal_rcd.checkResource(cost, owner))
+		base_console.internal_rcd.mode = old_mode
+		remote_eye.balloon_alert(owner, "not enough resources!")
+		return
+
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+
+	// Perform the RCD deconstruction
+	base_console.internal_rcd.rcd_create(rcd_target, owner)
+	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+
+	// Restore original mode
+	base_console.internal_rcd.mode = old_mode
+
+	// Clean up any empty shuttle turfs after deconstruction
+	ship_console.cleanup_deconstructed_turfs()
+
 /// Ship-specific RCD configure action
 /datum/action/innate/construction/ship/configure_mode
 	name = "Configure RCD"

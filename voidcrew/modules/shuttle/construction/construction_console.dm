@@ -25,6 +25,31 @@
 /// This is needed because remote construction doesn't have a user with an ID card
 /obj/item/construction/rcd/internal/ship
 	name = "ship internal RCD"
+	/// Reference to the ship construction console for drone tracking
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console
+
+/// Override build_delay to cancel if the drone moves
+/obj/item/construction/rcd/internal/ship/build_delay(mob/user, delay, atom/target)
+	if(delay <= 0)
+		return TRUE
+
+	// Get the drone's current location to track movement
+	var/mob/eye/camera/remote/drone = ship_console?.eyeobj
+	if(!drone)
+		return ..()
+
+	var/turf/drone_start_turf = get_turf(drone)
+
+	// Create a callback that checks if the drone moved
+	var/datum/callback/drone_check = CALLBACK(src, PROC_REF(check_drone_stationary), drone, drone_start_turf)
+
+	return do_after(user, delay, target, extra_checks = drone_check)
+
+/// Callback to check if drone is still on the same turf
+/obj/item/construction/rcd/internal/ship/proc/check_drone_stationary(mob/eye/camera/remote/drone, turf/start_turf)
+	if(QDELETED(drone))
+		return FALSE
+	return get_turf(drone) == start_turf
 
 /// Override to bypass account check when using silo - ships use SILICON_OVERRIDE
 /obj/item/construction/rcd/internal/ship/useResource(amount, mob/user)
@@ -89,7 +114,9 @@
 /obj/machinery/computer/camera_advanced/base_construction/ship/Initialize(mapload)
 	// Create ship-specific internal RCD with silo link capability
 	// Uses /ship subtype to bypass ore silo account checks
-	internal_rcd = new /obj/item/construction/rcd/internal/ship(src)
+	var/obj/item/construction/rcd/internal/ship/ship_rcd = new(src)
+	ship_rcd.ship_console = src
+	internal_rcd = ship_rcd
 	internal_rcd.construction_upgrades |= RCD_UPGRADE_SILO_LINK
 	// Add the remote materials component to the RCD so it can link to a silo
 	// The silo_mats needs to be added after setting the upgrade flag
@@ -129,6 +156,7 @@
 /obj/machinery/computer/camera_advanced/base_construction/ship/populate_actions_list()
 	actions += new /datum/action/innate/construction/ship/configure_mode(src)
 	actions += new /datum/action/innate/construction/ship/build(src)
+	actions += new /datum/action/innate/construction/ship/deconstruct(src)
 
 /// Override to show UI instead of immediately entering construction mode
 /// We skip the camera_advanced parent's attack_hand which would enter camera mode
@@ -389,12 +417,12 @@
 	if(!port)
 		return FALSE
 
-	// Get current shuttle bounds
+	// Get current shuttle bounds (normalize since return_coords order depends on direction)
 	var/list/bounds = port.return_coords()
-	var/x0 = bounds[1]
-	var/y0 = bounds[2]
-	var/x1 = bounds[3]
-	var/y1 = bounds[4]
+	var/x0 = min(bounds[1], bounds[3])
+	var/y0 = min(bounds[2], bounds[4])
+	var/x1 = max(bounds[1], bounds[3])
+	var/y1 = max(bounds[2], bounds[4])
 
 	// Calculate new bounds if we add this turf
 	var/new_x0 = min(x0, new_turf.x)
@@ -595,11 +623,27 @@
 		data["rcdMaxMatter"] = 0
 		data["usingSilo"] = FALSE
 
+	// Ship dimensions
+	var/obj/docking_port/mobile/port = get_docking_port()
+	if(port)
+		var/list/bounds = port.return_coords()
+		var/x0 = min(bounds[1], bounds[3])
+		var/y0 = min(bounds[2], bounds[4])
+		var/x1 = max(bounds[1], bounds[3])
+		var/y1 = max(bounds[2], bounds[4])
+		data["shipWidth"] = x1 - x0 + 1
+		data["shipHeight"] = y1 - y0 + 1
+	else
+		data["shipWidth"] = 0
+		data["shipHeight"] = 0
+	data["maxDimensionLong"] = RESERVE_DOCK_MAX_SIZE_LONG
+	data["maxDimensionShort"] = RESERVE_DOCK_MAX_SIZE_SHORT
+
 	// Current docking port info
 	data["currentPort"] = get_current_docking_port_info()
 
 	// Get the current port turf for comparison
-	var/turf/current_port_turf = get_turf(get_docking_port())
+	var/turf/current_port_turf = get_turf(port)
 
 	// Available airlocks
 	var/list/airlock_data = list()
