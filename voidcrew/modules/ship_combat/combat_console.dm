@@ -123,8 +123,8 @@
 	var/attack_mode = FALSE
 	/// Currently selected missile type filter (null = fire any)
 	var/selected_missile_type
-	/// Selected direction for missile approach (NORTH, SOUTH, EAST, WEST, or null for auto)
-	var/selected_missile_direction
+	/// Selected approach direction for missiles and lasers (NORTH/SOUTH/EAST/WEST or null for auto)
+	var/selected_approach_direction
 
 	// ===== INTERDICTOR VARIABLES =====
 	/// Is interdiction currently active (slowing target)?
@@ -804,6 +804,12 @@
 	if(istype(tool.buffer, /obj/machinery/ship_combat/laser_turret))
 		var/obj/machinery/ship_combat/laser_turret/turret = tool.buffer
 
+		// Check if at max turrets
+		if(length(linked_turrets) >= LASER_MAX_TURRETS)
+			balloon_alert(user, "max turrets reached")
+			to_chat(user, span_warning("Cannot link more than [LASER_MAX_TURRETS] laser turrets to one ship!"))
+			return ITEM_INTERACT_BLOCKING
+
 		// Check if already linked
 		for(var/datum/weakref/ref in linked_turrets)
 			if(ref.resolve() == turret)
@@ -1156,7 +1162,7 @@
 			var/list/offset = stagger_offsets[offset_index]
 
 			// Fire at the SAME target, but with staggered spawn positions
-			if(launcher.fire(target_turf, target_ship, current_ship, user, offset[1], offset[2], selected_missile_direction))
+			if(launcher.fire(target_turf, target_ship, current_ship, user, offset[1], offset[2], selected_approach_direction))
 				fired_count++
 
 			// Cycle through offsets
@@ -1196,7 +1202,7 @@
 		if(selected_missile_type && launcher.loaded_missile)
 			if(launcher.loaded_missile["payload_type"] != selected_missile_type)
 				continue // Missile type doesn't match
-		if(launcher.fire(target_turf, target_ship, current_ship, user, approach_dir = selected_missile_direction))
+		if(launcher.fire(target_turf, target_ship, current_ship, user, approach_dir = selected_approach_direction))
 			// Firing breaks cloak
 			if(current_ship)
 				SEND_SIGNAL(current_ship, COMSIG_SHIP_WEAPON_FIRED)
@@ -1230,7 +1236,7 @@
 			continue
 		if(!turret.can_fire())
 			continue
-		if(turret.fire(target_turf, target_ship, current_ship, user))
+		if(turret.fire(target_turf, target_ship, current_ship, user, approach_direction = selected_approach_direction))
 			return TRUE
 
 	if(user)
@@ -1294,6 +1300,7 @@
 		combined_damage,
 		primary_turret.power_level,
 		is_multi_beam,
+		selected_approach_direction,
 	)
 
 	// Create visual beam on the overmap between ships
@@ -1308,7 +1315,7 @@
 		)
 
 	// Play sound (extrarange and ignore_walls so it's audible from inside the ship)
-	playsound(primary_turret, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE, extrarange = 20, ignore_walls = TRUE)
+	playsound(primary_turret, 'sound/items/weapons/beam_sniper.ogg', 100, TRUE, extrarange = 50, ignore_walls = TRUE)
 
 	// Visual feedback
 	primary_turret.visible_message(span_danger("[turret_count > 1 ? "Multiple turrets fire" : "[primary_turret] fires"] a [is_multi_beam ? "concentrated" : ""] laser beam!"))
@@ -1402,19 +1409,19 @@
 
 	switch(choice)
 		if("Auto")
-			selected_missile_direction = null
+			selected_approach_direction = null
 			to_chat(user, span_notice("Missiles will approach from the closest edge to target."))
 		if("North")
-			selected_missile_direction = NORTH
+			selected_approach_direction = NORTH
 			to_chat(user, span_notice("Missiles will approach from the North."))
 		if("South")
-			selected_missile_direction = SOUTH
+			selected_approach_direction = SOUTH
 			to_chat(user, span_notice("Missiles will approach from the South."))
 		if("East")
-			selected_missile_direction = EAST
+			selected_approach_direction = EAST
 			to_chat(user, span_notice("Missiles will approach from the East."))
 		if("West")
-			selected_missile_direction = WEST
+			selected_approach_direction = WEST
 			to_chat(user, span_notice("Missiles will approach from the West."))
 
 /// Get status of all linked launchers
@@ -1724,10 +1731,10 @@
 		return
 	console.open_missile_radial(owner)
 
-// Select missile approach direction
+// Select approach direction for missiles and lasers
 /datum/action/innate/ship_combat/select_direction
 	name = "Select Direction"
-	desc = "Select which direction missiles will approach from."
+	desc = "Select which direction missiles and lasers will approach from."
 	button_icon_state = "mech_view_stats"
 
 /datum/action/innate/ship_combat/select_direction/Activate()

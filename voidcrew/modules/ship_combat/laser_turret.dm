@@ -222,6 +222,9 @@
 	// Find a combat console on this ship
 	for(var/area/ship_area in our_ship.shuttle.shuttle_areas)
 		for(var/obj/machinery/computer/camera_advanced/ship_combat/console in ship_area)
+			// Check if console is at max turrets
+			if(length(console.linked_turrets) >= LASER_MAX_TURRETS)
+				continue
 			// Found one - link to it
 			if(link_console(console))
 				// Also add ourselves to the console's turret list
@@ -284,7 +287,8 @@
 /// Returns TRUE if fired successfully
 /// multi_beam: If TRUE, uses multi-beam sprites (for combined turret fire)
 /// override_damage: If provided, uses this damage value instead of calculating from turret stats
-/obj/machinery/ship_combat/laser_turret/proc/fire(turf/target, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/source_ship, mob/user, multi_beam = FALSE, override_damage = 0)
+/// approach_direction: If provided, forces the laser to come from this direction instead of auto-calculating
+/obj/machinery/ship_combat/laser_turret/proc/fire(turf/target, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/source_ship, mob/user, multi_beam = FALSE, override_damage = 0, approach_direction = null)
 	if(!can_fire())
 		return FALSE
 
@@ -318,6 +322,7 @@
 		damage,
 		power_level,
 		multi_beam,
+		approach_direction,
 	)
 
 	// Create visual beam on the overmap between ships
@@ -336,7 +341,7 @@
 	new /obj/effect/temp_visual/turret_laser_visual(get_turf(src), dir, multi_beam)
 
 	// Play sound (extrarange and ignore_walls so it's audible from inside the ship)
-	playsound(src, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE, extrarange = 20, ignore_walls = TRUE)
+	playsound(src, 'sound/items/weapons/beam_sniper.ogg', 100, TRUE, extrarange = 50, ignore_walls = TRUE)
 
 	// Visual feedback
 	visible_message(span_danger("[src] fires a laser beam!"))
@@ -378,6 +383,18 @@
 	. = ITEM_INTERACT_BLOCKING
 	default_unfasten_wrench(user, tool)
 	return ITEM_INTERACT_SUCCESS
+
+// Alt+click to rotate when unwrenched
+/obj/machinery/ship_combat/laser_turret/AltClick(mob/user)
+	. = ..()
+	if(!user.can_perform_action(src, NEED_HANDS))
+		return
+	if(anchored)
+		to_chat(user, span_warning("Unwrench [src] first to rotate it!"))
+		return
+	// Rotate through cardinal directions
+	setDir(turn(dir, -90))
+	balloon_alert(user, "rotated [dir2text(dir)]")
 
 /obj/machinery/ship_combat/laser_turret/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
 	// Multitool linking - store self in buffer

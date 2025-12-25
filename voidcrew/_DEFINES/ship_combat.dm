@@ -143,6 +143,8 @@
 #define LASER_IDLE_POWER 50
 /// Base charge rate from powernet to cell (power per second)
 #define LASER_CHARGE_RATE_BASE 100
+/// Maximum number of laser turrets that can be linked to a ship
+#define LASER_MAX_TURRETS 10
 
 // Laser stock part multipliers (per tier above 1)
 /// Micro-laser: +25% damage per tier

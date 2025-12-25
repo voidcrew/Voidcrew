@@ -34,7 +34,7 @@
 	/// Whether this is a multi-beam (combined fire from multiple turrets)
 	var/is_multi_beam = FALSE
 
-/obj/effect/ship_laser_beam/Initialize(mapload, turf/target, obj/structure/overmap/ship/target_ship_ref, obj/structure/overmap/ship/source_ship_ref, laser_damage, laser_power_level = 1, multi_beam = FALSE)
+/obj/effect/ship_laser_beam/Initialize(mapload, turf/target, obj/structure/overmap/ship/target_ship_ref, obj/structure/overmap/ship/source_ship_ref, laser_damage, laser_power_level = 1, multi_beam = FALSE, forced_direction = null)
 	. = ..()
 
 	target_turf = target
@@ -42,6 +42,9 @@
 	source_ship = source_ship_ref
 	power_level = laser_power_level
 	is_multi_beam = multi_beam
+	// If a direction is forced, use it instead of calculating one
+	if(forced_direction)
+		approach_direction = forced_direction
 
 	if(laser_damage)
 		damage = laser_damage
@@ -83,7 +86,9 @@
 	var/spawn_dist = 10
 
 	// Find the best approach direction (looking for holes like missiles do)
-	approach_direction = find_clear_approach_direction(target_turf, min_x, max_x, min_y, max_y, spawn_dist)
+	// Skip if a direction was already forced in Initialize
+	if(!approach_direction)
+		approach_direction = find_clear_approach_direction(target_turf, min_x, max_x, min_y, max_y, spawn_dist)
 
 	var/spawn_x = target_turf.x
 	var/spawn_y = target_turf.y
@@ -517,17 +522,26 @@
 
 /obj/effect/temp_visual/turret_muzzle_flash/Initialize(mapload, direction = SOUTH)
 	. = ..()
-	// Rotate based on direction (sprite default faces NORTH)
+	// Rotate and offset based on direction (sprite default faces NORTH)
+	// Each direction has custom offsets to match the turret barrel position
 	var/angle
 	switch(direction)
 		if(NORTH)
 			angle = 0
+			pixel_y = 18
+			pixel_x = 0
 		if(SOUTH)
 			angle = 180
+			pixel_y = -14
+			pixel_x = 0
 		if(EAST)
 			angle = 90
+			pixel_x = 16
+			pixel_y = 4
 		if(WEST)
 			angle = -90
+			pixel_x = -16
+			pixel_y = 4
 		else
 			angle = 0
 	var/matrix/M = matrix()

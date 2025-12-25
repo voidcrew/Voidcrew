@@ -956,7 +956,7 @@
 		spawn_shield_walls()
 
 	update_appearance()
-	playsound(src, 'sound/machines/computer/computer_start.ogg', 50, TRUE)
+	playsound(src, 'sound/vehicles/mecha/mech_shield_raise.ogg', 100, TRUE, extrarange = 50, ignore_walls = TRUE)
 
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
@@ -1000,7 +1000,14 @@
 	var/list/boundary_turfs = get_random_boundary_turfs(8)
 	for(var/turf/T in boundary_turfs)
 		new /obj/effect/temp_visual/ship_shield_break(T)
-	playsound(src, 'sound/effects/glass/glassbr1.ogg', 80, TRUE)
+	playsound(src, 'sound/vehicles/mecha/mech_shield_drop.ogg', 100, TRUE, extrarange = 50, ignore_walls = TRUE)
+	// Play forcefield hit sound (same as normal shield hits)
+	var/sound_file = pick(
+		'voidcrew/sound/machines/forcefield/hit1.ogg',
+		'voidcrew/sound/machines/forcefield/hit2.ogg',
+		'voidcrew/sound/machines/forcefield/hit3.ogg',
+	)
+	playsound(src, sound_file, 100, TRUE, extrarange = 50, ignore_walls = TRUE)
 
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
@@ -1091,7 +1098,6 @@
 			'voidcrew/sound/machines/forcefield/hit1.ogg',
 			'voidcrew/sound/machines/forcefield/hit2.ogg',
 			'voidcrew/sound/machines/forcefield/hit3.ogg',
-			'voidcrew/sound/machines/forcefield/hit4.ogg',
 		)
 		// Play sound from nearest ship tile to impact (so crew hears directional audio)
 		var/turf/sound_loc = get_nearest_ship_turf(effect_loc)
