@@ -52,7 +52,7 @@
 	var/list/obj/structure/ship_shield_wall/shield_walls = list()
 
 	/// Debug logging for shield direction calculations
-	var/debug_shield_directions = FALSE
+	var/debug_shield_directions = TRUE
 
 /obj/machinery/ship_combat/shield_generator/Initialize(mapload)
 	. = ..()
@@ -229,23 +229,38 @@
 	debug_log("Found [length(candidate_turfs)] candidate turfs before pocket filtering")
 
 	// Filter out "pocket turfs" - space turfs surrounded by ship on 3+ sides
-	// These are narrow indentations where we want the shield to bridge across instead
+	// Also filter "tunnel turfs" - space turfs with ship on opposite cardinal sides (N+S or E+W)
+	// These are narrow indentations/corridors where we want the shield to bridge across instead
 	var/list/rejected_pockets = list()
 	for(var/turf/candidate in candidate_turfs)
+		var/ship_neighbor_dirs = NONE
 		var/ship_neighbor_count = 0
 		var/list/ship_dirs = list()
 		for(var/dir in GLOB.cardinals)
 			var/turf/neighbor = get_step(candidate, dir)
 			if(neighbor && (get_area(neighbor) in ship_areas))
 				ship_neighbor_count++
+				ship_neighbor_dirs |= dir
 				ship_dirs += dir_to_string(dir)
+
+		// Check for tunnel condition: ship on opposite sides (N+S or E+W)
+		var/is_tunnel = FALSE
+		if((ship_neighbor_dirs & NORTH) && (ship_neighbor_dirs & SOUTH))
+			is_tunnel = TRUE
+		if((ship_neighbor_dirs & EAST) && (ship_neighbor_dirs & WEST))
+			is_tunnel = TRUE
+
 		// If surrounded on 3+ sides, it's a pocket - skip it so shield bridges across
-		if(ship_neighbor_count < 3)
-			boundary_turfs |= candidate
-			debug_log("ACCEPTED ([candidate.x],[candidate.y]): [ship_neighbor_count] ship neighbors ([ship_dirs.Join(",")])")
-		else
+		// If ship is on opposite sides, it's a tunnel - skip it
+		if(ship_neighbor_count >= 3)
 			rejected_pockets += candidate
 			debug_log("REJECTED POCKET ([candidate.x],[candidate.y]): [ship_neighbor_count] ship neighbors ([ship_dirs.Join(",")])")
+		else if(is_tunnel)
+			rejected_pockets += candidate
+			debug_log("REJECTED TUNNEL ([candidate.x],[candidate.y]): ship on opposite sides ([ship_dirs.Join(",")])")
+		else
+			boundary_turfs |= candidate
+			debug_log("ACCEPTED ([candidate.x],[candidate.y]): [ship_neighbor_count] ship neighbors ([ship_dirs.Join(",")])")
 
 	debug_log("Pocket filtering: [length(boundary_turfs)] accepted, [length(rejected_pockets)] rejected as pockets")
 
@@ -1101,11 +1116,19 @@
 			ship.ship_announce("Shields online.", "Shield Status")
 
 /// Deactivates shields (called when power_allocation set to 0)
+/// Triggers cooldown just like breaking - can't just flip shields on/off instantly
 /obj/machinery/ship_combat/shield_generator/proc/deactivate_shields()
 	if(!active)
 		return
 
 	active = FALSE
+	broken = TRUE
+	shield_health = 0
+	overhealth = 0
+
+	// Start cooldown (same as break_shields)
+	var/cooldown_time = SHIP_SHIELD_BROKEN_COOLDOWN * get_cooldown_modifier()
+	COOLDOWN_START(src, reactivation_cooldown, cooldown_time)
 
 	// Only remove shield walls if no other active generators on this ship
 	// Another generator might still be keeping the shield up
@@ -1114,6 +1137,10 @@
 
 	update_appearance()
 	playsound(src, 'sound/machines/terminal/terminal_off.ogg', 25, FALSE)
+
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	if(ship && count_active_generators() == 0)
+		ship.ship_announce("Shields deactivated. Reactivation available in [DisplayTimeText(cooldown_time)].", "Shield Status")
 
 /// Called when shields are depleted by damage
 /obj/machinery/ship_combat/shield_generator/proc/break_shields()
