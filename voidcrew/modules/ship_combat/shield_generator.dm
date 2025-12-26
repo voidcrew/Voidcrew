@@ -215,14 +215,27 @@
 	var/list/ship_areas = ship.shuttle.shuttle_areas
 
 	// First pass: Get all turfs in ship areas and find cardinally adjacent space turfs
+	var/list/candidate_turfs = list()
 	for(var/area/ship_area in ship_areas)
 		for(var/turf/T in ship_area)
 			// Check each cardinal direction for space turfs
 			for(var/dir in GLOB.cardinals)
 				var/turf/neighbor = get_step(T, dir)
-				// If neighbor is space (not part of ship), add it as a boundary turf
+				// If neighbor is space (not part of ship), add it as a candidate boundary turf
 				if(neighbor && (isspaceturf(neighbor) || !(get_area(neighbor) in ship_areas)))
-					boundary_turfs |= neighbor  // Use |= to avoid duplicates
+					candidate_turfs |= neighbor  // Use |= to avoid duplicates
+
+	// Filter out "pocket turfs" - space turfs surrounded by ship on 3+ sides
+	// These are narrow indentations where we want the shield to bridge across instead
+	for(var/turf/candidate in candidate_turfs)
+		var/ship_neighbor_count = 0
+		for(var/dir in GLOB.cardinals)
+			var/turf/neighbor = get_step(candidate, dir)
+			if(neighbor && (get_area(neighbor) in ship_areas))
+				ship_neighbor_count++
+		// If surrounded on 3+ sides, it's a pocket - skip it so shield bridges across
+		if(ship_neighbor_count < 3)
+			boundary_turfs |= candidate
 
 	// Second pass: Find gap turfs that are only DIAGONALLY adjacent to ship
 	// These occur on diagonal ship edges where turfs don't touch ship cardinally
