@@ -345,22 +345,15 @@
 		if(offset_turf)
 			spawn_turf = offset_turf
 
-	// Create missile effect using stored data
+	// Store missile data before clearing
 	var/effect_type = loaded_missile["effect_type"]
 	var/obj/item/grenade/chem_grenade/grenade_to_pass = loaded_missile["grenade"]
-	new effect_type(
-		spawn_turf,
-		target,
-		target_ship,
-		source_ship,
-		loaded_missile["damage"],
-		loaded_missile["devastation"],
-		loaded_missile["heavy"],
-		loaded_missile["light"],
-		loaded_missile["flame"],
-		loaded_missile["icon_state"],
-		grenade_to_pass,  // For chemical missiles - pass the actual grenade
-	)
+	var/missile_damage = loaded_missile["damage"]
+	var/missile_devastation = loaded_missile["devastation"]
+	var/missile_heavy = loaded_missile["heavy"]
+	var/missile_light = loaded_missile["light"]
+	var/missile_flame = loaded_missile["flame"]
+	var/missile_icon_state = loaded_missile["icon_state"]
 
 	// Clear the loaded missile
 	loaded_missile = null
@@ -393,6 +386,9 @@
 	visible_message(span_danger("[src] fires a missile!"))
 	if(user)
 		to_chat(user, span_notice("Missile away! Target: [target_ship ? target_ship.name : "unknown"]"))
+
+	// Delay actual missile spawn so the launch visual can fly off-screen first
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(create_ship_missile), effect_type, spawn_turf, target, target_ship, source_ship, missile_damage, missile_devastation, missile_heavy, missile_light, missile_flame, missile_icon_state, grenade_to_pass), 1.5 SECONDS)
 
 	update_appearance()
 	return TRUE

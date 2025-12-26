@@ -2,6 +2,24 @@
 // Flying missile projectile that travels toward a target turf
 // Based on meteor movement patterns - spawns at edge of target ship and flies in
 
+/// Global proc to create a ship missile after a delay (called via timer from launcher)
+/proc/create_ship_missile(effect_type, turf/spawn_turf, turf/target, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/source_ship, damage, devastation, heavy, light, flame, icon_state, obj/item/grenade/chem_grenade/grenade)
+	if(!spawn_turf || !target)
+		return
+	new effect_type(
+		spawn_turf,
+		target,
+		target_ship,
+		source_ship,
+		damage,
+		devastation,
+		heavy,
+		light,
+		flame,
+		icon_state,
+		grenade,
+	)
+
 /obj/effect/ship_missile
 	name = "ship missile"
 	desc = "A ship-to-ship missile streaking through space."
