@@ -225,17 +225,29 @@
 				if(neighbor && (isspaceturf(neighbor) || !(get_area(neighbor) in ship_areas)))
 					candidate_turfs |= neighbor  // Use |= to avoid duplicates
 
+	debug_log("=== BOUNDARY DETECTION START ===")
+	debug_log("Found [length(candidate_turfs)] candidate turfs before pocket filtering")
+
 	// Filter out "pocket turfs" - space turfs surrounded by ship on 3+ sides
 	// These are narrow indentations where we want the shield to bridge across instead
+	var/list/rejected_pockets = list()
 	for(var/turf/candidate in candidate_turfs)
 		var/ship_neighbor_count = 0
+		var/list/ship_dirs = list()
 		for(var/dir in GLOB.cardinals)
 			var/turf/neighbor = get_step(candidate, dir)
 			if(neighbor && (get_area(neighbor) in ship_areas))
 				ship_neighbor_count++
+				ship_dirs += dir_to_string(dir)
 		// If surrounded on 3+ sides, it's a pocket - skip it so shield bridges across
 		if(ship_neighbor_count < 3)
 			boundary_turfs |= candidate
+			debug_log("ACCEPTED ([candidate.x],[candidate.y]): [ship_neighbor_count] ship neighbors ([ship_dirs.Join(",")])")
+		else
+			rejected_pockets += candidate
+			debug_log("REJECTED POCKET ([candidate.x],[candidate.y]): [ship_neighbor_count] ship neighbors ([ship_dirs.Join(",")])")
+
+	debug_log("Pocket filtering: [length(boundary_turfs)] accepted, [length(rejected_pockets)] rejected as pockets")
 
 	// Second pass: Find gap turfs that are only DIAGONALLY adjacent to ship
 	// These occur on diagonal ship edges where turfs don't touch ship cardinally
@@ -288,13 +300,37 @@
 				if(has_cardinal_ship)
 					continue  // Already should be in boundary from first pass
 
-				// This is a valid gap turf - diagonally adjacent to ship but not cardinally
+				// Check how many boundary neighbors this gap turf would have
+				// Must have exactly 2 to form a proper connection:
+				// - 1 neighbor = dead end (creates disconnected C shapes)
+				// - 3+ neighbors = T-junction (can't be rendered)
+				var/boundary_neighbor_count = 0
+				for(var/check_dir in GLOB.cardinals)
+					var/turf/potential_neighbor = get_step(card_neighbor, check_dir)
+					if(potential_neighbor in boundary_turfs)
+						boundary_neighbor_count++
+				if(boundary_neighbor_count < 2)
+					debug_log("SKIPPED GAP ([card_neighbor.x],[card_neighbor.y]): only [boundary_neighbor_count] boundary neighbor (dead end)")
+					continue
+				if(boundary_neighbor_count >= 3)
+					debug_log("SKIPPED GAP ([card_neighbor.x],[card_neighbor.y]): [boundary_neighbor_count] boundary neighbors (T-junction)")
+					continue
+
+				// This is a valid gap turf - diagonally adjacent to ship with exactly 2 boundary neighbors
 				gap_turfs |= card_neighbor
 
 		// Add gap turfs to boundary
 		if(length(gap_turfs))
 			found_new = TRUE
 			boundary_turfs |= gap_turfs
+			debug_log("Gap iteration [iteration]: Added [length(gap_turfs)] gap turfs")
+			for(var/turf/gt in gap_turfs)
+				debug_log("  GAP TURF ([gt.x],[gt.y])")
+
+	debug_log("=== BOUNDARY DETECTION COMPLETE ===")
+	debug_log("Final boundary: [length(boundary_turfs)] turfs")
+	for(var/turf/bt in boundary_turfs)
+		debug_log("  BOUNDARY ([bt.x],[bt.y])")
 
 	return boundary_turfs
 
@@ -391,7 +427,7 @@
 /obj/machinery/ship_combat/shield_generator/proc/debug_log(message)
 	if(!debug_shield_directions)
 		return
-	log_admin("SHIELD DEBUG: [message]")
+	log_shuttle("SHIELD DEBUG: [message]")
 
 /// Calculate the direction a shield wall should face
 /// Uses boundary-neighbor awareness: connects TO adjacent shields
@@ -406,16 +442,7 @@
 
 	debug_log("([wall_turf.x],[wall_turf.y]) boundary_dirs=[dir_to_string(boundary_dirs)]")
 
-	// STRAIGHT EDGES: boundary neighbors in opposite directions → bar
-	if((boundary_dirs & NORTH) && (boundary_dirs & SOUTH))
-		debug_log("  -> STRAIGHT N+S, returning SOUTH (vertical bar)")
-		return SOUTH  // Vertical bar
-	if((boundary_dirs & EAST) && (boundary_dirs & WEST))
-		debug_log("  -> STRAIGHT E+W, returning EAST (horizontal bar)")
-		return EAST   // Horizontal bar
-
-	// T-JUNCTIONS: three boundary neighbors
-	// Return bar perpendicular to the missing direction
+	// Count boundary neighbors
 	var/boundary_count = 0
 	if(boundary_dirs & NORTH)
 		boundary_count++
@@ -426,19 +453,86 @@
 	if(boundary_dirs & WEST)
 		boundary_count++
 
+	// T-JUNCTIONS: three boundary neighbors - need special handling
+	// We can only connect 2 directions, so we need to pick which 2
+	// Priority: connect to corner pieces over continuing straight lines
 	if(boundary_count == 3)
-		if(!(boundary_dirs & SOUTH))
-			debug_log("  -> T-JUNCTION missing S, returning SOUTH (vertical bar)")
-			return SOUTH
-		if(!(boundary_dirs & NORTH))
-			debug_log("  -> T-JUNCTION missing N, returning SOUTH (vertical bar)")
-			return SOUTH
-		if(!(boundary_dirs & EAST))
-			debug_log("  -> T-JUNCTION missing E, returning EAST (horizontal bar)")
-			return EAST
-		if(!(boundary_dirs & WEST))
-			debug_log("  -> T-JUNCTION missing W, returning EAST (horizontal bar)")
-			return EAST
+		// Find the "odd" direction (not part of a straight line)
+		var/odd_dir = NONE
+		var/straight_dir1 = NONE
+		var/straight_dir2 = NONE
+		if((boundary_dirs & NORTH) && (boundary_dirs & SOUTH))
+			// N+S straight line, odd is E or W
+			straight_dir1 = NORTH
+			straight_dir2 = SOUTH
+			odd_dir = (boundary_dirs & EAST) ? EAST : WEST
+		else if((boundary_dirs & EAST) && (boundary_dirs & WEST))
+			// E+W straight line, odd is N or S
+			straight_dir1 = EAST
+			straight_dir2 = WEST
+			odd_dir = (boundary_dirs & NORTH) ? NORTH : SOUTH
+
+		if(odd_dir)
+			// Check if the odd direction leads to a corner piece that NEEDS this connection
+			var/turf/odd_neighbor = get_step(wall_turf, odd_dir)
+			var/odd_neighbor_is_corner = FALSE
+			if(odd_neighbor in boundary)
+				// Check what direction the odd neighbor expects
+				// If it's a corner piece pointing toward us, we MUST connect to it
+				var/odd_neighbor_boundary_dirs = NONE
+				for(var/dir in GLOB.cardinals)
+					var/turf/nn = get_step(odd_neighbor, dir)
+					if(nn in boundary)
+						odd_neighbor_boundary_dirs |= dir
+				// Count odd neighbor's boundary neighbors
+				var/odd_neighbor_count = 0
+				if(odd_neighbor_boundary_dirs & NORTH) odd_neighbor_count++
+				if(odd_neighbor_boundary_dirs & SOUTH) odd_neighbor_count++
+				if(odd_neighbor_boundary_dirs & EAST) odd_neighbor_count++
+				if(odd_neighbor_boundary_dirs & WEST) odd_neighbor_count++
+				// If odd neighbor has exactly 2 boundary neighbors, it's a corner
+				if(odd_neighbor_count == 2)
+					odd_neighbor_is_corner = TRUE
+
+			if(odd_neighbor_is_corner)
+				// Connect to the corner (odd_dir) and one of the straight dirs
+				// Pick the straight dir that has a corner/endpoint, not middle of a line
+				var/turf/straight1_neighbor = get_step(wall_turf, straight_dir1)
+				var/turf/straight2_neighbor = get_step(wall_turf, straight_dir2)
+
+				// Check which straight neighbor is an endpoint (has fewer boundary neighbors)
+				var/s1_count = 0
+				var/s2_count = 0
+				if(straight1_neighbor in boundary)
+					for(var/dir in GLOB.cardinals)
+						if(get_step(straight1_neighbor, dir) in boundary)
+							s1_count++
+				if(straight2_neighbor in boundary)
+					for(var/dir in GLOB.cardinals)
+						if(get_step(straight2_neighbor, dir) in boundary)
+							s2_count++
+
+				// Prefer connecting to the neighbor with fewer connections (endpoint)
+				var/keep_straight = (s1_count <= s2_count) ? straight_dir1 : straight_dir2
+				var/result = get_connector_for_dirs(odd_dir, keep_straight)
+				debug_log("  -> T-JUNCTION with corner at [dir_to_string(odd_dir)], connecting [dir_to_string(odd_dir)]+[dir_to_string(keep_straight)], returning [dir_to_string(result)]")
+				return result
+			else
+				// Odd neighbor is not a corner, use straight bar
+				if(straight_dir1 == NORTH || straight_dir1 == SOUTH)
+					debug_log("  -> T-JUNCTION, odd [dir_to_string(odd_dir)] not corner, returning SOUTH (vertical bar)")
+					return SOUTH
+				else
+					debug_log("  -> T-JUNCTION, odd [dir_to_string(odd_dir)] not corner, returning EAST (horizontal bar)")
+					return EAST
+
+	// STRAIGHT EDGES: boundary neighbors in opposite directions → bar
+	if((boundary_dirs & NORTH) && (boundary_dirs & SOUTH))
+		debug_log("  -> STRAIGHT N+S, returning SOUTH (vertical bar)")
+		return SOUTH  // Vertical bar
+	if((boundary_dirs & EAST) && (boundary_dirs & WEST))
+		debug_log("  -> STRAIGHT E+W, returning EAST (horizontal bar)")
+		return EAST   // Horizontal bar
 
 	// FOUR-WAY JUNCTION: all four boundary neighbors
 	if(boundary_count == 4)
@@ -619,6 +713,9 @@
 		if(!(get_area(T) in ship_areas))
 			spawnable_boundary += T
 
+	debug_log("=== WALL SPAWNING START ===")
+	debug_log("Boundary turfs: [length(boundary)], Spawnable: [length(spawnable_boundary)]")
+
 	// First pass: spawn shields on all spawnable boundary turfs
 	for(var/turf/T in spawnable_boundary)
 		var/wall_dir = get_wall_direction(T, ship_areas, spawnable_boundary)
@@ -626,6 +723,7 @@
 		wall.generator_ref = WEAKREF(src)
 		wall.setDir(wall_dir)
 		shield_walls += wall
+		debug_log("SPAWNED WALL ([T.x],[T.y]) dir=[dir_to_string(wall_dir)]")
 
 	// Second pass: build snake chains for TRUE diagonal ship edges
 	// Detect diagonal edges by checking boundary turfs where ship is in 2 perpendicular cardinal directions
@@ -690,6 +788,8 @@
 		if(!continues)
 			continue
 
+		debug_log("DIAGONAL EDGE at ([T.x],[T.y]) ship_dirs=[dir_to_string(ship_dirs)] diagonal_dir=[dir_to_string(diagonal_dir)]")
+
 		// Mark this turf as processed
 		processed_chain_starts += T
 
@@ -697,11 +797,14 @@
 		// Find where to start the chain extension (space turf in diagonal direction)
 		var/turf/chain_start = get_step(T, diagonal_dir)
 		if(!chain_start || !isspaceturf(chain_start))
+			debug_log("  No valid chain start - chain_start is null or not space")
 			continue
 
 		// Build the snake chain extending into space
+		debug_log("  Building chain from ([chain_start.x],[chain_start.y])")
 		build_diagonal_shield_chain(chain_start, diagonal_dir, spawnable_boundary)
 
+	debug_log("=== VALIDATION PASS ===")
 	// Third pass: validate all shield connections and fix any mismatches
 	validate_shield_connections()
 
@@ -792,13 +895,16 @@
 			break
 
 		// Spawn the shield with alternating connector direction
+		var/chain_dir = use_first_connector ? connector_1 : connector_2
 		var/obj/structure/ship_shield_wall/wall = new(current)
 		wall.generator_ref = WEAKREF(src)
-		wall.setDir(use_first_connector ? connector_1 : connector_2)
+		wall.setDir(chain_dir)
 		shield_walls += wall
+		debug_log("  CHAIN WALL ([current.x],[current.y]) dir=[dir_to_string(chain_dir)]")
 
 		// Move to next position (alternating between the two move directions)
-		current = get_step(current, use_first_move ? move_dir_1 : move_dir_2)
+		var/next_move = use_first_move ? move_dir_1 : move_dir_2
+		current = get_step(current, next_move)
 
 		// Alternate for next iteration
 		use_first_connector = !use_first_connector
@@ -900,6 +1006,22 @@
 			var/reverse_dir = REVERSE_DIR(conn_dir)
 			if(!dir_connects(neighbor.dir, reverse_dir))
 				// Mismatch! Neighbor doesn't connect back to us
+
+				// Don't try to fix shields that have already been visited - that causes flip-flopping
+				if(neighbor in visited)
+					debug_log("VALIDATE SKIP: ([neighbor_turf.x],[neighbor_turf.y]) already visited, won't re-fix")
+					continue
+
+				// Count how many shield neighbors this shield has - if 3+, it's a T-junction
+				// and we can't fix it (would just cause flip-flopping)
+				var/neighbor_shield_count = 0
+				for(var/check_dir in GLOB.cardinals)
+					if(get_shield_at(get_step(neighbor_turf, check_dir)))
+						neighbor_shield_count++
+				if(neighbor_shield_count >= 3)
+					debug_log("VALIDATE SKIP: ([neighbor_turf.x],[neighbor_turf.y]) has [neighbor_shield_count] shield neighbors (T-junction)")
+					continue
+
 				// Fix the neighbor to connect properly while keeping its other connection
 				var/list/neighbor_connections = get_connection_dirs(neighbor.dir)
 
