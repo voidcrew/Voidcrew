@@ -1373,7 +1373,9 @@
 		destroy_all_ship_shield_walls()
 
 	update_appearance()
-	playsound(src, 'sound/machines/terminal/terminal_off.ogg', 25, FALSE)
+
+	// Audio effect - same as break_shields so crew knows shields are down
+	playsound(src, 'sound/vehicles/mecha/mech_shield_drop.ogg', 100, TRUE, extrarange = 50, pressure_affected = FALSE, ignore_walls = TRUE)
 
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship && count_active_generators() == 0)
@@ -1395,15 +1397,8 @@
 
 	update_appearance()
 
-	// Audio effects
-	playsound(src, 'sound/vehicles/mecha/mech_shield_drop.ogg', 100, TRUE, extrarange = 50, ignore_walls = TRUE)
-	// Play forcefield hit sound (same as normal shield hits)
-	var/sound_file = pick(
-		'voidcrew/sound/machines/forcefield/hit1.ogg',
-		'voidcrew/sound/machines/forcefield/hit2.ogg',
-		'voidcrew/sound/machines/forcefield/hit3.ogg',
-	)
-	playsound(src, sound_file, 100, TRUE, extrarange = 50, ignore_walls = TRUE)
+	// Audio effect (pressure_affected = FALSE so heard even with hull breaches)
+	playsound(src, 'sound/vehicles/mecha/mech_shield_drop.ogg', 100, TRUE, extrarange = 50, pressure_affected = FALSE, ignore_walls = TRUE)
 
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
@@ -1411,7 +1406,7 @@
 		if(count_active_generators() == 0)
 			destroy_all_ship_shield_walls()
 			SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_BROKEN)
-			ship.ship_announce("WARNING: Shields collapsed! Reactivation available in [DisplayTimeText(cooldown_time)].", "Shield Alert", TRUE, 'sound/machines/engine_alert/engine_alert3.ogg')
+			ship.ship_announce("WARNING: Shields restarting!", "Shield Alert", TRUE, 'sound/machines/engine_alert/engine_alert3.ogg')
 		else
 			// Just announce this generator broke, but shields still up
 			ship.ship_announce("Shield generator damaged! [count_active_generators()] generator(s) remaining.", "Shield Alert")
@@ -1496,8 +1491,9 @@
 			'voidcrew/sound/machines/forcefield/hit3.ogg',
 		)
 		// Play sound from nearest ship tile to impact (so crew hears directional audio)
+		// pressure_affected = FALSE so it's heard even if hull is breached
 		var/turf/sound_loc = get_nearest_ship_turf(effect_loc)
-		playsound(sound_loc || src, sound_file, 60, TRUE, 20, ignore_walls = TRUE)
+		playsound(sound_loc || src, sound_file, 60, TRUE, extrarange = 20, pressure_affected = FALSE, ignore_walls = TRUE)
 
 	// Signal that shield was hit
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()

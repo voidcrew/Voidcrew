@@ -370,7 +370,7 @@ const ShieldsPanel = () => {
   const healthPercent = shield_max_health
     ? shield_health / shield_max_health
     : 0;
-  const powerPercent = (shield_power_allocation ?? 1) * 100;
+  const powerPercent = Math.round((shield_power_allocation ?? 1) * 100);
 
   // Cooldown display
   if (shield_broken && shield_cooldown_active) {
@@ -395,7 +395,7 @@ const ShieldsPanel = () => {
           <Stack.Item>
             <NoticeBox danger>
               <Icon name="triangle-exclamation" mr={1} />
-              SHIELDS COLLAPSED
+              SHIELDS RECHARGING
             </NoticeBox>
           </Stack.Item>
           <Stack.Item>
@@ -486,7 +486,7 @@ const ShieldsPanel = () => {
                 - Shields disabled
               </Box>
             )}
-            {powerPercent > 100 && (
+            {powerPercent > 100 && shield_health >= shield_max_health && (
               <Box inline color="cyan" ml={1}>
                 - Generating overhealth
               </Box>
@@ -687,7 +687,7 @@ const TurretsPanel = () => {
     turret_power_max,
   } = data;
 
-  const powerPercent = (turret_power_level ?? 1) * 100;
+  const powerPercent = Math.round((turret_power_level ?? 1) * 100);
   const powerRatio = turret_power_max > 0 ? turret_power_available / turret_power_max : 0;
 
   return (

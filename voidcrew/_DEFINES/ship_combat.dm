@@ -96,8 +96,8 @@
 #define SHIP_SHIELD_BASE_HEALTH 500
 /// Base shield regeneration per second
 #define SHIP_SHIELD_BASE_REGEN 2
-/// Cooldown after shields break before reactivation (60 seconds)
-#define SHIP_SHIELD_BROKEN_COOLDOWN 60 SECONDS
+/// Cooldown after shields break before reactivation (30 seconds)
+#define SHIP_SHIELD_BROKEN_COOLDOWN 30 SECONDS
 /// Minimum power allocation (0% = shields off)
 #define SHIP_SHIELD_MIN_POWER_MULT 0
 /// Maximum power allocation (200%)
