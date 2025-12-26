@@ -316,9 +316,10 @@
 					continue  // Already should be in boundary from first pass
 
 				// Check how many boundary neighbors this gap turf would have
-				// Must have exactly 2 to form a proper connection:
-				// - 1 neighbor = dead end (creates disconnected C shapes)
-				// - 3+ neighbors = T-junction (can't be rendered)
+				// - 1 neighbor = dead end (creates disconnected C shapes) - skip
+				// - 2 neighbors = normal corner connection - allow
+				// - 3 neighbors = T-junction - allow (wall spawning code handles these)
+				// - 4 neighbors = 4-way junction - skip (too complex)
 				var/boundary_neighbor_count = 0
 				for(var/check_dir in GLOB.cardinals)
 					var/turf/potential_neighbor = get_step(card_neighbor, check_dir)
@@ -327,11 +328,11 @@
 				if(boundary_neighbor_count < 2)
 					debug_log("SKIPPED GAP ([card_neighbor.x],[card_neighbor.y]): only [boundary_neighbor_count] boundary neighbor (dead end)")
 					continue
-				if(boundary_neighbor_count >= 3)
-					debug_log("SKIPPED GAP ([card_neighbor.x],[card_neighbor.y]): [boundary_neighbor_count] boundary neighbors (T-junction)")
+				if(boundary_neighbor_count >= 4)
+					debug_log("SKIPPED GAP ([card_neighbor.x],[card_neighbor.y]): [boundary_neighbor_count] boundary neighbors (4-way junction)")
 					continue
 
-				// This is a valid gap turf - diagonally adjacent to ship with exactly 2 boundary neighbors
+				// This is a valid gap turf - diagonally adjacent to ship with 2-3 boundary neighbors
 				gap_turfs |= card_neighbor
 
 		// Add gap turfs to boundary
@@ -584,35 +585,41 @@
 
 		debug_log("  END CAP: boundary_dirs=[dir_to_string(boundary_dirs)], ship_dirs=[dir_to_string(ship_dirs)]")
 
-		// If ship is diagonal, return L-connector that connects to boundary neighbor + toward diagonal
+		// If ship is diagonal, return L-connector that connects to boundary neighbor + toward SPACE
+		// The L should curve AWAY from the ship (toward open space), not into it
+		// Ship at S+E means space is at N+W, ship at S+W means space is at N+E, etc.
 		if(ship_dirs == (SOUTH|EAST))
+			// Ship at S+E, space at N+W - curve toward NW
 			if(boundary_dirs == NORTH)
-				debug_log("  -> DIAG TRANSITION S+E with N neighbor, returning NORTHEAST")
-				return NORTHEAST  // Connect UP + RIGHT
+				debug_log("  -> DIAG TRANSITION S+E with N neighbor, returning NORTHWEST (curve to space)")
+				return NORTHWEST  // Connect N + W (toward space)
 			if(boundary_dirs == WEST)
-				debug_log("  -> DIAG TRANSITION S+E with W neighbor, returning SOUTHWEST")
-				return SOUTHWEST  // Connect LEFT + DOWN
+				debug_log("  -> DIAG TRANSITION S+E with W neighbor, returning NORTHWEST (curve to space)")
+				return NORTHWEST  // Connect W + N (toward space)
 		if(ship_dirs == (SOUTH|WEST))
+			// Ship at S+W, space at N+E - curve toward NE
 			if(boundary_dirs == NORTH)
-				debug_log("  -> DIAG TRANSITION S+W with N neighbor, returning NORTHWEST")
-				return NORTHWEST  // Connect UP + LEFT
+				debug_log("  -> DIAG TRANSITION S+W with N neighbor, returning NORTHEAST (curve to space)")
+				return NORTHEAST  // Connect N + E (toward space)
 			if(boundary_dirs == EAST)
-				debug_log("  -> DIAG TRANSITION S+W with E neighbor, returning SOUTHEAST")
-				return SOUTHEAST  // Connect RIGHT + DOWN
+				debug_log("  -> DIAG TRANSITION S+W with E neighbor, returning NORTHEAST (curve to space)")
+				return NORTHEAST  // Connect E + N (toward space)
 		if(ship_dirs == (NORTH|EAST))
+			// Ship at N+E, space at S+W - curve toward SW
 			if(boundary_dirs == SOUTH)
-				debug_log("  -> DIAG TRANSITION N+E with S neighbor, returning SOUTHEAST")
-				return SOUTHEAST  // Connect DOWN + RIGHT
+				debug_log("  -> DIAG TRANSITION N+E with S neighbor, returning SOUTHWEST (curve to space)")
+				return SOUTHWEST  // Connect S + W (toward space)
 			if(boundary_dirs == WEST)
-				debug_log("  -> DIAG TRANSITION N+E with W neighbor, returning NORTHWEST")
-				return NORTHWEST  // Connect LEFT + UP
+				debug_log("  -> DIAG TRANSITION N+E with W neighbor, returning SOUTHWEST (curve to space)")
+				return SOUTHWEST  // Connect W + S (toward space)
 		if(ship_dirs == (NORTH|WEST))
+			// Ship at N+W, space at S+E - curve toward SE
 			if(boundary_dirs == SOUTH)
-				debug_log("  -> DIAG TRANSITION N+W with S neighbor, returning SOUTHWEST")
-				return SOUTHWEST  // Connect DOWN + LEFT
+				debug_log("  -> DIAG TRANSITION N+W with S neighbor, returning SOUTHEAST (curve to space)")
+				return SOUTHEAST  // Connect S + E (toward space)
 			if(boundary_dirs == EAST)
-				debug_log("  -> DIAG TRANSITION N+W with E neighbor, returning NORTHEAST")
-				return NORTHEAST  // Connect RIGHT + UP
+				debug_log("  -> DIAG TRANSITION N+W with E neighbor, returning SOUTHEAST (curve to space)")
+				return SOUTHEAST  // Connect E + S (toward space)
 
 		// Not a diagonal transition, use bar
 		if(boundary_dirs == NORTH || boundary_dirs == SOUTH)
