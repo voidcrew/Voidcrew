@@ -542,6 +542,96 @@
 					debug_log("  -> T-JUNCTION, odd [dir_to_string(odd_dir)] not corner, returning EAST (horizontal bar)")
 					return EAST
 
+	// FOUR-WAY JUNCTION: all four boundary neighbors - must check BEFORE straight edges
+	// because straight edge check (N && S) would also match N+S+E+W
+	if(boundary_count == 4)
+		// Look at which neighbors have EXISTING shields with arms pointing toward us
+		// Only trust actual shields, not predictions (too complex for T-junctions)
+		var/needed_dirs = NONE
+		for(var/dir in GLOB.cardinals)
+			var/turf/neighbor = get_step(wall_turf, dir)
+			if(!(neighbor in boundary))
+				continue
+
+			// Check what shield direction this neighbor actually has (already spawned)
+			var/neighbor_shield_dir = NONE
+			for(var/obj/structure/ship_shield_wall/existing in neighbor)
+				neighbor_shield_dir = existing.dir
+				break
+
+			if(!neighbor_shield_dir)
+				// Neighbor doesn't have a shield yet - only predict simple cases (2 neighbors)
+				var/neighbor_boundary_dirs = NONE
+				for(var/ndir in GLOB.cardinals)
+					var/turf/nn = get_step(neighbor, ndir)
+					if(nn in boundary)
+						neighbor_boundary_dirs |= ndir
+				// Count neighbor's boundary neighbors
+				var/nb_count = 0
+				if(neighbor_boundary_dirs & NORTH) nb_count++
+				if(neighbor_boundary_dirs & SOUTH) nb_count++
+				if(neighbor_boundary_dirs & EAST) nb_count++
+				if(neighbor_boundary_dirs & WEST) nb_count++
+
+				// Only predict simple 2-neighbor cases (corners and bars)
+				if(nb_count == 2)
+					if(neighbor_boundary_dirs == (NORTH|WEST))
+						neighbor_shield_dir = NORTHWEST
+					else if(neighbor_boundary_dirs == (NORTH|EAST))
+						neighbor_shield_dir = NORTHEAST
+					else if(neighbor_boundary_dirs == (SOUTH|WEST))
+						neighbor_shield_dir = SOUTHWEST
+					else if(neighbor_boundary_dirs == (SOUTH|EAST))
+						neighbor_shield_dir = SOUTHEAST
+					else if(neighbor_boundary_dirs == (NORTH|SOUTH))
+						neighbor_shield_dir = SOUTH
+					else if(neighbor_boundary_dirs == (EAST|WEST))
+						neighbor_shield_dir = EAST
+				// Skip prediction for T-junctions (nb_count==3) - too complex
+
+			if(!neighbor_shield_dir)
+				continue  // Can't determine, skip this neighbor
+
+			// What direction would neighbor's arm need to point to reach us?
+			var/opposite = NONE
+			switch(dir)
+				if(NORTH) opposite = SOUTH  // neighbor to our N needs S arm to point at us
+				if(SOUTH) opposite = NORTH  // neighbor to our S needs N arm to point at us
+				if(EAST) opposite = WEST    // neighbor to our E needs W arm to point at us
+				if(WEST) opposite = EAST    // neighbor to our W needs E arm to point at us
+
+			// Get the arms of the neighbor's shield
+			var/neighbor_arms = NONE
+			switch(neighbor_shield_dir)
+				if(NORTH, SOUTH)
+					neighbor_arms = NORTH|SOUTH
+				if(EAST, WEST)
+					neighbor_arms = EAST|WEST
+				if(NORTHEAST)
+					neighbor_arms = NORTH|EAST
+				if(NORTHWEST)
+					neighbor_arms = NORTH|WEST
+				if(SOUTHEAST)
+					neighbor_arms = SOUTH|EAST
+				if(SOUTHWEST)
+					neighbor_arms = SOUTH|WEST
+
+			if(neighbor_arms & opposite)
+				// Neighbor has arm pointing at us, we need arm pointing at them
+				needed_dirs |= dir
+				debug_log("  4-WAY: neighbor at [dir_to_string(dir)] ([dir_to_string(neighbor_shield_dir)]) has arm toward us, need [dir_to_string(dir)]")
+
+		// Return L-connector for the needed directions
+		if(needed_dirs)
+			var/result = get_connector_for_dirs_from_bits(needed_dirs)
+			if(result)
+				debug_log("  -> FOUR-WAY JUNCTION, neighbors need [dir_to_string(needed_dirs)], returning [dir_to_string(result)]")
+				return result
+
+		// Fallback if we couldn't determine - just use horizontal bar
+		debug_log("  -> FOUR-WAY JUNCTION (fallback), returning EAST (horizontal bar)")
+		return EAST
+
 	// STRAIGHT EDGES: boundary neighbors in opposite directions → bar
 	if((boundary_dirs & NORTH) && (boundary_dirs & SOUTH))
 		debug_log("  -> STRAIGHT N+S, returning SOUTH (vertical bar)")
@@ -549,11 +639,6 @@
 	if((boundary_dirs & EAST) && (boundary_dirs & WEST))
 		debug_log("  -> STRAIGHT E+W, returning EAST (horizontal bar)")
 		return EAST   // Horizontal bar
-
-	// FOUR-WAY JUNCTION: all four boundary neighbors
-	if(boundary_count == 4)
-		debug_log("  -> FOUR-WAY JUNCTION, returning EAST (horizontal bar)")
-		return EAST
 
 	// TRUE CORNERS: boundary neighbors in perpendicular directions
 	// L-connector direction is determined SOLELY by boundary_dirs
@@ -974,6 +1059,39 @@
 		if(EAST|WEST)
 			return EAST   // Horizontal bar
 	return EAST  // Fallback
+
+/// Returns the shield direction for a bitfield of needed directions
+/// Handles case where more than 2 directions are needed by picking the best L-connector
+/obj/machinery/ship_combat/shield_generator/proc/get_connector_for_dirs_from_bits(needed_dirs)
+	// Count how many directions are needed
+	var/count = 0
+	if(needed_dirs & NORTH) count++
+	if(needed_dirs & SOUTH) count++
+	if(needed_dirs & EAST) count++
+	if(needed_dirs & WEST) count++
+
+	if(count <= 2)
+		// Simple case - just use the existing function
+		return get_connector_for_dirs(needed_dirs, NONE)
+
+	// More than 2 directions needed - pick the best pair
+	// Prioritize L-connectors (perpendicular) over straight bars
+	// Check for perpendicular pairs first
+	if((needed_dirs & NORTH) && (needed_dirs & EAST))
+		return NORTHEAST
+	if((needed_dirs & NORTH) && (needed_dirs & WEST))
+		return NORTHWEST
+	if((needed_dirs & SOUTH) && (needed_dirs & EAST))
+		return SOUTHEAST
+	if((needed_dirs & SOUTH) && (needed_dirs & WEST))
+		return SOUTHWEST
+	// Fallback to straight bars
+	if((needed_dirs & NORTH) && (needed_dirs & SOUTH))
+		return SOUTH
+	if((needed_dirs & EAST) && (needed_dirs & WEST))
+		return EAST
+
+	return EAST  // Final fallback
 
 /// Gets the shield wall at a turf location
 /obj/machinery/ship_combat/shield_generator/proc/get_shield_at(turf/T)
