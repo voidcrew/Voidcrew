@@ -191,13 +191,9 @@
 
 	qdel(src)
 
-// ========== EMP MISSILE VARIANT ==========
-
-/obj/effect/ship_missile/emp
-	name = "EMP ship missile"
-	desc = "An electromagnetic pulse missile streaking through space."
-
-/obj/effect/ship_missile/emp/impact()
+/// Called when the missile hits a shield - creates explosion effects without hull damage
+/// Shield has already absorbed the damage, this is just for visual/audio feedback
+/obj/effect/ship_missile/proc/shield_impact()
 	if(exploded)
 		return
 
@@ -207,25 +203,23 @@
 	// Play impact sound (extrarange and ignore_walls so it's audible from inside the ship)
 	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 30, ignore_walls = TRUE)
 
-	// Create smaller explosion
+	// Create explosion visual - reduced damage since shield absorbed it
+	// The explosion still happens visually but with minimal structural damage
 	explosion(
 		impact_loc,
-		devastation_range = 0,
-		heavy_impact_range = 0,
-		light_impact_range = explosion_light,
-		flame_range = 0,
-		flash_range = 3,
+		devastation_range = 0,  // No devastation - shield absorbed it
+		heavy_impact_range = 0,  // No heavy damage - shield absorbed it
+		light_impact_range = max(1, explosion_light),  // Small light damage for visual effect
+		flame_range = explosion_flame,  // Keep flame for visual
+		flash_range = explosion_light + 2,  // Bigger flash to show shield impact
 		adminlog = TRUE,
 		ignorecap = TRUE,
 		explosion_cause = src
 	)
 
-	// EMP pulse
-	empulse(impact_loc, 2, 4)
-
-	// Screen shake for nearby players
+	// Screen shake for nearby players - still feel the impact
 	for(var/mob/living/victim in range(7, impact_loc))
-		shake_camera(victim, 2, 1)
+		shake_camera(victim, 3, 2)
 
 	qdel(src)
 
@@ -282,3 +276,144 @@
 		shake_camera(victim, 2, 1)
 
 	qdel(src)
+
+/obj/effect/ship_missile/chemical/shield_impact()
+	if(exploded)
+		return
+
+	var/turf/impact_loc = get_turf(src)
+	exploded = TRUE
+
+	// Play impact sound
+	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 30, ignore_walls = TRUE)
+
+	// Visual explosion against shield - chemicals are blocked
+	explosion(
+		impact_loc,
+		devastation_range = 0,
+		heavy_impact_range = 0,
+		light_impact_range = 1,
+		flame_range = 0,
+		flash_range = 3,
+		adminlog = TRUE,
+		ignorecap = TRUE,
+		explosion_cause = src
+	)
+
+	// Chemical payload is blocked by shields - grenade does NOT detonate
+	// The grenade is simply destroyed along with the missile
+	if(payload_grenade && !QDELETED(payload_grenade))
+		qdel(payload_grenade)
+
+	// Screen shake
+	for(var/mob/living/victim in range(7, impact_loc))
+		shake_camera(victim, 2, 1)
+
+	qdel(src)
+
+// ========== MISSILE LAUNCH VISUAL EFFECT ==========
+// Purely cosmetic missile that fires from the launcher and flies off-screen
+// Similar to turret_laser_visual but for missiles
+
+/obj/effect/temp_visual/missile_launch_visual
+	name = "missile"
+	desc = "A missile launching into space."
+	icon = 'voidcrew/icons/obj/supplypods.dmi'
+	icon_state = "missile"
+	duration = 30  // 3 seconds
+	layer = ABOVE_ALL_MOB_LAYER
+	plane = ABOVE_GAME_PLANE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	randomdir = FALSE
+	// Explicit pixel offsets to prevent animate() from affecting other objects on same turf
+	pixel_x = 0
+	pixel_y = 0
+	/// Direction to fire (NORTH, SOUTH, EAST, WEST)
+	var/fire_dir = SOUTH
+
+/obj/effect/temp_visual/missile_launch_visual/Initialize(mapload, direction = SOUTH, offset_x = -16, offset_y = -16)
+	. = ..()
+	fire_dir = direction
+
+	// Set starting position from launcher's configured offsets
+	pixel_x = offset_x
+	pixel_y = offset_y
+
+	// Calculate the angle based on direction and rotate sprite
+	// The missile sprite points down (south) by default
+	var/angle
+	switch(fire_dir)
+		if(NORTH)
+			angle = 180
+		if(SOUTH)
+			angle = 0
+		if(EAST)
+			angle = -90
+		if(WEST)
+			angle = 90
+		else
+			angle = 0
+
+	var/matrix/M = matrix()
+	M.Turn(angle)
+	transform = M
+
+	// Start flying animation after short delay
+	addtimer(CALLBACK(src, PROC_REF(start_flying)), 0.1 SECONDS)
+
+/// Animates the missile flying off-screen
+/obj/effect/temp_visual/missile_launch_visual/proc/start_flying()
+	if(QDELETED(src))
+		return
+
+	var/turf/start_turf = get_turf(src)
+	if(!start_turf)
+		return
+
+	// Get virtual level bounds from the turf reservation (if in transit/reserved space)
+	var/datum/turf_reservation/reservation = SSmapping.get_reservation_from_turf(start_turf)
+	var/min_x = 1
+	var/max_x = world.maxx
+	var/min_y = 1
+	var/max_y = world.maxy
+	if(reservation && length(reservation.bottom_left_turfs) && length(reservation.top_right_turfs))
+		var/turf/bottom_left = reservation.bottom_left_turfs[1]
+		var/turf/top_right = reservation.top_right_turfs[1]
+		min_x = bottom_left.x
+		max_x = top_right.x
+		min_y = bottom_left.y
+		max_y = top_right.y
+
+	// Calculate travel distance based on direction
+	var/travel_distance = 0
+
+	switch(fire_dir)
+		if(NORTH)
+			travel_distance = max_y - start_turf.y
+		if(SOUTH)
+			travel_distance = start_turf.y - min_y
+		if(EAST)
+			travel_distance = max_x - start_turf.x
+		if(WEST)
+			travel_distance = start_turf.x - min_x
+
+	// Calculate pixel offset to reach destination
+	var/pixel_dest_x = 0
+	var/pixel_dest_y = 0
+	switch(fire_dir)
+		if(NORTH)
+			pixel_dest_y = travel_distance * 32
+		if(SOUTH)
+			pixel_dest_y = -travel_distance * 32
+		if(EAST)
+			pixel_dest_x = travel_distance * 32
+		if(WEST)
+			pixel_dest_x = -travel_distance * 32
+
+	// Animate the missile flying off screen
+	// Speed: roughly 2 tiles per decisecond (similar to missile speed)
+	var/flight_time = max(5, travel_distance * 0.5)  // Min 0.5 seconds, scales with distance
+	animate(src, pixel_x = pixel_dest_x, pixel_y = pixel_dest_y, time = flight_time, easing = LINEAR_EASING)
+
+	// Delete after animation completes
+	QDEL_IN(src, flight_time + 1)

@@ -39,9 +39,9 @@
 		var/obj/effect/ship_missile/missile = AM
 		damage = missile.damage
 		shield_mult = SHIELD_DAMAGE_MULT_MISSILE  // Missiles do reduced shield damage
-		// Mark as exploded so it doesn't detonate, then delete
-		missile.exploded = TRUE
-		qdel(missile)
+		// Let the missile explode against the shield (visual/audio feedback)
+		// shield_impact() creates explosion effects but with reduced damage since shield absorbed it
+		missile.shield_impact()
 	else if(istype(AM, /obj/effect/meteor))
 		var/obj/effect/meteor/meteor = AM
 		damage = get_meteor_damage(meteor)

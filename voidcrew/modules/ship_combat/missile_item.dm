@@ -73,29 +73,6 @@
 	range_light = 7
 	range_flame = 4
 
-/obj/item/bombcore/missile/emp
-	name = "EMP missile warhead"
-	desc = "An electromagnetic pulse warhead. Disables electronics on impact."
-	payload_type = "EMP"
-	ship_damage = MISSILE_DAMAGE_LIGHT
-	missile_effect_type = /obj/effect/ship_missile/emp
-	insert_time = 4 SECONDS
-	range_heavy = 0
-	range_medium = 0
-	range_light = 1
-	range_flame = 0
-	/// EMP heavy range
-	var/emp_heavy = 4
-	/// EMP light range
-	var/emp_light = 8
-
-/obj/item/bombcore/missile/emp/detonate()
-	// EMP effect instead of explosion
-	empulse(src, emp_heavy, emp_light)
-	if(loc && istype(loc, /obj/structure/ship_missile))
-		qdel(loc)
-	qdel(src)
-
 // ========== MISSILE FRAME ==========
 // The missile body that components are installed into
 
@@ -154,9 +131,6 @@
 
 /obj/structure/ship_missile/armed/heavy
 	warhead_path = /obj/item/bombcore/missile/heavy
-
-/obj/structure/ship_missile/armed/emp
-	warhead_path = /obj/item/bombcore/missile/emp
 
 /obj/structure/ship_missile/Destroy()
 	if(tracking)
@@ -519,11 +493,5 @@
 		"flame" = warhead.range_flame,
 		"icon_state" = warhead.missile_icon_state,
 	)
-
-	// Add EMP data if applicable
-	if(istype(warhead, /obj/item/bombcore/missile/emp))
-		var/obj/item/bombcore/missile/emp/emp_warhead = warhead
-		data["emp_heavy"] = emp_warhead.emp_heavy
-		data["emp_light"] = emp_warhead.emp_light
 
 	return data

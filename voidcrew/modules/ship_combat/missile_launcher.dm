@@ -127,6 +127,21 @@
 	default_unfasten_wrench(user, tool)
 	return ITEM_INTERACT_SUCCESS
 
+// Alt+click to rotate when unwrenched
+/obj/machinery/ship_combat/missile_launcher/click_alt(mob/user)
+	if(!user.can_perform_action(src, NEED_HANDS))
+		return CLICK_ACTION_BLOCKING
+	if(anchored)
+		to_chat(user, span_warning("Unwrench [src] first to rotate it!"))
+		return CLICK_ACTION_BLOCKING
+	if(loaded_missile)
+		to_chat(user, span_warning("Unload the missile first!"))
+		return CLICK_ACTION_BLOCKING
+	// Rotate through cardinal directions
+	setDir(turn(dir, -90))
+	balloon_alert(user, "rotated [dir2text(dir)]")
+	return CLICK_ACTION_SUCCESS
+
 /obj/machinery/ship_combat/missile_launcher/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
 	// Multitool linking - store self in buffer
 	if(istype(W, /obj/item/multitool))
@@ -179,9 +194,7 @@
 	// Note: Chemical missiles use grenades which can't be recreated from stored data
 	var/effect_type = loaded_missile["effect_type"]
 	var/warhead_type
-	if(effect_type == /obj/effect/ship_missile/emp)
-		warhead_type = /obj/item/bombcore/missile/emp
-	else if(effect_type == /obj/effect/ship_missile/chemical)
+	if(effect_type == /obj/effect/ship_missile/chemical)
 		// Chemical grenades can't be recreated - their reagents are unique
 		// The missile is unloadable but will be empty (just the frame)
 		to_chat(user, span_warning("The chemical payload cannot be recovered - the grenade was consumed."))
@@ -356,7 +369,25 @@
 	use_energy(MISSILE_LAUNCHER_POWER_FIRE)
 
 	// Play sound (extrarange and ignore_walls so it's audible from inside the ship)
-	playsound(src, 'sound/vehicles/rocketlaunch.ogg', 80, TRUE, extrarange = 20, ignore_walls = TRUE)
+	playsound(src, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 100, TRUE, extrarange = 20, ignore_walls = TRUE)
+
+	// Create visual effect of missile flying off-screen from the launcher
+	var/offset_x = -16
+	var/offset_y = -16
+	switch(dir)
+		if(NORTH)
+			offset_x = -16
+			offset_y = 0
+		if(SOUTH)
+			offset_x = -16
+			offset_y = -32
+		if(EAST)
+			offset_x = 0
+			offset_y = -16
+		if(WEST)
+			offset_x = -32
+			offset_y = -16
+	new /obj/effect/temp_visual/missile_launch_visual(get_turf(src), dir, offset_x, offset_y)
 
 	// Visual feedback
 	visible_message(span_danger("[src] fires a missile!"))

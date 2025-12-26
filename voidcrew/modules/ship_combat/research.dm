@@ -24,7 +24,6 @@
 	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
 	design_ids = list(
 		"ship_missile_warhead_standard",
-		"ship_missile_warhead_emp",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
@@ -198,17 +197,6 @@
 		/datum/material/plasma = SHEET_MATERIAL_AMOUNT * 20,
 		/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 10,
 		/datum/material/uranium = SHEET_MATERIAL_AMOUNT * 15,
-	)
-
-/datum/design/ship_missile_warhead/emp
-	name = "EMP Missile Warhead"
-	desc = "An electromagnetic pulse warhead that disables electronics."
-	id = "ship_missile_warhead_emp"
-	build_path = /obj/item/bombcore/missile/emp
-	materials = list(
-		/datum/material/iron = SHEET_MATERIAL_AMOUNT * 25,
-		/datum/material/plasma = SHEET_MATERIAL_AMOUNT * 10,
-		/datum/material/bluespace = SHEET_MATERIAL_AMOUNT * 20,
 	)
 
 // Chemical missiles now use standard chemical grenades inserted into missile frames
