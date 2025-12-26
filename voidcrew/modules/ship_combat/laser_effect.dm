@@ -628,14 +628,21 @@
 		else
 			angle = 0
 
-	// Get virtual level bounds (the playable area, not the whole map)
-	var/datum/virtual_level/vlevel = SSmapping.get_virtual_level(start_turf.z)
-	var/min_x = vlevel?.low_x || 1
-	var/max_x = vlevel?.high_x || world.maxx
-	var/min_y = vlevel?.low_y || 1
-	var/max_y = vlevel?.high_y || world.maxy
+	// Get virtual level bounds from the turf reservation (if in transit/reserved space)
+	var/datum/turf_reservation/reservation = SSmapping.get_reservation_from_turf(start_turf)
+	var/min_x = 1
+	var/max_x = world.maxx
+	var/min_y = 1
+	var/max_y = world.maxy
+	if(reservation && length(reservation.bottom_left_turfs) && length(reservation.top_right_turfs))
+		var/turf/bottom_left = reservation.bottom_left_turfs[1]
+		var/turf/top_right = reservation.top_right_turfs[1]
+		min_x = bottom_left.x
+		max_x = top_right.x
+		min_y = bottom_left.y
+		max_y = top_right.y
 
-	// Get step direction offsets and calculate distance to virtual level boundary
+	// Get step direction offsets and calculate distance to boundary
 	var/dx = 0
 	var/dy = 0
 	var/max_distance = 0

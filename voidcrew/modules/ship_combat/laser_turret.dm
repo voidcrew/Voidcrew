@@ -17,6 +17,12 @@
 	/// How much power we draw from the grid to charge our cell per process tick
 	idle_power_usage = BASE_MACHINE_IDLE_CONSUMPTION
 	active_power_usage = BASE_MACHINE_ACTIVE_CONSUMPTION * 2
+	/// Turret health
+	max_integrity = 200
+	/// Breaks at 50% health
+	integrity_failure = 0.5
+	/// Armor - resistant to lasers since it's a laser turret
+	armor_type = /datum/armor/ship_laser_turret
 
 	/// Reference to our linked combat console
 	var/datum/weakref/linked_console_ref
@@ -425,3 +431,47 @@
 		/datum/stock_part/servo = 1,
 		/obj/item/stock_parts/power_store/cell = 1,
 	)
+
+// ========== ARMOR ==========
+
+/datum/armor/ship_laser_turret
+	melee = 30
+	bullet = 30
+	laser = 50
+	energy = 30
+	bomb = 20
+	fire = 80
+	acid = 50
+
+// ========== DAMAGE HANDLING ==========
+
+/obj/machinery/ship_combat/laser_turret/atom_break(damage_flag)
+	. = ..()
+	if(.)
+		visible_message(span_danger("[src] sparks and breaks down!"))
+		playsound(src, 'sound/effects/sparks/sparks1.ogg', 70, TRUE)
+		do_sparks(5, TRUE, src)
+		update_appearance()
+
+/obj/machinery/ship_combat/laser_turret/emp_act(severity)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	if(machine_stat & BROKEN)
+		return
+
+	// Visual feedback
+	visible_message(span_danger("[src] crackles and sparks from the EMP!"))
+	playsound(src, 'sound/effects/sparks/sparks1.ogg', 50, TRUE)
+	do_sparks(3, TRUE, src)
+
+	// Drain cell charge based on severity (heavy EMP = more drain)
+	if(cell)
+		var/drain_amount = cell.maxcharge * (0.5 / severity)  // 50% drain for severity 1, 25% for severity 2
+		cell.use(drain_amount)
+
+	// Disable turret temporarily - longer for stronger EMP
+	var/disable_time = rand(5 SECONDS, 15 SECONDS) / severity
+	COOLDOWN_START(src, fire_cooldown, disable_time)
+
+	update_appearance()

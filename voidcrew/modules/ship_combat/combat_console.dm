@@ -1286,9 +1286,10 @@
 		turret.cell?.use(power_needed)
 		COOLDOWN_START(turret, fire_cooldown, turret.get_effective_cooldown())
 		turret.update_appearance()
-		// Create visual effects at each turret
+		// Create visual effects at each turret (always single beam at source turrets)
+		// The multi-beam effect is only shown at the target ship
 		new /obj/effect/temp_visual/turret_muzzle_flash(get_turf(turret), turret.dir)
-		new /obj/effect/temp_visual/turret_laser_visual(get_turf(turret), turret.dir, is_multi_beam)
+		new /obj/effect/temp_visual/turret_laser_visual(get_turf(turret), turret.dir, FALSE)
 
 	// Fire a single combined beam from the primary turret
 	// Skip the normal fire() power/cooldown handling since we did it manually

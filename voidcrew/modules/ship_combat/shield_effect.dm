@@ -23,24 +23,6 @@
 	// Animate expansion and fade
 	animate(src, transform = matrix(), alpha = 0, time = duration, easing = EASE_OUT)
 
-/// Pop/shatter effect when shields break from damage
-/obj/effect/temp_visual/ship_shield_break
-	name = "shield collapse"
-	desc = "The ship's shields shatter under the strain."
-	icon = 'icons/effects/effects.dmi'
-	icon_state = "blueshatter"
-	duration = 12
-	alpha = 255
-	layer = ABOVE_MOB_LAYER
-	plane = GAME_PLANE
-
-/obj/effect/temp_visual/ship_shield_break/Initialize(mapload)
-	. = ..()
-	// Rapid expansion and fade
-	var/matrix/M = matrix()
-	M.Scale(1.5, 1.5)
-	animate(src, transform = M, alpha = 0, time = duration, easing = EASE_OUT)
-
 /// Flicker effect when shields shut down from power loss
 /obj/effect/temp_visual/ship_shield_powerdown
 	name = "shield power loss"

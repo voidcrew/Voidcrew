@@ -996,10 +996,7 @@
 
 	update_appearance()
 
-	// Visual and audio effects on ship boundary
-	var/list/boundary_turfs = get_random_boundary_turfs(8)
-	for(var/turf/T in boundary_turfs)
-		new /obj/effect/temp_visual/ship_shield_break(T)
+	// Audio effects
 	playsound(src, 'sound/vehicles/mecha/mech_shield_drop.ogg', 100, TRUE, extrarange = 50, ignore_walls = TRUE)
 	// Play forcefield hit sound (same as normal shield hits)
 	var/sound_file = pick(
