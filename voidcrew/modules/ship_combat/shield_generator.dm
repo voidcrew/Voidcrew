@@ -216,8 +216,19 @@
 
 	// First pass: Get all turfs in ship areas and find cardinally adjacent space turfs
 	var/list/candidate_turfs = list()
+	var/min_x = INFINITY
+	var/min_y = INFINITY
+	var/max_x = 0
+	var/max_y = 0
+	var/our_z = 0
 	for(var/area/ship_area in ship_areas)
 		for(var/turf/T in ship_area)
+			// Track bounding box of ship
+			min_x = min(min_x, T.x)
+			min_y = min(min_y, T.y)
+			max_x = max(max_x, T.x)
+			max_y = max(max_y, T.y)
+			our_z = T.z
 			// Check each cardinal direction for space turfs
 			for(var/dir in GLOB.cardinals)
 				var/turf/neighbor = get_step(T, dir)
@@ -226,13 +237,94 @@
 					candidate_turfs |= neighbor  // Use |= to avoid duplicates
 
 	debug_log("=== BOUNDARY DETECTION START ===")
-	debug_log("Found [length(candidate_turfs)] candidate turfs before pocket filtering")
+	debug_log("Found [length(candidate_turfs)] candidate turfs before filtering")
+	debug_log("Ship bounding box: ([min_x],[min_y]) to ([max_x],[max_y]) on z=[our_z]")
+
+	// EXTERIOR DETECTION: Flood fill from outside the ship to find all exterior space
+	// This ensures we only generate shields on the OUTER boundary, not inside internal holes
+	var/list/exterior_space = list()
+	var/list/flood_queue = list()
+
+	// Expand bounding box by 2 for flood fill starting points
+	var/flood_min_x = max(1, min_x - 2)
+	var/flood_min_y = max(1, min_y - 2)
+	var/flood_max_x = min(world.maxx, max_x + 2)
+	var/flood_max_y = min(world.maxy, max_y + 2)
+
+	// Seed the flood fill with all space turfs along the edges of the bounding box
+	// These are definitely exterior (outside the ship boundary)
+	for(var/x_coord in flood_min_x to flood_max_x)
+		var/turf/top_edge = locate(x_coord, flood_max_y, our_z)
+		var/turf/bottom_edge = locate(x_coord, flood_min_y, our_z)
+		if(top_edge && isspaceturf(top_edge) && !(get_area(top_edge) in ship_areas))
+			flood_queue += top_edge
+			exterior_space[top_edge] = TRUE
+		if(bottom_edge && isspaceturf(bottom_edge) && !(get_area(bottom_edge) in ship_areas))
+			flood_queue += bottom_edge
+			exterior_space[bottom_edge] = TRUE
+	for(var/y_coord in flood_min_y to flood_max_y)
+		var/turf/left_edge = locate(flood_min_x, y_coord, our_z)
+		var/turf/right_edge = locate(flood_max_x, y_coord, our_z)
+		if(left_edge && isspaceturf(left_edge) && !(get_area(left_edge) in ship_areas))
+			flood_queue += left_edge
+			exterior_space[left_edge] = TRUE
+		if(right_edge && isspaceturf(right_edge) && !(get_area(right_edge) in ship_areas))
+			flood_queue += right_edge
+			exterior_space[right_edge] = TRUE
+
+	debug_log("Flood fill starting with [length(flood_queue)] edge turfs")
+
+	// Flood fill to find all connected exterior space
+	var/flood_iterations = 0
+	var/max_flood_iterations = 10000  // Safety limit
+	while(length(flood_queue) && flood_iterations < max_flood_iterations)
+		flood_iterations++
+		var/turf/current = flood_queue[1]
+		flood_queue -= current
+
+		// Check all 4 cardinal neighbors
+		for(var/dir in GLOB.cardinals)
+			var/turf/neighbor = get_step(current, dir)
+			if(!neighbor)
+				continue
+			// Skip if already processed
+			if(exterior_space[neighbor])
+				continue
+			// Skip if inside ship
+			if(get_area(neighbor) in ship_areas)
+				continue
+			// Skip if not space (and not a candidate - to avoid going too far)
+			if(!isspaceturf(neighbor))
+				continue
+			// Stay within expanded bounding box
+			if(neighbor.x < flood_min_x || neighbor.x > flood_max_x)
+				continue
+			if(neighbor.y < flood_min_y || neighbor.y > flood_max_y)
+				continue
+
+			// This is exterior space
+			exterior_space[neighbor] = TRUE
+			flood_queue += neighbor
+
+	debug_log("Flood fill complete: [length(exterior_space)] exterior space turfs found in [flood_iterations] iterations")
+
+	// Filter candidates to only include turfs that are EXTERIOR (connected to outside)
+	var/list/exterior_candidates = list()
+	var/interior_rejected = 0
+	for(var/turf/candidate in candidate_turfs)
+		if(exterior_space[candidate])
+			exterior_candidates += candidate
+		else
+			interior_rejected++
+			debug_log("REJECTED INTERIOR ([candidate.x],[candidate.y]): not connected to exterior space")
+
+	debug_log("Interior filtering: [length(exterior_candidates)] exterior, [interior_rejected] rejected as interior")
 
 	// Filter out "pocket turfs" - space turfs surrounded by ship on 3+ sides
 	// Also filter "tunnel turfs" - space turfs with ship on opposite cardinal sides (N+S or E+W)
 	// These are narrow indentations/corridors where we want the shield to bridge across instead
 	var/list/rejected_pockets = list()
-	for(var/turf/candidate in candidate_turfs)
+	for(var/turf/candidate in exterior_candidates)
 		var/ship_neighbor_dirs = NONE
 		var/ship_neighbor_count = 0
 		var/list/ship_dirs = list()
@@ -342,6 +434,26 @@
 			debug_log("Gap iteration [iteration]: Added [length(gap_turfs)] gap turfs")
 			for(var/turf/gt in gap_turfs)
 				debug_log("  GAP TURF ([gt.x],[gt.y])")
+
+	// Final pass: Remove isolated boundary turfs (turfs with NO boundary neighbors)
+	// These are typically corridor entrances that lead into internal spaces
+	// where all adjacent turfs were rejected as tunnels/pockets
+	var/list/isolated_turfs = list()
+	for(var/turf/bt in boundary_turfs)
+		var/has_boundary_neighbor = FALSE
+		for(var/dir in GLOB.cardinals)
+			var/turf/neighbor = get_step(bt, dir)
+			if((neighbor in boundary_turfs) && !(neighbor in isolated_turfs))
+				has_boundary_neighbor = TRUE
+				break
+		if(!has_boundary_neighbor)
+			isolated_turfs += bt
+			debug_log("REJECTED ISOLATED ([bt.x],[bt.y]): no boundary neighbors")
+
+	// Remove isolated turfs
+	boundary_turfs -= isolated_turfs
+	if(length(isolated_turfs))
+		debug_log("Isolated filtering: removed [length(isolated_turfs)] isolated turfs")
 
 	debug_log("=== BOUNDARY DETECTION COMPLETE ===")
 	debug_log("Final boundary: [length(boundary_turfs)] turfs")
