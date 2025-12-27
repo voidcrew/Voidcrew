@@ -100,6 +100,29 @@
 	/// Current power allocation for shields (0.0 to 2.0) - synchronized across all generators
 	var/shield_power_allocation = 0
 
+	/// Which docking port the ship is occupying
+	var/dock_index
+	///~~If we need to render a map for cameras and helms for this object~~ basically can you look at and use this as a ship or station
+	var/render_map = TRUE
+	/**
+	 * Stuff needed to render the map
+	 */
+	/// The actual map screen (using camera subtype for proper rendering)
+	var/atom/movable/screen/map_view/camera/cam_screen
+
+	var/datum/weakref/survey_console
+	var/datum/survey_research/survey_data
+
+	var/pending_dock = FALSE
+	var/pending_dock_timer
+	/// The ship we sent a docking request to (if any)
+	var/obj/structure/overmap/ship/pending_dock_target
+
+	/// Speed multiplier for external effects like interdiction (1 = normal, 0.5 = half speed)
+	var/speed_multiplier = 1
+	/// Cooldown preventing undocking after being interdicted
+	COOLDOWN_DECLARE(interdiction_undock_lockout)
+
 // ===== SHARED SHIELD POOL PROCS =====
 
 /// Recalculates shield stats from all linked generators
@@ -125,11 +148,8 @@
 	if(shield_health > shield_max_health)
 		shield_health = shield_max_health
 
-	// Update active status
-	if(any_active && !shields_active && !shields_broken)
-		shields_active = TRUE
-	else if(!any_active && shields_active)
-		shields_active = FALSE
+	// Note: shields_active is managed by activate_generator()/deactivate_generator()
+	// This proc only updates stats, not activation state
 
 /// Regenerates the shared shield pool - called by shield generators during process()
 /obj/structure/overmap/ship/proc/regenerate_shields(seconds_per_tick)
@@ -187,6 +207,9 @@
 
 	// Start cooldown
 	COOLDOWN_START(src, shield_reactivation_cooldown, SHIP_SHIELD_BROKEN_COOLDOWN)
+
+	// Ensure ship keeps processing so it can check cooldown and reactivate
+	start_shield_processing()
 
 	// Notify all generators
 	for(var/obj/machinery/ship_combat/shield_generator/gen in linked_shield_generators)
@@ -316,29 +339,6 @@
 	// If shields are no longer active and not broken, stop processing
 	if(!shields_active && !shields_broken)
 		stop_shield_processing()
-
-	/// Which docking port the ship is occupying
-	var/dock_index
-	///~~If we need to render a map for cameras and helms for this object~~ basically can you look at and use this as a ship or station
-	var/render_map = TRUE
-		/**
-	 * Stuff needed to render the map
-	 */
-	/// The actual map screen (using camera subtype for proper rendering)
-	var/atom/movable/screen/map_view/camera/cam_screen
-
-	var/datum/weakref/survey_console
-	var/datum/survey_research/survey_data
-
-	var/pending_dock = FALSE
-	var/pending_dock_timer
-	/// The ship we sent a docking request to (if any)
-	var/obj/structure/overmap/ship/pending_dock_target
-
-	/// Speed multiplier for external effects like interdiction (1 = normal, 0.5 = half speed)
-	var/speed_multiplier = 1
-	/// Cooldown preventing undocking after being interdicted
-	COOLDOWN_DECLARE(interdiction_undock_lockout)
 
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()

@@ -1396,13 +1396,7 @@
 
 		// If no generators are active, ship shields go down
 		if(count_active_generators() == 0)
-			destroy_all_ship_shield_walls()
-			SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_POWERDOWN)
-			ship.ship_announce("Shields offline - insufficient power.", "Shield Alert")
-			// Also break ship shields to trigger cooldown
-			ship.shields_active = FALSE
-			ship.shields_broken = TRUE
-			COOLDOWN_START(ship, shield_reactivation_cooldown, SHIP_SHIELD_BROKEN_COOLDOWN)
+			ship.break_ship_shields()
 
 /// Returns the count of active shield generators on this ship
 /obj/machinery/ship_combat/shield_generator/proc/count_active_generators()
