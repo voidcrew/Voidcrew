@@ -141,6 +141,12 @@
 		QDEL_NULL(chemical_grenade)
 	return ..()
 
+// Override shuttle rotation to prevent pixel offset rotation
+// For centered 64x64 sprites, offset should always be -16, -16
+/obj/structure/ship_missile/shuttleRotate(rotation, params)
+	params &= ~ROTATE_OFFSET
+	return ..()
+
 // Armed missiles explode when destroyed
 /obj/structure/ship_missile/atom_destruction(damage_flag)
 	if(construction_state == MISSILE_STATE_ARMED && (warhead || chemical_grenade) && !detonated)

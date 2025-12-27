@@ -120,6 +120,8 @@
 
 	/// Speed multiplier for external effects like interdiction (1 = normal, 0.5 = half speed)
 	var/speed_multiplier = 1
+	/// Whether this ship is currently being interdicted
+	var/is_interdicted = FALSE
 	/// Cooldown preventing undocking after being interdicted
 	COOLDOWN_DECLARE(interdiction_undock_lockout)
 
@@ -130,7 +132,6 @@
 /obj/structure/overmap/ship/proc/recalculate_shield_stats()
 	var/new_max_health = 0
 	var/new_regen_rate = 0
-	var/any_active = FALSE
 
 	for(var/obj/machinery/ship_combat/shield_generator/gen in linked_shield_generators)
 		if(gen.machine_stat & (BROKEN|NOPOWER))
@@ -138,8 +139,6 @@
 		// Each generator contributes its stats
 		new_max_health += gen.max_shield_health
 		new_regen_rate += gen.regen_rate
-		if(gen.active)
-			any_active = TRUE
 
 	shield_max_health = new_max_health
 	shield_regen_rate = new_regen_rate
@@ -363,6 +362,21 @@
 	ship_team = new()
 	ship_team.name = template.name
 	ship_team.ship = src
+
+	// Pick a random bright color for ship runechat
+	var/static/list/ship_chat_colors = list(
+		COLOR_SOFT_RED,
+		COLOR_ORANGE,
+		COLOR_VIVID_YELLOW,
+		COLOR_LIME,
+		COLOR_JADE,
+		COLOR_CYAN,
+		COLOR_BLUE_LIGHT,
+		COLOR_BRIGHT_BLUE,
+		COLOR_FADED_PINK,
+		COLOR_VIOLET,
+	)
+	chat_color = pick(ship_chat_colors)
 
 	//now build the job slots.
 	job_slots = source_template.assemble_job_slots()
@@ -623,6 +637,11 @@
   * * dock_to_use - The [/obj/docking_port/mobile] to dock to.
   */
 /obj/structure/overmap/ship/proc/dock(obj/structure/overmap/to_dock, obj/docking_port/stationary/dock_to_use)
+	// Can't dock while being interdicted
+	if(is_interdicted)
+		ship_announce("DOCKING ABORTED: Interdiction field preventing dock sequence!", "Navigation Alert", TRUE)
+		return "Cannot dock while interdicted!"
+
 	refresh_engines()
 	shuttle.request(dock_to_use)
 

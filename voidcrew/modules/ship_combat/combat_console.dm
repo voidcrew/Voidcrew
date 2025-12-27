@@ -280,12 +280,23 @@
 			if(A == ship_area)
 				current_ship = S
 				RegisterSignal(current_ship, COMSIG_SHIP_CLOAK_CHANGED, PROC_REF(on_cloak_changed))
+				RegisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_our_ship_docked))
 				return TRUE
 	return FALSE
 
 /obj/machinery/computer/camera_advanced/ship_combat/proc/on_cloak_changed(datum/source, new_state)
 	SIGNAL_HANDLER
 	cloak_active = new_state
+
+/// Called when our ship docks - clear all outgoing targeting/locks
+/obj/machinery/computer/camera_advanced/ship_combat/proc/on_our_ship_docked(datum/source)
+	SIGNAL_HANDLER
+	// Clear any in-progress targeting
+	if(is_targeting)
+		INVOKE_ASYNC(src, PROC_REF(cancel_targeting))
+	// Clear any existing target lock
+	if(target_ship)
+		INVOKE_ASYNC(src, PROC_REF(clear_target))
 
 // ========== CREW MEMBERSHIP CHECK ==========
 
@@ -896,6 +907,12 @@
 			to_chat(user, span_warning("Cannot target your own ship!"))
 		return FALSE
 
+	// Can't acquire locks while docked
+	if(current_ship?.docked)
+		if(user)
+			to_chat(user, span_warning("Cannot acquire target lock while docked!"))
+		return FALSE
+
 	// Cancel any existing targeting
 	cancel_targeting()
 
@@ -1463,6 +1480,12 @@
 			to_chat(user, span_warning("No target selected!"))
 		return FALSE
 
+	// Can't interdict a ship that's already being interdicted
+	if(target_ship.is_interdicted)
+		if(user)
+			to_chat(user, span_warning("Target is already being interdicted by another ship!"))
+		return FALSE
+
 	// Check range for interdiction (2 tiles)
 	var/turf/our_turf = get_turf(current_ship)
 	var/turf/target_turf = get_turf(target_ship)
@@ -1487,7 +1510,8 @@
 	interdiction_active = TRUE
 	interdicted_ship = target_ship
 
-	// Apply slowdown to target - affects new thrust
+	// Mark target as interdicted and apply slowdown
+	target_ship.is_interdicted = TRUE
 	target_ship.speed_multiplier = INTERDICTOR_SPEED_REDUCTION
 
 	// Also immediately reduce existing speed
@@ -1572,6 +1596,7 @@
 	// Remove slowdown from target and restore normal lighting
 	if(interdicted_ship)
 		UnregisterSignal(interdicted_ship, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
+		interdicted_ship.is_interdicted = FALSE
 		interdicted_ship.speed_multiplier = 1
 		set_ship_emergency_lights(interdicted_ship, FALSE)
 		SEND_SIGNAL(interdicted_ship, COMSIG_SHIP_INTERDICTION_ENDED)
@@ -1629,6 +1654,7 @@
 	if(current_ship)
 		UnregisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_MOVED)
 	UnregisterSignal(interdicted_ship, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
+	interdicted_ship.is_interdicted = FALSE
 	interdicted_ship.speed_multiplier = 1
 	set_ship_emergency_lights(interdicted_ship, FALSE)
 	SEND_SIGNAL(interdicted_ship, COMSIG_SHIP_INTERDICTION_ENDED)
@@ -1638,8 +1664,8 @@
 	current_ship.ship_announce("Forcing [dock_target.display_name] to dock!", "Force Dock Initiated")
 	dock_target.ship_announce("FORCED DOCKING INITIATED!", "INTERDICTION ALERT")
 
-	// Apply undock lockout to target ship BEFORE docking
-	COOLDOWN_START(dock_target, interdiction_undock_lockout, INTERDICTOR_UNDOCK_LOCKOUT)
+	// Apply undock lockout to target ship BEFORE docking (2 minute lockout for force dock)
+	COOLDOWN_START(dock_target, interdiction_undock_lockout, INTERDICTOR_FORCE_DOCK_LOCKOUT)
 
 	// Force dock the ships together
 	var/result = current_ship.dock_ships_directly(dock_target, null)
@@ -1651,9 +1677,9 @@
 	else
 		// Success - play alarm on target ship and notify of lockout
 		playsound(src, 'sound/machines/airlock/airlockopen.ogg', 50, TRUE)
-		dock_target.ship_announce("Undocking systems locked for [DisplayTimeText(INTERDICTOR_UNDOCK_LOCKOUT)]!", "SYSTEMS LOCKED")
+		dock_target.ship_announce("Undocking systems locked for [DisplayTimeText(INTERDICTOR_FORCE_DOCK_LOCKOUT)]!", "SYSTEMS LOCKED")
 		if(user)
-			to_chat(user, span_notice("Force dock successful! Target ship is now docked and cannot undock for [DisplayTimeText(INTERDICTOR_UNDOCK_LOCKOUT)]."))
+			to_chat(user, span_notice("Force dock successful! Target ship is now docked and cannot undock for [DisplayTimeText(INTERDICTOR_FORCE_DOCK_LOCKOUT)]."))
 		return TRUE
 
 /// Sets or unsets emergency lighting on all lights in a ship's areas

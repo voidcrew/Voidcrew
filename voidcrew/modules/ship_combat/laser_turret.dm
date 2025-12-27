@@ -381,8 +381,8 @@
 	new /obj/effect/temp_visual/turret_muzzle_flash(get_turf(src), dir)
 	new /obj/effect/temp_visual/turret_laser_visual(get_turf(src), dir, multi_beam)
 
-	// Play sound (extrarange and ignore_walls so it's audible from inside the ship)
-	playsound(src, 'sound/items/weapons/beam_sniper.ogg', 100, TRUE, extrarange = 50, ignore_walls = TRUE)
+	// Play sound (extrarange so it's audible, pressure_affected = FALSE for space)
+	playsound(src, 'sound/items/weapons/beam_sniper.ogg', 100, TRUE, extrarange = 50, pressure_affected = FALSE)
 
 	// Visual feedback
 	visible_message(span_danger("[src] fires a laser beam!"))

@@ -37,6 +37,12 @@
 	unlink_console()
 	return ..()
 
+// Override shuttle rotation to prevent pixel offset rotation
+// For centered 64x64 sprites, offset should always be -16, -16
+/obj/machinery/ship_combat/missile_launcher/shuttleRotate(rotation, params)
+	params &= ~ROTATE_OFFSET  // Don't rotate pixel offsets for this sprite
+	return ..()
+
 /obj/machinery/ship_combat/missile_launcher/examine(mob/user)
 	. = ..()
 	. += span_notice("Launcher ID: [launcher_id]")
@@ -362,8 +368,8 @@
 	// Use power
 	use_energy(MISSILE_LAUNCHER_POWER_FIRE)
 
-	// Play sound (extrarange and ignore_walls so it's audible from inside the ship)
-	playsound(src, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 100, TRUE, extrarange = 20, ignore_walls = TRUE)
+	// Play sound (extrarange so it's audible, pressure_affected = FALSE for space)
+	playsound(src, 'voidcrew/sound/machines/rocket/rocket_launch.ogg', 100, TRUE, extrarange = 20, pressure_affected = FALSE)
 
 	// Create visual effect of missile flying off-screen from the launcher
 	var/offset_x = -16

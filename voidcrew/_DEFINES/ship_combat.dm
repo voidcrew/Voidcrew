@@ -86,6 +86,9 @@
 /// Cooldown before interdicted ship can undock (30 seconds)
 #define INTERDICTOR_UNDOCK_LOCKOUT 30 SECONDS
 
+/// Cooldown before force-docked ship can undock (2 minutes)
+#define INTERDICTOR_FORCE_DOCK_LOCKOUT 2 MINUTES
+
 /// Range at which interdiction can be started (in overmap tiles)
 #define INTERDICTOR_RANGE 2
 

@@ -104,14 +104,14 @@ export const ShipCombatConsole = () => {
   const { connected, is_admin } = data;
 
   return (
-    <Window width={420} height={800} title="Ship Combat">
-      <Window.Content>
+    <Window width={400} height={600} title="Ship Combat">
+      <Window.Content scrollable>
         {!connected ? (
           <NoticeBox danger>
             Not connected to ship systems. Install console on a valid ship.
           </NoticeBox>
         ) : (
-          <Stack fill vertical>
+          <Stack vertical>
             <Stack.Item>
               <TargetingPanel />
             </Stack.Item>
@@ -124,7 +124,7 @@ export const ShipCombatConsole = () => {
             <Stack.Item>
               <TurretsPanel />
             </Stack.Item>
-            <Stack.Item grow>
+            <Stack.Item>
               <LaunchersPanel />
             </Stack.Item>
             {!!is_admin && (
@@ -328,26 +328,12 @@ const ShieldsPanel = () => {
     shield_cooldown_remaining,
   } = data;
 
-  // Not unlocked via research
+  // Hide entirely when not unlocked
   if (!shield_unlocked) {
-    return (
-      <Section
-        title={
-          <Box inline>
-            <Icon name="shield-halved" mr={1} />
-            Shields
-          </Box>
-        }
-      >
-        <Box color="label" textAlign="center">
-          <Icon name="lock" mr={1} />
-          Research Required
-        </Box>
-      </Section>
-    );
+    return null;
   }
 
-  // No generator linked
+  // No generator linked - minimal display
   if (!shield_linked) {
     return (
       <Section
@@ -355,14 +341,12 @@ const ShieldsPanel = () => {
           <Box inline>
             <Icon name="shield-halved" mr={1} />
             Shields
+            <Box inline color="label" ml={1} fontSize="11px">
+              NO GENERATOR
+            </Box>
           </Box>
         }
-      >
-        <Box color="label" textAlign="center">
-          <Icon name="unlink" mr={1} />
-          No Shield Generator Linked
-        </Box>
-      </Section>
+      />
     );
   }
 
@@ -372,10 +356,10 @@ const ShieldsPanel = () => {
     : 0;
   const powerPercent = Math.round((shield_power_allocation ?? 1) * 100);
 
-  // Cooldown display
+  // Cooldown display - compact recharging state
   if (shield_broken && shield_cooldown_active) {
     const cooldownSeconds = Math.ceil((shield_cooldown_remaining || 0) / 10);
-    const cooldownProgress = 1 - (shield_cooldown_remaining || 0) / 300; // 30 second base cooldown
+    const cooldownProgress = 1 - (shield_cooldown_remaining || 0) / 300;
 
     return (
       <Section
@@ -383,80 +367,72 @@ const ShieldsPanel = () => {
           <Box inline>
             <Icon name="shield-halved" mr={1} />
             Shields
-          </Box>
-        }
-        buttons={
-          <Box color="bad" fontSize="11px">
-            OFFLINE
+            <Box inline color="bad" ml={1} fontSize="11px">
+              RECHARGING - {cooldownSeconds}s
+            </Box>
           </Box>
         }
       >
-        <Stack vertical>
-          <Stack.Item>
-            <NoticeBox danger>
-              <Icon name="triangle-exclamation" mr={1} />
-              SHIELDS RECHARGING
-            </NoticeBox>
-          </Stack.Item>
-          <Stack.Item>
-            <ProgressBar
-              value={cooldownProgress}
-              ranges={{
-                bad: [0, 0.4],
-                average: [0.4, 0.8],
-                good: [0.8, 1],
-              }}
-            >
-              Recharging - {cooldownSeconds}s
-            </ProgressBar>
-          </Stack.Item>
-          <Stack.Item>
-            <Box color="label" fontSize="11px" textAlign="center">
-              Power: {powerPercent.toFixed(0)}%
-            </Box>
-          </Stack.Item>
-          <Stack.Item>
-            <Slider
-              key="shield-power-cooldown"
-              value={powerPercent}
-              minValue={0}
-              maxValue={200}
-              step={10}
-              stepPixelSize={4}
-              format={(v) => `${v}%`}
-              disabled
-            />
-          </Stack.Item>
-        </Stack>
+        <ProgressBar
+          value={cooldownProgress}
+          ranges={{
+            bad: [0, 0.4],
+            average: [0.4, 0.8],
+            good: [0.8, 1],
+          }}
+        />
       </Section>
     );
   }
 
+  // Shields OFF - minimal collapsible display
+  if (powerPercent === 0 && !shield_active) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="shield-halved" mr={1} />
+            Shields
+            <Box inline color="label" ml={1} fontSize="11px">
+              OFF
+            </Box>
+          </Box>
+        }
+      >
+        <Slider
+          value={powerPercent}
+          minValue={0}
+          maxValue={200}
+          step={10}
+          stepPixelSize={4}
+          format={(v) => `${v}%`}
+          onChange={(e, value) => act('set_shield_power', { power: value })}
+        />
+      </Section>
+    );
+  }
+
+  // Active/Charging shields - full display
   return (
     <Section
       title={
         <Box inline>
           <Icon name="shield-halved" mr={1} />
           Shields
-        </Box>
-      }
-      buttons={
-        <Box
-          color={
-            shield_active ? 'good' : powerPercent === 0 ? 'label' : 'average'
-          }
-          fontSize="11px"
-        >
-          {shield_active ? 'ACTIVE' : powerPercent === 0 ? 'OFF' : 'CHARGING'}
+          <Box
+            inline
+            color={shield_active ? 'good' : 'average'}
+            ml={1}
+            fontSize="11px"
+          >
+            {shield_active ? 'ACTIVE' : 'CHARGING'}
+          </Box>
         </Box>
       }
     >
       <Stack vertical>
         {/* Health Bar */}
         <Stack.Item>
-          <Box mb={0.5} fontSize="11px" color="label">
-            Shield Health
-          </Box>
           <ProgressBar
             value={healthPercent}
             ranges={{
@@ -469,7 +445,7 @@ const ShieldsPanel = () => {
               {shield_health || 0} / {shield_max_health || 0}
               {shield_overhealth > 0 && (
                 <Box inline color="cyan" ml={1}>
-                  (+{shield_overhealth} overhealth)
+                  (+{Math.round(shield_overhealth)})
                 </Box>
               )}
             </Box>
@@ -478,21 +454,15 @@ const ShieldsPanel = () => {
 
         {/* Power Allocation Slider */}
         <Stack.Item>
-          <Box mb={0.5} fontSize="11px" color="label">
-            Power Allocation ({powerPercent.toFixed(0)}%)
-            {powerPercent === 0 && (
-              <Box inline color="bad" ml={1}>
-                - Shields disabled
-              </Box>
-            )}
+          <Box fontSize="11px" color="label">
+            Power: {powerPercent}%
             {powerPercent > 100 && shield_health >= shield_max_health && (
               <Box inline color="cyan" ml={1}>
-                - Generating overhealth
+                +overhealth
               </Box>
             )}
           </Box>
           <Slider
-            key="shield-power-normal"
             value={powerPercent}
             minValue={0}
             maxValue={200}
@@ -504,22 +474,16 @@ const ShieldsPanel = () => {
           />
         </Stack.Item>
 
-        {/* Stats Row */}
+        {/* Stats Row - more compact */}
         <Stack.Item>
-          <Stack fontSize="11px" color="label" mt={0.5}>
-            <Stack.Item grow>
-              <Icon name="bolt" mr={0.5} />
-              {shield_power_draw || 0}W
-            </Stack.Item>
-            <Stack.Item grow>
+          <Box fontSize="11px" color="label">
+            <Icon name="bolt" mr={0.5} />
+            {shield_power_draw || 0}W
+            <Box inline ml={2}>
               <Icon name="arrow-up" mr={0.5} />
               {shield_regen_rate || 0}/s
-            </Stack.Item>
-            <Stack.Item grow>
-              <Icon name="gauge-high" mr={0.5} />
-              {shield_efficiency || 0}% eff.
-            </Stack.Item>
-          </Stack>
+            </Box>
+          </Box>
         </Stack.Item>
       </Stack>
     </Section>
@@ -538,22 +502,9 @@ const WeaponsPanel = () => {
     target_in_force_dock_range,
   } = data;
 
+  // Hide entirely when not unlocked
   if (!interdictor_unlocked) {
-    return (
-      <Section
-        title={
-          <Box inline>
-            <Icon name="satellite-dish" mr={1} />
-            Interdictor
-          </Box>
-        }
-      >
-        <Box color="label" textAlign="center">
-          <Icon name="lock" mr={1} />
-          Research Required
-        </Box>
-      </Section>
-    );
+    return null;
   }
 
   const canInterdict =
@@ -564,34 +515,79 @@ const WeaponsPanel = () => {
 
   const canForceDock = interdiction_active && target_in_force_dock_range;
 
-  // Build tooltip for Slow button
-  const getSlowTooltip = () => {
-    if (interdiction_active) {
-      return 'Interdiction field is already active';
-    }
-    if (!target_ref) {
-      return 'Select a target ship first';
-    }
-    if (!target_in_interdict_range) {
-      return 'Target is too far away - get closer to interdict';
-    }
-    if (interdict_cooldown_active) {
-      return 'Interdictor is recharging';
-    }
-    return 'Activate interdiction field to slow target ship by 50%';
-  };
+  // Cooldown state
+  if (interdict_cooldown_active && !interdiction_active) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="satellite-dish" mr={1} />
+            Interdictor
+            <Box inline color="average" ml={1} fontSize="11px">
+              RECHARGING
+            </Box>
+          </Box>
+        }
+      >
+        <ProgressBar
+          value={1 - interdict_cooldown_remaining / 3000}
+          ranges={{
+            bad: [0, 0.4],
+            average: [0.4, 0.8],
+            good: [0.8, 1],
+          }}
+        >
+          {Math.ceil(interdict_cooldown_remaining / 10)}s
+        </ProgressBar>
+      </Section>
+    );
+  }
 
-  // Build tooltip for Force Dock button
-  const getForceDockTooltip = () => {
-    if (!interdiction_active) {
-      return 'Must slow the target first before force docking';
-    }
-    if (!target_in_force_dock_range) {
-      return 'Must be on the same tile as target to force dock';
-    }
-    return 'Force the target ship to dock with yours';
-  };
+  // Active interdiction
+  if (interdiction_active) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="satellite-dish" mr={1} />
+            Interdictor
+            <Box inline color="orange" ml={1} fontSize="11px">
+              ACTIVE
+            </Box>
+          </Box>
+        }
+      >
+        <Stack>
+          <Stack.Item grow>
+            <Button
+              fluid
+              icon="link"
+              color="red"
+              disabled={!canForceDock}
+              tooltip={
+                !target_in_force_dock_range
+                  ? 'Must be on the same tile as target'
+                  : 'Force the target ship to dock with yours'
+              }
+              onClick={() => act('force_dock')}
+            >
+              {!target_in_force_dock_range ? 'Get Closer' : 'Force Dock'}
+            </Button>
+          </Stack.Item>
+          <Stack.Item>
+            <Button
+              icon="times"
+              color="bad"
+              tooltip="Cancel interdiction"
+              onClick={() => act('cancel_interdict')}
+            />
+          </Stack.Item>
+        </Stack>
+      </Section>
+    );
+  }
 
+  // Ready state - just show buttons
   return (
     <Section
       title={
@@ -601,77 +597,34 @@ const WeaponsPanel = () => {
         </Box>
       }
     >
-      {interdict_cooldown_active && !interdiction_active ? (
-        <ProgressBar
-          value={1 - interdict_cooldown_remaining / 3000}
-          ranges={{
-            bad: [0, 0.4],
-            average: [0.4, 0.8],
-            good: [0.8, 1],
-          }}
-        >
-          Recharging - {Math.ceil(interdict_cooldown_remaining / 10)}s
-        </ProgressBar>
-      ) : (
-        <Stack vertical>
-          {!!interdiction_active && (
-            <Stack.Item>
-              <NoticeBox warning>
-                <Icon name="bolt" mr={1} />
-                INTERDICTION ACTIVE
-              </NoticeBox>
-            </Stack.Item>
-          )}
-          <Stack.Item>
-            <Stack>
-              <Stack.Item grow>
-                <Button
-                  fluid
-                  icon="satellite-dish"
-                  disabled={!!interdiction_active || !canInterdict}
-                  color={interdiction_active ? 'average' : 'default'}
-                  tooltip={getSlowTooltip()}
-                  onClick={() => act('start_interdict')}
-                >
-                  {interdiction_active
-                    ? 'Slowing'
-                    : !target_ref
-                      ? 'No Target'
-                      : !target_in_interdict_range
-                        ? 'Out of Range'
-                        : 'Slow'}
-                </Button>
-              </Stack.Item>
-              <Stack.Item grow>
-                <Button
-                  fluid
-                  icon="link"
-                  color="red"
-                  disabled={!canForceDock}
-                  tooltip={getForceDockTooltip()}
-                  onClick={() => act('force_dock')}
-                >
-                  {!interdiction_active
-                    ? 'Slow First'
-                    : !target_in_force_dock_range
-                      ? 'Get Closer'
-                      : 'Force Dock'}
-                </Button>
-              </Stack.Item>
-              {!!interdiction_active && (
-                <Stack.Item>
-                  <Button
-                    icon="times"
-                    color="bad"
-                    tooltip="Cancel interdiction"
-                    onClick={() => act('cancel_interdict')}
-                  />
-                </Stack.Item>
-              )}
-            </Stack>
-          </Stack.Item>
-        </Stack>
-      )}
+      <Stack>
+        <Stack.Item grow>
+          <Button
+            fluid
+            icon="satellite-dish"
+            disabled={!canInterdict}
+            tooltip={
+              !target_ref
+                ? 'Select a target ship first'
+                : !target_in_interdict_range
+                  ? 'Target is too far away'
+                  : 'Slow target ship by 50%'
+            }
+            onClick={() => act('start_interdict')}
+          >
+            {!target_ref
+              ? 'No Target'
+              : !target_in_interdict_range
+                ? 'Out of Range'
+                : 'Slow'}
+          </Button>
+        </Stack.Item>
+        <Stack.Item grow>
+          <Button fluid icon="link" color="red" disabled tooltip="Slow first">
+            Force Dock
+          </Button>
+        </Stack.Item>
+      </Stack>
     </Section>
   );
 };
@@ -848,79 +801,117 @@ const LaunchersPanel = () => {
   const { data } = useBackend<Data>();
   const { launchers, launchers_ready, launchers_total } = data;
 
-  const missilesLoaded = launchers.filter((l) => l.loaded).length;
+  const loadedLaunchers = launchers.filter((l) => l.loaded);
+  const missilesLoaded = loadedLaunchers.length;
 
+  // No launchers linked
+  if (launchers.length === 0) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="rocket" mr={1} />
+            Launchers
+            <Box inline color="label" ml={1} fontSize="11px">
+              NONE
+            </Box>
+          </Box>
+        }
+      >
+        <Box color="label" textAlign="center">
+          <Icon name="unlink" mr={1} />
+          No launchers linked
+        </Box>
+      </Section>
+    );
+  }
+
+  // All launchers empty - show compact dot display
+  if (missilesLoaded === 0) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="rocket" mr={1} />
+            Launchers
+            <Box inline color="label" ml={1} fontSize="11px">
+              {launchers.map((l, i) => (
+                <Icon
+                  key={l.id}
+                  name="circle"
+                  size={0.8}
+                  color="bad"
+                  ml={i > 0 ? 0.5 : 1}
+                />
+              ))}
+              <Box inline ml={1}>0/{launchers.length}</Box>
+            </Box>
+          </Box>
+        }
+      />
+    );
+  }
+
+  // Has loaded missiles - show details
   return (
     <Section
-      fill
-      scrollable
       title={
         <Box inline>
           <Icon name="rocket" mr={1} />
           Launchers
-        </Box>
-      }
-      buttons={
-        <Box color="label" fontSize="11px">
-          {missilesLoaded} loaded | {launchers_ready}/{launchers_total} ready
+          <Box inline ml={1} fontSize="11px">
+            {launchers.map((l, i) => (
+              <Icon
+                key={l.id}
+                name="circle"
+                size={0.8}
+                color={l.loaded ? (l.ready ? 'good' : 'average') : 'bad'}
+                ml={i > 0 ? 0.5 : 1}
+              />
+            ))}
+            <Box inline color="label" ml={1}>
+              {launchers_ready}/{launchers_total}
+            </Box>
+          </Box>
         </Box>
       }
     >
-      {launchers.length === 0 ? (
-        <Box color="label" textAlign="center" py={2}>
-          <Icon name="unlink" size={2} mb={1} />
-          <br />
-          No launchers linked
-        </Box>
-      ) : (
-        <Stack vertical>
-          {launchers.map((launcher) => (
-            <Stack.Item key={launcher.id}>
-              <Stack align="center" py={0.5}>
-                <Stack.Item basis="60px">
-                  <Box color="label" fontSize="11px">
-                    {launcher.id}
+      <Stack vertical>
+        {loadedLaunchers.map((launcher) => (
+          <Stack.Item key={launcher.id}>
+            <Stack align="center">
+              <Stack.Item grow>
+                <Box color="good" fontSize="12px">
+                  {launcher.missile_name}
+                  <Box as="span" color="label" ml={1}>
+                    ({launcher.missile_damage} dmg)
                   </Box>
-                </Stack.Item>
-                <Stack.Item grow>
-                  {launcher.loaded ? (
-                    <Box color="good" fontSize="12px">
-                      {launcher.missile_name}
-                      <Box as="span" color="label" ml={1}>
-                        ({launcher.missile_damage})
-                      </Box>
-                    </Box>
-                  ) : (
-                    <Box color="bad" fontSize="12px">
-                      Empty
-                    </Box>
-                  )}
-                </Stack.Item>
-                <Stack.Item basis="70px">
-                  {launcher.ready ? (
-                    <Box color="good" textAlign="right">
-                      <Icon name="check" /> Ready
-                    </Box>
-                  ) : launcher.cooldown ? (
-                    <ProgressBar
-                      value={1 - launcher.cooldown_time / 50}
-                      ranges={{
-                        good: [0.8, 1],
-                        average: [0.4, 0.8],
-                        bad: [0, 0.4],
-                      }}
-                    />
-                  ) : (
-                    <Box color="bad" textAlign="right">
-                      Offline
-                    </Box>
-                  )}
-                </Stack.Item>
-              </Stack>
-            </Stack.Item>
-          ))}
-        </Stack>
-      )}
+                </Box>
+              </Stack.Item>
+              <Stack.Item basis="60px">
+                {launcher.ready ? (
+                  <Box color="good" textAlign="right">
+                    <Icon name="check" /> Ready
+                  </Box>
+                ) : launcher.cooldown ? (
+                  <ProgressBar
+                    value={1 - launcher.cooldown_time / 50}
+                    ranges={{
+                      good: [0.8, 1],
+                      average: [0.4, 0.8],
+                      bad: [0, 0.4],
+                    }}
+                  />
+                ) : (
+                  <Box color="average" textAlign="right">
+                    Loading
+                  </Box>
+                )}
+              </Stack.Item>
+            </Stack>
+          </Stack.Item>
+        ))}
+      </Stack>
     </Section>
   );
 };

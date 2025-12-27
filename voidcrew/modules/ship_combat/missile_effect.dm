@@ -103,6 +103,8 @@
 	// Start moving toward target
 	if(target_turf)
 		chase_target(target_turf)
+		// Play incoming whistle at target location so people at the impact site hear the warning
+		playsound(target_turf, 'voidcrew/sound/machines/rocket/rocket_whistle.ogg', 80, TRUE, extrarange = 30, pressure_affected = FALSE)
 
 	// Send fired signal
 	if(source_ship)
