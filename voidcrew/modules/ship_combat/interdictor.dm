@@ -1,0 +1,695 @@
+// Ship Combat Interdictor
+// A machine that slows enemy ships by creating an interdiction field
+// Must be linked to a combat console via multitool
+// Power level controls interdiction strength (higher power = slower target)
+// Has 5-second warmup before full effect
+// Prevents target from cloaking while interdicted
+
+/obj/machinery/ship_combat/interdictor
+	name = "interdiction system"
+	desc = "A ship-mounted gravitic field generator that slows enemy vessels. Link to a combat console with a multitool. Higher power levels create stronger interdiction fields."
+	icon = 'voidcrew/icons/obj/machines/interdictor.dmi'
+	icon_state = "off"
+	density = TRUE
+	anchored = TRUE
+	power_channel = AREA_USAGE_EQUIP
+	circuit = /obj/item/circuitboard/machine/ship_combat/interdictor
+	idle_power_usage = 0
+	active_power_usage = BASE_MACHINE_ACTIVE_CONSUMPTION
+	max_integrity = 250
+	integrity_failure = 0.5
+	armor_type = /datum/armor/ship_interdictor
+
+	/// Reference to our linked combat console
+	var/datum/weakref/linked_console_ref
+	/// Reference to our ship
+	var/datum/weakref/linked_ship_ref
+	/// Our unique ID for console linking
+	var/interdictor_id
+	/// Power allocation set by combat console (0.25 to 2.0)
+	var/power_allocation = 1
+	/// Cached ship mass for power calculations
+	var/cached_ship_mass = 100
+
+	// ===== INTERDICTION STATE =====
+	/// Is interdiction currently active?
+	var/interdiction_active = FALSE
+	/// Is warmup in progress?
+	var/interdiction_warming_up = FALSE
+	/// Warmup progress (0 to 1)
+	var/warmup_progress = 0
+	/// When warmup started (for calculating progress)
+	var/warmup_start_time = 0
+	/// Reference to the ship we're interdicting
+	var/datum/weakref/interdicted_ship_ref
+	/// The beam effect on the overmap
+	var/datum/beam/interdiction_beam
+	/// Cooldown between interdiction attempts
+	COOLDOWN_DECLARE(interdict_cooldown)
+
+	// ===== STOCK PART MODIFIERS =====
+	/// Effect strength multiplier from capacitors (higher = more slowdown)
+	var/effect_mult = 1
+	/// Power efficiency multiplier from micro-lasers (lower = less power draw)
+	var/efficiency_mult = 1
+	/// Cooldown multiplier from servos (lower = faster cooldown)
+	var/cooldown_mult = 1
+
+
+/obj/machinery/ship_combat/interdictor/Initialize(mapload)
+	. = ..()
+	interdictor_id = "[rand(1000, 9999)]"
+	name = "[initial(name)] ([interdictor_id])"
+	RefreshParts()
+	// Try to auto-link after a short delay
+	addtimer(CALLBACK(src, PROC_REF(attempt_auto_link)), 2 SECONDS)
+
+/obj/machinery/ship_combat/interdictor/Destroy()
+	cancel_interdiction("Interdictor destroyed!")
+	unlink_console()
+	unlink_ship()
+	return ..()
+
+/obj/machinery/ship_combat/interdictor/process(seconds_per_tick)
+	// Update power draw
+	update_power_draw()
+
+	// Handle power loss
+	if(machine_stat & (BROKEN|NOPOWER))
+		if(interdiction_active || interdiction_warming_up)
+			cancel_interdiction("Power loss!")
+		return
+
+	// Handle warmup phase
+	if(interdiction_warming_up)
+		process_warmup(seconds_per_tick)
+		return
+
+	// Handle active interdiction
+	if(interdiction_active)
+		process_interdiction(seconds_per_tick)
+
+/obj/machinery/ship_combat/interdictor/RefreshParts()
+	. = ..()
+
+	// Reset to base values
+	effect_mult = 1
+	efficiency_mult = 1
+	cooldown_mult = 1
+
+	// Apply capacitor bonuses (effect strength)
+	for(var/datum/stock_part/capacitor/cap in component_parts)
+		effect_mult += INTERDICTOR_CAPACITOR_EFFECT_MULT * (cap.tier - 1)
+
+	// Apply micro-laser bonuses (power efficiency)
+	for(var/datum/stock_part/micro_laser/laser in component_parts)
+		efficiency_mult -= INTERDICTOR_LASER_EFFICIENCY_MULT * (laser.tier - 1)
+
+	// Apply servo bonuses (cooldown reduction)
+	for(var/datum/stock_part/servo/servo in component_parts)
+		cooldown_mult -= INTERDICTOR_SERVO_COOLDOWN_MULT * (servo.tier - 1)
+
+	// Clamp values
+	efficiency_mult = max(efficiency_mult, 0.3)
+	cooldown_mult = max(cooldown_mult, 0.3)
+
+	update_power_draw()
+
+/obj/machinery/ship_combat/interdictor/examine(mob/user)
+	. = ..()
+	. += span_notice("Interdictor ID: [interdictor_id]")
+	. += span_notice("Power Allocation: [round(power_allocation * 100)]%")
+	. += span_notice("Effect Strength: [round(effect_mult * 100)]%")
+	. += span_notice("Power Efficiency: [round((1 - efficiency_mult) * 100)]% reduction")
+	. += span_notice("Cooldown Reduction: [round((1 - cooldown_mult) * 100)]%")
+
+	if(interdiction_active)
+		var/obj/structure/overmap/ship/target = interdicted_ship_ref?.resolve()
+		. += span_boldnotice("STATUS: INTERDICTING [target?.display_name || "UNKNOWN"]")
+		. += span_notice("Target Speed Cap: [round(get_current_speed_multiplier() * 100)]%")
+	else if(interdiction_warming_up)
+		. += span_warning("STATUS: LOCKING ON ([round(warmup_progress * 100)]%)")
+	else if(!COOLDOWN_FINISHED(src, interdict_cooldown))
+		. += span_warning("STATUS: RECHARGING ([round(COOLDOWN_TIMELEFT(src, interdict_cooldown) / 10, 0.1)]s)")
+	else
+		. += span_notice("STATUS: READY")
+
+	var/obj/machinery/computer/camera_advanced/ship_combat/console = linked_console_ref?.resolve()
+	if(console)
+		. += span_notice("Linked to: [console]")
+	else
+		. += span_warning("Not linked to a combat console. Use a multitool to link.")
+
+/obj/machinery/ship_combat/interdictor/update_icon_state()
+	. = ..()
+	if(machine_stat & (BROKEN|NOPOWER))
+		icon_state = "off"
+	else
+		icon_state = "on"
+
+// ========== POWER CALCULATIONS ==========
+
+/// Returns the current power draw based on state and allocation
+/obj/machinery/ship_combat/interdictor/proc/get_power_draw()
+	if(!interdiction_active && !interdiction_warming_up)
+		return 0
+
+	var/base_power = INTERDICTOR_BASE_POWER_COST + (cached_ship_mass * INTERDICTOR_POWER_PER_MASS)
+	return base_power * power_allocation * efficiency_mult
+
+/// Updates machine power usage
+/obj/machinery/ship_combat/interdictor/proc/update_power_draw()
+	var/power_needed = get_power_draw()
+	if(power_needed > 0)
+		update_mode_power_usage(ACTIVE_POWER_USE, power_needed)
+		update_use_power(ACTIVE_POWER_USE)
+	else
+		update_mode_power_usage(ACTIVE_POWER_USE, 0)
+		update_use_power(IDLE_POWER_USE)
+
+/// Calculates the speed multiplier applied to the target based on power and upgrades
+/// Returns a value between 0.15 and 0.75 (lower = slower target)
+/obj/machinery/ship_combat/interdictor/proc/get_target_speed_multiplier()
+	// Base reduction at 100% power is 0.5 (50% speed)
+	// With higher power allocation, target is slower
+	// With better capacitors (higher effect_mult), target is slower
+
+	// At power_allocation = 1.0 (100%), base = 0.5
+	// At power_allocation = 2.0 (200%), base = 0.25
+	// At power_allocation = 0.25 (25%), base = 0.75
+
+	// Linear interpolation: at 25% power = 75% speed, at 200% power = 25% speed
+	var/base_multiplier = 1 - (0.5 * power_allocation)  // 0.75 at 25%, 0.5 at 100%, 0 at 200%
+	base_multiplier = clamp(base_multiplier, 0.25, 0.75)
+
+	// Apply effect multiplier from capacitors (higher effect = lower speed)
+	var/final_multiplier = base_multiplier / effect_mult
+
+	// Clamp to reasonable range
+	return clamp(final_multiplier, 0.15, 0.75)
+
+/// Returns the current effective speed multiplier (accounting for warmup)
+/obj/machinery/ship_combat/interdictor/proc/get_current_speed_multiplier()
+	var/target_mult = get_target_speed_multiplier()
+	if(interdiction_warming_up)
+		// During warmup, lerp from 1.0 to target
+		return 1 - ((1 - target_mult) * warmup_progress)
+	return target_mult
+
+// ========== CONSOLE LINKING ==========
+
+/// Links this interdictor to a combat console
+/obj/machinery/ship_combat/interdictor/proc/link_console(obj/machinery/computer/camera_advanced/ship_combat/console)
+	if(!console)
+		return FALSE
+	unlink_console()
+	linked_console_ref = WEAKREF(console)
+	RegisterSignal(console, COMSIG_QDELETING, PROC_REF(on_console_deleted))
+	return TRUE
+
+/// Unlinks from the current console
+/obj/machinery/ship_combat/interdictor/proc/unlink_console()
+	var/obj/machinery/computer/camera_advanced/ship_combat/console = linked_console_ref?.resolve()
+	if(console)
+		UnregisterSignal(console, COMSIG_QDELETING)
+	linked_console_ref = null
+
+/obj/machinery/ship_combat/interdictor/proc/on_console_deleted(datum/source)
+	SIGNAL_HANDLER
+	linked_console_ref = null
+
+/// Links to our owning ship
+/obj/machinery/ship_combat/interdictor/proc/link_ship(obj/structure/overmap/ship/ship)
+	if(!ship)
+		return FALSE
+	unlink_ship()
+	linked_ship_ref = WEAKREF(ship)
+	ship.linked_interdictors |= src
+	cached_ship_mass = ship.mass
+	RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_our_ship_docked))
+	return TRUE
+
+/// Unlinks from our ship
+/obj/machinery/ship_combat/interdictor/proc/unlink_ship()
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	if(ship)
+		ship.linked_interdictors -= src
+		UnregisterSignal(ship, COMSIG_VOIDCREW_SHIP_DOCKED)
+	linked_ship_ref = null
+
+/// Attempts to auto-link to a combat console on the same ship
+/obj/machinery/ship_combat/interdictor/proc/attempt_auto_link()
+	// Already linked
+	if(linked_console_ref?.resolve())
+		return
+
+	// Find what ship we're on by checking areas
+	var/area/our_area = get_area(src)
+	if(!our_area)
+		return
+
+	var/obj/structure/overmap/ship/our_ship
+	for(var/obj/structure/overmap/ship/S in SSovermap.simulated_ships)
+		if(!S.shuttle)
+			continue
+		if(our_area in S.shuttle.shuttle_areas)
+			our_ship = S
+			break
+
+	if(!our_ship)
+		return
+
+	// Link to ship
+	link_ship(our_ship)
+
+	// Find a combat console on this ship
+	for(var/area/ship_area in our_ship.shuttle.shuttle_areas)
+		for(var/obj/machinery/computer/camera_advanced/ship_combat/console in ship_area)
+			// Check if console already has an interdictor
+			if(console.linked_interdictor_ref?.resolve())
+				continue
+			// Found one - link to it
+			if(link_console(console))
+				console.linked_interdictor_ref = WEAKREF(src)
+				return
+
+// ========== INTERDICTION ==========
+
+/// Checks if we can start interdiction
+/obj/machinery/ship_combat/interdictor/proc/can_interdict()
+	if(machine_stat & (BROKEN|NOPOWER))
+		return FALSE
+	if(!anchored)
+		return FALSE
+	if(!COOLDOWN_FINISHED(src, interdict_cooldown))
+		return FALSE
+	if(interdiction_active || interdiction_warming_up)
+		return FALSE
+	return TRUE
+
+/// Starts interdiction on a target ship
+/obj/machinery/ship_combat/interdictor/proc/start_interdiction(obj/structure/overmap/ship/target, mob/user)
+	if(!can_interdict())
+		if(user)
+			if(machine_stat & (BROKEN|NOPOWER))
+				to_chat(user, span_warning("[src] is not operational!"))
+			else if(!anchored)
+				to_chat(user, span_warning("[src] must be anchored!"))
+			else if(!COOLDOWN_FINISHED(src, interdict_cooldown))
+				to_chat(user, span_warning("[src] is recharging! Available in [DisplayTimeText(COOLDOWN_TIMELEFT(src, interdict_cooldown))]."))
+			else if(interdiction_active || interdiction_warming_up)
+				to_chat(user, span_warning("[src] is already interdicting!"))
+		return FALSE
+
+	if(!target)
+		if(user)
+			to_chat(user, span_warning("No target selected!"))
+		return FALSE
+
+	// Can't interdict a ship already being interdicted
+	if(target.is_interdicted)
+		if(user)
+			to_chat(user, span_warning("Target is already being interdicted by another ship!"))
+		return FALSE
+
+	var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
+	if(!our_ship)
+		if(user)
+			to_chat(user, span_warning("[src] is not linked to a ship!"))
+		return FALSE
+
+	// Check range
+	var/turf/our_turf = get_turf(our_ship)
+	var/turf/target_turf = get_turf(target)
+	if(!our_turf || !target_turf)
+		if(user)
+			to_chat(user, span_warning("Cannot determine ship positions!"))
+		return FALSE
+
+	var/distance = get_dist(our_turf, target_turf)
+	if(distance > INTERDICTOR_RANGE)
+		if(user)
+			to_chat(user, span_warning("Target is too far away! Move within [INTERDICTOR_RANGE] tiles."))
+		return FALSE
+
+	// Check target is flying
+	if(target.state != OVERMAP_SHIP_FLYING)
+		if(user)
+			to_chat(user, span_warning("Target cannot be interdicted!"))
+		return FALSE
+
+	// Start warmup phase
+	interdiction_warming_up = TRUE
+	warmup_progress = 0
+	warmup_start_time = world.time
+	interdicted_ship_ref = WEAKREF(target)
+
+	// Register signals on target
+	RegisterSignal(target, COMSIG_QDELETING, PROC_REF(on_target_deleted))
+	RegisterSignal(target, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(on_target_moved))
+	RegisterSignal(our_ship, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(on_our_ship_moved))
+
+	// Create beam effect
+	interdiction_beam = our_ship.Beam(
+		target,
+		icon_state = "kinesis",
+		icon = 'icons/effects/beam.dmi',
+		emissive = TRUE
+	)
+
+	// Notify target
+	target.ship_announce("WARNING: INTERDICTION LOCK DETECTED! Evasive maneuvers recommended!", "INTERDICTION ALERT", sound('sound/effects/alert.ogg'))
+
+	// Notify our crew
+	if(user)
+		to_chat(user, span_notice("Interdiction lock initiated on [target.display_name]. Warming up..."))
+	our_ship.ship_announce("Interdiction lock initiated on [target.display_name]. Lock completing in [INTERDICTOR_LOCK_TIME / 10] seconds.", "Interdictor")
+
+	update_appearance()
+	update_power_draw()
+
+	return TRUE
+
+/// Processes the warmup phase
+/obj/machinery/ship_combat/interdictor/proc/process_warmup(seconds_per_tick)
+	var/obj/structure/overmap/ship/target = interdicted_ship_ref?.resolve()
+	if(!target)
+		cancel_interdiction("Target lost!")
+		return
+
+	// Calculate warmup progress
+	var/elapsed = world.time - warmup_start_time
+	warmup_progress = min(elapsed / INTERDICTOR_LOCK_TIME, 1)
+
+	// Apply partial effect during warmup
+	var/current_mult = get_current_speed_multiplier()
+	var/strength = 1 - current_mult
+	target.update_interdiction(src, current_mult, strength * warmup_progress)
+
+	// Check if warmup complete
+	if(warmup_progress >= 1)
+		complete_warmup()
+
+/// Completes warmup and starts full interdiction
+/obj/machinery/ship_combat/interdictor/proc/complete_warmup()
+	interdiction_warming_up = FALSE
+	interdiction_active = TRUE
+	warmup_progress = 1
+
+	var/obj/structure/overmap/ship/target = interdicted_ship_ref?.resolve()
+	var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
+
+	if(!target)
+		cancel_interdiction("Target lost!")
+		return
+
+	// Apply full effect
+	var/speed_mult = get_target_speed_multiplier()
+	var/strength = 1 - speed_mult
+	target.update_interdiction(src, speed_mult, strength)
+
+
+	// Start cooldown
+	var/effective_cooldown = INTERDICTOR_COOLDOWN * cooldown_mult
+	COOLDOWN_START(src, interdict_cooldown, effective_cooldown)
+
+	// Apply undock lockout
+	COOLDOWN_START(target, interdiction_undock_lockout, INTERDICTOR_UNDOCK_LOCKOUT)
+
+	// Notify
+	SEND_SIGNAL(target, COMSIG_SHIP_INTERDICTED, src, power_allocation)
+	target.ship_announce("INTERDICTION LOCK COMPLETE! Engines limited to [round(speed_mult * 100)]% efficiency! Cloaking disabled!", "INTERDICTION ALERT", sound('sound/effects/alert.ogg'))
+
+	if(our_ship)
+		our_ship.ship_announce("Interdiction lock complete on [target.display_name]. Target speed capped at [round(speed_mult * 100)]%.", "Interdictor")
+
+	update_appearance()
+
+/// Processes active interdiction
+/obj/machinery/ship_combat/interdictor/proc/process_interdiction(seconds_per_tick)
+	var/obj/structure/overmap/ship/target = interdicted_ship_ref?.resolve()
+	if(!target)
+		cancel_interdiction("Target lost!")
+		return
+
+	// Update target's speed multiplier (in case power allocation changed)
+	var/speed_mult = get_target_speed_multiplier()
+	var/strength = 1 - speed_mult
+	target.update_interdiction(src, speed_mult, strength)
+
+/// Cancels interdiction for any reason
+/obj/machinery/ship_combat/interdictor/proc/cancel_interdiction(reason)
+	var/was_active = interdiction_active || interdiction_warming_up
+
+	interdiction_active = FALSE
+	interdiction_warming_up = FALSE
+	warmup_progress = 0
+
+	// Remove beam
+	QDEL_NULL(interdiction_beam)
+
+	// Unregister signals from our ship
+	var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
+	if(our_ship)
+		UnregisterSignal(our_ship, COMSIG_VOIDCREW_SHIP_MOVED)
+
+	// Clean up target
+	var/obj/structure/overmap/ship/target = interdicted_ship_ref?.resolve()
+	if(target)
+		UnregisterSignal(target, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
+		target.clear_interdiction()
+		SEND_SIGNAL(target, COMSIG_SHIP_INTERDICTION_ENDED)
+		target.ship_announce("Interdiction field collapsed. Engines restored to full power.", "Interdiction Ended")
+
+	interdicted_ship_ref = null
+
+	if(was_active && reason && our_ship)
+		our_ship.ship_announce("[reason]", "Interdiction Ended")
+
+	update_appearance()
+	update_power_draw()
+
+/// Sets power allocation (called by combat console)
+/obj/machinery/ship_combat/interdictor/proc/set_power_allocation(new_power)
+	power_allocation = clamp(new_power, INTERDICTOR_POWER_MIN, INTERDICTOR_POWER_MAX)
+	update_power_draw()
+
+	// If actively interdicting, update target immediately
+	if(interdiction_active)
+		var/obj/structure/overmap/ship/target = interdicted_ship_ref?.resolve()
+		if(target)
+			var/speed_mult = get_target_speed_multiplier()
+			var/strength = 1 - speed_mult
+			target.update_interdiction(src, speed_mult, strength)
+
+			// Notify target of change
+			target.ship_announce("Interdiction field strength changed. Engines now at [round(speed_mult * 100)]% efficiency.", "INTERDICTION ALERT")
+
+// ========== SIGNAL HANDLERS ==========
+
+/obj/machinery/ship_combat/interdictor/proc/on_target_deleted(datum/source)
+	SIGNAL_HANDLER
+	cancel_interdiction("Target destroyed!")
+
+/obj/machinery/ship_combat/interdictor/proc/on_target_moved(datum/source)
+	SIGNAL_HANDLER
+	check_interdiction_range()
+
+/obj/machinery/ship_combat/interdictor/proc/on_our_ship_moved(datum/source)
+	SIGNAL_HANDLER
+	check_interdiction_range()
+
+/obj/machinery/ship_combat/interdictor/proc/on_our_ship_docked(datum/source)
+	SIGNAL_HANDLER
+	cancel_interdiction("Ship docked - interdiction disabled.")
+
+/// Checks if target is still in range
+/obj/machinery/ship_combat/interdictor/proc/check_interdiction_range()
+	if(!interdiction_active && !interdiction_warming_up)
+		return
+
+	var/obj/structure/overmap/ship/target = interdicted_ship_ref?.resolve()
+	var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
+
+	if(!target || !our_ship)
+		return
+
+	var/turf/our_turf = get_turf(our_ship)
+	var/turf/target_turf = get_turf(target)
+
+	if(!our_turf || !target_turf)
+		return
+
+	var/distance = get_dist(our_turf, target_turf)
+	if(distance > INTERDICTOR_RANGE)
+		cancel_interdiction("Target escaped interdiction range!")
+
+// ========== FORCE DOCK ==========
+
+/// Forces the interdicted target to dock with us
+/obj/machinery/ship_combat/interdictor/proc/force_dock_target(mob/user)
+	if(!interdiction_active)
+		if(user)
+			to_chat(user, span_warning("No ship is currently being interdicted!"))
+		return FALSE
+
+	var/obj/structure/overmap/ship/target = interdicted_ship_ref?.resolve()
+	var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
+
+	if(!target || !our_ship)
+		if(user)
+			to_chat(user, span_warning("Ship reference lost!"))
+		return FALSE
+
+	// Check range for force dock (same tile)
+	var/turf/our_turf = get_turf(our_ship)
+	var/turf/target_turf = get_turf(target)
+
+	if(!our_turf || !target_turf)
+		if(user)
+			to_chat(user, span_warning("Cannot determine ship positions!"))
+		return FALSE
+
+	var/distance = get_dist(our_turf, target_turf)
+	if(distance > INTERDICTOR_FORCE_DOCK_RANGE)
+		if(user)
+			to_chat(user, span_warning("Target is not on the same tile! Move to their position to force dock."))
+		return FALSE
+
+	// Verify target is still flying
+	if(target.state != OVERMAP_SHIP_FLYING)
+		if(user)
+			to_chat(user, span_warning("Target is no longer flying!"))
+		cancel_interdiction()
+		return FALSE
+
+	// Store reference before cancelling
+	var/obj/structure/overmap/ship/dock_target = target
+
+	// Cancel interdiction (removes beam, resets target speed)
+	cancel_interdiction()
+
+	// Announce force dock
+	our_ship.ship_announce("Forcing [dock_target.display_name] to dock!", "Force Dock Initiated")
+	dock_target.ship_announce("FORCED DOCKING INITIATED!", "INTERDICTION ALERT")
+
+	// Apply extended undock lockout
+	COOLDOWN_START(dock_target, interdiction_undock_lockout, INTERDICTOR_FORCE_DOCK_LOCKOUT)
+
+	// Force dock the ships together
+	var/result = our_ship.dock_ships_directly(dock_target, null)
+	if(result)
+		our_ship.ship_announce("Forced docking failed: [result]", "Docking Error")
+		dock_target.ship_announce("Forced docking failed.", "Docking Error")
+		return FALSE
+	else
+		playsound(src, 'sound/machines/airlock/airlockopen.ogg', 50, TRUE)
+		dock_target.ship_announce("Undocking systems locked for [DisplayTimeText(INTERDICTOR_FORCE_DOCK_LOCKOUT)]!", "SYSTEMS LOCKED")
+		if(user)
+			to_chat(user, span_notice("Force dock successful! Target cannot undock for [DisplayTimeText(INTERDICTOR_FORCE_DOCK_LOCKOUT)]."))
+		return TRUE
+
+// ========== UTILITY ==========
+
+/// Returns status info for the combat console UI
+/obj/machinery/ship_combat/interdictor/proc/get_status()
+	var/obj/structure/overmap/ship/target = interdicted_ship_ref?.resolve()
+	return list(
+		"id" = interdictor_id,
+		"name" = name,
+		"power_allocation" = power_allocation,
+		"power_draw" = round(get_power_draw()),
+		"effect_mult" = effect_mult,
+		"efficiency_mult" = efficiency_mult,
+		"cooldown_mult" = cooldown_mult,
+		"interdiction_active" = interdiction_active,
+		"warming_up" = interdiction_warming_up,
+		"warmup_progress" = warmup_progress,
+		"target_name" = target?.display_name,
+		"target_speed_cap" = interdiction_active ? round(get_target_speed_multiplier() * 100) : null,
+		"cooldown_remaining" = COOLDOWN_FINISHED(src, interdict_cooldown) ? 0 : round(COOLDOWN_TIMELEFT(src, interdict_cooldown) / 10, 0.1),
+		"ready" = can_interdict(),
+	)
+
+// ========== TOOL INTERACTIONS ==========
+
+/obj/machinery/ship_combat/interdictor/wrench_act(mob/living/user, obj/item/tool)
+	. = ITEM_INTERACT_BLOCKING
+	if(interdiction_active || interdiction_warming_up)
+		to_chat(user, span_warning("Cannot unwrench while interdiction is active!"))
+		return ITEM_INTERACT_BLOCKING
+	default_unfasten_wrench(user, tool)
+	return ITEM_INTERACT_SUCCESS
+
+/obj/machinery/ship_combat/interdictor/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
+	if(istype(W, /obj/item/multitool))
+		var/obj/item/multitool/tool = W
+		tool.buffer = src
+		balloon_alert(user, "interdictor buffered")
+		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a combat console to link."))
+		return TRUE
+
+	if(default_deconstruction_screwdriver(user, icon_state, icon_state, W))
+		return
+	if(default_deconstruction_crowbar(W))
+		return
+	return ..()
+
+// ========== DAMAGE HANDLING ==========
+
+/obj/machinery/ship_combat/interdictor/atom_break(damage_flag)
+	. = ..()
+	if(.)
+		cancel_interdiction("Interdictor destroyed!")
+		visible_message(span_danger("[src] sparks and breaks down!"))
+		playsound(src, 'sound/effects/sparks/sparks1.ogg', 70, TRUE)
+		do_sparks(5, TRUE, src)
+		update_appearance()
+
+/obj/machinery/ship_combat/interdictor/emp_act(severity)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	if(machine_stat & BROKEN)
+		return
+
+	// EMP breaks interdiction
+	if(interdiction_active || interdiction_warming_up)
+		cancel_interdiction("EMP disruption!")
+
+	visible_message(span_danger("[src] crackles and sparks from the EMP!"))
+	playsound(src, 'sound/effects/sparks/sparks1.ogg', 50, TRUE)
+	do_sparks(3, TRUE, src)
+
+	// Apply extended cooldown from EMP
+	var/emp_cooldown = rand(30 SECONDS, 60 SECONDS) / severity
+	if(!COOLDOWN_FINISHED(src, interdict_cooldown))
+		// Add to existing cooldown
+		COOLDOWN_START(src, interdict_cooldown, COOLDOWN_TIMELEFT(src, interdict_cooldown) + emp_cooldown)
+	else
+		COOLDOWN_START(src, interdict_cooldown, emp_cooldown)
+
+	update_appearance()
+
+// ========== CIRCUIT BOARD ==========
+
+/obj/item/circuitboard/machine/ship_combat/interdictor
+	name = "Interdiction System"
+	greyscale_colors = CIRCUIT_COLOR_COMMAND
+	build_path = /obj/machinery/ship_combat/interdictor
+	req_components = list(
+		/datum/stock_part/capacitor = 2,
+		/datum/stock_part/micro_laser = 1,
+		/datum/stock_part/servo = 1,
+	)
+
+// ========== ARMOR ==========
+
+/datum/armor/ship_interdictor
+	melee = 30
+	bullet = 30
+	laser = 30
+	energy = 40
+	bomb = 25
+	fire = 80
+	acid = 50

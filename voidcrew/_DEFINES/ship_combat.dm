@@ -71,17 +71,14 @@
 
 // ========== INTERDICTOR DEFINES ==========
 
-/// Time to lock on to a target ship (5 seconds)
+/// Time to lock on to a target ship (5 seconds warmup)
 #define INTERDICTOR_LOCK_TIME 5 SECONDS
 
 /// Cooldown between interdiction attempts (5 minutes)
 #define INTERDICTOR_COOLDOWN 5 MINUTES
 
-/// Speed multiplier applied to interdicted ships (50% speed)
-#define INTERDICTOR_SPEED_REDUCTION 0.5
-
-/// Power draw when interdicting
-#define INTERDICTOR_POWER_ACTIVE 300
+/// Base speed reduction at 100% power (50% speed)
+#define INTERDICTOR_BASE_REDUCTION 0.5
 
 /// Cooldown before interdicted ship can undock (30 seconds)
 #define INTERDICTOR_UNDOCK_LOCKOUT 30 SECONDS
@@ -94,6 +91,32 @@
 
 /// Range at which force dock can be used (in overmap tiles, must be same tile)
 #define INTERDICTOR_FORCE_DOCK_RANGE 0
+
+// ========== INTERDICTOR MACHINE DEFINES ==========
+
+/// Base power draw for interdictor (3 kW)
+#define INTERDICTOR_BASE_POWER_COST 3 KILO WATTS
+/// Power draw per unit of ship mass (W per mass)
+#define INTERDICTOR_POWER_PER_MASS 40
+/// Minimum power allocation (25%)
+#define INTERDICTOR_POWER_MIN 0.25
+/// Maximum power allocation (200%)
+#define INTERDICTOR_POWER_MAX 2.0
+
+// Interdictor stock part multipliers (per tier above 1)
+/// Capacitor: +25% max effect strength per tier
+#define INTERDICTOR_CAPACITOR_EFFECT_MULT 0.25
+/// Micro-laser: +20% power efficiency per tier
+#define INTERDICTOR_LASER_EFFICIENCY_MULT 0.20
+/// Servo: -15% cooldown per tier
+#define INTERDICTOR_SERVO_COOLDOWN_MULT 0.15
+
+// ========== INTERDICTOR SIGNALS ==========
+
+/// Sent when a ship is interdicted: (obj/machinery/ship_combat/interdictor/source, power_level)
+#define COMSIG_SHIP_INTERDICTED "ship_interdicted"
+/// Sent when interdiction ends on a ship
+#define COMSIG_SHIP_INTERDICTION_ENDED "ship_interdiction_ended"
 
 // ========== SHIELD DEFINES ==========
 

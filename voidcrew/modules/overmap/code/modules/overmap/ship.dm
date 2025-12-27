@@ -124,6 +124,13 @@
 	var/is_interdicted = FALSE
 	/// Cooldown preventing undocking after being interdicted
 	COOLDOWN_DECLARE(interdiction_undock_lockout)
+	/// Weakref to the interdictor machine currently affecting this ship
+	var/datum/weakref/interdicting_machine_ref
+	/// Current interdiction strength for UI display (0 to 1, where 1 = maximum effect)
+	var/interdiction_strength = 0
+
+	/// List of interdictor machines installed on this ship
+	var/list/linked_interdictors = list()
 
 // ===== SHARED SHIELD POOL PROCS =====
 
@@ -631,6 +638,33 @@
 
 	INVOKE_ASYNC(object, TYPE_PROC_REF(/obj/structure/overmap, ship_act), user, src, optional_partner)
 
+// ===== INTERDICTION PROCS =====
+
+/**
+  * Updates the interdiction effect on this ship from an interdictor machine.
+  * Called by the interdictor machine when power level changes or warmup progresses.
+  * * source - The interdictor machine affecting us
+  * * new_multiplier - The new speed multiplier (1 = normal, 0.5 = 50% speed, etc.)
+  * * strength - The interdiction strength for UI display (0 to 1)
+  */
+/obj/structure/overmap/ship/proc/update_interdiction(source, new_multiplier, strength)
+	if(!source)
+		return
+	interdicting_machine_ref = WEAKREF(source)
+	speed_multiplier = new_multiplier
+	interdiction_strength = strength
+	is_interdicted = TRUE
+
+/**
+  * Clears the interdiction effect on this ship.
+  * Called when interdiction ends for any reason.
+  */
+/obj/structure/overmap/ship/proc/clear_interdiction()
+	interdicting_machine_ref = null
+	speed_multiplier = 1
+	interdiction_strength = 0
+	is_interdicted = FALSE
+
 /**
   * Docks the shuttle by requesting a port at the requested spot.
   * * to_dock - The [/obj/structure/overmap] to dock to.
@@ -965,6 +999,11 @@
 	var/current_speed = MAGNITUDE(speed[1], speed[2])
 	if(!current_speed)
 		return
+
+	// Apply speed multiplier as hard cap (for interdiction effects)
+	// This affects actual movement speed, not just thrust generation
+	if(speed_multiplier < 1)
+		current_speed *= speed_multiplier
 
 	var/timer = 1 / current_speed
 	movement_callback_id = addtimer(CALLBACK(src, PROC_REF(tick_move)), timer, TIMER_STOPPABLE)

@@ -127,14 +127,8 @@
 	var/selected_approach_direction
 
 	// ===== INTERDICTOR VARIABLES =====
-	/// Is interdiction currently active (slowing target)?
-	var/interdiction_active = FALSE
-	/// The ship currently being interdicted (slowed)
-	var/obj/structure/overmap/ship/interdicted_ship
-	/// Cooldown between interdiction attempts
-	COOLDOWN_DECLARE(interdict_cooldown)
-	/// The beam effect showing the interdiction link on the overmap
-	var/datum/beam/interdiction_beam
+	/// Linked interdictor machine (weakref)
+	var/datum/weakref/linked_interdictor_ref
 
 	// ===== RESEARCH INTEGRATION =====
 	/// Linked techweb for research upgrades
@@ -177,7 +171,11 @@
 
 /obj/machinery/computer/camera_advanced/ship_combat/Destroy()
 	cancel_targeting()
-	cancel_interdiction()
+	// Unlink interdictor
+	var/obj/machinery/ship_combat/interdictor/interdictor = linked_interdictor_ref?.resolve()
+	if(interdictor)
+		interdictor.unlink_console()
+	linked_interdictor_ref = null
 	clear_target()
 	for(var/datum/weakref/ref in linked_launchers)
 		var/obj/machinery/ship_combat/missile_launcher/launcher = ref.resolve()
@@ -197,6 +195,11 @@
 	. = ..()
 	. += span_notice("Linked launchers: [length(linked_launchers)]")
 	. += span_notice("Linked laser turrets: [length(linked_turrets)]")
+	var/obj/machinery/ship_combat/interdictor/interdictor = linked_interdictor_ref?.resolve()
+	if(interdictor)
+		. += span_notice("Linked interdictor: [interdictor.name]")
+	else
+		. += span_warning("No interdictor linked. Use a multitool to link an interdiction system.")
 	if(target_ship)
 		. += span_notice("Current target: [target_ship.display_name]")
 	else
@@ -435,11 +438,36 @@
 	data["turret_power_available"] = round(turret_power_available)
 	data["turret_power_max"] = round(turret_power_max)
 
-	// Interdictor data
-	data["interdiction_active"] = interdiction_active
-	data["interdict_cooldown_active"] = !COOLDOWN_FINISHED(src, interdict_cooldown)
-	data["interdict_cooldown_remaining"] = COOLDOWN_TIMELEFT(src, interdict_cooldown)
+	// Interdictor data - get from linked machine
+	var/obj/machinery/ship_combat/interdictor/interdictor = linked_interdictor_ref?.resolve()
+	data["interdictor_linked"] = !!interdictor
 	data["interdictor_unlocked"] = has_upgrade(TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR)
+	if(interdictor)
+		var/list/interdictor_status = interdictor.get_status()
+		data["interdiction_active"] = interdictor_status["interdiction_active"]
+		data["interdiction_warming_up"] = interdictor_status["warming_up"]
+		data["interdiction_warmup_progress"] = interdictor_status["warmup_progress"]
+		data["interdictor_power_level"] = interdictor_status["power_allocation"]
+		data["interdictor_power_draw"] = interdictor_status["power_draw"]
+		data["interdictor_target_name"] = interdictor_status["target_name"]
+		data["interdictor_target_speed_cap"] = interdictor_status["target_speed_cap"]
+		data["interdict_cooldown_active"] = interdictor_status["cooldown_remaining"] > 0
+		data["interdict_cooldown_remaining"] = interdictor_status["cooldown_remaining"] * 10  // Convert to deciseconds for UI
+		data["interdictor_ready"] = interdictor_status["ready"]
+	else
+		data["interdiction_active"] = FALSE
+		data["interdiction_warming_up"] = FALSE
+		data["interdictor_power_level"] = 1
+		data["interdict_cooldown_active"] = FALSE
+		data["interdict_cooldown_remaining"] = 0
+		data["interdictor_ready"] = FALSE
+
+	// Check if WE are being interdicted (for display)
+	if(current_ship?.is_interdicted)
+		data["being_interdicted"] = TRUE
+		data["our_interdiction_strength"] = round(current_ship.interdiction_strength * 100)
+	else
+		data["being_interdicted"] = FALSE
 
 	// Check target distance for interdiction, force dock, and missile lock
 	var/target_in_interdict_range = FALSE
@@ -536,14 +564,35 @@
 			return TRUE
 
 		if("start_interdict")
-			return start_interdiction(ui.user)
+			var/obj/machinery/ship_combat/interdictor/interdictor = linked_interdictor_ref?.resolve()
+			if(!interdictor)
+				to_chat(ui.user, span_warning("No interdictor linked! Link an interdiction system with a multitool."))
+				return FALSE
+			return interdictor.start_interdiction(target_ship, ui.user)
 
 		if("cancel_interdict")
-			cancel_interdiction()
+			var/obj/machinery/ship_combat/interdictor/interdictor = linked_interdictor_ref?.resolve()
+			if(interdictor)
+				interdictor.cancel_interdiction("Cancelled by operator.")
 			return TRUE
 
 		if("force_dock")
-			return force_dock_target(ui.user)
+			var/obj/machinery/ship_combat/interdictor/interdictor = linked_interdictor_ref?.resolve()
+			if(!interdictor)
+				to_chat(ui.user, span_warning("No interdictor linked!"))
+				return FALSE
+			return interdictor.force_dock_target(ui.user)
+
+		if("set_interdictor_power")
+			var/obj/machinery/ship_combat/interdictor/interdictor = linked_interdictor_ref?.resolve()
+			if(!interdictor)
+				return FALSE
+			var/new_power = params["power"]
+			if(!isnum(new_power))
+				return FALSE
+			// Convert from percentage (25-200) to multiplier (0.25-2)
+			interdictor.set_power_allocation(new_power / 100)
+			return TRUE
 
 		// Shield power allocation (0-200%) - applies to ship's shared shield pool
 		if("set_shield_power")
@@ -846,8 +895,46 @@
 
 		return ITEM_INTERACT_SUCCESS
 
+	// Handle interdictor linking
+	if(istype(tool.buffer, /obj/machinery/ship_combat/interdictor))
+		var/obj/machinery/ship_combat/interdictor/interdictor = tool.buffer
+
+		// Check if already linked
+		var/obj/machinery/ship_combat/interdictor/current = linked_interdictor_ref?.resolve()
+		if(current == interdictor)
+			balloon_alert(user, "already linked")
+			return ITEM_INTERACT_BLOCKING
+
+		// Link the interdictor
+		if(link_interdictor(interdictor))
+			balloon_alert(user, "interdictor linked")
+			to_chat(user, span_notice("Linked [interdictor] to [src]."))
+		else
+			balloon_alert(user, "link failed")
+
+		return ITEM_INTERACT_SUCCESS
+
 	// Not something we handle, let parent try
 	return ..()
+
+/// Links an interdictor to this console
+/obj/machinery/computer/camera_advanced/ship_combat/proc/link_interdictor(obj/machinery/ship_combat/interdictor/interdictor)
+	if(!interdictor)
+		return FALSE
+
+	// Unlink any existing interdictor
+	var/obj/machinery/ship_combat/interdictor/old = linked_interdictor_ref?.resolve()
+	if(old)
+		old.unlink_console()
+
+	linked_interdictor_ref = WEAKREF(interdictor)
+	interdictor.link_console(src)
+
+	// Link to our ship
+	if(current_ship)
+		interdictor.link_ship(current_ship)
+
+	return TRUE
 
 /// Links a shield generator to this console
 /obj/machinery/computer/camera_advanced/ship_combat/proc/link_shield_generator(obj/machinery/ship_combat/shield_generator/gen)
@@ -935,7 +1022,7 @@
 
 	// Warn the target ship
 	SEND_SIGNAL(targeting_ship, COMSIG_SHIP_BEING_TARGETED, current_ship)
-	targeting_ship.ship_announce("WARNING: HOSTILE TARGETING DETECTED! A ship is acquiring weapons lock!", "THREAT ALERT", FALSE, sound('sound/effects/alert.ogg'))
+	targeting_ship.ship_announce("HOSTILE SHIP ACQUIRING WEAPONS LOCK!", "WARNING", FALSE, sound('sound/effects/alert.ogg'))
 
 	// Notify our crew
 	if(user)
@@ -977,12 +1064,11 @@
 	// Notify the target ship that lock is complete (this breaks their cloak)
 	SEND_SIGNAL(target_ship, COMSIG_SHIP_TARGETING_STOPPED, current_ship)
 	SEND_SIGNAL(target_ship, COMSIG_SHIP_WEAPONS_LOCKED, current_ship)
-	target_ship.ship_announce("WEAPONS LOCK CONFIRMED! Hostile ship has missile lock on this vessel!", "TARGET LOCK", FALSE, sound('sound/effects/alert.ogg'))
 
 	// Notify our crew
 	if(user)
-		to_chat(user, span_danger("Target lock acquired on [target_ship.display_name]! Use 'Attack' to enter targeting mode."))
-	current_ship?.ship_announce("Target lock acquired: [target_ship.display_name]", "Targeting System")
+		to_chat(user, span_danger("Target lock acquired on [target_ship.display_name]!"))
+	current_ship?.ship_announce("Target lock acquired: [target_ship.display_name]")
 
 	return TRUE
 
@@ -1444,254 +1530,6 @@
 	status["ready"] = ready_count
 	status["total"] = total_count
 	return status
-
-// ========== INTERDICTION ==========
-
-/// Starts the interdiction process - slows target ship
-/obj/machinery/computer/camera_advanced/ship_combat/proc/start_interdiction(mob/user)
-	if(machine_stat & (BROKEN|NOPOWER))
-		if(user)
-			to_chat(user, span_warning("[src] is not operational!"))
-		return FALSE
-
-	if(!current_ship)
-		if(user)
-			to_chat(user, span_warning("[src] is not connected to ship systems!"))
-		return FALSE
-
-	// Check research unlock
-	if(!has_upgrade(TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR))
-		if(user)
-			to_chat(user, span_warning("Interdiction systems not unlocked! Research 'Ship Interdiction Systems' and link to a research network."))
-		return FALSE
-
-	if(interdiction_active)
-		if(user)
-			to_chat(user, span_warning("Interdiction already active!"))
-		return FALSE
-
-	if(!COOLDOWN_FINISHED(src, interdict_cooldown))
-		if(user)
-			to_chat(user, span_warning("Interdictor is recharging! Available in [DisplayTimeText(COOLDOWN_TIMELEFT(src, interdict_cooldown))]."))
-		return FALSE
-
-	if(!target_ship)
-		if(user)
-			to_chat(user, span_warning("No target selected!"))
-		return FALSE
-
-	// Can't interdict a ship that's already being interdicted
-	if(target_ship.is_interdicted)
-		if(user)
-			to_chat(user, span_warning("Target is already being interdicted by another ship!"))
-		return FALSE
-
-	// Check range for interdiction (2 tiles)
-	var/turf/our_turf = get_turf(current_ship)
-	var/turf/target_turf = get_turf(target_ship)
-	if(!our_turf || !target_turf)
-		if(user)
-			to_chat(user, span_warning("Cannot determine ship positions!"))
-		return FALSE
-
-	var/distance = get_dist(our_turf, target_turf)
-	if(distance > INTERDICTOR_RANGE)
-		if(user)
-			to_chat(user, span_warning("Target ship is too far away! Move within [INTERDICTOR_RANGE] tiles to interdict."))
-		return FALSE
-
-	// Verify target is still flying
-	if(target_ship.state != OVERMAP_SHIP_FLYING)
-		if(user)
-			to_chat(user, span_warning("Target ship cannot be interdicted!"))
-		return FALSE
-
-	// Start interdiction - immediately applies slowdown
-	interdiction_active = TRUE
-	interdicted_ship = target_ship
-
-	// Mark target as interdicted and apply slowdown
-	target_ship.is_interdicted = TRUE
-	target_ship.speed_multiplier = INTERDICTOR_SPEED_REDUCTION
-
-	// Also immediately reduce existing speed
-	if(target_ship.speed && length(target_ship.speed) >= 2)
-		target_ship.speed[1] *= INTERDICTOR_SPEED_REDUCTION
-		target_ship.speed[2] *= INTERDICTOR_SPEED_REDUCTION
-
-	// Register for target deletion and movement (both ships)
-	RegisterSignal(interdicted_ship, COMSIG_QDELETING, PROC_REF(on_interdicted_ship_deleted))
-	RegisterSignal(interdicted_ship, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(on_interdicted_ship_moved))
-	RegisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(on_our_ship_moved))
-
-	// Create the interdiction beam on the overmap between the two ships
-	if(current_ship && target_ship)
-		interdiction_beam = current_ship.Beam(
-			target_ship,
-			icon_state = "kinesis",
-			icon = 'icons/effects/beam.dmi',
-			emissive = TRUE
-		)
-
-	// Set emergency lighting on target ship
-	set_ship_emergency_lights(target_ship, TRUE)
-
-	// Send signal and alert target crew
-	SEND_SIGNAL(target_ship, COMSIG_SHIP_INTERDICTED, src)
-	target_ship.ship_announce("WARNING: YOUR SHIP IS BEING INTERDICTED! ENGINES AT [INTERDICTOR_SPEED_REDUCTION * 100]% EFFICIENCY!", "INTERDICTION ALERT", sound('sound/effects/alert.ogg'))
-
-	// Alert our crew
-	if(user)
-		to_chat(user, span_notice("Interdiction field active! [target_ship.display_name] is slowed. Close in and use Force Dock when within range."))
-	current_ship.ship_announce("Interdiction field active on [target_ship.display_name]. Target engines reduced to [INTERDICTOR_SPEED_REDUCTION * 100]%.", "Interdictor")
-
-	// Start cooldown immediately when interdiction starts
-	COOLDOWN_START(src, interdict_cooldown, INTERDICTOR_COOLDOWN)
-
-	return TRUE
-
-/// Called when the interdicted ship is deleted
-/obj/machinery/computer/camera_advanced/ship_combat/proc/on_interdicted_ship_deleted(datum/source)
-	SIGNAL_HANDLER
-	cancel_interdiction("Target destroyed!")
-
-/// Called when the interdicted ship moves - check if they escaped range
-/obj/machinery/computer/camera_advanced/ship_combat/proc/on_interdicted_ship_moved(datum/source)
-	SIGNAL_HANDLER
-	check_interdiction_range()
-
-/// Called when our ship moves - check if we left interdiction range
-/obj/machinery/computer/camera_advanced/ship_combat/proc/on_our_ship_moved(datum/source)
-	SIGNAL_HANDLER
-	check_interdiction_range()
-
-/// Checks if interdiction should be cancelled due to range
-/obj/machinery/computer/camera_advanced/ship_combat/proc/check_interdiction_range()
-	if(!interdiction_active || !interdicted_ship || !current_ship)
-		return
-
-	var/turf/our_turf = get_turf(current_ship)
-	var/turf/target_turf = get_turf(interdicted_ship)
-	if(!our_turf || !target_turf)
-		return
-
-	var/distance = get_dist(our_turf, target_turf)
-	if(distance > INTERDICTOR_RANGE)
-		cancel_interdiction("Target escaped interdiction range!")
-
-/// Cancels the interdiction - removes slowdown from target
-/obj/machinery/computer/camera_advanced/ship_combat/proc/cancel_interdiction(reason)
-	if(!interdiction_active)
-		return
-
-	interdiction_active = FALSE
-
-	// Remove the interdiction beam
-	QDEL_NULL(interdiction_beam)
-
-	// Unregister signal from our ship
-	if(current_ship)
-		UnregisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_MOVED)
-
-	// Remove slowdown from target and restore normal lighting
-	if(interdicted_ship)
-		UnregisterSignal(interdicted_ship, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
-		interdicted_ship.is_interdicted = FALSE
-		interdicted_ship.speed_multiplier = 1
-		set_ship_emergency_lights(interdicted_ship, FALSE)
-		SEND_SIGNAL(interdicted_ship, COMSIG_SHIP_INTERDICTION_ENDED)
-		interdicted_ship.ship_announce("Interdiction field collapsed. Engines restored to full power.", "Interdiction Ended")
-
-	interdicted_ship = null
-
-	if(reason && current_ship)
-		current_ship.ship_announce("[reason]", "Interdiction Ended")
-
-/// Forces the interdicted target to dock with us - requires same tile
-/obj/machinery/computer/camera_advanced/ship_combat/proc/force_dock_target(mob/user)
-	if(machine_stat & (BROKEN|NOPOWER))
-		if(user)
-			to_chat(user, span_warning("[src] is not operational!"))
-		return FALSE
-
-	if(!current_ship)
-		if(user)
-			to_chat(user, span_warning("[src] is not connected to ship systems!"))
-		return FALSE
-
-	if(!interdiction_active || !interdicted_ship)
-		if(user)
-			to_chat(user, span_warning("No ship is currently being interdicted! Interdict a target first."))
-		return FALSE
-
-	// Check range for force dock (same tile)
-	var/turf/our_turf = get_turf(current_ship)
-	var/turf/target_turf = get_turf(interdicted_ship)
-	if(!our_turf || !target_turf)
-		if(user)
-			to_chat(user, span_warning("Cannot determine ship positions!"))
-		return FALSE
-
-	var/distance = get_dist(our_turf, target_turf)
-	if(distance > INTERDICTOR_FORCE_DOCK_RANGE)
-		if(user)
-			to_chat(user, span_warning("Target ship is not on the same tile! Move to their position to force dock."))
-		return FALSE
-
-	// Verify target is still flying
-	if(interdicted_ship.state != OVERMAP_SHIP_FLYING)
-		if(user)
-			to_chat(user, span_warning("Target ship is no longer flying!"))
-		cancel_interdiction()
-		return FALSE
-
-	// Store reference before cancelling interdiction
-	var/obj/structure/overmap/ship/dock_target = interdicted_ship
-
-	// Cancel interdiction (removes slowdown, beam, and emergency lights)
-	interdiction_active = FALSE
-	QDEL_NULL(interdiction_beam)
-	if(current_ship)
-		UnregisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_MOVED)
-	UnregisterSignal(interdicted_ship, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
-	interdicted_ship.is_interdicted = FALSE
-	interdicted_ship.speed_multiplier = 1
-	set_ship_emergency_lights(interdicted_ship, FALSE)
-	SEND_SIGNAL(interdicted_ship, COMSIG_SHIP_INTERDICTION_ENDED)
-	interdicted_ship = null
-
-	// Announce force dock
-	current_ship.ship_announce("Forcing [dock_target.display_name] to dock!", "Force Dock Initiated")
-	dock_target.ship_announce("FORCED DOCKING INITIATED!", "INTERDICTION ALERT")
-
-	// Apply undock lockout to target ship BEFORE docking (2 minute lockout for force dock)
-	COOLDOWN_START(dock_target, interdiction_undock_lockout, INTERDICTOR_FORCE_DOCK_LOCKOUT)
-
-	// Force dock the ships together
-	var/result = current_ship.dock_ships_directly(dock_target, null)
-	if(result)
-		// Docking failed for some reason
-		current_ship.ship_announce("Forced docking failed: [result]", "Docking Error")
-		dock_target.ship_announce("Forced docking failed.", "Docking Error")
-		return FALSE
-	else
-		// Success - play alarm on target ship and notify of lockout
-		playsound(src, 'sound/machines/airlock/airlockopen.ogg', 50, TRUE)
-		dock_target.ship_announce("Undocking systems locked for [DisplayTimeText(INTERDICTOR_FORCE_DOCK_LOCKOUT)]!", "SYSTEMS LOCKED")
-		if(user)
-			to_chat(user, span_notice("Force dock successful! Target ship is now docked and cannot undock for [DisplayTimeText(INTERDICTOR_FORCE_DOCK_LOCKOUT)]."))
-		return TRUE
-
-/// Sets or unsets emergency lighting on all lights in a ship's areas
-/obj/machinery/computer/camera_advanced/ship_combat/proc/set_ship_emergency_lights(obj/structure/overmap/ship/target, enable = TRUE)
-	if(!target?.shuttle?.shuttle_areas)
-		return
-	for(var/area/ship_area in target.shuttle.shuttle_areas)
-		for(var/obj/machinery/light/light in ship_area)
-			if(enable)
-				light.set_major_emergency_light()
-			else
-				light.unset_major_emergency_light()
 
 // ========== TARGETING RETICLE ==========
 

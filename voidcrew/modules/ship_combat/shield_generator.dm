@@ -141,6 +141,12 @@
 			deactivate_generator()
 		return
 
+	// Can't run shields while docked
+	if(is_ship_docked())
+		if(active)
+			deactivate_generator()
+		return
+
 	// Check if ship shields are broken (on cooldown) - can't activate during cooldown
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship?.shields_broken)
@@ -1297,13 +1303,16 @@
 // ========== SHIELD STATE ==========
 
 /// Activates this generator to contribute to the ship's shared shield pool
-/// Returns FALSE if activation failed (ship shields broken, etc.)
+/// Returns FALSE if activation failed (docked, ship shields broken, etc.)
 /obj/machinery/ship_combat/shield_generator/proc/activate_generator()
 	if(active)
 		return TRUE
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	// Can't activate while ship shields are broken/on cooldown
 	if(ship?.shields_broken)
+		return FALSE
+	// Can't activate while docked
+	if(is_ship_docked())
 		return FALSE
 
 	active = TRUE
@@ -1477,9 +1486,12 @@
 	// Recalculate ship shield stats with this generator now contributing
 	ship.recalculate_shield_stats()
 
-	// Register for docking signals (shields can stay active while docked)
+	// Register for docking signals
 	RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_ship_docked))
 	RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(on_ship_undocked))
+	// If already docked, deactivate generator
+	if(is_ship_docked())
+		deactivate_generator()
 
 /// Unlinks from the current ship
 /obj/machinery/ship_combat/shield_generator/proc/unlink_ship()
@@ -1502,15 +1514,15 @@
 		return FALSE
 	return !isnull(ship.docked)
 
-/// Called when ship docks - shields can stay active
+/// Called when ship docks - deactivate generator
 /obj/machinery/ship_combat/shield_generator/proc/on_ship_docked(datum/source)
 	SIGNAL_HANDLER
-	// Shields remain active while docked
+	deactivate_generator()
 
-/// Called when ship undocks
+/// Called when ship undocks - shields can be reactivated
 /obj/machinery/ship_combat/shield_generator/proc/on_ship_undocked(datum/source)
 	SIGNAL_HANDLER
-	// No action needed - shields stay in their current state
+	// Shields don't auto-activate on undock - crew must manually enable
 
 /// Attempts to auto-link to a combat console on the same ship
 /obj/machinery/ship_combat/shield_generator/proc/attempt_auto_link()

@@ -71,10 +71,21 @@ type Data = {
   turret_power_level: number;
   turret_power_available: number;
   turret_power_max: number;
+  // Interdictor data
+  interdictor_linked: BooleanLike;
+  interdictor_unlocked: BooleanLike;
   interdiction_active: BooleanLike;
+  interdiction_warming_up: BooleanLike;
+  interdiction_warmup_progress: number;
+  interdictor_power_level: number;
+  interdictor_power_draw: number;
+  interdictor_target_name: string | null;
+  interdictor_target_speed_cap: number | null;
   interdict_cooldown_active: BooleanLike;
   interdict_cooldown_remaining: number;
-  interdictor_unlocked: BooleanLike;
+  interdictor_ready: BooleanLike;
+  being_interdicted: BooleanLike;
+  our_interdiction_strength: number;
   target_in_interdict_range: BooleanLike;
   target_in_force_dock_range: BooleanLike;
   target_in_missile_range: BooleanLike;
@@ -494,10 +505,20 @@ const WeaponsPanel = () => {
   const { act, data } = useBackend<Data>();
   const {
     target_ref,
+    interdictor_linked,
+    interdictor_unlocked,
     interdiction_active,
+    interdiction_warming_up,
+    interdiction_warmup_progress,
+    interdictor_power_level,
+    interdictor_power_draw,
+    interdictor_target_name,
+    interdictor_target_speed_cap,
     interdict_cooldown_active,
     interdict_cooldown_remaining,
-    interdictor_unlocked,
+    interdictor_ready,
+    being_interdicted,
+    our_interdiction_strength,
     target_in_interdict_range,
     target_in_force_dock_range,
   } = data;
@@ -507,16 +528,64 @@ const WeaponsPanel = () => {
     return null;
   }
 
+  const powerPercent = Math.round((interdictor_power_level ?? 1) * 100);
+
+  // Show if WE are being interdicted
+  if (being_interdicted) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="satellite-dish" mr={1} />
+            Interdictor
+            <Box inline color="bad" ml={1} fontSize="11px">
+              BEING INTERDICTED
+            </Box>
+          </Box>
+        }
+      >
+        <NoticeBox danger>
+          <Icon name="exclamation-triangle" mr={1} />
+          INTERDICTION FIELD ACTIVE - Engines at {100 - (our_interdiction_strength || 0)}%
+        </NoticeBox>
+      </Section>
+    );
+  }
+
+  // No interdictor linked
+  if (!interdictor_linked) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="satellite-dish" mr={1} />
+            Interdictor
+            <Box inline color="label" ml={1} fontSize="11px">
+              NOT LINKED
+            </Box>
+          </Box>
+        }
+      >
+        <Box color="label" textAlign="center">
+          <Icon name="unlink" mr={1} />
+          No interdictor linked. Use a multitool to link.
+        </Box>
+      </Section>
+    );
+  }
+
   const canInterdict =
     target_ref &&
     target_in_interdict_range &&
     !interdiction_active &&
-    !interdict_cooldown_active;
+    !interdiction_warming_up &&
+    !interdict_cooldown_active &&
+    interdictor_ready;
 
   const canForceDock = interdiction_active && target_in_force_dock_range;
 
   // Cooldown state
-  if (interdict_cooldown_active && !interdiction_active) {
+  if (interdict_cooldown_active && !interdiction_active && !interdiction_warming_up) {
     return (
       <Section
         title={
@@ -543,6 +612,47 @@ const WeaponsPanel = () => {
     );
   }
 
+  // Warmup state
+  if (interdiction_warming_up) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="satellite-dish" mr={1} />
+            Interdictor
+            <Box inline color="average" ml={1} fontSize="11px">
+              LOCKING
+            </Box>
+          </Box>
+        }
+      >
+        <Stack vertical>
+          <Stack.Item>
+            <Box bold textAlign="center" color="average" mb={1}>
+              <Icon name="spinner" spin mr={1} />
+              Acquiring lock on {interdictor_target_name}...
+            </Box>
+          </Stack.Item>
+          <Stack.Item>
+            <ProgressBar value={interdiction_warmup_progress || 0} color="blue">
+              {Math.round((interdiction_warmup_progress || 0) * 100)}%
+            </ProgressBar>
+          </Stack.Item>
+          <Stack.Item mt={1}>
+            <Button
+              fluid
+              icon="times"
+              color="bad"
+              onClick={() => act('cancel_interdict')}
+            >
+              Cancel
+            </Button>
+          </Stack.Item>
+        </Stack>
+      </Section>
+    );
+  }
+
   // Active interdiction
   if (interdiction_active) {
     return (
@@ -557,37 +667,66 @@ const WeaponsPanel = () => {
           </Box>
         }
       >
-        <Stack>
-          <Stack.Item grow>
-            <Button
-              fluid
-              icon="link"
-              color="red"
-              disabled={!canForceDock}
-              tooltip={
-                !target_in_force_dock_range
-                  ? 'Must be on the same tile as target'
-                  : 'Force the target ship to dock with yours'
-              }
-              onClick={() => act('force_dock')}
-            >
-              {!target_in_force_dock_range ? 'Get Closer' : 'Force Dock'}
-            </Button>
-          </Stack.Item>
+        <Stack vertical>
+          {/* Target Info */}
           <Stack.Item>
-            <Button
-              icon="times"
-              color="bad"
-              tooltip="Cancel interdiction"
-              onClick={() => act('cancel_interdict')}
+            <Box bold color="orange" textAlign="center">
+              {interdictor_target_name} - Speed capped at {interdictor_target_speed_cap}%
+            </Box>
+          </Stack.Item>
+
+          {/* Power Slider */}
+          <Stack.Item>
+            <Box fontSize="11px" color="label" mb={0.5}>
+              <Icon name="bolt" mr={0.5} />
+              Power: {powerPercent}% ({interdictor_power_draw}W)
+            </Box>
+            <Slider
+              value={powerPercent}
+              minValue={25}
+              maxValue={200}
+              step={25}
+              stepPixelSize={8}
+              format={(v) => `${v}%`}
+              onChange={(e, value) => act('set_interdictor_power', { power: value })}
             />
+          </Stack.Item>
+
+          {/* Action Buttons */}
+          <Stack.Item>
+            <Stack>
+              <Stack.Item grow>
+                <Button
+                  fluid
+                  icon="link"
+                  color="red"
+                  disabled={!canForceDock}
+                  tooltip={
+                    !target_in_force_dock_range
+                      ? 'Must be on the same tile as target'
+                      : 'Force the target ship to dock with yours'
+                  }
+                  onClick={() => act('force_dock')}
+                >
+                  {!target_in_force_dock_range ? 'Get Closer' : 'Force Dock'}
+                </Button>
+              </Stack.Item>
+              <Stack.Item>
+                <Button
+                  icon="times"
+                  color="bad"
+                  tooltip="Cancel interdiction"
+                  onClick={() => act('cancel_interdict')}
+                />
+              </Stack.Item>
+            </Stack>
           </Stack.Item>
         </Stack>
       </Section>
     );
   }
 
-  // Ready state - just show buttons
+  // Ready state - show power slider and buttons
   return (
     <Section
       title={
@@ -597,32 +736,59 @@ const WeaponsPanel = () => {
         </Box>
       }
     >
-      <Stack>
-        <Stack.Item grow>
-          <Button
-            fluid
-            icon="satellite-dish"
-            disabled={!canInterdict}
-            tooltip={
-              !target_ref
-                ? 'Select a target ship first'
-                : !target_in_interdict_range
-                  ? 'Target is too far away'
-                  : 'Slow target ship by 50%'
-            }
-            onClick={() => act('start_interdict')}
-          >
-            {!target_ref
-              ? 'No Target'
-              : !target_in_interdict_range
-                ? 'Out of Range'
-                : 'Slow'}
-          </Button>
+      <Stack vertical>
+        {/* Power Slider */}
+        <Stack.Item>
+          <Box fontSize="11px" color="label" mb={0.5}>
+            <Icon name="bolt" mr={0.5} />
+            Power: {powerPercent}%
+            {powerPercent > 100 && (
+              <Box inline color="orange" ml={1}>
+                - High power mode
+              </Box>
+            )}
+          </Box>
+          <Slider
+            value={powerPercent}
+            minValue={25}
+            maxValue={200}
+            step={25}
+            stepPixelSize={8}
+            format={(v) => `${v}%`}
+            onChange={(e, value) => act('set_interdictor_power', { power: value })}
+          />
         </Stack.Item>
-        <Stack.Item grow>
-          <Button fluid icon="link" color="red" disabled tooltip="Slow first">
-            Force Dock
-          </Button>
+
+        {/* Action Buttons */}
+        <Stack.Item>
+          <Stack>
+            <Stack.Item grow>
+              <Button
+                fluid
+                icon="satellite-dish"
+                disabled={!canInterdict}
+                tooltip={
+                  !target_ref
+                    ? 'Select a target ship first'
+                    : !target_in_interdict_range
+                      ? 'Target is too far away'
+                      : 'Slow target ship'
+                }
+                onClick={() => act('start_interdict')}
+              >
+                {!target_ref
+                  ? 'No Target'
+                  : !target_in_interdict_range
+                    ? 'Out of Range'
+                    : 'Interdict'}
+              </Button>
+            </Stack.Item>
+            <Stack.Item grow>
+              <Button fluid icon="link" color="red" disabled tooltip="Interdict first">
+                Force Dock
+              </Button>
+            </Stack.Item>
+          </Stack>
         </Stack.Item>
       </Stack>
     </Section>

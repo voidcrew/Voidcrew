@@ -41,10 +41,12 @@
 /datum/techweb_node/ship_combat_interdictor
 	id = TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR
 	display_name = "Ship Interdiction Systems"
-	description = "Advanced interdiction technology that allows disabling enemy ship engines and forcing them to dock. Requires linking the combat console to the research network."
-	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT_ADVANCED)
-	design_ids = list()
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
+	description = "Advanced interdiction technology that slows enemy ships and prevents cloaking. Power level determines effectiveness - higher power creates a harder speed cap on the target."
+	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
+	design_ids = list(
+		"ship_interdictor",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 
 /datum/techweb_node/ship_combat_shields
 	id = TECHWEB_NODE_SHIP_COMBAT_SHIELDS
@@ -117,6 +119,16 @@
 	desc = "Allows for the construction of a ship-mounted laser turret. Highly effective against shields."
 	id = "ship_laser_turret"
 	build_path = /obj/item/circuitboard/machine/ship_combat/laser_turret
+	category = list(
+		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
+
+/datum/design/board/ship_interdictor
+	name = "Interdictor Board"
+	desc = "Allows for the construction of a ship interdiction system. Slows enemy ships and prevents cloaking."
+	id = "ship_interdictor"
+	build_path = /obj/item/circuitboard/machine/ship_combat/interdictor
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
 	)

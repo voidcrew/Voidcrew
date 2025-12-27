@@ -202,6 +202,13 @@
 			to_chat(user, span_warning("Cloak recharging! Available in [DisplayTimeText(COOLDOWN_TIMELEFT(src, recloak_cooldown))]."))
 		return FALSE
 
+	// Cannot cloak while being interdicted
+	if(linked_ship.is_interdicted)
+		if(user)
+			to_chat(user, span_warning("Cannot activate cloaking device while interdicted!"))
+		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 40, TRUE)
+		return FALSE
+
 	cloak_active = TRUE
 
 	// Hide the ship on the overmap
