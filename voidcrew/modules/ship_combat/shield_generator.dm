@@ -12,6 +12,8 @@
 	anchored = TRUE
 	power_channel = AREA_USAGE_EQUIP
 	circuit = /obj/item/circuitboard/machine/ship_combat/shield_generator
+	/// No power draw when shields are off - active draw is set dynamically via update_power_draw()
+	idle_power_usage = 0
 
 	// Stock part integration
 	// Capacitors: +50% max shield health per tier
@@ -89,6 +91,9 @@
 	// Clamp efficiency to prevent negative power
 	power_efficiency = max(power_efficiency, 0.1)
 
+	// Update power draw since efficiency changed
+	update_power_draw()
+
 /obj/machinery/ship_combat/shield_generator/examine(mob/user)
 	. = ..()
 	. += span_notice("Shield Status: [active ? "ACTIVE" : (broken ? "BROKEN" : "OFFLINE")]")
@@ -149,13 +154,7 @@
 			broken = FALSE
 		return
 
-	// Draw power
-	var/power_draw = get_power_draw()
-	if(!use_energy(power_draw * seconds_per_tick))
-		power_loss_shutdown()
-		return
-
-	// Activate if not already
+	// Activate if not already (power is drawn automatically via update_mode_power_usage)
 	if(!active)
 		activate_shields()
 
@@ -1343,7 +1342,8 @@
 		spawn_shield_walls()
 
 	update_appearance()
-	playsound(src, 'sound/vehicles/mecha/mech_shield_raise.ogg', 100, TRUE, extrarange = 50, ignore_walls = TRUE)
+	update_power_draw()
+	playsound(src, 'sound/vehicles/mecha/mech_shield_raise.ogg', 100, TRUE)
 
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
@@ -1373,9 +1373,10 @@
 		destroy_all_ship_shield_walls()
 
 	update_appearance()
+	update_power_draw()
 
 	// Audio effect - same as break_shields so crew knows shields are down
-	playsound(src, 'sound/vehicles/mecha/mech_shield_drop.ogg', 100, TRUE, extrarange = 50, pressure_affected = FALSE, ignore_walls = TRUE)
+	playsound(src, 'sound/vehicles/mecha/mech_shield_drop.ogg', 100, TRUE)
 
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship && count_active_generators() == 0)
@@ -1396,9 +1397,10 @@
 	COOLDOWN_START(src, reactivation_cooldown, cooldown_time)
 
 	update_appearance()
+	update_power_draw()
 
 	// Audio effect (pressure_affected = FALSE so heard even with hull breaches)
-	playsound(src, 'sound/vehicles/mecha/mech_shield_drop.ogg', 100, TRUE, extrarange = 50, pressure_affected = FALSE, ignore_walls = TRUE)
+	playsound(src, 'sound/vehicles/mecha/mech_shield_drop.ogg', 100, TRUE, extrarange = 10, pressure_affected = FALSE)
 
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
@@ -1419,12 +1421,13 @@
 	active = FALSE
 
 	update_appearance()
+	update_power_draw()
 
 	// Visual and audio effects on ship boundary
 	var/list/boundary_turfs = get_random_boundary_turfs(5)
 	for(var/turf/T in boundary_turfs)
 		new /obj/effect/temp_visual/ship_shield_powerdown(T)
-	playsound(src, 'sound/machines/terminal/terminal_off.ogg', 50, TRUE)
+	playsound(src, 'sound/machines/terminal/terminal_off.ogg', 50, TRUE, pressure_affected = FALSE)
 
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
@@ -1489,11 +1492,12 @@
 			'voidcrew/sound/machines/forcefield/hit1.ogg',
 			'voidcrew/sound/machines/forcefield/hit2.ogg',
 			'voidcrew/sound/machines/forcefield/hit3.ogg',
+			'sound/vehicles/mecha/mech_shield_deflect.ogg',
 		)
 		// Play sound from nearest ship tile to impact (so crew hears directional audio)
 		// pressure_affected = FALSE so it's heard even if hull is breached
 		var/turf/sound_loc = get_nearest_ship_turf(effect_loc)
-		playsound(sound_loc || src, sound_file, 60, TRUE, extrarange = 20, pressure_affected = FALSE, ignore_walls = TRUE)
+		playsound(sound_loc || src, sound_file, 60, TRUE, extrarange = 10, pressure_affected = FALSE)
 
 	// Signal that shield was hit
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
@@ -1655,6 +1659,17 @@
 /// Sets power allocation from console (0.0 to 2.0)
 /obj/machinery/ship_combat/shield_generator/proc/set_power_allocation(new_allocation)
 	power_allocation = clamp(new_allocation, SHIP_SHIELD_MIN_POWER_MULT, SHIP_SHIELD_MAX_POWER_MULT)
+	update_power_draw()
+
+/// Updates the machine's power draw based on current settings
+/obj/machinery/ship_combat/shield_generator/proc/update_power_draw()
+	var/new_power = get_power_draw()
+	if(power_allocation > 0 && !broken)
+		update_mode_power_usage(ACTIVE_POWER_USE, new_power)
+		update_use_power(ACTIVE_POWER_USE)
+	else
+		update_mode_power_usage(ACTIVE_POWER_USE, 0)
+		update_use_power(IDLE_POWER_USE)
 
 // ========== CIRCUIT BOARD ==========
 

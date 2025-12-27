@@ -50,6 +50,7 @@
 	RefreshParts()
 	// Initialize power state based on cell
 	had_power = cell && cell.charge >= get_power_per_shot()
+	update_power_draw()
 	// Try to auto-link to a combat console on the same ship after a short delay
 	addtimer(CALLBACK(src, PROC_REF(attempt_auto_link)), 2 SECONDS)
 
@@ -72,6 +73,9 @@
 		update_appearance()
 	had_power = has_power_now
 
+	// Update power draw based on charging needs
+	update_power_draw()
+
 	// Charge our internal cell from the powernet
 	if(!cell)
 		return
@@ -81,12 +85,9 @@
 		return  // Already full
 
 	// Calculate how much to charge this tick
+	// Power is being drawn automatically via update_mode_power_usage
 	var/charge_amount = charge_rate * seconds_per_tick
-	var/needed = min(charge_amount, cell.maxcharge - cell.charge)
-
-	// Try to draw power from the grid
-	if(use_energy(needed))
-		cell.charge = min(cell.charge + needed, cell.maxcharge)
+	cell.charge = min(cell.charge + charge_amount, cell.maxcharge)
 
 /obj/machinery/ship_combat/laser_turret/RefreshParts()
 	. = ..()
@@ -115,6 +116,9 @@
 
 	// Clamp values
 	cooldown_mult = max(cooldown_mult, 0.3)
+
+	// Update power draw since charge rate may have changed
+	update_power_draw()
 
 /obj/machinery/ship_combat/laser_turret/examine(mob/user)
 	. = ..()
@@ -180,6 +184,18 @@
 /// Returns the max cell charge
 /obj/machinery/ship_combat/laser_turret/proc/get_cell_max()
 	return cell?.maxcharge || 0
+
+/// Updates the machine's power draw based on charging state
+/obj/machinery/ship_combat/laser_turret/proc/update_power_draw()
+	// Determine if we need to charge
+	var/needs_charging = cell && cell.charge < cell.maxcharge && !(machine_stat & BROKEN)
+
+	if(needs_charging)
+		update_mode_power_usage(ACTIVE_POWER_USE, charge_rate)
+		update_use_power(ACTIVE_POWER_USE)
+	else
+		update_mode_power_usage(ACTIVE_POWER_USE, 0)
+		update_use_power(IDLE_POWER_USE)
 
 // ========== CONSOLE LINKING ==========
 

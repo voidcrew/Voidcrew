@@ -273,7 +273,7 @@
 	create_end_cap(impact_turf, beam_angle, is_multi_beam)
 
 	// Play firing sound at impact location (pressure_affected = FALSE so it's heard in space)
-	playsound(impact_turf, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE, extrarange = 20, pressure_affected = FALSE, ignore_walls = TRUE)
+	playsound(impact_turf, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE, extrarange = 10, pressure_affected = FALSE)
 
 	// Damage everything along the beam path (mobs and objects)
 	damage_along_path(start_turf, impact_turf)
@@ -284,7 +284,6 @@
 		shield_hit.absorb_laser_damage(damage, impact_turf)
 		// Visual effect at shield impact
 		new /obj/effect/temp_visual/ship_laser_hit_shield(impact_turf)
-		playsound(impact_turf, 'sound/vehicles/mecha/mech_shield_deflect.ogg', 80, TRUE, extrarange = 20, pressure_affected = FALSE, ignore_walls = TRUE)
 	else
 		// Hit the ship/obstacle - deal damage at impact point
 		impact_ship(impact_turf)
@@ -361,8 +360,6 @@
 	if(!impact_loc)
 		return
 
-	// Play impact sound (pressure_affected = FALSE so it's heard in space)
-	playsound(impact_loc, 'sound/effects/sparks/sparks1.ogg', 80, TRUE, extrarange = 20, pressure_affected = FALSE, ignore_walls = TRUE)
 
 	// Deal damage to objects/mobs at impact location
 	for(var/atom/movable/AM in impact_loc)

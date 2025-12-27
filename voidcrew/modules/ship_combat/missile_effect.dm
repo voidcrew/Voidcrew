@@ -109,7 +109,7 @@
 	// Play incoming whistle sound at spawn location (pressure_affected = FALSE so it's heard in space)
 	// Use a specific channel so we can stop it on impact
 	whistle_channel = SSsounds.random_available_channel()
-	playsound(src, 'voidcrew/sound/machines/rocket/rocket_whistle.ogg', 80, TRUE, extrarange = 30, channel = whistle_channel, pressure_affected = FALSE, ignore_walls = TRUE)
+	playsound(src, 'voidcrew/sound/machines/rocket/rocket_whistle.ogg', 80, TRUE, extrarange = 50, channel = whistle_channel, pressure_affected = FALSE)
 
 	// Send fired signal
 	if(source_ship)
@@ -197,9 +197,17 @@
 	// Stop the incoming whistle sound
 	stop_whistle()
 
-	// Play impact sound (extrarange and ignore_walls so it's audible from inside the ship)
+	// Play impact sound - extrarange varies by missile power
 	// pressure_affected = FALSE so sound travels in space (no atmosphere)
-	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 30, pressure_affected = FALSE, ignore_walls = TRUE)
+	var/sound_range
+	switch(damage)
+		if(MISSILE_DAMAGE_HEAVY to INFINITY)
+			sound_range = 20
+		if(MISSILE_DAMAGE_STANDARD to MISSILE_DAMAGE_HEAVY - 1)
+			sound_range = 15
+		else
+			sound_range = 10
+	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = sound_range, pressure_affected = FALSE)
 
 	// Create explosion - ignorecap = TRUE so ship missiles bypass the server bomb cap
 	explosion(
@@ -232,9 +240,9 @@
 	// Stop the incoming whistle sound
 	stop_whistle()
 
-	// Play impact sound (extrarange and ignore_walls so it's audible from inside the ship)
+	// Play impact sound
 	// pressure_affected = FALSE so sound travels in space (no atmosphere)
-	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 30, pressure_affected = FALSE, ignore_walls = TRUE)
+	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 10, pressure_affected = FALSE)
 
 	// Create explosion visual - reduced damage since shield absorbed it
 	// The explosion still happens visually but with minimal structural damage
@@ -293,9 +301,9 @@
 	// Stop the incoming whistle sound
 	stop_whistle()
 
-	// Play impact sound (extrarange and ignore_walls so it's audible from inside the ship)
+	// Play impact sound
 	// pressure_affected = FALSE so sound travels in space (no atmosphere)
-	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 30, pressure_affected = FALSE, ignore_walls = TRUE)
+	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 10, pressure_affected = FALSE)
 
 	// Create small explosion first
 	explosion(
@@ -332,8 +340,9 @@
 	// Stop the incoming whistle sound
 	stop_whistle()
 
-	// Play impact sound (pressure_affected = FALSE so it's heard in space)
-	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 30, pressure_affected = FALSE, ignore_walls = TRUE)
+	// Play impact sound
+	// pressure_affected = FALSE so sound travels in space (no atmosphere)
+	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 10, pressure_affected = FALSE)
 
 	// Visual explosion against shield - chemicals are blocked
 	explosion(
