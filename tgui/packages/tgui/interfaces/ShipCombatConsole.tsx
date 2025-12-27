@@ -499,6 +499,7 @@ const ShieldsPanel = () => {
             step={10}
             stepPixelSize={4}
             format={(v) => `${v}%`}
+            disabled={!!shield_broken}
             onChange={(e, value) => act('set_shield_power', { power: value })}
           />
         </Stack.Item>
