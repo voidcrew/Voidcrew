@@ -1552,6 +1552,17 @@
 	linked_ship_ref = WEAKREF(ship)
 	ship.linked_shield_generators |= src  // Add to list (|= avoids duplicates)
 	update_ship_mass()
+
+	// Sync power allocation with existing generators on this ship
+	// This ensures new generators match the current ship-wide power setting
+	for(var/obj/machinery/ship_combat/shield_generator/other_gen in ship.linked_shield_generators)
+		if(other_gen == src)
+			continue
+		if(other_gen.power_allocation > 0)
+			// Found an active generator, copy its power allocation
+			set_power_allocation(other_gen.power_allocation)
+			break
+
 	// Register for docking signals
 	RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_ship_docked))
 	RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(on_ship_undocked))
