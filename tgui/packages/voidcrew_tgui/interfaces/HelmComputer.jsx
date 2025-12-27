@@ -480,6 +480,8 @@ const ShipControlContent = (props, context) => {
     isNotCrew,
     undockLocked,
     undockLockoutRemaining,
+    isInterdicted,
+    speedMultiplier,
   } = data;
   const isDisabled = isViewer || isNotCrew;
   const flyable = data.state === 'flying' && !shipDisabled && !isDisabled;
@@ -509,6 +511,11 @@ const ShipControlContent = (props, context) => {
       )}
       {!!flyable && !canThrust && (
         <div className="NoticeBox danger">No engine power available!</div>
+      )}
+      {!!isInterdicted && (
+        <div className="NoticeBox danger">
+          INTERDICTED - Engines at {Math.round(speedMultiplier * 100)}%
+        </div>
       )}
       <Table collapsing>
         <Table.Row height={2}>

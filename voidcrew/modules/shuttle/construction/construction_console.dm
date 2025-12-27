@@ -270,12 +270,17 @@
 	return (living_user.mind in current_ship.ship_team.members)
 
 /**
- * Checks if the console can perform operations (ship must be docked)
+ * Checks if the console can perform operations (ship must be docked and not force-docked from interdiction)
  */
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/can_operate()
 	if(!current_ship)
 		return FALSE
-	return current_ship.state == OVERMAP_SHIP_IDLE
+	if(current_ship.state != OVERMAP_SHIP_IDLE)
+		return FALSE
+	// Cannot operate while force-docked from interdiction
+	if(!COOLDOWN_FINISHED(current_ship, interdiction_undock_lockout))
+		return FALSE
+	return TRUE
 
 /**
  * Gets the docking port for the current ship

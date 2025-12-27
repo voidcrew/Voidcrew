@@ -1021,6 +1021,10 @@
   * * user - The user that initiated the action
   */
 /obj/structure/overmap/ship/proc/dock_in_empty_space(mob/user)
+	// Cannot dock while interdicted
+	if(is_interdicted)
+		return "Cannot dock while interdicted!"
+
 	var/obj/structure/overmap/planet/empty/E
 	E = locate() in get_turf(src)
 	if(!E)

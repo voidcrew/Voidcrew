@@ -154,6 +154,11 @@
 	data["undockLocked"] = !COOLDOWN_FINISHED(current_ship, interdiction_undock_lockout)
 	data["undockLockoutRemaining"] = COOLDOWN_TIMELEFT(current_ship, interdiction_undock_lockout)
 
+	// Interdiction status
+	data["isInterdicted"] = current_ship.is_interdicted
+	data["interdictionStrength"] = current_ship.interdiction_strength
+	data["speedMultiplier"] = current_ship.speed_multiplier
+
 	for(var/obj/machinery/power/shuttle_engine/ship/E in current_ship.shuttle.engine_list)
 		var/list/engine_data
 		if(!E.thruster_active)
