@@ -42,6 +42,10 @@
 	var/charge_rate = LASER_CHARGE_RATE_BASE
 	/// Whether we had enough power to fire last tick (for detecting power loss)
 	var/had_power = FALSE
+	/// Cached exterior check result (turrets don't move while anchored)
+	var/cached_exterior_check
+	/// Whether the exterior cache is valid
+	var/exterior_cache_valid = FALSE
 
 /obj/machinery/ship_combat/laser_turret/Initialize(mapload)
 	. = ..()
@@ -263,7 +267,12 @@
 
 /// Checks if this weapon is on the exterior of the ship (adjacent to non-shuttle-area tile)
 /// Weapons must be on the exterior to fire - they need line of sight to space/outside
+/// Result is cached while anchored since turrets don't move
 /obj/machinery/ship_combat/laser_turret/proc/is_on_exterior()
+	// Return cached result if valid (only valid while anchored)
+	if(exterior_cache_valid && anchored)
+		return cached_exterior_check
+
 	var/turf/our_turf = get_turf(src)
 	if(!our_turf)
 		return FALSE
@@ -279,15 +288,25 @@
 			break
 
 	// Check all adjacent tiles (including diagonals)
+	var/result = FALSE
 	for(var/turf/T in range(1, our_turf))
 		if(T == our_turf)
 			continue
 		var/area/tile_area = get_area(T)
 		// If adjacent tile is not in shuttle areas, we're on exterior
 		if(!tile_area || !(tile_area in shuttle_areas))
-			return TRUE
+			result = TRUE
+			break
 
-	return FALSE
+	// Cache the result
+	cached_exterior_check = result
+	exterior_cache_valid = TRUE
+
+	return result
+
+/// Invalidates the exterior check cache (call when turret is moved/anchored)
+/obj/machinery/ship_combat/laser_turret/proc/invalidate_exterior_cache()
+	exterior_cache_valid = FALSE
 
 /// Checks if the turret can fire
 /obj/machinery/ship_combat/laser_turret/proc/can_fire()
@@ -404,6 +423,7 @@
 /obj/machinery/ship_combat/laser_turret/wrench_act(mob/living/user, obj/item/tool)
 	. = ITEM_INTERACT_BLOCKING
 	default_unfasten_wrench(user, tool)
+	invalidate_exterior_cache()  // Position may have changed
 	return ITEM_INTERACT_SUCCESS
 
 // Alt+click to rotate when unwrenched

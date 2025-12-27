@@ -266,8 +266,16 @@
 		if(hit_obstacle)
 			break
 
-	// Create beam segments from start to impact
-	var/beam_angle = create_beam_visuals(start_turf, impact_turf, is_multi_beam)
+	// Truncate path to impact point for beam visuals and damage
+	// This avoids recalculating get_line() multiple times
+	var/list/impact_path = list()
+	for(var/turf/T in path)
+		impact_path += T
+		if(T == impact_turf)
+			break
+
+	// Create beam segments from start to impact (reuse path)
+	var/beam_angle = create_beam_visuals(start_turf, impact_turf, is_multi_beam, impact_path)
 
 	// Create end cap at impact point (using same angle as beam)
 	create_end_cap(impact_turf, beam_angle, is_multi_beam)
@@ -275,8 +283,8 @@
 	// Play firing sound at impact location (pressure_affected = FALSE so it's heard in space)
 	playsound(impact_turf, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE, extrarange = 10, pressure_affected = FALSE)
 
-	// Damage everything along the beam path (mobs and objects)
-	damage_along_path(start_turf, impact_turf)
+	// Damage everything along the beam path (mobs and objects) - reuse path
+	damage_along_path(start_turf, impact_turf, impact_path)
 
 	// Deal final impact damage based on what we hit
 	if(hit_shield && shield_hit)
@@ -293,11 +301,13 @@
 
 /// Creates the visual beam segments along the path
 /// Returns the beam angle for use by the end cap
-/obj/effect/ship_laser_beam/proc/create_beam_visuals(turf/start, turf/end, multi_beam = FALSE)
+/// If path_turfs is provided, uses that instead of recalculating get_line()
+/obj/effect/ship_laser_beam/proc/create_beam_visuals(turf/start, turf/end, multi_beam = FALSE, list/path_turfs = null)
 	// Calculate the angle for rotation first
 	var/angle = get_angle(start, end)
 
-	var/list/path = get_line(start, end)
+	// Use provided path or calculate if not given
+	var/list/path = path_turfs || get_line(start, end)
 	if(!length(path))
 		return angle
 
@@ -322,13 +332,15 @@
 	end_cap.set_impact_angle(beam_angle)
 
 /// Damages all mobs and objects along the beam path
-/obj/effect/ship_laser_beam/proc/damage_along_path(turf/start, turf/end)
+/// If path_turfs is provided, uses that instead of recalculating get_line()
+/obj/effect/ship_laser_beam/proc/damage_along_path(turf/start, turf/end, list/path_turfs = null)
 	if(!start || !end)
 		return
 
-	var/list/path_turfs = get_line(start, end)
+	// Use provided path or calculate if not given
+	var/list/path = path_turfs || get_line(start, end)
 
-	for(var/turf/T in path_turfs)
+	for(var/turf/T in path)
 		// Skip the starting turf (outside the ship)
 		if(T == start)
 			continue

@@ -150,6 +150,14 @@
 	/// Debug: Force unlock shields
 	var/debug_shields = FALSE
 
+	// ===== UI CACHING =====
+	/// Cached shield status data (for performance)
+	var/list/cached_shield_status
+	/// Whether shield cache needs refresh
+	var/shield_status_dirty = TRUE
+	/// Last time shield status was refreshed (world.time)
+	var/shield_status_last_update = 0
+
 	jump_action = null
 	off_action = null  // We use TGUI to exit attack mode, not the parent's camera_off action
 
@@ -536,6 +544,7 @@
 			// Convert from percentage (0-200) to multiplier (0-2)
 			var/power_mult = new_power / 100
 			current_ship.set_shield_power_allocation(power_mult)
+			invalidate_shield_cache()  // Force immediate UI refresh
 			return TRUE
 
 		// Laser turret power allocation (25-200%) - applies to ALL turrets
@@ -848,9 +857,17 @@
 	return TRUE
 
 /// Returns aggregated shield status from the ship's shared shield pool
+/// Uses caching for performance - refreshes every 0.5s or when marked dirty
 /obj/machinery/computer/camera_advanced/ship_combat/proc/get_aggregated_shield_status()
 	if(!current_ship)
 		return list()
+
+	// Check if we can use cached data (valid for 0.5 seconds unless marked dirty)
+	var/cache_age = world.time - shield_status_last_update
+	if(!shield_status_dirty && cached_shield_status && cache_age < 5)  // 0.5 seconds = 5 deciseconds
+		return cached_shield_status
+
+	// Refresh the cache
 	var/list/result = current_ship.get_shield_status()
 	// Add active_count for UI (count of active generators)
 	var/active_count = 0
@@ -858,7 +875,17 @@
 		if(gen.active)
 			active_count++
 	result["active_count"] = active_count
+
+	// Store in cache
+	cached_shield_status = result
+	shield_status_dirty = FALSE
+	shield_status_last_update = world.time
+
 	return result
+
+/// Marks shield status cache as dirty, forcing refresh on next query
+/obj/machinery/computer/camera_advanced/ship_combat/proc/invalidate_shield_cache()
+	shield_status_dirty = TRUE
 
 // ========== TARGET SELECTION ==========
 

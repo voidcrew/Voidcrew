@@ -48,6 +48,11 @@
 	/// Debug logging for shield direction calculations (disable for performance)
 	var/debug_shield_directions = FALSE
 
+	/// Cached boundary turfs for this ship (expensive to calculate)
+	var/list/cached_boundary_turfs
+	/// Whether the boundary cache is valid
+	var/boundary_cache_valid = FALSE
+
 /obj/machinery/ship_combat/shield_generator/Initialize(mapload)
 	. = ..()
 	// Start processing for regeneration
@@ -59,6 +64,7 @@
 	destroy_shield_walls()
 	unlink_console()
 	unlink_ship()
+	invalidate_boundary_cache()
 	return ..()
 
 /obj/machinery/ship_combat/shield_generator/RefreshParts()
@@ -167,8 +173,19 @@
 	else
 		cached_ship_mass = 500  // Default
 
+/// Invalidates the cached boundary turfs, forcing recalculation on next use
+/// Call this if ship structure changes (hull breach, expansion, etc.)
+/obj/machinery/ship_combat/shield_generator/proc/invalidate_boundary_cache()
+	boundary_cache_valid = FALSE
+	cached_boundary_turfs = null
+
 /// Returns a list of SPACE turfs adjacent to the ship (where shield walls will spawn)
+/// Results are cached for performance - call invalidate_boundary_cache() if ship structure changes
 /obj/machinery/ship_combat/shield_generator/proc/get_ship_boundary_turfs()
+	// Return cached result if valid
+	if(boundary_cache_valid && cached_boundary_turfs)
+		return cached_boundary_turfs
+
 	var/list/boundary_turfs = list()
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(!ship?.shuttle?.shuttle_areas)
@@ -421,6 +438,10 @@
 	debug_log("Final boundary: [length(boundary_turfs)] turfs")
 	for(var/turf/bt in boundary_turfs)
 		debug_log("  BOUNDARY ([bt.x],[bt.y])")
+
+	// Cache the result for future calls
+	cached_boundary_turfs = boundary_turfs
+	boundary_cache_valid = TRUE
 
 	return boundary_turfs
 
@@ -1485,6 +1506,7 @@
 		UnregisterSignal(ship, list(COMSIG_VOIDCREW_SHIP_DOCKED, COMSIG_VOIDCREW_SHIP_UNDOCKED))
 		ship.linked_shield_generators -= src  // Remove from list
 	linked_ship_ref = null
+	invalidate_boundary_cache()
 
 /// Returns TRUE if the ship is currently docked
 /obj/machinery/ship_combat/shield_generator/proc/is_ship_docked()
