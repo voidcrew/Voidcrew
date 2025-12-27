@@ -408,6 +408,9 @@
 	var/strength = 1 - speed_mult
 	target.update_interdiction(src, speed_mult, strength)
 
+	// Kill all target momentum - they have to re-engage engines
+	target.adjust_speed(-target.speed[1], -target.speed[2])
+
 
 	// Start cooldown
 	var/effective_cooldown = INTERDICTOR_COOLDOWN * cooldown_mult
