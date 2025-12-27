@@ -344,6 +344,9 @@
 	warmup_start_time = world.time
 	interdicted_ship_ref = WEAKREF(target)
 
+	// Start processing for warmup ticks
+	begin_processing()
+
 	// Register signals on target
 	RegisterSignal(target, COMSIG_QDELETING, PROC_REF(on_target_deleted))
 	RegisterSignal(target, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(on_target_moved))
@@ -379,7 +382,8 @@
 
 	// Calculate warmup progress
 	var/elapsed = world.time - warmup_start_time
-	warmup_progress = min(elapsed / INTERDICTOR_LOCK_TIME, 1)
+	var/lock_time = INTERDICTOR_LOCK_TIME  // Store in variable to avoid macro expansion issues
+	warmup_progress = min(elapsed / lock_time, 1)
 
 	// Apply partial effect during warmup
 	var/current_mult = get_current_speed_multiplier()
@@ -442,11 +446,12 @@
 
 /// Cancels interdiction for any reason
 /obj/machinery/ship_combat/interdictor/proc/cancel_interdiction(reason)
-	var/was_active = interdiction_active || interdiction_warming_up
-
 	interdiction_active = FALSE
 	interdiction_warming_up = FALSE
 	warmup_progress = 0
+
+	// Stop processing
+	end_processing()
 
 	// Remove beam
 	QDEL_NULL(interdiction_beam)
@@ -465,9 +470,6 @@
 		target.ship_announce("Interdiction field collapsed. Engines restored to full power.", "Interdiction Ended")
 
 	interdicted_ship_ref = null
-
-	if(was_active && reason && our_ship)
-		our_ship.ship_announce("[reason]", "Interdiction Ended")
 
 	update_appearance()
 	update_power_draw()
@@ -582,12 +584,21 @@
 	// Force dock the ships together
 	var/result = our_ship.dock_ships_directly(dock_target, null)
 	if(result)
-		our_ship.ship_announce("Forced docking failed: [result]", "Docking Error")
-		dock_target.ship_announce("Forced docking failed.", "Docking Error")
-		return FALSE
+		// Direct docking failed, fall back to reserve port docking
+		our_ship.ship_announce("Direct docking failed, using reserve ports.", "Docking")
+		dock_target.ship_announce("Direct docking failed, using reserve ports.", "INTERDICTION ALERT")
+		var/fallback_result = our_ship.dock_ships_to_reserve_ports(dock_target, null)
+		if(fallback_result)
+			our_ship.ship_announce("Forced docking failed: [fallback_result]", "Docking Error")
+			dock_target.ship_announce("Forced docking failed.", "Docking Error")
+			return FALSE
+		else
+			playsound(src, 'sound/machines/airlock/airlockopen.ogg', 50, TRUE)
+			if(user)
+				to_chat(user, span_notice("Force dock successful (reserve ports)! Target cannot undock for [DisplayTimeText(INTERDICTOR_FORCE_DOCK_LOCKOUT)]."))
+			return TRUE
 	else
 		playsound(src, 'sound/machines/airlock/airlockopen.ogg', 50, TRUE)
-		dock_target.ship_announce("Undocking systems locked for [DisplayTimeText(INTERDICTOR_FORCE_DOCK_LOCKOUT)]!", "SYSTEMS LOCKED")
 		if(user)
 			to_chat(user, span_notice("Force dock successful! Target cannot undock for [DisplayTimeText(INTERDICTOR_FORCE_DOCK_LOCKOUT)]."))
 		return TRUE

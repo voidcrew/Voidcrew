@@ -780,7 +780,8 @@
 	shuttle.destination = null
 	shuttle.mode = SHUTTLE_IGNITING
 	shuttle.setTimer(1 SECONDS)
-	priority_announce("Undocking now.", "Docking Announcement", sender_override = name)
+	// priority_announce("Undocking now.", "Docking Announcement", sender_override = name)
+	shuttle.current_ship.ship_announce("Undocking now.")
 	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(undock_from)), 1 SECONDS)
 	state = OVERMAP_SHIP_UNDOCKING
 	// Reset crash flag so ship can crash again if damaged
@@ -1116,6 +1117,83 @@
 	return null
 
 /**
+  * Fallback docking: Docks two ships to the same empty space's reserve ports separately.
+  * Used when direct exit-to-exit docking fails. Ships will be in the same location
+  * but their airlocks won't be touching.
+  * * other_ship - The other ship to dock with
+  * * user - The user who initiated the docking (optional)
+  * Returns an error string on failure, null on success.
+  */
+/obj/structure/overmap/ship/proc/dock_ships_to_reserve_ports(obj/structure/overmap/ship/other_ship, mob/user)
+	if(!other_ship || !shuttle || !other_ship.shuttle)
+		return "Invalid ships for docking."
+
+	// Create or find shared empty space
+	var/obj/structure/overmap/planet/empty/E = locate() in get_turf(src)
+	if(!E)
+		E = new(get_turf(src))
+
+	// Load the level first to ensure docking ports exist
+	if(!E.loaded && !E.loading)
+		E.load_level()
+
+	// Wait for level to load
+	if(E.loading)
+		return "Empty space is loading, try again in a moment."
+
+	if(!E.reserve_dock || !E.reserve_dock_secondary)
+		return "No docking ports available in empty space."
+
+	// Check if at least one dock is available for each ship
+	var/obj/docking_port/stationary/dock_for_us
+	var/obj/docking_port/stationary/dock_for_them
+
+	if(!E.first_dock_taken && !E.reserve_dock.get_docked())
+		dock_for_us = E.reserve_dock
+		E.first_dock_taken = TRUE
+		dock_index = 1
+	else if(!E.second_dock_taken && !E.reserve_dock_secondary.get_docked())
+		dock_for_us = E.reserve_dock_secondary
+		E.second_dock_taken = TRUE
+		dock_index = 2
+
+	if(!dock_for_us)
+		return "No available docking ports for our ship."
+
+	// Find dock for the other ship
+	if(!E.first_dock_taken && !E.reserve_dock.get_docked())
+		dock_for_them = E.reserve_dock
+		E.first_dock_taken = TRUE
+		other_ship.dock_index = 1
+	else if(!E.second_dock_taken && !E.reserve_dock_secondary.get_docked())
+		dock_for_them = E.reserve_dock_secondary
+		E.second_dock_taken = TRUE
+		other_ship.dock_index = 2
+
+	if(!dock_for_them)
+		// Rollback our dock allocation
+		if(dock_index == 1)
+			E.first_dock_taken = FALSE
+		else
+			E.second_dock_taken = FALSE
+		dock_index = 0
+		return "No available docking ports for target ship."
+
+	// Adjust docks to fit each shuttle
+	E.adjust_dock_to_shuttle(dock_for_us, shuttle)
+	E.adjust_dock_to_shuttle(dock_for_them, other_ship.shuttle)
+
+	// Set port destinations for helm UI
+	shuttle.port_destinations = dock_for_us
+	other_ship.shuttle.port_destinations = dock_for_them
+
+	// Dock both ships
+	dock(E, dock_for_us)
+	other_ship.dock(E, dock_for_them)
+
+	return null
+
+/**
   * Positions two stationary docks so that two shuttles will dock exit-to-exit (airlocks touching).
   * * empty_planet - The empty space planet (for calling adjust_dock_to_shuttle)
   * * dock_a - First stationary dock (for shuttle_a)
@@ -1217,7 +1295,14 @@
 		// Dock both ships directly exit-to-exit
 		var/result = dock_ships_directly(acting_ship, user)
 		if(result)
-			to_chat(user, "<span class='warning'>[result]</span>")
+			// Direct docking failed, fall back to reserve port docking
+			ship_announce("Direct docking failed, using reserve ports instead.", "Docking")
+			acting_ship.ship_announce("Direct docking failed, using reserve ports instead.", "Docking")
+			var/fallback_result = dock_ships_to_reserve_ports(acting_ship, user)
+			if(fallback_result)
+				to_chat(user, "<span class='warning'>Docking failed: [fallback_result]</span>")
+				ship_announce("Docking failed: [fallback_result]", "Docking Error")
+				acting_ship.ship_announce("Docking failed: [fallback_result]", "Docking Error")
 	else
 		// If acting_ship already has a pending request to a DIFFERENT ship, cancel it first
 		if(acting_ship.pending_dock && acting_ship.pending_dock_target != src)

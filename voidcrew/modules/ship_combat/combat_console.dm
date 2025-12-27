@@ -1022,7 +1022,7 @@
 
 	// Warn the target ship
 	SEND_SIGNAL(targeting_ship, COMSIG_SHIP_BEING_TARGETED, current_ship)
-	targeting_ship.ship_announce("HOSTILE SHIP ACQUIRING WEAPONS LOCK!", "WARNING", FALSE, sound('sound/effects/alert.ogg'))
+	targeting_ship.ship_announce("Hostile ship acquiring weapons lock!", "WARNING", FALSE, sound('sound/effects/alert.ogg'))
 
 	// Notify our crew
 	if(user)
