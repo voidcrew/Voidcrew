@@ -54,8 +54,6 @@
 	var/lifetime = 30 SECONDS
 	/// Have we already exploded?
 	var/exploded = FALSE
-	/// Sound channel for the incoming whistle (so we can stop it on impact)
-	var/whistle_channel
 
 /obj/effect/ship_missile/New()
 	// Add hyperspace traits in New() BEFORE the object is placed on the turf
@@ -105,11 +103,6 @@
 	// Start moving toward target
 	if(target_turf)
 		chase_target(target_turf)
-
-	// Play incoming whistle sound at spawn location (pressure_affected = FALSE so it's heard in space)
-	// Use a specific channel so we can stop it on impact
-	whistle_channel = SSsounds.random_available_channel()
-	playsound(src, 'voidcrew/sound/machines/rocket/rocket_whistle.ogg', 80, TRUE, extrarange = 50, channel = whistle_channel, pressure_affected = FALSE)
 
 	// Send fired signal
 	if(source_ship)
@@ -194,9 +187,6 @@
 	var/turf/impact_loc = get_turf(src)
 	exploded = TRUE
 
-	// Stop the incoming whistle sound
-	stop_whistle()
-
 	// Play impact sound - extrarange varies by missile power
 	// pressure_affected = FALSE so sound travels in space (no atmosphere)
 	var/sound_range
@@ -237,9 +227,6 @@
 	var/turf/impact_loc = get_turf(src)
 	exploded = TRUE
 
-	// Stop the incoming whistle sound
-	stop_whistle()
-
 	// Play impact sound
 	// pressure_affected = FALSE so sound travels in space (no atmosphere)
 	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 10, pressure_affected = FALSE)
@@ -263,14 +250,6 @@
 		shake_camera(victim, 3, 2)
 
 	qdel(src)
-
-/// Stops the incoming whistle sound for all nearby mobs
-/obj/effect/ship_missile/proc/stop_whistle()
-	if(!whistle_channel)
-		return
-	// Stop the whistle sound for all mobs who could hear it
-	for(var/mob/M in get_hearers_in_range(30, get_turf(src)))
-		M.stop_sound_channel(whistle_channel)
 
 // ========== CHEMICAL MISSILE VARIANT ==========
 
@@ -297,9 +276,6 @@
 
 	var/turf/impact_loc = get_turf(src)
 	exploded = TRUE
-
-	// Stop the incoming whistle sound
-	stop_whistle()
 
 	// Play impact sound
 	// pressure_affected = FALSE so sound travels in space (no atmosphere)
@@ -336,9 +312,6 @@
 
 	var/turf/impact_loc = get_turf(src)
 	exploded = TRUE
-
-	// Stop the incoming whistle sound
-	stop_whistle()
 
 	// Play impact sound
 	// pressure_affected = FALSE so sound travels in space (no atmosphere)

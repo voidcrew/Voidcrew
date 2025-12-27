@@ -375,7 +375,7 @@ const ShieldsPanel = () => {
   // Cooldown display
   if (shield_broken && shield_cooldown_active) {
     const cooldownSeconds = Math.ceil((shield_cooldown_remaining || 0) / 10);
-    const cooldownProgress = 1 - (shield_cooldown_remaining || 0) / 600; // 60 second base cooldown
+    const cooldownProgress = 1 - (shield_cooldown_remaining || 0) / 300; // 30 second base cooldown
 
     return (
       <Section
@@ -810,7 +810,7 @@ const TurretsPanel = () => {
                           <Box color="good" textAlign="right">
                             <Icon name="check" /> Ready
                           </Box>
-                        ) : (
+                        ) : turret.cooldown_remaining > 0 ? (
                           <ProgressBar
                             value={1 - turret.cooldown_remaining / turret.cooldown}
                             ranges={{
@@ -819,6 +819,17 @@ const TurretsPanel = () => {
                               bad: [0, 0.4],
                             }}
                           />
+                        ) : turret.cell_charge < turret.power_per_shot ? (
+                          <ProgressBar
+                            value={turret.cell_charge / turret.power_per_shot}
+                            color="yellow"
+                          >
+                            Charging
+                          </ProgressBar>
+                        ) : (
+                          <Box color="bad" textAlign="right">
+                            Error
+                          </Box>
                         )}
                       </Stack.Item>
                     </Stack>

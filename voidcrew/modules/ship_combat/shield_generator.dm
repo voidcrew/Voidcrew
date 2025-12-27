@@ -1499,6 +1499,11 @@
 	if(ship)
 		UnregisterSignal(ship, list(COMSIG_VOIDCREW_SHIP_DOCKED, COMSIG_VOIDCREW_SHIP_UNDOCKED))
 		ship.linked_shield_generators -= src  // Remove from list
+		// Recalculate ship shield stats without this generator
+		ship.recalculate_shield_stats()
+		// If no generators are left active, ship shields go down
+		if(active && count_active_generators() == 0)
+			ship.break_ship_shields()
 	linked_ship_ref = null
 	invalidate_boundary_cache()
 
