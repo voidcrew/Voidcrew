@@ -957,8 +957,9 @@
 	if(combat_eye)
 		combat_eye.target_ship = target_ship
 
-	// Notify the target ship that lock is complete
+	// Notify the target ship that lock is complete (this breaks their cloak)
 	SEND_SIGNAL(target_ship, COMSIG_SHIP_TARGETING_STOPPED, current_ship)
+	SEND_SIGNAL(target_ship, COMSIG_SHIP_WEAPONS_LOCKED, current_ship)
 	target_ship.ship_announce("WEAPONS LOCK CONFIRMED! Hostile ship has missile lock on this vessel!", "TARGET LOCK", FALSE, sound('sound/effects/alert.ogg'))
 
 	// Notify our crew
@@ -1719,7 +1720,8 @@
 /datum/action/innate/ship_combat/select_direction
 	name = "Select Direction"
 	desc = "Select which direction missiles and lasers will approach from."
-	button_icon_state = "mech_view_stats"
+	button_icon_state = "change_direction"
+	button_icon = 'voidcrew/icons/mob/actions/ship_combat.dmi'
 
 /datum/action/innate/ship_combat/select_direction/Activate()
 	if(!console || !ismob(owner))
@@ -1730,7 +1732,8 @@
 /datum/action/innate/ship_combat/fire_missile
 	name = "Fire Missile"
 	desc = "Fire one missile at the targeted location."
-	button_icon_state = "mech_zoom_off"
+	button_icon_state = "missile"
+	button_icon = 'voidcrew/icons/mob/actions/ship_combat.dmi'
 
 /datum/action/innate/ship_combat/fire_missile/Activate()
 	if(!console || !ismob(owner))
@@ -1741,7 +1744,8 @@
 /datum/action/innate/ship_combat/fire_all
 	name = "Fire All Missiles"
 	desc = "Fire all ready missiles at the targeted location."
-	button_icon_state = "mech_zoom_on"
+	button_icon = 'voidcrew/icons/mob/actions/ship_combat.dmi'
+	button_icon_state = "missiles"
 
 /datum/action/innate/ship_combat/fire_all/Activate()
 	if(!console || !ismob(owner))
@@ -1776,7 +1780,8 @@
 /datum/action/innate/ship_combat/adjust_laser_power
 	name = "Laser Power"
 	desc = "Adjust power level for all laser turrets. Higher power = more damage but more power usage."
-	button_icon_state = "mech_internals_on"
+	button_icon_state = "power"
+	button_icon = 'voidcrew/icons/mob/actions/ship_combat.dmi'
 
 /datum/action/innate/ship_combat/adjust_laser_power/Activate()
 	if(!console || !ismob(owner))

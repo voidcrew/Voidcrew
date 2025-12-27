@@ -1,10 +1,10 @@
 // Ship Cloaking Device
 // Hides the ship's icon on the overmap when active
-// Automatically decloaks when weapons are fired
+// Automatically decloaks when weapons are fired or a hostile acquires weapons lock
 
 /obj/machinery/ship_combat/cloak_device
 	name = "cloaking device"
-	desc = "An advanced cloaking device that hides the ship from detection on the overmap. Power scales with ship mass. Will automatically deactivate when weapons are fired, the duration expires, or power runs out."
+	desc = "An advanced cloaking device that hides the ship from detection on the overmap. Power scales with ship mass. Will automatically deactivate when weapons are fired, a hostile acquires weapons lock, the duration expires, or power runs out."
 	icon = 'icons/obj/machines/research.dmi'
 	icon_state = "explosive_compressor"
 	density = TRUE
@@ -125,11 +125,12 @@
 	update_ship_mass()
 	RegisterSignal(linked_ship, COMSIG_SHIP_WEAPON_FIRED, PROC_REF(on_weapon_fired))
 	RegisterSignal(linked_ship, COMSIG_SHIP_HAZARD_TRIGGERED, PROC_REF(on_hazard_triggered))
+	RegisterSignal(linked_ship, COMSIG_SHIP_WEAPONS_LOCKED, PROC_REF(on_weapons_locked))
 	RegisterSignal(linked_ship, COMSIG_QDELETING, PROC_REF(on_ship_deleted))
 
 /obj/machinery/ship_combat/cloak_device/proc/unlink_ship()
 	if(linked_ship)
-		UnregisterSignal(linked_ship, list(COMSIG_SHIP_WEAPON_FIRED, COMSIG_SHIP_HAZARD_TRIGGERED, COMSIG_QDELETING))
+		UnregisterSignal(linked_ship, list(COMSIG_SHIP_WEAPON_FIRED, COMSIG_SHIP_HAZARD_TRIGGERED, COMSIG_SHIP_WEAPONS_LOCKED, COMSIG_QDELETING))
 		linked_ship = null
 
 /obj/machinery/ship_combat/cloak_device/proc/on_ship_deleted(datum/source)
@@ -263,6 +264,14 @@
 	if(cloak_active)
 		// Weapons fire breaks cloak!
 		INVOKE_ASYNC(src, PROC_REF(emergency_decloak), "Weapons discharge detected")
+
+// ========== WEAPONS LOCK DETECTION ==========
+
+/obj/machinery/ship_combat/cloak_device/proc/on_weapons_locked(datum/source, obj/structure/overmap/ship/attacker)
+	SIGNAL_HANDLER
+	if(cloak_active)
+		// Being locked on breaks cloak!
+		INVOKE_ASYNC(src, PROC_REF(emergency_decloak), "Hostile targeting lock detected")
 
 // ========== HAZARD DETECTION ==========
 
