@@ -526,17 +526,16 @@
 		if("force_dock")
 			return force_dock_target(ui.user)
 
-		// Shield power allocation (0-200%) - applies to ALL generators
+		// Shield power allocation (0-200%) - applies to ship's shared shield pool
 		if("set_shield_power")
 			if(!current_ship || !length(current_ship.linked_shield_generators))
 				return FALSE
 			var/new_power = params["power"]
 			if(!isnum(new_power))
 				return FALSE
-			// Convert from percentage (0-200) to multiplier (0-2) and apply to all generators
+			// Convert from percentage (0-200) to multiplier (0-2)
 			var/power_mult = new_power / 100
-			for(var/obj/machinery/ship_combat/shield_generator/gen in current_ship.linked_shield_generators)
-				gen.set_power_allocation(power_mult)
+			current_ship.set_shield_power_allocation(power_mult)
 			return TRUE
 
 		// Laser turret power allocation (25-200%) - applies to ALL turrets
@@ -848,60 +847,17 @@
 
 	return TRUE
 
-/// Returns aggregated shield status from all generators on the ship
+/// Returns aggregated shield status from the ship's shared shield pool
 /obj/machinery/computer/camera_advanced/ship_combat/proc/get_aggregated_shield_status()
-	var/list/result = list()
-	if(!current_ship || !length(current_ship.linked_shield_generators))
-		return result
-
-	var/total_health = 0
-	var/total_max_health = 0
-	var/total_overhealth = 0
-	var/total_regen = 0
-	var/total_power_draw = 0
-	var/any_active = FALSE
-	var/all_broken = TRUE
-	var/any_cooldown = FALSE
-	var/max_cooldown_remaining = 0
-	var/power_allocation = 0
-	var/efficiency_sum = 0
-	var/generator_count = 0
+	if(!current_ship)
+		return list()
+	var/list/result = current_ship.get_shield_status()
+	// Add active_count for UI (count of active generators)
 	var/active_count = 0
-
 	for(var/obj/machinery/ship_combat/shield_generator/gen in current_ship.linked_shield_generators)
-		generator_count++
-		var/list/status = gen.get_status()
-		total_health += status["health"]
-		total_max_health += status["max_health"]
-		total_overhealth += status["overhealth"]
-		total_regen += status["regen_rate"]
-		total_power_draw += status["power_draw"]
-		efficiency_sum += status["efficiency"]
-		power_allocation = status["power_allocation"]  // Use last one (they should all be the same)
-
-		if(status["active"])
-			any_active = TRUE
+		if(gen.active)
 			active_count++
-		if(!status["broken"])
-			all_broken = FALSE
-		if(status["cooldown_active"])
-			any_cooldown = TRUE
-			max_cooldown_remaining = max(max_cooldown_remaining, status["cooldown_remaining"])
-
-	result["active"] = any_active
-	result["broken"] = all_broken && generator_count > 0
-	result["health"] = round(total_health)
-	result["max_health"] = round(total_max_health)
-	result["overhealth"] = round(total_overhealth)
-	result["power_allocation"] = power_allocation
-	result["regen_rate"] = round(total_regen, 0.1)
-	result["power_draw"] = round(total_power_draw)
-	result["efficiency"] = generator_count > 0 ? round(efficiency_sum / generator_count) : 0
-	result["cooldown_active"] = any_cooldown
-	result["cooldown_remaining"] = max_cooldown_remaining
-	result["generator_count"] = generator_count
 	result["active_count"] = active_count
-
 	return result
 
 // ========== TARGET SELECTION ==========

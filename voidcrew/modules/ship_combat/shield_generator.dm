@@ -20,32 +20,24 @@
 	// Micro-lasers: +30% base regen rate per tier
 	// Servos: -15% power consumption per tier
 
-	/// Current shield health
-	var/shield_health = 0
-	/// Current overhealth (extra shield beyond max)
-	var/overhealth = 0
-	/// Calculated max shield health (from base + parts)
+	/// This generator's max shield health contribution (from base + parts)
 	var/max_shield_health = SHIP_SHIELD_BASE_HEALTH
-	/// Calculated regeneration rate per second (from base + parts)
+	/// This generator's regeneration rate contribution per second (from base + parts)
 	var/regen_rate = SHIP_SHIELD_BASE_REGEN
 	/// Calculated power efficiency multiplier (from parts, 0-1 range, lower = more efficient)
 	var/power_efficiency = 1
 
 	/// Power allocation set by combat console (0.0 to 2.0) - starts at 0 (off)
+	/// This is synced with the ship's shield_power_allocation
 	var/power_allocation = 0
 
-	/// Is the shield currently protecting? (power_allocation > 0 and not broken)
+	/// Is this generator contributing to the shield pool?
 	var/active = FALSE
-	/// Is the shield broken (health reached 0)?
-	var/broken = FALSE
 
 	/// Reference to linked combat console
 	var/datum/weakref/linked_console_ref
 	/// Reference to our ship
 	var/datum/weakref/linked_ship_ref
-
-	/// Cooldown for reactivation after breaking
-	COOLDOWN_DECLARE(reactivation_cooldown)
 
 	/// Cached ship mass for power calculations
 	var/cached_ship_mass = 500
@@ -53,8 +45,8 @@
 	/// List of active shield wall structures
 	var/list/obj/structure/ship_shield_wall/shield_walls = list()
 
-	/// Debug logging for shield direction calculations
-	var/debug_shield_directions = TRUE
+	/// Debug logging for shield direction calculations (disable for performance)
+	var/debug_shield_directions = FALSE
 
 /obj/machinery/ship_combat/shield_generator/Initialize(mapload)
 	. = ..()
@@ -96,16 +88,20 @@
 
 /obj/machinery/ship_combat/shield_generator/examine(mob/user)
 	. = ..()
-	. += span_notice("Shield Status: [active ? "ACTIVE" : (broken ? "BROKEN" : "OFFLINE")]")
-	if(active)
-		. += span_notice("Shield Health: [round(shield_health)]/[round(max_shield_health)][overhealth > 0 ? " (+[round(overhealth)] overhealth)" : ""]")
-		. += span_notice("Regeneration: [round(get_effective_regen_rate(), 0.1)]/sec")
-		. += span_notice("Power Draw: [round(get_power_draw())]W")
-	if(broken)
-		if(!COOLDOWN_FINISHED(src, reactivation_cooldown))
-			. += span_warning("Cooldown: [DisplayTimeText(COOLDOWN_TIMELEFT(src, reactivation_cooldown))] remaining")
-		else
-			. += span_notice("Ready to reactivate.")
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	. += span_notice("Generator Status: [active ? "ACTIVE" : "OFFLINE"]")
+	if(ship)
+		. += span_notice("Ship Shield Status: [ship.shields_active ? "ACTIVE" : (ship.shields_broken ? "RECHARGING" : "OFFLINE")]")
+		if(ship.shields_active)
+			. += span_notice("Shield Health: [round(ship.shield_health)]/[round(ship.shield_max_health)][ship.shield_overhealth > 0 ? " (+[round(ship.shield_overhealth)] overhealth)" : ""]")
+			. += span_notice("Regeneration: [round(ship.shield_regen_rate * ship.shield_power_allocation, 0.1)]/sec")
+		if(ship.shields_broken)
+			if(!COOLDOWN_FINISHED(ship, shield_reactivation_cooldown))
+				. += span_warning("Cooldown: [DisplayTimeText(COOLDOWN_TIMELEFT(ship, shield_reactivation_cooldown))] remaining")
+			else
+				. += span_notice("Ready to reactivate.")
+	. += span_notice("This generator contributes: [round(max_shield_health)] max health, [round(regen_rate, 0.1)]/sec regen")
+	. += span_notice("Power Draw: [round(get_power_draw())]W")
 	. += span_notice("Power Allocation: [round(power_allocation * 100)]%")
 	. += span_notice("Efficiency: [round((1 - power_efficiency) * 100)]% power reduction")
 
@@ -118,8 +114,6 @@
 /obj/machinery/ship_combat/shield_generator/update_icon_state()
 	. = ..()
 	if(machine_stat & BROKEN)
-		icon_state = "shield_wall_gen"
-	else if(broken)
 		icon_state = "shield_wall_gen"
 	else if(active)
 		icon_state = "shield_wall_gen_on"
@@ -138,34 +132,25 @@
 	// If allocation is 0, shields are off
 	if(power_allocation <= 0)
 		if(active)
-			deactivate_shields()
+			deactivate_generator()
 		return
 
 	// Can't run shields while docked
 	if(is_ship_docked())
 		if(active)
-			deactivate_shields()
+			deactivate_generator()
 		return
 
-	// If broken and on cooldown, can't do anything
-	if(broken)
-		if(COOLDOWN_FINISHED(src, reactivation_cooldown))
-			// Ready to reactivate, but need manual trigger from console
-			broken = FALSE
+	// Check if ship shields are broken (on cooldown) - can't activate during cooldown
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	if(ship?.shields_broken)
 		return
 
-	// Activate if not already (power is drawn automatically via update_mode_power_usage)
+	// Activate this generator if not already
 	if(!active)
-		activate_shields()
+		activate_generator()
 
-	// Regenerate shield health
-	var/effective_regen = get_effective_regen_rate() * seconds_per_tick
-	if(shield_health < max_shield_health)
-		shield_health = min(shield_health + effective_regen, max_shield_health)
-	else if(power_allocation > 1)
-		// Generate overhealth when at max and power > 100%
-		var/overhealth_rate = get_overhealth_rate() * seconds_per_tick
-		overhealth += overhealth_rate
+	// Shield regeneration is handled by ship.process() - no need to coordinate here
 
 // ========== POWER CALCULATIONS ==========
 
@@ -173,29 +158,6 @@
 /// Formula: (BASE_COST + mass * POWER_PER_MASS) * allocation * efficiency
 /obj/machinery/ship_combat/shield_generator/proc/get_power_draw()
 	return (SHIP_SHIELD_BASE_POWER_COST + cached_ship_mass * SHIP_SHIELD_POWER_PER_MASS) * power_allocation * power_efficiency
-
-/// Returns the effective regeneration rate based on base rate and power allocation
-/obj/machinery/ship_combat/shield_generator/proc/get_effective_regen_rate()
-	return regen_rate * power_allocation
-
-/// Returns the overhealth generation rate (only when power > 100%)
-/obj/machinery/ship_combat/shield_generator/proc/get_overhealth_rate()
-	if(power_allocation <= 1)
-		return 0
-	// Excess power above 100% generates overhealth
-	// At 200% power, generate at same rate as regen
-	var/excess = power_allocation - 1
-	return regen_rate * excess
-
-/// Returns the cooldown modifier based on power allocation
-/// Higher power = faster cooldown recovery
-/obj/machinery/ship_combat/shield_generator/proc/get_cooldown_modifier()
-	// At 50% power: 1.5x longer cooldown
-	// At 100% power: 1x cooldown
-	// At 200% power: 0.5x cooldown
-	if(power_allocation <= 0)
-		return 2
-	return 1 / power_allocation
 
 /// Updates cached ship mass from the linked ship
 /obj/machinery/ship_combat/shield_generator/proc/update_ship_mass()
@@ -1319,102 +1281,78 @@
 
 // ========== SHIELD STATE ==========
 
-/// Activates shields (called when power_allocation > 0 and not broken)
-/// Returns FALSE if activation failed (docked, broken, etc.)
-/obj/machinery/ship_combat/shield_generator/proc/activate_shields()
+/// Activates this generator to contribute to the ship's shared shield pool
+/// Returns FALSE if activation failed (docked, ship shields broken, etc.)
+/obj/machinery/ship_combat/shield_generator/proc/activate_generator()
 	if(active)
 		return TRUE
-	if(broken && !COOLDOWN_FINISHED(src, reactivation_cooldown))
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	// Can't activate while ship shields are broken/on cooldown
+	if(ship?.shields_broken)
 		return FALSE
 	// Can't activate while docked
 	if(is_ship_docked())
 		return FALSE
 
 	active = TRUE
-	broken = FALSE
-
-	// Start at 50% health on activation
-	if(shield_health <= 0)
-		shield_health = max_shield_health * 0.5
-
-	// Only spawn shield walls if no other generator on this ship has them
-	// This prevents duplicate overlapping walls
-	if(!ship_has_active_shield_walls())
-		spawn_shield_walls()
 
 	update_appearance()
 	update_power_draw()
-	playsound(src, 'sound/vehicles/mecha/mech_shield_raise.ogg', 100, TRUE)
+
+	// Recalculate ship shield stats with this generator now contributing
+	if(ship)
+		ship.recalculate_shield_stats()
+
+		// If this is the first generator coming online, initialize ship shields
+		if(!ship.shields_active && !ship.shields_broken)
+			ship.shields_active = TRUE
+			ship.shield_health = ship.shield_max_health * 0.5  // Start at 50%
+
+			// Start ship processing for shield regen
+			ship.start_shield_processing()
+
+			// Spawn shield walls
+			if(!ship_has_active_shield_walls())
+				spawn_shield_walls()
+
+			playsound(src, 'sound/vehicles/mecha/mech_shield_raise.ogg', 100, TRUE)
+			ship.ship_announce("Shields online.", "Shield Status")
+			SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_RESTORED)
+		else if(ship.shields_active)
+			// Just announce new generator online
+			playsound(src, 'sound/vehicles/mecha/mech_shield_raise.ogg', 50, TRUE)
+
+	return TRUE
+
+/// Deactivates this generator (called when power_allocation set to 0)
+/obj/machinery/ship_combat/shield_generator/proc/deactivate_generator()
+	if(!active)
+		return
+
+	active = FALSE
+
+	update_appearance()
+	update_power_draw()
 
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
-		SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_RESTORED)
-		// Only announce if this is the first generator coming online
-		if(count_active_generators() == 1)
-			ship.ship_announce("Shields online.", "Shield Status")
+		// Recalculate ship shield stats without this generator
+		ship.recalculate_shield_stats()
 
-/// Deactivates shields (called when power_allocation set to 0)
-/// Triggers cooldown just like breaking - can't just flip shields on/off instantly
-/obj/machinery/ship_combat/shield_generator/proc/deactivate_shields()
-	if(!active)
-		return
+		// If no generators are active, ship shields go down
+		if(count_active_generators() == 0)
+			// Trigger ship shield break (starts cooldown)
+			ship.break_ship_shields()
 
+/// Called by ship when shared shield pool breaks
+/obj/machinery/ship_combat/shield_generator/proc/on_ship_shields_broken()
 	active = FALSE
-	broken = TRUE
-	shield_health = 0
-	overhealth = 0
-
-	// Start cooldown (same as break_shields)
-	var/cooldown_time = SHIP_SHIELD_BROKEN_COOLDOWN * get_cooldown_modifier()
-	COOLDOWN_START(src, reactivation_cooldown, cooldown_time)
-
-	// Only remove shield walls if no other active generators on this ship
-	// Another generator might still be keeping the shield up
-	if(count_active_generators() == 0)
-		destroy_all_ship_shield_walls()
-
 	update_appearance()
 	update_power_draw()
-
-	// Audio effect - same as break_shields so crew knows shields are down
-	playsound(src, 'sound/vehicles/mecha/mech_shield_drop.ogg', 100, TRUE)
-
-	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
-	if(ship && count_active_generators() == 0)
-		ship.ship_announce("Shields deactivated. Reactivation available in [DisplayTimeText(cooldown_time)].", "Shield Status")
-
-/// Called when shields are depleted by damage
-/obj/machinery/ship_combat/shield_generator/proc/break_shields()
-	if(!active)
-		return
-
-	active = FALSE
-	broken = TRUE
-	shield_health = 0
-	overhealth = 0
-
-	// Start cooldown (modified by power allocation)
-	var/cooldown_time = SHIP_SHIELD_BROKEN_COOLDOWN * get_cooldown_modifier()
-	COOLDOWN_START(src, reactivation_cooldown, cooldown_time)
-
-	update_appearance()
-	update_power_draw()
-
-	// Audio effect (pressure_affected = FALSE so heard even with hull breaches)
+	// Audio effect for each generator
 	playsound(src, 'sound/vehicles/mecha/mech_shield_drop.ogg', 100, TRUE, extrarange = 10, pressure_affected = FALSE)
 
-	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
-	if(ship)
-		// Only remove walls and announce collapse if ALL generators are down
-		if(count_active_generators() == 0)
-			destroy_all_ship_shield_walls()
-			SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_BROKEN)
-			ship.ship_announce("WARNING: Shields restarting!", "Shield Alert", TRUE, 'sound/machines/engine_alert/engine_alert3.ogg')
-		else
-			// Just announce this generator broke, but shields still up
-			ship.ship_announce("Shield generator damaged! [count_active_generators()] generator(s) remaining.", "Shield Alert")
-
-/// Called when shields shut down due to power loss
+/// Called when this generator shuts down due to power loss
 /obj/machinery/ship_combat/shield_generator/proc/power_loss_shutdown()
 	if(!active)
 		return
@@ -1432,20 +1370,27 @@
 
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
-		// Only remove walls if no other active generators
+		// Recalculate ship shield stats
+		ship.recalculate_shield_stats()
+
+		// If no generators are active, ship shields go down
 		if(count_active_generators() == 0)
 			destroy_all_ship_shield_walls()
 			SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_POWERDOWN)
 			ship.ship_announce("Shields offline - insufficient power.", "Shield Alert")
+			// Also break ship shields to trigger cooldown
+			ship.shields_active = FALSE
+			ship.shields_broken = TRUE
+			COOLDOWN_START(ship, shield_reactivation_cooldown, SHIP_SHIELD_BROKEN_COOLDOWN)
 
-/// Returns the count of active shield generators on this ship (excluding self if inactive)
+/// Returns the count of active shield generators on this ship
 /obj/machinery/ship_combat/shield_generator/proc/count_active_generators()
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(!ship)
 		return 0
 	var/count = 0
 	for(var/obj/machinery/ship_combat/shield_generator/gen in ship.linked_shield_generators)
-		if(gen.is_shield_active())
+		if(gen.active)
 			count++
 	return count
 
@@ -1470,51 +1415,17 @@
 
 // ========== DAMAGE HANDLING ==========
 
-/// Absorbs incoming damage. Returns TRUE if damage was fully absorbed.
+/// Absorbs incoming damage - redirects to ship's shared shield pool
+/// Returns TRUE if damage was absorbed, FALSE if shields were down
 /obj/machinery/ship_combat/shield_generator/proc/absorb_damage(damage, turf/impact_loc)
-	if(!active || broken)
-		return FALSE
-
-	// First absorb from overhealth
-	if(overhealth > 0)
-		var/overhealth_absorbed = min(damage, overhealth)
-		overhealth -= overhealth_absorbed
-		damage -= overhealth_absorbed
-
-	// Then from regular health
-	shield_health -= damage
-
-	// Find nearest boundary turf for visual effect (shields appear at ship edge)
-	var/turf/effect_loc = get_nearest_boundary_turf(impact_loc)
-	if(effect_loc)
-		new /obj/effect/temp_visual/ship_shield_hit(effect_loc)
-		// Random shield hit sound
-		var/sound_file = pick(
-			'voidcrew/sound/machines/forcefield/hit1.ogg',
-			'voidcrew/sound/machines/forcefield/hit2.ogg',
-			'voidcrew/sound/machines/forcefield/hit3.ogg',
-			'sound/vehicles/mecha/mech_shield_deflect.ogg',
-		)
-		// Play sound from nearest ship tile to impact (so crew hears directional audio)
-		// pressure_affected = FALSE so it's heard even if hull is breached
-		var/turf/sound_loc = get_nearest_ship_turf(effect_loc)
-		playsound(sound_loc || src, sound_file, 60, TRUE, extrarange = 10, pressure_affected = FALSE)
-
-	// Signal that shield was hit
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
-	if(ship)
-		SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_HIT, damage, effect_loc)
+	if(!ship)
+		return FALSE
+	return ship.absorb_shield_damage(damage, impact_loc)
 
-	// Check for shield break
-	if(shield_health <= 0)
-		shield_health = 0
-		break_shields()
-
-	return TRUE  // Damage was absorbed (even if shield broke)
-
-/// Returns TRUE if shields are currently active and can absorb damage
+/// Returns TRUE if this generator is active and contributing to shields
 /obj/machinery/ship_combat/shield_generator/proc/is_shield_active()
-	return active && !broken && shield_health > 0
+	return active
 
 // ========== CONSOLE LINKING ==========
 
@@ -1553,22 +1464,19 @@
 	ship.linked_shield_generators |= src  // Add to list (|= avoids duplicates)
 	update_ship_mass()
 
-	// Sync power allocation with existing generators on this ship
-	// This ensures new generators match the current ship-wide power setting
-	for(var/obj/machinery/ship_combat/shield_generator/other_gen in ship.linked_shield_generators)
-		if(other_gen == src)
-			continue
-		if(other_gen.power_allocation > 0)
-			// Found an active generator, copy its power allocation
-			set_power_allocation(other_gen.power_allocation)
-			break
+	// Sync power allocation with the ship's power allocation
+	if(ship.shield_power_allocation > 0)
+		set_power_allocation(ship.shield_power_allocation)
+
+	// Recalculate ship shield stats with this generator now contributing
+	ship.recalculate_shield_stats()
 
 	// Register for docking signals
 	RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_ship_docked))
 	RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(on_ship_undocked))
-	// If already docked, deactivate shields
+	// If already docked, deactivate generator
 	if(is_ship_docked())
-		deactivate_shields()
+		deactivate_generator()
 
 /// Unlinks from the current ship
 /obj/machinery/ship_combat/shield_generator/proc/unlink_ship()
@@ -1585,10 +1493,10 @@
 		return FALSE
 	return !isnull(ship.docked)
 
-/// Called when ship docks - deactivate shields
+/// Called when ship docks - deactivate generator
 /obj/machinery/ship_combat/shield_generator/proc/on_ship_docked(datum/source)
 	SIGNAL_HANDLER
-	deactivate_shields()
+	deactivate_generator()
 
 /// Called when ship undocks - shields can be reactivated
 /obj/machinery/ship_combat/shield_generator/proc/on_ship_undocked(datum/source)
@@ -1652,20 +1560,16 @@
 
 // ========== STATUS FOR UI ==========
 
-/// Returns status data for combat console UI
+/// Returns per-generator status data (for debugging/detailed view)
+/// For main UI, use ship.get_shield_status() instead
 /obj/machinery/ship_combat/shield_generator/proc/get_status()
 	return list(
 		"active" = active,
-		"broken" = broken,
-		"health" = round(shield_health),
-		"max_health" = round(max_shield_health),
-		"overhealth" = round(overhealth),
+		"max_health_contribution" = round(max_shield_health),
+		"regen_contribution" = round(regen_rate, 0.1),
 		"power_allocation" = power_allocation,
-		"regen_rate" = round(get_effective_regen_rate(), 0.1),
 		"power_draw" = round(get_power_draw()),
 		"efficiency" = round((1 - power_efficiency) * 100),
-		"cooldown_active" = broken && !COOLDOWN_FINISHED(src, reactivation_cooldown),
-		"cooldown_remaining" = COOLDOWN_TIMELEFT(src, reactivation_cooldown),
 	)
 
 /// Sets power allocation from console (0.0 to 2.0)
@@ -1676,7 +1580,7 @@
 /// Updates the machine's power draw based on current settings
 /obj/machinery/ship_combat/shield_generator/proc/update_power_draw()
 	var/new_power = get_power_draw()
-	if(power_allocation > 0 && !broken)
+	if(power_allocation > 0 && active)
 		update_mode_power_usage(ACTIVE_POWER_USE, new_power)
 		update_use_power(ACTIVE_POWER_USE)
 	else

@@ -412,8 +412,7 @@ const ShieldsPanel = () => {
           </Stack.Item>
           <Stack.Item>
             <Box color="label" fontSize="11px" textAlign="center">
-              Power: {powerPercent.toFixed(0)}% | Adjust power allocation while
-              waiting
+              Power: {powerPercent.toFixed(0)}%
             </Box>
           </Stack.Item>
           <Stack.Item>
@@ -425,7 +424,7 @@ const ShieldsPanel = () => {
               step={10}
               stepPixelSize={4}
               format={(v) => `${v}%`}
-              onChange={(e, value) => act('set_shield_power', { power: value })}
+              disabled
             />
           </Stack.Item>
         </Stack>

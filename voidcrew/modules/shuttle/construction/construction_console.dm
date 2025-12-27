@@ -721,9 +721,13 @@
 	if(current_ship)
 		data["shipMass"] = current_ship.mass || 0
 		data["maxIntegrity"] = current_ship.max_integrity || 0
+		data["integrity"] = current_ship.get_integrity_percent()
+		data["overhealth"] = current_ship.get_overhealth_percent()
 	else
 		data["shipMass"] = 0
 		data["maxIntegrity"] = 0
+		data["integrity"] = 100
+		data["overhealth"] = 0
 
 	// Current docking port info
 	data["currentPort"] = get_current_docking_port_info()

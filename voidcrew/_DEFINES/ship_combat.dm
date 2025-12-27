@@ -169,3 +169,10 @@
 
 /// Sent when a laser turret fires: (obj/machinery/ship_combat/laser_turret/turret, turf/target)
 #define COMSIG_SHIP_LASER_FIRED "ship_laser_fired"
+
+// ========== CLOAK DEFINES ==========
+
+/// Base power draw for cloaking device (5 kW) - ensures small ships still pay meaningful cost
+#define SHIP_CLOAK_BASE_POWER_COST 5 KILO WATTS
+/// Power draw per unit of ship mass (W per mass) - cloaking larger ships is harder
+#define SHIP_CLOAK_POWER_PER_MASS 50

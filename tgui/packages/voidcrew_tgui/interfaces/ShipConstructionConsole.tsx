@@ -49,21 +49,20 @@ interface Data {
   maxDimensionShort: number;
   shipMass: number;
   maxIntegrity: number;
+  integrity: number;
+  overhealth: number;
 }
 
-type TabType = 'overview' | 'construction' | 'relocation';
+type TabType = 'construction' | 'relocation';
 
 export const ShipConstructionConsole = () => {
   const { act, data } = useBackend<Data>();
   const {
     canOperate,
-    shipState,
-    shipName,
     isNotCrew,
     lastMessage,
     lastSuccess,
     currentPort,
-    dockingPortOnEdge,
     airlocks,
     rcdMatter,
     rcdMaxMatter,
@@ -75,21 +74,16 @@ export const ShipConstructionConsole = () => {
     maxDimensionShort,
     shipMass,
     maxIntegrity,
+    integrity,
+    overhealth,
   } = data;
 
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [activeTab, setActiveTab] = useState<TabType>('construction');
 
   return (
     <Window width={550} height={550} title="Ship Construction Console">
       <Window.Content scrollable>
         <Stack vertical fill>
-          {/* Crew Authorization Warning */}
-          {!!isNotCrew && (
-            <Stack.Item>
-              <NoticeBox danger>CREW AUTHORIZATION REQUIRED</NoticeBox>
-            </Stack.Item>
-          )}
-
           {/* Operation Status Message */}
           {!!lastMessage && (
             <Stack.Item>
@@ -108,12 +102,6 @@ export const ShipConstructionConsole = () => {
           <Stack.Item>
             <Tabs>
               <Tabs.Tab
-                selected={activeTab === 'overview'}
-                onClick={() => setActiveTab('overview')}
-              >
-                Overview
-              </Tabs.Tab>
-              <Tabs.Tab
                 selected={activeTab === 'construction'}
                 onClick={() => setActiveTab('construction')}
               >
@@ -130,25 +118,6 @@ export const ShipConstructionConsole = () => {
 
           {/* Tab Content */}
           <Stack.Item grow>
-            {activeTab === 'overview' && (
-              <OverviewTab
-                shipName={shipName}
-                shipState={shipState}
-                canOperate={canOperate}
-                isNotCrew={isNotCrew}
-                rcdMatter={rcdMatter}
-                rcdMaxMatter={rcdMaxMatter}
-                usingSilo={usingSilo}
-                currentPort={currentPort}
-                dockingPortOnEdge={dockingPortOnEdge}
-                shipWidth={shipWidth}
-                shipHeight={shipHeight}
-                maxDimensionLong={maxDimensionLong}
-                maxDimensionShort={maxDimensionShort}
-                shipMass={shipMass}
-                maxIntegrity={maxIntegrity}
-              />
-            )}
             {activeTab === 'construction' && (
               <ConstructionTab
                 canOperate={canOperate}
@@ -157,6 +126,14 @@ export const ShipConstructionConsole = () => {
                 rcdMaxMatter={rcdMaxMatter}
                 usingSilo={usingSilo}
                 isInConstructionMode={isInConstructionMode}
+                shipWidth={shipWidth}
+                shipHeight={shipHeight}
+                maxDimensionLong={maxDimensionLong}
+                maxDimensionShort={maxDimensionShort}
+                shipMass={shipMass}
+                maxIntegrity={maxIntegrity}
+                integrity={integrity}
+                overhealth={overhealth}
               />
             )}
             {activeTab === 'relocation' && (
@@ -174,55 +151,65 @@ export const ShipConstructionConsole = () => {
   );
 };
 
-interface OverviewTabProps {
-  shipName: string;
-  shipState: string;
+interface ConstructionTabProps {
   canOperate: boolean;
   isNotCrew: boolean;
   rcdMatter: number;
   rcdMaxMatter: number;
   usingSilo: boolean;
-  currentPort: PortData | null;
-  dockingPortOnEdge: boolean;
+  isInConstructionMode: boolean;
   shipWidth: number;
   shipHeight: number;
   maxDimensionLong: number;
   maxDimensionShort: number;
   shipMass: number;
   maxIntegrity: number;
+  integrity: number;
+  overhealth: number;
 }
 
-const OverviewTab = (props: OverviewTabProps) => {
+const ConstructionTab = (props: ConstructionTabProps) => {
   const { act } = useBackend();
   const {
-    shipName,
-    shipState,
     canOperate,
     isNotCrew,
     rcdMatter,
     rcdMaxMatter,
     usingSilo,
-    currentPort,
-    dockingPortOnEdge,
+    isInConstructionMode,
     shipWidth,
     shipHeight,
     maxDimensionLong,
     maxDimensionShort,
     shipMass,
     maxIntegrity,
+    integrity,
+    overhealth,
   } = props;
 
   return (
     <Stack vertical fill>
       <Stack.Item>
-        <Section title={shipName || 'Ship Construction Console'}>
+        <Section title="Ship Integrity">
           <LabeledList>
-            <LabeledList.Item label="Ship Status">
-              {shipState === 'idle' ? 'Docked' : 'In Flight'}
+            <LabeledList.Item label="Hull Integrity">
+              <ProgressBar
+                value={integrity}
+                maxValue={100 + overhealth}
+                ranges={{
+                  good: [70, Infinity],
+                  average: [40, 70],
+                  bad: [-Infinity, 40],
+                }}
+              >
+                {integrity}%{overhealth > 0 ? ` (+${overhealth}% overhealth)` : ''}
+              </ProgressBar>
             </LabeledList.Item>
-            <LabeledList.Item label="Console Status">
-              {canOperate ? 'Ready' : 'Operations Unavailable'}
-            </LabeledList.Item>
+            {integrity <= 50 && (
+              <LabeledList.Item label="Warning" color="bad">
+                Ship is disabled! Repair to restore functionality.
+              </LabeledList.Item>
+            )}
           </LabeledList>
         </Section>
       </Stack.Item>
@@ -287,115 +274,6 @@ const OverviewTab = (props: OverviewTabProps) => {
         </Section>
       </Stack.Item>
 
-      <Stack.Item>
-        <Section title="RCD Resources">
-          <LabeledList>
-            <LabeledList.Item label="Source">
-              {usingSilo ? 'Ore Silo (Linked)' : 'Internal Storage'}
-            </LabeledList.Item>
-            <LabeledList.Item label="Matter">
-              {usingSilo ? (
-                `${rcdMatter} units available`
-              ) : (
-                <ProgressBar
-                  value={rcdMatter}
-                  maxValue={rcdMaxMatter}
-                  ranges={{
-                    good: [rcdMaxMatter * 0.5, Infinity],
-                    average: [rcdMaxMatter * 0.25, rcdMaxMatter * 0.5],
-                    bad: [-Infinity, rcdMaxMatter * 0.25],
-                  }}
-                >
-                  {rcdMatter} / {rcdMaxMatter}
-                </ProgressBar>
-              )}
-            </LabeledList.Item>
-          </LabeledList>
-        </Section>
-      </Stack.Item>
-
-      <Stack.Item>
-        <Section title="Current Docking Port">
-          {currentPort ? (
-            <>
-              <LabeledList>
-                <LabeledList.Item label="Position">
-                  ({currentPort.x}, {currentPort.y})
-                </LabeledList.Item>
-                <LabeledList.Item label="Direction">
-                  {currentPort.dir}
-                </LabeledList.Item>
-                <LabeledList.Item label="Status">
-                  {dockingPortOnEdge ? (
-                    <span style={{ color: '#6c6' }}>On edge - OK</span>
-                  ) : (
-                    <span style={{ color: '#c66' }}>Blocked!</span>
-                  )}
-                </LabeledList.Item>
-              </LabeledList>
-              {!dockingPortOnEdge && (
-                <NoticeBox danger mt={1}>
-                  WARNING: You have built past your docking port! Docking may
-                  fail. Use Port Relocation to move the docking port to an edge
-                  airlock.
-                </NoticeBox>
-              )}
-            </>
-          ) : (
-            <NoticeBox>No docking port detected</NoticeBox>
-          )}
-        </Section>
-      </Stack.Item>
-
-      <Stack.Item>
-        <Section title="Ship Maintenance">
-          <Stack vertical>
-            <Stack.Item>
-              <Button
-                icon="fan"
-                content="Reset Fans"
-                tooltip="Removes all tiny fans and adds new ones to all external airlocks"
-                disabled={!canOperate || isNotCrew}
-                onClick={() => act('reset_fans')}
-              />
-            </Stack.Item>
-          </Stack>
-        </Section>
-      </Stack.Item>
-
-      {!canOperate && (
-        <Stack.Item>
-          <NoticeBox warning>
-            Ship must be docked to perform construction operations.
-          </NoticeBox>
-        </Stack.Item>
-      )}
-    </Stack>
-  );
-};
-
-interface ConstructionTabProps {
-  canOperate: boolean;
-  isNotCrew: boolean;
-  rcdMatter: number;
-  rcdMaxMatter: number;
-  usingSilo: boolean;
-  isInConstructionMode: boolean;
-}
-
-const ConstructionTab = (props: ConstructionTabProps) => {
-  const { act } = useBackend();
-  const {
-    canOperate,
-    isNotCrew,
-    rcdMatter,
-    rcdMaxMatter,
-    usingSilo,
-    isInConstructionMode,
-  } = props;
-
-  return (
-    <Stack vertical fill>
       <Stack.Item>
         <Section title="Construction Drone Control">
           <Stack vertical>
@@ -561,6 +439,18 @@ const RelocationTab = (props: RelocationTabProps) => {
               </Table.Row>
             )}
           </Table>
+        </Section>
+      </Stack.Item>
+
+      <Stack.Item>
+        <Section title="Airlock Maintenance">
+          <Button
+            icon="fan"
+            content="Reset Fans"
+            tooltip="Removes all tiny fans and adds new ones to all edge airlocks"
+            disabled={!canOperate || isNotCrew}
+            onClick={() => act('reset_fans')}
+          />
         </Section>
       </Stack.Item>
 

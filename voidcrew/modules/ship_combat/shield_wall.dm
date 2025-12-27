@@ -30,6 +30,10 @@
 	if(!gen)
 		return
 
+	var/obj/structure/overmap/ship/ship = gen.linked_ship_ref?.resolve()
+	if(!ship)
+		return
+
 	var/damage = 0
 	var/shield_mult = 1  // Shield damage multiplier based on damage source
 	var/turf/impact_loc = get_turf(src)
@@ -50,30 +54,9 @@
 		qdel(meteor)
 
 	if(damage > 0)
-		// Apply shield damage multiplier
+		// Apply shield damage multiplier and route to ship's shared shield pool
 		damage *= shield_mult
-		// Distribute damage across all active generators on the ship
-		var/obj/structure/overmap/ship/ship = gen.linked_ship_ref?.resolve()
-		if(ship && length(ship.linked_shield_generators))
-			distribute_damage_to_generators(ship, damage, impact_loc)
-		else
-			gen.absorb_damage(damage, impact_loc)
-
-/// Distributes damage evenly across all active shield generators
-/obj/structure/ship_shield_wall/proc/distribute_damage_to_generators(obj/structure/overmap/ship/ship, damage, turf/impact_loc)
-	// Get list of active generators
-	var/list/active_generators = list()
-	for(var/obj/machinery/ship_combat/shield_generator/gen in ship.linked_shield_generators)
-		if(gen.is_shield_active())
-			active_generators += gen
-
-	if(!length(active_generators))
-		return
-
-	// Split damage evenly across active generators
-	var/damage_per_gen = damage / length(active_generators)
-	for(var/obj/machinery/ship_combat/shield_generator/gen in active_generators)
-		gen.absorb_damage(damage_per_gen, impact_loc)
+		ship.absorb_shield_damage(damage, impact_loc)
 
 /// Returns the shield damage for a meteor based on its type
 /obj/structure/ship_shield_wall/proc/get_meteor_damage(obj/effect/meteor/M)
@@ -93,17 +76,15 @@
 	if(!gen)
 		return FALSE
 
+	var/obj/structure/overmap/ship/ship = gen.linked_ship_ref?.resolve()
+	if(!ship)
+		return FALSE
+
 	if(!impact_loc)
 		impact_loc = get_turf(src)
 
 	// Apply laser shield damage multiplier (lasers are effective against shields)
 	damage *= SHIELD_DAMAGE_MULT_LASER
 
-	// Distribute damage across all active generators on the ship
-	var/obj/structure/overmap/ship/ship = gen.linked_ship_ref?.resolve()
-	if(ship && length(ship.linked_shield_generators))
-		distribute_damage_to_generators(ship, damage, impact_loc)
-	else
-		gen.absorb_damage(damage, impact_loc)
-
-	return TRUE
+	// Route damage to ship's shared shield pool
+	return ship.absorb_shield_damage(damage, impact_loc)
