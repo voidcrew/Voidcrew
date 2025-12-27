@@ -47,6 +47,8 @@ interface Data {
   shipHeight: number;
   maxDimensionLong: number;
   maxDimensionShort: number;
+  shipMass: number;
+  maxIntegrity: number;
 }
 
 type TabType = 'overview' | 'construction' | 'relocation';
@@ -71,6 +73,8 @@ export const ShipConstructionConsole = () => {
     shipHeight,
     maxDimensionLong,
     maxDimensionShort,
+    shipMass,
+    maxIntegrity,
   } = data;
 
   const [activeTab, setActiveTab] = useState<TabType>('overview');
@@ -141,6 +145,8 @@ export const ShipConstructionConsole = () => {
                 shipHeight={shipHeight}
                 maxDimensionLong={maxDimensionLong}
                 maxDimensionShort={maxDimensionShort}
+                shipMass={shipMass}
+                maxIntegrity={maxIntegrity}
               />
             )}
             {activeTab === 'construction' && (
@@ -182,6 +188,8 @@ interface OverviewTabProps {
   shipHeight: number;
   maxDimensionLong: number;
   maxDimensionShort: number;
+  shipMass: number;
+  maxIntegrity: number;
 }
 
 const OverviewTab = (props: OverviewTabProps) => {
@@ -200,6 +208,8 @@ const OverviewTab = (props: OverviewTabProps) => {
     shipHeight,
     maxDimensionLong,
     maxDimensionShort,
+    shipMass,
+    maxIntegrity,
   } = props;
 
   return (
@@ -250,6 +260,29 @@ const OverviewTab = (props: OverviewTabProps) => {
               Max {maxDimensionLong}. Only one dimension may exceed{' '}
               {maxDimensionShort}.
             </LabeledList.Item>
+          </LabeledList>
+        </Section>
+      </Stack.Item>
+
+      <Stack.Item>
+        <Section title="Ship Mass">
+          <LabeledList>
+            <LabeledList.Item label="Current Mass">
+              <ProgressBar
+                value={shipMass}
+                maxValue={Math.max(maxIntegrity, shipMass)}
+              >
+                {shipMass} units
+              </ProgressBar>
+            </LabeledList.Item>
+            <LabeledList.Item label="Original Mass">
+              {maxIntegrity} units
+            </LabeledList.Item>
+            {shipMass > maxIntegrity && (
+              <LabeledList.Item label="Expansion" color="good">
+                +{shipMass - maxIntegrity} units
+              </LabeledList.Item>
+            )}
           </LabeledList>
         </Section>
       </Stack.Item>

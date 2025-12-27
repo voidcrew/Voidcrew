@@ -170,8 +170,9 @@
 // ========== POWER CALCULATIONS ==========
 
 /// Returns the current power draw based on ship mass, allocation, and efficiency
+/// Formula: (BASE_COST + mass * POWER_PER_MASS) * allocation * efficiency
 /obj/machinery/ship_combat/shield_generator/proc/get_power_draw()
-	return cached_ship_mass * SHIP_SHIELD_POWER_PER_MASS * power_allocation * power_efficiency
+	return (SHIP_SHIELD_BASE_POWER_COST + cached_ship_mass * SHIP_SHIELD_POWER_PER_MASS) * power_allocation * power_efficiency
 
 /// Returns the effective regeneration rate based on base rate and power allocation
 /obj/machinery/ship_combat/shield_generator/proc/get_effective_regen_rate()

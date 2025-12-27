@@ -15,7 +15,7 @@
 	power_channel = AREA_USAGE_EQUIP
 	circuit = /obj/item/circuitboard/machine/ship_combat/laser_turret
 	/// How much power we draw from the grid to charge our cell per process tick
-	idle_power_usage = BASE_MACHINE_IDLE_CONSUMPTION
+	idle_power_usage = 0
 	active_power_usage = BASE_MACHINE_ACTIVE_CONSUMPTION * 2
 	/// Turret health
 	max_integrity = 200

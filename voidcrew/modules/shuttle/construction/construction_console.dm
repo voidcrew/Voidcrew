@@ -717,6 +717,14 @@
 	data["maxDimensionLong"] = RESERVE_DOCK_MAX_SIZE_LONG
 	data["maxDimensionShort"] = RESERVE_DOCK_MAX_SIZE_SHORT
 
+	// Ship mass info
+	if(current_ship)
+		data["shipMass"] = current_ship.mass || 0
+		data["maxIntegrity"] = current_ship.max_integrity || 0
+	else
+		data["shipMass"] = 0
+		data["maxIntegrity"] = 0
+
 	// Current docking port info
 	data["currentPort"] = get_current_docking_port_info()
 	data["dockingPortOnEdge"] = is_docking_port_on_edge()

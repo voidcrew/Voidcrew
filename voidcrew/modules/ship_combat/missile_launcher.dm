@@ -12,6 +12,7 @@
 	anchored = TRUE
 	drag_slowdown = 2  // Heavy machinery
 	power_channel = AREA_USAGE_EQUIP
+	idle_power_usage = 0
 	circuit = /obj/item/circuitboard/machine/ship_combat/missile_launcher
 	pixel_x = -16
 	pixel_y = -16

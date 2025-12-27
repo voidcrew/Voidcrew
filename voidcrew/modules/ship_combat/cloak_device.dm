@@ -11,9 +11,9 @@
 	anchored = TRUE
 	power_channel = AREA_USAGE_EQUIP
 	circuit = /obj/item/circuitboard/machine/ship_combat/cloak_device
-	/// Base idle power - very low when not cloaking
-	idle_power_usage = BASE_MACHINE_IDLE_CONSUMPTION
-	/// Active power when cloaked - extremely high! (50 kW)
+	/// No power draw when not cloaking
+	idle_power_usage = 0
+	/// Active power when cloaked (50 kW)
 	active_power_usage = 50 KILO WATTS
 
 	/// Is the cloak currently active?
@@ -53,6 +53,9 @@
 
 /obj/machinery/ship_combat/cloak_device/RefreshParts()
 	. = ..()
+	// Reset power usage - parent multiplies by parts energy rating, but cloak has fixed power cost
+	active_power_usage = initial(active_power_usage)
+
 	var/capacitor_rating = 0
 	for(var/datum/stock_part/capacitor/cap in component_parts)
 		capacitor_rating += cap.tier
@@ -167,7 +170,8 @@
 	// Hide the ship on the overmap
 	linked_ship.SetInvisibility(INVISIBILITY_ABSTRACT, cloak_id, 100)
 
-	// Start high power drain
+	// Start high power drain - must use update_mode_power_usage to properly register with APC
+	update_mode_power_usage(ACTIVE_POWER_USE, active_power_usage)
 	update_use_power(ACTIVE_POWER_USE)
 
 	// Start cloak duration timer
@@ -202,7 +206,8 @@
 		linked_ship.RemoveInvisibility(cloak_id)
 		SEND_SIGNAL(linked_ship, COMSIG_SHIP_CLOAK_CHANGED, FALSE)
 
-	// Stop high power drain
+	// Stop high power drain - reset to idle
+	update_mode_power_usage(ACTIVE_POWER_USE, 0)
 	update_use_power(IDLE_POWER_USE)
 
 	// Start recloak cooldown
