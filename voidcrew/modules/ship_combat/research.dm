@@ -188,6 +188,8 @@
 		RND_CATEGORY_WEAPONS + RND_SUBCATEGORY_WEAPONS_AMMO
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+	research_icon = 'voidcrew/icons/obj/supplypods.dmi'
+	research_icon_state = "missile_core"
 
 /datum/design/ship_missile_warhead/light
 	name = "Light Missile Warhead"

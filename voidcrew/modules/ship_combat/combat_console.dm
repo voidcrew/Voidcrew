@@ -693,6 +693,11 @@
 	current_user = null
 	attack_mode = FALSE  // Ensure attack mode is reset when eye control is removed
 
+	// Restore interdiction overlay if the player had one
+	var/atom/movable/screen/fullscreen/interdiction/interdict_screen = user?.screens["interdiction"]
+	if(interdict_screen)
+		interdict_screen.start_strobe()
+
 	playsound(src, 'sound/machines/terminal/terminal_off.ogg', 25, FALSE)
 
 // ========== ATTACK MODE ==========
@@ -744,6 +749,12 @@
 
 	attack_mode = TRUE
 
+	// Hide interdiction overlay while in camera view
+	var/atom/movable/screen/fullscreen/interdiction/interdict_screen = user.screens["interdiction"]
+	if(interdict_screen)
+		animate(interdict_screen)  // Stop any running animations
+		interdict_screen.alpha = 0
+
 	// Give control and move to target
 	give_eye_control(user)
 	eyeobj.setLoc(target_turf, TRUE)
@@ -755,7 +766,7 @@
 /obj/machinery/computer/camera_advanced/ship_combat/proc/exit_attack_mode(mob/user)
 	attack_mode = FALSE
 	if(current_user == user)
-		remove_eye_control(user)
+		remove_eye_control(user)  // This also restores interdiction overlay
 		// Don't call unset_machine() - it would double-call remove_eye_control
 		// and end_processing, which can cause UI issues
 		end_processing()
