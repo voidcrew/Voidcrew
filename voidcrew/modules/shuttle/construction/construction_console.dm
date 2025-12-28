@@ -239,7 +239,7 @@
 
 	// Must be docked to use construction features
 	if(!can_operate())
-		to_chat(user, span_warning("Ship must be docked to use construction features."))
+		to_chat(user, span_warning("[get_operate_error()]"))
 		return FALSE
 
 	return TRUE
@@ -290,6 +290,18 @@
 	if(!COOLDOWN_FINISHED(current_ship, interdiction_undock_lockout))
 		return FALSE
 	return TRUE
+
+/**
+ * Returns an error message explaining why can_operate() failed
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_operate_error()
+	if(!current_ship)
+		return "No ship connection established."
+	if(current_ship.state != OVERMAP_SHIP_IDLE)
+		return "Ship must be docked to use construction features."
+	if(!COOLDOWN_FINISHED(current_ship, interdiction_undock_lockout))
+		return "Construction disabled while docked with another ship."
+	return "Unknown error."
 
 /**
  * Gets the docking port for the current ship
@@ -802,7 +814,7 @@
 			return TRUE
 		if("enter_construction_mode")
 			if(!can_operate())
-				to_chat(usr, span_warning("Ship must be docked to enter construction mode."))
+				to_chat(usr, span_warning("[get_operate_error()]"))
 				return TRUE
 			enter_construction_mode(usr)
 			return TRUE

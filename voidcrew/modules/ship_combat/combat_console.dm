@@ -366,6 +366,7 @@
 
 	data["connected"] = !!current_ship
 	data["ship_name"] = current_ship?.display_name
+	data["ship_docked"] = current_ship?.docked ? TRUE : FALSE
 	data["cloak_active"] = cloak_active
 	data["attack_mode"] = attack_mode
 	data["is_in_attack_mode"] = (eyeobj && user.remote_control == eyeobj)

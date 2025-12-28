@@ -49,6 +49,7 @@ type Turret = {
 type Data = {
   connected: BooleanLike;
   ship_name: string | null;
+  ship_docked: BooleanLike;
   cloak_active: BooleanLike;
   attack_mode: BooleanLike;
   is_in_attack_mode: BooleanLike;
@@ -324,6 +325,7 @@ const TargetingPanel = () => {
 const ShieldsPanel = () => {
   const { act, data } = useBackend<Data>();
   const {
+    ship_docked,
     shield_linked,
     shield_unlocked,
     shield_active,
@@ -358,6 +360,28 @@ const ShieldsPanel = () => {
           </Box>
         }
       />
+    );
+  }
+
+  // Ship is docked - shields unavailable
+  if (ship_docked) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="shield-halved" mr={1} />
+            Shields
+            <Box inline color="label" ml={1} fontSize="11px">
+              DOCKED
+            </Box>
+          </Box>
+        }
+      >
+        <Box color="label" textAlign="center">
+          <Icon name="anchor" mr={1} />
+          Shields unavailable while docked
+        </Box>
+      </Section>
     );
   }
 

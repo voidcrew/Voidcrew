@@ -282,12 +282,9 @@
  * Throws all unanchored objects and mobs on the ship during a crash landing
  * Similar to lateShuttleMove but for crash impacts
  */
-/obj/structure/overmap/ship/proc/crash_throw_contents(var/throwing_force = 20)
+/obj/structure/overmap/ship/proc/crash_throw_contents(throwing_force = 20, throw_dir = WEST, message = "The ship crashes violently, throwing you across the room!")
 	if(!shuttle?.shuttle_areas)
 		return
-
-	// var/throw_force = 5 // How far things get thrown (similar to movement_force["THROW"])
-	var/crash_dir = WEST // Always throw to the left
 
 	for(var/area/ship_area as anything in shuttle.shuttle_areas)
 		for(var/atom/movable/AM in ship_area)
@@ -303,10 +300,11 @@
 			if(isliving(AM))
 				var/mob/living/L = AM
 				shake_camera(L, 30, 5)
-				to_chat(L, span_userdanger("The ship crashes violently, throwing you across the room!"))
+				if(message)
+					to_chat(L, span_userdanger("[message]"))
 
-			// Throw in the crash direction - based on lateShuttleMove logic
-			var/turf/target = get_edge_target_turf(AM, crash_dir)
+			// Throw in the specified direction - based on lateShuttleMove logic
+			var/turf/target = get_edge_target_turf(AM, throw_dir)
 			var/range = throwing_force * 2
 			range = CEILING(rand(range - 1, range + 1), 1)
 			var/speed = max(range / 3, 1)

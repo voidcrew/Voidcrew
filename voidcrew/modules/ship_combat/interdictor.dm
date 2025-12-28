@@ -46,8 +46,8 @@
 	var/datum/beam/interdiction_beam
 	/// List of kinesis effect objects around the target ship
 	var/list/obj/effect/interediction_kinesis_effects = list()
-	/// The green glow effect covering the target ship interior
-	var/obj/effect/abstract/interdiction_glow/interdiction_glow_effect
+	/// List of mobs that currently have the interdiction fullscreen overlay
+	var/list/mob/interdiction_overlay_mobs = list()
 	/// Real-time positional sound on the interdictor machine itself
 	var/datum/realtime_positional_sound/machine_sound
 	/// Timer ID for the target ship sound loop
@@ -86,7 +86,7 @@
 /obj/machinery/ship_combat/interdictor/Destroy()
 	cancel_interdiction("Interdictor destroyed!")
 	destroy_kinesis_effects()
-	QDEL_NULL(interdiction_glow_effect)
+	clear_all_interdiction_overlays()
 	QDEL_NULL(machine_sound)
 	stop_target_sound()
 	unlink_console()
@@ -341,6 +341,12 @@
 			to_chat(user, span_warning("[src] is not linked to a ship!"))
 		return FALSE
 
+	// Can't interdict while being interdicted ourselves
+	if(our_ship.is_interdicted)
+		if(user)
+			to_chat(user, span_warning("Cannot activate interdictor while our ship is being interdicted!"))
+		return FALSE
+
 	// Check range
 	var/turf/our_turf = get_turf(our_ship)
 	var/turf/target_turf = get_turf(target)
@@ -441,14 +447,33 @@
 	var/strength = 1 - speed_mult
 	target.update_interdiction(src, speed_mult, strength)
 
+	// Check if ship had momentum before stopping
+	var/old_speed_x = target.speed[1]
+	var/old_speed_y = target.speed[2]
+	var/had_momentum = (old_speed_x != 0 || old_speed_y != 0)
+
 	// Kill all target momentum - they have to re-engage engines
 	target.adjust_speed(-target.speed[1], -target.speed[2])
 
+	// If ship was moving, throw everything inside due to inertia
+	if(had_momentum)
+		// Calculate throw direction (inertia continues in direction of travel)
+		var/throw_dir = NONE
+		if(old_speed_x > 0)
+			throw_dir |= EAST
+		else if(old_speed_x < 0)
+			throw_dir |= WEST
+		if(old_speed_y > 0)
+			throw_dir |= NORTH
+		else if(old_speed_y < 0)
+			throw_dir |= SOUTH
+		// Throw force based on speed magnitude
+		var/speed_magnitude = sqrt(old_speed_x * old_speed_x + old_speed_y * old_speed_y)
+		var/throw_force = clamp(round(speed_magnitude * 2), 1, 10)
+		target.crash_throw_contents(throw_force, throw_dir, "The ship lurches violently as it's pulled out of motion!")
+
 	// Spawn kinesis effects around target ship
 	spawn_kinesis_effects(target)
-
-	// Spawn glow effect inside target ship
-	spawn_glow_effect(target)
 
 	// Start looping sounds
 	machine_sound?.start()
@@ -498,8 +523,8 @@
 	// Remove kinesis effects
 	destroy_kinesis_effects()
 
-	// Remove glow effect
-	QDEL_NULL(interdiction_glow_effect)
+	// Remove fullscreen overlays from all mobs
+	clear_all_interdiction_overlays()
 
 	// Stop looping sounds
 	machine_sound?.stop()
@@ -539,9 +564,6 @@
 			var/speed_mult = get_target_speed_multiplier()
 			var/strength = 1 - speed_mult
 			target.update_interdiction(src, speed_mult, strength)
-
-			// Notify target of change
-			target.ship_announce("Interdiction field strength changed. Engines now at [round(speed_mult * 100)]% efficiency.", "INTERDICTION ALERT")
 
 // ========== SIGNAL HANDLERS ==========
 
@@ -748,29 +770,45 @@
 		return
 
 	var/list/ship_areas = target.shuttle.shuttle_areas
-	var/list/boundary_turfs = list()
 
-	// Find all space turfs adjacent to the ship (simplified boundary detection)
+	// Build associative list of ship turfs for O(1) lookup
+	var/list/ship_turfs = list()
 	for(var/area/ship_area in ship_areas)
 		for(var/turf/T in ship_area)
-			for(var/dir in GLOB.cardinals)
-				var/turf/neighbor = get_step(T, dir)
-				if(neighbor && isspaceturf(neighbor) && !(get_area(neighbor) in ship_areas))
-					boundary_turfs |= neighbor
+			ship_turfs[T] = TRUE
+
+	// Find edge turfs only (ship turfs with at least one space neighbor)
+	var/list/edge_turfs = list()
+	for(var/turf/T as anything in ship_turfs)
+		for(var/dir in GLOB.cardinals)
+			var/turf/neighbor = get_step(T, dir)
+			if(neighbor && isspaceturf(neighbor) && !ship_turfs[neighbor])
+				edge_turfs[T] = TRUE
+				break
+
+	// Expand outward up to 3 tiles from edge turfs only (much fewer iterations)
+	var/list/boundary_turfs = list()
+	for(var/turf/edge_turf as anything in edge_turfs)
+		for(var/turf/space_turf in RANGE_TURFS(3, edge_turf))
+			if(isspaceturf(space_turf) && !ship_turfs[space_turf])
+				boundary_turfs[space_turf] = TRUE
 
 	if(!length(boundary_turfs))
 		return
 
-	// Only spawn on about half the boundary turfs, scattered randomly
-	var/target_count = max(1, round(length(boundary_turfs) / 2))
-	var/list/shuffled_turfs = boundary_turfs.Copy()
+	// Spawn count scales with power allocation (25% power = 25% of turfs, 200% power = 100% of turfs)
+	var/power_ratio = clamp(power_allocation / INTERDICTOR_POWER_MAX, 0.25, 1)
+	var/target_count = max(1, round(length(boundary_turfs) * power_ratio))
+	var/list/shuffled_turfs = list()
+	for(var/turf/T as anything in boundary_turfs)
+		shuffled_turfs += T
 	shuffle_inplace(shuffled_turfs)
 
 	// Spawn effects with staggered start times
 	var/current_delay = 0
 	for(var/i in 1 to target_count)
 		var/turf/T = shuffled_turfs[i]
-		var/obj/effect/abstract/interdiction_kinesis/effect = new(T, boundary_turfs)
+		var/obj/effect/abstract/interdiction_kinesis/effect = new(T, shuffled_turfs)
 		interediction_kinesis_effects += effect
 		// Stagger the animation start (random 0-20 deciseconds between each)
 		effect.start_animation_delayed(current_delay)
@@ -799,6 +837,10 @@
 /obj/effect/abstract/interdiction_kinesis/Initialize(mapload, list/turfs)
 	. = ..()
 	available_turfs = turfs
+	// Randomly pick between interdict sprites for variety
+	icon_state = pick("interdict", "interdict2")
+	// Prevent hyperspace drift from moving these effects
+	ADD_TRAIT(src, TRAIT_HYPERSPACED, INNATE_TRAIT)
 	// Start invisible - will be shown by start_animation_delayed
 	alpha = 0
 
@@ -828,82 +870,53 @@
 	// Restart animation cycle
 	begin_animation_cycle()
 
-// ========== GLOW EFFECT ==========
+// ========== FULLSCREEN OVERLAY ==========
 
-/// Spawns the interdiction glow effect centered on the target ship
-/obj/machinery/ship_combat/interdictor/proc/spawn_glow_effect(obj/structure/overmap/ship/target)
-	QDEL_NULL(interdiction_glow_effect)
-
-	if(!target?.shuttle?.shuttle_areas)
+/// Adds the interdiction fullscreen overlay to a mob
+/obj/machinery/ship_combat/interdictor/proc/add_interdiction_overlay(mob/target)
+	if(!target?.client)
 		return
+	if(target in interdiction_overlay_mobs)
+		return  // Already has overlay
+	interdiction_overlay_mobs += target
+	RegisterSignal(target, COMSIG_QDELETING, PROC_REF(on_overlay_mob_deleted))
+	var/atom/movable/screen/fullscreen/interdiction/overlay = target.overlay_fullscreen("interdiction", /atom/movable/screen/fullscreen/interdiction)
+	overlay?.start_strobe()
 
-	// Find the center and bounding box of the ship
-	var/list/ship_areas = target.shuttle.shuttle_areas
-	var/sum_x = 0
-	var/sum_y = 0
-	var/turf_count = 0
-	var/z_level
-	var/min_x = INFINITY
-	var/max_x = 0
-	var/min_y = INFINITY
-	var/max_y = 0
-
-	for(var/area/ship_area in ship_areas)
-		for(var/turf/T in ship_area)
-			sum_x += T.x
-			sum_y += T.y
-			z_level = T.z
-			turf_count++
-			// Track bounding box
-			min_x = min(min_x, T.x)
-			max_x = max(max_x, T.x)
-			min_y = min(min_y, T.y)
-			max_y = max(max_y, T.y)
-
-	if(!turf_count)
+/// Removes the interdiction fullscreen overlay from a mob
+/obj/machinery/ship_combat/interdictor/proc/remove_interdiction_overlay(mob/target)
+	if(!target)
 		return
-
-	var/center_x = round(sum_x / turf_count)
-	var/center_y = round(sum_y / turf_count)
-	var/turf/center_turf = locate(center_x, center_y, z_level)
-
-	if(!center_turf)
+	if(!(target in interdiction_overlay_mobs))
 		return
+	interdiction_overlay_mobs -= target
+	UnregisterSignal(target, COMSIG_QDELETING)
+	target.clear_fullscreen("interdiction")
 
-	// Calculate scale based on ship size
-	// light_352.dmi is 352px = 11 tiles, we want to cover the largest dimension with some buffer
-	var/ship_width = max_x - min_x + 1
-	var/ship_height = max_y - min_y + 1
-	var/ship_size = max(ship_width, ship_height)
-	var/needed_scale = (ship_size / 11) * 1.3  // 1.3x buffer for gradient falloff
-	needed_scale = max(needed_scale, 1)  // Minimum 1x scale
+/// Clears interdiction overlays from all tracked mobs
+/obj/machinery/ship_combat/interdictor/proc/clear_all_interdiction_overlays()
+	for(var/mob/M in interdiction_overlay_mobs)
+		UnregisterSignal(M, COMSIG_QDELETING)
+		M.clear_fullscreen("interdiction")
+	interdiction_overlay_mobs.Cut()
 
-	interdiction_glow_effect = new(center_turf, needed_scale)
-	interdiction_glow_effect.start_strobe()
+/// Called when a mob with our overlay is deleted
+/obj/machinery/ship_combat/interdictor/proc/on_overlay_mob_deleted(datum/source)
+	SIGNAL_HANDLER
+	interdiction_overlay_mobs -= source
 
-/// The green glow effect that covers the interdicted ship interior
-/// Uses scaled light_352.dmi to cover large ships
-/obj/effect/abstract/interdiction_glow
-	name = "interdiction field"
-	desc = "A pulsing green glow from the interdiction field."
-	icon = 'icons/effects/light_overlays/light_352.dmi'
-	icon_state = "light"
+/// The fullscreen overlay shown to mobs on interdicted ships
+/atom/movable/screen/fullscreen/interdiction
+	icon = 'icons/hud/screen_gen.dmi'
+	icon_state = "flash"
+	screen_loc = "WEST,SOUTH to EAST,NORTH"
 	color = COLOR_GREEN
 	alpha = 0
-	layer = ABOVE_ALL_MOB_LAYER
-	plane = ABOVE_LIGHTING_PLANE
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-
-/obj/effect/abstract/interdiction_glow/Initialize(mapload)
-	. = ..()
-	// Scale up to cover large ships (352px * 6 = 2112px = 66 tiles)
-	var/matrix/M = matrix()
-	M.Scale(6)
-	transform = M
+	show_when_dead = TRUE  // Ghosts can see it too
 
 /// Starts the strobe animation
-/obj/effect/abstract/interdiction_glow/proc/start_strobe()
-	animate(src, alpha = 50, time = 1.5 SECONDS, loop = -1, easing = SINE_EASING)
+/atom/movable/screen/fullscreen/interdiction/proc/start_strobe()
+	animate(src, alpha = 40, time = 1.5 SECONDS, loop = -1, easing = SINE_EASING)
 	animate(alpha = 0, time = 1.5 SECONDS, easing = SINE_EASING)
 
 // ========== CIRCUIT BOARD ==========
@@ -956,12 +969,23 @@
 		stop_target_sound()
 		return
 
-	// Play to all mobs with clients in the ship's areas
+	// Track which mobs are currently in ship areas
+	var/list/mobs_in_ship = list()
+
+	// Play to all mobs with clients in the ship's areas (living and ghosts)
+	// Also add interdiction overlay to new mobs
 	for(var/area/ship_area in target.shuttle.shuttle_areas)
-		for(var/mob/living/M in ship_area)
+		for(var/mob/M in ship_area)
 			if(!M.client)
 				continue
-			if(HAS_TRAIT(M, TRAIT_DEAF))
+			// Only living mobs and ghosts
+			if(!isliving(M) && !isobserver(M))
+				continue
+			mobs_in_ship += M
+			// Add interdiction overlay if they don't have it
+			add_interdiction_overlay(M)
+			// Skip deaf living mobs for sound
+			if(isliving(M) && HAS_TRAIT(M, TRAIT_DEAF))
 				continue
 			// Check volume preference
 			var/pref_volume = M.client.prefs.read_preference(/datum/preference/numeric/volume/sound_ship_ambience_volume)
@@ -970,6 +994,11 @@
 			// Play directly to mob (no positional audio)
 			var/actual_volume = 80 * (pref_volume / 100)
 			SEND_SOUND(M, sound('voidcrew/sound/machines/interdictor/shield.ogg', volume = actual_volume))
+
+	// Remove overlays from mobs who left the ship
+	var/list/mobs_to_remove = interdiction_overlay_mobs - mobs_in_ship
+	for(var/mob/M in mobs_to_remove)
+		remove_interdiction_overlay(M)
 
 	// Schedule next play (2 second loop)
 	target_sound_timer = addtimer(CALLBACK(src, PROC_REF(play_target_sound_loop)), 2 SECONDS, TIMER_STOPPABLE)
