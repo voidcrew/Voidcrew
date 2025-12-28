@@ -106,6 +106,8 @@
 	var/last_operation_message = ""
 	/// Whether the last operation succeeded
 	var/last_operation_success = TRUE
+	/// Console ambient sounds
+	var/datum/console_ambience/console_ambience
 
 // ============================================
 // Initialization
@@ -122,6 +124,13 @@
 	// The silo_mats needs to be added after setting the upgrade flag
 	internal_rcd.silo_mats = internal_rcd.AddComponent(/datum/component/remote_materials, mapload, FALSE)
 	. = ..()
+	// Console ambient sounds
+	console_ambience = new(src, get_console_ambience_sounds())
+	console_ambience.start()
+
+/obj/machinery/computer/camera_advanced/base_construction/ship/Destroy()
+	QDEL_NULL(console_ambience)
+	return ..()
 
 /// Forward multitool interactions to the internal RCD for silo linking
 /obj/machinery/computer/camera_advanced/base_construction/ship/multitool_act(mob/living/user, obj/item/multitool/M)

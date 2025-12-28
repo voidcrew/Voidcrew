@@ -152,6 +152,9 @@
 	/// Last time shield status was refreshed (world.time)
 	var/shield_status_last_update = 0
 
+	/// Console ambient sounds
+	var/datum/console_ambience/console_ambience
+
 	jump_action = null
 	off_action = null  // We use TGUI to exit attack mode, not the parent's camera_off action
 
@@ -169,7 +172,12 @@
 
 	reticle = new(null, src)
 
+	// Console ambient sounds
+	console_ambience = new(src, get_console_ambience_sounds())
+	console_ambience.start()
+
 /obj/machinery/computer/camera_advanced/ship_combat/Destroy()
+	QDEL_NULL(console_ambience)
 	cancel_targeting()
 	// Unlink interdictor
 	var/obj/machinery/ship_combat/interdictor/interdictor = linked_interdictor_ref?.resolve()

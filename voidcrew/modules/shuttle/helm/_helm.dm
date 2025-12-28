@@ -47,6 +47,19 @@
 	var/last_integrity_percent = 100
 	/// Whether we've played the 55% alert already
 	var/played_55_alert = FALSE
+	/// Console ambient sounds
+	var/datum/console_ambience/console_ambience
+
+/obj/machinery/computer/helm/Initialize(mapload)
+	. = ..()
+	// Console ambient sounds (not for viewscreens)
+	if(!viewer)
+		console_ambience = new(src, get_console_ambience_sounds())
+		console_ambience.start()
+
+/obj/machinery/computer/helm/Destroy()
+	QDEL_NULL(console_ambience)
+	return ..()
 
 /obj/machinery/computer/helm/viewscreen
 	name = "ship viewscreen"

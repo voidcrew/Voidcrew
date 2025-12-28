@@ -68,8 +68,16 @@
 	name = "[initial(name)] ([interdictor_id])"
 	machine_sound = new(src, 'voidcrew/sound/machines/interdictor/on.ogg', 15, 7)
 	RefreshParts()
+	// Register for power loss signal
+	RegisterSignal(src, COMSIG_MACHINERY_POWER_LOST, PROC_REF(on_power_lost))
 	// Try to auto-link after a short delay
 	addtimer(CALLBACK(src, PROC_REF(attempt_auto_link)), 2 SECONDS)
+
+/// Called when power is lost - ensures interdiction stops immediately
+/obj/machinery/ship_combat/interdictor/proc/on_power_lost(datum/source)
+	SIGNAL_HANDLER
+	if(interdiction_active || interdiction_warming_up)
+		INVOKE_ASYNC(src, PROC_REF(cancel_interdiction), "Power loss!")
 
 /obj/machinery/ship_combat/interdictor/Destroy()
 	cancel_interdiction("Interdictor destroyed!")
@@ -723,7 +731,7 @@
 
 // ========== KINESIS EFFECTS ==========
 
-/// Spawns green kinesis effects around the target ship's boundary
+/// Spawns interdiction effects around the target ship's boundary
 /obj/machinery/ship_combat/interdictor/proc/spawn_kinesis_effects(obj/structure/overmap/ship/target)
 	destroy_kinesis_effects()
 
@@ -741,33 +749,75 @@
 				if(neighbor && isspaceturf(neighbor) && !(get_area(neighbor) in ship_areas))
 					boundary_turfs |= neighbor
 
-	// Spawn kinesis effects on boundary turfs
-	for(var/turf/T in boundary_turfs)
-		var/obj/effect/interdiction_kinesis/effect = new(T)
+	if(!length(boundary_turfs))
+		return
+
+	// Only spawn on about half the boundary turfs, scattered randomly
+	var/target_count = max(1, round(length(boundary_turfs) / 2))
+	var/list/shuffled_turfs = boundary_turfs.Copy()
+	shuffle_inplace(shuffled_turfs)
+
+	// Spawn effects with staggered start times
+	var/current_delay = 0
+	for(var/i in 1 to target_count)
+		var/turf/T = shuffled_turfs[i]
+		var/obj/effect/abstract/interdiction_kinesis/effect = new(T, boundary_turfs)
 		interediction_kinesis_effects += effect
+		// Stagger the animation start (random 0-20 deciseconds between each)
+		effect.start_animation_delayed(current_delay)
+		current_delay += rand(0, 20)
 
 /// Destroys all kinesis effects
 /obj/machinery/ship_combat/interdictor/proc/destroy_kinesis_effects()
-	for(var/obj/effect/interdiction_kinesis/effect in interediction_kinesis_effects)
+	for(var/obj/effect/abstract/interdiction_kinesis/effect in interediction_kinesis_effects)
 		qdel(effect)
 	interediction_kinesis_effects.Cut()
 
-/// The visual kinesis effect around interdicted ships
-/obj/effect/interdiction_kinesis
+/// The visual effect around interdicted ships
+/// Uses /obj/effect/abstract to avoid being moved by hyperspace/shuttle systems
+/obj/effect/abstract/interdiction_kinesis
 	name = "interdiction field"
 	desc = "A shimmering gravitational distortion."
-	icon = 'icons/effects/effects.dmi'
-	icon_state = "kinesis"
+	icon = 'voidcrew/icons/effects/effects.dmi'
+	icon_state = "interdict"
 	layer = ABOVE_MOB_LAYER
-	anchored = TRUE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	color = "#00ff00"  // Green tint
+	/// All available turfs this effect can appear on
+	var/list/available_turfs
+	/// Animation cycle duration in deciseconds (12 frames: 4x1 + 4x1 + 4x15 = 68ds)
+	var/animation_cycle_time = 68
 
-/obj/effect/interdiction_kinesis/Initialize(mapload)
+/obj/effect/abstract/interdiction_kinesis/Initialize(mapload, list/turfs)
 	. = ..()
-	// Add slight transparency and emissive glow
+	available_turfs = turfs
+	// Start invisible - will be shown by start_animation_delayed
+	alpha = 0
+
+/// Starts the animation cycle after a delay (for staggering)
+/obj/effect/abstract/interdiction_kinesis/proc/start_animation_delayed(delay)
+	if(delay > 0)
+		addtimer(CALLBACK(src, PROC_REF(begin_animation_cycle)), delay)
+	else
+		begin_animation_cycle()
+
+/// Begins an animation cycle and schedules relocation
+/obj/effect/abstract/interdiction_kinesis/proc/begin_animation_cycle()
+	if(QDELETED(src))
+		return
+	// Show the effect
 	alpha = 180
-	set_light(1, 1, "#00ff00")
+	// After animation completes, relocate to a new turf
+	addtimer(CALLBACK(src, PROC_REF(relocate_and_restart)), animation_cycle_time)
+
+/// Relocates to a random available turf and restarts animation
+/obj/effect/abstract/interdiction_kinesis/proc/relocate_and_restart()
+	if(QDELETED(src) || !length(available_turfs))
+		return
+	// Pick a random new turf
+	var/turf/new_turf = pick(available_turfs)
+	forceMove(new_turf)
+	// Restart animation cycle
+	begin_animation_cycle()
 
 // ========== CIRCUIT BOARD ==========
 
