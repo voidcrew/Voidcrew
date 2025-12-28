@@ -48,6 +48,9 @@
 	/// Debug logging for shield direction calculations (disable for performance)
 	var/debug_shield_directions = FALSE
 
+	/// Real-time positional sound when generator is active
+	var/datum/realtime_positional_sound/generator_sound
+
 	/// Cached boundary turfs for this ship (expensive to calculate)
 	var/list/cached_boundary_turfs
 	/// Whether the boundary cache is valid
@@ -55,6 +58,7 @@
 
 /obj/machinery/ship_combat/shield_generator/Initialize(mapload)
 	. = ..()
+	generator_sound = new(src, 'voidcrew/sound/machines/forcefield/shieldgen.ogg', 15, 7)
 	// Start processing for regeneration
 	begin_processing()
 	// Try to auto-link after a short delay
@@ -62,6 +66,7 @@
 
 /obj/machinery/ship_combat/shield_generator/Destroy()
 	destroy_shield_walls()
+	QDEL_NULL(generator_sound)
 	unlink_console()
 	unlink_ship()
 	invalidate_boundary_cache()
@@ -1319,6 +1324,7 @@
 
 	update_appearance()
 	update_power_draw()
+	generator_sound?.start()
 
 	// Recalculate ship shield stats with this generator now contributing
 	if(ship)
@@ -1354,6 +1360,7 @@
 
 	update_appearance()
 	update_power_draw()
+	generator_sound?.stop()
 
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
@@ -1370,6 +1377,7 @@
 	active = FALSE
 	update_appearance()
 	update_power_draw()
+	generator_sound?.stop()
 	// Audio effect for each generator
 	playsound(src, 'sound/vehicles/mecha/mech_shield_drop.ogg', 100, TRUE, extrarange = 10, pressure_affected = FALSE)
 
@@ -1382,6 +1390,7 @@
 
 	update_appearance()
 	update_power_draw()
+	generator_sound?.stop()
 
 	// Visual and audio effects on ship boundary
 	var/list/boundary_turfs = get_random_boundary_turfs(5)
@@ -1619,3 +1628,4 @@
 		/datum/stock_part/micro_laser = 2,
 		/datum/stock_part/servo = 1,
 	)
+

@@ -290,6 +290,7 @@
 			'voidcrew/sound/machines/forcefield/hit1.ogg',
 			'voidcrew/sound/machines/forcefield/hit2.ogg',
 			'voidcrew/sound/machines/forcefield/hit3.ogg',
+			'voidcrew/sound/machines/forcefield/hit4.ogg',
 			'sound/vehicles/mecha/mech_shield_deflect.ogg',
 		)
 		playsound(effect_loc, sound_file, 60, TRUE, extrarange = 10, pressure_affected = FALSE)

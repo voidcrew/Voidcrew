@@ -38,9 +38,12 @@
 	var/cached_ship_mass = 100
 	/// Calculated power efficiency multiplier (from parts, 0-1 range, lower = more efficient)
 	var/power_efficiency = 1
+	/// Real-time positional sound when cloak is active
+	var/datum/realtime_positional_sound/cloak_sound
 
 /obj/machinery/ship_combat/cloak_device/Initialize(mapload)
 	. = ..()
+	cloak_sound = new(src, 'voidcrew/sound/machines/cloaking/on.ogg', 15, 7)
 	// Try to find our ship on init
 	attempt_ship_connection()
 
@@ -50,6 +53,7 @@
 		cloak_timer_id = null
 	if(cloak_active)
 		deactivate_cloak(silent = TRUE)
+	QDEL_NULL(cloak_sound)
 	unlink_ship()
 	return ..()
 
@@ -225,6 +229,7 @@
 	// Visual and audio feedback
 	visible_message(span_notice("[src] hums to life as the cloaking field activates."))
 	playsound(src, 'sound/effects/EMPulse.ogg', 50, TRUE)
+	cloak_sound?.start()
 
 	// Send signal
 	SEND_SIGNAL(linked_ship, COMSIG_SHIP_CLOAK_CHANGED, TRUE)
@@ -253,6 +258,7 @@
 	// Stop high power drain - reset to idle
 	update_mode_power_usage(ACTIVE_POWER_USE, 0)
 	update_use_power(IDLE_POWER_USE)
+	cloak_sound?.stop()
 
 	// Start recloak cooldown
 	COOLDOWN_START(src, recloak_cooldown, recloak_delay)
@@ -352,3 +358,4 @@
 		/datum/stock_part/micro_laser = 2,
 		/datum/stock_part/scanning_module = 1,
 	)
+

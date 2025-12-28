@@ -44,6 +44,12 @@
 	var/datum/weakref/interdicted_ship_ref
 	/// The beam effect on the overmap
 	var/datum/beam/interdiction_beam
+	/// List of kinesis effect objects around the target ship
+	var/list/obj/effect/interediction_kinesis_effects = list()
+	/// Real-time positional sound on the interdictor machine itself
+	var/datum/realtime_positional_sound/machine_sound
+	/// Looping sound on the target ship (uses looping_sound since it's shipwide, not positional)
+	var/datum/looping_sound/interdictor_target/target_sound
 	/// Cooldown between interdiction attempts
 	COOLDOWN_DECLARE(interdict_cooldown)
 
@@ -60,12 +66,16 @@
 	. = ..()
 	interdictor_id = "[rand(1000, 9999)]"
 	name = "[initial(name)] ([interdictor_id])"
+	machine_sound = new(src, 'voidcrew/sound/machines/interdictor/on.ogg', 15, 7)
 	RefreshParts()
 	// Try to auto-link after a short delay
 	addtimer(CALLBACK(src, PROC_REF(attempt_auto_link)), 2 SECONDS)
 
 /obj/machinery/ship_combat/interdictor/Destroy()
 	cancel_interdiction("Interdictor destroyed!")
+	destroy_kinesis_effects()
+	QDEL_NULL(machine_sound)
+	QDEL_NULL(target_sound)
 	unlink_console()
 	unlink_ship()
 	return ..()
@@ -344,6 +354,9 @@
 	warmup_start_time = world.time
 	interdicted_ship_ref = WEAKREF(target)
 
+	// Play startup sound
+	playsound(src, 'voidcrew/sound/machines/interdictor/startup1.ogg', 35, FALSE)
+
 	// Start processing for warmup ticks
 	begin_processing()
 
@@ -355,7 +368,7 @@
 	// Create beam effect
 	interdiction_beam = our_ship.Beam(
 		target,
-		icon_state = "kinesis",
+		icon_state = "lichbeam",
 		icon = 'icons/effects/beam.dmi',
 		emissive = TRUE
 	)
@@ -400,6 +413,9 @@
 	interdiction_active = TRUE
 	warmup_progress = 1
 
+	// Play lock complete sound
+	playsound(src, 'voidcrew/sound/machines/interdictor/beep.ogg', 35, FALSE)
+
 	var/obj/structure/overmap/ship/target = interdicted_ship_ref?.resolve()
 	var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
 
@@ -415,6 +431,15 @@
 	// Kill all target momentum - they have to re-engage engines
 	target.adjust_speed(-target.speed[1], -target.speed[2])
 
+	// Spawn kinesis effects around target ship
+	spawn_kinesis_effects(target)
+
+	// Start looping sounds
+	machine_sound?.start()
+	// Create target sound attached to the target ship's shuttle (for shipwide audio)
+	if(target.shuttle)
+		target_sound = new(target.shuttle)
+		target_sound.start()
 
 	// Start cooldown
 	var/effective_cooldown = INTERDICTOR_COOLDOWN * cooldown_mult
@@ -455,6 +480,17 @@
 
 	// Remove beam
 	QDEL_NULL(interdiction_beam)
+
+	// Remove kinesis effects
+	destroy_kinesis_effects()
+
+	// Stop looping sounds
+	machine_sound?.stop()
+	QDEL_NULL(target_sound)
+
+	// Play shutdown sounds
+	playsound(src, 'voidcrew/sound/machines/interdictor/beep2.ogg', 35, FALSE)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'voidcrew/sound/machines/interdictor/off.ogg', 35, FALSE), 0.5 SECONDS)
 
 	// Unregister signals from our ship
 	var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
@@ -685,6 +721,54 @@
 
 	update_appearance()
 
+// ========== KINESIS EFFECTS ==========
+
+/// Spawns green kinesis effects around the target ship's boundary
+/obj/machinery/ship_combat/interdictor/proc/spawn_kinesis_effects(obj/structure/overmap/ship/target)
+	destroy_kinesis_effects()
+
+	if(!target?.shuttle?.shuttle_areas)
+		return
+
+	var/list/ship_areas = target.shuttle.shuttle_areas
+	var/list/boundary_turfs = list()
+
+	// Find all space turfs adjacent to the ship (simplified boundary detection)
+	for(var/area/ship_area in ship_areas)
+		for(var/turf/T in ship_area)
+			for(var/dir in GLOB.cardinals)
+				var/turf/neighbor = get_step(T, dir)
+				if(neighbor && isspaceturf(neighbor) && !(get_area(neighbor) in ship_areas))
+					boundary_turfs |= neighbor
+
+	// Spawn kinesis effects on boundary turfs
+	for(var/turf/T in boundary_turfs)
+		var/obj/effect/interdiction_kinesis/effect = new(T)
+		interediction_kinesis_effects += effect
+
+/// Destroys all kinesis effects
+/obj/machinery/ship_combat/interdictor/proc/destroy_kinesis_effects()
+	for(var/obj/effect/interdiction_kinesis/effect in interediction_kinesis_effects)
+		qdel(effect)
+	interediction_kinesis_effects.Cut()
+
+/// The visual kinesis effect around interdicted ships
+/obj/effect/interdiction_kinesis
+	name = "interdiction field"
+	desc = "A shimmering gravitational distortion."
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "kinesis"
+	layer = ABOVE_MOB_LAYER
+	anchored = TRUE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	color = "#00ff00"  // Green tint
+
+/obj/effect/interdiction_kinesis/Initialize(mapload)
+	. = ..()
+	// Add slight transparency and emissive glow
+	alpha = 180
+	set_light(1, 1, "#00ff00")
+
 // ========== CIRCUIT BOARD ==========
 
 /obj/item/circuitboard/machine/ship_combat/interdictor
@@ -707,3 +791,13 @@
 	bomb = 25
 	fire = 80
 	acid = 50
+
+// ========== LOOPING SOUNDS ==========
+
+/// Looping sound for the target ship (audible shipwide, not positional)
+/datum/looping_sound/interdictor_target
+	mid_sounds = 'voidcrew/sound/machines/interdictor/shield.ogg'
+	mid_length = 2 SECONDS
+	volume = 80
+	extra_range = 20
+	ignore_walls = TRUE
