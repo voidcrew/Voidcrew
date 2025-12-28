@@ -115,6 +115,7 @@
 	RegisterSignal(listener, COMSIG_MOVABLE_MOVED, PROC_REF(on_listener_moved), override = TRUE)
 	RegisterSignal(listener, COMSIG_QDELETING, PROC_REF(on_listener_deleted), override = TRUE)
 	RegisterSignal(listener, COMSIG_MOB_LOGIN, PROC_REF(on_listener_login), override = TRUE)
+	RegisterSignal(listener, COMSIG_LIVING_DEATH, PROC_REF(on_listener_died), override = TRUE)
 	RegisterSignals(listener, list(SIGNAL_ADDTRAIT(TRAIT_DEAF), SIGNAL_REMOVETRAIT(TRAIT_DEAF)), PROC_REF(on_listener_deaf_changed), override = TRUE)
 
 	// Check if listener is deaf or has ship ambience muted
@@ -134,7 +135,7 @@
 		return
 
 	stop_for_listener(listener)
-	UnregisterSignal(listener, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING, COMSIG_MOB_LOGIN, SIGNAL_ADDTRAIT(TRAIT_DEAF), SIGNAL_REMOVETRAIT(TRAIT_DEAF)))
+	UnregisterSignal(listener, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING, COMSIG_MOB_LOGIN, COMSIG_LIVING_DEATH, SIGNAL_ADDTRAIT(TRAIT_DEAF), SIGNAL_REMOVETRAIT(TRAIT_DEAF)))
 	listeners -= listener
 
 /// Stops the sound for a specific listener
@@ -206,6 +207,11 @@
 	SIGNAL_HANDLER
 	listeners -= listener
 
+/// Called when a listener dies - stop the sound for them
+/datum/realtime_positional_sound/proc/on_listener_died(mob/listener)
+	SIGNAL_HANDLER
+	deregister_listener(listener)
+
 /// Called when a listener's deaf status changes
 /datum/realtime_positional_sound/proc/on_listener_deaf_changed(mob/listener)
 	SIGNAL_HANDLER
@@ -224,5 +230,5 @@
 	SIGNAL_HANDLER
 	// Remove and re-add to refresh their sound state with new client
 	listeners -= listener
-	UnregisterSignal(listener, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING, COMSIG_MOB_LOGIN, SIGNAL_ADDTRAIT(TRAIT_DEAF), SIGNAL_REMOVETRAIT(TRAIT_DEAF)))
+	UnregisterSignal(listener, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING, COMSIG_MOB_LOGIN, COMSIG_LIVING_DEATH, SIGNAL_ADDTRAIT(TRAIT_DEAF), SIGNAL_REMOVETRAIT(TRAIT_DEAF)))
 	register_listener(listener)
