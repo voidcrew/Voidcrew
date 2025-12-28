@@ -46,10 +46,14 @@
 	var/datum/beam/interdiction_beam
 	/// List of kinesis effect objects around the target ship
 	var/list/obj/effect/interediction_kinesis_effects = list()
+	/// The green glow effect covering the target ship interior
+	var/obj/effect/abstract/interdiction_glow/interdiction_glow_effect
 	/// Real-time positional sound on the interdictor machine itself
 	var/datum/realtime_positional_sound/machine_sound
-	/// Looping sound on the target ship (uses looping_sound since it's shipwide, not positional)
-	var/datum/looping_sound/interdictor_target/target_sound
+	/// Timer ID for the target ship sound loop
+	var/target_sound_timer
+	/// Reference to the target ship for sound playback
+	var/datum/weakref/target_sound_ship_ref
 	/// Cooldown between interdiction attempts
 	COOLDOWN_DECLARE(interdict_cooldown)
 
@@ -82,8 +86,9 @@
 /obj/machinery/ship_combat/interdictor/Destroy()
 	cancel_interdiction("Interdictor destroyed!")
 	destroy_kinesis_effects()
+	QDEL_NULL(interdiction_glow_effect)
 	QDEL_NULL(machine_sound)
-	QDEL_NULL(target_sound)
+	stop_target_sound()
 	unlink_console()
 	unlink_ship()
 	return ..()
@@ -442,12 +447,13 @@
 	// Spawn kinesis effects around target ship
 	spawn_kinesis_effects(target)
 
+	// Spawn glow effect inside target ship
+	spawn_glow_effect(target)
+
 	// Start looping sounds
 	machine_sound?.start()
-	// Create target sound attached to the target ship's shuttle (for shipwide audio)
-	if(target.shuttle)
-		target_sound = new(target.shuttle)
-		target_sound.start()
+	// Start playing sound to all mobs on the target ship
+	start_target_sound(target)
 
 	// Start cooldown
 	var/effective_cooldown = INTERDICTOR_COOLDOWN * cooldown_mult
@@ -492,9 +498,12 @@
 	// Remove kinesis effects
 	destroy_kinesis_effects()
 
+	// Remove glow effect
+	QDEL_NULL(interdiction_glow_effect)
+
 	// Stop looping sounds
 	machine_sound?.stop()
-	QDEL_NULL(target_sound)
+	stop_target_sound()
 
 	// Play shutdown sounds
 	playsound(src, 'voidcrew/sound/machines/interdictor/beep2.ogg', 35, FALSE)
@@ -819,6 +828,84 @@
 	// Restart animation cycle
 	begin_animation_cycle()
 
+// ========== GLOW EFFECT ==========
+
+/// Spawns the interdiction glow effect centered on the target ship
+/obj/machinery/ship_combat/interdictor/proc/spawn_glow_effect(obj/structure/overmap/ship/target)
+	QDEL_NULL(interdiction_glow_effect)
+
+	if(!target?.shuttle?.shuttle_areas)
+		return
+
+	// Find the center and bounding box of the ship
+	var/list/ship_areas = target.shuttle.shuttle_areas
+	var/sum_x = 0
+	var/sum_y = 0
+	var/turf_count = 0
+	var/z_level
+	var/min_x = INFINITY
+	var/max_x = 0
+	var/min_y = INFINITY
+	var/max_y = 0
+
+	for(var/area/ship_area in ship_areas)
+		for(var/turf/T in ship_area)
+			sum_x += T.x
+			sum_y += T.y
+			z_level = T.z
+			turf_count++
+			// Track bounding box
+			min_x = min(min_x, T.x)
+			max_x = max(max_x, T.x)
+			min_y = min(min_y, T.y)
+			max_y = max(max_y, T.y)
+
+	if(!turf_count)
+		return
+
+	var/center_x = round(sum_x / turf_count)
+	var/center_y = round(sum_y / turf_count)
+	var/turf/center_turf = locate(center_x, center_y, z_level)
+
+	if(!center_turf)
+		return
+
+	// Calculate scale based on ship size
+	// light_352.dmi is 352px = 11 tiles, we want to cover the largest dimension with some buffer
+	var/ship_width = max_x - min_x + 1
+	var/ship_height = max_y - min_y + 1
+	var/ship_size = max(ship_width, ship_height)
+	var/needed_scale = (ship_size / 11) * 1.3  // 1.3x buffer for gradient falloff
+	needed_scale = max(needed_scale, 1)  // Minimum 1x scale
+
+	interdiction_glow_effect = new(center_turf, needed_scale)
+	interdiction_glow_effect.start_strobe()
+
+/// The green glow effect that covers the interdicted ship interior
+/// Uses scaled light_352.dmi to cover large ships
+/obj/effect/abstract/interdiction_glow
+	name = "interdiction field"
+	desc = "A pulsing green glow from the interdiction field."
+	icon = 'icons/effects/light_overlays/light_352.dmi'
+	icon_state = "light"
+	color = COLOR_GREEN
+	alpha = 0
+	layer = ABOVE_ALL_MOB_LAYER
+	plane = ABOVE_LIGHTING_PLANE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+/obj/effect/abstract/interdiction_glow/Initialize(mapload)
+	. = ..()
+	// Scale up to cover large ships (352px * 6 = 2112px = 66 tiles)
+	var/matrix/M = matrix()
+	M.Scale(6)
+	transform = M
+
+/// Starts the strobe animation
+/obj/effect/abstract/interdiction_glow/proc/start_strobe()
+	animate(src, alpha = 50, time = 1.5 SECONDS, loop = -1, easing = SINE_EASING)
+	animate(alpha = 0, time = 1.5 SECONDS, easing = SINE_EASING)
+
 // ========== CIRCUIT BOARD ==========
 
 /obj/item/circuitboard/machine/ship_combat/interdictor
@@ -842,12 +929,47 @@
 	fire = 80
 	acid = 50
 
-// ========== LOOPING SOUNDS ==========
+// ========== TARGET SHIP SOUND ==========
 
-/// Looping sound for the target ship (audible shipwide, not positional)
-/datum/looping_sound/interdictor_target
-	mid_sounds = 'voidcrew/sound/machines/interdictor/shield.ogg'
-	mid_length = 2 SECONDS
-	volume = 80
-	extra_range = 20
-	ignore_walls = TRUE
+/// Starts playing the interdiction sound to all mobs on the target ship
+/obj/machinery/ship_combat/interdictor/proc/start_target_sound(obj/structure/overmap/ship/target)
+	stop_target_sound()
+	if(!target?.shuttle?.shuttle_areas)
+		return
+	target_sound_ship_ref = WEAKREF(target)
+	// Play immediately, then loop
+	play_target_sound_loop()
+
+/// Stops the interdiction sound loop
+/obj/machinery/ship_combat/interdictor/proc/stop_target_sound()
+	if(target_sound_timer)
+		deltimer(target_sound_timer)
+		target_sound_timer = null
+	target_sound_ship_ref = null
+
+/// Plays the sound to all mobs on the target ship and schedules the next play
+/obj/machinery/ship_combat/interdictor/proc/play_target_sound_loop()
+	target_sound_timer = null
+
+	var/obj/structure/overmap/ship/target = target_sound_ship_ref?.resolve()
+	if(!target?.shuttle?.shuttle_areas)
+		stop_target_sound()
+		return
+
+	// Play to all mobs with clients in the ship's areas
+	for(var/area/ship_area in target.shuttle.shuttle_areas)
+		for(var/mob/living/M in ship_area)
+			if(!M.client)
+				continue
+			if(HAS_TRAIT(M, TRAIT_DEAF))
+				continue
+			// Check volume preference
+			var/pref_volume = M.client.prefs.read_preference(/datum/preference/numeric/volume/sound_ship_ambience_volume)
+			if(!pref_volume)
+				continue
+			// Play directly to mob (no positional audio)
+			var/actual_volume = 80 * (pref_volume / 100)
+			SEND_SOUND(M, sound('voidcrew/sound/machines/interdictor/shield.ogg', volume = actual_volume))
+
+	// Schedule next play (2 second loop)
+	target_sound_timer = addtimer(CALLBACK(src, PROC_REF(play_target_sound_loop)), 2 SECONDS, TIMER_STOPPABLE)
