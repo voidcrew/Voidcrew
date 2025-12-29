@@ -177,7 +177,6 @@ type Data = {
   turret_power_max: number;
   // Interdictor data
   interdictor_linked: BooleanLike;
-  interdictor_unlocked: BooleanLike;
   interdiction_active: BooleanLike;
   interdiction_warming_up: BooleanLike;
   interdiction_warmup_progress: number;
@@ -195,7 +194,6 @@ type Data = {
   target_in_missile_range: BooleanLike;
   // Shield data
   shield_linked: BooleanLike;
-  shield_unlocked: BooleanLike;
   shield_active: BooleanLike;
   shield_broken: BooleanLike;
   shield_health: number;
@@ -212,18 +210,13 @@ type Data = {
   // Cloak device
   cloak_device: CloakDevice | null;
   cloak_unlocked: BooleanLike;
-  // Admin
-  is_admin: BooleanLike;
-  debug_mode: BooleanLike;
-  debug_interdictor: BooleanLike;
-  debug_shields: BooleanLike;
   // Theme
   theme?: string;
 };
 
 export const ShipCombatConsole = () => {
   const { data } = useBackend<Data>();
-  const { connected, is_admin, theme } = data;
+  const { connected, theme } = data;
   const [activeTab, setActiveTab] = useState(0);
 
   return (
@@ -273,11 +266,6 @@ export const ShipCombatConsole = () => {
               {activeTab === 2 && <WeaponsTab />}
               {activeTab === 3 && <SettingsTab />}
             </Stack.Item>
-            {!!is_admin && (
-              <Stack.Item>
-                <DebugPanel />
-              </Stack.Item>
-            )}
           </Stack>
         )}
       </Window.Content>
@@ -533,7 +521,6 @@ const InterdictorPanel = () => {
   const {
     target_ref,
     interdictor_linked,
-    interdictor_unlocked,
     interdiction_active,
     interdiction_warming_up,
     interdiction_warmup_progress,
@@ -549,10 +536,6 @@ const InterdictorPanel = () => {
     target_in_interdict_range,
     target_in_force_dock_range,
   } = data;
-
-  if (!interdictor_unlocked) {
-    return null;
-  }
 
   const powerPercent = Math.round((interdictor_power_level ?? 1) * 100);
 
@@ -825,7 +808,6 @@ const ShieldGeneratorsPanel = () => {
   const {
     ship_docked,
     shield_linked,
-    shield_unlocked,
     shield_active,
     shield_broken,
     shield_health,
@@ -838,10 +820,6 @@ const ShieldGeneratorsPanel = () => {
     shield_cooldown_remaining,
     shield_generators,
   } = data;
-
-  if (!shield_unlocked) {
-    return null;
-  }
 
   if (!shield_linked) {
     return (
@@ -1525,54 +1503,3 @@ const SettingsTab = () => {
   );
 };
 
-// ============================================================================
-// DEBUG PANEL
-// ============================================================================
-
-const DebugPanel = () => {
-  const { act, data } = useBackend<Data>();
-  const { debug_mode, debug_interdictor, debug_shields } = data;
-
-  return (
-    <Collapsible title="Admin Debug" color="purple">
-      <Section>
-        <LabeledList>
-          <LabeledList.Item label="Debug Mode">
-            <Button
-              compact
-              icon={debug_mode ? 'toggle-on' : 'toggle-off'}
-              color={debug_mode ? 'good' : 'bad'}
-              onClick={() => act('toggle_debug')}
-            >
-              {debug_mode ? 'On' : 'Off'}
-            </Button>
-          </LabeledList.Item>
-          {!!debug_mode && (
-            <>
-              <LabeledList.Item label="Interdictor">
-                <Button
-                  compact
-                  icon={debug_interdictor ? 'check-square' : 'square'}
-                  color={debug_interdictor ? 'good' : 'default'}
-                  onClick={() => act('toggle_debug_interdictor')}
-                >
-                  {debug_interdictor ? 'Unlocked' : 'Locked'}
-                </Button>
-              </LabeledList.Item>
-              <LabeledList.Item label="Shields">
-                <Button
-                  compact
-                  icon={debug_shields ? 'check-square' : 'square'}
-                  color={debug_shields ? 'good' : 'default'}
-                  onClick={() => act('toggle_debug_shields')}
-                >
-                  {debug_shields ? 'Unlocked' : 'Locked'}
-                </Button>
-              </LabeledList.Item>
-            </>
-          )}
-        </LabeledList>
-      </Section>
-    </Collapsible>
-  );
-};

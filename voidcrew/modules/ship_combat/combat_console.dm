@@ -180,8 +180,8 @@
 /obj/machinery/computer/camera_advanced/ship_combat
 	name = "weapons system"
 	desc = "A tactical weapons system for ship-to-ship combat. Link missile launchers with a multitool, select a target ship, then use the targeting system to aim and fire."
-	icon_screen = "generic"
-	icon_keyboard = "generic_key"
+	icon_screen = "targeting"
+	icon_keyboard = "syndie_key"
 	circuit = /obj/item/circuitboard/computer/ship_combat_console
 	light_color = LIGHT_COLOR_INTENSE_RED
 	networks = list() // We don't use the camera network
@@ -227,20 +227,6 @@
 	// ===== CLOAKING DEVICE VARIABLES =====
 	/// Linked cloaking device machine (weakref)
 	var/datum/weakref/linked_cloak_ref
-
-	// ===== RESEARCH INTEGRATION =====
-	/// Linked techweb for research upgrades
-	var/datum/techweb/linked_techweb
-	/// Cached list of unlocked upgrades
-	var/list/unlocked_upgrades
-
-	// ===== DEBUG MODE (Admin only) =====
-	/// Debug mode - bypasses research requirements
-	var/debug_mode = FALSE
-	/// Debug: Force unlock interdictor
-	var/debug_interdictor = FALSE
-	/// Debug: Force unlock shields
-	var/debug_shields = FALSE
 
 	// ===== UI CACHING =====
 	/// Cached shield status data (for performance)
@@ -322,52 +308,6 @@
 		. += span_warning("No target selected. Use the console to select a target ship.")
 	if(!is_crew_member(user))
 		. += span_warning("You are not authorized to use this console.")
-	if(linked_techweb)
-		. += span_notice("Connected to research network.")
-	else
-		. += span_warning("Not connected to research network. Use a multitool to link to an R&D server.")
-
-// ========== RESEARCH INTEGRATION ==========
-
-/// Disconnects from the current research network
-/obj/machinery/computer/camera_advanced/ship_combat/unsync_research_servers()
-	if(linked_techweb)
-		linked_techweb.connected_machines -= src
-		linked_techweb = null
-		unlocked_upgrades = null
-
-
-/// Updates the list of unlocked upgrades from the linked techweb
-/obj/machinery/computer/camera_advanced/ship_combat/proc/update_unlocked_upgrades()
-	unlocked_upgrades = list()
-	if(!linked_techweb)
-		return
-
-	// Check for combat console upgrade nodes
-	var/list/upgrade_nodes = list(
-		TECHWEB_NODE_SHIP_COMBAT_MISSILES,
-		TECHWEB_NODE_SHIP_COMBAT_ORDNANCE_STANDARD,
-		TECHWEB_NODE_SHIP_COMBAT_ORDNANCE_HEAVY,
-		TECHWEB_NODE_SHIP_COMBAT_CLOAK,
-		TECHWEB_NODE_SHIP_COMBAT_SHIELDS,
-		TECHWEB_NODE_SHIP_COMBAT_LASERS,
-		TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR,
-	)
-
-	for(var/node_id in linked_techweb.researched_nodes)
-		if(node_id in upgrade_nodes)
-			unlocked_upgrades += node_id
-
-/// Checks if a specific upgrade is unlocked
-/obj/machinery/computer/camera_advanced/ship_combat/proc/has_upgrade(upgrade_id)
-	// Debug mode overrides
-	if(debug_mode)
-		if(upgrade_id == TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR && debug_interdictor)
-			return TRUE
-		if(upgrade_id == TECHWEB_NODE_SHIP_COMBAT_SHIELDS && debug_shields)
-			return TRUE
-	update_unlocked_upgrades()
-	return (upgrade_id in unlocked_upgrades)
 
 // ========== GHOST ADMIN OVERRIDES ==========
 
@@ -571,7 +511,6 @@
 	// Interdictor data - get from linked machine
 	var/obj/machinery/ship_combat/interdictor/interdictor = linked_interdictor_ref?.resolve()
 	data["interdictor_linked"] = !!interdictor
-	data["interdictor_unlocked"] = has_upgrade(TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR)
 	if(interdictor)
 		var/list/interdictor_status = interdictor.get_status()
 		data["interdiction_active"] = interdictor_status["interdiction_active"]
@@ -618,7 +557,6 @@
 	// Shield data - aggregate from all generators on the ship
 	var/has_any_generators = current_ship && length(current_ship.linked_shield_generators)
 	data["shield_linked"] = has_any_generators
-	data["shield_unlocked"] = has_upgrade(TECHWEB_NODE_SHIP_COMBAT_SHIELDS)
 	if(has_any_generators)
 		var/list/aggregated = get_aggregated_shield_status()
 		data["shield_active"] = aggregated["active"]
@@ -702,13 +640,6 @@
 		)
 	else
 		data["cloak_device"] = null
-
-	// Debug mode data (admin only)
-	var/is_admin = check_rights_for(user?.client, R_ADMIN, FALSE)
-	data["is_admin"] = is_admin
-	data["debug_mode"] = debug_mode
-	data["debug_interdictor"] = debug_interdictor
-	data["debug_shields"] = debug_shields
 
 	// Theme preference
 	data["theme"] = theme
@@ -829,25 +760,6 @@
 		// Fire all lasers at current target
 		if("fire_all_lasers")
 			fire_all_lasers(ui.user)
-			return TRUE
-
-		// Debug actions (admin only)
-		if("toggle_debug")
-			if(!check_rights_for(ui.user?.client, R_ADMIN, FALSE))
-				return FALSE
-			debug_mode = !debug_mode
-			return TRUE
-
-		if("toggle_debug_interdictor")
-			if(!check_rights_for(ui.user?.client, R_ADMIN, FALSE))
-				return FALSE
-			debug_interdictor = !debug_interdictor
-			return TRUE
-
-		if("toggle_debug_shields")
-			if(!check_rights_for(ui.user?.client, R_ADMIN, FALSE))
-				return FALSE
-			debug_shields = !debug_shields
 			return TRUE
 
 		// Cloaking device controls
@@ -1012,20 +924,6 @@
 
 	if(!tool.buffer)
 		return ..() // Let parent handle empty buffer
-
-	// Handle techweb linking for research integration
-	if(!QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb))
-		if(linked_techweb)
-			if(linked_techweb == tool.buffer)
-				say("Already linked to this research network!")
-				return ITEM_INTERACT_SUCCESS
-			unsync_research_servers()
-
-		linked_techweb = tool.buffer
-		linked_techweb.connected_machines += src
-		update_unlocked_upgrades()
-		say("Linked to research network!")
-		return ITEM_INTERACT_SUCCESS
 
 	// Handle list buffer (could be launchers or other things)
 	if(islist(tool.buffer))
