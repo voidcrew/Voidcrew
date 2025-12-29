@@ -1,4 +1,4 @@
-// Ship Combat Console
+// Ship Weapons System
 // Central control interface for ship-to-ship combat
 // Two-phase operation:
 // 1. TGUI interface for selecting target ship and viewing launcher status
@@ -15,6 +15,8 @@
 	var/obj/machinery/computer/camera_advanced/ship_combat/console
 	/// The ship we're allowed to view
 	var/obj/structure/overmap/ship/target_ship
+	/// Static images applied to interior turfs (non-edge turfs)
+	var/list/image/interior_static_images
 
 /mob/eye/camera/remote/ship_combat/Initialize(mapload, obj/machinery/computer/camera_advanced/ship_combat/origin)
 	. = ..()
@@ -26,9 +28,71 @@
 	if(console && user)
 		console.remove_eye_control(user)
 	assign_user(null)
+	clear_interior_static()
 	console = null
 	target_ship = null
 	return ..()
+
+/// Generates static overlay images for all interior turfs (turfs not adjacent to space)
+/// Only the ship's exterior outline (turfs touching space) will be visible
+/mob/eye/camera/remote/ship_combat/proc/generate_interior_static()
+	clear_interior_static()
+	if(!target_ship?.shuttle?.shuttle_areas)
+		return
+
+	interior_static_images = list()
+
+	// Get the z-level for plane offset calculation
+	var/z_level
+	for(var/area/ship_area in target_ship.shuttle.shuttle_areas)
+		for(var/turf/T in ship_area)
+			z_level = T.z
+			break
+		if(z_level)
+			break
+
+	if(!z_level)
+		return
+
+	// Create the base static image to clone from
+	var/image/base_static = new('icons/effects/cameravis.dmi')
+	SET_PLANE_W_SCALAR(base_static, CAMERA_STATIC_PLANE, GET_Z_PLANE_OFFSET(z_level))
+	base_static.appearance_flags = RESET_TRANSFORM | RESET_ALPHA | RESET_COLOR | KEEP_APART
+	base_static.override = TRUE
+
+	// Iterate through all turfs in the target ship
+	for(var/area/ship_area in target_ship.shuttle.shuttle_areas)
+		for(var/turf/ship_turf in ship_area)
+			// Check if this turf is on the exterior (adjacent to space)
+			if(is_exterior_turf(ship_turf))
+				continue // Skip exterior turfs - they should be visible
+
+			// This is an interior turf - add static
+			var/image/static_image = new /image(base_static)
+			static_image.loc = ship_turf
+			interior_static_images += static_image
+
+/// Checks if a turf is on the exterior of the ship (has at least one adjacent space turf)
+/mob/eye/camera/remote/ship_combat/proc/is_exterior_turf(turf/T)
+	// Check cardinal directions for space
+	for(var/dir in GLOB.cardinals)
+		var/turf/adjacent = get_step(T, dir)
+		if(isspaceturf(adjacent))
+			return TRUE
+	return FALSE
+
+/// Clears all interior static images
+/mob/eye/camera/remote/ship_combat/proc/clear_interior_static()
+	var/client/client = GetViewerClient()
+	if(client && interior_static_images)
+		client.images -= interior_static_images
+	interior_static_images = null
+
+/// Applies the interior static images to the current viewer
+/mob/eye/camera/remote/ship_combat/proc/apply_interior_static()
+	var/client/client = GetViewerClient()
+	if(client && interior_static_images)
+		client.images += interior_static_images
 
 /// Override to allow assigning non-living mobs (admin ghosts)
 /mob/eye/camera/remote/ship_combat/assign_user(mob/new_user)
@@ -86,8 +150,8 @@
 // ========== MAIN CONSOLE ==========
 
 /obj/machinery/computer/camera_advanced/ship_combat
-	name = "ship combat console"
-	desc = "A tactical combat console for ship-to-ship warfare. Link missile launchers with a multitool, select a target ship, then use the targeting system to aim and fire."
+	name = "weapons system"
+	desc = "A tactical weapons system for ship-to-ship combat. Link missile launchers with a multitool, select a target ship, then use the targeting system to aim and fire."
 	icon_screen = "generic"
 	icon_keyboard = "generic_key"
 	circuit = /obj/item/circuitboard/computer/ship_combat_console
@@ -129,6 +193,10 @@
 	// ===== INTERDICTOR VARIABLES =====
 	/// Linked interdictor machine (weakref)
 	var/datum/weakref/linked_interdictor_ref
+
+	// ===== CLOAKING DEVICE VARIABLES =====
+	/// Linked cloaking device machine (weakref)
+	var/datum/weakref/linked_cloak_ref
 
 	// ===== RESEARCH INTEGRATION =====
 	/// Linked techweb for research upgrades
@@ -184,6 +252,11 @@
 	if(interdictor)
 		interdictor.unlink_console()
 	linked_interdictor_ref = null
+	// Unlink cloaking device
+	var/obj/machinery/ship_combat/cloak_device/cloak = linked_cloak_ref?.resolve()
+	if(cloak)
+		cloak.unlink_console()
+	linked_cloak_ref = null
 	clear_target()
 	for(var/datum/weakref/ref in linked_launchers)
 		var/obj/machinery/ship_combat/missile_launcher/launcher = ref.resolve()
@@ -208,6 +281,11 @@
 		. += span_notice("Linked interdictor: [interdictor.name]")
 	else
 		. += span_warning("No interdictor linked. Use a multitool to link an interdiction system.")
+	var/obj/machinery/ship_combat/cloak_device/cloak = linked_cloak_ref?.resolve()
+	if(cloak)
+		. += span_notice("Linked cloaking device: [cloak.name]")
+	else
+		. += span_warning("No cloaking device linked. Use a multitool to link a cloaking device.")
 	if(target_ship)
 		. += span_notice("Current target: [target_ship.display_name]")
 	else
@@ -399,9 +477,22 @@
 				// Check if ship is visible (not cloaked)
 				if(S.invisibility > INVISIBILITY_NONE)
 					continue
+				// Calculate distance
+				var/turf/target_turf = get_turf(S)
+				var/distance = target_turf ? get_dist(our_turf, target_turf) : 0
+				// Calculate speed magnitude from x/y velocity
+				var/speed_val = 0
+				if(S.speed && length(S.speed) >= 2)
+					speed_val = sqrt(S.speed[1] ** 2 + S.speed[2] ** 2)
 				nearby_ships += list(list(
 					"name" = S.display_name || S.name,
 					"ref" = REF(S),
+					"shields" = S.shield_health,
+					"shields_max" = S.shield_max_health,
+					"integrity" = 100,  // Ship integrity - placeholder, ships don't have a direct integrity stat
+					"integrity_max" = 100,
+					"distance" = distance,
+					"speed" = round(speed_val * 100, 0.1),  // Convert to display units
 				))
 	data["nearby_ships"] = nearby_ships
 
@@ -513,6 +604,74 @@
 		data["shield_cooldown_remaining"] = aggregated["cooldown_remaining"]
 		data["shield_generator_count"] = aggregated["generator_count"]
 		data["shield_active_count"] = aggregated["active_count"]
+		// Individual generator data with upgrades
+		var/list/generators = list()
+		for(var/obj/machinery/ship_combat/shield_generator/gen in current_ship.linked_shield_generators)
+			var/list/gen_status = gen.get_status()
+			gen_status["id"] = REF(gen)
+			gen_status["name"] = gen.name
+			gen_status["ref"] = REF(gen)
+			// Calculate upgrade tiers from stock parts
+			var/gen_capacitor_tier = 0
+			var/gen_laser_tier = 0
+			var/gen_scanning_tier = 0
+			for(var/datum/stock_part/capacitor/cap in gen.component_parts)
+				gen_capacitor_tier += cap.tier
+			for(var/datum/stock_part/micro_laser/laser in gen.component_parts)
+				gen_laser_tier += laser.tier
+			for(var/datum/stock_part/scanning_module/scanner in gen.component_parts)
+				gen_scanning_tier += scanner.tier
+			gen_status["upgrades"] = list(
+				"capacitor_tier" = gen_capacitor_tier,
+				"laser_tier" = gen_laser_tier,
+				"scanning_tier" = gen_scanning_tier,
+			)
+			generators += list(gen_status)
+		data["shield_generators"] = generators
+
+	// Cloaking device data - get from linked machine
+	var/obj/machinery/ship_combat/cloak_device/cloak = linked_cloak_ref?.resolve()
+	data["cloak_linked"] = !!cloak
+	// Cloak is unlocked if we have a linked cloak device (no research requirement)
+	data["cloak_unlocked"] = !!cloak
+	if(cloak)
+		// Calculate upgrade tiers from stock parts
+		var/capacitor_tier = 0
+		var/laser_tier = 0
+		var/scanning_tier = 0
+		for(var/datum/stock_part/capacitor/cap in cloak.component_parts)
+			capacitor_tier += cap.tier
+		for(var/datum/stock_part/micro_laser/laser in cloak.component_parts)
+			laser_tier += laser.tier
+		for(var/datum/stock_part/scanning_module/scanner in cloak.component_parts)
+			scanning_tier += scanner.tier
+
+		// Duration remaining
+		var/duration_remaining = 0
+		if(cloak.cloak_active && cloak.cloak_expire_time > world.time)
+			duration_remaining = (cloak.cloak_expire_time - world.time) / 10  // Convert to seconds
+
+		// Cooldown remaining
+		var/cooldown_remaining = 0
+		if(!COOLDOWN_FINISHED(cloak, recloak_cooldown))
+			cooldown_remaining = COOLDOWN_TIMELEFT(cloak, recloak_cooldown) / 10  // Convert to seconds
+
+		// Send as a single cloak_device object matching TGUI CloakDevice type
+		data["cloak_device"] = list(
+			"active" = cloak.cloak_active,
+			"can_activate" = cloak.can_activate_cloak(),
+			"duration_remaining" = duration_remaining,
+			"duration_max" = cloak.max_cloak_duration / 10,  // Convert to seconds
+			"cooldown_remaining" = cooldown_remaining,
+			"cooldown_max" = cloak.recloak_delay / 10,  // Convert to seconds
+			"upgrades" = list(
+				"capacitor_tier" = capacitor_tier,
+				"laser_tier" = laser_tier,
+				"scanning_tier" = scanning_tier,
+			),
+		)
+	else
+		data["cloak_device"] = null
 
 	// Debug mode data (admin only)
 	var/is_admin = check_rights_for(user?.client, R_ADMIN, FALSE)
@@ -658,6 +817,20 @@
 			debug_shields = !debug_shields
 			return TRUE
 
+		// Cloaking device controls
+		if("cloak_activate")
+			var/obj/machinery/ship_combat/cloak_device/cloak = linked_cloak_ref?.resolve()
+			if(!cloak)
+				to_chat(ui.user, span_warning("No cloaking device linked! Link a cloaking device with a multitool."))
+				return FALSE
+			return cloak.activate_cloak(ui.user)
+
+		if("cloak_deactivate")
+			var/obj/machinery/ship_combat/cloak_device/cloak = linked_cloak_ref?.resolve()
+			if(!cloak)
+				return FALSE
+			return cloak.deactivate_cloak()
+
 	return FALSE
 
 // ========== CAMERA EYE CREATION ==========
@@ -687,6 +860,11 @@
 
 	for(var/datum/action/actions_removed as anything in actions)
 		actions_removed.Remove(user)
+
+	// Clear static overlay before removing control
+	var/mob/eye/camera/remote/ship_combat/combat_eye = eyeobj
+	if(combat_eye)
+		combat_eye.clear_interior_static()
 
 	if(eyeobj)
 		eyeobj.assign_user(null)
@@ -737,6 +915,8 @@
 	var/mob/eye/camera/remote/ship_combat/combat_eye = eyeobj
 	if(combat_eye)
 		combat_eye.target_ship = target_ship
+		// Generate static overlay for interior turfs - only ship outline will be visible
+		combat_eye.generate_interior_static()
 
 	// Get the mobile docking port turf for the TARGET ship
 	var/turf/target_turf = get_target_ship_port_turf()
@@ -758,6 +938,10 @@
 	// Give control and move to target
 	give_eye_control(user)
 	eyeobj.setLoc(target_turf, TRUE)
+
+	// Apply static overlay to the user's client
+	if(combat_eye)
+		combat_eye.apply_interior_static()
 
 	to_chat(user, span_notice("Targeting system active. Move to aim, use action buttons to fire."))
 	return TRUE
@@ -934,6 +1118,25 @@
 
 		return ITEM_INTERACT_SUCCESS
 
+	// Handle cloaking device linking
+	if(istype(tool.buffer, /obj/machinery/ship_combat/cloak_device))
+		var/obj/machinery/ship_combat/cloak_device/cloak = tool.buffer
+
+		// Check if already linked
+		var/obj/machinery/ship_combat/cloak_device/current_cloak = linked_cloak_ref?.resolve()
+		if(current_cloak == cloak)
+			balloon_alert(user, "already linked")
+			return ITEM_INTERACT_BLOCKING
+
+		// Link the cloaking device
+		if(link_cloak_device(cloak))
+			balloon_alert(user, "cloaking device linked")
+			to_chat(user, span_notice("Linked [cloak] to [src]."))
+		else
+			balloon_alert(user, "link failed")
+
+		return ITEM_INTERACT_SUCCESS
+
 	// Not something we handle, let parent try
 	return ..()
 
@@ -971,6 +1174,24 @@
 	// Link to our ship
 	if(current_ship)
 		gen.link_ship(current_ship)
+
+	return TRUE
+
+/// Links a cloaking device to this console
+/obj/machinery/computer/camera_advanced/ship_combat/proc/link_cloak_device(obj/machinery/ship_combat/cloak_device/cloak)
+	if(!cloak)
+		return FALSE
+
+	// Unlink any existing cloaking device
+	var/obj/machinery/ship_combat/cloak_device/old_cloak = linked_cloak_ref?.resolve()
+	if(old_cloak)
+		old_cloak.unlink_console()
+
+	linked_cloak_ref = WEAKREF(cloak)
+
+	// Ensure cloak device is connected to the same ship
+	if(current_ship && !cloak.linked_ship)
+		cloak.link_ship(current_ship)
 
 	return TRUE
 
@@ -1693,6 +1914,6 @@
 // ========== CIRCUIT BOARD ==========
 
 /obj/item/circuitboard/computer/ship_combat_console
-	name = "Ship Combat Console"
+	name = "Weapons System"
 	greyscale_colors = CIRCUIT_COLOR_COMMAND
 	build_path = /obj/machinery/computer/camera_advanced/ship_combat

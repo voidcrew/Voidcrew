@@ -40,10 +40,12 @@
 	var/power_efficiency = 1
 	/// Real-time positional sound when cloak is active
 	var/datum/realtime_positional_sound/cloak_sound
+	/// Whether this device failed to link due to duplicate on ship
+	var/link_failed_duplicate = FALSE
 
 /obj/machinery/ship_combat/cloak_device/Initialize(mapload)
 	. = ..()
-	cloak_sound = new(src, 'voidcrew/sound/machines/cloaking/on.ogg', 15, 7)
+	cloak_sound = new(src, 'voidcrew/sound/machines/cloaking/on.ogg', 7, 7)
 	// Try to find our ship on init
 	attempt_ship_connection()
 
@@ -88,6 +90,10 @@
 
 /obj/machinery/ship_combat/cloak_device/examine(mob/user)
 	. = ..()
+	if(link_failed_duplicate)
+		. += span_boldwarning("OFFLINE: Another cloaking device is already installed on this ship!")
+		. += span_warning("Only one cloaking device can operate per ship. Remove the other device first.")
+		return
 	if(cloak_active)
 		. += span_notice("Status: [span_green("CLOAKED")]")
 		. += span_notice("Power draw: [display_power(get_power_draw())]")
@@ -118,24 +124,51 @@
 			continue
 		for(var/area/A in S.shuttle.shuttle_areas)
 			if(A == ship_area)
-				link_ship(S)
+				if(!link_ship(S))
+					// Failed to link - likely a duplicate exists
+					link_failed_duplicate = TRUE
+					return FALSE
 				return TRUE
 	return FALSE
+
+/// Checks if a cloaking device already exists on the given ship
+/obj/machinery/ship_combat/cloak_device/proc/find_existing_cloak_device(obj/structure/overmap/ship/ship)
+	if(!ship?.shuttle?.shuttle_areas)
+		return null
+	for(var/area/ship_area in ship.shuttle.shuttle_areas)
+		for(var/obj/machinery/ship_combat/cloak_device/existing in ship_area)
+			if(existing != src && !QDELETED(existing) && !existing.link_failed_duplicate)
+				return existing
+	return null
 
 /obj/machinery/ship_combat/cloak_device/proc/link_ship(obj/structure/overmap/ship/ship)
 	if(linked_ship)
 		unlink_ship()
+
+	// Check if there's already a cloaking device on this ship
+	var/obj/machinery/ship_combat/cloak_device/existing = find_existing_cloak_device(ship)
+	if(existing)
+		return FALSE
+
 	linked_ship = ship
+	link_failed_duplicate = FALSE
 	update_ship_mass()
 	RegisterSignal(linked_ship, COMSIG_SHIP_WEAPON_FIRED, PROC_REF(on_weapon_fired))
 	RegisterSignal(linked_ship, COMSIG_SHIP_HAZARD_TRIGGERED, PROC_REF(on_hazard_triggered))
 	RegisterSignal(linked_ship, COMSIG_SHIP_WEAPONS_LOCKED, PROC_REF(on_weapons_locked))
 	RegisterSignal(linked_ship, COMSIG_QDELETING, PROC_REF(on_ship_deleted))
+	return TRUE
 
 /obj/machinery/ship_combat/cloak_device/proc/unlink_ship()
 	if(linked_ship)
 		UnregisterSignal(linked_ship, list(COMSIG_SHIP_WEAPON_FIRED, COMSIG_SHIP_HAZARD_TRIGGERED, COMSIG_SHIP_WEAPONS_LOCKED, COMSIG_QDELETING))
 		linked_ship = null
+
+/// Unlinks this device from a combat console (called when console is destroyed)
+/obj/machinery/ship_combat/cloak_device/proc/unlink_console()
+	// Currently cloak device doesn't track its linked console, so this is a no-op
+	// But it's here for consistency with other ship combat devices
+	return
 
 /obj/machinery/ship_combat/cloak_device/proc/on_ship_deleted(datum/source)
 	SIGNAL_HANDLER
@@ -159,28 +192,41 @@
 
 // ========== CLOAK ACTIVATION ==========
 
+/// Returns TRUE if the cloak can be activated right now
+/obj/machinery/ship_combat/cloak_device/proc/can_activate_cloak()
+	if(cloak_active)
+		return FALSE
+	if(link_failed_duplicate)
+		return FALSE
+	if(!linked_ship)
+		return FALSE
+	if(machine_stat & (BROKEN|NOPOWER))
+		return FALSE
+	if(available_energy() < get_power_draw())
+		return FALSE
+	if(!COOLDOWN_FINISHED(src, recloak_cooldown))
+		return FALSE
+	if(linked_ship.is_interdicted)
+		return FALSE
+	return TRUE
+
 /obj/machinery/ship_combat/cloak_device/attack_hand(mob/user, list/modifiers)
 	. = ..()
 	if(.)
 		return
 
-	if(!linked_ship)
-		if(!attempt_ship_connection())
-			to_chat(user, span_warning("Unable to connect to ship systems!"))
-			return
-
-	if(cloak_active)
-		deactivate_cloak()
-		balloon_alert(user, "cloak deactivated")
-	else
-		if(activate_cloak(user))
-			balloon_alert(user, "cloak activated")
-		else
-			balloon_alert(user, "cannot activate")
+	// Cloak device must be controlled from the weapons system console
+	to_chat(user, span_notice("The cloaking device must be controlled from the weapons system console. Link it with a multitool."))
+	balloon_alert(user, "use console")
 
 /// Activates the cloaking device
 /obj/machinery/ship_combat/cloak_device/proc/activate_cloak(mob/user)
 	if(cloak_active)
+		return FALSE
+
+	if(link_failed_duplicate)
+		if(user)
+			to_chat(user, span_warning("This cloaking device is offline! Another cloaking device is already installed on this ship."))
 		return FALSE
 
 	if(!linked_ship)
@@ -332,6 +378,14 @@
 // ========== TOOL INTERACTIONS ==========
 
 /obj/machinery/ship_combat/cloak_device/attackby(obj/item/W, mob/user, params)
+	// Multitool linking
+	if(istype(W, /obj/item/multitool))
+		var/obj/item/multitool/tool = W
+		tool.buffer = src
+		balloon_alert(user, "cloaking device buffered")
+		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a weapons system to link."))
+		return TRUE
+
 	// Standard deconstruction
 	if(default_deconstruction_screwdriver(user, icon_state, icon_state, W))
 		return
@@ -358,4 +412,3 @@
 		/datum/stock_part/micro_laser = 2,
 		/datum/stock_part/scanning_module = 1,
 	)
-

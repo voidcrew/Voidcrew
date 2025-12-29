@@ -7,7 +7,7 @@
 
 /obj/machinery/ship_combat/laser_turret
 	name = "laser turret"
-	desc = "A ship-mounted laser weapon system. Effective against shields. Link to a combat console with a multitool and control power levels from there. Has an internal power cell that can be replaced."
+	desc = "A ship-mounted laser weapon system. Effective against shields. Link to a weapons system with a multitool and control power levels from there. Has an internal power cell that can be replaced."
 	icon = 'icons/obj/weapons/turrets.dmi'
 	icon_state = "standard_off"
 	density = TRUE
@@ -152,7 +152,7 @@
 	if(linked_console)
 		. += span_notice("Linked to: [linked_console]")
 	else
-		. += span_warning("Not linked to a combat console. Use a multitool to link.")
+		. += span_warning("Not linked to a weapons system. Use a multitool to link.")
 
 /obj/machinery/ship_combat/laser_turret/update_icon_state()
 	. = ..()
@@ -445,7 +445,7 @@
 		// Store just this turret in the buffer (single item, not list)
 		tool.buffer = src
 		balloon_alert(user, "turret buffered")
-		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a combat console to link."))
+		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a weapons system to link."))
 		return TRUE
 
 	// Standard deconstruction

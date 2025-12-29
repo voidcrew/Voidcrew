@@ -7,7 +7,7 @@
 
 /obj/machinery/ship_combat/interdictor
 	name = "interdiction system"
-	desc = "A ship-mounted gravitic field generator that slows enemy vessels. Link to a combat console with a multitool. Higher power levels create stronger interdiction fields."
+	desc = "A ship-mounted gravitic field generator that slows enemy vessels. Link to a weapons system with a multitool. Higher power levels create stronger interdiction fields."
 	icon = 'voidcrew/icons/obj/machines/interdictor.dmi'
 	icon_state = "off"
 	density = TRUE
@@ -70,7 +70,7 @@
 	. = ..()
 	interdictor_id = "[rand(1000, 9999)]"
 	name = "[initial(name)] ([interdictor_id])"
-	machine_sound = new(src, 'voidcrew/sound/machines/interdictor/on.ogg', 15, 7)
+	machine_sound = new(src, 'voidcrew/sound/machines/interdictor/on.ogg', 7, 7)
 	RefreshParts()
 	// Register for power loss signal
 	RegisterSignal(src, COMSIG_MACHINERY_POWER_LOST, PROC_REF(on_power_lost))
@@ -161,7 +161,7 @@
 	if(console)
 		. += span_notice("Linked to: [console]")
 	else
-		. += span_warning("Not linked to a combat console. Use a multitool to link.")
+		. += span_warning("Not linked to a weapons system. Use a multitool to link.")
 
 /obj/machinery/ship_combat/interdictor/update_icon_state()
 	. = ..()
@@ -374,7 +374,7 @@
 	interdicted_ship_ref = WEAKREF(target)
 
 	// Play startup sound
-	playsound(src, 'voidcrew/sound/machines/interdictor/startup1.ogg', 35, FALSE)
+	playsound(src, 'voidcrew/sound/machines/interdictor/startup1.ogg', 17, FALSE)
 
 	// Start processing for warmup ticks
 	begin_processing()
@@ -433,7 +433,7 @@
 	warmup_progress = 1
 
 	// Play lock complete sound
-	playsound(src, 'voidcrew/sound/machines/interdictor/beep.ogg', 35, FALSE)
+	playsound(src, 'voidcrew/sound/machines/interdictor/beep.ogg', 17, FALSE)
 
 	var/obj/structure/overmap/ship/target = interdicted_ship_ref?.resolve()
 	var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
@@ -531,8 +531,8 @@
 	stop_target_sound()
 
 	// Play shutdown sounds
-	playsound(src, 'voidcrew/sound/machines/interdictor/beep2.ogg', 35, FALSE)
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'voidcrew/sound/machines/interdictor/off.ogg', 35, FALSE), 0.5 SECONDS)
+	playsound(src, 'voidcrew/sound/machines/interdictor/beep2.ogg', 17, FALSE)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'voidcrew/sound/machines/interdictor/off.ogg', 17, FALSE), 0.5 SECONDS)
 
 	// Unregister signals from our ship
 	var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
@@ -715,7 +715,7 @@
 		var/obj/item/multitool/tool = W
 		tool.buffer = src
 		balloon_alert(user, "interdictor buffered")
-		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a combat console to link."))
+		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a weapons system to link."))
 		return TRUE
 
 	if(default_deconstruction_screwdriver(user, icon_state, icon_state, W))
@@ -992,7 +992,7 @@
 			if(!pref_volume)
 				continue
 			// Play directly to mob (no positional audio)
-			var/actual_volume = 80 * (pref_volume / 100)
+			var/actual_volume = 40 * (pref_volume / 100)
 			SEND_SOUND(M, sound('voidcrew/sound/machines/interdictor/shield.ogg', volume = actual_volume))
 
 	// Remove overlays from mobs who left the ship

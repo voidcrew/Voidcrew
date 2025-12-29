@@ -72,7 +72,7 @@
 	// Stop sound for all listeners
 	for(var/mob/listener in listeners)
 		stop_for_listener(listener)
-		UnregisterSignal(listener, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
+		UnregisterSignal(listener, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING, COMSIG_MOB_LOGIN, COMSIG_MOB_LOGOUT, COMSIG_LIVING_DEATH, SIGNAL_ADDTRAIT(TRAIT_DEAF), SIGNAL_REMOVETRAIT(TRAIT_DEAF)))
 
 	listeners.Cut()
 	active_sound = null
@@ -86,16 +86,23 @@
 	if(!source_turf)
 		return
 
-	// Find all mobs in range
-	for(var/mob/living/M in range(range, source))
+	// Find all mobs in range (both living and observers/ghosts)
+	for(var/mob/M in range(range, source))
 		if(!M.client)
+			continue
+		// Only living mobs and observers (ghosts)
+		if(!isliving(M) && !isobserver(M))
 			continue
 		if(M in listeners)
 			continue
 		register_listener(M)
 
-	// Also check for listeners who left range
+	// Also check for listeners who left range or lost their client
 	for(var/mob/listener in listeners)
+		// If listener lost their client (e.g., they ghosted), stop sound and deregister
+		if(!listener.client)
+			deregister_listener(listener)
+			continue
 		var/turf/listener_turf = get_turf(listener)
 		if(!listener_turf || get_dist(source_turf, listener_turf) > range)
 			deregister_listener(listener)
@@ -115,8 +122,11 @@
 	RegisterSignal(listener, COMSIG_MOVABLE_MOVED, PROC_REF(on_listener_moved), override = TRUE)
 	RegisterSignal(listener, COMSIG_QDELETING, PROC_REF(on_listener_deleted), override = TRUE)
 	RegisterSignal(listener, COMSIG_MOB_LOGIN, PROC_REF(on_listener_login), override = TRUE)
-	RegisterSignal(listener, COMSIG_LIVING_DEATH, PROC_REF(on_listener_died), override = TRUE)
-	RegisterSignals(listener, list(SIGNAL_ADDTRAIT(TRAIT_DEAF), SIGNAL_REMOVETRAIT(TRAIT_DEAF)), PROC_REF(on_listener_deaf_changed), override = TRUE)
+	RegisterSignal(listener, COMSIG_MOB_LOGOUT, PROC_REF(on_listener_logout), override = TRUE)
+	// Only register death signal for living mobs
+	if(isliving(listener))
+		RegisterSignal(listener, COMSIG_LIVING_DEATH, PROC_REF(on_listener_died), override = TRUE)
+		RegisterSignals(listener, list(SIGNAL_ADDTRAIT(TRAIT_DEAF), SIGNAL_REMOVETRAIT(TRAIT_DEAF)), PROC_REF(on_listener_deaf_changed), override = TRUE)
 
 	// Check if listener is deaf or has ship ambience muted
 	var/pref_volume = listener.client?.prefs.read_preference(/datum/preference/numeric/volume/sound_ship_ambience_volume)
@@ -135,7 +145,7 @@
 		return
 
 	stop_for_listener(listener)
-	UnregisterSignal(listener, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING, COMSIG_MOB_LOGIN, COMSIG_LIVING_DEATH, SIGNAL_ADDTRAIT(TRAIT_DEAF), SIGNAL_REMOVETRAIT(TRAIT_DEAF)))
+	UnregisterSignal(listener, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING, COMSIG_MOB_LOGIN, COMSIG_MOB_LOGOUT, COMSIG_LIVING_DEATH, SIGNAL_ADDTRAIT(TRAIT_DEAF), SIGNAL_REMOVETRAIT(TRAIT_DEAF)))
 	listeners -= listener
 
 /// Stops the sound for a specific listener
@@ -230,5 +240,12 @@
 	SIGNAL_HANDLER
 	// Remove and re-add to refresh their sound state with new client
 	listeners -= listener
-	UnregisterSignal(listener, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING, COMSIG_MOB_LOGIN, COMSIG_LIVING_DEATH, SIGNAL_ADDTRAIT(TRAIT_DEAF), SIGNAL_REMOVETRAIT(TRAIT_DEAF)))
+	UnregisterSignal(listener, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING, COMSIG_MOB_LOGIN, COMSIG_MOB_LOGOUT, COMSIG_LIVING_DEATH, SIGNAL_ADDTRAIT(TRAIT_DEAF), SIGNAL_REMOVETRAIT(TRAIT_DEAF)))
 	register_listener(listener)
+
+/// Called when a listener logs out (e.g., ghosting) - stop the sound for them
+/datum/realtime_positional_sound/proc/on_listener_logout(mob/listener)
+	SIGNAL_HANDLER
+	// Stop the sound and deregister them - sound channel needs to be stopped before client is gone
+	stop_for_listener(listener)
+	deregister_listener(listener)

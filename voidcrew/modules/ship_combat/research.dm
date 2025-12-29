@@ -61,7 +61,7 @@
 /datum/techweb_node/ship_combat_lasers
 	id = TECHWEB_NODE_SHIP_COMBAT_LASERS
 	display_name = "Ship Laser Systems"
-	description = "Directed energy weapons that are highly effective against shields. Power level can be adjusted via the combat console."
+	description = "Directed energy weapons that are highly effective against shields. Power level can be adjusted via the weapons system."
 	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
 	design_ids = list(
 		"ship_laser_turret",
@@ -71,8 +71,8 @@
 // ========== COMPUTER BOARD DESIGNS ==========
 
 /datum/design/board/ship_combat_console
-	name = "Ship Combat Console Board"
-	desc = "Allows for the construction of a ship combat console for tactical warfare."
+	name = "Weapons System Board"
+	desc = "Allows for the construction of a ship weapons system for tactical warfare."
 	id = "ship_combat_console"
 	build_path = /obj/item/circuitboard/computer/ship_combat_console
 	category = list(

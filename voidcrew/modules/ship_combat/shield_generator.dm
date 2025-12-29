@@ -5,7 +5,7 @@
 
 /obj/machinery/ship_combat/shield_generator
 	name = "ship shield generator"
-	desc = "A ship-mounted deflector shield generator. Protects against missiles and meteors. Link to a combat console with a multitool to control."
+	desc = "A ship-mounted deflector shield generator. Protects against missiles and meteors. Link to a weapons system with a multitool to control."
 	icon = 'icons/obj/machines/shield_generator.dmi'  // Placeholder - TODO: custom icon
 	icon_state = "shield_wall_gen"  // Placeholder
 	density = TRUE
@@ -120,7 +120,7 @@
 	if(console)
 		. += span_notice("Linked to: [console]")
 	else
-		. += span_warning("Not linked to a combat console. Use a multitool to link.")
+		. += span_warning("Not linked to a weapons system. Use a multitool to link.")
 
 /obj/machinery/ship_combat/shield_generator/update_icon_state()
 	. = ..()
@@ -1564,13 +1564,29 @@
 
 // ========== TOOL INTERACTIONS ==========
 
+/// Attempts to shock the user if the generator is active
+/// Returns TRUE if the user was shocked, FALSE otherwise
+/obj/machinery/ship_combat/shield_generator/proc/shock_user(mob/living/user, shock_probability = 100)
+	if(!active)
+		return FALSE
+	if(!isliving(user))
+		return FALSE
+	// electrocute_mob handles insulated gloves check internally via wearing_shock_proof_gloves()
+	if(!prob(shock_probability))
+		return FALSE
+	// Use the area as power source since shield generators draw from ship power
+	if(electrocute_mob(user, get_area(src), src, siemens_coeff = 1, dist_check = TRUE))
+		do_sparks(5, TRUE, src)
+		return TRUE
+	return FALSE
+
 /obj/machinery/ship_combat/shield_generator/attackby(obj/item/W, mob/user, params)
 	// Multitool linking
 	if(istype(W, /obj/item/multitool))
 		var/obj/item/multitool/tool = W
 		tool.buffer = src
 		balloon_alert(user, "generator buffered")
-		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a combat console to link."))
+		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a weapons system to link."))
 		return TRUE
 
 	// Standard deconstruction
@@ -1580,9 +1596,21 @@
 		return
 	return ..()
 
+/obj/machinery/ship_combat/shield_generator/screwdriver_act(mob/living/user, obj/item/tool)
+	if(shock_user(user))
+		return ITEM_INTERACT_BLOCKING
+	return ..()
+
+/obj/machinery/ship_combat/shield_generator/crowbar_act(mob/living/user, obj/item/tool)
+	if(shock_user(user))
+		return ITEM_INTERACT_BLOCKING
+	return ..()
+
 /obj/machinery/ship_combat/shield_generator/wrench_act(mob/living/user, obj/item/tool)
 	. = ITEM_INTERACT_BLOCKING
 	if(active)
+		if(shock_user(user))
+			return
 		to_chat(user, span_warning("Deactivate the shields first!"))
 		return
 	default_unfasten_wrench(user, tool)

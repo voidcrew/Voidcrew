@@ -5,7 +5,7 @@
 
 /obj/machinery/ship_combat/missile_launcher
 	name = "missile launcher"
-	desc = "A ship-mounted missile launcher system. Drag an armed missile onto it to load, then link to a combat console with a multitool. Use a wrench to secure or unsecure."
+	desc = "A ship-mounted missile launcher system. Drag an armed missile onto it to load, then link to a weapons system with a multitool. Use a wrench to secure or unsecure."
 	icon = 'voidcrew/icons/obj/machines/missile_launcher.dmi'
 	icon_state = "unloaded"
 	density = TRUE
@@ -56,7 +56,7 @@
 	if(linked_console)
 		. += span_notice("Linked to: [linked_console]")
 	else
-		. += span_warning("Not linked to a combat console. Use a multitool to link.")
+		. += span_warning("Not linked to a weapons system. Use a multitool to link.")
 
 /obj/machinery/ship_combat/missile_launcher/update_icon_state()
 	. = ..()
@@ -156,7 +156,7 @@
 		// Store just this launcher in the buffer (single item, not list)
 		tool.buffer = src
 		balloon_alert(user, "launcher buffered")
-		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a combat console to link."))
+		to_chat(user, span_notice("You buffer [src] to the multitool. Use on a weapons system to link."))
 		return TRUE
 
 	// Standard deconstruction - only allow if empty
@@ -559,6 +559,7 @@
 
 /// Returns status info for the combat console UI
 /obj/machinery/ship_combat/missile_launcher/proc/get_status()
+	var/on_ext = is_on_exterior()
 	return list(
 		"id" = launcher_id,
 		"name" = name,
@@ -566,7 +567,8 @@
 		"missile_name" = loaded_missile ? loaded_missile["name"] : null,
 		"missile_damage" = loaded_missile ? loaded_missile["damage"] : null,
 		"ready" = can_fire(),
-		"on_exterior" = is_on_exterior(),
+		"on_exterior" = on_ext,
+		"enabled" = on_ext && anchored && !(machine_stat & (BROKEN|NOPOWER)),  // Can potentially fire (positioned correctly)
 	)
 
 // ========== CIRCUIT BOARD ==========

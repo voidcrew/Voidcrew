@@ -9,7 +9,7 @@
 	/// List of sound files to pick from
 	var/list/sound_files
 	/// Base volume of the sounds (0-100), scaled by player preference
-	var/volume = 25
+	var/volume = 12
 	/// How far the sound can be heard (in tiles)
 	var/range = 4
 	/// Minimum time between sounds (in deciseconds)
@@ -21,7 +21,7 @@
 	/// Timer ID for the next sound
 	var/next_sound_timer
 
-/datum/console_ambience/New(atom/sound_source, list/sounds, vol = 25, hear_range = 4, min_time = 1.5 MINUTES, max_time = 5 MINUTES)
+/datum/console_ambience/New(atom/sound_source, list/sounds, vol = 12, hear_range = 4, min_time = 1.5 MINUTES, max_time = 5 MINUTES)
 	source = sound_source
 	sound_files = sounds
 	volume = vol
