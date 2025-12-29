@@ -291,6 +291,7 @@ const TargetingTab = () => {
 const TargetingPanel = () => {
   const { act, data } = useBackend<Data>();
   const {
+    ship_docked,
     target_name,
     target_ref,
     nearby_ships,
@@ -304,6 +305,20 @@ const TargetingPanel = () => {
 
   // Find the currently targeted ship for status display
   const targetShip = target_ref ? nearby_ships.find((s) => s.ref === target_ref) : null;
+
+  // Show docked notice
+  if (ship_docked) {
+    return (
+      <Stack vertical>
+        <Stack.Item>
+          <NoticeBox info>
+            <Icon name="anchor" mr={1} />
+            Targeting unavailable while docked
+          </NoticeBox>
+        </Stack.Item>
+      </Stack>
+    );
+  }
 
   return (
     <Stack vertical>
@@ -433,27 +448,28 @@ const TargetingPanel = () => {
         </Stack.Item>
       )}
 
-      {/* Ship List */}
+      {/* Ship List - excludes currently targeted ship */}
       <Stack.Item>
-        {nearby_ships.length === 0 ? (
+        {nearby_ships.filter((s) => s.ref !== target_ref).length === 0 ? (
           <Box color="label" textAlign="center" py={0.5} fontSize="11px">
-            No ships in sensor range
+            {nearby_ships.length === 0 ? 'No ships in sensor range' : 'No other ships in range'}
           </Box>
         ) : (
           <Stack vertical>
-            {nearby_ships.map((ship) => (
-              <Stack.Item key={ship.ref}>
-                <Button
-                  fluid
-                  compact
-                  icon={target_ref === ship.ref ? 'dot-circle' : 'circle'}
-                  selected={target_ref === ship.ref}
-                  onClick={() => act('select_target', { ref: ship.ref })}
-                >
-                  {ship.name}
-                </Button>
-              </Stack.Item>
-            ))}
+            {nearby_ships
+              .filter((ship) => ship.ref !== target_ref)
+              .map((ship) => (
+                <Stack.Item key={ship.ref}>
+                  <Button
+                    fluid
+                    compact
+                    icon="circle"
+                    onClick={() => act('select_target', { ref: ship.ref })}
+                  >
+                    {ship.name}
+                  </Button>
+                </Stack.Item>
+              ))}
           </Stack>
         )}
       </Stack.Item>

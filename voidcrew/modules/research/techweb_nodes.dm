@@ -1,8 +1,8 @@
 /datum/techweb_node/basic_shuttle_tech
 	id = TECHWEB_NODE_BASIC_SHUTTLE
-	starting_node = TRUE
 	display_name = "Basic Shuttle Research"
 	description = "Research the technology required to create and pilot basic shuttles."
+	prereq_ids = list(TECHWEB_NODE_FUNDIMENTAL_SCI)
 	design_ids = list(
 		"engine_plasma",
 		"engine_ion",

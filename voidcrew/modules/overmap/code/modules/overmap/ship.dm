@@ -237,6 +237,12 @@
 	if(!COOLDOWN_FINISHED(src, shield_reactivation_cooldown))
 		return
 
+	// Can't reactivate while docked - just clear broken status and stop processing
+	if(!isnull(docked))
+		shields_broken = FALSE
+		stop_shield_processing()
+		return
+
 	shields_broken = FALSE
 
 	// Reactivate all generators that want to be active (have power allocation)
@@ -247,6 +253,7 @@
 			gen.active = TRUE
 			gen.update_appearance()
 			gen.update_power_draw()
+			gen.generator_sound?.start()
 			if(!first_active_gen)
 				first_active_gen = gen
 			any_activated = TRUE

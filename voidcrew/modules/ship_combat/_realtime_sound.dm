@@ -69,10 +69,17 @@
 
 	UnregisterSignal(source, COMSIG_MOVABLE_MOVED)
 
-	// Stop sound for all listeners
+	// Stop sound for all tracked listeners and unregister signals
 	for(var/mob/listener in listeners)
 		stop_for_listener(listener)
 		UnregisterSignal(listener, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING, COMSIG_MOB_LOGIN, COMSIG_MOB_LOGOUT, COMSIG_LIVING_DEATH, SIGNAL_ADDTRAIT(TRAIT_DEAF), SIGNAL_REMOVETRAIT(TRAIT_DEAF)))
+
+	// Also stop for any mob in range that might not be in our listeners list
+	// This catches edge cases like mobs that entered range but weren't registered yet
+	if(source)
+		for(var/mob/M in range(range, source))
+			if(M?.client && !(M in listeners))
+				M.stop_sound_channel(sound_channel)
 
 	listeners.Cut()
 	active_sound = null
@@ -110,6 +117,10 @@
 /// Registers a new listener
 /datum/realtime_positional_sound/proc/register_listener(mob/listener)
 	if(listener in listeners)
+		return
+
+	// Don't register if sound isn't playing
+	if(!playing)
 		return
 
 	// If no client yet, wait for login
@@ -156,7 +167,7 @@
 
 /// Updates the sound position for a listener
 /datum/realtime_positional_sound/proc/update_listener(mob/listener, first_play = FALSE)
-	if(!listener?.client || !active_sound || !source)
+	if(!playing || !listener?.client || !active_sound || !source)
 		return
 
 	var/turf/source_turf = get_turf(source)
@@ -243,9 +254,13 @@
 	UnregisterSignal(listener, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING, COMSIG_MOB_LOGIN, COMSIG_MOB_LOGOUT, COMSIG_LIVING_DEATH, SIGNAL_ADDTRAIT(TRAIT_DEAF), SIGNAL_REMOVETRAIT(TRAIT_DEAF)))
 	register_listener(listener)
 
-/// Called when a listener logs out (e.g., ghosting) - stop the sound for them
+/// Called when a listener logs out (e.g., ghosting or disconnecting) - stop the sound but keep them registered for login
 /datum/realtime_positional_sound/proc/on_listener_logout(mob/listener)
 	SIGNAL_HANDLER
-	// Stop the sound and deregister them - sound channel needs to be stopped before client is gone
-	stop_for_listener(listener)
-	deregister_listener(listener)
+	// Stop the sound for them - client might still exist at this point during Logout()
+	// We need to stop it NOW before the client is nulled
+	if(listener?.client)
+		listener.stop_sound_channel(sound_channel)
+	// Mute them while disconnected but keep them registered so we can restart on reconnect
+	if(listener in listeners)
+		listeners[listener] |= SOUND_MUTE

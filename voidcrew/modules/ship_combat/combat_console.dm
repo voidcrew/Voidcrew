@@ -315,9 +315,13 @@
 
 	// Check for combat console upgrade nodes
 	var/list/upgrade_nodes = list(
-		TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR,
-		TECHWEB_NODE_SHIP_COMBAT_ADVANCED,
+		TECHWEB_NODE_SHIP_COMBAT_MISSILES,
+		TECHWEB_NODE_SHIP_COMBAT_ORDNANCE_STANDARD,
+		TECHWEB_NODE_SHIP_COMBAT_ORDNANCE_HEAVY,
+		TECHWEB_NODE_SHIP_COMBAT_CLOAK,
 		TECHWEB_NODE_SHIP_COMBAT_SHIELDS,
+		TECHWEB_NODE_SHIP_COMBAT_LASERS,
+		TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR,
 	)
 
 	for(var/node_id in linked_techweb.researched_nodes)
@@ -480,10 +484,6 @@
 				// Calculate distance
 				var/turf/target_turf = get_turf(S)
 				var/distance = target_turf ? get_dist(our_turf, target_turf) : 0
-				// Calculate speed magnitude from x/y velocity (same as helm - spM)
-				var/speed_val = 0
-				if(S.speed && length(S.speed) >= 2)
-					speed_val = sqrt(S.speed[1] ** 2 + S.speed[2] ** 2)
 				nearby_ships += list(list(
 					"name" = S.display_name || S.name,
 					"ref" = REF(S),
@@ -492,7 +492,7 @@
 					"integrity" = 100,  // Ship integrity - placeholder, ships don't have a direct integrity stat
 					"integrity_max" = 100,
 					"distance" = distance,
-					"speed" = round(speed_val, 0.1),  // Speed in spM (spaces per minute) - same as helm
+					"speed" = round(S.get_speed(), 0.1),  // Speed in spM (spaces per minute) - same as helm
 				))
 	data["nearby_ships"] = nearby_ships
 
@@ -1254,6 +1254,9 @@
 	targeting_ship = new_target
 	is_targeting = TRUE
 	targeting_start_time = world.time
+
+	// Play targeting lock sound
+	playsound(src, 'voidcrew/sound/machines/interdictor/startup2.ogg', 30, FALSE)
 
 	// Register for target deletion and movement during targeting
 	RegisterSignal(targeting_ship, COMSIG_QDELETING, PROC_REF(on_targeting_ship_deleted))

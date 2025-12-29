@@ -142,12 +142,14 @@
 	if(!QDELETED(M.buffer) && istype(M.buffer, /obj/machinery/ore_silo))
 		var/obj/machinery/ore_silo/silo = M.buffer
 		if(internal_rcd.silo_mats.silo == silo)
+			balloon_alert(user, "already linked")
 			to_chat(user, span_warning("[src]'s RCD is already connected to [silo]."))
 			return ITEM_INTERACT_SUCCESS
 
 		internal_rcd.silo_mats.disconnect()
 		silo.connect_receptacle(internal_rcd.silo_mats, internal_rcd)
 		internal_rcd.silo_link = TRUE  // Enable silo link mode
+		balloon_alert(user, "linked")
 		to_chat(user, span_notice("You connect [src]'s RCD to [silo]."))
 		return ITEM_INTERACT_SUCCESS
 

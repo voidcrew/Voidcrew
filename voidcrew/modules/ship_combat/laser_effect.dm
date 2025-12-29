@@ -106,62 +106,63 @@
 
 	return locate(spawn_x, spawn_y, target_turf.z)
 
-/// Finds the best approach direction for the laser (same logic as missiles)
+/// Finds the best approach direction for the laser
+/// Prioritizes clear paths (through hull breaches), then picks the shortest among them
+/// If no clear paths exist, falls back to the shortest path overall
 /obj/effect/ship_laser_beam/proc/find_clear_approach_direction(turf/target, min_x, max_x, min_y, max_y, spawn_dist)
-	var/list/directions = list(NORTH, SOUTH, EAST, WEST)
 	var/list/clear_directions = list()
+	var/list/direction_distances = list()
 
-	// Check each direction for a clear path
-	for(var/check_dir in directions)
+	// Calculate path distance and clearance for each direction
+	for(var/check_dir in list(NORTH, SOUTH, EAST, WEST))
 		var/spawn_x = target.x
 		var/spawn_y = target.y
+		var/distance
 
 		switch(check_dir)
 			if(NORTH)
 				spawn_y = max_y + spawn_dist
+				distance = spawn_y - target.y
 			if(SOUTH)
 				spawn_y = min_y - spawn_dist
+				distance = target.y - spawn_y
 			if(EAST)
 				spawn_x = max_x + spawn_dist
+				distance = spawn_x - target.x
 			if(WEST)
 				spawn_x = min_x - spawn_dist
+				distance = target.x - spawn_x
 
 		var/turf/spawn_turf = locate(spawn_x, spawn_y, target.z)
 		if(!spawn_turf)
 			continue
 
+		direction_distances["[check_dir]"] = distance
+
 		// Check if path from spawn to target is clear
 		if(check_path_clear(spawn_turf, target))
 			clear_directions += check_dir
 
-	// If we found clear paths, pick the best one
+	// If we found clear paths, return the shortest one
 	if(length(clear_directions))
-		var/center_x = (min_x + max_x) / 2
-		var/center_y = (min_y + max_y) / 2
-		var/offset_x = target.x - center_x
-		var/offset_y = target.y - center_y
+		var/best_dir
+		var/best_distance = INFINITY
+		for(var/dir in clear_directions)
+			var/dist = direction_distances["[dir]"]
+			if(dist < best_distance)
+				best_distance = dist
+				best_dir = dir
+		return best_dir
 
-		var/preferred_dir
-		if(abs(offset_x) > abs(offset_y))
-			preferred_dir = (offset_x > 0) ? EAST : WEST
-		else
-			preferred_dir = (offset_y > 0) ? NORTH : SOUTH
-
-		if(preferred_dir in clear_directions)
-			return preferred_dir
-
-		return clear_directions[1]
-
-	// No clear paths - fall back to closest edge
-	var/center_x = (min_x + max_x) / 2
-	var/center_y = (min_y + max_y) / 2
-	var/offset_x = target.x - center_x
-	var/offset_y = target.y - center_y
-
-	if(abs(offset_x) > abs(offset_y))
-		return (offset_x > 0) ? EAST : WEST
-	else
-		return (offset_y > 0) ? NORTH : SOUTH
+	// No clear paths - return the shortest direction overall (will hit walls)
+	var/best_dir
+	var/best_distance = INFINITY
+	for(var/dir_key in direction_distances)
+		var/dist = direction_distances[dir_key]
+		if(dist < best_distance)
+			best_distance = dist
+			best_dir = text2num(dir_key)
+	return best_dir
 
 /// Checks if there's a clear line-of-sight path between two turfs
 /// Lasers can pass through windows, grilles, tables, and railings
