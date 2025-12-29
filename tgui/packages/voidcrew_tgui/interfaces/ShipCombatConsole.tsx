@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Collapsible,
+  Dropdown,
   Icon,
   LabeledList,
   NoticeBox,
@@ -216,15 +217,17 @@ type Data = {
   debug_mode: BooleanLike;
   debug_interdictor: BooleanLike;
   debug_shields: BooleanLike;
+  // Theme
+  theme?: string;
 };
 
 export const ShipCombatConsole = () => {
   const { data } = useBackend<Data>();
-  const { connected, is_admin } = data;
+  const { connected, is_admin, theme } = data;
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <Window width={380} height={520} title="Weapons System">
+    <Window width={380} height={520} title="Weapons System" theme={theme}>
       <Window.Content scrollable>
         {!connected ? (
           <NoticeBox danger>
@@ -255,12 +258,20 @@ export const ShipCombatConsole = () => {
                 >
                   Weapons
                 </Tabs.Tab>
+                <Tabs.Tab
+                  selected={activeTab === 3}
+                  onClick={() => setActiveTab(3)}
+                  icon="cog"
+                >
+                  Settings
+                </Tabs.Tab>
               </Tabs>
             </Stack.Item>
             <Stack.Item grow>
               {activeTab === 0 && <TargetingTab />}
               {activeTab === 1 && <EquipmentTab />}
               {activeTab === 2 && <WeaponsTab />}
+              {activeTab === 3 && <SettingsTab />}
             </Stack.Item>
             {!!is_admin && (
               <Stack.Item>
@@ -1474,6 +1485,43 @@ const LaserTurretsPanel = () => {
         </Stack.Item>
       </Stack>
     </Section>
+  );
+};
+
+// ============================================================================
+// SETTINGS TAB
+// ============================================================================
+
+const SettingsTab = () => {
+  const { act, data } = useBackend<Data>();
+  const { theme } = data;
+
+  return (
+    <Stack vertical>
+      <Stack.Item>
+        <Section title="Display Settings">
+          <LabeledList>
+            <LabeledList.Item label="Theme">
+              <Dropdown
+                width="150px"
+                selected={theme || 'default'}
+                options={[
+                  'default',
+                  'cardtable',
+                  'malfunction',
+                  'ntOS95',
+                  'ntos_synth',
+                  'ntos_terminal',
+                  'syndicate',
+                  'wizard',
+                ]}
+                onSelected={(value) => act('setTheme', { theme: value })}
+              />
+            </LabeledList.Item>
+          </LabeledList>
+        </Section>
+      </Stack.Item>
+    </Stack>
   );
 };
 

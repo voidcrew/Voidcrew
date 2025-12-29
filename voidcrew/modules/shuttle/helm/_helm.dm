@@ -163,9 +163,17 @@
 	data["engineInfo"] = list()
 	data["canLand"] = current_ship.shuttle.port_destinations ? TRUE : FALSE
 
+	// Undock cooldown data (after docking)
+	data["undockCooldown"] = !COOLDOWN_FINISHED(current_ship, undock_cooldown)
+	data["undockCooldownRemaining"] = COOLDOWN_TIMELEFT(current_ship, undock_cooldown)
+
 	// Interdiction undock lockout data
 	data["undockLocked"] = !COOLDOWN_FINISHED(current_ship, interdiction_undock_lockout)
 	data["undockLockoutRemaining"] = COOLDOWN_TIMELEFT(current_ship, interdiction_undock_lockout)
+
+	// Dock warmup data
+	data["dockWarmup"] = !!current_ship.dock_warmup_timer
+	data["dockWarmupRemaining"] = current_ship.dock_warmup_timer ? timeleft(current_ship.dock_warmup_timer) : 0
 
 	// Interdiction status
 	data["isInterdicted"] = current_ship.is_interdicted

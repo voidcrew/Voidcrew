@@ -108,6 +108,8 @@
 	var/last_operation_success = TRUE
 	/// Console ambient sounds
 	var/datum/console_ambience/console_ambience
+	/// UI theme preference
+	var/theme
 
 // ============================================
 // Initialization
@@ -783,6 +785,9 @@
 	// Check if user is in construction mode (controlling drone)
 	data["isInConstructionMode"] = (eyeobj && user.remote_control == eyeobj)
 
+	// Theme preference
+	data["theme"] = theme
+
 	return data
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/ui_static_data(mob/user)
@@ -822,6 +827,9 @@
 			return TRUE
 		if("reset_fans")
 			reset_fans()
+			return TRUE
+		if("setTheme")
+			theme = params["theme"]
 			return TRUE
 
 	return FALSE

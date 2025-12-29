@@ -656,13 +656,13 @@
 	// Apply extended undock lockout
 	COOLDOWN_START(dock_target, interdiction_undock_lockout, INTERDICTOR_FORCE_DOCK_LOCKOUT)
 
-	// Force dock the ships together
-	var/result = our_ship.dock_ships_directly(dock_target, null)
+	// Force dock the ships together (instant = TRUE bypasses dock warmup)
+	var/result = our_ship.dock_ships_directly(dock_target, null, TRUE)
 	if(result)
 		// Direct docking failed, fall back to reserve port docking
 		our_ship.ship_announce("Direct docking failed, using reserve ports.", "Docking")
 		dock_target.ship_announce("Direct docking failed, using reserve ports.", "INTERDICTION ALERT")
-		var/fallback_result = our_ship.dock_ships_to_reserve_ports(dock_target, null)
+		var/fallback_result = our_ship.dock_ships_to_reserve_ports(dock_target, null, TRUE)
 		if(fallback_result)
 			our_ship.ship_announce("Forced docking failed: [fallback_result]", "Docking Error")
 			dock_target.ship_announce("Forced docking failed.", "Docking Error")

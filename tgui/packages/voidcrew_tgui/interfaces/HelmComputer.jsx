@@ -478,14 +478,35 @@ const ShipControlContent = (props, context) => {
     canThrust,
     isViewer,
     isNotCrew,
+    undockCooldown,
+    undockCooldownRemaining,
     undockLocked,
     undockLockoutRemaining,
+    dockWarmup,
+    dockWarmupRemaining,
     isInterdicted,
     speedMultiplier,
   } = data;
   const isDisabled = isViewer || isNotCrew;
   const flyable = data.state === 'flying' && !shipDisabled && !isDisabled;
   const canMove = flyable && canThrust;
+
+  // Determine undock button state and tooltip
+  const undockDisabled =
+    data.state !== 'idle' ||
+    shipDisabled ||
+    isDisabled ||
+    undockCooldown ||
+    undockLocked;
+  const getUndockTooltip = () => {
+    if (undockCooldown) {
+      return `Systems stabilizing - ${Math.ceil(undockCooldownRemaining / 10)}s remaining`;
+    }
+    if (undockLocked) {
+      return `Undocking locked - ${Math.ceil(undockLockoutRemaining / 10)}s remaining (interdiction)`;
+    }
+    return 'Undock';
+  };
 
   //  DIRECTIONS const idea from Lyra as part of their Haven-Urist project
   const DIRECTIONS = {
@@ -509,6 +530,11 @@ const ShipControlContent = (props, context) => {
       {data.state === 'idle' && !shipDisabled && !isNotCrew && (
         <div className="NoticeBox">Ship Docked.</div>
       )}
+      {data.state === 'docking' && !!dockWarmup && !isNotCrew && (
+        <div className="NoticeBox">
+          Docking in {Math.ceil(dockWarmupRemaining / 10)}s...
+        </div>
+      )}
       {!!flyable && !canThrust && (
         <div className="NoticeBox danger">No engine power available!</div>
       )}
@@ -521,19 +547,10 @@ const ShipControlContent = (props, context) => {
         <Table.Row height={2}>
           <Table.Cell width={1}>
             <Button
-              tooltip={
-                undockLocked
-                  ? `Undocking locked - ${Math.ceil(undockLockoutRemaining / 10)}s remaining (interdiction)`
-                  : 'Undock'
-              }
+              tooltip={getUndockTooltip()}
               tooltipPosition="right"
               icon="sign-out-alt"
-              disabled={
-                data.state !== 'idle' ||
-                shipDisabled ||
-                isDisabled ||
-                undockLocked
-              }
+              disabled={undockDisabled}
               onClick={() => act('undock')}
             />
           </Table.Cell>

@@ -132,6 +132,11 @@
 	/// List of interdictor machines installed on this ship
 	var/list/linked_interdictors = list()
 
+	/// Cooldown preventing undocking shortly after docking
+	COOLDOWN_DECLARE(undock_cooldown)
+	/// Timer ID for dock warmup
+	var/dock_warmup_timer
+
 // ===== SHARED SHIELD POOL PROCS =====
 
 /// Recalculates shield stats from all linked generators
@@ -673,19 +678,24 @@
 	interdiction_strength = 0
 	is_interdicted = FALSE
 
+/// Dock warmup time in deciseconds
+#define DOCK_WARMUP_TIME (15 SECONDS)
+/// Undock cooldown time in deciseconds
+#define UNDOCK_COOLDOWN_TIME (20 SECONDS)
+
 /**
   * Docks the shuttle by requesting a port at the requested spot.
   * * to_dock - The [/obj/structure/overmap] to dock to.
   * * dock_to_use - The [/obj/docking_port/mobile] to dock to.
+  * * instant - If TRUE, bypasses the dock warmup (used for force dock)
   */
-/obj/structure/overmap/ship/proc/dock(obj/structure/overmap/to_dock, obj/docking_port/stationary/dock_to_use)
-	// Can't dock while being interdicted
-	if(is_interdicted)
+/obj/structure/overmap/ship/proc/dock(obj/structure/overmap/to_dock, obj/docking_port/stationary/dock_to_use, instant = FALSE)
+	// Can't dock while being interdicted (unless it's a force dock)
+	if(is_interdicted && !instant)
 		ship_announce("DOCKING ABORTED: Interdiction field preventing dock sequence!", "Navigation Alert", TRUE)
 		return "Cannot dock while interdicted!"
 
 	refresh_engines()
-	shuttle.request(dock_to_use)
 
 	docked = to_dock
 	state = OVERMAP_SHIP_DOCKING
@@ -700,11 +710,40 @@
 			RegisterSignal(current_planet, COMSIG_VOIDCREW_PLANET_LOADED, PROC_REF(on_planet_loaded))
 			return "Commencing docking, awaiting zone loading..."
 
-	// No loading required, dock immediately
+	// Instant dock (force dock) - bypass warmup
+	if(instant)
+		shuttle.request(dock_to_use)
+		ship_announce("Docking now.", "Docking Announcement", TRUE)
+		shuttle.setTimer(1 SECONDS)
+		addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), 1 SECONDS)
+		return "Commencing docking..."
+
+	// Start dock warmup
+	ship_announce("Initiating docking sequence. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "Docking Announcement", TRUE)
+	dock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_dock_warmup), dock_to_use, WEAKREF(to_dock)), DOCK_WARMUP_TIME, TIMER_STOPPABLE)
+	return "Initiating docking sequence..."
+
+/**
+  * Called after dock warmup completes - actually begins the shuttle dock
+  */
+/obj/structure/overmap/ship/proc/complete_dock_warmup(obj/docking_port/stationary/dock_to_use, datum/weakref/to_dock_ref)
+	dock_warmup_timer = null
+
+	// Check if we're still in docking state (might have been cancelled)
+	if(state != OVERMAP_SHIP_DOCKING)
+		return
+
+	var/obj/structure/overmap/to_dock = to_dock_ref?.resolve()
+	if(!to_dock)
+		state = OVERMAP_SHIP_FLYING
+		docked = null
+		ship_announce("Docking aborted: destination no longer available.", "Docking Error", TRUE)
+		return
+
+	shuttle.request(dock_to_use)
 	ship_announce("Docking now.", "Docking Announcement", TRUE)
 	shuttle.setTimer(1 SECONDS)
-	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), 1 SECONDS)
-	return "Commencing docking..."
+	addtimer(CALLBACK(src, PROC_REF(complete_dock), to_dock_ref), 1 SECONDS)
 
 /**
   * Signal handler - completes docking when a planet finishes loading.
@@ -716,9 +755,12 @@
 	if(state != OVERMAP_SHIP_DOCKING || docked != source)
 		return // Ship state changed, abort
 
-	ship_announce("Destination loaded, completing docking.", "Docking Announcement", TRUE)
-	shuttle.setTimer(1 SECONDS)
-	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(source)), 1 SECONDS)
+	// Get the dock port to use
+	var/obj/docking_port/stationary/dock_to_use = shuttle.port_destinations
+
+	// Start dock warmup
+	ship_announce("Destination loaded. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "Docking Announcement", TRUE)
+	dock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_dock_warmup), dock_to_use, WEAKREF(source)), DOCK_WARMUP_TIME, TIMER_STOPPABLE)
 
 /**
   * Proc called after a shuttle is moved, used for checking a ship's location when it's moved manually (E.G. calling the mining shuttle via a console)
@@ -774,6 +816,9 @@
 		return "Ship not docked!"
 	if(!shuttle)
 		return "Shuttle not found!"
+	// Check undock cooldown (after docking)
+	if(!COOLDOWN_FINISHED(src, undock_cooldown))
+		return "Undock systems stabilizing! [DisplayTimeText(COOLDOWN_TIMELEFT(src, undock_cooldown))] remaining."
 	// Check interdiction undock lockout
 	if(!COOLDOWN_FINISHED(src, interdiction_undock_lockout))
 		return "Undocking systems locked! [DisplayTimeText(COOLDOWN_TIMELEFT(src, interdiction_undock_lockout))] remaining."
@@ -820,6 +865,8 @@
 					S.shuttle.shuttle_areas |= shuttle.shuttle_areas
 				forceMove(docking_target)
 				state = OVERMAP_SHIP_IDLE
+				// Start undock cooldown
+				COOLDOWN_START(src, undock_cooldown, UNDOCK_COOLDOWN_TIME)
 				SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_DOCKED)
 			else
 				addtimer(CALLBACK(src, PROC_REF(complete_dock), to_dock), 1 SECONDS) //This should never happen, yet it does sometimes.
@@ -1081,9 +1128,10 @@
   * and positions the docking ports so the ships' exits face each other.
   * * other_ship - The other ship to dock with
   * * user - The user who initiated the docking
+  * * instant - If TRUE, bypasses the dock warmup (used for force dock)
   * Returns an error string on failure, null on success.
   */
-/obj/structure/overmap/ship/proc/dock_ships_directly(obj/structure/overmap/ship/other_ship, mob/user)
+/obj/structure/overmap/ship/proc/dock_ships_directly(obj/structure/overmap/ship/other_ship, mob/user, instant = FALSE)
 	if(!other_ship || !shuttle || !other_ship.shuttle)
 		return "Invalid ships for docking."
 
@@ -1123,8 +1171,8 @@
 	other_ship.shuttle.port_destinations = E.reserve_dock_secondary
 
 	// Dock both ships
-	dock(E, E.reserve_dock)
-	other_ship.dock(E, E.reserve_dock_secondary)
+	dock(E, E.reserve_dock, instant)
+	other_ship.dock(E, E.reserve_dock_secondary, instant)
 
 	return null
 
@@ -1134,9 +1182,10 @@
   * but their airlocks won't be touching.
   * * other_ship - The other ship to dock with
   * * user - The user who initiated the docking (optional)
+  * * instant - If TRUE, bypasses the dock warmup (used for force dock)
   * Returns an error string on failure, null on success.
   */
-/obj/structure/overmap/ship/proc/dock_ships_to_reserve_ports(obj/structure/overmap/ship/other_ship, mob/user)
+/obj/structure/overmap/ship/proc/dock_ships_to_reserve_ports(obj/structure/overmap/ship/other_ship, mob/user, instant = FALSE)
 	if(!other_ship || !shuttle || !other_ship.shuttle)
 		return "Invalid ships for docking."
 
@@ -1200,8 +1249,8 @@
 	other_ship.shuttle.port_destinations = dock_for_them
 
 	// Dock both ships
-	dock(E, dock_for_us)
-	other_ship.dock(E, dock_for_them)
+	dock(E, dock_for_us, instant)
+	other_ship.dock(E, dock_for_them, instant)
 
 	return null
 
@@ -1606,3 +1655,5 @@
 #undef SHIP_RUIN
 #undef SHIP_DELETE
 #undef SHIP_VIEW_RANGE
+#undef DOCK_WARMUP_TIME
+#undef UNDOCK_COOLDOWN_TIME

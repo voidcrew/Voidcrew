@@ -217,6 +217,8 @@
 	var/selected_missile_type
 	/// Selected approach direction for missiles and lasers (NORTH/SOUTH/EAST/WEST or null for auto)
 	var/selected_approach_direction
+	/// UI theme preference
+	var/theme
 
 	// ===== INTERDICTOR VARIABLES =====
 	/// Linked interdictor machine (weakref)
@@ -708,6 +710,9 @@
 	data["debug_interdictor"] = debug_interdictor
 	data["debug_shields"] = debug_shields
 
+	// Theme preference
+	data["theme"] = theme
+
 	return data
 
 /obj/machinery/computer/camera_advanced/ship_combat/ui_act(action, list/params, datum/tgui/ui)
@@ -858,6 +863,10 @@
 			if(!cloak)
 				return FALSE
 			return cloak.deactivate_cloak()
+
+		if("setTheme")
+			theme = params["theme"]
+			return TRUE
 
 	return FALSE
 

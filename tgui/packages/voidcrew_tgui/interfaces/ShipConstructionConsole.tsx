@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Collapsible,
+  Dropdown,
   LabeledList,
   NoticeBox,
   ProgressBar,
@@ -53,9 +54,10 @@ interface Data {
   maxIntegrity: number;
   integrity: number;
   overhealth: number;
+  theme?: string;
 }
 
-type TabType = 'construction' | 'relocation';
+type TabType = 'construction' | 'relocation' | 'settings';
 
 export const ShipConstructionConsole = () => {
   const { act, data } = useBackend<Data>();
@@ -78,12 +80,13 @@ export const ShipConstructionConsole = () => {
     maxIntegrity,
     integrity,
     overhealth,
+    theme,
   } = data;
 
   const [activeTab, setActiveTab] = useState<TabType>('construction');
 
   return (
-    <Window width={480} height={400} title="Ship Construction Console">
+    <Window width={480} height={400} title="Ship Construction Console" theme={theme}>
       <Window.Content scrollable>
         <Stack vertical fill>
           {/* Operation Status Message */}
@@ -114,6 +117,13 @@ export const ShipConstructionConsole = () => {
                 onClick={() => setActiveTab('relocation')}
               >
                 Port Relocation
+              </Tabs.Tab>
+              <Tabs.Tab
+                selected={activeTab === 'settings'}
+                onClick={() => setActiveTab('settings')}
+                icon="cog"
+              >
+                Settings
               </Tabs.Tab>
             </Tabs>
           </Stack.Item>
@@ -146,6 +156,7 @@ export const ShipConstructionConsole = () => {
                 airlocks={airlocks}
               />
             )}
+            {activeTab === 'settings' && <SettingsTab />}
           </Stack.Item>
         </Stack>
       </Window.Content>
@@ -427,6 +438,39 @@ const RelocationTab = (props: RelocationTabProps) => {
           <NoticeBox warning>Ship must be docked.</NoticeBox>
         </Stack.Item>
       )}
+    </Stack>
+  );
+};
+
+const SettingsTab = () => {
+  const { act, data } = useBackend<Data>();
+  const { theme } = data;
+
+  return (
+    <Stack vertical>
+      <Stack.Item>
+        <Section title="Display Settings">
+          <LabeledList>
+            <LabeledList.Item label="Theme">
+              <Dropdown
+                width="150px"
+                selected={theme || 'default'}
+                options={[
+                  'default',
+                  'cardtable',
+                  'malfunction',
+                  'ntOS95',
+                  'ntos_synth',
+                  'ntos_terminal',
+                  'syndicate',
+                  'wizard',
+                ]}
+                onSelected={(value) => act('setTheme', { theme: value })}
+              />
+            </LabeledList.Item>
+          </LabeledList>
+        </Section>
+      </Stack.Item>
     </Stack>
   );
 };
