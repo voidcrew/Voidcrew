@@ -47,7 +47,7 @@ const TierDots = ({ tier, maxTier = 4 }: { tier: number; maxTier?: number }) => 
   );
 };
 
-// Compact upgrade display: "Name: ●●●○"
+// Compact upgrade display: "Name: PartName ●●●○"
 const UpgradeDisplay = ({
   label,
   tier,
@@ -60,6 +60,20 @@ const UpgradeDisplay = ({
   <Box inline fontSize="9px" mr={1}>
     <Box inline color="label">{label}:</Box>
     <Box inline color="white" ml={0.5}>{getPartName(tier, names)}</Box>
+    <TierDots tier={tier} />
+  </Box>
+);
+
+// Simple upgrade display with just dots: "Cap: ●●●○"
+const SimpleUpgradeDisplay = ({
+  label,
+  tier,
+}: {
+  label: string;
+  tier: number;
+}) => (
+  <Box inline fontSize="9px" mr={1}>
+    <Box inline color="label">{label}:</Box>
     <TierDots tier={tier} />
   </Box>
 );
@@ -270,12 +284,6 @@ const TargetingTab = () => {
       <Stack.Item>
         <TargetingPanel />
       </Stack.Item>
-      <Stack.Item>
-        <EnemyStatusPanel />
-      </Stack.Item>
-      <Stack.Item>
-        <InterdictorPanel />
-      </Stack.Item>
     </Stack>
   );
 };
@@ -283,7 +291,6 @@ const TargetingTab = () => {
 const TargetingPanel = () => {
   const { act, data } = useBackend<Data>();
   const {
-    ship_name,
     target_name,
     target_ref,
     nearby_ships,
@@ -295,242 +302,202 @@ const TargetingPanel = () => {
     is_in_attack_mode,
   } = data;
 
-  return (
-    <Section
-      title={
-        <Box inline>
-          <Icon name="crosshairs" mr={1} />
-          Target Selection
-        </Box>
-      }
-      buttons={
-        <Box
-          color="label"
-          fontSize="10px"
-          style={{
-            maxWidth: '140px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {ship_name}
-        </Box>
-      }
-    >
-      <Stack vertical>
-        {/* Targeting Lock In Progress */}
-        {!!is_targeting && (
-          <Stack.Item>
-            <Box
-              p={0.5}
-              mb={0.5}
-              backgroundColor="rgba(255, 165, 0, 0.2)"
-              style={{ borderRadius: '3px' }}
-            >
-              <Stack vertical>
-                <Stack.Item>
-                  <Stack align="center" justify="center">
-                    <Stack.Item>
-                      <Icon name="spinner" spin color="average" mr={1} />
-                    </Stack.Item>
-                    <Stack.Item>
-                      <Box bold color="average" fontSize="11px">
-                        ACQUIRING: {targeting_ship_name}
-                      </Box>
-                    </Stack.Item>
-                    <Stack.Item ml={1}>
-                      <Button
-                        icon="times"
-                        color="transparent"
-                        compact
-                        onClick={() => act('cancel_targeting')}
-                      />
-                    </Stack.Item>
-                  </Stack>
-                </Stack.Item>
-                <Stack.Item>
-                  <ProgressBar value={(targeting_progress || 0) / 100} color="blue">
-                    {targeting_time_remaining.toFixed(1)}s
-                  </ProgressBar>
-                </Stack.Item>
-              </Stack>
-            </Box>
-          </Stack.Item>
-        )}
+  // Find the currently targeted ship for status display
+  const targetShip = target_ref ? nearby_ships.find((s) => s.ref === target_ref) : null;
 
-        {/* Current Target Display */}
+  return (
+    <Stack vertical>
+      {/* Targeting Lock In Progress */}
+      {!!is_targeting && (
+        <Stack.Item>
+          <Box
+            p={0.5}
+            mb={0.5}
+            backgroundColor="rgba(255, 165, 0, 0.2)"
+            style={{ borderRadius: '3px' }}
+          >
+            <Stack vertical>
+              <Stack.Item>
+                <Stack align="center" justify="center">
+                  <Stack.Item>
+                    <Icon name="spinner" spin color="average" mr={1} />
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Box bold color="average" fontSize="11px">
+                      ACQUIRING: {targeting_ship_name}
+                    </Box>
+                  </Stack.Item>
+                  <Stack.Item ml={1}>
+                    <Button
+                      icon="times"
+                      color="transparent"
+                      compact
+                      onClick={() => act('cancel_targeting')}
+                    />
+                  </Stack.Item>
+                </Stack>
+              </Stack.Item>
+              <Stack.Item>
+                <ProgressBar value={(targeting_progress || 0) / 100} color="blue">
+                  {targeting_time_remaining.toFixed(1)}s
+                </ProgressBar>
+              </Stack.Item>
+            </Stack>
+          </Box>
+        </Stack.Item>
+      )}
+
+      {/* Current Target Display */}
+      {target_name && targetShip ? (
+        <Stack.Item>
+          <Box
+            p={0.5}
+            backgroundColor="rgba(219, 40, 40, 0.15)"
+            style={{ borderRadius: '3px' }}
+          >
+            <Stack vertical>
+              {/* Target Name Header */}
+              <Stack.Item>
+                <Stack align="center">
+                  <Stack.Item>
+                    <Icon name="bullseye" color="bad" mr={1} />
+                  </Stack.Item>
+                  <Stack.Item grow>
+                    <Box bold color="bad" fontSize="13px">
+                      {target_name}
+                    </Box>
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Button
+                      icon="times"
+                      color="transparent"
+                      compact
+                      onClick={() => act('clear_target')}
+                    />
+                  </Stack.Item>
+                </Stack>
+              </Stack.Item>
+              {/* Enemy Status Bars */}
+              <Stack.Item>
+                <Stack fontSize="10px">
+                  <Stack.Item grow basis="50%">
+                    <Box color="label" mb={0.25}>Shields</Box>
+                    <ProgressBar
+                      value={targetShip.shields_max > 0 ? targetShip.shields / targetShip.shields_max : 0}
+                      color="#4488aa"
+                    >
+                      {Math.round(targetShip.shields)}/{targetShip.shields_max}
+                    </ProgressBar>
+                  </Stack.Item>
+                  <Stack.Item grow basis="50%">
+                    <Box color="label" mb={0.25}>Integrity</Box>
+                    <ProgressBar
+                      value={targetShip.integrity_max > 0 ? targetShip.integrity / targetShip.integrity_max : 0}
+                      ranges={{
+                        bad: [0, 0.25],
+                        average: [0.25, 0.5],
+                        good: [0.5, 1],
+                      }}
+                    >
+                      {Math.round(targetShip.integrity)}%
+                    </ProgressBar>
+                  </Stack.Item>
+                </Stack>
+              </Stack.Item>
+              {/* Distance and Speed */}
+              <Stack.Item>
+                <Stack fontSize="10px" color="label">
+                  <Stack.Item grow>
+                    <Icon name="ruler" mr={0.5} />
+                    {targetShip.distance} tiles
+                  </Stack.Item>
+                  <Stack.Item grow>
+                    <Icon name="tachometer-alt" mr={0.5} />
+                    {targetShip.speed} spM
+                  </Stack.Item>
+                </Stack>
+              </Stack.Item>
+            </Stack>
+          </Box>
+        </Stack.Item>
+      ) : (
         <Stack.Item>
           <Box
             p={0.5}
             textAlign="center"
-            backgroundColor={target_name ? 'rgba(219, 40, 40, 0.15)' : 'rgba(255,255,255,0.05)'}
+            backgroundColor="rgba(255,255,255,0.05)"
             style={{ borderRadius: '3px' }}
           >
-            {target_name ? (
-              <Stack align="center" justify="center">
-                <Stack.Item>
-                  <Icon name="bullseye" color="bad" mr={1} />
-                </Stack.Item>
-                <Stack.Item>
-                  <Box bold color="bad" fontSize="14px">
-                    {target_name}
-                  </Box>
-                </Stack.Item>
-                <Stack.Item ml={1}>
-                  <Button
-                    icon="times"
-                    color="transparent"
-                    compact
-                    onClick={() => act('clear_target')}
-                  />
-                </Stack.Item>
-              </Stack>
-            ) : (
-              <Box color="label" fontSize="11px">No Target</Box>
-            )}
+            <Box color="label" fontSize="11px">No Target</Box>
           </Box>
         </Stack.Item>
+      )}
 
-        {/* Ship List */}
-        <Stack.Item>
-          {nearby_ships.length === 0 ? (
-            <Box color="label" textAlign="center" py={0.5} fontSize="11px">
-              No ships in sensor range
-            </Box>
-          ) : (
-            <Stack vertical>
-              {nearby_ships.map((ship) => (
-                <Stack.Item key={ship.ref}>
-                  <Button
-                    fluid
-                    compact
-                    icon={target_ref === ship.ref ? 'dot-circle' : 'circle'}
-                    selected={target_ref === ship.ref}
-                    onClick={() => act('select_target', { ref: ship.ref })}
-                  >
-                    {ship.name}
-                  </Button>
-                </Stack.Item>
-              ))}
-            </Stack>
-          )}
-        </Stack.Item>
-
-        {/* Attack Mode Indicator */}
-        {!!is_in_attack_mode && (
-          <Stack.Item>
-            <NoticeBox warning>
-              <Icon name="crosshairs" mr={1} />
-              TARGETING ACTIVE
-            </NoticeBox>
-          </Stack.Item>
+      {/* Ship List */}
+      <Stack.Item>
+        {nearby_ships.length === 0 ? (
+          <Box color="label" textAlign="center" py={0.5} fontSize="11px">
+            No ships in sensor range
+          </Box>
+        ) : (
+          <Stack vertical>
+            {nearby_ships.map((ship) => (
+              <Stack.Item key={ship.ref}>
+                <Button
+                  fluid
+                  compact
+                  icon={target_ref === ship.ref ? 'dot-circle' : 'circle'}
+                  selected={target_ref === ship.ref}
+                  onClick={() => act('select_target', { ref: ship.ref })}
+                >
+                  {ship.name}
+                </Button>
+              </Stack.Item>
+            ))}
+          </Stack>
         )}
+      </Stack.Item>
 
-        {/* Engage/Exit Button */}
+      {/* Attack Mode Indicator */}
+      {!!is_in_attack_mode && (
         <Stack.Item>
-          {is_in_attack_mode ? (
-            <Button
-              fluid
-              compact
-              icon="times"
-              color="grey"
-              onClick={() => act('deactivate')}
-            >
-              EXIT TARGETING
-            </Button>
-          ) : (
-            <Button
-              fluid
-              compact
-              icon="rocket"
-              color="red"
-              disabled={!target_name || !target_in_missile_range}
-              onClick={() => act('activate')}
-            >
-              {!target_name
-                ? 'Select Target'
-                : !target_in_missile_range
-                  ? 'Out of Range'
-                  : 'ENGAGE'}
-            </Button>
-          )}
+          <NoticeBox warning>
+            <Icon name="crosshairs" mr={1} />
+            TARGETING ACTIVE
+          </NoticeBox>
         </Stack.Item>
-      </Stack>
-    </Section>
-  );
-};
+      )}
 
-const EnemyStatusPanel = () => {
-  const { data } = useBackend<Data>();
-  const { target_name, target_ref, nearby_ships } = data;
-
-  if (!target_ref || !target_name) {
-    return null;
-  }
-
-  const targetShip = nearby_ships.find((s) => s.ref === target_ref);
-  if (!targetShip) {
-    return null;
-  }
-
-  const shieldPercent = targetShip.shields_max > 0
-    ? targetShip.shields / targetShip.shields_max
-    : 0;
-  const integrityPercent = targetShip.integrity_max > 0
-    ? targetShip.integrity / targetShip.integrity_max
-    : 0;
-
-  return (
-    <Section
-      title={
-        <Box inline>
-          <Icon name="eye" mr={1} />
-          Enemy Status
-        </Box>
-      }
-    >
-      <Stack vertical>
-        <Stack.Item>
-          <Stack fontSize="10px">
-            <Stack.Item grow basis="50%">
-              <Box color="label" mb={0.25}>Shields</Box>
-              <ProgressBar
-                value={shieldPercent}
-                color="cyan"
-              >
-                {Math.round(targetShip.shields)}/{targetShip.shields_max}
-              </ProgressBar>
-            </Stack.Item>
-            <Stack.Item grow basis="50%">
-              <Box color="label" mb={0.25}>Integrity</Box>
-              <ProgressBar
-                value={integrityPercent}
-                ranges={{
-                  bad: [0, 0.25],
-                  average: [0.25, 0.5],
-                  good: [0.5, 1],
-                }}
-              >
-                {Math.round(targetShip.integrity)}%
-              </ProgressBar>
-            </Stack.Item>
-          </Stack>
-        </Stack.Item>
-        <Stack.Item>
-          <Stack fontSize="10px" color="label">
-            <Stack.Item grow>
-              <Icon name="ruler" mr={0.5} />
-              {targetShip.distance}m
-            </Stack.Item>
-            <Stack.Item grow>
-              <Icon name="tachometer-alt" mr={0.5} />
-              {targetShip.speed} m/s
-            </Stack.Item>
-          </Stack>
-        </Stack.Item>
-      </Stack>
-    </Section>
+      {/* Engage/Exit Button */}
+      <Stack.Item>
+        {is_in_attack_mode ? (
+          <Button
+            fluid
+            compact
+            icon="times"
+            color="grey"
+            onClick={() => act('deactivate')}
+          >
+            EXIT TARGETING
+          </Button>
+        ) : (
+          <Button
+            fluid
+            compact
+            icon="rocket"
+            color="red"
+            disabled={!target_name || !target_in_missile_range}
+            onClick={() => act('activate')}
+          >
+            {!target_name
+              ? 'Select Target'
+              : !target_in_missile_range
+                ? 'Out of Range'
+                : 'ENGAGE'}
+          </Button>
+        )}
+      </Stack.Item>
+    </Stack>
   );
 };
 
@@ -817,6 +784,9 @@ const EquipmentTab = () => {
         <ShieldGeneratorsPanel />
       </Stack.Item>
       <Stack.Item>
+        <InterdictorPanel />
+      </Stack.Item>
+      <Stack.Item>
         <CloakingPanel />
       </Stack.Item>
     </Stack>
@@ -1001,20 +971,17 @@ const ShieldGeneratorsPanel = () => {
                     >
                       <Box fontSize="11px" bold mb={0.5}>{gen.name}</Box>
                       <Box>
-                        <UpgradeDisplay
+                        <SimpleUpgradeDisplay
                           label="Cap"
                           tier={gen.upgrades?.capacitor_tier || 0}
-                          names={CAPACITOR_NAMES}
                         />
-                        <UpgradeDisplay
+                        <SimpleUpgradeDisplay
                           label="Laser"
                           tier={gen.upgrades?.laser_tier || 0}
-                          names={LASER_NAMES}
                         />
-                        <UpgradeDisplay
+                        <SimpleUpgradeDisplay
                           label="Scan"
                           tier={gen.upgrades?.scanning_tier || 0}
-                          names={SCANNER_NAMES}
                         />
                       </Box>
                     </Box>

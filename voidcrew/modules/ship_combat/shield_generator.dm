@@ -1531,6 +1531,8 @@
 /// Called when ship undocks - shields can be reactivated
 /obj/machinery/ship_combat/shield_generator/proc/on_ship_undocked(datum/source)
 	SIGNAL_HANDLER
+	// Invalidate boundary cache in case ship was modified while docked (e.g., construction console)
+	invalidate_boundary_cache()
 	// Shields don't auto-activate on undock - crew must manually enable
 
 /// Attempts to auto-link to a combat console on the same ship

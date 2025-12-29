@@ -93,8 +93,8 @@
 	name = "ship construction console"
 	desc = "A console for managing ship construction and modifications. Control a remote drone to build and modify your ship."
 	icon = 'voidcrew/modules/shuttle/icons/computer.dmi'
-	icon_screen = "navigation"
-	icon_keyboard = "tech_key"
+	icon_screen = "construction"
+	icon_keyboard = "power_key"
 	circuit = /obj/item/circuitboard/computer/ship_construction
 	light_color = LIGHT_COLOR_CYAN
 	// Ships don't use camera networks - the drone doesn't need visibility checks

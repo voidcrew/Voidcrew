@@ -27,6 +27,7 @@
 /obj/item/bombcore/missile
 	name = "standard missile warhead"
 	desc = "A warhead designed for ship-to-ship missiles. Insert into a missile frame with a tracking circuit installed."
+	icon = 'voidcrew/icons/obj/devices/assemblies.dmi'
 	icon_state = "bombcore"
 	/// Short name for use in missile naming and UI
 	var/payload_type = "standard"
@@ -53,6 +54,7 @@
 	name = "light missile warhead"
 	desc = "A smaller warhead for missiles. Less damage but cheaper to produce."
 	payload_type = "light"
+	icon_state = "bombcore_light"
 	ship_damage = MISSILE_DAMAGE_LIGHT
 	missile_icon_state = "smissile"
 	insert_time = 2 SECONDS
@@ -63,6 +65,7 @@
 
 /obj/item/bombcore/missile/heavy
 	name = "heavy missile warhead"
+	icon_state = "bombcore_heavy"
 	desc = "A massive warhead for missiles. Devastating damage but expensive."
 	w_class = WEIGHT_CLASS_BULKY
 	payload_type = "heavy"

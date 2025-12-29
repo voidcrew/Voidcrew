@@ -10,6 +10,7 @@
 	icon_state = "unloaded"
 	density = TRUE
 	anchored = TRUE
+	dir = 4
 	drag_slowdown = 2  // Heavy machinery
 	power_channel = AREA_USAGE_EQUIP
 	idle_power_usage = 0

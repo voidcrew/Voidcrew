@@ -480,7 +480,7 @@
 				// Calculate distance
 				var/turf/target_turf = get_turf(S)
 				var/distance = target_turf ? get_dist(our_turf, target_turf) : 0
-				// Calculate speed magnitude from x/y velocity
+				// Calculate speed magnitude from x/y velocity (same as helm - spM)
 				var/speed_val = 0
 				if(S.speed && length(S.speed) >= 2)
 					speed_val = sqrt(S.speed[1] ** 2 + S.speed[2] ** 2)
@@ -492,7 +492,7 @@
 					"integrity" = 100,  // Ship integrity - placeholder, ships don't have a direct integrity stat
 					"integrity_max" = 100,
 					"distance" = distance,
-					"speed" = round(speed_val * 100, 0.1),  // Convert to display units
+					"speed" = round(speed_val, 0.1),  // Speed in spM (spaces per minute) - same as helm
 				))
 	data["nearby_ships"] = nearby_ships
 
