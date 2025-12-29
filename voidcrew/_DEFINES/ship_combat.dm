@@ -155,6 +155,9 @@
 /// Sent when shields are reactivated after cooldown
 #define COMSIG_SHIP_SHIELD_RESTORED "ship_shield_restored"
 
+/// Sent when a ship's hull takes damage (turfs destroyed, walls damaged, etc)
+#define COMSIG_SHIP_HULL_HIT "ship_hull_hit"
+
 /// Return value to cancel missile impact (missile was blocked by shields)
 #define COMSIG_CANCEL_MISSILE_IMPACT (1<<0)
 

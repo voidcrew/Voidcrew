@@ -410,6 +410,10 @@
 	for(var/mob/living/victim in range(5, impact_loc))
 		shake_camera(victim, shake_intensity, shake_intensity)
 
+	// Signal that hull was hit (for combat camera static updates)
+	if(target_ship)
+		SEND_SIGNAL(target_ship, COMSIG_SHIP_HULL_HIT, impact_loc)
+
 // ========== BEAM SEGMENT EFFECT ==========
 
 /// Individual beam segment - uses beam_omni for single, plasmacutter for multi

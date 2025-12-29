@@ -29,6 +29,8 @@
 		console.remove_eye_control(user)
 	assign_user(null)
 	clear_interior_static()
+	if(target_ship)
+		UnregisterSignal(target_ship, COMSIG_SHIP_HULL_HIT)
 	console = null
 	target_ship = null
 	return ..()
@@ -72,12 +74,20 @@
 			static_image.loc = ship_turf
 			interior_static_images += static_image
 
-/// Checks if a turf is on the exterior of the ship (has at least one adjacent space turf)
+/// How many tiles from space should be visible (0 = only directly adjacent to space)
+#define COMBAT_CAMERA_VISIBILITY_RANGE 1
+
+/// Checks if a turf is visible (within COMBAT_CAMERA_VISIBILITY_RANGE tiles of space)
+/// When range is 0, only turfs directly adjacent to space are visible
+/// When range is 1+, turfs within that many tiles of space are also visible
 /mob/eye/camera/remote/ship_combat/proc/is_exterior_turf(turf/T)
-	// Check cardinal directions for space
-	for(var/dir in GLOB.cardinals)
-		var/turf/adjacent = get_step(T, dir)
-		if(isspaceturf(adjacent))
+	return is_near_space(T, COMBAT_CAMERA_VISIBILITY_RANGE)
+
+/// Checks if a turf is within 'range' tiles of any space turf
+/mob/eye/camera/remote/ship_combat/proc/is_near_space(turf/T, range = 0)
+	// Check all turfs within range for space
+	for(var/turf/check_turf in RANGE_TURFS(range, T))
+		if(isspaceturf(check_turf))
 			return TRUE
 	return FALSE
 
@@ -93,6 +103,24 @@
 	var/client/client = GetViewerClient()
 	if(client && interior_static_images)
 		client.images += interior_static_images
+
+/// Refreshes static overlay - called when hull damage reveals new areas
+/mob/eye/camera/remote/ship_combat/proc/refresh_interior_static()
+	var/client/client = GetViewerClient()
+	if(!client)
+		return
+	// Remove old static, regenerate, and reapply
+	if(interior_static_images)
+		client.images -= interior_static_images
+	generate_interior_static()
+	if(interior_static_images)
+		client.images += interior_static_images
+
+/// Signal handler for when the target ship's hull is hit
+/mob/eye/camera/remote/ship_combat/proc/on_target_hull_hit(datum/source, turf/impact_loc)
+	SIGNAL_HANDLER
+	// Refresh static after a short delay to allow turf destruction to complete
+	addtimer(CALLBACK(src, PROC_REF(refresh_interior_static)), 0.5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
 
 /// Override to allow assigning non-living mobs (admin ghosts)
 /mob/eye/camera/remote/ship_combat/assign_user(mob/new_user)
@@ -861,10 +889,12 @@
 	for(var/datum/action/actions_removed as anything in actions)
 		actions_removed.Remove(user)
 
-	// Clear static overlay before removing control
+	// Clear static overlay and unregister hull hit signal before removing control
 	var/mob/eye/camera/remote/ship_combat/combat_eye = eyeobj
 	if(combat_eye)
 		combat_eye.clear_interior_static()
+		if(combat_eye.target_ship)
+			combat_eye.UnregisterSignal(combat_eye.target_ship, COMSIG_SHIP_HULL_HIT)
 
 	if(eyeobj)
 		eyeobj.assign_user(null)
@@ -917,6 +947,8 @@
 		combat_eye.target_ship = target_ship
 		// Generate static overlay for interior turfs - only ship outline will be visible
 		combat_eye.generate_interior_static()
+		// Register for hull damage to update static when breaches occur
+		combat_eye.RegisterSignal(target_ship, COMSIG_SHIP_HULL_HIT, TYPE_PROC_REF(/mob/eye/camera/remote/ship_combat, on_target_hull_hit))
 
 	// Get the mobile docking port turf for the TARGET ship
 	var/turf/target_turf = get_target_ship_port_turf()
@@ -1257,6 +1289,7 @@
 
 	// Play targeting lock sound
 	playsound(src, 'voidcrew/sound/machines/interdictor/startup2.ogg', 30, FALSE)
+	playsound(src, 'voidcrew/sound/machines/interdictor/terminal.ogg', 30, FALSE)
 
 	// Register for target deletion and movement during targeting
 	RegisterSignal(targeting_ship, COMSIG_QDELETING, PROC_REF(on_targeting_ship_deleted))

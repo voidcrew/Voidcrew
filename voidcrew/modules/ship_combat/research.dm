@@ -65,7 +65,7 @@
 /datum/techweb_node/ship_combat_shields
 	id = TECHWEB_NODE_SHIP_COMBAT_SHIELDS
 	display_name = "Shuttle Shield Systems"
-	description = "Deflector shield technology that protects shuttles from missiles and meteors. Power requirements scale with shuttle size."
+	description = "Deflector shield technology that protects shuttles from attackers. Power requirements scale with shuttle size."
 	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
 	design_ids = list(
 		"ship_shield_generator",

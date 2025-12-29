@@ -20,6 +20,8 @@
 	var/sound/active_sound
 	/// Whether the sound is currently playing
 	var/playing = FALSE
+	/// Timer for periodic listener refresh (catches ghosts, new mobs entering range, etc.)
+	var/refresh_timer
 
 /datum/realtime_positional_sound/New(atom/sound_source, sound_path, vol = 50, hear_range = 7)
 	source = sound_source
@@ -61,11 +63,19 @@
 	// Register for source movement to update all listeners
 	RegisterSignal(source, COMSIG_MOVABLE_MOVED, PROC_REF(on_source_moved))
 
+	// Start periodic refresh to catch ghosts, new mobs entering range, etc.
+	refresh_timer = addtimer(CALLBACK(src, PROC_REF(periodic_refresh)), 2 SECONDS, TIMER_STOPPABLE | TIMER_LOOP)
+
 /// Stops the sound completely
 /datum/realtime_positional_sound/proc/stop()
 	if(!playing)
 		return
 	playing = FALSE
+
+	// Stop the periodic refresh timer
+	if(refresh_timer)
+		deltimer(refresh_timer)
+		refresh_timer = null
 
 	UnregisterSignal(source, COMSIG_MOVABLE_MOVED)
 
@@ -113,6 +123,10 @@
 		var/turf/listener_turf = get_turf(listener)
 		if(!listener_turf || get_dist(source_turf, listener_turf) > range)
 			deregister_listener(listener)
+
+/// Called periodically to catch new mobs entering range (ghosts, teleports, etc.)
+/datum/realtime_positional_sound/proc/periodic_refresh()
+	refresh_listeners()
 
 /// Registers a new listener
 /datum/realtime_positional_sound/proc/register_listener(mob/listener)

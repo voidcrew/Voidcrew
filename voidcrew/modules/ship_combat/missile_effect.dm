@@ -88,17 +88,22 @@
 	if(missile_icon)
 		icon_state = missile_icon
 
-	// Rotate to face the target direction
+	// Set direction to face the target using directional sprites
 	if(target_turf)
 		var/turf/our_turf = get_turf(src)
 		if(our_turf)
-			var/angle = get_angle(our_turf, target_turf)
-			// The missile sprite points down (south) by default
-			// get_angle returns 0 for north, 90 for east, etc.
-			// Add 180 to flip the sprite to face the target
-			var/matrix/M = matrix()
-			M.Turn(angle + 180)
-			transform = M
+			// Use dir for 4-directional sprites instead of matrix rotation
+			// get_dir gives us the cardinal/diagonal direction
+			var/target_dir = get_dir(our_turf, target_turf)
+			// Convert to cardinal direction (missile sprites only have 4 dirs)
+			// Diagonals get converted to the dominant axis
+			switch(target_dir)
+				if(NORTH, SOUTH, EAST, WEST)
+					dir = target_dir
+				if(NORTHEAST, NORTHWEST)
+					dir = NORTH
+				if(SOUTHEAST, SOUTHWEST)
+					dir = SOUTH
 
 	// Start moving toward target
 	if(target_turf)
@@ -217,6 +222,10 @@
 	// Screen shake for nearby players
 	for(var/mob/living/victim in range(7, impact_loc))
 		shake_camera(victim, 3, 2)
+
+	// Signal that hull was hit (for combat camera static updates)
+	if(target_ship)
+		SEND_SIGNAL(target_ship, COMSIG_SHIP_HULL_HIT, impact_loc)
 
 	qdel(src)
 
@@ -371,24 +380,8 @@
 	pixel_x = offset_x
 	pixel_y = offset_y
 
-	// Calculate the angle based on direction and rotate sprite
-	// The missile sprite points down (south) by default
-	var/angle
-	switch(fire_dir)
-		if(NORTH)
-			angle = 180
-		if(SOUTH)
-			angle = 0
-		if(EAST)
-			angle = -90
-		if(WEST)
-			angle = 90
-		else
-			angle = 0
-
-	var/matrix/M = matrix()
-	M.Turn(angle)
-	transform = M
+	// Use directional sprites instead of matrix rotation
+	dir = fire_dir
 
 	// Start flying animation after short delay
 	addtimer(CALLBACK(src, PROC_REF(start_flying)), 0.1 SECONDS)
