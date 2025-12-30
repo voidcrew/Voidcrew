@@ -29,7 +29,7 @@
 /datum/overmap/planet/lava
 	name = "Lava Planet"
 	desc = "A planet with lots of seismic and volcanic activity."
-	color = COLOR_ORANGE
+	icon_state = "lava_planet"
 
 	ruin_type = ZTRAIT_LAVA_RUINS
 	mapgen = /datum/map_generator/planet_generator/lava
@@ -42,7 +42,7 @@
 /datum/overmap/planet/ice
 	name = "Frozen Planet"
 	desc = "A planet with traces of water and extremely low temperatures."
-	color = COLOR_BLUE_LIGHT
+	icon_state = "snow_planet"
 
 	ruin_type = ZTRAIT_ICE_RUINS
 	mapgen = /datum/map_generator/planet_generator/snow
@@ -55,7 +55,7 @@
 /datum/overmap/planet/beach
 	name = "Oceanic Planet"
 	desc = "A planet with many traces of fish."
-	color = COLOR_NAVY
+	icon_state = "ocean_planet"
 
 	ruin_type = ZTRAIT_BEACH_RUINS
 	mapgen = /datum/map_generator/planet_generator/beach
@@ -68,7 +68,7 @@
 /datum/overmap/planet/jungle
 	name = "Tropical Planet"
 	desc = "A planet teeming with life."
-	color = COLOR_LIME
+	icon_state = "jungle_planet"
 
 	ruin_type = ZTRAIT_JUNGLE_RUINS
 	mapgen = /datum/map_generator/planet_generator
@@ -81,7 +81,7 @@
 /datum/overmap/planet/wasteland
 	name = "Apocalyptic Planet"
 	desc = "An abandoned industrial planet."
-	color = COLOR_BEIGE
+	icon_state = "desert_planet"
 
 	ruin_type = ZTRAIT_WASTELAND_RUINS
 	mapgen = /datum/map_generator/planet_generator/lava

@@ -32,7 +32,6 @@
 		name = planet_info.name
 		desc = planet_info.desc
 		icon_state = planet_info.icon_state
-		color = planet_info.color
 		weather_type = planet_info.weather_controller_type
 		qdel(planet_info)
 

@@ -57,10 +57,11 @@
 
 /obj/structure/overmap/event/electric/Initialize(mapload)
 	. = ..()
-	icon_state = "electrical[rand(1, 4)]"
+	icon_state = "electric"
 
 /obj/structure/overmap/event/electric/minor
 	name = "electrical storm (minor)"
+	icon_state = "electric_minor"
 	spread_chance = 40
 	chain_rate = 2
 	intensity = 1
@@ -68,6 +69,7 @@
 /obj/structure/overmap/event/electric/majour
 	name = "electrical storm (majour)"
 	spread_chance = 15
+	icon_state = "electric_major"
 	chain_rate = 6
 	intensity = 2
 

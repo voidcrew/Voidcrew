@@ -24,7 +24,7 @@
 	name = "Orbital survey mapping"
 	desc = "Upgrades your survey console to allow you to view a map of the planet and control where your ship docks"
 	id = "survey_ship_docking"
-	research_icon = 'voidcrew/icons/effects/overmap.dmi'
+	research_icon = 'voidcrew/modules/overmap/icons/effects/overmap.dmi'
 	research_icon_state = "globe"
 
 // Sight capabilities - Can we view mobs, objects, turfs, etc
@@ -32,28 +32,28 @@
 	name = "Survey mapping upgrade - Visible objects"
 	desc = "Upgrades your survey console capabilities to show flora and objects when using the map"
 	id = "survey_map_obj_sight"
-	research_icon = 'voidcrew/icons/effects/overmap.dmi'
+	research_icon = 'voidcrew/modules/overmap/icons/effects/overmap.dmi'
 	research_icon_state = "globe"
 
 /datum/design/survey_map_mob_sight
 	name = "Survey mapping upgrade - Visible lifeforms"
 	desc = "Upgrades your survey mapping system to show lifeforms when using the map"
 	id = "survey_map_mob_sight"
-	research_icon = 'voidcrew/icons/effects/overmap.dmi'
+	research_icon = 'voidcrew/modules/overmap/icons/effects/overmap.dmi'
 	research_icon_state = "globe"
 
 /datum/design/survey_map_range_upg_superior
 	name = "Survey mapping upgrade - Superior view range"
 	desc = "Upgrades your survey mapping system to have a larger field of view"
 	id = "survey_map_range_upg_superior"
-	research_icon = 'voidcrew/icons/effects/overmap.dmi'
+	research_icon = 'voidcrew/modules/overmap/icons/effects/overmap.dmi'
 	research_icon_state = "globe"
 
 /datum/design/survey_map_range_upg_elite
 	name = "Survey mapping upgrade - Elite view range"
 	desc = "Upgrades your survey mapping system to have a larger field of view"
 	id = "survey_map_range_upg_elite"
-	research_icon = 'voidcrew/icons/effects/overmap.dmi'
+	research_icon = 'voidcrew/modules/overmap/icons/effects/overmap.dmi'
 	research_icon_state = "globe"
 
 // Rewards upgrades
