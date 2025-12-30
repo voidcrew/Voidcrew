@@ -484,6 +484,8 @@ const ShipControlContent = (props, context) => {
     undockLockoutRemaining,
     dockWarmup,
     dockWarmupRemaining,
+    undockWarmup,
+    undockWarmupRemaining,
     isInterdicted,
     speedMultiplier,
   } = data;
@@ -493,12 +495,16 @@ const ShipControlContent = (props, context) => {
 
   // Determine undock button state and tooltip
   const undockDisabled =
-    data.state !== 'idle' ||
+    (data.state !== 'idle' && data.state !== 'undocking') ||
     shipDisabled ||
     isDisabled ||
     undockCooldown ||
-    undockLocked;
+    undockLocked ||
+    undockWarmup;
   const getUndockTooltip = () => {
+    if (undockWarmup) {
+      return `Undocking in ${Math.ceil(undockWarmupRemaining / 10)}s...`;
+    }
     if (undockCooldown) {
       return `Systems stabilizing - ${Math.ceil(undockCooldownRemaining / 10)}s remaining`;
     }
@@ -535,6 +541,11 @@ const ShipControlContent = (props, context) => {
           Docking in {Math.ceil(dockWarmupRemaining / 10)}s...
         </div>
       )}
+      {data.state === 'undocking' && !!undockWarmup && !isNotCrew && (
+        <div className="NoticeBox">
+          Undocking in {Math.ceil(undockWarmupRemaining / 10)}s...
+        </div>
+      )}
       {!!flyable && !canThrust && (
         <div className="NoticeBox danger">No engine power available!</div>
       )}
@@ -557,10 +568,14 @@ const ShipControlContent = (props, context) => {
 
           <Table.Cell width={1}>
             <Button
-              tooltip="Dock in Empty Space"
+              tooltip={
+                dockWarmup
+                  ? `Docking in ${Math.ceil(dockWarmupRemaining / 10)}s...`
+                  : 'Dock in Empty Space'
+              }
               tooltipPosition="right"
               icon="sign-in-alt"
-              disabled={!flyable}
+              disabled={!flyable || dockWarmup}
               onClick={() => act('dock_empty')}
             />
           </Table.Cell>

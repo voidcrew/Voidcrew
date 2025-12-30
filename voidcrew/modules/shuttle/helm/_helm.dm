@@ -175,6 +175,10 @@
 	data["dockWarmup"] = !!current_ship.dock_warmup_timer
 	data["dockWarmupRemaining"] = current_ship.dock_warmup_timer ? timeleft(current_ship.dock_warmup_timer) : 0
 
+	// Undock warmup data
+	data["undockWarmup"] = !!current_ship.undock_warmup_timer
+	data["undockWarmupRemaining"] = current_ship.undock_warmup_timer ? timeleft(current_ship.undock_warmup_timer) : 0
+
 	// Interdiction status
 	data["isInterdicted"] = current_ship.is_interdicted
 	data["interdictionStrength"] = current_ship.interdiction_strength

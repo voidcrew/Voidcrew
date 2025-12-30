@@ -180,6 +180,7 @@
 /obj/machinery/computer/camera_advanced/ship_combat
 	name = "weapons system"
 	desc = "A tactical weapons system for ship-to-ship combat. Link missile launchers with a multitool, select a target ship, then use the targeting system to aim and fire."
+	icon = 'voidcrew/modules/shuttle/icons/computer.dmi'
 	icon_screen = "targeting"
 	icon_keyboard = "syndie_key"
 	circuit = /obj/item/circuitboard/computer/ship_combat_console
@@ -418,7 +419,7 @@
 
 	data["connected"] = !!current_ship
 	data["ship_name"] = current_ship?.display_name
-	data["ship_docked"] = current_ship?.docked ? TRUE : FALSE
+	data["ship_docked"] = current_ship?.is_in_ship_to_ship_dock()  // Block shields when in ship-to-ship dock (either direction)
 	data["cloak_active"] = cloak_active
 	data["attack_mode"] = attack_mode
 	data["is_in_attack_mode"] = (eyeobj && user.remote_control == eyeobj)
@@ -582,17 +583,17 @@
 			// Calculate upgrade tiers from stock parts
 			var/gen_capacitor_tier = 0
 			var/gen_laser_tier = 0
-			var/gen_scanning_tier = 0
+			var/gen_servo_tier = 0
 			for(var/datum/stock_part/capacitor/cap in gen.component_parts)
 				gen_capacitor_tier += cap.tier
 			for(var/datum/stock_part/micro_laser/laser in gen.component_parts)
 				gen_laser_tier += laser.tier
-			for(var/datum/stock_part/scanning_module/scanner in gen.component_parts)
-				gen_scanning_tier += scanner.tier
+			for(var/datum/stock_part/servo/servo in gen.component_parts)
+				gen_servo_tier += servo.tier
 			gen_status["upgrades"] = list(
 				"capacitor_tier" = gen_capacitor_tier,
 				"laser_tier" = gen_laser_tier,
-				"scanning_tier" = gen_scanning_tier,
+				"servo_tier" = gen_servo_tier,
 			)
 			generators += list(gen_status)
 		data["shield_generators"] = generators
@@ -871,6 +872,12 @@
 		// Register for hull damage to update static when breaches occur
 		combat_eye.RegisterSignal(target_ship, COMSIG_SHIP_HULL_HIT, TYPE_PROC_REF(/mob/eye/camera/remote/ship_combat, on_target_hull_hit))
 
+	// Register for ship movement to detect when ships move out of range
+	// Use COMSIG_MOVABLE_MOVED to catch both engine burns AND momentum-based movement
+	RegisterSignal(target_ship, COMSIG_MOVABLE_MOVED, PROC_REF(on_target_ship_moved_attack))
+	if(current_ship)
+		RegisterSignal(current_ship, COMSIG_MOVABLE_MOVED, PROC_REF(on_our_ship_moved_attack))
+
 	// Get the mobile docking port turf for the TARGET ship
 	var/turf/target_turf = get_target_ship_port_turf()
 	if(!target_turf)
@@ -902,6 +909,13 @@
 /// Exits attack mode - returns user to normal view
 /obj/machinery/computer/camera_advanced/ship_combat/proc/exit_attack_mode(mob/user)
 	attack_mode = FALSE
+
+	// Unregister ship movement signals
+	if(target_ship)
+		UnregisterSignal(target_ship, COMSIG_MOVABLE_MOVED)
+	if(current_ship)
+		UnregisterSignal(current_ship, COMSIG_MOVABLE_MOVED)
+
 	if(current_user == user)
 		remove_eye_control(user)  // This also restores interdiction overlay
 		// Don't call unset_machine() - it would double-call remove_eye_control
@@ -1308,6 +1322,34 @@
 			to_chat(current_user, span_warning("Target lock lost - [target_name] moved out of sensor range!"))
 		current_ship?.ship_announce("Target lock failed - target escaped sensor range.", "Targeting System")
 
+/// Called when the target ship moves during attack mode - check range
+/obj/machinery/computer/camera_advanced/ship_combat/proc/on_target_ship_moved_attack(datum/source)
+	SIGNAL_HANDLER
+	check_attack_range()
+
+/// Called when our ship moves during attack mode - check range
+/obj/machinery/computer/camera_advanced/ship_combat/proc/on_our_ship_moved_attack(datum/source)
+	SIGNAL_HANDLER
+	check_attack_range()
+
+/// Checks if attack mode should end due to ships moving out of range
+/obj/machinery/computer/camera_advanced/ship_combat/proc/check_attack_range()
+	if(!attack_mode || !target_ship || !current_ship)
+		return
+
+	var/turf/our_turf = get_turf(current_ship)
+	var/turf/target_turf = get_turf(target_ship)
+	if(!our_turf || !target_turf)
+		return
+
+	var/distance = get_dist(our_turf, target_turf)
+	if(distance > COMBAT_MISSILE_LOCK_RANGE)
+		var/target_name = target_ship.display_name
+		if(current_user)
+			to_chat(current_user, span_warning("Target lock lost - [target_name] moved out of weapons range!"))
+			INVOKE_ASYNC(src, PROC_REF(exit_attack_mode), current_user)
+		current_ship?.ship_announce("Weapons lock lost - target escaped range.", "Targeting System")
+
 /// Called when the ship we're targeting is deleted mid-lock
 /obj/machinery/computer/camera_advanced/ship_combat/proc/on_targeting_ship_deleted(datum/source)
 	SIGNAL_HANDLER
@@ -1575,13 +1617,12 @@
 		selected_approach_direction,
 	)
 
-	// Create visual beam on the overmap between ships
-	if(current_ship && target_ship)
+	// Create visual beam on the overmap between ships (only if not on same tile)
+	if(current_ship && target_ship && get_turf(current_ship) != get_turf(target_ship))
 		current_ship.Beam(
 			target_ship,
-			icon_state = is_multi_beam ? "plasmacutter" : "beam_omni",
+			icon_state = "beam_omni",
 			icon = 'icons/obj/weapons/guns/projectiles_tracer.dmi',
-			beam_color = "#ff3300",
 			emissive = TRUE,
 			time = 0.5 SECONDS,
 		)

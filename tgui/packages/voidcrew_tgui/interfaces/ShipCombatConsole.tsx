@@ -118,7 +118,7 @@ type Turret = {
   upgrades: {
     capacitor_tier: number;
     laser_tier: number;
-    scanning_tier: number;
+    servo_tier: number;
   };
 };
 
@@ -131,7 +131,7 @@ type ShieldGenerator = {
   upgrades: {
     capacitor_tier: number;
     laser_tier: number;
-    scanning_tier: number;
+    servo_tier: number;
   };
 };
 
@@ -974,7 +974,6 @@ const ShieldGeneratorsPanel = () => {
                       backgroundColor="rgba(255,255,255,0.03)"
                       style={{ borderRadius: '3px' }}
                     >
-                      <Box fontSize="11px" bold mb={0.5}>{gen.name}</Box>
                       <Box>
                         <SimpleUpgradeDisplay
                           label="Cap"
@@ -985,8 +984,8 @@ const ShieldGeneratorsPanel = () => {
                           tier={gen.upgrades?.laser_tier || 0}
                         />
                         <SimpleUpgradeDisplay
-                          label="Scan"
-                          tier={gen.upgrades?.scanning_tier || 0}
+                          label="Servo"
+                          tier={gen.upgrades?.servo_tier || 0}
                         />
                       </Box>
                     </Box>
@@ -1006,7 +1005,19 @@ const CloakingPanel = () => {
   const { cloak_device, cloak_unlocked } = data;
 
   if (!cloak_unlocked || !cloak_device) {
-    return null;
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="eye-slash" mr={1} />
+            Cloaking Device
+            <Box inline color="label" ml={1} fontSize="10px">
+              NOT LINKED
+            </Box>
+          </Box>
+        }
+      />
+    );
   }
 
   const {
@@ -1439,20 +1450,17 @@ const LaserTurretsPanel = () => {
                     </Stack>
                     {/* Upgrades row */}
                     <Box mt={0.5}>
-                      <UpgradeDisplay
+                      <SimpleUpgradeDisplay
                         label="Cap"
                         tier={turret.upgrades?.capacitor_tier || 0}
-                        names={CAPACITOR_NAMES}
                       />
-                      <UpgradeDisplay
+                      <SimpleUpgradeDisplay
                         label="Laser"
                         tier={turret.upgrades?.laser_tier || 0}
-                        names={LASER_NAMES}
                       />
-                      <UpgradeDisplay
-                        label="Scan"
-                        tier={turret.upgrades?.scanning_tier || 0}
-                        names={SCANNER_NAMES}
+                      <SimpleUpgradeDisplay
+                        label="Servo"
+                        tier={turret.upgrades?.servo_tier || 0}
                       />
                     </Box>
                   </Box>

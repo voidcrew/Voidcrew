@@ -366,13 +366,12 @@
 		approach_direction,
 	)
 
-	// Create visual beam on the overmap between ships
-	if(source_ship && target_ship)
+	// Create visual beam on the overmap between ships (only if not on same tile)
+	if(source_ship && target_ship && get_turf(source_ship) != get_turf(target_ship))
 		source_ship.Beam(
 			target_ship,
-			icon_state = multi_beam ? "plasmacutter" : "beam_omni",
+			icon_state = "beam_omni",
 			icon = 'icons/obj/weapons/guns/projectiles_tracer.dmi',
-			beam_color = "#ff3300",
 			emissive = TRUE,
 			time = 0.5 SECONDS,
 		)
@@ -403,6 +402,17 @@
 
 /// Returns status info for the combat console UI
 /obj/machinery/ship_combat/laser_turret/proc/get_status()
+	// Calculate upgrade tiers from stock parts
+	var/capacitor_tier = 0
+	var/laser_tier = 0
+	var/servo_tier = 0
+	for(var/datum/stock_part/capacitor/cap in component_parts)
+		capacitor_tier += cap.tier
+	for(var/datum/stock_part/micro_laser/laser in component_parts)
+		laser_tier += laser.tier
+	for(var/datum/stock_part/servo/servo in component_parts)
+		servo_tier += servo.tier
+
 	return list(
 		"id" = turret_id,
 		"name" = name,
@@ -415,6 +425,11 @@
 		"cooldown_remaining" = COOLDOWN_FINISHED(src, fire_cooldown) ? 0 : round(COOLDOWN_TIMELEFT(src, fire_cooldown) / 10, 0.1),
 		"cell_charge" = round(cell?.charge || 0),
 		"cell_max" = round(cell?.maxcharge || 0),
+		"upgrades" = list(
+			"capacitor_tier" = capacitor_tier,
+			"laser_tier" = laser_tier,
+			"servo_tier" = servo_tier,
+		),
 	)
 
 // ========== TOOL INTERACTIONS ==========

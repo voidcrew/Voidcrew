@@ -136,6 +136,8 @@
 	COOLDOWN_DECLARE(undock_cooldown)
 	/// Timer ID for dock warmup
 	var/dock_warmup_timer
+	/// Timer ID for undock warmup
+	var/undock_warmup_timer
 
 // ===== SHARED SHIELD POOL PROCS =====
 
@@ -233,7 +235,6 @@
 			break
 
 	SEND_SIGNAL(src, COMSIG_SHIP_SHIELD_BROKEN)
-	ship_announce("WARNING: Shields collapsed! Restarting in [DisplayTimeText(SHIP_SHIELD_BROKEN_COOLDOWN)].", "Shield Alert", TRUE, 'sound/machines/engine_alert/engine_alert3.ogg')
 
 /// Called to reactivate shields after cooldown ends
 /obj/structure/overmap/ship/proc/reactivate_ship_shields()
@@ -275,7 +276,6 @@
 			first_active_gen.spawn_shield_walls()
 
 		SEND_SIGNAL(src, COMSIG_SHIP_SHIELD_RESTORED)
-		ship_announce("Shields restored.", "Shield Status")
 		playsound(first_active_gen || src, 'sound/vehicles/mecha/mech_shield_raise.ogg', 100, TRUE)
 	else
 		// No generators want to activate - stop processing
@@ -344,6 +344,31 @@
 /// Stops shield processing on this ship (called when shields deactivate)
 /obj/structure/overmap/ship/proc/stop_shield_processing()
 	STOP_PROCESSING(SSobj, src)
+
+/// Returns TRUE if this ship is involved in ship-to-ship docking (either we docked to them, or they docked to us)
+/// Only counts ships that have COMPLETED docking (state == IDLE), not ships still in transit
+/obj/structure/overmap/ship/proc/is_in_ship_to_ship_dock()
+	// We must be fully docked (IDLE state) to be in a ship-to-ship dock
+	if(state != OVERMAP_SHIP_IDLE)
+		return FALSE
+	// Check if we are docked to another ship directly
+	if(istype(docked, /obj/structure/overmap/ship))
+		return TRUE
+	// Check if any ship is docked to us directly (and has completed docking)
+	for(var/obj/structure/overmap/ship/other_ship in SSovermap.simulated_ships)
+		if(other_ship == src)
+			continue
+		if(other_ship.docked == src && other_ship.state == OVERMAP_SHIP_IDLE)
+			return TRUE
+	// Check if we're docked to the same empty space as another ship (consensual helm dock)
+	// Only count other ships that have completed docking
+	if(istype(docked, /obj/structure/overmap/planet/empty))
+		for(var/obj/structure/overmap/ship/other_ship in SSovermap.simulated_ships)
+			if(other_ship == src)
+				continue
+			if(other_ship.docked == docked && other_ship.state == OVERMAP_SHIP_IDLE)
+				return TRUE
+	return FALSE
 
 /// Process tick for ship - handles shield regeneration
 /obj/structure/overmap/ship/process(seconds_per_tick)
@@ -679,8 +704,10 @@
 	is_interdicted = FALSE
 
 /// Dock warmup time in deciseconds
-#define DOCK_WARMUP_TIME (15 SECONDS)
-/// Undock cooldown time in deciseconds
+#define DOCK_WARMUP_TIME (10 SECONDS)
+/// Undock warmup time in deciseconds
+#define UNDOCK_WARMUP_TIME (10 SECONDS)
+/// Undock cooldown time in deciseconds (after docking, before can undock)
 #define UNDOCK_COOLDOWN_TIME (20 SECONDS)
 
 /**
@@ -692,7 +719,7 @@
 /obj/structure/overmap/ship/proc/dock(obj/structure/overmap/to_dock, obj/docking_port/stationary/dock_to_use, instant = FALSE)
 	// Can't dock while being interdicted (unless it's a force dock)
 	if(is_interdicted && !instant)
-		ship_announce("DOCKING ABORTED: Interdiction field preventing dock sequence!", "Navigation Alert", TRUE)
+		ship_announce("DOCKING ABORTED: Interdiction field preventing dock sequence!", "Navigation Alert")
 		return "Cannot dock while interdicted!"
 
 	refresh_engines()
@@ -705,23 +732,22 @@
 		var/obj/structure/overmap/planet/current_planet = to_dock
 		current_planet.visited = TRUE
 		if(current_planet.loading)
-			ship_announce("Awaiting destination loading...", "Docking Announcement", TRUE)
 			// Register signal to complete dock when planet finishes loading
 			RegisterSignal(current_planet, COMSIG_VOIDCREW_PLANET_LOADED, PROC_REF(on_planet_loaded))
 			return "Commencing docking, awaiting zone loading..."
 
 	// Instant dock (force dock) - bypass warmup
 	if(instant)
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_ABOUT_TO_DOCK)
 		shuttle.request(dock_to_use)
-		ship_announce("Docking now.", "Docking Announcement", TRUE)
 		shuttle.setTimer(1 SECONDS)
 		addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), 1 SECONDS)
 		return "Commencing docking..."
 
 	// Start dock warmup
-	ship_announce("Initiating docking sequence. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "Docking Announcement", TRUE)
+	ship_announce("Initiating docking sequence. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "Docking Announcement")
 	dock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_dock_warmup), dock_to_use, WEAKREF(to_dock)), DOCK_WARMUP_TIME, TIMER_STOPPABLE)
-	return "Initiating docking sequence..."
+	return "Initiating docking sequence. Docking in [DOCK_WARMUP_TIME / 10] seconds."
 
 /**
   * Called after dock warmup completes - actually begins the shuttle dock
@@ -737,11 +763,12 @@
 	if(!to_dock)
 		state = OVERMAP_SHIP_FLYING
 		docked = null
-		ship_announce("Docking aborted: destination no longer available.", "Docking Error", TRUE)
+		ship_announce("Docking aborted: destination no longer available.", "Docking Error")
 		return
 
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_ABOUT_TO_DOCK)
 	shuttle.request(dock_to_use)
-	ship_announce("Docking now.", "Docking Announcement", TRUE)
+	ship_announce("Docking now.", "Docking Announcement")
 	shuttle.setTimer(1 SECONDS)
 	addtimer(CALLBACK(src, PROC_REF(complete_dock), to_dock_ref), 1 SECONDS)
 
@@ -759,7 +786,7 @@
 	var/obj/docking_port/stationary/dock_to_use = shuttle.port_destinations
 
 	// Start dock warmup
-	ship_announce("Destination loaded. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "Docking Announcement", TRUE)
+	ship_announce("Destination loaded. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "Docking Announcement")
 	dock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_dock_warmup), dock_to_use, WEAKREF(source)), DOCK_WARMUP_TIME, TIMER_STOPPABLE)
 
 /**
@@ -816,12 +843,32 @@
 		return "Ship not docked!"
 	if(!shuttle)
 		return "Shuttle not found!"
+	// Already undocking
+	if(state == OVERMAP_SHIP_UNDOCKING)
+		return "Already undocking!"
 	// Check undock cooldown (after docking)
 	if(!COOLDOWN_FINISHED(src, undock_cooldown))
 		return "Undock systems stabilizing! [DisplayTimeText(COOLDOWN_TIMELEFT(src, undock_cooldown))] remaining."
 	// Check interdiction undock lockout
 	if(!COOLDOWN_FINISHED(src, interdiction_undock_lockout))
 		return "Undocking systems locked! [DisplayTimeText(COOLDOWN_TIMELEFT(src, interdiction_undock_lockout))] remaining."
+
+	// Start undock warmup
+	state = OVERMAP_SHIP_UNDOCKING
+	ship_announce("Initiating undocking sequence. Undocking in [UNDOCK_WARMUP_TIME / 10] seconds.", "Undocking Announcement")
+	undock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_undock_warmup)), UNDOCK_WARMUP_TIME, TIMER_STOPPABLE)
+	return "Initiating undocking sequence. Undocking in [UNDOCK_WARMUP_TIME / 10] seconds."
+
+/**
+  * Called after undock warmup completes - actually begins the shuttle undock
+  */
+/obj/structure/overmap/ship/proc/complete_undock_warmup()
+	undock_warmup_timer = null
+
+	// Check if we're still in undocking state (might have been cancelled)
+	if(state != OVERMAP_SHIP_UNDOCKING)
+		return
+
 	// Don't clear dock flags here - wait until shuttle has actually moved in complete_dock
 	// Otherwise the z-level might be unloaded while we're still on it
 	// Clear port destinations when undocking from empty space to prevent confusion
@@ -833,13 +880,9 @@
 	shuttle.destination = null
 	shuttle.mode = SHUTTLE_IGNITING
 	shuttle.setTimer(1 SECONDS)
-	// priority_announce("Undocking now.", "Docking Announcement", sender_override = name)
-	shuttle.current_ship.ship_announce("Undocking now.")
 	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(undock_from)), 1 SECONDS)
-	state = OVERMAP_SHIP_UNDOCKING
 	// Reset crash flag so ship can crash again if damaged
 	has_crash_landed = FALSE
-	return "Beginning undocking procedures..."
 
 /**
   * Sets the ship, shuttle, and shuttle areas to a new name.
@@ -863,6 +906,17 @@
 				if(istype(docking_target, /obj/structure/overmap/ship)) //hardcoded and bad
 					var/obj/structure/overmap/ship/S = docking_target
 					S.shuttle.shuttle_areas |= shuttle.shuttle_areas
+					// Notify the target ship that we docked to them
+					SEND_SIGNAL(S, COMSIG_VOIDCREW_SHIP_DOCKED_BY, src)
+				// If docking to empty space, notify any other ships already docked there
+				// This creates a ship-to-ship dock situation via shared empty space
+				else if(istype(docking_target, /obj/structure/overmap/planet/empty))
+					for(var/obj/structure/overmap/ship/other_ship in SSovermap.simulated_ships)
+						if(other_ship == src)
+							continue
+						if(other_ship.docked == docking_target)
+							// Another ship is already docked to this empty space - notify them
+							SEND_SIGNAL(other_ship, COMSIG_VOIDCREW_SHIP_DOCKED_BY, src)
 				forceMove(docking_target)
 				state = OVERMAP_SHIP_IDLE
 				// Start undock cooldown
@@ -878,6 +932,8 @@
 					var/obj/structure/overmap/ship/S = loc
 					S.shuttle.shuttle_areas -= shuttle.shuttle_areas
 					adjust_speed(S.speed[1], S.speed[2])
+					// Notify the target ship that we undocked from them
+					SEND_SIGNAL(S, COMSIG_VOIDCREW_SHIP_UNDOCKED_BY, src)
 				var/turf/target_turf = get_turf(loc)
 				log_shuttle("complete_dock UNDOCKING: Moving ship [src] from [loc] to turf [target_turf]")
 				forceMove(target_turf)
@@ -904,6 +960,16 @@
 
 			// Note: Empty space cleanup is now handled via COMSIG_VOIDCREW_SHIP_UNDOCKED signal
 			// registered in /obj/structure/overmap/planet/empty/Entered()
+
+			// If undocking from empty space, notify any other ships still docked there
+			// This allows them to reactivate shields now that they're alone
+			if(istype(old_docked_location, /obj/structure/overmap/planet/empty))
+				for(var/obj/structure/overmap/ship/other_ship in SSovermap.simulated_ships)
+					if(other_ship == src)
+						continue
+					if(other_ship.docked == old_docked_location)
+						// Another ship is still docked to this empty space - notify them we left
+						SEND_SIGNAL(other_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED_BY, src)
 
 			// Handle space ruin dock flags and cleanup
 			if(istype(old_docked_location, /obj/structure/overmap/space_ruin))
@@ -1656,4 +1722,5 @@
 #undef SHIP_DELETE
 #undef SHIP_VIEW_RANGE
 #undef DOCK_WARMUP_TIME
+#undef UNDOCK_WARMUP_TIME
 #undef UNDOCK_COOLDOWN_TIME

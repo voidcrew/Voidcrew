@@ -720,3 +720,68 @@
 	var/matrix/M = matrix()
 	M.Turn(angle)
 	transform = M
+
+// ========== OVERMAP LASER EFFECTS ==========
+// These are used for the visual beam between ships on the overmap
+
+/// Muzzle flash effect for overmap laser beam - appears at the firing ship
+/// Single = omni, Multi (fire all) = plasmacutter
+/obj/effect/temp_visual/overmap_muzzle_flash
+	name = "muzzle flash"
+	icon = 'icons/obj/weapons/guns/projectiles_muzzle.dmi'
+	icon_state = "muzzle_omni"
+	duration = 5
+	layer = ABOVE_MOB_LAYER + 0.1
+	plane = GAME_PLANE
+	light_range = 3
+	light_power = 2
+	light_color = "#ff6600"
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	randomdir = FALSE
+
+/obj/effect/temp_visual/overmap_muzzle_flash/Initialize(target_atom, multi_beam = FALSE)
+	. = ..()
+	var/atom/target = target_atom
+	// Set sprite based on single vs multi-beam
+	if(multi_beam)
+		icon_state = "muzzle_plasmacutter"
+	else
+		icon_state = "muzzle_omni"
+	// Rotate to face target (beam travel direction)
+	if(isatom(target))
+		var/angle = get_angle(src, target)
+		var/matrix/M = matrix()
+		M.Turn(angle)
+		transform = M
+	animate(src, alpha = 0, time = duration, easing = EASE_OUT)
+
+/// Impact effect for overmap laser beam - appears at the target ship
+/// Single = omni, Multi (fire all) = plasmacutter
+/obj/effect/temp_visual/overmap_laser_impact
+	name = "laser impact"
+	icon = 'icons/obj/weapons/guns/projectiles_impact.dmi'
+	icon_state = "impact_omni"
+	duration = 5
+	layer = ABOVE_MOB_LAYER + 0.1
+	plane = GAME_PLANE
+	light_range = 3
+	light_power = 1.5
+	light_color = "#ff6600"
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	randomdir = FALSE
+
+/obj/effect/temp_visual/overmap_laser_impact/Initialize(source_atom, multi_beam = FALSE)
+	. = ..()
+	var/atom/source = source_atom
+	// Set sprite based on single vs multi-beam
+	if(multi_beam)
+		icon_state = "impact_plasmacutter"
+	else
+		icon_state = "impact_omni"
+	// Rotate to face back toward source (where beam came from)
+	if(isatom(source))
+		var/angle = get_angle(src, source)
+		var/matrix/M = matrix()
+		M.Turn(angle)
+		transform = M
+	animate(src, alpha = 0, time = duration, easing = EASE_OUT)

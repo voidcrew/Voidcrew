@@ -56,9 +56,19 @@
 	/// Whether the boundary cache is valid
 	var/boundary_cache_valid = FALSE
 
+	/// Flag: walls were destroyed and need respawning after shuttle move completes
+	var/pending_wall_respawn = FALSE
+	/// Flag: shuttle move has completed, waiting for dock info
+	var/shuttle_move_done = FALSE
+	/// Flag: we are currently in a ship-to-ship dock (set/cleared ONLY by signals at correct timing)
+	var/in_ship_to_ship_dock = FALSE
+
 /obj/machinery/ship_combat/shield_generator/Initialize(mapload)
 	. = ..()
 	generator_sound = new(src, 'voidcrew/sound/machines/forcefield/shieldgen.ogg', 15, 7)
+	// Register for shuttle move signals - destroy walls right before move, respawn after
+	RegisterSignal(src, COMSIG_ATOM_BEFORE_SHUTTLE_MOVE, PROC_REF(on_shuttle_move_start))
+	RegisterSignal(src, COMSIG_ATOM_AFTER_SHUTTLE_MOVE, PROC_REF(on_shuttle_move_complete))
 	// Start processing for regeneration
 	begin_processing()
 	// Try to auto-link after a short delay
@@ -146,8 +156,8 @@
 			deactivate_generator()
 		return
 
-	// Can't run shields while docked
-	if(is_ship_docked())
+	// Can't run shields while docked to another ship
+	if(is_docked_to_ship())
 		if(active)
 			deactivate_generator()
 		return
@@ -1310,14 +1320,18 @@
 /// Activates this generator to contribute to the ship's shared shield pool
 /// Returns FALSE if activation failed (docked, ship shields broken, etc.)
 /obj/machinery/ship_combat/shield_generator/proc/activate_generator()
+	log_shuttle("SHIELD DEBUG activate_generator: active=[active], shields_broken=[linked_ship_ref?.resolve()?.shields_broken], is_docked_to_ship=[is_docked_to_ship()]")
 	if(active)
+		log_shuttle("SHIELD DEBUG: Already active, returning TRUE")
 		return TRUE
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	// Can't activate while ship shields are broken/on cooldown
 	if(ship?.shields_broken)
+		log_shuttle("SHIELD DEBUG: shields_broken=TRUE, returning FALSE")
 		return FALSE
-	// Can't activate while docked
-	if(is_ship_docked())
+	// Can't activate while docked to another ship
+	if(is_docked_to_ship())
+		log_shuttle("SHIELD DEBUG: is_docked_to_ship=TRUE, returning FALSE")
 		return FALSE
 
 	active = TRUE
@@ -1331,7 +1345,9 @@
 		ship.recalculate_shield_stats()
 
 		// If this is the first generator coming online, initialize ship shields
+		log_shuttle("SHIELD DEBUG activate_generator: ship.shields_active=[ship.shields_active], ship.shields_broken=[ship.shields_broken]")
 		if(!ship.shields_active && !ship.shields_broken)
+			log_shuttle("SHIELD DEBUG: First generator online, initializing shields")
 			ship.shields_active = TRUE
 			ship.shield_health = ship.shield_max_health * 0.5  // Start at 50%
 
@@ -1340,19 +1356,22 @@
 
 			// Spawn shield walls
 			if(!ship_has_active_shield_walls())
+				log_shuttle("SHIELD DEBUG: Spawning shield walls")
 				spawn_shield_walls()
 
 			playsound(src, 'sound/vehicles/mecha/mech_shield_raise.ogg', 100, TRUE)
 			ship.ship_announce("Shields online.", "Shield Status")
 			SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_RESTORED)
 		else if(ship.shields_active)
+			log_shuttle("SHIELD DEBUG: shields_active already TRUE, skipping wall spawn")
 			// Just announce new generator online
 			playsound(src, 'sound/vehicles/mecha/mech_shield_raise.ogg', 50, TRUE)
 
 	return TRUE
 
 /// Deactivates this generator (called when power_allocation set to 0)
-/obj/machinery/ship_combat/shield_generator/proc/deactivate_generator()
+/// If skip_break is TRUE, won't trigger shield break cooldown (used for docking transitions)
+/obj/machinery/ship_combat/shield_generator/proc/deactivate_generator(skip_break = FALSE)
 	if(!active)
 		return
 
@@ -1367,8 +1386,8 @@
 		// Recalculate ship shield stats without this generator
 		ship.recalculate_shield_stats()
 
-		// If no generators are active, ship shields go down
-		if(count_active_generators() == 0)
+		// If no generators are active, ship shields go down (unless skipping for dock transition)
+		if(count_active_generators() == 0 && !skip_break)
 			// Trigger ship shield break (starts cooldown)
 			ship.break_ship_shields()
 
@@ -1496,17 +1515,23 @@
 	ship.recalculate_shield_stats()
 
 	// Register for docking signals
+	RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_ABOUT_TO_DOCK, PROC_REF(on_ship_about_to_dock))
 	RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_ship_docked))
 	RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(on_ship_undocked))
-	// If already docked, deactivate generator
-	if(is_ship_docked())
+	// Register for when OTHER ships dock to US
+	RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_DOCKED_BY, PROC_REF(on_other_ship_docked_to_us))
+	RegisterSignal(ship, COMSIG_VOIDCREW_SHIP_UNDOCKED_BY, PROC_REF(on_other_ship_undocked_from_us))
+	// Initialize ship-to-ship dock flag based on current state
+	in_ship_to_ship_dock = ship.is_in_ship_to_ship_dock()
+	// If already in ship-to-ship dock, deactivate generator
+	if(in_ship_to_ship_dock)
 		deactivate_generator()
 
 /// Unlinks from the current ship
 /obj/machinery/ship_combat/shield_generator/proc/unlink_ship()
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
-		UnregisterSignal(ship, list(COMSIG_VOIDCREW_SHIP_DOCKED, COMSIG_VOIDCREW_SHIP_UNDOCKED))
+		UnregisterSignal(ship, list(COMSIG_VOIDCREW_SHIP_ABOUT_TO_DOCK, COMSIG_VOIDCREW_SHIP_DOCKED, COMSIG_VOIDCREW_SHIP_UNDOCKED, COMSIG_VOIDCREW_SHIP_DOCKED_BY, COMSIG_VOIDCREW_SHIP_UNDOCKED_BY))
 		ship.linked_shield_generators -= src  // Remove from list
 		// Recalculate ship shield stats without this generator
 		ship.recalculate_shield_stats()
@@ -1523,14 +1548,123 @@
 		return FALSE
 	return !isnull(ship.docked)
 
-/// Called when ship docks - deactivate generator
+/// Returns TRUE if the ship is in a ship-to-ship dock (either we docked to them, or they docked to us)
+/// Shields cannot operate during ship-to-ship docking
+/obj/machinery/ship_combat/shield_generator/proc/is_docked_to_ship()
+	// Use the flag that's set/cleared by signals at the correct timing
+	// This avoids timing issues with state-based checks
+	return in_ship_to_ship_dock
+
+/// Called right before ship physically docks - no longer used for wall destruction
+/// Wall destruction is now handled by on_shuttle_move_start for better timing
+/obj/machinery/ship_combat/shield_generator/proc/on_ship_about_to_dock(datum/source)
+	SIGNAL_HANDLER
+	// Walls are now destroyed by COMSIG_ATOM_BEFORE_SHUTTLE_MOVE for tighter timing
+
+/// Called right before the shuttle physically moves this generator - destroy walls
+/obj/machinery/ship_combat/shield_generator/proc/on_shuttle_move_start(datum/source, turf/new_turf, rotation, move_mode, obj/docking_port/mobile/moving_dock)
+	SIGNAL_HANDLER
+	log_shuttle("SHIELD DEBUG on_shuttle_move_start: active=[active], destroying walls")
+	// Track that we need to respawn walls after move (if shields were active)
+	if(active && length(shield_walls))
+		pending_wall_respawn = TRUE
+		shuttle_move_done = FALSE
+	destroy_shield_walls()
+
+/// Called when ship docks - deactivate if ship-to-ship, otherwise respawn walls when shuttle move is done
 /obj/machinery/ship_combat/shield_generator/proc/on_ship_docked(datum/source)
 	SIGNAL_HANDLER
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	if(!ship)
+		return
+
+	// Update our ship-to-ship dock flag based on actual state NOW (after physical move)
+	in_ship_to_ship_dock = ship.is_in_ship_to_ship_dock()
+	log_shuttle("SHIELD DEBUG on_ship_docked: ship=[ship], active=[active], docked=[ship?.docked], docked_type=[ship?.docked?.type], pending=[pending_wall_respawn], shuttle_done=[shuttle_move_done], in_ship_to_ship_dock=[in_ship_to_ship_dock]")
+
+	// If in a ship-to-ship dock situation, shields must go down completely
+	if(in_ship_to_ship_dock)
+		log_shuttle("SHIELD DEBUG on_ship_docked: in ship-to-ship dock, deactivating")
+		pending_wall_respawn = FALSE
+		shuttle_move_done = FALSE
+		deactivate_generator()
+		return
+
+	// Docked to planet/ruin/empty space alone - respawn walls if shuttle move is done
+	// If shuttle move isn't done yet, on_shuttle_move_complete will handle it
+	if(pending_wall_respawn && shuttle_move_done)
+		log_shuttle("SHIELD DEBUG on_ship_docked: shuttle move done, respawning walls now")
+		try_respawn_walls()
+
+/// Called when this generator is physically moved by the shuttle system
+/obj/machinery/ship_combat/shield_generator/proc/on_shuttle_move_complete(datum/source, turf/old_turf)
+	SIGNAL_HANDLER
+	log_shuttle("SHIELD DEBUG on_shuttle_move_complete: active=[active], pending=[pending_wall_respawn], old_turf=[old_turf]")
+
+	// Always invalidate cache after shuttle move
+	invalidate_boundary_cache()
+
+	if(!active || !pending_wall_respawn)
+		return
+
+	// Mark that shuttle move is complete
+	shuttle_move_done = TRUE
+
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	if(!ship)
+		return
+
+	// If ship.docked is already set (on_ship_docked already fired), handle respawn now
+	// Check if in ship-to-ship dock - if so, don't respawn (deactivate was already called)
+	if(ship.docked)
+		if(is_docked_to_ship())
+			log_shuttle("SHIELD DEBUG on_shuttle_move_complete: in ship-to-ship dock, not respawning")
+			pending_wall_respawn = FALSE
+			return
+		// Docked to planet/ruin/empty alone - respawn walls
+		log_shuttle("SHIELD DEBUG on_shuttle_move_complete: dock info ready, respawning walls now")
+		try_respawn_walls()
+	else
+		log_shuttle("SHIELD DEBUG on_shuttle_move_complete: waiting for on_ship_docked")
+
+/// Helper to respawn walls and clear flags
+/obj/machinery/ship_combat/shield_generator/proc/try_respawn_walls()
+	pending_wall_respawn = FALSE
+	shuttle_move_done = FALSE
+	if(!active)
+		return
+	// Only first generator spawns walls
+	if(!ship_has_active_shield_walls())
+		log_shuttle("SHIELD DEBUG try_respawn_walls: spawning walls")
+		spawn_shield_walls()
+	else
+		log_shuttle("SHIELD DEBUG try_respawn_walls: ship already has walls")
+
+/// Called when ANOTHER ship docks TO us - we must deactivate shields
+/obj/machinery/ship_combat/shield_generator/proc/on_other_ship_docked_to_us(datum/source, obj/structure/overmap/ship/docking_ship)
+	SIGNAL_HANDLER
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	// Update flag - we're now in a ship-to-ship dock
+	in_ship_to_ship_dock = TRUE
+	log_shuttle("SHIELD DEBUG on_other_ship_docked_to_us: [docking_ship] docked to our ship, in_ship_to_ship_dock=[in_ship_to_ship_dock], deactivating shields")
 	deactivate_generator()
+
+/// Called when a ship that was docked to us undocks - we can reactivate shields
+/obj/machinery/ship_combat/shield_generator/proc/on_other_ship_undocked_from_us(datum/source, obj/structure/overmap/ship/undocking_ship)
+	SIGNAL_HANDLER
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	// Update flag based on whether any other ships are still docked
+	// At this point, the undocking ship has physically left, so is_in_ship_to_ship_dock() gives accurate result
+	in_ship_to_ship_dock = ship?.is_in_ship_to_ship_dock() || FALSE
+	log_shuttle("SHIELD DEBUG on_other_ship_undocked_from_us: [undocking_ship] undocked from our ship, in_ship_to_ship_dock=[in_ship_to_ship_dock]")
+	// Shields don't auto-reactivate - crew must manually enable
 
 /// Called when ship undocks - shields can be reactivated
 /obj/machinery/ship_combat/shield_generator/proc/on_ship_undocked(datum/source)
 	SIGNAL_HANDLER
+	// We're undocking, so we're no longer in any ship-to-ship dock
+	in_ship_to_ship_dock = FALSE
+	log_shuttle("SHIELD DEBUG on_ship_undocked: in_ship_to_ship_dock=[in_ship_to_ship_dock]")
 	// Invalidate boundary cache in case ship was modified while docked (e.g., construction console)
 	invalidate_boundary_cache()
 	// Shields don't auto-activate on undock - crew must manually enable
