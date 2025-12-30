@@ -93,8 +93,8 @@
 	name = "ship construction console"
 	desc = "A console for managing ship construction and modifications. Control a remote drone to build and modify your ship."
 	icon = 'voidcrew/modules/shuttle/icons/computer.dmi'
-	icon_screen = "navigation"
-	icon_keyboard = "tech_key"
+	icon_screen = "construction"
+	icon_keyboard = "power_key"
 	circuit = /obj/item/circuitboard/computer/ship_construction
 	light_color = LIGHT_COLOR_CYAN
 	// Ships don't use camera networks - the drone doesn't need visibility checks
@@ -106,6 +106,10 @@
 	var/last_operation_message = ""
 	/// Whether the last operation succeeded
 	var/last_operation_success = TRUE
+	/// Console ambient sounds
+	var/datum/console_ambience/console_ambience
+	/// UI theme preference
+	var/theme
 
 // ============================================
 // Initialization
@@ -122,6 +126,13 @@
 	// The silo_mats needs to be added after setting the upgrade flag
 	internal_rcd.silo_mats = internal_rcd.AddComponent(/datum/component/remote_materials, mapload, FALSE)
 	. = ..()
+	// Console ambient sounds
+	console_ambience = new(src, get_console_ambience_sounds())
+	console_ambience.start()
+
+/obj/machinery/computer/camera_advanced/base_construction/ship/Destroy()
+	QDEL_NULL(console_ambience)
+	return ..()
 
 /// Forward multitool interactions to the internal RCD for silo linking
 /obj/machinery/computer/camera_advanced/base_construction/ship/multitool_act(mob/living/user, obj/item/multitool/M)
@@ -133,12 +144,14 @@
 	if(!QDELETED(M.buffer) && istype(M.buffer, /obj/machinery/ore_silo))
 		var/obj/machinery/ore_silo/silo = M.buffer
 		if(internal_rcd.silo_mats.silo == silo)
+			balloon_alert(user, "already linked")
 			to_chat(user, span_warning("[src]'s RCD is already connected to [silo]."))
 			return ITEM_INTERACT_SUCCESS
 
 		internal_rcd.silo_mats.disconnect()
 		silo.connect_receptacle(internal_rcd.silo_mats, internal_rcd)
 		internal_rcd.silo_link = TRUE  // Enable silo link mode
+		balloon_alert(user, "linked")
 		to_chat(user, span_notice("You connect [src]'s RCD to [silo]."))
 		return ITEM_INTERACT_SUCCESS
 
@@ -230,7 +243,7 @@
 
 	// Must be docked to use construction features
 	if(!can_operate())
-		to_chat(user, span_warning("Ship must be docked to use construction features."))
+		to_chat(user, span_warning("[get_operate_error()]"))
 		return FALSE
 
 	return TRUE
@@ -246,11 +259,7 @@
 	if(current_ship)
 		return TRUE
 
-	var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(src)
-	if(!istype(port))
-		return FALSE
-
-	current_ship = port.current_ship
+	current_ship = get_ship_from_atom(src)
 	return !!current_ship
 
 /**
@@ -270,12 +279,29 @@
 	return (living_user.mind in current_ship.ship_team.members)
 
 /**
- * Checks if the console can perform operations (ship must be docked)
+ * Checks if the console can perform operations (ship must be docked and not force-docked from interdiction)
  */
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/can_operate()
 	if(!current_ship)
 		return FALSE
-	return current_ship.state == OVERMAP_SHIP_IDLE
+	if(current_ship.state != OVERMAP_SHIP_IDLE)
+		return FALSE
+	// Cannot operate while force-docked from interdiction
+	if(!COOLDOWN_FINISHED(current_ship, interdiction_undock_lockout))
+		return FALSE
+	return TRUE
+
+/**
+ * Returns an error message explaining why can_operate() failed
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_operate_error()
+	if(!current_ship)
+		return "No ship connection established."
+	if(current_ship.state != OVERMAP_SHIP_IDLE)
+		return "Ship must be docked to use construction features."
+	if(!COOLDOWN_FINISHED(current_ship, interdiction_undock_lockout))
+		return "Construction disabled while docked with another ship."
+	return "Unknown error."
 
 /**
  * Gets the docking port for the current ship
@@ -717,6 +743,18 @@
 	data["maxDimensionLong"] = RESERVE_DOCK_MAX_SIZE_LONG
 	data["maxDimensionShort"] = RESERVE_DOCK_MAX_SIZE_SHORT
 
+	// Ship mass info
+	if(current_ship)
+		data["shipMass"] = current_ship.mass || 0
+		data["maxIntegrity"] = current_ship.max_integrity || 0
+		data["integrity"] = current_ship.get_integrity_percent()
+		data["overhealth"] = current_ship.get_overhealth_percent()
+	else
+		data["shipMass"] = 0
+		data["maxIntegrity"] = 0
+		data["integrity"] = 100
+		data["overhealth"] = 0
+
 	// Current docking port info
 	data["currentPort"] = get_current_docking_port_info()
 	data["dockingPortOnEdge"] = is_docking_port_on_edge()
@@ -742,6 +780,9 @@
 
 	// Check if user is in construction mode (controlling drone)
 	data["isInConstructionMode"] = (eyeobj && user.remote_control == eyeobj)
+
+	// Theme preference
+	data["theme"] = theme
 
 	return data
 
@@ -776,12 +817,15 @@
 			return TRUE
 		if("enter_construction_mode")
 			if(!can_operate())
-				to_chat(usr, span_warning("Ship must be docked to enter construction mode."))
+				to_chat(usr, span_warning("[get_operate_error()]"))
 				return TRUE
 			enter_construction_mode(usr)
 			return TRUE
 		if("reset_fans")
 			reset_fans()
+			return TRUE
+		if("setTheme")
+			theme = params["theme"]
 			return TRUE
 
 	return FALSE

@@ -282,12 +282,9 @@
  * Throws all unanchored objects and mobs on the ship during a crash landing
  * Similar to lateShuttleMove but for crash impacts
  */
-/obj/structure/overmap/ship/proc/crash_throw_contents(var/throwing_force = 20)
+/obj/structure/overmap/ship/proc/crash_throw_contents(throwing_force = 20, throw_dir = WEST, message = "The ship crashes violently, throwing you across the room!")
 	if(!shuttle?.shuttle_areas)
 		return
-
-	// var/throw_force = 5 // How far things get thrown (similar to movement_force["THROW"])
-	var/crash_dir = WEST // Always throw to the left
 
 	for(var/area/ship_area as anything in shuttle.shuttle_areas)
 		for(var/atom/movable/AM in ship_area)
@@ -303,10 +300,11 @@
 			if(isliving(AM))
 				var/mob/living/L = AM
 				shake_camera(L, 30, 5)
-				to_chat(L, span_userdanger("The ship crashes violently, throwing you across the room!"))
+				if(message)
+					to_chat(L, span_userdanger("[message]"))
 
-			// Throw in the crash direction - based on lateShuttleMove logic
-			var/turf/target = get_edge_target_turf(AM, crash_dir)
+			// Throw in the specified direction - based on lateShuttleMove logic
+			var/turf/target = get_edge_target_turf(AM, throw_dir)
 			var/range = throwing_force * 2
 			range = CEILING(rand(range - 1, range + 1), 1)
 			var/speed = max(range / 3, 1)
@@ -323,6 +321,9 @@
  * Applies the effect of a hazard to the ship
  */
 /obj/structure/overmap/ship/proc/apply_hazard_effect(obj/structure/overmap/event/hazard)
+	// Send signal that we've entered a hazard (decloaks ship, etc.)
+	SEND_SIGNAL(src, COMSIG_SHIP_HAZARD_TRIGGERED, hazard)
+
 	// Meteors always trigger per tile - no cooldown
 	if(istype(hazard, /obj/structure/overmap/event/meteor))
 		apply_meteor_damage(hazard)
@@ -502,7 +503,7 @@
 	if(istype(storm, /obj/structure/overmap/event/meteor/majour))
 		meteor_type = /obj/effect/meteor/big
 	else if(istype(storm, /obj/structure/overmap/event/meteor/minor))
-		meteor_type = /obj/effect/meteor/medium
+		meteor_type = /obj/effect/meteor
 
 	// Spawn one meteor aimed at the ship
 	spawn_meteor_at_ship(meteor_type)
@@ -511,7 +512,8 @@
 	addtimer(CALLBACK(src, PROC_REF(calculate_mass)), 3 SECONDS)
 
 /**
- * Spawns a single meteor from outside the ship aimed at a random ship turf
+ * Spawns a single meteor from the edge of the virtual level aimed at a random ship turf
+ * Shield walls will physically intercept the meteor if shields are active
  */
 /obj/structure/overmap/ship/proc/spawn_meteor_at_ship(meteor_type)
 	// Pick a random target inside the ship
@@ -519,23 +521,46 @@
 	if(!target)
 		return
 
-	var/target_z = target.z
-	var/target_x = target.x
-	var/target_y = target.y
-
-	// Pick a random direction and spawn from that side
+	// Get the virtual level bounds from the turf reservation
+	var/datum/turf_reservation/reservation = SSmapping.get_reservation_from_turf(target)
 	var/turf/spawn_turf
-	var/spawn_distance = 15
 
-	switch(pick(1, 2, 3, 4))
-		if(1) // From North
-			spawn_turf = locate(target_x, target_y + spawn_distance, target_z)
-		if(2) // From South
-			spawn_turf = locate(target_x, target_y - spawn_distance, target_z)
-		if(3) // From East
-			spawn_turf = locate(target_x + spawn_distance, target_y, target_z)
-		if(4) // From West
-			spawn_turf = locate(target_x - spawn_distance, target_y, target_z)
+	if(reservation && length(reservation.bottom_left_turfs) && length(reservation.top_right_turfs))
+		// Use the reservation bounds to spawn at the edge of the virtual level
+		var/turf/bottom_left = reservation.bottom_left_turfs[1]
+		var/turf/top_right = reservation.top_right_turfs[1]
+
+		// Add small padding from the cordon edge
+		var/padding = 3
+		var/min_x = bottom_left.x + padding
+		var/min_y = bottom_left.y + padding
+		var/max_x = top_right.x - padding
+		var/max_y = top_right.y - padding
+
+		// Pick a random edge to spawn from
+		var/direction = pick(NORTH, SOUTH, EAST, WEST)
+		switch(direction)
+			if(NORTH)
+				spawn_turf = locate(rand(min_x, max_x), max_y, target.z)
+			if(SOUTH)
+				spawn_turf = locate(rand(min_x, max_x), min_y, target.z)
+			if(EAST)
+				spawn_turf = locate(max_x, rand(min_y, max_y), target.z)
+			if(WEST)
+				spawn_turf = locate(min_x, rand(min_y, max_y), target.z)
+	else
+		// Fallback for non-reserved turfs - use fixed distance
+		var/spawn_distance = 15
+		var/direction = pick(NORTH, SOUTH, EAST, WEST)
+		switch(direction)
+			if(NORTH)
+				spawn_turf = locate(target.x, target.y + spawn_distance, target.z)
+			if(SOUTH)
+				spawn_turf = locate(target.x, target.y - spawn_distance, target.z)
+			if(EAST)
+				spawn_turf = locate(target.x + spawn_distance, target.y, target.z)
+			if(WEST)
+				spawn_turf = locate(target.x - spawn_distance, target.y, target.z)
 
 	if(!spawn_turf)
 		return

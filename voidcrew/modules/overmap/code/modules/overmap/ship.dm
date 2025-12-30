@@ -4,6 +4,7 @@
 #define SHIP_RUIN (10 MINUTES)
 #define SHIP_DELETE (10 MINUTES)
 #define SHIP_VIEW_RANGE 4
+#define SHIP_SPEED_MULTIPLIER_DEFAULT 1
 
 /obj/structure/overmap/ship
 	name = "overmap vessel"
@@ -79,13 +80,32 @@
 	///Vessel approximate mass
 	var/mass
 
+	/// Linked shield generators for ship defense (multiple generators stack)
+	var/list/obj/machinery/ship_combat/shield_generator/linked_shield_generators = list()
 
+	// ===== SHARED SHIELD POOL =====
+	/// Current shared shield health (all generators contribute to this pool)
+	var/shield_health = 0
+	/// Maximum shared shield health (sum of all generator max_health)
+	var/shield_max_health = 0
+	/// Current overhealth (extra shield beyond max from >100% power)
+	var/shield_overhealth = 0
+	/// Combined regeneration rate (sum of all generator regen_rates)
+	var/shield_regen_rate = 0
+	/// Are shields currently active? (any generator online)
+	var/shields_active = FALSE
+	/// Are shields broken? (health reached 0, on cooldown)
+	var/shields_broken = FALSE
+	/// Cooldown for shield reactivation after breaking
+	COOLDOWN_DECLARE(shield_reactivation_cooldown)
+	/// Current power allocation for shields (0.0 to 2.0) - synchronized across all generators
+	var/shield_power_allocation = 0
 
 	/// Which docking port the ship is occupying
 	var/dock_index
-		///~~If we need to render a map for cameras and helms for this object~~ basically can you look at and use this as a ship or station
+	///~~If we need to render a map for cameras and helms for this object~~ basically can you look at and use this as a ship or station
 	var/render_map = TRUE
-		/**
+	/**
 	 * Stuff needed to render the map
 	 */
 	/// The actual map screen (using camera subtype for proper rendering)
@@ -98,6 +118,272 @@
 	var/pending_dock_timer
 	/// The ship we sent a docking request to (if any)
 	var/obj/structure/overmap/ship/pending_dock_target
+
+	/// Speed multiplier for external effects like interdiction (1 = normal, 0.5 = half speed)
+	var/speed_multiplier = SHIP_SPEED_MULTIPLIER_DEFAULT
+	/// Whether this ship is currently being interdicted
+	var/is_interdicted = FALSE
+	/// Cooldown preventing undocking after being interdicted
+	COOLDOWN_DECLARE(interdiction_undock_lockout)
+	/// Weakref to the interdictor machine currently affecting this ship
+	var/datum/weakref/interdicting_machine_ref
+	/// Current interdiction strength for UI display (0 to 1, where 1 = maximum effect)
+	var/interdiction_strength = 0
+
+	/// List of interdictor machines installed on this ship
+	var/list/linked_interdictors = list()
+
+	/// Cooldown preventing undocking shortly after docking
+	COOLDOWN_DECLARE(undock_cooldown)
+	/// Timer ID for dock warmup
+	var/dock_warmup_timer
+	/// Timer ID for undock warmup
+	var/undock_warmup_timer
+
+// ===== SHARED SHIELD POOL PROCS =====
+
+/// Recalculates shield stats from all linked generators
+/// Call this when generators are added/removed or parts upgraded
+/obj/structure/overmap/ship/proc/recalculate_shield_stats()
+	var/new_max_health = 0
+	var/new_regen_rate = 0
+
+	for(var/obj/machinery/ship_combat/shield_generator/gen in linked_shield_generators)
+		if(gen.machine_stat & (BROKEN|NOPOWER))
+			continue
+		// Each generator contributes its stats
+		new_max_health += gen.max_shield_health
+		new_regen_rate += gen.regen_rate
+
+	shield_max_health = new_max_health
+	shield_regen_rate = new_regen_rate
+
+	// If max health decreased and current health exceeds it, cap it
+	if(shield_health > shield_max_health)
+		shield_health = shield_max_health
+
+	// Note: shields_active is managed by activate_generator()/deactivate_generator()
+	// This proc only updates stats, not activation state
+
+/// Regenerates the shared shield pool - called by shield generators during process()
+/obj/structure/overmap/ship/proc/regenerate_shields(seconds_per_tick)
+	if(!shields_active || shields_broken)
+		return
+
+	// Calculate effective regen rate based on power allocation
+	var/effective_regen = shield_regen_rate * shield_power_allocation * seconds_per_tick
+
+	if(shield_health < shield_max_health)
+		shield_health = min(shield_health + effective_regen, shield_max_health)
+	else if(shield_power_allocation > 1)
+		// Generate overhealth when at max and power > 100%
+		var/excess = shield_power_allocation - 1
+		var/overhealth_rate = shield_regen_rate * excess * seconds_per_tick
+		shield_overhealth += overhealth_rate
+
+/// Absorbs incoming damage to the shared shield pool
+/// Returns TRUE if damage was absorbed (even partially), FALSE if shields were down
+/obj/structure/overmap/ship/proc/absorb_shield_damage(damage, turf/impact_loc)
+	if(!shields_active || shields_broken)
+		return FALSE
+
+	// First absorb from overhealth
+	if(shield_overhealth > 0)
+		var/overhealth_absorbed = min(damage, shield_overhealth)
+		shield_overhealth -= overhealth_absorbed
+		damage -= overhealth_absorbed
+
+	// Then from regular health
+	shield_health -= damage
+
+	// Visual and audio effects at impact location
+	do_shield_hit_effects(impact_loc)
+
+	// Signal that shield was hit
+	SEND_SIGNAL(src, COMSIG_SHIP_SHIELD_HIT, damage, impact_loc)
+
+	// Check for shield break
+	if(shield_health <= 0)
+		shield_health = 0
+		break_ship_shields()
+
+	return TRUE
+
+/// Called when the shared shield pool is depleted
+/obj/structure/overmap/ship/proc/break_ship_shields()
+	if(!shields_active)
+		return
+
+	shields_active = FALSE
+	shields_broken = TRUE
+	shield_health = 0
+	shield_overhealth = 0
+
+	// Start cooldown
+	COOLDOWN_START(src, shield_reactivation_cooldown, SHIP_SHIELD_BROKEN_COOLDOWN)
+
+	// Ensure ship keeps processing so it can check cooldown and reactivate
+	start_shield_processing()
+
+	// Notify all generators
+	for(var/obj/machinery/ship_combat/shield_generator/gen in linked_shield_generators)
+		gen.on_ship_shields_broken()
+
+	// Remove shield walls (first generator with walls handles this)
+	for(var/obj/machinery/ship_combat/shield_generator/gen in linked_shield_generators)
+		if(length(gen.shield_walls))
+			gen.destroy_shield_walls()
+			break
+
+	SEND_SIGNAL(src, COMSIG_SHIP_SHIELD_BROKEN)
+
+/// Called to reactivate shields after cooldown ends
+/obj/structure/overmap/ship/proc/reactivate_ship_shields()
+	if(!shields_broken)
+		return
+	if(!COOLDOWN_FINISHED(src, shield_reactivation_cooldown))
+		return
+
+	// Can't reactivate while docked - just clear broken status and stop processing
+	if(!isnull(docked))
+		shields_broken = FALSE
+		stop_shield_processing()
+		return
+
+	shields_broken = FALSE
+
+	// Reactivate all generators that want to be active (have power allocation)
+	var/any_activated = FALSE
+	var/obj/machinery/ship_combat/shield_generator/first_active_gen
+	for(var/obj/machinery/ship_combat/shield_generator/gen in linked_shield_generators)
+		if(gen.power_allocation > 0 && !(gen.machine_stat & (BROKEN|NOPOWER)))
+			gen.active = TRUE
+			gen.update_appearance()
+			gen.update_power_draw()
+			gen.generator_sound?.start()
+			if(!first_active_gen)
+				first_active_gen = gen
+			any_activated = TRUE
+
+	if(any_activated)
+		// Recalculate stats and activate
+		recalculate_shield_stats()
+		shields_active = TRUE
+		// Start at 50% health
+		shield_health = shield_max_health * 0.5
+
+		// Spawn shield walls from first active generator
+		if(first_active_gen)
+			first_active_gen.spawn_shield_walls()
+
+		SEND_SIGNAL(src, COMSIG_SHIP_SHIELD_RESTORED)
+		playsound(first_active_gen || src, 'sound/vehicles/mecha/mech_shield_raise.ogg', 100, TRUE)
+	else
+		// No generators want to activate - stop processing
+		stop_shield_processing()
+
+/// Sets power allocation for all generators and the ship
+/obj/structure/overmap/ship/proc/set_shield_power_allocation(new_allocation)
+	shield_power_allocation = clamp(new_allocation, SHIP_SHIELD_MIN_POWER_MULT, SHIP_SHIELD_MAX_POWER_MULT)
+	for(var/obj/machinery/ship_combat/shield_generator/gen in linked_shield_generators)
+		gen.set_power_allocation(shield_power_allocation)
+
+/// Visual and audio effects for shield hit
+/obj/structure/overmap/ship/proc/do_shield_hit_effects(turf/impact_loc)
+	// Find the nearest boundary turf for visual effect
+	var/turf/effect_loc = impact_loc
+	for(var/obj/machinery/ship_combat/shield_generator/gen in linked_shield_generators)
+		if(gen.active)
+			effect_loc = gen.get_nearest_boundary_turf(impact_loc)
+			break
+
+	if(effect_loc)
+		new /obj/effect/temp_visual/ship_shield_hit(effect_loc)
+		var/sound_file = pick(
+			'voidcrew/sound/machines/forcefield/hit1.ogg',
+			'voidcrew/sound/machines/forcefield/hit2.ogg',
+			'voidcrew/sound/machines/forcefield/hit3.ogg',
+			'voidcrew/sound/machines/forcefield/hit4.ogg',
+			'sound/vehicles/mecha/mech_shield_deflect.ogg',
+		)
+		playsound(effect_loc, sound_file, 60, TRUE, extrarange = 10, pressure_affected = FALSE)
+
+/// Returns aggregated shield status for UI
+/obj/structure/overmap/ship/proc/get_shield_status()
+	// Calculate total power draw and efficiency
+	var/total_power_draw = 0
+	var/total_efficiency_bonus = 0
+	var/gen_count = 0
+
+	for(var/obj/machinery/ship_combat/shield_generator/gen in linked_shield_generators)
+		if(!(gen.machine_stat & (BROKEN|NOPOWER)))
+			total_power_draw += gen.get_power_draw()
+			total_efficiency_bonus += (1 - gen.power_efficiency)
+			gen_count++
+
+	var/avg_efficiency = gen_count ? (total_efficiency_bonus / gen_count) * 100 : 0
+
+	return list(
+		"active" = shields_active,
+		"broken" = shields_broken,
+		"health" = round(shield_health),
+		"max_health" = round(shield_max_health),
+		"overhealth" = round(shield_overhealth),
+		"power_allocation" = shield_power_allocation,
+		"regen_rate" = round(shield_regen_rate * shield_power_allocation, 0.1),
+		"power_draw" = round(total_power_draw),
+		"efficiency" = round(avg_efficiency),
+		"cooldown_active" = shields_broken && !COOLDOWN_FINISHED(src, shield_reactivation_cooldown),
+		"cooldown_remaining" = COOLDOWN_TIMELEFT(src, shield_reactivation_cooldown),
+		"generator_count" = length(linked_shield_generators),
+	)
+
+/// Starts shield processing on this ship (called when shields activate)
+/obj/structure/overmap/ship/proc/start_shield_processing()
+	START_PROCESSING(SSobj, src)
+
+/// Stops shield processing on this ship (called when shields deactivate)
+/obj/structure/overmap/ship/proc/stop_shield_processing()
+	STOP_PROCESSING(SSobj, src)
+
+/// Returns TRUE if this ship is involved in ship-to-ship docking (either we docked to them, or they docked to us)
+/// Only counts ships that have COMPLETED docking (state == IDLE), not ships still in transit
+/obj/structure/overmap/ship/proc/is_in_ship_to_ship_dock()
+	// We must be fully docked (IDLE state) to be in a ship-to-ship dock
+	if(state != OVERMAP_SHIP_IDLE)
+		return FALSE
+	// Check if we are docked to another ship directly
+	if(istype(docked, /obj/structure/overmap/ship))
+		return TRUE
+	// Check if any ship is docked to us directly (and has completed docking)
+	for(var/obj/structure/overmap/ship/other_ship in SSovermap.simulated_ships)
+		if(other_ship == src)
+			continue
+		if(other_ship.docked == src && other_ship.state == OVERMAP_SHIP_IDLE)
+			return TRUE
+	// Check if we're docked to the same empty space as another ship (consensual helm dock)
+	// Only count other ships that have completed docking
+	if(istype(docked, /obj/structure/overmap/planet/empty))
+		for(var/obj/structure/overmap/ship/other_ship in SSovermap.simulated_ships)
+			if(other_ship == src)
+				continue
+			if(other_ship.docked == docked && other_ship.state == OVERMAP_SHIP_IDLE)
+				return TRUE
+	return FALSE
+
+/// Process tick for ship - handles shield regeneration
+/obj/structure/overmap/ship/process(seconds_per_tick)
+	// Handle shield regeneration
+	if(shields_active && !shields_broken)
+		regenerate_shields(seconds_per_tick)
+
+	// Check for shield cooldown recovery
+	if(shields_broken && COOLDOWN_FINISHED(src, shield_reactivation_cooldown))
+		reactivate_ship_shields()
+
+	// If shields are no longer active and not broken, stop processing
+	if(!shields_active && !shields_broken)
+		stop_shield_processing()
 
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
@@ -123,6 +409,21 @@
 	ship_team.name = template.name
 	ship_team.ship = src
 
+	// Pick a random bright color for ship runechat
+	var/static/list/ship_chat_colors = list(
+		COLOR_SOFT_RED,
+		COLOR_ORANGE,
+		COLOR_VIVID_YELLOW,
+		COLOR_LIME,
+		COLOR_JADE,
+		COLOR_CYAN,
+		COLOR_BLUE_LIGHT,
+		COLOR_BRIGHT_BLUE,
+		COLOR_FADED_PINK,
+		COLOR_VIOLET,
+	)
+	chat_color = pick(ship_chat_colors)
+
 	//now build the job slots.
 	job_slots = source_template.assemble_job_slots()
 
@@ -141,6 +442,7 @@
 
 	SSovermap.simulated_ships += src
 	survey_data = new()
+
 	return TRUE
 
 /obj/structure/overmap/ship/Destroy()
@@ -376,14 +678,53 @@
 
 	INVOKE_ASYNC(object, TYPE_PROC_REF(/obj/structure/overmap, ship_act), user, src, optional_partner)
 
+// ===== INTERDICTION PROCS =====
+
+/**
+  * Updates the interdiction effect on this ship from an interdictor machine.
+  * Called by the interdictor machine when power level changes or warmup progresses.
+  * * source - The interdictor machine affecting us
+  * * new_multiplier - The new speed multiplier (1 = normal, 0.5 = 50% speed, etc.)
+  * * strength - The interdiction strength for UI display (0 to 1)
+  */
+/obj/structure/overmap/ship/proc/update_interdiction(source, new_multiplier, strength)
+	if(!source)
+		return
+	interdicting_machine_ref = WEAKREF(source)
+	speed_multiplier = new_multiplier
+	interdiction_strength = strength
+	is_interdicted = TRUE
+
+/**
+  * Clears the interdiction effect on this ship.
+  * Called when interdiction ends for any reason.
+  */
+/obj/structure/overmap/ship/proc/clear_interdiction()
+	interdicting_machine_ref = null
+	speed_multiplier = SHIP_SPEED_MULTIPLIER_DEFAULT
+	interdiction_strength = 0
+	is_interdicted = FALSE
+
+/// Dock warmup time in deciseconds
+#define DOCK_WARMUP_TIME (10 SECONDS)
+/// Undock warmup time in deciseconds
+#define UNDOCK_WARMUP_TIME (10 SECONDS)
+/// Undock cooldown time in deciseconds (after docking, before can undock)
+#define UNDOCK_COOLDOWN_TIME (20 SECONDS)
+
 /**
   * Docks the shuttle by requesting a port at the requested spot.
   * * to_dock - The [/obj/structure/overmap] to dock to.
   * * dock_to_use - The [/obj/docking_port/mobile] to dock to.
+  * * instant - If TRUE, bypasses the dock warmup (used for force dock)
   */
-/obj/structure/overmap/ship/proc/dock(obj/structure/overmap/to_dock, obj/docking_port/stationary/dock_to_use)
+/obj/structure/overmap/ship/proc/dock(obj/structure/overmap/to_dock, obj/docking_port/stationary/dock_to_use, instant = FALSE)
+	// Can't dock while being interdicted (unless it's a force dock)
+	if(is_interdicted && !instant)
+		ship_announce("DOCKING ABORTED: Interdiction field preventing dock sequence!", "Navigation Alert")
+		return "Cannot dock while interdicted!"
+
 	refresh_engines()
-	shuttle.request(dock_to_use)
 
 	docked = to_dock
 	state = OVERMAP_SHIP_DOCKING
@@ -393,16 +734,45 @@
 		var/obj/structure/overmap/planet/current_planet = to_dock
 		current_planet.visited = TRUE
 		if(current_planet.loading)
-			ship_announce("Awaiting destination loading...", "Docking Announcement", TRUE)
 			// Register signal to complete dock when planet finishes loading
 			RegisterSignal(current_planet, COMSIG_VOIDCREW_PLANET_LOADED, PROC_REF(on_planet_loaded))
 			return "Commencing docking, awaiting zone loading..."
 
-	// No loading required, dock immediately
-	ship_announce("Docking now.", "Docking Announcement", TRUE)
+	// Instant dock (force dock) - bypass warmup
+	if(instant)
+		SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_ABOUT_TO_DOCK)
+		shuttle.request(dock_to_use)
+		shuttle.setTimer(1 SECONDS)
+		addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), 1 SECONDS)
+		return "Commencing docking..."
+
+	// Start dock warmup
+	ship_announce("Initiating docking sequence. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "Docking Announcement")
+	dock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_dock_warmup), dock_to_use, WEAKREF(to_dock)), DOCK_WARMUP_TIME, TIMER_STOPPABLE)
+	return "Initiating docking sequence. Docking in [DOCK_WARMUP_TIME / 10] seconds."
+
+/**
+  * Called after dock warmup completes - actually begins the shuttle dock
+  */
+/obj/structure/overmap/ship/proc/complete_dock_warmup(obj/docking_port/stationary/dock_to_use, datum/weakref/to_dock_ref)
+	dock_warmup_timer = null
+
+	// Check if we're still in docking state (might have been cancelled)
+	if(state != OVERMAP_SHIP_DOCKING)
+		return
+
+	var/obj/structure/overmap/to_dock = to_dock_ref?.resolve()
+	if(!to_dock)
+		state = OVERMAP_SHIP_FLYING
+		docked = null
+		ship_announce("Docking aborted: destination no longer available.", "Docking Error")
+		return
+
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_ABOUT_TO_DOCK)
+	shuttle.request(dock_to_use)
+	ship_announce("Docking now.", "Docking Announcement")
 	shuttle.setTimer(1 SECONDS)
-	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(to_dock)), 1 SECONDS)
-	return "Commencing docking..."
+	addtimer(CALLBACK(src, PROC_REF(complete_dock), to_dock_ref), 1 SECONDS)
 
 /**
   * Signal handler - completes docking when a planet finishes loading.
@@ -414,9 +784,12 @@
 	if(state != OVERMAP_SHIP_DOCKING || docked != source)
 		return // Ship state changed, abort
 
-	ship_announce("Destination loaded, completing docking.", "Docking Announcement", TRUE)
-	shuttle.setTimer(1 SECONDS)
-	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(source)), 1 SECONDS)
+	// Get the dock port to use
+	var/obj/docking_port/stationary/dock_to_use = shuttle.port_destinations
+
+	// Start dock warmup
+	ship_announce("Destination loaded. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "Docking Announcement")
+	dock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_dock_warmup), dock_to_use, WEAKREF(source)), DOCK_WARMUP_TIME, TIMER_STOPPABLE)
 
 /**
   * Proc called after a shuttle is moved, used for checking a ship's location when it's moved manually (E.G. calling the mining shuttle via a console)
@@ -472,6 +845,32 @@
 		return "Ship not docked!"
 	if(!shuttle)
 		return "Shuttle not found!"
+	// Already undocking
+	if(state == OVERMAP_SHIP_UNDOCKING)
+		return "Already undocking!"
+	// Check undock cooldown (after docking)
+	if(!COOLDOWN_FINISHED(src, undock_cooldown))
+		return "Undock systems stabilizing! [DisplayTimeText(COOLDOWN_TIMELEFT(src, undock_cooldown))] remaining."
+	// Check interdiction undock lockout
+	if(!COOLDOWN_FINISHED(src, interdiction_undock_lockout))
+		return "Undocking systems locked! [DisplayTimeText(COOLDOWN_TIMELEFT(src, interdiction_undock_lockout))] remaining."
+
+	// Start undock warmup
+	state = OVERMAP_SHIP_UNDOCKING
+	ship_announce("Initiating undocking sequence. Undocking in [UNDOCK_WARMUP_TIME / 10] seconds.", "Undocking Announcement")
+	undock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_undock_warmup)), UNDOCK_WARMUP_TIME, TIMER_STOPPABLE)
+	return "Initiating undocking sequence. Undocking in [UNDOCK_WARMUP_TIME / 10] seconds."
+
+/**
+  * Called after undock warmup completes - actually begins the shuttle undock
+  */
+/obj/structure/overmap/ship/proc/complete_undock_warmup()
+	undock_warmup_timer = null
+
+	// Check if we're still in undocking state (might have been cancelled)
+	if(state != OVERMAP_SHIP_UNDOCKING)
+		return
+
 	// Don't clear dock flags here - wait until shuttle has actually moved in complete_dock
 	// Otherwise the z-level might be unloaded while we're still on it
 	// Clear port destinations when undocking from empty space to prevent confusion
@@ -483,12 +882,9 @@
 	shuttle.destination = null
 	shuttle.mode = SHUTTLE_IGNITING
 	shuttle.setTimer(1 SECONDS)
-	priority_announce("Undocking now.", "Docking Announcement", sender_override = name)
 	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(undock_from)), 1 SECONDS)
-	state = OVERMAP_SHIP_UNDOCKING
 	// Reset crash flag so ship can crash again if damaged
 	has_crash_landed = FALSE
-	return "Beginning undocking procedures..."
 
 /**
   * Sets the ship, shuttle, and shuttle areas to a new name.
@@ -512,8 +908,21 @@
 				if(istype(docking_target, /obj/structure/overmap/ship)) //hardcoded and bad
 					var/obj/structure/overmap/ship/S = docking_target
 					S.shuttle.shuttle_areas |= shuttle.shuttle_areas
+					// Notify the target ship that we docked to them
+					SEND_SIGNAL(S, COMSIG_VOIDCREW_SHIP_DOCKED_BY, src)
+				// If docking to empty space, notify any other ships already docked there
+				// This creates a ship-to-ship dock situation via shared empty space
+				else if(istype(docking_target, /obj/structure/overmap/planet/empty))
+					for(var/obj/structure/overmap/ship/other_ship in SSovermap.simulated_ships)
+						if(other_ship == src)
+							continue
+						if(other_ship.docked == docking_target)
+							// Another ship is already docked to this empty space - notify them
+							SEND_SIGNAL(other_ship, COMSIG_VOIDCREW_SHIP_DOCKED_BY, src)
 				forceMove(docking_target)
 				state = OVERMAP_SHIP_IDLE
+				// Start undock cooldown
+				COOLDOWN_START(src, undock_cooldown, UNDOCK_COOLDOWN_TIME)
 				SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_DOCKED)
 			else
 				addtimer(CALLBACK(src, PROC_REF(complete_dock), to_dock), 1 SECONDS) //This should never happen, yet it does sometimes.
@@ -525,6 +934,8 @@
 					var/obj/structure/overmap/ship/S = loc
 					S.shuttle.shuttle_areas -= shuttle.shuttle_areas
 					adjust_speed(S.speed[1], S.speed[2])
+					// Notify the target ship that we undocked from them
+					SEND_SIGNAL(S, COMSIG_VOIDCREW_SHIP_UNDOCKED_BY, src)
 				var/turf/target_turf = get_turf(loc)
 				log_shuttle("complete_dock UNDOCKING: Moving ship [src] from [loc] to turf [target_turf]")
 				forceMove(target_turf)
@@ -552,6 +963,16 @@
 			// Note: Empty space cleanup is now handled via COMSIG_VOIDCREW_SHIP_UNDOCKED signal
 			// registered in /obj/structure/overmap/planet/empty/Entered()
 
+			// If undocking from empty space, notify any other ships still docked there
+			// This allows them to reactivate shields now that they're alone
+			if(istype(old_docked_location, /obj/structure/overmap/planet/empty))
+				for(var/obj/structure/overmap/ship/other_ship in SSovermap.simulated_ships)
+					if(other_ship == src)
+						continue
+					if(other_ship.docked == old_docked_location)
+						// Another ship is still docked to this empty space - notify them we left
+						SEND_SIGNAL(other_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED_BY, src)
+
 			// Handle space ruin dock flags and cleanup
 			if(istype(old_docked_location, /obj/structure/overmap/space_ruin))
 				var/obj/structure/overmap/space_ruin/ruin_place = old_docked_location
@@ -566,10 +987,19 @@
 			// Always set state to FLYING when undocking completes
 			state = OVERMAP_SHIP_FLYING
 			SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_UNDOCKED)
+			// Force refresh close_overmap_objects for all ships on this turf
+			var/turf/our_turf = get_turf(src)
+			if(our_turf)
+				for(var/obj/structure/overmap/other in our_turf)
+					if(other == src)
+						continue
+					LAZYOR(other.close_overmap_objects, src)
+					LAZYOR(close_overmap_objects, other)
 			//if(repair_timer)
 				//deltimer(repair_timer)
 			//addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/structure/overmap/ship, tick_autopilot)), 5 SECONDS) //TODO: Improve this SOMEHOW
 	calculate_mass()
+	update_appearance(UPDATE_ICON_STATE)
 	update_screen()
 
 /**
@@ -694,6 +1124,11 @@
 	if(!current_speed)
 		return
 
+	// Apply speed multiplier as hard cap (for interdiction effects)
+	// This affects actual movement speed, not just thrust generation
+	if(speed_multiplier < SHIP_SPEED_MULTIPLIER_DEFAULT)
+		current_speed *= speed_multiplier
+
 	var/timer = 1 / current_speed
 	movement_callback_id = addtimer(CALLBACK(src, PROC_REF(tick_move)), timer, TIMER_STOPPABLE)
 	update_screen()
@@ -709,6 +1144,10 @@
   * * user - The user that initiated the action
   */
 /obj/structure/overmap/ship/proc/dock_in_empty_space(mob/user)
+	// Cannot dock while interdicted
+	if(is_interdicted)
+		return "Cannot dock while interdicted!"
+
 	var/obj/structure/overmap/planet/empty/E
 	E = locate() in get_turf(src)
 	if(!E)
@@ -757,9 +1196,10 @@
   * and positions the docking ports so the ships' exits face each other.
   * * other_ship - The other ship to dock with
   * * user - The user who initiated the docking
+  * * instant - If TRUE, bypasses the dock warmup (used for force dock)
   * Returns an error string on failure, null on success.
   */
-/obj/structure/overmap/ship/proc/dock_ships_directly(obj/structure/overmap/ship/other_ship, mob/user)
+/obj/structure/overmap/ship/proc/dock_ships_directly(obj/structure/overmap/ship/other_ship, mob/user, instant = FALSE)
 	if(!other_ship || !shuttle || !other_ship.shuttle)
 		return "Invalid ships for docking."
 
@@ -799,8 +1239,86 @@
 	other_ship.shuttle.port_destinations = E.reserve_dock_secondary
 
 	// Dock both ships
-	dock(E, E.reserve_dock)
-	other_ship.dock(E, E.reserve_dock_secondary)
+	dock(E, E.reserve_dock, instant)
+	other_ship.dock(E, E.reserve_dock_secondary, instant)
+
+	return null
+
+/**
+  * Fallback docking: Docks two ships to the same empty space's reserve ports separately.
+  * Used when direct exit-to-exit docking fails. Ships will be in the same location
+  * but their airlocks won't be touching.
+  * * other_ship - The other ship to dock with
+  * * user - The user who initiated the docking (optional)
+  * * instant - If TRUE, bypasses the dock warmup (used for force dock)
+  * Returns an error string on failure, null on success.
+  */
+/obj/structure/overmap/ship/proc/dock_ships_to_reserve_ports(obj/structure/overmap/ship/other_ship, mob/user, instant = FALSE)
+	if(!other_ship || !shuttle || !other_ship.shuttle)
+		return "Invalid ships for docking."
+
+	// Create or find shared empty space
+	var/obj/structure/overmap/planet/empty/E = locate() in get_turf(src)
+	if(!E)
+		E = new(get_turf(src))
+
+	// Load the level first to ensure docking ports exist
+	if(!E.loaded && !E.loading)
+		E.load_level()
+
+	// Wait for level to load
+	if(E.loading)
+		return "Empty space is loading, try again in a moment."
+
+	if(!E.reserve_dock || !E.reserve_dock_secondary)
+		return "No docking ports available in empty space."
+
+	// Check if at least one dock is available for each ship
+	var/obj/docking_port/stationary/dock_for_us
+	var/obj/docking_port/stationary/dock_for_them
+
+	if(!E.first_dock_taken && !E.reserve_dock.get_docked())
+		dock_for_us = E.reserve_dock
+		E.first_dock_taken = TRUE
+		dock_index = 1
+	else if(!E.second_dock_taken && !E.reserve_dock_secondary.get_docked())
+		dock_for_us = E.reserve_dock_secondary
+		E.second_dock_taken = TRUE
+		dock_index = 2
+
+	if(!dock_for_us)
+		return "No available docking ports for our ship."
+
+	// Find dock for the other ship
+	if(!E.first_dock_taken && !E.reserve_dock.get_docked())
+		dock_for_them = E.reserve_dock
+		E.first_dock_taken = TRUE
+		other_ship.dock_index = 1
+	else if(!E.second_dock_taken && !E.reserve_dock_secondary.get_docked())
+		dock_for_them = E.reserve_dock_secondary
+		E.second_dock_taken = TRUE
+		other_ship.dock_index = 2
+
+	if(!dock_for_them)
+		// Rollback our dock allocation
+		if(dock_index == 1)
+			E.first_dock_taken = FALSE
+		else
+			E.second_dock_taken = FALSE
+		dock_index = 0
+		return "No available docking ports for target ship."
+
+	// Adjust docks to fit each shuttle
+	E.adjust_dock_to_shuttle(dock_for_us, shuttle)
+	E.adjust_dock_to_shuttle(dock_for_them, other_ship.shuttle)
+
+	// Set port destinations for helm UI
+	shuttle.port_destinations = dock_for_us
+	other_ship.shuttle.port_destinations = dock_for_them
+
+	// Dock both ships
+	dock(E, dock_for_us, instant)
+	other_ship.dock(E, dock_for_them, instant)
 
 	return null
 
@@ -906,7 +1424,14 @@
 		// Dock both ships directly exit-to-exit
 		var/result = dock_ships_directly(acting_ship, user)
 		if(result)
-			to_chat(user, "<span class='warning'>[result]</span>")
+			// Direct docking failed, fall back to reserve port docking
+			ship_announce("Direct docking failed, using reserve ports instead.", "Docking")
+			acting_ship.ship_announce("Direct docking failed, using reserve ports instead.", "Docking")
+			var/fallback_result = dock_ships_to_reserve_ports(acting_ship, user)
+			if(fallback_result)
+				to_chat(user, "<span class='warning'>Docking failed: [fallback_result]</span>")
+				ship_announce("Docking failed: [fallback_result]", "Docking Error")
+				acting_ship.ship_announce("Docking failed: [fallback_result]", "Docking Error")
 	else
 		// If acting_ship already has a pending request to a DIFFERENT ship, cancel it first
 		if(acting_ship.pending_dock && acting_ship.pending_dock_target != src)
@@ -1187,11 +1712,24 @@
 
 	thrust_used = thrust_used / max(mass * 100, 1) //do not know why this minimum check is here, but I clearly ran into an issue here before
 
+	// Apply speed multiplier (for effects like interdiction)
+	thrust_used *= speed_multiplier
+
 	if(n_dir)
 		accelerate(n_dir, thrust_used)
 
+/// Global helper to get the ship an atom is currently on
+/// Returns null if the atom is not on a ship
+/proc/get_ship_from_atom(atom/source)
+	var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(source)
+	return port?.current_ship
+
 #undef SHIP_SIZE_THRESHOLD
+#undef SHIP_SPEED_MULTIPLIER_DEFAULT
 
 #undef SHIP_RUIN
 #undef SHIP_DELETE
 #undef SHIP_VIEW_RANGE
+#undef DOCK_WARMUP_TIME
+#undef UNDOCK_WARMUP_TIME
+#undef UNDOCK_COOLDOWN_TIME

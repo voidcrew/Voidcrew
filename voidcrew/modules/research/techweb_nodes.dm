@@ -1,25 +1,34 @@
 /datum/techweb_node/basic_shuttle_tech
 	id = TECHWEB_NODE_BASIC_SHUTTLE
 	display_name = "Basic Shuttle Research"
-	description = "Research the technology required to create and use basic shuttles."
-	prereq_ids = list(TECHWEB_NODE_BLUESPACE_TRAVEL, TECHWEB_NODE_EXP_TOOLS)
+	description = "Research the technology required to create and pilot basic shuttles."
+	prereq_ids = list(TECHWEB_NODE_FUNDIMENTAL_SCI)
 	design_ids = list(
 		"engine_plasma",
 		"engine_ion",
 		"shuttle_helm",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_1_POINTS)
+
+/datum/techweb_node/ship_construction_console
+	id = TECHWEB_NODE_SHIP_CONSTRUCTION
+	display_name = "Shuttle Construction"
+	description = "Technology for constructing and modifying shuttles."
+	prereq_ids = list(TECHWEB_NODE_BASIC_SHUTTLE)
+	design_ids = list(
 		"ship_construction",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
 
 /datum/techweb_node/exp_shuttle_tech
 	id = TECHWEB_NODE_EXPERIMENTAL_SHUTTLE
 	display_name = "Experimental Shuttle Research"
-	description = "A bunch of engines and related shuttle parts that are likely not really that useful, but could be in strange situations."
+	description = "Experimental engines and shuttle parts for unusual situations."
 	prereq_ids = list(TECHWEB_NODE_BASIC_SHUTTLE)
 	design_ids = list(
 		"engine_expulsion",
 	)
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
 
 /datum/techweb_node/survey_scanner
 	id = TECHWEB_NODE_SURVEY_SCANNER
@@ -264,7 +273,7 @@
 	)
 	prereq_ids = list(TECHWEB_NODE_FUNDIMENTAL_SCI)
 	description = "Wait, there's stuff out here?!"
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 40)
 
 /datum/techweb_node/survey_console_advanced
 	id = TECHWEB_NODE_SURVEY_CONSOLE_ADV

@@ -5,13 +5,6 @@
 		/obj/item/stack/cable_coil = 2,
 		/obj/item/stock_parts/capacitor = 1)
 
-/obj/item/circuitboard/machine/shuttle/heater
-	name = "Fueled Engine Heater (Machine Board)"
-	build_path = /obj/machinery/atmospherics/components/unary/shuttle/heater
-	req_components = list(/obj/item/stock_parts/micro_laser = 2,
-		/obj/item/stock_parts/matter_bin = 1)
-
-
 /obj/item/circuitboard/machine/shuttle/engine/plasma
 	name = "Plasma Thruster (Machine Board)"
 	build_path = /obj/machinery/power/shuttle_engine/ship/fueled/plasma

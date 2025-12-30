@@ -47,6 +47,19 @@
 	var/last_integrity_percent = 100
 	/// Whether we've played the 55% alert already
 	var/played_55_alert = FALSE
+	/// Console ambient sounds
+	var/datum/console_ambience/console_ambience
+
+/obj/machinery/computer/helm/Initialize(mapload)
+	. = ..()
+	// Console ambient sounds (not for viewscreens)
+	if(!viewer)
+		console_ambience = new(src, get_console_ambience_sounds())
+		console_ambience.start()
+
+/obj/machinery/computer/helm/Destroy()
+	QDEL_NULL(console_ambience)
+	return ..()
 
 /obj/machinery/computer/helm/viewscreen
 	name = "ship viewscreen"
@@ -149,6 +162,28 @@
 	data["est_thrust"] = current_ship.est_thrust
 	data["engineInfo"] = list()
 	data["canLand"] = current_ship.shuttle.port_destinations ? TRUE : FALSE
+
+	// Undock cooldown data (after docking)
+	data["undockCooldown"] = !COOLDOWN_FINISHED(current_ship, undock_cooldown)
+	data["undockCooldownRemaining"] = COOLDOWN_TIMELEFT(current_ship, undock_cooldown)
+
+	// Interdiction undock lockout data
+	data["undockLocked"] = !COOLDOWN_FINISHED(current_ship, interdiction_undock_lockout)
+	data["undockLockoutRemaining"] = COOLDOWN_TIMELEFT(current_ship, interdiction_undock_lockout)
+
+	// Dock warmup data
+	data["dockWarmup"] = !!current_ship.dock_warmup_timer
+	data["dockWarmupRemaining"] = current_ship.dock_warmup_timer ? timeleft(current_ship.dock_warmup_timer) : 0
+
+	// Undock warmup data
+	data["undockWarmup"] = !!current_ship.undock_warmup_timer
+	data["undockWarmupRemaining"] = current_ship.undock_warmup_timer ? timeleft(current_ship.undock_warmup_timer) : 0
+
+	// Interdiction status
+	data["isInterdicted"] = current_ship.is_interdicted
+	data["interdictionStrength"] = current_ship.interdiction_strength
+	data["speedMultiplier"] = current_ship.speed_multiplier
+
 	for(var/obj/machinery/power/shuttle_engine/ship/E in current_ship.shuttle.engine_list)
 		var/list/engine_data
 		if(!E.thruster_active)
@@ -270,14 +305,11 @@
 		RegisterSignal(current_ship, COMSIG_SHIP_INTEGRITY_CHANGED, PROC_REF(on_ship_integrity_changed), override = TRUE)
 		return TRUE
 
-	var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(src)
-	if(!istype(port))
-		port = null
-
-	if(!port && last_resort) // todo: check for helm being constructed, damn those players
+	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
+	if(!ship && last_resort)
 		stack_trace("Failed to connect a helm to its ship, this is almost certainly a bug!")
 
-	set_current_ship(port?.current_ship)
+	set_current_ship(ship)
 	return !!current_ship
 
 /**
@@ -316,9 +348,9 @@
  * This proc manually rechecks that the helm computer is connected to a proper ship
  */
 /obj/machinery/computer/helm/proc/reload_ship()
-	var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(src)
-	if(port?.current_ship)
-		current_ship = port.current_ship
+	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
+	if(ship)
+		current_ship = ship
 	return TRUE
 
 /obj/machinery/computer/helm/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)

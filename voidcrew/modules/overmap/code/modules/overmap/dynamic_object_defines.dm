@@ -104,7 +104,10 @@
 	if(first_dock_taken || second_dock_taken)
 		return FALSE
 
-	// Don't unload if there are still living mobs with minds
+	// Check if any ships are still inside (catches race conditions with async unload)
+	for(var/obj/structure/overmap/ship/docked_ship in contents)
+		return
+
 	if(length(mapzone?.get_mind_mobs()))
 		return FALSE
 

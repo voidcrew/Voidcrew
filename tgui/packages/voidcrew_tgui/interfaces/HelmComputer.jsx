@@ -6,6 +6,7 @@ import {
   ByondUi,
   Input,
   LabeledList,
+  NoticeBox,
   ProgressBar,
   Section,
   Stack,
@@ -13,8 +14,8 @@ import {
 } from 'tgui-core/components';
 import { Window } from '../../tgui/layouts';
 
-export const HelmComputer = (props, context) => {
-  const { act, data, config } = useBackend(context);
+export const HelmComputer = (props) => {
+  const { act, data } = useBackend();
   const [mapRefreshKey, setMapRefreshKey] = useState(0);
   const { mapRef, isViewer, isNotCrew, shipCrashed, repairProgress } = data || {};
   // Controls are disabled if viewer mode OR not a crew member
@@ -92,8 +93,8 @@ export const HelmComputer = (props, context) => {
   );
 };
 
-const Radar = (context) => {
-  const { act, data } = useBackend(context);
+const Radar = () => {
+  const { act, data } = useBackend();
   const { isViewer, isNotCrew, otherInfo = [] } = data;
   const isDisabled = isViewer || isNotCrew;
   return (
@@ -144,8 +145,8 @@ const Radar = (context) => {
   );
 };
 
-const BroadcastSection = (props, context) => {
-  const { act, data } = useBackend(context);
+const BroadcastSection = () => {
+  const { act, data } = useBackend();
   const { isViewer, isNotCrew } = data;
   const isDisabled = isViewer || isNotCrew;
   const [broadcastMessage, setBroadcastMessage] = useState('');
@@ -189,8 +190,8 @@ const BroadcastSection = (props, context) => {
   );
 };
 
-const SharedContent = (props, context) => {
-  const { act, data } = useBackend(context);
+const SharedContent = () => {
+  const { act, data } = useBackend();
   const {
     isViewer,
     isNotCrew,
@@ -330,8 +331,8 @@ const IntegrityBar = (props) => {
 };
 
 // Content included on helms when they're controlling ships
-const ShipContent = (props, context) => {
-  const { act, data } = useBackend(context);
+const ShipContent = () => {
+  const { act, data } = useBackend();
   const {
     isViewer,
     isNotCrew,
@@ -424,7 +425,7 @@ const ShipContent = (props, context) => {
                 <Table.Cell collapsing>
                   <Button
                     content={
-                      engine.name.len < 14
+                      engine.name.length < 14
                         ? engine.name
                         : engine.name.slice(0, 10) + '...'
                     }
@@ -470,12 +471,49 @@ const ShipContent = (props, context) => {
 };
 
 // Arrow directional controls
-const ShipControlContent = (props, context) => {
-  const { act, data } = useBackend(context);
-  const { calibrating, shipDisabled, canThrust, isViewer, isNotCrew } = data;
+const ShipControlContent = () => {
+  const { act, data } = useBackend();
+  const {
+    calibrating,
+    shipDisabled,
+    canThrust,
+    isViewer,
+    isNotCrew,
+    undockCooldown,
+    undockCooldownRemaining,
+    undockLocked,
+    undockLockoutRemaining,
+    dockWarmup,
+    dockWarmupRemaining,
+    undockWarmup,
+    undockWarmupRemaining,
+    isInterdicted,
+    speedMultiplier,
+  } = data;
   const isDisabled = isViewer || isNotCrew;
   const flyable = data.state === 'flying' && !shipDisabled && !isDisabled;
   const canMove = flyable && canThrust;
+
+  // Determine undock button state and tooltip
+  const undockDisabled =
+    (data.state !== 'idle' && data.state !== 'undocking') ||
+    shipDisabled ||
+    isDisabled ||
+    undockCooldown ||
+    undockLocked ||
+    undockWarmup;
+  const getUndockTooltip = () => {
+    if (undockWarmup) {
+      return `Undocking in ${Math.ceil(undockWarmupRemaining / 10)}s...`;
+    }
+    if (undockCooldown) {
+      return `Systems stabilizing - ${Math.ceil(undockCooldownRemaining / 10)}s remaining`;
+    }
+    if (undockLocked) {
+      return `Undocking locked - ${Math.ceil(undockLockoutRemaining / 10)}s remaining (interdiction)`;
+    }
+    return 'Undock';
+  };
 
   //  DIRECTIONS const idea from Lyra as part of their Haven-Urist project
   const DIRECTIONS = {
@@ -491,35 +529,54 @@ const ShipControlContent = (props, context) => {
   return (
     <Section title="Navigation">
       {!!isNotCrew && (
-        <div className="NoticeBox danger">CREW AUTHORIZATION REQUIRED</div>
+        <NoticeBox danger>CREW AUTHORIZATION REQUIRED</NoticeBox>
       )}
       {!!shipDisabled && !isNotCrew && (
-        <div className="NoticeBox danger">HULL CRITICAL - SYSTEMS OFFLINE</div>
+        <NoticeBox danger>HULL CRITICAL - SYSTEMS OFFLINE</NoticeBox>
       )}
       {data.state === 'idle' && !shipDisabled && !isNotCrew && (
-        <div className="NoticeBox">Ship Docked.</div>
+        <NoticeBox>Ship Docked.</NoticeBox>
+      )}
+      {data.state === 'docking' && !!dockWarmup && !isNotCrew && (
+        <NoticeBox>
+          Docking in {Math.ceil(dockWarmupRemaining / 10)}s...
+        </NoticeBox>
+      )}
+      {data.state === 'undocking' && !!undockWarmup && !isNotCrew && (
+        <NoticeBox>
+          Undocking in {Math.ceil(undockWarmupRemaining / 10)}s...
+        </NoticeBox>
       )}
       {!!flyable && !canThrust && (
-        <div className="NoticeBox danger">No engine power available!</div>
+        <NoticeBox danger>No engine power available!</NoticeBox>
+      )}
+      {!!isInterdicted && (
+        <NoticeBox danger>
+          INTERDICTED - Engines at {Math.round(speedMultiplier * 100)}%
+        </NoticeBox>
       )}
       <Table collapsing>
         <Table.Row height={2}>
           <Table.Cell width={1}>
             <Button
-              tooltip="Undock"
+              tooltip={getUndockTooltip()}
               tooltipPosition="right"
               icon="sign-out-alt"
-              disabled={data.state !== 'idle' || shipDisabled || isDisabled}
+              disabled={undockDisabled}
               onClick={() => act('undock')}
             />
           </Table.Cell>
 
           <Table.Cell width={1}>
             <Button
-              tooltip="Dock in Empty Space"
+              tooltip={
+                dockWarmup
+                  ? `Docking in ${Math.ceil(dockWarmupRemaining / 10)}s...`
+                  : 'Dock in Empty Space'
+              }
               tooltipPosition="right"
               icon="sign-in-alt"
-              disabled={!flyable}
+              disabled={!flyable || dockWarmup}
               onClick={() => act('dock_empty')}
             />
           </Table.Cell>
