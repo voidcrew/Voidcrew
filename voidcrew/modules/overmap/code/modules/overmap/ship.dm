@@ -133,9 +133,6 @@
 	/// List of interdictor machines installed on this ship
 	var/list/linked_interdictors = list()
 
-	/// Unified defense system manager - coordinates shields, interdiction, and cloaking
-	var/datum/ship_defense_manager/defense_manager
-
 	/// Cooldown preventing undocking shortly after docking
 	COOLDOWN_DECLARE(undock_cooldown)
 	/// Timer ID for dock warmup
@@ -446,9 +443,6 @@
 	SSovermap.simulated_ships += src
 	survey_data = new()
 
-	// Initialize unified defense system manager
-	defense_manager = new(src)
-
 	return TRUE
 
 /obj/structure/overmap/ship/Destroy()
@@ -461,7 +455,6 @@
 	job_slots?.Cut()
 	QDEL_NULL(ship_team)
 	QDEL_NULL(cam_screen) // cam_background is inside cam_screen and deleted with it
-	QDEL_NULL(defense_manager)
 	return ..()
 
 /obj/structure/overmap/ship/attack_ghost(mob/user)

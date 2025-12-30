@@ -100,7 +100,7 @@
 	/// Chemical grenade payload (alternative to warhead for chemical missiles)
 	var/obj/item/grenade/chem_grenade/chemical_grenade
 	/// Time to load this missile into a launcher
-	var/load_time = 4 SECONDS
+	var/load_time = MISSILE_LAUNCHER_LOAD_TIME
 	/// Whether this missile has already detonated (prevents double explosions)
 	var/detonated = FALSE
 
@@ -357,7 +357,7 @@
 
 		to_chat(user, span_notice("You begin inserting [grenade] into [src]..."))
 
-		if(!do_after(user, 4 SECONDS, src))
+		if(!do_after(user, MISSILE_LAUNCHER_LOAD_TIME, src))
 			to_chat(user, span_warning("You stop inserting the grenade."))
 			return
 

@@ -29,7 +29,7 @@
 	/// Extra duration per capacitor tier (15 seconds per tier)
 	var/duration_per_tier = SHIP_CLOAK_DURATION_PER_TIER
 	/// Current maximum cloak duration (calculated from parts)
-	var/max_cloak_duration = 30 SECONDS
+	var/max_cloak_duration = SHIP_CLOAK_BASE_DURATION
 	/// When the cloak will expire
 	var/cloak_expire_time = 0
 	/// Timer ID for cloak expiration

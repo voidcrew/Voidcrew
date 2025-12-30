@@ -6929,7 +6929,6 @@
 #include "voidcrew\modules\ship_combat\cargo_packs.dm"
 #include "voidcrew\modules\ship_combat\cloak_device.dm"
 #include "voidcrew\modules\ship_combat\combat_console.dm"
-#include "voidcrew\modules\ship_combat\defense_manager.dm"
 #include "voidcrew\modules\ship_combat\interdictor.dm"
 #include "voidcrew\modules\ship_combat\laser_effect.dm"
 #include "voidcrew\modules\ship_combat\laser_turret.dm"
