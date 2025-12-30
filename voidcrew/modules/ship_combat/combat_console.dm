@@ -333,20 +333,13 @@
 	if(current_ship)
 		return TRUE
 
-	var/area/ship_area = get_area(src)
-	if(!ship_area)
+	current_ship = get_ship_from_atom(src)
+	if(!current_ship)
 		return FALSE
 
-	for(var/obj/structure/overmap/ship/S in SSovermap.simulated_ships)
-		if(!S.shuttle)
-			continue
-		for(var/area/A in S.shuttle.shuttle_areas)
-			if(A == ship_area)
-				current_ship = S
-				RegisterSignal(current_ship, COMSIG_SHIP_CLOAK_CHANGED, PROC_REF(on_cloak_changed))
-				RegisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_our_ship_docked))
-				return TRUE
-	return FALSE
+	RegisterSignal(current_ship, COMSIG_SHIP_CLOAK_CHANGED, PROC_REF(on_cloak_changed))
+	RegisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_our_ship_docked))
+	return TRUE
 
 /obj/machinery/computer/camera_advanced/ship_combat/proc/on_cloak_changed(datum/source, new_state)
 	SIGNAL_HANDLER

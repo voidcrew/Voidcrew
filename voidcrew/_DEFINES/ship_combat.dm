@@ -197,6 +197,15 @@
 /// Meteors deal normal damage to shields (100%)
 #define SHIELD_DAMAGE_MULT_METEOR 1.0
 
+// ========== METEOR SHIELD DAMAGE VALUES ==========
+
+/// Shield damage from big meteors
+#define METEOR_SHIELD_DAMAGE_BIG 600
+/// Shield damage from medium meteors
+#define METEOR_SHIELD_DAMAGE_MEDIUM 400
+/// Shield damage from small/default meteors
+#define METEOR_SHIELD_DAMAGE_SMALL 200
+
 // ========== LASER SIGNALS ==========
 
 /// Sent when a laser turret fires: (obj/machinery/ship_combat/laser_turret/turret, turf/target)

@@ -4,6 +4,7 @@
 #define SHIP_RUIN (10 MINUTES)
 #define SHIP_DELETE (10 MINUTES)
 #define SHIP_VIEW_RANGE 4
+#define SHIP_SPEED_MULTIPLIER_DEFAULT 1
 
 /obj/structure/overmap/ship
 	name = "overmap vessel"
@@ -119,7 +120,7 @@
 	var/obj/structure/overmap/ship/pending_dock_target
 
 	/// Speed multiplier for external effects like interdiction (1 = normal, 0.5 = half speed)
-	var/speed_multiplier = 1
+	var/speed_multiplier = SHIP_SPEED_MULTIPLIER_DEFAULT
 	/// Whether this ship is currently being interdicted
 	var/is_interdicted = FALSE
 	/// Cooldown preventing undocking after being interdicted
@@ -699,7 +700,7 @@
   */
 /obj/structure/overmap/ship/proc/clear_interdiction()
 	interdicting_machine_ref = null
-	speed_multiplier = 1
+	speed_multiplier = SHIP_SPEED_MULTIPLIER_DEFAULT
 	interdiction_strength = 0
 	is_interdicted = FALSE
 
@@ -1124,7 +1125,7 @@
 
 	// Apply speed multiplier as hard cap (for interdiction effects)
 	// This affects actual movement speed, not just thrust generation
-	if(speed_multiplier < 1)
+	if(speed_multiplier < SHIP_SPEED_MULTIPLIER_DEFAULT)
 		current_speed *= speed_multiplier
 
 	var/timer = 1 / current_speed
@@ -1716,7 +1717,14 @@
 	if(n_dir)
 		accelerate(n_dir, thrust_used)
 
+/// Global helper to get the ship an atom is currently on
+/// Returns null if the atom is not on a ship
+/proc/get_ship_from_atom(atom/source)
+	var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(source)
+	return port?.current_ship
+
 #undef SHIP_SIZE_THRESHOLD
+#undef SHIP_SPEED_MULTIPLIER_DEFAULT
 
 #undef SHIP_RUIN
 #undef SHIP_DELETE

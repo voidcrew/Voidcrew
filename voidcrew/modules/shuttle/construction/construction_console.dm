@@ -259,11 +259,7 @@
 	if(current_ship)
 		return TRUE
 
-	var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(src)
-	if(!istype(port))
-		return FALSE
-
-	current_ship = port.current_ship
+	current_ship = get_ship_from_atom(src)
 	return !!current_ship
 
 /**

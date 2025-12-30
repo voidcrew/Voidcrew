@@ -61,10 +61,10 @@
 /// Returns the shield damage for a meteor based on its type
 /obj/structure/ship_shield_wall/proc/get_meteor_damage(obj/effect/meteor/M)
 	if(istype(M, /obj/effect/meteor/big))
-		return 600
+		return METEOR_SHIELD_DAMAGE_BIG
 	if(istype(M, /obj/effect/meteor/medium))
-		return 400
-	return 200
+		return METEOR_SHIELD_DAMAGE_MEDIUM
+	return METEOR_SHIELD_DAMAGE_SMALL
 
 // NO CanAllowThrough() - blocks EVERYTHING including people
 // Players must turn shields off to enter/exit ship

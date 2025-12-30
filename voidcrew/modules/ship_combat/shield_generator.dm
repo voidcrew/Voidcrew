@@ -1639,7 +1639,6 @@
 /// Called when ANOTHER ship docks TO us - we must deactivate shields
 /obj/machinery/ship_combat/shield_generator/proc/on_other_ship_docked_to_us(datum/source, obj/structure/overmap/ship/docking_ship)
 	SIGNAL_HANDLER
-	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	// Update flag - we're now in a ship-to-ship dock
 	in_ship_to_ship_dock = TRUE
 	log_shuttle("SHIELD DEBUG on_other_ship_docked_to_us: [docking_ship] docked to our ship, in_ship_to_ship_dock=[in_ship_to_ship_dock], deactivating shields")

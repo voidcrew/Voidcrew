@@ -115,21 +115,15 @@
 // ========== SHIP CONNECTION ==========
 
 /obj/machinery/ship_combat/cloak_device/proc/attempt_ship_connection()
-	var/area/ship_area = get_area(src)
-	if(!ship_area)
+	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
+	if(!ship)
 		return FALSE
 
-	for(var/obj/structure/overmap/ship/S in SSovermap.simulated_ships)
-		if(!S.shuttle)
-			continue
-		for(var/area/A in S.shuttle.shuttle_areas)
-			if(A == ship_area)
-				if(!link_ship(S))
-					// Failed to link - likely a duplicate exists
-					link_failed_duplicate = TRUE
-					return FALSE
-				return TRUE
-	return FALSE
+	if(!link_ship(ship))
+		// Failed to link - likely a duplicate exists
+		link_failed_duplicate = TRUE
+		return FALSE
+	return TRUE
 
 /// Checks if a cloaking device already exists on the given ship
 /obj/machinery/ship_combat/cloak_device/proc/find_existing_cloak_device(obj/structure/overmap/ship/ship)
