@@ -34,6 +34,7 @@
 	. = ..()
 	var/obj/machinery/ship_combat/shield_generator/gen = generator_ref?.resolve()
 	if(!gen)
+		qdel(src)  // Orphaned wall with no generator - clean up
 		return
 
 	var/obj/structure/overmap/ship/ship = gen.linked_ship_ref?.resolve()

@@ -69,6 +69,9 @@
 /// Camera view size for targeting
 #define COMBAT_CAMERA_VIEW_RANGE 7
 
+/// How many tiles from space should be visible in targeting camera (0 = only directly adjacent to space)
+#define COMBAT_CAMERA_VISIBILITY_RANGE 1
+
 // ========== INTERDICTOR DEFINES ==========
 
 /// Time to lock on to a target ship (5 seconds warmup)
@@ -210,6 +213,23 @@
 
 /// Sent when a laser turret fires: (obj/machinery/ship_combat/laser_turret/turret, turf/target)
 #define COMSIG_SHIP_LASER_FIRED "ship_laser_fired"
+
+// ========== TIMING CONSTANTS ==========
+
+/// Missile flight lifetime before self-destruct
+#define MISSILE_FLIGHT_LIFETIME 30 SECONDS
+/// Time to load a missile into launcher
+#define MISSILE_LAUNCHER_LOAD_TIME 4 SECONDS
+/// Base cloak duration before upgrades
+#define SHIP_CLOAK_BASE_DURATION 30 SECONDS
+/// Additional cloak duration per capacitor tier
+#define SHIP_CLOAK_DURATION_PER_TIER 15 SECONDS
+/// Cooldown before recloaking
+#define SHIP_CLOAK_RECLOAK_DELAY 1 MINUTES
+/// Minimum recloak cooldown after upgrades
+#define SHIP_CLOAK_MIN_RECLOAK_DELAY 30 SECONDS
+/// Shield reactivation cooldown after breaking
+#define SHIP_SHIELD_REACTIVATION_COOLDOWN 1 MINUTES
 
 // ========== CLOAK DEFINES ==========
 

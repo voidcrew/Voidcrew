@@ -225,6 +225,10 @@
 
 /// Attempts to auto-link to a combat console on the same ship
 /obj/machinery/ship_combat/laser_turret/proc/attempt_auto_link()
+	// SSovermap must be initialized before we can search for ships
+	if(!SSovermap?.initialized)
+		return
+
 	// Already linked
 	if(linked_console_ref?.resolve())
 		return

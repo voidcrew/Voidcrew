@@ -6,6 +6,7 @@ import {
   ByondUi,
   Input,
   LabeledList,
+  NoticeBox,
   ProgressBar,
   Section,
   Stack,
@@ -13,8 +14,8 @@ import {
 } from 'tgui-core/components';
 import { Window } from '../../tgui/layouts';
 
-export const HelmComputer = (props, context) => {
-  const { act, data, config } = useBackend(context);
+export const HelmComputer = (props) => {
+  const { act, data } = useBackend();
   const [mapRefreshKey, setMapRefreshKey] = useState(0);
   const { mapRef, isViewer, isNotCrew, shipCrashed, repairProgress } = data || {};
   // Controls are disabled if viewer mode OR not a crew member
@@ -92,8 +93,8 @@ export const HelmComputer = (props, context) => {
   );
 };
 
-const Radar = (context) => {
-  const { act, data } = useBackend(context);
+const Radar = () => {
+  const { act, data } = useBackend();
   const { isViewer, isNotCrew, otherInfo = [] } = data;
   const isDisabled = isViewer || isNotCrew;
   return (
@@ -144,8 +145,8 @@ const Radar = (context) => {
   );
 };
 
-const BroadcastSection = (props, context) => {
-  const { act, data } = useBackend(context);
+const BroadcastSection = () => {
+  const { act, data } = useBackend();
   const { isViewer, isNotCrew } = data;
   const isDisabled = isViewer || isNotCrew;
   const [broadcastMessage, setBroadcastMessage] = useState('');
@@ -189,8 +190,8 @@ const BroadcastSection = (props, context) => {
   );
 };
 
-const SharedContent = (props, context) => {
-  const { act, data } = useBackend(context);
+const SharedContent = () => {
+  const { act, data } = useBackend();
   const {
     isViewer,
     isNotCrew,
@@ -330,8 +331,8 @@ const IntegrityBar = (props) => {
 };
 
 // Content included on helms when they're controlling ships
-const ShipContent = (props, context) => {
-  const { act, data } = useBackend(context);
+const ShipContent = () => {
+  const { act, data } = useBackend();
   const {
     isViewer,
     isNotCrew,
@@ -424,7 +425,7 @@ const ShipContent = (props, context) => {
                 <Table.Cell collapsing>
                   <Button
                     content={
-                      engine.name.len < 14
+                      engine.name.length < 14
                         ? engine.name
                         : engine.name.slice(0, 10) + '...'
                     }
@@ -470,8 +471,8 @@ const ShipContent = (props, context) => {
 };
 
 // Arrow directional controls
-const ShipControlContent = (props, context) => {
-  const { act, data } = useBackend(context);
+const ShipControlContent = () => {
+  const { act, data } = useBackend();
   const {
     calibrating,
     shipDisabled,
@@ -528,31 +529,31 @@ const ShipControlContent = (props, context) => {
   return (
     <Section title="Navigation">
       {!!isNotCrew && (
-        <div className="NoticeBox danger">CREW AUTHORIZATION REQUIRED</div>
+        <NoticeBox danger>CREW AUTHORIZATION REQUIRED</NoticeBox>
       )}
       {!!shipDisabled && !isNotCrew && (
-        <div className="NoticeBox danger">HULL CRITICAL - SYSTEMS OFFLINE</div>
+        <NoticeBox danger>HULL CRITICAL - SYSTEMS OFFLINE</NoticeBox>
       )}
       {data.state === 'idle' && !shipDisabled && !isNotCrew && (
-        <div className="NoticeBox">Ship Docked.</div>
+        <NoticeBox>Ship Docked.</NoticeBox>
       )}
       {data.state === 'docking' && !!dockWarmup && !isNotCrew && (
-        <div className="NoticeBox">
+        <NoticeBox>
           Docking in {Math.ceil(dockWarmupRemaining / 10)}s...
-        </div>
+        </NoticeBox>
       )}
       {data.state === 'undocking' && !!undockWarmup && !isNotCrew && (
-        <div className="NoticeBox">
+        <NoticeBox>
           Undocking in {Math.ceil(undockWarmupRemaining / 10)}s...
-        </div>
+        </NoticeBox>
       )}
       {!!flyable && !canThrust && (
-        <div className="NoticeBox danger">No engine power available!</div>
+        <NoticeBox danger>No engine power available!</NoticeBox>
       )}
       {!!isInterdicted && (
-        <div className="NoticeBox danger">
+        <NoticeBox danger>
           INTERDICTED - Engines at {Math.round(speedMultiplier * 100)}%
-        </div>
+        </NoticeBox>
       )}
       <Table collapsing>
         <Table.Row height={2}>

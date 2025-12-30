@@ -2,8 +2,6 @@
 // A modified version of the standard shieldgen for ship combat
 // Has a long cooldown before shields can be reactivated after being turned off
 
-#define SHIP_SHIELD_REACTIVATION_COOLDOWN 1 MINUTES
-
 /obj/machinery/shieldgen/ship
 	name = "ship shield projector"
 	desc = "A ship-mounted shield generator. Creates emergency shields around the ship. Warning: Requires a significant cooldown period before reactivation after deactivation."
@@ -48,5 +46,3 @@
 		. += span_warning("Shield capacitors recharging: [DisplayTimeText(COOLDOWN_TIMELEFT(src, reactivation_cooldown))] remaining.")
 	else
 		. += span_notice("The shields are ready to activate.")
-
-#undef SHIP_SHIELD_REACTIVATION_COOLDOWN

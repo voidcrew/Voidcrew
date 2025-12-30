@@ -24,7 +24,11 @@
 	/// Our unique ID for console linking
 	var/launcher_id
 	/// Time to load a missile
-	var/load_time = 4 SECONDS
+	var/load_time = MISSILE_LAUNCHER_LOAD_TIME
+	/// Cached exterior check result (launchers don't move while anchored)
+	var/cached_exterior_check
+	/// Whether the exterior cache is valid
+	var/exterior_cache_valid = FALSE
 
 /obj/machinery/ship_combat/missile_launcher/Initialize(mapload)
 	. = ..()
@@ -86,16 +90,6 @@
 		to_chat(user, span_warning("[missile] isn't armed! It needs a payload."))
 		return
 
-	var/list/fire_data = missile.get_fire_data()
-	if(!fire_data)
-		to_chat(user, span_warning("[missile] has no valid payload!"))
-		return
-
-	// If this is a chemical missile, move the grenade into the launcher to protect it from qdel
-	var/obj/item/grenade/chem_grenade/extracted_grenade = fire_data["grenade"]
-	if(extracted_grenade)
-		extracted_grenade.forceMove(src)  // Move into launcher - hidden from view and safe from missile qdel
-
 	to_chat(user, span_notice("You begin loading [missile] into [src]..."))
 	playsound(src, 'sound/machines/terminal/terminal_insert_disc.ogg', 50, TRUE)
 
@@ -111,8 +105,18 @@
 	if(missile.construction_state != MISSILE_STATE_ARMED)
 		return
 
-	// Load the missile - use the fire_data we already got (don't call get_fire_data again!)
-	// For chemical grenades, get_fire_data extracts the grenade, so calling it twice would fail
+	// Get fire data AFTER do_after succeeds to avoid orphaning grenades on failure
+	var/list/fire_data = missile.get_fire_data()
+	if(!fire_data)
+		to_chat(user, span_warning("[missile] has no valid payload!"))
+		return
+
+	// If this is a chemical missile, move the grenade into the launcher to protect it from qdel
+	var/obj/item/grenade/chem_grenade/extracted_grenade = fire_data["grenade"]
+	if(extracted_grenade)
+		extracted_grenade.forceMove(src)  // Move into launcher - hidden from view and safe from missile qdel
+
+	// Load the missile
 	loaded_missile = fire_data
 	loaded_missile["name"] = missile.name
 
@@ -133,6 +137,7 @@
 		to_chat(user, span_warning("Unload the missile first!"))
 		return
 	default_unfasten_wrench(user, tool)
+	invalidate_exterior_cache()  // Position may have changed
 	return ITEM_INTERACT_SUCCESS
 
 // Alt+click to rotate when unwrenched
@@ -169,7 +174,13 @@
 	return ..()
 
 /obj/machinery/ship_combat/missile_launcher/on_deconstruction(disassembled)
-	// Loaded missile is just lost on deconstruction
+	// Clean up any chemical grenades stored in the launcher
+	for(var/obj/item/grenade/chem_grenade/grenade in contents)
+		if(disassembled)
+			grenade.forceMove(drop_location())  // Drop grenade if disassembled cleanly
+		else
+			qdel(grenade)  // Delete grenade if destroyed
+	// Loaded missile data is lost on deconstruction
 	loaded_missile = null
 
 // ========== UNLOADING ==========
@@ -194,6 +205,8 @@
 
 	// Spawn a new armed missile structure
 	var/obj/structure/ship_missile/new_missile = new(drop_location())
+	if(!new_missile)
+		return
 
 	// Create tracking circuit
 	new_missile.tracking = new /obj/item/electronics/ship_missile_tracking(new_missile)
@@ -259,6 +272,10 @@
 
 /// Attempts to auto-link to a combat console on the same ship
 /obj/machinery/ship_combat/missile_launcher/proc/attempt_auto_link()
+	// Check if SSovermap is initialized
+	if(!SSovermap?.initialized)
+		return
+
 	// Already linked
 	if(linked_console_ref?.resolve())
 		return
@@ -302,7 +319,12 @@
 
 /// Checks if this weapon is on the exterior of the ship (adjacent to non-shuttle-area tile)
 /// Weapons must be on the exterior to fire - they need line of sight to space/outside
+/// Result is cached while anchored since launchers don't move
 /obj/machinery/ship_combat/missile_launcher/proc/is_on_exterior()
+	// Return cached result if valid (only valid while anchored)
+	if(exterior_cache_valid && anchored)
+		return cached_exterior_check
+
 	var/turf/our_turf = get_turf(src)
 	if(!our_turf)
 		return FALSE
@@ -318,15 +340,25 @@
 			break
 
 	// Check all adjacent tiles (including diagonals)
+	var/result = FALSE
 	for(var/turf/T in range(1, our_turf))
 		if(T == our_turf)
 			continue
 		var/area/tile_area = get_area(T)
 		// If adjacent tile is not in shuttle areas, we're on exterior
 		if(!tile_area || !(tile_area in shuttle_areas))
-			return TRUE
+			result = TRUE
+			break
 
-	return FALSE
+	// Cache the result
+	cached_exterior_check = result
+	exterior_cache_valid = TRUE
+
+	return result
+
+/// Invalidates the exterior check cache (call when launcher is moved/anchored)
+/obj/machinery/ship_combat/missile_launcher/proc/invalidate_exterior_cache()
+	exterior_cache_valid = FALSE
 
 /// Attempts to fire the loaded missile at the target turf
 /// spawn_offset_x/y are used to stagger missile spawn positions for volleys

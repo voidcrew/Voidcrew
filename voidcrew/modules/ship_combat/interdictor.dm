@@ -45,7 +45,7 @@
 	/// The beam effect on the overmap
 	var/datum/beam/interdiction_beam
 	/// List of kinesis effect objects around the target ship
-	var/list/obj/effect/interediction_kinesis_effects = list()
+	var/list/obj/effect/interdiction_kinesis_effects = list()
 	/// List of mobs that currently have the interdiction fullscreen overlay
 	var/list/mob/interdiction_overlay_mobs = list()
 	/// Real-time positional sound on the interdictor machine itself
@@ -415,7 +415,7 @@
 	// Calculate warmup progress
 	var/elapsed = world.time - warmup_start_time
 	var/lock_time = INTERDICTOR_LOCK_TIME  // Store in variable to avoid macro expansion issues
-	warmup_progress = min(elapsed / lock_time, 1)
+	warmup_progress = min(elapsed / max(lock_time, 1), 1)
 
 	// Apply partial effect during warmup
 	var/current_mult = get_current_speed_multiplier()
@@ -809,16 +809,16 @@
 	for(var/i in 1 to target_count)
 		var/turf/T = shuffled_turfs[i]
 		var/obj/effect/abstract/interdiction_kinesis/effect = new(T, shuffled_turfs)
-		interediction_kinesis_effects += effect
+		interdiction_kinesis_effects += effect
 		// Stagger the animation start (random 0-20 deciseconds between each)
 		effect.start_animation_delayed(current_delay)
 		current_delay += rand(0, 20)
 
 /// Destroys all kinesis effects
 /obj/machinery/ship_combat/interdictor/proc/destroy_kinesis_effects()
-	for(var/obj/effect/abstract/interdiction_kinesis/effect in interediction_kinesis_effects)
+	for(var/obj/effect/abstract/interdiction_kinesis/effect in interdiction_kinesis_effects)
 		qdel(effect)
-	interediction_kinesis_effects.Cut()
+	interdiction_kinesis_effects.Cut()
 
 /// The visual effect around interdicted ships
 /// Uses /obj/effect/abstract to avoid being moved by hyperspace/shuttle systems
@@ -864,8 +864,10 @@
 /obj/effect/abstract/interdiction_kinesis/proc/relocate_and_restart()
 	if(QDELETED(src) || !length(available_turfs))
 		return
-	// Pick a random new turf
+	// Pick a random new turf and validate it exists
 	var/turf/new_turf = pick(available_turfs)
+	if(!isturf(new_turf))
+		return
 	forceMove(new_turf)
 	// Restart animation cycle
 	begin_animation_cycle()
@@ -976,7 +978,7 @@
 	// Also add interdiction overlay to new mobs
 	for(var/area/ship_area in target.shuttle.shuttle_areas)
 		for(var/mob/M in ship_area)
-			if(!M.client)
+			if(!M.client?.prefs)
 				continue
 			// Only living mobs and ghosts
 			if(!isliving(M) && !isobserver(M))

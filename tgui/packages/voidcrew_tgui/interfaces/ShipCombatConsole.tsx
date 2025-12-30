@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { type BooleanLike } from 'tgui-core/react';
 import {
   Box,
@@ -303,7 +303,13 @@ const TargetingPanel = () => {
   } = data;
 
   // Find the currently targeted ship for status display
-  const targetShip = target_ref ? nearby_ships.find((s) => s.ref === target_ref) : null;
+  const targetShip = target_ref && nearby_ships ? nearby_ships.find((s) => s.ref === target_ref) : null;
+
+  // Memoize the filtered list of other ships to avoid filtering on every render
+  const otherShips = useMemo(
+    () => (nearby_ships ? nearby_ships.filter((s) => s.ref !== target_ref) : []),
+    [nearby_ships, target_ref]
+  );
 
   // Show docked notice
   if (ship_docked) {
@@ -346,6 +352,7 @@ const TargetingPanel = () => {
                       icon="times"
                       color="transparent"
                       compact
+                      aria-label="Cancel targeting"
                       onClick={() => act('cancel_targeting')}
                     />
                   </Stack.Item>
@@ -386,6 +393,7 @@ const TargetingPanel = () => {
                       icon="times"
                       color="transparent"
                       compact
+                      aria-label="Clear target"
                       onClick={() => act('clear_target')}
                     />
                   </Stack.Item>
@@ -449,26 +457,24 @@ const TargetingPanel = () => {
 
       {/* Ship List - excludes currently targeted ship */}
       <Stack.Item>
-        {nearby_ships.filter((s) => s.ref !== target_ref).length === 0 ? (
+        {otherShips.length === 0 ? (
           <Box color="label" textAlign="center" py={0.5} fontSize="11px">
-            {nearby_ships.length === 0 ? 'No ships in sensor range' : 'No other ships in range'}
+            {!nearby_ships || nearby_ships.length === 0 ? 'No ships in sensor range' : 'No other ships in range'}
           </Box>
         ) : (
           <Stack vertical>
-            {nearby_ships
-              .filter((ship) => ship.ref !== target_ref)
-              .map((ship) => (
-                <Stack.Item key={ship.ref}>
-                  <Button
-                    fluid
-                    compact
-                    icon="circle"
-                    onClick={() => act('select_target', { ref: ship.ref })}
-                  >
-                    {ship.name}
-                  </Button>
-                </Stack.Item>
-              ))}
+            {otherShips.map((ship) => (
+              <Stack.Item key={ship.ref}>
+                <Button
+                  fluid
+                  compact
+                  icon="circle"
+                  onClick={() => act('select_target', { ref: ship.ref })}
+                >
+                  {ship.name}
+                </Button>
+              </Stack.Item>
+            ))}
           </Stack>
         )}
       </Stack.Item>
@@ -710,6 +716,7 @@ const InterdictorPanel = () => {
                   compact
                   icon="times"
                   color="bad"
+                  aria-label="Cancel interdiction"
                   onClick={() => act('cancel_interdict')}
                 />
               </Stack.Item>
@@ -1427,7 +1434,7 @@ const LaserTurretsPanel = () => {
                           </Box>
                         ) : turret.cooldown_remaining > 0 ? (
                           <ProgressBar
-                            value={1 - turret.cooldown_remaining / turret.cooldown}
+                            value={turret.cooldown > 0 ? 1 - turret.cooldown_remaining / turret.cooldown : 0}
                             ranges={{
                               good: [0.8, 1],
                               average: [0.4, 0.8],

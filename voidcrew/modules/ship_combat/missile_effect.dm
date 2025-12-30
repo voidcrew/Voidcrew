@@ -51,7 +51,7 @@
 	/// Our starting z level
 	var/z_original
 	/// Lifetime before auto-deletion (in deciseconds)
-	var/lifetime = 30 SECONDS
+	var/lifetime = MISSILE_FLIGHT_LIFETIME
 	/// Have we already exploded?
 	var/exploded = FALSE
 

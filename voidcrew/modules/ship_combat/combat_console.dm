@@ -74,9 +74,6 @@
 			static_image.loc = ship_turf
 			interior_static_images += static_image
 
-/// How many tiles from space should be visible (0 = only directly adjacent to space)
-#define COMBAT_CAMERA_VISIBILITY_RANGE 1
-
 /// Checks if a turf is visible (within COMBAT_CAMERA_VISIBILITY_RANGE tiles of space)
 /// When range is 0, only turfs directly adjacent to space are visible
 /// When range is 1+, turfs within that many tiles of space are also visible
@@ -1136,7 +1133,7 @@
 	linked_cloak_ref = WEAKREF(cloak)
 
 	// Ensure cloak device is connected to the same ship
-	if(current_ship && !cloak.linked_ship)
+	if(current_ship && !cloak.linked_ship_ref?.resolve())
 		cloak.link_ship(current_ship)
 
 	return TRUE

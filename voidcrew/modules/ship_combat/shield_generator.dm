@@ -209,6 +209,7 @@
 	var/list/ship_areas = ship.shuttle.shuttle_areas
 
 	// First pass: Get all turfs in ship areas and find cardinally adjacent space turfs
+	// Uses CHECK_TICK to yield periodically and prevent frame drops on large ships
 	var/list/candidate_turfs = list()
 	var/min_x = INFINITY
 	var/min_y = INFINITY
@@ -217,6 +218,7 @@
 	var/our_z = 0
 	for(var/area/ship_area in ship_areas)
 		for(var/turf/T in ship_area)
+			CHECK_TICK
 			// Track bounding box of ship
 			min_x = min(min_x, T.x)
 			min_y = min(min_y, T.y)
@@ -269,7 +271,13 @@
 
 	debug_log("Flood fill starting with [length(flood_queue)] edge turfs")
 
+	// Validate that bounding box was actually calculated (min values should have been set)
+	if(min_x == INFINITY || min_y == INFINITY)
+		log_shuttle("SHIELD ERROR: Bounding box calculation failed - min_x=[min_x], min_y=[min_y]. Ship has no valid turfs in shuttle_areas.")
+		return boundary_turfs
+
 	// Flood fill to find all connected exterior space
+	// Uses CHECK_TICK to yield periodically and prevent frame drops on large ships
 	var/flood_iterations = 0
 	var/max_flood_iterations = 10000  // Safety limit
 	while(length(flood_queue) && flood_iterations < max_flood_iterations)
@@ -298,6 +306,9 @@
 			exterior_space[neighbor] = TRUE
 			flood_queue += neighbor
 
+		// Yield periodically to prevent frame drops on large ships
+		CHECK_TICK
+
 	debug_log("Flood fill complete: [length(exterior_space)] exterior space turfs found in [flood_iterations] iterations")
 
 	// Filter candidates to only include turfs that are EXTERIOR (connected to outside)
@@ -315,8 +326,10 @@
 	// Filter out "pocket turfs" - space turfs surrounded by ship on 3+ sides
 	// Also filter "tunnel turfs" - space turfs with ship on opposite cardinal sides (N+S or E+W)
 	// These are narrow indentations/corridors where we want the shield to bridge across instead
+	// Uses CHECK_TICK to yield periodically and prevent frame drops
 	var/list/rejected_pockets = list()
 	for(var/turf/candidate in exterior_candidates)
+		CHECK_TICK
 		var/ship_neighbor_dirs = NONE
 		var/ship_neighbor_count = 0
 		var/list/ship_dirs = list()
@@ -352,6 +365,7 @@
 	// These occur on diagonal ship edges where turfs don't touch ship cardinally
 	// but still need shields to complete the boundary
 	// We iterate until no new gaps are found, since gap turfs can chain together
+	// Uses CHECK_TICK to yield periodically and prevent frame drops
 	var/found_new = TRUE
 	var/max_iterations = 10  // Safety limit
 	var/iteration = 0
@@ -361,6 +375,7 @@
 		var/list/gap_turfs = list()
 
 		for(var/turf/boundary_turf in boundary_turfs)
+			CHECK_TICK
 			// Check cardinal neighbors of each boundary turf for potential gaps
 			for(var/card_dir in GLOB.cardinals)
 				var/turf/card_neighbor = get_step(boundary_turf, card_dir)
@@ -428,8 +443,10 @@
 	// Final pass: Remove isolated boundary turfs (turfs with NO boundary neighbors)
 	// These are typically corridor entrances that lead into internal spaces
 	// where all adjacent turfs were rejected as tunnels/pockets
+	// Uses CHECK_TICK to yield periodically and prevent frame drops
 	var/list/isolated_turfs = list()
 	for(var/turf/bt in boundary_turfs)
+		CHECK_TICK
 		var/has_boundary_neighbor = FALSE
 		for(var/dir in GLOB.cardinals)
 			var/turf/neighbor = get_step(bt, dir)
