@@ -223,11 +223,11 @@
 			max_x = max(max_x, T.x)
 			max_y = max(max_y, T.y)
 			our_z = T.z
-			// Check each cardinal direction for space turfs
+			// Check each cardinal direction for non-ship turfs
 			for(var/dir in GLOB.cardinals)
 				var/turf/neighbor = get_step(T, dir)
-				// If neighbor is space (not part of ship), add it as a candidate boundary turf
-				if(neighbor && (isspaceturf(neighbor) || !(get_area(neighbor) in ship_areas)))
+				// If neighbor is NOT part of ship (space or planet turfs), add it as a candidate boundary turf
+				if(neighbor && !(get_area(neighbor) in ship_areas))
 					candidate_turfs |= neighbor  // Use |= to avoid duplicates
 
 	debug_log("=== BOUNDARY DETECTION START ===")
@@ -245,24 +245,25 @@
 	var/flood_max_x = min(world.maxx, max_x + 2)
 	var/flood_max_y = min(world.maxy, max_y + 2)
 
-	// Seed the flood fill with all space turfs along the edges of the bounding box
+	// Seed the flood fill with all non-ship turfs along the edges of the bounding box
 	// These are definitely exterior (outside the ship boundary)
+	// Use area-based check instead of isspaceturf() so this works on planets too
 	for(var/x_coord in flood_min_x to flood_max_x)
 		var/turf/top_edge = locate(x_coord, flood_max_y, our_z)
 		var/turf/bottom_edge = locate(x_coord, flood_min_y, our_z)
-		if(top_edge && isspaceturf(top_edge) && !(get_area(top_edge) in ship_areas))
+		if(top_edge && !(get_area(top_edge) in ship_areas))
 			flood_queue += top_edge
 			exterior_space[top_edge] = TRUE
-		if(bottom_edge && isspaceturf(bottom_edge) && !(get_area(bottom_edge) in ship_areas))
+		if(bottom_edge && !(get_area(bottom_edge) in ship_areas))
 			flood_queue += bottom_edge
 			exterior_space[bottom_edge] = TRUE
 	for(var/y_coord in flood_min_y to flood_max_y)
 		var/turf/left_edge = locate(flood_min_x, y_coord, our_z)
 		var/turf/right_edge = locate(flood_max_x, y_coord, our_z)
-		if(left_edge && isspaceturf(left_edge) && !(get_area(left_edge) in ship_areas))
+		if(left_edge && !(get_area(left_edge) in ship_areas))
 			flood_queue += left_edge
 			exterior_space[left_edge] = TRUE
-		if(right_edge && isspaceturf(right_edge) && !(get_area(right_edge) in ship_areas))
+		if(right_edge && !(get_area(right_edge) in ship_areas))
 			flood_queue += right_edge
 			exterior_space[right_edge] = TRUE
 
@@ -284,11 +285,8 @@
 			// Skip if already processed
 			if(exterior_space[neighbor])
 				continue
-			// Skip if inside ship
+			// Skip if inside ship area
 			if(get_area(neighbor) in ship_areas)
-				continue
-			// Skip if not space (and not a candidate - to avoid going too far)
-			if(!isspaceturf(neighbor))
 				continue
 			// Stay within expanded bounding box
 			if(neighbor.x < flood_min_x || neighbor.x > flood_max_x)
@@ -296,7 +294,7 @@
 			if(neighbor.y < flood_min_y || neighbor.y > flood_max_y)
 				continue
 
-			// This is exterior space
+			// This is exterior (not part of ship) - works on space AND planet turfs
 			exterior_space[neighbor] = TRUE
 			flood_queue += neighbor
 
@@ -371,10 +369,8 @@
 				// Skip if already in boundary or part of ship
 				if(card_neighbor in boundary_turfs)
 					continue
+				// Skip if part of ship (we want exterior turfs - space or planet)
 				if(get_area(card_neighbor) in ship_areas)
-					continue
-				// Skip if not space
-				if(!isspaceturf(card_neighbor))
 					continue
 
 				// Check if this turf is diagonally adjacent to ship
@@ -1011,10 +1007,10 @@
 		processed_chain_starts += T
 
 		// The existing shield at T might need to be part of a snake chain
-		// Find where to start the chain extension (space turf in diagonal direction)
+		// Find where to start the chain extension (exterior turf in diagonal direction)
 		var/turf/chain_start = get_step(T, diagonal_dir)
-		if(!chain_start || !isspaceturf(chain_start))
-			debug_log("  No valid chain start - chain_start is null or not space")
+		if(!chain_start || (get_area(chain_start) in ship_areas))
+			debug_log("  No valid chain start - chain_start is null or part of ship")
 			continue
 
 		// Build the snake chain extending into space
@@ -1095,7 +1091,7 @@
 	var/list/ship_areas = ship?.shuttle?.shuttle_areas
 
 	for(var/i in 1 to max_iterations)
-		if(!current || !isspaceturf(current))
+		if(!current)
 			break
 		// Stop if we've reached an existing boundary turf
 		if(current in boundary)
