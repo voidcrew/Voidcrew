@@ -503,7 +503,7 @@
 	if(istype(storm, /obj/structure/overmap/event/meteor/majour))
 		meteor_type = /obj/effect/meteor/big
 	else if(istype(storm, /obj/structure/overmap/event/meteor/minor))
-		meteor_type = /obj/effect/meteor/medium
+		meteor_type = /obj/effect/meteor
 
 	// Spawn one meteor aimed at the ship
 	spawn_meteor_at_ship(meteor_type)
@@ -571,17 +571,6 @@
 	ADD_TRAIT(M, TRAIT_FREE_HYPERSPACE_MOVEMENT, INNATE_TRAIT)
 	ADD_TRAIT(M, TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT, INNATE_TRAIT)
 	ADD_TRAIT(M, TRAIT_HYPERSPACED, INNATE_TRAIT) // Prevent shuttle_cling component
-
-/**
- * Returns the shield damage for a given meteor type
- * Direct 1:1 damage transfer - no multipliers
- */
-/obj/structure/overmap/ship/proc/get_meteor_shield_damage(meteor_type)
-	if(ispath(meteor_type, /obj/effect/meteor/big))
-		return METEOR_SHIELD_DAMAGE_BIG
-	else if(ispath(meteor_type, /obj/effect/meteor/medium))
-		return METEOR_SHIELD_DAMAGE_MEDIUM
-	return METEOR_SHIELD_DAMAGE_SMALL
 
 /**
  * Nebula Effect

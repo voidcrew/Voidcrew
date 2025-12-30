@@ -19,6 +19,12 @@
 	/// Reference to the shield generator controlling this wall
 	var/datum/weakref/generator_ref
 
+/obj/structure/ship_shield_wall/Initialize(mapload)
+	. = ..()
+	// Gib any living mobs caught in the shield when it activates
+	for(var/mob/living/victim in loc)
+		victim.gib()
+
 /obj/structure/ship_shield_wall/Destroy()
 	generator_ref = null
 	return ..()
