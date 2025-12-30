@@ -46,7 +46,9 @@
 /obj/machinery/ship_combat/cloak_device/Initialize(mapload)
 	. = ..()
 	cloak_sound = new(src, 'voidcrew/sound/machines/cloaking/on.ogg', 7, 7)
-	// Try to find our ship on init
+
+/obj/machinery/ship_combat/cloak_device/LateInitialize()
+	. = ..()
 	attempt_ship_connection()
 
 /obj/machinery/ship_combat/cloak_device/Destroy()
@@ -61,6 +63,10 @@
 
 /obj/machinery/ship_combat/cloak_device/RefreshParts()
 	. = ..()
+
+	// Try to connect to ship if not already connected (handles mid-round construction)
+	if(!linked_ship)
+		attempt_ship_connection()
 
 	// Reset to base values
 	power_efficiency = 1

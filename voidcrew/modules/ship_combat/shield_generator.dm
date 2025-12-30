@@ -1345,7 +1345,7 @@
 		if(!ship.shields_active && !ship.shields_broken)
 			log_shuttle("SHIELD DEBUG: First generator online, initializing shields")
 			ship.shields_active = TRUE
-			ship.shield_health = ship.shield_max_health * 0.5  // Start at 50%
+			ship.shield_health = 0  // Start at 0, shields must regenerate
 
 			// Start ship processing for shield regen
 			ship.start_shield_processing()
