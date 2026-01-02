@@ -184,6 +184,62 @@
 	data["interdictionStrength"] = current_ship.interdiction_strength
 	data["speedMultiplier"] = current_ship.speed_multiplier
 
+	// Zone information
+	if(SSovermap_zones.zones_active)
+		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(T)
+		if(zone)
+			data["zone_type"] = zone.zone_type
+			data["zone_name"] = zone.name
+			data["zone_color"] = zone.get_color()
+			data["zone_description"] = zone.get_description()
+			data["weapons_allowed"] = zone.weapons_allowed()
+			data["interdiction_allowed"] = zone.interdiction_allowed()
+		else
+			data["zone_type"] = null
+			data["zone_name"] = "Unknown"
+			data["zone_color"] = "#ffffff"
+			data["zone_description"] = "Zone data unavailable."
+			data["weapons_allowed"] = TRUE
+			data["interdiction_allowed"] = TRUE
+		// Zone shift timer
+		var/time_until_shift = SSovermap_zones.get_time_until_rotation()
+		data["zone_shift_seconds"] = time_until_shift
+		data["zone_shift_minutes"] = floor(time_until_shift / 60)
+		data["zone_shift_remaining_seconds"] = round(time_until_shift) % 60
+
+		// Zone transition info (when crossing between zones)
+		data["zone_transitioning"] = current_ship.zone_transitioning
+		if(current_ship.zone_transitioning && current_ship.zone_transition_start_time)
+			var/elapsed = world.time - current_ship.zone_transition_start_time
+			var/progress = clamp((elapsed / ZONE_TRANSITION_TIME) * 100, 0, 100)
+			var/remaining = max(0, ZONE_TRANSITION_TIME - elapsed) / 10
+			data["zone_transition_progress"] = round(progress)
+			data["zone_transition_remaining"] = round(remaining, 0.1)
+			// Get target zone name
+			if(current_ship.zone_transition_target)
+				var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(current_ship.zone_transition_target)
+				data["zone_transition_target"] = target_zone?.name || "Unknown Zone"
+			else
+				data["zone_transition_target"] = "Unknown Zone"
+		else
+			data["zone_transition_progress"] = 0
+			data["zone_transition_remaining"] = 0
+			data["zone_transition_target"] = null
+	else
+		data["zone_type"] = null
+		data["zone_name"] = "Inactive"
+		data["zone_color"] = "#888888"
+		data["zone_description"] = "Zone system inactive."
+		data["weapons_allowed"] = TRUE
+		data["interdiction_allowed"] = TRUE
+		data["zone_shift_seconds"] = 0
+		data["zone_shift_minutes"] = 0
+		data["zone_shift_remaining_seconds"] = 0
+		data["zone_transitioning"] = FALSE
+		data["zone_transition_progress"] = 0
+		data["zone_transition_remaining"] = 0
+		data["zone_transition_target"] = null
+
 	for(var/obj/machinery/power/shuttle_engine/ship/E in current_ship.shuttle.engine_list)
 		var/list/engine_data
 		if(!E.thruster_active)
@@ -435,6 +491,10 @@
 					return
 				if("stop")
 					//current_ship.current_autopilot_target = null
+					// Cancel zone transition if in progress
+					if(current_ship.zone_transitioning)
+						current_ship.cancel_zone_transition()
+						return
 					current_ship.burn_engines()
 					return
 				if("bluespace_jump")
