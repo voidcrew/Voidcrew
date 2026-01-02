@@ -2,7 +2,7 @@
 
 ## Overview
 
-The zone system divides the overmap into three rotating "pie slice" regions that determine PvP rules and danger levels. Zones rotate periodically, ensuring all areas eventually cycle through all zone types.
+The zone system divides the overmap into concentric rings based on distance from the center (sun). Zones closer to the sun are more dangerous, while the outer edges and spawn area are safe.
 
 ## Zone Types
 
@@ -12,24 +12,20 @@ The zone system divides the overmap into three rotating "pie slice" regions that
 | **Yellow** | `#ffff88` | Disabled | **Allowed** | Caution - boarding/piracy permitted, but no ship weapons |
 | **Red** | `#ff8888` | **Allowed** | **Allowed** | Dangerous - full PvP, kill on sight |
 
-**Note:** Ships cannot target each other across zone boundaries. Both ships must be in the same zone to acquire a weapons lock.
+**Targeting Rules:** Ships can only target each other if both are in Yellow or Red zones. Green zone is a safe zone where targeting is disabled.
 
 ## How It Works
 
 ### Zone Layout
-- Overmap is divided into 3 equal 120-degree wedges (pie slices) radiating from center
-- Center area near the sun is always red (dangerous)
-- Wedges rotate together like a clock when zones shift
+Zones are organized as concentric rings based on distance from the center (sun), roughly equal in size:
 
-### Zone Rotation
-- Zones rotate every 30 minutes (configurable, currently 2 min for testing)
-- Warnings at 5 minutes and 1 minute before shift (30s/10s for testing)
-- Each rotation moves wedges by 120 degrees
-- Announcements broadcast to all players
+1. **Inner Ring** (< 33% of map radius) - Red - Dangerous, close to sun
+2. **Middle Ring** (33-66% of map radius) - Yellow - Caution zone
+3. **Outer Ring** (> 66% of map radius) - Green - Safe, edge of map
 
 ### Visual Feedback
 - Overmap turfs are tinted with zone colors
-- Helm console shows current zone + countdown timer
+- Helm console shows current zone with weapons/interdiction status
 - Combat console shows zone banner with weapons status
 
 ### Zone Transitions
@@ -50,7 +46,7 @@ voidcrew/
 │   └── overmap_zones.dm          # Zone constants, signals, macros
 ├── modules/overmap/code/modules/overmap/zones/
 │   ├── ZONES.md                  # This documentation
-│   ├── zone_admin.dm             # Admin verbs (force shift, set rotation, status)
+│   ├── zone_admin.dm             # Admin verbs (zone status)
 │   ├── zone_controller.dm        # SSovermap_zones subsystem
 │   └── zone_datum.dm             # /datum/overmap_zone
 ```
@@ -59,17 +55,14 @@ voidcrew/
 
 ### Defines (`voidcrew/_DEFINES/overmap_zones.dm`)
 - `ZONE_GREEN`, `ZONE_YELLOW`, `ZONE_RED` - Zone type constants
-- `ZONE_ROTATION_INTERVAL` - Time between rotations
-- `ZONE_SHIFT_WARNING_TIME` - Warning announcement timing
 - `ZONE_TRANSITION_TIME` - Time to cross zone boundaries (10 seconds)
 - `COMSIG_*` signals for zone events
 - `ZONE_WEAPONS_ALLOWED()`, `ZONE_INTERDICTION_ALLOWED()` macros
 
 ### Zone Controller (`zone_controller.dm`)
 - `SSovermap_zones` subsystem manages everything
-- `assign_zones()` - Assigns turfs to zones based on position/rotation
-- `calculate_zone_for_turf()` - Determines zone type for a turf (pie slice algorithm)
-- `perform_rotation()` - Executes zone shift
+- `assign_zones()` - Assigns turfs to zones based on distance from center
+- `calculate_zone_for_turf()` - Determines zone type for a turf (distance-based rings)
 - `weapons_allowed_at(atom)` - Check if weapons allowed (finds ship, checks its zone)
 - `interdiction_allowed_at(atom)` - Check if interdiction allowed
 - `get_zone(turf)` - Fast zone lookup for overmap turfs
@@ -80,9 +73,7 @@ voidcrew/
 - Provides `weapons_allowed()`, `interdiction_allowed()`, `get_color()`, etc.
 
 ### Admin Verbs (`zone_admin.dm`)
-- **Force Zone Shift** - Immediate rotation
-- **Set Zone Rotation** - Set rotation angle (0-359)
-- **Zone Status** - Show current zone stats
+- **Zone Status** - Show current zone stats and layout info
 
 ## Integration Points
 
@@ -93,17 +84,17 @@ Weapons check zones via `SSovermap_zones.weapons_allowed_at(src)`:
 - `voidcrew/modules/ship_combat/interdictor.dm` - `can_interdict()` proc
 
 ### Cross-Zone Targeting
-Ships cannot target each other across zone boundaries:
+Ships can target each other between Yellow and Red zones, but Green zone blocks all targeting:
 - `voidcrew/modules/ship_combat/combat_console.dm`:
-  - `start_targeting()` - Blocks acquiring locks on ships in different zones
-  - `check_targeting_range()` - Cancels in-progress targeting if ships enter different zones
-  - `check_attack_range()` - Exits attack mode if locked target enters different zone
+  - `start_targeting()` - Blocks acquiring locks if either ship is in Green zone
+  - `check_targeting_range()` - Cancels in-progress targeting if either ship enters Green zone
+  - `check_attack_range()` - Exits attack mode if either ship enters Green zone
   - `ui_data()` - Sends zone info for each nearby ship so UI can show which are targetable
-- Ships in different zones show as disabled in the targeting list with their zone name
+- Ships in Green zone show as disabled in the targeting list with tooltip explaining why
 
 ### UI Integration
 Zone data sent to TGUI via `ui_data()`:
-- `voidcrew/modules/shuttle/helm/_helm.dm` - Helm console (zone + timer)
+- `voidcrew/modules/shuttle/helm/_helm.dm` - Helm console (zone + status)
 - `voidcrew/modules/ship_combat/combat_console.dm` - Combat console (zone + weapons status)
 
 TGUI components:
@@ -133,9 +124,6 @@ Zone detection happens in `burn_engines()` - when thrusting toward a different z
 |--------|---------|------|-------------|
 | `COMSIG_TURF_ZONE_CHANGED` | Zone datum | `(old_type, new_type)` | Turf's zone changed |
 | `COMSIG_SHIP_ZONE_CHANGED` | Zone controller | `(old_type, new_type)` | Ship entered different zone |
-| `COMSIG_GLOB_ZONE_SHIFT_WARNING` | Zone controller | `(seconds_remaining)` | Warning before shift |
-| `COMSIG_GLOB_ZONE_SHIFT` | Zone controller | `(list/affected_turfs)` | Shift occurred |
-| `COMSIG_GLOB_ZONE_ROTATION_COMPLETE` | Zone controller | none | Rotation finished |
 
 ## Future Hooks
 
@@ -148,12 +136,23 @@ The zone system is designed for expansion. Planned integrations:
 
 ## Configuration
 
-Current test values (in `overmap_zones.dm`):
+Zone thresholds in `zone_controller.dm`:
 ```dm
-#define ZONE_ROTATION_INTERVAL (2 MINUTES)      // Production: 30 MINUTES
-#define ZONE_SHIFT_WARNING_TIME (30 SECONDS)    // Production: 5 MINUTES
-#define ZONE_SHIFT_FINAL_WARNING_TIME (10 SECONDS) // Production: 1 MINUTES
-#define ZONE_TRANSITION_TIME (10 SECONDS)       // Time to cross zone boundaries
+// Inner ring (Red) - dangerous, close to sun
+if(normalized < 0.33)
+    return ZONE_RED
+
+// Middle ring (Yellow) - caution zone
+if(normalized < 0.66)
+    return ZONE_YELLOW
+
+// Outer ring (Green) - safe, edge of map
+return ZONE_GREEN
+```
+
+Zone transition time in `overmap_zones.dm`:
+```dm
+#define ZONE_TRANSITION_TIME (10 SECONDS)  // Time to cross zone boundaries
 ```
 
 ## Troubleshooting

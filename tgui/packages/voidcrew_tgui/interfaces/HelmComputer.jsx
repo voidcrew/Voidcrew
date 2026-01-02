@@ -199,9 +199,6 @@ const ZoneSection = () => {
   const {
     zone_name = 'Unknown',
     zone_color = '#888888',
-    zone_description = '',
-    zone_shift_minutes = 0,
-    zone_shift_remaining_seconds = 0,
     weapons_allowed = true,
     interdiction_allowed = true,
     zone_transitioning = false,
@@ -209,9 +206,6 @@ const ZoneSection = () => {
     zone_transition_remaining = 0,
     zone_transition_target = null,
   } = data;
-
-  // Format timer as MM:SS
-  const timerDisplay = `${zone_shift_minutes}:${String(zone_shift_remaining_seconds).padStart(2, '0')}`;
 
   return (
     <Section
@@ -236,9 +230,6 @@ const ZoneSection = () => {
         </NoticeBox>
       )}
       <LabeledList>
-        <LabeledList.Item label="Next Shift">
-          {timerDisplay}
-        </LabeledList.Item>
         <LabeledList.Item label="Weapons">
           <span style={{ color: weapons_allowed ? '#4f4' : '#f44' }}>
             {weapons_allowed ? 'Enabled' : 'Disabled'}

@@ -201,12 +201,6 @@
 			data["zone_description"] = "Zone data unavailable."
 			data["weapons_allowed"] = TRUE
 			data["interdiction_allowed"] = TRUE
-		// Zone shift timer
-		var/time_until_shift = SSovermap_zones.get_time_until_rotation()
-		data["zone_shift_seconds"] = time_until_shift
-		data["zone_shift_minutes"] = floor(time_until_shift / 60)
-		data["zone_shift_remaining_seconds"] = round(time_until_shift) % 60
-
 		// Zone transition info (when crossing between zones)
 		data["zone_transitioning"] = current_ship.zone_transitioning
 		if(current_ship.zone_transitioning && current_ship.zone_transition_start_time)

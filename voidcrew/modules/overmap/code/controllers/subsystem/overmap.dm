@@ -200,7 +200,30 @@ SUBSYSTEM_DEF(overmap)
 	for (var/i in 2 to LAZYLEN(radius_tiles))
 		orbits += "[i]"
 
-	for (var/_ in 1 to MAX_OVERMAP_EVENT_CLUSTERS)
+	// Phase 1: Spawn guaranteed event types first to ensure map diversity
+	var/list/guaranteed_events = GLOB.overmap_event_guaranteed_list.Copy()
+	for (var/event_type in guaranteed_events)
+		if (MAX_OVERMAP_EVENTS <= LAZYLEN(events))
+			break
+		if (LAZYLEN(orbits) == 0 || !orbits)
+			break
+		var/selected_orbit = text2num(pick(orbits))
+
+		var/turf/turf_for_event = get_unused_overmap_square_in_radius(selected_orbit)
+		if (!turf_for_event || !istype(turf_for_event))
+			orbits -= "[selected_orbit]"
+			continue
+		var/obj/structure/overmap/event/event_to_spawn = new event_type(turf_for_event)
+		for (var/turf/turf_to_spawn as anything in radius_tiles[selected_orbit])
+			if (locate(/obj/structure/overmap) in turf_to_spawn)
+				continue
+			if (!prob(event_to_spawn.spread_chance))
+				continue
+			new event_type(turf_to_spawn)
+
+	// Phase 2: Fill remaining clusters with weighted random picks
+	var/clusters_spawned = length(GLOB.overmap_event_guaranteed_list)
+	for (var/_ in clusters_spawned to MAX_OVERMAP_EVENT_CLUSTERS)
 		if (MAX_OVERMAP_EVENTS <= LAZYLEN(events))
 			return
 		if (LAZYLEN(orbits) == 0 || !orbits)
