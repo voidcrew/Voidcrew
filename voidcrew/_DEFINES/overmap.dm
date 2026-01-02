@@ -2,7 +2,7 @@
 #define OVERMAP_Z_LEVEL 1 // aka centcom z
 
 // size of the overmap (OVERMAP_SIZE x OVERMAP_SIZE)
-#define OVERMAP_SIZE 25 // keep this odd to provide a centre tile
+#define OVERMAP_SIZE 51 // keep this odd to provide a centre tile
 
 // These overmap coords are configured to place it in the top left of the z level
 #define OVERMAP_LEFT_SIDE_COORD 1
@@ -20,6 +20,6 @@
 
 // Space ruin spawning configuration
 /// Maximum number of space ruins to spawn on the overmap
-#define MAX_OVERMAP_SPACE_RUINS 8
+#define MAX_OVERMAP_SPACE_RUINS 24
 /// Minimum number of space ruins to spawn
-#define MIN_OVERMAP_SPACE_RUINS 4
+#define MIN_OVERMAP_SPACE_RUINS 12
