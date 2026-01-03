@@ -23,7 +23,8 @@
 		return FALSE
 
 	// Create ship and set template directly as a workaround for Initialize arg passing
-	var/turf/spawn_loc = SSovermap.get_unused_overmap_square(tries = INFINITY)
+	// Ships spawn in the green zone (outer ring) for safety
+	var/turf/spawn_loc = SSovermap.get_unused_overmap_square_in_green_zone(tries = INFINITY)
 	var/obj/structure/overmap/ship/ship_to_spawn = new(spawn_loc)
 
 	if(!ship_to_spawn || QDELETED(ship_to_spawn))

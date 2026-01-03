@@ -179,6 +179,41 @@ SUBSYSTEM_DEF(overmap)
 		turf_to_return = null
 	return turf_to_return
 
+/**
+ * Returns TRUE if the given turf is in the green zone (outer ring)
+ * Checks the turf's current_zone if zones are initialized, otherwise calculates from distance
+ */
+/datum/controller/subsystem/overmap/proc/is_turf_in_green_zone(turf/open/overmap/T)
+	if(!T || !overmap_centre)
+		return FALSE
+	// Use current_zone if zones have been initialized
+	if(T.current_zone)
+		return T.current_zone.zone_type == ZONE_GREEN
+	// Fallback to distance calculation (for spawning before zones init)
+	var/max_radius = (OVERMAP_SIZE - 1) / 2
+	var/dx = T.x - overmap_centre.x
+	var/dy = T.y - overmap_centre.y
+	var/distance = sqrt(dx * dx + dy * dy)
+	var/normalized = distance / max_radius
+	return normalized >= 0.66
+
+/**
+ * Gets an unused overmap square specifically in the green zone (outer ring)
+ * Ships spawn here to ensure they start in the safe zone
+ */
+/datum/controller/subsystem/overmap/proc/get_unused_overmap_square_in_green_zone(thing_not_to_have = /obj/structure/overmap, tries = MAX_OVERMAP_PLACEMENT_ATTEMPTS, force = FALSE)
+	var/turf/turf_to_return
+	for (var/_ in 1 to tries)
+		turf_to_return = pick(block(locate(OVERMAP_LEFT_SIDE_COORD + 1, OVERMAP_SOUTH_SIDE_COORD + 1, OVERMAP_Z_LEVEL), locate(OVERMAP_RIGHT_SIDE_COORD - 1, OVERMAP_NORTH_SIDE_COORD - 1, OVERMAP_Z_LEVEL)))
+		if (locate(thing_not_to_have) in turf_to_return)
+			continue
+		if (!is_turf_in_green_zone(turf_to_return))
+			continue
+		return turf_to_return
+	if (!force)
+		turf_to_return = null
+	return turf_to_return
+
 /datum/controller/subsystem/overmap/proc/get_unused_overmap_square_in_radius(radius, thing_not_to_have = /obj/structure/overmap, tries = MAX_OVERMAP_PLACEMENT_ATTEMPTS, force = FALSE)
 	if (!radius)
 		radius = rand(2, length(radius_tiles) / 2)
