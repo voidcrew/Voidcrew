@@ -9,6 +9,9 @@
  * to be extracted. The player holding the briefcase gets the parts added to their account.
  */
 
+/// Tracks which ckeys have already extracted this round (prevents respawn exploit)
+GLOBAL_LIST_EMPTY(extracted_this_round)
+
 /**
  * Extract all ship parts from a player's extraction briefcases and add them to their account
  *
@@ -34,6 +37,11 @@
 
 	var/ckey = player_client.ckey
 	if(!ckey)
+		return list()
+
+	// Check if this player has already extracted this round
+	if(ckey in GLOB.extracted_this_round)
+		to_chat(player, span_warning("You have already extracted parts this round!"))
 		return list()
 
 	// Find all extraction cases on the player
@@ -74,6 +82,10 @@
 	// Delete extracted parts
 	for(var/obj/item/ship_parts/part in parts_to_delete)
 		qdel(part)
+
+	// Mark this player as having extracted this round (prevent respawn exploit)
+	if(length(parts_to_delete))
+		GLOB.extracted_this_round += ckey
 
 	// Notify player
 	var/total_extracted = 0
@@ -196,5 +208,8 @@
 
 	if(total_extracted > 0)
 		log_game("SHIP_EXTRACTION: Extracted [total_extracted] total parts from all players at round end")
+
+	// Clear the extraction tracking for next round
+	GLOB.extracted_this_round.Cut()
 
 	return total_extracted
