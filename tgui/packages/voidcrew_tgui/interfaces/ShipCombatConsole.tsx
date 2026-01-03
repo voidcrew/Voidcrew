@@ -366,7 +366,7 @@ const TargetingPanel = () => {
     zone_name,
   } = data;
 
-  // Check if we're in a safe zone (Green = 0)
+  // Check if we're in a safe zone (Neutral = 0)
   const inSafeZone = zone_type === 0;
 
   // Find the currently targeted ship for status display
@@ -532,13 +532,13 @@ const TargetingPanel = () => {
           <Stack vertical>
             {otherShips.map((ship) => {
               // Determine why targeting is disabled
-              const targetInGreen = ship.zone_type === 0;
+              const targetInNeutral = ship.zone_type === 0;
               const cantTarget = !ship.same_zone;
               let tooltipText: string | undefined;
               if (cantTarget) {
                 if (inSafeZone) {
                   tooltipText = `You are in ${zone_name} - targeting disabled`;
-                } else if (targetInGreen) {
+                } else if (targetInNeutral) {
                   tooltipText = `${ship.name} is in ${ship.zone_name} - cannot target`;
                 }
               }

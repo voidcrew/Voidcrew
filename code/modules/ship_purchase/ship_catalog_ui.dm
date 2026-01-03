@@ -112,23 +112,27 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 		for(var/list/job_definition in template.job_slots)
 			crew_capacity += job_definition["slots"]
 
-		// Determine rarity tier based on part cost
-		var/rarity_tier = "common"
-		if(template.part_cost >= 10)
-			rarity_tier = "legendary"
-		else if(template.part_cost >= 7)
-			rarity_tier = "epic"
-		else if(template.part_cost >= 5)
-			rarity_tier = "rare"
-		else if(template.part_cost >= 3)
-			rarity_tier = "uncommon"
-		else if(template.part_cost <= 0)
-			rarity_tier = "free"
-
-		// Build parts requirement list
+		// Build parts requirement list from template's class-based requirements
 		var/list/parts_required = list()
-		if(template.part_cost > 0)
-			parts_required[rarity_tier] = template.part_cost
+		var/total_parts = 0
+		for(var/part_class in GLOB.ship_part_classes)
+			var/count = template.part_requirements[part_class] || 0
+			if(count > 0)
+				parts_required[part_class] = count
+				total_parts += count
+
+		// Determine primary class (the one with most requirements, for display/filtering)
+		var/primary_class = "misc"
+		var/max_count = 0
+		for(var/part_class in template.part_requirements)
+			var/count = template.part_requirements[part_class] || 0
+			if(count > max_count)
+				max_count = count
+				primary_class = part_class
+
+		// If no parts required, it's free
+		if(total_parts == 0)
+			primary_class = "free"
 
 		// Faction (default to neutral - faction system not yet implemented on ships)
 		var/faction = FACTION_NEUTRAL
@@ -149,8 +153,8 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 			"suffix" = template.suffix,
 			"description" = generate_ship_description(template),
 			"crew_capacity" = crew_capacity,
-			"part_cost" = template.part_cost,
-			"rarity" = rarity_tier,
+			"total_parts" = total_parts,
+			"primary_class" = primary_class,
 			"parts_required" = parts_required,
 			"faction" = faction,
 			"preview_image" = get_ship_preview_path(template),
@@ -184,12 +188,12 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 	// Get player's current credits (account-wide)
 	data["credits"] = GLOB.ship_economy_db?.get_credits(ckey) || 0
 
-	// Get player's parts inventory (account-wide)
+	// Get player's parts inventory (account-wide) - now class-based
 	var/list/parts = GLOB.ship_economy_db?.get_parts(ckey)
 	if(!parts)
 		parts = list()
-		for(var/rarity in GLOB.ship_part_rarities)
-			parts[rarity] = 0
+		for(var/part_class in GLOB.ship_part_classes)
+			parts[part_class] = 0
 	data["parts"] = parts
 
 	// Get list of unlocked ships
@@ -312,22 +316,22 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 		to_chat(user, span_warning("You have already unlocked this ship!"))
 		return FALSE
 
-	// Calculate parts required
-	var/rarity_tier = "common"
-	if(template.part_cost >= 10)
-		rarity_tier = "legendary"
-	else if(template.part_cost >= 7)
-		rarity_tier = "epic"
-	else if(template.part_cost >= 5)
-		rarity_tier = "rare"
-	else if(template.part_cost >= 3)
-		rarity_tier = "uncommon"
-	else if(template.part_cost <= 0)
-		rarity_tier = "free"
-
+	// Build requirements from template's class-based part_requirements
 	var/list/requirements = list()
-	if(template.part_cost > 0)
-		requirements[rarity_tier] = template.part_cost
+	var/has_requirements = FALSE
+	for(var/part_class in template.part_requirements)
+		var/count = template.part_requirements[part_class] || 0
+		if(count > 0)
+			requirements[part_class] = count
+			has_requirements = TRUE
+
+	// If no requirements, ship is free - just unlock it
+	if(!has_requirements)
+		if(!GLOB.ship_economy_db.unlock_ship(ckey, "[template.type]"))
+			to_chat(user, span_warning("Failed to unlock ship. Please try again."))
+			return FALSE
+		log_game("SHIP_CATALOG: [ckey] unlocked free ship [template.type] ([template.name])")
+		return TRUE
 
 	// Check if player has sufficient parts
 	var/list/current_parts = GLOB.ship_economy_db.get_parts(ckey)
@@ -335,12 +339,12 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 		to_chat(user, span_warning("Unable to retrieve your parts inventory."))
 		return FALSE
 
-	for(var/rarity in requirements)
-		var/needed = requirements[rarity]
-		var/have = current_parts[rarity] || 0
+	for(var/part_class in requirements)
+		var/needed = requirements[part_class]
+		var/have = current_parts[part_class] || 0
 
 		if(have < needed)
-			to_chat(user, span_warning("Insufficient [rarity] parts! You need [needed] but only have [have]."))
+			to_chat(user, span_warning("Insufficient [part_class] parts! You need [needed] but only have [have]."))
 			return FALSE
 
 	// Attempt to spend parts

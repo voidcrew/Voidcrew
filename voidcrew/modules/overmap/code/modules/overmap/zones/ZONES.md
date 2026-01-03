@@ -6,22 +6,24 @@ The zone system divides the overmap into concentric rings based on distance from
 
 ## Zone Types
 
-| Zone | Color | Weapons | Interdiction | Description |
-|------|-------|---------|--------------|-------------|
-| **Green** | `#88ff88` | Disabled | Disabled | Safe space - no PvP allowed |
-| **Yellow** | `#ffff88` | Disabled | **Allowed** | Caution - boarding/piracy permitted, but no ship weapons |
-| **Red** | `#ff8888` | **Allowed** | **Allowed** | Dangerous - full PvP, kill on sight |
+| Zone | Color | Weapons | Interdiction | Radiation | Description |
+|------|-------|---------|--------------|-----------|-------------|
+| **Neutral** | `#88ff88` | Disabled | Disabled | None | Safe space - no PvP allowed |
+| **Contested** | `#ffff88` | Disabled | **Allowed** | Moderate | Caution - boarding/piracy permitted, but no ship weapons |
+| **Lawless** | `#ff8888` | **Allowed** | **Allowed** | Heavy | Dangerous - full PvP, kill on sight |
 
-**Targeting Rules:** Ships can only target each other if both are in Yellow or Red zones. Green zone is a safe zone where targeting is disabled.
+**Targeting Rules:** Ships can only target each other if both are in Contested or Lawless zones. Neutral zone is a safe zone where targeting is disabled.
+
+**Radiation:** Zones closer to the sun have higher solar radiation. Ships need appropriate shielding to protect crew.
 
 ## How It Works
 
 ### Zone Layout
 Zones are organized as concentric rings based on distance from the center (sun), roughly equal in size:
 
-1. **Inner Ring** (< 33% of map radius) - Red - Dangerous, close to sun
-2. **Middle Ring** (33-66% of map radius) - Yellow - Caution zone
-3. **Outer Ring** (> 66% of map radius) - Green - Safe, edge of map
+1. **Inner Ring** (< 33% of map radius) - Lawless - Dangerous, close to sun
+2. **Middle Ring** (33-66% of map radius) - Contested - Caution zone
+3. **Outer Ring** (> 66% of map radius) - Neutral - Safe, edge of map
 
 ### Visual Feedback
 - Overmap turfs are tinted with zone colors
@@ -54,7 +56,7 @@ voidcrew/
 ## Key Files
 
 ### Defines (`voidcrew/_DEFINES/overmap_zones.dm`)
-- `ZONE_GREEN`, `ZONE_YELLOW`, `ZONE_RED` - Zone type constants
+- `ZONE_GREEN`, `ZONE_YELLOW`, `ZONE_RED` - Zone type constants (Neutral, Contested, Lawless)
 - `ZONE_TRANSITION_TIME` - Time to cross zone boundaries (10 seconds)
 - `COMSIG_*` signals for zone events
 - `ZONE_WEAPONS_ALLOWED()`, `ZONE_INTERDICTION_ALLOWED()` macros
@@ -84,13 +86,13 @@ Weapons check zones via `SSovermap_zones.weapons_allowed_at(src)`:
 - `voidcrew/modules/ship_combat/interdictor.dm` - `can_interdict()` proc
 
 ### Cross-Zone Targeting
-Ships can target each other between Yellow and Red zones, but Green zone blocks all targeting:
+Ships can target each other between Contested and Lawless zones, but Neutral zone blocks all targeting:
 - `voidcrew/modules/ship_combat/combat_console.dm`:
-  - `start_targeting()` - Blocks acquiring locks if either ship is in Green zone
-  - `check_targeting_range()` - Cancels in-progress targeting if either ship enters Green zone
-  - `check_attack_range()` - Exits attack mode if either ship enters Green zone
+  - `start_targeting()` - Blocks acquiring locks if either ship is in Neutral zone
+  - `check_targeting_range()` - Cancels in-progress targeting if either ship enters Neutral zone
+  - `check_attack_range()` - Exits attack mode if either ship enters Neutral zone
   - `ui_data()` - Sends zone info for each nearby ship so UI can show which are targetable
-- Ships in Green zone show as disabled in the targeting list with tooltip explaining why
+- Ships in Neutral zone show as disabled in the targeting list with tooltip explaining why
 
 ### UI Integration
 Zone data sent to TGUI via `ui_data()`:
@@ -124,6 +126,52 @@ Zone detection happens in `burn_engines()` - when thrusting toward a different z
 |--------|---------|------|-------------|
 | `COMSIG_TURF_ZONE_CHANGED` | Zone datum | `(old_type, new_type)` | Turf's zone changed |
 | `COMSIG_SHIP_ZONE_CHANGED` | Zone controller | `(old_type, new_type)` | Ship entered different zone |
+| `COMSIG_SHIP_SHIELDING_CHANGED` | Ship | `(old_level, new_level)` | Ship's radiation shielding upgraded |
+
+## Solar Radiation System
+
+Zones closer to the sun expose crew to solar radiation. Ships need research-unlocked shielding to protect their crew.
+
+### Radiation Levels
+| Zone | Radiation Level | Required Shielding |
+|------|-----------------|-------------------|
+| Neutral | None | None |
+| Contested | Moderate (1 hit/tick) | Standard Shielding |
+| Lawless | Heavy (2 hits/tick) | Heavy Shielding |
+
+Note: Standard Shielding provides partial protection in Lawless zone (reduces from 2 hits to 1 hit).
+
+### Shielding Research
+Shielding is unlocked via the techweb research tree:
+
+1. **Standard Radiation Shielding** (Tier 2, 80 pts)
+   - Requires: Basic Shuttle Research
+   - Protects crew from Contested zone radiation
+   - Reduces Lawless zone radiation by half
+
+2. **Heavy Radiation Shielding** (Tier 4, 160 pts)
+   - Requires: Standard Radiation Shielding
+   - Protects crew from Contested and Lawless zone radiation
+
+### Auto-Upgrade System
+When shielding research is completed, ALL ships linked to that techweb automatically receive the upgrade:
+- R&D servers on ships auto-link when a disk is inserted
+- Ships announce when shielding upgrades are applied
+- Helm console shows current shielding level and radiation status
+
+### Radiation Effects
+Unshielded crew in radiation zones:
+- Receive the `solar_radiation_exposure` component
+- Take radiation damage every 5 seconds
+- Can be protected by wearing radiation-resistant clothing (radsuits)
+- Radiation stops when ship leaves zone or gains shielding
+
+### Key Files
+- `voidcrew/_DEFINES/overmap_zones.dm` - Radiation constants
+- `voidcrew/modules/research/radiation_shielding_research.dm` - Research nodes
+- `voidcrew/modules/overmap/code/modules/overmap/ship_radiation.dm` - Ship shielding procs
+- `voidcrew/modules/overmap/code/modules/overmap/zones/zone_radiation.dm` - Radiation processing
+- `voidcrew/modules/overmap/code/modules/overmap/zones/solar_radiation_component.dm` - Exposure component
 
 ## Future Hooks
 
@@ -131,22 +179,22 @@ The zone system is designed for expansion. Planned integrations:
 - **Missions** - Higher payouts in dangerous zones
 - **Planet weather** - Zone-based weather events
 - **Mob spawns** - Different enemies per zone
-- **Loot tables** - Better drops in red zones
-- **NPC ships** - Traders in green, pirates in red
+- **Loot tables** - Better drops in Lawless zones
+- **NPC ships** - Traders in Neutral, pirates in Lawless
 
 ## Configuration
 
 Zone thresholds in `zone_controller.dm`:
 ```dm
-// Inner ring (Red) - dangerous, close to sun
+// Inner ring (Lawless) - dangerous, close to sun
 if(normalized < 0.33)
     return ZONE_RED
 
-// Middle ring (Yellow) - caution zone
+// Middle ring (Contested) - caution zone
 if(normalized < 0.66)
     return ZONE_YELLOW
 
-// Outer ring (Green) - safe, edge of map
+// Outer ring (Neutral) - safe, edge of map
 return ZONE_GREEN
 ```
 

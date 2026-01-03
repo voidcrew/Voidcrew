@@ -234,6 +234,27 @@
 		data["zone_transition_remaining"] = 0
 		data["zone_transition_target"] = null
 
+	// Radiation shielding info
+	data["radiation_shielding_level"] = current_ship.radiation_shielding_level
+	data["radiation_shielding_name"] = current_ship.get_shielding_name(current_ship.radiation_shielding_level)
+
+	// Current zone radiation status
+	if(SSovermap_zones?.zones_active)
+		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(T)
+		if(zone)
+			var/radiation_level = ZONE_RADIATION_LEVEL(zone.zone_type)
+			data["zone_radiation_level"] = radiation_level
+			data["zone_radiation_protected"] = current_ship.is_protected_from_radiation(radiation_level)
+			data["zone_radiation_warning"] = radiation_level > ZONE_RADIATION_NONE && !current_ship.is_protected_from_radiation(radiation_level)
+		else
+			data["zone_radiation_level"] = ZONE_RADIATION_NONE
+			data["zone_radiation_protected"] = TRUE
+			data["zone_radiation_warning"] = FALSE
+	else
+		data["zone_radiation_level"] = ZONE_RADIATION_NONE
+		data["zone_radiation_protected"] = TRUE
+		data["zone_radiation_warning"] = FALSE
+
 	for(var/obj/machinery/power/shuttle_engine/ship/E in current_ship.shuttle.engine_list)
 		var/list/engine_data
 		if(!E.thruster_active)
@@ -339,6 +360,9 @@
 
 /obj/machinery/computer/helm/proc/do_jump()
 	current_ship?.ship_announce("Bluespace Jump Initiated.")
+	// Extract ship parts from all players on the ship before jumping
+	if(current_ship)
+		extract_ship_parts_from_ship(current_ship, "bluespace_jump")
 	current_ship.destroy_ship(TRUE)
 
 /obj/machinery/computer/helm/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)

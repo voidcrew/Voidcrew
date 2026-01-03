@@ -2,7 +2,7 @@
 	name = "Energia-class Experimental Vessel"
 	suffix = "energia"
 	short_name = "Energia-class"
-	part_cost = 2
+	part_requirements = list(PART_CLASS_SCIENCE = 2)
 
 	job_slots = list(
 		list(

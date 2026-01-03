@@ -16,14 +16,6 @@
 // Maximum number of retry attempts for failed transactions (User Q3)
 #define TRANSACTION_MAX_RETRIES 3
 
-// Rarity tier constants - use string-based system from ship_economy_database.dm
-// These are just aliases for compatibility with old code
-#define TRANSACTION_RARITY_COMMON RARITY_COMMON
-#define TRANSACTION_RARITY_UNCOMMON RARITY_UNCOMMON
-#define TRANSACTION_RARITY_RARE RARITY_RARE
-#define TRANSACTION_RARITY_EPIC RARITY_EPIC
-#define TRANSACTION_RARITY_LEGENDARY RARITY_LEGENDARY
-
 /**
  * Purchase a ship blueprint unlock with transaction safety.
  *
@@ -176,18 +168,18 @@
 		return FALSE
 
 	var/ckey = C.ckey
-	var/part_rarity = part.part_rarity || RARITY_COMMON
+	var/part_class = part.part_class || PART_CLASS_MISC
 	var/quantity = 1  // Each ship_parts item represents 1 part
 
 	// Step 1: Attempt to add parts to inventory
 	var/datum/db_query/add_parts_query = SSdbcore.NewQuery(
 		"INSERT INTO [format_table_name("player_ship_parts")] \
-		(ckey, part_rarity, quantity, last_updated) \
-		VALUES (:ckey, :rarity, :qty, Now()) \
+		(ckey, part_class, quantity, last_updated) \
+		VALUES (:ckey, :part_class, :qty, Now()) \
 		ON DUPLICATE KEY UPDATE quantity = quantity + :qty, last_updated = Now()",
 		list(
 			"ckey" = ckey,
-			"rarity" = part_rarity,
+			"part_class" = part_class,
 			"qty" = quantity
 		)
 	)
@@ -201,11 +193,11 @@
 
 		var/datum/db_query/pending_query = SSdbcore.NewQuery(
 			"INSERT INTO [format_table_name("pending_extractions")] \
-			(ckey, part_rarity, quantity, failure_reason, queued_at) \
-			VALUES (:ckey, :rarity, :qty, :reason, Now())",
+			(ckey, part_class, quantity, failure_reason, queued_at) \
+			VALUES (:ckey, :part_class, :qty, :reason, Now())",
 			list(
 				"ckey" = ckey,
-				"rarity" = part_rarity,
+				"part_class" = part_class,
 				"qty" = quantity,
 				"reason" = error_msg
 			)
@@ -216,7 +208,7 @@
 			to_chat(C, span_notice("Extraction queued for retry. Your parts will be credited shortly."))
 
 			// Log the pending extraction
-			log_part_extraction(ckey, part_rarity, quantity, "pending_queue")
+			log_part_extraction(ckey, part_class, quantity, "pending_queue")
 
 			// DO NOT delete the physical item - let player keep it in case queue fails
 			return TRUE
@@ -228,10 +220,10 @@
 	qdel(add_parts_query)
 
 	// Step 3: Success! Log the extraction
-	log_part_extraction(ckey, part_rarity, quantity, "device")
+	log_part_extraction(ckey, part_class, quantity, "device")
 
 	// Step 4: Only delete physical item after confirmed success
-	to_chat(C, span_notice("Extracted [quantity]x [get_rarity_name(part_rarity)] ship part(s) to your account!"))
+	to_chat(C, span_notice("Extracted [quantity]x [part_class] ship part(s) to your account!"))
 	qdel(part)
 
 	return TRUE
@@ -247,17 +239,17 @@
  * 5. Refund on failure
  *
  * @param client The client buying parts
- * @param rarity The rarity tier (1-4)
+ * @param part_class The part class (combat/science/trade/misc)
  * @param quantity Number of parts to buy
  * @param cost Total credit cost
  * @return TRUE if purchase successful, FALSE otherwise
  */
-/proc/buy_parts_with_credits(client/C, rarity, quantity, cost)
+/proc/buy_parts_with_credits(client/C, part_class, quantity, cost)
 	if(!C || quantity <= 0 || cost <= 0)
 		return FALSE
 
-	if(!(rarity in GLOB.ship_part_rarities))
-		to_chat(C, span_warning("Invalid part rarity."))
+	if(!(part_class in GLOB.ship_part_classes))
+		to_chat(C, span_warning("Invalid part class."))
 		return FALSE
 
 	if(!SSdbcore.IsConnected())
@@ -310,17 +302,17 @@
 			credits_deducted = TRUE
 
 			// Log credit transaction
-			log_credit_transaction(ckey, character_slot, -cost, "buy_parts:rarity[rarity]x[quantity]", current_balance - cost)
+			log_credit_transaction(ckey, character_slot, -cost, "buy_parts:[part_class]x[quantity]", current_balance - cost)
 
 		// Step 3: Add parts to inventory
 		var/datum/db_query/add_parts_query = SSdbcore.NewQuery(
 			"INSERT INTO [format_table_name("player_ship_parts")] \
-			(ckey, part_rarity, quantity, last_updated) \
-			VALUES (:ckey, :rarity, :qty, Now()) \
+			(ckey, part_class, quantity, last_updated) \
+			VALUES (:ckey, :part_class, :qty, Now()) \
 			ON DUPLICATE KEY UPDATE quantity = quantity + :qty, last_updated = Now()",
 			list(
 				"ckey" = ckey,
-				"rarity" = rarity,
+				"part_class" = part_class,
 				"qty" = quantity
 			)
 		)
@@ -330,9 +322,9 @@
 			qdel(add_parts_query)
 
 			// Log part acquisition
-			log_part_extraction(ckey, rarity, quantity, "purchase_with_credits")
+			log_part_extraction(ckey, part_class, quantity, "purchase_with_credits")
 
-			to_chat(C, span_notice("Purchased [quantity]x [get_rarity_name(rarity)] ship part(s)!"))
+			to_chat(C, span_notice("Purchased [quantity]x [part_class] ship part(s)!"))
 		else
 			qdel(add_parts_query)
 			retry_count++
@@ -356,7 +348,7 @@
 		qdel(refund_query)
 
 		// Log refund
-		log_credit_transaction(ckey, character_slot, cost, "refund_part_purchase_failed:rarity[rarity]x[quantity]", current_balance)
+		log_credit_transaction(ckey, character_slot, cost, "refund_part_purchase_failed:[part_class]x[quantity]", current_balance)
 
 		to_chat(C, span_warning("Purchase failed after [TRANSACTION_MAX_RETRIES] retries. Credits refunded."))
 		return FALSE
@@ -460,21 +452,21 @@
  * Log a part extraction to audit trail.
  *
  * @param ckey Player's ckey
- * @param part_rarity Rarity tier
+ * @param part_class Part class (combat/science/trade/misc)
  * @param quantity Number of parts
  * @param extraction_method How parts were obtained
  */
-/proc/log_part_extraction(ckey, part_rarity, quantity, extraction_method)
+/proc/log_part_extraction(ckey, part_class, quantity, extraction_method)
 	if(!SSdbcore.IsConnected())
 		return
 
 	var/datum/db_query/query = SSdbcore.NewQuery(
 		"INSERT INTO [format_table_name("part_extraction_log")] \
-		(ckey, part_rarity, quantity, extraction_method, extracted_at) \
-		VALUES (:ckey, :rarity, :qty, :method, Now())",
+		(ckey, part_class, quantity, extraction_method, extracted_at) \
+		VALUES (:ckey, :part_class, :qty, :method, Now())",
 		list(
 			"ckey" = ckey,
-			"rarity" = part_rarity,
+			"part_class" = part_class,
 			"qty" = quantity,
 			"method" = extraction_method
 		)
@@ -482,19 +474,6 @@
 
 	query.Execute() // Fire and forget
 	qdel(query)
-
-/**
- * Get human-readable rarity name.
- * Capitalizes the first letter of the rarity string.
- *
- * @param rarity Rarity tier string (common/uncommon/rare/epic/legendary)
- * @return Capitalized string name
- */
-/proc/get_rarity_name(rarity)
-	if(!rarity)
-		return "Unknown"
-	// Capitalize first letter
-	return uppertext(copytext(rarity, 1, 2)) + copytext(rarity, 2)
 
 // ============================================================================
 // PENDING EXTRACTIONS QUEUE PROCESSOR
@@ -514,7 +493,7 @@
 
 	// Get pending extractions
 	var/datum/db_query/get_pending = SSdbcore.NewQuery(
-		"SELECT id, ckey, part_rarity, quantity FROM [format_table_name("pending_extractions")] \
+		"SELECT id, ckey, part_class, quantity FROM [format_table_name("pending_extractions")] \
 		WHERE processed = 0 \
 		ORDER BY queued_at ASC \
 		LIMIT 10",
@@ -528,18 +507,18 @@
 	while(get_pending.NextRow())
 		var/extraction_id = text2num(get_pending.item[1])
 		var/ckey = get_pending.item[2]
-		var/part_rarity = text2num(get_pending.item[3])
+		var/part_class = get_pending.item[3]
 		var/quantity = text2num(get_pending.item[4])
 
 		// Try to add parts
 		var/datum/db_query/add_parts = SSdbcore.NewQuery(
 			"INSERT INTO [format_table_name("player_ship_parts")] \
-			(ckey, part_rarity, quantity, last_updated) \
-			VALUES (:ckey, :rarity, :qty, Now()) \
+			(ckey, part_class, quantity, last_updated) \
+			VALUES (:ckey, :part_class, :qty, Now()) \
 			ON DUPLICATE KEY UPDATE quantity = quantity + :qty, last_updated = Now()",
 			list(
 				"ckey" = ckey,
-				"rarity" = part_rarity,
+				"part_class" = part_class,
 				"qty" = quantity
 			)
 		)
@@ -558,7 +537,7 @@
 			qdel(mark_processed)
 
 			// Log the successful extraction
-			log_part_extraction(ckey, part_rarity, quantity, "pending_queue_retry")
+			log_part_extraction(ckey, part_class, quantity, "pending_queue_retry")
 
 			processed++
 		else
@@ -569,8 +548,3 @@
 	return processed
 
 #undef TRANSACTION_MAX_RETRIES
-#undef TRANSACTION_RARITY_COMMON
-#undef TRANSACTION_RARITY_UNCOMMON
-#undef TRANSACTION_RARITY_RARE
-#undef TRANSACTION_RARITY_EPIC
-#undef TRANSACTION_RARITY_LEGENDARY

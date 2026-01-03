@@ -308,7 +308,7 @@
 		return FALSE
 	if(interdiction_active || interdiction_warming_up)
 		return FALSE
-	// Zone restriction check - interdiction disabled in green zones only
+	// Zone restriction check - interdiction disabled in neutral zones only
 	if(!SSovermap_zones.interdiction_allowed_at(src))
 		return FALSE
 	return TRUE

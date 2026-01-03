@@ -2,7 +2,7 @@
 	name = "Dwayne-class Long Range Mining Transport"
 	suffix = "dwayne"
 	short_name = "Dwayne-class"
-	part_cost = 2
+	part_requirements = list(PART_CLASS_TRADE = 2)
 
 	job_slots = list(
 		list(

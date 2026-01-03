@@ -1,73 +1,53 @@
 /**
- * Ship Parts Items - Rarity-Based System
+ * Ship Parts Items - Class-Based System
  *
- * Physical items that can be picked up and redeemed for ship parts.
- * Uses rarity tiers: common, uncommon, rare, epic, legendary
- * Parts are stored in the database via GLOB.ship_economy_db
+ * Physical items that can be picked up and traded between players.
+ * Uses part classes: combat, science, trade, misc
+ * Parts are NOT automatically redeemed - they must be:
+ * 1. Placed in an extraction briefcase
+ * 2. Extracted via bluespace jump or round end
+ * Parts NOT in a briefcase will be lost!
  */
 /obj/item/ship_parts
 	name = "ship parts"
-	desc = "Ship parts, use them in hand to redeem them. Used for building ships."
+	desc = "Ship parts used for unlocking ships. Put these in an extraction briefcase before jumping - loose parts won't be extracted!"
 	icon = 'voidcrew/modules/shuttle/ship_parts/icons/ship_item.dmi'
 	icon_state = "ship"
+	w_class = WEIGHT_CLASS_SMALL
 
-	/// The rarity tier of this ship part
-	var/part_rarity = RARITY_COMMON
-
-/obj/item/ship_parts/attack_self(mob/user)
-	. = ..()
-	if(!user.client)
-		to_chat(user, span_warning("You need to be logged in to redeem ship parts!"))
-		return
-
-	var/ckey = user.client.ckey
-	if(!ckey)
-		to_chat(user, span_warning("Unable to identify your account!"))
-		return
-
-	// Add part to database
-	if(GLOB.ship_economy_db?.add_part(ckey, part_rarity, 1, "item_redemption"))
-		to_chat(user, span_notice("You have redeemed [src]! One [part_rarity] part has been added to your account."))
-		qdel(src)
-	else
-		to_chat(user, span_warning("Failed to redeem ship part. Please try again or contact an administrator."))
+	/// The class of this ship part (combat, science, trade, misc)
+	var/part_class = PART_CLASS_MISC
 
 /obj/item/ship_parts/examine(mob/user)
 	. = ..()
-	. += span_notice("This is a [part_rarity] rarity ship part.")
-	. += span_notice("Use it in hand to add it to your account.")
+	. += span_notice("This is a [part_class]-class ship part.")
+	. += span_warning("Must be stored in an extraction briefcase to be extracted!")
+	. += span_notice("Parts are extracted when you bluespace jump or when the round ends.")
 
-// Common parts (gray/white)
-/obj/item/ship_parts/common
-	name = "common ship parts"
-	desc = "Common quality ship parts. These are basic components for smaller vessels."
+// Combat parts (red) - found in wrecks, combat zones
+/obj/item/ship_parts/combat
+	name = "combat ship parts"
+	desc = "Military-grade ship components. Used for unlocking warships and combat vessels. Found in wrecks and combat zones. Store in an extraction briefcase!"
+	color = "#ff4444"
+	part_class = PART_CLASS_COMBAT
+
+// Science parts (blue) - found in labs, research sites
+/obj/item/ship_parts/science
+	name = "science ship parts"
+	desc = "Advanced research components. Used for unlocking research vessels and science ships. Found in laboratories and research sites. Store in an extraction briefcase!"
+	color = "#4488ff"
+	part_class = PART_CLASS_SCIENCE
+
+// Trade parts (gold) - found in stations, trade posts
+/obj/item/ship_parts/trade
+	name = "trade ship parts"
+	desc = "Commercial-grade ship components. Used for unlocking cargo haulers and trade vessels. Found at stations and trade posts. Store in an extraction briefcase!"
+	color = "#ffcc00"
+	part_class = PART_CLASS_TRADE
+
+// Misc parts (gray) - found in general loot areas
+/obj/item/ship_parts/misc
+	name = "miscellaneous ship parts"
+	desc = "General purpose ship components. Used for various ship unlocks. Found in general loot areas. Store in an extraction briefcase!"
 	color = "#9d9d9d"
-	part_rarity = RARITY_COMMON
-
-// Uncommon parts (green)
-/obj/item/ship_parts/uncommon
-	name = "uncommon ship parts"
-	desc = "Uncommon quality ship parts. Better than basic, suitable for mid-tier ships."
-	color = "#1eff00"
-	part_rarity = RARITY_UNCOMMON
-
-// Rare parts (blue)
-/obj/item/ship_parts/rare
-	name = "rare ship parts"
-	desc = "Rare quality ship parts. High-grade components for advanced vessels."
-	color = "#0070dd"
-	part_rarity = RARITY_RARE
-
-// Epic parts (purple)
-/obj/item/ship_parts/epic
-	name = "epic ship parts"
-	desc = "Epic quality ship parts. Premium components for elite vessels."
-	color = "#a335ee"
-	part_rarity = RARITY_EPIC
-
-// Legendary parts (orange)
-/obj/item/ship_parts/legendary
-	name = "legendary ship parts"
-	desc = "Legendary quality ship parts. The finest components for the most powerful ships."
-	color = "#ff8000"
-	part_rarity = RARITY_LEGENDARY
+	part_class = PART_CLASS_MISC

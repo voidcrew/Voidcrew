@@ -10,9 +10,9 @@
 #define ZONE_RED 3
 
 // Zone type names for display
-#define ZONE_NAME_GREEN "Green Zone"
-#define ZONE_NAME_YELLOW "Yellow Zone"
-#define ZONE_NAME_RED "Red Zone"
+#define ZONE_NAME_GREEN "Neutral Zone"
+#define ZONE_NAME_YELLOW "Contested Zone"
+#define ZONE_NAME_RED "Lawless Zone"
 
 // Zone type descriptions
 #define ZONE_DESC_GREEN "Safe space - ship weapons are disabled and PvP is prohibited."
@@ -39,7 +39,7 @@
 #define ZONE_TRANSITION_TIME (10 SECONDS)
 
 /// Zone distribution ratios (distance from center, as percentage of max radius)
-/// Inner ring: 0% to 33% = closest to sun (most dangerous due to sun + red zone)
+/// Inner ring: 0% to 33% = closest to sun (most dangerous due to sun + lawless zone)
 /// Middle ring: 33% to 66%
 /// Outer ring: 66% to 100%
 #define ZONE_INNER_RING_RATIO 0.33
@@ -73,3 +73,36 @@
 
 /// Check if forced docking is allowed in a zone type
 #define ZONE_FORCED_DOCKING_ALLOWED(zone_type) (zone_type != ZONE_GREEN)
+
+// ========== SOLAR RADIATION ==========
+
+/// No radiation exposure (Neutral zone)
+#define ZONE_RADIATION_NONE 0
+/// Moderate radiation exposure (Contested zone) - requires Standard Shielding
+#define ZONE_RADIATION_MODERATE 1
+/// Heavy radiation exposure (Lawless zone) - requires Heavy Shielding
+#define ZONE_RADIATION_HEAVY 2
+
+/// Get radiation level for a zone type
+#define ZONE_RADIATION_LEVEL(zone_type) (zone_type == ZONE_RED ? ZONE_RADIATION_HEAVY : (zone_type == ZONE_YELLOW ? ZONE_RADIATION_MODERATE : ZONE_RADIATION_NONE))
+
+// ========== SHIP RADIATION SHIELDING ==========
+
+/// No radiation shielding installed
+#define SHIP_SHIELDING_NONE 0
+/// Standard shielding - protects against Contested zone (moderate) radiation
+#define SHIP_SHIELDING_STANDARD 1
+/// Heavy shielding - protects against Lawless zone (heavy) radiation
+#define SHIP_SHIELDING_HEAVY 2
+
+// ========== RADIATION EXPOSURE PARAMETERS ==========
+
+/// Interval between radiation applications
+#define SOLAR_RADIATION_CHECK_INTERVAL (5 SECONDS)
+/// Minimum exposure time before first radiation hit
+#define SOLAR_RADIATION_MINIMUM_EXPOSURE (3 SECONDS)
+
+// ========== RADIATION SHIELDING SIGNALS ==========
+
+/// Sent when a ship's radiation shielding level changes: (old_level, new_level)
+#define COMSIG_SHIP_SHIELDING_CHANGED "ship_shielding_changed"

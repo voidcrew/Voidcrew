@@ -2,7 +2,7 @@
 	name = "Hyena-class Wrecking Tug"
 	suffix = "syndicate_hyena"
 	short_name = "Hyena-Class"
-	part_cost = 2
+	part_requirements = list(PART_CLASS_TRADE = 2)
 
 	job_slots = list(
 		list(

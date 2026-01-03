@@ -326,7 +326,7 @@
 		return FALSE
 	if(!is_on_exterior())
 		return FALSE
-	// Zone restriction check - weapons disabled in green and yellow zones
+	// Zone restriction check - weapons disabled in neutral and contested zones
 	if(!SSovermap_zones.weapons_allowed_at(src))
 		return FALSE
 	return TRUE

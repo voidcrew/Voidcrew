@@ -2,7 +2,7 @@
 	name = "Meta-class Freighter"
 	suffix = "meta"
 	short_name = "Meta-Class"
-	part_cost = 3
+	part_requirements = list(PART_CLASS_TRADE = 3)
 
 	job_slots = list(
 		list(

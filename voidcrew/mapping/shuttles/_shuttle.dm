@@ -5,10 +5,13 @@
 
 	///Short name of the ship
 	var/short_name
-	///Cost of the ship
-	var/part_cost = 1
-	///Rarity tier of the ship (auto-calculated from part_cost)
-	var/rarity = "common"
+
+	/**
+	 * Class-based part requirements for unlocking this ship.
+	 * Format: list("combat" = X, "science" = Y, "trade" = Z, "misc" = W)
+	 * Only include classes that are required (0 values can be omitted).
+	 */
+	var/list/part_requirements = list()
 
 	///List of job slots. Ensure the 'captain' is always the first entry
 	var/list/job_slots = list()
@@ -18,17 +21,10 @@
 
 /datum/map_template/shuttle/voidcrew/New()
 	. = ..()
-	// Calculate rarity from part_cost
-	if(part_cost >= 10)
-		rarity = "legendary"
-	else if(part_cost >= 7)
-		rarity = "epic"
-	else if(part_cost >= 5)
-		rarity = "rare"
-	else if(part_cost >= 3)
-		rarity = "uncommon"
-	else
-		rarity = "common"
+	// Ensure part_requirements has all classes initialized to 0 if not set
+	for(var/part_class in GLOB.ship_part_classes)
+		if(!(part_class in part_requirements))
+			part_requirements[part_class] = 0
 
 /datum/map_template/shuttle/voidcrew/proc/assemble_job_slots()
 	var/list/job_list = list()

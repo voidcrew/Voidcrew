@@ -2,7 +2,7 @@
 	name = "Phalanx-Class Super Battlecruiser"
 	suffix = "nano_phalanx"
 	short_name = "Phalanx-Class"
-	part_cost = 3
+	part_requirements = list(PART_CLASS_COMBAT = 3)
 
 	job_slots = list(
 		list(

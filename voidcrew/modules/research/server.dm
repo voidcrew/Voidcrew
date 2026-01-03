@@ -16,6 +16,10 @@
 	if(stored_research)
 		stored_research.techweb_servers -= src
 	if(source_code_hdd)
+		// Unlink ship from techweb before destroying
+		var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
+		if(ship && ship.linked_techweb == source_code_hdd.stored_research)
+			ship.unlink_techweb()
 		for(var/atom/everything_connected as anything in source_code_hdd.stored_research.connected_machines)
 			everything_connected.unsync_research_servers()
 		source_code_hdd.forceMove(loc)
@@ -35,8 +39,25 @@
 		stored_research = source_code_hdd.stored_research
 		stored_research.techweb_servers |= src
 		balloon_alert(user, "disk uploaded!")
+		// Link the ship to this techweb for auto-upgrades
+		link_ship_to_techweb()
 		return
 	return ..()
+
+/// Links any ship this server is on to our techweb for radiation shielding auto-upgrades
+/obj/machinery/rnd/server/ship/proc/link_ship_to_techweb()
+	if(!source_code_hdd?.stored_research)
+		return
+
+	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
+	if(ship)
+		ship.link_techweb(source_code_hdd.stored_research)
+
+/obj/machinery/rnd/server/ship/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
+	. = ..()
+	// When server connects to a shuttle (on mapload), link the ship to our techweb
+	if(source_code_hdd?.stored_research)
+		addtimer(CALLBACK(src, PROC_REF(link_ship_to_techweb)), 1 SECONDS)
 
 /obj/machinery/rnd/server/ship/multitool_act(mob/living/user, obj/item/multitool/multi)
 	if(!source_code_hdd)

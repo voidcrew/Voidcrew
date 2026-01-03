@@ -2,7 +2,7 @@
 	name = "Blackbeard-class Heavy Boarder"
 	suffix = "syndicate_blackbeard"
 	short_name = "Blackbeard-Class"
-	part_cost = 1
+	part_requirements = list(PART_CLASS_COMBAT = 1)
 
 	job_slots = list(
 		list(

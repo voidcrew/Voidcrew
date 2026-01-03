@@ -143,6 +143,12 @@
 	/// When the zone transition started (for progress calculation)
 	var/zone_transition_start_time
 
+	// ===== RADIATION SHIELDING =====
+	/// Current radiation shielding level (SHIP_SHIELDING_NONE, STANDARD, or HEAVY)
+	var/radiation_shielding_level = SHIP_SHIELDING_NONE
+	/// Linked techweb for radiation shielding auto-upgrades
+	var/datum/techweb/linked_techweb
+
 	/// Cooldown preventing undocking shortly after docking
 	COOLDOWN_DECLARE(undock_cooldown)
 	/// Timer ID for dock warmup

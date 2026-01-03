@@ -2,7 +2,7 @@
 	name = "Spitfire-class Search and Rescue Vessel"
 	suffix = "spitfire"
 	short_name = "Spitfire-class"
-	part_cost = 2
+	part_requirements = list(PART_CLASS_SCIENCE = 2)
 
 	job_slots = list(
 		list(

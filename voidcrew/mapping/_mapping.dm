@@ -173,19 +173,17 @@
 		return
 
 	for(var/datum/map_template/shuttle/voidcrew/shuttles as anything in subtypesof(/datum/map_template/shuttle/voidcrew))
-		// Calculate rarity tier based on part cost (same logic as in ship template New())
-		var/rarity = "Common"
-		var/part_cost = initial(shuttles.part_cost)
-		if(part_cost >= 10)
-			rarity = "Legendary"
-		else if(part_cost >= 7)
-			rarity = "Epic"
-		else if(part_cost >= 5)
-			rarity = "Rare"
-		else if(part_cost >= 3)
-			rarity = "Uncommon"
+		// Build requirements summary from class-based part_requirements
+		var/list/req_parts = list()
+		var/list/part_reqs = initial(shuttles.part_requirements)
+		if(part_reqs)
+			for(var/part_class in part_reqs)
+				var/count = part_reqs[part_class]
+				if(count > 0)
+					req_parts += "[count] [part_class]"
 
-		ship_purchase_list["[initial(shuttles.name)] ([rarity] [part_cost] part\s)"] = shuttles
+		var/cost_str = length(req_parts) ? req_parts.Join(", ") : "Free"
+		ship_purchase_list["[initial(shuttles.name)] ([cost_str])"] = shuttles
 
 /datum/controller/subsystem/mapping/get_station_center()
 	return SSovermap.overmap_centre || locate(OVERMAP_LEFT_SIDE_COORD, OVERMAP_NORTH_SIDE_COORD, OVERMAP_Z_LEVEL)

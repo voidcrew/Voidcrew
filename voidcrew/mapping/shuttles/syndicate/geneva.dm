@@ -2,7 +2,7 @@
 	name = "Geneva-class Search and Rescue Vessel"
 	suffix = "syndicate_geneva"
 	short_name = "Geneva-class"
-	part_cost = 3
+	part_requirements = list(PART_CLASS_SCIENCE = 2, PART_CLASS_MISC = 1)
 
 	job_slots = list(
 		list(

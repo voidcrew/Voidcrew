@@ -377,7 +377,7 @@
 	if(!our_zone)
 		return
 
-	// Check targeting in progress - break if either ship now in Green zone
+	// Check targeting in progress - break if either ship now in Neutral zone
 	if(is_targeting && targeting_ship)
 		var/turf/target_turf = get_turf(targeting_ship)
 		var/datum/overmap_zone/target_zone = SSovermap_zones?.get_zone(target_turf)
@@ -395,7 +395,7 @@
 			current_ship.ship_announce("Target lock failed - target entered safe zone.", "Targeting System")
 			return
 
-	// Check active attack mode or existing target lock - break if either ship now in Green zone
+	// Check active attack mode or existing target lock - break if either ship now in Neutral zone
 	if(target_ship)
 		var/turf/target_turf = get_turf(target_ship)
 		var/datum/overmap_zone/target_zone = SSovermap_zones?.get_zone(target_turf)
@@ -562,7 +562,7 @@
 					if(target_zone)
 						target_zone_type = target_zone.zone_type
 						target_zone_name = target_zone.name
-				// Can target if neither ship is in Green zone
+				// Can target if neither ship is in Neutral zone
 				var/can_target = (our_zone_type != ZONE_GREEN) && (target_zone_type != ZONE_GREEN)
 				nearby_ships += list(list(
 					"name" = S.display_name || S.name,
@@ -1307,7 +1307,7 @@
 			to_chat(user, span_warning("Cannot acquire target lock while docked!"))
 		return FALSE
 
-	// Can't target if either ship is in Green zone (safe space)
+	// Can't target if either ship is in Neutral zone (safe space)
 	if(SSovermap_zones?.initialized && current_ship)
 		var/datum/overmap_zone/our_zone = SSovermap_zones.get_zone(get_turf(current_ship))
 		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(get_turf(new_target))
@@ -1442,7 +1442,7 @@
 	if(!our_turf || !target_turf)
 		return
 
-	// Check if either ship entered Green zone (safe space)
+	// Check if either ship entered Neutral zone (safe space)
 	if(SSovermap_zones?.initialized)
 		var/datum/overmap_zone/our_zone = SSovermap_zones.get_zone(our_turf)
 		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
@@ -1488,7 +1488,7 @@
 	if(!our_turf || !target_turf)
 		return
 
-	// Check if either ship entered Green zone (safe space)
+	// Check if either ship entered Neutral zone (safe space)
 	if(SSovermap_zones?.initialized)
 		var/datum/overmap_zone/our_zone = SSovermap_zones.get_zone(our_turf)
 		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
