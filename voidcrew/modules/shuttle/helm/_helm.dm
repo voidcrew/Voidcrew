@@ -184,6 +184,77 @@
 	data["interdictionStrength"] = current_ship.interdiction_strength
 	data["speedMultiplier"] = current_ship.speed_multiplier
 
+	// Zone information
+	if(SSovermap_zones.zones_active)
+		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(T)
+		if(zone)
+			data["zone_type"] = zone.zone_type
+			data["zone_name"] = zone.name
+			data["zone_color"] = zone.get_color()
+			data["zone_description"] = zone.get_description()
+			data["weapons_allowed"] = zone.weapons_allowed()
+			data["interdiction_allowed"] = zone.interdiction_allowed()
+		else
+			data["zone_type"] = null
+			data["zone_name"] = "Unknown"
+			data["zone_color"] = "#ffffff"
+			data["zone_description"] = "Zone data unavailable."
+			data["weapons_allowed"] = TRUE
+			data["interdiction_allowed"] = TRUE
+		// Zone transition info (when crossing between zones)
+		data["zone_transitioning"] = current_ship.zone_transitioning
+		if(current_ship.zone_transitioning && current_ship.zone_transition_start_time)
+			var/elapsed = world.time - current_ship.zone_transition_start_time
+			var/progress = clamp((elapsed / ZONE_TRANSITION_TIME) * 100, 0, 100)
+			var/remaining = max(0, ZONE_TRANSITION_TIME - elapsed) / 10
+			data["zone_transition_progress"] = round(progress)
+			data["zone_transition_remaining"] = round(remaining, 0.1)
+			// Get target zone name
+			if(current_ship.zone_transition_target)
+				var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(current_ship.zone_transition_target)
+				data["zone_transition_target"] = target_zone?.name || "Unknown Zone"
+			else
+				data["zone_transition_target"] = "Unknown Zone"
+		else
+			data["zone_transition_progress"] = 0
+			data["zone_transition_remaining"] = 0
+			data["zone_transition_target"] = null
+	else
+		data["zone_type"] = null
+		data["zone_name"] = "Inactive"
+		data["zone_color"] = "#888888"
+		data["zone_description"] = "Zone system inactive."
+		data["weapons_allowed"] = TRUE
+		data["interdiction_allowed"] = TRUE
+		data["zone_shift_seconds"] = 0
+		data["zone_shift_minutes"] = 0
+		data["zone_shift_remaining_seconds"] = 0
+		data["zone_transitioning"] = FALSE
+		data["zone_transition_progress"] = 0
+		data["zone_transition_remaining"] = 0
+		data["zone_transition_target"] = null
+
+	// Radiation shielding info
+	data["radiation_shielding_level"] = current_ship.radiation_shielding_level
+	data["radiation_shielding_name"] = current_ship.get_shielding_name(current_ship.radiation_shielding_level)
+
+	// Current zone radiation status
+	if(SSovermap_zones?.zones_active)
+		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(T)
+		if(zone)
+			var/radiation_level = ZONE_RADIATION_LEVEL(zone.zone_type)
+			data["zone_radiation_level"] = radiation_level
+			data["zone_radiation_protected"] = current_ship.is_protected_from_radiation(radiation_level)
+			data["zone_radiation_warning"] = radiation_level > ZONE_RADIATION_NONE && !current_ship.is_protected_from_radiation(radiation_level)
+		else
+			data["zone_radiation_level"] = ZONE_RADIATION_NONE
+			data["zone_radiation_protected"] = TRUE
+			data["zone_radiation_warning"] = FALSE
+	else
+		data["zone_radiation_level"] = ZONE_RADIATION_NONE
+		data["zone_radiation_protected"] = TRUE
+		data["zone_radiation_warning"] = FALSE
+
 	for(var/obj/machinery/power/shuttle_engine/ship/E in current_ship.shuttle.engine_list)
 		var/list/engine_data
 		if(!E.thruster_active)
@@ -289,6 +360,9 @@
 
 /obj/machinery/computer/helm/proc/do_jump()
 	current_ship?.ship_announce("Bluespace Jump Initiated.")
+	// Extract ship parts from all players on the ship before jumping
+	if(current_ship)
+		extract_ship_parts_from_ship(current_ship, "bluespace_jump")
 	current_ship.destroy_ship(TRUE)
 
 /obj/machinery/computer/helm/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
@@ -435,6 +509,10 @@
 					return
 				if("stop")
 					//current_ship.current_autopilot_target = null
+					// Cancel zone transition if in progress
+					if(current_ship.zone_transitioning)
+						current_ship.cancel_zone_transition()
+						return
 					current_ship.burn_engines()
 					return
 				if("bluespace_jump")

@@ -336,6 +336,7 @@
 
 	RegisterSignal(current_ship, COMSIG_SHIP_CLOAK_CHANGED, PROC_REF(on_cloak_changed))
 	RegisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_our_ship_docked))
+	RegisterSignal(current_ship, COMSIG_SHIP_ZONE_CHANGED, PROC_REF(on_our_ship_zone_changed))
 	return TRUE
 
 /obj/machinery/computer/camera_advanced/ship_combat/proc/on_cloak_changed(datum/source, new_state)
@@ -351,6 +352,69 @@
 	// Clear any existing target lock
 	if(target_ship)
 		INVOKE_ASYNC(src, PROC_REF(clear_target))
+
+/// Called when our ship's zone changes (due to zone rotation) - check if we need to break locks
+/obj/machinery/computer/camera_advanced/ship_combat/proc/on_our_ship_zone_changed(datum/source, old_zone_type, new_zone_type)
+	SIGNAL_HANDLER
+	// Check if we're in attack mode or targeting - need to verify target is still in same zone
+	if(attack_mode || is_targeting)
+		INVOKE_ASYNC(src, PROC_REF(check_zone_after_rotation))
+
+/// Called when our target ship's zone changes (due to zone rotation)
+/obj/machinery/computer/camera_advanced/ship_combat/proc/on_target_ship_zone_changed(datum/source, old_zone_type, new_zone_type)
+	SIGNAL_HANDLER
+	if(attack_mode || is_targeting)
+		INVOKE_ASYNC(src, PROC_REF(check_zone_after_rotation))
+
+/// Checks if ships are still in the same zone after a zone rotation
+/obj/machinery/computer/camera_advanced/ship_combat/proc/check_zone_after_rotation()
+	if(!current_ship)
+		return
+
+	// Get our current zone
+	var/turf/our_turf = get_turf(current_ship)
+	var/datum/overmap_zone/our_zone = SSovermap_zones?.get_zone(our_turf)
+	if(!our_zone)
+		return
+
+	// Check targeting in progress - break if either ship now in Neutral zone
+	if(is_targeting && targeting_ship)
+		var/turf/target_turf = get_turf(targeting_ship)
+		var/datum/overmap_zone/target_zone = SSovermap_zones?.get_zone(target_turf)
+		if(our_zone?.zone_type == ZONE_GREEN)
+			cancel_targeting()
+			if(current_user)
+				to_chat(current_user, span_warning("Target lock lost - zone shift placed you in [our_zone.name]!"))
+			current_ship.ship_announce("Target lock failed - entered safe zone.", "Targeting System")
+			return
+		if(target_zone?.zone_type == ZONE_GREEN)
+			var/target_name = targeting_ship.display_name
+			cancel_targeting()
+			if(current_user)
+				to_chat(current_user, span_warning("Target lock lost - zone shift placed [target_name] in [target_zone.name]!"))
+			current_ship.ship_announce("Target lock failed - target entered safe zone.", "Targeting System")
+			return
+
+	// Check active attack mode or existing target lock - break if either ship now in Neutral zone
+	if(target_ship)
+		var/turf/target_turf = get_turf(target_ship)
+		var/datum/overmap_zone/target_zone = SSovermap_zones?.get_zone(target_turf)
+		if(our_zone?.zone_type == ZONE_GREEN)
+			if(current_user)
+				to_chat(current_user, span_warning("Target lock lost - zone shift placed you in [our_zone.name]!"))
+			if(attack_mode)
+				exit_attack_mode(current_user)
+			clear_target()
+			current_ship.ship_announce("Weapons lock lost - entered safe zone.", "Targeting System")
+			return
+		if(target_zone?.zone_type == ZONE_GREEN)
+			var/target_name = target_ship.display_name
+			if(current_user)
+				to_chat(current_user, span_warning("Target lock lost - zone shift placed [target_name] in [target_zone.name]!"))
+			if(attack_mode)
+				exit_attack_mode(current_user)
+			clear_target()
+			current_ship.ship_announce("Weapons lock lost - target entered safe zone.", "Targeting System")
 
 // ========== CREW MEMBERSHIP CHECK ==========
 
@@ -416,6 +480,49 @@
 	data["target_name"] = target_ship?.display_name
 	data["target_ref"] = target_ship ? REF(target_ship) : null
 
+	// Zone information
+	if(current_ship && SSovermap_zones.zones_active)
+		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(get_turf(current_ship))
+		if(zone)
+			data["zone_type"] = zone.zone_type
+			data["zone_name"] = zone.name
+			data["zone_color"] = zone.get_color()
+			data["weapons_allowed"] = zone.weapons_allowed()
+			data["interdiction_allowed"] = zone.interdiction_allowed()
+		else
+			data["zone_type"] = null
+			data["zone_name"] = "Unknown"
+			data["zone_color"] = "#ffffff"
+			data["weapons_allowed"] = TRUE
+			data["interdiction_allowed"] = TRUE
+		// Zone transition info
+		data["zone_transitioning"] = current_ship.zone_transitioning
+		if(current_ship.zone_transitioning && current_ship.zone_transition_start_time)
+			var/elapsed = world.time - current_ship.zone_transition_start_time
+			var/progress = clamp((elapsed / ZONE_TRANSITION_TIME) * 100, 0, 100)
+			var/remaining = max(0, ZONE_TRANSITION_TIME - elapsed) / 10
+			data["zone_transition_progress"] = round(progress)
+			data["zone_transition_remaining"] = round(remaining, 0.1)
+			if(current_ship.zone_transition_target)
+				var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(current_ship.zone_transition_target)
+				data["zone_transition_target"] = target_zone?.name || "Unknown Zone"
+			else
+				data["zone_transition_target"] = "Unknown Zone"
+		else
+			data["zone_transition_progress"] = 0
+			data["zone_transition_remaining"] = 0
+			data["zone_transition_target"] = null
+	else
+		data["zone_type"] = null
+		data["zone_name"] = "Unknown"
+		data["zone_color"] = "#ffffff"
+		data["weapons_allowed"] = TRUE
+		data["interdiction_allowed"] = TRUE
+		data["zone_transitioning"] = FALSE
+		data["zone_transition_progress"] = 0
+		data["zone_transition_remaining"] = 0
+		data["zone_transition_target"] = null
+
 	// Targeting lock-in-progress data
 	data["is_targeting"] = is_targeting
 	data["targeting_ship_name"] = targeting_ship?.display_name
@@ -433,6 +540,8 @@
 
 	// Get nearby ships within sensor range (3 tiles)
 	var/list/nearby_ships = list()
+	// Get our zone for comparison
+	var/our_zone_type = data["zone_type"]
 	if(current_ship)
 		var/turf/our_turf = get_turf(current_ship)
 		if(our_turf)
@@ -445,6 +554,16 @@
 				// Calculate distance
 				var/turf/target_turf = get_turf(S)
 				var/distance = target_turf ? get_dist(our_turf, target_turf) : 0
+				// Get target's zone
+				var/target_zone_type = null
+				var/target_zone_name = "Unknown"
+				if(SSovermap_zones?.initialized && target_turf)
+					var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
+					if(target_zone)
+						target_zone_type = target_zone.zone_type
+						target_zone_name = target_zone.name
+				// Can target if neither ship is in Neutral zone
+				var/can_target = (our_zone_type != ZONE_GREEN) && (target_zone_type != ZONE_GREEN)
 				nearby_ships += list(list(
 					"name" = S.display_name || S.name,
 					"ref" = REF(S),
@@ -454,6 +573,9 @@
 					"integrity_max" = 100,
 					"distance" = distance,
 					"speed" = round(S.get_speed(), 0.1),  // Speed in spM (spaces per minute) - same as helm
+					"zone_type" = target_zone_type,
+					"zone_name" = target_zone_name,
+					"same_zone" = can_target,
 				))
 	data["nearby_ships"] = nearby_ships
 
@@ -864,6 +986,7 @@
 
 	// Register for ship movement to detect when ships move out of range
 	// Use COMSIG_MOVABLE_MOVED to catch both engine burns AND momentum-based movement
+	// Note: Zone change signals are already registered in complete_targeting() and attempt_ship_connection()
 	RegisterSignal(target_ship, COMSIG_MOVABLE_MOVED, PROC_REF(on_target_ship_moved_attack))
 	if(current_ship)
 		RegisterSignal(current_ship, COMSIG_MOVABLE_MOVED, PROC_REF(on_our_ship_moved_attack))
@@ -900,7 +1023,7 @@
 /obj/machinery/computer/camera_advanced/ship_combat/proc/exit_attack_mode(mob/user)
 	attack_mode = FALSE
 
-	// Unregister ship movement signals
+	// Unregister ship movement signals (zone change signals stay registered via complete_targeting)
 	if(target_ship)
 		UnregisterSignal(target_ship, COMSIG_MOVABLE_MOVED)
 	if(current_ship)
@@ -1184,6 +1307,19 @@
 			to_chat(user, span_warning("Cannot acquire target lock while docked!"))
 		return FALSE
 
+	// Can't target if either ship is in Neutral zone (safe space)
+	if(SSovermap_zones?.initialized && current_ship)
+		var/datum/overmap_zone/our_zone = SSovermap_zones.get_zone(get_turf(current_ship))
+		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(get_turf(new_target))
+		if(our_zone?.zone_type == ZONE_GREEN)
+			if(user)
+				to_chat(user, span_warning("Cannot acquire target lock in [our_zone.name]!"))
+			return FALSE
+		if(target_zone?.zone_type == ZONE_GREEN)
+			if(user)
+				to_chat(user, span_warning("Cannot target ships in [target_zone.name]!"))
+			return FALSE
+
 	// Cancel any existing targeting
 	cancel_targeting()
 
@@ -1202,9 +1338,10 @@
 	playsound(src, 'voidcrew/sound/machines/interdictor/startup2.ogg', 30, FALSE)
 	playsound(src, 'voidcrew/sound/machines/interdictor/terminal.ogg', 30, FALSE)
 
-	// Register for target deletion and movement during targeting
+	// Register for target deletion, movement, and zone changes during targeting
 	RegisterSignal(targeting_ship, COMSIG_QDELETING, PROC_REF(on_targeting_ship_deleted))
 	RegisterSignal(targeting_ship, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(on_targeting_ship_moved))
+	RegisterSignal(targeting_ship, COMSIG_SHIP_ZONE_CHANGED, PROC_REF(on_target_ship_zone_changed))
 	if(current_ship)
 		RegisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(on_our_ship_moved_targeting))
 
@@ -1229,7 +1366,7 @@
 	var/obj/structure/overmap/ship/locked_target = targeting_ship
 
 	// Clean up targeting state
-	UnregisterSignal(targeting_ship, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
+	UnregisterSignal(targeting_ship, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED, COMSIG_SHIP_ZONE_CHANGED))
 	if(current_ship)
 		UnregisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_MOVED)
 	is_targeting = FALSE
@@ -1243,6 +1380,7 @@
 	// Set the new target
 	target_ship = locked_target
 	RegisterSignal(target_ship, COMSIG_QDELETING, PROC_REF(on_target_deleted))
+	RegisterSignal(target_ship, COMSIG_SHIP_ZONE_CHANGED, PROC_REF(on_target_ship_zone_changed))
 
 	// Set the eye's allowed ship if it exists
 	var/mob/eye/camera/remote/ship_combat/combat_eye = eyeobj
@@ -1278,7 +1416,7 @@
 	if(targeting_ship)
 		SEND_SIGNAL(targeting_ship, COMSIG_SHIP_TARGETING_STOPPED, current_ship)
 		targeting_ship.ship_announce("Hostile targeting signal lost.", "Threat Alert")
-		UnregisterSignal(targeting_ship, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
+		UnregisterSignal(targeting_ship, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED, COMSIG_SHIP_ZONE_CHANGED))
 
 	is_targeting = FALSE
 	targeting_ship = null
@@ -1294,7 +1432,7 @@
 	SIGNAL_HANDLER
 	check_targeting_range()
 
-/// Checks if targeting should be cancelled due to range
+/// Checks if targeting should be cancelled due to range or zone
 /obj/machinery/computer/camera_advanced/ship_combat/proc/check_targeting_range()
 	if(!is_targeting || !targeting_ship || !current_ship)
 		return
@@ -1303,6 +1441,24 @@
 	var/turf/target_turf = get_turf(targeting_ship)
 	if(!our_turf || !target_turf)
 		return
+
+	// Check if either ship entered Neutral zone (safe space)
+	if(SSovermap_zones?.initialized)
+		var/datum/overmap_zone/our_zone = SSovermap_zones.get_zone(our_turf)
+		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
+		if(our_zone?.zone_type == ZONE_GREEN)
+			cancel_targeting()
+			if(current_user)
+				to_chat(current_user, span_warning("Target lock lost - entered [our_zone.name]!"))
+			current_ship?.ship_announce("Target lock failed - entered safe zone.", "Targeting System")
+			return
+		if(target_zone?.zone_type == ZONE_GREEN)
+			var/target_name = targeting_ship.display_name
+			cancel_targeting()
+			if(current_user)
+				to_chat(current_user, span_warning("Target lock lost - [target_name] entered [target_zone.name]!"))
+			current_ship?.ship_announce("Target lock failed - target entered safe zone.", "Targeting System")
+			return
 
 	var/distance = get_dist(our_turf, target_turf)
 	if(distance > COMBAT_TARGETING_RANGE)
@@ -1322,7 +1478,7 @@
 	SIGNAL_HANDLER
 	check_attack_range()
 
-/// Checks if attack mode should end due to ships moving out of range
+/// Checks if attack mode should end due to ships moving out of range or zone
 /obj/machinery/computer/camera_advanced/ship_combat/proc/check_attack_range()
 	if(!attack_mode || !target_ship || !current_ship)
 		return
@@ -1331,6 +1487,24 @@
 	var/turf/target_turf = get_turf(target_ship)
 	if(!our_turf || !target_turf)
 		return
+
+	// Check if either ship entered Neutral zone (safe space)
+	if(SSovermap_zones?.initialized)
+		var/datum/overmap_zone/our_zone = SSovermap_zones.get_zone(our_turf)
+		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
+		if(our_zone?.zone_type == ZONE_GREEN)
+			if(current_user)
+				to_chat(current_user, span_warning("Weapons lock lost - entered [our_zone.name]!"))
+				INVOKE_ASYNC(src, PROC_REF(exit_attack_mode), current_user)
+			current_ship?.ship_announce("Weapons lock lost - entered safe zone.", "Targeting System")
+			return
+		if(target_zone?.zone_type == ZONE_GREEN)
+			var/target_name = target_ship.display_name
+			if(current_user)
+				to_chat(current_user, span_warning("Weapons lock lost - [target_name] entered [target_zone.name]!"))
+				INVOKE_ASYNC(src, PROC_REF(exit_attack_mode), current_user)
+			current_ship?.ship_announce("Weapons lock lost - target entered safe zone.", "Targeting System")
+			return
 
 	var/distance = get_dist(our_turf, target_turf)
 	if(distance > COMBAT_MISSILE_LOCK_RANGE)
@@ -1371,7 +1545,7 @@
 /// Clears the current target
 /obj/machinery/computer/camera_advanced/ship_combat/proc/clear_target()
 	if(target_ship)
-		UnregisterSignal(target_ship, COMSIG_QDELETING)
+		UnregisterSignal(target_ship, list(COMSIG_QDELETING, COMSIG_SHIP_ZONE_CHANGED))
 	target_ship = null
 
 	var/mob/eye/camera/remote/ship_combat/combat_eye = eyeobj

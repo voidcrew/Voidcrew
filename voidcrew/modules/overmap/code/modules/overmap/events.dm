@@ -81,6 +81,21 @@
 
 // voidcrew TODO: reimplement wormholes once ships are working again
 
+/// List of event types that MUST spawn at least once - ensures map diversity
+GLOBAL_LIST_INIT(overmap_event_guaranteed_list, list(
+	/obj/structure/overmap/event/nebula,
+	/obj/structure/overmap/event/meteor/minor,
+	/obj/structure/overmap/event/meteor,
+	/obj/structure/overmap/event/meteor/majour,
+	/obj/structure/overmap/event/emp/minor,
+	/obj/structure/overmap/event/emp,
+	/obj/structure/overmap/event/emp/majour,
+	/obj/structure/overmap/event/electric/minor,
+	/obj/structure/overmap/event/electric,
+	/obj/structure/overmap/event/electric/majour,
+))
+
+/// Weighted list for random event selection after guaranteed spawns
 GLOBAL_LIST_INIT(overmap_event_pick_list, list(
 	/obj/structure/overmap/event/nebula = 60,
 	/obj/structure/overmap/event/electric/minor = 45,

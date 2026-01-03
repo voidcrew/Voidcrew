@@ -4,32 +4,31 @@
  * This datum provides database access for the ship purchase system.
  * Based on user decisions:
  * - Account-wide credits (ckey only, no character_slot)
- * - Rarity tiers: common, uncommon, rare, epic, legendary
+ * - Part classes: combat, science, trade, misc
+ * - Parts must be extracted via bluespace jump or round end
  * - Pending extractions queue for failed extraction retry
  * - Account-wide ship unlocks
  *
  * Database Tables:
  * - player_ship_credits: Account-wide credits
- * - player_ship_parts: Account-wide parts inventory (by rarity)
+ * - player_ship_parts: Account-wide parts inventory (by class)
  * - player_ship_unlocks: Permanent ship blueprint unlocks
  * - pending_ship_extractions: Queue for failed part extractions
  * - ship_extraction_log: Audit trail for part extractions
  */
 
-// Rarity tier defines
-#define RARITY_COMMON "common"
-#define RARITY_UNCOMMON "uncommon"
-#define RARITY_RARE "rare"
-#define RARITY_EPIC "epic"
-#define RARITY_LEGENDARY "legendary"
+// Part class defines
+#define PART_CLASS_COMBAT "combat"
+#define PART_CLASS_SCIENCE "science"
+#define PART_CLASS_TRADE "trade"
+#define PART_CLASS_MISC "misc"
 
-// List of all valid rarity tiers
-GLOBAL_LIST_INIT(ship_part_rarities, list(
-	RARITY_COMMON,
-	RARITY_UNCOMMON,
-	RARITY_RARE,
-	RARITY_EPIC,
-	RARITY_LEGENDARY
+// List of all valid part classes
+GLOBAL_LIST_INIT(ship_part_classes, list(
+	PART_CLASS_COMBAT,
+	PART_CLASS_SCIENCE,
+	PART_CLASS_TRADE,
+	PART_CLASS_MISC
 ))
 
 // Singleton database access layer - initialized automatically on first access
@@ -136,10 +135,10 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 
 /**
  * Get parts inventory for a ckey
- * Returns associative list of rarity -> quantity
+ * Returns associative list of class -> quantity
  *
  * @param ckey - The player's ckey
- * @return list("common"=X, "uncommon"=Y, "rare"=Z, "epic"=A, "legendary"=B)
+ * @return list("combat"=X, "science"=Y, "trade"=Z, "misc"=A)
  */
 /datum/ship_economy_db/proc/get_parts(ckey)
 	if(!ckey)
@@ -155,12 +154,12 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 		return null
 
 	var/list/parts = list()
-	// Initialize all rarities to 0
-	for(var/rarity in GLOB.ship_part_rarities)
-		parts[rarity] = 0
+	// Initialize all classes to 0
+	for(var/part_class in GLOB.ship_part_classes)
+		parts[part_class] = 0
 
 	var/datum/db_query/query = SSdbcore.NewQuery(
-		"SELECT part_rarity, quantity FROM [format_table_name("player_ship_parts")] WHERE ckey = :ckey",
+		"SELECT part_class, quantity FROM [format_table_name("player_ship_parts")] WHERE ckey = :ckey",
 		list("ckey" = ckey)
 	)
 
@@ -169,11 +168,11 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 		return parts
 
 	while(query.NextRow())
-		var/rarity = query.item[1]
+		var/part_class = query.item[1]
 		var/quantity = text2num(query.item[2]) || 0
 
-		if(rarity in GLOB.ship_part_rarities)
-			parts[rarity] = quantity
+		if(part_class in GLOB.ship_part_classes)
+			parts[part_class] = quantity
 
 	qdel(query)
 
@@ -187,30 +186,30 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
  * Add parts to account inventory
  *
  * @param ckey - The player's ckey
- * @param rarity - Part rarity tier (common/uncommon/rare/epic/legendary)
+ * @param part_class - Part class (combat/science/trade/misc)
  * @param quantity - Number of parts to add (default 1)
  * @param method - Method of acquisition for logging
  * @return TRUE if successful, FALSE otherwise
  */
-/datum/ship_economy_db/proc/add_part(ckey, rarity, quantity = 1, method = "unspecified")
-	if(!ckey || !rarity)
+/datum/ship_economy_db/proc/add_part(ckey, part_class, quantity = 1, method = "unspecified")
+	if(!ckey || !part_class)
 		return FALSE
 
 	ckey = ckey(ckey) // Normalize ckey
 
-	// Validate rarity
-	if(!(rarity in GLOB.ship_part_rarities))
-		stack_trace("Invalid rarity '[rarity]' passed to add_part()")
+	// Validate class
+	if(!(part_class in GLOB.ship_part_classes))
+		stack_trace("Invalid part class '[part_class]' passed to add_part()")
 		return FALSE
 
 	if(!SSdbcore.IsConnected())
 		return FALSE
 
 	var/datum/db_query/query = SSdbcore.NewQuery(
-		"INSERT INTO [format_table_name("player_ship_parts")] (ckey, part_rarity, quantity) \
-		VALUES (:ckey, :rarity, :quantity) \
+		"INSERT INTO [format_table_name("player_ship_parts")] (ckey, part_class, quantity) \
+		VALUES (:ckey, :part_class, :quantity) \
 		ON DUPLICATE KEY UPDATE quantity = quantity + :quantity",
-		list("ckey" = ckey, "rarity" = rarity, "quantity" = quantity)
+		list("ckey" = ckey, "part_class" = part_class, "quantity" = quantity)
 	)
 
 	var/success = query.Execute()
@@ -221,7 +220,7 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 		invalidate_cache(ckey, "parts")
 
 		// Log the addition
-		log_game("SHIP_ECONOMY: [ckey] +[quantity] [rarity] part(s) - [method]")
+		log_game("SHIP_ECONOMY: [ckey] +[quantity] [part_class] part(s) - [method]")
 
 	return success
 
@@ -230,7 +229,7 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
  * Deducts parts and checks if sufficient quantity exists
  *
  * @param ckey - The player's ckey
- * @param requirements - Associative list of rarity -> quantity needed
+ * @param requirements - Associative list of class -> quantity needed
  * @return TRUE if successful, FALSE if insufficient parts or error
  */
 /datum/ship_economy_db/proc/spend_parts(ckey, list/requirements)
@@ -247,28 +246,28 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 	if(!current_parts)
 		return FALSE
 
-	for(var/rarity in requirements)
-		var/needed = requirements[rarity]
-		var/have = current_parts[rarity] || 0
+	for(var/part_class in requirements)
+		var/needed = requirements[part_class]
+		var/have = current_parts[part_class] || 0
 
 		if(have < needed)
-			log_game("SHIP_ECONOMY: [ckey] insufficient [rarity] parts (have: [have], need: [needed])")
+			log_game("SHIP_ECONOMY: [ckey] insufficient [part_class] parts (have: [have], need: [needed])")
 			return FALSE
 
-	// Deduct each rarity tier
-	for(var/rarity in requirements)
-		var/amount = requirements[rarity]
+	// Deduct each class
+	for(var/part_class in requirements)
+		var/amount = requirements[part_class]
 
 		var/datum/db_query/query = SSdbcore.NewQuery(
 			"UPDATE [format_table_name("player_ship_parts")] \
 			SET quantity = quantity - :amount \
-			WHERE ckey = :ckey AND part_rarity = :rarity AND quantity >= :amount",
-			list("ckey" = ckey, "rarity" = rarity, "amount" = amount)
+			WHERE ckey = :ckey AND part_class = :part_class AND quantity >= :amount",
+			list("ckey" = ckey, "part_class" = part_class, "amount" = amount)
 		)
 
 		if(!query.Execute() || query.affected < 1)
 			qdel(query)
-			log_game("SHIP_ECONOMY: [ckey] failed to deduct [amount] [rarity] parts (transaction failed)")
+			log_game("SHIP_ECONOMY: [ckey] failed to deduct [amount] [part_class] parts (transaction failed)")
 			return FALSE
 
 		qdel(query)
@@ -278,8 +277,8 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 
 	// Log successful spending
 	var/list/req_text = list()
-	for(var/rarity in requirements)
-		req_text += "[requirements[rarity]] [rarity]"
+	for(var/part_class in requirements)
+		req_text += "[requirements[part_class]] [part_class]"
 	log_game("SHIP_ECONOMY: [ckey] spent parts: [req_text.Join(", ")]")
 
 	return TRUE
@@ -404,18 +403,18 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
  * Used when extraction fails due to database issues
  *
  * @param ckey - The player's ckey
- * @param part_rarity - Rarity of the part
+ * @param part_class - Class of the part
  * @param part_uid - Unique identifier of the physical part (for tracking)
  * @return TRUE if queued successfully
  */
-/datum/ship_economy_db/proc/queue_pending_extraction(ckey, part_rarity, part_uid)
-	if(!ckey || !part_rarity)
+/datum/ship_economy_db/proc/queue_pending_extraction(ckey, part_class, part_uid)
+	if(!ckey || !part_class)
 		return FALSE
 
 	ckey = ckey(ckey) // Normalize ckey
 
-	if(!(part_rarity in GLOB.ship_part_rarities))
-		stack_trace("Invalid rarity '[part_rarity]' in queue_pending_extraction()")
+	if(!(part_class in GLOB.ship_part_classes))
+		stack_trace("Invalid part class '[part_class]' in queue_pending_extraction()")
 		return FALSE
 
 	if(!SSdbcore.IsConnected())
@@ -423,16 +422,16 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 
 	var/datum/db_query/query = SSdbcore.NewQuery(
 		"INSERT INTO [format_table_name("pending_ship_extractions")] \
-		(ckey, part_rarity, part_uid, queued_at, retry_count) \
-		VALUES (:ckey, :rarity, :uid, NOW(), 0)",
-		list("ckey" = ckey, "rarity" = part_rarity, "uid" = part_uid)
+		(ckey, part_class, part_uid, queued_at, retry_count) \
+		VALUES (:ckey, :part_class, :uid, NOW(), 0)",
+		list("ckey" = ckey, "part_class" = part_class, "uid" = part_uid)
 	)
 
 	var/success = query.Execute()
 	qdel(query)
 
 	if(success)
-		log_game("SHIP_ECONOMY: Queued pending extraction for [ckey] - [part_rarity] part (UID: [part_uid])")
+		log_game("SHIP_ECONOMY: Queued pending extraction for [ckey] - [part_class] part (UID: [part_uid])")
 
 	return success
 
@@ -449,7 +448,7 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 		return 0
 
 	var/datum/db_query/query = SSdbcore.NewQuery(
-		"SELECT id, ckey, part_rarity, part_uid, retry_count FROM [format_table_name("pending_ship_extractions")] \
+		"SELECT id, ckey, part_class, part_uid, retry_count FROM [format_table_name("pending_ship_extractions")] \
 		WHERE retry_count < :max_retries \
 		ORDER BY queued_at ASC \
 		LIMIT 100",
@@ -468,7 +467,7 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 		pending_entries += list(list(
 			"id" = text2num(query.item[1]),
 			"ckey" = query.item[2],
-			"part_rarity" = query.item[3],
+			"part_class" = query.item[3],
 			"part_uid" = query.item[4],
 			"retry_count" = text2num(query.item[5])
 		))
@@ -479,12 +478,12 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 	for(var/list/entry in pending_entries)
 		var/id = entry["id"]
 		var/entry_ckey = entry["ckey"]
-		var/rarity = entry["part_rarity"]
+		var/part_class = entry["part_class"]
 		var/uid = entry["part_uid"]
 		var/retries = entry["retry_count"]
 
 		// Attempt to add the part
-		if(add_part(entry_ckey, rarity, 1, "pending_extraction_retry"))
+		if(add_part(entry_ckey, part_class, 1, "pending_extraction_retry"))
 			// Success - remove from pending queue
 			var/datum/db_query/delete_query = SSdbcore.NewQuery(
 				"DELETE FROM [format_table_name("pending_ship_extractions")] WHERE id = :id",
@@ -494,10 +493,10 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 			qdel(delete_query)
 
 			// Log to extraction log
-			log_extraction(entry_ckey, rarity, "pending_retry_success", uid)
+			log_extraction(entry_ckey, part_class, "pending_retry_success", uid)
 
 			processed++
-			log_game("SHIP_ECONOMY: Successfully processed pending extraction [id] for [entry_ckey] ([rarity])")
+			log_game("SHIP_ECONOMY: Successfully processed pending extraction [id] for [entry_ckey] ([part_class])")
 		else
 			// Failed - increment retry count
 			var/datum/db_query/update_query = SSdbcore.NewQuery(
@@ -518,12 +517,12 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
  * Log a part extraction to audit trail
  *
  * @param ckey - Player's ckey
- * @param part_rarity - Rarity of extracted part
+ * @param part_class - Class of extracted part
  * @param extraction_location - Location description for analytics
  * @param part_uid - Unique identifier of the part (optional)
  */
-/datum/ship_economy_db/proc/log_extraction(ckey, part_rarity, extraction_location = "unknown", part_uid = null)
-	if(!ckey || !part_rarity)
+/datum/ship_economy_db/proc/log_extraction(ckey, part_class, extraction_location = "unknown", part_uid = null)
+	if(!ckey || !part_class)
 		return
 
 	ckey = ckey(ckey)
@@ -533,11 +532,11 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 
 	var/datum/db_query/query = SSdbcore.NewQuery(
 		"INSERT INTO [format_table_name("ship_extraction_log")] \
-		(ckey, part_rarity, extraction_location, part_uid, extraction_timestamp) \
-		VALUES (:ckey, :rarity, :location, :uid, NOW())",
+		(ckey, part_class, extraction_location, part_uid, extraction_timestamp) \
+		VALUES (:ckey, :part_class, :location, :uid, NOW())",
 		list(
 			"ckey" = ckey,
-			"rarity" = part_rarity,
+			"part_class" = part_class,
 			"location" = extraction_location,
 			"uid" = part_uid
 		)

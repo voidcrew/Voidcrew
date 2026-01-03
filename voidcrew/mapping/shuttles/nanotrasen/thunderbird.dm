@@ -2,7 +2,7 @@
 	name = "Thunderbird-class Emergency military vessel"
 	suffix = "nano_thunderbird"
 	short_name = "Thunderbird-Class"
-	part_cost = 2
+	part_requirements = list(PART_CLASS_COMBAT = 2)
 
 	job_slots = list(
 		list(

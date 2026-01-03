@@ -13,12 +13,10 @@ import { useBackend } from '../backend';
 import { Window } from '../layouts';
 
 type PartsInventory = {
-  free: number;
-  common: number;
-  uncommon: number;
-  rare: number;
-  epic: number;
-  legendary: number;
+  combat: number;
+  science: number;
+  trade: number;
+  misc: number;
 };
 
 type ShipCatalogData = {
@@ -38,9 +36,9 @@ type ShipEntry = {
   suffix: string;
   preview_image: string;
   crew_capacity: number;
-  rarity: string;
+  primary_class: string;
+  total_parts: number;
   description: string;
-  part_cost: number;
   parts_required: Partial<PartsInventory>;
   faction: string;
   jobs: Array<{
@@ -50,25 +48,32 @@ type ShipEntry = {
   }>;
 };
 
-const RARITY_COLORS = {
+const CLASS_COLORS: Record<string, string> = {
   free: '#00ff88',
-  common: '#9d9d9d',
-  uncommon: '#1eff00',
-  rare: '#0070dd',
-  epic: '#a335ee',
-  legendary: '#ff8000',
+  combat: '#ff4444',
+  science: '#4488ff',
+  trade: '#ffcc00',
+  misc: '#9d9d9d',
 };
 
-const RARITY_ORDER = ['free', 'common', 'uncommon', 'rare', 'epic', 'legendary'];
+const CLASS_ICONS: Record<string, string> = {
+  free: 'gift',
+  combat: 'crosshairs',
+  science: 'flask',
+  trade: 'coins',
+  misc: 'puzzle-piece',
+};
+
+const CLASS_ORDER = ['free', 'combat', 'science', 'trade', 'misc'];
 
 export const ShipCatalog = (props) => {
   const { act, data } = useBackend<ShipCatalogData>();
   const { credits, parts, ships, unlocked_ships, latejoin_mode } = data;
-  const [selectedRarity, setSelectedRarity] = useState<string | null>(null);
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
 
-  // Filter ships by rarity
-  const filteredShips = selectedRarity
-    ? ships.filter((ship) => ship.rarity === selectedRarity)
+  // Filter ships by primary class
+  const filteredShips = selectedClass
+    ? ships.filter((ship) => ship.primary_class === selectedClass)
     : ships;
 
   // Helper to check if ship is unlocked
@@ -94,24 +99,24 @@ export const ShipCatalog = (props) => {
                       <Box fontSize="14px" color="lightgray">
                         <Icon name="puzzle-piece" mr={1} />
                         Parts:{' '}
-                        <Box as="span" color={RARITY_COLORS.common}>
-                          {parts.common} Common
+                        <Box as="span" color={CLASS_COLORS.combat}>
+                          <Icon name={CLASS_ICONS.combat} mr={0.5} />
+                          {parts.combat || 0} Combat
                         </Box>
                         {', '}
-                        <Box as="span" color={RARITY_COLORS.uncommon}>
-                          {parts.uncommon} Uncommon
+                        <Box as="span" color={CLASS_COLORS.science}>
+                          <Icon name={CLASS_ICONS.science} mr={0.5} />
+                          {parts.science || 0} Science
                         </Box>
                         {', '}
-                        <Box as="span" color={RARITY_COLORS.rare}>
-                          {parts.rare} Rare
+                        <Box as="span" color={CLASS_COLORS.trade}>
+                          <Icon name={CLASS_ICONS.trade} mr={0.5} />
+                          {parts.trade || 0} Trade
                         </Box>
                         {', '}
-                        <Box as="span" color={RARITY_COLORS.epic}>
-                          {parts.epic} Epic
-                        </Box>
-                        {', '}
-                        <Box as="span" color={RARITY_COLORS.legendary}>
-                          {parts.legendary} Legendary
+                        <Box as="span" color={CLASS_COLORS.misc}>
+                          <Icon name={CLASS_ICONS.misc} mr={0.5} />
+                          {parts.misc || 0} Misc
                         </Box>
                       </Box>
                     </Stack.Item>
@@ -121,36 +126,37 @@ export const ShipCatalog = (props) => {
             </Section>
           </Stack.Item>
 
-          {/* Rarity Filter */}
+          {/* Class Filter */}
           <Stack.Item>
             <Section>
               <Stack>
                 <Stack.Item>
                   <Button
-                    selected={selectedRarity === null}
-                    onClick={() => setSelectedRarity(null)}
+                    selected={selectedClass === null}
+                    onClick={() => setSelectedClass(null)}
                     icon="asterisk"
                   >
                     All Ships
                   </Button>
                 </Stack.Item>
-                {RARITY_ORDER.map((rarity) => (
-                  <Stack.Item key={rarity}>
+                {CLASS_ORDER.map((partClass) => (
+                  <Stack.Item key={partClass}>
                     <Button
-                      selected={selectedRarity === rarity}
-                      onClick={() => setSelectedRarity(rarity)}
+                      selected={selectedClass === partClass}
+                      onClick={() => setSelectedClass(partClass)}
+                      icon={CLASS_ICONS[partClass]}
                       color={
-                        selectedRarity === rarity ? 'transparent' : 'default'
+                        selectedClass === partClass ? 'transparent' : 'default'
                       }
                       style={{
-                        color: RARITY_COLORS[rarity],
+                        color: CLASS_COLORS[partClass],
                         borderColor:
-                          selectedRarity === rarity
-                            ? RARITY_COLORS[rarity]
+                          selectedClass === partClass
+                            ? CLASS_COLORS[partClass]
                             : undefined,
                       }}
                     >
-                      {rarity.charAt(0).toUpperCase() + rarity.slice(1)}
+                      {partClass.charAt(0).toUpperCase() + partClass.slice(1)}
                     </Button>
                   </Stack.Item>
                 ))}
@@ -199,22 +205,23 @@ const ShipCard = (props: {
   // Calculate if player can afford to unlock
   const canAfford =
     !isUnlocked &&
-    Object.entries(ship.parts_required).every(([rarity, cost]) => {
-      return (parts[rarity] || 0) >= (cost || 0);
+    Object.entries(ship.parts_required).every(([partClass, cost]) => {
+      return (parts[partClass as keyof PartsInventory] || 0) >= (cost || 0);
     });
 
   // Format unlock cost for display
   const formatUnlockCost = () => {
     const costs = Object.entries(ship.parts_required)
       .filter(([_, cost]) => cost && cost > 0)
-      .map(([rarity, cost]) => (
+      .map(([partClass, cost]) => (
         <Box
-          key={rarity}
+          key={partClass}
           as="span"
-          color={RARITY_COLORS[rarity]}
+          color={CLASS_COLORS[partClass]}
           style={{ marginRight: '8px' }}
         >
-          {cost} {rarity.charAt(0).toUpperCase() + rarity.slice(1)}
+          <Icon name={CLASS_ICONS[partClass]} mr={0.5} />
+          {cost} {partClass.charAt(0).toUpperCase() + partClass.slice(1)}
         </Box>
       ));
 
@@ -224,7 +231,7 @@ const ShipCard = (props: {
   return (
     <Section
       style={{
-        borderLeft: `4px solid ${RARITY_COLORS[ship.rarity]}`,
+        borderLeft: `4px solid ${CLASS_COLORS[ship.primary_class]}`,
         marginBottom: '8px',
       }}
     >
@@ -235,7 +242,7 @@ const ShipCard = (props: {
             width="96px"
             height="96px"
             style={{
-              border: `2px solid ${RARITY_COLORS[ship.rarity]}`,
+              border: `2px solid ${CLASS_COLORS[ship.primary_class]}`,
               borderRadius: '4px',
               display: 'flex',
               alignItems: 'center',
@@ -249,7 +256,11 @@ const ShipCard = (props: {
                 style={{ width: '100%', height: '100%' }}
               />
             ) : (
-              <Icon name="rocket" size={4} color={RARITY_COLORS[ship.rarity]} />
+              <Icon
+                name="rocket"
+                size={4}
+                color={CLASS_COLORS[ship.primary_class]}
+              />
             )}
           </Box>
         </Stack.Item>
@@ -278,9 +289,11 @@ const ShipCard = (props: {
                   </Tooltip>
                 </Stack.Item>
                 <Stack.Item ml={2}>
-                  <Box color={RARITY_COLORS[ship.rarity]}>
-                    <Icon name="star" mr={1} />
-                    Rarity: {ship.rarity.charAt(0).toUpperCase() + ship.rarity.slice(1)}
+                  <Box color={CLASS_COLORS[ship.primary_class]}>
+                    <Icon name={CLASS_ICONS[ship.primary_class]} mr={1} />
+                    Type:{' '}
+                    {ship.primary_class.charAt(0).toUpperCase() +
+                      ship.primary_class.slice(1)}
                   </Box>
                 </Stack.Item>
               </Stack>
@@ -316,7 +329,7 @@ const ShipCard = (props: {
                             latejoinMode ? 'select_for_latejoin' : 'spawn_ship',
                             {
                               ship_id: ship.id,
-                            }
+                            },
                           )
                         }
                       >

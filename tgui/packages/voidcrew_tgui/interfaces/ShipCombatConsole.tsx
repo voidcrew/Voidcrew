@@ -88,6 +88,9 @@ type NearbyShip = {
   integrity_max: number;
   distance: number;
   speed: number;
+  zone_type: number | null;
+  zone_name: string;
+  same_zone: BooleanLike;
 };
 
 type Launcher = {
@@ -210,13 +213,34 @@ type Data = {
   // Cloak device
   cloak_device: CloakDevice | null;
   cloak_unlocked: BooleanLike;
+  // Zone information
+  zone_type: number | null;
+  zone_name: string;
+  zone_color: string;
+  weapons_allowed: BooleanLike;
+  interdiction_allowed: BooleanLike;
+  // Zone transition
+  zone_transitioning: BooleanLike;
+  zone_transition_progress: number;
+  zone_transition_remaining: number;
+  zone_transition_target: string | null;
   // Theme
   theme?: string;
 };
 
 export const ShipCombatConsole = () => {
   const { data } = useBackend<Data>();
-  const { connected, theme } = data;
+  const {
+    connected,
+    theme,
+    zone_name,
+    zone_color,
+    weapons_allowed,
+    zone_transitioning,
+    zone_transition_progress,
+    zone_transition_remaining,
+    zone_transition_target,
+  } = data;
   const [activeTab, setActiveTab] = useState(0);
 
   return (
@@ -228,6 +252,44 @@ export const ShipCombatConsole = () => {
           </NoticeBox>
         ) : (
           <Stack vertical fill>
+            <Stack.Item>
+              <Box
+                textAlign="center"
+                py={0.5}
+                bold
+                style={{
+                  backgroundColor: zone_color + '33',
+                  borderBottom: `2px solid ${zone_color}`,
+                }}
+              >
+                <span style={{ color: zone_color }}>{zone_name || 'Unknown Zone'}</span>
+                {!weapons_allowed && (
+                  <span style={{ color: '#ff4444', marginLeft: '8px' }}>
+                    — WEAPONS DISABLED
+                  </span>
+                )}
+              </Box>
+              {!!zone_transitioning && (
+                <Box
+                  textAlign="center"
+                  py={0.3}
+                  style={{
+                    backgroundColor: '#ffff0033',
+                    borderBottom: '1px solid #ffff00',
+                  }}
+                >
+                  <Box fontSize="10px" color="#ffff00" mb={0.3}>
+                    Entering {zone_transition_target}... ({zone_transition_remaining}s)
+                  </Box>
+                  <ProgressBar
+                    value={zone_transition_progress}
+                    maxValue={100}
+                    color="yellow"
+                    style={{ height: '4px' }}
+                  />
+                </Box>
+              )}
+            </Stack.Item>
             <Stack.Item>
               <Tabs fluid>
                 <Tabs.Tab
@@ -300,7 +362,12 @@ const TargetingPanel = () => {
     targeting_progress,
     targeting_time_remaining,
     is_in_attack_mode,
+    zone_type,
+    zone_name,
   } = data;
+
+  // Check if we're in a safe zone (Neutral = 0)
+  const inSafeZone = zone_type === 0;
 
   // Find the currently targeted ship for status display
   const targetShip = target_ref && nearby_ships ? nearby_ships.find((s) => s.ref === target_ref) : null;
@@ -463,18 +530,38 @@ const TargetingPanel = () => {
           </Box>
         ) : (
           <Stack vertical>
-            {otherShips.map((ship) => (
-              <Stack.Item key={ship.ref}>
-                <Button
-                  fluid
-                  compact
-                  icon="circle"
-                  onClick={() => act('select_target', { ref: ship.ref })}
-                >
-                  {ship.name}
-                </Button>
-              </Stack.Item>
-            ))}
+            {otherShips.map((ship) => {
+              // Determine why targeting is disabled
+              const targetInNeutral = ship.zone_type === 0;
+              const cantTarget = !ship.same_zone;
+              let tooltipText: string | undefined;
+              if (cantTarget) {
+                if (inSafeZone) {
+                  tooltipText = `You are in ${zone_name} - targeting disabled`;
+                } else if (targetInNeutral) {
+                  tooltipText = `${ship.name} is in ${ship.zone_name} - cannot target`;
+                }
+              }
+              return (
+                <Stack.Item key={ship.ref}>
+                  <Button
+                    fluid
+                    compact
+                    icon={cantTarget ? 'ban' : 'circle'}
+                    disabled={cantTarget}
+                    tooltip={tooltipText}
+                    onClick={() => act('select_target', { ref: ship.ref })}
+                  >
+                    {ship.name}
+                    {cantTarget && (
+                      <Box as="span" color="label" ml={1} fontSize="10px">
+                        [{ship.zone_name}]
+                      </Box>
+                    )}
+                  </Button>
+                </Stack.Item>
+              );
+            })}
           </Stack>
         )}
       </Stack.Item>

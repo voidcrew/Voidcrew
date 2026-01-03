@@ -2,7 +2,7 @@
 	name = "Kilo-class Mining Ship"
 	suffix = "kilo"
 	short_name = "Kilo-Class"
-	part_cost = 3
+	part_requirements = list(PART_CLASS_TRADE = 3)
 
 	job_slots = list(
 		list(

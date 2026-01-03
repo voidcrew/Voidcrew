@@ -123,7 +123,7 @@ celerybeat-schedule
 # Rope project settings
 .ropeproject
 
-dbconfig.txt
+config\dbconfig.txt
 .claude/
 .vscode/
 

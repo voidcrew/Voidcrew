@@ -2,7 +2,7 @@
 	name = "Pill-class Torture Device"
 	suffix = "pill"
 	short_name = "Pill-class"
-	part_cost = 1
+	part_requirements = list(PART_CLASS_MISC = 1)
 
 	job_slots = list(
 		list(

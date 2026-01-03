@@ -77,6 +77,10 @@ export const HelmComputer = (props) => {
                   </Stack.Item>
 
                   <Stack.Item>
+                    <ZoneSection />
+                  </Stack.Item>
+
+                  <Stack.Item>
                     <Radar />
                   </Stack.Item>
 
@@ -186,6 +190,91 @@ const BroadcastSection = () => {
           />
         </Stack.Item>
       </Stack>
+    </Section>
+  );
+};
+
+const ZoneSection = () => {
+  const { data } = useBackend();
+  const {
+    zone_name = 'Unknown',
+    zone_color = '#888888',
+    weapons_allowed = true,
+    interdiction_allowed = true,
+    zone_transitioning = false,
+    zone_transition_progress = 0,
+    zone_transition_remaining = 0,
+    zone_transition_target = null,
+    // Radiation data
+    radiation_shielding_name = 'None',
+    zone_radiation_level = 0,
+    zone_radiation_protected = true,
+    zone_radiation_warning = false,
+  } = data;
+
+  // Radiation level names
+  const getRadiationLevelName = (level) => {
+    if (level === 0) return 'None';
+    if (level === 1) return 'Moderate';
+    if (level === 2) return 'Heavy';
+    return 'Unknown';
+  };
+
+  return (
+    <Section
+      title={
+        <span style={{ color: zone_color }}>
+          {zone_name}
+        </span>
+      }
+    >
+      {!!zone_transitioning && (
+        <NoticeBox warning>
+          <div style={{ marginBottom: '4px' }}>
+            Entering {zone_transition_target}...
+          </div>
+          <ProgressBar
+            value={zone_transition_progress}
+            maxValue={100}
+            color="yellow"
+          >
+            {zone_transition_remaining}s
+          </ProgressBar>
+        </NoticeBox>
+      )}
+      {!!zone_radiation_warning && (
+        <NoticeBox danger>
+          WARNING: Solar radiation exposure! Crew at risk!
+        </NoticeBox>
+      )}
+      <LabeledList>
+        <LabeledList.Item label="Weapons">
+          <span style={{ color: weapons_allowed ? '#4f4' : '#f44' }}>
+            {weapons_allowed ? 'Enabled' : 'Disabled'}
+          </span>
+        </LabeledList.Item>
+        <LabeledList.Item label="Interdiction">
+          <span style={{ color: interdiction_allowed ? '#ff4' : '#4f4' }}>
+            {interdiction_allowed ? 'Allowed' : 'Prohibited'}
+          </span>
+        </LabeledList.Item>
+        <LabeledList.Item label="Radiation">
+          <span style={{
+            color: zone_radiation_level === 0 ? '#4f4' :
+              (zone_radiation_protected ? '#ff4' : '#f44')
+          }}>
+            {getRadiationLevelName(zone_radiation_level)}
+            {zone_radiation_level > 0 && (zone_radiation_protected ? ' (Shielded)' : ' (EXPOSED)')}
+          </span>
+        </LabeledList.Item>
+        <LabeledList.Item label="Shielding">
+          <span style={{
+            color: radiation_shielding_name === 'No Shielding' ? '#888' : '#4f4'
+          }}>
+            {radiation_shielding_name}
+          </span>
+        </LabeledList.Item>
+      </LabeledList>
     </Section>
   );
 };
@@ -489,10 +578,12 @@ const ShipControlContent = () => {
     undockWarmupRemaining,
     isInterdicted,
     speedMultiplier,
+    zone_transitioning,
   } = data;
   const isDisabled = isViewer || isNotCrew;
   const flyable = data.state === 'flying' && !shipDisabled && !isDisabled;
-  const canMove = flyable && canThrust;
+  // Can't move while transitioning zones (except stop button)
+  const canMove = flyable && canThrust && !zone_transitioning;
 
   // Determine undock button state and tooltip
   const undockDisabled =
@@ -555,6 +646,11 @@ const ShipControlContent = () => {
           INTERDICTED - Engines at {Math.round(speedMultiplier * 100)}%
         </NoticeBox>
       )}
+      {!!zone_transitioning && (
+        <NoticeBox warning>
+          ZONE TRANSITION IN PROGRESS - Press Stop to cancel
+        </NoticeBox>
+      )}
       <Table collapsing>
         <Table.Row height={2}>
           <Table.Cell width={1}>
@@ -576,7 +672,7 @@ const ShipControlContent = () => {
               }
               tooltipPosition="right"
               icon="sign-in-alt"
-              disabled={!flyable || dockWarmup}
+              disabled={!flyable || dockWarmup || zone_transitioning}
               onClick={() => act('dock_empty')}
             />
           </Table.Cell>
@@ -587,7 +683,7 @@ const ShipControlContent = () => {
               tooltipPosition="right"
               icon={calibrating ? 'times' : 'angle-double-right'}
               color={calibrating ? 'bad' : undefined}
-              disabled={!flyable}
+              disabled={!flyable || zone_transitioning}
               onClick={() => act('bluespace_jump')}
             />
           </Table.Cell>
@@ -647,10 +743,11 @@ const ShipControlContent = () => {
           </Table.Cell>
           <Table.Cell width={1}>
             <Button
-              tooltip="Stop"
-              icon="circle"
+              tooltip={zone_transitioning ? 'Cancel Transition' : 'Stop'}
+              icon={zone_transitioning ? 'times' : 'circle'}
+              color={zone_transitioning ? 'bad' : undefined}
               mb={1}
-              disabled={!data.speed || !flyable}
+              disabled={!flyable && !zone_transitioning}
               onClick={() => act('stop')}
             />
           </Table.Cell>

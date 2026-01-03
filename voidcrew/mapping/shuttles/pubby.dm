@@ -2,7 +2,7 @@
 	name = "Pubby-class Light Carrier"
 	suffix = "pubby"
 	short_name = "Pubby-class"
-	part_cost = 3
+	part_requirements = list(PART_CLASS_TRADE = 2, PART_CLASS_MISC = 1)
 
 	job_slots = list(
 		list(

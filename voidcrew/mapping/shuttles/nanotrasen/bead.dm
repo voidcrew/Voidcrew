@@ -2,7 +2,7 @@
 	name = "Bead-class Corporate Frigate"
 	suffix = "nano_bead"
 	short_name = "Bead-Class"
-	part_cost = 1
+	part_requirements = list(PART_CLASS_MISC = 1)
 
 	job_slots = list(
 		list(

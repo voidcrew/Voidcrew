@@ -308,6 +308,9 @@
 		return FALSE
 	if(interdiction_active || interdiction_warming_up)
 		return FALSE
+	// Zone restriction check - interdiction disabled in neutral zones only
+	if(!SSovermap_zones.interdiction_allowed_at(src))
+		return FALSE
 	return TRUE
 
 /// Starts interdiction on a target ship
@@ -322,6 +325,8 @@
 				to_chat(user, span_warning("[src] is recharging! Available in [DisplayTimeText(COOLDOWN_TIMELEFT(src, interdict_cooldown))]."))
 			else if(interdiction_active || interdiction_warming_up)
 				to_chat(user, span_warning("[src] is already interdicting!"))
+			else if(!SSovermap_zones.interdiction_allowed_at(src))
+				to_chat(user, span_warning("Interdiction is prohibited in this zone!"))
 		return FALSE
 
 	if(!target)

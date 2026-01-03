@@ -133,6 +133,22 @@
 	/// List of interdictor machines installed on this ship
 	var/list/linked_interdictors = list()
 
+	// ===== ZONE TRANSITION =====
+	/// Whether we're currently transitioning between zones (10 second delay)
+	var/zone_transitioning = FALSE
+	/// Timer ID for zone transition completion
+	var/zone_transition_timer
+	/// The target turf we're trying to transition to
+	var/turf/zone_transition_target
+	/// When the zone transition started (for progress calculation)
+	var/zone_transition_start_time
+
+	// ===== RADIATION SHIELDING =====
+	/// Current radiation shielding level (SHIP_SHIELDING_NONE, STANDARD, or HEAVY)
+	var/radiation_shielding_level = SHIP_SHIELDING_NONE
+	/// Linked techweb for radiation shielding auto-upgrades
+	var/datum/techweb/linked_techweb
+
 	/// Cooldown preventing undocking shortly after docking
 	COOLDOWN_DECLARE(undock_cooldown)
 	/// Timer ID for dock warmup
@@ -1112,26 +1128,113 @@
 		new_y = low_y
 
 	var/turf/newloc = locate(new_x, new_y, z)
+
 	if(newloc)
 		forceMove(newloc)
 		check_hazards()
 
+	reschedule_movement()
+	update_screen()
+
+/**
+  * Helper proc to reschedule the movement timer
+  */
+/obj/structure/overmap/ship/proc/reschedule_movement()
 	if(movement_callback_id)
 		deltimer(movement_callback_id)
 
-	//Queue another movement
 	var/current_speed = MAGNITUDE(speed[1], speed[2])
 	if(!current_speed)
 		return
 
 	// Apply speed multiplier as hard cap (for interdiction effects)
-	// This affects actual movement speed, not just thrust generation
 	if(speed_multiplier < SHIP_SPEED_MULTIPLIER_DEFAULT)
 		current_speed *= speed_multiplier
 
 	var/timer = 1 / current_speed
 	movement_callback_id = addtimer(CALLBACK(src, PROC_REF(tick_move)), timer, TIMER_STOPPABLE)
-	update_screen()
+
+// ===== ZONE TRANSITION PROCS =====
+
+/**
+  * Starts a zone transition - ship must wait 10 seconds before crossing into a new zone.
+  * Engines are cut and ship stops during transition.
+  * * target - The turf we're trying to move to
+  * * target_zone - The zone datum of the target turf
+  */
+/obj/structure/overmap/ship/proc/start_zone_transition(turf/target, datum/overmap_zone/target_zone)
+	if(zone_transitioning)
+		return
+
+	zone_transitioning = TRUE
+	zone_transition_target = target
+	zone_transition_start_time = world.time
+
+	// Stop the ship - cut engines
+	decelerate(max_speed)
+
+	// Cancel any movement timer
+	if(movement_callback_id)
+		deltimer(movement_callback_id)
+		movement_callback_id = null
+
+	// Rotate ship to face the target zone
+	var/transition_dir = get_dir(src, target)
+	if(transition_dir)
+		dir = transition_dir
+		// Show moving icon during transition
+		icon_state = "[base_icon_state]_moving"
+
+	// Announce to ship
+	ship_announce("Entering [target_zone.name]. Zone transition in progress - [ZONE_TRANSITION_TIME / 10] seconds.", "Zone Transition")
+
+	// Start completion timer
+	zone_transition_timer = addtimer(CALLBACK(src, PROC_REF(complete_zone_transition)), ZONE_TRANSITION_TIME, TIMER_STOPPABLE)
+
+/**
+  * Completes the zone transition - ship moves into the new zone.
+  */
+/obj/structure/overmap/ship/proc/complete_zone_transition()
+	if(!zone_transitioning || !zone_transition_target)
+		return
+
+	var/turf/target = zone_transition_target
+
+	// Clear transition state
+	zone_transitioning = FALSE
+	zone_transition_target = null
+	zone_transition_start_time = null
+	zone_transition_timer = null
+
+	// Actually move to the target turf
+	if(target && !QDELETED(src))
+		forceMove(target)
+		check_hazards()
+		ship_announce("Zone transition complete.", "Zone Transition")
+		update_icon_state()
+		update_screen()
+
+/**
+  * Cancels the zone transition - player pressed stop.
+  */
+/obj/structure/overmap/ship/proc/cancel_zone_transition()
+	if(!zone_transitioning)
+		return
+
+	// Cancel the timer
+	if(zone_transition_timer)
+		deltimer(zone_transition_timer)
+		zone_transition_timer = null
+
+	// Clear transition state
+	zone_transitioning = FALSE
+	zone_transition_target = null
+	zone_transition_start_time = null
+
+	// Reset icon to stationary
+	update_icon_state()
+
+	ship_announce("Zone transition cancelled.", "Zone Transition")
 
 /**
   * Returns whether or not the ship is moving in any direction.
@@ -1680,6 +1783,10 @@
 	if(state != OVERMAP_SHIP_FLYING)
 		return
 
+	// Can't thrust while transitioning zones
+	if(zone_transitioning)
+		return
+
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_MOVED)
 
 	// Clear any pending dock requests when moving
@@ -1688,10 +1795,33 @@
 		ship_announce("Docking request cancelled due to ship movement.", "Docking Cancelled")
 
 	// Decelerate without using fuel
-	if(!n_dir) {
+	if(!n_dir)
 		decelerate(acceleration_speed * (percentage / 100))
 		return
-	}
+
+	// Check if thrusting towards a zone boundary
+	if(SSovermap_zones?.initialized)
+		var/turf/current_turf = get_turf(src)
+		var/datum/overmap_zone/current_zone = SSovermap_zones.get_zone(current_turf)
+		if(current_zone)
+			// Calculate target tile in thrust direction
+			var/target_x = x
+			var/target_y = y
+			if(n_dir & EAST)
+				target_x++
+			if(n_dir & WEST)
+				target_x--
+			if(n_dir & NORTH)
+				target_y++
+			if(n_dir & SOUTH)
+				target_y--
+			var/turf/target_turf = locate(target_x, target_y, z)
+			if(target_turf)
+				var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
+				// If target tile is in a different zone, start transition instead of thrusting
+				if(target_zone && current_zone.zone_type != target_zone.zone_type)
+					start_zone_transition(target_turf, target_zone)
+					return
 
 	var/thrust_used = 0 //The amount of thrust that the engines will provide with one burn
 	refresh_engines()
