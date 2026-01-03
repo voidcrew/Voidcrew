@@ -180,12 +180,16 @@ SUBSYSTEM_DEF(overmap)
 	return turf_to_return
 
 /**
- * Returns TRUE if the given turf is in the green zone (outer ring, normalized distance >= 0.66)
- * This uses the same calculation as SSovermap_zones but can be called before zones are initialized
+ * Returns TRUE if the given turf is in the green zone (outer ring)
+ * Checks the turf's current_zone if zones are initialized, otherwise calculates from distance
  */
-/datum/controller/subsystem/overmap/proc/is_turf_in_green_zone(turf/T)
+/datum/controller/subsystem/overmap/proc/is_turf_in_green_zone(turf/open/overmap/T)
 	if(!T || !overmap_centre)
 		return FALSE
+	// Use current_zone if zones have been initialized
+	if(T.current_zone)
+		return T.current_zone.zone_type == ZONE_GREEN
+	// Fallback to distance calculation (for spawning before zones init)
 	var/max_radius = (OVERMAP_SIZE - 1) / 2
 	var/dx = T.x - overmap_centre.x
 	var/dy = T.y - overmap_centre.y
