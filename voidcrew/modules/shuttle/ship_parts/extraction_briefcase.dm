@@ -30,9 +30,6 @@
 	w_class = WEIGHT_CLASS_NORMAL // Fits in backpack
 	storage_type = /datum/storage/briefcase/extraction
 
-	/// Custom color tint for extraction case
-	color = "#445566"
-
 /obj/item/storage/briefcase/secure/extraction/PopulateContents()
 	// Start empty
 	return

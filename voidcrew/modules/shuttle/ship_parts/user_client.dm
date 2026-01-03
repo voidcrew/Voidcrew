@@ -175,7 +175,7 @@
  */
 /client/verb/withdraw_part()
 	set name = "Withdraw Ship Part"
-	set category = "OOC"
+	set category = "IC"
 
 	if(!ckey)
 		to_chat(src, span_warning("Unable to identify your account!"))
@@ -211,7 +211,7 @@
  */
 /client/verb/request_extraction_case()
 	set name = "Request Extraction Case"
-	set category = "OOC"
+	set category = "IC"
 
 	if(!mob || !isliving(mob))
 		to_chat(src, span_warning("You need to be alive to request a case!"))
