@@ -19832,7 +19832,7 @@
 	fax_name = "Chief Engineer's Office";
 	name = "Chief Engineer's Fax Machine"
 	},
-/obj/item/computer_disk/engineering,
+/obj/item/disk/computer/engineering,
 /obj/structure/table/reinforced/rglass,
 /turf/open/floor/carpet/orange,
 /area/station/command/heads_quarters/ce)
@@ -32131,14 +32131,14 @@
 	},
 /obj/effect/mapping_helpers/requests_console/assistance,
 /obj/effect/mapping_helpers/requests_console/information,
-/obj/item/computer_disk{
+/obj/item/disk/computer{
 	pixel_x = -5;
 	pixel_y = 8
 	},
-/obj/item/computer_disk{
+/obj/item/disk/computer{
 	pixel_y = 1
 	},
-/obj/item/computer_disk/ordnance{
+/obj/item/disk/computer/ordnance{
 	pixel_x = 4;
 	pixel_y = 6
 	},
@@ -101353,7 +101353,7 @@
 	pixel_y = 6;
 	pixel_x = -5
 	},
-/obj/item/computer_disk/medical,
+/obj/item/disk/computer/medical,
 /obj/machinery/requests_console/directional/south{
 	department = "Chief Medical Officer's Desk";
 	name = "Chief Medical Officer's Requests Console"
@@ -144154,7 +144154,7 @@
 	pixel_y = 3;
 	pixel_x = -2
 	},
-/obj/item/computer_disk/ordnance{
+/obj/item/disk/computer/ordnance{
 	pixel_y = 2;
 	pixel_x = 4
 	},
