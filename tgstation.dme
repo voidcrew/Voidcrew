@@ -6960,6 +6960,7 @@
 #include "voidcrew\modules\shuttle\boards.dm"
 #include "voidcrew\modules\shuttle\design.dm"
 #include "voidcrew\modules\shuttle\emergency.dm"
+#include "voidcrew\modules\shuttle\construction\construction_upgrades.dm"
 #include "voidcrew\modules\shuttle\construction\construction_actions.dm"
 #include "voidcrew\modules\shuttle\construction\construction_console.dm"
 #include "voidcrew\modules\shuttle\construction\construction_drone.dm"

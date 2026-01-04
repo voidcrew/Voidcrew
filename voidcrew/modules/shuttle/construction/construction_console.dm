@@ -27,6 +27,44 @@
 	name = "ship internal RCD"
 	/// Reference to the ship construction console for drone tracking
 	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console
+	/// Currently selected wall type name
+	var/selected_wall_type = "Iron Wall"
+	/// Currently selected floor type name
+	var/selected_floor_type = "Plating"
+
+	/// Static list of available wall types with their paths and material costs
+	/// Note: Plastitanium is an alloy (titanium + plasma), so we require the component materials
+	var/static/list/wall_types = list(
+		"Iron Wall" = list(
+			"path" = /turf/closed/wall,
+			"materials" = list(/datum/material/iron = 200)
+		),
+		"Titanium Wall" = list(
+			"path" = /turf/closed/wall/mineral/titanium,
+			"materials" = list(/datum/material/titanium = 200)
+		),
+		"Plastitanium Wall" = list(
+			"path" = /turf/closed/wall/mineral/plastitanium,
+			"materials" = list(/datum/material/titanium = 100, /datum/material/plasma = 100)
+		),
+	)
+
+	/// Static list of available floor types with their paths and material costs
+	/// Note: Plastitanium is an alloy (titanium + plasma), so we require the component materials
+	var/static/list/floor_types = list(
+		"Plating" = list(
+			"path" = /turf/open/floor/plating,
+			"materials" = list(/datum/material/iron = 100)
+		),
+		"Titanium Floor" = list(
+			"path" = /turf/open/floor/mineral/titanium,
+			"materials" = list(/datum/material/titanium = 50)
+		),
+		"Plastitanium Floor" = list(
+			"path" = /turf/open/floor/mineral/plastitanium,
+			"materials" = list(/datum/material/titanium = 25, /datum/material/plasma = 25)
+		),
+	)
 
 /// Override build_delay to cancel if the drone moves
 /obj/item/construction/rcd/internal/ship/build_delay(mob/user, delay, atom/target)
@@ -51,6 +89,14 @@
 		return FALSE
 	return get_turf(drone) == start_turf
 
+/// Show a balloon alert at the drone location (or fallback to user)
+/obj/item/construction/rcd/internal/ship/proc/drone_alert(mob/user, message)
+	var/mob/eye/camera/remote/drone = ship_console?.eyeobj
+	if(drone)
+		drone.balloon_alert(user, message)
+	else if(user)
+		balloon_alert(user, message)
+
 /// Override to bypass account check when using silo - ships use SILICON_OVERRIDE
 /obj/item/construction/rcd/internal/ship/useResource(amount, mob/user)
 	if(!silo_mats || !silo_link)
@@ -58,12 +104,12 @@
 
 	if(!silo_mats.mat_container)
 		if(user)
-			balloon_alert(user, "no silo detected!")
+			drone_alert(user, "no silo detected!")
 		return FALSE
 
 	if(!silo_mats.mat_container.has_enough_of_material(/datum/material/iron, amount * SHIP_RCD_SILO_USE_AMOUNT))
 		if(user)
-			balloon_alert(user, "not enough silo material!")
+			drone_alert(user, "not enough silo material!")
 		return FALSE
 
 	// Use SILICON_OVERRIDE to bypass account check for ship construction
@@ -84,10 +130,466 @@
 		return FALSE
 	. = silo_mats.mat_container.has_enough_of_material(/datum/material/iron, amount * SHIP_RCD_SILO_USE_AMOUNT)
 	if(!. && user)
-		balloon_alert(user, "low ammo!")
+		drone_alert(user, "low ammo!")
 		if(has_ammobar)
 			flick("[icon_state]_empty", src)
 	return .
+
+// ============================================
+// Ship RCD TGUI Interface
+// ============================================
+
+/// Always allow UI interaction for remote construction
+/obj/item/construction/rcd/internal/ship/ui_state(mob/user)
+	return GLOB.always_state
+
+/// Override ui_interact to use our custom ShipRCD interface (extends standard RCD UI)
+/obj/item/construction/rcd/internal/ship/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "ShipRCD", name)
+		ui.open()
+
+/obj/item/construction/rcd/internal/ship/ui_data(mob/user)
+	// Get all standard RCD data from parent
+	var/list/data = ..()
+
+	// Add ship-specific wall/floor type data
+	data["selectedWallType"] = selected_wall_type
+	data["selectedFloorType"] = selected_floor_type
+
+	// Wall types with material info
+	var/list/wall_type_data = list()
+	for(var/wall_name in wall_types)
+		var/list/wall_info = wall_types[wall_name]
+		var/list/materials_data = list()
+		for(var/mat_path in wall_info["materials"])
+			var/datum/material/mat = GET_MATERIAL_REF(mat_path)
+			materials_data += list(list(
+				"name" = mat ? mat.name : "Unknown",
+				"amount" = wall_info["materials"][mat_path]
+			))
+		wall_type_data += list(list(
+			"name" = wall_name,
+			"materials" = materials_data
+		))
+	data["wallTypes"] = wall_type_data
+
+	// Floor types with material info
+	var/list/floor_type_data = list()
+	for(var/floor_name in floor_types)
+		var/list/floor_info = floor_types[floor_name]
+		var/list/materials_data = list()
+		for(var/mat_path in floor_info["materials"])
+			var/datum/material/mat = GET_MATERIAL_REF(mat_path)
+			materials_data += list(list(
+				"name" = mat ? mat.name : "Unknown",
+				"amount" = floor_info["materials"][mat_path]
+			))
+		floor_type_data += list(list(
+			"name" = floor_name,
+			"materials" = materials_data
+		))
+	data["floorTypes"] = floor_type_data
+
+	// Silo materials for display
+	data["usingSilo"] = silo_link && silo_mats?.mat_container
+	var/list/silo_materials = list()
+	if(silo_link && silo_mats?.mat_container)
+		for(var/datum/material/mat as anything in silo_mats.mat_container.materials)
+			var/amount = silo_mats.mat_container.materials[mat]
+			if(amount > 0)
+				silo_materials[mat.name] = amount
+	data["siloMaterials"] = silo_materials
+
+	return data
+
+/obj/item/construction/rcd/internal/ship/handle_ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	// Handle our custom actions first
+	switch(action)
+		if("select_wall_type")
+			var/new_type = params["type"]
+			if(new_type in wall_types)
+				selected_wall_type = new_type
+				playsound(src, SFX_TOOL_SWITCH, 20, TRUE)
+				return TRUE
+		if("select_floor_type")
+			var/new_type = params["type"]
+			if(new_type in floor_types)
+				selected_floor_type = new_type
+				playsound(src, SFX_TOOL_SWITCH, 20, TRUE)
+				return TRUE
+
+	// Pass to parent for standard RCD actions
+	return ..()
+
+/// Get the turf path for the currently selected wall type
+/obj/item/construction/rcd/internal/ship/proc/get_selected_wall_path()
+	var/list/wall_info = wall_types[selected_wall_type]
+	if(!wall_info)
+		return /turf/closed/wall
+	return wall_info["path"]
+
+/// Get the turf path for the currently selected floor type
+/obj/item/construction/rcd/internal/ship/proc/get_selected_floor_path()
+	var/list/floor_info = floor_types[selected_floor_type]
+	if(!floor_info)
+		return /turf/open/floor/plating
+	return floor_info["path"]
+
+/// Get the materials list for the currently selected wall type
+/obj/item/construction/rcd/internal/ship/proc/get_selected_wall_materials()
+	var/list/wall_info = wall_types[selected_wall_type]
+	if(!wall_info)
+		return list(/datum/material/iron = 200)
+	return wall_info["materials"]
+
+/// Get the materials list for the currently selected floor type
+/obj/item/construction/rcd/internal/ship/proc/get_selected_floor_materials()
+	var/list/floor_info = floor_types[selected_floor_type]
+	if(!floor_info)
+		return list(/datum/material/iron = 100)
+	return floor_info["materials"]
+
+/// Check if we have enough materials in the silo for the given materials list
+/obj/item/construction/rcd/internal/ship/proc/check_materials(list/materials, mob/user)
+	if(!silo_mats?.mat_container || !silo_link)
+		if(user)
+			drone_alert(user, "no silo linked!")
+		return FALSE
+
+	for(var/mat_path in materials)
+		var/required = materials[mat_path]
+		if(!silo_mats.mat_container.has_enough_of_material(mat_path, required))
+			if(user)
+				var/datum/material/mat = GET_MATERIAL_REF(mat_path)
+				drone_alert(user, "not enough [mat?.name || "material"]!")
+			return FALSE
+
+	return TRUE
+
+/// Use materials from the silo for the given materials list
+/obj/item/construction/rcd/internal/ship/proc/use_materials(list/materials, mob/user)
+	if(!silo_mats?.mat_container || !silo_link)
+		return FALSE
+
+	// Double check we have enough before using
+	if(!check_materials(materials, user))
+		return FALSE
+
+	// Use SILICON_OVERRIDE to bypass account check for ship construction
+	var/list/user_data = ID_DATA(user)
+	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
+	silo_mats.use_materials(materials, action = "build", name = "ship construction", user_data = user_data)
+	return TRUE
+
+/// Check if we have enough materials for the selected wall type
+/obj/item/construction/rcd/internal/ship/proc/check_wall_materials(mob/user)
+	return check_materials(get_selected_wall_materials(), user)
+
+/// Check if we have enough materials for the selected floor type
+/obj/item/construction/rcd/internal/ship/proc/check_floor_materials(mob/user)
+	return check_materials(get_selected_floor_materials(), user)
+
+/// Use materials for the selected wall type
+/obj/item/construction/rcd/internal/ship/proc/use_wall_materials(mob/user)
+	return use_materials(get_selected_wall_materials(), user)
+
+/// Use materials for the selected floor type
+/obj/item/construction/rcd/internal/ship/proc/use_floor_materials(mob/user)
+	return use_materials(get_selected_floor_materials(), user)
+
+/// Build a wall of the selected type at the target turf
+/obj/item/construction/rcd/internal/ship/proc/build_wall(turf/target, mob/user)
+	if(!check_wall_materials(user))
+		return FALSE
+
+	// Show construction effect
+	var/obj/effect/constructing_effect/rcd_effect = new(target, 2 SECONDS, RCD_TURF)
+
+	// Delay for building
+	if(!build_delay(user, 2 SECONDS, target))
+		qdel(rcd_effect)
+		return FALSE
+
+	// Double check materials after delay
+	if(!use_wall_materials(user))
+		qdel(rcd_effect)
+		return FALSE
+
+	// Build the wall
+	var/wall_path = get_selected_wall_path()
+	target.ChangeTurf(wall_path, flags = CHANGETURF_INHERIT_AIR)
+	rcd_effect.end_animation()
+	return TRUE
+
+/// Build a floor of the selected type at the target turf
+/obj/item/construction/rcd/internal/ship/proc/build_floor(turf/target, mob/user)
+	if(!check_floor_materials(user))
+		return FALSE
+
+	// Show construction effect
+	var/obj/effect/constructing_effect/rcd_effect = new(target, 1 SECONDS, RCD_TURF)
+
+	// Delay for building
+	if(!build_delay(user, 1 SECONDS, target))
+		qdel(rcd_effect)
+		return FALSE
+
+	// Double check materials after delay
+	if(!use_floor_materials(user))
+		qdel(rcd_effect)
+		return FALSE
+
+	// Build the floor
+	var/floor_path = get_selected_floor_path()
+	target.ChangeTurf(floor_path, flags = CHANGETURF_INHERIT_AIR)
+	rcd_effect.end_animation()
+	return TRUE
+
+// ============================================
+// Ship Internal RTD - bypasses proximity checks
+// ============================================
+
+// RTD silo material costs
+#define SHIP_RTD_TILE_IRON 100
+
+/// Ship-specific internal RTD that allows remote UI interaction and uses silo materials
+/obj/item/construction/rtd/internal
+	name = "ship internal RTD"
+	/// Reference to the ship construction console for drone tracking
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console
+
+/// Always allow UI interaction for remote construction
+/obj/item/construction/rtd/internal/ui_state(mob/user)
+	return GLOB.always_state
+
+/// Show a balloon alert at the drone location (or fallback to user)
+/obj/item/construction/rtd/internal/proc/drone_alert(mob/user, message)
+	var/mob/eye/camera/remote/drone = ship_console?.eyeobj
+	if(drone)
+		drone.balloon_alert(user, message)
+	else if(user)
+		balloon_alert(user, message)
+
+/// Check if we have enough iron in the silo for a tile
+/obj/item/construction/rtd/internal/proc/check_tile_materials(mob/user)
+	if(!silo_mats?.mat_container || !silo_link)
+		if(user)
+			drone_alert(user, "no silo linked!")
+		return FALSE
+
+	if(!silo_mats.mat_container.has_enough_of_material(/datum/material/iron, SHIP_RTD_TILE_IRON))
+		if(user)
+			drone_alert(user, "not enough iron!")
+		return FALSE
+
+	return TRUE
+
+/// Use iron from the silo for a tile
+/obj/item/construction/rtd/internal/proc/use_tile_materials(mob/user)
+	if(!check_tile_materials(user))
+		return FALSE
+
+	var/list/materials = list(/datum/material/iron = SHIP_RTD_TILE_IRON)
+
+	// Use SILICON_OVERRIDE to bypass account check
+	var/list/user_data = ID_DATA(user)
+	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
+	silo_mats.use_materials(materials, action = "build", name = "ship tiling", user_data = user_data)
+	return TRUE
+
+// ============================================
+// Ship Internal RPD - bypasses proximity checks
+// ============================================
+
+// RPD silo material costs
+#define SHIP_RPD_PIPE_IRON 50
+
+/// Ship-specific internal RPD that allows remote UI interaction and uses silo materials
+/obj/item/pipe_dispenser/internal
+	name = "ship internal RPD"
+	/// Reference to the ship construction console for drone tracking
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console
+	/// Reference to silo materials component
+	var/datum/component/remote_materials/silo_mats
+	/// Whether silo link is enabled
+	var/silo_link = FALSE
+
+/// Always allow UI interaction for remote construction
+/obj/item/pipe_dispenser/internal/ui_state(mob/user)
+	return GLOB.always_state
+
+/// Show a balloon alert at the drone location (or fallback to user)
+/obj/item/pipe_dispenser/internal/proc/drone_alert(mob/user, message)
+	var/mob/eye/camera/remote/drone = ship_console?.eyeobj
+	if(drone)
+		drone.balloon_alert(user, message)
+	else if(user)
+		balloon_alert(user, message)
+
+/// Check if we have enough iron in the silo for a pipe
+/obj/item/pipe_dispenser/internal/proc/check_pipe_materials(mob/user)
+	if(!silo_mats?.mat_container || !silo_link)
+		if(user)
+			drone_alert(user, "no silo linked!")
+		return FALSE
+
+	if(!silo_mats.mat_container.has_enough_of_material(/datum/material/iron, SHIP_RPD_PIPE_IRON))
+		if(user)
+			drone_alert(user, "not enough iron!")
+		return FALSE
+
+	return TRUE
+
+/// Use iron from the silo for a pipe
+/obj/item/pipe_dispenser/internal/proc/use_pipe_materials(mob/user)
+	if(!check_pipe_materials(user))
+		return FALSE
+
+	var/list/materials = list(/datum/material/iron = SHIP_RPD_PIPE_IRON)
+
+	// Use SILICON_OVERRIDE to bypass account check
+	var/list/user_data = ID_DATA(user)
+	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
+	silo_mats.use_materials(materials, action = "build", name = "ship piping", user_data = user_data)
+	return TRUE
+
+// ============================================
+// Ship Internal RLD - bypasses proximity checks
+// ============================================
+
+// RLD silo material costs
+#define SHIP_RLD_WALL_LIGHT_IRON 25
+#define SHIP_RLD_WALL_LIGHT_GLASS 50
+#define SHIP_RLD_FLOOR_LIGHT_IRON 50
+#define SHIP_RLD_FLOOR_LIGHT_GLASS 25
+#define SHIP_RLD_GLOW_STICK_IRON 10
+#define SHIP_RLD_GLOW_STICK_GLASS 25
+
+/// Ship-specific internal RLD that allows remote UI interaction and uses silo materials
+/obj/item/construction/rld/internal
+	name = "ship internal RLD"
+	/// Reference to the ship construction console for drone tracking
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console
+
+/// Show a balloon alert at the drone location (or fallback to user)
+/obj/item/construction/rld/internal/proc/drone_alert(mob/user, message)
+	var/mob/eye/camera/remote/drone = ship_console?.eyeobj
+	if(drone)
+		drone.balloon_alert(user, message)
+	else if(user)
+		balloon_alert(user, message)
+
+/// Check if we have enough materials in the silo for a light type
+/obj/item/construction/rld/internal/proc/check_silo_materials(iron_cost, glass_cost, mob/user)
+	if(!silo_mats?.mat_container || !silo_link)
+		if(user)
+			drone_alert(user, "no silo linked!")
+		return FALSE
+
+	if(!silo_mats.mat_container.has_enough_of_material(/datum/material/iron, iron_cost))
+		if(user)
+			drone_alert(user, "not enough iron!")
+		return FALSE
+
+	if(!silo_mats.mat_container.has_enough_of_material(/datum/material/glass, glass_cost))
+		if(user)
+			drone_alert(user, "not enough glass!")
+		return FALSE
+
+	return TRUE
+
+/// Use materials from the silo for a light
+/obj/item/construction/rld/internal/proc/use_silo_materials(iron_cost, glass_cost, mob/user)
+	if(!check_silo_materials(iron_cost, glass_cost, user))
+		return FALSE
+
+	var/list/materials = list(
+		/datum/material/iron = iron_cost,
+		/datum/material/glass = glass_cost
+	)
+
+	// Use SILICON_OVERRIDE to bypass account check
+	var/list/user_data = ID_DATA(user)
+	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
+	silo_mats.use_materials(materials, action = "build", name = "ship lighting", user_data = user_data)
+	return TRUE
+
+/// Check materials for wall light
+/obj/item/construction/rld/internal/proc/check_wall_light_materials(mob/user)
+	return check_silo_materials(SHIP_RLD_WALL_LIGHT_IRON, SHIP_RLD_WALL_LIGHT_GLASS, user)
+
+/// Check materials for floor light
+/obj/item/construction/rld/internal/proc/check_floor_light_materials(mob/user)
+	return check_silo_materials(SHIP_RLD_FLOOR_LIGHT_IRON, SHIP_RLD_FLOOR_LIGHT_GLASS, user)
+
+/// Check materials for glow stick
+/obj/item/construction/rld/internal/proc/check_glow_stick_materials(mob/user)
+	return check_silo_materials(SHIP_RLD_GLOW_STICK_IRON, SHIP_RLD_GLOW_STICK_GLASS, user)
+
+/// Use materials for wall light
+/obj/item/construction/rld/internal/proc/use_wall_light_materials(mob/user)
+	return use_silo_materials(SHIP_RLD_WALL_LIGHT_IRON, SHIP_RLD_WALL_LIGHT_GLASS, user)
+
+/// Use materials for floor light
+/obj/item/construction/rld/internal/proc/use_floor_light_materials(mob/user)
+	return use_silo_materials(SHIP_RLD_FLOOR_LIGHT_IRON, SHIP_RLD_FLOOR_LIGHT_GLASS, user)
+
+/// Use materials for glow stick
+/obj/item/construction/rld/internal/proc/use_glow_stick_materials(mob/user)
+	return use_silo_materials(SHIP_RLD_GLOW_STICK_IRON, SHIP_RLD_GLOW_STICK_GLASS, user)
+
+/// Override attack_self to show radial menu on the drone location (without Deconstruct option)
+/obj/item/construction/rld/internal/attack_self(mob/user)
+	// Play the parent sound effects
+	playsound(loc, 'sound/effects/pop.ogg', 50, FALSE)
+	if(prob(20))
+		spark_system.start()
+
+	// Build filtered options (exclude Deconstruct - we have a separate action for that)
+	var/list/ship_options = list()
+	for(var/option in display_options)
+		if(option == "Deconstruct")
+			continue
+		ship_options[option] = display_options[option]
+
+	if((construction_upgrades & RCD_UPGRADE_SILO_LINK) && ship_options["Silo Link"] == null)
+		ship_options["Silo Link"] = icon(icon = 'icons/obj/machines/ore_silo.dmi', icon_state = "silo")
+
+	// Show radial menu on the drone location with no proximity requirement
+	var/mob/eye/camera/remote/drone = ship_console?.eyeobj
+	var/atom/menu_anchor = drone ? drone : src
+	var/choice = show_radial_menu(user, menu_anchor, ship_options, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = FALSE, tooltips = TRUE)
+	if(!check_menu(user))
+		return
+	if(!choice)
+		return
+
+	// RLD mode values: 1 = GLOW_MODE, 2 = LIGHT_MODE
+	switch(choice)
+		if("Light Fixture")
+			mode = 2 // LIGHT_MODE
+			to_chat(user, span_notice("You change RLD's mode to 'Permanent Light Construction'."))
+		if("Glow Stick")
+			mode = 1 // GLOW_MODE
+			to_chat(user, span_notice("You change RLD's mode to 'Light Launcher'."))
+		if("Color Pick")
+			var/new_choice = input(user,"","Choose Color",color_choice) as color
+			if(new_choice == null)
+				return
+
+			var/list/new_rgb = rgb2num(new_choice)
+			for(var/option in original_options)
+				if(option == "Color Pick" || option == "Deconstruct" || option == "Silo Link")
+					continue
+				var/icon/the_icon = icon(original_options[option])
+				the_icon.SetIntensity(new_rgb[1]/255, new_rgb[2]/255, new_rgb[3]/255)
+				display_options[option] = the_icon
+
+			color_choice = new_choice
+		else
+			toggle_silo(user)
 
 /obj/machinery/computer/camera_advanced/base_construction/ship
 	name = "ship construction console"
@@ -110,6 +612,18 @@
 	var/datum/console_ambience/console_ambience
 	/// UI theme preference
 	var/theme
+	/// Bitflags for console upgrades (RTD, RPD, RLD, etc.)
+	var/console_upgrades = NONE
+	/// Internal RTD for tiling (created when upgrade installed)
+	var/obj/item/construction/rtd/internal/internal_rtd
+	/// Internal RPD for piping (created when upgrade installed)
+	var/obj/item/pipe_dispenser/internal/internal_rpd
+	/// Internal RLD for lighting (created when upgrade installed)
+	var/obj/item/construction/rld/internal/internal_rld
+	/// Current T-ray scanner mode (off, t-ray, pipe, thermal)
+	var/tray_mode = SHIP_TRAY_MODE_OFF
+	/// Pipe connection images for T-ray pipe mode
+	var/list/tray_connection_images = list()
 
 // ============================================
 // Initialization
@@ -132,6 +646,190 @@
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/Destroy()
 	QDEL_NULL(console_ambience)
+	QDEL_NULL(internal_rtd)
+	QDEL_NULL(internal_rpd)
+	QDEL_NULL(internal_rld)
+	tray_connection_images.Cut()
+	return ..()
+
+/// Process T-ray scanner modes while viewing
+/obj/machinery/computer/camera_advanced/base_construction/ship/process()
+	. = ..()
+	if(. == PROCESS_KILL)
+		return
+
+	// Process T-ray scanner if upgrade installed and mode is active
+	if(!(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_TRAY))
+		return
+	if(!current_user?.client || !eyeobj)
+		return
+
+	switch(tray_mode)
+		if(SHIP_TRAY_MODE_TRAY)
+			t_ray_scan(current_user, 8, 3)
+		if(SHIP_TRAY_MODE_PIPE)
+			show_pipe_connections()
+		if(SHIP_TRAY_MODE_THERMAL)
+			show_thermal_overlay()
+
+/// Show pipe connection overlays around the drone (like pipe connectable goggles)
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/show_pipe_connections()
+	if(!current_user?.client || !eyeobj)
+		return
+
+	var/range = 3
+
+	// Clean up old images that are out of range
+	for(var/obj/machinery/atmospherics/pipe/smart/smart in tray_connection_images)
+		if(get_dist(eyeobj, smart) > range)
+			tray_connection_images -= smart
+
+	// Show connection arrows on smart pipes
+	for(var/obj/machinery/atmospherics/pipe/smart/smart in orange(range, eyeobj))
+		if(!tray_connection_images[smart])
+			tray_connection_images[smart] = list()
+		for(var/direction in GLOB.cardinals)
+			if(!(smart.get_init_directions() & direction))
+				continue
+			if(!tray_connection_images[smart][dir2text(direction)])
+				var/image/arrow = new('icons/obj/pipes_n_cables/simple.dmi', get_turf(smart), "connection_overlay")
+				arrow.dir = direction
+				arrow.layer = smart.layer
+				arrow.color = smart.pipe_color
+				PIPING_LAYER_DOUBLE_SHIFT(arrow, smart.piping_layer)
+				tray_connection_images[smart][dir2text(direction)] = arrow
+			if(tray_connection_images.len)
+				flick_overlay_global(tray_connection_images[smart][dir2text(direction)], list(current_user.client), 1.5 SECONDS)
+
+/// Show thermal overlay around the drone (like atmos thermal goggles)
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/show_thermal_overlay()
+	if(!current_user?.client || !eyeobj)
+		return
+	// Use the global atmos_thermal proc which handles everything
+	atmos_thermal(current_user, 5, 10)
+
+/// Close all configuration UIs when exiting camera mode
+/obj/machinery/computer/camera_advanced/base_construction/ship/remove_eye_control(mob/living/user)
+	// Close any open configuration UIs for internal devices
+	if(internal_rcd)
+		SStgui.close_uis(internal_rcd)
+	if(internal_rtd)
+		SStgui.close_uis(internal_rtd)
+	if(internal_rpd)
+		SStgui.close_uis(internal_rpd)
+	if(internal_rld)
+		SStgui.close_uis(internal_rld)
+	// Clear T-ray connection images
+	tray_connection_images.Cut()
+	return ..()
+
+/// Show installed upgrades when examining
+/obj/machinery/computer/camera_advanced/base_construction/ship/examine(mob/user)
+	. = ..()
+	if(!internal_rcd)
+		return
+	var/list/upgrades = list()
+	if(internal_rcd.construction_upgrades & RCD_UPGRADE_SILO_LINK)
+		upgrades += "silo link"
+	if(internal_rcd.construction_upgrades & RCD_UPGRADE_FRAMES)
+		upgrades += "frames"
+	if(internal_rcd.construction_upgrades & RCD_UPGRADE_SIMPLE_CIRCUITS)
+		upgrades += "simple circuits"
+	if(internal_rcd.construction_upgrades & RCD_UPGRADE_FURNISHING)
+		upgrades += "furnishing"
+	if(internal_rcd.construction_upgrades & RCD_UPGRADE_ANTI_INTERRUPT)
+		upgrades += "anti-interrupt"
+	if(internal_rcd.construction_upgrades & RCD_UPGRADE_NO_FREQUENT_USE_COOLDOWN)
+		upgrades += "enhanced cooling"
+	if(length(upgrades))
+		. += span_notice("Installed RCD upgrades: [english_list(upgrades)].")
+
+	// Show console upgrades (RTD, RPD, RLD)
+	var/list/console_upgrade_list = list()
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RTD)
+		console_upgrade_list += "rapid tiling"
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RPD)
+		console_upgrade_list += "rapid piping"
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RLD)
+		console_upgrade_list += "rapid lighting"
+	if(length(console_upgrade_list))
+		. += span_notice("Installed console upgrades: [english_list(console_upgrade_list)].")
+
+	. += span_notice("You can insert RCD upgrade disks or ship construction upgrade disks to add more capabilities.")
+
+/// Accept RCD upgrade disks - forward to internal RCD
+/obj/machinery/computer/camera_advanced/base_construction/ship/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	// Handle RCD upgrades - also forward silo link to RTD and RLD if installed
+	if(istype(tool, /obj/item/rcd_upgrade))
+		if(!internal_rcd)
+			balloon_alert(user, "no internal RCD!")
+			return ITEM_INTERACT_FAILURE
+		var/obj/item/rcd_upgrade/rcd_disk = tool
+		// If it's a silo link upgrade, install it on RTD and RLD too
+		if(rcd_disk.upgrade & RCD_UPGRADE_SILO_LINK)
+			// Forward to RTD
+			if(internal_rtd)
+				internal_rtd.construction_upgrades |= RCD_UPGRADE_SILO_LINK
+				if(!internal_rtd.silo_mats)
+					internal_rtd.silo_mats = internal_rtd.AddComponent(/datum/component/remote_materials, FALSE, FALSE)
+			// Forward to RLD
+			if(internal_rld)
+				internal_rld.construction_upgrades |= RCD_UPGRADE_SILO_LINK
+				if(!internal_rld.silo_mats)
+					internal_rld.silo_mats = internal_rld.AddComponent(/datum/component/remote_materials, FALSE, FALSE)
+		if(internal_rcd.install_upgrade(tool, user))
+			balloon_alert(user, "upgrade installed")
+		return ITEM_INTERACT_SUCCESS
+
+	// Handle RPD upgrades - forward to internal RPD
+	if(istype(tool, /obj/item/rpd_upgrade))
+		if(!internal_rpd)
+			balloon_alert(user, "no RPD installed!")
+			return ITEM_INTERACT_FAILURE
+		// Use the RPD's own upgrade handling
+		return internal_rpd.interact_with_atom(tool, user)
+
+	// Handle ship construction console upgrades (RTD, RPD, RLD)
+	if(istype(tool, /obj/item/ship_construction_upgrade))
+		var/obj/item/ship_construction_upgrade/upgrade_disk = tool
+		if(upgrade_disk.upgrade_flags & console_upgrades)
+			balloon_alert(user, "already installed!")
+			return ITEM_INTERACT_FAILURE
+
+		// Install the upgrade
+		console_upgrades |= upgrade_disk.upgrade_flags
+
+		// Create internal devices as needed
+		if((upgrade_disk.upgrade_flags & SHIP_CONSTRUCTION_UPGRADE_RTD) && !internal_rtd)
+			internal_rtd = new(src)
+			internal_rtd.ship_console = src
+			// Enable silo link by default for RTD
+			internal_rtd.silo_mats = internal_rtd.AddComponent(/datum/component/remote_materials, FALSE, FALSE)
+			internal_rtd.silo_link = TRUE
+
+		if((upgrade_disk.upgrade_flags & SHIP_CONSTRUCTION_UPGRADE_RPD) && !internal_rpd)
+			internal_rpd = new(src)
+			internal_rpd.ship_console = src
+			// Enable silo link by default for RPD
+			internal_rpd.silo_mats = internal_rpd.AddComponent(/datum/component/remote_materials, FALSE, FALSE)
+			internal_rpd.silo_link = TRUE
+
+		if((upgrade_disk.upgrade_flags & SHIP_CONSTRUCTION_UPGRADE_RLD) && !internal_rld)
+			internal_rld = new(src)
+			internal_rld.ship_console = src
+			// Enable silo link by default for RLD
+			internal_rld.construction_upgrades |= RCD_UPGRADE_SILO_LINK
+			internal_rld.silo_mats = internal_rld.AddComponent(/datum/component/remote_materials, FALSE, FALSE)
+			internal_rld.silo_link = TRUE
+
+		playsound(loc, 'sound/machines/click.ogg', 50, TRUE)
+		balloon_alert(user, "upgrade installed")
+		qdel(upgrade_disk)
+
+		// Refresh actions to add new upgrade actions
+		refresh_actions()
+		return ITEM_INTERACT_SUCCESS
+
 	return ..()
 
 /// Forward multitool interactions to the internal RCD for silo linking
@@ -151,6 +849,25 @@
 		internal_rcd.silo_mats.disconnect()
 		silo.connect_receptacle(internal_rcd.silo_mats, internal_rcd)
 		internal_rcd.silo_link = TRUE  // Enable silo link mode
+
+		// Also link the RTD to the silo if installed
+		if(internal_rtd?.silo_mats)
+			internal_rtd.silo_mats.disconnect()
+			silo.connect_receptacle(internal_rtd.silo_mats, internal_rtd)
+			internal_rtd.silo_link = TRUE
+
+		// Also link the RPD to the silo if installed
+		if(internal_rpd?.silo_mats)
+			internal_rpd.silo_mats.disconnect()
+			silo.connect_receptacle(internal_rpd.silo_mats, internal_rpd)
+			internal_rpd.silo_link = TRUE
+
+		// Also link the RLD to the silo if installed
+		if(internal_rld?.silo_mats)
+			internal_rld.silo_mats.disconnect()
+			silo.connect_receptacle(internal_rld.silo_mats, internal_rld)
+			internal_rld.silo_link = TRUE
+
 		balloon_alert(user, "linked")
 		to_chat(user, span_notice("You connect [src]'s RCD to [silo]."))
 		return ITEM_INTERACT_SUCCESS
@@ -167,9 +884,54 @@
 	current_ship = port.current_ship
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/populate_actions_list()
+	// Core RCD actions
 	actions += new /datum/action/innate/construction/ship/configure_mode(src)
 	actions += new /datum/action/innate/construction/ship/build(src)
 	actions += new /datum/action/innate/construction/ship/deconstruct(src)
+	// RTD actions (added if upgrade is installed)
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RTD)
+		actions += new /datum/action/innate/construction/ship/rtd_configure(src)
+		actions += new /datum/action/innate/construction/ship/rtd_build(src)
+		actions += new /datum/action/innate/construction/ship/rtd_deconstruct(src)
+	// RPD actions (added if upgrade is installed)
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RPD)
+		actions += new /datum/action/innate/construction/ship/rpd_configure(src)
+		actions += new /datum/action/innate/construction/ship/rpd_build(src)
+		actions += new /datum/action/innate/construction/ship/rpd_destroy(src)
+	// RLD actions (added if upgrade is installed)
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_RLD)
+		actions += new /datum/action/innate/construction/ship/rld_color(src)
+		actions += new /datum/action/innate/construction/ship/rld_build(src)
+		actions += new /datum/action/innate/construction/ship/rld_remove(src)
+	// T-ray scanner action (added if upgrade is installed)
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_TRAY)
+		actions += new /datum/action/innate/construction/ship/tray_toggle(src)
+
+/// Refreshes the actions list (called when upgrades are installed)
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/refresh_actions()
+	// Remove old construction actions from the current user if any (but not the off_action)
+	if(current_user)
+		for(var/datum/action/innate/construction/action in actions)
+			action.Remove(current_user)
+
+	// Preserve the off_action (camera exit button)
+	var/datum/action/innate/camera_off/preserved_off_action
+	for(var/datum/action/innate/camera_off/off_act in actions)
+		preserved_off_action = off_act
+		actions -= off_act
+		break
+
+	// Clear construction actions and repopulate
+	QDEL_LIST(actions)
+	populate_actions_list()
+
+	// Re-add the off_action at the beginning
+	if(preserved_off_action)
+		actions.Insert(1, preserved_off_action)
+
+	// Re-grant actions to current user if in construction mode
+	if(current_user)
+		GrantActions(current_user)
 
 /// Override to show UI instead of immediately entering construction mode
 /// We skip the camera_advanced parent's attack_hand which would enter camera mode
