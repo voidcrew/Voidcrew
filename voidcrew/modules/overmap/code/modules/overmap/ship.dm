@@ -114,6 +114,14 @@
 	var/datum/weakref/survey_console
 	var/datum/survey_research/survey_data
 
+	// ===== MISSIONS =====
+	/// Available missions this ship can accept
+	var/list/datum/mission/available_missions = list()
+	/// Currently active missions this ship has accepted
+	var/list/datum/mission/active_missions = list()
+	/// Maximum number of active missions (captain can adjust)
+	var/max_missions = DEFAULT_MAX_ACTIVE_MISSIONS
+
 	var/pending_dock = FALSE
 	var/pending_dock_timer
 	/// The ship we sent a docking request to (if any)
@@ -471,6 +479,9 @@
 	job_slots?.Cut()
 	QDEL_NULL(ship_team)
 	QDEL_NULL(cam_screen) // cam_background is inside cam_screen and deleted with it
+	// Clean up missions
+	QDEL_LIST(available_missions)
+	QDEL_LIST(active_missions)
 	return ..()
 
 /obj/structure/overmap/ship/attack_ghost(mob/user)
@@ -1853,6 +1864,67 @@
 /proc/get_ship_from_atom(atom/source)
 	var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(source)
 	return port?.current_ship
+
+// ===== MISSION PROCS =====
+
+/**
+ * Accepts a mission, moving it from available to active.
+ * * mission - The mission to accept
+ * Returns TRUE on success, error string on failure.
+ */
+/obj/structure/overmap/ship/proc/accept_mission(datum/mission/mission)
+	if(!mission)
+		return "Invalid mission."
+	if(!(mission in available_missions))
+		return "Mission not available."
+	if(length(active_missions) >= max_missions)
+		return "Maximum active missions reached ([max_missions])."
+	if(mission.active)
+		return "Mission already accepted."
+
+	if(!mission.start_mission(src))
+		return "Failed to start mission."
+
+	return TRUE
+
+/**
+ * Completes a mission via turn-in.
+ * * mission - The mission to complete
+ * * pad - The mission pad used for turn-in
+ * * item - Optional item being turned in
+ * Returns TRUE on success, error string on failure.
+ */
+/obj/structure/overmap/ship/proc/complete_mission(datum/mission/mission, obj/machinery/mission_pad/pad, obj/item/item)
+	if(!mission)
+		return "Invalid mission."
+	if(!(mission in active_missions))
+		return "Mission not active on this ship."
+
+	// Pre-validate before attempting turn-in for better error messages
+	if(mission.requires_item)
+		if(!mission.can_turn_in(item))
+			return mission.get_failure_reason(item)
+	else
+		if(!mission.can_complete())
+			return mission.get_failure_reason(item)
+
+	if(!mission.turn_in(pad, item))
+		return "Failed to complete mission."
+
+	return TRUE
+
+/**
+ * Abandons/gives up on a mission.
+ * * mission - The mission to abandon
+ */
+/obj/structure/overmap/ship/proc/abandon_mission(datum/mission/mission)
+	if(!mission)
+		return "Invalid mission."
+	if(!(mission in active_missions))
+		return "Mission not active on this ship."
+
+	mission.give_up()
+	return TRUE
 
 #undef SHIP_SIZE_THRESHOLD
 #undef SHIP_SPEED_MULTIPLIER_DEFAULT

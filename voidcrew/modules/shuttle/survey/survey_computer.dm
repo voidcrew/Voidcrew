@@ -282,6 +282,11 @@
 	data.update_survey_data(object)
 	survey_in_progress = FALSE
 	update_static_data(ui_user)
+
+	// Send signal to ship for mission tracking
+	var/celestial_type = data.get_related_celestial_list(object.type)
+	if(ship_port?.current_ship && celestial_type)
+		SEND_SIGNAL(ship_port.current_ship, COMSIG_VOIDCREW_SURVEY_COMPLETED, celestial_type)
 	return
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/get_survey_value(obj/structure/overmap/object)

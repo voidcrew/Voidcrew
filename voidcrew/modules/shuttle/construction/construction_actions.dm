@@ -19,12 +19,18 @@
 		to_chat(owner, span_warning("You can only build within the shuttle or on valid adjacent tiles!"))
 		return FALSE
 
+	// Check for blast doors - don't allow construction/deconstruction on tiles with blast doors
+	for(var/obj/machinery/door/poddoor/blast_door in build_target)
+		remote_eye.balloon_alert(owner, "blocked by blast door!")
+		return FALSE
+
 	return TRUE
 
 /// Ship-specific RCD build action
 /datum/action/innate/construction/ship/build
-	name = "Build"
-	button_icon_state = "build"
+	name = "RCD Build"
+	button_icon = 'voidcrew/icons/obj/tools.dmi'
+	button_icon_state = "rcd_construct"
 
 /datum/action/innate/construction/ship/build/Activate()
 	if(..())
@@ -32,15 +38,51 @@
 	if(!check_spot())
 		return
 	var/turf/target_turf = get_turf(remote_eye)
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+	var/obj/item/construction/rcd/internal/ship/ship_rcd = base_console.internal_rcd
+
+	owner.changeNext_move(CLICK_CD_RANGE)
+	check_rcd()
+
+	// Store turf state before building to detect if we built something new
+	var/was_in_shuttle = ship_console.is_in_shuttle_area(target_turf)
+
+	// If building outside shuttle, check dimension limits BEFORE building
+	if(!was_in_shuttle)
+		if(!ship_console.check_expansion_dimensions(target_turf, ship_console.get_docking_port()))
+			remote_eye.balloon_alert(owner, "exceeds max dimensions!")
+			return
+
+	// Check if we should use custom wall/floor building based on current RCD mode
+	var/rcd_mode = ship_rcd.construction_mode
+
+	// Build floor: RCD is in turf mode and target is space (need to create floor first)
+	if(rcd_mode == RCD_TURF && isspaceturf(target_turf))
+		if(!ship_rcd.build_floor(target_turf, owner))
+			return
+		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+		// Expand shuttle if building outside
+		if(!was_in_shuttle)
+			ship_console.expand_shuttle_to_turf(target_turf, owner)
+		return
+
+	// Build wall: RCD is in turf mode and target is any open floor (including plating)
+	if(rcd_mode == RCD_TURF && istype(target_turf, /turf/open/floor))
+		if(!ship_rcd.build_wall(target_turf, owner))
+			return
+		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+		// Expand shuttle if building outside
+		if(!was_in_shuttle)
+			ship_console.expand_shuttle_to_turf(target_turf, owner)
+		return
+
+	// For other build types (airlocks, windows, etc.), use standard RCD system
 	var/atom/rcd_target = target_turf
 
 	// Find airlocks and other structures that can be RCD'd
 	for(var/obj/S in target_turf)
 		if(LAZYLEN(S.rcd_vals(owner, base_console.internal_rcd)))
 			rcd_target = S
-
-	owner.changeNext_move(CLICK_CD_RANGE)
-	check_rcd()
 
 	// Check if we have enough resources before attempting to build
 	var/list/rcd_results = rcd_target.rcd_vals(owner, base_console.internal_rcd)
@@ -51,37 +93,19 @@
 		remote_eye.balloon_alert(owner, "not enough resources!")
 		return
 
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
-
-	// Store turf state before building to detect if we built something new
-	var/was_in_shuttle = ship_console.is_in_shuttle_area(target_turf)
-
-	// Check if this is a deconstruct action
-	var/is_deconstruct = (base_console.internal_rcd.construction_mode == RCD_DECONSTRUCT)
-
-	// If building outside shuttle, check dimension limits BEFORE building
-	if(!is_deconstruct && !was_in_shuttle)
-		if(!ship_console.check_expansion_dimensions(target_turf, ship_console.get_docking_port()))
-			remote_eye.balloon_alert(owner, "exceeds max dimensions!")
-			return
-
 	// Perform the RCD action
 	base_console.internal_rcd.rcd_create(rcd_target, owner)
 	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
 
-	// Handle post-RCD actions
-	if(is_deconstruct)
-		// After deconstruction, clean up any empty shuttle turfs
-		ship_console.cleanup_deconstructed_turfs()
-	else if(!was_in_shuttle)
-		// Expand shuttle to include the new turf
+	// Expand shuttle if building outside
+	if(!was_in_shuttle)
 		ship_console.expand_shuttle_to_turf(target_turf, owner)
 
 /// Ship-specific RCD deconstruct action
 /datum/action/innate/construction/ship/deconstruct
 	name = "Deconstruct"
-	button_icon = 'icons/mob/actions/actions_shuttle.dmi'
-	button_icon_state = "clear_turf"
+	button_icon = 'voidcrew/icons/obj/tools.dmi'
+	button_icon_state = "rcd_remove"
 
 /datum/action/innate/construction/ship/deconstruct/Activate()
 	if(..())
@@ -142,8 +166,8 @@
 /// Ship-specific RCD configure action
 /datum/action/innate/construction/ship/configure_mode
 	name = "Configure RCD"
-	button_icon = 'icons/obj/tools.dmi'
-	button_icon_state = "rcd"
+	button_icon = 'voidcrew/icons/obj/tools.dmi'
+	button_icon_state = "rcd_config"
 
 /datum/action/innate/construction/ship/configure_mode/Activate()
 	if(..())
@@ -151,3 +175,428 @@
 	check_rcd()
 	base_console.internal_rcd.owner = base_console
 	base_console.internal_rcd.ui_interact(owner)
+
+// ============================================
+// RTD (Rapid Tiling Device) Actions
+// ============================================
+
+/// Ship RTD configure action - opens tile selection UI
+/datum/action/innate/construction/ship/rtd_configure
+	name = "Configure Tiles"
+	button_icon = 'voidcrew/icons/obj/tools.dmi'
+	button_icon_state = "rtd_config"
+
+/datum/action/innate/construction/ship/rtd_configure/Activate()
+	if(..())
+		return
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+	if(!ship_console.internal_rtd)
+		remote_eye.balloon_alert(owner, "no RTD installed!")
+		return
+	// Open the RTD UI directly (bypass attack_self which has proximity checks)
+	ship_console.internal_rtd.ui_interact(owner)
+
+/// Ship RTD build action - places floor tiles
+/datum/action/innate/construction/ship/rtd_build
+	name = "Place Tile"
+	button_icon = 'voidcrew/icons/obj/tools.dmi'
+	button_icon_state = "rtd_construct"
+
+/datum/action/innate/construction/ship/rtd_build/Activate()
+	if(..())
+		return
+	if(!check_spot())
+		return
+	var/turf/target_turf = get_turf(remote_eye)
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+
+	if(!ship_console.internal_rtd)
+		remote_eye.balloon_alert(owner, "no RTD installed!")
+		return
+
+	var/obj/item/construction/rtd/internal/rtd = ship_console.internal_rtd
+
+	// RTD can only tile on plating
+	if(!istype(target_turf, /turf/open/floor/plating))
+		remote_eye.balloon_alert(owner, "need plating!")
+		return
+
+	owner.changeNext_move(CLICK_CD_RANGE)
+
+	// Check and use silo materials
+	if(!rtd.check_tile_materials(owner))
+		return
+	if(!rtd.use_tile_materials(owner))
+		return
+
+	// Create and place the tile
+	var/obj/item/stack/tile/final_tile = rtd.selected_design.new_tile(target_turf, rtd.selected_direction)
+	if(QDELETED(final_tile))
+		remote_eye.balloon_alert(owner, "tile creation failed!")
+		return
+
+	var/turf/open/new_turf = final_tile.place_tile(target_turf, owner)
+	if(new_turf)
+		// Apply any saved overlays
+		for(var/datum/overlay_info/info in rtd.design_overlays)
+			info.add_decal(new_turf)
+
+	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+
+/// Ship RTD deconstruct action - removes floor tiles
+/datum/action/innate/construction/ship/rtd_deconstruct
+	name = "Remove Tile"
+	button_icon = 'voidcrew/icons/obj/tools.dmi'
+	button_icon_state = "rtd_remove"
+
+/datum/action/innate/construction/ship/rtd_deconstruct/Activate()
+	if(..())
+		return
+	if(!check_spot())
+		return
+	var/turf/target_turf = get_turf(remote_eye)
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+
+	if(!ship_console.internal_rtd)
+		remote_eye.balloon_alert(owner, "no RTD installed!")
+		return
+
+	// Can't deconstruct plating - that's the RCD's job
+	if(istype(target_turf, /turf/open/floor/plating))
+		remote_eye.balloon_alert(owner, "nothing to remove!")
+		return
+
+	if(!istype(target_turf, /turf/open/floor))
+		remote_eye.balloon_alert(owner, "can't remove that!")
+		return
+
+	owner.changeNext_move(CLICK_CD_RANGE)
+
+	// Tile deconstruction is free (no silo materials needed)
+
+	// Remove decals
+	var/list/all_decals = list()
+	for(var/obj/effect/decal in target_turf.contents)
+		all_decals += decal
+	for(var/obj/effect/decal in all_decals)
+		target_turf.contents -= decal
+		qdel(decal)
+
+	// Change turf to plating
+	if(target_turf.baseturf_at_depth(1) == /turf/baseturf_bottom)
+		target_turf.ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
+	else
+		target_turf.ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
+
+	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+
+// ============================================
+// RPD (Rapid Pipe Dispenser) Actions
+// ============================================
+
+/// Ship RPD configure action - opens pipe selection UI
+/datum/action/innate/construction/ship/rpd_configure
+	name = "Configure Pipes"
+	button_icon = 'voidcrew/icons/obj/tools.dmi'
+	button_icon_state = "rpd_config"
+
+/datum/action/innate/construction/ship/rpd_configure/Activate()
+	if(..())
+		return
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+	if(!ship_console.internal_rpd)
+		remote_eye.balloon_alert(owner, "no RPD installed!")
+		return
+	// Open the RPD UI directly (bypass attack_self which has proximity checks)
+	ship_console.internal_rpd.ui_interact(owner)
+
+/// Ship RPD build action - places pipes
+/datum/action/innate/construction/ship/rpd_build
+	name = "Place Pipe"
+	button_icon = 'voidcrew/icons/obj/tools.dmi'
+	button_icon_state = "rpd_construct"
+
+/datum/action/innate/construction/ship/rpd_build/Activate()
+	if(..())
+		return
+	if(!check_spot())
+		return
+	var/turf/target_turf = get_turf(remote_eye)
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+
+	if(!ship_console.internal_rpd)
+		remote_eye.balloon_alert(owner, "no RPD installed!")
+		return
+
+	owner.changeNext_move(CLICK_CD_RANGE)
+
+	var/obj/item/pipe_dispenser/internal/rpd = ship_console.internal_rpd
+
+	// Check and use silo materials before placing pipe
+	if(!rpd.check_pipe_materials(owner))
+		return
+	if(!rpd.use_pipe_materials(owner))
+		return
+
+	// Use the RPD's interact_with_atom to handle pipe placement
+	rpd.interact_with_atom(target_turf, owner)
+
+/// Ship RPD destroy action - removes pipes
+/datum/action/innate/construction/ship/rpd_destroy
+	name = "Remove Pipe"
+	button_icon = 'voidcrew/icons/obj/tools.dmi'
+	button_icon_state = "rpd_remove"
+
+/datum/action/innate/construction/ship/rpd_destroy/Activate()
+	if(..())
+		return
+	if(!check_spot())
+		return
+	var/turf/target_turf = get_turf(remote_eye)
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+
+	if(!ship_console.internal_rpd)
+		remote_eye.balloon_alert(owner, "no RPD installed!")
+		return
+
+	owner.changeNext_move(CLICK_CD_RANGE)
+
+	var/obj/item/pipe_dispenser/rpd = ship_console.internal_rpd
+
+	// Check for placed/wrenched atmospherics pipes first
+	var/obj/machinery/atmospherics/atmos_pipe = locate() in target_turf
+	if(atmos_pipe)
+		// Need unwrench upgrade to remove placed pipes
+		if(!(rpd.upgrade_flags & RPD_UPGRADE_UNWRENCH))
+			remote_eye.balloon_alert(owner, "need unwrench upgrade!")
+			return
+		// Try to unwrench the pipe (converts it to an item)
+		var/result = atmos_pipe.wrench_act(owner, rpd)
+		if(result)
+			playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+		else
+			remote_eye.balloon_alert(owner, "can't unwrench that!")
+		return
+
+	// Find and destroy unplaced pipe-related objects on this turf
+	var/destroyed_something = FALSE
+	for(var/obj/item/pipe/P in target_turf)
+		qdel(P)
+		destroyed_something = TRUE
+		break
+	if(!destroyed_something)
+		for(var/obj/structure/disposalconstruct/D in target_turf)
+			qdel(D)
+			destroyed_something = TRUE
+			break
+	if(!destroyed_something)
+		for(var/obj/structure/c_transit_tube/T in target_turf)
+			qdel(T)
+			destroyed_something = TRUE
+			break
+	if(!destroyed_something)
+		for(var/obj/structure/c_transit_tube_pod/P in target_turf)
+			qdel(P)
+			destroyed_something = TRUE
+			break
+	if(!destroyed_something)
+		for(var/obj/item/pipe_meter/M in target_turf)
+			qdel(M)
+			destroyed_something = TRUE
+			break
+	if(!destroyed_something)
+		for(var/obj/structure/disposalpipe/broken/B in target_turf)
+			qdel(B)
+			destroyed_something = TRUE
+			break
+
+	if(destroyed_something)
+		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+	else
+		remote_eye.balloon_alert(owner, "nothing to remove!")
+
+// ============================================
+// RLD (Rapid Lighting Device) Actions
+// ============================================
+
+/// Ship RLD color picker action - opens color selection directly
+/datum/action/innate/construction/ship/rld_color
+	name = "Light Color"
+	button_icon = 'voidcrew/icons/obj/tools.dmi'
+	button_icon_state = "rld_config"
+
+/datum/action/innate/construction/ship/rld_color/Activate()
+	if(..())
+		return
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+	if(!ship_console.internal_rld)
+		remote_eye.balloon_alert(owner, "no RLD installed!")
+		return
+
+	var/obj/item/construction/rld/rld = ship_console.internal_rld
+	var/new_color = input(owner, "Choose light color", "Light Color", rld.color_choice) as color|null
+	if(new_color == null)
+		return
+
+	rld.color_choice = new_color
+	remote_eye.balloon_alert(owner, "color set")
+
+/// Ship RLD build action - places lights using drone direction for wall lights
+/datum/action/innate/construction/ship/rld_build
+	name = "Place Light"
+	button_icon = 'voidcrew/icons/obj/tools.dmi'
+	button_icon_state = "rld_construct"
+
+/datum/action/innate/construction/ship/rld_build/Activate()
+	if(..())
+		return
+	if(!check_spot())
+		return
+	var/turf/target_turf = get_turf(remote_eye)
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+
+	if(!ship_console.internal_rld)
+		remote_eye.balloon_alert(owner, "no RLD installed!")
+		return
+
+	owner.changeNext_move(CLICK_CD_RANGE)
+
+	var/obj/item/construction/rld/internal/rld = ship_console.internal_rld
+
+	// RLD mode: 1 = GLOW_MODE, 2 = LIGHT_MODE
+	switch(rld.mode)
+		if(1) // GLOW_MODE - throw glowstick
+			if(!rld.check_glow_stick_materials(owner))
+				return
+			if(!rld.use_glow_stick_materials(owner))
+				return
+			// Create and throw glowstick
+			var/obj/item/flashlight/glowstick/new_stick = new(get_turf(remote_eye))
+			new_stick.color = rld.color_choice
+			new_stick.set_light_color(new_stick.color)
+			new_stick.throw_at(target_turf, 9, 3, owner)
+			new_stick.turn_on()
+			new_stick.update_brightness()
+			rld.activate()
+
+		if(2) // LIGHT_MODE - place fixture
+			if(iswallturf(target_turf))
+				// Wall light - use drone's facing direction
+				var/drone_dir = remote_eye.dir
+				var/turf/light_turf = get_step(target_turf, drone_dir)
+
+				// Check if the target turf is valid for a light
+				if(!light_turf || iswallturf(light_turf) || isspaceturf(light_turf))
+					remote_eye.balloon_alert(owner, "can't place light there!")
+					return
+
+				// Check for existing light
+				if(locate(/obj/machinery/light) in light_turf)
+					remote_eye.balloon_alert(owner, "light already there!")
+					return
+
+				if(!rld.check_wall_light_materials(owner))
+					return
+				if(!rld.use_wall_light_materials(owner))
+					return
+
+				// Place wall light on the open turf, facing the wall
+				var/obj/machinery/light/L = new(light_turf)
+				L.setDir(get_dir(light_turf, target_turf))
+				L.color = rld.color_choice
+				L.set_light_color(rld.color_choice)
+				rld.activate()
+
+			else if(isfloorturf(target_turf))
+				// Floor light
+				if(locate(/obj/machinery/light/floor) in target_turf)
+					remote_eye.balloon_alert(owner, "light already there!")
+					return
+
+				if(!rld.check_floor_light_materials(owner))
+					return
+				if(!rld.use_floor_light_materials(owner))
+					return
+
+				var/obj/machinery/light/floor/FL = new(target_turf)
+				FL.color = rld.color_choice
+				FL.set_light_color(rld.color_choice)
+				rld.activate()
+			else
+				remote_eye.balloon_alert(owner, "can't place light here!")
+
+		else
+			remote_eye.balloon_alert(owner, "invalid mode!")
+
+/// Ship RLD remove action - removes lights
+/datum/action/innate/construction/ship/rld_remove
+	name = "Remove Light"
+	button_icon = 'voidcrew/icons/obj/tools.dmi'
+	button_icon_state = "rld_remove"
+
+/datum/action/innate/construction/ship/rld_remove/Activate()
+	if(..())
+		return
+	if(!check_spot())
+		return
+	var/turf/target_turf = get_turf(remote_eye)
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+
+	if(!ship_console.internal_rld)
+		remote_eye.balloon_alert(owner, "no RLD installed!")
+		return
+
+	owner.changeNext_move(CLICK_CD_RANGE)
+
+	var/obj/item/construction/rld/rld = ship_console.internal_rld
+
+	// Find a light fixture to remove
+	var/obj/machinery/light/target_light = locate() in target_turf
+	if(!target_light)
+		remote_eye.balloon_alert(owner, "no light here!")
+		return
+
+	// Check resources (deconstruction costs 10 matter)
+	if(!rld.checkResource(10, owner))
+		remote_eye.balloon_alert(owner, "not enough resources!")
+		return
+
+	// Use resources
+	if(!rld.useResource(10, owner))
+		remote_eye.balloon_alert(owner, "not enough resources!")
+		return
+
+	// Remove the light
+	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+	qdel(target_light)
+
+// ============================================
+// T-Ray Scanner Actions
+// ============================================
+
+/// Ship T-ray toggle action - cycles through scanner modes
+/datum/action/innate/construction/ship/tray_toggle
+	name = "Toggle Scanner"
+	button_icon = 'icons/obj/devices/scanner.dmi'
+	button_icon_state = "t-ray0"
+
+/datum/action/innate/construction/ship/tray_toggle/Activate()
+	if(..())
+		return
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+
+	// Cycle through modes: off -> t-ray -> pipe -> thermal -> off
+	switch(ship_console.tray_mode)
+		if(SHIP_TRAY_MODE_OFF)
+			ship_console.tray_mode = SHIP_TRAY_MODE_TRAY
+			remote_eye.balloon_alert(owner, "T-ray mode")
+		if(SHIP_TRAY_MODE_TRAY)
+			ship_console.tray_mode = SHIP_TRAY_MODE_PIPE
+			remote_eye.balloon_alert(owner, "pipe connections mode")
+		if(SHIP_TRAY_MODE_PIPE)
+			ship_console.tray_mode = SHIP_TRAY_MODE_THERMAL
+			remote_eye.balloon_alert(owner, "thermal mode")
+		if(SHIP_TRAY_MODE_THERMAL)
+			ship_console.tray_mode = SHIP_TRAY_MODE_OFF
+			ship_console.tray_connection_images.Cut()
+			remote_eye.balloon_alert(owner, "scanner off")

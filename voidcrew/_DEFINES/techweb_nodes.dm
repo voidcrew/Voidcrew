@@ -1,6 +1,9 @@
 #define TECHWEB_NODE_BASIC_SHUTTLE "basic_shuttle"
 #define TECHWEB_NODE_EXPERIMENTAL_SHUTTLE "exp_shuttle"
 #define TECHWEB_NODE_SHIP_CONSTRUCTION "ship_construction"
+#define TECHWEB_NODE_SHIP_PIPING "ship_piping"
+#define TECHWEB_NODE_SHIP_TILING "ship_tiling"
+#define TECHWEB_NODE_SHIP_LIGHTING "ship_lighting"
 #define TECHWEB_NODE_SURVEY_SCANNER "survey_scanner"
 #define TECHWEB_NODE_SURVEY_CONSOLE "survey_console"
 #define TECHWEB_NODE_SURVEY_CONSOLE_ADV "survey_console_advanced"
@@ -23,3 +26,6 @@
 // Radiation Shielding
 #define TECHWEB_NODE_RADIATION_SHIELDING_STANDARD "radiation_shielding_standard"
 #define TECHWEB_NODE_RADIATION_SHIELDING_HEAVY "radiation_shielding_heavy"
+
+// Missions
+#define TECHWEB_NODE_MISSION_LOGISTICS "mission_logistics"

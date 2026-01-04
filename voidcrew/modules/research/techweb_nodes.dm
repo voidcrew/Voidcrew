@@ -20,6 +20,37 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_2_POINTS)
 
+/datum/techweb_node/ship_piping
+	id = TECHWEB_NODE_SHIP_PIPING
+	display_name = "Shuttle Construction Piping"
+	description = "Rapid piping and scanning technology for shuttle construction."
+	prereq_ids = list(TECHWEB_NODE_SHIP_CONSTRUCTION)
+	design_ids = list(
+		"ship_construction_upgrade_rpd",
+		"ship_construction_upgrade_tray",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+/datum/techweb_node/ship_tiling
+	id = TECHWEB_NODE_SHIP_TILING
+	display_name = "Shuttle Construction Tiling"
+	description = "Rapid tiling technology for shuttle construction."
+	prereq_ids = list(TECHWEB_NODE_SHIP_CONSTRUCTION)
+	design_ids = list(
+		"ship_construction_upgrade_rtd",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
+/datum/techweb_node/ship_lighting
+	id = TECHWEB_NODE_SHIP_LIGHTING
+	display_name = "Shuttle Construction Lighting"
+	description = "Rapid lighting technology for shuttle construction."
+	prereq_ids = list(TECHWEB_NODE_SHIP_CONSTRUCTION)
+	design_ids = list(
+		"ship_construction_upgrade_rld",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
+
 /datum/techweb_node/exp_shuttle_tech
 	id = TECHWEB_NODE_EXPERIMENTAL_SHUTTLE
 	display_name = "Experimental Shuttle Research"
@@ -262,6 +293,17 @@
 	design_ids += list(
 		"surgery_oldstation_dissection_elite",
 	)
+
+/datum/techweb_node/mission_logistics
+	id = TECHWEB_NODE_MISSION_LOGISTICS
+	display_name = "Mission Logistics"
+	description = "Equipment for managing ship contracts and missions."
+	prereq_ids = list(TECHWEB_NODE_FUNDIMENTAL_SCI)
+	design_ids = list(
+		"mission_board",
+		"mission_pad",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 500)
 
 /datum/techweb_node/survey_console
 	id = TECHWEB_NODE_SURVEY_CONSOLE
