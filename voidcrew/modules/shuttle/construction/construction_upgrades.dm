@@ -9,6 +9,13 @@
 #define SHIP_CONSTRUCTION_UPGRADE_RTD (1 << 0)
 #define SHIP_CONSTRUCTION_UPGRADE_RPD (1 << 1)
 #define SHIP_CONSTRUCTION_UPGRADE_RLD (1 << 2)
+#define SHIP_CONSTRUCTION_UPGRADE_TRAY (1 << 3)
+
+// T-ray scanner modes for ship construction console
+#define SHIP_TRAY_MODE_OFF "off"
+#define SHIP_TRAY_MODE_TRAY "t-ray"
+#define SHIP_TRAY_MODE_PIPE "pipe"
+#define SHIP_TRAY_MODE_THERMAL "thermal"
 
 /// Base upgrade disk for ship construction consoles
 /obj/item/ship_construction_upgrade
@@ -40,3 +47,10 @@
 	desc = "Adds rapid lighting functionality to the ship construction console, allowing placement and removal of light fixtures and floor lights."
 	icon_state = "datadisk5"
 	upgrade_flags = SHIP_CONSTRUCTION_UPGRADE_RLD
+
+/// T-ray upgrade - allows seeing underfloor objects like pipes and cables
+/obj/item/ship_construction_upgrade/tray
+	name = "ship construction upgrade: T-ray scanner"
+	desc = "Adds T-ray scanner functionality to the ship construction console, allowing the drone to see underfloor objects such as cables and pipes. Includes pipe connection and thermal imaging modes."
+	icon_state = "datadisk1"
+	upgrade_flags = SHIP_CONSTRUCTION_UPGRADE_TRAY

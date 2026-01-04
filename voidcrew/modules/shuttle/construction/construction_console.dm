@@ -351,7 +351,10 @@
 // Ship Internal RTD - bypasses proximity checks
 // ============================================
 
-/// Ship-specific internal RTD that allows remote UI interaction
+// RTD silo material costs
+#define SHIP_RTD_TILE_IRON 100
+
+/// Ship-specific internal RTD that allows remote UI interaction and uses silo materials
 /obj/item/construction/rtd/internal
 	name = "ship internal RTD"
 	/// Reference to the ship construction console for drone tracking
@@ -361,43 +364,181 @@
 /obj/item/construction/rtd/internal/ui_state(mob/user)
 	return GLOB.always_state
 
-/// Override checkResource to show alerts on the drone
-/obj/item/construction/rtd/internal/checkResource(amount, mob/user)
-	. = ..()
-	// Parent already showed balloon_alert on user, but we want it on the drone
-	if(!. && user && ship_console?.eyeobj)
-		ship_console.eyeobj.balloon_alert(user, "low ammo!")
+/// Show a balloon alert at the drone location (or fallback to user)
+/obj/item/construction/rtd/internal/proc/drone_alert(mob/user, message)
+	var/mob/eye/camera/remote/drone = ship_console?.eyeobj
+	if(drone)
+		drone.balloon_alert(user, message)
+	else if(user)
+		balloon_alert(user, message)
+
+/// Check if we have enough iron in the silo for a tile
+/obj/item/construction/rtd/internal/proc/check_tile_materials(mob/user)
+	if(!silo_mats?.mat_container || !silo_link)
+		if(user)
+			drone_alert(user, "no silo linked!")
+		return FALSE
+
+	if(!silo_mats.mat_container.has_enough_of_material(/datum/material/iron, SHIP_RTD_TILE_IRON))
+		if(user)
+			drone_alert(user, "not enough iron!")
+		return FALSE
+
+	return TRUE
+
+/// Use iron from the silo for a tile
+/obj/item/construction/rtd/internal/proc/use_tile_materials(mob/user)
+	if(!check_tile_materials(user))
+		return FALSE
+
+	var/list/materials = list(/datum/material/iron = SHIP_RTD_TILE_IRON)
+
+	// Use SILICON_OVERRIDE to bypass account check
+	var/list/user_data = ID_DATA(user)
+	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
+	silo_mats.use_materials(materials, action = "build", name = "ship tiling", user_data = user_data)
+	return TRUE
 
 // ============================================
 // Ship Internal RPD - bypasses proximity checks
 // ============================================
 
-/// Ship-specific internal RPD that allows remote UI interaction
+// RPD silo material costs
+#define SHIP_RPD_PIPE_IRON 50
+
+/// Ship-specific internal RPD that allows remote UI interaction and uses silo materials
 /obj/item/pipe_dispenser/internal
 	name = "ship internal RPD"
 	/// Reference to the ship construction console for drone tracking
 	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console
+	/// Reference to silo materials component
+	var/datum/component/remote_materials/silo_mats
+	/// Whether silo link is enabled
+	var/silo_link = FALSE
 
 /// Always allow UI interaction for remote construction
 /obj/item/pipe_dispenser/internal/ui_state(mob/user)
 	return GLOB.always_state
 
+/// Show a balloon alert at the drone location (or fallback to user)
+/obj/item/pipe_dispenser/internal/proc/drone_alert(mob/user, message)
+	var/mob/eye/camera/remote/drone = ship_console?.eyeobj
+	if(drone)
+		drone.balloon_alert(user, message)
+	else if(user)
+		balloon_alert(user, message)
+
+/// Check if we have enough iron in the silo for a pipe
+/obj/item/pipe_dispenser/internal/proc/check_pipe_materials(mob/user)
+	if(!silo_mats?.mat_container || !silo_link)
+		if(user)
+			drone_alert(user, "no silo linked!")
+		return FALSE
+
+	if(!silo_mats.mat_container.has_enough_of_material(/datum/material/iron, SHIP_RPD_PIPE_IRON))
+		if(user)
+			drone_alert(user, "not enough iron!")
+		return FALSE
+
+	return TRUE
+
+/// Use iron from the silo for a pipe
+/obj/item/pipe_dispenser/internal/proc/use_pipe_materials(mob/user)
+	if(!check_pipe_materials(user))
+		return FALSE
+
+	var/list/materials = list(/datum/material/iron = SHIP_RPD_PIPE_IRON)
+
+	// Use SILICON_OVERRIDE to bypass account check
+	var/list/user_data = ID_DATA(user)
+	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
+	silo_mats.use_materials(materials, action = "build", name = "ship piping", user_data = user_data)
+	return TRUE
+
 // ============================================
 // Ship Internal RLD - bypasses proximity checks
 // ============================================
 
-/// Ship-specific internal RLD that allows remote UI interaction
+// RLD silo material costs
+#define SHIP_RLD_WALL_LIGHT_IRON 25
+#define SHIP_RLD_WALL_LIGHT_GLASS 50
+#define SHIP_RLD_FLOOR_LIGHT_IRON 50
+#define SHIP_RLD_FLOOR_LIGHT_GLASS 25
+#define SHIP_RLD_GLOW_STICK_IRON 10
+#define SHIP_RLD_GLOW_STICK_GLASS 25
+
+/// Ship-specific internal RLD that allows remote UI interaction and uses silo materials
 /obj/item/construction/rld/internal
 	name = "ship internal RLD"
 	/// Reference to the ship construction console for drone tracking
 	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console
 
-/// Override checkResource to show alerts on the drone
-/obj/item/construction/rld/internal/checkResource(amount, mob/user)
-	. = ..()
-	// Parent already showed balloon_alert on user, but we want it on the drone
-	if(!. && user && ship_console?.eyeobj)
-		ship_console.eyeobj.balloon_alert(user, "low ammo!")
+/// Show a balloon alert at the drone location (or fallback to user)
+/obj/item/construction/rld/internal/proc/drone_alert(mob/user, message)
+	var/mob/eye/camera/remote/drone = ship_console?.eyeobj
+	if(drone)
+		drone.balloon_alert(user, message)
+	else if(user)
+		balloon_alert(user, message)
+
+/// Check if we have enough materials in the silo for a light type
+/obj/item/construction/rld/internal/proc/check_silo_materials(iron_cost, glass_cost, mob/user)
+	if(!silo_mats?.mat_container || !silo_link)
+		if(user)
+			drone_alert(user, "no silo linked!")
+		return FALSE
+
+	if(!silo_mats.mat_container.has_enough_of_material(/datum/material/iron, iron_cost))
+		if(user)
+			drone_alert(user, "not enough iron!")
+		return FALSE
+
+	if(!silo_mats.mat_container.has_enough_of_material(/datum/material/glass, glass_cost))
+		if(user)
+			drone_alert(user, "not enough glass!")
+		return FALSE
+
+	return TRUE
+
+/// Use materials from the silo for a light
+/obj/item/construction/rld/internal/proc/use_silo_materials(iron_cost, glass_cost, mob/user)
+	if(!check_silo_materials(iron_cost, glass_cost, user))
+		return FALSE
+
+	var/list/materials = list(
+		/datum/material/iron = iron_cost,
+		/datum/material/glass = glass_cost
+	)
+
+	// Use SILICON_OVERRIDE to bypass account check
+	var/list/user_data = ID_DATA(user)
+	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
+	silo_mats.use_materials(materials, action = "build", name = "ship lighting", user_data = user_data)
+	return TRUE
+
+/// Check materials for wall light
+/obj/item/construction/rld/internal/proc/check_wall_light_materials(mob/user)
+	return check_silo_materials(SHIP_RLD_WALL_LIGHT_IRON, SHIP_RLD_WALL_LIGHT_GLASS, user)
+
+/// Check materials for floor light
+/obj/item/construction/rld/internal/proc/check_floor_light_materials(mob/user)
+	return check_silo_materials(SHIP_RLD_FLOOR_LIGHT_IRON, SHIP_RLD_FLOOR_LIGHT_GLASS, user)
+
+/// Check materials for glow stick
+/obj/item/construction/rld/internal/proc/check_glow_stick_materials(mob/user)
+	return check_silo_materials(SHIP_RLD_GLOW_STICK_IRON, SHIP_RLD_GLOW_STICK_GLASS, user)
+
+/// Use materials for wall light
+/obj/item/construction/rld/internal/proc/use_wall_light_materials(mob/user)
+	return use_silo_materials(SHIP_RLD_WALL_LIGHT_IRON, SHIP_RLD_WALL_LIGHT_GLASS, user)
+
+/// Use materials for floor light
+/obj/item/construction/rld/internal/proc/use_floor_light_materials(mob/user)
+	return use_silo_materials(SHIP_RLD_FLOOR_LIGHT_IRON, SHIP_RLD_FLOOR_LIGHT_GLASS, user)
+
+/// Use materials for glow stick
+/obj/item/construction/rld/internal/proc/use_glow_stick_materials(mob/user)
+	return use_silo_materials(SHIP_RLD_GLOW_STICK_IRON, SHIP_RLD_GLOW_STICK_GLASS, user)
 
 /// Override attack_self to show radial menu on the drone location (without Deconstruct option)
 /obj/item/construction/rld/internal/attack_self(mob/user)
@@ -479,6 +620,10 @@
 	var/obj/item/pipe_dispenser/internal/internal_rpd
 	/// Internal RLD for lighting (created when upgrade installed)
 	var/obj/item/construction/rld/internal/internal_rld
+	/// Current T-ray scanner mode (off, t-ray, pipe, thermal)
+	var/tray_mode = SHIP_TRAY_MODE_OFF
+	/// Pipe connection images for T-ray pipe mode
+	var/list/tray_connection_images = list()
 
 // ============================================
 // Initialization
@@ -504,7 +649,64 @@
 	QDEL_NULL(internal_rtd)
 	QDEL_NULL(internal_rpd)
 	QDEL_NULL(internal_rld)
+	tray_connection_images.Cut()
 	return ..()
+
+/// Process T-ray scanner modes while viewing
+/obj/machinery/computer/camera_advanced/base_construction/ship/process()
+	. = ..()
+	if(. == PROCESS_KILL)
+		return
+
+	// Process T-ray scanner if upgrade installed and mode is active
+	if(!(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_TRAY))
+		return
+	if(!current_user?.client || !eyeobj)
+		return
+
+	switch(tray_mode)
+		if(SHIP_TRAY_MODE_TRAY)
+			t_ray_scan(current_user, 8, 3)
+		if(SHIP_TRAY_MODE_PIPE)
+			show_pipe_connections()
+		if(SHIP_TRAY_MODE_THERMAL)
+			show_thermal_overlay()
+
+/// Show pipe connection overlays around the drone (like pipe connectable goggles)
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/show_pipe_connections()
+	if(!current_user?.client || !eyeobj)
+		return
+
+	var/range = 3
+
+	// Clean up old images that are out of range
+	for(var/obj/machinery/atmospherics/pipe/smart/smart in tray_connection_images)
+		if(get_dist(eyeobj, smart) > range)
+			tray_connection_images -= smart
+
+	// Show connection arrows on smart pipes
+	for(var/obj/machinery/atmospherics/pipe/smart/smart in orange(range, eyeobj))
+		if(!tray_connection_images[smart])
+			tray_connection_images[smart] = list()
+		for(var/direction in GLOB.cardinals)
+			if(!(smart.get_init_directions() & direction))
+				continue
+			if(!tray_connection_images[smart][dir2text(direction)])
+				var/image/arrow = new('icons/obj/pipes_n_cables/simple.dmi', get_turf(smart), "connection_overlay")
+				arrow.dir = direction
+				arrow.layer = smart.layer
+				arrow.color = smart.pipe_color
+				PIPING_LAYER_DOUBLE_SHIFT(arrow, smart.piping_layer)
+				tray_connection_images[smart][dir2text(direction)] = arrow
+			if(tray_connection_images.len)
+				flick_overlay_global(tray_connection_images[smart][dir2text(direction)], list(current_user.client), 1.5 SECONDS)
+
+/// Show thermal overlay around the drone (like atmos thermal goggles)
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/show_thermal_overlay()
+	if(!current_user?.client || !eyeobj)
+		return
+	// Use the global atmos_thermal proc which handles everything
+	atmos_thermal(current_user, 5, 10)
 
 /// Close all configuration UIs when exiting camera mode
 /obj/machinery/computer/camera_advanced/base_construction/ship/remove_eye_control(mob/living/user)
@@ -517,6 +719,8 @@
 		SStgui.close_uis(internal_rpd)
 	if(internal_rld)
 		SStgui.close_uis(internal_rld)
+	// Clear T-ray connection images
+	tray_connection_images.Cut()
 	return ..()
 
 /// Show installed upgrades when examining
@@ -599,16 +803,24 @@
 		if((upgrade_disk.upgrade_flags & SHIP_CONSTRUCTION_UPGRADE_RTD) && !internal_rtd)
 			internal_rtd = new(src)
 			internal_rtd.ship_console = src
-			internal_rtd.matter = internal_rtd.max_matter
+			// Enable silo link by default for RTD
+			internal_rtd.silo_mats = internal_rtd.AddComponent(/datum/component/remote_materials, FALSE, FALSE)
+			internal_rtd.silo_link = TRUE
 
 		if((upgrade_disk.upgrade_flags & SHIP_CONSTRUCTION_UPGRADE_RPD) && !internal_rpd)
 			internal_rpd = new(src)
 			internal_rpd.ship_console = src
+			// Enable silo link by default for RPD
+			internal_rpd.silo_mats = internal_rpd.AddComponent(/datum/component/remote_materials, FALSE, FALSE)
+			internal_rpd.silo_link = TRUE
 
 		if((upgrade_disk.upgrade_flags & SHIP_CONSTRUCTION_UPGRADE_RLD) && !internal_rld)
 			internal_rld = new(src)
 			internal_rld.ship_console = src
-			internal_rld.matter = internal_rld.max_matter
+			// Enable silo link by default for RLD
+			internal_rld.construction_upgrades |= RCD_UPGRADE_SILO_LINK
+			internal_rld.silo_mats = internal_rld.AddComponent(/datum/component/remote_materials, FALSE, FALSE)
+			internal_rld.silo_link = TRUE
 
 		playsound(loc, 'sound/machines/click.ogg', 50, TRUE)
 		balloon_alert(user, "upgrade installed")
@@ -638,13 +850,19 @@
 		silo.connect_receptacle(internal_rcd.silo_mats, internal_rcd)
 		internal_rcd.silo_link = TRUE  // Enable silo link mode
 
-		// Also link the RTD to the silo if installed and has silo upgrade
+		// Also link the RTD to the silo if installed
 		if(internal_rtd?.silo_mats)
 			internal_rtd.silo_mats.disconnect()
 			silo.connect_receptacle(internal_rtd.silo_mats, internal_rtd)
 			internal_rtd.silo_link = TRUE
 
-		// Also link the RLD to the silo if installed and has silo upgrade
+		// Also link the RPD to the silo if installed
+		if(internal_rpd?.silo_mats)
+			internal_rpd.silo_mats.disconnect()
+			silo.connect_receptacle(internal_rpd.silo_mats, internal_rpd)
+			internal_rpd.silo_link = TRUE
+
+		// Also link the RLD to the silo if installed
 		if(internal_rld?.silo_mats)
 			internal_rld.silo_mats.disconnect()
 			silo.connect_receptacle(internal_rld.silo_mats, internal_rld)
@@ -685,6 +903,9 @@
 		actions += new /datum/action/innate/construction/ship/rld_color(src)
 		actions += new /datum/action/innate/construction/ship/rld_build(src)
 		actions += new /datum/action/innate/construction/ship/rld_remove(src)
+	// T-ray scanner action (added if upgrade is installed)
+	if(console_upgrades & SHIP_CONSTRUCTION_UPGRADE_TRAY)
+		actions += new /datum/action/innate/construction/ship/tray_toggle(src)
 
 /// Refreshes the actions list (called when upgrades are installed)
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/refresh_actions()

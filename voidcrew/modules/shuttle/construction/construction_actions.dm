@@ -214,7 +214,7 @@
 		remote_eye.balloon_alert(owner, "no RTD installed!")
 		return
 
-	var/obj/item/construction/rtd/rtd = ship_console.internal_rtd
+	var/obj/item/construction/rtd/internal/rtd = ship_console.internal_rtd
 
 	// RTD can only tile on plating
 	if(!istype(target_turf, /turf/open/floor/plating))
@@ -223,14 +223,10 @@
 
 	owner.changeNext_move(CLICK_CD_RANGE)
 
-	// Check resources
-	if(!rtd.checkResource(rtd.selected_design.cost, owner))
-		remote_eye.balloon_alert(owner, "not enough resources!")
+	// Check and use silo materials
+	if(!rtd.check_tile_materials(owner))
 		return
-
-	// Use resources and place the tile
-	if(!rtd.useResource(rtd.selected_design.cost, owner))
-		remote_eye.balloon_alert(owner, "not enough resources!")
+	if(!rtd.use_tile_materials(owner))
 		return
 
 	// Create and place the tile
@@ -276,19 +272,7 @@
 
 	owner.changeNext_move(CLICK_CD_RANGE)
 
-	// Flat cost for removing any floor tile (no GLOB.floor_designs restriction)
-	var/cost = 15
-
-	// Check resources
-	var/obj/item/construction/rtd/rtd = ship_console.internal_rtd
-	if(!rtd.checkResource(cost, owner))
-		remote_eye.balloon_alert(owner, "not enough resources!")
-		return
-
-	// Use resources
-	if(!rtd.useResource(cost, owner))
-		remote_eye.balloon_alert(owner, "not enough resources!")
-		return
+	// Tile deconstruction is free (no silo materials needed)
 
 	// Remove decals
 	var/list/all_decals = list()
@@ -346,8 +330,16 @@
 
 	owner.changeNext_move(CLICK_CD_RANGE)
 
+	var/obj/item/pipe_dispenser/internal/rpd = ship_console.internal_rpd
+
+	// Check and use silo materials before placing pipe
+	if(!rpd.check_pipe_materials(owner))
+		return
+	if(!rpd.use_pipe_materials(owner))
+		return
+
 	// Use the RPD's interact_with_atom to handle pipe placement
-	ship_console.internal_rpd.interact_with_atom(target_turf, owner)
+	rpd.interact_with_atom(target_turf, owner)
 
 /// Ship RPD destroy action - removes pipes
 /datum/action/innate/construction/ship/rpd_destroy
@@ -455,11 +447,6 @@
 	button_icon = 'voidcrew/icons/obj/tools.dmi'
 	button_icon_state = "rld_construct"
 
-// RLD costs - matching base RLD defines
-#define SHIP_RLD_LIGHT_TUBE_COST 10
-#define SHIP_RLD_FLOOR_LIGHT_COST 15
-#define SHIP_RLD_GLOW_STICK_COST 5
-
 /datum/action/innate/construction/ship/rld_build/Activate()
 	if(..())
 		return
@@ -474,15 +461,14 @@
 
 	owner.changeNext_move(CLICK_CD_RANGE)
 
-	var/obj/item/construction/rld/rld = ship_console.internal_rld
+	var/obj/item/construction/rld/internal/rld = ship_console.internal_rld
 
 	// RLD mode: 1 = GLOW_MODE, 2 = LIGHT_MODE
 	switch(rld.mode)
 		if(1) // GLOW_MODE - throw glowstick
-			if(!rld.checkResource(SHIP_RLD_GLOW_STICK_COST, owner))
-				remote_eye.balloon_alert(owner, "not enough resources!")
+			if(!rld.check_glow_stick_materials(owner))
 				return
-			if(!rld.useResource(SHIP_RLD_GLOW_STICK_COST, owner))
+			if(!rld.use_glow_stick_materials(owner))
 				return
 			// Create and throw glowstick
 			var/obj/item/flashlight/glowstick/new_stick = new(get_turf(remote_eye))
@@ -509,10 +495,9 @@
 					remote_eye.balloon_alert(owner, "light already there!")
 					return
 
-				if(!rld.checkResource(SHIP_RLD_LIGHT_TUBE_COST, owner))
-					remote_eye.balloon_alert(owner, "not enough resources!")
+				if(!rld.check_wall_light_materials(owner))
 					return
-				if(!rld.useResource(SHIP_RLD_LIGHT_TUBE_COST, owner))
+				if(!rld.use_wall_light_materials(owner))
 					return
 
 				// Place wall light on the open turf, facing the wall
@@ -528,10 +513,9 @@
 					remote_eye.balloon_alert(owner, "light already there!")
 					return
 
-				if(!rld.checkResource(SHIP_RLD_FLOOR_LIGHT_COST, owner))
-					remote_eye.balloon_alert(owner, "not enough resources!")
+				if(!rld.check_floor_light_materials(owner))
 					return
-				if(!rld.useResource(SHIP_RLD_FLOOR_LIGHT_COST, owner))
+				if(!rld.use_floor_light_materials(owner))
 					return
 
 				var/obj/machinery/light/floor/FL = new(target_turf)
@@ -585,3 +569,34 @@
 	// Remove the light
 	playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
 	qdel(target_light)
+
+// ============================================
+// T-Ray Scanner Actions
+// ============================================
+
+/// Ship T-ray toggle action - cycles through scanner modes
+/datum/action/innate/construction/ship/tray_toggle
+	name = "Toggle Scanner"
+	button_icon = 'icons/obj/devices/scanner.dmi'
+	button_icon_state = "t-ray0"
+
+/datum/action/innate/construction/ship/tray_toggle/Activate()
+	if(..())
+		return
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
+
+	// Cycle through modes: off -> t-ray -> pipe -> thermal -> off
+	switch(ship_console.tray_mode)
+		if(SHIP_TRAY_MODE_OFF)
+			ship_console.tray_mode = SHIP_TRAY_MODE_TRAY
+			remote_eye.balloon_alert(owner, "T-ray mode")
+		if(SHIP_TRAY_MODE_TRAY)
+			ship_console.tray_mode = SHIP_TRAY_MODE_PIPE
+			remote_eye.balloon_alert(owner, "pipe connections mode")
+		if(SHIP_TRAY_MODE_PIPE)
+			ship_console.tray_mode = SHIP_TRAY_MODE_THERMAL
+			remote_eye.balloon_alert(owner, "thermal mode")
+		if(SHIP_TRAY_MODE_THERMAL)
+			ship_console.tray_mode = SHIP_TRAY_MODE_OFF
+			ship_console.tray_connection_images.Cut()
+			remote_eye.balloon_alert(owner, "scanner off")
