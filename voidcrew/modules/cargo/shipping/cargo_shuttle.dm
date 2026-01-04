@@ -35,7 +35,7 @@
 	return ..()
 
 /**
- * Cleans up all shuttle resources
+ * Cleans up all shuttle resources (for error states, not normal departure)
  */
 /datum/voidcrew_cargo_shuttle/proc/cleanup_shuttle()
 	log_shuttle("VOIDCREW CARGO: cleanup_shuttle() called")
@@ -54,29 +54,13 @@
 			docked_at.second_dock_taken = FALSE
 		cargo_dock_index = 0
 
-	// Delete the shuttle port
-	if(shuttle_port && !QDELETED(shuttle_port))
-		log_shuttle("VOIDCREW CARGO: Cleaning up shuttle_port [shuttle_port]")
+	// Move back to transit if possible, then destroy
+	if(shuttle_port && !QDELETED(shuttle_port) && transit_dock && !QDELETED(transit_dock))
+		log_shuttle("VOIDCREW CARGO: Moving shuttle back to transit")
+		shuttle_port.initiate_docking(transit_dock, force = TRUE)
 
-		// Clear any SSshuttle references BEFORE deleting
-		if(SSshuttle.supply == shuttle_port)
-			SSshuttle.supply = null
-
-		// Move back to transit dock first - this keeps the shuttle in the transit reservation
-		// When we delete the transit dock, the reservation cleanup handles the turfs
-		if(transit_dock && !QDELETED(transit_dock))
-			log_shuttle("VOIDCREW CARGO: Moving shuttle back to transit")
-			shuttle_port.initiate_docking(transit_dock, force = TRUE)
-
-		// Now delete the shuttle port (this calls unregister())
-		qdel(shuttle_port)
-	shuttle_port = null
-
-	// Clean up transit dock - this releases the turf reservation which cleans up the turfs
-	if(transit_dock && !QDELETED(transit_dock))
-		log_shuttle("VOIDCREW CARGO: Deleting transit dock")
-		qdel(transit_dock)
-	transit_dock = null
+	// Destroy the shuttle completely
+	destroy_shuttle()
 
 	docked_at = null
 	log_shuttle("VOIDCREW CARGO: cleanup_shuttle() complete")
@@ -145,6 +129,9 @@
 		qdel(template)
 		return FALSE
 
+	log_shuttle("VOIDCREW CARGO: Found docking port: [shuttle_port] at ([shuttle_port.x], [shuttle_port.y], [shuttle_port.z])")
+	log_shuttle("VOIDCREW CARGO: Port dimensions: width=[shuttle_port.width], height=[shuttle_port.height], dwidth=[shuttle_port.dwidth], dheight=[shuttle_port.dheight]")
+
 	// Don't let this become SSshuttle.supply
 	if(SSshuttle.supply == shuttle_port)
 		SSshuttle.supply = null
@@ -160,7 +147,12 @@
 	template.post_load(shuttle_port)
 	qdel(template)
 
-	log_shuttle("VOIDCREW CARGO: Shuttle spawned, port=[shuttle_port], shuttle_areas=[length(shuttle_port.shuttle_areas)]")
+	// Count turfs in shuttle areas after loading
+	var/turf_count = 0
+	for(var/area/shuttle_area as anything in shuttle_port.shuttle_areas)
+		for(var/turf/T in shuttle_area)
+			turf_count++
+	log_shuttle("VOIDCREW CARGO: Shuttle spawned, port=[shuttle_port], shuttle_areas=[length(shuttle_port.shuttle_areas)], turf_count=[turf_count]")
 	return TRUE
 
 /**
@@ -298,6 +290,16 @@
 
 	log_shuttle("VOIDCREW CARGO: Ship using dock [ship_dock], cargo will use dock [cargo_dock]")
 
+	// Log shuttle dimensions for debugging
+	log_shuttle("VOIDCREW CARGO: shuttle_port dimensions: width=[shuttle_port.width], height=[shuttle_port.height], dwidth=[shuttle_port.dwidth], dheight=[shuttle_port.dheight]")
+	log_shuttle("VOIDCREW CARGO: cargo_dock dimensions before: width=[cargo_dock.width], height=[cargo_dock.height]")
+
+	// Set cargo_dock dimensions to match the cargo shuttle
+	cargo_dock.width = shuttle_port.width
+	cargo_dock.height = shuttle_port.height
+
+	log_shuttle("VOIDCREW CARGO: cargo_dock dimensions after: width=[cargo_dock.width], height=[cargo_dock.height]")
+
 	// Use the same positioning system as ship-to-ship docking
 	// This positions both docks adjacent to each other at the center of the z-level
 	target_ship.position_docks_for_direct_docking(docked_at, ship_dock, cargo_dock, ship_shuttle, shuttle_port)
@@ -321,6 +323,14 @@
 		cleanup_shuttle()
 		return FALSE
 
+	// Debug: count turfs in shuttle areas after docking
+	var/turf_count = 0
+	for(var/area/shuttle_area as anything in shuttle_port.shuttle_areas)
+		for(var/turf/T in shuttle_area)
+			turf_count++
+	log_shuttle("VOIDCREW CARGO: After docking, shuttle has [turf_count] turfs in [length(shuttle_port.shuttle_areas)] areas")
+	log_shuttle("VOIDCREW CARGO: shuttle_port now at ([shuttle_port.x], [shuttle_port.y], [shuttle_port.z])")
+
 	state = CARGO_SHUTTLE_DOCKED
 	linked_console?.say("Cargo shuttle has arrived.")
 	log_shuttle("VOIDCREW CARGO: Shuttle docked successfully")
@@ -340,7 +350,7 @@
 	return TRUE
 
 /**
- * Timer callback - exports cargo and cleans up shuttle
+ * Timer callback - moves shuttle to transit, processes cargo, then cleans up
  */
 /datum/voidcrew_cargo_shuttle/proc/complete_departure()
 	warmup_timer = null
@@ -351,14 +361,75 @@
 	if(state != CARGO_SHUTTLE_DEPARTING)
 		return FALSE
 
-	// Export cargo before leaving
+	// Release the reserve dock first
+	if(docked_at && cargo_dock_index)
+		log_shuttle("VOIDCREW CARGO: Releasing dock [cargo_dock_index]")
+		if(cargo_dock_index == 1)
+			docked_at.first_dock_taken = FALSE
+		else if(cargo_dock_index == 2)
+			docked_at.second_dock_taken = FALSE
+		cargo_dock_index = 0
+
+	// Move shuttle back to transit for processing
+	if(shuttle_port && !QDELETED(shuttle_port) && transit_dock && !QDELETED(transit_dock))
+		log_shuttle("VOIDCREW CARGO: Moving shuttle to transit for processing")
+		shuttle_port.initiate_docking(transit_dock, force = TRUE)
+
+	// Export cargo while in transit
 	linked_console?.sell()
 
-	// Clean up everything - shuttle is ephemeral
-	cleanup_shuttle()
+	// Now fully destroy the shuttle
+	destroy_shuttle()
 
 	state = CARGO_SHUTTLE_AWAY
 	target_ship = null
+	docked_at = null
 	linked_console?.say("Cargo shuttle has departed.")
 	log_shuttle("VOIDCREW CARGO: Shuttle departed and cleaned up")
 	return TRUE
+
+/**
+ * Completely destroys the shuttle - deletes all turfs and objects
+ */
+/datum/voidcrew_cargo_shuttle/proc/destroy_shuttle()
+	log_shuttle("VOIDCREW CARGO: destroy_shuttle() called")
+
+	if(!shuttle_port || QDELETED(shuttle_port))
+		shuttle_port = null
+		return
+
+	// Clear SSshuttle references
+	if(SSshuttle.supply == shuttle_port)
+		SSshuttle.supply = null
+
+	// Get all turfs in shuttle areas before we delete the port
+	var/list/shuttle_turfs = list()
+	for(var/area/shuttle_area as anything in shuttle_port.shuttle_areas)
+		for(var/turf/T in shuttle_area)
+			shuttle_turfs += T
+
+	log_shuttle("VOIDCREW CARGO: Destroying [length(shuttle_turfs)] shuttle turfs")
+
+	// Delete all movable objects on shuttle turfs (except the docking port itself)
+	for(var/turf/T as anything in shuttle_turfs)
+		for(var/atom/movable/AM in T)
+			if(AM == shuttle_port)
+				continue
+			if(isliving(AM))
+				continue // Don't delete mobs
+			qdel(AM)
+
+	// Convert all shuttle turfs to space
+	for(var/turf/T as anything in shuttle_turfs)
+		T.ChangeTurf(/turf/open/space, flags = CHANGETURF_DEFER_CHANGE)
+
+	// Delete the shuttle port
+	qdel(shuttle_port)
+	shuttle_port = null
+
+	// Clean up transit dock
+	if(transit_dock && !QDELETED(transit_dock))
+		qdel(transit_dock)
+	transit_dock = null
+
+	log_shuttle("VOIDCREW CARGO: destroy_shuttle() complete")

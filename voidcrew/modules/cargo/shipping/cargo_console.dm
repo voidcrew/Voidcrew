@@ -271,8 +271,9 @@
 						say("Error: No orders in cart.")
 						return TRUE
 
-					buy() // Spawn items in shuttle cargo bay
+					// First spawn the shuttle, then load cargo into it
 					if(cargo_shuttle.call_shuttle(ship))
+						buy() // Spawn items in shuttle cargo bay (now that shuttle exists)
 						say("Cargo shuttle called. ETA 30 seconds.")
 						usr.investigate_log("called the [bank_account_holder.synced_bank_account.account_holder] cargo shuttle.", INVESTIGATE_CARGO)
 
