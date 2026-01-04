@@ -27,19 +27,84 @@
 	var/obj/structure/overmap/ship/target_ship
 	/// Which reserve dock we're using (1 or 2)
 	var/cargo_dock_index = 0
+	/// Transaction history - list of lists with keys: type, name, amount, value, time
+	var/list/transaction_history = list()
+	/// Maximum history entries to keep
+	var/max_history = 50
+	/// Current pending shuttle loan offer (if any)
+	var/datum/voidcrew_shuttle_loan/pending_loan
+	/// Whether a loan was accepted and items should spawn on arrival
+	var/loan_accepted = FALSE
+
+/**
+ * Records a transaction in the history
+ */
+/datum/voidcrew_cargo_shuttle/proc/record_transaction(type, name, amount, value)
+	var/list/entry = list(
+		"type" = type,
+		"name" = name,
+		"amount" = amount,
+		"value" = value,
+		"time" = station_time_timestamp()
+	)
+	transaction_history.Insert(1, list(entry)) // Insert at beginning (newest first)
+	if(length(transaction_history) > max_history)
+		transaction_history.len = max_history
 
 /datum/voidcrew_cargo_shuttle/Destroy()
 	cleanup_shuttle()
 	linked_console = null
 	target_ship = null
+	QDEL_NULL(pending_loan)
 	return ..()
+
+/**
+ * Receives a new shuttle loan offer
+ * Returns TRUE if offer was received successfully
+ */
+/datum/voidcrew_cargo_shuttle/proc/receive_loan_offer(datum/voidcrew_shuttle_loan/loan_type)
+	if(pending_loan)
+		return FALSE // Already have a pending offer
+	if(state != CARGO_SHUTTLE_AWAY)
+		return FALSE // Shuttle is busy
+
+	pending_loan = new loan_type()
+	return TRUE
+
+/**
+ * Accepts the current shuttle loan offer
+ * Returns TRUE if accepted successfully
+ */
+/datum/voidcrew_cargo_shuttle/proc/accept_loan()
+	if(!pending_loan)
+		return FALSE
+	if(state != CARGO_SHUTTLE_AWAY)
+		return FALSE
+
+	loan_accepted = TRUE
+
+	// Add bonus credits to the linked bank account
+	if(linked_console?.bank_account_holder?.synced_bank_account && pending_loan.bonus_credits > 0)
+		linked_console.bank_account_holder.synced_bank_account.adjust_money(pending_loan.bonus_credits)
+		record_transaction("loan", pending_loan.logging_desc, 1, pending_loan.bonus_credits)
+
+	// Announce acceptance
+	if(target_ship)
+		target_ship.ship_announce(pending_loan.thanks_msg, pending_loan.sender)
+
+	return TRUE
+
+/**
+ * Declines/clears the current shuttle loan offer
+ */
+/datum/voidcrew_cargo_shuttle/proc/decline_loan()
+	QDEL_NULL(pending_loan)
+	loan_accepted = FALSE
 
 /**
  * Cleans up all shuttle resources (for error states, not normal departure)
  */
 /datum/voidcrew_cargo_shuttle/proc/cleanup_shuttle()
-	log_shuttle("VOIDCREW CARGO: cleanup_shuttle() called")
-
 	if(warmup_timer)
 		deltimer(warmup_timer)
 		warmup_timer = null
@@ -47,7 +112,6 @@
 
 	// Release the reserve dock
 	if(docked_at && cargo_dock_index)
-		log_shuttle("VOIDCREW CARGO: Releasing dock [cargo_dock_index]")
 		if(cargo_dock_index == 1)
 			docked_at.first_dock_taken = FALSE
 		else if(cargo_dock_index == 2)
@@ -56,14 +120,12 @@
 
 	// Move back to transit if possible, then destroy
 	if(shuttle_port && !QDELETED(shuttle_port) && transit_dock && !QDELETED(transit_dock))
-		log_shuttle("VOIDCREW CARGO: Moving shuttle back to transit")
 		shuttle_port.initiate_docking(transit_dock, force = TRUE)
 
 	// Destroy the shuttle completely
 	destroy_shuttle()
 
 	docked_at = null
-	log_shuttle("VOIDCREW CARGO: cleanup_shuttle() complete")
 
 /**
  * Spawns the cargo shuttle using SSshuttle's transit system
@@ -72,18 +134,13 @@
 /datum/voidcrew_cargo_shuttle/proc/spawn_shuttle()
 	// Always spawn fresh - clean up any existing shuttle first
 	if(shuttle_port && !QDELETED(shuttle_port))
-		log_shuttle("VOIDCREW CARGO: spawn_shuttle() cleaning up existing shuttle")
 		cleanup_shuttle()
 	shuttle_port = null // Ensure it's null even if QDELETED
 
 	// Use the existing cargo_box template
 	var/datum/map_template/shuttle/cargo/box/template = new()
 
-	log_shuttle("VOIDCREW CARGO: Using template [template.name], mappath=[template.mappath]")
-	log_shuttle("VOIDCREW CARGO: Template dimensions: [template.width]x[template.height]")
-
 	if(!template.width || !template.height)
-		log_shuttle("VOIDCREW CARGO: Template dimensions are 0!")
 		qdel(template)
 		return FALSE
 
@@ -97,7 +154,6 @@
 	)
 
 	if(!transit_dock.reserved_area)
-		log_shuttle("VOIDCREW CARGO: Failed to reserve transit turf block")
 		QDEL_NULL(transit_dock)
 		qdel(template)
 		return FALSE
@@ -111,8 +167,6 @@
 	transit_turf = locate(transit_turf.x + SHUTTLE_TRANSIT_BORDER, transit_turf.y + SHUTTLE_TRANSIT_BORDER, transit_turf.z)
 	transit_dock.forceMove(transit_turf)
 
-	log_shuttle("VOIDCREW CARGO: Loading shuttle at [transit_turf]")
-
 	// Load the shuttle template - register = TRUE so shuttle_areas get populated
 	template.load(transit_turf, centered = FALSE, register = TRUE)
 
@@ -124,13 +178,9 @@
 			break
 
 	if(!shuttle_port)
-		log_shuttle("VOIDCREW CARGO: Docking port not found in loaded template!")
 		QDEL_NULL(transit_dock)
 		qdel(template)
 		return FALSE
-
-	log_shuttle("VOIDCREW CARGO: Found docking port: [shuttle_port] at ([shuttle_port.x], [shuttle_port.y], [shuttle_port.z])")
-	log_shuttle("VOIDCREW CARGO: Port dimensions: width=[shuttle_port.width], height=[shuttle_port.height], dwidth=[shuttle_port.dwidth], dheight=[shuttle_port.dheight]")
 
 	// Don't let this become SSshuttle.supply
 	if(SSshuttle.supply == shuttle_port)
@@ -147,12 +197,6 @@
 	template.post_load(shuttle_port)
 	qdel(template)
 
-	// Count turfs in shuttle areas after loading
-	var/turf_count = 0
-	for(var/area/shuttle_area as anything in shuttle_port.shuttle_areas)
-		for(var/turf/T in shuttle_area)
-			turf_count++
-	log_shuttle("VOIDCREW CARGO: Shuttle spawned, port=[shuttle_port], shuttle_areas=[length(shuttle_port.shuttle_areas)], turf_count=[turf_count]")
 	return TRUE
 
 /**
@@ -191,7 +235,8 @@
 	if(!warmup_started)
 		return 0
 	var/elapsed = world.time - warmup_started
-	var/remaining = max(0, CARGO_SHUTTLE_WARMUP - elapsed)
+	var/warmup_duration = (state == CARGO_SHUTTLE_DEPARTING) ? CARGO_SHUTTLE_DEPARTURE_WARMUP : CARGO_SHUTTLE_WARMUP
+	var/remaining = max(0, warmup_duration - elapsed)
 	return round(remaining / 10) // Convert to seconds
 
 /**
@@ -199,11 +244,9 @@
  */
 /datum/voidcrew_cargo_shuttle/proc/call_shuttle(obj/structure/overmap/ship/ship)
 	if(state != CARGO_SHUTTLE_AWAY)
-		log_shuttle("VOIDCREW CARGO: call_shuttle failed - state is [state], not AWAY")
 		return FALSE
 
 	if(!istype(ship?.docked, /obj/structure/overmap/planet/empty))
-		log_shuttle("VOIDCREW CARGO: call_shuttle failed - ship not docked at empty space")
 		return FALSE
 
 	target_ship = ship
@@ -211,14 +254,12 @@
 
 	// Spawn shuttle fresh
 	if(!spawn_shuttle())
-		log_shuttle("VOIDCREW CARGO: call_shuttle failed - spawn_shuttle returned FALSE")
 		return FALSE
 
 	// Start warmup
 	state = CARGO_SHUTTLE_ARRIVING
 	warmup_started = world.time
 	warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_arrival)), CARGO_SHUTTLE_WARMUP, TIMER_STOPPABLE)
-	log_shuttle("VOIDCREW CARGO: Shuttle called, timer set for [CARGO_SHUTTLE_WARMUP/10]s")
 	return TRUE
 
 /**
@@ -228,17 +269,13 @@
 	warmup_timer = null
 	warmup_started = null
 
-	log_shuttle("VOIDCREW CARGO: complete_arrival() called")
-
 	if(state != CARGO_SHUTTLE_ARRIVING || !docked_at || !target_ship)
-		log_shuttle("VOIDCREW CARGO: complete_arrival() aborted - invalid state")
 		state = CARGO_SHUTTLE_AWAY
 		cleanup_shuttle()
 		return FALSE
 
 	// Make sure the empty space level is loaded
 	if(!docked_at.loaded)
-		log_shuttle("VOIDCREW CARGO: Empty space not loaded, loading...")
 		if(!docked_at.loading)
 			docked_at.load_level()
 		// Schedule retry
@@ -249,7 +286,6 @@
 	// Find the player's ship shuttle
 	var/obj/docking_port/mobile/voidcrew/ship_shuttle = target_ship.shuttle
 	if(!ship_shuttle)
-		log_shuttle("VOIDCREW CARGO: Could not find player ship's shuttle")
 		state = CARGO_SHUTTLE_AWAY
 		linked_console?.say("Error: Could not locate ship.")
 		cleanup_shuttle()
@@ -263,7 +299,6 @@
 		ship_dock = docked_at.reserve_dock
 		cargo_dock = docked_at.reserve_dock_secondary
 		if(docked_at.second_dock_taken)
-			log_shuttle("VOIDCREW CARGO: Both docks taken!")
 			state = CARGO_SHUTTLE_AWAY
 			linked_console?.say("Error: No available docking ports.")
 			cleanup_shuttle()
@@ -274,7 +309,6 @@
 		ship_dock = docked_at.reserve_dock_secondary
 		cargo_dock = docked_at.reserve_dock
 		if(docked_at.first_dock_taken)
-			log_shuttle("VOIDCREW CARGO: Both docks taken!")
 			state = CARGO_SHUTTLE_AWAY
 			linked_console?.say("Error: No available docking ports.")
 			cleanup_shuttle()
@@ -282,58 +316,41 @@
 		docked_at.first_dock_taken = TRUE
 		cargo_dock_index = 1
 	else
-		log_shuttle("VOIDCREW CARGO: Could not find player ship's dock")
 		state = CARGO_SHUTTLE_AWAY
 		linked_console?.say("Error: Ship docking port not found.")
 		cleanup_shuttle()
 		return FALSE
 
-	log_shuttle("VOIDCREW CARGO: Ship using dock [ship_dock], cargo will use dock [cargo_dock]")
-
-	// Log shuttle dimensions for debugging
-	log_shuttle("VOIDCREW CARGO: shuttle_port dimensions: width=[shuttle_port.width], height=[shuttle_port.height], dwidth=[shuttle_port.dwidth], dheight=[shuttle_port.dheight]")
-	log_shuttle("VOIDCREW CARGO: cargo_dock dimensions before: width=[cargo_dock.width], height=[cargo_dock.height]")
-
 	// Set cargo_dock dimensions to match the cargo shuttle
 	cargo_dock.width = shuttle_port.width
 	cargo_dock.height = shuttle_port.height
-
-	log_shuttle("VOIDCREW CARGO: cargo_dock dimensions after: width=[cargo_dock.width], height=[cargo_dock.height]")
 
 	// Use the same positioning system as ship-to-ship docking
 	// This positions both docks adjacent to each other at the center of the z-level
 	target_ship.position_docks_for_direct_docking(docked_at, ship_dock, cargo_dock, ship_shuttle, shuttle_port)
 
-	log_shuttle("VOIDCREW CARGO: Docks positioned, ship_dock at ([ship_dock.x], [ship_dock.y]), cargo_dock at ([cargo_dock.x], [cargo_dock.y])")
-
 	// Redock the player ship to its repositioned dock
-	log_shuttle("VOIDCREW CARGO: Redocking player ship...")
-	var/ship_result = ship_shuttle.initiate_docking(ship_dock, force = TRUE)
-	log_shuttle("VOIDCREW CARGO: Ship redock result: [ship_result]")
+	ship_shuttle.initiate_docking(ship_dock, force = TRUE)
 
 	// Dock cargo shuttle
-	log_shuttle("VOIDCREW CARGO: Docking cargo shuttle...")
 	var/cargo_result = shuttle_port.initiate_docking(cargo_dock, force = TRUE)
-	log_shuttle("VOIDCREW CARGO: Cargo dock result: [cargo_result]")
 
 	if(cargo_result != DOCKING_SUCCESS)
-		log_shuttle("VOIDCREW CARGO: Cargo docking FAILED")
 		state = CARGO_SHUTTLE_AWAY
 		linked_console?.say("Error: Shuttle docking failed.")
 		cleanup_shuttle()
 		return FALSE
 
-	// Debug: count turfs in shuttle areas after docking
-	var/turf_count = 0
-	for(var/area/shuttle_area as anything in shuttle_port.shuttle_areas)
-		for(var/turf/T in shuttle_area)
-			turf_count++
-	log_shuttle("VOIDCREW CARGO: After docking, shuttle has [turf_count] turfs in [length(shuttle_port.shuttle_areas)] areas")
-	log_shuttle("VOIDCREW CARGO: shuttle_port now at ([shuttle_port.x], [shuttle_port.y], [shuttle_port.z])")
-
 	state = CARGO_SHUTTLE_DOCKED
 	linked_console?.say("Cargo shuttle has arrived.")
-	log_shuttle("VOIDCREW CARGO: Shuttle docked successfully")
+
+	// If a loan was accepted, spawn the loan items
+	if(loan_accepted && pending_loan)
+		pending_loan.spawn_items(src)
+		target_ship?.ship_announce(pending_loan.shuttle_transit_text, pending_loan.sender)
+		QDEL_NULL(pending_loan)
+		loan_accepted = FALSE
+
 	return TRUE
 
 /**
@@ -343,11 +360,28 @@
 	if(state != CARGO_SHUTTLE_DOCKED)
 		return FALSE
 
+	// Check for living mobs on the shuttle
+	if(has_living_mobs())
+		return FALSE
+
 	state = CARGO_SHUTTLE_DEPARTING
 	warmup_started = world.time
-	warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_departure)), CARGO_SHUTTLE_WARMUP, TIMER_STOPPABLE)
-	log_shuttle("VOIDCREW CARGO: Shuttle departing, timer set")
+	warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_departure)), CARGO_SHUTTLE_DEPARTURE_WARMUP, TIMER_STOPPABLE)
 	return TRUE
+
+/**
+ * Checks if there are any living mobs on the cargo shuttle
+ */
+/datum/voidcrew_cargo_shuttle/proc/has_living_mobs()
+	if(!shuttle_port)
+		return FALSE
+
+	for(var/area/shuttle_area as anything in shuttle_port.shuttle_areas)
+		for(var/turf/T in shuttle_area)
+			for(var/mob/living/L in T)
+				if(L.stat != DEAD)
+					return TRUE
+	return FALSE
 
 /**
  * Timer callback - moves shuttle to transit, processes cargo, then cleans up
@@ -356,14 +390,11 @@
 	warmup_timer = null
 	warmup_started = null
 
-	log_shuttle("VOIDCREW CARGO: complete_departure() called")
-
 	if(state != CARGO_SHUTTLE_DEPARTING)
 		return FALSE
 
 	// Release the reserve dock first
 	if(docked_at && cargo_dock_index)
-		log_shuttle("VOIDCREW CARGO: Releasing dock [cargo_dock_index]")
 		if(cargo_dock_index == 1)
 			docked_at.first_dock_taken = FALSE
 		else if(cargo_dock_index == 2)
@@ -372,7 +403,6 @@
 
 	// Move shuttle back to transit for processing
 	if(shuttle_port && !QDELETED(shuttle_port) && transit_dock && !QDELETED(transit_dock))
-		log_shuttle("VOIDCREW CARGO: Moving shuttle to transit for processing")
 		shuttle_port.initiate_docking(transit_dock, force = TRUE)
 
 	// Export cargo while in transit
@@ -385,15 +415,12 @@
 	target_ship = null
 	docked_at = null
 	linked_console?.say("Cargo shuttle has departed.")
-	log_shuttle("VOIDCREW CARGO: Shuttle departed and cleaned up")
 	return TRUE
 
 /**
  * Completely destroys the shuttle - deletes all turfs and objects
  */
 /datum/voidcrew_cargo_shuttle/proc/destroy_shuttle()
-	log_shuttle("VOIDCREW CARGO: destroy_shuttle() called")
-
 	if(!shuttle_port || QDELETED(shuttle_port))
 		shuttle_port = null
 		return
@@ -407,8 +434,6 @@
 	for(var/area/shuttle_area as anything in shuttle_port.shuttle_areas)
 		for(var/turf/T in shuttle_area)
 			shuttle_turfs += T
-
-	log_shuttle("VOIDCREW CARGO: Destroying [length(shuttle_turfs)] shuttle turfs")
 
 	// Delete all movable objects on shuttle turfs (except the docking port itself)
 	for(var/turf/T as anything in shuttle_turfs)
@@ -431,5 +456,3 @@
 	if(transit_dock && !QDELETED(transit_dock))
 		qdel(transit_dock)
 	transit_dock = null
-
-	log_shuttle("VOIDCREW CARGO: destroy_shuttle() complete")

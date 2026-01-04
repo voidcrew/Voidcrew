@@ -6796,6 +6796,8 @@
 #include "voidcrew\modules\cargo\bank_account.dm"
 #include "voidcrew\modules\cargo\bank_machine.dm"
 #include "voidcrew\modules\cargo\ntpay.dm"
+#include "voidcrew\modules\cargo\exports.dm"
+#include "voidcrew\modules\cargo\shipping\_shuttle_loan.dm"
 #include "voidcrew\modules\cargo\shipping\cargo_console.dm"
 #include "voidcrew\modules\cargo\shipping\cargo_shuttle.dm"
 #include "voidcrew\modules\cargo\shipping\ship_cargo.dm"

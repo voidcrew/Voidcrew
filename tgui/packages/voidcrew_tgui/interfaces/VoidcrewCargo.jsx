@@ -14,7 +14,7 @@ import {
 } from 'tgui-core/components';
 import { formatMoney } from 'tgui-core/format';
 import { Window } from '../../tgui/layouts';
-import { CargoCatalog } from '../../tgui/interfaces/Cargo/CargoCatalog';
+import { VoidcrewCargoCatalog } from './VoidcrewCargoCatalog';
 
 // Shuttle state constants (must match DM defines)
 const CARGO_SHUTTLE_AWAY = 0;
@@ -35,7 +35,7 @@ export const VoidcrewCargo = () => {
 export const VoidcrewCargoContent = () => {
   const { data } = useBackend();
   const [tab, setTab] = useSharedState('tab', 'catalog');
-  const { cart = [], supplies = {} } = data;
+  const { cart = [], supplies = {}, history = [] } = data;
   const cart_length = cart.reduce((total, entry) => total + entry.amount, 0);
   const hasSupplies = Object.keys(supplies).length > 0;
 
@@ -59,12 +59,19 @@ export const VoidcrewCargoContent = () => {
           >
             Checkout ({cart_length})
           </Tabs.Tab>
+          <Tabs.Tab
+            icon="history"
+            selected={tab === 'history'}
+            onClick={() => setTab('history')}
+          >
+            History ({history.length})
+          </Tabs.Tab>
         </Tabs>
       </Section>
       {tab === 'catalog' &&
         (hasSupplies ? (
           <Section fill height="550px">
-            <CargoCatalog express />
+            <VoidcrewCargoCatalog express />
           </Section>
         ) : (
           <Section>
@@ -74,6 +81,7 @@ export const VoidcrewCargoContent = () => {
           </Section>
         ))}
       {tab === 'cart' && <VoidcrewCargoCart />}
+      {tab === 'history' && <VoidcrewCargoHistory />}
     </Box>
   );
 };
@@ -87,6 +95,7 @@ const VoidcrewCargoStatus = () => {
     can_call_shuttle,
     shuttle_error,
     points,
+    loan,
   } = data;
 
   // Determine button text and state
@@ -159,8 +168,7 @@ const VoidcrewCargoStatus = () => {
           />
         </LabeledList.Item>
         <LabeledList.Item label="Status">{shuttle_status}</LabeledList.Item>
-        {(shuttle_state === CARGO_SHUTTLE_ARRIVING ||
-          shuttle_state === CARGO_SHUTTLE_DEPARTING) && (
+        {shuttle_state === CARGO_SHUTTLE_ARRIVING && (
           <LabeledList.Item label="Timer">
             <ProgressBar
               value={shuttle_timer}
@@ -175,12 +183,58 @@ const VoidcrewCargoStatus = () => {
             </ProgressBar>
           </LabeledList.Item>
         )}
+        {shuttle_state === CARGO_SHUTTLE_DEPARTING && (
+          <LabeledList.Item label="Timer">
+            <ProgressBar
+              value={shuttle_timer}
+              maxValue={5}
+              ranges={{
+                good: [3, 5],
+                average: [2, 3],
+                bad: [0, 2],
+              }}
+            >
+              {shuttle_timer}s remaining
+            </ProgressBar>
+          </LabeledList.Item>
+        )}
         {!!shuttle_error && shuttle_state === CARGO_SHUTTLE_AWAY && (
           <LabeledList.Item label="Note" color="bad">
             {shuttle_error}
           </LabeledList.Item>
         )}
       </LabeledList>
+      {!!loan && (
+        <Box mt={2} p={1} backgroundColor="rgba(255, 200, 0, 0.1)">
+          <Box bold color="yellow" mb={1}>
+            Shuttle Loan Offer from {loan.sender}
+          </Box>
+          <Box mb={1}>{loan.announcement}</Box>
+          {loan.bonus_credits > 0 && (
+            <Box color="good" mb={1}>
+              Bonus: {formatMoney(loan.bonus_credits)} credits
+            </Box>
+          )}
+          <Stack>
+            <Stack.Item>
+              <Button
+                color="green"
+                icon="check"
+                content="Accept Loan"
+                onClick={() => act('accept_loan')}
+              />
+            </Stack.Item>
+            <Stack.Item>
+              <Button
+                color="red"
+                icon="times"
+                content="Decline"
+                onClick={() => act('decline_loan')}
+              />
+            </Stack.Item>
+          </Stack>
+        </Box>
+      )}
     </Section>
   );
 };
@@ -291,6 +345,46 @@ const VoidcrewCargoCart = () => {
             then send it away to sell exports.
           </Box>
         </Box>
+      )}
+    </Section>
+  );
+};
+
+const VoidcrewCargoHistory = () => {
+  const { data } = useBackend();
+  const { history = [] } = data;
+
+  return (
+    <Section fill title="Transaction History">
+      {history.length === 0 && (
+        <Box color="label">No transactions recorded yet.</Box>
+      )}
+      {history.length > 0 && (
+        <Table>
+          <Table.Row header>
+            <Table.Cell>Time</Table.Cell>
+            <Table.Cell>Type</Table.Cell>
+            <Table.Cell>Item</Table.Cell>
+            <Table.Cell>Qty</Table.Cell>
+            <Table.Cell textAlign="right">Value</Table.Cell>
+          </Table.Row>
+          {history.map((entry, index) => (
+            <Table.Row key={index} className="candystripe">
+              <Table.Cell color="label">{entry.time}</Table.Cell>
+              <Table.Cell color={entry.type === 'buy' ? 'bad' : 'good'}>
+                {entry.type === 'buy' ? 'Purchase' : 'Sale'}
+              </Table.Cell>
+              <Table.Cell>{entry.name}</Table.Cell>
+              <Table.Cell>{entry.amount}</Table.Cell>
+              <Table.Cell textAlign="right">
+                <Box color={entry.type === 'buy' ? 'bad' : 'good'}>
+                  {entry.type === 'buy' ? '-' : '+'}
+                  {formatMoney(entry.value)} cr
+                </Box>
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table>
       )}
     </Section>
   );

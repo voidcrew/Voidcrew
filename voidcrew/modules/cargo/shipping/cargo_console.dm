@@ -14,11 +14,25 @@
 	///List of everything we're attempting to purchase.
 	var/list/datum/supply_order/checkout_list = list()
 
+	/// Whether contraband packs are available (set by emagging)
+	var/contraband = FALSE
+
+	/// Loaded coupons that can be applied to orders
+	var/list/obj/item/coupon/loaded_coupons
+
 /obj/machinery/computer/voidcrew_cargo/Destroy()
 	if(bank_account_holder)
 		on_bank_deletion(bank_account_holder)
 	QDEL_LIST(checkout_list)
+	QDEL_LAZYLIST(loaded_coupons)
 	return ..()
+
+/obj/machinery/computer/voidcrew_cargo/on_construction(mob/user)
+	. = ..()
+	var/obj/item/circuitboard/computer/voidcrew_cargo/board = circuit
+	if(board?.contraband)
+		contraband = TRUE
+		obj_flags |= EMAGGED
 
 /**
  * Gets the cargo shuttle for this console's ship
@@ -38,6 +52,44 @@
 	playsound(user, 'sound/machines/ding.ogg', 40, TRUE)
 	balloon_alert_to_viewers("new account synced")
 	return TRUE
+
+/obj/machinery/computer/voidcrew_cargo/emag_act(mob/user, obj/item/card/emag/emag_card)
+	if(obj_flags & EMAGGED)
+		return FALSE
+	if(user)
+		if(emag_card)
+			user.visible_message(span_warning("[user] swipes [emag_card] through [src]!"))
+		to_chat(user, span_notice("You adjust [src]'s routing and receiver spectrum, unlocking special supplies and contraband."))
+	obj_flags |= EMAGGED
+	contraband = TRUE
+	// Also set on circuit board so it persists through deconstruction
+	var/obj/item/circuitboard/computer/voidcrew_cargo/board = circuit
+	if(board)
+		board.contraband = TRUE
+		board.obj_flags |= EMAGGED
+	update_static_data(user)
+	return TRUE
+
+/obj/machinery/computer/voidcrew_cargo/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	// Handle trade chips
+	if(istype(tool, /obj/item/trade_chip))
+		var/obj/item/trade_chip/contract = tool
+		contract.try_to_unlock_contract(user)
+		return ITEM_INTERACT_SUCCESS
+	// Handle coupons
+	if(istype(tool, /obj/item/coupon))
+		var/obj/item/coupon/coupon = tool
+		coupon.inserted_console = src
+		LAZYADD(loaded_coupons, coupon)
+		say("Coupon for [initial(coupon.discounted_pack.name)] applied!")
+		coupon.forceMove(src)
+		return ITEM_INTERACT_SUCCESS
+	return ..()
+
+/obj/machinery/computer/voidcrew_cargo/Exited(atom/movable/gone, direction)
+	. = ..()
+	if(istype(gone, /obj/item/coupon))
+		LAZYREMOVE(loaded_coupons, gone)
 
 /obj/machinery/computer/voidcrew_cargo/proc/on_bank_deletion(atom/source)
 	SIGNAL_HANDLER
@@ -67,7 +119,7 @@
 			continue
 		if((pack.hidden && !(obj_flags & EMAGGED)) || (pack.special && !pack.special_enabled) || pack.drop_pod_only)
 			continue
-		if(pack.contraband)
+		if(pack.contraband && !contraband)
 			continue
 		var/obj/item/first_item = length(pack.contains) > 0 ? pack.contains[1] : null
 		packs += list(list(
@@ -122,6 +174,20 @@
 	data["shuttle_timer"] = cargo_shuttle?.get_remaining_time() || 0
 	data["can_call_shuttle"] = can_call_cargo_shuttle()
 	data["shuttle_error"] = get_shuttle_error_message()
+
+	// Transaction history
+	data["history"] = cargo_shuttle?.transaction_history || list()
+
+	// Shuttle loan offers
+	if(cargo_shuttle?.pending_loan)
+		var/datum/voidcrew_shuttle_loan/loan = cargo_shuttle.pending_loan
+		data["loan"] = list(
+			"sender" = loan.sender,
+			"announcement" = loan.announcement_text,
+			"bonus_credits" = loan.bonus_credits,
+		)
+	else
+		data["loan"] = null
 
 	// Shuttle state text for UI
 	switch(shuttle_state)
@@ -245,6 +311,28 @@
 			return TRUE
 
 		/**
+		 * SHUTTLE LOAN HANDLING
+		 */
+		if("accept_loan")
+			var/datum/voidcrew_cargo_shuttle/cargo_shuttle = get_cargo_shuttle()
+			if(!cargo_shuttle?.pending_loan)
+				say("No loan offer available.")
+				return TRUE
+			if(cargo_shuttle.accept_loan())
+				say("Loan offer accepted. Your shuttle will bring the cargo on its next arrival.")
+			else
+				say("Error: Could not accept loan offer.")
+			return TRUE
+
+		if("decline_loan")
+			var/datum/voidcrew_cargo_shuttle/cargo_shuttle = get_cargo_shuttle()
+			if(!cargo_shuttle?.pending_loan)
+				return TRUE
+			cargo_shuttle.decline_loan()
+			say("Loan offer declined.")
+			return TRUE
+
+		/**
 		 * CARGO SHUTTLE HANDLING
 		 */
 		if("send")
@@ -283,9 +371,13 @@
 						say("Error: Could not call cargo shuttle.")
 
 				if(CARGO_SHUTTLE_DOCKED)
+					// Check for living mobs before sending
+					if(cargo_shuttle.has_living_mobs())
+						say("Error: Living crew detected on cargo shuttle. Clear the shuttle before departure.")
+						return TRUE
 					// Send shuttle away
 					if(cargo_shuttle.send_shuttle())
-						say("Cargo shuttle departing. Exports will be processed in 30 seconds.")
+						say("Cargo shuttle departing. Exports will be processed shortly.")
 						usr.investigate_log("sent the [bank_account_holder.synced_bank_account.account_holder] cargo shuttle away.", INVESTIGATE_CARGO)
 					else
 						say("Error: Could not send cargo shuttle.")
@@ -352,6 +444,15 @@
 
 	var/amount = text2num(params["amount"]) || 1
 	for(var/count in 1 to amount)
+		// Check for matching coupon
+		var/obj/item/coupon/applied_coupon
+		for(var/obj/item/coupon/coupon_check in loaded_coupons)
+			if(pack.type == coupon_check.discounted_pack)
+				say("Coupon found! [round(coupon_check.discount_pct_off * 100)]% off applied!")
+				applied_coupon = coupon_check
+				LAZYREMOVE(loaded_coupons, coupon_check)
+				coupon_check.inserted_console = null
+				break
 
 		var/datum/supply_order/new_order = new(
 			pack = pack,
@@ -359,6 +460,7 @@
 			orderer_rank = rank,
 			orderer_ckey = usr.ckey,
 			paying_account = bank_account_holder.synced_bank_account,
+			coupon = applied_coupon,
 		)
 		checkout_list += new_order
 
@@ -393,3 +495,10 @@
 	name = "Supply Console"
 	greyscale_colors = CIRCUIT_COLOR_SUPPLY
 	build_path = /obj/machinery/computer/voidcrew_cargo
+	/// Whether the console should have contraband enabled (set by emagging)
+	var/contraband = FALSE
+
+/obj/item/circuitboard/computer/voidcrew_cargo/examine(mob/user)
+	. = ..()
+	if(obj_flags & EMAGGED)
+		. += span_warning("It has been modified to access illegal supply channels.")

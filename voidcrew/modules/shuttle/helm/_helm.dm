@@ -180,6 +180,10 @@
 	data["undockWarmup"] = !!current_ship.undock_warmup_timer
 	data["undockWarmupRemaining"] = current_ship.undock_warmup_timer ? timeleft(current_ship.undock_warmup_timer) : 0
 
+	// Cargo shuttle status - block undock if shuttle is present
+	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = current_ship.get_cargo_shuttle()
+	data["cargoShuttlePresent"] = cargo_shuttle && cargo_shuttle.state != CARGO_SHUTTLE_AWAY
+
 	// Interdiction status
 	data["isInterdicted"] = current_ship.is_interdicted
 	data["interdictionStrength"] = current_ship.interdiction_strength
@@ -536,6 +540,11 @@
 					return
 		if(OVERMAP_SHIP_IDLE)
 			if(action == "undock")
+				// Check if cargo shuttle is still present
+				var/datum/voidcrew_cargo_shuttle/cargo_shuttle = current_ship.get_cargo_shuttle()
+				if(cargo_shuttle && cargo_shuttle.state != CARGO_SHUTTLE_AWAY)
+					say("ERROR: Cannot undock while cargo shuttle is present. Send the cargo shuttle away first.")
+					return
 				current_ship.calculate_avg_fuel()
 				if(current_ship.avg_fuel_amnt < 25 && tgui_alert(usr, "Ship only has ~[round(current_ship.avg_fuel_amnt)]% fuel remaining! Are you sure you want to undock?", name, list("Yes", "No")) != "Yes")
 					return
