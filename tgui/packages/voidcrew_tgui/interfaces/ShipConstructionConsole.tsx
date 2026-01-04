@@ -42,9 +42,6 @@ interface Data {
   currentPort: PortData | null;
   dockingPortOnEdge: boolean;
   airlocks: AirlockData[];
-  rcdMatter: number;
-  rcdMaxMatter: number;
-  usingSilo: boolean;
   isInConstructionMode: boolean;
   shipWidth: number;
   shipHeight: number;
@@ -68,9 +65,6 @@ export const ShipConstructionConsole = () => {
     lastSuccess,
     currentPort,
     airlocks,
-    rcdMatter,
-    rcdMaxMatter,
-    usingSilo,
     isInConstructionMode,
     shipWidth,
     shipHeight,
@@ -134,9 +128,6 @@ export const ShipConstructionConsole = () => {
               <ConstructionTab
                 canOperate={canOperate}
                 isNotCrew={isNotCrew}
-                rcdMatter={rcdMatter}
-                rcdMaxMatter={rcdMaxMatter}
-                usingSilo={usingSilo}
                 isInConstructionMode={isInConstructionMode}
                 shipWidth={shipWidth}
                 shipHeight={shipHeight}
@@ -167,9 +158,6 @@ export const ShipConstructionConsole = () => {
 interface ConstructionTabProps {
   canOperate: boolean;
   isNotCrew: boolean;
-  rcdMatter: number;
-  rcdMaxMatter: number;
-  usingSilo: boolean;
   isInConstructionMode: boolean;
   shipWidth: number;
   shipHeight: number;
@@ -186,9 +174,6 @@ const ConstructionTab = (props: ConstructionTabProps) => {
   const {
     canOperate,
     isNotCrew,
-    rcdMatter,
-    rcdMaxMatter,
-    usingSilo,
     isInConstructionMode,
     shipWidth,
     shipHeight,
@@ -267,41 +252,6 @@ const ConstructionTab = (props: ConstructionTabProps) => {
         <Section title="Construction Drone">
           <Stack vertical>
             <Stack.Item>
-              <Stack align="center">
-                <Stack.Item grow>
-                  <Box color="label" inline mr={1}>
-                    RCD:
-                  </Box>
-                  {usingSilo ? (
-                    <Box inline color="good">
-                      {rcdMatter} units (Silo)
-                    </Box>
-                  ) : (
-                    <Box inline width="200px">
-                      <ProgressBar
-                        value={rcdMatter}
-                        maxValue={rcdMaxMatter}
-                        ranges={{
-                          good: [rcdMaxMatter * 0.5, Infinity],
-                          average: [rcdMaxMatter * 0.25, rcdMaxMatter * 0.5],
-                          bad: [-Infinity, rcdMaxMatter * 0.25],
-                        }}
-                      >
-                        {rcdMatter} / {rcdMaxMatter}
-                      </ProgressBar>
-                    </Box>
-                  )}
-                </Stack.Item>
-                {isInConstructionMode && (
-                  <Stack.Item>
-                    <Box color="good" bold>
-                      ACTIVE
-                    </Box>
-                  </Stack.Item>
-                )}
-              </Stack>
-            </Stack.Item>
-            <Stack.Item mt={1}>
               <Button
                 fluid
                 icon={isInConstructionMode ? 'check' : 'hammer'}
