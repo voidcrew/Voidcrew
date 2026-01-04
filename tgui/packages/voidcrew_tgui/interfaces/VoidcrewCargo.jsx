@@ -64,7 +64,7 @@ export const VoidcrewCargoContent = () => {
       {tab === 'catalog' &&
         (hasSupplies ? (
           <Section fill height="550px">
-            <CargoCatalog />
+            <CargoCatalog express />
           </Section>
         ) : (
           <Section>

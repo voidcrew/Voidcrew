@@ -101,6 +101,16 @@
 
 	data["points"] = bank_account_holder.synced_bank_account.account_balance
 
+	// CargoCatalog compatibility - we don't use private buying for voidcrew
+	data["self_paid"] = FALSE
+	data["app_cost"] = FALSE
+
+	// Track amounts in cart by name for max_order checking
+	var/list/amount_by_name = list()
+	for(var/datum/supply_order/order as anything in checkout_list)
+		amount_by_name[order.pack.name] = (amount_by_name[order.pack.name] || 0) + 1
+	data["amount_by_name"] = amount_by_name
+
 	// Shuttle status
 	var/shuttle_state = cargo_shuttle?.state || CARGO_SHUTTLE_AWAY
 	data["shuttle_state"] = shuttle_state
@@ -225,6 +235,9 @@
 				if(remove_item(list("id" = "[cancelled_order.id]")))
 					return TRUE
 			return TRUE
+		if("toggleprivate")
+			// Not used for voidcrew cargo - all purchases use ship's bank account
+			return TRUE
 
 		/**
 		 * CARGO SHUTTLE HANDLING
@@ -327,7 +340,7 @@
 		name = usr.real_name
 		rank = "Unknown"
 
-	var/amount = params["amount"]
+	var/amount = text2num(params["amount"]) || 1
 	for(var/count in 1 to amount)
 
 		var/datum/supply_order/new_order = new(
