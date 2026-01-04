@@ -114,6 +114,16 @@
 	var/datum/weakref/survey_console
 	var/datum/survey_research/survey_data
 
+	// ===== MISSIONS =====
+	/// Available missions this ship can accept
+	var/list/datum/mission/available_missions = list()
+	/// Currently active missions this ship has accepted
+	var/list/datum/mission/active_missions = list()
+	/// Maximum number of active missions (captain can adjust)
+	var/max_missions = DEFAULT_MAX_ACTIVE_MISSIONS
+	/// Crew share of mission rewards (0.0 to 1.0, rest goes to ship account)
+	var/crew_share = DEFAULT_CREW_SHARE
+
 	var/pending_dock = FALSE
 	var/pending_dock_timer
 	/// The ship we sent a docking request to (if any)
@@ -471,6 +481,9 @@
 	job_slots?.Cut()
 	QDEL_NULL(ship_team)
 	QDEL_NULL(cam_screen) // cam_background is inside cam_screen and deleted with it
+	// Clean up missions
+	QDEL_LIST(available_missions)
+	QDEL_LIST(active_missions)
 	return ..()
 
 /obj/structure/overmap/ship/attack_ghost(mob/user)
@@ -1853,6 +1866,101 @@
 /proc/get_ship_from_atom(atom/source)
 	var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(source)
 	return port?.current_ship
+
+// ===== MISSION PROCS =====
+
+/**
+ * Accepts a mission, moving it from available to active.
+ * * mission - The mission to accept
+ * Returns TRUE on success, error string on failure.
+ */
+/obj/structure/overmap/ship/proc/accept_mission(datum/mission/mission)
+	if(!mission)
+		return "Invalid mission."
+	if(!(mission in available_missions))
+		return "Mission not available."
+	if(length(active_missions) >= max_missions)
+		return "Maximum active missions reached ([max_missions])."
+	if(mission.active)
+		return "Mission already accepted."
+
+	if(!mission.start_mission(src))
+		return "Failed to start mission."
+
+	return TRUE
+
+/**
+ * Completes a mission via turn-in.
+ * * mission - The mission to complete
+ * * pad - The mission pad used for turn-in
+ * * item - Optional item being turned in
+ * Returns TRUE on success, error string on failure.
+ */
+/obj/structure/overmap/ship/proc/complete_mission(datum/mission/mission, obj/machinery/mission_pad/pad, obj/item/item)
+	if(!mission)
+		return "Invalid mission."
+	if(!(mission in active_missions))
+		return "Mission not active on this ship."
+
+	// For item-based missions, check can_turn_in with the item
+	// For non-item missions, check can_complete
+	if(item)
+		if(!mission.can_turn_in(item))
+			// Try to get detailed failure reason if available
+			if(istype(mission, /datum/mission/delivery))
+				var/datum/mission/delivery/delivery_mission = mission
+				return delivery_mission.get_turn_in_failure_reason(item)
+			return "Invalid item for turn-in."
+	else
+		if(!mission.can_complete())
+			return "Mission requirements not met."
+
+	if(!mission.turn_in(pad, item))
+		return "Failed to complete mission."
+
+	return TRUE
+
+/**
+ * Abandons/gives up on a mission.
+ * * mission - The mission to abandon
+ */
+/obj/structure/overmap/ship/proc/abandon_mission(datum/mission/mission)
+	if(!mission)
+		return "Invalid mission."
+	if(!(mission in active_missions))
+		return "Mission not active on this ship."
+
+	mission.give_up()
+	return TRUE
+
+/**
+ * Gets a list of bank accounts for all crew members.
+ * Used for distributing mission rewards.
+ */
+/obj/structure/overmap/ship/proc/get_crew_accounts()
+	var/list/datum/bank_account/accounts = list()
+
+	// Get accounts from crew members via ship_team
+	if(ship_team)
+		for(var/datum/mind/crew_mind as anything in ship_team.members)
+			if(!crew_mind?.current)
+				continue
+			var/mob/living/carbon/human/crew = crew_mind.current
+			if(!istype(crew))
+				continue
+			var/obj/item/card/id/id_card = crew.get_idcard()
+			if(id_card?.registered_account)
+				accounts |= id_card.registered_account
+
+	return accounts
+
+/**
+ * Sets the crew share percentage for mission rewards.
+ * Only captains/ship owners should be able to call this.
+ * * new_share - The new crew share (0.0 to 1.0)
+ */
+/obj/structure/overmap/ship/proc/set_crew_share(new_share)
+	crew_share = clamp(new_share, 0, 1)
 
 #undef SHIP_SIZE_THRESHOLD
 #undef SHIP_SPEED_MULTIPLIER_DEFAULT
