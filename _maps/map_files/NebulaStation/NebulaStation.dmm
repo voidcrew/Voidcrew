@@ -27413,7 +27413,7 @@
 "eci" = (
 /obj/structure/cable,
 /obj/machinery/door/airlock/maintenance/glass{
-	name = "Auxiliry Dock Maintainence"
+	name = "Auxiliary Dock Maintenance"
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -60908,7 +60908,7 @@
 	dir = 4
 	},
 /obj/machinery/door/airlock/maintenance/glass{
-	name = "Auxiliry Dock Storage Room"
+	name = "Auxiliary Dock Storage Room"
 	},
 /obj/effect/mapping_helpers/airlock/access/any/service/maintenance,
 /obj/effect/mapping_helpers/airlock/unres/delayed{
@@ -75764,7 +75764,7 @@
 "lib" = (
 /obj/structure/cable,
 /obj/machinery/door/airlock/maintenance/glass{
-	name = "Auxiliry Dock Maintainence"
+	name = "Auxiliary Dock Maintenance"
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -105332,7 +105332,7 @@
 "pzT" = (
 /obj/structure/cable,
 /obj/machinery/door/airlock/maintenance/glass{
-	name = "Auxiliry Dock Maintainence"
+	name = "Auxiliary Dock Maintenance"
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -115378,7 +115378,7 @@
 	dir = 4
 	},
 /obj/machinery/door/airlock/maintenance/glass{
-	name = "Auxiliry Dock Maintainence"
+	name = "Auxiliary Dock Maintenance"
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
