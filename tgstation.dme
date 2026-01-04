@@ -6798,6 +6798,7 @@
 #include "voidcrew\modules\cargo\ntpay.dm"
 #include "voidcrew\modules\cargo\shipping\cargo_console.dm"
 #include "voidcrew\modules\cargo\shipping\cargo_shuttle.dm"
+#include "voidcrew\modules\cargo\shipping\ship_cargo.dm"
 #include "voidcrew\modules\cargo\shipping\purchasing.dm"
 #include "voidcrew\modules\cargo\shipping\shipping_container.dm"
 #include "voidcrew\modules\clothing\gloves\insulated.dm"

@@ -14,17 +14,21 @@
 	///List of everything we're attempting to purchase.
 	var/list/datum/supply_order/checkout_list = list()
 
-	///The cargo shuttle controller
-	var/datum/voidcrew_cargo_shuttle/cargo_shuttle
-
 /obj/machinery/computer/voidcrew_cargo/Destroy()
 	if(bank_account_holder)
 		on_bank_deletion(bank_account_holder)
 	QDEL_LIST(checkout_list)
-	if(cargo_shuttle)
-		cargo_shuttle.linked_console = null
-		QDEL_NULL(cargo_shuttle)
 	return ..()
+
+/**
+ * Gets the cargo shuttle for this console's ship
+ * All consoles on the same ship share the same shuttle
+ */
+/obj/machinery/computer/voidcrew_cargo/proc/get_cargo_shuttle()
+	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
+	if(!ship)
+		return null
+	return ship.get_cargo_shuttle()
 
 /obj/machinery/computer/voidcrew_cargo/multitool_act(mob/living/user, obj/item/multitool/tool)
 	if(QDELETED(tool.buffer) || !istype(tool.buffer, /obj/machinery/computer/bank_machine))
@@ -112,6 +116,7 @@
 	data["amount_by_name"] = amount_by_name
 
 	// Shuttle status
+	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = get_cargo_shuttle()
 	var/shuttle_state = cargo_shuttle?.state || CARGO_SHUTTLE_AWAY
 	data["shuttle_state"] = shuttle_state
 	data["shuttle_timer"] = cargo_shuttle?.get_remaining_time() || 0
@@ -250,10 +255,14 @@
 				usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
 				return TRUE
 
-			// Create shuttle controller if needed
+			// Get shuttle from ship (shared between all consoles on the ship)
+			var/datum/voidcrew_cargo_shuttle/cargo_shuttle = get_cargo_shuttle()
 			if(!cargo_shuttle)
-				cargo_shuttle = new()
-				cargo_shuttle.linked_console = src
+				say("Error: Could not access cargo shuttle system.")
+				return TRUE
+
+			// Set linked console for callbacks
+			cargo_shuttle.linked_console = src
 
 			switch(cargo_shuttle.state)
 				if(CARGO_SHUTTLE_AWAY)

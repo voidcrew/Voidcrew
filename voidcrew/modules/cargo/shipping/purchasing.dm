@@ -7,6 +7,7 @@
 	if(!checkout_list.len)
 		return FALSE
 
+	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = get_cargo_shuttle()
 	if(!cargo_shuttle)
 		return FALSE
 
@@ -47,6 +48,7 @@
  * Exports items from the cargo shuttle's cargo bay
  */
 /obj/machinery/computer/voidcrew_cargo/proc/sell()
+	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = get_cargo_shuttle()
 	if(!cargo_shuttle)
 		return FALSE
 
