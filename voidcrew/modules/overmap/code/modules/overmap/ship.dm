@@ -121,8 +121,6 @@
 	var/list/datum/mission/active_missions = list()
 	/// Maximum number of active missions (captain can adjust)
 	var/max_missions = DEFAULT_MAX_ACTIVE_MISSIONS
-	/// Crew share of mission rewards (0.0 to 1.0, rest goes to ship account)
-	var/crew_share = DEFAULT_CREW_SHARE
 
 	var/pending_dock = FALSE
 	var/pending_dock_timer
@@ -1927,35 +1925,6 @@
 
 	mission.give_up()
 	return TRUE
-
-/**
- * Gets a list of bank accounts for all crew members.
- * Used for distributing mission rewards.
- */
-/obj/structure/overmap/ship/proc/get_crew_accounts()
-	var/list/datum/bank_account/accounts = list()
-
-	// Get accounts from crew members via ship_team
-	if(ship_team)
-		for(var/datum/mind/crew_mind as anything in ship_team.members)
-			if(!crew_mind?.current)
-				continue
-			var/mob/living/carbon/human/crew = crew_mind.current
-			if(!istype(crew))
-				continue
-			var/obj/item/card/id/id_card = crew.get_idcard()
-			if(id_card?.registered_account)
-				accounts |= id_card.registered_account
-
-	return accounts
-
-/**
- * Sets the crew share percentage for mission rewards.
- * Only captains/ship owners should be able to call this.
- * * new_share - The new crew share (0.0 to 1.0)
- */
-/obj/structure/overmap/ship/proc/set_crew_share(new_share)
-	crew_share = clamp(new_share, 0, 1)
 
 #undef SHIP_SIZE_THRESHOLD
 #undef SHIP_SPEED_MULTIPLIER_DEFAULT

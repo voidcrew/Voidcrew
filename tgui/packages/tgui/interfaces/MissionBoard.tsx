@@ -7,7 +7,6 @@ import {
   Flex,
   LabeledList,
   NoticeBox,
-  NumberInput,
   ProgressBar,
   Section,
   Stack,
@@ -25,6 +24,7 @@ type Mission = {
   author: string;
   value: number;
   reward_item: string | null;
+  reward_item_icon: string | null;
   duration: number;
   time_remaining: number;
   time_remaining_text: string;
@@ -47,8 +47,6 @@ type PadItem = {
 
 type Data = {
   has_ship: BooleanLike;
-  crew_share: number;
-  can_adjust_share: BooleanLike;
   max_missions: number;
   active_count: number;
   has_pad: BooleanLike;
@@ -77,8 +75,6 @@ export const MissionBoard = () => {
 const MissionBoardContent = () => {
   const { act, data } = useBackend<Data>();
   const {
-    crew_share,
-    can_adjust_share,
     max_missions,
     active_count,
     has_pad,
@@ -93,7 +89,7 @@ const MissionBoardContent = () => {
 
   return (
     <Stack fill vertical>
-      {/* Header with crew share controls */}
+      {/* Header */}
       <Stack.Item>
         <Section
           title="Mission Control"
@@ -106,20 +102,6 @@ const MissionBoardContent = () => {
           <LabeledList>
             <LabeledList.Item label="Active Missions">
               {active_count} / {max_missions}
-            </LabeledList.Item>
-            <LabeledList.Item label="Crew Share">
-              {can_adjust_share ? (
-                <NumberInput
-                  value={Math.round(crew_share * 100)}
-                  minValue={0}
-                  maxValue={100}
-                  step={5}
-                  unit="%"
-                  onChange={(value) => act('set_share', { share: value })}
-                />
-              ) : (
-                <Box>{Math.round(crew_share * 100)}%</Box>
-              )}
             </LabeledList.Item>
             <LabeledList.Item label="Mission Pad">
               <Box color={has_pad ? 'good' : 'bad'}>
@@ -237,7 +219,17 @@ const MissionCard = (props: MissionCardProps) => {
           </Box>
           {mission.reward_item && (
             <Box inline color="average">
-              + {mission.reward_item}
+              +{' '}
+              {mission.reward_item_icon && (
+                <img
+                  src={`data:image/png;base64,${mission.reward_item_icon}`}
+                  style={{
+                    verticalAlign: 'middle',
+                    marginRight: '4px',
+                  }}
+                />
+              )}
+              {mission.reward_item}
             </Box>
           )}
         </Box>
@@ -259,7 +251,17 @@ const MissionCard = (props: MissionCardProps) => {
         {mission.reward_item && (
           <Box as="span" color="average" bold>
             {' '}
-            + {mission.reward_item}
+            +{' '}
+            {mission.reward_item_icon && (
+              <img
+                src={`data:image/png;base64,${mission.reward_item_icon}`}
+                style={{
+                  verticalAlign: 'middle',
+                  marginRight: '4px',
+                }}
+              />
+            )}
+            {mission.reward_item}
           </Box>
         )}
       </Box>

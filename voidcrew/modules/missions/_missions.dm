@@ -297,8 +297,7 @@
 	qdel(item)
 
 /**
- * Distributes mission rewards to crew and ship.
- * Credits split based on ship's crew_share setting.
+ * Distributes mission rewards to the ship account.
  * Item rewards spawn on the mission pad.
  * * pad - The mission pad (for item reward spawning)
  */
@@ -306,20 +305,9 @@
 	if(!servant)
 		return
 
-	// Calculate credit split
-	var/crew_payout = round(value * servant.crew_share)
-	var/ship_payout = value - crew_payout
-
-	// Distribute to crew
-	var/list/crew_accounts = servant.get_crew_accounts()
-	if(length(crew_accounts) && crew_payout > 0)
-		var/per_crew = round(crew_payout / length(crew_accounts))
-		for(var/datum/bank_account/account in crew_accounts)
-			account.adjust_money(per_crew)
-
 	// Pay ship account
-	if(servant.ship_account && ship_payout > 0)
-		servant.ship_account.adjust_money(ship_payout)
+	if(servant.ship_account && value > 0)
+		servant.ship_account.adjust_money(value)
 
 	// Spawn item reward on pad
 	if(mission_reward && pad)
@@ -357,6 +345,9 @@
  * Returns mission data for TGUI display.
  */
 /datum/mission/proc/get_ui_data()
+	var/reward_icon_base64 = null
+	if(mission_reward)
+		reward_icon_base64 = icon2base64(icon(initial(mission_reward:icon), initial(mission_reward:icon_state)))
 	return list(
 		"ref" = REF(src),
 		"name" = name,
@@ -364,6 +355,7 @@
 		"author" = author,
 		"value" = value,
 		"reward_item" = mission_reward ? initial(mission_reward:name) : null,
+		"reward_item_icon" = reward_icon_base64,
 		"duration" = duration,
 		"time_remaining" = get_time_remaining(),
 		"time_remaining_text" = get_time_remaining_text(),

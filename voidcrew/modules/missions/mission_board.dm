@@ -10,7 +10,9 @@
 /obj/machinery/computer/mission_board
 	name = "mission board"
 	desc = "A console for managing ship contracts and missions."
-	icon_screen = "supply"
+	icon = 'voidcrew/modules/shuttle/icons/computer.dmi'
+	icon_screen = "mission"
+	icon_keyboard = "rd_key"
 	circuit = /obj/item/circuitboard/computer/mission_board
 	light_color = COLOR_BRIGHT_ORANGE
 
@@ -55,19 +57,6 @@
 /obj/machinery/computer/mission_board/proc/get_ship()
 	return get_ship_from_atom(src)
 
-/**
- * Checks if the user has captain-level access for crew share adjustment.
- */
-/obj/machinery/computer/mission_board/proc/can_adjust_share(mob/user)
-	if(!isliving(user))
-		return FALSE
-	var/mob/living/living_user = user
-	var/obj/item/card/id/id_card = living_user.get_idcard(TRUE)
-	if(!id_card)
-		return FALSE
-	// Check for captain access
-	return ACCESS_CAPTAIN in id_card.access
-
 /obj/machinery/computer/mission_board/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -83,8 +72,6 @@
 	if(!ship)
 		return data
 
-	data["crew_share"] = ship.crew_share
-	data["can_adjust_share"] = can_adjust_share(user)
 	data["max_missions"] = ship.max_missions
 	data["active_count"] = length(ship.active_missions)
 	data["has_pad"] = !!linked_pad
@@ -174,21 +161,6 @@
 				balloon_alert(usr, result)
 			else
 				balloon_alert(usr, "mission abandoned")
-			return TRUE
-
-		if("set_share")
-			if(!can_adjust_share(usr))
-				balloon_alert(usr, "captain access required!")
-				return TRUE
-
-			var/new_share = params["share"]
-			if(!isnum(new_share))
-				new_share = text2num(new_share)
-			if(isnull(new_share))
-				return TRUE
-
-			ship.set_crew_share(new_share / 100) // UI sends as percentage
-			balloon_alert(usr, "crew share set to [round(ship.crew_share * 100)]%")
 			return TRUE
 
 		if("refresh")
