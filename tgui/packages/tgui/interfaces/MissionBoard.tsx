@@ -33,6 +33,9 @@ type Mission = {
   target_x?: number;
   target_y?: number;
   visited?: BooleanLike;
+  difficulty: number;
+  difficulty_name: string;
+  difficulty_color: string;
 };
 
 type PadItem = {
@@ -201,6 +204,9 @@ const MissionCard = (props: MissionCardProps) => {
       title={mission.name}
       buttons={
         <Box inline>
+          <Box inline color={mission.difficulty_color} mr={1}>
+            [{mission.difficulty_name}]
+          </Box>
           <Box inline color="good" mr={1}>
             {mission.value} cr
           </Box>

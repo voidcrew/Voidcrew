@@ -11,7 +11,11 @@
 	var/desc = "Complete this mission."
 	/// Name of the mission giver (randomly generated if not set)
 	var/author = ""
-	/// Credit reward (randomized ±10% on generation)
+	/// Minimum credit reward
+	var/value_min = 800
+	/// Maximum credit reward
+	var/value_max = 1200
+	/// Actual credit reward (set during generation from min/max)
 	var/value = 1000
 	/// Time limit in deciseconds (default 30 minutes)
 	var/duration = DEFAULT_MISSION_DURATION
@@ -21,6 +25,8 @@
 	var/mission_limit = 0
 	/// Item type path to spawn on completion (optional)
 	var/mission_reward
+	/// Mission difficulty (MISSION_DIFFICULTY_EASY/MEDIUM/HARD) - informational only
+	var/difficulty = MISSION_DIFFICULTY_MEDIUM
 
 	/// Whether the mission has been accepted/started
 	var/active = FALSE
@@ -51,12 +57,11 @@
 
 /**
  * Generates randomized mission details on creation.
- * Randomizes value within ±10% and generates author if not set.
+ * Randomizes value within min/max range and generates author if not set.
  */
 /datum/mission/proc/generate_mission_details()
-	// Randomize value ±10%
-	var/variance = value * MISSION_VALUE_VARIANCE
-	value = round(value + rand(-variance, variance))
+	// Randomize value within min/max range
+	value = rand(value_min, value_max)
 
 	// Generate random author if not set
 	if(!author)
@@ -77,6 +82,32 @@
 		"Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Wilson"
 	)
 	return "[pick(first_names)] [pick(last_names)]"
+
+/**
+ * Returns the display name for the current difficulty.
+ */
+/datum/mission/proc/get_difficulty_name()
+	switch(difficulty)
+		if(MISSION_DIFFICULTY_EASY)
+			return "Easy"
+		if(MISSION_DIFFICULTY_MEDIUM)
+			return "Medium"
+		if(MISSION_DIFFICULTY_HARD)
+			return "Hard"
+	return "Unknown"
+
+/**
+ * Returns the UI color for the current difficulty.
+ */
+/datum/mission/proc/get_difficulty_color()
+	switch(difficulty)
+		if(MISSION_DIFFICULTY_EASY)
+			return "good"
+		if(MISSION_DIFFICULTY_MEDIUM)
+			return "average"
+		if(MISSION_DIFFICULTY_HARD)
+			return "bad"
+	return "label"
 
 /**
  * Applies text substitutions to name and desc.
@@ -309,4 +340,7 @@
 		"active" = active,
 		"failed" = failed,
 		"completed" = completed,
+		"difficulty" = difficulty,
+		"difficulty_name" = get_difficulty_name(),
+		"difficulty_color" = get_difficulty_color(),
 	)

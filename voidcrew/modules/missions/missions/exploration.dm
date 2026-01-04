@@ -7,7 +7,6 @@
 /datum/mission/exploration
 	name = "Exploration Contract"
 	desc = "Survey the sector at coordinates (%TARGET_X%, %TARGET_Y%). Fly to this location to complete the contract."
-	value = 1500
 	weight = 10
 	duration = DEFAULT_MISSION_DURATION
 
@@ -40,11 +39,24 @@
 			break
 		attempts--
 
-	// Adjust value based on distance from center (further = more valuable)
+	// Set difficulty and value range based on distance from center
 	var/center_dist = sqrt((target_x - center) ** 2 + (target_y - center) ** 2)
 	var/max_dist = sqrt(2 * (center - min_coord) ** 2)
-	var/distance_bonus = (center_dist / max_dist) * 500 // Up to 500 extra credits
-	value += round(distance_bonus)
+	var/dist_ratio = center_dist / max_dist
+
+	// Near center = easy, mid = medium, far = hard
+	if(dist_ratio < 0.4)
+		difficulty = MISSION_DIFFICULTY_EASY
+		value_min = 400
+		value_max = 700
+	else if(dist_ratio < 0.7)
+		difficulty = MISSION_DIFFICULTY_MEDIUM
+		value_min = 700
+		value_max = 1200
+	else
+		difficulty = MISSION_DIFFICULTY_HARD
+		value_min = 1200
+		value_max = 2000
 
 	. = ..()
 

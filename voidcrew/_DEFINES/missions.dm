@@ -3,14 +3,16 @@
 #define COMSIG_MISSION_COMPLETED "mission_completed"
 #define COMSIG_MISSION_FAILED "mission_failed"
 
+// Mission difficulty levels
+#define MISSION_DIFFICULTY_EASY 1
+#define MISSION_DIFFICULTY_MEDIUM 2
+#define MISSION_DIFFICULTY_HARD 3
+
 // Default config
 #define DEFAULT_AVAILABLE_MISSIONS 5
 #define DEFAULT_CREW_SHARE 0.5
 #define DEFAULT_MAX_ACTIVE_MISSIONS 3
 #define DEFAULT_MISSION_DURATION (30 MINUTES)
-
-// Value variance range (±10%)
-#define MISSION_VALUE_VARIANCE 0.1
 
 // Overmap bounds for exploration missions (relative coords, 1 to OVERMAP_SIZE)
 // Avoid edges (1 tile border) and some buffer
