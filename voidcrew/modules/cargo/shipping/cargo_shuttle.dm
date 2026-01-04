@@ -329,14 +329,10 @@
 	cargo_dock.width = shuttle_port.width
 	cargo_dock.height = shuttle_port.height
 
-	// Use the same positioning system as ship-to-ship docking
-	// This positions both docks adjacent to each other at the center of the z-level
-	target_ship.position_docks_for_direct_docking(docked_at, ship_dock, cargo_dock, ship_shuttle, shuttle_port)
+	// Position the cargo dock adjacent to the player's ship (without moving the ship)
+	position_cargo_dock_next_to_ship(ship_dock, cargo_dock, ship_shuttle, shuttle_port)
 
-	// Redock the player ship to its repositioned dock
-	ship_shuttle.initiate_docking(ship_dock, force = TRUE)
-
-	// Dock cargo shuttle
+	// Only dock the cargo shuttle - don't touch the player's ship
 	var/cargo_result = shuttle_port.initiate_docking(cargo_dock, force = TRUE)
 
 	if(cargo_result != DOCKING_SUCCESS)
@@ -467,3 +463,47 @@
 	// Delete the shuttle port (force = TRUE to actually delete it)
 	qdel(shuttle_port, force = TRUE)
 	shuttle_port = null
+
+/**
+ * Positions the cargo dock adjacent to the player's ship dock
+ * This finds where the ship already is and places the cargo dock next to it,
+ * without moving the player's ship at all.
+ *
+ * * ship_dock - The stationary dock the player's ship is using
+ * * cargo_dock - The stationary dock for the cargo shuttle
+ * * ship_shuttle - The player's ship mobile dock (for reference)
+ * * cargo_shuttle - The cargo shuttle mobile dock
+ */
+/datum/voidcrew_cargo_shuttle/proc/position_cargo_dock_next_to_ship(obj/docking_port/stationary/ship_dock, obj/docking_port/stationary/cargo_dock, obj/docking_port/mobile/ship_shuttle, obj/docking_port/mobile/cargo_shuttle_port)
+	// For exit-to-exit docking (airlocks facing each other):
+	// - ship_dock.dir points INTO the ship
+	// - cargo_dock.dir must point INTO the cargo shuttle (OPPOSITE direction)
+	// This way both shuttle bodies extend AWAY from the docking point
+
+	// Cargo dock faces opposite to ship dock (exit-to-exit)
+	cargo_dock.dir = REVERSE_DIR(ship_dock.dir)
+
+	// Set up cargo dock offsets to match the cargo shuttle
+	cargo_dock.dwidth = cargo_shuttle_port.dwidth
+	cargo_dock.dheight = cargo_shuttle_port.dheight
+
+	// The docks should be placed 1 tile apart in the direction the ship faces out
+	// ship_dock.dir points INTO ship, so REVERSE_DIR is where ship's exit is
+	var/offset_dir = REVERSE_DIR(ship_dock.dir)
+
+	var/cargo_dock_x = ship_dock.x
+	var/cargo_dock_y = ship_dock.y
+
+	switch(offset_dir)
+		if(NORTH)
+			cargo_dock_y = ship_dock.y + 1
+		if(SOUTH)
+			cargo_dock_y = ship_dock.y - 1
+		if(EAST)
+			cargo_dock_x = ship_dock.x + 1
+		if(WEST)
+			cargo_dock_x = ship_dock.x - 1
+
+	var/turf/new_loc = locate(cargo_dock_x, cargo_dock_y, ship_dock.z)
+	if(new_loc)
+		cargo_dock.forceMove(new_loc)

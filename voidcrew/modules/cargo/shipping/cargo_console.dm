@@ -248,12 +248,22 @@
 /obj/machinery/computer/voidcrew_cargo/proc/get_shuttle_error_message()
 	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
 	if(!ship)
-		return "NOT ON A REGISTERED SHIP"
-	if(ship.state != OVERMAP_SHIP_IDLE)
-		return "SHIP MUST BE STATIONARY"
+		return "Not on a registered ship"
+	// Check location first - more meaningful error when in hyperspace
 	if(!istype(ship.docked, /obj/structure/overmap/planet/empty))
-		return "MUST BE DOCKED IN EMPTY SPACE"
+		return "Must be docked in space"
+	if(ship.state != OVERMAP_SHIP_IDLE)
+		return "Ship cannot be moving"
 	return null
+
+/**
+ * Calculate total cost of all items in the checkout cart
+ */
+/obj/machinery/computer/voidcrew_cargo/proc/get_cart_total()
+	var/total = 0
+	for(var/datum/supply_order/order as anything in checkout_list)
+		total += order.get_final_cost()
+	return total
 
 /obj/machinery/computer/voidcrew_cargo/ui_act(action, params, datum/tgui/ui)
 	. = ..()
@@ -360,6 +370,13 @@
 						say("Error: No orders in cart.")
 						return TRUE
 
+					// Check if we have enough credits for the order
+					var/total_cost = get_cart_total()
+					var/available = bank_account_holder.synced_bank_account.account_balance
+					if(total_cost > available)
+						say("Error: Insufficient credits. Need [total_cost], have [available].")
+						return TRUE
+
 					// First spawn the shuttle, then load cargo into it
 					if(cargo_shuttle.call_shuttle(ship))
 						buy() // Spawn items in shuttle cargo bay (now that shuttle exists)
@@ -374,7 +391,7 @@
 				if(CARGO_SHUTTLE_DOCKED)
 					// Check for living mobs before sending
 					if(cargo_shuttle.has_living_mobs())
-						say("Error: Living crew detected on cargo shuttle. Clear the shuttle before departure.")
+						say("Error: Living organic(s) detected on cargo shuttle. Clear the shuttle before departure.")
 						return TRUE
 					// Send shuttle away
 					if(cargo_shuttle.send_shuttle())

@@ -102,13 +102,13 @@ const VoidcrewCargoStatus = () => {
   const getButtonText = () => {
     switch (shuttle_state) {
       case CARGO_SHUTTLE_AWAY:
-        return 'Call Cargo Shuttle';
+        return 'Call shuttle';
       case CARGO_SHUTTLE_ARRIVING:
-        return `Arriving... (${shuttle_timer}s)`;
+        return `Arriving...)`;
       case CARGO_SHUTTLE_DOCKED:
-        return 'Send Cargo Shuttle';
+        return 'Depart';
       case CARGO_SHUTTLE_DEPARTING:
-        return `Departing... (${shuttle_timer}s)`;
+        return `Departing...`;
       default:
         return 'Cargo Shuttle';
     }
