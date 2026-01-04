@@ -5,6 +5,7 @@ import {
   Button,
   Input,
   LabeledList,
+  ProgressBar,
   RestrictedInput,
   Section,
   Stack,
@@ -12,10 +13,16 @@ import {
   Tabs,
 } from 'tgui-core/components';
 import { formatMoney } from 'tgui-core/format';
-import { CargoCatalog } from '../../tgui/interfaces/Cargo/CargoCatalog.tsx';
 import { Window } from '../../tgui/layouts';
+import { CargoCatalog } from '../../tgui/interfaces/Cargo/CargoCatalog';
 
-export const VoidcrewCargo = (props, context) => {
+// Shuttle state constants (must match DM defines)
+const CARGO_SHUTTLE_AWAY = 0;
+const CARGO_SHUTTLE_ARRIVING = 1;
+const CARGO_SHUTTLE_DOCKED = 2;
+const CARGO_SHUTTLE_DEPARTING = 3;
+
+export const VoidcrewCargo = () => {
   return (
     <Window width={800} height={750}>
       <Window.Content scrollable>
@@ -25,11 +32,13 @@ export const VoidcrewCargo = (props, context) => {
   );
 };
 
-export const VoidcrewCargoContent = (props, context) => {
-  const { data } = useBackend(context);
-  const [tab, setTab] = useSharedState(context, 'tab', 'catalog');
-  const { cart = [] } = data;
+export const VoidcrewCargoContent = () => {
+  const { data } = useBackend();
+  const [tab, setTab] = useSharedState('tab', 'catalog');
+  const { cart = [], supplies = {} } = data;
   const cart_length = cart.reduce((total, entry) => total + entry.amount, 0);
+  const hasSupplies = Object.keys(supplies).length > 0;
+
   return (
     <Box>
       <VoidcrewCargoStatus />
@@ -52,23 +61,76 @@ export const VoidcrewCargoContent = (props, context) => {
           </Tabs.Tab>
         </Tabs>
       </Section>
-      {tab === 'catalog' && <CargoCatalog />}
+      {tab === 'catalog' &&
+        (hasSupplies ? (
+          <Section fill height="550px">
+            <CargoCatalog />
+          </Section>
+        ) : (
+          <Section>
+            <Box color="bad">
+              No supplies available. Make sure the cargo system is initialized.
+            </Box>
+          </Section>
+        ))}
       {tab === 'cart' && <VoidcrewCargoCart />}
     </Box>
   );
 };
 
-const VoidcrewCargoStatus = (props, context) => {
-  const { act, data } = useBackend(context);
+const VoidcrewCargoStatus = () => {
+  const { act, data } = useBackend();
   const {
-    beacon_cost_message,
-    has_beacon,
-    can_buy_beacon,
-    on_cargo_cooldown,
-    cargo_ordered,
-    beacon_error_message,
+    shuttle_state = CARGO_SHUTTLE_AWAY,
+    shuttle_status = 'Away',
+    shuttle_timer = 0,
+    can_call_shuttle,
+    shuttle_error,
     points,
   } = data;
+
+  // Determine button text and state
+  const getButtonText = () => {
+    switch (shuttle_state) {
+      case CARGO_SHUTTLE_AWAY:
+        return 'Call Cargo Shuttle';
+      case CARGO_SHUTTLE_ARRIVING:
+        return `Arriving... (${shuttle_timer}s)`;
+      case CARGO_SHUTTLE_DOCKED:
+        return 'Send Cargo Shuttle';
+      case CARGO_SHUTTLE_DEPARTING:
+        return `Departing... (${shuttle_timer}s)`;
+      default:
+        return 'Cargo Shuttle';
+    }
+  };
+
+  const getButtonColor = () => {
+    switch (shuttle_state) {
+      case CARGO_SHUTTLE_DOCKED:
+        return 'green';
+      case CARGO_SHUTTLE_ARRIVING:
+      case CARGO_SHUTTLE_DEPARTING:
+        return 'yellow';
+      default:
+        return 'blue';
+    }
+  };
+
+  const isButtonDisabled = () => {
+    // Disabled during transit or if can't call
+    if (
+      shuttle_state === CARGO_SHUTTLE_ARRIVING ||
+      shuttle_state === CARGO_SHUTTLE_DEPARTING
+    ) {
+      return true;
+    }
+    if (shuttle_state === CARGO_SHUTTLE_AWAY && !can_call_shuttle) {
+      return true;
+    }
+    return false;
+  };
+
   return (
     <Section>
       <Box position="absolute" right={1} bold>
@@ -82,26 +144,40 @@ const VoidcrewCargoStatus = (props, context) => {
           </>
         )) || <AnimatedNumber value="No credits" />}
       </Box>
-      {!has_beacon && (
-        <Button
-          content={beacon_cost_message}
-          disabled={!can_buy_beacon}
-          onClick={() => act('print_beacon')}
-        />
-      )}
       <LabeledList>
-        <LabeledList.Item label="Freight Container">
+        <LabeledList.Item label="Cargo Shuttle">
           <Button
-            color={'green'}
-            disabled={on_cargo_cooldown}
-            tooltip={on_cargo_cooldown ? 'On cooldown' : 'Send freight'}
-            content={cargo_ordered ? 'Cargo Bay' : 'Away'}
+            color={getButtonColor()}
+            disabled={isButtonDisabled()}
+            tooltip={
+              isButtonDisabled() && shuttle_state === CARGO_SHUTTLE_AWAY
+                ? shuttle_error || 'Cannot call shuttle'
+                : null
+            }
+            content={getButtonText()}
             onClick={() => act('send')}
           />
         </LabeledList.Item>
-        {!!beacon_error_message && (
-          <LabeledList.Item label="CentCom Message">
-            {beacon_error_message}
+        <LabeledList.Item label="Status">{shuttle_status}</LabeledList.Item>
+        {(shuttle_state === CARGO_SHUTTLE_ARRIVING ||
+          shuttle_state === CARGO_SHUTTLE_DEPARTING) && (
+          <LabeledList.Item label="Timer">
+            <ProgressBar
+              value={shuttle_timer}
+              maxValue={30}
+              ranges={{
+                good: [20, 30],
+                average: [10, 20],
+                bad: [0, 10],
+              }}
+            >
+              {shuttle_timer}s remaining
+            </ProgressBar>
+          </LabeledList.Item>
+        )}
+        {!!shuttle_error && shuttle_state === CARGO_SHUTTLE_AWAY && (
+          <LabeledList.Item label="Note" color="bad">
+            {shuttle_error}
           </LabeledList.Item>
         )}
       </LabeledList>
@@ -109,10 +185,11 @@ const VoidcrewCargoStatus = (props, context) => {
   );
 };
 
-const VoidcrewCargoCartButtons = (props, context) => {
-  const { act, data } = useBackend(context);
-  const { cart = [], cargo_ordered } = data;
+const VoidcrewCargoCartButtons = () => {
+  const { act, data } = useBackend();
+  const { cart = [], shuttle_state = CARGO_SHUTTLE_AWAY } = data;
   const total = cart.reduce((total, entry) => total + entry.cost, 0);
+  const shuttleDocked = shuttle_state === CARGO_SHUTTLE_DOCKED;
   return (
     <>
       <Box inline mx={1}>
@@ -121,7 +198,7 @@ const VoidcrewCargoCartButtons = (props, context) => {
         {cart.length >= 2 && cart.length + ' items'}{' '}
         {total > 0 && `(${formatMoney(total)} cr)`}
       </Box>
-      {!cargo_ordered && (
+      {!shuttleDocked && (
         <Button
           icon="times"
           color="transparent"
@@ -133,14 +210,15 @@ const VoidcrewCargoCartButtons = (props, context) => {
   );
 };
 
-const VoidcrewCargoCart = (props, context) => {
-  const { act, data } = useBackend(context);
-  const { cart = [], cargo_ordered } = data;
+const VoidcrewCargoCart = () => {
+  const { act, data } = useBackend();
+  const { cart = [], shuttle_state = CARGO_SHUTTLE_AWAY } = data;
+  const shuttleDocked = shuttle_state === CARGO_SHUTTLE_DOCKED;
   return (
     <Section fill>
       <Section>
         <Stack>
-          <Stack.Item mt="4px">Current-Cart</Stack.Item>
+          <Stack.Item mt="4px">Current Cart</Stack.Item>
           <Stack.Item ml="200px" mt="3px">
             Quantity
           </Stack.Item>
@@ -158,7 +236,7 @@ const VoidcrewCargoCart = (props, context) => {
                 #{entry.id}&nbsp;{entry.object}
               </Table.Cell>
               <Table.Cell inline ml="65px" width="40px">
-                {(!cargo_ordered && entry.can_be_cancelled && (
+                {(!shuttleDocked && entry.can_be_cancelled && (
                   <RestrictedInput
                     width="40px"
                     minValue={0}
@@ -174,7 +252,7 @@ const VoidcrewCargoCart = (props, context) => {
                 )) || <Input width="40px" value={entry.amount} disabled />}
               </Table.Cell>
               <Table.Cell inline ml="5px" width="10px">
-                {!cargo_ordered && !!entry.can_be_cancelled && (
+                {!shuttleDocked && !!entry.can_be_cancelled && (
                   <Button
                     icon="plus"
                     onClick={() =>
@@ -184,7 +262,7 @@ const VoidcrewCargoCart = (props, context) => {
                 )}
               </Table.Cell>
               <Table.Cell inline ml="15px" width="10px">
-                {!cargo_ordered && !!entry.can_be_cancelled && (
+                {!shuttleDocked && !!entry.can_be_cancelled && (
                   <Button
                     icon="minus"
                     onClick={() => act('remove', { order_name: entry.object })}
@@ -199,23 +277,19 @@ const VoidcrewCargoCart = (props, context) => {
           ))}
         </Table>
       )}
-      {cart.length > 0 && (
+      {cart.length > 0 && shuttle_state === CARGO_SHUTTLE_AWAY && (
         <Box mt={2}>
-          {(cargo_ordered && (
-            <Button
-              color="green"
-              style={{
-                'line-height': '28px',
-                padding: '0 12px',
-              }}
-              content="Confirm the order"
-              onClick={() => act('send')}
-            />
-          )) || (
-            <Box opacity={0.5}>
-              Cargo at {cargo_ordered ? 'Cargo Bay' : 'Away'}.
-            </Box>
-          )}
+          <Box opacity={0.5}>
+            Add items to cart, then call the cargo shuttle to order.
+          </Box>
+        </Box>
+      )}
+      {shuttleDocked && (
+        <Box mt={2}>
+          <Box color="good">
+            Cargo shuttle is docked! Board the shuttle to retrieve your items,
+            then send it away to sell exports.
+          </Box>
         </Box>
       )}
     </Section>

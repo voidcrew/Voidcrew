@@ -1,0 +1,94 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew_cargo)
+"b" = (
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew_cargo)
+"c" = (
+/obj/machinery/light/floor,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew_cargo)
+"d" = (
+/obj/effect/landmark/voidcrew_cargo_bay,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew_cargo)
+"e" = (
+/obj/machinery/door/airlock/external/glass{
+	name = "Cargo Shuttle Airlock"
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew_cargo)
+"f" = (
+/obj/docking_port/mobile/voidcrew_cargo{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew_cargo)
+"g" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+g
+a
+a
+a
+a
+a
+g
+"}
+(2,1,1) = {"
+a
+c
+b
+b
+b
+c
+a
+"}
+(3,1,1) = {"
+a
+b
+b
+d
+b
+b
+a
+"}
+(4,1,1) = {"
+e
+b
+b
+f
+b
+b
+e
+"}
+(5,1,1) = {"
+a
+b
+b
+b
+b
+b
+a
+"}
+(6,1,1) = {"
+a
+c
+b
+b
+b
+c
+a
+"}
+(7,1,1) = {"
+g
+a
+a
+a
+a
+a
+g
+"}

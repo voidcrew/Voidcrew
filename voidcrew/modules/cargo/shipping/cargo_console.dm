@@ -8,30 +8,23 @@
 	circuit = /obj/item/circuitboard/computer/voidcrew_cargo
 	light_color = COLOR_BRIGHT_ORANGE
 
-	///The linked supplypod beacon that will drop/send the cargo container.
-	var/obj/item/supply_beacon/beacon
 	///The machine we're connected to that holds our bank account.
 	var/obj/machinery/computer/bank_machine/bank_account_holder
 
 	///List of everything we're attempting to purchase.
 	var/list/datum/supply_order/checkout_list = list()
 
-	/// Cooldown between calling so you don't repeatedly spawn and delete crates.
-	COOLDOWN_DECLARE(calling_cooldown)
+	///The cargo shuttle controller
+	var/datum/voidcrew_cargo_shuttle/cargo_shuttle
 
 /obj/machinery/computer/voidcrew_cargo/Destroy()
 	if(bank_account_holder)
 		on_bank_deletion(bank_account_holder)
-	if(beacon)
-		QDEL_NULL(beacon)
 	QDEL_LIST(checkout_list)
+	if(cargo_shuttle)
+		cargo_shuttle.linked_console = null
+		QDEL_NULL(cargo_shuttle)
 	return ..()
-
-/obj/machinery/computer/voidcrew_cargo/attackby(obj/item/weapon, mob/user, params)
-	. = ..()
-	if(istype(weapon, /obj/item/supply_beacon))
-		beacon = weapon
-		balloon_alert_to_viewers("beacon updated")
 
 /obj/machinery/computer/voidcrew_cargo/multitool_act(mob/living/user, obj/item/multitool/tool)
 	if(QDELETED(tool.buffer) || !istype(tool.buffer, /obj/machinery/computer/bank_machine))
@@ -56,50 +49,75 @@
 
 /obj/machinery/computer/voidcrew_cargo/ui_static_data(mob/user)
 	var/list/data = list()
-	data["beacon_cost_message"] = "Print a beacon for [BEACON_COST] credits"
-	data["supplies"] = list()
-	for(var/pack in SSshuttle.supply_packs)
-		var/datum/supply_pack/P = SSshuttle.supply_packs[pack]
-		if(!data["supplies"][P.group])
-			data["supplies"][P.group] = list(
-				"name" = P.group,
-				"packs" = list()
-			)
-		if((P.hidden && !(obj_flags & EMAGGED)) || (P.special && !P.special_enabled) || P.drop_pod_only)
-			continue
-		data["supplies"][P.group]["packs"] += list(list(
-			"name" = P.name,
-			"cost" = P.get_cost(),
-			"id" = pack,
-			"desc" = P.desc || P.name, // If there is a description, use it. Otherwise use the pack's name.
-			"goody" = P.goody,
-			"access" = P.access
-		))
+	data["max_order"] = CARGO_MAX_ORDER
 	return data
+
+/**
+ * Returns a list of supply packs for a certain group
+ */
+/obj/machinery/computer/voidcrew_cargo/proc/get_packs_data(group)
+	var/list/packs = list()
+	for(var/pack_id in SSshuttle.supply_packs)
+		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_id]
+		if(pack.group != group)
+			continue
+		if((pack.hidden && !(obj_flags & EMAGGED)) || (pack.special && !pack.special_enabled) || pack.drop_pod_only)
+			continue
+		if(pack.contraband)
+			continue
+		var/obj/item/first_item = length(pack.contains) > 0 ? pack.contains[1] : null
+		packs += list(list(
+			"name" = pack.name,
+			"cost" = pack.get_cost(),
+			"id" = pack_id,
+			"desc" = pack.desc || pack.name,
+			"first_item_icon" = first_item?.icon,
+			"first_item_icon_state" = first_item?.icon_state,
+			"goody" = pack.goody,
+			"access" = pack.access,
+			"contraband" = pack.contraband,
+			"small_item" = FALSE,
+			"contains" = pack.get_contents_ui_data(),
+		))
+	return packs
 
 /obj/machinery/computer/voidcrew_cargo/ui_data(mob/user)
 	var/list/data = list()
 
+	// Build supplies list (in ui_data to ensure SSshuttle is initialized)
+	data["supplies"] = list()
+	for(var/pack_id in SSshuttle.supply_packs)
+		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_id]
+		if(!data["supplies"][pack.group])
+			data["supplies"][pack.group] = list(
+				"name" = pack.group,
+				"packs" = get_packs_data(pack.group),
+			)
+
 	data["has_bank_account"] = !!bank_account_holder
-	if(!bank_account_holder.synced_bank_account)
-		data["beacon_error_message"] += "Potential Errors: NO BANK ACCOUNT CONNECTED"//beacon was destroyed
+	if(!bank_account_holder?.synced_bank_account)
+		data["shuttle_error"] = "NO BANK ACCOUNT CONNECTED"
 		return data
 
-	data["on_cargo_cooldown"] = !COOLDOWN_FINISHED(src, calling_cooldown)
-	data["cargo_ordered"] = !!bank_account_holder.synced_bank_account.shipping_containers.len
 	data["points"] = bank_account_holder.synced_bank_account.account_balance
 
-	data["has_beacon"] = !!beacon
-	data["can_buy_beacon"] = !beacon && bank_account_holder.synced_bank_account.account_balance >= BEACON_COST
-	if(!beacon)
-		data["beacon_error_message"] = "Potential Errors: BEACON MISSING"//beacon was destroyed
-	else if(!isturf(beacon.loc))
-		data["beacon_error_message"] = "Potential Errors: BEACON MUST BE EXPOSED"//beacon's loc/user's loc must be a turf
-	else
-		data["beacon_error_message"] = null
+	// Shuttle status
+	var/shuttle_state = cargo_shuttle?.state || CARGO_SHUTTLE_AWAY
+	data["shuttle_state"] = shuttle_state
+	data["shuttle_timer"] = cargo_shuttle?.get_remaining_time() || 0
+	data["can_call_shuttle"] = can_call_cargo_shuttle()
+	data["shuttle_error"] = get_shuttle_error_message()
 
-	data["beaconzone"] = beacon ? get_area(beacon) : "No beacon"
-	data["beaconName"] = beacon ? beacon.name : "No Beacon Found"
+	// Shuttle state text for UI
+	switch(shuttle_state)
+		if(CARGO_SHUTTLE_AWAY)
+			data["shuttle_status"] = "Away"
+		if(CARGO_SHUTTLE_ARRIVING)
+			data["shuttle_status"] = "Arriving"
+		if(CARGO_SHUTTLE_DOCKED)
+			data["shuttle_status"] = "Docked"
+		if(CARGO_SHUTTLE_DEPARTING)
+			data["shuttle_status"] = "Departing"
 
 	var/cart_list = list()
 	for(var/datum/supply_order/order as anything in checkout_list)
@@ -129,31 +147,42 @@
 
 	return data
 
+/**
+ * Check if the cargo shuttle can be called
+ */
+/obj/machinery/computer/voidcrew_cargo/proc/can_call_cargo_shuttle()
+	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
+	if(!ship)
+		return FALSE
+	if(!istype(ship.docked, /obj/structure/overmap/planet/empty))
+		return FALSE
+	if(ship.state != OVERMAP_SHIP_IDLE)
+		return FALSE
+	return TRUE
+
+/**
+ * Get error message for shuttle restrictions
+ */
+/obj/machinery/computer/voidcrew_cargo/proc/get_shuttle_error_message()
+	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
+	if(!ship)
+		return "NOT ON A REGISTERED SHIP"
+	if(ship.state != OVERMAP_SHIP_IDLE)
+		return "SHIP MUST BE STATIONARY"
+	if(!istype(ship.docked, /obj/structure/overmap/planet/empty))
+		return "MUST BE DOCKED IN EMPTY SPACE"
+	return null
+
 /obj/machinery/computer/voidcrew_cargo/ui_act(action, params, datum/tgui/ui)
 	. = ..()
 	if(.)
 		return
-	if(!bank_account_holder.synced_bank_account)
+	if(!bank_account_holder?.synced_bank_account)
 		balloon_alert(usr, "no bank account connected.")
 		usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
 		return
 
 	switch(action)
-		/**
-		 * BECAON STUFF
-		 */
-		if("print_beacon")
-			if(beacon)
-				return TRUE
-			if(!bank_account_holder.synced_bank_account)
-				return FALSE
-			if(bank_account_holder.synced_bank_account.adjust_money(-BEACON_COST))
-				var/obj/item/supply_beacon/new_beacon = new /obj/item/supply_beacon(drop_location())
-				new_beacon.cargo_console = src
-				new_beacon.name = "Supply Pod Beacon ([bank_account_holder.synced_bank_account.account_holder])"
-				beacon = new_beacon
-			return TRUE
-
 		/**
 		 * CARGO ORDERING
 		 */
@@ -197,47 +226,83 @@
 					return TRUE
 			return TRUE
 
-
 		/**
-		 * DROP POD HANDLING
+		 * CARGO SHUTTLE HANDLING
 		 */
 		if("send")
-			COOLDOWN_START(src, calling_cooldown, 30 SECONDS)
-			//make an copy of the cart before its cleared by the shuttle
-			var/list/cart_list = list()
-			for(var/datum/supply_order/order as anything in checkout_list)
-				if(cart_list[order.pack.name])
-					cart_list[order.pack.name]["amount"]++
-					continue
-				cart_list[order.pack.name] = list(
-					"order" = order,
-					"amount" = 1,
-				)
+			var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
 
-			if(bank_account_holder.synced_bank_account.shipping_containers.len)
-				say("The freight container is departing.")
-				usr.investigate_log("sent the [bank_account_holder.synced_bank_account.account_holder] cargo pod away.", INVESTIGATE_CARGO)
-				sell()
-			else
-				say("The freight container has been called and will arrive soon.")
-				usr.investigate_log("called the [bank_account_holder.synced_bank_account.account_holder] cargo pod.", INVESTIGATE_CARGO)
-				buy()
-			if(!length(cart_list))
+			if(!can_call_cargo_shuttle())
+				say("Error: [get_shuttle_error_message()]")
+				usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
 				return TRUE
 
-			//create the paper from the cart list
-			var/obj/item/paper/requisition_paper = new(get_turf(src))
-			requisition_paper.name = "requisition form"
-			var/requisition_text = "<h2>[station_name()] Supply Requisition</h2>"
-			requisition_text += "<hr/>"
-			requisition_text += "Time of Order: [station_time_timestamp()]<br/>"
-			for(var/order_name in cart_list)
-				var/datum/supply_order/order = cart_list[order_name]["order"]
-				requisition_text += "[cart_list[order_name]["amount"]] [order.pack.name]("
-				requisition_text += "Access Restrictions: [SSid_access.get_access_desc(order.pack.access)])</br>"
-			requisition_paper.add_raw_text(requisition_text)
-			requisition_paper.update_appearance()
+			// Create shuttle controller if needed
+			if(!cargo_shuttle)
+				cargo_shuttle = new()
+				cargo_shuttle.linked_console = src
+
+			switch(cargo_shuttle.state)
+				if(CARGO_SHUTTLE_AWAY)
+					// Call the shuttle with our orders
+					if(!length(checkout_list))
+						say("Error: No orders in cart.")
+						return TRUE
+
+					buy() // Spawn items in shuttle cargo bay
+					if(cargo_shuttle.call_shuttle(ship))
+						say("Cargo shuttle called. ETA 30 seconds.")
+						usr.investigate_log("called the [bank_account_holder.synced_bank_account.account_holder] cargo shuttle.", INVESTIGATE_CARGO)
+
+						// Print requisition form
+						print_requisition_form()
+					else
+						say("Error: Could not call cargo shuttle.")
+
+				if(CARGO_SHUTTLE_DOCKED)
+					// Send shuttle away
+					if(cargo_shuttle.send_shuttle())
+						say("Cargo shuttle departing. Exports will be processed in 30 seconds.")
+						usr.investigate_log("sent the [bank_account_holder.synced_bank_account.account_holder] cargo shuttle away.", INVESTIGATE_CARGO)
+					else
+						say("Error: Could not send cargo shuttle.")
+
+				if(CARGO_SHUTTLE_ARRIVING)
+					say("Cargo shuttle is currently arriving. Please wait.")
+
+				if(CARGO_SHUTTLE_DEPARTING)
+					say("Cargo shuttle is currently departing. Please wait.")
+
 			return TRUE
+
+/**
+ * Prints a requisition form for the current orders
+ */
+/obj/machinery/computer/voidcrew_cargo/proc/print_requisition_form()
+	if(!length(checkout_list))
+		return
+
+	var/list/cart_list = list()
+	for(var/datum/supply_order/order as anything in checkout_list)
+		if(cart_list[order.pack.name])
+			cart_list[order.pack.name]["amount"]++
+			continue
+		cart_list[order.pack.name] = list(
+			"order" = order,
+			"amount" = 1,
+		)
+
+	var/obj/item/paper/requisition_paper = new(get_turf(src))
+	requisition_paper.name = "requisition form"
+	var/requisition_text = "<h2>[station_name()] Supply Requisition</h2>"
+	requisition_text += "<hr/>"
+	requisition_text += "Time of Order: [station_time_timestamp()]<br/>"
+	for(var/order_name in cart_list)
+		var/datum/supply_order/order = cart_list[order_name]["order"]
+		requisition_text += "[cart_list[order_name]["amount"]] [order.pack.name]("
+		requisition_text += "Access Restrictions: [SSid_access.get_access_desc(order.pack.access)])</br>"
+	requisition_paper.add_raw_text(requisition_text)
+	requisition_paper.update_appearance()
 
 /**
  * Adds an item to the grocery list
