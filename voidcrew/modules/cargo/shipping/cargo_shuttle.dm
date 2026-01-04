@@ -344,6 +344,13 @@
 	state = CARGO_SHUTTLE_DOCKED
 	linked_console?.say("Cargo shuttle has arrived.")
 
+	// Play docking sound to all mobs on the ship
+	if(target_ship?.shuttle)
+		for(var/area/ship_area as anything in target_ship.shuttle.shuttle_areas)
+			for(var/mob/M in ship_area)
+				M.playsound_local(M, 'voidcrew/sound/cargodock1.ogg', 50, FALSE)
+		addtimer(CALLBACK(src, PROC_REF(play_dock_sound_2)), 1 SECONDS)
+
 	// If a loan was accepted, spawn the loan items
 	if(loan_accepted && pending_loan)
 		var/list/cargo_turfs = get_cargo_bay_turfs()
@@ -474,6 +481,16 @@
  * * ship_shuttle - The player's ship mobile dock (for reference)
  * * cargo_shuttle - The cargo shuttle mobile dock
  */
+/**
+ * Plays the second docking sound after a delay
+ */
+/datum/voidcrew_cargo_shuttle/proc/play_dock_sound_2()
+	if(!target_ship?.shuttle)
+		return
+	for(var/area/ship_area as anything in target_ship.shuttle.shuttle_areas)
+		for(var/mob/M in ship_area)
+			M.playsound_local(M, 'voidcrew/sound/cargodock2.ogg', 50, FALSE)
+
 /datum/voidcrew_cargo_shuttle/proc/position_cargo_dock_next_to_ship(obj/docking_port/stationary/ship_dock, obj/docking_port/stationary/cargo_dock, obj/docking_port/mobile/ship_shuttle, obj/docking_port/mobile/cargo_shuttle_port)
 	// For exit-to-exit docking (airlocks facing each other):
 	// - ship_dock.dir points INTO the ship

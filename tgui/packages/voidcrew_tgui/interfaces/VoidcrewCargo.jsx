@@ -104,7 +104,7 @@ const VoidcrewCargoStatus = () => {
       case CARGO_SHUTTLE_AWAY:
         return 'Call shuttle';
       case CARGO_SHUTTLE_ARRIVING:
-        return `Arriving...)`;
+        return `Arriving...`;
       case CARGO_SHUTTLE_DOCKED:
         return 'Depart';
       case CARGO_SHUTTLE_DEPARTING:
