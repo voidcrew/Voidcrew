@@ -152,8 +152,9 @@
 		)
 		data["otherInfo"] += list(other_data)
 	var/turf/T = get_turf(current_ship)
-	data["x"] = T.x
-	data["y"] = T.y
+	// Convert absolute turf coordinates to relative overmap coordinates (1-based)
+	data["x"] = T.x - OVERMAP_LEFT_SIDE_COORD + 1
+	data["y"] = T.y - OVERMAP_SOUTH_SIDE_COORD + 1
 	data["state"] = current_ship.state
 	data["docked"] = isturf(current_ship.loc) ? FALSE : TRUE
 	data["heading"] = dir2text(current_ship.get_heading()) || "None"
