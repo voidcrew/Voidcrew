@@ -118,11 +118,8 @@
 			docked_at.second_dock_taken = FALSE
 		cargo_dock_index = 0
 
-	// Move back to transit if possible, then destroy
-	if(shuttle_port && !QDELETED(shuttle_port) && transit_dock && !QDELETED(transit_dock))
-		shuttle_port.initiate_docking(transit_dock, force = TRUE)
-
-	// Destroy the shuttle completely
+	// Don't move to transit before destroying - just destroy where it is
+	// Moving causes baseturfs accumulation issues
 	destroy_shuttle()
 
 	docked_at = null
@@ -220,12 +217,19 @@
 /datum/voidcrew_cargo_shuttle/proc/get_cargo_bay_turfs()
 	var/list/turfs = list()
 	if(!shuttle_port)
+		log_shuttle("LOAN DEBUG: get_cargo_bay_turfs - shuttle_port is null!")
 		return turfs
 
+	var/area_count = 0
+	var/turf_count = 0
 	for(var/area/shuttle_area as anything in shuttle_port.shuttle_areas)
-		for(var/turf/open/floor/T in shuttle_area)
-			turfs += T
+		area_count++
+		for(var/turf/T in shuttle_area)
+			turf_count++
+			if(istype(T, /turf/open/floor))
+				turfs += T
 
+	log_shuttle("LOAN DEBUG: get_cargo_bay_turfs - areas=[area_count], total_turfs=[turf_count], floor_turfs=[length(turfs)]")
 	return turfs
 
 /**
@@ -346,6 +350,10 @@
 
 	// If a loan was accepted, spawn the loan items
 	if(loan_accepted && pending_loan)
+		var/list/cargo_turfs = get_cargo_bay_turfs()
+		log_shuttle("LOAN DEBUG: Spawning loan items. shuttle_port=[shuttle_port ? "valid" : "null"], turfs_found=[length(cargo_turfs)], loan_type=[pending_loan.type]")
+		if(!length(cargo_turfs))
+			log_shuttle("LOAN DEBUG: No cargo turfs found! shuttle_areas=[shuttle_port?.shuttle_areas ? length(shuttle_port.shuttle_areas) : "null"]")
 		pending_loan.spawn_items(src)
 		target_ship?.ship_announce(pending_loan.shuttle_transit_text, pending_loan.sender)
 		QDEL_NULL(pending_loan)
@@ -384,7 +392,7 @@
 	return FALSE
 
 /**
- * Timer callback - moves shuttle to transit, processes cargo, then cleans up
+ * Timer callback - processes cargo and cleans up shuttle
  */
 /datum/voidcrew_cargo_shuttle/proc/complete_departure()
 	warmup_timer = null
@@ -401,14 +409,10 @@
 			docked_at.second_dock_taken = FALSE
 		cargo_dock_index = 0
 
-	// Move shuttle back to transit for processing
-	if(shuttle_port && !QDELETED(shuttle_port) && transit_dock && !QDELETED(transit_dock))
-		shuttle_port.initiate_docking(transit_dock, force = TRUE)
-
-	// Export cargo while in transit
+	// Export cargo while shuttle is still docked (sell() uses shuttle_areas, doesn't need transit)
 	linked_console?.sell()
 
-	// Now fully destroy the shuttle
+	// Now fully destroy the shuttle (don't move to transit first - causes baseturfs issues)
 	destroy_shuttle()
 
 	state = CARGO_SHUTTLE_AWAY
@@ -421,6 +425,15 @@
  * Completely destroys the shuttle - deletes all turfs and objects
  */
 /datum/voidcrew_cargo_shuttle/proc/destroy_shuttle()
+	// Clean up transit dock and its reservation FIRST
+	if(transit_dock && !QDELETED(transit_dock))
+		// Release the turf reservation if it exists
+		if(transit_dock.reserved_area)
+			qdel(transit_dock.reserved_area)
+			transit_dock.reserved_area = null
+		qdel(transit_dock)
+	transit_dock = null
+
 	if(!shuttle_port || QDELETED(shuttle_port))
 		shuttle_port = null
 		return
@@ -428,6 +441,9 @@
 	// Clear SSshuttle references
 	if(SSshuttle.supply == shuttle_port)
 		SSshuttle.supply = null
+
+	// Unlink from transit dock
+	shuttle_port.assigned_transit = null
 
 	// Get all turfs in shuttle areas before we delete the port
 	var/list/shuttle_turfs = list()
@@ -448,11 +464,6 @@
 	for(var/turf/T as anything in shuttle_turfs)
 		T.ChangeTurf(/turf/open/space, flags = CHANGETURF_DEFER_CHANGE)
 
-	// Delete the shuttle port
-	qdel(shuttle_port)
+	// Delete the shuttle port (force = TRUE to actually delete it)
+	qdel(shuttle_port, force = TRUE)
 	shuttle_port = null
-
-	// Clean up transit dock
-	if(transit_dock && !QDELETED(transit_dock))
-		qdel(transit_dock)
-	transit_dock = null

@@ -101,12 +101,16 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 			end_when = activeFor + 1 // No more eligible ships
 
 /datum/round_event/shuttle_loan_voidcrew/end()
-	// If the loan is still pending when the event ends, decline it automatically
+	// If the loan was accepted, don't expire it - the shuttle will handle cleanup on arrival
+	if(loan_accepted)
+		return
+
+	// If the loan is still pending (not accepted) when the event ends, decline it automatically
 	if(!target_ship)
 		return
 
 	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = target_ship.get_cargo_shuttle()
-	if(cargo_shuttle?.pending_loan)
+	if(cargo_shuttle?.pending_loan && !cargo_shuttle.loan_accepted)
 		target_ship.ship_announce("The shuttle loan offer has expired.", "Offer Expired")
 		cargo_shuttle.decline_loan()
 
@@ -300,7 +304,9 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 
 /datum/voidcrew_shuttle_loan/pizza_delivery/spawn_items(datum/voidcrew_cargo_shuttle/shuttle)
 	var/list/cargo_turfs = shuttle.get_cargo_bay_turfs()
+	log_shuttle("LOAN DEBUG: pizza_delivery spawn_items - cargo_turfs=[length(cargo_turfs)]")
 	if(!length(cargo_turfs))
+		log_shuttle("LOAN DEBUG: pizza_delivery - NO TURFS, aborting spawn!")
 		return
 
 	var/list/pizza_types = list(
@@ -310,11 +316,15 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 		/obj/item/pizzabox/mushroom
 	)
 
+	var/spawned_count = 0
 	for(var/i in 1 to rand(4, 8))
 		if(!length(cargo_turfs))
 			break
 		var/pizza_type = pick(pizza_types)
-		new pizza_type(pick_n_take(cargo_turfs))
+		var/turf/spawn_turf = pick_n_take(cargo_turfs)
+		new pizza_type(spawn_turf)
+		spawned_count++
+	log_shuttle("LOAN DEBUG: pizza_delivery - spawned [spawned_count] pizzas")
 
 /// Medical emergency - medical supplies
 /datum/voidcrew_shuttle_loan/medical_emergency
