@@ -377,14 +377,10 @@
 						say("Error: Insufficient credits. Need [total_cost], have [available].")
 						return TRUE
 
-					// First spawn the shuttle, then load cargo into it
+					// Call the shuttle - buy() will be called after successful docking
 					if(cargo_shuttle.call_shuttle(ship))
-						buy() // Spawn items in shuttle cargo bay (now that shuttle exists)
 						say("Cargo shuttle called. ETA 30 seconds.")
 						usr.investigate_log("called the [bank_account_holder.synced_bank_account.account_holder] cargo shuttle.", INVESTIGATE_CARGO)
-
-						// Print requisition form
-						print_requisition_form()
 					else
 						say("Error: Could not call cargo shuttle.")
 

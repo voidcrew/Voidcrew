@@ -344,6 +344,11 @@
 	state = CARGO_SHUTTLE_DOCKED
 	linked_console?.say("Cargo shuttle has arrived.")
 
+	// Now that docking succeeded, process purchases and spawn items
+	if(linked_console)
+		linked_console.buy()
+		linked_console.print_requisition_form()
+
 	// Play docking sound to all mobs on the ship
 	if(target_ship?.shuttle)
 		for(var/area/ship_area as anything in target_ship.shuttle.shuttle_areas)
@@ -463,9 +468,13 @@
 				continue // Don't delete mobs
 			qdel(AM)
 
-	// Convert all shuttle turfs to space
+	// Convert all shuttle turfs to space and move them out of shuttle area
+	var/area/space/space_area = locate(/area/space) in GLOB.areas
+	if(!space_area)
+		space_area = new /area/space
 	for(var/turf/T as anything in shuttle_turfs)
 		T.ChangeTurf(/turf/open/space, flags = CHANGETURF_DEFER_CHANGE)
+		space_area.contents += T
 
 	// Delete the shuttle port (force = TRUE to actually delete it)
 	qdel(shuttle_port, force = TRUE)
