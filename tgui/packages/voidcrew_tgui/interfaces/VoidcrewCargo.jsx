@@ -205,34 +205,51 @@ const VoidcrewCargoStatus = () => {
         )}
       </LabeledList>
       {!!loan && (
-        <Box mt={2} p={1} backgroundColor="rgba(255, 200, 0, 0.1)">
-          <Box bold color="yellow" mb={1}>
-            Shuttle Loan Offer from {loan.sender}
+        <Box
+          mt={2}
+          p={1}
+          backgroundColor={
+            loan.accepted
+              ? 'rgba(100, 200, 100, 0.1)'
+              : 'rgba(255, 200, 0, 0.1)'
+          }
+        >
+          <Box bold color={loan.accepted ? 'good' : 'yellow'} mb={1}>
+            {loan.accepted
+              ? `Loan Accepted from ${loan.sender}`
+              : `Shuttle Loan Offer from ${loan.sender}`}
           </Box>
           <Box mb={1}>{loan.announcement}</Box>
           {loan.bonus_credits > 0 && (
             <Box color="good" mb={1}>
               Bonus: {formatMoney(loan.bonus_credits)} credits
+              {loan.accepted && ' (credited)'}
             </Box>
           )}
-          <Stack>
-            <Stack.Item>
-              <Button
-                color="green"
-                icon="check"
-                content="Accept Loan"
-                onClick={() => act('accept_loan')}
-              />
-            </Stack.Item>
-            <Stack.Item>
-              <Button
-                color="red"
-                icon="times"
-                content="Decline"
-                onClick={() => act('decline_loan')}
-              />
-            </Stack.Item>
-          </Stack>
+          {loan.accepted ? (
+            <Box color="good" italic>
+              Call the cargo shuttle to receive your loan items.
+            </Box>
+          ) : (
+            <Stack>
+              <Stack.Item>
+                <Button
+                  color="green"
+                  icon="check"
+                  content="Accept Loan"
+                  onClick={() => act('accept_loan')}
+                />
+              </Stack.Item>
+              <Stack.Item>
+                <Button
+                  color="red"
+                  icon="times"
+                  content="Decline"
+                  onClick={() => act('decline_loan')}
+                />
+              </Stack.Item>
+            </Stack>
+          )}
         </Box>
       )}
     </Section>

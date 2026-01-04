@@ -185,6 +185,7 @@
 			"sender" = loan.sender,
 			"announcement" = loan.announcement_text,
 			"bonus_credits" = loan.bonus_credits,
+			"accepted" = cargo_shuttle.loan_accepted,
 		)
 	else
 		data["loan"] = null
@@ -354,8 +355,8 @@
 
 			switch(cargo_shuttle.state)
 				if(CARGO_SHUTTLE_AWAY)
-					// Call the shuttle with our orders
-					if(!length(checkout_list))
+					// Call the shuttle with our orders (allow empty cart if loan accepted)
+					if(!length(checkout_list) && !cargo_shuttle.loan_accepted)
 						say("Error: No orders in cart.")
 						return TRUE
 
