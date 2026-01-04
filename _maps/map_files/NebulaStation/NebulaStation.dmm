@@ -14853,11 +14853,11 @@
 /obj/effect/turf_decal/tile/blue/anticorner/contrasted{
 	dir = 4
 	},
-/obj/machinery/digital_clock/directional/east,
 /obj/structure/bed/medical{
 	dir = 4
 	},
 /obj/item/bedsheet/medical,
+/obj/machinery/vitals_reader/directional/east,
 /turf/open/floor/iron/white,
 /area/station/medical/treatment_center)
 "ckV" = (
@@ -24173,6 +24173,9 @@
 	},
 /obj/effect/turf_decal/siding/dark/end{
 	dir = 8
+	},
+/obj/machinery/vitals_reader/directional/west{
+	id_tag = "uppercryo"
 	},
 /turf/open/floor/iron/dark/small,
 /area/station/medical/cryo)
@@ -35286,6 +35289,9 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/structure/disposalpipe/segment{
 	dir = 6
+	},
+/obj/machinery/vitals_reader/directional/west{
+	id_tag = "lowercryo"
 	},
 /turf/open/floor/iron/dark/small,
 /area/station/medical/cryo)
@@ -50307,6 +50313,7 @@
 	dir = 1
 	},
 /obj/machinery/digital_clock/directional/south,
+/obj/machinery/vitals_reader/directional/east,
 /turf/open/floor/iron/showroomfloor,
 /area/station/medical/surgery/theatre)
 "hud" = (
@@ -75513,6 +75520,7 @@
 /obj/machinery/computer/operating{
 	dir = 1
 	},
+/obj/machinery/vitals_reader/directional/west,
 /turf/open/floor/iron/showroomfloor,
 /area/station/medical/surgery/theatre)
 "lfV" = (
@@ -78157,16 +78165,17 @@
 "lAm" = (
 /obj/machinery/defibrillator_mount/directional/south,
 /obj/effect/turf_decal/tile/blue/anticorner/contrasted,
-/obj/machinery/digital_clock/directional/east,
 /obj/structure/bed/medical{
 	dir = 4
 	},
 /obj/item/bedsheet/medical,
+/obj/machinery/vitals_reader/directional/east,
 /turf/open/floor/iron/white,
 /area/station/medical/treatment_center)
 "lAq" = (
 /obj/machinery/cryo_cell{
-	dir = 4
+	dir = 4;
+	id_tag = "lowercryo"
 	},
 /obj/effect/turf_decal/bot_white{
 	color = "#52B4E9"
@@ -95271,6 +95280,17 @@
 /obj/machinery/power/apc/auto_name/directional/north,
 /turf/open/floor/plating,
 /area/station/maintenance/starboard/aft)
+"ogk" = (
+/obj/machinery/cryo_cell{
+	dir = 4;
+	id_tag = "uppercryo"
+	},
+/obj/effect/turf_decal/bot_white{
+	color = "#52B4E9"
+	},
+/obj/structure/sign/warning/cold_temp/directional/west,
+/turf/open/floor/iron/dark/textured,
+/area/station/medical/cryo)
 "ogl" = (
 /obj/structure/fluff/paper,
 /obj/structure/sign/poster/random/directional/south,
@@ -118263,6 +118283,9 @@
 	},
 /obj/item/bedsheet/medical{
 	dir = 4
+	},
+/obj/machinery/digital_clock/directional/north{
+	pixel_y = 36
 	},
 /turf/open/floor/iron/white,
 /area/station/medical/treatment_center)
@@ -254375,7 +254398,7 @@ aqQ
 gyf
 nHB
 dCZ
-lAq
+ogk
 tMT
 lAq
 fjZ
