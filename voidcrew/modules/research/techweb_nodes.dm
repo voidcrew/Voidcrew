@@ -263,6 +263,17 @@
 		"surgery_oldstation_dissection_elite",
 	)
 
+/datum/techweb_node/mission_logistics
+	id = TECHWEB_NODE_MISSION_LOGISTICS
+	display_name = "Mission Logistics"
+	description = "Equipment for managing ship contracts and missions."
+	prereq_ids = list(TECHWEB_NODE_FUNDIMENTAL_SCI)
+	design_ids = list(
+		"mission_board",
+		"mission_pad",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 500)
+
 /datum/techweb_node/survey_console
 	id = TECHWEB_NODE_SURVEY_CONSOLE
 	display_name = "Orbital survey console"

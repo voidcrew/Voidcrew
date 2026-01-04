@@ -3,10 +3,11 @@
  *
  * A mission that requires the ship to fly to specific overmap coordinates.
  * Completes when the ship reaches the target location.
+ * Difficulty is determined by the target zone (Neutral=Easy, Contested=Medium, Lawless=Hard).
  */
 /datum/mission/exploration
 	name = "Exploration Contract"
-	desc = "Survey the sector at coordinates (%TARGET_X%, %TARGET_Y%). Fly to this location to complete the contract."
+	desc = "Survey the sector at coordinates (%TARGET_X%, %TARGET_Y%) in the %ZONE_NAME%. Fly to this location to complete the contract."
 	weight = 10
 	duration = DEFAULT_MISSION_DURATION
 
@@ -14,49 +15,90 @@
 	var/target_x = 0
 	/// Target Y coordinate on the overmap
 	var/target_y = 0
+	/// Target zone type (ZONE_GREEN, ZONE_YELLOW, ZONE_RED)
+	var/target_zone = ZONE_GREEN
+	/// Target zone display name
+	var/target_zone_name = "Neutral Zone"
 	/// Whether the target has been visited
 	var/visited = FALSE
 	/// Range within which the mission counts as complete (tiles from target)
 	var/completion_range = 1
 
 /datum/mission/exploration/generate_mission_details()
-	// Pick random coordinates on the overmap (relative coords 1 to OVERMAP_SIZE)
-	// Avoid the edges and center (sun area)
-	var/min_coord = MISSION_OVERMAP_MIN_COORD
-	var/max_coord = MISSION_OVERMAP_MAX_COORD
 	var/center = round(OVERMAP_SIZE / 2)
+	var/max_radius = (OVERMAP_SIZE - 1) / 2
 	var/sun_radius = 3
 
-	// Try to find coordinates not in the sun
-	var/attempts = 20
-	while(attempts > 0)
-		target_x = rand(min_coord, max_coord)
-		target_y = rand(min_coord, max_coord)
+	// Weighted zone selection (more easy missions, fewer hard)
+	var/list/zone_weights = list()
+	zone_weights["[ZONE_GREEN]"] = 50   // Easy - most common
+	zone_weights["[ZONE_YELLOW]"] = 35  // Medium
+	zone_weights["[ZONE_RED]"] = 15     // Hard - rarest
+	target_zone = text2num(pick_weight(zone_weights))
 
-		// Check if we're not in the sun area
-		var/dist_from_center = sqrt((target_x - center) ** 2 + (target_y - center) ** 2)
-		if(dist_from_center > sun_radius)
+	// Set difficulty and rewards based on zone
+	switch(target_zone)
+		if(ZONE_GREEN)
+			target_zone_name = ZONE_NAME_GREEN
+			difficulty = MISSION_DIFFICULTY_EASY
+			value_min = 400
+			value_max = 700
+		if(ZONE_YELLOW)
+			target_zone_name = ZONE_NAME_YELLOW
+			difficulty = MISSION_DIFFICULTY_MEDIUM
+			value_min = 800
+			value_max = 1300
+		if(ZONE_RED)
+			target_zone_name = ZONE_NAME_RED
+			difficulty = MISSION_DIFFICULTY_HARD
+			value_min = 1400
+			value_max = 2200
+
+	// Calculate distance range for target zone
+	// ZONE_RED: < 0.33 of max_radius (inner ring)
+	// ZONE_YELLOW: 0.33 - 0.66 of max_radius (middle ring)
+	// ZONE_GREEN: > 0.66 of max_radius (outer ring)
+	var/min_dist
+	var/max_dist
+	switch(target_zone)
+		if(ZONE_RED)
+			min_dist = sun_radius + 1  // Avoid sun
+			max_dist = max_radius * 0.33
+		if(ZONE_YELLOW)
+			min_dist = max_radius * 0.33
+			max_dist = max_radius * 0.66
+		if(ZONE_GREEN)
+			min_dist = max_radius * 0.66
+			max_dist = max_radius - 2  // Avoid edge
+
+	// Generate random coordinates within the zone's distance range
+	var/attempts = 30
+	while(attempts > 0)
+		// Pick random angle and distance within zone range
+		var/angle = rand(0, 359) * (3.14159 / 180)  // Convert to radians
+		var/dist = rand(round(min_dist), round(max_dist))
+
+		target_x = round(center + cos(angle) * dist)
+		target_y = round(center + sin(angle) * dist)
+
+		// Clamp to valid bounds
+		target_x = clamp(target_x, MISSION_OVERMAP_MIN_COORD, MISSION_OVERMAP_MAX_COORD)
+		target_y = clamp(target_y, MISSION_OVERMAP_MIN_COORD, MISSION_OVERMAP_MAX_COORD)
+
+		// Verify we're in the correct zone
+		var/actual_dist = sqrt((target_x - center) ** 2 + (target_y - center) ** 2)
+		var/normalized = actual_dist / max_radius
+		var/actual_zone
+		if(normalized < 0.33)
+			actual_zone = ZONE_RED
+		else if(normalized < 0.66)
+			actual_zone = ZONE_YELLOW
+		else
+			actual_zone = ZONE_GREEN
+
+		if(actual_zone == target_zone && actual_dist > sun_radius)
 			break
 		attempts--
-
-	// Set difficulty and value range based on distance from center
-	var/center_dist = sqrt((target_x - center) ** 2 + (target_y - center) ** 2)
-	var/max_dist = sqrt(2 * (center - min_coord) ** 2)
-	var/dist_ratio = center_dist / max_dist
-
-	// Near center = easy, mid = medium, far = hard
-	if(dist_ratio < 0.4)
-		difficulty = MISSION_DIFFICULTY_EASY
-		value_min = 400
-		value_max = 700
-	else if(dist_ratio < 0.7)
-		difficulty = MISSION_DIFFICULTY_MEDIUM
-		value_min = 700
-		value_max = 1200
-	else
-		difficulty = MISSION_DIFFICULTY_HARD
-		value_min = 1200
-		value_max = 2000
 
 	. = ..()
 
@@ -64,8 +106,10 @@
 	. = ..()
 	name = replacetext(name, "%TARGET_X%", "[target_x]")
 	name = replacetext(name, "%TARGET_Y%", "[target_y]")
+	name = replacetext(name, "%ZONE_NAME%", target_zone_name)
 	desc = replacetext(desc, "%TARGET_X%", "[target_x]")
 	desc = replacetext(desc, "%TARGET_Y%", "[target_y]")
+	desc = replacetext(desc, "%ZONE_NAME%", target_zone_name)
 
 /datum/mission/exploration/start_mission(obj/structure/overmap/ship/ship)
 	. = ..()
@@ -147,5 +191,7 @@
 	var/list/data = ..()
 	data["target_x"] = target_x
 	data["target_y"] = target_y
+	data["target_zone"] = target_zone
+	data["target_zone_name"] = target_zone_name
 	data["visited"] = visited
 	return data

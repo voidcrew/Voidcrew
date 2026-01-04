@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import {
   Box,
   Button,
@@ -85,6 +87,10 @@ const MissionBoardContent = () => {
     pad_contents,
   } = data;
 
+  const [currentTab, setCurrentTab] = useState<'available' | 'active'>(
+    'available',
+  );
+
   return (
     <Stack fill vertical>
       {/* Header with crew share controls */}
@@ -124,8 +130,8 @@ const MissionBoardContent = () => {
         </Section>
       </Stack.Item>
 
-      {/* Pad contents if any */}
-      {has_pad && pad_contents.length > 0 && (
+      {/* Pad contents if any - only show on active tab */}
+      {currentTab === 'active' && has_pad && pad_contents.length > 0 && (
         <Stack.Item>
           <Section title="Items on Pad">
             {pad_contents.map((item) => (
@@ -137,42 +143,61 @@ const MissionBoardContent = () => {
         </Stack.Item>
       )}
 
-      {/* Active Missions */}
-      <Stack.Item grow>
-        <Section title="Active Missions" fill scrollable>
-          {active_missions.length === 0 ? (
-            <NoticeBox>No active missions</NoticeBox>
-          ) : (
-            <Stack vertical>
-              {active_missions.map((mission) => (
-                <Stack.Item key={mission.ref}>
-                  <MissionCard
-                    mission={mission}
-                    isActive
-                    padContents={pad_contents}
-                  />
-                </Stack.Item>
-              ))}
-            </Stack>
-          )}
-        </Section>
+      {/* Mission Tabs */}
+      <Stack.Item>
+        <Tabs fluid>
+          <Tabs.Tab
+            selected={currentTab === 'available'}
+            onClick={() => setCurrentTab('available')}
+          >
+            Available ({available_missions.length})
+          </Tabs.Tab>
+          <Tabs.Tab
+            selected={currentTab === 'active'}
+            onClick={() => setCurrentTab('active')}
+          >
+            Active ({active_count}/{max_missions})
+          </Tabs.Tab>
+        </Tabs>
       </Stack.Item>
 
-      {/* Available Missions */}
+      {/* Tab Content */}
       <Stack.Item grow>
-        <Section title="Available Missions" fill scrollable>
-          {available_missions.length === 0 ? (
-            <NoticeBox>No available missions</NoticeBox>
-          ) : (
-            <Stack vertical>
-              {available_missions.map((mission) => (
-                <Stack.Item key={mission.ref}>
-                  <MissionCard mission={mission} isActive={false} />
-                </Stack.Item>
-              ))}
-            </Stack>
-          )}
-        </Section>
+        {currentTab === 'available' && (
+          <Section fill scrollable>
+            {available_missions.length === 0 ? (
+              <NoticeBox>No available missions</NoticeBox>
+            ) : (
+              <Stack vertical>
+                {available_missions.map((mission) => (
+                  <Stack.Item key={mission.ref}>
+                    <MissionCard mission={mission} isActive={false} />
+                  </Stack.Item>
+                ))}
+              </Stack>
+            )}
+          </Section>
+        )}
+
+        {currentTab === 'active' && (
+          <Section fill scrollable>
+            {active_missions.length === 0 ? (
+              <NoticeBox>No active missions</NoticeBox>
+            ) : (
+              <Stack vertical>
+                {active_missions.map((mission) => (
+                  <Stack.Item key={mission.ref}>
+                    <MissionCard
+                      mission={mission}
+                      isActive
+                      padContents={pad_contents}
+                    />
+                  </Stack.Item>
+                ))}
+              </Stack>
+            )}
+          </Section>
+        )}
       </Stack.Item>
     </Stack>
   );
@@ -222,6 +247,22 @@ const MissionCard = (props: MissionCardProps) => {
         From: {mission.author}
       </Box>
       <Box mb={1}>{mission.desc}</Box>
+
+      {/* Rewards summary */}
+      <Box mb={1}>
+        <Box as="span" color="label">
+          Rewards:{' '}
+        </Box>
+        <Box as="span" color="good" bold>
+          {mission.value} credits
+        </Box>
+        {mission.reward_item && (
+          <Box as="span" color="average" bold>
+            {' '}
+            + {mission.reward_item}
+          </Box>
+        )}
+      </Box>
 
       {isActive && (
         <>

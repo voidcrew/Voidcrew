@@ -23,3 +23,6 @@
 // Radiation Shielding
 #define TECHWEB_NODE_RADIATION_SHIELDING_STANDARD "radiation_shielding_standard"
 #define TECHWEB_NODE_RADIATION_SHIELDING_HEAVY "radiation_shielding_heavy"
+
+// Missions
+#define TECHWEB_NODE_MISSION_LOGISTICS "mission_logistics"

@@ -10,3 +10,5 @@
 #define COMSIG_VOIDCREW_SHIP_DOCKED_BY "voidcrew_ship_docked_by"
 /// Signal sent TO the target ship when a ship undocks from it (source = undocking ship)
 #define COMSIG_VOIDCREW_SHIP_UNDOCKED_BY "voidcrew_ship_undocked_by"
+/// Signal sent when a ship completes surveying a celestial object (args: celestial_type_key)
+#define COMSIG_VOIDCREW_SURVEY_COMPLETED "voidcrew_survey_completed"
