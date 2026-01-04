@@ -16,7 +16,7 @@
 	/// Maximum credit reward
 	var/value_max = 1200
 	/// Actual credit reward (set during generation from min/max)
-	var/value = 1000
+	var/value = 0
 	/// Time limit in deciseconds (default 30 minutes)
 	var/duration = DEFAULT_MISSION_DURATION
 	/// Selection weight for random mission generation (0 = never auto-selected)
@@ -27,6 +27,8 @@
 	var/mission_reward
 	/// Mission difficulty (MISSION_DIFFICULTY_EASY/MEDIUM/HARD) - informational only
 	var/difficulty = MISSION_DIFFICULTY_MEDIUM
+	/// If TRUE, mission requires an item to be turned in via mission pad
+	var/requires_item = FALSE
 
 	/// Whether the mission has been accepted/started
 	var/active = FALSE
@@ -215,6 +217,9 @@
 /datum/mission/proc/can_complete()
 	if(failed || completed)
 		return FALSE
+	// Item-based missions can only be completed via can_turn_in
+	if(requires_item)
+		return FALSE
 	return TRUE
 
 /**
@@ -227,13 +232,33 @@
 	return can_complete()
 
 /**
+ * Returns a detailed reason why the mission can't be completed or item can't be turned in.
+ * Used for user-facing error messages. Override in subtypes for specific messages.
+ * * item - The item being offered (may be null)
+ */
+/datum/mission/proc/get_failure_reason(obj/item/item)
+	if(failed)
+		return "Mission already failed."
+	if(completed)
+		return "Mission already completed."
+	if(requires_item && !item)
+		return "No item provided."
+	return "Requirements not met."
+
+/**
  * Completes the mission and distributes rewards.
  * * pad - The mission pad used for turn-in (for item rewards)
  * * turned_in_item - Optional item that was turned in (will be consumed)
  */
 /datum/mission/proc/turn_in(obj/machinery/mission_pad/pad, obj/item/turned_in_item)
-	if(!can_complete())
-		return FALSE
+	// Validate completion - use can_turn_in for item missions, can_complete otherwise
+	if(requires_item)
+		if(!can_turn_in(turned_in_item))
+			return FALSE
+	else
+		if(!can_complete())
+			return FALSE
+
 	if(failed || completed)
 		return FALSE
 
@@ -244,9 +269,9 @@
 		deltimer(timeout_timer)
 		timeout_timer = null
 
-	// Consume turned in item if any
+	// Consume turned in item via hook (subtypes can override for stacks, etc.)
 	if(turned_in_item)
-		qdel(turned_in_item)
+		consume_turned_in_item(turned_in_item)
 
 	// Distribute rewards
 	distribute_rewards(pad)
@@ -263,6 +288,13 @@
 
 	qdel(src)
 	return TRUE
+
+/**
+ * Consumes the turned in item. Override for custom behavior (e.g., stack consumption).
+ * * item - The item to consume
+ */
+/datum/mission/proc/consume_turned_in_item(obj/item/item)
+	qdel(item)
 
 /**
  * Distributes mission rewards to crew and ship.
@@ -343,4 +375,5 @@
 		"difficulty" = difficulty,
 		"difficulty_name" = get_difficulty_name(),
 		"difficulty_color" = get_difficulty_color(),
+		"requires_item" = requires_item,
 	)

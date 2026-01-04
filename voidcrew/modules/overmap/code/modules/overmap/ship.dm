@@ -1902,18 +1902,13 @@
 	if(!(mission in active_missions))
 		return "Mission not active on this ship."
 
-	// For item-based missions, check can_turn_in with the item
-	// For non-item missions, check can_complete
-	if(item)
+	// Pre-validate before attempting turn-in for better error messages
+	if(mission.requires_item)
 		if(!mission.can_turn_in(item))
-			// Try to get detailed failure reason if available
-			if(istype(mission, /datum/mission/delivery))
-				var/datum/mission/delivery/delivery_mission = mission
-				return delivery_mission.get_turn_in_failure_reason(item)
-			return "Invalid item for turn-in."
+			return mission.get_failure_reason(item)
 	else
 		if(!mission.can_complete())
-			return "Mission requirements not met."
+			return mission.get_failure_reason(item)
 
 	if(!mission.turn_in(pad, item))
 		return "Failed to complete mission."
