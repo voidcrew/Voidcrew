@@ -1,6 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "ad" = (
-/obj/machinery/vending/medical/syndicate_access/cybersun,
+/obj/machinery/ship_combat/interdictor,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/medbay)
 "aj" = (
@@ -35,12 +35,9 @@
 "aT" = (
 /obj/structure/table/reinforced,
 /obj/item/gun/ballistic/rocketlauncher/unrestricted,
-/obj/item/ammo_casing/caseless/rocket,
-/obj/item/ammo_casing/caseless/rocket,
 /obj/structure/railing{
 	dir = 10
 	},
-/obj/item/ammo_casing/caseless/rocket/heap,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/cargo)
 "bl" = (
@@ -60,13 +57,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/catwalk_floor,
 /area/shuttle/voidcrew/blackbeard/medbay)
-"ch" = (
-/obj/machinery/airalarm/all_access{
-	dir = 4;
-	pixel_x = -24
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/blackbeard/hallway/aft)
 "cs" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -328,11 +318,6 @@
 /area/shuttle/voidcrew/blackbeard/hallway/aft)
 "rJ" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/airalarm/all_access{
-	pixel_x = null;
-	pixel_y = 24;
-	dir = 1
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/engineering)
 "rY" = (
@@ -354,10 +339,6 @@
 "sv" = (
 /obj/machinery/sleeper/syndie{
 	dir = 8
-	},
-/obj/machinery/airalarm/all_access{
-	pixel_y = -24;
-	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/medbay)
@@ -410,6 +391,7 @@
 /turf/open/floor/catwalk_floor,
 /area/shuttle/voidcrew/blackbeard/hallway/aft)
 "uP" = (
+/obj/machinery/ship_combat/shield_generator,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/bridge)
 "wm" = (
@@ -450,10 +432,6 @@
 /obj/item/clothing/shoes/combat,
 /obj/item/melee/baton/telescopic,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/obj/machinery/airalarm/all_access{
-	pixel_y = -24;
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -568,10 +546,6 @@
 /obj/item/ammo_box/magazine/m9mm_aps,
 /obj/item/ammo_box/magazine/m9mm_aps,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/obj/machinery/airalarm/all_access{
-	pixel_y = -24;
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -768,7 +742,6 @@
 "Ow" = (
 /obj/structure/table/reinforced,
 /obj/item/card/emag,
-/obj/item/areaeditor/shuttle,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/bridge)
 "Pi" = (
@@ -787,14 +760,8 @@
 /turf/open/floor/catwalk_floor,
 /area/shuttle/voidcrew/blackbeard/hallway/aft)
 "Qz" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/airalarm/all_access{
-	dir = 4;
-	pixel_x = -24
-	},
-/turf/open/floor/catwalk_floor,
+/obj/machinery/ship_combat/missile_launcher,
+/turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/hallway/fore)
 "Rp" = (
 /obj/structure/table/reinforced,
@@ -812,10 +779,6 @@
 /obj/item/gun/ballistic/automatic/ar{
 	desc = "A robust assault rifle used by Nanotrasen fighting forces, this one has has a crudely scratched in S over the Nanotrasen Logo."
 	},
-/obj/item/ammo_box/magazine/m556,
-/obj/item/ammo_box/magazine/m556,
-/obj/item/ammo_box/magazine/m556,
-/obj/item/ammo_box/magazine/m556,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/cargo)
 "Rt" = (
@@ -942,14 +905,8 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/cargo)
 "XG" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/airalarm/all_access{
-	pixel_y = -24;
-	dir = 1
-	},
-/turf/open/floor/catwalk_floor,
+/obj/machinery/ship_combat/laser_turret,
+/turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/cargo)
 "XN" = (
 /obj/machinery/light/small{
@@ -1115,7 +1072,7 @@ Bw
 en
 cs
 HS
-ch
+rE
 DN
 bl
 Yt
@@ -1352,7 +1309,7 @@ TQ
 jm
 av
 av
-Qz
+av
 Ed
 Tp
 av
@@ -1424,7 +1381,7 @@ TQ
 (30,1,1) = {"
 TQ
 TQ
-Kj
+Qz
 av
 kw
 Ow
@@ -1432,14 +1389,14 @@ DC
 uP
 kw
 av
-Kj
+Qz
 TQ
 TQ
 "}
 (31,1,1) = {"
 TQ
 TQ
-im
+XG
 xY
 aS
 aS
@@ -1447,7 +1404,7 @@ aS
 aS
 aS
 xY
-im
+XG
 TQ
 TQ
 "}
@@ -1476,7 +1433,7 @@ Wp
 jk
 Wp
 Wp
-XG
+Wp
 im
 TQ
 TQ

@@ -1,0 +1,10 @@
+// NPC Ships Module
+// AI-controlled pirate ships that spawn dynamically and engage player ships
+
+#include "code\_defines.dm"
+#include "code\npc_ship.dm"
+#include "code\npc_combat_interface.dm"
+#include "code\npc_ship_controller.dm"
+#include "code\spawner_subsystem.dm"
+#include "code\subtrees\combat_subtree.dm"
+#include "code\behaviors\ship_combat_behaviors.dm"
