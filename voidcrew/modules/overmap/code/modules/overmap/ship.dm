@@ -1475,9 +1475,10 @@
 	dock_b.dwidth = round((dock_b.width - shuttle_b.width) / 2) + shuttle_b.dwidth
 	dock_b.dheight = round((dock_b.height - shuttle_b.height) / 2) + shuttle_b.dheight
 
-	// Position dock_b adjacent to dock_a (1 tile apart for airlocks to touch)
+	// Position dock_b adjacent to dock_a (exit-to-exit docking)
 	// dock_a.dir points INTO shuttle_a, shuttle_a extends in REVERSE_DIR(dock_a.dir)
 	// dock_b should be in that direction so shuttles face each other
+	// The +1 offset puts the docking ports adjacent - shuttle bodies extend away from each other
 	var/offset_dir = REVERSE_DIR(dock_a.dir)
 	var/dock_b_x = dock_a.x
 	var/dock_b_y = dock_a.y

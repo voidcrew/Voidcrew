@@ -1432,10 +1432,17 @@
 	var/angle_diff = SIMPLIFY_DEGREES(dir2angle(world_port_facing) - dir2angle(port.preferred_direction))
 	var/new_port_direction = angle2dir(angle_diff)
 
+	// Get the current stationary dock before moving (if docked)
+	var/obj/docking_port/stationary/current_dock = port.get_docked()
+
 	// Move the port and update variables
 	port.forceMove(airlock_turf)
 	port.dir = new_dir
 	port.port_direction = new_port_direction
+
+	// Move the stationary dock to the new location to maintain docking relationship
+	if(current_dock)
+		current_dock.forceMove(airlock_turf)
 
 	// Recalculate dimensions
 	port.calculate_docking_port_information()
