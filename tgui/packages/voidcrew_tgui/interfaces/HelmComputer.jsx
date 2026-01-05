@@ -579,6 +579,7 @@ const ShipControlContent = () => {
     isInterdicted,
     speedMultiplier,
     zone_transitioning,
+    cargoShuttlePresent,
   } = data;
   const isDisabled = isViewer || isNotCrew;
   const flyable = data.state === 'flying' && !shipDisabled && !isDisabled;
@@ -592,10 +593,14 @@ const ShipControlContent = () => {
     isDisabled ||
     undockCooldown ||
     undockLocked ||
-    undockWarmup;
+    undockWarmup ||
+    cargoShuttlePresent;
   const getUndockTooltip = () => {
     if (undockWarmup) {
       return `Undocking in ${Math.ceil(undockWarmupRemaining / 10)}s...`;
+    }
+    if (cargoShuttlePresent) {
+      return 'Cargo shuttle present - send it away first';
     }
     if (undockCooldown) {
       return `Systems stabilizing - ${Math.ceil(undockCooldownRemaining / 10)}s remaining`;

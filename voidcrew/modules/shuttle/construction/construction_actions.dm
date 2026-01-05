@@ -107,6 +107,11 @@
 	button_icon = 'voidcrew/icons/obj/tools.dmi'
 	button_icon_state = "rcd_remove"
 
+/// Cost to deconstruct an airlock (same as standard RCD)
+#define SHIP_RCD_AIRLOCK_DECONSTRUCT_COST 32
+/// Delay to deconstruct an airlock
+#define SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY (5 SECONDS)
+
 /datum/action/innate/construction/ship/deconstruct/Activate()
 	if(..())
 		return
@@ -114,6 +119,7 @@
 		return
 	var/turf/target_turf = get_turf(remote_eye)
 	var/atom/rcd_target = target_turf
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
 
 	// Check for indestructible objects blocking deconstruction (blast doors, r-walls, etc.)
 	for(var/obj/blocker in target_turf)
@@ -124,6 +130,41 @@
 	// Also check if the turf itself is indestructible
 	if(target_turf.resistance_flags & INDESTRUCTIBLE)
 		remote_eye.balloon_alert(owner, "can't deconstruct that!")
+		return
+
+	// Special handling for airlocks - bypass reinforcement/seal checks for remote construction
+	var/obj/machinery/door/airlock/target_airlock = locate() in target_turf
+	if(target_airlock)
+		owner.changeNext_move(CLICK_CD_RANGE)
+		check_rcd()
+
+		// Check resources
+		if(!base_console.internal_rcd.checkResource(SHIP_RCD_AIRLOCK_DECONSTRUCT_COST, owner))
+			remote_eye.balloon_alert(owner, "not enough resources!")
+			return
+
+		// Show construction effect
+		var/obj/effect/constructing_effect/rcd_effect = new(target_turf, SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY, RCD_DECONSTRUCT)
+
+		// Delay for deconstruction
+		var/obj/item/construction/rcd/internal/ship/ship_rcd = base_console.internal_rcd
+		if(!ship_rcd.build_delay(owner, SHIP_RCD_AIRLOCK_DECONSTRUCT_DELAY, target_airlock))
+			qdel(rcd_effect)
+			return
+
+		// Use resources after delay
+		if(!base_console.internal_rcd.useResource(SHIP_RCD_AIRLOCK_DECONSTRUCT_COST, owner))
+			qdel(rcd_effect)
+			remote_eye.balloon_alert(owner, "not enough resources!")
+			return
+
+		// Remove the airlock
+		playsound(target_turf, 'sound/items/deconstruct.ogg', 60, TRUE)
+		rcd_effect.end_animation()
+		qdel(target_airlock)
+
+		// Clean up any empty shuttle turfs after deconstruction
+		ship_console.cleanup_deconstructed_turfs()
 		return
 
 	// Find structures that can be deconstructed
@@ -150,8 +191,6 @@
 		base_console.internal_rcd.mode = old_mode
 		remote_eye.balloon_alert(owner, "not enough resources!")
 		return
-
-	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console = base_console
 
 	// Perform the RCD deconstruction
 	base_console.internal_rcd.rcd_create(rcd_target, owner)
