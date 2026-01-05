@@ -325,6 +325,18 @@
 		cleanup_shuttle()
 		return FALSE
 
+	// Calculate the correct dir for ship_dock based on ship_shuttle's current geometry
+	// We can't call adjust_dock_to_shuttle because it also moves the dock
+	// This is necessary because construction console port relocation updates port_direction
+	// but doesn't update the stationary dock's dir
+	var/shuttle_true_height = ship_shuttle.height
+	var/shuttle_true_width = ship_shuttle.width
+	if(EWCOMPONENT(ship_shuttle.port_direction))
+		shuttle_true_height = ship_shuttle.width
+		shuttle_true_width = ship_shuttle.height
+	var/ship_facing_dir = angle2dir(dir2angle(shuttle_true_height > shuttle_true_width ? EAST : NORTH) + dir2angle(ship_shuttle.port_direction) + 180)
+	ship_dock.dir = ship_facing_dir
+
 	// Set cargo_dock dimensions to match the cargo shuttle
 	cargo_dock.width = shuttle_port.width
 	cargo_dock.height = shuttle_port.height
