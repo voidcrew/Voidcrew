@@ -12,9 +12,10 @@
 	/// Ships don't use normal movement, they use overmap velocity
 	ai_movement = null
 
-	/// Combat subtree for ship-to-ship fighting
+	/// Combat and movement subtrees
 	planning_subtrees = list(
 		/datum/ai_planning_subtree/npc_ship_combat,
+		/datum/ai_planning_subtree/npc_ship_movement,
 	)
 
 	/// Ships should always be active while in simulation
@@ -24,9 +25,20 @@
 	continue_processing_when_client = TRUE
 
 /datum/ai_controller/npc_ship/New(atom/new_pawn)
-	// Initialize blackboard with default values
+	// Initialize combat blackboard
 	blackboard[BB_NPC_COMBAT_STATE] = NPC_COMBAT_IDLE
 	blackboard[BB_NPC_TARGET_LOCKED] = FALSE
+
+	// Initialize movement blackboard
+	blackboard[BB_NPC_MOVEMENT_MODE] = NPC_MOVEMENT_PATROL
+	blackboard[BB_NPC_ORBIT_DISTANCE] = NPC_SHIP_ORBIT_DISTANCE
+	blackboard[BB_NPC_CHASE_BOUNDARY] = NPC_SHIP_CHASE_RANGE
+	blackboard[BB_NPC_PATROL_INDEX] = 1
+
+	// Store home turf for chase behavior
+	if(new_pawn)
+		blackboard[BB_NPC_HOME_TURF] = get_turf(new_pawn)
+
 	. = ..()
 
 /datum/ai_controller/npc_ship/TryPossessPawn(atom/new_pawn)

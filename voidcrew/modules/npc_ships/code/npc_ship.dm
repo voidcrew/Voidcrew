@@ -26,6 +26,9 @@
 	/// Set faction for pirate hostility
 	faction = list(FACTION_PIRATE)
 
+	/// Default movement mode for this ship type
+	var/default_movement_mode = NPC_MOVEMENT_PATROL
+
 /obj/structure/overmap/ship/npc/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
 	// AI initialization happens after shuttle is fully loaded via signal or explicit call
@@ -41,10 +44,7 @@
  */
 /obj/structure/overmap/ship/npc/proc/initialize_ai()
 	if(ai_controller)
-		log_shuttle("NPC SHIP AI: [src] - AI already initialized")
 		return // Already initialized
-
-	log_shuttle("NPC SHIP AI: [src] - Initializing AI controller...")
 
 	// Create combat interface to find and manage weapons
 	combat_interface = new()
@@ -56,7 +56,8 @@
 	// Create and attach AI controller
 	ai_controller = new /datum/ai_controller/npc_ship(src)
 
-	log_shuttle("NPC SHIP AI: [src] - AI controller created: [ai_controller]")
+	// Set default movement mode
+	set_movement_mode(default_movement_mode)
 
 	// Register for signals we care about
 	RegisterSignal(src, COMSIG_SHIP_INTEGRITY_CHANGED, PROC_REF(on_integrity_changed))
@@ -64,6 +65,47 @@
 
 	// Spawn pirate crew
 	spawn_crew()
+
+/**
+ * Sets the movement mode for this NPC ship.
+ * Valid modes: NPC_MOVEMENT_IDLE, NPC_MOVEMENT_ORBIT, NPC_MOVEMENT_PATROL, NPC_MOVEMENT_CHASE
+ */
+/obj/structure/overmap/ship/npc/proc/set_movement_mode(mode)
+	if(!ai_controller)
+		return
+	var/datum/ai_controller/npc_ship/controller = ai_controller
+	controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, mode)
+
+/**
+ * Sets up orbit mode around a celestial object.
+ * @param target The object to orbit (star, planet, etc.)
+ * @param distance The desired orbit distance in tiles
+ */
+/obj/structure/overmap/ship/npc/proc/set_orbit_target(atom/target, distance = NPC_SHIP_ORBIT_DISTANCE)
+	if(!ai_controller)
+		return
+	var/datum/ai_controller/npc_ship/controller = ai_controller
+	controller.set_blackboard_key(BB_NPC_ORBIT_TARGET, target)
+	controller.set_blackboard_key(BB_NPC_ORBIT_DISTANCE, distance)
+	set_movement_mode(NPC_MOVEMENT_ORBIT)
+
+/**
+ * Sets up chase mode with a boundary limit.
+ * @param chase_range Maximum tiles to chase from home position
+ */
+/obj/structure/overmap/ship/npc/proc/set_chase_mode(chase_range = NPC_SHIP_CHASE_RANGE)
+	if(!ai_controller)
+		return
+	var/datum/ai_controller/npc_ship/controller = ai_controller
+	controller.set_blackboard_key(BB_NPC_CHASE_BOUNDARY, chase_range)
+	controller.set_blackboard_key(BB_NPC_HOME_TURF, get_turf(src))
+	set_movement_mode(NPC_MOVEMENT_CHASE)
+
+/**
+ * Sets up patrol mode. Waypoints will be auto-generated.
+ */
+/obj/structure/overmap/ship/npc/proc/set_patrol_mode()
+	set_movement_mode(NPC_MOVEMENT_PATROL)
 
 /**
  * Spawns hostile pirate crew aboard the ship.
@@ -75,12 +117,25 @@
 	var/crew_count = rand(NPC_SHIP_CREW_MIN, NPC_SHIP_CREW_MAX)
 	var/list/valid_turfs = list()
 
-	// Find valid spawn turfs (non-space, walkable)
+	// Find valid spawn turfs (floor tiles that aren't blocked)
 	for(var/area/shuttle_area as anything in shuttle.shuttle_areas)
 		for(var/turf/T in shuttle_area)
+			// Skip space
 			if(isspaceturf(T))
 				continue
+			// Skip dense turfs (walls, etc.)
 			if(T.density)
+				continue
+			// Must be an open floor type
+			if(!isfloorturf(T))
+				continue
+			// Check for dense objects blocking the turf
+			var/blocked = FALSE
+			for(var/obj/O in T)
+				if(O.density)
+					blocked = TRUE
+					break
+			if(blocked)
 				continue
 			valid_turfs += T
 
@@ -133,3 +188,16 @@
 		return
 
 	can_board = FALSE
+
+/**
+ * Override accelerate to enforce NPC speed cap.
+ * NPCs move slower than player ships for gameplay balance.
+ */
+/obj/structure/overmap/ship/npc/accelerate(direction, acceleration)
+	. = ..()
+	// Cap speed at NPC max
+	var/current_magnitude = MAGNITUDE(speed[1], speed[2])
+	if(current_magnitude > NPC_SHIP_MAX_SPEED)
+		var/scale = NPC_SHIP_MAX_SPEED / current_magnitude
+		speed[1] *= scale
+		speed[2] *= scale
