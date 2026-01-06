@@ -28,7 +28,7 @@
 #define NPC_MOVEMENT_ROAMING "roaming"
 
 // Config
-#define NPC_SHIP_TERRITORY_RANGE 1        // Detect and attack within 1 tile (must be adjacent)
+#define NPC_SHIP_TERRITORY_RANGE 2        // Detect and attack within 2 tiles (escape at 3+ tiles)
 #define NPC_SHIP_LOCK_TIME (5 SECONDS)    // Match player lock time
 #define NPC_SHIP_MAX_SHIPS 5              // Max pirates per round
 #define NPC_SHIP_SPAWN_INTERVAL (30 SECONDS)

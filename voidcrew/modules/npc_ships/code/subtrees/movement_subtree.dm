@@ -46,7 +46,6 @@
 				if(next_turf)
 					var/next_zone = SSovermap_zones.get_zone(next_turf)
 					if(next_zone != spawn_zone)
-						log_shuttle("NPC MOVE: ABOUT TO CROSS BOUNDARY! Instant stop.")
 						ship.speed[1] = 0
 						ship.speed[2] = 0
 
@@ -56,7 +55,6 @@
 		if(our_turf)
 			var/current_zone = SSovermap_zones.get_zone(our_turf)
 			if(current_zone != spawn_zone)
-				log_shuttle("NPC MOVE: OUTSIDE SPAWN ZONE! Forcing return to zone")
 				// Clear any target - we can't fight outside our zone
 				if(target)
 					controller.clear_target()
@@ -73,7 +71,6 @@
 	// No target - check if we just lost one (need to return to route)
 	var/had_target = controller.blackboard[BB_NPC_HAD_TARGET]
 	if(had_target)
-		log_shuttle("NPC MOVE: Target lost, returning to patrol route")
 		controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_RETURN_TO_ROUTE)
 		controller.set_blackboard_key(BB_NPC_HAD_TARGET, FALSE)
 		// Clear path so return_to_route calculates fresh path to nearest waypoint

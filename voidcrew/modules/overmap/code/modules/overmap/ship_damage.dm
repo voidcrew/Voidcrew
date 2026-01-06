@@ -249,7 +249,7 @@
 	// Register for dock completion signal - effects happen the instant we land
 	RegisterSignal(src, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_crash_dock_complete))
 
-	dock(crash_site, dock_to_use)
+	dock(crash_site, dock_to_use, instant = TRUE)
 
 /**
  * Signal handler - crash effects the instant docking completes

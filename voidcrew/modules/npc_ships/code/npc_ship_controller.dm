@@ -195,7 +195,12 @@
 
 /**
  * Clears the current target and resets to idle.
+ * Also cancels any active interdiction.
  */
 /datum/ai_controller/npc_ship/proc/clear_target()
+	// Cancel any active interdiction when losing target
+	var/datum/npc_combat_interface/combat = get_combat_interface()
+	combat?.cancel_interdiction()
+
 	set_target(null)
 	set_combat_state(NPC_COMBAT_IDLE)

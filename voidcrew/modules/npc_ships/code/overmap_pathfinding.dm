@@ -227,14 +227,7 @@
 
 	// Need at least 3 waypoints for a valid circuit
 	if(length(waypoints) < 3)
-		log_shuttle("CIRCUIT GEN: Failed - only [length(waypoints)] valid waypoints")
 		return null
-
-	// Debug: log all waypoints
-	log_shuttle("CIRCUIT GEN: Generated [length(waypoints)] waypoints at radius [patrol_radius]:")
-	for(var/i in 1 to length(waypoints))
-		var/turf/wp = waypoints[i]
-		log_shuttle("  Waypoint [i]: ([wp.x],[wp.y])")
 
 	return waypoints
 

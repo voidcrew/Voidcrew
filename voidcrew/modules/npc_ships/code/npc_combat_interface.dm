@@ -284,6 +284,15 @@
 
 	return linked_interdictor.start_interdiction(target_ship, null)
 
+/**
+ * Cancels any active interdiction.
+ */
+/datum/npc_combat_interface/proc/cancel_interdiction()
+	if(QDELETED(linked_interdictor))
+		return
+	if(linked_interdictor.interdiction_active || linked_interdictor.interdiction_warming_up)
+		linked_interdictor.cancel_interdiction("Target lost!")
+
 // ========== UTILITY ==========
 
 /**
