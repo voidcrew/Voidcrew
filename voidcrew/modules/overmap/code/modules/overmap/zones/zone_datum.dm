@@ -7,8 +7,8 @@
 /datum/overmap_zone
 	/// The zone type (ZONE_GREEN, ZONE_YELLOW, ZONE_RED)
 	var/zone_type = ZONE_GREEN
-	/// List of overmap turfs currently in this zone
-	var/list/turf/turfs = list()
+	/// Associative list of overmap turfs in this zone (turf -> TRUE for O(1) lookup)
+	var/list/turfs = list()
 	/// Display name for this zone
 	var/name = "Unknown Zone"
 
@@ -87,7 +87,7 @@
 /datum/overmap_zone/proc/add_turf(turf/open/overmap/T)
 	if(!istype(T))
 		return FALSE
-	if(T in turfs)
+	if(turfs[T])  // O(1) lookup
 		return FALSE
 
 	var/old_zone_type = null
@@ -95,7 +95,7 @@
 		old_zone_type = T.current_zone.zone_type
 		T.current_zone.remove_turf(T)
 
-	turfs += T
+	turfs[T] = TRUE  // Associative list entry
 	T.current_zone = src
 
 	// Send signal that turf's zone changed
@@ -110,7 +110,7 @@
 /datum/overmap_zone/proc/remove_turf(turf/open/overmap/T)
 	if(!istype(T))
 		return FALSE
-	if(!(T in turfs))
+	if(!turfs[T])  // O(1) lookup
 		return FALSE
 
 	turfs -= T

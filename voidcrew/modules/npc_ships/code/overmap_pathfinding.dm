@@ -23,8 +23,8 @@
 	if(start == goal)
 		return list(start)
 
-	// Check if goal is valid
-	if(zone_constraint && !(goal in zone_constraint.turfs))
+	// Check if goal is valid (O(1) assoc list lookup)
+	if(zone_constraint && !zone_constraint.turfs[goal])
 		return null
 	if(overmap_turf_blocked(goal))
 		return null
@@ -75,8 +75,8 @@
 			if(overmap_turf_blocked(neighbor))
 				continue
 
-			// Skip if outside zone constraint
-			if(zone_constraint && !(neighbor in zone_constraint.turfs))
+			// Skip if outside zone constraint (O(1) assoc list lookup)
+			if(zone_constraint && !zone_constraint.turfs[neighbor])
 				continue
 
 			// Calculate tentative g_score
@@ -131,12 +131,14 @@
 	return neighbors
 
 /**
- * Check if a turf is blocked by an obstacle
+ * Check if a turf is blocked by an obstacle.
+ * Uses cached lookup for O(1) performance (cache built at round start).
  */
 /proc/overmap_turf_blocked(turf/T)
 	if(!T)
 		return TRUE
-	return locate(/obj/structure/overmap/event) in T
+	// O(1) cached lookup - cache is built at round start by SSovermap_zones
+	return GLOB.overmap_blocked_turfs[T]
 
 /**
  * Reconstruct the path from came_from map
@@ -215,8 +217,8 @@
 		// Get the turf at this position
 		var/turf/waypoint = locate(wx, wy, OVERMAP_Z_LEVEL)
 
-		// Validate waypoint is in zone and not blocked
-		if(waypoint && (waypoint in zone.turfs))
+		// Validate waypoint is in zone and not blocked (O(1) lookup)
+		if(waypoint && zone.turfs[waypoint])
 			if(!overmap_turf_blocked(waypoint))
 				waypoints += waypoint
 			else
@@ -245,7 +247,7 @@
 			for(var/step in 1 to dist)
 				if(!check)
 					break
-				if((check in zone.turfs) && !overmap_turf_blocked(check))
+				if(zone.turfs[check] && !overmap_turf_blocked(check))  // O(1) lookup
 					return check
 				check = get_step(check, dir)
 

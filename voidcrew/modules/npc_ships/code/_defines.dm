@@ -1,3 +1,6 @@
+// Cached blocked turfs for O(1) pathfinding lookups (populated at round start)
+GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
+
 // NPC Ship AI Blackboard Keys
 #define BB_NPC_TARGET "npc_target"                    // Target ship reference
 #define BB_NPC_TARGET_LOCKED "npc_target_locked"      // TRUE if weapons locked

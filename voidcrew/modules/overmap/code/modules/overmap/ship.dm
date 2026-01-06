@@ -1094,8 +1094,10 @@
 /obj/structure/overmap/ship/proc/adjust_speed(n_x, n_y)
 	var/offset = 1
 	if(movement_callback_id)
-		var/previous_time = 1 / MAGNITUDE(speed[1], speed[2])
-		offset = timeleft(movement_callback_id) / previous_time
+		var/magnitude = MAGNITUDE(speed[1], speed[2])
+		if(magnitude > 0)
+			var/previous_time = 1 / magnitude
+			offset = timeleft(movement_callback_id) / previous_time
 		deltimer(movement_callback_id)
 		movement_callback_id = null //just in case
 
