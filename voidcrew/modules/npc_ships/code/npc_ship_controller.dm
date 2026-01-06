@@ -53,13 +53,42 @@
 
 	return ..()
 
+/// Override to avoid ai_movement access (we set ai_movement = null for ships)
+/// Replicates parent logic without the ai_movement.moving_controllers check
 /datum/ai_controller/npc_ship/UnpossessPawn(destroy)
-	if(pawn)
-		UnregisterSignal(pawn, list(
-			COMSIG_SHIP_SHIELD_HIT,
-			COMSIG_SHIP_HULL_HIT,
-			COMSIG_QDELETING,
-		))
+	if(isnull(pawn))
+		return
+
+	// Unregister ship-specific signals
+	UnregisterSignal(pawn, list(
+		COMSIG_SHIP_SHIELD_HIT,
+		COMSIG_SHIP_HULL_HIT,
+		COMSIG_QDELETING,
+	))
+
+	// Replicate parent cleanup (without ai_movement check which would crash)
+	SEND_SIGNAL(src, COMSIG_AI_CONTROLLER_UNPOSSESSED_PAWN)
+	set_ai_status(AI_STATUS_OFF)
+	UnregisterSignal(pawn, list(COMSIG_MOVABLE_Z_CHANGED, COMSIG_QDELETING))
+	clear_able_to_run()
+	// SKIP: ai_movement.moving_controllers check - we don't use ai_movement
+	var/turf/pawn_turf = get_turf(pawn)
+	if(pawn_turf)
+		GLOB.ai_controllers_by_zlevel[pawn_turf.z] -= src
+	remove_from_unplanned_controllers()
+	pawn.ai_controller = null
+	pawn = null
+	if(destroy)
+		qdel(src)
+
+/// Override to avoid ai_movement access in parent Destroy
+/datum/ai_controller/npc_ship/Destroy(force)
+	UnpossessPawn(FALSE)
+	if(ai_status)
+		GLOB.ai_controllers_by_status[ai_status] -= src
+	our_cells = null
+	set_movement_target(type, null)
+	// SKIP: ai_movement.moving_controllers check - we don't use ai_movement
 	return ..()
 
 /**

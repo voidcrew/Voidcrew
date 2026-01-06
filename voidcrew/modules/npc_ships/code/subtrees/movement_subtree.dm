@@ -2,10 +2,7 @@
  * NPC Ship Movement Subtree
  *
  * This planning subtree handles movement decisions for NPC ships.
- *
- * IMPORTANT: If there's an active combat target, we ALWAYS chase it
- * regardless of the movement mode. Movement mode only affects what
- * happens when there's no target.
+ * Uses discrete movement (forceMove) - no momentum/physics.
  *
  * Movement modes:
  * - IDLE: No active movement, sit still
@@ -26,39 +23,15 @@
 
 	var/spawn_zone = controller.blackboard[BB_NPC_SPAWN_ZONE]
 
-	// SAFETY NET: If moving INTO a zone boundary, instant stop
-	if(spawn_zone && ship && !ship.is_still())
-		var/turf/our_turf = get_turf(ship)
-		if(our_turf)
-			// Get velocity direction
-			var/move_dir = 0
-			if(ship.speed[1] > 0)
-				move_dir |= EAST
-			else if(ship.speed[1] < 0)
-				move_dir |= WEST
-			if(ship.speed[2] > 0)
-				move_dir |= NORTH
-			else if(ship.speed[2] < 0)
-				move_dir |= SOUTH
-
-			if(move_dir)
-				var/turf/next_turf = get_step(our_turf, move_dir)
-				if(next_turf)
-					var/next_zone = SSovermap_zones.get_zone(next_turf)
-					if(next_zone != spawn_zone)
-						ship.speed[1] = 0
-						ship.speed[2] = 0
-
-	// PRIORITY CHECK: If we're outside our spawn zone, we need to get back ASAP
+	// PRIORITY CHECK: If we're outside our spawn zone, we need to get back
 	if(spawn_zone && ship)
 		var/turf/our_turf = get_turf(ship)
 		if(our_turf)
 			var/current_zone = SSovermap_zones.get_zone(our_turf)
 			if(current_zone != spawn_zone)
-				// Clear any target and movement state - we can't fight outside our zone
+				// Clear any target - we can't fight outside our zone
 				if(target)
 					controller.clear_target()
-				controller.blackboard[BB_NPC_TARGET_TILE] = null
 				controller.blackboard[BB_NPC_HAD_TARGET] = FALSE
 				controller.queue_behavior(/datum/ai_behavior/npc_ship/return_to_zone)
 				return
@@ -77,7 +50,6 @@
 		controller.set_blackboard_key(BB_NPC_HAD_TARGET, FALSE)
 		// Clear movement state so return_to_route starts fresh
 		controller.blackboard[BB_NPC_CURRENT_PATH] = null
-		controller.blackboard[BB_NPC_TARGET_TILE] = null
 		// Find nearest waypoint on circuit
 		var/list/circuit = controller.blackboard[BB_NPC_PATROL_CIRCUIT]
 		if(length(circuit))

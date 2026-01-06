@@ -40,6 +40,10 @@
 	if(!ship)
 		return AI_BEHAVIOR_DELAY
 
+	// Non-hostile ships don't actively scan for targets
+	if(!ship.hostile)
+		return AI_BEHAVIOR_DELAY
+
 	// Only attack in zones where weapons are allowed
 	if(!SSovermap_zones.weapons_allowed_at(ship))
 		// If we had a target, clear it since we can't fight here
@@ -59,11 +63,8 @@
 		// Target out of range - will be handled by disengage behavior
 
 	// Scan for player ships in territory range
-	var/turf/our_turf = get_turf(ship)
-	if(!our_turf)
-		return AI_BEHAVIOR_DELAY
-
-	for(var/obj/structure/overmap/ship/potential_target in range(ship.territory_range, our_turf))
+	// Use SSovermap.simulated_ships + get_dist() instead of range() for better performance
+	for(var/obj/structure/overmap/ship/potential_target as anything in SSovermap.simulated_ships)
 		// Skip ourselves
 		if(potential_target == ship)
 			continue
@@ -74,6 +75,10 @@
 
 		// Skip ships that aren't flying
 		if(potential_target.state != OVERMAP_SHIP_FLYING)
+			continue
+
+		// Check distance (O(1) instead of range()'s O(tiles))
+		if(get_dist(ship, potential_target) > ship.territory_range)
 			continue
 
 		// Found a valid target!
@@ -123,8 +128,8 @@
 		controller.set_blackboard_key(BB_NPC_LOCK_START_TIME, world.time)
 		return AI_BEHAVIOR_DELAY
 
-	// Check if lock is complete
-	if(world.time >= lock_start + NPC_SHIP_LOCK_TIME)
+	// Check if lock is complete (uses per-ship lock time)
+	if(world.time >= lock_start + ship.lock_time)
 		// Lock acquired!
 		controller.set_blackboard_key(BB_NPC_TARGET_LOCKED, TRUE)
 		controller.set_combat_state(NPC_COMBAT_COMBAT)
@@ -196,9 +201,9 @@
 		// 60% chance to fire all, 40% chance to fire single
 		fire_all = prob(60)
 
-	// Fire!
+	// Fire! (uses per-ship laser cooldown)
 	if(combat.fire_lasers(target, fire_all))
-		COOLDOWN_START(ship, laser_cooldown, NPC_LASER_COOLDOWN)
+		COOLDOWN_START(ship, laser_cooldown, ship.laser_cooldown_time)
 		return TRUE
 
 	return FALSE
@@ -219,9 +224,9 @@
 		try_fire_lasers(ship, combat, target)
 		return FALSE
 
-	// Fire missile (random type)
+	// Fire missile (uses per-ship missile cooldown)
 	if(combat.fire_missile(target))
-		COOLDOWN_START(ship, missile_cooldown, NPC_MISSILE_COOLDOWN)
+		COOLDOWN_START(ship, missile_cooldown, ship.missile_cooldown_time)
 		return TRUE
 
 	return FALSE

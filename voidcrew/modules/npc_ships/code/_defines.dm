@@ -13,10 +13,8 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 #define BB_NPC_CIRCUIT_INDEX "npc_circuit_index"      // Current waypoint index on circuit
 #define BB_NPC_CURRENT_PATH "npc_current_path"        // Current A* path (list of turfs)
 #define BB_NPC_PATH_INDEX "npc_path_index"            // Current index in path (1-based)
-#define BB_NPC_PATH_TIMESTAMP "npc_path_timestamp"    // world.time when path was calculated
 #define BB_NPC_SPAWN_ZONE "npc_spawn_zone"            // Zone ship spawned in (can't leave)
 #define BB_NPC_HAD_TARGET "npc_had_target"            // TRUE if we were just chasing (for return_to_route)
-#define BB_NPC_TARGET_TILE "npc_target_tile"          // The specific tile we're moving toward
 
 // Combat states
 #define NPC_COMBAT_IDLE "idle"
@@ -30,25 +28,22 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 #define NPC_MOVEMENT_RETURN_TO_ROUTE "return_to_route"
 #define NPC_MOVEMENT_ROAMING "roaming"
 
-// Config
-#define NPC_SHIP_TERRITORY_RANGE 2        // Detect and attack within 2 tiles (escape at 3+ tiles)
-#define NPC_SHIP_LOCK_TIME (5 SECONDS)    // Match player lock time
-#define NPC_SHIP_MAX_SHIPS 5              // Max pirates per round
+// Spawner config (subsystem-level settings)
+#define NPC_SHIP_MAX_SHIPS 5              // Max NPC ships per round
 #define NPC_SHIP_SPAWN_INTERVAL (30 SECONDS)
 
-// Weapon cooldowns (simplified - no ammo tracking)
-#define NPC_LASER_COOLDOWN (5 SECONDS)
-#define NPC_MISSILE_COOLDOWN (10 SECONDS)
-
-// Movement config
-#define NPC_SHIP_ACCELERATION 0.3         // Fixed acceleration per burn (ignores mass/engine power)
-#define NPC_SHIP_MAX_SPEED 0.5            // Max speed cap (tiles per tick)
+// Movement behavior config (shared by all ship types)
 #define NPC_SHIP_PATROL_THRESHOLD 3       // How close to waypoint before moving on
 #define NPC_SHIP_OBSTACLE_SCAN_RANGE 1    // How far ahead to scan for obstacles
-#define NPC_SHIP_REPATH_INTERVAL (2 SECONDS) // How often to recalculate A* paths
 #define NPC_SHIP_CIRCUIT_WAYPOINTS 12     // Number of waypoints in patrol circuit
 #define NPC_SHIP_ORBIT_VARIANCE 0.15      // Radius variance for patrol circuits (15%)
 
-// Pirate crew config
-#define NPC_SHIP_CREW_MIN 3
-#define NPC_SHIP_CREW_MAX 6
+// NOTE: Per-ship vars (territory_range, lock_time, cooldowns, speed, acceleration, crew)
+// are now defined on /obj/structure/overmap/ship/npc and its subtypes.
+// See npc_ship.dm for pirate/trader ship configurations.
+
+// Faction colors for ship identification
+#define NPC_COLOR_PIRATE COLOR_RED            // Pirates - red
+#define NPC_COLOR_TRADER COLOR_YELLOW         // Traders - yellow
+#define NPC_COLOR_NANOTRASEN "#4444FF"        // Nanotrasen - blue
+#define NPC_COLOR_SYNDICATE "#8B0000"         // Syndicate - dark red

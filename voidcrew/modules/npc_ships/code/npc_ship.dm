@@ -5,14 +5,49 @@
  * to attack player ships that come within range.
  */
 /obj/structure/overmap/ship/npc
-	name = "pirate vessel"
-	desc = "A hostile vessel operated by pirates."
+	name = "unidentified vessel"
+	desc = "An AI-controlled vessel."
 
 	/// Combat interface for firing weapons
 	var/datum/npc_combat_interface/combat_interface
 
+	// ========== PER-SHIP CONFIGURABLE VARS ==========
+	// Override these in subtypes to create different ship behaviors
+
+	/// Whether this ship is hostile and attacks on sight
+	var/hostile = TRUE
+
 	/// How close player ships need to be to trigger aggression (in tiles)
-	var/territory_range = NPC_SHIP_TERRITORY_RANGE
+	var/territory_range = 2
+
+	/// Ship color tint for faction identification (set in subtypes)
+	var/ship_color = null
+
+	/// Movement speed cap for this NPC ship (tiles per tick)
+	var/speed_limit = 0.5
+
+	/// Acceleration per engine burn for this NPC ship
+	var/thrust_power = 0.3
+
+	/// Time to acquire weapons lock (deciseconds)
+	var/lock_time = 5 SECONDS
+
+	/// Cooldown between laser volleys (deciseconds)
+	var/laser_cooldown_time = 5 SECONDS
+
+	/// Cooldown between missile launches (deciseconds)
+	var/missile_cooldown_time = 10 SECONDS
+
+	/// Minimum crew to spawn
+	var/crew_min = 3
+
+	/// Maximum crew to spawn
+	var/crew_max = 6
+
+	/// List of mob types to spawn as crew (picked randomly)
+	var/list/crew_types = list()
+
+	// ========== INTERNAL STATE ==========
 
 	/// Whether this ship can currently be boarded (disabled or interdicted)
 	var/can_board = FALSE
@@ -31,6 +66,10 @@
 
 /obj/structure/overmap/ship/npc/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
+	// Apply faction color tint
+	if(ship_color)
+		color = ship_color
+		chat_color = ship_color
 	// AI initialization happens after shuttle is fully loaded via signal or explicit call
 
 /obj/structure/overmap/ship/npc/Destroy()
@@ -90,13 +129,18 @@
 	set_movement_mode(NPC_MOVEMENT_PATROL)
 
 /**
- * Spawns hostile pirate crew aboard the ship.
+ * Spawns crew aboard the ship using per-ship crew configuration.
+ * Override crew_min, crew_max, and crew_types in subtypes for different crews.
  */
 /obj/structure/overmap/ship/npc/proc/spawn_crew()
 	if(!shuttle?.shuttle_areas)
 		return
 
-	var/crew_count = rand(NPC_SHIP_CREW_MIN, NPC_SHIP_CREW_MAX)
+	// No crew types defined = no crew to spawn
+	if(!length(crew_types))
+		return
+
+	var/crew_count = rand(crew_min, crew_max)
 	var/list/valid_turfs = list()
 
 	// Find valid spawn turfs (floor tiles that aren't blocked)
@@ -124,13 +168,10 @@
 	if(!length(valid_turfs))
 		return
 
-	// Spawn pirates
+	// Spawn crew from configured types
 	for(var/i in 1 to min(crew_count, length(valid_turfs)))
 		var/turf/spawn_loc = pick_n_take(valid_turfs)
-		var/mob_type = pick(
-			/mob/living/basic/trooper/pirate/melee/space,
-			/mob/living/basic/trooper/pirate/ranged/space,
-		)
+		var/mob_type = pick(crew_types)
 		new mob_type(spawn_loc)
 
 /**
@@ -172,7 +213,7 @@
 	can_board = FALSE
 
 /**
- * Override burn_engines to use fixed acceleration while still requiring working engines.
+ * Override burn_engines to use per-ship acceleration while still requiring working engines.
  * This bypasses the complex thrust/mass calculation but ensures the ship has functional
  * engines before allowing movement.
  */
@@ -186,15 +227,92 @@
 
 	// Decelerate
 	if(!n_dir)
-		decelerate(NPC_SHIP_ACCELERATION * (percentage / 100))
+		decelerate(thrust_power * (percentage / 100))
 		return
 
-	// Accelerate using fixed value
-	accelerate(n_dir, NPC_SHIP_ACCELERATION * (percentage / 100))
+	// Accelerate using per-ship thrust power
+	accelerate(n_dir, thrust_power * (percentage / 100))
 
-	// Cap at max speed
+	// Cap at per-ship speed limit
 	var/current_magnitude = MAGNITUDE(speed[1], speed[2])
-	if(current_magnitude > NPC_SHIP_MAX_SPEED)
-		var/scale = NPC_SHIP_MAX_SPEED / current_magnitude
+	if(current_magnitude > speed_limit)
+		var/scale = speed_limit / current_magnitude
 		speed[1] *= scale
 		speed[2] *= scale
+
+// ========== SHIP TYPE SUBTYPES ==========
+
+/**
+ * Pirate Ship - Hostile vessels that attack on sight
+ *
+ * Pirates are aggressive, attack any player ships in range,
+ * and spawn with armed pirate crew.
+ */
+/obj/structure/overmap/ship/npc/pirate
+	name = "pirate vessel"
+	desc = "A hostile vessel operated by pirates."
+
+	// Pirates are hostile and attack on sight
+	hostile = TRUE
+	territory_range = 2
+
+	// Red color for pirate faction
+	ship_color = NPC_COLOR_PIRATE
+
+	// Combat stats
+	lock_time = 5 SECONDS
+	laser_cooldown_time = 5 SECONDS
+	missile_cooldown_time = 10 SECONDS
+
+	// Movement stats
+	speed_limit = 0.5
+	thrust_power = 0.3
+
+	// Crew configuration
+	crew_min = 3
+	crew_max = 6
+	crew_types = list(
+		/mob/living/basic/trooper/pirate/melee/space,
+		/mob/living/basic/trooper/pirate/ranged/space,
+	)
+
+	// Faction
+	faction = list(FACTION_PIRATE)
+
+/**
+ * Trader Ship - Non-hostile merchant vessels
+ *
+ * Traders don't attack on sight but will defend if provoked.
+ * They patrol trade routes and can be hailed for trading (future feature).
+ * Attacking traders generates bounty (future feature).
+ */
+/obj/structure/overmap/ship/npc/trader
+	name = "merchant vessel"
+	desc = "A trading vessel carrying cargo between stations."
+
+	// Traders are NOT hostile - they don't attack unprovoked
+	hostile = FALSE
+	territory_range = 3  // Larger awareness range for self-defense
+
+	// Yellow color for trader faction
+	ship_color = NPC_COLOR_TRADER
+
+	// Combat stats (slower reactions - they're merchants, not warriors)
+	lock_time = 8 SECONDS
+	laser_cooldown_time = 8 SECONDS
+	missile_cooldown_time = 15 SECONDS
+
+	// Movement stats (slower, heavily loaded)
+	speed_limit = 0.3
+	thrust_power = 0.2
+
+	// Crew configuration (no combat crew by default)
+	crew_min = 0
+	crew_max = 0
+	crew_types = list()
+
+	// Faction - neutral
+	faction = list()
+
+	// Traders prefer to patrol established routes
+	default_movement_mode = NPC_MOVEMENT_PATROL

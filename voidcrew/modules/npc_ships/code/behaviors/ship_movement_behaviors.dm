@@ -77,11 +77,11 @@
 /**
  * Patrols in a circular circuit around the zone.
  * Uses A* pathfinding to navigate between circuit waypoints.
- * Moves tile-by-tile: thrust -> coast -> arrive -> brake -> repeat
+ * Discrete movement: moves one tile per tick (no momentum/physics).
  * Falls back to roaming if circuit generation fails.
  */
 /datum/ai_behavior/npc_ship/patrol
-	action_cooldown = 0.5 SECONDS
+	action_cooldown = 2 SECONDS
 
 /datum/ai_behavior/npc_ship/patrol/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
@@ -91,33 +91,15 @@
 		return AI_BEHAVIOR_DELAY
 	if(ship.state != OVERMAP_SHIP_FLYING)
 		return AI_BEHAVIOR_DELAY
+	// Must have working engines with fuel
+	if(!ship.can_thrust())
+		return AI_BEHAVIOR_DELAY
 
 	var/turf/our_loc = get_turf(ship)
 	if(!our_loc)
 		return AI_BEHAVIOR_DELAY
 
 	var/datum/overmap_zone/spawn_zone = controller.blackboard[BB_NPC_SPAWN_ZONE]
-
-	// === TILE-BY-TILE MOVEMENT ===
-	var/turf/target_tile = controller.blackboard[BB_NPC_TARGET_TILE]
-	if(target_tile)
-		// Check if we've arrived (exact match OR within 1 tile for diagonal movement)
-		var/arrived = (our_loc == target_tile) || (get_dist(ship, target_tile) <= 1)
-		if(arrived)
-			// Arrived! Brake and clear target
-			if(!ship.is_still())
-				ship.burn_engines(null, 100)
-				return AI_BEHAVIOR_DELAY
-			// Fully stopped - clear target and continue
-			controller.set_blackboard_key(BB_NPC_TARGET_TILE, null)
-		else
-			// Still en route - but check if we're actually moving
-			if(ship.is_still())
-				// We're stopped but haven't arrived - need to re-thrust!
-				var/direction = get_dir(ship, target_tile)
-				if(direction)
-					ship.burn_engines(direction, 100)
-			return AI_BEHAVIOR_DELAY
 
 	// === CIRCUIT MANAGEMENT ===
 	var/list/circuit = controller.blackboard[BB_NPC_PATROL_CIRCUIT]
@@ -139,7 +121,7 @@
 		controller.set_blackboard_key(BB_NPC_CIRCUIT_INDEX, circuit_index + 1)
 		return AI_BEHAVIOR_DELAY
 
-	// Check if we've reached the circuit waypoint (exact position - we're doing tile-by-tile movement)
+	// Check if we've reached the circuit waypoint
 	if(our_loc == target_waypoint)
 		circuit_index++
 		if(circuit_index > length(circuit))
@@ -152,30 +134,22 @@
 	// === PATH MANAGEMENT ===
 	var/list/path = controller.blackboard[BB_NPC_CURRENT_PATH]
 	var/path_index = controller.blackboard[BB_NPC_PATH_INDEX] || 1
-	var/path_time = controller.blackboard[BB_NPC_PATH_TIMESTAMP] || 0
 
-	var/needs_repath = !length(path)
-	if(!needs_repath && path_index > length(path))
-		needs_repath = TRUE
-	if(!needs_repath && (world.time - path_time) > NPC_SHIP_REPATH_INTERVAL)
-		needs_repath = TRUE
+	var/needs_repath = !length(path) || path_index > length(path)
 
 	if(needs_repath)
 		var/list/new_path = overmap_astar(our_loc, target_waypoint, spawn_zone)
 		if(length(new_path))
-			// Use direct blackboard assignment and update local vars to continue immediately
 			controller.blackboard[BB_NPC_CURRENT_PATH] = new_path
 			controller.blackboard[BB_NPC_PATH_INDEX] = 1
-			controller.blackboard[BB_NPC_PATH_TIMESTAMP] = world.time
 			path = new_path
 			path_index = 1
-			// Continue with new path (don't return)
 		else
 			// No path found - skip this waypoint
 			controller.set_blackboard_key(BB_NPC_CIRCUIT_INDEX, circuit_index + 1)
 			return AI_BEHAVIOR_DELAY
 
-	// === MOVE TO NEXT TILE ===
+	// === DISCRETE MOVEMENT ===
 	if(length(path) && path_index <= length(path))
 		var/turf/next_tile = path[path_index]
 
@@ -188,12 +162,12 @@
 				return AI_BEHAVIOR_DELAY
 			next_tile = path[path_index]
 
-		// Set target and thrust
-		var/direction = get_dir(ship, next_tile)
-		if(direction)
-			controller.set_blackboard_key(BB_NPC_TARGET_TILE, next_tile)
-			controller.set_blackboard_key(BB_NPC_PATH_INDEX, path_index + 1)
-			ship.burn_engines(direction, 100)
+		// Move directly to next tile (no momentum)
+		var/move_dir = get_dir(ship, next_tile)
+		if(move_dir)
+			ship.dir = move_dir
+		ship.forceMove(next_tile)
+		controller.set_blackboard_key(BB_NPC_PATH_INDEX, path_index + 1)
 
 	return AI_BEHAVIOR_DELAY
 
@@ -203,16 +177,18 @@
 /**
  * Fallback behavior when circuit patrol is impossible.
  * Picks random directions and wanders the zone.
- * Moves tile-by-tile: thrust -> coast -> arrive -> brake -> repeat
+ * Discrete movement: moves one tile per tick (no momentum/physics).
  */
 /datum/ai_behavior/npc_ship/roaming
-	action_cooldown = 0.5 SECONDS
+	action_cooldown = 2 SECONDS
 
 /datum/ai_behavior/npc_ship/roaming/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
 	if(!ship || ship.state != OVERMAP_SHIP_FLYING)
+		return AI_BEHAVIOR_DELAY
+	if(!ship.can_thrust())
 		return AI_BEHAVIOR_DELAY
 
 	var/turf/our_loc = get_turf(ship)
@@ -221,27 +197,13 @@
 
 	var/datum/overmap_zone/spawn_zone = controller.blackboard[BB_NPC_SPAWN_ZONE]
 
-	// === TILE-BY-TILE MOVEMENT ===
-	var/turf/target_tile = controller.blackboard[BB_NPC_TARGET_TILE]
-	if(target_tile)
-		var/arrived = (our_loc == target_tile) || (get_dist(ship, target_tile) <= 1)
-		if(arrived)
-			// Arrived - brake and clear
-			if(!ship.is_still())
-				ship.burn_engines(null, 100)
-				return AI_BEHAVIOR_DELAY
-			controller.set_blackboard_key(BB_NPC_TARGET_TILE, null)
-		else
-			// Still en route - coast
-			return AI_BEHAVIOR_DELAY
-
 	// Pick a random safe direction and move one tile
 	var/roaming_dir = pick_random_safe_direction(our_loc, spawn_zone)
 	if(roaming_dir)
 		var/turf/next_tile = get_step(our_loc, roaming_dir)
 		if(next_tile)
-			controller.set_blackboard_key(BB_NPC_TARGET_TILE, next_tile)
-			ship.burn_engines(roaming_dir, 100)
+			ship.dir = roaming_dir
+			ship.forceMove(next_tile)
 
 	return AI_BEHAVIOR_DELAY
 
@@ -263,10 +225,10 @@
 /**
  * Returns to patrol circuit after combat ends.
  * Uses A* to path back to the nearest circuit waypoint.
- * Moves tile-by-tile: thrust -> coast -> arrive -> brake -> repeat
+ * Discrete movement: moves one tile per tick (no momentum/physics).
  */
 /datum/ai_behavior/npc_ship/return_to_route
-	action_cooldown = 0.5 SECONDS
+	action_cooldown = 2 SECONDS
 
 /datum/ai_behavior/npc_ship/return_to_route/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
@@ -274,26 +236,14 @@
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
 	if(!ship || ship.state != OVERMAP_SHIP_FLYING)
 		return AI_BEHAVIOR_DELAY
+	if(!ship.can_thrust())
+		return AI_BEHAVIOR_DELAY
 
 	var/turf/our_loc = get_turf(ship)
 	if(!our_loc)
 		return AI_BEHAVIOR_DELAY
 
 	var/datum/overmap_zone/spawn_zone = controller.blackboard[BB_NPC_SPAWN_ZONE]
-
-	// === TILE-BY-TILE MOVEMENT ===
-	var/turf/target_tile = controller.blackboard[BB_NPC_TARGET_TILE]
-	if(target_tile)
-		var/arrived = (our_loc == target_tile) || (get_dist(ship, target_tile) <= 1)
-		if(arrived)
-			// Arrived - brake and clear
-			if(!ship.is_still())
-				ship.burn_engines(null, 100)
-				return AI_BEHAVIOR_DELAY
-			controller.set_blackboard_key(BB_NPC_TARGET_TILE, null)
-		else
-			// Still en route - coast
-			return AI_BEHAVIOR_DELAY
 
 	// === CIRCUIT CHECK ===
 	var/list/circuit = controller.blackboard[BB_NPC_PATROL_CIRCUIT]
@@ -314,7 +264,7 @@
 		controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_ROAMING)
 		return AI_BEHAVIOR_DELAY
 
-	// Check if we've reached the waypoint (exact position)
+	// Check if we've reached the waypoint
 	if(our_loc == target_waypoint)
 		controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_PATROL)
 		controller.blackboard[BB_NPC_CURRENT_PATH] = null
@@ -325,29 +275,21 @@
 	// === PATH MANAGEMENT ===
 	var/list/path = controller.blackboard[BB_NPC_CURRENT_PATH]
 	var/path_index = controller.blackboard[BB_NPC_PATH_INDEX] || 1
-	var/path_time = controller.blackboard[BB_NPC_PATH_TIMESTAMP] || 0
 
-	var/needs_repath = !length(path)
-	if(!needs_repath && path_index > length(path))
-		needs_repath = TRUE
-	if(!needs_repath && (world.time - path_time) > NPC_SHIP_REPATH_INTERVAL)
-		needs_repath = TRUE
+	var/needs_repath = !length(path) || path_index > length(path)
 
 	if(needs_repath)
 		var/list/new_path = overmap_astar(our_loc, target_waypoint, spawn_zone)
 		if(length(new_path))
-			// Use direct blackboard assignment and update local vars to continue immediately
 			controller.blackboard[BB_NPC_CURRENT_PATH] = new_path
 			controller.blackboard[BB_NPC_PATH_INDEX] = 1
-			controller.blackboard[BB_NPC_PATH_TIMESTAMP] = world.time
 			path = new_path
 			path_index = 1
-			// Continue with new path (don't return)
 		else
 			controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_ROAMING)
 			return AI_BEHAVIOR_DELAY
 
-	// === MOVE TO NEXT TILE ===
+	// === DISCRETE MOVEMENT ===
 	if(length(path) && path_index <= length(path))
 		var/turf/next_tile = path[path_index]
 
@@ -359,11 +301,11 @@
 				return AI_BEHAVIOR_DELAY
 			next_tile = path[path_index]
 
-		var/direction = get_dir(ship, next_tile)
-		if(direction)
-			controller.set_blackboard_key(BB_NPC_TARGET_TILE, next_tile)
-			controller.set_blackboard_key(BB_NPC_PATH_INDEX, path_index + 1)
-			ship.burn_engines(direction, 100)
+		var/move_dir = get_dir(ship, next_tile)
+		if(move_dir)
+			ship.dir = move_dir
+		ship.forceMove(next_tile)
+		controller.set_blackboard_key(BB_NPC_PATH_INDEX, path_index + 1)
 
 	return AI_BEHAVIOR_DELAY
 
@@ -371,7 +313,7 @@
 
 /**
  * Chases a target ship when it enters range.
- * Uses tile-by-tile movement (same as patrol) for consistent, predictable motion.
+ * Discrete movement: moves one tile per tick toward target.
  * Stops chasing at zone boundaries or when target escapes.
  *
  * IMPORTANT: This behavior INTENTIONALLY IGNORES obstacles!
@@ -379,7 +321,7 @@
  * This is a core gameplay mechanic - don't add obstacle avoidance here!
  */
 /datum/ai_behavior/npc_ship/chase
-	action_cooldown = 0.5 SECONDS
+	action_cooldown = 1 SECONDS
 
 /datum/ai_behavior/npc_ship/chase/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
@@ -387,13 +329,13 @@
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
 	if(!ship || ship.state != OVERMAP_SHIP_FLYING)
 		return AI_BEHAVIOR_DELAY
+	if(!ship.can_thrust())
+		return AI_BEHAVIOR_DELAY
 
 	var/obj/structure/overmap/ship/target = controller.get_target()
 
-	// No target - decelerate and wait for subtree to switch to return_to_route
+	// No target - wait for subtree to switch to return_to_route
 	if(!target || QDELETED(target))
-		if(!ship.is_still())
-			ship.burn_engines(null, 100)
 		return AI_BEHAVIOR_DELAY
 
 	var/turf/our_loc = get_turf(ship)
@@ -408,70 +350,43 @@
 	// Check if target escaped to a different zone
 	var/target_zone = SSovermap_zones.get_zone(target_loc)
 	if(spawn_zone && target_zone != spawn_zone)
-		ship.burn_engines(null, 200)
-		controller.blackboard[BB_NPC_TARGET_TILE] = null
 		return AI_BEHAVIOR_DELAY
 
 	// Check if we're already adjacent to target (within combat range)
-	var/dist_to_target = get_dist(ship, target)
-	if(dist_to_target <= 1)
-		// Already in combat range - stop and hold position
-		if(!ship.is_still())
-			ship.burn_engines(null, 100)
-		controller.blackboard[BB_NPC_TARGET_TILE] = null
+	if(get_dist(ship, target) <= 1)
 		return AI_BEHAVIOR_DELAY
 
-	// === TILE-BY-TILE MOVEMENT (same pattern as patrol) ===
-	var/turf/target_tile = controller.blackboard[BB_NPC_TARGET_TILE]
-	if(target_tile)
-		// Check if we've arrived at our intermediate tile
-		var/arrived = (our_loc == target_tile) || (get_dist(ship, target_tile) <= 1)
-		if(arrived)
-			// Arrived - brake and clear target tile
-			if(!ship.is_still())
-				ship.burn_engines(null, 100)
-				return AI_BEHAVIOR_DELAY
-			// Fully stopped - clear and pick new tile toward target
-			controller.blackboard[BB_NPC_TARGET_TILE] = null
-		else
-			// Still en route - check if we're actually moving
-			if(ship.is_still())
-				// Stopped but haven't arrived - re-thrust
-				var/direction = get_dir(ship, target_tile)
-				if(direction)
-					ship.burn_engines(direction, 100)
-			return AI_BEHAVIOR_DELAY
-
-	// Pick next tile toward target (ignoring obstacles - players can bait us)
+	// Move toward target (ignoring obstacles - players can bait us into hazards)
 	var/direction = get_dir(ship, target)
 	if(direction)
 		// Check if moving this direction would leave spawn zone
 		if(spawn_zone && !direction_stays_in_zone(our_loc, direction, spawn_zone))
-			ship.burn_engines(null, 200)
 			return AI_BEHAVIOR_DELAY
 
 		var/turf/next_tile = get_step(our_loc, direction)
 		if(next_tile)
-			controller.blackboard[BB_NPC_TARGET_TILE] = next_tile
-			ship.burn_engines(direction, 100)
+			ship.dir = direction
+			ship.forceMove(next_tile)
 
 	return AI_BEHAVIOR_DELAY
 
 // ========== RETURN TO ZONE BEHAVIOR ==========
 
 /**
- * Emergency behavior when ship has drifted outside its spawn zone.
- * Aggressively decelerates and moves back toward zone center.
- * Ignores obstacles - getting back to zone is priority.
+ * Emergency behavior when ship is outside its spawn zone.
+ * With discrete movement this should rarely trigger, but kept as fallback.
+ * Moves directly toward zone middle.
  */
 /datum/ai_behavior/npc_ship/return_to_zone
-	action_cooldown = 0.25 SECONDS  // Fast tick for responsive correction
+	action_cooldown = 2 SECONDS
 
 /datum/ai_behavior/npc_ship/return_to_zone/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
 	if(!ship || ship.state != OVERMAP_SHIP_FLYING)
+		return AI_BEHAVIOR_DELAY
+	if(!ship.can_thrust())
 		return AI_BEHAVIOR_DELAY
 
 	var/turf/our_loc = get_turf(ship)
@@ -483,22 +398,43 @@
 	// Check if we're back in our zone
 	var/current_zone = SSovermap_zones.get_zone(our_loc)
 	if(current_zone == spawn_zone)
-		// We're back - stop and let normal behaviors take over
-		if(!ship.is_still())
-			ship.burn_engines(null, 300)
 		return AI_BEHAVIOR_DELAY
 
-	// Still outside zone - aggressive return toward zone center
+	// Calculate target point in the MIDDLE of our spawn zone
+	var/center_x = SSovermap_zones.center_x
+	var/center_y = SSovermap_zones.center_y
+	var/max_radius = SSovermap_zones.max_radius
 
-	// First, hard brake to stop drifting further
-	if(!ship.is_still())
-		ship.burn_engines(null, 200)
+	// Get target radius based on zone type
+	var/target_radius
+	switch(spawn_zone.zone_type)
+		if(ZONE_RED)
+			target_radius = max_radius * 0.17
+		if(ZONE_YELLOW)
+			target_radius = max_radius * 0.5
+		if(ZONE_GREEN)
+			target_radius = max_radius * 0.8
+		else
+			target_radius = 0
 
-	// Accelerate toward zone center (ignore obstacles - we MUST get back)
-	var/turf/center = locate(SSovermap_zones.center_x, SSovermap_zones.center_y, OVERMAP_Z_LEVEL)
-	if(center)
-		var/direction = get_dir(ship, center)
+	// Calculate direction from center to ship, then find point at target_radius
+	var/dx = our_loc.x - center_x
+	var/dy = our_loc.y - center_y
+	var/dist = sqrt(dx * dx + dy * dy)
+
+	var/target_x = center_x
+	var/target_y = center_y
+	if(dist > 0 && target_radius > 0)
+		target_x = center_x + (dx / dist) * target_radius
+		target_y = center_y + (dy / dist) * target_radius
+
+	var/turf/target = locate(round(target_x), round(target_y), OVERMAP_Z_LEVEL)
+	if(target)
+		var/direction = get_dir(ship, target)
 		if(direction)
-			ship.burn_engines(direction, 100)
+			var/turf/next_tile = get_step(our_loc, direction)
+			if(next_tile)
+				ship.dir = direction
+				ship.forceMove(next_tile)
 
 	return AI_BEHAVIOR_DELAY

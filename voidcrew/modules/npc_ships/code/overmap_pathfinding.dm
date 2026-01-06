@@ -45,6 +45,10 @@
 	while(length(open_set) && iterations < max_iterations)
 		iterations++
 
+		// Yield to server every 50 iterations to prevent blocking
+		if(iterations % 50 == 0)
+			CHECK_TICK
+
 		// Find node in open_set with lowest f_score
 		var/turf/current = null
 		var/lowest_f = INFINITY

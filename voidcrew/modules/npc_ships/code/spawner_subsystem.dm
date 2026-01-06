@@ -75,11 +75,22 @@ SUBSYSTEM_DEF(npc_ships)
 		if(QDELETED(ship))
 			active_ships -= ship
 
+/// Lookup table for ship type spawn zones (initial() doesn't work on lists)
+/datum/controller/subsystem/npc_ships/proc/get_spawn_zones_for_type(ship_type_path)
+	switch(ship_type_path)
+		if(/obj/structure/overmap/ship/npc/pirate)
+			return list(ZONE_RED)
+		if(/obj/structure/overmap/ship/npc/trader)
+			return list(ZONE_GREEN, ZONE_YELLOW)
+	// Default fallback
+	return list(ZONE_RED)
+
 /**
  * Spawns a new NPC ship in a valid zone.
- * Returns the spawned ship or null on failure.
+ * @param ship_type_path The ship type to spawn (e.g., /obj/structure/overmap/ship/npc/pirate)
+ * @return The spawned ship or null on failure.
  */
-/datum/controller/subsystem/npc_ships/proc/spawn_npc_ship()
+/datum/controller/subsystem/npc_ships/proc/spawn_npc_ship(ship_type_path = /obj/structure/overmap/ship/npc/pirate)
 	if(!length(ship_templates))
 		return null
 
@@ -88,13 +99,18 @@ SUBSYSTEM_DEF(npc_ships)
 	if(!template_path)
 		return null
 
-	// Find a spawn location in YELLOW or RED zone, away from player ships
-	var/turf/spawn_turf = get_spawn_turf()
+	// Get spawn zones for this ship type
+	var/list/spawn_zones = get_spawn_zones_for_type(ship_type_path)
+	if(!length(spawn_zones))
+		return null
+
+	// Find a spawn location in valid zones, away from player ships
+	var/turf/spawn_turf = get_spawn_turf(spawn_zones)
 	if(!spawn_turf)
 		return null
 
 	// Create the NPC ship
-	var/obj/structure/overmap/ship/npc/ship = create_npc_ship(template_path, spawn_turf)
+	var/obj/structure/overmap/ship/npc/ship = create_npc_ship(template_path, spawn_turf, ship_type_path)
 	if(!ship)
 		return null
 
@@ -105,20 +121,16 @@ SUBSYSTEM_DEF(npc_ships)
 
 /**
  * Finds a valid spawn turf for an NPC ship.
- * Spawns in YELLOW or RED zones, away from player ships.
+ * @param spawn_zones List of zone types to spawn in (ZONE_RED, ZONE_YELLOW, ZONE_GREEN)
  */
-/datum/controller/subsystem/npc_ships/proc/get_spawn_turf()
-	// Build list of valid turfs from YELLOW and RED zones
+/datum/controller/subsystem/npc_ships/proc/get_spawn_turf(list/spawn_zones)
+	// Build list of valid turfs from specified zones
 	var/list/valid_turfs = list()
 
-	// Prefer RED zone (where combat is allowed)
-	if(SSovermap_zones?.zone_red?.turfs)
-		valid_turfs += SSovermap_zones.zone_red.turfs
-
-	// Also allow YELLOW zone (ships can exist there, just can't attack)
-	// Comment this out if you want pirates only in RED zone
-	// if(SSovermap_zones?.zone_yellow?.turfs)
-	//     valid_turfs += SSovermap_zones.zone_yellow.turfs
+	for(var/zone_type in spawn_zones)
+		var/datum/overmap_zone/zone = SSovermap_zones.get_zone_datum(zone_type)
+		if(zone?.turfs)
+			valid_turfs += zone.turfs
 
 	if(!length(valid_turfs))
 		return null
@@ -150,8 +162,11 @@ SUBSYSTEM_DEF(npc_ships)
 /**
  * Creates an NPC ship from a template at the specified location.
  * This is similar to SSshuttle.create_ship() but for NPC ships.
+ * @param template_path The shuttle template to use
+ * @param spawn_turf Where to spawn the ship
+ * @param ship_type_path The ship type path (e.g., /obj/structure/overmap/ship/npc/pirate)
  */
-/datum/controller/subsystem/npc_ships/proc/create_npc_ship(template_path, turf/spawn_turf)
+/datum/controller/subsystem/npc_ships/proc/create_npc_ship(template_path, turf/spawn_turf, ship_type_path = /obj/structure/overmap/ship/npc/pirate)
 	UNTIL(!SSshuttle.shuttle_loading)
 	SSshuttle.shuttle_loading = TRUE
 
@@ -170,8 +185,8 @@ SUBSYSTEM_DEF(npc_ships)
 		SSshuttle.shuttle_loading = FALSE
 		return null
 
-	// Create NPC ship at spawn location
-	var/obj/structure/overmap/ship/npc/ship = new(spawn_turf)
+	// Create NPC ship of specified type at spawn location
+	var/obj/structure/overmap/ship/npc/ship = new ship_type_path(spawn_turf)
 
 	if(!ship || QDELETED(ship))
 		SSshuttle.shuttle_loading = FALSE
@@ -197,8 +212,8 @@ SUBSYSTEM_DEF(npc_ships)
 
 	// Link ship to shuttle
 	loaded.current_ship = ship
-	ship.name = "Pirate [loaded.name]"
 	ship.shuttle = loaded
+	// Ship name comes from the subtype (e.g., "pirate vessel", "merchant vessel")
 
 	SEND_SIGNAL(loaded, COMSIG_VOIDCREW_SHIP_LOADED)
 
@@ -219,12 +234,22 @@ SUBSYSTEM_DEF(npc_ships)
 	if(!check_rights(R_ADMIN))
 		return
 
-	var/obj/structure/overmap/ship/npc/ship = SSnpc_ships.spawn_npc_ship()
+	// Let admin pick ship type
+	var/list/ship_types = list(
+		"Pirate" = /obj/structure/overmap/ship/npc/pirate,
+		"Trader" = /obj/structure/overmap/ship/npc/trader,
+	)
+	var/choice = tgui_input_list(usr, "Select ship type to spawn:", "Spawn NPC Ship", ship_types)
+	if(!choice)
+		return
+
+	var/ship_type_path = ship_types[choice]
+	var/obj/structure/overmap/ship/npc/ship = SSnpc_ships.spawn_npc_ship(ship_type_path)
 	if(ship)
 		to_chat(usr, span_notice("Spawned NPC ship: [ship.name]"))
 		mob.client?.admin_follow(ship.shuttle)
 	else
-		to_chat(usr, span_warning("Failed to spawn NPC ship."))
+		to_chat(usr, span_warning("Failed to spawn NPC ship. Check spawn zone availability."))
 
 /**
  * Admin verb to toggle NPC ship spawning.
