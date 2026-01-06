@@ -14,7 +14,7 @@
 		if(isnull(active_ships.shuttle))
 			stack_trace("[active_ships] has no shuttle???")
 			continue
-		if(length(active_ships.shuttle.spawn_points) <= 0 || !active_ships.joining_allowed)
+		if(length(active_ships.shuttle.spawn_points) <= 0 || !active_ships.joining_allowed || istype(active_ships, /obj/structure/overmap/ship/npc))
 			continue
 		shuttle_choices["[active_ships.name] - ([active_ships.source_template?.short_name || "Unknown Class"])"] = active_ships
 

@@ -55,9 +55,11 @@
 		if(our_turf)
 			var/current_zone = SSovermap_zones.get_zone(our_turf)
 			if(current_zone != spawn_zone)
-				// Clear any target - we can't fight outside our zone
+				// Clear any target and movement state - we can't fight outside our zone
 				if(target)
 					controller.clear_target()
+				controller.blackboard[BB_NPC_TARGET_TILE] = null
+				controller.blackboard[BB_NPC_HAD_TARGET] = FALSE
 				controller.queue_behavior(/datum/ai_behavior/npc_ship/return_to_zone)
 				return
 
@@ -73,8 +75,9 @@
 	if(had_target)
 		controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_RETURN_TO_ROUTE)
 		controller.set_blackboard_key(BB_NPC_HAD_TARGET, FALSE)
-		// Clear path so return_to_route calculates fresh path to nearest waypoint
+		// Clear movement state so return_to_route starts fresh
 		controller.blackboard[BB_NPC_CURRENT_PATH] = null
+		controller.blackboard[BB_NPC_TARGET_TILE] = null
 		// Find nearest waypoint on circuit
 		var/list/circuit = controller.blackboard[BB_NPC_PATROL_CIRCUIT]
 		if(length(circuit))
