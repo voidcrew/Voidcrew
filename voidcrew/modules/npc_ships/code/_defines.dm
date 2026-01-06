@@ -5,14 +5,15 @@
 #define BB_NPC_COMBAT_STATE "npc_combat_state"        // idle/engaging/combat
 
 // Movement blackboard keys
-#define BB_NPC_MOVEMENT_MODE "npc_movement_mode"      // orbit/patrol/chase
-#define BB_NPC_ORBIT_TARGET "npc_orbit_target"        // Celestial object to orbit
-#define BB_NPC_ORBIT_DISTANCE "npc_orbit_distance"    // Desired orbit distance
-#define BB_NPC_ORBIT_ANGLE "npc_orbit_angle"          // Current angle in orbit
-#define BB_NPC_PATROL_WAYPOINTS "npc_patrol_waypoints"// List of patrol turfs
-#define BB_NPC_PATROL_INDEX "npc_patrol_index"        // Current waypoint index
-#define BB_NPC_CHASE_BOUNDARY "npc_chase_boundary"    // Max chase range from home
-#define BB_NPC_HOME_TURF "npc_home_turf"              // Starting position
+#define BB_NPC_MOVEMENT_MODE "npc_movement_mode"      // patrol/chase/return_to_route/roaming
+#define BB_NPC_PATROL_CIRCUIT "npc_patrol_circuit"    // List of circuit waypoints (circular patrol)
+#define BB_NPC_CIRCUIT_INDEX "npc_circuit_index"      // Current waypoint index on circuit
+#define BB_NPC_CURRENT_PATH "npc_current_path"        // Current A* path (list of turfs)
+#define BB_NPC_PATH_INDEX "npc_path_index"            // Current index in path (1-based)
+#define BB_NPC_PATH_TIMESTAMP "npc_path_timestamp"    // world.time when path was calculated
+#define BB_NPC_SPAWN_ZONE "npc_spawn_zone"            // Zone ship spawned in (can't leave)
+#define BB_NPC_HAD_TARGET "npc_had_target"            // TRUE if we were just chasing (for return_to_route)
+#define BB_NPC_TARGET_TILE "npc_target_tile"          // The specific tile we're moving toward
 
 // Combat states
 #define NPC_COMBAT_IDLE "idle"
@@ -21,12 +22,13 @@
 
 // Movement modes
 #define NPC_MOVEMENT_IDLE "idle"
-#define NPC_MOVEMENT_ORBIT "orbit"
 #define NPC_MOVEMENT_PATROL "patrol"
 #define NPC_MOVEMENT_CHASE "chase"
+#define NPC_MOVEMENT_RETURN_TO_ROUTE "return_to_route"
+#define NPC_MOVEMENT_ROAMING "roaming"
 
 // Config
-#define NPC_SHIP_TERRITORY_RANGE 10       // Detect and attack within 10 tiles
+#define NPC_SHIP_TERRITORY_RANGE 1        // Detect and attack within 1 tile (must be adjacent)
 #define NPC_SHIP_LOCK_TIME (5 SECONDS)    // Match player lock time
 #define NPC_SHIP_MAX_SHIPS 5              // Max pirates per round
 #define NPC_SHIP_SPAWN_INTERVAL (30 SECONDS)
@@ -36,12 +38,13 @@
 #define NPC_MISSILE_COOLDOWN (10 SECONDS)
 
 // Movement config
-#define NPC_SHIP_ACCELERATION 0.03        // How fast ships accelerate (slow and steady)
-#define NPC_SHIP_MAX_SPEED 0.25           // Max speed magnitude (~4 seconds per tile)
-#define NPC_SHIP_ORBIT_DISTANCE 5         // Default orbit distance in tiles
+#define NPC_SHIP_ACCELERATION 0.3         // Fixed acceleration per burn (ignores mass/engine power)
+#define NPC_SHIP_MAX_SPEED 0.5            // Max speed cap (tiles per tick)
 #define NPC_SHIP_PATROL_THRESHOLD 3       // How close to waypoint before moving on
-#define NPC_SHIP_CHASE_RANGE 50           // Max tiles to chase from home (most of red zone)
-#define NPC_SHIP_OBSTACLE_SCAN_RANGE 3    // How far ahead to scan for obstacles
+#define NPC_SHIP_OBSTACLE_SCAN_RANGE 1    // How far ahead to scan for obstacles
+#define NPC_SHIP_REPATH_INTERVAL (2 SECONDS) // How often to recalculate A* paths
+#define NPC_SHIP_CIRCUIT_WAYPOINTS 12     // Number of waypoints in patrol circuit
+#define NPC_SHIP_ORBIT_VARIANCE 0.15      // Radius variance for patrol circuits (15%)
 
 // Pirate crew config
 #define NPC_SHIP_CREW_MIN 3

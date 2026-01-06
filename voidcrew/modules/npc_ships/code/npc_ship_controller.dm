@@ -31,13 +31,13 @@
 
 	// Initialize movement blackboard
 	blackboard[BB_NPC_MOVEMENT_MODE] = NPC_MOVEMENT_PATROL
-	blackboard[BB_NPC_ORBIT_DISTANCE] = NPC_SHIP_ORBIT_DISTANCE
-	blackboard[BB_NPC_CHASE_BOUNDARY] = NPC_SHIP_CHASE_RANGE
-	blackboard[BB_NPC_PATROL_INDEX] = 1
+	blackboard[BB_NPC_CIRCUIT_INDEX] = 1
 
-	// Store home turf for chase behavior
+	// Store spawn zone - ship cannot leave this zone
 	if(new_pawn)
-		blackboard[BB_NPC_HOME_TURF] = get_turf(new_pawn)
+		var/turf/spawn_turf = get_turf(new_pawn)
+		if(spawn_turf)
+			blackboard[BB_NPC_SPAWN_ZONE] = SSovermap_zones.get_zone(spawn_turf)
 
 	. = ..()
 

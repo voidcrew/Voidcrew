@@ -309,7 +309,7 @@
 // ========== CHECK DISENGAGE ==========
 
 /**
- * Checks if the target has moved out of territory range.
+ * Checks if the target has moved out of territory range or left our zone.
  * If so, clears the target and returns to IDLE state.
  */
 /datum/ai_behavior/npc_ship/check_disengage
@@ -330,6 +330,18 @@
 
 	if(!ship)
 		return AI_BEHAVIOR_DELAY
+
+	// Check if target escaped to a different zone
+	var/spawn_zone = controller.blackboard[BB_NPC_SPAWN_ZONE]
+	if(spawn_zone)
+		var/turf/target_turf = get_turf(target)
+		if(target_turf)
+			var/target_zone = SSovermap_zones.get_zone(target_turf)
+			if(target_zone != spawn_zone)
+				log_shuttle("NPC DISENGAGE: Target [target] escaped to different zone ([target_zone] vs [spawn_zone])")
+				SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
+				controller.clear_target()
+				return AI_BEHAVIOR_DELAY
 
 	// Check distance to target
 	var/target_dist = get_dist(ship, target)

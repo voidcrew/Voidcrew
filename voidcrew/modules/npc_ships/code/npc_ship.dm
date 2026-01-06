@@ -77,28 +77,10 @@
 	controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, mode)
 
 /**
- * Sets up orbit mode around a celestial object.
- * @param target The object to orbit (star, planet, etc.)
- * @param distance The desired orbit distance in tiles
+ * Sets up chase mode. Ship will chase targets and return to patrol when done.
+ * Note: Chase is now automatic when targets are detected, this just sets the mode.
  */
-/obj/structure/overmap/ship/npc/proc/set_orbit_target(atom/target, distance = NPC_SHIP_ORBIT_DISTANCE)
-	if(!ai_controller)
-		return
-	var/datum/ai_controller/npc_ship/controller = ai_controller
-	controller.set_blackboard_key(BB_NPC_ORBIT_TARGET, target)
-	controller.set_blackboard_key(BB_NPC_ORBIT_DISTANCE, distance)
-	set_movement_mode(NPC_MOVEMENT_ORBIT)
-
-/**
- * Sets up chase mode with a boundary limit.
- * @param chase_range Maximum tiles to chase from home position
- */
-/obj/structure/overmap/ship/npc/proc/set_chase_mode(chase_range = NPC_SHIP_CHASE_RANGE)
-	if(!ai_controller)
-		return
-	var/datum/ai_controller/npc_ship/controller = ai_controller
-	controller.set_blackboard_key(BB_NPC_CHASE_BOUNDARY, chase_range)
-	controller.set_blackboard_key(BB_NPC_HOME_TURF, get_turf(src))
+/obj/structure/overmap/ship/npc/proc/set_chase_mode()
 	set_movement_mode(NPC_MOVEMENT_CHASE)
 
 /**
@@ -190,12 +172,27 @@
 	can_board = FALSE
 
 /**
- * Override accelerate to enforce NPC speed cap.
- * NPCs move slower than player ships for gameplay balance.
+ * Override burn_engines to use fixed acceleration while still requiring working engines.
+ * This bypasses the complex thrust/mass calculation but ensures the ship has functional
+ * engines before allowing movement.
  */
-/obj/structure/overmap/ship/npc/accelerate(direction, acceleration)
-	. = ..()
-	// Cap speed at NPC max
+/obj/structure/overmap/ship/npc/burn_engines(n_dir = null, percentage = 100)
+	if(state != OVERMAP_SHIP_FLYING)
+		return
+
+	// Must have at least one working engine with fuel
+	if(!can_thrust())
+		return
+
+	// Decelerate
+	if(!n_dir)
+		decelerate(NPC_SHIP_ACCELERATION * (percentage / 100))
+		return
+
+	// Accelerate using fixed value
+	accelerate(n_dir, NPC_SHIP_ACCELERATION * (percentage / 100))
+
+	// Cap at max speed
 	var/current_magnitude = MAGNITUDE(speed[1], speed[2])
 	if(current_magnitude > NPC_SHIP_MAX_SPEED)
 		var/scale = NPC_SHIP_MAX_SPEED / current_magnitude
