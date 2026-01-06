@@ -371,6 +371,7 @@
 
 /**
  * Chases a target ship when it enters range.
+ * Uses tile-by-tile movement (same as patrol) for consistent, predictable motion.
  * Stops chasing at zone boundaries or when target escapes.
  *
  * IMPORTANT: This behavior INTENTIONALLY IGNORES obstacles!
@@ -408,6 +409,7 @@
 	var/target_zone = SSovermap_zones.get_zone(target_loc)
 	if(spawn_zone && target_zone != spawn_zone)
 		ship.burn_engines(null, 200)
+		controller.blackboard[BB_NPC_TARGET_TILE] = null
 		return AI_BEHAVIOR_DELAY
 
 	// Check if we're already adjacent to target (within combat range)
@@ -416,9 +418,31 @@
 		// Already in combat range - stop and hold position
 		if(!ship.is_still())
 			ship.burn_engines(null, 100)
+		controller.blackboard[BB_NPC_TARGET_TILE] = null
 		return AI_BEHAVIOR_DELAY
 
-	// Chase the target - but check if next tile would leave our zone
+	// === TILE-BY-TILE MOVEMENT (same pattern as patrol) ===
+	var/turf/target_tile = controller.blackboard[BB_NPC_TARGET_TILE]
+	if(target_tile)
+		// Check if we've arrived at our intermediate tile
+		var/arrived = (our_loc == target_tile) || (get_dist(ship, target_tile) <= 1)
+		if(arrived)
+			// Arrived - brake and clear target tile
+			if(!ship.is_still())
+				ship.burn_engines(null, 100)
+				return AI_BEHAVIOR_DELAY
+			// Fully stopped - clear and pick new tile toward target
+			controller.blackboard[BB_NPC_TARGET_TILE] = null
+		else
+			// Still en route - check if we're actually moving
+			if(ship.is_still())
+				// Stopped but haven't arrived - re-thrust
+				var/direction = get_dir(ship, target_tile)
+				if(direction)
+					ship.burn_engines(direction, 100)
+			return AI_BEHAVIOR_DELAY
+
+	// Pick next tile toward target (ignoring obstacles - players can bait us)
 	var/direction = get_dir(ship, target)
 	if(direction)
 		// Check if moving this direction would leave spawn zone
@@ -426,8 +450,10 @@
 			ship.burn_engines(null, 200)
 			return AI_BEHAVIOR_DELAY
 
-		// Chase! (intentionally ignoring obstacles - players can bait us into hazards)
-		ship.burn_engines(direction, 100)
+		var/turf/next_tile = get_step(our_loc, direction)
+		if(next_tile)
+			controller.blackboard[BB_NPC_TARGET_TILE] = next_tile
+			ship.burn_engines(direction, 100)
 
 	return AI_BEHAVIOR_DELAY
 
