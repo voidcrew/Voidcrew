@@ -10143,9 +10143,6 @@
 	dir = 2
 	},
 /obj/effect/landmark/start/psychologist,
-/obj/machinery/door/airlock/medical{
-	name = "Psychology Lobby"
-	},
 /turf/open/floor/wood/parquet,
 /area/station/medical/psychology)
 "bBl" = (
@@ -30100,6 +30097,16 @@
 	},
 /turf/open/floor/iron/dark/smooth_large,
 /area/station/medical/pharmacy)
+"ewR" = (
+/obj/machinery/status_display/evac/directional/north,
+/obj/machinery/light/directional/north,
+/obj/structure/table/reinforced/rglass,
+/obj/item/storage/medkit/emergency{
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/bot_white,
+/turf/open/floor/iron/white,
+/area/station/hallway/primary/fore)
 "ewV" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 6
@@ -65033,7 +65040,8 @@
 /area/station/commons/dorms)
 "jDO" = (
 /obj/machinery/door/airlock/medical{
-	name = "Psychology"
+	name = "Psychology";
+	id_tag = "psychology"
 	},
 /obj/effect/turf_decal/tile/blue/fourcorners,
 /obj/effect/mapping_helpers/airlock/access/all/medical/psychology,
@@ -72068,6 +72076,7 @@
 	},
 /obj/structure/aquarium/prefilled,
 /obj/structure/sign/clock/directional/west,
+/obj/effect/turf_decal/siding/wood,
 /turf/open/floor/wood/parquet,
 /area/station/medical/psychology)
 "kDb" = (
@@ -74326,14 +74335,13 @@
 /turf/open/floor/iron/dark/small,
 /area/station/engineering/supermatter/room/upper)
 "kUl" = (
-/obj/machinery/status_display/evac/directional/north,
-/obj/machinery/light/directional/north,
-/obj/structure/table/reinforced/rglass,
-/obj/item/storage/medkit/emergency{
-	pixel_y = 4
+/obj/effect/turf_decal/siding/wood{
+	dir = 6
 	},
-/obj/effect/turf_decal/bot_white,
-/turf/open/floor/iron/dark/textured_large,
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood/parquet,
 /area/station/hallway/primary/fore)
 "kUm" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark/corner{
@@ -107167,12 +107175,12 @@
 	},
 /obj/effect/turf_decal/siding/wood,
 /obj/machinery/button/door/directional/north{
-	id = "padded";
-	name = "Padded Cell Bolts Control";
+	name = "Psychologist Office Bolts Control";
 	normaldoorcontrol = 1;
 	specialfunctions = 4;
 	pixel_x = -6;
-	pixel_y = 26
+	pixel_y = 26;
+	id = "psychology"
 	},
 /obj/machinery/light/directional/north,
 /obj/machinery/light_switch/directional/north{
@@ -107294,7 +107302,10 @@
 /area/station/maintenance/port/central)
 "pOV" = (
 /obj/effect/turf_decal/siding/wood{
-	dir = 6
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 8
 	},
 /turf/open/floor/wood/parquet,
 /area/station/medical/psychology)
@@ -128392,7 +128403,6 @@
 /obj/effect/turf_decal/stripes/corner{
 	dir = 1
 	},
-/obj/structure/sign/departments/medbay/alt/directional/north,
 /obj/effect/turf_decal/siding/thinplating_new/light/corner{
 	dir = 8
 	},
@@ -138243,6 +138253,20 @@
 /obj/effect/turf_decal/siding/thinplating_new/light,
 /turf/open/floor/iron/white/small,
 /area/station/commons/fitness/recreation/pool)
+"uwl" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/machinery/door/airlock/medical{
+	name = "Psychology";
+	id_tag = "psychology"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/medical/psychology,
+/turf/open/floor/wood/parquet,
+/area/station/medical/psychology)
 "uwo" = (
 /obj/effect/turf_decal/trimline/dark_blue/filled/line{
 	dir = 1
@@ -143174,6 +143198,7 @@
 	dir = 1
 	},
 /obj/structure/marker_beacon/lime,
+/obj/structure/sign/departments/medbay/alt/directional/north,
 /turf/open/floor/iron/white,
 /area/station/hallway/primary/fore)
 "vhO" = (
@@ -260811,7 +260836,7 @@ nXX
 ias
 nDa
 pOV
-bxI
+uwl
 kUl
 qyc
 myV
@@ -261326,7 +261351,7 @@ ivp
 aZX
 smy
 bxI
-hkc
+ewR
 sYJ
 mpA
 xwK
