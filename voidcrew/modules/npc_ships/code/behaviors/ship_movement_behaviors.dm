@@ -436,6 +436,14 @@
 		ship.burn_engines(null, 200)
 		return AI_BEHAVIOR_DELAY
 
+	// Check if we're already adjacent to target (within combat range)
+	var/dist_to_target = get_dist(ship, target)
+	if(dist_to_target <= 1)
+		// Already in combat range - stop and hold position
+		if(!ship.is_still())
+			ship.burn_engines(null, 100)
+		return AI_BEHAVIOR_DELAY
+
 	// Chase the target - but check if next tile would leave our zone
 	var/direction = get_dir(ship, target)
 	if(direction)
