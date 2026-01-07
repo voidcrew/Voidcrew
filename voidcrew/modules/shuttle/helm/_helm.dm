@@ -130,11 +130,14 @@
 	data["shipDisabled"] = raw_percent <= 50
 	data["shipCrashed"] = current_ship.has_crash_landed && raw_percent < 65
 
-	// Repair progress: 0% at 50 raw, 100% at 65 raw
+	// Repair progress as tile counts - shows exact mass repaired vs needed
 	if(data["shipCrashed"])
-		data["repairProgress"] = clamp(round((raw_percent - 50) / 15 * 100), 0, 100)
+		var/target_integrity = round(0.65 * current_ship.max_integrity)
+		data["repairCurrent"] = max(0, current_ship.integrity - current_ship.crashed_at_integrity)
+		data["repairTotal"] = max(1, target_integrity - current_ship.crashed_at_integrity)
 	else
-		data["repairProgress"] = 100
+		data["repairCurrent"] = 0
+		data["repairTotal"] = 0
 
 	data["calibrating"] = calibrating
 	data["canThrust"] = current_ship.can_thrust()

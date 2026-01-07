@@ -913,8 +913,9 @@
 	shuttle.mode = SHUTTLE_IGNITING
 	shuttle.setTimer(1 SECONDS)
 	addtimer(CALLBACK(src, PROC_REF(complete_dock), WEAKREF(undock_from)), 1 SECONDS)
-	// Reset crash flag so ship can crash again if damaged
+	// Reset crash state so ship can crash again if damaged
 	has_crash_landed = FALSE
+	crashed_at_integrity = 0
 
 /**
   * Sets the ship, shuttle, and shuttle areas to a new name.
@@ -1709,10 +1710,9 @@
 	for(var/area/shuttle_area as anything in shuttle.shuttle_areas)
 		RegisterSignal(shuttle_area, COMSIG_AREA_TURF_ADDED, PROC_REF(on_area_turf_added))
 		RegisterSignal(shuttle_area, COMSIG_AREA_TURF_REMOVED, PROC_REF(on_area_turf_removed))
-		// Register COMSIG_TURF_CHANGE on existing turfs for in-place type changes
+		// Register COMSIG_TURF_CHANGE on ALL turfs (including space) for in-place type changes
+		// This is necessary to detect repairs (space -> floor)
 		for(var/turf/T in shuttle_area)
-			if(isspaceturf(T))
-				continue
 			RegisterSignal(T, COMSIG_TURF_CHANGE, PROC_REF(on_shuttle_turf_change))
 
 /**
@@ -1727,10 +1727,10 @@
 
 	log_shuttle("DEBUG [src]: on_area_turf_added - [T] ([T.type]) joined area [source]")
 
-	// Register for in-place type changes on this turf
+	// Register for in-place type changes on this turf (including space turfs for future repairs)
 	RegisterSignal(T, COMSIG_TURF_CHANGE, PROC_REF(on_shuttle_turf_change), override = TRUE)
 
-	// Skip space turfs - they don't contribute mass
+	// Space turfs don't contribute mass, but we still registered for future changes above
 	if(isspaceturf(T))
 		return
 
@@ -1752,10 +1752,10 @@
 
 	log_shuttle("DEBUG [src]: on_area_turf_removed - [T] ([T.type]) left area [source]")
 
-	// Unregister turf change signal
+	// Unregister turf change signal (we register on all turfs including space)
 	UnregisterSignal(T, COMSIG_TURF_CHANGE)
 
-	// Skip space turfs - they don't contribute mass
+	// Space turfs don't contribute mass
 	if(isspaceturf(T))
 		return
 

@@ -17,7 +17,7 @@ import { Window } from '../../tgui/layouts';
 export const HelmComputer = (props) => {
   const { act, data } = useBackend();
   const [mapRefreshKey, setMapRefreshKey] = useState(0);
-  const { mapRef, isViewer, isNotCrew, shipCrashed, repairProgress } = data || {};
+  const { mapRef, isViewer, isNotCrew, shipCrashed, repairCurrent, repairTotal } = data || {};
   // Controls are disabled if viewer mode OR not a crew member
   const isDisabled = isViewer || isNotCrew;
 
@@ -26,7 +26,7 @@ export const HelmComputer = (props) => {
     return (
       <Window width={500} height={400}>
         <Window.Content>
-          <CrashRepairScreen repairProgress={repairProgress} />
+          <CrashRepairScreen repairCurrent={repairCurrent} repairTotal={repairTotal} />
         </Window.Content>
       </Window>
     );
@@ -816,7 +816,7 @@ const ShipControlContent = () => {
 
 // Crash repair screen - shown when ship is crashed and needs repair
 const CrashRepairScreen = (props) => {
-  const { repairProgress } = props;
+  const { repairCurrent, repairTotal } = props;
 
   return (
     <Section
@@ -863,16 +863,16 @@ const CrashRepairScreen = (props) => {
         </Stack.Item>
         <Stack.Item>
           <ProgressBar
-            value={repairProgress}
-            maxValue={100}
+            value={repairCurrent}
+            maxValue={repairTotal}
             ranges={{
-              bad: [0, 33],
-              average: [34, 66],
-              good: [67, 100],
+              bad: [0, repairTotal * 0.33],
+              average: [repairTotal * 0.33, repairTotal * 0.66],
+              good: [repairTotal * 0.66, repairTotal],
             }}
           >
             <span style={{ fontSize: '20px', fontWeight: 'bold' }}>
-              {repairProgress}%
+              {repairCurrent} / {repairTotal}
             </span>
           </ProgressBar>
         </Stack.Item>
@@ -884,7 +884,7 @@ const CrashRepairScreen = (props) => {
               marginTop: '20px',
             }}
           >
-            Rebuild hull structure to 65% integrity to restore systems
+            Rebuild {repairTotal - repairCurrent} more hull mass to restore systems
           </div>
         </Stack.Item>
       </Stack>

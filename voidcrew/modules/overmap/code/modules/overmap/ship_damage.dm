@@ -25,6 +25,8 @@
 	var/overhealth = 0
 	/// Whether the ship has already crash landed (prevents multiple crashes)
 	var/has_crash_landed = FALSE
+	/// Integrity (mass) value when the ship crashed (for repair progress calculation)
+	var/crashed_at_integrity = 0
 	/// Timer ID for critical state alert loop
 	var/critical_alert_timer
 
@@ -92,6 +94,8 @@
 	if(has_crash_landed)
 		return
 	has_crash_landed = TRUE
+	// Record current integrity for repair progress calculation
+	crashed_at_integrity = integrity
 
 	// Stop the ship dead
 	speed[1] = 0
