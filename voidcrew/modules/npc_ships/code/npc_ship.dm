@@ -64,6 +64,19 @@
 	/// Default movement mode for this ship type
 	var/default_movement_mode = NPC_MOVEMENT_PATROL
 
+	// ========== MASS CACHING (Performance optimization) ==========
+	// Instead of iterating all turfs every second, we cache mass and only
+	// recalculate when the ship takes hull damage
+
+	/// Cached mass value - avoids iterating all turfs every second
+	var/cached_mass = 0
+	/// Whether cached_mass has been initialized
+	var/mass_initialized = FALSE
+	/// Whether mass needs recalculation (set TRUE when ship takes damage)
+	var/mass_dirty = FALSE
+	/// Cooldown to prevent mass recalc spam when taking multiple hits
+	COOLDOWN_DECLARE(mass_recalc_cooldown)
+
 /obj/structure/overmap/ship/npc/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
 	// Apply faction color tint
@@ -75,6 +88,8 @@
 /obj/structure/overmap/ship/npc/Destroy()
 	QDEL_NULL(ai_controller)
 	QDEL_NULL(combat_interface)
+	// Clean up from dirty queue if we were in it
+	SSovermap.dirty_npc_ships -= src
 	return ..()
 
 /**
@@ -101,6 +116,13 @@
 	// Register for signals we care about
 	RegisterSignal(src, COMSIG_SHIP_INTEGRITY_CHANGED, PROC_REF(on_integrity_changed))
 	RegisterSignal(src, COMSIG_SHIP_INTERDICTED, PROC_REF(on_interdicted))
+	// Only recalc mass on explosive damage (missiles) - lasers don't destroy enough turfs to matter
+	RegisterSignal(src, COMSIG_SHIP_EXPLOSIVE_DAMAGE, PROC_REF(on_hull_damaged))
+
+	// Calculate and cache initial mass (avoids per-second recalculation)
+	mass_dirty = TRUE  // Force initial calculation
+	calculate_mass()
+	mass_initialized = TRUE
 
 	// Spawn pirate crew
 	spawn_crew()
@@ -239,6 +261,52 @@
 		var/scale = speed_limit / current_magnitude
 		speed[1] *= scale
 		speed[2] *= scale
+
+// ========== MASS CALCULATION OVERRIDE ==========
+
+/**
+ * Override calculate_mass to use cached value for performance.
+ * Instead of iterating all turfs every second, we only recalculate when:
+ * 1. Mass hasn't been initialized yet
+ * 2. Ship has taken hull damage (mass_dirty = TRUE)
+ * 3. Cooldown has expired (prevents spam recalc when taking multiple hits)
+ *
+ * This saves thousands of turf iterations per second across all NPC ships.
+ */
+/obj/structure/overmap/ship/npc/calculate_mass()
+	// If not dirty and initialized, return cached value
+	if(!mass_dirty && mass_initialized)
+		return cached_mass
+
+	// Even if dirty, respect cooldown to prevent spam (unless first init)
+	if(mass_initialized && !COOLDOWN_FINISHED(src, mass_recalc_cooldown))
+		return cached_mass
+
+	// Recalculate using parent proc
+	cached_mass = ..()
+	mass_dirty = FALSE
+
+	// Start cooldown - won't recalc again for 6 seconds even if hit more
+	COOLDOWN_START(src, mass_recalc_cooldown, 6 SECONDS)
+
+	// Remove from dirty queue if we were in it
+	SSovermap.dirty_npc_ships -= src
+
+	return cached_mass
+
+/**
+ * Signal handler for when the ship takes hull damage.
+ * Marks mass as dirty so it will be recalculated.
+ */
+/obj/structure/overmap/ship/npc/proc/on_hull_damaged(datum/source, turf/impact_location)
+	SIGNAL_HANDLER
+
+	// Don't queue if already dirty
+	if(mass_dirty)
+		return
+
+	mass_dirty = TRUE
+	SSovermap.dirty_npc_ships |= src
 
 // ========== SHIP TYPE SUBTYPES ==========
 

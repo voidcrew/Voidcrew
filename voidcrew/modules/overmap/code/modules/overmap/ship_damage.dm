@@ -8,7 +8,12 @@
  * Ship health is purely turf-based:
  * - Damage = turfs being destroyed (explosions, meteors, etc.)
  * - Repair = turfs being rebuilt (construction)
- * - SSovermap.fire() calls calculate_mass() every second to update integrity
+ *
+ * Mass tracking is event-driven via signals (see setup_mass_tracking in ship.dm):
+ * - COMSIG_TURF_CHANGE: tracks turf type changes (wall->floor, floor->space)
+ * - COMSIG_TURF_REMOVED_FROM_SHUTTLE: tracks turfs removed from shuttle
+ * - COMSIG_SHUTTLE_EXPANDED: tracks new turfs added via expansion
+ * This is ~750x more efficient than the old polling approach.
  */
 
 /obj/structure/overmap/ship
@@ -345,7 +350,7 @@
 /**
  * Ion Storm Effect
  * EMPs random areas of the ship - no direct hull damage, but EMP can destroy electronics
- * Hull damage comes from destroyed equipment/turfs, detected by calculate_mass()
+ * If turfs are destroyed, delta tracking will automatically update mass
  */
 /obj/structure/overmap/ship/proc/apply_ion_storm_damage(obj/structure/overmap/event/emp/storm)
 	var/intensity = storm.intensity
@@ -360,9 +365,6 @@
 			// empulse handles the visual effect when heavy_range > 1
 			empulse(target, 2 * intensity, 4 * intensity)
 			playsound(target, 'sound/effects/empulse.ogg', 50, TRUE)
-
-	// Trigger immediate mass recalculation to detect any destroyed turfs/equipment
-	calculate_mass()
 
 /**
  * Electrical Storm Effect
@@ -421,9 +423,7 @@
 		light.flicker(10)
 		// Schedule the lightning strike from light
 		addtimer(CALLBACK(src, PROC_REF(electrical_storm_shock), light, intensity), rand(1 SECONDS, 2 SECONDS))
-
-	// Trigger immediate mass recalculation
-	calculate_mass()
+	// Note: Mass updates are handled by delta tracking when turfs change
 
 /**
  * Spawns a real lightning bolt strike at the target turf
@@ -506,10 +506,8 @@
 		meteor_type = /obj/effect/meteor
 
 	// Spawn one meteor aimed at the ship
+	// Note: Mass updates are handled by delta tracking when meteor destroys turfs
 	spawn_meteor_at_ship(meteor_type)
-
-	// Schedule mass recalculation after meteor has time to hit (meteors take a moment to travel)
-	addtimer(CALLBACK(src, PROC_REF(calculate_mass)), 3 SECONDS)
 
 /**
  * Spawns a single meteor from the edge of the virtual level aimed at a random ship turf

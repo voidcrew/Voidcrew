@@ -30,7 +30,16 @@
 
 /obj/docking_port/mobile/voidcrew/Destroy(force)
 	UnregisterSignal(SSdcs, COMSIG_GLOB_Z_SHIP_PROBE)
-	current_ship.shuttle = null
+	// Debug: log when shuttle is destroyed to help track orphaning issues
+	if(current_ship)
+		// This should only happen through normal cleanup - log a stack trace to find unexpected deletions
+		var/ship_name = current_ship.name
+		var/ship_state = current_ship.state
+		log_shuttle("Shuttle [name] destroyed while overmap ship [ship_name] still exists. Force=[force], state=[ship_state]")
+		stack_trace("Shuttle [name] being destroyed while overmap ship [ship_name] exists - investigate if unexpected")
+		current_ship.shuttle = null
+	else
+		log_shuttle("Shuttle [name] destroyed with no current_ship reference. Force=[force]")
 	current_ship = null
 	spawn_points.Cut()
 	unlink_from_z_level()

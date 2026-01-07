@@ -161,6 +161,10 @@
 /// Sent when a ship's hull takes damage (turfs destroyed, walls damaged, etc)
 #define COMSIG_SHIP_HULL_HIT "ship_hull_hit"
 
+/// Sent when a ship takes explosive damage that destroys turfs (missiles, bombs)
+/// Used by NPC ships to trigger mass recalculation
+#define COMSIG_SHIP_EXPLOSIVE_DAMAGE "ship_explosive_damage"
+
 /// Return value to cancel missile impact (missile was blocked by shields)
 #define COMSIG_CANCEL_MISSILE_IMPACT (1<<0)
 

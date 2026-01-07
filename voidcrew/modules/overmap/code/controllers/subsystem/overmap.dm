@@ -2,8 +2,9 @@
 voidcrew TODO:
 	SSovermap originally fired to apply the planet effects but these would be way better off just using signals
 
-
-
+Performance Note:
+	Ship mass/integrity is now tracked via event-driven delta updates instead of polling.
+	See setup_mass_tracking() in ship.dm for details.
 */
 
 #define MAX_OVERMAP_EVENT_CLUSTERS 24
@@ -33,6 +34,9 @@ SUBSYSTEM_DEF(overmap)
 	var/list/map_zones = list()
 	///List of all simulated ships
 	var/list/simulated_ships = list()
+	/// List of NPC ships that need mass recalculated (damaged ships)
+	/// Used for performance - NPC ships cache mass and only recalc when damaged
+	var/list/dirty_npc_ships = list()
 	/// Timer ID of the timer used for telling which stage of an endround "jump" the ships are in
 	var/jump_timer
 	/// Current state of the jump
@@ -56,15 +60,15 @@ SUBSYSTEM_DEF(overmap)
 	return SS_INIT_SUCCESS
 
 /**
- * Called every tick (1 second) - updates all ship integrity calculations
- * This ensures ship health is always current and triggers UI updates via signals
+ * Called every tick (1 second) - cleanup only
+ * Ship integrity is now tracked via event-driven delta updates (see ship.dm setup_mass_tracking)
+ * This polling loop has been removed for ~750x performance improvement
  */
 /datum/controller/subsystem/overmap/fire(resumed)
+	// Clean up deleted ships from the list
 	for(var/obj/structure/overmap/ship/ship as anything in simulated_ships)
 		if(QDELETED(ship))
 			simulated_ships -= ship
-			continue
-		ship.calculate_mass()
 
 /*
  * Bluespace jump procs

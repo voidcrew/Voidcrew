@@ -226,6 +226,8 @@
 	// Signal that hull was hit (for combat camera static updates)
 	if(target_ship)
 		SEND_SIGNAL(target_ship, COMSIG_SHIP_HULL_HIT, impact_loc)
+		// Signal for NPC mass recalculation - missiles destroy turfs via explosion
+		SEND_SIGNAL(target_ship, COMSIG_SHIP_EXPLOSIVE_DAMAGE, impact_loc)
 
 	qdel(src)
 

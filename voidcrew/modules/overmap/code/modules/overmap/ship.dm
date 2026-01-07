@@ -495,6 +495,9 @@
   * Just double checks all the engines on the shuttle
   */
 /obj/structure/overmap/ship/proc/refresh_engines()
+	if(!shuttle)
+		est_thrust = 0
+		return
 	var/calculated_thrust
 	for(var/obj/machinery/power/shuttle_engine/ship/E in shuttle.engine_list)
 		if (QDELETED(E)) //Garant that we has no ghost engines.
@@ -953,6 +956,7 @@
 				SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_DOCKED)
 			else
 				addtimer(CALLBACK(src, PROC_REF(complete_dock), to_dock), 1 SECONDS) //This should never happen, yet it does sometimes.
+				return
 		if(OVERMAP_SHIP_UNDOCKING)
 			// Get the location we're undocking from (passed via weakref from undock())
 			var/obj/structure/overmap/old_docked_location = to_dock?.resolve()
@@ -1025,7 +1029,8 @@
 			//if(repair_timer)
 				//deltimer(repair_timer)
 			//addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/structure/overmap/ship, tick_autopilot)), 5 SECONDS) //TODO: Improve this SOMEHOW
-	calculate_mass()
+
+	// With area-based mass tracking, no re-registration needed - areas persist through shuttle movement
 	update_appearance(UPDATE_ICON_STATE)
 	update_screen()
 
@@ -1572,10 +1577,14 @@
 		acting_ship.pending_dock_timer = addtimer(CALLBACK(acting_ship, PROC_REF(clear_pending_dock)), 30 SECONDS, TIMER_STOPPABLE)
 		acting_ship.ship_announce("Docking request will expire in 30 seconds.", "Docking Request Timer")
 /**
-  * Calculates the mass based on the amount of turfs in the shuttle's areas
-  * Ship health is based on current turfs vs original turfs
-  * Losing turfs = losing health, rebuilding = healing
-  */
+ * Calculates the mass based on the amount of turfs in the shuttle's areas
+ * Ship health is based on current turfs vs original turfs
+ * Losing turfs = losing health, rebuilding = healing
+ *
+ * NOTE: This is now only called ONCE during ship initialization to establish baseline.
+ * After that, mass is tracked via event-driven delta updates (see setup_mass_tracking).
+ * Do NOT call this in a loop - use check_integrity_thresholds() for threshold checks.
+ */
 /obj/structure/overmap/ship/proc/calculate_mass()
 	if(!shuttle)
 		return 0
@@ -1642,6 +1651,179 @@
 
 	update_icon_state()
 
+	// Set up event-driven mass tracking after first calculation
+	if(integrity_initialized && !mass_tracking_initialized)
+		setup_mass_tracking()
+
+/**
+ * Returns the mass weight contribution for a turf type
+ * Used by delta tracking to update mass without full iteration
+ */
+/proc/get_turf_mass_weight(turf_type)
+	if(ispath(turf_type, /turf/open/space))
+		return 0
+	if(ispath(turf_type, /turf/closed/wall/r_wall))
+		return 3
+	if(ispath(turf_type, /turf/closed/wall))
+		return 2
+	// Non-space turfs (floors, etc)
+	if(ispath(turf_type, /turf/open) || ispath(turf_type, /turf/closed))
+		return 1
+	return 0
+
+/**
+ * Returns the mass weight for an actual turf instance
+ * Checks if it's a valid shuttle turf before returning weight
+ */
+/proc/get_turf_mass_weight_instance(turf/T)
+	if(!T)
+		return 0
+	if(isspaceturf(T))
+		return 0
+	if(!isshuttleturf(T))
+		return 0
+	if(istype(T, /turf/closed/wall/r_wall))
+		return 3
+	if(istype(T, /turf/closed/wall))
+		return 2
+	return 1
+
+/obj/structure/overmap/ship
+	/// Whether mass tracking signals have been set up
+	var/mass_tracking_initialized = FALSE
+
+/**
+ * Sets up event-driven mass tracking by registering signals on shuttle AREAS
+ * Areas persist through shuttle movement, so we only register once - no re-registration needed on dock/undock
+ * Called once after the initial calculate_mass() establishes the baseline
+ */
+/obj/structure/overmap/ship/proc/setup_mass_tracking()
+	if(mass_tracking_initialized)
+		return
+	if(!shuttle?.shuttle_areas)
+		return
+
+	mass_tracking_initialized = TRUE
+
+	// Register on shuttle areas - these persist through shuttle movement
+	for(var/area/shuttle_area as anything in shuttle.shuttle_areas)
+		RegisterSignal(shuttle_area, COMSIG_AREA_TURF_ADDED, PROC_REF(on_area_turf_added))
+		RegisterSignal(shuttle_area, COMSIG_AREA_TURF_REMOVED, PROC_REF(on_area_turf_removed))
+		// Register COMSIG_TURF_CHANGE on existing turfs for in-place type changes
+		for(var/turf/T in shuttle_area)
+			if(isspaceturf(T))
+				continue
+			RegisterSignal(T, COMSIG_TURF_CHANGE, PROC_REF(on_shuttle_turf_change))
+
+/**
+ * Signal handler for when a turf joins a shuttle area
+ * Handles: shuttle movement arrival, new construction, shuttle expansion
+ */
+/obj/structure/overmap/ship/proc/on_area_turf_added(area/source, turf/T, area/old_area)
+	SIGNAL_HANDLER
+
+	if(!integrity_initialized)
+		return
+
+	log_shuttle("DEBUG [src]: on_area_turf_added - [T] ([T.type]) joined area [source]")
+
+	// Register for in-place type changes on this turf
+	RegisterSignal(T, COMSIG_TURF_CHANGE, PROC_REF(on_shuttle_turf_change), override = TRUE)
+
+	// Skip space turfs - they don't contribute mass
+	if(isspaceturf(T))
+		return
+
+	var/weight = get_turf_mass_weight_instance(T)
+	log_shuttle("DEBUG [src]: on_area_turf_added - weight=[weight], mass before=[mass]")
+	if(weight > 0)
+		mass += weight
+		check_integrity_thresholds()
+
+/**
+ * Signal handler for when a turf leaves a shuttle area
+ * Handles: shuttle movement departure, turf destruction, area changes
+ */
+/obj/structure/overmap/ship/proc/on_area_turf_removed(area/source, turf/T, area/new_area)
+	SIGNAL_HANDLER
+
+	if(!integrity_initialized)
+		return
+
+	log_shuttle("DEBUG [src]: on_area_turf_removed - [T] ([T.type]) left area [source]")
+
+	// Unregister turf change signal
+	UnregisterSignal(T, COMSIG_TURF_CHANGE)
+
+	// Skip space turfs - they don't contribute mass
+	if(isspaceturf(T))
+		return
+
+	var/weight = get_turf_mass_weight_instance(T)
+	log_shuttle("DEBUG [src]: on_area_turf_removed - weight=[weight], mass before=[mass]")
+	if(weight > 0)
+		mass -= weight
+		check_integrity_thresholds()
+
+/**
+ * Signal handler for when a shuttle turf changes type in-place
+ * Handles: wall -> floor, floor -> space, etc. (without changing area)
+ */
+/obj/structure/overmap/ship/proc/on_shuttle_turf_change(turf/old_turf, path, list/new_baseturfs, flags, list/post_change_callbacks)
+	SIGNAL_HANDLER
+
+	if(!integrity_initialized)
+		return
+
+	// Calculate the delta between old and new turf types
+	var/old_weight = get_turf_mass_weight_instance(old_turf)
+	var/new_weight = get_turf_mass_weight(path)
+	var/delta = new_weight - old_weight
+
+	log_shuttle("DEBUG [src]: on_shuttle_turf_change - [old_turf?.type] -> [path], old_weight=[old_weight], new_weight=[new_weight], delta=[delta], mass before=[mass]")
+
+	if(delta == 0)
+		return
+
+	mass += delta
+	log_shuttle("DEBUG [src]: on_shuttle_turf_change - mass after=[mass]")
+	check_integrity_thresholds()
+
+/**
+ * Checks integrity thresholds and sends signals without iterating turfs
+ * Called by delta tracking when mass changes
+ */
+/obj/structure/overmap/ship/proc/check_integrity_thresholds()
+	var/old_integrity = integrity
+
+	// Update integrity from current mass
+	integrity = min(mass, max_integrity)
+	overhealth = max(0, mass - max_integrity)
+
+	// Check for integrity changes and send signals
+	if(integrity != old_integrity && max_integrity > 0)
+		var/raw_percent = round((integrity / max_integrity) * 100)
+		var/old_raw_percent = round((old_integrity / max_integrity) * 100)
+		var/display_percent = get_integrity_percent()
+
+		SEND_SIGNAL(src, COMSIG_SHIP_INTEGRITY_CHANGED, integrity, max_integrity, display_percent)
+
+		// Check thresholds (only when health dropped)
+		if(integrity < old_integrity)
+			if(old_raw_percent > 60 && raw_percent <= 60)
+				start_critical_alert()
+			if(old_raw_percent > 50 && raw_percent <= 50)
+				stop_critical_alert()
+				on_ship_destroyed()
+
+		// Check for recovery
+		if(integrity > old_integrity && has_crash_landed)
+			if(old_raw_percent < 65 && raw_percent >= 65)
+				stop_critical_alert()
+				on_ship_recovered()
+
+	update_icon_state()
+
 /obj/structure/overmap/ship/update_icon_state()
 	if(mass < SHIP_SIZE_THRESHOLD)
 		base_icon_state = "shuttle"
@@ -1658,6 +1840,9 @@
   * Calculates the average fuel fullness of all engines.
   */
 /obj/structure/overmap/ship/proc/calculate_avg_fuel()
+	if(!shuttle)
+		avg_fuel_amnt = 0
+		return
 	var/fuel_avg = 0
 	var/engine_amnt = 0
 	for(var/obj/machinery/power/shuttle_engine/ship/E in shuttle.engine_list)
@@ -1672,6 +1857,8 @@
 
 ///Returns TRUE if the ship has at least one working engine with fuel available.
 /obj/structure/overmap/ship/proc/can_thrust()
+	if(!shuttle)
+		return FALSE
 	refresh_engines()
 	for(var/obj/machinery/power/shuttle_engine/ship/engine in shuttle.engine_list)
 		if(!engine.enabled || !engine.thruster_active)
@@ -1839,6 +2026,9 @@
 
 	var/thrust_used = 0 //The amount of thrust that the engines will provide with one burn
 	refresh_engines()
+
+	if(!shuttle)
+		return
 
 	if(!mass)
 		calculate_mass()
