@@ -1725,8 +1725,6 @@
 	if(!integrity_initialized)
 		return
 
-	log_shuttle("DEBUG [src]: on_area_turf_added - [T] ([T.type]) joined area [source]")
-
 	// Register for in-place type changes on this turf (including space turfs for future repairs)
 	RegisterSignal(T, COMSIG_TURF_CHANGE, PROC_REF(on_shuttle_turf_change), override = TRUE)
 
@@ -1735,7 +1733,6 @@
 		return
 
 	var/weight = get_turf_mass_weight_instance(T)
-	log_shuttle("DEBUG [src]: on_area_turf_added - weight=[weight], mass before=[mass]")
 	if(weight > 0)
 		mass += weight
 		check_integrity_thresholds()
@@ -1750,8 +1747,6 @@
 	if(!integrity_initialized)
 		return
 
-	log_shuttle("DEBUG [src]: on_area_turf_removed - [T] ([T.type]) left area [source]")
-
 	// Unregister turf change signal (we register on all turfs including space)
 	UnregisterSignal(T, COMSIG_TURF_CHANGE)
 
@@ -1760,7 +1755,6 @@
 		return
 
 	var/weight = get_turf_mass_weight_instance(T)
-	log_shuttle("DEBUG [src]: on_area_turf_removed - weight=[weight], mass before=[mass]")
 	if(weight > 0)
 		mass -= weight
 		check_integrity_thresholds()
@@ -1780,13 +1774,10 @@
 	var/new_weight = get_turf_mass_weight(path)
 	var/delta = new_weight - old_weight
 
-	log_shuttle("DEBUG [src]: on_shuttle_turf_change - [old_turf?.type] -> [path], old_weight=[old_weight], new_weight=[new_weight], delta=[delta], mass before=[mass]")
-
 	if(delta == 0)
 		return
 
 	mass += delta
-	log_shuttle("DEBUG [src]: on_shuttle_turf_change - mass after=[mass]")
 	check_integrity_thresholds()
 
 /**
