@@ -77,6 +77,10 @@
 		if(potential_target.state != OVERMAP_SHIP_FLYING)
 			continue
 
+		// Skip cloaked ships - can't detect them
+		if(potential_target.invisibility > INVISIBILITY_NONE)
+			continue
+
 		// Check distance (O(1) instead of range()'s O(tiles))
 		if(get_dist(ship, potential_target) > ship.territory_range)
 			continue
@@ -176,7 +180,9 @@
 
 	if(target_has_shields)
 		// Target has shields - use lasers (effective vs shields)
-		try_fire_lasers(ship, combat, target)
+		// Fall back to missiles if we have no working lasers
+		if(!try_fire_lasers(ship, combat, target))
+			try_fire_missiles(ship, combat, target, skip_laser_fallback = TRUE)
 	else
 		// Target shields down - use missiles (effective vs hull)
 		try_fire_missiles(ship, combat, target)
@@ -211,17 +217,19 @@
 /**
  * Attempts to fire missiles at the target.
  */
-/datum/ai_behavior/npc_ship/fire_weapons/proc/try_fire_missiles(obj/structure/overmap/ship/npc/ship, datum/npc_combat_interface/combat, obj/structure/overmap/ship/target)
+/datum/ai_behavior/npc_ship/fire_weapons/proc/try_fire_missiles(obj/structure/overmap/ship/npc/ship, datum/npc_combat_interface/combat, obj/structure/overmap/ship/target, skip_laser_fallback = FALSE)
 	// Check cooldown
 	if(!COOLDOWN_FINISHED(ship, missile_cooldown))
 		// Fallback to lasers if available
-		try_fire_lasers(ship, combat, target)
+		if(!skip_laser_fallback)
+			try_fire_lasers(ship, combat, target)
 		return FALSE
 
 	var/launcher_count = combat.get_working_launcher_count()
 	if(launcher_count < 1)
 		// No launchers, try lasers instead
-		try_fire_lasers(ship, combat, target)
+		if(!skip_laser_fallback)
+			try_fire_lasers(ship, combat, target)
 		return FALSE
 
 	// Fire missile (uses per-ship missile cooldown)
@@ -285,6 +293,12 @@
 		return AI_BEHAVIOR_DELAY
 
 	if(!ship)
+		return AI_BEHAVIOR_DELAY
+
+	// Check if target cloaked - lose tracking
+	if(target.invisibility > INVISIBILITY_NONE)
+		SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
+		controller.clear_target()
 		return AI_BEHAVIOR_DELAY
 
 	// Check if target has crashed (no longer flying) - don't attack crashed ships

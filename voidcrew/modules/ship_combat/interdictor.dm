@@ -557,6 +557,54 @@
 	update_appearance()
 	update_power_draw()
 
+/// Called when the target ship breaks free via shield burst
+/// Similar to cancel_interdiction but doesn't clear interdiction on target (they already did that)
+/obj/machinery/ship_combat/interdictor/proc/on_target_broke_free()
+	interdiction_active = FALSE
+	interdiction_warming_up = FALSE
+	warmup_progress = 0
+
+	// Stop processing
+	end_processing()
+
+	// Remove beam
+	QDEL_NULL(interdiction_beam)
+
+	// Remove kinesis effects
+	destroy_kinesis_effects()
+
+	// Remove fullscreen overlays from all mobs
+	clear_all_interdiction_overlays()
+
+	// Stop looping sounds
+	machine_sound?.stop()
+	stop_target_sound()
+
+	// Play shutdown sounds
+	playsound(src, 'voidcrew/sound/machines/interdictor/beep2.ogg', 17, FALSE)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'voidcrew/sound/machines/interdictor/off.ogg', 17, FALSE), 0.5 SECONDS)
+
+	// Unregister signals from our ship
+	var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
+	if(our_ship)
+		UnregisterSignal(our_ship, COMSIG_VOIDCREW_SHIP_MOVED)
+
+	// Unregister signals from target (but don't clear their interdiction - they already did)
+	var/obj/structure/overmap/ship/target = interdicted_ship_ref?.resolve()
+	if(target)
+		UnregisterSignal(target, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
+		SEND_SIGNAL(target, COMSIG_SHIP_INTERDICTION_ENDED)
+
+	interdicted_ship_ref = null
+
+	// Announce to our ship
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	if(ship)
+		ship.ship_announce("WARNING: Target vessel performed emergency shield burst! Interdiction lock broken.", "INTERDICTION FAILURE")
+
+	update_appearance()
+	update_power_draw()
+
 /// Sets power allocation (called by combat console)
 /obj/machinery/ship_combat/interdictor/proc/set_power_allocation(new_power)
 	power_allocation = clamp(new_power, INTERDICTOR_POWER_MIN, INTERDICTOR_POWER_MAX)

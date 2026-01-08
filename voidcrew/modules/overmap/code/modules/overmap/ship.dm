@@ -141,6 +141,9 @@
 	/// List of interdictor machines installed on this ship
 	var/list/linked_interdictors = list()
 
+	/// List of ships that currently have a weapons lock on us (prevents cloaking)
+	var/list/locked_on_by = list()
+
 	// ===== ZONE TRANSITION =====
 	/// Whether we're currently transitioning between zones (10 second delay)
 	var/zone_transitioning = FALSE
@@ -734,6 +737,66 @@
 	speed_multiplier = SHIP_SPEED_MULTIPLIER_DEFAULT
 	interdiction_strength = 0
 	is_interdicted = FALSE
+
+/// Base shield health cost for shield burst (one generator's worth)
+#define SHIELD_BURST_BASE_COST 500
+
+/**
+ * Gets the shield health required to burst free from current interdiction.
+ * Cost scales with interdictor power level: base_cost * power_level
+ * Returns 0 if not interdicted.
+ */
+/obj/structure/overmap/ship/proc/get_burst_shield_cost()
+	if(!is_interdicted)
+		return 0
+	var/obj/machinery/ship_combat/interdictor/interdictor = interdicting_machine_ref?.resolve()
+	if(!interdictor)
+		return SHIELD_BURST_BASE_COST  // Fallback to base cost
+	return SHIELD_BURST_BASE_COST * interdictor.power_allocation
+
+/**
+ * Checks if the ship can perform a shield burst to break interdiction.
+ * Requirements:
+ * - Ship must be interdicted
+ * - Shields must be active (not broken)
+ * - Shield health must meet the cost (base * interdictor power level)
+ */
+/obj/structure/overmap/ship/proc/can_burst_shields()
+	if(!is_interdicted)
+		return FALSE
+	if(!shields_active || shields_broken)
+		return FALSE
+	var/required = get_burst_shield_cost()
+	if(shield_health < required)
+		return FALSE
+	return TRUE
+
+/**
+ * Sacrifices all shield energy to break free from interdiction.
+ * Drains shields to 0, puts them in broken/cooldown state, and clears interdiction.
+ * Returns TRUE on success, FALSE if requirements not met.
+ */
+/obj/structure/overmap/ship/proc/burst_shields_break_interdiction()
+	if(!can_burst_shields())
+		return FALSE
+
+	// Get the interdictor that's affecting us so we can notify it
+	var/obj/machinery/ship_combat/interdictor/interdictor = interdicting_machine_ref?.resolve()
+
+	// Break our shields - this sets health to 0 and starts cooldown
+	break_ship_shields()
+
+	// Clear our interdiction state
+	clear_interdiction()
+
+	// Tell the interdictor to stop (if it still exists)
+	if(interdictor)
+		interdictor.on_target_broke_free()
+
+	// Announce to the ship
+	ship_announce("SHIELD BURST SUCCESSFUL! Interdiction field disrupted. Shields offline - recharging.", "EMERGENCY MANEUVER")
+
+	return TRUE
 
 /// Dock warmup time in deciseconds
 #define DOCK_WARMUP_TIME (10 SECONDS)

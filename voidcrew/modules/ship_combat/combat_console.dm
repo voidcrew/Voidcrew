@@ -648,8 +648,12 @@
 	if(current_ship?.is_interdicted)
 		data["being_interdicted"] = TRUE
 		data["our_interdiction_strength"] = round(current_ship.interdiction_strength * 100)
+		data["can_burst_shields"] = current_ship.can_burst_shields()
+		data["burst_shield_cost"] = round(current_ship.get_burst_shield_cost())
 	else
 		data["being_interdicted"] = FALSE
+		data["can_burst_shields"] = FALSE
+		data["burst_shield_cost"] = 0
 
 	// Check target distance for interdiction, force dock, and missile lock
 	var/target_in_interdict_range = FALSE
@@ -851,6 +855,16 @@
 			current_ship.set_shield_power_allocation(power_mult)
 			invalidate_shield_cache()  // Force immediate UI refresh
 			return TRUE
+
+		// Shield burst - sacrifice shields to break interdiction
+		if("burst_shields")
+			if(!current_ship)
+				return FALSE
+			if(!current_ship.can_burst_shields())
+				var/required = current_ship.get_burst_shield_cost()
+				to_chat(ui.user, span_warning("Cannot perform shield burst! Requires: being interdicted, shields active, and [required] shield health."))
+				return FALSE
+			return current_ship.burst_shields_break_interdiction()
 
 		// Laser turret power allocation (25-200%) - applies to ALL turrets
 		if("set_turret_power")

@@ -81,7 +81,7 @@
  * Falls back to roaming if circuit generation fails.
  */
 /datum/ai_behavior/npc_ship/patrol
-	action_cooldown = 2 SECONDS
+	action_cooldown = 8 SECONDS  // 1/4 speed when out of combat
 
 /datum/ai_behavior/npc_ship/patrol/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
@@ -180,7 +180,7 @@
  * Discrete movement: moves one tile per tick (no momentum/physics).
  */
 /datum/ai_behavior/npc_ship/roaming
-	action_cooldown = 2 SECONDS
+	action_cooldown = 8 SECONDS  // 1/4 speed when out of combat
 
 /datum/ai_behavior/npc_ship/roaming/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
@@ -228,7 +228,7 @@
  * Discrete movement: moves one tile per tick (no momentum/physics).
  */
 /datum/ai_behavior/npc_ship/return_to_route
-	action_cooldown = 2 SECONDS
+	action_cooldown = 8 SECONDS  // 1/4 speed when out of combat
 
 /datum/ai_behavior/npc_ship/return_to_route/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
@@ -321,7 +321,7 @@
  * This is a core gameplay mechanic - don't add obstacle avoidance here!
  */
 /datum/ai_behavior/npc_ship/chase
-	action_cooldown = 1 SECONDS
+	action_cooldown = 2 SECONDS  // 1/2 speed when in combat
 
 /datum/ai_behavior/npc_ship/chase/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
@@ -378,7 +378,7 @@
  * Moves directly toward zone middle.
  */
 /datum/ai_behavior/npc_ship/return_to_zone
-	action_cooldown = 2 SECONDS
+	action_cooldown = 8 SECONDS  // 1/4 speed when out of combat
 
 /datum/ai_behavior/npc_ship/return_to_zone/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()

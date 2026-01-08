@@ -192,6 +192,8 @@ type Data = {
   interdictor_ready: BooleanLike;
   being_interdicted: BooleanLike;
   our_interdiction_strength: number;
+  can_burst_shields: BooleanLike;
+  burst_shield_cost: number;
   target_in_interdict_range: BooleanLike;
   target_in_force_dock_range: BooleanLike;
   target_in_missile_range: BooleanLike;
@@ -626,6 +628,8 @@ const InterdictorPanel = () => {
     interdictor_ready,
     being_interdicted,
     our_interdiction_strength,
+    can_burst_shields,
+    burst_shield_cost,
     target_in_interdict_range,
     target_in_force_dock_range,
   } = data;
@@ -650,6 +654,21 @@ const InterdictorPanel = () => {
           <Icon name="exclamation-triangle" mr={1} />
           Engines at {100 - (our_interdiction_strength || 0)}%
         </NoticeBox>
+        <Button
+          fluid
+          icon="shield-alt"
+          color={can_burst_shields ? 'caution' : 'transparent'}
+          disabled={!can_burst_shields}
+          onClick={() => act('burst_shields')}
+          tooltip={
+            can_burst_shields
+              ? `Sacrifice all shield energy to break free (costs ${burst_shield_cost} shield)`
+              : `Requires ${burst_shield_cost} shield health (shields must be active)`
+          }
+          mt={1}
+        >
+          Emergency Shield Burst ({burst_shield_cost} HP)
+        </Button>
       </Section>
     );
   }

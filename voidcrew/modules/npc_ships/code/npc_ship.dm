@@ -1,7 +1,7 @@
 /**
  * NPC Ship - AI-controlled ships that can engage players in combat
  *
- * These ships spawn dynamically in YELLOW/RED zones and use territorial AI
+ * These ships spawn dynamically in RED zones and use territorial AI
  * to attack player ships that come within range.
  */
 /obj/structure/overmap/ship/npc
@@ -347,40 +347,3 @@
 	// Faction
 	faction = list(FACTION_PIRATE)
 
-/**
- * Trader Ship - Non-hostile merchant vessels
- *
- * Traders don't attack on sight but will defend if provoked.
- * They patrol trade routes and can be hailed for trading (future feature).
- * Attacking traders generates bounty (future feature).
- */
-/obj/structure/overmap/ship/npc/trader
-	name = "merchant vessel"
-	desc = "A trading vessel carrying cargo between stations."
-
-	// Traders are NOT hostile - they don't attack unprovoked
-	hostile = FALSE
-	territory_range = 3  // Larger awareness range for self-defense
-
-	// Yellow color for trader faction
-	ship_color = NPC_COLOR_TRADER
-
-	// Combat stats (slower reactions - they're merchants, not warriors)
-	lock_time = 8 SECONDS
-	laser_cooldown_time = 8 SECONDS
-	missile_cooldown_time = 15 SECONDS
-
-	// Movement stats (slower, heavily loaded)
-	speed_limit = 0.3
-	thrust_power = 0.2
-
-	// Crew configuration (no combat crew by default)
-	crew_min = 0
-	crew_max = 0
-	crew_types = list()
-
-	// Faction - neutral
-	faction = list()
-
-	// Traders prefer to patrol established routes
-	default_movement_mode = NPC_MOVEMENT_PATROL

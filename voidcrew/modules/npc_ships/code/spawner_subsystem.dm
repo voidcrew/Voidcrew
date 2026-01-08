@@ -1,7 +1,7 @@
 /**
  * NPC Ships Spawner Subsystem
  *
- * Manages dynamic spawning of NPC pirate ships in YELLOW/RED zones.
+ * Manages dynamic spawning of NPC pirate ships in RED zones.
  * Ships are spawned periodically throughout the round based on player count.
  */
 SUBSYSTEM_DEF(npc_ships)
@@ -80,8 +80,6 @@ SUBSYSTEM_DEF(npc_ships)
 	switch(ship_type_path)
 		if(/obj/structure/overmap/ship/npc/pirate)
 			return list(ZONE_RED)
-		if(/obj/structure/overmap/ship/npc/trader)
-			return list(ZONE_GREEN, ZONE_YELLOW)
 	// Default fallback
 	return list(ZONE_RED)
 
@@ -225,7 +223,7 @@ SUBSYSTEM_DEF(npc_ships)
 	return ship
 
 /**
- * Admin verb to force spawn an NPC ship.
+ * Admin verb to force spawn an NPC pirate ship.
  */
 /client/proc/spawn_npc_ship()
 	set name = "Spawn NPC Ship"
@@ -234,17 +232,7 @@ SUBSYSTEM_DEF(npc_ships)
 	if(!check_rights(R_ADMIN))
 		return
 
-	// Let admin pick ship type
-	var/list/ship_types = list(
-		"Pirate" = /obj/structure/overmap/ship/npc/pirate,
-		"Trader" = /obj/structure/overmap/ship/npc/trader,
-	)
-	var/choice = tgui_input_list(usr, "Select ship type to spawn:", "Spawn NPC Ship", ship_types)
-	if(!choice)
-		return
-
-	var/ship_type_path = ship_types[choice]
-	var/obj/structure/overmap/ship/npc/ship = SSnpc_ships.spawn_npc_ship(ship_type_path)
+	var/obj/structure/overmap/ship/npc/ship = SSnpc_ships.spawn_npc_ship()
 	if(ship)
 		to_chat(usr, span_notice("Spawned NPC ship: [ship.name]"))
 		mob.client?.admin_follow(ship.shuttle)

@@ -40,10 +40,9 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 
 // NOTE: Per-ship vars (territory_range, lock_time, cooldowns, speed, acceleration, crew)
 // are now defined on /obj/structure/overmap/ship/npc and its subtypes.
-// See npc_ship.dm for pirate/trader ship configurations.
+// See npc_ship.dm for pirate ship configuration.
 
 // Faction colors for ship identification
 #define NPC_COLOR_PIRATE COLOR_RED            // Pirates - red
-#define NPC_COLOR_TRADER COLOR_YELLOW         // Traders - yellow
 #define NPC_COLOR_NANOTRASEN "#4444FF"        // Nanotrasen - blue
 #define NPC_COLOR_SYNDICATE "#8B0000"         // Syndicate - dark red

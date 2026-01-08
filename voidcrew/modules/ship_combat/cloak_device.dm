@@ -256,6 +256,8 @@
 		return FALSE
 	if(linked_ship.is_interdicted)
 		return FALSE
+	if(length(linked_ship.locked_on_by))
+		return FALSE
 	return TRUE
 
 /obj/machinery/ship_combat/cloak_device/attack_hand(mob/user, list/modifiers)
