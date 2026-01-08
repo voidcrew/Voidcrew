@@ -87,7 +87,7 @@ Weapons check zones via `SSovermap_zones.weapons_allowed_at(src)`:
 
 ### Cross-Zone Targeting
 Ships can target each other between Contested and Lawless zones, but Neutral zone blocks all targeting:
-- `voidcrew/modules/ship_combat/combat_console.dm`:
+- Ship Combat Console (`voidcrew/modules/ship_combat/console/`):
   - `start_targeting()` - Blocks acquiring locks if either ship is in Neutral zone
   - `check_targeting_range()` - Cancels in-progress targeting if either ship enters Neutral zone
   - `check_attack_range()` - Exits attack mode if either ship enters Neutral zone
@@ -97,7 +97,7 @@ Ships can target each other between Contested and Lawless zones, but Neutral zon
 ### UI Integration
 Zone data sent to TGUI via `ui_data()`:
 - `voidcrew/modules/shuttle/helm/_helm.dm` - Helm console (zone + status)
-- `voidcrew/modules/ship_combat/combat_console.dm` - Combat console (zone + weapons status)
+- `voidcrew/modules/ship_combat/console/console_ui.dm` - Combat console (zone + weapons status)
 
 TGUI components:
 - `tgui/packages/voidcrew_tgui/interfaces/HelmComputer.jsx` - ZoneSection component
