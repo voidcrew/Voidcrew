@@ -1347,6 +1347,11 @@
 
 		return FALSE
 
+	// Cloak and shields are mutually exclusive - deactivate cloak first
+	if(ship?.linked_cloak_device?.cloak_active)
+		ship.linked_cloak_device.deactivate_cloak()
+		ship.ship_announce("Cloaking device deactivated - shields coming online.", "Cloak Status")
+
 	active = TRUE
 
 	update_appearance()

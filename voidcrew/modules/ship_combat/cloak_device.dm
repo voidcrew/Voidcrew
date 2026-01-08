@@ -156,11 +156,11 @@
 		unlink_ship()
 
 	// Check if there's already a cloaking device on this ship
-	var/obj/machinery/ship_combat/cloak_device/existing = find_existing_cloak_device(ship)
-	if(existing)
+	if(ship.linked_cloak_device && ship.linked_cloak_device != src)
 		return FALSE
 
 	linked_ship_ref = WEAKREF(ship)
+	ship.linked_cloak_device = src
 	link_failed_duplicate = FALSE
 	update_ship_mass()
 	RegisterSignal(ship, COMSIG_SHIP_WEAPON_FIRED, PROC_REF(on_weapon_fired))
@@ -173,6 +173,8 @@
 	var/obj/structure/overmap/ship/linked_ship = linked_ship_ref?.resolve()
 	if(linked_ship)
 		UnregisterSignal(linked_ship, list(COMSIG_SHIP_WEAPON_FIRED, COMSIG_SHIP_HAZARD_TRIGGERED, COMSIG_SHIP_WEAPONS_LOCKED, COMSIG_QDELETING))
+		if(linked_ship.linked_cloak_device == src)
+			linked_ship.linked_cloak_device = null
 	linked_ship_ref = null
 
 /// Links this device to a combat console
@@ -311,6 +313,15 @@
 			to_chat(user, span_warning("Cannot activate cloaking device while interdicted!"))
 		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 40, TRUE)
 		return FALSE
+
+	// Cloak and shields are mutually exclusive - deactivate shields first
+	if(linked_ship.shields_active)
+		for(var/obj/machinery/ship_combat/shield_generator/gen in linked_ship.linked_shield_generators)
+			gen.deactivate_generator(skip_break = TRUE)
+		linked_ship.shields_active = FALSE
+		if(user)
+			to_chat(user, span_warning("Shield generators deactivated - cloaking device cannot operate with shields active."))
+		linked_ship.ship_announce("Shields offline - cloaking device activated.", "Shield Status")
 
 	cloak_active = TRUE
 

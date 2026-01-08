@@ -83,6 +83,9 @@
 	/// Linked shield generators for ship defense (multiple generators stack)
 	var/list/obj/machinery/ship_combat/shield_generator/linked_shield_generators = list()
 
+	/// Linked cloaking device (only one per ship)
+	var/obj/machinery/ship_combat/cloak_device/linked_cloak_device
+
 	// ===== SHARED SHIELD POOL =====
 	/// Current shared shield health (all generators contribute to this pool)
 	var/shield_health = 0
@@ -743,7 +746,7 @@
 
 /**
  * Gets the shield health required to burst free from current interdiction.
- * Cost scales with interdictor power level: base_cost * power_level
+ * Cost scales with interdictor power level and upgrades: base_cost * power_level * effect_mult
  * Returns 0 if not interdicted.
  */
 /obj/structure/overmap/ship/proc/get_burst_shield_cost()
@@ -752,7 +755,7 @@
 	var/obj/machinery/ship_combat/interdictor/interdictor = interdicting_machine_ref?.resolve()
 	if(!interdictor)
 		return SHIELD_BURST_BASE_COST  // Fallback to base cost
-	return SHIELD_BURST_BASE_COST * interdictor.power_allocation
+	return SHIELD_BURST_BASE_COST * interdictor.power_allocation * interdictor.effect_mult
 
 /**
  * Checks if the ship can perform a shield burst to break interdiction.

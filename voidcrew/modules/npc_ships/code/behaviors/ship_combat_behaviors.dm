@@ -328,3 +328,63 @@
 		controller.clear_target()
 
 	return AI_BEHAVIOR_DELAY
+
+// ========== RETREAT ESCAPE ==========
+
+/**
+ * Escape behavior for retreating ships.
+ * If interdicted: tries to shield burst to break free.
+ * If not interdicted (or just broke free): tries to cloak.
+ */
+/datum/ai_behavior/npc_ship/retreat_escape
+	action_cooldown = 1 SECONDS
+
+/datum/ai_behavior/npc_ship/retreat_escape/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
+	var/datum/npc_combat_interface/combat = get_combat_interface(controller)
+
+	if(!ship || !combat)
+		return AI_BEHAVIOR_DELAY
+
+	// If interdicted, try to break free with shield burst
+	if(ship.is_interdicted)
+		if(ship.can_burst_shields())
+			ship.burst_shields_break_interdiction()
+			// After bursting, immediately try to cloak
+			if(combat.has_working_cloak())
+				combat.activate_cloak()
+		return AI_BEHAVIOR_DELAY
+
+	// Not interdicted - try to cloak if we haven't already
+	if(ship.invisibility <= INVISIBILITY_NONE && combat.has_working_cloak())
+		combat.activate_cloak()
+
+	return AI_BEHAVIOR_DELAY
+
+// ========== CHECK WEAPONS ==========
+
+/**
+ * Checks if the ship still has functional weapons.
+ * If all weapons are destroyed, transitions to RETREATING state.
+ */
+/datum/ai_behavior/npc_ship/check_weapons
+	action_cooldown = 2 SECONDS
+
+/datum/ai_behavior/npc_ship/check_weapons/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
+	var/datum/npc_combat_interface/combat = get_combat_interface(controller)
+
+	if(!ship || !combat)
+		return AI_BEHAVIOR_DELAY
+
+	// If we have no weapons, enter retreat mode
+	if(!combat.has_any_weapons())
+		controller.set_combat_state(NPC_COMBAT_RETREATING)
+		controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_RETREAT)
+		ship.ship_announce("All weapons systems offline! Initiating emergency retreat!", "CRITICAL DAMAGE")
+
+	return AI_BEHAVIOR_DELAY

@@ -10,6 +10,7 @@
  * - CHASE: Pursue target (used internally when target exists)
  * - RETURN_TO_ROUTE: Path back to patrol circuit after combat
  * - ROAMING: Fallback when circuit generation fails
+ * - RETREAT: Fleeing after all weapons destroyed
  */
 /datum/ai_planning_subtree/npc_ship_movement
 
@@ -22,6 +23,11 @@
 	var/obj/structure/overmap/ship/npc/ship = controller.pawn
 
 	var/spawn_zone = controller.blackboard[BB_NPC_SPAWN_ZONE]
+
+	// PRIORITY CHECK: Retreat mode overrides everything - keep fleeing
+	if(movement_mode == NPC_MOVEMENT_RETREAT)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/retreat)
+		return
 
 	// PRIORITY CHECK: If we're outside our spawn zone, we need to get back
 	if(spawn_zone && ship)

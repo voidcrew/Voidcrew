@@ -18,6 +18,9 @@
 	/// The interdictor on this ship (if any)
 	var/obj/machinery/ship_combat/interdictor/linked_interdictor
 
+	/// The cloaking device on this ship (if any)
+	var/obj/machinery/ship_combat/cloak_device/linked_cloak_device
+
 	/// Default missile type for this NPC (light, standard, heavy)
 	var/default_missile_type = "standard"
 
@@ -26,6 +29,7 @@
 	linked_laser_turrets.Cut()
 	linked_missile_launchers.Cut()
 	linked_interdictor = null
+	linked_cloak_device = null
 	return ..()
 
 /**
@@ -49,6 +53,8 @@
 				linked_missile_launchers += equipment
 			else if(istype(equipment, /obj/machinery/ship_combat/interdictor))
 				linked_interdictor = equipment
+			else if(istype(equipment, /obj/machinery/ship_combat/cloak_device))
+				linked_cloak_device = equipment
 
 	// Pre-load all missile launchers with virtual missiles
 	load_all_launchers()
@@ -168,6 +174,30 @@
 	if(QDELETED(linked_interdictor))
 		return FALSE
 	return linked_interdictor.can_interdict()
+
+/**
+ * Returns whether we have ANY working weapons (lasers OR missiles).
+ * Used to determine if the ship should retreat.
+ */
+/datum/npc_combat_interface/proc/has_any_weapons()
+	return get_working_laser_count() > 0 || get_working_launcher_count() > 0
+
+/**
+ * Returns whether we have a working cloak device that can activate.
+ */
+/datum/npc_combat_interface/proc/has_working_cloak()
+	if(QDELETED(linked_cloak_device))
+		return FALSE
+	return linked_cloak_device.can_activate_cloak()
+
+/**
+ * Attempts to activate the cloak device.
+ * Returns TRUE if cloak was activated.
+ */
+/datum/npc_combat_interface/proc/activate_cloak()
+	if(!has_working_cloak())
+		return FALSE
+	return linked_cloak_device.activate_cloak()
 
 // ========== FIRING WEAPONS ==========
 

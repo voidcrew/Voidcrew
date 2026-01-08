@@ -20,6 +20,7 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 #define NPC_COMBAT_IDLE "idle"
 #define NPC_COMBAT_ENGAGING "engaging"
 #define NPC_COMBAT_COMBAT "combat"
+#define NPC_COMBAT_RETREATING "retreating"
 
 // Movement modes
 #define NPC_MOVEMENT_IDLE "idle"
@@ -27,6 +28,7 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 #define NPC_MOVEMENT_CHASE "chase"
 #define NPC_MOVEMENT_RETURN_TO_ROUTE "return_to_route"
 #define NPC_MOVEMENT_ROAMING "roaming"
+#define NPC_MOVEMENT_RETREAT "retreat"
 
 // Spawner config (subsystem-level settings)
 #define NPC_SHIP_MAX_SHIPS 5              // Max NPC ships per round

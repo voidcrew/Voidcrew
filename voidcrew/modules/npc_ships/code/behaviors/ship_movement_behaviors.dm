@@ -438,3 +438,52 @@
 				ship.forceMove(next_tile)
 
 	return AI_BEHAVIOR_DELAY
+
+// ========== RETREAT BEHAVIOR ==========
+
+/**
+ * Retreat behavior when weapons are destroyed.
+ * Moves away from the last known threat, staying within spawn zone.
+ * Uses slower movement (same as patrol) since it's out of combat.
+ */
+/datum/ai_behavior/npc_ship/retreat
+	action_cooldown = 8 SECONDS  // 1/4 speed, same as patrol
+
+/datum/ai_behavior/npc_ship/retreat/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
+	if(!ship || ship.state != OVERMAP_SHIP_FLYING)
+		return AI_BEHAVIOR_DELAY
+	if(!ship.can_thrust())
+		return AI_BEHAVIOR_DELAY
+
+	var/turf/our_loc = get_turf(ship)
+	if(!our_loc)
+		return AI_BEHAVIOR_DELAY
+
+	var/datum/overmap_zone/spawn_zone = controller.blackboard[BB_NPC_SPAWN_ZONE]
+
+	// Get the last target we were fighting (to flee from their direction)
+	var/obj/structure/overmap/ship/threat = controller.get_target()
+	var/flee_dir
+
+	if(threat && !QDELETED(threat))
+		// Flee in opposite direction from threat
+		var/threat_dir = get_dir(ship, threat)
+		flee_dir = REVERSE_DIR(threat_dir)
+	else
+		// No known threat - pick a random safe direction
+		flee_dir = pick(GLOB.cardinals)
+
+	// Get a safe direction that avoids obstacles and stays in zone
+	var/safe_dir = get_zone_safe_direction(ship, flee_dir, spawn_zone)
+	if(!safe_dir)
+		return AI_BEHAVIOR_DELAY
+
+	var/turf/next_tile = get_step(our_loc, safe_dir)
+	if(next_tile)
+		ship.dir = safe_dir
+		ship.forceMove(next_tile)
+
+	return AI_BEHAVIOR_DELAY
