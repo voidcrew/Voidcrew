@@ -1,0 +1,3242 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ai" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/scarab/engines)
+"ao" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"aJ" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/red/corner,
+/obj/structure/marker_beacon/burgundy,
+/obj/effect/turf_decal/siding/white{
+	dir = 8
+	},
+/obj/structure/sign/warning/docking/directional/north,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"aV" = (
+/obj/structure/cable,
+/obj/machinery/light/floor,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"bg" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"br" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/structure/cable,
+/obj/machinery/computer/cryopod{
+	pixel_x = -32
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/dormitories)
+"by" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 8
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"bG" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/structure/cable,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 4;
+	id = "scarab_shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"bN" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 10
+	},
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/cable,
+/obj/machinery/firealarm/directional/east{
+	pixel_y = -6
+	},
+/obj/machinery/light_switch/directional/east{
+	pixel_y = 6
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"bR" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/shuttle/voidcrew/scarab/commons)
+"cd" = (
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"cj" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/dormitories)
+"co" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engines)
+"cs" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/bot/right,
+/obj/machinery/computer/monitor{
+	dir = 8;
+	name = "main power monitoring console"
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"cw" = (
+/obj/structure/cable,
+/obj/structure/closet/crate/internals,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/tank/internals/emergency_oxygen,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"du" = (
+/obj/structure/table,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/commons)
+"dB" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"dR" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/shuttle/voidcrew/scarab/commons)
+"dS" = (
+/obj/structure/cable,
+/obj/machinery/light/small/red/directional/east,
+/obj/structure/sign/warning/gas_mask/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/components/binary/pump/off{
+	dir = 1;
+	name = "engine fuel pump"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"ee" = (
+/obj/machinery/atmospherics/pipe/smart/simple/dark/hidden/layer2{
+	dir = 4
+	},
+/obj/effect/spawner/structure/window/reinforced/plasma,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 8;
+	id = "scarab_shutters"
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"et" = (
+/obj/structure/reagent_dispensers/fueltank,
+/obj/structure/cable,
+/obj/effect/turf_decal/box/corners{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"eT" = (
+/obj/structure/table,
+/obj/machinery/defibrillator_mount/directional/west,
+/obj/structure/sign/poster/official/moth_epi/directional/south,
+/obj/item/storage/box/bodybags,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"eW" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/components/binary/pump/on/layer4{
+	dir = 8;
+	name = "air supply pump"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"fa" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/obj/machinery/suit_storage_unit/standard_unit,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"fb" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 5
+	},
+/obj/structure/marker_beacon/cerulean,
+/obj/structure/sign/departments/medbay/alt/directional/west,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"ff" = (
+/obj/machinery/door/airlock/command{
+	name = "Bridge"
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"fA" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"fL" = (
+/obj/machinery/airalarm/directional/north,
+/obj/item/radio/intercom/directional/west,
+/obj/structure/closet/crate/freezer/blood,
+/obj/item/reagent_containers/cup/bottle/formaldehyde,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"fV" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/door/firedoor,
+/obj/machinery/door/airlock{
+	name = "Dormitories"
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/dormitories)
+"fY" = (
+/obj/machinery/atmospherics/pipe/smart/simple/dark/hidden/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/machinery/portable_atmospherics/scrubber,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"gs" = (
+/obj/machinery/washing_machine,
+/obj/effect/turf_decal/box/red,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/dormitories)
+"hc" = (
+/obj/structure/handrail{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"hi" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 4
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"hx" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 6
+	},
+/obj/structure/marker_beacon/cerulean,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/scarab/engineering)
+"hI" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 9
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 9
+	},
+/obj/structure/marker_beacon/cerulean,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/scarab/dormitories)
+"hU" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 10
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 10
+	},
+/obj/structure/marker_beacon/cerulean,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/scarab/medbay)
+"hX" = (
+/obj/structure/table,
+/obj/machinery/airalarm/directional/east,
+/obj/machinery/cell_charger,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"io" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"ir" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 9
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 9
+	},
+/obj/structure/tank_dispenser/oxygen,
+/obj/effect/turf_decal/bot,
+/obj/structure/sign/warning/electric_shock/directional/south,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"iv" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/structure/cable,
+/obj/machinery/door/poddoor/shutters/window/preopen{
+	dir = 4;
+	id = "scarab_shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/bridge)
+"iW" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"iZ" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/scarab/commons)
+"jf" = (
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"jh" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/obj/machinery/suit_storage_unit/standard_unit,
+/obj/structure/sign/poster/official/get_your_legs/directional/south,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"jy" = (
+/obj/machinery/door/airlock{
+	name = "Dormitories"
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/dormitories)
+"ki" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"kq" = (
+/obj/effect/spawner/structure/window/reinforced/plasma,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"kt" = (
+/obj/structure/closet/secure_closet/medical3{
+	anchored = 1
+	},
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/light/cold/directional/east,
+/obj/item/clothing/glasses/hud/health,
+/obj/item/clothing/glasses/hud/health,
+/obj/item/storage/belt/medical,
+/obj/item/storage/belt/medical,
+/obj/item/clothing/neck/stethoscope,
+/obj/item/clothing/neck/stethoscope,
+/obj/item/clothing/neck/stethoscope,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"kw" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/red/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/red/corner{
+	dir = 1
+	},
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/engineering)
+"kI" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 6
+	},
+/obj/structure/mirror/directional/west,
+/obj/structure/sink/directional/east,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/commons)
+"kQ" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"kS" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"kU" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"kZ" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"lw" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/scarab/engines)
+"lL" = (
+/obj/machinery/firealarm/directional/south,
+/obj/structure/sign/poster/official/plasma_effects/directional/east,
+/obj/machinery/atmospherics/components/tank/plasma{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"lP" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/medbay)
+"lQ" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/bridge)
+"ma" = (
+/obj/machinery/airalarm/directional/east,
+/obj/structure/cable,
+/obj/machinery/computer/monitor{
+	dir = 8;
+	name = "main power monitoring console"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"mg" = (
+/obj/machinery/power/smes/ship{
+	input_level = 10000
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/box,
+/obj/machinery/door/window/brigdoor/left/directional/east{
+	name = "engine access"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"ml" = (
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/effect/landmark/start/assistant,
+/obj/structure/bed{
+	dir = 4;
+	pixel_z = 12
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/dormitories)
+"mJ" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engines)
+"mO" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/shuttle/voidcrew/scarab/commons)
+"mP" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/scarab/dormitories)
+"mT" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"mU" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/machinery/power/port_gen/pacman,
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line,
+/obj/item/radio/intercom/directional/north,
+/obj/machinery/light_switch/directional/east{
+	pixel_y = 6
+	},
+/obj/machinery/firealarm/directional/east{
+	pixel_y = -6
+	},
+/obj/item/stack/sheet/mineral/plasma/thirty,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"mX" = (
+/obj/machinery/atmospherics/pipe/smart/simple/dark/hidden/layer2{
+	dir = 5
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold/purple/hidden{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"mZ" = (
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"nk" = (
+/obj/machinery/atmospherics/pipe/smart/simple/dark/hidden/layer2{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
+	dir = 10
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"nx" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"nJ" = (
+/obj/effect/landmark/start/medical_doctor,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"nN" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 1;
+	id = "scarab_shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/dormitories)
+"ou" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/structure/chair/comfy/shuttle,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"oz" = (
+/obj/structure/cable,
+/obj/structure/rack,
+/obj/item/storage/toolbox/emergency,
+/obj/item/clothing/mask/gas,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"oT" = (
+/obj/structure/table,
+/obj/machinery/airalarm/directional/north,
+/obj/item/storage/fancy/donut_box,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"ps" = (
+/obj/machinery/door/airlock/medical{
+	name = "Medical Storage"
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"pv" = (
+/obj/machinery/airalarm/directional/north,
+/obj/machinery/light/directional/north,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"pz" = (
+/turf/template_noop,
+/area/template_noop)
+"pF" = (
+/obj/machinery/shower/directional/south,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/structure/curtain,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/commons)
+"pG" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/structure/cable,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 4;
+	id = "scarab_shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/bridge)
+"pN" = (
+/obj/structure/sign/clock/directional/south,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"pV" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 2;
+	id = "scarab_shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/medbay)
+"qa" = (
+/obj/machinery/firealarm/directional/west{
+	pixel_y = 6
+	},
+/obj/structure/closet/emcloset/anchored,
+/obj/effect/turf_decal/bot_red,
+/obj/item/radio/intercom/directional/east,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"qf" = (
+/obj/machinery/light/floor,
+/obj/structure/extinguisher_cabinet/directional/north,
+/obj/structure/handrail,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"qm" = (
+/obj/effect/spawner/structure/window/reinforced/plasma,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"qp" = (
+/obj/machinery/door/window/brigdoor/left/directional/east{
+	name = "engine access"
+	},
+/obj/structure/cable,
+/obj/machinery/power/smes/ship{
+	input_level = 10000
+	},
+/obj/effect/turf_decal/stripes/box,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"qH" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"qK" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"qL" = (
+/obj/machinery/light/small/directional/south,
+/obj/structure/dresser,
+/obj/structure/cable,
+/obj/structure/mirror/directional/south,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"qR" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"qS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/firecloset{
+	anchored = 1
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot_red,
+/obj/item/clothing/glasses/meson/engine,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"ra" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/dormitories)
+"rw" = (
+/obj/effect/spawner/structure/window/reinforced/plasma,
+/obj/structure/cable,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"rB" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/shuttle/voidcrew/scarab/commons)
+"rC" = (
+/obj/structure/sign/poster/official/cleanliness/directional/north,
+/obj/structure/handrail,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"rE" = (
+/obj/machinery/atmospherics/components/binary/pump/off{
+	dir = 1;
+	name = "engine fuel pump"
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"rQ" = (
+/obj/structure/table,
+/obj/machinery/button/door/directional/east{
+	pixel_y = 6;
+	id = "scarab_shutters";
+	name = "window shutters"
+	},
+/obj/machinery/button/door/directional/east{
+	pixel_y = -6;
+	name = "external airlock lockdown shutters";
+	id = "scarab_airlocks"
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"sb" = (
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 6
+	},
+/obj/structure/marker_beacon/cerulean,
+/obj/docking_port/mobile/voidcrew/scarab/a,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/scarab/engineering)
+"sg" = (
+/obj/structure/table,
+/obj/item/storage/medkit,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"sl" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"sn" = (
+/obj/item/radio/intercom/directional/south,
+/obj/machinery/firealarm/directional/west{
+	pixel_y = -6
+	},
+/obj/machinery/light_switch/directional/west{
+	pixel_y = 4
+	},
+/obj/structure/closet{
+	anchored = 1
+	},
+/obj/item/storage/backpack,
+/obj/item/storage/backpack/messenger,
+/obj/item/storage/backpack/satchel,
+/obj/item/clothing/under/rank/medical/scrubs/blue,
+/obj/item/clothing/under/rank/medical/scrubs/blue,
+/obj/item/clothing/shoes/sneakers/blue,
+/obj/item/clothing/shoes/sneakers/blue,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/dormitories)
+"sp" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 6
+	},
+/obj/structure/marker_beacon/cerulean,
+/obj/structure/sign/departments/medbay/alt/directional/west,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/scarab/dormitories)
+"st" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 10
+	},
+/obj/structure/chair/comfy/shuttle,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"sz" = (
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/structure/cable,
+/obj/structure/closet{
+	anchored = 1
+	},
+/obj/structure/extinguisher_cabinet/directional/east,
+/obj/item/storage/backpack,
+/obj/item/storage/backpack/messenger,
+/obj/item/storage/backpack/satchel,
+/obj/item/clothing/under/rank/medical/scrubs/blue,
+/obj/item/clothing/under/rank/medical/scrubs/blue,
+/obj/item/clothing/shoes/sneakers/blue,
+/obj/item/clothing/shoes/sneakers/blue,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/dormitories)
+"sA" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 1;
+	id = "scarab_shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/commons)
+"sE" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/scarab/engineering)
+"sH" = (
+/obj/machinery/microwave,
+/obj/structure/table,
+/obj/structure/noticeboard/directional/east,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/commons)
+"tg" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/obj/machinery/portable_atmospherics/pump,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"tk" = (
+/obj/structure/cable,
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"tl" = (
+/obj/structure/closet/crate/cardboard,
+/obj/structure/cable,
+/obj/item/radio,
+/obj/item/radio,
+/obj/item/radio,
+/obj/item/radio,
+/obj/item/clothing/suit/hooded/explorer,
+/obj/item/clothing/suit/hooded/explorer,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/mining_scanner,
+/obj/item/mining_scanner,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"tn" = (
+/obj/machinery/door/airlock/command{
+	name = "Captain's Quarters"
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/door/firedoor,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"tr" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"ts" = (
+/obj/machinery/power/shuttle_engine/ship/fueled/plasma{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"tE" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/structure/sign/poster/contraband/principles/directional/north,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/dormitories)
+"tV" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/item/radio/intercom/directional/east,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"tW" = (
+/obj/structure/extinguisher_cabinet/directional/east,
+/obj/machinery/digital_clock/directional/south,
+/obj/machinery/suit_storage_unit/medical{
+	req_access = list("medical");
+	access_locked = 1;
+	locked = 1
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"ul" = (
+/obj/structure/table,
+/obj/item/storage/medkit/o2,
+/obj/item/storage/medkit/toxin{
+	pixel_z = 6
+	},
+/obj/machinery/door/window/right/directional/north,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"uq" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/components/binary/pump/off/general/hidden/layer2{
+	dir = 8;
+	name = "waste collection pump"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"uC" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 9
+	},
+/obj/effect/landmark/start/atmospheric_technician,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"uP" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"uQ" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 8
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"vb" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/light/small/red/directional/east,
+/obj/structure/sign/warning/gas_mask/directional/east,
+/obj/effect/landmark/start/station_engineer,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engines)
+"vk" = (
+/obj/structure/sign/departments/medbay/alt/directional/south,
+/turf/template_noop,
+/area/template_noop)
+"vy" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line,
+/obj/machinery/power/smes/ship{
+	name = "main power storage";
+	output_level = 25000;
+	input_level = 25000
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"vB" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/shuttle/voidcrew/scarab/commons)
+"vZ" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"xe" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"xr" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/layer2{
+	dir = 4
+	},
+/obj/machinery/portable_atmospherics/canister,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"xJ" = (
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/west,
+/obj/structure/handrail{
+	dir = 1
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"xO" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/scarab/medbay)
+"yp" = (
+/obj/machinery/door/airlock/medical{
+	name = "Medical Bay"
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/door/firedoor,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"yr" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 1;
+	id = "scarab_shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"yz" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/mop_bucket,
+/obj/item/mop,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"yE" = (
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"yI" = (
+/obj/machinery/door/airlock/external,
+/obj/effect/turf_decal/stripes/red/full,
+/obj/machinery/door/poddoor/shutters/window/preopen{
+	id = "scarab_airlocks";
+	dir = 8
+	},
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
+	cycle_id = "scarab_rear_airlock_a"
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"yR" = (
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/obj/structure/frame/computer{
+	anchored = 1;
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"yT" = (
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/structure/cable,
+/obj/machinery/vending/cigarette,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"zx" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/effect/turf_decal/stripes/red/line,
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 1
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/engineering)
+"zy" = (
+/obj/machinery/atmospherics/pipe/smart/simple/dark/hidden/layer2{
+	dir = 10
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"zC" = (
+/obj/structure/table,
+/obj/item/radio/intercom/directional/south,
+/obj/machinery/recharger,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"zG" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/red/corner{
+	dir = 4
+	},
+/obj/structure/marker_beacon/burgundy,
+/obj/effect/turf_decal/siding/white{
+	dir = 8
+	},
+/obj/structure/sign/warning/docking/directional/south,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"zZ" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/shuttle/voidcrew/scarab/commons)
+"Aa" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/obj/machinery/suit_storage_unit/standard_unit,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Av" = (
+/obj/structure/table,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/item/statuebust/hippocratic{
+	pixel_y = 20;
+	pixel_x = 18
+	},
+/obj/item/folder/white{
+	pixel_y = 3;
+	pixel_x = 3
+	},
+/obj/item/folder/blue,
+/turf/open/floor/mineral/titanium/purple,
+/area/shuttle/voidcrew/scarab/commons)
+"AC" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/iv_drip,
+/obj/structure/handrail,
+/obj/effect/landmark/start/medical_doctor,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"AH" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/scarab/dormitories)
+"AL" = (
+/obj/machinery/airalarm/directional/north,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"AY" = (
+/obj/item/radio/intercom/directional/north,
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/west,
+/obj/structure/handrail,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Bb" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/structure/railing/corner/end{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/components/binary/valve/digital/on/layer2{
+	dir = 8;
+	name = "waste release valve"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"Bw" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/west{
+	pixel_y = -6
+	},
+/obj/machinery/light_switch/directional/west{
+	pixel_y = 4
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"BC" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"BD" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 5
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"Cb" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"Co" = (
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"CC" = (
+/obj/structure/table/wood,
+/obj/item/paper_bin,
+/obj/item/pen,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"CK" = (
+/obj/structure/closet/secure_closet/medical1,
+/obj/effect/turf_decal/bot_red,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"CO" = (
+/obj/effect/turf_decal/bot/right,
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"CZ" = (
+/obj/structure/cable,
+/obj/structure/handrail{
+	dir = 8
+	},
+/obj/machinery/power/apc/auto_name/directional/east,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engines)
+"Di" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/sign/warning/no_smoking/circle/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/suit_storage_unit/engine,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engines)
+"Do" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"Dp" = (
+/obj/machinery/door/airlock/external,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/red/full,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
+	cycle_id = "scarab_rear_airlock_a"
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"DE" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"DF" = (
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/machinery/power/port_gen/pacman,
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line,
+/obj/item/stack/sheet/mineral/plasma/thirty,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"El" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"Eo" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4,
+/obj/machinery/light/floor,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Ey" = (
+/obj/structure/cable,
+/obj/machinery/power/smes/ship{
+	input_level = 10000
+	},
+/obj/effect/turf_decal/stripes/box,
+/obj/machinery/door/window/brigdoor/right/directional/east{
+	name = "engine access"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"Fi" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/red/line,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"Ft" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"FX" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/scarab/medbay)
+"Gm" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/structure/toilet{
+	dir = 4
+	},
+/obj/machinery/light/small/directional/west,
+/obj/structure/handrail{
+	dir = 8
+	},
+/obj/item/soap,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/commons)
+"Gr" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Engine Access"
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/door/firedoor,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/scarab/engines)
+"GG" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 9
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"GR" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 8
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Hl" = (
+/obj/machinery/door/firedoor,
+/obj/machinery/door/airlock/engineering{
+	name = "Engine Access"
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/scarab/engines)
+"Ho" = (
+/obj/machinery/door/airlock{
+	name = "Bathroom"
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/commons)
+"Hs" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/structure/chair/office{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/effect/landmark/start/chief_medical_officer,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"Hw" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/dormitories)
+"Hx" = (
+/obj/effect/turf_decal/bot/right,
+/obj/structure/frame/computer{
+	anchored = 1;
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"HI" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 2;
+	id = "scarab_shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"HV" = (
+/obj/machinery/airalarm/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/components/tank/plasma{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"HW" = (
+/obj/structure/closet/crate,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/item/circuitboard/machine/ore_redemption,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/glass/fifty,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Ia" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot_red,
+/obj/structure/closet/firecloset{
+	anchored = 1
+	},
+/obj/machinery/digital_clock/directional/west,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"Ij" = (
+/obj/structure/sign/departments/medbay/alt/directional/south,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"Iw" = (
+/obj/item/radio/intercom/directional/north,
+/obj/machinery/light/directional/north,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"Ix" = (
+/obj/machinery/light/small/directional/south,
+/obj/machinery/airalarm/directional/west,
+/obj/structure/sign/poster/official/bless_this_spess/directional/south,
+/obj/structure/closet/secure_closet/chief_medical,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"Iz" = (
+/obj/structure/sign/poster/official/help_others/directional/north,
+/obj/structure/handrail,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"IF" = (
+/obj/structure/table,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/shuttle/voidcrew/scarab/commons)
+"IH" = (
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/commons)
+"IZ" = (
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 4
+	},
+/obj/structure/handrail{
+	dir = 1
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Jh" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Jm" = (
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/light_switch/directional/west,
+/obj/structure/closet/secure_closet,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"Jn" = (
+/obj/machinery/door/airlock/external,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/red/full,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
+	cycle_id = "scarab_rear_airlock_a"
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Js" = (
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/obj/machinery/computer/monitor{
+	dir = 4;
+	name = "engine power monitoring console"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"Ju" = (
+/obj/machinery/door/airlock{
+	name = "Cargo Bay"
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"JQ" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 5
+	},
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"JV" = (
+/obj/machinery/stasis{
+	dir = 4
+	},
+/obj/machinery/light/cold/directional/west,
+/obj/machinery/vending/wallmed/directional/west,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"Kg" = (
+/obj/item/radio/intercom/directional/west,
+/obj/effect/turf_decal/bot,
+/obj/machinery/suit_storage_unit/standard_unit,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"KF" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/dormitories)
+"KM" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/passive_vent/layer2{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"KQ" = (
+/obj/structure/sign/warning/engine_safety/directional/north,
+/obj/structure/tank_dispenser,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engines)
+"KV" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/closet/crate/trashcart,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"KX" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/ore_box,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Lc" = (
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"Lf" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line,
+/obj/machinery/power/smes/ship{
+	name = "engine power storage"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"Lq" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Lu" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"LG" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Engineering"
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"LT" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/bot/right,
+/obj/structure/frame/computer{
+	anchored = 1;
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"Mc" = (
+/obj/machinery/airalarm/directional/south,
+/obj/structure/closet{
+	anchored = 1
+	},
+/obj/item/storage/backpack,
+/obj/item/storage/backpack/messenger,
+/obj/item/storage/backpack/satchel,
+/obj/item/clothing/under/rank/medical/scrubs/blue,
+/obj/item/clothing/under/rank/medical/scrubs/blue,
+/obj/item/clothing/shoes/sneakers/blue,
+/obj/item/clothing/shoes/sneakers/blue,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/dormitories)
+"Mi" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 10
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"Mo" = (
+/obj/structure/closet/firecloset{
+	anchored = 1
+	},
+/obj/effect/turf_decal/bot_red,
+/obj/effect/turf_decal/stripes/red/corner{
+	dir = 1
+	},
+/obj/structure/sign/warning/vacuum/external/directional/west,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Mw" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/item/radio/intercom/directional/north,
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"Mz" = (
+/obj/effect/spawner/structure/window/reinforced/plasma,
+/obj/machinery/atmospherics/pipe/smart/simple/dark/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"MI" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/emcloset/anchored,
+/obj/effect/turf_decal/bot_red,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"MS" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 9
+	},
+/obj/effect/turf_decal/stripes/red/corner{
+	dir = 8
+	},
+/obj/structure/sign/warning/vacuum/external/directional/south,
+/obj/machinery/light/small/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"MY" = (
+/obj/structure/chair/comfy/shuttle,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"MZ" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Nf" = (
+/obj/machinery/vending/coffee,
+/obj/structure/sign/poster/official/jim_nortons/directional/south,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"Nh" = (
+/obj/structure/cable,
+/obj/item/radio/intercom/directional/east,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/handrail{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engines)
+"Nk" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/scarab/engineering)
+"Nq" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"Nr" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/autolathe,
+/obj/structure/sign/poster/official/soft_cap_pop_art/directional/east,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Nv" = (
+/obj/machinery/light/floor,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"NN" = (
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/structure/bed{
+	dir = 4;
+	pixel_z = 12
+	},
+/obj/machinery/light/small/directional/north,
+/obj/effect/landmark/start/shaft_miner,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/dormitories)
+"NV" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/stripes/line,
+/obj/item/storage/toolbox/electrical,
+/obj/item/storage/belt/utility,
+/obj/item/wrench,
+/obj/item/multitool,
+/obj/item/storage/belt/utility,
+/obj/item/clothing/gloves/color/yellow,
+/obj/item/clothing/gloves/color/yellow,
+/obj/structure/sign/warning/electric_shock/directional/north,
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"Oc" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/box/corners{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Oi" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"Ok" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/cable,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"Oo" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"Os" = (
+/obj/structure/sign/departments/medbay/alt/directional/north,
+/turf/template_noop,
+/area/template_noop)
+"Ot" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Ow" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 10
+	},
+/obj/machinery/light_switch/directional/north{
+	pixel_x = -6;
+	pixel_y = 28
+	},
+/obj/machinery/firealarm/directional/north{
+	pixel_x = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"OA" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
+"OG" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/structure/railing/corner/end/flip{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/binary/pump/on/layer4{
+	dir = 8;
+	name = "air supply pump"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"OI" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"OU" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 5
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"OX" = (
+/obj/machinery/atmospherics/pipe/smart/simple/dark/hidden/layer2{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/bot_red,
+/obj/machinery/pipedispenser,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"Pc" = (
+/obj/structure/table,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 2
+	},
+/obj/item/storage/belt/utility,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Pj" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 10
+	},
+/obj/structure/cable,
+/obj/machinery/light/floor,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"Pk" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"PF" = (
+/obj/machinery/firealarm/directional/north,
+/obj/structure/closet/emcloset/anchored,
+/obj/effect/turf_decal/bot_red,
+/obj/effect/turf_decal/stripes/red/corner{
+	dir = 8
+	},
+/obj/structure/sign/warning/vacuum/external/directional/west,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"PS" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/structure/cable,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 2;
+	id = "scarab_shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"PU" = (
+/obj/structure/table,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/item/storage/medkit/emergency,
+/turf/open/floor/mineral/titanium/purple,
+/area/shuttle/voidcrew/scarab/commons)
+"Qr" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 4;
+	id = "scarab_shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/dormitories)
+"Qv" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/shuttle/voidcrew/scarab/commons)
+"QP" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 9
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/item/radio/intercom/directional/south,
+/obj/machinery/firealarm/directional/east{
+	pixel_y = 4
+	},
+/obj/machinery/light/small/directional/east,
+/obj/structure/handrail{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/dormitories)
+"Ro" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 4
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"RF" = (
+/obj/machinery/cryopod{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/dormitories)
+"RQ" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/shuttle/voidcrew/scarab/commons)
+"SE" = (
+/obj/structure/cable,
+/obj/effect/spawner/structure/window/reinforced/plasma,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"SI" = (
+/obj/machinery/atmospherics/components/tank/air/layer4{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/build/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"SK" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/scarab/bridge)
+"SO" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/scarab/commons)
+"SQ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"SX" = (
+/obj/structure/bed{
+	dir = 2
+	},
+/obj/item/bedsheet/captain,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"Tc" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/door/firedoor,
+/obj/machinery/door/airlock/engineering{
+	name = "Engineering"
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"TJ" = (
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 4
+	},
+/obj/structure/handrail,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"UM" = (
+/obj/machinery/door/airlock/external,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/red/full,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/engineering)
+"US" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/white{
+	dir = 5
+	},
+/obj/structure/marker_beacon/cerulean,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Vd" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/medbay)
+"Vo" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Vq" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/sign/warning/no_smoking/circle/directional/south,
+/obj/machinery/space_heater,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"Vw" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/box/corners,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Vy" = (
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"VO" = (
+/obj/machinery/atmospherics/components/tank/air/layer4{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"Wy" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 6
+	},
+/obj/structure/extinguisher_cabinet/directional/north,
+/obj/machinery/suit_storage_unit/engine,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engines)
+"WW" = (
+/obj/machinery/door/airlock/external,
+/obj/effect/turf_decal/stripes/red/full,
+/obj/machinery/door/poddoor/shutters/window/preopen{
+	id = "scarab_airlocks"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/scarab/engineering)
+"WZ" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"Xd" = (
+/obj/structure/dresser,
+/obj/machinery/light/small/directional/north,
+/obj/structure/mirror/directional/north,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/dormitories)
+"Xe" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"Xu" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 6
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"XL" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug/nanotrasen{
+	pixel_x = -3
+	},
+/obj/item/clothing/neck/stethoscope,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"XO" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/item/radio/intercom/directional/east,
+/obj/machinery/firealarm/directional/north,
+/obj/machinery/light/small/red/directional/east,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engines)
+"XS" = (
+/obj/structure/table,
+/obj/item/storage/toolbox/emergency,
+/obj/item/flashlight/flare,
+/obj/item/megaphone,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"Yf" = (
+/obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
+	dir = 10
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 5
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"Ys" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"YM" = (
+/obj/structure/table,
+/obj/structure/cable,
+/obj/item/paper_bin{
+	pixel_y = 6
+	},
+/obj/item/pen,
+/turf/open/floor/mineral/titanium/purple,
+/area/shuttle/voidcrew/scarab/commons)
+"YP" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
+	dir = 8
+	},
+/obj/item/kirbyplants/organic/plant10,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/bridge)
+"YS" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/scarab/bridge)
+"YV" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cmos_office)
+"Ze" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 6
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/firealarm/directional/west{
+	pixel_y = 6
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/handrail,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
+"Zg" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/light/floor,
+/obj/structure/handrail,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"ZG" = (
+/obj/structure/table,
+/obj/item/storage/medkit/brute,
+/obj/item/storage/medkit/fire{
+	pixel_z = 6
+	},
+/obj/machinery/door/window/left/directional/north,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/scarab/medbay)
+"ZH" = (
+/obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"ZJ" = (
+/obj/structure/closet/crate,
+/obj/effect/turf_decal/box/corners{
+	dir = 4
+	},
+/obj/item/flashlight/flare,
+/obj/item/flashlight/flare,
+/obj/item/flashlight/flare,
+/obj/item/stack/rods/fifty,
+/obj/item/storage/box/lights/bulbs,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"ZW" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 5
+	},
+/obj/structure/closet/emcloset/anchored,
+/obj/effect/turf_decal/bot_red,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge)
+
+(1,1,1) = {"
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+"}
+(2,1,1) = {"
+pz
+lw
+xe
+xe
+lw
+pz
+pz
+pz
+pz
+lw
+xe
+xe
+xe
+lw
+pz
+lw
+xe
+xe
+lw
+pz
+"}
+(3,1,1) = {"
+pz
+lw
+Ok
+Ok
+lw
+aJ
+GR
+GR
+zG
+lw
+ts
+ts
+ts
+lw
+KM
+lw
+Ok
+Ok
+lw
+pz
+"}
+(4,1,1) = {"
+pz
+lw
+mg
+Ey
+lw
+Lu
+yI
+yI
+Lu
+lw
+WZ
+Pk
+WZ
+lw
+ee
+lw
+qp
+Ey
+lw
+pz
+"}
+(5,1,1) = {"
+pz
+ai
+vZ
+vZ
+lw
+AY
+uQ
+by
+xJ
+lw
+Di
+uC
+Ft
+qS
+OX
+MI
+qK
+Vq
+ai
+pz
+"}
+(6,1,1) = {"
+pz
+ai
+AL
+sl
+lw
+TJ
+Ro
+hi
+IZ
+lw
+KQ
+Yf
+uP
+ZH
+zy
+mX
+rE
+HV
+ai
+pz
+"}
+(7,1,1) = {"
+pz
+ai
+XO
+co
+lw
+Lu
+Jn
+Dp
+Lu
+lw
+Wy
+vb
+Nh
+mJ
+CZ
+nk
+dS
+lL
+ai
+pz
+"}
+(8,1,1) = {"
+pz
+lw
+lw
+Gr
+lw
+PF
+Xe
+qH
+Mo
+lw
+kq
+lw
+lw
+Hl
+lw
+Mz
+lw
+lw
+lw
+pz
+"}
+(9,1,1) = {"
+pz
+US
+Lu
+Zg
+jf
+jf
+dB
+Ys
+Nv
+Kg
+Aa
+Lu
+DF
+Co
+Js
+fY
+xr
+Nk
+hx
+pz
+"}
+(10,1,1) = {"
+pz
+pz
+yr
+ou
+et
+tk
+HW
+Oc
+Vy
+Vy
+ki
+rw
+Lf
+io
+kU
+Bb
+uq
+HI
+pz
+pz
+"}
+(11,1,1) = {"
+pz
+pz
+yr
+st
+yz
+KV
+KX
+kQ
+SQ
+Jh
+ir
+Lu
+NV
+Xu
+tr
+Oi
+GG
+HI
+pz
+pz
+"}
+(12,1,1) = {"
+pz
+pz
+yr
+MY
+ZJ
+cw
+tl
+Vw
+Lq
+tg
+oz
+SE
+vy
+mT
+bg
+OG
+eW
+HI
+pz
+pz
+"}
+(13,1,1) = {"
+pz
+pz
+Vo
+qf
+jf
+Vy
+jf
+MZ
+Eo
+jf
+Vy
+Lu
+mU
+kZ
+ma
+VO
+SI
+sE
+pz
+pz
+"}
+(14,1,1) = {"
+pz
+vk
+Lu
+Lu
+Nr
+yR
+hX
+Pc
+nx
+fa
+jh
+Lu
+Nk
+Tc
+Nk
+qm
+Nk
+Nk
+Os
+pz
+"}
+(15,1,1) = {"
+pz
+pz
+US
+Lu
+Lu
+Lu
+Lu
+Lu
+Ju
+Ot
+Lu
+Lu
+Ze
+Fi
+UM
+zx
+WW
+sb
+pz
+pz
+"}
+(16,1,1) = {"
+pz
+pz
+pz
+sA
+Gm
+kI
+Ho
+Bw
+OA
+DE
+Do
+LG
+tV
+MS
+Nk
+kw
+HI
+pz
+pz
+pz
+"}
+(17,1,1) = {"
+pz
+pz
+pz
+iZ
+iZ
+pF
+SO
+Iw
+vB
+dR
+pN
+xO
+xO
+xO
+xO
+FX
+FX
+pz
+pz
+pz
+"}
+(18,1,1) = {"
+pz
+pz
+pz
+pz
+iZ
+SO
+SO
+rC
+mO
+zZ
+hc
+xO
+fL
+JV
+eT
+FX
+pz
+pz
+pz
+pz
+"}
+(19,1,1) = {"
+pz
+pz
+pz
+pz
+sA
+du
+IH
+cd
+PU
+Av
+qR
+yp
+BD
+Vd
+sg
+pV
+pz
+pz
+pz
+pz
+"}
+(20,1,1) = {"
+pz
+pz
+pz
+pz
+sA
+sH
+IH
+cd
+IF
+YM
+Ij
+xO
+AC
+lP
+nJ
+pV
+pz
+pz
+pz
+pz
+"}
+(21,1,1) = {"
+pz
+pz
+pz
+pz
+mP
+AH
+AH
+Iz
+bR
+Qv
+hc
+xO
+bN
+OU
+tW
+FX
+pz
+pz
+pz
+pz
+"}
+(22,1,1) = {"
+pz
+pz
+pz
+mP
+AH
+RF
+AH
+pv
+RQ
+rB
+yT
+xO
+xO
+ps
+xO
+FX
+FX
+pz
+pz
+pz
+"}
+(23,1,1) = {"
+pz
+pz
+pz
+nN
+br
+KF
+jy
+qR
+ao
+mZ
+Nf
+xO
+qa
+Mi
+OI
+ZG
+pV
+pz
+pz
+pz
+"}
+(24,1,1) = {"
+pz
+pz
+hI
+AH
+tE
+QP
+AH
+SK
+ff
+lQ
+SK
+SK
+SK
+CK
+kt
+ul
+xO
+hU
+pz
+pz
+"}
+(25,1,1) = {"
+pz
+pz
+AH
+AH
+fV
+AH
+AH
+Jm
+Oo
+YP
+Ia
+ZW
+YS
+kS
+kS
+kS
+kS
+kS
+pz
+pz
+"}
+(26,1,1) = {"
+pz
+pz
+mP
+NN
+ra
+sn
+mP
+Lc
+aV
+Nq
+BC
+Pj
+El
+tn
+JQ
+iW
+Ix
+YV
+pz
+pz
+"}
+(27,1,1) = {"
+pz
+pz
+nN
+ml
+cj
+Mc
+mP
+oT
+fA
+Cb
+Cb
+fA
+zC
+kS
+Mw
+CC
+XL
+PS
+pz
+pz
+"}
+(28,1,1) = {"
+pz
+pz
+nN
+ml
+Hw
+sz
+AH
+XS
+cs
+CO
+Hx
+LT
+rQ
+kS
+Ow
+Hs
+yE
+PS
+pz
+pz
+"}
+(29,1,1) = {"
+pz
+pz
+mP
+Xd
+gs
+AH
+AH
+SK
+pG
+iv
+iv
+pG
+SK
+kS
+kS
+SX
+qL
+YV
+pz
+pz
+"}
+(30,1,1) = {"
+pz
+pz
+mP
+Qr
+Qr
+AH
+sp
+pz
+pz
+pz
+pz
+pz
+pz
+fb
+kS
+bG
+bG
+YV
+pz
+pz
+"}
+(31,1,1) = {"
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+"}
+(32,1,1) = {"
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+pz
+"}
