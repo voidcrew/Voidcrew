@@ -541,6 +541,25 @@
 								return
 					say(current_ship.dock_in_empty_space(usr))
 					return
+				if("hide_in_nebula")
+					if(!current_ship.can_hide_in_nebula())
+						if(current_ship.hidden_in_nebula)
+							say("ERROR: Already concealed in nebula.")
+						else if(current_ship.is_interdicted)
+							say("ERROR: Cannot hide while interdicted!")
+						else
+							say("ERROR: Must be inside a nebula to engage concealment.")
+						return
+					if(current_ship.hide_in_nebula())
+						say("Nebula concealment engaged. All combat systems offline.")
+					return
+				if("unhide_from_nebula")
+					if(!current_ship.can_unhide_from_nebula())
+						say("ERROR: Ship is not in concealment mode.")
+						return
+					if(current_ship.unhide_from_nebula())
+						say("Emerging from nebula concealment. Combat systems online.")
+					return
 		if(OVERMAP_SHIP_IDLE)
 			if(action == "undock")
 				// Check if cargo shuttle is still present

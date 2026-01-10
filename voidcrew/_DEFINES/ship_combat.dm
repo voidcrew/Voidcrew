@@ -26,6 +26,12 @@
 /// Sent when a ship enters an overmap hazard event: (obj/structure/overmap/event/hazard)
 #define COMSIG_SHIP_HAZARD_TRIGGERED "ship_hazard_triggered"
 
+/// Sent when a ship hides in a nebula (drops all combat connections)
+#define COMSIG_SHIP_GOING_DARK "ship_going_dark"
+
+/// Sent when a ship unhides from a nebula
+#define COMSIG_SHIP_EMERGING_FROM_NEBULA "ship_emerging_from_nebula"
+
 // ========== MISSILE DEFINES ==========
 /// Missile construction states
 #define MISSILE_STATE_UNWIRED 0

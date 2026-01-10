@@ -197,7 +197,24 @@
  * Transitions to a new combat state.
  */
 /datum/ai_controller/npc_ship/proc/set_combat_state(new_state)
+	var/old_state = blackboard[BB_NPC_COMBAT_STATE]
 	set_blackboard_key(BB_NPC_COMBAT_STATE, new_state)
+
+	// When entering retreat mode, lose weapon lock and cancel interdiction
+	if(new_state == NPC_COMBAT_RETREATING && old_state != NPC_COMBAT_RETREATING)
+		// Clear weapon lock
+		clear_blackboard_key(BB_NPC_TARGET_LOCKED)
+		clear_blackboard_key(BB_NPC_LOCK_START_TIME)
+
+		// Cancel interdiction
+		var/datum/npc_combat_interface/combat = get_combat_interface()
+		combat?.cancel_interdiction()
+
+		// Notify target that we stopped targeting them
+		var/obj/structure/overmap/ship/target = get_target()
+		var/obj/structure/overmap/ship/npc/ship = get_ship()
+		if(target && ship)
+			SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
 
 /**
  * Gets the current combat state.
