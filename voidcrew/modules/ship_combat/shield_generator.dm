@@ -1406,8 +1406,8 @@
 
 		// If no generators are active, ship shields go down (unless skipping for dock transition)
 		if(count_active_generators() == 0 && !skip_break)
-			// Trigger ship shield break (starts cooldown)
-			ship.break_ship_shields()
+			// Graceful shutdown - preserves shield health for when they come back online
+			ship.break_ship_shields(graceful = TRUE)
 
 /// Called by ship when shared shield pool breaks
 /obj/machinery/ship_combat/shield_generator/proc/on_ship_shields_broken()
@@ -1442,7 +1442,8 @@
 
 		// If no generators are active, ship shields go down
 		if(count_active_generators() == 0)
-			ship.break_ship_shields()
+			// Power loss is graceful - preserves shield health
+			ship.break_ship_shields(graceful = TRUE)
 
 /// Returns the count of active shield generators on this ship
 /obj/machinery/ship_combat/shield_generator/proc/count_active_generators()
@@ -1555,7 +1556,8 @@
 		ship.recalculate_shield_stats()
 		// If no generators are left active, ship shields go down
 		if(active && count_active_generators() == 0)
-			ship.break_ship_shields()
+			// Generator being removed is graceful - preserves health
+			ship.break_ship_shields(graceful = TRUE)
 	linked_ship_ref = null
 	invalidate_boundary_cache()
 

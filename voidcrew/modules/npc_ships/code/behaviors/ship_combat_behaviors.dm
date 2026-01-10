@@ -85,6 +85,10 @@
 		if(get_dist(ship, potential_target) > ship.territory_range)
 			continue
 
+		// Skip targets we can't see (blocked by nebula)
+		if(!ship.has_los_to(potential_target))
+			continue
+
 		// Found a valid target!
 		controller.set_target(potential_target)
 		controller.set_combat_state(NPC_COMBAT_ENGAGING)
@@ -297,6 +301,12 @@
 
 	// Check if target cloaked - lose tracking
 	if(target.invisibility > INVISIBILITY_NONE)
+		SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
+		controller.clear_target()
+		return AI_BEHAVIOR_DELAY
+
+	// Check if line of sight is blocked (e.g., by a nebula) - lose tracking
+	if(!ship.has_los_to(target))
 		SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
 		controller.clear_target()
 		return AI_BEHAVIOR_DELAY

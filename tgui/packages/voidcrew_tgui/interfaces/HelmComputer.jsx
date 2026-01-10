@@ -580,6 +580,11 @@ const ShipControlContent = () => {
     speedMultiplier,
     zone_transitioning,
     cargoShuttlePresent,
+    // Nebula concealment
+    onNebula,
+    hiddenInNebula,
+    nebulaHideWarmup,
+    nebulaHideRemaining,
   } = data;
   const isDisabled = isViewer || isNotCrew;
   const flyable = data.state === 'flying' && !shipDisabled && !isDisabled;
@@ -656,30 +661,64 @@ const ShipControlContent = () => {
           ZONE TRANSITION IN PROGRESS - Press Stop to cancel
         </NoticeBox>
       )}
+      {!!hiddenInNebula && (
+        <NoticeBox info>
+          NEBULA CONCEALMENT ACTIVE - Ship hidden
+        </NoticeBox>
+      )}
+      {!!nebulaHideWarmup && !hiddenInNebula && (
+        <NoticeBox>
+          Engaging nebula concealment in {Math.ceil(nebulaHideRemaining / 10)}s...
+        </NoticeBox>
+      )}
       <Table collapsing>
         <Table.Row height={2}>
           <Table.Cell width={1}>
-            <Button
-              tooltip={getUndockTooltip()}
-              tooltipPosition="right"
-              icon="sign-out-alt"
-              disabled={undockDisabled}
-              onClick={() => act('undock')}
-            />
+            {hiddenInNebula ? (
+              <Button
+                tooltip="Emerge from Nebula"
+                tooltipPosition="right"
+                icon="eye"
+                disabled={isDisabled}
+                onClick={() => act('unhide_from_nebula')}
+              />
+            ) : (
+              <Button
+                tooltip={getUndockTooltip()}
+                tooltipPosition="right"
+                icon="sign-out-alt"
+                disabled={undockDisabled}
+                onClick={() => act('undock')}
+              />
+            )}
           </Table.Cell>
 
           <Table.Cell width={1}>
-            <Button
-              tooltip={
-                dockWarmup
-                  ? `Docking in ${Math.ceil(dockWarmupRemaining / 10)}s...`
-                  : 'Dock in Empty Space'
-              }
-              tooltipPosition="right"
-              icon="sign-in-alt"
-              disabled={!flyable || dockWarmup || zone_transitioning}
-              onClick={() => act('dock_empty')}
-            />
+            {onNebula && !hiddenInNebula ? (
+              <Button
+                tooltip={
+                  nebulaHideWarmup
+                    ? `Hiding in ${Math.ceil(nebulaHideRemaining / 10)}s...`
+                    : 'Hide in Nebula'
+                }
+                tooltipPosition="right"
+                icon="eye-slash"
+                disabled={!flyable || nebulaHideWarmup || zone_transitioning || isInterdicted}
+                onClick={() => act('hide_in_nebula')}
+              />
+            ) : (
+              <Button
+                tooltip={
+                  dockWarmup
+                    ? `Docking in ${Math.ceil(dockWarmupRemaining / 10)}s...`
+                    : 'Dock in Empty Space'
+                }
+                tooltipPosition="right"
+                icon="sign-in-alt"
+                disabled={!flyable || dockWarmup || zone_transitioning || hiddenInNebula}
+                onClick={() => act('dock_empty')}
+              />
+            )}
           </Table.Cell>
 
           <Table.Cell width={1}>
@@ -688,7 +727,7 @@ const ShipControlContent = () => {
               tooltipPosition="right"
               icon={calibrating ? 'times' : 'angle-double-right'}
               color={calibrating ? 'bad' : undefined}
-              disabled={!flyable || zone_transitioning}
+              disabled={!flyable || zone_transitioning || hiddenInNebula}
               onClick={() => act('bluespace_jump')}
             />
           </Table.Cell>

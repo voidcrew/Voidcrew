@@ -103,6 +103,8 @@
 	COOLDOWN_DECLARE(shield_reactivation_cooldown)
 	/// Current power allocation for shields (0.0 to 2.0) - synchronized across all generators
 	var/shield_power_allocation = 0
+	/// Stored shield health for reactivation (preserved on graceful shutdown, reset to 0 on break)
+	var/stored_shield_health = 0
 
 	/// Which docking port the ship is occupying
 	var/dock_index
@@ -146,6 +148,11 @@
 
 	/// List of ships that currently have a weapons lock on us (prevents cloaking)
 	var/list/locked_on_by = list()
+
+	/// Whether this ship is currently hidden inside a nebula
+	var/hidden_in_nebula = FALSE
+	/// Timer ID for nebula hide warmup
+	var/nebula_hide_timer
 
 	// ===== ZONE TRANSITION =====
 	/// Whether we're currently transitioning between zones (10 second delay)
@@ -235,14 +242,22 @@
 	// Check for shield break
 	if(shield_health <= 0)
 		shield_health = 0
-		break_ship_shields()
+		break_ship_shields(graceful = FALSE)  // Damage break - stored health resets to 0
 
 	return TRUE
 
-/// Called when the shared shield pool is depleted
-/obj/structure/overmap/ship/proc/break_ship_shields()
+/// Called when shields go offline (either depleted or manually turned off)
+/// graceful = TRUE: Manual shutdown, preserves current health for reactivation
+/// graceful = FALSE: Damage break or shield pop, resets stored health to 0
+/obj/structure/overmap/ship/proc/break_ship_shields(graceful = FALSE)
 	if(!shields_active)
 		return
+
+	// Store or reset health based on shutdown type
+	if(graceful)
+		stored_shield_health = shield_health  // Preserve for manual shutdown
+	else
+		stored_shield_health = 0  // Reset for damage break or shield pop
 
 	shields_active = FALSE
 	shields_broken = TRUE
@@ -299,8 +314,8 @@
 		// Recalculate stats and activate
 		recalculate_shield_stats()
 		shields_active = TRUE
-		// Start at 50% health
-		shield_health = shield_max_health * 0.5
+		// Restore stored health (capped to max in case generators changed)
+		shield_health = min(stored_shield_health, shield_max_health)
 
 		// Spawn shield walls from first active generator
 		if(first_active_gen)
@@ -731,6 +746,16 @@
 	interdiction_strength = strength
 	is_interdicted = TRUE
 
+	// Cancel nebula hide warmup if interdicted during it
+	if(nebula_hide_timer)
+		cancel_nebula_hide()
+		ship_announce("Interdiction field disrupted nebula concealment!", "WARNING")
+
+	// Force unhide from nebula if interdicted while hidden
+	if(hidden_in_nebula)
+		unhide_from_nebula()
+		ship_announce("Interdiction field forcing emergence from nebula!", "WARNING")
+
 /**
   * Clears the interdiction effect on this ship.
   * Called when interdiction ends for any reason.
@@ -786,8 +811,8 @@
 	// Get the interdictor that's affecting us so we can notify it
 	var/obj/machinery/ship_combat/interdictor/interdictor = interdicting_machine_ref?.resolve()
 
-	// Break our shields - this sets health to 0 and starts cooldown
-	break_ship_shields()
+	// Break our shields - shield pop is NOT graceful, stored health resets to 0
+	break_ship_shields(graceful = FALSE)
 
 	// Clear our interdiction state
 	clear_interdiction()
@@ -798,6 +823,139 @@
 
 	// Announce to the ship
 	ship_announce("SHIELD BURST SUCCESSFUL! Interdiction field disrupted. Shields offline - recharging.", "EMERGENCY MANEUVER")
+
+	return TRUE
+
+// ===== LINE OF SIGHT CHECKS =====
+
+/// Checks if this ship has line of sight to another ship (not blocked by nebulas or other opaque objects)
+/obj/structure/overmap/ship/proc/has_los_to(obj/structure/overmap/ship/target)
+	var/turf/our_turf = get_turf(src)
+	var/turf/their_turf = get_turf(target)
+
+	if(!our_turf || !their_turf)
+		return FALSE
+
+	// Same tile = always LOS
+	if(our_turf == their_turf)
+		return TRUE
+
+	// Adjacent = skip the expensive checks
+	if(get_dist(our_turf, their_turf) <= 1)
+		return TRUE
+
+	// Check all turfs between ships (excluding endpoints) for opaque blockers
+	var/list/line = get_line(our_turf, their_turf)
+	var/line_length = length(line)
+
+	for(var/i in 2 to (line_length - 1)) // Skip first and last turf (the ships themselves)
+		var/turf/T = line[i]
+		// Check turf opacity (shouldn't happen on overmap but just in case)
+		if(T.opacity)
+			return FALSE
+		// Check for opaque objects on the turf (nebulas have opacity = TRUE)
+		for(var/atom/A in T)
+			if(A.opacity && A != src && A != target)
+				return FALSE
+
+	return TRUE
+
+// ===== NEBULA CONCEALMENT =====
+
+/// Warmup time for nebula concealment in deciseconds
+#define NEBULA_HIDE_WARMUP_TIME (10 SECONDS)
+
+/// Checks if the ship can start hiding in a nebula
+/obj/structure/overmap/ship/proc/can_hide_in_nebula()
+	// Already hidden or in process of hiding
+	if(hidden_in_nebula || nebula_hide_timer)
+		return FALSE
+
+	// Can't hide while interdicted
+	if(is_interdicted)
+		return FALSE
+
+	// Must be on a nebula tile
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		return FALSE
+
+	for(var/obj/structure/overmap/event/nebula/N in our_turf)
+		return TRUE
+
+	return FALSE
+
+/// Starts the nebula hide warmup process (10 seconds)
+/obj/structure/overmap/ship/proc/hide_in_nebula()
+	if(!can_hide_in_nebula())
+		return FALSE
+
+	// Stop all movement first - we're holding position to hide
+	speed[1] = 0
+	speed[2] = 0
+
+	// Start the warmup timer
+	nebula_hide_timer = addtimer(CALLBACK(src, PROC_REF(complete_nebula_hide)), NEBULA_HIDE_WARMUP_TIME, TIMER_STOPPABLE)
+
+	// Announce to crew
+	ship_announce("Entering the nebula in [NEBULA_HIDE_WARMUP_TIME / 10] seconds", "Helm Control")
+
+	return TRUE
+
+/// Completes the nebula hide process after warmup
+/obj/structure/overmap/ship/proc/complete_nebula_hide()
+	nebula_hide_timer = null
+
+	// Verify we're still on a nebula and can hide
+	var/turf/our_turf = get_turf(src)
+	var/on_nebula = FALSE
+	if(our_turf)
+		for(var/obj/structure/overmap/event/nebula/N in our_turf)
+			on_nebula = TRUE
+			break
+
+	if(!on_nebula || is_interdicted)
+		return FALSE
+
+	hidden_in_nebula = TRUE
+
+	// Make the ship invisible using managed invisibility (so it stacks properly with cloak)
+	SetInvisibility(INVISIBILITY_ABSTRACT, "nebula_concealment", 100)
+
+	// Send signal to drop all combat connections
+	SEND_SIGNAL(src, COMSIG_SHIP_GOING_DARK)
+
+	return TRUE
+
+/// Cancels an in-progress nebula hide attempt
+/obj/structure/overmap/ship/proc/cancel_nebula_hide()
+	if(!nebula_hide_timer)
+		return FALSE
+
+	deltimer(nebula_hide_timer)
+	nebula_hide_timer = null
+
+	return TRUE
+
+/// Checks if the ship can emerge from nebula concealment
+/obj/structure/overmap/ship/proc/can_unhide_from_nebula()
+	return hidden_in_nebula
+
+/// Emerges from nebula concealment - makes the ship visible again
+/obj/structure/overmap/ship/proc/unhide_from_nebula()
+	if(!can_unhide_from_nebula())
+		return FALSE
+
+	hidden_in_nebula = FALSE
+
+	// Remove the nebula invisibility source (may still be invisible if cloaked)
+	RemoveInvisibility("nebula_concealment")
+
+	// Send signal that we're emerging
+	SEND_SIGNAL(src, COMSIG_SHIP_EMERGING_FROM_NEBULA)
+
+	// Announce to crew
+	ship_announce("Emerging from nebula concealment.", "Helm Control")
 
 	return TRUE
 
@@ -1915,6 +2073,9 @@
 ///Returns TRUE if the ship has at least one working engine with fuel available.
 /obj/structure/overmap/ship/proc/can_thrust()
 	if(!shuttle)
+		return FALSE
+	// Can't thrust while hidden in a nebula
+	if(hidden_in_nebula)
 		return FALSE
 	refresh_engines()
 	for(var/obj/machinery/power/shuttle_engine/ship/engine in shuttle.engine_list)

@@ -156,6 +156,7 @@ type Data = {
   connected: BooleanLike;
   ship_name: string | null;
   ship_docked: BooleanLike;
+  hidden_in_nebula: BooleanLike;
   cloak_active: BooleanLike;
   attack_mode: BooleanLike;
   is_in_attack_mode: BooleanLike;
@@ -355,6 +356,7 @@ const TargetingPanel = () => {
   const { act, data } = useBackend<Data>();
   const {
     ship_docked,
+    hidden_in_nebula,
     target_name,
     target_ref,
     nearby_ships,
@@ -388,6 +390,20 @@ const TargetingPanel = () => {
           <NoticeBox info>
             <Icon name="anchor" mr={1} />
             Targeting unavailable while docked
+          </NoticeBox>
+        </Stack.Item>
+      </Stack>
+    );
+  }
+
+  // Show nebula concealment notice
+  if (hidden_in_nebula) {
+    return (
+      <Stack vertical>
+        <Stack.Item>
+          <NoticeBox info>
+            <Icon name="eye-slash" mr={1} />
+            Combat systems offline - nebula concealment active
           </NoticeBox>
         </Stack.Item>
       </Stack>
@@ -615,6 +631,7 @@ const InterdictorPanel = () => {
   const { act, data } = useBackend<Data>();
   const {
     target_ref,
+    hidden_in_nebula,
     interdictor_linked,
     interdiction_active,
     interdiction_warming_up,
@@ -635,6 +652,28 @@ const InterdictorPanel = () => {
   } = data;
 
   const powerPercent = Math.round((interdictor_power_level ?? 1) * 100);
+
+  // Combat systems offline while hidden in nebula (but still show if we're being interdicted)
+  if (hidden_in_nebula && !being_interdicted) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="satellite-dish" mr={1} />
+            Interdictor
+            <Box inline color="label" ml={1} fontSize="10px">
+              OFFLINE
+            </Box>
+          </Box>
+        }
+      >
+        <Box color="label" textAlign="center" fontSize="11px">
+          <Icon name="eye-slash" mr={1} />
+          Unavailable in nebula concealment
+        </Box>
+      </Section>
+    );
+  }
 
   // Show if WE are being interdicted
   if (being_interdicted) {
@@ -1168,7 +1207,7 @@ const CloakingPanel = () => {
             good: [0.8, 1],
           }}
         >
-          {Math.ceil(cooldown_remaining / 10)}s
+          {Math.ceil(cooldown_remaining)}s
         </ProgressBar>
       </Section>
     );
@@ -1190,8 +1229,15 @@ const CloakingPanel = () => {
       >
         <Stack vertical>
           <Stack.Item>
-            <ProgressBar value={durationPercent} color="cyan">
-              {Math.ceil(duration_remaining / 10)}s remaining
+            <ProgressBar
+              value={durationPercent}
+              ranges={{
+                bad: [0, 0.25],
+                average: [0.25, 0.5],
+                good: [0.5, 1],
+              }}
+            >
+              {Math.ceil(duration_remaining)}s remaining
             </ProgressBar>
           </Stack.Item>
           <Stack.Item>

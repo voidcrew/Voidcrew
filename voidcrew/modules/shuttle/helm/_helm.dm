@@ -192,6 +192,17 @@
 	data["interdictionStrength"] = current_ship.interdiction_strength
 	data["speedMultiplier"] = current_ship.speed_multiplier
 
+	// Nebula concealment status
+	data["hiddenInNebula"] = current_ship.hidden_in_nebula
+	data["nebulaHideWarmup"] = !!current_ship.nebula_hide_timer
+	data["nebulaHideRemaining"] = current_ship.nebula_hide_timer ? timeleft(current_ship.nebula_hide_timer) : 0
+	// Check if we're on a nebula tile (can hide)
+	var/on_nebula = FALSE
+	for(var/obj/structure/overmap/event/nebula/N in T)
+		on_nebula = TRUE
+		break
+	data["onNebula"] = on_nebula
+
 	// Zone information
 	if(SSovermap_zones.zones_active)
 		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(T)
@@ -545,13 +556,19 @@
 					if(!current_ship.can_hide_in_nebula())
 						if(current_ship.hidden_in_nebula)
 							say("ERROR: Already concealed in nebula.")
+						else if(current_ship.nebula_hide_timer)
+							say("ERROR: Nebula concealment already in progress...")
 						else if(current_ship.is_interdicted)
 							say("ERROR: Cannot hide while interdicted!")
 						else
 							say("ERROR: Must be inside a nebula to engage concealment.")
 						return
 					if(current_ship.hide_in_nebula())
-						say("Nebula concealment engaged. All combat systems offline.")
+						say("Initiating nebula concealment sequence...")
+					return
+				if("cancel_nebula_hide")
+					if(current_ship.cancel_nebula_hide())
+						say("Nebula concealment cancelled.")
 					return
 				if("unhide_from_nebula")
 					if(!current_ship.can_unhide_from_nebula())

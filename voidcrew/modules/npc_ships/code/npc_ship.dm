@@ -216,14 +216,14 @@
 /**
  * Updates whether this ship can be boarded based on current state.
  * Ship is boardable when:
- * 1. Integrity <= 50% (disabled), OR
+ * 1. Integrity <= 75% (disabled), OR
  * 2. Ship is currently interdicted
  */
 /obj/structure/overmap/ship/npc/proc/update_boarding_state()
-	// Check integrity - ship is disabled at 50% or below
+	// Check integrity - ship is disabled at 75% or below
 	if(max_integrity > 0)
 		var/integrity_percent = (integrity / max_integrity) * 100
-		if(integrity_percent <= 50)
+		if(integrity_percent <= 75)
 			can_board = TRUE
 			return
 
