@@ -217,7 +217,7 @@
 	name = "Dormitories"
 	icon_state = "dorms"
 
-/// OUFITS
+/// OUTFITS
 
 /datum/outfit/job/assistant/resident
 	name = "Assistant - Resident"
@@ -239,3 +239,14 @@
 	name = "Assistant - Resident C"
 	uniform = /obj/item/clothing/under/rank/security/officer
 	shoes = /obj/item/clothing/shoes/sneakers/red
+
+// For the TEG, the default amount of plasma is too high and will clog it
+
+/obj/machinery/atmospherics/components/tank/plasma/less
+	name = "pressure tank (Plasma)"
+	gas_type = null
+	flags_1 = parent_type::flags_1 | NO_NEW_GAGS_PREVIEW_1
+
+/obj/machinery/atmospherics/components/tank/plasma/less/Initialize(mapload)
+	. = ..()
+	fill_to_pressure(/datum/gas/plasma, 0.1)

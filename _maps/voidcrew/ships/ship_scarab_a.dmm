@@ -862,6 +862,7 @@
 /obj/effect/turf_decal/stripes/line{
 	dir = 4
 	},
+/obj/machinery/light/small/red/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines)
 "sn" = (
@@ -1619,6 +1620,7 @@
 /obj/machinery/atmospherics/components/tank/plasma{
 	dir = 1
 	},
+/obj/machinery/light/small/red/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines)
 "HW" = (
@@ -1790,6 +1792,7 @@
 "KQ" = (
 /obj/structure/sign/warning/engine_safety/directional/north,
 /obj/structure/tank_dispenser,
+/obj/machinery/light/small/red/directional/north,
 /turf/open/floor/mineral/titanium/tiled/yellow,
 /area/shuttle/voidcrew/scarab/engines)
 "KV" = (
