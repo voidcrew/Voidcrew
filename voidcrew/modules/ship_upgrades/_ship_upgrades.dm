@@ -22,9 +22,13 @@ GLOBAL_LIST_EMPTY(ship_themes)
  *
  * Represents a single upgrade option for a specific slot on a ship.
  * Each slot can have multiple modules to choose from.
+ *
+ * Modules are organized by ship template - each ship class has its own set of modules.
+ * This allows multiple ships to have modules with the same display name (e.g., "Basic Cargo Bay")
+ * without conflicting.
  */
 /datum/ship_upgrade_module
-	/// Unique identifier for this module (e.g., "cargo_expanded")
+	/// Unique identifier for this module within its ship class (e.g., "cargo_expanded")
 	var/id
 	/// Display name shown in UI
 	var/name = "Unnamed Module"
@@ -40,11 +44,17 @@ GLOBAL_LIST_EMPTY(ship_themes)
 	var/preview_icon
 	/// If TRUE, this module loads when no upgrade is selected for this slot
 	var/is_default = FALSE
+	/// The BASE ship template type this module is for (e.g., /datum/map_template/shuttle/voidcrew/test_modular)
+	/// Themed variants inherit from base, so only specify the base type.
+	var/for_ship
 
 /datum/ship_upgrade_module/New()
 	. = ..()
-	if(id)
-		GLOB.ship_upgrade_modules[id] = src
+	if(id && for_ship)
+		// Register under ship type, then by id
+		if(!GLOB.ship_upgrade_modules[for_ship])
+			GLOB.ship_upgrade_modules[for_ship] = list()
+		GLOB.ship_upgrade_modules[for_ship][id] = src
 
 /**
  * Ship Theme
@@ -86,8 +96,8 @@ GLOBAL_VAR_INIT(ship_upgrades_initialized, FALSE)
 	// Create instances of all ship_upgrade_module subtypes
 	for(var/module_type in subtypesof(/datum/ship_upgrade_module))
 		var/datum/ship_upgrade_module/module = module_type
-		// Skip abstract types (no id defined)
-		if(!initial(module.id))
+		// Skip abstract types (no id or for_ship defined)
+		if(!initial(module.id) || !initial(module.for_ship))
 			continue
 		new module_type()
 
@@ -99,4 +109,35 @@ GLOBAL_VAR_INIT(ship_upgrades_initialized, FALSE)
 			continue
 		new theme_type()
 
-	log_game("SHIP_UPGRADES: Initialized with [length(GLOB.ship_upgrade_modules)] modules and [length(GLOB.ship_themes)] themes")
+/**
+ * Get all modules registered for a specific ship template type
+ * Handles inheritance - if template is a subtype (themed variant), checks parent types too
+ *
+ * Returns: assoc list of module_id -> /datum/ship_upgrade_module
+ */
+/proc/get_modules_for_ship(ship_template_type)
+	ensure_ship_upgrades_initialized()
+
+	// Check the exact type first
+	if(GLOB.ship_upgrade_modules[ship_template_type])
+		return GLOB.ship_upgrade_modules[ship_template_type]
+
+	// For themed variants, walk up the parent chain to find the base ship's modules
+	var/check_type = ship_template_type
+	while(check_type && check_type != /datum/map_template/shuttle/voidcrew)
+		if(GLOB.ship_upgrade_modules[check_type])
+			return GLOB.ship_upgrade_modules[check_type]
+		check_type = type2parent(check_type)
+
+	return list()
+
+/**
+ * Get the default module for a slot on a specific ship
+ */
+/proc/get_default_module_for_ship_slot(ship_template_type, slot_key)
+	var/list/modules = get_modules_for_ship(ship_template_type)
+	for(var/module_id in modules)
+		var/datum/ship_upgrade_module/module = modules[module_id]
+		if(module.slot == slot_key && module.is_default)
+			return module
+	return null

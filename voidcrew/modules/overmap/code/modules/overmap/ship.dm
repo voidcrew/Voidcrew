@@ -62,6 +62,8 @@
 	var/list/job_slots
 	///Assoc list of selected ship upgrades (slot_key = /datum/ship_upgrade_module)
 	var/list/upgrade_selections = list()
+	/// Theme of this ship (e.g., "pirate", "science"). Used to load themed module variants.
+	var/theme = null
 
 	/**
 	 * Movement stuff

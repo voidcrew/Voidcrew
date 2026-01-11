@@ -44,9 +44,10 @@
 		shuttle_loading = FALSE
 		return FALSE
 
-	// Store upgrade selections on ship BEFORE map loads (so modular_map_root can read them)
+	// Store upgrade selections and theme on ship BEFORE map loads (so modular_map_root can read them)
 	if(length(upgrade_selections))
 		ship_to_spawn.upgrade_selections = upgrade_selections.Copy()
+	ship_to_spawn.theme = template_instance.theme
 
 	// Set loading_ship so modular_map_root/ship_upgrade can find the ship during map loading
 	loading_ship = ship_to_spawn
@@ -171,6 +172,12 @@
 	var/ship_type = modular_ships[ship_choice]
 	var/datum/map_template/shuttle/voidcrew/template = new ship_type()
 
+	// Get modules registered for this ship
+	var/list/ship_modules = get_modules_for_ship(ship_type)
+	if(!length(ship_modules))
+		to_chat(usr, span_warning("No upgrade modules registered for [template.name]!"))
+		// Still allow spawning with no upgrades
+
 	// Build upgrade selections for each slot
 	var/list/upgrade_selections = list()
 
@@ -179,8 +186,8 @@
 		var/list/slot_options = list()
 		slot_options["None (empty)"] = null
 
-		for(var/module_id in GLOB.ship_upgrade_modules)
-			var/datum/ship_upgrade_module/module = GLOB.ship_upgrade_modules[module_id]
+		for(var/module_id in ship_modules)
+			var/datum/ship_upgrade_module/module = ship_modules[module_id]
 			if(module.slot != slot_key)
 				continue
 
@@ -202,10 +209,6 @@
 
 	// Show summary
 	to_chat(usr, span_notice("Spawning [template.name] with [length(upgrade_selections)] upgrade(s) selected..."))
-	for(var/slot_key in upgrade_selections)
-		var/datum/ship_upgrade_module/mod = upgrade_selections[slot_key]
-		to_chat(usr, span_notice("  - [slot_key]: [mod?.id || "null"] ([mod?.map_file || "no file"])"))
-		log_game("SHIP_UPGRADE: Admin selected '[slot_key]' = '[mod?.id]' ([mod?.map_file])")
 
 	// Spawn
 	var/obj/structure/overmap/ship/spawned = SSshuttle.create_ship(template, upgrade_selections)

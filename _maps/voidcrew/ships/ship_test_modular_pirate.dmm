@@ -1,0 +1,133 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/test_modular/pirate)
+"b" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/test_modular/pirate)
+"c" = (
+/obj/machinery/computer/helm,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/test_modular/pirate)
+"d" = (
+/obj/docking_port/mobile/voidcrew/test_modular/pirate{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/test_modular/pirate)
+"e" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "cargobay"
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/test_modular/pirate)
+"f" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "engineroom"
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/test_modular/pirate)
+"g" = (
+/turf/closed/wall/mineral/wood,
+/area/shuttle/voidcrew/test_modular/pirate)
+"h" = (
+/obj/machinery/door/airlock/wood,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/test_modular/pirate)
+"i" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/window/reinforced/spawner/directional/west,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/test_modular/pirate)
+
+(1,1,1) = {"
+g
+g
+g
+g
+g
+g
+g
+g
+g
+"}
+(2,1,1) = {"
+g
+a
+a
+a
+a
+a
+a
+a
+g
+"}
+(3,1,1) = {"
+g
+a
+e
+a
+a
+a
+f
+a
+g
+"}
+(4,1,1) = {"
+g
+a
+a
+a
+a
+a
+a
+a
+g
+"}
+(5,1,1) = {"
+i
+a
+a
+a
+b
+a
+a
+a
+i
+"}
+(6,1,1) = {"
+g
+a
+a
+a
+c
+a
+a
+a
+g
+"}
+(7,1,1) = {"
+g
+a
+a
+a
+a
+a
+a
+a
+g
+"}
+(8,1,1) = {"
+g
+g
+h
+d
+h
+g
+g
+g
+g
+"}

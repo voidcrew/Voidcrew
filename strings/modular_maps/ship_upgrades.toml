@@ -1,9 +1,0 @@
-directory = "_maps/voidcrew/ship_modules/"
-
-# Cargo bay upgrade slot
-[rooms.cargobay]
-modules = ["cargo_basic.dmm", "cargo_expanded.dmm"]
-
-# Engine room upgrade slot
-[rooms.engineroom]
-modules = ["engine_basic.dmm", "engine_advanced.dmm"]
