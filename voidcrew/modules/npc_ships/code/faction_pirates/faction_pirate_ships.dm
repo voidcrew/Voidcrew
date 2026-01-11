@@ -29,11 +29,11 @@
 
 	crew_min = 2
 	crew_max = 4
+	captain_type = /mob/living/basic/trooper/pirate/faction/silverscale/captain
 	crew_types = list(
 		/mob/living/basic/trooper/pirate/faction/silverscale/melee,
 		/mob/living/basic/trooper/pirate/faction/silverscale/melee,
 		/mob/living/basic/trooper/pirate/faction/silverscale/ranged,
-		/mob/living/basic/trooper/pirate/faction/silverscale/captain,
 	)
 
 // ==================== SKELETON (Flying Dutchman) ====================
@@ -54,11 +54,11 @@
 
 	crew_min = 3
 	crew_max = 6
+	captain_type = /mob/living/basic/trooper/pirate/faction/skeleton/captain
 	crew_types = list(
 		/mob/living/basic/trooper/pirate/faction/skeleton/melee,
 		/mob/living/basic/trooper/pirate/faction/skeleton/melee,
 		/mob/living/basic/trooper/pirate/faction/skeleton/ranged,
-		/mob/living/basic/trooper/pirate/faction/skeleton/captain,
 	)
 
 // ==================== GREY TIDE (Rogue Assistants) ====================
@@ -77,13 +77,16 @@
 	speed_limit = 0.4
 	thrust_power = 0.25
 
+	// Yellow zone - stay to interdict/siphon even without weapons
+	retreat_without_weapons = FALSE
+
 	crew_min = 3
 	crew_max = 5
+	captain_type = /mob/living/basic/trooper/pirate/faction/grey/captain
 	crew_types = list(
 		/mob/living/basic/trooper/pirate/faction/grey/melee,
 		/mob/living/basic/trooper/pirate/faction/grey/melee,
 		/mob/living/basic/trooper/pirate/faction/grey/ranged,
-		/mob/living/basic/trooper/pirate/faction/grey/captain,
 	)
 
 // ==================== LUSTROUS (Mutated Ethereals) ====================
@@ -98,12 +101,15 @@
 	// Ethereals are... weird
 	territory_range = 3
 
+	// Yellow zone - stay to interdict/siphon even without weapons
+	retreat_without_weapons = FALSE
+
 	crew_min = 2
 	crew_max = 4
+	captain_type = /mob/living/basic/trooper/pirate/faction/lustrous/captain
 	crew_types = list(
 		/mob/living/basic/trooper/pirate/faction/lustrous/melee,
 		/mob/living/basic/trooper/pirate/faction/lustrous/ranged,
-		/mob/living/basic/trooper/pirate/faction/lustrous/captain,
 	)
 
 // ==================== INTERDYNE (Ex-Pharmacists) ====================
@@ -124,11 +130,11 @@
 
 	crew_min = 3
 	crew_max = 5
+	captain_type = /mob/living/basic/trooper/pirate/faction/interdyne/captain
 	crew_types = list(
 		/mob/living/basic/trooper/pirate/faction/interdyne/melee,
 		/mob/living/basic/trooper/pirate/faction/interdyne/ranged,
 		/mob/living/basic/trooper/pirate/faction/interdyne/ranged,
-		/mob/living/basic/trooper/pirate/faction/interdyne/captain,
 	)
 
 // ==================== IRS (Tax Collectors) ====================
@@ -152,13 +158,16 @@
 	speed_limit = 0.6
 	thrust_power = 0.35
 
+	// Yellow zone - stay to interdict/siphon even without weapons
+	retreat_without_weapons = FALSE
+
 	crew_min = 3
 	crew_max = 5
+	captain_type = /mob/living/basic/trooper/pirate/faction/irs/captain
 	crew_types = list(
 		/mob/living/basic/trooper/pirate/faction/irs/melee,
 		/mob/living/basic/trooper/pirate/faction/irs/ranged,
 		/mob/living/basic/trooper/pirate/faction/irs/ranged,
-		/mob/living/basic/trooper/pirate/faction/irs/captain,
 	)
 
 // ==================== MEDIEVAL (Space Warmongers) ====================
@@ -183,9 +192,9 @@
 
 	crew_min = 3
 	crew_max = 6
+	captain_type = /mob/living/basic/trooper/pirate/faction/medieval/captain
 	crew_types = list(
 		/mob/living/basic/trooper/pirate/faction/medieval/melee,
 		/mob/living/basic/trooper/pirate/faction/medieval/melee,
 		/mob/living/basic/trooper/pirate/faction/medieval/ranged,
-		/mob/living/basic/trooper/pirate/faction/medieval/captain,
 	)

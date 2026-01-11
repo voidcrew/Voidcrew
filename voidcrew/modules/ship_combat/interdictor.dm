@@ -452,10 +452,12 @@
 	var/strength = 1 - speed_mult
 	target.update_interdiction(src, speed_mult, strength)
 
-	// Check if ship had momentum before stopping
+	// Check if ship had meaningful momentum before stopping
 	var/old_speed_x = target.speed[1]
 	var/old_speed_y = target.speed[2]
-	var/had_momentum = (old_speed_x != 0 || old_speed_y != 0)
+	var/speed_magnitude = sqrt(old_speed_x * old_speed_x + old_speed_y * old_speed_y)
+	// Use threshold to ignore negligible drift from floating-point imprecision
+	var/had_momentum = speed_magnitude > 0.05
 
 	// Kill all target momentum - they have to re-engage engines
 	target.adjust_speed(-target.speed[1], -target.speed[2])
@@ -473,7 +475,6 @@
 		else if(old_speed_y < 0)
 			throw_dir |= SOUTH
 		// Throw force based on speed magnitude
-		var/speed_magnitude = sqrt(old_speed_x * old_speed_x + old_speed_y * old_speed_y)
 		var/throw_force = clamp(round(speed_magnitude * 2), 1, 10)
 		target.crash_throw_contents(throw_force, throw_dir, "The ship lurches violently as it's pulled out of motion!")
 

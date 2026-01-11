@@ -6981,6 +6981,7 @@
 #include "voidcrew\modules\npc_ships\code\_defines.dm"
 #include "voidcrew\modules\npc_ships\code\overmap_pathfinding.dm"
 #include "voidcrew\modules\npc_ships\code\npc_ship.dm"
+#include "voidcrew\modules\npc_ships\code\ship_key.dm"
 #include "voidcrew\modules\npc_ships\code\npc_combat_interface.dm"
 #include "voidcrew\modules\npc_ships\code\subtrees\combat_subtree.dm"
 #include "voidcrew\modules\npc_ships\code\subtrees\movement_subtree.dm"

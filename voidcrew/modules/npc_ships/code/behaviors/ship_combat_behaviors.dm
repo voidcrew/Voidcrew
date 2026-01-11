@@ -44,8 +44,11 @@
 	if(!ship.hostile)
 		return AI_BEHAVIOR_DELAY
 
-	// Only attack in zones where weapons are allowed
-	if(!SSovermap_zones.weapons_allowed_at(ship))
+	// Only attack in zones where combat is allowed (weapons OR interdiction)
+	var/turf/ship_loc = get_turf(ship)
+	var/datum/overmap_zone/zone = SSovermap_zones.get_zone(ship_loc)
+	var/can_fight = zone ? (zone.weapons_allowed() || zone.interdiction_allowed()) : TRUE
+	if(!can_fight)
 		// If we had a target, clear it since we can't fight here
 		if(controller.get_target())
 			controller.clear_target()
@@ -425,8 +428,8 @@
 	if(!ship || !combat)
 		return AI_BEHAVIOR_DELAY
 
-	// If we have no weapons, enter retreat mode
-	if(!combat.has_any_weapons())
+	// If we have no weapons and ship type retreats without weapons, enter retreat mode
+	if(!combat.has_any_weapons() && ship.retreat_without_weapons)
 		controller.set_combat_state(NPC_COMBAT_RETREATING)
 		controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_RETREAT)
 		ship.ship_announce("All weapons systems offline! Initiating emergency retreat!", "CRITICAL DAMAGE")

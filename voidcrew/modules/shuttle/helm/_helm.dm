@@ -71,6 +71,79 @@
 	density = FALSE
 	viewer = TRUE
 
+/obj/machinery/computer/helm/attackby(obj/item/I, mob/living/user, params)
+	// Handle ship authorization key
+	if(istype(I, /obj/item/ship_key))
+		attempt_claim_ship(I, user)
+		return TRUE
+	return ..()
+
+/// Attempts to claim the ship using an authorization key
+/obj/machinery/computer/helm/proc/attempt_claim_ship(obj/item/ship_key/key, mob/living/user)
+	if(!current_ship && !attempt_ship_connection(last_resort = TRUE))
+		to_chat(user, span_warning("This console is not connected to a ship!"))
+		return FALSE
+
+	// Check if key is valid
+	if(!key.is_valid())
+		to_chat(user, span_warning("This authorization key is no longer valid."))
+		return FALSE
+
+	// Check if key matches this ship
+	var/obj/structure/overmap/ship/npc/npc_ship = key.get_ship()
+	if(npc_ship != current_ship)
+		to_chat(user, span_warning("This key is for a different vessel: [key.ship_name]"))
+		return FALSE
+
+	// Claim the ship!
+	if(claim_npc_ship(npc_ship, user))
+		to_chat(user, span_notice("Ship authorization accepted. You now have command of [npc_ship.name]."))
+		playsound(src, 'sound/machines/terminal/terminal_on.ogg', 50, TRUE)
+		// Consume the key
+		qdel(key)
+		return TRUE
+	else
+		to_chat(user, span_warning("Failed to claim ship. Try again."))
+		return FALSE
+
+/// Converts an NPC ship to player control
+/obj/machinery/computer/helm/proc/claim_npc_ship(obj/structure/overmap/ship/npc/npc_ship, mob/living/claimer)
+	if(!istype(npc_ship))
+		return FALSE
+
+	// Remove the AI controller
+	if(npc_ship.ai_controller)
+		QDEL_NULL(npc_ship.ai_controller)
+
+	// Remove the combat interface (no longer needed for AI)
+	if(npc_ship.combat_interface)
+		QDEL_NULL(npc_ship.combat_interface)
+
+	// Clear NPC-specific state
+	npc_ship.hostile = FALSE
+
+	// Remove NPC color tint
+	npc_ship.color = null
+	npc_ship.chat_color = null
+
+	// Announce the change of ownership
+	npc_ship.ship_announce("NOTICE: Command authorization transferred. New commanding officer recognized.", "SHIP SYSTEMS")
+
+	// Add claimer to ship team if it exists, or create one
+	// Note: Players can be members of multiple ship teams simultaneously
+	if(claimer?.mind)
+		if(!npc_ship.ship_team)
+			// Create a ship team if one doesn't exist
+			npc_ship.ship_team = new /datum/team/voidcrew()
+			npc_ship.ship_team.name = npc_ship.name
+			npc_ship.ship_team.ship = npc_ship
+		npc_ship.ship_team.add_member(claimer.mind)
+
+	// Log the claim
+	log_game("[key_name(claimer)] claimed NPC ship [npc_ship.name] at [AREACOORD(npc_ship)]")
+
+	return TRUE
+
 /obj/machinery/computer/helm/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
 	if(!current_ship && !attempt_ship_connection(last_resort = TRUE))

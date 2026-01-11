@@ -19,6 +19,13 @@
 	/// Whether this siphon requires weapons lock to function
 	var/requires_lock = TRUE
 
+	/// Warmup time before siphon activates (in deciseconds)
+	var/warmup_time = 5 SECONDS
+	/// Whether warmup is in progress
+	var/warming_up = FALSE
+	/// When warmup started
+	var/warmup_start_time = 0
+
 /obj/machinery/shuttle_scrambler/ship_siphon/Initialize(mapload)
 	. = ..()
 
@@ -61,35 +68,45 @@
 
 /// Called by NPC ship AI when it has weapons lock
 /obj/machinery/shuttle_scrambler/ship_siphon/proc/activate_siphon(obj/structure/overmap/ship/target)
-	if(active)
+	if(active || warming_up)
 		return
 	if(!target)
 		return
 
 	set_target(target)
-	active = TRUE
+
+	// Start warmup phase
+	warming_up = TRUE
+	warmup_start_time = world.time
 	START_PROCESSING(SSobj, src)
 	update_appearance()
 
-	// Notify the target ship
+	// Announce warmup to owner ship only (target notified when siphon activates)
 	var/obj/structure/overmap/ship/owner = get_owner_ship()
-	var/owner_name = owner ? owner.name : "Unknown vessel"
-	notify_target_ship(target, "WARNING: [owner_name] is siphoning credits from your accounts!")
+	owner?.ship_announce("Data siphon calibrating. Target: [target.name]. ETA: [warmup_time / 10] seconds.", "SIPHON SYSTEM")
 
 /// Called when lock is lost or target destroyed
 /obj/machinery/shuttle_scrambler/ship_siphon/proc/deactivate_siphon()
-	if(!active)
+	if(!active && !warming_up)
 		return
 
+	var/was_active = active
 	active = FALSE
+	warming_up = FALSE
+	warmup_start_time = 0
+
+	var/obj/structure/overmap/ship/owner = get_owner_ship()
+	var/obj/structure/overmap/ship/target = get_target_ship()
+
+	if(was_active && target)
+		target.ship_announce("Data siphon connection severed. Your accounts are secure.", "SECURITY ALERT")
+		owner?.ship_announce("Siphon link lost. Total credits acquired: [credits_stored].", "SIPHON SYSTEM")
+
 	target_ship_ref = null
 	STOP_PROCESSING(SSobj, src)
 	update_appearance()
 
 /obj/machinery/shuttle_scrambler/ship_siphon/process()
-	if(!active)
-		return PROCESS_KILL
-
 	var/obj/structure/overmap/ship/owner = get_owner_ship()
 	var/obj/structure/overmap/ship/target = get_target_ship()
 
@@ -109,6 +126,20 @@
 				deactivate_siphon()
 				return PROCESS_KILL
 
+	// Handle warmup phase
+	if(warming_up)
+		if(world.time >= warmup_start_time + warmup_time)
+			// Warmup complete - activate siphon
+			warming_up = FALSE
+			active = TRUE
+			owner?.ship_announce("Data siphon active. Draining target accounts.", "SIPHON SYSTEM")
+			target.ship_announce("CRITICAL: Data siphon breach successful! Credits are being stolen! Destroy or board the attacker!", "SECURITY ALERT")
+		return
+
+	// If not active (shouldn't happen but safety check)
+	if(!active)
+		return PROCESS_KILL
+
 	// Perform the siphon
 	siphon_from_target(target)
 
@@ -126,28 +157,14 @@
 	target_account.adjust_money(-siphoned)
 	credits_stored += siphoned
 
-	// Periodic notification to target (every ~10 seconds worth of siphoning)
-	if(prob(20))
-		notify_target_ship(target, "Your ship's accounts are being drained! [siphoned] credits stolen. Destroy or board the attacker to stop the siphon!")
-
-/// Sends a message to everyone on the target ship
-/obj/machinery/shuttle_scrambler/ship_siphon/proc/notify_target_ship(obj/structure/overmap/ship/target, message)
-	if(!target?.shuttle?.shuttle_areas)
-		return
-
-	for(var/area/shuttle_area as anything in target.shuttle.shuttle_areas)
-		for(var/mob/living/crew in shuttle_area)
-			to_chat(crew, span_userdanger("[message]"))
-
 /obj/machinery/shuttle_scrambler/ship_siphon/interact(mob/user)
-	if(active)
+	if(active || warming_up)
 		// Check if user is on the same ship as the siphon or boarding
 		dump_loot(user)
 		return
 
 	// Manual activation by players (for stolen siphons)
-	if(!active)
-		attempt_manual_activation(user)
+	attempt_manual_activation(user)
 
 /// Allows players to manually activate a stolen siphon
 /obj/machinery/shuttle_scrambler/ship_siphon/proc/attempt_manual_activation(mob/user)
@@ -182,6 +199,19 @@
 	log_game("[key_name(user)] recovered [credits_stored] siphoned credits from [owner ? owner.name : "unknown ship"]'s data siphon.")
 
 	credits_stored = 0
+
+/obj/machinery/shuttle_scrambler/ship_siphon/examine(mob/user)
+	. = ..()
+	if(warming_up)
+		var/remaining = max(0, (warmup_start_time + warmup_time - world.time) / 10)
+		. += span_warning("Calibrating... [round(remaining, 0.1)] seconds remaining.")
+	else if(active)
+		. += span_warning("ACTIVE - Siphoning credits from target.")
+		. += span_notice("Credits stored: [credits_stored]")
+	else
+		. += span_notice("Inactive. Requires weapons lock on target to activate.")
+	if(credits_stored > 0)
+		. += span_notice("Credits stored: [credits_stored]")
 
 /obj/machinery/shuttle_scrambler/ship_siphon/Destroy()
 	deactivate_siphon()

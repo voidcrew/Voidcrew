@@ -41,6 +41,9 @@
 	/// Override cloak duration for this NPC ship type (0 = use device's calculated value)
 	var/npc_cloak_duration = 0
 
+	/// Whether to retreat when all weapons are destroyed (FALSE = stay and use interdictor/siphon)
+	var/retreat_without_weapons = TRUE
+
 	/// Minimum crew to spawn
 	var/crew_min = 3
 
@@ -49,6 +52,9 @@
 
 	/// List of mob types to spawn as crew (picked randomly)
 	var/list/crew_types = list()
+
+	/// Captain mob type - always spawns one with the ship key
+	var/captain_type = null
 
 	/// Shuttle template to use for this ship type (set in subtypes)
 	var/shuttle_template = null
@@ -221,11 +227,35 @@
 	if(!length(valid_turfs))
 		return
 
-	// Spawn crew from configured types
+	// Spawn captain first with ship key
+	if(captain_type && length(valid_turfs))
+		var/turf/captain_loc = pick_n_take(valid_turfs)
+		var/mob/living/basic/captain = new captain_type(captain_loc)
+		// Give captain the ship key - stored in contents, drops on death
+		var/obj/item/ship_key/key = new(null, src)
+		key.forceMove(captain)
+		// Register to drop the key when captain dies
+		RegisterSignal(captain, COMSIG_LIVING_DEATH, PROC_REF(on_captain_death))
+		crew_count--  // Captain counts toward crew count
+
+	// Spawn rest of crew from configured types
 	for(var/i in 1 to min(crew_count, length(valid_turfs)))
 		var/turf/spawn_loc = pick_n_take(valid_turfs)
 		var/mob_type = pick(crew_types)
 		new mob_type(spawn_loc)
+
+/**
+ * Signal handler for when the captain dies.
+ * Drops any items in their contents (including ship key).
+ */
+/obj/structure/overmap/ship/npc/proc/on_captain_death(mob/living/captain, gibbed)
+	SIGNAL_HANDLER
+	UnregisterSignal(captain, COMSIG_LIVING_DEATH)
+	// Drop all items in the captain's contents
+	var/turf/drop_loc = get_turf(captain)
+	if(drop_loc)
+		for(var/obj/item/I in captain.contents)
+			I.forceMove(drop_loc)
 
 /**
  * Signal handler for ship integrity changes.
@@ -371,9 +401,13 @@
 	speed_limit = 0.5
 	thrust_power = 0.3
 
+	// Yellow zone - stay to interdict/siphon even without weapons
+	retreat_without_weapons = FALSE
+
 	// Crew configuration
 	crew_min = 3
 	crew_max = 6
+	captain_type = /mob/living/basic/trooper/pirate/ranged/space
 	crew_types = list(
 		/mob/living/basic/trooper/pirate/melee/space,
 		/mob/living/basic/trooper/pirate/ranged/space,

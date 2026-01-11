@@ -19,9 +19,12 @@
 		shuttle_choices["[active_ships.name] - ([active_ships.source_template?.short_name || "Unknown Class"])"] = active_ships
 
 	var/used_name = client.prefs.read_preference(/datum/preference/name/real_name)
-	var/obj/structure/overmap/ship/selected_ship = shuttle_choices[tgui_input_list(src, "Select ship to spawn on.", "Welcome, [used_name].", shuttle_choices)]
+	var/selected_key = tgui_input_list(src, "Select ship to spawn on.", "Welcome, [used_name].", shuttle_choices)
+	if(!selected_key)
+		return // User cancelled - don't retry to avoid infinite loops
+	var/selected_ship = shuttle_choices[selected_key]
 	if(!selected_ship)
-		return
+		return select_ship() // Invalid selection, try again
 
 	if(selected_ship == "Purchase")
 		// Open the ship catalog in latejoin mode with callback
