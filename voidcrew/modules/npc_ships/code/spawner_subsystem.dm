@@ -92,13 +92,13 @@ SUBSYSTEM_DEF(npc_ships)
 	switch(ship_type_path)
 		// Light-threat factions - spawn in yellow (and red)
 		if(/obj/structure/overmap/ship/npc/pirate)           // Rogues
-			return list(ZONE_YELLOW, ZONE_RED)
+			return list(ZONE_YELLOW)
 		if(/obj/structure/overmap/ship/npc/pirate/silverscale)
-			return list(ZONE_YELLOW, ZONE_RED)
+			return list(ZONE_YELLOW)
 		if(/obj/structure/overmap/ship/npc/pirate/grey)
-			return list(ZONE_YELLOW, ZONE_RED)
+			return list(ZONE_YELLOW)
 		if(/obj/structure/overmap/ship/npc/pirate/lustrous)
-			return list(ZONE_YELLOW, ZONE_RED)
+			return list(ZONE_YELLOW)
 
 		// Heavy-threat factions - spawn only in red
 		if(/obj/structure/overmap/ship/npc/pirate/skeleton)
