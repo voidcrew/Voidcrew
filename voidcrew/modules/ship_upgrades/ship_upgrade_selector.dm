@@ -1,15 +1,20 @@
 /**
  * # Ship Upgrade Selector UI
  *
- * TGUI interface for selecting ship upgrades before spawning.
- * Shows available upgrade modules for each slot and calculates costs.
+ * TGUI interface for unlocking and selecting ship upgrades before spawning.
+ *
+ * Two-phase approach:
+ * 1. UNLOCK: Purchase upgrade modules permanently (one-time cost)
+ * 2. SELECT: Choose from unlocked upgrades when spawning (free)
+ *
+ * Default modules are always available (no unlock required).
  */
 
 /**
  * Ship Upgrade Selector Datum
  *
  * Opens after player selects a ship from the catalog to allow
- * customization of upgrade slots before spawning.
+ * unlocking and selecting upgrade modules before spawning.
  */
 /datum/ship_upgrade_selector
 	/// The user viewing this UI
@@ -22,6 +27,8 @@
 	var/list/selected_upgrades = list()
 	/// All available modules for this ship, cached
 	var/list/available_modules = list()
+	/// Cached list of unlocked upgrade IDs for this ship
+	var/list/unlocked_upgrade_ids = list()
 
 /datum/ship_upgrade_selector/New(mob/viewing_user, datum/map_template/shuttle/voidcrew/ship_template, datum/callback/completion_callback)
 	. = ..()
@@ -32,6 +39,9 @@
 	// Initialize upgrade system and cache modules
 	ensure_ship_upgrades_initialized()
 	available_modules = get_modules_for_ship(template.type)
+
+	// Get unlocked upgrades for this ship
+	refresh_unlocked_upgrades()
 
 	// Pre-select default modules for each slot
 	for(var/slot_key in template.upgrade_slot_ids)
@@ -45,7 +55,31 @@
 	on_complete = null
 	selected_upgrades = null
 	available_modules = null
+	unlocked_upgrade_ids = null
 	return ..()
+
+/**
+ * Refresh the cached list of unlocked upgrade IDs
+ */
+/datum/ship_upgrade_selector/proc/refresh_unlocked_upgrades()
+	if(!user?.client)
+		unlocked_upgrade_ids = list()
+		return
+
+	var/ckey = user.client.ckey
+	unlocked_upgrade_ids = GLOB.ship_economy_db?.get_unlocked_upgrades_for_ship(ckey, "[template.type]") || list()
+
+/**
+ * Check if a module is unlocked (or is default/free)
+ */
+/datum/ship_upgrade_selector/proc/is_module_unlocked(datum/ship_upgrade_module/module)
+	if(!module)
+		return FALSE
+	// Default modules are always unlocked
+	if(module.is_default)
+		return TRUE
+	// Check if purchased
+	return (module.id in unlocked_upgrade_ids)
 
 /datum/ship_upgrade_selector/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -69,6 +103,7 @@
 	// Ship info
 	data["ship_name"] = template.name
 	data["ship_short_name"] = template.short_name || template.name
+	data["ship_template"] = "[template.type]"
 
 	// Build slots with available modules
 	var/list/slots = list()
@@ -84,7 +119,9 @@
 			var/list/part_cost = list()
 			if(length(module.part_cost))
 				for(var/part_class in module.part_cost)
-					part_cost[part_class] = module.part_cost[part_class]
+					var/cost = module.part_cost[part_class]
+					if(cost > 0)
+						part_cost[part_class] = cost
 
 			slot_modules += list(list(
 				"id" = module.id,
@@ -104,7 +141,7 @@
 	return data
 
 /**
- * Dynamic data - player's parts and current selections
+ * Dynamic data - player's parts, unlocks, and current selections
  */
 /datum/ship_upgrade_selector/ui_data(mob/user)
 	var/list/data = list()
@@ -122,34 +159,17 @@
 			parts[part_class] = 0
 	data["parts"] = parts
 
-	// Current selections
+	// Refresh and send unlocked upgrades
+	refresh_unlocked_upgrades()
+	data["unlocked_upgrades"] = unlocked_upgrade_ids
+
+	// Current selections (only unlocked modules can be selected)
 	var/list/selections = list()
 	for(var/slot_key in selected_upgrades)
 		var/datum/ship_upgrade_module/module = selected_upgrades[slot_key]
-		if(module)
+		if(module && is_module_unlocked(module))
 			selections[slot_key] = module.id
 	data["selected_upgrades"] = selections
-
-	// Calculate total cost of non-default selections
-	var/list/total_cost = list()
-	for(var/part_class in GLOB.ship_part_classes)
-		total_cost[part_class] = 0
-
-	for(var/slot_key in selected_upgrades)
-		var/datum/ship_upgrade_module/module = selected_upgrades[slot_key]
-		if(module?.part_cost && !module.is_default)
-			for(var/part_class in module.part_cost)
-				total_cost[part_class] += module.part_cost[part_class]
-
-	data["total_cost"] = total_cost
-
-	// Check if player can afford
-	var/can_afford = TRUE
-	for(var/part_class in total_cost)
-		if(total_cost[part_class] > (parts[part_class] || 0))
-			can_afford = FALSE
-			break
-	data["can_afford"] = can_afford
 
 	return data
 
@@ -160,7 +180,42 @@
 	. = TRUE
 
 	switch(action)
+		if("unlock_upgrade")
+			// Purchase/unlock an upgrade module permanently
+			var/module_id = params["module_id"]
+			if(!module_id)
+				return FALSE
+
+			var/datum/ship_upgrade_module/module = available_modules[module_id]
+			if(!module)
+				to_chat(user, span_warning("Invalid upgrade module."))
+				return FALSE
+
+			// Can't unlock defaults (they're already free)
+			if(module.is_default)
+				to_chat(user, span_notice("Default modules don't need to be unlocked."))
+				return FALSE
+
+			// Already unlocked?
+			if(is_module_unlocked(module))
+				to_chat(user, span_notice("You already own this upgrade."))
+				return FALSE
+
+			// Check cost
+			if(!can_afford_module(user, module))
+				to_chat(user, span_warning("You cannot afford this upgrade!"))
+				return FALSE
+
+			// Spend parts and unlock
+			if(!purchase_module(user, module))
+				to_chat(user, span_warning("Failed to purchase upgrade. Please try again."))
+				return FALSE
+
+			to_chat(user, span_notice("Successfully unlocked [module.name]!"))
+			refresh_unlocked_upgrades()
+
 		if("select_upgrade")
+			// Select an upgrade for a slot (must be unlocked)
 			var/slot_key = params["slot"]
 			var/module_id = params["module_id"]
 
@@ -175,21 +230,24 @@
 				else
 					selected_upgrades -= slot_key
 			else
-				// Select specific module
+				// Select specific module (must be unlocked)
 				var/datum/ship_upgrade_module/module = available_modules[module_id]
-				if(module && module.slot == slot_key)
-					selected_upgrades[slot_key] = module
+				if(!module || module.slot != slot_key)
+					return FALSE
+
+				if(!is_module_unlocked(module))
+					to_chat(user, span_warning("You must unlock this upgrade before selecting it."))
+					return FALSE
+
+				selected_upgrades[slot_key] = module
 
 		if("confirm")
-			// Validate player can afford
-			if(!can_afford_upgrades(user))
-				to_chat(user, span_warning("You cannot afford these upgrades!"))
-				return FALSE
-
-			// Deduct parts for non-default upgrades
-			if(!spend_upgrade_parts(user))
-				to_chat(user, span_warning("Failed to deduct upgrade costs. Please try again."))
-				return FALSE
+			// Validate all selections are unlocked
+			for(var/slot_key in selected_upgrades)
+				var/datum/ship_upgrade_module/module = selected_upgrades[slot_key]
+				if(module && !is_module_unlocked(module))
+					to_chat(user, span_warning("You have selected upgrades you don't own!"))
+					return FALSE
 
 			// Close UI and invoke callback
 			ui.close()
@@ -202,66 +260,59 @@
 				on_complete.Invoke(null, null)
 
 /**
- * Check if the user can afford all selected non-default upgrades
+ * Check if player can afford to unlock a module
  */
-/datum/ship_upgrade_selector/proc/can_afford_upgrades(mob/check_user)
-	if(!check_user?.client)
+/datum/ship_upgrade_selector/proc/can_afford_module(mob/check_user, datum/ship_upgrade_module/module)
+	if(!check_user?.client || !module)
 		return FALSE
+
+	// Default modules are free
+	if(module.is_default)
+		return TRUE
+
+	// No cost defined = free
+	if(!length(module.part_cost))
+		return TRUE
 
 	var/ckey = check_user.client.ckey
 	var/list/parts = GLOB.ship_economy_db?.get_parts(ckey)
 	if(!parts)
 		return FALSE
 
-	// Calculate total cost - only non-zero costs
-	var/list/total_cost = list()
-
-	for(var/slot_key in selected_upgrades)
-		var/datum/ship_upgrade_module/module = selected_upgrades[slot_key]
-		if(module?.part_cost && !module.is_default)
-			for(var/part_class in module.part_cost)
-				var/cost = module.part_cost[part_class]
-				if(cost > 0)
-					total_cost[part_class] = (total_cost[part_class] || 0) + cost
-
-	// If no cost, always affordable
-	if(!length(total_cost))
-		return TRUE
-
-	// Check affordability
-	for(var/part_class in total_cost)
-		if(total_cost[part_class] > (parts[part_class] || 0))
+	for(var/part_class in module.part_cost)
+		var/cost = module.part_cost[part_class]
+		if(cost > 0 && (parts[part_class] || 0) < cost)
 			return FALSE
 
 	return TRUE
 
 /**
- * Spend parts for all selected non-default upgrades
+ * Purchase/unlock a module permanently
  */
-/datum/ship_upgrade_selector/proc/spend_upgrade_parts(mob/spending_user)
-	if(!spending_user?.client)
+/datum/ship_upgrade_selector/proc/purchase_module(mob/purchasing_user, datum/ship_upgrade_module/module)
+	if(!purchasing_user?.client || !module)
 		return FALSE
 
-	var/ckey = spending_user.client.ckey
+	var/ckey = purchasing_user.client.ckey
 
-	// Calculate total cost - only include non-zero costs
-	var/list/total_cost = list()
+	// Build cost list (only non-zero costs)
+	var/list/cost = list()
+	if(length(module.part_cost))
+		for(var/part_class in module.part_cost)
+			var/amount = module.part_cost[part_class]
+			if(amount > 0)
+				cost[part_class] = amount
 
-	for(var/slot_key in selected_upgrades)
-		var/datum/ship_upgrade_module/module = selected_upgrades[slot_key]
-		if(module?.part_cost && !module.is_default)
-			for(var/part_class in module.part_cost)
-				var/cost = module.part_cost[part_class]
-				if(cost > 0)
-					total_cost[part_class] = (total_cost[part_class] || 0) + cost
+	// Spend parts if there's a cost
+	if(length(cost))
+		if(!GLOB.ship_economy_db?.spend_parts(ckey, cost))
+			return FALSE
 
-	// If no cost, nothing to spend
-	if(!length(total_cost))
-		return TRUE
-
-	// Spend parts
-	if(!GLOB.ship_economy_db?.spend_parts(ckey, total_cost))
+	// Unlock the upgrade
+	if(!GLOB.ship_economy_db?.unlock_upgrade(ckey, "[template.type]", module.id))
+		// Parts were spent but unlock failed - log error
+		log_game("SHIP_UPGRADE ERROR: Parts spent but unlock failed for [ckey] - upgrade [module.id] on [template.type]")
 		return FALSE
 
-	log_game("SHIP_UPGRADE: [ckey] spent parts for ship upgrades on [template.type]")
+	log_game("SHIP_UPGRADE: [ckey] purchased upgrade '[module.id]' for [template.type]")
 	return TRUE
