@@ -73,7 +73,7 @@ b
 
 ### 4. Register the Module
 
-Create a new file for your ship's modules (e.g., `voidcrew/modules/ship_upgrades/ships/your_ship_modules.dm`), or add to an existing ship's module file:
+Create a new file for your ship's modules (e.g., `voidcrew/modules/ship_upgrades/ships/your_ship.dm`), or add to an existing ship's module file:
 
 ```dm
 /// Base type for all your_ship modules - sets the ship they belong to
@@ -212,10 +212,10 @@ voidcrew/modules/ship_upgrades/
 ├── _ship_upgrades.dm           # Core system (don't edit)
 ├── modular_map_root_ship.dm    # Loader (don't edit)
 ├── ship_upgrades.toml          # Module file registry
-├── test_modules.dm             # Test ship module definitions
 └── ships/                      # Per-ship module definitions
-    ├── delta_modules.dm        # Delta-class modules
-    └── your_ship_modules.dm    # Your ship's modules
+    ├── test_modular.dm         # Test Modular Ship modules
+    ├── delta.dm                # Delta-class modules
+    └── your_ship.dm            # Your ship's modules
 
 voidcrew/mapping/shuttles/
 └── your_ship.dm                # Ship template definition
@@ -306,7 +306,7 @@ a
 
 ### Step 2: Register Modules
 
-Add to your ship's module file (e.g., `voidcrew/modules/ship_upgrades/ships/your_ship_modules.dm`):
+Add to your ship's module file (e.g., `voidcrew/modules/ship_upgrades/ships/your_ship.dm`):
 
 ```dm
 /// Base type for your ship's modules
@@ -583,7 +583,7 @@ This means:
 - [ ] `_maps/voidcrew/ships/ship_{name}.dmm` - Ship DMM with upgrade markers
 - [ ] Ship template definition in `voidcrew/mapping/shuttles/{name}.dm`
 - [ ] Docking port and area subtypes
-- [ ] Module definition file: `voidcrew/modules/ship_upgrades/ships/{name}_modules.dm`
+- [ ] Module definition file: `voidcrew/modules/ship_upgrades/ships/{name}.dm`
 - [ ] Base module subtype with `for_ship = /datum/map_template/shuttle/voidcrew/{name}`
 - [ ] Create subdirectory: `_maps/voidcrew/ship_modules/{name}/`
 - [ ] Module DMMs in `_maps/voidcrew/ship_modules/{name}/`
