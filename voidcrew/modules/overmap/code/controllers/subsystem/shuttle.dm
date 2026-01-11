@@ -1,4 +1,9 @@
-/datum/controller/subsystem/shuttle/proc/create_ship(ship_template_to_spawn)
+/// The ship currently being loaded via create_ship(). Used by modular_map_root/ship_upgrade
+/// to find the ship during map loading (before current_ship is set on the docking port).
+/datum/controller/subsystem/shuttle
+	var/obj/structure/overmap/ship/loading_ship
+
+/datum/controller/subsystem/shuttle/proc/create_ship(ship_template_to_spawn, list/upgrade_selections)
 	RETURN_TYPE(/obj/structure/overmap/ship)
 
 	UNTIL(!shuttle_loading)
@@ -39,13 +44,24 @@
 		shuttle_loading = FALSE
 		return FALSE
 
+	// Store upgrade selections on ship BEFORE map loads (so modular_map_root can read them)
+	if(length(upgrade_selections))
+		ship_to_spawn.upgrade_selections = upgrade_selections.Copy()
+
+	// Set loading_ship so modular_map_root/ship_upgrade can find the ship during map loading
+	loading_ship = ship_to_spawn
+
 	SSair.can_fire = FALSE
 	var/obj/docking_port/mobile/voidcrew/loaded = action_load(ship_to_spawn.source_template)
 	SSair.can_fire = TRUE
+
+	// Clear loading_ship now that map is loaded
+	loading_ship = null
 	shuttle_loading = FALSE
 
 	if(!loaded)
 		stack_trace("Unable to properly load ship template [ship_to_spawn.source_template].")
+		loading_ship = null
 		qdel(ship_to_spawn)
 		return FALSE
 
@@ -82,6 +98,7 @@
 	add_verb(src, list(
 		/client/proc/respawn_ship,
 		/client/proc/spawn_specific_ship,
+		/client/proc/spawn_modular_ship,
 		/client/proc/initiate_jump,
 		/client/proc/cancel_jump,
 		/client/proc/team_panel,
@@ -92,6 +109,7 @@
 	remove_verb(src, list(
 		/client/proc/respawn_ship,
 		/client/proc/spawn_specific_ship,
+		/client/proc/spawn_modular_ship,
 		/client/proc/initiate_jump,
 		/client/proc/cancel_jump,
 		/client/proc/team_panel,
@@ -124,6 +142,78 @@
 
 	var/obj/structure/overmap/ship/spawned = SSshuttle.create_ship(choices[ship_to_spawn])
 	mob.client?.admin_follow(spawned.shuttle)
+
+/client/proc/spawn_modular_ship()
+	set name = "Spawn Modular Ship (With Upgrades)"
+	set category = "Overmap.Spawn"
+
+	// Initialize upgrade system
+	ensure_ship_upgrades_initialized()
+
+	// Build list of ships that support upgrades
+	var/list/modular_ships = list()
+	for(var/ship_type in subtypesof(/datum/map_template/shuttle/voidcrew))
+		var/datum/map_template/shuttle/voidcrew/template = ship_type
+		if(initial(template.abstract) == ship_type)
+			continue
+		if(initial(template.has_upgrade_slots))
+			modular_ships[initial(template.name)] = ship_type
+
+	if(!length(modular_ships))
+		to_chat(usr, span_warning("No ships with upgrade slots found!"))
+		return
+
+	// Select ship
+	var/ship_choice = tgui_input_list(usr, "Select a modular ship to spawn:", "Spawn Modular Ship", modular_ships)
+	if(!ship_choice)
+		return
+
+	var/ship_type = modular_ships[ship_choice]
+	var/datum/map_template/shuttle/voidcrew/template = new ship_type()
+
+	// Build upgrade selections for each slot
+	var/list/upgrade_selections = list()
+
+	for(var/slot_key in template.upgrade_slot_ids)
+		// Find all modules for this slot
+		var/list/slot_options = list()
+		slot_options["None (empty)"] = null
+
+		for(var/module_id in GLOB.ship_upgrade_modules)
+			var/datum/ship_upgrade_module/module = GLOB.ship_upgrade_modules[module_id]
+			if(module.slot != slot_key)
+				continue
+
+			var/option_name = module.name
+			if(module.is_default)
+				option_name += " (default)"
+			if(length(module.part_cost))
+				var/list/costs = list()
+				for(var/part_class in module.part_cost)
+					costs += "[module.part_cost[part_class]] [part_class]"
+				option_name += " [jointext(costs, ", ")]"
+
+			slot_options[option_name] = module
+
+		// Ask user to pick
+		var/choice = tgui_input_list(usr, "Select upgrade for '[slot_key]':", "Upgrade: [slot_key]", slot_options)
+		if(choice && slot_options[choice])
+			upgrade_selections[slot_key] = slot_options[choice]
+
+	// Show summary
+	to_chat(usr, span_notice("Spawning [template.name] with [length(upgrade_selections)] upgrade(s) selected..."))
+	for(var/slot_key in upgrade_selections)
+		var/datum/ship_upgrade_module/mod = upgrade_selections[slot_key]
+		to_chat(usr, span_notice("  - [slot_key]: [mod?.id || "null"] ([mod?.map_file || "no file"])"))
+		log_game("SHIP_UPGRADE: Admin selected '[slot_key]' = '[mod?.id]' ([mod?.map_file])")
+
+	// Spawn
+	var/obj/structure/overmap/ship/spawned = SSshuttle.create_ship(template, upgrade_selections)
+	if(spawned)
+		mob.client?.admin_follow(spawned.shuttle)
+		to_chat(usr, span_notice("[template.name] spawned successfully!"))
+	else
+		to_chat(usr, span_warning("Failed to spawn [template.name]!"))
 
 /client/proc/initiate_jump()
 	set name = "Initiate Jump"
