@@ -17,19 +17,18 @@ SUBSYSTEM_DEF(npc_ships)
 	/// Maximum number of NPC ships that can exist at once
 	var/max_ships = NPC_SHIP_MAX_SHIPS
 
-	/// Weighted list of ship templates for NPC pirates
-	/// Format: list(template_path = weight, ...)
-	var/list/ship_templates = list()
+	/// Weighted list of NPC ship types to spawn
+	/// Format: list(ship_type_path = weight, ...)
+	var/list/ship_types = list()
 
 	/// Whether spawning is enabled
 	var/spawning_enabled = TRUE
 
 /datum/controller/subsystem/npc_ships/Initialize()
-	// Build the template list from existing ship templates
-	// For now, use a few smaller ships that would make sense for pirates
-	build_template_list()
+	// Build the ship type list with all available pirate factions
+	build_ship_type_list()
 
-	log_world("SSnpc_ships: Initialized with [length(ship_templates)] templates, max [max_ships] ships")
+	log_world("SSnpc_ships: Initialized with [length(ship_types)] ship types, max [max_ships] ships")
 	return SS_INIT_SUCCESS
 
 /datum/controller/subsystem/npc_ships/fire(resumed)
@@ -49,23 +48,35 @@ SUBSYSTEM_DEF(npc_ships)
 	if(!prob(spawn_chance))
 		return
 
-	// Try to spawn a new NPC ship
-	spawn_npc_ship()
+	// Pick a random ship type and spawn it
+	if(!length(ship_types))
+		return
+	var/ship_type = pick_weight(ship_types)
+	spawn_npc_ship(ship_type)
 
 /**
- * Builds the weighted template list for NPC ships.
- * Currently uses a subset of existing ship templates.
- * In the future, this should use pirate-specific templates.
+ * Builds the weighted list of NPC ship types to spawn.
+ * Each faction has a weight determining spawn frequency.
+ * Light-threat factions are more common, heavy-threat are rarer.
  */
-/datum/controller/subsystem/npc_ships/proc/build_template_list()
-	ship_templates = list()
+/datum/controller/subsystem/npc_ships/proc/build_ship_type_list()
+	ship_types = list()
 
-	// For now, only use the Syndicate Blackbeard ship for testing
-	ship_templates[/datum/map_template/shuttle/voidcrew/blackbeard] = 1
+	// Light-threat factions (more common)
+	ship_types[/obj/structure/overmap/ship/npc/pirate] = 20              // Rogues (default)
+	ship_types[/obj/structure/overmap/ship/npc/pirate/silverscale] = 15  // Silverscale nobles
+	ship_types[/obj/structure/overmap/ship/npc/pirate/grey] = 15         // Grey Tide
+	ship_types[/obj/structure/overmap/ship/npc/pirate/lustrous] = 10     // Lustrous ethereals
 
-	// If no templates found, log a warning
-	if(!length(ship_templates))
-		log_world("SSnpc_ships: WARNING - No ship templates found for NPC spawning!")
+	// Heavy-threat factions (rarer but more dangerous)
+	ship_types[/obj/structure/overmap/ship/npc/pirate/skeleton] = 10     // Flying Dutchman
+	ship_types[/obj/structure/overmap/ship/npc/pirate/interdyne] = 10    // Interdyne biocraft
+	ship_types[/obj/structure/overmap/ship/npc/pirate/irs] = 10          // Space IRS
+	ship_types[/obj/structure/overmap/ship/npc/pirate/medieval] = 10     // Medieval warmongers
+
+	// If no ship types found, log a warning
+	if(!length(ship_types))
+		log_world("SSnpc_ships: WARNING - No ship types found for NPC spawning!")
 
 /**
  * Removes destroyed ships from the active list.
@@ -75,12 +86,31 @@ SUBSYSTEM_DEF(npc_ships)
 		if(QDELETED(ship))
 			active_ships -= ship
 
-/// Lookup table for ship type spawn zones (initial() doesn't work on lists)
+/// Lookup table for ship type spawn zones
+/// Light-threat factions spawn in yellow zones, heavy-threat in red zones
 /datum/controller/subsystem/npc_ships/proc/get_spawn_zones_for_type(ship_type_path)
 	switch(ship_type_path)
-		if(/obj/structure/overmap/ship/npc/pirate)
+		// Light-threat factions - spawn in yellow (and red)
+		if(/obj/structure/overmap/ship/npc/pirate)           // Rogues
+			return list(ZONE_YELLOW, ZONE_RED)
+		if(/obj/structure/overmap/ship/npc/pirate/silverscale)
+			return list(ZONE_YELLOW, ZONE_RED)
+		if(/obj/structure/overmap/ship/npc/pirate/grey)
+			return list(ZONE_YELLOW, ZONE_RED)
+		if(/obj/structure/overmap/ship/npc/pirate/lustrous)
+			return list(ZONE_YELLOW, ZONE_RED)
+
+		// Heavy-threat factions - spawn only in red
+		if(/obj/structure/overmap/ship/npc/pirate/skeleton)
 			return list(ZONE_RED)
-	// Default fallback
+		if(/obj/structure/overmap/ship/npc/pirate/interdyne)
+			return list(ZONE_RED)
+		if(/obj/structure/overmap/ship/npc/pirate/irs)
+			return list(ZONE_RED)
+		if(/obj/structure/overmap/ship/npc/pirate/medieval)
+			return list(ZONE_RED)
+
+	// Default fallback - red zone only
 	return list(ZONE_RED)
 
 /**
@@ -89,12 +119,10 @@ SUBSYSTEM_DEF(npc_ships)
  * @return The spawned ship or null on failure.
  */
 /datum/controller/subsystem/npc_ships/proc/spawn_npc_ship(ship_type_path = /obj/structure/overmap/ship/npc/pirate)
-	if(!length(ship_templates))
-		return null
-
-	// Pick a template
-	var/template_path = pick_weight(ship_templates)
+	// Get the shuttle template from the ship type
+	var/template_path = initial(ship_type_path:shuttle_template)
 	if(!template_path)
+		log_world("SSnpc_ships: No shuttle_template defined for [ship_type_path]")
 		return null
 
 	// Get spawn zones for this ship type
@@ -232,7 +260,29 @@ SUBSYSTEM_DEF(npc_ships)
 	if(!check_rights(R_ADMIN))
 		return
 
-	var/obj/structure/overmap/ship/npc/ship = SSnpc_ships.spawn_npc_ship()
+	// Let admin pick which faction to spawn
+	var/list/faction_options = list(
+		"Rogues (Default)" = /obj/structure/overmap/ship/npc/pirate,
+		"Silverscale (Lizards)" = /obj/structure/overmap/ship/npc/pirate/silverscale,
+		"Grey Tide (Assistants)" = /obj/structure/overmap/ship/npc/pirate/grey,
+		"Lustrous (Ethereals)" = /obj/structure/overmap/ship/npc/pirate/lustrous,
+		"Skeleton (Dutchman)" = /obj/structure/overmap/ship/npc/pirate/skeleton,
+		"Interdyne (Pharma)" = /obj/structure/overmap/ship/npc/pirate/interdyne,
+		"IRS (Tax Collectors)" = /obj/structure/overmap/ship/npc/pirate/irs,
+		"Medieval (Knights)" = /obj/structure/overmap/ship/npc/pirate/medieval,
+		"Random" = null,
+	)
+
+	var/choice = tgui_input_list(usr, "Select pirate faction to spawn:", "Spawn NPC Ship", faction_options)
+	if(!choice)
+		return
+
+	var/ship_type = faction_options[choice]
+	if(!ship_type)
+		// Random - pick from weighted list
+		ship_type = pick_weight(SSnpc_ships.ship_types)
+
+	var/obj/structure/overmap/ship/npc/ship = SSnpc_ships.spawn_npc_ship(ship_type)
 	if(ship)
 		to_chat(usr, span_notice("Spawned NPC ship: [ship.name]"))
 		mob.client?.admin_follow(ship.shuttle)

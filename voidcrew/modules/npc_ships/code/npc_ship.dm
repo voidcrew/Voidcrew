@@ -47,6 +47,9 @@
 	/// List of mob types to spawn as crew (picked randomly)
 	var/list/crew_types = list()
 
+	/// Shuttle template to use for this ship type (set in subtypes)
+	var/shuttle_template = null
+
 	// ========== INTERNAL STATE ==========
 
 	/// Whether this ship can currently be boarded (disabled or interdicted)
@@ -326,6 +329,9 @@
 
 	// Red color for pirate faction
 	ship_color = NPC_COLOR_PIRATE
+
+	// Default pirate shuttle template (Rogues)
+	shuttle_template = /datum/map_template/shuttle/voidcrew/pirate_default
 
 	// Combat stats
 	lock_time = 5 SECONDS
