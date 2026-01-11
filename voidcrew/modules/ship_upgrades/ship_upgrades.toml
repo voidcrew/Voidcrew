@@ -1,0 +1,11 @@
+# Ship Upgrade Modules Configuration
+# Module DMMs are organized by ship type in subdirectories
+
+directory = "_maps/voidcrew/ship_modules/"
+
+# Test Modular Ship modules
+[rooms.test_modular.cargobay]
+modules = ["test_modular/cargo_basic.dmm", "test_modular/cargo_expanded.dmm"]
+
+[rooms.test_modular.engineroom]
+modules = ["test_modular/engine_basic.dmm", "test_modular/engine_advanced.dmm"]
