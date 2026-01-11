@@ -422,7 +422,7 @@
 /turf/open/floor/pod/light,
 /area/shuttle/voidcrew/pirate_silverscale)
 "Ae" = (
-/obj/machinery/shuttle_scrambler,
+/obj/machinery/shuttle_scrambler/ship_siphon,
 /obj/effect/turf_decal/bot,
 /obj/machinery/light/directional/east,
 /turf/open/floor/iron/dark,

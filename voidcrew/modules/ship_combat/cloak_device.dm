@@ -333,8 +333,14 @@
 	update_use_power(ACTIVE_POWER_USE)
 
 	// Start cloak duration timer
-	cloak_expire_time = world.time + max_cloak_duration
-	cloak_timer_id = addtimer(CALLBACK(src, PROC_REF(on_cloak_expired)), max_cloak_duration, TIMER_STOPPABLE)
+	// NPC ships can override duration for balance purposes
+	var/actual_duration = max_cloak_duration
+	if(istype(linked_ship, /obj/structure/overmap/ship/npc))
+		var/obj/structure/overmap/ship/npc/npc_ship = linked_ship
+		if(npc_ship.npc_cloak_duration > 0)
+			actual_duration = npc_ship.npc_cloak_duration
+	cloak_expire_time = world.time + actual_duration
+	cloak_timer_id = addtimer(CALLBACK(src, PROC_REF(on_cloak_expired)), actual_duration, TIMER_STOPPABLE)
 
 	// Visual and audio feedback
 	visible_message(span_notice("[src] hums to life as the cloaking field activates."))

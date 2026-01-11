@@ -61,6 +61,36 @@
 
 	return TRUE
 
+/**
+ * Rescans the ship for weapons. Use this after adding equipment post-spawn.
+ */
+/datum/npc_combat_interface/proc/rescan_weapons()
+	if(!owner_ship?.shuttle?.shuttle_areas)
+		return FALSE
+
+	// Clear existing lists
+	linked_laser_turrets.Cut()
+	linked_missile_launchers.Cut()
+	linked_interdictor = null
+	linked_cloak_device = null
+
+	// Re-scan all ship areas
+	for(var/area/ship_area as anything in owner_ship.shuttle.shuttle_areas)
+		for(var/obj/machinery/ship_combat/equipment in ship_area)
+			if(istype(equipment, /obj/machinery/ship_combat/laser_turret))
+				linked_laser_turrets += equipment
+			else if(istype(equipment, /obj/machinery/ship_combat/missile_launcher))
+				linked_missile_launchers += equipment
+			else if(istype(equipment, /obj/machinery/ship_combat/interdictor))
+				linked_interdictor = equipment
+			else if(istype(equipment, /obj/machinery/ship_combat/cloak_device))
+				linked_cloak_device = equipment
+
+	// Re-load all missile launchers
+	load_all_launchers()
+
+	return TRUE
+
 // ========== VIRTUAL MISSILE SYSTEM ==========
 
 /**

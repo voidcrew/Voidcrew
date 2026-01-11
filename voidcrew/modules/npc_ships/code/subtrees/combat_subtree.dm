@@ -35,6 +35,7 @@
 		if(NPC_COMBAT_COMBAT)
 			controller.queue_behavior(/datum/ai_behavior/npc_ship/fire_weapons)
 			controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)
+			controller.queue_behavior(/datum/ai_behavior/npc_ship/activate_siphon)
 			controller.queue_behavior(/datum/ai_behavior/npc_ship/check_weapons)
 
 	// Always check if we should disengage (target out of range)

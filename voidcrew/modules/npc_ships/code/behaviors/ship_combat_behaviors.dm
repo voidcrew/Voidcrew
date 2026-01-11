@@ -373,6 +373,40 @@
 
 	return AI_BEHAVIOR_DELAY
 
+// ========== ACTIVATE SIPHON ==========
+
+/**
+ * Activates the ship's data siphon when weapons lock is achieved.
+ * Pirates use this to steal credits from locked targets.
+ */
+/datum/ai_behavior/npc_ship/activate_siphon
+	action_cooldown = 2 SECONDS
+
+/datum/ai_behavior/npc_ship/activate_siphon/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
+	var/obj/structure/overmap/ship/target = controller.get_target()
+
+	if(!ship || !target || QDELETED(target))
+		return AI_BEHAVIOR_DELAY
+
+	// Only siphon if we have lock
+	if(!controller.blackboard[BB_NPC_TARGET_LOCKED])
+		return AI_BEHAVIOR_DELAY
+
+	// Find our data siphon and activate it
+	var/obj/machinery/shuttle_scrambler/ship_siphon/siphon
+	for(var/area/shuttle_area as anything in ship.shuttle?.shuttle_areas)
+		siphon = locate(/obj/machinery/shuttle_scrambler/ship_siphon) in shuttle_area
+		if(siphon)
+			break
+
+	if(siphon && !siphon.active)
+		siphon.activate_siphon(target)
+
+	return AI_BEHAVIOR_DELAY
+
 // ========== CHECK WEAPONS ==========
 
 /**

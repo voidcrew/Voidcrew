@@ -54,6 +54,12 @@
 "aZ" = (
 /obj/item/clothing/suit/hazardvest,
 /obj/effect/spawner/random/maintenance/six,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_grey)
+"bn" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "bp" = (
@@ -201,6 +207,7 @@
 /obj/effect/spawner/random/structure/chair_maintenance{
 	dir = 1
 	},
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "hW" = (
@@ -277,6 +284,7 @@
 	dir = 1
 	},
 /obj/item/reagent_containers/cup/glass/coffee,
+/obj/machinery/ship_combat/cloak_device,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "lB" = (
@@ -351,12 +359,6 @@
 /area/shuttle/voidcrew/pirate_grey)
 "ox" = (
 /obj/machinery/light/small/directional/west,
-/obj/machinery/computer/camera_advanced/shuttle_docker/syndicate/pirate{
-	dir = 4;
-	x_offset = -5;
-	y_offset = 12;
-	view_range = 10
-	},
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/firealarm/directional/south,
 /obj/effect/turf_decal/tile/red/anticorner/contrasted,
@@ -770,6 +772,13 @@
 /obj/item/knife/butcher,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/pirate_grey)
+"zn" = (
+/obj/structure/cable,
+/obj/machinery/power/port_gen/pacman/pre_loaded{
+	anchored = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_grey)
 "zB" = (
 /turf/closed/wall/rust,
 /area/shuttle/voidcrew/pirate_grey)
@@ -814,6 +823,14 @@
 /obj/effect/turf_decal/trimline/yellow/warning,
 /obj/effect/spawner/structure/window,
 /turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_grey)
+"AL" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/iron,
 /area/shuttle/voidcrew/pirate_grey)
 "AR" = (
 /obj/structure/toilet{
@@ -913,6 +930,11 @@
 /obj/effect/mapping_helpers/burnt_floor,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
+"CS" = (
+/obj/effect/spawner/random/structure/crate,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_grey)
 "CY" = (
 /obj/structure/cable,
 /obj/item/flashlight,
@@ -993,7 +1015,9 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "FT" = (
-/obj/machinery/loot_locator,
+/obj/machinery/ship_combat/interdictor{
+	dir = 8
+	},
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/pirate_grey)
 "Gb" = (
@@ -1057,6 +1081,7 @@
 /area/shuttle/voidcrew/pirate_grey)
 "HS" = (
 /obj/effect/spawner/random/engineering/atmospherics_portable,
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "IE" = (
@@ -1080,6 +1105,7 @@
 /area/shuttle/voidcrew/pirate_grey)
 "JI" = (
 /obj/effect/spawner/random/engineering/toolbox,
+/obj/machinery/ship_combat/shield_generator,
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/pirate_grey)
 "JL" = (
@@ -1135,7 +1161,9 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/item/reagent_containers/cup/glass/coffee,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_grey)
+/area/shuttle/voidcrew/pirate_grey{
+	requires_power = 0
+	})
 "LQ" = (
 /obj/effect/spawner/random/structure/steam_vent,
 /turf/open/floor/plating,
@@ -1147,8 +1175,8 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "Mu" = (
-/obj/machinery/power/shuttle_engine/propulsion{
-	dir = 8
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
 	},
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/pirate_grey)
@@ -1161,6 +1189,7 @@
 /area/shuttle/voidcrew/pirate_grey)
 "Nu" = (
 /obj/effect/spawner/random/structure/closet_maintenance,
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "NI" = (
@@ -1175,6 +1204,11 @@
 /obj/effect/turf_decal/tile/neutral/fourcorners,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/pirate_grey)
+"NQ" = (
+/obj/structure/sign/poster/random/directional/east,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_grey)
 "Oa" = (
 /obj/structure/table/wood,
 /obj/effect/spawner/random/maintenance/four,
@@ -1188,7 +1222,7 @@
 /area/shuttle/voidcrew/pirate_grey)
 "Oo" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/shuttle_scrambler,
+/obj/machinery/shuttle_scrambler/ship_siphon,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "Ox" = (
@@ -1312,6 +1346,7 @@
 "SB" = (
 /obj/effect/mapping_helpers/burnt_floor,
 /obj/item/melee/baton/security/cattleprod/teleprod,
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "Ti" = (
@@ -1353,16 +1388,22 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "Uv" = (
+/obj/machinery/ship_combat/shield_generator,
 /turf/open/floor/plating/rust,
 /area/shuttle/voidcrew/pirate_grey)
 "UJ" = (
-/obj/machinery/power/shuttle_engine/propulsion{
-	dir = 8
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
 	},
 /obj/effect/turf_decal/trimline/yellow/warning{
 	dir = 8
 	},
 /turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_grey)
+"UR" = (
+/obj/machinery/portable_atmospherics/canister,
+/obj/structure/cable,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "Vd" = (
 /obj/structure/rack,
@@ -1379,7 +1420,9 @@
 "Vw" = (
 /obj/machinery/light/small/directional/west,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_grey)
+/area/shuttle/voidcrew/pirate_grey{
+	requires_power = 0
+	})
 "VI" = (
 /obj/structure/rack,
 /obj/item/wrench,
@@ -1410,9 +1453,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "Ww" = (
-/obj/machinery/power/shuttle_engine/heater{
-	dir = 8
-	},
+/obj/structure/cable,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/pirate_grey)
 "Wy" = (
@@ -1486,6 +1527,7 @@
 /area/shuttle/voidcrew/pirate_grey)
 "ZD" = (
 /obj/effect/spawner/random/trash/garbage,
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 
@@ -1552,7 +1594,7 @@ Hv
 fm
 de
 tS
-xs
+UR
 Wy
 Qm
 GI
@@ -1590,7 +1632,7 @@ CP
 rB
 xu
 ht
-Lk
+bn
 Ha
 Ue
 Wy
@@ -1609,7 +1651,7 @@ QU
 Pg
 uY
 Wc
-Wy
+zn
 FP
 Yj
 Ox
@@ -1628,7 +1670,7 @@ Fp
 au
 Su
 iL
-Yj
+CS
 cH
 eU
 OG
@@ -1685,7 +1727,7 @@ RH
 LE
 lk
 ZD
-ei
+NQ
 wY
 Qe
 xj
@@ -1741,7 +1783,7 @@ pk
 pS
 pU
 Pn
-QO
+AL
 Ac
 Wc
 Mo

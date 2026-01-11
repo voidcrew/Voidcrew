@@ -38,6 +38,9 @@
 	/// Cooldown between missile launches (deciseconds)
 	var/missile_cooldown_time = 10 SECONDS
 
+	/// Override cloak duration for this NPC ship type (0 = use device's calculated value)
+	var/npc_cloak_duration = 0
+
 	/// Minimum crew to spawn
 	var/crew_min = 3
 
@@ -129,6 +132,31 @@
 
 	// Spawn pirate crew
 	spawn_crew()
+
+/obj/structure/overmap/ship/npc/examine(mob/user)
+	. = ..()
+	// Debug info for admins
+	if(!check_rights_for(user.client, R_DEBUG))
+		return
+	. += span_notice("--- NPC DEBUG INFO ---")
+	if(!ai_controller)
+		. += span_warning("AI Controller: NOT INITIALIZED")
+		return
+	var/datum/ai_controller/npc_ship/controller = ai_controller
+	var/combat_state = controller.blackboard[BB_NPC_COMBAT_STATE] || "null"
+	var/movement_mode = controller.blackboard[BB_NPC_MOVEMENT_MODE] || "null"
+	var/has_target = controller.blackboard[BB_NPC_TARGET] ? "YES" : "NO"
+	var/has_lock = controller.blackboard[BB_NPC_TARGET_LOCKED] ? "YES" : "NO"
+	. += span_notice("Combat State: [combat_state]")
+	. += span_notice("Movement Mode: [movement_mode]")
+	. += span_notice("Has Target: [has_target]")
+	. += span_notice("Weapons Lock: [has_lock]")
+	if(combat_interface)
+		var/laser_count = length(combat_interface.linked_laser_turrets)
+		var/missile_count = length(combat_interface.linked_missile_launchers)
+		. += span_notice("Lasers: [laser_count] | Missiles: [missile_count]")
+	else
+		. += span_warning("Combat Interface: NOT INITIALIZED")
 
 /**
  * Sets the movement mode for this NPC ship.
@@ -337,6 +365,7 @@
 	lock_time = 5 SECONDS
 	laser_cooldown_time = 5 SECONDS
 	missile_cooldown_time = 10 SECONDS
+	npc_cloak_duration = 5 SECONDS  // Short cloak for pirates
 
 	// Movement stats
 	speed_limit = 0.5
