@@ -9,6 +9,9 @@ SUBSYSTEM_DEF(bounty)
 	init_order = INIT_ORDER_OVERMAP + 3  // After NPC ships spawn
 	flags = SS_NO_FIRE  // No periodic firing - event-driven
 	runlevels = RUNLEVEL_GAME
+	dependencies = list(
+		/datum/controller/subsystem/npc_ships,  // Pirates must exist before we create bounties
+	)
 
 	/// List of all active bounties
 	var/list/datum/pirate_bounty/active_bounties = list()
@@ -17,23 +20,23 @@ SUBSYSTEM_DEF(bounty)
 	var/bounties_initialized = FALSE
 
 /datum/controller/subsystem/bounty/Initialize()
-	// Generate bounties after a delay to let pirates spawn
-	addtimer(CALLBACK(src, PROC_REF(generate_initial_bounties)), 6 SECONDS)
+	// SSnpc_ships is a dependency, so pirates are already spawned
+	// Generate bounties for all existing pirates
+	generate_initial_bounties()
+	bounties_initialized = TRUE
 	return SS_INIT_SUCCESS
 
 /**
  * Generates bounties for all currently active pirates.
- * Called after pirate spawning is complete.
+ * Called to create bounties for any pirates that already exist.
  */
 /datum/controller/subsystem/bounty/proc/generate_initial_bounties()
-	if(bounties_initialized)
-		return
-
+	var/count = 0
 	for(var/obj/structure/overmap/ship/npc/ship in SSnpc_ships.active_ships)
-		create_bounty_for_ship(ship)
+		if(create_bounty_for_ship(ship))
+			count++
 
-	bounties_initialized = TRUE
-	log_world("SSbounty: Generated [length(active_bounties)] initial bounties")
+	log_world("SSbounty: Generated [count] bounties for existing pirates")
 
 /**
  * Creates a bounty for a specific pirate ship.
@@ -135,6 +138,16 @@ SUBSYSTEM_DEF(bounty)
 	return claimed
 
 /**
+ * Checks if a ship already has an active bounty.
+ * Ships can only hunt one bounty at a time.
+ */
+/datum/controller/subsystem/bounty/proc/ship_has_active_bounty(obj/structure/overmap/ship/ship)
+	for(var/datum/pirate_bounty/bounty in active_bounties)
+		if(bounty.is_valid() && bounty.is_claimant(ship))
+			return TRUE
+	return FALSE
+
+/**
  * Removes a bounty from tracking (called by bounty on complete/fail).
  */
 /datum/controller/subsystem/bounty/proc/remove_bounty(datum/bounty/bounty)
@@ -142,13 +155,14 @@ SUBSYSTEM_DEF(bounty)
 
 /**
  * Called by SSnpc_ships when a new pirate spawns.
- * Creates a bounty for the new ship.
+ * Creates a bounty for the new ship after a short delay.
  */
 /datum/controller/subsystem/bounty/proc/on_pirate_spawned(obj/structure/overmap/ship/npc/ship)
+	// During SSbounty initialization, bounties are created via generate_initial_bounties()
 	if(!bounties_initialized)
-		return  // Will be handled by generate_initial_bounties
+		return
 
-	// Small delay to let the ship fully initialize (key spawns with captain)
+	// For replacement pirates spawned after init, create bounty with delay for ship to fully load
 	addtimer(CALLBACK(src, PROC_REF(create_bounty_for_ship), ship), 2 SECONDS)
 
 // ========== UI DATA HELPERS ==========
@@ -172,6 +186,7 @@ SUBSYSTEM_DEF(bounty)
 		// Add ship-specific data
 		if(for_ship)
 			bounty_data["is_hunting"] = bounty.is_claimant(for_ship)
+			bounty_data["was_abandoned"] = bounty.has_abandoned(for_ship)
 
 		// Add target location hint (zone)
 		var/obj/structure/overmap/ship/npc/target = bounty.get_target_ship()

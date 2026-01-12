@@ -29,6 +29,9 @@
 	/// List of ships (weakrefs) that have accepted this bounty
 	var/list/datum/weakref/claiming_ships = list()
 
+	/// List of ships (weakrefs) that have abandoned this bounty (can't re-accept)
+	var/list/datum/weakref/abandoned_by = list()
+
 	/// Whether this bounty has been completed
 	var/completed = FALSE
 
@@ -61,16 +64,28 @@
 	RegisterSignal(captain_key, COMSIG_SHIP_KEY_DESTROYED, PROC_REF(on_key_destroyed))
 	RegisterSignal(captain_key, COMSIG_SHIP_KEY_USED, PROC_REF(on_key_used))
 
+	// Register for ship destruction signal
+	RegisterSignal(target_ship, COMSIG_SHIP_DESTROYED, PROC_REF(on_ship_destroyed))
+
 /datum/pirate_bounty/Destroy()
-	// Unregister signals
+	// Remove from global tracking first (prevents memory leak)
+	SSbounty?.remove_bounty(src)
+
+	// Unregister signals from key
 	var/obj/item/ship_key/key = target_key_ref?.resolve()
 	if(key)
 		UnregisterSignal(key, list(COMSIG_SHIP_KEY_DESTROYED, COMSIG_SHIP_KEY_USED))
+
+	// Unregister signals from ship
+	var/obj/structure/overmap/ship/npc/ship = target_ship_ref?.resolve()
+	if(ship)
+		UnregisterSignal(ship, COMSIG_SHIP_DESTROYED)
 
 	// Clear references
 	target_ship_ref = null
 	target_key_ref = null
 	claiming_ships.Cut()
+	abandoned_by.Cut()
 
 	return ..()
 
@@ -83,7 +98,7 @@
 	var/base_reward = 1000
 
 	// Heavy factions are worth more
-	if(ship.type in SSnpc_ships.heavy_factions)
+	if(SSnpc_ships && (ship.type in SSnpc_ships.heavy_factions))
 		base_reward = 2000
 
 	// Add some variance (80-120%)
@@ -121,7 +136,7 @@
 /**
  * Adds a ship to the list of claimants hunting this bounty.
  * @param ship The player ship accepting the bounty
- * @return TRUE if successfully added, FALSE if already claimed or invalid
+ * @return TRUE if successfully added, FALSE otherwise
  */
 /datum/pirate_bounty/proc/add_claimant(obj/structure/overmap/ship/ship)
 	if(!is_valid())
@@ -129,31 +144,65 @@
 	if(!ship || QDELETED(ship))
 		return FALSE
 
-	// Check if already claiming
-	for(var/datum/weakref/ref in claiming_ships)
-		if(ref.resolve() == ship)
-			return FALSE  // Already hunting
+	// Check if already claiming this bounty
+	if(is_claimant(ship))
+		return FALSE
+
+	// Check if ship abandoned this bounty before
+	if(has_abandoned(ship))
+		return FALSE
+
+	// Check if ship already has an active bounty (limit: 1 at a time)
+	if(SSbounty?.ship_has_active_bounty(ship))
+		return FALSE
 
 	claiming_ships += WEAKREF(ship)
 	return TRUE
 
 /**
- * Removes a ship from the claimant list (cancelled bounty).
+ * Removes a ship from the claimant list (cancelled/abandoned bounty).
+ * Ship cannot re-accept this bounty after abandoning.
+ * Also cleans up dead weakrefs while iterating.
  * @param ship The player ship cancelling the bounty
  */
 /datum/pirate_bounty/proc/remove_claimant(obj/structure/overmap/ship/ship)
 	for(var/datum/weakref/ref in claiming_ships)
-		if(ref.resolve() == ship)
+		var/obj/structure/overmap/ship/resolved = ref.resolve()
+		if(!resolved)
 			claiming_ships -= ref
+			continue
+		if(resolved == ship)
+			claiming_ships -= ref
+			// Mark as abandoned - can't re-accept
+			abandoned_by += WEAKREF(ship)
+			return TRUE
+	return FALSE
+
+/**
+ * Checks if a ship has previously abandoned this bounty.
+ * Also cleans up dead weakrefs while iterating.
+ */
+/datum/pirate_bounty/proc/has_abandoned(obj/structure/overmap/ship/ship)
+	for(var/datum/weakref/ref in abandoned_by)
+		var/obj/structure/overmap/ship/resolved = ref.resolve()
+		if(!resolved)
+			abandoned_by -= ref
+			continue
+		if(resolved == ship)
 			return TRUE
 	return FALSE
 
 /**
  * Checks if a ship is currently hunting this bounty.
+ * Also cleans up dead weakrefs while iterating.
  */
 /datum/pirate_bounty/proc/is_claimant(obj/structure/overmap/ship/ship)
 	for(var/datum/weakref/ref in claiming_ships)
-		if(ref.resolve() == ship)
+		var/obj/structure/overmap/ship/resolved = ref.resolve()
+		if(!resolved)
+			claiming_ships -= ref
+			continue
+		if(resolved == ship)
 			return TRUE
 	return FALSE
 
@@ -270,3 +319,12 @@
 	// If someone claimed the ship via helm, the bounty fails
 	// (They took the ship as loot instead of turning in the key)
 	fail("Target ship was claimed by another crew.")
+
+/**
+ * Signal handler for when the target ship is destroyed.
+ * The bounty fails since the ship (and likely the key) is gone.
+ */
+/datum/pirate_bounty/proc/on_ship_destroyed(datum/source)
+	SIGNAL_HANDLER
+
+	fail("Target vessel was destroyed.")

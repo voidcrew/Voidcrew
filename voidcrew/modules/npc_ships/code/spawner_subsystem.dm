@@ -10,6 +10,10 @@ SUBSYSTEM_DEF(npc_ships)
 	init_order = INIT_ORDER_OVERMAP + 2 // After SSovermap and SSovermap_zones
 	flags = SS_NO_FIRE  // No periodic firing - we spawn on events
 	runlevels = RUNLEVEL_GAME
+	dependencies = list(
+		/datum/controller/subsystem/shuttle,  // Need SSshuttle to load ship templates
+		/datum/controller/subsystem/overmap_zones,  // Need zones for spawn locations
+	)
 
 	/// List of currently active NPC ships
 	var/list/obj/structure/overmap/ship/npc/active_ships = list()
@@ -45,8 +49,8 @@ SUBSYSTEM_DEF(npc_ships)
 
 /datum/controller/subsystem/npc_ships/Initialize()
 	log_world("SSnpc_ships: Initializing with [length(light_factions)] light factions, [length(heavy_factions)] heavy factions")
-	// Spawn initial pirates after a short delay to let overmap fully initialize
-	addtimer(CALLBACK(src, PROC_REF(initialize_pirates)), 5 SECONDS)
+	// SSshuttle is listed as a dependency, so it's guaranteed to be ready
+	initialize_pirates()
 	return SS_INIT_SUCCESS
 
 /**

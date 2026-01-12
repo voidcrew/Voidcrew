@@ -52,6 +52,7 @@ type Bounty = {
   reward: number;
   hunter_count: number;
   is_hunting: boolean;
+  was_abandoned: boolean;
   zone: string;
 };
 
@@ -64,6 +65,7 @@ type Data = {
   active_missions: Mission[];
   pad_contents: PadItem[];
   bounties: Bounty[];
+  has_active_bounty: BooleanLike;
 };
 
 export const MissionBoard = () => {
@@ -93,6 +95,7 @@ const MissionBoardContent = () => {
     active_missions,
     pad_contents,
     bounties,
+    has_active_bounty,
   } = data;
 
   const [currentTab, setCurrentTab] = useState<
@@ -215,7 +218,11 @@ const MissionBoardContent = () => {
               <Stack vertical>
                 {bounties.map((bounty) => (
                   <Stack.Item key={bounty.ref}>
-                    <BountyCard bounty={bounty} hasPad={!!has_pad} />
+                    <BountyCard
+                      bounty={bounty}
+                      hasPad={!!has_pad}
+                      hasActiveBounty={!!has_active_bounty}
+                    />
                   </Stack.Item>
                 ))}
               </Stack>
@@ -389,17 +396,29 @@ const MissionCard = (props: MissionCardProps) => {
 type BountyCardProps = {
   bounty: Bounty;
   hasPad: boolean;
+  hasActiveBounty: boolean;
 };
 
 const BountyCard = (props: BountyCardProps) => {
   const { act } = useBackend<Data>();
-  const { bounty, hasPad } = props;
+  const { bounty, hasPad, hasActiveBounty } = props;
+
+  // Can't accept if: already hunting one, abandoned this one, or already hunting this one
+  const canAccept =
+    !hasActiveBounty && !bounty.was_abandoned && !bounty.is_hunting;
+
+  // Determine why we can't accept
+  const getDisabledReason = () => {
+    if (bounty.was_abandoned) return 'You abandoned this bounty';
+    if (hasActiveBounty) return 'Already hunting a bounty';
+    return undefined;
+  };
 
   return (
     <Section
       title={
-        <Box inline>
-          <Box as="span" color="red" mr={1}>
+        <Box inline color={bounty.was_abandoned ? 'gray' : undefined}>
+          <Box as="span" color={bounty.was_abandoned ? 'gray' : 'red'} mr={1}>
             ☠
           </Box>
           {bounty.name}
@@ -407,7 +426,12 @@ const BountyCard = (props: BountyCardProps) => {
       }
       buttons={
         <Box inline>
-          <Box inline color="gold" bold mr={1}>
+          <Box
+            inline
+            color={bounty.was_abandoned ? 'gray' : 'gold'}
+            bold
+            mr={1}
+          >
             {bounty.reward} cr
           </Box>
           <Box inline color="label">
@@ -416,7 +440,9 @@ const BountyCard = (props: BountyCardProps) => {
         </Box>
       }
     >
-      <Box mb={1}>{bounty.desc}</Box>
+      <Box mb={1} color={bounty.was_abandoned ? 'gray' : undefined}>
+        {bounty.desc}
+      </Box>
 
       <Flex justify="space-between" align="center" mb={1}>
         <Flex.Item>
@@ -431,6 +457,11 @@ const BountyCard = (props: BountyCardProps) => {
           {bounty.is_hunting && (
             <Box color="green" bold>
               [HUNTING]
+            </Box>
+          )}
+          {bounty.was_abandoned && (
+            <Box color="bad" bold>
+              [ABANDONED]
             </Box>
           )}
         </Flex.Item>
@@ -470,10 +501,12 @@ const BountyCard = (props: BountyCardProps) => {
             <Button
               fluid
               icon="skull"
-              color="caution"
+              color={canAccept ? 'caution' : 'gray'}
+              disabled={!canAccept}
+              tooltip={getDisabledReason()}
               onClick={() => act('accept_bounty', { ref: bounty.ref })}
             >
-              Accept Bounty
+              {bounty.was_abandoned ? 'Abandoned' : 'Accept Bounty'}
             </Button>
           )}
         </Flex.Item>

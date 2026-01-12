@@ -101,6 +101,7 @@
 
 	// Bounties - global competitive pirate bounties
 	data["bounties"] = SSbounty?.get_bounty_ui_data(ship) || list()
+	data["has_active_bounty"] = SSbounty?.ship_has_active_bounty(ship) || FALSE
 
 	return data
 
@@ -180,12 +181,21 @@
 				balloon_alert(usr, "bounty not available!")
 				return TRUE
 
+			// Check specific failure reasons for better feedback
+			if(bounty.has_abandoned(ship))
+				balloon_alert(usr, "you abandoned this bounty!")
+				return TRUE
+
+			if(SSbounty?.ship_has_active_bounty(ship))
+				balloon_alert(usr, "already hunting a bounty!")
+				return TRUE
+
 			if(bounty.add_claimant(ship))
 				balloon_alert(usr, "bounty accepted!")
 				playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
 				ship.ship_announce("BOUNTY ACCEPTED: [bounty.name] - [bounty.reward] credit reward", "MISSION CONTROL")
 			else
-				balloon_alert(usr, "already hunting!")
+				balloon_alert(usr, "cannot accept bounty!")
 			return TRUE
 
 		if("cancel_bounty")
@@ -212,17 +222,21 @@
 				balloon_alert(usr, "place captain's key on pad!")
 				return TRUE
 
-			// Find matching bounty
-			var/datum/pirate_bounty/bounty = SSbounty?.get_bounty_for_key(key)
-			if(!bounty)
-				balloon_alert(usr, "no bounty for this key!")
+			// Find what bounty this ship is hunting (ships can only have one)
+			var/list/hunting = SSbounty?.get_bounties_for_claimant(ship)
+			if(!length(hunting))
+				balloon_alert(usr, "you have no active bounty!")
 				return TRUE
 
-			if(!bounty.can_turn_in(key, ship))
-				if(!bounty.is_claimant(ship))
-					balloon_alert(usr, "you haven't accepted this bounty!")
-				else
-					balloon_alert(usr, "cannot turn in!")
+			var/datum/pirate_bounty/bounty = hunting[1]
+
+			// Verify the key matches the bounty we're hunting
+			if(key != bounty.get_target_key())
+				balloon_alert(usr, "wrong key! need [bounty.name]'s key")
+				return TRUE
+
+			if(!bounty.is_valid())
+				balloon_alert(usr, "bounty no longer valid!")
 				return TRUE
 
 			// Complete the bounty!
