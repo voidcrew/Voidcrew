@@ -1369,12 +1369,16 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/scarab/cmos_office/b)
 "SA" = (
-/obj/machinery/power/smes/ship,
 /obj/effect/turf_decal/stripes/box,
 /obj/machinery/door/window/brigdoor/right/directional/east{
 	name = "engine access"
 	},
 /obj/structure/cable,
+/obj/machinery/power/smes/ship{
+	input_level = 10000;
+	output_level = 10000;
+	name = "engine power storage"
+	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/b)
 "Tw" = (
@@ -1590,12 +1594,16 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/scarab/commons/b)
 "YN" = (
-/obj/machinery/power/smes/ship,
 /obj/effect/turf_decal/stripes/box,
 /obj/machinery/door/window/brigdoor/left/directional/east{
 	name = "engine access"
 	},
 /obj/structure/cable,
+/obj/machinery/power/smes/ship{
+	input_level = 10000;
+	output_level = 10000;
+	name = "engine power storage"
+	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/b)
 "Zt" = (

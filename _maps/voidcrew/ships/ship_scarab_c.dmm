@@ -51,6 +51,7 @@
 	dir = 8
 	},
 /obj/machinery/power/apc/auto_name/directional/east,
+/obj/structure/cable,
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/shuttle/voidcrew/scarab/engines/c)
 "cR" = (
@@ -265,12 +266,16 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engineering/c)
 "iC" = (
-/obj/machinery/power/smes/ship,
 /obj/effect/turf_decal/stripes/box,
 /obj/machinery/door/window/brigdoor/right/directional/east{
 	name = "engine access"
 	},
 /obj/structure/cable,
+/obj/machinery/power/smes/ship{
+	input_level = 10000;
+	output_level = 10000;
+	name = "engine power storage"
+	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/c)
 "iG" = (
@@ -834,12 +839,16 @@
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/shuttle/voidcrew/scarab/engines/c)
 "vG" = (
-/obj/machinery/power/smes/ship,
 /obj/effect/turf_decal/stripes/box,
 /obj/machinery/door/window/brigdoor/left/directional/east{
 	name = "engine access"
 	},
 /obj/structure/cable,
+/obj/machinery/power/smes/ship{
+	input_level = 10000;
+	output_level = 10000;
+	name = "engine power storage"
+	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/c)
 "wA" = (
@@ -932,7 +941,6 @@
 /obj/structure/sign/warning/engine_safety/directional/north,
 /obj/effect/turf_decal/tile/yellow/full,
 /obj/structure/tank_dispenser,
-/obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 6
 	},
@@ -958,6 +966,7 @@
 	dir = 1;
 	name = "engine fuel pump"
 	},
+/obj/structure/cable,
 /turf/open/floor/iron/smooth,
 /area/shuttle/voidcrew/scarab/engines/c)
 "Bf" = (
@@ -970,12 +979,16 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/bridge/c)
 "Bg" = (
-/obj/machinery/power/smes/ship,
 /obj/machinery/door/window/brigdoor/right/directional/east{
 	name = "engine access"
 	},
 /obj/effect/turf_decal/stripes/box,
 /obj/structure/cable,
+/obj/machinery/power/smes/ship{
+	input_level = 10000;
+	output_level = 10000;
+	name = "engine power storage"
+	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/c)
 "Bi" = (
@@ -993,6 +1006,7 @@
 /obj/machinery/light/small/red/directional/east,
 /obj/structure/sign/warning/gas_mask/directional/east,
 /obj/effect/landmark/start/station_engineer,
+/obj/structure/cable,
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/shuttle/voidcrew/scarab/engines/c)
 "BB" = (
@@ -1285,6 +1299,7 @@
 /obj/structure/handrail{
 	dir = 8
 	},
+/obj/structure/cable,
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/shuttle/voidcrew/scarab/engines/c)
 "MQ" = (
@@ -1350,7 +1365,6 @@
 /obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
 	dir = 10
 	},
-/obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 1
@@ -1449,7 +1463,6 @@
 /obj/machinery/atmospherics/pipe/smart/simple/dark/hidden/layer2{
 	dir = 5
 	},
-/obj/structure/cable,
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/shuttle/voidcrew/scarab/engines/c)
 "Sa" = (
