@@ -10,10 +10,10 @@
 	pixel_z = 12
 	},
 /turf/open/floor/iron/large,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "at" = (
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "aQ" = (
 /obj/effect/spawner/structure/window/survival_pod,
 /obj/structure/cable,
@@ -22,17 +22,17 @@
 	id = "scarab_shutters"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "bT" = (
 /turf/closed/wall/mineral/titanium/survival/nodiagonal,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "cy" = (
 /obj/structure/dresser,
 /obj/machinery/light/small/directional/north,
 /obj/effect/turf_decal/tile/dark_green/full,
 /obj/structure/mirror/directional/north,
 /turf/open/floor/iron/large,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "cH" = (
 /obj/machinery/power/terminal{
 	dir = 8
@@ -45,45 +45,45 @@
 /obj/machinery/space_heater,
 /obj/machinery/light/small/red/directional/south,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "cL" = (
 /obj/structure/handrail{
 	dir = 8
 	},
 /obj/machinery/power/apc/auto_name/directional/east,
 /turf/open/floor/catwalk_floor/iron_smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "cR" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
 /obj/effect/turf_decal/stripes/line{
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "dg" = (
 /obj/machinery/power/shuttle_engine/ship/fueled/plasma{
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "dC" = (
 /obj/machinery/power/apc/auto_name/directional/north,
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "dU" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 8
 	},
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "ez" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "scarab_med"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "eE" = (
 /obj/machinery/door/airlock/external,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -94,7 +94,7 @@
 	cycle_id = "scarab_rear_airlock_c"
 	},
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "eQ" = (
 /obj/machinery/door/airlock/engineering{
 	name = "Engine Access"
@@ -108,14 +108,14 @@
 /obj/structure/cable,
 /obj/machinery/door/firedoor,
 /turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "fa" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 8
 	},
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "fb" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 6
@@ -125,7 +125,7 @@
 	},
 /obj/structure/marker_beacon/burgundy,
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "fc" = (
 /obj/structure/bed{
 	dir = 4
@@ -137,7 +137,7 @@
 	pixel_z = 12
 	},
 /turf/open/floor/iron/large,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "fl" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -149,19 +149,19 @@
 	dir = 4
 	},
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "fx" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
 	},
 /turf/open/floor/iron/white/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "fI" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable,
 /obj/machinery/door/firedoor,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "ga" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -171,7 +171,7 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "gr" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
@@ -185,7 +185,7 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "gD" = (
 /turf/template_noop,
 /area/template_noop)
@@ -196,10 +196,10 @@
 	},
 /obj/effect/turf_decal/tile/yellow/full,
 /turf/open/floor/iron/smooth_large,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "gH" = (
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/shuttle/voidcrew/scarab/engineering/c)
 "hq" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 8
@@ -214,13 +214,13 @@
 /turf/open/floor/iron/edge{
 	dir = 8
 	},
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "ht" = (
 /obj/structure/cable,
 /obj/effect/spawner/structure/window/reinforced/plasma,
 /obj/machinery/door/firedoor,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "hv" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -232,7 +232,7 @@
 /obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/tile/dark_red/full,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "hK" = (
 /obj/machinery/atmospherics/components/tank/plasma{
 	dir = 1
@@ -244,7 +244,7 @@
 	},
 /obj/machinery/light/small/red/directional/south,
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "hP" = (
 /obj/machinery/power/terminal{
 	dir = 8
@@ -255,7 +255,7 @@
 	dir = 8
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "ig" = (
 /obj/effect/spawner/structure/window/survival_pod,
 /obj/machinery/door/poddoor/shutters/preopen{
@@ -263,7 +263,7 @@
 	id = "scarab_shutters"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/shuttle/voidcrew/scarab/engineering/c)
 "iC" = (
 /obj/machinery/power/smes/ship,
 /obj/effect/turf_decal/stripes/box,
@@ -272,7 +272,7 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "iG" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/bot/right,
@@ -282,7 +282,7 @@
 	name = "main power monitoring console"
 	},
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "iR" = (
 /obj/structure/cable,
 /obj/effect/spawner/structure/window/survival_pod,
@@ -291,12 +291,12 @@
 	id = "scarab_shutters"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "jb" = (
 /obj/effect/landmark/start/medical_doctor,
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /turf/open/floor/iron/white,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "jc" = (
 /obj/machinery/power/terminal{
 	dir = 8
@@ -307,16 +307,16 @@
 	},
 /obj/machinery/light/small/red/directional/north,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "jA" = (
 /obj/structure/table,
 /obj/item/storage/medkit,
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /turf/open/floor/iron/white,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "kb" = (
 /turf/closed/wall/mineral/titanium/survival/nodiagonal,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "ki" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 4
@@ -325,7 +325,7 @@
 	dir = 4
 	},
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "kK" = (
 /obj/structure/bed{
 	dir = 2
@@ -333,7 +333,7 @@
 /obj/effect/turf_decal/tile/dark_blue/full,
 /obj/item/bedsheet/captain,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "kM" = (
 /obj/structure/bed{
 	dir = 4
@@ -346,7 +346,7 @@
 	pixel_z = 12
 	},
 /turf/open/floor/iron/large,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "kT" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
 	dir = 8
@@ -357,10 +357,10 @@
 /obj/structure/cable,
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /turf/open/floor/iron/white,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "le" = (
 /turf/closed/wall/mineral/titanium/survival,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "lv" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 10
@@ -384,7 +384,7 @@
 /obj/item/clothing/neck/stethoscope,
 /obj/item/storage/box/bodybags,
 /turf/open/floor/iron/white,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "lG" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/layer2{
 	dir = 4
@@ -396,10 +396,10 @@
 	dir = 8
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "mb" = (
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/commons)
+/area/shuttle/voidcrew/scarab/commons/c)
 "mc" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 6
@@ -409,7 +409,7 @@
 	},
 /obj/structure/marker_beacon/burgundy,
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/shuttle/voidcrew/scarab/engineering/c)
 "mf" = (
 /obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
 	dir = 1
@@ -422,14 +422,14 @@
 	dir = 5
 	},
 /turf/open/floor/catwalk_floor/iron_smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "mo" = (
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 4
 	},
 /obj/structure/handrail,
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "mr" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 1
@@ -440,7 +440,7 @@
 /obj/structure/mirror/directional/west,
 /obj/structure/sink/directional/east,
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/scarab/commons)
+/area/shuttle/voidcrew/scarab/commons/c)
 "mu" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 4
@@ -451,13 +451,13 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "mC" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable,
 /obj/machinery/door/firedoor,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "mH" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 10
@@ -467,7 +467,7 @@
 	},
 /obj/structure/marker_beacon/burgundy,
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "mN" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 9
@@ -485,13 +485,13 @@
 	dir = 1
 	},
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "mY" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "scarab_common"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/commons)
+/area/shuttle/voidcrew/scarab/commons/c)
 "np" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 10
@@ -502,7 +502,7 @@
 /obj/structure/cable,
 /obj/machinery/light/floor,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "ns" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -514,7 +514,7 @@
 /obj/structure/marker_beacon/burgundy,
 /obj/structure/sign/warning/docking/directional/north,
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "oA" = (
 /obj/machinery/shower/directional/south{
 	dir = 2
@@ -524,7 +524,7 @@
 	},
 /obj/structure/curtain,
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/scarab/commons)
+/area/shuttle/voidcrew/scarab/commons/c)
 "oK" = (
 /obj/structure/table,
 /obj/effect/turf_decal/tile/dark_blue/full,
@@ -539,10 +539,10 @@
 	id = "scarab_airlocks"
 	},
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "oN" = (
 /turf/closed/wall/mineral/titanium/survival,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "oV" = (
 /obj/structure/table,
 /obj/machinery/defibrillator_mount/directional/west,
@@ -552,7 +552,7 @@
 	pixel_z = 6
 	},
 /turf/open/floor/iron/white,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "oZ" = (
 /obj/structure/window/reinforced/spawner/directional/east,
 /obj/structure/cable,
@@ -560,10 +560,10 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "pk" = (
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/shuttle/voidcrew/scarab/engineering/c)
 "pl" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 5
@@ -573,7 +573,7 @@
 	},
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /turf/open/floor/iron/white,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "px" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 9
@@ -583,7 +583,7 @@
 	},
 /obj/structure/marker_beacon/burgundy,
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "pR" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
@@ -594,20 +594,20 @@
 	pixel_x = -32
 	},
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "pS" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "pW" = (
 /obj/structure/table/wood,
 /obj/item/paper_bin,
 /obj/item/pen,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "qb" = (
 /obj/machinery/power/apc/auto_name/directional/south,
 /obj/structure/cable,
@@ -624,7 +624,7 @@
 /obj/item/clothing/under/rank/security/officer/skirt,
 /obj/item/clothing/shoes/sneakers/red,
 /turf/open/floor/iron/large,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "qi" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/bot,
@@ -632,7 +632,7 @@
 /obj/effect/turf_decal/tile/dark_red/full,
 /obj/structure/sign/poster/official/get_your_legs/directional/south,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "qj" = (
 /obj/machinery/door/airlock/command{
 	name = "Captain's Quarters"
@@ -646,7 +646,7 @@
 /obj/structure/cable,
 /obj/machinery/door/firedoor,
 /turf/open/floor/iron/dark/textured_large,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "qo" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/bot/right,
@@ -656,7 +656,7 @@
 	dir = 8
 	},
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "qp" = (
 /obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
 	dir = 4
@@ -666,7 +666,7 @@
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "qw" = (
 /obj/machinery/door/airlock{
 	name = "Bathroom"
@@ -678,7 +678,7 @@
 	dir = 1
 	},
 /turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/scarab/commons)
+/area/shuttle/voidcrew/scarab/commons/c)
 "qy" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 10
@@ -687,7 +687,7 @@
 	dir = 10
 	},
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "qN" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 6
@@ -703,7 +703,7 @@
 /turf/open/floor/iron/edge{
 	dir = 4
 	},
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "rr" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
 	dir = 8
@@ -714,7 +714,7 @@
 /obj/structure/cable,
 /obj/effect/turf_decal/tile/dark_green/half,
 /turf/open/floor/iron/edge,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "rT" = (
 /obj/machinery/atmospherics/pipe/smart/simple/dark/hidden/layer2{
 	dir = 4
@@ -726,7 +726,7 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "ss" = (
 /obj/machinery/airalarm/directional/south,
 /obj/structure/closet{
@@ -741,10 +741,10 @@
 /obj/item/clothing/under/rank/security/officer/skirt,
 /obj/item/clothing/shoes/sneakers/red,
 /turf/open/floor/iron/large,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "sz" = (
 /turf/closed/wall/mineral/titanium/survival/nodiagonal,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "sU" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 10
@@ -761,11 +761,11 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "tC" = (
 /obj/effect/turf_decal/tile/neutral/full,
 /turf/closed/wall/mineral/titanium/survival/nodiagonal,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "tD" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 4
@@ -774,7 +774,7 @@
 	dir = 4
 	},
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "tF" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -788,7 +788,7 @@
 /obj/structure/marker_beacon/burgundy,
 /obj/structure/sign/warning/docking/directional/south,
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "tI" = (
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 8
@@ -798,10 +798,10 @@
 	dir = 1
 	},
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "tY" = (
 /turf/closed/wall/mineral/titanium/survival/nodiagonal,
-/area/shuttle/voidcrew/scarab/commons)
+/area/shuttle/voidcrew/scarab/commons/c)
 "us" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 5
@@ -813,7 +813,7 @@
 /obj/effect/turf_decal/bot_red,
 /obj/effect/turf_decal/tile/dark_blue/full,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "ux" = (
 /obj/effect/turf_decal/bot/right,
 /obj/effect/turf_decal/tile/dark_blue/full,
@@ -822,7 +822,7 @@
 	dir = 8
 	},
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "vA" = (
 /obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
 	dir = 10
@@ -832,7 +832,7 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/catwalk_floor/iron_smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "vG" = (
 /obj/machinery/power/smes/ship,
 /obj/effect/turf_decal/stripes/box,
@@ -841,20 +841,20 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "wA" = (
 /turf/closed/wall/mineral/titanium/survival/nodiagonal,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "wB" = (
 /turf/closed/wall/mineral/titanium/survival/nodiagonal,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/shuttle/voidcrew/scarab/engineering/c)
 "wD" = (
 /obj/structure/table,
 /obj/item/radio/intercom/directional/south,
 /obj/machinery/recharger,
 /obj/effect/turf_decal/tile/dark_blue/full,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "wE" = (
 /obj/effect/spawner/structure/window/survival_pod,
 /obj/machinery/door/poddoor/shutters/preopen{
@@ -862,7 +862,7 @@
 	id = "scarab_shutters"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "wH" = (
 /obj/machinery/stasis{
 	dir = 4
@@ -871,13 +871,13 @@
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /obj/machinery/vending/wallmed/directional/west,
 /turf/open/floor/iron/white,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "xg" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "scarab_engineering"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/shuttle/voidcrew/scarab/engineering/c)
 "xo" = (
 /obj/effect/spawner/structure/window/survival_pod,
 /obj/machinery/door/poddoor/shutters/preopen{
@@ -885,7 +885,7 @@
 	id = "scarab_shutters"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/commons)
+/area/shuttle/voidcrew/scarab/commons/c)
 "xt" = (
 /obj/effect/turf_decal/bot/right,
 /obj/effect/turf_decal/tile/dark_blue/full,
@@ -893,13 +893,13 @@
 	dir = 8
 	},
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "xS" = (
 /obj/effect/spawner/structure/window/reinforced/plasma,
 /obj/structure/cable,
 /obj/machinery/door/firedoor,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "yk" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 8
@@ -914,7 +914,7 @@
 	},
 /obj/effect/turf_decal/tile/dark_green/full,
 /turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "yM" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 8
@@ -927,7 +927,7 @@
 /obj/machinery/suit_storage_unit/standard_unit,
 /obj/effect/turf_decal/tile/dark_red/full,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "ze" = (
 /obj/structure/sign/warning/engine_safety/directional/north,
 /obj/effect/turf_decal/tile/yellow/full,
@@ -943,10 +943,10 @@
 /obj/effect/turf_decal/siding/yellow,
 /obj/machinery/light/small/red/directional/north,
 /turf/open/floor/iron/smooth_large,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "AB" = (
 /turf/closed/wall/mineral/titanium/survival,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "AW" = (
 /obj/machinery/light/small/red/directional/east,
 /obj/structure/sign/warning/gas_mask/directional/east,
@@ -959,7 +959,7 @@
 	name = "engine fuel pump"
 	},
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Bf" = (
 /obj/structure/cable,
 /obj/effect/spawner/structure/window/survival_pod,
@@ -968,7 +968,7 @@
 	id = "scarab_shutters"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "Bg" = (
 /obj/machinery/power/smes/ship,
 /obj/machinery/door/window/brigdoor/right/directional/east{
@@ -977,7 +977,7 @@
 /obj/effect/turf_decal/stripes/box,
 /obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Bi" = (
 /obj/machinery/light/small/directional/south,
 /obj/effect/turf_decal/tile/dark_blue/full,
@@ -985,16 +985,16 @@
 /obj/structure/cable,
 /obj/structure/mirror/directional/south,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "Bq" = (
 /turf/closed/wall/mineral/titanium/survival/nodiagonal,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "By" = (
 /obj/machinery/light/small/red/directional/east,
 /obj/structure/sign/warning/gas_mask/directional/east,
 /obj/effect/landmark/start/station_engineer,
 /turf/open/floor/catwalk_floor/iron_smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "BB" = (
 /obj/machinery/door/airlock/external,
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
@@ -1005,7 +1005,7 @@
 	cycle_id = "scarab_rear_airlock_c"
 	},
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "CV" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -1014,14 +1014,14 @@
 	dir = 4
 	},
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "CW" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 8
 	},
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "Df" = (
 /obj/effect/spawner/structure/window/reinforced/plasma,
 /obj/machinery/atmospherics/pipe/smart/simple/dark/hidden/layer2{
@@ -1030,7 +1030,7 @@
 /obj/machinery/door/firedoor,
 /obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Do" = (
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /obj/machinery/digital_clock/directional/south,
@@ -1040,13 +1040,13 @@
 	locked = 1
 	},
 /turf/open/floor/iron/white,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "Dp" = (
 /obj/machinery/washing_machine,
 /obj/effect/turf_decal/tile/dark_green/full,
 /obj/effect/turf_decal/box/red,
 /turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "DV" = (
 /obj/structure/table,
 /obj/item/storage/toolbox/emergency,
@@ -1054,10 +1054,10 @@
 /obj/item/flashlight/flare,
 /obj/item/megaphone,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "Ed" = (
 /turf/closed/wall/mineral/titanium/survival/nodiagonal,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "Fa" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/box/white/corners{
@@ -1070,7 +1070,7 @@
 	name = "engine fuel pump"
 	},
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Fq" = (
 /obj/machinery/light/small/directional/south,
 /obj/effect/turf_decal/tile/dark_blue/anticorner/contrasted{
@@ -1080,11 +1080,11 @@
 /obj/machinery/airalarm/directional/west,
 /obj/structure/closet/secure_closet/captains,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "GT" = (
 /obj/effect/turf_decal/tile/dark_red/fourcorners,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "GX" = (
 /obj/machinery/door/airlock{
 	name = "Dormitories"
@@ -1098,7 +1098,7 @@
 /obj/structure/cable,
 /obj/effect/turf_decal/tile/dark_green/full,
 /turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "HW" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
@@ -1107,13 +1107,13 @@
 	dir = 8
 	},
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "Ih" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
 	},
 /turf/open/floor/iron/white/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "Is" = (
 /obj/machinery/door/airlock{
 	name = "Cargo Bay"
@@ -1126,7 +1126,7 @@
 	},
 /obj/machinery/door/firedoor,
 /turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "Iy" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 5
@@ -1140,7 +1140,7 @@
 	dir = 1
 	},
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "IC" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 8
@@ -1153,19 +1153,19 @@
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /obj/structure/handrail,
 /turf/open/floor/iron/white,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "Jk" = (
 /obj/machinery/airalarm/directional/north,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/catwalk_floor/iron_smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "JS" = (
 /obj/structure/table,
 /obj/machinery/airalarm/directional/north,
 /obj/item/storage/fancy/donut_box,
 /obj/effect/turf_decal/tile/dark_blue/full,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "Ke" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -1180,14 +1180,14 @@
 /obj/effect/turf_decal/tile/dark_blue/full,
 /obj/machinery/digital_clock/directional/west,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "Kp" = (
 /obj/structure/reagent_dispensers/fueltank,
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Kx" = (
 /turf/closed/wall/mineral/titanium/survival,
-/area/shuttle/voidcrew/scarab/commons)
+/area/shuttle/voidcrew/scarab/commons/c)
 "KD" = (
 /obj/item/radio/intercom/directional/north,
 /obj/effect/turf_decal/stripes/red/line{
@@ -1196,7 +1196,7 @@
 /obj/machinery/light/small/directional/west,
 /obj/structure/handrail,
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "KX" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 4
@@ -1205,14 +1205,14 @@
 	dir = 8
 	},
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "Ld" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/bot,
 /obj/machinery/suit_storage_unit/standard_unit,
 /obj/effect/turf_decal/tile/dark_red/full,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "Lo" = (
 /obj/machinery/door/airlock/medical{
 	name = "Medical Bay"
@@ -1227,7 +1227,7 @@
 /obj/machinery/door/firedoor,
 /obj/effect/turf_decal/tile/blue/full,
 /turf/open/floor/iron/white/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "LI" = (
 /obj/effect/spawner/structure/window/survival_pod,
 /obj/machinery/door/poddoor/shutters/preopen{
@@ -1235,7 +1235,7 @@
 	id = "scarab_shutters"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "LR" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /obj/structure/toilet{
@@ -1247,7 +1247,7 @@
 	},
 /obj/item/soap,
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/scarab/commons)
+/area/shuttle/voidcrew/scarab/commons/c)
 "Mb" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 5
@@ -1257,7 +1257,7 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Md" = (
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 4
@@ -1266,7 +1266,7 @@
 	dir = 1
 	},
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "Mj" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 5
@@ -1276,17 +1276,17 @@
 	},
 /obj/structure/marker_beacon/burgundy,
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "MK" = (
 /turf/closed/wall/mineral/titanium/survival,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "ML" = (
 /obj/item/radio/intercom/directional/east,
 /obj/structure/handrail{
 	dir = 8
 	},
 /turf/open/floor/catwalk_floor/iron_smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "MQ" = (
 /obj/effect/spawner/structure/window/survival_pod,
 /obj/structure/cable,
@@ -1295,7 +1295,7 @@
 	id = "scarab_shutters"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "NE" = (
 /obj/machinery/airalarm/directional/north,
 /obj/item/radio/intercom/directional/west,
@@ -1303,7 +1303,7 @@
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /obj/item/reagent_containers/cup/bottle/formaldehyde,
 /turf/open/floor/iron/white,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "Oo" = (
 /obj/effect/spawner/structure/window/survival_pod,
 /obj/machinery/door/poddoor/shutters/preopen{
@@ -1311,10 +1311,10 @@
 	id = "scarab_shutters"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "Os" = (
 /turf/closed/wall/mineral/titanium/survival,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/shuttle/voidcrew/scarab/medbay/c)
 "OB" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 1
@@ -1325,7 +1325,7 @@
 	},
 /obj/item/kirbyplants/random/dead,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "OF" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 8
@@ -1335,7 +1335,7 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "Pl" = (
 /obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
 	dir = 1
@@ -1345,7 +1345,7 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/catwalk_floor/iron_smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Pn" = (
 /obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
 	dir = 10
@@ -1356,29 +1356,29 @@
 	dir = 1
 	},
 /turf/open/floor/catwalk_floor/iron_smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Pz" = (
 /obj/effect/turf_decal/tile/dark_green/full,
 /obj/machinery/cryopod{
 	dir = 4
 	},
 /turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "Qf" = (
 /obj/structure/cable,
 /obj/machinery/light/floor,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "Qt" = (
 /turf/closed/wall/mineral/titanium/survival,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Qz" = (
 /obj/effect/turf_decal/bot_red,
 /obj/effect/turf_decal/tile/dark_blue/full,
 /obj/machinery/light_switch/directional/west,
 /obj/structure/closet/secure_closet/security,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "QQ" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -1389,17 +1389,17 @@
 	},
 /obj/effect/turf_decal/tile/dark_red/fourcorners,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "QV" = (
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "Ra" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/tile/dark_red/full,
 /obj/machinery/portable_atmospherics/pump,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "Rb" = (
 /obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
 	dir = 1
@@ -1410,7 +1410,7 @@
 	dir = 1
 	},
 /turf/open/floor/catwalk_floor/iron_smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Ri" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 4
@@ -1420,7 +1420,7 @@
 	dir = 4
 	},
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "Rz" = (
 /obj/effect/spawner/structure/window/survival_pod,
 /obj/machinery/door/poddoor/shutters/preopen{
@@ -1429,19 +1429,19 @@
 	},
 /obj/docking_port/mobile/voidcrew/scarab/c,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/shuttle/voidcrew/scarab/engineering/c)
 "RC" = (
 /obj/item/radio/intercom/directional/west,
 /obj/effect/turf_decal/bot,
 /obj/machinery/suit_storage_unit/standard_unit,
 /obj/effect/turf_decal/tile/dark_red/full,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "RL" = (
 /obj/effect/turf_decal/tile/dark_blue/anticorner/contrasted,
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "RS" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/purple/hidden{
 	dir = 8
@@ -1451,7 +1451,7 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/catwalk_floor/iron_smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Sa" = (
 /obj/machinery/atmospherics/pipe/smart/simple/dark/hidden/layer2{
 	dir = 4
@@ -1461,13 +1461,13 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/pipedispenser,
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Sz" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "scarab_cargo"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "Tj" = (
 /obj/effect/spawner/structure/window/reinforced/plasma,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -1479,7 +1479,7 @@
 /obj/structure/cable,
 /obj/machinery/door/firedoor,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "To" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 9
@@ -1492,7 +1492,7 @@
 /obj/structure/sign/warning/electric_shock/directional/south,
 /obj/effect/turf_decal/tile/dark_red/full,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "Ui" = (
 /obj/machinery/door/airlock/external,
 /obj/effect/turf_decal/stripes/red/full,
@@ -1505,14 +1505,14 @@
 	cycle_id = "scarab_rear_airlock_c"
 	},
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "UM" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /obj/item/radio/intercom/directional/east,
 /obj/machinery/firealarm/directional/north,
 /obj/machinery/light/small/red/directional/east,
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "UN" = (
 /obj/structure/cable,
 /obj/structure/rack,
@@ -1521,7 +1521,7 @@
 /obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/tile/dark_red/full,
 /turf/open/floor/iron/dark/smooth_large,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "UR" = (
 /obj/structure/cable,
 /obj/structure/extinguisher_cabinet/directional/north,
@@ -1536,12 +1536,12 @@
 /obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/siding/yellow,
 /turf/open/floor/iron/smooth_large,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Vb" = (
 /obj/structure/cable,
 /obj/machinery/light/small/red/directional/south,
 /turf/open/floor/catwalk_floor/iron_smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Vh" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -1550,12 +1550,12 @@
 	dir = 8
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Vi" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/tile/dark_red/fourcorners,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "Vz" = (
 /obj/item/radio/intercom/directional/south,
 /obj/machinery/firealarm/directional/west{
@@ -1576,7 +1576,7 @@
 /obj/item/clothing/under/rank/security/officer/skirt,
 /obj/item/clothing/shoes/sneakers/red,
 /turf/open/floor/iron/large,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "VE" = (
 /obj/structure/sign/warning/no_smoking/circle/directional/north,
 /obj/effect/turf_decal/tile/yellow/full,
@@ -1585,7 +1585,7 @@
 /obj/effect/turf_decal/siding/yellow,
 /obj/machinery/light/small/red/directional/north,
 /turf/open/floor/iron/smooth_large,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Wk" = (
 /obj/structure/table/wood,
 /obj/effect/turf_decal/tile/dark_blue/half/contrasted,
@@ -1593,7 +1593,7 @@
 	pixel_x = -4
 	},
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "WB" = (
 /obj/machinery/door/airlock/command{
 	name = "Bridge"
@@ -1606,7 +1606,7 @@
 	},
 /obj/machinery/door/firedoor,
 /turf/open/floor/iron/dark/textured_large,
-/area/shuttle/voidcrew/scarab/bridge)
+/area/shuttle/voidcrew/scarab/bridge/c)
 "WE" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
 /obj/machinery/atmospherics/components/unary/outlet_injector/on{
@@ -1616,7 +1616,7 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Xp" = (
 /obj/structure/closet/firecloset{
 	anchored = 1
@@ -1628,7 +1628,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/light/small/red/directional/west,
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "XS" = (
 /obj/machinery/power/terminal{
 	dir = 8
@@ -1639,7 +1639,7 @@
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "XZ" = (
 /obj/machinery/door/airlock/engineering{
 	name = "Engineering"
@@ -1653,7 +1653,7 @@
 /obj/machinery/door/firedoor,
 /obj/effect/turf_decal/tile/yellow/full,
 /turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/shuttle/voidcrew/scarab/engineering/c)
 "Yh" = (
 /obj/machinery/firealarm/directional/south,
 /obj/structure/sign/poster/official/plasma_effects/directional/east,
@@ -1664,7 +1664,7 @@
 	dir = 1
 	},
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Yp" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 5
@@ -1674,12 +1674,12 @@
 	},
 /obj/structure/marker_beacon/burgundy,
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/scarab/captains_office)
+/area/shuttle/voidcrew/scarab/captains_office/c)
 "YD" = (
 /obj/structure/closet/emcloset/anchored,
 /obj/effect/turf_decal/bot_red,
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engines)
+/area/shuttle/voidcrew/scarab/engines/c)
 "Za" = (
 /obj/effect/spawner/structure/window/survival_pod,
 /obj/machinery/door/poddoor/shutters/preopen{
@@ -1687,7 +1687,7 @@
 	id = "scarab_shutters"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/dormitories)
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "ZJ" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 4
@@ -1696,7 +1696,7 @@
 	dir = 8
 	},
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 
 (1,1,1) = {"
 gD

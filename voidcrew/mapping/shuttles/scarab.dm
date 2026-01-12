@@ -188,13 +188,31 @@
 	name = "Bridge"
 	icon_state = "bridge"
 
+/area/shuttle/voidcrew/scarab/bridge/a
+
+/area/shuttle/voidcrew/scarab/bridge/b
+
+/area/shuttle/voidcrew/scarab/bridge/c
+
 /area/shuttle/voidcrew/scarab/captains_office
 	name = "Captain's Quarters"
 	icon_state = "captain"
 
+/area/shuttle/voidcrew/scarab/captains_office/a
+
+/area/shuttle/voidcrew/scarab/captains_office/b
+
+/area/shuttle/voidcrew/scarab/captains_office/c
+
 /area/shuttle/voidcrew/scarab/cmos_office
 	name = "Chief Medical Officer's Quarters"
 	icon_state = "cmo_office"
+
+/area/shuttle/voidcrew/scarab/cmos_office/a
+
+/area/shuttle/voidcrew/scarab/cmos_office/b
+
+/area/shuttle/voidcrew/scarab/cmos_office/c
 
 /// Engineering ///
 
@@ -202,9 +220,21 @@
 	name = "Engineering Bay"
 	icon_state = "engine"
 
+/area/shuttle/voidcrew/scarab/engineering/a
+
+/area/shuttle/voidcrew/scarab/engineering/b
+
+/area/shuttle/voidcrew/scarab/engineering/c
+
 /area/shuttle/voidcrew/scarab/engines
 	name = "Engine Room"
 	icon_state = "atmos_engine"
+
+/area/shuttle/voidcrew/scarab/engines/a
+
+/area/shuttle/voidcrew/scarab/engines/b
+
+/area/shuttle/voidcrew/scarab/engines/c
 
 /// Medbay ///
 
@@ -212,19 +242,43 @@
 	name = "Medical Bay"
 	icon_state = "medbay"
 
+/area/shuttle/voidcrew/scarab/medbay/a
+
+/area/shuttle/voidcrew/scarab/medbay/b
+
+/area/shuttle/voidcrew/scarab/medbay/c
+
 /// Misc ///
 
 /area/shuttle/voidcrew/scarab/cargo_bay
 	name = "Cargo Bay"
 	icon_state = "cargo_bay"
 
+/area/shuttle/voidcrew/scarab/cargo_bay/a
+
+/area/shuttle/voidcrew/scarab/cargo_bay/b
+
+/area/shuttle/voidcrew/scarab/cargo_bay/c
+
 /area/shuttle/voidcrew/scarab/commons
 	name = "Common Room"
 	icon_state = "station"
 
+/area/shuttle/voidcrew/scarab/commons/a
+
+/area/shuttle/voidcrew/scarab/commons/b
+
+/area/shuttle/voidcrew/scarab/commons/c
+
 /area/shuttle/voidcrew/scarab/dormitories
 	name = "Dormitories"
 	icon_state = "dorms"
+
+/area/shuttle/voidcrew/scarab/dormitories/a
+
+/area/shuttle/voidcrew/scarab/dormitories/b
+
+/area/shuttle/voidcrew/scarab/dormitories/c
 
 /// OUTFITS
 
