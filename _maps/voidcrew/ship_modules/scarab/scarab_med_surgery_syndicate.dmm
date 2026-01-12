@@ -8,13 +8,13 @@
 	},
 /obj/modular_map_connector,
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "d" = (
 /obj/effect/spawner/surgery_tray/full,
 /obj/structure/table/glass,
 /obj/machinery/light/cold/directional/east,
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "j" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 8
@@ -27,7 +27,7 @@
 	name = "Surgical Theatre"
 	},
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "z" = (
 /turf/template_noop,
 /area/template_noop)
@@ -36,18 +36,18 @@
 	dir = 1
 	},
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "G" = (
 /obj/machinery/smartfridge/organ,
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "H" = (
 /obj/machinery/computer/operating{
 	dir = 1
 	},
 /obj/structure/sign/departments/medbay/alt/directional/south,
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "L" = (
 /obj/structure/table/optable,
 /obj/item/tank/internals/anesthetic,
@@ -55,7 +55,7 @@
 /obj/item/clothing/mask/breath/muzzle,
 /obj/item/clothing/mask/breath/muzzle,
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "N" = (
 /obj/structure/table/glass,
 /obj/item/clothing/suit/apron/surgical{
@@ -66,7 +66,7 @@
 	pixel_y = -4
 	},
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "R" = (
 /obj/structure/closet/crate/freezer/surplus_limbs,
 /obj/item/radio/intercom/directional/east,
@@ -74,7 +74,7 @@
 	pixel_y = 6
 	},
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 
 (1,1,1) = {"
 z

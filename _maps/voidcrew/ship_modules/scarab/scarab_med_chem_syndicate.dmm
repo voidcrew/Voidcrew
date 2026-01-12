@@ -8,12 +8,12 @@
 	},
 /obj/modular_map_connector,
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "d" = (
 /obj/structure/chair/office/light,
 /obj/machinery/light/cold/directional/east,
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "z" = (
 /turf/template_noop,
 /area/template_noop)
@@ -22,27 +22,27 @@
 	dir = 1
 	},
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "F" = (
 /obj/machinery/smartfridge/chemistry,
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "H" = (
 /obj/machinery/chem_dispenser,
 /obj/structure/extinguisher_cabinet/directional/east,
 /obj/structure/sign/poster/official/periodic_table/directional/south,
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "L" = (
 /obj/machinery/chem_master,
 /obj/structure/sign/poster/official/safety_eye_protection/directional/west,
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "N" = (
 /obj/machinery/chem_heater,
 /obj/structure/sign/warning/chem_diamond/directional/east,
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "R" = (
 /obj/item/storage/box/beakers,
 /obj/item/storage/box/syringes{
@@ -56,7 +56,7 @@
 	pixel_y = 6
 	},
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "Y" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 8
@@ -69,7 +69,7 @@
 	name = "Chemistry Lab"
 	},
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 
 (1,1,1) = {"
 z

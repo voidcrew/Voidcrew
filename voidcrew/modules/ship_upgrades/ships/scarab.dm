@@ -44,7 +44,7 @@
 		providing an immense amount of sustainable power to the ship."
 	slot = "scarab_engineering"
 	map_file = "scarab/scarab_engineering_teg.dmm"
-	part_cost = list(PART_CLASS_TRADE = 2)
+	part_cost = list(PART_CLASS_TRADE = 2) // TEG is pretty OP
 
 /datum/ship_upgrade_module/scarab/common_quarters
 	id = "scarab_common_basic"
@@ -78,7 +78,7 @@
 		Comes with recharging stations intended for quicker EVA operations."
 	slot = "scarab_cargo"
 	map_file = "scarab/scarab_cargo_engi.dmm"
-	part_cost = list(PART_CLASS_TRADE = 1)
+	part_cost = list(PART_CLASS_COMBAT = 1) // Basically just a cargo bay but with stuff that makes space combat easier
 
 /datum/ship_upgrade_module/scarab/cargo_med
 	id = "scarab_cargo_med"

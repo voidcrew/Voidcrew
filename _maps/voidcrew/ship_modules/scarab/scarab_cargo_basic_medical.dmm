@@ -9,16 +9,16 @@
 	},
 /obj/structure/sign/warning/vacuum/external/directional/west,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "d" = (
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "f" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
 	dir = 1
 	},
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "g" = (
 /obj/structure/closet/crate,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -29,7 +29,7 @@
 /obj/item/stack/sheet/iron/fifty,
 /obj/item/stack/sheet/glass/fifty,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "h" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -39,7 +39,7 @@
 	},
 /obj/modular_map_connector,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "i" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -49,7 +49,7 @@
 	},
 /obj/structure/closet/crate/trashcart,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "j" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
 	dir = 4
@@ -59,7 +59,7 @@
 	},
 /obj/structure/ore_box,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "k" = (
 /turf/template_noop,
 /area/template_noop)
@@ -71,7 +71,7 @@
 	dir = 4
 	},
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "n" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 10
@@ -81,11 +81,11 @@
 	},
 /obj/structure/chair/comfy/shuttle,
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "o" = (
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "r" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -94,7 +94,7 @@
 	dir = 4
 	},
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "s" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 4
@@ -103,7 +103,7 @@
 	dir = 8
 	},
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "u" = (
 /obj/structure/reagent_dispensers/fueltank,
 /obj/structure/cable,
@@ -111,7 +111,7 @@
 	dir = 1
 	},
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "w" = (
 /obj/machinery/firealarm/directional/north,
 /obj/structure/closet/emcloset/anchored,
@@ -121,17 +121,17 @@
 	},
 /obj/structure/sign/warning/vacuum/external/directional/west,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "x" = (
 /obj/machinery/light/floor,
 /obj/structure/extinguisher_cabinet/directional/north,
 /obj/structure/handrail,
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "y" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "z" = (
 /obj/structure/closet/crate/cardboard,
 /obj/structure/cable,
@@ -148,7 +148,7 @@
 /obj/item/mining_scanner,
 /obj/item/mining_scanner,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "B" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -159,7 +159,7 @@
 /obj/structure/cable,
 /obj/structure/chair/comfy/shuttle,
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "C" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -171,12 +171,12 @@
 /obj/machinery/light/floor,
 /obj/structure/handrail,
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "D" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/box/corners,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "F" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 4
@@ -186,12 +186,12 @@
 	dir = 8
 	},
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "G" = (
 /obj/structure/cable,
 /obj/structure/reagent_dispensers/watertank,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "H" = (
 /obj/machinery/power/apc/auto_name/directional/east,
 /obj/structure/cable,
@@ -201,7 +201,7 @@
 	dir = 8
 	},
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "J" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
 	dir = 8
@@ -210,7 +210,7 @@
 	dir = 8
 	},
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "K" = (
 /obj/structure/cable,
 /obj/structure/closet/crate/internals,
@@ -223,7 +223,7 @@
 /obj/item/tank/internals/emergency_oxygen,
 /obj/item/tank/internals/emergency_oxygen,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "L" = (
 /obj/structure/closet/crate,
 /obj/effect/turf_decal/box/corners{
@@ -235,13 +235,13 @@
 /obj/item/stack/rods/fifty,
 /obj/item/storage/box/lights/bulbs,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "M" = (
 /obj/effect/turf_decal/bot,
 /obj/machinery/autolathe,
 /obj/structure/sign/poster/official/soft_cap_pop_art/directional/east,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "N" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -252,7 +252,7 @@
 /obj/structure/mop_bucket,
 /obj/item/mop,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "O" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -261,7 +261,7 @@
 	dir = 8
 	},
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "P" = (
 /obj/structure/table,
 /obj/item/storage/toolbox/mechanical{
@@ -270,7 +270,7 @@
 /obj/item/storage/belt/utility,
 /obj/effect/turf_decal/bot,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "R" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -280,22 +280,22 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "S" = (
 /obj/machinery/light/floor,
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "T" = (
 /obj/structure/table,
 /obj/machinery/airalarm/directional/east,
 /obj/machinery/cell_charger,
 /obj/effect/turf_decal/bot,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "V" = (
 /obj/structure/chair/comfy/shuttle,
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 "Y" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -303,7 +303,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4,
 /obj/machinery/light/floor,
 /turf/open/floor/mineral/titanium/tiled,
-/area/shuttle/voidcrew/scarab/cargo_bay)
+/area/template_noop)
 
 (1,1,1) = {"
 k

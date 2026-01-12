@@ -5,18 +5,18 @@
 "b" = (
 /obj/machinery/shower/directional/south,
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "d" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "e" = (
 /obj/structure/handrail{
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "f" = (
 /obj/item/radio/intercom/directional/north,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -33,7 +33,7 @@
 	},
 /obj/machinery/light/cold/directional/north,
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "h" = (
 /obj/machinery/atmospherics/components/unary/thermomachine,
 /obj/effect/turf_decal/box/red/corners,
@@ -43,7 +43,7 @@
 /turf/open/floor/mineral/titanium/white{
 	color = "#333135"
 	},
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "k" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -55,7 +55,7 @@
 	dir = 4
 	},
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "l" = (
 /obj/structure/table,
 /obj/item/reagent_containers/cup/beaker/cryoxadone{
@@ -67,7 +67,7 @@
 	pixel_x = 4
 	},
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "m" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 10
@@ -83,11 +83,11 @@
 /turf/open/floor/mineral/titanium/white{
 	color = "#333135"
 	},
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "n" = (
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "o" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
@@ -103,7 +103,7 @@
 	dir = 4
 	},
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "q" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -113,13 +113,13 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "r" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4,
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "s" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
@@ -135,7 +135,7 @@
 	dir = 1
 	},
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "u" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 1
@@ -154,14 +154,14 @@
 	dir = 1
 	},
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "v" = (
 /obj/machinery/digital_clock/directional/south,
 /obj/structure/handrail{
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "x" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -175,7 +175,7 @@
 /turf/open/floor/mineral/titanium/white{
 	color = "#333135"
 	},
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "y" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -185,14 +185,14 @@
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "z" = (
 /obj/machinery/shower/directional/south,
 /obj/machinery/atmospherics/pipe/layer_manifold/scrubbers/hidden{
 	dir = 4
 	},
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "B" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 6
@@ -204,13 +204,13 @@
 /turf/open/floor/mineral/titanium/white{
 	color = "#333135"
 	},
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "H" = (
 /obj/structure/table,
 /obj/item/wrench/medical,
 /obj/structure/sign/departments/medbay/alt/directional/south,
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "J" = (
 /obj/structure/cable,
 /obj/structure/railing{
@@ -223,7 +223,7 @@
 	dir = 1
 	},
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "K" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -234,13 +234,13 @@
 /obj/structure/cable,
 /obj/modular_map_connector,
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "L" = (
 /obj/machinery/power/apc/auto_name/directional/south,
 /obj/structure/cable,
 /obj/machinery/vending/drugs,
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "M" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -250,7 +250,7 @@
 	},
 /obj/structure/extinguisher_cabinet/directional/west,
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "N" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -268,7 +268,7 @@
 	dir = 8
 	},
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "O" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 4
@@ -278,7 +278,7 @@
 	dir = 4
 	},
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "P" = (
 /obj/structure/cable,
 /obj/structure/railing/corner/end/flip{
@@ -291,7 +291,7 @@
 	dir = 1
 	},
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "R" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
 	dir = 1
@@ -301,7 +301,7 @@
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold/cyan/visible,
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "S" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -311,7 +311,7 @@
 	},
 /obj/machinery/firealarm/directional/west,
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "T" = (
 /obj/machinery/portable_atmospherics/canister/anesthetic_mix,
 /obj/machinery/atmospherics/components/unary/portables_connector,
@@ -325,7 +325,7 @@
 /turf/open/floor/mineral/titanium/white{
 	color = "#333135"
 	},
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "U" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 4
@@ -341,11 +341,11 @@
 	dir = 4
 	},
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "V" = (
 /obj/machinery/vending/coffee,
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "W" = (
 /obj/machinery/airalarm/directional/north,
 /obj/structure/railing{
@@ -359,7 +359,7 @@
 	},
 /obj/machinery/light/cold/directional/north,
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "Y" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/cyan/visible{
 	dir = 4
@@ -371,7 +371,7 @@
 /turf/open/floor/mineral/titanium/white{
 	color = "#333135"
 	},
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 "Z" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -383,7 +383,7 @@
 	dir = 8
 	},
 /turf/open/floor/catwalk_floor/iron_dark,
-/area/shuttle/voidcrew/scarab/commons)
+/area/template_noop)
 
 (1,1,1) = {"
 a

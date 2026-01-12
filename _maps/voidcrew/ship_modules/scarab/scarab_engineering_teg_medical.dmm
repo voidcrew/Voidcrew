@@ -10,7 +10,7 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "d" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/stripes/line{
@@ -22,7 +22,7 @@
 	output_level = 40000
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "e" = (
 /obj/machinery/atmospherics/components/binary/volume_pump{
 	dir = 1
@@ -31,7 +31,7 @@
 	dir = 1
 	},
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "f" = (
 /obj/machinery/power/thermoelectric_generator{
 	dir = 1
@@ -39,7 +39,7 @@
 /obj/structure/cable,
 /obj/modular_map_connector,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "g" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/components/binary/valve/digital/on/layer2{
@@ -47,7 +47,7 @@
 	name = "waste release valve"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "h" = (
 /obj/machinery/airalarm/directional/north,
 /obj/structure/cable,
@@ -59,7 +59,7 @@
 	dir = 6
 	},
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "i" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 9
@@ -70,10 +70,10 @@
 	name = "air supply pump"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "j" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "l" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -83,7 +83,7 @@
 	dir = 4
 	},
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "m" = (
 /obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
 	dir = 9
@@ -95,20 +95,20 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "q" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 5
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "r" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/cyan/visible{
 	dir = 8
 	},
 /obj/machinery/meter,
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "s" = (
 /obj/structure/table,
 /obj/item/clothing/mask/gas,
@@ -116,7 +116,7 @@
 /obj/item/clothing/glasses/meson/engine,
 /obj/item/clothing/glasses/meson/engine,
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "v" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/orange/visible{
 	dir = 4
@@ -126,7 +126,7 @@
 	},
 /obj/machinery/meter,
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "w" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -138,14 +138,14 @@
 	output_level = 40000
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "x" = (
 /obj/machinery/atmospherics/components/tank/plasma/less{
 	dir = 1
 	},
 /obj/machinery/digital_clock/directional/south,
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "y" = (
 /obj/machinery/atmospherics/components/binary/circulator/cold{
 	dir = 4
@@ -154,7 +154,7 @@
 	dir = 8
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "z" = (
 /obj/item/radio/intercom/directional/east,
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
@@ -164,7 +164,7 @@
 	dir = 4
 	},
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "A" = (
 /obj/item/storage/belt/utility,
 /obj/item/wrench,
@@ -173,7 +173,7 @@
 /obj/structure/table,
 /obj/structure/sign/warning/no_smoking/directional/east,
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "B" = (
 /obj/machinery/atmospherics/components/tank/air/layer4{
 	dir = 1
@@ -184,7 +184,7 @@
 /obj/structure/sign/poster/official/build/directional/south,
 /obj/machinery/light/warm/directional/south,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "C" = (
 /obj/structure/sign/warning/electric_shock/directional/north,
 /obj/machinery/light/warm/directional/north,
@@ -194,14 +194,14 @@
 /obj/item/clothing/gloves/color/yellow,
 /obj/item/multitool,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "G" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/components/tank/plasma/less,
 /obj/item/radio/intercom/directional/north,
 /obj/machinery/power/apc/auto_name/directional/west,
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "H" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 6
@@ -209,10 +209,9 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 6
 	},
-/obj/docking_port/mobile/voidcrew/scarab/b,
 /obj/structure/marker_beacon/cerulean,
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "J" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/components/unary/portables_connector/layer2{
@@ -220,7 +219,7 @@
 	},
 /obj/machinery/portable_atmospherics/scrubber,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "K" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 4
@@ -232,7 +231,7 @@
 	dir = 1
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "L" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/handrail,
@@ -250,7 +249,7 @@
 	dir = 4
 	},
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "M" = (
 /obj/machinery/atmospherics/pipe/smart/simple/orange/visible{
 	dir = 6
@@ -263,7 +262,7 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "N" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/components/unary/thermomachine{
@@ -271,7 +270,7 @@
 	},
 /obj/structure/sign/warning/hot_temp/directional/north,
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "O" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 6
@@ -281,14 +280,14 @@
 	dir = 4
 	},
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "P" = (
 /obj/machinery/atmospherics/components/binary/pump/off/general/hidden/layer2{
 	dir = 8;
 	name = "waste collection pump"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "Q" = (
 /obj/machinery/atmospherics/components/unary/thermomachine{
 	target_temperature = 73;
@@ -296,7 +295,7 @@
 	},
 /obj/structure/sign/warning/cold_temp/directional/south,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "R" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
@@ -310,12 +309,12 @@
 	dir = 8
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "S" = (
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "T" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 8
@@ -324,11 +323,11 @@
 	dir = 1
 	},
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "U" = (
 /obj/machinery/atmospherics/components/binary/volume_pump,
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "V" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -341,7 +340,7 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "W" = (
 /obj/machinery/atmospherics/components/tank/air/layer4{
 	dir = 1
@@ -350,7 +349,7 @@
 	dir = 8
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "X" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 4
@@ -360,7 +359,7 @@
 	},
 /obj/machinery/space_heater,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "Z" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 9
@@ -371,7 +370,7 @@
 	},
 /obj/structure/sign/warning/gas_mask/directional/east,
 /turf/open/floor/mineral/titanium/tiled/yellow,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 
 (1,1,1) = {"
 G

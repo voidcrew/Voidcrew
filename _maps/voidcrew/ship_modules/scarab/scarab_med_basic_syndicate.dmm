@@ -8,20 +8,26 @@
 	},
 /obj/modular_map_connector,
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "d" = (
-/obj/structure/closet/secure_closet/medical3{
-	anchored = 1
-	},
 /obj/effect/turf_decal/bot_red,
 /obj/machinery/light/cold/directional/east,
-/obj/item/clothing/glasses/hud/health,
-/obj/item/clothing/glasses/science,
-/obj/item/storage/bag/chemistry,
-/obj/item/storage/belt/medical,
-/obj/item/clothing/neck/stethoscope,
+/obj/structure/closet/emcloset/anchored,
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
+"j" = (
+/obj/machinery/door/airlock/medical{
+	name = "Medical Storage"
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
 "z" = (
 /turf/template_noop,
 /area/template_noop)
@@ -30,7 +36,7 @@
 	dir = 1
 	},
 /turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "H" = (
 /obj/structure/table,
 /obj/item/storage/medkit/o2,
@@ -39,7 +45,7 @@
 	},
 /obj/machinery/door/window/right/directional/north,
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "L" = (
 /obj/structure/table,
 /obj/item/storage/medkit/brute,
@@ -48,25 +54,27 @@
 	},
 /obj/machinery/door/window/left/directional/north,
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "N" = (
 /obj/structure/closet/secure_closet/medical1,
 /obj/effect/turf_decal/bot_red,
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "R" = (
-/obj/structure/closet/emcloset/anchored,
-/obj/effect/turf_decal/bot_red,
 /obj/item/radio/intercom/directional/east,
 /obj/machinery/firealarm/directional/west{
 	pixel_y = 6
 	},
+/obj/structure/bodycontainer/morgue{
+	dir = 2
+	},
+/obj/effect/turf_decal/bot_white,
 /turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 
 (1,1,1) = {"
 z
-z
+j
 z
 z
 "}

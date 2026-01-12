@@ -7,14 +7,14 @@
 /obj/structure/table/glass,
 /obj/machinery/light/cold/directional/east,
 /turf/open/floor/iron/white/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "e" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /turf/open/floor/iron/white,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "l" = (
 /obj/structure/table/optable,
 /obj/item/tank/internals/anesthetic,
@@ -22,7 +22,7 @@
 /obj/item/clothing/mask/breath/muzzle,
 /obj/item/clothing/mask/breath/muzzle,
 /turf/open/floor/iron/white/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "v" = (
 /obj/structure/table/glass,
 /obj/item/clothing/suit/apron/surgical{
@@ -33,7 +33,7 @@
 	pixel_y = -4
 	},
 /turf/open/floor/iron/white/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "x" = (
 /obj/structure/closet/crate/freezer/surplus_limbs,
 /obj/item/radio/intercom/directional/east,
@@ -41,12 +41,12 @@
 	pixel_y = 6
 	},
 /turf/open/floor/iron/white/smooth_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "E" = (
 /obj/machinery/smartfridge/organ,
 /obj/effect/turf_decal/tile/blue/full,
 /turf/open/floor/iron/white/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "J" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 8
@@ -60,7 +60,7 @@
 	},
 /obj/effect/turf_decal/tile/blue/full,
 /turf/open/floor/iron/white/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "M" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 8
@@ -71,14 +71,14 @@
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /obj/modular_map_connector,
 /turf/open/floor/iron/white,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "P" = (
 /obj/machinery/computer/operating{
 	dir = 1
 	},
 /obj/structure/sign/departments/medbay/alt/directional/south,
 /turf/open/floor/iron/white/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 
 (1,1,1) = {"
 a

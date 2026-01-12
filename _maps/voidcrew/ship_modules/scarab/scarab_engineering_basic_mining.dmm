@@ -11,7 +11,7 @@
 	input_level = 25000
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "c" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
@@ -20,7 +20,7 @@
 /obj/effect/turf_decal/tile/yellow/half/contrasted,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "d" = (
 /obj/machinery/door/airlock/external,
 /obj/effect/turf_decal/stripes/red/full,
@@ -32,7 +32,7 @@
 	},
 /obj/structure/fans/tiny,
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "e" = (
 /obj/machinery/airalarm/directional/east,
 /obj/structure/cable,
@@ -42,7 +42,7 @@
 	name = "main power monitoring console"
 	},
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "f" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 1
@@ -53,7 +53,7 @@
 /obj/effect/turf_decal/tile/yellow/half/contrasted,
 /obj/modular_map_connector,
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "g" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
 	dir = 8
@@ -65,10 +65,10 @@
 	dir = 1
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "j" = (
 /turf/closed/wall/mineral/titanium/survival/nodiagonal,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "l" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
@@ -80,7 +80,7 @@
 	},
 /obj/effect/turf_decal/tile/neutral,
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "m" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
@@ -94,7 +94,7 @@
 	name = "waste release valve"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "q" = (
 /obj/machinery/door/airlock/external,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -106,13 +106,13 @@
 /obj/effect/turf_decal/stripes/red/full,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "r" = (
 /obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
 	dir = 1
 	},
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "v" = (
 /obj/machinery/atmospherics/components/tank/air/layer4{
 	dir = 8
@@ -125,7 +125,7 @@
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "w" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/stripes/line,
@@ -133,14 +133,14 @@
 	name = "engine power storage"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "x" = (
 /obj/machinery/atmospherics/components/tank/air/layer4{
 	dir = 8
 	},
 /obj/structure/sign/poster/official/build/directional/east,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "y" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
@@ -149,7 +149,7 @@
 /obj/effect/turf_decal/tile/yellow/half/contrasted,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "z" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
 	dir = 4
@@ -163,7 +163,7 @@
 	},
 /obj/effect/turf_decal/tile/neutral,
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "A" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 8
@@ -176,7 +176,7 @@
 	},
 /obj/machinery/light/small/directional/east,
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "B" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
@@ -189,7 +189,7 @@
 	dir = 1
 	},
 /turf/open/floor/pod,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "C" = (
 /obj/structure/rack,
 /obj/effect/turf_decal/stripes/line,
@@ -203,7 +203,7 @@
 /obj/structure/sign/warning/electric_shock/directional/north,
 /obj/machinery/light/warm/directional/north,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "G" = (
 /obj/machinery/power/terminal{
 	dir = 4
@@ -213,7 +213,7 @@
 /obj/effect/turf_decal/stripes/line,
 /obj/item/stack/sheet/mineral/plasma/thirty,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "H" = (
 /obj/structure/marker_beacon/burgundy,
 /obj/effect/turf_decal/stripes/red/line{
@@ -225,16 +225,15 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 6
 	},
-/obj/docking_port/mobile/voidcrew/scarab/c,
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "J" = (
 /obj/machinery/atmospherics/components/binary/pump/off/general/hidden/layer2{
 	dir = 8;
 	name = "waste collection pump"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "K" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
@@ -248,7 +247,7 @@
 	name = "air supply pump"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "L" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 6
@@ -263,7 +262,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/handrail,
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "M" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 8
@@ -277,7 +276,7 @@
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "N" = (
 /obj/machinery/power/terminal{
 	dir = 8
@@ -294,7 +293,7 @@
 	},
 /obj/item/stack/sheet/mineral/plasma/thirty,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "O" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -306,7 +305,7 @@
 	dir = 4
 	},
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "P" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 5
@@ -316,7 +315,7 @@
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "Q" = (
 /obj/machinery/atmospherics/components/unary/portables_connector/layer2{
 	dir = 4
@@ -324,7 +323,7 @@
 /obj/machinery/portable_atmospherics/canister,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "R" = (
 /obj/machinery/atmospherics/pipe/smart/simple/dark/hidden/layer2{
 	dir = 4
@@ -338,7 +337,7 @@
 /obj/machinery/portable_atmospherics/scrubber,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "S" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
 	dir = 1
@@ -351,7 +350,7 @@
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "T" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 8
@@ -365,7 +364,7 @@
 	},
 /obj/effect/turf_decal/tile/yellow/full,
 /turf/open/floor/iron/smooth_large,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "U" = (
 /obj/machinery/power/apc/auto_name/directional/west,
 /obj/structure/cable,
@@ -377,7 +376,7 @@
 	dir = 8
 	},
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "V" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 6
@@ -388,18 +387,18 @@
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/smooth,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "W" = (
 /obj/effect/spawner/structure/window/reinforced/plasma,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "X" = (
 /obj/machinery/atmospherics/components/binary/pump/on/layer4{
 	dir = 8;
 	name = "air supply pump"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 "Z" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
@@ -415,7 +414,7 @@
 /obj/effect/turf_decal/tile/neutral/anticorner/contrasted,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/scarab/engineering)
+/area/template_noop)
 
 (1,1,1) = {"
 G

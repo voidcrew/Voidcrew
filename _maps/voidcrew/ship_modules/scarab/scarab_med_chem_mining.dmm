@@ -6,7 +6,7 @@
 /obj/structure/chair/office/light,
 /obj/machinery/light/cold/directional/east,
 /turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "e" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
@@ -16,12 +16,12 @@
 	dir = 1
 	},
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "l" = (
 /obj/machinery/chem_master,
 /obj/structure/sign/poster/official/safety_eye_protection/directional/west,
 /turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "m" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 8
@@ -35,17 +35,17 @@
 	},
 /obj/effect/turf_decal/tile/blue/full,
 /turf/open/floor/iron/white/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "p" = (
 /obj/machinery/smartfridge/chemistry,
 /obj/effect/turf_decal/tile/blue/full,
 /turf/open/floor/iron/white/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "v" = (
 /obj/machinery/chem_heater,
 /obj/structure/sign/warning/chem_diamond/directional/east,
 /turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "x" = (
 /obj/item/storage/box/beakers,
 /obj/item/storage/box/syringes{
@@ -59,7 +59,7 @@
 	pixel_y = 6
 	},
 /turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "M" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 8
@@ -73,13 +73,13 @@
 	},
 /obj/modular_map_connector,
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 "P" = (
 /obj/machinery/chem_dispenser,
 /obj/structure/extinguisher_cabinet/directional/east,
 /obj/structure/sign/poster/official/periodic_table/directional/south,
 /turf/open/floor/iron/textured_large,
-/area/shuttle/voidcrew/scarab/medbay)
+/area/template_noop)
 
 (1,1,1) = {"
 a

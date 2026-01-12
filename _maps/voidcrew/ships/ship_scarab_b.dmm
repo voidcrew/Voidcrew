@@ -59,6 +59,14 @@
 	color = "#333135"
 	},
 /area/shuttle/voidcrew/scarab/bridge)
+"dF" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/obj/machinery/suit_storage_unit/standard_unit,
+/turf/open/floor/mineral/titanium/white{
+	color = "#333135"
+	},
+/area/shuttle/voidcrew/scarab/cargo_bay)
 "ew" = (
 /obj/machinery/door/airlock/external,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -78,6 +86,14 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines)
+"fP" = (
+/obj/item/radio/intercom/directional/west,
+/obj/effect/turf_decal/bot,
+/obj/machinery/suit_storage_unit/standard_unit,
+/turf/open/floor/mineral/titanium/white{
+	color = "#333135"
+	},
+/area/shuttle/voidcrew/scarab/cargo_bay)
 "gd" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable,
@@ -99,6 +115,15 @@
 /obj/machinery/light_switch/directional/east{
 	pixel_y = 6
 	},
+/obj/structure/closet/secure_closet/medical3{
+	anchored = 1
+	},
+/obj/item/storage/bag/chemistry,
+/obj/item/clothing/glasses/science,
+/obj/item/clothing/glasses/hud/health,
+/obj/item/storage/belt/medical,
+/obj/item/clothing/neck/stethoscope,
+/obj/item/storage/box/bodybags,
 /turf/open/floor/mineral/titanium/tiled/blue,
 /area/shuttle/voidcrew/scarab/medbay)
 "gn" = (
@@ -116,13 +141,23 @@
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/scarab/engines)
 "gu" = (
-/obj/machinery/door/airlock/external,
-/obj/effect/turf_decal/stripes/red/full,
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 1
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 8
 	},
-/obj/structure/fans/tiny,
-/turf/open/floor/pod/dark,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
+"gL" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/obj/machinery/door/poddoor/shutters/preopen{
+	dir = 2;
+	id = "scarab_shutters"
+	},
+/obj/docking_port/mobile/voidcrew/scarab/b,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engineering)
 "gT" = (
 /obj/machinery/shower/directional/south,
@@ -178,6 +213,14 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines)
+"iZ" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/obj/machinery/portable_atmospherics/pump,
+/turf/open/floor/mineral/titanium/white{
+	color = "#333135"
+	},
+/area/shuttle/voidcrew/scarab/cargo_bay)
 "jw" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/layer2{
 	dir = 4
@@ -222,7 +265,7 @@
 /turf/open/floor/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "kG" = (
-/obj/structure/window/reinforced/plasma/plastitanium,
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /obj/structure/cable,
 /obj/machinery/door/poddoor/shutters/preopen{
 	dir = 2;
@@ -264,7 +307,7 @@
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/scarab/engines)
 "lU" = (
-/obj/structure/window/reinforced/plasma/plastitanium,
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /obj/machinery/door/poddoor/shutters/preopen{
 	dir = 4;
 	id = "scarab_shutters"
@@ -275,7 +318,7 @@
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/scarab/dormitories)
 "na" = (
-/obj/structure/window/reinforced/plasma/plastitanium,
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /obj/machinery/door/poddoor/shutters/preopen{
 	dir = 2;
 	id = "scarab_shutters"
@@ -295,7 +338,7 @@
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/scarab/engines)
 "nF" = (
-/obj/structure/window/reinforced/plasma/plastitanium,
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /obj/machinery/door/poddoor/shutters/preopen{
 	dir = 1;
 	id = "scarab_shutters"
@@ -316,7 +359,6 @@
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "on" = (
-/obj/structure/extinguisher_cabinet/directional/east,
 /obj/machinery/digital_clock/directional/south,
 /obj/machinery/suit_storage_unit/medical{
 	req_access = list("medical");
@@ -344,17 +386,6 @@
 /turf/open/floor/mineral/titanium/tiled/yellow,
 /area/shuttle/voidcrew/scarab/engines)
 "pd" = (
-/obj/structure/marker_beacon/burgundy,
-/obj/effect/turf_decal/stripes/red/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/stripes/line{
-	dir = 6
-	},
-/obj/effect/turf_decal/siding/dark{
-	dir = 6
-	},
-/obj/docking_port/mobile/voidcrew/scarab/b,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/scarab/engineering)
 "pf" = (
@@ -368,17 +399,19 @@
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "pA" = (
-/obj/machinery/door/airlock/external,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
-	dir = 1
+	dir = 8
 	},
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
-	dir = 1
+	dir = 4
 	},
-/obj/effect/turf_decal/stripes/red/full,
-/obj/effect/mapping_helpers/airlock/cyclelink_helper,
-/turf/open/floor/pod/dark,
-/area/shuttle/voidcrew/scarab/engineering)
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/obj/machinery/suit_storage_unit/standard_unit,
+/turf/open/floor/mineral/titanium/white{
+	color = "#333135"
+	},
+/area/shuttle/voidcrew/scarab/cargo_bay)
 "pB" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -407,7 +440,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines)
 "qS" = (
-/obj/structure/window/reinforced/plasma/plastitanium,
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /obj/machinery/door/poddoor/shutters/preopen{
 	dir = 2;
 	id = "scarab_shutters"
@@ -415,9 +448,15 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engineering)
 "qT" = (
-/obj/effect/spawner/structure/window/reinforced/plasma,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/obj/structure/cable,
+/obj/structure/rack,
+/obj/item/storage/toolbox/emergency,
+/obj/item/clothing/mask/gas,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/mineral/titanium/white{
+	color = "#333135"
+	},
+/area/shuttle/voidcrew/scarab/cargo_bay)
 "rn" = (
 /obj/machinery/door/airlock/command{
 	name = "Captain's Quarters"
@@ -477,7 +516,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "sM" = (
-/obj/structure/window/reinforced/plasma/plastitanium,
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /obj/structure/cable,
 /obj/machinery/door/poddoor/shutters/preopen{
 	dir = 4;
@@ -543,18 +582,9 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines)
 "tH" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/red/corner{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/red/corner{
-	dir = 1
-	},
-/obj/machinery/light/small/directional/east,
-/turf/open/floor/pod/dark,
-/area/shuttle/voidcrew/scarab/engineering)
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
 "ux" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
 	dir = 8
@@ -567,18 +597,8 @@
 /turf/open/floor/iron/dark/smooth_edge,
 /area/shuttle/voidcrew/scarab/dormitories)
 "uB" = (
-/obj/machinery/door/airlock/medical{
-	name = "Medical Storage"
-	},
-/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/door/firedoor,
-/turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
 "uT" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -791,7 +811,7 @@
 /turf/open/floor/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "Di" = (
-/obj/structure/window/reinforced/plasma/plastitanium,
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /obj/machinery/door/poddoor/shutters/preopen{
 	dir = 1;
 	id = "scarab_shutters"
@@ -800,7 +820,7 @@
 /area/shuttle/voidcrew/scarab/commons)
 "Dr" = (
 /obj/structure/cable,
-/obj/structure/window/reinforced/plasma/plastitanium,
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /obj/machinery/door/poddoor/shutters/window/preopen{
 	dir = 4;
 	id = "scarab_shutters"
@@ -876,7 +896,7 @@
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "FG" = (
 /obj/structure/cable,
-/obj/structure/window/reinforced/plasma/plastitanium,
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /obj/machinery/door/poddoor/shutters/preopen{
 	dir = 4;
 	id = "scarab_shutters"
@@ -919,6 +939,19 @@
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/scarab/cmos_office)
+"GC" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/mineral/titanium/white{
+	color = "#333135"
+	},
+/area/shuttle/voidcrew/scarab/cargo_bay)
 "GF" = (
 /obj/machinery/power/terminal{
 	dir = 8
@@ -1060,6 +1093,15 @@
 	},
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/scarab/medbay)
+"Lh" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/obj/machinery/suit_storage_unit/standard_unit,
+/obj/structure/sign/poster/official/get_your_legs/directional/south,
+/turf/open/floor/mineral/titanium/white{
+	color = "#333135"
+	},
+/area/shuttle/voidcrew/scarab/cargo_bay)
 "Lj" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 9
@@ -1288,18 +1330,19 @@
 /turf/open/floor/mineral/titanium/tiled/blue,
 /area/shuttle/voidcrew/scarab/medbay)
 "Rn" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
-	dir = 5
+	dir = 9
 	},
-/obj/effect/turf_decal/stripes/red/line,
-/obj/effect/turf_decal/stripes/red/line{
-	dir = 1
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 9
 	},
-/turf/open/floor/pod/dark,
-/area/shuttle/voidcrew/scarab/engineering)
+/obj/structure/tank_dispenser/oxygen,
+/obj/effect/turf_decal/bot,
+/obj/structure/sign/warning/electric_shock/directional/south,
+/turf/open/floor/mineral/titanium/white{
+	color = "#333135"
+	},
+/area/shuttle/voidcrew/scarab/cargo_bay)
 "Sf" = (
 /obj/effect/turf_decal/tile/dark_green/full,
 /obj/machinery/cryopod{
@@ -1429,7 +1472,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines)
 "VO" = (
-/obj/structure/window/reinforced/plasma/plastitanium,
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /obj/machinery/door/poddoor/shutters/preopen{
 	dir = 1;
 	id = "scarab_shutters"
@@ -1559,7 +1602,10 @@
 /obj/structure/table,
 /obj/machinery/defibrillator_mount/directional/west,
 /obj/structure/sign/poster/official/moth_meth/directional/south,
-/obj/item/storage/box/bodybags,
+/obj/item/storage/medkit/o2,
+/obj/item/storage/medkit/toxin{
+	pixel_z = 6
+	},
 /turf/open/floor/mineral/titanium/tiled/blue,
 /area/shuttle/voidcrew/scarab/medbay)
 "Zv" = (
@@ -1803,8 +1849,8 @@ sD
 sD
 sD
 sD
-sD
-sD
+fP
+pA
 rr
 qs
 qs
@@ -1825,8 +1871,8 @@ sD
 sD
 sD
 sD
-sD
-sD
+tH
+gu
 hp
 qs
 qs
@@ -1847,15 +1893,15 @@ sD
 sD
 lJ
 sD
-sD
-sD
+GC
+Rn
 rr
 qs
 qs
 zJ
 qs
 qs
-qS
+gL
 jY
 jY
 "}
@@ -1869,8 +1915,8 @@ sD
 sD
 sD
 sD
-sD
-sD
+iZ
+qT
 xT
 qs
 qs
@@ -1891,8 +1937,8 @@ sD
 sD
 sD
 sD
-sD
-sD
+uB
+tH
 rr
 qs
 qs
@@ -1913,15 +1959,15 @@ sD
 sD
 sD
 sD
-sD
-sD
+dF
+Lh
 rr
 qs
 qs
+qs
+qs
+qs
 HV
-qT
-HV
-hL
 jY
 jY
 "}
@@ -1940,9 +1986,9 @@ rr
 rr
 qs
 qs
-pA
-Rn
-gu
+qs
+qs
+qs
 pd
 jY
 jY
@@ -1962,8 +2008,8 @@ zc
 cV
 qs
 qs
-HV
-tH
+qs
+qs
 qS
 jY
 jY
@@ -2093,9 +2139,9 @@ zc
 zc
 Vt
 Vt
-uB
+Ux
 Vt
-EC
+Vt
 EC
 jY
 jY
