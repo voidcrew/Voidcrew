@@ -3,6 +3,10 @@
  *
  * Dropped by NPC ship captains on death. Can be inserted into the
  * helm console to claim the ship for player use.
+ *
+ * The key serves as the single source of truth for pirate ship lifecycle.
+ * When destroyed (for any reason), it notifies the spawner subsystem to
+ * spawn a replacement pirate of the same tier.
  */
 /obj/item/ship_key
 	name = "ship authorization key"
@@ -17,10 +21,29 @@
 	/// Name of the ship (for display even if ship is destroyed)
 	var/ship_name = "Unknown Vessel"
 
+	/// The type path of the NPC ship (for spawner replacement logic)
+	var/ship_type_path
+
+	/// Why this key is being destroyed (set before qdel for proper signaling)
+	var/destruction_reason = KEY_DESTROYED_UNKNOWN
+
+	/// Whether we've already notified the spawner (prevents double-notification)
+	var/spawner_notified = FALSE
+
 /obj/item/ship_key/Initialize(mapload, obj/structure/overmap/ship/npc/target_ship)
 	. = ..()
 	if(target_ship)
 		set_ship(target_ship)
+
+/obj/item/ship_key/Destroy()
+	// Send signal before destruction so bounties can react
+	var/obj/structure/overmap/ship/npc/ship = ship_ref?.resolve()
+	SEND_SIGNAL(src, COMSIG_SHIP_KEY_DESTROYED, ship, destruction_reason)
+
+	// Notify spawner to spawn replacement (if not already done)
+	notify_spawner_resolved()
+
+	return ..()
 
 /obj/item/ship_key/examine(mob/user)
 	. = ..()
@@ -39,6 +62,7 @@
 		return
 	ship_ref = WEAKREF(target_ship)
 	ship_name = target_ship.name
+	ship_type_path = target_ship.type
 	name = "[target_ship.name] authorization key"
 
 /// Returns the ship if it still exists
@@ -53,3 +77,33 @@
 	if(!ship.ai_controller)
 		return FALSE  // Already claimed
 	return TRUE
+
+/**
+ * Marks this key for destruction with a specific reason.
+ * Call this before qdel() to properly signal why the key is being destroyed.
+ * @param reason One of KEY_DESTROYED_UNKNOWN, KEY_DESTROYED_CLAIMED, KEY_DESTROYED_BOUNTY
+ */
+/obj/item/ship_key/proc/mark_destruction_reason(reason)
+	destruction_reason = reason
+
+/**
+ * Notifies the spawner subsystem that this pirate has been resolved.
+ * Called automatically during Destroy(), but can be called manually for
+ * edge cases (like abandonment where key may persist).
+ *
+ * Only notifies once per key to prevent duplicate spawns.
+ * Does NOT notify if ship was already abandoned (already resolved via abandonment).
+ */
+/obj/item/ship_key/proc/notify_spawner_resolved()
+	if(spawner_notified)
+		return
+	if(!ship_type_path)
+		return
+
+	// Check if ship was already resolved via abandonment
+	var/obj/structure/overmap/ship/npc/ship = ship_ref?.resolve()
+	if(ship?.abandoned)
+		return  // Ship was already resolved when abandoned
+
+	spawner_notified = TRUE
+	SSnpc_ships.on_pirate_resolved(ship_type_path)

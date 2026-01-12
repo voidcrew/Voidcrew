@@ -6989,6 +6989,8 @@
 #include "voidcrew\modules\npc_ships\code\behaviors\ship_movement_behaviors.dm"
 #include "voidcrew\modules\npc_ships\code\npc_ship_controller.dm"
 #include "voidcrew\modules\npc_ships\code\spawner_subsystem.dm"
+#include "voidcrew\modules\npc_ships\code\bounty\bounty.dm"
+#include "voidcrew\modules\npc_ships\code\bounty\bounty_subsystem.dm"
 #include "voidcrew\modules\npc_ships\code\faction_pirates\faction_pirate_corpses.dm"
 #include "voidcrew\modules\npc_ships\code\faction_pirates\faction_pirate_mobs.dm"
 #include "voidcrew\modules\npc_ships\code\faction_pirates\faction_pirate_ships.dm"

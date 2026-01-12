@@ -99,7 +99,10 @@
 	if(claim_npc_ship(npc_ship, user))
 		to_chat(user, span_notice("Ship authorization accepted. You now have command of [npc_ship.name]."))
 		playsound(src, 'sound/machines/terminal/terminal_on.ogg', 50, TRUE)
-		// Consume the key
+		// Send signal that key was used before destroying
+		SEND_SIGNAL(key, COMSIG_SHIP_KEY_USED, npc_ship, user)
+		// Mark destruction reason and consume the key
+		key.mark_destruction_reason(KEY_DESTROYED_CLAIMED)
 		qdel(key)
 		return TRUE
 	else

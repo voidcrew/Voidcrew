@@ -86,7 +86,7 @@
 		/client/proc/cancel_jump,
 		/client/proc/team_panel,
 		/client/proc/spawn_npc_ship,
-		/client/proc/toggle_npc_spawning,
+		/client/proc/npc_ship_status,
 	))
 
 /client/remove_admin_verbs()
@@ -98,7 +98,7 @@
 		/client/proc/cancel_jump,
 		/client/proc/team_panel,
 		/client/proc/spawn_npc_ship,
-		/client/proc/toggle_npc_spawning,
+		/client/proc/npc_ship_status,
 	))
 
 #define RESPAWN_FORCE "Force Respawn"

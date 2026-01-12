@@ -1,0 +1,272 @@
+/**
+ * Bounty - Global competitive bounty for pirate ships
+ *
+ * Bounties are created for each active pirate ship and can be claimed
+ * by multiple player ships simultaneously. First ship to turn in the
+ * captain's key wins the bounty reward.
+ *
+ * Bounties fail when:
+ * - The captain's key is destroyed (gibbed, spaced, etc.)
+ * - The pirate ship is claimed via helm (not bounty turn-in)
+ * - The pirate ship is abandoned (crew all dead, no one claimed)
+ */
+/datum/pirate_bounty
+	/// Display name for the bounty
+	var/name = "Unknown Target"
+
+	/// Flavor text description
+	var/desc = "Eliminate this target and return their command key."
+
+	/// Credit reward for completing the bounty
+	var/reward = 1000
+
+	/// Weak reference to the target pirate ship
+	var/datum/weakref/target_ship_ref
+
+	/// Weak reference to the captain's key (proof of kill)
+	var/datum/weakref/target_key_ref
+
+	/// List of ships (weakrefs) that have accepted this bounty
+	var/list/datum/weakref/claiming_ships = list()
+
+	/// Whether this bounty has been completed
+	var/completed = FALSE
+
+	/// Whether this bounty has failed
+	var/failed = FALSE
+
+	/// Reason for failure (if failed)
+	var/failure_reason = ""
+
+	/// The ship type path (for UI categorization)
+	var/ship_type_path
+
+/datum/pirate_bounty/New(obj/structure/overmap/ship/npc/target_ship, obj/item/ship_key/captain_key)
+	. = ..()
+	if(!target_ship || !captain_key)
+		qdel(src)
+		return
+
+	// Store references
+	target_ship_ref = WEAKREF(target_ship)
+	target_key_ref = WEAKREF(captain_key)
+	ship_type_path = target_ship.type
+
+	// Generate bounty details from ship
+	name = target_ship.name
+	desc = "Eliminate the crew of [target_ship.name] and return their command authorization key."
+	reward = calculate_reward(target_ship)
+
+	// Register for key destruction signal
+	RegisterSignal(captain_key, COMSIG_SHIP_KEY_DESTROYED, PROC_REF(on_key_destroyed))
+	RegisterSignal(captain_key, COMSIG_SHIP_KEY_USED, PROC_REF(on_key_used))
+
+/datum/pirate_bounty/Destroy()
+	// Unregister signals
+	var/obj/item/ship_key/key = target_key_ref?.resolve()
+	if(key)
+		UnregisterSignal(key, list(COMSIG_SHIP_KEY_DESTROYED, COMSIG_SHIP_KEY_USED))
+
+	// Clear references
+	target_ship_ref = null
+	target_key_ref = null
+	claiming_ships.Cut()
+
+	return ..()
+
+/**
+ * Calculates the reward for a bounty based on ship type.
+ * Heavy-threat ships are worth more than light-threat.
+ */
+/datum/pirate_bounty/proc/calculate_reward(obj/structure/overmap/ship/npc/ship)
+	// Base reward
+	var/base_reward = 1000
+
+	// Heavy factions are worth more
+	if(ship.type in SSnpc_ships.heavy_factions)
+		base_reward = 2000
+
+	// Add some variance (80-120%)
+	return round(base_reward * rand(80, 120) / 100)
+
+/**
+ * Checks if the bounty is still valid (target exists and not resolved).
+ */
+/datum/pirate_bounty/proc/is_valid()
+	if(completed || failed)
+		return FALSE
+
+	var/obj/structure/overmap/ship/npc/ship = target_ship_ref?.resolve()
+	if(!ship || QDELETED(ship))
+		return FALSE
+
+	var/obj/item/ship_key/key = target_key_ref?.resolve()
+	if(!key || QDELETED(key))
+		return FALSE
+
+	return TRUE
+
+/**
+ * Returns the target ship if it still exists.
+ */
+/datum/pirate_bounty/proc/get_target_ship()
+	return target_ship_ref?.resolve()
+
+/**
+ * Returns the target key if it still exists.
+ */
+/datum/pirate_bounty/proc/get_target_key()
+	return target_key_ref?.resolve()
+
+/**
+ * Adds a ship to the list of claimants hunting this bounty.
+ * @param ship The player ship accepting the bounty
+ * @return TRUE if successfully added, FALSE if already claimed or invalid
+ */
+/datum/pirate_bounty/proc/add_claimant(obj/structure/overmap/ship/ship)
+	if(!is_valid())
+		return FALSE
+	if(!ship || QDELETED(ship))
+		return FALSE
+
+	// Check if already claiming
+	for(var/datum/weakref/ref in claiming_ships)
+		if(ref.resolve() == ship)
+			return FALSE  // Already hunting
+
+	claiming_ships += WEAKREF(ship)
+	return TRUE
+
+/**
+ * Removes a ship from the claimant list (cancelled bounty).
+ * @param ship The player ship cancelling the bounty
+ */
+/datum/pirate_bounty/proc/remove_claimant(obj/structure/overmap/ship/ship)
+	for(var/datum/weakref/ref in claiming_ships)
+		if(ref.resolve() == ship)
+			claiming_ships -= ref
+			return TRUE
+	return FALSE
+
+/**
+ * Checks if a ship is currently hunting this bounty.
+ */
+/datum/pirate_bounty/proc/is_claimant(obj/structure/overmap/ship/ship)
+	for(var/datum/weakref/ref in claiming_ships)
+		if(ref.resolve() == ship)
+			return TRUE
+	return FALSE
+
+/**
+ * Gets the number of ships currently hunting this bounty.
+ */
+/datum/pirate_bounty/proc/get_hunter_count()
+	// Clean up dead refs while counting
+	var/count = 0
+	for(var/datum/weakref/ref in claiming_ships)
+		if(ref.resolve())
+			count++
+		else
+			claiming_ships -= ref
+	return count
+
+/**
+ * Checks if a key can be turned in for this bounty.
+ * @param key The ship key being turned in
+ * @param turner The ship attempting to turn in
+ * @return TRUE if valid turn-in, FALSE otherwise
+ */
+/datum/pirate_bounty/proc/can_turn_in(obj/item/ship_key/key, obj/structure/overmap/ship/turner)
+	if(!is_valid())
+		return FALSE
+
+	// Key must match our target
+	if(key != target_key_ref?.resolve())
+		return FALSE
+
+	// Turner must have accepted this bounty
+	if(!is_claimant(turner))
+		return FALSE
+
+	return TRUE
+
+/**
+ * Completes the bounty, awarding the winner.
+ * @param winner The ship that turned in the key
+ * @return The reward amount awarded
+ */
+/datum/pirate_bounty/proc/complete(obj/structure/overmap/ship/winner)
+	if(completed || failed)
+		return 0
+
+	completed = TRUE
+
+	// Award credits to winning ship
+	if(winner)
+		winner.ship_account.adjust_money(reward)
+		winner.ship_announce("BOUNTY COMPLETE: [name] - [reward] credits awarded!", "MISSION CONTROL")
+
+	// Notify other claimants of failure
+	for(var/datum/weakref/ref in claiming_ships)
+		var/obj/structure/overmap/ship/loser = ref.resolve()
+		if(loser && loser != winner)
+			loser.ship_announce("BOUNTY FAILED: [name] - Another crew claimed the bounty.", "MISSION CONTROL")
+
+	// Remove from global tracker
+	SSbounty?.remove_bounty(src)
+
+	return reward
+
+/**
+ * Fails the bounty for all claimants.
+ * @param reason The reason for failure
+ */
+/datum/pirate_bounty/proc/fail(reason)
+	if(completed || failed)
+		return
+
+	failed = TRUE
+	failure_reason = reason
+
+	// Notify all claimants
+	for(var/datum/weakref/ref in claiming_ships)
+		var/obj/structure/overmap/ship/ship = ref.resolve()
+		if(ship)
+			ship.ship_announce("BOUNTY FAILED: [name] - [reason]", "MISSION CONTROL")
+
+	// Remove from global tracker
+	SSbounty?.remove_bounty(src)
+
+// ========== SIGNAL HANDLERS ==========
+
+/**
+ * Signal handler for when the target key is destroyed.
+ * Fails the bounty for all claimants.
+ */
+/datum/pirate_bounty/proc/on_key_destroyed(obj/item/ship_key/source, obj/structure/overmap/ship/npc/ship, reason)
+	SIGNAL_HANDLER
+
+	// Different failure messages based on reason
+	var/fail_message
+	switch(reason)
+		if(KEY_DESTROYED_CLAIMED)
+			// Don't fail here - on_key_used handles this
+			return
+		if(KEY_DESTROYED_BOUNTY)
+			// This shouldn't happen (key turned in = completed, not destroyed)
+			return
+		else
+			fail_message = "Target's command key was destroyed."
+
+	fail(fail_message)
+
+/**
+ * Signal handler for when the key is used to claim the ship (not bounty turn-in).
+ * This means someone claimed the ship directly without completing the bounty.
+ */
+/datum/pirate_bounty/proc/on_key_used(obj/item/ship_key/source, obj/structure/overmap/ship/npc/ship, mob/claimer)
+	SIGNAL_HANDLER
+
+	// If someone claimed the ship via helm, the bounty fails
+	// (They took the ship as loot instead of turning in the key)
+	fail("Target ship was claimed by another crew.")

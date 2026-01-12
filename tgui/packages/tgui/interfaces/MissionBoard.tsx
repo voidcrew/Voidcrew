@@ -45,6 +45,16 @@ type PadItem = {
   ref: string;
 };
 
+type Bounty = {
+  ref: string;
+  name: string;
+  desc: string;
+  reward: number;
+  hunter_count: number;
+  is_hunting: boolean;
+  zone: string;
+};
+
 type Data = {
   has_ship: BooleanLike;
   max_missions: number;
@@ -53,6 +63,7 @@ type Data = {
   available_missions: Mission[];
   active_missions: Mission[];
   pad_contents: PadItem[];
+  bounties: Bounty[];
 };
 
 export const MissionBoard = () => {
@@ -81,11 +92,14 @@ const MissionBoardContent = () => {
     available_missions,
     active_missions,
     pad_contents,
+    bounties,
   } = data;
 
-  const [currentTab, setCurrentTab] = useState<'available' | 'active'>(
-    'available',
-  );
+  const [currentTab, setCurrentTab] = useState<
+    'available' | 'active' | 'bounties'
+  >('available');
+
+  const huntingCount = bounties.filter((b) => b.is_hunting).length;
 
   return (
     <Stack fill vertical>
@@ -140,6 +154,13 @@ const MissionBoardContent = () => {
           >
             Active ({active_count}/{max_missions})
           </Tabs.Tab>
+          <Tabs.Tab
+            selected={currentTab === 'bounties'}
+            onClick={() => setCurrentTab('bounties')}
+            icon="skull"
+          >
+            Bounties ({huntingCount}/{bounties.length})
+          </Tabs.Tab>
         </Tabs>
       </Stack.Item>
 
@@ -174,6 +195,27 @@ const MissionBoardContent = () => {
                       isActive
                       padContents={pad_contents}
                     />
+                  </Stack.Item>
+                ))}
+              </Stack>
+            )}
+          </Section>
+        )}
+
+        {currentTab === 'bounties' && (
+          <Section fill scrollable>
+            <NoticeBox info mb={1}>
+              Bounties are competitive - multiple crews can hunt the same
+              target. Turn in the captain&apos;s key at the mission pad to claim
+              the reward.
+            </NoticeBox>
+            {bounties.length === 0 ? (
+              <NoticeBox>No active bounties</NoticeBox>
+            ) : (
+              <Stack vertical>
+                {bounties.map((bounty) => (
+                  <Stack.Item key={bounty.ref}>
+                    <BountyCard bounty={bounty} hasPad={!!has_pad} />
                   </Stack.Item>
                 ))}
               </Stack>
@@ -340,6 +382,102 @@ const MissionCard = (props: MissionCardProps) => {
           Accept Mission
         </Button>
       )}
+    </Section>
+  );
+};
+
+type BountyCardProps = {
+  bounty: Bounty;
+  hasPad: boolean;
+};
+
+const BountyCard = (props: BountyCardProps) => {
+  const { act } = useBackend<Data>();
+  const { bounty, hasPad } = props;
+
+  return (
+    <Section
+      title={
+        <Box inline>
+          <Box as="span" color="red" mr={1}>
+            ☠
+          </Box>
+          {bounty.name}
+        </Box>
+      }
+      buttons={
+        <Box inline>
+          <Box inline color="gold" bold mr={1}>
+            {bounty.reward} cr
+          </Box>
+          <Box inline color="label">
+            [{bounty.zone}]
+          </Box>
+        </Box>
+      }
+    >
+      <Box mb={1}>{bounty.desc}</Box>
+
+      <Flex justify="space-between" align="center" mb={1}>
+        <Flex.Item>
+          <Box color="label">
+            <Box as="span" color={bounty.hunter_count > 0 ? 'orange' : 'gray'}>
+              ⚔ {bounty.hunter_count} crew{bounty.hunter_count !== 1 ? 's' : ''}{' '}
+              hunting
+            </Box>
+          </Box>
+        </Flex.Item>
+        <Flex.Item>
+          {bounty.is_hunting && (
+            <Box color="green" bold>
+              [HUNTING]
+            </Box>
+          )}
+        </Flex.Item>
+      </Flex>
+
+      <Divider />
+
+      <Flex justify="space-between">
+        <Flex.Item grow>
+          {bounty.is_hunting ? (
+            <Stack>
+              <Stack.Item grow>
+                <Button
+                  fluid
+                  icon="crosshairs"
+                  color="green"
+                  disabled={!hasPad}
+                  tooltip={
+                    !hasPad ? 'Requires mission pad to turn in' : undefined
+                  }
+                  onClick={() => act('turn_in_bounty', { ref: bounty.ref })}
+                >
+                  Turn In Key
+                </Button>
+              </Stack.Item>
+              <Stack.Item>
+                <Button
+                  icon="times"
+                  color="bad"
+                  onClick={() => act('cancel_bounty', { ref: bounty.ref })}
+                >
+                  Cancel
+                </Button>
+              </Stack.Item>
+            </Stack>
+          ) : (
+            <Button
+              fluid
+              icon="skull"
+              color="caution"
+              onClick={() => act('accept_bounty', { ref: bounty.ref })}
+            >
+              Accept Bounty
+            </Button>
+          )}
+        </Flex.Item>
+      </Flex>
     </Section>
   );
 };

@@ -128,6 +128,8 @@
 	QDEL_NULL(combat_interface)
 	// Clean up from dirty queue if we were in it
 	SSovermap.dirty_npc_ships -= src
+	// Untrack from spawner subsystem
+	SSnpc_ships.untrack_ship(src)
 	// Cancel abandonment timer if running
 	if(abandonment_timer)
 		deltimer(abandonment_timer)
@@ -321,6 +323,29 @@
 	if(abandonment_timer)
 		deltimer(abandonment_timer)
 		abandonment_timer = null
+
+/**
+ * Override abandon_ship to notify spawner that this pirate is resolved.
+ * When an NPC ship is abandoned, we immediately spawn a replacement.
+ * The abandoned ship stays as a derelict that players can still claim.
+ */
+/obj/structure/overmap/ship/npc/abandon_ship(crash = TRUE)
+	// Notify spawner before calling parent (spawns replacement pirate)
+	notify_spawner_resolved()
+
+	// Call parent implementation
+	return ..()
+
+/**
+ * Notifies the spawner subsystem that this pirate ship is no longer active.
+ * Triggers spawning of a replacement pirate from the same tier.
+ */
+/obj/structure/overmap/ship/npc/proc/notify_spawner_resolved()
+	// Don't notify if already player-controlled (was claimed)
+	if(player_controlled)
+		return
+
+	SSnpc_ships.on_pirate_resolved(type)
 
 /**
  * Signal handler for ship integrity changes.

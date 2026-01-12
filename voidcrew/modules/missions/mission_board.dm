@@ -99,6 +99,9 @@
 				"ref" = REF(item),
 			))
 
+	// Bounties - global competitive pirate bounties
+	data["bounties"] = SSbounty?.get_bounty_ui_data(ship) || list()
+
 	return data
 
 /obj/machinery/computer/mission_board/ui_act(action, params, datum/tgui/ui)
@@ -167,6 +170,71 @@
 			// Force refresh available missions
 			SSmissions.force_refresh_ship_missions(ship)
 			balloon_alert(usr, "missions refreshed!")
+			return TRUE
+
+		// ========== BOUNTY ACTIONS ==========
+
+		if("accept_bounty")
+			var/datum/pirate_bounty/bounty = locate(params["ref"])
+			if(!bounty || !bounty.is_valid())
+				balloon_alert(usr, "bounty not available!")
+				return TRUE
+
+			if(bounty.add_claimant(ship))
+				balloon_alert(usr, "bounty accepted!")
+				playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
+				ship.ship_announce("BOUNTY ACCEPTED: [bounty.name] - [bounty.reward] credit reward", "MISSION CONTROL")
+			else
+				balloon_alert(usr, "already hunting!")
+			return TRUE
+
+		if("cancel_bounty")
+			var/datum/pirate_bounty/bounty = locate(params["ref"])
+			if(!bounty)
+				balloon_alert(usr, "bounty not found!")
+				return TRUE
+
+			if(bounty.remove_claimant(ship))
+				balloon_alert(usr, "bounty cancelled")
+				ship.ship_announce("BOUNTY CANCELLED: [bounty.name]", "MISSION CONTROL")
+			else
+				balloon_alert(usr, "not hunting this bounty!")
+			return TRUE
+
+		if("turn_in_bounty")
+			// Find ship key on pad
+			if(!linked_pad)
+				balloon_alert(usr, "no mission pad linked!")
+				return TRUE
+
+			var/obj/item/ship_key/key = locate() in linked_pad.get_items_on_pad()
+			if(!key)
+				balloon_alert(usr, "place captain's key on pad!")
+				return TRUE
+
+			// Find matching bounty
+			var/datum/pirate_bounty/bounty = SSbounty?.get_bounty_for_key(key)
+			if(!bounty)
+				balloon_alert(usr, "no bounty for this key!")
+				return TRUE
+
+			if(!bounty.can_turn_in(key, ship))
+				if(!bounty.is_claimant(ship))
+					balloon_alert(usr, "you haven't accepted this bounty!")
+				else
+					balloon_alert(usr, "cannot turn in!")
+				return TRUE
+
+			// Complete the bounty!
+			var/reward = bounty.complete(ship)
+			if(reward > 0)
+				balloon_alert(usr, "[reward] credits awarded!")
+				playsound(src, 'sound/effects/cashregister.ogg', 50, TRUE)
+				// Mark key for bounty destruction and delete it
+				key.mark_destruction_reason(KEY_DESTROYED_BOUNTY)
+				qdel(key)
+			else
+				balloon_alert(usr, "bounty completion failed!")
 			return TRUE
 
 /**
