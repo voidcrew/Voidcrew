@@ -91,6 +91,17 @@
 	/// Whether this ship has been claimed by a player (uses normal movement physics)
 	var/player_controlled = FALSE
 
+	// ========== CREW TRACKING & ABANDONMENT ==========
+
+	/// List of all spawned crew members for tracking deaths
+	var/list/mob/living/tracked_crew = list()
+
+	/// Timer for abandonment after all crew die (gives players time to claim)
+	var/abandonment_timer
+
+	/// Delay before ship becomes abandoned after all crew die
+	var/abandonment_delay = 10 MINUTES
+
 	// ========== MASS CACHING (Performance optimization) ==========
 	// Instead of iterating all turfs every second, we cache mass and only
 	// recalculate when the ship takes hull damage
@@ -117,6 +128,12 @@
 	QDEL_NULL(combat_interface)
 	// Clean up from dirty queue if we were in it
 	SSovermap.dirty_npc_ships -= src
+	// Cancel abandonment timer if running
+	if(abandonment_timer)
+		deltimer(abandonment_timer)
+		abandonment_timer = null
+	// Clear crew tracking
+	tracked_crew.Cut()
 	return ..()
 
 /**
@@ -249,28 +266,61 @@
 		// Give captain the ship key - stored in contents, drops on death
 		var/obj/item/ship_key/key = new(null, src)
 		key.forceMove(captain)
-		// Register to drop the key when captain dies
-		RegisterSignal(captain, COMSIG_LIVING_DEATH, PROC_REF(on_captain_death))
+		// Track captain and register death signal
+		tracked_crew += captain
+		RegisterSignal(captain, COMSIG_LIVING_DEATH, PROC_REF(on_crew_death))
 		crew_count--  // Captain counts toward crew count
 
 	// Spawn rest of crew from configured types
 	for(var/i in 1 to min(crew_count, length(valid_turfs)))
 		var/turf/spawn_loc = pick_n_take(valid_turfs)
 		var/mob_type = pick(crew_types)
-		new mob_type(spawn_loc)
+		var/mob/living/crewmember = new mob_type(spawn_loc)
+		// Track crew and register death signal
+		tracked_crew += crewmember
+		RegisterSignal(crewmember, COMSIG_LIVING_DEATH, PROC_REF(on_crew_death))
 
 /**
- * Signal handler for when the captain dies.
- * Drops any items in their contents (including ship key).
+ * Signal handler for when any crew member dies.
+ * Tracks deaths and triggers abandonment when all crew are dead.
  */
-/obj/structure/overmap/ship/npc/proc/on_captain_death(mob/living/captain, gibbed)
+/obj/structure/overmap/ship/npc/proc/on_crew_death(mob/living/victim, gibbed)
 	SIGNAL_HANDLER
-	UnregisterSignal(captain, COMSIG_LIVING_DEATH)
-	// Drop all items in the captain's contents
-	var/turf/drop_loc = get_turf(captain)
+	UnregisterSignal(victim, COMSIG_LIVING_DEATH)
+
+	// Drop ship key if the victim has one (captain)
+	var/turf/drop_loc = get_turf(victim)
 	if(drop_loc)
-		for(var/obj/item/I in captain.contents)
-			I.forceMove(drop_loc)
+		for(var/obj/item/ship_key/key in victim.contents)
+			key.forceMove(drop_loc)
+
+	// Remove from tracked crew list
+	tracked_crew -= victim
+
+	// Check if all crew are dead
+	if(!length(tracked_crew))
+		start_abandonment_timer()
+
+/**
+ * Starts a timer to abandon the ship after all crew die.
+ * Gives players a window to find and use the ship key to claim.
+ */
+/obj/structure/overmap/ship/npc/proc/start_abandonment_timer()
+	if(abandonment_timer)
+		return // Already started
+	if(abandoned || player_controlled)
+		return // Already claimed or converted
+
+	message_admins("\[NPC SHIP]: [name] crew eliminated! Ship will be abandoned in [abandonment_delay / 600] minutes. [ADMIN_COORDJMP(src)]")
+	abandonment_timer = addtimer(CALLBACK(src, PROC_REF(abandon_ship), TRUE), abandonment_delay, TIMER_STOPPABLE)
+
+/**
+ * Cancels the abandonment timer (e.g., if ship is claimed before timer fires).
+ */
+/obj/structure/overmap/ship/npc/proc/cancel_abandonment_timer()
+	if(abandonment_timer)
+		deltimer(abandonment_timer)
+		abandonment_timer = null
 
 /**
  * Signal handler for ship integrity changes.

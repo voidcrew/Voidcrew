@@ -84,15 +84,15 @@
 		to_chat(user, span_warning("This console is not connected to a ship!"))
 		return FALSE
 
-	// Check if key is valid
-	if(!key.is_valid())
-		to_chat(user, span_warning("This authorization key is no longer valid."))
-		return FALSE
-
 	// Check if key matches this ship
 	var/obj/structure/overmap/ship/npc/npc_ship = key.get_ship()
 	if(npc_ship != current_ship)
 		to_chat(user, span_warning("This key is for a different vessel: [key.ship_name]"))
+		return FALSE
+
+	// Check if key is valid (has AI controller) OR ship is abandoned (claimable without valid key)
+	if(!key.is_valid() && !current_ship.abandoned)
+		to_chat(user, span_warning("This authorization key is no longer valid."))
 		return FALSE
 
 	// Claim the ship!
@@ -110,6 +110,15 @@
 /obj/machinery/computer/helm/proc/claim_npc_ship(obj/structure/overmap/ship/npc/npc_ship, mob/living/claimer)
 	if(!istype(npc_ship))
 		return FALSE
+
+	// Cancel abandonment timer if one is running
+	if(npc_ship.abandonment_timer)
+		npc_ship.cancel_abandonment_timer()
+
+	// Reset abandoned state if ship was abandoned
+	if(npc_ship.abandoned)
+		npc_ship.abandoned = FALSE
+		npc_ship.joining_allowed = TRUE
 
 	// Remove the AI controller
 	if(npc_ship.ai_controller)
@@ -400,6 +409,9 @@
 	// Check if user is a crew member of this ship
 	data["isNotCrew"] = !is_crew_member(user)
 
+	// Abandoned ship status
+	data["isAbandoned"] = current_ship?.abandoned
+
 	return data
 
 /**
@@ -416,6 +428,8 @@
 		return FALSE
 	if(!current_ship?.ship_team)
 		return TRUE // No ship team set up, allow access
+	if(current_ship.abandoned)
+		return TRUE // Abandoned ships allow anyone to access for claiming
 	return (living_user.mind in current_ship.ship_team.members)
 
 /obj/machinery/computer/helm/LateInitialize()
@@ -590,6 +604,19 @@
 			if(!length(message))
 				return
 			current_ship.ship_broadcast_runechat(message)
+			return
+		if("claim_abandoned")
+			if(!current_ship?.abandoned)
+				say("ERROR: This ship is not abandoned.")
+				return
+			var/mob/living/living_user = usr
+			if(!istype(living_user))
+				return
+			if(current_ship.claim_abandoned_ship(living_user))
+				playsound(src, 'sound/machines/terminal/terminal_on.ogg', 50, TRUE)
+				update_static_data(usr, ui)
+			else
+				say("ERROR: Failed to claim ship.")
 			return
 
 	// Prevent operation if ship is destroyed (at or below 50% integrity)

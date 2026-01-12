@@ -568,6 +568,7 @@ const ShipControlContent = () => {
     canThrust,
     isViewer,
     isNotCrew,
+    isAbandoned,
     undockCooldown,
     undockCooldownRemaining,
     undockLocked,
@@ -586,7 +587,8 @@ const ShipControlContent = () => {
     nebulaHideWarmup,
     nebulaHideRemaining,
   } = data;
-  const isDisabled = isViewer || isNotCrew;
+  // For abandoned ships, allow access but show claim button
+  const isDisabled = isViewer || (isNotCrew && !isAbandoned);
   const flyable = data.state === 'flying' && !shipDisabled && !isDisabled;
   // Can't move while transitioning zones (except stop button)
   const canMove = flyable && canThrust && !zone_transitioning;
@@ -629,10 +631,22 @@ const ShipControlContent = () => {
   };
   return (
     <Section title="Navigation">
-      {!!isNotCrew && (
+      {!!isAbandoned && (
+        <NoticeBox warning>
+          <div style={{ marginBottom: '8px' }}>SHIP ABANDONED - NO OWNER</div>
+          <Button
+            fluid
+            icon="flag"
+            color="good"
+            content="Claim This Ship"
+            onClick={() => act('claim_abandoned')}
+          />
+        </NoticeBox>
+      )}
+      {!!isNotCrew && !isAbandoned && (
         <NoticeBox danger>CREW AUTHORIZATION REQUIRED</NoticeBox>
       )}
-      {!!shipDisabled && !isNotCrew && (
+      {!!shipDisabled && !isNotCrew && !isAbandoned && (
         <NoticeBox danger>HULL CRITICAL - SYSTEMS OFFLINE</NoticeBox>
       )}
       {data.state === 'idle' && !shipDisabled && !isNotCrew && (

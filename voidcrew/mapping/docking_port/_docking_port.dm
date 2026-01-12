@@ -140,45 +140,6 @@
 		humans_to_add.Add(human_to_add)
 	return humans_to_add
 
-/**
- * Scuttle the ship
- *
- * Delete all of the areas, and delete any cryopods
- */
-/obj/docking_port/mobile/voidcrew/proc/mothball()
-	if(length(get_all_humans()) > 0)
-		return
-	var/obj/docking_port/stationary/current_dock = get_docked()
-
-	var/underlying_area_type = SHUTTLE_DEFAULT_UNDERLYING_AREA
-	if(current_dock && current_dock.area_type)
-		underlying_area_type = current_dock.area_type
-
-	var/list/old_turfs = return_ordered_turfs(x, y, z, dir)
-
-	var/area/underlying_area = GLOB.areas_by_type[underlying_area_type]
-	if(!underlying_area)
-		underlying_area = new underlying_area_type(null)
-
-	for(var/turf/oldT in old_turfs)
-		if(!oldT || !istype(oldT.loc, area_type))
-			continue
-		var/obj/machinery/cryopod/pod = locate() in oldT.contents
-		if(pod)
-			qdel(pod) // we don't want anyone respawning now do we
-		var/obj/machinery/computer/helm/helm = locate() in oldT.contents
-		if(helm)
-			qdel(helm) // we don't want anyone respawning now do we
-
-		var/area/old_area = oldT.loc
-		underlying_area.contents += oldT
-		oldT.transfer_area_lighting(old_area, underlying_area)
-
-	message_admins("\[SHUTTLE]: [current_ship?.name] has been turned into a ruin!")
-	log_admin("\[SHUTTLE]: [current_ship?.name] has been turned into a ruin!")
-
-	qdel(current_ship)
-
 /obj/docking_port/mobile/voidcrew/proc/recalculate_shuttle_areas()
 	for(var/area/area as anything in shuttle_areas)
 		area.area_flags |= VALID_TERRITORY

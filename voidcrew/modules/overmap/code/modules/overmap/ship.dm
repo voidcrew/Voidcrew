@@ -30,6 +30,8 @@
 	var/display_name
 	///How long until the ship will delete itself.
 	var/deletion_timer
+	/// Whether this ship has been abandoned (no crew, claimable by anyone)
+	var/abandoned = FALSE
 	///Timer ID of the looping movement timer
 	var/movement_callback_id
 
@@ -631,14 +633,82 @@
  *
  * Deletes the ship, if there's no humans on.
  */
+/**
+ * Abandons the ship - clears ownership and makes it claimable by anyone.
+ * Called when all crew die/leave and the deletion timer fires.
+ * * crash - If TRUE, crash the ship if it's currently flying
+ */
+/obj/structure/overmap/ship/proc/abandon_ship(crash = TRUE)
+	if(abandoned)
+		return // Already abandoned
+
+	abandoned = TRUE
+	joining_allowed = FALSE // Disable cryopod spawning until claimed
+
+	// Clear all crew members properly (removes antag datums)
+	if(ship_team)
+		var/list/members_to_remove = ship_team.members?.Copy()
+		for(var/datum/mind/member in members_to_remove)
+			ship_team.remove_member(member)
+
+	// Stop deletion timer if still running
+	if(deletion_timer)
+		end_deletion_timer()
+
+	// If flying and crash requested, trigger crash landing
+	if(crash && (state in list(OVERMAP_SHIP_FLYING, OVERMAP_SHIP_UNDOCKING, OVERMAP_SHIP_ACTING)))
+		on_ship_destroyed()
+
+	message_admins("\[SHUTTLE]: [name] has been abandoned and is now claimable! [ADMIN_COORDJMP(shuttle?.loc)]")
+	log_shuttle("[name] has been abandoned and is claimable.")
+
+	// Announce on ship
+	ship_announce("WARNING: Ship abandoned. Command authorization reset. Any personnel may claim this vessel via the helm console.", "ABANDONMENT PROTOCOL")
+
+/**
+ * Claims an abandoned ship for a new owner.
+ * * claimer - The mob claiming the ship
+ */
+/obj/structure/overmap/ship/proc/claim_abandoned_ship(mob/living/claimer)
+	if(!abandoned)
+		return FALSE
+	if(!claimer?.mind)
+		return FALSE
+
+	// Reset abandoned state
+	abandoned = FALSE
+	joining_allowed = TRUE // Re-enable cryopod spawning
+
+	// Create new ship team or use existing (cleared) one
+	if(!ship_team)
+		ship_team = new /datum/team/voidcrew()
+		ship_team.name = name
+		ship_team.ship = src
+
+	// Add claimer to ship team
+	ship_team.add_member(claimer.mind)
+
+	// Announce
+	ship_announce("NOTICE: Command authorization restored. New commanding officer: [claimer.real_name].", "SHIP SYSTEMS")
+
+	to_chat(claimer, span_notice("You have claimed command of [name]!"))
+	log_game("[key_name(claimer)] claimed abandoned ship [name] at [AREACOORD(src)]")
+
+	return TRUE
+
 /obj/structure/overmap/ship/proc/destroy_ship(force)
-	if(!force && (length(shuttle.get_all_humans()) > 0))
+	// For backward compatibility, redirect to abandon_ship unless forced
+	if(force)
+		if(length(shuttle?.get_all_humans()) > 0)
+			return
+		message_admins("\[SHUTTLE]: [shuttle?.name] has been FORCE deleted!")
+		log_shuttle("[shuttle?.name] has been force deleted!")
+		shuttle?.jumpToNullSpace()
+		qdel(src)
 		return
-	message_admins("\[SHUTTLE]: [shuttle.name] has been deleted!")
-	log_shuttle("[shuttle.name] has been deleted!")
-	shuttle.jumpToNullSpace()
-//	update_docked_bools() //voidcrew todo: ship functionality
-	qdel(src)
+
+	// Normal case: abandon instead of delete
+	abandon_ship()
 
 /obj/structure/overmap/ship/proc/ship_announce(message, title, must_be_same_z_level = FALSE, sound)
 	var/list/announce_targets = list()
@@ -705,11 +775,11 @@
 /obj/structure/overmap/ship/proc/start_deletion_timer()
 	switch(state)
 		if(OVERMAP_SHIP_FLYING, OVERMAP_SHIP_UNDOCKING, OVERMAP_SHIP_ACTING)
-			message_admins("\[SHUTTLE]: [display_name] has been queued for deletion in [SHIP_DELETE / 600] minutes! [ADMIN_COORDJMP(shuttle.loc)]")
-			deletion_timer = addtimer(CALLBACK(src, PROC_REF(destroy_ship)), SHIP_DELETE, (TIMER_STOPPABLE|TIMER_UNIQUE))
+			message_admins("\[SHUTTLE]: [display_name] will be abandoned (with crash) in [SHIP_DELETE / 600] minutes! [ADMIN_COORDJMP(shuttle.loc)]")
+			deletion_timer = addtimer(CALLBACK(src, PROC_REF(abandon_ship), TRUE), SHIP_DELETE, (TIMER_STOPPABLE|TIMER_UNIQUE))
 		if(OVERMAP_SHIP_IDLE, OVERMAP_SHIP_DOCKING)
-			message_admins("\[SHUTTLE]: [display_name] has been queued for ruin conversion in [SHIP_RUIN / 600] minutes! [ADMIN_COORDJMP(shuttle.loc)]")
-			deletion_timer = addtimer(CALLBACK(shuttle, TYPE_PROC_REF(/obj/docking_port/mobile/voidcrew/, mothball)), SHIP_RUIN, (TIMER_STOPPABLE|TIMER_UNIQUE))
+			message_admins("\[SHUTTLE]: [display_name] will be abandoned in [SHIP_RUIN / 600] minutes! [ADMIN_COORDJMP(shuttle.loc)]")
+			deletion_timer = addtimer(CALLBACK(src, PROC_REF(abandon_ship), FALSE), SHIP_RUIN, (TIMER_STOPPABLE|TIMER_UNIQUE))
 
 /obj/structure/overmap/ship/proc/end_deletion_timer()
 	deltimer(deletion_timer)
