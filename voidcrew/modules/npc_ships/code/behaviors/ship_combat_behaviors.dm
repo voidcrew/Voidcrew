@@ -92,6 +92,14 @@
 		if(!ship.has_los_to(potential_target))
 			continue
 
+		// If this ship scans before engaging, check if we recently scanned this target
+		if(ship.scan_before_engage)
+			var/list/scanned_ships = controller.blackboard[BB_NPC_SCANNED_SHIPS]
+			if(scanned_ships)
+				var/scanned_time = scanned_ships[REF(potential_target)]
+				if(scanned_time && (world.time - scanned_time) < NPC_SCAN_MEMORY_TIME)
+					continue  // Skip - we scanned this ship recently
+
 		// Found a valid target!
 		controller.set_target(potential_target)
 
@@ -100,6 +108,7 @@
 			controller.set_combat_state(NPC_COMBAT_SCANNING)
 			controller.blackboard[BB_NPC_SCAN_START_TIME] = world.time
 			controller.blackboard[BB_NPC_SCAN_COMPLETE] = FALSE
+			controller.blackboard[BB_NPC_SCAN_ANNOUNCED] = FALSE
 		else
 			controller.set_combat_state(NPC_COMBAT_ENGAGING)
 
@@ -137,15 +146,24 @@
 		controller.blackboard[BB_NPC_SCAN_START_TIME] = world.time
 		return AI_BEHAVIOR_DELAY
 
+	// Announce scan start (only once)
+	if(!controller.blackboard[BB_NPC_SCAN_ANNOUNCED])
+		controller.blackboard[BB_NPC_SCAN_ANNOUNCED] = TRUE
+		ship.ship_announce("Initiating financial scan of [target.name]...", "SCANNER")
+		target.ship_announce("ALERT: [ship.name] is scanning our financial systems!", "SECURITY ALERT")
+
 	var/elapsed = world.time - scan_start
 	if(elapsed < ship.scan_time)
-		// Still scanning - announce progress periodically
-		if(elapsed == 0 || (elapsed % (2 SECONDS)) < (0.5 SECONDS))
-			ship.ship_announce("Scanning [target.name]... [round((elapsed / ship.scan_time) * 100)]%", "SCANNER")
+		// Still scanning - just wait
 		return AI_BEHAVIOR_DELAY
 
-	// Scan complete!
+	// Scan complete! Record this ship as scanned
 	controller.blackboard[BB_NPC_SCAN_COMPLETE] = TRUE
+	var/list/scanned_ships = controller.blackboard[BB_NPC_SCANNED_SHIPS]
+	if(!scanned_ships)
+		scanned_ships = list()
+		controller.blackboard[BB_NPC_SCANNED_SHIPS] = scanned_ships
+	scanned_ships[REF(target)] = world.time
 
 	// Check target's wealth
 	var/target_wealth = target.ship_account?.account_balance || 0
@@ -158,6 +176,7 @@
 	else
 		// Target is broke - not worth it
 		ship.ship_announce("Scan complete. Target has insufficient funds ([target_wealth] credits). Disengaging.", "SCANNER")
+		target.ship_announce("Hostile scan complete. They found nothing of value and are disengaging.", "BROKEY ALERT")
 		controller.clear_target()
 
 	return AI_BEHAVIOR_DELAY

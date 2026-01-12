@@ -28,6 +28,11 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 // Scanning blackboard keys
 #define BB_NPC_SCAN_START_TIME "npc_scan_start_time"  // When scan started
 #define BB_NPC_SCAN_COMPLETE "npc_scan_complete"      // Whether scan finished
+#define BB_NPC_SCANNED_SHIPS "npc_scanned_ships"      // Assoc list of ship ref -> time scanned
+#define BB_NPC_SCAN_ANNOUNCED "npc_scan_announced"    // Whether we announced scan start
+
+// How long to remember a scanned ship before re-scanning (5 minutes)
+#define NPC_SCAN_MEMORY_TIME (5 MINUTES)
 
 // Movement modes
 #define NPC_MOVEMENT_IDLE "idle"

@@ -126,6 +126,20 @@
 	npc_ship.color = null
 	npc_ship.chat_color = null
 
+	// Convert ship areas to require power (NPC ships don't need power, player ships do)
+	if(npc_ship.shuttle?.shuttle_areas)
+		for(var/area/shuttle_area as anything in npc_ship.shuttle.shuttle_areas)
+			shuttle_area.requires_power = TRUE
+			// Update all machinery in the area to respect power requirements
+			shuttle_area.power_change()
+
+	// Reset ship movement state (NPC ships have different movement mechanics)
+	npc_ship.speed = list(0, 0)
+	npc_ship.acceleration = list(0, 0)
+	npc_ship.speed_multiplier = SHIP_SPEED_MULTIPLIER_DEFAULT
+	npc_ship.is_interdicted = FALSE
+	npc_ship.interdiction_strength = 0
+
 	// Announce the change of ownership
 	npc_ship.ship_announce("NOTICE: Command authorization transferred. New commanding officer recognized.", "SHIP SYSTEMS")
 

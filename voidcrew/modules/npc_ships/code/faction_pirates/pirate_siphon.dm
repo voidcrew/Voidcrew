@@ -15,7 +15,7 @@
 	/// Reference to the current target ship being siphoned
 	var/datum/weakref/target_ship_ref
 	/// Credits siphoned per process tick (every 2 seconds)
-	siphon_per_tick = 50
+	siphon_per_tick = 200
 	/// Whether this siphon requires weapons lock to function
 	var/requires_lock = TRUE
 
@@ -121,7 +121,7 @@
 	var/obj/structure/overmap/ship/target = get_target_ship()
 
 	if(was_active && target)
-		target.ship_announce("Data siphon connection severed. Your accounts are secure.", "SECURITY ALERT")
+		target.ship_announce("Data siphon connection severed. Total credits lost: [credits_stored].", "FINANCE ALERT")
 		owner?.ship_announce("Siphon link lost. Total credits acquired: [credits_stored].", "SIPHON SYSTEM")
 
 	target_ship_ref = null
@@ -155,7 +155,7 @@
 			warming_up = FALSE
 			active = TRUE
 			owner?.ship_announce("Data siphon active. Draining target accounts.", "SIPHON SYSTEM")
-			target.ship_announce("CRITICAL: Data siphon breach successful! Credits are being stolen! Destroy or board the attacker!", "SECURITY ALERT")
+			target.ship_announce("CRITICAL: CREDIT SIPHONING OCCURRING!", "FINANCE ALERT")
 		return
 
 	// If not active (shouldn't happen but safety check)
@@ -203,6 +203,7 @@
 		controller.blackboard[BB_NPC_LAST_TARGET] = WEAKREF(target)
 		controller.blackboard[BB_NPC_RETREAT_REASON] = "siphon_goal"
 		controller.set_combat_state(NPC_COMBAT_RETREATING)
+		controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_RETREAT)
 
 /obj/machinery/shuttle_scrambler/ship_siphon/interact(mob/user)
 	if(active || warming_up)
