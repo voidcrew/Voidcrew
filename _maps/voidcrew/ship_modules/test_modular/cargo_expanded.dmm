@@ -1,0 +1,32 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/open/floor/iron,
+/area/template_noop)
+"b" = (
+/obj/structure/closet/crate,
+/turf/open/floor/iron,
+/area/template_noop)
+"c" = (
+/obj/modular_map_connector,
+/turf/open/floor/iron,
+/area/template_noop)
+"d" = (
+/obj/structure/closet/crate/secure,
+/turf/open/floor/iron,
+/area/template_noop)
+
+(1,1,1) = {"
+b
+a
+b
+"}
+(2,1,1) = {"
+a
+c
+a
+"}
+(3,1,1) = {"
+d
+a
+d
+"}

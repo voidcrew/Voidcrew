@@ -77,6 +77,32 @@
 	if(!template)
 		return select_ship() // Cancelled, return to menu
 
+	// Check if this ship has upgrade slots - if so, open upgrade selector
+	if(template.has_upgrade_slots && length(template.upgrade_slot_ids))
+		var/datum/callback/cb = CALLBACK(src, PROC_REF(on_upgrades_confirmed))
+		var/datum/ship_upgrade_selector/selector = new(src, template, cb)
+		selector.ui_interact(src)
+		return
+
+	// No upgrades, spawn directly
+	spawn_ship_with_upgrades(template, list())
+
+/**
+ * Callback when player confirms upgrade selections
+ */
+/mob/dead/new_player/proc/on_upgrades_confirmed(datum/map_template/shuttle/voidcrew/template, list/upgrade_selections)
+	if(!template)
+		return select_ship() // Cancelled, return to menu
+
+	spawn_ship_with_upgrades(template, upgrade_selections)
+
+/**
+ * Actually spawn the ship with the given upgrade selections
+ */
+/mob/dead/new_player/proc/spawn_ship_with_upgrades(datum/map_template/shuttle/voidcrew/template, list/upgrade_selections)
+	if(!template)
+		return select_ship()
+
 	// Prevent double-click spawning
 	if(spawning_ship)
 		to_chat(src, span_warning("Your ship is already being prepared. Please wait..."))
@@ -84,7 +110,7 @@
 	spawning_ship = TRUE
 
 	to_chat(src, span_notice("Your [template.name] is being prepared. Please be patient!"))
-	var/obj/structure/overmap/ship/target = SSshuttle.create_ship(template)
+	var/obj/structure/overmap/ship/target = SSshuttle.create_ship(template, upgrade_selections)
 	if(!istype(target))
 		spawning_ship = FALSE
 		to_chat(src, span_danger("There was an error loading the ship. Please contact admins!"))
