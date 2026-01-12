@@ -128,43 +128,6 @@
 	STOP_PROCESSING(SSobj, src)
 	update_appearance()
 
-/obj/machinery/shuttle_scrambler/ship_siphon/process()
-	var/obj/structure/overmap/ship/owner = get_owner_ship()
-	var/obj/structure/overmap/ship/target = get_target_ship()
-
-	// Validate target still exists
-	if(!target || QDELETED(target))
-		deactivate_siphon()
-		return PROCESS_KILL
-
-	// If we require lock, verify we still have it
-	if(requires_lock && owner)
-		var/obj/structure/overmap/ship/npc/npc_owner = owner
-		if(istype(npc_owner) && npc_owner.ai_controller)
-			var/datum/ai_controller/npc_ship/controller = npc_owner.ai_controller
-			var/current_target = controller.get_target()
-			var/has_lock = controller.blackboard[BB_NPC_TARGET_LOCKED]
-			if(current_target != target || !has_lock)
-				deactivate_siphon()
-				return PROCESS_KILL
-
-	// Handle warmup phase
-	if(warming_up)
-		if(world.time >= warmup_start_time + warmup_time)
-			// Warmup complete - activate siphon
-			warming_up = FALSE
-			active = TRUE
-			owner?.ship_announce("Data siphon active. Draining target accounts.", "SIPHON SYSTEM")
-			target.ship_announce("CRITICAL: CREDIT SIPHONING OCCURRING!", "FINANCE ALERT")
-		return
-
-	// If not active (shouldn't happen but safety check)
-	if(!active)
-		return PROCESS_KILL
-
-	// Perform the siphon
-	siphon_from_target(target)
-
 /// Steals credits from the target ship's bank account
 /obj/machinery/shuttle_scrambler/ship_siphon/proc/siphon_from_target(obj/structure/overmap/ship/target)
 	if(!target?.ship_account)
@@ -276,3 +239,186 @@
 
 /obj/machinery/shuttle_scrambler/ship_siphon/interrupt_research()
 	return
+
+// ========== TGUI INTERFACE ==========
+
+/obj/machinery/shuttle_scrambler/ship_siphon/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "ShipSiphon")
+		ui.open()
+
+/obj/machinery/shuttle_scrambler/ship_siphon/ui_data(mob/user)
+	var/list/data = list()
+
+	data["active"] = active
+	data["warming_up"] = warming_up
+	data["credits_stored"] = credits_stored
+
+	// Warmup progress
+	if(warming_up && warmup_start_time > 0)
+		var/elapsed = world.time - warmup_start_time
+		data["warmup_progress"] = clamp((elapsed / warmup_time) * 100, 0, 100)
+	else
+		data["warmup_progress"] = 0
+
+	// Goal progress
+	if(siphon_goal > 0)
+		data["siphon_goal"] = siphon_goal
+		data["goal_progress"] = clamp((credits_stored / siphon_goal) * 100, 0, 100)
+	else
+		data["siphon_goal"] = 0
+		data["goal_progress"] = 0
+
+	// Target info
+	var/obj/structure/overmap/ship/target = get_target_ship()
+	if(target)
+		data["has_target"] = TRUE
+		data["target_name"] = target.name
+		data["target_credits"] = target.ship_account?.account_balance || 0
+	else
+		// Check if we can get a target from combat console (for player ships)
+		var/obj/machinery/computer/camera_advanced/ship_combat/console = find_combat_console()
+		if(console?.target_ship)
+			data["has_target"] = TRUE
+			data["target_name"] = console.target_ship.name
+			data["target_credits"] = console.target_ship.ship_account?.account_balance || 0
+			data["can_activate"] = TRUE
+			data["no_lock_reason"] = null
+		else
+			data["has_target"] = FALSE
+			data["target_name"] = null
+			data["target_credits"] = 0
+			data["can_activate"] = FALSE
+			data["no_lock_reason"] = console ? "No target locked on combat console." : "No combat console found on this ship."
+
+	return data
+
+/obj/machinery/shuttle_scrambler/ship_siphon/ui_act(action, params)
+	. = ..()
+	if(.)
+		return
+
+	switch(action)
+		if("activate")
+			return player_activate_siphon(usr)
+		if("deactivate")
+			deactivate_siphon()
+			return TRUE
+		if("withdraw")
+			if(credits_stored > 0 && !active && !warming_up)
+				dump_loot(usr)
+				return TRUE
+			return FALSE
+
+/// Finds the combat console on the owner ship
+/obj/machinery/shuttle_scrambler/ship_siphon/proc/find_combat_console()
+	var/obj/structure/overmap/ship/owner = get_owner_ship()
+	if(!owner?.shuttle?.shuttle_areas)
+		return null
+
+	for(var/area/ship_area in owner.shuttle.shuttle_areas)
+		for(var/obj/machinery/computer/camera_advanced/ship_combat/console in ship_area)
+			return console
+
+	return null
+
+/// Player-initiated siphon activation (from UI)
+/obj/machinery/shuttle_scrambler/ship_siphon/proc/player_activate_siphon(mob/user)
+	if(active || warming_up)
+		to_chat(user, span_warning("The siphon is already active!"))
+		return FALSE
+
+	var/obj/machinery/computer/camera_advanced/ship_combat/console = find_combat_console()
+	if(!console)
+		to_chat(user, span_warning("No combat console found on this ship."))
+		return FALSE
+
+	if(!console.target_ship)
+		to_chat(user, span_warning("No target locked on combat console. Acquire a weapons lock first."))
+		return FALSE
+
+	var/obj/structure/overmap/ship/target = console.target_ship
+
+	// Set the target
+	set_target(target)
+
+	// Calculate 25% goal for player usage
+	goal_reached = FALSE
+	if(target.ship_account)
+		var/target_balance = target.ship_account.account_balance
+		if(target_balance < 50)
+			to_chat(user, span_warning("Target vessel has insufficient funds to siphon."))
+			target_ship_ref = null
+			return FALSE
+		siphon_goal = round(target_balance * 0.25)
+		siphon_goal = max(siphon_goal, 100)
+
+	// Register for lock lost signal
+	RegisterSignal(console, COMSIG_QDELETING, PROC_REF(on_console_deleted))
+
+	// Start warmup
+	warming_up = TRUE
+	warmup_start_time = world.time
+	START_PROCESSING(SSobj, src)
+	update_appearance()
+
+	to_chat(user, span_notice("Siphon calibrating. Target: [target.name]."))
+	var/obj/structure/overmap/ship/owner = get_owner_ship()
+	owner?.ship_announce("Data siphon calibrating. Target: [target.name]. ETA: [warmup_time / 10] seconds.", "SIPHON SYSTEM")
+
+	return TRUE
+
+/// Called when linked combat console is deleted
+/obj/machinery/shuttle_scrambler/ship_siphon/proc/on_console_deleted(datum/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_QDELETING)
+	if(active || warming_up)
+		deactivate_siphon()
+
+/// Override process to check player ship lock status
+/obj/machinery/shuttle_scrambler/ship_siphon/process()
+	var/obj/structure/overmap/ship/owner = get_owner_ship()
+	var/obj/structure/overmap/ship/target = get_target_ship()
+
+	// Validate target still exists
+	if(!target || QDELETED(target))
+		deactivate_siphon()
+		return PROCESS_KILL
+
+	// For player ships, check if combat console still has lock
+	if(!istype(owner, /obj/structure/overmap/ship/npc))
+		var/obj/machinery/computer/camera_advanced/ship_combat/console = find_combat_console()
+		if(!console || console.target_ship != target)
+			var/obj/structure/overmap/ship/old_target = target
+			deactivate_siphon()
+			owner?.ship_announce("Siphon deactivated - weapons lock on [old_target.name] lost.", "SIPHON SYSTEM")
+			return PROCESS_KILL
+
+	// If we require lock and this is an NPC ship, verify we still have it
+	if(requires_lock && owner)
+		var/obj/structure/overmap/ship/npc/npc_owner = owner
+		if(istype(npc_owner) && npc_owner.ai_controller)
+			var/datum/ai_controller/npc_ship/controller = npc_owner.ai_controller
+			var/current_target = controller.get_target()
+			var/has_lock = controller.blackboard[BB_NPC_TARGET_LOCKED]
+			if(current_target != target || !has_lock)
+				deactivate_siphon()
+				return PROCESS_KILL
+
+	// Handle warmup phase
+	if(warming_up)
+		if(world.time >= warmup_start_time + warmup_time)
+			// Warmup complete - activate siphon
+			warming_up = FALSE
+			active = TRUE
+			owner?.ship_announce("Data siphon active. Draining target accounts.", "SIPHON SYSTEM")
+			target.ship_announce("CRITICAL: CREDIT SIPHONING OCCURRING!", "FINANCE ALERT")
+		return
+
+	// If not active (shouldn't happen but safety check)
+	if(!active)
+		return PROCESS_KILL
+
+	// Perform the siphon
+	siphon_from_target(target)

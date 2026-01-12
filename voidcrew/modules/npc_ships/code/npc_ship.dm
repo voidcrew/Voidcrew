@@ -88,6 +88,9 @@
 	/// Default movement mode for this ship type
 	var/default_movement_mode = NPC_MOVEMENT_PATROL
 
+	/// Whether this ship has been claimed by a player (uses normal movement physics)
+	var/player_controlled = FALSE
+
 	// ========== MASS CACHING (Performance optimization) ==========
 	// Instead of iterating all turfs every second, we cache mass and only
 	// recalculate when the ship takes hull damage
@@ -311,8 +314,14 @@
  * Override burn_engines to use per-ship acceleration while still requiring working engines.
  * This bypasses the complex thrust/mass calculation but ensures the ship has functional
  * engines before allowing movement.
+ *
+ * When player_controlled is TRUE, uses normal engine physics instead.
  */
 /obj/structure/overmap/ship/npc/burn_engines(n_dir = null, percentage = 100)
+	// If player-controlled, use normal engine physics
+	if(player_controlled)
+		return ..()
+
 	if(state != OVERMAP_SHIP_FLYING)
 		return
 

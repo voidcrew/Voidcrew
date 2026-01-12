@@ -135,10 +135,10 @@
 
 	// Reset ship movement state (NPC ships have different movement mechanics)
 	npc_ship.speed = list(0, 0)
-	npc_ship.acceleration = list(0, 0)
-	npc_ship.speed_multiplier = SHIP_SPEED_MULTIPLIER_DEFAULT
+	npc_ship.speed_multiplier = 1
 	npc_ship.is_interdicted = FALSE
 	npc_ship.interdiction_strength = 0
+	npc_ship.player_controlled = TRUE  // Use normal engine physics instead of NPC simplified movement
 
 	// Announce the change of ownership
 	npc_ship.ship_announce("NOTICE: Command authorization transferred. New commanding officer recognized.", "SHIP SYSTEMS")

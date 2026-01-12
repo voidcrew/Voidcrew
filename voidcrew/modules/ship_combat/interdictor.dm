@@ -453,18 +453,18 @@
 	target.update_interdiction(src, speed_mult, strength)
 
 	// Check if ship had meaningful momentum before stopping
+	// Use is_still() first as a definitive check, then speed magnitude as backup
+	var/was_moving = !target.is_still()
 	var/old_speed_x = target.speed[1]
 	var/old_speed_y = target.speed[2]
 	var/speed_magnitude = sqrt(old_speed_x * old_speed_x + old_speed_y * old_speed_y)
-	// Use threshold to ignore negligible drift from floating-point imprecision or stationary ships
-	// Ships need to be moving at a meaningful speed to cause inertial throw effects
-	var/had_momentum = speed_magnitude > 0.5
 
 	// Kill all target momentum - they have to re-engage engines
 	target.adjust_speed(-target.speed[1], -target.speed[2])
 
-	// If ship was moving, throw everything inside due to inertia
-	if(had_momentum)
+	// If ship was moving at meaningful speed, throw everything inside due to inertia
+	// Require both is_still() to be false AND speed magnitude > 0.5 to prevent false positives
+	if(was_moving && speed_magnitude > 0.5)
 		// Calculate throw direction (inertia continues in direction of travel)
 		var/throw_dir = NONE
 		if(old_speed_x > 0)
