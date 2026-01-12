@@ -29,7 +29,6 @@
 /area/ruin/unpowered)
 "i" = (
 /obj/structure/table,
-/obj/item/kitchen/knife/combat,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "j" = (
@@ -37,15 +36,14 @@
 /obj/item/storage/toolbox/syndicate,
 /obj/item/stack/sheet/mineral/plasma,
 /obj/item/gun/ballistic/automatic/pistol,
+/obj/item/ammo_box/magazine/m9mm,
+/obj/item/ammo_box/magazine/m9mm,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "k" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
-/turf/open/floor/plating,
-/area/ruin/powered)
-"l" = (
-/obj/structure/cable,
+/mob/living/basic/trooper/syndicate/melee,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "m" = (
@@ -80,12 +78,6 @@
 /obj/item/grenade/frag,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"t" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/porta_turret/syndicate/pod,
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "u" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/porta_turret/syndicate/pod,
@@ -108,14 +100,10 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"y" = (
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "A" = (
 /obj/structure/rack,
-/obj/item/ammo_box/magazine/mm712x82,
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/item/knife/combat,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "C" = (
@@ -135,11 +123,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"G" = (
-/obj/structure/cable,
-/mob/living/simple_animal/hostile/syndicate,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "H" = (
 /obj/structure/punji_sticks,
 /obj/structure/flora/ausbushes/fullgrass,
@@ -156,7 +139,7 @@
 /area/ruin/unpowered)
 "K" = (
 /obj/structure/chair/plastic,
-/mob/living/simple_animal/hostile/syndicate/ranged,
+/mob/living/basic/trooper/syndicate/ranged/infiltrator,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "M" = (
@@ -205,10 +188,6 @@
 "Y" = (
 /obj/structure/sign/poster/contraband/free_key,
 /turf/closed/wall,
-/area/ruin/powered)
-"Z" = (
-/obj/structure/cable,
-/turf/open/floor/plating,
 /area/ruin/powered)
 
 (1,1,1) = {"
@@ -259,8 +238,8 @@ T
 v
 U
 X
-Z
-l
+S
+S
 F
 K
 R
@@ -269,9 +248,9 @@ q
 (6,1,1) = {"
 n
 Y
-G
+S
 V
-y
+S
 V
 A
 w
@@ -282,7 +261,7 @@ a
 b
 x
 r
-y
+S
 e
 I
 I
@@ -293,7 +272,7 @@ a
 b
 w
 o
-t
+u
 b
 a
 a

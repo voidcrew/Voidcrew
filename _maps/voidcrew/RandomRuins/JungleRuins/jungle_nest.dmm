@@ -1,12 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aH" = (
-/obj/structure/alien/weeds,
-/obj/structure/table/wood/fancy,
-/obj/machinery/chem_dispenser/drinks/beer{
-	dir = 8
-	},
-/turf/open/misc/dirt,
-/area/ruin/powered)
 "aW" = (
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
@@ -38,6 +30,9 @@
 /obj/structure/alien/weeds,
 /obj/structure/alien/weeds/node,
 /obj/effect/decal/cleanable/blood/old,
+/obj/effect/mob_spawn/human/corpse/solgov/infantry,
+/obj/item/gun/ballistic/shotgun/automatic/dual_tube/deadly,
+/obj/item/ammo_casing/shotgun/buckshot/spent,
 /turf/open/misc/dirt,
 /area/ruin/powered)
 "eA" = (
@@ -56,6 +51,10 @@
 "fj" = (
 /obj/structure/alien/weeds,
 /obj/structure/mecha_wreckage/ripley,
+/obj/item/mecha_parts/mecha_equipment/weapon/energy/plasma{
+	pixel_x = 1;
+	pixel_y = -15
+	},
 /turf/open/misc/dirt,
 /area/ruin/powered)
 "fZ" = (
@@ -65,12 +64,6 @@
 "gU" = (
 /obj/structure/alien/weeds,
 /obj/effect/decal/remains/xeno,
-/turf/open/misc/dirt,
-/area/ruin/powered)
-"hu" = (
-/obj/structure/alien/weeds,
-/obj/structure/alien/weeds/node,
-/obj/machinery/vending/boozeomat,
 /turf/open/misc/dirt,
 /area/ruin/powered)
 "iF" = (
@@ -98,16 +91,12 @@
 /area/ruin/powered)
 "mW" = (
 /obj/structure/alien/weeds,
-/obj/effect/decal/cleanable/xenoblood/xgibs/larva/body,
+/mob/living/basic/alien,
 /turf/open/misc/dirt,
 /area/ruin/powered)
 "nn" = (
 /obj/structure/barricade/wooden,
 /turf/open/misc/dirt,
-/area/ruin/powered)
-"oB" = (
-/obj/effect/decal/cleanable/xenoblood/xgibs/larva/body,
-/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "oX" = (
 /obj/structure/alien/weeds,
@@ -121,40 +110,17 @@
 /area/ruin/powered)
 "rY" = (
 /obj/structure/alien/weeds,
-/obj/structure/table/wood/fancy,
-/obj/item/reagent_containers/food/drinks/bottle/fernet,
-/obj/item/reagent_containers/food/drinks/bottle/champagne,
+/mob/living/basic/alien/drone,
 /turf/open/misc/dirt,
 /area/ruin/powered)
 "sw" = (
 /obj/structure/alien/resin/wall,
 /turf/open/misc/dirt/jungle,
 /area/ruin/powered)
-"tZ" = (
-/obj/effect/decal/cleanable/xenoblood,
-/turf/open/misc/dirt/jungle,
-/area/ruin/powered)
-"ul" = (
-/obj/structure/alien/weeds,
-/obj/structure/bed/nest,
-/obj/item/storage/box/alienhandcuffs,
-/turf/open/misc/dirt,
-/area/ruin/powered)
 "uo" = (
 /obj/structure/alien/weeds,
-/obj/effect/mob_spawn/human/corpse/assistant,
 /obj/structure/bed/nest,
 /obj/effect/decal/cleanable/blood/old,
-/turf/open/misc/dirt,
-/area/ruin/powered)
-"uR" = (
-/obj/effect/decal/cleanable/xenoblood/xgibs/up,
-/turf/open/misc/dirt/jungle,
-/area/ruin/powered)
-"vg" = (
-/obj/structure/alien/weeds,
-/obj/structure/bed/nest,
-/obj/item/clothing/under/costume/mech_suit/blue,
 /turf/open/misc/dirt,
 /area/ruin/powered)
 "vt" = (
@@ -179,34 +145,13 @@
 /area/ruin/powered)
 "wl" = (
 /obj/structure/alien/weeds,
-/obj/effect/decal/cleanable/xenoblood/xgibs/torso,
+/mob/living/basic/alien/sentinel,
 /turf/open/misc/dirt,
-/area/ruin/powered)
-"wt" = (
-/obj/structure/alien/weeds,
-/obj/structure/alien/resin/wall,
-/obj/structure/sign/poster/contraband/lusty_xenomorph,
-/turf/open/misc/grass,
-/area/ruin/powered)
-"xY" = (
-/obj/structure/alien/weeds,
-/obj/effect/mob_spawn/human/corpse/assistant,
-/obj/structure/bed/nest,
-/turf/open/misc/dirt,
-/area/ruin/powered)
-"ya" = (
-/obj/effect/decal/cleanable/xenoblood/xgibs/larva,
-/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "yF" = (
 /obj/structure/alien/weeds,
 /obj/structure/alien/resin/wall,
 /turf/open/misc/grass,
-/area/ruin/powered)
-"yG" = (
-/obj/structure/alien/weeds,
-/mob/living/simple_animal/hostile/alien/maid,
-/turf/open/misc/dirt,
 /area/ruin/powered)
 "yV" = (
 /obj/structure/alien/resin/wall,
@@ -230,6 +175,7 @@
 "zz" = (
 /obj/structure/alien/weeds,
 /obj/effect/decal/remains/xeno/larva,
+/mob/living/basic/alien/queen/large,
 /turf/open/misc/dirt,
 /area/ruin/powered)
 "AC" = (
@@ -240,7 +186,6 @@
 "AE" = (
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
-/obj/item/clothing/head/helmet/riot,
 /obj/item/shield/riot,
 /turf/open/misc/dirt,
 /area/ruin/powered)
@@ -251,19 +196,19 @@
 /area/ruin/powered)
 "Du" = (
 /obj/structure/alien/weeds,
-/obj/effect/mob_spawn/human/corpse/nanotrasensoldier,
 /obj/structure/bed/nest,
-/turf/open/misc/dirt,
-/area/ruin/powered)
-"DP" = (
-/obj/structure/alien/resin/wall,
-/obj/structure/sign/poster/contraband/busty_backdoor_xeno_babes_6,
-/turf/open/misc/grass,
-/area/ruin/powered)
-"Ee" = (
-/obj/structure/alien/weeds,
-/obj/structure/bed/nest,
-/obj/item/kitchen/knife/combat/survival,
+/obj/item/storage/box/lethalshot/old{
+	pixel_x = 4;
+	pixel_y = 7
+	},
+/obj/item/storage/box/lethalshot{
+	pixel_x = -13;
+	pixel_y = 3
+	},
+/obj/item/storage/box/lethalshot{
+	pixel_x = 6;
+	pixel_y = 0
+	},
 /turf/open/misc/dirt,
 /area/ruin/powered)
 "EC" = (
@@ -275,7 +220,6 @@
 "Fe" = (
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
-/obj/item/cartridge,
 /obj/item/clothing/under/rank/civilian/curator,
 /turf/open/misc/dirt,
 /area/ruin/powered)
@@ -287,8 +231,9 @@
 /area/ruin/powered)
 "Gk" = (
 /obj/structure/alien/weeds,
-/mob/living/simple_animal/hostile/alien/sentinel,
 /obj/effect/decal/cleanable/blood/old,
+/mob/living/basic/alien/sentinel,
+/obj/item/ammo_casing/shotgun/buckshot/spent,
 /turf/open/misc/dirt,
 /area/ruin/powered)
 "Gt" = (
@@ -298,12 +243,10 @@
 /area/ruin/powered)
 "Hh" = (
 /obj/structure/alien/weeds,
-/mob/living/simple_animal/hostile/alien/drone,
+/obj/effect/mob_spawn/corpse/human/assistant,
+/obj/item/spear/explosive,
 /turf/open/misc/dirt,
 /area/ruin/powered)
-"Hs" = (
-/turf/closed/mineral/random/jungle,
-/area/ruin)
 "Hz" = (
 /obj/structure/alien/weeds,
 /obj/structure/alien/egg/burst,
@@ -312,12 +255,6 @@
 "II" = (
 /turf/open/misc/dirt/jungle,
 /area/ruin/powered)
-"KR" = (
-/obj/structure/alien/weeds,
-/obj/structure/table/wood/fancy,
-/obj/machinery/dish_drive,
-/turf/open/misc/dirt,
-/area/ruin/powered)
 "Lg" = (
 /obj/structure/alien/weeds,
 /obj/structure/alien/resin/membrane,
@@ -325,18 +262,12 @@
 /area/ruin/powered)
 "Lh" = (
 /obj/structure/alien/weeds,
-/mob/living/simple_animal/hostile/alien/queen/large,
+/obj/item/ammo_casing/shotgun/buckshot/spent,
 /turf/open/misc/dirt,
 /area/ruin/powered)
 "MJ" = (
 /obj/structure/alien/weeds,
 /obj/effect/decal/remains/human,
-/turf/open/misc/dirt,
-/area/ruin/powered)
-"Ne" = (
-/obj/structure/alien/weeds,
-/obj/structure/alien/weeds/node,
-/mob/living/simple_animal/hostile/alien,
 /turf/open/misc/dirt,
 /area/ruin/powered)
 "NK" = (
@@ -366,14 +297,6 @@
 /obj/structure/flora/tree/jungle/small,
 /turf/open/misc/dirt/jungle,
 /area/ruin/powered)
-"VT" = (
-/obj/structure/alien/weeds,
-/obj/structure/table/wood/fancy,
-/obj/machinery/chem_dispenser/drinks{
-	dir = 8
-	},
-/turf/open/misc/dirt,
-/area/ruin/powered)
 "Wb" = (
 /turf/template_noop,
 /area/template_noop)
@@ -395,7 +318,7 @@ iF
 iF
 II
 II
-tZ
+II
 eB
 Wb
 Wb
@@ -447,7 +370,7 @@ NK
 zy
 zy
 zy
-ya
+II
 TY
 II
 Wb
@@ -462,7 +385,7 @@ UV
 UV
 UV
 UV
-vg
+eG
 zy
 zv
 II
@@ -493,7 +416,7 @@ iF
 sw
 vt
 UV
-Lh
+UV
 UV
 yF
 Gt
@@ -509,9 +432,9 @@ Wb
 iF
 iF
 vt
-mW
 UV
 UV
+wl
 yF
 UV
 yF
@@ -519,7 +442,7 @@ dj
 Du
 zy
 eB
-oB
+II
 Yq
 "}
 (9,1,1) = {"
@@ -528,9 +451,9 @@ iF
 vt
 vt
 cj
-mW
+UV
 yF
-Hh
+UV
 yF
 Gk
 AE
@@ -549,7 +472,7 @@ yF
 yF
 UV
 yF
-UV
+Lh
 zy
 vt
 UV
@@ -564,7 +487,7 @@ vt
 yF
 yF
 EC
-UV
+Lh
 yF
 Gt
 zy
@@ -581,12 +504,12 @@ vt
 UV
 gU
 AI
+mW
 UV
-UV
-UV
+Lh
 kd
 AC
-wl
+UV
 UV
 II
 "}
@@ -604,7 +527,7 @@ yF
 zy
 nn
 UV
-UV
+Lh
 eA
 "}
 (14,1,1) = {"
@@ -612,7 +535,7 @@ Wb
 iF
 vt
 uo
-UV
+mW
 UV
 UV
 UV
@@ -622,18 +545,18 @@ zy
 zy
 zy
 zy
-uR
+II
 "}
 (15,1,1) = {"
 Wb
 iF
-DP
+vt
 FA
 UV
 Hh
 UV
 wg
-xY
+eG
 yF
 yF
 Fe
@@ -645,15 +568,15 @@ Yq
 Wb
 iF
 sw
-Ee
+eG
 UV
 AI
 UV
-UV
+mW
 TS
 yF
-UV
-Ne
+mW
+AI
 eG
 zy
 iF
@@ -671,7 +594,7 @@ yF
 yF
 UV
 MJ
-ul
+eG
 yV
 iF
 "}
@@ -683,7 +606,7 @@ jI
 vt
 UV
 UV
-UV
+rY
 UV
 UV
 UV
@@ -700,13 +623,13 @@ iF
 jI
 vt
 vt
-Gt
 yF
-wt
+yF
+AI
 yF
 zy
 iF
-Hs
+iF
 Wb
 "}
 (20,1,1) = {"
@@ -716,11 +639,11 @@ Wb
 Wb
 iF
 iF
-vt
+iF
+yF
 UV
 UV
-UV
-KR
+yF
 zy
 iF
 Wb
@@ -733,12 +656,12 @@ Wb
 Wb
 Wb
 Wb
-jI
-vt
-hu
-yG
-rY
-yV
+iF
+iF
+yF
+yF
+yF
+iF
 iF
 Wb
 Wb
@@ -751,11 +674,11 @@ Wb
 Wb
 Wb
 Wb
-jI
-vt
-VT
-aH
-yV
+iF
+iF
+iF
+iF
+iF
 Wb
 Wb
 Wb
@@ -769,10 +692,10 @@ Wb
 Wb
 Wb
 iF
-sw
-vt
-jI
-jI
+iF
+iF
+iF
+iF
 Wb
 Wb
 Wb

@@ -5,15 +5,6 @@
 	},
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
-"b" = (
-/obj/effect/mob_spawn/human/skeleton/alive,
-/mob/living/simple_animal/hostile/skeleton/plasmaminer/jackhammer,
-/turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
-"d" = (
-/obj/effect/mob_spawn/human/skeleton/alive,
-/turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
 "e" = (
 /obj/item/clothing/head/helmet/skull,
 /turf/open/misc/dirt/jungle,
@@ -22,17 +13,8 @@
 /obj/structure/flora/grass/jungle/b,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
-"g" = (
-/obj/effect/decal/cleanable/blood/tracks,
-/obj/effect/mob_spawn/human/skeleton/alive,
-/turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
 "h" = (
 /obj/effect/decal/cleanable/blood/tracks,
-/turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
-"i" = (
-/obj/item/kitchen/knife/combat/bone,
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "j" = (
@@ -42,7 +24,7 @@
 /area/ruin/unpowered)
 "k" = (
 /obj/effect/decal/cleanable/blood/tracks,
-/obj/item/book/granter/crafting_recipe/boneyard_notes,
+/obj/structure/spawner/skeleton,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "l" = (
@@ -64,13 +46,8 @@
 "q" = (
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
-"s" = (
-/obj/structure/fluff/drake_statue,
-/turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
 "t" = (
 /obj/effect/decal/cleanable/blood/tracks,
-/obj/item/nullrod/scythe,
 /obj/item/storage/box/holy/follower,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
@@ -84,11 +61,6 @@
 	},
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
-"x" = (
-/obj/item/slime_cookie/black,
-/mob/living/simple_animal/hostile/skeleton/templar,
-/turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
 "y" = (
 /obj/item/slime_cookie/black,
 /obj/structure/flora/grass/jungle/b,
@@ -99,13 +71,12 @@
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "B" = (
-/obj/effect/mob_spawn/human/skeleton/alive,
 /obj/structure/flora/rock/jungle,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "C" = (
 /obj/effect/decal/cleanable/blood/tracks,
-/obj/effect/mob_spawn/human/skeleton/alive,
+/mob/living/basic/skeleton/settler,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "D" = (
@@ -123,26 +94,9 @@
 	},
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
-"G" = (
-/obj/effect/decal/cleanable/blood/tracks,
-/mob/living/simple_animal/hostile/skeleton/plasmaminer/jackhammer,
-/turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
-"H" = (
-/mob/living/simple_animal/hostile/retaliate/ghost,
-/turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
 "I" = (
-/mob/living/simple_animal/hostile/skeleton/plasmaminer/jackhammer,
-/turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
-"J" = (
-/mob/living/simple_animal/hostile/retaliate/ghost,
-/turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
-"K" = (
-/mob/living/simple_animal/hostile/skeleton/templar,
-/obj/structure/flora/grass/jungle/b,
+/obj/item/crusher_trophy/legion_skull,
+/mob/living/basic/skeleton/templar,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "L" = (
@@ -159,18 +113,8 @@
 /obj/structure/flora/grass/jungle/b,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
-"R" = (
-/obj/effect/mob_spawn/human/skeleton/alive,
-/obj/item/stack/sheet/bone,
-/turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
 "S" = (
 /obj/item/slime_cookie/black,
-/turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
-"T" = (
-/obj/effect/decal/cleanable/blood/tracks,
-/mob/living/simple_animal/hostile/skeleton/templar,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "U" = (
@@ -182,8 +126,7 @@
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "W" = (
-/obj/structure/spawner/skeleton,
-/obj/item/reagent_containers/food/snacks/meat/slab/human/mutant/skeleton,
+/obj/item/book/granter/crafting_recipe/boneyard_notes,
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "X" = (
@@ -207,7 +150,7 @@
 (1,1,1) = {"
 D
 m
-b
+m
 m
 a
 Q
@@ -223,49 +166,49 @@ a
 "}
 (2,1,1) = {"
 m
-s
-W
+q
+q
 l
 S
 m
-J
-d
+m
+m
 j
 q
 q
-x
+S
 m
-L
+I
 U
 "}
 (3,1,1) = {"
-d
+P
 o
 Y
 k
-T
+E
 t
 E
 h
 h
 h
 E
-g
-G
+h
+h
 F
-H
+q
 "}
 (4,1,1) = {"
 m
-P
+m
 W
-i
+q
 V
 n
-d
-I
 m
-H
+m
+m
+q
 L
 y
 v
@@ -273,16 +216,16 @@ w
 C
 "}
 (5,1,1) = {"
-K
+f
 e
 L
-d
-Z
 m
 Z
 m
 Z
-R
+m
+Z
+U
 Z
 m
 z

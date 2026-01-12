@@ -14,12 +14,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
-"cS" = (
-/obj/effect/mapping_helpers/broken_floor,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
-/area/ruin/unpowered)
 "dX" = (
 /obj/item/gun/ballistic/automatic/pistol{
 	spawnwithmagazine = 0
@@ -102,6 +96,12 @@
 	initial_gas_mix = "ws_atmos"
 	},
 /area/ruin/unpowered)
+"nn" = (
+/mob/living/basic/trooper/syndicate/ranged/space,
+/turf/open/floor/plating{
+	initial_gas_mix = "ws_atmos"
+	},
+/area/ruin/unpowered)
 "ns" = (
 /obj/structure/frame/machine,
 /obj/item/circuitboard/machine/smes,
@@ -123,15 +123,17 @@
 "oT" = (
 /turf/open/misc/dust/lit,
 /area/ruin/unpowered)
-"pL" = (
-/mob/living/basic/trooper/syndicate/ranged/shotgun/space,
-/turf/open/misc/dust/lit,
-/area/overmap_encounter/planetoid/wasteland)
 "qe" = (
 /obj/machinery/atmospherics/components/binary/circulator{
 	dir = 4
 	},
 /turf/open/floor/engine{
+	initial_gas_mix = "ws_atmos"
+	},
+/area/ruin/unpowered)
+"qk" = (
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating{
 	initial_gas_mix = "ws_atmos"
 	},
 /area/ruin/unpowered)
@@ -175,6 +177,7 @@
 /area/ruin/unpowered)
 "yj" = (
 /obj/machinery/door/airlock/hatch,
+/obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "zB" = (
@@ -200,7 +203,7 @@
 /turf/closed/wall/r_wall/plastitanium/syndicate/nodiagonal,
 /area/ruin/unpowered)
 "CW" = (
-/mob/living/basic/trooper/syndicate/ranged/space,
+/obj/effect/mapping_helpers/burnt_floor,
 /turf/open/floor/plating{
 	initial_gas_mix = "ws_atmos"
 	},
@@ -231,12 +234,6 @@
 	initial_gas_mix = "ws_atmos"
 	},
 /area/ruin/unpowered)
-"Eu" = (
-/obj/effect/mapping_helpers/burnt_floor,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
-/area/ruin/unpowered)
 "Gd" = (
 /obj/item/grenade/c4/x4,
 /obj/item/grenade/c4/x4,
@@ -244,6 +241,7 @@
 /obj/item/grenade/syndieminibomb/concussion,
 /obj/item/grenade/c4,
 /obj/item/grenade/c4,
+/obj/structure/closet/crate/secure/syndicate/gorlex/weapons/bustedlock,
 /turf/open/floor/plating{
 	initial_gas_mix = "ws_atmos"
 	},
@@ -298,8 +296,13 @@
 	initial_gas_mix = "ws_atmos"
 	},
 /area/ruin/unpowered)
+"OY" = (
+/mob/living/basic/trooper/syndicate/ranged/shotgun/space,
+/turf/open/misc/dust/lit,
+/area/overmap_encounter/planetoid/wasteland)
 "Pr" = (
 /obj/machinery/door/airlock/engineering,
+/obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
 /turf/open/floor/plating{
 	initial_gas_mix = "ws_atmos"
 	},
@@ -379,6 +382,11 @@
 /turf/open/floor/plating{
 	initial_gas_mix = "ws_atmos"
 	},
+/area/ruin/unpowered)
+"Ws" = (
+/obj/machinery/door/airlock/hatch,
+/obj/effect/mapping_helpers/airlock/access/all/syndicate/leader,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "WX" = (
 /turf/open/floor/engine{
@@ -472,7 +480,7 @@ Vl
 oT
 RJ
 CM
-cS
+qk
 CM
 Sx
 Sx
@@ -515,7 +523,7 @@ RJ
 RJ
 RJ
 Iz
-CW
+nn
 kZ
 BW
 BW
@@ -525,12 +533,12 @@ kZ
 Sx
 kZ
 oT
-cS
-cS
+qk
+qk
 WX
 sB
 Sx
-cS
+qk
 RJ
 RJ
 RJ
@@ -583,7 +591,7 @@ WX
 WX
 WX
 kZ
-cS
+qk
 WX
 RJ
 RJ
@@ -599,7 +607,7 @@ CM
 Sx
 kZ
 CM
-Eu
+CW
 kW
 CM
 CM
@@ -607,7 +615,7 @@ Sx
 kZ
 Sx
 kZ
-cS
+qk
 kZ
 WX
 WX
@@ -652,17 +660,17 @@ kZ
 Uw
 BW
 BW
-yj
-Eu
+Ws
+CW
 Ts
 CM
 CM
 kZ
-cS
+qk
 kZ
 Sx
 kZ
-cS
+qk
 WX
 hG
 kZ
@@ -680,8 +688,8 @@ CM
 kZ
 eS
 CM
-Eu
-Eu
+CW
+CW
 CM
 CM
 WX
@@ -739,13 +747,13 @@ CM
 CM
 CM
 WX
-cS
+qk
 ox
 Dz
 gt
 kZ
 TT
-cS
+qk
 WX
 kZ
 RJ
@@ -765,14 +773,14 @@ rp
 fw
 CM
 CM
-cS
+qk
 kZ
 kZ
 WX
 WX
 WX
 WX
-cS
+qk
 kZ
 CM
 RJ
@@ -825,7 +833,7 @@ kZ
 WX
 kZ
 CX
-cS
+qk
 kZ
 kZ
 CM
@@ -848,13 +856,13 @@ CM
 RJ
 kZ
 kZ
-cS
+qk
 WX
 WX
 WX
 WX
 kZ
-cS
+qk
 bl
 RJ
 RJ
@@ -868,7 +876,7 @@ RJ
 bl
 dX
 gK
-pL
+OY
 bl
 bl
 RJ
@@ -932,7 +940,7 @@ RJ
 RJ
 RJ
 BW
-cS
+qk
 Sx
 Sx
 RJ
@@ -987,7 +995,7 @@ RJ
 RJ
 RJ
 CM
-cS
+qk
 CM
 RJ
 RJ

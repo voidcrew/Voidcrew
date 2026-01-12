@@ -16,23 +16,10 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "br" = (
-/mob/living/simple_animal/hostile/cockroach,
 /obj/effect/decal/cleanable/dirt,
 /obj/item/cigbutt/roach,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"cR" = (
-/obj/structure/cable,
-/mob/living/simple_animal/hostile/cockroach,
-/obj/item/cigbutt/roach,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"dG" = (
-/obj/effect/turf_decal/weather/dirt{
-	dir = 4
-	},
-/turf/template_noop,
-/area/template_noop)
 "ec" = (
 /obj/structure/plaque{
 	desc = "A motivational plaque reading: \"It's not a crack shack, it's a crack home <3\"";
@@ -50,22 +37,15 @@
 /area/ruin/unpowered)
 "fP" = (
 /obj/structure/cable,
-/obj/item/reagent_containers/food/snacks/grown/cannabis,
 /obj/item/cigbutt/roach,
+/obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "gP" = (
 /obj/item/trash/chips,
-/turf/open/floor/wood{
-	icon_state = "wood-broken4"
-	},
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/wood,
 /area/ruin/unpowered)
-"gS" = (
-/obj/effect/turf_decal/weather/dirt{
-	dir = 1
-	},
-/turf/template_noop,
-/area/template_noop)
 "il" = (
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt,
@@ -86,21 +66,9 @@
 	},
 /area/ruin/unpowered)
 "kM" = (
-/mob/living/simple_animal/hostile/cockroach,
 /obj/item/trash/cheesie,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"kW" = (
-/obj/structure/cable,
-/obj/machinery/power/port_gen/pacman,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"li" = (
-/obj/effect/turf_decal/weather/dirt{
-	dir = 8
-	},
-/turf/template_noop,
-/area/template_noop)
 "ls" = (
 /obj/machinery/hydroponics/constructable,
 /obj/item/rollingpaper,
@@ -128,19 +96,11 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
-/area/template_noop)
+/area/overmap_encounter/planetoid/jungle)
 "nI" = (
 /obj/structure/cable,
 /obj/item/trash/cheesie,
-/turf/open/floor/wood{
-	icon_state = "wood-broken3"
-	},
-/area/ruin/unpowered)
-"nJ" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood{
-	icon_state = "wood-broken4"
-	},
+/turf/open/floor/wood,
 /area/ruin/unpowered)
 "ov" = (
 /obj/structure/cable,
@@ -160,18 +120,8 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "rl" = (
-/obj/structure/bed/pod,
-/obj/structure/bed/pod{
-	pixel_y = 10
-	},
-/obj/effect/immovablerod{
-	pixel_x = -15
-	},
-/obj/effect/immovablerod{
-	pixel_x = 15
-	},
 /obj/item/seeds/cannabis/rainbow,
-/obj/item/clothing/head/beanie/rasta,
+/obj/structure/bed/double/pod,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "sF" = (
@@ -188,12 +138,10 @@
 	dir = 6
 	},
 /turf/open/misc/grass/jungle,
-/area/template_noop)
+/area/overmap_encounter/planetoid/jungle)
 "sW" = (
 /obj/item/cigbutt/roach,
-/turf/open/floor/wood{
-	icon_state = "wood-broken"
-	},
+/turf/open/floor/wood,
 /area/ruin/unpowered)
 "uQ" = (
 /obj/machinery/power/terminal{
@@ -201,11 +149,12 @@
 	},
 /obj/structure/cable,
 /obj/item/cigbutt/roach,
+/obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "wn" = (
 /turf/open/misc/dirt/jungle,
-/area/template_noop)
+/area/overmap_encounter/planetoid/jungle)
 "xh" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 9
@@ -215,7 +164,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
-/area/template_noop)
+/area/overmap_encounter/planetoid/jungle)
 "zz" = (
 /obj/item/trash/boritos,
 /obj/item/seeds/cannabis/death,
@@ -223,10 +172,6 @@
 /area/ruin/unpowered)
 "zL" = (
 /obj/structure/closet/crate/hydroponics,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"Av" = (
-/mob/living/simple_animal/hostile/cockroach,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "AJ" = (
@@ -240,7 +185,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
-/area/template_noop)
+/area/overmap_encounter/planetoid/jungle)
 "Cw" = (
 /obj/structure/cable,
 /obj/structure/table/wood,
@@ -252,14 +197,6 @@
 /obj/item/cigbutt/roach,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"DN" = (
-/obj/structure/cable,
-/obj/item/cigbutt/roach,
-/obj/item/reagent_containers/glass/bucket,
-/turf/open/floor/wood{
-	icon_state = "wood-broken7"
-	},
-/area/ruin/unpowered)
 "Ey" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 10
@@ -269,41 +206,16 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
-/area/template_noop)
-"EM" = (
-/obj/structure/cable,
-/mob/living/simple_animal/hostile/cockroach,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"FK" = (
-/obj/structure/cable,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "FN" = (
 /obj/machinery/power/smes/engineering,
 /turf/open/floor/wood,
-/area/ruin/unpowered)
-"Gc" = (
-/obj/item/cigbutt/roach,
-/turf/open/floor/wood{
-	icon_state = "wood-broken3"
-	},
 /area/ruin/unpowered)
 "Gi" = (
 /obj/structure/table/wood,
 /obj/item/rollingpaper,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"Gk" = (
-/obj/effect/turf_decal/weather/dirt{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood{
-	icon_state = "wood-broken5"
-	},
-/area/template_noop)
 "Hl" = (
 /obj/structure/cable,
 /obj/structure/sink/kitchen{
@@ -316,12 +228,11 @@
 "Hp" = (
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/item/reagent_containers/glass/bucket,
+/obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "HG" = (
 /obj/structure/table/wood,
-/obj/item/clothing/mask/cigarette/rollie/mindbreaker,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "HJ" = (
@@ -334,18 +245,14 @@
 "Jb" = (
 /obj/effect/turf_decal/weather/dirt,
 /obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/wood,
-/area/template_noop)
-"JY" = (
-/mob/living/simple_animal/hostile/cockroach/glockroach,
-/turf/open/misc/dirt/jungle,
-/area/template_noop)
+/area/overmap_encounter/planetoid/jungle)
 "Kg" = (
 /obj/structure/cable,
 /obj/machinery/power/terminal{
 	dir = 1
 	},
-/obj/machinery/power/apc/auto_name/north,
 /obj/item/trash/cheesie,
 /obj/item/cigbutt/roach,
 /turf/open/floor/wood,
@@ -353,9 +260,7 @@
 "Kq" = (
 /obj/structure/cable,
 /obj/item/seeds/cannabis,
-/turf/open/floor/wood{
-	icon_state = "wood-broken"
-	},
+/turf/open/floor/wood,
 /area/ruin/unpowered)
 "LD" = (
 /obj/machinery/hydroponics/constructable,
@@ -363,49 +268,25 @@
 	currentcolor = "#FFFFFF"
 	},
 /area/ruin/unpowered)
-"Ma" = (
-/obj/structure/cable,
-/obj/machinery/power/floodlight{
-	setting = 15
-	},
-/turf/open/floor/wood,
-/area/ruin/unpowered)
 "Mj" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"NE" = (
-/obj/effect/turf_decal/weather/dirt{
-	dir = 5
-	},
-/turf/template_noop,
-/area/template_noop)
 "Pk" = (
-/mob/living/simple_animal/hostile/cockroach/glockroach,
 /obj/effect/decal/cleanable/dirt,
 /obj/item/cigbutt/roach,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"Pv" = (
-/obj/structure/mineral_door/wood,
-/obj/structure/cable,
+/obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "PS" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood{
-	icon_state = "wood-broken2"
-	},
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/wood,
 /area/ruin/unpowered)
 "Qr" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
-/area/template_noop)
-"Qs" = (
-/mob/living/simple_animal/hostile/cockroach,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "Qt" = (
 /obj/structure/mineral_door/wood,
 /obj/structure/cable,
@@ -417,12 +298,7 @@
 	setting = 15
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"Rj" = (
-/mob/living/simple_animal/hostile/cockroach,
-/obj/item/reagent_containers/food/snacks/grown/cannabis,
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "RW" = (
@@ -432,9 +308,7 @@
 	},
 /obj/item/rollingpaper,
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood{
-	icon_state = "wood-broken5"
-	},
+/turf/open/floor/wood,
 /area/ruin/unpowered)
 "Tx" = (
 /obj/structure/cable,
@@ -442,28 +316,14 @@
 /area/ruin/unpowered)
 "TK" = (
 /obj/structure/table/wood,
-/obj/item/clothing/mask/cigarette/rollie/cannabis{
-	pixel_x = 8;
-	pixel_y = 8
-	},
-/obj/item/clothing/mask/cigarette/rollie/cannabis{
-	pixel_x = 4;
-	pixel_y = 4
-	},
-/obj/item/clothing/mask/cigarette/rollie/cannabis,
 /obj/item/storage/fancy/rollingpapers,
 /obj/item/storage/fancy/rollingpapers,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "Up" = (
 /obj/structure/table/wood,
-/obj/item/clothing/head/beanie/rasta,
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"UC" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/item/reagent_containers/glass/bucket,
+/obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "Vn" = (
@@ -474,13 +334,9 @@
 	dir = 5
 	},
 /obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/wood,
-/area/template_noop)
-"VY" = (
-/obj/structure/table/wood,
-/obj/item/reagent_containers/food/snacks/grown/cannabis,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "Wo" = (
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -492,7 +348,7 @@
 	dir = 8
 	},
 /turf/open/misc/grass/jungle,
-/area/template_noop)
+/area/overmap_encounter/planetoid/jungle)
 "Xd" = (
 /obj/machinery/hydroponics/constructable,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -505,26 +361,19 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"XT" = (
-/obj/effect/turf_decal/weather/dirt{
-	dir = 9
-	},
-/turf/template_noop,
-/area/template_noop)
 "XW" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood{
-	icon_state = "wood-broken"
-	},
-/area/template_noop)
+/turf/open/floor/wood,
+/area/overmap_encounter/planetoid/jungle)
 "Yj" = (
 /turf/closed/wall/mineral/wood/nonmetal,
 /area/ruin/unpowered)
 "YB" = (
 /obj/structure/cable,
+/obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "YL" = (
@@ -536,7 +385,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
-/area/template_noop)
+/area/overmap_encounter/planetoid/jungle)
 "ZK" = (
 /turf/template_noop,
 /area/template_noop)
@@ -589,7 +438,7 @@ Yj
 aj
 nI
 fP
-YB
+Tx
 Yj
 Pk
 sW
@@ -644,16 +493,16 @@ ZK
 Yj
 Yj
 QQ
-UC
-Av
+Mj
+YL
 Tx
 Yj
-Gc
-cR
+sW
+aj
 Yj
 Yj
 Yj
-dG
+ZK
 ZK
 ZK
 ZK
@@ -662,26 +511,26 @@ ZK
 (7,1,1) = {"
 Yj
 Mj
-Ma
+iw
 oE
 kD
-FK
+XJ
 Yj
 Yj
-Pv
+Qt
 Yj
-VY
+HG
 Yj
 wn
-NE
+ZK
 ZK
 ZK
 ZK
 "}
 (8,1,1) = {"
 Yj
-Rj
-Ma
+Mj
+iw
 LD
 Xd
 Hp
@@ -694,13 +543,13 @@ Yj
 sF
 wn
 wn
-NE
+ZK
 ZK
 "}
 (9,1,1) = {"
 Yj
 Yj
-Ma
+iw
 YL
 gP
 Tx
@@ -712,17 +561,17 @@ YL
 Yj
 wn
 xh
-JY
 wn
-NE
+wn
+ZK
 "}
 (10,1,1) = {"
 Yj
 Yj
-Ma
+iw
 LD
 Xd
-FK
+XJ
 ec
 HJ
 il
@@ -731,7 +580,7 @@ ZS
 Yj
 wn
 ns
-Gk
+Cs
 Ey
 wn
 "}
@@ -741,7 +590,7 @@ YL
 lJ
 LD
 ls
-DN
+aj
 Qt
 mx
 Cw
@@ -759,19 +608,19 @@ Yj
 Yj
 FN
 uQ
-EM
+Tx
 Hl
 ov
 XJ
-Qs
 ZS
-nJ
+ZS
+Mj
 qI
 XW
 Qr
 ZJ
 wn
-XT
+ZK
 "}
 (13,1,1) = {"
 ZK
@@ -782,15 +631,15 @@ Yj
 Yj
 Yj
 aW
-kW
+aW
 AJ
-Qs
+ZS
 Yj
 wn
 Vn
 wn
 wn
-gS
+ZK
 "}
 (14,1,1) = {"
 ZK
@@ -802,13 +651,13 @@ ZK
 Yj
 Yj
 Yj
-VY
+HG
 Gi
 Yj
 wn
 wn
 wn
-XT
+ZK
 ZK
 "}
 (15,1,1) = {"
@@ -825,8 +674,8 @@ Yj
 Yj
 Yj
 Wr
-li
-li
+ZK
+ZK
 ZK
 ZK
 "}

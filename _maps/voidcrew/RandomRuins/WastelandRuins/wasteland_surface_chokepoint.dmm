@@ -6,61 +6,46 @@
 /obj/structure/closet/secure_closet{
 	icon_state = "sec"
 	},
-/obj/item/gun/ballistic/automatic/pistol/commander,
-/obj/item/ammo_box/magazine/co9mm,
-/obj/item/ammo_box/magazine/co9mm,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/ruin/powered)
 "e" = (
 /obj/structure/sign/poster/official/here_for_your_safety,
-/turf/closed/wall/rust,
-/area/ruin/unpowered)
+/turf/closed/wall,
+/area/ruin/powered)
 "f" = (
 /obj/item/banner/security/mundane,
 /turf/open/misc/dust/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "g" = (
 /obj/structure/bed,
 /obj/item/bedsheet/hos,
-/mob/living/simple_animal/hostile/nanotrasen/ranged{
-	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 999, "min_n2" = 0, "max_n2" = 0);
-	damage_coeff = list("brute" = 1, "fire" = 1, "toxin" = 1, "clone" = 1, "stamina" = 0, "oxygen" = 0);
-	name = "\improper NanoTrasen Stranded Security Officer"
-	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
-	},
-/area/ruin/unpowered)
+/turf/open/floor/plating,
+/area/ruin/powered)
 "h" = (
-/mob/living/simple_animal/hostile/nanotrasen/ranged{
-	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 999, "min_n2" = 0, "max_n2" = 0);
-	damage_coeff = list("brute" = 1, "fire" = 1, "toxin" = 1, "clone" = 1, "stamina" = 0, "oxygen" = 0);
-	dir = 4;
-	name = "\improper NanoTrasen Stranded Security Officer"
-	},
-/turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/obj/machinery/door/airlock/maintenance/external,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/turf/open/floor/plating,
+/area/ruin/powered)
 "j" = (
 /obj/item/banner/security,
 /turf/open/floor/plating,
-/area/ruin/unpowered)
+/area/ruin/powered)
 "k" = (
-/obj/effect/mob_spawn/human/corpse/whitesands/survivor,
 /obj/effect/decal/cleanable/blood,
 /turf/open/misc/dust/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "m" = (
 /turf/open/floor/plating,
-/area/ruin/unpowered)
+/area/ruin/powered)
 "n" = (
 /obj/structure/sign/poster/official/ion_rifle,
 /turf/closed/wall/rust,
-/area/ruin/unpowered)
+/area/ruin/powered)
 "p" = (
 /obj/structure/sign/poster/official/safety_report,
 /turf/closed/wall,
-/area/ruin/unpowered)
+/area/ruin/powered)
 "r" = (
 /obj/structure/closet/cabinet,
 /obj/item/clothing/head/helmet/knight/blue,
@@ -68,54 +53,40 @@
 /obj/item/spear,
 /obj/item/shield/buckler,
 /turf/open/floor/plating,
-/area/ruin/unpowered)
+/area/ruin/powered)
 "u" = (
 /turf/open/misc/dust/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "v" = (
-/mob/living/simple_animal/hostile/nanotrasen/ranged{
-	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 999, "min_n2" = 0, "max_n2" = 0);
-	damage_coeff = list("brute" = 1, "fire" = 1, "toxin" = 1, "clone" = 1, "stamina" = 0, "oxygen" = 0);
-	dir = 8;
-	name = "\improper NanoTrasen Stranded Security Officer"
-	},
-/turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
-"w" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
+/turf/closed/wall,
+/area/ruin/powered)
 "x" = (
 /obj/structure/sign/poster/official/space_cops,
 /turf/closed/wall/rust,
-/area/ruin/unpowered)
+/area/ruin/powered)
 "y" = (
-/turf/closed/wall,
-/area/ruin/unpowered)
-"B" = (
-/turf/open/floor/plating{
-	icon_state = "panelscorched"
+/obj/machinery/door/airlock/maintenance/external,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
 	},
-/area/ruin/unpowered)
-"C" = (
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/turf/open/floor/plating,
+/area/ruin/powered)
 "E" = (
 /obj/item/banner/security/mundane,
 /turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "F" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/ruin/powered)
 "H" = (
 /obj/structure/sign/poster/official/report_crimes,
 /turf/closed/wall,
-/area/ruin/unpowered)
+/area/ruin/powered)
 "I" = (
 /obj/structure/sign/poster/official/twelve_gauge,
 /turf/closed/wall/rust,
-/area/ruin/unpowered)
+/area/ruin/powered)
 "J" = (
 /obj/item/cigbutt,
 /obj/item/cigbutt{
@@ -124,45 +95,42 @@
 	},
 /obj/structure/barricade/sandbags,
 /turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "K" = (
 /obj/structure/barricade/sandbags,
 /turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "L" = (
 /obj/structure/sign/poster/official/love_ian,
 /turf/closed/wall/rust,
-/area/ruin/unpowered)
-"M" = (
-/obj/machinery/door/airlock/wood/glass,
-/turf/open/floor/plating,
 /area/ruin/powered)
+"M" = (
+/mob/living/basic/trooper/nanotrasen/ranged/elite,
+/turf/open/misc/wasteland/lit,
+/area/overmap_encounter/planetoid/wasteland)
 "N" = (
 /obj/structure/sign/poster/official/work_for_a_future,
 /turf/closed/wall/rust,
-/area/ruin/unpowered)
+/area/ruin/powered)
 "P" = (
 /obj/structure/sign/poster/official/do_not_question,
 /turf/closed/wall/rust,
-/area/ruin/unpowered)
+/area/ruin/powered)
 "Q" = (
 /obj/structure/table/wood,
 /obj/item/holosign_creator/security,
 /turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "R" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating{
-	icon_state = "panelscorched"
-	},
-/area/ruin/unpowered)
+/turf/open/floor/plating,
+/area/ruin/powered)
 "S" = (
-/obj/effect/mob_spawn/human/corpse/whitesands/survivor,
 /obj/effect/decal/cleanable/blood{
 	icon_state = "floor3"
 	},
 /turf/open/misc/dust/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "T" = (
 /obj/structure/table/wood,
 /obj/item/reagent_containers/cup/glass/bottle/whiskey{
@@ -173,22 +141,22 @@
 	pixel_x = 7;
 	pixel_y = 2
 	},
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/turf/open/floor/plating,
+/area/ruin/powered)
 "U" = (
 /turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "W" = (
 /obj/structure/sign/poster/official/obey,
 /turf/closed/wall/rust,
-/area/ruin/unpowered)
+/area/ruin/powered)
 "X" = (
 /turf/closed/wall/rust,
-/area/ruin/unpowered)
+/area/ruin/powered)
 "Y" = (
 /obj/structure/sign/poster/official/nanotrasen_logo,
 /turf/closed/wall/rust,
-/area/ruin/unpowered)
+/area/ruin/powered)
 
 (1,1,1) = {"
 a
@@ -257,11 +225,11 @@ K
 K
 U
 K
-K
+U
 X
 n
 H
-y
+v
 a
 a
 "}
@@ -272,7 +240,7 @@ K
 U
 U
 v
-U
+v
 e
 r
 d
@@ -286,11 +254,11 @@ U
 K
 Q
 U
-U
-U
+h
+m
 y
-w
-B
+R
+m
 Y
 a
 a
@@ -299,11 +267,11 @@ a
 a
 U
 U
+U
+U
 v
-U
-U
-U
-M
+m
+v
 m
 R
 N
@@ -312,37 +280,37 @@ a
 "}
 (9,1,1) = {"
 a
-a
+U
 K
 U
 U
-U
-U
+v
+v
 W
 F
-w
+R
 T
 p
 a
 "}
 (10,1,1) = {"
 a
-a
+U
 J
+M
 U
 U
 U
-h
 x
 j
-C
+m
 g
 P
 a
 "}
 (11,1,1) = {"
 a
-a
+U
 K
 K
 U
@@ -351,13 +319,13 @@ K
 X
 X
 L
-y
-y
+v
+v
 a
 "}
 (12,1,1) = {"
 a
-a
+U
 E
 u
 U

@@ -4,15 +4,17 @@
 /obj/item/mmi/syndie,
 /obj/item/mmi/syndie,
 /obj/item/mmi/syndie,
-/turf/open/floor/plasteel/mono/dark,
+/obj/structure/window/reinforced/spawner/directional/east,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "aq" = (
+/obj/structure/alien/weeds,
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "aH" = (
 /obj/structure/table,
 /obj/item/retractor,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "aI" = (
 /obj/effect/spawner/structure/window/reinforced,
@@ -20,18 +22,20 @@
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "aO" = (
-/obj/machinery/door/airlock/maintenance_hatch,
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
 /obj/structure/disposalpipe/broken{
 	dir = 4
 	},
+/obj/structure/door_assembly/door_assembly_mhatch,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "bN" = (
 /obj/structure/table_frame,
 /turf/open/floor/iron,
+/area/ruin/unpowered)
+"cj" = (
+/obj/structure/alien/weeds,
+/mob/living/basic/alien,
+/turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "cp" = (
 /obj/structure/disposalpipe/segment{
@@ -41,13 +45,19 @@
 /area/ruin/unpowered)
 "cB" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/obj/machinery/door/window/brigdoor/left/directional/east,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "cY" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/poddoor/shutters,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/white,
+/area/ruin/unpowered)
+"do" = (
+/obj/structure/table_frame,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/iron,
 /area/ruin/unpowered)
 "et" = (
 /obj/effect/spawner/structure/window/reinforced,
@@ -56,6 +66,11 @@
 	dir = 1
 	},
 /turf/open/floor/engine,
+/area/ruin/unpowered)
+"eD" = (
+/obj/structure/alien/resin/wall,
+/obj/structure/alien/weeds,
+/turf/open/misc/wasteland/lit,
 /area/ruin/unpowered)
 "fp" = (
 /obj/structure/table,
@@ -69,9 +84,8 @@
 /obj/structure/frame/machine{
 	anchored = 1
 	},
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
-	},
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "fV" = (
 /obj/machinery/button/door{
@@ -89,9 +103,8 @@
 /area/ruin/unpowered)
 "ha" = (
 /obj/structure/table_frame,
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
-	},
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "hK" = (
 /obj/effect/spawner/structure/window/reinforced,
@@ -105,17 +118,27 @@
 /area/ruin/unpowered)
 "hS" = (
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	initial_gas_mix = "ws_atmos"
+	},
+/area/ruin/unpowered)
+"hY" = (
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plating{
+	initial_gas_mix = "ws_atmos"
 	},
 /area/ruin/unpowered)
 "iE" = (
-/obj/effect/turf_decal/industrial/outline/yellow,
 /obj/effect/decal/cleanable/dirt,
+/obj/effect/mine/explosive/light,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
+"iW" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/alien/weeds,
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/iron/white,
+/area/ruin/unpowered)
 "jk" = (
-/obj/effect/turf_decal/industrial/warning,
-/obj/machinery/aug_manipulator,
 /obj/machinery/light{
 	dir = 4
 	},
@@ -123,8 +146,9 @@
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "ks" = (
-/obj/machinery/computer/rdconsole/core,
 /obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/rdconsole,
+/obj/effect/mapping_helpers/broken_machine,
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "kz" = (
@@ -141,7 +165,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/circuit/red/telecomms,
+/turf/open/floor/circuit/red/off,
 /area/ruin/unpowered)
 "ml" = (
 /obj/machinery/recharge_station,
@@ -160,16 +184,14 @@
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "oh" = (
-/obj/effect/turf_decal/industrial/warning{
-	dir = 1
-	},
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/barricade/wooden,
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "oo" = (
-/turf/open/floor/plating{
-	icon_state = "platingdmg3"
-	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mine/explosive/light,
+/turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "oH" = (
 /obj/machinery/mech_bay_recharge_port{
@@ -182,25 +204,30 @@
 /obj/machinery/computer/operating{
 	dir = 1
 	},
-/obj/effect/turf_decal/borderfloor,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/obj/effect/mapping_helpers/broken_machine,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "oM" = (
 /obj/structure/table/optable,
-/obj/effect/turf_decal/borderfloor,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "oY" = (
 /obj/effect/spawner/structure/window,
 /obj/machinery/door/poddoor/shutters,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
+"po" = (
+/obj/structure/alien/weeds,
+/obj/structure/alien/resin/wall,
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
 "pz" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/alien/weeds,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "pO" = (
@@ -218,11 +245,13 @@
 	pixel_y = 12
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "rr" = (
 /obj/machinery/door/airlock/research,
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/barricade/wooden/crude,
+/obj/effect/mapping_helpers/airlock/welded,
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "rB" = (
@@ -239,6 +268,7 @@
 /area/ruin/unpowered)
 "rW" = (
 /obj/item/organ/body_egg/alien_embryo,
+/obj/structure/alien/weeds,
 /turf/open/floor/engine,
 /area/ruin/unpowered)
 "sp" = (
@@ -259,29 +289,44 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
+"sZ" = (
+/obj/structure/alien/weeds,
+/turf/open/misc/wasteland/lit,
+/area/ruin/unpowered)
 "tc" = (
 /obj/item/circuitboard/machine/rdserver,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
+"to" = (
+/obj/structure/alien/weeds,
+/mob/living/basic/alien,
+/turf/open/floor/engine,
+/area/ruin/unpowered)
 "tF" = (
-/obj/effect/turf_decal/industrial/warning/corner,
 /obj/effect/decal/cleanable/dirt,
+/obj/item/ammo_casing/spent,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	initial_gas_mix = "ws_atmos"
+	},
+/area/ruin/unpowered)
+"tM" = (
+/obj/structure/alien/weeds,
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating{
+	initial_gas_mix = "ws_atmos"
 	},
 /area/ruin/unpowered)
 "tW" = (
+/obj/structure/alien/resin/wall,
+/obj/structure/alien/weeds,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	initial_gas_mix = "ws_atmos"
 	},
 /area/ruin/unpowered)
 "uD" = (
-/obj/effect/turf_decal/industrial/warning/corner{
-	dir = 4
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/white,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "uE" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
@@ -289,26 +334,24 @@
 	},
 /obj/structure/table_frame,
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/alien/weeds,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "uQ" = (
-/obj/effect/turf_decal/industrial/warning,
 /obj/effect/decal/cleanable/dirt,
+/obj/item/ammo_casing/spent,
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "vc" = (
 /obj/structure/table,
-/obj/item/clothing/gloves/color/latex,
 /obj/item/razor,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "wF" = (
-/obj/effect/turf_decal/rechargefloor,
-/turf/open/floor/iron,
+/turf/closed/wall/r_wall,
 /area/ruin/unpowered)
 "xq" = (
-/obj/structure/window/reinforced/spawner/west,
 /obj/machinery/disposal/bin,
 /obj/structure/disposalpipe/trunk{
 	dir = 4
@@ -320,11 +363,10 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/circuit/red/telecomms,
+/turf/open/floor/circuit/red/off,
 /area/ruin/unpowered)
 "zv" = (
-/obj/structure/table_frame,
-/turf/open/floor/plating,
+/turf/closed/wall/r_wall/rust,
 /area/ruin/unpowered)
 "zz" = (
 /obj/machinery/button/door{
@@ -336,6 +378,12 @@
 	pixel_y = 25
 	},
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/alien/weeds,
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
+"Ag" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/alien/weeds/node,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "Ap" = (
@@ -351,8 +399,8 @@
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "AX" = (
-/obj/machinery/door/poddoor/shutters,
-/turf/open/floor/iron/white,
+/obj/machinery/door/poddoor/shutters/preopen,
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "Ca" = (
 /turf/open/misc/wasteland/lit,
@@ -368,51 +416,69 @@
 /turf/open/floor/engine,
 /area/ruin/unpowered)
 "DJ" = (
-/obj/structure/girder/reinforced,
+/obj/structure/alien/weeds,
+/obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "DV" = (
 /obj/item/kirbyplants/random,
-/obj/effect/turf_decal/borderfloor,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/obj/structure/window/reinforced/spawner/directional/east,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "ET" = (
 /obj/structure/table_frame,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
+"Fc" = (
+/obj/structure/alien/weeds/node,
+/turf/open/floor/engine,
+/area/ruin/unpowered)
 "Fk" = (
 /obj/effect/mine/shrapnel,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
+"FB" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
 "FH" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 9
 	},
-/obj/structure/reagent_dispensers/peppertank{
-	pixel_x = -32
-	},
 /obj/structure/closet/secure_closet/security/science,
+/obj/structure/alien/weeds,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "Gb" = (
-/obj/effect/turf_decal/borderfloor,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "Gk" = (
 /obj/machinery/door/airlock/research,
 /obj/machinery/door/poddoor/shutters,
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
+"GP" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/alien/weeds,
+/mob/living/basic/alien/sentinel,
+/turf/open/floor/iron/white,
+/area/ruin/unpowered)
+"GS" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/iron,
+/area/ruin/unpowered)
+"GU" = (
+/obj/effect/mine/shrapnel,
+/turf/open/floor/iron,
+/area/ruin/unpowered)
 "Hp" = (
-/obj/effect/turf_decal/industrial/warning{
-	dir = 1
-	},
-/obj/structure/frame/machine{
-	anchored = 1
-	},
+/obj/effect/mapping_helpers/broken_machine,
+/obj/machinery/vending/wardrobe/robo_wardrobe,
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "HD" = (
@@ -420,22 +486,25 @@
 /obj/item/storage/box/bodybags,
 /obj/item/pen,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
+/area/ruin/unpowered)
+"IS" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "Jg" = (
 /obj/structure/frame/machine{
 	anchored = 1
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
-	},
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "Jx" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
-	},
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "JY" = (
 /obj/structure/table/reinforced,
@@ -443,10 +512,8 @@
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "Kj" = (
-/obj/effect/turf_decal/industrial/warning{
-	dir = 4
-	},
 /obj/effect/decal/cleanable/dirt,
+/obj/effect/mine/shrapnel,
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "KZ" = (
@@ -455,13 +522,14 @@
 /area/ruin/unpowered)
 "Lt" = (
 /obj/structure/girder/reinforced,
+/obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	initial_gas_mix = "ws_atmos"
 	},
 /area/ruin/unpowered)
 "LG" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/circuit/red/telecomms,
+/turf/open/floor/circuit/red/anim,
 /area/ruin/unpowered)
 "LN" = (
 /obj/machinery/light/small{
@@ -472,9 +540,6 @@
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "LZ" = (
-/obj/effect/turf_decal/industrial/warning{
-	dir = 4
-	},
 /obj/machinery/conveyor_switch/oneway,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/white,
@@ -491,14 +556,21 @@
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "MQ" = (
+/obj/structure/alien/weeds,
+/obj/structure/alien/resin/wall,
 /turf/open/floor/engine,
 /area/ruin/unpowered)
 "Nf" = (
-/turf/open/floor/circuit/red/telecomms,
+/turf/open/floor/circuit/red/anim,
 /area/ruin/unpowered)
 "NP" = (
 /obj/effect/decal/cleanable/dirt,
+/obj/item/ammo_casing/spent,
 /turf/open/misc/asteroid,
+/area/ruin/unpowered)
+"NW" = (
+/obj/structure/alien/weeds,
+/turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "Od" = (
 /obj/structure/table,
@@ -507,7 +579,7 @@
 	pixel_x = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "Ol" = (
 /obj/machinery/mech_bay_recharge_port{
@@ -526,22 +598,38 @@
 /obj/structure/disposaloutlet{
 	dir = 1
 	},
+/obj/structure/alien/weeds,
+/obj/structure/alien/resin/wall,
 /turf/open/floor/engine,
 /area/ruin/unpowered)
 "ON" = (
-/obj/structure/frame/machine{
-	anchored = 1
-	},
+/obj/effect/mapping_helpers/broken_machine,
+/obj/machinery/mecha_part_fabricator/maint,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "Pn" = (
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
+"PK" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/alien/weeds,
+/turf/open/floor/iron/white,
+/area/ruin/unpowered)
+"PZ" = (
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating{
+	initial_gas_mix = "ws_atmos"
+	},
+/area/ruin/unpowered)
 "Qi" = (
 /obj/machinery/door/airlock/research,
 /obj/structure/disposalpipe/segment{
 	dir = 4
+	},
+/obj/effect/mapping_helpers/airlock/welded,
+/obj/effect/mapping_helpers/airlock_note_placer{
+	note_info = "To whoever finds this: The landmines and barricades are here for a reason. Come prepared."
 	},
 /turf/open/floor/iron,
 /area/ruin/unpowered)
@@ -553,17 +641,18 @@
 "QM" = (
 /obj/structure/disposalpipe/segment,
 /obj/effect/decal/cleanable/dirt,
+/obj/item/ammo_casing/spent,
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "QP" = (
 /obj/machinery/computer/mech_bay_power_console{
 	dir = 8
 	},
+/obj/effect/mapping_helpers/broken_machine,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "Rg" = (
 /obj/structure/bodycontainer/morgue,
-/obj/effect/turf_decal/borderfloor,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "RV" = (
@@ -573,31 +662,55 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
+"Ss" = (
+/obj/structure/alien/weeds,
+/obj/structure/alien/resin/membrane,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"SO" = (
+/obj/structure/alien/weeds,
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"Ti" = (
+/obj/structure/grille/broken,
+/obj/effect/decal/cleanable/glass,
+/obj/machinery/door/poddoor/shutters/preopen/deconstructed,
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
 "Tl" = (
-/obj/structure/window/reinforced/spawner/west,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/white,
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "Ts" = (
-/turf/closed/wall/r_wall/syndicate,
+/turf/closed/wall,
 /area/ruin/unpowered)
 "TF" = (
 /obj/structure/door_assembly/door_assembly_com,
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/alien/weeds,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "Ub" = (
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/alien/weeds,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	initial_gas_mix = "ws_atmos"
 	},
 /area/ruin/unpowered)
 "UH" = (
 /obj/effect/spawner/structure/window/reinforced,
-/obj/machinery/atmospherics/pipe/simple/general/hidden{
-	dir = 8
-	},
 /turf/open/floor/plating,
+/area/ruin/unpowered)
+"UY" = (
+/obj/effect/mapping_helpers/broken_floor,
+/obj/structure/girder/reinforced,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"Vn" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/alien/weeds/node,
+/turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "Vp" = (
 /obj/effect/decal/cleanable/dirt,
@@ -610,6 +723,7 @@
 /obj/machinery/light/built{
 	dir = 8
 	},
+/obj/structure/alien/weeds,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "VO" = (
@@ -621,22 +735,34 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/white,
+/turf/open/floor/plating{
+	initial_gas_mix = "ws_atmos"
+	},
 /area/ruin/unpowered)
 "WJ" = (
 /obj/machinery/light/small/broken{
 	dir = 4
 	},
+/obj/structure/alien/weeds,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "WO" = (
 /obj/machinery/recharge_station,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
-"Xw" = (
-/obj/effect/turf_decal/rechargefloor,
+"WT" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron,
+/obj/structure/alien/weeds/node,
+/mob/living/basic/alien/queen/large,
+/turf/open/misc/asteroid,
+/area/ruin/unpowered)
+"Xw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/alien/weeds/node,
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating{
+	initial_gas_mix = "ws_atmos"
+	},
 /area/ruin/unpowered)
 "XI" = (
 /obj/structure/disposalpipe/segment{
@@ -644,19 +770,26 @@
 	},
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
+"Ya" = (
+/obj/structure/alien/weeds,
+/mob/living/basic/alien/drone,
+/turf/open/floor/engine,
+/area/ruin/unpowered)
 "Yd" = (
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "Yj" = (
-/obj/machinery/door/window/eastright{
-	dir = 8
-	},
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/alien/weeds,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "YE" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono,
+/obj/structure/alien/weeds,
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating{
+	initial_gas_mix = "ws_atmos"
+	},
 /area/ruin/unpowered)
 "YK" = (
 /obj/structure/disposalpipe/broken,
@@ -665,58 +798,58 @@
 	pixel_y = 8
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg3"
+	initial_gas_mix = "ws_atmos"
 	},
 /area/ruin/unpowered)
 
 (1,1,1) = {"
-Ts
+UY
 aO
-Ts
-Ts
-Ts
-Ts
-Ts
-Ts
-Ts
-Ts
-Ts
+UY
+wF
+wF
+wF
+wF
+wF
+zv
+zv
+zv
+PZ
+hS
+PZ
 Cq
 Cq
 Cq
-Cq
-Cq
-Cq
-Ts
-Ts
-Ts
-Ts
-Ts
+zv
+zv
+zv
+wF
+wF
 Cq
 "}
 (2,1,1) = {"
-Ts
+wF
 fV
 Ol
-wF
+Yd
 rQ
 ml
-Ts
+wF
 vc
 HD
 Rg
-Ts
-Ts
+zv
+zv
 Gk
-Ts
-Ts
-Ts
-Ts
-Ts
-MQ
-MQ
-MQ
-Ts
+zv
+zv
+zv
+zv
+zv
+SO
+SO
+SO
+wF
 ra
 "}
 (3,1,1) = {"
@@ -726,22 +859,22 @@ Nf
 lv
 LG
 gW
-Ts
+wF
 Od
-cB
+Gb
 Gb
 Ts
 aq
-Cu
-Ts
+Tl
+zv
 Jg
 LN
 Jg
-Ts
+zv
+Ya
+SO
 MQ
-MQ
-MQ
-Ts
+wF
 hK
 "}
 (4,1,1) = {"
@@ -749,23 +882,23 @@ AX
 MG
 lv
 Nf
-lv
+FB
 sR
-Ts
+wF
 rm
 lv
 oM
 Ts
-Vp
-Vp
-Ts
+GP
+PK
+zv
 lE
 tc
 yH
-Ts
-MQ
-MQ
-MQ
+wF
+Fc
+SO
+SO
 MQ
 hK
 "}
@@ -776,21 +909,21 @@ LG
 LG
 LG
 oa
-Ts
+zv
 aH
 lv
 oJ
 Ts
-oa
-lv
-Ts
+NW
+Yj
+wF
 UH
 rB
 UH
-Ts
-MQ
-MQ
-MQ
+wF
+SO
+SO
+SO
 MQ
 CR
 "}
@@ -798,54 +931,54 @@ CR
 KZ
 Ap
 oH
-Xw
+gW
 QP
 WO
-Ts
+zv
 aj
 cB
 DV
 Ts
 aq
-Vp
+PK
 TF
 Jx
-lv
+Yj
 Jx
-Ts
+wF
 MQ
 MQ
-MQ
+SO
 Ox
 et
 "}
 (7,1,1) = {"
-Ts
+zv
 Qi
 kz
 cY
 cY
-Ts
-Ts
+zv
+zv
 xq
-Yj
-Tl
-Ts
 lv
 Vp
 Ts
+Ag
+PK
+wF
 Jx
-NP
-nS
-Ts
-MQ
-MQ
-MQ
-Ts
+WT
+Jx
+zv
+SO
+SO
+SO
+wF
 hK
 "}
 (8,1,1) = {"
-Ts
+zv
 cp
 QM
 QM
@@ -853,24 +986,24 @@ VR
 YK
 Pn
 XI
-Vp
-Vp
-Ts
-lv
+oo
 Vp
 Ts
+Yj
+PK
+wF
 fB
 WJ
 ha
-Ts
-MQ
+zv
+to
 rW
-MQ
-Ts
+Fc
+wF
 ra
 "}
 (9,1,1) = {"
-Ts
+zv
 VO
 Vp
 tF
@@ -879,94 +1012,94 @@ hS
 Cu
 LZ
 lv
-uD
-Ts
-Vp
 Vp
 Ts
-Ts
-Ts
-Ts
-Ts
-Ts
+PK
+PK
+wF
+wF
+zv
+zv
+zv
+zv
 DJ
 Lt
-Ts
+wF
 Cq
 "}
 (10,1,1) = {"
-Ts
+zv
 ks
 lv
 uQ
-lv
-tW
+IS
+hY
 hS
 ON
 RV
 sO
 Ts
-Vp
-lv
-Ts
+PK
+Yj
+wF
 FH
 Vx
-Cu
-Ca
-Cq
-Cq
-Cq
-Cq
-Cq
+Tl
+sZ
+sZ
+sZ
+sZ
+eD
+Fk
 "}
 (11,1,1) = {"
-Ts
-Ts
+zv
+zv
 fp
-uQ
+Vp
 gW
 NP
-Jx
+tF
 ET
 RV
-oh
+Kj
 Ts
-Vp
-Vp
-Ts
+PK
+PK
+wF
 zz
-YE
-tW
-Fk
-Ca
-Cq
-Cq
-Cq
+Xw
+tM
+sZ
+sZ
+eD
+eD
+eD
 Cq
 "}
 (12,1,1) = {"
 ra
 sp
-oo
+hS
 lv
-tW
+hS
 iE
+GS
+do
 gW
-bN
-iE
 oh
 AD
-Vp
-nS
+PK
+Jx
 hN
 pz
-nS
-oa
+Jx
+cj
+eD
+eD
+eD
 Ca
 Ca
-Ca
-Ca
-Cq
 Cq
 "}
 (13,1,1) = {"
@@ -977,17 +1110,17 @@ nS
 gW
 Qr
 gW
-tW
+uD
 lv
 oh
 rr
-Vp
-Vp
+iW
+Vn
 aI
 uE
 YE
 tW
-Ca
+eD
 Ca
 Ca
 Fk
@@ -1003,43 +1136,43 @@ ET
 bN
 bN
 My
-Yd
+GU
 Hp
 oY
-lv
-nS
-aI
-zv
+Yj
+Jx
+Ti
+ha
 Ub
 tW
 nm
-Cq
-Cq
+Ca
+Ca
 Cq
 Cq
 Cq
 "}
 (15,1,1) = {"
 Ca
-Ts
-Ts
-Ts
-Ts
+wF
+zv
+zv
+wF
 Ts
 Ts
 oY
 JY
 Ts
 Ts
-Cu
-oa
+Ss
+po
 aI
 aI
 aI
 aI
-Cq
-Cq
-Cq
+Ca
+Fk
+Ca
 Cq
 Cq
 Cq

@@ -26,45 +26,31 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "dt" = (
-/obj/effect/mob_spawn/human/corpse/assistant,
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "dV" = (
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "eO" = (
+/mob/living/basic/demon,
 /turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "fm" = (
 /obj/effect/decal/cleanable/blood/gibs/old,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "fr" = (
-/mob/living/simple_animal/hostile/cult_demon{
-	health = 120;
-	name = "Demonic Foreman";
-	resize = 1.25
-	},
 /turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "fv" = (
 /obj/structure/flora/junglebush/large,
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
-"fL" = (
-/obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/cult_demon,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
+/area/overmap_encounter/planetoid/jungle)
 "fX" = (
 /obj/effect/decal/cleanable/chem_pile,
 /turf/open/floor/iron/dark,
-/area/ruin/powered)
-"fY" = (
-/obj/structure/sign/poster/contraband/random,
-/turf/closed/wall/material,
 /area/ruin/powered)
 "gL" = (
 /obj/machinery/door/airlock/grunge,
@@ -89,19 +75,8 @@
 /obj/machinery/light/floor,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
-"iB" = (
-/turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
-"iC" = (
-/obj/structure/chair/office,
-/obj/effect/mob_spawn/human/skeleton/alive,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/blood/old,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
 "jd" = (
 /obj/structure/table/reinforced,
-/obj/item/reagent_containers/food/drinks/waterbottle/large,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
@@ -114,9 +89,6 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/blood/gibs/up,
 /turf/open/floor/iron/dark,
-/area/ruin/powered)
-"kb" = (
-/turf/closed/wall/material,
 /area/ruin/powered)
 "kf" = (
 /obj/structure/sign/warning/explosives,
@@ -138,21 +110,20 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "mY" = (
 /turf/template_noop,
 /area/template_noop)
 "nC" = (
 /obj/structure/fluff/fokoff_sign,
 /turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "nJ" = (
 /obj/structure/filingcabinet/chestdrawer,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "nR" = (
-/mob/living/simple_animal/hostile/cult_demon,
-/obj/effect/decal/cleanable/dirt,
+/mob/living/basic/demon,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "pm" = (
@@ -163,13 +134,13 @@
 "pE" = (
 /obj/structure/flora/tree/jungle/small,
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "qD" = (
 /obj/structure/fence{
 	dir = 8
 	},
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "qE" = (
 /obj/effect/decal/cleanable/glass,
 /turf/open/floor/iron/dark,
@@ -177,7 +148,7 @@
 "rc" = (
 /obj/structure/closet/crate/grave,
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "rx" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/blood/gibs/old,
@@ -185,14 +156,8 @@
 /area/ruin/powered)
 "rA" = (
 /obj/structure/chair/office,
-/obj/effect/mob_spawn/human/corpse/charredskeleton,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/blood/old,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
-"se" = (
-/obj/structure/janitorialcart,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "sD" = (
@@ -201,7 +166,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "sK" = (
 /obj/structure/chair/office/light{
 	dir = 8
@@ -209,13 +174,8 @@
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
-"sQ" = (
-/obj/effect/decal/cleanable/oil/slippery,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
 "tv" = (
 /obj/structure/chair/office,
-/obj/effect/mob_spawn/human/skeleton/alive,
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
@@ -245,9 +205,7 @@
 /area/ruin/powered)
 "wG" = (
 /obj/structure/rack,
-/obj/item/stack/spacecash/c1000,
 /obj/item/fakeartefact,
-/obj/item/stack/spacecash/c1000,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "wP" = (
@@ -263,15 +221,11 @@
 "wS" = (
 /obj/structure/flora/tree/jungle,
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
-"xe" = (
-/mob/living/simple_animal/hostile/cult_demon,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
+/area/overmap_encounter/planetoid/jungle)
 "xK" = (
 /obj/structure/bonfire/prelit,
 /turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "xY" = (
 /obj/structure/reagent_dispensers/watertank/high,
 /turf/open/floor/iron/dark,
@@ -288,7 +242,7 @@
 "AI" = (
 /obj/structure/flora/grass/jungle,
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "AU" = (
 /obj/structure/table/reinforced,
 /obj/item/storage/box/drinkingglasses,
@@ -305,7 +259,7 @@
 "Dd" = (
 /obj/effect/decal/remains/human,
 /turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "DC" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/glass,
@@ -317,7 +271,7 @@
 "Ew" = (
 /obj/structure/flora/junglebush/c,
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "EY" = (
 /turf/closed/wall/rust,
 /area/ruin/powered)
@@ -330,7 +284,6 @@
 /obj/structure/rack,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/spawner/random/clothing/gloves,
-/obj/item/stack/spacecash/c1000,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "FK" = (
@@ -340,7 +293,7 @@
 /area/ruin/powered)
 "FR" = (
 /obj/structure/sign/warning/fire,
-/turf/closed/wall/material,
+/turf/closed/wall,
 /area/ruin/powered)
 "FY" = (
 /obj/structure/sign/warning/biohazard,
@@ -349,7 +302,6 @@
 "GI" = (
 /obj/structure/rack,
 /obj/effect/spawner/random/clothing/costume,
-/obj/item/stack/spacecash/c1000,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Hk" = (
@@ -374,35 +326,27 @@
 /area/ruin/powered)
 "Iq" = (
 /obj/structure/chair/comfy/brown,
-/mob/living/simple_animal/hostile/cult_demon/greater{
-	health = 250;
-	name = "The Boss";
-	resize = 1.5
-	},
+/mob/living/basic/demon/slaughter,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Ir" = (
 /obj/structure/flora/junglebush/b,
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "Jx" = (
 /obj/structure/fence,
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "JB" = (
 /obj/structure/fence{
 	dir = 4
 	},
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
-"JI" = (
-/obj/effect/mob_spawn/human/corpse/pirate,
-/turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "KA" = (
 /obj/structure/flora/junglebush,
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "KV" = (
 /obj/machinery/light/floor,
 /obj/effect/decal/cleanable/dirt,
@@ -412,7 +356,7 @@
 /obj/structure/chair/office/light{
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/cult_demon,
+/mob/living/basic/demon,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Lu" = (
@@ -420,21 +364,20 @@
 /turf/closed/wall/rust,
 /area/ruin/powered)
 "LP" = (
-/mob/living/simple_animal/hostile/cult_demon,
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "LV" = (
 /obj/structure/flora/rock/jungle,
 /turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "LW" = (
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Mk" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "Mq" = (
 /obj/structure/table/reinforced,
 /obj/item/pen/survival,
@@ -459,7 +402,7 @@
 /area/ruin/powered)
 "MW" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/closed/wall/material,
+/turf/closed/wall,
 /area/ruin/powered)
 "Nl" = (
 /obj/structure/sign/poster/contraband/random,
@@ -477,11 +420,11 @@
 "NU" = (
 /obj/structure/ore_box,
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "OU" = (
 /obj/effect/mob_spawn/corpse/human/cargo_tech,
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "Pe" = (
 /obj/effect/decal/cleanable/ash,
 /obj/effect/decal/cleanable/dirt,
@@ -496,7 +439,6 @@
 /obj/structure/rack,
 /obj/item/stack/spacecash/c1000,
 /obj/effect/spawner/random/clothing/gloves,
-/obj/item/stack/spacecash/c1000,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Re" = (
@@ -515,14 +457,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
-"Sz" = (
-/obj/structure/closet/ammunitionlocker,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
-"SJ" = (
-/obj/structure/sign/warning/nosmoking,
-/turf/closed/wall,
-/area/ruin/powered)
 "SU" = (
 /obj/structure/table/reinforced,
 /obj/item/paper_bin,
@@ -532,7 +466,7 @@
 "SV" = (
 /obj/structure/closet/crate/trashcart,
 /turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "Ta" = (
 /obj/structure/closet/secure_closet/engineering_electrical,
 /obj/effect/decal/cleanable/greenglow,
@@ -550,8 +484,9 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "TI" = (
-/obj/structure/sign/warning/electricshock,
-/turf/closed/wall,
+/obj/effect/decal/cleanable/dirt,
+/mob/living/basic/demon,
+/turf/open/floor/iron/dark,
 /area/ruin/powered)
 "TY" = (
 /obj/structure/closet/crate/internals,
@@ -573,7 +508,6 @@
 /obj/machinery/light/floor,
 /obj/item/stack/spacecash/c1000,
 /obj/item/fakeartefact,
-/obj/item/stack/spacecash/c1000,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Wa" = (
@@ -587,7 +521,7 @@
 "XB" = (
 /obj/effect/decal/remains/xeno,
 /turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "XS" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
@@ -600,7 +534,7 @@
 "YL" = (
 /obj/structure/flora/rock/jungle,
 /turf/open/misc/dirt/jungle,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/jungle)
 "YX" = (
 /obj/effect/decal/cleanable/cobweb,
 /obj/effect/decal/cleanable/dirt,
@@ -614,13 +548,13 @@ mY
 mY
 NU
 AI
-iB
-iB
-eO
-eO
+dt
+dt
+fr
+fr
 Mk
 YL
-iB
+dt
 mY
 mY
 mY
@@ -636,12 +570,12 @@ Ed
 bR
 Ed
 Ed
-iB
-eO
+dt
+fr
 nC
 Dd
 Mk
-iB
+dt
 Ed
 Ed
 Ed
@@ -661,12 +595,12 @@ EY
 Ew
 Mk
 sD
-eO
-eO
-iB
+fr
+fr
+dt
 Ed
 YX
-sQ
+LW
 LW
 XS
 LW
@@ -681,10 +615,10 @@ XS
 SU
 EY
 pE
-eO
+fr
 Mk
-eO
-eO
+fr
+fr
 Ir
 bR
 LW
@@ -693,7 +627,7 @@ FA
 Mw
 qE
 bR
-iB
+dt
 "}
 (5,1,1) = {"
 mY
@@ -702,34 +636,34 @@ nJ
 LW
 sK
 EY
-iB
-eO
+dt
+fr
 Mk
 Mk
-eO
-eO
+fr
+fr
 Ed
 LW
 XS
 Ig
-xe
+LW
 LW
 Ed
-iB
+dt
 "}
 (6,1,1) = {"
-iB
+dt
 Ed
 PA
 KV
 Wi
 Lu
-eO
-eO
-eO
+fr
+fr
+fr
 Mk
 Mk
-eO
+fr
 Ed
 LW
 Tp
@@ -737,32 +671,32 @@ VO
 GI
 XS
 Ed
-iB
+dt
 "}
 (7,1,1) = {"
-iB
+dt
 bR
 rx
 LW
 LW
 Hz
-eO
-eO
-eO
-eO
+fr
+fr
+fr
+fr
 Mk
-eO
+fr
 gL
 LW
-LW
+nR
 AF
-sQ
+LW
 XS
 Ed
 dt
 "}
 (8,1,1) = {"
-iB
+dt
 EY
 Fh
 Mq
@@ -770,75 +704,75 @@ Hk
 Ed
 Mk
 Mk
-eO
-eO
-eO
-eO
-SJ
+fr
+fr
+fr
+fr
+Ed
 LW
 wr
 GI
 QI
 XS
 Ed
-iB
+dt
 "}
 (9,1,1) = {"
-iB
+dt
 EY
 EY
 bR
 Ed
 Ed
-iB
-eO
+dt
 fr
-eO
-eO
+fr
+fr
+fr
 KA
 EY
 LW
 DC
 LW
-fL
+XS
 XS
 Nl
-iB
+dt
 "}
 (10,1,1) = {"
-iB
+dt
 AI
-iB
+dt
 JB
 rc
-iB
+dt
 fv
 XB
 xK
-eO
-eO
-iB
+fr
+fr
+dt
 Nl
 XS
-sQ
+LW
 fm
 LW
 LW
 Ed
-iB
+dt
 "}
 (11,1,1) = {"
-iB
+dt
 OU
-iB
+dt
 JB
 NU
 AI
-iB
-eO
+dt
+fr
 Mk
 Mk
-eO
+fr
 AI
 EY
 Nt
@@ -847,21 +781,21 @@ Yp
 xY
 Nm
 Ed
-iB
+dt
 "}
 (12,1,1) = {"
-iB
-iB
-iB
+dt
+dt
+dt
 JB
 wS
-iB
-iB
-iB
+dt
+dt
+dt
 eO
 Mk
-eO
-eO
+fr
+fr
 EY
 Ed
 Ed
@@ -869,54 +803,54 @@ bR
 Ed
 Ed
 Ed
-iB
+dt
 "}
 (13,1,1) = {"
-iB
-iB
+dt
+dt
 AI
 qD
-iB
-iB
+dt
+dt
 YL
-iB
-eO
-eO
-eO
+dt
+fr
+fr
+fr
 Dd
-eO
-iB
-iB
-iB
+fr
+dt
+dt
+dt
 JB
 AI
 rc
-iB
+dt
 "}
 (14,1,1) = {"
-iB
-iB
+dt
+dt
 Ir
 JB
-iB
-iB
-iB
-iB
-iB
-eO
-eO
-eO
+dt
+dt
+dt
+dt
+dt
+fr
+fr
+fr
 Mk
-eO
-iB
+fr
+dt
 fv
 JB
-iB
+dt
 Ir
-iB
+dt
 "}
 (15,1,1) = {"
-iB
+dt
 Ed
 Ed
 Ed
@@ -925,20 +859,20 @@ EY
 EY
 EY
 gL
-kb
+EY
 Ed
 Ed
 Mk
 Mk
-eO
+fr
 Ed
 Ed
 Ed
 EY
-iB
+dt
 "}
 (16,1,1) = {"
-iB
+dt
 Ed
 Vp
 FK
@@ -950,83 +884,83 @@ LW
 XS
 Re
 Ed
-eO
+fr
 Mk
-eO
-TI
+fr
+Ed
 LP
 uj
 Nl
-iB
+dt
 "}
 (17,1,1) = {"
-iB
+dt
 Ed
 Hv
 XS
 cQ
 LW
-kb
+EY
 DC
 LW
-iC
+rA
 RX
 Ed
 SV
-eO
-eO
+fr
+fr
 Sg
 wP
 bO
 EY
-iB
+dt
 "}
 (18,1,1) = {"
-iB
+dt
 Ed
 bE
 Iq
 pm
 MM
-kb
+Ed
 LW
 hk
-fY
-kb
+Nl
+EY
 Ed
-eO
-eO
-eO
+fr
+fr
+fr
 gL
 LW
 TY
 EY
-iB
+dt
 "}
 (19,1,1) = {"
-iB
+dt
 Ed
 AU
 li
 yM
 XS
 FR
-XS
+TI
 LW
 fX
 wQ
 Ed
 mI
-eO
-iB
+fr
+dt
 kf
 LW
 jf
 Ed
-iB
+dt
 "}
 (20,1,1) = {"
-iB
+dt
 Ed
 UH
 LW
@@ -1039,22 +973,22 @@ rA
 RX
 Ed
 Mk
-eO
-iB
+fr
+dt
 Ed
 XS
-Sz
+LW
 Ed
-iB
+dt
 "}
 (21,1,1) = {"
 mY
 Ed
 MW
-kb
-fY
-kb
-kb
+Ed
+bR
+Ed
+Ed
 Wi
 hk
 Nl
@@ -1062,12 +996,12 @@ EY
 EY
 LV
 fv
-iB
+dt
 Ed
 XS
 tR
 Ed
-iB
+dt
 "}
 (22,1,1) = {"
 mY
@@ -1082,11 +1016,11 @@ qE
 XS
 jd
 EY
-eO
-iB
+fr
+dt
 AI
 bR
-nR
+XS
 Ta
 Ed
 mY
@@ -1096,7 +1030,7 @@ mY
 EY
 bx
 kM
-se
+XS
 iw
 FY
 uD
@@ -1140,19 +1074,19 @@ mY
 mY
 mY
 mY
-iB
-iB
-iB
-iB
-iB
-iB
-iB
-iB
-eO
-eO
-JI
-iB
-iB
+dt
+dt
+dt
+dt
+dt
+dt
+dt
+dt
+fr
+fr
+fr
+dt
+dt
 mY
 mY
 mY

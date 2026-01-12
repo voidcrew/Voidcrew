@@ -10,22 +10,14 @@
 /obj/effect/mob_spawn/human/corpse/solgov/infantry,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"d" = (
-/obj/effect/turf_decal/industrial/warning{
-	dir = 1
-	},
-/turf/open/floor/mineral/titanium/yellow,
-/area/ruin/unpowered)
 "f" = (
 /obj/structure/frame/machine,
-/obj/item/stack/cable_coil/random/five,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "g" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 1
 	},
-/obj/item/stack/sheet/metal,
 /obj/effect/mob_spawn/human/corpse/solgov/officer,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
@@ -36,9 +28,6 @@
 "p" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 1
-	},
-/obj/effect/turf_decal/industrial/warning{
-	dir = 10
 	},
 /turf/open/floor/mineral/titanium/blue,
 /area/ruin/unpowered)
@@ -53,7 +42,7 @@
 /turf/open/floor/mineral/titanium/blue,
 /area/ruin/unpowered)
 "v" = (
-/obj/machinery/door/airlock/solgov/glass,
+/obj/machinery/door/airlock/command,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "w" = (
@@ -61,17 +50,11 @@
 /area/ruin/unpowered)
 "D" = (
 /obj/structure/table/reinforced,
-/obj/item/desk_flag/solgov,
-/obj/item/pen/fountain/solgov,
 /turf/open/floor/mineral/titanium/blue,
 /area/ruin/unpowered)
 "E" = (
 /obj/item/stack/rods,
-/obj/effect/turf_decal/industrial/warning{
-	dir = 5
-	},
 /obj/item/clothing/head/helmet/solgov,
-/obj/item/gun/energy/laser/terra,
 /obj/item/clothing/under/solgov/elite,
 /obj/effect/gibspawner/human,
 /turf/open/floor/mineral/titanium/yellow,
@@ -81,7 +64,6 @@
 /area/overmap_encounter/planetoid/wasteland)
 "H" = (
 /obj/item/stack/rods,
-/obj/effect/turf_decal/industrial/warning,
 /turf/open/floor/mineral/titanium/white,
 /area/ruin/unpowered)
 "K" = (
@@ -98,9 +80,6 @@
 /obj/structure/chair/comfy/shuttle{
 	dir = 1
 	},
-/obj/effect/turf_decal/industrial/warning{
-	dir = 4
-	},
 /turf/open/floor/mineral/titanium/yellow,
 /area/ruin/unpowered)
 "Q" = (
@@ -110,36 +89,17 @@
 /obj/structure/chair/comfy/shuttle{
 	dir = 1
 	},
-/obj/effect/turf_decal/industrial/warning{
-	dir = 8
-	},
 /obj/item/clothing/under/solgov,
 /turf/open/floor/mineral/titanium/yellow,
 /area/ruin/unpowered)
-"T" = (
-/obj/item/stack/sheet/metal,
-/obj/item/stack/cable_coil/random/five,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
 "U" = (
-/obj/machinery/power/shuttle/engine/electric{
-	dir = 1
-	},
-/turf/open/floor/plating,
-/area/ruin/unpowered)
-"X" = (
-/obj/structure/window/shuttle,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "Y" = (
-/obj/item/stack/sheet/metal,
 /obj/effect/mob_spawn/human/corpse/solgov/infantry,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "Z" = (
-/obj/machinery/power/smes/shuttle{
-	dir = 1
-	},
 /turf/open/floor/mineral/titanium/white,
 /area/ruin/unpowered)
 
@@ -205,8 +165,8 @@ Q
 "}
 (3,1,1) = {"
 a
-X
-T
+U
+U
 l
 K
 Y
@@ -235,11 +195,11 @@ Q
 "}
 (4,1,1) = {"
 a
-X
+U
 t
 g
 v
-d
+w
 w
 H
 r
@@ -296,7 +256,7 @@ G
 (6,1,1) = {"
 a
 K
-X
+U
 K
 K
 O
