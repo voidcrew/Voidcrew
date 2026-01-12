@@ -6971,6 +6971,7 @@
 #include "voidcrew\modules\ship_combat\shield_generator.dm"
 #include "voidcrew\modules\ship_combat\shield_wall.dm"
 #include "voidcrew\modules\ship_combat\ship_shieldgen.dm"
+#include "voidcrew\modules\ship_upgrades\ships\scarab.dm"
 #include "voidcrew\modules\shuttle\boards.dm"
 #include "voidcrew\modules\shuttle\design.dm"
 #include "voidcrew\modules\shuttle\emergency.dm"

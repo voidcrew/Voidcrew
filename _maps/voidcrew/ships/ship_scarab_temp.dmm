@@ -198,6 +198,17 @@
 /obj/machinery/atmospherics/pipe/smart/manifold/cyan/visible,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/shuttle/voidcrew/scarab/commons)
+"aU" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 10
+	},
+/obj/effect/turf_decal/tile/blue/opposingcorners,
+/obj/modular_map_connector,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/scarab/medbay)
 "aW" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
@@ -279,7 +290,8 @@
 /obj/machinery/power/apc/auto_name/directional/east,
 /obj/structure/cable,
 /obj/effect/turf_decal/bot,
-/obj/machinery/computer/old{
+/obj/structure/frame/computer{
+	anchored = 1;
 	dir = 8
 	},
 /turf/open/floor/iron/smooth_large,
@@ -499,7 +511,7 @@
 	},
 /obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
-	id_tag = "scarab_rear_airlock_b"
+	cycle_id = "scarab_rear_airlock_b"
 	},
 /turf/open/floor/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay)
@@ -516,6 +528,17 @@
 	color = "#333135"
 	},
 /area/shuttle/voidcrew/scarab/bridge)
+"cB" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/modular_map_connector,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/scarab/commons)
 "cC" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /obj/machinery/door/poddoor/shutters/preopen{
@@ -705,9 +728,16 @@
 /turf/open/floor/iron/smooth_large,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "dI" = (
-/obj/docking_port/mobile/voidcrew/scarab/c,
-/turf/template_noop,
-/area/template_noop)
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/modular_map_connector,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/scarab/commons)
 "dJ" = (
 /obj/structure/closet/crate/freezer/surplus_limbs,
 /obj/item/radio/intercom/directional/east,
@@ -915,7 +945,7 @@
 	},
 /obj/effect/turf_decal/stripes/red/full,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
-	id_tag = "scarab_rear_airlock_a"
+	cycle_id = "scarab_rear_airlock_a"
 	},
 /turf/open/floor/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay)
@@ -925,6 +955,9 @@
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
 	dir = 4
+	},
+/obj/modular_map_root/ship_upgrade{
+	key = "scarab_cargo"
 	},
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/scarab/cargo_bay)
@@ -1067,6 +1100,16 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/dormitories)
+"fp" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/modular_map_connector,
+/turf/open/floor/iron/dark/textured_large,
+/area/shuttle/voidcrew/scarab/cargo_bay)
 "fq" = (
 /obj/effect/turf_decal/bot_red,
 /obj/machinery/light_switch/directional/west,
@@ -1172,7 +1215,7 @@
 	},
 /obj/effect/turf_decal/stripes/red/full,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
-	id_tag = "scarab_rear_airlock_b"
+	cycle_id = "scarab_rear_airlock_b"
 	},
 /turf/open/floor/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay)
@@ -1283,6 +1326,20 @@
 	},
 /turf/open/floor/iron/dark/textured_large,
 /area/shuttle/voidcrew/scarab/dormitories)
+"gs" = (
+/obj/structure/marker_beacon/burgundy,
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 6
+	},
+/obj/docking_port/mobile/voidcrew/scarab/c,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/scarab/engineering)
 "gu" = (
 /obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
 	dir = 9
@@ -1369,7 +1426,7 @@
 	},
 /obj/structure/bed{
 	dir = 4;
-	pixel_y = 12
+	pixel_z = 12
 	},
 /obj/machinery/light/small/directional/north,
 /obj/effect/landmark/start/shaft_miner,
@@ -1546,6 +1603,7 @@
 	dir = 6
 	},
 /obj/structure/marker_beacon/cerulean,
+/obj/docking_port/mobile/voidcrew/scarab/a,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/scarab/engineering)
 "ho" = (
@@ -1708,6 +1766,18 @@
 /obj/structure/chair/comfy/shuttle,
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/scarab/cargo_bay)
+"ia" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/tile/blue/half,
+/obj/modular_map_connector,
+/turf/open/floor/iron/edge,
+/area/shuttle/voidcrew/scarab/commons)
 "ic" = (
 /obj/machinery/airalarm/directional/south,
 /obj/structure/closet{
@@ -1906,6 +1976,7 @@
 /obj/machinery/suit_storage_unit/engine,
 /obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/siding/yellow,
+/obj/machinery/light/small/red/directional/north,
 /turf/open/floor/iron/smooth_large,
 /area/shuttle/voidcrew/scarab/engines)
 "iM" = (
@@ -1916,11 +1987,13 @@
 /turf/open/floor/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "iN" = (
-/obj/machinery/power/smes/ship{
-	name = "main power storage"
-	},
 /obj/structure/cable,
 /obj/effect/turf_decal/stripes/line,
+/obj/machinery/power/smes/ship{
+	name = "main power storage";
+	output_level = 25000;
+	input_level = 25000
+	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engineering)
 "iO" = (
@@ -2117,8 +2190,8 @@
 /turf/open/floor/iron/dark/smooth_edge,
 /area/shuttle/voidcrew/scarab/commons)
 "jG" = (
-/turf/closed/wall/mineral/titanium/survival,
-/area/shuttle/voidcrew/scarab/engineering)
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/scarab/bridge)
 "jI" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
 	dir = 1
@@ -2198,6 +2271,17 @@
 /obj/effect/turf_decal/bot_red,
 /turf/open/floor/iron/white/smooth_large,
 /area/shuttle/voidcrew/scarab/medbay)
+"jY" = (
+/obj/structure/marker_beacon/burgundy,
+/obj/effect/turf_decal/stripes/line{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 6
+	},
+/obj/docking_port/mobile/voidcrew/scarab/b,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/scarab/engineering)
 "kk" = (
 /obj/structure/chair{
 	dir = 4
@@ -2303,6 +2387,17 @@
 	},
 /turf/open/floor/iron/white/smooth_large,
 /area/shuttle/voidcrew/scarab/commons)
+"kE" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/modular_map_connector,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/scarab/commons)
 "kG" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 4
@@ -2338,6 +2433,9 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/modular_map_root/ship_upgrade{
+	key = "scarab_engineering"
+	},
 /turf/open/floor/mineral/titanium/tiled/yellow,
 /area/shuttle/voidcrew/scarab/engineering)
 "kL" = (
@@ -2407,7 +2505,7 @@
 	},
 /obj/effect/turf_decal/stripes/red/full,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
-	id_tag = "scarab_rear_airlock_b"
+	cycle_id = "scarab_rear_airlock_b"
 	},
 /turf/open/floor/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay)
@@ -2427,11 +2525,13 @@
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/scarab/bridge)
 "lh" = (
-/obj/machinery/atmospherics/components/tank/plasma,
 /obj/machinery/firealarm/directional/south,
 /obj/structure/sign/poster/official/plasma_effects/directional/east,
 /obj/effect/turf_decal/box/white/corners{
 	color = "#800080"
+	},
+/obj/machinery/atmospherics/components/tank/plasma{
+	dir = 1
 	},
 /turf/open/floor/iron/smooth,
 /area/shuttle/voidcrew/scarab/engines)
@@ -2948,12 +3048,12 @@
 /obj/structure/bed{
 	dir = 4
 	},
-/obj/structure/bed{
-	dir = 4;
-	pixel_y = 12
-	},
 /obj/effect/landmark/start/assistant,
 /obj/effect/turf_decal/tile/dark_green/full,
+/obj/structure/bed{
+	dir = 4;
+	pixel_z = 12
+	},
 /turf/open/floor/iron/large,
 /area/shuttle/voidcrew/scarab/dormitories)
 "nY" = (
@@ -2967,6 +3067,7 @@
 /obj/item/stack/medical/gauze/twelve{
 	pixel_y = 4
 	},
+/obj/modular_map_connector,
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "oa" = (
@@ -2990,6 +3091,7 @@
 /obj/effect/turf_decal/stripes/line{
 	dir = 4
 	},
+/obj/machinery/light/small/red/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines)
 "on" = (
@@ -3104,7 +3206,7 @@
 	},
 /obj/effect/turf_decal/stripes/red/full,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
-	id_tag = "scarab_rear_airlock_c"
+	cycle_id = "scarab_rear_airlock_c"
 	},
 /turf/open/floor/pod,
 /area/shuttle/voidcrew/scarab/cargo_bay)
@@ -3476,6 +3578,19 @@
 /area/shuttle/voidcrew/scarab/engineering)
 "qk" = (
 /turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/scarab/commons)
+"qp" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/modular_map_root/ship_upgrade{
+	key = "scarab_commons"
+	},
+/turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/scarab/commons)
 "qt" = (
 /obj/machinery/cryopod{
@@ -3899,7 +4014,8 @@
 /obj/machinery/power/apc/auto_name/directional/east,
 /obj/structure/cable,
 /obj/effect/turf_decal/bot,
-/obj/machinery/computer/old{
+/obj/structure/frame/computer{
+	anchored = 1;
 	dir = 8
 	},
 /turf/open/floor/iron/dark/smooth_large,
@@ -3968,12 +4084,15 @@
 /turf/open/floor/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "sC" = (
-/obj/machinery/atmospherics/components/tank/plasma,
+/obj/machinery/atmospherics/components/tank/plasma{
+	dir = 1
+	},
 /obj/machinery/airalarm/directional/south,
 /obj/effect/turf_decal/box/white/corners{
 	color = "#800080";
 	dir = 8
 	},
+/obj/machinery/light/small/red/directional/south,
 /turf/open/floor/iron/smooth,
 /area/shuttle/voidcrew/scarab/engines)
 "sD" = (
@@ -3989,6 +4108,7 @@
 	},
 /obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/siding/yellow,
+/obj/machinery/light/small/red/directional/north,
 /turf/open/floor/iron/smooth_large,
 /area/shuttle/voidcrew/scarab/engines)
 "sG" = (
@@ -4043,7 +4163,7 @@
 	},
 /obj/effect/turf_decal/stripes/red/full,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
-	id_tag = "scarab_rear_airlock_a"
+	cycle_id = "scarab_rear_airlock_a"
 	},
 /turf/open/floor/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay)
@@ -4081,6 +4201,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/red/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines)
 "sS" = (
@@ -4159,12 +4280,12 @@
 /obj/structure/bed{
 	dir = 4
 	},
-/obj/structure/bed{
-	dir = 4;
-	pixel_y = 12
-	},
 /obj/effect/turf_decal/tile/dark_green/full,
 /obj/effect/landmark/start/shaft_miner,
+/obj/structure/bed{
+	dir = 4;
+	pixel_z = 12
+	},
 /turf/open/floor/iron/large,
 /area/shuttle/voidcrew/scarab/dormitories)
 "tl" = (
@@ -4207,6 +4328,9 @@
 	},
 /obj/structure/cable,
 /obj/effect/turf_decal/tile/blue/half,
+/obj/modular_map_root/ship_upgrade{
+	key = "scarab_commons"
+	},
 /turf/open/floor/iron/dark/smooth_edge,
 /area/shuttle/voidcrew/scarab/commons)
 "ts" = (
@@ -4270,6 +4394,7 @@
 /obj/effect/turf_decal/tile/yellow/opposingcorners{
 	dir = 1
 	},
+/obj/modular_map_connector,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/scarab/medbay)
 "tH" = (
@@ -4546,7 +4671,7 @@
 	},
 /obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
-	id_tag = "scarab_rear_airlock_a"
+	cycle_id = "scarab_rear_airlock_a"
 	},
 /turf/open/floor/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay)
@@ -4651,6 +4776,9 @@
 /obj/structure/handrail,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay)
+"vF" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/scarab/bridge)
 "vG" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -4713,7 +4841,7 @@
 	},
 /obj/effect/turf_decal/stripes/red/full,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
-	id_tag = "scarab_rear_airlock_c"
+	cycle_id = "scarab_rear_airlock_c"
 	},
 /turf/open/floor/pod,
 /area/shuttle/voidcrew/scarab/cargo_bay)
@@ -4721,13 +4849,13 @@
 /obj/structure/bed{
 	dir = 4
 	},
-/obj/structure/bed{
-	dir = 4;
-	pixel_y = 12
-	},
 /obj/machinery/light/small/directional/north,
 /obj/effect/turf_decal/tile/dark_green/full,
 /obj/effect/landmark/start/security_officer,
+/obj/structure/bed{
+	dir = 4;
+	pixel_z = 12
+	},
 /turf/open/floor/iron/large,
 /area/shuttle/voidcrew/scarab/dormitories)
 "we" = (
@@ -5016,6 +5144,9 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/yellow/half/contrasted,
+/obj/modular_map_root/ship_upgrade{
+	key = "scarab_engineering"
+	},
 /turf/open/floor/iron/smooth,
 /area/shuttle/voidcrew/scarab/engineering)
 "xs" = (
@@ -5031,6 +5162,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
 	dir = 4
 	},
+/obj/modular_map_connector,
 /turf/open/floor/mineral/titanium/white{
 	color = "#333135"
 	},
@@ -5148,11 +5280,16 @@
 /turf/open/floor/iron/smooth,
 /area/shuttle/voidcrew/scarab/engineering)
 "xW" = (
-/obj/machinery/firealarm/directional/south,
-/obj/structure/sign/poster/official/plasma_effects/directional/east,
-/obj/machinery/atmospherics/components/tank/plasma,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines)
+/obj/effect/turf_decal/stripes/line{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 6
+	},
+/obj/docking_port/mobile/voidcrew/scarab/b,
+/obj/structure/marker_beacon/cerulean,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/scarab/engineering)
 "xZ" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/components/binary/pump/off/general/hidden/layer2{
@@ -5261,6 +5398,9 @@
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
 	dir = 4
 	},
+/obj/modular_map_root/ship_upgrade{
+	key = "scarab_cargo"
+	},
 /turf/open/floor/iron/dark/textured_large,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "ys" = (
@@ -5305,9 +5445,11 @@
 /turf/open/floor/iron/white/textured_large,
 /area/shuttle/voidcrew/scarab/medbay)
 "yC" = (
-/obj/machinery/atmospherics/components/tank/plasma,
 /obj/machinery/firealarm/directional/south,
 /obj/structure/sign/poster/official/plasma_effects/directional/east,
+/obj/machinery/atmospherics/components/tank/plasma{
+	dir = 1
+	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines)
 "yD" = (
@@ -5325,6 +5467,7 @@
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 10
 	},
+/obj/modular_map_connector,
 /turf/open/floor/mineral/titanium/tiled/blue,
 /area/shuttle/voidcrew/scarab/medbay)
 "yL" = (
@@ -5576,12 +5719,12 @@
 /obj/structure/bed{
 	dir = 4
 	},
-/obj/structure/bed{
-	dir = 4;
-	pixel_y = 12
-	},
 /obj/effect/landmark/start/assistant,
 /obj/effect/turf_decal/tile/dark_green/full,
+/obj/structure/bed{
+	dir = 4;
+	pixel_z = 12
+	},
 /turf/open/floor/iron/dark/smooth_large,
 /area/shuttle/voidcrew/scarab/dormitories)
 "Ai" = (
@@ -5749,6 +5892,7 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 6
 	},
+/obj/docking_port/mobile/voidcrew/scarab/b,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/scarab/engineering)
 "Ba" = (
@@ -5828,6 +5972,7 @@
 /obj/item/stack/medical/gauze/twelve{
 	pixel_y = 4
 	},
+/obj/modular_map_connector,
 /turf/open/floor/iron/white/smooth_large,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "Bq" = (
@@ -5862,6 +6007,20 @@
 	name = "air supply pump"
 	},
 /turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
+"Bt" = (
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 6
+	},
+/obj/docking_port/mobile/voidcrew/scarab/b,
+/obj/structure/marker_beacon/cerulean,
+/turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/scarab/engineering)
 "Bx" = (
 /turf/closed/wall/mineral/plastitanium,
@@ -5919,7 +6078,8 @@
 /obj/machinery/power/apc/auto_name/directional/east,
 /obj/structure/cable,
 /obj/effect/turf_decal/bot,
-/obj/machinery/computer/old{
+/obj/structure/frame/computer{
+	anchored = 1;
 	dir = 8
 	},
 /turf/open/floor/mineral/titanium,
@@ -5937,13 +6097,17 @@
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/scarab/commons)
 "BQ" = (
-/obj/machinery/power/smes/ship{
-	name = "facility power storage"
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
 	},
-/obj/structure/cable,
-/obj/effect/turf_decal/stripes/line,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering)
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/modular_map_root/ship_upgrade{
+	key = "scarab_cargo"
+	},
+/turf/open/floor/iron/smooth_large,
+/area/shuttle/voidcrew/scarab/cargo_bay)
 "BX" = (
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 8
@@ -6115,9 +6279,12 @@
 /turf/open/floor/iron/dark/smooth_large,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "Da" = (
-/obj/machinery/atmospherics/components/tank/plasma,
 /obj/machinery/airalarm/directional/south,
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/components/tank/plasma{
+	dir = 1
+	},
+/obj/machinery/light/small/red/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines)
 "Db" = (
@@ -6208,12 +6375,14 @@
 /turf/open/floor/iron/large,
 /area/shuttle/voidcrew/scarab/dormitories)
 "Dp" = (
-/obj/machinery/suit_storage_unit/medical{
-	req_access = list("medical")
-	},
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /obj/structure/extinguisher_cabinet/directional/east,
 /obj/machinery/digital_clock/directional/south,
+/obj/machinery/suit_storage_unit/medical{
+	req_access = list("medical");
+	access_locked = 1;
+	locked = 1
+	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/scarab/medbay)
 "Dt" = (
@@ -6515,6 +6684,30 @@
 	},
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/scarab/commons)
+"Fm" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/machinery/light/small/red/directional/north,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
+"Fo" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/sign/warning/no_smoking/circle/directional/south,
+/obj/machinery/space_heater,
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines)
 "Fp" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
@@ -6682,8 +6875,11 @@
 /turf/open/floor/iron/dark/smooth_large,
 /area/shuttle/voidcrew/scarab/bridge)
 "Gw" = (
-/obj/machinery/atmospherics/components/tank/plasma,
 /obj/machinery/airalarm/directional/south,
+/obj/machinery/atmospherics/components/tank/plasma{
+	dir = 1
+	},
+/obj/machinery/light/small/red/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines)
 "Gz" = (
@@ -6817,9 +7013,17 @@
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "Hj" = (
-/obj/docking_port/mobile/voidcrew/scarab/a,
-/turf/template_noop,
-/area/template_noop)
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 10
+	},
+/obj/modular_map_root/ship_upgrade{
+	key = "scarab_med"
+	},
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/scarab/medbay)
 "Hk" = (
 /obj/structure/closet/firecloset{
 	anchored = 1
@@ -6894,6 +7098,7 @@
 "HI" = (
 /obj/structure/sign/warning/engine_safety/directional/north,
 /obj/structure/tank_dispenser,
+/obj/machinery/light/small/red/directional/north,
 /turf/open/floor/mineral/titanium/tiled/yellow,
 /area/shuttle/voidcrew/scarab/engines)
 "HJ" = (
@@ -7045,8 +7250,20 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/red/directional/west,
 /turf/open/floor/iron/smooth,
 /area/shuttle/voidcrew/scarab/engines)
+"IS" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/modular_map_connector,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/commons)
 "IZ" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -7413,11 +7630,11 @@
 /obj/structure/bed{
 	dir = 4
 	},
+/obj/effect/landmark/start/assistant,
 /obj/structure/bed{
 	dir = 4;
-	pixel_y = 12
+	pixel_z = 12
 	},
-/obj/effect/landmark/start/assistant,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/scarab/dormitories)
 "KA" = (
@@ -7654,13 +7871,13 @@
 /obj/structure/bed{
 	dir = 4
 	},
-/obj/structure/bed{
-	dir = 4;
-	pixel_y = 12
-	},
 /obj/machinery/light/small/directional/north,
 /obj/effect/turf_decal/tile/dark_green/full,
 /obj/effect/landmark/start/shaft_miner,
+/obj/structure/bed{
+	dir = 4;
+	pixel_z = 12
+	},
 /turf/open/floor/iron/dark/smooth_large,
 /area/shuttle/voidcrew/scarab/dormitories)
 "LG" = (
@@ -7730,6 +7947,9 @@
 	dir = 10
 	},
 /obj/effect/turf_decal/tile/blue/opposingcorners,
+/obj/modular_map_root/ship_upgrade{
+	key = "scarab_med"
+	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/scarab/medbay)
 "LX" = (
@@ -7854,6 +8074,17 @@
 	},
 /turf/open/floor/iron/dark/smooth_large,
 /area/shuttle/voidcrew/scarab/bridge)
+"Mz" = (
+/obj/structure/marker_beacon/burgundy,
+/obj/effect/turf_decal/stripes/line{
+	dir = 6
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 6
+	},
+/obj/docking_port/mobile/voidcrew/scarab/c,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/scarab/engineering)
 "MB" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
 	dir = 1
@@ -8136,13 +8367,22 @@
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "Og" = (
-/obj/structure/table,
-/obj/item/storage/medkit,
-/obj/item/bodybag{
-	pixel_y = 11
+/obj/machinery/power/terminal{
+	dir = 8
 	},
-/turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/obj/machinery/power/port_gen/pacman,
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line,
+/obj/item/radio/intercom/directional/north,
+/obj/machinery/light_switch/directional/east{
+	pixel_y = 6
+	},
+/obj/machinery/firealarm/directional/east{
+	pixel_y = -6
+	},
+/obj/item/stack/sheet/mineral/plasma/thirty,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
 "Oh" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 4
@@ -8433,11 +8673,13 @@
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "PT" = (
-/obj/machinery/suit_storage_unit/medical{
-	req_access = list("medical")
-	},
 /obj/structure/extinguisher_cabinet/directional/east,
 /obj/machinery/digital_clock/directional/south,
+/obj/machinery/suit_storage_unit/medical{
+	req_access = list("medical");
+	access_locked = 1;
+	locked = 1
+	},
 /turf/open/floor/mineral/titanium/tiled/blue,
 /area/shuttle/voidcrew/scarab/medbay)
 "PY" = (
@@ -8472,6 +8714,7 @@
 /obj/item/stack/medical/gauze/twelve{
 	pixel_y = 4
 	},
+/obj/modular_map_connector,
 /turf/open/floor/mineral/titanium/white{
 	color = "#333135"
 	},
@@ -8602,7 +8845,7 @@
 	},
 /obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
-	id_tag = "scarab_rear_airlock_c"
+	cycle_id = "scarab_rear_airlock_c"
 	},
 /turf/open/floor/pod,
 /area/shuttle/voidcrew/scarab/cargo_bay)
@@ -8776,6 +9019,7 @@
 /obj/machinery/light_switch/directional/east{
 	pixel_y = 6
 	},
+/obj/item/stack/sheet/mineral/plasma/thirty,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engineering)
 "RR" = (
@@ -8866,6 +9110,9 @@
 	color = "#333135"
 	},
 /area/shuttle/voidcrew/scarab/cargo_bay)
+"Sf" = (
+/turf/closed/wall/mineral/titanium/survival,
+/area/shuttle/voidcrew/scarab/bridge)
 "Sg" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4,
@@ -9137,9 +9384,6 @@
 /obj/structure/table,
 /obj/item/storage/medkit,
 /obj/effect/turf_decal/tile/blue/opposingcorners,
-/obj/item/bodybag{
-	pixel_y = 11
-	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/scarab/medbay)
 "TE" = (
@@ -9159,12 +9403,19 @@
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
 	dir = 4
 	},
+/obj/modular_map_connector,
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "TI" = (
-/obj/effect/spawner/structure/window/survival_pod,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/dormitories)
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/modular_map_connector,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay)
 "TK" = (
 /obj/structure/chair{
 	dir = 4
@@ -9290,13 +9541,16 @@
 /turf/open/floor/iron/edge,
 /area/shuttle/voidcrew/scarab/commons)
 "Uk" = (
-/obj/structure/extinguisher_cabinet/directional/east,
-/obj/machinery/digital_clock/directional/south,
-/obj/machinery/suit_storage_unit/medical{
-	req_access = list("medical")
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
 	},
-/turf/open/floor/mineral/titanium/tiled/blue,
-/area/shuttle/voidcrew/scarab/medbay)
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/yellow/half/contrasted,
+/obj/modular_map_connector,
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/scarab/engineering)
 "Um" = (
 /obj/structure/window/reinforced/plasma/plastitanium,
 /obj/machinery/door/poddoor/shutters/preopen{
@@ -9345,11 +9599,11 @@
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "UB" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line,
 /obj/machinery/power/smes/ship{
 	name = "engine power storage"
 	},
-/obj/structure/cable,
-/obj/effect/turf_decal/stripes/line,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engineering)
 "UD" = (
@@ -9536,11 +9790,24 @@
 	},
 /turf/open/floor/mineral/titanium/tiled/blue,
 /area/shuttle/voidcrew/scarab/medbay)
+"VI" = (
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/tile/blue/half,
+/obj/modular_map_connector,
+/turf/open/floor/iron/dark/smooth_edge,
+/area/shuttle/voidcrew/scarab/commons)
 "VL" = (
 /obj/machinery/power/thermoelectric_generator{
 	dir = 1
 	},
 /obj/structure/cable,
+/obj/modular_map_connector,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engineering)
 "VN" = (
@@ -9651,6 +9918,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden/layer4{
 	dir = 4
 	},
+/obj/modular_map_connector,
 /turf/open/floor/iron/smooth_large,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "Wd" = (
@@ -9737,6 +10005,9 @@
 	},
 /obj/structure/cable,
 /obj/effect/turf_decal/tile/blue/half,
+/obj/modular_map_root/ship_upgrade{
+	key = "scarab_commons"
+	},
 /turf/open/floor/iron/edge,
 /area/shuttle/voidcrew/scarab/commons)
 "Wy" = (
@@ -9929,6 +10200,7 @@
 /area/shuttle/voidcrew/scarab/bridge)
 "Xq" = (
 /obj/structure/cable,
+/obj/machinery/light/small/red/directional/south,
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/shuttle/voidcrew/scarab/engines)
 "Xt" = (
@@ -9954,9 +10226,15 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/scarab/cargo_bay)
 "XA" = (
-/obj/docking_port/mobile/voidcrew/scarab/b,
-/turf/template_noop,
-/area/template_noop)
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/machinery/power/port_gen/pacman,
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line,
+/obj/item/stack/sheet/mineral/plasma/thirty,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering)
 "XB" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 10
@@ -10255,6 +10533,17 @@
 	},
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/scarab/cargo_bay)
+"Zm" = (
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/modular_map_connector,
+/turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engineering)
 "Zo" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
 	dir = 1
@@ -10721,7 +11010,7 @@ oU
 oU
 oU
 cX
-HJ
+Fm
 oT
 ii
 ZZ
@@ -10736,7 +11025,7 @@ IN
 YN
 cU
 WM
-Bg
+Fo
 ii
 oU
 oU
@@ -10910,7 +11199,7 @@ Au
 qF
 OZ
 WZ
-xW
+yC
 ok
 oU
 "}
@@ -10921,8 +11210,8 @@ oU
 oU
 oU
 oU
-cX
-cX
+ii
+ii
 TN
 ii
 JO
@@ -10937,12 +11226,12 @@ rE
 ii
 XT
 ii
-cX
-cX
+ii
+ii
 oU
 oU
-aF
-aF
+Tr
+Tr
 TN
 Tr
 Wb
@@ -10957,12 +11246,12 @@ vy
 Tr
 Eg
 Tr
-aF
-aF
+Tr
+Tr
 oU
 oU
-ok
-ok
+jj
+jj
 TN
 jj
 Mq
@@ -10977,8 +11266,8 @@ vy
 jj
 XT
 jj
-ok
-ok
+jj
+jj
 oU
 "}
 (10,1,1) = {"
@@ -10989,7 +11278,7 @@ oU
 oU
 oU
 ak
-oo
+sd
 JG
 qQ
 qQ
@@ -10999,17 +11288,17 @@ ys
 vJ
 Iy
 sd
-Hc
+XA
 Mo
 hI
 tl
 Yg
-jG
+KG
 lU
 oU
 oU
 ak
-Bx
+Mn
 uY
 kN
 kN
@@ -11019,17 +11308,17 @@ gX
 ye
 pt
 Mn
-Hc
+XA
 PZ
 pp
 tl
 ZQ
-Hr
+en
 lU
 oU
 oU
 Ry
-yz
+mt
 GV
 kO
 kO
@@ -11039,12 +11328,12 @@ IA
 Jl
 SJ
 mt
-Hc
+XA
 Tt
 Sb
 tl
 ZQ
-jg
+Jw
 dy
 oU
 "}
@@ -11106,7 +11395,7 @@ qW
 qW
 Ee
 RU
-de
+UB
 mc
 Aq
 nw
@@ -11128,7 +11417,7 @@ ja
 mg
 bY
 Yf
-Wc
+BQ
 Sh
 ao
 Md
@@ -11220,7 +11509,7 @@ ng
 Be
 SR
 gN
-BQ
+iN
 wr
 ui
 Bs
@@ -11240,7 +11529,7 @@ db
 gl
 PL
 gN
-de
+iN
 wt
 Dk
 uk
@@ -11267,12 +11556,12 @@ jk
 BD
 hO
 sd
-hH
+Og
 BG
 zX
 hw
 sA
-jG
+KG
 oU
 oU
 oU
@@ -11307,7 +11596,7 @@ tn
 kO
 qW
 mt
-hH
+Og
 Gt
 ux
 hw
@@ -11324,8 +11613,8 @@ oU
 oU
 oU
 oU
-oo
-oo
+sd
+sd
 zQ
 br
 RA
@@ -11339,13 +11628,13 @@ cj
 KG
 Yo
 KG
-jG
+KG
 oU
 oU
 oU
 oU
-Bx
-Bx
+Mn
+Mn
 Rk
 sl
 vd
@@ -11364,8 +11653,8 @@ oU
 oU
 oU
 JU
-yz
-yz
+mt
+mt
 gv
 BI
 du
@@ -11379,7 +11668,7 @@ oa
 Jw
 Yo
 Jw
-jg
+Jw
 dB
 oU
 "}
@@ -11392,7 +11681,7 @@ oU
 oU
 oU
 ak
-oo
+sd
 sd
 sd
 sd
@@ -11406,13 +11695,13 @@ SY
 Ge
 OD
 KU
-AZ
-dI
+gs
+oU
 oU
 oU
 oU
 ak
-Bx
+Mn
 Mn
 Mn
 Mn
@@ -11427,12 +11716,12 @@ hx
 Zz
 rG
 AZ
-XA
+oU
 oU
 oU
 oU
 Ry
-yz
+mt
 mt
 mt
 mt
@@ -11447,7 +11736,7 @@ zO
 wx
 lb
 hm
-Hj
+oU
 oU
 "}
 (17,1,1) = {"
@@ -11707,11 +11996,11 @@ mB
 Yw
 sG
 Xa
-nI
+qp
 FR
 VN
 QQ
-Og
+aw
 fO
 oU
 oU
@@ -11845,7 +12134,7 @@ xe
 Iu
 aQ
 VE
-Uk
+PT
 tu
 oU
 oU
@@ -11862,7 +12151,7 @@ oU
 oU
 oU
 EB
-EB
+pu
 na
 pu
 ni
@@ -11882,7 +12171,7 @@ oU
 oU
 oU
 Qg
-Qg
+Lv
 gr
 Lv
 Ao
@@ -11902,7 +12191,7 @@ oU
 oU
 oU
 FJ
-FJ
+pz
 qt
 pz
 mm
@@ -11958,7 +12247,7 @@ nm
 UL
 Rn
 HP
-yJ
+Hj
 fR
 GC
 Bq
@@ -11978,7 +12267,7 @@ cQ
 mZ
 Iu
 Cd
-yJ
+Hj
 fR
 GC
 fO
@@ -11995,7 +12284,7 @@ oU
 oU
 oU
 Vl
-EB
+pu
 sO
 ue
 pu
@@ -12008,14 +12297,14 @@ km
 jW
 ee
 GK
-aR
+YY
 PD
 oU
 oU
 oU
 oU
 Vl
-Qg
+Lv
 lv
 rt
 Lv
@@ -12028,14 +12317,14 @@ CH
 AQ
 ms
 VD
-Hb
+Rn
 PD
 oU
 oU
 oU
 oU
 ml
-FJ
+pz
 Ub
 dt
 pz
@@ -12048,7 +12337,7 @@ lg
 AQ
 kt
 VD
-tu
+Iu
 oR
 oU
 oU
@@ -12061,8 +12350,8 @@ oU
 oU
 oU
 oU
-EB
-EB
+pu
+pu
 IF
 pu
 pu
@@ -12071,18 +12360,18 @@ Ck
 PI
 Gu
 Ns
-km
+Sf
 WC
 WC
 WC
-Cy
-Cy
+WC
+WC
 oU
 oU
 oU
 oU
-Qg
-Qg
+Lv
+Lv
 tc
 Lv
 Lv
@@ -12091,18 +12380,18 @@ uG
 iu
 ca
 Uc
-CH
+jG
 hM
 hM
 hM
-zy
-zy
+hM
+hM
 oU
 oU
 oU
 oU
-FJ
-FJ
+pz
+pz
 Ss
 pz
 pz
@@ -12111,12 +12400,12 @@ nz
 zf
 ey
 Ta
-lg
+vF
 XC
 XC
 XC
-uQ
-uQ
+XC
+XC
 oU
 oU
 "}
@@ -12262,7 +12551,7 @@ oU
 oU
 oU
 oU
-TI
+fn
 nW
 jq
 gq
@@ -12399,7 +12688,7 @@ oU
 EB
 Pi
 Pi
-EB
+pu
 GZ
 oU
 oU
@@ -12408,7 +12697,7 @@ oU
 oU
 oU
 Yq
-Cy
+WC
 dP
 dP
 Cy
@@ -12419,7 +12708,7 @@ oU
 Qg
 Um
 Um
-Qg
+Lv
 GZ
 oU
 oU
@@ -12428,7 +12717,7 @@ oU
 oU
 oU
 Zf
-zy
+hM
 mW
 mW
 zy
@@ -12439,7 +12728,7 @@ oU
 FJ
 Gp
 Gp
-FJ
+pz
 BH
 oU
 oU
@@ -12448,7 +12737,7 @@ oU
 oU
 oU
 gS
-uQ
+XC
 ws
 ws
 uQ
@@ -12529,7 +12818,7 @@ oU
 Ij
 Ij
 oU
-Ij
+oU
 oU
 oU
 oU
@@ -12807,7 +13096,7 @@ xf
 an
 xU
 pf
-Jb
+kE
 oU
 oU
 oU
@@ -12827,7 +13116,7 @@ wn
 sp
 aT
 rk
-YQ
+dI
 oU
 oU
 oU
@@ -12847,7 +13136,7 @@ Wd
 XK
 xU
 rk
-MT
+IS
 oU
 oU
 oU
@@ -13012,7 +13301,7 @@ LK
 oU
 oU
 wi
-LT
+aU
 Fp
 yB
 oU
@@ -14016,31 +14305,11 @@ Js
 ch
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-cn
-hc
-we
-Js
-ch
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+XA
+Mo
+hI
+tl
+Yg
 oU
 oU
 oU
@@ -14056,10 +14325,30 @@ Js
 ch
 oU
 oU
+XA
+PZ
+pp
+tl
+ZQ
 oU
 oU
 oU
 oU
+oU
+oU
+oU
+cn
+hc
+we
+Js
+ch
+oU
+oU
+Hc
+Tt
+Sb
+tl
+ZQ
 oU
 oU
 "}
@@ -14083,11 +14372,11 @@ gu
 TX
 oU
 oU
-oU
-oU
-oU
-oU
-oU
+UB
+el
+ZB
+nw
+Tn
 oU
 oU
 oU
@@ -14103,12 +14392,11 @@ gu
 TX
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
+UB
+mc
+Jq
+jQ
+xZ
 oU
 oU
 oU
@@ -14123,10 +14411,11 @@ gu
 TX
 oU
 oU
-oU
-oU
-oU
-oU
+de
+mc
+Aq
+nw
+xZ
 oU
 oU
 "}
@@ -14150,31 +14439,11 @@ kX
 Tn
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-xg
-eu
-VL
-kX
-Tn
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+JR
+wI
+Uk
+ec
+JP
 oU
 oU
 oU
@@ -14190,10 +14459,30 @@ kX
 Tn
 oU
 oU
+JR
+jI
+Zm
+fl
+Lg
 oU
 oU
 oU
 oU
+oU
+oU
+oU
+xg
+eu
+VL
+kX
+Tn
+oU
+oU
+JR
+MB
+Zm
+ec
+JP
 oU
 oU
 "}
@@ -14217,11 +14506,11 @@ qj
 mj
 oU
 oU
-oU
-oU
-oU
-oU
-oU
+iN
+xV
+ax
+Bs
+jx
 oU
 oU
 oU
@@ -14237,12 +14526,11 @@ qj
 mj
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
+iN
+wr
+ui
+Bs
+Xg
 oU
 oU
 oU
@@ -14257,10 +14545,11 @@ qj
 mj
 oU
 oU
-oU
-oU
-oU
-oU
+de
+wt
+Dk
+uk
+LZ
 oU
 oU
 "}
@@ -14284,31 +14573,11 @@ Yl
 RY
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-ED
-LB
-to
-EV
-XW
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+Og
+BG
+zX
+hw
+sA
 oU
 oU
 oU
@@ -14324,10 +14593,30 @@ EV
 XW
 oU
 oU
+RL
+Lf
+VQ
+hw
+sA
 oU
 oU
 oU
 oU
+oU
+oU
+oU
+ED
+LB
+to
+EV
+XW
+oU
+oU
+hH
+Gt
+ux
+hw
+sA
 oU
 oU
 "}
@@ -14351,31 +14640,11 @@ hk
 Jw
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-im
-kV
-cs
-hk
-Jw
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+KG
+cj
+KG
+Yo
+KG
 oU
 oU
 oU
@@ -14391,10 +14660,30 @@ hk
 Jw
 oU
 oU
+en
+oa
+en
+Yo
+en
 oU
 oU
 oU
 oU
+oU
+oU
+oU
+im
+kV
+cs
+hk
+Jw
+oU
+oU
+Jw
+oa
+Jw
+Yo
+Jw
 oU
 oU
 "}
@@ -14416,34 +14705,14 @@ mN
 kY
 dM
 Jw
+Mz
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-kL
-GH
-kY
-dM
-Jw
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+YE
+SY
+Ge
+OD
+KU
+gs
 oU
 oU
 oU
@@ -14456,13 +14725,33 @@ GH
 kY
 dM
 Jw
+jY
+oU
+Pt
+AR
+hx
+Zz
+rG
+AZ
 oU
 oU
 oU
 oU
 oU
 oU
+kL
+GH
+kY
+dM
+Jw
+xW
 oU
+Pt
+AR
+zO
+wx
+lb
+Bt
 oU
 "}
 (62,1,1) = {"
@@ -14485,30 +14774,10 @@ QU
 oU
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-NL
-DU
-UI
-wg
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+rT
+aW
+KG
+ip
 oU
 oU
 oU
@@ -14525,9 +14794,29 @@ wg
 oU
 oU
 oU
+AY
+gQ
+en
+sj
 oU
 oU
 oU
+oU
+oU
+oU
+oU
+oU
+NL
+DU
+UI
+wg
+oU
+oU
+oU
+AY
+WL
+Jw
+Du
 oU
 oU
 oU
@@ -14681,6 +14970,16 @@ oU
 oU
 oU
 oU
+JO
+RX
+yg
+Xt
+oU
+oU
+KH
+aU
+Fp
+HG
 oU
 oU
 oU
@@ -14690,6 +14989,17 @@ oU
 oU
 oU
 oU
+Wb
+gb
+LD
+sP
+oU
+oU
+oU
+HP
+yJ
+fR
+GC
 oU
 oU
 oU
@@ -14698,38 +15008,17 @@ oU
 oU
 oU
 oU
+Mq
+lQ
+gx
+wq
 oU
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+Cd
+yJ
+fR
+GC
 oU
 oU
 "}
@@ -14746,6 +15035,18 @@ oU
 oU
 oU
 oU
+JG
+qQ
+qQ
+WG
+on
+ys
+oU
+oU
+oU
+jW
+ee
+GK
 oU
 oU
 oU
@@ -14753,50 +15054,38 @@ oU
 oU
 oU
 oU
+uY
+kN
+kN
+Zo
+AF
+gX
+oU
+oU
+oU
+oU
+AQ
+ms
+VD
 oU
 oU
 oU
 oU
 oU
 oU
+GV
+kO
+kO
+OR
+oY
+IA
 oU
 oU
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+AQ
+kt
+VD
 oU
 oU
 "}
@@ -14813,6 +15102,12 @@ oU
 oU
 oU
 oU
+uv
+vS
+mS
+Oa
+Oh
+gm
 oU
 oU
 oU
@@ -14826,6 +15121,12 @@ oU
 oU
 oU
 oU
+zr
+UT
+DH
+bB
+CC
+pU
 oU
 oU
 oU
@@ -14839,24 +15140,12 @@ oU
 oU
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+pl
+VS
+fg
+nd
+cG
+qW
 oU
 oU
 oU
@@ -14880,6 +15169,12 @@ oU
 oU
 oU
 oU
+ja
+mg
+bY
+Yf
+Wc
+Sh
 oU
 oU
 oU
@@ -14893,6 +15188,12 @@ oU
 oU
 oU
 oU
+LN
+Ax
+Eb
+re
+fp
+KF
 oU
 oU
 oU
@@ -14906,24 +15207,12 @@ oU
 oU
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+au
+Wu
+Ec
+MQ
+TI
+OO
 oU
 oU
 oU
@@ -14947,58 +15236,58 @@ oU
 oU
 oU
 oU
+wP
+dH
+UO
+bF
+ie
+ky
+oU
+oU
+oU
+ab
+td
+fV
+Kd
 oU
 oU
 oU
 oU
 oU
 oU
+FW
+PE
+qC
+oH
+mF
+ng
+oU
+oU
+oU
+oU
+gU
+dA
+jr
+vs
 oU
 oU
 oU
 oU
 oU
+hV
+NR
+pH
+QS
+YC
+db
 oU
 oU
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+YA
+yF
+vG
+jm
 oU
 "}
 (70,1,1) = {"
@@ -15014,58 +15303,58 @@ oU
 oU
 oU
 oU
+ox
+Uf
+LP
+Uf
+si
+jk
+oU
+oU
+oU
+ez
+sq
+DW
+EL
 oU
 oU
 oU
 oU
 oU
 oU
+vE
+Wl
+hT
+Wl
+hu
+kx
+oU
+oU
+oU
+oU
+ro
+jp
+gR
+Ai
 oU
 oU
 oU
 oU
 oU
+uK
+kO
+qW
+kO
+kA
+tn
 oU
 oU
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+ij
+KB
+Uw
+Ej
 oU
 "}
 (71,1,1) = {"
@@ -15082,6 +15371,18 @@ oU
 oU
 oU
 oU
+zQ
+br
+RA
+ac
+Br
+oU
+oU
+oU
+xc
+CJ
+ES
+BK
 oU
 oU
 oU
@@ -15089,50 +15390,38 @@ oU
 oU
 oU
 oU
+Rk
+sl
+vd
+CK
+bW
+oU
+oU
+oU
+oU
+ls
+TK
+kk
+jD
 oU
 oU
 oU
 oU
 oU
 oU
+gv
+BI
+du
+yv
+AP
 oU
 oU
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+gk
+fA
+xL
+xe
 oU
 "}
 (72,1,1) = {"
@@ -15155,6 +15444,12 @@ oU
 oU
 oU
 oU
+Zr
+nR
+Sl
+Yk
+pX
+ia
 oU
 oU
 oU
@@ -15169,6 +15464,12 @@ oU
 oU
 oU
 oU
+PY
+QD
+IH
+gw
+Jj
+VI
 oU
 oU
 oU
@@ -15182,24 +15483,12 @@ oU
 oU
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+vo
+mB
+Yw
+sG
+Xa
+cB
 oU
 "}
 (73,1,1) = {"
@@ -15222,6 +15511,12 @@ oU
 oU
 oU
 oU
+GO
+nR
+Sl
+Rg
+nA
+mR
 oU
 oU
 oU
@@ -15236,6 +15531,12 @@ oU
 oU
 oU
 oU
+ko
+QD
+IH
+aZ
+fW
+VX
 oU
 oU
 oU
@@ -15249,24 +15550,12 @@ oU
 oU
 oU
 oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
-oU
+hv
+mB
+Yw
+On
+pa
+lN
 oU
 "}
 (74,1,1) = {"
@@ -15291,6 +15580,207 @@ oU
 oU
 oU
 oU
+TY
+AN
+mP
+BK
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+YJ
+oM
+hp
+jD
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+zL
+Jm
+ph
+xe
+oU
+"}
+(75,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+ni
+NH
+rx
+qx
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+Ao
+sf
+mD
+sS
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+mm
+Bl
+HS
+Ed
+oU
+"}
+(76,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+uF
+Sg
+Yy
+Ug
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+iX
+ex
+nm
+UL
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+nI
+lS
+cQ
+mZ
+oU
+"}
+(77,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
 oU
 oU
 oU
@@ -15336,7 +15826,811 @@ oU
 oU
 oU
 "}
-(75,1,1) = {"
+(78,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+"}
+(79,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+"}
+(80,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+"}
+(81,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+"}
+(82,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+"}
+(83,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+"}
+(84,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+"}
+(85,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+"}
+(86,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+"}
+(87,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+"}
+(88,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+"}
+(89,1,1) = {"
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+oU
+"}
+(90,1,1) = {"
 oU
 oU
 oU

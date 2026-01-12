@@ -8,13 +8,20 @@
  */
 /datum/map_template/shuttle/voidcrew/scarab
 	abstract = /datum/map_template/shuttle/voidcrew/scarab
+	has_upgrade_slots = TRUE
+	upgrade_slot_ids = list(
+		"scarab_med",
+		"scarab_engineering",
+		"scarab_common",
+		"scarab_cargo",
+	)
 
 /datum/map_template/shuttle/voidcrew/scarab/a
 	// Variant A is themed around medical and being a mobile hospital
 	name = "Scarab-class Frigate A: Hospital Variant"
 	suffix = "scarab_a"
 	short_name = "Scarab-class A"
-	// part_requirements = list(PART_CLASS_MISC = 2)
+	theme = "medical"
 
 	job_slots = list(
 		list(
@@ -61,7 +68,8 @@
 	name = "Scarab-class Frigate B: Reinforced Variant"
 	suffix = "scarab_b"
 	short_name = "Scarab-class B"
-	// part_requirements = list(PART_CLASS_MISC = 2)
+	theme = "syndicate"
+	part_requirements = list(PART_CLASS_SCIENCE = 1)
 
 	job_slots = list(
 		list(
@@ -115,7 +123,8 @@
 	name = "Scarab-class Frigate C: Security Variant"
 	suffix = "scarab_c"
 	short_name = "Scarab-class C"
-	// part_requirements = list(PART_CLASS_COMBAT = 1, PART_CLASS_MISC = 1)
+	theme = "mining"
+	part_requirements = list(PART_CLASS_COMBAT = 1)
 
 	job_slots = list(
 		list(
