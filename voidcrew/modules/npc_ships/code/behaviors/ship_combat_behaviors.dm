@@ -94,12 +94,71 @@
 
 		// Found a valid target!
 		controller.set_target(potential_target)
-		controller.set_combat_state(NPC_COMBAT_ENGAGING)
+
+		// If this ship scans before engaging, go to SCANNING first
+		if(ship.scan_before_engage)
+			controller.set_combat_state(NPC_COMBAT_SCANNING)
+			controller.blackboard[BB_NPC_SCAN_START_TIME] = world.time
+			controller.blackboard[BB_NPC_SCAN_COMPLETE] = FALSE
+		else
+			controller.set_combat_state(NPC_COMBAT_ENGAGING)
 
 		// Notify the target that they're being targeted
 		SEND_SIGNAL(potential_target, COMSIG_SHIP_BEING_TARGETED, ship)
 
 		return AI_BEHAVIOR_DELAY
+
+	return AI_BEHAVIOR_DELAY
+
+// ========== SCAN WEALTH ==========
+
+/**
+ * Scans the target ship for wealth before engaging.
+ * Used by yellow zone pirates to check if target is worth robbing.
+ * After scan completes, either engages (has money) or ignores (broke).
+ */
+/datum/ai_behavior/npc_ship/scan_wealth
+	action_cooldown = 0.5 SECONDS
+
+/datum/ai_behavior/npc_ship/scan_wealth/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
+	var/obj/structure/overmap/ship/target = controller.get_target()
+
+	if(!ship || !target || QDELETED(target))
+		controller.clear_target()
+		return AI_BEHAVIOR_DELAY
+
+	// Check if scan is complete
+	var/scan_start = controller.blackboard[BB_NPC_SCAN_START_TIME]
+	if(!scan_start)
+		// Shouldn't happen, but reset
+		controller.blackboard[BB_NPC_SCAN_START_TIME] = world.time
+		return AI_BEHAVIOR_DELAY
+
+	var/elapsed = world.time - scan_start
+	if(elapsed < ship.scan_time)
+		// Still scanning - announce progress periodically
+		if(elapsed == 0 || (elapsed % (2 SECONDS)) < (0.5 SECONDS))
+			ship.ship_announce("Scanning [target.name]... [round((elapsed / ship.scan_time) * 100)]%", "SCANNER")
+		return AI_BEHAVIOR_DELAY
+
+	// Scan complete!
+	controller.blackboard[BB_NPC_SCAN_COMPLETE] = TRUE
+
+	// Check target's wealth
+	var/target_wealth = target.ship_account?.account_balance || 0
+
+	if(target_wealth >= ship.min_target_wealth)
+		// Target has money - engage!
+		ship.ship_announce("Scan complete. Target has [target_wealth] credits. Engaging.", "SCANNER")
+		target.ship_announce("WARNING: Hostile vessel has completed scan and is engaging!", "SECURITY ALERT")
+		controller.set_combat_state(NPC_COMBAT_ENGAGING)
+	else
+		// Target is broke - not worth it
+		ship.ship_announce("Scan complete. Target has insufficient funds ([target_wealth] credits). Disengaging.", "SCANNER")
+		controller.clear_target()
 
 	return AI_BEHAVIOR_DELAY
 
@@ -374,7 +433,32 @@
 	if(ship.invisibility <= INVISIBILITY_NONE && combat.has_working_cloak())
 		combat.activate_cloak()
 
+	// Check if we've escaped far enough from the last target to return to patrol
+	var/datum/weakref/last_target_ref = controller.blackboard[BB_NPC_LAST_TARGET]
+	var/obj/structure/overmap/ship/last_target = last_target_ref?.resolve()
+
+	if(last_target && !QDELETED(last_target))
+		var/turf/our_loc = get_turf(ship)
+		var/turf/target_loc = get_turf(last_target)
+		if(our_loc && target_loc)
+			var/distance = get_dist(our_loc, target_loc)
+			// If we're far enough away (15+ tiles), return to patrol
+			if(distance >= 15)
+				return_to_patrol(controller)
+	else
+		// No last target to escape from - just return to patrol
+		return_to_patrol(controller)
+
 	return AI_BEHAVIOR_DELAY
+
+/// Helper proc to transition retreating ship back to patrol
+/datum/ai_behavior/npc_ship/retreat_escape/proc/return_to_patrol(datum/ai_controller/npc_ship/controller)
+	// Clear retreat state
+	controller.blackboard[BB_NPC_RETREAT_REASON] = null
+	controller.blackboard[BB_NPC_LAST_TARGET] = null
+	// Return to idle/patrol
+	controller.clear_target()
+	controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_PATROL)
 
 // ========== ACTIVATE SIPHON ==========
 
@@ -405,7 +489,9 @@
 		if(siphon)
 			break
 
-	if(siphon && !siphon.active)
+	if(siphon && !siphon.active && !siphon.warming_up)
+		// Copy the ship's siphon goal percentage to the siphon
+		siphon.siphon_goal_percent = ship.siphon_goal_percent
 		siphon.activate_siphon(target)
 
 	return AI_BEHAVIOR_DELAY

@@ -33,16 +33,17 @@
 		catalog.ui_interact(src)
 		return
 
-	if(selected_ship.memo)
-		var/memo_accept = tgui_alert(src, "Current ship memo: [selected_ship.memo]", "[selected_ship.name] Memo", list("OK", "Cancel"))
+	var/obj/structure/overmap/ship/ship = selected_ship
+	if(ship.memo)
+		var/memo_accept = tgui_alert(src, "Current ship memo: [ship.memo]", "[ship.name] Memo", list("OK", "Cancel"))
 		if(memo_accept != "OK")
 			return select_ship() //Send them back to shuttle selection
 
 	var/list/job_choices = list()
-	for(var/datum/job/job as anything in selected_ship.job_slots)
-		if(selected_ship.job_slots[job] < 1)
+	for(var/datum/job/job as anything in ship.job_slots)
+		if(ship.job_slots[job] < 1)
 			continue
-		job_choices["[job.title] ([selected_ship.job_slots[job]] positions)"] = job
+		job_choices["[job.title] ([ship.job_slots[job]] positions)"] = job
 	if(!job_choices.len)
 		to_chat(usr, span_danger("There are no jobs available on this ship!"))
 		return select_ship() //Send them back to shuttle selection
@@ -67,7 +68,7 @@
 		if((living_player_count() >= relevant_cap) || (src != SSticker.queued_players[1]))
 			to_chat(usr, span_warning("Server is full."))
 
-	AttemptSpawnOnShip(selected_job, selected_ship)
+	AttemptSpawnOnShip(selected_job, ship)
 
 /// Flag to prevent double-clicking ship spawn
 /mob/dead/new_player/var/spawning_ship = FALSE

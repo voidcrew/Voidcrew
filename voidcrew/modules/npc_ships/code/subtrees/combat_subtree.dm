@@ -4,6 +4,7 @@
  * This planning subtree handles all combat decision-making for NPC ships.
  * It queues behaviors based on the current combat state:
  * - IDLE: Just scan for threats
+ * - SCANNING: Scanning target for wealth (yellow zone pirates)
  * - ENGAGING: Acquiring weapon lock on target
  * - COMBAT: Actively firing weapons and using interdictor
  * - RETREATING: All weapons destroyed, trying to escape
@@ -21,11 +22,19 @@
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/retreat_escape)
 		return
 
-	// Always scan for threats first (unless retreating)
-	controller.queue_behavior(/datum/ai_behavior/npc_ship/scan_threats)
+	// Always scan for threats first (unless retreating or scanning)
+	if(combat_state != NPC_COMBAT_SCANNING)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/scan_threats)
 
 	switch(combat_state)
 		if(NPC_COMBAT_IDLE)
+			return
+
+		if(NPC_COMBAT_SCANNING)
+			// Scanning target for wealth before engaging
+			controller.queue_behavior(/datum/ai_behavior/npc_ship/scan_wealth)
+			// Still check disengage in case target escapes during scan
+			controller.queue_behavior(/datum/ai_behavior/npc_ship/check_disengage)
 			return
 
 		if(NPC_COMBAT_ENGAGING)

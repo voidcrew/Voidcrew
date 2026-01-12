@@ -6,6 +6,8 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 #define BB_NPC_TARGET_LOCKED "npc_target_locked"      // TRUE if weapons locked
 #define BB_NPC_LOCK_START_TIME "npc_lock_start_time"  // When lock started
 #define BB_NPC_COMBAT_STATE "npc_combat_state"        // idle/engaging/combat
+#define BB_NPC_RETREAT_REASON "npc_retreat_reason"    // Why we're retreating (siphon_goal, no_weapons)
+#define BB_NPC_LAST_TARGET "npc_last_target"          // Who we were fighting before retreating
 
 // Movement blackboard keys
 #define BB_NPC_MOVEMENT_MODE "npc_movement_mode"      // patrol/chase/return_to_route/roaming
@@ -18,9 +20,14 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 
 // Combat states
 #define NPC_COMBAT_IDLE "idle"
+#define NPC_COMBAT_SCANNING "scanning"  // Scanning target for wealth before engaging
 #define NPC_COMBAT_ENGAGING "engaging"
 #define NPC_COMBAT_COMBAT "combat"
 #define NPC_COMBAT_RETREATING "retreating"
+
+// Scanning blackboard keys
+#define BB_NPC_SCAN_START_TIME "npc_scan_start_time"  // When scan started
+#define BB_NPC_SCAN_COMPLETE "npc_scan_complete"      // Whether scan finished
 
 // Movement modes
 #define NPC_MOVEMENT_IDLE "idle"

@@ -26,6 +26,13 @@
 	/// When warmup started
 	var/warmup_start_time = 0
 
+	/// Goal amount to steal (0 = no goal, unlimited siphoning)
+	var/siphon_goal = 0
+	/// Percentage of target's money to steal as goal (0 = use absolute goal)
+	var/siphon_goal_percent = 0
+	/// Whether goal has been reached this session
+	var/goal_reached = FALSE
+
 /obj/machinery/shuttle_scrambler/ship_siphon/Initialize(mapload)
 	. = ..()
 
@@ -74,6 +81,21 @@
 		return
 
 	set_target(target)
+
+	// Calculate siphon goal based on target's current money
+	goal_reached = FALSE
+	if(siphon_goal_percent > 0 && target.ship_account)
+		var/target_balance = target.ship_account.account_balance
+		// If target is broke (less than 50 credits), don't bother siphoning
+		if(target_balance < 50)
+			var/obj/structure/overmap/ship/owner = get_owner_ship()
+			owner?.ship_announce("Target vessel has insufficient funds. Aborting siphon.", "SIPHON SYSTEM")
+			// Trigger retreat if we have a goal-based behavior
+			on_goal_reached(target)
+			return
+		siphon_goal = round(target_balance * (siphon_goal_percent / 100))
+		// Ensure minimum goal of 100 credits
+		siphon_goal = max(siphon_goal, 100)
 
 	// Start warmup phase
 	warming_up = TRUE
@@ -156,6 +178,31 @@
 
 	target_account.adjust_money(-siphoned)
 	credits_stored += siphoned
+
+	// Check if we've reached our siphon goal
+	if(siphon_goal > 0 && credits_stored >= siphon_goal && !goal_reached)
+		goal_reached = TRUE
+		on_goal_reached(target)
+
+/// Called when siphon goal is reached - triggers retreat behavior
+/obj/machinery/shuttle_scrambler/ship_siphon/proc/on_goal_reached(obj/structure/overmap/ship/target)
+	var/obj/structure/overmap/ship/owner = get_owner_ship()
+
+	// Announce goal reached
+	owner?.ship_announce("Siphon goal reached! [credits_stored] credits acquired. Disengaging from target.", "SIPHON SYSTEM")
+	target?.ship_announce("The attacker has finished siphoning and is disengaging.", "SECURITY ALERT")
+
+	// Deactivate the siphon
+	deactivate_siphon()
+
+	// Tell the owner ship's AI to retreat
+	var/obj/structure/overmap/ship/npc/npc_owner = owner
+	if(istype(npc_owner) && npc_owner.ai_controller)
+		var/datum/ai_controller/npc_ship/controller = npc_owner.ai_controller
+		// Store the target before we lose it
+		controller.blackboard[BB_NPC_LAST_TARGET] = WEAKREF(target)
+		controller.blackboard[BB_NPC_RETREAT_REASON] = "siphon_goal"
+		controller.set_combat_state(NPC_COMBAT_RETREATING)
 
 /obj/machinery/shuttle_scrambler/ship_siphon/interact(mob/user)
 	if(active || warming_up)

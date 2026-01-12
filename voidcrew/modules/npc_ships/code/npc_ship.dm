@@ -44,6 +44,18 @@
 	/// Whether to retreat when all weapons are destroyed (FALSE = stay and use interdictor/siphon)
 	var/retreat_without_weapons = TRUE
 
+	/// Percentage of target's money to steal before retreating (0 = no limit, steal forever)
+	var/siphon_goal_percent = 0
+
+	/// Whether to scan targets for wealth before engaging (yellow zone behavior)
+	var/scan_before_engage = FALSE
+
+	/// How long the wealth scan takes (deciseconds)
+	var/scan_time = 5 SECONDS
+
+	/// Minimum credits target must have to be worth engaging
+	var/min_target_wealth = 100
+
 	/// Minimum crew to spawn
 	var/crew_min = 3
 

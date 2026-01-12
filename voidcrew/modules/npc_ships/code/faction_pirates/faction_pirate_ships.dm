@@ -79,6 +79,10 @@
 
 	// Yellow zone - stay to interdict/siphon even without weapons
 	retreat_without_weapons = FALSE
+	// Scan targets for wealth before engaging
+	scan_before_engage = TRUE
+	// Steal 25% of target's money then retreat
+	siphon_goal_percent = 25
 
 	crew_min = 3
 	crew_max = 5
@@ -103,6 +107,10 @@
 
 	// Yellow zone - stay to interdict/siphon even without weapons
 	retreat_without_weapons = FALSE
+	// Scan targets for wealth before engaging
+	scan_before_engage = TRUE
+	// Steal 25% of target's money then retreat
+	siphon_goal_percent = 25
 
 	crew_min = 2
 	crew_max = 4
@@ -160,6 +168,10 @@
 
 	// Yellow zone - stay to interdict/siphon even without weapons
 	retreat_without_weapons = FALSE
+	// Scan targets for wealth before engaging
+	scan_before_engage = TRUE
+	// Steal 25% of target's money then retreat
+	siphon_goal_percent = 25
 
 	crew_min = 3
 	crew_max = 5
