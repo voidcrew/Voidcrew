@@ -4,6 +4,9 @@
 	short_name = "Dwayne-class"
 	part_requirements = list(PART_CLASS_TRADE = 2)
 
+	has_upgrade_slots = TRUE
+	upgrade_slot_ids = list("medbay", "hangar")
+
 	job_slots = list(
 		list(
 			name = "Captain",
@@ -70,6 +73,10 @@
 
 /area/shuttle/voidcrew/dwayne/cargo_bay
 	name = "Cargo Bay"
+	icon_state = "cargo_bay"
+
+/area/shuttle/voidcrew/dwayne/hangar
+	name = "Hangar"
 	icon_state = "cargo_bay"
 
 /// Engineering ///
