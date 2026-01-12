@@ -186,9 +186,6 @@
 /obj/structure/guncase,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/dwayne/cargo_bay)
-"gs" = (
-/turf/closed/wall/r_wall,
-/area/shuttle/voidcrew/dwayne/hangar)
 "gu" = (
 /obj/effect/turf_decal/trimline/neutral/warning,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -245,9 +242,6 @@
 /obj/structure/cable,
 /obj/machinery/power/tracker,
 /turf/open/floor/iron/solarpanel/airless,
-/area/shuttle/voidcrew/dwayne/medbay)
-"hA" = (
-/turf/open/floor/plating,
 /area/shuttle/voidcrew/dwayne/medbay)
 "hK" = (
 /obj/structure/window/reinforced/plasma/spawner,
@@ -390,6 +384,9 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/dwayne/engineering)
+"lh" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/dwayne/hangar)
 "lp" = (
 /obj/structure/rack,
 /obj/item/storage/toolbox/electrical{
@@ -645,6 +642,9 @@
 /obj/effect/turf_decal/stripes,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/dwayne/crew)
+"sZ" = (
+/turf/closed/wall/r_wall,
+/area/shuttle/voidcrew/dwayne/hangar)
 "tH" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -795,9 +795,6 @@
 /obj/structure/cable/layer1,
 /turf/open/floor/catwalk_floor,
 /area/shuttle/voidcrew/dwayne/engineering)
-"zW" = (
-/turf/closed/wall,
-/area/shuttle/voidcrew/dwayne/hangar)
 "Aj" = (
 /obj/machinery/firealarm/directional/south,
 /obj/effect/turf_decal/tile/yellow/half,
@@ -902,6 +899,9 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/dwayne/cargo_bay)
+"EF" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/dwayne/medbay)
 "Fz" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
@@ -909,9 +909,6 @@
 /obj/structure/cable/layer1,
 /turf/open/floor/iron/grimy,
 /area/shuttle/voidcrew/dwayne/crew)
-"FC" = (
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/dwayne/hangar)
 "FN" = (
 /obj/item/kirbyplants/random,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -1092,6 +1089,9 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/dwayne/medbay)
+"MN" = (
+/turf/closed/wall,
+/area/shuttle/voidcrew/dwayne/hangar)
 "MQ" = (
 /obj/machinery/atmospherics/components/binary/pump/on/layer2{
 	dir = 1;
@@ -1323,13 +1323,6 @@
 /obj/effect/turf_decal/box,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/dwayne/bridge)
-"Yf" = (
-/obj/machinery/door/poddoor/preopen{
-	id = "mining_ship_blast"
-	},
-/obj/effect/spawner/structure/window/reinforced,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/dwayne/hangar)
 "YJ" = (
 /turf/closed/wall/r_wall,
 /area/shuttle/voidcrew/dwayne/cargo_bay)
@@ -1489,13 +1482,13 @@ Ij
 tH
 Nw
 Gv
-gs
-gs
-gs
-gs
-gs
-gs
-gs
+sZ
+sZ
+sZ
+sZ
+sZ
+sZ
+sZ
 "}
 (9,1,1) = {"
 YJ
@@ -1508,13 +1501,13 @@ eM
 NY
 yu
 iZ
-zW
-FC
-FC
-FC
-FC
-FC
-FC
+MN
+lh
+lh
+lh
+lh
+lh
+lh
 "}
 (10,1,1) = {"
 Cw
@@ -1527,13 +1520,13 @@ eM
 Sg
 AD
 Hf
-zW
-FC
-FC
-FC
-FC
-FC
-FC
+MN
+lh
+lh
+lh
+lh
+lh
+lh
 "}
 (11,1,1) = {"
 Cw
@@ -1546,13 +1539,13 @@ eM
 aI
 bv
 yH
-zW
-FC
-FC
-FC
-FC
-FC
-FC
+MN
+lh
+lh
+lh
+lh
+lh
+lh
 "}
 (12,1,1) = {"
 kD
@@ -1565,13 +1558,13 @@ uc
 or
 bv
 sD
-Yf
-FC
-FC
-FC
-FC
-FC
-FC
+MN
+lh
+lh
+lh
+lh
+lh
+lh
 "}
 (13,1,1) = {"
 kD
@@ -1586,11 +1579,11 @@ nJ
 sg
 ef
 oB
-FC
-FC
-FC
-FC
-FC
+lh
+lh
+lh
+lh
+lh
 "}
 (14,1,1) = {"
 kD
@@ -1603,13 +1596,13 @@ uc
 or
 bv
 sD
-Yf
-FC
-FC
-FC
-FC
-FC
-FC
+MN
+lh
+lh
+lh
+lh
+lh
+lh
 "}
 (15,1,1) = {"
 YJ
@@ -1622,13 +1615,13 @@ YJ
 IZ
 bv
 xz
-zW
-FC
-FC
-FC
-FC
-FC
-FC
+MN
+lh
+lh
+lh
+lh
+lh
+lh
 "}
 (16,1,1) = {"
 DC
@@ -1641,13 +1634,13 @@ LJ
 Sg
 bv
 eu
-zW
-FC
-FC
-FC
-FC
-FC
-FC
+MN
+lh
+lh
+lh
+lh
+lh
+lh
 "}
 (17,1,1) = {"
 YJ
@@ -1660,13 +1653,13 @@ GU
 Sg
 bv
 Hf
-zW
-FC
-FC
-FC
-FC
-FC
-FC
+MN
+lh
+lh
+lh
+lh
+lh
+lh
 "}
 (18,1,1) = {"
 YJ
@@ -1679,21 +1672,21 @@ oC
 Sg
 bv
 Sg
-zW
-gs
-gs
-gs
-gs
-gs
-gs
+MN
+sZ
+sZ
+sZ
+sZ
+sZ
+sZ
 "}
 (19,1,1) = {"
 OJ
 Po
 ei
-hA
-hA
-hA
+EF
+EF
+EF
 oC
 Sg
 bv
@@ -1710,9 +1703,9 @@ OJ
 OJ
 Po
 ei
-hA
-hA
-hA
+EF
+EF
+EF
 oC
 my
 oR
@@ -1729,8 +1722,8 @@ OJ
 OJ
 Po
 ei
-hA
-hA
+EF
+EF
 MB
 dy
 qK
@@ -1748,9 +1741,9 @@ OJ
 OJ
 Po
 ei
-hA
-hA
-hA
+EF
+EF
+EF
 oC
 DJ
 xh
@@ -1767,9 +1760,9 @@ OJ
 OJ
 Po
 ei
-hA
-hA
-hA
+EF
+EF
+EF
 oC
 Xl
 AQ
