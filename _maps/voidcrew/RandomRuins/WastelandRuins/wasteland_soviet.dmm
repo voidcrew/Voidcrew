@@ -1,306 +1,287 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aw" = (
-/obj/structure/punji_sticks,
-/turf/open/misc/wasteland/lit,
-/area/ruin/unpowered)
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin)
 "be" = (
 /turf/open/misc/dust/lit,
-/area/ruin/unpowered)
-"bC" = (
-/obj/structure/cable,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "cm" = (
 /obj/vehicle/ridden/atv,
 /turf/open/misc/wasteland/lit,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "dp" = (
 /obj/effect/decal/cleanable/ash,
 /turf/open/misc/wasteland/lit,
-/area/ruin/unpowered)
-"eP" = (
-/obj/machinery/door/airlock/grunge,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "gM" = (
 /obj/structure/fence/corner,
 /turf/open/misc/wasteland/lit,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "is" = (
 /obj/structure/fence{
 	dir = 4
 	},
 /turf/open/misc/wasteland/lit,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "iw" = (
-/obj/effect/decal/cleanable/oil,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
-"iP" = (
+/obj/effect/decal/cleanable/dirt,
 /obj/structure/cable,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/turf/open/floor/plating,
+/area/ruin)
 "jY" = (
 /obj/structure/rack,
 /obj/item/weldingtool/hugetank,
 /obj/item/shovel,
 /obj/effect/decal/cleanable/dirt,
+/obj/item/key,
+/obj/item/weldingtool,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/ruin)
 "kg" = (
 /obj/effect/spawner/structure/window,
 /obj/structure/barricade/wooden/crude,
 /obj/effect/decal/cleanable/glass,
 /turf/open/floor/plating,
-/area/ruin/unpowered)
+/area/ruin)
 "lm" = (
 /obj/structure/fence/corner{
 	dir = 10
 	},
 /turf/open/misc/wasteland/lit,
-/area/ruin/unpowered)
-"mB" = (
-/obj/structure/table/wood/fancy/red,
-/obj/item/reagent_containers/food/drinks/bottle/vodka,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "ne" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
+/obj/machinery/door/airlock/grunge,
+/turf/open/floor/wood,
+/area/ruin)
 "nE" = (
-/obj/machinery/power/port_gen/pacman,
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt,
+/obj/machinery/power/apc/auto_name/directional/south,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/ruin)
 "nP" = (
 /turf/closed/wall,
-/area/ruin/unpowered)
+/area/ruin)
 "op" = (
 /obj/structure/sink/oil_well,
 /turf/open/misc/dust/lit,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "pr" = (
 /turf/template_noop,
 /area/template_noop)
 "rJ" = (
 /obj/structure/reagent_dispensers/fueltank,
-/obj/effect/decal/cleanable/oil,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/ruin)
 "rW" = (
 /obj/structure/rack,
 /obj/item/construction/plumbing,
 /turf/open/misc/dust/lit,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "rX" = (
 /obj/structure/fence{
 	dir = 8
 	},
 /turf/open/misc/dust/lit,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "sf" = (
 /obj/structure/closet/gimmick/russian,
 /obj/item/gun/ballistic/rifle/boltaction,
-/obj/item/storage/toolbox/ammo,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/obj/item/storage/toolbox/ammobox/strilka310/surplus,
+/obj/item/knife/combat/survival,
+/obj/item/ammo_box/n762,
+/turf/open/floor/wood,
+/area/ruin)
 "sr" = (
 /obj/effect/decal/cleanable/wrapping,
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/cable,
+/mob/living/basic/trooper/russian,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/ruin)
 "sV" = (
-/obj/structure/table,
-/obj/item/gun/ballistic/revolver/russian,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/obj/item/radio{
+	pixel_x = -10;
+	pixel_y = 5
+	},
+/obj/structure/table/wood/fancy/red,
+/turf/open/floor/wood,
+/area/ruin)
 "tl" = (
 /obj/structure/fence{
 	dir = 8
 	},
 /turf/open/misc/wasteland/lit,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "ut" = (
 /obj/structure/rack,
 /obj/item/clothing/head/utility/welding,
 /obj/item/clothing/head/utility/welding,
 /obj/item/storage/belt/utility/full,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
-"uG" = (
-/obj/structure/rack,
+/obj/item/clothing/glasses/welding,
+/obj/item/clothing/glasses/welding,
+/obj/item/stack/sheet/mineral/plasma/five,
 /obj/item/stack/ducts/fifty,
-/obj/item/stack/sheet/mineral/plasma,
-/obj/item/stack/sheet/mineral/plasma,
-/obj/item/stack/sheet/mineral/plasma,
-/obj/item/stack/sheet/mineral/plasma,
-/obj/item/stack/sheet/mineral/plasma,
-/obj/item/stack/sheet/mineral/plasma,
-/obj/item/stack/sheet/mineral/plasma,
-/obj/item/stack/sheet/mineral/plasma,
-/obj/item/stack/sheet/mineral/plasma,
-/obj/item/stack/sheet/mineral/plasma,
-/obj/item/stack/sheet/mineral/plasma,
+/turf/open/floor/plating/rust,
+/area/ruin)
+"uG" = (
+/obj/structure/sign/departments/engineering/directional/west,
 /turf/open/floor/plating,
-/area/ruin/unpowered)
+/area/ruin)
 "vt" = (
-/obj/structure/rack,
-/obj/item/weldingtool,
-/obj/item/key,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
+/obj/structure/cable,
+/turf/open/misc/wasteland/lit,
+/area/overmap_encounter/planetoid/wasteland)
 "vx" = (
 /obj/structure/fence/door/opened,
-/obj/effect/mine/stun,
 /turf/open/misc/wasteland/lit,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "vM" = (
-/obj/structure/sign/poster/contraband/rebels_unite,
-/turf/closed/wall,
-/area/ruin/unpowered)
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin)
 "wm" = (
 /obj/structure/ore_box,
 /obj/effect/decal/cleanable/cobweb,
-/obj/effect/decal/cleanable/oil,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/ruin)
 "xs" = (
 /obj/item/wallframe/extinguisher_cabinet,
 /turf/closed/wall,
-/area/ruin/unpowered)
+/area/ruin)
 "xN" = (
+/obj/effect/mine/stun,
 /turf/open/misc/wasteland/lit,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "yY" = (
 /obj/machinery/door/airlock/grunge,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
 /turf/open/floor/plating,
-/area/ruin/unpowered)
+/area/ruin)
 "zb" = (
-/obj/effect/spawner/structure/window,
-/obj/structure/barricade/wooden/crude,
+/obj/structure/cable,
+/obj/machinery/power/smes/engineering,
 /turf/open/floor/plating,
-/area/ruin/unpowered)
+/area/ruin)
 "ze" = (
 /obj/effect/decal/cleanable/glass,
 /obj/structure/punji_sticks,
 /turf/open/misc/wasteland/lit,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "zg" = (
-/obj/effect/decal/cleanable/robot_debris,
+/obj/structure/ore_box,
+/obj/structure/sign/poster/contraband/communist_state/directional/north,
 /turf/open/misc/wasteland/lit,
-/area/ruin/unpowered)
-"BG" = (
-/turf/closed/wall/rust,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "CT" = (
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/ruin)
 "Dj" = (
-/obj/structure/sign/poster/contraband/communist_state,
-/turf/closed/wall,
-/area/ruin/unpowered)
-"DO" = (
-/obj/structure/sign/departments/engineering,
-/turf/closed/wall/rust,
-/area/ruin/unpowered)
+/obj/effect/spawner/structure/window,
+/obj/structure/barricade/wooden/crude,
+/turf/open/floor/plating,
+/area/ruin)
 "Fg" = (
 /obj/structure/chair/comfy/beige,
-/mob/living/simple_animal/hostile/russian,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
-"FY" = (
-/obj/structure/table,
-/obj/item/flashlight/lamp/green,
-/obj/item/radio,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/mob/living/basic/trooper/russian/ranged,
+/turf/open/floor/wood,
+/area/ruin)
 "Ge" = (
 /obj/structure/punji_sticks,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "GW" = (
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/ruin)
 "If" = (
-/obj/structure/rack,
-/obj/item/clothing/glasses/welding,
-/obj/item/clothing/glasses/welding,
-/obj/item/trash/syndi_cakes,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
+/obj/structure/cable,
+/obj/machinery/power/port_gen/pacman,
+/turf/open/misc/wasteland/lit,
+/area/overmap_encounter/planetoid/wasteland)
 "IB" = (
 /obj/machinery/plumbing/liquid_pump,
 /turf/open/misc/dust/lit,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "Mn" = (
 /obj/structure/rack,
 /obj/item/weldingtool/largetank,
 /obj/item/key,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/sign/poster/contraband/rebels_unite/directional/north,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/ruin)
 "MJ" = (
-/mob/living/simple_animal/hostile/bear/russian,
 /turf/open/floor/plating,
-/area/ruin/unpowered)
+/area/ruin)
 "Ob" = (
 /obj/effect/decal/cleanable/wrapping,
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/russian,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
-"OR" = (
-/obj/machinery/vending/sovietsoda,
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
-"Pg" = (
-/obj/structure/table,
-/obj/item/paper_bin,
-/obj/item/pen/fountain,
-/obj/effect/decal/cleanable/glass,
+/area/ruin)
+"OR" = (
+/obj/machinery/vending/sovietsoda,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/ruin)
+"Pg" = (
+/obj/item/paper_bin{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/pen/fountain{
+	pixel_x = -6;
+	pixel_y = 7
+	},
+/obj/effect/decal/cleanable/glass,
+/obj/item/flashlight/lamp/green{
+	pixel_x = 8;
+	pixel_y = 2
+	},
+/obj/structure/table/wood/fancy/red,
+/turf/open/floor/wood,
+/area/ruin)
 "PI" = (
-/obj/structure/sign/poster/contraband/revolver,
 /turf/closed/wall/rust,
-/area/ruin/unpowered)
+/area/ruin)
 "Qv" = (
 /obj/structure/fence,
 /turf/open/misc/wasteland/lit,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "QX" = (
 /obj/structure/cable,
+/obj/machinery/door/airlock/maintenance_hatch,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/ruin)
 "VO" = (
-/obj/effect/decal/cleanable/oil,
 /turf/open/misc/wasteland/lit,
-/area/ruin/unpowered)
+/area/overmap_encounter/planetoid/wasteland)
 "VS" = (
+/mob/living/basic/trooper/russian/ranged,
+/turf/open/floor/plating,
+/area/ruin)
+"WB" = (
 /obj/structure/closet/crate/trashcart,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
-"WB" = (
-/obj/structure/ore_box,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
+/area/ruin)
 "WO" = (
+/obj/structure/cable,
 /turf/open/floor/plating,
-/area/ruin/unpowered)
+/area/ruin)
 
 (1,1,1) = {"
 pr
 pr
 pr
 Ge
-ze
+Ge
 Ge
 pr
 pr
@@ -314,10 +295,10 @@ pr
 nP
 nP
 nP
-zb
-BG
-BG
-BG
+nP
+PI
+PI
+PI
 Qv
 Qv
 lm
@@ -328,18 +309,18 @@ dp
 nP
 wm
 Ob
-iP
+CT
 CT
 nE
-BG
+PI
 cm
-xN
+VO
 is
 pr
 "}
 (4,1,1) = {"
 dp
-BG
+PI
 WB
 sr
 ut
@@ -354,82 +335,82 @@ pr
 (5,1,1) = {"
 pr
 PI
-mB
+nP
 QX
-If
-ne
-VS
+nP
+nP
+nP
 nP
 zg
-xN
+VO
 tl
 pr
 "}
 (6,1,1) = {"
 pr
-BG
+PI
 OR
-bC
+CT
 uG
-ne
-ne
+vM
+aw
 yY
-xN
-xN
+vt
+VO
 is
 pr
 "}
 (7,1,1) = {"
-aw
+Ge
 xs
+GW
+WO
 iw
 WO
-ne
-WO
-WO
-eP
-xN
-xN
+zb
+nP
+If
+VO
 tl
 dp
 "}
 (8,1,1) = {"
 ze
-zb
-ne
+Dj
+vM
 MJ
-WO
-WO
-FY
+nP
+nP
+nP
 nP
 IB
-xN
+VO
 tl
 pr
 "}
 (9,1,1) = {"
-aw
-zb
+Ge
+Dj
 GW
-WO
+VS
 ne
 Fg
 sV
-DO
+PI
 op
 be
 vx
 pr
 "}
 (10,1,1) = {"
-aw
-vM
+Ge
+nP
 Mn
 jY
-vt
+nP
 sf
 Pg
-BG
+PI
 rW
 VO
 rX
@@ -437,12 +418,12 @@ pr
 "}
 (11,1,1) = {"
 pr
-BG
-BG
+PI
+PI
 nP
 nP
 kg
-zb
+Dj
 nP
 Qv
 Qv
@@ -454,10 +435,10 @@ pr
 pr
 pr
 pr
-aw
-aw
-aw
-aw
+Ge
+Ge
+Ge
+Ge
 pr
 pr
 pr
