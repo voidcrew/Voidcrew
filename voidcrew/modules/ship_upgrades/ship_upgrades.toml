@@ -9,3 +9,16 @@ modules = ["test_modular/cargo_basic.dmm", "test_modular/cargo_expanded.dmm"]
 
 [rooms.test_modular.engineroom]
 modules = ["test_modular/engine_basic.dmm", "test_modular/engine_advanced.dmm"]
+
+# Scarab ship modules
+[rooms.scarab.scarab_med]
+modules = ["scarab/scarab_med_basic.dmm", "scarab/scarab_med_chem.dmm", "scarab/scarab_med_surgery.dmm"]
+
+[rooms.scarab.scarab_engineering]
+modules = ["scarab/scarab_engineering_basic.dmm", "scarab/scarab_engineering_teg.dmm"]
+
+[rooms.scarab.scarab_common]
+modules = ["scarab/scarab_common_basic.dmm", "scarab/scarab_common_cryo.dmm"]
+
+[rooms.scarab.scarab_cargo]
+modules = ["scarab/scarab_cargo_basic.dmm", "scarab/scarab_cargo_engi.dmm", "scarab/scarab_cargo_med.dmm"]
