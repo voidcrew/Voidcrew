@@ -219,7 +219,7 @@
 /obj/effect/turf_decal/trimline/yellow/warning{
 	dir = 9
 	},
-/turf/closed/wall/material,
+/turf/closed/wall/rust,
 /area/shuttle/voidcrew/pirate_grey)
 "ia" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1504,6 +1504,7 @@
 "Ww" = (
 /obj/structure/cable,
 /obj/machinery/power/smes/full,
+/obj/structure/window/reinforced/spawner/directional/west,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/pirate_grey)
 "Wy" = (

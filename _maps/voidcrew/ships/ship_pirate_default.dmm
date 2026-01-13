@@ -363,6 +363,7 @@
 	dir = 1
 	},
 /obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -392,6 +393,7 @@
 /obj/structure/closet/secure_closet/personal,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/stripes/line,
+/obj/structure/sign/poster/contraband/random/directional/west,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -1067,6 +1069,12 @@
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
+"AC" = (
+/obj/machinery/computer/cryopod,
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/shuttle/voidcrew/pirate_default{
+	requires_power = 0
+	})
 "ED" = (
 /obj/effect/turf_decal/delivery,
 /obj/effect/decal/cleanable/dirt,
@@ -1148,7 +1156,9 @@
 /obj/machinery/airalarm/directional/north,
 /obj/effect/mapping_helpers/airalarm/all_access,
 /obj/effect/decal/cleanable/dirt,
-/obj/structure/sign/poster/contraband/random/directional/west,
+/obj/machinery/cryopod{
+	dir = 1
+	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -1165,6 +1175,7 @@
 	port_direction = 2
 	},
 /obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -1208,7 +1219,7 @@ aw
 ak
 bF
 aj
-aj
+AC
 aj
 fW
 af

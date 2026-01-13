@@ -20,18 +20,18 @@ SUBSYSTEM_DEF(npc_ships)
 
 	/// Light-threat faction types (spawn in yellow zones)
 	var/list/light_factions = list(
-		/obj/structure/overmap/ship/npc/pirate,           // Rogues
-		/obj/structure/overmap/ship/npc/pirate/silverscale,
+		/obj/structure/overmap/ship/npc/pirate/skeleton,   // Dutchman
 		/obj/structure/overmap/ship/npc/pirate/grey,
-		/obj/structure/overmap/ship/npc/pirate/lustrous,
+		/obj/structure/overmap/ship/npc/pirate/medieval,
+		/obj/structure/overmap/ship/npc/pirate/lustrous,   // Geode
 	)
 
 	/// Heavy-threat faction types (spawn in red zones)
 	var/list/heavy_factions = list(
-		/obj/structure/overmap/ship/npc/pirate/skeleton,
-		/obj/structure/overmap/ship/npc/pirate/interdyne,
+		/obj/structure/overmap/ship/npc/pirate/silverscale,
+		/obj/structure/overmap/ship/npc/pirate,           // Rogues
 		/obj/structure/overmap/ship/npc/pirate/irs,
-		/obj/structure/overmap/ship/npc/pirate/medieval,
+		/obj/structure/overmap/ship/npc/pirate/interdyne,
 	)
 
 	/// Currently active light-threat faction types

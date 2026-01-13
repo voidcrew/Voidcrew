@@ -44,6 +44,9 @@
 	/// The ship type path (for UI categorization)
 	var/ship_type_path
 
+	/// Whether this is a heavy-threat bounty (determines loot quality)
+	var/is_heavy_bounty = FALSE
+
 /datum/pirate_bounty/New(obj/structure/overmap/ship/npc/target_ship, obj/item/ship_key/captain_key)
 	. = ..()
 	if(!target_ship || !captain_key)
@@ -94,12 +97,13 @@
  * Heavy-threat ships are worth more than light-threat.
  */
 /datum/pirate_bounty/proc/calculate_reward(obj/structure/overmap/ship/npc/ship)
-	// Base reward
-	var/base_reward = 1000
+	// Base reward - light pirates
+	var/base_reward = 5000
 
-	// Heavy factions are worth more
+	// Heavy factions are worth significantly more
 	if(SSnpc_ships && (ship.type in SSnpc_ships.heavy_factions))
-		base_reward = 2000
+		base_reward = 15000
+		is_heavy_bounty = TRUE
 
 	// Add some variance (80-120%)
 	return round(base_reward * rand(80, 120) / 100)
@@ -242,9 +246,10 @@
 /**
  * Completes the bounty, awarding the winner.
  * @param winner The ship that turned in the key
+ * @param pad Optional mission pad to spawn item rewards on
  * @return The reward amount awarded
  */
-/datum/pirate_bounty/proc/complete(obj/structure/overmap/ship/winner)
+/datum/pirate_bounty/proc/complete(obj/structure/overmap/ship/winner, obj/machinery/mission_pad/pad)
 	if(completed || failed)
 		return 0
 
@@ -253,7 +258,22 @@
 	// Award credits to winning ship
 	if(winner)
 		winner.ship_account.adjust_money(reward)
-		winner.ship_announce("BOUNTY COMPLETE: [name] - [reward] credits awarded!", "MISSION CONTROL")
+
+	// Spawn item rewards on mission pad
+	var/list/item_rewards = list()
+	if(pad)
+		var/turf/spawn_turf = get_turf(pad)
+		if(spawn_turf)
+			item_rewards = spawn_bounty_loot(spawn_turf)
+			pad.do_teleport_effect()
+
+	// Build reward announcement
+	var/reward_text = "[reward] credits"
+	if(length(item_rewards))
+		reward_text += " + [english_list(item_rewards)]"
+
+	if(winner)
+		winner.ship_announce("BOUNTY COMPLETE: [name] - [reward_text] awarded!", "MISSION CONTROL")
 
 	// Notify other claimants of failure
 	for(var/datum/weakref/ref in claiming_ships)
@@ -265,6 +285,60 @@
 	SSbounty?.remove_bounty(src)
 
 	return reward
+
+/**
+ * Spawns bounty loot at the given location.
+ * Light bounties: 2 standard missiles + basic weapon crate
+ * Heavy bounties: 2 heavy missiles + premium weapon crate
+ * @param spawn_loc The turf to spawn items on
+ * @return List of item names spawned (for announcement)
+ */
+/datum/pirate_bounty/proc/spawn_bounty_loot(turf/spawn_loc)
+	var/list/spawned_items = list()
+
+	if(!spawn_loc)
+		return spawned_items
+
+	// Spawn missiles based on bounty type
+	if(is_heavy_bounty)
+		// Heavy bounty: 2 armed heavy missiles
+		new /obj/structure/ship_missile/armed/heavy(spawn_loc)
+		new /obj/structure/ship_missile/armed/heavy(spawn_loc)
+		spawned_items += "2 heavy missiles"
+	else
+		// Light bounty: 2 armed standard missiles
+		new /obj/structure/ship_missile/armed/standard(spawn_loc)
+		new /obj/structure/ship_missile/armed/standard(spawn_loc)
+		spawned_items += "2 missiles"
+
+	// Spawn loot crate based on bounty type
+	var/crate_type
+	if(is_heavy_bounty)
+		// Heavy bounty: premium weapon crate
+		var/static/list/heavy_loot_crates = list(
+			/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/energy_guns,
+			/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/combat_shotguns,
+			/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/laser_carbines,
+			/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/swat,
+			/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/riot,
+			/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/incendiary,
+		)
+		crate_type = pick(heavy_loot_crates)
+	else
+		// Light bounty: basic weapon crate
+		var/static/list/light_loot_crates = list(
+			/obj/structure/closet/crate/secure/weapon/pirate_loot/lasers,
+			/obj/structure/closet/crate/secure/weapon/pirate_loot/disablers,
+			/obj/structure/closet/crate/secure/weapon/pirate_loot/armor,
+			/obj/structure/closet/crate/secure/weapon/pirate_loot/batons,
+			/obj/structure/closet/crate/secure/weapon/pirate_loot/supplies,
+		)
+		crate_type = pick(light_loot_crates)
+
+	var/obj/structure/closet/crate/spawned_crate = new crate_type(spawn_loc)
+	spawned_items += spawned_crate.name
+
+	return spawned_items
 
 /**
  * Fails the bounty for all claimants.

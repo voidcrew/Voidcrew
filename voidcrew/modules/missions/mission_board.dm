@@ -240,7 +240,7 @@
 				return TRUE
 
 			// Complete the bounty!
-			var/reward = bounty.complete(ship)
+			var/reward = bounty.complete(ship, linked_pad)
 			if(reward > 0)
 				balloon_alert(usr, "[reward] credits awarded!")
 				playsound(src, 'sound/effects/cashregister.ogg', 50, TRUE)

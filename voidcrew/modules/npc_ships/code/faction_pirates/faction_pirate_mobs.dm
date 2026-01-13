@@ -8,6 +8,7 @@
 /mob/living/basic/trooper/pirate/faction
 	name = "Faction Pirate"
 	desc = "A pirate aligned with a specific faction."
+	faction = list(FACTION_PIRATE, FACTION_NEUTRAL)
 	unsuitable_atmos_damage = 0
 	minimum_survivable_temperature = 0
 	loot = null // NPC ship crew don't drop loot

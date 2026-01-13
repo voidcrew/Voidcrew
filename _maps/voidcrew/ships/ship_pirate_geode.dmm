@@ -2,7 +2,9 @@
 "at" = (
 /obj/structure/barricade/wooden,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "aM" = (
 /obj/structure/table/wood,
 /obj/machinery/light/small/blacklight/directional{
@@ -15,13 +17,17 @@
 /obj/item/grenade/c4,
 /obj/item/grenade/c4,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "bY" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
 	},
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "cx" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/box/white/corners{
@@ -29,7 +35,9 @@
 	},
 /obj/effect/turf_decal/stripes/white/corner,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "el" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -42,30 +50,41 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "ev" = (
 /obj/machinery/computer/piratepad_control,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "fB" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
 	dir = 1
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "fO" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
 	dir = 5
 	},
 /obj/effect/spawner/random/trash/mess,
+/obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "ga" = (
 /obj/machinery/space_heater,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "ge" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -78,25 +97,38 @@
 	dir = 1
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "gv" = (
 /obj/machinery/suit_storage_unit/pirate{
 	helmet_type = /obj/item/clothing/head/helmet/space/syndicate/blue;
 	suit_type = /obj/item/clothing/suit/space/syndicate/blue
 	},
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "gM" = (
 /obj/structure/flora/lunar_plant/style_2,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
+"hg" = (
+/obj/machinery/ship_combat/shield_generator,
+/turf/open/misc/dirt/station,
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "hM" = (
-/obj/machinery/porta_turret/syndicate/teleport{
-	dir = 4;
-	faction = list("pirate")
+/obj/machinery/porta_turret/syndicate/energy{
+	dir = 4
 	},
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "id" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
@@ -106,7 +138,9 @@
 /obj/effect/mapping_helpers/airlock/locked,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "im" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -116,7 +150,9 @@
 	dir = 8
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "iu" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -126,7 +162,9 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "iG" = (
 /obj/effect/spawner/structure/window/hollow/survival_pod,
 /obj/machinery/door/poddoor/shutters/preopen{
@@ -134,13 +172,19 @@
 	dir = 4
 	},
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "jh" = (
 /turf/open/floor/catwalk_floor,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "jx" = (
 /turf/closed/mineral/random/jungle/space_safe,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "jD" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/machinery/light/small/blacklight/directional{
@@ -150,31 +194,50 @@
 	color = "#4f98ff"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
+"jE" = (
+/obj/item/stack/sheet/bluespace_crystal{
+	amount = 2
+	},
+/turf/open/misc/dirt/station,
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "ka" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/item/trash/energybar,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "ko" = (
 /obj/item/trash/energybar,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "kp" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
 	dir = 1
 	},
 /obj/structure/tank_dispenser/oxygen,
+/obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "kx" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "kM" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -188,18 +251,23 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "kV" = (
 /obj/item/reagent_containers/cup/beaker/large,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "lt" = (
 /turf/template_noop,
 /area/template_noop)
 "lz" = (
-/obj/machinery/launchpad,
 /turf/open/floor/light,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "lA" = (
 /obj/effect/decal/cleanable/shreds,
 /obj/effect/turf_decal/lunar_sand/plating,
@@ -207,20 +275,26 @@
 	dir = 5
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "mv" = (
-/obj/machinery/porta_turret/syndicate/teleport{
-	dir = 8;
-	faction = list("pirate")
+/obj/machinery/porta_turret/syndicate/energy{
+	dir = 8
 	},
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "nk" = (
 /obj/item/stack/sheet/bluespace_crystal{
 	amount = 2
 	},
+/obj/structure/cable,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "nD" = (
 /obj/machinery/light/small/blacklight/directional{
 	dir = 1
@@ -229,7 +303,9 @@
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/stripes/white/line,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "nR" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -241,7 +317,9 @@
 /obj/item/stock_parts/power_store/cell/high,
 /obj/item/stock_parts/power_store/cell/high,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "oa" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -251,7 +329,9 @@
 	color = "#4f98ff"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "oU" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -265,7 +345,9 @@
 	req_access = null
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "oV" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -275,7 +357,9 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "pC" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -288,7 +372,9 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "pO" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -298,7 +384,9 @@
 	color = "#4f98ff"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "qp" = (
 /obj/item/stack/sheet/bluespace_crystal,
 /obj/machinery/button/door{
@@ -307,20 +395,22 @@
 	pixel_y = 30
 	},
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "qK" = (
 /obj/effect/turf_decal/lunar_sand/plating,
-/obj/machinery/computer/camera_advanced/syndie{
-	dir = 1
-	},
 /obj/effect/turf_decal{
 	dir = 1
 	},
 /obj/effect/turf_decal/stripes/white/line{
 	dir = 1
 	},
+/obj/machinery/ship_combat/interdictor,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "qO" = (
 /obj/effect/turf_decal/lunar_sand,
 /obj/structure/table/wood,
@@ -332,13 +422,17 @@
 	pixel_y = 9
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "rn" = (
 /obj/structure/closet/crate/miningcar,
 /obj/effect/spawner/random/maintenance/three,
 /obj/item/mining_scanner,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "rG" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -351,7 +445,9 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "rO" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -361,13 +457,17 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "tD" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 3
 	},
 /turf/closed/wall/mineral/iron,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "uk" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
@@ -377,7 +477,9 @@
 /obj/effect/mapping_helpers/airlock/locked,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "uH" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -391,7 +493,9 @@
 	},
 /obj/effect/spawner/random/trash/mess,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "uP" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/box/white/corners{
@@ -401,13 +505,17 @@
 	dir = 8
 	},
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "vj" = (
 /obj/machinery/computer/helm{
 	dir = 8
 	},
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "vl" = (
 /obj/effect/spawner/random/maintenance,
 /obj/item/shovel,
@@ -417,7 +525,9 @@
 	amount = 5
 	},
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "vP" = (
 /obj/structure/table/reinforced,
 /obj/machinery/recharger,
@@ -426,17 +536,20 @@
 	},
 /obj/item/gun/energy/laser/retro,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "vY" = (
-/obj/machinery/computer/camera_advanced/shuttle_docker/syndicate/pirate{
-	dir = 8;
-	x_offset = -8
-	},
 /obj/effect/turf_decal/weather/dirt{
 	dir = 3
 	},
+/obj/machinery/computer/camera_advanced/ship_combat{
+	dir = 8
+	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "wd" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -446,7 +559,9 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "wz" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -460,45 +575,75 @@
 	},
 /obj/effect/decal/cleanable/shreds,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "xg" = (
 /obj/effect/spawner/structure/window/hollow/survival_pod,
 /obj/structure/barricade/wooden/crude,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "xN" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "xS" = (
 /obj/structure/sign/poster/contraband/busty_backdoor_xeno_babes_6/directional/north,
 /obj/item/stack/ore/silver,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "yh" = (
 /obj/structure/cable,
 /turf/closed/wall/mineral/iron,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "yu" = (
 /obj/effect/turf_decal/stripes/white/line{
 	dir = 8
 	},
+/obj/structure/cable,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "yz" = (
 /obj/structure/flora/lunar_plant/style_3,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
+"zI" = (
+/obj/effect/turf_decal/lunar_sand/plating,
+/obj/effect/turf_decal/weather/dirt{
+	dir = 5
+	},
+/obj/effect/spawner/random/trash/mess,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "zO" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
 	dir = 10
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "zS" = (
 /obj/item/stack/sheet/bluespace_crystal{
 	amount = 2
@@ -506,16 +651,19 @@
 /obj/structure/table/wood,
 /obj/machinery/reagentgrinder,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "zZ" = (
 /obj/structure/reagent_dispensers/watertank,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "AT" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/docking_port/mobile/voidcrew/pirate_geode{
-	port_direction = 2;
-	dir = 4
+	port_direction = 4
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 1
@@ -526,8 +674,19 @@
 /obj/effect/mapping_helpers/airlock/locked,
 /obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/docking_port/mobile/voidcrew/pirate_geode{
+	port_direction = 2
+	},
+/obj/docking_port/mobile/voidcrew/pirate_geode{
+	port_direction = 2
+	},
+/obj/docking_port/mobile/voidcrew/pirate_geode{
+	port_direction = 2
+	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "BA" = (
 /obj/structure/closet/crate/cardboard{
 	name = "box of climbing hooks"
@@ -536,7 +695,15 @@
 /obj/item/climbing_hook/syndicate,
 /obj/item/climbing_hook/syndicate,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
+"BD" = (
+/obj/machinery/computer/cryopod,
+/turf/closed/wall/mineral/iron,
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "BI" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/structure/table/reinforced,
@@ -552,16 +719,22 @@
 	dir = 1
 	},
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Cg" = (
 /obj/effect/turf_decal/stripes/line,
 /obj/effect/turf_decal/lunar_sand,
 /turf/closed/wall/mineral/iron,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Ds" = (
 /obj/machinery/loot_locator,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Dw" = (
 /obj/machinery/power/port_gen/pacman{
 	anchored = 1
@@ -569,7 +742,9 @@
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Dx" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -577,16 +752,22 @@
 	},
 /obj/effect/spawner/random/trash/mess,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "DM" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "DT" = (
 /obj/structure/fluff/minepost,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Ec" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/box/white/corners{
@@ -596,13 +777,17 @@
 	dir = 4
 	},
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Er" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/structure/showcase/machinery/tv/broken,
 /obj/structure/table/wood,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Fx" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
@@ -615,11 +800,15 @@
 /obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Gj" = (
 /obj/machinery/piratepad,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "GQ" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -633,35 +822,43 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Hm" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 8
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "HJ" = (
 /obj/machinery/shuttle_scrambler,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "HY" = (
 /obj/effect/spawner/random/trash/mess,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Ig" = (
 /obj/effect/turf_decal/lunar_sand/plating,
-/obj/machinery/computer/launchpad{
-	dir = 1
-	},
 /obj/effect/turf_decal{
 	dir = 1
 	},
 /obj/effect/turf_decal/stripes/white/line{
 	dir = 1
 	},
+/obj/machinery/ship_combat/cloak_device,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Ih" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -671,8 +868,11 @@
 	dir = 4
 	},
 /obj/item/stack/ore/gold,
+/obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "IP" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/machinery/light/small/blacklight/directional{
@@ -682,7 +882,9 @@
 /obj/effect/mapping_helpers/apc/cut_AI_wire,
 /obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Js" = (
 /obj/item/coin/gold,
 /obj/structure/sign/poster/contraband/random/directional/west,
@@ -691,16 +893,22 @@
 	dir = 4
 	},
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "JK" = (
 /obj/item/stack/sheet/bluespace_crystal,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "JL" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "JV" = (
 /obj/item/storage/bag/money,
 /obj/effect/turf_decal/lunar_sand/plating,
@@ -708,17 +916,21 @@
 	dir = 8
 	},
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Ku" = (
-/obj/effect/turf_decal/lunar_sand/plating,
-/obj/structure/cable,
-/obj/machinery/power/smes/ship,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/obj/machinery/porta_turret/syndicate/energy/heavy,
+/turf/closed/wall/mineral/iron,
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "KK" = (
 /obj/structure/reagent_dispensers/fueltank,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Mc" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -726,7 +938,9 @@
 	},
 /obj/effect/spawner/random/trash/mess,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Mm" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -739,14 +953,18 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Mz" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/structure/chair/wood{
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "ME" = (
 /obj/structure/rack,
 /obj/effect/turf_decal/lunar_sand/plating,
@@ -760,18 +978,19 @@
 /obj/item/multitool,
 /obj/item/storage/toolbox/electrical,
 /obj/structure/cable,
-/obj/machinery/power/terminal{
-	dir = 1
-	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Nb" = (
 /obj/structure/rack,
 /obj/item/storage/box/syringes,
 /obj/item/storage/medkit/brute,
 /obj/item/storage/medkit/fire,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "NT" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -779,10 +998,21 @@
 	},
 /obj/item/trash/energybar,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
+"Oc" = (
+/obj/structure/fluff/minepost,
+/obj/structure/cable,
+/turf/open/misc/dirt/station,
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Od" = (
 /turf/closed/wall/mineral/iron,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Oq" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -794,7 +1024,9 @@
 	desc = "The Lustrous' beloved squatter. Lives rent free."
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "OP" = (
 /obj/structure/rack,
 /obj/item/gun/energy/recharge/kinetic_accelerator{
@@ -819,23 +1051,30 @@
 	pixel_y = -5
 	},
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "OR" = (
 /obj/machinery/porta_turret/syndicate/teleport{
 	faction = list("pirate")
 	},
 /turf/closed/wall/mineral/iron,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "OX" = (
 /obj/structure/sign/poster/contraband/bountyhunters,
 /turf/closed/wall/mineral/iron,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Pq" = (
-/obj/machinery/power/shuttle_engine/propulsion{
-	dir = 8
-	},
+/obj/machinery/power/smes/full,
+/obj/structure/cable,
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Pr" = (
 /obj/structure/table/wood,
 /obj/item/food/energybar{
@@ -843,18 +1082,25 @@
 	},
 /obj/item/food/energybar,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "PB" = (
 /obj/machinery/light/small/blacklight/directional{
 	dir = 4
 	},
+/obj/machinery/cryopod,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Qo" = (
 /turf/open/floor/iron/stairs{
 	dir = 1
 	},
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "QL" = (
 /obj/item/stack/sheet/bluespace_crystal,
 /obj/effect/turf_decal/lunar_sand/plating,
@@ -863,17 +1109,29 @@
 	dir = 1
 	},
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Rp" = (
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
+"Rt" = (
+/obj/structure/cable,
+/turf/open/misc/dirt/station,
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Rv" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 3
 	},
 /obj/structure/cable,
 /turf/closed/wall/mineral/iron,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Ss" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/machinery/light/small/blacklight/directional,
@@ -892,7 +1150,9 @@
 	pixel_x = -5
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "St" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/stripes/white/line,
@@ -900,11 +1160,15 @@
 	dir = 1
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Sy" = (
 /obj/structure/chair/wood,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "SP" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
@@ -913,12 +1177,17 @@
 /obj/machinery/light/small/blacklight/directional{
 	dir = 8
 	},
+/obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "TC" = (
 /obj/structure/flora/lunar_plant/style_1,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Uf" = (
 /obj/machinery/power/shuttle_engine/heater{
 	dir = 8
@@ -926,8 +1195,14 @@
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/structure/barricade/wooden/crude,
 /obj/effect/spawner/structure/window/hollow/survival_pod,
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 8
+	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Un" = (
 /obj/item/stock_parts/capacitor/adv,
 /obj/effect/turf_decal/lunar_sand/plating,
@@ -935,21 +1210,29 @@
 	dir = 1
 	},
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Uw" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "UM" = (
 /obj/effect/spawner/structure/window/hollow/survival_pod,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "UY" = (
 /obj/machinery/airalarm/directional/north,
 /obj/structure/table/wood,
 /obj/machinery/microwave,
 /obj/effect/mapping_helpers/airalarm/all_access,
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "WR" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -959,24 +1242,31 @@
 	dir = 1
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "XB" = (
-/obj/machinery/porta_turret/syndicate/teleport{
-	dir = 1;
-	faction = list("pirate")
+/obj/machinery/porta_turret/syndicate/energy{
+	dir = 1
 	},
-/turf/closed/wall/mineral/iron,
-/area/shuttle/voidcrew/pirate_geode)
+/turf/open/misc/dirt/station,
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "YK" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/structure/chair/wood{
 	dir = 1
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "Zw" = (
 /turf/open/floor/iron/stairs,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "ZD" = (
 /obj/effect/turf_decal/lunar_sand/plating,
 /obj/effect/turf_decal/weather/dirt{
@@ -985,8 +1275,11 @@
 /obj/machinery/atmospherics/components/tank/air{
 	dir = 4
 	},
+/obj/structure/cable,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 "ZF" = (
 /obj/item/stack/sheet/bluespace_crystal{
 	amount = 2
@@ -995,7 +1288,9 @@
 	dir = 8
 	},
 /turf/open/misc/dirt/station,
-/area/shuttle/voidcrew/pirate_geode)
+/area/shuttle/voidcrew/pirate_geode{
+	requires_power = 0
+	})
 
 (1,1,1) = {"
 lt
@@ -1022,7 +1317,7 @@ lt
 lt
 lt
 lt
-mv
+Uw
 Od
 Pq
 Pq
@@ -1066,15 +1361,15 @@ lt
 jx
 jx
 Od
-DT
+Oc
 kp
 Uw
-Ku
+DM
 ME
 Dw
 Uw
 ZD
-DT
+Oc
 Od
 jx
 jx
@@ -1085,9 +1380,9 @@ lt
 lt
 lt
 lt
-jx
+hg
 Od
-Rp
+Rt
 fO
 IP
 DM
@@ -1142,7 +1437,7 @@ Od
 Od
 jx
 jx
-jx
+lt
 "}
 (8,1,1) = {"
 jx
@@ -1163,7 +1458,7 @@ rn
 Od
 jx
 jx
-jx
+lt
 "}
 (9,1,1) = {"
 jx
@@ -1179,12 +1474,12 @@ Od
 OX
 Pr
 Mm
-nk
+jE
 vl
 Od
 jx
 jx
-jx
+lt
 "}
 (10,1,1) = {"
 lt
@@ -1204,7 +1499,7 @@ Rp
 DT
 Od
 Od
-Od
+Ku
 lt
 "}
 (11,1,1) = {"
@@ -1216,7 +1511,7 @@ oa
 zO
 Od
 Rp
-nk
+jE
 Rp
 Od
 BA
@@ -1230,7 +1525,7 @@ lt
 "}
 (12,1,1) = {"
 lt
-XB
+Od
 Od
 fB
 qO
@@ -1251,9 +1546,9 @@ lt
 "}
 (13,1,1) = {"
 lt
-Rp
+XB
 xg
-fO
+zI
 pO
 im
 Od
@@ -1276,7 +1571,7 @@ jx
 Od
 DT
 PB
-nk
+jE
 Od
 ev
 rG
@@ -1288,7 +1583,7 @@ Rp
 DT
 Od
 Od
-Od
+Ku
 lt
 "}
 (15,1,1) = {"
@@ -1296,7 +1591,7 @@ lt
 jx
 Od
 Od
-Od
+BD
 Od
 Od
 Od
@@ -1410,7 +1705,7 @@ lt
 hM
 jx
 jx
-jx
+hg
 jx
 jx
 jx
