@@ -66,8 +66,8 @@
 	dir = 8
 	},
 /obj/structure/sign/warning/no_smoking/circle/directional/south,
-/obj/machinery/space_heater,
 /obj/machinery/light/small/red/directional/south,
+/obj/machinery/portable_atmospherics/canister/air,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/c)
 "cL" = (
@@ -1244,10 +1244,8 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/components/binary/volume_pump{
-	dir = 1;
-	name = "engine fuel pump";
-	hide = 1
+/obj/machinery/atmospherics/components/unary/portables_connector{
+	dir = 1
 	},
 /turf/open/floor/iron/smooth,
 /area/shuttle/voidcrew/scarab/engines/c)

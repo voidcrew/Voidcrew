@@ -314,6 +314,7 @@
 	dir = 9
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/space_heater,
 /turf/open/floor/plating,
 /area/template_noop)
 "Q" = (
@@ -393,10 +394,10 @@
 /turf/open/floor/plating,
 /area/template_noop)
 "X" = (
-/obj/machinery/atmospherics/components/binary/pump/on/layer4{
-	dir = 8;
-	name = "air supply pump"
+/obj/machinery/atmospherics/components/unary/portables_connector/layer4{
+	dir = 8
 	},
+/obj/machinery/portable_atmospherics/pump,
 /turf/open/floor/plating,
 /area/template_noop)
 "Z" = (

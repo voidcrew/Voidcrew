@@ -215,6 +215,16 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/b)
+"io" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engines/b)
 "iZ" = (
 /obj/structure/cable,
 /obj/effect/turf_decal/bot,
@@ -588,10 +598,8 @@
 "tF" = (
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/components/binary/volume_pump{
-	dir = 1;
-	name = "engine fuel pump";
-	hide = 1
+/obj/machinery/atmospherics/components/unary/portables_connector{
+	dir = 1
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/b)
@@ -849,16 +857,6 @@
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/scarab/dormitories/b)
-"CT" = (
-/obj/structure/window/reinforced/plasma/spawner/directional/east,
-/obj/effect/turf_decal/stripes/line{
-	dir = 4
-	},
-/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines/b)
 "Db" = (
 /obj/item/radio/intercom/directional/north,
 /obj/effect/turf_decal/stripes/red/line{
@@ -1023,7 +1021,7 @@
 	dir = 8
 	},
 /obj/structure/sign/warning/no_smoking/circle/directional/south,
-/obj/machinery/space_heater,
+/obj/machinery/portable_atmospherics/canister/air,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/b)
 "GS" = (
@@ -1943,9 +1941,9 @@ xV
 xV
 rr
 lN
-CT
-CT
-CT
+io
+io
+io
 lN
 qI
 lN
