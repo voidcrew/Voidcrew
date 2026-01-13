@@ -17,6 +17,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/effect/turf_decal/trimline/purple/filled/corner,
 /obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/east,
 /turf/open/floor/iron,
 /area/template_noop)
 "h" = (
@@ -259,6 +260,7 @@
 "Q" = (
 /obj/effect/turf_decal/bot,
 /obj/machinery/vending/cola/black,
+/obj/machinery/light/small/directional/west,
 /turf/open/floor/iron/large,
 /area/template_noop)
 "R" = (
