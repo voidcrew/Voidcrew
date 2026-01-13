@@ -23,6 +23,7 @@
 "h" = (
 /obj/effect/turf_decal/trimline/purple/filled/line,
 /obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/directional/south,
 /turf/open/floor/iron/white,
 /area/template_noop)
 "i" = (
@@ -149,6 +150,7 @@
 	},
 /obj/machinery/computer/rdconsole,
 /obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/directional/north,
 /turf/open/floor/iron/white,
 /area/template_noop)
 "A" = (
