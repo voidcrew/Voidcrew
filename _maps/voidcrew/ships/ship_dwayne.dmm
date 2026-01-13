@@ -42,8 +42,11 @@
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/dwayne/crew)
 "bb" = (
-/obj/machinery/power/smes/engineering{
-	dir = 4
+/obj/machinery/power/smes/ship{
+	input_level = 25000;
+	output_level = 100000;
+	name = "engine power storage";
+	charge = 5e+007
 	},
 /obj/structure/window/reinforced/spawner/directional/west,
 /obj/machinery/door/window/right/directional/north{
@@ -663,8 +666,11 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/dwayne/cargo_bay)
 "uP" = (
-/obj/machinery/power/smes/engineering{
-	dir = 4
+/obj/machinery/power/smes/ship{
+	input_level = 25000;
+	output_level = 100000;
+	name = "engine power storage";
+	charge = 5e+007
 	},
 /obj/structure/window/reinforced/spawner/directional/west,
 /obj/machinery/door/window/left/directional/north{
