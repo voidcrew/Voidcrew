@@ -3,7 +3,7 @@
 /datum/controller/subsystem/shuttle
 	var/obj/structure/overmap/ship/loading_ship
 
-/datum/controller/subsystem/shuttle/proc/create_ship(ship_template_to_spawn, list/upgrade_selections)
+/datum/controller/subsystem/shuttle/proc/create_ship(ship_template_to_spawn, list/upgrade_selections, datum/ship_theme/selected_theme)
 	RETURN_TYPE(/obj/structure/overmap/ship)
 
 	UNTIL(!shuttle_loading)
@@ -27,6 +27,13 @@
 		shuttle_loading = FALSE
 		return FALSE
 
+	// If a theme is selected, update the template's suffix, mappath, and theme ID for map loading
+	if(selected_theme)
+		template_instance.suffix = selected_theme.template_suffix
+		template_instance.theme = selected_theme.id
+		// Recalculate mappath since suffix changed (mappath is set in New() before we can change suffix)
+		template_instance.mappath = "[template_instance.prefix][template_instance.port_id]_[template_instance.suffix].dmm"
+
 	// Create ship and set template directly as a workaround for Initialize arg passing
 	// Ships spawn in the green zone (outer ring) for safety
 	var/turf/spawn_loc = SSovermap.get_unused_overmap_square_in_green_zone(tries = INFINITY)
@@ -38,7 +45,8 @@
 		return FALSE
 
 	// Manually initialize the ship with the template since arg passing through Initialize chain is broken
-	if(!ship_to_spawn.setup_from_template(template_instance))
+	// Pass the selected theme so job_slots can be set from theme
+	if(!ship_to_spawn.setup_from_template(template_instance, selected_theme))
 		stack_trace("Ship failed to setup from template [ship_template_to_spawn].")
 		qdel(ship_to_spawn)
 		shuttle_loading = FALSE
@@ -47,7 +55,7 @@
 	// Store upgrade selections and theme on ship BEFORE map loads (so modular_map_root can read them)
 	if(length(upgrade_selections))
 		ship_to_spawn.upgrade_selections = upgrade_selections.Copy()
-	ship_to_spawn.theme = template_instance.theme
+	ship_to_spawn.theme = selected_theme?.id || template_instance.theme
 
 	// Set loading_ship so modular_map_root/ship_upgrade can find the ship during map loading
 	loading_ship = ship_to_spawn

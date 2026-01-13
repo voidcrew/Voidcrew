@@ -77,29 +77,31 @@
 	if(!template)
 		return select_ship() // Cancelled, return to menu
 
-	// Check if this ship has upgrade slots - if so, open upgrade selector
-	if(template.has_upgrade_slots && length(template.upgrade_slot_ids))
+	// Check if this ship has upgrade slots OR themes - if so, open upgrade selector
+	// (Theme selection happens in the upgrade selector UI)
+	if((template.has_upgrade_slots && length(template.upgrade_slot_ids)) || length(template.available_themes))
 		var/datum/callback/cb = CALLBACK(src, PROC_REF(on_upgrades_confirmed))
 		var/datum/ship_upgrade_selector/selector = new(src, template, cb)
 		selector.ui_interact(src)
 		return
 
-	// No upgrades, spawn directly
-	spawn_ship_with_upgrades(template, list())
+	// No upgrades or themes, spawn directly with default theme if available
+	var/datum/ship_theme/default_theme = get_default_theme_for_ship(template.type)
+	spawn_ship_with_upgrades(template, list(), default_theme)
 
 /**
  * Callback when player confirms upgrade selections
  */
-/mob/dead/new_player/proc/on_upgrades_confirmed(datum/map_template/shuttle/voidcrew/template, list/upgrade_selections)
+/mob/dead/new_player/proc/on_upgrades_confirmed(datum/map_template/shuttle/voidcrew/template, list/upgrade_selections, datum/ship_theme/selected_theme)
 	if(!template)
 		return select_ship() // Cancelled, return to menu
 
-	spawn_ship_with_upgrades(template, upgrade_selections)
+	spawn_ship_with_upgrades(template, upgrade_selections, selected_theme)
 
 /**
- * Actually spawn the ship with the given upgrade selections
+ * Actually spawn the ship with the given upgrade selections and theme
  */
-/mob/dead/new_player/proc/spawn_ship_with_upgrades(datum/map_template/shuttle/voidcrew/template, list/upgrade_selections)
+/mob/dead/new_player/proc/spawn_ship_with_upgrades(datum/map_template/shuttle/voidcrew/template, list/upgrade_selections, datum/ship_theme/selected_theme)
 	if(!template)
 		return select_ship()
 
@@ -110,7 +112,7 @@
 	spawning_ship = TRUE
 
 	to_chat(src, span_notice("Your [template.name] is being prepared. Please be patient!"))
-	var/obj/structure/overmap/ship/target = SSshuttle.create_ship(template, upgrade_selections)
+	var/obj/structure/overmap/ship/target = SSshuttle.create_ship(template, upgrade_selections, selected_theme)
 	if(!istype(target))
 		spawning_ship = FALSE
 		to_chat(src, span_danger("There was an error loading the ship. Please contact admins!"))

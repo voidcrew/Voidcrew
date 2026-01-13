@@ -6997,6 +6997,7 @@
 #include "voidcrew\modules\shuttle\survey\survey_data_disk.dm"
 #include "voidcrew\modules\shuttle\survey\survey_designs.dm"
 #include "voidcrew\modules\ship_upgrades\_ship_upgrades.dm"
+#include "voidcrew\modules\ship_upgrades\admin_verbs.dm"
 #include "voidcrew\modules\ship_upgrades\modular_map_root_ship.dm"
 #include "voidcrew\modules\ship_upgrades\ship_upgrade_selector.dm"
 #include "voidcrew\modules\ship_upgrades\ships\test_modular.dm"

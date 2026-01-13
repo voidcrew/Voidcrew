@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   Box,
   Button,
+  Collapsible,
   Icon,
   Modal,
   Section,
@@ -17,6 +18,21 @@ type PartsInventory = {
   science: number;
   trade: number;
   misc: number;
+};
+
+type JobPreview = {
+  name: string;
+  slots: number;
+  officer: boolean;
+};
+
+type ShipTheme = {
+  id: string;
+  name: string;
+  desc: string;
+  part_cost: Partial<PartsInventory>;
+  is_default: boolean;
+  jobs: JobPreview[];
 };
 
 type UpgradeModule = {
@@ -37,10 +53,14 @@ type ShipUpgradeSelectorData = {
   ship_name: string;
   ship_short_name: string;
   ship_template: string;
+  themes: ShipTheme[];
+  has_themes: boolean;
   slots: UpgradeSlot[];
   parts: PartsInventory;
   unlocked_upgrades: string[];
+  unlocked_themes: string[];
   selected_upgrades: Record<string, string>;
+  selected_theme: string | null;
 };
 
 const CLASS_COLORS: Record<string, string> = {
@@ -59,12 +79,29 @@ const CLASS_ICONS: Record<string, string> = {
 
 export const ShipUpgradeSelector = () => {
   const { act, data } = useBackend<ShipUpgradeSelectorData>();
-  const { ship_name, slots, parts, unlocked_upgrades, selected_upgrades } =
-    data;
+  const {
+    ship_name,
+    themes,
+    has_themes,
+    slots,
+    parts,
+    unlocked_upgrades,
+    unlocked_themes,
+    selected_upgrades,
+    selected_theme,
+  } = data;
 
   // State for purchase confirmation modal
-  const [confirmingPurchase, setConfirmingPurchase] =
-    useState<UpgradeModule | null>(null);
+  const [confirmingPurchase, setConfirmingPurchase] = useState<{
+    type: 'theme' | 'upgrade';
+    item: ShipTheme | UpgradeModule;
+  } | null>(null);
+
+  // Check if a theme is unlocked
+  const isThemeUnlocked = (theme: ShipTheme) => {
+    if (theme.is_default) return true;
+    return unlocked_themes?.includes(theme.id);
+  };
 
   // Check if a module is unlocked
   const isModuleUnlocked = (module: UpgradeModule) => {
@@ -72,49 +109,59 @@ export const ShipUpgradeSelector = () => {
     return unlocked_upgrades?.includes(module.id);
   };
 
-  // Check if player can afford a module
-  const canAffordModule = (module: UpgradeModule) => {
-    if (module.is_default || !module.part_cost) return true;
-    return Object.entries(module.part_cost).every(
+  // Check if player can afford an item
+  const canAfford = (partCost: Partial<PartsInventory> | undefined) => {
+    if (!partCost) return true;
+    return Object.entries(partCost).every(
       ([partClass, cost]) =>
         (parts?.[partClass as keyof PartsInventory] || 0) >= (cost || 0),
     );
   };
 
   // Handle unlock button click - show confirmation
-  const handleUnlockClick = (module: UpgradeModule) => {
-    setConfirmingPurchase(module);
+  const handleUnlockClick = (
+    type: 'theme' | 'upgrade',
+    item: ShipTheme | UpgradeModule,
+  ) => {
+    setConfirmingPurchase({ type, item });
   };
 
   // Confirm purchase
   const confirmPurchase = () => {
     if (confirmingPurchase) {
-      act('unlock_upgrade', { module_id: confirmingPurchase.id });
+      const action =
+        confirmingPurchase.type === 'theme' ? 'unlock_theme' : 'unlock_upgrade';
+      const idKey =
+        confirmingPurchase.type === 'theme' ? 'theme_id' : 'module_id';
+      act(action, { [idKey]: confirmingPurchase.item.id });
       setConfirmingPurchase(null);
     }
   };
 
+  const selectedThemeData = themes?.find((t) => t.id === selected_theme);
+
   return (
-    <Window title={`Customize: ${ship_name}`} width={600} height={550}>
+    <Window title={`Customize: ${ship_name}`} width={650} height={650}>
       <Window.Content scrollable>
         {/* Purchase Confirmation Modal */}
         {confirmingPurchase && (
           <Modal>
             <Box fontSize="16px" bold mb={2}>
-              Unlock Upgrade?
+              Unlock{' '}
+              {confirmingPurchase.type === 'theme' ? 'Theme' : 'Upgrade'}?
             </Box>
             <Box mb={2}>
               <Box bold color="white">
-                {confirmingPurchase.name}
+                {confirmingPurchase.item.name}
               </Box>
               <Box color="white" mt={1}>
-                {confirmingPurchase.desc}
+                {confirmingPurchase.item.desc}
               </Box>
             </Box>
             <Box mb={2}>
               <Box bold>Cost:</Box>
               <Stack mt={1}>
-                {Object.entries(confirmingPurchase.part_cost || {})
+                {Object.entries(confirmingPurchase.item.part_cost || {})
                   .filter(([_, cost]) => cost && cost > 0)
                   .map(([partClass, cost]) => (
                     <Stack.Item key={partClass} mr={2}>
@@ -124,13 +171,13 @@ export const ShipUpgradeSelector = () => {
                       </Box>
                     </Stack.Item>
                   ))}
-                {Object.keys(confirmingPurchase.part_cost || {}).length ===
+                {Object.keys(confirmingPurchase.item.part_cost || {}).length ===
                   0 && <Box color="good">Free</Box>}
               </Stack>
             </Box>
             <Box italic color="label" mb={2}>
-              This is a one-time purchase. Once unlocked, you can use this
-              upgrade forever.
+              This is a one-time purchase. Once unlocked, you can use this{' '}
+              {confirmingPurchase.type} forever.
             </Box>
             <Stack justify="flex-end">
               <Stack.Item>
@@ -143,7 +190,7 @@ export const ShipUpgradeSelector = () => {
                   color="good"
                   icon="unlock"
                   onClick={confirmPurchase}
-                  disabled={!canAffordModule(confirmingPurchase)}
+                  disabled={!canAfford(confirmingPurchase.item.part_cost)}
                 >
                   Confirm Purchase
                 </Button>
@@ -169,6 +216,163 @@ export const ShipUpgradeSelector = () => {
             </Section>
           </Stack.Item>
 
+          {/* Theme Selection */}
+          {has_themes && themes && themes.length > 0 && (
+            <Stack.Item>
+              <Section
+                title="Ship Theme"
+                buttons={
+                  <Box fontSize="12px" color="label">
+                    Choose your ship&apos;s configuration
+                  </Box>
+                }
+              >
+                <Stack vertical>
+                  {themes.map((theme) => {
+                    const isUnlocked = isThemeUnlocked(theme);
+                    const isSelected = selected_theme === theme.id;
+                    const hasCost =
+                      theme.part_cost &&
+                      Object.values(theme.part_cost).some((v) => v && v > 0);
+                    const affordable = canAfford(theme.part_cost);
+
+                    return (
+                      <Stack.Item key={theme.id}>
+                        <Box
+                          style={{
+                            padding: '10px',
+                            marginBottom: '4px',
+                            backgroundColor: isSelected
+                              ? 'rgba(0, 200, 0, 0.15)'
+                              : isUnlocked
+                                ? 'rgba(255, 255, 255, 0.05)'
+                                : 'rgba(0, 0, 0, 0.2)',
+                            border: isSelected
+                              ? '2px solid rgba(0, 200, 0, 0.5)'
+                              : '1px solid rgba(255, 255, 255, 0.1)',
+                            borderRadius: '4px',
+                            opacity: isUnlocked ? 1 : 0.7,
+                          }}
+                        >
+                          <Stack align="center">
+                            <Stack.Item grow>
+                              <Stack vertical>
+                                <Stack.Item>
+                                  <Box bold color={isUnlocked ? 'white' : 'gray'}>
+                                    {theme.name}
+                                    {theme.is_default && (
+                                      <Box as="span" color="label" ml={1}>
+                                        (Default)
+                                      </Box>
+                                    )}
+                                    {isUnlocked && !theme.is_default && (
+                                      <Box as="span" color="good" ml={1}>
+                                        <Icon name="check" /> Owned
+                                      </Box>
+                                    )}
+                                  </Box>
+                                </Stack.Item>
+                                <Stack.Item>
+                                  <Box color="white" fontSize="12px">
+                                    {theme.desc}
+                                  </Box>
+                                </Stack.Item>
+                                {theme.jobs && theme.jobs.length > 0 && (
+                                  <Stack.Item>
+                                    <Collapsible title="Crew Roster" color="label">
+                                      <Box fontSize="11px" color="label" mt={1}>
+                                        {theme.jobs.map((job, idx) => (
+                                          <Box key={idx}>
+                                            {job.officer && (
+                                              <Icon
+                                                name="star"
+                                                color="gold"
+                                                mr={1}
+                                              />
+                                            )}
+                                            {job.slots}x {job.name}
+                                          </Box>
+                                        ))}
+                                      </Box>
+                                    </Collapsible>
+                                  </Stack.Item>
+                                )}
+                              </Stack>
+                            </Stack.Item>
+
+                            {/* Cost display for locked themes */}
+                            {!isUnlocked && hasCost && (
+                              <Stack.Item>
+                                <Stack>
+                                  {Object.entries(theme.part_cost)
+                                    .filter(([_, cost]) => cost && cost > 0)
+                                    .map(([partClass, cost]) => (
+                                      <Stack.Item key={partClass} ml={1}>
+                                        <Tooltip
+                                          content={`${cost} ${capitalize(partClass)} parts`}
+                                        >
+                                          <Box
+                                            color={
+                                              (parts?.[
+                                                partClass as keyof PartsInventory
+                                              ] || 0) >= (cost || 0)
+                                                ? CLASS_COLORS[partClass]
+                                                : 'bad'
+                                            }
+                                          >
+                                            <Icon
+                                              name={CLASS_ICONS[partClass]}
+                                              mr={0.5}
+                                            />
+                                            {cost}
+                                          </Box>
+                                        </Tooltip>
+                                      </Stack.Item>
+                                    ))}
+                                </Stack>
+                              </Stack.Item>
+                            )}
+
+                            {/* Action buttons */}
+                            <Stack.Item ml={2}>
+                              {isUnlocked ? (
+                                <Button
+                                  icon={isSelected ? 'check-circle' : 'circle'}
+                                  color={isSelected ? 'good' : 'default'}
+                                  onClick={() =>
+                                    act('select_theme', { theme_id: theme.id })
+                                  }
+                                >
+                                  {isSelected ? 'Selected' : 'Select'}
+                                </Button>
+                              ) : (
+                                <Button
+                                  icon="lock"
+                                  color={affordable ? 'caution' : 'gray'}
+                                  disabled={!affordable}
+                                  onClick={() =>
+                                    handleUnlockClick('theme', theme)
+                                  }
+                                  tooltip={
+                                    !affordable
+                                      ? 'You cannot afford this theme'
+                                      : 'Click to unlock this theme permanently'
+                                  }
+                                >
+                                  Unlock
+                                </Button>
+                              )}
+                            </Stack.Item>
+                          </Stack>
+                        </Box>
+                      </Stack.Item>
+                    );
+                  })}
+                </Stack>
+              </Section>
+            </Stack.Item>
+          )}
+
           {/* Upgrade Slots */}
           <Stack.Item grow>
             <Section
@@ -177,7 +381,9 @@ export const ShipUpgradeSelector = () => {
               scrollable
               buttons={
                 <Box fontSize="12px" color="label">
-                  Unlock upgrades permanently, then select for your ship
+                  {selectedThemeData
+                    ? `Upgrades for ${selectedThemeData.name}`
+                    : 'Unlock upgrades permanently, then select for your ship'}
                 </Box>
               }
             >
@@ -189,10 +395,19 @@ export const ShipUpgradeSelector = () => {
                       selectedModuleId={selected_upgrades?.[slot.key]}
                       playerParts={parts}
                       unlockedUpgrades={unlocked_upgrades || []}
-                      onUnlockClick={handleUnlockClick}
+                      onUnlockClick={(module) =>
+                        handleUnlockClick('upgrade', module)
+                      }
                     />
                   </Stack.Item>
                 ))}
+                {(!slots || slots.length === 0) && (
+                  <Stack.Item>
+                    <Box color="label" textAlign="center" py={2}>
+                      No upgrade slots available for this configuration.
+                    </Box>
+                  </Stack.Item>
+                )}
               </Stack>
             </Section>
           </Stack.Item>
@@ -202,11 +417,7 @@ export const ShipUpgradeSelector = () => {
             <Section>
               <Stack justify="flex-end">
                 <Stack.Item>
-                  <Button
-                    icon="times"
-                    color="bad"
-                    onClick={() => act('cancel')}
-                  >
+                  <Button icon="times" color="bad" onClick={() => act('cancel')}>
                     Cancel
                   </Button>
                 </Stack.Item>
@@ -377,6 +588,13 @@ const UpgradeSlotSection = (props: {
             </Stack.Item>
           );
         })}
+        {slot.modules.length === 0 && (
+          <Stack.Item>
+            <Box color="label" textAlign="center" py={1}>
+              No modules available for this slot.
+            </Box>
+          </Stack.Item>
+        )}
       </Stack>
     </Section>
   );
