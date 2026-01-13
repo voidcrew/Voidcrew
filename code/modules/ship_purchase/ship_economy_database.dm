@@ -43,8 +43,10 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 	var/list/credits_cache = list()
 	/// Cache for parts by ckey
 	var/list/parts_cache = list()
-	/// Cache for unlocks by ckey
+	/// Cache for ship unlocks by ckey
 	var/list/unlocks_cache = list()
+	/// Cache for upgrade unlocks by ckey
+	var/list/upgrade_unlocks_cache = list()
 	/// Last cache update time by ckey
 	var/list/cache_times = list()
 	/// Cache validity duration in deciseconds (5 minutes)
@@ -398,6 +400,153 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 
 	return unlocks
 
+// =============================================================================
+// UPGRADE MODULE UNLOCKS
+// =============================================================================
+
+/**
+ * Check if an upgrade module is unlocked for a player
+ *
+ * @param ckey - The player's ckey
+ * @param ship_template - Ship template path (e.g., "/datum/map_template/shuttle/voidcrew/test_modular")
+ * @param upgrade_id - Upgrade module ID (e.g., "cargo_expanded")
+ * @return TRUE if unlocked, FALSE otherwise
+ */
+/datum/ship_economy_db/proc/is_upgrade_unlocked(ckey, ship_template, upgrade_id)
+	if(!ckey || !ship_template || !upgrade_id)
+		return FALSE
+
+	ckey = ckey(ckey) // Normalize ckey
+
+	// Check cache
+	if(is_cache_valid(ckey, "upgrade_unlocks"))
+		var/list/unlocks = upgrade_unlocks_cache[ckey]
+		var/unlock_key = "[ship_template]|[upgrade_id]"
+		return (unlock_key in unlocks)
+
+	if(!SSdbcore.IsConnected())
+		return FALSE
+
+	var/datum/db_query/query = SSdbcore.NewQuery(
+		"SELECT 1 FROM [format_table_name("player_upgrade_unlocks")] \
+		WHERE ckey = :ckey AND ship_template = :ship_template AND upgrade_id = :upgrade_id",
+		list("ckey" = ckey, "ship_template" = ship_template, "upgrade_id" = upgrade_id)
+	)
+
+	var/unlocked = FALSE
+	if(query.Execute() && query.NextRow())
+		unlocked = TRUE
+
+	qdel(query)
+
+	return unlocked
+
+/**
+ * Unlock an upgrade module for a player (permanent)
+ *
+ * @param ckey - The player's ckey
+ * @param ship_template - Ship template path
+ * @param upgrade_id - Upgrade module ID
+ * @return TRUE if successful, FALSE otherwise
+ */
+/datum/ship_economy_db/proc/unlock_upgrade(ckey, ship_template, upgrade_id)
+	if(!ckey || !ship_template || !upgrade_id)
+		return FALSE
+
+	ckey = ckey(ckey) // Normalize ckey
+
+	if(!SSdbcore.IsConnected())
+		return FALSE
+
+	// Check if already unlocked
+	if(is_upgrade_unlocked(ckey, ship_template, upgrade_id))
+		return TRUE
+
+	var/datum/db_query/query = SSdbcore.NewQuery(
+		"INSERT INTO [format_table_name("player_upgrade_unlocks")] (ckey, ship_template, upgrade_id) \
+		VALUES (:ckey, :ship_template, :upgrade_id) \
+		ON DUPLICATE KEY UPDATE upgrade_id = upgrade_id",
+		list("ckey" = ckey, "ship_template" = ship_template, "upgrade_id" = upgrade_id)
+	)
+
+	var/success = query.Execute()
+	qdel(query)
+
+	if(success)
+		// Invalidate cache
+		invalidate_cache(ckey, "upgrade_unlocks")
+
+		// Log unlock
+		log_game("SHIP_ECONOMY: [ckey] unlocked upgrade '[upgrade_id]' for ship [ship_template]")
+
+	return success
+
+/**
+ * Get list of all unlocked upgrades for a player
+ *
+ * @param ckey - The player's ckey
+ * @return List of "ship_template|upgrade_id" keys
+ */
+/datum/ship_economy_db/proc/get_unlocked_upgrades(ckey)
+	if(!ckey)
+		return list()
+
+	ckey = ckey(ckey) // Normalize ckey
+
+	// Check cache
+	if(is_cache_valid(ckey, "upgrade_unlocks"))
+		return upgrade_unlocks_cache[ckey]?.Copy()
+
+	if(!SSdbcore.IsConnected())
+		return list()
+
+	var/list/unlocks = list()
+
+	var/datum/db_query/query = SSdbcore.NewQuery(
+		"SELECT ship_template, upgrade_id FROM [format_table_name("player_upgrade_unlocks")] WHERE ckey = :ckey",
+		list("ckey" = ckey)
+	)
+
+	if(!query.Execute())
+		qdel(query)
+		return unlocks
+
+	while(query.NextRow())
+		var/ship_template = query.item[1]
+		var/upgrade_id = query.item[2]
+		unlocks += "[ship_template]|[upgrade_id]"
+
+	qdel(query)
+
+	// Update cache
+	upgrade_unlocks_cache[ckey] = unlocks.Copy()
+	update_cache_time(ckey, "upgrade_unlocks")
+
+	return unlocks
+
+/**
+ * Get list of unlocked upgrade IDs for a specific ship template
+ *
+ * @param ckey - The player's ckey
+ * @param ship_template - Ship template path to filter by
+ * @return List of upgrade_id strings
+ */
+/datum/ship_economy_db/proc/get_unlocked_upgrades_for_ship(ckey, ship_template)
+	if(!ckey || !ship_template)
+		return list()
+
+	ckey = ckey(ckey) // Normalize ckey
+
+	var/list/all_unlocks = get_unlocked_upgrades(ckey)
+	var/list/ship_unlocks = list()
+
+	for(var/unlock_key in all_unlocks)
+		var/list/parts = splittext(unlock_key, "|")
+		if(length(parts) >= 2 && parts[1] == "[ship_template]")
+			ship_unlocks += parts[2]
+
+	return ship_unlocks
+
 /**
  * Queue a pending extraction for retry
  * Used when extraction fails due to database issues
@@ -580,6 +729,7 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 		credits_cache -= ckey
 		parts_cache -= ckey
 		unlocks_cache -= ckey
+		upgrade_unlocks_cache -= ckey
 		cache_times -= ckey
 	else
 		// Invalidate specific cache type
@@ -590,6 +740,8 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 				parts_cache -= ckey
 			if("unlocks")
 				unlocks_cache -= ckey
+			if("upgrade_unlocks")
+				upgrade_unlocks_cache -= ckey
 
 		if(cache_times[ckey])
 			cache_times[ckey] -= cache_type
@@ -601,5 +753,6 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 	credits_cache.Cut()
 	parts_cache.Cut()
 	unlocks_cache.Cut()
+	upgrade_unlocks_cache.Cut()
 	cache_times.Cut()
 	log_admin("SHIP_ECONOMY: All caches cleared")

@@ -19,6 +19,14 @@
 	/// Ensures we dont try to spawn an abstract subtype
 	var/abstract = /datum/map_template/shuttle/voidcrew
 
+	/// Whether this ship template has modular upgrade slots
+	var/has_upgrade_slots = FALSE
+	/// List of upgrade slot keys this template supports (e.g., list("cargobay", "engineroom"))
+	var/list/upgrade_slot_ids = list()
+	/// Theme identifier for this ship variant (e.g., "pirate", "science"). Null for base/default theme.
+	/// When set, the module loader will look for themed module variants (e.g., "cargo_basic_pirate.dmm")
+	var/theme = null
+
 /datum/map_template/shuttle/voidcrew/New()
 	. = ..()
 	// Ensure part_requirements has all classes initialized to 0 if not set
