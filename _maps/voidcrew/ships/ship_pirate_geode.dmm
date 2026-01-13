@@ -122,7 +122,7 @@
 	requires_power = 0
 	})
 "hM" = (
-/obj/machinery/porta_turret/syndicate/energy{
+/obj/machinery/porta_turret/syndicate/energy/pirate{
 	dir = 4
 	},
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
@@ -279,7 +279,7 @@
 	requires_power = 0
 	})
 "mv" = (
-/obj/machinery/porta_turret/syndicate/energy{
+/obj/machinery/porta_turret/syndicate/energy/pirate{
 	dir = 8
 	},
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
@@ -920,7 +920,7 @@
 	requires_power = 0
 	})
 "Ku" = (
-/obj/machinery/porta_turret/syndicate/energy/heavy,
+/obj/machinery/porta_turret/syndicate/energy/pirate,
 /turf/closed/wall/mineral/iron,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
@@ -1055,9 +1055,7 @@
 	requires_power = 0
 	})
 "OR" = (
-/obj/machinery/porta_turret/syndicate/teleport{
-	faction = list("pirate")
-	},
+/obj/machinery/porta_turret/syndicate/pirate,
 /turf/closed/wall/mineral/iron,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
@@ -1246,7 +1244,7 @@
 	requires_power = 0
 	})
 "XB" = (
-/obj/machinery/porta_turret/syndicate/energy{
+/obj/machinery/porta_turret/syndicate/energy/pirate{
 	dir = 1
 	},
 /turf/open/misc/dirt/station,
@@ -1317,7 +1315,7 @@ lt
 lt
 lt
 lt
-Uw
+mv
 Od
 Pq
 Pq

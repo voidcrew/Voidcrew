@@ -8,7 +8,7 @@
 /mob/living/basic/trooper/pirate/faction
 	name = "Faction Pirate"
 	desc = "A pirate aligned with a specific faction."
-	faction = list(FACTION_PIRATE, FACTION_NEUTRAL)
+	faction = list(FACTION_PIRATE)
 	unsuitable_atmos_damage = 0
 	minimum_survivable_temperature = 0
 	loot = null // NPC ship crew don't drop loot
@@ -340,6 +340,7 @@
 /mob/living/basic/trooper/pirate/faction/irs
 	name = "IRS Agent"
 	desc = "The only thing certain in life is death and taxes. They're here for the taxes."
+	faction = list(FACTION_PIRATE, FACTION_IRS)
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs
 

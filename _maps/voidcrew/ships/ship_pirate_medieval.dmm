@@ -493,8 +493,8 @@
 	requires_power = 0
 	})
 "Aa" = (
-/obj/machinery/porta_turret/syndicate{
-	dir = 1
+/obj/machinery/porta_turret/syndicate/pirate{
+	dir = 9
 	},
 /turf/closed/wall/mineral/wood,
 /area/shuttle/voidcrew/pirate_medieval{
@@ -502,7 +502,9 @@
 	})
 "Ha" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/porta_turret/syndicate,
+/obj/machinery/porta_turret/syndicate/pirate{
+	dir = 10
+	},
 /turf/open/floor/plating,
 /area/template_noop)
 "HQ" = (
@@ -512,7 +514,9 @@
 	requires_power = 0
 	})
 "Mn" = (
-/obj/machinery/porta_turret/syndicate,
+/obj/machinery/porta_turret/syndicate/pirate{
+	dir = 6
+	},
 /turf/open/floor/plating,
 /area/template_noop)
 "Nz" = (
@@ -521,6 +525,14 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"OX" = (
+/obj/machinery/porta_turret/syndicate/pirate{
+	dir = 5
+	},
+/turf/closed/wall/mineral/wood,
 /area/shuttle/voidcrew/pirate_medieval{
 	requires_power = 0
 	})
@@ -653,7 +665,7 @@ dL
 Nz
 "}
 (12,1,1) = {"
-Aa
+OX
 ap
 ap
 ap

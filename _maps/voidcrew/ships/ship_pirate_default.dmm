@@ -432,7 +432,7 @@
 	requires_power = 0
 	})
 "aR" = (
-/obj/machinery/ship_combat/laser_turret,
+/obj/machinery/porta_turret/syndicate/pirate,
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -798,9 +798,8 @@
 	requires_power = 0
 	})
 "df" = (
-/obj/machinery/porta_turret/syndicate/energy{
-	dir = 4;
-	faction = list("pirate")
+/obj/machinery/porta_turret/syndicate/energy/pirate{
+	dir = 4
 	},
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/pirate_default{
@@ -1037,9 +1036,8 @@
 	requires_power = 0
 	})
 "wR" = (
-/obj/machinery/porta_turret/syndicate/energy{
-	dir = 8;
-	faction = list("pirate")
+/obj/machinery/porta_turret/syndicate/energy/pirate{
+	dir = 8
 	},
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/pirate_default{

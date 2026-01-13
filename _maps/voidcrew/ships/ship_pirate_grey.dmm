@@ -141,6 +141,7 @@
 /area/shuttle/voidcrew/pirate_grey)
 "ei" = (
 /obj/structure/sign/poster/random/directional/east,
+/obj/machinery/porta_turret/syndicate/pirate,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
 "eU" = (
@@ -377,6 +378,12 @@
 /obj/effect/turf_decal/tile/neutral/fourcorners,
 /obj/effect/spawner/random/structure/tank_holder,
 /turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_grey)
+"oE" = (
+/obj/machinery/porta_turret/syndicate/pirate{
+	dir = 8
+	},
+/turf/closed/wall/rust,
 /area/shuttle/voidcrew/pirate_grey)
 "pk" = (
 /turf/closed/wall/r_wall/rust,
@@ -1130,6 +1137,12 @@
 /obj/effect/decal/cleanable/glass,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
+"Jt" = (
+/obj/machinery/porta_turret/syndicate/pirate{
+	dir = 1
+	},
+/turf/closed/wall,
+/area/shuttle/voidcrew/pirate_grey)
 "Jv" = (
 /obj/item/kirbyplants/random,
 /turf/open/floor/plating,
@@ -1585,7 +1598,7 @@
 (1,1,1) = {"
 je
 je
-zB
+oE
 nY
 zB
 Gr
@@ -1597,7 +1610,7 @@ Gr
 Gr
 zB
 Bl
-zB
+oE
 je
 je
 "}
@@ -1754,7 +1767,7 @@ qm
 Ti
 "}
 (10,1,1) = {"
-Pn
+Jt
 Ut
 kw
 CH

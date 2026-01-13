@@ -560,7 +560,7 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/obj/machinery/porta_turret/syndicate/energy{
+/obj/machinery/porta_turret/syndicate/energy/pirate{
 	dir = 4
 	},
 /turf/open/floor/plating/airless,
@@ -888,7 +888,7 @@
 /obj/structure/railing{
 	dir = 8
 	},
-/obj/machinery/porta_turret/syndicate/energy{
+/obj/machinery/porta_turret/syndicate/energy/pirate{
 	dir = 8
 	},
 /turf/open/floor/plating/airless,
@@ -1005,7 +1005,7 @@
 	color = "#4C3117";
 	name = "wooden railing"
 	},
-/obj/machinery/porta_turret/syndicate/energy{
+/obj/machinery/porta_turret/syndicate/energy/pirate{
 	dir = 1
 	},
 /turf/open/floor/wood/airless,
@@ -1167,7 +1167,7 @@
 	name = "wooden railing";
 	dir = 8
 	},
-/obj/machinery/porta_turret/syndicate/energy{
+/obj/machinery/porta_turret/syndicate/energy/pirate{
 	dir = 1
 	},
 /turf/open/floor/wood/airless,

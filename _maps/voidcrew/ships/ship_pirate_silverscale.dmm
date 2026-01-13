@@ -362,9 +362,8 @@
 	requires_power = 0
 	})
 "pk" = (
-/obj/machinery/porta_turret/syndicate/energy{
-	dir = 8;
-	faction = list("pirate")
+/obj/machinery/porta_turret/syndicate/energy/pirate{
+	dir = 8
 	},
 /obj/effect/turf_decal/trimline/yellow/warning{
 	dir = 9
@@ -750,6 +749,14 @@
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
+"Ij" = (
+/obj/machinery/porta_turret/syndicate/pirate{
+	dir = 8
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/pirate_silverscale{
+	requires_power = 0
+	})
 "Is" = (
 /obj/machinery/computer/piratepad_control{
 	dir = 4
@@ -1114,9 +1121,8 @@
 	requires_power = 0
 	})
 "TV" = (
-/obj/machinery/porta_turret/syndicate/energy{
-	dir = 8;
-	faction = list("pirate")
+/obj/machinery/porta_turret/syndicate/energy/pirate{
+	dir = 8
 	},
 /obj/effect/turf_decal/trimline/yellow/warning{
 	dir = 10
@@ -1296,7 +1302,7 @@
 (1,1,1) = {"
 je
 je
-rB
+Ij
 nY
 rB
 Gr
@@ -1308,7 +1314,7 @@ Gr
 Gr
 rB
 Bl
-rB
+Ij
 je
 je
 "}
