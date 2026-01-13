@@ -22,15 +22,15 @@
 /turf/open/floor/iron/smooth,
 /area/template_noop)
 "d" = (
-/obj/machinery/door/airlock/external,
 /obj/effect/turf_decal/stripes/red/full,
 /obj/machinery/door/poddoor/shutters/window/preopen{
-	id = "scarab_airlocks"
+	id = "scarab_c_airlocks"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 1
 	},
 /obj/structure/fans/tiny,
+/obj/machinery/door/airlock/external/glass,
 /turf/open/floor/pod,
 /area/template_noop)
 "e" = (
@@ -96,7 +96,6 @@
 /turf/open/floor/plating,
 /area/template_noop)
 "q" = (
-/obj/machinery/door/airlock/external,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
 	},
@@ -105,6 +104,7 @@
 	},
 /obj/effect/turf_decal/stripes/red/full,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/machinery/door/airlock/external/glass,
 /turf/open/floor/pod,
 /area/template_noop)
 "r" = (
