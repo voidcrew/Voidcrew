@@ -1950,7 +1950,7 @@
 /obj/machinery/door/airlock/hatch{
 	name = "MiniSat Foyer"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/command/ai_upload,
+/obj/effect/mapping_helpers/airlock/access/any/command/ai_upload,
 /obj/effect/turf_decal/stripes/line{
 	dir = 4
 	},
@@ -1958,7 +1958,7 @@
 	dir = 8
 	},
 /obj/machinery/door/firedoor,
-/obj/effect/mapping_helpers/airlock/access/all/command/minisat,
+/obj/effect/mapping_helpers/airlock/access/any/command/minisat,
 /turf/open/floor/iron/dark/textured_large,
 /area/station/ai/satellite/equipment)
 "aoQ" = (
@@ -59873,13 +59873,14 @@
 /obj/machinery/door/airlock/hatch{
 	name = "MiniSat Atmospherics"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/command/ai_upload,
+/obj/effect/mapping_helpers/airlock/access/any/command/minisat,
 /obj/effect/turf_decal/stripes/line,
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
 /obj/machinery/door/firedoor,
 /obj/structure/cable,
+/obj/effect/mapping_helpers/airlock/access/any/command/ai_upload,
 /turf/open/floor/iron/dark/textured_large,
 /area/station/ai/satellite/teleporter)
 "iPG" = (
@@ -101381,13 +101382,14 @@
 /obj/machinery/door/airlock/hatch{
 	name = "MiniSat Storage"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/command/ai_upload,
+/obj/effect/mapping_helpers/airlock/access/any/command/minisat,
 /obj/effect/turf_decal/stripes/line,
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
 /obj/machinery/door/firedoor,
 /obj/structure/cable,
+/obj/effect/mapping_helpers/airlock/access/any/command/ai_upload,
 /turf/open/floor/iron/dark/textured_large,
 /area/station/ai/satellite/equipment)
 "oYY" = (
@@ -128527,7 +128529,7 @@
 /obj/machinery/door/airlock/hatch{
 	name = "MiniSat Teleporter"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/command/ai_upload,
+/obj/effect/mapping_helpers/airlock/access/any/command/minisat,
 /obj/effect/turf_decal/stripes/line{
 	dir = 4
 	},
@@ -128535,7 +128537,7 @@
 	dir = 8
 	},
 /obj/machinery/door/firedoor,
-/obj/effect/mapping_helpers/airlock/access/all/command/minisat,
+/obj/effect/mapping_helpers/airlock/access/any/command/ai_upload,
 /turf/open/floor/iron/dark/textured_large,
 /area/station/ai/satellite/teleporter)
 "sZP" = (
