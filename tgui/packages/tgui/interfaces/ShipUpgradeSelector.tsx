@@ -260,7 +260,7 @@ export const ShipUpgradeSelector = () => {
                                 <Stack.Item>
                                   <Box bold color={isUnlocked ? 'white' : 'gray'}>
                                     {theme.name}
-                                    {theme.is_default && (
+                                    {!!theme.is_default && (
                                       <Box as="span" color="label" ml={1}>
                                         (Default)
                                       </Box>
@@ -277,7 +277,7 @@ export const ShipUpgradeSelector = () => {
                                     {theme.desc}
                                   </Box>
                                 </Stack.Item>
-                                {theme.jobs && theme.jobs.length > 0 && (
+                                {!!(theme.jobs && theme.jobs.length > 0) && (
                                   <Stack.Item>
                                     <Collapsible title="Crew Roster" color="label">
                                       <Box fontSize="11px" color="label" mt={1}>
