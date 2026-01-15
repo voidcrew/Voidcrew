@@ -32,6 +32,12 @@
 	/// List of ships (weakrefs) that have abandoned this bounty (can't re-accept)
 	var/list/datum/weakref/abandoned_by = list()
 
+	/// List of ships (weakrefs) that have purchased tracking for this bounty
+	var/list/datum/weakref/tracking_ships = list()
+
+	/// Percentage of reward lost when purchasing tracking (0-100)
+	var/tracking_cost_percent = 25
+
 	/// Whether this bounty has been completed
 	var/completed = FALSE
 
@@ -89,6 +95,7 @@
 	target_key_ref = null
 	claiming_ships.Cut()
 	abandoned_by.Cut()
+	tracking_ships.Cut()
 
 	return ..()
 
@@ -224,6 +231,57 @@
 	return count
 
 /**
+ * Checks if a ship has tracking enabled for this bounty.
+ * Also cleans up dead weakrefs while iterating.
+ */
+/datum/pirate_bounty/proc/has_tracking(obj/structure/overmap/ship/ship)
+	for(var/datum/weakref/ref in tracking_ships)
+		var/obj/structure/overmap/ship/resolved = ref.resolve()
+		if(!resolved)
+			tracking_ships -= ref
+			continue
+		if(resolved == ship)
+			return TRUE
+	return FALSE
+
+/**
+ * Enables tracking for a ship. Must be hunting this bounty.
+ * @param ship The ship purchasing tracking
+ * @return TRUE if tracking was enabled, FALSE otherwise
+ */
+/datum/pirate_bounty/proc/enable_tracking(obj/structure/overmap/ship/ship)
+	if(!is_valid())
+		return FALSE
+	if(!ship || QDELETED(ship))
+		return FALSE
+	// Must be hunting this bounty
+	if(!is_claimant(ship))
+		return FALSE
+	// Already has tracking
+	if(has_tracking(ship))
+		return FALSE
+
+	tracking_ships += WEAKREF(ship)
+	return TRUE
+
+/**
+ * Gets the credit cost for enabling tracking.
+ * This is the amount that will be deducted from the reward.
+ */
+/datum/pirate_bounty/proc/get_tracking_cost()
+	return round(reward * tracking_cost_percent / 100)
+
+/**
+ * Gets the reward for a specific ship, accounting for tracking penalty.
+ * @param ship The ship to calculate reward for
+ * @return The adjusted reward amount
+ */
+/datum/pirate_bounty/proc/get_reward_for_ship(obj/structure/overmap/ship/ship)
+	if(has_tracking(ship))
+		return reward - get_tracking_cost()
+	return reward
+
+/**
  * Checks if a key can be turned in for this bounty.
  * @param key The ship key being turned in
  * @param turner The ship attempting to turn in
@@ -255,9 +313,10 @@
 
 	completed = TRUE
 
-	// Award credits to winning ship
+	// Award credits to winning ship (reduced if they used tracking)
+	var/actual_reward = get_reward_for_ship(winner)
 	if(winner)
-		winner.ship_account.adjust_money(reward)
+		winner.ship_account.adjust_money(actual_reward)
 
 	// Spawn item rewards on mission pad
 	var/list/item_rewards = list()
@@ -268,7 +327,7 @@
 			pad.do_teleport_effect()
 
 	// Build reward announcement
-	var/reward_text = "[reward] credits"
+	var/reward_text = "[actual_reward] credits"
 	if(length(item_rewards))
 		reward_text += " + [english_list(item_rewards)]"
 
@@ -284,7 +343,7 @@
 	// Remove from global tracker
 	SSbounty?.remove_bounty(src)
 
-	return reward
+	return actual_reward
 
 /**
  * Spawns bounty loot at the given location.

@@ -84,6 +84,11 @@
 		if(potential_target.invisibility > INVISIBILITY_NONE)
 			continue
 
+		// Skip targets already engaged by another pirate (only one pirate can engage at a time)
+		var/obj/structure/overmap/ship/npc/engaging_pirate = potential_target.engaging_pirate_ref?.resolve()
+		if(engaging_pirate && engaging_pirate != ship && !QDELETED(engaging_pirate))
+			continue
+
 		// Check distance (O(1) instead of range()'s O(tiles))
 		if(get_dist(ship, potential_target) > ship.territory_range)
 			continue

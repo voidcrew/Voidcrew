@@ -181,18 +181,29 @@ SUBSYSTEM_DEF(bounty)
 			"reward" = bounty.reward,
 			"hunter_count" = bounty.get_hunter_count(),
 			"ref" = REF(bounty),
+			"tracking_cost" = bounty.get_tracking_cost(),
 		)
 
 		// Add ship-specific data
 		if(for_ship)
 			bounty_data["is_hunting"] = bounty.is_claimant(for_ship)
 			bounty_data["was_abandoned"] = bounty.has_abandoned(for_ship)
+			bounty_data["has_tracking"] = bounty.has_tracking(for_ship)
+			// Calculate reward this ship would get (accounting for tracking)
+			bounty_data["effective_reward"] = bounty.get_reward_for_ship(for_ship)
 
 		// Add target location hint (zone)
 		var/obj/structure/overmap/ship/npc/target = bounty.get_target_ship()
 		if(target)
 			var/zone_type = SSovermap_zones?.get_zone_for_atom(target)
 			bounty_data["zone"] = zone_type || "Unknown"
+
+			// If ship has tracking enabled, include real-time coordinates
+			if(for_ship && bounty.has_tracking(for_ship))
+				var/turf/target_turf = get_turf(target)
+				if(target_turf)
+					bounty_data["target_x"] = target_turf.x
+					bounty_data["target_y"] = target_turf.y
 
 		data += list(bounty_data)
 

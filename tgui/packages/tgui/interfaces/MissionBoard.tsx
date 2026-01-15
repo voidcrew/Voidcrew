@@ -54,6 +54,11 @@ type Bounty = {
   is_hunting: boolean;
   was_abandoned: boolean;
   zone: string;
+  tracking_cost: number;
+  has_tracking?: boolean;
+  effective_reward?: number;
+  target_x?: number;
+  target_y?: number;
 };
 
 type Data = {
@@ -414,6 +419,11 @@ const BountyCard = (props: BountyCardProps) => {
     return undefined;
   };
 
+  // Display effective reward if hunting (may be reduced by tracking)
+  const displayReward = bounty.is_hunting
+    ? (bounty.effective_reward ?? bounty.reward)
+    : bounty.reward;
+
   return (
     <Section
       title={
@@ -432,7 +442,12 @@ const BountyCard = (props: BountyCardProps) => {
             bold
             mr={1}
           >
-            {bounty.reward} cr
+            {displayReward} cr
+            {bounty.has_tracking && (
+              <Box as="span" color="label" ml={1}>
+                (-{bounty.tracking_cost})
+              </Box>
+            )}
           </Box>
           <Box inline color="label">
             [{bounty.zone}]
@@ -444,6 +459,17 @@ const BountyCard = (props: BountyCardProps) => {
         {bounty.desc}
       </Box>
 
+      {/* Show coordinates if tracking is enabled */}
+      {bounty.has_tracking &&
+        bounty.target_x !== undefined &&
+        bounty.target_y !== undefined && (
+          <Box mb={1} p={1} backgroundColor="rgba(0, 255, 0, 0.1)">
+            <Box color="good" bold>
+              Target Coordinates: ({bounty.target_x}, {bounty.target_y})
+            </Box>
+          </Box>
+        )}
+
       <Flex justify="space-between" align="center" mb={1}>
         <Flex.Item>
           <Box color="label">
@@ -454,6 +480,11 @@ const BountyCard = (props: BountyCardProps) => {
           </Box>
         </Flex.Item>
         <Flex.Item>
+          {bounty.is_hunting && bounty.has_tracking && (
+            <Box color="teal" bold mr={1}>
+              [TRACKING]
+            </Box>
+          )}
           {bounty.is_hunting && (
             <Box color="green" bold>
               [HUNTING]
@@ -487,6 +518,18 @@ const BountyCard = (props: BountyCardProps) => {
                   Turn In Key
                 </Button>
               </Stack.Item>
+              {!bounty.has_tracking && (
+                <Stack.Item>
+                  <Button
+                    icon="satellite-dish"
+                    color="teal"
+                    tooltip={`Enable tracking to see target coordinates. Reduces reward by ${bounty.tracking_cost} cr`}
+                    onClick={() => act('enable_tracking', { ref: bounty.ref })}
+                  >
+                    Track (-{bounty.tracking_cost})
+                  </Button>
+                </Stack.Item>
+              )}
               <Stack.Item>
                 <Button
                   icon="times"

@@ -149,6 +149,9 @@
 	/// Current interdiction strength for UI display (0 to 1, where 1 = maximum effect)
 	var/interdiction_strength = 0
 
+	/// Weakref to the NPC pirate ship currently engaging this ship (only one pirate can engage at a time)
+	var/datum/weakref/engaging_pirate_ref
+
 	/// List of interdictor machines installed on this ship
 	var/list/linked_interdictors = list()
 

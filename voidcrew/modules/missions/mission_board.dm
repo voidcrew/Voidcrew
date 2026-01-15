@@ -211,6 +211,29 @@
 				balloon_alert(usr, "not hunting this bounty!")
 			return TRUE
 
+		if("enable_tracking")
+			var/datum/pirate_bounty/bounty = locate(params["ref"])
+			if(!bounty || !bounty.is_valid())
+				balloon_alert(usr, "bounty not available!")
+				return TRUE
+
+			if(!bounty.is_claimant(ship))
+				balloon_alert(usr, "not hunting this bounty!")
+				return TRUE
+
+			if(bounty.has_tracking(ship))
+				balloon_alert(usr, "already tracking!")
+				return TRUE
+
+			if(bounty.enable_tracking(ship))
+				var/tracking_cost = bounty.get_tracking_cost()
+				balloon_alert(usr, "tracking enabled! -[tracking_cost] cr")
+				playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
+				ship.ship_announce("TRACKING ENABLED: [bounty.name] - Reward reduced by [tracking_cost] credits", "MISSION CONTROL")
+			else
+				balloon_alert(usr, "cannot enable tracking!")
+			return TRUE
+
 		if("turn_in_bounty")
 			// Find ship key on pad
 			if(!linked_pad)

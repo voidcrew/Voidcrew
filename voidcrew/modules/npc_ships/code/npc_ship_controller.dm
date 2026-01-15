@@ -176,6 +176,12 @@
  */
 /datum/ai_controller/npc_ship/proc/on_ship_destroyed(datum/source)
 	SIGNAL_HANDLER
+	// Clear engaging_pirate_ref on our target if we had one
+	var/obj/structure/overmap/ship/target = get_target()
+	var/obj/structure/overmap/ship/npc/our_ship = get_ship()
+	if(target && !QDELETED(target) && our_ship)
+		if(target.engaging_pirate_ref?.resolve() == our_ship)
+			target.engaging_pirate_ref = null
 	set_ai_status(AI_STATUS_OFF)
 
 // ========== HELPER PROCS ==========
@@ -210,11 +216,14 @@
 		var/datum/npc_combat_interface/combat = get_combat_interface()
 		combat?.cancel_interdiction()
 
-		// Notify target that we stopped targeting them
+		// Notify target that we stopped targeting them and clear engagement
 		var/obj/structure/overmap/ship/target = get_target()
 		var/obj/structure/overmap/ship/npc/ship = get_ship()
 		if(target && ship)
 			SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
+			// Clear engagement so another pirate can engage this target
+			if(target.engaging_pirate_ref?.resolve() == ship)
+				target.engaging_pirate_ref = null
 
 /**
  * Gets the current combat state.
@@ -224,10 +233,22 @@
 
 /**
  * Sets the current target ship.
+ * Also marks the target as engaged by this pirate (prevents other pirates from engaging same target).
  */
 /datum/ai_controller/npc_ship/proc/set_target(obj/structure/overmap/ship/target)
+	var/obj/structure/overmap/ship/npc/our_ship = get_ship()
+
+	// Clear engaging_pirate on old target if we had one
+	var/obj/structure/overmap/ship/old_target = blackboard[BB_NPC_TARGET]
+	if(old_target && !QDELETED(old_target) && old_target != target)
+		if(old_target.engaging_pirate_ref?.resolve() == our_ship)
+			old_target.engaging_pirate_ref = null
+
 	if(target)
 		set_blackboard_key(BB_NPC_TARGET, target)
+		// Mark this target as engaged by us (only one pirate can engage at a time)
+		if(our_ship)
+			target.engaging_pirate_ref = WEAKREF(our_ship)
 	else
 		clear_blackboard_key(BB_NPC_TARGET)
 		clear_blackboard_key(BB_NPC_TARGET_LOCKED)
@@ -241,12 +262,20 @@
 
 /**
  * Clears the current target and resets to idle.
- * Also cancels any active interdiction.
+ * Also cancels any active interdiction and clears engagement tracking.
  */
 /datum/ai_controller/npc_ship/proc/clear_target()
 	// Cancel any active interdiction when losing target
 	var/datum/npc_combat_interface/combat = get_combat_interface()
 	combat?.cancel_interdiction()
+
+	// Clear engaging_pirate_ref on current target before clearing
+	var/obj/structure/overmap/ship/target = get_target()
+	var/obj/structure/overmap/ship/npc/our_ship = get_ship()
+	if(target && !QDELETED(target) && our_ship)
+		// Only clear if we're the one engaging (could have been taken over by another pirate in edge cases)
+		if(target.engaging_pirate_ref?.resolve() == our_ship)
+			target.engaging_pirate_ref = null
 
 	set_target(null)
 	set_combat_state(NPC_COMBAT_IDLE)
