@@ -7,6 +7,7 @@ import {
   Modal,
   Section,
   Stack,
+  Tabs,
   Tooltip,
 } from 'tgui-core/components';
 
@@ -90,6 +91,15 @@ export const ShipUpgradeSelector = () => {
     selected_upgrades,
     selected_theme,
   } = data;
+
+  // State for active tab
+  const [activeTab, setActiveTab] = useState<'theme' | 'upgrades'>('theme');
+
+  // Effective tab - if no themes, always show upgrades
+  const effectiveTab =
+    activeTab === 'theme' && has_themes && themes?.length > 0
+      ? 'theme'
+      : 'upgrades';
 
   // State for purchase confirmation modal
   const [confirmingPurchase, setConfirmingPurchase] = useState<{
@@ -216,11 +226,33 @@ export const ShipUpgradeSelector = () => {
             </Section>
           </Stack.Item>
 
+          {/* Tabs */}
+          <Stack.Item>
+            <Tabs>
+              {has_themes && themes && themes.length > 0 && (
+                <Tabs.Tab
+                  selected={effectiveTab === 'theme'}
+                  onClick={() => setActiveTab('theme')}
+                >
+                  Theme
+                </Tabs.Tab>
+              )}
+              <Tabs.Tab
+                selected={effectiveTab === 'upgrades'}
+                onClick={() => setActiveTab('upgrades')}
+              >
+                Upgrades
+              </Tabs.Tab>
+            </Tabs>
+          </Stack.Item>
+
           {/* Theme Selection */}
-          {has_themes && themes && themes.length > 0 && (
-            <Stack.Item>
+          {effectiveTab === 'theme' && (
+            <Stack.Item grow>
               <Section
                 title="Ship Theme"
+                fill
+                scrollable
                 buttons={
                   <Box fontSize="12px" color="label">
                     Choose your ship&apos;s configuration
@@ -283,13 +315,6 @@ export const ShipUpgradeSelector = () => {
                                       <Box fontSize="11px" color="label" mt={1}>
                                         {theme.jobs.map((job, idx) => (
                                           <Box key={idx}>
-                                            {job.officer && (
-                                              <Icon
-                                                name="star"
-                                                color="gold"
-                                                mr={1}
-                                              />
-                                            )}
                                             {job.slots}x {job.name}
                                           </Box>
                                         ))}
@@ -374,7 +399,8 @@ export const ShipUpgradeSelector = () => {
           )}
 
           {/* Upgrade Slots */}
-          <Stack.Item grow>
+          {effectiveTab === 'upgrades' && (
+            <Stack.Item grow>
             <Section
               title="Upgrade Slots"
               fill
@@ -411,6 +437,7 @@ export const ShipUpgradeSelector = () => {
               </Stack>
             </Section>
           </Stack.Item>
+          )}
 
           {/* Actions */}
           <Stack.Item>
@@ -500,7 +527,7 @@ const UpgradeSlotSection = (props: {
                       <Stack.Item>
                         <Box bold color={isUnlocked ? 'white' : 'gray'}>
                           {module.name}
-                          {module.is_default && (
+                          {!!module.is_default && (
                             <Box as="span" color="label" ml={1}>
                               (Default)
                             </Box>

@@ -47,11 +47,10 @@ GLOBAL_LIST_EMPTY(ship_themes)
 	/// The BASE ship template type this module is for (e.g., /datum/map_template/shuttle/voidcrew/test_modular)
 	/// Themed variants inherit from base, so only specify the base type.
 	var/for_ship
-	/// Optional: Single theme ID this module is exclusive to (e.g., "medical"). If null, available to all themes.
+	/// Which theme(s) this module is available for. REQUIRED for themed ships.
+	/// Can be a single string (e.g., "medical") or a list (e.g., list("medical", "syndicate"))
+	/// Modules without for_theme won't appear in the upgrade selector for themed ships.
 	var/for_theme
-	/// Optional: List of theme IDs this module is available to. If null, available to all themes.
-	/// Use for_theme for single theme, for_themes for multiple but not all.
-	var/list/for_themes
 
 /datum/ship_upgrade_module/New()
 	. = ..()
@@ -200,39 +199,43 @@ GLOBAL_VAR_INIT(ship_upgrades_initialized, FALSE)
 
 /**
  * Get modules for a ship filtered by theme
- * If theme_id is null, returns all modules
- * Otherwise returns only modules available for that theme
+ *
+ * For themed ships (theme_id provided): Returns only modules with matching for_theme
+ * For non-themed ships (theme_id null): Returns modules WITHOUT for_theme set
  *
  * Returns: assoc list of module_id -> /datum/ship_upgrade_module
  */
 /proc/get_modules_for_ship_theme(ship_template_type, theme_id)
 	var/list/all_modules = get_modules_for_ship(ship_template_type)
 
-	if(!theme_id)
-		return all_modules
-
 	var/list/filtered = list()
 	for(var/module_id in all_modules)
 		var/datum/ship_upgrade_module/module = all_modules[module_id]
-		if(is_module_available_for_theme(module, theme_id))
-			filtered[module_id] = module
+		if(theme_id)
+			// Themed ship: only modules that match this theme
+			if(is_module_available_for_theme(module, theme_id))
+				filtered[module_id] = module
+		else
+			// Non-themed ship: only modules without for_theme
+			if(!module.for_theme)
+				filtered[module_id] = module
 
 	return filtered
 
 /**
  * Check if a module is available for a specific theme
+ *
+ * Modules MUST have for_theme set to appear for themed ships.
+ * for_theme can be a single string or a list of theme IDs.
  */
 /proc/is_module_available_for_theme(datum/ship_upgrade_module/module, theme_id)
 	if(!module)
 		return FALSE
-	// If module has no theme restrictions, it's available to all
-	if(!module.for_theme && !length(module.for_themes))
-		return TRUE
-	// Check single theme restriction
-	if(module.for_theme == theme_id)
-		return TRUE
-	// Check multi-theme restriction
-	if(theme_id in module.for_themes)
-		return TRUE
-	// Has restrictions but doesn't match this theme
-	return FALSE
+	// No theme specified = module doesn't appear for themed ships
+	if(!module.for_theme)
+		return FALSE
+	// Check if for_theme is a list
+	if(islist(module.for_theme))
+		return (theme_id in module.for_theme)
+	// Single theme string
+	return (module.for_theme == theme_id)

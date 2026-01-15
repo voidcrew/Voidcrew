@@ -1,5 +1,7 @@
 /datum/ship_upgrade_module/scarab
 	for_ship = /datum/map_template/shuttle/voidcrew/scarab
+	// All Scarab modules are shared across all three themes
+	for_theme = list("medical", "syndicate", "mining")
 
 /datum/ship_upgrade_module/scarab/med_basic
 	id = "scarab_med_basic"
