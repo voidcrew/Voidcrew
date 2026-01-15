@@ -102,14 +102,27 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 
 	// Ensure catalog is initialized
 	ensure_ship_catalog_initialized()
+	// Also ensure ship upgrades/themes are initialized for themed ships
+	ensure_ship_upgrades_initialized()
 
 	// Build ship catalog
 	var/list/ships = list()
 
 	for(var/datum/map_template/shuttle/voidcrew/template as anything in GLOB.ship_catalog_templates)
+		// Get job slots - either from template directly or from default theme
+		var/list/job_slots_to_use = template.job_slots
+		var/theme_count = 0
+
+		// If ship has available_themes, get job slots from the default theme
+		if(length(template.available_themes))
+			theme_count = length(template.available_themes)
+			var/datum/ship_theme/default_theme = get_default_theme_for_ship(template.type)
+			if(default_theme?.job_slots)
+				job_slots_to_use = default_theme.job_slots
+
 		// Calculate crew capacity from job slots
 		var/crew_capacity = 0
-		for(var/list/job_definition in template.job_slots)
+		for(var/list/job_definition in job_slots_to_use)
 			crew_capacity += job_definition["slots"]
 
 		// Build parts requirement list from template's class-based requirements
@@ -139,7 +152,7 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 
 		// Build job list for display
 		var/list/jobs = list()
-		for(var/list/job_definition in template.job_slots)
+		for(var/list/job_definition in job_slots_to_use)
 			jobs += list(list(
 				"name" = job_definition["name"],
 				"slots" = job_definition["slots"],
@@ -158,7 +171,9 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 			"parts_required" = parts_required,
 			"faction" = faction,
 			"preview_image" = get_ship_preview_path(template),
-			"jobs" = jobs
+			"jobs" = jobs,
+			"theme_count" = theme_count,
+			"has_upgrades" = template.has_upgrade_slots
 		))
 
 	data["ships"] = ships
@@ -368,21 +383,35 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
  * Generate a description for a ship based on its properties
  */
 /datum/ship_catalog_ui/proc/generate_ship_description(datum/map_template/shuttle/voidcrew/template)
+	// Get job slots - either from template directly or from default theme
+	var/list/job_slots_to_use = template.job_slots
+
+	// If ship has available_themes, get job slots from the default theme
+	if(length(template.available_themes))
+		var/datum/ship_theme/default_theme = get_default_theme_for_ship(template.type)
+		if(default_theme?.job_slots)
+			job_slots_to_use = default_theme.job_slots
+
 	var/crew_count = 0
-	for(var/list/job_definition in template.job_slots)
+	for(var/list/job_definition in job_slots_to_use)
 		crew_count += job_definition["slots"]
 
 	var/ship_class = template.short_name || template.name
 
 	// Build role summary
 	var/list/roles = list()
-	for(var/list/job_definition in template.job_slots)
+	for(var/list/job_definition in job_slots_to_use)
 		if(job_definition["slots"] > 0)
 			roles += "[job_definition["slots"]]x [job_definition["name"]]"
 
-	var/role_summary = roles.Join(", ")
+	var/role_summary = length(roles) ? roles.Join(", ") : "varies by theme"
 
-	return "[ship_class] with capacity for [crew_count] crew members. Crew roles: [role_summary]."
+	// Add theme info if applicable
+	var/theme_info = ""
+	if(length(template.available_themes))
+		theme_info = " [length(template.available_themes)] theme variants available."
+
+	return "[ship_class] with capacity for [crew_count] crew members. Crew roles: [role_summary].[theme_info]"
 
 /**
  * Get ship preview image path

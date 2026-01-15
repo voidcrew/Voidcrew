@@ -46,6 +46,8 @@ type ShipEntry = {
     slots: number;
     officer: boolean;
   }>;
+  theme_count: number;
+  has_upgrades: boolean;
 };
 
 const CLASS_COLORS: Record<string, string> = {

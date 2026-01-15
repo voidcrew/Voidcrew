@@ -37,6 +37,17 @@ CREATE TABLE IF NOT EXISTS `player_upgrade_unlocks` (
   KEY `idx_ship` (`ship_template`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Player theme unlocks (permanent ship theme unlocks)
+CREATE TABLE IF NOT EXISTS `player_theme_unlocks` (
+  `ckey` VARCHAR(32) NOT NULL,
+  `ship_template` VARCHAR(255) NOT NULL,
+  `theme_id` VARCHAR(64) NOT NULL,
+  `unlock_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`ckey`, `ship_template`, `theme_id`),
+  KEY `idx_ckey` (`ckey`),
+  KEY `idx_ship` (`ship_template`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Pending ship extractions queue (for failed extraction retry)
 CREATE TABLE IF NOT EXISTS `pending_ship_extractions` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,

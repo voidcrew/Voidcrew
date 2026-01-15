@@ -422,9 +422,10 @@
 
 /**
  * Sets up the ship from a template. Called after Initialize.
+ * If a theme is provided, uses the theme's job_slots instead of template's.
  * Returns TRUE on success, FALSE on failure.
  */
-/obj/structure/overmap/ship/proc/setup_from_template(datum/map_template/shuttle/voidcrew/template)
+/obj/structure/overmap/ship/proc/setup_from_template(datum/map_template/shuttle/voidcrew/template, datum/ship_theme/selected_theme)
 	if(!template)
 		return FALSE
 
@@ -452,8 +453,11 @@
 	)
 	chat_color = pick(ship_chat_colors)
 
-	//now build the job slots.
-	job_slots = source_template.assemble_job_slots()
+	// Build job slots from theme if provided, otherwise from template
+	if(selected_theme?.job_slots && length(selected_theme.job_slots))
+		job_slots = assemble_job_slots_from_list(selected_theme.job_slots)
+	else
+		job_slots = source_template.assemble_job_slots()
 
 	//then the account, which relies on there having a job, as we set it to the captain's.
 	ship_account = new(newname = ship_team.name, job = job_slots[1], player_account = FALSE)
