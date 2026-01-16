@@ -282,46 +282,7 @@
 
 		// ========== PLAYER BOUNTY ACTIONS ==========
 
-		if("create_preset_bounty")
-			// Open radial menu for item selection
-			if(SSbounty?.ship_has_active_player_bounty(ship))
-				balloon_alert(usr, "already have active bounty!")
-				return TRUE
-
-			var/reward_amount = text2num(params["reward"])
-			if(!reward_amount || reward_amount < 100)
-				balloon_alert(usr, "minimum reward is 100 cr!")
-				return TRUE
-
-			if(ship.ship_account?.account_balance < reward_amount)
-				balloon_alert(usr, "insufficient funds!")
-				return TRUE
-
-			var/item_amount = text2num(params["amount"]) || 1
-			item_amount = clamp(item_amount, 1, 100)
-
-			// Show radial menu for item selection
-			var/selected_type = show_preset_item_radial(usr)
-			if(!selected_type)
-				return TRUE // User cancelled
-
-			// Create the bounty
-			var/datum/player_bounty/new_bounty = SSbounty?.create_player_bounty(ship, linked_pad, reward_amount)
-			if(!new_bounty)
-				balloon_alert(usr, "failed to create bounty!")
-				return TRUE
-
-			if(!new_bounty.setup_preset(selected_type, item_amount))
-				new_bounty.cancel()
-				balloon_alert(usr, "invalid item selected!")
-				return TRUE
-
-			balloon_alert(usr, "bounty created!")
-			playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
-			ship.ship_announce("BOUNTY POSTED: [new_bounty.name] - [reward_amount] credit reward", "MISSION CONTROL")
-			return TRUE
-
-		if("create_custom_bounty")
+		if("create_bounty")
 			if(SSbounty?.ship_has_active_player_bounty(ship))
 				balloon_alert(usr, "already have active bounty!")
 				return TRUE
@@ -356,7 +317,7 @@
 				balloon_alert(usr, "failed to create bounty!")
 				return TRUE
 
-			if(!new_bounty.setup_custom(bounty_name, bounty_desc))
+			if(!new_bounty.setup(bounty_name, bounty_desc))
 				new_bounty.cancel()
 				balloon_alert(usr, "failed to setup bounty!")
 				return TRUE
@@ -405,53 +366,8 @@
 			balloon_alert(usr, "bounty cancelled, funds refunded")
 			return TRUE
 
-		if("turn_in_player_bounty")
-			if(!linked_pad)
-				balloon_alert(usr, "no mission pad linked!")
-				return TRUE
-
-			var/datum/player_bounty/bounty = SSbounty?.get_ship_claimed_bounty(ship)
-			if(!bounty)
-				balloon_alert(usr, "no claimed bounty!")
-				return TRUE
-
-			if(bounty.is_custom)
-				balloon_alert(usr, "custom bounties need creator approval!")
-				return TRUE
-
-			// For stacks, count total across all matching stacks on pad
-			var/list/matching_items = list()
-			var/total_amount = 0
-
-			for(var/obj/item/item in linked_pad.get_items_on_pad())
-				if(istype(item, bounty.target_item_type))
-					if(isstack(item))
-						var/obj/item/stack/S = item
-						total_amount += S.amount
-						matching_items += item
-					else
-						// Non-stack item found
-						matching_items += item
-						total_amount = 1
-						break
-
-			if(!length(matching_items))
-				balloon_alert(usr, "place [bounty.target_item_name] on pad!")
-				return TRUE
-
-			if(total_amount < bounty.target_amount)
-				balloon_alert(usr, "need [bounty.target_amount], only have [total_amount]!")
-				return TRUE
-
-			if(bounty.complete_preset(ship, linked_pad, matching_items))
-				balloon_alert(usr, "[bounty.reward] credits awarded!")
-				playsound(src, 'sound/effects/cashregister.ogg', 50, TRUE)
-			else
-				balloon_alert(usr, "turn-in failed!")
-			return TRUE
-
 		if("make_bounty_offer")
-			// Hunter submits an offer for a custom bounty
+			// Contractor submits an offer
 			if(!linked_pad)
 				balloon_alert(usr, "no mission pad linked!")
 				return TRUE
@@ -459,10 +375,6 @@
 			var/datum/player_bounty/bounty = SSbounty?.get_ship_claimed_bounty(ship)
 			if(!bounty)
 				balloon_alert(usr, "no claimed bounty!")
-				return TRUE
-
-			if(!bounty.is_custom)
-				balloon_alert(usr, "use turn-in for item bounties!")
 				return TRUE
 
 			if(bounty.has_pending_offer(ship))
@@ -484,7 +396,7 @@
 			return TRUE
 
 		if("withdraw_bounty_offer")
-			// Hunter withdraws their pending offer
+			// Contractor withdraws their pending offer
 			var/datum/player_bounty/bounty = SSbounty?.get_ship_claimed_bounty(ship)
 			if(!bounty)
 				balloon_alert(usr, "no claimed bounty!")
@@ -501,10 +413,6 @@
 			var/datum/player_bounty/bounty = SSbounty?.get_ship_created_bounty(ship)
 			if(!bounty)
 				balloon_alert(usr, "no bounty found!")
-				return TRUE
-
-			if(!bounty.is_custom)
-				balloon_alert(usr, "preset bounties auto-complete!")
 				return TRUE
 
 			// Find the ship whose offer to approve
@@ -539,35 +447,6 @@
 			else
 				balloon_alert(usr, "no offer to reject!")
 			return TRUE
-
-/**
- * Shows a radial menu for selecting preset bounty items.
- * @param user The mob selecting
- * @return The selected item type path, or null if cancelled
- */
-/obj/machinery/computer/mission_board/proc/show_preset_item_radial(mob/user)
-	var/list/choices = list()
-
-	for(var/item_type in GLOB.preset_bounty_items)
-		var/list/item_data = GLOB.preset_bounty_items[item_type]
-		var/item_name = item_data[1]
-		var/icon_state = item_data[2]
-		var/icon_file = item_data[3]
-
-		var/image/item_image = image(icon = icon_file, icon_state = icon_state)
-		choices[item_name] = item_image
-
-	var/selection = show_radial_menu(user, src, choices, tooltips = TRUE)
-	if(!selection)
-		return null
-
-	// Find the type that matches the selection name
-	for(var/item_type in GLOB.preset_bounty_items)
-		var/list/item_data = GLOB.preset_bounty_items[item_type]
-		if(item_data[1] == selection)
-			return item_type
-
-	return null
 
 /**
  * Circuit board for the mission board console.

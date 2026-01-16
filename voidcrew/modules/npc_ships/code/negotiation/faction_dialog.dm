@@ -28,6 +28,7 @@
 	var/list/counter_final_lines = list("Last chance. %CREDITS% credits. Take it or leave it.")
 	var/list/payment_received_lines = list("Good. %VALUE% credits received.")
 	var/list/cargo_rejection_lines = list("I don't want your junk. Credits only.")
+	var/list/movement_betrayal_lines = list("You dare try to flee?! All weapons, FIRE!")
 
 /**
  * Get a greeting line when hailing begins.
@@ -99,6 +100,12 @@
  */
 /datum/pirate_faction_dialog/proc/get_cargo_rejection_line()
 	return pick(cargo_rejection_lines)
+
+/**
+ * Get a line when player tries to move during negotiation (betrayal).
+ */
+/datum/pirate_faction_dialog/proc/get_movement_betrayal_line()
+	return pick(movement_betrayal_lines)
 
 // ========== FACTION SUBTYPES ==========
 

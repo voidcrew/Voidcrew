@@ -12,6 +12,10 @@
 	var/obj/structure/overmap/ship/linked_ship
 	/// Active negotiation (if any)
 	var/datum/pirate_negotiation/active_negotiation
+	/// Whether we're currently ringing from an incoming hail
+	var/incoming_hail = FALSE
+	/// Timer for the ring sound loop
+	var/ring_timer_id
 
 /obj/machinery/holopad/ship_comms/Initialize(mapload)
 	. = ..()
@@ -19,11 +23,61 @@
 	find_linked_ship()
 
 /obj/machinery/holopad/ship_comms/Destroy()
+	stop_ringing()
 	if(active_negotiation)
 		active_negotiation.holopad = null
 		active_negotiation = null
 	linked_ship = null
 	return ..()
+
+/**
+ * Start ringing to indicate an incoming pirate hail.
+ */
+/obj/machinery/holopad/ship_comms/proc/start_ringing()
+	if(incoming_hail)
+		return  // Already ringing
+
+	incoming_hail = TRUE
+	update_appearance(UPDATE_ICON_STATE)
+
+	// Play ring sound immediately
+	playsound(src, 'sound/machines/beep/twobeep.ogg', 75, FALSE)
+
+	// Set up repeating ring sound every 3 seconds
+	ring_timer_id = addtimer(CALLBACK(src, PROC_REF(ring_sound)), 3 SECONDS, TIMER_LOOP | TIMER_STOPPABLE)
+
+/**
+ * Stop ringing (hail answered or expired).
+ */
+/obj/machinery/holopad/ship_comms/proc/stop_ringing()
+	if(!incoming_hail)
+		return
+
+	incoming_hail = FALSE
+	update_appearance(UPDATE_ICON_STATE)
+
+	if(ring_timer_id)
+		deltimer(ring_timer_id)
+		ring_timer_id = null
+
+/**
+ * Play ring sound (called by timer).
+ */
+/obj/machinery/holopad/ship_comms/proc/ring_sound()
+	if(!incoming_hail)
+		stop_ringing()
+		return
+	playsound(src, 'sound/machines/beep/twobeep.ogg', 75, FALSE)
+
+/obj/machinery/holopad/ship_comms/update_icon_state()
+	// Don't call parent - it would overwrite our icon_state
+	if(incoming_hail)
+		icon_state = "holopad_ringing"
+		return
+	if(active_negotiation)
+		icon_state = "holopad1"
+		return
+	icon_state = "holopad0"
 
 /**
  * Find the ship this holopad is installed on.
@@ -48,8 +102,41 @@
 	return null
 
 /**
+ * Get list of pirate ships that are actively hailing us (waiting for us to answer).
+ * These are pirates in HAILING state targeting our ship.
+ */
+/obj/machinery/holopad/ship_comms/proc/get_hailing_pirates()
+	var/list/hailing = list()
+
+	if(!linked_ship)
+		find_linked_ship()
+	if(!linked_ship)
+		return hailing
+
+	for(var/obj/structure/overmap/ship/npc/pirate/pirate as anything in SSnpc_ships.active_ships)
+		if(!istype(pirate))
+			continue
+
+		var/datum/ai_controller/npc_ship/controller = pirate.ai_controller
+		if(!controller)
+			continue
+
+		// Must be in HAILING state and targeting us
+		var/combat_state = controller.get_combat_state()
+		if(combat_state != NPC_COMBAT_HAILING)
+			continue
+
+		if(controller.get_target() != linked_ship)
+			continue
+
+		hailing += pirate
+
+	return hailing
+
+/**
  * Get list of pirate ships that can be hailed.
  * Only pirates targeting us or about to target us are hailable.
+ * Excludes pirates already hailing us (use answer_hail for those).
  */
 /obj/machinery/holopad/ship_comms/proc/get_hailable_pirates()
 	var/list/hailable = list()
@@ -68,11 +155,16 @@
 		if(!pirate.accepts_negotiation)
 			continue
 
-		// Must be targeting us OR be in range and hostile
 		var/datum/ai_controller/npc_ship/controller = pirate.ai_controller
 		if(!controller)
 			continue
 
+		// Skip pirates already hailing us (they're in the hailing list, not here)
+		var/combat_state = controller.get_combat_state()
+		if(combat_state == NPC_COMBAT_HAILING)
+			continue
+
+		// Must be targeting us OR be in range and hostile
 		var/is_targeting_us = (controller.get_target() == linked_ship)
 		var/in_range = (get_dist(pirate, linked_ship) <= pirate.territory_range + 2)
 		var/is_hostile = pirate.hostile
@@ -89,7 +181,59 @@
 	return hailable
 
 /**
- * Initiate hailing a pirate ship.
+ * Answer a hail from a pirate ship that is already trying to contact us.
+ * Transitions pirate from HAILING to NEGOTIATING state.
+ */
+/obj/machinery/holopad/ship_comms/proc/answer_hail(obj/structure/overmap/ship/npc/pirate/pirate, mob/user)
+	if(!pirate || !linked_ship)
+		return FALSE
+
+	if(active_negotiation)
+		to_chat(user, span_warning("Already in an active negotiation!"))
+		return FALSE
+
+	var/datum/ai_controller/npc_ship/controller = pirate.ai_controller
+	if(!controller)
+		to_chat(user, span_warning("Failed to establish connection - no response."))
+		return FALSE
+
+	// Verify pirate is actually hailing us
+	if(controller.get_combat_state() != NPC_COMBAT_HAILING)
+		to_chat(user, span_warning("[pirate.name] is no longer hailing."))
+		return FALSE
+
+	if(controller.get_target() != linked_ship)
+		to_chat(user, span_warning("[pirate.name] is not hailing us."))
+		return FALSE
+
+	// Create negotiation
+	var/datum/pirate_negotiation/negotiation = new(pirate, linked_ship, src)
+	if(QDELETED(negotiation))
+		to_chat(user, span_warning("Failed to establish connection."))
+		return FALSE
+
+	active_negotiation = negotiation
+
+	// Start the negotiation - this will tell the pirate AI to enter NEGOTIATING state
+	if(!negotiation.start_negotiation())
+		to_chat(user, span_warning("Failed to start negotiation."))
+		QDEL_NULL(active_negotiation)
+		return FALSE
+
+	// Clear hailing state on pirate
+	controller.clear_blackboard_key(BB_NPC_HAILING_START)
+	controller.clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
+	controller.clear_blackboard_key("hailing_reminder_sent")
+
+	// Stop the ringing - call has been answered
+	stop_ringing()
+
+	to_chat(user, span_notice("Connection established with [pirate.name]."))
+	return TRUE
+
+/**
+ * Initiate hailing a pirate ship (player-initiated contact).
+ * Used when pirate is NOT already hailing us.
  */
 /obj/machinery/holopad/ship_comms/proc/hail_pirate(obj/structure/overmap/ship/npc/pirate/pirate, mob/user)
 	if(!pirate || !linked_ship)
@@ -157,19 +301,32 @@
 			"state" = active_negotiation.negotiation_state,
 		)
 
-	// Hailable pirates
-	var/list/pirates = list()
-	for(var/obj/structure/overmap/ship/npc/pirate/pirate in get_hailable_pirates())
+	// Pirates actively hailing us (incoming calls - answer these!)
+	var/list/hailing_data = list()
+	var/list/hailing = get_hailing_pirates()
+	for(var/obj/structure/overmap/ship/npc/pirate/pirate in hailing)
+		hailing_data += list(list(
+			"ref" = REF(pirate),
+			"name" = pirate.name,
+			"faction" = pirate.pirate_faction,
+			"distance" = linked_ship ? get_dist(pirate, linked_ship) : 0,
+		))
+	data["hailing_pirates"] = hailing_data
+
+	// Hailable pirates - these are NOT currently hailing us, but we could hail them
+	var/list/pirates_data = list()
+	var/list/hailable = get_hailable_pirates()
+	for(var/obj/structure/overmap/ship/npc/pirate/pirate in hailable)
 		var/datum/ai_controller/npc_ship/controller = pirate.ai_controller
 		var/is_targeting = (controller?.get_target() == linked_ship)
-		pirates += list(list(
+		pirates_data += list(list(
 			"ref" = REF(pirate),
 			"name" = pirate.name,
 			"faction" = pirate.pirate_faction,
 			"targeting" = is_targeting,
-			"distance" = get_dist(pirate, linked_ship),
+			"distance" = linked_ship ? get_dist(pirate, linked_ship) : 0,
 		))
-	data["hailable_pirates"] = pirates
+	data["hailable_pirates"] = pirates_data
 
 	return data
 
@@ -179,7 +336,16 @@
 		return
 
 	switch(action)
+		if("answer")
+			// Answer an incoming hail from a pirate
+			var/pirate_ref = params["ref"]
+			var/obj/structure/overmap/ship/npc/pirate/pirate = locate(pirate_ref) in SSnpc_ships.active_ships
+			if(pirate)
+				answer_hail(pirate, usr)
+			return TRUE
+
 		if("hail")
+			// Initiate contact with a pirate (player-initiated)
 			var/pirate_ref = params["ref"]
 			var/obj/structure/overmap/ship/npc/pirate/pirate = locate(pirate_ref) in SSnpc_ships.active_ships
 			if(pirate)
@@ -235,5 +401,4 @@
 	// For ship comms, we just track that there's a hologram
 	// The actual hologram is managed by the negotiation datum
 	if(holo)
-		SetLightsAndPower()
-		update_appearance()
+		SetLigh

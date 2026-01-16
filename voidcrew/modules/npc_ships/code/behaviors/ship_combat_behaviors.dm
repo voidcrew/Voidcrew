@@ -126,6 +126,15 @@
 			controller.blackboard[BB_NPC_SCAN_START_TIME] = world.time
 			controller.blackboard[BB_NPC_SCAN_COMPLETE] = FALSE
 			controller.blackboard[BB_NPC_SCAN_ANNOUNCED] = FALSE
+		// If this pirate accepts negotiation, go to HAILING first (give player chance to respond)
+		else if(istype(ship, /obj/structure/overmap/ship/npc/pirate))
+			var/obj/structure/overmap/ship/npc/pirate/pirate_ship = ship
+			if(pirate_ship.accepts_negotiation)
+				controller.set_combat_state(NPC_COMBAT_HAILING)
+				controller.clear_blackboard_key(BB_NPC_HAILING_START)
+				controller.clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
+			else
+				controller.set_combat_state(NPC_COMBAT_ENGAGING)
 		else
 			controller.set_combat_state(NPC_COMBAT_ENGAGING)
 
@@ -186,8 +195,20 @@
 	var/target_wealth = target.ship_account?.account_balance || 0
 
 	if(target_wealth >= ship.min_target_wealth)
-		// Target has money - engage!
-		ship.ship_announce("Scan complete. Target has [target_wealth] credits. Engaging.", "SCANNER")
+		// Target has money - proceed to hailing or engaging
+		ship.ship_announce("Scan complete. Target has [target_wealth] credits.", "SCANNER")
+
+		// If this pirate accepts negotiation, go to HAILING first (give player chance to respond)
+		if(istype(ship, /obj/structure/overmap/ship/npc/pirate))
+			var/obj/structure/overmap/ship/npc/pirate/pirate_ship = ship
+			if(pirate_ship.accepts_negotiation)
+				target.ship_announce("WARNING: [ship.name] is hailing your vessel!", "SECURITY ALERT")
+				controller.set_combat_state(NPC_COMBAT_HAILING)
+				controller.clear_blackboard_key(BB_NPC_HAILING_START)
+				controller.clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
+				return AI_BEHAVIOR_DELAY
+
+		// Otherwise engage directly
 		target.ship_announce("WARNING: Hostile vessel has completed scan and is engaging!", "SECURITY ALERT")
 		controller.set_combat_state(NPC_COMBAT_ENGAGING)
 	else
@@ -197,6 +218,153 @@
 		controller.clear_target()
 
 	return AI_BEHAVIOR_DELAY
+
+// ========== HAILING ==========
+
+/**
+ * Hailing behavior - pirate is demanding tribute, waiting for player response.
+ * During this phase:
+ * - Pirate follows target but doesn't attack
+ * - Player can answer via holopad → NEGOTIATING
+ * - Player can escape (moving is OK during hailing)
+ * - Player locks weapons → immediate COMBAT
+ * - Player fires on pirate → immediate COMBAT
+ * - 20 seconds pass without answer → COMBAT
+ */
+/datum/ai_behavior/npc_ship/hailing
+	action_cooldown = 1 SECONDS
+
+/datum/ai_behavior/npc_ship/hailing/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship(controller)
+	var/obj/structure/overmap/ship/target = controller.get_target()
+
+	if(!ship || !target || QDELETED(target))
+		controller.clear_target()
+		return AI_BEHAVIOR_DELAY
+
+	// Check if we've been attacked (player aggression)
+	// This is handled by signal, but double-check here
+	if(controller.blackboard[BB_NPC_TARGET_LOCKED])
+		// We somehow got a lock during hailing - shouldn't happen, but handle it
+		escalate_to_combat(controller, ship, target, "aggression")
+		return AI_BEHAVIOR_DELAY
+
+	// Send initial hail announcement (only once)
+	if(!controller.blackboard[BB_NPC_HAILING_ANNOUNCED])
+		controller.set_blackboard_key(BB_NPC_HAILING_ANNOUNCED, TRUE)
+		controller.set_blackboard_key(BB_NPC_HAILING_START, world.time)
+
+		// Announce to pirate ship
+		ship.ship_announce("Hailing [target.name]. Awaiting response.", "COMMS")
+
+		// Announce to player ship - this is the key notification!
+		target.ship_announce(
+			"INCOMING HAIL from [ship.name]! Report to ship communications array to respond. You have 20 seconds before they open fire!",
+			"PRIORITY ALERT",
+			FALSE,
+			sound('sound/effects/alert.ogg')
+		)
+
+		// Make the ship comms holopad ring
+		start_target_holopad_ringing(target)
+
+	// Check timeout
+	var/hail_start = controller.blackboard[BB_NPC_HAILING_START]
+	if(!hail_start)
+		controller.set_blackboard_key(BB_NPC_HAILING_START, world.time)
+		return AI_BEHAVIOR_DELAY
+
+	var/elapsed = world.time - hail_start
+
+	// Send reminder at halfway point
+	if(elapsed >= (NPC_HAILING_GRACE_PERIOD / 2) && elapsed < (NPC_HAILING_GRACE_PERIOD / 2) + 2 SECONDS)
+		// Only send once (check if we're in the 2-second window after halfway)
+		if(!controller.blackboard["hailing_reminder_sent"])
+			controller.set_blackboard_key("hailing_reminder_sent", TRUE)
+			target.ship_announce(
+				"WARNING: [ship.name] is losing patience! 10 seconds until they open fire!",
+				"URGENT",
+				FALSE,
+				sound('sound/effects/alert.ogg')
+			)
+
+	// Check if grace period expired
+	if(elapsed >= NPC_HAILING_GRACE_PERIOD)
+		escalate_to_combat(controller, ship, target, "ignored")
+		return AI_BEHAVIOR_DELAY
+
+	return AI_BEHAVIOR_DELAY
+
+/**
+ * Escalate from HAILING to COMBAT - player ignored or aggressed.
+ */
+/datum/ai_behavior/npc_ship/hailing/proc/escalate_to_combat(datum/ai_controller/npc_ship/controller, obj/structure/overmap/ship/npc/ship, obj/structure/overmap/ship/target, reason)
+	// Clear hailing state
+	controller.clear_blackboard_key(BB_NPC_HAILING_START)
+	controller.clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
+	controller.clear_blackboard_key("hailing_reminder_sent")
+
+	// Stop the holopad ringing
+	stop_target_holopad_ringing(target)
+
+	// Announce escalation
+	if(reason == "ignored")
+		ship.ship_announce("No response from target. Engaging.", "COMMS")
+		target.ship_announce(
+			"[ship.name] has received no response and is engaging!",
+			"COMBAT ALERT",
+			FALSE,
+			sound('sound/effects/alert.ogg')
+		)
+	else if(reason == "aggression")
+		ship.ship_announce("Hostile action detected! Engaging!", "COMBAT")
+		target.ship_announce(
+			"[ship.name] is retaliating to hostile action!",
+			"COMBAT ALERT",
+			FALSE,
+			sound('sound/effects/alert.ogg')
+		)
+	else if(reason == "negotiation_failed")
+		ship.ship_announce("Negotiations failed. Engaging target.", "COMMS")
+		target.ship_announce(
+			"Negotiations with [ship.name] have failed! Brace for combat!",
+			"COMBAT ALERT",
+			FALSE,
+			sound('sound/effects/alert.ogg')
+		)
+
+	// Transition to ENGAGING (will acquire lock then fight)
+	controller.set_combat_state(NPC_COMBAT_ENGAGING)
+
+/**
+ * Find and start ringing the ship comms holopad on the target ship.
+ */
+/datum/ai_behavior/npc_ship/hailing/proc/start_target_holopad_ringing(obj/structure/overmap/ship/target)
+	var/obj/machinery/holopad/ship_comms/holopad = find_ship_comms_holopad(target)
+	holopad?.start_ringing()
+
+/**
+ * Find and stop ringing the ship comms holopad on the target ship.
+ */
+/datum/ai_behavior/npc_ship/hailing/proc/stop_target_holopad_ringing(obj/structure/overmap/ship/target)
+	var/obj/machinery/holopad/ship_comms/holopad = find_ship_comms_holopad(target)
+	holopad?.stop_ringing()
+
+/**
+ * Find the ship comms holopad on a ship.
+ */
+/datum/ai_behavior/npc_ship/hailing/proc/find_ship_comms_holopad(obj/structure/overmap/ship/target)
+	if(!target?.shuttle?.shuttle_areas)
+		return null
+
+	for(var/area/shuttle_area as anything in target.shuttle.shuttle_areas)
+		var/obj/machinery/holopad/ship_comms/found = locate() in shuttle_area
+		if(found)
+			return found
+
+	return null
 
 // ========== ACQUIRE LOCK ==========
 
@@ -423,16 +591,15 @@
 		controller.clear_target()
 		return AI_BEHAVIOR_DELAY
 
-	// Check if target escaped to a different zone
-	var/spawn_zone = controller.blackboard[BB_NPC_SPAWN_ZONE]
-	if(spawn_zone)
-		var/turf/target_turf = get_turf(target)
-		if(target_turf)
-			var/target_zone = SSovermap_zones.get_zone(target_turf)
-			if(target_zone != spawn_zone)
-				SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
-				controller.clear_target()
-				return AI_BEHAVIOR_DELAY
+	// Check if target escaped to a protected zone (where combat isn't allowed)
+	var/turf/target_turf = get_turf(target)
+	if(target_turf)
+		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
+		var/target_can_be_attacked = target_zone ? (target_zone.weapons_allowed() || target_zone.interdiction_allowed()) : TRUE
+		if(!target_can_be_attacked)
+			SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
+			controller.clear_target()
+			return AI_BEHAVIOR_DELAY
 
 	// Check distance to target
 	var/target_dist = get_dist(ship, target)

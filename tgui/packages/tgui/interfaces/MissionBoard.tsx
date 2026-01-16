@@ -75,17 +75,14 @@ type PlayerBounty = {
   name: string;
   desc: string;
   reward: number;
-  is_custom: boolean;
   status: 'available' | 'completed' | 'cancelled';
-  target_item_name?: string;
-  target_amount?: number;
   creator_name?: string;
   is_creator: boolean;
   is_claimer: boolean;
   was_abandoned?: boolean;
   has_pending_offer?: boolean;
   can_claim: boolean;
-  hunter_count: number;
+  contractor_count: number;
   pending_offers?: PendingOffer[];
 };
 
@@ -643,161 +640,37 @@ type PlayerBountyCreatorProps = {
   hasPad: boolean;
 };
 
-type BountyMode = 'select' | 'preset' | 'custom';
-
 const PlayerBountyCreator = (props: PlayerBountyCreatorProps) => {
   const { act } = useBackend<Data>();
   const { hasCreatedBounty, shipBalance, hasPad } = props;
 
-  const [mode, setMode] = useState<BountyMode>('select');
   const [reward, setReward] = useState(500);
-  const [itemAmount, setItemAmount] = useState(5);
-  const [customName, setCustomName] = useState('');
-  const [customDesc, setCustomDesc] = useState('');
+  const [bountyName, setBountyName] = useState('');
+  const [bountyDesc, setBountyDesc] = useState('');
 
   if (hasCreatedBounty) {
     return null; // Don't show creator if already has a bounty
   }
 
-  // Initial selection - choose bounty type
-  if (mode === 'select') {
-    return (
-      <Section title="Create Bounty">
-        <Box mb={1} color="label">
-          Post a bounty for other ships to complete. Your reward will be held in
-          escrow until the bounty is completed or cancelled.
-        </Box>
-        <LabeledList>
-          <LabeledList.Item label="Ship Balance">
-            <Box color={shipBalance >= 100 ? 'good' : 'bad'}>
-              {shipBalance} cr
-            </Box>
-          </LabeledList.Item>
-        </LabeledList>
-        <Divider />
-        <Stack>
-          <Stack.Item grow>
-            <Button
-              fluid
-              icon="box"
-              color="good"
-              disabled={shipBalance < 100 || !hasPad}
-              tooltip={
-                !hasPad
-                  ? 'Requires mission pad for item delivery'
-                  : shipBalance < 100
-                    ? 'Insufficient funds (need 100 cr minimum)'
-                    : 'Request a specific item to be delivered'
-              }
-              onClick={() => setMode('preset')}
-            >
-              Request Item
-            </Button>
-          </Stack.Item>
-          <Stack.Item grow>
-            <Button
-              fluid
-              icon="pen"
-              color="caution"
-              disabled={shipBalance < 100}
-              tooltip={
-                shipBalance < 100
-                  ? 'Insufficient funds (need 100 cr minimum)'
-                  : 'Create a custom objective'
-              }
-              onClick={() => setMode('custom')}
-            >
-              Custom Objective
-            </Button>
-          </Stack.Item>
-        </Stack>
-      </Section>
-    );
-  }
-
-  // Preset item bounty flow
-  if (mode === 'preset') {
-    return (
-      <Section
-        title="Request Item"
-        buttons={
-          <Button icon="arrow-left" onClick={() => setMode('select')}>
-            Back
-          </Button>
-        }
-      >
-        <LabeledList>
-          <LabeledList.Item label="Item Amount">
-            <NumberInput
-              value={itemAmount}
-              minValue={1}
-              maxValue={100}
-              step={1}
-              width="80px"
-              onChange={(value) => setItemAmount(value)}
-            />
-            <Box as="span" color="label" ml={1}>
-              (for stackable items)
-            </Box>
-          </LabeledList.Item>
-          <LabeledList.Item label="Reward">
-            <NumberInput
-              value={reward}
-              minValue={100}
-              maxValue={Math.min(50000, shipBalance)}
-              step={100}
-              width="100px"
-              onChange={(value) => setReward(value)}
-            />
-            <Box as="span" color="label" ml={1}>
-              cr
-            </Box>
-          </LabeledList.Item>
-        </LabeledList>
-        <Divider />
-        <Button
-          fluid
-          icon="hand-pointer"
-          color="good"
-          disabled={shipBalance < reward}
-          tooltip={
-            shipBalance < reward ? 'Insufficient funds' : 'Choose item type'
-          }
-          onClick={() =>
-            act('create_preset_bounty', { reward, amount: itemAmount })
-          }
-        >
-          Select Item Type...
-        </Button>
-      </Section>
-    );
-  }
-
-  // Custom objective bounty flow
   return (
-    <Section
-      title="Custom Objective"
-      buttons={
-        <Button
-          icon="arrow-left"
-          onClick={() => {
-            setMode('select');
-            setCustomName('');
-            setCustomDesc('');
-          }}
-        >
-          Back
-        </Button>
-      }
-    >
+    <Section title="Create Bounty">
+      <Box mb={1} color="label">
+        Post a bounty for other ships to complete. Contractors will submit
+        offers with proof, which you can approve to complete the exchange.
+      </Box>
       <LabeledList>
+        <LabeledList.Item label="Ship Balance">
+          <Box color={shipBalance >= 100 ? 'good' : 'bad'}>
+            {shipBalance} cr
+          </Box>
+        </LabeledList.Item>
         <LabeledList.Item label="Title">
           <Input
             placeholder="Bounty name..."
             width="100%"
             maxLength={64}
-            value={customName}
-            onChange={(value) => setCustomName(value)}
+            value={bountyName}
+            onChange={(value) => setBountyName(value)}
           />
         </LabeledList.Item>
         <LabeledList.Item label="Objective">
@@ -806,8 +679,8 @@ const PlayerBountyCreator = (props: PlayerBountyCreatorProps) => {
             width="100%"
             height="60px"
             maxLength={256}
-            value={customDesc}
-            onChange={(value) => setCustomDesc(value)}
+            value={bountyDesc}
+            onChange={(value) => setBountyDesc(value)}
           />
         </LabeledList.Item>
         <LabeledList.Item label="Reward">
@@ -827,31 +700,30 @@ const PlayerBountyCreator = (props: PlayerBountyCreatorProps) => {
       <Divider />
       <Button
         fluid
-        icon="check"
+        icon="plus"
         color="good"
         disabled={
           shipBalance < reward ||
-          customName.length < 3 ||
-          customDesc.length < 5
+          bountyName.length < 3 ||
+          bountyDesc.length < 5
         }
         tooltip={
           shipBalance < reward
             ? 'Insufficient funds'
-            : customName.length < 3
+            : bountyName.length < 3
               ? 'Title must be at least 3 characters'
-              : customDesc.length < 5
+              : bountyDesc.length < 5
                 ? 'Objective must be at least 5 characters'
                 : undefined
         }
         onClick={() => {
-          act('create_custom_bounty', {
+          act('create_bounty', {
             reward,
-            name: customName,
-            desc: customDesc,
+            name: bountyName,
+            desc: bountyDesc,
           });
-          setMode('select');
-          setCustomName('');
-          setCustomDesc('');
+          setBountyName('');
+          setBountyDesc('');
         }}
       >
         Post Bounty
@@ -890,26 +762,22 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
         >
           <LabeledList>
             <LabeledList.Item label="Name">{createdBounty.name}</LabeledList.Item>
-            <LabeledList.Item label="Type">
-              {createdBounty.is_custom ? 'Custom Objective' : 'Item Request'}
-            </LabeledList.Item>
             <LabeledList.Item label="Reward">
               <Box color="gold">{createdBounty.reward} cr</Box>
             </LabeledList.Item>
             <LabeledList.Item label="Contractors">
               <Box
-                color={createdBounty.hunter_count > 0 ? 'good' : 'average'}
+                color={createdBounty.contractor_count > 0 ? 'good' : 'average'}
               >
-                {createdBounty.hunter_count > 0
-                  ? `${createdBounty.hunter_count} ship${createdBounty.hunter_count !== 1 ? 's' : ''} accepted`
+                {createdBounty.contractor_count > 0
+                  ? `${createdBounty.contractor_count} ship${createdBounty.contractor_count !== 1 ? 's' : ''} accepted`
                   : 'Waiting for contractors'}
               </Box>
             </LabeledList.Item>
           </LabeledList>
 
-          {/* For custom bounties, show pending offers to approve/reject */}
-          {!!createdBounty.is_custom &&
-            createdBounty.pending_offers &&
+          {/* Show pending offers to approve/reject */}
+          {createdBounty.pending_offers &&
             createdBounty.pending_offers.length > 0 && (
               <Box mt={1}>
                 <Divider />
@@ -965,15 +833,14 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
               </Box>
             )}
 
-          {/* For custom bounties with hunters but no offers yet */}
-          {!!createdBounty.is_custom &&
-            createdBounty.hunter_count > 0 &&
+          {/* Contractors working but no offers yet */}
+          {createdBounty.contractor_count > 0 &&
             (!createdBounty.pending_offers ||
               createdBounty.pending_offers.length === 0) && (
               <Box mt={1}>
                 <NoticeBox info>
-                  Contractors are working on your bounty. Offers will appear here
-                  for your approval.
+                  Contractors are working on your bounty. Offers will appear
+                  here for your approval.
                 </NoticeBox>
               </Box>
             )}
@@ -983,7 +850,7 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
       {/* Show claimed bounty */}
       {claimedBounty && (
         <Section
-          title="Hunting Bounty"
+          title="Accepted Contract"
           buttons={
             <Button
               icon="times"
@@ -1005,9 +872,11 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
               <Box color="gold">{claimedBounty.reward} cr</Box>
             </LabeledList.Item>
             <LabeledList.Item label="Competition">
-              <Box color={claimedBounty.hunter_count > 1 ? 'orange' : 'good'}>
-                {claimedBounty.hunter_count > 1
-                  ? `${claimedBounty.hunter_count - 1} other ship${claimedBounty.hunter_count > 2 ? 's' : ''} competing`
+              <Box
+                color={claimedBounty.contractor_count > 1 ? 'orange' : 'good'}
+              >
+                {claimedBounty.contractor_count > 1
+                  ? `${claimedBounty.contractor_count - 1} other ship${claimedBounty.contractor_count > 2 ? 's' : ''} competing`
                   : 'No competition'}
               </Box>
             </LabeledList.Item>
@@ -1016,68 +885,45 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
             </LabeledList.Item>
           </LabeledList>
 
-          {/* Preset item bounty - direct turn-in */}
-          {!claimedBounty.is_custom && (
-            <Box mt={1}>
-              <Button
-                fluid
-                icon="truck"
-                color="good"
-                disabled={!hasPad}
-                tooltip={
-                  !hasPad
-                    ? 'Requires mission pad'
-                    : `Place ${claimedBounty.target_item_name} on pad`
-                }
-                onClick={() => act('turn_in_player_bounty')}
-              >
-                Turn In ({claimedBounty.target_item_name})
-              </Button>
-            </Box>
-          )}
-
-          {/* Custom bounty - offer system */}
-          {!!claimedBounty.is_custom && (
-            <Box mt={1}>
-              {claimedBounty.has_pending_offer ? (
-                <>
-                  <NoticeBox info mb={1}>
-                    Your offer has been submitted. Keep the items on your pad
-                    until the creator approves!
-                  </NoticeBox>
-                  <Button
-                    fluid
-                    icon="undo"
-                    color="caution"
-                    onClick={() => act('withdraw_bounty_offer')}
-                  >
-                    Withdraw Offer
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <NoticeBox info mb={1}>
-                    Place items on your pad as proof, then submit an offer. The
-                    creator will review and approve to complete the exchange.
-                  </NoticeBox>
-                  <Button
-                    fluid
-                    icon="paper-plane"
-                    color="good"
-                    disabled={!hasPad}
-                    tooltip={
-                      !hasPad
-                        ? 'Requires mission pad'
-                        : 'Submit items on pad as an offer'
-                    }
-                    onClick={() => act('make_bounty_offer')}
-                  >
-                    Submit Offer
-                  </Button>
-                </>
-              )}
-            </Box>
-          )}
+          <Box mt={1}>
+            {claimedBounty.has_pending_offer ? (
+              <>
+                <NoticeBox info mb={1}>
+                  Your offer has been submitted. Keep the items on your pad
+                  until the creator approves!
+                </NoticeBox>
+                <Button
+                  fluid
+                  icon="undo"
+                  color="caution"
+                  onClick={() => act('withdraw_bounty_offer')}
+                >
+                  Withdraw Offer
+                </Button>
+              </>
+            ) : (
+              <>
+                <NoticeBox info mb={1}>
+                  Place items on your pad as proof, then submit an offer. The
+                  creator will review and approve to complete the exchange.
+                </NoticeBox>
+                <Button
+                  fluid
+                  icon="paper-plane"
+                  color="good"
+                  disabled={!hasPad}
+                  tooltip={
+                    !hasPad
+                      ? 'Requires mission pad'
+                      : 'Submit items on pad as an offer'
+                  }
+                  onClick={() => act('make_bounty_offer')}
+                >
+                  Submit Offer
+                </Button>
+              </>
+            )}
+          </Box>
         </Section>
       )}
     </>
@@ -1098,9 +944,9 @@ const PlayerBountyCard = (props: PlayerBountyCardProps) => {
 
   // Determine why we can't claim
   const getDisabledReason = () => {
-    if (bounty.was_abandoned) return 'You abandoned this bounty';
-    if (hasClaimedBounty) return 'Already accepted a bounty';
-    if (!bounty.can_claim) return 'Cannot claim this bounty';
+    if (bounty.was_abandoned) return 'You abandoned this contract';
+    if (hasClaimedBounty) return 'Already accepted a contract';
+    if (!bounty.can_claim) return 'Cannot accept this contract';
     return undefined;
   };
 
@@ -1108,9 +954,6 @@ const PlayerBountyCard = (props: PlayerBountyCardProps) => {
     <Section
       title={
         <Box inline color={bounty.was_abandoned ? 'gray' : undefined}>
-          <Box as="span" color={bounty.was_abandoned ? 'gray' : 'teal'} mr={1}>
-            {bounty.is_custom ? '[Custom]' : '[Item]'}
-          </Box>
           {bounty.name}
         </Box>
       }
@@ -1127,23 +970,15 @@ const PlayerBountyCard = (props: PlayerBountyCardProps) => {
         {bounty.desc}
       </Box>
 
-      {!bounty.is_custom && bounty.target_item_name && (
-        <Box mb={1} p={1} backgroundColor="rgba(0, 100, 200, 0.1)">
-          <Box color="label">
-            Required:{' '}
-            <Box as="span" color="white" bold>
-              {bounty.target_item_name}
-            </Box>
-          </Box>
-        </Box>
-      )}
-
       <Flex justify="space-between" align="center" mb={1}>
         <Flex.Item>
           <Box color="label">
-            <Box as="span" color={bounty.hunter_count > 0 ? 'orange' : 'gray'}>
-              {bounty.hunter_count} crew{bounty.hunter_count !== 1 ? 's' : ''}{' '}
-              accepted
+            <Box
+              as="span"
+              color={bounty.contractor_count > 0 ? 'orange' : 'gray'}
+            >
+              {bounty.contractor_count} contractor
+              {bounty.contractor_count !== 1 ? 's' : ''}
             </Box>
           </Box>
         </Flex.Item>
@@ -1158,13 +993,13 @@ const PlayerBountyCard = (props: PlayerBountyCardProps) => {
 
       <Button
         fluid
-        icon="hand-paper"
+        icon="handshake"
         color={canClaim ? 'good' : 'gray'}
         disabled={!canClaim}
         tooltip={getDisabledReason()}
         onClick={() => act('claim_player_bounty', { ref: bounty.ref })}
       >
-        {bounty.was_abandoned ? 'Abandoned' : 'Accept Bounty'}
+        {bounty.was_abandoned ? 'Abandoned' : 'Accept Contract'}
       </Button>
     </Section>
   );

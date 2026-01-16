@@ -51,6 +51,10 @@
 	RegisterSignal(new_pawn, COMSIG_SHIP_HULL_HIT, PROC_REF(on_hull_hit))
 	RegisterSignal(new_pawn, COMSIG_QDELETING, PROC_REF(on_ship_destroyed))
 
+	// Register for player aggression signals (being targeted = player starting lock)
+	RegisterSignal(new_pawn, COMSIG_SHIP_BEING_TARGETED, PROC_REF(on_being_targeted_by_player))
+	RegisterSignal(new_pawn, COMSIG_SHIP_WEAPONS_LOCKED, PROC_REF(on_weapons_locked_by_player))
+
 	return ..()
 
 /// Override to avoid ai_movement access (we set ai_movement = null for ships)
@@ -64,6 +68,8 @@
 		COMSIG_SHIP_SHIELD_HIT,
 		COMSIG_SHIP_HULL_HIT,
 		COMSIG_QDELETING,
+		COMSIG_SHIP_BEING_TARGETED,
+		COMSIG_SHIP_WEAPONS_LOCKED,
 	))
 
 	// Replicate parent cleanup (without ai_movement check which would crash)
@@ -183,6 +189,72 @@
 		if(target.engaging_pirate_ref?.resolve() == our_ship)
 			target.engaging_pirate_ref = null
 	set_ai_status(AI_STATUS_OFF)
+
+/**
+ * Called when a player ship STARTS targeting us (beginning lock acquisition).
+ * If we're in HAILING or NEGOTIATING with this player, treat as aggression.
+ */
+/datum/ai_controller/npc_ship/proc/on_being_targeted_by_player(datum/source, obj/structure/overmap/ship/aggressor)
+	SIGNAL_HANDLER
+	// Only react if the aggressor is our current target (the ship we're negotiating with)
+	var/obj/structure/overmap/ship/our_target = get_target()
+	if(!our_target || aggressor != our_target)
+		return
+
+	var/combat_state = get_combat_state()
+
+	// If we're hailing or negotiating, this is aggression
+	if(combat_state == NPC_COMBAT_HAILING || combat_state == NPC_COMBAT_NEGOTIATING)
+		INVOKE_ASYNC(src, PROC_REF(handle_player_aggression), aggressor, "targeting")
+
+/**
+ * Called when a player ship completes a weapons lock on us.
+ * If we're in HAILING or NEGOTIATING with this player, treat as aggression.
+ */
+/datum/ai_controller/npc_ship/proc/on_weapons_locked_by_player(datum/source, obj/structure/overmap/ship/aggressor)
+	SIGNAL_HANDLER
+	// Only react if the aggressor is our current target (the ship we're negotiating with)
+	var/obj/structure/overmap/ship/our_target = get_target()
+	if(!our_target || aggressor != our_target)
+		return
+
+	var/combat_state = get_combat_state()
+
+	// If we're hailing or negotiating, this is aggression - immediate combat
+	if(combat_state == NPC_COMBAT_HAILING || combat_state == NPC_COMBAT_NEGOTIATING)
+		INVOKE_ASYNC(src, PROC_REF(handle_player_aggression), aggressor, "weapons_lock")
+
+/**
+ * Handle player aggression during HAILING or NEGOTIATING phase.
+ * Escalates to immediate combat.
+ */
+/datum/ai_controller/npc_ship/proc/handle_player_aggression(obj/structure/overmap/ship/aggressor, reason)
+	var/obj/structure/overmap/ship/npc/our_ship = get_ship()
+	var/combat_state = get_combat_state()
+
+	// If negotiating, end the negotiation first
+	if(combat_state == NPC_COMBAT_NEGOTIATING)
+		var/datum/pirate_negotiation/negotiation = blackboard[BB_NPC_NEGOTIATION]
+		if(negotiation)
+			negotiation.end_negotiation(success = FALSE, reason = "player_aggression")
+
+	// Clear hailing state if we were hailing
+	if(combat_state == NPC_COMBAT_HAILING)
+		clear_blackboard_key(BB_NPC_HAILING_START)
+		clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
+		clear_blackboard_key("hailing_reminder_sent")
+
+	// Announce to both ships
+	our_ship?.ship_announce("Hostile action detected! Engaging!", "COMBAT")
+	aggressor?.ship_announce(
+		"[our_ship?.name || "Hostile vessel"] is retaliating to your aggressive actions!",
+		"COMBAT ALERT",
+		FALSE,
+		sound('sound/effects/alert.ogg')
+	)
+
+	// Go straight to ENGAGING (will acquire lock then fight)
+	set_combat_state(NPC_COMBAT_ENGAGING)
 
 // ========== HELPER PROCS ==========
 

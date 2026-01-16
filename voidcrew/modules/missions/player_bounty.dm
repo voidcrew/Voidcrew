@@ -12,42 +12,11 @@
 /// Maximum reward for player bounties
 #define PLAYER_BOUNTY_MAX_REWARD 50000
 
-/**
- * Preset bounty items that can be selected via radial menu.
- * Format: type_path = list("name", icon_state, icon_file)
- * Amount is specified by the user when creating the bounty.
- */
-GLOBAL_LIST_INIT(preset_bounty_items, list(
-	// Common Materials
-	/obj/item/stack/sheet/iron = list("Iron Sheets", "sheet-metal", 'icons/obj/stack_objects.dmi'),
-	/obj/item/stack/sheet/glass = list("Glass Sheets", "sheet-glass", 'icons/obj/stack_objects.dmi'),
-	/obj/item/stack/sheet/plasteel = list("Plasteel Sheets", "sheet-plasteel", 'icons/obj/stack_objects.dmi'),
-	/obj/item/stack/sheet/mineral/plasma = list("Plasma Sheets", "sheet-plasma", 'icons/obj/stack_objects.dmi'),
-	// Valuables
-	/obj/item/stack/sheet/mineral/gold = list("Gold Sheets", "sheet-gold", 'icons/obj/stack_objects.dmi'),
-	/obj/item/stack/sheet/mineral/silver = list("Silver Sheets", "sheet-silver", 'icons/obj/stack_objects.dmi'),
-	/obj/item/stack/sheet/mineral/diamond = list("Diamonds", "sheet-diamond", 'icons/obj/stack_objects.dmi'),
-	/obj/item/stack/sheet/mineral/uranium = list("Uranium Sheets", "sheet-uranium", 'icons/obj/stack_objects.dmi'),
-	// Components
-	/obj/item/stack/cable_coil = list("Cable Coil", "coil", 'icons/obj/stack_objects.dmi'),
-	/obj/item/stock_parts/micro_laser = list("Micro-Laser", "micro_laser", 'icons/obj/devices/stock_parts.dmi'),
-	/obj/item/stock_parts/capacitor = list("Capacitor", "capacitor", 'icons/obj/devices/stock_parts.dmi'),
-	/obj/item/stock_parts/scanning_module = list("Scanning Module", "scan_module", 'icons/obj/devices/stock_parts.dmi'),
-	// Medical
-	/obj/item/reagent_containers/cup/bottle/epinephrine = list("Epinephrine Bottle", "bottle-4", 'icons/obj/medical/reagent_fillings.dmi'),
-	/obj/item/stack/medical/suture = list("Sutures", "suture", 'icons/obj/medical/stack_medical.dmi'),
-	/obj/item/stack/medical/mesh = list("Regen Mesh", "mesh", 'icons/obj/medical/stack_medical.dmi'),
-	// Tools & Equipment
-	/obj/item/multitool = list("Multitool", "multitool", 'icons/obj/devices/tool.dmi'),
-	/obj/item/weldingtool = list("Welding Tool", "welder", 'icons/obj/tools.dmi'),
-	/obj/item/crowbar = list("Crowbar", "crowbar", 'icons/obj/tools.dmi'),
-))
-
 /datum/player_bounty
 	/// Display name for the bounty
 	var/name = "Player Bounty"
 
-	/// Description (for custom bounties, auto-generated for preset)
+	/// Description/objective for the bounty
 	var/desc = ""
 
 	/// Credit reward for completing the bounty
@@ -65,25 +34,13 @@ GLOBAL_LIST_INIT(preset_bounty_items, list(
 	/// List of ships (weakrefs) that have abandoned this bounty
 	var/list/datum/weakref/abandoned_by = list()
 
-	/// For preset bounties: the item type required
-	var/target_item_type
-
-	/// Display name for the target item
-	var/target_item_name
-
-	/// Required amount for stack items
-	var/target_amount = 1
-
-	/// Whether this is a custom text bounty (vs preset item)
-	var/is_custom = FALSE
-
 	/// When the bounty was created (world.time)
 	var/creation_time
 
 	/// Bounty status: "available", "completed", "cancelled"
 	var/status = "available"
 
-	/// Pending offers for custom bounties - list of offer data
+	/// Pending offers - list of offer data
 	/// Each offer: list("ship_ref" = weakref, "pad_ref" = weakref, "items" = list of item descriptions, "time" = world.time)
 	var/list/pending_offers = list()
 
@@ -108,54 +65,16 @@ GLOBAL_LIST_INIT(preset_bounty_items, list(
 	return ..()
 
 /**
- * Sets up this bounty as a preset item bounty.
- * @param item_type The type path of the required item
- * @param amount The amount required (for stacks)
- */
-/datum/player_bounty/proc/setup_preset(item_type, amount = 1)
-	if(!item_type || !(item_type in GLOB.preset_bounty_items))
-		return FALSE
-
-	target_item_type = item_type
-	var/list/item_data = GLOB.preset_bounty_items[item_type]
-	// Extract base name without the amount hint
-	var/base_name = item_data[1]
-	// Remove any existing amount hints like "(10)" from the display name
-	var/paren_pos = findtext(base_name, " (")
-	if(paren_pos)
-		base_name = copytext(base_name, 1, paren_pos)
-
-	target_amount = clamp(amount, 1, 100)
-	is_custom = FALSE
-
-	// Build display name with the user-specified amount
-	if(ispath(item_type, /obj/item/stack))
-		target_item_name = "[base_name] x[target_amount]"
-	else
-		target_item_name = base_name
-		target_amount = 1 // Non-stackables are always 1
-
-	name = "Wanted: [target_item_name]"
-	desc = "Deliver [target_item_name] to the mission pad to collect your reward."
-
-	return TRUE
-
-/**
- * Sets up this bounty as a custom text bounty.
+ * Sets up the bounty with a name and description.
  * @param bounty_name The title for the bounty
  * @param bounty_desc The description/objective
  */
-/datum/player_bounty/proc/setup_custom(bounty_name, bounty_desc)
+/datum/player_bounty/proc/setup(bounty_name, bounty_desc)
 	if(!bounty_name || !bounty_desc)
 		return FALSE
 
 	name = bounty_name
 	desc = bounty_desc
-	is_custom = TRUE
-	target_item_type = null
-	target_item_name = null
-	target_amount = 1
-
 	return TRUE
 
 /**
@@ -269,110 +188,7 @@ GLOBAL_LIST_INIT(preset_bounty_items, list(
 	return FALSE
 
 /**
- * Checks if an item can be turned in for this bounty.
- * @param item The item being turned in
- * @param turner The ship turning it in
- */
-/datum/player_bounty/proc/can_turn_in(obj/item/item, obj/structure/overmap/ship/turner)
-	if(is_custom)
-		return FALSE // Custom bounties can't be item-turned-in
-
-	if(status != "available")
-		return FALSE
-
-	if(!is_claimant(turner))
-		return FALSE
-
-	if(!istype(item, target_item_type))
-		return FALSE
-
-	// Check stack amount if applicable
-	if(isstack(item))
-		var/obj/item/stack/S = item
-		if(S.amount < target_amount)
-			return FALSE
-
-	return TRUE
-
-/**
- * Completes the bounty via item turn-in.
- * Teleports items to creator's pad and awards credits.
- * @param turner_ship The ship completing the bounty
- * @param turner_pad The pad the items are on
- * @param items List of items being turned in (for stacks, may be multiple)
- */
-/datum/player_bounty/proc/complete_preset(obj/structure/overmap/ship/turner_ship, obj/machinery/mission_pad/turner_pad, list/items)
-	if(is_custom)
-		return FALSE
-	if(status != "available")
-		return FALSE
-	if(!is_claimant(turner_ship))
-		return FALSE
-
-	var/obj/structure/overmap/ship/creator_ship = get_creator_ship()
-	var/obj/machinery/mission_pad/creator_pad = get_creator_pad()
-
-	// Award credits to turner
-	turner_ship.ship_account?.adjust_money(reward)
-
-	// Handle item transfer - consume required amount from stacks
-	var/remaining_to_take = target_amount
-	var/turf/dest_turf = creator_pad ? get_turf(creator_pad) : null
-
-	for(var/obj/item/item in items)
-		if(remaining_to_take <= 0)
-			break
-
-		if(isstack(item))
-			var/obj/item/stack/S = item
-			var/take_from_this = min(S.amount, remaining_to_take)
-
-			if(dest_turf)
-				// Transfer to creator's pad
-				if(S.amount <= take_from_this)
-					// Take the whole stack
-					S.forceMove(dest_turf)
-					remaining_to_take -= S.amount
-				else
-					// Split the stack
-					var/obj/item/stack/taken = S.split_stack(null, take_from_this)
-					if(taken)
-						taken.forceMove(dest_turf)
-					remaining_to_take -= take_from_this
-			else
-				// No creator pad - just consume
-				S.use(take_from_this)
-				remaining_to_take -= take_from_this
-		else
-			// Non-stack item
-			if(dest_turf)
-				item.forceMove(dest_turf)
-			else
-				qdel(item)
-			remaining_to_take = 0
-
-	// Effects
-	if(creator_pad)
-		creator_pad.do_teleport_effect()
-	turner_pad?.do_teleport_effect()
-
-	// Announcements
-	turner_ship.ship_announce("BOUNTY COMPLETE: [name] - [reward] credits awarded!", "MISSION CONTROL")
-	creator_ship?.ship_announce("BOUNTY FULFILLED: [name] - Item delivered to your mission pad.", "MISSION CONTROL")
-
-	// Notify other claimants they lost
-	for(var/datum/weakref/ref in claiming_ships)
-		var/obj/structure/overmap/ship/loser = ref.resolve()
-		if(loser && loser != turner_ship)
-			loser.ship_announce("BOUNTY LOST: [name] - Another crew completed the bounty first.", "MISSION CONTROL")
-
-	status = "completed"
-	SSbounty?.remove_player_bounty(src)
-
-	return TRUE
-
-/**
- * Creates an offer for the bounty creator to review (for custom bounties).
+ * Creates an offer for the bounty creator to review.
  * Items stay on the sender's pad until the creator approves.
  * @param items List of items being offered
  * @param sender_pad The pad with the items
@@ -380,8 +196,6 @@ GLOBAL_LIST_INIT(preset_bounty_items, list(
  * @return TRUE if offer created, FALSE otherwise
  */
 /datum/player_bounty/proc/make_offer(list/items, obj/machinery/mission_pad/sender_pad, obj/structure/overmap/ship/sender_ship)
-	if(!is_custom)
-		return FALSE
 	if(status != "available")
 		return FALSE
 	if(!is_claimant(sender_ship))
@@ -443,8 +257,6 @@ GLOBAL_LIST_INIT(preset_bounty_items, list(
  * @return TRUE if successful, error message otherwise
  */
 /datum/player_bounty/proc/approve_offer(obj/structure/overmap/ship/sender_ship)
-	if(!is_custom)
-		return "not a custom bounty"
 	if(status != "available")
 		return "bounty not available"
 
@@ -535,40 +347,6 @@ GLOBAL_LIST_INIT(preset_bounty_items, list(
 	return TRUE
 
 /**
- * Completes a custom bounty manually (creator confirms completion for a specific claimant).
- * @param winner_ship The ship to award the bounty to
- */
-/datum/player_bounty/proc/complete_custom(obj/structure/overmap/ship/winner_ship)
-	if(!is_custom)
-		return FALSE
-
-	if(status != "available")
-		return FALSE
-
-	if(!winner_ship || !is_claimant(winner_ship))
-		return FALSE
-
-	var/obj/structure/overmap/ship/creator_ship = get_creator_ship()
-
-	// Award credits
-	winner_ship.ship_account?.adjust_money(reward)
-
-	// Announcements
-	winner_ship.ship_announce("BOUNTY COMPLETE: [name] - [reward] credits awarded!", "MISSION CONTROL")
-	creator_ship?.ship_announce("BOUNTY COMPLETED: [name] - Reward paid to [winner_ship.name].", "MISSION CONTROL")
-
-	// Notify other claimants they lost
-	for(var/datum/weakref/ref in claiming_ships)
-		var/obj/structure/overmap/ship/loser = ref.resolve()
-		if(loser && loser != winner_ship)
-			loser.ship_announce("BOUNTY LOST: [name] - Creator awarded bounty to another crew.", "MISSION CONTROL")
-
-	status = "completed"
-	SSbounty?.remove_player_bounty(src)
-
-	return TRUE
-
-/**
  * Cancels the bounty (creator cancels).
  * Refunds reward to creator.
  */
@@ -600,11 +378,8 @@ GLOBAL_LIST_INIT(preset_bounty_items, list(
 		"name" = name,
 		"desc" = desc,
 		"reward" = reward,
-		"is_custom" = is_custom,
 		"status" = status,
-		"target_item_name" = target_item_name,
-		"target_amount" = target_amount,
-		"hunter_count" = get_hunter_count(),
+		"contractor_count" = get_hunter_count(),
 	)
 
 	// Add creator info
@@ -621,8 +396,8 @@ GLOBAL_LIST_INIT(preset_bounty_items, list(
 		// Can claim if: status available, not creator, not already a claimant, hasn't abandoned, and doesn't have another claimed bounty
 		data["can_claim"] = (status == "available" && for_ship != creator && !is_claimant(for_ship) && !has_abandoned(for_ship) && !SSbounty?.ship_has_claimed_player_bounty(for_ship))
 
-	// For custom bounties with creator viewing, include pending offers
-	if(is_custom && for_ship == creator && length(pending_offers) > 0)
+	// Include pending offers for creator
+	if(for_ship == creator && length(pending_offers) > 0)
 		var/list/offers_data = list()
 		for(var/list/offer in pending_offers)
 			var/datum/weakref/ship_ref = offer["ship_ref"]

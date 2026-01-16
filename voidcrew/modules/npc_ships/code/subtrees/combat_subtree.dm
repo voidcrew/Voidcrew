@@ -5,6 +5,7 @@
  * It queues behaviors based on the current combat state:
  * - IDLE: Just scan for threats
  * - SCANNING: Scanning target for wealth (yellow zone pirates)
+ * - HAILING: Hailing target, waiting for them to answer (20 sec grace period)
  * - ENGAGING: Acquiring weapon lock on target
  * - COMBAT: Actively firing weapons and using interdictor
  * - RETREATING: All weapons destroyed, trying to escape
@@ -23,12 +24,19 @@
 		// No combat behaviors - negotiation datum handles timeout and resolution
 		return
 
+	// Hailing ships wait for player to answer - don't scan for other threats
+	if(combat_state == NPC_COMBAT_HAILING)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/hailing)
+		// Still check disengage in case target escapes
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/check_disengage)
+		return
+
 	// Retreating ships don't scan for threats or fight - they just try to escape
 	if(combat_state == NPC_COMBAT_RETREATING)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/retreat_escape)
 		return
 
-	// Always scan for threats first (unless retreating or scanning)
+	// Always scan for threats first (unless retreating, scanning, or hailing)
 	if(combat_state != NPC_COMBAT_SCANNING)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/scan_threats)
 

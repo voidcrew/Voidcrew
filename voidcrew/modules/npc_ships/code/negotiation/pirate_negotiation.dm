@@ -60,6 +60,9 @@
 	RegisterSignal(player_ship, COMSIG_QDELETING, PROC_REF(on_player_destroyed))
 	RegisterSignal(holopad, COMSIG_QDELETING, PROC_REF(on_holopad_destroyed))
 
+	// Register for player ship movement - moving during negotiation breaks the deal!
+	RegisterSignal(player_ship, COMSIG_VOIDCREW_SHIP_MOVED, PROC_REF(on_player_ship_moved))
+
 /datum/pirate_negotiation/Destroy()
 	// Clean up hologram
 	if(hologram)
@@ -74,7 +77,7 @@
 	if(pirate_ship)
 		UnregisterSignal(pirate_ship, COMSIG_QDELETING)
 	if(player_ship)
-		UnregisterSignal(player_ship, COMSIG_QDELETING)
+		UnregisterSignal(player_ship, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
 	if(holopad)
 		UnregisterSignal(holopad, COMSIG_QDELETING)
 		holopad.active_negotiation = null
@@ -109,6 +112,32 @@
 	SIGNAL_HANDLER
 	// Holopad destroyed - negotiation fails
 	end_negotiation(success = FALSE, reason = "holopad_destroyed")
+
+/datum/pirate_negotiation/proc/on_player_ship_moved(datum/source)
+	SIGNAL_HANDLER
+	// Player ship moved during active negotiation - pirate sees this as betrayal!
+	if(negotiation_state != NEGOTIATION_ACTIVE && negotiation_state != NEGOTIATION_PAYING)
+		return  // Only fail during active negotiation, not during setup/cleanup
+
+	INVOKE_ASYNC(src, PROC_REF(fail_due_to_movement))
+
+/**
+ * Called when the player ship moves during negotiation - this breaks the deal.
+ */
+/datum/pirate_negotiation/proc/fail_due_to_movement()
+	// Announce the betrayal
+	pirate_say(dialog.get_movement_betrayal_line())
+
+	// Announce to player ship
+	player_ship?.ship_announce(
+		"Negotiations with [pirate_ship?.name] have FAILED - they detected your ship movement!",
+		"NEGOTIATION FAILED",
+		FALSE,
+		sound('sound/effects/alert.ogg')
+	)
+
+	// End negotiation as failure
+	end_negotiation(success = FALSE, reason = "player_moved")
 
 // ========== NEGOTIATION FLOW ==========
 
@@ -221,6 +250,10 @@
 	// Update state
 	negotiation_state = success ? NEGOTIATION_ACCEPTED : NEGOTIATION_REJECTED
 
+	// Grant immunity BEFORE telling AI to disengage (prevents immediate re-targeting)
+	if(success)
+		grant_tribute_immunity()
+
 	// Tell the pirate AI to resume or disengage
 	var/datum/ai_controller/npc_ship/controller = pirate_ship?.ai_controller
 	if(controller)
@@ -229,8 +262,6 @@
 	// Final message from pirate
 	if(success)
 		pirate_say(dialog.get_acceptance_line())
-		// Grant immunity
-		grant_tribute_immunity()
 	else
 		if(reason == "timeout")
 			pirate_say(dialog.get_timeout_line())
@@ -331,7 +362,8 @@
 /datum/pirate_negotiation/proc/check_payment_complete()
 	var/total_paid = credits_received + cargo_value_received
 	if(total_paid >= demanded_credits)
-		negotiation_state = NEGOTIATION_ACCEPTED
+		// Don't set state here - end_negotiation handles it
+		// (setting it early would cause end_negotiation to return early)
 		end_negotiation(success = TRUE, reason = "payment_complete")
 
 /**

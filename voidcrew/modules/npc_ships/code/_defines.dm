@@ -21,10 +21,24 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 // Combat states
 #define NPC_COMBAT_IDLE "idle"
 #define NPC_COMBAT_SCANNING "scanning"  // Scanning target for wealth before engaging
+#define NPC_COMBAT_HAILING "hailing"    // Hailing target - waiting for them to answer
 #define NPC_COMBAT_ENGAGING "engaging"
 #define NPC_COMBAT_COMBAT "combat"
 #define NPC_COMBAT_RETREATING "retreating"
 #define NPC_COMBAT_NEGOTIATING "negotiating"
+
+// Hailing phase blackboard keys
+#define BB_NPC_HAILING_START "npc_hailing_start"          // When hailing started
+#define BB_NPC_HAILING_ANNOUNCED "npc_hailing_announced"  // Whether initial hail was sent
+#define BB_NPC_TARGET_LAST_POS "npc_target_last_pos"      // Target position when negotiation started (to detect movement)
+
+// Hailing/negotiation timing
+#define NPC_HAILING_GRACE_PERIOD (20 SECONDS)     // Time to answer the hail before combat
+#define NPC_HAILING_REMINDER_INTERVAL (10 SECONDS)  // Reminder halfway through
+
+// Signals for player aggression detection
+#define COMSIG_SHIP_WEAPONS_LOCKED "ship_weapons_locked"  // Fired when player locks weapons on a ship
+#define COMSIG_SHIP_MOVED_DURING_NEGOTIATION "ship_moved_during_negotiation"
 
 // Negotiation blackboard keys
 #define BB_NPC_NEGOTIATION "npc_negotiation"

@@ -24,8 +24,8 @@
 	shuttle_template = /datum/map_template/shuttle/voidcrew/pirate_silverscale
 	ship_color = NPC_COLOR_SILVERSCALE
 
-	// Silverscales are arrogant but not suicidal
-	territory_range = 3
+	// Detection range
+	territory_range = 2
 
 	crew_min = 2
 	crew_max = 4
@@ -51,12 +51,19 @@
 	shuttle_template = /datum/map_template/shuttle/voidcrew/pirate_dutchman
 	ship_color = NPC_COLOR_SKELETON
 
-	// Skeletons are fearless
-	territory_range = 4
+	// Detection range
+	territory_range = 2
 
 	// Combat stats - undead crew are relentless
 	lock_time = 4 SECONDS
 	laser_cooldown_time = 4 SECONDS
+
+	// Yellow zone - stay to interdict/siphon even without weapons
+	retreat_without_weapons = FALSE
+	// Scan targets for wealth before engaging
+	scan_before_engage = TRUE
+	// Steal 25% of target's money then retreat
+	siphon_goal_percent = 25
 
 	crew_min = 3
 	crew_max = 6
@@ -120,8 +127,8 @@
 	shuttle_template = /datum/map_template/shuttle/voidcrew/pirate_geode
 	ship_color = NPC_COLOR_LUSTROUS
 
-	// Ethereals are... weird
-	territory_range = 3
+	// Detection range
+	territory_range = 2
 
 	// Yellow zone - stay to interdict/siphon even without weapons
 	retreat_without_weapons = FALSE
@@ -153,8 +160,8 @@
 	shuttle_template = /datum/map_template/shuttle/voidcrew/pirate_interdyne
 	ship_color = NPC_COLOR_INTERDYNE
 
-	// Interdyne are calculating
-	territory_range = 3
+	// Detection range
+	territory_range = 2
 
 	// Better equipped
 	lock_time = 4 SECONDS
@@ -184,8 +191,8 @@
 	shuttle_template = /datum/map_template/shuttle/voidcrew/pirate_irs
 	ship_color = NPC_COLOR_IRS
 
-	// IRS is very aggressive about collecting
-	territory_range = 4
+	// Detection range
+	territory_range = 2
 
 	// Well-funded government agency
 	lock_time = 3 SECONDS
@@ -227,8 +234,8 @@
 	shuttle_template = /datum/map_template/shuttle/voidcrew/pirate_medieval
 	ship_color = NPC_COLOR_MEDIEVAL
 
-	// Medieval warriors are aggressive
-	territory_range = 4
+	// Detection range
+	territory_range = 2
 
 	// Slow but tough - they don't really understand the engines
 	speed_limit = 0.35
@@ -237,6 +244,13 @@
 	// Longer lock times - medieval targeting systems
 	lock_time = 6 SECONDS
 	laser_cooldown_time = 6 SECONDS
+
+	// Yellow zone - stay to interdict/siphon even without weapons
+	retreat_without_weapons = FALSE
+	// Scan targets for wealth before engaging
+	scan_before_engage = TRUE
+	// Steal 25% of target's money then retreat
+	siphon_goal_percent = 25
 
 	crew_min = 3
 	crew_max = 6
