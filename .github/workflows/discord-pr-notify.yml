@@ -1,0 +1,33 @@
+name: Discord PR Notification
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [master]
+
+jobs:
+  notify:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -H "Content-Type: application/json" \
+            -d "{
+              \"embeds\": [{
+                \"title\": \"PR Merged: #${{ github.event.pull_request.number }}\",
+                \"description\": \"${{ github.event.pull_request.title }}\",
+                \"url\": \"${{ github.event.pull_request.html_url }}\",
+                \"color\": 5025616,
+                \"author\": {
+                  \"name\": \"${{ github.event.pull_request.user.login }}\",
+                  \"icon_url\": \"${{ github.event.pull_request.user.avatar_url }}\"
+                },
+                \"footer\": {
+                  \"text\": \"Merged into master\"
+                }
+              }]
+            }" \
+            $DISCORD_WEBHOOK
