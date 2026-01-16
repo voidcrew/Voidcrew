@@ -336,6 +336,8 @@
 /// Clears the current target
 /obj/machinery/computer/camera_advanced/ship_combat/proc/clear_target()
 	if(target_ship)
+		// Notify the target they are no longer locked
+		SEND_SIGNAL(target_ship, COMSIG_SHIP_WEAPONS_LOCK_LOST, current_ship)
 		UnregisterSignal(target_ship, list(COMSIG_QDELETING, COMSIG_SHIP_ZONE_CHANGED, COMSIG_SHIP_GOING_DARK))
 	target_ship = null
 

@@ -38,6 +38,7 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 
 // Signals for player aggression detection
 #define COMSIG_SHIP_WEAPONS_LOCKED "ship_weapons_locked"  // Fired when player locks weapons on a ship
+#define COMSIG_SHIP_WEAPONS_LOCK_LOST "ship_weapons_lock_lost"  // Fired when weapon lock on a ship is lost
 #define COMSIG_SHIP_MOVED_DURING_NEGOTIATION "ship_moved_during_negotiation"
 
 // Negotiation blackboard keys

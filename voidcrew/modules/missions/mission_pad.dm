@@ -111,17 +111,16 @@
 		return
 
 	// Check if this item is accepted as tribute
-	var/value = tribute_negotiation.process_cargo_payment(item)
-	if(value > 0)
+	if(tribute_negotiation.process_item_payment(item))
 		visible_message(span_notice("The [item.name] is teleported away as tribute!"))
 
 /obj/machinery/mission_pad/examine(mob/user)
 	. = ..()
 	if(tribute_negotiation)
 		. += span_warning("This pad is linked to an active pirate negotiation!")
-		. += span_notice("Place valuable items here to pay tribute.")
-		var/remaining = tribute_negotiation.get_remaining_demand()
-		. += span_notice("Remaining demand: [remaining] credits worth of tribute.")
+		var/remaining = tribute_negotiation.get_remaining_items()
+		if(remaining > 0)
+			. += span_notice("Place [remaining] more [tribute_negotiation.demanded_item_name] here to pay tribute.")
 
 /**
  * Circuit board for the mission pad.

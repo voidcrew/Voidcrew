@@ -280,6 +280,13 @@
 
 	// When entering retreat mode, lose weapon lock and cancel interdiction
 	if(new_state == NPC_COMBAT_RETREATING && old_state != NPC_COMBAT_RETREATING)
+		var/obj/structure/overmap/ship/target = get_target()
+		var/obj/structure/overmap/ship/npc/ship = get_ship()
+
+		// Notify target that weapon lock is lost before clearing it
+		if(blackboard[BB_NPC_TARGET_LOCKED] && target && ship && !QDELETED(target))
+			SEND_SIGNAL(target, COMSIG_SHIP_WEAPONS_LOCK_LOST, ship)
+
 		// Clear weapon lock
 		clear_blackboard_key(BB_NPC_TARGET_LOCKED)
 		clear_blackboard_key(BB_NPC_LOCK_START_TIME)
@@ -289,8 +296,6 @@
 		combat?.cancel_interdiction()
 
 		// Notify target that we stopped targeting them and clear engagement
-		var/obj/structure/overmap/ship/target = get_target()
-		var/obj/structure/overmap/ship/npc/ship = get_ship()
 		if(target && ship)
 			SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
 			// Clear engagement so another pirate can engage this target
@@ -322,6 +327,9 @@
 		if(our_ship)
 			target.engaging_pirate_ref = WEAKREF(our_ship)
 	else
+		// If we had a weapon lock on the old target, notify them we lost it
+		if(blackboard[BB_NPC_TARGET_LOCKED] && old_target && !QDELETED(old_target))
+			SEND_SIGNAL(old_target, COMSIG_SHIP_WEAPONS_LOCK_LOST, our_ship)
 		clear_blackboard_key(BB_NPC_TARGET)
 		clear_blackboard_key(BB_NPC_TARGET_LOCKED)
 		clear_blackboard_key(BB_NPC_LOCK_START_TIME)
@@ -368,6 +376,12 @@
 
 	// Transition to negotiating state (pauses combat behaviors)
 	set_combat_state(NPC_COMBAT_NEGOTIATING)
+
+	// Notify target that weapon lock is lost before clearing it
+	var/obj/structure/overmap/ship/target = get_target()
+	var/obj/structure/overmap/ship/npc/ship = get_ship()
+	if(blackboard[BB_NPC_TARGET_LOCKED] && target && ship && !QDELETED(target))
+		SEND_SIGNAL(target, COMSIG_SHIP_WEAPONS_LOCK_LOST, ship)
 
 	// Clear weapon lock if we were acquiring one
 	clear_blackboard_key(BB_NPC_TARGET_LOCKED)

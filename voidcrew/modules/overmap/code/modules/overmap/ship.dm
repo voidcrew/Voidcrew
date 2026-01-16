@@ -162,6 +162,9 @@
 	/// List of ships that currently have a weapons lock on us (prevents cloaking)
 	var/list/locked_on_by = list()
 
+	/// Combat alarm that plays when weapons are locked on this ship
+	var/datum/combat_alarm/combat_alarm
+
 	/// Whether this ship is currently hidden inside a nebula
 	var/hidden_in_nebula = FALSE
 	/// Timer ID for nebula hide warmup
@@ -501,6 +504,11 @@
 	SSovermap.simulated_ships += src
 	survey_data = new()
 
+	// Initialize combat alarm system
+	combat_alarm = new(src)
+	RegisterSignal(src, COMSIG_SHIP_WEAPONS_LOCKED, PROC_REF(on_weapons_locked))
+	RegisterSignal(src, COMSIG_SHIP_WEAPONS_LOCK_LOST, PROC_REF(on_weapons_lock_lost))
+
 	return TRUE
 
 /obj/structure/overmap/ship/Destroy()
@@ -513,6 +521,7 @@
 	job_slots?.Cut()
 	QDEL_NULL(ship_team)
 	QDEL_NULL(cam_screen) // cam_background is inside cam_screen and deleted with it
+	QDEL_NULL(combat_alarm)
 	// Clean up missions
 	QDEL_LIST(available_missions)
 	QDEL_LIST(active_missions)
@@ -2462,6 +2471,36 @@
 
 	mission.give_up()
 	return TRUE
+
+// ===== COMBAT ALARM SIGNAL HANDLERS =====
+
+/// Called when a ship acquires a weapons lock on us
+/obj/structure/overmap/ship/proc/on_weapons_locked(datum/source, obj/structure/overmap/ship/attacker)
+	SIGNAL_HANDLER
+	if(!attacker)
+		return
+	if(attacker in locked_on_by)
+		return // Already tracking this attacker
+
+	locked_on_by += attacker
+
+	// Start the combat alarm if this is the first lock
+	if(length(locked_on_by) == 1 && combat_alarm)
+		combat_alarm.start()
+
+/// Called when a ship loses their weapons lock on us
+/obj/structure/overmap/ship/proc/on_weapons_lock_lost(datum/source, obj/structure/overmap/ship/attacker)
+	SIGNAL_HANDLER
+	if(!attacker)
+		return
+	if(!(attacker in locked_on_by))
+		return // Not tracking this attacker
+
+	locked_on_by -= attacker
+
+	// Stop the combat alarm if no more locks
+	if(!length(locked_on_by) && combat_alarm)
+		combat_alarm.stop()
 
 #undef SHIP_SIZE_THRESHOLD
 #undef SHIP_SPEED_MULTIPLIER_DEFAULT

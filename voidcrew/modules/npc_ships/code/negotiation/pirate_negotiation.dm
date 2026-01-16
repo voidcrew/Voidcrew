@@ -2,7 +2,7 @@
  * Pirate Negotiation Datum
  *
  * Manages the state of a negotiation between a player ship and a pirate ship.
- * Handles demand calculation, payment processing, timeouts, and cleanup.
+ * Pirates demand either credits OR a specific item - no bartering.
  */
 /datum/pirate_negotiation
 	/// The pirate ship we're negotiating with
@@ -27,10 +27,15 @@
 
 	/// Credits demanded by the pirate
 	var/demanded_credits = 0
-	/// Credits received so far
-	var/credits_received = 0
-	/// Cargo value received so far
-	var/cargo_value_received = 0
+
+	/// Item demand - the specific item type demanded
+	var/demanded_item_type
+	/// Item demand - quantity needed
+	var/demanded_item_quantity = 0
+	/// Item demand - quantity received so far
+	var/items_received = 0
+	/// Item demand - display name for the item
+	var/demanded_item_name = ""
 
 	/// Faction dialog handler for personality
 	var/datum/pirate_faction_dialog/dialog
@@ -143,13 +148,14 @@
 
 /**
  * Calculate the tribute demand based on player wealth, combat state, and faction.
+ * Also picks a random item demand as an alternative.
  */
 /datum/pirate_negotiation/proc/calculate_demand()
 	var/base_demand = 0
 
-	// Factor 1: Player ship wealth (15% of their balance)
+	// Factor 1: Player ship wealth (25% of their balance) - expensive!
 	var/player_wealth = player_ship.ship_account?.account_balance || 0
-	base_demand = player_wealth * 0.15
+	base_demand = player_wealth * 0.25
 
 	// Factor 2: Combat state modifier
 	var/datum/ai_controller/npc_ship/controller = pirate_ship.ai_controller
@@ -181,6 +187,13 @@
 	if(demanded_credits < min_demand)
 		demanded_credits = min_demand
 
+	// Pick a random item demand as alternative
+	var/list/item_demand = pick_pirate_item_demand()
+	if(item_demand && length(item_demand) >= 3)
+		demanded_item_type = item_demand[1]
+		demanded_item_quantity = item_demand[2]
+		demanded_item_name = item_demand[3]
+
 /**
  * Start the negotiation - spawn hologram, pause pirate AI, begin timeout.
  */
@@ -199,6 +212,9 @@
 	// Create the hologram
 	spawn_hologram()
 
+	// Link mission pad for item delivery
+	link_nearest_mission_pad()
+
 	// Start the timeout timer
 	time_started = world.time
 	timeout_timer_id = addtimer(CALLBACK(src, PROC_REF(on_timeout)), timeout_duration, TIMER_STOPPABLE)
@@ -215,10 +231,23 @@
 	SEND_SIGNAL(pirate_ship, COMSIG_NEGOTIATION_STARTED, src)
 	SEND_SIGNAL(player_ship, COMSIG_SHIP_HAILED, src)
 
-	// Pirate announces their demand
-	pirate_say(dialog.get_demand_line(demanded_credits))
+	// Pirate announces their demands
+	pirate_say(dialog.get_demand_line(demanded_credits, demanded_item_quantity, demanded_item_name))
 
 	return TRUE
+
+/**
+ * Link the nearest mission pad on the player ship.
+ */
+/datum/pirate_negotiation/proc/link_nearest_mission_pad()
+	if(!player_ship?.shuttle?.shuttle_areas)
+		return
+
+	// Search through all shuttle areas for a mission pad
+	for(var/area/ship_area as anything in player_ship.shuttle.shuttle_areas)
+		for(var/obj/machinery/mission_pad/found_pad in ship_area)
+			link_mission_pad(found_pad)
+			return  // Found one, we're done
 
 /**
  * Spawn the pirate hologram on the holopad.
@@ -297,126 +326,59 @@
  * Process a credit payment from the player.
  * Returns TRUE if payment was accepted.
  */
-/datum/pirate_negotiation/proc/process_credit_payment(amount)
+/datum/pirate_negotiation/proc/process_credit_payment()
 	if(negotiation_state != NEGOTIATION_ACTIVE && negotiation_state != NEGOTIATION_PAYING)
-		return FALSE
-
-	if(amount <= 0)
 		return FALSE
 
 	// Deduct from player account
-	if(!player_ship.ship_account?.has_money(amount))
+	if(!player_ship.ship_account?.has_money(demanded_credits))
 		return FALSE
 
-	player_ship.ship_account.adjust_money(-amount)
-	credits_received += amount
+	player_ship.ship_account.adjust_money(-demanded_credits)
 
-	// Notify
-	SEND_SIGNAL(src, COMSIG_NEGOTIATION_PAYMENT, amount, FALSE)
-
-	// Check if fully paid
-	check_payment_complete()
+	// Payment complete!
+	end_negotiation(success = TRUE, reason = "payment_complete")
 	return TRUE
 
 /**
- * Process a cargo item as payment.
- * Returns the value credited, or 0 if item not accepted.
+ * Process an item as payment.
+ * Returns TRUE if item was accepted, FALSE otherwise.
  */
-/datum/pirate_negotiation/proc/process_cargo_payment(obj/item/item)
+/datum/pirate_negotiation/proc/process_item_payment(obj/item/item)
 	if(negotiation_state != NEGOTIATION_ACTIVE && negotiation_state != NEGOTIATION_PAYING)
-		return 0
+		return FALSE
 
-	if(!dialog.accepts_cargo)
-		pirate_say(dialog.get_cargo_rejection_line())
-		return 0
+	if(!demanded_item_type)
+		return FALSE
 
-	var/value = evaluate_cargo_value(item)
-	if(value <= 0)
-		return 0
+	// Check if item matches demanded type
+	if(!istype(item, demanded_item_type))
+		pirate_say("That's not what I asked for. I want [demanded_item_name]!")
+		return FALSE
 
-	// Accept the cargo - teleport it away
-	cargo_value_received += value
+	// Get amount (stacks vs single items)
+	var/amount = get_item_stack_amount(item)
+	items_received += amount
+
+	// Accept the item - teleport it away
 	tribute_pad?.do_teleport_effect()
 	qdel(item)
 
-	// Acknowledge receipt
-	pirate_say(dialog.get_payment_received_line(value))
-
-	// Notify
-	SEND_SIGNAL(src, COMSIG_NEGOTIATION_PAYMENT, value, TRUE)
-
 	// Check if fully paid
-	check_payment_complete()
-	return value
-
-/**
- * Evaluate the tribute value of a cargo item.
- * Uses the global get_pirate_tribute_value helper.
- */
-/datum/pirate_negotiation/proc/evaluate_cargo_value(obj/item/item)
-	return get_pirate_tribute_value(item)
-
-/**
- * Check if total payment meets demand.
- */
-/datum/pirate_negotiation/proc/check_payment_complete()
-	var/total_paid = credits_received + cargo_value_received
-	if(total_paid >= demanded_credits)
-		// Don't set state here - end_negotiation handles it
-		// (setting it early would cause end_negotiation to return early)
+	if(items_received >= demanded_item_quantity)
+		pirate_say(dialog.get_acceptance_line())
 		end_negotiation(success = TRUE, reason = "payment_complete")
-
-/**
- * Get the remaining amount needed.
- */
-/datum/pirate_negotiation/proc/get_remaining_demand()
-	var/total_paid = credits_received + cargo_value_received
-	return max(0, demanded_credits - total_paid)
-
-/**
- * Get payment progress as a percentage (0-100).
- */
-/datum/pirate_negotiation/proc/get_payment_progress()
-	if(demanded_credits <= 0)
-		return 100
-	var/total_paid = credits_received + cargo_value_received
-	return clamp((total_paid / demanded_credits) * 100, 0, 100)
-
-// ========== COUNTER-OFFERS ==========
-
-/**
- * Player makes a counter-offer. Returns TRUE if accepted.
- */
-/datum/pirate_negotiation/proc/accept_counter_offer(offered_amount)
-	if(negotiation_state != NEGOTIATION_ACTIVE)
-		return FALSE
-
-	if(!dialog.accepts_counter_offer)
-		pirate_say(dialog.get_counter_rejection_line())
-		return FALSE
-
-	// Accept if offer is at least 60% of demand
-	var/minimum_acceptable = demanded_credits * 0.6
-	if(offered_amount >= minimum_acceptable)
-		demanded_credits = offered_amount
-		pirate_say(dialog.get_counter_acceptance_line(offered_amount))
-		// Reset timeout since they're engaging
-		reset_timeout()
-		return TRUE
 	else
-		// Reject but give them a final offer
-		var/final_offer = round(demanded_credits * 0.8, 100)
-		demanded_credits = final_offer
-		pirate_say(dialog.get_counter_final_offer_line(final_offer))
-		return FALSE
+		var/remaining = demanded_item_quantity - items_received
+		pirate_say("Good. [remaining] more [demanded_item_name] to go.")
+
+	return TRUE
 
 /**
- * Reset the timeout timer (called when player is actively engaging).
+ * Get remaining items needed.
  */
-/datum/pirate_negotiation/proc/reset_timeout()
-	if(timeout_timer_id)
-		deltimer(timeout_timer_id)
-	timeout_timer_id = addtimer(CALLBACK(src, PROC_REF(on_timeout)), timeout_duration, TIMER_STOPPABLE)
+/datum/pirate_negotiation/proc/get_remaining_items()
+	return max(0, demanded_item_quantity - items_received)
 
 // ========== TRIBUTE IMMUNITY ==========
 

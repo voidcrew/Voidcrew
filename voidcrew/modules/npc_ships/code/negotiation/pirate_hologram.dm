@@ -2,7 +2,7 @@
  * Pirate Hologram
  *
  * A specialized hologram that represents a pirate captain during negotiations.
- * Players click on it to open a radial menu with negotiation options.
+ * Players click on it to open a radial menu with payment options.
  */
 /obj/effect/overlay/holo_pad_hologram/pirate
 	name = "pirate transmission"
@@ -27,27 +27,62 @@
 	. = ..()
 	if(negotiation)
 		. += span_notice("They are demanding [negotiation.demanded_credits] credits.")
-		var/remaining = negotiation.get_remaining_demand()
-		if(remaining < negotiation.demanded_credits)
-			. += span_notice("You have paid [negotiation.demanded_credits - remaining] credits so far.")
-			. += span_notice("Remaining: [remaining] credits.")
-		. += span_notice("Click to negotiate.")
+		if(negotiation.demanded_item_type)
+			. += span_notice("OR [negotiation.demanded_item_quantity] [negotiation.demanded_item_name].")
+		if(negotiation.items_received > 0)
+			. += span_notice("Items delivered: [negotiation.items_received]/[negotiation.demanded_item_quantity]")
+		. += span_notice("Click to respond.")
 
 /**
  * Set the hologram appearance based on faction.
+ * Uses preset holoimages to create faction-appropriate captain appearances.
  */
 /obj/effect/overlay/holo_pad_hologram/pirate/proc/set_faction_appearance(faction)
 	pirate_faction = faction
-	// Use a generic holographic pirate appearance
-	// Could be enhanced with faction-specific sprites later
-	icon = 'icons/mob/simple/simple_human.dmi'
-	icon_state = "pirate_greyscale"
-	// Apply holographic blue tint
-	color = "#77bbff"
-	alpha = 200
+
+	// Get the appropriate preset holoimage for this faction
+	var/datum/preset_holoimage/preset = get_faction_holoimage(faction)
+	if(preset)
+		var/image/captain_image = preset.build_image()
+		if(captain_image)
+			icon = captain_image.icon
+			icon_state = captain_image.icon_state
+			copy_overlays(captain_image, TRUE)
+			// Apply holographic effect
+			makeHologram()
+
+	// Set proper visual properties
+	mouse_opacity = MOUSE_OPACITY_ICON
+	layer = FLY_LAYER
+	anchored = TRUE
+
 	// Update name based on faction dialog
 	if(negotiation?.dialog)
-		name = "[negotiation.dialog.faction_name] transmission"
+		name = "[negotiation.dialog.faction_name] Captain (Hologram)"
+
+/**
+ * Get the appropriate preset holoimage type for a faction.
+ */
+/obj/effect/overlay/holo_pad_hologram/pirate/proc/get_faction_holoimage(faction)
+	switch(faction)
+		if("rogues")
+			return new /datum/preset_holoimage/pirate_captain/rogues()
+		if("irs")
+			return new /datum/preset_holoimage/pirate_captain/irs()
+		if("skeleton")
+			return new /datum/preset_holoimage/pirate_captain/skeleton()
+		if("grey")
+			return new /datum/preset_holoimage/pirate_captain/greytide()
+		if("medieval")
+			return new /datum/preset_holoimage/pirate_captain/medieval()
+		if("silverscale")
+			return new /datum/preset_holoimage/pirate_captain/silverscale()
+		if("interdyne")
+			return new /datum/preset_holoimage/pirate_captain/interdyne()
+		if("lustrous")
+			return new /datum/preset_holoimage/pirate_captain/lustrous()
+	// Default to generic pirate
+	return new /datum/preset_holoimage/pirate_captain()
 
 /**
  * Handle clicking on the hologram - show radial menu.
@@ -63,43 +98,26 @@
 
 	show_negotiation_radial(user)
 
-/obj/effect/overlay/holo_pad_hologram/pirate/attackby(obj/item/I, mob/living/user, params)
-	// Clicking with an item - check if it's tribute
-	if(!negotiation)
-		return ..()
-
-	if(is_pirate_tribute_accepted(I))
-		to_chat(user, span_notice("Place tribute items on the mission pad to deliver them."))
-		return TRUE
-
-	return ..()
-
 /**
- * Show the negotiation radial menu.
+ * Show the negotiation radial menu - simple: pay credits, give items, or refuse.
  */
 /obj/effect/overlay/holo_pad_hologram/pirate/proc/show_negotiation_radial(mob/user)
 	if(!negotiation)
 		return
 
-	var/remaining = negotiation.get_remaining_demand()
-
-	// Build choices list
+	// Build choices list - just credits, items, and refuse
 	var/list/choices = list()
 
-	// Pay full amount (or remaining amount if partial payment made)
-	var/pay_label = remaining < negotiation.demanded_credits ? "Pay Remaining ([remaining] cr)" : "Pay ([remaining] cr)"
-	choices[pay_label] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_pay")
+	// Pay credits option
+	choices["Pay [negotiation.demanded_credits] cr"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_yes")
 
-	// Counter-offer (only if faction accepts it)
-	if(negotiation.dialog?.accepts_counter_offer)
-		choices["Counter-Offer"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_talk")
-
-	// Offer cargo (only if faction accepts it)
-	if(negotiation.dialog?.accepts_cargo)
-		choices["Offer Cargo"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_cargo")
+	// Give items option (if item demand exists)
+	if(negotiation.demanded_item_type)
+		var/remaining = negotiation.get_remaining_items()
+		choices["Give [remaining] [negotiation.demanded_item_name]"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_buying")
 
 	// Refuse
-	choices["Refuse"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_refuse")
+	choices["Refuse"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_no")
 
 	// Show radial menu
 	var/choice = show_radial_menu(user, src, choices, tooltips = TRUE, require_near = TRUE)
@@ -119,10 +137,8 @@
 	// Parse the choice
 	if(findtext(choice, "Pay"))
 		handle_pay_choice(user)
-	else if(choice == "Counter-Offer")
-		handle_counter_offer(user)
-	else if(choice == "Offer Cargo")
-		handle_offer_cargo(user)
+	else if(findtext(choice, "Give"))
+		handle_give_items(user)
 	else if(choice == "Refuse")
 		handle_refuse(user)
 
@@ -133,74 +149,34 @@
 	if(!negotiation)
 		return
 
-	var/remaining = negotiation.get_remaining_demand()
-
 	// Check if player ship has enough
 	var/available = negotiation.player_ship?.ship_account?.account_balance || 0
-	if(available < remaining)
-		to_chat(user, span_warning("Insufficient funds! You have [available] credits but need [remaining]."))
-		pirate_say(negotiation.dialog.get_counter_rejection_line())
+	if(available < negotiation.demanded_credits)
+		to_chat(user, span_warning("Insufficient funds! You have [available] credits but need [negotiation.demanded_credits]."))
+		if(negotiation.demanded_item_type)
+			pirate_say("You don't have enough credits. Bring me [negotiation.demanded_item_quantity] [negotiation.demanded_item_name] instead!")
 		return
 
 	// Process payment
-	if(negotiation.process_credit_payment(remaining))
-		to_chat(user, span_notice("Payment of [remaining] credits transferred."))
+	if(negotiation.process_credit_payment())
+		to_chat(user, span_notice("Payment of [negotiation.demanded_credits] credits transferred."))
 	else
 		to_chat(user, span_warning("Payment failed!"))
 
 /**
- * Handle counter-offer - let player input an amount.
+ * Handle give items - explain how to use mission pad.
  */
-/obj/effect/overlay/holo_pad_hologram/pirate/proc/handle_counter_offer(mob/user)
+/obj/effect/overlay/holo_pad_hologram/pirate/proc/handle_give_items(mob/user)
 	if(!negotiation)
 		return
-
-	var/offer = tgui_input_number(user, "Enter your counter-offer in credits:", "Counter-Offer", default = round(negotiation.demanded_credits * 0.7), min_value = 1, max_value = negotiation.demanded_credits)
-
-	if(!offer || !negotiation)
-		return
-
-	// Check if player can afford their own offer
-	var/available = negotiation.player_ship?.ship_account?.account_balance || 0
-	if(available < offer)
-		to_chat(user, span_warning("You don't have [offer] credits to offer!"))
-		return
-
-	// Submit counter-offer
-	if(negotiation.accept_counter_offer(offer))
-		to_chat(user, span_notice("The pirate accepts your offer of [offer] credits."))
-		// Show menu again for payment
-		show_negotiation_radial(user)
-	else
-		to_chat(user, span_warning("The pirate rejected your offer but made a counter: [negotiation.demanded_credits] credits."))
-
-/**
- * Handle offer cargo - explain how to use mission pad.
- */
-/obj/effect/overlay/holo_pad_hologram/pirate/proc/handle_offer_cargo(mob/user)
-	if(!negotiation)
-		return
-
-	// Link mission pad if not already linked
-	if(!negotiation.tribute_pad)
-		// Find mission pad on player ship by checking shuttle areas
-		var/obj/structure/overmap/ship/player_ship = negotiation.player_ship
-		if(player_ship?.shuttle?.shuttle_areas)
-			for(var/obj/machinery/mission_pad/found_pad as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/mission_pad))
-				var/area/pad_area = get_area(found_pad)
-				if(pad_area in player_ship.shuttle.shuttle_areas)
-					negotiation.link_mission_pad(found_pad)
-					break
 
 	if(!negotiation.tribute_pad)
 		to_chat(user, span_warning("No mission pad found on your ship! You'll need to pay with credits."))
 		return
 
-	to_chat(user, span_notice("Place valuable items on the mission pad to offer as tribute."))
-	to_chat(user, span_notice("Accepted items include:"))
-	for(var/category in get_pirate_tribute_categories())
-		to_chat(user, span_notice("- [category]"))
-	to_chat(user, span_notice("Remaining tribute needed: [negotiation.get_remaining_demand()] credits worth."))
+	var/remaining = negotiation.get_remaining_items()
+	to_chat(user, span_notice("Place [remaining] [negotiation.demanded_item_name] on the mission pad."))
+	to_chat(user, span_notice("The mission pad is linked and ready to receive items."))
 
 	negotiation.negotiation_state = NEGOTIATION_PAYING
 
@@ -227,3 +203,62 @@
 
 	// Could add speech animation here
 	addtimer(VARSET_CALLBACK(src, speaking, FALSE), 2 SECONDS)
+
+// ========== PRESET HOLOIMAGES FOR PIRATE CAPTAINS ==========
+
+/**
+ * Base pirate captain holoimage - generic pirate outfit.
+ */
+/datum/preset_holoimage/pirate_captain
+	outfit_type = /datum/outfit/job/captain/pirate
+
+/**
+ * Rogue Raiders - Classic pirate captain.
+ */
+/datum/preset_holoimage/pirate_captain/rogues
+	outfit_type = /datum/outfit/job/captain/pirate
+
+/**
+ * IRS - Tax enforcement agent in a suit.
+ */
+/datum/preset_holoimage/pirate_captain/irs
+	outfit_type = /datum/outfit/job/captain/irs
+
+/**
+ * Skeleton/Flying Dutchman - Undead captain.
+ * Uses a skeleton mob instead of human.
+ */
+/datum/preset_holoimage/pirate_captain/skeleton
+	nonhuman_mobtype = /mob/living/basic/skeleton
+
+/**
+ * Grey Tide - Chaotic assistant captain.
+ */
+/datum/preset_holoimage/pirate_captain/greytide
+	outfit_type = /datum/outfit/job/captain/greytide
+
+/**
+ * Medieval/Order of the Void - Armored knight captain.
+ */
+/datum/preset_holoimage/pirate_captain/medieval
+	outfit_type = /datum/outfit/job/captain/medieval
+
+/**
+ * Silverscale Dynasty - Aristocratic lizard captain.
+ */
+/datum/preset_holoimage/pirate_captain/silverscale
+	outfit_type = /datum/outfit/job/captain/silverscale
+	species_type = /datum/species/lizard
+
+/**
+ * Interdyne Pharmaceutics - Corporate medical captain.
+ */
+/datum/preset_holoimage/pirate_captain/interdyne
+	outfit_type = /datum/outfit/job/captain/interdyne
+
+/**
+ * Lustrous Collective - Ethereal captain.
+ */
+/datum/preset_holoimage/pirate_captain/lustrous
+	outfit_type = /datum/outfit/job/captain/lustrous
+	species_type = /datum/species/ethereal

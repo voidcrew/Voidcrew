@@ -20,9 +20,10 @@ type PirateInfo = {
 type NegotiationInfo = {
   pirate_name: string;
   faction: string;
-  demanded: number;
-  remaining: number;
-  progress: number;
+  demanded_credits: number;
+  demanded_item: string;
+  demanded_quantity: number;
+  items_received: number;
   state: string;
 };
 
@@ -118,31 +119,39 @@ export const ShipComms = (props) => {
               <LabeledList.Item label="Faction">
                 {negotiation.faction}
               </LabeledList.Item>
-              <LabeledList.Item label="Demanded">
-                {negotiation.demanded} cr
+              <LabeledList.Item label="Credit Demand">
+                {negotiation.demanded_credits} cr
               </LabeledList.Item>
-              <LabeledList.Item label="Remaining">
-                {negotiation.remaining} cr
-              </LabeledList.Item>
+              {negotiation.demanded_item && (
+                <LabeledList.Item label="Item Demand">
+                  {negotiation.demanded_quantity} {negotiation.demanded_item}
+                </LabeledList.Item>
+              )}
+              {negotiation.demanded_item && negotiation.items_received > 0 && (
+                <LabeledList.Item label="Items Delivered">
+                  {negotiation.items_received} / {negotiation.demanded_quantity}
+                </LabeledList.Item>
+              )}
             </LabeledList>
 
-            <ProgressBar
-              value={negotiation.progress}
-              maxValue={100}
-              color={negotiation.progress >= 100 ? 'green' : 'yellow'}
-              mt={1}
-            >
-              Payment Progress: {Math.round(negotiation.progress)}%
-            </ProgressBar>
+            {negotiation.demanded_item && (
+              <ProgressBar
+                value={negotiation.items_received}
+                maxValue={negotiation.demanded_quantity}
+                color={negotiation.items_received >= negotiation.demanded_quantity ? 'green' : 'yellow'}
+                mt={1}
+              >
+                Item Progress: {negotiation.items_received} / {negotiation.demanded_quantity}
+              </ProgressBar>
+            )}
 
             <NoticeBox info mt={1}>
-              Click the hologram or use the radial menu to negotiate.
-              Place tribute on the mission pad to make payments.
+              Click the hologram to pay credits or deliver items.
+              Place items on the mission pad if paying with goods.
             </NoticeBox>
 
             <NoticeBox warning mt={1}>
-              WARNING: Moving your ship or locking weapons will end
-              negotiations and provoke an attack!
+              WARNING: Moving your ship will end negotiations and provoke an attack!
             </NoticeBox>
 
             <Button

@@ -1,115 +1,59 @@
 /**
- * Pirate Cargo Demands
+ * Pirate Item Demands
  *
- * Defines the list of items that pirates will accept as tribute payment
- * and their associated credit values.
+ * Defines specific item demands that pirates can request as alternative to credits.
+ * Each demand specifies an item type, quantity, and display name.
  */
 
-/// Global list mapping item types to their tribute value per unit
-/// Holochips and spacecash use face value instead of this list
-GLOBAL_LIST_INIT(pirate_cargo_demands, list(
-	// === PRECIOUS MINERALS ===
-	/obj/item/stack/sheet/mineral/gold = 200,
-	/obj/item/stack/sheet/mineral/silver = 100,
-	/obj/item/stack/sheet/mineral/diamond = 500,
-	/obj/item/stack/sheet/mineral/uranium = 150,
-	/obj/item/stack/sheet/mineral/plasma = 100,
-	/obj/item/stack/sheet/mineral/titanium = 80,
-	/obj/item/stack/sheet/mineral/bananium = 300,
-	/obj/item/stack/sheet/mineral/adamantine = 400,
+/// List of possible item demands pirates can make
+/// Format: list(item_type, quantity, display_name)
+GLOBAL_LIST_INIT(pirate_item_demands, list(
+	// Precious minerals - expensive quantities
+	list(/obj/item/stack/sheet/mineral/gold, 20, "gold sheets"),
+	list(/obj/item/stack/sheet/mineral/silver, 30, "silver sheets"),
+	list(/obj/item/stack/sheet/mineral/diamond, 10, "diamonds"),
+	list(/obj/item/stack/sheet/mineral/uranium, 25, "uranium sheets"),
+	list(/obj/item/stack/sheet/mineral/plasma, 30, "plasma sheets"),
+	list(/obj/item/stack/sheet/mineral/bananium, 15, "bananium sheets"),
 
-	// === PROCESSED MATERIALS ===
-	/obj/item/stack/sheet/plasteel = 50,
-	/obj/item/stack/sheet/mineral/plastitanium = 75,
-	/obj/item/stack/sheet/rglass = 30,
-	/obj/item/stack/sheet/plasmarglass = 60,
+	// Bluespace - rare and valuable
+	list(/obj/item/stack/sheet/bluespace_crystal, 10, "bluespace crystals"),
 
-	// === BLUESPACE ===
-	/obj/item/stack/sheet/bluespace_crystal = 400,
-	/obj/item/stack/ore/bluespace_crystal = 200,
+	// Processed materials - large quantities
+	list(/obj/item/stack/sheet/plasteel, 40, "plasteel sheets"),
+	list(/obj/item/stack/sheet/mineral/plastitanium, 30, "plastitanium sheets"),
 
-	// === WEAPONS ===
-	/obj/item/gun/energy = 300,
-	/obj/item/gun/ballistic = 250,
-	/obj/item/melee/energy = 200,
-	/obj/item/melee/baton = 150,
+	// Weapons
+	list(/obj/item/gun/energy, 3, "energy weapons"),
+	list(/obj/item/gun/ballistic, 4, "ballistic weapons"),
 
-	// === MEDICAL ===
-	/obj/item/storage/medkit = 100,
-	/obj/item/reagent_containers/hypospray/medipen = 50,
-	/obj/item/defibrillator = 200,
-
-	// === VALUABLE ITEMS ===
-	/obj/item/stack/spacecash = 1,  // Face value (per unit in stack)
-	/obj/item/clothing/suit/armor = 150,
-	/obj/item/clothing/head/helmet = 100,
-
-	// === RESEARCH ===
-	/obj/item/disk/tech_disk = 200,
-	/obj/item/disk/design_disk = 150,
+	// Medical - bulk supplies
+	list(/obj/item/storage/medkit, 5, "medkits"),
+	list(/obj/item/reagent_containers/hypospray/medipen, 15, "medipens"),
 ))
 
 /**
- * Get the tribute value of an item.
- * Returns 0 if the item is not accepted.
+ * Pick a random item demand for a pirate negotiation.
+ * Returns list(item_type, quantity, display_name) or null if list is empty.
  */
-/proc/get_pirate_tribute_value(obj/item/item)
-	if(!istype(item))
-		return 0
-
-	// Holochips have face value
-	if(istype(item, /obj/item/holochip))
-		var/obj/item/holochip/chip = item
-		return chip.credits
-
-	// Spacecash has face value (amount * denomination)
-	if(istype(item, /obj/item/stack/spacecash))
-		var/obj/item/stack/spacecash/cash = item
-		return cash.get_item_credit_value()
-
-	// Check against our accepted items list
-	for(var/item_type in GLOB.pirate_cargo_demands)
-		if(istype(item, item_type))
-			var/base_value = GLOB.pirate_cargo_demands[item_type]
-
-			// Stacks multiply by amount
-			if(isstack(item))
-				var/obj/item/stack/stack = item
-				return base_value * stack.amount
-
-			return base_value
-
-	return 0
+/proc/pick_pirate_item_demand()
+	if(!length(GLOB.pirate_item_demands))
+		return null
+	return pick(GLOB.pirate_item_demands)
 
 /**
- * Check if an item type is accepted as tribute.
+ * Check if an item matches the demanded type.
  */
-/proc/is_pirate_tribute_accepted(obj/item/item)
+/proc/item_matches_demand(obj/item/item, demanded_type)
 	if(!istype(item))
 		return FALSE
-
-	// Holochips always accepted
-	if(istype(item, /obj/item/holochip))
-		return TRUE
-
-	// Check against our list
-	for(var/item_type in GLOB.pirate_cargo_demands)
-		if(istype(item, item_type))
-			return TRUE
-
-	return FALSE
+	return istype(item, demanded_type)
 
 /**
- * Get a human-readable list of accepted tribute categories.
+ * Get the stack amount of an item (or 1 for non-stacks).
  */
-/proc/get_pirate_tribute_categories()
-	return list(
-		"Precious minerals (gold, silver, diamond, uranium, plasma)",
-		"Processed alloys (plasteel, plastitanium)",
-		"Bluespace crystals",
-		"Weapons (energy guns, ballistic guns, melee weapons)",
-		"Medical supplies (medkits, medipens, defibrillators)",
-		"Armor and protective gear",
-		"Research disks",
-		"Credit holochips (face value)",
-	)
+/proc/get_item_stack_amount(obj/item/item)
+	if(isstack(item))
+		var/obj/item/stack/stack = item
+		return stack.amount
+	return 1

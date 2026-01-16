@@ -9,25 +9,16 @@
 	var/faction_name = "Pirates"
 	/// Multiplier on base demand (1.0 = normal, 1.5 = greedy, 0.7 = desperate)
 	var/demand_multiplier = 1.0
-	/// Whether this faction accepts cargo as payment
-	var/accepts_cargo = TRUE
-	/// Whether this faction accepts counter-offers
-	var/accepts_counter_offer = TRUE
 	/// Multiplier on timeout duration (1.0 = normal, 2.0 = patient)
 	var/patience_modifier = 1.0
 
 	// Dialog line lists - will pick randomly from these
 	var/list/greetings = list("Attention vessel. This is your only warning.")
-	var/list/demand_lines = list("Pay us %CREDITS% credits or face destruction.")
+	var/list/demand_lines = list("Pay us %CREDITS% credits, or bring me %QUANTITY% %ITEM%. Your choice.")
 	var/list/acceptance_lines = list("Wise choice. You may pass.")
 	var/list/rejection_lines = list("Then you've chosen death.")
 	var/list/timeout_lines = list("Your time is up!")
 	var/list/impatience_lines = list("You're trying my patience... %SECONDS% seconds remaining.")
-	var/list/counter_acceptance_lines = list("...Fine. %CREDITS% credits. Deal.")
-	var/list/counter_rejection_lines = list("Don't insult me with such a pathetic offer.")
-	var/list/counter_final_lines = list("Last chance. %CREDITS% credits. Take it or leave it.")
-	var/list/payment_received_lines = list("Good. %VALUE% credits received.")
-	var/list/cargo_rejection_lines = list("I don't want your junk. Credits only.")
 	var/list/movement_betrayal_lines = list("You dare try to flee?! All weapons, FIRE!")
 
 /**
@@ -37,11 +28,14 @@
 	return pick(greetings)
 
 /**
- * Get a demand line with the credit amount filled in.
+ * Get a demand line with credits and item demand filled in.
  */
-/datum/pirate_faction_dialog/proc/get_demand_line(credits)
+/datum/pirate_faction_dialog/proc/get_demand_line(credits, item_quantity, item_name)
 	var/line = pick(demand_lines)
-	return replacetextEx(line, "%CREDITS%", "[credits]")
+	line = replacetextEx(line, "%CREDITS%", "[credits]")
+	line = replacetextEx(line, "%QUANTITY%", "[item_quantity]")
+	line = replacetextEx(line, "%ITEM%", "[item_name]")
+	return line
 
 /**
  * Get an acceptance line when payment is complete.
@@ -69,39 +63,6 @@
 	return replacetextEx(line, "%SECONDS%", "[seconds]")
 
 /**
- * Get a line when counter-offer is accepted.
- */
-/datum/pirate_faction_dialog/proc/get_counter_acceptance_line(credits)
-	var/line = pick(counter_acceptance_lines)
-	return replacetextEx(line, "%CREDITS%", "[credits]")
-
-/**
- * Get a line when counter-offer is flatly rejected.
- */
-/datum/pirate_faction_dialog/proc/get_counter_rejection_line()
-	return pick(counter_rejection_lines)
-
-/**
- * Get a final offer line after rejected counter-offer.
- */
-/datum/pirate_faction_dialog/proc/get_counter_final_offer_line(credits)
-	var/line = pick(counter_final_lines)
-	return replacetextEx(line, "%CREDITS%", "[credits]")
-
-/**
- * Get a line acknowledging partial payment.
- */
-/datum/pirate_faction_dialog/proc/get_payment_received_line(value)
-	var/line = pick(payment_received_lines)
-	return replacetextEx(line, "%VALUE%", "[value]")
-
-/**
- * Get a line rejecting cargo payment (for factions that don't accept it).
- */
-/datum/pirate_faction_dialog/proc/get_cargo_rejection_line()
-	return pick(cargo_rejection_lines)
-
-/**
  * Get a line when player tries to move during negotiation (betrayal).
  */
 /datum/pirate_faction_dialog/proc/get_movement_betrayal_line()
@@ -111,13 +72,11 @@
 
 /**
  * IRS - Space Tax Collectors
- * Bureaucratic, formal, demanding. Credits only, no cargo.
+ * Bureaucratic, formal, demanding.
  */
 /datum/pirate_faction_dialog/irs
 	faction_name = "Internal Revenue Service"
 	demand_multiplier = 1.5  // IRS wants their cut
-	accepts_cargo = FALSE     // Cash only
-	accepts_counter_offer = FALSE  // No negotiating with the taxman
 	patience_modifier = 0.8   // Bureaucrats are impatient
 
 	greetings = list(
@@ -126,9 +85,9 @@
 		"IRS Enforcement. Our records indicate significant tax delinquency on your account.",
 	)
 	demand_lines = list(
-		"You owe %CREDITS% credits in back taxes, fees, and penalties. Pay immediately.",
-		"Your outstanding balance is %CREDITS% credits. Failure to pay will result in asset seizure.",
-		"Total amount due: %CREDITS% credits. This is a final notice before enforcement action.",
+		"You owe %CREDITS% credits in back taxes. Alternatively, surrender %QUANTITY% %ITEM% as asset forfeiture.",
+		"Your outstanding balance is %CREDITS% credits. Or provide %QUANTITY% %ITEM% for immediate compliance.",
+		"Total amount due: %CREDITS% credits. We will also accept %QUANTITY% %ITEM% as payment in kind.",
 	)
 	acceptance_lines = list(
 		"Payment received. Your account has been noted as compliant. For now.",
@@ -148,14 +107,6 @@
 		"You have %SECONDS% seconds to remit payment before penalties increase.",
 		"The IRS does not wait. %SECONDS% seconds remaining.",
 	)
-	counter_rejection_lines = list(
-		"The IRS does not negotiate. The amount owed is non-negotiable.",
-		"Your counter-offer has been rejected. Pay the full amount.",
-	)
-	cargo_rejection_lines = list(
-		"The IRS accepts monetary payment only. No bartering.",
-		"We don't take goods. Credits. Now.",
-	)
 
 /**
  * Skeleton - The Flying Dutchman
@@ -164,8 +115,6 @@
 /datum/pirate_faction_dialog/skeleton
 	faction_name = "The Flying Dutchman"
 	demand_multiplier = 0.8   // Undead have simple needs
-	accepts_cargo = TRUE
-	accepts_counter_offer = TRUE
 	patience_modifier = 2.0   // The dead are patient
 
 	greetings = list(
@@ -174,9 +123,9 @@
 		"We've been sailing these stars for centuries... and we hunger...",
 	)
 	demand_lines = list(
-		"Surrender %CREDITS% credits worth of treasure... or join our eternal crew...",
-		"The curse demands %CREDITS% in gold... Pay, or be damned alongside us...",
-		"%CREDITS% credits... A small price to avoid our fate...",
+		"Surrender %CREDITS% credits... or bring us %QUANTITY% %ITEM%... or join our eternal crew...",
+		"The curse demands %CREDITS% in gold... or %QUANTITY% %ITEM%... Pay, or be damned...",
+		"%CREDITS% credits... or %QUANTITY% %ITEM%... A small price to avoid our fate...",
 	)
 	acceptance_lines = list(
 		"Your tribute is... acceptable. Sail on, living one. For now...",
@@ -196,16 +145,6 @@
 		"%SECONDS% seconds... The crew grows restless...",
 		"The cursed souls hunger... %SECONDS% seconds...",
 	)
-	counter_acceptance_lines = list(
-		"...Very well. %CREDITS% credits... The curse cares not for exact amounts...",
-	)
-	counter_final_lines = list(
-		"%CREDITS% credits... Final offer... Choose wisely, mortal...",
-	)
-	payment_received_lines = list(
-		"The Dutchman accepts your offering... %VALUE% credits...",
-		"Treasure for the hoard... %VALUE% credits...",
-	)
 
 /**
  * Grey Tide - Rogue Assistants
@@ -214,8 +153,6 @@
 /datum/pirate_faction_dialog/grey
 	faction_name = "Grey Tide"
 	demand_multiplier = 0.7   // Assistants take what they can get
-	accepts_cargo = TRUE
-	accepts_counter_offer = TRUE
 	patience_modifier = 0.7   // ADHD
 
 	greetings = list(
@@ -225,9 +162,9 @@
 		"Robust or get robbed, your choice!",
 	)
 	demand_lines = list(
-		"Give us like %CREDITS% credits and we'll leave you alone, deal?",
-		"We need %CREDITS% credits for... stuff. Important stuff. Hand it over!",
-		"%CREDITS% credits! Come on, we know you've got it!",
+		"Give us %CREDITS% credits or %QUANTITY% %ITEM%, your choice!",
+		"We need %CREDITS% credits! Or like %QUANTITY% %ITEM%, whatever works!",
+		"%CREDITS% credits or %QUANTITY% %ITEM%! Come on, hand it over!",
 	)
 	acceptance_lines = list(
 		"NICE! Thanks buddy, you're cool. Grey tide approved!",
@@ -247,17 +184,6 @@
 		"Come on come on come on! %SECONDS% seconds!",
 		"Hurry up! %SECONDS% seconds! I got places to be!",
 	)
-	counter_acceptance_lines = list(
-		"Eh, %CREDITS% credits works. Deal!",
-		"Fine fine, %CREDITS%. Whatever!",
-	)
-	counter_final_lines = list(
-		"Look, %CREDITS% credits, final offer. Take it or get toolboxed.",
-	)
-	payment_received_lines = list(
-		"Nice, %VALUE% credits! Keep it coming!",
-		"Cha-ching! %VALUE% credits!",
-	)
 
 /**
  * Medieval - Space Knights
@@ -266,8 +192,6 @@
 /datum/pirate_faction_dialog/medieval
 	faction_name = "The Order of the Void"
 	demand_multiplier = 1.0
-	accepts_cargo = TRUE
-	accepts_counter_offer = TRUE
 	patience_modifier = 1.2   // Knights are honorable and patient
 
 	greetings = list(
@@ -276,9 +200,9 @@
 		"By the stars above, you shall pay homage to the Order!",
 	)
 	demand_lines = list(
-		"Render unto us %CREDITS% credits in tribute, or face trial by combat!",
-		"The Order demands %CREDITS% credits! Pay, or be vanquished!",
-		"%CREDITS% credits, peasant! Such is the price of safe passage!",
+		"Render unto us %CREDITS% credits in tribute, or bring %QUANTITY% %ITEM%! Or face trial by combat!",
+		"The Order demands %CREDITS% credits! Or %QUANTITY% %ITEM%! Pay, or be vanquished!",
+		"%CREDITS% credits, peasant! Or %QUANTITY% %ITEM%! Such is the price of safe passage!",
 	)
 	acceptance_lines = list(
 		"Your tribute is accepted. Go with honor, traveler.",
@@ -298,15 +222,6 @@
 		"Make haste! %SECONDS% seconds remain before we attack!",
 		"The Order's patience wanes... %SECONDS% seconds!",
 	)
-	counter_acceptance_lines = list(
-		"Hmm... %CREDITS% credits. A fair compromise. Agreed!",
-	)
-	counter_final_lines = list(
-		"%CREDITS% credits. Our final offer. Decide now!",
-	)
-	payment_received_lines = list(
-		"Tribute received! %VALUE% credits added to the war chest!",
-	)
 
 /**
  * Silverscale - Aristocratic Lizards
@@ -315,8 +230,6 @@
 /datum/pirate_faction_dialog/silverscale
 	faction_name = "Silverscale Dynasty"
 	demand_multiplier = 1.3   // Aristocrats want more
-	accepts_cargo = TRUE
-	accepts_counter_offer = TRUE
 	patience_modifier = 1.0
 
 	greetings = list(
@@ -325,9 +238,9 @@
 		"How... quaint. Your vessel. State your business or pay your dues.",
 	)
 	demand_lines = list(
-		"The Dynasty requires %CREDITS% credits. A pittance for your continued existence.",
-		"%CREDITS% credits. The Dynasty does not ask twice.",
-		"You will pay %CREDITS% credits. This is not a request.",
+		"The Dynasty requires %CREDITS% credits. Or %QUANTITY% %ITEM%. A pittance for your continued existence.",
+		"%CREDITS% credits. Or %QUANTITY% %ITEM%. The Dynasty does not ask twice.",
+		"You will pay %CREDITS% credits. Or provide %QUANTITY% %ITEM%. This is not a request.",
 	)
 	acceptance_lines = list(
 		"Adequate. You may proceed. Do not test our patience again.",
@@ -347,15 +260,6 @@
 		"The Dynasty does not appreciate delays. %SECONDS% seconds.",
 		"You waste our time. %SECONDS% seconds remaining.",
 	)
-	counter_acceptance_lines = list(
-		"...Fine. %CREDITS% credits. The Dynasty accepts, reluctantly.",
-	)
-	counter_final_lines = list(
-		"%CREDITS% credits. Final. Do not test our patience further.",
-	)
-	payment_received_lines = list(
-		"%VALUE% credits. Continue.",
-	)
 
 /**
  * Interdyne - Ex-Pharmacists / Corporate
@@ -364,8 +268,6 @@
 /datum/pirate_faction_dialog/interdyne
 	faction_name = "Interdyne Pharmaceutics"
 	demand_multiplier = 1.2
-	accepts_cargo = TRUE      // Especially medical supplies
-	accepts_counter_offer = TRUE
 	patience_modifier = 1.0
 
 	greetings = list(
@@ -374,9 +276,9 @@
 		"This is Interdyne. We require... compensation for your continued operation.",
 	)
 	demand_lines = list(
-		"Transfer %CREDITS% credits to facilitate mutual benefit.",
-		"The acquisition cost is %CREDITS% credits. Payment is mandatory.",
-		"%CREDITS% credits. A small investment in your continued biological function.",
+		"Transfer %CREDITS% credits. Or provide %QUANTITY% %ITEM%. Either will facilitate mutual benefit.",
+		"The acquisition cost is %CREDITS% credits. Alternatively, %QUANTITY% %ITEM% is acceptable.",
+		"%CREDITS% credits. Or %QUANTITY% %ITEM%. A small investment in your continued biological function.",
 	)
 	acceptance_lines = list(
 		"Transaction complete. Interdyne thanks you for your cooperation.",
@@ -396,15 +298,6 @@
 		"Processing delay detected. %SECONDS% seconds until protocol escalation.",
 		"%SECONDS% seconds remaining in compliance window.",
 	)
-	counter_acceptance_lines = list(
-		"Counter-proposal evaluated. %CREDITS% credits accepted.",
-	)
-	counter_final_lines = list(
-		"Final terms: %CREDITS% credits. Accept or face consequences.",
-	)
-	payment_received_lines = list(
-		"Asset transfer confirmed. %VALUE% credits logged.",
-	)
 
 /**
  * Rogues - Standard Pirates
@@ -413,8 +306,6 @@
 /datum/pirate_faction_dialog/rogues
 	faction_name = "Rogue Raiders"
 	demand_multiplier = 1.0
-	accepts_cargo = TRUE
-	accepts_counter_offer = TRUE
 	patience_modifier = 1.0
 
 	greetings = list(
@@ -423,9 +314,9 @@
 		"Your credits or your life! Your choice!",
 	)
 	demand_lines = list(
-		"Hand over %CREDITS% credits and nobody gets hurt.",
-		"%CREDITS% credits. Now. Don't make this difficult.",
-		"We want %CREDITS% credits. Pay up!",
+		"Hand over %CREDITS% credits and nobody gets hurt. Or %QUANTITY% %ITEM%, your call.",
+		"%CREDITS% credits. Or %QUANTITY% %ITEM%. Now. Don't make this difficult.",
+		"We want %CREDITS% credits! Or bring us %QUANTITY% %ITEM%! Pay up!",
 	)
 	acceptance_lines = list(
 		"Smart choice. Get out of here before we change our minds.",
@@ -445,15 +336,6 @@
 		"Tick tock! %SECONDS% seconds!",
 		"We're losing patience here! %SECONDS% seconds!",
 	)
-	counter_acceptance_lines = list(
-		"Hmm... %CREDITS% credits. Alright, deal.",
-	)
-	counter_final_lines = list(
-		"%CREDITS% credits. Final offer. Take it or die.",
-	)
-	payment_received_lines = list(
-		"Got it! %VALUE% credits! Keep it coming!",
-	)
 
 /**
  * Lustrous - Ethereal/Bluespace Entities
@@ -462,8 +344,6 @@
 /datum/pirate_faction_dialog/lustrous
 	faction_name = "The Lustrous Collective"
 	demand_multiplier = 1.0
-	accepts_cargo = TRUE      // Especially bluespace items
-	accepts_counter_offer = TRUE
 	patience_modifier = 1.5   // Ethereal beings are patient
 
 	greetings = list(
@@ -472,9 +352,9 @@
 		"Mortal vessel. You intrude upon sacred frequencies.",
 	)
 	demand_lines = list(
-		"Offer %CREDITS% credits to the Collective. We require... sustenance.",
-		"%CREDITS% credits. The Collective demands this resonance.",
-		"Your tribute: %CREDITS% credits. The crystals hunger.",
+		"Offer %CREDITS% credits to the Collective... Or %QUANTITY% %ITEM%... We require... sustenance.",
+		"%CREDITS% credits... Or %QUANTITY% %ITEM%... The Collective demands this resonance.",
+		"Your tribute: %CREDITS% credits... Or %QUANTITY% %ITEM%... The crystals hunger.",
 	)
 	acceptance_lines = list(
 		"The Collective is... satisfied. You may continue your trajectory.",
@@ -493,13 +373,4 @@
 	impatience_lines = list(
 		"The frequencies grow unstable... %SECONDS% seconds...",
 		"%SECONDS% seconds before the Collective acts...",
-	)
-	counter_acceptance_lines = list(
-		"The Collective... accepts. %CREDITS% credits will suffice.",
-	)
-	counter_final_lines = list(
-		"%CREDITS% credits. The Collective offers this final resonance.",
-	)
-	payment_received_lines = list(
-		"The Collective absorbs %VALUE% credits... The crystals pulse...",
 	)

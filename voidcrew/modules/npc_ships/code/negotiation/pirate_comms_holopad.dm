@@ -295,9 +295,10 @@
 		data["negotiation"] = list(
 			"pirate_name" = active_negotiation.pirate_ship?.name,
 			"faction" = active_negotiation.dialog?.faction_name,
-			"demanded" = active_negotiation.demanded_credits,
-			"remaining" = active_negotiation.get_remaining_demand(),
-			"progress" = active_negotiation.get_payment_progress(),
+			"demanded_credits" = active_negotiation.demanded_credits,
+			"demanded_item" = active_negotiation.demanded_item_name,
+			"demanded_quantity" = active_negotiation.demanded_item_quantity,
+			"items_received" = active_negotiation.items_received,
 			"state" = active_negotiation.negotiation_state,
 		)
 
@@ -401,4 +402,5 @@
 	// For ship comms, we just track that there's a hologram
 	// The actual hologram is managed by the negotiation datum
 	if(holo)
-		SetLigh
+		SetLightsAndPower()
+		update_appearance()

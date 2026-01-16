@@ -23,6 +23,9 @@
 /// Sent when a ship has a weapons lock acquired on it (breaks cloak): (obj/structure/overmap/ship/attacker)
 #define COMSIG_SHIP_WEAPONS_LOCKED "ship_weapons_locked"
 
+/// Sent when a ship loses a weapons lock that was on it: (obj/structure/overmap/ship/attacker)
+#define COMSIG_SHIP_WEAPONS_LOCK_LOST "ship_weapons_lock_lost"
+
 /// Sent when a ship enters an overmap hazard event: (obj/structure/overmap/event/hazard)
 #define COMSIG_SHIP_HAZARD_TRIGGERED "ship_hazard_triggered"
 
