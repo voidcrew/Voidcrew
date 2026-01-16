@@ -282,6 +282,9 @@
 	// Grant immunity BEFORE telling AI to disengage (prevents immediate re-targeting)
 	if(success)
 		grant_tribute_immunity()
+	else
+		// Mark this ship as having failed negotiation - no second chances
+		mark_negotiation_failed()
 
 	// Tell the pirate AI to resume or disengage
 	var/datum/ai_controller/npc_ship/controller = pirate_ship?.ai_controller
@@ -397,6 +400,22 @@
 		controller.set_blackboard_key(BB_NPC_PAID_TRIBUTE_SHIPS, paid_ships)
 
 	paid_ships[REF(player_ship)] = world.time + NEGOTIATION_IMMUNITY_DURATION
+
+/**
+ * Mark the player ship as having failed negotiation - no second chances.
+ */
+/datum/pirate_negotiation/proc/mark_negotiation_failed()
+	var/datum/ai_controller/npc_ship/controller = pirate_ship?.ai_controller
+	if(!controller)
+		return
+
+	// Add to failed negotiation ships list - permanent for this encounter
+	var/list/failed_ships = controller.blackboard[BB_NPC_FAILED_NEGOTIATION_SHIPS]
+	if(!failed_ships)
+		failed_ships = list()
+		controller.set_blackboard_key(BB_NPC_FAILED_NEGOTIATION_SHIPS, failed_ships)
+
+	failed_ships[REF(player_ship)] = TRUE
 
 // ========== HOLOGRAM SPEECH ==========
 

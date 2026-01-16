@@ -176,6 +176,11 @@
 		if(controller.blackboard[BB_NPC_NEGOTIATION])
 			continue
 
+		// Don't allow re-hailing if we already failed/refused negotiation with this pirate
+		var/list/failed_ships = controller.blackboard[BB_NPC_FAILED_NEGOTIATION_SHIPS]
+		if(failed_ships && failed_ships[REF(linked_ship)])
+			continue
+
 		hailable += pirate
 
 	return hailable

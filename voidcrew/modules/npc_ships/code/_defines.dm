@@ -45,6 +45,7 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 #define BB_NPC_NEGOTIATION "npc_negotiation"
 #define BB_NPC_NEGOTIATION_START "npc_negotiation_start"
 #define BB_NPC_PAID_TRIBUTE_SHIPS "npc_paid_tribute_ships"
+#define BB_NPC_FAILED_NEGOTIATION_SHIPS "npc_failed_negotiation_ships"  // Ships that refused/failed negotiation - no second chances
 
 // Negotiation states
 #define NEGOTIATION_PENDING "pending"

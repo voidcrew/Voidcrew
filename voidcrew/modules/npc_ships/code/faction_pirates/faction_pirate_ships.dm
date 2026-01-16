@@ -203,13 +203,6 @@
 	speed_limit = 0.6
 	thrust_power = 0.35
 
-	// Yellow zone - stay to interdict/siphon even without weapons
-	retreat_without_weapons = FALSE
-	// Scan targets for wealth before engaging
-	scan_before_engage = TRUE
-	// Steal 25% of target's money then retreat
-	siphon_goal_percent = 25
-
 	crew_min = 3
 	crew_max = 5
 	captain_type = /mob/living/basic/trooper/pirate/faction/irs/captain
