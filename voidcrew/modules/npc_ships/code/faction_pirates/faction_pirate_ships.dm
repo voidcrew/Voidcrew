@@ -36,6 +36,12 @@
 		/mob/living/basic/trooper/pirate/faction/silverscale/ranged,
 	)
 
+	// Negotiation - aristocrats want more
+	negotiation_dialog_type = /datum/pirate_faction_dialog/silverscale
+	min_negotiation_demand = 800
+	max_negotiation_demand = 15000
+	pirate_faction = "silverscale"
+
 // ==================== SKELETON (Flying Dutchman) ====================
 
 /obj/structure/overmap/ship/npc/pirate/skeleton
@@ -60,6 +66,12 @@
 		/mob/living/basic/trooper/pirate/faction/skeleton/melee,
 		/mob/living/basic/trooper/pirate/faction/skeleton/ranged,
 	)
+
+	// Negotiation - undead will negotiate but are patient and ominous
+	negotiation_dialog_type = /datum/pirate_faction_dialog/skeleton
+	min_negotiation_demand = 400
+	max_negotiation_demand = 8000
+	pirate_faction = "skeleton"
 
 // ==================== GREY TIDE (Rogue Assistants) ====================
 
@@ -93,6 +105,12 @@
 		/mob/living/basic/trooper/pirate/faction/grey/ranged,
 	)
 
+	// Negotiation - assistants take what they can get
+	negotiation_dialog_type = /datum/pirate_faction_dialog/grey
+	min_negotiation_demand = 200
+	max_negotiation_demand = 5000
+	pirate_faction = "grey"
+
 // ==================== LUSTROUS (Mutated Ethereals) ====================
 
 /obj/structure/overmap/ship/npc/pirate/lustrous
@@ -120,6 +138,12 @@
 		/mob/living/basic/trooper/pirate/faction/lustrous/ranged,
 	)
 
+	// Negotiation - ethereals are patient and mysterious
+	negotiation_dialog_type = /datum/pirate_faction_dialog/lustrous
+	min_negotiation_demand = 500
+	max_negotiation_demand = 10000
+	pirate_faction = "lustrous"
+
 // ==================== INTERDYNE (Ex-Pharmacists) ====================
 
 /obj/structure/overmap/ship/npc/pirate/interdyne
@@ -144,6 +168,12 @@
 		/mob/living/basic/trooper/pirate/faction/interdyne/ranged,
 		/mob/living/basic/trooper/pirate/faction/interdyne/ranged,
 	)
+
+	// Negotiation - clinical and professional
+	negotiation_dialog_type = /datum/pirate_faction_dialog/interdyne
+	min_negotiation_demand = 700
+	max_negotiation_demand = 12000
+	pirate_faction = "interdyne"
 
 // ==================== IRS (Tax Collectors) ====================
 
@@ -182,6 +212,12 @@
 		/mob/living/basic/trooper/pirate/faction/irs/ranged,
 	)
 
+	// Negotiation - IRS is bureaucratic and demanding (no counter-offers!)
+	negotiation_dialog_type = /datum/pirate_faction_dialog/irs
+	min_negotiation_demand = 1000
+	max_negotiation_demand = 20000
+	pirate_faction = "irs"
+
 // ==================== MEDIEVAL (Space Warmongers) ====================
 
 /obj/structure/overmap/ship/npc/pirate/medieval
@@ -210,3 +246,9 @@
 		/mob/living/basic/trooper/pirate/faction/medieval/melee,
 		/mob/living/basic/trooper/pirate/faction/medieval/ranged,
 	)
+
+	// Negotiation - theatrical knights
+	negotiation_dialog_type = /datum/pirate_faction_dialog/medieval
+	min_negotiation_demand = 600
+	max_negotiation_demand = 12000
+	pirate_faction = "medieval"

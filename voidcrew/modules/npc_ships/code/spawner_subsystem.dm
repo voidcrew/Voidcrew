@@ -374,6 +374,23 @@ SUBSYSTEM_DEF(npc_ships)
 	lines += ""
 	lines += "All Active Ships:"
 	for(var/obj/structure/overmap/ship/npc/ship in SSnpc_ships.active_ships)
-		lines += "  - [ship.name] ([ship.type]) at ([ship.x], [ship.y])"
+		var/datum/ai_controller/npc_ship/controller = ship.ai_controller
+		var/obj/structure/overmap/ship/target = controller?.get_target()
+		var/combat_state = controller?.blackboard[BB_NPC_COMBAT_STATE] || "none"
+		lines += "  - [ship.name] at ([ship.x], [ship.y], z=[ship.z])"
+		lines += "      State: [combat_state], Target: [target?.name || "none"]"
+		lines += "      Territory: [ship.territory_range] tiles"
+
+	// Also show player ships for distance comparison
+	lines += ""
+	lines += "Player Ships:"
+	for(var/obj/structure/overmap/ship/player_ship in SSovermap.simulated_ships)
+		if(istype(player_ship, /obj/structure/overmap/ship/npc))
+			continue
+		lines += "  - [player_ship.name] at ([player_ship.x], [player_ship.y], z=[player_ship.z])"
+		// Show distance to each pirate
+		for(var/obj/structure/overmap/ship/npc/pirate in SSnpc_ships.active_ships)
+			var/dist = get_dist(pirate, player_ship)
+			lines += "      -> [pirate.name]: [dist] tiles away"
 
 	to_chat(usr, lines.Join("\n"))

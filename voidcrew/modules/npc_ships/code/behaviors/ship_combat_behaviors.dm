@@ -89,12 +89,23 @@
 		if(engaging_pirate && engaging_pirate != ship && !QDELETED(engaging_pirate))
 			continue
 
+		// Skip targets that have recently paid tribute (immunity)
+		if(controller.has_tribute_immunity(potential_target))
+			continue
+
 		// Check distance (O(1) instead of range()'s O(tiles))
 		if(get_dist(ship, potential_target) > ship.territory_range)
 			continue
 
 		// Skip targets we can't see (blocked by nebula)
 		if(!ship.has_los_to(potential_target))
+			continue
+
+		// Skip targets in zones where combat isn't allowed (green space protection)
+		var/turf/target_loc = get_turf(potential_target)
+		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_loc)
+		var/target_can_be_attacked = target_zone ? (target_zone.weapons_allowed() || target_zone.interdiction_allowed()) : TRUE
+		if(!target_can_be_attacked)
 			continue
 
 		// If this ship scans before engaging, check if we recently scanned this target
@@ -106,6 +117,7 @@
 					continue  // Skip - we scanned this ship recently
 
 		// Found a valid target!
+		log_shuttle("NPC_SHIP: [ship.name] targeting [potential_target.name] - dist=[get_dist(ship, potential_target)], territory=[ship.territory_range]")
 		controller.set_target(potential_target)
 
 		// If this ship scans before engaging, go to SCANNING first
@@ -202,6 +214,14 @@
 	var/obj/structure/overmap/ship/target = controller.get_target()
 
 	if(!ship || !target || QDELETED(target))
+		controller.clear_target()
+		return AI_BEHAVIOR_DELAY
+
+	// Check if target escaped to green space - abort lock
+	var/turf/target_loc = get_turf(target)
+	var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_loc)
+	var/target_can_be_attacked = target_zone ? (target_zone.weapons_allowed() || target_zone.interdiction_allowed()) : TRUE
+	if(!target_can_be_attacked)
 		controller.clear_target()
 		return AI_BEHAVIOR_DELAY
 

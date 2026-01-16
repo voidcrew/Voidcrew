@@ -512,3 +512,15 @@
 	// Faction
 	faction = list(FACTION_PIRATE)
 
+	// ========== NEGOTIATION CONFIG ==========
+	/// Whether this pirate accepts negotiations (can be hailed)
+	var/accepts_negotiation = TRUE
+	/// Faction dialog type for negotiation personality
+	var/negotiation_dialog_type = /datum/pirate_faction_dialog/rogues
+	/// Minimum credits to demand in negotiation
+	var/min_negotiation_demand = 500
+	/// Maximum credits to demand in negotiation
+	var/max_negotiation_demand = 10000
+	/// Faction identifier for dialog and appearance
+	var/pirate_faction = "rogues"
+

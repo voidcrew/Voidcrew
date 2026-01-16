@@ -24,6 +24,34 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 #define NPC_COMBAT_ENGAGING "engaging"
 #define NPC_COMBAT_COMBAT "combat"
 #define NPC_COMBAT_RETREATING "retreating"
+#define NPC_COMBAT_NEGOTIATING "negotiating"
+
+// Negotiation blackboard keys
+#define BB_NPC_NEGOTIATION "npc_negotiation"
+#define BB_NPC_NEGOTIATION_START "npc_negotiation_start"
+#define BB_NPC_PAID_TRIBUTE_SHIPS "npc_paid_tribute_ships"
+
+// Negotiation states
+#define NEGOTIATION_PENDING "pending"
+#define NEGOTIATION_ACTIVE "active"
+#define NEGOTIATION_PAYING "paying"
+#define NEGOTIATION_ACCEPTED "accepted"
+#define NEGOTIATION_REJECTED "rejected"
+#define NEGOTIATION_TIMEOUT "timeout"
+
+// Negotiation signals
+#define COMSIG_SHIP_HAILED "ship_hailed"
+#define COMSIG_NEGOTIATION_STARTED "negotiation_started"
+#define COMSIG_NEGOTIATION_ENDED "negotiation_ended"
+
+// Negotiation timing
+#define NEGOTIATION_DEFAULT_TIMEOUT (2 MINUTES)
+#define NEGOTIATION_IMMUNITY_TIME (5 MINUTES)
+#define NEGOTIATION_IMMUNITY_DURATION (5 MINUTES)
+#define NEGOTIATION_WARNING_TIMES list(60, 30, 10)  // Seconds before timeout to warn
+
+// Negotiation payment signal
+#define COMSIG_NEGOTIATION_PAYMENT "negotiation_payment"
 
 // Scanning blackboard keys
 #define BB_NPC_SCAN_START_TIME "npc_scan_start_time"  // When scan started

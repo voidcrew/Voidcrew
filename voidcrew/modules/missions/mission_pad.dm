@@ -19,6 +19,8 @@
 
 	/// Linked mission board console
 	var/obj/machinery/computer/mission_board/linked_console
+	/// Active pirate negotiation using this pad for tribute (if any)
+	var/datum/pirate_negotiation/tribute_negotiation
 
 /obj/machinery/mission_pad/Initialize(mapload)
 	. = ..()
@@ -29,6 +31,9 @@
 	if(linked_console)
 		linked_console.linked_pad = null
 		linked_console = null
+	if(tribute_negotiation)
+		tribute_negotiation.tribute_pad = null
+		tribute_negotiation = null
 	return ..()
 
 /**
@@ -87,6 +92,36 @@
 
 	// Sound effect
 	playsound(src, 'sound/effects/magic/teleport_diss.ogg', 50, TRUE)
+
+/**
+ * Handle items being placed on the pad.
+ * If we're linked to a tribute negotiation, check if the item is valid tribute.
+ */
+/obj/machinery/mission_pad/Crossed(atom/movable/crossed, oldloc)
+	. = ..()
+	// Check for tribute processing
+	if(tribute_negotiation && isitem(crossed))
+		process_tribute_item(crossed)
+
+/**
+ * Process an item as potential tribute for an active negotiation.
+ */
+/obj/machinery/mission_pad/proc/process_tribute_item(obj/item/item)
+	if(!tribute_negotiation)
+		return
+
+	// Check if this item is accepted as tribute
+	var/value = tribute_negotiation.process_cargo_payment(item)
+	if(value > 0)
+		visible_message(span_notice("The [item.name] is teleported away as tribute!"))
+
+/obj/machinery/mission_pad/examine(mob/user)
+	. = ..()
+	if(tribute_negotiation)
+		. += span_warning("This pad is linked to an active pirate negotiation!")
+		. += span_notice("Place valuable items here to pay tribute.")
+		var/remaining = tribute_negotiation.get_remaining_demand()
+		. += span_notice("Remaining demand: [remaining] credits worth of tribute.")
 
 /**
  * Circuit board for the mission pad.

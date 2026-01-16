@@ -1,12 +1,15 @@
 /**
- * Ship Key - Used to claim ownership of an NPC ship
+ * Ship Key - Used to claim ownership of a ship
  *
- * Dropped by NPC ship captains on death. Can be inserted into the
+ * For NPC ships: Dropped by NPC ship captains on death. Can be inserted into the
  * helm console to claim the ship for player use.
  *
- * The key serves as the single source of truth for pirate ship lifecycle.
+ * For player ships: Given to the captain on spawn. Can be used to reclaim the ship
+ * if it becomes abandoned.
+ *
+ * The key serves as the single source of truth for NPC pirate ship lifecycle.
  * When destroyed (for any reason), it notifies the spawner subsystem to
- * spawn a replacement pirate of the same tier.
+ * spawn a replacement pirate of the same tier (NPC ships only).
  */
 /obj/item/ship_key
 	name = "ship authorization key"
@@ -15,7 +18,7 @@
 	icon_state = "keycard"
 	w_class = WEIGHT_CLASS_SMALL
 
-	/// Weak reference to the NPC ship this key belongs to
+	/// Weak reference to the ship this key belongs to
 	var/datum/weakref/ship_ref
 
 	/// Name of the ship (for display even if ship is destroyed)
@@ -30,7 +33,10 @@
 	/// Whether we've already notified the spawner (prevents double-notification)
 	var/spawner_notified = FALSE
 
-/obj/item/ship_key/Initialize(mapload, obj/structure/overmap/ship/npc/target_ship)
+	/// Whether this key is for an NPC ship (affects claiming and spawner notification)
+	var/is_npc_key = FALSE
+
+/obj/item/ship_key/Initialize(mapload, obj/structure/overmap/ship/target_ship)
 	. = ..()
 	if(target_ship)
 		set_ship(target_ship)

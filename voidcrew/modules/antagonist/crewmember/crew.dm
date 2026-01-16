@@ -5,6 +5,7 @@
 	show_in_roundend = FALSE
 	show_in_antagpanel = FALSE
 	silent = TRUE
+	ui_name = null // No objectives button for regular crew
 	/// The specific ship team this antagonist datum is for (supports multi-crew)
 	var/datum/team/voidcrew/crew_team
 

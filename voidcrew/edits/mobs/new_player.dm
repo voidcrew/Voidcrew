@@ -206,6 +206,17 @@
 
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_CREWMEMBER_JOINED, character, job.title)
 
+	// Grant captain management action if spawning as captain (officer job)
+	if(job.officer && humanc)
+		var/datum/action/innate/captain_management/captain_action = new(humanc, joined_ship)
+		captain_action.Grant(humanc)
+
+	// Show ship memo after spawn (with a small delay so they're fully loaded in)
+	if(joined_ship.memo && humanc)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(show_ship_memo_to_player), humanc, joined_ship), 3 SECONDS)
+
+	return TRUE
+
 /**
  * Apply custom slot loadout items to a character
  * This is called after normal job equip when a cryo console has swapped the job to use a custom slot

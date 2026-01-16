@@ -8,6 +8,7 @@
  * - ENGAGING: Acquiring weapon lock on target
  * - COMBAT: Actively firing weapons and using interdictor
  * - RETREATING: All weapons destroyed, trying to escape
+ * - NEGOTIATING: In active negotiation with target, combat paused
  */
 /datum/ai_planning_subtree/npc_ship_combat
 
@@ -16,6 +17,11 @@
 		return
 
 	var/combat_state = controller.get_combat_state()
+
+	// Negotiating ships don't do any combat - they just wait for negotiation outcome
+	if(combat_state == NPC_COMBAT_NEGOTIATING)
+		// No combat behaviors - negotiation datum handles timeout and resolution
+		return
 
 	// Retreating ships don't scan for threats or fight - they just try to escape
 	if(combat_state == NPC_COMBAT_RETREATING)

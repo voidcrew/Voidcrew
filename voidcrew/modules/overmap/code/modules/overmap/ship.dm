@@ -53,6 +53,10 @@
 	var/acceleration_speed = 0.02
 	///Cooldown until the ship can be renamed again
 	COOLDOWN_DECLARE(rename_cooldown)
+	///Cooldown between sending crew invites
+	COOLDOWN_DECLARE(invite_cooldown)
+	///List of pending crew invites: ckey -> invite_time
+	var/list/pending_invites = list()
 
 	///Timer between job managing delays
 	COOLDOWN_DECLARE(job_slot_adjustment_cooldown)
@@ -671,6 +675,51 @@
 
 	// Announce on ship
 	ship_announce("WARNING: Ship abandoned. Command authorization reset. Any personnel may claim this vessel via the helm console.", "ABANDONMENT PROTOCOL")
+
+// ===== CAPTAIN MANAGEMENT =====
+
+/**
+ * Check if a mob is the captain of this ship.
+ * Returns TRUE if the mob holds the officer role for this ship.
+ */
+/obj/structure/overmap/ship/proc/is_ship_captain(mob/living/check_mob)
+	if(!check_mob?.mind)
+		return FALSE
+	if(!(check_mob.mind in ship_team?.members))
+		return FALSE
+
+	var/datum/job/captain_job = get_captain_job()
+	if(!captain_job)
+		return FALSE
+
+	return check_mob.mind.assigned_role?.type == captain_job.type
+
+/**
+ * Get the captain job datum for this ship.
+ * Returns the first job with officer = TRUE, or the first job as fallback.
+ */
+/obj/structure/overmap/ship/proc/get_captain_job()
+	for(var/datum/job/job in job_slots)
+		if(job.officer)
+			return job
+	// Fallback to first job if no officer defined
+	if(length(job_slots))
+		for(var/datum/job/job in job_slots)
+			return job
+	return null
+
+/**
+ * Get the current captain mob if they are online.
+ */
+/obj/structure/overmap/ship/proc/get_captain()
+	var/datum/job/captain_job = get_captain_job()
+	if(!captain_job)
+		return null
+
+	for(var/datum/mind/member in ship_team?.members)
+		if(member.assigned_role?.type == captain_job.type && member.current?.client)
+			return member.current
+	return null
 
 /**
  * Claims an abandoned ship for a new owner.

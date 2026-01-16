@@ -279,3 +279,66 @@
 
 	set_target(null)
 	set_combat_state(NPC_COMBAT_IDLE)
+
+// ========== NEGOTIATION HANDLING ==========
+
+/**
+ * Enter negotiation state - pauses combat while keeping target.
+ * Called when a player hails the pirate to negotiate tribute.
+ */
+/datum/ai_controller/npc_ship/proc/enter_negotiation(datum/pirate_negotiation/negotiation)
+	if(!negotiation)
+		return FALSE
+
+	// Store negotiation reference
+	set_blackboard_key(BB_NPC_NEGOTIATION, negotiation)
+	set_blackboard_key(BB_NPC_NEGOTIATION_START, world.time)
+
+	// Transition to negotiating state (pauses combat behaviors)
+	set_combat_state(NPC_COMBAT_NEGOTIATING)
+
+	// Clear weapon lock if we were acquiring one
+	clear_blackboard_key(BB_NPC_TARGET_LOCKED)
+	clear_blackboard_key(BB_NPC_LOCK_START_TIME)
+
+	// Cancel any active interdiction
+	var/datum/npc_combat_interface/combat = get_combat_interface()
+	combat?.cancel_interdiction()
+
+	return TRUE
+
+/**
+ * Exit negotiation state - either disengage (success) or resume combat (failure).
+ */
+/datum/ai_controller/npc_ship/proc/exit_negotiation(success = FALSE)
+	// Clear negotiation reference
+	clear_blackboard_key(BB_NPC_NEGOTIATION)
+	clear_blackboard_key(BB_NPC_NEGOTIATION_START)
+
+	if(success)
+		// Payment received - disengage completely
+		clear_target()
+		// Target is now on our "paid" list (handled by negotiation datum)
+	else
+		// Negotiation failed - resume combat
+		set_combat_state(NPC_COMBAT_ENGAGING)
+
+/**
+ * Check if a target ship has recently paid tribute (immunity check).
+ * Returns TRUE if the ship is immune from attack.
+ */
+/datum/ai_controller/npc_ship/proc/has_tribute_immunity(obj/structure/overmap/ship/target)
+	var/list/paid_ships = blackboard[BB_NPC_PAID_TRIBUTE_SHIPS]
+	if(!paid_ships)
+		return FALSE
+
+	var/immunity_expires = paid_ships[REF(target)]
+	if(!immunity_expires)
+		return FALSE
+
+	// Check if immunity has expired
+	if(world.time > immunity_expires)
+		paid_ships -= REF(target)
+		return FALSE
+
+	return TRUE

@@ -16,6 +16,9 @@ SUBSYSTEM_DEF(bounty)
 	/// List of all active bounties
 	var/list/datum/pirate_bounty/active_bounties = list()
 
+	/// List of all player-created bounties
+	var/list/datum/player_bounty/player_bounties = list()
+
 	/// Whether initial bounties have been generated
 	var/bounties_initialized = FALSE
 
@@ -206,5 +209,105 @@ SUBSYSTEM_DEF(bounty)
 					bounty_data["target_y"] = target_turf.y
 
 		data += list(bounty_data)
+
+	return data
+
+// ========== PLAYER BOUNTY MANAGEMENT ==========
+
+/**
+ * Creates a new player bounty.
+ * @param creator_ship The ship creating the bounty
+ * @param creator_pad The mission pad linked to the creator's console
+ * @param reward_amount The credit reward offered
+ * @return The created bounty or null on failure
+ */
+/datum/controller/subsystem/bounty/proc/create_player_bounty(obj/structure/overmap/ship/creator_ship, obj/machinery/mission_pad/creator_pad, reward_amount)
+	if(!creator_ship || QDELETED(creator_ship))
+		return null
+
+	// Check if ship already has an active bounty
+	if(ship_has_active_player_bounty(creator_ship))
+		return null
+
+	// Check if ship has sufficient funds
+	if(!creator_ship.ship_account || creator_ship.ship_account.account_balance < reward_amount)
+		return null
+
+	// Deduct reward from creator (escrow)
+	creator_ship.ship_account.adjust_money(-reward_amount)
+
+	var/datum/player_bounty/new_bounty = new(creator_ship, creator_pad, reward_amount)
+	if(QDELETED(new_bounty))
+		// Refund on failure
+		creator_ship.ship_account.adjust_money(reward_amount)
+		return null
+
+	player_bounties += new_bounty
+	return new_bounty
+
+/**
+ * Removes a player bounty from tracking.
+ */
+/datum/controller/subsystem/bounty/proc/remove_player_bounty(datum/player_bounty/bounty)
+	player_bounties -= bounty
+
+/**
+ * Gets all valid player bounties.
+ */
+/datum/controller/subsystem/bounty/proc/get_all_player_bounties()
+	var/list/valid = list()
+	for(var/datum/player_bounty/bounty in player_bounties)
+		if(bounty.is_valid())
+			valid += bounty
+		else if(bounty.status == "available")
+			// Invalid but not resolved - cancel it
+			bounty.cancel()
+	return valid
+
+/**
+ * Checks if a ship has created an active player bounty.
+ */
+/datum/controller/subsystem/bounty/proc/ship_has_active_player_bounty(obj/structure/overmap/ship/ship)
+	for(var/datum/player_bounty/bounty in player_bounties)
+		if(bounty.get_creator_ship() == ship && bounty.status == "available")
+			return TRUE
+	return FALSE
+
+/**
+ * Checks if a ship is hunting (has claimed) a player bounty.
+ */
+/datum/controller/subsystem/bounty/proc/ship_has_claimed_player_bounty(obj/structure/overmap/ship/ship)
+	for(var/datum/player_bounty/bounty in player_bounties)
+		if(bounty.status == "available" && bounty.is_claimant(ship))
+			return TRUE
+	return FALSE
+
+/**
+ * Gets the player bounty a ship has created.
+ */
+/datum/controller/subsystem/bounty/proc/get_ship_created_bounty(obj/structure/overmap/ship/ship)
+	for(var/datum/player_bounty/bounty in player_bounties)
+		if(bounty.get_creator_ship() == ship && bounty.status == "available")
+			return bounty
+	return null
+
+/**
+ * Gets the player bounty a ship is hunting.
+ */
+/datum/controller/subsystem/bounty/proc/get_ship_claimed_bounty(obj/structure/overmap/ship/ship)
+	for(var/datum/player_bounty/bounty in player_bounties)
+		if(bounty.status == "available" && bounty.is_claimant(ship))
+			return bounty
+	return null
+
+/**
+ * Gets player bounty data formatted for TGUI.
+ * @param for_ship The ship to include relationship data for
+ */
+/datum/controller/subsystem/bounty/proc/get_player_bounty_ui_data(obj/structure/overmap/ship/for_ship)
+	var/list/data = list()
+
+	for(var/datum/player_bounty/bounty in get_all_player_bounties())
+		data += list(bounty.get_ui_data(for_ship))
 
 	return data
