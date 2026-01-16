@@ -450,36 +450,8 @@
 				balloon_alert(usr, "turn-in failed!")
 			return TRUE
 
-		if("complete_custom_bounty")
-			// Creator manually completes a custom bounty for a specific claimant
-			var/datum/player_bounty/bounty = SSbounty?.get_ship_created_bounty(ship)
-			if(!bounty)
-				balloon_alert(usr, "no bounty to complete!")
-				return TRUE
-
-			if(!bounty.is_custom)
-				balloon_alert(usr, "preset bounties auto-complete!")
-				return TRUE
-
-			if(bounty.get_hunter_count() == 0)
-				balloon_alert(usr, "no one hunting this bounty!")
-				return TRUE
-
-			// Find the claimant to pay
-			var/obj/structure/overmap/ship/winner = locate(params["claimant_ref"])
-			if(!winner || !bounty.is_claimant(winner))
-				balloon_alert(usr, "invalid claimant!")
-				return TRUE
-
-			if(bounty.complete_custom(winner))
-				balloon_alert(usr, "bounty completed!")
-				playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
-			else
-				balloon_alert(usr, "completion failed!")
-			return TRUE
-
-		if("send_custom_bounty_item")
-			// Claimer sends an item to the creator's pad for custom bounties
+		if("make_bounty_offer")
+			// Hunter submits an offer for a custom bounty
 			if(!linked_pad)
 				balloon_alert(usr, "no mission pad linked!")
 				return TRUE
@@ -493,19 +465,79 @@
 				balloon_alert(usr, "use turn-in for item bounties!")
 				return TRUE
 
+			if(bounty.has_pending_offer(ship))
+				balloon_alert(usr, "you already have a pending offer!")
+				return TRUE
+
 			// Get items on pad
 			var/list/items_on_pad = linked_pad.get_items_on_pad()
 			if(!length(items_on_pad))
-				balloon_alert(usr, "place item on pad first!")
+				balloon_alert(usr, "place items on pad first!")
 				return TRUE
 
-			// Send items to creator's pad
-			var/sent_count = bounty.send_items_to_creator(items_on_pad, linked_pad, ship)
-			if(sent_count > 0)
-				balloon_alert(usr, "sent [sent_count] item(s)!")
-				playsound(src, 'sound/effects/magic/teleport_diss.ogg', 50, TRUE)
+			// Create the offer
+			if(bounty.make_offer(items_on_pad, linked_pad, ship))
+				balloon_alert(usr, "offer submitted!")
+				playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
 			else
-				balloon_alert(usr, "failed to send items!")
+				balloon_alert(usr, "failed to submit offer!")
+			return TRUE
+
+		if("withdraw_bounty_offer")
+			// Hunter withdraws their pending offer
+			var/datum/player_bounty/bounty = SSbounty?.get_ship_claimed_bounty(ship)
+			if(!bounty)
+				balloon_alert(usr, "no claimed bounty!")
+				return TRUE
+
+			if(bounty.withdraw_offer(ship))
+				balloon_alert(usr, "offer withdrawn")
+			else
+				balloon_alert(usr, "no offer to withdraw!")
+			return TRUE
+
+		if("approve_bounty_offer")
+			// Creator approves an offer
+			var/datum/player_bounty/bounty = SSbounty?.get_ship_created_bounty(ship)
+			if(!bounty)
+				balloon_alert(usr, "no bounty found!")
+				return TRUE
+
+			if(!bounty.is_custom)
+				balloon_alert(usr, "preset bounties auto-complete!")
+				return TRUE
+
+			// Find the ship whose offer to approve
+			var/obj/structure/overmap/ship/offer_ship = locate(params["ship_ref"])
+			if(!offer_ship)
+				balloon_alert(usr, "invalid ship!")
+				return TRUE
+
+			var/result = bounty.approve_offer(offer_ship)
+			if(result == TRUE)
+				balloon_alert(usr, "offer approved!")
+				playsound(src, 'sound/effects/cashregister.ogg', 50, TRUE)
+			else
+				balloon_alert(usr, "[result]")
+			return TRUE
+
+		if("reject_bounty_offer")
+			// Creator rejects an offer
+			var/datum/player_bounty/bounty = SSbounty?.get_ship_created_bounty(ship)
+			if(!bounty)
+				balloon_alert(usr, "no bounty found!")
+				return TRUE
+
+			// Find the ship whose offer to reject
+			var/obj/structure/overmap/ship/offer_ship = locate(params["ship_ref"])
+			if(!offer_ship)
+				balloon_alert(usr, "invalid ship!")
+				return TRUE
+
+			if(bounty.reject_offer(offer_ship))
+				balloon_alert(usr, "offer rejected")
+			else
+				balloon_alert(usr, "no offer to reject!")
 			return TRUE
 
 /**

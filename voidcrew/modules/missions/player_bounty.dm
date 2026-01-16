@@ -83,6 +83,10 @@ GLOBAL_LIST_INIT(preset_bounty_items, list(
 	/// Bounty status: "available", "completed", "cancelled"
 	var/status = "available"
 
+	/// Pending offers for custom bounties - list of offer data
+	/// Each offer: list("ship_ref" = weakref, "pad_ref" = weakref, "items" = list of item descriptions, "time" = world.time)
+	var/list/pending_offers = list()
+
 /datum/player_bounty/New(obj/structure/overmap/ship/creator_ship, obj/machinery/mission_pad/creator_pad, reward_amount)
 	. = ..()
 	if(!creator_ship)
@@ -100,6 +104,7 @@ GLOBAL_LIST_INIT(preset_bounty_items, list(
 	creator_pad_ref = null
 	claiming_ships.Cut()
 	abandoned_by.Cut()
+	pending_offers.Cut()
 	return ..()
 
 /**
@@ -367,45 +372,167 @@ GLOBAL_LIST_INIT(preset_bounty_items, list(
 	return TRUE
 
 /**
- * Sends items from the claimer's pad to the creator's pad (for custom bounties).
- * Does NOT complete the bounty - creator must manually confirm.
- * @param items List of items to send
- * @param sender_pad The pad sending the items
- * @param sender_ship The ship sending the items
- * @return Number of items sent
+ * Creates an offer for the bounty creator to review (for custom bounties).
+ * Items stay on the sender's pad until the creator approves.
+ * @param items List of items being offered
+ * @param sender_pad The pad with the items
+ * @param sender_ship The ship making the offer
+ * @return TRUE if offer created, FALSE otherwise
  */
-/datum/player_bounty/proc/send_items_to_creator(list/items, obj/machinery/mission_pad/sender_pad, obj/structure/overmap/ship/sender_ship)
+/datum/player_bounty/proc/make_offer(list/items, obj/machinery/mission_pad/sender_pad, obj/structure/overmap/ship/sender_ship)
 	if(!is_custom)
-		return 0
+		return FALSE
 	if(status != "available")
-		return 0
+		return FALSE
 	if(!is_claimant(sender_ship))
-		return 0
+		return FALSE
+	if(!length(items))
+		return FALSE
 
-	var/obj/machinery/mission_pad/creator_pad = get_creator_pad()
-	if(!creator_pad || QDELETED(creator_pad))
-		return 0
+	// Check if this ship already has a pending offer
+	for(var/list/offer in pending_offers)
+		var/datum/weakref/existing_ref = offer["ship_ref"]
+		if(existing_ref?.resolve() == sender_ship)
+			return FALSE // Already has pending offer
 
-	var/turf/dest_turf = get_turf(creator_pad)
-	if(!dest_turf)
-		return 0
-
-	var/sent_count = 0
+	// Build item descriptions
+	var/list/item_descriptions = list()
 	for(var/obj/item/item in items)
-		item.forceMove(dest_turf)
+		if(isstack(item))
+			var/obj/item/stack/S = item
+			item_descriptions += "[S.name] x[S.amount]"
+		else
+			item_descriptions += item.name
+
+	// Create the offer
+	var/list/new_offer = list(
+		"ship_ref" = WEAKREF(sender_ship),
+		"pad_ref" = WEAKREF(sender_pad),
+		"items" = item_descriptions,
+		"time" = world.time,
+	)
+	pending_offers += list(new_offer)
+
+	// Notify both parties
+	var/obj/structure/overmap/ship/creator = get_creator_ship()
+	var/items_str = jointext(item_descriptions, ", ")
+	sender_ship?.ship_announce("BOUNTY: Offer submitted to bounty creator. Awaiting approval.", "MISSION CONTROL")
+	creator?.ship_announce("BOUNTY: [sender_ship?.name || "Unknown"] offers: [items_str] for '[name]'. Review at mission console.", "MISSION CONTROL")
+
+	return TRUE
+
+/**
+ * Gets the pending offer from a specific ship.
+ */
+/datum/player_bounty/proc/get_offer_from_ship(obj/structure/overmap/ship/ship)
+	for(var/list/offer in pending_offers)
+		var/datum/weakref/ship_ref = offer["ship_ref"]
+		if(ship_ref?.resolve() == ship)
+			return offer
+	return null
+
+/**
+ * Checks if a ship has a pending offer.
+ */
+/datum/player_bounty/proc/has_pending_offer(obj/structure/overmap/ship/ship)
+	return !!get_offer_from_ship(ship)
+
+/**
+ * Approves an offer - teleports items and completes the bounty.
+ * @param sender_ship The ship whose offer is being approved
+ * @return TRUE if successful, error message otherwise
+ */
+/datum/player_bounty/proc/approve_offer(obj/structure/overmap/ship/sender_ship)
+	if(!is_custom)
+		return "not a custom bounty"
+	if(status != "available")
+		return "bounty not available"
+
+	var/list/offer = get_offer_from_ship(sender_ship)
+	if(!offer)
+		return "no pending offer"
+
+	var/datum/weakref/pad_ref = offer["pad_ref"]
+	var/obj/machinery/mission_pad/sender_pad = pad_ref?.resolve()
+	if(!sender_pad || QDELETED(sender_pad))
+		// Remove invalid offer
+		pending_offers -= list(offer)
+		return "sender's pad no longer exists"
+
+	// Get items currently on sender's pad
+	var/list/items_on_pad = sender_pad.get_items_on_pad()
+	if(!length(items_on_pad))
+		// Remove offer since items are gone
+		pending_offers -= list(offer)
+		return "items no longer on pad"
+
+	// Get creator's pad for receiving items
+	var/obj/machinery/mission_pad/creator_pad = get_creator_pad()
+	var/turf/dest_turf = creator_pad ? get_turf(creator_pad) : null
+
+	// Transfer items
+	var/sent_count = 0
+	for(var/obj/item/item in items_on_pad)
+		if(dest_turf)
+			item.forceMove(dest_turf)
 		sent_count++
 
-	// Effects on both pads
+	// Effects
 	if(sent_count > 0)
-		sender_pad?.do_teleport_effect()
-		creator_pad.do_teleport_effect()
+		sender_pad.do_teleport_effect()
+		creator_pad?.do_teleport_effect()
 
-		// Notify both parties
-		var/obj/structure/overmap/ship/creator = get_creator_ship()
-		sender_ship?.ship_announce("BOUNTY: Sent [sent_count] item(s) to bounty creator.", "MISSION CONTROL")
-		creator?.ship_announce("BOUNTY: Received [sent_count] item(s) from [sender_ship?.name || "unknown"] for '[name]'.", "MISSION CONTROL")
+	// Award credits
+	sender_ship.ship_account?.adjust_money(reward)
 
-	return sent_count
+	// Announcements
+	var/obj/structure/overmap/ship/creator_ship = get_creator_ship()
+	sender_ship.ship_announce("BOUNTY COMPLETE: [name] - [reward] credits awarded! Items delivered.", "MISSION CONTROL")
+	creator_ship?.ship_announce("BOUNTY COMPLETED: [name] - Received [sent_count] item(s), paid [reward] cr to [sender_ship.name].", "MISSION CONTROL")
+
+	// Notify other claimants they lost
+	for(var/datum/weakref/ref in claiming_ships)
+		var/obj/structure/overmap/ship/loser = ref.resolve()
+		if(loser && loser != sender_ship)
+			loser.ship_announce("BOUNTY LOST: [name] - Creator accepted another crew's offer.", "MISSION CONTROL")
+
+	status = "completed"
+	SSbounty?.remove_player_bounty(src)
+
+	return TRUE
+
+/**
+ * Rejects an offer from a ship.
+ * @param sender_ship The ship whose offer is being rejected
+ */
+/datum/player_bounty/proc/reject_offer(obj/structure/overmap/ship/sender_ship)
+	var/list/offer = get_offer_from_ship(sender_ship)
+	if(!offer)
+		return FALSE
+
+	pending_offers -= list(offer)
+
+	// Notify the sender
+	sender_ship?.ship_announce("BOUNTY: Your offer for '[name]' was rejected by the creator.", "MISSION CONTROL")
+
+	return TRUE
+
+/**
+ * Withdraws the ship's own pending offer.
+ * @param ship The ship withdrawing their offer
+ */
+/datum/player_bounty/proc/withdraw_offer(obj/structure/overmap/ship/ship)
+	var/list/offer = get_offer_from_ship(ship)
+	if(!offer)
+		return FALSE
+
+	pending_offers -= list(offer)
+
+	// Notify the creator
+	var/obj/structure/overmap/ship/creator = get_creator_ship()
+	creator?.ship_announce("BOUNTY: [ship.name] withdrew their offer for '[name]'.", "MISSION CONTROL")
+
+	return TRUE
 
 /**
  * Completes a custom bounty manually (creator confirms completion for a specific claimant).
@@ -490,20 +617,23 @@ GLOBAL_LIST_INIT(preset_bounty_items, list(
 		data["is_creator"] = (for_ship == creator)
 		data["is_claimer"] = is_claimant(for_ship)
 		data["was_abandoned"] = has_abandoned(for_ship)
+		data["has_pending_offer"] = has_pending_offer(for_ship)
 		// Can claim if: status available, not creator, not already a claimant, hasn't abandoned, and doesn't have another claimed bounty
 		data["can_claim"] = (status == "available" && for_ship != creator && !is_claimant(for_ship) && !has_abandoned(for_ship) && !SSbounty?.ship_has_claimed_player_bounty(for_ship))
 
-	// For custom bounties, include list of claimants (for creator to choose who to pay)
-	if(is_custom && for_ship == creator && length(claiming_ships) > 0)
-		var/list/claimant_list = list()
-		for(var/datum/weakref/ref in claiming_ships)
-			var/obj/structure/overmap/ship/claimer = ref.resolve()
-			if(claimer)
-				claimant_list += list(list(
-					"ref" = REF(claimer),
-					"name" = claimer.name,
+	// For custom bounties with creator viewing, include pending offers
+	if(is_custom && for_ship == creator && length(pending_offers) > 0)
+		var/list/offers_data = list()
+		for(var/list/offer in pending_offers)
+			var/datum/weakref/ship_ref = offer["ship_ref"]
+			var/obj/structure/overmap/ship/offer_ship = ship_ref?.resolve()
+			if(offer_ship)
+				offers_data += list(list(
+					"ship_ref" = REF(offer_ship),
+					"ship_name" = offer_ship.name,
+					"items" = offer["items"],
 				))
-		data["claimants"] = claimant_list
+		data["pending_offers"] = offers_data
 
 	return data
 
