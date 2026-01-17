@@ -169,10 +169,29 @@
 
 	// Find the mobile docking port that was loaded
 	var/list/affected = template.get_affected_turfs(transit_turf, centered = FALSE)
+	log_shuttle("CARGO DEBUG: Template loaded. Affected turfs: [length(affected)]")
 	for(var/turf/T in affected)
 		shuttle_port = locate(/obj/docking_port/mobile) in T
 		if(shuttle_port)
+			log_shuttle("CARGO DEBUG: Found shuttle_port at [T.x],[T.y],[T.z]. Type: [shuttle_port.type]")
+			log_shuttle("CARGO DEBUG: shuttle_areas length: [length(shuttle_port.shuttle_areas)]")
+			for(var/area/A as anything in shuttle_port.shuttle_areas)
+				log_shuttle("CARGO DEBUG: shuttle_area: [A.type]")
 			break
+
+	// Debug: Check what areas the turfs are actually in
+	log_shuttle("CARGO DEBUG: Checking turf areas...")
+	var/shuttle_area_count = 0
+	var/non_shuttle_area_count = 0
+	for(var/turf/T in affected)
+		var/area/A = T.loc
+		if(istype(A, /area/shuttle))
+			shuttle_area_count++
+		else
+			non_shuttle_area_count++
+			if(non_shuttle_area_count <= 5) // Log first 5 non-shuttle turfs
+				log_shuttle("CARGO DEBUG: Non-shuttle turf at [T.x],[T.y],[T.z] in area [A.type]")
+	log_shuttle("CARGO DEBUG: Shuttle areas: [shuttle_area_count], Non-shuttle areas: [non_shuttle_area_count]")
 
 	if(!shuttle_port)
 		QDEL_NULL(transit_dock)
@@ -205,7 +224,8 @@
 
 	// Find any open turf in the shuttle area
 	for(var/area/shuttle_area as anything in shuttle_port.shuttle_areas)
-		for(var/turf/open/floor/T in shuttle_area)
+		// Use get_turfs_from_all_zlevels() instead of iterating directly - areas track turfs by z-level
+		for(var/turf/open/floor/T in shuttle_area.get_turfs_from_all_zlevels())
 			if(!T.is_blocked_turf())
 				return T
 
@@ -224,7 +244,8 @@
 	var/turf_count = 0
 	for(var/area/shuttle_area as anything in shuttle_port.shuttle_areas)
 		area_count++
-		for(var/turf/T in shuttle_area)
+		// Use get_turfs_from_all_zlevels() instead of iterating directly - areas track turfs by z-level
+		for(var/turf/T in shuttle_area.get_turfs_from_all_zlevels())
 			turf_count++
 			if(istype(T, /turf/open/floor))
 				turfs += T

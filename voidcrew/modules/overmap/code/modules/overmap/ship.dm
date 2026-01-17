@@ -6,6 +6,10 @@
 #define SHIP_VIEW_RANGE 4
 #define SHIP_SPEED_MULTIPLIER_DEFAULT 1
 
+/// Burn direction constants for throttle system
+#define BURN_NONE 0
+#define BURN_STOP -1
+
 /obj/structure/overmap/ship
 	name = "overmap vessel"
 	desc = "A spacefaring vessel."
@@ -88,6 +92,12 @@
 	var/est_thrust
 	///Average fuel fullness percentage
 	var/avg_fuel_amnt = 100
+	/// The direction currently being burned (0 = none, direction = thrust, -1 = active braking)
+	var/burn_direction = 0
+	/// Percentage of engine thrust to use (1-100)
+	var/burn_percentage = 50
+	/// Whether we're currently registered with SSfastprocess for thrust
+	var/thrust_processing = FALSE
 
 	///Vessel approximate mass
 	var/mass
@@ -400,11 +410,47 @@
 
 /// Starts shield processing on this ship (called when shields activate)
 /obj/structure/overmap/ship/proc/start_shield_processing()
-	START_PROCESSING(SSobj, src)
+	update_ship_processing()
 
 /// Stops shield processing on this ship (called when shields deactivate)
 /obj/structure/overmap/ship/proc/stop_shield_processing()
-	STOP_PROCESSING(SSobj, src)
+	update_ship_processing()
+
+/**
+ * Updates which subsystem the ship is registered with based on current needs.
+ * Uses SSfastprocess (0.2s) when thrusting for responsive controls.
+ * Uses SSobj (2s) when only shields are active (slower is fine for regen).
+ * Stops processing entirely when neither is needed.
+ */
+/obj/structure/overmap/ship/proc/update_ship_processing()
+	var/needs_fast = thrust_processing && burn_direction != BURN_NONE
+	var/needs_slow = shields_active || shields_broken
+
+	if(needs_fast)
+		// Need fast processing for thrust - use SSfastprocess
+		if(datum_flags & DF_ISPROCESSING)
+			// Already processing somewhere, check if we need to switch
+			if(!(src in SSfastprocess.processing))
+				STOP_PROCESSING(SSobj, src)
+				START_PROCESSING(SSfastprocess, src)
+		else
+			START_PROCESSING(SSfastprocess, src)
+	else if(needs_slow)
+		// Only need slow processing for shields - use SSobj
+		if(datum_flags & DF_ISPROCESSING)
+			// Already processing somewhere, check if we need to switch
+			if(!(src in SSobj.processing))
+				STOP_PROCESSING(SSfastprocess, src)
+				START_PROCESSING(SSobj, src)
+		else
+			START_PROCESSING(SSobj, src)
+	else
+		// Don't need any processing
+		if(datum_flags & DF_ISPROCESSING)
+			// Try stopping from both (one will be a no-op)
+			STOP_PROCESSING(SSfastprocess, src)
+			STOP_PROCESSING(SSobj, src)
+		thrust_processing = FALSE
 
 /// Returns TRUE if this ship is involved in ship-to-ship docking (either we docked to them, or they docked to us)
 /// Only counts ships that have COMPLETED docking (state == IDLE), not ships still in transit
@@ -431,8 +477,23 @@
 				return TRUE
 	return FALSE
 
-/// Process tick for ship - handles shield regeneration
+/// Process tick for ship - handles shield regeneration and continuous thrust
+/// Uses SSfastprocess (0.2s) when thrusting, SSobj (2s) when only shields active
 /obj/structure/overmap/ship/process(seconds_per_tick)
+	// Handle continuous thrust (only when actively thrusting)
+	if(thrust_processing && burn_direction != BURN_NONE)
+		if(state != OVERMAP_SHIP_FLYING || zone_transitioning)
+			// Stop thrusting if we can't fly
+			burn_direction = BURN_NONE
+		else if(burn_direction == BURN_STOP)
+			// Active braking - decelerate toward zero
+			if(is_still())
+				burn_direction = BURN_NONE
+			else
+				burn_engines(null, burn_percentage)
+		else if(can_thrust())
+			burn_engines(burn_direction, burn_percentage)
+
 	// Handle shield regeneration
 	if(shields_active && !shields_broken)
 		regenerate_shields(seconds_per_tick)
@@ -441,9 +502,8 @@
 	if(shields_broken && COOLDOWN_FINISHED(src, shield_reactivation_cooldown))
 		reactivate_ship_shields()
 
-	// If shields are no longer active and not broken, stop processing
-	if(!shields_active && !shields_broken)
-		stop_shield_processing()
+	// Update which subsystem we should be on based on current needs
+	update_ship_processing()
 
 /obj/structure/overmap/ship/Initialize(mapload, datum/map_template/shuttle/voidcrew/template)
 	. = ..()
@@ -525,6 +585,11 @@
 	QDEL_NULL(ship_team)
 	QDEL_NULL(cam_screen) // cam_background is inside cam_screen and deleted with it
 	QDEL_NULL(combat_alarm)
+	// Clean up processing (thrust and/or shields)
+	burn_direction = BURN_NONE
+	thrust_processing = FALSE
+	STOP_PROCESSING(SSfastprocess, src)
+	STOP_PROCESSING(SSobj, src)
 	// Clean up missions
 	QDEL_LIST(available_missions)
 	QDEL_LIST(active_missions)
@@ -1147,6 +1212,11 @@
 
 	refresh_engines()
 
+	// Clear thrust when docking
+	burn_direction = BURN_NONE
+	thrust_processing = FALSE
+	update_ship_processing()
+
 	docked = to_dock
 	state = OVERMAP_SHIP_DOCKING
 
@@ -1580,6 +1650,11 @@
 	zone_transition_target = target
 	zone_transition_start_time = world.time
 
+	// Clear thrust when entering zone transition
+	burn_direction = BURN_NONE
+	thrust_processing = FALSE
+	update_ship_processing()
+
 	// Stop the ship - cut engines
 	decelerate(max_speed)
 
@@ -2004,14 +2079,12 @@
 	// First calculation - set original mass as max_integrity and start at full health
 	if(!integrity_initialized)
 		max_integrity = mass
-		integrity = mass // Start at 100% health
-		overhealth = 0
+		integrity = mass
 		integrity_initialized = TRUE
 	else
-		// Subsequent calculations - health = current turfs (capped at original max)
-		integrity = min(mass, max_integrity)
-		// Overhealth = turfs beyond original ship size (from expansion)
-		overhealth = max(0, mass - max_integrity)
+		// Update max_integrity if ship has expanded - crash threshold scales with ship size
+		max_integrity = max(max_integrity, mass)
+		integrity = mass
 
 	// Check for integrity changes and send signals
 	if(integrity != old_integrity && max_integrity > 0)
@@ -2178,9 +2251,9 @@
 /obj/structure/overmap/ship/proc/check_integrity_thresholds()
 	var/old_integrity = integrity
 
-	// Update integrity from current mass
-	integrity = min(mass, max_integrity)
-	overhealth = max(0, mass - max_integrity)
+	// Update max_integrity if ship has expanded, then set integrity to current mass
+	max_integrity = max(max_integrity, mass)
+	integrity = mass
 
 	// Check for integrity changes and send signals
 	if(integrity != old_integrity && max_integrity > 0)
@@ -2436,6 +2509,18 @@
 
 	if(n_dir)
 		accelerate(n_dir, thrust_used)
+
+/**
+ * Changes the burn direction for continuous thrust.
+ * Call with a direction to start thrusting, BURN_STOP to actively brake, or BURN_NONE to stop.
+ * Uses SSfastprocess (0.2s ticks) for responsive controls.
+ * * direction - The direction to burn in, or BURN_STOP/BURN_NONE
+ */
+/obj/structure/overmap/ship/proc/change_heading(direction)
+	burn_direction = direction
+	if(burn_direction != BURN_NONE)
+		thrust_processing = TRUE
+	update_ship_processing()
 
 /// Global helper to get the ship an atom is currently on
 /// Returns null if the atom is not on a ship

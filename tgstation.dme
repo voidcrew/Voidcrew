@@ -6745,6 +6745,7 @@
 #include "voidcrew\edits\turf.dm"
 #include "voidcrew\edits\_onclick\hud\hud.dm"
 #include "voidcrew\edits\mobs\new_player.dm"
+#include "voidcrew\edits\mobs\ship_join_menu.dm"
 #include "voidcrew\edits\objects\structures\lavaland\necropolis_tendril.dm"
 #include "voidcrew\edits\subsystem\economy.dm"
 #include "voidcrew\edits\subsystem\job.dm"

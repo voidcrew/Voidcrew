@@ -368,7 +368,8 @@
  * Updates whether this ship can be boarded based on current state.
  * Ship is boardable when:
  * 1. Integrity <= 75% (disabled), OR
- * 2. Ship is currently interdicted
+ * 2. Ship is currently interdicted, OR
+ * 3. All engines are destroyed/non-functional
  */
 /obj/structure/overmap/ship/npc/proc/update_boarding_state()
 	// Check integrity - ship is disabled at 75% or below
@@ -380,6 +381,11 @@
 
 	// Check interdiction
 	if(is_interdicted)
+		can_board = TRUE
+		return
+
+	// Check engines - no working engines means dead in the water
+	if(!can_thrust())
 		can_board = TRUE
 		return
 
@@ -457,6 +463,9 @@
  */
 /obj/structure/overmap/ship/npc/proc/on_hull_damaged(datum/source, turf/impact_location)
 	SIGNAL_HANDLER
+
+	// Check if engines were destroyed (makes ship boardable)
+	update_boarding_state()
 
 	// Don't queue if already dirty
 	if(mass_dirty)

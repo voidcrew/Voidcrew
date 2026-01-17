@@ -73,23 +73,34 @@
 		else
 			break
 
+	var/space_count = 0
+	var/baseturf_skip_count = 0
+	var/processed_count = 0
 	for(var/i in 1 to turfs.len)
 		var/turf/place = turfs[i]
 		if(isspaceturf(place)) // This assumes all shuttles are loaded in a single spot then moved to their real destination.
+			space_count++
 			continue
 
 		if (place.count_baseturfs() < 2) // Some snowflake shuttle shit
+			baseturf_skip_count++
 			continue
 
+		processed_count++
 		place.insert_baseturf(3, /turf/baseturf_skipover/shuttle)
 
 		for(var/obj/docking_port/mobile/port in place)
+			log_shuttle("DISPATCH DEBUG: Found port [port] at [place.x],[place.y],[place.z]. Template: width=[width], height=[height]")
 			port.calculate_docking_port_information(src)
+			log_shuttle("DISPATCH DEBUG: After calc_info: port.width=[port.width], port.height=[port.height], dwidth=[port.dwidth], dheight=[port.dheight]")
 			// initTemplateBounds explicitly ignores the shuttle's docking port, to ensure that it calculates the bounds of the shuttle correctly
 			// so we need to manually initialize it here
 			SSatoms.InitializeAtoms(list(port))
+			log_shuttle("DISPATCH DEBUG: After Initialize: shuttle_areas len=[length(port.shuttle_areas)]")
 			if(register)
 				port.register()
+
+	log_shuttle("DISPATCH DEBUG: Total turfs=[length(turfs)], space=[space_count], baseturf_skip=[baseturf_skip_count], processed=[processed_count]")
 
 //Whatever special stuff you want
 /datum/map_template/shuttle/post_load(obj/docking_port/mobile/M)

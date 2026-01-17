@@ -276,6 +276,8 @@
 	data["speed"] = current_ship.get_speed()
 	data["eta"] = current_ship.get_eta()
 	data["est_thrust"] = current_ship.est_thrust
+	data["burnDirection"] = current_ship.burn_direction
+	data["burnPercentage"] = current_ship.burn_percentage
 	data["engineInfo"] = list()
 	data["canLand"] = current_ship.shuttle.port_destinations ? TRUE : FALSE
 
@@ -632,16 +634,27 @@
 					current_ship.refresh_engines()
 					return
 				if("change_heading")
-					//current_ship.current_autopilot_target = null
-					current_ship.burn_engines(text2num(params["dir"]))
+					var/new_direction = text2num(params["dir"])
+					// Toggle off if clicking same direction
+					if(new_direction == current_ship.burn_direction)
+						current_ship.change_heading(BURN_NONE)
+					else
+						current_ship.change_heading(new_direction)
+					return
+				if("change_burn_percentage")
+					var/new_percentage = clamp(text2num(params["percentage"]), 1, 100)
+					current_ship.burn_percentage = new_percentage
 					return
 				if("stop")
-					//current_ship.current_autopilot_target = null
 					// Cancel zone transition if in progress
 					if(current_ship.zone_transitioning)
 						current_ship.cancel_zone_transition()
 						return
-					current_ship.burn_engines()
+					// Toggle between no thrust and active braking
+					if(current_ship.burn_direction == BURN_NONE)
+						current_ship.change_heading(BURN_STOP)
+					else
+						current_ship.change_heading(BURN_NONE)
 					return
 				if("bluespace_jump")
 					if(calibrating)

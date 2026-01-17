@@ -306,7 +306,7 @@
 	for(var/datum/weakref/ref in claiming_ships)
 		var/obj/structure/overmap/ship/loser = ref.resolve()
 		if(loser && loser != sender_ship)
-			loser.ship_notify("[name] - Creator accepted another crew's offer.", "BOUNTY LOST", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn2.ogg')
+			loser.ship_notify("[name] - Creator accepted another crew's offer.", "BOUNTY LOST", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg')
 
 	status = "completed"
 	SSbounty?.remove_player_bounty(src)
@@ -325,7 +325,7 @@
 	pending_offers -= list(offer)
 
 	// Notify the sender
-	sender_ship?.ship_notify("Your offer for '[name]' was rejected by the creator.", "BOUNTY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn2.ogg')
+	sender_ship?.ship_notify("Your offer for '[name]' was rejected by the creator.", "BOUNTY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg')
 
 	return TRUE
 
@@ -342,7 +342,7 @@
 
 	// Notify the creator
 	var/obj/structure/overmap/ship/creator = get_creator_ship()
-	creator?.ship_notify("[ship.name] withdrew their offer for '[name]'.", "BOUNTY", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg')
+	creator?.ship_notify("[ship.name] withdrew their offer for '[name]'.", "BOUNTY", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	return TRUE
 
@@ -361,7 +361,7 @@
 	for(var/datum/weakref/ref in claiming_ships)
 		var/obj/structure/overmap/ship/claimer = ref.resolve()
 		if(claimer)
-			claimer.ship_notify("[name] - The bounty creator has cancelled this bounty.", "BOUNTY CANCELLED", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn2.ogg')
+			claimer.ship_notify("[name] - The bounty creator has cancelled this bounty.", "BOUNTY CANCELLED", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg')
 
 	status = "cancelled"
 	SSbounty?.remove_player_bounty(src)

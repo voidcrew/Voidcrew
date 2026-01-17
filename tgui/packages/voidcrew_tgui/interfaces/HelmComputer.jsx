@@ -9,6 +9,7 @@ import {
   NoticeBox,
   ProgressBar,
   Section,
+  Slider,
   Stack,
   Table,
 } from 'tgui-core/components';
@@ -526,6 +527,10 @@ const ShipContent = () => {
   );
 };
 
+// Burn direction constants (must match DM defines)
+const BURN_NONE = 0;
+const BURN_STOP = -1;
+
 // Arrow directional controls
 const ShipControlContent = () => {
   const { act, data } = useBackend();
@@ -553,6 +558,10 @@ const ShipControlContent = () => {
     hiddenInNebula,
     nebulaHideWarmup,
     nebulaHideRemaining,
+    // Throttle controls
+    burnDirection,
+    burnPercentage,
+    speed,
   } = data;
   // For abandoned ships, allow access but show claim button
   const isDisabled = isViewer || (isNotCrew && !isAbandoned);
@@ -652,6 +661,21 @@ const ShipControlContent = () => {
           Engaging nebula concealment in {Math.ceil(nebulaHideRemaining / 10)}s...
         </NoticeBox>
       )}
+      <div style={{ marginBottom: '8px' }}>
+        <div style={{ marginBottom: '4px', fontSize: '12px' }}>
+          Throttle: {burnPercentage}%
+        </div>
+        <Slider
+          value={burnPercentage}
+          minValue={1}
+          maxValue={100}
+          step={1}
+          disabled={isDisabled}
+          onChange={(e, value) =>
+            act('change_burn_percentage', { percentage: value })
+          }
+        />
+      </div>
       <Table collapsing>
         <Table.Row height={2}>
           <Table.Cell width={1}>
@@ -719,6 +743,7 @@ const ShipControlContent = () => {
               icon="arrow-left"
               iconRotation={45}
               mb={1}
+              color={burnDirection === DIRECTIONS.northwest ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -731,6 +756,7 @@ const ShipControlContent = () => {
             <Button
               icon="arrow-up"
               mb={1}
+              color={burnDirection === DIRECTIONS.north ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -744,6 +770,7 @@ const ShipControlContent = () => {
               icon="arrow-right"
               iconRotation={-45}
               mb={1}
+              color={burnDirection === DIRECTIONS.northeast ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -758,6 +785,7 @@ const ShipControlContent = () => {
             <Button
               icon="arrow-left"
               mb={1}
+              color={burnDirection === DIRECTIONS.west ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -768,9 +796,31 @@ const ShipControlContent = () => {
           </Table.Cell>
           <Table.Cell width={1}>
             <Button
-              tooltip={zone_transitioning ? 'Cancel Transition' : 'Stop'}
-              icon={zone_transitioning ? 'times' : 'circle'}
-              color={zone_transitioning ? 'bad' : undefined}
+              tooltip={
+                zone_transitioning
+                  ? 'Cancel Transition'
+                  : burnDirection === BURN_STOP
+                    ? 'Braking - Click to pause'
+                    : burnDirection === BURN_NONE
+                      ? 'Click to brake'
+                      : 'Stop thrust'
+              }
+              icon={
+                zone_transitioning
+                  ? 'times'
+                  : burnDirection === BURN_STOP
+                    ? 'stop'
+                    : burnDirection === BURN_NONE && speed > 0
+                      ? 'stop'
+                      : 'pause'
+              }
+              color={
+                zone_transitioning
+                  ? 'bad'
+                  : burnDirection === BURN_STOP
+                    ? 'bad'
+                    : undefined
+              }
               mb={1}
               disabled={!flyable && !zone_transitioning}
               onClick={() => act('stop')}
@@ -780,6 +830,7 @@ const ShipControlContent = () => {
             <Button
               icon="arrow-right"
               mb={1}
+              color={burnDirection === DIRECTIONS.east ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -795,6 +846,7 @@ const ShipControlContent = () => {
               icon="arrow-left"
               iconRotation={-45}
               mb={1}
+              color={burnDirection === DIRECTIONS.southwest ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -807,6 +859,7 @@ const ShipControlContent = () => {
             <Button
               icon="arrow-down"
               mb={1}
+              color={burnDirection === DIRECTIONS.south ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -820,6 +873,7 @@ const ShipControlContent = () => {
               icon="arrow-right"
               iconRotation={45}
               mb={1}
+              color={burnDirection === DIRECTIONS.southeast ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {

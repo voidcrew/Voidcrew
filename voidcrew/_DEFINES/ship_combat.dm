@@ -136,7 +136,7 @@
 /// Tier 1: 500, Tier 2: 750, Tier 3: 1000
 #define SHIP_SHIELD_BASE_HEALTH 500
 /// Base shield regeneration per second
-#define SHIP_SHIELD_BASE_REGEN 2
+#define SHIP_SHIELD_BASE_REGEN 10
 /// Cooldown after shields break before reactivation (30 seconds)
 #define SHIP_SHIELD_BROKEN_COOLDOWN 30 SECONDS
 /// Minimum power allocation (0% = shields off)

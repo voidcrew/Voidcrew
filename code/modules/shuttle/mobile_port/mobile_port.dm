@@ -79,14 +79,22 @@
 	if(areas)
 		for(var/area/area as anything in areas)
 			shuttle_areas[area] = TRUE
+		log_shuttle("DOCKPORT DEBUG: [src] initialized with [length(areas)] passed areas. shuttle_areas len: [length(shuttle_areas)]")
 	else
 		var/list/all_turfs = return_ordered_turfs(x, y, z, dir)
+		log_shuttle("DOCKPORT DEBUG: [src] at [x],[y],[z] dir=[dir]. Checking [length(all_turfs)] turfs for area_type=[area_type]")
+		var/non_match_count = 0
 		for(var/i in 1 to all_turfs.len)
 			var/turf/curT = all_turfs[i]
 			var/area/cur_area = curT.loc
 			if(istype(cur_area, area_type))
 				turf_count++
 				shuttle_areas[cur_area] = TRUE
+			else
+				non_match_count++
+				if(non_match_count <= 5)
+					log_shuttle("DOCKPORT DEBUG: Turf [curT.x],[curT.y],[curT.z] ([curT.type]) in non-matching area: [cur_area.type]")
+		log_shuttle("DOCKPORT DEBUG: Found [turf_count] matching turfs, [non_match_count] non-matching. shuttle_areas len: [length(shuttle_areas)]")
 
 #ifdef TESTING
 	highlight("#0f0")

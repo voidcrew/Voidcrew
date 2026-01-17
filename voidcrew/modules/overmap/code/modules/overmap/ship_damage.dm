@@ -21,7 +21,7 @@
 	COOLDOWN_DECLARE(hazard_damage_cooldown)
 	/// Whether ship integrity has been initialized from mass
 	var/integrity_initialized = FALSE
-	/// Bonus turfs added through ship expansion (shows as dark green overhealth)
+	/// DEPRECATED - No longer used. max_integrity now scales with ship expansion.
 	var/overhealth = 0
 	/// Whether the ship has already crash landed (prevents multiple crashes)
 	var/has_crash_landed = FALSE
@@ -34,21 +34,19 @@
 /**
  * Returns the current integrity as a percentage for UI display
  * Shows actual turf percentage - ship crashes at 50%
- * Can exceed 100% if ship has been expanded (overhealth)
+ * max_integrity scales with ship expansion, so this is always 0-100%
  */
 /obj/structure/overmap/ship/proc/get_integrity_percent()
 	if(max_integrity <= 0)
 		return 100
-	return round(((integrity + overhealth) / max_integrity) * 100)
+	return round((integrity / max_integrity) * 100)
 
 /**
  * Returns just the overhealth portion as a percentage
- * Used by UI to show the dark green overhealth bar
+ * No longer used - max_integrity now scales with ship expansion
  */
 /obj/structure/overmap/ship/proc/get_overhealth_percent()
-	if(max_integrity <= 0)
-		return 0
-	return round((overhealth / max_integrity) * 100)
+	return 0
 
 /**
  * Starts the critical alert loop - plays warning sound repeatedly
