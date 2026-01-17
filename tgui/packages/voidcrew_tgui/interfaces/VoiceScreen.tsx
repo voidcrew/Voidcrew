@@ -1,6 +1,6 @@
-import { useBackend } from '../backend';
-import { Box, Button, Stack } from '../components';
-import { Window } from '../layouts';
+import { useBackend } from '../../tgui/backend';
+import { Box, Button, Stack } from 'tgui-core/components';
+import { Window } from '../../tgui/layouts';
 
 type Data = {
   voice_pack_groups: Record<string, [string, string][]>;
@@ -8,7 +8,7 @@ type Data = {
 };
 
 export const VoiceScreen = () => {
-  const { data } = useBackend<Data>();
+  const { data, act } = useBackend<Data>();
 
   return (
     <Window title="Voice Sound" width={270} height={500} theme="generic">
@@ -19,6 +19,7 @@ export const VoiceScreen = () => {
             name={group_name}
             voice_packs={data.voice_pack_groups[group_name]}
             selected={data.selected}
+            act={act}
           />
         ))}
       </Window.Content>
@@ -30,28 +31,36 @@ const VoicePackGroup = (props: {
   name: string;
   voice_packs: [string, string][];
   selected: string;
+  act: (action: string, payload?: object) => void;
 }) => {
   return (
     <Box>
       <h3>{props.name}</h3>
       <Box>
         {props.voice_packs.map((voice_pack, index) => (
-          <VoicePack key={index} name={voice_pack} selected={props.selected} />
+          <VoicePack
+            key={index}
+            name={voice_pack}
+            selected={props.selected}
+            act={props.act}
+          />
         ))}
       </Box>
     </Box>
   );
 };
 
-const VoicePack = (props: { name: [string, string]; selected: string }) => {
-  const { act } = useBackend<Data>();
-
+const VoicePack = (props: {
+  name: [string, string];
+  selected: string;
+  act: (action: string, payload?: object) => void;
+}) => {
   return (
     <Stack style={{ margin: '5px 0px' }}>
       <Stack.Item>
         <Button
           onClick={() => {
-            act('play', { selected: props.name[1] });
+            props.act('play', { selected: props.name[1] });
           }}
           icon="play"
           width="100%"
@@ -61,7 +70,7 @@ const VoicePack = (props: { name: [string, string]; selected: string }) => {
       <Stack.Item>
         <Button
           onClick={() => {
-            act('select', { selected: props.name[1] });
+            props.act('select', { selected: props.name[1] });
           }}
           selected={props.name[1] === props.selected}
           width="100%"
