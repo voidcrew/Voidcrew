@@ -1350,7 +1350,7 @@
 	// Cloak and shields are mutually exclusive - deactivate cloak first
 	if(ship?.linked_cloak_device?.cloak_active)
 		ship.linked_cloak_device.deactivate_cloak()
-		ship.ship_announce("Cloaking device deactivated - shields coming online.", "Cloak Status")
+		ship.ship_notify("Cloaking device deactivated - shields coming online.", "CLOAK", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	active = TRUE
 
@@ -1378,7 +1378,7 @@
 				spawn_shield_walls()
 
 			playsound(src, 'sound/vehicles/mecha/mech_shield_raise.ogg', 100, TRUE)
-			ship.ship_announce("Shields online.", "Shield Status")
+			ship.ship_notify("Shields online.", "SHIELDS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 			SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_RESTORED)
 		else if(ship.shields_active)
 

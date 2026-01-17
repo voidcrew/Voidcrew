@@ -89,7 +89,7 @@
 		// If target is broke (less than 50 credits), don't bother siphoning
 		if(target_balance < 50)
 			var/obj/structure/overmap/ship/owner = get_owner_ship()
-			owner?.ship_announce("Target vessel has insufficient funds. Aborting siphon.", "SIPHON SYSTEM")
+			owner?.ship_notify("Target vessel has insufficient funds. Aborting siphon.", "SIPHON", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg')
 			// Trigger retreat if we have a goal-based behavior
 			on_goal_reached(target)
 			return
@@ -105,7 +105,7 @@
 
 	// Announce warmup to owner ship only (target notified when siphon activates)
 	var/obj/structure/overmap/ship/owner = get_owner_ship()
-	owner?.ship_announce("Data siphon calibrating. Target: [target.name]. ETA: [warmup_time / 10] seconds.", "SIPHON SYSTEM")
+	owner?.ship_notify("Data siphon calibrating. Target: [target.name]. ETA: [warmup_time / 10] seconds.", "SIPHON", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 /// Called when lock is lost or target destroyed
 /obj/machinery/shuttle_scrambler/ship_siphon/proc/deactivate_siphon()
@@ -121,8 +121,8 @@
 	var/obj/structure/overmap/ship/target = get_target_ship()
 
 	if(was_active && target)
-		target.ship_announce("Data siphon connection severed. Total credits lost: [credits_stored].", "FINANCE ALERT")
-		owner?.ship_announce("Siphon link lost. Total credits acquired: [credits_stored].", "SIPHON SYSTEM")
+		target.ship_notify("Data siphon connection severed. Total credits lost: [credits_stored].", "FINANCE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg')
+		owner?.ship_notify("Siphon link lost. Total credits acquired: [credits_stored].", "SIPHON", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg')
 
 	target_ship_ref = null
 	STOP_PROCESSING(SSobj, src)
@@ -152,8 +152,8 @@
 	var/obj/structure/overmap/ship/owner = get_owner_ship()
 
 	// Announce goal reached
-	owner?.ship_announce("Siphon goal reached! [credits_stored] credits acquired. Disengaging from target.", "SIPHON SYSTEM")
-	target?.ship_announce("The attacker has finished siphoning and is disengaging.", "SECURITY ALERT")
+	owner?.ship_notify("Siphon goal reached! [credits_stored] credits acquired. Disengaging from target.", "SIPHON", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+	target?.ship_notify("The attacker has finished siphoning and is disengaging.", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg')
 
 	// Deactivate the siphon
 	deactivate_siphon()
@@ -365,7 +365,7 @@
 
 	to_chat(user, span_notice("Siphon calibrating. Target: [target.name]."))
 	var/obj/structure/overmap/ship/owner = get_owner_ship()
-	owner?.ship_announce("Data siphon calibrating. Target: [target.name]. ETA: [warmup_time / 10] seconds.", "SIPHON SYSTEM")
+	owner?.ship_notify("Data siphon calibrating. Target: [target.name]. ETA: [warmup_time / 10] seconds.", "SIPHON SYSTEM", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	return TRUE
 
@@ -392,7 +392,7 @@
 		if(!console || console.target_ship != target)
 			var/obj/structure/overmap/ship/old_target = target
 			deactivate_siphon()
-			owner?.ship_announce("Siphon deactivated - weapons lock on [old_target.name] lost.", "SIPHON SYSTEM")
+			owner?.ship_notify("Siphon deactivated - weapons lock on [old_target.name] lost.", "SIPHON SYSTEM", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
 			return PROCESS_KILL
 
 	// If we require lock and this is an NPC ship, verify we still have it
@@ -412,8 +412,8 @@
 			// Warmup complete - activate siphon
 			warming_up = FALSE
 			active = TRUE
-			owner?.ship_announce("Data siphon active. Draining target accounts.", "SIPHON SYSTEM")
-			target.ship_announce("CRITICAL: CREDIT SIPHONING OCCURRING!", "FINANCE ALERT")
+			owner?.ship_notify("Data siphon active. Draining target accounts.", "SIPHON SYSTEM", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+			target.ship_notify("CRITICAL: CREDIT SIPHONING OCCURRING!", "FINANCE ALERT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert2.ogg')
 		return
 
 	// If not active (shouldn't happen but safety check)

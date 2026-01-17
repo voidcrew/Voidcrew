@@ -20,6 +20,8 @@
 	mouse_opacity = MOUSE_OPACITY_ICON
 
 /obj/effect/overlay/holo_pad_hologram/pirate/Destroy()
+	// Play hologram deactivation sound
+	playsound(src, 'voidcrew/sound/hologram_off.ogg', 80, FALSE)
 	negotiation = null
 	return ..()
 
@@ -114,7 +116,7 @@
 	// Give items option (if item demand exists)
 	if(negotiation.demanded_item_type)
 		var/remaining = negotiation.get_remaining_items()
-		choices["Give [remaining] [negotiation.demanded_item_name]"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_buying")
+		choices["Give [remaining] [negotiation.demanded_item_name]"] = image(icon = 'voidcrew/icons/hud/radial.dmi', icon_state = "cargo")
 
 	// Refuse
 	choices["Refuse"] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_no")
@@ -170,13 +172,13 @@
 	if(!negotiation)
 		return
 
-	if(!negotiation.tribute_pad)
+	if(!length(negotiation.tribute_pads))
 		to_chat(user, span_warning("No mission pad found on your ship! You'll need to pay with credits."))
 		return
 
 	var/remaining = negotiation.get_remaining_items()
-	to_chat(user, span_notice("Place [remaining] [negotiation.demanded_item_name] on the mission pad."))
-	to_chat(user, span_notice("The mission pad is linked and ready to receive items."))
+	to_chat(user, span_notice("Place [remaining] [negotiation.demanded_item_name] on any mission pad."))
+	to_chat(user, span_notice("[length(negotiation.tribute_pads)] mission pad(s) linked and ready to receive items."))
 
 	negotiation.negotiation_state = NEGOTIATION_PAYING
 
@@ -191,74 +193,74 @@
 	negotiation.end_negotiation(success = FALSE, reason = "refused")
 
 /**
- * Make the pirate hologram speak.
+ * Make the pirate hologram speak using runechat (speech bubble above hologram).
  */
 /obj/effect/overlay/holo_pad_hologram/pirate/proc/pirate_say(message)
 	if(!message)
 		return
 
-	// Visual speech
 	speaking = TRUE
-	visible_message(span_bold("[src]") + " says, \"[message]\"")
-
-	// Could add speech animation here
+	// Use say() to trigger runechat bubbles above the hologram
+	say(message, sanitize = FALSE)
 	addtimer(VARSET_CALLBACK(src, speaking, FALSE), 2 SECONDS)
 
 // ========== PRESET HOLOIMAGES FOR PIRATE CAPTAINS ==========
+// These use the actual corpse outfit types from faction_pirate_corpses.dm
+// to match the in-game appearance of faction captains.
 
 /**
  * Base pirate captain holoimage - generic pirate outfit.
  */
 /datum/preset_holoimage/pirate_captain
-	outfit_type = /datum/outfit/job/captain/pirate
+	outfit_type = /datum/outfit/piratecorpse/faction/skeleton/captain
 
 /**
  * Rogue Raiders - Classic pirate captain.
  */
 /datum/preset_holoimage/pirate_captain/rogues
-	outfit_type = /datum/outfit/job/captain/pirate
+	outfit_type = /datum/outfit/piratecorpse/faction/skeleton/captain
 
 /**
  * IRS - Tax enforcement agent in a suit.
  */
 /datum/preset_holoimage/pirate_captain/irs
-	outfit_type = /datum/outfit/job/captain/irs
+	outfit_type = /datum/outfit/piratecorpse/faction/irs/captain
 
 /**
- * Skeleton/Flying Dutchman - Undead captain.
- * Uses a skeleton mob instead of human.
+ * Skeleton/Flying Dutchman - Undead captain with pirate attire.
  */
 /datum/preset_holoimage/pirate_captain/skeleton
-	nonhuman_mobtype = /mob/living/basic/skeleton
+	outfit_type = /datum/outfit/piratecorpse/faction/skeleton/captain
+	species_type = /datum/species/skeleton
 
 /**
  * Grey Tide - Chaotic assistant captain.
  */
 /datum/preset_holoimage/pirate_captain/greytide
-	outfit_type = /datum/outfit/job/captain/greytide
+	outfit_type = /datum/outfit/piratecorpse/faction/grey/captain
 
 /**
- * Medieval/Order of the Void - Armored knight captain.
+ * Medieval/Order of the Void - Armored knight warlord.
  */
 /datum/preset_holoimage/pirate_captain/medieval
-	outfit_type = /datum/outfit/job/captain/medieval
+	outfit_type = /datum/outfit/piratecorpse/faction/medieval/captain
 
 /**
- * Silverscale Dynasty - Aristocratic lizard captain.
+ * Silverscale Dynasty - Aristocratic lizard noble.
  */
 /datum/preset_holoimage/pirate_captain/silverscale
-	outfit_type = /datum/outfit/job/captain/silverscale
-	species_type = /datum/species/lizard
+	outfit_type = /datum/outfit/piratecorpse/faction/silverscale/captain
+	species_type = /datum/species/lizard/silverscale
 
 /**
- * Interdyne Pharmaceutics - Corporate medical captain.
+ * Interdyne Pharmaceutics - Corporate medical director.
  */
 /datum/preset_holoimage/pirate_captain/interdyne
-	outfit_type = /datum/outfit/job/captain/interdyne
+	outfit_type = /datum/outfit/piratecorpse/faction/interdyne/captain
 
 /**
- * Lustrous Collective - Ethereal captain.
+ * Lustrous Collective - Ethereal radiant captain.
  */
 /datum/preset_holoimage/pirate_captain/lustrous
-	outfit_type = /datum/outfit/job/captain/lustrous
-	species_type = /datum/species/ethereal
+	outfit_type = /datum/outfit/piratecorpse/faction/lustrous/captain
+	species_type = /datum/species/ethereal/lustrous

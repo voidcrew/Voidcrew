@@ -332,13 +332,13 @@
 		reward_text += " + [english_list(item_rewards)]"
 
 	if(winner)
-		winner.ship_announce("BOUNTY COMPLETE: [name] - [reward_text] awarded!", "MISSION CONTROL")
+		winner.ship_notify("BOUNTY COMPLETE: [name] - [reward_text] awarded!", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	// Notify other claimants of failure
 	for(var/datum/weakref/ref in claiming_ships)
 		var/obj/structure/overmap/ship/loser = ref.resolve()
 		if(loser && loser != winner)
-			loser.ship_announce("BOUNTY FAILED: [name] - Another crew claimed the bounty.", "MISSION CONTROL")
+			loser.ship_notify("BOUNTY FAILED: [name] - Another crew claimed the bounty.", "MISSION CONTROL", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg')
 
 	// Remove from global tracker
 	SSbounty?.remove_bounty(src)
@@ -414,7 +414,7 @@
 	for(var/datum/weakref/ref in claiming_ships)
 		var/obj/structure/overmap/ship/ship = ref.resolve()
 		if(ship)
-			ship.ship_announce("BOUNTY FAILED: [name] - [reason]", "MISSION CONTROL")
+			ship.ship_notify("BOUNTY FAILED: [name] - [reason]", "MISSION CONTROL", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg')
 
 	// Remove from global tracker
 	SSbounty?.remove_bounty(src)

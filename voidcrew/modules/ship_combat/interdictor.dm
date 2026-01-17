@@ -398,12 +398,12 @@
 	)
 
 	// Notify target
-	target.ship_announce("WARNING: INTERDICTION LOCK DETECTED! Evasive maneuvers recommended!", "INTERDICTION ALERT", sound('sound/effects/alert.ogg'))
+	target.ship_notify("INTERDICTION LOCK DETECTED! Evasive maneuvers recommended!", "INTERDICTION", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert4.ogg')
 
 	// Notify our crew
 	if(user)
 		to_chat(user, span_notice("Interdiction lock initiated on [target.display_name]. Warming up..."))
-	our_ship.ship_announce("Interdiction lock initiated on [target.display_name]. Lock completing in [INTERDICTOR_LOCK_TIME / 10] seconds.", "Interdictor")
+	our_ship.ship_notify("Interdiction lock initiated on [target.display_name]. Lock completing in [INTERDICTOR_LOCK_TIME / 10] seconds.", "INTERDICTOR", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	update_appearance()
 	update_power_draw()
@@ -496,10 +496,10 @@
 
 	// Notify
 	SEND_SIGNAL(target, COMSIG_SHIP_INTERDICTED, src, power_allocation)
-	target.ship_announce("INTERDICTION LOCK COMPLETE! Engines limited to [round(speed_mult * 100)]% efficiency! Cloaking disabled!", "INTERDICTION ALERT", sound('sound/effects/alert.ogg'))
+	target.ship_notify("INTERDICTION LOCK COMPLETE! Engines limited to [round(speed_mult * 100)]% efficiency! Cloaking disabled!", "INTERDICTION", SHIP_NOTIFY_DANGER)
 
 	if(our_ship)
-		our_ship.ship_announce("Interdiction lock complete on [target.display_name]. Target speed capped at [round(speed_mult * 100)]%.", "Interdictor")
+		our_ship.ship_notify("Interdiction lock complete on [target.display_name]. Target speed capped at [round(speed_mult * 100)]%.", "INTERDICTOR", SHIP_NOTIFY_NOTICE)
 
 	update_appearance()
 
@@ -552,7 +552,7 @@
 		UnregisterSignal(target, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
 		target.clear_interdiction()
 		SEND_SIGNAL(target, COMSIG_SHIP_INTERDICTION_ENDED)
-		target.ship_announce("Interdiction field collapsed. Engines restored to full power.", "Interdiction Ended")
+		target.ship_notify("Interdiction field collapsed. Engines restored to full power.", "INTERDICTION", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	interdicted_ship_ref = null
 
@@ -602,7 +602,7 @@
 	// Announce to our ship
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
-		ship.ship_announce("WARNING: Target vessel performed emergency shield burst! Interdiction lock broken.", "INTERDICTION FAILURE")
+		ship.ship_notify("Target vessel performed emergency shield burst! Interdiction lock broken.", "INTERDICTOR", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg')
 
 	update_appearance()
 	update_power_draw()
@@ -705,8 +705,8 @@
 	cancel_interdiction()
 
 	// Announce force dock
-	our_ship.ship_announce("Forcing [dock_target.display_name] to dock!", "Force Dock Initiated")
-	dock_target.ship_announce("FORCED DOCKING INITIATED!", "INTERDICTION ALERT")
+	our_ship.ship_notify("Forcing [dock_target.display_name] to dock!", "INTERDICTOR", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+	dock_target.ship_notify("FORCED DOCKING INITIATED!", "INTERDICTION", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn2.ogg')
 
 	// Apply extended undock lockout
 	COOLDOWN_START(dock_target, interdiction_undock_lockout, INTERDICTOR_FORCE_DOCK_LOCKOUT)
@@ -715,12 +715,12 @@
 	var/result = our_ship.dock_ships_directly(dock_target, null, TRUE)
 	if(result)
 		// Direct docking failed, fall back to reserve port docking
-		our_ship.ship_announce("Direct docking failed, using reserve ports.", "Docking")
-		dock_target.ship_announce("Direct docking failed, using reserve ports.", "INTERDICTION ALERT")
+		our_ship.ship_notify("Direct docking failed, using reserve ports.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg')
+		dock_target.ship_notify("Direct docking failed, using reserve ports.", "INTERDICTION", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg')
 		var/fallback_result = our_ship.dock_ships_to_reserve_ports(dock_target, null, TRUE)
 		if(fallback_result)
-			our_ship.ship_announce("Forced docking failed: [fallback_result]", "Docking Error")
-			dock_target.ship_announce("Forced docking failed.", "Docking Error")
+			our_ship.ship_notify("Forced docking failed: [fallback_result]", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg')
+			dock_target.ship_notify("Forced docking failed.", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg')
 			return FALSE
 		else
 			playsound(src, 'sound/machines/airlock/airlockopen.ogg', 50, TRUE)

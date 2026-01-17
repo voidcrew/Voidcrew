@@ -250,3 +250,15 @@
 #define SHIP_CLOAK_BASE_POWER_COST 5 KILO WATTS
 /// Power draw per unit of ship mass (W per mass) - cloaking larger ships is harder
 #define SHIP_CLOAK_POWER_PER_MASS 50
+
+// ========== SHIP NOTIFICATION DEFINES ==========
+
+/// Notification alert levels for ship_notify()
+#define SHIP_NOTIFY_NOTICE 1
+#define SHIP_NOTIFY_WARNING 2
+#define SHIP_NOTIFY_DANGER 3
+
+// ========== SOUND CHANNELS ==========
+
+/// Sound channel for economic scan looping sound
+#define CHANNEL_ECON_SCAN 1010

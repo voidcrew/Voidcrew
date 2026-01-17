@@ -321,7 +321,7 @@
 		linked_ship.shields_active = FALSE
 		if(user)
 			to_chat(user, span_warning("Shield generators deactivated - cloaking device cannot operate with shields active."))
-		linked_ship.ship_announce("Shields offline - cloaking device activated.", "Shield Status")
+		linked_ship.ship_notify("Shields offline - cloaking device activated.", "SHIELDS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	cloak_active = TRUE
 

@@ -230,8 +230,8 @@
 	// Notify both parties
 	var/obj/structure/overmap/ship/creator = get_creator_ship()
 	var/items_str = jointext(item_descriptions, ", ")
-	sender_ship?.ship_announce("BOUNTY: Offer submitted to bounty creator. Awaiting approval.", "MISSION CONTROL")
-	creator?.ship_announce("BOUNTY: [sender_ship?.name || "Unknown"] offers: [items_str] for '[name]'. Review at mission console.", "MISSION CONTROL")
+	sender_ship?.ship_notify("Offer submitted to bounty creator. Awaiting approval.", "BOUNTY", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+	creator?.ship_notify("[sender_ship?.name || "Unknown"] offers: [items_str] for '[name]'. Review at mission console.", "BOUNTY", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	return TRUE
 
@@ -299,14 +299,14 @@
 
 	// Announcements
 	var/obj/structure/overmap/ship/creator_ship = get_creator_ship()
-	sender_ship.ship_announce("BOUNTY COMPLETE: [name] - [reward] credits awarded! Items delivered.", "MISSION CONTROL")
-	creator_ship?.ship_announce("BOUNTY COMPLETED: [name] - Received [sent_count] item(s), paid [reward] cr to [sender_ship.name].", "MISSION CONTROL")
+	sender_ship.ship_notify("[name] - [reward] credits awarded! Items delivered.", "BOUNTY COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+	creator_ship?.ship_notify("[name] - Received [sent_count] item(s), paid [reward] cr to [sender_ship.name].", "BOUNTY COMPLETED", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	// Notify other claimants they lost
 	for(var/datum/weakref/ref in claiming_ships)
 		var/obj/structure/overmap/ship/loser = ref.resolve()
 		if(loser && loser != sender_ship)
-			loser.ship_announce("BOUNTY LOST: [name] - Creator accepted another crew's offer.", "MISSION CONTROL")
+			loser.ship_notify("[name] - Creator accepted another crew's offer.", "BOUNTY LOST", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn2.ogg')
 
 	status = "completed"
 	SSbounty?.remove_player_bounty(src)
@@ -325,7 +325,7 @@
 	pending_offers -= list(offer)
 
 	// Notify the sender
-	sender_ship?.ship_announce("BOUNTY: Your offer for '[name]' was rejected by the creator.", "MISSION CONTROL")
+	sender_ship?.ship_notify("Your offer for '[name]' was rejected by the creator.", "BOUNTY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn2.ogg')
 
 	return TRUE
 
@@ -342,7 +342,7 @@
 
 	// Notify the creator
 	var/obj/structure/overmap/ship/creator = get_creator_ship()
-	creator?.ship_announce("BOUNTY: [ship.name] withdrew their offer for '[name]'.", "MISSION CONTROL")
+	creator?.ship_notify("[ship.name] withdrew their offer for '[name]'.", "BOUNTY", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg')
 
 	return TRUE
 
@@ -361,7 +361,7 @@
 	for(var/datum/weakref/ref in claiming_ships)
 		var/obj/structure/overmap/ship/claimer = ref.resolve()
 		if(claimer)
-			claimer.ship_announce("BOUNTY CANCELLED: [name] - The bounty creator has cancelled this bounty.", "MISSION CONTROL")
+			claimer.ship_notify("[name] - The bounty creator has cancelled this bounty.", "BOUNTY CANCELLED", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn2.ogg')
 
 	status = "cancelled"
 	SSbounty?.remove_player_bounty(src)

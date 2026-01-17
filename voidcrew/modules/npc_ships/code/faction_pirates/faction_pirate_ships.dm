@@ -27,6 +27,10 @@
 	// Detection range
 	territory_range = 2
 
+	// Combat stats - aristocrats are methodical
+	lock_time = 6 SECONDS          // Increased for balance
+	laser_cooldown_time = 7 SECONDS // Increased for balance
+
 	crew_min = 2
 	crew_max = 4
 	captain_type = /mob/living/basic/trooper/pirate/faction/silverscale/captain
@@ -163,9 +167,10 @@
 	// Detection range
 	territory_range = 2
 
-	// Better equipped
-	lock_time = 4 SECONDS
-	missile_cooldown_time = 8 SECONDS
+	// Better equipped but balanced
+	lock_time = 5 SECONDS           // Increased from 4s for balance
+	laser_cooldown_time = 6 SECONDS // Added for balance
+	missile_cooldown_time = 15 SECONDS // Increased from 8s for balance
 
 	crew_min = 3
 	crew_max = 5
@@ -194,10 +199,10 @@
 	// Detection range
 	territory_range = 2
 
-	// Well-funded government agency
-	lock_time = 3 SECONDS
-	laser_cooldown_time = 4 SECONDS
-	missile_cooldown_time = 8 SECONDS
+	// Well-funded government agency - but still balanced
+	lock_time = 5 SECONDS           // Increased from 3s for balance
+	laser_cooldown_time = 6 SECONDS // Increased from 4s for balance
+	missile_cooldown_time = 15 SECONDS // Increased from 8s for balance
 
 	// Better engines
 	speed_limit = 0.6

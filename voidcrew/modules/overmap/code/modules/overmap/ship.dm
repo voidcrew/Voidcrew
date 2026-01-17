@@ -159,6 +159,9 @@
 	/// List of interdictor machines installed on this ship
 	var/list/linked_interdictors = list()
 
+	/// Mission pads installed on this ship (for pirate tribute delivery, mission rewards, etc.)
+	var/list/obj/machinery/mission_pad/linked_mission_pads = list()
+
 	/// List of ships that currently have a weapons lock on us (prevents cloaking)
 	var/list/locked_on_by = list()
 
@@ -683,7 +686,7 @@
 	log_shuttle("[name] has been abandoned and is claimable.")
 
 	// Announce on ship
-	ship_announce("WARNING: Ship abandoned. Command authorization reset. Any personnel may claim this vessel via the helm console.", "ABANDONMENT PROTOCOL")
+	ship_notify("WARNING: Ship abandoned. Command authorization reset. Any personnel may claim this vessel via the helm console.", "ABANDONMENT PROTOCOL", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
 
 // ===== CAPTAIN MANAGEMENT =====
 
@@ -754,7 +757,7 @@
 	ship_team.add_member(claimer.mind)
 
 	// Announce
-	ship_announce("NOTICE: Command authorization restored. New commanding officer: [claimer.real_name].", "SHIP SYSTEMS")
+	ship_notify("NOTICE: Command authorization restored. New commanding officer: [claimer.real_name].", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	to_chat(claimer, span_notice("You have claimed command of [name]!"))
 	log_game("[key_name(claimer)] claimed abandoned ship [name] at [AREACOORD(src)]")
@@ -775,16 +778,33 @@
 	// Normal case: abandon instead of delete
 	abandon_ship()
 
-/obj/structure/overmap/ship/proc/ship_announce(message, title, must_be_same_z_level = FALSE, sound)
-	var/list/announce_targets = list()
+/**
+ * Minimalist ship notification - sends a styled chat message to all crew members.
+ * Much less intrusive than ship_notify/priority_announce.
+ *
+ * Arguments:
+ * * message - The notification message
+ * * category - Short category label (e.g. "SCANNER", "COMBAT", "TARGETING")
+ * * alert_level - SHIP_NOTIFY_NOTICE (blue), SHIP_NOTIFY_WARNING (orange), or SHIP_NOTIFY_DANGER (red)
+ * * sound_file - Optional sound to play. If null, no sound is played.
+ */
+/obj/structure/overmap/ship/proc/ship_notify(message, category = "ALERT", alert_level = SHIP_NOTIFY_NOTICE, sound_file = null)
+	var/formatted
+	switch(alert_level)
+		if(SHIP_NOTIFY_DANGER)
+			formatted = span_bolddanger("[message]")
+		if(SHIP_NOTIFY_WARNING)
+			formatted = span_boldwarning("[message]")
+		else
+			formatted = span_boldnotice("[message]")
+
 	for(var/datum/mind/shipmate as anything in ship_team.members)
 		var/mob/crewmate = shipmate.current
 		if(!crewmate)
 			continue
-		if(must_be_same_z_level && crewmate.z != z)
-			continue
-		announce_targets += crewmate
-	priority_announce(message, title, sound || 'sound/announcer/default/attention.ogg', null, "[name] Announcement", players = announce_targets)
+		to_chat(crewmate, formatted)
+		if(sound_file)
+			SEND_SOUND(crewmate, sound(sound_file))
 
 /**
  * Broadcasts a message as runechat above the ship on the overmap.
@@ -884,12 +904,12 @@
 	// Cancel nebula hide warmup if interdicted during it
 	if(nebula_hide_timer)
 		cancel_nebula_hide()
-		ship_announce("Interdiction field disrupted nebula concealment!", "WARNING")
+		ship_notify("Interdiction field disrupted nebula concealment!", "WARNING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
 
 	// Force unhide from nebula if interdicted while hidden
 	if(hidden_in_nebula)
 		unhide_from_nebula()
-		ship_announce("Interdiction field forcing emergence from nebula!", "WARNING")
+		ship_notify("Interdiction field forcing emergence from nebula!", "WARNING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
 
 /**
   * Clears the interdiction effect on this ship.
@@ -957,7 +977,7 @@
 		interdictor.on_target_broke_free()
 
 	// Announce to the ship
-	ship_announce("SHIELD BURST SUCCESSFUL! Interdiction field disrupted. Shields offline - recharging.", "EMERGENCY MANEUVER")
+	ship_notify("SHIELD BURST SUCCESSFUL! Interdiction field disrupted. Shields offline - recharging.", "EMERGENCY MANEUVER", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	return TRUE
 
@@ -1033,7 +1053,7 @@
 	nebula_hide_timer = addtimer(CALLBACK(src, PROC_REF(complete_nebula_hide)), NEBULA_HIDE_WARMUP_TIME, TIMER_STOPPABLE)
 
 	// Announce to crew
-	ship_announce("Entering the nebula in [NEBULA_HIDE_WARMUP_TIME / 10] seconds", "Helm Control")
+	ship_notify("Entering the nebula in [NEBULA_HIDE_WARMUP_TIME / 10] seconds", "HELM", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	return TRUE
 
@@ -1090,7 +1110,7 @@
 	SEND_SIGNAL(src, COMSIG_SHIP_EMERGING_FROM_NEBULA)
 
 	// Announce to crew
-	ship_announce("Emerging from nebula concealment.", "Helm Control")
+	ship_notify("Emerging from nebula concealment.", "HELM", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	return TRUE
 
@@ -1110,7 +1130,7 @@
 /obj/structure/overmap/ship/proc/dock(obj/structure/overmap/to_dock, obj/docking_port/stationary/dock_to_use, instant = FALSE)
 	// Can't dock while being interdicted (unless it's a force dock)
 	if(is_interdicted && !instant)
-		ship_announce("DOCKING ABORTED: Interdiction field preventing dock sequence!", "Navigation Alert")
+		ship_notify("DOCKING ABORTED: Interdiction field preventing dock sequence!", "NAVIGATION", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
 		return "Cannot dock while interdicted!"
 
 	refresh_engines()
@@ -1136,7 +1156,7 @@
 		return "Commencing docking..."
 
 	// Start dock warmup
-	ship_announce("Initiating docking sequence. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "Docking Announcement")
+	ship_notify("Initiating docking sequence. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 	dock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_dock_warmup), dock_to_use, WEAKREF(to_dock)), DOCK_WARMUP_TIME, TIMER_STOPPABLE)
 	return "Initiating docking sequence. Docking in [DOCK_WARMUP_TIME / 10] seconds."
 
@@ -1154,12 +1174,12 @@
 	if(!to_dock)
 		state = OVERMAP_SHIP_FLYING
 		docked = null
-		ship_announce("Docking aborted: destination no longer available.", "Docking Error")
+		ship_notify("Docking aborted: destination no longer available.", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
 		return
 
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_ABOUT_TO_DOCK)
 	shuttle.request(dock_to_use)
-	ship_announce("Docking now.", "Docking Announcement")
+	ship_notify("Docking now.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 	shuttle.setTimer(1 SECONDS)
 	addtimer(CALLBACK(src, PROC_REF(complete_dock), to_dock_ref), 1 SECONDS)
 
@@ -1177,7 +1197,7 @@
 	var/obj/docking_port/stationary/dock_to_use = shuttle.port_destinations
 
 	// Start dock warmup
-	ship_announce("Destination loaded. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "Docking Announcement")
+	ship_notify("Destination loaded. Docking in [DOCK_WARMUP_TIME / 10] seconds.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 	dock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_dock_warmup), dock_to_use, WEAKREF(source)), DOCK_WARMUP_TIME, TIMER_STOPPABLE)
 
 /**
@@ -1246,7 +1266,7 @@
 
 	// Start undock warmup
 	state = OVERMAP_SHIP_UNDOCKING
-	ship_announce("Initiating undocking sequence. Undocking in [UNDOCK_WARMUP_TIME / 10] seconds.", "Undocking Announcement")
+	ship_notify("Initiating undocking sequence. Undocking in [UNDOCK_WARMUP_TIME / 10] seconds.", "UNDOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 	undock_warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_undock_warmup)), UNDOCK_WARMUP_TIME, TIMER_STOPPABLE)
 	return "Initiating undocking sequence. Undocking in [UNDOCK_WARMUP_TIME / 10] seconds."
 
@@ -1564,7 +1584,7 @@
 		icon_state = "[base_icon_state]_moving"
 
 	// Announce to ship
-	ship_announce("Entering [target_zone.name]. Zone transition in progress - [ZONE_TRANSITION_TIME / 10] seconds.", "Zone Transition")
+	ship_notify("Entering [target_zone.name]. Zone transition in progress - [ZONE_TRANSITION_TIME / 10] seconds.", "ZONE TRANSITION", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	// Start completion timer
 	zone_transition_timer = addtimer(CALLBACK(src, PROC_REF(complete_zone_transition)), ZONE_TRANSITION_TIME, TIMER_STOPPABLE)
@@ -1588,7 +1608,7 @@
 	if(target && !QDELETED(src))
 		forceMove(target)
 		check_hazards()
-		ship_announce("Zone transition complete.", "Zone Transition")
+		ship_notify("Zone transition complete.", "ZONE TRANSITION", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 		update_icon_state()
 		update_screen()
 
@@ -1612,7 +1632,7 @@
 	// Reset icon to stationary
 	update_icon_state()
 
-	ship_announce("Zone transition cancelled.", "Zone Transition")
+	ship_notify("Zone transition cancelled.", "ZONE TRANSITION", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
 
 /**
   * Returns whether or not the ship is moving in any direction.
@@ -1889,15 +1909,15 @@
 	// If so, cancel the request
 	if(acting_ship.pending_dock && acting_ship.pending_dock_target == src)
 		acting_ship.clear_pending_dock()
-		acting_ship.ship_announce("Docking request to [name] has been cancelled.", "Docking Cancelled")
-		ship_announce("[acting_ship.name] has cancelled their docking request.", "Docking Cancelled")
+		acting_ship.ship_notify("Docking request to [name] has been cancelled.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg')
+		ship_notify("[acting_ship.name] has cancelled their docking request.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg')
 		return
 
 	// Check if the target (src) already sent a request to acting_ship
 	// If src.pending_dock is TRUE and target is acting_ship, complete the handshake
 	if(pending_dock && pending_dock_target == acting_ship)
-		ship_announce("Initiating docking procedures with [acting_ship.name]...", "Docking")
-		acting_ship.ship_announce("Initiating docking procedures with [name]...", "Docking")
+		ship_notify("Initiating docking procedures with [acting_ship.name]...", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+		acting_ship.ship_notify("Initiating docking procedures with [name]...", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 		// Clear pending status and timers for both ships
 		clear_pending_dock()
@@ -1907,35 +1927,35 @@
 		var/result = dock_ships_directly(acting_ship, user)
 		if(result)
 			// Direct docking failed, fall back to reserve port docking
-			ship_announce("Direct docking failed, using reserve ports instead.", "Docking")
-			acting_ship.ship_announce("Direct docking failed, using reserve ports instead.", "Docking")
+			ship_notify("Direct docking failed, using reserve ports instead.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg')
+			acting_ship.ship_notify("Direct docking failed, using reserve ports instead.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg')
 			var/fallback_result = dock_ships_to_reserve_ports(acting_ship, user)
 			if(fallback_result)
 				to_chat(user, "<span class='warning'>Docking failed: [fallback_result]</span>")
-				ship_announce("Docking failed: [fallback_result]", "Docking Error")
-				acting_ship.ship_announce("Docking failed: [fallback_result]", "Docking Error")
+				ship_notify("Docking failed: [fallback_result]", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
+				acting_ship.ship_notify("Docking failed: [fallback_result]", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
 	else
 		// If acting_ship already has a pending request to a DIFFERENT ship, cancel it first
 		if(acting_ship.pending_dock && acting_ship.pending_dock_target != src)
 			var/obj/structure/overmap/ship/old_target = acting_ship.pending_dock_target
 			acting_ship.clear_pending_dock()
-			acting_ship.ship_announce("Docking request to [old_target?.name] has been cancelled.", "Docking Cancelled")
+			acting_ship.ship_notify("Docking request to [old_target?.name] has been cancelled.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg')
 			if(old_target)
-				old_target.ship_announce("[acting_ship.name] has cancelled their docking request.", "Docking Cancelled")
+				old_target.ship_notify("[acting_ship.name] has cancelled their docking request.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg')
 
 		// New request - acting_ship wants to dock with src (target)
 		log_admin("[key_name(user)] requested ship-to-ship docking from [acting_ship.name] to [name]")
 		// Announce to the acting ship (the one making the request)
-		acting_ship.ship_announce("Your ship has requested to dock with [name]. They must also request docking to proceed.", "Docking Request")
+		acting_ship.ship_notify("Your ship has requested to dock with [name]. They must also request docking to proceed.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 		// Announce to the target ship (src) that they have an incoming request
-		ship_announce("[acting_ship.name] has requested to dock with your ship. Use your helm console to accept.", "Incoming Docking Request")
+		ship_notify("[acting_ship.name] has requested to dock with your ship. Use your helm console to accept.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 		// Set pending on acting_ship - this marks that acting_ship is waiting for src to respond
 		acting_ship.pending_dock = TRUE
 		acting_ship.pending_dock_target = src
 
 		// Set a 30 second timer to clear the pending dock request on acting_ship
 		acting_ship.pending_dock_timer = addtimer(CALLBACK(acting_ship, PROC_REF(clear_pending_dock)), 30 SECONDS, TIMER_STOPPABLE)
-		acting_ship.ship_announce("Docking request will expire in 30 seconds.", "Docking Request Timer")
+		acting_ship.ship_notify("Docking request will expire in 30 seconds.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg')
 /**
  * Calculates the mass based on the amount of turfs in the shuttle's areas
  * Ship health is based on current turfs vs original turfs
@@ -2346,7 +2366,7 @@
 	// Clear any pending dock requests when moving
 	if(pending_dock)
 		clear_pending_dock()
-		ship_announce("Docking request cancelled due to ship movement.", "Docking Cancelled")
+		ship_notify("Docking request cancelled due to ship movement.", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
 
 	// Decelerate without using fuel
 	if(!n_dir)
@@ -2483,6 +2503,8 @@
 		return // Already tracking this attacker
 
 	locked_on_by += attacker
+	// Track when the attacker is deleted so we can clean up
+	RegisterSignal(attacker, COMSIG_QDELETING, PROC_REF(on_attacker_deleted))
 
 	// Start the combat alarm if this is the first lock
 	if(length(locked_on_by) == 1 && combat_alarm)
@@ -2496,6 +2518,18 @@
 	if(!(attacker in locked_on_by))
 		return // Not tracking this attacker
 
+	locked_on_by -= attacker
+	UnregisterSignal(attacker, COMSIG_QDELETING)
+
+	// Stop the combat alarm if no more locks
+	if(!length(locked_on_by) && combat_alarm)
+		combat_alarm.stop()
+
+/// Called when an attacker that had us locked is deleted
+/obj/structure/overmap/ship/proc/on_attacker_deleted(obj/structure/overmap/ship/attacker)
+	SIGNAL_HANDLER
+	if(!(attacker in locked_on_by))
+		return
 	locked_on_by -= attacker
 
 	// Stop the combat alarm if no more locks

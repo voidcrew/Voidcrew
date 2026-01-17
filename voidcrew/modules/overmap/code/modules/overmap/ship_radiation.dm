@@ -68,7 +68,7 @@
 	// Announce to crew
 	var/shielding_name = get_shielding_name(new_level)
 	var/protection_desc = get_shielding_protection_desc(new_level)
-	ship_announce("[shielding_name] has been installed. Crew are now protected from [protection_desc].", "Radiation Shielding Upgrade")
+	ship_notify("[shielding_name] has been installed. Crew are now protected from [protection_desc].", "RADIATION SHIELDING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 	SEND_SIGNAL(src, COMSIG_SHIP_SHIELDING_CHANGED, old_level, new_level)
 

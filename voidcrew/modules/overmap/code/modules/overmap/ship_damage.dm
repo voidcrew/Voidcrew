@@ -83,7 +83,7 @@
  */
 /obj/structure/overmap/ship/proc/on_ship_recovered()
 	play_ship_sound('sound/machines/computer/computer_start.ogg', 15)
-	ship_announce("Hull integrity restored. Ship systems operational.", "Systems Online")
+	ship_notify("Hull integrity restored. Ship systems operational.", "SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 /**
  * Called when ship integrity reaches 0
@@ -129,7 +129,7 @@
 	// Don't crash land if already docked (e.g., ship-to-ship docking)
 	// The other ship can help/rescue without needing to create a crash site
 	if(state == OVERMAP_SHIP_IDLE || state == OVERMAP_SHIP_DOCKING)
-		ship_announce("Ship critically damaged! Emergency systems holding. Seek immediate repairs.", "CRITICAL DAMAGE")
+		ship_notify("Ship critically damaged! Emergency systems holding. Seek immediate repairs.", "CRITICAL", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg')
 		return
 
 	// Check if we're above a planet - if so, crash onto it
@@ -172,7 +172,7 @@
 	if(!planet || !shuttle)
 		return
 
-	ship_announce("EMERGENCY: Crash landing on [planet.name]!", "MAYDAY")
+	ship_notify("EMERGENCY: Crash landing on [planet.name]!", "MAYDAY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg')
 	play_ship_sound('sound/items/weapons/mortar_long_whistle.ogg')
 
 	// Load the planet if not already loaded
@@ -285,7 +285,7 @@
 			continue
 		M.set_machine_stat(M.machine_stat & ~EMPED)
 
-	ship_announce("Emergency systems restored. Ship systems coming back online.", "Systems Restored")
+	ship_notify("Emergency systems restored. Ship systems coming back online.", "SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 /**
  * Throws all unanchored objects and mobs on the ship during a crash landing
@@ -360,7 +360,7 @@
 	var/intensity = storm.intensity
 	var/emp_count = 2 + (intensity * 2)
 
-	ship_announce("Ion storm interference detected! Electronic systems may be affected.", "Ion Storm Warning", TRUE, 'sound/effects/empulse.ogg')
+	ship_notify("Ion storm interference detected! Electronic systems may be affected.", "HAZARD", SHIP_NOTIFY_WARNING, 'sound/effects/empulse.ogg')
 
 	// Create EMPs at random locations in the ship - these can destroy equipment
 	for(var/i in 1 to emp_count)
@@ -378,7 +378,7 @@
 /obj/structure/overmap/ship/proc/apply_electrical_storm_damage(obj/structure/overmap/event/electric/storm)
 	var/intensity = storm.intensity
 
-	ship_announce("Electrical storm detected! Lighting systems overloading!", "Electrical Storm Warning", TRUE, 'sound/effects/sparks/sparks1.ogg')
+	ship_notify("Electrical storm detected! Lighting systems overloading!", "HAZARD", SHIP_NOTIFY_WARNING, 'sound/effects/sparks/sparks1.ogg')
 
 	// Spawn real lightning strikes - but not on minor storms
 	// Minor: no lightning, Moderate: 1 strike (40% chance each), Major: 2-3 strikes

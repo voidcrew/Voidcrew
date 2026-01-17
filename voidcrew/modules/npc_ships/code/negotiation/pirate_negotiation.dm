@@ -13,8 +13,8 @@
 	var/obj/machinery/holopad/ship_comms/holopad
 	/// The hologram of the pirate captain
 	var/obj/effect/overlay/holo_pad_hologram/pirate/hologram
-	/// The mission pad linked for tribute delivery
-	var/obj/machinery/mission_pad/tribute_pad
+	/// Mission pads linked for tribute delivery (all pads on player ship)
+	var/list/obj/machinery/mission_pad/tribute_pads = list()
 
 	/// Current negotiation state
 	var/negotiation_state = NEGOTIATION_PENDING
@@ -42,6 +42,11 @@
 
 	/// Whether this negotiation prevents the fight from starting (vs stopping mid-fight)
 	var/preemptive = FALSE
+
+	/// Cooldown for rejection messages to prevent spam
+	COOLDOWN_DECLARE(rejection_message_cooldown)
+	/// Cooldown for progress messages to prevent spam
+	COOLDOWN_DECLARE(progress_message_cooldown)
 
 /datum/pirate_negotiation/New(obj/structure/overmap/ship/npc/pirate/pirate, obj/structure/overmap/ship/player, obj/machinery/holopad/ship_comms/pad)
 	. = ..()
@@ -73,10 +78,10 @@
 	if(hologram)
 		QDEL_NULL(hologram)
 
-	// Unlink from mission pad
-	if(tribute_pad)
-		tribute_pad.tribute_negotiation = null
-		tribute_pad = null
+	// Unlink from mission pads
+	for(var/obj/machinery/mission_pad/pad as anything in tribute_pads)
+		pad.tribute_negotiation = null
+	tribute_pads.Cut()
 
 	// Unregister signals
 	if(pirate_ship)
@@ -86,6 +91,7 @@
 	if(holopad)
 		UnregisterSignal(holopad, COMSIG_QDELETING)
 		holopad.active_negotiation = null
+		holopad.update_appearance(UPDATE_ICON_STATE)
 
 	// Cancel timeout timer
 	if(timeout_timer_id)
@@ -134,12 +140,7 @@
 	pirate_say(dialog.get_movement_betrayal_line())
 
 	// Announce to player ship
-	player_ship?.ship_announce(
-		"Negotiations with [pirate_ship?.name] have FAILED - they detected your ship movement!",
-		"NEGOTIATION FAILED",
-		FALSE,
-		sound('sound/effects/alert.ogg')
-	)
+	player_ship?.ship_notify("Negotiations with [pirate_ship?.name] have FAILED - they detected your ship movement!", "NEGOTIATION", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg')
 
 	// End negotiation as failure
 	end_negotiation(success = FALSE, reason = "player_moved")
@@ -212,8 +213,8 @@
 	// Create the hologram
 	spawn_hologram()
 
-	// Link mission pad for item delivery
-	link_nearest_mission_pad()
+	// Link all mission pads for item delivery
+	link_ship_mission_pads()
 
 	// Start the timeout timer
 	time_started = world.time
@@ -237,17 +238,30 @@
 	return TRUE
 
 /**
- * Link the nearest mission pad on the player ship.
+ * Link all mission pads on the player ship.
  */
-/datum/pirate_negotiation/proc/link_nearest_mission_pad()
-	if(!player_ship?.shuttle?.shuttle_areas)
+/datum/pirate_negotiation/proc/link_ship_mission_pads()
+	if(!player_ship)
+		message_admins("DEBUG: link_ship_mission_pads - no player_ship")
 		return
 
-	// Search through all shuttle areas for a mission pad
-	for(var/area/ship_area as anything in player_ship.shuttle.shuttle_areas)
-		for(var/obj/machinery/mission_pad/found_pad in ship_area)
-			link_mission_pad(found_pad)
-			return  // Found one, we're done
+	message_admins("DEBUG: link_ship_mission_pads - player_ship=[player_ship], linked_mission_pads=[length(player_ship.linked_mission_pads)]")
+
+	// Use the ship's registered mission pads
+	if(length(player_ship.linked_mission_pads))
+		for(var/obj/machinery/mission_pad/pad as anything in player_ship.linked_mission_pads)
+			link_mission_pad(pad)
+		message_admins("DEBUG: linked [length(tribute_pads)] pads from ship registry")
+		return
+
+	// Fallback: search through shuttle areas (in case pads haven't registered yet)
+	message_admins("DEBUG: Trying fallback - shuttle=[player_ship.shuttle], shuttle_areas=[player_ship.shuttle?.shuttle_areas ? length(player_ship.shuttle.shuttle_areas) : "null"]")
+	if(player_ship.shuttle?.shuttle_areas)
+		for(var/area/ship_area as anything in player_ship.shuttle.shuttle_areas)
+			for(var/obj/machinery/mission_pad/found_pad in ship_area)
+				link_mission_pad(found_pad)
+				message_admins("DEBUG: Found pad [found_pad] in area [ship_area]")
+	message_admins("DEBUG: After fallback, tribute_pads=[length(tribute_pads)]")
 
 /**
  * Spawn the pirate hologram on the holopad.
@@ -263,6 +277,9 @@
 
 	// Link hologram to holopad for visual effects
 	holopad.on_negotiation_hologram_set(hologram)
+
+	// Play hologram activation sound
+	playsound(holopad, 'voidcrew/sound/hologram_on.ogg', 80, FALSE)
 
 /**
  * End the negotiation with success or failure.
@@ -294,6 +311,8 @@
 	// Final message from pirate
 	if(success)
 		pirate_say(dialog.get_acceptance_line())
+		// Notify player ship crew that pirates have disengaged
+		player_ship?.ship_notify("[pirate_ship.name] has accepted tribute and is disengaging.", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 	else
 		if(reason == "timeout")
 			pirate_say(dialog.get_timeout_line())
@@ -348,32 +367,42 @@
  * Returns TRUE if item was accepted, FALSE otherwise.
  */
 /datum/pirate_negotiation/proc/process_item_payment(obj/item/item)
+	message_admins("DEBUG process_item_payment: state=[negotiation_state], demanded_type=[demanded_item_type], item=[item.type]")
 	if(negotiation_state != NEGOTIATION_ACTIVE && negotiation_state != NEGOTIATION_PAYING)
+		message_admins("DEBUG process_item_payment: wrong state (need ACTIVE=1 or PAYING=2, got [negotiation_state])")
 		return FALSE
 
 	if(!demanded_item_type)
+		message_admins("DEBUG process_item_payment: no demanded_item_type")
 		return FALSE
 
 	// Check if item matches demanded type
 	if(!istype(item, demanded_item_type))
-		pirate_say("That's not what I asked for. I want [demanded_item_name]!")
+		message_admins("DEBUG process_item_payment: type mismatch - wanted [demanded_item_type], got [item.type]")
+		// Debounce rejection messages to prevent spam when stacks are dropped
+		if(COOLDOWN_FINISHED(src, rejection_message_cooldown))
+			pirate_say("That's not what I asked for. I want [demanded_item_name]!")
+			COOLDOWN_START(src, rejection_message_cooldown, 2 SECONDS)
 		return FALSE
 
 	// Get amount (stacks vs single items)
 	var/amount = get_item_stack_amount(item)
 	items_received += amount
 
-	// Accept the item - teleport it away
-	tribute_pad?.do_teleport_effect()
+	// Accept the item - teleport it away (use first available pad for effect)
+	var/obj/machinery/mission_pad/effect_pad = length(tribute_pads) ? tribute_pads[1] : null
+	effect_pad?.do_teleport_effect()
 	qdel(item)
 
 	// Check if fully paid
 	if(items_received >= demanded_item_quantity)
-		pirate_say(dialog.get_acceptance_line())
+		// end_negotiation handles the acceptance message
 		end_negotiation(success = TRUE, reason = "payment_complete")
-	else
+	else if(COOLDOWN_FINISHED(src, progress_message_cooldown))
+		// Debounce progress messages to prevent spam when stacks are dropped
 		var/remaining = demanded_item_quantity - items_received
 		pirate_say("Good. [remaining] more [demanded_item_name] to go.")
+		COOLDOWN_START(src, progress_message_cooldown, 1 SECONDS)
 
 	return TRUE
 
@@ -420,15 +449,14 @@
 // ========== HOLOGRAM SPEECH ==========
 
 /**
- * Make the pirate hologram speak.
+ * Make the pirate hologram speak via runechat bubble.
+ * The dialogue appears above the hologram, not in ship chat.
  */
 /datum/pirate_negotiation/proc/pirate_say(message)
 	if(!message)
 		return
 	if(hologram)
 		hologram.pirate_say(message)
-	// Also announce on ship comms
-	player_ship?.ship_announce("[pirate_ship.name]: [message]", "Incoming Transmission")
 
 // ========== MISSION PAD LINKING ==========
 
@@ -436,16 +464,24 @@
  * Link a mission pad for tribute delivery.
  */
 /datum/pirate_negotiation/proc/link_mission_pad(obj/machinery/mission_pad/pad)
-	if(tribute_pad)
-		tribute_pad.tribute_negotiation = null
-	tribute_pad = pad
-	if(pad)
-		pad.tribute_negotiation = src
+	if(!pad || (pad in tribute_pads))
+		return
+	tribute_pads += pad
+	pad.tribute_negotiation = src
 
 /**
- * Unlink the mission pad.
+ * Unlink a specific mission pad.
  */
-/datum/pirate_negotiation/proc/unlink_mission_pad()
-	if(tribute_pad)
-		tribute_pad.tribute_negotiation = null
-		tribute_pad = null
+/datum/pirate_negotiation/proc/unlink_mission_pad(obj/machinery/mission_pad/pad)
+	if(!pad || !(pad in tribute_pads))
+		return
+	pad.tribute_negotiation = null
+	tribute_pads -= pad
+
+/**
+ * Unlink all mission pads.
+ */
+/datum/pirate_negotiation/proc/unlink_all_mission_pads()
+	for(var/obj/machinery/mission_pad/pad as anything in tribute_pads)
+		pad.tribute_negotiation = null
+	tribute_pads.Cut()

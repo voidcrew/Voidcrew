@@ -17,7 +17,7 @@ GLOBAL_LIST_INIT(pirate_item_demands, list(
 	list(/obj/item/stack/sheet/mineral/bananium, 15, "bananium sheets"),
 
 	// Bluespace - rare and valuable
-	list(/obj/item/stack/sheet/bluespace_crystal, 10, "bluespace crystals"),
+	list(/obj/item/stack/sheet/bluespace_crystal, 10, "bluespace polycrystals"),
 
 	// Processed materials - large quantities
 	list(/obj/item/stack/sheet/plasteel, 40, "plasteel sheets"),

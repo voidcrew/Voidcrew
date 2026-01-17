@@ -245,13 +245,8 @@
 		clear_blackboard_key("hailing_reminder_sent")
 
 	// Announce to both ships
-	our_ship?.ship_announce("Hostile action detected! Engaging!", "COMBAT")
-	aggressor?.ship_announce(
-		"[our_ship?.name || "Hostile vessel"] is retaliating to your aggressive actions!",
-		"COMBAT ALERT",
-		FALSE,
-		sound('sound/effects/alert.ogg')
-	)
+	our_ship?.ship_notify("Hostile action detected! Engaging!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg')
+	aggressor?.ship_notify("[our_ship?.name || "Hostile vessel"] is retaliating to your aggressive actions!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert2.ogg')
 
 	// Go straight to ENGAGING (will acquire lock then fight)
 	set_combat_state(NPC_COMBAT_ENGAGING)

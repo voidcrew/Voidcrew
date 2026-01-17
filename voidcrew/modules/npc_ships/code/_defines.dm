@@ -75,6 +75,20 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 #define BB_NPC_SCANNED_SHIPS "npc_scanned_ships"      // Assoc list of ship ref -> time scanned
 #define BB_NPC_SCAN_ANNOUNCED "npc_scan_announced"    // Whether we announced scan start
 
+// Combat action commitment blackboard keys (for action priority system)
+#define BB_NPC_LAST_COMBAT_ACTION "npc_last_combat_action"      // Last offensive action taken
+#define BB_NPC_INTERDICTOR_START_TIME "npc_interdictor_start"   // When interdiction was activated
+#define BB_NPC_SIPHON_START_TIME "npc_siphon_start"             // When siphon was activated
+
+// Combat action types (for action priority)
+#define NPC_ACTION_FIRE_WEAPONS "fire_weapons"
+#define NPC_ACTION_USE_INTERDICTOR "use_interdictor"
+#define NPC_ACTION_ACTIVATE_SIPHON "activate_siphon"
+
+// Commitment delays (time after starting an action before other actions can be taken)
+#define NPC_INTERDICTOR_COMMITMENT_DELAY (3 SECONDS)  // Delay after starting interdiction
+#define NPC_SIPHON_COMMITMENT_DELAY (2 SECONDS)       // Delay after activating siphon
+
 // How long to remember a scanned ship before re-scanning (5 minutes)
 #define NPC_SCAN_MEMORY_TIME (5 MINUTES)
 

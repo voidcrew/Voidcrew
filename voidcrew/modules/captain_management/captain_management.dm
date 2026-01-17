@@ -7,9 +7,8 @@
 /datum/action/innate/captain_management
 	name = "Ship Management"
 	desc = "Open the captain's ship management panel to manage crew, invites, and ship settings."
-	button_icon = 'icons/mob/actions/actions_mecha.dmi'
-	button_icon_state = "mech_view_stats"
-	background_icon_state = "bg_default"
+	button_icon = 'icons/hud/actions.dmi'
+	button_icon_state = "round_end"
 	check_flags = AB_CHECK_CONSCIOUS
 
 	/// Reference to the ship this action controls
@@ -177,7 +176,7 @@
 			if(ship.ship_team)
 				ship.ship_team.name = new_name
 			COOLDOWN_START(ship, rename_cooldown, 5 MINUTES)
-			ship.ship_announce("This vessel has been renamed from [old_name] to [new_name].", "SHIP SYSTEMS")
+			ship.ship_notify("This vessel has been renamed from [old_name] to [new_name].", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 			log_game("[key_name(captain)] renamed ship from [old_name] to [new_name]")
 			return TRUE
 
@@ -256,7 +255,7 @@
 		ship.manifest += player.real_name
 
 	to_chat(player, span_notice("You have joined the crew of [ship.name]!"))
-	ship.ship_announce("[player.real_name] has joined the crew.", "CREW UPDATE")
+	ship.ship_notify("[player.real_name] has joined the crew.", "CREW UPDATE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 	log_game("[key_name(captain)] invited [key_name(player)] to ship [ship.name]")
 
 // ===== CREW MANAGEMENT =====
@@ -277,7 +276,7 @@
 	ship.manifest -= kicked_name
 
 	to_chat(kicked_mob, span_userdanger("You have been removed from [ship.name]'s crew by the captain!"))
-	ship.ship_announce("[kicked_name] has been removed from the crew roster.", "CREW UPDATE")
+	ship.ship_notify("[kicked_name] has been removed from the crew roster.", "CREW UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg')
 	log_game("[key_name(captain)] kicked [key_name(kicked_mob)] from ship [ship.name]")
 
 // ===== MEMO DISPLAY HELPER =====

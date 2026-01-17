@@ -51,7 +51,7 @@
 	var/scan_before_engage = FALSE
 
 	/// How long the wealth scan takes (deciseconds)
-	var/scan_time = 5 SECONDS
+	var/scan_time = 6 SECONDS
 
 	/// Minimum credits target must have to be worth engaging
 	var/min_target_wealth = 100
@@ -487,18 +487,15 @@
 	// Default pirate shuttle template (Rogues)
 	shuttle_template = /datum/map_template/shuttle/voidcrew/pirate_default
 
-	// Combat stats
+	// Combat stats - balanced for gameplay
 	lock_time = 5 SECONDS
-	laser_cooldown_time = 5 SECONDS
-	missile_cooldown_time = 10 SECONDS
+	laser_cooldown_time = 6 SECONDS  // Increased from 5s for balance
+	missile_cooldown_time = 15 SECONDS  // Increased from 10s for balance
 	npc_cloak_duration = 5 SECONDS  // Short cloak for pirates
 
 	// Movement stats
 	speed_limit = 0.5
 	thrust_power = 0.3
-
-	// Yellow zone - stay to interdict/siphon even without weapons
-	retreat_without_weapons = FALSE
 
 	// Crew configuration
 	crew_min = 3

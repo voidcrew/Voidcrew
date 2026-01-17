@@ -180,7 +180,7 @@
 
 	// Notify ship
 	if(servant)
-		servant.ship_announce("[name]: [reason]", "Mission Failed")
+		servant.ship_notify("[name]: [reason]", "MISSION FAILED", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg')
 		servant.active_missions -= src
 
 	// Remove from subsystem tracking
@@ -278,7 +278,7 @@
 
 	// Notify ship
 	if(servant)
-		servant.ship_announce("[name] completed! Reward: [value] credits[mission_reward ? " + item reward" : ""]", "Mission Complete")
+		servant.ship_notify("[name] completed! Reward: [value] credits[mission_reward ? " + item reward" : ""]", "MISSION COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 		servant.active_missions -= src
 
 	// Remove from subsystem tracking

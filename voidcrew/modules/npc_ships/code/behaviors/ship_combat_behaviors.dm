@@ -23,6 +23,26 @@
 /datum/ai_behavior/npc_ship/proc/get_combat_interface(datum/ai_controller/npc_ship/controller)
 	return controller?.get_combat_interface()
 
+/**
+ * Check if another pirate is already hailing or negotiating with the target.
+ * Only one pirate can hail/negotiate with a ship at a time.
+ */
+/datum/ai_behavior/npc_ship/proc/is_target_being_hailed(obj/structure/overmap/ship/target, obj/structure/overmap/ship/npc/self)
+	for(var/obj/structure/overmap/ship/npc/pirate/other_pirate as anything in SSnpc_ships.active_ships)
+		if(other_pirate == self)
+			continue
+		if(!istype(other_pirate))
+			continue
+		var/datum/ai_controller/npc_ship/other_controller = other_pirate.ai_controller
+		if(!other_controller)
+			continue
+		// Check if this other pirate is hailing or negotiating with our target
+		var/other_state = other_controller.get_combat_state()
+		if(other_state == NPC_COMBAT_HAILING || other_state == NPC_COMBAT_NEGOTIATING)
+			if(other_controller.get_target() == target)
+				return TRUE
+	return FALSE
+
 // ========== SCAN THREATS ==========
 
 /**
@@ -129,7 +149,8 @@
 		// If this pirate accepts negotiation, go to HAILING first (give player chance to respond)
 		else if(istype(ship, /obj/structure/overmap/ship/npc/pirate))
 			var/obj/structure/overmap/ship/npc/pirate/pirate_ship = ship
-			if(pirate_ship.accepts_negotiation)
+			// Only hail if no other pirate is already hailing/negotiating with this target
+			if(pirate_ship.accepts_negotiation && !is_target_being_hailed(potential_target, ship))
 				controller.set_combat_state(NPC_COMBAT_HAILING)
 				controller.clear_blackboard_key(BB_NPC_HAILING_START)
 				controller.clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
@@ -175,15 +196,20 @@
 	// Announce scan start (only once)
 	if(!controller.blackboard[BB_NPC_SCAN_ANNOUNCED])
 		controller.blackboard[BB_NPC_SCAN_ANNOUNCED] = TRUE
-		ship.ship_announce("Initiating financial scan of [target.name]...", "SCANNER")
-		target.ship_announce("ALERT: [ship.name] is scanning our financial systems!", "SECURITY ALERT")
+		ship.ship_notify("Initiating financial scan of [target.name]...", "SCANNER", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+		target.ship_notify("[ship.name] is scanning our financial systems!", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg')
+		// Start looping scan sound on target ship
+		start_scan_sound(target)
 
 	var/elapsed = world.time - scan_start
 	if(elapsed < ship.scan_time)
 		// Still scanning - just wait
 		return AI_BEHAVIOR_DELAY
 
-	// Scan complete! Record this ship as scanned
+	// Scan complete! Stop the scan sound
+	stop_scan_sound(target)
+
+	// Record this ship as scanned
 	controller.blackboard[BB_NPC_SCAN_COMPLETE] = TRUE
 	var/list/scanned_ships = controller.blackboard[BB_NPC_SCANNED_SHIPS]
 	if(!scanned_ships)
@@ -196,28 +222,49 @@
 
 	if(target_wealth >= ship.min_target_wealth)
 		// Target has money - proceed to hailing or engaging
-		ship.ship_announce("Scan complete. Target has [target_wealth] credits.", "SCANNER")
+		ship.ship_notify("Scan complete. Target has [target_wealth] credits.", "SCANNER", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 		// If this pirate accepts negotiation, go to HAILING first (give player chance to respond)
+		// But only if no other pirate is already hailing/negotiating with this target
 		if(istype(ship, /obj/structure/overmap/ship/npc/pirate))
 			var/obj/structure/overmap/ship/npc/pirate/pirate_ship = ship
-			if(pirate_ship.accepts_negotiation)
-				target.ship_announce("WARNING: [ship.name] is hailing your vessel!", "SECURITY ALERT")
+			if(pirate_ship.accepts_negotiation && !is_target_being_hailed(target, ship))
+				target.ship_notify("[ship.name] is hailing your vessel!", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn2.ogg')
 				controller.set_combat_state(NPC_COMBAT_HAILING)
 				controller.clear_blackboard_key(BB_NPC_HAILING_START)
 				controller.clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
 				return AI_BEHAVIOR_DELAY
 
-		// Otherwise engage directly
-		target.ship_announce("WARNING: Hostile vessel has completed scan and is engaging!", "SECURITY ALERT")
+		// Otherwise engage directly (or another pirate is already hailing)
+		target.ship_notify("Hostile vessel has completed scan and is engaging!", "SECURITY", SHIP_NOTIFY_DANGER)
 		controller.set_combat_state(NPC_COMBAT_ENGAGING)
 	else
 		// Target is broke - not worth it
-		ship.ship_announce("Scan complete. Target has insufficient funds ([target_wealth] credits). Disengaging.", "SCANNER")
-		target.ship_announce("Hostile scan complete. They found nothing of value and are disengaging.", "BROKEY ALERT")
+		ship.ship_notify("Scan complete. Target has insufficient funds ([target_wealth] credits). Disengaging.", "SCANNER", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+		target.ship_notify("Hostile scan complete. They found nothing of value and are disengaging.", "BROKEY ALERT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 		controller.clear_target()
 
 	return AI_BEHAVIOR_DELAY
+
+/// Starts looping scan sound on the target ship
+/datum/ai_behavior/npc_ship/scan_wealth/proc/start_scan_sound(obj/structure/overmap/ship/target)
+	if(!target?.shuttle?.shuttle_areas)
+		return
+	var/sound/scan_sound = sound('voidcrew/sound/econ_scan.ogg', repeat = TRUE, channel = CHANNEL_ECON_SCAN)
+	for(var/area/shuttle_area as anything in target.shuttle.shuttle_areas)
+		for(var/mob/M in shuttle_area)
+			if(M.client)
+				SEND_SOUND(M, scan_sound)
+
+/// Stops the looping scan sound on the target ship
+/datum/ai_behavior/npc_ship/scan_wealth/proc/stop_scan_sound(obj/structure/overmap/ship/target)
+	if(!target?.shuttle?.shuttle_areas)
+		return
+	var/sound/stop_sound = sound(null, channel = CHANNEL_ECON_SCAN)
+	for(var/area/shuttle_area as anything in target.shuttle.shuttle_areas)
+		for(var/mob/M in shuttle_area)
+			if(M.client)
+				SEND_SOUND(M, stop_sound)
 
 // ========== HAILING ==========
 
@@ -257,15 +304,10 @@
 		controller.set_blackboard_key(BB_NPC_HAILING_START, world.time)
 
 		// Announce to pirate ship
-		ship.ship_announce("Hailing [target.name]. Awaiting response.", "COMMS")
+		ship.ship_notify("Hailing [target.name]. Awaiting response.", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 
 		// Announce to player ship - this is the key notification!
-		target.ship_announce(
-			"INCOMING HAIL from [ship.name]! Report to ship communications array to respond. You have 20 seconds before they open fire!",
-			"PRIORITY ALERT",
-			FALSE,
-			sound('sound/effects/alert.ogg')
-		)
+		target.ship_notify("INCOMING HAIL from [ship.name]! Report to comms array to respond. 20 seconds before they open fire!", "PRIORITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg')
 
 		// Make the ship comms holopad ring
 		start_target_holopad_ringing(target)
@@ -283,12 +325,7 @@
 		// Only send once (check if we're in the 2-second window after halfway)
 		if(!controller.blackboard["hailing_reminder_sent"])
 			controller.set_blackboard_key("hailing_reminder_sent", TRUE)
-			target.ship_announce(
-				"WARNING: [ship.name] is losing patience! 10 seconds until they open fire!",
-				"URGENT",
-				FALSE,
-				sound('sound/effects/alert.ogg')
-			)
+			target.ship_notify("[ship.name] is losing patience! 10 seconds until they open fire!", "URGENT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg')
 
 	// Check if grace period expired
 	if(elapsed >= NPC_HAILING_GRACE_PERIOD)
@@ -311,29 +348,14 @@
 
 	// Announce escalation
 	if(reason == "ignored")
-		ship.ship_announce("No response from target. Engaging.", "COMMS")
-		target.ship_announce(
-			"[ship.name] has received no response and is engaging!",
-			"COMBAT ALERT",
-			FALSE,
-			sound('sound/effects/alert.ogg')
-		)
+		ship.ship_notify("No response from target. Engaging.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg')
+		target.ship_notify("[ship.name] has received no response and is engaging!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg')
 	else if(reason == "aggression")
-		ship.ship_announce("Hostile action detected! Engaging!", "COMBAT")
-		target.ship_announce(
-			"[ship.name] is retaliating to hostile action!",
-			"COMBAT ALERT",
-			FALSE,
-			sound('sound/effects/alert.ogg')
-		)
+		ship.ship_notify("Hostile action detected! Engaging!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg')
+		target.ship_notify("[ship.name] is retaliating to hostile action!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg')
 	else if(reason == "negotiation_failed")
-		ship.ship_announce("Negotiations failed. Engaging target.", "COMMS")
-		target.ship_announce(
-			"Negotiations with [ship.name] have failed! Brace for combat!",
-			"COMBAT ALERT",
-			FALSE,
-			sound('sound/effects/alert.ogg')
-		)
+		ship.ship_notify("Negotiations failed. Engaging target.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg')
+		target.ship_notify("Negotiations with [ship.name] have failed! Brace for combat!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg')
 
 	// Transition to ENGAGING (will acquire lock then fight)
 	controller.set_combat_state(NPC_COMBAT_ENGAGING)
@@ -401,12 +423,7 @@
 	var/lock_start = controller.blackboard[BB_NPC_LOCK_START_TIME]
 	if(!lock_start)
 		// Start the lock - alert the target ship (like combat console does)
-		target.ship_announce(
-			"Hostile ship acquiring weapons lock!",
-			"WARNING",
-			FALSE,
-			sound('sound/effects/alert.ogg')
-		)
+		target.ship_notify("Hostile ship acquiring weapons lock!", "WARNING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg')
 		controller.set_blackboard_key(BB_NPC_LOCK_START_TIME, world.time)
 		return AI_BEHAVIOR_DELAY
 
@@ -420,12 +437,7 @@
 		SEND_SIGNAL(target, COMSIG_SHIP_WEAPONS_LOCKED, ship)
 
 		// Announce lock complete to target ship
-		target.ship_announce(
-			"WARNING: Hostile weapons lock detected from [ship.name]!",
-			"THREAT ALERT",
-			FALSE,
-			sound('sound/effects/alert.ogg')
-		)
+		target.ship_notify("Hostile weapons lock completed!", "THREAT", SHIP_NOTIFY_DANGER)
 
 	return AI_BEHAVIOR_DELAY
 
@@ -437,7 +449,7 @@
  * - If target shields are down: use missiles (effective vs hull)
  */
 /datum/ai_behavior/npc_ship/fire_weapons
-	action_cooldown = 1 SECONDS
+	action_cooldown = 2 SECONDS  // Increased from 1s for balance
 
 /datum/ai_behavior/npc_ship/fire_weapons/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
@@ -482,8 +494,8 @@
 	// Decide whether to fire all or single
 	var/fire_all = FALSE
 	if(working_lasers >= 2)
-		// 60% chance to fire all, 40% chance to fire single
-		fire_all = prob(60)
+		// 20% chance to fire all, 80% chance to fire single (reduced for balance)
+		fire_all = prob(20)
 
 	// Fire! (uses per-ship laser cooldown)
 	if(combat.fire_lasers(target, fire_all))
@@ -524,7 +536,7 @@
  * NPCs will aggressively interdict to prevent escape.
  */
 /datum/ai_behavior/npc_ship/use_interdictor
-	action_cooldown = 2 SECONDS
+	action_cooldown = 3 SECONDS  // Increased from 2s for balance
 
 /datum/ai_behavior/npc_ship/use_interdictor/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
@@ -542,10 +554,14 @@
 
 	// Check if target is already interdicted
 	if(target.is_interdicted)
+		// Clear commitment since interdiction is complete
+		controller.clear_blackboard_key(BB_NPC_INTERDICTOR_START_TIME)
 		return AI_BEHAVIOR_DELAY
 
 	// Try to interdict! (aggressively - don't wait for target to start moving)
-	combat.start_interdiction(target)
+	if(combat.start_interdiction(target))
+		// Record commitment start time - other actions delayed while committed
+		controller.set_blackboard_key(BB_NPC_INTERDICTOR_START_TIME, world.time)
 
 	return AI_BEHAVIOR_DELAY
 
@@ -678,7 +694,7 @@
  * Pirates use this to steal credits from locked targets.
  */
 /datum/ai_behavior/npc_ship/activate_siphon
-	action_cooldown = 2 SECONDS
+	action_cooldown = 3 SECONDS  // Increased from 2s for balance
 
 /datum/ai_behavior/npc_ship/activate_siphon/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
@@ -703,7 +719,9 @@
 	if(siphon && !siphon.active && !siphon.warming_up)
 		// Copy the ship's siphon goal percentage to the siphon
 		siphon.siphon_goal_percent = ship.siphon_goal_percent
-		siphon.activate_siphon(target)
+		if(siphon.activate_siphon(target))
+			// Record commitment start time - other actions delayed while committed
+			controller.set_blackboard_key(BB_NPC_SIPHON_START_TIME, world.time)
 
 	return AI_BEHAVIOR_DELAY
 
@@ -729,6 +747,6 @@
 	if(!combat.has_any_weapons() && ship.retreat_without_weapons)
 		controller.set_combat_state(NPC_COMBAT_RETREATING)
 		controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_RETREAT)
-		ship.ship_announce("All weapons systems offline! Initiating emergency retreat!", "CRITICAL DAMAGE")
+		ship.ship_notify("All weapons systems offline! Initiating emergency retreat!", "CRITICAL", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg')
 
 	return AI_BEHAVIOR_DELAY
