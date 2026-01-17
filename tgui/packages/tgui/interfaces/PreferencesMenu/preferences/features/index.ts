@@ -19,3 +19,9 @@ for (const key of requireFeature.keys()) {
     features[featureKey] = feature as Feature<unknown>;
   }
 }
+
+// Import voidcrew features
+import * as voidcrewFeatures from 'voidcrew_tgui/preferences/features';
+for (const [featureKey, feature] of Object.entries(voidcrewFeatures)) {
+  features[featureKey] = feature as Feature<unknown>;
+}
