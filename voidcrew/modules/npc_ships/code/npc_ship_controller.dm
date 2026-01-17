@@ -225,6 +225,57 @@
 		INVOKE_ASYNC(src, PROC_REF(handle_player_aggression), aggressor, "weapons_lock")
 
 /**
+ * Called when our target starts a zone transition.
+ * If we're in HAILING state, cancel the hail - they're escaping.
+ */
+/datum/ai_controller/npc_ship/proc/on_target_zone_transition(datum/source, datum/overmap_zone/target_zone)
+	SIGNAL_HANDLER
+
+	var/combat_state = get_combat_state()
+
+	// If we're hailing, cancel the hail - they're getting away
+	if(combat_state == NPC_COMBAT_HAILING)
+		INVOKE_ASYNC(src, PROC_REF(handle_target_escaping_via_zone))
+
+/**
+ * Handle target escaping via zone transition during HAILING phase.
+ * Cancels the hail and clears the target.
+ */
+/datum/ai_controller/npc_ship/proc/handle_target_escaping_via_zone()
+	var/obj/structure/overmap/ship/npc/our_ship = get_ship()
+	var/obj/structure/overmap/ship/target = get_target()
+
+	// Clear hailing state
+	clear_blackboard_key(BB_NPC_HAILING_START)
+	clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
+	clear_blackboard_key("hailing_reminder_sent")
+
+	// Stop the holopad ringing on target ship
+	if(target && !QDELETED(target))
+		var/obj/machinery/holopad/ship_comms/holopad = find_ship_comms_holopad(target)
+		holopad?.stop_ringing()
+
+	// Announce to pirate ship
+	our_ship?.ship_notify("Target is crossing zones. Hail cancelled.", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+
+	// Clear target and return to idle
+	clear_target()
+
+/**
+ * Find the ship comms holopad on a ship.
+ */
+/datum/ai_controller/npc_ship/proc/find_ship_comms_holopad(obj/structure/overmap/ship/target)
+	if(!target?.shuttle?.shuttle_areas)
+		return null
+
+	for(var/area/shuttle_area as anything in target.shuttle.shuttle_areas)
+		var/obj/machinery/holopad/ship_comms/found = locate() in shuttle_area
+		if(found)
+			return found
+
+	return null
+
+/**
  * Handle player aggression during HAILING or NEGOTIATING phase.
  * Escalates to immediate combat.
  */
@@ -315,13 +366,20 @@
 	if(old_target && !QDELETED(old_target) && old_target != target)
 		if(old_target.engaging_pirate_ref?.resolve() == our_ship)
 			old_target.engaging_pirate_ref = null
+		// Unregister zone transition signal from old target
+		UnregisterSignal(old_target, COMSIG_VOIDCREW_SHIP_ZONE_TRANSITION_START)
 
 	if(target)
 		set_blackboard_key(BB_NPC_TARGET, target)
 		// Mark this target as engaged by us (only one pirate can engage at a time)
 		if(our_ship)
 			target.engaging_pirate_ref = WEAKREF(our_ship)
+		// Register for zone transition signal to cancel hails if target escapes
+		RegisterSignal(target, COMSIG_VOIDCREW_SHIP_ZONE_TRANSITION_START, PROC_REF(on_target_zone_transition))
 	else
+		// Unregister zone transition signal if clearing target
+		if(old_target && !QDELETED(old_target))
+			UnregisterSignal(old_target, COMSIG_VOIDCREW_SHIP_ZONE_TRANSITION_START)
 		// If we had a weapon lock on the old target, notify them we lost it
 		if(blackboard[BB_NPC_TARGET_LOCKED] && old_target && !QDELETED(old_target))
 			SEND_SIGNAL(old_target, COMSIG_SHIP_WEAPONS_LOCK_LOST, our_ship)

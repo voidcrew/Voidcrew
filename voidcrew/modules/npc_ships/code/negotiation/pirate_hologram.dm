@@ -19,6 +19,10 @@
 	// Make clickable
 	mouse_opacity = MOUSE_OPACITY_ICON
 
+/// Allow long barks so the pirate speech plays multiple sounds based on message length
+/obj/effect/overlay/holo_pad_hologram/pirate/can_long_bark()
+	return TRUE
+
 /**
  * Return a faction-specific voice pack ID for voice barks.
  * Each pirate faction has a distinct voice to match their personality.
@@ -229,6 +233,7 @@
 
 /**
  * Make the pirate hologram speak using runechat (speech bubble above hologram).
+ * Also plays faction-specific voice barks for players nearby.
  */
 /obj/effect/overlay/holo_pad_hologram/pirate/proc/pirate_say(message)
 	if(!message)
@@ -237,6 +242,15 @@
 	speaking = TRUE
 	// Use say() to trigger runechat bubbles above the hologram
 	say(message, sanitize = FALSE)
+
+	// Directly trigger voice barks for nearby players
+	if(GLOB.voices_enabled)
+		var/datum/atom_voice/my_bark_voice = get_bark_voice()
+		if(my_bark_voice?.voicepack)
+			var/list/hearers = get_hearers_in_view(7, src)
+			var/talk_icon_state = say_test(message)
+			my_bark_voice.start_barking(message, hearers, 7, talk_icon_state, FALSE, src)
+
 	addtimer(VARSET_CALLBACK(src, speaking, FALSE), 2 SECONDS)
 
 // ========== PRESET HOLOIMAGES FOR PIRATE CAPTAINS ==========
