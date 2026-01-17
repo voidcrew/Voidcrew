@@ -110,8 +110,7 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	SHOULD_BE_PURE(TRUE)
 	return !HAS_TRAIT(src, TRAIT_MUTE)
 
-/atom/movable/proc/send_speech(message, range = 7, obj/source = src, bubble_type, list/spans, datum/language/message_language, list/message_mods = list(), forced = FALSE, tts_message, list/tts_filter)
-	var/found_client = FALSE
+/atom/movable/proc/send_speech(message, range = 7, obj/source = src, bubble_type, list/spans, datum/language/message_language, list/message_mods = list(), forced = FALSE)
 	var/list/listeners = get_hearers_in_view(range, source)
 	var/list/listened = list()
 	for(var/atom/movable/hearing_movable as anything in listeners)
@@ -120,23 +119,9 @@ GLOBAL_LIST_INIT(freqtospan, list(
 			continue
 		if(hearing_movable.Hear(null, src, message_language, message, null, null, null, spans, message_mods, range))
 			listened += hearing_movable
-		if(!found_client && length(hearing_movable.client_mobs_in_contents))
-			found_client = TRUE
 
-	var/tts_message_to_use = tts_message
-	if(!tts_message_to_use)
-		tts_message_to_use = message
-
-	var/list/filter = list()
-	if(length(voice_filter) > 0)
-		filter += voice_filter
-
-	if(length(tts_filter) > 0)
-		filter += tts_filter.Join(",")
-
-	if(voice && found_client)
-		if (!CONFIG_GET(flag/tts_no_whisper) || (CONFIG_GET(flag/tts_no_whisper) && !message_mods[WHISPER_MODE]))
-			INVOKE_ASYNC(SStts, TYPE_PROC_REF(/datum/controller/subsystem/tts, queue_tts_message), src, html_decode(tts_message_to_use), message_language, voice, filter.Join(","), listened, message_range = range, pitch = pitch)
+	// Voice barks for atom/movable
+	get_voice_bark().start_barking(message, listened, range, say_test(message), FALSE, src)
 
 /atom/movable/proc/compose_message(atom/movable/speaker, datum/language/message_language, raw_message, radio_freq, radio_freq_name, radio_freq_color, list/spans, list/message_mods = list(), visible_name = FALSE)
 	//This proc uses [] because it is faster than continually appending strings. Thanks BYOND.

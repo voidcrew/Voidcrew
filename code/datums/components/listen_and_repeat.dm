@@ -59,15 +59,7 @@
 	if(speaker == source) // don't parrot ourselves
 		return
 
-	var/list/speaker_sound
-
-	if(!SStts.tts_enabled || !ismovable(speaker))
-		speaker_sound = invalid_voice
-	else
-		speaker_sound = list()
-		var/atom/movable/movable_speaker = speaker
-		speaker_sound[MESSAGE_VOICE] = movable_speaker.voice || "invalid"
-		speaker_sound[MESSAGE_PITCH] = (movable_speaker.pitch && SStts.pitch_enabled ? movable_speaker.pitch : 0)
+	var/list/speaker_sound = invalid_voice
 
 	if(over_radio && prob(RADIO_IGNORE_CHANCE))
 		return

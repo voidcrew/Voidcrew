@@ -243,12 +243,6 @@ GLOBAL_LIST_EMPTY(vending_machines_to_restock)
 	. = ..()
 	set_wires(new /datum/wires/vending(src))
 
-	if(SStts.tts_enabled)
-		var/static/vendor_voice_by_type = list()
-		if(!vendor_voice_by_type[type])
-			vendor_voice_by_type[type] = pick(SStts.available_speakers)
-		voice = vendor_voice_by_type[type]
-
 	if(build_inv) //non-constructable vending machine
 		///Non-constructible vending machines do not have a refill canister to populate its products list from,
 		///Which apparently is still needed in the case we use product categories instead.

@@ -370,9 +370,6 @@
 	ADD_TRAIT(src, TRAIT_CONTRABAND, INNATE_TRAIT)
 	register_context()
 
-	if(SStts.tts_enabled) //This capsule informs you on why it cannot be deployed in a sliiiiightly different way.
-		voice = pick(SStts.available_speakers)
-
 /obj/item/survivalcapsule/fishing/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	if(!held_item || held_item == src)
 		context[SCREENTIP_CONTEXT_RMB] = "Change fishing spot"
