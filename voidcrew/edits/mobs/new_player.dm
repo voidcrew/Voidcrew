@@ -33,7 +33,6 @@
 		to_chat(usr, span_danger("There are no jobs available on this ship!"))
 		return select_ship() // Send them back to ship selection
 
-	var/used_name = client?.prefs?.read_preference(/datum/preference/name/real_name) || "Spacer"
 	var/datum/job/selected_job = job_choices[tgui_input_list(src, "Select your role.", "[ship.name]", job_choices)]
 	if(!selected_job)
 		return select_ship() // Send them back to ship selection
