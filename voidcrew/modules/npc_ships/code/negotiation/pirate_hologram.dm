@@ -19,6 +19,38 @@
 	// Make clickable
 	mouse_opacity = MOUSE_OPACITY_ICON
 
+/**
+ * Return a faction-specific voice pack ID for voice barks.
+ * Each pirate faction has a distinct voice to match their personality.
+ */
+/obj/effect/overlay/holo_pad_hologram/pirate/initial_voice_pack_id()
+	return get_faction_voice_pack(pirate_faction)
+
+/**
+ * Get the voice pack ID for a specific pirate faction.
+ * Returns an appropriate voice bark pack that matches the faction's personality.
+ */
+/obj/effect/overlay/holo_pad_hologram/pirate/proc/get_faction_voice_pack(faction)
+	switch(faction)
+		if("skeleton")
+			return "goon.skelly" // Rattling skeleton voice
+		if("silverscale")
+			return "goon.lizard" // Hissing lizard voice
+		if("interdyne")
+			return "goon.cyborg" // Clinical robotic voice
+		if("lustrous")
+			return "goon.buwoo" // Ethereal wooshing voice
+		if("irs")
+			return "goon.bottalk_1" // Bureaucratic monotone
+		if("grey")
+			return "goon.speak_2" // Chaotic normal voice
+		if("medieval")
+			return "goon.speak_1" // Dramatic speech
+		if("rogues")
+			return "goon.speak_3" // Classic pirate voice
+	// Default fallback
+	return "goon.speak_1"
+
 /obj/effect/overlay/holo_pad_hologram/pirate/Destroy()
 	// Play hologram deactivation sound
 	playsound(src, 'voidcrew/sound/hologram_off.ogg', 80, FALSE)
@@ -41,6 +73,9 @@
  */
 /obj/effect/overlay/holo_pad_hologram/pirate/proc/set_faction_appearance(faction)
 	pirate_faction = faction
+
+	// Set faction-specific voice bark
+	set_bark_voice_pack(get_faction_voice_pack(faction))
 
 	// Get the appropriate preset holoimage for this faction
 	var/datum/preset_holoimage/preset = get_faction_holoimage(faction)
