@@ -205,8 +205,6 @@ GLOBAL_LIST_INIT(message_modes_stat_limits, list(
 
 	var/list/message_data = treat_message(message) // unfortunately we still need this
 	message = message_data["message"]
-	var/tts_message = message_data["tts_message"]
-	var/list/tts_filter = message_data["tts_filter"]
 
 	spans |= speech_span
 
@@ -256,7 +254,7 @@ GLOBAL_LIST_INIT(message_modes_stat_limits, list(
 	if(pressure < ONE_ATMOSPHERE * (HAS_TRAIT(src, TRAIT_SPEECH_BOOSTER) ? 0.1 : 0.4)) //Thin air, let's italicise the message unless we have a loud low pressure speech trait and not in vacuum
 		spans |= SPAN_ITALICS
 
-	send_speech(message, message_range, src, bubble_type, spans, language, message_mods, forced = forced, tts_message = tts_message, tts_filter = tts_filter)//roughly 58% of living/say()'s total cost
+	send_speech(message, message_range, src, bubble_type, spans, language, message_mods, forced = forced)//roughly 58% of living/say()'s total cost
 	if(succumbed)
 		succumb(TRUE)
 		to_chat(src, compose_message(src, language, message, null, null, null, spans, message_mods))
@@ -375,7 +373,7 @@ GLOBAL_LIST_INIT(message_modes_stat_limits, list(
 	var/show_message_success = show_message(message, MSG_AUDIBLE, deaf_message, deaf_type, avoid_highlight)
 	return understood && show_message_success
 
-/mob/living/send_speech(message_raw, message_range = 6, obj/source = src, bubble_type = bubble_icon, list/spans, datum/language/message_language = null, list/message_mods = list(), forced = null, tts_message, list/tts_filter)
+/mob/living/send_speech(message_raw, message_range = 6, obj/source = src, bubble_type = bubble_icon, list/spans, datum/language/message_language = null, list/message_mods = list(), forced = null)
 	var/whisper_range = 0
 	var/is_speaker_whispering = FALSE
 	if(message_mods[WHISPER_MODE]) //If we're whispering
@@ -429,22 +427,13 @@ GLOBAL_LIST_INIT(message_modes_stat_limits, list(
 			if(!M.client.prefs.read_preference(/datum/preference/toggle/enable_runechat) || (SSlag_switch.measures[DISABLE_RUNECHAT] && !HAS_TRAIT(src, TRAIT_BYPASS_MEASURES)))
 				speech_bubble_recipients.Add(M.client)
 			found_client = TRUE
-	if(SStts.tts_enabled && voice && found_client && !message_mods[MODE_CUSTOM_SAY_ERASE_INPUT] && !HAS_TRAIT(src, TRAIT_SIGN_LANG) && !HAS_TRAIT(src, TRAIT_UNKNOWN))
-		var/tts_message_to_use = tts_message
-		if(!tts_message_to_use)
-			tts_message_to_use = message_raw
-
-		var/list/filter = list()
-		var/list/special_filter = list()
-		if(length(voice_filter) > 0)
-			filter += voice_filter
-
-		if(length(tts_filter) > 0)
-			filter += tts_filter.Join(",")
-
-		var/voice_to_use = get_tts_voice(filter, special_filter)
-		if (!CONFIG_GET(flag/tts_no_whisper) || (CONFIG_GET(flag/tts_no_whisper) && !message_mods[WHISPER_MODE]))
-			INVOKE_ASYNC(SStts, TYPE_PROC_REF(/datum/controller/subsystem/tts, queue_tts_message), src, html_decode(tts_message_to_use), message_language, voice_to_use, filter.Join(","), listened, message_range = message_range, pitch = pitch, special_filters = special_filter.Join("|"))
+	// Voice barks - play sound effects when speaking
+	if(found_client && !message_mods[MODE_CUSTOM_SAY_ERASE_INPUT] && !HAS_TRAIT(src, TRAIT_UNKNOWN))
+		if(!HAS_TRAIT(src, TRAIT_SIGN_LANG))
+			get_voice_bark().start_barking(message_raw, listened, message_range, talk_icon_state, is_speaker_whispering, src)
+		else if (!is_speaker_whispering)
+			var/sound/sound = sound(pick('sound/mobs/humanoids/human/snap/fingersnap1.ogg', 'sound/mobs/humanoids/human/snap/fingersnap2.ogg'))
+			get_voice_bark().short_bark(listened, message_range + 1, 100, 0, src, sound_override=sound)
 
 	var/image/say_popup = image('icons/mob/effects/talk.dmi', src, "[bubble_type][talk_icon_state]", FLY_LAYER)
 	SET_PLANE_EXPLICIT(say_popup, ABOVE_GAME_PLANE, src)
@@ -452,22 +441,6 @@ GLOBAL_LIST_INIT(message_modes_stat_limits, list(
 	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(flick_overlay_global), say_popup, speech_bubble_recipients, 3 SECONDS)
 	LAZYADD(update_on_z, say_popup)
 	addtimer(CALLBACK(src, PROC_REF(clear_saypopup), say_popup), 3.5 SECONDS)
-
-/mob/living/proc/get_tts_voice(list/filter, list/special_filter)
-	. = voice
-	var/obj/item/clothing/mask/mask = get_item_by_slot(ITEM_SLOT_MASK)
-	if(!istype(mask) || mask.up)
-		return
-	if(mask.voice_override)
-		. = mask.voice_override
-	if(mask.voice_filter)
-		filter += mask.voice_filter
-	if(mask.use_radio_beeps_tts)
-		special_filter |= TTS_FILTER_RADIO
-
-/mob/living/silicon/get_tts_voice(list/filter, list/special_filter)
-	. = ..()
-	special_filter |= TTS_FILTER_SILICON
 
 /mob/living/proc/clear_saypopup(image/say_popup)
 	LAZYREMOVE(update_on_z, say_popup)
@@ -481,10 +454,9 @@ GLOBAL_LIST_INIT(message_modes_stat_limits, list(
  * message - The message to treat.
  * capitalize_message - Whether we run capitalize() on the message after we're done.
  *
- * Returns a list, which is a packet of information corresponding to the message that has been treated, which
- * contains the new message, as well as text-to-speech information.
+ * Returns a list containing the treated message.
  */
-/mob/living/proc/treat_message(message, tts_message, tts_filter, capitalize_message = TRUE)
+/mob/living/proc/treat_message(message, tts_message = null, tts_filter = null, capitalize_message = TRUE)
 	RETURN_TYPE(/list)
 
 	if(HAS_TRAIT(src, TRAIT_UNINTELLIGIBLE_SPEECH))
@@ -494,31 +466,12 @@ GLOBAL_LIST_INIT(message_modes_stat_limits, list(
 	var/list/data = list(message, tts_message, tts_filter, capitalize_message)
 	SEND_SIGNAL(src, COMSIG_LIVING_TREAT_MESSAGE, data)
 	message = data[TREAT_MESSAGE_ARG]
-	tts_message = data[TREAT_TTS_MESSAGE_ARG]
-	tts_filter = data[TREAT_TTS_FILTER_ARG]
 	capitalize_message = data[TREAT_CAPITALIZE_MESSAGE]
-
-	if(!tts_message)
-		tts_message = message
 
 	if(capitalize_message)
 		message = capitalize(message)
-		tts_message = capitalize(tts_message)
 
-	///caps the length of individual letters to 3: ex: heeeeeeyy -> heeeyy
-	/// prevents TTS from choking on unrealistic text while keeping emphasis
-	var/static/regex/length_regex = regex(@"(.+)\1\1\1", "gi")
-	while(length_regex.Find(tts_message))
-		var/replacement = tts_message[length_regex.index]+tts_message[length_regex.index]+tts_message[length_regex.index]
-		tts_message = replacetext(tts_message, length_regex.match, replacement, length_regex.index)
-
-	// removes repeated consonants at the start of a word: ex: sss
-	var/static/regex/word_start_regex = regex(@"\b([^aeiou\L])\1", "gi")
-	while(word_start_regex.Find(tts_message))
-		var/replacement = tts_message[word_start_regex.index]
-		tts_message = replacetext(tts_message, word_start_regex.match, replacement, word_start_regex.index)
-
-	return list("message" = message, "tts_message" = tts_message, "tts_filter" = tts_filter)
+	return list("message" = message)
 
 /mob/living/proc/radio(message, list/message_mods = list(), list/spans, language)
 	var/obj/item/implant/radio/imp = locate() in src

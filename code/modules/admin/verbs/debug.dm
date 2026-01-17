@@ -752,17 +752,6 @@ ADMIN_VERB(check_timer_sources, R_DEBUG, "Check Timer Sources", "Checks the sour
 	"})
 	browser.open()
 
-ADMIN_VERB(reestablish_tts_connection, R_DEBUG, "Re-establish Connection To TTS", "Re-establishes connection to the TTS server if possible", ADMIN_CATEGORY_DEBUG)
-	message_admins("[key_name_admin(user)] attempted to re-establish connection to the TTS HTTP server.")
-	log_admin("[key_name(user)] attempted to re-establish connection to the TTS HTTP server.")
-	var/success = SStts.establish_connection_to_tts()
-	if(!success)
-		message_admins("[key_name_admin(user)] failed to re-established the connection to the TTS HTTP server.")
-		log_admin("[key_name(user)] failed to re-established the connection to the TTS HTTP server.")
-		return
-	message_admins("[key_name_admin(user)] successfully re-established the connection to the TTS HTTP server.")
-	log_admin("[key_name(user)] successfully re-established the connection to the TTS HTTP server.")
-
 ADMIN_VERB(allow_browser_inspect, R_DEBUG, "Allow Browser Inspect", "Allow browser debugging via inspect", ADMIN_CATEGORY_DEBUG)
 	if(user.byond_version < 516)
 		to_chat(user, span_warning("You can only use this on 516!"))
