@@ -2,3 +2,4 @@
 // These get imported by the main tgui features index
 
 export * from './bark_voice';
+export * from './intents';
