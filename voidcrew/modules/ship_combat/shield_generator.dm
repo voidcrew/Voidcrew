@@ -1378,7 +1378,6 @@
 				spawn_shield_walls()
 
 			playsound(src, 'sound/vehicles/mecha/mech_shield_raise.ogg', 100, TRUE)
-			ship.ship_notify("Shields online.", "SHIELDS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
 			SEND_SIGNAL(ship, COMSIG_SHIP_SHIELD_RESTORED)
 		else if(ship.shields_active)
 

@@ -2511,8 +2511,8 @@
 	RegisterSignal(attacker, COMSIG_QDELETING, PROC_REF(on_attacker_deleted))
 
 	// Start the combat alarm if this is the first lock
-	if(length(locked_on_by) == 1 && combat_alarm)
-		combat_alarm.start()
+	// if(length(locked_on_by) == 1 && combat_alarm)
+	// 	combat_alarm.start()
 
 /// Called when a ship loses their weapons lock on us
 /obj/structure/overmap/ship/proc/on_weapons_lock_lost(datum/source, obj/structure/overmap/ship/attacker)

@@ -989,14 +989,6 @@
 /obj/item/stack/cable_coil,
 /obj/item/stack/cable_coil,
 /obj/item/screwdriver,
-/obj/item/bombcore/large,
-/obj/item/bombcore/large,
-/obj/item/bombcore/large,
-/obj/item/bombcore/large,
-/obj/item/bombcore/large,
-/obj/item/bombcore/large,
-/obj/item/bombcore/large,
-/obj/item/bombcore/large,
 /obj/item/electronics/ship_missile_tracking,
 /obj/item/electronics/ship_missile_tracking,
 /obj/item/electronics/ship_missile_tracking,
@@ -1009,6 +1001,19 @@
 /obj/item/electronics/ship_missile_tracking,
 /obj/item/electronics/ship_missile_tracking,
 /obj/item/electronics/ship_missile_tracking,
+/obj/item/bombcore/missile/heavy,
+/obj/item/bombcore/missile/heavy,
+/obj/item/bombcore/missile/heavy,
+/obj/item/bombcore/missile/heavy,
+/obj/item/bombcore/missile/heavy,
+/obj/item/bombcore/missile/heavy,
+/obj/item/bombcore/missile/heavy,
+/obj/item/bombcore/missile/heavy,
+/obj/item/bombcore/missile/heavy,
+/obj/item/bombcore/missile/heavy,
+/obj/item/bombcore/missile/heavy,
+/obj/item/bombcore/missile/heavy,
+/obj/item/bombcore/missile/heavy,
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/scarab/bridge/a)
 "zG" = (
@@ -1278,6 +1283,7 @@
 /obj/effect/turf_decal/bot_red,
 /obj/machinery/digital_clock/directional/west,
 /obj/machinery/ship_combat/shield_generator,
+/obj/machinery/computer/bank_machine,
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/scarab/bridge/a)
 "It" = (
@@ -1836,9 +1842,11 @@
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
 	dir = 8
 	},
+/obj/machinery/computer/voidcrew_cargo,
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/scarab/bridge/a)
 "YS" = (
+/obj/machinery/ore_silo,
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/scarab/bridge/a)
 "YV" = (

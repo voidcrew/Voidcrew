@@ -407,9 +407,13 @@
 
 /obj/machinery/ship_combat/cloak_device/proc/on_hazard_triggered(datum/source, obj/structure/overmap/event/hazard)
 	SIGNAL_HANDLER
-	if(cloak_active)
-		// Entering a hazard breaks cloak!
-		INVOKE_ASYNC(src, PROC_REF(emergency_decloak), "Hazard interference detected")
+	if(!cloak_active)
+		return
+	// Nebulas don't interfere with cloaking - they actually help conceal ships
+	if(istype(hazard, /obj/structure/overmap/event/nebula))
+		return
+	// Other hazards break cloak
+	INVOKE_ASYNC(src, PROC_REF(emergency_decloak), "Hazard interference detected")
 
 /obj/machinery/ship_combat/cloak_device/proc/emergency_decloak(reason = "Unknown interference")
 	visible_message(span_danger("[src] overloads! [reason] - emergency decloak!"))
