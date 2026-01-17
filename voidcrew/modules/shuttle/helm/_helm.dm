@@ -139,11 +139,17 @@
 	npc_ship.chat_color = null
 
 	// Convert ship areas to require power (NPC ships don't need power, player ships do)
+	// Also convert any pirate turrets to be player-friendly
 	if(npc_ship.shuttle?.shuttle_areas)
 		for(var/area/shuttle_area as anything in npc_ship.shuttle.shuttle_areas)
 			shuttle_area.requires_power = TRUE
 			// Update all machinery in the area to respect power requirements
 			shuttle_area.power_change()
+			// Turn off pirate turrets - syndicate-based turrets can't be made safe
+			// (their assess_perp always returns 10), but players can deconstruct
+			// and rebuild them as standard turrets
+			for(var/obj/machinery/porta_turret/syndicate/turret in shuttle_area)
+				turret.toggle_on(FALSE)
 
 	// Reset ship movement state (NPC ships have different movement mechanics)
 	npc_ship.speed = list(0, 0)
@@ -164,6 +170,13 @@
 			npc_ship.ship_team.name = npc_ship.name
 			npc_ship.ship_team.ship = npc_ship
 		npc_ship.ship_team.add_member(claimer.mind)
+
+		// Set the claimer as captain (for NPC ships without job_slots)
+		npc_ship.claimed_captain = claimer.mind
+
+		// Grant the Captain Management action button
+		var/datum/action/innate/captain_management/captain_action = new(claimer, npc_ship)
+		captain_action.Grant(claimer)
 
 	// Log the claim
 	log_game("[key_name(claimer)] claimed NPC ship [npc_ship.name] at [AREACOORD(npc_ship)]")
@@ -352,27 +365,6 @@
 		data["zone_transition_remaining"] = 0
 		data["zone_transition_target"] = null
 
-	// Radiation shielding info
-	data["radiation_shielding_level"] = current_ship.radiation_shielding_level
-	data["radiation_shielding_name"] = current_ship.get_shielding_name(current_ship.radiation_shielding_level)
-
-	// Current zone radiation status
-	if(SSovermap_zones?.zones_active)
-		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(T)
-		if(zone)
-			var/radiation_level = ZONE_RADIATION_LEVEL(zone.zone_type)
-			data["zone_radiation_level"] = radiation_level
-			data["zone_radiation_protected"] = current_ship.is_protected_from_radiation(radiation_level)
-			data["zone_radiation_warning"] = radiation_level > ZONE_RADIATION_NONE && !current_ship.is_protected_from_radiation(radiation_level)
-		else
-			data["zone_radiation_level"] = ZONE_RADIATION_NONE
-			data["zone_radiation_protected"] = TRUE
-			data["zone_radiation_warning"] = FALSE
-	else
-		data["zone_radiation_level"] = ZONE_RADIATION_NONE
-		data["zone_radiation_protected"] = TRUE
-		data["zone_radiation_warning"] = FALSE
-
 	for(var/obj/machinery/power/shuttle_engine/ship/E in current_ship.shuttle.engine_list)
 		var/list/engine_data
 		if(!E.thruster_active)
@@ -459,7 +451,7 @@
 	return TRUE
 
 /obj/machinery/computer/helm/proc/cancel_jump()
-	current_ship?.ship_notify("Pylon Disengaged. Jump cancelled.", "BLUESPACE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
+	current_ship?.ship_notify("Pylon Disengaged. Jump cancelled.", "BLUESPACE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg')
 	calibrating = FALSE
 	deltimer(jump_timer)
 

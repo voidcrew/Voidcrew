@@ -6,15 +6,13 @@ The zone system divides the overmap into concentric rings based on distance from
 
 ## Zone Types
 
-| Zone | Color | Weapons | Interdiction | Radiation | Description |
-|------|-------|---------|--------------|-----------|-------------|
-| **Neutral** | `#88ff88` | Disabled | Disabled | None | Safe space - no PvP allowed |
-| **Contested** | `#ffff88` | Disabled | **Allowed** | Moderate | Caution - boarding/piracy permitted, but no ship weapons |
-| **Lawless** | `#ff8888` | **Allowed** | **Allowed** | Heavy | Dangerous - full PvP, kill on sight |
+| Zone | Color | Weapons | Interdiction | Description |
+|------|-------|---------|--------------|-------------|
+| **Neutral** | `#88ff88` | Disabled | Disabled | Safe space - no PvP allowed |
+| **Contested** | `#ffff88` | Disabled | **Allowed** | Caution - boarding/piracy permitted, but no ship weapons |
+| **Lawless** | `#ff8888` | **Allowed** | **Allowed** | Dangerous - full PvP, kill on sight |
 
 **Targeting Rules:** Ships can only target each other if both are in Contested or Lawless zones. Neutral zone is a safe zone where targeting is disabled.
-
-**Radiation:** Zones closer to the sun have higher solar radiation. Ships need appropriate shielding to protect crew.
 
 ## How It Works
 
@@ -126,52 +124,6 @@ Zone detection happens in `burn_engines()` - when thrusting toward a different z
 |--------|---------|------|-------------|
 | `COMSIG_TURF_ZONE_CHANGED` | Zone datum | `(old_type, new_type)` | Turf's zone changed |
 | `COMSIG_SHIP_ZONE_CHANGED` | Zone controller | `(old_type, new_type)` | Ship entered different zone |
-| `COMSIG_SHIP_SHIELDING_CHANGED` | Ship | `(old_level, new_level)` | Ship's radiation shielding upgraded |
-
-## Solar Radiation System
-
-Zones closer to the sun expose crew to solar radiation. Ships need research-unlocked shielding to protect their crew.
-
-### Radiation Levels
-| Zone | Radiation Level | Required Shielding |
-|------|-----------------|-------------------|
-| Neutral | None | None |
-| Contested | Moderate (1 hit/tick) | Standard Shielding |
-| Lawless | Heavy (2 hits/tick) | Heavy Shielding |
-
-Note: Standard Shielding provides partial protection in Lawless zone (reduces from 2 hits to 1 hit).
-
-### Shielding Research
-Shielding is unlocked via the techweb research tree:
-
-1. **Standard Radiation Shielding** (Tier 2, 80 pts)
-   - Requires: Basic Shuttle Research
-   - Protects crew from Contested zone radiation
-   - Reduces Lawless zone radiation by half
-
-2. **Heavy Radiation Shielding** (Tier 4, 160 pts)
-   - Requires: Standard Radiation Shielding
-   - Protects crew from Contested and Lawless zone radiation
-
-### Auto-Upgrade System
-When shielding research is completed, ALL ships linked to that techweb automatically receive the upgrade:
-- R&D servers on ships auto-link when a disk is inserted
-- Ships announce when shielding upgrades are applied
-- Helm console shows current shielding level and radiation status
-
-### Radiation Effects
-Unshielded crew in radiation zones:
-- Receive the `solar_radiation_exposure` component
-- Take radiation damage every 5 seconds
-- Can be protected by wearing radiation-resistant clothing (radsuits)
-- Radiation stops when ship leaves zone or gains shielding
-
-### Key Files
-- `voidcrew/_DEFINES/overmap_zones.dm` - Radiation constants
-- `voidcrew/modules/research/radiation_shielding_research.dm` - Research nodes
-- `voidcrew/modules/overmap/code/modules/overmap/ship_radiation.dm` - Ship shielding procs
-- `voidcrew/modules/overmap/code/modules/overmap/zones/zone_radiation.dm` - Radiation processing
-- `voidcrew/modules/overmap/code/modules/overmap/zones/solar_radiation_component.dm` - Exposure component
 
 ## Future Hooks
 

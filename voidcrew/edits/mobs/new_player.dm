@@ -16,7 +16,8 @@
 			continue
 		if(length(active_ships.shuttle.spawn_points) <= 0 || !active_ships.joining_allowed || istype(active_ships, /obj/structure/overmap/ship/npc))
 			continue
-		shuttle_choices["[active_ships.name] - ([active_ships.source_template?.short_name || "Unknown Class"])"] = active_ships
+		var/crew_count = length(active_ships.manifest)
+		shuttle_choices["[active_ships.name] - ([active_ships.source_template?.short_name || "Unknown Class"]) ([crew_count] crew)"] = active_ships
 
 	var/used_name = client.prefs.read_preference(/datum/preference/name/real_name)
 	var/selected_key = tgui_input_list(src, "Select ship to spawn on.", "Welcome, [used_name].", shuttle_choices)

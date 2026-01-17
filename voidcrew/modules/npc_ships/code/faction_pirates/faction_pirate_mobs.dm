@@ -11,11 +11,18 @@
 	faction = list(FACTION_PIRATE)
 	unsuitable_atmos_damage = 0
 	minimum_survivable_temperature = 0
-	loot = null // NPC ship crew don't drop loot
 
 /mob/living/basic/trooper/pirate/faction/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_SPACEWALK, INNATE_TRAIT)
+	// Drop held weapons on death
+	var/list/weapon_drops = list()
+	if(r_hand)
+		weapon_drops += r_hand
+	if(l_hand)
+		weapon_drops += l_hand
+	if(length(weapon_drops))
+		AddElement(/datum/element/death_drops, weapon_drops)
 
 // ==================== SILVERSCALE (Aristocratic Lizards) ====================
 

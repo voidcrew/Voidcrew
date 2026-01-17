@@ -57,6 +57,8 @@
 	COOLDOWN_DECLARE(invite_cooldown)
 	///List of pending crew invites: ckey -> invite_time
 	var/list/pending_invites = list()
+	/// Mind of whoever claimed this ship (for NPC ships without job_slots)
+	var/datum/mind/claimed_captain
 
 	///Timer between job managing delays
 	COOLDOWN_DECLARE(job_slot_adjustment_cooldown)
@@ -182,12 +184,6 @@
 	var/turf/zone_transition_target
 	/// When the zone transition started (for progress calculation)
 	var/zone_transition_start_time
-
-	// ===== RADIATION SHIELDING =====
-	/// Current radiation shielding level (SHIP_SHIELDING_NONE, STANDARD, or HEAVY)
-	var/radiation_shielding_level = SHIP_SHIELDING_NONE
-	/// Linked techweb for radiation shielding auto-upgrades
-	var/datum/techweb/linked_techweb
 
 	/// Cooldown preventing undocking shortly after docking
 	COOLDOWN_DECLARE(undock_cooldown)
@@ -696,13 +692,18 @@
 
 /**
  * Check if a mob is the captain of this ship.
- * Returns TRUE if the mob holds the officer role for this ship.
+ * Returns TRUE if the mob holds the officer role for this ship,
+ * or if they are the claimed_captain (for NPC ships without job_slots).
  */
 /obj/structure/overmap/ship/proc/is_ship_captain(mob/living/check_mob)
 	if(!check_mob?.mind)
 		return FALSE
 	if(!(check_mob.mind in ship_team?.members))
 		return FALSE
+
+	// Check if this is the claimed captain (for NPC ships without job slots)
+	if(claimed_captain && check_mob.mind == claimed_captain)
+		return TRUE
 
 	var/datum/job/captain_job = get_captain_job()
 	if(!captain_job)
@@ -759,6 +760,13 @@
 
 	// Add claimer to ship team
 	ship_team.add_member(claimer.mind)
+
+	// Set the claimer as captain
+	claimed_captain = claimer.mind
+
+	// Grant the Captain Management action button
+	var/datum/action/innate/captain_management/captain_action = new(claimer, src)
+	captain_action.Grant(claimer)
 
 	// Announce
 	ship_notify("NOTICE: Command authorization restored. New commanding officer: [claimer.real_name].", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')

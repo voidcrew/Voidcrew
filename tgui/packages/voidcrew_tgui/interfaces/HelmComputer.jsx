@@ -57,6 +57,7 @@ export const HelmComputer = (props) => {
                   <ByondUi
                     key={`helm-map-${mapRefreshKey}`}
                     className="CameraConsole__map"
+                    width="100%"
                     height="610px"
                     params={{
                       id: mapRef,
@@ -205,20 +206,7 @@ const ZoneSection = () => {
     zone_transition_progress = 0,
     zone_transition_remaining = 0,
     zone_transition_target = null,
-    // Radiation data
-    radiation_shielding_name = 'None',
-    zone_radiation_level = 0,
-    zone_radiation_protected = true,
-    zone_radiation_warning = false,
   } = data;
-
-  // Radiation level names
-  const getRadiationLevelName = (level) => {
-    if (level === 0) return 'None';
-    if (level === 1) return 'Moderate';
-    if (level === 2) return 'Heavy';
-    return 'Unknown';
-  };
 
   return (
     <Section
@@ -242,11 +230,6 @@ const ZoneSection = () => {
           </ProgressBar>
         </NoticeBox>
       )}
-      {!!zone_radiation_warning && (
-        <NoticeBox danger>
-          WARNING: Solar radiation exposure! Crew at risk!
-        </NoticeBox>
-      )}
       <LabeledList>
         <LabeledList.Item label="Weapons">
           <span style={{ color: weapons_allowed ? '#4f4' : '#f44' }}>
@@ -256,22 +239,6 @@ const ZoneSection = () => {
         <LabeledList.Item label="Interdiction">
           <span style={{ color: interdiction_allowed ? '#ff4' : '#4f4' }}>
             {interdiction_allowed ? 'Allowed' : 'Prohibited'}
-          </span>
-        </LabeledList.Item>
-        <LabeledList.Item label="Radiation">
-          <span style={{
-            color: zone_radiation_level === 0 ? '#4f4' :
-              (zone_radiation_protected ? '#ff4' : '#f44')
-          }}>
-            {getRadiationLevelName(zone_radiation_level)}
-            {zone_radiation_level > 0 && (zone_radiation_protected ? ' (Shielded)' : ' (EXPOSED)')}
-          </span>
-        </LabeledList.Item>
-        <LabeledList.Item label="Shielding">
-          <span style={{
-            color: radiation_shielding_name === 'No Shielding' ? '#888' : '#4f4'
-          }}>
-            {radiation_shielding_name}
           </span>
         </LabeledList.Item>
       </LabeledList>

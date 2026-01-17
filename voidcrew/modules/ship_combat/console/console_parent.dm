@@ -84,6 +84,10 @@
 	console_ambience = new(src, get_console_ambience_sounds())
 	console_ambience.start()
 
+/obj/machinery/computer/camera_advanced/ship_combat/LateInitialize()
+	. = ..()
+	attempt_ship_connection()
+
 /obj/machinery/computer/camera_advanced/ship_combat/Destroy()
 	QDEL_NULL(console_ambience)
 	cancel_targeting()
