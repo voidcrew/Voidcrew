@@ -1,12 +1,8 @@
-# Willardstation
+# Voidcrew
 
-## HackMD
+A doctor frantically stitches up their Captain as missiles bombard the outer hull. Their shields have gone down, and it's looking grim. They're the only ones on the ship, and they've been targeted by pirates. Another missile sneaks through the destroyed hull, but this one is different. It's carrying hellfoam. The doctor and the captain are near instantly disintegrated.
 
-Our HackMD page is here https://hackmd.io/4xy7l9v4RX2a-gD9aWiNTw?view
-Anyone can contribute to the non-maintainer section, but please leave the maintainer section to the maintainers. It's also for maintainer-approved ideas.
+Another day in the Void
 
-## What we are
+This is Voidcrew. A shuttle based server that allows you to explore the outer edges of space with your crew. Land on planets, asteroids and ruins in search of new treasure. Survey the cosmos while protecting your ship from the dangers that wait. Trade, kill, and team up with other ships in order to survive. The void is unforgiving, and you will die. But you know what say, it's about the friends you made along the way.
 
-We are an attempt to rebase Voidcrew onto current TG, we are not a new server. If we manage to complete all goals we've set out to do, we will try to move voidcrew onto this version of the codebase.
-
-The name was chosen ironically.
