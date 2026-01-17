@@ -11,6 +11,7 @@ import random
 import json
 from flask import Flask, request, send_file, abort, make_response
 tts_sample_rate = 40000 # Set to 40000 if you're using RVC, or whatever sample rate your endpoint is going to send the audio in.
+tts_backend_url = os.getenv("TTS_BACKEND_URL", "http://127.0.0.1:5003")
 app = Flask(__name__)
 segmenter = pysbd.Segmenter(language="en", clean=True)
 radio_starts = ["./on1.wav", "./on2.wav"]
@@ -30,7 +31,7 @@ def text_to_speech_handler(endpoint, voice, text, filter_complex, pitch, special
 	final_audio = pydub.AudioSegment.empty()
 
 	for sentence in segmenter.segment(text):
-		response = requests.get(f"http://127.0.0.1:5003/" + endpoint, json={ 'text': sentence, 'voice': voice, 'pitch': pitch })
+		response = requests.get(f"{tts_backend_url}/" + endpoint, json={ 'text': sentence, 'voice': voice, 'pitch': pitch })
 		if response.status_code != 200:
 			abort(500)
 		sentence_audio = pydub.AudioSegment.from_file(io.BytesIO(response.content), "wav")
@@ -60,8 +61,12 @@ def text_to_speech_handler(endpoint, voice, text, filter_complex, pitch, special
 		radio_audio.export(new_data_bytes, format="ogg")
 		export_audio = io.BytesIO(new_data_bytes.getvalue())
 	matched_length = re.search(r"time=([0-9:\\.]+)", ffmpeg_metadata_output)
-	hh_mm_ss = matched_length.group(1)
-	length = hhmmss_to_seconds(hh_mm_ss)
+	if matched_length:
+		hh_mm_ss = matched_length.group(1)
+		length = hhmmss_to_seconds(hh_mm_ss)
+	else:
+		print(f"WARNING: Could not parse audio length from ffmpeg output")
+		length = 1.0  # Default fallback
 
 	response = send_file(export_audio, as_attachment=True, download_name='identifier.ogg', mimetype="audio/ogg")
 	response.headers['audio-length'] = length
@@ -108,7 +113,7 @@ def voices_list():
 	if authorization_token != request.headers.get("Authorization", ""):
 		abort(401)
 
-	response = requests.get(f"http://127.0.0.1:5003/tts-voices")
+	response = requests.get(f"{tts_backend_url}/tts-voices")
 	return response.content
 
 @app.route("/health-check")
@@ -121,7 +126,7 @@ def pitch_available():
 	if authorization_token != request.headers.get("Authorization", ""):
 		abort(401)
 
-	response = requests.get(f"http://127.0.0.1:5003/pitch-available")
+	response = requests.get(f"{tts_backend_url}/pitch-available")
 	if response.status_code != 200:
 		abort(500)
 	return make_response("Pitch available", 200)

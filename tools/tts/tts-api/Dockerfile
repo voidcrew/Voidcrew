@@ -24,6 +24,7 @@ RUN pip install Flask &&\
 	pip install waitress &&\
 	pip install pysbd &&\
 	pip install pydub &&\
+	pip install requests &&\
 	pip cache purge
 
 COPY . /root

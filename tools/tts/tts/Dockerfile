@@ -2,7 +2,7 @@
 FROM debian:bullseye-slim
 
 # install required packages
-RUN apt-get update && apt-get upgrade -y && apt-get install -y wget curl espeak-ng &&\
+RUN apt-get update && apt-get upgrade -y && apt-get install -y wget curl espeak-ng ffmpeg &&\
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

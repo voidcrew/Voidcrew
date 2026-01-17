@@ -34,7 +34,7 @@ export const HelmComputer = (props) => {
 
   return (
     <Window width={900} height={900} resizable>
-      <Window.Content>
+      <Window.Content scrollable>
         <Stack vertical>
           <Stack.Item textAlign={'center'}>
             <SharedContent />

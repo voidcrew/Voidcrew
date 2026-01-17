@@ -47,6 +47,8 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 	var/list/unlocks_cache = list()
 	/// Cache for upgrade unlocks by ckey
 	var/list/upgrade_unlocks_cache = list()
+	/// Cache for theme unlocks by ckey
+	var/list/theme_unlocks_cache = list()
 	/// Last cache update time by ckey
 	var/list/cache_times = list()
 	/// Cache validity duration in deciseconds (5 minutes)
@@ -547,6 +549,161 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 
 	return ship_unlocks
 
+// =============================================================================
+// THEME UNLOCKS
+// =============================================================================
+
+/**
+ * Check if a ship theme is unlocked for a player
+ * Default themes are always considered unlocked.
+ *
+ * @param ckey - The player's ckey
+ * @param ship_template - Ship template path (e.g., "/datum/map_template/shuttle/voidcrew/scarab")
+ * @param theme_id - Theme ID (e.g., "medical")
+ * @return TRUE if unlocked, FALSE otherwise
+ */
+/datum/ship_economy_db/proc/is_theme_unlocked(ckey, ship_template, theme_id)
+	if(!ckey || !ship_template || !theme_id)
+		return FALSE
+
+	// Check if this theme is marked as default (always unlocked)
+	var/list/themes = get_themes_for_ship(text2path(ship_template))
+	if(themes && themes[theme_id])
+		var/datum/ship_theme/theme = themes[theme_id]
+		if(theme.is_default)
+			return TRUE
+
+	ckey = ckey(ckey) // Normalize ckey
+
+	// Check cache
+	if(is_cache_valid(ckey, "theme_unlocks"))
+		var/list/unlocks = theme_unlocks_cache[ckey]
+		var/unlock_key = "[ship_template]|[theme_id]"
+		return (unlock_key in unlocks)
+
+	if(!SSdbcore.IsConnected())
+		return FALSE
+
+	var/datum/db_query/query = SSdbcore.NewQuery(
+		"SELECT 1 FROM [format_table_name("player_theme_unlocks")] \
+		WHERE ckey = :ckey AND ship_template = :ship_template AND theme_id = :theme_id",
+		list("ckey" = ckey, "ship_template" = ship_template, "theme_id" = theme_id)
+	)
+
+	var/unlocked = FALSE
+	if(query.Execute() && query.NextRow())
+		unlocked = TRUE
+
+	qdel(query)
+
+	return unlocked
+
+/**
+ * Unlock a ship theme for a player (permanent)
+ *
+ * @param ckey - The player's ckey
+ * @param ship_template - Ship template path
+ * @param theme_id - Theme ID
+ * @return TRUE if successful, FALSE otherwise
+ */
+/datum/ship_economy_db/proc/unlock_theme(ckey, ship_template, theme_id)
+	if(!ckey || !ship_template || !theme_id)
+		return FALSE
+
+	ckey = ckey(ckey) // Normalize ckey
+
+	if(!SSdbcore.IsConnected())
+		return FALSE
+
+	// Check if already unlocked
+	if(is_theme_unlocked(ckey, ship_template, theme_id))
+		return TRUE
+
+	var/datum/db_query/query = SSdbcore.NewQuery(
+		"INSERT INTO [format_table_name("player_theme_unlocks")] (ckey, ship_template, theme_id) \
+		VALUES (:ckey, :ship_template, :theme_id) \
+		ON DUPLICATE KEY UPDATE theme_id = theme_id",
+		list("ckey" = ckey, "ship_template" = ship_template, "theme_id" = theme_id)
+	)
+
+	var/success = query.Execute()
+	qdel(query)
+
+	if(success)
+		// Invalidate cache
+		invalidate_cache(ckey, "theme_unlocks")
+
+		// Log unlock
+		log_game("SHIP_ECONOMY: [ckey] unlocked theme '[theme_id]' for ship [ship_template]")
+
+	return success
+
+/**
+ * Get list of all unlocked themes for a player
+ *
+ * @param ckey - The player's ckey
+ * @return List of "ship_template|theme_id" keys
+ */
+/datum/ship_economy_db/proc/get_unlocked_themes(ckey)
+	if(!ckey)
+		return list()
+
+	ckey = ckey(ckey) // Normalize ckey
+
+	// Check cache
+	if(is_cache_valid(ckey, "theme_unlocks"))
+		return theme_unlocks_cache[ckey]?.Copy()
+
+	if(!SSdbcore.IsConnected())
+		return list()
+
+	var/list/unlocks = list()
+
+	var/datum/db_query/query = SSdbcore.NewQuery(
+		"SELECT ship_template, theme_id FROM [format_table_name("player_theme_unlocks")] WHERE ckey = :ckey",
+		list("ckey" = ckey)
+	)
+
+	if(!query.Execute())
+		qdel(query)
+		return unlocks
+
+	while(query.NextRow())
+		var/ship_template = query.item[1]
+		var/theme_id_val = query.item[2]
+		unlocks += "[ship_template]|[theme_id_val]"
+
+	qdel(query)
+
+	// Update cache
+	theme_unlocks_cache[ckey] = unlocks.Copy()
+	update_cache_time(ckey, "theme_unlocks")
+
+	return unlocks
+
+/**
+ * Get list of unlocked theme IDs for a specific ship template
+ *
+ * @param ckey - The player's ckey
+ * @param ship_template - Ship template path to filter by
+ * @return List of theme_id strings
+ */
+/datum/ship_economy_db/proc/get_unlocked_themes_for_ship(ckey, ship_template)
+	if(!ckey || !ship_template)
+		return list()
+
+	ckey = ckey(ckey) // Normalize ckey
+
+	var/list/all_unlocks = get_unlocked_themes(ckey)
+	var/list/ship_unlocks = list()
+
+	for(var/unlock_key in all_unlocks)
+		var/list/parts = splittext(unlock_key, "|")
+		if(length(parts) >= 2 && parts[1] == "[ship_template]")
+			ship_unlocks += parts[2]
+
+	return ship_unlocks
+
 /**
  * Queue a pending extraction for retry
  * Used when extraction fails due to database issues
@@ -730,6 +887,7 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 		parts_cache -= ckey
 		unlocks_cache -= ckey
 		upgrade_unlocks_cache -= ckey
+		theme_unlocks_cache -= ckey
 		cache_times -= ckey
 	else
 		// Invalidate specific cache type
@@ -742,6 +900,8 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 				unlocks_cache -= ckey
 			if("upgrade_unlocks")
 				upgrade_unlocks_cache -= ckey
+			if("theme_unlocks")
+				theme_unlocks_cache -= ckey
 
 		if(cache_times[ckey])
 			cache_times[ckey] -= cache_type
@@ -754,5 +914,6 @@ GLOBAL_DATUM_INIT(ship_economy_db, /datum/ship_economy_db, new)
 	parts_cache.Cut()
 	unlocks_cache.Cut()
 	upgrade_unlocks_cache.Cut()
+	theme_unlocks_cache.Cut()
 	cache_times.Cut()
 	log_admin("SHIP_ECONOMY: All caches cleared")

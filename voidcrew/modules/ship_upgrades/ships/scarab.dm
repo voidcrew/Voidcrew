@@ -1,5 +1,7 @@
 /datum/ship_upgrade_module/scarab
 	for_ship = /datum/map_template/shuttle/voidcrew/scarab
+	// All Scarab modules are shared across all three themes
+	for_theme = list("medical", "syndicate", "mining")
 
 /datum/ship_upgrade_module/scarab/med_basic
 	id = "scarab_med_basic"
@@ -88,3 +90,173 @@
 	slot = "scarab_cargo"
 	map_file = "scarab/scarab_cargo_med.dmm"
 	part_cost = list(PART_CLASS_MISC = 1)
+
+// ========== SCARAB THEMES ==========
+
+/datum/ship_theme/scarab
+	for_ship = /datum/map_template/shuttle/voidcrew/scarab
+
+/datum/ship_theme/scarab/medical
+	id = "medical"
+	name = "Hospital Variant"
+	desc = "Medical-focused configuration with a Chief Medical Officer and dedicated doctors. \
+		Designed for emergency response and patient care."
+	is_default = TRUE
+	template_suffix = "scarab_a"
+	upgrade_slot_ids = list(
+		"scarab_med",
+		"scarab_engineering",
+		"scarab_common",
+		"scarab_cargo",
+	)
+	job_slots = list(
+		list(
+			name = "Chief Medical Officer",
+			officer = TRUE,
+			outfit = /datum/outfit/job/cmo,
+			category = JOB_CAT_COMMAND,
+			slots = 1,
+		),
+		list(
+			name = "Medical Doctor",
+			outfit = /datum/outfit/job/doctor,
+			category = JOB_CAT_MEDICAL,
+			slots = 2,
+		),
+		list(
+			name = "Ship Engineer",
+			outfit = /datum/outfit/job/engineer,
+			category = JOB_CAT_ENGINEERING,
+			slots = 1,
+		),
+		list(
+			name = "Atmospheric Technician",
+			outfit = /datum/outfit/job/atmos,
+			category = JOB_CAT_ENGINEERING,
+			slots = 1,
+		),
+		list(
+			name = "Resource Acquisition Specialist",
+			outfit = /datum/outfit/job/miner,
+			category = JOB_CAT_CARGO,
+			slots = 1,
+		),
+		list(
+			name = "Resident",
+			outfit = /datum/outfit/job/assistant/resident/a,
+			category = JOB_CAT_ASSISTANT,
+			slots = 2,
+		),
+	)
+
+/datum/ship_theme/scarab/syndicate
+	id = "syndicate"
+	name = "Reinforced Variant"
+	desc = "Chemistry-focused variant with reinforced hull. \
+		Designed for pharmaceutical operations and hazardous material handling."
+	part_cost = list(PART_CLASS_SCIENCE = 1)
+	template_suffix = "scarab_b"
+	upgrade_slot_ids = list(
+		"scarab_med",
+		"scarab_engineering",
+		"scarab_common",
+		"scarab_cargo",
+	)
+	job_slots = list(
+		list(
+			name = "Chief Pharmacist Officer",
+			officer = TRUE,
+			outfit = /datum/outfit/job/cmo,
+			category = JOB_CAT_COMMAND,
+			slots = 1,
+		),
+		list(
+			name = "Pharmacist",
+			outfit = /datum/outfit/job/chemist,
+			category = JOB_CAT_MEDICAL,
+			slots = 1,
+		),
+		list(
+			name = "Medical Doctor",
+			outfit = /datum/outfit/job/doctor,
+			category = JOB_CAT_MEDICAL,
+			slots = 1,
+		),
+		list(
+			name = "Ship Engineer",
+			outfit = /datum/outfit/job/engineer,
+			category = JOB_CAT_ENGINEERING,
+			slots = 1,
+		),
+		list(
+			name = "Atmospheric Technician",
+			outfit = /datum/outfit/job/atmos,
+			category = JOB_CAT_ENGINEERING,
+			slots = 1,
+		),
+		list(
+			name = "Resource Acquisition Specialist",
+			outfit = /datum/outfit/job/miner,
+			category = JOB_CAT_CARGO,
+			slots = 1,
+		),
+		list(
+			name = "Resident",
+			outfit = /datum/outfit/job/assistant/resident/b,
+			category = JOB_CAT_ASSISTANT,
+			slots = 2,
+		),
+	)
+
+/datum/ship_theme/scarab/mining
+	id = "mining"
+	name = "Security Variant"
+	desc = "Patrol-focused variant with security crew. \
+		Designed for sector patrol and law enforcement operations."
+	part_cost = list(PART_CLASS_COMBAT = 1)
+	template_suffix = "scarab_c"
+	upgrade_slot_ids = list(
+		"scarab_med",
+		"scarab_engineering",
+		"scarab_common",
+		"scarab_cargo",
+	)
+	job_slots = list(
+		list(
+			name = "Captain",
+			officer = TRUE,
+			outfit = /datum/outfit/job/captain,
+			category = JOB_CAT_COMMAND,
+			slots = 1,
+		),
+		list(
+			name = "Medical Officer",
+			outfit = /datum/outfit/job/doctor,
+			category = JOB_CAT_MEDICAL,
+			slots = 1,
+		),
+		list(
+			name = "Engineering Officer",
+			outfit = /datum/outfit/job/engineer,
+			category = JOB_CAT_ENGINEERING,
+			slots = 1,
+		),
+		list(
+			name = "Resource Acquisition Specialist",
+			outfit = /datum/outfit/job/miner,
+			category = JOB_CAT_CARGO,
+			slots = 1,
+		),
+		list(
+			name = "Security Officer",
+			outfit = /datum/outfit/job/security,
+			category = JOB_CAT_ASSISTANT,
+			slots = 2,
+		),
+		list(
+			name = "Assistant",
+			outfit = /datum/outfit/job/assistant/resident/c,
+			category = JOB_CAT_ASSISTANT,
+			slots = 2,
+		),
+	)
