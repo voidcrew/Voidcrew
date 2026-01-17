@@ -50,9 +50,9 @@
 
 /// Which voice pack does the player want to use for barks
 /datum/preference/choiced/voice_pack
-	category = PREFERENCE_CATEGORY_SECONDARY_FEATURES
 	savefile_identifier = PREFERENCE_CHARACTER
 	savefile_key = "voice_pack"
+	category = PREFERENCE_CATEGORY_NON_CONTEXTUAL
 
 /datum/preference/choiced/voice_pack/compile_ui_data(mob/user, value)
 	var/datum/voice_pack/voicepack = GLOB.voice_pack_list[value]
@@ -84,9 +84,9 @@
 */
 
 /datum/preference/numeric/bark_speech_speed
-	category = PREFERENCE_CATEGORY_SECONDARY_FEATURES
 	savefile_identifier = PREFERENCE_CHARACTER
 	savefile_key = "bark_speech_speed"
+	category = PREFERENCE_CATEGORY_NON_CONTEXTUAL
 	minimum = VOICE_DEFAULT_MINSPEED
 	maximum = VOICE_DEFAULT_MAXSPEED
 	step = 0.01
@@ -102,9 +102,9 @@
 */
 
 /datum/preference/numeric/bark_speech_pitch
-	category = PREFERENCE_CATEGORY_SECONDARY_FEATURES
 	savefile_identifier = PREFERENCE_CHARACTER
 	savefile_key = "bark_speech_pitch"
+	category = PREFERENCE_CATEGORY_NON_CONTEXTUAL
 	minimum = VOICE_DEFAULT_MINPITCH
 	maximum = VOICE_DEFAULT_MAXPITCH
 	step = 0.01
@@ -120,9 +120,9 @@
 */
 
 /datum/preference/numeric/bark_pitch_range
-	category = PREFERENCE_CATEGORY_SECONDARY_FEATURES
 	savefile_identifier = PREFERENCE_CHARACTER
 	savefile_key = "bark_pitch_range"
+	category = PREFERENCE_CATEGORY_NON_CONTEXTUAL
 	minimum = VOICE_DEFAULT_MINVARY
 	maximum = VOICE_DEFAULT_MAXVARY
 	step = 0.01
