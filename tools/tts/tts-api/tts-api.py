@@ -13,6 +13,15 @@ from flask import Flask, request, send_file, abort, make_response
 tts_sample_rate = 40000 # Set to 40000 if you're using RVC, or whatever sample rate your endpoint is going to send the audio in.
 tts_backend_url = os.getenv("TTS_BACKEND_URL", "http://127.0.0.1:5003")
 app = Flask(__name__)
+
+# Create clean environment for ffmpeg (without conda library path interference)
+def get_clean_env():
+	env = os.environ.copy()
+	# Remove conda library paths that interfere with system ffmpeg
+	env.pop('LD_LIBRARY_PATH', None)
+	return env
+
+ffmpeg_env = get_clean_env()
 segmenter = pysbd.Segmenter(language="en", clean=True)
 radio_starts = ["./on1.wav", "./on2.wav"]
 radio_ends = ["./off1.wav", "./off2.wav", "./off3.wav", "./off4.wav"]
@@ -44,12 +53,12 @@ def text_to_speech_handler(endpoint, voice, text, filter_complex, pitch, special
 	filter_complex = filter_complex.replace("%SAMPLE_RATE%", str(tts_sample_rate))
 	ffmpeg_result = None
 	if filter_complex != "":
-		ffmpeg_result = subprocess.run(["ffmpeg", "-f", "wav", "-i", "pipe:0", "-filter_complex", filter_complex, "-c:a", "libvorbis", "-b:a", "64k", "-f", "ogg", "pipe:1"], input=data_bytes.read(), capture_output = True)
+		ffmpeg_result = subprocess.run(["ffmpeg", "-f", "wav", "-i", "pipe:0", "-filter_complex", filter_complex, "-c:a", "libvorbis", "-b:a", "64k", "-f", "ogg", "pipe:1"], input=data_bytes.read(), capture_output = True, env=ffmpeg_env)
 	else:
 		if "silicon" in special_filters:
-			ffmpeg_result = subprocess.run(["ffmpeg", "-f", "wav", "-i", "pipe:0", "-i", "./SynthImpulse.wav", "-i", "./RoomImpulse.wav", "-filter_complex", "[0] aresample=44100 [re_1]; [re_1] apad=pad_dur=2 [in_1]; [in_1] asplit=2 [in_1_1] [in_1_2]; [in_1_1] [1] afir=dry=10:wet=10 [reverb_1]; [in_1_2] [reverb_1] amix=inputs=2:weights=8 1 [mix_1]; [mix_1] asplit=2 [mix_1_1] [mix_1_2]; [mix_1_1] [2] afir=dry=1:wet=1 [reverb_2]; [mix_1_2] [reverb_2] amix=inputs=2:weights=10 1 [mix_2]; [mix_2] equalizer=f=7710:t=q:w=0.6:g=-6,equalizer=f=33:t=q:w=0.44:g=-10 [out]; [out] alimiter=level_in=1:level_out=1:limit=0.5:attack=5:release=20:level=disabled", "-c:a", "libvorbis", "-b:a", "64k", "-f", "ogg", "pipe:1"], input=data_bytes.read(), capture_output = True)
+			ffmpeg_result = subprocess.run(["ffmpeg", "-f", "wav", "-i", "pipe:0", "-i", "./SynthImpulse.wav", "-i", "./RoomImpulse.wav", "-filter_complex", "[0] aresample=44100 [re_1]; [re_1] apad=pad_dur=2 [in_1]; [in_1] asplit=2 [in_1_1] [in_1_2]; [in_1_1] [1] afir=dry=10:wet=10 [reverb_1]; [in_1_2] [reverb_1] amix=inputs=2:weights=8 1 [mix_1]; [mix_1] asplit=2 [mix_1_1] [mix_1_2]; [mix_1_1] [2] afir=dry=1:wet=1 [reverb_2]; [mix_1_2] [reverb_2] amix=inputs=2:weights=10 1 [mix_2]; [mix_2] equalizer=f=7710:t=q:w=0.6:g=-6,equalizer=f=33:t=q:w=0.44:g=-10 [out]; [out] alimiter=level_in=1:level_out=1:limit=0.5:attack=5:release=20:level=disabled", "-c:a", "libvorbis", "-b:a", "64k", "-f", "ogg", "pipe:1"], input=data_bytes.read(), capture_output = True, env=ffmpeg_env)
 		else:
-			ffmpeg_result = subprocess.run(["ffmpeg", "-f", "wav", "-i", "pipe:0", "-c:a", "libvorbis", "-b:a", "64k", "-f", "ogg", "pipe:1"], input= data_bytes.read(), capture_output = True)
+			ffmpeg_result = subprocess.run(["ffmpeg", "-f", "wav", "-i", "pipe:0", "-c:a", "libvorbis", "-b:a", "64k", "-f", "ogg", "pipe:1"], input= data_bytes.read(), capture_output = True, env=ffmpeg_env)
 	ffmpeg_metadata_output = ffmpeg_result.stderr.decode()
 	print(f"ffmpeg result size: {len(ffmpeg_result.stdout)} stderr = \n{ffmpeg_metadata_output}")
 	export_audio = io.BytesIO(ffmpeg_result.stdout)

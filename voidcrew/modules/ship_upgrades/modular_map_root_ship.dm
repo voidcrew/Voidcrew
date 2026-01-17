@@ -13,6 +13,18 @@
 /obj/modular_map_root/ship_upgrade
 	name = "ship upgrade slot"
 	config_file = "voidcrew/modules/ship_upgrades/ship_upgrades.toml"
+	/// Cached reference to the ship - captured in Initialize before async load_map runs
+	/// This is necessary because SSshuttle.loading_ship gets cleared before INVOKE_ASYNC fires
+	var/obj/structure/overmap/ship/cached_ship
+
+/**
+ * Override Initialize to capture the ship reference BEFORE the async load_map call
+ * The parent class uses INVOKE_ASYNC which means load_map() runs after loading_ship is cleared
+ */
+/obj/modular_map_root/ship_upgrade/Initialize(mapload)
+	// Capture the ship reference NOW, before parent's INVOKE_ASYNC schedules load_map
+	cached_ship = SSshuttle.loading_ship
+	return ..()
 
 /**
  * Override load_map to use ship's upgrade_selections instead of random TOML pick
@@ -27,9 +39,9 @@
 	// Ensure upgrade modules are registered
 	ensure_ship_upgrades_initialized()
 
-	// Find the ship - during map loading, use SSshuttle.loading_ship
-	// After loading, fall back to get_ship_from_atom
-	var/obj/structure/overmap/ship/ship = SSshuttle.loading_ship
+	// Use the cached ship reference (captured in Initialize before async delay)
+	// Fall back to get_ship_from_atom for runtime spawning
+	var/obj/structure/overmap/ship/ship = cached_ship
 	if(!ship)
 		ship = get_ship_from_atom(src)
 
