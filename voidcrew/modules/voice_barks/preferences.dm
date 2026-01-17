@@ -15,8 +15,19 @@
 
 	action_delegations = list(
 		"play_bark" = PROC_REF(play_bark),
+		"open_voice_screen" = PROC_REF(open_voice_screen),
 	)
+	var/datum/voice_screen/voice_screen
 	var/atom/movable/barker
+
+/datum/preference_middleware/bark/proc/open_voice_screen(list/params, mob/user)
+	if(voice_screen)
+		voice_screen.ui_interact(user)
+		return TRUE
+	else
+		voice_screen = new(src)
+		voice_screen.ui_interact(user)
+		return TRUE
 
 /datum/preference_middleware/bark/proc/play_bark(list/params, mob/user)
 	if(!COOLDOWN_FINISHED(src, bark_cooldown))

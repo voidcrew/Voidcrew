@@ -7016,6 +7016,7 @@
 #include "voidcrew\modules\voice_barks\preferences.dm"
 #include "voidcrew\modules\voice_barks\speech_hook.dm"
 #include "voidcrew\modules\voice_barks\voice_packs.dm"
+#include "voidcrew\modules\voice_barks\voice_screen.dm"
 #include "voidcrew\objects\items\blueprints.dm"
 #include "voidcrew\objects\items\cards_ids.dm"
 #include "voidcrew\objects\items\circuitboards\machines\machine_circuitboards.dm"
