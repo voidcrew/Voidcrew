@@ -12,27 +12,6 @@
 	// Only usable if intent system is enabled
 	return !!L.GetComponent(/datum/component/intents)
 
-// Override combat mode keybindings to not fire when intent system is active
-/datum/keybinding/living/enable_combat_mode/can_use(client/user)
-	. = ..()
-	if(!.)
-		return FALSE
-	var/mob/living/L = user.mob
-	// Disable when intent system is active
-	if(L.GetComponent(/datum/component/intents))
-		return FALSE
-	return TRUE
-
-/datum/keybinding/living/disable_combat_mode/can_use(client/user)
-	. = ..()
-	if(!.)
-		return FALSE
-	var/mob/living/L = user.mob
-	// Disable when intent system is active
-	if(L.GetComponent(/datum/component/intents))
-		return FALSE
-	return TRUE
-
 /datum/keybinding/living/intent/help
 	hotkey_keys = list("1")
 	name = "intent_help"

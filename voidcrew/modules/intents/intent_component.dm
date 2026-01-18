@@ -15,6 +15,10 @@
 	set_intent(INTENT_HELP)
 	RegisterSignal(owner, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_attack))
 	RegisterSignal(owner, COMSIG_LIVING_GRAB, PROC_REF(on_grab_attempt))
+	// Intercept combat mode keybinds to prevent them from bypassing intents
+	RegisterSignal(owner, COMSIG_KB_LIVING_TOGGLE_COMBAT_DOWN, PROC_REF(on_toggle_combat))
+	RegisterSignal(owner, COMSIG_KB_LIVING_ENABLE_COMBAT_DOWN, PROC_REF(on_enable_combat))
+	RegisterSignal(owner, COMSIG_KB_LIVING_DISABLE_COMBAT_DOWN, PROC_REF(on_disable_combat))
 
 /datum/component/intents/Destroy()
 	if(intent_hud)
@@ -24,7 +28,13 @@
 /datum/component/intents/UnregisterFromParent()
 	var/mob/living/owner = parent
 	if(owner)
-		UnregisterSignal(owner, list(COMSIG_LIVING_UNARMED_ATTACK, COMSIG_LIVING_GRAB))
+		UnregisterSignal(owner, list(
+			COMSIG_LIVING_UNARMED_ATTACK,
+			COMSIG_LIVING_GRAB,
+			COMSIG_KB_LIVING_TOGGLE_COMBAT_DOWN,
+			COMSIG_KB_LIVING_ENABLE_COMBAT_DOWN,
+			COMSIG_KB_LIVING_DISABLE_COMBAT_DOWN,
+		))
 
 /// Sets the current intent and syncs combat mode
 /datum/component/intents/proc/set_intent(new_intent)
@@ -100,3 +110,21 @@
 	if(!source.Adjacent(target))
 		return
 	source.grab(target)
+
+/// Intercept F key (toggle combat) - cycle intents instead
+/datum/component/intents/proc/on_toggle_combat(mob/living/source)
+	SIGNAL_HANDLER
+	cycle_intent()
+	return COMSIG_KB_ACTIVATED
+
+/// Intercept 4 key (enable combat) - set harm intent
+/datum/component/intents/proc/on_enable_combat(mob/living/source)
+	SIGNAL_HANDLER
+	set_intent(INTENT_HARM)
+	return COMSIG_KB_ACTIVATED
+
+/// Intercept 1 key (disable combat) - set help intent
+/datum/component/intents/proc/on_disable_combat(mob/living/source)
+	SIGNAL_HANDLER
+	set_intent(INTENT_HELP)
+	return COMSIG_KB_ACTIVATED
