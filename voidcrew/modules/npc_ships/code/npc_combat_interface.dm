@@ -353,6 +353,64 @@
 	if(linked_interdictor.interdiction_active || linked_interdictor.interdiction_warming_up)
 		linked_interdictor.cancel_interdiction("Target lost!")
 
+// ========== BOARDING PODS ==========
+
+/**
+ * Fires boarding pods at the target ship, delivering hostile mobs.
+ * Uses the supplypod system for dramatic drop-from-above delivery.
+ * Returns TRUE if at least one pod was launched.
+ *
+ * Arguments:
+ * * target_ship - The ship to board
+ * * pod_count - Number of pods to launch (1-5)
+ * * mob_types - List of mob types to spawn in pods (uses ship's configured types if null)
+ */
+/datum/npc_combat_interface/proc/fire_boarding_pods(obj/structure/overmap/ship/target_ship, pod_count = 1, list/mob_types = null)
+	if(!target_ship || !owner_ship)
+		return FALSE
+
+	// Clamp pod count
+	pod_count = clamp(pod_count, 1, 5)
+
+	// Get mob types to spawn - use ship's configured types if not provided
+	var/list/spawn_types = mob_types
+	if(!spawn_types || !length(spawn_types))
+		var/obj/structure/overmap/ship/npc/pirate/pirate_ship = owner_ship
+		if(istype(pirate_ship))
+			// Use boarding pod specific types, or fall back to crew types
+			if(length(pirate_ship.boarding_pod_mob_types))
+				spawn_types = pirate_ship.boarding_pod_mob_types.Copy()
+			else if(length(pirate_ship.crew_types))
+				spawn_types = pirate_ship.crew_types.Copy()
+
+	if(!spawn_types || !length(spawn_types))
+		return FALSE
+
+	var/pods_launched = 0
+
+	// Launch pods at different locations on the target ship
+	for(var/i in 1 to pod_count)
+		var/turf/target_turf = get_random_target_turf(target_ship)
+		if(!target_turf)
+			continue
+
+		// Pick a random mob type for this pod
+		var/mob_type = pick(spawn_types)
+
+		// Create the boarding pod with a slight delay between launches
+		// Uses supplypod system - pod falls from above, lands, opens to reveal mob
+		var/launch_delay = (i - 1) * 0.5 SECONDS
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(create_boarding_pod), target_turf, target_ship, owner_ship, mob_type), launch_delay)
+		pods_launched++
+
+	if(pods_launched > 0)
+		// Signal weapon fired (breaks cloak)
+		SEND_SIGNAL(owner_ship, COMSIG_SHIP_WEAPON_FIRED)
+		// Notify our ship
+		owner_ship.ship_notify("Launching [pods_launched] boarding pod[pods_launched > 1 ? "s" : ""]!", "TACTICAL", SHIP_NOTIFY_NOTICE)
+
+	return pods_launched > 0
+
 // ========== UTILITY ==========
 
 /**

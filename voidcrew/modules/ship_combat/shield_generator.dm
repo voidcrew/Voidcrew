@@ -1350,7 +1350,7 @@
 	// Cloak and shields are mutually exclusive - deactivate cloak first
 	if(ship?.linked_cloak_device?.cloak_active)
 		ship.linked_cloak_device.deactivate_cloak()
-		ship.ship_notify("Cloaking device deactivated - shields coming online.", "CLOAK", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+		ship.ship_notify("Cloaking device deactivated - shields coming online.", "CLOAK", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 	active = TRUE
 

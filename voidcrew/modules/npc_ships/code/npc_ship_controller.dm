@@ -256,7 +256,7 @@
 		holopad?.stop_ringing()
 
 	// Announce to pirate ship
-	our_ship?.ship_notify("Target is crossing zones. Hail cancelled.", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+	our_ship?.ship_notify("Target is crossing zones. Hail cancelled.", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 	// Clear target and return to idle
 	clear_target()
@@ -296,8 +296,8 @@
 		clear_blackboard_key("hailing_reminder_sent")
 
 	// Announce to both ships
-	our_ship?.ship_notify("Hostile action detected! Engaging!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg')
-	aggressor?.ship_notify("[our_ship?.name || "Hostile vessel"] is retaliating to your aggressive actions!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert2.ogg')
+	our_ship?.ship_notify("Hostile action detected! Engaging!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
+	aggressor?.ship_notify("[our_ship?.name || "Hostile vessel"] is retaliating to your aggressive actions!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert2.ogg', 25)
 
 	// Go straight to ENGAGING (will acquire lock then fight)
 	set_combat_state(NPC_COMBAT_ENGAGING)
@@ -448,8 +448,9 @@
 
 /**
  * Exit negotiation state - either disengage (success) or resume combat (failure).
+ * reason: Why negotiation ended - "player_moved" triggers immediate ship combat
  */
-/datum/ai_controller/npc_ship/proc/exit_negotiation(success = FALSE)
+/datum/ai_controller/npc_ship/proc/exit_negotiation(success = FALSE, reason = "unknown")
 	// Clear negotiation reference
 	clear_blackboard_key(BB_NPC_NEGOTIATION)
 	clear_blackboard_key(BB_NPC_NEGOTIATION_START)
@@ -459,7 +460,18 @@
 		clear_target()
 		// Target is now on our "paid" list (handled by negotiation datum)
 	else
-		// Negotiation failed - resume combat
+		// Movement during negotiation = immediate ship combat (no boarding chance)
+		if(reason == "player_moved")
+			set_combat_state(NPC_COMBAT_COMBAT)
+			return
+
+		// Negotiation failed - check if we should use phased boarding
+		var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
+		if(istype(ship) && ship.uses_boarding_phases)
+			// Start the phased boarding system
+			if(start_boarding_phase())
+				return  // Successfully started boarding phase
+		// Fallback: resume standard ship combat
 		set_combat_state(NPC_COMBAT_ENGAGING)
 
 /**
@@ -481,3 +493,602 @@
 		return FALSE
 
 	return TRUE
+
+// ========== PHASED BOARDING COMBAT SYSTEM ==========
+
+/**
+ * Start the boarding phase after negotiation fails.
+ * This initiates the wave-based combat system instead of immediate ship combat.
+ */
+/datum/ai_controller/npc_ship/proc/start_boarding_phase()
+	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
+	var/obj/structure/overmap/ship/target = get_target()
+
+	if(!ship || !target || QDELETED(target))
+		return FALSE
+
+	// Only pirate ships with boarding phases enabled can use this
+	if(!istype(ship) || !ship.uses_boarding_phases)
+		return FALSE
+
+	// Count and store player crew count for wave scaling
+	var/crew_count = count_player_crew(target)
+	set_blackboard_key(BB_NPC_BOARDING_INITIAL_CREW_COUNT, crew_count)
+
+	// Start tracking player crew deaths
+	start_tracking_player_crew(target)
+
+	// Register for player aggression during boarding (escalates to full combat)
+	RegisterSignal(target, COMSIG_SHIP_WEAPONS_LOCKED, PROC_REF(on_player_weapons_lock_during_boarding))
+
+	// Start interdiction to prevent FTL escape
+	var/datum/npc_combat_interface/combat = get_combat_interface()
+	if(combat)
+		combat.start_interdiction(target)
+
+	// Announce boarding phase start
+	ship.ship_notify("Boarding operation initiated. Wave 1 deploying.", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
+	target.ship_notify("[ship.name] is deploying boarding parties! Prepare to repel boarders!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+
+	// Initialize wave tracking
+	set_blackboard_key(BB_NPC_BOARDING_WAVE, 1)
+	set_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS, list())
+
+	// Enter boarding state
+	set_combat_state(NPC_COMBAT_BOARDING)
+
+	// Launch the first wave after a delay (gives players time to prepare)
+	addtimer(CALLBACK(src, PROC_REF(launch_boarding_wave), 1), 30 SECONDS)
+	target.ship_notify("First wave incoming in 30 seconds!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
+
+	return TRUE
+
+/**
+ * Count living humanoid crew on the target ship.
+ * Used for wave scaling.
+ */
+/datum/ai_controller/npc_ship/proc/count_player_crew(obj/structure/overmap/ship/target)
+	if(!target?.shuttle?.shuttle_areas)
+		return 0
+
+	var/count = 0
+	for(var/area/shuttle_area as anything in target.shuttle.shuttle_areas)
+		for(var/mob/living/carbon/human/H in shuttle_area)
+			if(H.stat != DEAD)
+				count++
+	return count
+
+/**
+ * Launch a boarding wave of the specified number.
+ * Wave size scales with initial player crew count.
+ */
+/datum/ai_controller/npc_ship/proc/launch_boarding_wave(wave_number)
+	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
+	var/obj/structure/overmap/ship/target = get_target()
+
+	if(!ship || !target || QDELETED(target))
+		return FALSE
+
+	// Get wave size range from ship config
+	var/list/wave_sizes = ship.boarding_wave_sizes
+	if(!wave_sizes || wave_number > length(wave_sizes))
+		return FALSE
+
+	var/list/wave_range = wave_sizes[wave_number]
+	var/base_min = wave_range[1]
+	var/base_max = wave_range[2]
+
+	// Scale wave size based on initial crew count
+	var/initial_crew = blackboard[BB_NPC_BOARDING_INITIAL_CREW_COUNT] || 1
+	var/scale_factor = get_crew_scale_factor(initial_crew)
+
+	var/scaled_min = round(base_min * scale_factor)
+	var/scaled_max = round(base_max * scale_factor)
+
+	// Ensure at least 1 boarder
+	scaled_min = max(1, scaled_min)
+	scaled_max = max(scaled_min, scaled_max)
+
+	var/boarder_count = rand(scaled_min, scaled_max)
+
+	// Get mob types to spawn (use boarding pod types or crew types)
+	var/list/mob_types = ship.boarding_pod_mob_types
+	if(!length(mob_types))
+		mob_types = ship.crew_types
+
+	if(!length(mob_types))
+		return FALSE
+
+	// Find valid spawn locations on target ship
+	var/list/valid_turfs = get_target_spawn_turfs(target)
+	if(!length(valid_turfs))
+		return FALSE
+
+	// Spawn the boarders
+	var/list/wave_boarders = list()
+	for(var/i in 1 to boarder_count)
+		if(!length(valid_turfs))
+			break
+		var/turf/spawn_loc = pick(valid_turfs)
+		var/mob_type = pick(mob_types)
+
+		// Visual teleport-in effect before spawning
+		do_sparks(3, TRUE, spawn_loc)
+		playsound(spawn_loc, 'sound/effects/portal/portal_travel.ogg', 50, TRUE)
+
+		var/mob/living/boarder = new mob_type(spawn_loc)
+
+		// Set loot tier based on wave (if this mob type has plunder_credits)
+		if(boarder)
+			var/mob/living/basic/trooper/pirate/pirate_boarder = boarder
+			if(istype(pirate_boarder))
+				switch(wave_number)
+					if(1)
+						pirate_boarder.plunder_credits = round(pirate_boarder.plunder_credits * NPC_LOOT_TIER_WAVE1)
+					if(2)
+						pirate_boarder.plunder_credits = round(pirate_boarder.plunder_credits * NPC_LOOT_TIER_WAVE2)
+					if(3)
+						pirate_boarder.plunder_credits = round(pirate_boarder.plunder_credits * NPC_LOOT_TIER_WAVE3)
+
+			// Track this boarder and register death signal
+			wave_boarders += boarder
+			RegisterSignal(boarder, COMSIG_LIVING_DEATH, PROC_REF(on_boarder_death))
+
+	// Store the wave boarders for tracking
+	set_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS, wave_boarders)
+
+	// Track wave start time and target position (for time limit and movement detection)
+	set_blackboard_key(BB_NPC_BOARDING_WAVE_START_TIME, world.time)
+	set_blackboard_key(BB_NPC_BOARDING_TARGET_POS, list(target.x, target.y))
+
+	// Notify target ship
+	target.ship_notify("Wave [wave_number]: [length(wave_boarders)] hostiles have boarded!", "SECURITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
+
+	return TRUE
+
+/**
+ * Get crew scaling factor based on player crew count.
+ * Returns multiplier for wave sizes.
+ */
+/datum/ai_controller/npc_ship/proc/get_crew_scale_factor(crew_count)
+	switch(crew_count)
+		if(0 to 2)
+			return 0.75  // Solo/duo - smaller waves
+		if(3 to 4)
+			return 1.0   // Standard crew - normal waves
+		if(5 to 6)
+			return 1.25  // Larger crew - bigger waves
+		else
+			return 1.5   // Full crew - maximum waves
+
+/**
+ * Find valid turfs on the target ship for spawning boarders.
+ */
+/datum/ai_controller/npc_ship/proc/get_target_spawn_turfs(obj/structure/overmap/ship/target)
+	var/list/valid_turfs = list()
+
+	if(!target?.shuttle?.shuttle_areas)
+		return valid_turfs
+
+	for(var/area/shuttle_area as anything in target.shuttle.shuttle_areas)
+		for(var/turf/T in shuttle_area)
+			if(isspaceturf(T))
+				continue
+			if(T.density)
+				continue
+			if(!isfloorturf(T))
+				continue
+			var/blocked = FALSE
+			for(var/obj/O in T)
+				if(O.density)
+					blocked = TRUE
+					break
+			if(blocked)
+				continue
+			valid_turfs += T
+
+	return valid_turfs
+
+/**
+ * Signal handler for when a boarder dies.
+ * Tracks deaths and checks if wave is complete.
+ */
+/datum/ai_controller/npc_ship/proc/on_boarder_death(mob/living/victim, gibbed)
+	SIGNAL_HANDLER
+	UnregisterSignal(victim, COMSIG_LIVING_DEATH)
+
+	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
+	if(wave_boarders)
+		wave_boarders -= victim
+
+	// Check if all boarders are dead
+	INVOKE_ASYNC(src, PROC_REF(check_wave_complete))
+
+/**
+ * Check if the current wave is complete (all boarders dead).
+ */
+/datum/ai_controller/npc_ship/proc/check_wave_complete()
+	// Guard against multiple calls - only process if we're in BOARDING state
+	var/combat_state = get_combat_state()
+	if(combat_state != NPC_COMBAT_BOARDING && combat_state != NPC_COMBAT_BOSS_PHASE)
+		return
+
+	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
+
+	// Count living boarders
+	var/living_count = 0
+	for(var/mob/living/boarder as anything in wave_boarders)
+		if(!QDELETED(boarder) && boarder.stat != DEAD)
+			living_count++
+
+	if(living_count > 0)
+		return  // Wave still active
+
+	// Wave complete! Clear the list to prevent duplicate processing
+	clear_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS)
+
+	var/current_wave = blackboard[BB_NPC_BOARDING_WAVE] || 1
+	SEND_SIGNAL(src, COMSIG_BOARDING_WAVE_COMPLETE, current_wave)
+
+	// Check if this was the final wave
+	if(current_wave >= NPC_BOARDING_WAVE_COUNT)
+		// All waves defeated - start boss cooldown
+		start_boss_cooldown()
+	else
+		// Start cooldown before next wave
+		start_wave_cooldown(current_wave)
+
+/**
+ * Start the cooldown period between waves.
+ * During cooldown, pirates taunt the players.
+ */
+/datum/ai_controller/npc_ship/proc/start_wave_cooldown(completed_wave)
+	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
+	var/obj/structure/overmap/ship/target = get_target()
+
+	if(!ship || !target)
+		return
+
+	// Enter cooldown state
+	set_combat_state(NPC_COMBAT_BOARDING_COOLDOWN)
+
+	// Set cooldown end time
+	var/cooldown_end = world.time + NPC_BOARDING_WAVE_COOLDOWN
+	set_blackboard_key(BB_NPC_BOARDING_COOLDOWN_END, cooldown_end)
+
+	// Play a taunt
+	if(ship.wave_taunts && completed_wave <= length(ship.wave_taunts))
+		var/list/taunts = ship.wave_taunts[completed_wave]
+		if(length(taunts))
+			var/taunt = pick(taunts)
+			ship.ship_notify("[taunt]", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+			target.ship_notify("[ship.name]: \"[taunt]\"", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
+
+	// Notify about cooldown
+	var/next_wave = completed_wave + 1
+	target.ship_notify("Wave [completed_wave] repelled! Next wave in 30 seconds...", "COMBAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+
+	// Schedule next wave
+	addtimer(CALLBACK(src, PROC_REF(end_wave_cooldown), next_wave), NPC_BOARDING_WAVE_COOLDOWN)
+
+/**
+ * End the cooldown and launch the next wave.
+ */
+/datum/ai_controller/npc_ship/proc/end_wave_cooldown(next_wave)
+	// Make sure we're still in cooldown state (could have escalated to combat)
+	if(get_combat_state() != NPC_COMBAT_BOARDING_COOLDOWN)
+		return
+
+	var/obj/structure/overmap/ship/target = get_target()
+	if(!target || QDELETED(target))
+		return
+
+	// Update wave number
+	set_blackboard_key(BB_NPC_BOARDING_WAVE, next_wave)
+
+	// Return to active boarding state
+	set_combat_state(NPC_COMBAT_BOARDING)
+
+	// Launch the wave
+	launch_boarding_wave(next_wave)
+
+/**
+ * Start the cooldown before boss spawns.
+ * Plays the boss taunt and announces boss arrival in 30 seconds.
+ */
+/datum/ai_controller/npc_ship/proc/start_boss_cooldown()
+	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
+	var/obj/structure/overmap/ship/target = get_target()
+
+	if(!ship || !target)
+		return
+
+	// Enter cooldown state (reuse boarding cooldown state)
+	set_combat_state(NPC_COMBAT_BOARDING_COOLDOWN)
+
+	// Set cooldown end time
+	var/cooldown_end = world.time + NPC_BOARDING_WAVE_COOLDOWN
+	set_blackboard_key(BB_NPC_BOARDING_COOLDOWN_END, cooldown_end)
+
+	// Play boss spawn taunt
+	if(ship.wave_taunts && length(ship.wave_taunts) >= 3)
+		var/list/boss_taunts = ship.wave_taunts[3]
+		if(length(boss_taunts))
+			var/taunt = pick(boss_taunts)
+			ship.ship_notify("[taunt]", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
+			target.ship_notify("[ship.name]: \"[taunt]\"", "COMMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+
+	// Announce boss incoming
+	target.ship_notify("All waves repelled! Enemy commander boarding in 30 seconds...", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
+
+	// Schedule boss spawn
+	addtimer(CALLBACK(src, PROC_REF(spawn_boarding_boss)), NPC_BOARDING_WAVE_COOLDOWN)
+
+/**
+ * Spawn the faction boss after all waves are defeated.
+ */
+/datum/ai_controller/npc_ship/proc/spawn_boarding_boss()
+	// Guard against duplicate boss spawns
+	if(blackboard[BB_NPC_BOARDING_BOSS])
+		return
+
+	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
+	var/obj/structure/overmap/ship/target = get_target()
+
+	if(!ship || !target || QDELETED(target))
+		return
+
+	// Enter boss phase
+	set_combat_state(NPC_COMBAT_BOSS_PHASE)
+
+	// Find spawn location
+	var/list/valid_turfs = get_target_spawn_turfs(target)
+	if(!length(valid_turfs))
+		return
+
+	var/turf/spawn_loc = pick(valid_turfs)
+
+	// Spawn the boss
+	var/boss_type = ship.boss_type
+	if(!boss_type)
+		boss_type = /mob/living/basic/trooper/pirate/faction/boss/rogues
+
+	var/mob/living/basic/trooper/pirate/faction/boss/boss = new boss_type(spawn_loc)
+	if(boss)
+		boss.parent_ship = ship
+		set_blackboard_key(BB_NPC_BOARDING_BOSS, boss)
+		RegisterSignal(boss, COMSIG_LIVING_DEATH, PROC_REF(on_boss_death))
+
+	// Announce boss arrival
+	target.ship_notify("WARNING: [boss?.name || "Enemy Commander"] has boarded your vessel!", "SECURITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
+
+/**
+ * Signal handler for when the boss is killed.
+ * This disables the pirate ship and allows players to board it.
+ */
+/datum/ai_controller/npc_ship/proc/on_boss_death(mob/living/victim, gibbed)
+	SIGNAL_HANDLER
+	UnregisterSignal(victim, COMSIG_LIVING_DEATH)
+
+	INVOKE_ASYNC(src, PROC_REF(handle_boss_killed))
+
+/**
+ * Handle the boss being killed - disable the pirate ship.
+ */
+/datum/ai_controller/npc_ship/proc/handle_boss_killed()
+	// Guard against duplicate processing
+	if(get_combat_state() == NPC_COMBAT_DISABLED)
+		return
+
+	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
+	var/obj/structure/overmap/ship/target = get_target()
+
+	SEND_SIGNAL(src, COMSIG_BOARDING_BOSS_KILLED)
+
+	// Clean up boarding signals
+	cleanup_boarding_signals()
+
+	// Release the player - cancel weapons lock and interdiction
+	if(target && ship && !QDELETED(target))
+		// Notify target that weapons lock is released
+		if(blackboard[BB_NPC_TARGET_LOCKED])
+			SEND_SIGNAL(target, COMSIG_SHIP_WEAPONS_LOCK_LOST, ship)
+		// Clear engagement tracking so other pirates can engage
+		if(target.engaging_pirate_ref?.resolve() == ship)
+			target.engaging_pirate_ref = null
+
+	// Clear weapons lock
+	clear_blackboard_key(BB_NPC_TARGET_LOCKED)
+	clear_blackboard_key(BB_NPC_LOCK_START_TIME)
+
+	// Cancel interdiction
+	var/datum/npc_combat_interface/combat = get_combat_interface()
+	combat?.cancel_interdiction()
+
+	// Disable the pirate ship (this sends the notification to the player)
+	ship?.set_disabled_state()
+
+// ========== PLAYER CREW TRACKING ==========
+
+/**
+ * Start tracking player crew for the "pirates win" condition.
+ * If all tracked crew die, pirates disengage victoriously.
+ */
+/datum/ai_controller/npc_ship/proc/start_tracking_player_crew(obj/structure/overmap/ship/target)
+	if(!target?.shuttle?.shuttle_areas)
+		return
+
+	var/list/tracked_crew = list()
+
+	for(var/area/shuttle_area as anything in target.shuttle.shuttle_areas)
+		for(var/mob/living/carbon/human/H in shuttle_area)
+			if(H.stat != DEAD && H.client)  // Only track player-controlled crew
+				tracked_crew += H
+				RegisterSignal(H, COMSIG_LIVING_DEATH, PROC_REF(on_player_crew_death))
+
+	set_blackboard_key(BB_NPC_BOARDING_PLAYER_CREW, tracked_crew)
+
+/**
+ * Signal handler for when a tracked player crew member dies.
+ */
+/datum/ai_controller/npc_ship/proc/on_player_crew_death(mob/living/victim, gibbed)
+	SIGNAL_HANDLER
+	UnregisterSignal(victim, COMSIG_LIVING_DEATH)
+
+	var/list/tracked_crew = blackboard[BB_NPC_BOARDING_PLAYER_CREW]
+	if(tracked_crew)
+		tracked_crew -= victim
+
+	INVOKE_ASYNC(src, PROC_REF(check_player_crew_status))
+
+/**
+ * Check if all player crew are dead - pirates win!
+ */
+/datum/ai_controller/npc_ship/proc/check_player_crew_status()
+	var/list/tracked_crew = blackboard[BB_NPC_BOARDING_PLAYER_CREW]
+	if(!tracked_crew)
+		return
+
+	// Count living, connected players
+	var/living_players = 0
+	for(var/mob/living/carbon/human/H as anything in tracked_crew)
+		if(!QDELETED(H) && H.stat != DEAD && H.client)
+			living_players++
+
+	if(living_players > 0)
+		return
+
+	// All players dead - pirates win!
+	pirates_win()
+
+/**
+ * Pirates have won - all player crew eliminated.
+ * Pirates disengage and leave.
+ */
+/datum/ai_controller/npc_ship/proc/pirates_win()
+	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
+	var/obj/structure/overmap/ship/target = get_target()
+
+	// Clean up
+	cleanup_boarding_signals()
+
+	// Announce victory
+	ship?.ship_notify("All hostiles eliminated. Disengaging.", "COMBAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	target?.ship_notify("[ship?.name || "Hostile vessel"] has eliminated all crew and is disengaging.", "DEFEAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn3.ogg', 25)
+
+	// Enter disengage state
+	set_combat_state(NPC_COMBAT_DISENGAGING)
+
+	// Schedule full disengage
+	addtimer(CALLBACK(src, PROC_REF(complete_disengage)), NPC_BOARDING_DISENGAGE_DELAY)
+
+/**
+ * Complete the disengage - clear target and return to patrol.
+ */
+/datum/ai_controller/npc_ship/proc/complete_disengage()
+	clear_target()
+	set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_PATROL)
+
+// ========== ESCALATION HANDLING ==========
+
+/**
+ * Signal handler for player locking weapons during boarding phase.
+ * This escalates to full ship combat.
+ */
+/datum/ai_controller/npc_ship/proc/on_player_weapons_lock_during_boarding(datum/source, obj/structure/overmap/ship/aggressor)
+	SIGNAL_HANDLER
+
+	// Only escalate if we're in a boarding state
+	var/combat_state = get_combat_state()
+	if(combat_state != NPC_COMBAT_BOARDING && combat_state != NPC_COMBAT_BOARDING_COOLDOWN && combat_state != NPC_COMBAT_BOSS_PHASE)
+		return
+
+	INVOKE_ASYNC(src, PROC_REF(escalate_to_full_combat), aggressor)
+
+/**
+ * Escalate from boarding phase to full ship combat.
+ * This happens when the player locks weapons on the pirate ship.
+ */
+/datum/ai_controller/npc_ship/proc/escalate_to_full_combat(obj/structure/overmap/ship/aggressor)
+	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
+	var/obj/structure/overmap/ship/target = get_target()
+
+	SEND_SIGNAL(src, COMSIG_BOARDING_ESCALATED)
+
+	// Clean up boarding state
+	cleanup_boarding_signals()
+
+	// Clear any remaining boarders (they're now on their own)
+	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
+	if(wave_boarders)
+		for(var/mob/living/boarder as anything in wave_boarders)
+			UnregisterSignal(boarder, COMSIG_LIVING_DEATH)
+	clear_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS)
+
+	// Clear boss tracking
+	var/mob/living/boss = blackboard[BB_NPC_BOARDING_BOSS]
+	if(boss && !QDELETED(boss))
+		UnregisterSignal(boss, COMSIG_LIVING_DEATH)
+	clear_blackboard_key(BB_NPC_BOARDING_BOSS)
+
+	// Announce escalation
+	ship?.ship_notify("Hostile action detected! Switching to weapons combat!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
+	target?.ship_notify("[ship?.name || "Hostile vessel"] is responding to your aggression with ship weapons!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+
+	// Transition to standard combat
+	set_combat_state(NPC_COMBAT_ENGAGING)
+
+/**
+ * Clean up all boarding-related signals and state.
+ */
+/datum/ai_controller/npc_ship/proc/cleanup_boarding_signals()
+	var/obj/structure/overmap/ship/target = get_target()
+
+	// Unregister from player weapons lock
+	if(target && !QDELETED(target))
+		UnregisterSignal(target, COMSIG_SHIP_WEAPONS_LOCKED)
+
+	// Unregister from player crew deaths
+	var/list/tracked_crew = blackboard[BB_NPC_BOARDING_PLAYER_CREW]
+	if(tracked_crew)
+		for(var/mob/living/crew as anything in tracked_crew)
+			if(!QDELETED(crew))
+				UnregisterSignal(crew, COMSIG_LIVING_DEATH)
+
+	// Clear boarding blackboard keys
+	clear_blackboard_key(BB_NPC_BOARDING_WAVE)
+	clear_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS)
+	clear_blackboard_key(BB_NPC_BOARDING_COOLDOWN_END)
+	clear_blackboard_key(BB_NPC_BOARDING_BOSS)
+	clear_blackboard_key(BB_NPC_BOARDING_PLAYER_CREW)
+	clear_blackboard_key(BB_NPC_BOARDING_INITIAL_CREW_COUNT)
+	clear_blackboard_key(BB_NPC_BOARDING_WAVE_START_TIME)
+	clear_blackboard_key(BB_NPC_BOARDING_TARGET_POS)
+
+/**
+ * Escalate from boarding phase to ship combat due to player behavior.
+ * Called when time limit exceeded, player moves, or player locks weapons.
+ * The caller is responsible for sending appropriate messages before calling this.
+ */
+/datum/ai_controller/npc_ship/proc/escalate_boarding_to_combat(reason)
+	SEND_SIGNAL(src, COMSIG_BOARDING_ESCALATED, reason)
+
+	// Clean up boarding state
+	cleanup_boarding_signals()
+
+	// Clear any remaining boarders (they're now on their own)
+	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
+	if(wave_boarders)
+		for(var/mob/living/boarder as anything in wave_boarders)
+			if(!QDELETED(boarder))
+				UnregisterSignal(boarder, COMSIG_LIVING_DEATH)
+	clear_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS)
+
+	// Clear boss tracking
+	var/mob/living/boss = blackboard[BB_NPC_BOARDING_BOSS]
+	if(boss && !QDELETED(boss))
+		UnregisterSignal(boss, COMSIG_LIVING_DEATH)
+	clear_blackboard_key(BB_NPC_BOARDING_BOSS)
+
+	// Transition to standard combat (will acquire lock then fight)
+	set_combat_state(NPC_COMBAT_ENGAGING)

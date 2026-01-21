@@ -32,14 +32,14 @@
 			cancel_targeting()
 			if(current_user)
 				to_chat(current_user, span_warning("Target lock lost - zone shift placed you in [our_zone.name]!"))
-			current_ship.ship_notify("Target lock failed - entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
+			current_ship.ship_notify("Target lock failed - entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 			return
 		if(target_zone?.zone_type == ZONE_GREEN)
 			var/target_name = targeting_ship.display_name
 			cancel_targeting()
 			if(current_user)
 				to_chat(current_user, span_warning("Target lock lost - zone shift placed [target_name] in [target_zone.name]!"))
-			current_ship.ship_notify("Target lock failed - target entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
+			current_ship.ship_notify("Target lock failed - target entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 			return
 
 	// Check active attack mode or existing target lock - break if either ship now in Neutral zone
@@ -52,7 +52,7 @@
 			if(attack_mode)
 				exit_attack_mode(current_user)
 			clear_target()
-			current_ship.ship_notify("Weapons lock lost - entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
+			current_ship.ship_notify("Weapons lock lost - entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 			return
 		if(target_zone?.zone_type == ZONE_GREEN)
 			var/target_name = target_ship.display_name
@@ -61,7 +61,7 @@
 			if(attack_mode)
 				exit_attack_mode(current_user)
 			clear_target()
-			current_ship.ship_notify("Weapons lock lost - target entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
+			current_ship.ship_notify("Weapons lock lost - target entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 
 /// Starts the targeting process for a new ship (takes time and warns the target)
 /obj/machinery/computer/camera_advanced/ship_combat/proc/start_targeting(obj/structure/overmap/ship/new_target, mob/user)
@@ -128,7 +128,7 @@
 
 	// Warn the target ship
 	SEND_SIGNAL(targeting_ship, COMSIG_SHIP_BEING_TARGETED, current_ship)
-	targeting_ship.ship_notify("Hostile ship acquiring weapons lock!", "WARNING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/combatalarm.ogg')
+	targeting_ship.ship_notify("Hostile ship acquiring weapons lock!", "WARNING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/combatalarm.ogg', 25)
 
 	// Notify our crew
 	if(user)
@@ -176,7 +176,7 @@
 	// Notify our crew
 	if(user)
 		to_chat(user, span_danger("Target lock acquired on [target_ship.display_name]!"))
-	current_ship?.ship_notify("Target lock acquired: [target_ship.display_name]", "TARGETING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+	current_ship?.ship_notify("Target lock acquired: [target_ship.display_name]", "TARGETING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 	return TRUE
 
@@ -197,7 +197,7 @@
 	// Notify the target they're no longer being targeted
 	if(targeting_ship)
 		SEND_SIGNAL(targeting_ship, COMSIG_SHIP_TARGETING_STOPPED, current_ship)
-		targeting_ship.ship_notify("Hostile targeting signal lost.", "THREAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+		targeting_ship.ship_notify("Hostile targeting signal lost.", "THREAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		UnregisterSignal(targeting_ship, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED, COMSIG_SHIP_ZONE_CHANGED))
 
 	is_targeting = FALSE
@@ -232,14 +232,14 @@
 			cancel_targeting()
 			if(current_user)
 				to_chat(current_user, span_warning("Target lock lost - entered [our_zone.name]!"))
-			current_ship?.ship_notify("Target lock failed - entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
+			current_ship?.ship_notify("Target lock failed - entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 			return
 		if(target_zone?.zone_type == ZONE_GREEN)
 			var/target_name = targeting_ship.display_name
 			cancel_targeting()
 			if(current_user)
 				to_chat(current_user, span_warning("Target lock lost - [target_name] entered [target_zone.name]!"))
-			current_ship?.ship_notify("Target lock failed - target entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
+			current_ship?.ship_notify("Target lock failed - target entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 			return
 
 	// Check if line of sight is blocked (e.g., by a nebula)
@@ -248,7 +248,7 @@
 		cancel_targeting()
 		if(current_user)
 			to_chat(current_user, span_warning("Target lock lost - [target_name] obscured by interference!"))
-		current_ship?.ship_notify("Target lock failed - line of sight blocked.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
+		current_ship?.ship_notify("Target lock failed - line of sight blocked.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return
 
 	var/distance = get_dist(our_turf, target_turf)
@@ -257,7 +257,7 @@
 		cancel_targeting()
 		if(current_user)
 			to_chat(current_user, span_warning("Target lock lost - [target_name] moved out of sensor range!"))
-		current_ship?.ship_notify("Target lock failed - target escaped sensor range.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
+		current_ship?.ship_notify("Target lock failed - target escaped sensor range.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 
 /// Called when the target ship moves during attack mode - check range
 /obj/machinery/computer/camera_advanced/ship_combat/proc/on_target_ship_moved_attack(datum/source)
@@ -287,14 +287,14 @@
 			if(current_user)
 				to_chat(current_user, span_warning("Weapons lock lost - entered [our_zone.name]!"))
 				INVOKE_ASYNC(src, PROC_REF(exit_attack_mode), current_user)
-			current_ship?.ship_notify("Weapons lock lost - entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
+			current_ship?.ship_notify("Weapons lock lost - entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 			return
 		if(target_zone?.zone_type == ZONE_GREEN)
 			var/target_name = target_ship.display_name
 			if(current_user)
 				to_chat(current_user, span_warning("Weapons lock lost - [target_name] entered [target_zone.name]!"))
 				INVOKE_ASYNC(src, PROC_REF(exit_attack_mode), current_user)
-			current_ship?.ship_notify("Weapons lock lost - target entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
+			current_ship?.ship_notify("Weapons lock lost - target entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 			return
 
 	var/distance = get_dist(our_turf, target_turf)
@@ -303,7 +303,7 @@
 		if(current_user)
 			to_chat(current_user, span_warning("Target lock lost - [target_name] moved out of weapons range!"))
 			INVOKE_ASYNC(src, PROC_REF(exit_attack_mode), current_user)
-		current_ship?.ship_notify("Weapons lock lost - target escaped range.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
+		current_ship?.ship_notify("Weapons lock lost - target escaped range.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 
 /// Called when the ship we're targeting is deleted mid-lock
 /obj/machinery/computer/camera_advanced/ship_combat/proc/on_targeting_ship_deleted(datum/source)
@@ -360,4 +360,4 @@
 	clear_target()
 	if(current_user)
 		to_chat(current_user, span_warning("[target_name] has disappeared from sensors!"))
-	current_ship?.ship_notify("Target lost - ship went dark.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg')
+	current_ship?.ship_notify("Target lost - ship went dark.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)

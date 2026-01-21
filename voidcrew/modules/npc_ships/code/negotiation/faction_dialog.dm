@@ -20,6 +20,7 @@
 	var/list/timeout_lines = list("Your time is up!")
 	var/list/impatience_lines = list("You're trying my patience... %SECONDS% seconds remaining.")
 	var/list/movement_betrayal_lines = list("You dare try to flee?! All weapons, FIRE!")
+	var/list/escape_warning_lines = list("And don't even think about running. Try to move or target us, and we'll gun you down.")
 
 /**
  * Get a greeting line when hailing begins.
@@ -68,6 +69,12 @@
 /datum/pirate_faction_dialog/proc/get_movement_betrayal_line()
 	return pick(movement_betrayal_lines)
 
+/**
+ * Get an escape warning line (said after demand to warn about movement).
+ */
+/datum/pirate_faction_dialog/proc/get_escape_warning_line()
+	return pick(escape_warning_lines)
+
 // ========== FACTION SUBTYPES ==========
 
 /**
@@ -107,6 +114,10 @@
 		"You have %SECONDS% seconds to remit payment before penalties increase.",
 		"The IRS does not wait. %SECONDS% seconds remaining.",
 	)
+	escape_warning_lines = list(
+		"Any attempt to flee or engage our vessels will be considered an act of tax terrorism.",
+		"Do not attempt evasion. Our enforcement drones will pursue and eliminate.",
+	)
 
 /**
  * Skeleton - The Flying Dutchman
@@ -144,6 +155,10 @@
 	impatience_lines = list(
 		"%SECONDS% seconds... The crew grows restless...",
 		"The cursed souls hunger... %SECONDS% seconds...",
+	)
+	escape_warning_lines = list(
+		"Flee... and the curse will find you... There is no escape from the Dutchman...",
+		"Do not attempt to run... The dead are patient... and relentless...",
 	)
 
 /**
@@ -184,6 +199,10 @@
 		"Come on come on come on! %SECONDS% seconds!",
 		"Hurry up! %SECONDS% seconds! I got places to be!",
 	)
+	escape_warning_lines = list(
+		"Don't even THINK about running bro, we got toolboxes and we're not afraid to use them!",
+		"Try to dip and we'll robust you SO hard!",
+	)
 
 /**
  * Medieval - Space Knights
@@ -221,6 +240,10 @@
 	impatience_lines = list(
 		"Make haste! %SECONDS% seconds remain before we attack!",
 		"The Order's patience wanes... %SECONDS% seconds!",
+	)
+	escape_warning_lines = list(
+		"Flee not, coward! Any attempt to escape shall be met with righteous fury!",
+		"A knight never runs, and neither shall you. Stay your engines, or face our wrath!",
 	)
 
 /**
@@ -260,6 +283,10 @@
 		"The Dynasty does not appreciate delays. %SECONDS% seconds.",
 		"You waste our time. %SECONDS% seconds remaining.",
 	)
+	escape_warning_lines = list(
+		"Do not presume to flee from your betters. The Dynasty's reach is absolute.",
+		"Attempt to run, and we will make an example of you. The Dynasty does not tolerate cowardice.",
+	)
 
 /**
  * Interdyne - Ex-Pharmacists / Corporate
@@ -297,6 +324,10 @@
 	impatience_lines = list(
 		"Processing delay detected. %SECONDS% seconds until protocol escalation.",
 		"%SECONDS% seconds remaining in compliance window.",
+	)
+	escape_warning_lines = list(
+		"Evasion protocols are inadvisable. Our targeting systems have already achieved lock.",
+		"Any attempt to flee will trigger immediate termination protocols. Compliance is optimal.",
 	)
 
 /**
@@ -336,6 +367,10 @@
 		"Tick tock! %SECONDS% seconds!",
 		"We're losing patience here! %SECONDS% seconds!",
 	)
+	escape_warning_lines = list(
+		"Try to run and we'll blow you out of the sky. This ain't a bluff.",
+		"Don't even think about booking it. Our guns are faster than your engines.",
+	)
 
 /**
  * Lustrous - Ethereal/Bluespace Entities
@@ -373,4 +408,8 @@
 	impatience_lines = list(
 		"The frequencies grow unstable... %SECONDS% seconds...",
 		"%SECONDS% seconds before the Collective acts...",
+	)
+	escape_warning_lines = list(
+		"Do not attempt to phase away... The Collective perceives all trajectories...",
+		"Flight is... meaningless... We exist in all frequencies... You cannot escape...",
 	)

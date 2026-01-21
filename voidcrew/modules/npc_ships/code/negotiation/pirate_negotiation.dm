@@ -140,7 +140,7 @@
 	pirate_say(dialog.get_movement_betrayal_line())
 
 	// Announce to player ship
-	player_ship?.ship_notify("Negotiations with [pirate_ship?.name] have FAILED - they detected your ship movement!", "NEGOTIATION", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg')
+	player_ship?.ship_notify("Negotiations with [pirate_ship?.name] have FAILED - they detected your ship movement!", "NEGOTIATION", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
 
 	// End negotiation as failure
 	end_negotiation(success = FALSE, reason = "player_moved")
@@ -235,6 +235,9 @@
 	// Pirate announces their demands
 	pirate_say(dialog.get_demand_line(demanded_credits, demanded_item_quantity, demanded_item_name))
 
+	// After a brief pause, warn about escape attempts
+	addtimer(CALLBACK(src, PROC_REF(say_escape_warning)), 3 SECONDS)
+
 	return TRUE
 
 /**
@@ -306,13 +309,13 @@
 	// Tell the pirate AI to resume or disengage
 	var/datum/ai_controller/npc_ship/controller = pirate_ship?.ai_controller
 	if(controller)
-		controller.exit_negotiation(success)
+		controller.exit_negotiation(success, reason)
 
 	// Final message from pirate
 	if(success)
 		pirate_say(dialog.get_acceptance_line())
 		// Notify player ship crew that pirates have disengaged
-		player_ship?.ship_notify("[pirate_ship.name] has accepted tribute and is disengaging.", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+		player_ship?.ship_notify("[pirate_ship.name] has accepted tribute and is disengaging.", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	else
 		if(reason == "timeout")
 			pirate_say(dialog.get_timeout_line())
@@ -457,6 +460,16 @@
 		return
 	if(hologram)
 		hologram.pirate_say(message)
+
+/**
+ * Say the escape warning (called after demand with a delay).
+ */
+/datum/pirate_negotiation/proc/say_escape_warning()
+	if(negotiation_state != NEGOTIATION_ACTIVE)
+		return  // Negotiation ended before warning
+	if(!dialog)
+		return
+	pirate_say(dialog.get_escape_warning_line())
 
 // ========== MISSION PAD LINKING ==========
 

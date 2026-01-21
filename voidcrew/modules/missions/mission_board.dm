@@ -199,7 +199,7 @@
 			if(bounty.add_claimant(ship))
 				balloon_alert(usr, "bounty accepted!")
 				playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
-				ship.ship_notify("BOUNTY ACCEPTED: [bounty.name] - [bounty.reward] credit reward", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+				ship.ship_notify("BOUNTY ACCEPTED: [bounty.name] - [bounty.reward] credit reward", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 			else
 				balloon_alert(usr, "cannot accept bounty!")
 			return TRUE
@@ -212,7 +212,7 @@
 
 			if(bounty.remove_claimant(ship))
 				balloon_alert(usr, "bounty cancelled")
-				ship.ship_notify("BOUNTY CANCELLED: [bounty.name]", "MISSION CONTROL", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg')
+				ship.ship_notify("BOUNTY CANCELLED: [bounty.name]", "MISSION CONTROL", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 			else
 				balloon_alert(usr, "not hunting this bounty!")
 			return TRUE
@@ -235,7 +235,7 @@
 				var/tracking_cost = bounty.get_tracking_cost()
 				balloon_alert(usr, "tracking enabled! -[tracking_cost] cr")
 				playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
-				ship.ship_notify("TRACKING ENABLED: [bounty.name] - Reward reduced by [tracking_cost] credits", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+				ship.ship_notify("TRACKING ENABLED: [bounty.name] - Reward reduced by [tracking_cost] credits", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 			else
 				balloon_alert(usr, "cannot enable tracking!")
 			return TRUE
@@ -324,7 +324,7 @@
 
 			balloon_alert(usr, "bounty created!")
 			playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
-			ship.ship_notify("BOUNTY POSTED: [new_bounty.name] - [reward_amount] credit reward", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+			ship.ship_notify("BOUNTY POSTED: [new_bounty.name] - [reward_amount] credit reward", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 			return TRUE
 
 		if("claim_player_bounty")
@@ -340,7 +340,7 @@
 
 			balloon_alert(usr, "bounty accepted!")
 			playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
-			ship.ship_notify("PLAYER BOUNTY ACCEPTED: [bounty.name] - [bounty.reward] credit reward", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+			ship.ship_notify("PLAYER BOUNTY ACCEPTED: [bounty.name] - [bounty.reward] credit reward", "MISSION CONTROL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 			return TRUE
 
 		if("abandon_player_bounty")
@@ -351,7 +351,7 @@
 
 			if(bounty.abandon(ship))
 				balloon_alert(usr, "bounty abandoned")
-				ship.ship_notify("PLAYER BOUNTY ABANDONED: [bounty.name]", "MISSION CONTROL", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg')
+				ship.ship_notify("PLAYER BOUNTY ABANDONED: [bounty.name]", "MISSION CONTROL", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 			else
 				balloon_alert(usr, "not your bounty!")
 			return TRUE

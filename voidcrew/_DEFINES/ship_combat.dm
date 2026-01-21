@@ -11,6 +11,9 @@
 /// Sent when a ship fires any weapon (used for cloaking decloak): ()
 #define COMSIG_SHIP_WEAPON_FIRED "ship_weapon_fired"
 
+/// Sent when a ship is boarded by a boarding pod: (obj/effect/boarding_pod/pod, obj/structure/overmap/ship/npc/source_ship)
+#define COMSIG_SHIP_BOARDED "ship_boarded"
+
 /// Sent when a ship's cloak status changes: (cloaked)
 #define COMSIG_SHIP_CLOAK_CHANGED "ship_cloak_changed"
 

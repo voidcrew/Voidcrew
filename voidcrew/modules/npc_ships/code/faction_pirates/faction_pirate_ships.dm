@@ -40,11 +40,34 @@
 		/mob/living/basic/trooper/pirate/faction/silverscale/ranged,
 	)
 
+	// Boarding pods - aristocrats send their duelists
+	boarding_pods_enabled = TRUE
+	boarding_pods_min = 1
+	boarding_pods_max = 2
+	boarding_pod_cooldown_time = 35 SECONDS
+
 	// Negotiation - aristocrats want more
 	negotiation_dialog_type = /datum/pirate_faction_dialog/silverscale
 	min_negotiation_demand = 800
 	max_negotiation_demand = 15000
 	pirate_faction = "silverscale"
+
+	// Phased combat - aristocratic duelists
+	boss_type = /mob/living/basic/trooper/pirate/faction/boss/silverscale
+	wave_taunts = list(
+		list(
+			"Your crew has spirit. A pity it will be broken.",
+			"The nobles find your resistance... amusing.",
+		),
+		list(
+			"You've slain my guards. Impressive. But futile.",
+			"Prepare the honor guard. These ones have earned a proper death.",
+		),
+		list(
+			"Very well. You shall face a Highlord in single combat.",
+			"I shall deal with this rabble personally.",
+		),
+	)
 
 // ==================== SKELETON (Flying Dutchman) ====================
 
@@ -78,11 +101,34 @@
 		/mob/living/basic/trooper/pirate/faction/skeleton/ranged,
 	)
 
+	// Boarding pods - undead are relentless boarders
+	boarding_pods_enabled = TRUE
+	boarding_pods_min = 2
+	boarding_pods_max = 4
+	boarding_pod_cooldown_time = 25 SECONDS
+
 	// Negotiation - undead will negotiate but are patient and ominous
 	negotiation_dialog_type = /datum/pirate_faction_dialog/skeleton
 	min_negotiation_demand = 400
 	max_negotiation_demand = 8000
 	pirate_faction = "skeleton"
+
+	// Phased combat - undead hordes
+	boss_type = /mob/living/basic/trooper/pirate/faction/boss/skeleton
+	wave_taunts = list(
+		list(
+			"The dead do not tire. We will keep coming.",
+			"Your souls will join our crew... eventually.",
+		),
+		list(
+			"The Dutchman demands more souls...",
+			"You cannot kill what is already dead. But we can kill you.",
+		),
+		list(
+			"Davy Jones himself shall claim your vessel.",
+			"The captain wishes to meet you... in person.",
+		),
+	)
 
 // ==================== GREY TIDE (Rogue Assistants) ====================
 
@@ -116,11 +162,34 @@
 		/mob/living/basic/trooper/pirate/faction/grey/ranged,
 	)
 
+	// Boarding pods - grey tiders love swarming
+	boarding_pods_enabled = TRUE
+	boarding_pods_min = 2
+	boarding_pods_max = 5
+	boarding_pod_cooldown_time = 20 SECONDS
+
 	// Negotiation - assistants take what they can get
 	negotiation_dialog_type = /datum/pirate_faction_dialog/grey
 	min_negotiation_demand = 200
 	max_negotiation_demand = 5000
 	pirate_faction = "grey"
+
+	// Phased combat - greytide swarm
+	boss_type = /mob/living/basic/trooper/pirate/faction/boss/grey
+	wave_taunts = list(
+		list(
+			"GREYTIDE STATION WIDE! MORE TIDERS INCOMING!",
+			"lol u killed some greys? theres way more where that came from",
+		),
+		list(
+			"valid salad incoming. prepare ur anus",
+			"THE TOOLBOXES HUNGER FOR MORE",
+		),
+		list(
+			"yo the ROBUST ONE is coming. ur so fucked lmao",
+			"gg no re. tidemaster inbound",
+		),
+	)
 
 // ==================== LUSTROUS (Mutated Ethereals) ====================
 
@@ -149,11 +218,34 @@
 		/mob/living/basic/trooper/pirate/faction/lustrous/ranged,
 	)
 
+	// Boarding pods - ethereals prefer ranged combat, fewer boarders
+	boarding_pods_enabled = TRUE
+	boarding_pods_min = 1
+	boarding_pods_max = 2
+	boarding_pod_cooldown_time = 40 SECONDS
+
 	// Negotiation - ethereals are patient and mysterious
 	negotiation_dialog_type = /datum/pirate_faction_dialog/lustrous
 	min_negotiation_demand = 500
 	max_negotiation_demand = 10000
 	pirate_faction = "lustrous"
+
+	// Phased combat - crystalline beings
+	boss_type = /mob/living/basic/trooper/pirate/faction/boss/lustrous
+	wave_taunts = list(
+		list(
+			"Your violence disturbs the crystal matrix. More shall come.",
+			"The lattice remembers. The lattice sends more.",
+		),
+		list(
+			"Interesting. You resist the inevitable crystallization.",
+			"The Radiant One observes your struggle with curiosity.",
+		),
+		list(
+			"The Radiant One shall phase into your reality now.",
+			"Prepare for transcendence. The Radiant One comes.",
+		),
+	)
 
 // ==================== INTERDYNE (Ex-Pharmacists) ====================
 
@@ -181,11 +273,34 @@
 		/mob/living/basic/trooper/pirate/faction/interdyne/ranged,
 	)
 
+	// Boarding pods - interdyne sends surgical strike teams
+	boarding_pods_enabled = TRUE
+	boarding_pods_min = 1
+	boarding_pods_max = 3
+	boarding_pod_cooldown_time = 30 SECONDS
+
 	// Negotiation - clinical and professional
 	negotiation_dialog_type = /datum/pirate_faction_dialog/interdyne
 	min_negotiation_demand = 700
 	max_negotiation_demand = 12000
 	pirate_faction = "interdyne"
+
+	// Phased combat - surgical strike teams
+	boss_type = /mob/living/basic/trooper/pirate/faction/boss/interdyne
+	wave_taunts = list(
+		list(
+			"Subjects neutralized. Deploying backup extraction team.",
+			"Your resistance has been documented. Increasing dosage.",
+		),
+		list(
+			"Fascinating combat data. The Director will be pleased.",
+			"Clinical trials proceeding as expected. Phase 2 initiated.",
+		),
+		list(
+			"Director Prime is taking personal interest in your case.",
+			"The Director will handle this... personally.",
+		),
+	)
 
 // ==================== IRS (Tax Collectors) ====================
 
@@ -217,11 +332,34 @@
 		/mob/living/basic/trooper/pirate/faction/irs/ranged,
 	)
 
+	// Boarding pods - IRS sends auditors to seize assets
+	boarding_pods_enabled = TRUE
+	boarding_pods_min = 2
+	boarding_pods_max = 4
+	boarding_pod_cooldown_time = 25 SECONDS
+
 	// Negotiation - IRS is bureaucratic and demanding (no counter-offers!)
 	negotiation_dialog_type = /datum/pirate_faction_dialog/irs
 	min_negotiation_demand = 1000
 	max_negotiation_demand = 20000
 	pirate_faction = "irs"
+
+	// Phased combat - tax enforcement
+	boss_type = /mob/living/basic/trooper/pirate/faction/boss/irs
+	wave_taunts = list(
+		list(
+			"Resistance to audit has been noted on your permanent record.",
+			"Additional agents have been assigned to your case.",
+		),
+		list(
+			"This is your FINAL NOTICE. Penalties are accumulating.",
+			"Your tax liability increases with every agent you harm.",
+		),
+		list(
+			"The Chief Auditor is reviewing your case PERSONALLY.",
+			"Nobody escapes the Chief Auditor. NOBODY.",
+		),
+	)
 
 // ==================== MEDIEVAL (Space Warmongers) ====================
 
@@ -259,8 +397,31 @@
 		/mob/living/basic/trooper/pirate/faction/medieval/ranged,
 	)
 
+	// Boarding pods - medieval warriors LOVE boarding actions
+	boarding_pods_enabled = TRUE
+	boarding_pods_min = 3
+	boarding_pods_max = 5
+	boarding_pod_cooldown_time = 20 SECONDS
+
 	// Negotiation - theatrical knights
 	negotiation_dialog_type = /datum/pirate_faction_dialog/medieval
 	min_negotiation_demand = 600
 	max_negotiation_demand = 12000
 	pirate_faction = "medieval"
+
+	// Phased combat - knights and men-at-arms
+	boss_type = /mob/living/basic/trooper/pirate/faction/boss/medieval
+	wave_taunts = list(
+		list(
+			"HUZZAH! Your mettle is tested! Send forth more knights!",
+			"The fallen shall be AVENGED! More soldiers, TO ARMS!",
+		),
+		list(
+			"You fight with HONOR! But honor will not save thee!",
+			"The siege continues! Bring forth the HEAVY INFANTRY!",
+		),
+		list(
+			"So be it! THE BLACK KNIGHT SHALL END THIS!",
+			"'TIS BUT A SCRATCH! The Black Knight challenges thee!",
+		),
+	)

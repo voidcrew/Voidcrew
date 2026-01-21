@@ -26,6 +26,12 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 #define NPC_COMBAT_COMBAT "combat"
 #define NPC_COMBAT_RETREATING "retreating"
 #define NPC_COMBAT_NEGOTIATING "negotiating"
+// Boarding phase states (phased combat system)
+#define NPC_COMBAT_BOARDING "boarding"                    // Active wave in progress
+#define NPC_COMBAT_BOARDING_COOLDOWN "boarding_cooldown"  // 60-second break between waves
+#define NPC_COMBAT_BOSS_PHASE "boss_phase"                // Boss spawned, awaiting outcome
+#define NPC_COMBAT_DISABLED "disabled"                    // Ship disabled, player can board
+#define NPC_COMBAT_DISENGAGING "disengaging"              // Pirates won, leaving
 
 // Hailing phase blackboard keys
 #define BB_NPC_HAILING_START "npc_hailing_start"          // When hailing started
@@ -69,6 +75,36 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 // Negotiation payment signal
 #define COMSIG_NEGOTIATION_PAYMENT "negotiation_payment"
 
+// ========== BOARDING PHASE SYSTEM ==========
+
+// Boarding blackboard keys
+#define BB_NPC_BOARDING_WAVE "npc_boarding_wave"                    // Current wave number (1, 2, 3)
+#define BB_NPC_BOARDING_WAVE_BOARDERS "npc_boarding_wave_boarders"  // List of mobs in current wave
+#define BB_NPC_BOARDING_COOLDOWN_END "npc_boarding_cooldown_end"    // World.time when cooldown ends
+#define BB_NPC_BOARDING_BOSS "npc_boarding_boss"                    // Reference to spawned boss mob
+#define BB_NPC_BOARDING_PLAYER_CREW "npc_boarding_player_crew"      // List of tracked player crew
+#define BB_NPC_BOARDING_INITIAL_CREW_COUNT "npc_boarding_crew_count" // Crew count at boarding start (for wave scaling)
+#define BB_NPC_BOARDING_WAVE_START_TIME "npc_boarding_wave_start"   // World.time when current wave started
+#define BB_NPC_BOARDING_TARGET_POS "npc_boarding_target_pos"        // Target position at boarding start (for movement detection)
+
+// Boarding signals
+#define COMSIG_BOARDING_WAVE_COMPLETE "boarding_wave_complete"      // Fired when all boarders in wave die
+#define COMSIG_BOARDING_BOSS_KILLED "boarding_boss_killed"          // Fired when boss is killed
+#define COMSIG_BOARDING_PLAYER_CREW_DIED "boarding_player_crew_died" // Fired when tracked player crew dies
+#define COMSIG_BOARDING_ESCALATED "boarding_escalated"              // Fired when player aggression escalates to full combat
+
+// Boarding timing constants
+#define NPC_BOARDING_WAVE_COUNT 3                  // Number of waves before boss
+#define NPC_BOARDING_WAVE_COOLDOWN (30 SECONDS)    // Time between waves
+#define NPC_BOARDING_DISENGAGE_DELAY (10 SECONDS)  // Time before pirates leave after victory
+#define NPC_BOARDING_WAVE_TIME_LIMIT (3 MINUTES)   // Max time per wave before escalation
+
+// Wave loot tiers (multipliers)
+#define NPC_LOOT_TIER_WAVE1 1.0
+#define NPC_LOOT_TIER_WAVE2 1.5
+#define NPC_LOOT_TIER_WAVE3 2.0
+#define NPC_LOOT_TIER_BOSS 3.0
+
 // Scanning blackboard keys
 #define BB_NPC_SCAN_START_TIME "npc_scan_start_time"  // When scan started
 #define BB_NPC_SCAN_COMPLETE "npc_scan_complete"      // Whether scan finished
@@ -82,6 +118,7 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 
 // Combat action types (for action priority)
 #define NPC_ACTION_FIRE_WEAPONS "fire_weapons"
+#define NPC_ACTION_FIRE_BOARDING_PODS "fire_boarding_pods"
 #define NPC_ACTION_USE_INTERDICTOR "use_interdictor"
 #define NPC_ACTION_ACTIVATE_SIPHON "activate_siphon"
 

@@ -10,6 +10,13 @@
  * - COMBAT: Actively firing weapons and using interdictor
  * - RETREATING: All weapons destroyed, trying to escape
  * - NEGOTIATING: In active negotiation with target, combat paused
+ *
+ * Phased Boarding Combat States:
+ * - BOARDING: Active wave of boarders on target ship
+ * - BOARDING_COOLDOWN: 60-second break between waves
+ * - BOSS_PHASE: Boss has been spawned, awaiting outcome
+ * - DISABLED: Ship disabled after boss killed, player can board
+ * - DISENGAGING: Pirates won (all player crew dead), leaving area
  */
 /datum/ai_planning_subtree/npc_ship_combat
 
@@ -36,7 +43,34 @@
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/retreat_escape)
 		return
 
-	// Always scan for threats first (unless retreating, scanning, or hailing)
+	// ========== BOARDING PHASE STATES ==========
+
+	// Active boarding wave - monitor the wave
+	if(combat_state == NPC_COMBAT_BOARDING)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/boarding_wave_monitor)
+		return
+
+	// Cooldown between waves - wait for timer
+	if(combat_state == NPC_COMBAT_BOARDING_COOLDOWN)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/boarding_cooldown_monitor)
+		return
+
+	// Boss phase - wait for boss to be killed
+	if(combat_state == NPC_COMBAT_BOSS_PHASE)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/boss_phase_monitor)
+		return
+
+	// Ship disabled - do nothing, wait for players to board
+	if(combat_state == NPC_COMBAT_DISABLED)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/disabled)
+		return
+
+	// Disengaging after pirate victory - leaving the area
+	if(combat_state == NPC_COMBAT_DISENGAGING)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/disengage)
+		return
+
+	// Always scan for threats first (unless in special states)
 	if(combat_state != NPC_COMBAT_SCANNING)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/scan_threats)
 
@@ -62,6 +96,8 @@
 			switch(chosen_action)
 				if(NPC_ACTION_FIRE_WEAPONS)
 					controller.queue_behavior(/datum/ai_behavior/npc_ship/fire_weapons)
+				if(NPC_ACTION_FIRE_BOARDING_PODS)
+					controller.queue_behavior(/datum/ai_behavior/npc_ship/fire_boarding_pods)
 				if(NPC_ACTION_USE_INTERDICTOR)
 					controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)
 				if(NPC_ACTION_ACTIVATE_SIPHON)
@@ -79,11 +115,12 @@
  * Priority logic:
  * 1. If we just started interdiction/siphon, we're "committed" and must wait before other actions
  * 2. Otherwise, use weighted random selection favoring weapons fire
+ * 3. Boarding pods are heavily favored when target shields are down (reduces missile reliance)
  *
- * Returns: NPC_ACTION_FIRE_WEAPONS, NPC_ACTION_USE_INTERDICTOR, or NPC_ACTION_ACTIVATE_SIPHON
+ * Returns: NPC_ACTION_FIRE_WEAPONS, NPC_ACTION_FIRE_BOARDING_PODS, NPC_ACTION_USE_INTERDICTOR, or NPC_ACTION_ACTIVATE_SIPHON
  */
 /datum/ai_planning_subtree/npc_ship_combat/proc/choose_combat_action(datum/ai_controller/npc_ship/controller)
-	var/obj/structure/overmap/ship/npc/ship = controller.get_ship()
+	var/obj/structure/overmap/ship/npc/pirate/ship = controller.get_ship()
 	var/obj/structure/overmap/ship/target = controller.get_target()
 
 	// Check commitment delays - if we recently started interdiction or siphon, we can't do other actions
@@ -104,8 +141,25 @@
 	// Build list of available actions with weights
 	var/list/action_weights = list()
 
-	// Weapons fire is always available and highest priority (weight: 60)
-	action_weights[NPC_ACTION_FIRE_WEAPONS] = 60
+	// Check if target shields are down (critical for boarding pod decision)
+	var/target_shields_down = !target?.shields_active || target.shield_health <= 0
+
+	// Check if boarding pods are available (ship has them enabled, cooldown ready)
+	var/boarding_pods_available = FALSE
+	if(istype(ship) && ship.boarding_pods_enabled && target_shields_down)
+		if(COOLDOWN_FINISHED(ship, boarding_pod_cooldown))
+			boarding_pods_available = TRUE
+
+	// If boarding pods are available (shields down, off cooldown), heavily favor them
+	// This reduces reliance on missiles and adds lethality via boarders
+	if(boarding_pods_available)
+		// Boarding pods get high weight when shields are down (weight: 50)
+		action_weights[NPC_ACTION_FIRE_BOARDING_PODS] = 50
+		// Reduce weapons weight when pods available (weight: 30 instead of 60)
+		action_weights[NPC_ACTION_FIRE_WEAPONS] = 30
+	else
+		// Weapons fire is always available (weight: 60)
+		action_weights[NPC_ACTION_FIRE_WEAPONS] = 60
 
 	// Interdictor is available if target isn't already interdicted (weight: 25)
 	if(target && !target.is_interdicted)
@@ -117,7 +171,8 @@
 
 	// If only weapons available, just return that
 	if(length(action_weights) == 1)
-		return NPC_ACTION_FIRE_WEAPONS
+		for(var/action in action_weights)
+			return action
 
 	// Weighted random selection
 	var/total_weight = 0

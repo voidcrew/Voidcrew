@@ -80,6 +80,9 @@
 	var/obj/structure/overmap/ship/npc/ship = get_ship()
 	if(!ship || QDELETED(ship))
 		return FALSE
+	// Disabled ships are always claimable
+	if(ship.is_disabled)
+		return TRUE
 	if(!ship.ai_controller)
 		return FALSE  // Already claimed
 	return TRUE

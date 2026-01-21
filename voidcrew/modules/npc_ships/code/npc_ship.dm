@@ -76,6 +76,9 @@
 	/// Whether this ship can currently be boarded (disabled or interdicted)
 	var/can_board = FALSE
 
+	/// Whether this ship has been disabled (boss killed in phased combat)
+	var/is_disabled = FALSE
+
 	/// Cooldown for laser firing
 	COOLDOWN_DECLARE(laser_cooldown)
 
@@ -392,6 +395,28 @@
 	can_board = FALSE
 
 /**
+ * Sets the ship into disabled state (boss was killed).
+ * In this state:
+ * - Ship stops attacking
+ * - Ship can be boarded by players
+ * - AI is paused
+ */
+/obj/structure/overmap/ship/npc/proc/set_disabled_state()
+	is_disabled = TRUE
+	can_board = TRUE
+
+	// Notify player ship that pirate is disabled
+	var/datum/ai_controller/npc_ship/controller = ai_controller
+	if(controller)
+		var/obj/structure/overmap/ship/target = controller.get_target()
+		if(target && !QDELETED(target))
+			target.ship_notify("[name] has been disabled! You may now board and claim the vessel.", "COMBAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		controller.set_combat_state(NPC_COMBAT_DISABLED)
+
+	// Announce to this ship
+	ship_notify("All hands lost. Ship systems failing.", "CRITICAL", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
+
+/**
  * Override burn_engines to use per-ship acceleration while still requiring working engines.
  * This bypasses the complex thrust/mass calculation but ensures the ship has functional
  * engines before allowing movement.
@@ -529,4 +554,48 @@
 	var/max_negotiation_demand = 10000
 	/// Faction identifier for dialog and appearance
 	var/pirate_faction = "rogues"
+
+	// ========== BOARDING POD CONFIG ==========
+	/// Whether this pirate can launch boarding pods
+	var/boarding_pods_enabled = TRUE
+	/// Minimum number of pods to launch at once
+	var/boarding_pods_min = 1
+	/// Maximum number of pods to launch at once
+	var/boarding_pods_max = 3
+	/// Cooldown between boarding pod salvos
+	var/boarding_pod_cooldown_time = 30 SECONDS
+	/// List of mob types to spawn in boarding pods (uses crew_types if empty)
+	var/list/boarding_pod_mob_types = list()
+	/// Cooldown tracker for boarding pod launches
+	COOLDOWN_DECLARE(boarding_pod_cooldown)
+
+	// ========== PHASED BOARDING COMBAT CONFIG ==========
+	/// Whether this pirate uses the phased boarding system (negotiation fail -> waves -> boss)
+	var/uses_boarding_phases = TRUE
+	/// Wave sizes by wave number - list of list(min, max) per wave
+	/// Default scales with crew count, these are base values
+	var/list/boarding_wave_sizes = list(
+		list(2, 3),  // Wave 1
+		list(3, 4),  // Wave 2
+		list(3, 5),  // Wave 3
+	)
+	/// Boss mob type for this faction
+	var/boss_type = /mob/living/basic/trooper/pirate/faction/boss/rogues
+	/// Minimum crew on target ship to bother attacking (small ship protection)
+	var/min_target_crew = 1
+	/// Wave taunts - played during cooldown between waves
+	var/list/wave_taunts = list(
+		list(  // Wave 1 -> 2 cooldown
+			"Your resistance is noted. Reinforcements inbound.",
+			"You fight well for cargo haulers. Let's see how long that lasts.",
+		),
+		list(  // Wave 2 -> 3 cooldown
+			"This is your final warning. Surrender now.",
+			"Impressive. But the next wave won't be so gentle.",
+		),
+		list(  // Boss spawn
+			"You've forced my hand. I'm coming personally.",
+			"Enough games. Prepare to meet your end.",
+		),
+	)
 

@@ -90,8 +90,8 @@
 		to_chat(user, span_warning("This key is for a different vessel: [key.ship_name]"))
 		return FALSE
 
-	// Check if key is valid (has AI controller) OR ship is abandoned (claimable without valid key)
-	if(!key.is_valid() && !current_ship.abandoned)
+	// Check if key is valid (has AI controller) OR ship is abandoned OR ship is disabled (all claimable)
+	if(!key.is_valid() && !current_ship.abandoned && !npc_ship?.is_disabled)
 		to_chat(user, span_warning("This authorization key is no longer valid."))
 		return FALSE
 
@@ -159,7 +159,7 @@
 	npc_ship.player_controlled = TRUE  // Use normal engine physics instead of NPC simplified movement
 
 	// Announce the change of ownership
-	npc_ship.ship_notify("NOTICE: Command authorization transferred. New commanding officer recognized.", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+	npc_ship.ship_notify("NOTICE: Command authorization transferred. New commanding officer recognized.", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 	// Add claimer to ship team if it exists, or create one
 	// Note: Players can be members of multiple ship teams simultaneously
@@ -448,12 +448,12 @@
 		return // This exists to prefent Href exploits to call process_jump more than once by a client
 	message_admins("[ADMIN_LOOKUPFLW(usr)] has initiated a bluespace jump in [ADMIN_VERBOSEJMP(src)]")
 	jump_timer = addtimer(CALLBACK(src, PROC_REF(jump_sequence), TRUE), JUMP_CHARGEUP_TIME, TIMER_STOPPABLE)
-	current_ship?.ship_notify("Bluespace jump calibration initialized. Calibration completion in [JUMP_CHARGEUP_TIME/600] minutes.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+	current_ship?.ship_notify("Bluespace jump calibration initialized. Calibration completion in [JUMP_CHARGEUP_TIME/600] minutes.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	calibrating = TRUE
 	return TRUE
 
 /obj/machinery/computer/helm/proc/cancel_jump()
-	current_ship?.ship_notify("Pylon Disengaged. Jump cancelled.", "BLUESPACE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg')
+	current_ship?.ship_notify("Pylon Disengaged. Jump cancelled.", "BLUESPACE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
 	calibrating = FALSE
 	deltimer(jump_timer)
 
@@ -464,19 +464,19 @@
 			SStgui.close_uis(src)
 		if(JUMP_STATE_CHARGING)
 			jump_state = JUMP_STATE_IONIZING
-			current_ship?.ship_notify("Bluespace Jump Calibration completed. Ionizing Bluespace Pylon.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+			current_ship?.ship_notify("Bluespace Jump Calibration completed. Ionizing Bluespace Pylon.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		if(JUMP_STATE_IONIZING)
 			jump_state = JUMP_STATE_FIRING
-			current_ship?.ship_notify("Bluespace Ionization finalized; preparing to fire Bluespace Pylon.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+			current_ship?.ship_notify("Bluespace Ionization finalized; preparing to fire Bluespace Pylon.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		if(JUMP_STATE_FIRING)
 			jump_state = JUMP_STATE_FINALIZED
-			current_ship?.ship_notify("Bluespace Pylon launched.", sound='sound/effects/magic/lightning_chargeup.ogg')
+			current_ship?.ship_notify("Bluespace Pylon launched.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'sound/effects/magic/lightning_chargeup.ogg', 50)
 			addtimer(CALLBACK(src, PROC_REF(do_jump)), 10 SECONDS)
 			return
 	addtimer(CALLBACK(src, PROC_REF(jump_sequence), TRUE), JUMP_CHARGE_DELAY)
 
 /obj/machinery/computer/helm/proc/do_jump()
-	current_ship?.ship_notify("Bluespace Jump Initiated.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+	current_ship?.ship_notify("Bluespace Jump Initiated.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	// Extract ship parts from all players on the ship before jumping
 	if(current_ship)
 		extract_ship_parts_from_ship(current_ship, "bluespace_jump")

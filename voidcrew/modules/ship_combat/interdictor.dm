@@ -398,12 +398,12 @@
 	)
 
 	// Notify target
-	target.ship_notify("INTERDICTION LOCK DETECTED! Evasive maneuvers recommended!", "INTERDICTION", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert4.ogg')
+	target.ship_notify("INTERDICTION LOCK DETECTED! Evasive maneuvers recommended!", "INTERDICTION", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert4.ogg', 25)
 
 	// Notify our crew
 	if(user)
 		to_chat(user, span_notice("Interdiction lock initiated on [target.display_name]. Warming up..."))
-	our_ship.ship_notify("Interdiction lock initiated on [target.display_name]. Lock completing in [INTERDICTOR_LOCK_TIME / 10] seconds.", "INTERDICTOR", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+	our_ship.ship_notify("Interdiction lock initiated on [target.display_name]. Lock completing in [INTERDICTOR_LOCK_TIME / 10] seconds.", "INTERDICTOR", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 	update_appearance()
 	update_power_draw()
@@ -552,7 +552,7 @@
 		UnregisterSignal(target, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
 		target.clear_interdiction()
 		SEND_SIGNAL(target, COMSIG_SHIP_INTERDICTION_ENDED)
-		target.ship_notify("Interdiction field collapsed. Engines restored to full power.", "INTERDICTION", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+		target.ship_notify("Interdiction field collapsed. Engines restored to full power.", "INTERDICTION", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 	interdicted_ship_ref = null
 
@@ -602,7 +602,7 @@
 	// Announce to our ship
 	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
 	if(ship)
-		ship.ship_notify("Target vessel performed emergency shield burst! Interdiction lock broken.", "INTERDICTOR", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg')
+		ship.ship_notify("Target vessel performed emergency shield burst! Interdiction lock broken.", "INTERDICTOR", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 
 	update_appearance()
 	update_power_draw()
@@ -705,8 +705,8 @@
 	cancel_interdiction()
 
 	// Announce force dock
-	our_ship.ship_notify("Forcing [dock_target.display_name] to dock!", "INTERDICTOR", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
-	dock_target.ship_notify("FORCED DOCKING INITIATED!", "INTERDICTION", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn2.ogg')
+	our_ship.ship_notify("Forcing [dock_target.display_name] to dock!", "INTERDICTOR", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	dock_target.ship_notify("FORCED DOCKING INITIATED!", "INTERDICTION", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn2.ogg', 25)
 
 	// Apply extended undock lockout
 	COOLDOWN_START(dock_target, interdiction_undock_lockout, INTERDICTOR_FORCE_DOCK_LOCKOUT)
@@ -715,12 +715,12 @@
 	var/result = our_ship.dock_ships_directly(dock_target, null, TRUE)
 	if(result)
 		// Direct docking failed, fall back to reserve port docking
-		our_ship.ship_notify("Direct docking failed, using reserve ports.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg')
-		dock_target.ship_notify("Direct docking failed, using reserve ports.", "INTERDICTION", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg')
+		our_ship.ship_notify("Direct docking failed, using reserve ports.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg', 50)
+		dock_target.ship_notify("Direct docking failed, using reserve ports.", "INTERDICTION", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 		var/fallback_result = our_ship.dock_ships_to_reserve_ports(dock_target, null, TRUE)
 		if(fallback_result)
-			our_ship.ship_notify("Forced docking failed: [fallback_result]", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg')
-			dock_target.ship_notify("Forced docking failed.", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg')
+			our_ship.ship_notify("Forced docking failed: [fallback_result]", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
+			dock_target.ship_notify("Forced docking failed.", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 			return FALSE
 		else
 			playsound(src, 'sound/machines/airlock/airlockopen.ogg', 50, TRUE)
@@ -1049,7 +1049,7 @@
 			if(!pref_volume)
 				continue
 			// Play directly to mob (no positional audio)
-			var/actual_volume = 40 * (pref_volume / 100)
+			var/actual_volume = 20 * (pref_volume / 100)
 			SEND_SOUND(M, sound('voidcrew/sound/machines/interdictor/shield.ogg', volume = actual_volume))
 
 	// Remove overlays from mobs who left the ship

@@ -176,7 +176,7 @@
 			if(ship.ship_team)
 				ship.ship_team.name = new_name
 			COOLDOWN_START(ship, rename_cooldown, 5 MINUTES)
-			ship.ship_notify("This vessel has been renamed from [old_name] to [new_name].", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+			ship.ship_notify("This vessel has been renamed from [old_name] to [new_name].", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 			log_game("[key_name(captain)] renamed ship from [old_name] to [new_name]")
 			return TRUE
 
@@ -255,7 +255,7 @@
 		ship.manifest += player.real_name
 
 	to_chat(player, span_notice("You have joined the crew of [ship.name]!"))
-	ship.ship_notify("[player.real_name] has joined the crew.", "CREW UPDATE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+	ship.ship_notify("[player.real_name] has joined the crew.", "CREW UPDATE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	log_game("[key_name(captain)] invited [key_name(player)] to ship [ship.name]")
 
 // ===== CREW MANAGEMENT =====
@@ -276,7 +276,7 @@
 	ship.manifest -= kicked_name
 
 	to_chat(kicked_mob, span_userdanger("You have been removed from [ship.name]'s crew by the captain!"))
-	ship.ship_notify("[kicked_name] has been removed from the crew roster.", "CREW UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg')
+	ship.ship_notify("[kicked_name] has been removed from the crew roster.", "CREW UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 25)
 	log_game("[key_name(captain)] kicked [key_name(kicked_mob)] from ship [ship.name]")
 
 // ===== MEMO DISPLAY HELPER =====

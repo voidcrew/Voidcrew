@@ -105,8 +105,9 @@
 			continue
 
 		// Skip targets already engaged by another pirate (only one pirate can engage at a time)
+		// Exception: disabled pirates don't block other pirates from engaging
 		var/obj/structure/overmap/ship/npc/engaging_pirate = potential_target.engaging_pirate_ref?.resolve()
-		if(engaging_pirate && engaging_pirate != ship && !QDELETED(engaging_pirate))
+		if(engaging_pirate && engaging_pirate != ship && !QDELETED(engaging_pirate) && !engaging_pirate.is_disabled)
 			continue
 
 		// Skip targets that have recently paid tribute (immunity)
@@ -196,8 +197,8 @@
 	// Announce scan start (only once)
 	if(!controller.blackboard[BB_NPC_SCAN_ANNOUNCED])
 		controller.blackboard[BB_NPC_SCAN_ANNOUNCED] = TRUE
-		ship.ship_notify("Initiating financial scan of [target.name]...", "SCANNER", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
-		target.ship_notify("[ship.name] is scanning our financial systems!", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg')
+		ship.ship_notify("Initiating financial scan of [target.name]...", "SCANNER", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		target.ship_notify("[ship.name] is scanning our financial systems!", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg', 25)
 		// Start looping scan sound on target ship
 		start_scan_sound(target)
 
@@ -222,14 +223,14 @@
 
 	if(target_wealth >= ship.min_target_wealth)
 		// Target has money - proceed to hailing or engaging
-		ship.ship_notify("Scan complete. Target has [target_wealth] credits.", "SCANNER", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+		ship.ship_notify("Scan complete. Target has [target_wealth] credits.", "SCANNER", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 		// If this pirate accepts negotiation, go to HAILING first (give player chance to respond)
 		// But only if no other pirate is already hailing/negotiating with this target
 		if(istype(ship, /obj/structure/overmap/ship/npc/pirate))
 			var/obj/structure/overmap/ship/npc/pirate/pirate_ship = ship
 			if(pirate_ship.accepts_negotiation && !is_target_being_hailed(target, ship))
-				target.ship_notify("[ship.name] is hailing your vessel!", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn2.ogg')
+				target.ship_notify("[ship.name] is hailing your vessel!", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn2.ogg', 25)
 				controller.set_combat_state(NPC_COMBAT_HAILING)
 				controller.clear_blackboard_key(BB_NPC_HAILING_START)
 				controller.clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
@@ -240,8 +241,8 @@
 		controller.set_combat_state(NPC_COMBAT_ENGAGING)
 	else
 		// Target is broke - not worth it
-		ship.ship_notify("Scan complete. Target has insufficient funds ([target_wealth] credits). Disengaging.", "SCANNER", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
-		target.ship_notify("Hostile scan complete. They found nothing of value and are disengaging.", "BROKEY ALERT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+		ship.ship_notify("Scan complete. Target has insufficient funds ([target_wealth] credits). Disengaging.", "SCANNER", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		target.ship_notify("Hostile scan complete. They found nothing of value and are disengaging.", "BROKEY ALERT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		controller.clear_target()
 
 	return AI_BEHAVIOR_DELAY
@@ -304,10 +305,10 @@
 		controller.set_blackboard_key(BB_NPC_HAILING_START, world.time)
 
 		// Announce to pirate ship
-		ship.ship_notify("Hailing [target.name]. Awaiting response.", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg')
+		ship.ship_notify("Hailing [target.name]. Awaiting response.", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 		// Announce to player ship - this is the key notification!
-		target.ship_notify("INCOMING HAIL from [ship.name]! Report to comms array to respond. 20 seconds before they open fire!", "PRIORITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg')
+		target.ship_notify("INCOMING HAIL from [ship.name]! Report to comms array to respond. 20 seconds before they open fire!", "PRIORITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
 
 		// Make the ship comms holopad ring
 		start_target_holopad_ringing(target)
@@ -325,7 +326,7 @@
 		// Only send once (check if we're in the 2-second window after halfway)
 		if(!controller.blackboard["hailing_reminder_sent"])
 			controller.set_blackboard_key("hailing_reminder_sent", TRUE)
-			target.ship_notify("[ship.name] is losing patience! 10 seconds until they open fire!", "URGENT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg')
+			target.ship_notify("[ship.name] is losing patience! 10 seconds until they open fire!", "URGENT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg', 25)
 
 	// Check if grace period expired
 	if(elapsed >= NPC_HAILING_GRACE_PERIOD)
@@ -336,6 +337,7 @@
 
 /**
  * Escalate from HAILING to COMBAT - player ignored or aggressed.
+ * If the ship uses boarding phases, starts phased boarding instead of ship combat.
  */
 /datum/ai_behavior/npc_ship/hailing/proc/escalate_to_combat(datum/ai_controller/npc_ship/controller, obj/structure/overmap/ship/npc/ship, obj/structure/overmap/ship/target, reason)
 	// Clear hailing state
@@ -348,16 +350,23 @@
 
 	// Announce escalation
 	if(reason == "ignored")
-		ship.ship_notify("No response from target. Engaging.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg')
-		target.ship_notify("[ship.name] has received no response and is engaging!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg')
+		ship.ship_notify("No response from target. Engaging.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
+		target.ship_notify("[ship.name] has received no response and is engaging!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
 	else if(reason == "aggression")
-		ship.ship_notify("Hostile action detected! Engaging!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg')
-		target.ship_notify("[ship.name] is retaliating to hostile action!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg')
+		ship.ship_notify("Hostile action detected! Engaging!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
+		target.ship_notify("[ship.name] is retaliating to hostile action!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
 	else if(reason == "negotiation_failed")
-		ship.ship_notify("Negotiations failed. Engaging target.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg')
-		target.ship_notify("Negotiations with [ship.name] have failed! Brace for combat!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg')
+		ship.ship_notify("Negotiations failed. Engaging target.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
+		target.ship_notify("Negotiations with [ship.name] have failed! Brace for combat!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
 
-	// Transition to ENGAGING (will acquire lock then fight)
+	// Check if we should use phased boarding (only for ignored/negotiation_failed, not aggression)
+	if(reason != "aggression")
+		var/obj/structure/overmap/ship/npc/pirate/pirate_ship = ship
+		if(istype(pirate_ship) && pirate_ship.uses_boarding_phases)
+			if(controller.start_boarding_phase())
+				return  // Successfully started boarding phase
+
+	// Fallback: Transition to ENGAGING (will acquire lock then fight)
 	controller.set_combat_state(NPC_COMBAT_ENGAGING)
 
 /**
@@ -423,7 +432,7 @@
 	var/lock_start = controller.blackboard[BB_NPC_LOCK_START_TIME]
 	if(!lock_start)
 		// Start the lock - alert the target ship (like combat console does)
-		target.ship_notify("Hostile ship acquiring weapons lock!", "WARNING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg')
+		target.ship_notify("Hostile ship acquiring weapons lock!", "WARNING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
 		controller.set_blackboard_key(BB_NPC_LOCK_START_TIME, world.time)
 		return AI_BEHAVIOR_DELAY
 
@@ -528,6 +537,59 @@
 		return TRUE
 
 	return FALSE
+
+// ========== FIRE BOARDING PODS ==========
+
+/**
+ * Fires boarding pods at the target ship when shields are down.
+ * Pods deliver hostile mobs directly onto the target ship.
+ * Used as an alternative to missiles to add lethality without relying solely on ordnance.
+ */
+/datum/ai_behavior/npc_ship/fire_boarding_pods
+	action_cooldown = 3 SECONDS
+
+/datum/ai_behavior/npc_ship/fire_boarding_pods/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship(controller)
+	var/datum/npc_combat_interface/combat = get_combat_interface(controller)
+	var/obj/structure/overmap/ship/target = controller.get_target()
+
+	if(!ship || !combat || !target || QDELETED(target))
+		return AI_BEHAVIOR_DELAY
+
+	// Only pirate ships can launch boarding pods
+	if(!istype(ship))
+		return AI_BEHAVIOR_DELAY
+
+	// Check if boarding pods are enabled for this ship
+	if(!ship.boarding_pods_enabled)
+		return AI_BEHAVIOR_DELAY
+
+	// Check cooldown
+	if(!COOLDOWN_FINISHED(ship, boarding_pod_cooldown))
+		return AI_BEHAVIOR_DELAY
+
+	// Check if weapons are allowed in this zone
+	if(!SSovermap_zones.weapons_allowed_at(ship))
+		return AI_BEHAVIOR_DELAY
+
+	// IMPORTANT: Only fire pods when target shields are DOWN
+	// Shields would destroy the pods before they could deliver boarders
+	var/target_has_shields = target.shields_active && target.shield_health > 0
+	if(target_has_shields)
+		return AI_BEHAVIOR_DELAY
+
+	// Calculate number of pods to launch
+	var/pod_count = rand(ship.boarding_pods_min, ship.boarding_pods_max)
+
+	// Fire the boarding pods!
+	if(combat.fire_boarding_pods(target, pod_count))
+		COOLDOWN_START(ship, boarding_pod_cooldown, ship.boarding_pod_cooldown_time)
+		// Announce the boarding action
+		target.ship_notify("Multiple boarding pods inbound! Prepare to repel boarders!", "SECURITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
+
+	return AI_BEHAVIOR_DELAY
 
 // ========== USE INTERDICTOR ==========
 
@@ -747,6 +809,132 @@
 	if(!combat.has_any_weapons() && ship.retreat_without_weapons)
 		controller.set_combat_state(NPC_COMBAT_RETREATING)
 		controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_RETREAT)
-		ship.ship_notify("All weapons systems offline! Initiating emergency retreat!", "CRITICAL", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg')
+		ship.ship_notify("All weapons systems offline! Initiating emergency retreat!", "CRITICAL", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
+
+	return AI_BEHAVIOR_DELAY
+
+// ========== BOARDING PHASE BEHAVIORS ==========
+
+/**
+ * Monitors the active boarding wave.
+ * This behavior runs during NPC_COMBAT_BOARDING state.
+ * Checks for escalation conditions: time limit, movement, player aggression.
+ */
+/datum/ai_behavior/npc_ship/boarding_wave_monitor
+	action_cooldown = 2 SECONDS
+
+/datum/ai_behavior/npc_ship/boarding_wave_monitor/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	// Verify we're still in boarding state
+	if(controller.get_combat_state() != NPC_COMBAT_BOARDING)
+		return AI_BEHAVIOR_DELAY
+
+	var/obj/structure/overmap/ship/npc/ship = controller.get_ship()
+	var/obj/structure/overmap/ship/target = controller.get_target()
+
+	if(!ship || !target || QDELETED(target))
+		return AI_BEHAVIOR_DELAY
+
+	// Check 1: Wave time limit exceeded (cheesing by walling off boarders)
+	var/wave_start = controller.blackboard[BB_NPC_BOARDING_WAVE_START_TIME]
+	if(wave_start && world.time >= wave_start + NPC_BOARDING_WAVE_TIME_LIMIT)
+		ship.ship_notify("These cowards are stalling! Open fire!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
+		target.ship_notify("[ship.name]: \"You think you can hide from us? Time's up!\"", "COMMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+		controller.escalate_boarding_to_combat("time_limit")
+		return AI_BEHAVIOR_DELAY
+
+	// Check 2: Target has moved (trying to escape)
+	var/list/initial_pos = controller.blackboard[BB_NPC_BOARDING_TARGET_POS]
+	if(initial_pos && length(initial_pos) >= 2)
+		if(target.x != initial_pos[1] || target.y != initial_pos[2])
+			ship.ship_notify("Target is trying to escape! Weapons free!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
+			target.ship_notify("[ship.name]: \"Running won't save you! All guns, fire!\"", "COMMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+			controller.escalate_boarding_to_combat("movement")
+			return AI_BEHAVIOR_DELAY
+
+	// Note: Player weapons lock is handled via COMSIG_SHIP_WEAPONS_LOCKED signal in controller
+
+	return AI_BEHAVIOR_DELAY
+
+/**
+ * Monitors the cooldown between waves.
+ * During cooldown, the pirate ship waits for the timer to expire.
+ */
+/datum/ai_behavior/npc_ship/boarding_cooldown_monitor
+	action_cooldown = 1 SECONDS
+
+/datum/ai_behavior/npc_ship/boarding_cooldown_monitor/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	// Verify we're in cooldown state
+	if(controller.get_combat_state() != NPC_COMBAT_BOARDING_COOLDOWN)
+		return AI_BEHAVIOR_DELAY
+
+	// Check if cooldown has expired (timer handles the actual transition)
+	var/cooldown_end = controller.blackboard[BB_NPC_BOARDING_COOLDOWN_END]
+	if(cooldown_end && world.time >= cooldown_end)
+		// Timer should have fired, but just in case
+		return AI_BEHAVIOR_DELAY
+
+	return AI_BEHAVIOR_DELAY
+
+/**
+ * Monitors the boss phase.
+ * During boss phase, we wait for the boss to be killed.
+ */
+/datum/ai_behavior/npc_ship/boss_phase_monitor
+	action_cooldown = 2 SECONDS
+
+/datum/ai_behavior/npc_ship/boss_phase_monitor/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	// Verify we're in boss phase
+	if(controller.get_combat_state() != NPC_COMBAT_BOSS_PHASE)
+		return AI_BEHAVIOR_DELAY
+
+	// Check if boss still exists
+	var/mob/living/boss = controller.blackboard[BB_NPC_BOARDING_BOSS]
+	if(!boss || QDELETED(boss) || boss.stat == DEAD)
+		// Boss is dead - controller should handle this via signal
+		return AI_BEHAVIOR_DELAY
+
+	return AI_BEHAVIOR_DELAY
+
+/**
+ * Handles the disengaging state after pirates win.
+ * The pirate ship leaves the area.
+ */
+/datum/ai_behavior/npc_ship/disengage
+	action_cooldown = 1 SECONDS
+
+/datum/ai_behavior/npc_ship/disengage/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	// Verify we're in disengage state
+	if(controller.get_combat_state() != NPC_COMBAT_DISENGAGING)
+		return AI_BEHAVIOR_DELAY
+
+	// The controller handles the actual disengage timer
+	// This behavior just ensures we don't do anything else
+
+	return AI_BEHAVIOR_DELAY
+
+/**
+ * Handles the disabled state.
+ * Ship is dead in the water, waiting to be boarded.
+ */
+/datum/ai_behavior/npc_ship/disabled
+	action_cooldown = 5 SECONDS
+
+/datum/ai_behavior/npc_ship/disabled/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+	. = ..()
+
+	// Verify we're in disabled state
+	if(controller.get_combat_state() != NPC_COMBAT_DISABLED)
+		return AI_BEHAVIOR_DELAY
+
+	// Ship is disabled - nothing to do
+	// Players can now board and claim it
 
 	return AI_BEHAVIOR_DELAY

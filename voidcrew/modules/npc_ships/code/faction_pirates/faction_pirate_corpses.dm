@@ -1,6 +1,22 @@
 // Faction-specific pirate corpse spawners and outfits for NPC mobs
 // These define the visual appearance of faction pirate troopers
 
+// ==================== BASE FACTION CORPSE ====================
+// This fixes the TG bug where skin_tone is defined but never applied after randomize_human_normie()
+
+/obj/effect/mob_spawn/corpse/human/pirate/faction
+	skin_tone = "caucasian1"
+	hairstyle = "Bald"
+	facial_hairstyle = "Shaved"
+
+/obj/effect/mob_spawn/corpse/human/pirate/faction/special(mob/living/carbon/human/spawned_human)
+	. = ..()
+	// Fix: The base mob_spawn code doesn't apply skin_tone after randomization
+	// We force it here for consistent corpse appearances
+	if(skin_tone && ishuman(spawned_human))
+		spawned_human.skin_tone = skin_tone
+		spawned_human.update_body_parts()
+
 // ==================== SILVERSCALE (Aristocratic Lizards) ====================
 
 /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale

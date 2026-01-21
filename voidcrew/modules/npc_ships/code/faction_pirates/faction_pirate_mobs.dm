@@ -48,7 +48,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/melee
 	r_hand = /obj/item/melee/energy/sword/pirate
-	plunder_credits = 50
+	plunder_credits = 0
 
 /mob/living/basic/trooper/pirate/faction/silverscale/ranged
 	name = "Silverscale Marksman"
@@ -87,7 +87,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
 	r_hand = /obj/item/melee/energy/sword/pirate
-	plunder_credits = 100
+	plunder_credits = 0
 
 // ==================== SKELETON (Undead Pirates) ====================
 
@@ -113,7 +113,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/melee
 	r_hand = /obj/item/melee/energy/sword/pirate
-	plunder_credits = 50
+	plunder_credits = 0
 
 /mob/living/basic/trooper/pirate/faction/skeleton/ranged
 	name = "Skeleton Gunner"
@@ -152,7 +152,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/captain
 	r_hand = /obj/item/gun/magic/midas_hand
-	plunder_credits = 100
+	plunder_credits = 0
 
 // ==================== GREY TIDE (Rogue Assistants) ====================
 
@@ -175,7 +175,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/melee
 	r_hand = /obj/item/storage/toolbox/mechanical
-	plunder_credits = 50
+	plunder_credits = 0
 
 /mob/living/basic/trooper/pirate/faction/grey/ranged
 	name = "Grey Tider Gunner"
@@ -213,7 +213,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/captain
 	r_hand = /obj/item/storage/toolbox/syndicate
-	plunder_credits = 100
+	plunder_credits = 0
 
 // ==================== LUSTROUS (Mutated Ethereals) ====================
 
@@ -236,7 +236,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/melee
 	r_hand = /obj/item/switchblade
-	plunder_credits = 50
+	plunder_credits = 0
 
 /mob/living/basic/trooper/pirate/faction/lustrous/ranged
 	name = "Lustrous Coruscant"
@@ -278,7 +278,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/captain
 	r_hand = /obj/item/melee/energy/sword/pirate
-	plunder_credits = 100
+	plunder_credits = 0
 
 // ==================== INTERDYNE (Ex-Pharmacists) ====================
 
@@ -301,7 +301,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/melee
 	r_hand = /obj/item/scalpel
-	plunder_credits = 50
+	plunder_credits = 0
 
 /mob/living/basic/trooper/pirate/faction/interdyne/ranged
 	name = "Interdyne Pharmacist"
@@ -340,7 +340,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/captain
 	r_hand = /obj/item/melee/energy/sword/pirate
-	plunder_credits = 100
+	plunder_credits = 0
 
 // ==================== IRS (Tax Collectors) ====================
 
@@ -364,7 +364,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/melee
 	r_hand = /obj/item/melee/baton/telescopic
-	plunder_credits = 50
+	plunder_credits = 0
 
 /mob/living/basic/trooper/pirate/faction/irs/ranged
 	name = "IRS Agent"
@@ -401,7 +401,7 @@
 	var/projectilesound = 'sound/items/weapons/laser.ogg'
 	var/burst_shots = 3
 	var/ranged_cooldown = 4 SECONDS
-	plunder_credits = 100
+	plunder_credits = 0
 
 /mob/living/basic/trooper/pirate/faction/irs/captain/Initialize(mapload)
 	. = ..()
@@ -434,7 +434,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/melee
 	r_hand = /obj/item/claymore/shortsword
-	plunder_credits = 50
+	plunder_credits = 0
 
 /mob/living/basic/trooper/pirate/faction/medieval/melee/Initialize(mapload)
 	. = ..()
@@ -481,7 +481,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/captain
 	r_hand = /obj/item/fireaxe/boardingaxe
-	plunder_credits = 150
+	plunder_credits = 0
 
 /mob/living/basic/trooper/pirate/faction/medieval/captain/Initialize(mapload)
 	. = ..()
