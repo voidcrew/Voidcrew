@@ -1,6 +1,9 @@
 // Cached blocked turfs for O(1) pathfinding lookups (populated at round start)
 GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 
+// Patrol stagger counter - prevents mobs from all targeting the same door
+GLOBAL_LIST_EMPTY(patrol_stagger_counter)
+
 // NPC Ship AI Blackboard Keys
 #define BB_NPC_TARGET "npc_target"                    // Target ship reference
 #define BB_NPC_TARGET_LOCKED "npc_target_locked"      // TRUE if weapons locked
@@ -159,8 +162,13 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 // ========== MOB PATROL SYSTEM ==========
 // Cached patrol paths for boarding parties (keyed by ship ref)
 GLOBAL_LIST_EMPTY(boarding_patrol_paths)
+// Cached list of doors that require access (keyed by ship ref -> list of door refs)
+// Pirates have no access, so these doors need to be attacked, not bumped
+GLOBAL_LIST_EMPTY(boarding_locked_doors)
 // Tracks which ships have had their patrol path visualized (debug mode only)
 GLOBAL_VAR(patrol_paths_visualized)
+// Stores visualization markers for patrol paths (keyed by ship ref)
+GLOBAL_LIST_EMPTY(patrol_path_markers)
 
 // Mob patrol blackboard keys
 #define BB_MOB_PATROL_PATH "mob_patrol_path"          // Reference to the cached patrol path list

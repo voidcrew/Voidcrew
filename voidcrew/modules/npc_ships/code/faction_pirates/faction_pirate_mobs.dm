@@ -11,6 +11,7 @@
 	faction = list(FACTION_PIRATE)
 	unsuitable_atmos_damage = 0
 	minimum_survivable_temperature = 0
+	obj_damage = 60  // Can break doors/objects like blobbernauts
 
 /mob/living/basic/trooper/pirate/faction/Initialize(mapload)
 	. = ..()

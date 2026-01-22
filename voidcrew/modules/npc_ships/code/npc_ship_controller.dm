@@ -912,6 +912,21 @@
 		set_blackboard_key(BB_NPC_BOARDING_BOSS, boss)
 		RegisterSignal(boss, COMSIG_LIVING_DEATH, PROC_REF(on_boss_death))
 
+		// Swap boss AI controller to patrolling version and assign patrol
+		var/new_controller_type
+		if(istype(boss.ai_controller, /datum/ai_controller/basic_controller/trooper/ranged))
+			new_controller_type = /datum/ai_controller/basic_controller/trooper/ranged/patrolling/boss
+		else
+			new_controller_type = /datum/ai_controller/basic_controller/trooper/patrolling/boss
+		log_shuttle("PATROL: Swapping [boss] to [new_controller_type]")
+		boss.ai_controller.set_ai_status(AI_STATUS_OFF)
+		qdel(boss.ai_controller)
+		boss.ai_controller = new new_controller_type(boss)
+		boss.ai_controller.set_ai_status(AI_STATUS_ON)
+
+		// Assign boss to patrol the target ship
+		assign_mob_to_patrol(boss, target)
+
 	// Announce boss arrival
 	target.ship_notify("WARNING: [boss?.name || "Enemy Commander"] has boarded your vessel!", "SECURITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
 
