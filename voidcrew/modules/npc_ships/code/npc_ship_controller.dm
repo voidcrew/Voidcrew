@@ -460,7 +460,7 @@
 		clear_target()
 		// Target is now on our "paid" list (handled by negotiation datum)
 	else
-		// Movement during negotiation = immediate ship combat (no boarding chance)
+		// Double flee attempt = straight to ship combat (player was already warned)
 		if(reason == "player_moved")
 			set_combat_state(NPC_COMBAT_COMBAT)
 			return
@@ -521,27 +521,60 @@
 	// Register for player aggression during boarding (escalates to full combat)
 	RegisterSignal(target, COMSIG_SHIP_WEAPONS_LOCKED, PROC_REF(on_player_weapons_lock_during_boarding))
 
+	// Ensure engaging_pirate_ref is set (defensive - should already be set, but just in case)
+	// This prevents other pirates from targeting this ship while we're boarding
+	target.engaging_pirate_ref = WEAKREF(ship)
+
+	// Initialize wave tracking
+	set_blackboard_key(BB_NPC_BOARDING_WAVE, 1)
+	blackboard[BB_NPC_BOARDING_WAVE_BOARDERS] = list()
+
+	// Enter boarding state
+	set_combat_state(NPC_COMBAT_BOARDING)
+
+	// Stagger the boarding phase events for dramatic effect:
+	// T+0: Rejection line already played (from end_negotiation)
+	// T+5s: Interdiction locks in
+	// T+8s: Boarding announcement
+	// T+38s: First wave launches (30s after announcement)
+
+	addtimer(CALLBACK(src, PROC_REF(boarding_phase_interdiction)), 5 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(boarding_phase_announcement)), 8 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(launch_boarding_wave), 1), 38 SECONDS)
+
+	return TRUE
+
+/**
+ * Delayed interdiction during boarding phase setup.
+ */
+/datum/ai_controller/npc_ship/proc/boarding_phase_interdiction()
+	var/obj/structure/overmap/ship/target = get_target()
+	if(!target || QDELETED(target))
+		return
+
 	// Start interdiction to prevent FTL escape
 	var/datum/npc_combat_interface/combat = get_combat_interface()
 	if(combat)
 		combat.start_interdiction(target)
 
+/**
+ * Delayed boarding announcement during boarding phase setup.
+ */
+/datum/ai_controller/npc_ship/proc/boarding_phase_announcement()
+	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
+	var/obj/structure/overmap/ship/target = get_target()
+
+	if(!ship || !target || QDELETED(target))
+		return
+
+	// Check we're still in boarding state (didn't escalate to combat)
+	if(get_combat_state() != NPC_COMBAT_BOARDING)
+		return
+
 	// Announce boarding phase start
 	ship.ship_notify("Boarding operation initiated. Wave 1 deploying.", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
-	target.ship_notify("[ship.name] is deploying boarding parties! Prepare to repel boarders!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
-
-	// Initialize wave tracking
-	set_blackboard_key(BB_NPC_BOARDING_WAVE, 1)
-	set_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS, list())
-
-	// Enter boarding state
-	set_combat_state(NPC_COMBAT_BOARDING)
-
-	// Launch the first wave after a delay (gives players time to prepare)
-	addtimer(CALLBACK(src, PROC_REF(launch_boarding_wave), 1), 30 SECONDS)
+	target.ship_notify("[ship.name] is deploying boarding parties! Prepare to repel boarders!", "COMBAT", SHIP_NOTIFY_DANGER)
 	target.ship_notify("First wave incoming in 30 seconds!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
-
-	return TRUE
 
 /**
  * Count living humanoid crew on the target ship.
@@ -634,12 +667,32 @@
 			wave_boarders += boarder
 			RegisterSignal(boarder, COMSIG_LIVING_DEATH, PROC_REF(on_boarder_death))
 
+	// Set up patrol behavior for all spawned boarders
+	log_shuttle("PATROL: Wave spawned [length(wave_boarders)] boarders, setting up patrol on [target]")
+	for(var/i in 1 to length(wave_boarders))
+		var/mob/living/boarder = wave_boarders[i]
+		if(!boarder)
+			continue
+		// Swap to patrolling AI controller
+		var/new_controller_type
+		if(istype(boarder.ai_controller, /datum/ai_controller/basic_controller/trooper/ranged))
+			new_controller_type = /datum/ai_controller/basic_controller/trooper/ranged/patrolling
+		else if(istype(boarder.ai_controller, /datum/ai_controller/basic_controller/trooper))
+			new_controller_type = /datum/ai_controller/basic_controller/trooper/patrolling
+
+		if(new_controller_type)
+			log_shuttle("PATROL: Swapping [boarder] to [new_controller_type]")
+			new new_controller_type(boarder)
+
+		// Assign patrol path
+		assign_mob_to_patrol(boarder, target, i - 1, length(wave_boarders))
+
 	// Store the wave boarders for tracking
-	set_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS, wave_boarders)
+	blackboard[BB_NPC_BOARDING_WAVE_BOARDERS] = wave_boarders
 
 	// Track wave start time and target position (for time limit and movement detection)
 	set_blackboard_key(BB_NPC_BOARDING_WAVE_START_TIME, world.time)
-	set_blackboard_key(BB_NPC_BOARDING_TARGET_POS, list(target.x, target.y))
+	blackboard[BB_NPC_BOARDING_TARGET_POS] = list(target.x, target.y)
 
 	// Notify target ship
 	target.ship_notify("Wave [wave_number]: [length(wave_boarders)] hostiles have boarded!", "SECURITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)

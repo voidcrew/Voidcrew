@@ -107,8 +107,13 @@
 		// Skip targets already engaged by another pirate (only one pirate can engage at a time)
 		// Exception: disabled pirates don't block other pirates from engaging
 		var/obj/structure/overmap/ship/npc/engaging_pirate = potential_target.engaging_pirate_ref?.resolve()
-		if(engaging_pirate && engaging_pirate != ship && !QDELETED(engaging_pirate) && !engaging_pirate.is_disabled)
-			continue
+		if(engaging_pirate && engaging_pirate != ship && !QDELETED(engaging_pirate))
+			// If the engaging pirate is disabled, they don't block engagement
+			if(engaging_pirate.is_disabled)
+				// Disabled pirate - we can take over
+			else
+				// Active pirate has this target - skip it
+				continue
 
 		// Skip targets that have recently paid tribute (immunity)
 		if(controller.has_tribute_immunity(potential_target))
@@ -122,11 +127,10 @@
 		if(!ship.has_los_to(potential_target))
 			continue
 
-		// Skip targets in zones where combat isn't allowed (green space protection)
+		// Skip targets in different zones - pirates only engage within their own zone
 		var/turf/target_loc = get_turf(potential_target)
 		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_loc)
-		var/target_can_be_attacked = target_zone ? (target_zone.weapons_allowed() || target_zone.interdiction_allowed()) : TRUE
-		if(!target_can_be_attacked)
+		if(target_zone != zone)
 			continue
 
 		// If this ship scans before engaging, check if we recently scanned this target
@@ -351,13 +355,13 @@
 	// Announce escalation
 	if(reason == "ignored")
 		ship.ship_notify("No response from target. Engaging.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
-		target.ship_notify("[ship.name] has received no response and is engaging!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+		target.ship_notify("[ship.name] has received no response and is engaging!", "COMBAT", SHIP_NOTIFY_DANGER)
 	else if(reason == "aggression")
 		ship.ship_notify("Hostile action detected! Engaging!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
-		target.ship_notify("[ship.name] is retaliating to hostile action!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+		target.ship_notify("[ship.name] is retaliating to hostile action!", "COMBAT", SHIP_NOTIFY_DANGER)
 	else if(reason == "negotiation_failed")
 		ship.ship_notify("Negotiations failed. Engaging target.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
-		target.ship_notify("Negotiations with [ship.name] have failed! Brace for combat!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+		target.ship_notify("Negotiations with [ship.name] have failed! Brace for combat!", "COMBAT", SHIP_NOTIFY_DANGER)
 
 	// Check if we should use phased boarding (only for ignored/negotiation_failed, not aggression)
 	if(reason != "aggression")
@@ -416,11 +420,12 @@
 		controller.clear_target()
 		return AI_BEHAVIOR_DELAY
 
-	// Check if target escaped to green space - abort lock
+	// Check if target escaped to a different zone - abort lock
+	var/turf/ship_loc = get_turf(ship)
 	var/turf/target_loc = get_turf(target)
+	var/datum/overmap_zone/ship_zone = SSovermap_zones.get_zone(ship_loc)
 	var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_loc)
-	var/target_can_be_attacked = target_zone ? (target_zone.weapons_allowed() || target_zone.interdiction_allowed()) : TRUE
-	if(!target_can_be_attacked)
+	if(ship_zone != target_zone)
 		controller.clear_target()
 		return AI_BEHAVIOR_DELAY
 
@@ -669,15 +674,23 @@
 		controller.clear_target()
 		return AI_BEHAVIOR_DELAY
 
-	// Check if target escaped to a protected zone (where combat isn't allowed)
+	// Check if target escaped to a different zone - lose target entirely
+	var/turf/ship_turf = get_turf(ship)
 	var/turf/target_turf = get_turf(target)
-	if(target_turf)
+	if(ship_turf && target_turf)
+		var/datum/overmap_zone/ship_zone = SSovermap_zones.get_zone(ship_turf)
 		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
-		var/target_can_be_attacked = target_zone ? (target_zone.weapons_allowed() || target_zone.interdiction_allowed()) : TRUE
-		if(!target_can_be_attacked)
+		if(ship_zone != target_zone)
 			SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
 			controller.clear_target()
 			return AI_BEHAVIOR_DELAY
+
+	// Check if another (active, non-disabled) pirate is engaging this target - yield to them
+	var/obj/structure/overmap/ship/npc/engaging_pirate = target.engaging_pirate_ref?.resolve()
+	if(engaging_pirate && engaging_pirate != ship && !QDELETED(engaging_pirate) && !engaging_pirate.is_disabled)
+		SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
+		controller.clear_target()
+		return AI_BEHAVIOR_DELAY
 
 	// Check distance to target
 	var/target_dist = get_dist(ship, target)

@@ -155,3 +155,15 @@ GLOBAL_LIST_EMPTY(overmap_blocked_turfs)
 #define NPC_COLOR_PIRATE COLOR_RED            // Pirates - red
 #define NPC_COLOR_NANOTRASEN "#4444FF"        // Nanotrasen - blue
 #define NPC_COLOR_SYNDICATE "#8B0000"         // Syndicate - dark red
+
+// ========== MOB PATROL SYSTEM ==========
+// Cached patrol paths for boarding parties (keyed by ship ref)
+GLOBAL_LIST_EMPTY(boarding_patrol_paths)
+// Tracks which ships have had their patrol path visualized (debug mode only)
+GLOBAL_VAR(patrol_paths_visualized)
+
+// Mob patrol blackboard keys
+#define BB_MOB_PATROL_PATH "mob_patrol_path"          // Reference to the cached patrol path list
+#define BB_MOB_PATROL_INDEX "mob_patrol_index"        // Current index in the patrol path (1-based)
+#define BB_MOB_PATROL_TARGET "mob_patrol_target"      // Current patrol waypoint turf
+#define BB_DOOR_TO_OPEN "door_to_open"                // Door we're trying to open

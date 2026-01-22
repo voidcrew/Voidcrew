@@ -386,6 +386,10 @@
 	if(!spawn_types || !length(spawn_types))
 		return FALSE
 
+	// Set up patrol distribution for this wave
+	GLOB.boarding_spawn_index = 0
+	GLOB.boarding_spawn_total = pod_count
+
 	var/pods_launched = 0
 
 	// Launch pods at different locations on the target ship

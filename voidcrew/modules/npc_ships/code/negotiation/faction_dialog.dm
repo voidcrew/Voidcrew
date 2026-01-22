@@ -19,7 +19,8 @@
 	var/list/rejection_lines = list("Then you've chosen death.")
 	var/list/timeout_lines = list("Your time is up!")
 	var/list/impatience_lines = list("You're trying my patience... %SECONDS% seconds remaining.")
-	var/list/movement_betrayal_lines = list("You dare try to flee?! All weapons, FIRE!")
+	var/list/flee_warning_lines = list("Nice try. You're not going anywhere. And for that little stunt, the price just went up.")
+	var/list/movement_betrayal_lines = list("You tried that already! All weapons, FIRE!")
 	var/list/escape_warning_lines = list("And don't even think about running. Try to move or target us, and we'll gun you down.")
 
 /**
@@ -64,7 +65,13 @@
 	return replacetextEx(line, "%SECONDS%", "[seconds]")
 
 /**
- * Get a line when player tries to move during negotiation (betrayal).
+ * Get a warning line when player tries to flee for the first time.
+ */
+/datum/pirate_faction_dialog/proc/get_flee_warning_line()
+	return pick(flee_warning_lines)
+
+/**
+ * Get a line when player tries to move a second time (full betrayal).
  */
 /datum/pirate_faction_dialog/proc/get_movement_betrayal_line()
 	return pick(movement_betrayal_lines)
@@ -114,6 +121,14 @@
 		"You have %SECONDS% seconds to remit payment before penalties increase.",
 		"The IRS does not wait. %SECONDS% seconds remaining.",
 	)
+	flee_warning_lines = list(
+		"Attempting to evade an audit? Interdiction engaged. Your penalties have increased.",
+		"Fleeing from the IRS is a federal offense. You're not going anywhere. And your debt just grew.",
+	)
+	movement_betrayal_lines = list(
+		"Repeat evasion attempt logged. Lethal enforcement authorized!",
+		"You were warned. Commencing aggressive asset seizure!",
+	)
 	escape_warning_lines = list(
 		"Any attempt to flee or engage our vessels will be considered an act of tax terrorism.",
 		"Do not attempt evasion. Our enforcement drones will pursue and eliminate.",
@@ -155,6 +170,14 @@
 	impatience_lines = list(
 		"%SECONDS% seconds... The crew grows restless...",
 		"The cursed souls hunger... %SECONDS% seconds...",
+	)
+	flee_warning_lines = list(
+		"You cannot outrun the curse... Now your debt to us grows...",
+		"The Dutchman's grasp tightens... Your tribute has increased...",
+	)
+	movement_betrayal_lines = list(
+		"Twice you tried to flee... Now you join the crew... FOREVER!",
+		"Your soul is forfeit! The curse claims you!",
 	)
 	escape_warning_lines = list(
 		"Flee... and the curse will find you... There is no escape from the Dutchman...",
@@ -199,6 +222,14 @@
 		"Come on come on come on! %SECONDS% seconds!",
 		"Hurry up! %SECONDS% seconds! I got places to be!",
 	)
+	flee_warning_lines = list(
+		"BRO! Did you just try to run?! Nah nah nah, you're paying MORE now!",
+		"LOL nice try! You're not going anywhere! And that's gonna cost you extra!",
+	)
+	movement_betrayal_lines = list(
+		"AGAIN?! Okay that's IT! TOOLBOX TIME FOR REAL!",
+		"You just don't learn! GET ROBUST!",
+	)
 	escape_warning_lines = list(
 		"Don't even THINK about running bro, we got toolboxes and we're not afraid to use them!",
 		"Try to dip and we'll robust you SO hard!",
@@ -240,6 +271,14 @@
 	impatience_lines = list(
 		"Make haste! %SECONDS% seconds remain before we attack!",
 		"The Order's patience wanes... %SECONDS% seconds!",
+	)
+	flee_warning_lines = list(
+		"COWARD! You dare flee?! Your dishonor demands a greater tribute!",
+		"Stay your vessel, knave! For this transgression, the toll increases!",
+	)
+	movement_betrayal_lines = list(
+		"TWICE you show cowardice?! There is no redemption! CHARGE!",
+		"Your dishonor knows no bounds! TO ARMS, BROTHERS!",
 	)
 	escape_warning_lines = list(
 		"Flee not, coward! Any attempt to escape shall be met with righteous fury!",
@@ -283,6 +322,14 @@
 		"The Dynasty does not appreciate delays. %SECONDS% seconds.",
 		"You waste our time. %SECONDS% seconds remaining.",
 	)
+	flee_warning_lines = list(
+		"You DARE attempt to flee from the Dynasty?! The tribute has increased. Significantly.",
+		"Foolish commoner. You are going nowhere. And you will pay dearly for this insult.",
+	)
+	movement_betrayal_lines = list(
+		"Twice you insult the Dynasty?! UNFORGIVABLE! Destroy them!",
+		"Your insolence knows no bounds! The Dynasty will END you!",
+	)
 	escape_warning_lines = list(
 		"Do not presume to flee from your betters. The Dynasty's reach is absolute.",
 		"Attempt to run, and we will make an example of you. The Dynasty does not tolerate cowardice.",
@@ -324,6 +371,14 @@
 	impatience_lines = list(
 		"Processing delay detected. %SECONDS% seconds until protocol escalation.",
 		"%SECONDS% seconds remaining in compliance window.",
+	)
+	flee_warning_lines = list(
+		"Evasion attempt detected. Interdiction engaged. Acquisition cost has been adjusted upward.",
+		"Flight protocol intercepted. You're not going anywhere. Processing fee increased.",
+	)
+	movement_betrayal_lines = list(
+		"Second evasion attempt logged. Initiating lethal acquisition protocols.",
+		"Continued non-compliance detected. Termination authorized.",
 	)
 	escape_warning_lines = list(
 		"Evasion protocols are inadvisable. Our targeting systems have already achieved lock.",
@@ -367,6 +422,14 @@
 		"Tick tock! %SECONDS% seconds!",
 		"We're losing patience here! %SECONDS% seconds!",
 	)
+	flee_warning_lines = list(
+		"Ha! Nice try. You're not going anywhere. And for that, the price just went up.",
+		"Where do you think you're going? You're staying right here. And paying more.",
+	)
+	movement_betrayal_lines = list(
+		"I warned you once! Now you're dead! OPEN FIRE!",
+		"Tried it twice, huh? Your funeral! BLAST 'EM!",
+	)
 	escape_warning_lines = list(
 		"Try to run and we'll blow you out of the sky. This ain't a bluff.",
 		"Don't even think about booking it. Our guns are faster than your engines.",
@@ -408,6 +471,14 @@
 	impatience_lines = list(
 		"The frequencies grow unstable... %SECONDS% seconds...",
 		"%SECONDS% seconds before the Collective acts...",
+	)
+	flee_warning_lines = list(
+		"You cannot escape our perception... The resonance tightens... Your tribute grows...",
+		"We felt your intent to flee... Now you are bound... And you will pay more...",
+	)
+	movement_betrayal_lines = list(
+		"Twice you try to phase away... The Collective will consume you...",
+		"Your resistance is... irritating. We will harvest you directly.",
 	)
 	escape_warning_lines = list(
 		"Do not attempt to phase away... The Collective perceives all trajectories...",

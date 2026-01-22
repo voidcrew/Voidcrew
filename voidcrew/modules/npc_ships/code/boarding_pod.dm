@@ -5,6 +5,10 @@
  * Pod lands, opens to reveal the boarder, then vanishes.
  */
 
+/// Tracks spawn index for distributing boarders along patrol path
+GLOBAL_VAR_INIT(boarding_spawn_index, 0)
+GLOBAL_VAR_INIT(boarding_spawn_total, 1)
+
 /// Global proc to create a boarding pod drop at a target location
 /proc/create_boarding_pod(turf/target_turf, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/npc/source_ship, mob_type)
 	if(!target_turf || !mob_type)
@@ -22,6 +26,8 @@
 	// Store references for the pod
 	pod.target_ship = target_ship
 	pod.source_ship = source_ship
+	pod.boarder_ref = WEAKREF(boarder)
+	pod.spawn_index = GLOB.boarding_spawn_index++
 
 	// Create the landing zone - this handles the whole falling animation
 	new /obj/effect/pod_landingzone/boarding(target_turf, pod, target_ship, source_ship)
@@ -48,6 +54,10 @@
 	var/obj/structure/overmap/ship/target_ship
 	/// The ship that launched us
 	var/obj/structure/overmap/ship/npc/source_ship
+	/// Weak reference to the boarder mob inside
+	var/datum/weakref/boarder_ref
+	/// This boarder's index in the spawn batch (for patrol distribution)
+	var/spawn_index = 0
 
 /obj/structure/closet/supplypod/boarding/preOpen()
 	. = ..()
@@ -57,14 +67,67 @@
 
 /obj/structure/closet/supplypod/boarding/open_pod(atom/movable/holder, broken = FALSE, forced = FALSE)
 	. = ..()
+	log_shuttle("PATROL: open_pod called, holder=[holder], target_ship=[target_ship], boarder_ref=[boarder_ref]")
+
 	// Announce the boarder emerging
 	var/turf/T = get_turf(holder)
-	for(var/mob/living/boarder in T)
-		boarder.visible_message(span_danger("[boarder] emerges from the boarding pod!"))
+	for(var/mob/living/emerged_mob in T)
+		emerged_mob.visible_message(span_danger("[emerged_mob] emerges from the boarding pod!"))
+
+	// Assign patrol behavior to the boarder
+	var/mob/living/boarder = boarder_ref?.resolve()
+	log_shuttle("PATROL: Resolved boarder_ref to: [boarder]")
+
+	if(boarder && target_ship && !QDELETED(target_ship))
+		log_shuttle("PATROL: Calling setup_boarder_patrol...")
+		setup_boarder_patrol(boarder, target_ship, spawn_index)
+	else
+		log_shuttle("PATROL: NOT calling setup_boarder_patrol - boarder=[boarder], target_ship=[target_ship], QDELETED=[QDELETED(target_ship)]")
 
 	// Signal that boarders have arrived
 	if(target_ship && !QDELETED(target_ship))
 		SEND_SIGNAL(target_ship, COMSIG_SHIP_BOARDED, src, source_ship)
+
+/**
+ * Set up patrol behavior for a boarder mob.
+ * Swaps their AI controller to a patrolling variant and assigns the ship's patrol path.
+ */
+/obj/structure/closet/supplypod/boarding/proc/setup_boarder_patrol(mob/living/boarder, obj/structure/overmap/ship/target_ship, spawn_index)
+	log_shuttle("PATROL: setup_boarder_patrol called: boarder=[boarder], target_ship=[target_ship], spawn_index=[spawn_index]")
+
+	if(!boarder)
+		log_shuttle("PATROL: FAILED - boarder is null")
+		return
+
+	log_shuttle("PATROL: Boarder current AI controller: [boarder.ai_controller] ([boarder.ai_controller?.type])")
+
+	// Determine the patrolling AI controller type based on current controller
+	var/new_controller_type
+	if(istype(boarder.ai_controller, /datum/ai_controller/basic_controller/trooper/ranged))
+		new_controller_type = /datum/ai_controller/basic_controller/trooper/ranged/patrolling
+		log_shuttle("PATROL: Detected ranged trooper, will swap to ranged/patrolling")
+	else if(istype(boarder.ai_controller, /datum/ai_controller/basic_controller/trooper))
+		new_controller_type = /datum/ai_controller/basic_controller/trooper/patrolling
+		log_shuttle("PATROL: Detected melee trooper, will swap to patrolling")
+	else
+		log_shuttle("PATROL: Unknown AI controller type, no swap will occur")
+
+	// Swap to patrolling controller if we found a valid type
+	// PossessPawn automatically handles cleanup of the old controller
+	if(new_controller_type)
+		log_shuttle("PATROL: Creating new controller of type [new_controller_type]")
+		new new_controller_type(boarder)
+		var/datum/ai_controller/new_ctrl = boarder.ai_controller
+		log_shuttle("PATROL: New AI controller: [new_ctrl] ([new_ctrl?.type])")
+		if(new_ctrl)
+			log_shuttle("PATROL: Controller details - ai_movement=[new_ctrl.ai_movement?.type], able_to_run=[new_ctrl.able_to_run], movement_delay=[new_ctrl.movement_delay], ai_status=[new_ctrl.ai_status]")
+			var/turf/boarder_turf = get_turf(boarder)
+			var/clients_on_z = boarder_turf ? length(SSmobs.clients_by_zlevel[boarder_turf.z]) : 0
+			log_shuttle("PATROL: Pawn details - loc=[boarder.loc], on_turf=[isturf(boarder.loc)], z=[boarder_turf?.z], clients_on_z=[clients_on_z], mobility_flags=[boarder.mobility_flags], MOBILITY_MOVE=[(boarder.mobility_flags & MOBILITY_MOVE) ? "YES" : "NO"]")
+
+	// Assign patrol path (works even if controller wasn't swapped)
+	var/result = assign_mob_to_patrol(boarder, target_ship, spawn_index, GLOB.boarding_spawn_total)
+	log_shuttle("PATROL: assign_mob_to_patrol returned: [result]")
 
 /**
  * Boarding Pod Landing Zone - Handles the falling animation and notifications

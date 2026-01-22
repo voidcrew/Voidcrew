@@ -48,6 +48,11 @@
 	/// Cooldown for progress messages to prevent spam
 	COOLDOWN_DECLARE(progress_message_cooldown)
 
+	/// Whether the player has already tried to flee once (next attempt = combat)
+	var/caught_fleeing = FALSE
+	/// Multiplier applied to demand when caught fleeing
+	var/flee_penalty_multiplier = 1.5
+
 /datum/pirate_negotiation/New(obj/structure/overmap/ship/npc/pirate/pirate, obj/structure/overmap/ship/player, obj/machinery/holopad/ship_comms/pad)
 	. = ..()
 	if(!pirate || !player || !pad)
@@ -133,17 +138,40 @@
 	INVOKE_ASYNC(src, PROC_REF(fail_due_to_movement))
 
 /**
- * Called when the player ship moves during negotiation - this breaks the deal.
+ * Called when the player ship moves during negotiation.
+ * First attempt: Interdict + increase demand + warning
+ * Second attempt: Open fire, end negotiation
  */
 /datum/pirate_negotiation/proc/fail_due_to_movement()
-	// Announce the betrayal
-	pirate_say(dialog.get_movement_betrayal_line())
+	var/datum/ai_controller/npc_ship/controller = pirate_ship?.ai_controller
 
-	// Announce to player ship
-	player_ship?.ship_notify("Negotiations with [pirate_ship?.name] have FAILED - they detected your ship movement!", "NEGOTIATION", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+	if(!caught_fleeing)
+		// First attempt - interdict and increase demand
+		caught_fleeing = TRUE
 
-	// End negotiation as failure
-	end_negotiation(success = FALSE, reason = "player_moved")
+		// Interdict the player immediately
+		var/datum/npc_combat_interface/combat = controller?.get_combat_interface()
+		if(combat && player_ship)
+			combat.start_interdiction(player_ship)
+
+		// Increase the demand as penalty
+		var/old_demand = demanded_credits
+		demanded_credits = round(demanded_credits * flee_penalty_multiplier, 100)
+
+		// Announce the warning (not full betrayal yet)
+		pirate_say(dialog.get_flee_warning_line())
+
+		// Notify player of the penalty
+		player_ship?.ship_notify("[pirate_ship?.name] has interdicted your ship! Tribute demand increased from [old_demand] to [demanded_credits] credits!", "NEGOTIATION", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+	else
+		// Second attempt - they didn't learn, open fire
+		pirate_say(dialog.get_movement_betrayal_line())
+
+		// Announce to player ship
+		player_ship?.ship_notify("[pirate_ship?.name] is opening fire - you tried to flee twice!", "COMBAT", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+
+		// End negotiation as failure - go to combat
+		end_negotiation(success = FALSE, reason = "player_moved")
 
 // ========== NEGOTIATION FLOW ==========
 
