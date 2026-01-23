@@ -1160,3 +1160,72 @@
 
 	// Transition to standard combat (will acquire lock then fight)
 	set_combat_state(NPC_COMBAT_ENGAGING)
+
+/**
+ * Handle wave timeout - advance to next wave instead of escalating to combat.
+ * Only escalate to ship combat if ALL waves time out (none defeated).
+ */
+/datum/ai_controller/npc_ship/proc/handle_wave_timeout()
+	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
+	var/obj/structure/overmap/ship/target = get_target()
+	var/current_wave = blackboard[BB_NPC_BOARDING_WAVE] || 1
+
+	if(!ship || !target)
+		return
+
+	// Clean up current wave boarders
+	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
+	if(wave_boarders)
+		for(var/mob/living/boarder as anything in wave_boarders)
+			if(!QDELETED(boarder))
+				UnregisterSignal(boarder, COMSIG_LIVING_DEATH)
+	clear_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS)
+
+	// Check if this was the final wave
+	if(current_wave >= NPC_BOARDING_WAVE_COUNT)
+		// All waves timed out - escalate to boss phase
+		ship.ship_notify("Time's up! Sending in the heavy hitter!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
+		target.ship_notify("[ship.name]: \"You've stalled long enough. Meet our enforcer.\"", "COMMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+		start_boss_cooldown()
+		return
+
+	// Advance to next wave
+	var/next_wave = current_wave + 1
+	ship.ship_notify("Wave [current_wave] timed out. Sending wave [next_wave]!", "COMBAT", SHIP_NOTIFY_WARNING)
+	target.ship_notify("[ship.name]: \"Your stalling won't save you. More incoming!\"", "COMMS", SHIP_NOTIFY_WARNING)
+
+	// Start cooldown for next wave
+	set_combat_state(NPC_COMBAT_BOARDING_COOLDOWN)
+	var/cooldown_end = world.time + NPC_BOARDING_WAVE_COOLDOWN
+	set_blackboard_key(BB_NPC_BOARDING_COOLDOWN_END, cooldown_end)
+	set_blackboard_key(BB_NPC_BOARDING_WAVE_START_TIME, null)
+
+	// Schedule next wave
+	addtimer(CALLBACK(src, PROC_REF(end_wave_cooldown), next_wave), NPC_BOARDING_WAVE_COOLDOWN)
+
+/**
+ * Check if any boarders have fallen into space and clean them up.
+ * This prevents boarders from being "stuck" floating in space after being spaced.
+ */
+/datum/ai_controller/npc_ship/proc/check_boarders_in_space()
+	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
+	if(!wave_boarders || !length(wave_boarders))
+		return
+
+	var/list/spaced_boarders = list()
+	for(var/mob/living/boarder as anything in wave_boarders)
+		if(QDELETED(boarder))
+			continue
+		var/turf/boarder_turf = get_turf(boarder)
+		if(!boarder_turf)
+			continue
+		// Check if boarder is in space (not on a ship)
+		if(isspaceturf(boarder_turf) || istype(get_area(boarder_turf), /area/space))
+			spaced_boarders += boarder
+
+	// Kill spaced boarders (they suffocate in space anyway)
+	for(var/mob/living/spaced as anything in spaced_boarders)
+		if(!QDELETED(spaced) && spaced.stat != DEAD)
+			spaced.death()
+			wave_boarders -= spaced
+			UnregisterSignal(spaced, COMSIG_LIVING_DEATH)

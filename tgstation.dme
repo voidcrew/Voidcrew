@@ -6907,6 +6907,7 @@
 #include "voidcrew\modules\nanites\code\programs\utility.dm"
 #include "voidcrew\modules\nanites\code\programs\weapon.dm"
 #include "voidcrew\modules\npc_ships\code\_defines.dm"
+#include "voidcrew\modules\npc_ships\code\admin_verbs.dm"
 #include "voidcrew\modules\npc_ships\code\boarding_pod.dm"
 #include "voidcrew\modules\npc_ships\code\mob_patrol.dm"
 #include "voidcrew\modules\npc_ships\code\npc_combat_interface.dm"

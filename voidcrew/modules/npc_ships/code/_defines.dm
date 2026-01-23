@@ -101,6 +101,14 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 #define NPC_BOARDING_WAVE_COOLDOWN (30 SECONDS)    // Time between waves
 #define NPC_BOARDING_DISENGAGE_DELAY (10 SECONDS)  // Time before pirates leave after victory
 #define NPC_BOARDING_WAVE_TIME_LIMIT (3 MINUTES)   // Max time per wave before escalation
+#define NPC_BOARDING_SPACE_CHECK_INTERVAL (10 SECONDS)  // How often to check if boarders fell into space
+
+// Ship combat boarding pod constants
+#define NPC_SHIP_COMBAT_MAX_BOARDERS 10            // Max hostile mobs during ship combat phase
+#define NPC_SHIP_COMBAT_POD_COOLDOWN (15 SECONDS)  // Cooldown between boarding pod volleys
+
+// Additional boarding blackboard keys
+#define BB_NPC_BOARDING_LAST_SPACE_CHECK "npc_boarding_space_check"  // Last time we checked for boarders in space
 
 // Wave loot tiers (multipliers)
 #define NPC_LOOT_TIER_WAVE1 1.0
@@ -159,7 +167,7 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 #define NPC_COLOR_NANOTRASEN "#4444FF"        // Nanotrasen - blue
 #define NPC_COLOR_SYNDICATE "#8B0000"         // Syndicate - dark red
 
-// ========== MOB PATROL SYSTEM ==========
+// ========== MOB PATROL SYSTEM (JPS-based) ==========
 // Cached patrol paths for boarding parties (keyed by ship ref)
 GLOBAL_LIST_EMPTY(boarding_patrol_paths)
 // Cached list of doors that require access (keyed by ship ref -> list of door refs)
@@ -173,5 +181,9 @@ GLOBAL_LIST_EMPTY(patrol_path_markers)
 // Mob patrol blackboard keys
 #define BB_MOB_PATROL_PATH "mob_patrol_path"          // Reference to the cached patrol path list
 #define BB_MOB_PATROL_INDEX "mob_patrol_index"        // Current index in the patrol path (1-based)
-#define BB_MOB_PATROL_TARGET "mob_patrol_target"      // Current patrol waypoint turf
+#define BB_MOB_PATROL_TARGET "mob_patrol_target"      // Current patrol waypoint (target door)
+#define BB_MOB_PATROL_SHIP_REF "mob_patrol_ship_ref"  // REF() of the ship being patrolled
 #define BB_DOOR_TO_OPEN "door_to_open"                // Door we're trying to open
+
+// Door attack timeout (for reinforced doors)
+#define PATROL_DOOR_ATTACK_TIMEOUT (45 SECONDS)

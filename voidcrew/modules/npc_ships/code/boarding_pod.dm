@@ -117,13 +117,23 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	if(new_controller_type)
 		log_shuttle("PATROL: Creating new controller of type [new_controller_type]")
 		new new_controller_type(boarder)
+
+		// Issue 1: Verify controller was properly assigned
 		var/datum/ai_controller/new_ctrl = boarder.ai_controller
+		if(!new_ctrl || !istype(new_ctrl, new_controller_type))
+			log_shuttle("PATROL: ERROR - Controller swap failed! Expected [new_controller_type], got [new_ctrl?.type]")
+			return
+
 		log_shuttle("PATROL: New AI controller: [new_ctrl] ([new_ctrl?.type])")
-		if(new_ctrl)
-			log_shuttle("PATROL: Controller details - ai_movement=[new_ctrl.ai_movement?.type], able_to_run=[new_ctrl.able_to_run], movement_delay=[new_ctrl.movement_delay], ai_status=[new_ctrl.ai_status]")
-			var/turf/boarder_turf = get_turf(boarder)
-			var/clients_on_z = boarder_turf ? length(SSmobs.clients_by_zlevel[boarder_turf.z]) : 0
-			log_shuttle("PATROL: Pawn details - loc=[boarder.loc], on_turf=[isturf(boarder.loc)], z=[boarder_turf?.z], clients_on_z=[clients_on_z], mobility_flags=[boarder.mobility_flags], MOBILITY_MOVE=[(boarder.mobility_flags & MOBILITY_MOVE) ? "YES" : "NO"]")
+		log_shuttle("PATROL: Controller details - ai_movement=[new_ctrl.ai_movement?.type], able_to_run=[new_ctrl.able_to_run], movement_delay=[new_ctrl.movement_delay], ai_status=[new_ctrl.ai_status]")
+
+		// Issue 2: Force AI activation immediately instead of waiting for subsystem tick
+		new_ctrl.reset_ai_status()
+		log_shuttle("PATROL: Force-activated AI, new ai_status=[new_ctrl.ai_status]")
+
+		var/turf/boarder_turf = get_turf(boarder)
+		var/clients_on_z = boarder_turf ? length(SSmobs.clients_by_zlevel[boarder_turf.z]) : 0
+		log_shuttle("PATROL: Pawn details - loc=[boarder.loc], on_turf=[isturf(boarder.loc)], z=[boarder_turf?.z], clients_on_z=[clients_on_z], mobility_flags=[boarder.mobility_flags], MOBILITY_MOVE=[(boarder.mobility_flags & MOBILITY_MOVE) ? "YES" : "NO"]")
 
 	// Assign patrol path (works even if controller wasn't swapped)
 	var/result = assign_mob_to_patrol(boarder, target_ship, spawn_index, GLOB.boarding_spawn_total)

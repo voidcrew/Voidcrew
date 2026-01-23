@@ -571,7 +571,7 @@
 	if(!ship.boarding_pods_enabled)
 		return AI_BEHAVIOR_DELAY
 
-	// Check cooldown
+	// Check cooldown - use the ship combat pod cooldown (15 seconds)
 	if(!COOLDOWN_FINISHED(ship, boarding_pod_cooldown))
 		return AI_BEHAVIOR_DELAY
 
@@ -585,16 +585,39 @@
 	if(target_has_shields)
 		return AI_BEHAVIOR_DELAY
 
-	// Calculate number of pods to launch
+	// Check if we've hit the max boarder cap (10 mobs max during ship combat)
+	var/current_boarders = count_hostile_mobs_on_ship(target)
+	if(current_boarders >= NPC_SHIP_COMBAT_MAX_BOARDERS)
+		return AI_BEHAVIOR_DELAY
+
+	// Calculate number of pods to launch (don't exceed the cap)
 	var/pod_count = rand(ship.boarding_pods_min, ship.boarding_pods_max)
+	pod_count = min(pod_count, NPC_SHIP_COMBAT_MAX_BOARDERS - current_boarders)
+	if(pod_count <= 0)
+		return AI_BEHAVIOR_DELAY
 
 	// Fire the boarding pods!
 	if(combat.fire_boarding_pods(target, pod_count))
-		COOLDOWN_START(ship, boarding_pod_cooldown, ship.boarding_pod_cooldown_time)
+		COOLDOWN_START(ship, boarding_pod_cooldown, NPC_SHIP_COMBAT_POD_COOLDOWN)
 		// Announce the boarding action
 		target.ship_notify("Multiple boarding pods inbound! Prepare to repel boarders!", "SECURITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
 
 	return AI_BEHAVIOR_DELAY
+
+/**
+ * Count hostile mobs (pirate troopers) currently on a target ship.
+ * Used to enforce the max boarder cap during ship combat.
+ */
+/datum/ai_behavior/npc_ship/fire_boarding_pods/proc/count_hostile_mobs_on_ship(obj/structure/overmap/ship/target)
+	if(!target?.shuttle?.shuttle_areas)
+		return 0
+
+	var/count = 0
+	for(var/area/shuttle_area as anything in target.shuttle.shuttle_areas)
+		for(var/mob/living/basic/trooper/pirate/boarder in shuttle_area)
+			if(boarder.stat != DEAD)
+				count++
+	return count
 
 // ========== USE INTERDICTOR ==========
 
@@ -850,14 +873,20 @@
 		return AI_BEHAVIOR_DELAY
 
 	// Check 1: Wave time limit exceeded (cheesing by walling off boarders)
+	// Instead of escalating to combat, advance to the next wave
+	// Only escalate to ship combat if ALL waves time out (none defeated)
 	var/wave_start = controller.blackboard[BB_NPC_BOARDING_WAVE_START_TIME]
 	if(wave_start && world.time >= wave_start + NPC_BOARDING_WAVE_TIME_LIMIT)
-		ship.ship_notify("These cowards are stalling! Open fire!", "COMBAT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/alert2.ogg', 25)
-		target.ship_notify("[ship.name]: \"You think you can hide from us? Time's up!\"", "COMMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
-		controller.escalate_boarding_to_combat("time_limit")
+		controller.handle_wave_timeout()
 		return AI_BEHAVIOR_DELAY
 
-	// Check 2: Target has moved (trying to escape)
+	// Check 2: Periodically check if boarders fell into space
+	var/last_space_check = controller.blackboard[BB_NPC_BOARDING_LAST_SPACE_CHECK] || 0
+	if(world.time >= last_space_check + NPC_BOARDING_SPACE_CHECK_INTERVAL)
+		controller.set_blackboard_key(BB_NPC_BOARDING_LAST_SPACE_CHECK, world.time)
+		controller.check_boarders_in_space()
+
+	// Check 3: Target has moved (trying to escape)
 	var/list/initial_pos = controller.blackboard[BB_NPC_BOARDING_TARGET_POS]
 	if(initial_pos && length(initial_pos) >= 2)
 		if(target.x != initial_pos[1] || target.y != initial_pos[2])
