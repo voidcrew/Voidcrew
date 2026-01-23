@@ -152840,7 +152840,7 @@
 /obj/machinery/door/airlock/wood{
 	name = "Abandoned Theater"
 	},
-/obj/effect/spawner/random/structure/barricade,
+/obj/effect/spawner/random/structure/barricade/crude,
 /obj/structure/disposalpipe/segment,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/wood/tile,
