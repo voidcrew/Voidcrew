@@ -53410,7 +53410,7 @@
 /area/station/medical/lower)
 "hRk" = (
 /obj/structure/table,
-/obj/item/toy/katana,
+/obj/item/storage/belt/sheath/katana/toy,
 /obj/item/gun/ballistic/shotgun/toy/crossbow,
 /obj/machinery/power/apc/auto_name/directional/north,
 /obj/structure/cable,
@@ -80632,7 +80632,7 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/obj/item/toy/katana,
+/obj/item/storage/belt/sheath/katana/toy,
 /turf/open/floor/bamboo/tatami/black,
 /area/station/maintenance/starboard/central)
 "lTG" = (
