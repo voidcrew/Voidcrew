@@ -34,6 +34,7 @@
 		return null
 
 	// Collect all interior doors on the ship (exclude external airlocks, blast doors, etc.)
+	// First pass: collect all valid doors
 	var/list/obj/machinery/door/all_doors = list()
 	for(var/area/ship_area as anything in target_ship.shuttle.shuttle_areas)
 		for(var/obj/machinery/door/D in ship_area)
@@ -69,6 +70,30 @@
 			if(leads_to_space)
 				continue
 			all_doors += D
+
+	// Filter to a single z-level to avoid duplicate rooms from multi-z shuttles
+	// Pick the z-level with the most doors
+	var/list/doors_by_z = list()
+	for(var/obj/machinery/door/D in all_doors)
+		var/turf/T = get_turf(D)
+		if(!T)
+			continue
+		var/z_key = "[T.z]"
+		if(!doors_by_z[z_key])
+			doors_by_z[z_key] = list()
+		doors_by_z[z_key] += D
+
+	// Find z-level with most doors
+	var/best_z = null
+	var/best_count = 0
+	for(var/z_key in doors_by_z)
+		if(length(doors_by_z[z_key]) > best_count)
+			best_count = length(doors_by_z[z_key])
+			best_z = z_key
+
+	if(best_z)
+		all_doors = doors_by_z[best_z]
+		PATROL_LOG("Filtered to z-level [best_z] with [length(all_doors)] doors")
 
 	PATROL_LOG("Found [length(all_doors)] interior doors on ship")
 
@@ -132,10 +157,13 @@
 					continue
 				if(neighbor.density)
 					continue
-				// Check for walls/solid objects (but allow doors)
+				// Only block on things that truly separate rooms (windows, grilles)
+				// Allow all other structures and machinery - they're walkable furniture
 				var/blocked = FALSE
 				for(var/obj/O in neighbor)
-					if(O.density && !istype(O, /obj/machinery/door))
+					if(!O.density)
+						continue
+					if(istype(O, /obj/structure/window) || istype(O, /obj/structure/grille))
 						blocked = TRUE
 						break
 				if(blocked)
@@ -229,7 +257,321 @@
 	GLOB.boarding_locked_doors[ship_ref] = locked_doors
 	PATROL_LOG("Identified [length(locked_doors)] doors requiring access (will attack directly)")
 
+	// Compute room data for exploration system
+	compute_ship_rooms(target_ship, all_doors)
+
+	// Post-process: remove doors that would just revisit the same rooms
+	// This prevents bouncing between the same 2 rooms via multiple doors
+	var/list/filtered_path = list()
+	var/list/visited_room_pairs = list()
+
+	for(var/obj/machinery/door/D in path)
+		var/list/door_rooms = GLOB.door_to_rooms[ship_ref]?[REF(D)]
+		if(!door_rooms || length(door_rooms) < 2)
+			// Door doesn't connect two rooms - keep it anyway
+			PATROL_LOG("Door [D.name] connects [length(door_rooms)] rooms - keeping (no pair)")
+			filtered_path += D
+			continue
+
+		// Create a canonical key for this room pair (sorted to be order-independent)
+		var/room_a = door_rooms[1]
+		var/room_b = door_rooms[2]
+		var/pair_key = room_a < room_b ? "[room_a]-[room_b]" : "[room_b]-[room_a]"
+
+		if(visited_room_pairs[pair_key])
+			// Already have a door for this room pair - skip this one
+			PATROL_LOG("Skipping door [D.name] - already have door for [pair_key]")
+			continue
+
+		PATROL_LOG("Door [D.name] connects [pair_key] - keeping")
+		visited_room_pairs[pair_key] = TRUE
+		filtered_path += D
+
+	if(length(filtered_path) < length(path))
+		PATROL_LOG("Filtered path from [length(path)] to [length(filtered_path)] doors (removed duplicates)")
+		path = filtered_path
+
 	return path
+
+/**
+ * Compute discrete rooms on a ship using flood-fill.
+ * Each room is a connected region of turfs separated by doors.
+ * Builds GLOB.ship_rooms, GLOB.turf_to_room, and GLOB.door_to_rooms.
+ *
+ * @param target_ship The ship to compute rooms for
+ * @param all_doors List of doors on the ship (from generate_ship_patrol_path)
+ */
+/proc/compute_ship_rooms(obj/structure/overmap/ship/target_ship, list/obj/machinery/door/all_doors, colorize = FALSE, filter_z = 0)
+	if(!target_ship?.shuttle?.shuttle_areas?.len)
+		return
+
+	var/ship_ref = REF(target_ship)
+	var/color_count = length(GLOB.room_colors)
+
+	// If no z-filter specified, use the z-level of the first door
+	if(!filter_z && length(all_doors))
+		var/obj/machinery/door/first_door = all_doors[1]
+		var/turf/T = get_turf(first_door)
+		if(T)
+			filter_z = T.z
+	var/list/cardinal_dirs = GLOB.cardinals
+
+	// Initialize GLOB structures for this ship
+	GLOB.ship_rooms[ship_ref] = list()
+	GLOB.turf_to_room[ship_ref] = list()
+	GLOB.door_to_rooms[ship_ref] = list()
+
+	// Build a set of all door turfs for quick lookup
+	var/list/door_turfs = list()
+	for(var/obj/machinery/door/D in all_doors)
+		var/turf/door_turf = get_turf(D)
+		if(door_turf)
+			door_turfs[door_turf] = D
+
+	// Collect all valid turfs on the ship (filtered to single z-level if specified)
+	var/list/all_ship_turfs = list()
+	for(var/area/ship_area as anything in target_ship.shuttle.shuttle_areas)
+		for(var/turf/T in ship_area)
+			if(isspaceturf(T))
+				continue
+			if(filter_z && T.z != filter_z)
+				continue  // Skip turfs on other z-levels
+			all_ship_turfs[T] = TRUE
+
+	// Track visited turfs across all flood-fills
+	var/list/global_visited = list()
+	var/room_counter = 0
+
+	// Flood-fill from each unvisited non-door turf
+	for(var/turf/start_turf as anything in all_ship_turfs)
+		if(global_visited[start_turf])
+			continue
+		if(door_turfs[start_turf])
+			continue // Don't start from a door turf
+		if(start_turf.density)
+			continue // Don't start from a wall
+
+		// Start a new room
+		room_counter++
+		var/room_id = "room_[room_counter]"
+
+		var/list/room_turfs = list()
+		var/list/room_closets = list()
+		var/list/room_doors = list()
+
+		var/list/queue = list(start_turf)
+		var/list/visited = list(start_turf = TRUE)
+		var/queue_idx = 1
+
+		while(queue_idx <= length(queue))
+			var/turf/current = queue[queue_idx]
+			queue_idx++
+
+			// Check if this is a door turf - record door but don't expand past it
+			var/obj/machinery/door/door_here = door_turfs[current]
+			if(door_here)
+				room_doors |= door_here
+				continue // Don't expand past doors
+
+			// This is a valid room turf
+			room_turfs += current
+			global_visited[current] = TRUE
+
+			// Record turf -> room mapping for O(1) lookup
+			GLOB.turf_to_room[ship_ref][REF(current)] = room_id
+
+			// Check for closets/crates on this turf
+			for(var/obj/structure/closet/C in current)
+				room_closets |= C
+				PATROL_LOG("Found closet [C.type] '[C.name]' in room [room_id] at ([current.x],[current.y])")
+
+			// Expand to neighbors
+			for(var/dir in cardinal_dirs)
+				var/turf/neighbor = get_step(current, dir)
+				if(!neighbor || visited[neighbor])
+					continue
+				if(!all_ship_turfs[neighbor])
+					continue // Outside ship
+				if(neighbor.density && !door_turfs[neighbor])
+					continue // Wall (but allow doors)
+
+				// Only block on things that truly separate rooms (windows, grilles)
+				// Allow doors, structures, machinery - they don't divide rooms
+				var/blocked = FALSE
+				for(var/obj/O in neighbor)
+					if(!O.density)
+						continue
+					if(istype(O, /obj/structure/window) || istype(O, /obj/structure/grille))
+						blocked = TRUE
+						break
+				if(blocked && !door_turfs[neighbor])
+					continue
+
+				visited[neighbor] = TRUE
+				queue += neighbor
+
+		// Store room data
+		GLOB.ship_rooms[ship_ref][room_id] = list(
+			"turfs" = room_turfs,
+			"closets" = room_closets,
+			"doors" = room_doors
+		)
+
+		PATROL_LOG("Room [room_id]: [length(room_turfs)] turfs, [length(room_closets)] closets, [length(room_doors)] doors")
+
+		// Optionally colorize turfs for debugging
+		if(colorize && color_count)
+			var/room_color = GLOB.room_colors[((room_counter - 1) % color_count) + 1]
+			for(var/turf/T as anything in room_turfs)
+				T.color = room_color
+
+	// Build door_to_rooms mapping
+	// Each door connects two rooms (the rooms on each side of it)
+	for(var/obj/machinery/door/D in all_doors)
+		var/turf/door_turf = get_turf(D)
+		if(!door_turf)
+			continue
+
+		var/list/connected_rooms = list()
+		for(var/dir in cardinal_dirs)
+			var/turf/adj = get_step(door_turf, dir)
+			if(!adj)
+				continue
+			var/adj_room = GLOB.turf_to_room[ship_ref][REF(adj)]
+			if(adj_room && !(adj_room in connected_rooms))
+				connected_rooms += adj_room
+
+		if(length(connected_rooms))
+			GLOB.door_to_rooms[ship_ref][REF(D)] = connected_rooms
+
+	PATROL_LOG("Computed [room_counter] rooms for ship [target_ship]")
+
+/**
+ * Get the room ID for a given turf on a ship.
+ * Uses pre-computed turf_to_room for O(1) lookup.
+ * If the turf is a door turf (not in any room), checks adjacent turfs.
+ *
+ * @param T The turf to look up
+ * @param ship_ref REF() of the ship
+ * @return Room ID string, or null if turf isn't in a known room
+ */
+/proc/get_room_for_turf(turf/T, ship_ref)
+	if(!T || !ship_ref)
+		return null
+	var/list/ship_turf_map = GLOB.turf_to_room[ship_ref]
+	if(!ship_turf_map)
+		return null
+
+	var/room = ship_turf_map[REF(T)]
+	if(room)
+		return room
+
+	// Turf not in a room - might be a door turf
+	// Check adjacent turfs to find what room we're effectively in
+	for(var/dir in GLOB.cardinals)
+		var/turf/adj = get_step(T, dir)
+		if(!adj)
+			continue
+		var/adj_room = ship_turf_map[REF(adj)]
+		if(adj_room)
+			return adj_room
+
+	return null
+
+/**
+ * Start room exploration if the room hasn't been explored yet.
+ * Called when mob enters a new room.
+ *
+ * @param controller The AI controller
+ * @param room_id The room to explore
+ * @param ship_ref REF() of the ship
+ */
+/proc/maybe_start_room_exploration(datum/ai_controller/controller, room_id, ship_ref)
+	if(!controller || !room_id || !ship_ref)
+		return
+
+	// Check if room already explored this cycle
+	var/list/explored_rooms = controller.blackboard[BB_EXPLORED_ROOMS]
+	if(explored_rooms && explored_rooms[room_id])
+		PATROL_LOG("[controller.pawn] already explored [room_id], skipping")
+		return
+
+	// Mark room as explored NOW (before building targets)
+	// This prevents re-exploration if combat interrupts
+	LAZYSET(controller.blackboard[BB_EXPLORED_ROOMS], room_id, TRUE)
+
+	// Get room data
+	var/list/ship_rooms = GLOB.ship_rooms[ship_ref]
+	if(!ship_rooms)
+		return
+	var/list/room_data = ship_rooms[room_id]
+	if(!room_data)
+		return
+
+	// Skip exploration for tiny rooms (likely just hallway segments or door gaps)
+	var/list/room_turfs = room_data["turfs"]
+	var/list/room_closets = room_data["closets"]
+	if(length(room_turfs) < EXPLORATION_MIN_ROOM_SIZE && !length(room_closets))
+		PATROL_LOG("[controller.pawn] skipping tiny room [room_id] ([length(room_turfs)] turfs, no closets)")
+		return
+
+	// Build target list
+	var/list/targets = list()
+
+	// Add closets that are closed (locked ones will be broken open)
+	var/list/valid_closets = list()
+	var/list/all_room_closets = room_data["closets"]
+	PATROL_LOG("[controller.pawn] room [room_id] has [length(all_room_closets)] closets in room data")
+	for(var/obj/structure/closet/C in all_room_closets)
+		if(QDELETED(C))
+			PATROL_LOG("  - [C.type] QDELETED, skipping")
+			continue
+		if(C.opened)
+			PATROL_LOG("  - [C.type] '[C.name]' already open, skipping")
+			continue
+		PATROL_LOG("  - [C.type] '[C.name]' added (locked=[C.locked], welded=[C.welded])")
+		valid_closets += C
+
+	// Cap closets and shuffle
+	if(length(valid_closets) > EXPLORATION_MAX_LOCKERS)
+		valid_closets = shuffle(valid_closets)
+		valid_closets.len = EXPLORATION_MAX_LOCKERS
+
+	// If room has closets, ONLY do closets (purpose-driven)
+	// If no closets, do 2 waypoints instead
+	if(length(valid_closets))
+		targets = valid_closets
+	else
+		// No closets - pick 2 random walkable turfs as waypoints
+		var/list/walkable_turfs = list()
+		for(var/turf/T in room_turfs)
+			if(T.density)
+				continue
+			var/blocked = FALSE
+			for(var/obj/O in T)
+				if(O.density)
+					blocked = TRUE
+					break
+			if(blocked)
+				continue
+			walkable_turfs += T
+
+		if(length(walkable_turfs))
+			walkable_turfs = shuffle(walkable_turfs)
+			for(var/i in 1 to min(2, length(walkable_turfs)))
+				targets += walkable_turfs[i]
+
+	// If no targets, exploration completes immediately
+	if(!length(targets))
+		PATROL_LOG("[controller.pawn] room [room_id] has no exploration targets")
+		return
+
+	// Set exploration state
+	controller.set_blackboard_key(BB_EXPLORING_ROOM, room_id)
+	controller.set_blackboard_key(BB_EXPLORATION_TARGETS, targets)
+	controller.set_blackboard_key(BB_EXPLORATION_INDEX, 1)
+
+	PATROL_LOG("[controller.pawn] starting exploration of [room_id]: [length(targets)] targets ([length(valid_closets)] closets)")
 
 /**
  * Clear patrol tracking keys from a controller's blackboard.
@@ -238,6 +580,9 @@
 /proc/clear_patrol_tracking_keys(datum/ai_controller/controller)
 	controller.clear_blackboard_key("_patrol_door_start_time")
 	controller.clear_blackboard_key("_patrol_last_dist")
+	controller.clear_blackboard_key(BB_MOB_PATROL_TARGET_TURF)
+	controller.clear_blackboard_key("_patrol_assembly_to_attack")
+	controller.clear_blackboard_key(BB_MOB_PATROL_ORIGIN_ROOM)
 
 /**
  * Clear ALL patrol-related state from a controller's blackboard.
@@ -249,8 +594,16 @@
 	controller.clear_blackboard_key(BB_MOB_PATROL_INDEX)
 	controller.clear_blackboard_key(BB_MOB_PATROL_TARGET)
 	controller.clear_blackboard_key(BB_MOB_PATROL_SHIP_REF)
+	controller.clear_blackboard_key("_last_crossed_door")
 	controller.clear_blackboard_key("_failed_blocking_doors")
 	controller.clear_blackboard_key("_patrol_started_logged")
+	// Clear exploration state
+	controller.clear_blackboard_key(BB_LAST_KNOWN_ROOM)
+	controller.clear_blackboard_key(BB_EXPLORED_ROOMS)
+	controller.clear_blackboard_key(BB_EXPLORING_ROOM)
+	controller.clear_blackboard_key(BB_EXPLORATION_TARGETS)
+	controller.clear_blackboard_key(BB_EXPLORATION_INDEX)
+	controller.clear_blackboard_key(BB_EXPLORATION_TARGET)
 
 /**
  * Check if a door requires access to open.
@@ -313,6 +666,10 @@
 	GLOB.boarding_patrol_paths -= ship_ref
 	GLOB.boarding_locked_doors -= ship_ref
 	GLOB.patrol_stagger_counter -= ship_ref
+	// Clear room data
+	GLOB.ship_rooms -= ship_ref
+	GLOB.turf_to_room -= ship_ref
+	GLOB.door_to_rooms -= ship_ref
 
 /**
  * Debug visualization - draws the door patrol path on the ship with colored markers.
@@ -530,6 +887,13 @@
 
 	PATROL_LOG("SUCCESS: Assigned [mob_to_assign] to patrol, start_index=[start_index], path_length=[length(path)]")
 
+	// Determine starting room and trigger initial exploration
+	var/starting_room = get_room_for_turf(mob_turf, ship_ref)
+	if(starting_room)
+		controller.set_blackboard_key(BB_LAST_KNOWN_ROOM, starting_room)
+		maybe_start_room_exploration(controller, starting_room, ship_ref)
+		PATROL_LOG("[mob_to_assign] starting in [starting_room]")
+
 	// Auto-visualize path in debug mode (only once per ship)
 	#if PATROL_DEBUG
 	if(!GLOB.patrol_paths_visualized)
@@ -563,23 +927,50 @@
 		return
 
 	var/patrol_index = controller.blackboard[BB_MOB_PATROL_INDEX] || 1
+	var/ship_ref = controller.blackboard[BB_MOB_PATROL_SHIP_REF]
 
 	// Clamp index to valid range
 	if(patrol_index < 1 || patrol_index > length(patrol_path))
 		patrol_index = 1
 		controller.blackboard[BB_MOB_PATROL_INDEX] = patrol_index
+		// Clear explored rooms when patrol wraps around
+		controller.clear_blackboard_key(BB_EXPLORED_ROOMS)
+		PATROL_LOG("[pawn] patrol wrapped, clearing explored rooms")
 
 	// Get current target door
 	var/obj/machinery/door/target_door = patrol_path[patrol_index]
 
-	// If door is destroyed, advance to next
+	// Store the target door's turf for assembly checking (before it might be destroyed)
+	var/turf/target_turf = controller.blackboard[BB_MOB_PATROL_TARGET_TURF]
+	if(!QDELETED(target_door) && !target_turf)
+		target_turf = get_turf(target_door)
+		controller.blackboard[BB_MOB_PATROL_TARGET_TURF] = target_turf
+
+	// If door is destroyed, check for assembly before advancing
 	if(QDELETED(target_door))
+		// Check if there's an assembly on the door's former location
+		if(target_turf)
+			for(var/obj/structure/door_assembly/assembly in target_turf)
+				if(assembly.density)
+					// Assembly still blocking - need to attack it
+					PATROL_LOG("[pawn] door destroyed but assembly [assembly.name] remains - attacking")
+					controller.set_blackboard_key("_patrol_assembly_to_attack", assembly)
+					controller.queue_behavior(/datum/ai_behavior/move_to_and_attack_assembly, "_patrol_assembly_to_attack")
+					return SUBTREE_RETURN_FINISH_PLANNING
+
+		// No blocking assembly - safe to advance
 		patrol_index = (patrol_index % length(patrol_path)) + 1
 		controller.blackboard[BB_MOB_PATROL_INDEX] = patrol_index
+		controller.clear_blackboard_key(BB_MOB_PATROL_TARGET_TURF)
 		clear_patrol_tracking_keys(controller)
-		PATROL_LOG("[pawn] door destroyed, advancing to [patrol_index]")
+		// Check for wrap
+		if(patrol_index == 1)
+			controller.clear_blackboard_key(BB_EXPLORED_ROOMS)
+			PATROL_LOG("[pawn] patrol wrapped after destroyed door, clearing explored rooms")
+		PATROL_LOG("[pawn] door destroyed (no assembly), advancing to [patrol_index]")
 		return
 
+	var/turf/pawn_turf = get_turf(pawn)
 	var/current_dist = get_dist(pawn, target_door)
 
 	// Log first patrol start
@@ -587,13 +978,89 @@
 		controller.blackboard["_patrol_started_logged"] = TRUE
 		PATROL_LOG("[pawn] STARTING PATROL - target: [target_door.name], dist=[current_dist]")
 
-	// If door is open and we're near it, advance to next
-	if(!target_door.density && current_dist <= 2)
+	// Room-based door transition detection
+	// Check if we've moved into a new room (meaning we walked through a door)
+	var/current_room = get_room_for_turf(pawn_turf, ship_ref)
+	var/last_room = controller.blackboard[BB_LAST_KNOWN_ROOM]
+
+	// Track origin room - the room we were in when we first started approaching this door
+	// This is used to verify we actually crossed THROUGH the target door
+	var/origin_room = controller.blackboard[BB_MOB_PATROL_ORIGIN_ROOM]
+	if(!origin_room && current_room)
+		origin_room = current_room
+		controller.set_blackboard_key(BB_MOB_PATROL_ORIGIN_ROOM, origin_room)
+
+	// If we don't have room data at all, use simpler fallback logic
+	var/has_room_data = GLOB.turf_to_room[ship_ref] != null
+
+	if(current_room && current_room != last_room)
+		// We've entered a new room!
+		controller.set_blackboard_key(BB_LAST_KNOWN_ROOM, current_room)
+		PATROL_LOG("[pawn] entered new room: [current_room] (was: [last_room || "none"])")
+
+		// Check if this room transition means we passed through the target door
+		// The door connects two rooms - we must have crossed FROM one TO the other
+		var/list/door_rooms = GLOB.door_to_rooms[ship_ref]?[REF(target_door)]
+		if(door_rooms && length(door_rooms) >= 2)
+			var/room_a = door_rooms[1]
+			var/room_b = door_rooms[2]
+
+			// Check if origin room is one of the door's rooms
+			var/origin_is_door_room = (origin_room == room_a || origin_room == room_b)
+
+			if(origin_is_door_room)
+				// Origin is one of the door's rooms - check for valid crossing
+				var/valid_crossing = FALSE
+				if(origin_room == room_a && current_room == room_b)
+					valid_crossing = TRUE
+				else if(origin_room == room_b && current_room == room_a)
+					valid_crossing = TRUE
+
+				if(valid_crossing)
+					// We actually crossed through the target door - advance patrol
+					var/old_index = patrol_index
+					patrol_index = (patrol_index % length(patrol_path)) + 1
+					controller.blackboard[BB_MOB_PATROL_INDEX] = patrol_index
+
+					// Track the door we just crossed so we don't open it again from the other side
+					controller.set_blackboard_key("_last_crossed_door", target_door)
+
+					clear_patrol_tracking_keys(controller)
+
+					// Check for wrap
+					if(patrol_index == 1)
+						controller.clear_blackboard_key(BB_EXPLORED_ROOMS)
+						PATROL_LOG("[pawn] patrol wrapped, clearing explored rooms")
+
+					PATROL_LOG("[pawn] walked through door [old_index] ([origin_room] -> [current_room]), advancing to [patrol_index]")
+
+					// Trigger room exploration for the new room
+					maybe_start_room_exploration(controller, current_room, ship_ref)
+					return
+			else
+				// Origin is NOT one of the door's rooms - check if we just entered one
+				// This happens when the NPC approaches from a distant room
+				if(current_room == room_a || current_room == room_b)
+					// We've reached one of the door's rooms - update origin
+					controller.set_blackboard_key(BB_MOB_PATROL_ORIGIN_ROOM, current_room)
+					PATROL_LOG("[pawn] reached door's room [current_room], setting as origin")
+
+		// Trigger exploration for new room even if we didn't cross target door
+		maybe_start_room_exploration(controller, current_room, ship_ref)
+
+		// Entered a different room (not via target door) - still explore it
+		maybe_start_room_exploration(controller, current_room, ship_ref)
+
+	// Fallback: ONLY if room data is completely unavailable for this ship
+	// This prevents premature patrol advancement when room detection should work
+	if(!has_room_data && !target_door.density && current_dist <= 1)
 		var/old_index = patrol_index
 		patrol_index = (patrol_index % length(patrol_path)) + 1
 		controller.blackboard[BB_MOB_PATROL_INDEX] = patrol_index
 		clear_patrol_tracking_keys(controller)
-		PATROL_LOG("[pawn] passed open door [old_index], advancing to [patrol_index]")
+		if(patrol_index == 1)
+			controller.clear_blackboard_key(BB_EXPLORED_ROOMS)
+		PATROL_LOG("[pawn] passed open door [old_index] (no room data fallback), advancing to [patrol_index]")
 		return
 
 	// Simple timeout-based stuck detection
@@ -615,20 +1082,35 @@
 			patrol_index = (patrol_index % length(patrol_path)) + 1
 			controller.blackboard[BB_MOB_PATROL_INDEX] = patrol_index
 			clear_patrol_tracking_keys(controller)
+			if(patrol_index == 1)
+				controller.clear_blackboard_key(BB_EXPLORED_ROOMS)
 			PATROL_LOG("[pawn] TIMEOUT reaching door [old_index] (dist=[current_dist]), advancing to [patrol_index]")
 			return
 
 	// Set the door as our patrol target
 	controller.blackboard[BB_MOB_PATROL_TARGET] = target_door
 
-	// If adjacent to door, let door interaction subtrees handle it
+	// If adjacent to door
 	if(current_dist <= 1)
+		// If door is OPEN (not dense), we need to walk THROUGH it
+		if(!target_door.density)
+			var/turf/door_turf = get_turf(target_door)
+			if(door_turf)
+				// Find a walkable turf on the opposite side of the door from the pawn
+				var/turf/through_turf = get_turf_through_door(pawn_turf, door_turf)
+				if(through_turf)
+					// Store through turf and queue walk-through behavior
+					controller.set_blackboard_key(BB_MOB_PATROL_TARGET_TURF, through_turf)
+					controller.queue_behavior(/datum/ai_behavior/patrol_walk_through, BB_MOB_PATROL_TARGET_TURF)
+					PATROL_LOG("[pawn] door [target_door.name] is open, walking through to ([through_turf.x],[through_turf.y])")
+					return SUBTREE_RETURN_FINISH_PLANNING
+		// If door is closed, let door interaction subtrees handle opening it
 		return
 
 	// Queue travel behavior - this triggers the JPS movement system
 	// Only queue if we're not already moving to this target
-	var/turf/target_turf = get_turf(target_door)
-	if(target_turf && controller.current_movement_target != target_turf)
+	var/turf/door_turf = get_turf(target_door)
+	if(door_turf && controller.current_movement_target != door_turf)
 		controller.queue_behavior(/datum/ai_behavior/patrol_travel, BB_MOB_PATROL_TARGET)
 		PATROL_LOG("[pawn] queued travel to [target_door.name] (dist=[current_dist])")
 
@@ -652,13 +1134,121 @@
 
 /datum/ai_behavior/patrol_travel/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
 	var/obj/machinery/door/target = controller.blackboard[target_key]
-	// Succeed if door opened/destroyed or we're adjacent
-	if(QDELETED(target) || !target.density || get_dist(controller.pawn, target) <= 1)
+	if(QDELETED(target))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	// Only succeed when adjacent - we need to actually reach the door
+	if(get_dist(controller.pawn, target) <= 1)
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 	return AI_BEHAVIOR_DELAY
 
 /datum/ai_behavior/patrol_travel/finish_action(datum/ai_controller/controller, succeeded, target_key)
 	. = ..()
+
+/**
+ * Behavior for walking through an open door to a turf on the other side.
+ */
+/datum/ai_behavior/patrol_walk_through
+	required_distance = 0  // Must actually reach the turf
+	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+
+/datum/ai_behavior/patrol_walk_through/setup(datum/ai_controller/controller, target_key)
+	var/turf/target = controller.blackboard[target_key]
+	if(!target)
+		return FALSE
+	controller.set_movement_target(type, target)
+	return TRUE
+
+/datum/ai_behavior/patrol_walk_through/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
+	var/turf/target = controller.blackboard[target_key]
+	if(!target)
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	// Succeed when we're on or adjacent to the target turf
+	var/dist = get_dist(controller.pawn, target)
+	if(dist <= 0)
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	return AI_BEHAVIOR_DELAY
+
+/datum/ai_behavior/patrol_walk_through/finish_action(datum/ai_controller/controller, succeeded, target_key)
+	. = ..()
+	controller.clear_blackboard_key(target_key)
+
+/**
+ * Helper proc to find a walkable turf on the opposite side of a door from the pawn.
+ * Used to make NPCs walk THROUGH open doors instead of just standing next to them.
+ */
+/proc/get_turf_through_door(turf/pawn_turf, turf/door_turf)
+	if(!pawn_turf || !door_turf)
+		return null
+
+	// Calculate direction from pawn to door
+	var/dir_to_door = get_dir(pawn_turf, door_turf)
+	if(!dir_to_door)
+		return null
+
+	// Get the turf on the opposite side of the door (same direction, one more step)
+	var/turf/through_turf = get_step(door_turf, dir_to_door)
+	if(through_turf && !through_turf.density)
+		// Check for dense objects on that turf
+		var/blocked = FALSE
+		for(var/obj/O in through_turf)
+			if(O.density)
+				blocked = TRUE
+				break
+		if(!blocked)
+			return through_turf
+
+	// If direct path blocked, check cardinal directions from the door
+	for(var/dir in GLOB.cardinals)
+		if(dir == get_dir(door_turf, pawn_turf))
+			continue  // Skip the direction back to the pawn
+		var/turf/candidate = get_step(door_turf, dir)
+		if(candidate && !candidate.density)
+			var/blocked = FALSE
+			for(var/obj/O in candidate)
+				if(O.density)
+					blocked = TRUE
+					break
+			if(!blocked)
+				return candidate
+
+	return null
+
+/**
+ * Behavior for walking through an open door to the other side.
+ */
+/datum/ai_behavior/patrol_walk_through
+	required_distance = 0  // Actually reach the target turf
+	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+
+/datum/ai_behavior/patrol_walk_through/setup(datum/ai_controller/controller, target_key)
+	var/turf/target = controller.blackboard[target_key]
+	if(!target)
+		PATROL_LOG("[controller.pawn] walk_through setup failed: no target turf")
+		return FALSE
+	controller.set_movement_target(type, target)
+	return TRUE
+
+/datum/ai_behavior/patrol_walk_through/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
+	var/turf/target = controller.blackboard[target_key]
+	if(!target)
+		PATROL_LOG("[controller.pawn] walk_through perform failed: no target turf")
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	// Succeed when we reach the target turf
+	var/turf/pawn_turf = get_turf(controller.pawn)
+	if(pawn_turf == target)
+		PATROL_LOG("[controller.pawn] walk_through succeeded: reached target turf")
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	// Log if we seem stuck (still far from target)
+	var/dist = get_dist(controller.pawn, target)
+	if(dist > 1)
+		PATROL_LOG("[controller.pawn] walk_through: still dist=[dist] from target ([target.x],[target.y])")
+	return AI_BEHAVIOR_DELAY
+
+/datum/ai_behavior/patrol_walk_through/finish_action(datum/ai_controller/controller, succeeded, target_key)
+	. = ..()
+	if(!succeeded)
+		PATROL_LOG("[controller.pawn] walk_through finish_action: FAILED to reach target")
+	controller.clear_blackboard_key(target_key)
 
 /**
  * Subtree that handles ANY blocking door in our path - not just the patrol target.
@@ -689,15 +1279,38 @@
 	if(length(patrol_path) && patrol_index >= 1 && patrol_index <= length(patrol_path))
 		patrol_target = patrol_path[patrol_index]
 
+	// Get the door we just crossed through (if any) - don't re-open it from the other side
+	var/obj/machinery/door/last_crossed = controller.blackboard["_last_crossed_door"]
+
+	// Get our current movement target (patrol door or exploration target)
+	var/atom/movement_target = controller.current_movement_target
+	if(!movement_target)
+		// Also check exploration target
+		movement_target = controller.blackboard[BB_EXPLORATION_TARGET]
+	if(!movement_target)
+		movement_target = patrol_target
+
+	// Determine which direction we're trying to go
+	var/target_dir = movement_target ? get_dir(pawn_turf, get_turf(movement_target)) : 0
+
 	for(var/dir in GLOB.cardinals)
 		var/turf/adj = get_step(pawn_turf, dir)
 		if(!adj)
+			continue
+
+		// Only handle doors that are in the direction we're trying to go
+		// This prevents repeatedly opening doors we've already passed through
+		if(target_dir && !(dir & target_dir))
 			continue
 
 		// Check for any closed door on this adjacent turf
 		for(var/obj/machinery/door/blocking_door in adj)
 			// Skip if this IS our patrol target (normal handling will deal with it)
 			if(blocking_door == patrol_target)
+				continue
+
+			// Skip the door we just crossed through - don't re-open it from the other side
+			if(blocking_door == last_crossed)
 				continue
 
 			// Skip open doors
@@ -807,6 +1420,50 @@
 /datum/ai_behavior/attack_blocking_assembly/finish_action(datum/ai_controller/controller, succeeded, assembly_key)
 	. = ..()
 	controller.clear_blackboard_key(assembly_key)
+
+/**
+ * Behavior that moves to and attacks a door assembly (used when patrol target door is destroyed)
+ * This combines pathfinding to the assembly with attacking it.
+ */
+/datum/ai_behavior/move_to_and_attack_assembly
+	action_cooldown = 1.2 SECONDS
+	behavior_flags = NONE
+
+/datum/ai_behavior/move_to_and_attack_assembly/setup(datum/ai_controller/controller, assembly_key)
+	var/obj/structure/door_assembly/assembly = controller.blackboard[assembly_key]
+	if(QDELETED(assembly) || !assembly.density)
+		return FALSE
+	return TRUE
+
+/datum/ai_behavior/move_to_and_attack_assembly/perform(seconds_per_tick, datum/ai_controller/controller, assembly_key)
+	var/obj/structure/door_assembly/assembly = controller.blackboard[assembly_key]
+	var/mob/living/basic/pawn = controller.pawn
+
+	if(QDELETED(assembly) || !assembly.density)
+		PATROL_LOG("[pawn] assembly destroyed/cleared, can advance")
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+	var/assembly_dist = get_dist(pawn, assembly)
+
+	// If not adjacent, move toward it
+	if(assembly_dist > 1)
+		// Queue movement to the assembly
+		controller.current_movement_target = assembly
+		PATROL_LOG("[pawn] moving to assembly [assembly.name] (dist=[assembly_dist])")
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED  // Keep running until adjacent
+
+	// Adjacent - attack it
+	pawn.melee_attack(assembly)
+	PATROL_LOG("[pawn] smashing patrol target assembly [assembly.name]")
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+/datum/ai_behavior/move_to_and_attack_assembly/finish_action(datum/ai_controller/controller, succeeded, assembly_key)
+	. = ..()
+	var/obj/structure/door_assembly/assembly = controller.blackboard[assembly_key]
+	// Only clear if assembly is actually gone
+	if(QDELETED(assembly) || !assembly.density)
+		controller.clear_blackboard_key(assembly_key)
+		controller.clear_blackboard_key(BB_MOB_PATROL_TARGET_TURF)
 
 /**
  * Behavior that attempts to open a blocking door (not our patrol target)
@@ -1089,6 +1746,171 @@
 	. = ..()
 	controller.clear_blackboard_key(door_key)
 
+// ========== ROOM EXPLORATION SUBTREE ==========
+
+/**
+ * Planning subtree for room exploration behavior.
+ * When BB_EXPLORING_ROOM is set, visits targets (closets and waypoint turfs)
+ * to simulate searching/exploring the room.
+ */
+/datum/ai_planning_subtree/explore_room
+
+/datum/ai_planning_subtree/explore_room/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+	// Not exploring? Skip
+	var/exploring_room = controller.blackboard[BB_EXPLORING_ROOM]
+	if(!exploring_room)
+		return
+
+	// Don't explore if we have a combat target
+	if(controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+		return
+
+	var/mob/living/pawn = controller.pawn
+	if(!pawn)
+		return
+
+	// Get targets and current index
+	var/list/targets = controller.blackboard[BB_EXPLORATION_TARGETS]
+	var/target_index = controller.blackboard[BB_EXPLORATION_INDEX] || 1
+
+	// Exploration complete?
+	if(!length(targets) || target_index > length(targets))
+		PATROL_LOG("[pawn] exploration of [exploring_room] complete")
+		clear_exploration_state(controller)
+		return
+
+	// Get current target
+	var/atom/current_target = targets[target_index]
+
+	// Validate target - if invalid, advance and block patrol from taking over
+	if(QDELETED(current_target))
+		controller.set_blackboard_key(BB_EXPLORATION_INDEX, target_index + 1)
+		return SUBTREE_RETURN_FINISH_PLANNING
+
+	// Skip already-opened closets
+	if(istype(current_target, /obj/structure/closet))
+		var/obj/structure/closet/closet = current_target
+		if(closet.opened)
+			controller.set_blackboard_key(BB_EXPLORATION_INDEX, target_index + 1)
+			return SUBTREE_RETURN_FINISH_PLANNING
+
+	// Set as current target for behaviors
+	controller.set_blackboard_key(BB_EXPLORATION_TARGET, current_target)
+
+	var/target_dist = get_dist(pawn, current_target)
+
+	// If adjacent to target, perform appropriate action
+	if(target_dist <= 1)
+		if(istype(current_target, /obj/structure/closet))
+			// Open the closet
+			controller.queue_behavior(/datum/ai_behavior/explore_open_closet, BB_EXPLORATION_TARGET)
+			return SUBTREE_RETURN_FINISH_PLANNING
+		else
+			// It's a turf waypoint - we reached it, advance
+			PATROL_LOG("[pawn] reached waypoint in [exploring_room]")
+			controller.set_blackboard_key(BB_EXPLORATION_INDEX, target_index + 1)
+			// IMPORTANT: Return FINISH_PLANNING to prevent patrol from taking over
+			return SUBTREE_RETURN_FINISH_PLANNING
+
+	// Not adjacent - travel to target
+	controller.queue_behavior(/datum/ai_behavior/explore_travel, BB_EXPLORATION_TARGET)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+/**
+ * Clear exploration state from controller.
+ */
+/proc/clear_exploration_state(datum/ai_controller/controller)
+	controller.clear_blackboard_key(BB_EXPLORING_ROOM)
+	controller.clear_blackboard_key(BB_EXPLORATION_TARGETS)
+	controller.clear_blackboard_key(BB_EXPLORATION_INDEX)
+	controller.clear_blackboard_key(BB_EXPLORATION_TARGET)
+
+/**
+ * Travel behavior for exploration targets.
+ * Uses JPS pathfinding to reach closets/waypoints.
+ */
+/datum/ai_behavior/explore_travel
+	required_distance = 1
+	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+
+/datum/ai_behavior/explore_travel/setup(datum/ai_controller/controller, target_key)
+	var/atom/target = controller.blackboard[target_key]
+	if(QDELETED(target))
+		return FALSE
+	var/turf/target_turf = get_turf(target)
+	if(!target_turf)
+		return FALSE
+	controller.set_movement_target(type, target_turf)
+	return TRUE
+
+/datum/ai_behavior/explore_travel/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
+	var/atom/target = controller.blackboard[target_key]
+	// Succeed if we're adjacent or target is gone
+	if(QDELETED(target) || get_dist(controller.pawn, target) <= 1)
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	return AI_BEHAVIOR_DELAY
+
+/datum/ai_behavior/explore_travel/finish_action(datum/ai_controller/controller, succeeded, target_key)
+	. = ..()
+
+/**
+ * Behavior that opens a closet during exploration.
+ */
+/datum/ai_behavior/explore_open_closet
+	action_cooldown = 1.2 SECONDS
+	behavior_flags = NONE
+
+/datum/ai_behavior/explore_open_closet/setup(datum/ai_controller/controller, target_key)
+	var/obj/structure/closet/closet = controller.blackboard[target_key]
+	if(QDELETED(closet))
+		return FALSE
+	if(closet.opened)
+		return FALSE
+	return TRUE
+
+/datum/ai_behavior/explore_open_closet/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
+	var/obj/structure/closet/closet = controller.blackboard[target_key]
+	var/mob/living/basic/pawn = controller.pawn
+
+	if(QDELETED(closet) || closet.opened)
+		// Already open or gone - advance index
+		var/target_index = controller.blackboard[BB_EXPLORATION_INDEX] || 1
+		controller.set_blackboard_key(BB_EXPLORATION_INDEX, target_index + 1)
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+	// If locked or welded, attack it to break it open
+	if(closet.locked || closet.welded)
+		pawn.melee_attack(closet)
+		PATROL_LOG("[pawn] attacking locked/welded closet [closet.name]")
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED  // Keep attacking until it opens
+
+	// Unlocked - just open it
+	var/old_combat_mode = pawn.combat_mode
+	pawn.combat_mode = FALSE
+	closet.open(pawn)
+	pawn.combat_mode = old_combat_mode
+
+	PATROL_LOG("[pawn] opened closet [closet.name] during exploration")
+
+	// Scan for crew hiding inside - they'll be on/near the closet's turf now
+	var/turf/closet_turf = get_turf(closet)
+	if(closet_turf)
+		for(var/mob/living/carbon/hiding_crew in range(1, closet_turf))
+			if(hiding_crew.stat != DEAD)
+				// Found a live crew member! Target them immediately
+				controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, hiding_crew)
+				PATROL_LOG("[pawn] found [hiding_crew] hiding in closet! Targeting!")
+				break
+
+	// Advance to next target
+	var/target_index = controller.blackboard[BB_EXPLORATION_INDEX] || 1
+	controller.set_blackboard_key(BB_EXPLORATION_INDEX, target_index + 1)
+
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+/datum/ai_behavior/explore_open_closet/finish_action(datum/ai_controller/controller, succeeded, target_key)
+	. = ..()
+
 /**
  * Aggressive target finding subtree that uses range() instead of hearers().
  * This bypasses TG's broken proximity field system.
@@ -1098,14 +1920,27 @@
 	var/scan_range = 9
 
 /datum/ai_planning_subtree/aggressive_find_target/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	// Already have a valid target? Skip scanning
-	var/atom/current_target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
-	if(!QDELETED(current_target))
-		return
-
 	var/mob/living/pawn = controller.pawn
 	if(!pawn || !isturf(pawn.loc))
 		return
+
+	// Already have a valid target? Validate it
+	var/atom/current_target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(!QDELETED(current_target))
+		// Check if target is a dead mob - if so, clear it and find a new one
+		if(isliving(current_target))
+			var/mob/living/living_target = current_target
+			if(living_target.stat == DEAD)
+				controller.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+				// Fall through to find new target
+			else if(get_dist(pawn, living_target) <= 1 && !pawn.CanReach(living_target))
+				// Adjacent but unreachable (behind windoor, etc) - clear and find new one
+				controller.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+				// Fall through to find new target
+			else
+				return  // Target is alive (and reachable if adjacent), keep it
+		else
+			return  // Non-mob target, keep it
 
 	var/datum/targeting_strategy/targeting_strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_TARGETING_STRATEGY])
 	if(!targeting_strategy)
@@ -1117,6 +1952,9 @@
 	var/list/rejected_targets = list()
 	for(var/mob/living/potential_target in range(scan_range, pawn))
 		if(potential_target == pawn)
+			continue
+		// Skip dead mobs - don't waste time attacking corpses
+		if(potential_target.stat == DEAD)
 			continue
 		if(targeting_strategy.can_attack(pawn, potential_target))
 			potential_targets += potential_target
@@ -1195,6 +2033,7 @@
 /**
  * Trooper AI controller variant that patrols door-to-door when not in combat.
  * Uses JPS pathfinding for reliable navigation through ship interiors.
+ * Includes room exploration: searches lockers and visits waypoints in each room.
  */
 /datum/ai_controller/basic_controller/trooper/patrolling
 	ai_movement = /datum/ai_movement/jps  // JPS pathfinding instead of basic_avoidance
@@ -1204,6 +2043,7 @@
 		/datum/ai_planning_subtree/attack_obstacle_in_path/trooper/include_mobs,
 		/datum/ai_planning_subtree/basic_melee_attack_subtree,
 		/datum/ai_planning_subtree/handle_blocking_door,
+		/datum/ai_planning_subtree/explore_room,           // Room exploration - after door handling, before patrol
 		/datum/ai_planning_subtree/patrol_path,
 		/datum/ai_planning_subtree/try_open_door_in_path,
 		/datum/ai_planning_subtree/attack_patrol_door,
@@ -1217,6 +2057,7 @@
 		/datum/ai_planning_subtree/attack_obstacle_in_path/trooper/include_mobs,
 		/datum/ai_planning_subtree/basic_ranged_attack_subtree/trooper,
 		/datum/ai_planning_subtree/handle_blocking_door,
+		/datum/ai_planning_subtree/explore_room,           // Room exploration - after door handling, before patrol
 		/datum/ai_planning_subtree/patrol_path,
 		/datum/ai_planning_subtree/try_open_door_in_path,
 		/datum/ai_planning_subtree/attack_patrol_door,
@@ -1231,6 +2072,7 @@
 		/datum/ai_planning_subtree/attack_obstacle_in_path/trooper/include_mobs,
 		/datum/ai_planning_subtree/basic_melee_attack_subtree,
 		/datum/ai_planning_subtree/handle_blocking_door,
+		/datum/ai_planning_subtree/explore_room,           // Room exploration - after door handling, before patrol
 		/datum/ai_planning_subtree/patrol_path,
 		/datum/ai_planning_subtree/try_open_door_in_path,
 		/datum/ai_planning_subtree/attack_patrol_door,
@@ -1245,6 +2087,7 @@
 		/datum/ai_planning_subtree/attack_obstacle_in_path/trooper/include_mobs,
 		/datum/ai_planning_subtree/basic_ranged_attack_subtree/trooper,
 		/datum/ai_planning_subtree/handle_blocking_door,
+		/datum/ai_planning_subtree/explore_room,           // Room exploration - after door handling, before patrol
 		/datum/ai_planning_subtree/patrol_path,
 		/datum/ai_planning_subtree/try_open_door_in_path,
 		/datum/ai_planning_subtree/attack_patrol_door,

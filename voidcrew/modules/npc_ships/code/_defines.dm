@@ -183,7 +183,27 @@ GLOBAL_LIST_EMPTY(patrol_path_markers)
 #define BB_MOB_PATROL_INDEX "mob_patrol_index"        // Current index in the patrol path (1-based)
 #define BB_MOB_PATROL_TARGET "mob_patrol_target"      // Current patrol waypoint (target door)
 #define BB_MOB_PATROL_SHIP_REF "mob_patrol_ship_ref"  // REF() of the ship being patrolled
+#define BB_MOB_PATROL_TARGET_TURF "mob_patrol_target_turf"  // Turf of current patrol target (for assembly check when door destroyed)
+#define BB_MOB_PATROL_ORIGIN_ROOM "mob_patrol_origin_room"  // Room we were in when we started approaching current target door
 #define BB_DOOR_TO_OPEN "door_to_open"                // Door we're trying to open
 
 // Door attack timeout (for reinforced doors)
 #define PATROL_DOOR_ATTACK_TIMEOUT (45 SECONDS)
+
+// ========== ROOM EXPLORATION SYSTEM ==========
+// Cached room data for ship exploration (populated during patrol path generation)
+GLOBAL_LIST_EMPTY(ship_rooms)      // ship_ref -> list(room_id -> room_data)
+GLOBAL_LIST_EMPTY(turf_to_room)    // ship_ref -> list(turf_ref -> room_id) - O(1) lookup
+GLOBAL_LIST_EMPTY(door_to_rooms)   // ship_ref -> list(door_ref -> list(room_id_1, room_id_2))
+
+// Room exploration blackboard keys
+#define BB_LAST_KNOWN_ROOM "_last_known_room"                     // Last room mob was in (for transition detection)
+#define BB_EXPLORED_ROOMS "_explored_rooms"                       // Rooms explored this cycle (use LAZYSET)
+#define BB_EXPLORING_ROOM "_exploring_room"                       // Current room being explored
+#define BB_EXPLORATION_TARGETS "_exploration_targets"             // List of targets (closets + turfs)
+#define BB_EXPLORATION_INDEX "_exploration_index"                 // Current target index
+#define BB_EXPLORATION_TARGET "_exploration_target"               // Current exploration target
+
+// Room exploration constants
+#define EXPLORATION_MAX_LOCKERS 3                                 // Cap locker targets per room
+#define EXPLORATION_MIN_ROOM_SIZE 4                               // Skip exploration for rooms smaller than this

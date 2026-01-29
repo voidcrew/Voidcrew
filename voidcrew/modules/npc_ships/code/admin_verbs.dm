@@ -195,3 +195,274 @@ ADMIN_VERB(force_z_level_active, R_DEBUG, "Force Z-Level Active", "Keep a z-leve
 	to_chat(user, span_adminnotice("Z-level [z_level] forced active. Run verb again to deactivate."))
 	message_admins("[key_name_admin(user)] forced z-level [z_level] active for AI debugging.")
 	BLACKBOX_LOG_ADMIN_VERB("Force Z-Level Active")
+
+/// Global list of room visualization overlays (ship_ref -> list of overlay images)
+GLOBAL_LIST_EMPTY(room_visualization_overlays)
+
+/// Distinct colors for room visualization (enough for ~30 rooms)
+GLOBAL_LIST_INIT(room_colors, list(
+	"#FF0000", // Red
+	"#00FF00", // Green
+	"#0000FF", // Blue
+	"#FFFF00", // Yellow
+	"#FF00FF", // Magenta
+	"#00FFFF", // Cyan
+	"#FF8000", // Orange
+	"#8000FF", // Purple
+	"#00FF80", // Spring Green
+	"#FF0080", // Hot Pink
+	"#80FF00", // Lime
+	"#0080FF", // Sky Blue
+	"#FF8080", // Light Red
+	"#80FF80", // Light Green
+	"#8080FF", // Light Blue
+	"#FFFF80", // Light Yellow
+	"#FF80FF", // Light Magenta
+	"#80FFFF", // Light Cyan
+	"#804000", // Brown
+	"#008040", // Teal
+	"#400080", // Indigo
+	"#408000", // Olive
+	"#800040", // Maroon
+	"#004080", // Navy
+	"#C0C0C0", // Silver
+	"#808000", // Dark Yellow
+	"#008080", // Dark Cyan
+	"#800080", // Dark Magenta
+	"#404040", // Dark Gray
+	"#C08040", // Tan
+))
+
+ADMIN_VERB(visualize_rooms, R_DEBUG, "Visualize Ship Rooms", "Toggle room visualization on/off for the current ship.", ADMIN_CATEGORY_DEBUG)
+	var/mob/admin_mob = user.mob
+	if(!admin_mob)
+		to_chat(user, span_warning("You need a mob to use this."))
+		return
+
+	var/turf/admin_turf = get_turf(admin_mob)
+	if(!admin_turf)
+		to_chat(user, span_warning("Could not find your location."))
+		return
+
+	// Find the ship we're on
+	var/area/current_area = get_area(admin_turf)
+	var/obj/structure/overmap/ship/found_ship = null
+
+	if(current_area)
+		for(var/obj/structure/overmap/ship/S in SSovermap.simulated_ships)
+			if(!S.shuttle?.shuttle_areas)
+				continue
+			if(current_area in S.shuttle.shuttle_areas)
+				found_ship = S
+				break
+
+	if(!found_ship)
+		to_chat(user, span_warning("You must be standing on a ship to visualize rooms."))
+		return
+
+	var/ship_ref = REF(found_ship)
+
+	// Check if visualization is already active - toggle off
+	if(GLOB.room_visualization_overlays[ship_ref])
+		clear_room_visualization(ship_ref)
+		to_chat(user, span_adminnotice("Room visualization disabled for [found_ship.name]."))
+		return
+
+	// Check if room data exists
+	if(!GLOB.ship_rooms[ship_ref])
+		to_chat(user, span_warning("No room data found for [found_ship.name]. Generating patrol path first..."))
+		var/path = generate_ship_patrol_path(found_ship)
+		if(!path)
+			to_chat(user, span_warning("Failed to generate patrol path/room data."))
+			return
+
+	// Visualize the rooms
+	var/room_count = visualize_ship_rooms(found_ship)
+	to_chat(user, span_adminnotice("Room visualization enabled for [found_ship.name]. [room_count] rooms colored. Run again to disable."))
+	message_admins("[key_name_admin(user)] enabled room visualization for [found_ship.name].")
+	BLACKBOX_LOG_ADMIN_VERB("Visualize Ship Rooms")
+
+/**
+ * Visualize all rooms on a ship by coloring their turfs.
+ * Each room gets a unique color overlay.
+ *
+ * @param target_ship The ship to visualize
+ * @return Number of rooms visualized
+ */
+/proc/visualize_ship_rooms(obj/structure/overmap/ship/target_ship)
+	if(!target_ship)
+		return 0
+
+	var/ship_ref = REF(target_ship)
+	var/list/room_data = GLOB.ship_rooms[ship_ref]
+	if(!room_data)
+		return 0
+
+	// Clear any existing visualization
+	clear_room_visualization(ship_ref)
+
+	// Initialize overlay storage
+	GLOB.room_visualization_overlays[ship_ref] = list()
+
+	var/room_index = 0
+	var/color_count = length(GLOB.room_colors)
+
+	for(var/room_id in room_data)
+		var/list/room = room_data[room_id]
+		var/list/turfs = room["turfs"]
+		if(!length(turfs))
+			continue
+
+		// Pick a color (cycle through if more rooms than colors)
+		var/color = GLOB.room_colors[(room_index % color_count) + 1]
+		room_index++
+
+		// Create overlay for each turf in the room
+		for(var/turf/T as anything in turfs)
+			// Create a semi-transparent colored overlay
+			var/image/room_overlay = image('icons/effects/effects.dmi', T, "yourfloor") // Use a simple square icon state
+			room_overlay.color = color
+			room_overlay.alpha = 100 // Semi-transparent
+			room_overlay.plane = ABOVE_LIGHTING_PLANE
+			room_overlay.layer = ABOVE_MOB_LAYER
+
+			// Add to all clients (admin visibility)
+			for(var/client/C in GLOB.clients)
+				C.images += room_overlay
+
+			GLOB.room_visualization_overlays[ship_ref] += room_overlay
+
+	return room_index
+
+/**
+ * Clear room visualization overlays for a ship.
+ *
+ * @param ship_ref REF() of the ship
+ */
+/proc/clear_room_visualization(ship_ref)
+	var/list/overlays = GLOB.room_visualization_overlays[ship_ref]
+	if(!overlays)
+		return
+
+	// Remove overlays from all clients
+	for(var/image/overlay as anything in overlays)
+		for(var/client/C in GLOB.clients)
+			C.images -= overlay
+		qdel(overlay)
+
+	GLOB.room_visualization_overlays -= ship_ref
+
+/// Tracks which ships have had their turfs directly colored for room debugging
+GLOBAL_LIST_EMPTY(room_colored_ships)
+
+ADMIN_VERB(colorize_rooms_direct, R_DEBUG, "Colorize Ship Rooms (Direct)", "Toggle direct turf coloring for room visualization. Modifies actual turf color var.", ADMIN_CATEGORY_DEBUG)
+	var/mob/admin_mob = user.mob
+	if(!admin_mob)
+		to_chat(user, span_warning("You need a mob to use this."))
+		return
+
+	var/turf/admin_turf = get_turf(admin_mob)
+	if(!admin_turf)
+		to_chat(user, span_warning("Could not find your location."))
+		return
+
+	// Find the ship we're on
+	var/area/current_area = get_area(admin_turf)
+	var/obj/structure/overmap/ship/found_ship = null
+
+	if(current_area)
+		for(var/obj/structure/overmap/ship/S in SSovermap.simulated_ships)
+			if(!S.shuttle?.shuttle_areas)
+				continue
+			if(current_area in S.shuttle.shuttle_areas)
+				found_ship = S
+				break
+
+	if(!found_ship)
+		to_chat(user, span_warning("You must be standing on a ship to colorize rooms."))
+		return
+
+	var/ship_ref = REF(found_ship)
+
+	// Check if already colored - toggle off
+	if(GLOB.room_colored_ships[ship_ref])
+		clear_room_colors_direct(ship_ref)
+		to_chat(user, span_adminnotice("Room colors cleared for [found_ship.name]."))
+		return
+
+	// Generate room data if needed, with colorize = TRUE
+	if(GLOB.ship_rooms[ship_ref])
+		// Room data exists but turfs aren't colored - color them now
+		colorize_ship_rooms_direct(found_ship)
+	else
+		// Generate fresh with colorize enabled
+		to_chat(user, span_notice("Generating room data with colorization..."))
+		// First generate the patrol path (which calls compute_ship_rooms)
+		var/path = generate_ship_patrol_path(found_ship)
+		if(!path)
+			to_chat(user, span_warning("Failed to generate patrol path/room data."))
+			return
+		// Now colorize since compute_ship_rooms was called without colorize flag
+		colorize_ship_rooms_direct(found_ship)
+
+	GLOB.room_colored_ships[ship_ref] = TRUE
+	var/room_count = length(GLOB.ship_rooms[ship_ref])
+	to_chat(user, span_adminnotice("Directly colored [room_count] rooms on [found_ship.name]. Run again to clear."))
+	message_admins("[key_name_admin(user)] colorized room turfs for [found_ship.name].")
+	BLACKBOX_LOG_ADMIN_VERB("Colorize Ship Rooms Direct")
+
+/**
+ * Directly color all room turfs on a ship using turf.color var.
+ * Each room gets a unique color.
+ *
+ * @param target_ship The ship to colorize
+ */
+/proc/colorize_ship_rooms_direct(obj/structure/overmap/ship/target_ship)
+	if(!target_ship)
+		log_shuttle("COLORIZE: No target ship!")
+		return
+
+	var/ship_ref = REF(target_ship)
+	var/list/room_data = GLOB.ship_rooms[ship_ref]
+	if(!room_data)
+		log_shuttle("COLORIZE: No room data for ship [target_ship]!")
+		return
+
+	var/room_index = 0
+	var/color_count = length(GLOB.room_colors)
+
+	log_shuttle("COLORIZE: Starting colorization for [target_ship], [length(room_data)] rooms, [color_count] colors available")
+
+	for(var/room_id in room_data)
+		var/list/room = room_data[room_id]
+		var/list/turfs = room["turfs"]
+		if(!length(turfs))
+			continue
+
+		// Pick a color (cycle through if more rooms than colors)
+		var/room_color = GLOB.room_colors[(room_index % color_count) + 1]
+		room_index++
+
+		// Directly set turf color
+		for(var/turf/T as anything in turfs)
+			T.color = room_color
+
+/**
+ * Clear direct turf coloring for a ship.
+ *
+ * @param ship_ref REF() of the ship
+ */
+/proc/clear_room_colors_direct(ship_ref)
+	var/list/room_data = GLOB.ship_rooms[ship_ref]
+	if(!room_data)
+		GLOB.room_colored_ships -= ship_ref
+		return
+
+	// Reset all turf colors to null
+	for(var/room_id in room_data)
+		var/list/room = room_data[room_id]
+		var/list/turfs = room["turfs"]
+		for(var/turf/T as anything in turfs)
+			T.color = null
+
+	GLOB.room_colored_ships -= ship_ref
