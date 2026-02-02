@@ -6,7 +6,7 @@
  */
 
 // Debug logging toggle - set to TRUE to enable patrol debug messages
-#define PATROL_DEBUG TRUE
+#define PATROL_DEBUG FALSE
 
 #if PATROL_DEBUG
 #define PATROL_LOG(msg) log_shuttle("PATROL: [msg]")
@@ -1018,7 +1018,7 @@
 
 				if(valid_crossing)
 					// We actually crossed through the target door - advance patrol
-					var/old_index = patrol_index
+					PATROL_LOG("[pawn] crossed door [patrol_index] ([origin_room] -> [current_room])")
 					patrol_index = (patrol_index % length(patrol_path)) + 1
 					controller.blackboard[BB_MOB_PATROL_INDEX] = patrol_index
 
@@ -1032,7 +1032,7 @@
 						controller.clear_blackboard_key(BB_EXPLORED_ROOMS)
 						PATROL_LOG("[pawn] patrol wrapped, clearing explored rooms")
 
-					PATROL_LOG("[pawn] walked through door [old_index] ([origin_room] -> [current_room]), advancing to [patrol_index]")
+					PATROL_LOG("[pawn] advancing to patrol index [patrol_index]")
 
 					// Trigger room exploration for the new room
 					maybe_start_room_exploration(controller, current_room, ship_ref)
@@ -1054,13 +1054,13 @@
 	// Fallback: ONLY if room data is completely unavailable for this ship
 	// This prevents premature patrol advancement when room detection should work
 	if(!has_room_data && !target_door.density && current_dist <= 1)
-		var/old_index = patrol_index
+		PATROL_LOG("[pawn] passed open door [patrol_index] (no room data fallback)")
 		patrol_index = (patrol_index % length(patrol_path)) + 1
 		controller.blackboard[BB_MOB_PATROL_INDEX] = patrol_index
 		clear_patrol_tracking_keys(controller)
 		if(patrol_index == 1)
 			controller.clear_blackboard_key(BB_EXPLORED_ROOMS)
-		PATROL_LOG("[pawn] passed open door [old_index] (no room data fallback), advancing to [patrol_index]")
+		PATROL_LOG("[pawn] advancing to [patrol_index]")
 		return
 
 	// Simple timeout-based stuck detection
@@ -1078,13 +1078,13 @@
 			controller.blackboard["_patrol_last_dist"] = current_dist
 		// If we've been stuck for too long, skip to next door
 		else if(world.time > door_start_time + PATROL_DOOR_TIMEOUT && current_dist > 2)
-			var/old_index = patrol_index
+			PATROL_LOG("[pawn] TIMEOUT reaching door [patrol_index] (dist=[current_dist])")
 			patrol_index = (patrol_index % length(patrol_path)) + 1
 			controller.blackboard[BB_MOB_PATROL_INDEX] = patrol_index
 			clear_patrol_tracking_keys(controller)
 			if(patrol_index == 1)
 				controller.clear_blackboard_key(BB_EXPLORED_ROOMS)
-			PATROL_LOG("[pawn] TIMEOUT reaching door [old_index] (dist=[current_dist]), advancing to [patrol_index]")
+			PATROL_LOG("[pawn] advancing to [patrol_index]")
 			return
 
 	// Set the door as our patrol target
@@ -1238,16 +1238,12 @@
 	if(pawn_turf == target)
 		PATROL_LOG("[controller.pawn] walk_through succeeded: reached target turf")
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-	// Log if we seem stuck (still far from target)
-	var/dist = get_dist(controller.pawn, target)
-	if(dist > 1)
-		PATROL_LOG("[controller.pawn] walk_through: still dist=[dist] from target ([target.x],[target.y])")
+	PATROL_LOG("[controller.pawn] walk_through: dist=[get_dist(controller.pawn, target)] from target")
 	return AI_BEHAVIOR_DELAY
 
 /datum/ai_behavior/patrol_walk_through/finish_action(datum/ai_controller/controller, succeeded, target_key)
 	. = ..()
-	if(!succeeded)
-		PATROL_LOG("[controller.pawn] walk_through finish_action: FAILED to reach target")
+	PATROL_LOG("[controller.pawn] walk_through finish_action: succeeded=[succeeded]")
 	controller.clear_blackboard_key(target_key)
 
 /**
@@ -1949,7 +1945,6 @@
 
 	// Use range() instead of hearers() - more reliable on shuttles
 	var/list/potential_targets = list()
-	var/list/rejected_targets = list()
 	for(var/mob/living/potential_target in range(scan_range, pawn))
 		if(potential_target == pawn)
 			continue
@@ -1958,12 +1953,6 @@
 			continue
 		if(targeting_strategy.can_attack(pawn, potential_target))
 			potential_targets += potential_target
-		else
-			rejected_targets += "[potential_target] ([potential_target.type])"
-
-	// Debug: log what we found
-	if(length(rejected_targets))
-		PATROL_LOG("[pawn] aggressive_find_target: Rejected [length(rejected_targets)] targets: [rejected_targets.Join(", ")]")
 
 	if(!length(potential_targets))
 		return

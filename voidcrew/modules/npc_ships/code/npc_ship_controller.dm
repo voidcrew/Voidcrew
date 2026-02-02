@@ -372,8 +372,11 @@
 	if(target)
 		set_blackboard_key(BB_NPC_TARGET, target)
 		// Mark this target as engaged by us (only one pirate can engage at a time)
+		// Don't overwrite if another active pirate already has this target claimed
 		if(our_ship)
-			target.engaging_pirate_ref = WEAKREF(our_ship)
+			var/obj/structure/overmap/ship/npc/existing_pirate = target.engaging_pirate_ref?.resolve()
+			if(!existing_pirate || QDELETED(existing_pirate) || existing_pirate.is_disabled || existing_pirate == our_ship)
+				target.engaging_pirate_ref = WEAKREF(our_ship)
 		// Register for zone transition signal to cancel hails if target escapes
 		RegisterSignal(target, COMSIG_VOIDCREW_SHIP_ZONE_TRANSITION_START, PROC_REF(on_target_zone_transition))
 	else
@@ -637,7 +640,11 @@
 	if(!length(valid_turfs))
 		return FALSE
 
-	// Spawn the boarders
+	// Set up global spawn tracking for patrol distribution
+	GLOB.boarding_spawn_index = 0
+	GLOB.boarding_spawn_total = boarder_count
+
+	// Spawn the boarders via drop pods
 	var/list/wave_boarders = list()
 	for(var/i in 1 to boarder_count)
 		if(!length(valid_turfs))
@@ -645,14 +652,11 @@
 		var/turf/spawn_loc = pick(valid_turfs)
 		var/mob_type = pick(mob_types)
 
-		// Visual teleport-in effect before spawning
-		do_sparks(3, TRUE, spawn_loc)
-		playsound(spawn_loc, 'sound/effects/portal/portal_travel.ogg', 50, TRUE)
+		// Create boarding pod with the mob inside - returns the boarder for tracking
+		var/mob/living/boarder = create_boarding_pod(spawn_loc, target, ship, mob_type)
 
-		var/mob/living/boarder = new mob_type(spawn_loc)
-
-		// Set loot tier based on wave (if this mob type has plunder_credits)
 		if(boarder)
+			// Set loot tier based on wave (if this mob type has plunder_credits)
 			var/mob/living/basic/trooper/pirate/pirate_boarder = boarder
 			if(istype(pirate_boarder))
 				switch(wave_number)
@@ -667,25 +671,8 @@
 			wave_boarders += boarder
 			RegisterSignal(boarder, COMSIG_LIVING_DEATH, PROC_REF(on_boarder_death))
 
-	// Set up patrol behavior for all spawned boarders
-	log_shuttle("PATROL: Wave spawned [length(wave_boarders)] boarders, setting up patrol on [target]")
-	for(var/i in 1 to length(wave_boarders))
-		var/mob/living/boarder = wave_boarders[i]
-		if(!boarder)
-			continue
-		// Swap to patrolling AI controller
-		var/new_controller_type
-		if(istype(boarder.ai_controller, /datum/ai_controller/basic_controller/trooper/ranged))
-			new_controller_type = /datum/ai_controller/basic_controller/trooper/ranged/patrolling
-		else if(istype(boarder.ai_controller, /datum/ai_controller/basic_controller/trooper))
-			new_controller_type = /datum/ai_controller/basic_controller/trooper/patrolling
-
-		if(new_controller_type)
-			log_shuttle("PATROL: Swapping [boarder] to [new_controller_type]")
-			new new_controller_type(boarder)
-
-		// Assign patrol path
-		assign_mob_to_patrol(boarder, target, i - 1, length(wave_boarders))
+	// Note: Patrol setup is handled by the boarding pod's open_pod() proc
+	log_shuttle("PATROL: Wave [wave_number] launched [length(wave_boarders)] boarders via drop pods")
 
 	// Store the wave boarders for tracking
 	blackboard[BB_NPC_BOARDING_WAVE_BOARDERS] = wave_boarders
@@ -901,34 +888,20 @@
 
 	var/turf/spawn_loc = pick(valid_turfs)
 
-	// Spawn the boss
+	// Spawn the boss via heavy drop pod
 	var/boss_type = ship.boss_type
 	if(!boss_type)
 		boss_type = /mob/living/basic/trooper/pirate/faction/boss/rogues
 
-	var/mob/living/basic/trooper/pirate/faction/boss/boss = new boss_type(spawn_loc)
+	// Create boss boarding pod - returns the boss for tracking
+	// Pod handles parent_ship, AI controller swap, and patrol assignment
+	var/mob/living/basic/trooper/pirate/faction/boss/boss = create_boss_boarding_pod(spawn_loc, target, ship, boss_type)
 	if(boss)
-		boss.parent_ship = ship
 		set_blackboard_key(BB_NPC_BOARDING_BOSS, boss)
 		RegisterSignal(boss, COMSIG_LIVING_DEATH, PROC_REF(on_boss_death))
 
-		// Swap boss AI controller to patrolling version and assign patrol
-		var/new_controller_type
-		if(istype(boss.ai_controller, /datum/ai_controller/basic_controller/trooper/ranged))
-			new_controller_type = /datum/ai_controller/basic_controller/trooper/ranged/patrolling/boss
-		else
-			new_controller_type = /datum/ai_controller/basic_controller/trooper/patrolling/boss
-		log_shuttle("PATROL: Swapping [boss] to [new_controller_type]")
-		boss.ai_controller.set_ai_status(AI_STATUS_OFF)
-		qdel(boss.ai_controller)
-		boss.ai_controller = new new_controller_type(boss)
-		boss.ai_controller.set_ai_status(AI_STATUS_ON)
-
-		// Assign boss to patrol the target ship
-		assign_mob_to_patrol(boss, target)
-
 	// Announce boss arrival
-	target.ship_notify("WARNING: [boss?.name || "Enemy Commander"] has boarded your vessel!", "SECURITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
+	target.ship_notify("WARNING: Enemy Commander incoming via drop pod!", "SECURITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
 
 /**
  * Signal handler for when the boss is killed.

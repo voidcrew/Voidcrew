@@ -709,8 +709,11 @@
 			return AI_BEHAVIOR_DELAY
 
 	// Check if another (active, non-disabled) pirate is engaging this target - yield to them
+	// Exception: don't yield if we're actively boarding - we have priority
+	var/combat_state = controller.get_combat_state()
+	var/is_boarding = (combat_state == NPC_COMBAT_BOARDING || combat_state == NPC_COMBAT_BOARDING_COOLDOWN || combat_state == NPC_COMBAT_BOSS_PHASE)
 	var/obj/structure/overmap/ship/npc/engaging_pirate = target.engaging_pirate_ref?.resolve()
-	if(engaging_pirate && engaging_pirate != ship && !QDELETED(engaging_pirate) && !engaging_pirate.is_disabled)
+	if(engaging_pirate && engaging_pirate != ship && !QDELETED(engaging_pirate) && !engaging_pirate.is_disabled && !is_boarding)
 		SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
 		controller.clear_target()
 		return AI_BEHAVIOR_DELAY

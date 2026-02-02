@@ -10,9 +10,10 @@ GLOBAL_VAR_INIT(boarding_spawn_index, 0)
 GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 
 /// Global proc to create a boarding pod drop at a target location
+/// Returns the boarder mob so the caller can register signals (e.g. death tracking)
 /proc/create_boarding_pod(turf/target_turf, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/npc/source_ship, mob_type)
 	if(!target_turf || !mob_type)
-		return FALSE
+		return null
 
 	// Create the boarding pod with the mob inside
 	var/obj/structure/closet/supplypod/boarding/pod = new()
@@ -21,7 +22,7 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	var/mob/living/boarder = new mob_type(pod)
 	if(!boarder)
 		qdel(pod)
-		return FALSE
+		return null
 
 	// Store references for the pod
 	pod.target_ship = target_ship
@@ -32,7 +33,7 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	// Create the landing zone - this handles the whole falling animation
 	new /obj/effect/pod_landingzone/boarding(target_turf, pod, target_ship, source_ship)
 
-	return TRUE
+	return boarder
 
 /**
  * Boarding Pod - A supplypod variant for delivering hostile boarders
@@ -161,3 +162,79 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 		playsound_ship(get_turf(src), pod.fallingSound, pod.soundVolume, TRUE, 6, target_ship)
 	else
 		. = ..()
+
+// ========== BOSS BOARDING POD ==========
+
+/// Global proc to create a boss boarding pod drop at a target location
+/// Returns the boss mob so the caller can register signals and track it
+/proc/create_boss_boarding_pod(turf/target_turf, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/npc/source_ship, mob_type)
+	if(!target_turf || !mob_type)
+		return null
+
+	// Create the boss boarding pod
+	var/obj/structure/closet/supplypod/boarding/boss/pod = new()
+
+	// Create the boss mob and put it in the pod
+	var/mob/living/basic/trooper/pirate/faction/boss/boss = new mob_type(pod)
+	if(!boss)
+		qdel(pod)
+		return null
+
+	// Set up boss-specific properties
+	boss.parent_ship = source_ship
+
+	// Store references for the pod
+	pod.target_ship = target_ship
+	pod.source_ship = source_ship
+	pod.boarder_ref = WEAKREF(boss)
+
+	// Create the landing zone - this handles the whole falling animation
+	new /obj/effect/pod_landingzone/boarding(target_turf, pod, target_ship, source_ship)
+
+	return boss
+
+/**
+ * Boss Boarding Pod - A heavier variant for boss delivery
+ *
+ * More dramatic entrance with bigger explosion and slower approach.
+ */
+/obj/structure/closet/supplypod/boarding/boss
+	name = "heavy boarding pod"
+	desc = "A reinforced assault pod. Something dangerous is inside."
+	explosionSize = list(0, 0, 1, 2)  // Bigger impact
+	damage = 50  // More damage to anyone caught underneath
+	delays = list(POD_TRANSIT = 20, POD_FALLING = 5, POD_OPENING = 10, POD_LEAVING = 8)
+
+/obj/structure/closet/supplypod/boarding/boss/preOpen()
+	. = ..()
+	// Extra dramatic sound for boss arrival
+	if(target_ship)
+		playsound_ship(get_turf(src), 'sound/effects/explosion/explosion1.ogg', 80, TRUE, 10, target_ship)
+
+/obj/structure/closet/supplypod/boarding/boss/setup_boarder_patrol(mob/living/boarder, obj/structure/overmap/ship/target_ship, spawn_index)
+	log_shuttle("PATROL: Boss setup_boarder_patrol called: boarder=[boarder], target_ship=[target_ship]")
+
+	if(!boarder)
+		log_shuttle("PATROL: FAILED - boarder is null")
+		return
+
+	// Determine the boss-specific patrolling AI controller type
+	var/new_controller_type
+	if(istype(boarder.ai_controller, /datum/ai_controller/basic_controller/trooper/ranged))
+		new_controller_type = /datum/ai_controller/basic_controller/trooper/ranged/patrolling/boss
+		log_shuttle("PATROL: Detected ranged boss, will swap to ranged/patrolling/boss")
+	else
+		new_controller_type = /datum/ai_controller/basic_controller/trooper/patrolling/boss
+		log_shuttle("PATROL: Detected melee boss, will swap to patrolling/boss")
+
+	// Swap to boss patrolling controller
+	if(new_controller_type)
+		log_shuttle("PATROL: Creating new boss controller of type [new_controller_type]")
+		boarder.ai_controller.set_ai_status(AI_STATUS_OFF)
+		qdel(boarder.ai_controller)
+		boarder.ai_controller = new new_controller_type(boarder)
+		boarder.ai_controller.set_ai_status(AI_STATUS_ON)
+
+	// Assign patrol path
+	var/result = assign_mob_to_patrol(boarder, target_ship)
+	log_shuttle("PATROL: Boss assign_mob_to_patrol returned: [result]")
