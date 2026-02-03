@@ -151,6 +151,9 @@
 			for(var/obj/machinery/porta_turret/syndicate/turret in shuttle_area)
 				turret.toggle_on(FALSE)
 
+	// Remove access requirements from all doors (player ships have open access)
+	npc_ship.clear_door_access()
+
 	// Reset ship movement state (NPC ships have different movement mechanics)
 	npc_ship.speed = list(0, 0)
 	npc_ship.speed_multiplier = 1

@@ -37,8 +37,12 @@
 	for(var/obj/structure/overmap/ship/active_ship as anything in SSovermap.simulated_ships)
 		if(isnull(active_ship.shuttle))
 			continue
-		// Skip ships that aren't accepting crew, have no spawn points, or are NPC ships
-		if(length(active_ship.shuttle.spawn_points) <= 0 || !active_ship.joining_allowed || istype(active_ship, /obj/structure/overmap/ship/npc))
+		// Skip ships that aren't accepting crew or have no spawn points
+		if(length(active_ship.shuttle.spawn_points) <= 0 || !active_ship.joining_allowed)
+			continue
+		// Skip NPC ships unless they've been claimed by players
+		var/obj/structure/overmap/ship/npc/npc_ship = active_ship
+		if(npc_ship && !npc_ship.player_controlled)
 			continue
 
 		var/crew_count = length(active_ship.manifest)
@@ -91,7 +95,12 @@
 				return FALSE
 
 			// Verify ship is still accepting crew
-			if(!ship.joining_allowed || istype(ship, /obj/structure/overmap/ship/npc))
+			if(!ship.joining_allowed)
+				to_chat(user, span_warning("That ship is not accepting new crew members."))
+				return FALSE
+			// Block unclaimed NPC ships
+			var/obj/structure/overmap/ship/npc/npc_ship = ship
+			if(npc_ship && !npc_ship.player_controlled)
 				to_chat(user, span_warning("That ship is not accepting new crew members."))
 				return FALSE
 

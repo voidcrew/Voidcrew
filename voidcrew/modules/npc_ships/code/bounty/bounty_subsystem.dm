@@ -206,7 +206,8 @@ SUBSYSTEM_DEF(bounty)
 				var/turf/target_turf = get_turf(target)
 				if(target_turf)
 					bounty_data["target_x"] = target_turf.x
-					bounty_data["target_y"] = target_turf.y
+					// Convert absolute Y to relative overmap coordinate (1-based)
+					bounty_data["target_y"] = target_turf.y - OVERMAP_SOUTH_SIDE_COORD + 1
 
 		data += list(bounty_data)
 

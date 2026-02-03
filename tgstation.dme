@@ -6740,6 +6740,7 @@
 #include "voidcrew\edits\id_card.dm"
 #include "voidcrew\edits\jobs.dm"
 #include "voidcrew\edits\keybindings.dm"
+#include "voidcrew\edits\machinery\power.dm"
 #include "voidcrew\edits\map_config.dm"
 #include "voidcrew\edits\preferences.dm"
 #include "voidcrew\edits\turf.dm"

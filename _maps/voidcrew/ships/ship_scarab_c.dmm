@@ -118,7 +118,7 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 8
 	},
-/turf/closed/wall/mineral/titanium/survival,
+/turf/open/space/basic,
 /area/shuttle/voidcrew/scarab/dormitories/c)
 "dC" = (
 /obj/machinery/power/apc/auto_name/directional/north,

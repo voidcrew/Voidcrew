@@ -92,11 +92,15 @@
 		if(job_ref in custom_slot_swaps)
 			current_swap = custom_slot_swaps[job_ref]["slot_index"]
 
+		// Calculate max slots: initial slots * 2, but cap at 6 (matching backend limit)
+		var/initial_slots = linked_port.current_ship.initial_job_slots?[ship_jobs] || 1
+		var/max_slots = min(initial_slots * 2, 6)
+
 		data["jobs"] += list(list(
 			"name" = ship_jobs.title,
 			"slots" = linked_port.current_ship.job_slots[ship_jobs],
 			"ref" = job_ref,
-			"max" = linked_port.current_ship.source_template.job_slots[ship_jobs] * 2,
+			"max" = max_slots,
 			"swapOptions" = swap_options.Copy(),
 			"currentSwap" = current_swap
 		))
@@ -123,7 +127,7 @@
 			var/datum/job/target_job = locate(params["toAdjust"])
 			if(!target_job)
 				return
-			if(linked_port.current_ship.job_slots[target_job] + params["delta"] < 0 || linked_port.current_ship.job_slots[target_job] + params["delta"] > 4)
+			if(linked_port.current_ship.job_slots[target_job] + params["delta"] < 0 || linked_port.current_ship.job_slots[target_job] + params["delta"] > 6)
 				return
 			linked_port.current_ship.job_slots[target_job] += params["delta"]
 			COOLDOWN_START(linked_port.current_ship, job_slot_adjustment_cooldown, DEFAULT_JOB_SLOT_ADJUSTMENT_COOLDOWN)

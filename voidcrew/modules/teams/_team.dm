@@ -7,8 +7,8 @@
 	var/obj/structure/overmap/ship/ship
 
 /datum/team/voidcrew/add_member(datum/mind/new_member)
-	// Check if already a member of this team
-	if(src in new_member.ship_teams)
+	// Check if already a member of this team (use LAZYFIND for null-safety)
+	if(LAZYFIND(new_member.ship_teams, src))
 		return
 
 	. = ..()

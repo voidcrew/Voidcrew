@@ -72,6 +72,8 @@
 	var/list/manifest = list()
 	///Assoc list of remaining open job slots (job = remaining slots)
 	var/list/job_slots
+	///Assoc list of initial job slot counts (job = initial slots) - used for max slot calculations
+	var/list/initial_job_slots
 	///Assoc list of selected ship upgrades (slot_key = /datum/ship_upgrade_module)
 	var/list/upgrade_selections = list()
 	/// Theme of this ship (e.g., "pirate", "science"). Used to load themed module variants.
@@ -551,6 +553,10 @@
 	else
 		job_slots = source_template.assemble_job_slots()
 
+	// Store initial slot counts for max slot calculations in cryo console
+	// This is an assoc list (job datum -> slot count), same format as job_slots
+	initial_job_slots = job_slots.Copy()
+
 	//then the account, which relies on there having a job, as we set it to the captain's.
 	ship_account = new(newname = ship_team.name, job = job_slots[1], player_account = FALSE)
 
@@ -572,7 +578,22 @@
 	RegisterSignal(src, COMSIG_SHIP_WEAPONS_LOCKED, PROC_REF(on_weapons_locked))
 	RegisterSignal(src, COMSIG_SHIP_WEAPONS_LOCK_LOST, PROC_REF(on_weapons_lock_lost))
 
+	// Player ships have no access requirements on doors
+	clear_door_access()
+
 	return TRUE
+
+/**
+ * Removes all access requirements from doors on this ship.
+ * Called when player ships spawn and when NPC ships are claimed.
+ */
+/obj/structure/overmap/ship/proc/clear_door_access()
+	if(!shuttle?.shuttle_areas)
+		return
+	for(var/area/shuttle_area as anything in shuttle.shuttle_areas)
+		for(var/obj/machinery/door/door in shuttle_area)
+			door.req_access = null
+			door.req_one_access = null
 
 /obj/structure/overmap/ship/Destroy()
 	source_template = null
@@ -582,6 +603,7 @@
 	QDEL_NULL(ship_account)
 	manifest?.Cut()
 	job_slots?.Cut()
+	initial_job_slots?.Cut()
 	QDEL_NULL(ship_team)
 	QDEL_NULL(cam_screen) // cam_background is inside cam_screen and deleted with it
 	QDEL_NULL(combat_alarm)
