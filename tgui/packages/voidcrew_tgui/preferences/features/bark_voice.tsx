@@ -2,9 +2,11 @@ import { useBackend } from 'tgui/backend';
 import { Button, Stack } from 'tgui-core/components';
 
 import {
+  CheckboxInput,
   type FeatureChoiced,
   type FeatureChoicedServerData,
   type FeatureNumeric,
+  type FeatureToggle,
   FeatureSliderInput,
   type FeatureValueProps,
 } from 'tgui/interfaces/PreferencesMenu/preferences/features/base';
@@ -66,4 +68,24 @@ export const bark_pitch_range: FeatureNumeric = {
   name: 'Bark Pitch Variance',
   description: 'How much your bark pitch varies between sounds.',
   component: FeatureSliderInput,
+};
+
+// Game preferences for hearing barks
+
+export const voice_sounds_short: FeatureToggle = {
+  name: 'Shortened Bark Sounds',
+  description: 'Hear shortened versions of bark sounds.',
+  component: CheckboxInput,
+};
+
+export const voice_sounds_limited_pitch: FeatureToggle = {
+  name: 'Limit Bark Pitch',
+  description: 'Hear barks without pitch modification.',
+  component: CheckboxInput,
+};
+
+export const voice_sounds_only_goon: FeatureToggle = {
+  name: 'Simple Barks Only',
+  description: 'Only hear simple Goonstation-style bark sounds.',
+  component: CheckboxInput,
 };
