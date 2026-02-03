@@ -2,7 +2,7 @@
  * NPC Ships Spawner Subsystem
  *
  * Manages deterministic spawning of NPC pirate ships.
- * Spawns 5 pirates at round start: 3 light-threat (yellow zone) + 2 heavy-threat (red zone).
+ * Spawns 3 pirates at round start: 2 light-threat (yellow zone) + 1 heavy-threat (red zone).
  * When a pirate is "resolved" (killed, claimed, abandoned), spawns a replacement from same tier.
  */
 SUBSYSTEM_DEF(npc_ships)
@@ -41,8 +41,8 @@ SUBSYSTEM_DEF(npc_ships)
 	var/list/active_heavy_types = list()
 
 	/// Target counts for each tier
-	var/light_count_target = 3
-	var/heavy_count_target = 2
+	var/light_count_target = 2
+	var/heavy_count_target = 1
 
 	/// Whether initial spawning is complete
 	var/initialized_pirates = FALSE
@@ -55,7 +55,7 @@ SUBSYSTEM_DEF(npc_ships)
 
 /**
  * Spawns the initial set of pirates at round start.
- * 3 light-threat + 2 heavy-threat, no duplicate factions.
+ * 2 light-threat + 1 heavy-threat, no duplicate factions.
  */
 /datum/controller/subsystem/npc_ships/proc/initialize_pirates()
 	if(initialized_pirates)
@@ -63,7 +63,7 @@ SUBSYSTEM_DEF(npc_ships)
 
 	log_world("SSnpc_ships: Spawning initial pirates...")
 
-	// Spawn 3 light-threat pirates (pick 3 random factions)
+	// Spawn 2 light-threat pirates (pick 2 random factions)
 	var/list/available_light = light_factions.Copy()
 	for(var/i in 1 to light_count_target)
 		if(!length(available_light))
@@ -71,7 +71,7 @@ SUBSYSTEM_DEF(npc_ships)
 		var/faction_type = pick_n_take(available_light)
 		spawn_pirate(faction_type)
 
-	// Spawn 2 heavy-threat pirates (pick 2 random factions)
+	// Spawn 1 heavy-threat pirate
 	var/list/available_heavy = heavy_factions.Copy()
 	for(var/i in 1 to heavy_count_target)
 		if(!length(available_heavy))

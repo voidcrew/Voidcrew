@@ -38,6 +38,10 @@
 	/// Cooldown between missile launches (deciseconds)
 	var/missile_cooldown_time = 10 SECONDS
 
+	/// Global cooldown between ANY weapon firing (missiles, lasers, boarding pods)
+	/// This prevents rapid-fire spam across different weapon types
+	var/global_weapon_cooldown_time = 10 SECONDS
+
 	/// Override cloak duration for this NPC ship type (0 = use device's calculated value)
 	var/npc_cloak_duration = 0
 
@@ -84,6 +88,9 @@
 
 	/// Cooldown for missile firing
 	COOLDOWN_DECLARE(missile_cooldown)
+
+	/// Global cooldown - prevents ALL weapons from firing (shared across lasers, missiles, pods)
+	COOLDOWN_DECLARE(global_weapon_cooldown)
 
 	/// Set faction for pirate hostility
 	faction = list(FACTION_PIRATE)

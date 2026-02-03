@@ -497,7 +497,11 @@
  * Attempts to fire lasers at the target.
  */
 /datum/ai_behavior/npc_ship/fire_weapons/proc/try_fire_lasers(obj/structure/overmap/ship/npc/ship, datum/npc_combat_interface/combat, obj/structure/overmap/ship/target)
-	// Check cooldown
+	// Check global cooldown first - prevents spam across all weapon types
+	if(!COOLDOWN_FINISHED(ship, global_weapon_cooldown))
+		return FALSE
+
+	// Check laser-specific cooldown
 	if(!COOLDOWN_FINISHED(ship, laser_cooldown))
 		return FALSE
 
@@ -514,6 +518,7 @@
 	// Fire! (uses per-ship laser cooldown)
 	if(combat.fire_lasers(target, fire_all))
 		COOLDOWN_START(ship, laser_cooldown, ship.laser_cooldown_time)
+		COOLDOWN_START(ship, global_weapon_cooldown, ship.global_weapon_cooldown_time)
 		return TRUE
 
 	return FALSE
@@ -522,7 +527,11 @@
  * Attempts to fire missiles at the target.
  */
 /datum/ai_behavior/npc_ship/fire_weapons/proc/try_fire_missiles(obj/structure/overmap/ship/npc/ship, datum/npc_combat_interface/combat, obj/structure/overmap/ship/target, skip_laser_fallback = FALSE)
-	// Check cooldown
+	// Check global cooldown first - prevents spam across all weapon types
+	if(!COOLDOWN_FINISHED(ship, global_weapon_cooldown))
+		return FALSE
+
+	// Check missile-specific cooldown
 	if(!COOLDOWN_FINISHED(ship, missile_cooldown))
 		// Fallback to lasers if available
 		if(!skip_laser_fallback)
@@ -539,6 +548,7 @@
 	// Fire missile (uses per-ship missile cooldown)
 	if(combat.fire_missile(target))
 		COOLDOWN_START(ship, missile_cooldown, ship.missile_cooldown_time)
+		COOLDOWN_START(ship, global_weapon_cooldown, ship.global_weapon_cooldown_time)
 		return TRUE
 
 	return FALSE
@@ -571,6 +581,10 @@
 	if(!ship.boarding_pods_enabled)
 		return AI_BEHAVIOR_DELAY
 
+	// Check global cooldown first - prevents spam across all weapon types
+	if(!COOLDOWN_FINISHED(ship, global_weapon_cooldown))
+		return AI_BEHAVIOR_DELAY
+
 	// Check cooldown - use the ship combat pod cooldown (15 seconds)
 	if(!COOLDOWN_FINISHED(ship, boarding_pod_cooldown))
 		return AI_BEHAVIOR_DELAY
@@ -599,6 +613,7 @@
 	// Fire the boarding pods!
 	if(combat.fire_boarding_pods(target, pod_count))
 		COOLDOWN_START(ship, boarding_pod_cooldown, NPC_SHIP_COMBAT_POD_COOLDOWN)
+		COOLDOWN_START(ship, global_weapon_cooldown, ship.global_weapon_cooldown_time)
 		// Announce the boarding action
 		target.ship_notify("Multiple boarding pods inbound! Prepare to repel boarders!", "SECURITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
 
@@ -875,6 +890,17 @@
 	if(!ship || !target || QDELETED(target))
 		return AI_BEHAVIOR_DELAY
 
+	// Check 0: Target escaped to a different zone - fully disengage
+	var/turf/ship_turf = get_turf(ship)
+	var/turf/target_turf = get_turf(target)
+	if(ship_turf && target_turf)
+		var/datum/overmap_zone/ship_zone = SSovermap_zones.get_zone(ship_turf)
+		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
+		if(ship_zone != target_zone)
+			ship.ship_notify("Target has escaped to another sector. Aborting boarding operation.", "COMBAT", SHIP_NOTIFY_NOTICE)
+			controller.abort_boarding()
+			return AI_BEHAVIOR_DELAY
+
 	// Check 1: Wave time limit exceeded (cheesing by walling off boarders)
 	// Instead of escalating to combat, advance to the next wave
 	// Only escalate to ship combat if ALL waves time out (none defeated)
@@ -889,7 +915,7 @@
 		controller.set_blackboard_key(BB_NPC_BOARDING_LAST_SPACE_CHECK, world.time)
 		controller.check_boarders_in_space()
 
-	// Check 3: Target has moved (trying to escape)
+	// Check 3: Target has moved within same zone (trying to escape but still in range)
 	var/list/initial_pos = controller.blackboard[BB_NPC_BOARDING_TARGET_POS]
 	if(initial_pos && length(initial_pos) >= 2)
 		if(target.x != initial_pos[1] || target.y != initial_pos[2])
@@ -916,6 +942,23 @@
 	if(controller.get_combat_state() != NPC_COMBAT_BOARDING_COOLDOWN)
 		return AI_BEHAVIOR_DELAY
 
+	var/obj/structure/overmap/ship/npc/ship = controller.get_ship()
+	var/obj/structure/overmap/ship/target = controller.get_target()
+
+	if(!ship || !target || QDELETED(target))
+		return AI_BEHAVIOR_DELAY
+
+	// Check if target escaped to a different zone - fully disengage
+	var/turf/ship_turf = get_turf(ship)
+	var/turf/target_turf = get_turf(target)
+	if(ship_turf && target_turf)
+		var/datum/overmap_zone/ship_zone = SSovermap_zones.get_zone(ship_turf)
+		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
+		if(ship_zone != target_zone)
+			ship.ship_notify("Target has escaped to another sector. Aborting boarding operation.", "COMBAT", SHIP_NOTIFY_NOTICE)
+			controller.abort_boarding()
+			return AI_BEHAVIOR_DELAY
+
 	// Check if cooldown has expired (timer handles the actual transition)
 	var/cooldown_end = controller.blackboard[BB_NPC_BOARDING_COOLDOWN_END]
 	if(cooldown_end && world.time >= cooldown_end)
@@ -937,6 +980,23 @@
 	// Verify we're in boss phase
 	if(controller.get_combat_state() != NPC_COMBAT_BOSS_PHASE)
 		return AI_BEHAVIOR_DELAY
+
+	var/obj/structure/overmap/ship/npc/ship = controller.get_ship()
+	var/obj/structure/overmap/ship/target = controller.get_target()
+
+	if(!ship || !target || QDELETED(target))
+		return AI_BEHAVIOR_DELAY
+
+	// Check if target escaped to a different zone - fully disengage
+	var/turf/ship_turf = get_turf(ship)
+	var/turf/target_turf = get_turf(target)
+	if(ship_turf && target_turf)
+		var/datum/overmap_zone/ship_zone = SSovermap_zones.get_zone(ship_turf)
+		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
+		if(ship_zone != target_zone)
+			ship.ship_notify("Target has escaped to another sector. Aborting boarding operation.", "COMBAT", SHIP_NOTIFY_NOTICE)
+			controller.abort_boarding()
+			return AI_BEHAVIOR_DELAY
 
 	// Check if boss still exists
 	var/mob/living/boss = controller.blackboard[BB_NPC_BOARDING_BOSS]

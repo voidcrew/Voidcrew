@@ -1107,6 +1107,31 @@
 	clear_blackboard_key(BB_NPC_BOARDING_TARGET_POS)
 
 /**
+ * Abort boarding operation entirely - target escaped to a different zone.
+ * Cleans up all boarding state and returns to IDLE without a target.
+ */
+/datum/ai_controller/npc_ship/proc/abort_boarding()
+	// Clean up boarding state
+	cleanup_boarding_signals()
+
+	// Clear any remaining boarders (unregister death signals)
+	var/list/wave_boarders = blackboard[BB_NPC_BOARDING_WAVE_BOARDERS]
+	if(wave_boarders)
+		for(var/mob/living/boarder as anything in wave_boarders)
+			if(!QDELETED(boarder))
+				UnregisterSignal(boarder, COMSIG_LIVING_DEATH)
+	clear_blackboard_key(BB_NPC_BOARDING_WAVE_BOARDERS)
+
+	// Clear boss tracking
+	var/mob/living/boss = blackboard[BB_NPC_BOARDING_BOSS]
+	if(boss && !QDELETED(boss))
+		UnregisterSignal(boss, COMSIG_LIVING_DEATH)
+	clear_blackboard_key(BB_NPC_BOARDING_BOSS)
+
+	// Fully disengage - clear target and return to idle
+	clear_target()
+
+/**
  * Escalate from boarding phase to ship combat due to player behavior.
  * Called when time limit exceeded, player moves, or player locks weapons.
  * The caller is responsible for sending appropriate messages before calling this.

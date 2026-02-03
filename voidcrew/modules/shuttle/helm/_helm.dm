@@ -368,6 +368,8 @@
 		data["zone_transition_target"] = null
 
 	for(var/obj/machinery/power/shuttle_engine/ship/E in current_ship.shuttle.engine_list)
+		if(QDELETED(E))
+			continue
 		var/list/engine_data
 		if(!E.thruster_active)
 			engine_data = list(

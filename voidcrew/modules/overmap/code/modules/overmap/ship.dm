@@ -611,8 +611,15 @@
 		return
 	var/calculated_thrust
 	for(var/obj/machinery/power/shuttle_engine/ship/E in shuttle.engine_list)
-		if (QDELETED(E)) //Garant that we has no ghost engines.
+		// Remove deleted engines
+		if(QDELETED(E))
 			shuttle.engine_list -= E
+			continue
+		// Remove engines that are no longer on the ship
+		var/area/engine_area = get_area(E)
+		if(!(engine_area in shuttle.shuttle_areas))
+			shuttle.engine_list -= E
+			E.unsync_ship()
 			continue
 		E.update_engine()
 		if(E.enabled)
