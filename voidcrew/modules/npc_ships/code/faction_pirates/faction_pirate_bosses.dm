@@ -57,10 +57,10 @@
 	light_range = 3
 	light_power = 3
 	light_color = "#C0C0C0"
-	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
-	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
+	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/highlord
+	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/highlord
 	r_hand = /obj/item/melee/energy/sword/pirate
-	plunder_credits = 0
+	plunder_credits = 3000
 
 /mob/living/basic/trooper/pirate/faction/boss/silverscale/Initialize(mapload)
 	. = ..()
@@ -85,10 +85,10 @@
 	light_range = 2
 	light_power = 2
 	light_color = "#4488FF"
-	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/captain
-	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/captain
+	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/davyjones
+	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/davyjones
 	r_hand = /obj/item/gun/magic/midas_hand
-	plunder_credits = 0
+	plunder_credits = 3000
 
 /mob/living/basic/trooper/pirate/faction/boss/skeleton/Initialize(mapload)
 	. = ..()
@@ -110,10 +110,11 @@
 	attack_sound = 'sound/items/weapons/smash.ogg'
 	attack_vis_effect = ATTACK_EFFECT_SMASH
 	speak_emote = list("GREYTIDES")
-	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/captain
-	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/captain
-	r_hand = /obj/item/storage/toolbox/syndicate
-	plunder_credits = 0
+	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/robust
+	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/robust
+	r_hand = /obj/item/storage/toolbox/mechanical/old/clean
+	l_hand = /obj/item/stack/telecrystal/five
+	plunder_credits = 3000
 
 /mob/living/basic/trooper/pirate/faction/boss/grey/Initialize(mapload)
 	. = ..()
@@ -137,10 +138,10 @@
 	light_range = 6
 	light_power = 4
 	light_color = "#9966FF"
-	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/captain
-	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/captain
+	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/radiant
+	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/radiant
 	r_hand = /obj/item/melee/energy/sword/pirate
-	plunder_credits = 0
+	plunder_credits = 3000
 
 /mob/living/basic/trooper/pirate/faction/boss/lustrous/Initialize(mapload)
 	. = ..()
@@ -164,7 +165,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/captain
 	r_hand = /obj/item/reagent_containers/hypospray/combat
-	plunder_credits = 0
+	plunder_credits = 3000
 	ai_controller = /datum/ai_controller/basic_controller/trooper/ranged
 	var/projectiletype = /obj/projectile/beam/laser
 	var/projectilesound = 'sound/items/weapons/laser.ogg'
@@ -198,7 +199,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/captain
 	r_hand = /obj/item/gun/energy/e_gun/lethal
-	plunder_credits = 0
+	plunder_credits = 3000
 	ai_controller = /datum/ai_controller/basic_controller/trooper/ranged
 	var/projectiletype = /obj/projectile/beam/laser
 	var/projectilesound = 'sound/items/weapons/laser.ogg'
@@ -232,7 +233,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/captain
 	r_hand = /obj/item/fireaxe/boardingaxe
-	plunder_credits = 0
+	plunder_credits = 3000
 
 /mob/living/basic/trooper/pirate/faction/boss/medieval/Initialize(mapload)
 	. = ..()
@@ -259,7 +260,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate
 	r_hand = /obj/item/melee/energy/sword/pirate
-	plunder_credits = 0
+	plunder_credits = 3000
 
 /mob/living/basic/trooper/pirate/faction/boss/rogues/Initialize(mapload)
 	. = ..()

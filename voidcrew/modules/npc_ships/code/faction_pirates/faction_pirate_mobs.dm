@@ -12,8 +12,19 @@
 	unsuitable_atmos_damage = 0
 	minimum_survivable_temperature = 0
 	obj_damage = 60  // Can break doors/objects like blobbernauts
+	var/drop_items = TRUE
+	/// List of possible right hand items. Entries can be type paths or HAND_RESOLVER_* strings.
+	/// If set, one is picked at random during init and assigned to r_hand.
+	var/list/r_hand_options
+	/// List of possible left hand items. Same format as r_hand_options.
+	var/list/l_hand_options
 
 /mob/living/basic/trooper/pirate/faction/Initialize(mapload)
+	// Resolve dynamic hand items before parent init uses them for visuals
+	if(length(r_hand_options))
+		r_hand = resolve_hand_item(pick(r_hand_options))
+	if(length(l_hand_options))
+		l_hand = resolve_hand_item(pick(l_hand_options))
 	. = ..()
 	ADD_TRAIT(src, TRAIT_SPACEWALK, INNATE_TRAIT)
 	// Drop held weapons on death
@@ -24,6 +35,16 @@
 		weapon_drops += l_hand
 	if(length(weapon_drops))
 		AddElement(/datum/element/death_drops, weapon_drops)
+
+/// Resolves a hand item option to a concrete type path.
+/// Type paths pass through unchanged; HAND_RESOLVER_* strings dispatch to helper procs.
+/mob/living/basic/trooper/pirate/faction/proc/resolve_hand_item(hand_option)
+	if(ispath(hand_option))
+		return hand_option
+	switch(hand_option)
+		if(HAND_RESOLVER_RANDOM_FISH)
+			return random_fish_type()
+	CRASH("Unknown hand item resolver: [hand_option]")
 
 // ==================== SILVERSCALE (Aristocratic Lizards) ====================
 
@@ -48,15 +69,27 @@
 	light_color = COLOR_SOFT_RED
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/melee
-	r_hand = /obj/item/melee/energy/sword/pirate
-	plunder_credits = 0
+	r_hand_options = list(\
+		/obj/item/storage/medkit,\
+		/obj/item/storage/toolbox/mechanical,\
+		HAND_RESOLVER_RANDOM_FISH,\
+		/obj/item/pen/edagger,\
+		/obj/item/gun/energy/e_gun/mini,\
+	)
+	plunder_credits = 300
 
 /mob/living/basic/trooper/pirate/faction/silverscale/ranged
 	name = "Silverscale Marksman"
 	desc = "A noble lizard with impeccable aim."
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/ranged
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/ranged
-	r_hand = /obj/item/gun/energy/e_gun/lethal
+	r_hand_options = list(\
+		/obj/item/storage/medkit,\
+		/obj/item/storage/toolbox/mechanical,\
+		HAND_RESOLVER_RANDOM_FISH,\
+		/obj/item/pen/edagger,\
+		/obj/item/gun/energy/e_gun/mini,\
+	)
 	ai_controller = /datum/ai_controller/basic_controller/trooper/ranged
 	var/projectiletype = /obj/projectile/beam/laser
 	var/projectilesound = 'sound/items/weapons/laser.ogg'

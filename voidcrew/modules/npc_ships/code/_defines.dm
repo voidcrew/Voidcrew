@@ -207,3 +207,8 @@ GLOBAL_LIST_EMPTY(door_to_rooms)   // ship_ref -> list(door_ref -> list(room_id_
 // Room exploration constants
 #define EXPLORATION_MAX_LOCKERS 3                                 // Cap locker targets per room
 #define EXPLORATION_MIN_ROOM_SIZE 4                               // Skip exploration for rooms smaller than this
+
+// ========== HAND ITEM RESOLVERS ==========
+// Use these in r_hand_options/l_hand_options lists for dynamic item resolution at init time.
+// Anything that's ispath() gets used directly; strings trigger resolve_hand_item().
+#define HAND_RESOLVER_RANDOM_FISH "hand_resolver_random_fish"

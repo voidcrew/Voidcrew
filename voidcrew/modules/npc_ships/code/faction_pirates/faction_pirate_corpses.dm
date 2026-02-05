@@ -36,6 +36,10 @@
 	name = "Silverscale Noble"
 	outfit = /datum/outfit/piratecorpse/faction/silverscale/captain
 
+/obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/highlord
+	name = "Silverscale Highlord"
+	outfit = /datum/outfit/piratecorpse/faction/silverscale/highlord
+
 /datum/outfit/piratecorpse/faction/silverscale
 	name = "Silverscale Pirate Corpse"
 	uniform = /obj/item/clothing/under/syndicate/sniper
@@ -56,6 +60,11 @@
 	head = /obj/item/clothing/head/costume/crown
 	mask = /obj/item/cigarette/cigar/havana
 
+/datum/outfit/piratecorpse/faction/silverscale/highlord
+	name = "Silverscale Highlord Corpse"
+	head = /obj/item/clothing/head/costume/redcoat
+	suit = /obj/item/clothing/suit/armor/hos/hos_formal
+
 // ==================== SKELETON (Undead Pirates) ====================
 
 /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton
@@ -75,11 +84,13 @@
 	name = "Skeleton Captain"
 	outfit = /datum/outfit/piratecorpse/faction/skeleton/captain
 
+/obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/davyjones
+	name = "Davy Jones"
+	outfit = /datum/outfit/piratecorpse/faction/skeleton/davyjones
+
 /datum/outfit/piratecorpse/faction/skeleton
 	name = "Skeleton Pirate Corpse"
 	uniform = /obj/item/clothing/under/costume/pirate
-	suit = /obj/item/clothing/suit/costume/pirate/armored
-	glasses = /obj/item/clothing/glasses/eyepatch
 	head = /obj/item/clothing/head/costume/pirate/bandana/armored
 	shoes = /obj/item/clothing/shoes/pirate/armored
 
@@ -88,12 +99,21 @@
 
 /datum/outfit/piratecorpse/faction/skeleton/ranged
 	name = "Skeleton Gunner Corpse"
-	head = /obj/item/clothing/head/costume/pirate/armored
 
 /datum/outfit/piratecorpse/faction/skeleton/captain
 	name = "Skeleton Captain Corpse"
-	head = /obj/item/clothing/head/costume/pirate/armored
+	head = /obj/item/clothing/head/costume/crown
+	suit = /obj/item/clothing/suit/costume/pirate/armored
 	belt = /obj/item/gun/magic/midas_hand
+	glasses = /obj/item/clothing/glasses/eyepatch
+	l_pocket = /obj/item/coin/gold/doubloon
+
+/datum/outfit/piratecorpse/faction/skeleton/davyjones
+	name = "Davy Jones Corpse"
+	head = /obj/item/clothing/head/costume/pirate/armored
+	suit = /obj/item/clothing/suit/costume/pirate/captain/armored
+	belt = /obj/item/gun/magic/midas_hand
+	glasses = /obj/item/clothing/glasses/eyepatch
 	l_pocket = /obj/item/coin/gold/doubloon
 
 // ==================== GREY TIDE (Rogue Assistants) ====================
@@ -114,6 +134,10 @@
 	name = "Tidemaster"
 	outfit = /datum/outfit/piratecorpse/faction/grey/captain
 
+/obj/effect/mob_spawn/corpse/human/pirate/faction/grey/robust
+	name = "The Robust One"
+	outfit = /datum/outfit/piratecorpse/faction/grey/robust
+
 /datum/outfit/piratecorpse/faction/grey
 	name = "Grey Tide Pirate Corpse"
 	uniform = /obj/item/clothing/under/color/grey/ancient
@@ -129,7 +153,13 @@
 
 /datum/outfit/piratecorpse/faction/grey/captain
 	name = "Tidemaster Corpse"
-	head = /obj/item/clothing/head/soft/grey
+	head = /obj/item/clothing/head/collectable/captain
+
+/datum/outfit/piratecorpse/faction/grey/robust
+	name = "The Robust One Corpse"
+	head = /obj/item/reagent_containers/cup/bucket
+	mask = /obj/item/clothing/mask/gas/tiki_mask
+	neck = /obj/item/bedsheet/cosmos/double
 
 // ==================== LUSTROUS (Mutated Ethereals) ====================
 
@@ -150,6 +180,10 @@
 	name = "Lustrous Radiant"
 	outfit = /datum/outfit/piratecorpse/faction/lustrous/captain
 
+/obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/radiant
+	name = "The Radiant One"
+	outfit = /datum/outfit/piratecorpse/faction/lustrous/radiant
+
 /datum/outfit/piratecorpse/faction/lustrous
 	name = "Lustrous Pirate Corpse"
 	uniform = /obj/item/clothing/under/ethereal_tunic
@@ -168,6 +202,12 @@
 	name = "Lustrous Radiant Corpse"
 	suit = /obj/item/clothing/suit/jacket/oversized
 	head = /obj/item/clothing/head/costume/crown
+
+/datum/outfit/piratecorpse/faction/lustrous/radiant
+	name = "The Radiant One Corpse"
+	suit = /obj/item/clothing/suit/hooded/ethereal_raincoat/trailwarden
+	head = /obj/item/clothing/head/hooded/ethereal_rainhood/trailwarden
+	uniform = /obj/item/clothing/under/ethereal_tunic/trailwarden
 
 // ==================== INTERDYNE (Ex-Pharmacists) ====================
 
