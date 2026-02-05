@@ -162,9 +162,10 @@
 	attack_verb_simple = "inject"
 	attack_sound = 'sound/items/hypospray.ogg'
 	attack_vis_effect = ATTACK_EFFECT_PUNCH
-	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/captain
-	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/captain
+	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/prime
+	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/prime
 	r_hand = /obj/item/reagent_containers/hypospray/combat
+	l_hand = /obj/item/gun/syringe/syndicate
 	plunder_credits = 3000
 	ai_controller = /datum/ai_controller/basic_controller/trooper/ranged
 	var/projectiletype = /obj/projectile/beam/laser
@@ -230,8 +231,8 @@
 	attack_verb_simple = "SMITE"
 	attack_sound = 'sound/items/weapons/smash.ogg'
 	attack_vis_effect = ATTACK_EFFECT_SMASH
-	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/captain
-	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/captain
+	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/blacknight
+	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/blackknight
 	r_hand = /obj/item/fireaxe/boardingaxe
 	plunder_credits = 3000
 
@@ -240,8 +241,8 @@
 	// The Black Knight refuses to use guns
 	ADD_TRAIT(src, TRAIT_NOGUNS, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_TOSS_GUN_HARD, INNATE_TRAIT)
-	// Visual gigantism - even bigger than warlord
-	transform = transform.Scale(1.5, 1.5)
+	// Visual gigantism
+	transform = transform.Scale(1.3, 1.3)
 
 // ==================== ROGUES BOSS ====================
 

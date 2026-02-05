@@ -227,6 +227,10 @@
 	name = "Interdyne Director"
 	outfit = /datum/outfit/piratecorpse/faction/interdyne/captain
 
+/obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/prime
+	name = "Interdyne Director Prime"
+	outfit = /datum/outfit/piratecorpse/faction/interdyne/prime
+
 /datum/outfit/piratecorpse/faction/interdyne
 	name = "Interdyne Pirate Corpse"
 	uniform = /obj/item/clothing/under/rank/medical/scrubs/coroner
@@ -246,6 +250,11 @@
 /datum/outfit/piratecorpse/faction/interdyne/captain
 	name = "Interdyne Director Corpse"
 	suit = /obj/item/clothing/suit/toggle/labcoat/cmo
+
+/datum/outfit/piratecorpse/faction/interdyne/prime
+	name = "Interdyne Director Prime Corpse"
+	suit = /obj/item/clothing/suit/bio_suit/cmo
+	head = /obj/item/clothing/head/bio_hood/cmo
 
 // ==================== IRS (Tax Collectors) ====================
 
@@ -287,6 +296,14 @@
 	head = null
 	belt = /obj/item/storage/belt/holster/detective/full/ert
 
+/datum/outfit/piratecorpse/faction/irs/chief
+	name = "IRS Head Auditor Corpse"
+	uniform = /obj/item/clothing/under/suit/charcoal
+	neck = /obj/item/clothing/neck/tie/red/tied
+	suit = null
+	head = /obj/item/clothing/head/costume/constable
+	belt = /obj/item/storage/belt/holster/detective/full/ert
+
 // ==================== MEDIEVAL (Space Warmongers) ====================
 
 /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval
@@ -304,6 +321,10 @@
 /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/captain
 	name = "Medieval Warlord"
 	outfit = /datum/outfit/piratecorpse/faction/medieval/captain
+
+/obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/blackknight
+	name = "The Black Knight"
+	outfit = /datum/outfit/piratecorpse/faction/medieval/blackknight
 
 /datum/outfit/piratecorpse/faction/medieval
 	name = "Medieval Pirate Corpse"
@@ -326,6 +347,16 @@
 	name = "Medieval Warlord Corpse"
 	neck = /obj/item/bedsheet/pirate
 	suit = /obj/item/clothing/suit/armor/riot/knight/warlord
+	gloves = /obj/item/clothing/gloves/combat
+	head = /obj/item/clothing/head/helmet/knight/greyscale
+	mask = /obj/item/clothing/mask/breath
+	shoes = /obj/item/clothing/shoes/bronze
+	back = /obj/item/fireaxe/boardingaxe
+
+/datum/outfit/piratecorpse/faction/medieval/blackknight
+	name = "The Black Knight Corpse"
+	neck = /obj/item/bedsheet/pirate
+	suit = /obj/item/clothing/suit/armor/riot/knight/greyscale
 	gloves = /obj/item/clothing/gloves/combat
 	head = /obj/item/clothing/head/helmet/knight/warlord
 	mask = /obj/item/clothing/mask/breath

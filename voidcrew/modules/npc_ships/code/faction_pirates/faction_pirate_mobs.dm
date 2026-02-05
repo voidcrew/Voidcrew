@@ -524,5 +524,3 @@
 	ADD_TRAIT(src, TRAIT_PUSHIMMUNE, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_NOGUNS, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_TOSS_GUN_HARD, INNATE_TRAIT)
-	// Visual gigantism
-	transform = transform.Scale(1.3, 1.3)
