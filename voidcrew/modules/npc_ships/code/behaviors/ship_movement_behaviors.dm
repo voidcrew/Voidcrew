@@ -442,12 +442,12 @@
 // ========== RETREAT BEHAVIOR ==========
 
 /**
- * Retreat behavior when weapons are destroyed.
+ * Retreat behavior when weapons are destroyed or siphon goal reached.
  * Moves away from the last known threat, staying within spawn zone.
- * Uses slower movement (same as patrol) since it's out of combat.
+ * Uses fast movement (same as chase) since the ship is urgently fleeing.
  */
 /datum/ai_behavior/npc_ship/retreat
-	action_cooldown = 8 SECONDS  // 1/4 speed, same as patrol
+	action_cooldown = 2 SECONDS  // Same speed as chase - urgently fleeing
 
 /datum/ai_behavior/npc_ship/retreat/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
@@ -466,6 +466,10 @@
 
 	// Get the last target we were fighting (to flee from their direction)
 	var/obj/structure/overmap/ship/threat = controller.get_target()
+	// Fallback to BB_NPC_LAST_TARGET if current target was cleared
+	if(!threat || QDELETED(threat))
+		var/datum/weakref/last_target_ref = controller.blackboard[BB_NPC_LAST_TARGET]
+		threat = last_target_ref?.resolve()
 	var/flee_dir
 
 	if(threat && !QDELETED(threat))

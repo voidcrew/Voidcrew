@@ -318,6 +318,12 @@
 /obj/item/flashlight,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
+"mr" = (
+/obj/machinery/ship_combat/laser_turret{
+	dir = 1
+	},
+/turf/closed/wall,
+/area/shuttle/voidcrew/pirate_grey)
 "mT" = (
 /obj/machinery/atmospherics/components/unary/portables_connector/visible,
 /obj/effect/turf_decal/stripes/line{
@@ -646,6 +652,7 @@
 /obj/effect/turf_decal/trimline/yellow/warning{
 	dir = 6
 	},
+/obj/machinery/ship_combat/missile_launcher,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/pirate_grey)
 "wX" = (
@@ -888,6 +895,10 @@
 /obj/structure/frame/machine,
 /obj/item/circuitboard/machine/chem_master,
 /turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_grey)
+"Bk" = (
+/obj/machinery/ship_combat/laser_turret,
+/turf/closed/wall,
 /area/shuttle/voidcrew/pirate_grey)
 "Bl" = (
 /obj/machinery/door/airlock/external/glass/ruin{
@@ -1224,6 +1235,15 @@
 	dir = 4
 	},
 /obj/structure/cable,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_grey)
+"MG" = (
+/obj/effect/turf_decal/trimline/yellow/warning{
+	dir = 8
+	},
+/obj/machinery/ship_combat/laser_turret{
+	dir = 8
+	},
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/pirate_grey)
 "Nm" = (
@@ -1601,13 +1621,13 @@ je
 oE
 nY
 zB
-Gr
+MG
 Gr
 lL
 je
 jG
 Gr
-Gr
+MG
 zB
 Bl
 oE
@@ -1977,7 +1997,7 @@ je
 "}
 (21,1,1) = {"
 je
-Pn
+mr
 Pn
 xm
 yU
@@ -1991,7 +2011,7 @@ Zc
 Pn
 pB
 Pn
-Pn
+Bk
 je
 "}
 (22,1,1) = {"

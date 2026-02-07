@@ -261,6 +261,23 @@
 #define SHIP_NOTIFY_WARNING 2
 #define SHIP_NOTIFY_DANGER 3
 
+// ========== SIPHON MACHINE DEFINES ==========
+
+/// Base power draw for data siphon (2 kW)
+#define SIPHON_BASE_POWER_COST 2 KILO WATTS
+/// Base siphon rate (credits per tick)
+#define SIPHON_BASE_RATE 25
+/// Base warmup time before siphon activates
+#define SIPHON_BASE_WARMUP_TIME 5 SECONDS
+
+// Siphon stock part multipliers (per tier above 1)
+/// Capacitor: +25% siphon rate per tier
+#define SIPHON_CAPACITOR_RATE_MULT 0.25
+/// Micro-laser: +20% power efficiency per tier
+#define SIPHON_LASER_EFFICIENCY_MULT 0.20
+/// Servo: -15% warmup time per tier
+#define SIPHON_SERVO_WARMUP_MULT 0.15
+
 // ========== SOUND CHANNELS ==========
 
 /// Sound channel for economic scan looping sound

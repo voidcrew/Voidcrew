@@ -308,6 +308,10 @@
 		return FALSE
 	if(interdiction_active || interdiction_warming_up)
 		return FALSE
+	// Can't interdict while our own ship is docked or not flying
+	var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
+	if(our_ship && our_ship.state != OVERMAP_SHIP_FLYING)
+		return FALSE
 	// Zone restriction check - interdiction disabled in neutral zones only
 	if(!SSovermap_zones.interdiction_allowed_at(src))
 		return FALSE
@@ -327,6 +331,10 @@
 				to_chat(user, span_warning("[src] is already interdicting!"))
 			else if(!SSovermap_zones.interdiction_allowed_at(src))
 				to_chat(user, span_warning("Interdiction is prohibited in this zone!"))
+			else
+				var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
+				if(our_ship && our_ship.state != OVERMAP_SHIP_FLYING)
+					to_chat(user, span_warning("Cannot activate interdictor while docked!"))
 		return FALSE
 
 	if(!target)
@@ -377,6 +385,10 @@
 	warmup_progress = 0
 	warmup_start_time = world.time
 	interdicted_ship_ref = WEAKREF(target)
+
+	// Mark target as interdicted immediately to prevent race conditions
+	// (another ship starting interdiction before our first process tick)
+	target.update_interdiction(src, 1, 0)
 
 	// Play startup sound
 	playsound(src, 'voidcrew/sound/machines/interdictor/startup1.ogg', 17, FALSE)
@@ -487,10 +499,6 @@
 	// Start playing sound to all mobs on the target ship
 	start_target_sound(target)
 
-	// Start cooldown
-	var/effective_cooldown = INTERDICTOR_COOLDOWN * cooldown_mult
-	COOLDOWN_START(src, interdict_cooldown, effective_cooldown)
-
 	// Apply undock lockout
 	COOLDOWN_START(target, interdiction_undock_lockout, INTERDICTOR_UNDOCK_LOCKOUT)
 
@@ -517,6 +525,11 @@
 
 /// Cancels interdiction for any reason
 /obj/machinery/ship_combat/interdictor/proc/cancel_interdiction(reason)
+	// Start cooldown only if interdiction was fully active (not just warming up)
+	if(interdiction_active)
+		var/effective_cooldown = INTERDICTOR_COOLDOWN * cooldown_mult
+		COOLDOWN_START(src, interdict_cooldown, effective_cooldown)
+
 	interdiction_active = FALSE
 	interdiction_warming_up = FALSE
 	warmup_progress = 0
@@ -565,6 +578,10 @@
 	interdiction_active = FALSE
 	interdiction_warming_up = FALSE
 	warmup_progress = 0
+
+	// Reset cooldown - shield burst means the attacker can't immediately re-interdict
+	var/effective_cooldown = INTERDICTOR_COOLDOWN * cooldown_mult
+	COOLDOWN_START(src, interdict_cooldown, effective_cooldown)
 
 	// Stop processing
 	end_processing()

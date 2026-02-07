@@ -12,39 +12,48 @@
 	unsuitable_atmos_damage = 0
 	minimum_survivable_temperature = 0
 	obj_damage = 60  // Can break doors/objects like blobbernauts
-	var/drop_items = TRUE
-	/// List of possible right hand items. Entries can be type paths or HAND_RESOLVER_* strings.
-	/// If set, one is picked at random during init and assigned to r_hand.
-	var/list/r_hand_options
-	/// List of possible left hand items. Same format as r_hand_options.
-	var/list/l_hand_options
+	/// Guaranteed loot items dropped on death. All items in this list are spawned.
+	var/list/loot_pool
+	/// Random combat loot - one item is picked at random and added to death drops.
+	var/list/random_loot = list(\
+		/obj/item/pen/edagger,\
+		/obj/item/switchblade,\
+		/obj/item/knife/combat/survival,\
+		/obj/item/melee/baton/telescopic,\
+		/obj/item/gun/energy/e_gun/mini\
+	)
+	/// Random auxiliary loot - one item is picked at random and added to death drops.
+	var/list/random_loot_2 = list(\
+		/obj/item/storage/medkit/regular,\
+		/obj/item/storage/toolbox/mechanical,\
+		/obj/item/flashlight/seclite,\
+		/obj/item/reagent_containers/hypospray/medipen,\
+		/obj/item/stack/telecrystal\
+	)
 
 /mob/living/basic/trooper/pirate/faction/Initialize(mapload)
-	// Resolve dynamic hand items before parent init uses them for visuals
-	if(length(r_hand_options))
-		r_hand = resolve_hand_item(pick(r_hand_options))
-	if(length(l_hand_options))
-		l_hand = resolve_hand_item(pick(l_hand_options))
 	. = ..()
 	ADD_TRAIT(src, TRAIT_SPACEWALK, INNATE_TRAIT)
-	// Drop held weapons on death
-	var/list/weapon_drops = list()
-	if(r_hand)
-		weapon_drops += r_hand
-	if(l_hand)
-		weapon_drops += l_hand
-	if(length(weapon_drops))
-		AddElement(/datum/element/death_drops, weapon_drops)
+	// Remove upstream plundering_attacks - faction pirates drop credits on death instead of stealing on hit
+	qdel(GetComponent(/datum/component/plundering_attacks))
+	// Drop credits as holochip on death
+	if(plunder_credits > 0)
+		RegisterSignal(src, COMSIG_LIVING_DEATH, PROC_REF(on_death_drop_credits))
+	// Build death drops from loot pool
+	var/list/death_loot = list()
+	if(length(loot_pool))
+		death_loot += loot_pool
+	if(length(random_loot))
+		death_loot += pick(random_loot)
+	if(length(random_loot_2))
+		death_loot += pick(random_loot_2)
+	if(length(death_loot))
+		AddElement(/datum/element/death_drops, death_loot)
 
-/// Resolves a hand item option to a concrete type path.
-/// Type paths pass through unchanged; HAND_RESOLVER_* strings dispatch to helper procs.
-/mob/living/basic/trooper/pirate/faction/proc/resolve_hand_item(hand_option)
-	if(ispath(hand_option))
-		return hand_option
-	switch(hand_option)
-		if(HAND_RESOLVER_RANDOM_FISH)
-			return random_fish_type()
-	CRASH("Unknown hand item resolver: [hand_option]")
+/// Drops plunder_credits as a holochip on death
+/mob/living/basic/trooper/pirate/faction/proc/on_death_drop_credits(mob/living/source)
+	SIGNAL_HANDLER
+	new /obj/item/holochip(drop_location(), plunder_credits)
 
 // ==================== SILVERSCALE (Aristocratic Lizards) ====================
 
@@ -57,9 +66,9 @@
 /mob/living/basic/trooper/pirate/faction/silverscale/melee
 	name = "Silverscale Duelist"
 	desc = "A noble lizard trained in the art of the blade."
-	melee_damage_lower = 30
-	melee_damage_upper = 30
-	armour_penetration = 35
+	melee_damage_lower = 15
+	melee_damage_upper = 20
+	armour_penetration = 15
 	attack_verb_continuous = "slashes"
 	attack_verb_simple = "slash"
 	attack_sound = 'sound/items/weapons/blade1.ogg'
@@ -69,27 +78,19 @@
 	light_color = COLOR_SOFT_RED
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/melee
-	r_hand_options = list(\
-		/obj/item/storage/medkit,\
-		/obj/item/storage/toolbox/mechanical,\
-		HAND_RESOLVER_RANDOM_FISH,\
-		/obj/item/pen/edagger,\
-		/obj/item/gun/energy/e_gun/mini,\
-	)
+	r_hand = /obj/item/melee/energy/sword/pirate
 	plunder_credits = 300
+
+/mob/living/basic/trooper/pirate/faction/silverscale/melee/Initialize(mapload)
+	random_loot_2 = list(/obj/item/storage/medkit/regular, /obj/item/storage/toolbox/mechanical, random_fish_type())
+	. = ..()
 
 /mob/living/basic/trooper/pirate/faction/silverscale/ranged
 	name = "Silverscale Marksman"
 	desc = "A noble lizard with impeccable aim."
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/ranged
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/ranged
-	r_hand_options = list(\
-		/obj/item/storage/medkit,\
-		/obj/item/storage/toolbox/mechanical,\
-		HAND_RESOLVER_RANDOM_FISH,\
-		/obj/item/pen/edagger,\
-		/obj/item/gun/energy/e_gun/mini,\
-	)
+	r_hand = /obj/item/gun/energy/e_gun/lethal
 	ai_controller = /datum/ai_controller/basic_controller/trooper/ranged
 	var/projectiletype = /obj/projectile/beam/laser
 	var/projectilesound = 'sound/items/weapons/laser.ogg'
@@ -97,6 +98,7 @@
 	var/ranged_cooldown = 6 SECONDS
 
 /mob/living/basic/trooper/pirate/faction/silverscale/ranged/Initialize(mapload)
+	random_loot_2 = list(/obj/item/storage/medkit/regular, /obj/item/storage/toolbox/mechanical, random_fish_type())
 	. = ..()
 	AddComponent(\
 		/datum/component/ranged_attacks,\
@@ -111,17 +113,19 @@
 	desc = "A high-born lizard of impeccable breeding and ruthless ambition."
 	maxHealth = 150
 	health = 150
-	melee_damage_lower = 35
-	melee_damage_upper = 40
-	armour_penetration = 40
+	melee_damage_lower = 20
+	melee_damage_upper = 25
+	armour_penetration = 25
 	attack_verb_continuous = "slashes"
 	attack_verb_simple = "slash"
 	attack_sound = 'sound/items/weapons/blade1.ogg'
 	attack_vis_effect = ATTACK_EFFECT_SLASH
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/silverscale/captain
-	r_hand = /obj/item/melee/energy/sword/pirate
-	plunder_credits = 0
+	r_hand = /obj/item/gun/energy/e_gun/lethal
+	loot_pool = list(/obj/item/melee/energy/sword/pirate)
+	random_loot = null
+	plunder_credits = 1000
 
 // ==================== SKELETON (Undead Pirates) ====================
 
@@ -134,9 +138,9 @@
 /mob/living/basic/trooper/pirate/faction/skeleton/melee
 	name = "Skeleton Swashbuckler"
 	desc = "A skeletal swordsman that refuses to stay dead."
-	melee_damage_lower = 30
-	melee_damage_upper = 30
-	armour_penetration = 35
+	melee_damage_lower = 15
+	melee_damage_upper = 20
+	armour_penetration = 15
 	attack_verb_continuous = "slashes"
 	attack_verb_simple = "slash"
 	attack_sound = 'sound/items/weapons/blade1.ogg'
@@ -147,7 +151,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/melee
 	r_hand = /obj/item/melee/energy/sword/pirate
-	plunder_credits = 0
+	plunder_credits = 300
 
 /mob/living/basic/trooper/pirate/faction/skeleton/ranged
 	name = "Skeleton Gunner"
@@ -173,20 +177,22 @@
 
 /mob/living/basic/trooper/pirate/faction/skeleton/captain
 	name = "Skeleton Captain"
-	desc = "The undead commander of the Flying Dutchman, wielder of the Midas Hand."
+	desc = "The terrifying undead commander of the Flying Dutchman."
 	maxHealth = 150
 	health = 150
-	melee_damage_lower = 35
-	melee_damage_upper = 40
-	armour_penetration = 40
+	melee_damage_lower = 20
+	melee_damage_upper = 25
+	armour_penetration = 25
 	attack_verb_continuous = "slashes"
 	attack_verb_simple = "slash"
 	attack_sound = 'sound/items/weapons/blade1.ogg'
 	attack_vis_effect = ATTACK_EFFECT_SLASH
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/skeleton/captain
-	r_hand = /obj/item/gun/magic/midas_hand
-	plunder_credits = 0
+	r_hand = /obj/item/gun/energy/e_gun/lethal
+	loot_pool = list(/obj/item/gun/energy/e_gun/lethal)
+	random_loot = null
+	plunder_credits = 1000
 
 // ==================== GREY TIDE (Rogue Assistants) ====================
 
@@ -200,8 +206,9 @@
 /mob/living/basic/trooper/pirate/faction/grey/melee
 	name = "Grey Tider"
 	desc = "Armed with a toolbox and bad intentions."
-	melee_damage_lower = 25
-	melee_damage_upper = 30
+	melee_damage_lower = 15
+	melee_damage_upper = 20
+	armour_penetration = 15
 	attack_verb_continuous = "robusts"
 	attack_verb_simple = "robust"
 	attack_sound = 'sound/items/weapons/smash.ogg'
@@ -209,11 +216,11 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/melee
 	r_hand = /obj/item/storage/toolbox/mechanical
-	plunder_credits = 0
+	plunder_credits = 300
 
 /mob/living/basic/trooper/pirate/faction/grey/ranged
 	name = "Grey Tider Gunner"
-	desc = "Even assistants can find guns sometimes."
+	desc = "An assistant with a gun. Uh oh."
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/ranged
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/ranged
 	r_hand = /obj/item/gun/energy/laser
@@ -235,11 +242,12 @@
 
 /mob/living/basic/trooper/pirate/faction/grey/captain
 	name = "Tidemaster"
-	desc = "The greyest of them all. Maximum robustness achieved."
+	desc = "If he's on your shift, the Captain does not have his spare"
 	maxHealth = 150
 	health = 150
-	melee_damage_lower = 35
-	melee_damage_upper = 40
+	melee_damage_lower = 20
+	melee_damage_upper = 25
+	armour_penetration = 25
 	attack_verb_continuous = "robusts"
 	attack_verb_simple = "robust"
 	attack_sound = 'sound/items/weapons/smash.ogg'
@@ -247,7 +255,9 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/grey/captain
 	r_hand = /obj/item/storage/toolbox/syndicate
-	plunder_credits = 0
+	loot_pool = list(/obj/item/storage/toolbox/syndicate)
+	random_loot = null
+	plunder_credits = 1000
 
 // ==================== LUSTROUS (Mutated Ethereals) ====================
 
@@ -260,9 +270,9 @@
 /mob/living/basic/trooper/pirate/faction/lustrous/melee
 	name = "Lustrous Scintillant"
 	desc = "A crystalline being with a sharp blade."
-	melee_damage_lower = 30
-	melee_damage_upper = 30
-	armour_penetration = 35
+	melee_damage_lower = 15
+	melee_damage_upper = 20
+	armour_penetration = 15
 	attack_verb_continuous = "slashes"
 	attack_verb_simple = "slash"
 	attack_sound = 'sound/items/weapons/blade1.ogg'
@@ -270,7 +280,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/melee
 	r_hand = /obj/item/switchblade
-	plunder_credits = 0
+	plunder_credits = 300
 
 /mob/living/basic/trooper/pirate/faction/lustrous/ranged
 	name = "Lustrous Coruscant"
@@ -299,9 +309,9 @@
 	desc = "A blindingly bright ethereal, the leader of their crystalline kind."
 	maxHealth = 150
 	health = 150
-	melee_damage_lower = 35
-	melee_damage_upper = 40
-	armour_penetration = 40
+	melee_damage_lower = 20
+	melee_damage_upper = 25
+	armour_penetration = 25
 	attack_verb_continuous = "slashes"
 	attack_verb_simple = "slash"
 	attack_sound = 'sound/items/weapons/blade1.ogg'
@@ -312,7 +322,9 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/captain
 	r_hand = /obj/item/melee/energy/sword/pirate
-	plunder_credits = 0
+	loot_pool = list(/obj/item/melee/energy/sword/pirate)
+	random_loot = null
+	plunder_credits = 1000
 
 // ==================== INTERDYNE (Ex-Pharmacists) ====================
 
@@ -325,9 +337,9 @@
 /mob/living/basic/trooper/pirate/faction/interdyne/melee
 	name = "Interdyne Enforcer"
 	desc = "Enforces pharmaceutical compliance with surgical precision."
-	melee_damage_lower = 30
-	melee_damage_upper = 30
-	armour_penetration = 35
+	melee_damage_lower = 15
+	melee_damage_upper = 20
+	armour_penetration = 15
 	attack_verb_continuous = "slashes"
 	attack_verb_simple = "slash"
 	attack_sound = 'sound/items/weapons/blade1.ogg'
@@ -335,7 +347,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/melee
 	r_hand = /obj/item/scalpel
-	plunder_credits = 0
+	plunder_credits = 300
 
 /mob/living/basic/trooper/pirate/faction/interdyne/ranged
 	name = "Interdyne Pharmacist"
@@ -364,9 +376,9 @@
 	desc = "The head of this rogue pharmaceutical operation."
 	maxHealth = 150
 	health = 150
-	melee_damage_lower = 35
-	melee_damage_upper = 40
-	armour_penetration = 40
+	melee_damage_lower = 20
+	melee_damage_upper = 25
+	armour_penetration = 25
 	attack_verb_continuous = "slashes"
 	attack_verb_simple = "slash"
 	attack_sound = 'sound/items/weapons/blade1.ogg'
@@ -374,13 +386,15 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/interdyne/captain
 	r_hand = /obj/item/melee/energy/sword/pirate
-	plunder_credits = 0
+	loot_pool = list(/obj/item/melee/energy/sword/pirate)
+	random_loot = null
+	plunder_credits = 1000
 
 // ==================== IRS (Tax Collectors) ====================
 
 /mob/living/basic/trooper/pirate/faction/irs
 	name = "IRS Agent"
-	desc = "The only thing certain in life is death and taxes. They're here for the taxes."
+	desc = "The only thing certain in life is death and taxes. They're here for both."
 	faction = list(FACTION_PIRATE, FACTION_IRS)
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs
@@ -388,9 +402,9 @@
 /mob/living/basic/trooper/pirate/faction/irs/melee
 	name = "IRS Enforcer"
 	desc = "Collects taxes the hard way."
-	melee_damage_lower = 30
-	melee_damage_upper = 30
-	armour_penetration = 35
+	melee_damage_lower = 15
+	melee_damage_upper = 20
+	armour_penetration = 15
 	attack_verb_continuous = "audits"
 	attack_verb_simple = "audit"
 	attack_sound = 'sound/items/weapons/blade1.ogg'
@@ -398,7 +412,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/melee
 	r_hand = /obj/item/melee/baton/telescopic
-	plunder_credits = 0
+	plunder_credits = 300
 
 /mob/living/basic/trooper/pirate/faction/irs/ranged
 	name = "IRS Agent"
@@ -430,12 +444,14 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/captain
 	r_hand = /obj/item/gun/energy/e_gun/lethal
+	loot_pool = list(/obj/item/gun/energy/e_gun/lethal)
+	random_loot = null
 	ai_controller = /datum/ai_controller/basic_controller/trooper/ranged
 	var/projectiletype = /obj/projectile/beam/laser
 	var/projectilesound = 'sound/items/weapons/laser.ogg'
-	var/burst_shots = 3
-	var/ranged_cooldown = 4 SECONDS
-	plunder_credits = 0
+	var/burst_shots = 2
+	var/ranged_cooldown = 6 SECONDS
+	plunder_credits = 1000
 
 /mob/living/basic/trooper/pirate/faction/irs/captain/Initialize(mapload)
 	. = ..()
@@ -457,10 +473,10 @@
 
 /mob/living/basic/trooper/pirate/faction/medieval/melee
 	name = "Medieval Footsoldier"
-	desc = "A knight who refuses to use guns. Throws them instead."
-	melee_damage_lower = 35
-	melee_damage_upper = 40
-	armour_penetration = 40
+	desc = "A knight who refuses to use guns. Honorable."
+	melee_damage_lower = 15
+	melee_damage_upper = 20
+	armour_penetration = 15
 	attack_verb_continuous = "slashes"
 	attack_verb_simple = "slash"
 	attack_sound = 'sound/items/weapons/blade1.ogg'
@@ -468,7 +484,7 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/melee
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/melee
 	r_hand = /obj/item/claymore/shortsword
-	plunder_credits = 0
+	plunder_credits = 300
 
 /mob/living/basic/trooper/pirate/faction/medieval/melee/Initialize(mapload)
 	. = ..()
@@ -488,7 +504,7 @@
 	var/projectiletype = /obj/projectile/energy/bolt/large
 	var/projectilesound = 'sound/items/weapons/punchmiss.ogg'
 	var/burst_shots = 1
-	var/ranged_cooldown = 4 SECONDS
+	var/ranged_cooldown = 6 SECONDS
 
 /mob/living/basic/trooper/pirate/faction/medieval/ranged/Initialize(mapload)
 	. = ..()
@@ -502,12 +518,12 @@
 
 /mob/living/basic/trooper/pirate/faction/medieval/captain
 	name = "Medieval Warlord"
-	desc = "A hulking brute of a knight. Massive, stun-immune, and very angry."
+	desc = "A hulking brute of a knight. Massive, and very angry."
 	maxHealth = 200
 	health = 200
-	melee_damage_lower = 50
-	melee_damage_upper = 60
-	armour_penetration = 50
+	melee_damage_lower = 30
+	melee_damage_upper = 35
+	armour_penetration = 35
 	attack_verb_continuous = "crushes"
 	attack_verb_simple = "crush"
 	attack_sound = 'sound/items/weapons/smash.ogg'
@@ -515,7 +531,9 @@
 	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/captain
 	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/medieval/captain
 	r_hand = /obj/item/fireaxe/boardingaxe
-	plunder_credits = 0
+	loot_pool = list(/obj/item/fireaxe/boardingaxe)
+	random_loot = null
+	plunder_credits = 300
 
 /mob/living/basic/trooper/pirate/faction/medieval/captain/Initialize(mapload)
 	. = ..()

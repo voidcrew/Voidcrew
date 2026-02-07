@@ -46,9 +46,6 @@ GLOBAL_LIST_INIT(npc_pirate_factions, list(
 		"Captain (Warlord)" = /mob/living/basic/trooper/pirate/faction/medieval/captain,
 		"Boss (The Black Knight)" = /mob/living/basic/trooper/pirate/faction/boss/medieval,
 	),
-	"Rogues" = list(
-		"Boss (Dread Pirate Roberts)" = /mob/living/basic/trooper/pirate/faction/boss/rogues,
-	),
 ))
 
 ADMIN_VERB(spawn_npc_pirate, R_SPAWN|R_DEBUG, "Spawn NPC Pirate", "Spawn an NPC pirate mob with patrol AI.", ADMIN_CATEGORY_DEBUG)

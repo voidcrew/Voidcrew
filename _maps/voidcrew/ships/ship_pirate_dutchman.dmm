@@ -700,6 +700,7 @@
 	dir = 1;
 	name = "wooden railing"
 	},
+/obj/machinery/ship_combat/missile_launcher,
 /turf/open/floor/wood/airless,
 /area/shuttle/voidcrew/pirate_dutchman{
 	requires_power = 0
@@ -1182,6 +1183,9 @@
 	color = "#4C3117";
 	dir = 1;
 	name = "wooden railing"
+	},
+/obj/machinery/ship_combat/missile_launcher{
+	dir = 8
 	},
 /turf/open/floor/wood/airless,
 /area/shuttle/voidcrew/pirate_dutchman{

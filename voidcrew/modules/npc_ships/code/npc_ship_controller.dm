@@ -203,13 +203,13 @@
 
 	var/combat_state = get_combat_state()
 
-	// If we're hailing or negotiating, this is aggression
-	if(combat_state == NPC_COMBAT_HAILING || combat_state == NPC_COMBAT_NEGOTIATING)
+	// If we're hailing, negotiating, or siphoning, this is aggression
+	if(combat_state == NPC_COMBAT_HAILING || combat_state == NPC_COMBAT_NEGOTIATING || combat_state == NPC_COMBAT_SIPHONING)
 		INVOKE_ASYNC(src, PROC_REF(handle_player_aggression), aggressor, "targeting")
 
 /**
  * Called when a player ship completes a weapons lock on us.
- * If we're in HAILING or NEGOTIATING with this player, treat as aggression.
+ * If we're in HAILING, NEGOTIATING, or SIPHONING with this player, treat as aggression.
  */
 /datum/ai_controller/npc_ship/proc/on_weapons_locked_by_player(datum/source, obj/structure/overmap/ship/aggressor)
 	SIGNAL_HANDLER
@@ -220,8 +220,8 @@
 
 	var/combat_state = get_combat_state()
 
-	// If we're hailing or negotiating, this is aggression - immediate combat
-	if(combat_state == NPC_COMBAT_HAILING || combat_state == NPC_COMBAT_NEGOTIATING)
+	// If we're hailing, negotiating, or siphoning, this is aggression - immediate combat
+	if(combat_state == NPC_COMBAT_HAILING || combat_state == NPC_COMBAT_NEGOTIATING || combat_state == NPC_COMBAT_SIPHONING)
 		INVOKE_ASYNC(src, PROC_REF(handle_player_aggression), aggressor, "weapons_lock")
 
 /**
@@ -328,6 +328,10 @@
 	if(new_state == NPC_COMBAT_RETREATING && old_state != NPC_COMBAT_RETREATING)
 		var/obj/structure/overmap/ship/target = get_target()
 		var/obj/structure/overmap/ship/npc/ship = get_ship()
+
+		// Store last target for retreat direction (retreat_escape uses this for distance check)
+		if(target && !QDELETED(target))
+			blackboard[BB_NPC_LAST_TARGET] = WEAKREF(target)
 
 		// Notify target that weapon lock is lost before clearing it
 		if(blackboard[BB_NPC_TARGET_LOCKED] && target && ship && !QDELETED(target))
@@ -656,17 +660,6 @@
 		var/mob/living/boarder = create_boarding_pod(spawn_loc, target, ship, mob_type)
 
 		if(boarder)
-			// Set loot tier based on wave (if this mob type has plunder_credits)
-			var/mob/living/basic/trooper/pirate/pirate_boarder = boarder
-			if(istype(pirate_boarder))
-				switch(wave_number)
-					if(1)
-						pirate_boarder.plunder_credits = round(pirate_boarder.plunder_credits * NPC_LOOT_TIER_WAVE1)
-					if(2)
-						pirate_boarder.plunder_credits = round(pirate_boarder.plunder_credits * NPC_LOOT_TIER_WAVE2)
-					if(3)
-						pirate_boarder.plunder_credits = round(pirate_boarder.plunder_credits * NPC_LOOT_TIER_WAVE3)
-
 			// Track this boarder and register death signal
 			wave_boarders += boarder
 			RegisterSignal(boarder, COMSIG_LIVING_DEATH, PROC_REF(on_boarder_death))
@@ -891,7 +884,7 @@
 	// Spawn the boss via heavy drop pod
 	var/boss_type = ship.boss_type
 	if(!boss_type)
-		boss_type = /mob/living/basic/trooper/pirate/faction/boss/rogues
+		return
 
 	// Create boss boarding pod - returns the boss for tracking
 	// Pod handles parent_ship, AI controller swap, and patrol assignment

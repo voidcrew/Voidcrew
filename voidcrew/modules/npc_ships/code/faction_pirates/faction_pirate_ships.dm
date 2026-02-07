@@ -11,10 +11,6 @@
 #define NPC_COLOR_IRS "#FFD700"           // Gold
 #define NPC_COLOR_MEDIEVAL "#8B0000"      // Dark red
 
-// ==================== ROGUES (Default Pirates) ====================
-// Uses the base /obj/structure/overmap/ship/npc/pirate defined in npc_ship.dm
-// Shuttle template: pirate_default
-
 // ==================== SILVERSCALE (Aristocratic Lizards) ====================
 
 /obj/structure/overmap/ship/npc/pirate/silverscale
@@ -85,13 +81,6 @@
 	lock_time = 4 SECONDS
 	laser_cooldown_time = 4 SECONDS
 
-	// Yellow zone - stay to interdict/siphon even without weapons
-	retreat_without_weapons = FALSE
-	// Scan targets for wealth before engaging
-	scan_before_engage = TRUE
-	// Steal 25% of target's money then retreat
-	siphon_goal_percent = 25
-
 	crew_min = 3
 	crew_max = 6
 	captain_type = /mob/living/basic/trooper/pirate/faction/skeleton/captain
@@ -146,13 +135,6 @@
 	speed_limit = 0.4
 	thrust_power = 0.25
 
-	// Yellow zone - stay to interdict/siphon even without weapons
-	retreat_without_weapons = FALSE
-	// Scan targets for wealth before engaging
-	scan_before_engage = TRUE
-	// Steal 25% of target's money then retreat
-	siphon_goal_percent = 25
-
 	crew_min = 3
 	crew_max = 5
 	captain_type = /mob/living/basic/trooper/pirate/faction/grey/captain
@@ -202,13 +184,6 @@
 
 	// Detection range
 	territory_range = 2
-
-	// Yellow zone - stay to interdict/siphon even without weapons
-	retreat_without_weapons = FALSE
-	// Scan targets for wealth before engaging
-	scan_before_engage = TRUE
-	// Steal 25% of target's money then retreat
-	siphon_goal_percent = 25
 
 	crew_min = 2
 	crew_max = 4
@@ -380,13 +355,6 @@
 	// Longer lock times - medieval targeting systems
 	lock_time = 6 SECONDS
 	laser_cooldown_time = 6 SECONDS
-
-	// Yellow zone - stay to interdict/siphon even without weapons
-	retreat_without_weapons = FALSE
-	// Scan targets for wealth before engaging
-	scan_before_engage = TRUE
-	// Steal 25% of target's money then retreat
-	siphon_goal_percent = 25
 
 	crew_min = 3
 	crew_max = 6

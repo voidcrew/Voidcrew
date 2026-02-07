@@ -100,15 +100,19 @@
 	return ..()
 
 /**
- * Calculates the reward for a bounty based on ship type.
- * Heavy-threat ships are worth more than light-threat.
+ * Calculates the reward for a bounty based on the zone the ship is in.
+ * Red zone pirates are worth more than yellow zone pirates.
+ * Note: Ships are confined to their spawn zone (BB_NPC_SPAWN_ZONE),
+ * so the zone at spawn time is the zone for the ship's lifetime.
  */
 /datum/pirate_bounty/proc/calculate_reward(obj/structure/overmap/ship/npc/ship)
-	// Base reward - light pirates
+	// Base reward - yellow zone pirates
 	var/base_reward = 5000
 
-	// Heavy factions are worth significantly more
-	if(SSnpc_ships && (ship.type in SSnpc_ships.heavy_factions))
+	// Red zone pirates are worth significantly more
+	var/turf/ship_turf = get_turf(ship)
+	var/datum/overmap_zone/zone = SSovermap_zones.get_zone(ship_turf)
+	if(zone?.zone_type == ZONE_RED)
 		base_reward = 15000
 		is_heavy_bounty = TRUE
 
@@ -346,9 +350,19 @@
 	return actual_reward
 
 /**
+ * Returns a human-readable description of the loot this bounty will award.
+ * Used by the bounty console UI to show expected rewards.
+ */
+/datum/pirate_bounty/proc/get_loot_description()
+	if(is_heavy_bounty)
+		return "2 heavy missiles, weapon cache, [BOUNTY_HEAVY_SHIP_PARTS] ship parts"
+	return "2 missiles, weapon cache, [BOUNTY_LIGHT_SHIP_PARTS] ship part[BOUNTY_LIGHT_SHIP_PARTS > 1 ? "s" : ""]"
+
+/**
  * Spawns bounty loot at the given location.
- * Light bounties: 2 standard missiles + basic weapon crate
- * Heavy bounties: 2 heavy missiles + premium weapon crate
+ * Light bounties: 2 standard missiles + basic weapon crate + 1 ship part
+ * Heavy bounties: 2 heavy missiles + premium weapon crate + 3 ship parts
+ * Ship parts are 70% combat, 30% misc.
  * @param spawn_loc The turf to spawn items on
  * @return List of item names spawned (for announcement)
  */
@@ -396,6 +410,17 @@
 
 	var/obj/structure/closet/crate/spawned_crate = new crate_type(spawn_loc)
 	spawned_items += spawned_crate.name
+
+	// Spawn ship parts loose on pad (players must collect and store in extraction briefcase)
+	var/part_count = is_heavy_bounty ? BOUNTY_HEAVY_SHIP_PARTS : BOUNTY_LIGHT_SHIP_PARTS
+	var/static/list/bounty_part_types = list(
+		/obj/item/ship_parts/combat = 70,
+		/obj/item/ship_parts/misc = 30,
+	)
+	for(var/i in 1 to part_count)
+		var/part_type = pick_weight(bounty_part_types)
+		new part_type(spawn_loc)
+	spawned_items += "[part_count] ship part[part_count > 1 ? "s" : ""]"
 
 	return spawned_items
 

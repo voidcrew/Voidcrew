@@ -42,7 +42,7 @@
 			continue
 		// Skip NPC ships unless they've been claimed by players
 		var/obj/structure/overmap/ship/npc/npc_ship = active_ship
-		if(npc_ship && !npc_ship.player_controlled)
+		if(istype(npc_ship) && !npc_ship.player_controlled)
 			continue
 
 		var/crew_count = length(active_ship.manifest)
@@ -100,7 +100,7 @@
 				return FALSE
 			// Block unclaimed NPC ships
 			var/obj/structure/overmap/ship/npc/npc_ship = ship
-			if(npc_ship && !npc_ship.player_controlled)
+			if(istype(npc_ship) && !npc_ship.player_controlled)
 				to_chat(user, span_warning("That ship is not accepting new crew members."))
 				return FALSE
 

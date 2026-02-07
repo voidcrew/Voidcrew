@@ -22,6 +22,7 @@
 #define TECHWEB_NODE_SHIP_COMBAT_SHIELDS "ship_combat_shields"
 #define TECHWEB_NODE_SHIP_COMBAT_LASERS "ship_combat_lasers"
 #define TECHWEB_NODE_SHIP_COMBAT_INTERDICTOR "ship_combat_interdictor"
+#define TECHWEB_NODE_SHIP_COMBAT_SIPHON "ship_combat_siphon"
 
 // Missions
 #define TECHWEB_NODE_MISSION_LOGISTICS "mission_logistics"

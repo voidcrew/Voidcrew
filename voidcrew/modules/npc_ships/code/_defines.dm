@@ -27,6 +27,7 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 #define NPC_COMBAT_HAILING "hailing"    // Hailing target - waiting for them to answer
 #define NPC_COMBAT_ENGAGING "engaging"
 #define NPC_COMBAT_COMBAT "combat"
+#define NPC_COMBAT_SIPHONING "siphoning"  // Yellow zone: interdict + siphon (no weapons/boarding)
 #define NPC_COMBAT_RETREATING "retreating"
 #define NPC_COMBAT_NEGOTIATING "negotiating"
 // Boarding phase states (phased combat system)
@@ -110,11 +111,9 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 // Additional boarding blackboard keys
 #define BB_NPC_BOARDING_LAST_SPACE_CHECK "npc_boarding_space_check"  // Last time we checked for boarders in space
 
-// Wave loot tiers (multipliers)
-#define NPC_LOOT_TIER_WAVE1 1.0
-#define NPC_LOOT_TIER_WAVE2 1.5
-#define NPC_LOOT_TIER_WAVE3 2.0
-#define NPC_LOOT_TIER_BOSS 3.0
+// Bounty ship part rewards
+#define BOUNTY_LIGHT_SHIP_PARTS 1
+#define BOUNTY_HEAVY_SHIP_PARTS 3
 
 // Scanning blackboard keys
 #define BB_NPC_SCAN_START_TIME "npc_scan_start_time"  // When scan started
@@ -208,7 +207,3 @@ GLOBAL_LIST_EMPTY(door_to_rooms)   // ship_ref -> list(door_ref -> list(room_id_
 #define EXPLORATION_MAX_LOCKERS 3                                 // Cap locker targets per room
 #define EXPLORATION_MIN_ROOM_SIZE 4                               // Skip exploration for rooms smaller than this
 
-// ========== HAND ITEM RESOLVERS ==========
-// Use these in r_hand_options/l_hand_options lists for dynamic item resolution at init time.
-// Anything that's ispath() gets used directly; strings trigger resolve_hand_item().
-#define HAND_RESOLVER_RANDOM_FISH "hand_resolver_random_fish"

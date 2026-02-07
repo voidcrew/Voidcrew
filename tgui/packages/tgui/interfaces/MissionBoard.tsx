@@ -62,6 +62,7 @@ type Bounty = {
   effective_reward?: number;
   target_x?: number;
   target_y?: number;
+  loot_description: string;
 };
 
 type PendingOffer = {
@@ -531,6 +532,19 @@ const BountyCard = (props: BountyCardProps) => {
     >
       <Box mb={1} color={bounty.was_abandoned ? 'gray' : undefined}>
         {bounty.desc}
+      </Box>
+
+      <Box mb={1}>
+        <Box as="span" color="label">
+          Rewards:{' '}
+        </Box>
+        <Box as="span" color="good" bold>
+          {displayReward} cr
+        </Box>
+        <Box as="span" color="average" bold>
+          {' '}
+          + {bounty.loot_description}
+        </Box>
       </Box>
 
       {/* Show coordinates if tracking is enabled */}

@@ -185,6 +185,7 @@ SUBSYSTEM_DEF(bounty)
 			"hunter_count" = bounty.get_hunter_count(),
 			"ref" = REF(bounty),
 			"tracking_cost" = bounty.get_tracking_cost(),
+			"loot_description" = bounty.get_loot_description(),
 		)
 
 		// Add ship-specific data

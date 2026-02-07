@@ -2,8 +2,11 @@
  * NPC Ships Spawner Subsystem
  *
  * Manages deterministic spawning of NPC pirate ships.
- * Spawns 3 pirates at round start: 2 light-threat (yellow zone) + 1 heavy-threat (red zone).
- * When a pirate is "resolved" (killed, claimed, abandoned), spawns a replacement from same tier.
+ * Spawns 3 pirates at round start from a unified faction pool.
+ * Any faction can spawn in any zone - the zone determines behavior:
+ * - Yellow zone: scan -> lock -> interdict + siphon (economic threat)
+ * - Red zone: hail -> negotiate -> boarding waves -> boss (lethal threat)
+ * When a pirate is "resolved" (killed, claimed, abandoned), spawns a replacement.
  */
 SUBSYSTEM_DEF(npc_ships)
 	name = "NPC Ships"
@@ -18,44 +21,35 @@ SUBSYSTEM_DEF(npc_ships)
 	/// List of currently active NPC ships
 	var/list/obj/structure/overmap/ship/npc/active_ships = list()
 
-	/// Light-threat faction types (spawn in yellow zones)
-	var/list/light_factions = list(
-		/obj/structure/overmap/ship/npc/pirate/skeleton,   // Dutchman
-		/obj/structure/overmap/ship/npc/pirate/grey,
-		/obj/structure/overmap/ship/npc/pirate/medieval,
-		/obj/structure/overmap/ship/npc/pirate/lustrous,   // Geode
+	/// All available pirate faction types (any can spawn in any zone)
+	var/list/all_factions = list(
+		/obj/structure/overmap/ship/npc/pirate/skeleton,     // Dutchman
+		/obj/structure/overmap/ship/npc/pirate/grey,         // Grey Tide
+		/obj/structure/overmap/ship/npc/pirate/medieval,     // Medieval
+		/obj/structure/overmap/ship/npc/pirate/lustrous,     // Geode
+		/obj/structure/overmap/ship/npc/pirate/silverscale,  // Silverscale
+		/obj/structure/overmap/ship/npc/pirate/irs,          // IRS
+		/obj/structure/overmap/ship/npc/pirate/interdyne,    // Interdyne
 	)
 
-	/// Heavy-threat faction types (spawn in red zones)
-	var/list/heavy_factions = list(
-		/obj/structure/overmap/ship/npc/pirate/silverscale,
-		/obj/structure/overmap/ship/npc/pirate,           // Rogues
-		/obj/structure/overmap/ship/npc/pirate/irs,
-		/obj/structure/overmap/ship/npc/pirate/interdyne,
-	)
+	/// Currently active faction types
+	var/list/active_faction_types = list()
 
-	/// Currently active light-threat faction types
-	var/list/active_light_types = list()
-
-	/// Currently active heavy-threat faction types
-	var/list/active_heavy_types = list()
-
-	/// Target counts for each tier
-	var/light_count_target = 2
-	var/heavy_count_target = 1
+	/// Target number of active pirates
+	var/pirate_count_target = 4
 
 	/// Whether initial spawning is complete
 	var/initialized_pirates = FALSE
 
 /datum/controller/subsystem/npc_ships/Initialize()
-	log_world("SSnpc_ships: Initializing with [length(light_factions)] light factions, [length(heavy_factions)] heavy factions")
+	log_world("SSnpc_ships: Initializing with [length(all_factions)] factions, target [pirate_count_target] pirates")
 	// SSshuttle is listed as a dependency, so it's guaranteed to be ready
 	initialize_pirates()
 	return SS_INIT_SUCCESS
 
 /**
  * Spawns the initial set of pirates at round start.
- * 2 light-threat + 1 heavy-threat, no duplicate factions.
+ * Picks random unique factions, each spawned in a random zone.
  */
 /datum/controller/subsystem/npc_ships/proc/initialize_pirates()
 	if(initialized_pirates)
@@ -63,20 +57,12 @@ SUBSYSTEM_DEF(npc_ships)
 
 	log_world("SSnpc_ships: Spawning initial pirates...")
 
-	// Spawn 2 light-threat pirates (pick 2 random factions)
-	var/list/available_light = light_factions.Copy()
-	for(var/i in 1 to light_count_target)
-		if(!length(available_light))
+	// Pick random unique factions
+	var/list/available = all_factions.Copy()
+	for(var/i in 1 to pirate_count_target)
+		if(!length(available))
 			break
-		var/faction_type = pick_n_take(available_light)
-		spawn_pirate(faction_type)
-
-	// Spawn 1 heavy-threat pirate
-	var/list/available_heavy = heavy_factions.Copy()
-	for(var/i in 1 to heavy_count_target)
-		if(!length(available_heavy))
-			break
-		var/faction_type = pick_n_take(available_heavy)
+		var/faction_type = pick_n_take(available)
 		spawn_pirate(faction_type)
 
 	initialized_pirates = TRUE
@@ -84,81 +70,55 @@ SUBSYSTEM_DEF(npc_ships)
 
 /**
  * Called when a pirate is "resolved" (killed, claimed, abandoned, etc.)
- * Spawns a replacement from the same tier.
+ * Spawns a replacement from an unused faction in the same zone.
  * @param resolved_type The type path of the resolved pirate ship
+ * @param resolved_zone_type The zone type the resolved ship was in (ZONE_YELLOW, ZONE_RED, or null)
  */
-/datum/controller/subsystem/npc_ships/proc/on_pirate_resolved(resolved_type)
+/datum/controller/subsystem/npc_ships/proc/on_pirate_resolved(resolved_type, resolved_zone_type)
 	if(!initialized_pirates)
 		return  // Don't replace during initialization
 
 	// Remove from active tracking
-	active_light_types -= resolved_type
-	active_heavy_types -= resolved_type
+	active_faction_types -= resolved_type
 
-	// Determine which tier and spawn replacement
-	var/is_heavy = (resolved_type in heavy_factions)
-
-	if(is_heavy)
-		spawn_replacement_heavy()
-	else
-		spawn_replacement_light()
+	// Spawn replacement in same zone
+	spawn_replacement(resolved_zone_type)
 
 /**
- * Spawns a replacement light-threat pirate.
- * Prefers factions not currently active.
+ * Spawns a replacement pirate.
+ * Prefers factions not currently active. Spawns in specified zone.
+ * @param target_zone_type The zone type to spawn in (null = any zone)
  */
-/datum/controller/subsystem/npc_ships/proc/spawn_replacement_light()
+/datum/controller/subsystem/npc_ships/proc/spawn_replacement(target_zone_type)
 	// Check if we're at capacity
-	if(length(active_light_types) >= light_count_target)
+	if(length(active_faction_types) >= pirate_count_target)
 		return
 
 	// Get factions not currently active
-	var/list/available = light_factions - active_light_types
+	var/list/available = all_factions - active_faction_types
 
-	// If all factions are active, pick any light faction
+	// If all factions are active, pick any faction
 	if(!length(available))
-		available = light_factions.Copy()
+		available = all_factions.Copy()
 
 	var/faction_type = pick(available)
-	spawn_pirate(faction_type)
-	log_world("SSnpc_ships: Spawned replacement light pirate: [faction_type]")
-
-/**
- * Spawns a replacement heavy-threat pirate.
- * Prefers factions not currently active.
- */
-/datum/controller/subsystem/npc_ships/proc/spawn_replacement_heavy()
-	// Check if we're at capacity
-	if(length(active_heavy_types) >= heavy_count_target)
-		return
-
-	// Get factions not currently active
-	var/list/available = heavy_factions - active_heavy_types
-
-	// If all factions are active, pick any heavy faction
-	if(!length(available))
-		available = heavy_factions.Copy()
-
-	var/faction_type = pick(available)
-	spawn_pirate(faction_type)
-	log_world("SSnpc_ships: Spawned replacement heavy pirate: [faction_type]")
+	spawn_pirate(faction_type, target_zone_type)
+	log_world("SSnpc_ships: Spawned replacement pirate: [faction_type] in zone [target_zone_type]")
 
 /**
  * Spawns a pirate of the specified type.
  * @param ship_type_path The ship type to spawn
+ * @param target_zone_type The zone type to spawn in (null = any zone)
  * @return The spawned ship or null on failure
  */
-/datum/controller/subsystem/npc_ships/proc/spawn_pirate(ship_type_path)
-	var/obj/structure/overmap/ship/npc/ship = spawn_npc_ship(ship_type_path)
+/datum/controller/subsystem/npc_ships/proc/spawn_pirate(ship_type_path, target_zone_type)
+	var/obj/structure/overmap/ship/npc/ship = spawn_npc_ship(ship_type_path, target_zone_type)
 	if(!ship)
 		log_world("SSnpc_ships: Failed to spawn pirate of type [ship_type_path]")
 		return null
 
-	// Track in appropriate tier list
-	if(ship_type_path in heavy_factions)
-		active_heavy_types += ship_type_path
-	else
-		active_light_types += ship_type_path
+	// Track in active faction list
+	active_faction_types += ship_type_path
 
 	// Notify bounty subsystem to create a bounty for this pirate
 	SSbounty?.on_pirate_spawned(ship)
@@ -185,12 +145,10 @@ SUBSYSTEM_DEF(npc_ships)
 
 /**
  * Gets the spawn zones for a ship type.
- * Light-threat = yellow zones, Heavy-threat = red zones.
+ * Any faction can spawn in any zone - zone determines behavior.
  */
 /datum/controller/subsystem/npc_ships/proc/get_spawn_zones_for_type(ship_type_path)
-	if(ship_type_path in heavy_factions)
-		return list(ZONE_RED)
-	return list(ZONE_YELLOW)
+	return list(ZONE_YELLOW, ZONE_RED)
 
 /**
  * Finds a valid spawn turf for an NPC ship.
@@ -231,15 +189,20 @@ SUBSYSTEM_DEF(npc_ships)
 /**
  * Spawns a new NPC ship in a valid zone.
  * @param ship_type_path The ship type to spawn
+ * @param target_zone_type Specific zone type to spawn in (null = use get_spawn_zones_for_type)
  * @return The spawned ship or null on failure
  */
-/datum/controller/subsystem/npc_ships/proc/spawn_npc_ship(ship_type_path)
+/datum/controller/subsystem/npc_ships/proc/spawn_npc_ship(ship_type_path, target_zone_type)
 	var/template_path = initial(ship_type_path:shuttle_template)
 	if(!template_path)
 		log_world("SSnpc_ships: No shuttle_template defined for [ship_type_path]")
 		return null
 
-	var/list/spawn_zones = get_spawn_zones_for_type(ship_type_path)
+	var/list/spawn_zones
+	if(target_zone_type)
+		spawn_zones = list(target_zone_type)
+	else
+		spawn_zones = get_spawn_zones_for_type(ship_type_path)
 	if(!length(spawn_zones))
 		return null
 
@@ -326,7 +289,6 @@ SUBSYSTEM_DEF(npc_ships)
 		return
 
 	var/list/faction_options = list(
-		"Rogues (Default)" = /obj/structure/overmap/ship/npc/pirate,
 		"Silverscale (Lizards)" = /obj/structure/overmap/ship/npc/pirate/silverscale,
 		"Grey Tide (Assistants)" = /obj/structure/overmap/ship/npc/pirate/grey,
 		"Lustrous (Ethereals)" = /obj/structure/overmap/ship/npc/pirate/lustrous,
@@ -360,16 +322,10 @@ SUBSYSTEM_DEF(npc_ships)
 
 	var/list/lines = list()
 	lines += "=== NPC Ship Status ==="
-	lines += "Active ships: [length(SSnpc_ships.active_ships)]"
-	lines += "Light types active: [length(SSnpc_ships.active_light_types)]/[SSnpc_ships.light_count_target]"
-	lines += "Heavy types active: [length(SSnpc_ships.active_heavy_types)]/[SSnpc_ships.heavy_count_target]"
+	lines += "Active ships: [length(SSnpc_ships.active_ships)]/[SSnpc_ships.pirate_count_target]"
 	lines += ""
-	lines += "Active Light Factions:"
-	for(var/faction in SSnpc_ships.active_light_types)
-		lines += "  - [faction]"
-	lines += ""
-	lines += "Active Heavy Factions:"
-	for(var/faction in SSnpc_ships.active_heavy_types)
+	lines += "Active Factions:"
+	for(var/faction in SSnpc_ships.active_faction_types)
 		lines += "  - [faction]"
 	lines += ""
 	lines += "All Active Ships:"
@@ -377,7 +333,10 @@ SUBSYSTEM_DEF(npc_ships)
 		var/datum/ai_controller/npc_ship/controller = ship.ai_controller
 		var/obj/structure/overmap/ship/target = controller?.get_target()
 		var/combat_state = controller?.blackboard[BB_NPC_COMBAT_STATE] || "none"
-		lines += "  - [ship.name] at ([ship.x], [ship.y], z=[ship.z])"
+		var/turf/ship_turf = get_turf(ship)
+		var/datum/overmap_zone/ship_zone = SSovermap_zones.get_zone(ship_turf)
+		var/zone_name = ship_zone?.zone_type || "unknown"
+		lines += "  - [ship.name] at ([ship.x], [ship.y], z=[ship.z]) [zone_name] zone"
 		lines += "      State: [combat_state], Target: [target?.name || "none"]"
 		lines += "      Territory: [ship.territory_range] tiles"
 

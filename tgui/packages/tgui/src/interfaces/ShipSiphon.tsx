@@ -14,6 +14,12 @@ type SiphonData = {
   goal_progress: number;
   can_activate: boolean;
   no_lock_reason: string;
+  siphon_rate: number;
+  rate_mult: number;
+  efficiency_mult: number;
+  warmup_mult: number;
+  warmup_time: number;
+  power_draw: number;
 };
 
 export const ShipSiphon = (props) => {
@@ -30,10 +36,16 @@ export const ShipSiphon = (props) => {
     goal_progress,
     can_activate,
     no_lock_reason,
+    siphon_rate,
+    rate_mult,
+    efficiency_mult,
+    warmup_mult,
+    warmup_time,
+    power_draw,
   } = data;
 
   return (
-    <Window width={400} height={350} title="Ship Data Siphon">
+    <Window width={400} height={450} title="Ship Data Siphon">
       <Window.Content>
         <Section title="Status">
           <LabeledList>
@@ -80,7 +92,9 @@ export const ShipSiphon = (props) => {
         <Section title="Target">
           {has_target ? (
             <LabeledList>
-              <LabeledList.Item label="Target Ship">{target_name}</LabeledList.Item>
+              <LabeledList.Item label="Target Ship">
+                {target_name}
+              </LabeledList.Item>
               <LabeledList.Item label="Target Credits">
                 {target_credits} cr
               </LabeledList.Item>
@@ -90,9 +104,27 @@ export const ShipSiphon = (props) => {
             </LabeledList>
           ) : (
             <NoticeBox info>
-              {no_lock_reason || 'No target locked. Use the combat console to acquire a weapons lock.'}
+              {no_lock_reason ||
+                'No target locked. Use the combat console to acquire a weapons lock.'}
             </NoticeBox>
           )}
+        </Section>
+
+        <Section title="System Stats">
+          <LabeledList>
+            <LabeledList.Item label="Siphon Rate">
+              {siphon_rate} cr/tick ({Math.round(rate_mult * 100)}%)
+            </LabeledList.Item>
+            <LabeledList.Item label="Warmup Time">
+              {warmup_time}s ({Math.round((1 - warmup_mult) * 100)}% reduction)
+            </LabeledList.Item>
+            <LabeledList.Item label="Power Draw">
+              {power_draw > 0 ? `${power_draw} W` : 'Idle'}
+            </LabeledList.Item>
+            <LabeledList.Item label="Efficiency">
+              {Math.round((1 - efficiency_mult) * 100)}% power reduction
+            </LabeledList.Item>
+          </LabeledList>
         </Section>
 
         <Section title="Controls">

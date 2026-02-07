@@ -386,56 +386,6 @@
 	)
 
 /**
- * Rogues - Standard Pirates
- * Rough, direct, opportunistic.
- */
-/datum/pirate_faction_dialog/rogues
-	faction_name = "Rogue Raiders"
-	demand_multiplier = 1.0
-	patience_modifier = 1.0
-
-	greetings = list(
-		"Well well, what do we have here?",
-		"Stop right there! This is a robbery!",
-		"Your credits or your life! Your choice!",
-	)
-	demand_lines = list(
-		"Hand over %CREDITS% credits and nobody gets hurt. Or %QUANTITY% %ITEM%, your call.",
-		"%CREDITS% credits. Or %QUANTITY% %ITEM%. Now. Don't make this difficult.",
-		"We want %CREDITS% credits! Or bring us %QUANTITY% %ITEM%! Pay up!",
-	)
-	acceptance_lines = list(
-		"Smart choice. Get out of here before we change our minds.",
-		"Pleasure doing business. Now scram!",
-		"That'll do. You can go.",
-	)
-	rejection_lines = list(
-		"Wrong answer! Open fire!",
-		"Your funeral! Attack!",
-		"Fine by me, we'll take it from your wreckage!",
-	)
-	timeout_lines = list(
-		"Out of time! Attacking!",
-		"That's it, we're done waiting!",
-	)
-	impatience_lines = list(
-		"Tick tock! %SECONDS% seconds!",
-		"We're losing patience here! %SECONDS% seconds!",
-	)
-	flee_warning_lines = list(
-		"Ha! Nice try. You're not going anywhere. And for that, the price just went up.",
-		"Where do you think you're going? You're staying right here. And paying more.",
-	)
-	movement_betrayal_lines = list(
-		"I warned you once! Now you're dead! OPEN FIRE!",
-		"Tried it twice, huh? Your funeral! BLAST 'EM!",
-	)
-	escape_warning_lines = list(
-		"Try to run and we'll blow you out of the sky. This ain't a bluff.",
-		"Don't even think about booking it. Our guns are faster than your engines.",
-	)
-
-/**
  * Lustrous - Ethereal/Bluespace Entities
  * Mysterious, cryptic, otherworldly.
  */

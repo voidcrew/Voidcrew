@@ -486,6 +486,12 @@
 /area/shuttle/voidcrew/pirate_medieval{
 	requires_power = 0
 	})
+"jJ" = (
+/obj/machinery/ship_combat/missile_launcher,
+/turf/closed/wall/mineral/wood,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
 "qA" = (
 /obj/machinery/power/shuttle_engine/propulsion/right,
 /turf/open/floor/plating/airless,
@@ -495,6 +501,14 @@
 "Aa" = (
 /obj/machinery/porta_turret/syndicate/pirate{
 	dir = 9
+	},
+/turf/closed/wall/mineral/wood,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"BK" = (
+/obj/machinery/ship_combat/missile_launcher{
+	dir = 8
 	},
 /turf/closed/wall/mineral/wood,
 /area/shuttle/voidcrew/pirate_medieval{
@@ -531,6 +545,14 @@
 "OX" = (
 /obj/machinery/porta_turret/syndicate/pirate{
 	dir = 5
+	},
+/turf/closed/wall/mineral/wood,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"Rz" = (
+/obj/machinery/ship_combat/laser_turret{
+	dir = 1
 	},
 /turf/closed/wall/mineral/wood,
 /area/shuttle/voidcrew/pirate_medieval{
@@ -578,7 +600,7 @@ aa
 "}
 (4,1,1) = {"
 Aa
-ap
+BK
 ap
 ap
 ax
@@ -599,7 +621,7 @@ dL
 Nz
 "}
 (6,1,1) = {"
-ap
+Rz
 ap
 aW
 aD
@@ -643,7 +665,7 @@ ab
 ap
 "}
 (10,1,1) = {"
-ap
+Rz
 YF
 aU
 aD
@@ -666,7 +688,7 @@ Nz
 "}
 (12,1,1) = {"
 OX
-ap
+jJ
 ap
 ap
 ad

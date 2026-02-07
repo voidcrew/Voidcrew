@@ -208,6 +208,25 @@
 
 		return ITEM_INTERACT_SUCCESS
 
+	// Handle siphon linking
+	if(istype(tool.buffer, /obj/machinery/shuttle_scrambler/ship_siphon))
+		var/obj/machinery/shuttle_scrambler/ship_siphon/siphon = tool.buffer
+
+		// Check if already linked
+		var/obj/machinery/shuttle_scrambler/ship_siphon/current_siphon = linked_siphon_ref?.resolve()
+		if(current_siphon == siphon)
+			balloon_alert(user, "already linked")
+			return ITEM_INTERACT_BLOCKING
+
+		// Link the siphon
+		if(link_siphon(siphon))
+			balloon_alert(user, "siphon linked")
+			to_chat(user, span_notice("Linked [siphon] to [src]."))
+		else
+			balloon_alert(user, "link failed")
+
+		return ITEM_INTERACT_SUCCESS
+
 	// Not something we handle, let parent try
 	return ..()
 
@@ -263,6 +282,21 @@
 	// Ensure cloak device is connected to the same ship
 	if(current_ship && !cloak.linked_ship_ref?.resolve())
 		cloak.link_ship(current_ship)
+
+	return TRUE
+
+/// Links a siphon to this console
+/obj/machinery/computer/camera_advanced/ship_combat/proc/link_siphon(obj/machinery/shuttle_scrambler/ship_siphon/siphon)
+	if(!siphon)
+		return FALSE
+
+	// Unlink any existing siphon
+	var/obj/machinery/shuttle_scrambler/ship_siphon/old_siphon = linked_siphon_ref?.resolve()
+	if(old_siphon)
+		old_siphon.unlink_console()
+
+	linked_siphon_ref = WEAKREF(siphon)
+	siphon.link_console(src)
 
 	return TRUE
 

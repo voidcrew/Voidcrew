@@ -50,8 +50,6 @@
 			return "goon.speak_2" // Chaotic normal voice
 		if("medieval")
 			return "goon.speak_1" // Dramatic speech
-		if("rogues")
-			return "goon.speak_3" // Classic pirate voice
 	// Default fallback
 	return "goon.speak_1"
 
@@ -106,8 +104,6 @@
  */
 /obj/effect/overlay/holo_pad_hologram/pirate/proc/get_faction_holoimage(faction)
 	switch(faction)
-		if("rogues")
-			return new /datum/preset_holoimage/pirate_captain/rogues()
 		if("irs")
 			return new /datum/preset_holoimage/pirate_captain/irs()
 		if("skeleton")
@@ -261,12 +257,6 @@
  * Base pirate captain holoimage - generic pirate outfit.
  */
 /datum/preset_holoimage/pirate_captain
-	outfit_type = /datum/outfit/piratecorpse/faction/skeleton/captain
-
-/**
- * Rogue Raiders - Classic pirate captain.
- */
-/datum/preset_holoimage/pirate_captain/rogues
 	outfit_type = /datum/outfit/piratecorpse/faction/skeleton/captain
 
 /**

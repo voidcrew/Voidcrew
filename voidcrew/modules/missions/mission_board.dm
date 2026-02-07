@@ -268,14 +268,15 @@
 				balloon_alert(usr, "bounty no longer valid!")
 				return TRUE
 
+			// Remove the key before spawning loot
+			key.mark_destruction_reason(KEY_DESTROYED_BOUNTY)
+			qdel(key)
+
 			// Complete the bounty!
 			var/reward = bounty.complete(ship, linked_pad)
 			if(reward > 0)
 				balloon_alert(usr, "[reward] credits awarded!")
 				playsound(src, 'sound/effects/cashregister.ogg', 50, TRUE)
-				// Mark key for bounty destruction and delete it
-				key.mark_destruction_reason(KEY_DESTROYED_BOUNTY)
-				qdel(key)
 			else
 				balloon_alert(usr, "bounty completion failed!")
 			return TRUE

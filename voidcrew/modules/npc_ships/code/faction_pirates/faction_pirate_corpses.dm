@@ -158,7 +158,6 @@
 /datum/outfit/piratecorpse/faction/grey/robust
 	name = "The Robust One Corpse"
 	head = /obj/item/reagent_containers/cup/bucket
-	mask = /obj/item/clothing/mask/gas/tiki_mask
 	neck = /obj/item/bedsheet/cosmos/double
 
 // ==================== LUSTROUS (Mutated Ethereals) ====================
@@ -348,7 +347,7 @@
 	neck = /obj/item/bedsheet/pirate
 	suit = /obj/item/clothing/suit/armor/riot/knight/warlord
 	gloves = /obj/item/clothing/gloves/combat
-	head = /obj/item/clothing/head/helmet/knight/greyscale
+	head = /obj/item/clothing/head/helmet/knight/warlord
 	mask = /obj/item/clothing/mask/breath
 	shoes = /obj/item/clothing/shoes/bronze
 	back = /obj/item/fireaxe/boardingaxe
@@ -356,9 +355,9 @@
 /datum/outfit/piratecorpse/faction/medieval/blackknight
 	name = "The Black Knight Corpse"
 	neck = /obj/item/bedsheet/pirate
-	suit = /obj/item/clothing/suit/armor/riot/knight/greyscale
+	suit = /obj/item/clothing/suit/hooded/cloak/godslayer
 	gloves = /obj/item/clothing/gloves/combat
-	head = /obj/item/clothing/head/helmet/knight/warlord
+	head = /obj/item/clothing/head/hooded/cloakhood/godslayer
 	mask = /obj/item/clothing/mask/breath
 	shoes = /obj/item/clothing/shoes/bronze
 	back = /obj/item/fireaxe/boardingaxe

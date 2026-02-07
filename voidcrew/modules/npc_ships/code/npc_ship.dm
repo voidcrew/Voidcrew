@@ -1,8 +1,10 @@
 /**
  * NPC Ship - AI-controlled ships that can engage players in combat
  *
- * These ships spawn dynamically in RED zones and use territorial AI
- * to attack player ships that come within range.
+ * These ships spawn in any zone and use territorial AI to attack
+ * player ships that come within range. The zone determines behavior:
+ * - Yellow zone: scan -> lock -> interdict + siphon (economic threat)
+ * - Red zone: hail -> negotiate -> boarding waves -> boss (lethal threat)
  */
 /obj/structure/overmap/ship/npc
 	name = "unidentified vessel"
@@ -49,10 +51,7 @@
 	var/retreat_without_weapons = TRUE
 
 	/// Percentage of target's money to steal before retreating (0 = no limit, steal forever)
-	var/siphon_goal_percent = 0
-
-	/// Whether to scan targets for wealth before engaging (yellow zone behavior)
-	var/scan_before_engage = FALSE
+	var/siphon_goal_percent = 25
 
 	/// How long the wealth scan takes (deciseconds)
 	var/scan_time = 6 SECONDS
@@ -112,6 +111,9 @@
 	/// Delay before ship becomes abandoned after all crew die
 	var/abandonment_delay = 10 MINUTES
 
+	/// Whether the spawner has already been notified to spawn a replacement
+	var/spawner_resolved = FALSE
+
 	// ========== MASS CACHING (Performance optimization) ==========
 	// Instead of iterating all turfs every second, we cache mass and only
 	// recalculate when the ship takes hull damage
@@ -138,6 +140,8 @@
 	QDEL_NULL(combat_interface)
 	// Clean up from dirty queue if we were in it
 	SSovermap.dirty_npc_ships -= src
+	// Notify spawner to spawn replacement (guard prevents double-notify if already resolved)
+	notify_spawner_resolved()
 	// Untrack from spawner subsystem
 	SSnpc_ships.untrack_ship(src)
 	// Cancel abandonment timer if running
@@ -174,6 +178,8 @@
 	RegisterSignal(src, COMSIG_SHIP_INTERDICTED, PROC_REF(on_interdicted))
 	// Only recalc mass on explosive damage (missiles) - lasers don't destroy enough turfs to matter
 	RegisterSignal(src, COMSIG_SHIP_EXPLOSIVE_DAMAGE, PROC_REF(on_hull_damaged))
+	// Clear combat when docked (e.g., force-docked by a player interdictor)
+	RegisterSignal(src, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_ship_docked))
 
 	// Calculate and cache initial mass (avoids per-second recalculation)
 	mass_dirty = TRUE  // Force initial calculation
@@ -348,14 +354,20 @@
 
 /**
  * Notifies the spawner subsystem that this pirate ship is no longer active.
- * Triggers spawning of a replacement pirate from the same tier.
+ * Triggers spawning of a replacement pirate.
+ * Only notifies once per ship to prevent duplicate replacements.
  */
 /obj/structure/overmap/ship/npc/proc/notify_spawner_resolved()
+	if(spawner_resolved)
+		return
 	// Don't notify if already player-controlled (was claimed)
 	if(player_controlled)
 		return
 
-	SSnpc_ships.on_pirate_resolved(type)
+	spawner_resolved = TRUE
+	var/turf/ship_turf = get_turf(src)
+	var/datum/overmap_zone/zone = SSovermap_zones.get_zone(ship_turf)
+	SSnpc_ships.on_pirate_resolved(type, zone?.zone_type)
 
 /**
  * Signal handler for ship integrity changes.
@@ -364,6 +376,16 @@
 /obj/structure/overmap/ship/npc/proc/on_integrity_changed(datum/source, new_integrity, max_integrity, display_percent)
 	SIGNAL_HANDLER
 	update_boarding_state()
+
+/**
+ * Signal handler for when the ship is docked (e.g., force-docked by player interdictor).
+ * Clears all combat state so the NPC ship doesn't attack while docked.
+ */
+/obj/structure/overmap/ship/npc/proc/on_ship_docked(datum/source)
+	SIGNAL_HANDLER
+	var/datum/ai_controller/npc_ship/controller = ai_controller
+	if(controller)
+		INVOKE_ASYNC(controller, TYPE_PROC_REF(/datum/ai_controller/npc_ship, clear_target))
 
 /**
  * Signal handler for when ship is interdicted.
@@ -525,7 +547,6 @@
 	// Red color for pirate faction
 	ship_color = NPC_COLOR_PIRATE
 
-	// Default pirate shuttle template (Rogues)
 	shuttle_template = /datum/map_template/shuttle/voidcrew/pirate_default
 
 	// Combat stats - balanced for gameplay
@@ -554,13 +575,13 @@
 	/// Whether this pirate accepts negotiations (can be hailed)
 	var/accepts_negotiation = TRUE
 	/// Faction dialog type for negotiation personality
-	var/negotiation_dialog_type = /datum/pirate_faction_dialog/rogues
+	var/negotiation_dialog_type
 	/// Minimum credits to demand in negotiation
 	var/min_negotiation_demand = 500
 	/// Maximum credits to demand in negotiation
 	var/max_negotiation_demand = 10000
 	/// Faction identifier for dialog and appearance
-	var/pirate_faction = "rogues"
+	var/pirate_faction
 
 	// ========== BOARDING POD CONFIG ==========
 	/// Whether this pirate can launch boarding pods
@@ -587,7 +608,7 @@
 		list(3, 5),  // Wave 3
 	)
 	/// Boss mob type for this faction
-	var/boss_type = /mob/living/basic/trooper/pirate/faction/boss/rogues
+	var/boss_type
 	/// Minimum crew on target ship to bother attacking (small ship protection)
 	var/min_target_crew = 1
 	/// Wave taunts - played during cooldown between waves

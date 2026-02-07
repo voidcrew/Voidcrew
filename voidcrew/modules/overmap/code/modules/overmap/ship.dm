@@ -2030,6 +2030,12 @@
 		to_chat(user, "<span class='warning'>Both ships must be undocked to perform ship-to-ship docking!</span>")
 		return
 
+	// If the acting ship has an interdictor locked onto the target, force dock instead
+	for(var/obj/machinery/ship_combat/interdictor/interdictor in acting_ship.linked_interdictors)
+		if(interdictor.interdiction_active && interdictor.interdicted_ship_ref?.resolve() == src)
+			interdictor.force_dock_target(user)
+			return
+
 	// If target ship is a disabled NPC ship, allow direct docking without mutual request
 	var/obj/structure/overmap/ship/npc/npc_target = src
 	if(istype(npc_target) && npc_target.is_disabled)

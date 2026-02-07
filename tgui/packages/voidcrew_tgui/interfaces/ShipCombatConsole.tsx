@@ -196,7 +196,6 @@ type Data = {
   can_burst_shields: BooleanLike;
   burst_shield_cost: number;
   target_in_interdict_range: BooleanLike;
-  target_in_force_dock_range: BooleanLike;
   target_in_missile_range: BooleanLike;
   // Shield data
   shield_linked: BooleanLike;
@@ -216,6 +215,15 @@ type Data = {
   // Cloak device
   cloak_device: CloakDevice | null;
   cloak_unlocked: BooleanLike;
+  // Siphon data
+  siphon_linked: BooleanLike;
+  siphon_active: BooleanLike;
+  siphon_warming_up: BooleanLike;
+  siphon_warmup_progress: number;
+  siphon_credits_stored: number;
+  siphon_goal: number;
+  siphon_goal_progress: number;
+  siphon_target_name: string | null;
   // Zone information
   zone_type: number | null;
   zone_name: string;
@@ -648,7 +656,6 @@ const InterdictorPanel = () => {
     can_burst_shields,
     burst_shield_cost,
     target_in_interdict_range,
-    target_in_force_dock_range,
   } = data;
 
   const powerPercent = Math.round((interdictor_power_level ?? 1) * 100);
@@ -735,8 +742,6 @@ const InterdictorPanel = () => {
     !interdiction_warming_up &&
     !interdict_cooldown_active &&
     interdictor_ready;
-
-  const canForceDock = interdiction_active && target_in_force_dock_range;
 
   // Cooldown state
   if (interdict_cooldown_active && !interdiction_active && !interdiction_warming_up) {
@@ -843,29 +848,15 @@ const InterdictorPanel = () => {
             />
           </Stack.Item>
           <Stack.Item>
-            <Stack>
-              <Stack.Item grow>
-                <Button
-                  fluid
-                  compact
-                  icon="link"
-                  color="red"
-                  disabled={!canForceDock}
-                  onClick={() => act('force_dock')}
-                >
-                  {!target_in_force_dock_range ? 'Get Closer' : 'Force Dock'}
-                </Button>
-              </Stack.Item>
-              <Stack.Item>
-                <Button
-                  compact
-                  icon="times"
-                  color="bad"
-                  aria-label="Cancel interdiction"
-                  onClick={() => act('cancel_interdict')}
-                />
-              </Stack.Item>
-            </Stack>
+            <Button
+              fluid
+              compact
+              icon="times"
+              color="bad"
+              onClick={() => act('cancel_interdict')}
+            >
+              Cancel Interdiction
+            </Button>
           </Stack.Item>
         </Stack>
       </Section>
@@ -950,6 +941,9 @@ const EquipmentTab = () => {
       </Stack.Item>
       <Stack.Item>
         <CloakingPanel />
+      </Stack.Item>
+      <Stack.Item>
+        <SiphonPanel />
       </Stack.Item>
     </Stack>
   );
@@ -1301,6 +1295,165 @@ const CloakingPanel = () => {
             onClick={() => act('cloak_activate')}
           >
             {can_activate ? 'Activate Cloak' : 'Cannot Cloak'}
+          </Button>
+        </Stack.Item>
+      </Stack>
+    </Section>
+  );
+};
+
+const SiphonPanel = () => {
+  const { act, data } = useBackend<Data>();
+  const {
+    target_ref,
+    siphon_linked,
+    siphon_active,
+    siphon_warming_up,
+    siphon_warmup_progress,
+    siphon_credits_stored,
+    siphon_goal,
+    siphon_goal_progress,
+    siphon_target_name,
+  } = data;
+
+  if (!siphon_linked) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="download" mr={1} />
+            Data Siphon
+            <Box inline color="label" ml={1} fontSize="10px">
+              NOT LINKED
+            </Box>
+          </Box>
+        }
+      />
+    );
+  }
+
+  // Calibrating state
+  if (siphon_warming_up) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="download" mr={1} />
+            Data Siphon
+            <Box inline color="average" ml={1} fontSize="10px">
+              CALIBRATING
+            </Box>
+          </Box>
+        }
+      >
+        <Stack vertical>
+          <Stack.Item>
+            <Box bold textAlign="center" color="average" fontSize="11px">
+              <Icon name="spinner" spin mr={1} />
+              {siphon_target_name}
+            </Box>
+          </Stack.Item>
+          <Stack.Item>
+            <ProgressBar value={(siphon_warmup_progress || 0) / 100} color="blue">
+              {Math.round(siphon_warmup_progress || 0)}%
+            </ProgressBar>
+          </Stack.Item>
+          <Stack.Item>
+            <Button
+              fluid
+              compact
+              icon="times"
+              color="bad"
+              onClick={() => act('siphon_deactivate')}
+            >
+              Cancel
+            </Button>
+          </Stack.Item>
+        </Stack>
+      </Section>
+    );
+  }
+
+  // Active siphoning state
+  if (siphon_active) {
+    return (
+      <Section
+        title={
+          <Box inline>
+            <Icon name="download" mr={1} />
+            Data Siphon
+            <Box inline color="bad" ml={1} fontSize="10px">
+              SIPHONING
+            </Box>
+          </Box>
+        }
+      >
+        <Stack vertical>
+          <Stack.Item>
+            <Box bold color="bad" textAlign="center" fontSize="11px">
+              {siphon_target_name}
+            </Box>
+          </Stack.Item>
+          {siphon_goal > 0 && (
+            <Stack.Item>
+              <ProgressBar
+                value={(siphon_goal_progress || 0) / 100}
+                color="red"
+              >
+                {Math.round(siphon_goal_progress || 0)}% ({siphon_credits_stored} / {siphon_goal} cr)
+              </ProgressBar>
+            </Stack.Item>
+          )}
+          <Stack.Item>
+            <Box fontSize="10px" color="label">
+              <Icon name="coins" mr={0.5} />
+              Credits stored: {siphon_credits_stored} cr
+            </Box>
+          </Stack.Item>
+          <Stack.Item>
+            <Button
+              fluid
+              compact
+              icon="times"
+              color="bad"
+              onClick={() => act('siphon_deactivate')}
+            >
+              Deactivate Siphon
+            </Button>
+          </Stack.Item>
+        </Stack>
+      </Section>
+    );
+  }
+
+  // Ready state
+  return (
+    <Section
+      title={
+        <Box inline>
+          <Icon name="download" mr={1} />
+          Data Siphon
+        </Box>
+      }
+    >
+      <Stack vertical>
+        {siphon_credits_stored > 0 && (
+          <Stack.Item>
+            <Box fontSize="10px" color="good">
+              <Icon name="coins" mr={0.5} />
+              {siphon_credits_stored} cr stored — retrieve from device
+            </Box>
+          </Stack.Item>
+        )}
+        <Stack.Item>
+          <Button
+            fluid
+            compact
+            icon="download"
+            disabled={!target_ref}
+            onClick={() => act('siphon_activate')}
+          >
+            {!target_ref ? 'No Target' : 'Activate Siphon'}
           </Button>
         </Stack.Item>
       </Stack>

@@ -122,9 +122,7 @@
 	requires_power = 0
 	})
 "hM" = (
-/obj/machinery/porta_turret/syndicate/energy/pirate{
-	dir = 4
-	},
+/obj/machinery/ship_combat/missile_launcher,
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0
@@ -662,9 +660,6 @@
 	})
 "AT" = (
 /obj/effect/turf_decal/lunar_sand/plating,
-/obj/docking_port/mobile/voidcrew/pirate_geode{
-	port_direction = 4
-	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 1
 	},
@@ -675,13 +670,7 @@
 /obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/docking_port/mobile/voidcrew/pirate_geode{
-	port_direction = 2
-	},
-/obj/docking_port/mobile/voidcrew/pirate_geode{
-	port_direction = 2
-	},
-/obj/docking_port/mobile/voidcrew/pirate_geode{
-	port_direction = 2
+	port_direction = 4
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_geode{

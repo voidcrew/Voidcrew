@@ -133,8 +133,8 @@
 		if(target_zone != zone)
 			continue
 
-		// If this ship scans before engaging, check if we recently scanned this target
-		if(ship.scan_before_engage)
+		// Yellow zone: skip recently-scanned ships (scan memory)
+		if(zone?.zone_type != ZONE_RED)
 			var/list/scanned_ships = controller.blackboard[BB_NPC_SCANNED_SHIPS]
 			if(scanned_ships)
 				var/scanned_time = scanned_ships[REF(potential_target)]
@@ -145,14 +145,15 @@
 		log_shuttle("NPC_SHIP: [ship.name] targeting [potential_target.name] - dist=[get_dist(ship, potential_target)], territory=[ship.territory_range]")
 		controller.set_target(potential_target)
 
-		// If this ship scans before engaging, go to SCANNING first
-		if(ship.scan_before_engage)
+		// Zone-based initial state: yellow -> scan wealth first, red -> hail/engage
+		if(zone?.zone_type != ZONE_RED)
+			// Yellow zone: scan target for wealth before engaging
 			controller.set_combat_state(NPC_COMBAT_SCANNING)
 			controller.blackboard[BB_NPC_SCAN_START_TIME] = world.time
 			controller.blackboard[BB_NPC_SCAN_COMPLETE] = FALSE
 			controller.blackboard[BB_NPC_SCAN_ANNOUNCED] = FALSE
-		// If this pirate accepts negotiation, go to HAILING first (give player chance to respond)
 		else if(istype(ship, /obj/structure/overmap/ship/npc/pirate))
+			// Red zone: hail first (give player chance to respond)
 			var/obj/structure/overmap/ship/npc/pirate/pirate_ship = ship
 			// Only hail if no other pirate is already hailing/negotiating with this target
 			if(pirate_ship.accepts_negotiation && !is_target_being_hailed(potential_target, ship))
@@ -226,23 +227,31 @@
 	var/target_wealth = target.ship_account?.account_balance || 0
 
 	if(target_wealth >= ship.min_target_wealth)
-		// Target has money - proceed to hailing or engaging
+		// Target has money - proceed based on zone
 		ship.ship_notify("Scan complete. Target has [target_wealth] credits.", "SCANNER", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
-		// If this pirate accepts negotiation, go to HAILING first (give player chance to respond)
-		// But only if no other pirate is already hailing/negotiating with this target
-		if(istype(ship, /obj/structure/overmap/ship/npc/pirate))
-			var/obj/structure/overmap/ship/npc/pirate/pirate_ship = ship
-			if(pirate_ship.accepts_negotiation && !is_target_being_hailed(target, ship))
-				target.ship_notify("[ship.name] is hailing your vessel!", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn2.ogg', 25)
-				controller.set_combat_state(NPC_COMBAT_HAILING)
-				controller.clear_blackboard_key(BB_NPC_HAILING_START)
-				controller.clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
-				return AI_BEHAVIOR_DELAY
+		// Check zone for branching
+		var/turf/ship_loc = get_turf(ship)
+		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(ship_loc)
 
-		// Otherwise engage directly (or another pirate is already hailing)
-		target.ship_notify("Hostile vessel has completed scan and is engaging!", "SECURITY", SHIP_NOTIFY_DANGER)
-		controller.set_combat_state(NPC_COMBAT_ENGAGING)
+		if(zone?.zone_type != ZONE_RED)
+			// Yellow zone: straight to lock acquisition, then siphon (no hailing)
+			target.ship_notify("Hostile vessel has completed scan and is locking onto your ship!", "SECURITY", SHIP_NOTIFY_DANGER)
+			controller.set_combat_state(NPC_COMBAT_ENGAGING)
+		else
+			// Red zone: hail first (give player chance to respond)
+			if(istype(ship, /obj/structure/overmap/ship/npc/pirate))
+				var/obj/structure/overmap/ship/npc/pirate/pirate_ship = ship
+				if(pirate_ship.accepts_negotiation && !is_target_being_hailed(target, ship))
+					target.ship_notify("[ship.name] is hailing your vessel!", "SECURITY", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn2.ogg', 25)
+					controller.set_combat_state(NPC_COMBAT_HAILING)
+					controller.clear_blackboard_key(BB_NPC_HAILING_START)
+					controller.clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
+					return AI_BEHAVIOR_DELAY
+
+			// Engage directly (or another pirate is already hailing)
+			target.ship_notify("Hostile vessel has completed scan and is engaging!", "SECURITY", SHIP_NOTIFY_DANGER)
+			controller.set_combat_state(NPC_COMBAT_ENGAGING)
 	else
 		// Target is broke - not worth it
 		ship.ship_notify("Scan complete. Target has insufficient funds ([target_wealth] credits). Disengaging.", "SCANNER", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
@@ -445,7 +454,12 @@
 	if(world.time >= lock_start + ship.lock_time)
 		// Lock acquired!
 		controller.set_blackboard_key(BB_NPC_TARGET_LOCKED, TRUE)
-		controller.set_combat_state(NPC_COMBAT_COMBAT)
+
+		// Branch based on zone: yellow zone -> siphon, red zone -> full combat
+		if(ship_zone?.zone_type != ZONE_RED)
+			controller.set_combat_state(NPC_COMBAT_SIPHONING)
+		else
+			controller.set_combat_state(NPC_COMBAT_COMBAT)
 
 		// Notify the target via signal (for cloak device etc)
 		SEND_SIGNAL(target, COMSIG_SHIP_WEAPONS_LOCKED, ship)
@@ -861,6 +875,8 @@
 
 	// If we have no weapons and ship type retreats without weapons, enter retreat mode
 	if(!combat.has_any_weapons() && ship.retreat_without_weapons)
+		controller.blackboard[BB_NPC_RETREAT_REASON] = "no_weapons"
+		// set_combat_state stores BB_NPC_LAST_TARGET automatically when entering retreat
 		controller.set_combat_state(NPC_COMBAT_RETREATING)
 		controller.set_blackboard_key(BB_NPC_MOVEMENT_MODE, NPC_MOVEMENT_RETREAT)
 		ship.ship_notify("All weapons systems offline! Initiating emergency retreat!", "CRITICAL", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)

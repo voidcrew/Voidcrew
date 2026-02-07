@@ -115,4 +115,10 @@
 		return  // Ship was already resolved when abandoned
 
 	spawner_notified = TRUE
-	SSnpc_ships.on_pirate_resolved(ship_type_path)
+	// Pass the ship's zone so replacement spawns in same zone
+	var/resolved_zone_type
+	if(ship)
+		var/turf/ship_turf = get_turf(ship)
+		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(ship_turf)
+		resolved_zone_type = zone?.zone_type
+	SSnpc_ships.on_pirate_resolved(ship_type_path, resolved_zone_type)

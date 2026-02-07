@@ -18,9 +18,14 @@
 	if(!istype(controller))
 		return
 
+	var/obj/structure/overmap/ship/npc/ship = controller.pawn
+
+	// Don't run movement AI when the ship isn't flying (docked, crashed, etc.)
+	if(!ship || ship.state != OVERMAP_SHIP_FLYING)
+		return
+
 	var/movement_mode = controller.blackboard[BB_NPC_MOVEMENT_MODE] || NPC_MOVEMENT_PATROL
 	var/obj/structure/overmap/ship/target = controller.get_target()
-	var/obj/structure/overmap/ship/npc/ship = controller.pawn
 
 	var/spawn_zone = controller.blackboard[BB_NPC_SPAWN_ZONE]
 

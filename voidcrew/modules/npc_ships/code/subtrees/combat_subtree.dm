@@ -8,6 +8,7 @@
  * - HAILING: Hailing target, waiting for them to answer (20 sec grace period)
  * - ENGAGING: Acquiring weapon lock on target
  * - COMBAT: Actively firing weapons and using interdictor
+ * - SIPHONING: Yellow zone - interdict + siphon only (no weapons/boarding)
  * - RETREATING: All weapons destroyed, trying to escape
  * - NEGOTIATING: In active negotiation with target, combat paused
  *
@@ -24,6 +25,11 @@
 	if(!istype(controller))
 		return
 
+	// Don't run combat AI when the ship isn't flying (docked, crashed, etc.)
+	var/obj/structure/overmap/ship/npc/ship = controller.get_ship()
+	if(!ship || ship.state != OVERMAP_SHIP_FLYING)
+		return
+
 	var/combat_state = controller.get_combat_state()
 
 	// Negotiating ships don't do any combat - they just wait for negotiation outcome
@@ -35,6 +41,13 @@
 	if(combat_state == NPC_COMBAT_HAILING)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/hailing)
 		// Still check disengage in case target escapes
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/check_disengage)
+		return
+
+	// Siphoning ships interdict + siphon only (yellow zone economic threat, no weapons/boarding)
+	if(combat_state == NPC_COMBAT_SIPHONING)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/activate_siphon)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/check_disengage)
 		return
 
