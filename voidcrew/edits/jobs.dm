@@ -5,9 +5,9 @@
 	var/job_category
 
 /**
- * Gets the job slots from our initial ship template, and verifies if that job is available.
- * Excludes non-player job jobs (such as unassigned)
- * Will run as normal if there's no ship assigned.
+ * Gets the job slots from all roundstart ship templates, and verifies if that job is available.
+ * Excludes non-player jobs (such as unassigned).
+ * Will run as normal if there are no roundstart templates configured.
  * Sets the Captain as the 'overflow' job (This does nothing in practice, as we don't expand the job slots).
  * If a job is not meant to show up in prefs menu, we remove their new player joinable flag before sending it through.
  */
@@ -15,14 +15,16 @@
 	//let non-player jobs function properly.
 	if(!(job_flags & JOB_NEW_PLAYER_JOINABLE))
 		return TRUE
-	if(!SSovermap.set_initial_ship())
+	if(!length(SSovermap.roundstart_ship_templates))
 		return ..()
 
 	var/static/list/roundstart_ship_jobs
 	if(!roundstart_ship_jobs)
-		var/datum/map_template/shuttle/voidcrew/voidcrew_ship = new SSovermap.initial_ship_template
-		roundstart_ship_jobs = voidcrew_ship.assemble_job_slots()
-		qdel(voidcrew_ship)
+		roundstart_ship_jobs = list()
+		for(var/template_type in SSovermap.roundstart_ship_templates)
+			var/datum/map_template/shuttle/voidcrew/voidcrew_ship = new template_type
+			roundstart_ship_jobs += voidcrew_ship.assemble_job_slots()
+			qdel(voidcrew_ship)
 
 	for(var/datum/job/job as anything in roundstart_ship_jobs)
 		if(type != job.type)

@@ -111,7 +111,7 @@
 		// Notify crew of progress
 		if(servant && current_amount < required_amount)
 			var/display_name = required_amount == 1 ? target_name_singular : target_name
-			servant.ship_announce("[name]: Surveyed [current_amount]/[required_amount] [display_name].", "Mission Progress")
+			servant.ship_notify("Surveyed [current_amount]/[required_amount] [display_name].", "MISSION PROGRESS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg', 50)
 
 /datum/mission/survey/can_complete()
 	if(failed || completed)

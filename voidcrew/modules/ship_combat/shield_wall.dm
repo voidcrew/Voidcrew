@@ -53,6 +53,9 @@
 		// Let the missile explode against the shield (visual/audio feedback)
 		// shield_impact() creates explosion effects but with reduced damage since shield absorbed it
 		missile.shield_impact()
+	// Note: Boarding pods use the supplypod drop-from-above system and don't physically
+	// travel through space, so they can't hit shields. The AI checks if shields are down
+	// before launching boarding pods.
 	else if(istype(AM, /obj/effect/meteor))
 		var/obj/effect/meteor/meteor = AM
 		damage = get_meteor_damage(meteor)

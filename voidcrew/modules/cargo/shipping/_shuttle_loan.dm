@@ -111,7 +111,7 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 
 	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = target_ship.get_cargo_shuttle()
 	if(cargo_shuttle?.pending_loan && !cargo_shuttle.loan_accepted)
-		target_ship.ship_announce("The shuttle loan offer has expired.", "Offer Expired")
+		target_ship.ship_notify("The shuttle loan offer has expired.", "CARGO", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
 		cargo_shuttle.decline_loan()
 
 /**
@@ -176,7 +176,7 @@ GLOBAL_LIST_INIT(voidcrew_shuttle_loans, list(
 
 	// Announce the offer to the ship
 	var/datum/voidcrew_shuttle_loan/loan = cargo_shuttle.pending_loan
-	ship.ship_announce(loan.announcement_text, loan.sender)
+	ship.ship_notify(loan.announcement_text, "CARGO", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 	return TRUE
 

@@ -1,0 +1,2969 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ac" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/effect/decal/cleanable/blood/old,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"az" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/obj/machinery/iv_drip,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"aC" = (
+/obj/machinery/porta_turret/syndicate/irs,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"aT" = (
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"ba" = (
+/obj/structure/rack,
+/obj/structure/window/reinforced/tinted/spawner/directional/west,
+/obj/item/storage/box/breacherslug,
+/obj/item/gun/ballistic/shotgun/doublebarrel/breacherslug,
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"bo" = (
+/obj/structure/railing,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"bp" = (
+/obj/structure/table,
+/obj/effect/turf_decal/siding/dark_green{
+	dir = 1
+	},
+/obj/item/rag,
+/turf/open/floor/iron/kitchen,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"bT" = (
+/obj/structure/sink/kitchen/directional/east,
+/obj/machinery/button/door/directional/south{
+	id = "pirate_irs_bar";
+	name = "Privacy Shutters"
+	},
+/turf/open/floor/iron/kitchen,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"bV" = (
+/obj/machinery/computer/helm,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 9
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"cL" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters{
+	dir = 8;
+	id = "pirate_irs_bridge"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"cO" = (
+/obj/machinery/computer/monitor{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 6
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"dl" = (
+/obj/structure/sign/calendar/directional/north,
+/turf/open/floor/glass,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"do" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/obj/structure/table/glass,
+/obj/item/storage/box/masks{
+	pixel_y = 6
+	},
+/obj/item/stack/medical/bone_gel{
+	pixel_x = 10;
+	pixel_y = 2
+	},
+/obj/item/storage/box/gloves,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"dC" = (
+/obj/structure/railing/corner{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"dP" = (
+/obj/effect/turf_decal/siding/dark_green,
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/statue/gold/hop{
+	name = "statue of the model tax collector"
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"eg" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/power/port_gen/pacman/pre_loaded,
+/obj/structure/cable,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"ev" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"ew" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"fb" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"fe" = (
+/obj/machinery/computer/apc_control,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"fm" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"fE" = (
+/obj/effect/turf_decal/caution/stand_clear/white{
+	dir = 1
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"fO" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/iron/edge{
+	dir = 8
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"gd" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"gl" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/obj/machinery/recharger,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"gY" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"hf" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters{
+	dir = 8;
+	id = "pirate_irs_bar"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"hK" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"hS" = (
+/obj/effect/mob_spawn/ghost_role/human/pirate/irs/auditor{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"hW" = (
+/obj/machinery/suit_storage_unit/standard_unit,
+/obj/effect/turf_decal/bot/left,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"ie" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 9
+	},
+/obj/structure/table/glass,
+/obj/item/clothing/neck/stethoscope,
+/obj/item/storage/backpack/duffelbag/syndie/surgery,
+/obj/item/reagent_containers/spray/cleaner,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"ig" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/red/dim/directional/south,
+/obj/item/storage/bag/money/vault,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"ip" = (
+/obj/structure/table,
+/obj/effect/turf_decal/siding/dark_green{
+	dir = 1
+	},
+/obj/effect/spawner/random/food_or_drink/donkpockets{
+	pixel_y = 6
+	},
+/turf/open/floor/iron/kitchen,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"iG" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/structure/table/reinforced,
+/obj/structure/fluff{
+	density = 1;
+	desc = "Ill-gotten gains of the Space IRS";
+	icon = 'icons/obj/stack_objects.dmi';
+	icon_state = "sheet-gold_3";
+	name = "recouped gold"
+	},
+/obj/structure/window/reinforced/survival_pod/spawner/directional/south,
+/obj/machinery/door/window/brigdoor/right/directional/north{
+	req_access = list("syndicate")
+	},
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"iZ" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/structure/rack,
+/obj/item/electropack{
+	pixel_x = 1
+	},
+/obj/item/assembly/signaler{
+	pixel_x = -8
+	},
+/obj/effect/turf_decal/stripes/white{
+	dir = 6
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 9
+	},
+/obj/item/melee/chainofcommand,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"jp" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/corner,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"jX" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/item/reagent_containers/cup/bucket{
+	pixel_x = -9;
+	pixel_y = -4
+	},
+/obj/item/stock_parts/power_store/cell/lead{
+	pixel_y = -8;
+	pixel_x = 2
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"kK" = (
+/obj/structure/rack,
+/obj/structure/window/reinforced/tinted/spawner/directional/east,
+/obj/structure/window/reinforced/tinted/spawner/directional/south,
+/obj/item/storage/toolbox/syndicate{
+	pixel_y = -2
+	},
+/obj/item/crowbar/power,
+/obj/item/stack/sheet/mineral/sandbags{
+	amount = 30
+	},
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"kO" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/glass,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"lc" = (
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/effect/mapping_helpers/airlock/access/any/syndicate,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/airlock/external/glass/ruin{
+	id_tag = "pirateportexternal"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"lf" = (
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/obj/structure/window/reinforced/survival_pod{
+	dir = 5
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"lp" = (
+/obj/effect/turf_decal/stripes,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"lE" = (
+/turf/open/floor/iron/grimy,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"mv" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/bot,
+/obj/item/storage/box/lights/bulbs{
+	pixel_y = -1
+	},
+/obj/item/flashlight/seclite{
+	pixel_y = -8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/dyespray{
+	pixel_y = 1
+	},
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 10;
+	pixel_y = -5
+	},
+/obj/item/stack/cable_coil/five{
+	pixel_y = -6
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"mA" = (
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"mE" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Special Tax Recoupment Unit"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/syndicate,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"mN" = (
+/obj/machinery/loot_locator,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"nk" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/iron/edge{
+	dir = 8
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"nq" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/structure/cable,
+/obj/machinery/ship_combat/shield_generator,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"nw" = (
+/turf/open/floor/iron/kitchen,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"nA" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"nB" = (
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/effect/mapping_helpers/airlock/access/any/syndicate,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/airlock/external/glass/ruin{
+	id_tag = "piratestarboardexternal"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"nE" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"nI" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/effect/turf_decal/arrows/red{
+	dir = 4;
+	pixel_x = -15
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"nP" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/effect/decal/cleanable/blood/splatter,
+/obj/machinery/firealarm/directional/north,
+/obj/machinery/ship_combat/shield_generator,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"od" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/turf/open/floor/iron/edge{
+	dir = 8
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"oo" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/iron/edge{
+	dir = 8
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"oH" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/ammobox/wt550m9{
+	pixel_y = 6
+	},
+/obj/item/storage/toolbox/ammobox/wt550m9ap,
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"oJ" = (
+/obj/structure/table/reinforced,
+/obj/item/flashlight/lamp{
+	pixel_x = -5
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/structure/sign/clock/directional/north,
+/obj/item/megaphone/command,
+/obj/item/encryptionkey/headset_com,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"pg" = (
+/obj/machinery/door/airlock/vault{
+	name = "Vault";
+	id_tag = "pirate_irs_vault"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/syndicate,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"px" = (
+/obj/machinery/porta_turret/syndicate/irs{
+	dir = 6
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"py" = (
+/obj/structure/closet/syndicate,
+/obj/item/clothing/under/rank/centcom/military,
+/obj/item/clothing/shoes/jackboots{
+	pixel_y = -7
+	},
+/obj/item/storage/belt/military/assault,
+/obj/item/clothing/head/helmet/marine/pmc,
+/obj/item/clothing/suit/armor/vest/marine/pmc,
+/obj/item/clothing/mask/balaclava,
+/obj/item/clothing/gloves/combat,
+/obj/item/storage/backpack/security,
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"pD" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Enhanced Auditing Interview Chamber"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/syndicate,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"pO" = (
+/obj/effect/turf_decal/trimline/yellow/filled/corner,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"qj" = (
+/obj/machinery/chem_dispenser/drinks/beer/fullupgrade{
+	dir = 1;
+	pixel_y = -16
+	},
+/turf/open/floor/iron/kitchen,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"qm" = (
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"qI" = (
+/obj/structure/guncase/wt550,
+/obj/item/gun/ballistic/automatic/wt550,
+/obj/item/gun/ballistic/automatic/wt550,
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"qO" = (
+/obj/effect/turf_decal/bot/left,
+/obj/structure/reagent_dispensers/fueltank/large,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/cable,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"qU" = (
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"rf" = (
+/obj/structure/chair/stool/directional/south,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"rN" = (
+/obj/machinery/computer/records/medical/syndie,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"sb" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/obj/structure/table/glass,
+/obj/item/storage/medkit{
+	pixel_y = -1
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"se" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"sg" = (
+/obj/effect/turf_decal/siding/thinplating_new/corner{
+	dir = 4
+	},
+/obj/structure/railing/corner{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"sr" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/button/door/directional/south{
+	id = "piratestarboardexternal";
+	name = "External Bolt Control";
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"sE" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/medkit/regular,
+/obj/effect/turf_decal/trimline/blue/filled/corner{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"sH" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/iron/edge{
+	dir = 4
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"sP" = (
+/obj/machinery/porta_turret/syndicate/irs{
+	dir = 10
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"sS" = (
+/obj/structure/chair/stool/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"tf" = (
+/obj/machinery/ship_combat/laser_turret{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"tv" = (
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/caution/stand_clear/white,
+/obj/structure/railing/corner{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"tF" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/obj/machinery/light/floor,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"uc" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/trimline/yellow/filled/corner{
+	dir = 4
+	},
+/obj/item/restraints/handcuffs,
+/obj/item/assembly/flash{
+	pixel_y = 4;
+	pixel_x = -2
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"uj" = (
+/obj/structure/sign/departments/vault/directional/north,
+/obj/machinery/vending/clothing,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"uk" = (
+/obj/structure/rack,
+/obj/structure/window/reinforced/tinted/spawner/directional/east,
+/obj/item/knife/combat{
+	pixel_x = -1
+	},
+/obj/item/knife/combat{
+	pixel_x = 4
+	},
+/obj/item/spess_knife{
+	pixel_x = 2;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"ur" = (
+/obj/machinery/atmospherics/components/tank/air{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"uy" = (
+/obj/machinery/chem_dispenser/drinks/fullupgrade{
+	dir = 1;
+	pixel_y = -18
+	},
+/obj/effect/turf_decal/siding/dark_green{
+	dir = 4
+	},
+/obj/machinery/door/window/right/directional/east,
+/turf/open/floor/iron/kitchen,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"uC" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/backpack/satchel,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"uJ" = (
+/obj/structure/tank_dispenser,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"vi" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"vo" = (
+/obj/effect/mapping_helpers/airlock/access/any/syndicate,
+/obj/machinery/door/airlock/glass{
+	name = "Commons Area"
+	},
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/firedoor,
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"vF" = (
+/obj/effect/turf_decal/stripes,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/effect/turf_decal/arrows{
+	dir = 8;
+	pixel_x = 14
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"vO" = (
+/obj/effect/turf_decal/bot/right,
+/obj/structure/reagent_dispensers/watertank/high,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"wl" = (
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/obj/structure/window/reinforced/survival_pod{
+	dir = 9
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"ww" = (
+/obj/item/documents,
+/obj/structure/filingcabinet,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"wM" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"xo" = (
+/obj/machinery/firealarm/directional/north,
+/obj/machinery/cryopod,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"xv" = (
+/obj/machinery/computer/crew{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 10
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"xy" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 5
+	},
+/obj/structure/bed/medical/emergency,
+/obj/structure/curtain,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"xQ" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"yg" = (
+/obj/structure/chair/stool/directional/east,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"yl" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"yN" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/power/smes/ship,
+/obj/structure/cable,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"yP" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 6
+	},
+/obj/structure/closet/crate/freezer/blood,
+/obj/item/reagent_containers/blood/o_minus,
+/obj/item/reagent_containers/blood/o_minus,
+/obj/item/reagent_containers/blood/o_minus,
+/obj/item/reagent_containers/blood/random,
+/obj/item/reagent_containers/blood/random,
+/obj/item/reagent_containers/blood/random,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"zh" = (
+/obj/effect/turf_decal/trimline/blue/filled/line,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"zy" = (
+/obj/effect/turf_decal/trimline/blue/filled/corner{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"zG" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters{
+	dir = 8;
+	id = "pirate_irs"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Ae" = (
+/obj/machinery/suit_storage_unit/standard_unit,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot/right,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Ah" = (
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/iron/stairs{
+	dir = 1
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Aw" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 5
+	},
+/obj/structure/table/reinforced,
+/obj/item/crowbar/red{
+	pixel_y = 5
+	},
+/obj/item/multitool{
+	pixel_x = 3
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Bf" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/structure/cable,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Bl" = (
+/obj/machinery/shuttle_scrambler{
+	name = "Wireless Tax Retrieval Machine"
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Bq" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 8
+	},
+/obj/structure/mirror/directional/north,
+/obj/structure/sink/directional/south,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"BC" = (
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck/cas/black,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"BG" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"BY" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/light/directional/west,
+/turf/open/floor/iron/edge{
+	dir = 8
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Cf" = (
+/obj/machinery/vending/autodrobe,
+/obj/effect/turf_decal/siding/dark_green{
+	dir = 6
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Ck" = (
+/obj/structure/table,
+/obj/effect/turf_decal/siding/dark_green{
+	dir = 5
+	},
+/obj/item/reagent_containers/cup/glass/bottle/beer{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/kitchen,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Cr" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/obj/machinery/iv_drip,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Cx" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/obj/structure/table/optable,
+/obj/item/surgical_drapes,
+/obj/machinery/defibrillator_mount/loaded{
+	pixel_y = -32
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"CB" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/item/reagent_containers/syringe{
+	pixel_y = -11;
+	pixel_x = -5
+	},
+/obj/item/clothing/suit/jacket/straight_jacket{
+	pixel_y = 3
+	},
+/obj/structure/rack,
+/obj/item/taperecorder{
+	pixel_x = 6
+	},
+/obj/item/reagent_containers/cup/bottle/facid{
+	pixel_x = 2
+	},
+/obj/item/reagent_containers/cup/bottle/facid{
+	pixel_x = -7
+	},
+/obj/item/clothing/glasses/blindfold,
+/obj/item/clothing/mask/muzzle,
+/obj/effect/turf_decal/stripes/white{
+	dir = 9
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 6
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"CM" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/obj/structure/bed/medical/emergency,
+/obj/structure/curtain,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Dr" = (
+/obj/structure/sign/departments/vault/directional/north,
+/obj/effect/turf_decal/trimline/dark_blue/filled/end{
+	dir = 8
+	},
+/obj/structure/railing{
+	dir = 10
+	},
+/obj/machinery/shower/directional/south,
+/obj/effect/turf_decal/box,
+/obj/structure/fluff/shower_drain,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Dy" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"DK" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"DV" = (
+/obj/effect/turf_decal/trimline/dark_blue/arrow_ccw{
+	dir = 10
+	},
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Ef" = (
+/obj/effect/turf_decal/bot/left,
+/obj/machinery/computer/piratepad_control{
+	dir = 1
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Eq" = (
+/obj/machinery/suit_storage_unit/standard_unit,
+/obj/effect/turf_decal/bot,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Et" = (
+/obj/effect/turf_decal/trimline/dark_blue/arrow_ccw,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"EJ" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Fn" = (
+/obj/structure/chair/office{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Fw" = (
+/obj/structure/railing,
+/turf/open/floor/iron/stairs{
+	dir = 8
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"FN" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/obj/structure/table/glass,
+/obj/item/clothing/mask/breath/muzzle{
+	pixel_x = 3;
+	pixel_y = 4
+	},
+/obj/item/healthanalyzer,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"FU" = (
+/obj/machinery/power/smes/full,
+/obj/structure/cable,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Gt" = (
+/obj/structure/table,
+/obj/effect/turf_decal/siding/dark_green{
+	dir = 1
+	},
+/obj/machinery/microwave,
+/turf/open/floor/iron/kitchen,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"GN" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/structure/safe,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/west,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/south,
+/obj/structure/window/reinforced/survival_pod{
+	dir = 10
+	},
+/obj/structure/window/reinforced/survival_pod{
+	dir = 9
+	},
+/obj/item/gun/ballistic/revolver/mateba,
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Hg" = (
+/obj/effect/turf_decal/siding/dark/end{
+	dir = 4
+	},
+/turf/open/floor/glass,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"HG" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/structure/rack{
+	desc = "someones got a friend in Syria!"
+	},
+/obj/item/melee/baseball_bat/ablative{
+	name = "kneecap buster";
+	desc = "This bat is made of highly reflective, highly armored material, It seems to be made specifically for busting one's kneecap";
+	pixel_x = 2
+	},
+/obj/item/restraints/handcuffs{
+	pixel_y = -5;
+	pixel_x = -3
+	},
+/obj/item/restraints/handcuffs{
+	pixel_y = -5;
+	pixel_x = 2
+	},
+/obj/effect/turf_decal/stripes/white{
+	dir = 5
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 10
+	},
+/obj/item/lead_pipe,
+/obj/item/flamethrower{
+	name = "Fallujah firehose";
+	desc = "Someone's got a friend in Syria!"
+	},
+/obj/structure/cable,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"HO" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/button/door/directional/south{
+	id = "pirateportexternal";
+	name = "External Bolt Control";
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Ic" = (
+/obj/machinery/light/small/directional/north,
+/obj/machinery/cryopod,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"If" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/iron/edge{
+	dir = 4
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Ir" = (
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/caution/stand_clear/white,
+/obj/structure/railing/corner{
+	dir = 4
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"IE" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/obj/structure/table/glass,
+/obj/item/storage/medkit/brute{
+	pixel_y = -1
+	},
+/obj/item/storage/medkit/fire{
+	pixel_y = 5
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"IS" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/iron/edge{
+	dir = 8
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"IU" = (
+/obj/structure/table/wood/poker,
+/obj/structure/sign/poster/contraband/busty_backdoor_xeno_babes_6/directional/north,
+/obj/item/toy/cards/deck,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"IY" = (
+/obj/effect/turf_decal/trimline/dark_blue/arrow_cw{
+	dir = 6
+	},
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"IZ" = (
+/turf/open/floor/glass,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Jn" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/effect/mapping_helpers/airlock/access/any/syndicate,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/door/airlock/public/glass{
+	name = "Bridge"
+	},
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/firedoor,
+/turf/open/floor/iron/edge{
+	dir = 8
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Jq" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/iron/stairs{
+	dir = 1
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Ka" = (
+/obj/item/kirbyplants/random,
+/obj/effect/turf_decal/trimline/dark_blue/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/dark_blue/arrow_ccw{
+	dir = 10
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"KA" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"KE" = (
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/effect/mapping_helpers/airlock/access/any/syndicate,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/airlock/external/glass/ruin{
+	id_tag = "piratestarboardexternal"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/obj/docking_port/mobile/voidcrew/pirate_irs{
+	port_direction = 2;
+	preferred_direction = 1
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"KI" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4;
+	name = "tactical chair"
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"KJ" = (
+/obj/structure/rack,
+/obj/item/storage/box/flashbangs,
+/obj/structure/window/reinforced/tinted/spawner/directional/south,
+/obj/structure/window/reinforced/tinted/spawner/directional/west,
+/obj/item/grenade/smokebomb{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = 2;
+	pixel_y = 5
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = 9;
+	pixel_y = 5
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = 9
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = 2
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = -5
+	},
+/obj/item/gun/grenadelauncher{
+	pixel_y = 7
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"KO" = (
+/obj/effect/turf_decal/stripes,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/item/reagent_containers/cup/bucket,
+/obj/item/mop,
+/obj/effect/mapping_helpers/apc/cut_AI_wire,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"KZ" = (
+/obj/machinery/door/window/brigdoor/right/directional/east{
+	req_access = list("syndicate")
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/machinery/turretid{
+	icon_state = "control_kill";
+	lethal = 1;
+	pixel_y = -24;
+	req_access = list("syndicate")
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Lf" = (
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Lo" = (
+/obj/machinery/computer/cryopod,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"LB" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"LM" = (
+/obj/effect/turf_decal/trimline/dark_blue/arrow_cw,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"LR" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/iron/edge{
+	dir = 4
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"LV" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 5
+	},
+/obj/machinery/computer/camera_advanced/ship_combat,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"LZ" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/turf/open/floor/iron/edge{
+	dir = 4
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Ma" = (
+/obj/structure/closet/syndicate,
+/obj/item/clothing/under/rank/centcom/military,
+/obj/item/clothing/shoes/jackboots{
+	pixel_y = -7
+	},
+/obj/item/storage/belt/military/assault,
+/obj/machinery/light/directional/east,
+/obj/item/clothing/head/helmet/marine/pmc,
+/obj/item/clothing/suit/armor/vest/marine/pmc,
+/obj/item/clothing/mask/balaclava,
+/obj/item/clothing/gloves/combat,
+/obj/item/storage/backpack/security,
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Mu" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Mv" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/structure/chair/e_chair{
+	dir = 8
+	},
+/obj/effect/turf_decal/box/red,
+/obj/effect/decal/cleanable/blood/gibs/old,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"My" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"MJ" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/structure/sign/departments/security/directional/east,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/iron/edge{
+	dir = 4
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Ni" = (
+/obj/machinery/vending/cigarette,
+/obj/effect/turf_decal/siding/dark_green,
+/obj/machinery/light/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"No" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/structure/sign/departments/security/directional/east,
+/turf/open/floor/iron/edge{
+	dir = 4
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"NW" = (
+/obj/structure/table/reinforced,
+/obj/item/stamp{
+	pixel_x = 7;
+	pixel_y = 10
+	},
+/obj/item/stamp/denied{
+	pixel_x = 7;
+	pixel_y = 1
+	},
+/obj/item/paper_bin{
+	pixel_y = 4;
+	pixel_x = -5
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"NX" = (
+/obj/machinery/jukebox{
+	req_access = null
+	},
+/obj/effect/turf_decal/siding/dark_green,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Og" = (
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/effect/mapping_helpers/airlock/access/any/syndicate,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/airlock/external/glass/ruin{
+	id_tag = "pirateportexternal"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Ot" = (
+/obj/machinery/ship_combat/missile_launcher{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"OC" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Pn" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/red/dim/directional/south,
+/obj/item/stack/sheet/mineral/gold{
+	amount = 3;
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/obj/item/stack/sheet/mineral/silver{
+	amount = 8;
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"PP" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters{
+	id = "pirate_irs_bridge";
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"PX" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Room"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/syndicate,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Qc" = (
+/obj/effect/turf_decal/bot/right,
+/obj/machinery/piratepad,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Qi" = (
+/obj/structure/railing,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Qn" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Qv" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 9
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/button/door{
+	id = "pirate_irs_bridge";
+	name = "Bridge Shutters"
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Qx" = (
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"QQ" = (
+/obj/structure/table/wood,
+/obj/item/plate,
+/obj/item/food/burger/bigbite,
+/obj/machinery/computer/security/telescreen/entertainment/directional/south,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"QT" = (
+/obj/machinery/vending/boozeomat,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"QV" = (
+/obj/structure/chair/stool/bar/directional/south,
+/turf/open/floor/iron/grimy,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Rh" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters{
+	id = "pirate_irs_bridge";
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Rv" = (
+/obj/structure/table/reinforced,
+/obj/item/folder/blue,
+/obj/item/pen/fountain,
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"RC" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/fancy/donut_box,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"RF" = (
+/obj/effect/turf_decal/siding/dark/end{
+	dir = 8
+	},
+/turf/open/floor/glass,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"RX" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/turf/open/floor/iron/edge{
+	dir = 8
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"SA" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 10
+	},
+/obj/machinery/computer/operating{
+	dir = 1
+	},
+/obj/item/disk/surgery/irs,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"SC" = (
+/obj/item/kirbyplants/random,
+/obj/effect/turf_decal/trimline/dark_blue/corner,
+/obj/effect/turf_decal/trimline/dark_blue/arrow_cw{
+	dir = 9
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"SG" = (
+/obj/effect/turf_decal/siding/thinplating_new/corner{
+	dir = 1
+	},
+/obj/structure/railing/corner{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"SM" = (
+/obj/effect/turf_decal/trimline/blue/filled/line,
+/obj/machinery/light/floor,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"SQ" = (
+/obj/machinery/photocopier/gratis,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Tg" = (
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/obj/structure/table/reinforced,
+/obj/structure/fluff{
+	density = 1;
+	desc = "Ill-gotten gains of the Space IRS";
+	icon = 'icons/obj/stack_objects.dmi';
+	icon_state = "sheet-silver_3";
+	name = "recouped silver"
+	},
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/east,
+/obj/structure/window/reinforced/survival_pod/spawner/directional/south,
+/obj/structure/window/reinforced/survival_pod{
+	dir = 6
+	},
+/obj/structure/window/reinforced/survival_pod{
+	dir = 5
+	},
+/turf/open/floor/iron/smooth,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Th" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Ts" = (
+/obj/item/kirbyplants/random,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 9
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Tu" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/dark,
+/turf/open/floor/glass,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"TA" = (
+/obj/structure/table/wood,
+/obj/item/plate,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Uk" = (
+/obj/machinery/door/airlock/vault{
+	name = "Vault";
+	id_tag = "pirate_irs_vault"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/effect/mapping_helpers/airlock/access/any/syndicate,
+/obj/machinery/door/firedoor,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"UF" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 5
+	},
+/obj/machinery/ship_combat/cloak_device,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Vf" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/iron/edge{
+	dir = 4
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"VB" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/layer2{
+	dir = 4;
+	on = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"VS" = (
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"WA" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"WO" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/structure/toilet{
+	dir = 8;
+	name = "swirlie-inator 3000"
+	},
+/obj/effect/turf_decal/bot_red,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"WR" = (
+/turf/template_noop,
+/area/template_noop)
+"WU" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/machinery/light/red/directional/east,
+/turf/open/floor/pod/light,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Xr" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Auditing Office"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/syndicate,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/firedoor,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"XI" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters{
+	dir = 1;
+	id = "pirate_irs_bridge"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"XX" = (
+/obj/structure/railing{
+	dir = 9
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 9
+	},
+/obj/effect/turf_decal/trimline/dark_blue/warning{
+	dir = 6
+	},
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Ya" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/machinery/button/door/directional/north{
+	id = "pirate_irs_vault";
+	normaldoorcontrol = 1;
+	specialfunctions = 4;
+	name = "Vault Lockdown"
+	},
+/obj/machinery/ship_combat/interdictor,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Yf" = (
+/obj/machinery/power/rtg/advanced{
+	power_gen = 608000
+	},
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/machinery/door/window/brigdoor/right/directional/north{
+	req_access = list("syndicate")
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"Yu" = (
+/obj/structure/window/reinforced/tinted/spawner/directional/north,
+/obj/machinery/power/terminal,
+/obj/structure/cable,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"YE" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/iron/edge{
+	dir = 8
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"YJ" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/effect/mapping_helpers/airlock/access/any/syndicate,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/airlock/public/glass{
+	name = "Bridge"
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/iron/edge{
+	dir = 4
+	},
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+"ZE" = (
+/obj/item/reagent_containers/cup/glass/bottle/ritual_wine{
+	pixel_y = 14;
+	pixel_x = -8
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = -9
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/button/door/directional/north{
+	id = "pirate_irs";
+	name = "Privacy Shutters"
+	},
+/obj/item/melee/baton/telescopic{
+	pixel_y = 11;
+	pixel_x = 8
+	},
+/obj/item/storage/fancy/cigarettes/cigars/cohiba{
+	pixel_y = 9;
+	pixel_x = 6
+	},
+/obj/item/lighter/skull{
+	pixel_x = 11;
+	pixel_y = 1
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass,
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 9
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/pirate_irs{
+	requires_power = 0
+	})
+
+(1,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+VB
+WR
+WR
+WR
+WR
+"}
+(2,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+hK
+hK
+Qx
+hK
+sP
+WR
+WR
+"}
+(3,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+Ot
+hK
+hf
+hf
+hf
+hK
+hK
+mv
+KO
+Yf
+hK
+hK
+WR
+"}
+(4,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+WR
+hK
+zG
+zG
+zG
+hK
+NX
+lE
+QV
+Gt
+bT
+hK
+ur
+lp
+yN
+Yu
+FU
+DV
+"}
+(5,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+hK
+hK
+ZE
+hS
+SQ
+hK
+Ni
+lE
+QV
+ip
+nw
+QT
+vO
+jp
+Bf
+Yu
+FU
+Et
+"}
+(6,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+hK
+ww
+Fn
+aT
+Dy
+hK
+dP
+lE
+QV
+bp
+qj
+hK
+qO
+vF
+eg
+Yu
+FU
+Et
+"}
+(7,1,1) = {"
+WR
+WR
+tf
+cL
+cL
+hK
+oJ
+Rv
+NW
+KZ
+hK
+Cf
+lE
+QV
+Ck
+uy
+hK
+hK
+PX
+hK
+hK
+hK
+hK
+"}
+(8,1,1) = {"
+WR
+WR
+Rh
+Ts
+xv
+hK
+dl
+kO
+kO
+IZ
+hK
+yg
+fm
+RF
+se
+fb
+hK
+Ae
+BG
+lc
+fE
+qU
+Og
+"}
+(9,1,1) = {"
+WR
+tf
+hK
+rN
+KA
+hK
+IZ
+IZ
+IZ
+IZ
+hK
+IU
+sS
+Tu
+rf
+QQ
+hK
+Eq
+HO
+gd
+gd
+hK
+hK
+"}
+(10,1,1) = {"
+WR
+Rh
+Qv
+sE
+SM
+hK
+Ka
+IZ
+IZ
+SC
+hK
+BC
+sS
+Hg
+rf
+TA
+hK
+hW
+BG
+VS
+Bl
+hK
+WR
+"}
+(11,1,1) = {"
+hK
+Rh
+RC
+LB
+zh
+gd
+WA
+Xr
+hK
+gY
+hK
+hK
+gY
+vo
+WA
+hK
+gd
+sg
+BG
+lf
+ig
+aC
+WR
+"}
+(12,1,1) = {"
+Rh
+bV
+Th
+mA
+zy
+Jn
+nk
+RX
+IS
+nk
+od
+BY
+nk
+YE
+oo
+fO
+Jq
+tv
+BG
+Lf
+Qc
+hK
+WR
+"}
+(13,1,1) = {"
+Rh
+LV
+ev
+mA
+pO
+YJ
+sH
+LR
+sH
+sH
+Vf
+LZ
+MJ
+If
+No
+LZ
+Ah
+Ir
+BG
+Lf
+Ef
+hK
+WR
+"}
+(14,1,1) = {"
+hK
+Rh
+gl
+nA
+nE
+gd
+hK
+hK
+Uk
+hK
+hK
+hK
+hK
+mE
+hK
+hK
+gd
+SG
+BG
+wl
+Pn
+aC
+WR
+"}
+(15,1,1) = {"
+WR
+Rh
+Aw
+uc
+tF
+hK
+ba
+KJ
+BG
+GN
+hK
+xo
+bo
+Qi
+ie
+SA
+hK
+uC
+BG
+VS
+mN
+hK
+WR
+"}
+(16,1,1) = {"
+WR
+tf
+hK
+fe
+KI
+hK
+DK
+My
+BG
+iG
+Lo
+Ic
+bo
+Qi
+yl
+Cx
+hK
+EJ
+sr
+gd
+gd
+hK
+hK
+"}
+(17,1,1) = {"
+WR
+WR
+XI
+UF
+cO
+hK
+uk
+kK
+BG
+Tg
+hK
+uj
+Fw
+Qi
+yl
+FN
+hK
+uJ
+BG
+nB
+fE
+qU
+KE
+"}
+(18,1,1) = {"
+WR
+WR
+tf
+PP
+PP
+hK
+Ya
+BG
+BG
+BG
+pg
+ew
+dC
+BG
+vi
+sb
+hK
+hK
+pD
+hK
+hK
+hK
+hK
+"}
+(19,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+hK
+oH
+OC
+Mu
+OC
+hK
+Dr
+BG
+XX
+wM
+IE
+hK
+iZ
+nI
+HG
+Yu
+FU
+LM
+"}
+(20,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+hK
+hK
+py
+Ma
+qI
+hK
+Bq
+Qn
+wM
+qm
+do
+hK
+jX
+ac
+xQ
+Yu
+FU
+LM
+"}
+(21,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+WR
+hK
+hK
+hK
+hK
+hK
+xy
+Cr
+CM
+az
+yP
+hK
+nP
+Mv
+nq
+Yu
+FU
+IY
+"}
+(22,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+Ot
+hK
+hK
+hK
+hK
+hK
+hK
+WO
+WU
+CB
+hK
+hK
+WR
+"}
+(23,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+hK
+hK
+hK
+hK
+px
+WR
+WR
+"}

@@ -10,7 +10,7 @@
  * 4. Fall back to random available job on the ship
  */
 /datum/controller/subsystem/ticker/create_characters()
-	var/obj/structure/overmap/ship/roundstart_ship = SSovermap.simulated_ships[1]
+	var/obj/structure/overmap/ship/roundstart_ship = SSovermap.initial_ship
 	if(!roundstart_ship)
 		CRASH("There's no roundstart ship for jobs to spawn on!")
 

@@ -6,14 +6,16 @@ services:
     ports:
       - "127.0.0.1:5002:5002"
     restart: always
+    environment:
+      - TTS_BACKEND_URL=http://tts:5003
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:5002/health-check"]
       interval: 1s
       timeout: 1s
       retries: 3
       start_period: 30s
-    links:
-      - "tts:tts-container"
+    depends_on:
+      - tts
   tts:
     container_name: tts
 

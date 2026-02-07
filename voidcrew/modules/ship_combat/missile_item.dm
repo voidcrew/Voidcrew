@@ -13,7 +13,7 @@
 /obj/item/electronics/ship_missile_tracking
 	name = "missile tracking circuit"
 	desc = "A guidance system circuit for ship missiles. Insert into a wired missile frame before adding the warhead."
-	icon_state = "boris_recharging" // Placeholder - can be changed later
+	icon_state = "integrated_circuit"
 	/// Time to insert this circuit into a frame
 	var/insert_time = 2 SECONDS
 

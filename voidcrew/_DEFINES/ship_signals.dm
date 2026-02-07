@@ -16,3 +16,15 @@
 
 /// Sent when ship has been destroyed and is crash landing: ()
 #define COMSIG_SHIP_DESTROYED "ship_destroyed"
+
+// Ship key signals
+
+/// Sent when a ship key is about to be destroyed: (obj/structure/overmap/ship/npc/linked_ship, reason)
+/// Reasons: "destroyed", "claimed", "bounty_turned_in"
+#define COMSIG_SHIP_KEY_DESTROYED "ship_key_destroyed"
+	#define KEY_DESTROYED_UNKNOWN "destroyed"
+	#define KEY_DESTROYED_CLAIMED "claimed"
+	#define KEY_DESTROYED_BOUNTY "bounty_turned_in"
+
+/// Sent when a ship key is used to claim a ship: (obj/structure/overmap/ship/npc/ship, mob/claimer)
+#define COMSIG_SHIP_KEY_USED "ship_key_used"

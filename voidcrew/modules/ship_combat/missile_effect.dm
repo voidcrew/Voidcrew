@@ -109,7 +109,8 @@
 	if(target_turf)
 		chase_target(target_turf)
 		// Play incoming whistle at target location so people at the impact site hear the warning
-		playsound(target_turf, 'voidcrew/sound/machines/rocket/rocket_whistle.ogg', 80, TRUE, extrarange = 30, pressure_affected = FALSE)
+		// Ship-limited to prevent sound bleed to other ships in reserved space
+		playsound_ship(target_turf, 'voidcrew/sound/machines/rocket/rocket_whistle.ogg', 80, TRUE, 30, target_ship)
 
 	// Send fired signal
 	if(source_ship)
@@ -194,8 +195,7 @@
 	var/turf/impact_loc = get_turf(src)
 	exploded = TRUE
 
-	// Play impact sound - extrarange varies by missile power
-	// pressure_affected = FALSE so sound travels in space (no atmosphere)
+	// Play impact sound - limited to target ship's areas to prevent bleed to other ships in reserved space
 	var/sound_range
 	switch(damage)
 		if(MISSILE_DAMAGE_HEAVY to INFINITY)
@@ -204,9 +204,10 @@
 			sound_range = 15
 		else
 			sound_range = 10
-	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = sound_range, pressure_affected = FALSE)
+	playsound_ship(impact_loc, impact_sound, 80, TRUE, sound_range, target_ship)
 
 	// Create explosion - ignorecap = TRUE so ship missiles bypass the server bomb cap
+	// silent = TRUE to prevent z-level wide sound/shake, we handle those with ship-limited procs
 	explosion(
 		impact_loc,
 		devastation_range = explosion_devastation,
@@ -216,16 +217,21 @@
 		flash_range = explosion_light + 1,
 		adminlog = TRUE,
 		ignorecap = TRUE,
+		silent = TRUE,
 		explosion_cause = src
 	)
 
-	// Screen shake for nearby players
-	for(var/mob/living/victim in range(7, impact_loc))
-		shake_camera(victim, 3, 2)
+	// Ship-limited explosion effects (sound + screenshake) - only affects mobs on the target ship
+	ship_explosion_effects(impact_loc, target_ship, quake_factor = explosion_devastation, echo_factor = explosion_heavy)
+
+	// Screen shake for nearby players on the target ship only
+	shake_camera_ship(impact_loc, 7, 3, 2, target_ship)
 
 	// Signal that hull was hit (for combat camera static updates)
 	if(target_ship)
 		SEND_SIGNAL(target_ship, COMSIG_SHIP_HULL_HIT, impact_loc)
+		// Signal for NPC mass recalculation - missiles destroy turfs via explosion
+		SEND_SIGNAL(target_ship, COMSIG_SHIP_EXPLOSIVE_DAMAGE, impact_loc)
 
 	qdel(src)
 
@@ -238,12 +244,12 @@
 	var/turf/impact_loc = get_turf(src)
 	exploded = TRUE
 
-	// Play impact sound
-	// pressure_affected = FALSE so sound travels in space (no atmosphere)
-	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 10, pressure_affected = FALSE)
+	// Play impact sound - limited to target ship's areas
+	playsound_ship(impact_loc, impact_sound, 80, TRUE, 10, target_ship)
 
 	// Create explosion visual - reduced damage since shield absorbed it
 	// The explosion still happens visually but with minimal structural damage
+	// silent = TRUE to prevent z-level wide sound/shake
 	explosion(
 		impact_loc,
 		devastation_range = 0,  // No devastation - shield absorbed it
@@ -253,12 +259,15 @@
 		flash_range = explosion_light + 2,  // Bigger flash to show shield impact
 		adminlog = TRUE,
 		ignorecap = TRUE,
+		silent = TRUE,
 		explosion_cause = src
 	)
 
-	// Screen shake for nearby players - still feel the impact
-	for(var/mob/living/victim in range(7, impact_loc))
-		shake_camera(victim, 3, 2)
+	// Ship-limited explosion effects
+	ship_explosion_effects(impact_loc, target_ship)
+
+	// Screen shake for nearby players on the target ship only
+	shake_camera_ship(impact_loc, 7, 3, 2, target_ship)
 
 	qdel(src)
 
@@ -288,11 +297,11 @@
 	var/turf/impact_loc = get_turf(src)
 	exploded = TRUE
 
-	// Play impact sound
-	// pressure_affected = FALSE so sound travels in space (no atmosphere)
-	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 10, pressure_affected = FALSE)
+	// Play impact sound - limited to target ship's areas
+	playsound_ship(impact_loc, impact_sound, 80, TRUE, 10, target_ship)
 
 	// Create small explosion first
+	// silent = TRUE to prevent z-level wide sound/shake
 	explosion(
 		impact_loc,
 		devastation_range = 0,
@@ -302,8 +311,12 @@
 		flash_range = 2,
 		adminlog = TRUE,
 		ignorecap = TRUE,
+		silent = TRUE,
 		explosion_cause = src
 	)
+
+	// Ship-limited explosion effects
+	ship_explosion_effects(impact_loc, target_ship)
 
 	// Detonate the chemical grenade at the impact location
 	if(payload_grenade && !QDELETED(payload_grenade))
@@ -311,9 +324,8 @@
 		payload_grenade.forceMove(impact_loc)
 		payload_grenade.detonate()
 
-	// Screen shake for nearby players
-	for(var/mob/living/victim in range(7, impact_loc))
-		shake_camera(victim, 2, 1)
+	// Screen shake for nearby players on the target ship only
+	shake_camera_ship(impact_loc, 7, 2, 1, target_ship)
 
 	qdel(src)
 
@@ -324,11 +336,11 @@
 	var/turf/impact_loc = get_turf(src)
 	exploded = TRUE
 
-	// Play impact sound
-	// pressure_affected = FALSE so sound travels in space (no atmosphere)
-	playsound(impact_loc, impact_sound, 80, TRUE, extrarange = 10, pressure_affected = FALSE)
+	// Play impact sound - limited to target ship's areas
+	playsound_ship(impact_loc, impact_sound, 80, TRUE, 10, target_ship)
 
 	// Visual explosion against shield - chemicals are blocked
+	// silent = TRUE to prevent z-level wide sound/shake
 	explosion(
 		impact_loc,
 		devastation_range = 0,
@@ -338,17 +350,20 @@
 		flash_range = 3,
 		adminlog = TRUE,
 		ignorecap = TRUE,
+		silent = TRUE,
 		explosion_cause = src
 	)
+
+	// Ship-limited explosion effects
+	ship_explosion_effects(impact_loc, target_ship)
 
 	// Chemical payload is blocked by shields - grenade does NOT detonate
 	// The grenade is simply destroyed along with the missile
 	if(payload_grenade && !QDELETED(payload_grenade))
 		qdel(payload_grenade)
 
-	// Screen shake
-	for(var/mob/living/victim in range(7, impact_loc))
-		shake_camera(victim, 2, 1)
+	// Screen shake on target ship only
+	shake_camera_ship(impact_loc, 7, 2, 1, target_ship)
 
 	qdel(src)
 

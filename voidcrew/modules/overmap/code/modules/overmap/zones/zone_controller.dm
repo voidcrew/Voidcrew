@@ -55,6 +55,9 @@ SUBSYSTEM_DEF(overmap_zones)
 	// Update all turf colors
 	update_all_turf_colors()
 
+	// Cache blocked turfs for O(1) pathfinding lookups
+	cache_blocked_turfs()
+
 	zones_active = TRUE
 
 	log_world("SSovermap_zones: Initialization complete!")
@@ -202,3 +205,26 @@ SUBSYSTEM_DEF(overmap_zones)
 		T.update_zone_color()
 	for(var/turf/open/overmap/T as anything in zone_red.turfs)
 		T.update_zone_color()
+
+/**
+ * Caches all blocked overmap turfs for O(1) pathfinding lookups.
+ * Called once at initialization since the overmap is static.
+ */
+/datum/controller/subsystem/overmap_zones/proc/cache_blocked_turfs()
+	var/blocked_count = 0
+	var/list/all_turfs = get_area_turfs(/area/overmap, target_z = OVERMAP_Z_LEVEL)
+
+	for(var/turf/T as anything in all_turfs)
+		if(!T)
+			continue
+		// Check for blocking events (same logic as overmap_turf_blocked)
+		for(var/obj/structure/overmap/event/E in T)
+			// Nebulas are safe - skip them
+			if(istype(E, /obj/structure/overmap/event/nebula))
+				continue
+			// Found a blocking event
+			GLOB.overmap_blocked_turfs[T] = TRUE
+			blocked_count++
+			break
+
+	log_world("SSovermap_zones: Cached [blocked_count] blocked turfs for pathfinding")

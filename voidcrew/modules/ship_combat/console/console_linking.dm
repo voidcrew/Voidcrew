@@ -11,6 +11,7 @@
 	RegisterSignal(current_ship, COMSIG_SHIP_CLOAK_CHANGED, PROC_REF(on_cloak_changed))
 	RegisterSignal(current_ship, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_our_ship_docked))
 	RegisterSignal(current_ship, COMSIG_SHIP_ZONE_CHANGED, PROC_REF(on_our_ship_zone_changed))
+	RegisterSignal(current_ship, COMSIG_SHIP_GOING_DARK, PROC_REF(on_our_ship_going_dark))
 	return TRUE
 
 /obj/machinery/computer/camera_advanced/ship_combat/proc/on_cloak_changed(datum/source, new_state)
@@ -26,6 +27,19 @@
 	// Clear any existing target lock
 	if(target_ship)
 		INVOKE_ASYNC(src, PROC_REF(clear_target))
+
+/// Called when our ship hides in a nebula - combat systems go offline
+/obj/machinery/computer/camera_advanced/ship_combat/proc/on_our_ship_going_dark(datum/source)
+	SIGNAL_HANDLER
+	// Clear any in-progress targeting
+	if(is_targeting)
+		INVOKE_ASYNC(src, PROC_REF(cancel_targeting))
+	// Clear any existing target lock
+	if(target_ship)
+		INVOKE_ASYNC(src, PROC_REF(clear_target))
+	// Exit attack mode if active
+	if(attack_mode)
+		INVOKE_ASYNC(src, PROC_REF(exit_attack_mode), current_user)
 
 // ========== MULTITOOL LINKING ==========
 
@@ -194,6 +208,25 @@
 
 		return ITEM_INTERACT_SUCCESS
 
+	// Handle siphon linking
+	if(istype(tool.buffer, /obj/machinery/shuttle_scrambler/ship_siphon))
+		var/obj/machinery/shuttle_scrambler/ship_siphon/siphon = tool.buffer
+
+		// Check if already linked
+		var/obj/machinery/shuttle_scrambler/ship_siphon/current_siphon = linked_siphon_ref?.resolve()
+		if(current_siphon == siphon)
+			balloon_alert(user, "already linked")
+			return ITEM_INTERACT_BLOCKING
+
+		// Link the siphon
+		if(link_siphon(siphon))
+			balloon_alert(user, "siphon linked")
+			to_chat(user, span_notice("Linked [siphon] to [src]."))
+		else
+			balloon_alert(user, "link failed")
+
+		return ITEM_INTERACT_SUCCESS
+
 	// Not something we handle, let parent try
 	return ..()
 
@@ -249,6 +282,21 @@
 	// Ensure cloak device is connected to the same ship
 	if(current_ship && !cloak.linked_ship_ref?.resolve())
 		cloak.link_ship(current_ship)
+
+	return TRUE
+
+/// Links a siphon to this console
+/obj/machinery/computer/camera_advanced/ship_combat/proc/link_siphon(obj/machinery/shuttle_scrambler/ship_siphon/siphon)
+	if(!siphon)
+		return FALSE
+
+	// Unlink any existing siphon
+	var/obj/machinery/shuttle_scrambler/ship_siphon/old_siphon = linked_siphon_ref?.resolve()
+	if(old_siphon)
+		old_siphon.unlink_console()
+
+	linked_siphon_ref = WEAKREF(siphon)
+	siphon.link_console(src)
 
 	return TRUE
 

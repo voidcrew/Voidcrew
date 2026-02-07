@@ -11,6 +11,9 @@
 /// Sent when a ship fires any weapon (used for cloaking decloak): ()
 #define COMSIG_SHIP_WEAPON_FIRED "ship_weapon_fired"
 
+/// Sent when a ship is boarded by a boarding pod: (obj/effect/boarding_pod/pod, obj/structure/overmap/ship/npc/source_ship)
+#define COMSIG_SHIP_BOARDED "ship_boarded"
+
 /// Sent when a ship's cloak status changes: (cloaked)
 #define COMSIG_SHIP_CLOAK_CHANGED "ship_cloak_changed"
 
@@ -23,8 +26,17 @@
 /// Sent when a ship has a weapons lock acquired on it (breaks cloak): (obj/structure/overmap/ship/attacker)
 #define COMSIG_SHIP_WEAPONS_LOCKED "ship_weapons_locked"
 
+/// Sent when a ship loses a weapons lock that was on it: (obj/structure/overmap/ship/attacker)
+#define COMSIG_SHIP_WEAPONS_LOCK_LOST "ship_weapons_lock_lost"
+
 /// Sent when a ship enters an overmap hazard event: (obj/structure/overmap/event/hazard)
 #define COMSIG_SHIP_HAZARD_TRIGGERED "ship_hazard_triggered"
+
+/// Sent when a ship hides in a nebula (drops all combat connections)
+#define COMSIG_SHIP_GOING_DARK "ship_going_dark"
+
+/// Sent when a ship unhides from a nebula
+#define COMSIG_SHIP_EMERGING_FROM_NEBULA "ship_emerging_from_nebula"
 
 // ========== MISSILE DEFINES ==========
 /// Missile construction states
@@ -127,7 +139,7 @@
 /// Tier 1: 500, Tier 2: 750, Tier 3: 1000
 #define SHIP_SHIELD_BASE_HEALTH 500
 /// Base shield regeneration per second
-#define SHIP_SHIELD_BASE_REGEN 2
+#define SHIP_SHIELD_BASE_REGEN 10
 /// Cooldown after shields break before reactivation (30 seconds)
 #define SHIP_SHIELD_BROKEN_COOLDOWN 30 SECONDS
 /// Minimum power allocation (0% = shields off)
@@ -160,6 +172,10 @@
 
 /// Sent when a ship's hull takes damage (turfs destroyed, walls damaged, etc)
 #define COMSIG_SHIP_HULL_HIT "ship_hull_hit"
+
+/// Sent when a ship takes explosive damage that destroys turfs (missiles, bombs)
+/// Used by NPC ships to trigger mass recalculation
+#define COMSIG_SHIP_EXPLOSIVE_DAMAGE "ship_explosive_damage"
 
 /// Return value to cancel missile impact (missile was blocked by shields)
 #define COMSIG_CANCEL_MISSILE_IMPACT (1<<0)
@@ -237,3 +253,32 @@
 #define SHIP_CLOAK_BASE_POWER_COST 5 KILO WATTS
 /// Power draw per unit of ship mass (W per mass) - cloaking larger ships is harder
 #define SHIP_CLOAK_POWER_PER_MASS 50
+
+// ========== SHIP NOTIFICATION DEFINES ==========
+
+/// Notification alert levels for ship_notify()
+#define SHIP_NOTIFY_NOTICE 1
+#define SHIP_NOTIFY_WARNING 2
+#define SHIP_NOTIFY_DANGER 3
+
+// ========== SIPHON MACHINE DEFINES ==========
+
+/// Base power draw for data siphon (2 kW)
+#define SIPHON_BASE_POWER_COST 2 KILO WATTS
+/// Base siphon rate (credits per tick)
+#define SIPHON_BASE_RATE 25
+/// Base warmup time before siphon activates
+#define SIPHON_BASE_WARMUP_TIME 5 SECONDS
+
+// Siphon stock part multipliers (per tier above 1)
+/// Capacitor: +25% siphon rate per tier
+#define SIPHON_CAPACITOR_RATE_MULT 0.25
+/// Micro-laser: +20% power efficiency per tier
+#define SIPHON_LASER_EFFICIENCY_MULT 0.20
+/// Servo: -15% warmup time per tier
+#define SIPHON_SERVO_WARMUP_MULT 0.15
+
+// ========== SOUND CHANNELS ==========
+
+/// Sound channel for economic scan looping sound
+#define CHANNEL_ECON_SCAN 1010

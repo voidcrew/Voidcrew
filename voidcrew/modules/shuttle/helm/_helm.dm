@@ -71,6 +71,121 @@
 	density = FALSE
 	viewer = TRUE
 
+/obj/machinery/computer/helm/attackby(obj/item/I, mob/living/user, params)
+	// Handle ship authorization key
+	if(istype(I, /obj/item/ship_key))
+		attempt_claim_ship(I, user)
+		return TRUE
+	return ..()
+
+/// Attempts to claim the ship using an authorization key
+/obj/machinery/computer/helm/proc/attempt_claim_ship(obj/item/ship_key/key, mob/living/user)
+	if(!current_ship && !attempt_ship_connection(last_resort = TRUE))
+		to_chat(user, span_warning("This console is not connected to a ship!"))
+		return FALSE
+
+	// Check if key matches this ship
+	var/obj/structure/overmap/ship/npc/npc_ship = key.get_ship()
+	if(npc_ship != current_ship)
+		to_chat(user, span_warning("This key is for a different vessel: [key.ship_name]"))
+		return FALSE
+
+	// Check if key is valid (has AI controller) OR ship is abandoned OR ship is disabled (all claimable)
+	if(!key.is_valid() && !current_ship.abandoned && !npc_ship?.is_disabled)
+		to_chat(user, span_warning("This authorization key is no longer valid."))
+		return FALSE
+
+	// Claim the ship!
+	if(claim_npc_ship(npc_ship, user))
+		to_chat(user, span_notice("Ship authorization accepted. You now have command of [npc_ship.name]."))
+		playsound(src, 'sound/machines/terminal/terminal_on.ogg', 50, TRUE)
+		// Send signal that key was used before destroying
+		SEND_SIGNAL(key, COMSIG_SHIP_KEY_USED, npc_ship, user)
+		// Mark destruction reason and consume the key
+		key.mark_destruction_reason(KEY_DESTROYED_CLAIMED)
+		qdel(key)
+		return TRUE
+	else
+		to_chat(user, span_warning("Failed to claim ship. Try again."))
+		return FALSE
+
+/// Converts an NPC ship to player control
+/obj/machinery/computer/helm/proc/claim_npc_ship(obj/structure/overmap/ship/npc/npc_ship, mob/living/claimer)
+	if(!istype(npc_ship))
+		return FALSE
+
+	// Cancel abandonment timer if one is running
+	if(npc_ship.abandonment_timer)
+		npc_ship.cancel_abandonment_timer()
+
+	// Reset abandoned state if ship was abandoned
+	if(npc_ship.abandoned)
+		npc_ship.abandoned = FALSE
+		npc_ship.joining_allowed = TRUE
+
+	// Remove the AI controller
+	if(npc_ship.ai_controller)
+		QDEL_NULL(npc_ship.ai_controller)
+
+	// Remove the combat interface (no longer needed for AI)
+	if(npc_ship.combat_interface)
+		QDEL_NULL(npc_ship.combat_interface)
+
+	// Clear NPC-specific state
+	npc_ship.hostile = FALSE
+
+	// Remove NPC color tint
+	npc_ship.color = null
+	npc_ship.chat_color = null
+
+	// Convert ship areas to require power (NPC ships don't need power, player ships do)
+	// Also convert any pirate turrets to be player-friendly
+	if(npc_ship.shuttle?.shuttle_areas)
+		for(var/area/shuttle_area as anything in npc_ship.shuttle.shuttle_areas)
+			shuttle_area.requires_power = TRUE
+			// Update all machinery in the area to respect power requirements
+			shuttle_area.power_change()
+			// Turn off pirate turrets - syndicate-based turrets can't be made safe
+			// (their assess_perp always returns 10), but players can deconstruct
+			// and rebuild them as standard turrets
+			for(var/obj/machinery/porta_turret/syndicate/turret in shuttle_area)
+				turret.toggle_on(FALSE)
+
+	// Remove access requirements from all doors (player ships have open access)
+	npc_ship.clear_door_access()
+
+	// Reset ship movement state (NPC ships have different movement mechanics)
+	npc_ship.speed = list(0, 0)
+	npc_ship.speed_multiplier = 1
+	npc_ship.is_interdicted = FALSE
+	npc_ship.interdiction_strength = 0
+	npc_ship.player_controlled = TRUE  // Use normal engine physics instead of NPC simplified movement
+
+	// Announce the change of ownership
+	npc_ship.ship_notify("NOTICE: Command authorization transferred. New commanding officer recognized.", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+
+	// Add claimer to ship team if it exists, or create one
+	// Note: Players can be members of multiple ship teams simultaneously
+	if(claimer?.mind)
+		if(!npc_ship.ship_team)
+			// Create a ship team if one doesn't exist
+			npc_ship.ship_team = new /datum/team/voidcrew()
+			npc_ship.ship_team.name = npc_ship.name
+			npc_ship.ship_team.ship = npc_ship
+		npc_ship.ship_team.add_member(claimer.mind)
+
+		// Set the claimer as captain (for NPC ships without job_slots)
+		npc_ship.claimed_captain = claimer.mind
+
+		// Grant the Captain Management action button
+		var/datum/action/innate/captain_management/captain_action = new(claimer, npc_ship)
+		captain_action.Grant(claimer)
+
+	// Log the claim
+	log_game("[key_name(claimer)] claimed NPC ship [npc_ship.name] at [AREACOORD(npc_ship)]")
+
+	return TRUE
+
 /obj/machinery/computer/helm/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
 	if(!current_ship && !attempt_ship_connection(last_resort = TRUE))
@@ -130,11 +245,14 @@
 	data["shipDisabled"] = raw_percent <= 50
 	data["shipCrashed"] = current_ship.has_crash_landed && raw_percent < 65
 
-	// Repair progress: 0% at 50 raw, 100% at 65 raw
+	// Repair progress as tile counts - shows exact mass repaired vs needed
 	if(data["shipCrashed"])
-		data["repairProgress"] = clamp(round((raw_percent - 50) / 15 * 100), 0, 100)
+		var/target_integrity = round(0.65 * current_ship.max_integrity)
+		data["repairCurrent"] = max(0, current_ship.integrity - current_ship.crashed_at_integrity)
+		data["repairTotal"] = max(1, target_integrity - current_ship.crashed_at_integrity)
 	else
-		data["repairProgress"] = 100
+		data["repairCurrent"] = 0
+		data["repairTotal"] = 0
 
 	data["calibrating"] = calibrating
 	data["canThrust"] = current_ship.can_thrust()
@@ -161,6 +279,8 @@
 	data["speed"] = current_ship.get_speed()
 	data["eta"] = current_ship.get_eta()
 	data["est_thrust"] = current_ship.est_thrust
+	data["burnDirection"] = current_ship.burn_direction
+	data["burnPercentage"] = current_ship.burn_percentage
 	data["engineInfo"] = list()
 	data["canLand"] = current_ship.shuttle.port_destinations ? TRUE : FALSE
 
@@ -188,6 +308,17 @@
 	data["isInterdicted"] = current_ship.is_interdicted
 	data["interdictionStrength"] = current_ship.interdiction_strength
 	data["speedMultiplier"] = current_ship.speed_multiplier
+
+	// Nebula concealment status
+	data["hiddenInNebula"] = current_ship.hidden_in_nebula
+	data["nebulaHideWarmup"] = !!current_ship.nebula_hide_timer
+	data["nebulaHideRemaining"] = current_ship.nebula_hide_timer ? timeleft(current_ship.nebula_hide_timer) : 0
+	// Check if we're on a nebula tile (can hide)
+	var/on_nebula = FALSE
+	for(var/obj/structure/overmap/event/nebula/N in T)
+		on_nebula = TRUE
+		break
+	data["onNebula"] = on_nebula
 
 	// Zone information
 	if(SSovermap_zones.zones_active)
@@ -239,28 +370,9 @@
 		data["zone_transition_remaining"] = 0
 		data["zone_transition_target"] = null
 
-	// Radiation shielding info
-	data["radiation_shielding_level"] = current_ship.radiation_shielding_level
-	data["radiation_shielding_name"] = current_ship.get_shielding_name(current_ship.radiation_shielding_level)
-
-	// Current zone radiation status
-	if(SSovermap_zones?.zones_active)
-		var/datum/overmap_zone/zone = SSovermap_zones.get_zone(T)
-		if(zone)
-			var/radiation_level = ZONE_RADIATION_LEVEL(zone.zone_type)
-			data["zone_radiation_level"] = radiation_level
-			data["zone_radiation_protected"] = current_ship.is_protected_from_radiation(radiation_level)
-			data["zone_radiation_warning"] = radiation_level > ZONE_RADIATION_NONE && !current_ship.is_protected_from_radiation(radiation_level)
-		else
-			data["zone_radiation_level"] = ZONE_RADIATION_NONE
-			data["zone_radiation_protected"] = TRUE
-			data["zone_radiation_warning"] = FALSE
-	else
-		data["zone_radiation_level"] = ZONE_RADIATION_NONE
-		data["zone_radiation_protected"] = TRUE
-		data["zone_radiation_warning"] = FALSE
-
 	for(var/obj/machinery/power/shuttle_engine/ship/E in current_ship.shuttle.engine_list)
+		if(QDELETED(E))
+			continue
 		var/list/engine_data
 		if(!E.thruster_active)
 			engine_data = list(
@@ -299,6 +411,9 @@
 	// Check if user is a crew member of this ship
 	data["isNotCrew"] = !is_crew_member(user)
 
+	// Abandoned ship status
+	data["isAbandoned"] = current_ship?.abandoned
+
 	return data
 
 /**
@@ -315,6 +430,8 @@
 		return FALSE
 	if(!current_ship?.ship_team)
 		return TRUE // No ship team set up, allow access
+	if(current_ship.abandoned)
+		return TRUE // Abandoned ships allow anyone to access for claiming
 	return (living_user.mind in current_ship.ship_team.members)
 
 /obj/machinery/computer/helm/LateInitialize()
@@ -336,12 +453,12 @@
 		return // This exists to prefent Href exploits to call process_jump more than once by a client
 	message_admins("[ADMIN_LOOKUPFLW(usr)] has initiated a bluespace jump in [ADMIN_VERBOSEJMP(src)]")
 	jump_timer = addtimer(CALLBACK(src, PROC_REF(jump_sequence), TRUE), JUMP_CHARGEUP_TIME, TIMER_STOPPABLE)
-	current_ship?.ship_announce("Bluespace jump calibration initialized. Calibration completion in [JUMP_CHARGEUP_TIME/600] minutes.")
+	current_ship?.ship_notify("Bluespace jump calibration initialized. Calibration completion in [JUMP_CHARGEUP_TIME/600] minutes.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	calibrating = TRUE
 	return TRUE
 
 /obj/machinery/computer/helm/proc/cancel_jump()
-	current_ship?.ship_announce("Pylon Disengaged. Jump cancelled.", "Bluespace Pylon")
+	current_ship?.ship_notify("Pylon Disengaged. Jump cancelled.", "BLUESPACE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
 	calibrating = FALSE
 	deltimer(jump_timer)
 
@@ -352,19 +469,19 @@
 			SStgui.close_uis(src)
 		if(JUMP_STATE_CHARGING)
 			jump_state = JUMP_STATE_IONIZING
-			current_ship?.ship_announce("Bluespace Jump Calibration completed. Ionizing Bluespace Pylon.")
+			current_ship?.ship_notify("Bluespace Jump Calibration completed. Ionizing Bluespace Pylon.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		if(JUMP_STATE_IONIZING)
 			jump_state = JUMP_STATE_FIRING
-			current_ship?.ship_announce("Bluespace Ionization finalized; preparing to fire Bluespace Pylon.")
+			current_ship?.ship_notify("Bluespace Ionization finalized; preparing to fire Bluespace Pylon.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		if(JUMP_STATE_FIRING)
 			jump_state = JUMP_STATE_FINALIZED
-			current_ship?.ship_announce("Bluespace Pylon launched.", sound='sound/effects/magic/lightning_chargeup.ogg')
+			current_ship?.ship_notify("Bluespace Pylon launched.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'sound/effects/magic/lightning_chargeup.ogg', 50)
 			addtimer(CALLBACK(src, PROC_REF(do_jump)), 10 SECONDS)
 			return
 	addtimer(CALLBACK(src, PROC_REF(jump_sequence), TRUE), JUMP_CHARGE_DELAY)
 
 /obj/machinery/computer/helm/proc/do_jump()
-	current_ship?.ship_announce("Bluespace Jump Initiated.")
+	current_ship?.ship_notify("Bluespace Jump Initiated.", "BLUESPACE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	// Extract ship parts from all players on the ship before jumping
 	if(current_ship)
 		extract_ship_parts_from_ship(current_ship, "bluespace_jump")
@@ -490,6 +607,19 @@
 				return
 			current_ship.ship_broadcast_runechat(message)
 			return
+		if("claim_abandoned")
+			if(!current_ship?.abandoned)
+				say("ERROR: This ship is not abandoned.")
+				return
+			var/mob/living/living_user = usr
+			if(!istype(living_user))
+				return
+			if(current_ship.claim_abandoned_ship(living_user))
+				playsound(src, 'sound/machines/terminal/terminal_on.ogg', 50, TRUE)
+				update_static_data(usr, ui)
+			else
+				say("ERROR: Failed to claim ship.")
+			return
 
 	// Prevent operation if ship is destroyed (at or below 50% integrity)
 	if(current_ship.get_integrity_percent() <= 50)
@@ -509,16 +639,27 @@
 					current_ship.refresh_engines()
 					return
 				if("change_heading")
-					//current_ship.current_autopilot_target = null
-					current_ship.burn_engines(text2num(params["dir"]))
+					var/new_direction = text2num(params["dir"])
+					// Toggle off if clicking same direction
+					if(new_direction == current_ship.burn_direction)
+						current_ship.change_heading(BURN_NONE)
+					else
+						current_ship.change_heading(new_direction)
+					return
+				if("change_burn_percentage")
+					var/new_percentage = clamp(text2num(params["percentage"]), 1, 100)
+					current_ship.burn_percentage = new_percentage
 					return
 				if("stop")
-					//current_ship.current_autopilot_target = null
 					// Cancel zone transition if in progress
 					if(current_ship.zone_transitioning)
 						current_ship.cancel_zone_transition()
 						return
-					current_ship.burn_engines()
+					// Toggle between no thrust and active braking
+					if(current_ship.burn_direction == BURN_NONE)
+						current_ship.change_heading(BURN_STOP)
+					else
+						current_ship.change_heading(BURN_NONE)
 					return
 				if("bluespace_jump")
 					if(calibrating)
@@ -537,6 +678,31 @@
 								balloon_alert(usr, "something is in the way!")
 								return
 					say(current_ship.dock_in_empty_space(usr))
+					return
+				if("hide_in_nebula")
+					if(!current_ship.can_hide_in_nebula())
+						if(current_ship.hidden_in_nebula)
+							say("ERROR: Already concealed in nebula.")
+						else if(current_ship.nebula_hide_timer)
+							say("ERROR: Nebula concealment already in progress...")
+						else if(current_ship.is_interdicted)
+							say("ERROR: Cannot hide while interdicted!")
+						else
+							say("ERROR: Must be inside a nebula to engage concealment.")
+						return
+					if(current_ship.hide_in_nebula())
+						say("Initiating nebula concealment sequence...")
+					return
+				if("cancel_nebula_hide")
+					if(current_ship.cancel_nebula_hide())
+						say("Nebula concealment cancelled.")
+					return
+				if("unhide_from_nebula")
+					if(!current_ship.can_unhide_from_nebula())
+						say("ERROR: Ship is not in concealment mode.")
+						return
+					if(current_ship.unhide_from_nebula())
+						say("Emerging from nebula concealment. Combat systems online.")
 					return
 		if(OVERMAP_SHIP_IDLE)
 			if(action == "undock")

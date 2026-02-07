@@ -74,6 +74,9 @@
 	if(istype(arrived, /obj/structure/overmap/ship))
 		// Register for undock signal so we can clean up when the ship leaves
 		RegisterSignal(arrived, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(on_ship_undocked))
+		// If an NPC ship docks here, show its name on the overmap instead of "Empty Space"
+		if(istype(arrived, /obj/structure/overmap/ship/npc))
+			name = arrived.name
 
 // Note: We don't override Exited() because the ship exits BEFORE the undock signal fires
 // The signal handler in on_ship_undocked() cleans up the registration

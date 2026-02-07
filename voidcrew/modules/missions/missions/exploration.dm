@@ -165,7 +165,7 @@
 	var/dist = sqrt((ship_x - target_x) ** 2 + (ship_y - target_y) ** 2)
 	if(dist <= completion_range)
 		visited = TRUE
-		servant.ship_announce("Survey coordinates reached! Return to the mission board to collect your reward.", "Mission Update")
+		servant.ship_notify("Survey coordinates reached! Return to the mission board to collect your reward.", "MISSION UPDATE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 /datum/mission/exploration/can_complete()
 	if(!..())

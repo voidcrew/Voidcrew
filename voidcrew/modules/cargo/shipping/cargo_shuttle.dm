@@ -90,7 +90,7 @@
 
 	// Announce acceptance
 	if(target_ship)
-		target_ship.ship_announce(pending_loan.thanks_msg, pending_loan.sender)
+		target_ship.ship_notify(pending_loan.thanks_msg, "CARGO", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 	return TRUE
 
@@ -375,7 +375,7 @@
 		if(!length(cargo_turfs))
 			log_shuttle("LOAN DEBUG: No cargo turfs found! shuttle_areas=[shuttle_port?.shuttle_areas ? length(shuttle_port.shuttle_areas) : "null"]")
 		pending_loan.spawn_items(src)
-		target_ship?.ship_announce(pending_loan.shuttle_transit_text, pending_loan.sender)
+		target_ship?.ship_notify(pending_loan.shuttle_transit_text, "CARGO", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		QDEL_NULL(pending_loan)
 		loan_accepted = FALSE
 

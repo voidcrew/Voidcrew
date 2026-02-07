@@ -123,7 +123,7 @@
 			announcement += "\nNew balance: [bank_account_holder.synced_bank_account.account_balance] credits"
 		else if(total_profit == 0 && !length(export_lines))
 			announcement = "No exportable items were found on the cargo shuttle."
-		ship.ship_announce(announcement, "Cargo Export Report")
+		ship.ship_notify(announcement, "CARGO", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 	SSeconomy.export_total += total_profit
 	investigate_log("contents sold for [total_profit] credits. Contents: [ex.exported_atoms ? ex.exported_atoms.Join(",") + "." : "none."]", INVESTIGATE_CARGO)

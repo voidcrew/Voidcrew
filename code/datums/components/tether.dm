@@ -19,6 +19,8 @@
 	var/tether_trait_source
 	/// If TRUE, only add TRAIT_TETHER_ATTACHED to our parent
 	var/no_target_trait
+	/// Prevents infinite recursion when pulling the anchor
+	var/currently_pulling = FALSE
 
 /datum/component/tether/Initialize(atom/tether_target, max_dist = 7, tether_name, atom/embed_target = null, start_distance = null, \
 	parent_module = null, tether_trait_source = null, no_target_trait = FALSE)
@@ -83,6 +85,10 @@
 /datum/component/tether/proc/check_tether(atom/source, new_loc)
 	SIGNAL_HANDLER
 
+	// Prevent infinite recursion when pulling the anchor causes their tether check to pull us back
+	if (currently_pulling)
+		return
+
 	if (check_snap())
 		return
 
@@ -94,7 +100,10 @@
 	var/atom/movable/movable_source = source
 	var/atom/movable/anchor = (source == tether_target ? parent : tether_target)
 	if (get_dist(anchor, new_loc) > cur_dist)
-		if (!istype(anchor) || anchor.anchored || !(!anchor.anchored && anchor.move_resist <= movable_source.move_force && anchor.Move(get_step_towards(anchor, new_loc))))
+		currently_pulling = TRUE
+		var/pull_success = istype(anchor) && !anchor.anchored && anchor.move_resist <= movable_source.move_force && anchor.Move(get_step_towards(anchor, new_loc))
+		currently_pulling = FALSE
+		if (!pull_success)
 			to_chat(source, span_warning("[tether_name] runs out of slack and prevents you from moving!"))
 			return COMPONENT_MOVABLE_BLOCK_PRE_MOVE
 

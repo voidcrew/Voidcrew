@@ -30,7 +30,16 @@
 
 /obj/docking_port/mobile/voidcrew/Destroy(force)
 	UnregisterSignal(SSdcs, COMSIG_GLOB_Z_SHIP_PROBE)
-	current_ship.shuttle = null
+	// Debug: log when shuttle is destroyed to help track orphaning issues
+	if(current_ship)
+		// This should only happen through normal cleanup - log a stack trace to find unexpected deletions
+		var/ship_name = current_ship.name
+		var/ship_state = current_ship.state
+		log_shuttle("Shuttle [name] destroyed while overmap ship [ship_name] still exists. Force=[force], state=[ship_state]")
+		stack_trace("Shuttle [name] being destroyed while overmap ship [ship_name] exists - investigate if unexpected")
+		current_ship.shuttle = null
+	else
+		log_shuttle("Shuttle [name] destroyed with no current_ship reference. Force=[force]")
 	current_ship = null
 	spawn_points.Cut()
 	unlink_from_z_level()
@@ -130,45 +139,6 @@
 			continue
 		humans_to_add.Add(human_to_add)
 	return humans_to_add
-
-/**
- * Scuttle the ship
- *
- * Delete all of the areas, and delete any cryopods
- */
-/obj/docking_port/mobile/voidcrew/proc/mothball()
-	if(length(get_all_humans()) > 0)
-		return
-	var/obj/docking_port/stationary/current_dock = get_docked()
-
-	var/underlying_area_type = SHUTTLE_DEFAULT_UNDERLYING_AREA
-	if(current_dock && current_dock.area_type)
-		underlying_area_type = current_dock.area_type
-
-	var/list/old_turfs = return_ordered_turfs(x, y, z, dir)
-
-	var/area/underlying_area = GLOB.areas_by_type[underlying_area_type]
-	if(!underlying_area)
-		underlying_area = new underlying_area_type(null)
-
-	for(var/turf/oldT in old_turfs)
-		if(!oldT || !istype(oldT.loc, area_type))
-			continue
-		var/obj/machinery/cryopod/pod = locate() in oldT.contents
-		if(pod)
-			qdel(pod) // we don't want anyone respawning now do we
-		var/obj/machinery/computer/helm/helm = locate() in oldT.contents
-		if(helm)
-			qdel(helm) // we don't want anyone respawning now do we
-
-		var/area/old_area = oldT.loc
-		underlying_area.contents += oldT
-		oldT.transfer_area_lighting(old_area, underlying_area)
-
-	message_admins("\[SHUTTLE]: [current_ship?.name] has been turned into a ruin!")
-	log_admin("\[SHUTTLE]: [current_ship?.name] has been turned into a ruin!")
-
-	qdel(current_ship)
 
 /obj/docking_port/mobile/voidcrew/proc/recalculate_shuttle_areas()
 	for(var/area/area as anything in shuttle_areas)

@@ -79,6 +79,27 @@
 	opacity = TRUE
 	var/datum/gas/gas_type = "plasma"
 
+/obj/structure/overmap/event/nebula/ship_act(mob/user, obj/structure/overmap/ship/acting)
+	// If already hidden, unhide
+	if(acting.hidden_in_nebula)
+		if(acting.unhide_from_nebula())
+			return
+		to_chat(user, span_warning("Failed to emerge from nebula concealment."))
+		return
+
+	// Try to hide
+	if(!acting.can_hide_in_nebula())
+		if(acting.is_interdicted)
+			to_chat(user, span_warning("Cannot hide while interdicted!"))
+		else
+			to_chat(user, span_warning("Cannot engage nebula concealment here."))
+		return
+
+	if(acting.hide_in_nebula())
+		return
+
+	to_chat(user, span_warning("Failed to engage nebula concealment."))
+
 // voidcrew TODO: reimplement wormholes once ships are working again
 
 /// List of event types that MUST spawn at least once - ensures map diversity

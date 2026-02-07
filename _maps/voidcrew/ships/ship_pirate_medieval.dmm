@@ -1,0 +1,732 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/turf/template_noop,
+/area/template_noop)
+"ab" = (
+/obj/structure/cable,
+/obj/machinery/ship_combat/cloak_device,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"ac" = (
+/obj/structure/fake_stairs/wood/directional/east,
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"ad" = (
+/obj/structure/fake_stairs/wood/directional/east,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/obj/structure/mineral_door/gold,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"ae" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/trash/botanical_waste,
+/obj/effect/spawner/random/trash/garbage,
+/obj/effect/mob_spawn/ghost_role/human/pirate/medieval,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"af" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"ag" = (
+/obj/structure/fans/tiny,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/mineral_door/iron,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"ah" = (
+/obj/structure/table/wood,
+/obj/item/spear/military{
+	pixel_y = 8;
+	pixel_x = -7
+	},
+/obj/item/spear/military{
+	pixel_y = 1;
+	pixel_x = -6
+	},
+/obj/item/spear/military{
+	pixel_y = -2;
+	pixel_x = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"ai" = (
+/obj/machinery/power/shuttle_engine/propulsion/left,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aj" = (
+/obj/item/flashlight/lantern{
+	light_on = 1
+	},
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"ak" = (
+/obj/structure/table/wood,
+/obj/item/restraints/legcuffs/bola/tactical,
+/obj/item/restraints/legcuffs/bola/tactical,
+/obj/item/restraints/legcuffs/bola/tactical,
+/obj/item/restraints/legcuffs/bola,
+/obj/item/restraints/legcuffs/bola,
+/obj/item/restraints/legcuffs/bola,
+/obj/structure/cable,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"al" = (
+/obj/structure/mineral_door/iron,
+/obj/docking_port/mobile/voidcrew/pirate_medieval{
+	preferred_direction = 1
+	},
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"am" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/arrows{
+	dir = 8
+	},
+/obj/effect/spawner/random/trash/cigbutt,
+/obj/effect/spawner/random/trash/botanical_waste,
+/obj/effect/mob_spawn/ghost_role/human/pirate/medieval,
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"an" = (
+/obj/effect/decal/cleanable/vomit/old,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"ao" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/arrows{
+	dir = 4
+	},
+/obj/effect/spawner/random/trash/mess,
+/obj/effect/spawner/random/trash/garbage,
+/obj/effect/mob_spawn/ghost_role/human/pirate/medieval,
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"ap" = (
+/turf/closed/wall/mineral/wood,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"ar" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/trash/garbage,
+/obj/effect/mob_spawn/ghost_role/human/pirate/medieval,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"as" = (
+/obj/structure/fans/tiny,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/docking_port/mobile/voidcrew/pirate_medieval{
+	port_direction = 2
+	},
+/obj/structure/mineral_door/iron,
+/obj/structure/window/reinforced/spawner/directional/west,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"at" = (
+/obj/structure/fans/tiny,
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/mineral_door/iron,
+/obj/structure/window/reinforced/spawner/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"au" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/blood/gibs/limb,
+/obj/effect/decal/cleanable/blood/gibs/body,
+/obj/item/food/meat/slab/human/mutant/zombie,
+/obj/item/kitchen/fork,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"av" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aw" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"ax" = (
+/obj/structure/fake_stairs/wood/directional/west,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/obj/structure/mineral_door/gold,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"ay" = (
+/obj/machinery/shuttle_scrambler,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"az" = (
+/obj/structure/fans/tiny,
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/mineral_door/iron,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aA" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/reagent_containers/cup/glass/bottle/vodka,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aB" = (
+/obj/machinery/power/shuttle_engine/heater,
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aC" = (
+/obj/machinery/airalarm/directional/west,
+/obj/effect/mapping_helpers/airalarm/all_access,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/ship_combat/interdictor,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aD" = (
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aE" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/obj/structure/barricade/wooden/crude,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aF" = (
+/obj/structure/cable,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aG" = (
+/obj/machinery/ship_combat/shield_generator,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aH" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/wood/wings,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aI" = (
+/obj/structure/fake_stairs/wood/directional/west,
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aJ" = (
+/obj/effect/decal/cleanable/blood/gibs/old,
+/obj/item/food/burger/human,
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/rum{
+	pixel_y = 15;
+	pixel_x = -4
+	},
+/obj/item/reagent_containers/cup/glass/bottle/rum{
+	pixel_y = 8;
+	pixel_x = 8
+	},
+/obj/machinery/power/terminal,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aK" = (
+/obj/structure/table/wood,
+/obj/item/stack/medical/poultice{
+	pixel_y = 6;
+	pixel_x = -3
+	},
+/obj/item/stack/medical/poultice{
+	pixel_y = -3;
+	pixel_x = 5
+	},
+/obj/item/storage/medkit/fire,
+/obj/structure/cable,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aL" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 1
+	},
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aM" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/effect/spawner/random/trash/graffiti,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aN" = (
+/obj/machinery/computer/helm,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/fermenting_barrel/thermite,
+/obj/item/reagent_containers/cup/beaker/large,
+/obj/item/reagent_containers/cup/beaker/large,
+/obj/item/reagent_containers/cup/beaker/large,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aP" = (
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aQ" = (
+/obj/structure/closet/cabinet,
+/obj/item/claymore,
+/obj/item/shield/kite,
+/obj/item/shield/kite,
+/obj/item/shield/kite,
+/obj/machinery/power/terminal,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aR" = (
+/obj/machinery/atmospherics/components/tank/air{
+	dir = 1
+	},
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aS" = (
+/obj/item/assault_pod/medieval,
+/obj/machinery/computer/camera_advanced/ship_combat,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aT" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aU" = (
+/obj/machinery/cryopod,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aV" = (
+/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
+/obj/structure/barricade/wooden/crude,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aW" = (
+/obj/structure/table/wood,
+/obj/item/radio/intercom{
+	pixel_y = 5
+	},
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
+	dir = 4
+	},
+/obj/structure/table/wood,
+/obj/item/bodypart/head/skeleton{
+	pixel_x = -6
+	},
+/obj/item/bodypart/head/skeleton{
+	pixel_y = -2;
+	pixel_x = 5
+	},
+/obj/item/bodypart/head/skeleton{
+	pixel_x = 1;
+	pixel_y = 8
+	},
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"aZ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/flashlight/lantern{
+	light_on = 1
+	},
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"dL" = (
+/obj/machinery/power/smes/full,
+/obj/structure/cable,
+/obj/structure/window/reinforced/spawner,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"gt" = (
+/obj/structure/fans/tiny,
+/obj/structure/mineral_door/iron,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"jJ" = (
+/obj/machinery/ship_combat/missile_launcher,
+/turf/closed/wall/mineral/wood,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"qA" = (
+/obj/machinery/power/shuttle_engine/propulsion/right,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"Aa" = (
+/obj/machinery/porta_turret/syndicate/pirate{
+	dir = 9
+	},
+/turf/closed/wall/mineral/wood,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"BK" = (
+/obj/machinery/ship_combat/missile_launcher{
+	dir = 8
+	},
+/turf/closed/wall/mineral/wood,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"Ha" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/porta_turret/syndicate/pirate{
+	dir = 10
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"HQ" = (
+/obj/effect/mob_spawn/ghost_role/human/pirate/medieval/warlord,
+/turf/open/floor/stone,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"Mn" = (
+/obj/machinery/porta_turret/syndicate/pirate{
+	dir = 6
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"Nz" = (
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"OX" = (
+/obj/machinery/porta_turret/syndicate/pirate{
+	dir = 5
+	},
+/turf/closed/wall/mineral/wood,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"Rz" = (
+/obj/machinery/ship_combat/laser_turret{
+	dir = 1
+	},
+/turf/closed/wall/mineral/wood,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+"YF" = (
+/obj/machinery/computer/cryopod,
+/turf/closed/wall/mineral/wood,
+/area/shuttle/voidcrew/pirate_medieval{
+	requires_power = 0
+	})
+
+(1,1,1) = {"
+aa
+aa
+ap
+ap
+gt
+ap
+aB
+ai
+aa
+"}
+(2,1,1) = {"
+aa
+aa
+ag
+af
+ao
+ar
+aA
+as
+aa
+"}
+(3,1,1) = {"
+aa
+aa
+aa
+aa
+aI
+aa
+aa
+aa
+aa
+"}
+(4,1,1) = {"
+Aa
+BK
+ap
+ap
+ax
+ap
+aE
+ap
+Ha
+"}
+(5,1,1) = {"
+aa
+aE
+aR
+aX
+aT
+aC
+aQ
+dL
+Nz
+"}
+(6,1,1) = {"
+Rz
+ap
+aW
+aD
+aT
+aj
+aY
+ah
+aE
+"}
+(7,1,1) = {"
+aa
+aE
+aN
+aY
+aT
+aY
+aD
+ak
+ap
+"}
+(8,1,1) = {"
+aV
+aV
+aS
+aP
+aT
+aL
+HQ
+aF
+al
+"}
+(9,1,1) = {"
+aa
+aE
+ay
+aD
+aw
+an
+aH
+ab
+ap
+"}
+(10,1,1) = {"
+Rz
+YF
+aU
+aD
+aw
+aZ
+au
+aK
+aE
+"}
+(11,1,1) = {"
+aa
+aE
+aG
+aD
+aT
+aO
+aJ
+dL
+Nz
+"}
+(12,1,1) = {"
+OX
+jJ
+ap
+ap
+ad
+ap
+aE
+ap
+Mn
+"}
+(13,1,1) = {"
+aa
+aa
+aa
+aa
+ac
+aa
+aa
+aa
+aa
+"}
+(14,1,1) = {"
+aa
+aa
+az
+aM
+am
+ae
+av
+at
+aa
+"}
+(15,1,1) = {"
+aa
+aa
+ap
+ap
+gt
+ap
+aB
+qA
+aa
+"}

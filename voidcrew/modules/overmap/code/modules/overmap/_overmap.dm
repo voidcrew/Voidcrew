@@ -9,7 +9,7 @@
 
 	/// Check that someone already act with this.
 	var/concerned = FALSE
-	/// Current integrity (turf count for ships). Updated by calculate_mass() via SSovermap.
+	/// Current integrity (turf count for ships). Updated via event-driven delta tracking.
 	var/integrity = 100
 
 	///List of other overmap objects in the same tile
