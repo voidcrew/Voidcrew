@@ -49,7 +49,8 @@ SUBSYSTEM_DEF(npc_ships)
 
 /**
  * Spawns the initial set of pirates at round start.
- * Picks random unique factions, each spawned in a random zone.
+ * Picks random unique factions, distributed evenly across zones.
+ * Ensures each zone gets at least one pirate before any zone gets a second.
  */
 /datum/controller/subsystem/npc_ships/proc/initialize_pirates()
 	if(initialized_pirates)
@@ -59,11 +60,27 @@ SUBSYSTEM_DEF(npc_ships)
 
 	// Pick random unique factions
 	var/list/available = all_factions.Copy()
+
+	// Build zone assignments: distribute evenly across RED and YELLOW
+	var/list/spawn_zones = list(ZONE_RED, ZONE_YELLOW)
+	var/list/zone_assignments = list()
+	for(var/i in 1 to pirate_count_target)
+		// Cycle through zones: 1->RED, 2->YELLOW, 3->RED, 4->YELLOW, etc.
+		var/zone_index = ((i - 1) % length(spawn_zones)) + 1
+		zone_assignments += spawn_zones[zone_index]
+
+	// Shuffle zone assignments so it's not always RED first
+	for(var/i in length(zone_assignments) to 2 step -1)
+		var/j = rand(1, i)
+		var/temp = zone_assignments[i]
+		zone_assignments[i] = zone_assignments[j]
+		zone_assignments[j] = temp
+
 	for(var/i in 1 to pirate_count_target)
 		if(!length(available))
 			break
 		var/faction_type = pick_n_take(available)
-		spawn_pirate(faction_type)
+		spawn_pirate(faction_type, zone_assignments[i])
 
 	initialized_pirates = TRUE
 	log_world("SSnpc_ships: Initial spawn complete. [length(active_ships)] pirates active.")
