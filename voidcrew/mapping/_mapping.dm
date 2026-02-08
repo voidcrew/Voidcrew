@@ -138,6 +138,11 @@
 	lavaland_air.parse_string_immutable(LAVALAND_DEFAULT_ATMOS)
 	SSair.planetary[LAVALAND_DEFAULT_ATMOS] = lavaland_air
 
+	// Register icemoon atmosphere as FROZEN_ATMOS since voidcrew uses breathable ice planets
+	var/datum/gas_mixture/immutable/planetary/icemoon_air = new
+	icemoon_air.parse_string_immutable(FROZEN_ATMOS)
+	SSair.planetary[ICEMOON_DEFAULT_ATMOS] = icemoon_air
+
 	var/list/lava_levels = levels_by_trait(ZTRAIT_LAVA_RUINS)
 	if (lava_levels.len)
 		seedRuins(lava_levels, CONFIG_GET(number/lavaland_budget), list(/area/overmap_encounter/planetoid/lava), themed_ruins[ZTRAIT_LAVA_RUINS], clear_below = TRUE, mineral_budget = 15, mineral_budget_update = OREGEN_PRESET_LAVALAND)

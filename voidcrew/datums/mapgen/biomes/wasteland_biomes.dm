@@ -167,6 +167,7 @@
 
 /datum/biome/cave/mossy_stone
 	open_turf_types = list(/turf/open/floor/plating/mossy_stone = 5, /turf/open/misc/dirt/dry = 1)
+	closed_turf_types = list(/turf/closed/mineral/random/high_chance/wasteland = 1)
 	feature_spawn_list = list(
 		/obj/effect/decal/cleanable/greenglow = 30,
 		/obj/machinery/portable_atmospherics/canister/plasma = 15,

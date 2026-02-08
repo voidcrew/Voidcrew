@@ -16,6 +16,23 @@
 	light_range = 2
 	light_power = 1
 
+// Voidcrew doesn't have a real icemoon - icemoon turfs only appear from TG ruins
+// loaded onto the ice planet. Override the atmosphere to match FROZEN_ATMOS so
+// ruin turfs don't cause atmos differences with surrounding biome turfs.
+/datum/atmosphere/icemoon/generate_gas_string()
+	gas_string = FROZEN_ATMOS
+
+/turf/open/misc/asteroid/snow/icemoon
+	initial_gas_mix = FROZEN_ATMOS
+	planetary_atmos = TRUE
+
+/turf/open/misc/ice/icemoon
+	initial_gas_mix = FROZEN_ATMOS
+	planetary_atmos = TRUE
+
+/turf/open/openspace/icemoon
+	initial_gas_mix = FROZEN_ATMOS
+
 /turf/open/misc/asteroid/snow/icemoon/breathable
 	initial_gas_mix = FROZEN_ATMOS
 	planetary_atmos = TRUE
