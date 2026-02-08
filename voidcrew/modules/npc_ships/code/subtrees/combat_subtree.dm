@@ -60,16 +60,19 @@
 
 	// Active boarding wave - monitor the wave
 	if(combat_state == NPC_COMBAT_BOARDING)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/boarding_wave_monitor)
 		return
 
 	// Cooldown between waves - wait for timer
 	if(combat_state == NPC_COMBAT_BOARDING_COOLDOWN)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/boarding_cooldown_monitor)
 		return
 
 	// Boss phase - wait for boss to be killed
 	if(combat_state == NPC_COMBAT_BOSS_PHASE)
+		controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)
 		controller.queue_behavior(/datum/ai_behavior/npc_ship/boss_phase_monitor)
 		return
 

@@ -167,6 +167,11 @@
 	mob_species = /datum/species/ethereal/lustrous
 	outfit = /datum/outfit/piratecorpse/faction/lustrous
 
+/obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/special(mob/living/carbon/human/spawned_human)
+	// Prevent the ethereal heart's crystal revival mechanic from reviving NPC pirate corpses
+	ADD_TRAIT(spawned_human, TRAIT_CANNOT_CRYSTALIZE, TRAIT_GENERIC)
+	return ..()
+
 /obj/effect/mob_spawn/corpse/human/pirate/faction/lustrous/melee
 	name = "Lustrous Scintillant"
 	outfit = /datum/outfit/piratecorpse/faction/lustrous/melee
