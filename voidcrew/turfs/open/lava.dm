@@ -20,6 +20,8 @@
 	light_power = 0.75
 
 /turf/open/lava/plasma/planetary
+	initial_gas_mix = FROZEN_ATMOS
+	planetary_atmos = TRUE
 	overlay_light = /obj/effect/dummy/lighting_obj/lava_light/plasma
 
 /turf/open/lava/plasma/planetary/Initialize()

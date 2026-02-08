@@ -61,6 +61,7 @@
 	icon = 'voidcrew/icons/turf/wasteland.dmi'
 	icon_state = "dirt"
 	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = TRUE
 	baseturfs = /turf/open/misc/dirt/dry
 
 /turf/open/misc/dirt/dry/lit
@@ -98,6 +99,8 @@
 	icon_state = "wasteland1"
 	base_icon_state = "wasteland"
 	baseturfs = /turf/open/misc/wasteland
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = TRUE
 	footstep = FOOTSTEP_SAND
 	barefootstep = FOOTSTEP_SAND
 	clawfootstep = FOOTSTEP_SAND
@@ -119,6 +122,8 @@
 	icon_state = "rubblefull"
 	base_icon_state = "rubble"
 	baseturfs = /turf/open/floor/plating/rubble
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = TRUE
 	footstep = FOOTSTEP_FLOOR
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
 	clawfootstep = FOOTSTEP_HARD_CLAW
@@ -136,6 +141,8 @@
 	icon_state = "tunnelintact"
 	base_icon_state = "tunnel"
 	baseturfs = /turf/open/floor/plating/tunnel
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = TRUE
 	footstep = FOOTSTEP_FLOOR
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
 	clawfootstep = FOOTSTEP_HARD_CLAW
@@ -153,6 +160,8 @@
 	icon_state = "stone_old"
 	base_icon_state = "stone"
 	baseturfs = /turf/open/floor/plating/mossy_stone
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = TRUE
 	footstep = FOOTSTEP_FLOOR
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
 	clawfootstep = FOOTSTEP_HARD_CLAW
@@ -170,6 +179,8 @@
 	icon_state = "dust1"
 	base_icon_state = "dust"
 	baseturfs = /turf/open/misc/dust
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = TRUE
 	footstep = FOOTSTEP_SAND
 	barefootstep = FOOTSTEP_SAND
 	clawfootstep = FOOTSTEP_SAND
