@@ -268,12 +268,15 @@
 				balloon_alert(usr, "bounty no longer valid!")
 				return TRUE
 
-			// Remove the key before spawning loot
+			// Move key off the pad before spawning loot (but don't delete yet - bounty needs valid key ref)
+			key.forceMove(null)
+
+			// Complete the bounty while key still exists (is_valid() requires non-QDELETED key)
+			var/reward = bounty.complete(ship, linked_pad)
+
+			// Now safe to destroy the key
 			key.mark_destruction_reason(KEY_DESTROYED_BOUNTY)
 			qdel(key)
-
-			// Complete the bounty!
-			var/reward = bounty.complete(ship, linked_pad)
 			if(reward > 0)
 				balloon_alert(usr, "[reward] credits awarded!")
 				playsound(src, 'sound/effects/cashregister.ogg', 50, TRUE)

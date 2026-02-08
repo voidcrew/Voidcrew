@@ -6,7 +6,7 @@
  */
 
 // Debug logging toggle - set to TRUE to enable patrol debug messages
-#define PATROL_DEBUG FALSE
+#define PATROL_DEBUG TRUE
 
 #if PATROL_DEBUG
 #define PATROL_LOG(msg) log_shuttle("PATROL: [msg]")
@@ -1368,10 +1368,14 @@
 			controller.queue_behavior(/datum/ai_behavior/try_open_blocking_door, "_blocking_door_to_open")
 			return SUBTREE_RETURN_FINISH_PLANNING
 
-	// Also check for door assemblies (left behind when doors are destroyed)
+	// Also check for door assemblies and other dense objects blocking our path
 	for(var/dir in GLOB.cardinals)
 		var/turf/adj = get_step(pawn_turf, dir)
 		if(!adj)
+			continue
+
+		// Only check in the direction we're trying to go
+		if(target_dir && !(dir & target_dir))
 			continue
 
 		for(var/obj/structure/door_assembly/assembly in adj)
@@ -1381,6 +1385,27 @@
 			PATROL_LOG("[pawn] found blocking door assembly [assembly.name] at ([adj.x],[adj.y]) - attacking it")
 			controller.set_blackboard_key("_blocking_assembly_to_attack", assembly)
 			controller.queue_behavior(/datum/ai_behavior/attack_blocking_assembly, "_blocking_assembly_to_attack")
+			return SUBTREE_RETURN_FINISH_PLANNING
+
+		// Check for other dense structures/machinery blocking the path (e.g. deployables, missile launchers)
+		for(var/obj/blocking_obj in adj)
+			if(!blocking_obj.density)
+				continue
+			if(!istype(blocking_obj, /obj/structure) && !istype(blocking_obj, /obj/machinery))
+				continue
+			// Already handled above
+			if(istype(blocking_obj, /obj/machinery/door))
+				continue
+			if(istype(blocking_obj, /obj/structure/door_assembly))
+				continue
+			if(istype(blocking_obj, /obj/structure/grille))
+				continue
+			if(istype(blocking_obj, /obj/structure/window))
+				continue
+
+			PATROL_LOG("[pawn] found blocking object [blocking_obj.name] at ([adj.x],[adj.y]) - attacking it")
+			controller.set_blackboard_key("_blocking_obstacle_to_attack", blocking_obj)
+			controller.queue_behavior(/datum/ai_behavior/attack_blocking_obstacle, "_blocking_obstacle_to_attack")
 			return SUBTREE_RETURN_FINISH_PLANNING
 
 /**
@@ -1416,6 +1441,39 @@
 /datum/ai_behavior/attack_blocking_assembly/finish_action(datum/ai_controller/controller, succeeded, assembly_key)
 	. = ..()
 	controller.clear_blackboard_key(assembly_key)
+
+/**
+ * Behavior that attacks a dense structure or machine blocking the patrol path
+ */
+/datum/ai_behavior/attack_blocking_obstacle
+	action_cooldown = 1.2 SECONDS
+	behavior_flags = NONE
+
+/datum/ai_behavior/attack_blocking_obstacle/setup(datum/ai_controller/controller, obstacle_key)
+	var/obj/obstacle = controller.blackboard[obstacle_key]
+	if(QDELETED(obstacle) || !obstacle.density)
+		return FALSE
+	return TRUE
+
+/datum/ai_behavior/attack_blocking_obstacle/perform(seconds_per_tick, datum/ai_controller/controller, obstacle_key)
+	var/obj/obstacle = controller.blackboard[obstacle_key]
+	var/mob/living/basic/pawn = controller.pawn
+
+	if(QDELETED(obstacle) || !obstacle.density)
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+	// Must be adjacent to attack
+	if(get_dist(pawn, obstacle) > 1)
+		PATROL_LOG("[pawn] not adjacent to obstacle [obstacle.name], cannot attack")
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+
+	pawn.melee_attack(obstacle)
+	PATROL_LOG("[pawn] smashing blocking obstacle [obstacle.name]")
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+/datum/ai_behavior/attack_blocking_obstacle/finish_action(datum/ai_controller/controller, succeeded, obstacle_key)
+	. = ..()
+	controller.clear_blackboard_key(obstacle_key)
 
 /**
  * Behavior that moves to and attacks a door assembly (used when patrol target door is destroyed)

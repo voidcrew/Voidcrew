@@ -196,16 +196,24 @@
  */
 /datum/ai_controller/npc_ship/proc/on_being_targeted_by_player(datum/source, obj/structure/overmap/ship/aggressor)
 	SIGNAL_HANDLER
-	// Only react if the aggressor is our current target (the ship we're negotiating with)
 	var/obj/structure/overmap/ship/our_target = get_target()
-	if(!our_target || aggressor != our_target)
-		return
-
 	var/combat_state = get_combat_state()
 
-	// If we're hailing, negotiating, or siphoning, this is aggression
-	if(combat_state == NPC_COMBAT_HAILING || combat_state == NPC_COMBAT_NEGOTIATING || combat_state == NPC_COMBAT_SIPHONING)
-		INVOKE_ASYNC(src, PROC_REF(handle_player_aggression), aggressor, "targeting")
+	// If the aggressor is our current target during hailing/negotiation/siphoning, treat as aggression
+	if(our_target && aggressor == our_target)
+		if(combat_state == NPC_COMBAT_HAILING || combat_state == NPC_COMBAT_NEGOTIATING || combat_state == NPC_COMBAT_SIPHONING)
+			INVOKE_ASYNC(src, PROC_REF(handle_player_aggression), aggressor, "targeting")
+			return
+
+	// If we're idle with no target, the aggressor becomes our target and we engage
+	if(combat_state == NPC_COMBAT_IDLE && !our_target)
+		set_target(aggressor)
+		set_combat_state(NPC_COMBAT_ENGAGING)
+		return
+
+	// If we're in boarding phases, escalate to ship combat
+	if(combat_state == NPC_COMBAT_BOARDING || combat_state == NPC_COMBAT_BOARDING_COOLDOWN || combat_state == NPC_COMBAT_BOSS_PHASE)
+		INVOKE_ASYNC(src, PROC_REF(escalate_to_full_combat), aggressor)
 
 /**
  * Called when a player ship completes a weapons lock on us.
@@ -213,16 +221,24 @@
  */
 /datum/ai_controller/npc_ship/proc/on_weapons_locked_by_player(datum/source, obj/structure/overmap/ship/aggressor)
 	SIGNAL_HANDLER
-	// Only react if the aggressor is our current target (the ship we're negotiating with)
 	var/obj/structure/overmap/ship/our_target = get_target()
-	if(!our_target || aggressor != our_target)
-		return
-
 	var/combat_state = get_combat_state()
 
-	// If we're hailing, negotiating, or siphoning, this is aggression - immediate combat
-	if(combat_state == NPC_COMBAT_HAILING || combat_state == NPC_COMBAT_NEGOTIATING || combat_state == NPC_COMBAT_SIPHONING)
-		INVOKE_ASYNC(src, PROC_REF(handle_player_aggression), aggressor, "weapons_lock")
+	// If the aggressor is our current target during hailing/negotiation/siphoning, treat as aggression
+	if(our_target && aggressor == our_target)
+		if(combat_state == NPC_COMBAT_HAILING || combat_state == NPC_COMBAT_NEGOTIATING || combat_state == NPC_COMBAT_SIPHONING)
+			INVOKE_ASYNC(src, PROC_REF(handle_player_aggression), aggressor, "weapons_lock")
+			return
+
+	// If we're idle with no target, the aggressor becomes our target - skip straight to COMBAT (they already have lock)
+	if(combat_state == NPC_COMBAT_IDLE && !our_target)
+		set_target(aggressor)
+		set_combat_state(NPC_COMBAT_COMBAT)
+		return
+
+	// If we're in boarding phases, escalate to ship combat
+	if(combat_state == NPC_COMBAT_BOARDING || combat_state == NPC_COMBAT_BOARDING_COOLDOWN || combat_state == NPC_COMBAT_BOSS_PHASE)
+		INVOKE_ASYNC(src, PROC_REF(escalate_to_full_combat), aggressor)
 
 /**
  * Called when our target starts a zone transition.
@@ -525,9 +541,6 @@
 	// Start tracking player crew deaths
 	start_tracking_player_crew(target)
 
-	// Register for player aggression during boarding (escalates to full combat)
-	RegisterSignal(target, COMSIG_SHIP_WEAPONS_LOCKED, PROC_REF(on_player_weapons_lock_during_boarding))
-
 	// Ensure engaging_pirate_ref is set (defensive - should already be set, but just in case)
 	// This prevents other pirates from targeting this ship while we're boarding
 	target.engaging_pirate_ref = WEAKREF(ship)
@@ -555,6 +568,10 @@
  * Delayed interdiction during boarding phase setup.
  */
 /datum/ai_controller/npc_ship/proc/boarding_phase_interdiction()
+	// Check we're still in boarding state (didn't escalate to combat)
+	if(get_combat_state() != NPC_COMBAT_BOARDING)
+		return
+
 	var/obj/structure/overmap/ship/target = get_target()
 	if(!target || QDELETED(target))
 		return
@@ -603,6 +620,11 @@
  * Wave size scales with initial player crew count.
  */
 /datum/ai_controller/npc_ship/proc/launch_boarding_wave(wave_number)
+	// Check we're still in boarding state (didn't escalate to combat)
+	var/combat_state = get_combat_state()
+	if(combat_state != NPC_COMBAT_BOARDING)
+		return FALSE
+
 	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
 	var/obj/structure/overmap/ship/target = get_target()
 
@@ -1026,20 +1048,6 @@
 // ========== ESCALATION HANDLING ==========
 
 /**
- * Signal handler for player locking weapons during boarding phase.
- * This escalates to full ship combat.
- */
-/datum/ai_controller/npc_ship/proc/on_player_weapons_lock_during_boarding(datum/source, obj/structure/overmap/ship/aggressor)
-	SIGNAL_HANDLER
-
-	// Only escalate if we're in a boarding state
-	var/combat_state = get_combat_state()
-	if(combat_state != NPC_COMBAT_BOARDING && combat_state != NPC_COMBAT_BOARDING_COOLDOWN && combat_state != NPC_COMBAT_BOSS_PHASE)
-		return
-
-	INVOKE_ASYNC(src, PROC_REF(escalate_to_full_combat), aggressor)
-
-/**
  * Escalate from boarding phase to full ship combat.
  * This happens when the player locks weapons on the pirate ship.
  */
@@ -1076,12 +1084,6 @@
  * Clean up all boarding-related signals and state.
  */
 /datum/ai_controller/npc_ship/proc/cleanup_boarding_signals()
-	var/obj/structure/overmap/ship/target = get_target()
-
-	// Unregister from player weapons lock
-	if(target && !QDELETED(target))
-		UnregisterSignal(target, COMSIG_SHIP_WEAPONS_LOCKED)
-
 	// Unregister from player crew deaths
 	var/list/tracked_crew = blackboard[BB_NPC_BOARDING_PLAYER_CREW]
 	if(tracked_crew)

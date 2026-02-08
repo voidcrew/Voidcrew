@@ -146,10 +146,10 @@
 #define SHIP_SHIELD_MIN_POWER_MULT 0
 /// Maximum power allocation (200%)
 #define SHIP_SHIELD_MAX_POWER_MULT 2
-/// Base power draw for shield generator (3 kW) - ensures small ships still pay meaningful cost
-#define SHIP_SHIELD_BASE_POWER_COST 3 KILO WATTS
+/// Base power draw for shield generator (1.5 kW) - ensures small ships still pay meaningful cost
+#define SHIP_SHIELD_BASE_POWER_COST 1.5 KILO WATTS
 /// Power draw per unit of ship mass (W per mass)
-#define SHIP_SHIELD_POWER_PER_MASS 30
+#define SHIP_SHIELD_POWER_PER_MASS 15
 
 // Stock part multipliers (per tier above 1)
 /// Capacitor: +50% max shield health per tier
