@@ -6754,7 +6754,6 @@
 #include "voidcrew\edits\subsystem\station.dm"
 #include "voidcrew\edits\subsystem\ticker.dm"
 #include "voidcrew\edits\surgery\decapitation.dm"
-#include "voidcrew\lighting\_lighting.dm"
 #include "voidcrew\machinery\dance_machine.dm"
 #include "voidcrew\machinery\suit_storage_unit.dm"
 #include "voidcrew\mapping\_mapping.dm"
