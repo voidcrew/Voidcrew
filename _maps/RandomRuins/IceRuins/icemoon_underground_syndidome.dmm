@@ -779,6 +779,8 @@
 	},
 /obj/effect/turf_decal/trimline/dark_red/line,
 /obj/effect/decal/cleanable/dirt,
+/obj/item/ammo_casing/c45/spent,
+/obj/item/ammo_casing/c45/spent,
 /turf/open/floor/iron/dark,
 /area/ruin/syndibiodome)
 "jS" = (
@@ -1108,8 +1110,12 @@
 /turf/open/floor/iron/dark/herringbone,
 /area/ruin/syndibiodome)
 "oj" = (
-/obj/effect/mob_spawn/corpse/human/syndicatecommando/lessenedgear,
 /obj/effect/turf_decal/trimline/dark_red/line,
+/obj/effect/mob_spawn/corpse/human/syndicatesoldier,
+/obj/item/ammo_box/magazine/smgm45{
+	pixel_x = 9;
+	pixel_y = 8
+	},
 /turf/open/floor/iron/dark,
 /area/ruin/syndibiodome)
 "on" = (
@@ -1744,6 +1750,8 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/trimline/dark_red/line,
 /obj/machinery/door/firedoor,
+/obj/item/ammo_casing/c45/spent,
+/obj/item/ammo_casing/c45/spent,
 /turf/open/floor/iron/dark/herringbone,
 /area/ruin/syndibiodome)
 "vP" = (
@@ -2570,6 +2578,12 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/trimline/dark_red/line,
+/obj/item/gun/ballistic/automatic/c20r/sc_c20r,
+/obj/item/ammo_casing/c45/spent,
+/obj/item/ammo_box/magazine/smgm45{
+	pixel_x = 10;
+	pixel_y = -6
+	},
 /turf/open/floor/iron/dark,
 /area/ruin/syndibiodome)
 "Fg" = (
@@ -2823,6 +2837,10 @@
 /obj/effect/turf_decal/trimline/dark_red/corner{
 	dir = 8
 	},
+/obj/item/ammo_casing/c45/spent,
+/obj/item/ammo_casing/c45/spent,
+/obj/item/ammo_casing/c45/spent,
+/obj/item/ammo_casing/c45/spent,
 /turf/open/floor/iron/dark,
 /area/ruin/syndibiodome)
 "Iq" = (
@@ -4423,6 +4441,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
+/obj/item/ammo_casing/c45/spent,
 /turf/open/floor/iron/dark,
 /area/ruin/syndibiodome)
 "ZD" = (
