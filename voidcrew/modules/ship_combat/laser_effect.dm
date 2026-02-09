@@ -281,8 +281,8 @@
 	// Create end cap at impact point (using same angle as beam)
 	create_end_cap(impact_turf, beam_angle, is_multi_beam)
 
-	// Play firing sound at impact location (pressure_affected = FALSE so it's heard in space)
-	playsound(impact_turf, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE, extrarange = 10, pressure_affected = FALSE)
+	// Play firing sound at impact location - limited to target ship's areas to prevent bleed
+	playsound_ship(impact_turf, 'sound/items/weapons/beam_sniper.ogg', 80, TRUE, 10, target_ship)
 
 	// Damage everything along the beam path (mobs and objects) - reuse path
 	damage_along_path(start_turf, impact_turf, impact_path)
@@ -405,10 +405,9 @@
 	// Small fire effect
 	new /obj/effect/hotspot(impact_loc)
 
-	// Screen shake for nearby players - stronger at high power
+	// Screen shake for nearby players on target ship only - stronger at high power
 	var/shake_intensity = power_level >= 1.5 ? 2 : 1
-	for(var/mob/living/victim in range(5, impact_loc))
-		shake_camera(victim, shake_intensity, shake_intensity)
+	shake_camera_ship(impact_loc, 5, shake_intensity, shake_intensity, target_ship)
 
 	// Signal that hull was hit (for combat camera static updates)
 	if(target_ship)

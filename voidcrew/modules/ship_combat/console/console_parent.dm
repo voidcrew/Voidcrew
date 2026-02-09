@@ -52,6 +52,10 @@
 	/// Linked cloaking device machine (weakref)
 	var/datum/weakref/linked_cloak_ref
 
+	// ===== SIPHON VARIABLES =====
+	/// Linked ship data siphon (weakref)
+	var/datum/weakref/linked_siphon_ref
+
 	// ===== UI CACHING =====
 	/// Cached shield status data (for performance)
 	var/list/cached_shield_status
@@ -84,6 +88,10 @@
 	console_ambience = new(src, get_console_ambience_sounds())
 	console_ambience.start()
 
+/obj/machinery/computer/camera_advanced/ship_combat/LateInitialize()
+	. = ..()
+	attempt_ship_connection()
+
 /obj/machinery/computer/camera_advanced/ship_combat/Destroy()
 	QDEL_NULL(console_ambience)
 	cancel_targeting()
@@ -97,6 +105,11 @@
 	if(cloak)
 		cloak.unlink_console()
 	linked_cloak_ref = null
+	// Unlink siphon
+	var/obj/machinery/shuttle_scrambler/ship_siphon/siphon = linked_siphon_ref?.resolve()
+	if(siphon)
+		siphon.unlink_console()
+	linked_siphon_ref = null
 	clear_target()
 	for(var/datum/weakref/ref in linked_launchers)
 		var/obj/machinery/ship_combat/missile_launcher/launcher = ref.resolve()
@@ -126,6 +139,11 @@
 		. += span_notice("Linked cloaking device: [cloak.name]")
 	else
 		. += span_warning("No cloaking device linked. Use a multitool to link a cloaking device.")
+	var/obj/machinery/shuttle_scrambler/ship_siphon/siphon = linked_siphon_ref?.resolve()
+	if(siphon)
+		. += span_notice("Linked data siphon: [siphon.name]")
+	else
+		. += span_warning("No data siphon linked. Use a multitool to link a siphon.")
 	if(target_ship)
 		. += span_notice("Current target: [target_ship.display_name]")
 	else

@@ -94,6 +94,17 @@
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
 
+// Data Siphon
+/datum/techweb_node/ship_combat_siphon
+	id = TECHWEB_NODE_SHIP_COMBAT_SIPHON
+	display_name = "Ship Data Siphon"
+	description = "Sophisticated data siphon technology that drains credits from targeted ship accounts. Requires weapons lock to operate."
+	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
+	design_ids = list(
+		"ship_data_siphon",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_5_POINTS)
+
 // ========== COMPUTER BOARD DESIGNS ==========
 
 /datum/design/board/ship_combat_console
@@ -155,6 +166,16 @@
 	desc = "Allows for the construction of a ship interdiction system. Slows enemy ships and prevents cloaking."
 	id = "ship_interdictor"
 	build_path = /obj/item/circuitboard/machine/ship_combat/interdictor
+	category = list(
+		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SECURITY | DEPARTMENT_BITFLAG_SCIENCE
+
+/datum/design/board/ship_data_siphon
+	name = "Data Siphon Board"
+	desc = "Allows for the construction of a ship data siphon. Drains credits from targeted ship accounts."
+	id = "ship_data_siphon"
+	build_path = /obj/item/circuitboard/machine/ship_combat/data_siphon
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING
 	)

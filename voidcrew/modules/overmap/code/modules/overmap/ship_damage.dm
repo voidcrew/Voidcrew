@@ -8,7 +8,12 @@
  * Ship health is purely turf-based:
  * - Damage = turfs being destroyed (explosions, meteors, etc.)
  * - Repair = turfs being rebuilt (construction)
- * - SSovermap.fire() calls calculate_mass() every second to update integrity
+ *
+ * Mass tracking is event-driven via signals (see setup_mass_tracking in ship.dm):
+ * - COMSIG_TURF_CHANGE: tracks turf type changes (wall->floor, floor->space)
+ * - COMSIG_TURF_REMOVED_FROM_SHUTTLE: tracks turfs removed from shuttle
+ * - COMSIG_SHUTTLE_EXPANDED: tracks new turfs added via expansion
+ * This is ~750x more efficient than the old polling approach.
  */
 
 /obj/structure/overmap/ship
@@ -16,10 +21,12 @@
 	COOLDOWN_DECLARE(hazard_damage_cooldown)
 	/// Whether ship integrity has been initialized from mass
 	var/integrity_initialized = FALSE
-	/// Bonus turfs added through ship expansion (shows as dark green overhealth)
+	/// DEPRECATED - No longer used. max_integrity now scales with ship expansion.
 	var/overhealth = 0
 	/// Whether the ship has already crash landed (prevents multiple crashes)
 	var/has_crash_landed = FALSE
+	/// Integrity (mass) value when the ship crashed (for repair progress calculation)
+	var/crashed_at_integrity = 0
 	/// Timer ID for critical state alert loop
 	var/critical_alert_timer
 
@@ -27,21 +34,19 @@
 /**
  * Returns the current integrity as a percentage for UI display
  * Shows actual turf percentage - ship crashes at 50%
- * Can exceed 100% if ship has been expanded (overhealth)
+ * max_integrity scales with ship expansion, so this is always 0-100%
  */
 /obj/structure/overmap/ship/proc/get_integrity_percent()
 	if(max_integrity <= 0)
 		return 100
-	return round(((integrity + overhealth) / max_integrity) * 100)
+	return round((integrity / max_integrity) * 100)
 
 /**
  * Returns just the overhealth portion as a percentage
- * Used by UI to show the dark green overhealth bar
+ * No longer used - max_integrity now scales with ship expansion
  */
 /obj/structure/overmap/ship/proc/get_overhealth_percent()
-	if(max_integrity <= 0)
-		return 0
-	return round((overhealth / max_integrity) * 100)
+	return 0
 
 /**
  * Starts the critical alert loop - plays warning sound repeatedly
@@ -76,7 +81,7 @@
  */
 /obj/structure/overmap/ship/proc/on_ship_recovered()
 	play_ship_sound('sound/machines/computer/computer_start.ogg', 15)
-	ship_announce("Hull integrity restored. Ship systems operational.", "Systems Online")
+	ship_notify("Hull integrity restored. Ship systems operational.", "SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 /**
  * Called when ship integrity reaches 0
@@ -87,6 +92,8 @@
 	if(has_crash_landed)
 		return
 	has_crash_landed = TRUE
+	// Record current integrity for repair progress calculation
+	crashed_at_integrity = integrity
 
 	// Stop the ship dead
 	speed[1] = 0
@@ -120,7 +127,7 @@
 	// Don't crash land if already docked (e.g., ship-to-ship docking)
 	// The other ship can help/rescue without needing to create a crash site
 	if(state == OVERMAP_SHIP_IDLE || state == OVERMAP_SHIP_DOCKING)
-		ship_announce("Ship critically damaged! Emergency systems holding. Seek immediate repairs.", "CRITICAL DAMAGE")
+		ship_notify("Ship critically damaged! Emergency systems holding. Seek immediate repairs.", "CRITICAL", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
 		return
 
 	// Check if we're above a planet - if so, crash onto it
@@ -163,7 +170,7 @@
 	if(!planet || !shuttle)
 		return
 
-	ship_announce("EMERGENCY: Crash landing on [planet.name]!", "MAYDAY")
+	ship_notify("EMERGENCY: Crash landing on [planet.name]!", "MAYDAY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
 	play_ship_sound('sound/items/weapons/mortar_long_whistle.ogg')
 
 	// Load the planet if not already loaded
@@ -249,7 +256,7 @@
 	// Register for dock completion signal - effects happen the instant we land
 	RegisterSignal(src, COMSIG_VOIDCREW_SHIP_DOCKED, PROC_REF(on_crash_dock_complete))
 
-	dock(crash_site, dock_to_use)
+	dock(crash_site, dock_to_use, instant = TRUE)
 
 /**
  * Signal handler - crash effects the instant docking completes
@@ -276,7 +283,7 @@
 			continue
 		M.set_machine_stat(M.machine_stat & ~EMPED)
 
-	ship_announce("Emergency systems restored. Ship systems coming back online.", "Systems Restored")
+	ship_notify("Emergency systems restored. Ship systems coming back online.", "SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 /**
  * Throws all unanchored objects and mobs on the ship during a crash landing
@@ -345,13 +352,13 @@
 /**
  * Ion Storm Effect
  * EMPs random areas of the ship - no direct hull damage, but EMP can destroy electronics
- * Hull damage comes from destroyed equipment/turfs, detected by calculate_mass()
+ * If turfs are destroyed, delta tracking will automatically update mass
  */
 /obj/structure/overmap/ship/proc/apply_ion_storm_damage(obj/structure/overmap/event/emp/storm)
 	var/intensity = storm.intensity
 	var/emp_count = 2 + (intensity * 2)
 
-	ship_announce("Ion storm interference detected! Electronic systems may be affected.", "Ion Storm Warning", TRUE, 'sound/effects/empulse.ogg')
+	ship_notify("Ion storm interference detected! Electronic systems may be affected.", "HAZARD", SHIP_NOTIFY_WARNING, 'sound/effects/empulse.ogg', 50)
 
 	// Create EMPs at random locations in the ship - these can destroy equipment
 	for(var/i in 1 to emp_count)
@@ -361,9 +368,6 @@
 			empulse(target, 2 * intensity, 4 * intensity)
 			playsound(target, 'sound/effects/empulse.ogg', 50, TRUE)
 
-	// Trigger immediate mass recalculation to detect any destroyed turfs/equipment
-	calculate_mass()
-
 /**
  * Electrical Storm Effect
  * Overloads ship lighting fixtures and strikes the ship with real lightning bolts
@@ -372,7 +376,7 @@
 /obj/structure/overmap/ship/proc/apply_electrical_storm_damage(obj/structure/overmap/event/electric/storm)
 	var/intensity = storm.intensity
 
-	ship_announce("Electrical storm detected! Lighting systems overloading!", "Electrical Storm Warning", TRUE, 'sound/effects/sparks/sparks1.ogg')
+	ship_notify("Electrical storm detected! Lighting systems overloading!", "HAZARD", SHIP_NOTIFY_WARNING, 'sound/effects/sparks/sparks1.ogg', 50)
 
 	// Spawn real lightning strikes - but not on minor storms
 	// Minor: no lightning, Moderate: 1 strike (40% chance each), Major: 2-3 strikes
@@ -421,9 +425,7 @@
 		light.flicker(10)
 		// Schedule the lightning strike from light
 		addtimer(CALLBACK(src, PROC_REF(electrical_storm_shock), light, intensity), rand(1 SECONDS, 2 SECONDS))
-
-	// Trigger immediate mass recalculation
-	calculate_mass()
+	// Note: Mass updates are handled by delta tracking when turfs change
 
 /**
  * Spawns a real lightning bolt strike at the target turf
@@ -506,10 +508,8 @@
 		meteor_type = /obj/effect/meteor
 
 	// Spawn one meteor aimed at the ship
+	// Note: Mass updates are handled by delta tracking when meteor destroys turfs
 	spawn_meteor_at_ship(meteor_type)
-
-	// Schedule mass recalculation after meteor has time to hit (meteors take a moment to travel)
-	addtimer(CALLBACK(src, PROC_REF(calculate_mass)), 3 SECONDS)
 
 /**
  * Spawns a single meteor from the edge of the virtual level aimed at a random ship turf

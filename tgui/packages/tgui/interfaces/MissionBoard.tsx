@@ -5,12 +5,15 @@ import {
   Button,
   Divider,
   Flex,
+  Input,
   LabeledList,
   NoticeBox,
+  NumberInput,
   ProgressBar,
   Section,
   Stack,
   Tabs,
+  TextArea,
 } from 'tgui-core/components';
 import type { BooleanLike } from 'tgui-core/react';
 
@@ -45,6 +48,45 @@ type PadItem = {
   ref: string;
 };
 
+type Bounty = {
+  ref: string;
+  name: string;
+  desc: string;
+  reward: number;
+  hunter_count: number;
+  is_hunting: boolean;
+  was_abandoned: boolean;
+  zone: string;
+  tracking_cost: number;
+  has_tracking?: boolean;
+  effective_reward?: number;
+  target_x?: number;
+  target_y?: number;
+  loot_description: string;
+};
+
+type PendingOffer = {
+  ship_ref: string;
+  ship_name: string;
+  items: string[];
+};
+
+type PlayerBounty = {
+  ref: string;
+  name: string;
+  desc: string;
+  reward: number;
+  status: 'available' | 'completed' | 'cancelled';
+  creator_name?: string;
+  is_creator: boolean;
+  is_claimer: boolean;
+  was_abandoned?: boolean;
+  has_pending_offer?: boolean;
+  can_claim: boolean;
+  contractor_count: number;
+  pending_offers?: PendingOffer[];
+};
+
 type Data = {
   has_ship: BooleanLike;
   max_missions: number;
@@ -53,6 +95,12 @@ type Data = {
   available_missions: Mission[];
   active_missions: Mission[];
   pad_contents: PadItem[];
+  bounties: Bounty[];
+  has_active_bounty: BooleanLike;
+  player_bounties: PlayerBounty[];
+  has_created_bounty: BooleanLike;
+  has_claimed_player_bounty: BooleanLike;
+  ship_balance: number;
 };
 
 export const MissionBoard = () => {
@@ -81,11 +129,19 @@ const MissionBoardContent = () => {
     available_missions,
     active_missions,
     pad_contents,
+    bounties,
+    has_active_bounty,
+    player_bounties,
+    has_created_bounty,
+    has_claimed_player_bounty,
+    ship_balance,
   } = data;
 
-  const [currentTab, setCurrentTab] = useState<'available' | 'active'>(
-    'available',
-  );
+  const [currentTab, setCurrentTab] = useState<
+    'available' | 'active' | 'bounties'
+  >('available');
+
+  const huntingCount = bounties.filter((b) => b.is_hunting).length;
 
   return (
     <Stack fill vertical>
@@ -140,6 +196,13 @@ const MissionBoardContent = () => {
           >
             Active ({active_count}/{max_missions})
           </Tabs.Tab>
+          <Tabs.Tab
+            selected={currentTab === 'bounties'}
+            onClick={() => setCurrentTab('bounties')}
+            icon="skull"
+          >
+            Bounties ({huntingCount}/{bounties.length})
+          </Tabs.Tab>
         </Tabs>
       </Stack.Item>
 
@@ -178,6 +241,72 @@ const MissionBoardContent = () => {
                 ))}
               </Stack>
             )}
+          </Section>
+        )}
+
+        {currentTab === 'bounties' && (
+          <Section fill scrollable>
+            {/* Player Bounty Creation */}
+            <PlayerBountyCreator
+              hasCreatedBounty={!!has_created_bounty}
+              shipBalance={ship_balance}
+              hasPad={!!has_pad}
+            />
+
+            {/* Player's Active Bounty Status */}
+            {(!!has_created_bounty || !!has_claimed_player_bounty) && (
+              <PlayerBountyStatus
+                playerBounties={player_bounties}
+                hasPad={!!has_pad}
+              />
+            )}
+
+            {/* Available Player Bounties */}
+            {player_bounties.filter(
+              (b) => !b.is_creator && b.status === 'available',
+            ).length > 0 && (
+              <Section title="Player Bounties" mt={1}>
+                <Stack vertical>
+                  {player_bounties
+                    .filter((b) => !b.is_creator && b.status === 'available')
+                    .map((bounty) => (
+                      <Stack.Item key={bounty.ref}>
+                        <PlayerBountyCard
+                          bounty={bounty}
+                          hasPad={!!has_pad}
+                          hasClaimedBounty={!!has_claimed_player_bounty}
+                        />
+                      </Stack.Item>
+                    ))}
+                </Stack>
+              </Section>
+            )}
+
+            <Divider />
+
+            {/* Pirate Bounties */}
+            <Section title="Pirate Bounties">
+              <NoticeBox info mb={1}>
+                Bounties are competitive - multiple crews can hunt the same
+                target. Turn in the captain&apos;s key at the mission pad to
+                claim the reward.
+              </NoticeBox>
+              {bounties.length === 0 ? (
+                <NoticeBox>No active pirate bounties</NoticeBox>
+              ) : (
+                <Stack vertical>
+                  {bounties.map((bounty) => (
+                    <Stack.Item key={bounty.ref}>
+                      <BountyCard
+                        bounty={bounty}
+                        hasPad={!!has_pad}
+                        hasActiveBounty={!!has_active_bounty}
+                      />
+                    </Stack.Item>
+                  ))}
+                </Stack>
+              )}
+            </Section>
           </Section>
         )}
       </Stack.Item>
@@ -340,6 +469,552 @@ const MissionCard = (props: MissionCardProps) => {
           Accept Mission
         </Button>
       )}
+    </Section>
+  );
+};
+
+type BountyCardProps = {
+  bounty: Bounty;
+  hasPad: boolean;
+  hasActiveBounty: boolean;
+};
+
+const BountyCard = (props: BountyCardProps) => {
+  const { act } = useBackend<Data>();
+  const { bounty, hasPad, hasActiveBounty } = props;
+
+  // Can't accept if: already hunting one, abandoned this one, or already hunting this one
+  const canAccept =
+    !hasActiveBounty && !bounty.was_abandoned && !bounty.is_hunting;
+
+  // Determine why we can't accept
+  const getDisabledReason = () => {
+    if (bounty.was_abandoned) return 'You abandoned this bounty';
+    if (hasActiveBounty) return 'Already hunting a bounty';
+    return undefined;
+  };
+
+  // Display effective reward if hunting (may be reduced by tracking)
+  const displayReward = bounty.is_hunting
+    ? (bounty.effective_reward ?? bounty.reward)
+    : bounty.reward;
+
+  return (
+    <Section
+      title={
+        <Box inline color={bounty.was_abandoned ? 'gray' : undefined}>
+          <Box as="span" color={bounty.was_abandoned ? 'gray' : 'red'} mr={1}>
+            ☠
+          </Box>
+          {bounty.name}
+        </Box>
+      }
+      buttons={
+        <Box inline>
+          <Box
+            inline
+            color={bounty.was_abandoned ? 'gray' : 'gold'}
+            bold
+            mr={1}
+          >
+            {displayReward} cr
+            {!!bounty.has_tracking && (
+              <Box as="span" color="label" ml={1}>
+                (-{bounty.tracking_cost})
+              </Box>
+            )}
+          </Box>
+          <Box inline color="label">
+            [{bounty.zone}]
+          </Box>
+        </Box>
+      }
+    >
+      <Box mb={1} color={bounty.was_abandoned ? 'gray' : undefined}>
+        {bounty.desc}
+      </Box>
+
+      <Box mb={1}>
+        <Box as="span" color="label">
+          Rewards:{' '}
+        </Box>
+        <Box as="span" color="good" bold>
+          {displayReward} cr
+        </Box>
+        <Box as="span" color="average" bold>
+          {' '}
+          + {bounty.loot_description}
+        </Box>
+      </Box>
+
+      {/* Show coordinates if tracking is enabled */}
+      {!!bounty.has_tracking &&
+        bounty.target_x !== undefined &&
+        bounty.target_y !== undefined && (
+          <Box mb={1} p={1} backgroundColor="rgba(0, 255, 0, 0.1)">
+            <Box color="good" bold>
+              Target Coordinates: ({bounty.target_x}, {bounty.target_y})
+            </Box>
+          </Box>
+        )}
+
+      <Flex justify="space-between" align="center" mb={1}>
+        <Flex.Item>
+          <Box color="label">
+            <Box as="span" color={bounty.hunter_count > 0 ? 'orange' : 'gray'}>
+              ⚔ {bounty.hunter_count} crew{bounty.hunter_count !== 1 ? 's' : ''}{' '}
+              hunting
+            </Box>
+          </Box>
+        </Flex.Item>
+        <Flex.Item>
+          {!!bounty.is_hunting && !!bounty.has_tracking && (
+            <Box color="teal" bold mr={1}>
+              [TRACKING]
+            </Box>
+          )}
+          {!!bounty.is_hunting && (
+            <Box color="green" bold>
+              [HUNTING]
+            </Box>
+          )}
+          {!!bounty.was_abandoned && (
+            <Box color="bad" bold>
+              [ABANDONED]
+            </Box>
+          )}
+        </Flex.Item>
+      </Flex>
+
+      <Divider />
+
+      <Flex justify="space-between">
+        <Flex.Item grow>
+          {bounty.is_hunting ? (
+            <Stack>
+              <Stack.Item grow>
+                <Button
+                  fluid
+                  icon="crosshairs"
+                  color="green"
+                  disabled={!hasPad}
+                  tooltip={
+                    !hasPad ? 'Requires mission pad to turn in' : undefined
+                  }
+                  onClick={() => act('turn_in_bounty', { ref: bounty.ref })}
+                >
+                  Turn In Key
+                </Button>
+              </Stack.Item>
+              {!bounty.has_tracking && (
+                <Stack.Item>
+                  <Button
+                    icon="satellite-dish"
+                    color="teal"
+                    tooltip={`Enable tracking to see target coordinates. Reduces reward by ${bounty.tracking_cost} cr`}
+                    onClick={() => act('enable_tracking', { ref: bounty.ref })}
+                  >
+                    Track (-{bounty.tracking_cost})
+                  </Button>
+                </Stack.Item>
+              )}
+              <Stack.Item>
+                <Button
+                  icon="times"
+                  color="bad"
+                  onClick={() => act('cancel_bounty', { ref: bounty.ref })}
+                >
+                  Cancel
+                </Button>
+              </Stack.Item>
+            </Stack>
+          ) : (
+            <Button
+              fluid
+              icon="skull"
+              color={canAccept ? 'caution' : 'gray'}
+              disabled={!canAccept}
+              tooltip={getDisabledReason()}
+              onClick={() => act('accept_bounty', { ref: bounty.ref })}
+            >
+              {bounty.was_abandoned ? 'Abandoned' : 'Accept Bounty'}
+            </Button>
+          )}
+        </Flex.Item>
+      </Flex>
+    </Section>
+  );
+};
+
+// ========== PLAYER BOUNTY COMPONENTS ==========
+
+type PlayerBountyCreatorProps = {
+  hasCreatedBounty: boolean;
+  shipBalance: number;
+  hasPad: boolean;
+};
+
+const PlayerBountyCreator = (props: PlayerBountyCreatorProps) => {
+  const { act } = useBackend<Data>();
+  const { hasCreatedBounty, shipBalance, hasPad } = props;
+
+  const [reward, setReward] = useState(500);
+  const [bountyName, setBountyName] = useState('');
+  const [bountyDesc, setBountyDesc] = useState('');
+
+  if (hasCreatedBounty) {
+    return null; // Don't show creator if already has a bounty
+  }
+
+  return (
+    <Section title="Create Bounty">
+      <Box mb={1} color="label">
+        Post a bounty for other ships to complete. Contractors will submit
+        offers with proof, which you can approve to complete the exchange.
+      </Box>
+      <LabeledList>
+        <LabeledList.Item label="Ship Balance">
+          <Box color={shipBalance >= 100 ? 'good' : 'bad'}>
+            {shipBalance} cr
+          </Box>
+        </LabeledList.Item>
+        <LabeledList.Item label="Title">
+          <Input
+            placeholder="Bounty name..."
+            width="100%"
+            maxLength={64}
+            value={bountyName}
+            onChange={(value) => setBountyName(value)}
+          />
+        </LabeledList.Item>
+        <LabeledList.Item label="Objective">
+          <TextArea
+            placeholder="Describe what needs to be done..."
+            width="100%"
+            height="60px"
+            maxLength={256}
+            value={bountyDesc}
+            onChange={(value) => setBountyDesc(value)}
+          />
+        </LabeledList.Item>
+        <LabeledList.Item label="Reward">
+          <NumberInput
+            value={reward}
+            minValue={100}
+            maxValue={Math.min(50000, shipBalance)}
+            step={100}
+            width="100px"
+            onChange={(value) => setReward(value)}
+          />
+          <Box as="span" color="label" ml={1}>
+            cr
+          </Box>
+        </LabeledList.Item>
+      </LabeledList>
+      <Divider />
+      <Button
+        fluid
+        icon="plus"
+        color="good"
+        disabled={
+          shipBalance < reward ||
+          bountyName.length < 3 ||
+          bountyDesc.length < 5
+        }
+        tooltip={
+          shipBalance < reward
+            ? 'Insufficient funds'
+            : bountyName.length < 3
+              ? 'Title must be at least 3 characters'
+              : bountyDesc.length < 5
+                ? 'Objective must be at least 5 characters'
+                : undefined
+        }
+        onClick={() => {
+          act('create_bounty', {
+            reward,
+            name: bountyName,
+            desc: bountyDesc,
+          });
+          setBountyName('');
+          setBountyDesc('');
+        }}
+      >
+        Post Bounty
+      </Button>
+    </Section>
+  );
+};
+
+type PlayerBountyStatusProps = {
+  playerBounties: PlayerBounty[];
+  hasPad: boolean;
+};
+
+const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
+  const { act } = useBackend<Data>();
+  const { playerBounties, hasPad } = props;
+
+  const createdBounty = playerBounties.find((b) => b.is_creator);
+  const claimedBounty = playerBounties.find((b) => b.is_claimer);
+
+  return (
+    <>
+      {/* Show created bounty */}
+      {createdBounty && (
+        <Section
+          title="Your Bounty"
+          buttons={
+            <Button
+              icon="times"
+              color="bad"
+              onClick={() => act('cancel_player_bounty')}
+            >
+              Cancel
+            </Button>
+          }
+        >
+          <LabeledList>
+            <LabeledList.Item label="Name">{createdBounty.name}</LabeledList.Item>
+            <LabeledList.Item label="Reward">
+              <Box color="gold">{createdBounty.reward} cr</Box>
+            </LabeledList.Item>
+            <LabeledList.Item label="Contractors">
+              <Box
+                color={createdBounty.contractor_count > 0 ? 'good' : 'average'}
+              >
+                {createdBounty.contractor_count > 0
+                  ? `${createdBounty.contractor_count} ship${createdBounty.contractor_count !== 1 ? 's' : ''} accepted`
+                  : 'Waiting for contractors'}
+              </Box>
+            </LabeledList.Item>
+          </LabeledList>
+
+          {/* Show pending offers to approve/reject */}
+          {createdBounty.pending_offers &&
+            createdBounty.pending_offers.length > 0 && (
+              <Box mt={1}>
+                <Divider />
+                <Box color="good" bold mb={1}>
+                  Pending Offers:
+                </Box>
+                <Stack vertical>
+                  {createdBounty.pending_offers.map((offer) => (
+                    <Stack.Item key={offer.ship_ref}>
+                      <Section
+                        title={offer.ship_name}
+                        buttons={
+                          <Stack>
+                            <Stack.Item>
+                              <Button
+                                icon="check"
+                                color="good"
+                                onClick={() =>
+                                  act('approve_bounty_offer', {
+                                    ship_ref: offer.ship_ref,
+                                  })
+                                }
+                              >
+                                Approve
+                              </Button>
+                            </Stack.Item>
+                            <Stack.Item>
+                              <Button
+                                icon="times"
+                                color="bad"
+                                onClick={() =>
+                                  act('reject_bounty_offer', {
+                                    ship_ref: offer.ship_ref,
+                                  })
+                                }
+                              >
+                                Reject
+                              </Button>
+                            </Stack.Item>
+                          </Stack>
+                        }
+                      >
+                        <Box color="label">Offering:</Box>
+                        {offer.items.map((item, idx) => (
+                          <Box key={idx} ml={1}>
+                            • {item}
+                          </Box>
+                        ))}
+                      </Section>
+                    </Stack.Item>
+                  ))}
+                </Stack>
+              </Box>
+            )}
+
+          {/* Contractors working but no offers yet */}
+          {createdBounty.contractor_count > 0 &&
+            (!createdBounty.pending_offers ||
+              createdBounty.pending_offers.length === 0) && (
+              <Box mt={1}>
+                <NoticeBox info>
+                  Contractors are working on your bounty. Offers will appear
+                  here for your approval.
+                </NoticeBox>
+              </Box>
+            )}
+        </Section>
+      )}
+
+      {/* Show claimed bounty */}
+      {claimedBounty && (
+        <Section
+          title="Accepted Contract"
+          buttons={
+            <Button
+              icon="times"
+              color="bad"
+              onClick={() =>
+                act('abandon_player_bounty', { ref: claimedBounty.ref })
+              }
+            >
+              Abandon
+            </Button>
+          }
+        >
+          <LabeledList>
+            <LabeledList.Item label="Name">{claimedBounty.name}</LabeledList.Item>
+            <LabeledList.Item label="From">
+              {claimedBounty.creator_name || 'Unknown'}
+            </LabeledList.Item>
+            <LabeledList.Item label="Reward">
+              <Box color="gold">{claimedBounty.reward} cr</Box>
+            </LabeledList.Item>
+            <LabeledList.Item label="Competition">
+              <Box
+                color={claimedBounty.contractor_count > 1 ? 'orange' : 'good'}
+              >
+                {claimedBounty.contractor_count > 1
+                  ? `${claimedBounty.contractor_count - 1} other ship${claimedBounty.contractor_count > 2 ? 's' : ''} competing`
+                  : 'No competition'}
+              </Box>
+            </LabeledList.Item>
+            <LabeledList.Item label="Objective">
+              {claimedBounty.desc}
+            </LabeledList.Item>
+          </LabeledList>
+
+          <Box mt={1}>
+            {claimedBounty.has_pending_offer ? (
+              <>
+                <NoticeBox info mb={1}>
+                  Your offer has been submitted. Keep the items on your pad
+                  until the creator approves!
+                </NoticeBox>
+                <Button
+                  fluid
+                  icon="undo"
+                  color="caution"
+                  onClick={() => act('withdraw_bounty_offer')}
+                >
+                  Withdraw Offer
+                </Button>
+              </>
+            ) : (
+              <>
+                <NoticeBox info mb={1}>
+                  Place items on your pad as proof, then submit an offer. The
+                  creator will review and approve to complete the exchange.
+                </NoticeBox>
+                <Button
+                  fluid
+                  icon="paper-plane"
+                  color="good"
+                  disabled={!hasPad}
+                  tooltip={
+                    !hasPad
+                      ? 'Requires mission pad'
+                      : 'Submit items on pad as an offer'
+                  }
+                  onClick={() => act('make_bounty_offer')}
+                >
+                  Submit Offer
+                </Button>
+              </>
+            )}
+          </Box>
+        </Section>
+      )}
+    </>
+  );
+};
+
+type PlayerBountyCardProps = {
+  bounty: PlayerBounty;
+  hasPad: boolean;
+  hasClaimedBounty: boolean;
+};
+
+const PlayerBountyCard = (props: PlayerBountyCardProps) => {
+  const { act } = useBackend<Data>();
+  const { bounty, hasPad, hasClaimedBounty } = props;
+
+  const canClaim = bounty.can_claim && !hasClaimedBounty;
+
+  // Determine why we can't claim
+  const getDisabledReason = () => {
+    if (bounty.was_abandoned) return 'You abandoned this contract';
+    if (hasClaimedBounty) return 'Already accepted a contract';
+    if (!bounty.can_claim) return 'Cannot accept this contract';
+    return undefined;
+  };
+
+  return (
+    <Section
+      title={
+        <Box inline color={bounty.was_abandoned ? 'gray' : undefined}>
+          {bounty.name}
+        </Box>
+      }
+      buttons={
+        <Box inline color={bounty.was_abandoned ? 'gray' : 'gold'} bold>
+          {bounty.reward} cr
+        </Box>
+      }
+    >
+      <Box mb={1} italic color="label">
+        From: {bounty.creator_name || 'Unknown'}
+      </Box>
+      <Box mb={1} color={bounty.was_abandoned ? 'gray' : undefined}>
+        {bounty.desc}
+      </Box>
+
+      <Flex justify="space-between" align="center" mb={1}>
+        <Flex.Item>
+          <Box color="label">
+            <Box
+              as="span"
+              color={bounty.contractor_count > 0 ? 'orange' : 'gray'}
+            >
+              {bounty.contractor_count} contractor
+              {bounty.contractor_count !== 1 ? 's' : ''}
+            </Box>
+          </Box>
+        </Flex.Item>
+        <Flex.Item>
+          {!!bounty.was_abandoned && (
+            <Box color="bad" bold>
+              [ABANDONED]
+            </Box>
+          )}
+        </Flex.Item>
+      </Flex>
+
+      <Button
+        fluid
+        icon="handshake"
+        color={canClaim ? 'good' : 'gray'}
+        disabled={!canClaim}
+        tooltip={getDisabledReason()}
+        onClick={() => act('claim_player_bounty', { ref: bounty.ref })}
+      >
+        {bounty.was_abandoned ? 'Abandoned' : 'Accept Contract'}
+      </Button>
     </Section>
   );
 };

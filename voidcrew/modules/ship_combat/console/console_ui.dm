@@ -40,6 +40,7 @@
 	data["connected"] = !!current_ship
 	data["ship_name"] = current_ship?.display_name
 	data["ship_docked"] = current_ship?.is_in_ship_to_ship_dock()  // Block shields when in ship-to-ship dock (either direction)
+	data["hidden_in_nebula"] = current_ship?.hidden_in_nebula  // Combat systems offline when hidden
 	data["cloak_active"] = cloak_active
 	data["attack_mode"] = attack_mode
 	data["is_in_attack_mode"] = (eyeobj && user.remote_control == eyeobj)
@@ -214,12 +215,15 @@
 	if(current_ship?.is_interdicted)
 		data["being_interdicted"] = TRUE
 		data["our_interdiction_strength"] = round(current_ship.interdiction_strength * 100)
+		data["can_burst_shields"] = current_ship.can_burst_shields()
+		data["burst_shield_cost"] = round(current_ship.get_burst_shield_cost())
 	else
 		data["being_interdicted"] = FALSE
+		data["can_burst_shields"] = FALSE
+		data["burst_shield_cost"] = 0
 
 	// Check target distance for interdiction, force dock, and missile lock
 	var/target_in_interdict_range = FALSE
-	var/target_in_force_dock_range = FALSE
 	var/target_in_missile_range = FALSE
 	if(target_ship && current_ship)
 		var/turf/our_turf = get_turf(current_ship)
@@ -227,10 +231,8 @@
 		if(our_turf && target_turf)
 			var/distance = get_dist(our_turf, target_turf)
 			target_in_interdict_range = (distance <= INTERDICTOR_RANGE)
-			target_in_force_dock_range = (distance <= INTERDICTOR_FORCE_DOCK_RANGE)
 			target_in_missile_range = (distance <= COMBAT_MISSILE_LOCK_RANGE)
 	data["target_in_interdict_range"] = target_in_interdict_range
-	data["target_in_force_dock_range"] = target_in_force_dock_range
 	data["target_in_missile_range"] = target_in_missile_range
 
 	// Shield data - aggregate from all generators on the ship
@@ -320,6 +322,27 @@
 	else
 		data["cloak_device"] = null
 
+	// Siphon data - get from linked machine
+	var/obj/machinery/shuttle_scrambler/ship_siphon/siphon = linked_siphon_ref?.resolve()
+	data["siphon_linked"] = !!siphon
+	if(siphon)
+		var/list/siphon_status = siphon.get_status()
+		data["siphon_active"] = siphon_status["active"]
+		data["siphon_warming_up"] = siphon_status["warming_up"]
+		data["siphon_warmup_progress"] = siphon_status["warmup_progress"]
+		data["siphon_credits_stored"] = siphon_status["credits_stored"]
+		data["siphon_goal"] = siphon_status["siphon_goal"]
+		data["siphon_goal_progress"] = siphon_status["goal_progress"]
+		data["siphon_target_name"] = siphon_status["target_name"]
+	else
+		data["siphon_active"] = FALSE
+		data["siphon_warming_up"] = FALSE
+		data["siphon_warmup_progress"] = 0
+		data["siphon_credits_stored"] = 0
+		data["siphon_goal"] = 0
+		data["siphon_goal_progress"] = 0
+		data["siphon_target_name"] = null
+
 	// Theme preference
 	data["theme"] = theme
 
@@ -387,13 +410,6 @@
 				interdictor.cancel_interdiction("Cancelled by operator.")
 			return TRUE
 
-		if("force_dock")
-			var/obj/machinery/ship_combat/interdictor/interdictor = linked_interdictor_ref?.resolve()
-			if(!interdictor)
-				to_chat(ui.user, span_warning("No interdictor linked!"))
-				return FALSE
-			return interdictor.force_dock_target(ui.user)
-
 		if("set_interdictor_power")
 			var/obj/machinery/ship_combat/interdictor/interdictor = linked_interdictor_ref?.resolve()
 			if(!interdictor)
@@ -417,6 +433,16 @@
 			current_ship.set_shield_power_allocation(power_mult)
 			invalidate_shield_cache()  // Force immediate UI refresh
 			return TRUE
+
+		// Shield burst - sacrifice shields to break interdiction
+		if("burst_shields")
+			if(!current_ship)
+				return FALSE
+			if(!current_ship.can_burst_shields())
+				var/required = current_ship.get_burst_shield_cost()
+				to_chat(ui.user, span_warning("Cannot perform shield burst! Requires: being interdicted, shields active, and [required] shield health."))
+				return FALSE
+			return current_ship.burst_shields_break_interdiction()
 
 		// Laser turret power allocation (25-200%) - applies to ALL turrets
 		if("set_turret_power")
@@ -454,6 +480,22 @@
 			if(!cloak)
 				return FALSE
 			return cloak.deactivate_cloak()
+
+		if("siphon_activate")
+			var/obj/machinery/shuttle_scrambler/ship_siphon/siphon = linked_siphon_ref?.resolve()
+			if(!siphon)
+				to_chat(ui.user, span_warning("No siphon linked! Link a data siphon with a multitool."))
+				return FALSE
+			if(!target_ship)
+				to_chat(ui.user, span_warning("No target locked. Acquire a weapons lock first."))
+				return FALSE
+			return siphon.player_activate_siphon(ui.user, target_ship)
+
+		if("siphon_deactivate")
+			var/obj/machinery/shuttle_scrambler/ship_siphon/siphon = linked_siphon_ref?.resolve()
+			if(siphon)
+				siphon.deactivate_siphon()
+			return TRUE
 
 		if("setTheme")
 			theme = params["theme"]

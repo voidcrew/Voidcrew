@@ -156,11 +156,11 @@
 		unlink_ship()
 
 	// Check if there's already a cloaking device on this ship
-	var/obj/machinery/ship_combat/cloak_device/existing = find_existing_cloak_device(ship)
-	if(existing)
+	if(ship.linked_cloak_device && ship.linked_cloak_device != src)
 		return FALSE
 
 	linked_ship_ref = WEAKREF(ship)
+	ship.linked_cloak_device = src
 	link_failed_duplicate = FALSE
 	update_ship_mass()
 	RegisterSignal(ship, COMSIG_SHIP_WEAPON_FIRED, PROC_REF(on_weapon_fired))
@@ -173,6 +173,8 @@
 	var/obj/structure/overmap/ship/linked_ship = linked_ship_ref?.resolve()
 	if(linked_ship)
 		UnregisterSignal(linked_ship, list(COMSIG_SHIP_WEAPON_FIRED, COMSIG_SHIP_HAZARD_TRIGGERED, COMSIG_SHIP_WEAPONS_LOCKED, COMSIG_QDELETING))
+		if(linked_ship.linked_cloak_device == src)
+			linked_ship.linked_cloak_device = null
 	linked_ship_ref = null
 
 /// Links this device to a combat console
@@ -256,6 +258,8 @@
 		return FALSE
 	if(linked_ship.is_interdicted)
 		return FALSE
+	if(length(linked_ship.locked_on_by))
+		return FALSE
 	return TRUE
 
 /obj/machinery/ship_combat/cloak_device/attack_hand(mob/user, list/modifiers)
@@ -310,6 +314,15 @@
 		playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 40, TRUE)
 		return FALSE
 
+	// Cloak and shields are mutually exclusive - deactivate shields first
+	if(linked_ship.shields_active)
+		for(var/obj/machinery/ship_combat/shield_generator/gen in linked_ship.linked_shield_generators)
+			gen.deactivate_generator(skip_break = TRUE)
+		linked_ship.shields_active = FALSE
+		if(user)
+			to_chat(user, span_warning("Shield generators deactivated - cloaking device cannot operate with shields active."))
+		linked_ship.ship_notify("Shields offline - cloaking device activated.", "SHIELDS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+
 	cloak_active = TRUE
 
 	// Hide the ship on the overmap
@@ -320,8 +333,14 @@
 	update_use_power(ACTIVE_POWER_USE)
 
 	// Start cloak duration timer
-	cloak_expire_time = world.time + max_cloak_duration
-	cloak_timer_id = addtimer(CALLBACK(src, PROC_REF(on_cloak_expired)), max_cloak_duration, TIMER_STOPPABLE)
+	// NPC ships can override duration for balance purposes
+	var/actual_duration = max_cloak_duration
+	if(istype(linked_ship, /obj/structure/overmap/ship/npc))
+		var/obj/structure/overmap/ship/npc/npc_ship = linked_ship
+		if(npc_ship.npc_cloak_duration > 0)
+			actual_duration = npc_ship.npc_cloak_duration
+	cloak_expire_time = world.time + actual_duration
+	cloak_timer_id = addtimer(CALLBACK(src, PROC_REF(on_cloak_expired)), actual_duration, TIMER_STOPPABLE)
 
 	// Visual and audio feedback
 	visible_message(span_notice("[src] hums to life as the cloaking field activates."))
@@ -388,9 +407,13 @@
 
 /obj/machinery/ship_combat/cloak_device/proc/on_hazard_triggered(datum/source, obj/structure/overmap/event/hazard)
 	SIGNAL_HANDLER
-	if(cloak_active)
-		// Entering a hazard breaks cloak!
-		INVOKE_ASYNC(src, PROC_REF(emergency_decloak), "Hazard interference detected")
+	if(!cloak_active)
+		return
+	// Nebulas don't interfere with cloaking - they actually help conceal ships
+	if(istype(hazard, /obj/structure/overmap/event/nebula))
+		return
+	// Other hazards break cloak
+	INVOKE_ASYNC(src, PROC_REF(emergency_decloak), "Hazard interference detected")
 
 /obj/machinery/ship_combat/cloak_device/proc/emergency_decloak(reason = "Unknown interference")
 	visible_message(span_danger("[src] overloads! [reason] - emergency decloak!"))

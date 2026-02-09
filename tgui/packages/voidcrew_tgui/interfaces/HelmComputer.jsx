@@ -9,6 +9,7 @@ import {
   NoticeBox,
   ProgressBar,
   Section,
+  Slider,
   Stack,
   Table,
 } from 'tgui-core/components';
@@ -17,7 +18,7 @@ import { Window } from '../../tgui/layouts';
 export const HelmComputer = (props) => {
   const { act, data } = useBackend();
   const [mapRefreshKey, setMapRefreshKey] = useState(0);
-  const { mapRef, isViewer, isNotCrew, shipCrashed, repairProgress } = data || {};
+  const { mapRef, isViewer, isNotCrew, shipCrashed, repairCurrent, repairTotal } = data || {};
   // Controls are disabled if viewer mode OR not a crew member
   const isDisabled = isViewer || isNotCrew;
 
@@ -26,7 +27,7 @@ export const HelmComputer = (props) => {
     return (
       <Window width={500} height={400}>
         <Window.Content>
-          <CrashRepairScreen repairProgress={repairProgress} />
+          <CrashRepairScreen repairCurrent={repairCurrent} repairTotal={repairTotal} />
         </Window.Content>
       </Window>
     );
@@ -34,7 +35,7 @@ export const HelmComputer = (props) => {
 
   return (
     <Window width={900} height={900} resizable>
-      <Window.Content>
+      <Window.Content scrollable>
         <Stack vertical>
           <Stack.Item textAlign={'center'}>
             <SharedContent />
@@ -57,6 +58,7 @@ export const HelmComputer = (props) => {
                   <ByondUi
                     key={`helm-map-${mapRefreshKey}`}
                     className="CameraConsole__map"
+                    width="100%"
                     height="610px"
                     params={{
                       id: mapRef,
@@ -205,20 +207,7 @@ const ZoneSection = () => {
     zone_transition_progress = 0,
     zone_transition_remaining = 0,
     zone_transition_target = null,
-    // Radiation data
-    radiation_shielding_name = 'None',
-    zone_radiation_level = 0,
-    zone_radiation_protected = true,
-    zone_radiation_warning = false,
   } = data;
-
-  // Radiation level names
-  const getRadiationLevelName = (level) => {
-    if (level === 0) return 'None';
-    if (level === 1) return 'Moderate';
-    if (level === 2) return 'Heavy';
-    return 'Unknown';
-  };
 
   return (
     <Section
@@ -242,11 +231,6 @@ const ZoneSection = () => {
           </ProgressBar>
         </NoticeBox>
       )}
-      {!!zone_radiation_warning && (
-        <NoticeBox danger>
-          WARNING: Solar radiation exposure! Crew at risk!
-        </NoticeBox>
-      )}
       <LabeledList>
         <LabeledList.Item label="Weapons">
           <span style={{ color: weapons_allowed ? '#4f4' : '#f44' }}>
@@ -256,22 +240,6 @@ const ZoneSection = () => {
         <LabeledList.Item label="Interdiction">
           <span style={{ color: interdiction_allowed ? '#ff4' : '#4f4' }}>
             {interdiction_allowed ? 'Allowed' : 'Prohibited'}
-          </span>
-        </LabeledList.Item>
-        <LabeledList.Item label="Radiation">
-          <span style={{
-            color: zone_radiation_level === 0 ? '#4f4' :
-              (zone_radiation_protected ? '#ff4' : '#f44')
-          }}>
-            {getRadiationLevelName(zone_radiation_level)}
-            {zone_radiation_level > 0 && (zone_radiation_protected ? ' (Shielded)' : ' (EXPOSED)')}
-          </span>
-        </LabeledList.Item>
-        <LabeledList.Item label="Shielding">
-          <span style={{
-            color: radiation_shielding_name === 'No Shielding' ? '#888' : '#4f4'
-          }}>
-            {radiation_shielding_name}
           </span>
         </LabeledList.Item>
       </LabeledList>
@@ -559,6 +527,10 @@ const ShipContent = () => {
   );
 };
 
+// Burn direction constants (must match DM defines)
+const BURN_NONE = 0;
+const BURN_STOP = -1;
+
 // Arrow directional controls
 const ShipControlContent = () => {
   const { act, data } = useBackend();
@@ -568,6 +540,7 @@ const ShipControlContent = () => {
     canThrust,
     isViewer,
     isNotCrew,
+    isAbandoned,
     undockCooldown,
     undockCooldownRemaining,
     undockLocked,
@@ -580,8 +553,18 @@ const ShipControlContent = () => {
     speedMultiplier,
     zone_transitioning,
     cargoShuttlePresent,
+    // Nebula concealment
+    onNebula,
+    hiddenInNebula,
+    nebulaHideWarmup,
+    nebulaHideRemaining,
+    // Throttle controls
+    burnDirection,
+    burnPercentage,
+    speed,
   } = data;
-  const isDisabled = isViewer || isNotCrew;
+  // For abandoned ships, allow access but show claim button
+  const isDisabled = isViewer || (isNotCrew && !isAbandoned);
   const flyable = data.state === 'flying' && !shipDisabled && !isDisabled;
   // Can't move while transitioning zones (except stop button)
   const canMove = flyable && canThrust && !zone_transitioning;
@@ -624,10 +607,22 @@ const ShipControlContent = () => {
   };
   return (
     <Section title="Navigation">
-      {!!isNotCrew && (
+      {!!isAbandoned && (
+        <NoticeBox warning>
+          <div style={{ marginBottom: '8px' }}>SHIP ABANDONED - NO OWNER</div>
+          <Button
+            fluid
+            icon="flag"
+            color="good"
+            content="Claim This Ship"
+            onClick={() => act('claim_abandoned')}
+          />
+        </NoticeBox>
+      )}
+      {!!isNotCrew && !isAbandoned && (
         <NoticeBox danger>CREW AUTHORIZATION REQUIRED</NoticeBox>
       )}
-      {!!shipDisabled && !isNotCrew && (
+      {!!shipDisabled && !isNotCrew && !isAbandoned && (
         <NoticeBox danger>HULL CRITICAL - SYSTEMS OFFLINE</NoticeBox>
       )}
       {data.state === 'idle' && !shipDisabled && !isNotCrew && (
@@ -656,30 +651,79 @@ const ShipControlContent = () => {
           ZONE TRANSITION IN PROGRESS - Press Stop to cancel
         </NoticeBox>
       )}
+      {!!hiddenInNebula && (
+        <NoticeBox info>
+          NEBULA CONCEALMENT ACTIVE - Ship hidden
+        </NoticeBox>
+      )}
+      {!!nebulaHideWarmup && !hiddenInNebula && (
+        <NoticeBox>
+          Engaging nebula concealment in {Math.ceil(nebulaHideRemaining / 10)}s...
+        </NoticeBox>
+      )}
+      <div style={{ marginBottom: '8px' }}>
+        <div style={{ marginBottom: '4px', fontSize: '12px' }}>
+          Throttle: {burnPercentage}%
+        </div>
+        <Slider
+          value={burnPercentage}
+          minValue={1}
+          maxValue={100}
+          step={1}
+          disabled={isDisabled}
+          onChange={(e, value) =>
+            act('change_burn_percentage', { percentage: value })
+          }
+        />
+      </div>
       <Table collapsing>
         <Table.Row height={2}>
           <Table.Cell width={1}>
-            <Button
-              tooltip={getUndockTooltip()}
-              tooltipPosition="right"
-              icon="sign-out-alt"
-              disabled={undockDisabled}
-              onClick={() => act('undock')}
-            />
+            {hiddenInNebula ? (
+              <Button
+                tooltip="Emerge from Nebula"
+                tooltipPosition="right"
+                icon="eye"
+                disabled={isDisabled}
+                onClick={() => act('unhide_from_nebula')}
+              />
+            ) : (
+              <Button
+                tooltip={getUndockTooltip()}
+                tooltipPosition="right"
+                icon="sign-out-alt"
+                disabled={undockDisabled}
+                onClick={() => act('undock')}
+              />
+            )}
           </Table.Cell>
 
           <Table.Cell width={1}>
-            <Button
-              tooltip={
-                dockWarmup
-                  ? `Docking in ${Math.ceil(dockWarmupRemaining / 10)}s...`
-                  : 'Dock in Empty Space'
-              }
-              tooltipPosition="right"
-              icon="sign-in-alt"
-              disabled={!flyable || dockWarmup || zone_transitioning}
-              onClick={() => act('dock_empty')}
-            />
+            {onNebula && !hiddenInNebula ? (
+              <Button
+                tooltip={
+                  nebulaHideWarmup
+                    ? `Hiding in ${Math.ceil(nebulaHideRemaining / 10)}s...`
+                    : 'Hide in Nebula'
+                }
+                tooltipPosition="right"
+                icon="eye-slash"
+                disabled={!flyable || nebulaHideWarmup || zone_transitioning || isInterdicted}
+                onClick={() => act('hide_in_nebula')}
+              />
+            ) : (
+              <Button
+                tooltip={
+                  dockWarmup
+                    ? `Docking in ${Math.ceil(dockWarmupRemaining / 10)}s...`
+                    : 'Dock in Empty Space'
+                }
+                tooltipPosition="right"
+                icon="sign-in-alt"
+                disabled={!flyable || dockWarmup || zone_transitioning || hiddenInNebula}
+                onClick={() => act('dock_empty')}
+              />
+            )}
           </Table.Cell>
 
           <Table.Cell width={1}>
@@ -688,7 +732,7 @@ const ShipControlContent = () => {
               tooltipPosition="right"
               icon={calibrating ? 'times' : 'angle-double-right'}
               color={calibrating ? 'bad' : undefined}
-              disabled={!flyable || zone_transitioning}
+              disabled={!flyable || zone_transitioning || hiddenInNebula}
               onClick={() => act('bluespace_jump')}
             />
           </Table.Cell>
@@ -699,6 +743,7 @@ const ShipControlContent = () => {
               icon="arrow-left"
               iconRotation={45}
               mb={1}
+              color={burnDirection === DIRECTIONS.northwest ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -711,6 +756,7 @@ const ShipControlContent = () => {
             <Button
               icon="arrow-up"
               mb={1}
+              color={burnDirection === DIRECTIONS.north ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -724,6 +770,7 @@ const ShipControlContent = () => {
               icon="arrow-right"
               iconRotation={-45}
               mb={1}
+              color={burnDirection === DIRECTIONS.northeast ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -738,6 +785,7 @@ const ShipControlContent = () => {
             <Button
               icon="arrow-left"
               mb={1}
+              color={burnDirection === DIRECTIONS.west ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -748,9 +796,31 @@ const ShipControlContent = () => {
           </Table.Cell>
           <Table.Cell width={1}>
             <Button
-              tooltip={zone_transitioning ? 'Cancel Transition' : 'Stop'}
-              icon={zone_transitioning ? 'times' : 'circle'}
-              color={zone_transitioning ? 'bad' : undefined}
+              tooltip={
+                zone_transitioning
+                  ? 'Cancel Transition'
+                  : burnDirection === BURN_STOP
+                    ? 'Braking - Click to pause'
+                    : burnDirection === BURN_NONE
+                      ? 'Click to brake'
+                      : 'Stop thrust'
+              }
+              icon={
+                zone_transitioning
+                  ? 'times'
+                  : burnDirection === BURN_STOP
+                    ? 'stop'
+                    : burnDirection === BURN_NONE && speed > 0
+                      ? 'stop'
+                      : 'pause'
+              }
+              color={
+                zone_transitioning
+                  ? 'bad'
+                  : burnDirection === BURN_STOP
+                    ? 'bad'
+                    : undefined
+              }
               mb={1}
               disabled={!flyable && !zone_transitioning}
               onClick={() => act('stop')}
@@ -760,6 +830,7 @@ const ShipControlContent = () => {
             <Button
               icon="arrow-right"
               mb={1}
+              color={burnDirection === DIRECTIONS.east ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -775,6 +846,7 @@ const ShipControlContent = () => {
               icon="arrow-left"
               iconRotation={-45}
               mb={1}
+              color={burnDirection === DIRECTIONS.southwest ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -787,6 +859,7 @@ const ShipControlContent = () => {
             <Button
               icon="arrow-down"
               mb={1}
+              color={burnDirection === DIRECTIONS.south ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -800,6 +873,7 @@ const ShipControlContent = () => {
               icon="arrow-right"
               iconRotation={45}
               mb={1}
+              color={burnDirection === DIRECTIONS.southeast ? 'good' : undefined}
               disabled={!canMove}
               onClick={() =>
                 act('change_heading', {
@@ -816,7 +890,7 @@ const ShipControlContent = () => {
 
 // Crash repair screen - shown when ship is crashed and needs repair
 const CrashRepairScreen = (props) => {
-  const { repairProgress } = props;
+  const { repairCurrent, repairTotal } = props;
 
   return (
     <Section
@@ -863,16 +937,16 @@ const CrashRepairScreen = (props) => {
         </Stack.Item>
         <Stack.Item>
           <ProgressBar
-            value={repairProgress}
-            maxValue={100}
+            value={repairCurrent}
+            maxValue={repairTotal}
             ranges={{
-              bad: [0, 33],
-              average: [34, 66],
-              good: [67, 100],
+              bad: [0, repairTotal * 0.33],
+              average: [repairTotal * 0.33, repairTotal * 0.66],
+              good: [repairTotal * 0.66, repairTotal],
             }}
           >
             <span style={{ fontSize: '20px', fontWeight: 'bold' }}>
-              {repairProgress}%
+              {repairCurrent} / {repairTotal}
             </span>
           </ProgressBar>
         </Stack.Item>
@@ -884,7 +958,7 @@ const CrashRepairScreen = (props) => {
               marginTop: '20px',
             }}
           >
-            Rebuild hull structure to 65% integrity to restore systems
+            Rebuild {repairTotal - repairCurrent} more hull mass to restore systems
           </div>
         </Stack.Item>
       </Stack>

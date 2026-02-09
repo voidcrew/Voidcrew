@@ -1,20 +1,37 @@
 /datum/mind
-	var/datum/team/voidcrew/ship_team
+	/// List of ship teams this mind belongs to (supports multiple crews)
+	var/list/ship_teams
 
 /datum/team/voidcrew
 	show_roundend_report = TRUE
 	var/obj/structure/overmap/ship/ship
 
 /datum/team/voidcrew/add_member(datum/mind/new_member)
-	if(!new_member.ship_team)
-		. = ..()
-		new_member.ship_team = src
-		new_member.add_antag_datum(/datum/antagonist/crew)
+	// Check if already a member of this team (use LAZYFIND for null-safety)
+	if(LAZYFIND(new_member.ship_teams, src))
+		return
+
+	. = ..()
+
+	// Initialize list if needed and add this team
+	LAZYADD(new_member.ship_teams, src)
+
+	// Add crew antagonist datum linked to this specific team
+	var/datum/antagonist/crew/crew_antag = new()
+	crew_antag.crew_team = src
+	new_member.add_antag_datum(crew_antag)
 
 /datum/team/voidcrew/remove_member(datum/mind/member)
 	. = ..()
-	member.ship_team = null
-	member.remove_antag_datum(/datum/antagonist/crew)
+
+	// Remove this team from the member's list
+	LAZYREMOVE(member.ship_teams, src)
+
+	// Find and remove the specific crew antagonist for this team
+	for(var/datum/antagonist/crew/crew_antag in member.antag_datums)
+		if(crew_antag.crew_team == src)
+			member.remove_antag_datum(crew_antag)
+			break
 
 /datum/team/voidcrew/Destroy(force, ...)
 	for(var/datum/mind/team_minds as anything in members)

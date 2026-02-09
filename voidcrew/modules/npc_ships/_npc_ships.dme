@@ -1,0 +1,19 @@
+// NPC Ships Module
+// AI-controlled pirate ships that spawn dynamically and engage player ships
+
+#include "code\_defines.dm"
+#include "code\npc_ship.dm"
+#include "code\npc_combat_interface.dm"
+#include "code\subtrees\combat_subtree.dm"
+#include "code\subtrees\movement_subtree.dm"
+#include "code\behaviors\ship_combat_behaviors.dm"
+#include "code\behaviors\ship_movement_behaviors.dm"
+#include "code\npc_ship_controller.dm"
+#include "code\spawner_subsystem.dm"
+
+// Negotiation system - allows players to hail and pay off pirates
+#include "code\negotiation\cargo_demands.dm"
+#include "code\negotiation\faction_dialog.dm"
+#include "code\negotiation\pirate_negotiation.dm"
+#include "code\negotiation\pirate_hologram.dm"
+#include "code\negotiation\pirate_comms_holopad.dm"

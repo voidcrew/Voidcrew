@@ -110,6 +110,8 @@
 		/client/proc/initiate_jump,
 		/client/proc/cancel_jump,
 		/client/proc/team_panel,
+		/client/proc/spawn_npc_ship,
+		/client/proc/npc_ship_status,
 	))
 
 /client/remove_admin_verbs()
@@ -120,17 +122,22 @@
 		/client/proc/initiate_jump,
 		/client/proc/cancel_jump,
 		/client/proc/team_panel,
+		/client/proc/spawn_npc_ship,
+		/client/proc/npc_ship_status,
 	))
 
 #define RESPAWN_FORCE "Force Respawn"
 /client/proc/respawn_ship()
-	set name = "Respawn Initial Ship"
+	set name = "Respawn Initial Ships"
 	set category = "Overmap.Spawn"
-	if(SSovermap.initial_ship)
-		var/resp = tgui_alert(usr, "Initial ship already exists. This can delete players and their progress", "Shits Fucked", list(RESPAWN_FORCE, "Cancel"))
+	if(length(SSovermap.initial_ships))
+		var/resp = tgui_alert(usr, "Roundstart ships already exist ([length(SSovermap.initial_ships)] ships). This can delete players and their progress.", "Warning", list(RESPAWN_FORCE, "Cancel"))
 		if(resp != RESPAWN_FORCE)
 			return
-		qdel(SSovermap.initial_ship)
+		for(var/obj/structure/overmap/ship/ship as anything in SSovermap.initial_ships.Copy())
+			qdel(ship)
+		SSovermap.initial_ships.Cut()
+		SSovermap.initial_ship = null
 	SSovermap.spawn_initial_ship()
 #undef RESPAWN_FORCE
 

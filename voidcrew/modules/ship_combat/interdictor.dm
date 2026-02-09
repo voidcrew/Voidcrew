@@ -308,6 +308,10 @@
 		return FALSE
 	if(interdiction_active || interdiction_warming_up)
 		return FALSE
+	// Can't interdict while our own ship is docked or not flying
+	var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
+	if(our_ship && our_ship.state != OVERMAP_SHIP_FLYING)
+		return FALSE
 	// Zone restriction check - interdiction disabled in neutral zones only
 	if(!SSovermap_zones.interdiction_allowed_at(src))
 		return FALSE
@@ -327,6 +331,10 @@
 				to_chat(user, span_warning("[src] is already interdicting!"))
 			else if(!SSovermap_zones.interdiction_allowed_at(src))
 				to_chat(user, span_warning("Interdiction is prohibited in this zone!"))
+			else
+				var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
+				if(our_ship && our_ship.state != OVERMAP_SHIP_FLYING)
+					to_chat(user, span_warning("Cannot activate interdictor while docked!"))
 		return FALSE
 
 	if(!target)
@@ -378,6 +386,10 @@
 	warmup_start_time = world.time
 	interdicted_ship_ref = WEAKREF(target)
 
+	// Mark target as interdicted immediately to prevent race conditions
+	// (another ship starting interdiction before our first process tick)
+	target.update_interdiction(src, 1, 0)
+
 	// Play startup sound
 	playsound(src, 'voidcrew/sound/machines/interdictor/startup1.ogg', 17, FALSE)
 
@@ -398,12 +410,12 @@
 	)
 
 	// Notify target
-	target.ship_announce("WARNING: INTERDICTION LOCK DETECTED! Evasive maneuvers recommended!", "INTERDICTION ALERT", sound('sound/effects/alert.ogg'))
+	target.ship_notify("INTERDICTION LOCK DETECTED! Evasive maneuvers recommended!", "INTERDICTION", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert4.ogg', 25)
 
 	// Notify our crew
 	if(user)
 		to_chat(user, span_notice("Interdiction lock initiated on [target.display_name]. Warming up..."))
-	our_ship.ship_announce("Interdiction lock initiated on [target.display_name]. Lock completing in [INTERDICTOR_LOCK_TIME / 10] seconds.", "Interdictor")
+	our_ship.ship_notify("Interdiction lock initiated on [target.display_name]. Lock completing in [INTERDICTOR_LOCK_TIME / 10] seconds.", "INTERDICTOR", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 	update_appearance()
 	update_power_draw()
@@ -452,16 +464,19 @@
 	var/strength = 1 - speed_mult
 	target.update_interdiction(src, speed_mult, strength)
 
-	// Check if ship had momentum before stopping
+	// Check if ship had meaningful momentum before stopping
+	// Use is_still() first as a definitive check, then speed magnitude as backup
+	var/was_moving = !target.is_still()
 	var/old_speed_x = target.speed[1]
 	var/old_speed_y = target.speed[2]
-	var/had_momentum = (old_speed_x != 0 || old_speed_y != 0)
+	var/speed_magnitude = sqrt(old_speed_x * old_speed_x + old_speed_y * old_speed_y)
 
 	// Kill all target momentum - they have to re-engage engines
 	target.adjust_speed(-target.speed[1], -target.speed[2])
 
-	// If ship was moving, throw everything inside due to inertia
-	if(had_momentum)
+	// If ship was moving at meaningful speed, throw everything inside due to inertia
+	// Require both is_still() to be false AND speed magnitude > 0.5 to prevent false positives
+	if(was_moving && speed_magnitude > 0.5)
 		// Calculate throw direction (inertia continues in direction of travel)
 		var/throw_dir = NONE
 		if(old_speed_x > 0)
@@ -473,7 +488,6 @@
 		else if(old_speed_y < 0)
 			throw_dir |= SOUTH
 		// Throw force based on speed magnitude
-		var/speed_magnitude = sqrt(old_speed_x * old_speed_x + old_speed_y * old_speed_y)
 		var/throw_force = clamp(round(speed_magnitude * 2), 1, 10)
 		target.crash_throw_contents(throw_force, throw_dir, "The ship lurches violently as it's pulled out of motion!")
 
@@ -485,19 +499,15 @@
 	// Start playing sound to all mobs on the target ship
 	start_target_sound(target)
 
-	// Start cooldown
-	var/effective_cooldown = INTERDICTOR_COOLDOWN * cooldown_mult
-	COOLDOWN_START(src, interdict_cooldown, effective_cooldown)
-
 	// Apply undock lockout
 	COOLDOWN_START(target, interdiction_undock_lockout, INTERDICTOR_UNDOCK_LOCKOUT)
 
 	// Notify
 	SEND_SIGNAL(target, COMSIG_SHIP_INTERDICTED, src, power_allocation)
-	target.ship_announce("INTERDICTION LOCK COMPLETE! Engines limited to [round(speed_mult * 100)]% efficiency! Cloaking disabled!", "INTERDICTION ALERT", sound('sound/effects/alert.ogg'))
+	target.ship_notify("INTERDICTION LOCK COMPLETE! Engines limited to [round(speed_mult * 100)]% efficiency! Cloaking disabled!", "INTERDICTION", SHIP_NOTIFY_DANGER)
 
 	if(our_ship)
-		our_ship.ship_announce("Interdiction lock complete on [target.display_name]. Target speed capped at [round(speed_mult * 100)]%.", "Interdictor")
+		our_ship.ship_notify("Interdiction lock complete on [target.display_name]. Target speed capped at [round(speed_mult * 100)]%.", "INTERDICTOR", SHIP_NOTIFY_NOTICE)
 
 	update_appearance()
 
@@ -515,6 +525,11 @@
 
 /// Cancels interdiction for any reason
 /obj/machinery/ship_combat/interdictor/proc/cancel_interdiction(reason)
+	// Start cooldown only if interdiction was fully active (not just warming up)
+	if(interdiction_active)
+		var/effective_cooldown = INTERDICTOR_COOLDOWN * cooldown_mult
+		COOLDOWN_START(src, interdict_cooldown, effective_cooldown)
+
 	interdiction_active = FALSE
 	interdiction_warming_up = FALSE
 	warmup_progress = 0
@@ -550,9 +565,61 @@
 		UnregisterSignal(target, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
 		target.clear_interdiction()
 		SEND_SIGNAL(target, COMSIG_SHIP_INTERDICTION_ENDED)
-		target.ship_announce("Interdiction field collapsed. Engines restored to full power.", "Interdiction Ended")
+		target.ship_notify("Interdiction field collapsed. Engines restored to full power.", "INTERDICTION", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 	interdicted_ship_ref = null
+
+	update_appearance()
+	update_power_draw()
+
+/// Called when the target ship breaks free via shield burst
+/// Similar to cancel_interdiction but doesn't clear interdiction on target (they already did that)
+/obj/machinery/ship_combat/interdictor/proc/on_target_broke_free()
+	interdiction_active = FALSE
+	interdiction_warming_up = FALSE
+	warmup_progress = 0
+
+	// Reset cooldown - shield burst means the attacker can't immediately re-interdict
+	var/effective_cooldown = INTERDICTOR_COOLDOWN * cooldown_mult
+	COOLDOWN_START(src, interdict_cooldown, effective_cooldown)
+
+	// Stop processing
+	end_processing()
+
+	// Remove beam
+	QDEL_NULL(interdiction_beam)
+
+	// Remove kinesis effects
+	destroy_kinesis_effects()
+
+	// Remove fullscreen overlays from all mobs
+	clear_all_interdiction_overlays()
+
+	// Stop looping sounds
+	machine_sound?.stop()
+	stop_target_sound()
+
+	// Play shutdown sounds
+	playsound(src, 'voidcrew/sound/machines/interdictor/beep2.ogg', 17, FALSE)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'voidcrew/sound/machines/interdictor/off.ogg', 17, FALSE), 0.5 SECONDS)
+
+	// Unregister signals from our ship
+	var/obj/structure/overmap/ship/our_ship = linked_ship_ref?.resolve()
+	if(our_ship)
+		UnregisterSignal(our_ship, COMSIG_VOIDCREW_SHIP_MOVED)
+
+	// Unregister signals from target (but don't clear their interdiction - they already did)
+	var/obj/structure/overmap/ship/target = interdicted_ship_ref?.resolve()
+	if(target)
+		UnregisterSignal(target, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED))
+		SEND_SIGNAL(target, COMSIG_SHIP_INTERDICTION_ENDED)
+
+	interdicted_ship_ref = null
+
+	// Announce to our ship
+	var/obj/structure/overmap/ship/ship = linked_ship_ref?.resolve()
+	if(ship)
+		ship.ship_notify("Target vessel performed emergency shield burst! Interdiction lock broken.", "INTERDICTOR", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 
 	update_appearance()
 	update_power_draw()
@@ -655,8 +722,8 @@
 	cancel_interdiction()
 
 	// Announce force dock
-	our_ship.ship_announce("Forcing [dock_target.display_name] to dock!", "Force Dock Initiated")
-	dock_target.ship_announce("FORCED DOCKING INITIATED!", "INTERDICTION ALERT")
+	our_ship.ship_notify("Forcing [dock_target.display_name] to dock!", "INTERDICTOR", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	dock_target.ship_notify("FORCED DOCKING INITIATED!", "INTERDICTION", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn2.ogg', 25)
 
 	// Apply extended undock lockout
 	COOLDOWN_START(dock_target, interdiction_undock_lockout, INTERDICTOR_FORCE_DOCK_LOCKOUT)
@@ -665,12 +732,12 @@
 	var/result = our_ship.dock_ships_directly(dock_target, null, TRUE)
 	if(result)
 		// Direct docking failed, fall back to reserve port docking
-		our_ship.ship_announce("Direct docking failed, using reserve ports.", "Docking")
-		dock_target.ship_announce("Direct docking failed, using reserve ports.", "INTERDICTION ALERT")
+		our_ship.ship_notify("Direct docking failed, using reserve ports.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg', 50)
+		dock_target.ship_notify("Direct docking failed, using reserve ports.", "INTERDICTION", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 		var/fallback_result = our_ship.dock_ships_to_reserve_ports(dock_target, null, TRUE)
 		if(fallback_result)
-			our_ship.ship_announce("Forced docking failed: [fallback_result]", "Docking Error")
-			dock_target.ship_announce("Forced docking failed.", "Docking Error")
+			our_ship.ship_notify("Forced docking failed: [fallback_result]", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
+			dock_target.ship_notify("Forced docking failed.", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 			return FALSE
 		else
 			playsound(src, 'sound/machines/airlock/airlockopen.ogg', 50, TRUE)
@@ -999,7 +1066,7 @@
 			if(!pref_volume)
 				continue
 			// Play directly to mob (no positional audio)
-			var/actual_volume = 40 * (pref_volume / 100)
+			var/actual_volume = 20 * (pref_volume / 100)
 			SEND_SOUND(M, sound('voidcrew/sound/machines/interdictor/shield.ogg', volume = actual_volume))
 
 	// Remove overlays from mobs who left the ship

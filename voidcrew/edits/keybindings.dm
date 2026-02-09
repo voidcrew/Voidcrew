@@ -15,6 +15,9 @@
 	if(.)
 		return
 
+	if(!isliving(user.mob))
+		return FALSE
+
 	// Get list of owned parts from database
 	var/list/owned_parts = user.get_ships()
 	if(!owned_parts)

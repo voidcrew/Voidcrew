@@ -74,35 +74,3 @@
 /// Check if forced docking is allowed in a zone type
 #define ZONE_FORCED_DOCKING_ALLOWED(zone_type) (zone_type != ZONE_GREEN)
 
-// ========== SOLAR RADIATION ==========
-
-/// No radiation exposure (Neutral zone)
-#define ZONE_RADIATION_NONE 0
-/// Moderate radiation exposure (Contested zone) - requires Standard Shielding
-#define ZONE_RADIATION_MODERATE 1
-/// Heavy radiation exposure (Lawless zone) - requires Heavy Shielding
-#define ZONE_RADIATION_HEAVY 2
-
-/// Get radiation level for a zone type
-#define ZONE_RADIATION_LEVEL(zone_type) (zone_type == ZONE_RED ? ZONE_RADIATION_HEAVY : (zone_type == ZONE_YELLOW ? ZONE_RADIATION_MODERATE : ZONE_RADIATION_NONE))
-
-// ========== SHIP RADIATION SHIELDING ==========
-
-/// No radiation shielding installed
-#define SHIP_SHIELDING_NONE 0
-/// Standard shielding - protects against Contested zone (moderate) radiation
-#define SHIP_SHIELDING_STANDARD 1
-/// Heavy shielding - protects against Lawless zone (heavy) radiation
-#define SHIP_SHIELDING_HEAVY 2
-
-// ========== RADIATION EXPOSURE PARAMETERS ==========
-
-/// Interval between radiation applications
-#define SOLAR_RADIATION_CHECK_INTERVAL (5 SECONDS)
-/// Minimum exposure time before first radiation hit
-#define SOLAR_RADIATION_MINIMUM_EXPOSURE (3 SECONDS)
-
-// ========== RADIATION SHIELDING SIGNALS ==========
-
-/// Sent when a ship's radiation shielding level changes: (old_level, new_level)
-#define COMSIG_SHIP_SHIELDING_CHANGED "ship_shielding_changed"

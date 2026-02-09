@@ -9,7 +9,9 @@ from flask import Flask, request, send_file, abort
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 
-tts = TTS("tts_models/en/vctk/vits", progress_bar=False, gpu=False)
+print("Loading TTS model (this may take a few minutes on first run)...", flush=True)
+tts = TTS("tts_models/en/vctk/vits", progress_bar=True, gpu=False)
+print("TTS model loaded successfully!", flush=True)
 letters_to_use = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 random_factor = 0.35
 os.makedirs('samples', exist_ok=True)

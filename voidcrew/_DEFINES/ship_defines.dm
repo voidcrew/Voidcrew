@@ -6,6 +6,8 @@
 #define COMSIG_VOIDCREW_SHIP_DOCKED "voidcrew_ship_docked"
 #define COMSIG_VOIDCREW_SHIP_UNDOCKED "voidcrew_ship_undocked"
 #define COMSIG_VOIDCREW_SHIP_MOVED "voidcrew_ship_moved"
+/// Signal sent when a ship starts a zone transition (before crossing into a new zone)
+#define COMSIG_VOIDCREW_SHIP_ZONE_TRANSITION_START "voidcrew_ship_zone_transition_start"
 /// Signal sent TO the target ship when another ship docks to it (source = docking ship)
 #define COMSIG_VOIDCREW_SHIP_DOCKED_BY "voidcrew_ship_docked_by"
 /// Signal sent TO the target ship when a ship undocks from it (source = undocking ship)

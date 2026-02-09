@@ -2,8 +2,9 @@
 voidcrew TODO:
 	SSovermap originally fired to apply the planet effects but these would be way better off just using signals
 
-
-
+Performance Note:
+	Ship mass/integrity is now tracked via event-driven delta updates instead of polling.
+	See setup_mass_tracking() in ship.dm for details.
 */
 
 #define MAX_OVERMAP_EVENT_CLUSTERS 24
@@ -33,6 +34,9 @@ SUBSYSTEM_DEF(overmap)
 	var/list/map_zones = list()
 	///List of all simulated ships
 	var/list/simulated_ships = list()
+	/// List of NPC ships that need mass recalculated (damaged ships)
+	/// Used for performance - NPC ships cache mass and only recalc when damaged
+	var/list/dirty_npc_ships = list()
 	/// Timer ID of the timer used for telling which stage of an endround "jump" the ships are in
 	var/jump_timer
 	/// Current state of the jump
@@ -42,8 +46,16 @@ SUBSYSTEM_DEF(overmap)
 	/// Time taken for a bluespace jump to complete after it initiates (in deciseconds)
 	var/jump_completion_time = 1200
 
-	var/datum/map_template/shuttle/voidcrew/initial_ship_template
+	/// Type paths of ship templates to spawn at round start. Change this list to control what ships appear.
+	var/list/roundstart_ship_templates = list(
+		/datum/map_template/shuttle/voidcrew/scarab,
+		/datum/map_template/shuttle/voidcrew/meta,
+		/datum/map_template/shuttle/voidcrew/box,
+	)
+	/// The primary roundstart ship (first in the list). Kept for backward compatibility.
 	var/obj/structure/overmap/ship/initial_ship
+	/// All ships spawned at round start.
+	var/list/obj/structure/overmap/ship/initial_ships = list()
 
 /datum/controller/subsystem/overmap/Initialize(start_timeofday)
 	create_map()
@@ -56,15 +68,15 @@ SUBSYSTEM_DEF(overmap)
 	return SS_INIT_SUCCESS
 
 /**
- * Called every tick (1 second) - updates all ship integrity calculations
- * This ensures ship health is always current and triggers UI updates via signals
+ * Called every tick (1 second) - cleanup only
+ * Ship integrity is now tracked via event-driven delta updates (see ship.dm setup_mass_tracking)
+ * This polling loop has been removed for ~750x performance improvement
  */
 /datum/controller/subsystem/overmap/fire(resumed)
+	// Clean up deleted ships from the list
 	for(var/obj/structure/overmap/ship/ship as anything in simulated_ships)
 		if(QDELETED(ship))
 			simulated_ships -= ship
-			continue
-		ship.calculate_mass()
 
 /*
  * Bluespace jump procs
@@ -448,54 +460,47 @@ SUBSYSTEM_DEF(overmap)
 	log_mapping("SSovermap: Finished spawning [length(used_ruins)] space ruins")
 
 /**
- * At the start of the game, we want to make sure there is a ship on the overmap for people to join.
- * If there is no default template, we iterate through subtypes and run various checks to see if its a valid ship.
- * When we find a valid template we use it to spawn a ship.
+ * Spawns all ships defined in roundstart_ship_templates.
+ * The first successfully spawned ship becomes initial_ship (backward compat).
+ * All spawned ships are tracked in initial_ships.
  */
 /datum/controller/subsystem/overmap/proc/spawn_initial_ship()
 #ifdef UNIT_TESTS
 	var/list/remaining_templates = subtypesof(/datum/map_template/shuttle/voidcrew)
 	for(var/templates in remaining_templates)
-		var/datum/map_template/shuttle/voidcrew/loaded_template = SSshuttle.create_ship(templates)
-		if(!initial_ship_template)
-			initial_ship_template = loaded_template
-		if(!loaded_template)
+		var/obj/structure/overmap/ship/loaded_ship = SSshuttle.create_ship(templates)
+		if(!initial_ship && loaded_ship)
+			initial_ship = loaded_ship
+		if(loaded_ship)
+			initial_ships += loaded_ship
+			RegisterSignal(loaded_ship, COMSIG_QDELETING, PROC_REF(handle_initial_ship_deletion))
+		else
 			log_mapping("[src] failed to load ship [templates].")
 #else
-	if(!set_initial_ship())
-		return
-	initial_ship = SSshuttle.create_ship(initial_ship_template)
-	if(!initial_ship)
-		CRASH("Failed to spawn initial ship.")
+	if(!length(roundstart_ship_templates))
+		CRASH("No roundstart ship templates configured.")
 
-	RegisterSignal(initial_ship, COMSIG_QDELETING, PROC_REF(handle_initial_ship_deletion))
-#endif
-
-/**
- * Attempts to set an initial ship template.
- * If one is already set, this will return out.
- * If a ship is set, initial_ship_template will be set to it, and it will return TRUE, otherwise FALSE.
- */
-/datum/controller/subsystem/overmap/proc/set_initial_ship()
-	if(initial_ship_template)
-		return TRUE
-
-	var/list/remaining_templates = subtypesof(/datum/map_template/shuttle/voidcrew)
-	while(!initial_ship_template && LAZYLEN(remaining_templates))
-		var/datum/map_template/shuttle/voidcrew/random_template = pick_n_take(remaining_templates)
-		if(initial(random_template.abstract) == random_template)
+	for(var/ship_type in roundstart_ship_templates)
+		var/obj/structure/overmap/ship/spawned = SSshuttle.create_ship(ship_type)
+		if(!spawned)
+			stack_trace("Failed to spawn roundstart ship: [ship_type]")
 			continue
-		initial_ship_template = random_template
-		return TRUE
+		initial_ships += spawned
+		RegisterSignal(spawned, COMSIG_QDELETING, PROC_REF(handle_initial_ship_deletion))
 
-	stack_trace("Failed to find a valid initial ship template to spawn.")
-	return FALSE
+	if(!length(initial_ships))
+		CRASH("Failed to spawn any roundstart ships.")
+
+	initial_ship = initial_ships[1]
+#endif
 
 /datum/controller/subsystem/overmap/proc/handle_initial_ship_deletion(datum/source)
 	SIGNAL_HANDLER
 
-	initial_ship = null
-	message_admins("Overmap Starter Ship was deleted. You may want to investigate or spawn a new one!")
+	initial_ships -= source
+	if(source == initial_ship)
+		initial_ship = length(initial_ships) ? initial_ships[1] : null
+	message_admins("A roundstart ship was deleted. [length(initial_ships)] roundstart ship(s) remaining.")
 
 
 

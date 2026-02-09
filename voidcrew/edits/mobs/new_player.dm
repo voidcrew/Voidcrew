@@ -3,50 +3,39 @@
 	return TRUE
 
 /**
- * Latejoin menu
+ * Latejoin menu - opens the ship join TGUI
  */
 /mob/dead/new_player/proc/select_ship()
-	var/list/shuttle_choices = list(
-		"Purchase ship" = "Purchase",
-	)
+	var/datum/ship_join_menu/menu = new(src)
+	menu.ui_interact(src)
 
-	for(var/obj/structure/overmap/ship/active_ships as anything in SSovermap.simulated_ships)
-		if(isnull(active_ships.shuttle))
-			stack_trace("[active_ships] has no shuttle???")
-			continue
-		if(length(active_ships.shuttle.spawn_points) <= 0 || !active_ships.joining_allowed)
-			continue
-		shuttle_choices["[active_ships.name] - ([active_ships.source_template?.short_name || "Unknown Class"])"] = active_ships
+/**
+ * Job selection after choosing a ship from the join menu
+ */
+/mob/dead/new_player/proc/select_job_on_ship(obj/structure/overmap/ship/ship)
+	if(!istype(ship))
+		return select_ship()
 
-	var/used_name = client.prefs.read_preference(/datum/preference/name/real_name)
-	var/obj/structure/overmap/ship/selected_ship = shuttle_choices[tgui_input_list(src, "Select ship to spawn on.", "Welcome, [used_name].", shuttle_choices)]
-	if(!selected_ship)
-		return
-
-	if(selected_ship == "Purchase")
-		// Open the ship catalog in latejoin mode with callback
-		var/datum/callback/cb = CALLBACK(src, PROC_REF(on_ship_catalog_selection))
-		var/datum/ship_catalog_ui/catalog = new(src, latejoin = TRUE, selection_callback = cb)
-		catalog.ui_interact(src)
-		return
-
-	if(selected_ship.memo)
-		var/memo_accept = tgui_alert(src, "Current ship memo: [selected_ship.memo]", "[selected_ship.name] Memo", list("OK", "Cancel"))
+	// Show memo if present
+	if(ship.memo)
+		var/memo_accept = tgui_alert(src, "Current ship memo: [ship.memo]", "[ship.name] Memo", list("OK", "Cancel"))
 		if(memo_accept != "OK")
-			return select_ship() //Send them back to shuttle selection
+			return select_ship() // Send them back to ship selection
 
+	// Build job choices
 	var/list/job_choices = list()
-	for(var/datum/job/job as anything in selected_ship.job_slots)
-		if(selected_ship.job_slots[job] < 1)
+	for(var/datum/job/job as anything in ship.job_slots)
+		if(ship.job_slots[job] < 1)
 			continue
-		job_choices["[job.title] ([selected_ship.job_slots[job]] positions)"] = job
+		job_choices["[job.title] ([ship.job_slots[job]] positions)"] = job
+
 	if(!job_choices.len)
 		to_chat(usr, span_danger("There are no jobs available on this ship!"))
-		return select_ship() //Send them back to shuttle selection
+		return select_ship() // Send them back to ship selection
 
-	var/datum/job/selected_job = job_choices[tgui_input_list(src, "Select job.", "Welcome, [used_name].", job_choices)]
+	var/datum/job/selected_job = job_choices[tgui_input_list(src, "Select your role.", "[ship.name]", job_choices)]
 	if(!selected_job)
-		return select_ship() //Send them back to shuttle selection
+		return select_ship() // Send them back to ship selection
 
 	if(!SSticker?.IsRoundInProgress())
 		to_chat(usr, span_danger("The round is either not ready, or has already finished..."))
@@ -64,7 +53,7 @@
 		if((living_player_count() >= relevant_cap) || (src != SSticker.queued_players[1]))
 			to_chat(usr, span_warning("Server is full."))
 
-	AttemptSpawnOnShip(selected_job, selected_ship)
+	AttemptSpawnOnShip(selected_job, ship)
 
 /// Flag to prevent double-clicking ship spawn
 /mob/dead/new_player/var/spawning_ship = FALSE
@@ -203,6 +192,17 @@
 		joined_ship.end_deletion_timer()
 
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_CREWMEMBER_JOINED, character, job.title)
+
+	// Grant captain management action if spawning as captain (officer job)
+	if(job.officer && humanc)
+		var/datum/action/innate/captain_management/captain_action = new(humanc, joined_ship)
+		captain_action.Grant(humanc)
+
+	// Show ship memo after spawn (with a small delay so they're fully loaded in)
+	if(joined_ship.memo && humanc)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(show_ship_memo_to_player), humanc, joined_ship), 3 SECONDS)
+
+	return TRUE
 
 /**
  * Apply custom slot loadout items to a character
