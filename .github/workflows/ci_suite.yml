@@ -14,6 +14,8 @@ jobs:
     name: Compile
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    outputs:
+      maps: ${{ steps.map_finder.outputs.maps }}
 
     steps:
       - uses: actions/checkout@v6
@@ -28,3 +30,91 @@ jobs:
         run: |
           source $HOME/BYOND/byond/bin/byondsetup
           tools/build/build.sh --ci dm -DCIBUILDING -DCITESTING -DALL_MAPS
+
+      - name: Find Maps
+        id: map_finder
+        run: |
+          > maps_output.txt
+          for file in _maps/*.json; do
+            if ! jq -e '.exclude_from_ci == true' "$file" >/dev/null 2>&1; then
+              echo "\"$(basename "$file" .json)\"" >> maps_output.txt
+            else
+              echo "Excluded: $file"
+            fi
+          done
+          map_list=$(paste -sd, maps_output.txt)
+          echo "Maps: $map_list"
+          echo "maps={\"paths\":[$map_list]}" >> "$GITHUB_OUTPUT"
+
+      - name: Copy build output
+        run: bash tools/ci/copy_build_output.sh artifact
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: build-artifact
+          path: artifact
+          retention-days: 1
+
+  run_integration_tests:
+    name: Integration Tests (${{ matrix.map }})
+    needs: compile
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        map: ${{ fromJSON(needs.compile.outputs.maps).paths }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Restore BYOND from Cache
+        uses: ./.github/actions/restore_or_install_byond
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: build-artifact
+          path: ./
+
+      - name: Setup database
+        run: |
+          sudo systemctl start mysql
+          mysql -u root -e 'CREATE DATABASE tg_ci;'
+          mysql -u root tg_ci < SQL/tgstation_schema.sql
+          mysql -u root -e 'CREATE DATABASE tg_ci_prefixed;'
+          mysql -u root tg_ci_prefixed < SQL/tgstation_schema_prefixed.sql
+
+      - name: Install rust-g
+        run: bash tools/ci/install_rust_g.sh
+
+      - name: Install dreamluau
+        run: bash tools/ci/install_dreamluau.sh
+
+      - name: Run Tests
+        id: run_tests
+        run: |
+          source $HOME/BYOND/byond/bin/byondsetup
+          bash tools/ci/run_server.sh ${{ matrix.map }}
+
+      - name: On test fail, write a step summary
+        if: always() && steps.run_tests.outcome == 'failure'
+        run: |
+          if [ -f data/unit_tests.json ]; then
+            FAILED_UNIT_TESTS=$(jq 'to_entries | map(.value | select(.status == 1))' data/unit_tests.json)
+            FAIL_COUNT=$(echo $FAILED_UNIT_TESTS | jq 'length')
+            echo "# Test failures" >> $GITHUB_STEP_SUMMARY
+            echo "$FAIL_COUNT tests failed." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            for i in $( seq $FAIL_COUNT ); do
+              CURRENT_FAIL=$(echo $FAILED_UNIT_TESTS | jq --arg i $i '.[($i | tonumber) - 1]')
+              TEST=$(echo $CURRENT_FAIL | jq --raw-output '.name')
+              echo "### $TEST" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              echo $CURRENT_FAIL | jq --raw-output '.message' >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            done
+          fi
