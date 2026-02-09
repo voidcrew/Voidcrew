@@ -277,7 +277,6 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/vomit/old,
 /obj/effect/turf_decal/tile/bar/opposingcorners,
-/obj/machinery/ship_combat/cloak_device,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -308,6 +307,13 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 4
 	},
+/obj/machinery/button/door/directional/south{
+	id = "pirateportexternal";
+	name = "External Bolt Control";
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -320,20 +326,6 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_default{
-	requires_power = 0
-	})
-"aG" = (
-/obj/effect/turf_decal/stripes/line{
-	dir = 1
-	},
-/obj/machinery/power/port_gen/pacman{
-	anchored = 1
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable,
-/obj/machinery/power/terminal,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -364,6 +356,9 @@
 	},
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/structure/fans/tiny,
+/obj/docking_port/mobile/voidcrew/pirate_default{
+	port_direction = 2
+	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -399,34 +394,16 @@
 	requires_power = 0
 	})
 "aN" = (
-/obj/machinery/light/small/directional/south,
-/obj/effect/turf_decal/stripes/corner{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/button/door/directional/south{
-	id = "pirateportexternal";
-	name = "External Bolt Control";
-	normaldoorcontrol = 1;
-	specialfunctions = 4
-	},
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
 "aO" = (
-/obj/machinery/light/small/directional/south,
-/obj/effect/turf_decal/stripes/corner,
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/button/door/directional/south{
-	id = "piratestarboardexternal";
-	name = "External Bolt Control";
-	normaldoorcontrol = 1;
-	specialfunctions = 4
-	},
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -438,8 +415,8 @@
 	requires_power = 0
 	})
 "aS" = (
-/obj/effect/turf_decal/stripes/line,
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -517,13 +494,7 @@
 	requires_power = 0
 	})
 "bk" = (
-/obj/effect/turf_decal/stripes/line{
-	dir = 1
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable,
-/obj/machinery/power/terminal,
-/turf/open/floor/plating,
+/turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -545,13 +516,6 @@
 "bm" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
 /turf/open/floor/pod/dark,
-/area/shuttle/voidcrew/pirate_default{
-	requires_power = 0
-	})
-"bo" = (
-/obj/machinery/light/small/directional/east,
-/obj/structure/sign/warning/vacuum/external/directional/east,
-/turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -581,19 +545,7 @@
 /obj/machinery/light/small/directional/north,
 /obj/machinery/firealarm/directional/north,
 /obj/effect/decal/cleanable/dirt,
-/obj/structure/table,
-/obj/item/melee/energy/sword/pirate{
-	pixel_x = -1;
-	pixel_y = 6
-	},
-/obj/item/melee/energy/sword/pirate{
-	pixel_x = 6;
-	pixel_y = 6
-	},
-/obj/item/melee/energy/sword/pirate{
-	pixel_x = 13;
-	pixel_y = 6
-	},
+/obj/machinery/ship_combat/cloak_device,
 /turf/open/floor/pod/light,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -630,7 +582,6 @@
 "by" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/piratepad,
 /turf/open/floor/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -744,6 +695,7 @@
 "bP" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -754,45 +706,24 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 8
 	},
+/obj/machinery/light/small/directional/south,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
 "bX" = (
+/obj/structure/cable,
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/shuttle/voidcrew/pirate_default{
+	requires_power = 0
+	})
+"bZ" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/power/terminal{
-	dir = 4
-	},
-/obj/structure/rack,
-/obj/item/storage/toolbox/mechanical{
-	pixel_y = 4
-	},
-/obj/item/flashlight{
-	pixel_x = 3;
-	pixel_y = 3
-	},
-/obj/item/storage/box/lights/bulbs,
-/obj/item/stack/sheet/mineral/plasma{
-	amount = 10
-	},
-/obj/item/multitool,
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
 /obj/structure/cable,
 /obj/machinery/power/terminal,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/pirate_default{
-	requires_power = 0
-	})
-"bZ" = (
-/obj/machinery/door/airlock/external/glass/ruin{
-	id_tag = "piratestarboardexternal"
-	},
-/obj/effect/mapping_helpers/airlock/locked,
-/obj/effect/mapping_helpers/airlock/cyclelink_helper,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/mapping_helpers/airlock/cutaiwire,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -841,6 +772,23 @@
 	pixel_x = 5
 	},
 /obj/structure/sign/poster/contraband/bountyhunters/directional/north,
+/obj/item/melee/energy/sword/pirate{
+	pixel_x = 13;
+	pixel_y = 6
+	},
+/obj/item/melee/energy/sword/pirate{
+	pixel_x = -1;
+	pixel_y = 6
+	},
+/obj/item/melee/energy/sword/pirate{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/obj/item/storage/box/lethalshot,
+/obj/item/gun/ballistic/shotgun/automatic/combat{
+	pixel_x = -2;
+	pixel_y = 2
+	},
 /turf/open/floor/pod/light,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -1010,14 +958,7 @@
 	dir = 9
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/structure/rack{
-	dir = 8
-	},
-/obj/item/storage/box/lethalshot,
-/obj/item/gun/ballistic/shotgun/automatic/combat{
-	pixel_x = -2;
-	pixel_y = 2
-	},
+/obj/machinery/piratepad,
 /turf/open/floor/pod/light,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -1076,7 +1017,19 @@
 "ED" = (
 /obj/effect/turf_decal/delivery,
 /obj/effect/decal/cleanable/dirt,
-/obj/structure/tank_dispenser/oxygen,
+/obj/structure/rack,
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 10
+	},
+/obj/item/multitool,
+/obj/item/storage/box/lights/bulbs,
+/obj/item/flashlight{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 4
+	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -1117,11 +1070,10 @@
 	requires_power = 0
 	})
 "Ni" = (
-/obj/effect/turf_decal/stripes/line,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 5
 	},
+/obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -1162,18 +1114,10 @@
 	requires_power = 0
 	})
 "TU" = (
-/obj/machinery/door/airlock/external/glass/ruin{
-	id_tag = "piratestarboardexternal"
-	},
-/obj/effect/mapping_helpers/airlock/locked,
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
-/obj/docking_port/mobile/voidcrew/pirate_default{
-	port_direction = 2
-	},
-/obj/effect/mapping_helpers/airlock/cutaiwire,
-/obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
@@ -1237,7 +1181,7 @@ ar
 aj
 RY
 aM
-ep
+aj
 aK
 af
 "}
@@ -1255,7 +1199,7 @@ OL
 zw
 dy
 br
-ep
+aj
 aK
 af
 "}
@@ -1274,7 +1218,7 @@ aj
 aj
 aj
 aj
-aj
+bX
 aR
 "}
 (6,1,1) = {"
@@ -1291,9 +1235,9 @@ aj
 aj
 Gk
 Ni
-aF
-aI
-aJ
+bZ
+ep
+aK
 "}
 (7,1,1) = {"
 af
@@ -1309,9 +1253,9 @@ JT
 aj
 km
 aN
-aj
-aj
-aj
+TU
+bk
+aK
 "}
 (8,1,1) = {"
 af
@@ -1327,9 +1271,9 @@ ai
 aU
 be
 aD
-aG
-ep
-aK
+aj
+aj
+aj
 "}
 (9,1,1) = {"
 af
@@ -1345,9 +1289,9 @@ bm
 mU
 aL
 bP
-bX
-ep
-aK
+aF
+aI
+aJ
 "}
 (10,1,1) = {"
 af
@@ -1363,9 +1307,9 @@ bI
 aj
 bO
 bQ
-bk
-ep
-aK
+aj
+aj
+aj
 "}
 (11,1,1) = {"
 af
@@ -1381,9 +1325,9 @@ vB
 aj
 np
 aO
-aj
-aj
-aj
+TU
+bk
+aK
 "}
 (12,1,1) = {"
 af
@@ -1400,8 +1344,8 @@ aj
 ED
 aS
 bZ
-bo
-TU
+ep
+aK
 "}
 (13,1,1) = {"
 af
@@ -1418,7 +1362,7 @@ aj
 aj
 aj
 aj
-aj
+bX
 aR
 "}
 (14,1,1) = {"
@@ -1435,7 +1379,7 @@ bJ
 bM
 dU
 aV
-ep
+aj
 aK
 af
 "}
@@ -1453,7 +1397,7 @@ wf
 aj
 OD
 aV
-ep
+aj
 aK
 af
 "}

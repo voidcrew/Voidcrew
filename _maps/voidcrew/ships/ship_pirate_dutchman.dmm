@@ -19,7 +19,9 @@
 	dir = 4
 	},
 /turf/open/floor/wood/airless,
-/area/template_noop)
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
 "af" = (
 /turf/template_noop,
 /area/template_noop)
@@ -544,7 +546,9 @@
 	dir = 8
 	},
 /turf/open/floor/wood/airless,
-/area/template_noop)
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
 "tH" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 5
@@ -737,7 +741,9 @@
 	name = "wooden railing"
 	},
 /turf/open/floor/wood/airless,
-/area/template_noop)
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
 "BP" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
@@ -1145,7 +1151,9 @@
 	dir = 4
 	},
 /turf/open/floor/wood/airless,
-/area/template_noop)
+/area/shuttle/voidcrew/pirate_dutchman{
+	requires_power = 0
+	})
 "YT" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 9
