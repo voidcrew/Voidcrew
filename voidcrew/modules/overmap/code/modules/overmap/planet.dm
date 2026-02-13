@@ -95,7 +95,9 @@
 		var/datum/space_level/z_level = mapzone.z_levels[1]
 		if(!z_level)
 			return
-		var/planet_turf = locate(round(world.maxx/2), round(world.maxy/2), z_level.z_value)
+		var/center_x = !isnull(z_level.low_x) ? round((z_level.low_x + z_level.high_x) / 2) : round(world.maxx / 2)
+		var/center_y = !isnull(z_level.low_y) ? round((z_level.low_y + z_level.high_y) / 2) : round(world.maxy / 2)
+		var/planet_turf = locate(center_x, center_y, z_level.z_value)
 		if(!planet_turf)
 			return
 		user.forceMove(get_turf(planet_turf))

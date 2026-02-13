@@ -32,49 +32,57 @@
 	load_ship_templates()
 	return ..()
 
-#define INIT_ANNOUNCE(X) to_chat(world, span_boldannounce("[X]")); log_world(X)
 /datum/controller/subsystem/mapping/loadWorld()
 	InitializeDefaultZLevels()
-	var/list/FailedZs = list()
-	var/z_count = 1
-	for(var/i in 1 to lava_planet_count)
-		LoadGroup(FailedZs, "Planet lava [i]", "map_files/voidcrew", "lava.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM)))
-		z_count += 2
-		var/list/p = list(type = /datum/overmap/planet/lava, z = z_count)
-		planets += list("lava [i]" = p)
 
-	for(var/i in 1 to ice_planet_count)
-		LoadGroup(FailedZs, "Planet ice [i]", "map_files/voidcrew", "ice.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM)))
-		z_count += 2
-		var/list/p = list(type = /datum/overmap/planet/ice, z = z_count)
-		planets += list("ice [i]" = p)
+	var/list/planet_configs = list(
+		list("name" = "lava", "count" = lava_planet_count, "type" = /datum/overmap/planet/lava),
+		list("name" = "ice", "count" = ice_planet_count, "type" = /datum/overmap/planet/ice),
+		list("name" = "jungle", "count" = jungle_planet_count, "type" = /datum/overmap/planet/jungle),
+		list("name" = "beach", "count" = beach_planet_count, "type" = /datum/overmap/planet/beach),
+		list("name" = "wasteland", "count" = wasteland_planet_count, "type" = /datum/overmap/planet/wasteland),
+	)
 
-	for(var/i in 1 to jungle_planet_count)
-		LoadGroup(FailedZs, "Planet jungle [i]", "map_files/voidcrew", "jungle.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_JUNGLE_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_JUNGLE_RUINS)))
-		z_count += 2
-		var/list/p = list(type = /datum/overmap/planet/jungle, z = z_count)
-		planets += list("jungle [i]" = p)
+	for(var/list/config in planet_configs)
+		var/planet_name = config["name"]
+		var/planet_count = config["count"]
+		var/planet_type_path = config["type"]
 
-	for(var/i in 1 to beach_planet_count)
-		LoadGroup(FailedZs, "Planet beach [i]", "map_files/voidcrew", "beach.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_BEACH_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_BEACH_RUINS)))
-		z_count += 2
-		var/list/p = list(type = /datum/overmap/planet/beach, z = z_count)
-		planets += list("beach [i]" = p)
+		// Instantiate to read subtype vars, then delete
+		var/datum/overmap/planet/temp = new planet_type_path
+		var/psize = temp.planet_size
+		var/ruin_trait = temp.ruin_type
+		var/weather_trait = temp.weather_trait
+		var/cave_area_type = temp.cave_area
+		var/surface_area_type = temp.surface_area
+		qdel(temp)
 
-	for(var/i in 1 to wasteland_planet_count)
-		LoadGroup(FailedZs, "Planet wasteland [i]", "map_files/voidcrew", "wasteland.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_WASTELAND_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_WASTELAND_RUINS)))
-		z_count += 2
-		var/list/p = list(type = /datum/overmap/planet/wasteland, z = z_count)
-		planets += list("wasteland [i]" = p)
+		for(var/i in 1 to planet_count)
+			// Build shared traits from planet datum
+			var/list/shared_traits = list(ZTRAIT_MINING = TRUE, ZTRAIT_LINKAGE = UNAFFECTED)
+			if(ruin_trait)
+				shared_traits[ruin_trait] = TRUE
 
-	if(LAZYLEN(FailedZs)) //but seriously, unless the server's filesystem is messed up this will never happen
-		var/msg = "RED ALERT! The following map files failed to load: [FailedZs[1]]"
-		if(FailedZs.len > 1)
-			for(var/I in 2 to FailedZs.len)
-				msg += ", [FailedZs[I]]"
-		msg += ". Yell at your server host!"
-		INIT_ANNOUNCE(msg)
-#undef INIT_ANNOUNCE
+			// Cave z-level (no weather trait - weather is surface only)
+			var/list/cave_traits = shared_traits.Copy()
+			cave_traits[ZTRAIT_UP] = 1
+			var/datum/space_level/cave_z = add_new_zlevel("Planet [planet_name] [i] cave", cave_traits)
+			cave_z.set_bounds(psize, psize)
+			cave_z.fill_in(area_override = cave_area_type)
+			cave_z.place_cordon()
+
+			// Surface z-level (weather trait goes here)
+			var/list/surface_traits = shared_traits.Copy()
+			surface_traits[ZTRAIT_DOWN] = 1
+			if(weather_trait)
+				surface_traits[weather_trait] = TRUE
+			var/datum/space_level/surface_z = add_new_zlevel("Planet [planet_name] [i]", surface_traits)
+			surface_z.set_bounds(psize, psize)
+			surface_z.fill_in(area_override = surface_area_type)
+			surface_z.place_cordon()
+
+			var/list/p = list("type" = planet_type_path, "z" = surface_z.z_value, "cave_z" = cave_z.z_value)
+			planets += list("[planet_name] [i]" = p)
 
 /datum/controller/subsystem/mapping/run_map_terrain_generation()
 	for(var/area/A as anything in GLOB.areas)
@@ -166,11 +174,13 @@
 /datum/controller/subsystem/mapping/setup_rivers()
 	var/list/lava_ruins = levels_by_trait(ZTRAIT_LAVA_RUINS)
 	for (var/lava_z in lava_ruins)
-		spawn_planet_rivers(lava_z, 4, /turf/open/lava/smooth/lava_land_surface/planetary, list(/area/overmap_encounter/planetoid/lava, /area/overmap_encounter/planetoid/cave))
+		var/datum/space_level/level = get_level(lava_z)
+		spawn_planet_rivers(lava_z, 4, /turf/open/lava/smooth/lava_land_surface/planetary, list(/area/overmap_encounter/planetoid/lava, /area/overmap_encounter/planetoid/cave), level.low_x, level.low_y, level.high_x, level.high_y)
 
 	var/list/ice_ruins = levels_by_trait(ZTRAIT_ICE_RUINS)
 	for (var/ice_z in ice_ruins)
-		spawn_planet_rivers(ice_z, 4, /turf/open/lava/plasma/planetary, list(/area/overmap_encounter/planetoid/ice, /area/overmap_encounter/planetoid/cave/ice))
+		var/datum/space_level/level = get_level(ice_z)
+		spawn_planet_rivers(ice_z, 4, /turf/open/lava/plasma/planetary, list(/area/overmap_encounter/planetoid/ice, /area/overmap_encounter/planetoid/cave/ice), level.low_x, level.low_y, level.high_x, level.high_y)
 
 /datum/controller/subsystem/mapping/proc/load_ship_templates()
 	SHOULD_CALL_PARENT(TRUE)

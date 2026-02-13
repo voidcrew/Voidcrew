@@ -49,14 +49,29 @@
 		if(living_mob.z == z_value)
 			. += living_mob
 
+/datum/space_level/proc/set_bounds(width, height)
+	width = clamp(width, PLANET_MIN_SIZE, world.maxx)
+	height = clamp(height, PLANET_MIN_SIZE, world.maxy)
+	low_x = round((world.maxx - width) / 2) + 1
+	low_y = round((world.maxy - height) / 2) + 1
+	high_x = low_x + width - 1
+	high_y = low_y + height - 1
+
 /datum/space_level/proc/get_block()
-	low_x = 1
-	low_y = 1
-	high_x = world.maxx
-	high_y = world.maxy
+	if(isnull(low_x))
+		low_x = 1
+		low_y = 1
+		high_x = world.maxx
+		high_y = world.maxy
 	return block(locate(low_x,low_y,z_value), locate(high_x,high_y,z_value))
 
 /datum/space_level/proc/clear_reservation()
+	// Reset bounds so cleanup covers the full z-level
+	low_x = null
+	low_y = null
+	high_x = null
+	high_y = null
+
 	var/area/space_area = GLOB.areas_by_type[world.area]
 
 	var/list/turf/block_turfs = get_block()
@@ -91,6 +106,12 @@
 /// Clears contents and resets turfs to uninitialized /turf/open/space/basic
 /// This bypasses ChangeTurf so turfs remain uninitialized and unbuildable
 /datum/space_level/proc/clear_to_uninitialized_space()
+	// Reset bounds so cleanup covers the full z-level
+	low_x = null
+	low_y = null
+	high_x = null
+	high_y = null
+
 	var/area/space_area = GLOB.areas_by_type[world.area]
 	var/list/turf/block_turfs = get_block()
 
@@ -113,6 +134,31 @@
 		// Create uninitialized space turf directly (bypasses ChangeTurf which would init it)
 		new /turf/open/space/basic(T)
 		CHECK_TICK
+
+/// Fills all turfs outside the bounded area with cordon turfs. Only does anything if bounds are smaller than the full z-level.
+/datum/space_level/proc/place_cordon()
+	if(isnull(low_x))
+		return
+	// No cordon needed if bounds cover the full z-level
+	if(low_x <= 1 && low_y <= 1 && high_x >= world.maxx && high_y >= world.maxy)
+		return
+
+	// Bottom strip (below planet)
+	if(low_y > 1)
+		for(var/turf/T as anything in block(locate(1, 1, z_value), locate(world.maxx, low_y - 1, z_value)))
+			new /turf/cordon(T)
+	// Top strip (above planet)
+	if(high_y < world.maxy)
+		for(var/turf/T as anything in block(locate(1, high_y + 1, z_value), locate(world.maxx, world.maxy, z_value)))
+			new /turf/cordon(T)
+	// Left strip (beside planet, between top and bottom)
+	if(low_x > 1)
+		for(var/turf/T as anything in block(locate(1, low_y, z_value), locate(low_x - 1, high_y, z_value)))
+			new /turf/cordon(T)
+	// Right strip (beside planet, between top and bottom)
+	if(high_x < world.maxx)
+		for(var/turf/T as anything in block(locate(high_x + 1, low_y, z_value), locate(world.maxx, high_y, z_value)))
+			new /turf/cordon(T)
 
 /datum/space_level/proc/fill_in(turf/turf_type, area/area_override)
 	var/area/area_to_use = null

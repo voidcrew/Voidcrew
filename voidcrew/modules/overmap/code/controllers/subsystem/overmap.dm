@@ -323,18 +323,21 @@ SUBSYSTEM_DEF(overmap)
 		qdel(planet_info)
 
 		var/datum/map_zone/mapzone = find_free_mapzone()
-		var/datum/space_level/zlevel
 		var/encounter_name = "Dynamic Overmap Encounter"
 		if(isnull(mapzone))
 			mapzone = create_map_zone(encounter_name)
-			zlevel = SSmapping.get_level(planets[planet]["z"])
-			mapzone.add_space_level(zlevel)
-		else
-			if(mapzone.z_levels[1])
-				zlevel = mapzone.z_levels[1]
-			else
-				zlevel = SSmapping.get_level(planets[planet]["z"])
-				mapzone.add_space_level(zlevel)
+
+		// Add surface z-level
+		var/datum/space_level/surface_level = SSmapping.get_level(planets[planet]["z"])
+		if(!(surface_level in mapzone.z_levels))
+			mapzone.add_space_level(surface_level)
+
+		// Add cave z-level
+		var/cave_z_value = planets[planet]["cave_z"]
+		if(cave_z_value)
+			var/datum/space_level/cave_level = SSmapping.get_level(cave_z_value)
+			if(cave_level && !(cave_level in mapzone.z_levels))
+				mapzone.add_space_level(cave_level)
 
 		mapzone.taken = TRUE
 		planet_to_spawn.mapzone = mapzone
@@ -544,6 +547,7 @@ SUBSYSTEM_DEF(overmap)
 	var/datum/weather/weather_controller_type
 	var/weather_trait
 	var/datum/planet/planet_template
+	var/planet_size
 	if(!isnull(planet_type))
 		planet_type = new planet_type
 		ruin_list = get_ruin_list(planet_type.ruin_type)
@@ -552,6 +556,7 @@ SUBSYSTEM_DEF(overmap)
 		target_area = planet_type.target_area
 		weather_controller_type = planet_type.weather_controller_type
 		weather_trait = planet_type.weather_trait
+		planet_size = planet_type.planet_size
 		if(!(isnull(planet_type.planet_template)))
 			planet_template = new planet_type.planet_template
 		qdel(planet_type)
@@ -585,7 +590,11 @@ SUBSYSTEM_DEF(overmap)
 
 	mapzone.taken = TRUE
 
+	if(planet_size)
+		zlevel.set_bounds(planet_size, planet_size)
+
 	var/area/filled_area = zlevel.fill_in(area_override = target_area)
+	zlevel.place_cordon()
 
 	if(ruin_type)
 		var/turf/ruin_turf = locate(rand(
@@ -606,7 +615,10 @@ SUBSYSTEM_DEF(overmap)
 		filled_area.reg_in_areas_in_z()
 
 	if(weather_controller_type)
-		new weather_controller_type(mapzone)
+		var/list/weather_z_levels = list()
+		for(var/datum/space_level/level as anything in mapzone.z_levels)
+			weather_z_levels += level.z_value
+		new weather_controller_type(weather_z_levels)
 
 	// locates the first dock in the bottom left, accounting for padding and the border
 	var/turf/primary_docking_turf = locate(

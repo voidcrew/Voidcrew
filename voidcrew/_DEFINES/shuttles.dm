@@ -4,6 +4,9 @@
 #define SHUTTLE_DOCKER_BLOCKED_BY_MOB 4
 #define SHUTTLE_DOCKER_BLOCKED_BY_AREA 5
 
+// Minimum planet size: 2 docks + padding + border
+#define PLANET_MIN_SIZE 123
+
 // max reserve shuttle dock size defines
 
 // neither of the shuttle's dimensions should exceed this size if it is to dock at encounters
