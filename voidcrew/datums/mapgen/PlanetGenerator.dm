@@ -86,7 +86,7 @@
 	to_chat(world, span_boldannounce("[message]"))
 	log_world(message)
 
-/datum/map_generator/planet_generator/proc/generate_overworld(heat, humidity_level, gen_turf, datum/planet/planet_type)
+/datum/map_generator/planet_generator/proc/generate_overworld(heat, humidity_level, turf/gen_turf, datum/planet/planet_type)
 	var/heat_level
 	var/datum/biome/selected_biome
 
@@ -106,7 +106,10 @@
 	selected_biome = heat_level[humidity_level]
 	selected_biome = SSmapping.biomes[selected_biome]
 	var/turf/picked_turf = pickweight(selected_biome.open_turf_types)
-	picked_turf = new picked_turf(gen_turf)
+	if(SSlighting.initialized)
+		picked_turf = gen_turf.ChangeTurf(picked_turf, flags = CHANGETURF_IGNORE_AIR)
+	else
+		picked_turf = new picked_turf(gen_turf)
 	picked_turf.generating_biome = selected_biome
 
 /datum/map_generator/planet_generator/proc/generate_cave(heat, humidity_level, string_gen, turf/gen_turf, cave_area, datum/planet/planet_type)
@@ -126,7 +129,10 @@
 	selected_cave_biome = SSmapping.biomes[selected_cave_biome]
 	var/closed = text2num(string_gen[world.maxx * (gen_turf.y - 1) + gen_turf.x])
 	var/turf/picked_turf = pickweight(closed ? selected_cave_biome.closed_turf_types : selected_cave_biome.open_turf_types)
-	picked_turf = new picked_turf(gen_turf)
+	if(SSlighting.initialized)
+		picked_turf = gen_turf.ChangeTurf(picked_turf, flags = CHANGETURF_IGNORE_AIR)
+	else
+		picked_turf = new picked_turf(gen_turf)
 	if(gen_turf.turf_flags & NO_RUINS)
 		picked_turf.turf_flags |= NO_RUINS
 	var/turf_area = get_area(picked_turf)

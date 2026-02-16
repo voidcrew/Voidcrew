@@ -605,11 +605,14 @@ SUBSYSTEM_DEF(overmap)
 			)
 		ruin_type.load(ruin_turf)
 
+	var/list/block_turfs = zlevel.get_block()
 	if (!isnull(mapgen) && (istype(mapgen, /datum/map_generator/planet_generator)) && !isnull(planet_template))
-		mapgen.generate_terrain(zlevel.get_block(), planet_template, FALSE, FALSE)
+		mapgen.generate_terrain(block_turfs, planet_template, FALSE, FALSE)
+		spawn()
+			mapgen.populate_terrain(block_turfs)
 	else
 		if (!isnull(mapgen))
-			mapgen.generate_terrain(zlevel.get_block(), planet_template)
+			mapgen.generate_terrain(block_turfs, planet_template)
 
 	if(filled_area)
 		filled_area.reg_in_areas_in_z()
