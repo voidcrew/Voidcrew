@@ -72,8 +72,6 @@
 /obj/structure/overmap/planet/empty/Entered(atom/movable/arrived, atom/old_loc, list/atom/old_locs)
 	. = ..()
 	if(istype(arrived, /obj/structure/overmap/ship))
-		// Register for undock signal so we can clean up when the ship leaves
-		RegisterSignal(arrived, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(on_ship_undocked))
 		// If an NPC ship docks here, show its name on the overmap instead of "Empty Space"
 		if(istype(arrived, /obj/structure/overmap/ship/npc))
 			name = arrived.name
@@ -81,8 +79,8 @@
 // Note: We don't override Exited() because the ship exits BEFORE the undock signal fires
 // The signal handler in on_ship_undocked() cleans up the registration
 
-/// Signal handler - called when a ship that was docked here finishes undocking
-/obj/structure/overmap/planet/empty/proc/on_ship_undocked(obj/structure/overmap/ship/source)
+/// Override: empty spaces unload and qdel instead of recycling
+/obj/structure/overmap/planet/empty/on_ship_undocked(obj/structure/overmap/ship/source)
 	SIGNAL_HANDLER
 	UnregisterSignal(source, COMSIG_VOIDCREW_SHIP_UNDOCKED)
 	// Reset retry counter for this undock attempt

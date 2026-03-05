@@ -342,6 +342,7 @@ SUBSYSTEM_DEF(overmap)
 		mapzone.taken = TRUE
 		planet_to_spawn.mapzone = mapzone
 		planet_to_spawn.loaded = TRUE
+		planet_to_spawn.planet_key = planet
 
 	// Midgame planets
 	// var/list/datum/overmap/planet/midgame_planets = list()

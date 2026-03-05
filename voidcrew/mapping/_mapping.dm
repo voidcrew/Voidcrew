@@ -84,6 +84,8 @@
 			var/list/p = list("type" = planet_type_path, "z" = surface_z.z_value, "cave_z" = cave_z.z_value)
 			planets += list("[planet_name] [i]" = p)
 
+	SSplanet_mobs.setup_tracking()
+
 /datum/controller/subsystem/mapping/run_map_terrain_generation()
 	for(var/area/A as anything in GLOB.areas)
 		CHECK_TICK

@@ -6700,6 +6700,7 @@
 #include "voidcrew\_HELPERS\ships.dm"
 #include "voidcrew\_strings\star_names.dm"
 #include "voidcrew\area\ship_areas.dm"
+#include "voidcrew\controllers\subsystem\planet_mobs.dm"
 #include "voidcrew\datums\map_zones.dm"
 #include "voidcrew\datums\pod_style.dm"
 #include "voidcrew\datums\weather.dm"

@@ -240,7 +240,10 @@
 					break
 
 			if(can_spawn)
-				new picked_mob(target_turf)
+				if(ispath(picked_mob, /obj/structure/spawner) || is_megafauna)
+					new picked_mob(target_turf)
+				else
+					SSplanet_mobs.register_spawn_turf(target_turf)
 				spawned_something = TRUE
 		CHECK_TICK
 
