@@ -80,9 +80,10 @@
 		// don't waste time trying to qdelete the lighting object
 		for(var/datum/thing in (turf.contents - turf.lighting_object))
 			qdel(thing)
-			// DO NOT CHECK_TICK HERE. IT CAN CAUSE ITEMS TO GET LEFT BEHIND
-			// THIS IS REALLY IMPORTANT FOR CONSISTENCY. SORRY ABOUT THE LAG SPIKE
+		// CHECK_TICK between turfs (not between items on the same turf - that can leave items behind)
+		CHECK_TICK
 
+	stoplag()
 	for(var/turf/turf as anything in block_turfs)
 		// Reset turf
 		turf.empty(RESERVED_TURF_TYPE, RESERVED_TURF_TYPE, null, CHANGETURF_IGNORE_AIR|CHANGETURF_DEFER_CHANGE)
@@ -91,6 +92,7 @@
 		turf.change_area(old_area, space_area)
 		CHECK_TICK
 
+	stoplag()
 	for(var/turf/turf as anything in block_turfs)
 		turf.AfterChange(CHANGETURF_IGNORE_AIR)
 
@@ -147,18 +149,22 @@
 	if(low_y > 1)
 		for(var/turf/T as anything in block(locate(1, 1, z_value), locate(world.maxx, low_y - 1, z_value)))
 			new /turf/cordon(T)
+			CHECK_TICK
 	// Top strip (above planet)
 	if(high_y < world.maxy)
 		for(var/turf/T as anything in block(locate(1, high_y + 1, z_value), locate(world.maxx, world.maxy, z_value)))
 			new /turf/cordon(T)
+			CHECK_TICK
 	// Left strip (beside planet, between top and bottom)
 	if(low_x > 1)
 		for(var/turf/T as anything in block(locate(1, low_y, z_value), locate(low_x - 1, high_y, z_value)))
 			new /turf/cordon(T)
+			CHECK_TICK
 	// Right strip (beside planet, between top and bottom)
 	if(high_x < world.maxx)
 		for(var/turf/T as anything in block(locate(high_x + 1, low_y, z_value), locate(world.maxx, high_y, z_value)))
 			new /turf/cordon(T)
+			CHECK_TICK
 
 /datum/space_level/proc/fill_in(turf/turf_type, area/area_override)
 	var/area/area_to_use = null

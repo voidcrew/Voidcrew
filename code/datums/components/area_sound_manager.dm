@@ -57,7 +57,6 @@
 
 /datum/component/area_sound_manager/proc/change_the_track(skip_start = FALSE)
 	var/time_remaining = 0
-	log_game("WEATHER_AUDIO DEBUG: change_the_track called for [parent], skip_start=[skip_start]")
 
 	if(our_loop)
 		var/our_id = our_loop.timer_id || timerid
@@ -69,21 +68,16 @@
 
 	var/area/our_area = get_area(parent)
 	var/new_loop_type = area_to_looping_type[our_area]
-	log_game("WEATHER_AUDIO DEBUG: our_area=[our_area] ([our_area?.type]), new_loop_type=[new_loop_type], area_to_looping_type length=[length(area_to_looping_type)]")
 	if(!new_loop_type)
-		log_game("WEATHER_AUDIO DEBUG: No loop type for area [our_area], returning early. Available areas: [json_encode(area_to_looping_type)]")
 		return
 
 	our_loop = new new_loop_type(parent, FALSE, TRUE, skip_start)
-	log_game("WEATHER_AUDIO DEBUG: Created new looping sound [our_loop] of type [new_loop_type]")
 
 	//If we're still playing, wait a bit before changing the sound so we don't double up
 	if(time_remaining)
 		timerid = addtimer(CALLBACK(src, PROC_REF(start_looping_sound)), time_remaining, TIMER_UNIQUE | TIMER_CLIENT_TIME | TIMER_STOPPABLE | TIMER_NO_HASH_WAIT | TIMER_DELETE_ME, SSsound_loops)
-		log_game("WEATHER_AUDIO DEBUG: Delaying sound start by [time_remaining]")
 		return
 	timerid = null
-	log_game("WEATHER_AUDIO DEBUG: Starting looping sound immediately")
 	our_loop.start()
 
 /datum/component/area_sound_manager/proc/start_looping_sound()

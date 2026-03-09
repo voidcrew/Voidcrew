@@ -8,7 +8,6 @@
 	feature_spawn_chance = 3
 	feature_spawn_list = list(
 		/obj/structure/flora/rock/hell = 100,
-		/obj/structure/ladder/cave = 5,
 		/obj/structure/elite_tumor = 1,
 		/obj/structure/geyser/random = 5,
 	)
@@ -38,7 +37,6 @@
 	feature_spawn_list = list(
 		/obj/structure/flora/rock/hell = 70,
 		/obj/structure/elite_tumor = 1,
-		/obj/structure/ladder/cave = 15,
 		/obj/structure/geyser/random = 7,
 	)
 	feature_spawn_chance = 2

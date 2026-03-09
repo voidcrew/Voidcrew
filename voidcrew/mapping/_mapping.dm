@@ -84,7 +84,94 @@
 			var/list/p = list("type" = planet_type_path, "z" = surface_z.z_value, "cave_z" = cave_z.z_value)
 			planets += list("[planet_name] [i]" = p)
 
+	// Mega planets: full 255x255, surface only, no cave z-level
+	var/list/mega_planet_pool = planet_configs.Copy()
+	for(var/m in 1 to MEGA_PLANET_COUNT)
+		var/list/chosen_config = pick(mega_planet_pool)
+		var/mega_name = chosen_config["name"]
+		var/mega_type_path = chosen_config["type"]
+
+		var/datum/overmap/planet/mega_temp = new mega_type_path
+		var/mega_ruin_trait = mega_temp.ruin_type
+		var/mega_weather_trait = mega_temp.weather_trait
+		var/mega_surface_area_type = mega_temp.surface_area
+		qdel(mega_temp)
+
+		var/list/mega_traits = list(ZTRAIT_MINING = TRUE, ZTRAIT_LINKAGE = UNAFFECTED)
+		if(mega_ruin_trait)
+			mega_traits[mega_ruin_trait] = TRUE
+		if(mega_weather_trait)
+			mega_traits[mega_weather_trait] = TRUE
+
+		var/datum/space_level/mega_surface_z = add_new_zlevel("Mega planet [mega_name] [m]", mega_traits)
+		mega_surface_z.set_bounds(MEGA_PLANET_SIZE, MEGA_PLANET_SIZE)
+		mega_surface_z.fill_in(area_override = mega_surface_area_type)
+		mega_surface_z.place_cordon()
+
+		var/list/mega_p = list("type" = mega_type_path, "z" = mega_surface_z.z_value, "cave_z" = null, "mega" = TRUE)
+		planets += list("mega [mega_name] [m]" = mega_p)
+
 	SSplanet_mobs.setup_tracking()
+
+/datum/controller/subsystem/mapping/run_map_terrain_population()
+	..()
+	spawn_cave_ladders()
+
+/// Spawns cave entrance ladders on all non-mega planets using Poisson disc sampling
+/proc/spawn_cave_ladders()
+	for(var/planet_key in SSmapping.planets)
+		var/list/planet_data = SSmapping.planets[planet_key]
+		if(planet_data["mega"])
+			continue
+		var/cave_z = planet_data["cave_z"]
+		if(!cave_z)
+			continue
+		var/surface_z = planet_data["z"]
+		spawn_cave_ladders_for_planet(surface_z, cave_z)
+
+/// Spawns paired cave ladders between surface and cave z-levels using Poisson disc sampling
+/proc/spawn_cave_ladders_for_planet(surface_z, cave_z)
+	var/datum/space_level/surface_level = SSmapping.get_level(surface_z)
+	if(!surface_level)
+		return
+
+	var/pwidth = surface_level.high_x - surface_level.low_x + 1
+	var/pheight = surface_level.high_y - surface_level.low_y + 1
+
+	// Poisson disc with radius 20 gives roughly even spacing
+	var/poisson_data = rustg_noise_poisson_map("[rand(0, 50000)]", "[pwidth]", "[pheight]", "20")
+
+	for(var/i in 1 to length(poisson_data))
+		if(poisson_data[i] != "1")
+			continue
+
+		// Convert 1D index to 2D coordinates, offset by level bounds
+		var/local_x = ((i - 1) % pwidth)
+		var/local_y = round((i - 1) / pwidth)
+		var/abs_x = surface_level.low_x + local_x
+		var/abs_y = surface_level.low_y + local_y
+
+		var/turf/surface_turf = locate(abs_x, abs_y, surface_z)
+		if(!surface_turf)
+			continue
+		// Must be a walkable biome turf on the surface
+		if(!surface_turf.generating_biome)
+			continue
+		if(!(surface_turf.type in surface_turf.generating_biome.open_turf_types))
+			continue
+
+		var/turf/cave_turf = locate(abs_x, abs_y, cave_z)
+		if(!cave_turf)
+			continue
+		// Must be a walkable biome turf in the cave too
+		if(!cave_turf.generating_biome)
+			continue
+		if(!(cave_turf.type in cave_turf.generating_biome.open_turf_types))
+			continue
+
+		var/obj/structure/ladder/cave/surface_ladder = new(surface_turf)
+		var/obj/structure/ladder/cave/cave_ladder = new(cave_turf)
+		surface_ladder.link_down(cave_ladder)
 
 /datum/controller/subsystem/mapping/run_map_terrain_generation()
 	for(var/area/A as anything in GLOB.areas)

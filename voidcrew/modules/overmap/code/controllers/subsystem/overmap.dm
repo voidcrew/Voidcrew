@@ -46,6 +46,11 @@ SUBSYSTEM_DEF(overmap)
 	/// Time taken for a bluespace jump to complete after it initiates (in deciseconds)
 	var/jump_completion_time = 1200
 
+	/// Queue of planets waiting to recycle (only one recycles at a time)
+	var/list/obj/structure/overmap/planet/recycle_queue = list()
+	/// TRUE while a planet is currently being recycled
+	var/recycle_in_progress = FALSE
+
 	/// Type paths of ship templates to spawn at round start. Change this list to control what ships appear.
 	var/list/roundstart_ship_templates = list(
 		/datum/map_template/shuttle/voidcrew/scarab,
@@ -343,6 +348,10 @@ SUBSYSTEM_DEF(overmap)
 		planet_to_spawn.mapzone = mapzone
 		planet_to_spawn.loaded = TRUE
 		planet_to_spawn.planet_key = planet
+
+		// Mega planets don't despawn
+		if(planets[planet]["mega"])
+			planet_to_spawn.preserve_level = TRUE
 
 	// Midgame planets
 	// var/list/datum/overmap/planet/midgame_planets = list()
@@ -659,6 +668,31 @@ SUBSYSTEM_DEF(overmap)
 
 /datum/controller/subsystem/overmap/proc/create_map_zone(new_name)
 	return new /datum/map_zone(new_name)
+
+/// Queues a planet for recycling. Only one planet recycles at a time.
+/datum/controller/subsystem/overmap/proc/queue_planet_recycle(obj/structure/overmap/planet/planet_obj)
+	if(planet_obj in recycle_queue)
+		return
+	recycle_queue += planet_obj
+	process_recycle_queue()
+
+/// Processes the next planet in the recycle queue if none is currently recycling.
+/datum/controller/subsystem/overmap/proc/process_recycle_queue()
+	if(recycle_in_progress || !length(recycle_queue))
+		return
+	var/obj/structure/overmap/planet/next_planet = recycle_queue[1]
+	recycle_queue -= next_planet
+	if(QDELETED(next_planet))
+		// Skip deleted planets and try next
+		process_recycle_queue()
+		return
+	recycle_in_progress = TRUE
+	next_planet.recycle_planet()
+
+/// Called by a planet when its recycle is complete. Triggers the next in queue.
+/datum/controller/subsystem/overmap/proc/recycle_complete()
+	recycle_in_progress = FALSE
+	process_recycle_queue()
 
 /datum/controller/subsystem/overmap/proc/find_free_mapzone()
 	. = null

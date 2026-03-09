@@ -343,6 +343,13 @@
 		cash *= 1.2
 		points *= 1.2
 
+	// Mega planets give bonus survey rewards
+	if(istype(object, /obj/structure/overmap/planet))
+		var/obj/structure/overmap/planet/surveyed_planet = object
+		if(surveyed_planet.survey_point_multiplier > 1)
+			cash *= surveyed_planet.survey_point_multiplier
+			points *= surveyed_planet.survey_point_multiplier
+
 	if("elite" in survey_research_tiers)
 		cash *= 2
 		points *= 2

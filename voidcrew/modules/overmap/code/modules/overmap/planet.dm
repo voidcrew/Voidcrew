@@ -309,7 +309,7 @@
 		return
 	if(length(mapzone?.get_mind_mobs()))
 		return
-	recycle_planet()
+	SSovermap.queue_planet_recycle(src)
 
 /// Main orchestrator: wipes and regenerates the planet terrain on existing z-levels.
 /obj/structure/overmap/planet/proc/recycle_planet()
@@ -322,6 +322,7 @@
 		log_game("PLANET LIFECYCLE: ERROR - No planet data for [planet_key], aborting recycle")
 		recycling = FALSE
 		concerned = FALSE
+		SSovermap.recycle_complete()
 		return
 
 	var/surface_z = planet_data["z"]
@@ -357,6 +358,7 @@
 	concerned = FALSE
 
 	log_game("PLANET LIFECYCLE: [planet_key] recycled successfully at [x],[y]")
+	SSovermap.recycle_complete()
 
 /// Ends active weather events on the given z-level and removes it from eligibility
 /obj/structure/overmap/planet/proc/cleanup_weather(surface_z)

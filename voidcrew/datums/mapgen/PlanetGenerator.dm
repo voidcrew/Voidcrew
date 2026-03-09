@@ -181,23 +181,6 @@
 						can_spawn = FALSE
 						break
 
-				// Spawn linked ladders after checks pass
-				if((picked_feature in typesof(/obj/structure/ladder)) && can_spawn)
-					var/turf/turf_below = GET_TURF_BELOW(target_turf)
-					var/turf/turf_above = GET_TURF_ABOVE(target_turf)
-					// Since we aren't doing triple z, no reason to spawn both above and below
-					if(turf_below)
-						// Don't create up/down ladders if the turfs don't exist in our whitelist)
-						if(!turf_below.generating_biome || !(turf_below.type in turf_below.generating_biome.open_turf_types))
-							can_spawn = FALSE
-						else
-							new /obj/structure/ladder/cave(turf_below)
-					else if(turf_above)
-						if(!turf_above.generating_biome || !(turf_above.type in turf_above.generating_biome.open_turf_types))
-							can_spawn = FALSE
-						else
-							new /obj/structure/ladder/cave(turf_above)
-
 				if(can_spawn)
 					new picked_feature(target_turf)
 					spawned_something = TRUE
