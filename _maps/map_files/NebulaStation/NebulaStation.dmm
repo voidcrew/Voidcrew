@@ -67112,7 +67112,7 @@
 /area/station/medical/lower)
 "jSP" = (
 /obj/structure/cable,
-/mob/living/simple_animal/bot/secbot/beepsky/officer,
+/mob/living/basic/bot/secbot/beepsky/officer,
 /turf/open/floor/iron/dark/small,
 /area/station/security/brig)
 "jSZ" = (
@@ -91645,7 +91645,7 @@
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 4
 	},
-/mob/living/simple_animal/bot/secbot/pingsky,
+/mob/living/basic/bot/secbot/pingsky,
 /obj/machinery/ai_slipper{
 	uses = 10
 	},
@@ -110893,7 +110893,7 @@
 	location = "F10-Cargo";
 	codes_txt = "patrol;next_patrol=F11-Cargo"
 	},
-/mob/living/simple_animal/bot/secbot/beepsky/officer{
+/mob/living/basic/bot/secbot/beepsky/officer{
 	name = "Beepsky the Third"
 	},
 /turf/open/floor/iron,
@@ -113588,7 +113588,7 @@
 /turf/open/floor/iron/dark/herringbone,
 /area/station/service/chapel/funeral)
 "qKN" = (
-/mob/living/simple_animal/bot/secbot/beepsky/armsky,
+/mob/living/basic/bot/secbot/beepsky/armsky,
 /turf/open/floor/glass/reinforced,
 /area/station/security/armory)
 "qKR" = (
