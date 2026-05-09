@@ -113,6 +113,10 @@
   Y0SH1M4S73R:
   - balance: You can no longer get Xenomicrobes and Nanomachines from botany mutations.
 2026-05-09:
+  Melbert:
+  - rscadd: Spacers are now "very tall" again, rather than just "decently tall".
   SmArtKar:
   - rscadd: Mining mobs now use priority when choosing their target, prioritizing
       NODE drones over miners who haven't attacked them or their allies
+  lelandkemble:
+  - bugfix: SyndEye PDA app tracking tracks successfully
