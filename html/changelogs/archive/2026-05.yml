@@ -113,10 +113,22 @@
   Y0SH1M4S73R:
   - balance: You can no longer get Xenomicrobes and Nanomachines from botany mutations.
 2026-05-09:
+  1393F:
+  - bugfix: The crystallizer can be rotated once again, on left click
+  FalloutFalcon:
+  - bugfix: Drying rack no longer accepts or processes dried items
   Melbert:
   - rscadd: Spacers are now "very tall" again, rather than just "decently tall".
+  - qol: Tweaks message displayed when examining recovered crew / thanatorenaisa bodies
+  - bugfix: Some masks no longer hide lizard frills.
+  - rscadd: Hats that flatten hair now also flatten lizard frills a bit.
+  Neocloudy:
+  - sound: Restored fire alarm sound quality
   SmArtKar:
   - rscadd: Mining mobs now use priority when choosing their target, prioritizing
       NODE drones over miners who haven't attacked them or their allies
+  - bugfix: Removed a rogue syndiedome ruin decal
   lelandkemble:
   - bugfix: SyndEye PDA app tracking tracks successfully
+  - bugfix: You no longer need traitor on to get syndicate monkey or contractor ghost
+      polls, & banning from these roles bans from the polls as well
