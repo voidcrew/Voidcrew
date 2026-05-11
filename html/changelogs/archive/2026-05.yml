@@ -146,3 +146,8 @@
   - balance: You can cuff shields to yourself again. Unless we figure out it's still
       oppressive in which case it'll probably be removed (again)
   - bugfix: IV drops should break your character's offsets less often
+2026-05-11:
+  Melbert:
+  - bugfix: You can speak with a stoat tongue
+  - bugfix: Stoat infusion is slightly taller
+  - bugfix: Explosions won't remove organs from skeletons/plasmamen
