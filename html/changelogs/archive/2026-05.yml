@@ -147,6 +147,8 @@
       oppressive in which case it'll probably be removed (again)
   - bugfix: IV drops should break your character's offsets less often
 2026-05-11:
+  Aliceee2ch:
+  - bugfix: RND servers are visible once again.
   Melbert:
   - bugfix: You can speak with a stoat tongue
   - bugfix: Stoat infusion is slightly taller
