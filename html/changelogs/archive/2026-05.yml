@@ -179,6 +179,16 @@
   - balance: Raptor are now immune to ice slippage
   - balance: Mining MOD has had its ore digging speed increased
   - bugfix: Buckled mobs can no longer "slip" (get stunned) on wet/icy tiles.
+  SmArtKar, thgvr:
+  - balance: Goliaths no longer hardstun, but instead bind and drag their targets
+      in with their tentacles. They are, however, much faster now.
+  - balance: Brimdemon beams can no longer wound, but deal a bit more DOT damage.
+      Their beams can also be interrupted by hitting them from the side or back in
+      melee.
+  - balance: Watchers and legions now try to maintain a few tiles of distance from
+      their targets instead of retreating.
+  - bugfix: Lobstrocity AI should no longer sometimes flee out of their aggro range
+      when retreating.
   Y0SH1M4S73R:
   - spellcheck: You are told you are downed instead of unconscious if you attempt
       to use an action that requires you to be conscious while in softcrit.
@@ -188,5 +198,9 @@
       to 4.
   lelandkemble:
   - bugfix: sinks(and other methods of washing) clean out petri dishes
+  - rscadd: Added a new traitor item, Carnivorous Blood. It is purchasable in uplinks.
+      Carnivorous Blood is a reagent that eats away at a victim's blood once in their
+      bloodstream, doing so significantly faster if it has been mixed with the victim's
+      blood beforehand.
   timothymtorres:
   - bugfix: Fix shock immunity flag not working when electrocution occurs
