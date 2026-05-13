@@ -204,3 +204,8 @@
       blood beforehand.
   timothymtorres:
   - bugfix: Fix shock immunity flag not working when electrocution occurs
+2026-05-13:
+  Glu-furro:
+  - rscadd: 'Increased max prisoners from 2 to 4.
+
+      :cl:'
