@@ -211,6 +211,9 @@
   - qol: The protection effect from regenerative rainbow extracts now actually makes
       you all rainbowy.
   - code_imp: Minor improvements to crossbreed status effect code.
+  CabinetOnFire:
+  - refactor: Implements "Event Logging" an improved way for programmers to debug
+      specific datums.
   ElGitificador:
   - bugfix: fixes a certain explosions message related to influences
   Glu-furro:
