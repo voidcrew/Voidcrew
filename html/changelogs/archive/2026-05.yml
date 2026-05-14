@@ -225,3 +225,18 @@
   necromanceranne:
   - qol: Your overall athletics level is what protects you from a random heart attack.
       If you achieve peak fitness, you are immune to random heart attacks.
+2026-05-14:
+  Derpguy3:
+  - bugfix: The door control button in Deltastation's medical desk works again.
+  TealSeer:
+  - bugfix: fixed arming grenades not being logged
+  TheRyeGuyWhoWillNowDie:
+  - spellcheck: nspect scanners no longer claim to be capable of area scans
+  carpotoxin:
+  - rscadd: Adds the Deep Space deathmatch map
+  lelandkemble:
+  - bugfix: The Junkie quirk gives you the addiction you ask it for
+  - bugfix: Ghost role mobspawner bans work again
+  - spellcheck: Users of a Gaseous holoparasite no longer appear to repeatedly catch
+      fire when they are not.
+  - bugfix: You can unbuckle people from wheelchairs again
