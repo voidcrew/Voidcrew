@@ -226,6 +226,10 @@
   - qol: Your overall athletics level is what protects you from a random heart attack.
       If you achieve peak fitness, you are immune to random heart attacks.
 2026-05-14:
+  ArcaneMusic:
+  - qol: Grills now have screentips when using tools on them.
+  - qol: In-line with other deconstruction processes, grills now deconstruct on right
+      click.
   Derpguy3:
   - bugfix: The door control button in Deltastation's medical desk works again.
   Iamgoofball:
