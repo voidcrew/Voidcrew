@@ -228,6 +228,11 @@
 2026-05-14:
   Derpguy3:
   - bugfix: The door control button in Deltastation's medical desk works again.
+  Iamgoofball:
+  - rscadd: You can now print basic wet floor signs at the Service Protolathe, because
+      you couldn't actually print them for decades.
+  Melbert:
+  - rscadd: You can purchase (lower quality) broadcast cameras in cargo for 800cr
   TealSeer:
   - bugfix: fixed arming grenades not being logged
   TheRyeGuyWhoWillNowDie:
