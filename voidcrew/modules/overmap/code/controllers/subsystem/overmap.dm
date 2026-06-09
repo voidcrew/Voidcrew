@@ -349,9 +349,10 @@ SUBSYSTEM_DEF(overmap)
 		planet_to_spawn.loaded = TRUE
 		planet_to_spawn.planet_key = planet
 
-		// Mega planets don't despawn
+		// Mega planets don't despawn and grant bonus survey rewards
 		if(planets[planet]["mega"])
 			planet_to_spawn.preserve_level = TRUE
+			planet_to_spawn.survey_point_multiplier = 2
 
 	// Midgame planets
 	// var/list/datum/overmap/planet/midgame_planets = list()

@@ -30,6 +30,8 @@
 	var/despawn_timer_id
 	/// TRUE while terrain is being recycled, blocks ship_act() and re-entry
 	var/recycling = FALSE
+	/// Multiplier applied to survey rewards (cash and points). Set above 1 for bonus rewards (e.g. mega planets).
+	var/survey_point_multiplier = 1
 
 /**
   * Load a level for a ship that's visiting the level.
