@@ -5,6 +5,10 @@
  * When surveyed, reveals its true nature (derelict, station, asteroid, etc.).
  * Ships can dock and explore the ruin.
  */
+
+/// All space ruin signals currently on the overmap (used by recovery missions to pick targets)
+GLOBAL_LIST_EMPTY(space_ruin_signals)
+
 /obj/structure/overmap/space_ruin
 	name = "unknown signal"
 	desc = "A faint signal of unknown origin. Survey to learn more."
@@ -35,11 +39,19 @@
 	var/true_desc
 	/// Category for grouping (derelict, station, asteroid, syndicate, misc)
 	var/ruin_category = "unknown"
+	/// Bottom-left turf of the loaded ruin template footprint (set by load_level, cleared on unload)
+	var/turf/ruin_bottom_left
 
 /obj/structure/overmap/space_ruin/Initialize(mapload, datum/map_template/ruin/space/template)
 	. = ..()
+	GLOB.space_ruin_signals += src
 	if(template)
 		set_ruin_template(template)
+
+/obj/structure/overmap/space_ruin/Destroy()
+	GLOB.space_ruin_signals -= src
+	ruin_bottom_left = null
+	return ..()
 
 /**
  * Sets the ruin template and extracts relevant info
@@ -167,6 +179,7 @@
 	var/ruin_x = bottom_left.x + RESERVE_DOCK_MAX_SIZE_LONG + RESERVE_DOCK_DEFAULT_PADDING
 	var/ruin_y = bottom_left.y + RESERVE_DOCK_MAX_SIZE_SHORT + RESERVE_DOCK_DEFAULT_PADDING
 	var/turf/ruin_turf = locate(ruin_x, ruin_y, bottom_left.z)
+	ruin_bottom_left = ruin_turf
 
 	// Try to load the ruin, handle failures gracefully
 	var/load_success = FALSE
@@ -180,6 +193,7 @@
 		// Clean up the reservation if loading failed
 		qdel(reservation)
 		reservation = null
+		ruin_bottom_left = null
 		loading = FALSE
 		return
 
@@ -381,6 +395,33 @@
 	if(reservation)
 		qdel(reservation)
 		reservation = null
+	ruin_bottom_left = null
+
+/**
+ * Picks a random non-dense, non-space turf inside the loaded ruin's template footprint.
+ * Used by recovery missions to place objectives. Returns null if the ruin isn't loaded.
+ */
+/obj/structure/overmap/space_ruin/proc/get_random_interior_turf()
+	if(!loaded || !ruin_bottom_left || !ruin_template?.width || !ruin_template?.height)
+		return null
+	var/turf/top_right = locate(
+		ruin_bottom_left.x + ruin_template.width - 1,
+		ruin_bottom_left.y + ruin_template.height - 1,
+		ruin_bottom_left.z
+	)
+	if(!top_right)
+		return null
+	var/list/candidates = list()
+	for(var/turf/interior_turf as anything in block(ruin_bottom_left, top_right))
+		if(interior_turf.density)
+			continue
+		// Templates aren't rectangular; skip the empty space inside the bounding box
+		if(isspaceturf(interior_turf))
+			continue
+		candidates += interior_turf
+	if(!length(candidates))
+		return null
+	return pick(candidates)
 
 /obj/structure/overmap/space_ruin/proc/remove_docks()
 	if(reserve_dock)

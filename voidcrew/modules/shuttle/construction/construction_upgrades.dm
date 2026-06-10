@@ -3,19 +3,9 @@
  *
  * Upgrade disks that can be inserted into the ship construction console
  * to add new capabilities beyond basic RCD functionality.
+ *
+ * Upgrade flag / tray mode defines live in voidcrew/_DEFINES/ship_construction.dm.
  */
-
-// Upgrade flags for ship construction console
-#define SHIP_CONSTRUCTION_UPGRADE_RTD (1 << 0)
-#define SHIP_CONSTRUCTION_UPGRADE_RPD (1 << 1)
-#define SHIP_CONSTRUCTION_UPGRADE_RLD (1 << 2)
-#define SHIP_CONSTRUCTION_UPGRADE_TRAY (1 << 3)
-
-// T-ray scanner modes for ship construction console
-#define SHIP_TRAY_MODE_OFF "off"
-#define SHIP_TRAY_MODE_TRAY "t-ray"
-#define SHIP_TRAY_MODE_PIPE "pipe"
-#define SHIP_TRAY_MODE_THERMAL "thermal"
 
 /// Base upgrade disk for ship construction consoles
 /obj/item/ship_construction_upgrade

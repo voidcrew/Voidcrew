@@ -12,6 +12,7 @@
 #define DEFAULT_AVAILABLE_MISSIONS 5
 #define DEFAULT_MAX_ACTIVE_MISSIONS 3
 #define DEFAULT_MISSION_DURATION (30 MINUTES)
+#define MISSION_REFRESH_COOLDOWN (60 SECONDS)
 
 // Overmap bounds for exploration missions (relative coords, 1 to OVERMAP_SIZE)
 // Avoid edges (1 tile border) and some buffer

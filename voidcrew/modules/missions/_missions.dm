@@ -29,6 +29,10 @@
 	var/difficulty = MISSION_DIFFICULTY_MEDIUM
 	/// If TRUE, mission requires an item to be turned in via mission pad
 	var/requires_item = FALSE
+	/// Number of trade vouchers awarded on completion (spawned on the mission pad)
+	var/voucher_count = 0
+	/// Set TRUE by generate_mission_details() if the mission couldn't find a valid setup; the subsystem discards it
+	var/generation_failed = FALSE
 
 	/// Whether the mission has been accepted/started
 	var/active = FALSE
@@ -278,7 +282,12 @@
 
 	// Notify ship
 	if(servant)
-		servant.ship_notify("[name] completed! Reward: [value] credits[mission_reward ? " + item reward" : ""]", "MISSION COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+		var/reward_text = "[value] credits"
+		if(mission_reward)
+			reward_text += " + item reward"
+		if(voucher_count > 0)
+			reward_text += " + [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]"
+		servant.ship_notify("[name] completed! Reward: [reward_text]", "MISSION COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		servant.active_missions -= src
 
 	// Remove from subsystem tracking
@@ -297,6 +306,15 @@
 	qdel(item)
 
 /**
+ * Uploads this mission's objective beacon to a specific handheld GPS unit
+ * (player tapped the unit on the mission board console).
+ * Override in mission types that have a trackable objective.
+ * Returns TRUE if this mission had a beacon to upload.
+ */
+/datum/mission/proc/link_gps_unit(datum/component/gps/item/gps_unit)
+	return FALSE
+
+/**
  * Distributes mission rewards to the ship account.
  * Item rewards spawn on the mission pad.
  * * pad - The mission pad (for item reward spawning)
@@ -313,6 +331,11 @@
 	if(mission_reward && pad)
 		new mission_reward(get_turf(pad))
 		// Visual effect
+		pad.do_teleport_effect()
+
+	// Spawn voucher rewards on pad
+	if(voucher_count > 0 && pad)
+		new /obj/item/stack/trade_voucher(get_turf(pad), voucher_count)
 		pad.do_teleport_effect()
 
 /**
@@ -368,4 +391,5 @@
 		"difficulty_name" = get_difficulty_name(),
 		"difficulty_color" = get_difficulty_color(),
 		"requires_item" = requires_item,
+		"voucher_count" = voucher_count,
 	)

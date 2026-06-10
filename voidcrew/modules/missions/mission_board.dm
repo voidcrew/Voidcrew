@@ -57,6 +57,34 @@
 /obj/machinery/computer/mission_board/proc/get_ship()
 	return get_ship_from_atom(src)
 
+/**
+ * Tapping a handheld GPS on the console uploads the active missions' objective
+ * beacons to that specific unit.
+ */
+/obj/machinery/computer/mission_board/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	var/datum/component/gps/item/gps_unit = tool.GetComponent(/datum/component/gps/item)
+	if(!gps_unit)
+		return ..()
+
+	var/obj/structure/overmap/ship/ship = get_ship()
+	if(!ship)
+		balloon_alert(user, "console not on a ship!")
+		return ITEM_INTERACT_BLOCKING
+
+	var/uploaded = 0
+	for(var/datum/mission/mission as anything in ship.active_missions)
+		if(QDELETED(mission))
+			continue
+		if(mission.link_gps_unit(gps_unit))
+			uploaded++
+
+	if(uploaded)
+		balloon_alert(user, "[uploaded] beacon[uploaded > 1 ? "s" : ""] uploaded")
+		playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
+	else
+		balloon_alert(user, "no beacons to upload!")
+	return ITEM_INTERACT_SUCCESS
+
 /obj/machinery/computer/mission_board/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -75,6 +103,7 @@
 	data["max_missions"] = ship.max_missions
 	data["active_count"] = length(ship.active_missions)
 	data["has_pad"] = !!linked_pad
+	data["refresh_cooldown_remaining"] = max(0, round((MISSION_REFRESH_COOLDOWN - (world.time - ship.last_mission_refresh)) / 10))
 
 	// Available missions
 	data["available_missions"] = list()
@@ -174,7 +203,11 @@
 			return TRUE
 
 		if("refresh")
-			// Force refresh available missions
+			var/cooldown_remaining = MISSION_REFRESH_COOLDOWN - (world.time - ship.last_mission_refresh)
+			if(cooldown_remaining > 0)
+				balloon_alert(usr, "wait [round(cooldown_remaining / 10)]s")
+				return TRUE
+			ship.last_mission_refresh = world.time
 			SSmissions.force_refresh_ship_missions(ship)
 			balloon_alert(usr, "missions refreshed!")
 			return TRUE

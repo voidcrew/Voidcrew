@@ -35,6 +35,7 @@ type Mission = {
   can_complete: BooleanLike;
   active: BooleanLike;
   requires_item?: BooleanLike;
+  voucher_count?: number;
   target_x?: number;
   target_y?: number;
   visited?: BooleanLike;
@@ -101,6 +102,7 @@ type Data = {
   has_created_bounty: BooleanLike;
   has_claimed_player_bounty: BooleanLike;
   ship_balance: number;
+  refresh_cooldown_remaining: number;
 };
 
 export const MissionBoard = () => {
@@ -135,6 +137,7 @@ const MissionBoardContent = () => {
     has_created_bounty,
     has_claimed_player_bounty,
     ship_balance,
+    refresh_cooldown_remaining,
   } = data;
 
   const [currentTab, setCurrentTab] = useState<
@@ -150,8 +153,14 @@ const MissionBoardContent = () => {
         <Section
           title="Mission Control"
           buttons={
-            <Button icon="sync" onClick={() => act('refresh')}>
-              Refresh
+            <Button
+              icon="sync"
+              disabled={refresh_cooldown_remaining > 0}
+              onClick={() => act('refresh')}
+            >
+              {refresh_cooldown_remaining > 0
+                ? `Refresh (${refresh_cooldown_remaining}s)`
+                : 'Refresh'}
             </Button>
           }
         >
@@ -391,6 +400,13 @@ const MissionCard = (props: MissionCardProps) => {
               />
             )}
             {mission.reward_item}
+          </Box>
+        )}
+        {!!mission.voucher_count && (
+          <Box as="span" color="gold" bold>
+            {' '}
+            + {mission.voucher_count} trade voucher
+            {mission.voucher_count > 1 ? 's' : ''}
           </Box>
         )}
       </Box>

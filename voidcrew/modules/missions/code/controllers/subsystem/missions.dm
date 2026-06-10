@@ -105,7 +105,12 @@ SUBSYSTEM_DEF(missions)
 /datum/controller/subsystem/missions/proc/create_mission(mission_type)
 	if(!mission_type)
 		return null
-	return new mission_type()
+	var/datum/mission/mission = new mission_type()
+	// Some mission types (e.g. recovery) can fail generation if no valid target exists
+	if(mission.generation_failed)
+		qdel(mission)
+		return null
+	return mission
 
 /**
  * Force-generates new available missions for a specific ship.

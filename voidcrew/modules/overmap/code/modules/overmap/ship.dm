@@ -150,6 +150,8 @@
 	var/list/datum/mission/active_missions = list()
 	/// Maximum number of active missions (captain can adjust)
 	var/max_missions = DEFAULT_MAX_ACTIVE_MISSIONS
+	/// World time of the last manual mission refresh (rate-limited)
+	var/last_mission_refresh = 0
 
 	var/pending_dock = FALSE
 	var/pending_dock_timer
