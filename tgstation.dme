@@ -6690,7 +6690,6 @@
 #include "voidcrew\_DEFINES\overmap_zones.dm"
 #include "voidcrew\_DEFINES\planet_defines.dm"
 #include "voidcrew\_DEFINES\ship_combat.dm"
-#include "voidcrew\_DEFINES\ship_construction.dm"
 #include "voidcrew\_DEFINES\ship_defines.dm"
 #include "voidcrew\_DEFINES\ship_signals.dm"
 #include "voidcrew\_DEFINES\shuttles.dm"

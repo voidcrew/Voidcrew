@@ -63,6 +63,7 @@ SUBSYSTEM_DEF(overmap)
 	setup_dangers()
 	setup_planets()
 	setup_space_ruins()
+	setup_trader_outposts()
 	spawn_initial_ship()
 
 	return SS_INIT_SUCCESS
@@ -458,6 +459,53 @@ SUBSYSTEM_DEF(overmap)
 		log_mapping("SSovermap: Spawned space ruin '[selected_ruin.name]' at orbit [selected_orbit]")
 
 	log_mapping("SSovermap: Finished spawning [length(used_ruins)] space ruins")
+
+/**
+ * Returns the zone band (ZONE_RED/YELLOW/GREEN) a turf falls in, computed from
+ * distance to the sun. Mirrors SSovermap_zones.calculate_zone_for_turf(), which
+ * can't be used here because SSovermap_zones initializes after SSovermap.
+ * Zones are static concentric rings, so the distance math is the ground truth.
+ */
+/datum/controller/subsystem/overmap/proc/get_zone_band_for_turf(turf/T)
+	if(!T || !overmap_centre)
+		return ZONE_GREEN
+	var/max_radius = (OVERMAP_SIZE - 1) / 2
+	var/dx = T.x - overmap_centre.x
+	var/dy = T.y - overmap_centre.y
+	var/normalized = sqrt(dx * dx + dy * dy) / max_radius
+	if(normalized < ZONE_INNER_RING_RATIO)
+		return ZONE_RED
+	if(normalized < ZONE_MIDDLE_RING_RATIO)
+		return ZONE_YELLOW
+	return ZONE_GREEN
+
+/**
+ * Places one trader outpost per zone band (black market deep, outfitter mid,
+ * general store in the safe outer ring). Outposts are permanent and never move.
+ */
+/datum/controller/subsystem/overmap/proc/setup_trader_outposts()
+	var/list/wanted = list(
+		"[ZONE_RED]" = /obj/structure/overmap/trader_outpost/black_market,
+		"[ZONE_YELLOW]" = /obj/structure/overmap/trader_outpost/outfitter,
+		"[ZONE_GREEN]" = /obj/structure/overmap/trader_outpost/general,
+	)
+
+	for(var/_ in 1 to MAX_OUTPOST_PLACEMENT_ATTEMPTS)
+		if(!length(wanted))
+			break
+		var/turf/candidate = get_unused_overmap_square()
+		if(!candidate)
+			continue
+		var/band = "[get_zone_band_for_turf(candidate)]"
+		var/outpost_type = wanted[band]
+		if(!outpost_type)
+			continue
+		var/obj/structure/overmap/trader_outpost/outpost = new outpost_type(candidate)
+		wanted -= band
+		log_mapping("SSovermap: Spawned trader outpost '[outpost.name]' in zone band [band] at ([candidate.x], [candidate.y])")
+
+	for(var/band in wanted)
+		log_mapping("SSovermap: WARNING - failed to place a trader outpost in zone band [band]")
 
 /**
  * Spawns all ships defined in roundstart_ship_templates.

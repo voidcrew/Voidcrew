@@ -259,3 +259,7 @@ tgstation.json
 rust_g64.dll
 
 .vscode
+
+# SpacemanDMM dev tools (local map rendering/linting)
+/bin/dmm-tools.exe
+/bin/dreamchecker.exe

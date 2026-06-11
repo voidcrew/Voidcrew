@@ -1,0 +1,45 @@
+name = "trader_outpost"
+
+# Trader outpost interior: indestructible sanctuary shop floor.
+# 21x15. Two airlocks each on the west and east walls (ships land on
+# reservation docks outside and crews walk/EVA in). Six shop terminals along
+# the north wall, trader hologram on a lit central platform, defense turrets
+# in all four corners.
+
+[defaults]
+turf = "/turf/open/indestructible/dark"
+area = "/area/voidcrew/trader_outpost"
+
+[grid]
+map = '''
+#####################
+#T.cnc.c..n..c.cnc.T#
+#..p.............p..#
+#w.................e#
+#...................#
+#...................#
+D........hhh........D
+#........hHh........#
+D........hhh........D
+#...................#
+#...................#
+#w..............bb.e#
+#...................#
+#T..s.....s.....s..T#
+#####################
+'''
+
+[legend]
+"#" = ["/turf/closed/indestructible/reinforced/titanium/outpost"]
+"." = []
+"T" = ["/obj/machinery/porta_turret/outpost"]
+"c" = ["/obj/machinery/computer/outpost_shop_terminal"]
+"n" = ["/obj/machinery/light/directional/north"]
+"s" = ["/obj/machinery/light/directional/south"]
+"w" = ["/obj/machinery/light/directional/west"]
+"e" = ["/obj/machinery/light/directional/east"]
+"p" = ["/obj/item/kirbyplants/random"]
+"b" = ["/obj/structure/closet/crate"]
+"h" = ["/turf/open/indestructible/light"]
+"H" = ["/obj/machinery/outpost_trader", "/turf/open/indestructible/light"]
+"D" = ["/obj/machinery/door/airlock/outpost", "/obj/structure/fans/tiny"]

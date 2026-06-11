@@ -319,53 +319,10 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 		ship_act(user, optional_partner)
 
 /**
- * Adjusts dock position for the shuttle (copied from planet.dm)
+ * Adjusts dock position for the shuttle (shared helper; see _HELPERS/docking.dm)
  */
 /obj/structure/overmap/space_ruin/proc/adjust_dock_to_shuttle(obj/docking_port/stationary/dock_to_adjust, obj/docking_port/mobile/shuttle)
-	var/shuttle_true_height = shuttle.height
-	var/shuttle_true_width = shuttle.width
-	if(EWCOMPONENT(shuttle.port_direction))
-		shuttle_true_height = shuttle.width
-		shuttle_true_width = shuttle.height
-	var/final_facing_dir = angle2dir(dir2angle(shuttle_true_height > shuttle_true_width ? EAST : NORTH)+dir2angle(shuttle.port_direction)+180)
-	var/list/old_corners = dock_to_adjust.return_coords()
-	var/list/new_dock_location
-	if(final_facing_dir == dock_to_adjust.dir)
-		new_dock_location = list(old_corners[1], old_corners[2])
-	else if(final_facing_dir == angle2dir(dir2angle(dock_to_adjust.dir)+180))
-		new_dock_location = list(old_corners[3], old_corners[4])
-	else
-		var/combined_dirs = final_facing_dir | dock_to_adjust.dir
-		if(combined_dirs == (NORTH|EAST) || combined_dirs == (SOUTH|WEST))
-			new_dock_location = list(old_corners[1], old_corners[4])
-		else
-			new_dock_location = list(old_corners[3], old_corners[2])
-		var/dock_height_store = dock_to_adjust.height
-		dock_to_adjust.height = dock_to_adjust.width
-		dock_to_adjust.width = dock_height_store
-
-	dock_to_adjust.dir = final_facing_dir
-
-	var/new_dheight = round((dock_to_adjust.height-shuttle.height)/2) + shuttle.dheight
-	var/new_dwidth = round((dock_to_adjust.width-shuttle.width)/2) + shuttle.dwidth
-
-	switch(final_facing_dir)
-		if(NORTH)
-			new_dock_location[1] += new_dwidth
-			new_dock_location[2] += new_dheight
-		if(SOUTH)
-			new_dock_location[1] -= new_dwidth
-			new_dock_location[2] -= new_dheight
-		if(EAST)
-			new_dock_location[1] += new_dheight
-			new_dock_location[2] -= new_dwidth
-		if(WEST)
-			new_dock_location[1] -= new_dheight
-			new_dock_location[2] += new_dwidth
-
-	dock_to_adjust.forceMove(locate(new_dock_location[1], new_dock_location[2], dock_to_adjust.z))
-	dock_to_adjust.dheight = new_dheight
-	dock_to_adjust.dwidth = new_dwidth
+	adjust_reserve_dock_to_shuttle(dock_to_adjust, shuttle)
 
 /**
  * Unloads the ruin level when no longer needed
