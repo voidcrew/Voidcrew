@@ -16,6 +16,15 @@
 #define TECHWEB_NODE_NANITE_SMART "nanite_smart"
 #define TECHWEB_NODE_NANITE_MESH "nanite_mesh"
 
+// Weapon blueprint pipeline (weapons bench + per-gun part/ammo nodes)
+#define TECHWEB_NODE_WEAPONS_BENCH "weapons_bench"
+#define TECHWEB_NODE_WEAPON_PART_L6_SAW "weapon_part_l6_saw"
+#define TECHWEB_NODE_WEAPON_AMMO_L6_SAW "weapon_ammo_l6_saw"
+#define TECHWEB_NODE_WEAPON_PART_C20R "weapon_part_c20r"
+#define TECHWEB_NODE_WEAPON_AMMO_C20R "weapon_ammo_c20r"
+#define TECHWEB_NODE_WEAPON_PART_SNIPER "weapon_part_sniper"
+#define TECHWEB_NODE_WEAPON_AMMO_SNIPER "weapon_ammo_sniper"
+
 // Ship Combat
 #define TECHWEB_NODE_SHIP_COMBAT "ship_combat"
 #define TECHWEB_NODE_SHIP_COMBAT_MISSILES "ship_combat_missiles"

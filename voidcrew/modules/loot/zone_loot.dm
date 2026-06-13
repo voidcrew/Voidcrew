@@ -113,7 +113,8 @@
 // TODO: review/balance-pass all six tables below — first-draft weights and
 // contents, never playtested. Tune weights against the black-market voucher
 // prices in shop.dm.
-// TODO(loot-economy item 6): add weapon blueprints once the pipeline lands.
+// loot-economy item 6: weapon blueprints seeded below (c20r in yellow; l6_saw +
+// sniper in red and rare-red). Build them at a weapons bench (modules/weapons_bench).
 // =========================================================================
 
 /obj/structure/closet/crate/zone_loot/syndicate
@@ -143,6 +144,7 @@
 		/obj/item/card/id/advanced/chameleon = 4,
 		/obj/item/clothing/shoes/chameleon/noslip = 4,
 		/obj/item/clothing/glasses/thermal/syndi = 3,
+		/obj/item/gun_blueprint/c20r = 4,
 	)
 	loot_red = list(
 		/obj/item/ammo_box/a357 = 9,
@@ -156,6 +158,8 @@
 		/obj/item/pen/sleepy = 4,
 		/obj/item/grenade/syndieminibomb = 3,
 		/obj/item/card/emag = 2,
+		/obj/item/gun_blueprint/l6_saw = 3,
+		/obj/item/gun_blueprint/sniper_rifle = 3,
 	)
 	rare_loot_green = list(
 		/obj/item/storage/medkit/tactical = 8,
@@ -177,6 +181,8 @@
 		/obj/item/grenade/syndieminibomb = 6,
 		/obj/item/gun/ballistic/automatic/c20r = 5,
 		/obj/item/card/emag = 4,
+		/obj/item/gun_blueprint/l6_saw = 5,
+		/obj/item/gun_blueprint/sniper_rifle = 5,
 	)
 
 /obj/structure/closet/crate/zone_loot/syndicate/rare

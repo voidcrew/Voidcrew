@@ -260,6 +260,8 @@
 		/datum/shop_sku/black_market/sleepy_pen,
 		/datum/shop_sku/black_market/tactical_medkit,
 		/datum/shop_sku/black_market/star_chart,
+		/datum/shop_sku/black_market/saw_blueprint,
+		/datum/shop_sku/black_market/sniper_blueprint,
 		/datum/shop_sku/black_market/soap,
 	)
 	trader_lines = list(
@@ -404,6 +406,20 @@
 	stock_min = 3
 	stock_max = 6
 
+// Weapon blueprints (loot-economy item 6) -- the only trader route to these guns;
+// build them at a weapons bench. Reusable, so priced at the top of the ladder.
+/datum/shop_sku/black_market/saw_blueprint
+	item_path = /obj/item/gun_blueprint/l6_saw
+	price_vouchers = 5
+	stock_min = 1
+	stock_max = 1
+
+/datum/shop_sku/black_market/sniper_blueprint
+	item_path = /obj/item/gun_blueprint/sniper_rifle
+	price_vouchers = 5
+	stock_min = 1
+	stock_max = 1
+
 // =========================================================================
 // OUTFITTER (yellow zone) — mid-tier defensive/utility gear, credits-first
 // =========================================================================
@@ -424,6 +440,7 @@
 		/datum/shop_sku/outfitter/brute_kit,
 		/datum/shop_sku/outfitter/jaws,
 		/datum/shop_sku/outfitter/star_chart,
+		/datum/shop_sku/outfitter/smg_blueprint,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -503,6 +520,13 @@
 	price_credits = 400
 	stock_min = 1
 	stock_max = 2
+
+// Weapon blueprint (loot-economy item 6) -- yellow-tier gun, build at a weapons bench.
+/datum/shop_sku/outfitter/smg_blueprint
+	item_path = /obj/item/gun_blueprint/c20r
+	price_vouchers = 3
+	stock_min = 1
+	stock_max = 1
 
 // =========================================================================
 // GENERAL STORE (green zone) — sundries and starter resupply, credits only
