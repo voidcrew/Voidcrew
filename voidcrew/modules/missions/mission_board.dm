@@ -261,7 +261,11 @@
 				return TRUE
 
 			if(bounty.has_tracking(ship))
-				balloon_alert(usr, "already tracking!")
+				// Already paid - just re-chart the helm waypoint (free), in case it was cleared
+				if(bounty.push_tracking_waypoint(ship))
+					balloon_alert(usr, "waypoint re-charted!")
+				else
+					balloon_alert(usr, "already tracking!")
 				return TRUE
 
 			if(bounty.enable_tracking(ship))

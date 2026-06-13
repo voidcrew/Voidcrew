@@ -83,6 +83,10 @@ export const HelmComputer = (props) => {
                   </Stack.Item>
 
                   <Stack.Item>
+                    <WaypointsSection />
+                  </Stack.Item>
+
+                  <Stack.Item>
                     <Radar />
                   </Stack.Item>
 
@@ -243,6 +247,50 @@ const ZoneSection = () => {
           </span>
         </LabeledList.Item>
       </LabeledList>
+    </Section>
+  );
+};
+
+const WaypointsSection = () => {
+  const { act, data } = useBackend();
+  const { isViewer, isNotCrew, waypoints = [] } = data;
+  const isDisabled = isViewer || isNotCrew;
+  if (!waypoints.length) {
+    return null;
+  }
+  return (
+    <Section title="Waypoints">
+      <Table>
+        {waypoints.map((waypoint) => (
+          <Table.Row key={waypoint.ref || waypoint.name} className="candystripe">
+            <Table.Cell>{waypoint.name}</Table.Cell>
+            <Table.Cell collapsing nowrap>
+              ({waypoint.x}, {waypoint.y})
+            </Table.Cell>
+            <Table.Cell collapsing nowrap>
+              {waypoint.dist > 0
+                ? `${waypoint.dist} units ${waypoint.bearing}`
+                : 'Here'}
+            </Table.Cell>
+            {!isDisabled && (
+              <Table.Cell collapsing>
+                {!!waypoint.ref && (
+                  <Button
+                    icon="times"
+                    tooltip="Clear waypoint"
+                    tooltipPosition="left"
+                    onClick={() =>
+                      act('remove_waypoint', {
+                        waypoint: waypoint.ref,
+                      })
+                    }
+                  />
+                )}
+              </Table.Cell>
+            )}
+          </Table.Row>
+        ))}
+      </Table>
     </Section>
   );
 };

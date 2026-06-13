@@ -2,6 +2,9 @@
 
 /datum/map_template/ruin/jungle
 	prefix = "_maps/voidcrew/RandomRuins/JungleRuins/"
+	ruin_type = ZTRAIT_JUNGLE_RUINS
+	allow_duplicates = FALSE
+	cost = 5
 
 /datum/map_template/ruin/jungle/solgov_crash
 	name = "Abandoned SolGov Exploration Pod"

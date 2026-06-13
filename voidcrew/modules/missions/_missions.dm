@@ -57,6 +57,7 @@
 		deltimer(timeout_timer)
 		timeout_timer = null
 	if(servant)
+		servant.remove_waypoint(REF(src))
 		servant.active_missions -= src
 		servant = null
 	return ..()
@@ -154,6 +155,9 @@
 
 	// Track in subsystem
 	SSmissions.all_active_missions += src
+
+	// Chart the mission's target on the helm waypoint readout, if it has one
+	push_waypoint()
 
 	// Send signal
 	SEND_SIGNAL(src, COMSIG_MISSION_STARTED, ship)
@@ -304,6 +308,26 @@
  */
 /datum/mission/proc/consume_turned_in_item(obj/item/item)
 	qdel(item)
+
+/**
+ * Returns this mission's overmap target for the helm waypoint readout as
+ * list(name, x, y) in relative overmap coordinates, or null if this mission
+ * type has no overmap target.
+ */
+/datum/mission/proc/get_waypoint_info()
+	return null
+
+/**
+ * Pushes (or refreshes) this mission's waypoint on the servant ship's helm
+ * readout. Safe to call again after a retarget; the marker moves in place.
+ */
+/datum/mission/proc/push_waypoint()
+	if(!servant)
+		return
+	var/list/info = get_waypoint_info()
+	if(!info)
+		return
+	servant.add_waypoint(REF(src), info[1], info[2], info[3])
 
 /**
  * Uploads this mission's objective beacon to a specific handheld GPS unit

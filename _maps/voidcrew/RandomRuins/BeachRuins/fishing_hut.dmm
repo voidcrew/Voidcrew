@@ -17,7 +17,7 @@
 	})
 "bE" = (
 /obj/structure/table/wood/fancy,
-/obj/item/reagent_containers/food/snacks/cubancarp,
+/obj/item/food/cubancarp,
 /turf/open/floor/carpet/red,
 /area/ruin/powered{
 	name = "\improper Dining Hall"
@@ -38,15 +38,15 @@
 	})
 "gT" = (
 /obj/structure/table/wood/fancy/purple,
-/obj/item/storage/backpack/magspear_quiver,
-/obj/item/storage/backpack/magspear_quiver,
+/obj/item/spear,
+/obj/item/spear,
 /turf/open/floor/carpet/royalblack,
 /area/ruin/powered{
 	name = "\improper Dining Hall"
 	})
 "hd" = (
 /obj/structure/table/wood/fancy,
-/obj/item/reagent_containers/food/snacks/burger/fish,
+/obj/item/food/burger/fish,
 /turf/open/floor/carpet/red/airless,
 /area/ruin/powered{
 	name = "\improper Dining Hall"
@@ -56,7 +56,7 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "hK" = (
-/turf/open/floor/carpet/red_gold,
+/turf/open/floor/carpet/red,
 /area/ruin/powered{
 	name = "\improper Dining Hall"
 	})
@@ -70,7 +70,7 @@
 /obj/structure/chair/wood/wings{
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/pirate/melee/beach,
+/mob/living/basic/trooper/pirate/melee,
 /turf/open/floor/carpet/red/airless,
 /area/ruin/unpowered)
 "nv" = (
@@ -87,23 +87,15 @@
 	name = "\improper Dining Hall"
 	})
 "pI" = (
-/mob/living/simple_animal/hostile/cat_butcherer{
-	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0);
+/obj/item/guardian_creator/carp,
+/mob/living/basic/cat_butcherer{
+	name = "The Butcher";
 	desc = "A profession carp butcher, gone mad due to carptoxin exposure. There seems to be something in their pocket...";
 	faction = list("hostile", "beach");
 	health = 300;
-	held_items = held();
-	loot = list(/obj/effect/mob_spawn/human/corpse/cat_butcher, /obj/item/guardiancreator/carp);
 	maxHealth = 300;
-	maxbodytemp = 10000;
 	melee_damage_lower = 20;
-	melee_damage_upper = 25;
-	minbodytemp = 0;
-	name = "The Butcher";
-	ranged_cooldown_time = 15;
-	ranged_message = "fires the speargun at";
-	real_name = "The Butcher";
-	unique_name = 1
+	melee_damage_upper = 25
 	},
 /turf/open/floor/iron/kitchen_coldroom/freezerfloor,
 /area/ruin/powered{
@@ -111,14 +103,14 @@
 	})
 "sA" = (
 /obj/structure/table/wood/fancy/purple,
-/obj/item/pneumatic_cannon/speargun,
-/obj/item/pneumatic_cannon/speargun,
+/obj/item/pneumatic_cannon,
+/obj/item/pneumatic_cannon,
 /turf/open/floor/carpet/royalblack,
 /area/ruin/powered{
 	name = "\improper Dining Hall"
 	})
 "tV" = (
-/mob/living/simple_animal/hostile/pirate/melee/beach,
+/mob/living/basic/trooper/pirate/melee,
 /turf/open/floor/carpet/red,
 /area/ruin/powered{
 	name = "\improper Dining Hall"
@@ -146,14 +138,14 @@
 	})
 "uZ" = (
 /obj/structure/table/wood/fancy,
-/obj/item/reagent_containers/food/snacks/fishandchips,
+/obj/item/food/fishandchips,
 /turf/open/floor/carpet/red,
 /area/ruin/powered{
 	name = "\improper Dining Hall"
 	})
 "vc" = (
 /obj/structure/table/wood/fancy,
-/obj/item/reagent_containers/food/snacks/meat/slab/human/mutant/squid,
+/obj/item/food/meat/slab/rawcrab,
 /turf/open/floor/carpet/red/airless,
 /area/ruin/powered{
 	name = "\improper Dining Hall"
@@ -169,7 +161,7 @@
 	})
 "wH" = (
 /obj/structure/table/wood/fancy,
-/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/reagent_containers/cup/soda_cans/cola,
 /turf/open/floor/carpet/red,
 /area/ruin/powered{
 	name = "\improper Dining Hall"
@@ -190,14 +182,14 @@
 	})
 "DM" = (
 /obj/structure/table/wood/fancy,
-/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/reagent_containers/cup/soda_cans/cola,
 /turf/open/floor/carpet/red/airless,
 /area/ruin/powered{
 	name = "\improper Dining Hall"
 	})
 "DO" = (
 /obj/structure/table/wood/fancy,
-/obj/item/reagent_containers/food/snacks/fishfry,
+/obj/item/food/fishfry,
 /turf/open/floor/carpet/red/airless,
 /area/ruin/powered{
 	name = "\improper Dining Hall"
@@ -260,8 +252,8 @@
 	name = "\improper Cold Storage"
 	})
 "Os" = (
-/mob/living/simple_animal/hostile/pirate/ranged/beach,
-/turf/open/floor/carpet/red_gold,
+/mob/living/basic/trooper/pirate/ranged,
+/turf/open/floor/carpet/red,
 /area/ruin/powered{
 	name = "\improper Dining Hall"
 	})
@@ -309,7 +301,7 @@
 /area/ruin/unpowered)
 "Xp" = (
 /obj/structure/table/rolling,
-/obj/item/clothing/suit/space/hardsuit/carp,
+/obj/item/clothing/suit/hooded/carp_costume,
 /turf/open/floor/iron/kitchen_coldroom/freezerfloor,
 /area/ruin/powered{
 	name = "\improper Cold Storage"
@@ -327,6 +319,12 @@
 /obj/item/food/fishmeat/carp,
 /obj/item/food/fishmeat/carp,
 /obj/item/food/fishmeat/carp,
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/ruin/powered{
+	name = "\improper Cold Storage"
+	})
+"Zc" = (
+/obj/structure/closet/crate/zone_loot/syndicate,
 /turf/open/floor/iron/kitchen_coldroom/freezerfloor,
 /area/ruin/powered{
 	name = "\improper Cold Storage"
@@ -543,7 +541,7 @@ ep
 YJ
 QO
 QO
-QO
+Zc
 ep
 "}
 (14,1,1) = {"

@@ -22,18 +22,18 @@
 /turf/open/floor/carpet/royalblue,
 /area/ruin/powered)
 "dh" = (
-/mob/living/simple_animal/hostile/russian/ranged/mosin,
+/mob/living/basic/trooper/russian/ranged,
 /turf/open/floor/light,
 /area/ruin/powered)
 "ds" = (
-/mob/living/simple_animal/hostile/russian/ranged/trooper,
+/mob/living/basic/trooper/russian/ranged,
 /turf/open/floor/light,
 /area/ruin/powered)
 "dG" = (
 /obj/structure/chair/sofa/corner{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/russian,
+/mob/living/basic/trooper/russian,
 /obj/machinery/light,
 /turf/open/floor/carpet/royalblue,
 /area/ruin/powered)
@@ -52,13 +52,13 @@
 /turf/open/floor/light,
 /area/ruin/powered)
 "ie" = (
-/obj/item/storage/pill_bottle/floorpill/full,
+/obj/item/storage/pill_bottle/happy,
 /turf/open/floor/light,
 /area/ruin/powered)
 "kc" = (
 /obj/structure/chair/sofa/right,
 /obj/item/research_notes/loot/medium,
-/mob/living/simple_animal/hostile/russian/ranged/trooper,
+/mob/living/basic/trooper/russian/ranged,
 /turf/open/floor/iron/vaporwave,
 /area/ruin/powered)
 "kf" = (
@@ -70,7 +70,7 @@
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "mf" = (
-/mob/living/simple_animal/hostile/russian,
+/mob/living/basic/trooper/russian,
 /turf/open/floor/carpet/blue,
 /area/ruin/powered)
 "mK" = (
@@ -84,7 +84,7 @@
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "nz" = (
-/mob/living/simple_animal/hostile/russian,
+/mob/living/basic/trooper/russian,
 /turf/open/floor/light,
 /area/ruin/powered)
 "nS" = (
@@ -114,7 +114,7 @@
 	dir = 1
 	},
 /obj/machinery/light,
-/mob/living/simple_animal/hostile/russian,
+/mob/living/basic/trooper/russian,
 /turf/open/floor/carpet/royalblue,
 /area/ruin/powered)
 "rb" = (
@@ -136,7 +136,7 @@
 /turf/open/floor/carpet/blue,
 /area/ruin/powered)
 "sP" = (
-/mob/living/simple_animal/hostile/russian/ranged/officer,
+/mob/living/basic/trooper/russian/ranged,
 /turf/open/floor/light,
 /area/ruin/powered)
 "uC" = (
@@ -151,12 +151,12 @@
 /area/ruin/powered)
 "xr" = (
 /obj/structure/chair/office/light,
-/mob/living/simple_animal/hostile/russian,
+/mob/living/basic/trooper/russian,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "xL" = (
 /obj/structure/chair/sofa,
-/mob/living/simple_animal/hostile/russian/ranged/mosin,
+/mob/living/basic/trooper/russian/ranged,
 /turf/open/floor/carpet/royalblue,
 /area/ruin/powered)
 "yA" = (
@@ -182,12 +182,12 @@
 "Cm" = (
 /obj/structure/table/glass,
 /obj/item/gun/ballistic/revolver/golden,
-/obj/item/ammo_casing/a357,
-/obj/item/ammo_casing/a357,
-/obj/item/ammo_casing/a357,
-/obj/item/ammo_casing/a357,
-/obj/item/ammo_casing/a357,
-/obj/item/ammo_casing/a357,
+/obj/item/ammo_casing/c357,
+/obj/item/ammo_casing/c357,
+/obj/item/ammo_casing/c357,
+/obj/item/ammo_casing/c357,
+/obj/item/ammo_casing/c357,
+/obj/item/ammo_casing/c357,
 /turf/open/floor/carpet/royalblue,
 /area/ruin/powered)
 "Cs" = (
@@ -206,9 +206,9 @@
 "CX" = (
 /obj/structure/table/rolling,
 /obj/item/storage/fancy/rollingpapers,
-/obj/item/clothing/mask/cigarette/rollie/cannabis,
-/obj/item/clothing/mask/cigarette/rollie/cannabis,
-/obj/item/reagent_containers/pill/stimulant,
+/obj/item/cigarette/rollie/cannabis,
+/obj/item/cigarette/rollie/cannabis,
+/obj/item/reagent_containers/applicator/pill/stimulant,
 /turf/open/floor/carpet/royalblue,
 /area/ruin/powered)
 "Df" = (
@@ -216,11 +216,11 @@
 /turf/open/floor/carpet/royalblue,
 /area/ruin/powered)
 "Dz" = (
-/mob/living/simple_animal/hostile/bear/russian,
+/mob/living/basic/bear/russian,
 /turf/open/floor/carpet/cyan,
 /area/ruin/powered)
 "Fr" = (
-/mob/living/simple_animal/hostile/russian/ranged/officer,
+/mob/living/basic/trooper/russian/ranged,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "FB" = (
@@ -228,7 +228,7 @@
 /turf/open/floor/carpet/blue,
 /area/ruin/powered)
 "GK" = (
-/obj/effect/spawner/structure/window/plasma/reinforced,
+/obj/effect/spawner/structure/window/reinforced/plasma,
 /turf/open/floor/carpet/blue,
 /area/ruin/powered)
 "Ha" = (
@@ -242,7 +242,6 @@
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "Iw" = (
-/obj/machinery/plantgenes/seedvault,
 /obj/structure/table/reinforced,
 /obj/item/research_notes/loot/big,
 /obj/machinery/light,
@@ -262,7 +261,7 @@
 /turf/open/floor/light,
 /area/ruin/powered)
 "Mb" = (
-/mob/living/simple_animal/hostile/russian/ranged/mosin,
+/mob/living/basic/trooper/russian/ranged,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "MB" = (
@@ -284,14 +283,14 @@
 /turf/open/floor/iron/vaporwave,
 /area/ruin/powered)
 "Ou" = (
-/mob/living/simple_animal/hostile/russian/ranged/mosin,
+/mob/living/basic/trooper/russian/ranged,
 /turf/open/floor/carpet/cyan,
 /area/ruin/powered)
 "Pq" = (
 /obj/structure/chair/sofa/right{
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/russian/ranged/trooper,
+/mob/living/basic/trooper/russian/ranged,
 /turf/open/floor/carpet/royalblue,
 /area/ruin/powered)
 "Px" = (
@@ -305,11 +304,11 @@
 /obj/structure/chair/sofa/right{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/russian,
+/mob/living/basic/trooper/russian,
 /turf/open/floor/carpet/royalblue,
 /area/ruin/powered)
 "RJ" = (
-/obj/effect/spawner/structure/window/plasma/reinforced,
+/obj/effect/spawner/structure/window/reinforced/plasma,
 /turf/open/floor/carpet/royalblue,
 /area/ruin/powered)
 "RS" = (
@@ -344,12 +343,12 @@
 /area/ruin/powered)
 "TP" = (
 /obj/structure/table/glass,
-/obj/item/reagent_containers/food/drinks/drinkingglass/shotglass,
-/obj/item/reagent_containers/food/drinks/drinkingglass/shotglass,
-/obj/item/reagent_containers/food/drinks/drinkingglass/shotglass,
-/obj/item/reagent_containers/food/drinks/drinkingglass,
-/obj/item/reagent_containers/food/drinks/drinkingglass,
-/obj/item/reagent_containers/food/drinks/drinkingglass,
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass,
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass,
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass,
+/obj/item/reagent_containers/cup/glass/drinkingglass,
+/obj/item/reagent_containers/cup/glass/drinkingglass,
+/obj/item/reagent_containers/cup/glass/drinkingglass,
 /obj/item/stack/medical/suture,
 /turf/open/floor/iron/vaporwave,
 /area/ruin/powered)
@@ -370,7 +369,7 @@
 /turf/open/floor/light,
 /area/ruin/powered)
 "Xs" = (
-/obj/item/gun/ballistic/automatic/pistol/commander,
+/obj/item/gun/ballistic/automatic/pistol/deagle,
 /turf/open/floor/light,
 /area/ruin/powered)
 "XC" = (
@@ -387,8 +386,12 @@
 /obj/item/seeds/cannabis/white,
 /turf/open/floor/plastic,
 /area/ruin/powered)
+"Zc" = (
+/obj/structure/closet/crate/zone_loot/syndicate,
+/turf/open/floor/plastic,
+/area/ruin/powered)
 "Zo" = (
-/obj/item/reagent_containers/pill/happy,
+/obj/item/reagent_containers/applicator/pill/happy,
 /turf/open/floor/light,
 /area/ruin/powered)
 "ZH" = (
@@ -683,7 +686,7 @@ RS
 pG
 QN
 pG
-pG
+Zc
 RS
 "}
 (13,1,1) = {"

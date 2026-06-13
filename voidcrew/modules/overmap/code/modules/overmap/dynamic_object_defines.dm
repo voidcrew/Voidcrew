@@ -25,8 +25,12 @@
 	else
 		return
 
+/// All planet overmap objects (used to map interior z-levels back to overmap tiles, e.g. for zone-aware loot)
+GLOBAL_LIST_EMPTY(overmap_planets)
+
 /obj/structure/overmap/planet/Initialize(mapload)
 	. = ..()
+	GLOB.overmap_planets += src
 	if(planet)
 		var/datum/overmap/planet/planet_info = new planet
 		name = planet_info.name
@@ -35,6 +39,10 @@
 		color = planet_info.color
 		weather_type = planet_info.weather_controller_type
 		qdel(planet_info)
+
+/obj/structure/overmap/planet/Destroy()
+	GLOB.overmap_planets -= src
+	return ..()
 
 /obj/structure/overmap/planet/lava
 	planet = /datum/overmap/planet/lava

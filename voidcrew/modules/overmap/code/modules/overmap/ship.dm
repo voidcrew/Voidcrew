@@ -617,6 +617,7 @@
 	// Clean up missions
 	QDEL_LIST(available_missions)
 	QDEL_LIST(active_missions)
+	QDEL_LIST(waypoints)
 	return ..()
 
 /obj/structure/overmap/ship/attack_ghost(mob/user)

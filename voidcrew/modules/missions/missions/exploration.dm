@@ -111,6 +111,9 @@
 	desc = replacetext(desc, "%TARGET_Y%", "[target_y]")
 	desc = replacetext(desc, "%ZONE_NAME%", target_zone_name)
 
+/datum/mission/exploration/get_waypoint_info()
+	return list("Survey site", target_x, target_y)
+
 /datum/mission/exploration/start_mission(obj/structure/overmap/ship/ship)
 	. = ..()
 	if(!.)

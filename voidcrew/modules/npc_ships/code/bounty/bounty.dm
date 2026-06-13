@@ -79,6 +79,8 @@
 /datum/pirate_bounty/Destroy()
 	// Remove from global tracking first (prevents memory leak)
 	SSbounty?.remove_bounty(src)
+	// Belt-and-suspenders: complete()/fail() already clear these
+	clear_tracking_waypoints()
 
 	// Unregister signals from key
 	var/obj/item/ship_key/key = target_key_ref?.resolve()
@@ -190,6 +192,8 @@
 			claiming_ships -= ref
 			// Mark as abandoned - can't re-accept
 			abandoned_by += WEAKREF(ship)
+			// Drop their tracking waypoint, if they bought one
+			ship.remove_waypoint(REF(src))
 			return TRUE
 	return FALSE
 
@@ -266,7 +270,30 @@
 		return FALSE
 
 	tracking_ships += WEAKREF(ship)
+	push_tracking_waypoint(ship)
 	return TRUE
+
+/**
+ * Charts the target on a tracking ship's helm waypoint readout; the waypoint
+ * follows the pirate ship live via its tracked_target weakref.
+ * @return TRUE if the waypoint was charted
+ */
+/datum/pirate_bounty/proc/push_tracking_waypoint(obj/structure/overmap/ship/ship)
+	var/obj/structure/overmap/ship/npc/target = get_target_ship()
+	var/list/target_coords = target?.get_relative_overmap_coords()
+	if(!target_coords)
+		return FALSE
+	ship.add_waypoint(REF(src), "Bounty: [name]", target_coords[1], target_coords[2], target)
+	return TRUE
+
+/**
+ * Removes this bounty's helm waypoint from every ship that bought tracking.
+ * Called whenever the bounty resolves (complete/fail/delete).
+ */
+/datum/pirate_bounty/proc/clear_tracking_waypoints()
+	for(var/datum/weakref/ref in tracking_ships)
+		var/obj/structure/overmap/ship/resolved = ref.resolve()
+		resolved?.remove_waypoint(REF(src))
 
 /**
  * Gets the credit cost for enabling tracking.
@@ -316,6 +343,7 @@
 		return 0
 
 	completed = TRUE
+	clear_tracking_waypoints()
 
 	// Award credits to winning ship (reduced if they used tracking)
 	var/actual_reward = get_reward_for_ship(winner)
@@ -434,6 +462,7 @@
 
 	failed = TRUE
 	failure_reason = reason
+	clear_tracking_waypoints()
 
 	// Notify all claimants
 	for(var/datum/weakref/ref in claiming_ships)

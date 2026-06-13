@@ -2,6 +2,9 @@
 
 /datum/map_template/ruin/wasteland
 	prefix = "_maps/voidcrew/RandomRuins/WastelandRuins/"
+	ruin_type = ZTRAIT_WASTELAND_RUINS
+	allow_duplicates = FALSE
+	cost = 5
 
 /datum/map_template/ruin/wasteland/solgov_crash
 	name = "Crashed SolGov Transport"

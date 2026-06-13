@@ -275,6 +275,39 @@
 	data["y"] = T.y - OVERMAP_SOUTH_SIDE_COORD + 1
 	data["state"] = current_ship.state
 	data["docked"] = isturf(current_ship.loc) ? FALSE : TRUE
+
+	// Waypoint readout: live distance/bearing from current position.
+	// Trader outposts are permanent fixtures, so they're always listed (no
+	// per-ship state, no clear button); charted waypoints follow.
+	data["waypoints"] = list()
+	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
+		var/list/outpost_coords = outpost.get_relative_overmap_coords()
+		if(!outpost_coords)
+			continue
+		var/dx = outpost_coords[1] - data["x"]
+		var/dy = outpost_coords[2] - data["y"]
+		var/dist = round(sqrt(dx * dx + dy * dy))
+		data["waypoints"] += list(list(
+			"name" = "Trader [outpost.shop.trader_name]",
+			"x" = outpost_coords[1],
+			"y" = outpost_coords[2],
+			"dist" = dist,
+			"bearing" = overmap_delta_to_compass(dx, dy),
+			"ref" = null,
+		))
+	for(var/datum/ship_waypoint/waypoint as anything in current_ship.waypoints)
+		var/list/waypoint_coords = waypoint.get_coords()
+		var/dx = waypoint_coords[1] - data["x"]
+		var/dy = waypoint_coords[2] - data["y"]
+		var/dist = round(sqrt(dx * dx + dy * dy))
+		data["waypoints"] += list(list(
+			"name" = waypoint.name,
+			"x" = waypoint_coords[1],
+			"y" = waypoint_coords[2],
+			"dist" = dist,
+			"bearing" = overmap_delta_to_compass(dx, dy),
+			"ref" = REF(waypoint),
+		))
 	data["heading"] = dir2text(current_ship.get_heading()) || "None"
 	data["speed"] = current_ship.get_speed()
 	data["eta"] = current_ship.get_eta()
@@ -587,6 +620,11 @@
 			update_static_data(usr, ui)
 			return
 			*/
+		if("remove_waypoint")
+			var/datum/ship_waypoint/waypoint = locate(params["waypoint"]) in current_ship.waypoints
+			if(waypoint)
+				current_ship.delete_waypoint(waypoint)
+			return
 		if("reload_ship")
 			reload_ship()
 			current_ship.calculate_mass() // Refresh health based on current turfs

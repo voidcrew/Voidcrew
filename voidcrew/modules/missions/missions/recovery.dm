@@ -135,6 +135,9 @@
 	RegisterSignal(target_ruin, COMSIG_QDELETING, PROC_REF(on_ruin_deleted))
 	return TRUE
 
+/datum/mission/recovery/get_waypoint_info()
+	return list("Recovery: [objective_name]", target_x, target_y)
+
 /datum/mission/recovery/start_mission(obj/structure/overmap/ship/ship)
 	// The target may have been destroyed while the mission sat in the available list
 	if(QDELETED(target_ruin) && !pick_target_ruin())
@@ -297,6 +300,7 @@
 	update_text()
 	if(active)
 		arm_objective()
+		push_waypoint()
 		if(servant)
 			servant.ship_notify("[name]: target signal relocated to ([target_x], [target_y]), [target_zone_name].", "MISSION UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 
@@ -377,6 +381,9 @@
 
 /datum/mission/recovery/kill/gps_tag_prefix()
 	return "HUNT"
+
+/datum/mission/recovery/kill/get_waypoint_info()
+	return list("Hunt: [objective_name]", target_x, target_y)
 
 /datum/mission/recovery/kill/spawn_objective()
 	if(objective_spawned || QDELETED(target_ruin))

@@ -23,7 +23,7 @@
 	var/lava_planet_count = 0
 	var/ice_planet_count = 0
 	var/jungle_planet_count = 0
-	var/beach_planet_count = 0
+	var/beach_planet_count = 1
 	var/wasteland_planet_count = 0
 
 	var/list/planets = list()

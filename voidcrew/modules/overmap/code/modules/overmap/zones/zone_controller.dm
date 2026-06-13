@@ -156,6 +156,73 @@ SUBSYSTEM_DEF(overmap_zones)
 	return get_zone(get_turf(A))
 
 /**
+ * Resolves the zone type for any turf, including interiors of overmap objects.
+ *
+ * Overmap turfs resolve directly. Turfs inside a loaded space ruin, trader
+ * outpost or planet resolve to the zone of that object's overmap tile.
+ * Returns null when the location can't be tied to the overmap (e.g. ship
+ * interiors, CentCom) — callers pick their own default.
+ */
+/datum/controller/subsystem/overmap_zones/proc/get_zone_type_anywhere(turf/T)
+	if(!T)
+		return null
+	if(istype(T, /turf/open/overmap))
+		return resolve_zone_for_overmap_turf(T)
+	var/obj/structure/overmap/holder = get_overmap_object_for_turf(T)
+	if(!holder)
+		return null
+	var/turf/overmap_turf = get_turf(holder)
+	if(!istype(overmap_turf, /turf/open/overmap))
+		return null
+	return resolve_zone_for_overmap_turf(overmap_turf)
+
+/**
+ * Zone type for an overmap turf, falling back to the static distance-from-sun
+ * band formula when zone assignment hasn't run yet (zones never move, so the
+ * formula always matches the eventual assignment).
+ */
+/datum/controller/subsystem/overmap_zones/proc/resolve_zone_for_overmap_turf(turf/T)
+	var/zone_type = get_zone_type(T)
+	if(!isnull(zone_type))
+		return zone_type
+	if(!SSovermap.overmap_centre)
+		return null
+	return SSovermap.get_zone_band_for_turf(T)
+
+/**
+ * Finds the overmap object whose loaded interior contains the given turf.
+ */
+/datum/controller/subsystem/overmap_zones/proc/get_overmap_object_for_turf(turf/T)
+	// Space ruins: turf reservations on shared z-levels — bounds check
+	for(var/obj/structure/overmap/space_ruin/ruin as anything in GLOB.space_ruin_signals)
+		if(reservation_contains_turf(ruin.reservation, T))
+			return ruin
+	// Trader outposts: same reservation pattern
+	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
+		if(reservation_contains_turf(outpost.reservation, T))
+			return outpost
+	// Planets: own whole z-levels via their mapzone
+	for(var/obj/structure/overmap/planet/planet as anything in GLOB.overmap_planets)
+		if(!planet.mapzone)
+			continue
+		for(var/datum/space_level/level as anything in planet.mapzone.z_levels)
+			if(level.z_value == T.z)
+				return planet
+	return null
+
+/**
+ * Whether a turf reservation's bounds contain the given turf.
+ */
+/datum/controller/subsystem/overmap_zones/proc/reservation_contains_turf(datum/turf_reservation/reservation, turf/T)
+	if(!reservation || !length(reservation.bottom_left_turfs))
+		return FALSE
+	var/turf/bottom_left = reservation.bottom_left_turfs[1]
+	if(!bottom_left || bottom_left.z != T.z)
+		return FALSE
+	return T.x >= bottom_left.x && T.x < bottom_left.x + reservation.width \
+		&& T.y >= bottom_left.y && T.y < bottom_left.y + reservation.height
+
+/**
  * Checks if weapons are allowed at a location
  * For atoms inside ships, checks the ship's overmap position
  */
