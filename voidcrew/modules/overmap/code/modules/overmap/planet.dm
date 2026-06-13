@@ -2,6 +2,8 @@
 	name = "weak energy signature"
 	desc = "A very weak energy signature."
 	icon_state = "strange_event"
+	sensor_detectable = TRUE
+	sensor_category = "Planets"
 
 	/// Datum containing all of the information about this planet
 	var/datum/overmap/planet/planet

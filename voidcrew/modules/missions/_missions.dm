@@ -327,7 +327,7 @@
 	var/list/info = get_waypoint_info()
 	if(!info)
 		return
-	servant.add_waypoint(REF(src), info[1], info[2], info[3])
+	servant.add_waypoint(REF(src), info[1], info[2], info[3], "Missions")
 
 /**
  * Uploads this mission's objective beacon to a specific handheld GPS unit

@@ -283,7 +283,7 @@
 	var/list/target_coords = target?.get_relative_overmap_coords()
 	if(!target_coords)
 		return FALSE
-	ship.add_waypoint(REF(src), "Bounty: [name]", target_coords[1], target_coords[2], target)
+	ship.add_waypoint(REF(src), "Bounty: [name]", target_coords[1], target_coords[2], "Bounties", target)
 	return TRUE
 
 /**

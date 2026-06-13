@@ -276,9 +276,15 @@
 	data["state"] = current_ship.state
 	data["docked"] = isturf(current_ship.loc) ? FALSE : TRUE
 
-	// Waypoint readout: live distance/bearing from current position.
-	// Trader outposts are permanent fixtures, so they're always listed (no
-	// per-ship state, no clear button); charted waypoints follow.
+	// Unified navigation readout: live distance/bearing from current position,
+	// grouped by category on the helm. Trader outposts are permanent fixtures,
+	// always listed (no per-ship state, no clear button). Most other entries are
+	// charted waypoints — missions, bounties, active-scan contacts. Ship
+	// contacts are appended live (not charted) when the top radar tier is
+	// researched: they vanish the moment either ship leaves the bubble.
+	data["sensorRange"] = current_ship.get_sensor_range()
+	data["scanCooldown"] = !COOLDOWN_FINISHED(current_ship, sensor_scan_cooldown)
+	data["scanCooldownRemaining"] = COOLDOWN_TIMELEFT(current_ship, sensor_scan_cooldown)
 	data["waypoints"] = list()
 	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
 		var/list/outpost_coords = outpost.get_relative_overmap_coords()
@@ -293,8 +299,33 @@
 			"y" = outpost_coords[2],
 			"dist" = dist,
 			"bearing" = overmap_delta_to_compass(dx, dy),
+			"category" = "Outposts",
 			"ref" = null,
 		))
+	if(current_ship.can_scan_ships())
+		var/ship_scan_range = data["sensorRange"]
+		for(var/obj/structure/overmap/ship/other as anything in SSovermap.simulated_ships)
+			// Any vessel in range registers — including pirates; that's the
+			// point of vessel tracking. Nebula-hidden ships stay concealed.
+			if(other == current_ship || other.hidden_in_nebula)
+				continue
+			var/list/other_coords = other.get_relative_overmap_coords()
+			if(!other_coords)
+				continue
+			var/dx = other_coords[1] - data["x"]
+			var/dy = other_coords[2] - data["y"]
+			var/dist = round(sqrt(dx * dx + dy * dy))
+			if(dist > ship_scan_range)
+				continue
+			data["waypoints"] += list(list(
+				"name" = other.name,
+				"x" = other_coords[1],
+				"y" = other_coords[2],
+				"dist" = dist,
+				"bearing" = overmap_delta_to_compass(dx, dy),
+				"category" = "Ships",
+				"ref" = null,
+			))
 	for(var/datum/ship_waypoint/waypoint as anything in current_ship.waypoints)
 		var/list/waypoint_coords = waypoint.get_coords()
 		var/dx = waypoint_coords[1] - data["x"]
@@ -306,6 +337,7 @@
 			"y" = waypoint_coords[2],
 			"dist" = dist,
 			"bearing" = overmap_delta_to_compass(dx, dy),
+			"category" = waypoint.category,
 			"ref" = REF(waypoint),
 		))
 	data["heading"] = dir2text(current_ship.get_heading()) || "None"
@@ -667,6 +699,20 @@
 	switch(current_ship.state) // Ship state-limited topics
 		if(OVERMAP_SHIP_FLYING)
 			switch(action)
+				if("active_scan")
+					var/category = params["category"]
+					var/found = current_ship.active_scan(category)
+					var/label = lowertext(category) || "object"
+					if(found < 0)
+						say("Sensors recharging. ETA: [DisplayTimeText(COOLDOWN_TIMELEFT(current_ship, sensor_scan_cooldown))].")
+						playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
+					else if(found > 0)
+						say("Active scan complete: [found] [label] contact[found > 1 ? "s" : ""] charted.")
+						playsound(src, 'sound/machines/ping.ogg', 40)
+					else
+						say("Active scan complete: no new [label] contacts in sensor range.")
+						playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
+					return
 				if("act_overmap")
 					var/obj/structure/overmap/to_act = locate(params["ship_to_act"])
 					say(current_ship.overmap_object_act(usr, to_act))

@@ -259,6 +259,7 @@
 		/datum/shop_sku/black_market/thermals,
 		/datum/shop_sku/black_market/sleepy_pen,
 		/datum/shop_sku/black_market/tactical_medkit,
+		/datum/shop_sku/black_market/star_chart,
 		/datum/shop_sku/black_market/soap,
 	)
 	trader_lines = list(
@@ -389,6 +390,13 @@
 	stock_min = 1
 	stock_max = 3
 
+// Charts the lawless deep — the discovery certainty channel, voucher-priced
+/datum/shop_sku/black_market/star_chart
+	item_path = /obj/item/disk/star_chart/red
+	price_vouchers = 2
+	stock_min = 1
+	stock_max = 2
+
 // The mandatory joke item; also the cheap "see how the shop works" SKU
 /datum/shop_sku/black_market/soap
 	item_path = /obj/item/soap/syndie
@@ -415,6 +423,7 @@
 		/datum/shop_sku/outfitter/gas_mask,
 		/datum/shop_sku/outfitter/brute_kit,
 		/datum/shop_sku/outfitter/jaws,
+		/datum/shop_sku/outfitter/star_chart,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -485,6 +494,13 @@
 	item_path = /obj/item/crowbar/power
 	price_vouchers = 1
 	price_credits = 500
+	stock_min = 1
+	stock_max = 2
+
+// Charts the contested lanes — discovery certainty for the middle ring
+/datum/shop_sku/outfitter/star_chart
+	item_path = /obj/item/disk/star_chart/yellow
+	price_credits = 400
 	stock_min = 1
 	stock_max = 2
 

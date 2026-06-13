@@ -320,7 +320,7 @@
 /datum/techweb_node/survey_console_advanced
 	id = TECHWEB_NODE_SURVEY_CONSOLE_ADV
 	display_name = "Survey console advanced upgrades"
-	description = "Your shuttle can now land directly on planets."
+	description = "You can now choose where to dock on a planet."
 	prereq_ids = list(TECHWEB_NODE_SURVEY_CONSOLE)
 	design_ids = list(
 		"survey_ship_docking",
@@ -359,3 +359,31 @@
 	)
 	required_surveyed_objects = list(stars = 1, planets = 5, asteroids = 2)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 20000)
+
+// Radar array — the ship's overmap sensor suite. A dedicated ladder separate
+// from the survey console: each tier widens the active-scan radius, and the
+// upper tiers add ruin identification and live player-ship tracking. Read by
+// the ship's sensor procs in ship_sensors.dm; the nodes unlock no designs.
+/datum/techweb_node/radar_array
+	id = TECHWEB_NODE_RADAR_ARRAY
+	display_name = "Radar Array"
+	description = "A long-range overmap sensor array. Widens the helm's active-scan radius for charting planets, ruins and outposts."
+	prereq_ids = list(TECHWEB_NODE_FUNDIMENTAL_SCI)
+	design_ids = list()
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1000)
+
+/datum/techweb_node/radar_array_advanced
+	id = TECHWEB_NODE_RADAR_ARRAY_ADV
+	display_name = "Radar Array — Signal Analysis"
+	description = "Spectral analysis of charted signals. Further widens the scan radius and identifies what a space ruin actually is the moment it's charted, no survey required."
+	prereq_ids = list(TECHWEB_NODE_RADAR_ARRAY)
+	design_ids = list()
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
+
+/datum/techweb_node/radar_array_elite
+	id = TECHWEB_NODE_RADAR_ARRAY_ELITE
+	display_name = "Radar Array — Vessel Tracking"
+	description = "Active vessel tracking. Maximises the scan radius and continuously plots other crews' ships within sensor range — contacts that vanish the instant either ship leaves the bubble."
+	prereq_ids = list(TECHWEB_NODE_RADAR_ARRAY_ADV)
+	design_ids = list()
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)

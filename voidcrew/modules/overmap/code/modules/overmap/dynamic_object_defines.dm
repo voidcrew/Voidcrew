@@ -67,6 +67,7 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 
 /obj/structure/overmap/planet/empty
 	planet = /datum/overmap/planet/empty
+	sensor_detectable = FALSE // dynamic dock-in-empty-space placeholder, not a real celestial
 	/// How many times we've tried to unload this level
 	var/unload_attempts = 0
 	/// Maximum number of unload retry attempts

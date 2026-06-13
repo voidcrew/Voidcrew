@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useBackend } from '../../tgui/backend';
 import {
   AnimatedNumber,
+  Box,
   Button,
   ByondUi,
   Input,
@@ -83,7 +84,7 @@ export const HelmComputer = (props) => {
                   </Stack.Item>
 
                   <Stack.Item>
-                    <WaypointsSection />
+                    <NavigationSection />
                   </Stack.Item>
 
                   <Stack.Item>
@@ -251,46 +252,142 @@ const ZoneSection = () => {
   );
 };
 
-const WaypointsSection = () => {
+// Object types the crew can actively scan for. Matches sensor_category on the
+// detectable overmap objects. Outposts are always listed and ships are tracked
+// live by the top radar tier, so neither is a scan button here.
+const SCAN_TYPES = ['Planets', 'Ruins'];
+
+const NavigationSection = () => {
   const { act, data } = useBackend();
-  const { isViewer, isNotCrew, waypoints = [] } = data;
+  const {
+    isViewer,
+    isNotCrew,
+    waypoints = [],
+    sensorRange,
+    state,
+    scanCooldown,
+    scanCooldownRemaining,
+  } = data;
   const isDisabled = isViewer || isNotCrew;
-  if (!waypoints.length) {
-    return null;
+  const [filter, setFilter] = useState('All');
+
+  // Group the unified readout by category for display and filtering.
+  const groups = {};
+  for (const wp of waypoints) {
+    const cat = wp.category || 'Waypoints';
+    if (!groups[cat]) {
+      groups[cat] = [];
+    }
+    groups[cat].push(wp);
   }
+  const categories = Object.keys(groups).sort();
+  // Fall back to "All" if the selected filter no longer has any entries.
+  const activeFilter = filter !== 'All' && !groups[filter] ? 'All' : filter;
+  const visibleCats = activeFilter === 'All' ? categories : [activeFilter];
+
+  const canScan = !isDisabled && state === 'flying';
+  const colSpan = isDisabled ? 3 : 4;
+
   return (
-    <Section title="Waypoints">
-      <Table>
-        {waypoints.map((waypoint) => (
-          <Table.Row key={waypoint.ref || waypoint.name} className="candystripe">
-            <Table.Cell>{waypoint.name}</Table.Cell>
-            <Table.Cell collapsing nowrap>
-              ({waypoint.x}, {waypoint.y})
-            </Table.Cell>
-            <Table.Cell collapsing nowrap>
-              {waypoint.dist > 0
-                ? `${waypoint.dist} units ${waypoint.bearing}`
-                : 'Here'}
-            </Table.Cell>
-            {!isDisabled && (
-              <Table.Cell collapsing>
-                {!!waypoint.ref && (
+    <Section
+      title="Navigation"
+      buttons={
+        sensorRange ? (
+          <Box inline color="label">
+            Sensor range: {sensorRange}
+          </Box>
+        ) : null
+      }
+    >
+      {canScan && (
+        <Stack wrap mb={1} align="center">
+          <Stack.Item color="label" mr={1}>
+            {scanCooldown
+              ? `Sensors recharging (${Math.ceil(scanCooldownRemaining / 10)}s)`
+              : 'Active scan:'}
+          </Stack.Item>
+          {SCAN_TYPES.map((t) => (
+            <Stack.Item key={t}>
+              <Button
+                icon="satellite-dish"
+                disabled={scanCooldown}
+                onClick={() => act('active_scan', { category: t })}
+              >
+                {t}
+              </Button>
+            </Stack.Item>
+          ))}
+        </Stack>
+      )}
+      {!waypoints.length ? (
+        <NoticeBox info>
+          No contacts.
+          {canScan ? ' Run an active scan to detect nearby objects.' : ''}
+        </NoticeBox>
+      ) : (
+        <>
+          {categories.length > 1 && (
+            <Stack wrap mb={1}>
+              <Stack.Item>
+                <Button
+                  selected={activeFilter === 'All'}
+                  onClick={() => setFilter('All')}
+                >
+                  All ({waypoints.length})
+                </Button>
+              </Stack.Item>
+              {categories.map((cat) => (
+                <Stack.Item key={cat}>
                   <Button
-                    icon="times"
-                    tooltip="Clear waypoint"
-                    tooltipPosition="left"
-                    onClick={() =>
-                      act('remove_waypoint', {
-                        waypoint: waypoint.ref,
-                      })
-                    }
-                  />
-                )}
-              </Table.Cell>
-            )}
-          </Table.Row>
-        ))}
-      </Table>
+                    selected={activeFilter === cat}
+                    onClick={() => setFilter(cat)}
+                  >
+                    {cat} ({groups[cat].length})
+                  </Button>
+                </Stack.Item>
+              ))}
+            </Stack>
+          )}
+          <Table>
+            {visibleCats.map((cat) => (
+              <Fragment key={cat}>
+                <Table.Row header>
+                  <Table.Cell colSpan={colSpan}>
+                    <Box inline bold color="label">
+                      {cat}
+                    </Box>
+                  </Table.Cell>
+                </Table.Row>
+                {groups[cat].map((wp) => (
+                  <Table.Row key={wp.ref || wp.name} className="candystripe">
+                    <Table.Cell>{wp.name}</Table.Cell>
+                    <Table.Cell collapsing nowrap>
+                      ({wp.x}, {wp.y})
+                    </Table.Cell>
+                    <Table.Cell collapsing nowrap>
+                      {wp.dist > 0 ? `${wp.dist} units ${wp.bearing}` : 'Here'}
+                    </Table.Cell>
+                    {!isDisabled && (
+                      <Table.Cell collapsing>
+                        {!!wp.ref && (
+                          <Button
+                            icon="times"
+                            tooltip="Clear waypoint"
+                            tooltipPosition="left"
+                            onClick={() =>
+                              act('remove_waypoint', { waypoint: wp.ref })
+                            }
+                          />
+                        )}
+                      </Table.Cell>
+                    )}
+                  </Table.Row>
+                ))}
+              </Fragment>
+            ))}
+          </Table>
+        </>
+      )}
     </Section>
   );
 };

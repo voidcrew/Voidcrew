@@ -13,6 +13,8 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	name = "unknown signal"
 	desc = "A faint signal of unknown origin. Survey to learn more."
 	icon_state = "strange_event"
+	sensor_detectable = TRUE
+	sensor_category = "Ruins"
 
 	/// The ruin template this object will spawn
 	var/datum/map_template/ruin/space/ruin_template

@@ -11,6 +11,8 @@
 /datum/ship_waypoint
 	/// Display name shown on the helm readout
 	var/name = "waypoint"
+	/// Category the helm groups/filters this entry under (e.g. "Missions", "Planets")
+	var/category = "Waypoints"
 	/// Target X in relative overmap coordinates (1 to OVERMAP_SIZE)
 	var/target_x = 0
 	/// Target Y in relative overmap coordinates (1 to OVERMAP_SIZE)
@@ -42,10 +44,10 @@
 /**
  * Adds a waypoint to the helm readout, or updates the existing one with the
  * same source_key (so retargeting missions move their marker instead of
- * stacking new ones). Pass track_target to make the waypoint follow a moving
- * overmap object.
+ * stacking new ones). Pass category to group/filter the entry on the helm, and
+ * track_target to make the waypoint follow a moving overmap object.
  */
-/obj/structure/overmap/ship/proc/add_waypoint(source_key, name, target_x, target_y, obj/structure/overmap/track_target)
+/obj/structure/overmap/ship/proc/add_waypoint(source_key, name, target_x, target_y, category = "Waypoints", obj/structure/overmap/track_target)
 	var/datum/ship_waypoint/waypoint = get_waypoint(source_key)
 	if(!waypoint)
 		waypoint = new
@@ -54,6 +56,7 @@
 	waypoint.name = name
 	waypoint.target_x = target_x
 	waypoint.target_y = target_y
+	waypoint.category = category
 	waypoint.tracked_target = track_target ? WEAKREF(track_target) : null
 	return waypoint
 
