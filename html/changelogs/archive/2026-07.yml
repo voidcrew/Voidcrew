@@ -96,6 +96,8 @@
   - bugfix: Health and security HUD now scales with player height, no more huds clipping
       into spacer hair
   - bugfix: Ore veins can no longer spread into gibtonite turfs
+  - qol: Miner callouts are now off by default
+  - bugfix: Miner callouts can now be used to command pets like regular pointing
   Swan:
   - bugfix: fixes the chemical tab of the plant analyzer bluescreening on certain
       seeds.
