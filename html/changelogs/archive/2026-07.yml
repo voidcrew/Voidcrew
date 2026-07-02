@@ -37,11 +37,46 @@
   - code_imp: bodyshape is now accessible in build_worn_overlays() and similar procs.
   - image: lizards now have support female gender shaping for their suits
 2026-07-02:
+  Charlotte-Sugar:
+  - rscadd: Added new hairstyles
+  Melbert:
+  - bugfix: Airlock pump "timeout" period no longer gets frozen alongside atmos itself,
+      meaning airlock pumps will always consistently open after ten seconds, no matter
+      if atmos is struggling
+  - bugfix: Fixes some niche issues with settler/spacer looking off
+  - bugfix: Spacer is visible in prefs
+  - balance: 'Suffocation damage is slightly more consistent now: You take 3 oxyloss
+      per suffocation tick, reduced for partially successful breaths and or if you
+      are in crit. Alternatively, if you are in crit and you have epinephrine/atropine
+      in your system, it gets nullified entirely.'
+  - code_imp: Cleaned up lungs a bit, particularly relating to abnormal lungs like
+      plasmamen or fish, report any oddities with them.
+  - rscdel: You no longer have a chance to gasp twice in one suffocation tick.
+  OrbisAnima:
+  - bugfix: Puts a check on departamental budget cards to not be used with custom
+      vendors.
+  Richard Blonski:
+  - admin: Added Ignored CIDs, a message will appear when a player joins with an Ignored
+      CID.
   SmArtKar:
   - bugfix: Eigenstate and wilderness z levels now randomize properly
+  - bugfix: Raptor eggs no longer hatch into fully grown raptors
   Swan:
   - bugfix: fixes the chemical tab of the plant analyzer bluescreening on certain
       seeds.
   Time-Green:
   - qol: Gizmo's have some improved feedback to help convey the fact that there's
       no such thing as 'doing nothing'
+  lelandkemble:
+  - bugfix: It's no longer possible to softlock building a turret(if it ever was)
+  - bugfix: you can no longer stuff the blackbox recorder full with as many blackboxes
+      as you've somehow collected
+  - bugfix: TTVs will no longer remain on your back as a ghost when you cut their
+      wire straps
+  - bugfix: RCLs will now properly update their appearance when given their first
+      coil of cleaners
+  - code_imp: 50 files have been converted from attackby() to item_interaction()
+  mcbalaam:
+  - rscadd: AIs can now point to things using holopads
+  timothymtorres:
+  - rscadd: Mobs that are wet become frozen in freezing temperatures
