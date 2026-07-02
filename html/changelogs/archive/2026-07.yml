@@ -36,3 +36,12 @@
   vinylspiders:
   - code_imp: bodyshape is now accessible in build_worn_overlays() and similar procs.
   - image: lizards now have support female gender shaping for their suits
+2026-07-02:
+  SmArtKar:
+  - bugfix: Eigenstate and wilderness z levels now randomize properly
+  Swan:
+  - bugfix: fixes the chemical tab of the plant analyzer bluescreening on certain
+      seeds.
+  Time-Green:
+  - qol: Gizmo's have some improved feedback to help convey the fact that there's
+      no such thing as 'doing nothing'
