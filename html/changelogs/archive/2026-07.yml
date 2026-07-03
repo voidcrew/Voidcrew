@@ -123,3 +123,6 @@
   - rscadd: AIs can now point to things using holopads
   timothymtorres:
   - rscadd: Mobs that are wet become frozen in freezing temperatures
+2026-07-03:
+  Melbert:
+  - rscdel: Fixed jaws of recovery being able to be stored in the paramedic EMT belt
