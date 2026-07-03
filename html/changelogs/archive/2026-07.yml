@@ -145,8 +145,11 @@
       one, but take longer and must be stationary to do so.
   Melbert:
   - rscdel: Fixed jaws of recovery being able to be stored in the paramedic EMT belt
+  TealSeer:
+  - bugfix: fixed being unable to view/modify trim accesses in Access Management app
   lelandkemble:
   - map: There's no longer a missing pipe in the disposals loop on icebox
+  - bugfix: hand teleporters can now close portals
   timothymtorres:
   - balance: Upload computers in AI Upload Areas no longer require command IDs to
       use.
