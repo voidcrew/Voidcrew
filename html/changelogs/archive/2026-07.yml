@@ -124,5 +124,23 @@
   timothymtorres:
   - rscadd: Mobs that are wet become frozen in freezing temperatures
 2026-07-03:
+  KingkumaArt:
+  - balance: Increased the damage of base crossbow ammo to and metal h2 to 40. Traitor
+      ammo now takes plasteel to craft, but now has better anti-armor properties.
+  - balance: Traitor rebar crossbow no longer requires being stationary to rack/reload.
+  - bugfix: Fixed rebar crossbows having lower ammo capacity than intended due to
+      a gun code bolt refactor.
+  - bugfix: Fixed Traitor Crossbow reload being instant.
+  - qol: Engi Modsuits can now hold crossbows in their suit storage slot. I thought
+      they could already.
+  - qol: Makeshift rebar quivers can now reload via a GUI button like the syndicate
+      one, but take longer and must be stationary to do so.
   Melbert:
   - rscdel: Fixed jaws of recovery being able to be stored in the paramedic EMT belt
+  lelandkemble:
+  - map: There's no longer a missing pipe in the disposals loop on icebox
+  timothymtorres:
+  - balance: Upload computers in AI Upload Areas no longer require command IDs to
+      use.
+  vinylspiders:
+  - code_imp: tgui-core bumped to v6.1, please report any tgui-related issues
