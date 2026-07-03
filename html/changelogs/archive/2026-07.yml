@@ -124,6 +124,14 @@
   timothymtorres:
   - rscadd: Mobs that are wet become frozen in freezing temperatures
 2026-07-03:
+  CabinetOnFire:
+  - bugfix: Hot springs now use correct args for creating smoke
+  - bugfix: C4 no longer renders below floors when placed on floors
+  Jacquerel:
+  - balance: Adjusted the values of ores from the work camp to make a 1000 point sentence
+      closer to a 10 minute brig timer
+  - map: Moved some lightbulbs around in the work camp so you can see the bars getting
+      printed
   KingkumaArt:
   - balance: Increased the damage of base crossbow ammo to and metal h2 to 40. Traitor
       ammo now takes plasteel to craft, but now has better anti-armor properties.
