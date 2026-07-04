@@ -159,8 +159,20 @@
   LT3:
   - map: Finished moving the plant outside Metastation medbay's side airlock, an astonishing
       speed of 1 tile per 8 months.
+  - bugfix: Fixed duplicate priority announcements about a possible resonance cascade
+  - code_imp: Improved supermatter delamination logging
+  LemonInTheDark:
+  - bugfix: Fixed some sillyness with the stale map system
+  - config: MAP_VOTE_MIN_POP_TO_REMEMBER_MAPS -> MAP_VOTE_MINIMUM_POP_TO_REMEMBER_MAPS
+  SmArtKar:
+  - bugfix: Fixed random black siderite/shale tiles appearing after ash storms
+  - bugfix: Fixed rain overlay rendering (only) with particle weather enabled
   XeonMations:
   - bugfix: Fixed the radio volume slider being missing in game preferences
   hry-gh:
   - code_imp: the backend to all verbs in the game has been played with, please report
       any issues to github
+  lelandkemble:
+  - bugfix: Academy businessman doesn't buy a scanner wand, as it is not a wand
+  - spellcheck: Academy wizard dialogue has been cleared of all glaring spelling and
+      capitalization errors
