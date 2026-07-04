@@ -156,6 +156,11 @@
   vinylspiders:
   - code_imp: tgui-core bumped to v6.1, please report any tgui-related issues
 2026-07-04:
+  Fghj240:
+  - bugfix: nutriment pump implant plus plus plus now has a sideways sprite
+  Ghommie:
+  - bugfix: Fixed the lobby interface NOT being able to show more than ONE button
+      related to station traits like special jobs and the skub trait.
   LT3:
   - map: Finished moving the plant outside Metastation medbay's side airlock, an astonishing
       speed of 1 tile per 8 months.
@@ -164,9 +169,14 @@
   LemonInTheDark:
   - bugfix: Fixed some sillyness with the stale map system
   - config: MAP_VOTE_MIN_POP_TO_REMEMBER_MAPS -> MAP_VOTE_MINIMUM_POP_TO_REMEMBER_MAPS
+  QuiteLiterallyAnything:
+  - bugfix: Removed a singular stray disposals pipe on Catwalk Station.
   SmArtKar:
   - bugfix: Fixed random black siderite/shale tiles appearing after ash storms
   - bugfix: Fixed rain overlay rendering (only) with particle weather enabled
+  - bugfix: Anchored nutraslop trays
+  TealSeer:
+  - bugfix: fixed mousetrap beaker assemblies not triggering when container is opened
   XeonMations:
   - bugfix: Fixed the radio volume slider being missing in game preferences
   hry-gh:
@@ -176,3 +186,7 @@
   - bugfix: Academy businessman doesn't buy a scanner wand, as it is not a wand
   - spellcheck: Academy wizard dialogue has been cleared of all glaring spelling and
       capitalization errors
+  timothymtorres:
+  - bugfix: Fix runtime for spacetime distortion not playing sound
+  - sound: Spacetime distortion portals now play the same sound as the teleporter
+      portals.
