@@ -193,6 +193,10 @@
 2026-07-05:
   Ghommie:
   - bugfix: Fixed the subtle lack of symmetry on the monkey right arm and leg.
+  PapaMichael:
+  - balance: Paradox Clones ghost poll for a specific target; ghosts are now signing
+      up to be a specific person's clone.
+  - admin: If admins spawn a Paradox Clone, they can choose the person to be cloned.
   SmArtKar:
   - rscadd: Tendrils now remove their corrupted tiles after death
   - bugfix: Tendrils got their death sound back
