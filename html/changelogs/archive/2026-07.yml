@@ -190,3 +190,6 @@
   - bugfix: Fix runtime for spacetime distortion not playing sound
   - sound: Spacetime distortion portals now play the same sound as the teleporter
       portals.
+2026-07-05:
+  TealSeer:
+  - qol: added screentips for beaker assemblies
