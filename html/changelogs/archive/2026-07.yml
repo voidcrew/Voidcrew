@@ -191,5 +191,19 @@
   - sound: Spacetime distortion portals now play the same sound as the teleporter
       portals.
 2026-07-05:
+  Ghommie:
+  - bugfix: Fixed the subtle lack of symmetry on the monkey right arm and leg.
+  SmArtKar:
+  - rscadd: Tendrils now remove their corrupted tiles after death
+  - bugfix: Tendrils got their death sound back
   TealSeer:
   - qol: added screentips for beaker assemblies
+  lelandkemble:
+  - bugfix: Wizards can now successfully refund summoning items
+  - bugfix: Holopayment stands can now take payment
+  - code_imp: 21 things have been moved from attackby() to item_interaction()
+  timothymtorres:
+  - balance: Change blood deficiency to start with 85% blood instead of 80%
+  - bugfix: Fix blood deficiency from causing gasping, stamina loss, and blurriness
+  vinylspiders:
+  - bugfix: shadows will no longer get the candidate's prefs applied to their mob
