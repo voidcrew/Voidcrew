@@ -212,6 +212,17 @@
   vinylspiders:
   - bugfix: shadows will no longer get the candidate's prefs applied to their mob
 2026-07-06:
+  Ghommie:
+  - refactor: Refactored a few things with techweb designs (the ones for autolathes,
+      protolathes, circuit printers, mechfabs etc.) to make sure that the materials
+      of items that can be made from these designs more closely match the materials
+      used to make them.
+  - bugfix: Lizard fries no longer need a plate to be made, like all other treats
+      that used to require plates in a distant past.
+  - balance: Tweaked the materials cost of RCD, RDD and RCD cartridges.
+  - image: Oven trays now have a more metallic hue.
+  - balance: Plates printed printed from lathes won't shatter like ceramic ones, in
+      virtue of them being made out of iron instead.
   RikuTheKiller:
   - bugfix: Low temperature alerts now appear for basic mobs when the damage being
       dealt is below 1 but above 0 (e.g. 0.5 DPS).
