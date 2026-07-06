@@ -211,3 +211,10 @@
   - bugfix: Fix blood deficiency from causing gasping, stamina loss, and blurriness
   vinylspiders:
   - bugfix: shadows will no longer get the candidate's prefs applied to their mob
+2026-07-06:
+  RikuTheKiller:
+  - bugfix: Low temperature alerts now appear for basic mobs when the damage being
+      dealt is below 1 but above 0 (e.g. 0.5 DPS).
+  - balance: Blood worms are now breathless again.
+  - balance: Blood worms take damage from low pressures now (increases with growth
+      stage).
