@@ -272,6 +272,9 @@
   - bugfix: Fixed particle weather bleeding through z-levels when different weathers
       are present
   - qol: Necropolis stone tiles can no longer be hit
+  TheRyeGuyWhoWillNowDie:
+  - rscadd: Kilostation
+  - rscdel: Wawastation
   lelandkemble:
   - code_imp: 20 files have been converted from attackby() to item_interaction()
   - bugfix: You can no longer repeatedly put anomaly cores into the anomaly core guns
