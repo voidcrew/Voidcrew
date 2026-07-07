@@ -246,7 +246,24 @@
   - bugfix: fixes an issue where switching slots would carry over the quirks of a
       previous slot until you add or remove a quirk
 2026-07-07:
+  Aliceee2ch:
+  - image: Bacon was resprited
+  FalloutFalcon:
+  - code_imp: Ensures some code actually updates overlays instead of return a list
+      of them to nobody
+  JohnFulpWillard:
+  - spellcheck: Oldstation rnd notes now update properly when you mix them together.
+  PapaMichael:
+  - bugfix: Blood brothers once again have a 10% chance of being able to recruit a
+      team of 3.
   Robwo:
   - rscadd: added heads of staff intercoms
   - image: added color to departmental intercoms
   - image: added a unique state for syndicate intercoms
+  SmArtKar:
+  - bugfix: Fixed particle weather bleeding through z-levels when different weathers
+      are present
+  - qol: Necropolis stone tiles can no longer be hit
+  sergeirocks100:
+  - spellcheck: When untying a neckerchief, the item in question will no longer be
+      misspelled as "neckercheif".
