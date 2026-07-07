@@ -251,6 +251,9 @@
   FalloutFalcon:
   - code_imp: Ensures some code actually updates overlays instead of return a list
       of them to nobody
+  Ghommie:
+  - bugfix: Custom material floors and walls of a shuttle are no longer lost on departure
+      or arrival.
   JohnFulpWillard:
   - spellcheck: Oldstation rnd notes now update properly when you mix them together.
   PapaMichael:
