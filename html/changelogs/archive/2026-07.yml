@@ -317,6 +317,7 @@
   - balance: Cleanable decals can no longer be hit (not cleaned, just hit) if the
       user has combat mode on.
   - bugfix: Fixed goldgrubs leaving floating emissives after dying
+  - bugfix: Fixed xenobio consoles not being able to spawn monkeys
   antropod:
   - bugfix: Fixes material tiles spawned by disposals underneath the floor
   lelandkemble:
