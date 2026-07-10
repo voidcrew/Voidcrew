@@ -328,6 +328,8 @@
       with the toggle component (such as jackets) to have invisible icons upon using
       the toggle
 2026-07-10:
+  FalloutFalcon:
+  - server: status topic reports hostby config if we have no true world.host
   Jacquerel:
   - balance: Heparin and Nitrous Oxide now make nosebleeds worse, and also make you
       bleed more if someone very convincing tells you to start doing it.
