@@ -361,5 +361,11 @@
 2026-07-11:
   Melbert:
   - image: Re-saturates the occupations tab
+  - bugfix: Bioscrambler can no longer decapitate you (or remove any of your limbs
+      for that matter)
+  SmArtKar:
+  - bugfix: Adult raptors can no longer be picked up
+  TheRyeGuyWhoWillNowDie:
+  - spellcheck: Updated the station plaques for kilo and wawa
   lelandkemble:
   - bugfix: fixed the janitor keyring being unable to open doors
