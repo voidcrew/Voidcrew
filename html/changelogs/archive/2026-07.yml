@@ -384,3 +384,10 @@
   - balance: The pipegun types now deal more damage. Good luck.
   - balance: 'New Junk Round: Sometimes, your pipegun will fire an entire ant colony
       into your enemies bloodstream. Die, asshole. Ants.'
+2026-07-12:
+  SmArtKar:
+  - refactor: Refactored accessory rendering, fixing missing overlay updates and making
+      them affected by height
+  - bugfix: More than one accessory can now render above worn suits
+  TheRyeGuyWhoWillNowDie:
+  - admin: Event intervention time is now 20 seconds from 10
