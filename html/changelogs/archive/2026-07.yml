@@ -385,9 +385,17 @@
   - balance: 'New Junk Round: Sometimes, your pipegun will fire an entire ant colony
       into your enemies bloodstream. Die, asshole. Ants.'
 2026-07-12:
+  Jacquerel:
+  - bugfix: You can cut off the heads of corpses using a chainsaw
+  - balance: You have to turn it on first
+  Melbert:
+  - bugfix: Fixes a few potential exploits in the message monitor
+  - balance: Message monitors located off station can no longer change the station's
+      message monitor password
   SmArtKar:
   - refactor: Refactored accessory rendering, fixing missing overlay updates and making
       them affected by height
   - bugfix: More than one accessory can now render above worn suits
+  - bugfix: Fixed non-monkey monkeycube spawns
   TheRyeGuyWhoWillNowDie:
   - admin: Event intervention time is now 20 seconds from 10
