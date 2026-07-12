@@ -385,6 +385,10 @@
   - balance: 'New Junk Round: Sometimes, your pipegun will fire an entire ant colony
       into your enemies bloodstream. Die, asshole. Ants.'
 2026-07-12:
+  Hatterhat:
+  - bugfix: Nanotrasen Wave (tm) support on standard, non-portable microwaves has
+      been reinstated after a firmware update addressed an erroneous check (Regular
+      microwaves can be used to recharge PDAs if properly upgraded again).
   Jacquerel:
   - bugfix: You can cut off the heads of corpses using a chainsaw
   - balance: You have to turn it on first
@@ -392,6 +396,12 @@
   - bugfix: Fixes a few potential exploits in the message monitor
   - balance: Message monitors located off station can no longer change the station's
       message monitor password
+  MrMelbert:
+  - rscadd: Allow you to assign character slots to jobs, to load that slot if you
+      end up selected for that job.
+  QuiteLiterallyAnything:
+  - bugfix: Portable gravity generators will no longer become invisible when screwed
+      open.
   SmArtKar:
   - refactor: Refactored accessory rendering, fixing missing overlay updates and making
       them affected by height
@@ -404,3 +414,5 @@
   - admin: Event intervention time is now 20 seconds from 10
   lelandkemble:
   - code_imp: Nine files have been converted from attackby() to item_interaction()
+  timothymtorres:
+  - bugfix: Fix EMPs to work on PDA power cells
