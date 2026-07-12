@@ -397,6 +397,9 @@
       them affected by height
   - bugfix: More than one accessory can now render above worn suits
   - bugfix: Fixed non-monkey monkeycube spawns
+  StrangeWeirdKitten, Toriate (sprites):
+  - rscadd: Janitor borgs now have a crew operated end that allows their squishy overlords
+      to do some cleaning themselves.
   TheRyeGuyWhoWillNowDie:
   - admin: Event intervention time is now 20 seconds from 10
   lelandkemble:
