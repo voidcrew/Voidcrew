@@ -417,9 +417,16 @@
   timothymtorres:
   - bugfix: Fix EMPs to work on PDA power cells
 2026-07-13:
+  PapaMichael:
+  - bugfix: The HOP ticket machine display now shows the correct number when tickets
+      are destroyed
   antropod:
   - bugfix: Fixes material tiles not having material after prying and placing back.
   san7890:
   - refactor: Picking up mobs has been altered a bit, please report any bugs or glitches.
+  vinylspiders:
+  - bugfix: fixes an issue that would cause the character preferences menu to bluescreen
+      if you press f5 to reload or used the Refresh-Tgui verb while it was open
+  - bugfix: fixes an issue that was preventing a selected new slot from updating properly
   zxaber:
   - bugfix: You can now use experiment scanners on DNA Infusers correctly.
