@@ -419,5 +419,7 @@
 2026-07-13:
   antropod:
   - bugfix: Fixes material tiles not having material after prying and placing back.
+  san7890:
+  - refactor: Picking up mobs has been altered a bit, please report any bugs or glitches.
   zxaber:
   - bugfix: You can now use experiment scanners on DNA Infusers correctly.
