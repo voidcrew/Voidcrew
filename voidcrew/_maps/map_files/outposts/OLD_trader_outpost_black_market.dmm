@@ -1,0 +1,1008 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/turf/open/indestructible/light,
+/area/voidcrew/trader_outpost)
+"ab" = (
+/turf/closed/indestructible/opsglass,
+/area/voidcrew/trader_outpost)
+"ac" = (
+/obj/item/radio/intercom/directional/east,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"ad" = (
+/obj/structure/table,
+/obj/effect/spawner/random/medical/minor_healing,
+/obj/machinery/vending/wallmed/directional/north,
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/trader_outpost)
+"ae" = (
+/obj/machinery/light/red/dim/directional/south,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"af" = (
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"ag" = (
+/obj/machinery/iv_drip,
+/turf/open/indestructible/white,
+/area/voidcrew/trader_outpost)
+"ah" = (
+/obj/machinery/light/small/dim/directional/east,
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"ai" = (
+/obj/structure/bed/medical,
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/trader_outpost)
+"aj" = (
+/turf/template_noop,
+/area/template_noop)
+"ak" = (
+/obj/machinery/door/airlock/outpost,
+/obj/structure/fans/tiny,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"al" = (
+/obj/effect/turf_decal/tile/red/opposingcorners,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"am" = (
+/obj/structure/sign/warning/secure_area,
+/turf/closed/indestructible/syndicate/outpost,
+/area/voidcrew/trader_outpost)
+"an" = (
+/obj/machinery/light/directional/east,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"ao" = (
+/obj/machinery/light/cold/directional/east,
+/turf/open/indestructible/white,
+/area/voidcrew/trader_outpost)
+"ap" = (
+/obj/structure/sign/poster/contraband/random,
+/turf/closed/indestructible/syndicate/outpost,
+/area/voidcrew/trader_outpost)
+"aq" = (
+/mob/living/basic/outpost_loiterer/dockhand,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"ar" = (
+/obj/machinery/porta_turret/outpost,
+/obj/effect/turf_decal/bot,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"as" = (
+/obj/structure/table/reinforced,
+/obj/effect/spawner/random/bureaucracy/paper{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/obj/item/pen{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"at" = (
+/obj/machinery/barsign,
+/turf/closed/indestructible/syndicate/outpost,
+/area/voidcrew/trader_outpost)
+"au" = (
+/obj/machinery/sleeper/outpost,
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/trader_outpost)
+"av" = (
+/obj/machinery/computer/outpost_shop_terminal,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aw" = (
+/obj/machinery/light/directional/south,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"ax" = (
+/obj/machinery/light/cold/directional/north,
+/turf/open/indestructible/white,
+/area/voidcrew/trader_outpost)
+"ay" = (
+/obj/machinery/light/directional/west,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"az" = (
+/obj/machinery/door/airlock/outpost,
+/obj/effect/turf_decal/tile/red/fourcorners,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aA" = (
+/obj/structure/closet/outpost_medical,
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/turf/open/indestructible/white,
+/area/voidcrew/trader_outpost)
+"aB" = (
+/obj/effect/spawner/random/structure/crate_abandoned,
+/obj/effect/turf_decal/delivery,
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"aC" = (
+/obj/machinery/light/directional/north,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aD" = (
+/obj/machinery/computer/outpost_shop_terminal{
+	name = "consignment window"
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"aE" = (
+/turf/open/indestructible/white,
+/area/voidcrew/trader_outpost)
+"aF" = (
+/obj/machinery/newscaster/directional/south,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aG" = (
+/obj/machinery/computer/outpost_mission_board,
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aH" = (
+/obj/structure/table/reinforced,
+/obj/structure/desk_bell{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aI" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aJ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"aK" = (
+/mob/living/basic/outpost_loiterer/mechanic,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aL" = (
+/obj/effect/spawner/random/trash/graffiti,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aM" = (
+/obj/machinery/outpost_trader,
+/turf/open/indestructible/light,
+/area/voidcrew/trader_outpost)
+"aN" = (
+/obj/item/radio/intercom/directional/north,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aO" = (
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aP" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"aQ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/white,
+/area/voidcrew/trader_outpost)
+"aR" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/turf_decal/bot,
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"aS" = (
+/turf/closed/indestructible/syndicate/outpost,
+/area/voidcrew/trader_outpost)
+"aT" = (
+/obj/effect/turf_decal/caution,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aU" = (
+/obj/structure/marker_beacon{
+	picked_color = "Burgundy"
+	},
+/turf/open/floor/plating/airless,
+/area/voidcrew/trader_outpost)
+"aV" = (
+/turf/open/floor/plating/airless,
+/area/voidcrew/trader_outpost)
+"aW" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/shaker{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"aX" = (
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aY" = (
+/obj/machinery/light/red/dim/directional/north,
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"aZ" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"ci" = (
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"dk" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"pB" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/entertainment/deck{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/effect/spawner/random/entertainment/money_small{
+	pixel_x = 4;
+	pixel_y = 1
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"vb" = (
+/obj/machinery/jukebox,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"xj" = (
+/mob/living/basic/outpost_loiterer/off_duty_pirate,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"xF" = (
+/obj/structure/chair/sofa/corp/right{
+	dir = 8
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"xL" = (
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"AU" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/turf_decal/delivery,
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"Fe" = (
+/obj/structure/chair/stool/bar/directional/west,
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"IO" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"Jz" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"MD" = (
+/obj/effect/spawner/random/trash/graffiti,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"ME" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"MP" = (
+/obj/structure/chair/sofa/corp/left{
+	dir = 4
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"MY" = (
+/obj/machinery/light/small/broken/directional/west,
+/turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"Pc" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/food_or_drink/booze{
+	pixel_x = -2;
+	pixel_y = 5
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"Vr" = (
+/obj/machinery/light/floor,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"VB" = (
+/obj/machinery/vending/boozeomat,
+/obj/effect/turf_decal/bot,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"Wb" = (
+/obj/machinery/vending/cigarette,
+/obj/effect/turf_decal/bot,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+
+(1,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aU
+aU
+aj
+aj
+aj
+aj
+aj
+aj
+"}
+(2,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+aS
+ab
+ab
+ap
+aS
+aV
+aV
+aj
+aj
+aj
+aj
+aj
+aj
+"}
+(3,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+au
+aE
+aE
+aE
+aS
+ak
+ak
+aS
+aS
+aS
+aS
+aS
+aj
+"}
+(4,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+aA
+aE
+aQ
+aE
+aS
+aT
+aT
+az
+aJ
+MY
+aB
+aS
+aj
+"}
+(5,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+ax
+aE
+aE
+aE
+aS
+aY
+ar
+aS
+aR
+af
+aJ
+aS
+aj
+"}
+(6,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+ad
+aE
+aE
+aQ
+am
+aI
+aL
+as
+af
+dk
+AU
+ap
+aj
+"}
+(7,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+ai
+aE
+aQ
+aE
+aS
+aO
+aI
+aD
+aJ
+af
+dk
+aS
+aj
+"}
+(8,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+ag
+ao
+aE
+aE
+aS
+aO
+ae
+aS
+ah
+aB
+aR
+aS
+aj
+"}
+(9,1,1) = {"
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+az
+aS
+aS
+aI
+aO
+aS
+aS
+aS
+aS
+aS
+aj
+"}
+(10,1,1) = {"
+ap
+aR
+aJ
+as
+aX
+ay
+aS
+ar
+aO
+aI
+aO
+aO
+aO
+aI
+aS
+ap
+aS
+aS
+aS
+aS
+"}
+(11,1,1) = {"
+aS
+aB
+af
+av
+aZ
+aO
+aS
+aC
+al
+aO
+aI
+al
+aO
+aF
+aS
+aW
+VB
+aW
+Wb
+aS
+"}
+(12,1,1) = {"
+aS
+aR
+aJ
+as
+aZ
+aI
+al
+aI
+aO
+aO
+aO
+aI
+aI
+aw
+at
+Pc
+ci
+Pc
+xL
+ap
+"}
+(13,1,1) = {"
+aS
+aP
+af
+aH
+aZ
+aO
+aO
+aO
+aI
+aa
+aa
+aa
+al
+aO
+aS
+Fe
+Fe
+Fe
+ci
+aS
+"}
+(14,1,1) = {"
+ap
+aR
+aJ
+av
+aZ
+aO
+aI
+aO
+aO
+aa
+aM
+aa
+aO
+aI
+az
+ci
+ci
+xL
+ci
+aS
+"}
+(15,1,1) = {"
+aS
+aB
+af
+as
+aZ
+aI
+aO
+aI
+aO
+aa
+aa
+aa
+aK
+aO
+aS
+IO
+ME
+ci
+MP
+ab
+"}
+(16,1,1) = {"
+aS
+aR
+aB
+av
+aZ
+aO
+al
+aO
+al
+aO
+aI
+aO
+aO
+aw
+ap
+MD
+pB
+xj
+pB
+ab
+"}
+(17,1,1) = {"
+aS
+aJ
+af
+as
+aZ
+aO
+aS
+aC
+aO
+aI
+aO
+al
+aI
+aO
+aS
+IO
+Jz
+ci
+xF
+aS
+"}
+(18,1,1) = {"
+ap
+aR
+aJ
+az
+aI
+an
+aS
+aN
+aG
+aO
+aq
+ac
+aO
+ar
+aS
+vb
+ci
+Vr
+MD
+aS
+"}
+(19,1,1) = {"
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aT
+aI
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+"}
+(20,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+aI
+ar
+aS
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+"}
+(21,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+aY
+aO
+aS
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+"}
+(22,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+aO
+ae
+aS
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+"}
+(23,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+am
+aL
+aO
+aS
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+"}
+(24,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+aO
+aI
+am
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+"}
+(25,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+aY
+aO
+aS
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+"}
+(26,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+aI
+aL
+aS
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+"}
+(27,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+aX
+aI
+aS
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+"}
+(28,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aS
+ak
+ak
+aS
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+"}
+(29,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aV
+aV
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+"}
+(30,1,1) = {"
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aU
+aU
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+aj
+"}

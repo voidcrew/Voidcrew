@@ -17,8 +17,8 @@
 /obj/machinery/weapons_bench
 	name = "weapons assembly bench"
 	desc = "A heavy fabrication bench for assembling finished firearms from a blueprint, a machined part and a firing pin."
-	icon = 'voidcrew/modules/research/icons/objects.dmi' // TODO: placeholder (shared with the survey scanner) -- pending a dedicated sprite (art pass)
-	icon_state = "hivebot_fab"
+	icon = 'voidcrew/modules/weapons_bench/icons/weapons_bench.dmi'
+	icon_state = "bench"
 	density = TRUE
 	circuit = /obj/item/circuitboard/machine/weapons_bench
 
@@ -54,7 +54,7 @@
 
 /obj/machinery/weapons_bench/update_icon_state()
 	. = ..()
-	icon_state = (building && is_operational) ? "hivebot_fab_on" : "hivebot_fab"
+	icon_state = (building && is_operational) ? "bench_on" : "bench"
 
 /obj/machinery/weapons_bench/attackby(obj/item/attacking_item, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(istype(attacking_item, /obj/item/gun_blueprint))
@@ -185,7 +185,7 @@
 /obj/machinery/weapons_bench/screwdriver_act(mob/living/user, obj/item/tool)
 	if(building)
 		return FALSE
-	if(!default_deconstruction_screwdriver(user, "hivebot_fab-o", "hivebot_fab", tool))
+	if(!default_deconstruction_screwdriver(user, "bench-o", "bench", tool))
 		return FALSE
 	return TRUE
 

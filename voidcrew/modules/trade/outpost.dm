@@ -24,9 +24,22 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	flags_1 = NONE
 	ambience_index = AMBIENCE_AWAY
 
+// Each zone variant loads its own interior (split from the old shared
+// trader_outpost.dmm on 2026-07-06). Base type is abstract: no mappath.
 /datum/map_template/trader_outpost
 	name = "Trader Outpost"
-	mappath = "voidcrew/_maps/map_files/outposts/trader_outpost.dmm"
+
+/datum/map_template/trader_outpost/black_market
+	name = "Trader Outpost - Undertow Exchange"
+	mappath = "voidcrew/_maps/map_files/outposts/trader_outpost_black_market.dmm"
+
+/datum/map_template/trader_outpost/outfitter
+	name = "Trader Outpost - Quartermain Depot"
+	mappath = "voidcrew/_maps/map_files/outposts/trader_outpost_outfitter.dmm"
+
+/datum/map_template/trader_outpost/general
+	name = "Trader Outpost - Waystation Halcyon"
+	mappath = "voidcrew/_maps/map_files/outposts/trader_outpost_general.dmm"
 
 /obj/structure/overmap/trader_outpost
 	name = "trader outpost"
@@ -37,8 +50,8 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/shop_type = /datum/outpost_shop/black_market
 	/// The live shop (shared per-round stock for all terminals here)
 	var/datum/outpost_shop/shop
-	/// Interior template type
-	var/template_type = /datum/map_template/trader_outpost
+	/// Interior template type (zone-specific)
+	var/template_type = /datum/map_template/trader_outpost/black_market
 	/// The loaded template instance
 	var/datum/map_template/trader_outpost/outpost_template
 	/// The turf reservation holding the interior + docks
@@ -60,8 +73,14 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/list/embargoed_ships = list()
 	/// Minds that attacked outpost property: mind -> TRUE (turret targets, refused service)
 	var/list/aggressor_minds = list()
+	/// Warning strikes accrued before turrets engage: mind -> infraction count
+	var/list/aggressor_strikes = list()
 	/// Linked shop terminals inside the outpost
 	var/list/obj/machinery/computer/outpost_shop_terminal/terminals = list()
+	/// Linked supply request boards inside the outpost
+	var/list/obj/machinery/computer/outpost_mission_board/mission_boards = list()
+	/// Posted (not yet accepted) supply request missions (see outpost_missions.dm)
+	var/list/datum/mission/outpost_supply/shop_offers = list()
 	/// Linked trader hologram
 	var/obj/machinery/outpost_trader/trader
 	/// Linked defense turrets
@@ -80,7 +99,10 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	template_bottom_left = null
 	embargoed_ships.Cut()
 	aggressor_minds.Cut()
+	aggressor_strikes.Cut()
 	terminals.Cut()
+	mission_boards.Cut()
+	QDEL_LIST(shop_offers)
 	turrets.Cut()
 	trader = null
 	return ..()
@@ -187,6 +209,10 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 				var/obj/machinery/computer/outpost_shop_terminal/terminal = machine
 				terminal.outpost = src
 				terminals += terminal
+			else if(istype(machine, /obj/machinery/computer/outpost_mission_board))
+				var/obj/machinery/computer/outpost_mission_board/board = machine
+				board.outpost = src
+				mission_boards += board
 			else if(istype(machine, /obj/machinery/outpost_trader))
 				trader = machine
 				trader.outpost = src
@@ -282,14 +308,29 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 // ===== EMBARGO / AGGRESSION =====
 
 /**
- * Called when someone attacks outpost property. Marks the offender and embargoes
- * every ship whose crew they belong to. Idempotent per mind.
+ * Called when someone attacks outpost property. The first infractions only issue
+ * a warning; once the offender racks up OUTPOST_AGGRESSION_STRIKES the outpost
+ * marks them and embargoes every ship whose crew they belong to. Idempotent once
+ * marked — confirmed aggressors short-circuit here.
  */
 /obj/structure/overmap/trader_outpost/proc/register_aggression(mob/living/offender)
 	if(!istype(offender) || !offender.mind)
 		return
 	if(aggressor_minds[offender.mind])
 		return
+
+	var/strikes = aggressor_strikes[offender.mind] + 1
+	aggressor_strikes[offender.mind] = strikes
+
+	// Not over the line yet — warn and give them a chance to stand down.
+	if(strikes < OUTPOST_AGGRESSION_STRIKES)
+		var/remaining = OUTPOST_AGGRESSION_STRIKES - strikes
+		to_chat(offender, span_userdanger("Outpost defense systems train on you in warning. [remaining] more infraction\s and they fire."))
+		if(trader)
+			trader.speak_line(TRADER_LINE_WARNING)
+		return
+
+	// Final strike — mark them and embargo their crew's ships.
 	aggressor_minds[offender.mind] = TRUE
 
 	for(var/datum/team/voidcrew/team as anything in offender.mind.ship_teams)
@@ -364,9 +405,12 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 
 /obj/structure/overmap/trader_outpost/black_market
 	shop_type = /datum/outpost_shop/black_market
+	template_type = /datum/map_template/trader_outpost/black_market
 
 /obj/structure/overmap/trader_outpost/outfitter
 	shop_type = /datum/outpost_shop/outfitter
+	template_type = /datum/map_template/trader_outpost/outfitter
 
 /obj/structure/overmap/trader_outpost/general
 	shop_type = /datum/outpost_shop/general
+	template_type = /datum/map_template/trader_outpost/general

@@ -87,6 +87,23 @@
 			))
 	data["skus"] = skus
 
+	// Sell side: what the trader is buying this round
+	var/list/buybacks = list()
+	if(shop)
+		for(var/datum/shop_buyback/buyback as anything in shop.buybacks)
+			var/denial = isliving(user) ? buyback.get_denial_reason(user) : "Unavailable."
+			buybacks += list(list(
+				"ref" = REF(buyback),
+				"name" = buyback.name,
+				"desc" = buyback.desc,
+				"wanted_text" = buyback.get_wanted_text(),
+				"payment_text" = buyback.get_payment_text(),
+				"demand" = buyback.demand,
+				"can_sell" = !data["barred"] && buyback.demand > 0 && isnull(denial),
+				"denial" = denial,
+			))
+	data["buybacks"] = buybacks
+
 	return data
 
 /obj/machinery/computer/outpost_shop_terminal/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -116,5 +133,24 @@
 				return TRUE
 			if(sku.try_purchase(user, src))
 				playsound(src, 'sound/machines/ping.ogg', 40, TRUE)
+				outpost.trader?.speak_line(TRADER_LINE_SALE)
+			return TRUE
+		if("sell")
+			if(outpost.is_user_barred(user))
+				outpost.trader?.speak_line(TRADER_LINE_REFUSAL)
+				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
+				return TRUE
+			var/datum/shop_buyback/buyback = locate(params["ref"]) in outpost.shop.buybacks
+			if(!buyback)
+				return TRUE
+			if(buyback.demand <= 0)
+				to_chat(user, span_warning("Not buying any more this shift."))
+				return TRUE
+			var/denial = buyback.get_denial_reason(user)
+			if(denial)
+				to_chat(user, span_warning(denial))
+				return TRUE
+			if(buyback.try_sell(user, src))
+				playsound(src, 'sound/effects/cashregister.ogg', 40, TRUE)
 				outpost.trader?.speak_line(TRADER_LINE_SALE)
 			return TRUE

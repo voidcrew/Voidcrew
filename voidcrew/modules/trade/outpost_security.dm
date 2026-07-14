@@ -7,8 +7,9 @@
  *
  * Turrets never target ordinary visitors — zone PvP between players is the
  * commute's problem, not the outpost's. Aggression against the outpost itself
- * marks the offender's mind (see trader_outpost.register_aggression), and
- * marked offenders are shot on sight until they leave.
+ * accrues warning strikes (see trader_outpost.register_aggression); the early
+ * hits only issue a warning, and only once the offender crosses
+ * OUTPOST_AGGRESSION_STRIKES is their mind marked and shot on sight until they leave.
  */
 /obj/machinery/porta_turret/outpost
 	name = "outpost defense turret"
@@ -21,8 +22,8 @@
 	use_power = NO_POWER_USE
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	scan_range = 9
-	stun_projectile = /obj/projectile/beam/laser
-	lethal_projectile = /obj/projectile/beam/laser
+	stun_projectile = /obj/projectile/beam/laser/outpost
+	lethal_projectile = /obj/projectile/beam/laser/outpost
 	lethal_projectile_sound = 'sound/items/weapons/plasma_cutter.ogg'
 	stun_projectile_sound = 'sound/items/weapons/plasma_cutter.ogg'
 	icon_state = "syndie_off"
@@ -62,6 +63,28 @@
 /obj/machinery/porta_turret/outpost/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
 	if(outpost && isliving(hitting_projectile.firer))
 		outpost.register_aggression(hitting_projectile.firer)
+	return ..()
+
+/**
+ * # Outpost Defense Laser
+ *
+ * Fired only by outpost turrets. Phases harmlessly through bystanders and only
+ * impacts valid turret targets — marked aggressors and embargoed crew — so
+ * enforcement never catches innocent shoppers in the crossfire. Dense obstacles
+ * (walls, structures) still stop it as normal.
+ */
+/obj/projectile/beam/laser/outpost
+	name = "outpost defense laser"
+
+/obj/projectile/beam/laser/outpost/can_hit_target(atom/target, direct_target = FALSE, ignore_loc = FALSE, cross_failed = FALSE)
+	// Let bystanders through: skip any living mob that isn't a turret target. The aimed
+	// offender arrives as direct_target and any other barred mob in the path passes
+	// is_turret_target(), so both are still hit by the parent check. Aggression is
+	// per-mind, resolved via the firing turret's outpost, not by faction.
+	if(isliving(target) && !direct_target)
+		var/obj/machinery/porta_turret/outpost/turret = firer
+		if(istype(turret) && !turret.outpost?.is_turret_target(target))
+			return FALSE
 	return ..()
 
 /**

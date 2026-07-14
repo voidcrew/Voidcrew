@@ -22,19 +22,29 @@
 	var/list/sku_types = list()
 	/// Live SKU instances (hold the shared per-round stock)
 	var/list/datum/shop_sku/skus = list()
+	/// Buyback typepaths — what this trader buys from players (see shop_buyback.dm)
+	var/list/buyback_types = list()
+	/// Live buyback instances (hold the shared per-round demand)
+	var/list/datum/shop_buyback/buybacks = list()
 	/// The outpost this shop belongs to
 	var/obj/structure/overmap/trader_outpost/outpost
 	/// Personality lines, keyed by TRADER_LINE_* category
 	var/list/trader_lines = list()
+	/// Supply request table for the outpost mission board: list of
+	/// list("type" = path, "name" = text, "amount" = num, "difficulty" = MISSION_DIFFICULTY_*)
+	var/list/mission_requests = list()
 
 /datum/outpost_shop/New(obj/structure/overmap/trader_outpost/outpost)
 	..()
 	src.outpost = outpost
 	for(var/sku_type in sku_types)
 		skus += new sku_type
+	for(var/buyback_type in buyback_types)
+		buybacks += new buyback_type
 
 /datum/outpost_shop/Destroy()
 	QDEL_LIST(skus)
+	QDEL_LIST(buybacks)
 	outpost = null
 	return ..()
 
@@ -264,6 +274,19 @@
 		/datum/shop_sku/black_market/sniper_blueprint,
 		/datum/shop_sku/black_market/soap,
 	)
+	// The consignment window: Vex fences ruin loot at the best rates in the system
+	buyback_types = list(
+		/datum/shop_buyback/black_market/bluespace_crystals,
+		/datum/shop_buyback/black_market/syndicate_documents,
+		/datum/shop_buyback/black_market/hot_iron,
+	)
+	// Vex's supply requests want the rare stuff — the free item makes it worth it
+	mission_requests = list(
+		list("type" = /obj/item/stack/ore/uranium, "name" = "uranium ore", "amount" = 8, "difficulty" = MISSION_DIFFICULTY_HARD),
+		list("type" = /obj/item/stack/ore/diamond, "name" = "diamonds", "amount" = 4, "difficulty" = MISSION_DIFFICULTY_HARD),
+		list("type" = /obj/item/stack/ore/bluespace_crystal, "name" = "bluespace crystals", "amount" = 2, "difficulty" = MISSION_DIFFICULTY_HARD),
+		list("type" = /obj/item/stack/sheet/mineral/plasma, "name" = "plasma sheets", "amount" = 20, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
 			"Welcome to the Undertow. Touch nothing you can't pay for.",
@@ -279,6 +302,11 @@
 			"Your money's no good here. Literally — check your embargo notice.",
 			"We don't serve your kind. 'Your kind' meaning people who shoot at my stock.",
 			"Come back when your ship's ledger is clean.",
+		),
+		TRADER_LINE_WARNING = list(
+			"Easy, killer. The turrets have a temper and a long memory.",
+			"That's one. Keep swinging and you'll meet the expensive part of this station.",
+			"Read the plaque. Violence is bad for business — mostly yours.",
 		),
 		TRADER_LINE_AGGRESSION = list(
 			"Bad call. The turrets were the cheap part of this station.",
@@ -420,6 +448,37 @@
 	stock_min = 1
 	stock_max = 1
 
+// --- Vex's consignment window (buybacks) ---
+// Voucher payouts here must stay un-farmable: natural crystals only (the
+// artificial subtype is lathe-printable), original syndicate docs only
+// (photocopies are a different subtype and worthless).
+
+/datum/shop_buyback/black_market/bluespace_crystals
+	name = "natural bluespace crystals"
+	desc = "Unrefined crystal straight out of dangerous rock. Vex can tell the lab-grown ones apart by smell, apparently."
+	item_path = /obj/item/stack/ore/bluespace_crystal
+	match_subtypes = FALSE
+	amount = 3
+	pay_vouchers = 1
+	demand_min = 3
+	demand_max = 5
+
+/datum/shop_buyback/black_market/syndicate_documents
+	name = "syndicate documents"
+	desc = "Original classified paperwork. Photocopies are an insult and priced accordingly (zero)."
+	item_path = /obj/item/documents/syndicate
+	pay_vouchers = 2
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/black_market/hot_iron
+	name = "firearm (any, no questions)"
+	desc = "Vex buys guns with a past. Serial numbers optional. Preferably absent."
+	item_path = /obj/item/gun
+	pay_credits = 250
+	demand_min = 4
+	demand_max = 8
+
 // =========================================================================
 // OUTFITTER (yellow zone) — mid-tier defensive/utility gear, credits-first
 // =========================================================================
@@ -442,6 +501,19 @@
 		/datum/shop_sku/outfitter/star_chart,
 		/datum/shop_sku/outfitter/smg_blueprint,
 	)
+	// Sarge buys serviceable salvage — arms and armor off whoever stopped needing them
+	buyback_types = list(
+		/datum/shop_buyback/outfitter/salvage_ballistics,
+		/datum/shop_buyback/outfitter/salvage_energy,
+		/datum/shop_buyback/outfitter/salvage_armor,
+	)
+	// Depot resupply runs: industrial quantities, decent free kit
+	mission_requests = list(
+		list("type" = /obj/item/stack/sheet/plasteel, "name" = "plasteel sheets", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("type" = /obj/item/stack/ore/titanium, "name" = "titanium ore", "amount" = 12, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("type" = /obj/item/stack/ore/silver, "name" = "silver ore", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("type" = /obj/item/stack/cable_coil, "name" = "cable coil", "amount" = 60, "difficulty" = MISSION_DIFFICULTY_EASY),
+	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
 			"Quartermain Depot. State your needs, keep your sidearm holstered.",
@@ -454,6 +526,10 @@
 		TRADER_LINE_REFUSAL = list(
 			"You're flagged. No sales until your embargo clears.",
 			"Depot policy: no service to hostiles. Take it up with your captain.",
+		),
+		TRADER_LINE_WARNING = list(
+			"Hands off the merchandise, hostile. Next one arms the grid.",
+			"That's a warning shot's worth of patience. I have exactly one to spare.",
 		),
 		TRADER_LINE_AGGRESSION = list(
 			"Weapons free. You were warned by the sign. There are several signs.",
@@ -528,6 +604,33 @@
 	stock_min = 1
 	stock_max = 1
 
+// --- Sarge's salvage counter (buybacks) --- credits only; guns and armor
+// can come off a lathe, so they never pay vouchers.
+
+/datum/shop_buyback/outfitter/salvage_ballistics
+	name = "ballistic firearm (salvage)"
+	desc = "Working ballistics, any pattern. Sarge strips them for parts or resells to the next crew through."
+	item_path = /obj/item/gun/ballistic
+	pay_credits = 200
+	demand_min = 3
+	demand_max = 6
+
+/datum/shop_buyback/outfitter/salvage_energy
+	name = "energy weapon (salvage)"
+	desc = "Cell-fed weaponry in working order. Dead cells accepted grudgingly."
+	item_path = /obj/item/gun/energy
+	pay_credits = 350
+	demand_min = 2
+	demand_max = 4
+
+/datum/shop_buyback/outfitter/salvage_armor
+	name = "armored suit (salvage)"
+	desc = "Body armor with mileage on it. Holes are a pricing conversation, not a dealbreaker."
+	item_path = /obj/item/clothing/suit/armor
+	pay_credits = 150
+	demand_min = 3
+	demand_max = 6
+
 // =========================================================================
 // GENERAL STORE (green zone) — sundries and starter resupply, credits only
 // =========================================================================
@@ -545,6 +648,17 @@
 		/datum/shop_sku/general/diamond_pick,
 		/datum/shop_sku/barter/plasma_for_medkit,
 	)
+	// Barnaby buys honest prospecting hauls at honest prices
+	buyback_types = list(
+		/datum/shop_buyback/general/gold_ore,
+		/datum/shop_buyback/general/diamonds,
+	)
+	// Waystation restocking: gentle asks for the outer ring
+	mission_requests = list(
+		list("type" = /obj/item/stack/ore/iron, "name" = "iron ore", "amount" = 15, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("type" = /obj/item/stack/sheet/glass, "name" = "glass sheets", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("type" = /obj/item/stack/ore/plasma, "name" = "plasma ore", "amount" = 8, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
 			"Welcome to Halcyon! Mind the gift shop on your way out. We are the gift shop.",
@@ -557,6 +671,10 @@
 		TRADER_LINE_REFUSAL = list(
 			"Oh dear. Your ship's on the naughty list, I'm afraid.",
 			"No no, I can't sell to you lot. Head office was very clear.",
+		),
+		TRADER_LINE_WARNING = list(
+			"Oh, please don't do that, dear. The turrets get ever so cross.",
+			"Now now, that's quite enough. One more and I simply can't help you.",
 		),
 		TRADER_LINE_AGGRESSION = list(
 			"In the GREEN zone?! Have you no shame? Turrets, please.",
@@ -597,6 +715,26 @@
 	price_credits = 800
 	stock_min = 1
 	stock_max = 2
+
+// --- Barnaby's prospector counter (buybacks) ---
+
+/datum/shop_buyback/general/gold_ore
+	name = "gold ore"
+	desc = "Raw gold, straight from the rock. Barnaby weighs it twice and rounds in your favor."
+	item_path = /obj/item/stack/ore/gold
+	amount = 5
+	pay_credits = 300
+	demand_min = 4
+	demand_max = 8
+
+/datum/shop_buyback/general/diamonds
+	name = "diamonds"
+	desc = "Uncut diamonds. He keeps them in a biscuit tin behind the counter."
+	item_path = /obj/item/stack/ore/diamond
+	amount = 2
+	pay_credits = 500
+	demand_min = 2
+	demand_max = 4
 
 // Barter demo SKU: Barnaby pays in kit for raw plasma
 /datum/shop_sku/barter/plasma_for_medkit
