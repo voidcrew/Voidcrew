@@ -433,6 +433,9 @@
 2026-07-14:
   ArcaneMusic:
   - bugfix: Lights will now update themselves when moving Z-levels.
+  CabinetOnFire:
+  - bugfix: Fixed some sleeping procs that could run in procs that arent allowed to
+      sleep
   Gboster-0:
   - code_imp: optimized deathmatch lobbies and meaty ores a tiny bit
   Ghommie:
