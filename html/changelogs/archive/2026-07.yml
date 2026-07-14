@@ -435,6 +435,8 @@
   - bugfix: Lights will now update themselves when moving Z-levels.
   Gboster-0:
   - code_imp: optimized deathmatch lobbies and meaty ores a tiny bit
+  Ghommie:
+  - qol: Improved how wiremod designs are organized in the component printer UI
   QuiteLiterallyAnything:
   - rscadd: Health analyzers now display ethereal charge.
   - rscadd: It is also possible to check the charge of an ethereal (or their stomach
@@ -444,6 +446,8 @@
   - code_imp: Cleaned up generic mech code and moved subtype specific behaviors to
       said subtypes
   - refactor: Refactored how Durand's shield works
+  nPocToDark:
+  - rscadd: Now you can print Replica Katana in Service Protolathe and Hacked AutoLathe
   vinylspiders:
   - qol: the character job slot assignment menu will fade out while you are dragging
       a character, to allow you to access jobs that might render behind it
