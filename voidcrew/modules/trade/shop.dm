@@ -51,6 +51,8 @@
 	var/list/datum/shop_buyback/buybacks = list()
 	/// The outpost this shop belongs to
 	var/obj/structure/overmap/trader_outpost/outpost
+	/// The trader hologram machine fronting this shop, if one is placed (set on interior link)
+	var/obj/machinery/outpost_trader/trader_machine
 	/// Personality lines, keyed by TRADER_LINE_* category
 	var/list/trader_lines = list()
 	/// Supply request table for the outpost mission board: list of
@@ -79,6 +81,7 @@
 	QDEL_LIST(skus)
 	QDEL_LIST(buybacks)
 	outpost = null
+	trader_machine = null
 	return ..()
 
 /**
@@ -458,7 +461,7 @@
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	if(!ship)
 		return FALSE
-	var/datum/outpost_shop/shop = terminal?.outpost?.shop
+	var/datum/outpost_shop/shop = terminal?.shop
 	var/obj/structure/overmap/space_ruin/target = find_rumor_target(ship, shop)
 	if(!target)
 		to_chat(user, span_warning("The lanes are quiet — no fresh rumors this shift."))

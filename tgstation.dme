@@ -7073,6 +7073,7 @@
 #include "voidcrew\modules\trade\shop.dm"
 #include "voidcrew\modules\trade\shop_buyback.dm"
 #include "voidcrew\modules\trade\shop_catalog_black_market.dm"
+#include "voidcrew\modules\trade\shop_catalog_black_market_vendors.dm"
 #include "voidcrew\modules\trade\shop_catalog_general.dm"
 #include "voidcrew\modules\trade\shop_catalog_outfitter.dm"
 #include "voidcrew\modules\trade\shop_terminal.dm"

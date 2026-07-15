@@ -21,11 +21,17 @@
 
 	/// The outpost this terminal sells for (set by the outpost on interior load)
 	var/obj/structure/overmap/trader_outpost/outpost
+	/// The shop this terminal sells for: null for the outpost's main shop, or a
+	/// /datum/outpost_shop typepath for a vendor stall (the bar, the clinic, ...)
+	var/shop_type
+	/// The resolved live shop (set by the outpost on interior link)
+	var/datum/outpost_shop/shop
 
 /obj/machinery/computer/outpost_shop_terminal/Destroy()
 	if(outpost)
 		outpost.terminals -= src
 		outpost = null
+	shop = null
 	return ..()
 
 /obj/machinery/computer/outpost_shop_terminal/examine(mob/user)
@@ -56,7 +62,6 @@
 /obj/machinery/computer/outpost_shop_terminal/ui_static_data(mob/user)
 	var/list/data = list()
 
-	var/datum/outpost_shop/shop = outpost?.shop
 	data["shop_name"] = shop ? shop.outpost_name : "OFFLINE"
 	data["trader_name"] = shop ? shop.trader_name : ""
 	data["categories"] = shop ? shop.categories : list()
@@ -101,7 +106,6 @@
 /obj/machinery/computer/outpost_shop_terminal/ui_data(mob/user)
 	var/list/data = list()
 
-	var/datum/outpost_shop/shop = outpost?.shop
 	data["barred"] = outpost ? outpost.is_user_barred(user) : FALSE
 
 	// Buyer's wallet snapshot, for the header — vouchers count from the whole
@@ -147,17 +151,17 @@
 		return
 
 	var/mob/living/user = ui.user
-	if(!istype(user) || !outpost?.shop)
+	if(!istype(user) || !outpost || !shop)
 		return
 
 	switch(action)
 		if("buy")
 			if(outpost.is_user_barred(user))
-				outpost.trader?.speak_line(TRADER_LINE_REFUSAL)
+				shop.trader_machine?.speak_line(TRADER_LINE_REFUSAL)
 				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
 				play_denial()
 				return TRUE
-			var/datum/shop_sku/sku = locate(params["ref"]) in outpost.shop.skus
+			var/datum/shop_sku/sku = locate(params["ref"]) in shop.skus
 			if(!sku)
 				return TRUE
 			if(sku.stock <= 0)
@@ -171,15 +175,15 @@
 				return TRUE
 			if(sku.try_purchase(user, src))
 				playsound(src, 'sound/effects/cashregister.ogg', 40, TRUE)
-				outpost.trader?.speak_line(TRADER_LINE_SALE)
+				shop.trader_machine?.speak_line(TRADER_LINE_SALE)
 			return TRUE
 		if("sell")
 			if(outpost.is_user_barred(user))
-				outpost.trader?.speak_line(TRADER_LINE_REFUSAL)
+				shop.trader_machine?.speak_line(TRADER_LINE_REFUSAL)
 				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
 				play_denial()
 				return TRUE
-			var/datum/shop_buyback/buyback = locate(params["ref"]) in outpost.shop.buybacks
+			var/datum/shop_buyback/buyback = locate(params["ref"]) in shop.buybacks
 			if(!buyback)
 				return TRUE
 			if(buyback.demand <= 0)
@@ -193,15 +197,15 @@
 				return TRUE
 			if(buyback.try_sell(user, src))
 				playsound(src, 'sound/effects/cashregister.ogg', 40, TRUE)
-				outpost.trader?.speak_line(TRADER_LINE_SALE)
+				shop.trader_machine?.speak_line(TRADER_LINE_SALE)
 			return TRUE
 		if("sell_all")
 			if(outpost.is_user_barred(user))
-				outpost.trader?.speak_line(TRADER_LINE_REFUSAL)
+				shop.trader_machine?.speak_line(TRADER_LINE_REFUSAL)
 				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
 				play_denial()
 				return TRUE
-			var/datum/shop_buyback/buyback = locate(params["ref"]) in outpost.shop.buybacks
+			var/datum/shop_buyback/buyback = locate(params["ref"]) in shop.buybacks
 			if(!buyback)
 				return TRUE
 			var/denial = buyback.get_denial_reason(user)
@@ -211,7 +215,7 @@
 				return TRUE
 			if(buyback.try_sell_bulk(user, src) > 0)
 				playsound(src, 'sound/effects/cashregister.ogg', 40, TRUE)
-				outpost.trader?.speak_line(TRADER_LINE_SALE)
+				shop.trader_machine?.speak_line(TRADER_LINE_SALE)
 			else
 				play_denial()
 			return TRUE

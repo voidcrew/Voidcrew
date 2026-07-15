@@ -25,6 +25,11 @@
 
 	/// The outpost this trader fronts for (set by the outpost on interior load)
 	var/obj/structure/overmap/trader_outpost/outpost
+	/// The shop this pad fronts: null for the outpost's main shop, or a
+	/// /datum/outpost_shop typepath for a vendor stall (the bar, the clinic, ...)
+	var/shop_type
+	/// The resolved live shop (set by the outpost on interior link)
+	var/datum/outpost_shop/shop
 	/// The projected merchant figure
 	var/obj/effect/overlay/holo_pad_hologram/outpost_trader/hologram
 	/// Minimum delay between idle chatter lines
@@ -32,9 +37,24 @@
 	/// Minimum delay between any spoken lines (don't spam on bulk purchases)
 	COOLDOWN_DECLARE(speak_cooldown)
 
+// Covers the roundstart pre-load path: the outpost links (and sets shop on)
+// this machine before SSatoms initializes it, so the projection spawns here.
+// No-ops when there's no linked shop yet — the lazy-load path activates
+// through link_interior_machinery instead.
+/obj/machinery/outpost_trader/Initialize(mapload)
+	. = ..()
+	activate_hologram()
+
 /obj/machinery/outpost_trader/Destroy()
 	QDEL_NULL(hologram)
-	outpost = null
+	if(shop?.trader_machine == src)
+		shop.trader_machine = null
+	shop = null
+	if(outpost)
+		outpost.traders -= src
+		if(outpost.trader == src)
+			outpost.trader = null
+		outpost = null
 	return ..()
 
 /**
@@ -42,23 +62,24 @@
  * it has linked this machine (the appearance depends on the shop datum).
  */
 /obj/machinery/outpost_trader/proc/activate_hologram()
-	if(hologram || !outpost?.shop)
+	if(hologram || !shop)
 		return
 	hologram = new(get_turf(src))
 	hologram.trader_machine = src
-	hologram.set_trader_appearance(outpost.shop)
+	hologram.set_trader_appearance(shop)
+	SET_PLANE_EXPLICIT(hologram, ABOVE_GAME_PLANE, src)
 	icon_state = "holopad1"
 	set_light(2, 1, LIGHT_COLOR_CYAN)
 
 /obj/machinery/outpost_trader/update_name(updates)
 	. = ..()
-	if(outpost?.shop)
-		name = "[outpost.shop.trader_name], holographic trader"
+	if(shop)
+		name = "[shop.trader_name], holographic trader"
 
 /obj/machinery/outpost_trader/examine(mob/user)
 	. = ..()
-	if(outpost?.shop)
-		. += span_notice("The projection introduces itself as <b>[outpost.shop.trader_name]</b>.")
+	if(shop)
+		. += span_notice("The projection introduces itself as <b>[shop.trader_name]</b>.")
 	if(outpost?.is_user_barred(user))
 		. += span_warning("It is pointedly ignoring you.")
 
@@ -79,11 +100,11 @@
  * pirate negotiation holograms) so each trader has an audible voice.
  */
 /obj/machinery/outpost_trader/proc/speak_line(category)
-	if(!outpost?.shop)
+	if(!shop)
 		return
 	if(category != TRADER_LINE_AGGRESSION && !COOLDOWN_FINISHED(src, speak_cooldown))
 		return
-	var/line = outpost.shop.get_line(category)
+	var/line = shop.get_line(category)
 	if(!line)
 		return
 	COOLDOWN_START(src, speak_cooldown, 3 SECONDS)
@@ -99,7 +120,7 @@
 
 // Idle chatter on the machinery tick, roughly once every few minutes
 /obj/machinery/outpost_trader/process()
-	if(!outpost?.shop)
+	if(!shop)
 		return
 	if(!COOLDOWN_FINISHED(src, idle_line_cooldown))
 		return

@@ -381,8 +381,9 @@
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "dW" = (
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/obj/effect/spawner/random/trash/garbage,
+/obj/structure/chair/wood{
+	dir = 8
+	},
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "ez" = (
@@ -469,9 +470,8 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "gK" = (
-/obj/machinery/newscaster/directional/east{
-	name = "Dregs market feed"
-	},
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "hc" = (
@@ -500,8 +500,16 @@
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "ip" = (
-/obj/effect/decal/cleanable/glass,
-/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/clothing/mask/breath,
+/obj/item/tank/internals/oxygen{
+	pixel_x = 3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"iQ" = (
+/obj/machinery/light/warm/dim/directional/east,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "jc" = (
@@ -515,7 +523,16 @@
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "ji" = (
-/mob/living/basic/outpost_loiterer/off_duty_pirate,
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/effect/spawner/random/food_or_drink/booze,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 5;
+	pixel_y = 4
+	},
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "jt" = (
@@ -545,7 +562,12 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "kF" = (
-/obj/structure/reagent_dispensers/beerkeg,
+/obj/structure/table/wood,
+/obj/effect/spawner/random/food_or_drink/cups,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -5;
+	pixel_y = 5
+	},
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "kM" = (
@@ -556,10 +578,10 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "kU" = (
-/obj/effect/turf_decal/caution{
-	dir = 2
+/obj/structure/chair/wood{
+	dir = 1
 	},
-/turf/open/indestructible/plating,
+/turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "mG" = (
 /obj/machinery/vending/boozeomat/syndicate,
@@ -646,33 +668,18 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "tP" = (
-/obj/structure/table/wood,
-/obj/effect/spawner/random/food_or_drink/cups,
-/obj/item/reagent_containers/cup/glass/drinkingglass{
-	pixel_x = -5;
-	pixel_y = 5
-	},
+/obj/machinery/outpost_trader/dregs_barkeep,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "uq" = (
-/obj/structure/table/wood/poker,
-/obj/item/toy/cards/deck{
-	pixel_y = 3
+/obj/structure/sink/directional/south{
+	name = "bar sink"
 	},
-/obj/effect/spawner/random/entertainment/money_small,
-/obj/effect/spawner/random/entertainment/lighter,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "ut" = (
-/obj/structure/table/reinforced/plastitaniumglass,
-/obj/effect/spawner/random/food_or_drink/booze,
-/obj/item/flashlight/flare/candle/infinite{
-	pixel_x = -5;
-	pixel_y = 4
-	},
-/obj/item/reagent_containers/cup/glass/drinkingglass{
-	pixel_x = 5;
-	pixel_y = 4
+/obj/structure/chair/sofa/corp/right{
+	dir = 1
 	},
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
@@ -696,9 +703,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "vk" = (
-/obj/structure/chair/sofa/corp/right{
-	dir = 1
-	},
+/obj/structure/reagent_dispensers/beerkeg,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "vl" = (
@@ -721,6 +726,10 @@
 "vB" = (
 /obj/structure/showcase/cyborg/old,
 /turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"vK" = (
+/obj/machinery/jukebox/disco/indestructible,
+/turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "we" = (
 /obj/structure/table/reinforced/plastitaniumglass,
@@ -795,9 +804,7 @@
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "yK" = (
-/obj/structure/chair/wood{
-	dir = 1
-	},
+/obj/machinery/porta_turret/outpost,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "yS" = (
@@ -814,7 +821,7 @@
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
 "zr" = (
-/obj/machinery/porta_turret/outpost,
+/obj/machinery/vending/cigarette/syndicate,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "Av" = (
@@ -847,7 +854,7 @@
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
 "BP" = (
-/obj/machinery/light/warm/dim/directional/east,
+/obj/machinery/light/blacklight/directional/east,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "Cq" = (
@@ -864,13 +871,10 @@
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "DU" = (
-/obj/structure/rack,
-/obj/item/clothing/mask/breath,
-/obj/item/tank/internals/oxygen{
-	pixel_x = 3
+/obj/effect/turf_decal/caution{
+	dir = 2
 	},
-/obj/effect/turf_decal/bot,
-/turf/open/indestructible/hotelwood,
+/turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
 "Eu" = (
 /obj/effect/turf_decal/arrows/red{
@@ -1029,7 +1033,9 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "MJ" = (
-/obj/machinery/jukebox/disco/indestructible,
+/obj/machinery/newscaster/directional/east{
+	name = "Dregs market feed"
+	},
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "MP" = (
@@ -1063,8 +1069,8 @@
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "Pn" = (
-/obj/structure/sink/directional/south{
-	name = "bar sink"
+/obj/structure/chair/wood{
+	dir = 2
 	},
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
@@ -1081,7 +1087,7 @@
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
 "Ql" = (
-/obj/machinery/holopad,
+/obj/machinery/outpost_trader/clinic_doctor,
 /obj/effect/turf_decal/box/white{
 	color = "#52B4E9"
 	},
@@ -1128,11 +1134,12 @@
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
 "Tt" = (
-/obj/machinery/light/blacklight/directional/east,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/spawner/random/trash/garbage,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "TD" = (
-/obj/machinery/vending/cigarette/syndicate,
+/mob/living/basic/outpost_loiterer/off_duty_pirate,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "TM" = (
@@ -1160,7 +1167,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "Vy" = (
-/obj/machinery/computer/crew{
+/obj/machinery/computer/outpost_shop_terminal/patchup_clinic{
 	dir = 2
 	},
 /obj/item/radio/intercom/directional/east,
@@ -1174,9 +1181,12 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "VM" = (
-/obj/structure/chair/wood{
-	dir = 8
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck{
+	pixel_y = 3
 	},
+/obj/effect/spawner/random/entertainment/money_small,
+/obj/effect/spawner/random/entertainment/lighter,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "VR" = (
@@ -1234,8 +1244,13 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "YU" = (
-/obj/structure/chair/wood{
+/obj/machinery/computer/outpost_shop_terminal/dregs_bar{
 	dir = 2
+	},
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "undertow_bar";
+	dir = 4;
+	name = "Bar Shutters"
 	},
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
@@ -1953,9 +1968,9 @@ aC
 aC
 aC
 ae
+vk
 kF
 tP
-aO
 we
 nG
 aO
@@ -1989,7 +2004,7 @@ aO
 aO
 aO
 Pi
-vk
+ut
 aa
 aC
 aC
@@ -2005,17 +2020,17 @@ aC
 aC
 aC
 aa
-TD
+zr
 fL
 aO
-Xr
+YU
 nG
 hH
+TD
+aO
+aO
+aO
 ji
-aO
-aO
-aO
-ut
 aa
 aC
 aC
@@ -2031,13 +2046,13 @@ aC
 aC
 aC
 aa
-zr
+yK
 RM
 Pi
 aO
 RM
 Gn
-YU
+Pn
 aO
 aO
 RM
@@ -2057,7 +2072,7 @@ aF
 aa
 aa
 aT
-Pn
+uq
 RM
 aO
 aO
@@ -2083,16 +2098,16 @@ aL
 an
 aH
 aD
+DU
+aO
+RM
+RM
+RM
+RM
+aO
+Pn
+VM
 kU
-aO
-RM
-RM
-RM
-RM
-aO
-YU
-uq
-yK
 aO
 aV
 aC
@@ -2109,7 +2124,7 @@ aF
 aa
 aa
 aa
-DU
+ip
 Pi
 aO
 aO
@@ -2117,7 +2132,7 @@ aO
 aO
 RM
 Pi
-VM
+dW
 aO
 Pi
 aa
@@ -2135,17 +2150,17 @@ aL
 aC
 aC
 aa
-MJ
+vK
 aO
-BP
+iQ
 aO
 Pi
 aO
 aO
+MJ
+BP
 gK
 Tt
-ip
-dW
 aa
 aC
 aC

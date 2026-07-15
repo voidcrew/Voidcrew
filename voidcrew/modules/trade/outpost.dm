@@ -50,6 +50,9 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/shop_type = /datum/outpost_shop/black_market
 	/// The live shop (shared per-round stock for all terminals here)
 	var/datum/outpost_shop/shop
+	/// Secondary vendor shops (the bar, the clinic, ...) keyed by shop typepath,
+	/// created lazily when the interior links a machine that asks for one
+	var/list/datum/outpost_shop/extra_shops = list()
 	/// Interior template type (zone-specific)
 	var/template_type = /datum/map_template/trader_outpost/black_market
 	/// The loaded template instance
@@ -80,8 +83,10 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/list/obj/machinery/computer/outpost_mission_board/mission_boards = list()
 	/// Posted (not yet accepted) contracts (see outpost_missions.dm / outpost_quests.dm)
 	var/list/datum/mission/shop_offers = list()
-	/// Linked trader hologram
+	/// Linked trader hologram fronting the main shop (the outpost's "face")
 	var/obj/machinery/outpost_trader/trader
+	/// All linked trader holograms, main trader and vendor stalls alike
+	var/list/obj/machinery/outpost_trader/traders = list()
 	/// Linked defense turrets
 	var/list/obj/machinery/porta_turret/outpost/turrets = list()
 	/// Looping timer id for the supply convoy restock
@@ -91,10 +96,22 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	. = ..()
 	GLOB.trader_outposts += src
 	berths = new /list(OUTPOST_MAX_BERTHS)
+	ensure_main_shop()
+	restock_timer = addtimer(CALLBACK(src, PROC_REF(convoy_restock)), OUTPOST_RESTOCK_INTERVAL, TIMER_STOPPABLE | TIMER_LOOP)
+
+/**
+ * Creates the main shop on first need. SSovermap spawns outposts and pre-loads
+ * their interiors during its own init — before SSatoms has run this structure's
+ * Initialize — so interior linking and Initialize both route through here and
+ * whichever happens first builds the shop.
+ */
+/obj/structure/overmap/trader_outpost/proc/ensure_main_shop()
+	if(shop)
+		return shop
 	shop = new shop_type(src)
 	name = shop.outpost_name
 	desc = shop.outpost_desc
-	restock_timer = addtimer(CALLBACK(src, PROC_REF(convoy_restock)), OUTPOST_RESTOCK_INTERVAL, TIMER_STOPPABLE | TIMER_LOOP)
+	return shop
 
 /obj/structure/overmap/trader_outpost/Destroy()
 	if(restock_timer)
@@ -109,6 +126,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	lobby_alcove_turfs.Cut()
 	lobby_panels.Cut()
 	QDEL_NULL(shop)
+	QDEL_LIST_ASSOC_VAL(extra_shops)
 	template_bottom_left = null
 	embargoed_ships.Cut()
 	aggressor_minds.Cut()
@@ -117,6 +135,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	mission_boards.Cut()
 	QDEL_LIST(shop_offers)
 	turrets.Cut()
+	traders.Cut()
 	trader = null
 	return ..()
 
@@ -193,15 +212,21 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			if(istype(machine, /obj/machinery/computer/outpost_shop_terminal))
 				var/obj/machinery/computer/outpost_shop_terminal/terminal = machine
 				terminal.outpost = src
+				terminal.shop = get_shop(terminal.shop_type)
 				terminals += terminal
 			else if(istype(machine, /obj/machinery/computer/outpost_mission_board))
 				var/obj/machinery/computer/outpost_mission_board/board = machine
 				board.outpost = src
 				mission_boards += board
 			else if(istype(machine, /obj/machinery/outpost_trader))
-				trader = machine
-				trader.outpost = src
-				trader.update_appearance(UPDATE_NAME)
+				var/obj/machinery/outpost_trader/stall = machine
+				stall.outpost = src
+				stall.shop = get_shop(stall.shop_type)
+				stall.shop.trader_machine = stall
+				traders += stall
+				if(isnull(stall.shop_type)) // the main shop's trader is the outpost's face
+					trader = stall
+				stall.update_appearance(UPDATE_NAME)
 			else if(istype(machine, /obj/machinery/porta_turret/outpost))
 				var/obj/machinery/porta_turret/outpost/turret = machine
 				turret.outpost = src
@@ -214,8 +239,37 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 				panel.outpost = src
 				panel.is_lobby = TRUE
 				lobby_panels += panel
-	// The projection's appearance depends on the shop, so it spawns post-link
-	trader?.activate_hologram()
+	// The projections' appearances depend on their shops, so they spawn post-link.
+	// In the roundstart pre-load path the machines haven't initialized yet —
+	// building the hologram (an outfitted human mannequin) that early is unsafe,
+	// so those pads activate themselves in Initialize instead.
+	for(var/obj/machinery/outpost_trader/stall as anything in traders)
+		if(stall.flags_1 & INITIALIZED_1)
+			stall.activate_hologram()
+
+/**
+ * Resolves the shop a linked machine sells for. A null shop_type means the
+ * outpost's main shop; a /datum/outpost_shop typepath means a vendor stall
+ * (the bar, the clinic, ...), created on first request and shared by every
+ * machine in the interior that asks for the same type.
+ */
+/obj/structure/overmap/trader_outpost/proc/get_shop(shop_type)
+	if(isnull(shop_type))
+		return ensure_main_shop()
+	var/datum/outpost_shop/vendor_shop = extra_shops[shop_type]
+	if(!vendor_shop)
+		vendor_shop = new shop_type(src)
+		extra_shops[shop_type] = vendor_shop
+	return vendor_shop
+
+/**
+ * Every live shop here: the main shop plus any vendor stalls.
+ */
+/obj/structure/overmap/trader_outpost/proc/get_all_shops()
+	var/list/all_shops = list(shop)
+	for(var/shop_type in extra_shops)
+		all_shops += extra_shops[shop_type]
+	return all_shops
 
 /obj/structure/overmap/trader_outpost/attack_ghost(mob/user)
 	if(length(lobby_alcove_turfs))
@@ -298,8 +352,9 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 /obj/structure/overmap/trader_outpost/proc/convoy_restock()
 	if(!shop)
 		return
-	shop.convoy_restock()
-	trader?.speak_line(TRADER_LINE_RESTOCK)
+	for(var/datum/outpost_shop/stocked_shop as anything in get_all_shops())
+		stocked_shop.convoy_restock()
+		stocked_shop.trader_machine?.speak_line(TRADER_LINE_RESTOCK)
 	for(var/datum/outpost_berth/berth as anything in berths)
 		if(berth?.ship)
 			berth.ship.ship_notify("[name]: supply convoy arrived — shelves restocked, new items rotated in.", "CONVOY ARRIVAL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
