@@ -1,0 +1,522 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"b" = (
+/obj/structure/closet/crate,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"c" = (
+/obj/structure/bed,
+/obj/effect/spawner/random/bedsheet,
+/obj/effect/turf_decal/siding/white{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"d" = (
+/obj/structure/closet/emcloset,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"e" = (
+/turf/closed/wall/mineral/titanium,
+/area/voidcrew/player_outpost)
+"h" = (
+/obj/machinery/door/airlock/external,
+/obj/structure/fans/tiny,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"j" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/wall/mineral/titanium,
+/area/voidcrew/player_outpost)
+"l" = (
+/obj/structure/reagent_dispensers/water_cooler,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"n" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"q" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"u" = (
+/obj/effect/landmark/player_outpost_arrival,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"v" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/voidcrew/player_outpost)
+"w" = (
+/obj/structure/table/reinforced,
+/obj/effect/spawner/random/engineering/tool,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"y" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"z" = (
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"C" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"D" = (
+/obj/machinery/door/airlock,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"E" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"F" = (
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"L" = (
+/obj/machinery/space_heater,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"N" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"O" = (
+/obj/machinery/computer/player_outpost_management,
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"P" = (
+/obj/machinery/computer/camera_advanced/base_construction/ship/outpost,
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"S" = (
+/obj/item/radio/intercom/directional/west,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"U" = (
+/obj/machinery/ore_silo,
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"Z" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+
+(1,1,1) = {"
+e
+e
+e
+e
+e
+e
+e
+e
+h
+e
+e
+e
+e
+e
+e
+e
+e
+"}
+(2,1,1) = {"
+e
+U
+n
+S
+b
+E
+b
+F
+F
+F
+F
+E
+w
+F
+L
+F
+e
+"}
+(3,1,1) = {"
+e
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+w
+F
+F
+F
+e
+"}
+(4,1,1) = {"
+e
+N
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+e
+"}
+(5,1,1) = {"
+e
+N
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+e
+"}
+(6,1,1) = {"
+e
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+e
+"}
+(7,1,1) = {"
+e
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+e
+"}
+(8,1,1) = {"
+e
+e
+e
+e
+e
+e
+e
+e
+D
+e
+e
+e
+e
+e
+e
+e
+e
+"}
+(9,1,1) = {"
+j
+P
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+l
+v
+"}
+(10,1,1) = {"
+v
+O
+F
+F
+F
+F
+F
+z
+z
+z
+F
+F
+F
+F
+F
+F
+j
+"}
+(11,1,1) = {"
+h
+F
+F
+F
+F
+F
+F
+z
+u
+z
+F
+F
+F
+F
+F
+F
+h
+"}
+(12,1,1) = {"
+v
+F
+F
+F
+F
+F
+F
+z
+z
+z
+F
+F
+F
+F
+F
+Z
+j
+"}
+(13,1,1) = {"
+j
+a
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+y
+v
+"}
+(14,1,1) = {"
+e
+e
+e
+e
+e
+e
+e
+e
+D
+e
+e
+e
+e
+e
+e
+e
+e
+"}
+(15,1,1) = {"
+e
+d
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+e
+"}
+(16,1,1) = {"
+e
+d
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+e
+"}
+(17,1,1) = {"
+e
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+e
+"}
+(18,1,1) = {"
+e
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+F
+e
+"}
+(19,1,1) = {"
+e
+F
+y
+F
+F
+F
+F
+F
+F
+F
+F
+F
+w
+F
+F
+F
+e
+"}
+(20,1,1) = {"
+e
+F
+c
+q
+c
+F
+c
+F
+F
+F
+F
+q
+C
+F
+F
+F
+e
+"}
+(21,1,1) = {"
+e
+e
+e
+e
+e
+e
+e
+e
+h
+e
+e
+e
+e
+e
+e
+e
+e
+"}

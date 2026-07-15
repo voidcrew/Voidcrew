@@ -1,0 +1,1740 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ab" = (
+/obj/structure/chair/pew{
+	dir = 1
+	},
+/obj/item/book/bible{
+	pixel_y = 5
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"ac" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -1;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"ad" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ae" = (
+/obj/structure/closet/emcloset,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"af" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"ag" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"ah" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ai" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aj" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"ak" = (
+/mob/living/basic/construct/proteon/hostile,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"al" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 2;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"am" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"an" = (
+/obj/structure/chair/pew{
+	dir = 1
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"ao" = (
+/obj/machinery/light/warm/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ap" = (
+/obj/structure/chair/pew/right{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aq" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ar" = (
+/mob/living/basic/construct/juggernaut/hostile,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"as" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"at" = (
+/obj/machinery/door/airlock/wood{
+	name = "Votive Alcove"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"au" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"av" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/bottle/holywater{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/bottle/holywater{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 1;
+	pixel_y = -3
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aw" = (
+/obj/machinery/door/airlock/wood{
+	name = "Sacristy"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"ax" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -1;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ay" = (
+/obj/structure/chair/pew/left{
+	dir = 1
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"az" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aA" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aB" = (
+/obj/item/paper{
+	name = "annotated hymnal page";
+	default_raw_text = "Hymn 44, Vigil of the Wick. The margins are crowded in one hand, growing steadily worse: it hums along. it knows the words better than we do. it is teaching US now. do not stop singing. whatever happens, do not be the one who stops."
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"aC" = (
+/obj/machinery/door/airlock/wood{
+	name = "Chapel Doors"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"aD" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/paper{
+	name = "pilgrimage manifest";
+	default_raw_text = "Cycle 1 of the Vow. Souls aboard: 61. Course: the Shrine of the Long Silence, by way of the outer dark. Brother Ilan says a generation ship is a prayer that takes a lifetime to finish saying. Let the void hear us.";
+	pixel_y = 5
+	},
+/obj/item/book/bible{
+	pixel_x = -3;
+	pixel_y = -2
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 6;
+	pixel_y = -1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aE" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"aF" = (
+/obj/item/trash/candle,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"aG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"aH" = (
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"aI" = (
+/obj/effect/spawner/structure/window/reinforced/tinted,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aJ" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/powered)
+"aK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"aL" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"aM" = (
+/turf/closed/wall/mineral/wood,
+/area/ruin/space/has_grav/powered)
+"aN" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aO" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aP" = (
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"aQ" = (
+/obj/structure/chair/pew/right{
+	dir = 1
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"aR" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"aS" = (
+/obj/item/trash/candle,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aT" = (
+/obj/structure/chair/pew/left{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aU" = (
+/turf/template_noop,
+/area/template_noop)
+"aV" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"aW" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/powered)
+"aX" = (
+/obj/machinery/door/poddoor{
+	id = "reliquary_seal";
+	name = "reliquary seal"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aY" = (
+/obj/structure/rack,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath{
+	pixel_x = 3;
+	pixel_y = -3
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = -4
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aZ" = (
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"bt" = (
+/obj/item/trash/candle,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"ch" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 2;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"cD" = (
+/obj/effect/decal/remains/human,
+/obj/item/paper{
+	name = "unsigned vow";
+	default_raw_text = "We knelt and were heard. We asked and were answered. We stopped asking and it went on answering. The service never ends. It is enough. It is enough. It is enough."
+	},
+/turf/open/floor/engine/cult,
+/area/ruin/space/has_grav/powered)
+"cP" = (
+/obj/structure/closet/crate/coffin,
+/obj/item/coin/eldritch,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"eO" = (
+/obj/structure/table/wood/fancy/royalblack,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 1;
+	pixel_y = 5
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 6;
+	pixel_y = 7
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"fO" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -1;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"gd" = (
+/obj/structure/altar/of_gods,
+/obj/item/book/bible{
+	pixel_y = 6
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"gW" = (
+/mob/living/basic/construct/artificer/hostile,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"iM" = (
+/obj/structure/closet/crate/coffin,
+/obj/item/toy/cards/deck/tarot/haunted,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"kd" = (
+/obj/structure/closet/crate/coffin,
+/obj/item/reagent_containers/cup/glass/bottle/wine,
+/obj/item/storage/fancy/candle_box,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"kC" = (
+/obj/structure/closet/crate/wooden{
+	name = "offering crate";
+	desc = "A wooden crate for the congregation's tithes. The lid was nailed down, then pried loose, then nailed down again."
+	},
+/obj/effect/spawner/random/entertainment/money_small,
+/obj/effect/spawner/random/entertainment/money_small,
+/obj/item/coin/silver,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"lE" = (
+/obj/machinery/light/warm/directional/north,
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "celebrant's last instruction";
+	default_raw_text = "If any of the Vow still walk and still remember walking: I have dropped the reliquary seal. The release is here in my sacristy, on the east wall. Every gift we carried for the dead is where we swore it would be. What answered our prayers keeps the vigil now, and it does not tire, and it does not doubt. I am going down to sing. Forgive me. It is easier than it should be.";
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = -1
+	},
+/obj/item/storage/fancy/candle_box{
+	pixel_x = -5;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"mB" = (
+/obj/structure/closet/crate/coffin,
+/obj/item/toy/cards/deck/tarot,
+/obj/item/coin/silver,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"mM" = (
+/obj/structure/table/wood/fancy/royalblack,
+/obj/item/statuebust{
+	pixel_y = 6
+	},
+/obj/item/coin/gold{
+	pixel_x = -5;
+	pixel_y = -2
+	},
+/obj/item/coin/gold{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"nf" = (
+/obj/structure/closet/crate/coffin,
+/obj/item/clothing/suit/chaplainsuit/bishoprobe,
+/obj/item/clothing/head/chaplain/bishopmitre,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"nx" = (
+/obj/structure/statue/sandstone/venus{
+	name = "votive statue";
+	desc = "A robed figure carved from sandstone, palms open. The stone around the eyes has been kissed smooth."
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"nH" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/bottle/wine{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/storage/fancy/candle_box{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"of" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 1;
+	pixel_y = 5
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 6;
+	pixel_y = 7
+	},
+/obj/item/trash/candle{
+	pixel_x = -2;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"oj" = (
+/obj/machinery/light/small/red/directional/north,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ow" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/statuebust{
+	pixel_y = 6
+	},
+/obj/item/coin/gold{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"pv" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 2;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"qc" = (
+/obj/structure/statue/sandstone/venus{
+	name = "votive statue";
+	desc = "A robed figure carved from sandstone, palms open. The stone around the eyes has been kissed smooth."
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"qA" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"rr" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"sR" = (
+/obj/structure/table/wood/fancy/black,
+/obj/effect/spawner/random/entertainment/money_small{
+	pixel_y = 3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"tT" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 2;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"wt" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"wA" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"wY" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 3;
+	pixel_y = 1
+	},
+/turf/open/floor/engine/cult,
+/area/ruin/space/has_grav/powered)
+"xX" = (
+/obj/structure/displaycase{
+	name = "founder's reliquary";
+	desc = "A consecrated display case. The bust inside watches the door, no matter where the door is.";
+	start_showpiece_type = /obj/item/statuebust
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"An" = (
+/obj/machinery/light/small/red/directional/north,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Bf" = (
+/obj/effect/decal/remains/human,
+/obj/item/paper{
+	name = "deacon's log";
+	default_raw_text = "Cycle 112. Attendance is perfect again. It has been perfect for nine services now. Nobody will say why. When we sing there is a voice under the singing, one octave down, patient as water. The celebrant says it is the hull settling. The hull has never settled before."
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Bv" = (
+/obj/structure/destructible/cult/pylon,
+/turf/open/floor/engine/cult,
+/area/ruin/space/has_grav/powered)
+"Bw" = (
+/obj/structure/closet/crate/coffin,
+/obj/item/statuebust,
+/obj/item/coin/silver,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"BC" = (
+/obj/structure/closet/crate/coffin,
+/obj/item/reagent_containers/cup/glass/bottle/holywater,
+/obj/item/coin/gold,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"BG" = (
+/obj/structure/closet/crate/zone_loot/occult/rare,
+/turf/open/floor/engine/cult,
+/area/ruin/space/has_grav/powered)
+"Db" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Di" = (
+/obj/structure/closet/wardrobe/chaplain_black,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"DD" = (
+/mob/living/basic/construct/artificer/hostile,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"DH" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/statuebust{
+	pixel_y = 6
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -6;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Ef" = (
+/obj/structure/bookcase/random/religion,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"GL" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -1;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Hb" = (
+/turf/open/floor/engine/cult,
+/area/ruin/space/has_grav/powered)
+"Hd" = (
+/mob/living/basic/construct/juggernaut/hostile,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"IQ" = (
+/obj/structure/closet/crate/coffin,
+/obj/item/stack/sheet/mineral/gold{
+	amount = 3
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Je" = (
+/obj/structure/table/wood/fancy/black,
+/obj/effect/spawner/random/entertainment/money_medium{
+	pixel_y = 4
+	},
+/obj/item/coin/gold{
+	pixel_x = -5;
+	pixel_y = -2
+	},
+/obj/item/coin/silver{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Jh" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/engine/cult,
+/area/ruin/space/has_grav/powered)
+"Jw" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"JI" = (
+/obj/structure/musician/piano{
+	name = "votive organ";
+	desc = "A pipeless organ tuned for the long liturgy. The keys are worn down to the wood in exactly one chord."
+	},
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"Kk" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"LG" = (
+/obj/structure/closet/crate/zone_loot/occult,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"MI" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"MS" = (
+/obj/item/trash/candle,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Ni" = (
+/obj/machinery/light/small/red/dim/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"OZ" = (
+/obj/machinery/light/small/red/dim/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Pb" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"Pm" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/coin/gold{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/coin/silver{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/obj/item/coin/silver{
+	pixel_x = -1;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Pn" = (
+/obj/structure/closet/crate/coffin,
+/obj/item/book/bible,
+/obj/item/coin/gold,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"PB" = (
+/mob/living/basic/construct/wraith/hostile,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"PL" = (
+/obj/structure/chair/pew{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"QF" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/wine{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/bottle/wine{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/obj/item/storage/box/matches{
+	pixel_x = 1;
+	pixel_y = -4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"TV" = (
+/obj/machinery/button/door/directional/east{
+	id = "reliquary_seal";
+	name = "reliquary seal release"
+	},
+/obj/item/flashlight/lantern{
+	pixel_x = -2;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"UF" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"Vv" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"VO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"Wn" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -1;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"XO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine/cult,
+/area/ruin/space/has_grav/powered)
+"YM" = (
+/obj/structure/table/wood/fancy/royalblack,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 1;
+	pixel_y = 5
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 6;
+	pixel_y = 7
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"YR" = (
+/obj/machinery/light/red/dim/directional/north,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/powered)
+"YS" = (
+/obj/structure/closet/crate/coffin,
+/obj/item/clothing/suit/chaplainsuit/nun,
+/obj/item/clothing/head/chaplain/nun_hood,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+
+(1,1,1) = {"
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(2,1,1) = {"
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(3,1,1) = {"
+aU
+aU
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aO
+aO
+aI
+aI
+aO
+aO
+aI
+aI
+aO
+aO
+aO
+aO
+aI
+aI
+aO
+aO
+aO
+aI
+aI
+aO
+aO
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(4,1,1) = {"
+aU
+aU
+aJ
+An
+Kk
+Kk
+Ni
+Kk
+Db
+aJ
+Jw
+VO
+tT
+fO
+VO
+aO
+Je
+Wn
+kC
+am
+aO
+DH
+wA
+Wn
+MS
+aO
+of
+Wn
+aV
+am
+aO
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(5,1,1) = {"
+aU
+aU
+aJ
+YM
+Kk
+Pn
+Kk
+BC
+Kk
+aJ
+JI
+Pb
+VO
+VO
+VO
+aM
+qc
+PL
+aV
+MS
+aO
+nH
+Bf
+aV
+ch
+aO
+LG
+aV
+Wn
+ch
+aO
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(6,1,1) = {"
+aU
+aU
+aJ
+Kk
+PB
+aa
+pv
+aa
+Kk
+aJ
+VO
+VO
+VO
+VO
+fO
+aO
+rr
+aV
+aV
+aV
+aO
+rr
+wA
+aV
+aV
+aO
+of
+aV
+aV
+aV
+aO
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(7,1,1) = {"
+aU
+aU
+aJ
+Kk
+Kk
+Bw
+Kk
+cP
+Kk
+aJ
+VO
+VO
+VO
+VO
+VO
+aO
+aO
+at
+aO
+aO
+aM
+aO
+aO
+ag
+aO
+aO
+aO
+ag
+aO
+aO
+aO
+aO
+aO
+aI
+aO
+aO
+aU
+aU
+"}
+(8,1,1) = {"
+aU
+aU
+aJ
+GL
+Kk
+Kk
+Kk
+Kk
+Kk
+aJ
+YR
+eO
+nx
+VO
+bt
+aW
+aE
+as
+ay
+ac
+ay
+ac
+ay
+as
+ay
+aE
+ay
+as
+ay
+aF
+aL
+aO
+aY
+aT
+aN
+aO
+aU
+aU
+"}
+(9,1,1) = {"
+aU
+aU
+aJ
+Kk
+Kk
+mB
+Kk
+nf
+GL
+aJ
+fO
+VO
+VO
+VO
+VO
+af
+as
+au
+an
+aH
+an
+as
+ab
+aH
+an
+au
+ab
+aH
+an
+as
+aH
+aO
+ao
+ap
+aS
+aO
+aU
+aU
+"}
+(10,1,1) = {"
+aU
+aU
+aJ
+wY
+Hb
+Kk
+Kk
+Kk
+Kk
+aJ
+VO
+VO
+VO
+VO
+Vv
+af
+aH
+aH
+aQ
+as
+aQ
+aH
+aQ
+as
+aQ
+aH
+aQ
+aH
+aQ
+ac
+as
+aO
+av
+ad
+ax
+aO
+aU
+aU
+"}
+(11,1,1) = {"
+aU
+aU
+aJ
+BG
+XO
+Hd
+aZ
+aZ
+aZ
+aX
+aZ
+gd
+UF
+VO
+VO
+aP
+aP
+aG
+aP
+aP
+aP
+aP
+aG
+aB
+aP
+aP
+aP
+ak
+aG
+aP
+aP
+aC
+ad
+ah
+ah
+aq
+aU
+aU
+"}
+(12,1,1) = {"
+aU
+aU
+aJ
+Bv
+cD
+aZ
+aZ
+aZ
+aZ
+aX
+aZ
+Vv
+VO
+VO
+VO
+ar
+aP
+aP
+aG
+aP
+aP
+aG
+aP
+aP
+aP
+aG
+aG
+aR
+aP
+aP
+aP
+aC
+az
+ah
+ah
+aq
+aU
+aU
+"}
+(13,1,1) = {"
+aU
+aU
+aJ
+wY
+Hb
+Kk
+Kk
+Kk
+Kk
+aJ
+XO
+Bv
+XO
+VO
+VO
+af
+aH
+aK
+ay
+as
+ay
+aH
+ay
+aH
+ay
+aH
+ay
+as
+ay
+ac
+as
+aO
+aD
+ad
+ax
+aO
+aU
+aU
+"}
+(14,1,1) = {"
+aU
+aU
+aJ
+Kk
+Kk
+kd
+Kk
+iM
+GL
+aJ
+XO
+eO
+XO
+VO
+VO
+af
+as
+al
+ab
+aH
+an
+au
+an
+as
+an
+al
+an
+aH
+an
+as
+aH
+aO
+aA
+aT
+aS
+aO
+aU
+aU
+"}
+(15,1,1) = {"
+aU
+aU
+aJ
+Kk
+Kk
+aa
+pv
+aa
+Kk
+aJ
+YR
+VO
+nx
+DD
+VO
+aW
+aj
+as
+aQ
+ac
+aQ
+as
+aQ
+as
+aQ
+aj
+aQ
+as
+aQ
+aF
+aL
+aO
+ae
+ap
+ai
+aO
+aU
+aU
+"}
+(16,1,1) = {"
+aU
+aU
+aJ
+Kk
+Kk
+YS
+Kk
+Pn
+Kk
+aJ
+VO
+VO
+VO
+VO
+VO
+aO
+aO
+aw
+aO
+aO
+aM
+aO
+aO
+ag
+aO
+aO
+aO
+ag
+aO
+aO
+aO
+aO
+aO
+aI
+aO
+aO
+aU
+aU
+"}
+(17,1,1) = {"
+aU
+aU
+aJ
+mM
+PB
+Kk
+Kk
+Kk
+Kk
+aJ
+fO
+VO
+VO
+bt
+fO
+aO
+Di
+aV
+aV
+am
+aO
+Pm
+aV
+aV
+am
+aO
+of
+aV
+aV
+aV
+aO
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(18,1,1) = {"
+aU
+aU
+aJ
+Kk
+Kk
+IQ
+Kk
+mB
+Kk
+aJ
+VO
+VO
+VO
+VO
+VO
+aM
+Ef
+aV
+LG
+wt
+aO
+sR
+aV
+LG
+MS
+aO
+xX
+wA
+Wn
+MS
+aO
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(19,1,1) = {"
+aU
+aU
+aJ
+oj
+Kk
+Kk
+OZ
+Kk
+qA
+aJ
+MI
+tT
+VO
+fO
+VO
+aO
+lE
+wt
+QF
+TV
+aO
+ow
+gW
+Wn
+aV
+aO
+of
+aV
+XO
+Jh
+aO
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(20,1,1) = {"
+aU
+aU
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aJ
+aO
+aO
+aI
+aI
+aO
+aO
+aI
+aI
+aO
+aO
+aO
+aO
+aI
+aI
+aO
+aO
+aO
+aI
+aI
+aO
+aO
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(21,1,1) = {"
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(22,1,1) = {"
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}

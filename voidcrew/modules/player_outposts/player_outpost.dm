@@ -1,0 +1,548 @@
+/**
+ * # Player Outpost
+ *
+ * A player-founded, player-built station on the overmap. Founded by using an
+ * outpost deed (see outpost_deed.dm) while the crew's ship sits on an empty
+ * overmap tile: the founder picks a shell template, the outpost gets its own
+ * z-level (same substrate as empty-space docking, so construction is allowed),
+ * and the shell is loaded next to two reserve docks.
+ *
+ * Once founded the outpost is permanent for the round — it never unloads and
+ * never moves. Zone rules are locked in at founding: green-zone outposts are
+ * protected from ship weapons, yellow/red outposts are raidable.
+ *
+ * One outpost per ckey per round (see GLOB.player_outpost_founder_ckeys).
+ * Nothing about the outpost persists across rounds.
+ */
+
+/// All player outposts on the overmap
+GLOBAL_LIST_EMPTY(player_outposts)
+/// Ckeys that have founded (or been transferred) an outpost this round. Append-only.
+GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
+
+/obj/structure/overmap/dynamic/player_outpost
+	name = "player outpost"
+	desc = "An independent outpost."
+	icon_state = "station"
+	sensor_detectable = TRUE
+	sensor_category = "Outposts"
+	preserve_level = TRUE // never unloads (documentation — /dynamic has no unload path anyway)
+
+	/// Ckey of the current owner. Ownership survives death/respawn.
+	var/founder_ckey
+	/// Display name of the founder at founding time (for examine/announcements)
+	var/founder_name
+	/// Weakref to the owner's mind, used to recognize the owner's crew ship
+	var/datum/weakref/founder_mind
+	/// Whether ship weapons may target this outpost. Locked in at founding from the zone band.
+	var/raidable = FALSE
+	/// Zone band this outpost was founded in (ZONE_RED/YELLOW/GREEN)
+	var/founded_zone
+	/// Docking policy: OUTPOST_DOCK_MODE_OPEN / _REQUEST / _LOCKDOWN
+	var/dock_mode = OUTPOST_DOCK_MODE_OPEN
+	/// Ships cleared to dock while in REQUEST mode
+	var/list/approved_ships = list()
+	/// Pending docking requests: ship -> world.time of the request
+	var/list/pending_dock_requests = list()
+	/// Ships refused in all modes
+	var/list/banned_ships = list()
+	/// Ckeys allowed to use the construction console besides the owner
+	var/list/authorized_builder_ckeys = list()
+	/// Owner-set public description, shown on examine and advertisements
+	var/memo = ""
+	/// The live advertisement, if any (see outpost_adverts.dm)
+	var/datum/outpost_advert/current_advert
+	/// The shell template instance that was loaded at founding
+	var/datum/map_template/player_outpost/shell_template
+	// template_bottom_left (the shell footprint origin) lives on /obj/structure/overmap
+	/// Buildable region on the outpost z-level: list(x1, y1, x2, y2)
+	var/list/build_bounds
+	/// Turf visitors/drones arrive at, from the shell's arrival landmark
+	var/turf/arrival_turf
+	/// Linked management console (from the shell)
+	var/obj/machinery/computer/player_outpost_management/management_console
+	/// Linked construction console (from the shell)
+	var/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/construction_console
+	var/loaded = FALSE
+	var/loading = FALSE
+	COOLDOWN_DECLARE(rename_cooldown)
+	COOLDOWN_DECLARE(advert_cooldown)
+
+/obj/structure/overmap/dynamic/player_outpost/Initialize(mapload)
+	. = ..()
+	GLOB.player_outposts += src
+
+/obj/structure/overmap/dynamic/player_outpost/Destroy()
+	GLOB.player_outposts -= src
+	QDEL_NULL(current_advert)
+	approved_ships.Cut()
+	pending_dock_requests.Cut()
+	banned_ships.Cut()
+	if(management_console)
+		management_console.outpost = null
+		management_console = null
+	if(construction_console)
+		construction_console.outpost = null
+		construction_console = null
+	template_bottom_left = null
+	arrival_turf = null
+	// Admin deletion must not leak hangar reservations (berths eject occupants
+	// to the lobby, so release them while the mapzone still exists)
+	for(var/datum/outpost_berth/berth as anything in berths)
+		if(berth)
+			berth.release(force = TRUE)
+	berths = null
+	remove_docks()
+	remove_mapzone()
+	return ..()
+
+/obj/structure/overmap/dynamic/player_outpost/proc/remove_docks()
+	if(reserve_dock)
+		qdel(reserve_dock, TRUE)
+		reserve_dock = null
+	if(reserve_dock_secondary)
+		qdel(reserve_dock_secondary, TRUE)
+		reserve_dock_secondary = null
+
+/obj/structure/overmap/dynamic/player_outpost/proc/remove_mapzone()
+	if(mapzone)
+		mapzone.clear_to_uninitialized_space()
+		mapzone.taken = FALSE
+		mapzone = null
+
+/obj/structure/overmap/dynamic/player_outpost/examine(mob/user)
+	. = ..()
+	if(founder_name)
+		. += span_notice("Registered to [founder_name].")
+	if(memo)
+		. += span_notice("\"[memo]\"")
+	switch(dock_mode)
+		if(OUTPOST_DOCK_MODE_OPEN)
+			. += span_notice("Broadcasting an open docking invitation.")
+		if(OUTPOST_DOCK_MODE_REQUEST)
+			. += span_notice("Docking by request only.")
+		if(OUTPOST_DOCK_MODE_LOCKDOWN)
+			. += span_warning("Docking clearance revoked for all outside vessels.")
+	if(raidable)
+		. += span_danger("This deep-space claim is outside patrolled space. It can be attacked.")
+	else
+		. += span_notice("Registered in patrolled space — protected from ship weapons.")
+
+// ===== OWNERSHIP =====
+
+/// Whether the given mob is the outpost's owner. Ckey-based, so it survives death/respawn.
+/obj/structure/overmap/dynamic/player_outpost/proc/is_owner(mob/user)
+	return user?.ckey && user.ckey == founder_ckey
+
+/// Whether the given mob may use the construction console
+/obj/structure/overmap/dynamic/player_outpost/proc/can_build(mob/user)
+	if(is_owner(user))
+		return TRUE
+	return user?.ckey && (user.ckey in authorized_builder_ckeys)
+
+/// Whether the given ship carries the owner's crew (the founder's ship team)
+/obj/structure/overmap/dynamic/player_outpost/proc/is_owner_crew_ship(obj/structure/overmap/ship/acting)
+	if(!acting?.ship_team)
+		return FALSE
+	var/datum/mind/owner_mind = founder_mind?.resolve()
+	if(!owner_mind)
+		return FALSE
+	return (acting.ship_team in owner_mind.ship_teams)
+
+/// The ship the owner currently crews, if any (for docking-request notifications)
+/obj/structure/overmap/dynamic/player_outpost/proc/get_owner_ship()
+	var/datum/mind/owner_mind = founder_mind?.resolve()
+	if(!owner_mind)
+		return null
+	for(var/datum/team/voidcrew/team as anything in owner_mind.ship_teams)
+		if(team.ship)
+			return team.ship
+	return null
+
+/// Notify the owner's current ship, if they crew one
+/obj/structure/overmap/dynamic/player_outpost/proc/notify_owner(message, title = "OUTPOST")
+	var/obj/structure/overmap/ship/owner_ship = get_owner_ship()
+	if(owner_ship)
+		owner_ship.ship_notify("[name]: [message]", title, SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
+
+// ===== COMBAT TARGET API (see /obj/structure/overmap base hooks) =====
+
+/// Combat notifications reach everyone on the outpost plus the owner's crew ship
+/obj/structure/overmap/dynamic/player_outpost/ship_notify(message, category = "ALERT", alert_level = SHIP_NOTIFY_NOTICE, sound_file = null, volume = 100)
+	var/formatted
+	switch(alert_level)
+		if(SHIP_NOTIFY_DANGER)
+			formatted = span_bolddanger("[name]: [message]")
+		if(SHIP_NOTIFY_WARNING)
+			formatted = span_boldwarning("[name]: [message]")
+		else
+			formatted = span_boldnotice("[name]: [message]")
+	if(mapzone)
+		for(var/mob/living/occupant as anything in mapzone.get_mind_mobs())
+			to_chat(occupant, formatted)
+			if(sound_file && occupant.client)
+				var/sound/S = sound(sound_file)
+				S.volume = volume
+				SEND_SOUND(occupant, S)
+	// The owner hears about it wherever they are
+	var/obj/structure/overmap/ship/owner_ship = get_owner_ship()
+	if(owner_ship && !(mapzone && (owner_ship.docked == src)))
+		owner_ship.ship_notify("[name]: [message]", category, alert_level, sound_file, volume)
+
+/obj/structure/overmap/dynamic/player_outpost/is_combat_targetable()
+	return raidable
+
+// Null: the outpost owns its whole z-level, so sounds/shakes need no area filter
+/obj/structure/overmap/dynamic/player_outpost/get_combat_target_areas()
+	return null
+
+/obj/structure/overmap/dynamic/player_outpost/get_combat_bounds()
+	return build_bounds
+
+/obj/structure/overmap/dynamic/player_outpost/combat_camera_can_view(turf/T)
+	return is_turf_buildable(T)
+
+/obj/structure/overmap/dynamic/player_outpost/get_combat_camera_turfs()
+	if(!build_bounds || !mapzone)
+		return null
+	var/datum/space_level/zlevel = mapzone.z_levels[1]
+	if(!zlevel)
+		return null
+	return block(
+		locate(build_bounds[1], build_bounds[2], zlevel.z_value),
+		locate(build_bounds[3], build_bounds[4], zlevel.z_value)
+	)
+
+/obj/structure/overmap/dynamic/player_outpost/get_combat_default_turf()
+	return arrival_turf
+
+// ===== FOUNDING =====
+
+/**
+ * Completes founding: registers ownership, locks in zone rules, loads the
+ * z-level and shell. Called by the shell catalog UI right after creation.
+ * Returns TRUE on success; on failure the outpost deletes itself.
+ */
+/obj/structure/overmap/dynamic/player_outpost/proc/found(mob/living/founder, datum/map_template/player_outpost/shell, outpost_name)
+	founder_ckey = founder.ckey
+	founder_name = founder.real_name
+	founder_mind = WEAKREF(founder.mind)
+	shell_template = shell
+	name = outpost_name
+	display_name = outpost_name
+
+	founded_zone = SSovermap.get_zone_band_for_turf(get_turf(src))
+	raidable = (founded_zone != ZONE_GREEN)
+
+	if(!load_level())
+		qdel(src)
+		return FALSE
+
+	// Spawned onto the tile the founding ship is sitting still on; no ENTERED
+	// fires, so register with co-located ships now or the outpost stays hidden
+	// from their helm/sensors until they re-cross the tile.
+	sync_close_overmap_objects()
+
+	GLOB.player_outpost_founder_ckeys += founder_ckey
+
+	priority_announce("[founder_name]'s crew has founded the outpost [name] in [founded_zone == ZONE_GREEN ? "patrolled" : "unpatrolled"] space.", "Colonial Registry")
+	log_shuttle("PLAYER OUTPOST: [key_name(founder)] founded '[name]' ([shell.name]) at zone [founded_zone]")
+	message_admins("[key_name_admin(founder)] founded player outpost '[name]'")
+	return TRUE
+
+/**
+ * Allocates the outpost's z-level (empty-space pattern: construction allowed,
+ * two reserve docks included) and loads the shell template north of the docks.
+ */
+/obj/structure/overmap/dynamic/player_outpost/proc/load_level()
+	if(mapzone || loading)
+		return FALSE
+	loading = TRUE
+
+	if(!shell_template?.width || !shell_template?.height)
+		log_mapping("PLAYER OUTPOST: Shell template '[shell_template?.name]' has no dimensions, cannot load.")
+		loading = FALSE
+		return FALSE
+
+	var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(null, FALSE)
+	if(!length(dynamic_encounter_values))
+		loading = FALSE
+		return FALSE
+	mapzone = dynamic_encounter_values[1]
+	reserve_dock = dynamic_encounter_values[2]
+	reserve_dock_secondary = dynamic_encounter_values[3]
+
+	var/datum/space_level/zlevel = mapzone.z_levels[1]
+	// Directly north of the docks (which sit at the bottom edge), aligned with the first dock
+	var/shell_min_y = zlevel.low_y + RESERVE_DOCK_DEFAULT_PADDING + 1 + RESERVE_DOCK_MAX_SIZE_SHORT + 6
+	var/turf/bottom_left = locate(
+		zlevel.low_x + RESERVE_DOCK_DEFAULT_PADDING + 1,
+		shell_min_y,
+		zlevel.z_value
+	)
+	if(!bottom_left)
+		log_mapping("PLAYER OUTPOST: Could not locate shell origin turf.")
+		fail_load()
+		return FALSE
+
+	var/load_success = FALSE
+	try
+		load_success = shell_template.load(bottom_left)
+	catch(var/exception/e)
+		log_mapping("PLAYER OUTPOST: Failed to load shell '[shell_template.name]': [e]")
+		load_success = FALSE
+
+	if(!load_success)
+		fail_load()
+		return FALSE
+
+	template_bottom_left = bottom_left
+
+	// Buildable region: shell footprint inflated by the build margin, kept off
+	// the z-level border and off the dock rows at the bottom edge
+	build_bounds = list(
+		max(bottom_left.x - PLAYER_OUTPOST_BUILD_MARGIN, zlevel.low_x + 3),
+		max(bottom_left.y - PLAYER_OUTPOST_BUILD_MARGIN, shell_min_y - 2),
+		min(bottom_left.x + shell_template.width - 1 + PLAYER_OUTPOST_BUILD_MARGIN, zlevel.high_x - 3),
+		min(bottom_left.y + shell_template.height - 1 + PLAYER_OUTPOST_BUILD_MARGIN, zlevel.high_y - 3),
+	)
+
+	link_interior_machinery()
+
+	loaded = TRUE
+	loading = FALSE
+	return TRUE
+
+/// Cleanup after a failed shell load: release the freshly-claimed mapzone
+/obj/structure/overmap/dynamic/player_outpost/proc/fail_load()
+	remove_docks()
+	remove_mapzone()
+	loading = FALSE
+
+/// Whether this outpost has an operational hangar elevator (placed via the
+/// construction console). With one installed, docking switches to hangar berths.
+/obj/structure/overmap/dynamic/player_outpost/proc/has_hangar_elevator()
+	return length(lobby_alcove_turfs) && length(lobby_panels)
+
+/// Whether the given turf is inside the outpost's buildable region
+/obj/structure/overmap/dynamic/player_outpost/proc/is_turf_buildable(turf/target)
+	if(!build_bounds || !mapzone)
+		return FALSE
+	var/datum/space_level/zlevel = mapzone.z_levels[1]
+	if(!zlevel || target.z != zlevel.z_value)
+		return FALSE
+	return (target.x >= build_bounds[1] && target.y >= build_bounds[2] && target.x <= build_bounds[3] && target.y <= build_bounds[4])
+
+/**
+ * Finds the machinery the shell spawned and links it to this outpost.
+ */
+/obj/structure/overmap/dynamic/player_outpost/proc/link_interior_machinery()
+	if(!template_bottom_left || !shell_template?.width || !shell_template?.height)
+		return
+	var/turf/top_right = locate(
+		template_bottom_left.x + shell_template.width - 1,
+		template_bottom_left.y + shell_template.height - 1,
+		template_bottom_left.z
+	)
+	if(!top_right)
+		return
+	for(var/turf/interior_turf as anything in block(template_bottom_left, top_right))
+		for(var/obj/effect/landmark/player_outpost_arrival/mark in interior_turf)
+			arrival_turf = interior_turf
+			qdel(mark)
+		for(var/obj/machinery/machine in interior_turf)
+			if(istype(machine, /obj/machinery/computer/player_outpost_management))
+				var/obj/machinery/computer/player_outpost_management/console = machine
+				console.outpost = src
+				management_console = console
+			else if(istype(machine, /obj/machinery/computer/camera_advanced/base_construction/ship/outpost))
+				var/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/builder = machine
+				builder.outpost = src
+				construction_console = builder
+
+/obj/structure/overmap/dynamic/player_outpost/attack_ghost(mob/user)
+	if(arrival_turf)
+		user.forceMove(arrival_turf)
+		return TRUE
+	return ..()
+
+// ===== RENAME / MEMO =====
+
+/**
+ * Renames the outpost (galaxy-visible). Mirrors /obj/structure/overmap/ship/set_ship_name:
+ * cooldown-gated, announced, admin-logged. Returns TRUE on success.
+ */
+/obj/structure/overmap/dynamic/player_outpost/proc/set_outpost_name(new_name, mob/user)
+	if(!new_name || new_name == name)
+		return FALSE
+	if(!COOLDOWN_FINISHED(src, rename_cooldown))
+		return FALSE
+	priority_announce("The outpost [name] has been renamed to [new_name].", "Colonial Registry")
+	message_admins("[key_name_admin(user)] renamed player outpost '[name]' to '[new_name]'")
+	name = new_name
+	display_name = new_name
+	COOLDOWN_START(src, rename_cooldown, PLAYER_OUTPOST_RENAME_COOLDOWN)
+	return TRUE
+
+/// Sets the owner memo (already sanitized by the console)
+/obj/structure/overmap/dynamic/player_outpost/proc/set_memo(new_memo)
+	memo = new_memo
+	desc = length(memo) ? "An independent outpost. \"[memo]\"" : "An independent outpost."
+
+// ===== DOCKING =====
+
+/**
+ * Handles a visiting ship: access control first, then the planet-style
+ * two-dock allocation. The level is always loaded (founding loads it).
+ */
+/obj/structure/overmap/dynamic/player_outpost/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
+	if(concerned)
+		to_chat(user, span_notice("Too much traffic, try again later!"))
+		return
+	if(!loaded)
+		to_chat(user, span_warning("The outpost's transponder isn't responding."))
+		return
+
+	var/denial = get_docking_denial(acting)
+	if(denial)
+		to_chat(user, span_warning(denial))
+		return
+
+	concerned = TRUE
+	var/prev_state = acting.state
+	acting.state = OVERMAP_SHIP_ACTING
+	balloon_alert(user, "starting docking process..")
+
+	var/obj/docking_port/stationary/dock_to_use = null
+	var/datum/outpost_berth/berth = null
+	// Port destinations are set by survey consoles
+	if(acting.shuttle.port_destinations)
+		dock_to_use = acting.shuttle.port_destinations
+	else
+		var/long_axis = max(acting.shuttle.width, acting.shuttle.height)
+		var/short_axis = min(acting.shuttle.width, acting.shuttle.height)
+		if(long_axis > RESERVE_DOCK_MAX_SIZE_LONG || short_axis > RESERVE_DOCK_MAX_SIZE_SHORT)
+			acting.state = prev_state
+			concerned = FALSE
+			to_chat(user, span_warning("Ship is too large to dock at [name]."))
+			return
+
+		if(has_hangar_elevator())
+			// A placed hangar elevator upgrades docking to per-ship berths,
+			// exactly like the trader outposts (see outpost_hangar.dm)
+			berth = allocate_berth(acting)
+			if(!berth)
+				acting.state = prev_state
+				concerned = FALSE
+				to_chat(user, span_notice("[name] traffic control: all hangar berths are occupied. Try again later."))
+				return
+			adjust_reserve_dock_to_shuttle(berth.dock, acting.shuttle)
+			dock_to_use = berth.dock
+		else
+			if(reserve_dock && !first_dock_taken && !reserve_dock.get_docked())
+				dock_to_use = reserve_dock
+				first_dock_taken = TRUE
+				acting.dock_index = 1
+			else if(reserve_dock_secondary && !second_dock_taken && !reserve_dock_secondary.get_docked())
+				dock_to_use = reserve_dock_secondary
+				second_dock_taken = TRUE
+				acting.dock_index = 2
+
+			if(!dock_to_use)
+				acting.state = prev_state
+				concerned = FALSE
+				to_chat(user, span_notice("[name] traffic control: all docking pads are occupied."))
+				return
+			adjust_reserve_dock_to_shuttle(dock_to_use, acting.shuttle)
+
+	if(acting.shuttle.height > dock_to_use.height || acting.shuttle.width > dock_to_use.width)
+		berth?.release(force = TRUE) // nothing has landed yet, safe to free immediately
+		acting.state = prev_state
+		concerned = FALSE
+		to_chat(user, span_warning("Ship is too large to dock at this location."))
+		return
+
+	to_chat(user, span_notice("[acting.dock(src, dock_to_use)]"))
+	concerned = FALSE
+
+	if(optional_partner)
+		ship_act(user, optional_partner)
+
+/**
+ * Access control. Returns a denial message, or null when the ship may dock.
+ * Owner-crew ships always pass. Queues a docking request as a side effect in
+ * REQUEST mode.
+ */
+/obj/structure/overmap/dynamic/player_outpost/proc/get_docking_denial(obj/structure/overmap/ship/acting)
+	if(banned_ships[acting])
+		return "[name] traffic control: your vessel has been denied docking privileges."
+	if(is_owner_crew_ship(acting))
+		return null
+	switch(dock_mode)
+		if(OUTPOST_DOCK_MODE_OPEN)
+			return null
+		if(OUTPOST_DOCK_MODE_LOCKDOWN)
+			return "[name] traffic control: outpost is in lockdown. Docking denied."
+		if(OUTPOST_DOCK_MODE_REQUEST)
+			if(approved_ships[acting])
+				return null
+			var/requested_at = pending_dock_requests[acting]
+			if(requested_at && (world.time - requested_at) < OUTPOST_DOCK_REQUEST_TIMEOUT)
+				return "[name] traffic control: docking clearance still pending. Hold position."
+			pending_dock_requests[acting] = world.time
+			notify_owner("[acting.name] is requesting docking clearance.", "DOCKING REQUEST")
+			management_console?.on_dock_requests_changed()
+			return "[name] traffic control: docking clearance requested. Hold position."
+	return null
+
+/// Owner approved a pending request
+/obj/structure/overmap/dynamic/player_outpost/proc/approve_dock_request(obj/structure/overmap/ship/requester)
+	pending_dock_requests -= requester
+	approved_ships[requester] = TRUE
+	requester.ship_notify("[name]: docking clearance granted.", "DOCKING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
+
+/// Owner denied a pending request
+/obj/structure/overmap/dynamic/player_outpost/proc/deny_dock_request(obj/structure/overmap/ship/requester)
+	pending_dock_requests -= requester
+	requester.ship_notify("[name]: docking clearance denied.", "DOCKING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
+
+/// Drop expired requests and dead ship refs before showing the list
+/obj/structure/overmap/dynamic/player_outpost/proc/prune_dock_requests()
+	for(var/obj/structure/overmap/ship/requester in pending_dock_requests)
+		if(QDELETED(requester) || (world.time - pending_dock_requests[requester]) >= OUTPOST_DOCK_REQUEST_TIMEOUT)
+			pending_dock_requests -= requester
+
+// ===== ABANDON / TRANSFER =====
+
+/**
+ * The owner walks away: ownership clears, docking opens up, adverts die.
+ * The physical outpost persists (round-permanent by design). The previous
+ * owner's ckey stays in the founder registry — no re-founding this round.
+ */
+/obj/structure/overmap/dynamic/player_outpost/proc/abandon(mob/user)
+	priority_announce("The outpost [name] has been abandoned by its owner. Salvage rights unclaimed.", "Colonial Registry")
+	message_admins("[key_name_admin(user)] abandoned player outpost '[name]'")
+	founder_ckey = null
+	founder_name = null
+	founder_mind = null
+	dock_mode = OUTPOST_DOCK_MODE_OPEN
+	authorized_builder_ckeys.Cut()
+	pending_dock_requests.Cut()
+	QDEL_NULL(current_advert)
+
+/**
+ * Transfers ownership to another player. The recipient must not have founded
+ * an outpost this round; their ckey joins the founder registry.
+ */
+/obj/structure/overmap/dynamic/player_outpost/proc/transfer_ownership(mob/living/new_owner, mob/user)
+	if(!istype(new_owner) || !new_owner.ckey || !new_owner.mind)
+		return FALSE
+	if(new_owner.ckey in GLOB.player_outpost_founder_ckeys)
+		return FALSE
+	founder_ckey = new_owner.ckey
+	founder_name = new_owner.real_name
+	founder_mind = WEAKREF(new_owner.mind)
+	GLOB.player_outpost_founder_ckeys += new_owner.ckey
+	message_admins("[key_name_admin(user)] transferred player outpost '[name]' to [key_name_admin(new_owner)]")
+	to_chat(new_owner, span_boldnotice("You are now the registered owner of [name]."))
+	return TRUE

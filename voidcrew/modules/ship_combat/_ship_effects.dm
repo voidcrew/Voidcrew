@@ -2,15 +2,16 @@
 // Helper procs for playing sounds and screen shakes that respect ship boundaries
 // in hyperspace/reserved space where multiple ships share a z-level
 
-/// Plays a sound only to mobs within a specific ship's areas
-/// This prevents sounds from bleeding across to other ships in reserved space
-/proc/playsound_ship(turf/source_turf, sound, volume = 100, vary = TRUE, extrarange = 0, obj/structure/overmap/ship/target_ship)
-	if(!source_turf || !target_ship?.shuttle?.shuttle_areas)
-		// Fallback to normal playsound if no ship context
+/// Plays a sound only to mobs within a specific target's combat areas
+/// This prevents sounds from bleeding across to other ships in reserved space.
+/// Targets without area scoping (player outposts own their whole z-level) fall
+/// back to a normal unfiltered playsound.
+/proc/playsound_ship(turf/source_turf, sound, volume = 100, vary = TRUE, extrarange = 0, obj/structure/overmap/target_ship)
+	var/list/ship_areas = target_ship?.get_combat_target_areas()
+	if(!source_turf || !ship_areas)
+		// Fallback to normal playsound if no area scoping
 		playsound(source_turf, sound, volume, vary, extrarange = extrarange, pressure_affected = FALSE)
 		return
-
-	var/list/ship_areas = target_ship.shuttle.shuttle_areas
 
 	// Calculate the effective hearing range
 	var/range = world.view + extrarange
@@ -38,16 +39,14 @@
 			played_sound.frequency = rand(75, 125) / 100
 		SEND_SOUND(listener, played_sound)
 
-/// Shakes cameras only for mobs within a specific ship's areas
+/// Shakes cameras only for mobs within a specific target's combat areas
 /// This prevents screen shakes from affecting players on other ships in reserved space
-/proc/shake_camera_ship(turf/epicenter, shake_range = 7, duration = 3, strength = 2, obj/structure/overmap/ship/target_ship)
+/proc/shake_camera_ship(turf/epicenter, shake_range = 7, duration = 3, strength = 2, obj/structure/overmap/target_ship)
 	if(!epicenter)
 		return
 
-	// If no ship context, check for mobs in range but filter by area
-	var/list/ship_areas
-	if(target_ship?.shuttle?.shuttle_areas)
-		ship_areas = target_ship.shuttle.shuttle_areas
+	// If no area scoping, shake everyone in range (correct for whole-z targets)
+	var/list/ship_areas = target_ship?.get_combat_target_areas()
 
 	for(var/mob/living/victim in range(shake_range, epicenter))
 		// If we have ship areas, filter to only those within the ship
@@ -60,14 +59,12 @@
 
 /// Combined explosion effects (sound + screenshake) limited to a specific ship
 /// Use this after calling explosion() with silent = TRUE
-/proc/ship_explosion_effects(turf/epicenter, obj/structure/overmap/ship/target_ship, near_sound = 'sound/effects/explosion/explosion2.ogg', far_sound = 'sound/effects/explosion/explosionfar.ogg', near_range = 7, far_range = 14, quake_factor = 0, echo_factor = 0)
+/proc/ship_explosion_effects(turf/epicenter, obj/structure/overmap/target_ship, near_sound = 'sound/effects/explosion/explosion2.ogg', far_sound = 'sound/effects/explosion/explosionfar.ogg', near_range = 7, far_range = 14, quake_factor = 0, echo_factor = 0)
 	if(!epicenter)
 		return
 
-	// Get ship areas if available
-	var/list/ship_areas
-	if(target_ship?.shuttle?.shuttle_areas)
-		ship_areas = target_ship.shuttle.shuttle_areas
+	// Get area scoping if available (null = whole-z target, no filter needed)
+	var/list/ship_areas = target_ship?.get_combat_target_areas()
 
 	// Sound ranges
 	var/near_dist = world.view + near_range

@@ -64,6 +64,7 @@ SUBSYSTEM_DEF(overmap)
 	setup_planets()
 	setup_space_ruins()
 	setup_trader_outposts()
+	schedule_vestige_ruins()
 	spawn_initial_ship()
 
 	return SS_INIT_SUCCESS

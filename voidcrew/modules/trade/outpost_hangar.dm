@@ -58,8 +58,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth, 32)
  * links to the hangar's elevator machinery.
  */
 /datum/outpost_berth
-	/// Outpost that owns this berth
-	var/obj/structure/overmap/trader_outpost/outpost
+	/// Berth host that owns this berth (trader outpost or player outpost)
+	var/obj/structure/overmap/outpost
 	/// Slot index in outpost.berths (1-based); doubles as the floor number
 	var/berth_number = 0
 	/// Ship assigned to this berth (cleared via COMSIG_QDELETING)
@@ -83,7 +83,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth, 32)
 	/// Timer that frees the berth if the ship never shows up (TIMER_STOPPABLE)
 	var/arrival_watchdog
 
-/datum/outpost_berth/New(obj/structure/overmap/trader_outpost/outpost, berth_number, obj/structure/overmap/ship/ship)
+/datum/outpost_berth/New(obj/structure/overmap/outpost, berth_number, obj/structure/overmap/ship/ship)
 	src.outpost = outpost
 	src.berth_number = berth_number
 	src.ship = ship
@@ -260,14 +260,18 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth, 32)
 				for(var/mob/living/rider in occupant.get_all_contents())
 					to_chat(rider, span_warning("Berth [berth_number] is being cleared for departure — outpost staff haul you back to the concourse."))
 
-// ===== OUTPOST-SIDE BERTH MANAGEMENT =====
+// ===== HOST-SIDE BERTH MANAGEMENT =====
+// Defined on the overmap base so both trader outposts and player outposts
+// (once they place a hangar elevator) can host berths.
 
 /**
  * Allocates the lowest free berth for a ship: reserves space, loads the hangar
  * template into it and wires everything up. Returns the berth, or null if the
  * outpost is full or the load failed.
  */
-/obj/structure/overmap/trader_outpost/proc/allocate_berth(obj/structure/overmap/ship/ship)
+/obj/structure/overmap/proc/allocate_berth(obj/structure/overmap/ship/ship)
+	if(!berths)
+		berths = new /list(OUTPOST_MAX_BERTHS)
 	var/berth_number = 0
 	for(var/i in 1 to OUTPOST_MAX_BERTHS)
 		if(!berths[i])
@@ -311,14 +315,14 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth, 32)
 	return berth
 
 /// Called from complete_dock() once the ship has fully left the outpost.
-/obj/structure/overmap/trader_outpost/proc/on_ship_undock_complete(obj/structure/overmap/ship/ship)
+/obj/structure/overmap/proc/on_ship_undock_complete(obj/structure/overmap/ship/ship)
 	for(var/datum/outpost_berth/berth as anything in berths)
 		if(berth?.ship == ship)
 			berth.release()
 			return
 
 /// Resolves a floor id to its elevator alcove turfs: 0 = concourse lobby, 1..N = berths. Null if that floor doesn't currently exist.
-/obj/structure/overmap/trader_outpost/proc/get_floor_alcove(floor_id)
+/obj/structure/overmap/proc/get_floor_alcove(floor_id)
 	if(floor_id == 0)
 		return length(lobby_alcove_turfs) ? lobby_alcove_turfs : null
 	if(floor_id < 1 || floor_id > length(berths))
@@ -329,7 +333,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/outpost_berth, 32)
 	return berth.alcove_turfs
 
 /// Pushes fresh data to every elevator panel UI (floor list changed).
-/obj/structure/overmap/trader_outpost/proc/refresh_elevator_uis()
+/obj/structure/overmap/proc/refresh_elevator_uis()
 	for(var/obj/machinery/outpost_elevator/lobby_panel as anything in lobby_panels)
 		SStgui.update_uis(lobby_panel)
 	for(var/datum/outpost_berth/berth as anything in berths)

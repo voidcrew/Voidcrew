@@ -30,8 +30,7 @@
 	 */
 	///State of the shuttle: idle, flying, docking, or undocking
 	var/state = OVERMAP_SHIP_FLYING
-	///Name of the Ship with the faction appended to it
-	var/display_name
+	// display_name (name with faction appended) is declared on /obj/structure/overmap
 	///How long until the ship will delete itself.
 	var/deletion_timer
 	/// Whether this ship has been abandoned (no crew, claimable by anyone)
@@ -618,6 +617,7 @@
 	QDEL_LIST(available_missions)
 	QDEL_LIST(active_missions)
 	QDEL_LIST(waypoints)
+	QDEL_LIST(pending_rumors)
 	return ..()
 
 /obj/structure/overmap/ship/attack_ghost(mob/user)
@@ -898,7 +898,7 @@
  * * sound_file - Optional sound to play. If null, no sound is played.
  * * volume - Volume of the sound (0-100). Defaults to 100.
  */
-/obj/structure/overmap/ship/proc/ship_notify(message, category = "ALERT", alert_level = SHIP_NOTIFY_NOTICE, sound_file = null, volume = 100)
+/obj/structure/overmap/ship/ship_notify(message, category = "ALERT", alert_level = SHIP_NOTIFY_NOTICE, sound_file = null, volume = 100)
 	var/formatted
 	switch(alert_level)
 		if(SHIP_NOTIFY_DANGER)
@@ -920,6 +920,41 @@
 			var/sound/S = sound(sound_file)
 			S.volume = volume * (pref_volume / 100)
 			SEND_SOUND(crewmate, S)
+
+// ===== COMBAT TARGET API (see /obj/structure/overmap base hooks) =====
+
+/obj/structure/overmap/ship/is_combat_targetable()
+	return TRUE
+
+/obj/structure/overmap/ship/get_combat_target_areas()
+	return shuttle?.shuttle_areas
+
+/obj/structure/overmap/ship/get_combat_bounds()
+	if(!shuttle)
+		return null
+	var/list/bounds = shuttle.return_coords()
+	if(!bounds || bounds.len < 4)
+		return null
+	return list(min(bounds[1], bounds[3]), min(bounds[2], bounds[4]), max(bounds[1], bounds[3]), max(bounds[2], bounds[4]))
+
+/obj/structure/overmap/ship/combat_camera_can_view(turf/T)
+	if(!shuttle)
+		return FALSE
+	var/area/dest_area = get_area(T)
+	return dest_area && (dest_area in shuttle.shuttle_areas)
+
+/obj/structure/overmap/ship/get_combat_camera_turfs()
+	if(!shuttle?.shuttle_areas)
+		return null
+	. = list()
+	for(var/area/ship_area in shuttle.shuttle_areas)
+		for(var/turf/T in ship_area)
+			. += T
+
+/obj/structure/overmap/ship/get_combat_default_turf()
+	if(shuttle)
+		return get_turf(shuttle)
+	return null
 
 /**
  * Broadcasts a message as runechat above the ship on the overmap.
@@ -1505,9 +1540,8 @@
 						SEND_SIGNAL(other_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED_BY, src)
 
 			// Free the ship's hangar berth (the outpost itself never unloads — it's permanent)
-			if(istype(old_docked_location, /obj/structure/overmap/trader_outpost))
-				var/obj/structure/overmap/trader_outpost/outpost_place = old_docked_location
-				outpost_place.on_ship_undock_complete(src)
+			// (trader outposts and player outposts with a hangar elevator; no-op elsewhere)
+			old_docked_location?.on_ship_undock_complete(src)
 
 			// Handle space ruin dock flags and cleanup
 			if(istype(old_docked_location, /obj/structure/overmap/space_ruin))

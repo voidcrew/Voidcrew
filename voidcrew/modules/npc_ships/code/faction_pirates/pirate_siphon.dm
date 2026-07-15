@@ -545,7 +545,9 @@
 	else if(console?.target_ship)
 		data["has_target"] = TRUE
 		data["target_name"] = console.target_ship.name
-		data["target_credits"] = console.target_ship.ship_account?.account_balance || 0
+		// Console targets can also be player outposts, which hold no ship account
+		var/obj/structure/overmap/ship/console_target = console.target_ship
+		data["target_credits"] = istype(console_target) ? (console_target.ship_account?.account_balance || 0) : 0
 	else
 		data["has_target"] = FALSE
 		data["target_name"] = null

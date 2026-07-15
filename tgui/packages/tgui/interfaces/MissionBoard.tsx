@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import {
   Box,
@@ -20,12 +20,19 @@ import type { BooleanLike } from 'tgui-core/react';
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
 
+type RewardItem = {
+  name: string;
+  icon: string | null;
+  rare: BooleanLike;
+};
+
 type Mission = {
   ref: string;
   name: string;
   desc: string;
   author: string;
   value: number;
+  reward_items?: RewardItem[];
   reward_item: string | null;
   reward_item_icon: string | null;
   duration: number;
@@ -103,6 +110,15 @@ type Data = {
   has_claimed_player_bounty: BooleanLike;
   ship_balance: number;
   refresh_cooldown_remaining: number;
+  outpost_adverts: OutpostAdvert[];
+};
+
+type OutpostAdvert = {
+  name: string;
+  blurb: string;
+  x: number;
+  y: number;
+  remaining_minutes: number;
 };
 
 export const MissionBoard = () => {
@@ -138,10 +154,11 @@ const MissionBoardContent = () => {
     has_claimed_player_bounty,
     ship_balance,
     refresh_cooldown_remaining,
+    outpost_adverts = [],
   } = data;
 
   const [currentTab, setCurrentTab] = useState<
-    'available' | 'active' | 'bounties'
+    'available' | 'active' | 'bounties' | 'broadcasts'
   >('available');
 
   const huntingCount = bounties.filter((b) => b.is_hunting).length;
@@ -211,6 +228,13 @@ const MissionBoardContent = () => {
             icon="skull"
           >
             Bounties ({huntingCount}/{bounties.length})
+          </Tabs.Tab>
+          <Tabs.Tab
+            selected={currentTab === 'broadcasts'}
+            onClick={() => setCurrentTab('broadcasts')}
+            icon="satellite-dish"
+          >
+            Broadcasts ({outpost_adverts.length})
           </Tabs.Tab>
         </Tabs>
       </Stack.Item>
@@ -318,6 +342,42 @@ const MissionBoardContent = () => {
             </Section>
           </Section>
         )}
+
+        {currentTab === 'broadcasts' && (
+          <Section fill scrollable title="Outpost Broadcasts">
+            {outpost_adverts.length === 0 ? (
+              <NoticeBox>
+                No outposts are broadcasting right now. Player-founded outposts
+                can buy galaxy-wide listings from their management console.
+              </NoticeBox>
+            ) : (
+              <Stack vertical>
+                {outpost_adverts.map((advert) => (
+                  <Stack.Item key={`${advert.name}-${advert.x}-${advert.y}`}>
+                    <Section>
+                      <Stack align="center">
+                        <Stack.Item grow>
+                          <Box bold>{advert.name}</Box>
+                          <Box color="label" fontSize="0.9em">
+                            &quot;{advert.blurb}&quot;
+                          </Box>
+                        </Stack.Item>
+                        <Stack.Item textAlign="right">
+                          <Box bold>
+                            ({advert.x}, {advert.y})
+                          </Box>
+                          <Box color="label" fontSize="0.85em">
+                            {advert.remaining_minutes} min left
+                          </Box>
+                        </Stack.Item>
+                      </Stack>
+                    </Section>
+                  </Stack.Item>
+                ))}
+              </Stack>
+            )}
+          </Section>
+        )}
       </Stack.Item>
     </Stack>
   );
@@ -327,6 +387,64 @@ type MissionCardProps = {
   mission: Mission;
   isActive: boolean;
   padContents?: PadItem[];
+};
+
+/**
+ * Renders a mission's full payout — credits, each item in the reward bundle
+ * (rare picks accented), and vouchers — as " + "-joined segments. `full` spells
+ * out "credits" for the detail view; the compact form says "cr".
+ */
+const RewardSummary = (props: { mission: Mission; full?: boolean }) => {
+  const { mission, full } = props;
+  const items = mission.reward_items ?? [];
+  const segments: ReactNode[] = [];
+
+  if (mission.value > 0) {
+    segments.push(
+      <Box as="span" bold color="good">
+        {mission.value}
+        {full ? ' credits' : ' cr'}
+      </Box>,
+    );
+  }
+  for (const item of items) {
+    segments.push(
+      <Box as="span" bold color={item.rare ? 'orange' : 'average'}>
+        {item.icon && (
+          <img
+            src={`data:image/png;base64,${item.icon}`}
+            style={{
+              verticalAlign: 'middle',
+              marginRight: '4px',
+              maxHeight: '1.6em',
+              maxWidth: '1.6em',
+            }}
+          />
+        )}
+        {item.name}
+      </Box>,
+    );
+  }
+  if (mission.voucher_count) {
+    segments.push(
+      <Box as="span" bold color="gold">
+        {mission.voucher_count} trade voucher
+        {mission.voucher_count > 1 ? 's' : ''}
+      </Box>,
+    );
+  }
+
+  return (
+    <>
+      {segments.map((segment, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static, order-stable list
+        <Box as="span" key={index}>
+          {index > 0 && <Box as="span" color="label">{' + '}</Box>}
+          {segment}
+        </Box>
+      ))}
+    </>
+  );
 };
 
 const MissionCard = (props: MissionCardProps) => {
@@ -352,24 +470,7 @@ const MissionCard = (props: MissionCardProps) => {
           <Box inline color={mission.difficulty_color} mr={1}>
             [{mission.difficulty_name}]
           </Box>
-          <Box inline color="good" mr={1}>
-            {mission.value} cr
-          </Box>
-          {mission.reward_item && (
-            <Box inline color="average">
-              +{' '}
-              {mission.reward_item_icon && (
-                <img
-                  src={`data:image/png;base64,${mission.reward_item_icon}`}
-                  style={{
-                    verticalAlign: 'middle',
-                    marginRight: '4px',
-                  }}
-                />
-              )}
-              {mission.reward_item}
-            </Box>
-          )}
+          <RewardSummary mission={mission} />
         </Box>
       }
     >
@@ -383,32 +484,7 @@ const MissionCard = (props: MissionCardProps) => {
         <Box as="span" color="label">
           Rewards:{' '}
         </Box>
-        <Box as="span" color="good" bold>
-          {mission.value} credits
-        </Box>
-        {mission.reward_item && (
-          <Box as="span" color="average" bold>
-            {' '}
-            +{' '}
-            {mission.reward_item_icon && (
-              <img
-                src={`data:image/png;base64,${mission.reward_item_icon}`}
-                style={{
-                  verticalAlign: 'middle',
-                  marginRight: '4px',
-                }}
-              />
-            )}
-            {mission.reward_item}
-          </Box>
-        )}
-        {!!mission.voucher_count && (
-          <Box as="span" color="gold" bold>
-            {' '}
-            + {mission.voucher_count} trade voucher
-            {mission.voucher_count > 1 ? 's' : ''}
-          </Box>
-        )}
+        <RewardSummary mission={mission} full />
       </Box>
 
       {isActive && (

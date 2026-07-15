@@ -302,6 +302,21 @@
 			"category" = "Outposts",
 			"ref" = null,
 		))
+	// Advertising player outposts buy their way onto every helm chart for the
+	// advert's duration (see voidcrew/modules/player_outposts/outpost_adverts.dm)
+	for(var/datum/outpost_advert/advert as anything in GLOB.outpost_adverts)
+		var/dx = advert.coord_x - data["x"]
+		var/dy = advert.coord_y - data["y"]
+		var/dist = round(sqrt(dx * dx + dy * dy))
+		data["waypoints"] += list(list(
+			"name" = advert.outpost_name,
+			"x" = advert.coord_x,
+			"y" = advert.coord_y,
+			"dist" = dist,
+			"bearing" = overmap_delta_to_compass(dx, dy),
+			"category" = "Outposts",
+			"ref" = null,
+		))
 	if(current_ship.can_scan_ships())
 		var/ship_scan_range = data["sensorRange"]
 		for(var/obj/structure/overmap/ship/other as anything in SSovermap.simulated_ships)
@@ -339,6 +354,14 @@
 			"bearing" = overmap_delta_to_compass(dx, dy),
 			"category" = waypoint.category,
 			"ref" = REF(waypoint),
+		))
+	// Sealed rumors bought from traders, waiting on the reveal button
+	data["pendingRumors"] = list()
+	for(var/datum/rumor_chart/chart as anything in current_ship.pending_rumors)
+		data["pendingRumors"] += list(list(
+			"name" = chart.name,
+			"desc" = chart.desc,
+			"ref" = REF(chart),
 		))
 	data["heading"] = dir2text(current_ship.get_heading()) || "None"
 	data["speed"] = current_ship.get_speed()
@@ -656,6 +679,19 @@
 			var/datum/ship_waypoint/waypoint = locate(params["waypoint"]) in current_ship.waypoints
 			if(waypoint)
 				current_ship.delete_waypoint(waypoint)
+			return
+		if("reveal_rumor")
+			var/datum/rumor_chart/chart = locate(params["chart"]) in current_ship.pending_rumors
+			if(!chart)
+				return
+			var/obj/structure/overmap/space_ruin/ruin = current_ship.reveal_pending_rumor(chart)
+			if(!ruin)
+				say("ERROR: Unable to fix the rumor's coordinates. Retry shortly.")
+				playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
+				return
+			var/list/coords = ruin.get_relative_overmap_coords()
+			say("Rumor decrypted: rare signal fixed at ([coords[1]], [coords[2]]). Charted under Rumors.")
+			playsound(src, 'sound/machines/ping.ogg', 40)
 			return
 		if("reload_ship")
 			reload_ship()

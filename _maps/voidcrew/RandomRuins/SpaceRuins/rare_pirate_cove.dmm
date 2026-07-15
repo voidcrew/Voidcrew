@@ -1,0 +1,1652 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/emcloset,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ab" = (
+/obj/machinery/door/airlock/wood{
+	name = "bunkhouse"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"ac" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/paper/crumpled/bloody{
+	name = "last watch order";
+	default_raw_text = "Harrow is dead and the office is bolted. The release is on the other side of that lock, mocking us through the wall. Salvage crews will come sniffing soon enough. That is why the barricade. That is why me."
+	},
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"ad" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ae" = (
+/obj/machinery/light/small/red/directional/north,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"af" = (
+/turf/template_noop,
+/area/template_noop)
+"ag" = (
+/obj/effect/spawner/random/maintenance,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"ah" = (
+/obj/structure/sign/poster/contraband/random,
+/turf/closed/wall/mineral/wood,
+/area/ruin/space/has_grav/powered)
+"ai" = (
+/obj/machinery/door/airlock/wood{
+	name = "quartermaster's office"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"aj" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ak" = (
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"al" = (
+/obj/effect/spawner/random/trash/graffiti,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"am" = (
+/obj/structure/girder,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"an" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ao" = (
+/mob/living/basic/trooper/pirate/melee/space,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"ap" = (
+/obj/machinery/door/airlock{
+	name = "freight airlock"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aq" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"ar" = (
+/obj/machinery/door/poddoor{
+	id = "scuppers_vault";
+	name = "hoard vault door"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"as" = (
+/turf/closed/mineral/gold,
+/area/ruin/space/has_grav/powered)
+"at" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"au" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"av" = (
+/turf/closed/wall/mineral/wood,
+/area/ruin/space/has_grav/powered)
+"aw" = (
+/obj/machinery/door/airlock{
+	name = "gun room"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ax" = (
+/obj/effect/spawner/random/structure/crate_abandoned,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ay" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"az" = (
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"aA" = (
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"aB" = (
+/obj/structure/marker_beacon/burgundy,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"aC" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aD" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aE" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"aF" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aG" = (
+/obj/item/paper/crumpled{
+	name = "house rules";
+	default_raw_text = "THE SCUPPERS - HOUSE RULES. Berth fees due in coin or cargo. No colors past the airlock. No open flame in the sand. Disputes settle in the cantina, first blood only. The house counts the pot. The house is always square."
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aH" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/powered)
+"aI" = (
+/turf/closed/mineral/random,
+/area/ruin/space/has_grav/powered)
+"aJ" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/food_or_drink/booze,
+/obj/effect/spawner/random/food_or_drink/booze,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"aK" = (
+/obj/structure/barricade/wooden,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"aL" = (
+/mob/living/basic/trooper/pirate/ranged,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"aM" = (
+/obj/structure/sign/poster/contraband/random,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aN" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aO" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aP" = (
+/obj/structure/marker_beacon/burgundy,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aQ" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aR" = (
+/obj/machinery/door/airlock/wood{
+	name = "The Scuppers Cantina"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"aS" = (
+/obj/machinery/door/airlock/wood{
+	name = "stockroom"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"aT" = (
+/obj/structure/rack,
+/obj/item/clothing/mask/breath,
+/obj/item/tank/internals/oxygen{
+	pixel_x = 3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aU" = (
+/obj/structure/glowshroom/single,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"aV" = (
+/turf/closed/mineral,
+/area/ruin/space/has_grav/powered)
+"aW" = (
+/obj/machinery/light/small/red/directional/south,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/powered)
+"aX" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aY" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"aZ" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"bs" = (
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"bF" = (
+/obj/structure/closet/crate/zone_loot/plunder/rare,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"cb" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"cA" = (
+/obj/structure/closet/cabinet,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"cI" = (
+/obj/structure/dresser,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"df" = (
+/obj/structure/table/wood,
+/obj/item/stack/spacecash/c500{
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 6
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"ea" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"eB" = (
+/obj/item/ammo_casing/spent{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/ammo_casing/spent{
+	pixel_x = 5
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"eN" = (
+/obj/effect/turf_decal/box,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"he" = (
+/obj/structure/table/wood,
+/obj/item/stack/spacecash/c100{
+	pixel_y = 3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"hg" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/rum{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 5
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"hU" = (
+/obj/structure/safe,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"ig" = (
+/obj/effect/spawner/random/trash/grime,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ij" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"iv" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/reagent_containers/cup/glass/bottle/rum/aged,
+/obj/item/reagent_containers/cup/glass/bottle/absinthe/premium,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ju" = (
+/obj/machinery/light/small/red/directional/north,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"jX" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/clothing/head/costume/pirate{
+	pixel_y = 5
+	},
+/obj/item/clothing/glasses/eyepatch{
+	pixel_x = -4
+	},
+/obj/item/paper/crumpled/bloody{
+	name = "blood-smeared cipher card";
+	default_raw_text = "Release cipher for the hoard door. Memorized and burned - this card kept blank on purpose. If you are reading this off my body, the split is settled. - Q.M. Harrow"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"mX" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/stack/spacecash/c1000{
+	amount = 2
+	},
+/obj/item/reagent_containers/cup/glass/bottle/wine,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"nD" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"oi" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"pn" = (
+/mob/living/basic/trooper/pirate/ranged,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"rS" = (
+/obj/effect/turf_decal/caution{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"sK" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"tw" = (
+/obj/item/coin/gold/doubloon{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/obj/item/coin/gold/doubloon{
+	pixel_x = 4
+	},
+/obj/item/coin/silver/doubloon{
+	pixel_x = 1;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"uk" = (
+/obj/structure/fermenting_barrel,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"uy" = (
+/obj/item/stack/sheet/mineral/gold{
+	amount = 10
+	},
+/obj/item/stack/sheet/mineral/silver{
+	amount = 8;
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/box,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"uM" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/stack/rods{
+	amount = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"uN" = (
+/obj/effect/spawner/random/structure/chair_flipped,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"wb" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"xP" = (
+/obj/structure/bed,
+/obj/effect/spawner/random/bedsheet,
+/obj/item/paper/crumpled{
+	name = "deckhand's note";
+	default_raw_text = "Shooting started over the split and I hid in the bunks like a coward. The ones still walking do not know the door code either, they just will not admit it. If some crew ever cracks the vault - my share is under my pillow. Take it. I owe the house."
+	},
+/obj/item/coin/silver/doubloon{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"zn" = (
+/obj/item/stack/spacecash/c1000{
+	amount = 3
+	},
+/obj/item/coin/gold{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"zx" = (
+/obj/structure/table/wood,
+/obj/item/gun/ballistic/shotgun/doublebarrel{
+	pixel_y = 5
+	},
+/obj/item/storage/box/lethalshot{
+	pixel_y = -3
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"zD" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/spawner/random/entertainment/money_small,
+/obj/effect/spawner/random/entertainment/money_small,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"AM" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lantern{
+	pixel_y = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Bp" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Bq" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/food_or_drink/booze,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Bt" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/paper/crumpled/bloody{
+	name = "torn share-slip";
+	default_raw_text = "Harrow counts the take. Harrow keeps the book. Harrow says the split is fair. The book says the vault holds forty crews of plunder and we counted eleven crews at dock. Vote was called. Vote was guns."
+	},
+/obj/item/gun/ballistic/revolver{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/obj/item/ammo_casing/spent{
+	pixel_x = -5
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"DK" = (
+/obj/machinery/jukebox,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Ej" = (
+/mob/living/basic/trooper/pirate/melee,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Fd" = (
+/obj/structure/chair/stool/bar{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Fr" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Hl" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Hx" = (
+/mob/living/basic/trooper/pirate/ranged/space,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"JH" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Ke" = (
+/obj/item/stack/rods{
+	amount = 2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Kr" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/bottle/wine{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"KM" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"MH" = (
+/obj/structure/rack,
+/obj/item/weldingtool/largetank{
+	pixel_x = -3
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"MW" = (
+/obj/effect/decal/cleanable/glass,
+/obj/item/broken_bottle{
+	pixel_x = 3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"MZ" = (
+/obj/structure/table/wood,
+/obj/item/paper/crumpled{
+	name = "quartermaster's ledger - final entry";
+	default_raw_text = "They voted guns, so the hoard votes with me. Vault is sealed. The office lock answers to my hand and no other. The release button stays armed - one push, the day every share is squared, and not an hour before. Nobody gets a cut until every gun goes back in its rack. - Q.M. Harrow"
+	},
+/obj/item/pen{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Ni" = (
+/obj/machinery/light/warm/dim/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Oi" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"OX" = (
+/obj/structure/girder,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Pf" = (
+/obj/machinery/light/warm/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"QV" = (
+/obj/structure/rack,
+/obj/item/storage/box/lethalshot{
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Sk" = (
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck{
+	pixel_y = 4
+	},
+/obj/item/stack/spacecash/c100{
+	pixel_x = -4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"SN" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Uv" = (
+/mob/living/basic/trooper/pirate/ranged,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"UQ" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"VA" = (
+/obj/item/stack/sheet/mineral/gold{
+	amount = 5
+	},
+/obj/item/stack/sheet/mineral/diamond{
+	amount = 2;
+	pixel_x = 4;
+	pixel_y = 5
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Wv" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"WC" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"YH" = (
+/obj/structure/bed,
+/obj/effect/spawner/random/bedsheet,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Zl" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Zm" = (
+/obj/structure/bed,
+/obj/effect/spawner/random/bedsheet,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"ZC" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ZL" = (
+/obj/machinery/button/door/directional/east{
+	id = "scuppers_vault";
+	name = "vault release"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"ZT" = (
+/obj/structure/table/wood,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"ZW" = (
+/obj/structure/closet/crate,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+
+(1,1,1) = {"
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+"}
+(2,1,1) = {"
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+"}
+(3,1,1) = {"
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+aZ
+aX
+aZ
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+"}
+(4,1,1) = {"
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+at
+aj
+at
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+"}
+(5,1,1) = {"
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+aZ
+aF
+aZ
+aV
+aV
+aV
+af
+af
+af
+af
+af
+af
+af
+af
+af
+"}
+(6,1,1) = {"
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+aZ
+aP
+aZ
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+af
+af
+af
+af
+af
+"}
+(7,1,1) = {"
+af
+af
+af
+af
+af
+af
+af
+af
+af
+aZ
+aZ
+aZ
+an
+aZ
+aZ
+aZ
+aZ
+aV
+aV
+aV
+aV
+aV
+af
+af
+af
+af
+"}
+(8,1,1) = {"
+af
+af
+af
+af
+af
+af
+af
+aV
+aV
+aZ
+ax
+aD
+aC
+aT
+aa
+aN
+aZ
+aV
+aV
+aV
+aV
+aV
+aV
+af
+af
+af
+"}
+(9,1,1) = {"
+af
+af
+af
+aV
+aV
+aV
+aV
+aV
+aV
+aZ
+ad
+an
+an
+aG
+an
+aO
+aZ
+aV
+aV
+aV
+aV
+aV
+aV
+af
+af
+af
+"}
+(10,1,1) = {"
+af
+af
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aZ
+WC
+an
+sK
+Hx
+an
+OX
+aM
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+af
+af
+"}
+(11,1,1) = {"
+af
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aZ
+SN
+ZW
+aO
+an
+aO
+Ke
+aZ
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+af
+af
+"}
+(12,1,1) = {"
+af
+aV
+av
+av
+av
+av
+av
+av
+av
+aZ
+MH
+aO
+ZC
+ad
+KM
+ig
+aZ
+aZ
+aZ
+aZ
+aZ
+aV
+aV
+aV
+af
+af
+"}
+(13,1,1) = {"
+af
+aV
+av
+Zl
+uk
+Oi
+aY
+Fr
+av
+aZ
+aZ
+aZ
+ap
+aZ
+aZ
+aZ
+aZ
+Bp
+bs
+ig
+aZ
+aV
+aV
+aV
+aV
+af
+"}
+(14,1,1) = {"
+af
+aV
+av
+hg
+ay
+he
+Bt
+nD
+av
+aV
+aV
+aV
+aA
+aA
+aA
+aA
+aw
+rS
+eB
+an
+aZ
+aV
+aV
+aV
+aV
+af
+"}
+(15,1,1) = {"
+af
+aV
+ah
+Kr
+aY
+ZT
+Fd
+jX
+av
+aV
+aV
+aV
+aB
+aV
+aV
+au
+aZ
+Bp
+an
+Uv
+aZ
+aV
+aV
+aV
+aV
+af
+"}
+(16,1,1) = {"
+af
+aV
+av
+Bq
+ay
+ZT
+Fd
+JH
+aR
+aq
+aA
+aA
+aA
+aV
+aV
+al
+aZ
+QV
+aO
+uM
+aZ
+aV
+aV
+aV
+aV
+af
+"}
+(17,1,1) = {"
+af
+aV
+av
+ZT
+ay
+Wv
+Fd
+Ej
+av
+aV
+aV
+aV
+al
+aI
+aV
+aA
+aZ
+aZ
+aZ
+aZ
+aZ
+aV
+aV
+aV
+aV
+af
+"}
+(18,1,1) = {"
+af
+aV
+av
+Pf
+MW
+uN
+ay
+aY
+av
+aV
+aV
+aU
+au
+aV
+aI
+aA
+aU
+ag
+am
+aV
+aV
+aV
+aV
+aV
+aV
+af
+"}
+(19,1,1) = {"
+af
+aV
+av
+aY
+ay
+Sk
+wb
+ay
+av
+aV
+aV
+aA
+aB
+aV
+aV
+au
+aA
+ak
+aE
+aV
+aV
+aV
+aV
+aV
+aV
+af
+"}
+(20,1,1) = {"
+af
+aV
+av
+DK
+pn
+ea
+aY
+ay
+av
+aI
+aV
+aV
+au
+ao
+aV
+aA
+ao
+aA
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+af
+"}
+(21,1,1) = {"
+af
+aV
+av
+av
+aS
+av
+av
+av
+av
+aV
+aV
+aV
+au
+ag
+aI
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+af
+"}
+(22,1,1) = {"
+af
+aV
+aV
+av
+aY
+az
+av
+aV
+aV
+aV
+aV
+aV
+aB
+as
+aV
+aV
+av
+av
+av
+av
+av
+av
+aV
+aV
+aV
+af
+"}
+(23,1,1) = {"
+af
+aV
+aV
+av
+aY
+aJ
+av
+aV
+aV
+aV
+ae
+aA
+aA
+aA
+aA
+aA
+av
+hU
+aY
+ay
+ij
+av
+aV
+aV
+af
+af
+"}
+(24,1,1) = {"
+af
+aV
+aV
+av
+av
+av
+av
+aV
+aV
+aV
+aA
+aA
+aA
+ac
+aU
+aA
+ai
+aY
+MZ
+ay
+ay
+av
+aV
+aV
+af
+af
+"}
+(25,1,1) = {"
+af
+aV
+av
+av
+av
+ah
+av
+av
+av
+aV
+aA
+aK
+aK
+aK
+aA
+au
+av
+oi
+df
+ay
+aY
+ah
+aV
+aV
+af
+af
+"}
+(26,1,1) = {"
+af
+aV
+av
+YH
+cb
+ay
+aY
+cA
+av
+aA
+aA
+aA
+aL
+aA
+aW
+aV
+av
+UQ
+ay
+aY
+ay
+av
+aV
+aV
+af
+af
+"}
+(27,1,1) = {"
+af
+aV
+av
+Zm
+aY
+ay
+ay
+Fr
+av
+aA
+aH
+aH
+ar
+aH
+aH
+aH
+av
+Hl
+ZL
+Fr
+zD
+av
+aV
+af
+af
+af
+"}
+(28,1,1) = {"
+af
+aV
+av
+cI
+ay
+Ej
+ay
+ay
+ab
+aA
+aH
+uy
+tw
+aQ
+zn
+aH
+av
+av
+av
+av
+av
+av
+aV
+af
+af
+af
+"}
+(29,1,1) = {"
+af
+aV
+ah
+Ni
+Fr
+AM
+ay
+ay
+av
+aV
+aH
+ju
+bF
+aQ
+aQ
+aH
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+af
+af
+af
+"}
+(30,1,1) = {"
+af
+aV
+av
+xP
+aY
+aY
+pn
+aY
+av
+as
+aH
+iv
+eN
+aQ
+eN
+aH
+aV
+aV
+aV
+aV
+aV
+aV
+af
+af
+af
+af
+"}
+(31,1,1) = {"
+af
+aV
+av
+Zm
+ay
+aY
+ay
+az
+av
+aV
+aH
+mX
+aQ
+zx
+VA
+aH
+aV
+aV
+aV
+aV
+af
+af
+af
+af
+af
+af
+"}
+(32,1,1) = {"
+af
+aV
+av
+av
+av
+ah
+av
+av
+av
+aV
+aH
+aH
+aH
+aH
+aH
+aH
+aV
+aV
+af
+af
+af
+af
+af
+af
+af
+af
+"}
+(33,1,1) = {"
+af
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+af
+af
+af
+af
+af
+af
+af
+af
+af
+"}
+(34,1,1) = {"
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+"}

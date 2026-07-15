@@ -1,0 +1,1766 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/turf/closed/wall/r_wall/rust,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ab" = (
+/obj/structure/girder,
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ac" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Bosun's Store"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ad" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Crew Berthing"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ae" = (
+/obj/structure/frame/computer{
+	anchored = 1;
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"af" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ag" = (
+/obj/structure/sign/warning/vacuum/external,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ah" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ai" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Washroom"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aj" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ak" = (
+/obj/item/radio/intercom/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"al" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/gloaming)
+"am" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/gloaming)
+"an" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Cargo Hold"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ao" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ap" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Mess"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aq" = (
+/obj/structure/barricade/wooden,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ar" = (
+/obj/effect/spawner/random/structure/crate_abandoned,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"as" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/gloaming)
+"at" = (
+/obj/machinery/conveyor{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"au" = (
+/obj/structure/extinguisher_cabinet/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"av" = (
+/obj/machinery/power/shuttle_engine/propulsion{
+	dir = 4
+	},
+/turf/open/floor/plating/airless,
+/area/template_noop)
+"aw" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ax" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ay" = (
+/obj/effect/decal/remains/human,
+/obj/item/flashlight,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"az" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Cargo Loading Hatch"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aA" = (
+/turf/closed/wall/rust,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aB" = (
+/obj/machinery/light/broken/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aC" = (
+/obj/machinery/light/broken/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aE" = (
+/obj/structure/table,
+/obj/item/paper/crumpled{
+	name = "final helm log";
+	default_raw_text = "Helm log, CFV Gloaming, mid-burn. Main bus dropped at 0341. Backups at 0355. Handhelds after that, one at a time, always the one nearest the hold first. Battery chemistry does not fail by proximity. Cut thrust to one quarter. If we run dark, it has nothing left to take from us. If you are reading this, you brought a light aboard. That was a mistake."
+	},
+/obj/item/pen{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aF" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aG" = (
+/obj/machinery/conveyor{
+	dir = 1
+	},
+/obj/effect/turf_decal/caution{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aH" = (
+/obj/effect/turf_decal/caution,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aI" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 2
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aJ" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aK" = (
+/obj/effect/spawner/random/trash/garbage,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aL" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aM" = (
+/obj/structure/rack,
+/obj/item/clothing/mask/breath,
+/obj/item/tank/internals/emergency_oxygen/engi{
+	pixel_x = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aN" = (
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aO" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aP" = (
+/obj/structure/filingcabinet,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aQ" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aR" = (
+/turf/template_noop,
+/area/template_noop)
+"aS" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aT" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aU" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aV" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aW" = (
+/obj/machinery/portable_atmospherics/canister,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aX" = (
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aY" = (
+/obj/effect/turf_decal/caution{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"aZ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"bT" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"cz" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"cH" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/stack/rods/fifty,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"dX" = (
+/obj/effect/spawner/random/trash/garbage,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"eC" = (
+/obj/structure/floodlight_frame/completed,
+/mob/living/basic/vestige_patron/stranger,
+/obj/effect/decal/cleanable/ash/large,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"gs" = (
+/obj/structure/table,
+/obj/item/paper/crumpled{
+	name = "cook's tally";
+	default_raw_text = "Six candles left in the tin. Voss says something leans over him every time one gutters out, and I have stopped telling him he is wrong. We eat inside the ring where the light overlaps. Nobody sits with their back to the hold anymore. Five candles. I am not going to write four."
+	},
+/obj/item/pen{
+	pixel_x = 6
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"gH" = (
+/obj/structure/table,
+/obj/item/flashlight/lantern,
+/obj/item/trash/candle{
+	pixel_x = -4
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"gS" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"hP" = (
+/obj/item/chair,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"iu" = (
+/obj/effect/decal/cleanable/ash/large,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"iM" = (
+/obj/structure/closet,
+/obj/effect/spawner/random/clothing,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"iQ" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/engineering/tool,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 5
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"mB" = (
+/obj/structure/closet,
+/obj/effect/spawner/random/clothing,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"nI" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/gloaming)
+"nU" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ok" = (
+/obj/structure/ore_box,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"om" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ou" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"oE" = (
+/obj/effect/spawner/random/structure/crate_abandoned,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"oS" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"pH" = (
+/obj/structure/bed,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"qE" = (
+/obj/machinery/light/broken/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"qY" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"sa" = (
+/obj/machinery/conveyor{
+	dir = 1
+	},
+/obj/item/paper/crumpled{
+	name = "outbound manifest";
+	default_raw_text = "CFV GLOAMING - OUTBOUND CONSIGNMENT, WAYPOINT VERGE. 212 crates general freight. 40 crates lighting consumables (tube, bulb, floodlight element). Bosun's addendum: recount came up short again. Nothing missing but the lights."
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"sj" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"tk" = (
+/obj/effect/spawner/random/clothing,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ua" = (
+/obj/structure/dresser,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ur" = (
+/obj/structure/ore_box,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"uF" = (
+/obj/machinery/washing_machine,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/gloaming)
+"vY" = (
+/obj/effect/spawner/random/structure/chair_flipped,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"wo" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/spawner/random/clothing,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"wF" = (
+/obj/item/broken_bottle,
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"zz" = (
+/obj/machinery/light/broken/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"zY" = (
+/obj/structure/closet/crate/engineering,
+/obj/effect/spawner/random/engineering/tool,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Aq" = (
+/obj/item/trash/candle,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"BU" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/gloaming)
+"En" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"EE" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"EZ" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/maintenance/three,
+/obj/item/stack/sheet/iron/fifty{
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Fp" = (
+/obj/machinery/power/shuttle_engine/heater{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"FC" = (
+/obj/effect/decal/remains/human,
+/obj/item/trash/candle{
+	pixel_x = -6
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"GW" = (
+/obj/structure/sink/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"GX" = (
+/obj/machinery/conveyor{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Hv" = (
+/obj/effect/spawner/random/structure/closet_maintenance,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Ir" = (
+/obj/structure/spider/stickyweb,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Ix" = (
+/obj/effect/spawner/random/entertainment/plushie,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"IA" = (
+/obj/effect/decal/cleanable/ash/large,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Jg" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/spawner/random/food_or_drink/snack,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Jk" = (
+/obj/structure/closet/crate,
+/obj/item/storage/box/lights/mixed,
+/obj/item/storage/box/lights/bulbs,
+/obj/item/light/tube,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"JK" = (
+/obj/effect/spawner/random/trash/garbage,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"JU" = (
+/obj/item/stack/rods,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"KE" = (
+/obj/structure/mop_bucket,
+/obj/item/mop,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"KH" = (
+/obj/structure/table,
+/obj/effect/spawner/random/entertainment/deck,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"KL" = (
+/obj/structure/bed,
+/obj/item/bedsheet,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"LR" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Ml" = (
+/obj/structure/table,
+/obj/item/trash/candle,
+/obj/item/trash/candle{
+	pixel_x = 5;
+	pixel_y = 3
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"MM" = (
+/obj/machinery/light/broken/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/gloaming)
+"MS" = (
+/obj/structure/table,
+/obj/effect/spawner/random/food_or_drink/dinner,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Nd" = (
+/obj/structure/tank_holder/extinguisher,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Nt" = (
+/obj/structure/closet/crate/freezer,
+/obj/effect/spawner/random/food_or_drink/snack,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"NO" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Oa" = (
+/obj/structure/closet/crate/internals,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Oh" = (
+/obj/structure/toilet{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Ok" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"OG" = (
+/obj/structure/reagent_dispensers/fueltank,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Pe" = (
+/obj/structure/table,
+/obj/effect/spawner/random/entertainment/plushie,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"PN" = (
+/obj/structure/closet/crate,
+/obj/effect/spawner/random/maintenance/two,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"PW" = (
+/obj/structure/closet/crate,
+/obj/effect/spawner/random/maintenance/two,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"QV" = (
+/obj/structure/bed,
+/obj/item/bedsheet,
+/obj/effect/decal/remains/human,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Sk" = (
+/obj/structure/sink/directional/south,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/gloaming)
+"SN" = (
+/obj/structure/spider/stickyweb,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Vv" = (
+/obj/structure/closet/crate/secure/loot,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"VP" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+"Yv" = (
+/obj/item/stack/cable_coil,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/gloaming)
+"ZB" = (
+/obj/structure/rack,
+/obj/item/stack/rods/fifty,
+/obj/item/stack/sheet/iron/fifty{
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/gloaming)
+
+(1,1,1) = {"
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+"}
+(2,1,1) = {"
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+"}
+(3,1,1) = {"
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+as
+as
+as
+aU
+aU
+as
+as
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+"}
+(4,1,1) = {"
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+as
+aP
+ae
+aJ
+ae
+aK
+as
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+"}
+(5,1,1) = {"
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+as
+ak
+aw
+af
+aj
+aJ
+as
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+"}
+(6,1,1) = {"
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+as
+aE
+aJ
+aT
+af
+aF
+as
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+"}
+(7,1,1) = {"
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+as
+af
+aJ
+aJ
+aJ
+aS
+as
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+"}
+(8,1,1) = {"
+aR
+aR
+aR
+as
+as
+as
+as
+as
+as
+as
+as
+as
+as
+as
+ao
+ao
+as
+as
+as
+aL
+as
+as
+as
+as
+as
+as
+aR
+aR
+aR
+"}
+(9,1,1) = {"
+aR
+aR
+aR
+as
+Oh
+BU
+LR
+MM
+tk
+uF
+as
+ax
+aC
+aZ
+aZ
+ao
+aZ
+ao
+aZ
+ao
+aZ
+ar
+ao
+aZ
+ao
+as
+aR
+aR
+aR
+"}
+(10,1,1) = {"
+aR
+aR
+aR
+as
+Sk
+aN
+BU
+nI
+BU
+aN
+ai
+aZ
+ao
+ao
+ao
+aZ
+ao
+aZ
+ao
+aZ
+ao
+aZ
+ay
+ao
+aZ
+as
+aR
+aR
+aR
+"}
+(11,1,1) = {"
+aR
+aR
+aR
+as
+as
+as
+as
+as
+as
+as
+as
+ao
+aZ
+as
+as
+as
+as
+aH
+aH
+as
+aA
+as
+as
+aZ
+aV
+as
+aR
+aR
+aR
+"}
+(12,1,1) = {"
+aR
+aR
+aR
+as
+Nt
+FC
+om
+Aq
+aX
+zz
+aA
+ah
+au
+as
+bT
+Jk
+Jg
+aJ
+af
+aJ
+af
+aF
+as
+ao
+aZ
+as
+aR
+aR
+aR
+"}
+(13,1,1) = {"
+aR
+aR
+aR
+as
+MS
+om
+hP
+sj
+om
+om
+as
+ar
+ao
+as
+NO
+PW
+oE
+af
+aJ
+af
+aJ
+af
+as
+ao
+ar
+as
+aR
+aR
+aR
+"}
+(14,1,1) = {"
+aR
+aR
+aR
+as
+GW
+aX
+Ml
+gs
+Ok
+aX
+ap
+ao
+aZ
+an
+aJ
+af
+aJ
+aJ
+af
+aJ
+af
+aJ
+as
+aZ
+ao
+as
+aR
+aR
+aR
+"}
+(15,1,1) = {"
+aR
+aR
+aR
+as
+oS
+om
+gH
+KH
+nU
+om
+aL
+aZ
+ao
+aA
+af
+aJ
+af
+af
+aJ
+af
+aJ
+af
+as
+ao
+aZ
+as
+aR
+aR
+aR
+"}
+(16,1,1) = {"
+aR
+aR
+aR
+as
+aX
+Aq
+cz
+vY
+om
+aX
+as
+aD
+aZ
+as
+aJ
+aT
+VP
+VP
+VP
+aJ
+af
+aJ
+as
+ar
+aV
+as
+aR
+aR
+aR
+"}
+(17,1,1) = {"
+aR
+aR
+aR
+as
+En
+aX
+om
+aX
+wF
+Aq
+as
+ah
+ao
+as
+af
+aJ
+aJ
+eC
+iu
+aT
+aJ
+af
+as
+aZ
+ao
+as
+aR
+aR
+aR
+"}
+(18,1,1) = {"
+aR
+aR
+aR
+as
+as
+as
+aL
+as
+as
+as
+as
+aZ
+aZ
+as
+aJ
+af
+VP
+VP
+VP
+af
+af
+aJ
+as
+ao
+ar
+as
+aR
+aR
+aR
+"}
+(19,1,1) = {"
+aR
+aR
+aR
+aI
+aY
+aO
+aZ
+aZ
+aZ
+aZ
+ao
+ao
+aD
+as
+af
+aJ
+aJ
+aJ
+aJ
+aJ
+qY
+aF
+as
+aZ
+aZ
+as
+aR
+aR
+aR
+"}
+(20,1,1) = {"
+aR
+aR
+aR
+as
+as
+as
+aM
+aZ
+aZ
+aZ
+ao
+ao
+ao
+as
+NO
+ur
+PW
+af
+aJ
+af
+aJ
+af
+as
+ao
+ao
+as
+aR
+aR
+aR
+"}
+(21,1,1) = {"
+aR
+aR
+aR
+as
+as
+as
+as
+am
+as
+as
+as
+aZ
+aZ
+as
+af
+ZB
+zY
+aJ
+af
+sa
+GX
+GX
+at
+at
+aG
+az
+aR
+aR
+aR
+"}
+(22,1,1) = {"
+aR
+aR
+aR
+as
+KL
+om
+aX
+Ix
+zz
+mB
+as
+aD
+ar
+as
+aJ
+af
+af
+af
+aJ
+af
+Oa
+Ir
+as
+aq
+ao
+ag
+aR
+aR
+aR
+"}
+(23,1,1) = {"
+aR
+aR
+aR
+as
+ua
+aX
+Aq
+om
+aX
+Hv
+as
+ah
+ao
+as
+EE
+aJ
+aT
+aJ
+af
+aJ
+PW
+Jg
+as
+ab
+aZ
+as
+aR
+aR
+aR
+"}
+(24,1,1) = {"
+aR
+aR
+aR
+aL
+QV
+om
+aX
+aX
+om
+aX
+ad
+aZ
+aZ
+as
+as
+as
+as
+aH
+aH
+as
+aL
+as
+as
+aZ
+aV
+as
+aR
+aR
+aR
+"}
+(25,1,1) = {"
+aR
+aR
+aR
+as
+Pe
+aX
+om
+om
+aX
+KE
+as
+ao
+ao
+ar
+ao
+aZ
+ao
+ao
+aZ
+aZ
+ao
+aZ
+ao
+ao
+aZ
+as
+aR
+aR
+aR
+"}
+(26,1,1) = {"
+aR
+aR
+aR
+as
+pH
+qE
+aX
+wo
+om
+dX
+as
+aQ
+aZ
+aB
+aZ
+ao
+ao
+aZ
+ao
+ao
+aW
+aB
+aZ
+aZ
+ao
+as
+aR
+aR
+aR
+"}
+(27,1,1) = {"
+aR
+aR
+aR
+as
+as
+as
+as
+al
+al
+al
+al
+al
+al
+al
+al
+aa
+aH
+aH
+al
+al
+al
+al
+as
+as
+as
+as
+aR
+aR
+aR
+"}
+(28,1,1) = {"
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+al
+EZ
+PN
+SN
+al
+ok
+OG
+aC
+ao
+ao
+ao
+iQ
+aW
+JK
+al
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+"}
+(29,1,1) = {"
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+al
+ah
+ao
+ao
+ac
+ao
+aZ
+IA
+aZ
+ao
+gS
+aZ
+ao
+ab
+al
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+"}
+(30,1,1) = {"
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+al
+aZ
+Vv
+cH
+al
+Nd
+gS
+aZ
+Yv
+aZ
+ao
+IA
+aZ
+gS
+al
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+"}
+(31,1,1) = {"
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+al
+iM
+aZ
+aZ
+al
+aW
+Fp
+JU
+aZ
+Fp
+aZ
+ao
+Fp
+ou
+al
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+"}
+(32,1,1) = {"
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+"}
+(33,1,1) = {"
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+av
+aR
+aR
+av
+aR
+aR
+av
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+"}
+(34,1,1) = {"
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+"}

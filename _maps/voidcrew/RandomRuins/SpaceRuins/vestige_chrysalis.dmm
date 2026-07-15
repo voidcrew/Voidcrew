@@ -1,0 +1,1846 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ab" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ac" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ad" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ae" = (
+/obj/structure/sign/warning/no_smoking,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"af" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ag" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ah" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ai" = (
+/obj/machinery/light/broken/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aj" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ak" = (
+/obj/structure/alien/weeds,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"al" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"am" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"an" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ao" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/structure/marker_beacon/burgundy,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ap" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aq" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ar" = (
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"as" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/machinery/light/broken/directional/south,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"at" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"au" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/machinery/light/broken/directional/north,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"av" = (
+/obj/structure/girder/displaced,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aw" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ax" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ay" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"az" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aA" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aB" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Morgue"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aC" = (
+/turf/template_noop,
+/area/template_noop)
+"aD" = (
+/obj/machinery/door/airlock/medical/glass{
+	name = "Recovery Ward"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aE" = (
+/obj/machinery/door/airlock/medical{
+	name = "Operating Theater"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aF" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aG" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aH" = (
+/obj/machinery/door/airlock{
+	name = "Crew Berths"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aI" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aJ" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aK" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/obj/machinery/light/broken/directional/west,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aL" = (
+/obj/effect/mapping_helpers/broken_floor,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aM" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aO" = (
+/obj/effect/decal/cleanable/blood/gibs/old,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aP" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aQ" = (
+/obj/structure/sign/warning/biohazard,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aR" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aS" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aT" = (
+/obj/machinery/door/airlock/medical/glass{
+	name = "Medical Bay"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aU" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aV" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aW" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aX" = (
+/turf/closed/wall/rust,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aY" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"aZ" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"bf" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"by" = (
+/obj/effect/decal/cleanable/blood/gibs/torso,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"cj" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ck" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"df" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"dw" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"dM" = (
+/obj/machinery/computer/operating{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"dX" = (
+/obj/effect/spawner/random/trash/grime,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ep" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ex" = (
+/obj/machinery/iv_drip,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"eI" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/medical/medkit_rare,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"gP" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"hv" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"hD" = (
+/obj/effect/gibspawner/human/bodypartless,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"hH" = (
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"hW" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/remains/human,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ij" = (
+/obj/machinery/light/small/broken/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"is" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"kC" = (
+/obj/structure/alien/weeds,
+/obj/item/food/meat/slab/human,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"kF" = (
+/obj/item/flashlight/flare/candle/infinite,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"lt" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"lx" = (
+/obj/structure/table/optable,
+/obj/effect/decal/cleanable/blood/gibs/torso,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"lG" = (
+/obj/item/scalpel{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"nn" = (
+/obj/effect/spawner/random/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"nt" = (
+/obj/machinery/iv_drip,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"nz" = (
+/obj/structure/closet,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"nB" = (
+/obj/structure/bodycontainer/morgue{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"pl" = (
+/obj/item/paper/crumpled{
+	name = "unsent letter";
+	default_raw_text = "It wears him like a coat. It knocks with his knuckles, it asks in his voice. Marta answered her door. I am not going to answer mine. The candle stays lit so I can see the gap under the door."
+	},
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"pp" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/insectguts,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"qw" = (
+/obj/structure/table/glass,
+/obj/effect/spawner/random/trash/food_packaging,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"qx" = (
+/obj/effect/spawner/random/trash/grime,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"qF" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"rU" = (
+/obj/vehicle/ridden/wheelchair{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"sm" = (
+/obj/effect/spawner/random/medical/patient_stretcher,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"sE" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/medical/supplies,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"sK" = (
+/obj/structure/alien/weeds,
+/mob/living/basic/headslug,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"sV" = (
+/obj/structure/bed/medical/emergency,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ug" = (
+/obj/structure/alien/weeds,
+/obj/structure/marker_beacon/fuchsia,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"vE" = (
+/obj/structure/table,
+/obj/item/bodybag,
+/obj/item/paper/crumpled{
+	name = "morgue intake ledger";
+	default_raw_text = "Tray 1: HULL, J. Tray 2: OKAFOR, B. Tray 3: empty. Tray 3 was not empty yesterday. Tray 4: DR WREN — entry struck through — tray 4 is empty. They open from the inside now. I have stopped locking them."
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"vV" = (
+/obj/effect/mob_spawn/corpse/human/assistant,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"wt" = (
+/obj/item/food/meat/slab/human,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"wB" = (
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"xe" = (
+/obj/item/food/meat/slab/human,
+/obj/item/food/meat/slab/human{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"xT" = (
+/obj/effect/decal/cleanable/blood/splatter,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"xX" = (
+/obj/structure/table/glass,
+/obj/effect/spawner/random/medical/surgery_tool,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"yQ" = (
+/obj/effect/turf_decal/caution{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"za" = (
+/obj/effect/spawner/random/trash/mess,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"zt" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"AS" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"AY" = (
+/obj/structure/table/glass,
+/obj/effect/spawner/random/medical/surgery_tool,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Bd" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"BF" = (
+/obj/effect/mob_spawn/corpse/human/doctor,
+/obj/effect/decal/cleanable/blood/gibs/old,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"CX" = (
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/obj/effect/mob_spawn/corpse/human/assistant,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Ep" = (
+/obj/item/kirbyplants/random,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"EZ" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/blood/gibs/body,
+/mob/living/basic/vestige_patron/chrysalis,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Fx" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Go" = (
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"GA" = (
+/obj/structure/chair/office{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"GJ" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall/rust,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"GM" = (
+/obj/effect/decal/cleanable/insectguts,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"HI" = (
+/obj/effect/decal/cleanable/blood/gibs,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"In" = (
+/obj/structure/alien/weeds,
+/obj/structure/glowshroom/single,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Ix" = (
+/obj/structure/alien/weeds,
+/obj/item/food/meat/slab/human,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"IO" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/blood/gibs/old,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Ja" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"JX" = (
+/obj/structure/table/glass,
+/obj/item/paper/crumpled{
+	name = "intake log — final page";
+	default_raw_text = "Day 224: 30 souls aboard. Day 225: 29 souls — Dr. Wren lost stabilizing the boarding casualty. Day 226: 30 souls. Count corrected and signed, Dr. Wren."
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"KQ" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/spawner/random/trash/grime,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"KZ" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/blood/gibs,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Lo" = (
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Lw" = (
+/obj/structure/girder/displaced,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Lz" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/blood/gibs/down,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"LG" = (
+/obj/structure/sign/warning/biohazard,
+/turf/closed/wall/rust,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"LH" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"LN" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Mi" = (
+/obj/machinery/light/small/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"MB" = (
+/obj/structure/dresser,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Ni" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/remains/human,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Nj" = (
+/obj/structure/alien/resin/wall,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Nv" = (
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Ox" = (
+/obj/structure/alien/resin/wall,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"OL" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"OP" = (
+/obj/effect/spawner/random/medical/injector,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"OZ" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/insectguts,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Pf" = (
+/obj/structure/alien/weeds,
+/obj/effect/spawner/random/medical/organs,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"PS" = (
+/obj/effect/spawner/random/trash/garbage,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Qq" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Rd" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Rl" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Rp" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/blood/gibs/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Rx" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"SC" = (
+/obj/structure/alien/weeds,
+/mob/living/basic/headslug,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"TI" = (
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"TR" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Ub" = (
+/obj/structure/alien/resin/membrane,
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"UU" = (
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Vv" = (
+/obj/structure/closet/body_bag,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"VF" = (
+/obj/structure/table/glass,
+/obj/effect/spawner/random/medical/minor_healing,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"VO" = (
+/obj/structure/alien/weeds,
+/obj/structure/glowshroom/single,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Wn" = (
+/obj/machinery/light/broken/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Ws" = (
+/obj/structure/sink/directional/south,
+/obj/structure/mirror/broken/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"WK" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/blood/gibs,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"WY" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"Yf" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ZF" = (
+/obj/effect/spawner/random/structure/chair_flipped,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+"ZG" = (
+/obj/structure/sink/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/chrysalis)
+
+(1,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+"}
+(2,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+"}
+(3,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+"}
+(4,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aq
+ab
+aq
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+"}
+(5,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aq
+aS
+aq
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+"}
+(6,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aq
+aq
+aq
+am
+aq
+aq
+aq
+ad
+aq
+aq
+aq
+aq
+aI
+aq
+aq
+aX
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+"}
+(7,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aq
+TI
+Ja
+Ja
+nz
+Rd
+aq
+aU
+ao
+aq
+Rx
+nB
+nB
+nB
+dw
+aX
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+"}
+(8,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aq
+MB
+za
+ZF
+Ja
+Ja
+aZ
+au
+aJ
+aq
+Vv
+by
+LN
+Rl
+qx
+aX
+aC
+aC
+aC
+aX
+aX
+aX
+aX
+aX
+aX
+aX
+aC
+aC
+"}
+(9,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aq
+CX
+aj
+Rd
+Nv
+ZF
+aq
+ax
+az
+aq
+dw
+cj
+BF
+dw
+Rl
+GJ
+aC
+aC
+aC
+aX
+aX
+Ox
+pp
+Ox
+aX
+aX
+aC
+aC
+"}
+(10,1,1) = {"
+aC
+aq
+aq
+aq
+aq
+aq
+kF
+pl
+ep
+Rd
+bf
+aH
+an
+ah
+aB
+WY
+Go
+dw
+WY
+OL
+aX
+aX
+GJ
+aX
+aX
+Ox
+Ni
+UU
+WK
+Ox
+aX
+aC
+aC
+"}
+(11,1,1) = {"
+aC
+aq
+Mi
+GA
+Rd
+aq
+zt
+Rd
+nn
+dX
+Ja
+aq
+aa
+aJ
+aq
+Rl
+vE
+Rl
+Go
+dw
+aX
+df
+kC
+Yf
+aX
+Ox
+Ix
+UU
+sK
+is
+aX
+Nj
+aC
+"}
+(12,1,1) = {"
+aC
+am
+sE
+Nv
+Nv
+aZ
+hH
+qF
+Ja
+Rd
+Nv
+aq
+ax
+aY
+aQ
+ij
+Rl
+Vv
+LH
+Rl
+aX
+Rp
+hW
+ak
+aX
+In
+UU
+ug
+UU
+UU
+aX
+Nj
+aC
+"}
+(13,1,1) = {"
+aC
+am
+rU
+za
+Ja
+aq
+aq
+aq
+aq
+aq
+aq
+aq
+aU
+az
+aq
+aq
+aq
+aq
+aq
+aq
+aX
+ak
+SC
+al
+Ub
+UU
+Pf
+UU
+Ix
+WK
+aX
+aC
+aC
+"}
+(14,1,1) = {"
+aC
+aF
+yQ
+ar
+ck
+aT
+at
+aG
+aK
+ac
+at
+aN
+an
+ah
+aR
+aP
+aL
+aO
+ak
+al
+Rp
+al
+ak
+Lz
+is
+gP
+lt
+is
+lt
+In
+aX
+aC
+aC
+"}
+(15,1,1) = {"
+aC
+aF
+yQ
+Ja
+Ja
+aT
+af
+ag
+aw
+aA
+aw
+aj
+ax
+aJ
+ap
+aV
+ai
+aP
+aV
+ak
+ak
+Qq
+KZ
+ak
+UU
+is
+UU
+EZ
+Pf
+is
+aX
+aC
+aC
+"}
+(16,1,1) = {"
+aC
+am
+sm
+aj
+Rd
+aq
+aq
+aq
+aZ
+aq
+aq
+aq
+aa
+ay
+aq
+aq
+aq
+aq
+aq
+aq
+aX
+VO
+ak
+Bd
+Ub
+UU
+In
+is
+UU
+pp
+aX
+aC
+aC
+"}
+(17,1,1) = {"
+aC
+am
+JX
+qw
+TR
+aq
+TI
+Ja
+sV
+nz
+Rd
+aQ
+ax
+az
+aq
+AS
+Rd
+eI
+Rd
+df
+aX
+Bd
+df
+kC
+aX
+IO
+UU
+UU
+Ni
+UU
+aX
+Lw
+aC
+"}
+(18,1,1) = {"
+aC
+aq
+KQ
+Ep
+PS
+aq
+nt
+Nv
+Ja
+Rd
+OP
+aq
+au
+aJ
+aq
+ZG
+aj
+Ja
+lG
+Ja
+aX
+OZ
+VO
+Bd
+aX
+Ox
+sK
+ug
+In
+Ox
+aX
+aC
+aC
+"}
+(19,1,1) = {"
+aC
+aq
+aq
+aq
+aq
+aq
+CX
+aj
+Nv
+Ja
+Rd
+aq
+an
+as
+aq
+AY
+Nv
+HI
+xT
+Nv
+aX
+aX
+GJ
+aX
+aX
+Ox
+WK
+UU
+IO
+Ox
+aX
+aC
+aC
+"}
+(20,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aq
+Ws
+Rd
+Fx
+Rd
+Fx
+aD
+ax
+ah
+aE
+Fx
+aj
+lx
+hD
+aj
+LG
+aC
+aC
+aC
+aX
+aX
+Ox
+Ix
+Ox
+aX
+aX
+aC
+aC
+"}
+(21,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+ae
+wB
+nt
+Rd
+Nv
+aj
+aq
+aU
+az
+aq
+xX
+Ja
+xe
+wt
+Rd
+aX
+aC
+aC
+aC
+aX
+aX
+aX
+aX
+aX
+aX
+aX
+aC
+aC
+"}
+(22,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aq
+VF
+Rd
+za
+Ja
+Ja
+aq
+aa
+ay
+aI
+dM
+Rd
+Nv
+Ja
+GM
+aX
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+"}
+(23,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aq
+Lo
+vV
+Rd
+Rd
+Rd
+aZ
+ax
+aJ
+aq
+Ja
+ex
+Rd
+za
+Ja
+aX
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+"}
+(24,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aq
+KQ
+Ja
+Wn
+Ja
+qF
+aq
+an
+az
+aq
+KQ
+Ja
+Ja
+ai
+Rd
+aX
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+"}
+(25,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aq
+aq
+am
+aq
+am
+aq
+aq
+ax
+ah
+aq
+aq
+aq
+am
+aq
+aq
+aX
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+"}
+(26,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aq
+av
+aW
+aX
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+"}
+(27,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aX
+aX
+aX
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+"}
+(28,1,1) = {"
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+"}

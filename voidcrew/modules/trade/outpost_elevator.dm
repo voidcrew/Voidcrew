@@ -24,8 +24,9 @@
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	mouse_over_pointer = MOUSE_HAND_POINTER
 
-	/// Outpost whose floors we serve (wired by the lobby/berth load scans)
-	var/obj/structure/overmap/trader_outpost/outpost
+	/// Berth host whose floors we serve (wired by the lobby/berth load scans, or
+	/// by the player-outpost construction console when it places an elevator)
+	var/obj/structure/overmap/outpost
 	/// The berth we sit in, or null for the concourse panel
 	var/datum/outpost_berth/berth
 	/// Whether this is the concourse (floor 0) panel
@@ -106,7 +107,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/outpost_elevator, 32)
 			"your_ship" = FALSE,
 		))
 		for(var/i in 1 to OUTPOST_MAX_BERTHS)
-			var/datum/outpost_berth/slot = outpost.berths[i]
+			// berths stays null on hosts that haven't berthed a ship yet
+			var/datum/outpost_berth/slot = LAZYACCESS(outpost.berths, i)
 			var/is_yours = FALSE
 			if(slot?.ship?.ship_team && user?.mind?.ship_teams)
 				is_yours = (slot.ship.ship_team in user.mind.ship_teams)

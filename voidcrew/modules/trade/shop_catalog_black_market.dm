@@ -10,7 +10,7 @@
 	outpost_name = "\improper Undertow Exchange"
 	outpost_desc = "A heavily armored den of fences and quartermasters who don't ask questions. Somehow, nobody has ever managed to rob it."
 	trader_name = "Vex"
-	trader_holoimage_type = /datum/preset_holoimage/outpost_trader/black_market
+	trader_outfit = /datum/outfit/job/detective
 	trader_voice_pack = "goon.speak_2"
 	trader_voice_pitch = 0.92
 	categories = list(
@@ -50,7 +50,9 @@
 		/datum/shop_sku/black_market/stimulants,
 		// Intel & Charts
 		/datum/shop_sku/black_market/star_chart,
-		/datum/shop_sku/rumor/black_market,
+		/datum/shop_sku/ruin_chart/armory,
+		/datum/shop_sku/ruin_chart/pirate_cove,
+		/datum/shop_sku/ruin_chart/reliquary,
 		// Blueprints
 		/datum/shop_sku/black_market/saw_blueprint,
 		/datum/shop_sku/black_market/sniper_blueprint,
@@ -314,11 +316,32 @@
 	stock_min = 1
 	stock_max = 2
 
-// Vex's tips run expensive and deep — red-band signals only
-/datum/shop_sku/rumor/black_market
-	name = "whisper from the deep lanes"
-	desc = "Vex hears things. Terrible things, profitable things. One uncharted red-band signal, marked on your helm. What's parked there is your problem."
-	price_credits = 500
+// Vex's whispers name a specific prize now: each chart is one rare ruin that
+// exists nowhere until somebody buys the tip and reveals it from their helm.
+// One buyer per rumor, ever — the trail goes cold for everyone else.
+/datum/shop_sku/ruin_chart/armory
+	name = "whisper from the deep lanes: 'Bastion-6'"
+	desc = "Vex trades you a coordinates-shaped rumor: a mothballed NT munitions barge, vault never emptied, security grid never stood down. Uploaded sealed to your helm — reveal it when your crew is ready to race for it."
+	price_vouchers = 3
+	ruin_template_path = /datum/map_template/ruin/space/rare/armory
+	rumor_name = "Vex's whisper: Bastion-6"
+	rumor_desc = "A deadstock munitions barge parked dark in the red band. The grid is still live. The vault is still full."
+
+/datum/shop_sku/ruin_chart/pirate_cove
+	name = "whisper from the deep lanes: 'The Scuppers'"
+	desc = "Vex trades you a coordinates-shaped rumor: a smugglers' freeport dug into a hollow rock, crews that shot each other over the split, and a quartermaster's hoard still sealed behind its blast door. Uploaded sealed to your helm — reveal it when your crew is ready to race for it."
+	price_vouchers = 3
+	ruin_template_path = /datum/map_template/ruin/space/rare/pirate_cove
+	rumor_name = "Vex's whisper: The Scuppers"
+	rumor_desc = "A freeport gone quiet in a hollow asteroid. The crews settled the split with guns. The hoard never got divided — and the survivors are still holding the door."
+
+/datum/shop_sku/ruin_chart/reliquary
+	name = "whisper from the deep lanes: 'Pilgrim's Vow'"
+	desc = "Vex trades you a coordinates-shaped rumor: a votive barge that went dark on pilgrimage a generation ago, congregation still keeping the service, crypt never once robbed. Uploaded sealed to your helm — reveal it when your crew is ready to kneel."
+	price_vouchers = 3
+	ruin_template_path = /datum/map_template/ruin/space/rare/reliquary
+	rumor_name = "Vex's whisper: Pilgrim's Vow"
+	rumor_desc = "A pilgrim barge adrift with every candle still burning. The service never ended. The grave-goods never left."
 
 // ===== BLUEPRINTS =====
 // The only trader route to these guns; build them via their schematics.

@@ -208,6 +208,13 @@ SUBSYSTEM_DEF(overmap_zones)
 		for(var/datum/space_level/level as anything in planet.mapzone.z_levels)
 			if(level.z_value == T.z)
 				return planet
+	// Player outposts: same whole-z-level pattern as planets
+	for(var/obj/structure/overmap/dynamic/player_outpost/player_outpost as anything in GLOB.player_outposts)
+		if(!player_outpost.mapzone)
+			continue
+		for(var/datum/space_level/level as anything in player_outpost.mapzone.z_levels)
+			if(level.z_value == T.z)
+				return player_outpost
 	return null
 
 /**

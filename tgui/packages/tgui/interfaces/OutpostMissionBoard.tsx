@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import {
   Box,
   Button,
@@ -12,14 +14,19 @@ import type { BooleanLike } from 'tgui-core/react';
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
 
+type RewardItem = {
+  name: string;
+  icon: string | null;
+  rare: BooleanLike;
+};
+
 type Offer = {
   ref: string;
   name: string;
   desc: string;
   author: string;
   value: number;
-  reward_item: string | null;
-  reward_item_icon: string | null;
+  reward_items?: RewardItem[];
   voucher_count: number;
   difficulty_name: string;
   difficulty_color: string;
@@ -62,35 +69,59 @@ const archetypeIcon = (archetype: string) =>
 
 const RewardLine = (props: { offer: Offer }) => {
   const { offer } = props;
+  const items = offer.reward_items ?? [];
+  const segments: ReactNode[] = [];
+
+  if (offer.value > 0) {
+    segments.push(
+      <Box as="span" bold color="gold">
+        {offer.value} cr
+      </Box>,
+    );
+  }
+  for (const item of items) {
+    segments.push(
+      <Box as="span" bold color={item.rare ? 'orange' : 'teal'}>
+        {item.icon && (
+          <img
+            src={`data:image/png;base64,${item.icon}`}
+            style={{
+              verticalAlign: 'middle',
+              marginRight: '4px',
+              maxHeight: '1.6em',
+              maxWidth: '1.6em',
+            }}
+          />
+        )}
+        {item.name}
+      </Box>,
+    );
+  }
+  if (offer.voucher_count > 0) {
+    segments.push(
+      <Box as="span" bold color="purple">
+        {offer.voucher_count} voucher{offer.voucher_count === 1 ? '' : 's'}
+      </Box>,
+    );
+  }
+
   return (
     <Box>
       <Box inline color="label">
         Pays:{' '}
       </Box>
-      {offer.voucher_count > 0 && (
-        <Box inline bold color="purple">
-          {offer.voucher_count} voucher{offer.voucher_count === 1 ? '' : 's'}
-        </Box>
-      )}
-      {offer.voucher_count > 0 && (offer.value > 0 || offer.reward_item) && (
+      {segments.length === 0 ? (
         <Box inline color="label">
-          {' + '}
+          goods
         </Box>
-      )}
-      {offer.value > 0 && (
-        <Box inline bold color="gold">
-          {offer.value} cr
-        </Box>
-      )}
-      {offer.value > 0 && offer.reward_item && (
-        <Box inline color="label">
-          {' + '}
-        </Box>
-      )}
-      {offer.reward_item && (
-        <Box inline bold color="teal">
-          {offer.reward_item}
-        </Box>
+      ) : (
+        segments.map((segment, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static, order-stable list
+          <Box as="span" key={index}>
+            {index > 0 && <Box as="span" color="label">{' + '}</Box>}
+            {segment}
+          </Box>
+        ))
       )}
     </Box>
   );

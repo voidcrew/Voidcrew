@@ -13,10 +13,10 @@
 
 	/// Our ship reference
 	var/obj/structure/overmap/ship/current_ship
-	/// Currently targeted enemy ship (fully locked)
-	var/obj/structure/overmap/ship/target_ship
-	/// Ship we're currently acquiring a lock on
-	var/obj/structure/overmap/ship/targeting_ship
+	/// Currently locked target: an enemy ship or a raidable player outpost
+	var/obj/structure/overmap/target_ship
+	/// Target we're currently acquiring a lock on
+	var/obj/structure/overmap/targeting_ship
 	/// Are we currently acquiring a target lock?
 	var/is_targeting = FALSE
 	/// World time when targeting started

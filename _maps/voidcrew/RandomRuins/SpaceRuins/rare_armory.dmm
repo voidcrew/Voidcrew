@@ -1,0 +1,1216 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ab" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/box/zipties{
+	pixel_y = 4
+	},
+/obj/item/paper/crumpled{
+	name = "duty log";
+	default_raw_text = "0834: grid armed for decomm transfer. 0851: grid flagged the transfer team as intruders. 0852: bolts dropped. Ferris is still in the gallery. do not go in the gallery."
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ac" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/obj/item/paper/crumpled/bloody{
+	name = "Ferris' note";
+	default_raw_text = "the slits. watch the slits."
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ad" = (
+/obj/machinery/porta_turret/syndicate/energy/heavy{
+	name = "heavy asset-denial turret"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ae" = (
+/obj/structure/sign/warning/no_smoking,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"af" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ag" = (
+/obj/structure/closet/crate/secure/weapon{
+	name = "deadstock crate"
+	},
+/obj/item/storage/box/lethalshot,
+/obj/item/storage/box/beanbag,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ah" = (
+/obj/effect/turf_decal/caution{
+	dir = 1
+	},
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/paper/crumpled/bloody{
+	name = "final entry";
+	default_raw_text = "Grid flagged us mid-decomm. Chen died at the checkpoint, Ferris in the gallery. The south wall is the only plate that isn't reinforced - we were cutting into our own vault when the bots found us. If you are reading this: finish the cut. Take everything. NT owes us that much."
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ai" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aj" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ak" = (
+/obj/structure/rack,
+/obj/item/clothing/head/helmet/alt{
+	pixel_y = 4
+	},
+/obj/item/clothing/head/helmet/alt{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"al" = (
+/obj/machinery/door/poddoor{
+	id = "bastion_vault";
+	name = "armory vault door"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"am" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"an" = (
+/obj/structure/rack,
+/obj/item/clothing/mask/breath,
+/obj/item/tank/internals/emergency_oxygen/engi{
+	pixel_x = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ao" = (
+/obj/structure/closet/emcloset,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ap" = (
+/obj/item/weldingtool/largetank{
+	pixel_x = -3
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aq" = (
+/mob/living/basic/hivebot/range,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ar" = (
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"as" = (
+/obj/structure/closet/crate/secure/weapon{
+	name = "deadstock crate"
+	},
+/obj/item/gun/ballistic/automatic/wt550,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"at" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"au" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"av" = (
+/obj/structure/rack,
+/obj/item/storage/box/flashbangs{
+	pixel_y = 4
+	},
+/obj/item/storage/box/handcuffs{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aw" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ax" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ay" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/paper/crumpled/bloody{
+	name = "scrawled note";
+	default_raw_text = "tried to reset the grid from the checkpoint. it reset me instead. vault code died with the captain. cut your way in. sorry."
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"az" = (
+/obj/structure/rack,
+/obj/item/gun/energy/e_gun{
+	pixel_y = 5
+	},
+/obj/item/gun/energy/e_gun{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aA" = (
+/obj/structure/rack,
+/obj/item/gun/ballistic/shotgun/riot{
+	pixel_y = 4
+	},
+/obj/item/storage/box/lethalshot{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/item/storage/box/rubbershot{
+	pixel_x = -5;
+	pixel_y = -3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aB" = (
+/turf/template_noop,
+/area/template_noop)
+"aC" = (
+/obj/machinery/door/airlock/highsecurity{
+	name = "Gallery Access"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aD" = (
+/obj/structure/sign/warning/secure_area,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/powered)
+"aE" = (
+/obj/machinery/door/airlock/highsecurity{
+	name = "Vault Antechamber"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aF" = (
+/obj/structure/closet/crate,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aG" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aH" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aI" = (
+/obj/item/gun/energy/e_gun/mini{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aJ" = (
+/obj/structure/rack,
+/obj/item/gun/energy/laser{
+	pixel_y = 5
+	},
+/obj/item/gun/energy/laser{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aK" = (
+/obj/machinery/button/door/directional/west{
+	id = "bastion_vault";
+	name = "vault door control"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aL" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/powered)
+"aM" = (
+/obj/effect/turf_decal/box,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aN" = (
+/obj/structure/girder,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aO" = (
+/obj/machinery/porta_turret/syndicate/energy{
+	name = "asset-denial turret"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aP" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aQ" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aR" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aS" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aT" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aU" = (
+/obj/structure/sign/poster/official/nanotrasen_logo,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aV" = (
+/obj/machinery/light/small/red/directional/north,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aW" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/armor/bulletproof{
+	pixel_y = 4
+	},
+/obj/item/clothing/suit/armor/bulletproof{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aX" = (
+/obj/machinery/door/airlock{
+	name = "Checkpoint"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aY" = (
+/obj/item/stack/sheet/plasteel{
+	amount = 6
+	},
+/obj/item/stack/rods{
+	amount = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aZ" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"cq" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"gA" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"na" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ns" = (
+/obj/effect/decal/cleanable/blood/gibs/robot_debris,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ql" = (
+/mob/living/basic/hivebot,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"qs" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"rs" = (
+/mob/living/basic/hivebot/mechanic,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"sp" = (
+/obj/structure/sign/warning/electric_shock,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"uP" = (
+/obj/structure/frame/machine,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"xg" = (
+/mob/living/basic/hivebot/rapid,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"CF" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Ge" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"GB" = (
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"HI" = (
+/mob/living/basic/hivebot/strong,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"KO" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Lk" = (
+/obj/effect/spawner/random/trash,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Ta" = (
+/obj/machinery/door/airlock/maintenance,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Tc" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Vz" = (
+/obj/structure/girder,
+/obj/item/stack/rods{
+	amount = 2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Xs" = (
+/obj/structure/rack,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 3
+	},
+/obj/item/crowbar/large,
+/obj/item/grenade/c4,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+
+(1,1,1) = {"
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(2,1,1) = {"
+aB
+aB
+aB
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+Ge
+aR
+aR
+aR
+aR
+aR
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(3,1,1) = {"
+aB
+aB
+aB
+aU
+aG
+ar
+ay
+aj
+aX
+au
+aR
+CF
+aR
+aZ
+aR
+aZ
+aZ
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(4,1,1) = {"
+aB
+aB
+aB
+aR
+ab
+af
+aI
+af
+at
+ao
+aR
+cq
+aR
+aZ
+aR
+aZ
+KO
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(5,1,1) = {"
+aB
+aB
+aB
+aL
+aL
+aC
+aL
+aL
+aR
+aZ
+an
+aZ
+aZ
+aF
+aR
+aZ
+aZ
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(6,1,1) = {"
+aB
+aB
+aB
+aL
+aH
+aH
+aH
+aL
+aR
+am
+aM
+aZ
+ns
+aZ
+aR
+am
+aZ
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(7,1,1) = {"
+aB
+aB
+aL
+aL
+aV
+ax
+aQ
+aD
+aR
+aZ
+aM
+aZ
+aZ
+aZ
+Ta
+aZ
+aZ
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(8,1,1) = {"
+aB
+aB
+aL
+aO
+ax
+ax
+ax
+aL
+aR
+aZ
+aZ
+ql
+aZ
+Tc
+aR
+aZ
+Lk
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(9,1,1) = {"
+aB
+aB
+aL
+aL
+ax
+aa
+ax
+aL
+aR
+aZ
+aZ
+aZ
+aZ
+KO
+aR
+GB
+aZ
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(10,1,1) = {"
+aB
+aB
+aB
+aL
+ax
+aa
+ax
+aO
+aR
+aZ
+aq
+aZ
+aZ
+aZ
+aR
+aZ
+aZ
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(11,1,1) = {"
+aB
+aB
+aL
+aL
+ax
+ac
+ax
+aL
+aR
+aF
+aZ
+aZ
+Vz
+Vz
+aR
+Lk
+aZ
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(12,1,1) = {"
+aB
+aB
+aL
+aO
+ax
+ax
+ax
+aL
+aR
+aZ
+aZ
+aZ
+aZ
+aZ
+aR
+aZ
+aZ
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(13,1,1) = {"
+aB
+aB
+aL
+aL
+aV
+ax
+ax
+aL
+aR
+aR
+aR
+qs
+aR
+aR
+aR
+KO
+aZ
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(14,1,1) = {"
+aB
+aB
+aB
+aL
+aP
+aP
+aP
+aL
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aZ
+ns
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(15,1,1) = {"
+aB
+aB
+aB
+aL
+aL
+aE
+aL
+aL
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+xg
+aZ
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(16,1,1) = {"
+aB
+aB
+aB
+aL
+ax
+ax
+af
+aL
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+am
+aZ
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(17,1,1) = {"
+aB
+aB
+aB
+aL
+aV
+ax
+ax
+aL
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aZ
+aZ
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(18,1,1) = {"
+aB
+aB
+aB
+aL
+ax
+ax
+ax
+aL
+aR
+aR
+ae
+aR
+aR
+aR
+aR
+aZ
+aZ
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(19,1,1) = {"
+aB
+aL
+aL
+aL
+aL
+al
+aL
+aL
+aL
+aZ
+aZ
+aZ
+aZ
+aZ
+aR
+aZ
+GB
+aR
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(20,1,1) = {"
+aB
+aL
+az
+aT
+ax
+aH
+aK
+ax
+aL
+ap
+na
+aZ
+aZ
+aZ
+aR
+aZ
+aZ
+aR
+aR
+sp
+aR
+aR
+aR
+aB
+"}
+(21,1,1) = {"
+aB
+aL
+aJ
+aT
+ax
+ax
+ax
+ax
+aR
+ah
+gA
+gA
+aZ
+aZ
+aR
+am
+aZ
+aR
+uP
+aZ
+aZ
+ns
+aR
+aB
+"}
+(22,1,1) = {"
+aB
+aL
+aA
+aT
+ax
+ax
+ax
+ax
+aL
+aN
+Xs
+aZ
+aZ
+aZ
+Ta
+aZ
+KO
+aR
+am
+aZ
+aq
+aZ
+aR
+aB
+"}
+(23,1,1) = {"
+aB
+aL
+ai
+aT
+ax
+ax
+ax
+ax
+aD
+aY
+aZ
+aZ
+KO
+aZ
+aR
+aZ
+aZ
+aR
+aZ
+aZ
+aZ
+aZ
+aR
+aB
+"}
+(24,1,1) = {"
+aB
+aL
+aW
+aT
+ax
+ax
+ax
+aw
+aL
+am
+aZ
+aZ
+aZ
+Tc
+qs
+KO
+aZ
+Ta
+aZ
+HI
+aZ
+Tc
+aR
+aB
+"}
+(25,1,1) = {"
+aB
+aL
+ak
+aT
+ax
+ad
+ax
+ax
+aL
+aZ
+aZ
+aZ
+aZ
+KO
+aR
+aZ
+aZ
+aR
+rs
+aZ
+aZ
+aZ
+aR
+aB
+"}
+(26,1,1) = {"
+aB
+aL
+av
+aT
+ax
+ax
+ax
+ag
+aL
+aZ
+aZ
+aZ
+aZ
+aZ
+aR
+KO
+aZ
+aR
+aZ
+ns
+uP
+aN
+aR
+aB
+"}
+(27,1,1) = {"
+aB
+aL
+as
+aT
+aG
+aS
+ax
+ax
+aL
+aR
+aR
+qs
+aR
+aR
+aR
+aZ
+aZ
+aR
+aF
+CF
+aZ
+aZ
+aR
+aB
+"}
+(28,1,1) = {"
+aB
+aL
+aL
+aL
+aD
+aL
+aL
+aL
+aL
+aB
+aB
+aB
+aB
+aB
+aB
+aR
+aR
+aR
+aR
+Ge
+aR
+aR
+aR
+aB
+"}
+(29,1,1) = {"
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+"}
+(30,1,1) = {"
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+"}

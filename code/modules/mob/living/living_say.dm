@@ -29,6 +29,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	// Misc
 	RADIO_KEY_AI_PRIVATE = RADIO_CHANNEL_AI_PRIVATE, // AI Upload channel
 	RADIO_KEY_ENTERTAINMENT = RADIO_CHANNEL_ENTERTAINMENT, // Entertainment monitors
+	RADIO_KEY_WIDEBAND = RADIO_CHANNEL_WIDEBAND, // VOIDCREW EDIT ADDITION - galaxy-wide hailing channel
 
 
 	//kinda localization -- rastaf0

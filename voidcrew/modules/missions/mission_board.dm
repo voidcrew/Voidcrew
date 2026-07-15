@@ -138,6 +138,17 @@
 	data["has_claimed_player_bounty"] = SSbounty?.ship_has_claimed_player_bounty(ship) || FALSE
 	data["ship_balance"] = ship.ship_account?.account_balance || 0
 
+	// Live player-outpost advertisements (see voidcrew/modules/player_outposts/outpost_adverts.dm)
+	data["outpost_adverts"] = list()
+	for(var/datum/outpost_advert/advert as anything in GLOB.outpost_adverts)
+		data["outpost_adverts"] += list(list(
+			"name" = advert.outpost_name,
+			"blurb" = advert.blurb,
+			"x" = advert.coord_x,
+			"y" = advert.coord_y,
+			"remaining_minutes" = CEILING(advert.get_remaining_seconds() / 60, 1),
+		))
+
 	return data
 
 /obj/machinery/computer/mission_board/ui_act(action, params, datum/tgui/ui)

@@ -1,0 +1,1531 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/medical,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ab" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ac" = (
+/obj/machinery/light/cold/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ad" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/item/radio/intercom/directional/north,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ae" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/machinery/button/door/directional/north{
+	id = "meridian_quarantine";
+	name = "quarantine seal override"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"af" = (
+/obj/machinery/door/poddoor{
+	id = "meridian_quarantine";
+	name = "quarantine seal"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ag" = (
+/obj/structure/bed/medical,
+/obj/item/bedsheet/medical,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ah" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ai" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aj" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/spawner/random/medical/patient_stretcher,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ak" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"al" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"am" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/powered)
+"an" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Morgue"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ao" = (
+/obj/effect/spawner/random/trash/grime,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ap" = (
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aq" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/machinery/light/cold/directional/north,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ar" = (
+/obj/machinery/light/broken/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"as" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"at" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"au" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"av" = (
+/obj/structure/filingcabinet/chestdrawer,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aw" = (
+/turf/template_noop,
+/area/template_noop)
+"ax" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ay" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"az" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/machinery/light/broken/directional/south,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aA" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aB" = (
+/obj/structure/table/glass,
+/obj/effect/spawner/random/medical/injector,
+/obj/item/healthanalyzer{
+	pixel_y = 5
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aC" = (
+/obj/structure/table/reinforced,
+/obj/structure/desk_bell{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/storage/pill_bottle/penacid{
+	pixel_x = 5
+	},
+/obj/item/paper/crumpled{
+	name = "dispensary directive";
+	default_raw_text = "Directive 7-40: rationing suspended for the duration. Dispense on demand, log nothing, keep the window open. Nobody has come to the window in two days. I restocked the shelves anyway. That is the procedure."
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aD" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/cup/bottle/epinephrine{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/bottle/multiver{
+	pixel_x = 1;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/bottle/salglu_solution{
+	pixel_x = 7;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aE" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/medical/supplies,
+/obj/item/storage/box/medipens{
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aF" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aG" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/vehicle/ridden/wheelchair{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aH" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/medical/medkit,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aI" = (
+/obj/structure/table/glass,
+/obj/item/reagent_containers/cup/beaker{
+	pixel_x = 5
+	},
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_x = -4
+	},
+/obj/item/reagent_containers/dropper,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aJ" = (
+/obj/machinery/vending/medical,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aK" = (
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aL" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aM" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aN" = (
+/obj/structure/sign/warning/biohazard,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/powered)
+"aO" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/medical/medkit,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aP" = (
+/obj/structure/sign/warning/no_smoking,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aQ" = (
+/obj/machinery/door/airlock/medical{
+	name = "Operating Theater"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aR" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aS" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Morgue Loading Hatch"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aT" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/structure/rack,
+/obj/item/clothing/mask/breath,
+/obj/item/tank/internals/emergency_oxygen/engi{
+	pixel_x = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aU" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/item/paper/crumpled{
+	name = "quarantine order 12-C";
+	default_raw_text = "By authority of quarantine directive 12-C the aft ward is sealed as of this hour. Procedure requires an officer on the contaminated side and I will not order anyone else through, so the override stays keyed to this panel and I stay with my patients. To whoever finds the Meridian: the stock in there is not worth what is in there with it. LEAVE IT SHUT. - QO E. Halvorsen"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aV" = (
+/obj/machinery/door/airlock/medical/glass{
+	name = "Pharmacy"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aW" = (
+/obj/machinery/door/airlock/medical/glass{
+	name = "Ward"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aX" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aY" = (
+/obj/structure/table/reinforced,
+/obj/item/folder/white{
+	pixel_x = -4
+	},
+/obj/item/reagent_containers/cup/bottle/morphine{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/pen{
+	pixel_x = 2;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aZ" = (
+/obj/machinery/door/airlock/medical/glass{
+	name = "Triage"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"cr" = (
+/obj/item/clipboard,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ds" = (
+/obj/structure/bodycontainer/morgue{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"el" = (
+/obj/machinery/vending/wallmed/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"fs" = (
+/obj/item/kirbyplants/random,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"fy" = (
+/obj/effect/spawner/random/medical/minor_healing,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"fX" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/bottle/atropine{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/bottle/salglu_solution{
+	pixel_x = 5
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"gD" = (
+/obj/effect/spawner/random/medical/patient_stretcher,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"hM" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"iC" = (
+/obj/structure/table/reinforced,
+/obj/structure/desk_bell{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/folder/white{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"iX" = (
+/obj/structure/table/reinforced,
+/obj/item/paper/crumpled{
+	name = "triage intake log";
+	default_raw_text = "T+9h: 41 intake, 3 discharged. T+16h: 62 intake, none discharged. Out of amber tags - command says use the marker. T+22h: out of everything. It does not matter anymore. Everyone is red."
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"jl" = (
+/obj/structure/closet/crate/zone_loot/medical/rare,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"jo" = (
+/obj/structure/table/reinforced,
+/obj/item/bodybag,
+/obj/item/bodybag{
+	pixel_y = 4
+	},
+/obj/item/paper/crumpled{
+	name = "morgue intake ledger";
+	default_raw_text = "T+31h: trays full. Procedure says one occupant to a tray. Amended per CMO: two to a tray. T+40h: three. The CMO is in tray four. I am logging this so somebody knows we kept the ledger to the end."
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"jA" = (
+/obj/machinery/light/cold/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"jZ" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ke" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"kn" = (
+/obj/machinery/smartfridge/organ,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"kt" = (
+/obj/structure/table/optable,
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"kF" = (
+/obj/effect/decal/cleanable/blood/gibs/old,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"kJ" = (
+/obj/item/scalpel{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"kK" = (
+/obj/machinery/iv_drip,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"lz" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"lJ" = (
+/mob/living/basic/zombie,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ne" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"nm" = (
+/obj/machinery/light/cold/directional/east,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"oz" = (
+/obj/machinery/light/broken/directional/east,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"oP" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"pk" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"rA" = (
+/obj/machinery/computer/operating{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"sE" = (
+/obj/structure/closet/crate/zone_loot/medical,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"sR" = (
+/obj/item/paper/crumpled/bloody{
+	name = "operative record - final";
+	default_raw_text = "0412: arrest on the table. Compressions continued forty minutes past protocol. I signed the certificate myself. 0455: the certificate is wrong. She sat up. I closed her incision before I ran. She earned that much."
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ut" = (
+/obj/structure/table/glass,
+/obj/item/paper/crumpled{
+	name = "rounds note";
+	default_raw_text = "Bed 6 stopped breathing at 0300. Bed 6 was walking again at 0320. Doubled restraints hold, so far. Keep the curtains drawn - they stay quiet when they cannot see us."
+	},
+/obj/item/storage/pill_bottle/probital{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"yh" = (
+/obj/structure/closet/crate/freezer/blood,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"yF" = (
+/obj/effect/decal/cleanable/blood/gibs/old,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"AO" = (
+/obj/effect/spawner/surgery_tray/full/deployed,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Bg" = (
+/obj/structure/curtain,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"BE" = (
+/obj/item/circular_saw{
+	pixel_x = -5
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Cz" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Dk" = (
+/obj/structure/bed/medical,
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Eq" = (
+/obj/machinery/defibrillator_mount/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Ge" = (
+/obj/effect/decal/cleanable/vomit/old,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Hk" = (
+/mob/living/basic/zombie/rotten,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Ht" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Il" = (
+/obj/structure/filingcabinet/chestdrawer,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"KQ" = (
+/obj/machinery/light/small/red/directional/east,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Le" = (
+/obj/structure/table/reinforced,
+/obj/item/tank/internals/anesthetic{
+	pixel_x = -3
+	},
+/obj/item/tank/internals/anesthetic{
+	pixel_x = 3
+	},
+/obj/item/clothing/mask/breath/muzzle{
+	pixel_y = -4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"LJ" = (
+/obj/machinery/light/small/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Mp" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Mz" = (
+/mob/living/basic/zombie/rotten/assistant,
+/obj/effect/decal/cleanable/vomit/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"QH" = (
+/obj/effect/decal/cleanable/blood/gibs/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"QW" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"RN" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Morgue"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Si" = (
+/obj/item/bodybag,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"SB" = (
+/mob/living/basic/zombie/rotten,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"SF" = (
+/obj/machinery/vending/wallmed/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"SJ" = (
+/obj/vehicle/ridden/wheelchair{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Vj" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/reagent_containers/hypospray/medipen/survival{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"VJ" = (
+/mob/living/basic/zombie/rotten/assistant,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Wc" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/clipboard{
+	name = "quarantine watch log";
+	pixel_x = -5
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"WO" = (
+/obj/structure/sink/directional/east,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Xg" = (
+/obj/structure/table/glass,
+/obj/effect/spawner/random/medical/organs,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Xj" = (
+/obj/effect/decal/cleanable/vomit/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"XO" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"YH" = (
+/obj/effect/spawner/random/structure/chair_flipped,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Zh" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ZJ" = (
+/obj/structure/bed/medical,
+/obj/item/bedsheet/medical,
+/obj/machinery/defibrillator_mount/directional/north,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ZP" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/blue/anticorner/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+
+(1,1,1) = {"
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+"}
+(2,1,1) = {"
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+"}
+(3,1,1) = {"
+aw
+aw
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aA
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aw
+aw
+aw
+aw
+"}
+(4,1,1) = {"
+aw
+aw
+ai
+aH
+aK
+ar
+aJ
+aR
+av
+ai
+aM
+ai
+ab
+iX
+aK
+SF
+aK
+ap
+fs
+ai
+aw
+aw
+aw
+aw
+"}
+(5,1,1) = {"
+aw
+aw
+ai
+aO
+aK
+aI
+ao
+aK
+aK
+ai
+aL
+ai
+ab
+iC
+aK
+aK
+Ge
+aK
+aK
+ai
+aw
+aw
+aw
+aw
+"}
+(6,1,1) = {"
+aw
+aw
+ai
+aD
+aK
+aK
+aK
+aK
+aK
+aV
+ah
+aT
+ai
+Il
+aK
+gD
+aK
+aK
+aR
+ai
+aw
+aw
+aw
+aw
+"}
+(7,1,1) = {"
+aw
+aw
+ai
+aE
+aK
+aB
+aK
+aR
+aC
+ab
+aX
+ax
+aZ
+aK
+YH
+aK
+aK
+Ht
+aK
+ai
+aw
+aw
+aw
+aw
+"}
+(8,1,1) = {"
+aw
+aw
+ai
+ac
+aK
+aK
+aR
+aK
+aY
+ab
+ah
+as
+ai
+ZP
+aK
+VJ
+gD
+aK
+XO
+ai
+aw
+aw
+aw
+aw
+"}
+(9,1,1) = {"
+aw
+aw
+ai
+aa
+aR
+aK
+aK
+aK
+at
+ai
+aq
+ay
+ai
+ZP
+oP
+aK
+Zh
+aK
+aK
+ai
+aw
+aw
+aw
+aw
+"}
+(10,1,1) = {"
+aw
+aw
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ak
+ax
+aP
+ZP
+aK
+aR
+aK
+ao
+aR
+ai
+aw
+aw
+aw
+aw
+"}
+(11,1,1) = {"
+aw
+aw
+ai
+ag
+aR
+ap
+aK
+aR
+ag
+aF
+ah
+aG
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aw
+aw
+aw
+aw
+"}
+(12,1,1) = {"
+aw
+aw
+ai
+Bg
+kK
+aK
+ao
+aK
+Bg
+ai
+aX
+az
+ai
+kn
+Xg
+WO
+kJ
+jZ
+aR
+ai
+aw
+aw
+aw
+aw
+"}
+(13,1,1) = {"
+aw
+aw
+ai
+Dk
+oP
+VJ
+aK
+oP
+aK
+aW
+ah
+ax
+ai
+Eq
+aK
+lJ
+sR
+pk
+pk
+ai
+aw
+aw
+aw
+aw
+"}
+(14,1,1) = {"
+aw
+aw
+ai
+Bg
+aK
+cr
+aK
+aK
+XO
+ai
+ad
+au
+aQ
+aK
+rA
+kt
+BE
+aR
+aR
+ai
+aw
+aw
+aw
+aw
+"}
+(15,1,1) = {"
+aw
+aw
+ai
+ZJ
+ut
+aK
+oP
+aK
+ag
+ai
+aq
+ax
+ai
+Le
+aR
+AO
+aK
+Xj
+LJ
+ai
+aw
+aw
+aw
+aw
+"}
+(16,1,1) = {"
+aw
+aw
+ai
+Bg
+aR
+aK
+aK
+Hk
+Bg
+ai
+aX
+aj
+aF
+aR
+nm
+aR
+aK
+ao
+aa
+ai
+aw
+aw
+aw
+aw
+"}
+(17,1,1) = {"
+aw
+aw
+ai
+Dk
+oP
+aK
+aK
+aK
+Dk
+ai
+ak
+ay
+ai
+ai
+ai
+ai
+RN
+ai
+ai
+ai
+aw
+aw
+aw
+aw
+"}
+(18,1,1) = {"
+aw
+aw
+ai
+Bg
+kK
+Xj
+Mz
+aK
+jA
+ai
+ah
+az
+ai
+sE
+ke
+ke
+ke
+ke
+ds
+ai
+aw
+aw
+aw
+aw
+"}
+(19,1,1) = {"
+aw
+aw
+ai
+ag
+aR
+aK
+aK
+fy
+aK
+aW
+ah
+ax
+an
+ke
+ne
+pk
+Cz
+kF
+ds
+ai
+aw
+aw
+aw
+aw
+"}
+(20,1,1) = {"
+aw
+aw
+ai
+Bg
+aK
+SJ
+aK
+aR
+Bg
+ai
+ae
+au
+ai
+jo
+SB
+ke
+ke
+yh
+ds
+ai
+aw
+aw
+aw
+aw
+"}
+(21,1,1) = {"
+aw
+aw
+ai
+Dk
+el
+aK
+oz
+aK
+ag
+ai
+al
+aU
+ai
+lz
+hM
+Si
+Cz
+Cz
+ke
+aS
+aw
+aw
+aw
+aw
+"}
+(22,1,1) = {"
+aw
+aw
+am
+am
+am
+am
+am
+am
+am
+aN
+af
+ab
+aN
+am
+am
+am
+am
+am
+am
+am
+aw
+aw
+aw
+aw
+"}
+(23,1,1) = {"
+aw
+aw
+am
+yF
+Vj
+ar
+aK
+Xj
+aR
+aK
+oP
+Wc
+aR
+aK
+ar
+Xj
+aK
+yF
+Mp
+am
+aw
+aw
+aw
+aw
+"}
+(24,1,1) = {"
+aw
+aw
+aN
+fX
+aK
+QH
+aR
+lJ
+aK
+aR
+aR
+aK
+aK
+aR
+aK
+aK
+lJ
+aK
+aR
+am
+aw
+aw
+aw
+aw
+"}
+(25,1,1) = {"
+aw
+aw
+am
+aR
+Xj
+aK
+oP
+aR
+aK
+aK
+Xj
+aR
+QH
+aK
+lJ
+aR
+aK
+aR
+oP
+aN
+aw
+aw
+aw
+aw
+"}
+(26,1,1) = {"
+aw
+aw
+am
+jl
+aK
+kK
+aK
+aK
+oP
+kK
+aK
+VJ
+aK
+oP
+aK
+aK
+oP
+aK
+aR
+am
+aw
+aw
+aw
+aw
+"}
+(27,1,1) = {"
+aw
+aw
+am
+QW
+KQ
+Dk
+Bg
+Dk
+Bg
+ag
+aR
+KQ
+aK
+Dk
+Bg
+Dk
+Bg
+ag
+Xj
+am
+aw
+aw
+aw
+aw
+"}
+(28,1,1) = {"
+aw
+aw
+am
+am
+am
+am
+am
+am
+am
+am
+am
+am
+am
+am
+am
+am
+am
+am
+am
+am
+aw
+aw
+aw
+aw
+"}
+(29,1,1) = {"
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+"}
+(30,1,1) = {"
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+aw
+"}

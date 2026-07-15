@@ -115,7 +115,13 @@
 // ========== PRE-ARMED MISSILE SUBTYPES ==========
 // These spawn already armed with their warhead - for admin spawning and cargo
 
+// Name/icon defaults match the armed state so shop and reward UIs — which read
+// compile-time initial() values, not the runtime-updated appearance — show a
+// finished missile instead of "missile frame".
 /obj/structure/ship_missile/armed
+	name = "armed missile"
+	desc = "A fully armed ship-to-ship missile. Drag it to a launcher to load."
+	icon_state = "missile"
 	construction_state = MISSILE_STATE_ARMED
 	/// The warhead type to spawn with
 	var/warhead_path = /obj/item/bombcore/missile
@@ -127,12 +133,15 @@
 	update_appearance()
 
 /obj/structure/ship_missile/armed/light
+	name = "light missile"
 	warhead_path = /obj/item/bombcore/missile/light
 
 /obj/structure/ship_missile/armed/standard
+	name = "standard missile"
 	warhead_path = /obj/item/bombcore/missile
 
 /obj/structure/ship_missile/armed/heavy
+	name = "heavy missile"
 	warhead_path = /obj/item/bombcore/missile/heavy
 
 /obj/structure/ship_missile/Destroy()

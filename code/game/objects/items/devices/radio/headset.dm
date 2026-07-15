@@ -13,6 +13,7 @@ GLOBAL_LIST_INIT(channel_tokens, list(
 	MODE_BINARY = MODE_TOKEN_BINARY,
 	RADIO_CHANNEL_AI_PRIVATE = RADIO_TOKEN_AI_PRIVATE,
 	RADIO_CHANNEL_ENTERTAINMENT = RADIO_TOKEN_ENTERTAINMENT,
+	RADIO_CHANNEL_WIDEBAND = RADIO_TOKEN_WIDEBAND, // VOIDCREW EDIT ADDITION
 ))
 
 /obj/item/radio/headset
@@ -500,6 +501,13 @@ GLOBAL_LIST_INIT(channel_tokens, list(
 
 		for(var/ch_name in channels)
 			secure_radio_connections[ch_name] = add_radio(src, GLOB.default_radio_channels[ch_name])
+
+	// VOIDCREW EDIT ADDITION BEGIN - every headset carries the galaxy-wide Wideband channel
+	LAZYSET(channels, RADIO_CHANNEL_WIDEBAND, TRUE)
+	secure_radio_connections[RADIO_CHANNEL_WIDEBAND] = add_radio(src, FREQ_WIDEBAND)
+	if(!get_listening())
+		remove_radio_all(src)
+	// VOIDCREW EDIT ADDITION END
 
 	// Updates radio languages entirely for the mob wearing the headset
 	var/mob/mob_loc = loc

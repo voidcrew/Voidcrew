@@ -3,8 +3,8 @@
 /// How long an outpost trade embargo against a ship lasts after aggression
 #define OUTPOST_EMBARGO_DURATION (15 MINUTES)
 
-/// How many infractions against outpost property it takes before turrets open
-/// fire. Earlier hits only issue a warning; the final strike marks the aggressor.
+/// How many violent infractions at an outpost it takes before turrets open fire.
+/// Earlier offenses only issue a warning; the final strike marks the aggressor.
 #define OUTPOST_AGGRESSION_STRIKES 3
 
 /// Placement attempts when scattering trader outposts across the zone bands

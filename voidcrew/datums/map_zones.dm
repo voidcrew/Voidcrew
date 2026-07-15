@@ -29,6 +29,14 @@
 
 /datum/map_zone/proc/add_space_level(datum/space_level/level)
 	z_levels += level
+	// Otherwise only set as a side effect of get_block() (via fill_in()), which
+	// skips its loops - and this assignment - when called with no area/turf
+	// type to paint. Set eagerly so bounds are never null for callers that
+	// read them before (or without) a fill_in() call, e.g. player outposts.
+	level.low_x = 1
+	level.low_y = 1
+	level.high_x = world.maxx
+	level.high_y = world.maxy
 
 /datum/map_zone/proc/get_mind_mobs()
 	. = list()

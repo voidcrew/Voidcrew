@@ -84,6 +84,10 @@ export const HelmComputer = (props) => {
                   </Stack.Item>
 
                   <Stack.Item>
+                    <SealedRumorsSection />
+                  </Stack.Item>
+
+                  <Stack.Item>
                     <NavigationSection />
                   </Stack.Item>
 
@@ -248,6 +252,47 @@ const ZoneSection = () => {
           </span>
         </LabeledList.Item>
       </LabeledList>
+    </Section>
+  );
+};
+
+// Trader rumor charts land here sealed; revealing one spawns its rare ruin
+// somewhere in the deep lanes and charts the coordinates under Rumors.
+const SealedRumorsSection = () => {
+  const { act, data } = useBackend();
+  const { isViewer, isNotCrew, pendingRumors = [] } = data;
+  const isDisabled = isViewer || isNotCrew;
+
+  if (!pendingRumors.length) {
+    return null;
+  }
+
+  return (
+    <Section title="Sealed Rumors">
+      <Stack vertical>
+        {pendingRumors.map((rumor) => (
+          <Stack.Item key={rumor.ref}>
+            <Box bold color="gold">
+              {rumor.name}
+            </Box>
+            {!!rumor.desc && (
+              <Box color="label" fontSize="11px" mb={0.5}>
+                {rumor.desc}
+              </Box>
+            )}
+            <Button
+              fluid
+              icon="satellite-dish"
+              color="average"
+              disabled={isDisabled}
+              tooltip="Decrypts the rumor: spawns the signal somewhere in the deep lanes and charts its coordinates. Ready your crew first — the mark is visible to anyone who scans it."
+              onClick={() => act('reveal_rumor', { chart: rumor.ref })}
+            >
+              Reveal Coordinates
+            </Button>
+          </Stack.Item>
+        ))}
+      </Stack>
     </Section>
   );
 };

@@ -174,6 +174,11 @@
 		joined_ship.manifest_inject(humanc, job)
 		GLOB.manifest.inject(humanc)
 
+		// Bind their headset's ship channel to this ship so crew comms follow them off-ship
+		var/obj/item/radio/spawned_headset = humanc.ears
+		if(istype(spawned_headset))
+			spawned_headset.bind_comms_to_ship(joined_ship.shuttle)
+
 		humanc.increment_scar_slot()
 		humanc.load_persistent_scars()
 

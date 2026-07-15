@@ -1,0 +1,1664 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"ab" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/powered)
+"ac" = (
+/obj/structure/sign/warning/secure_area,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"ad" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"ae" = (
+/obj/structure/bodycontainer/morgue{
+	dir = 1
+	},
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"af" = (
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ag" = (
+/obj/structure/sign/warning/secure_area,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/powered)
+"ah" = (
+/obj/structure/table,
+/obj/effect/spawner/random/food_or_drink/snack,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"ai" = (
+/obj/structure/sign/warning/biohazard,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aj" = (
+/obj/structure/closet/secure_closet/personal,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"ak" = (
+/obj/machinery/vending/cigarette,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"al" = (
+/obj/machinery/door/airlock/highsecurity{
+	name = "Extract Vault Antechamber"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"am" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"an" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ao" = (
+/obj/structure/table,
+/obj/machinery/microwave,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"ap" = (
+/obj/structure/sign/warning/biohazard,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/powered)
+"aq" = (
+/obj/machinery/door/airlock{
+	name = "Crew Wing"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ar" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"as" = (
+/obj/structure/bodycontainer/morgue,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"at" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"au" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"av" = (
+/obj/machinery/door/airlock/research/glass{
+	name = "Specimen Bay"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aw" = (
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"ax" = (
+/obj/structure/bedsheetbin,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"ay" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Chemical Storage"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"az" = (
+/obj/effect/spawner/random/entertainment/plushie,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aA" = (
+/obj/structure/sign/poster/official/nanotrasen_logo,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aB" = (
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"aC" = (
+/obj/structure/bed,
+/obj/item/bedsheet/purple,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aD" = (
+/turf/template_noop,
+/area/template_noop)
+"aE" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"aF" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aG" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aH" = (
+/obj/effect/spawner/random/structure/chair_flipped,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"aI" = (
+/obj/machinery/door/airlock{
+	name = "Cold Storage"
+	},
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"aJ" = (
+/obj/item/stack/rods{
+	amount = 2
+	},
+/obj/effect/decal/cleanable/greenglow,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aK" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"aL" = (
+/obj/machinery/light/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aM" = (
+/obj/structure/bed,
+/obj/item/bedsheet/grey,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aN" = (
+/obj/structure/chair/stool,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"aO" = (
+/obj/machinery/door/airlock/research{
+	name = "Decontamination"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"aP" = (
+/obj/structure/bed,
+/obj/item/bedsheet/blue,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aQ" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aR" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Suit Storage"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aS" = (
+/obj/structure/table,
+/obj/item/paper/crumpled{
+	name = "unsent letter";
+	default_raw_text = "They keep saying the evacuation order is processing. Mirra sleeps in the canteen now - says the dorm wall is too close to the cells. It hums at night. I did not tell her I hear it too."
+	},
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"aT" = (
+/obj/machinery/vending/coffee,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"aU" = (
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"aV" = (
+/obj/structure/dresser,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aW" = (
+/obj/machinery/vending/snack,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"aX" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/paper/crumpled/bloody{
+	name = "torn page";
+	default_raw_text = "day 9 no shuttle. okafor says the bay doors will hold. the bay doors did not hold."
+	},
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aY" = (
+/obj/machinery/door/airlock{
+	name = "Crew Quarters"
+	},
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"aZ" = (
+/obj/structure/table,
+/obj/effect/spawner/random/food_or_drink/condiment,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"bQ" = (
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"bW" = (
+/obj/machinery/rnd/server,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"cZ" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/paper/crumpled/bloody{
+	name = "keeper's note";
+	default_raw_text = "cell one latch checked fine at 0600. it was watching me check it. it learned the latch. do not trust a quiet cell."
+	},
+/obj/item/experi_scanner{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"dc" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"dC" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"dJ" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/mineral/plasma/thirty{
+	pixel_y = 4
+	},
+/obj/item/stack/sheet/mineral/plasma/thirty{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"dO" = (
+/mob/living/basic/slime,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"ee" = (
+/obj/structure/table/reinforced,
+/obj/item/paper_bin{
+	pixel_y = 4
+	},
+/obj/item/pen,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"eM" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"fL" = (
+/mob/living/basic/slime,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"gV" = (
+/obj/machinery/computer/camera_advanced/xenobio,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"hx" = (
+/obj/machinery/light/small/red/directional/east,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"in" = (
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"iV" = (
+/obj/effect/decal/cleanable/greenglow,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"jk" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"jn" = (
+/obj/structure/table/glass,
+/obj/item/paper/crumpled{
+	name = "extract ledger";
+	default_raw_text = "Batch 44 exceeded projection. Vault stock at 61 units and the buyers know it. Shipping release still keys from the server room terminal - quartermaster keeps forgetting we moved it. Nobody has filed in two cycles. 61 units."
+	},
+/obj/item/experi_scanner{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"jC" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"jR" = (
+/obj/structure/closet/crate/zone_loot/research/rare,
+/obj/effect/turf_decal/box,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"kc" = (
+/obj/effect/spawner/random/trash/grime,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"kl" = (
+/obj/structure/table/reinforced,
+/obj/item/slime_extract/bluespace{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/slime_extract/adamantine{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"kN" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"ll" = (
+/obj/structure/table/reinforced,
+/obj/item/clipboard{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/folder/white{
+	pixel_x = 5
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"lq" = (
+/obj/item/shard,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"lx" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"lR" = (
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"lX" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"mg" = (
+/obj/machinery/portable_atmospherics/canister/plasma,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"mF" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"mO" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"nP" = (
+/obj/structure/table,
+/obj/item/storage/box/monkeycubes{
+	pixel_y = 4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ok" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"oC" = (
+/obj/structure/closet/emcloset,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"pf" = (
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"pp" = (
+/obj/machinery/light/small/red/directional/east,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"pr" = (
+/mob/living/basic/spider/giant/hunter,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"pU" = (
+/obj/structure/table/glass,
+/obj/item/storage/box/beakers{
+	pixel_y = 4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"rd" = (
+/obj/machinery/monkey_recycler,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"rF" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"sl" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"sp" = (
+/obj/effect/decal/cleanable/greenglow,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"sY" = (
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"tl" = (
+/obj/machinery/smartfridge/extract/preloaded,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"tv" = (
+/obj/machinery/button/door/directional/north{
+	id = "eventide_vault";
+	name = "extract vault release"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"uq" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/bio_suit/scientist{
+	pixel_y = 4
+	},
+/obj/item/clothing/head/bio_hood/scientist{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"uE" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/paper/crumpled/bloody{
+	name = "final entry";
+	default_raw_text = "Vault sealed per protocol when the bay went loud. The release is in the server room past the bay and everything between here and there has legs now. If you are reading this: the stock is intact. We were not."
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"uV" = (
+/obj/machinery/light/small/red/directional/north,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"uX" = (
+/obj/structure/table/glass,
+/obj/item/reagent_containers/cup/beaker{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_x = 5
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"vZ" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"wm" = (
+/obj/machinery/shower/directional/south,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"wR" = (
+/obj/structure/table/glass,
+/obj/effect/decal/cleanable/glass,
+/obj/item/shard,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"xH" = (
+/obj/structure/spider/stickyweb,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"xZ" = (
+/obj/item/paper/crumpled{
+	name = "posting notice";
+	default_raw_text = "Annex standing orders: decon both ways, the cells stay shut, and there is no rule that brings the resupply shuttle early. Stop asking. - Dr. Voss"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"ya" = (
+/obj/machinery/processor/slime,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"yb" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"yE" = (
+/obj/structure/bed/dogbed,
+/obj/effect/decal/cleanable/greenglow,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"zc" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Av" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"AN" = (
+/obj/structure/spider/stickyweb,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Bb" = (
+/obj/machinery/light/small/red/directional/east,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Bl" = (
+/obj/effect/mapping_helpers/broken_floor,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Cb" = (
+/obj/effect/turf_decal/tile/purple/half/contrasted{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"CE" = (
+/obj/effect/turf_decal/tile/purple/fourcorners,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Di" = (
+/mob/living/basic/spider/giant/tarantula,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"DA" = (
+/obj/structure/rack,
+/obj/item/stack/ore/bluespace_crystal{
+	pixel_y = 4
+	},
+/obj/item/raw_anomaly_core/random{
+	pixel_y = -3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"DH" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Eb" = (
+/obj/machinery/door/airlock/research/glass{
+	name = "Containment Cell 2"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"EU" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"EZ" = (
+/obj/machinery/door/airlock/research/glass{
+	name = "Annex Server Room"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Fv" = (
+/obj/structure/rack,
+/obj/item/storage/box/beakers{
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"FI" = (
+/obj/structure/grille/broken,
+/obj/item/shard,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"GK" = (
+/obj/effect/decal/cleanable/greenglow,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"GW" = (
+/mob/living/basic/spider/giant/guard,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"HL" = (
+/obj/structure/rack,
+/obj/item/stock_parts/capacitor/adv{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/stock_parts/micro_laser/high{
+	pixel_x = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Ik" = (
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Io" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"IX" = (
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/folder/white{
+	pixel_x = 5
+	},
+/obj/item/paper/crumpled{
+	name = "cold storage manifest";
+	default_raw_text = "Tray 1: Ballard, K. Tray 2: Osei, D. Trays 3 through 6: reassigned to specimen inventory per Dr. Voss. Amendment, unsigned: Dr. Voss, tray 3."
+	},
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"JL" = (
+/obj/effect/mob_spawn/corpse/human/scientist,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"JW" = (
+/obj/item/shard,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Kv" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"KD" = (
+/obj/machinery/space_heater,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"KL" = (
+/obj/structure/table,
+/obj/item/petri_dish{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/petri_dish{
+	pixel_x = 4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"KQ" = (
+/obj/effect/turf_decal/caution{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"LE" = (
+/mob/living/basic/spider/giant/ambush,
+/obj/structure/spider/stickyweb,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Mt" = (
+/obj/machinery/portable_atmospherics/canister/plasma,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Nl" = (
+/obj/structure/spider/stickyweb,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"NF" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"NH" = (
+/obj/machinery/door/poddoor{
+	id = "eventide_vault";
+	name = "extract vault door"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"NN" = (
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Pc" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Pf" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Pw" = (
+/obj/structure/table/optable,
+/obj/effect/mob_spawn/corpse/human/scientist,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Rj" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Rx" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"RV" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Sg" = (
+/obj/item/slime_extract/grey,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"SQ" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Tq" = (
+/obj/structure/spider/stickyweb,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"TZ" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"UZ" = (
+/obj/effect/spawner/random/trash/grime,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"VW" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/gibs,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Wc" = (
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"WY" = (
+/mob/living/basic/spider/giant/nurse,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Xb" = (
+/mob/living/basic/slime,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"XT" = (
+/obj/structure/table/glass,
+/obj/item/petri_dish{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/petri_dish{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"Zf" = (
+/obj/structure/bed/dogbed,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ZE" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+
+(1,1,1) = {"
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+"}
+(2,1,1) = {"
+aD
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+ai
+am
+ai
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+at
+aD
+"}
+(3,1,1) = {"
+aD
+at
+tl
+Ik
+af
+lX
+af
+rF
+at
+uq
+jk
+at
+TZ
+af
+mO
+xZ
+ZE
+at
+Fv
+aF
+at
+aT
+aB
+aE
+aB
+aB
+at
+aD
+"}
+(4,1,1) = {"
+aD
+at
+uX
+rF
+rF
+af
+rF
+Cb
+aR
+aF
+aF
+at
+wm
+af
+af
+af
+rF
+at
+Wc
+Rx
+at
+aW
+aN
+aN
+aB
+aB
+aQ
+aD
+"}
+(5,1,1) = {"
+aD
+aQ
+XT
+af
+af
+af
+af
+af
+at
+oC
+aF
+at
+wm
+af
+af
+af
+af
+at
+sl
+aF
+ay
+aK
+aB
+ah
+aZ
+aB
+aQ
+aD
+"}
+(6,1,1) = {"
+aD
+aQ
+wR
+lq
+af
+af
+lR
+af
+at
+RV
+Rx
+at
+rF
+Av
+lx
+af
+af
+at
+KD
+Mt
+at
+ao
+aB
+aS
+aB
+ar
+at
+aD
+"}
+(7,1,1) = {"
+aD
+at
+jn
+af
+af
+af
+af
+Cb
+at
+at
+at
+at
+at
+aA
+aO
+at
+at
+at
+at
+at
+at
+ar
+aH
+aB
+aN
+aB
+at
+aD
+"}
+(8,1,1) = {"
+aD
+at
+pU
+af
+af
+Xb
+af
+af
+at
+TZ
+af
+ZE
+rF
+af
+af
+rF
+af
+af
+rF
+Rj
+at
+au
+aB
+aK
+aK
+aB
+at
+aD
+"}
+(9,1,1) = {"
+aD
+at
+ok
+af
+af
+af
+af
+af
+av
+af
+af
+af
+af
+af
+rF
+af
+af
+af
+Nl
+nP
+at
+ak
+aB
+aB
+aB
+aB
+at
+aD
+"}
+(10,1,1) = {"
+aD
+at
+rF
+af
+Pw
+af
+af
+Cb
+at
+rF
+rF
+af
+af
+af
+af
+rF
+af
+Xb
+af
+KL
+aa
+at
+at
+aY
+at
+at
+at
+aD
+"}
+(11,1,1) = {"
+aD
+aQ
+rF
+af
+af
+af
+Ik
+rF
+ab
+ab
+ab
+ab
+af
+pr
+af
+af
+af
+af
+af
+af
+at
+aC
+aG
+aw
+aw
+aG
+at
+aD
+"}
+(12,1,1) = {"
+aD
+aQ
+af
+af
+af
+rF
+af
+af
+ab
+AN
+Zf
+FI
+NF
+af
+af
+af
+lx
+af
+CE
+af
+aq
+aw
+aw
+aw
+aG
+aw
+at
+aD
+"}
+(13,1,1) = {"
+aD
+at
+ya
+af
+rF
+af
+af
+af
+ab
+Tq
+AN
+JW
+af
+af
+af
+cZ
+af
+af
+af
+ya
+at
+aP
+aw
+aw
+az
+aw
+at
+aD
+"}
+(14,1,1) = {"
+aD
+at
+at
+at
+at
+EZ
+at
+at
+ab
+ab
+ab
+ab
+af
+af
+CE
+af
+af
+rF
+af
+rd
+at
+aV
+aw
+aX
+ad
+aw
+aa
+aD
+"}
+(15,1,1) = {"
+aD
+at
+bW
+an
+an
+an
+an
+an
+ab
+GK
+yE
+SQ
+af
+Nl
+af
+af
+af
+zc
+af
+rF
+at
+aM
+aw
+aw
+aw
+aG
+at
+aD
+"}
+(16,1,1) = {"
+aD
+at
+tv
+an
+an
+an
+sY
+an
+ab
+fL
+Sg
+Eb
+af
+af
+af
+af
+pr
+af
+af
+Rj
+aa
+aL
+aw
+aG
+aw
+ax
+at
+aD
+"}
+(17,1,1) = {"
+aD
+at
+gV
+bW
+an
+an
+an
+an
+ap
+ab
+ab
+ab
+Nl
+af
+Nl
+rF
+af
+af
+rF
+in
+at
+aj
+aj
+aw
+aw
+aw
+at
+aD
+"}
+(18,1,1) = {"
+aD
+at
+bW
+an
+pf
+an
+eM
+an
+ab
+VW
+Bl
+JW
+af
+WY
+af
+mF
+af
+af
+af
+rF
+at
+at
+at
+aI
+at
+at
+at
+aD
+"}
+(19,1,1) = {"
+aD
+at
+EU
+Bb
+an
+an
+kc
+an
+ab
+LE
+dC
+SQ
+DH
+af
+af
+af
+hx
+yb
+af
+Nl
+at
+as
+aU
+aU
+aU
+ae
+at
+aD
+"}
+(20,1,1) = {"
+aD
+at
+at
+at
+at
+at
+at
+at
+ab
+ab
+ab
+ab
+ab
+ab
+ab
+at
+ac
+al
+at
+at
+at
+as
+aU
+IX
+aU
+ae
+at
+aD
+"}
+(21,1,1) = {"
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+ab
+dJ
+an
+xH
+an
+mg
+ab
+bQ
+an
+an
+Pf
+an
+at
+as
+aU
+aU
+UZ
+aU
+at
+aD
+"}
+(22,1,1) = {"
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+ab
+HL
+xH
+an
+xH
+an
+ab
+KQ
+Pf
+an
+an
+iV
+aJ
+sp
+sp
+sp
+aU
+aU
+ai
+aD
+"}
+(23,1,1) = {"
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+ab
+uV
+an
+jR
+an
+jC
+NH
+KQ
+uE
+Pf
+an
+Pf
+at
+as
+dO
+aU
+Kv
+aU
+at
+aD
+"}
+(24,1,1) = {"
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+ab
+xH
+an
+Di
+an
+xH
+ab
+KQ
+an
+GW
+an
+an
+at
+dc
+UZ
+aU
+aU
+aU
+at
+aD
+"}
+(25,1,1) = {"
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+ab
+an
+xH
+an
+an
+NN
+ab
+an
+ll
+an
+iV
+NN
+at
+kN
+aU
+aU
+JL
+aU
+at
+aD
+"}
+(26,1,1) = {"
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+ab
+DA
+an
+kl
+an
+Pf
+ab
+EU
+ee
+Pc
+an
+vZ
+at
+Io
+aU
+pp
+aU
+aU
+at
+aD
+"}
+(27,1,1) = {"
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+ab
+ab
+ab
+ag
+ab
+ab
+ab
+at
+at
+aa
+at
+at
+at
+at
+at
+at
+at
+at
+at
+aD
+"}
+(28,1,1) = {"
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+"}

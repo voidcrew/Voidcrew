@@ -63,11 +63,17 @@
 			clear_target()
 			current_ship.ship_notify("Weapons lock lost - target entered safe zone.", "TARGETING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 
-/// Starts the targeting process for a new ship (takes time and warns the target)
-/obj/machinery/computer/camera_advanced/ship_combat/proc/start_targeting(obj/structure/overmap/ship/new_target, mob/user)
+/// Starts the targeting process for a new target (takes time and warns the target)
+/obj/machinery/computer/camera_advanced/ship_combat/proc/start_targeting(obj/structure/overmap/new_target, mob/user)
 	if(new_target == current_ship)
 		if(user)
 			to_chat(user, span_warning("Cannot target your own ship!"))
+		return FALSE
+
+	// Protected targets (e.g. green-zone player outposts) never enter the lock pipeline
+	if(!new_target.is_combat_targetable())
+		if(user)
+			to_chat(user, span_warning("Weapons systems cannot resolve a firing solution on [new_target.display_name]."))
 		return FALSE
 
 	// Can't acquire locks while docked
@@ -144,7 +150,7 @@
 	if(!is_targeting || !targeting_ship)
 		return FALSE
 
-	var/obj/structure/overmap/ship/locked_target = targeting_ship
+	var/obj/structure/overmap/locked_target = targeting_ship
 
 	// Clean up targeting state
 	UnregisterSignal(targeting_ship, list(COMSIG_QDELETING, COMSIG_VOIDCREW_SHIP_MOVED, COMSIG_SHIP_ZONE_CHANGED))
@@ -312,22 +318,21 @@
 	if(current_user)
 		to_chat(current_user, span_danger("Target lost!"))
 
-/// Sets a new target ship (legacy - now just calls start_targeting)
-/obj/machinery/computer/camera_advanced/ship_combat/proc/set_target_ship(obj/structure/overmap/ship/new_target, mob/user)
+/// Sets a new target (legacy - now just calls start_targeting)
+/obj/machinery/computer/camera_advanced/ship_combat/proc/set_target_ship(obj/structure/overmap/new_target, mob/user)
 	return start_targeting(new_target, user)
 
-/// Gets a turf at the target ship's mobile docking port
+/// Gets the target's default aim turf (ships: their docking port; outposts: their arrival point)
 /obj/machinery/computer/camera_advanced/ship_combat/proc/get_target_ship_port_turf()
-	if(!target_ship?.shuttle)
-		return null
-	return get_turf(target_ship.shuttle)
+	return target_ship?.get_combat_default_turf()
 
-/// Gets any valid turf on the target ship (fallback)
+/// Gets any valid turf on the target (fallback)
 /obj/machinery/computer/camera_advanced/ship_combat/proc/get_target_ship_turf()
-	if(!target_ship?.shuttle?.shuttle_areas)
-		return null
+	var/list/target_areas = target_ship?.get_combat_target_areas()
+	if(!target_areas)
+		return target_ship?.get_combat_default_turf()
 
-	for(var/area/A in target_ship.shuttle.shuttle_areas)
+	for(var/area/A in target_areas)
 		for(var/turf/T in A)
 			if(!isclosedturf(T))
 				return T

@@ -48,7 +48,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 
 	/// Shop datum type stocking this outpost (zone-specific)
 	var/shop_type = /datum/outpost_shop/black_market
-	/// The live shop (shared per-round stock for all terminals here)
+	/// The live shop (shared per-round stock everyone here trades against)
 	var/datum/outpost_shop/shop
 	/// Secondary vendor shops (the bar, the clinic, ...) keyed by shop typepath,
 	/// created lazily when the interior links a machine that asks for one
@@ -63,30 +63,20 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/loaded = FALSE
 	/// Whether the interior is currently loading
 	var/loading = FALSE
-	/// Hangar berth slots; berths[i] is the /datum/outpost_berth in slot i or null (see outpost_hangar.dm)
-	var/list/berths
-	/// Elevator alcove turfs on the concourse, from landmarks in the interior template (block() order)
-	var/list/turf/lobby_alcove_turfs = list()
-	/// Concourse-side elevator panels
-	var/list/obj/machinery/outpost_elevator/lobby_panels = list()
-	/// Bottom-left turf of the loaded template footprint
-	var/turf/template_bottom_left
+	// Berth/elevator host vars (berths, lobby_alcove_turfs, lobby_panels,
+	// template_bottom_left) live on /obj/structure/overmap — see _overmap.dm.
 	/// Ships under trade embargo: ship -> world.time the embargo ends
 	var/list/embargoed_ships = list()
-	/// Minds that attacked outpost property: mind -> TRUE (turret targets, refused service)
+	/// Minds that committed violence here: mind -> TRUE (turret targets, refused service)
 	var/list/aggressor_minds = list()
 	/// Warning strikes accrued before turrets engage: mind -> infraction count
 	var/list/aggressor_strikes = list()
-	/// Linked shop terminals inside the outpost
-	var/list/obj/machinery/computer/outpost_shop_terminal/terminals = list()
-	/// Linked supply request boards inside the outpost
-	var/list/obj/machinery/computer/outpost_mission_board/mission_boards = list()
 	/// Posted (not yet accepted) contracts (see outpost_missions.dm / outpost_quests.dm)
 	var/list/datum/mission/shop_offers = list()
-	/// Linked trader hologram fronting the main shop (the outpost's "face")
-	var/obj/machinery/outpost_trader/trader
-	/// All linked trader holograms, main trader and vendor stalls alike
-	var/list/obj/machinery/outpost_trader/traders = list()
+	/// Linked trader NPC fronting the main shop (the outpost's "face")
+	var/mob/living/basic/outpost_trader/trader
+	/// All linked trader NPCs, main trader and vendor stalls alike
+	var/list/mob/living/basic/outpost_trader/traders = list()
 	/// Linked defense turrets
 	var/list/obj/machinery/porta_turret/outpost/turrets = list()
 	/// Looping timer id for the supply convoy restock
@@ -131,8 +121,6 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	embargoed_ships.Cut()
 	aggressor_minds.Cut()
 	aggressor_strikes.Cut()
-	terminals.Cut()
-	mission_boards.Cut()
 	QDEL_LIST(shop_offers)
 	turrets.Cut()
 	traders.Cut()
@@ -208,26 +196,15 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		for(var/obj/effect/landmark/outpost_elevator_alcove/alcove_mark in interior_turf)
 			lobby_alcove_turfs += interior_turf
 			qdel(alcove_mark)
+		for(var/mob/living/basic/outpost_trader/npc in interior_turf)
+			npc.outpost = src
+			npc.shop = get_shop(npc.shop_type)
+			npc.shop.trader_npc = npc
+			traders += npc
+			if(isnull(npc.shop_type)) // the main shop's trader is the outpost's face
+				trader = npc
 		for(var/obj/machinery/machine in interior_turf)
-			if(istype(machine, /obj/machinery/computer/outpost_shop_terminal))
-				var/obj/machinery/computer/outpost_shop_terminal/terminal = machine
-				terminal.outpost = src
-				terminal.shop = get_shop(terminal.shop_type)
-				terminals += terminal
-			else if(istype(machine, /obj/machinery/computer/outpost_mission_board))
-				var/obj/machinery/computer/outpost_mission_board/board = machine
-				board.outpost = src
-				mission_boards += board
-			else if(istype(machine, /obj/machinery/outpost_trader))
-				var/obj/machinery/outpost_trader/stall = machine
-				stall.outpost = src
-				stall.shop = get_shop(stall.shop_type)
-				stall.shop.trader_machine = stall
-				traders += stall
-				if(isnull(stall.shop_type)) // the main shop's trader is the outpost's face
-					trader = stall
-				stall.update_appearance(UPDATE_NAME)
-			else if(istype(machine, /obj/machinery/porta_turret/outpost))
+			if(istype(machine, /obj/machinery/porta_turret/outpost))
 				var/obj/machinery/porta_turret/outpost/turret = machine
 				turret.outpost = src
 				turrets += turret
@@ -239,13 +216,13 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 				panel.outpost = src
 				panel.is_lobby = TRUE
 				lobby_panels += panel
-	// The projections' appearances depend on their shops, so they spawn post-link.
-	// In the roundstart pre-load path the machines haven't initialized yet —
-	// building the hologram (an outfitted human mannequin) that early is unsafe,
-	// so those pads activate themselves in Initialize instead.
-	for(var/obj/machinery/outpost_trader/stall as anything in traders)
-		if(stall.flags_1 & INITIALIZED_1)
-			stall.activate_hologram()
+	// The traders' names/appearances depend on their shops, so setup runs
+	// post-link. In the roundstart pre-load path the mobs haven't initialized
+	// yet — dressing the appearance dummy that early is unsafe, so those
+	// traders run setup_from_shop in Initialize instead.
+	for(var/mob/living/basic/outpost_trader/npc as anything in traders)
+		if(npc.flags_1 & INITIALIZED_1)
+			npc.setup_from_shop()
 
 /**
  * Resolves the shop a linked machine sells for. A null shop_type means the
@@ -354,23 +331,24 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		return
 	for(var/datum/outpost_shop/stocked_shop as anything in get_all_shops())
 		stocked_shop.convoy_restock()
-		stocked_shop.trader_machine?.speak_line(TRADER_LINE_RESTOCK)
+		stocked_shop.trader_npc?.speak_line(TRADER_LINE_RESTOCK)
 	for(var/datum/outpost_berth/berth as anything in berths)
 		if(berth?.ship)
 			berth.ship.ship_notify("[name]: supply convoy arrived — shelves restocked, new items rotated in.", "CONVOY ARRIVAL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
 	// Open storefront UIs are looking at a stale catalog now; refresh them
-	for(var/obj/machinery/computer/outpost_shop_terminal/terminal as anything in terminals)
-		terminal.update_static_data_for_all_viewers()
+	for(var/mob/living/basic/outpost_trader/npc as anything in traders)
+		npc.shop_ui?.update_static_data_for_all_viewers()
 
 // ===== EMBARGO / AGGRESSION =====
 
 /**
- * Called when someone attacks outpost property. The first infractions only issue
- * a warning; once the offender racks up OUTPOST_AGGRESSION_STRIKES the outpost
- * marks them and embargoes every ship whose crew they belong to. Idempotent once
- * marked — confirmed aggressors short-circuit here.
+ * Called when someone attacks outpost property or another visitor. The first
+ * infractions only issue a warning; once the offender racks up
+ * OUTPOST_AGGRESSION_STRIKES the outpost marks them and embargoes every ship
+ * whose crew they belong to. Idempotent once marked — confirmed aggressors
+ * short-circuit here.
  */
-/obj/structure/overmap/trader_outpost/proc/register_aggression(mob/living/offender)
+/obj/structure/overmap/trader_outpost/register_aggression(mob/living/offender)
 	if(!istype(offender) || !offender.mind)
 		return
 	if(aggressor_minds[offender.mind])
@@ -440,22 +418,30 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	return istype(target) && is_user_barred(target)
 
 /**
- * Resolves which trader outpost a turf belongs to by checking each outpost's
- * loaded template footprint. Used by outpost turfs (walls), which can't hold
- * a back-reference. Cheap: there are only a handful of outposts per round.
+ * Resolves which trader outpost protects a turf by checking its concourse and
+ * allocated hangar footprints. Coordinate checks intentionally include docked
+ * ship turfs, whose areas still belong to the ship. Cheap: there are only a
+ * handful of outposts and berths per round.
  */
 /proc/get_trader_outpost_for_turf(turf/T)
 	if(!T)
 		return null
 	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
 		var/turf/bottom_left = outpost.template_bottom_left
-		if(!bottom_left || bottom_left.z != T.z)
-			continue
-		if(T.x < bottom_left.x || T.x >= bottom_left.x + outpost.outpost_template.width)
-			continue
-		if(T.y < bottom_left.y || T.y >= bottom_left.y + outpost.outpost_template.height)
-			continue
-		return outpost
+		if(bottom_left?.z == T.z \
+			&& T.x >= bottom_left.x && T.x < bottom_left.x + outpost.outpost_template.width \
+			&& T.y >= bottom_left.y && T.y < bottom_left.y + outpost.outpost_template.height)
+			return outpost
+		for(var/datum/outpost_berth/berth as anything in outpost.berths)
+			var/turf/hangar_bottom_left = berth?.hangar_bottom_left
+			var/datum/turf_reservation/reservation = berth?.reservation
+			if(!hangar_bottom_left || !reservation || hangar_bottom_left.z != T.z)
+				continue
+			if(T.x < hangar_bottom_left.x || T.x >= hangar_bottom_left.x + reservation.width)
+				continue
+			if(T.y < hangar_bottom_left.y || T.y >= hangar_bottom_left.y + reservation.height)
+				continue
+			return outpost
 	return null
 
 // ===== ZONE VARIANTS =====

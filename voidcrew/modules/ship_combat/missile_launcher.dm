@@ -363,8 +363,8 @@
 /// Attempts to fire the loaded missile at the target turf
 /// spawn_offset_x/y are used to stagger missile spawn positions for volleys
 /// approach_dir is the direction missiles come FROM (NORTH means missiles come from north, fly south)
-/obj/machinery/ship_combat/missile_launcher/proc/fire(turf/target, obj/structure/overmap/ship/target_ship, obj/structure/overmap/ship/source_ship, mob/user, spawn_offset_x = 0, spawn_offset_y = 0, approach_dir = null)
-	if(!can_fire())
+/obj/machinery/ship_combat/missile_launcher/proc/fire(turf/target, obj/structure/overmap/target_ship, obj/structure/overmap/ship/source_ship, mob/user, spawn_offset_x = 0, spawn_offset_y = 0, approach_dir = null)
+	if(!can_fire(target_ship))
 		return FALSE
 
 	if(!target)
@@ -433,25 +433,24 @@
 	update_appearance()
 	return TRUE
 
-/// Calculates where to spawn a missile - outside the target ship, in the transit space
+/// Calculates where to spawn a missile - outside the target, in the transit space
 /// approach_dir: If provided, missiles spawn from this direction. Otherwise auto-calculated to find a clear path.
-/obj/machinery/ship_combat/missile_launcher/proc/get_missile_spawn_turf(turf/target, obj/structure/overmap/ship/tgt_ship, approach_dir = null)
+/obj/machinery/ship_combat/missile_launcher/proc/get_missile_spawn_turf(turf/target, obj/structure/overmap/tgt_ship, approach_dir = null)
 	if(!target)
 		return null
 
-	// Get ship bounds from the docking port
+	// Get target footprint bounds (ships: shuttle rect; outposts: build region)
 	var/min_x = target.x
 	var/max_x = target.x
 	var/min_y = target.y
 	var/max_y = target.y
 
-	if(tgt_ship?.shuttle)
-		var/list/bounds = tgt_ship.shuttle.return_coords()
-		if(bounds?.len >= 4)
-			min_x = min(bounds[1], bounds[3])
-			max_x = max(bounds[1], bounds[3])
-			min_y = min(bounds[2], bounds[4])
-			max_y = max(bounds[2], bounds[4])
+	var/list/bounds = tgt_ship?.get_combat_bounds()
+	if(bounds && bounds.len >= 4)
+		min_x = bounds[1]
+		min_y = bounds[2]
+		max_x = bounds[3]
+		max_y = bounds[4]
 
 	// How far outside the ship to spawn (between ship edge and black wall)
 	var/spawn_dist = 10
@@ -575,8 +574,9 @@
 
 	return TRUE
 
-/// Checks if the launcher can fire
-/obj/machinery/ship_combat/missile_launcher/proc/can_fire()
+/// Checks if the launcher can fire. Pass the console's locked target (if any)
+/// so the yellow-zone siege exception can be evaluated.
+/obj/machinery/ship_combat/missile_launcher/proc/can_fire(obj/structure/overmap/locked_target = null)
 	if(machine_stat & (BROKEN|NOPOWER))
 		return FALSE
 	if(!anchored)
@@ -585,13 +585,36 @@
 		return FALSE
 	if(!is_on_exterior())
 		return FALSE
-	// Zone restriction check - weapons disabled in neutral and contested zones
-	if(!SSovermap_zones.weapons_allowed_at(src))
+	// Zone restriction check - weapons disabled in neutral and contested zones,
+	// unless this is a siege shot against a raidable player outpost
+	if(!SSovermap_zones.weapons_allowed_at(src) && !is_siege_shot_allowed(locked_target))
 		return FALSE
 	return TRUE
 
+/**
+ * The yellow-zone siege exception: missile launchers may fire outside the red
+ * zone when (and only when) the locked target is a raidable player outpost and
+ * the firing ship isn't sitting in patrolled green space. Define-gated so it
+ * can be flipped off if it warps ship-vs-ship balance.
+ */
+/obj/machinery/ship_combat/missile_launcher/proc/is_siege_shot_allowed(obj/structure/overmap/locked_target)
+#ifdef PLAYER_OUTPOST_YELLOW_SIEGE_ENABLED
+	if(!istype(locked_target, /obj/structure/overmap/dynamic/player_outpost))
+		return FALSE
+	var/obj/structure/overmap/dynamic/player_outpost/outpost = locked_target
+	if(!outpost.raidable)
+		return FALSE
+	var/obj/structure/overmap/ship/our_ship = get_ship_from_atom(src)
+	if(!our_ship)
+		return FALSE
+	var/zone_type = SSovermap_zones.get_zone_type(get_turf(our_ship))
+	return zone_type == ZONE_YELLOW || zone_type == ZONE_RED
+#else
+	return FALSE
+#endif
+
 /// Returns status info for the combat console UI
-/obj/machinery/ship_combat/missile_launcher/proc/get_status()
+/obj/machinery/ship_combat/missile_launcher/proc/get_status(obj/structure/overmap/locked_target = null)
 	var/on_ext = is_on_exterior()
 	return list(
 		"id" = launcher_id,
@@ -599,7 +622,7 @@
 		"loaded" = loaded_missile ? 1 : 0,
 		"missile_name" = loaded_missile ? loaded_missile["name"] : null,
 		"missile_damage" = loaded_missile ? loaded_missile["damage"] : null,
-		"ready" = can_fire(),
+		"ready" = can_fire(locked_target),
 		"on_exterior" = on_ext,
 		"enabled" = on_ext && anchored && !(machine_stat & (BROKEN|NOPOWER)),  // Can potentially fire (positioned correctly)
 	)

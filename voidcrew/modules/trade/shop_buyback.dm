@@ -35,7 +35,7 @@
 	/// Per-round demand roll bounds (how many sales the trader will take)
 	var/demand_min = 2
 	var/demand_max = 4
-	/// Remaining demand this round (shared between the outpost's terminals)
+	/// Remaining demand this round (shared between everyone selling here)
 	var/demand = 0
 	/// Author override when the item's initial icon renders wrong in the UI
 	var/icon_override
@@ -147,10 +147,10 @@
 
 /**
  * Sells one sale-unit: validates, consumes the goods, decrements demand and
- * pays out at the terminal. Returns TRUE on success.
+ * pays out over the counter. Returns TRUE on success.
  * * quiet - suppress the per-sale chat line (bulk mode prints its own total)
  */
-/datum/shop_buyback/proc/try_sell(mob/living/user, obj/machinery/computer/outpost_shop_terminal/terminal, quiet = FALSE)
+/datum/shop_buyback/proc/try_sell(mob/living/user, mob/living/basic/outpost_trader/vendor, quiet = FALSE)
 	if(demand <= 0)
 		return FALSE
 
@@ -186,7 +186,7 @@
 	if(pay_credits > 0)
 		account.adjust_money(pay_credits, "Trader Outpost: sold [name]")
 	if(pay_vouchers > 0)
-		var/atom/drop_loc = terminal?.drop_location() || user.drop_location()
+		var/atom/drop_loc = user.drop_location() || vendor?.drop_location()
 		var/obj/item/stack/trade_voucher/payout = new(drop_loc, pay_vouchers)
 		if(!user.put_in_hands(payout) && !quiet)
 			to_chat(user, span_notice("Your voucher payout lands at your feet."))
@@ -198,11 +198,11 @@
  * Sells as many sale-units as demand and the seller's carry allow.
  * Returns how many units were sold.
  */
-/datum/shop_buyback/proc/try_sell_bulk(mob/living/user, obj/machinery/computer/outpost_shop_terminal/terminal)
+/datum/shop_buyback/proc/try_sell_bulk(mob/living/user, mob/living/basic/outpost_trader/vendor)
 	var/sold = 0
 	var/safety = 50
 	while(demand > 0 && safety-- > 0)
-		if(!try_sell(user, terminal, quiet = TRUE))
+		if(!try_sell(user, vendor, quiet = TRUE))
 			break
 		sold++
 	if(sold > 0)

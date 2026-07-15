@@ -43,6 +43,9 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	var/ruin_category = "unknown"
 	/// Bottom-left turf of the loaded ruin template footprint (set by load_level, cleared on unload)
 	var/turf/ruin_bottom_left
+	/// Rare ruins come from rumor charts, not natural seeding: tinted gold on
+	/// the map, and cleaning one out never spawns a replacement.
+	var/rare = FALSE
 
 /obj/structure/overmap/space_ruin/Initialize(mapload, datum/map_template/ruin/space/template)
 	. = ..()
@@ -96,6 +99,16 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 		ruin_category = "unknown"
 
 /**
+ * Flags this signal as a rumor-chart rare ruin: gold on every map view, and
+ * exempt from the replacement-respawn cycle. Call after set_ruin_template.
+ */
+/obj/structure/overmap/space_ruin/proc/mark_rare()
+	rare = TRUE
+	name = "encrypted signal"
+	desc = "A signal buried under heavy encryption. Whoever hid this didn't want casual traffic finding it."
+	color = "#ffc94d"
+
+/**
  * Updates the icon based on category and survey status
  */
 /obj/structure/overmap/space_ruin/proc/update_icon_for_category()
@@ -127,6 +140,8 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 			. += span_notice("This location has been explored.")
 	else
 		. += span_warning("Survey this signal to learn more about it.")
+	if(rare)
+		. += span_boldnotice("The encryption on this signal is the kind used to hide something valuable.")
 
 /**
  * Called when the ruin is surveyed - reveals true nature
@@ -446,8 +461,10 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	remove_reservation()
 	loaded = FALSE
 
-	// Spawn a new ruin somewhere else on the overmap BEFORE we delete ourselves
-	spawn_replacement_ruin(old_template)
+	// Spawn a new ruin somewhere else on the overmap BEFORE we delete ourselves.
+	// Rare rumor ruins are one-shots: clearing one doesn't seed anything new.
+	if(!rare)
+		spawn_replacement_ruin(old_template)
 
 	// Delete this overmap object
 	qdel(src)

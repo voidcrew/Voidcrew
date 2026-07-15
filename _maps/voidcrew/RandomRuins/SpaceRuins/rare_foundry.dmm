@@ -1,0 +1,1947 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ab" = (
+/obj/structure/closet/emcloset,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ac" = (
+/obj/structure/closet/crate,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ad" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ae" = (
+/mob/living/basic/hivebot/mechanic,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"af" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"ag" = (
+/obj/structure/rack,
+/obj/item/stock_parts/scanning_module/adv,
+/obj/item/stock_parts/matter_bin/adv,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ah" = (
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ai" = (
+/obj/structure/sign/warning/secure_area,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/powered)
+"aj" = (
+/obj/structure/girder,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ak" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Assembly Cell B"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"al" = (
+/obj/machinery/door/airlock/highsecurity{
+	name = "Shipping Gate"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"am" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"an" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ao" = (
+/obj/machinery/conveyor{
+	dir = 4;
+	id = "foundry_line"
+	},
+/obj/item/stack/sheet/iron{
+	amount = 10
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ap" = (
+/obj/structure/rack,
+/obj/item/stock_parts/power_store/cell/high,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aq" = (
+/obj/structure/table,
+/obj/item/stock_parts/capacitor/adv{
+	pixel_x = -4
+	},
+/obj/item/stock_parts/capacitor/adv{
+	pixel_x = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ar" = (
+/turf/template_noop,
+/area/template_noop)
+"as" = (
+/obj/effect/turf_decal/arrows{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"at" = (
+/obj/structure/table,
+/obj/item/paper/crumpled{
+	name = "final shift log";
+	default_raw_text = "Day 34 since the Combine stopped answering the wire. Receivership notice went up on the intake door this morning. Foreman says leave the line running - the custodians keep the schedule better than we ever did, and somebody from the bank will come to count the stock. Last shift out. Lights stay on."
+	},
+/obj/item/pen{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"au" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/glass{
+	amount = 20
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"av" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aw" = (
+/obj/effect/decal/cleanable/blood/oil,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ax" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ay" = (
+/obj/structure/sign/warning/electric_shock,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"az" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aA" = (
+/obj/effect/spawner/random/trash,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aB" = (
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aC" = (
+/obj/structure/sign/warning/hot_temp,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aD" = (
+/obj/effect/turf_decal/box,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aE" = (
+/obj/machinery/door/airlock/mining{
+	name = "Freight Intake"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aF" = (
+/mob/living/basic/hivebot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aG" = (
+/obj/effect/decal/cleanable/blood/gibs/robot_debris,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aH" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aI" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/powered)
+"aJ" = (
+/obj/machinery/door/poddoor{
+	id = "foundry_vault";
+	name = "finished-goods vault door"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aK" = (
+/obj/structure/table,
+/obj/item/stock_parts/micro_laser/high,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aL" = (
+/obj/structure/frame/machine,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aM" = (
+/obj/machinery/autolathe,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aN" = (
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"aO" = (
+/obj/effect/turf_decal/delivery,
+/obj/structure/closet/crate/zone_loot/industrial,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aP" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aQ" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aR" = (
+/obj/structure/sign/warning/secure_area,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aS" = (
+/obj/item/weldingtool/largetank{
+	pixel_x = -3
+	},
+/obj/item/clothing/head/utility/welding{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aT" = (
+/obj/machinery/conveyor{
+	dir = 4;
+	id = "foundry_line"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aU" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aV" = (
+/obj/machinery/space_heater,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aW" = (
+/obj/structure/table,
+/obj/item/storage/part_replacer,
+/obj/item/paper/crumpled{
+	name = "work order 88-C";
+	default_raw_text = "Assembly Cell B: recalibrate manipulator batch seven. NOTE: requisitioned parts are drawn against vault stock - return what you do not fit. The overseer counts everything. It always counts."
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aX" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Assembly Cell A"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aY" = (
+/obj/machinery/door/airlock/maintenance,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aZ" = (
+/obj/item/stack/rods{
+	amount = 2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"bj" = (
+/obj/effect/turf_decal/arrows{
+	dir = 4
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"bs" = (
+/obj/effect/turf_decal/delivery,
+/obj/structure/closet/crate/zone_loot/industrial,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"bQ" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"cR" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"db" = (
+/obj/machinery/mineral/processing_unit_console,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"dD" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"dO" = (
+/obj/effect/turf_decal/box,
+/obj/item/stack/sheet/mineral/titanium{
+	amount = 30
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"eq" = (
+/obj/effect/turf_decal/box,
+/obj/item/stack/sheet/mineral/titanium{
+	amount = 8
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"eY" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"hY" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/construction/rcd,
+/obj/item/weldingtool/experimental,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"iL" = (
+/obj/structure/table/reinforced,
+/obj/item/paper/crumpled{
+	name = "maintenance notice 4,406";
+	default_raw_text = "TO: HELIOS-BETNA HOLDINGS, RECEIVERSHIP DESK. Line two coolant loop re-packed. Output nominal at 214 units per shift. Finished-goods vault at 61 percent capacity. Awaiting shipping authorization. Awaiting reply to notices 1 through 4,405. - Caretaker Voss"
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"iU" = (
+/obj/machinery/conveyor{
+	dir = 2;
+	id = "foundry_line"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"lJ" = (
+/obj/machinery/space_heater,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"nA" = (
+/obj/machinery/mineral/stacking_machine,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"nD" = (
+/obj/effect/turf_decal/delivery,
+/obj/item/paper/crumpled{
+	name = "shipping manifest - consignment 001";
+	default_raw_text = "4,112 crates certified structural alloy, graded, sealed, and palletized. HOLD FOR SHIPPING AUTHORIZATION. Authorization pending since - date field illegible. Custodian units will defend the consignment until release codes are presented. THE LINE DELIVERS."
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ot" = (
+/obj/effect/decal/cleanable/blood/gibs/robot_debris,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"oX" = (
+/obj/structure/frame/machine,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"qB" = (
+/obj/machinery/door/airlock/command{
+	name = "Overseer Control"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"rK" = (
+/obj/effect/turf_decal/box,
+/obj/item/stack/sheet/iron{
+	amount = 3
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"uv" = (
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"uG" = (
+/mob/living/basic/hivebot/strong,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"vm" = (
+/obj/effect/turf_decal/box,
+/obj/item/stack/sheet/mineral/diamond{
+	amount = 5
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"vB" = (
+/obj/machinery/computer/monitor{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"vK" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/machinery/conveyor_switch/oneway{
+	id = "foundry_line";
+	name = "line control"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"vQ" = (
+/obj/effect/decal/cleanable/blood/gibs/robot_debris,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"wp" = (
+/obj/effect/spawner/random/trash,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"wt" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/blood/oil,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"wL" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/obj/effect/decal/remains/human,
+/obj/item/paper/crumpled{
+	name = "final entry";
+	default_raw_text = "vault hit 100 percent today. the overseer flagged it OVERCAPACITY and the line just kept going. they stack the surplus in the yard now. i am going to sit here a while and listen to the belt. it is a good sound. somebody authorize the shipment."
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"xj" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/stock_parts/matter_bin/super,
+/obj/item/stock_parts/micro_laser/ultra,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"xk" = (
+/obj/effect/turf_decal/box,
+/obj/item/stack/sheet/plasteel{
+	amount = 30
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"xO" = (
+/obj/effect/turf_decal/box,
+/obj/item/stack/sheet/mineral/silver{
+	amount = 20
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"xU" = (
+/obj/machinery/button/door/directional/east{
+	id = "foundry_vault";
+	name = "vault door control"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"yW" = (
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"zs" = (
+/obj/effect/turf_decal/box,
+/obj/item/stack/sheet/mineral/plastitanium{
+	amount = 10
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"zB" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Bj" = (
+/mob/living/basic/hivebot/rapid,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Cq" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/stock_parts/scanning_module/phasic,
+/obj/item/stock_parts/capacitor/super,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Dw" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/iron{
+	amount = 20
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"DT" = (
+/obj/effect/decal/cleanable/blood/oil,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Ec" = (
+/obj/effect/turf_decal/delivery,
+/obj/structure/closet/crate/zone_loot/industrial/rare,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Ei" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Fe" = (
+/obj/machinery/conveyor_switch/oneway{
+	id = "foundry_line";
+	name = "line master control"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"FS" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Hj" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Hx" = (
+/obj/effect/turf_decal/box,
+/obj/item/stack/sheet/iron{
+	amount = 15
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"HN" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"HU" = (
+/obj/machinery/ore_silo,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"HW" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"If" = (
+/obj/effect/turf_decal/caution/stand_clear{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Ij" = (
+/obj/effect/decal/cleanable/blood/splatter/oil,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Iy" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"IC" = (
+/obj/machinery/conveyor{
+	dir = 2;
+	id = "foundry_line"
+	},
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 5
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"IX" = (
+/obj/structure/girder,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Jd" = (
+/obj/machinery/button/door/directional/north{
+	id = "foundry_vault";
+	name = "shipping release control"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"JR" = (
+/obj/effect/turf_decal/box,
+/obj/item/stack/sheet/mineral/uranium{
+	amount = 10
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Ld" = (
+/obj/effect/turf_decal/caution/stand_clear{
+	dir = 4
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Ly" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"LB" = (
+/obj/effect/turf_decal/arrows{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"LJ" = (
+/obj/item/stack/rods{
+	amount = 3
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Ms" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"MT" = (
+/obj/structure/closet/crate,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"MU" = (
+/obj/effect/decal/cleanable/blood/gibs/robot_debris/old,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Nm" = (
+/obj/effect/turf_decal/box,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"PR" = (
+/obj/machinery/light/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"PV" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Qe" = (
+/obj/effect/turf_decal/box,
+/obj/item/stack/sheet/mineral/gold{
+	amount = 20
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"QO" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"QT" = (
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Rf" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/stock_parts/power_store/cell/hyper,
+/obj/item/storage/part_replacer,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Rg" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Ri" = (
+/obj/machinery/porta_turret/syndicate/energy/heavy{
+	name = "custodian sentry turret"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"RD" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"RI" = (
+/obj/structure/frame/computer,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"RU" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Th" = (
+/mob/living/basic/hivebot,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Tp" = (
+/obj/structure/rack,
+/obj/item/clothing/head/utility/welding,
+/obj/item/stack/cable_coil,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Tr" = (
+/obj/item/stack/rods{
+	amount = 4
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"TM" = (
+/obj/item/stack/rods{
+	amount = 6
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Us" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Ux" = (
+/mob/living/basic/hivebot/mechanic,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"UN" = (
+/obj/machinery/mineral/processing_unit,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Vb" = (
+/obj/effect/turf_decal/box,
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 10
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Vg" = (
+/obj/machinery/light/small/red/directional/north,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Wt" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/circuitboard/machine/autolathe,
+/obj/item/circuitboard/machine/ore_redemption,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"WC" = (
+/mob/living/basic/hivebot/strong,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"WP" = (
+/obj/machinery/conveyor{
+	dir = 4;
+	id = "foundry_line"
+	},
+/obj/item/stack/sheet/mineral/titanium{
+	amount = 5
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Xw" = (
+/obj/effect/turf_decal/box,
+/obj/item/stack/sheet/plasteel{
+	amount = 10
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"XH" = (
+/obj/effect/decal/cleanable/blood/oil,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"XJ" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/blood/oil,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"Ya" = (
+/obj/effect/decal/cleanable/blood/gibs/robot_debris/old,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"YE" = (
+/mob/living/basic/hivebot/range,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+"YH" = (
+/obj/effect/turf_decal/delivery/red,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"YJ" = (
+/obj/machinery/conveyor{
+	dir = 4;
+	id = "foundry_line"
+	},
+/obj/item/stack/sheet/plasteel{
+	amount = 5
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Zf" = (
+/obj/structure/table/reinforced,
+/obj/item/paper/crumpled{
+	name = "maintenance notice 11,209";
+	default_raw_text = "TO: WHOEVER IS LEFT. Line two nominal. Vault at 97 percent capacity. The custodians re-plated the catwalks again - they do not know how to stop, and I have stopped telling them. If nobody reads these, at least the machines watch me write them. - V."
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ZZ" = (
+/obj/machinery/recycler{
+	dir = 4
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/powered)
+
+(1,1,1) = {"
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(2,1,1) = {"
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+aU
+aU
+af
+aQ
+aQ
+aU
+aU
+aU
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(3,1,1) = {"
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+aU
+ab
+ac
+az
+aT
+ad
+av
+aU
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(4,1,1) = {"
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+aU
+ax
+aw
+ax
+ao
+aO
+ax
+aU
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(5,1,1) = {"
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+aU
+at
+ax
+aF
+aT
+aD
+aw
+aU
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(6,1,1) = {"
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+aU
+am
+az
+az
+aT
+as
+aZ
+aU
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(7,1,1) = {"
+ar
+ar
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aC
+aE
+aE
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+ar
+ar
+"}
+(8,1,1) = {"
+ar
+ar
+aU
+lJ
+Rg
+RU
+yW
+Rg
+HU
+HN
+Rg
+PV
+aT
+bQ
+HN
+Rg
+aN
+aN
+az
+az
+az
+az
+aY
+az
+ax
+aU
+ar
+ar
+"}
+(9,1,1) = {"
+ar
+ar
+aU
+Rg
+yW
+XH
+aN
+aN
+Rg
+Ei
+XH
+PV
+aT
+bQ
+Rg
+IX
+aN
+Rg
+aU
+aU
+aH
+aU
+aU
+ah
+az
+aU
+ar
+ar
+"}
+(10,1,1) = {"
+ar
+ar
+aU
+oX
+XH
+aN
+Ux
+aN
+db
+UN
+RD
+PV
+ao
+bQ
+aN
+aN
+Rg
+aN
+aU
+aM
+az
+aq
+aU
+az
+az
+aQ
+ar
+ar
+"}
+(11,1,1) = {"
+ar
+ar
+aU
+Tp
+aN
+Rg
+Rg
+XH
+Rg
+dD
+dD
+PV
+aT
+wt
+aN
+Th
+Nm
+aN
+aU
+ax
+ax
+aK
+aU
+ax
+aB
+aU
+ar
+ar
+"}
+(12,1,1) = {"
+ar
+ar
+aU
+aU
+aU
+aH
+aU
+aU
+aN
+aN
+IC
+iU
+aT
+bQ
+XH
+aN
+Nm
+aN
+aX
+az
+aw
+av
+aU
+az
+az
+aU
+ar
+ar
+"}
+(13,1,1) = {"
+ar
+ar
+aU
+Ly
+an
+an
+Ly
+qB
+XH
+RD
+Rg
+PV
+aT
+bQ
+aN
+aN
+aN
+HW
+aU
+aL
+aF
+ax
+aU
+az
+ah
+aU
+ar
+ar
+"}
+(14,1,1) = {"
+ar
+ar
+aU
+iL
+an
+an
+an
+FS
+aN
+ZZ
+aN
+PV
+aT
+bQ
+vQ
+Rg
+aN
+LJ
+aU
+ap
+az
+az
+aU
+aA
+aw
+ay
+ar
+ar
+"}
+(15,1,1) = {"
+ar
+ar
+aH
+Zf
+Ly
+an
+an
+FS
+Rg
+XH
+Ij
+PV
+YJ
+bQ
+aN
+aN
+wp
+aN
+aU
+aU
+aH
+aU
+aU
+ah
+az
+aU
+ar
+ar
+"}
+(16,1,1) = {"
+ar
+ar
+aU
+Ms
+an
+an
+vB
+FS
+aN
+Rg
+Rg
+PV
+aT
+bQ
+aN
+oX
+rK
+Rg
+aU
+aL
+az
+aW
+aU
+az
+aB
+aU
+ar
+ar
+"}
+(17,1,1) = {"
+ar
+ar
+aU
+an
+an
+an
+RI
+FS
+aN
+oX
+XH
+PV
+aT
+cR
+Rg
+aN
+Bj
+aN
+aU
+ax
+aG
+az
+aU
+ax
+aA
+aU
+ar
+ar
+"}
+(18,1,1) = {"
+ar
+ar
+aU
+an
+an
+wL
+Fe
+FS
+Rg
+aN
+aN
+PV
+aT
+bQ
+aN
+Ij
+aN
+aN
+ak
+az
+aS
+av
+aU
+az
+ah
+aU
+ar
+ar
+"}
+(19,1,1) = {"
+ar
+ar
+aU
+Jd
+an
+an
+RI
+FS
+aN
+vQ
+aN
+PV
+aT
+bQ
+aN
+aN
+Rg
+HW
+aU
+az
+az
+aw
+aU
+az
+ae
+aU
+ar
+ar
+"}
+(20,1,1) = {"
+ar
+ar
+aU
+an
+Ly
+an
+an
+FS
+aN
+aN
+Rg
+XJ
+WP
+bQ
+aN
+aN
+aN
+XH
+aU
+ag
+az
+ax
+aU
+aZ
+az
+aU
+ar
+ar
+"}
+(21,1,1) = {"
+ar
+ar
+aU
+Ms
+an
+Ly
+an
+FS
+Rg
+MT
+aN
+PV
+aT
+bQ
+Rg
+aN
+LJ
+aN
+aU
+aU
+aH
+aU
+aU
+ax
+aB
+aU
+ar
+ar
+"}
+(22,1,1) = {"
+ar
+ar
+aU
+QO
+an
+an
+Ly
+FS
+aN
+Rg
+aN
+PV
+aT
+bQ
+YE
+Rg
+aN
+oX
+az
+ax
+az
+ac
+aU
+aj
+ax
+aU
+ar
+ar
+"}
+(23,1,1) = {"
+ar
+ar
+aU
+aU
+aU
+aH
+aU
+aU
+aN
+IX
+aN
+PV
+aT
+bQ
+aN
+aN
+Rg
+aN
+az
+az
+aA
+az
+aU
+az
+az
+aU
+ar
+ar
+"}
+(24,1,1) = {"
+ar
+ar
+aU
+Vb
+aN
+Rg
+aN
+aN
+aN
+aN
+aN
+vK
+aT
+bj
+XH
+aN
+aN
+Rg
+az
+az
+az
+az
+aY
+az
+ah
+aU
+ar
+ar
+"}
+(25,1,1) = {"
+ar
+ar
+aU
+aN
+aN
+aN
+wp
+Ya
+Rg
+aN
+aN
+PV
+nA
+bQ
+bs
+aN
+uG
+aN
+az
+aA
+ax
+ax
+aU
+ax
+az
+aU
+ar
+ar
+"}
+(26,1,1) = {"
+ar
+ar
+aU
+Rg
+IX
+aN
+aN
+aN
+zB
+Tr
+PR
+Xw
+Ld
+eq
+Us
+zB
+aN
+aN
+az
+Dw
+au
+aP
+aU
+aa
+aV
+aU
+ar
+ar
+"}
+(27,1,1) = {"
+ar
+ar
+aU
+Iy
+aN
+wp
+Rg
+Rg
+aU
+aU
+aU
+aR
+al
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+ar
+ar
+"}
+(28,1,1) = {"
+ar
+ar
+aH
+TM
+Rg
+YE
+aN
+aN
+aU
+Vg
+an
+ot
+YH
+an
+Hj
+an
+uv
+aU
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(29,1,1) = {"
+ar
+ar
+aU
+aN
+XH
+aN
+aN
+aN
+aU
+Hj
+Ri
+an
+LB
+an
+WC
+DT
+an
+aU
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(30,1,1) = {"
+ar
+ar
+aU
+Rg
+aN
+aN
+bs
+aN
+aU
+an
+an
+eY
+If
+eY
+an
+Hj
+MU
+aU
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(31,1,1) = {"
+ar
+ar
+aU
+aN
+aN
+Ya
+aN
+Rg
+aI
+aI
+aI
+ai
+aJ
+aI
+aI
+aI
+aI
+aI
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(32,1,1) = {"
+ar
+ar
+aU
+Iy
+Ya
+aN
+aN
+aN
+aI
+xk
+Cq
+xj
+an
+Wt
+an
+JR
+Hj
+aI
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(33,1,1) = {"
+ar
+ar
+aU
+aN
+aN
+IX
+Rg
+aN
+aI
+dO
+Ly
+an
+an
+an
+an
+an
+an
+aI
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(34,1,1) = {"
+ar
+ar
+aU
+wp
+Hx
+aN
+aN
+wp
+aI
+Vg
+an
+an
+Ec
+nD
+an
+an
+uv
+aI
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(35,1,1) = {"
+ar
+ar
+aU
+aN
+aN
+Rg
+Hx
+aN
+aI
+zs
+an
+an
+an
+an
+Ly
+an
+an
+aI
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(36,1,1) = {"
+ar
+ar
+aU
+QT
+Rg
+zB
+aN
+Rg
+aI
+Qe
+Hj
+xU
+Rf
+hY
+an
+vm
+xO
+aI
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(37,1,1) = {"
+ar
+ar
+aU
+aU
+aU
+aU
+aU
+aU
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}
+(38,1,1) = {"
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+ar
+"}

@@ -144,6 +144,36 @@
 					"zone_name" = target_zone_name,
 					"same_zone" = can_target,
 				))
+			// Raidable player outposts in range are valid siege targets
+			for(var/obj/structure/overmap/dynamic/player_outpost/outpost as anything in GLOB.player_outposts)
+				if(!outpost.raidable)
+					continue
+				var/turf/outpost_turf = get_turf(outpost)
+				if(!outpost_turf || outpost_turf.z != our_turf.z)
+					continue
+				var/distance = get_dist(our_turf, outpost_turf)
+				if(distance > COMBAT_TARGETING_RANGE)
+					continue
+				var/target_zone_type = null
+				var/target_zone_name = "Unknown"
+				if(SSovermap_zones?.initialized)
+					var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(outpost_turf)
+					if(target_zone)
+						target_zone_type = target_zone.zone_type
+						target_zone_name = target_zone.name
+				nearby_ships += list(list(
+					"name" = "[outpost.name] (outpost)",
+					"ref" = REF(outpost),
+					"shields" = 0,
+					"shields_max" = 0,
+					"integrity" = 100,
+					"integrity_max" = 100,
+					"distance" = distance,
+					"speed" = 0,
+					"zone_type" = target_zone_type,
+					"zone_name" = target_zone_name,
+					"same_zone" = (our_zone_type != ZONE_GREEN),
+				))
 	data["nearby_ships"] = nearby_ships
 
 	// Get launcher status
@@ -156,10 +186,10 @@
 			linked_launchers -= ref
 			continue
 		total_count++
-		var/is_ready = launcher.can_fire()
+		var/is_ready = launcher.can_fire(target_ship)
 		if(is_ready)
 			ready_count++
-		launchers += list(launcher.get_status())
+		launchers += list(launcher.get_status(target_ship))
 	data["launchers"] = launchers
 	data["launchers_ready"] = ready_count
 	data["launchers_total"] = total_count
@@ -363,7 +393,9 @@
 			var/target_ref = params["ref"]
 			if(!target_ref)
 				return FALSE
-			var/obj/structure/overmap/ship/new_target = locate(target_ref) in SSovermap.simulated_ships
+			var/obj/structure/overmap/new_target = locate(target_ref) in SSovermap.simulated_ships
+			if(!new_target)
+				new_target = locate(target_ref) in GLOB.player_outposts
 			if(!new_target || new_target == current_ship)
 				return FALSE
 			set_target_ship(new_target, ui.user)
@@ -401,6 +433,9 @@
 			var/obj/machinery/ship_combat/interdictor/interdictor = linked_interdictor_ref?.resolve()
 			if(!interdictor)
 				to_chat(ui.user, span_warning("No interdictor linked! Link an interdiction system with a multitool."))
+				return FALSE
+			if(!istype(target_ship, /obj/structure/overmap/ship))
+				to_chat(ui.user, span_warning("Interdiction fields cannot anchor a stationary structure."))
 				return FALSE
 			return interdictor.start_interdiction(target_ship, ui.user)
 
@@ -488,6 +523,9 @@
 				return FALSE
 			if(!target_ship)
 				to_chat(ui.user, span_warning("No target locked. Acquire a weapons lock first."))
+				return FALSE
+			if(!istype(target_ship, /obj/structure/overmap/ship))
+				to_chat(ui.user, span_warning("Siphon protocols require a ship-class target."))
 				return FALSE
 			return siphon.player_activate_siphon(ui.user, target_ship)
 

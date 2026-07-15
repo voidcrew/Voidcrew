@@ -9,7 +9,7 @@
  * - Salvage Order  — recovery contract on a ruin, trader flavor
  * - Kill Contract  — proof-of-kill on a named ruin target, trader flavor
  * - Courier Run    — haul a sealed freight pod to ANOTHER outpost; the pod
- *   only unloads at its destination board (piracy bait by design)
+ *   only unloads at its destination trader (piracy bait by design)
  *
  * Hard contracts can roll the shop's exclusive_rewards — items no shelf sells.
  */
@@ -26,13 +26,24 @@
 		return
 	author = shop.trader_name
 	. = ..()
-	shop?.maybe_attach_exclusive(src)
+	if(generation_failed)
+		return
+	// Board contracts pay in goods, not money — the open market covers credits/vouchers
+	value = 0
+	value_min = 0
+	value_max = 0
+	voucher_count = 0
+	if(!shop.roll_contract_reward(src))
+		generation_failed = TRUE
+		return
+	update_text()
 
 /datum/mission/recovery/outpost/update_text()
+	var/reward_name = get_reward_summary()
 	name = "Salvage Order: [objective_name]"
 	desc = "[author] of [shop?.outpost_name || "the outpost"] is paying for the [objective_name] out at ([target_x], [target_y]) in the [target_zone_name]. \
-		Deliver it to any contract board or your own mission pad. \
-		Pays [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""][mission_reward ? " and a little something off the back shelf" : ""]. \
+		Deliver it to any outpost trader or your own mission pad. \
+		Pays in kit — [reward_name], no credits changing hands. \
 		Tap a GPS unit on a mission board to receive the objective's beacon ([gps_tag])."
 
 /datum/mission/recovery/outpost/get_archetype()
@@ -50,13 +61,24 @@
 		return
 	author = shop.trader_name
 	. = ..()
-	shop?.maybe_attach_exclusive(src)
+	if(generation_failed)
+		return
+	// Board contracts pay in goods, not money — the open market covers credits/vouchers
+	value = 0
+	value_min = 0
+	value_max = 0
+	voucher_count = 0
+	if(!shop.roll_contract_reward(src))
+		generation_failed = TRUE
+		return
+	update_text()
 
 /datum/mission/recovery/kill/outpost/update_text()
+	var/reward_name = get_reward_summary()
 	name = "Kill Contract: [objective_name]"
 	desc = "[author] of [shop?.outpost_name || "the outpost"] wants [objective_name] gone — holed up at ([target_x], [target_y]) in the [target_zone_name]. \
-		Bring the identification tag to any contract board or your own mission pad. \
-		Pays [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""][mission_reward ? " plus something that isn't on any shelf" : ""]. \
+		Bring the identification tag to any outpost trader or your own mission pad. \
+		Pays in goods — [reward_name], settled on delivery. \
 		Tap a GPS unit on a mission board for the target's transponder ([gps_tag])."
 
 /datum/mission/recovery/kill/outpost/get_archetype()
@@ -106,34 +128,33 @@
 	target_x = destination.x
 	target_y = destination.y - OVERMAP_SOUTH_SIDE_COORD + 1
 
-	// Pay follows the destination's zone — deep deliveries are worth more
+	// Difficulty follows the destination's zone — deeper runs pay richer goods
 	var/zone_type = SSovermap_zones?.get_zone_type(get_turf(destination)) || ZONE_GREEN
 	switch(zone_type)
 		if(ZONE_GREEN)
 			target_zone_name = ZONE_NAME_GREEN
 			difficulty = MISSION_DIFFICULTY_EASY
-			value_min = 500
-			value_max = 800
-			voucher_count = 1
 		if(ZONE_YELLOW)
 			target_zone_name = ZONE_NAME_YELLOW
 			difficulty = MISSION_DIFFICULTY_MEDIUM
-			value_min = 900
-			value_max = 1400
-			voucher_count = 2
 		if(ZONE_RED)
 			target_zone_name = ZONE_NAME_RED
 			difficulty = MISSION_DIFFICULTY_HARD
-			value_min = 1500
-			value_max = 2200
-			voucher_count = 3
-	shop.maybe_attach_exclusive(src)
+
+	// Board contracts pay in goods, not money — the open market covers credits/vouchers
+	value_min = 0
+	value_max = 0
+	voucher_count = 0
+	if(!shop.roll_contract_reward(src))
+		generation_failed = TRUE
+		return
 
 	. = ..()
+	var/reward_name = get_reward_summary()
 	name = "Courier Run: [destination.name]"
 	desc = "[author] needs a sealed freight pod hauled to [destination.name] at ([target_x], [target_y]) in the [target_zone_name]. \
-		The pod's seals only release at the destination's contract board — and every pirate on the lane knows what a courier pod looks like. \
-		Pays [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""] on delivery."
+		The pod's seals only release at the destination's trader — and every pirate on the lane knows what a courier pod looks like. \
+		Pays in kit on delivery: [reward_name]."
 
 /datum/mission/outpost_courier/get_archetype()
 	return "courier"
@@ -147,11 +168,10 @@
 	. = ..()
 	if(!.)
 		return FALSE
-	// The pod materializes at the posting outpost's board — you accepted in person
+	// The pod materializes at the posting trader's feet — you accepted in person
 	var/turf/pod_turf
-	if(shop?.outpost && length(shop.outpost.mission_boards))
-		var/obj/machinery/computer/outpost_mission_board/board = shop.outpost.mission_boards[1]
-		pod_turf = get_turf(board)
+	if(shop?.outpost?.trader)
+		pod_turf = get_turf(shop.outpost.trader)
 	if(!pod_turf)
 		pod_turf = get_turf(ship.shuttle) // desperation fallback; should not happen
 	if(!pod_turf)
@@ -161,7 +181,7 @@
 	pod.name = "sealed freight pod ([shop.outpost_name] → [destination.name])"
 	pod.mission_ref = WEAKREF(src)
 	RegisterSignal(pod, COMSIG_QDELETING, PROC_REF(on_pod_destroyed))
-	servant?.ship_notify("Freight pod dispensed at [shop.outpost_name]'s contract board. Deliver it to [destination.name] ([target_x], [target_y]).", "COURIER RUN", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	servant?.ship_notify("Freight pod handed over at [shop.outpost_name]. Deliver it to [destination.name] ([target_x], [target_y]).", "COURIER RUN", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 	return TRUE
 
 /datum/mission/outpost_courier/proc/on_pod_destroyed(datum/source)
@@ -180,13 +200,13 @@
 	return offered.mission_ref?.resolve() == src
 
 /datum/mission/outpost_courier/can_turn_in_at(atom/reward_anchor)
-	if(!istype(reward_anchor, /obj/machinery/computer/outpost_mission_board))
+	if(!istype(reward_anchor, /mob/living/basic/outpost_trader))
 		return FALSE
-	var/obj/machinery/computer/outpost_mission_board/board = reward_anchor
-	return board.outpost == destination
+	var/mob/living/basic/outpost_trader/npc = reward_anchor
+	return npc.outpost == destination
 
 /datum/mission/outpost_courier/get_wrong_location_reason(atom/reward_anchor)
-	return "The pod's seals only release at [destination?.name || "its destination"]'s contract board."
+	return "The pod's seals only release at [destination?.name || "its destination"]'s trader."
 
 /datum/mission/outpost_courier/get_failure_reason(obj/item/item)
 	if(failed)
@@ -210,7 +230,7 @@
 
 /datum/mission/outpost_courier/get_progress_string()
 	if(!pod)
-		return "Pod waiting at the posting board"
+		return "Pod waiting with the posting trader"
 	return "Deliver the pod to [destination?.name || "the destination"] ([target_x], [target_y])"
 
 /**

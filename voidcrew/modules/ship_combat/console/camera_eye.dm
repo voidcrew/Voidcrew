@@ -7,8 +7,8 @@
 	sight = SEE_TURFS | SEE_OBJS // See turfs and objects, not mobs
 	/// Reference to our console
 	var/obj/machinery/computer/camera_advanced/ship_combat/console
-	/// The ship we're allowed to view
-	var/obj/structure/overmap/ship/target_ship
+	/// The target (ship or raidable outpost) we're allowed to view
+	var/obj/structure/overmap/target_ship
 	/// Static images applied to interior turfs (non-edge turfs)
 	var/list/image/interior_static_images
 
@@ -30,23 +30,18 @@
 	return ..()
 
 /// Generates static overlay images for all interior turfs (turfs not adjacent to space)
-/// Only the ship's exterior outline (turfs touching space) will be visible
+/// Only the target's exterior outline (turfs touching space) will be visible
 /mob/eye/camera/remote/ship_combat/proc/generate_interior_static()
 	clear_interior_static()
-	if(!target_ship?.shuttle?.shuttle_areas)
+	var/list/turf/camera_turfs = target_ship?.get_combat_camera_turfs()
+	if(!length(camera_turfs))
 		return
 
 	interior_static_images = list()
 
 	// Get the z-level for plane offset calculation
-	var/z_level
-	for(var/area/ship_area in target_ship.shuttle.shuttle_areas)
-		for(var/turf/T in ship_area)
-			z_level = T.z
-			break
-		if(z_level)
-			break
-
+	var/turf/first_turf = camera_turfs[1]
+	var/z_level = first_turf.z
 	if(!z_level)
 		return
 
@@ -56,17 +51,17 @@
 	base_static.appearance_flags = RESET_TRANSFORM | RESET_ALPHA | RESET_COLOR | KEEP_APART
 	base_static.override = TRUE
 
-	// Iterate through all turfs in the target ship
-	for(var/area/ship_area in target_ship.shuttle.shuttle_areas)
-		for(var/turf/ship_turf in ship_area)
-			// Check if this turf is on the exterior (adjacent to space)
-			if(is_exterior_turf(ship_turf))
-				continue // Skip exterior turfs - they should be visible
+	// Iterate through all turfs in the target
+	for(var/turf/target_turf as anything in camera_turfs)
+		// Check if this turf is on the exterior (adjacent to space)
+		if(is_exterior_turf(target_turf))
+			continue // Skip exterior turfs - they should be visible
 
-			// This is an interior turf - add static
-			var/image/static_image = new /image(base_static)
-			static_image.loc = ship_turf
-			interior_static_images += static_image
+		// This is an interior turf - add static
+		var/image/static_image = new /image(base_static)
+		static_image.loc = target_turf
+		interior_static_images += static_image
+		CHECK_TICK
 
 /// Checks if a turf is visible (within COMBAT_CAMERA_VISIBILITY_RANGE tiles of space)
 /// When range is 0, only turfs directly adjacent to space are visible
@@ -151,16 +146,15 @@
 	if(!destination)
 		return ..()
 
-	// If no target ship set yet, allow any movement (for initial placement)
-	if(!target_ship?.shuttle)
+	// If no target set yet, allow any movement (for initial placement)
+	if(!target_ship)
 		return ..()
 
-	// Only allow movement within the target ship's areas
-	var/area/dest_area = get_area(destination)
-	if(dest_area && (dest_area in target_ship.shuttle.shuttle_areas))
+	// Only allow movement within the target's viewable footprint
+	if(target_ship.combat_camera_can_view(destination))
 		return ..()
 
-	// Block movement outside target ship
+	// Block movement outside the target
 	return FALSE
 
 /mob/eye/camera/remote/ship_combat/can_z_move(direction, turf/start, turf/destination, z_move_flags = NONE, mob/living/rider)

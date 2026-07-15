@@ -146,12 +146,8 @@
 	if(!location)
 		return NONE
 
-	// Check if this turf is on the target ship
-	if(!target_ship?.shuttle)
-		return NONE
-
-	var/area/click_area = get_area(location)
-	if(!click_area || !(click_area in target_ship.shuttle.shuttle_areas))
+	// Check if this turf is on the target
+	if(!target_ship || !target_ship.combat_camera_can_view(location))
 		return NONE
 
 	// Move the eye to the clicked location

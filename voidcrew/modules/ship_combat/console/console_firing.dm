@@ -43,7 +43,7 @@
 			continue
 
 		// Keep firing from this launcher until it's empty
-		while(launcher.can_fire())
+		while(launcher.can_fire(target_ship))
 			// Get spawn offset for this missile
 			var/list/offset = stagger_offsets[offset_index]
 
@@ -82,7 +82,7 @@
 		if(!launcher)
 			linked_launchers -= ref
 			continue
-		if(!launcher.can_fire())
+		if(!launcher.can_fire(target_ship))
 			continue
 		// Filter by selected missile type if set
 		if(selected_missile_type && launcher.loaded_missile)
@@ -115,6 +115,12 @@
 			to_chat(user, span_warning("No target selected!"))
 		return FALSE
 
+	// Lasers remain ship-to-ship only; sieging outposts is missile work
+	if(!istype(target_ship, /obj/structure/overmap/ship))
+		if(user)
+			to_chat(user, span_warning("Laser tracking cannot resolve station-scale targets — use missiles."))
+		return FALSE
+
 	for(var/datum/weakref/ref in linked_turrets)
 		var/obj/machinery/ship_combat/laser_turret/turret = ref.resolve()
 		if(!turret)
@@ -140,6 +146,12 @@
 	if(!target_ship || !target_turf)
 		if(user)
 			to_chat(user, span_warning("No target selected!"))
+		return 0
+
+	// Lasers remain ship-to-ship only; sieging outposts is missile work
+	if(!istype(target_ship, /obj/structure/overmap/ship))
+		if(user)
+			to_chat(user, span_warning("Laser tracking cannot resolve station-scale targets — use missiles."))
 		return 0
 
 	// Collect all ready turrets and calculate combined damage

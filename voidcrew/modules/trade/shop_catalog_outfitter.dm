@@ -10,15 +10,18 @@
 	outpost_name = "\improper Quartermain Depot"
 	outpost_desc = "A fortified outfitter's depot serving the contested lanes. Armored like it expects its customers to be the problem."
 	trader_name = "Sarge"
-	trader_holoimage_type = /datum/preset_holoimage/outpost_trader/outfitter
+	trader_outfit = /datum/outfit/job/hos
+	trader_gender = FEMALE
 	trader_voice_pack = "goon.speak_1"
 	trader_voice_pitch = 0.85
 	categories = list(
 		"Armor",
 		"Firearms & Ammo",
+		"Ship Ordnance",
 		"Security Gear",
 		"Combat Medical",
 		"Utility",
+		"Colonial Registry",
 		"Charts & Special Orders",
 		"Barter Deals",
 	)
@@ -38,6 +41,10 @@
 		/datum/shop_sku/outfitter/boltaction,
 		/datum/shop_sku/outfitter/rifle_clip,
 		/datum/shop_sku/outfitter/firing_pin,
+		// Ship Ordnance
+		/datum/shop_sku/outfitter/missile_tracking,
+		/datum/shop_sku/outfitter/warhead_standard,
+		/datum/shop_sku/outfitter/missile_light,
 		// Security Gear
 		/datum/shop_sku/outfitter/handcuffs,
 		/datum/shop_sku/outfitter/zipties,
@@ -61,9 +68,13 @@
 		/datum/shop_sku/outfitter/binoculars,
 		/datum/shop_sku/outfitter/mod_flashlight,
 		/datum/shop_sku/outfitter/mod_tether,
+		// Colonial Registry
+		/datum/shop_sku/outpost_deed,
 		// Charts & Special Orders
 		/datum/shop_sku/outfitter/star_chart,
 		/datum/shop_sku/rumor/outfitter,
+		/datum/shop_sku/ruin_chart/biolab,
+		/datum/shop_sku/ruin_chart/foundry,
 		/datum/shop_sku/outfitter/smg_blueprint,
 		/datum/shop_sku/outfitter/wt550_blueprint,
 		/datum/shop_sku/outfitter/carbine_blueprint,
@@ -76,11 +87,14 @@
 		/datum/shop_sku/outfitter/rotating/tackler_gloves,
 		/datum/shop_sku/outfitter/rotating/flashbang,
 		/datum/shop_sku/outfitter/rotating/frag_grenade,
+		/datum/shop_sku/outfitter/rotating/missile_standard,
+		/datum/shop_sku/outfitter/rotating/warhead_heavy,
 	)
 	rare_pool = list(
 		/datum/shop_sku/outfitter/rare/ablative_vest,
 		/datum/shop_sku/outfitter/rare/compact_defib,
 		/datum/shop_sku/outfitter/rare/ion_rifle,
+		/datum/shop_sku/outfitter/rare/missile_heavy,
 	)
 	// Sarge buys serviceable salvage — arms and armor off whoever stopped
 	// needing them — plus field materials off planet megafauna
@@ -105,6 +119,7 @@
 		/obj/item/storage/belt/military/assault,
 		/obj/item/shield/riot/tele,
 		/obj/item/clothing/gloves/tackler/combat,
+		/obj/item/circuitboard/machine/ship_combat/missile_launcher,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -244,6 +259,34 @@
 	price_credits = 300
 	stock_min = 3
 	stock_max = 5
+
+// ===== SHIP ORDNANCE =====
+// Ship-to-ship missiles and the parts to feed a launcher. The armed missiles
+// dispense ready to drag onto a launcher; the components restock a workshop.
+
+/datum/shop_sku/outfitter/missile_tracking
+	category = "Ship Ordnance"
+	item_path = /obj/item/electronics/ship_missile_tracking
+	price_credits = 250
+	stock_min = 2
+	stock_max = 4
+
+/datum/shop_sku/outfitter/warhead_standard
+	category = "Ship Ordnance"
+	item_path = /obj/item/bombcore/missile
+	price_credits = 500
+	stock_min = 1
+	stock_max = 3
+
+/datum/shop_sku/outfitter/missile_light
+	category = "Ship Ordnance"
+	name = "light missile (armed)"
+	desc = "A ready-to-fire light missile. Drag it straight onto a ship launcher — no assembly, no fuss."
+	item_path = /obj/structure/ship_missile/armed/light
+	price_vouchers = 1
+	price_credits = 400
+	stock_min = 1
+	stock_max = 2
 
 // ===== SECURITY GEAR =====
 
@@ -392,6 +435,30 @@
 	category = "Charts & Special Orders"
 	price_credits = 300
 
+// Sarge's special orders name a specific prize: each chart is one rare ruin
+// that exists nowhere until somebody buys the tip and reveals it from their
+// helm. One buyer per rumor, ever — once sold, the trail is cold at every
+// outpost.
+/datum/shop_sku/ruin_chart/biolab
+	name = "special order: 'Eventide'"
+	desc = "Sarge slides over a requisition form for coordinates. An off-ledger NT xenobiology annex that stopped filing reports mid-shift — specimens loose, extract vault never emptied. Uploaded sealed to your helm; reveal it when your crew is kitted for what's inside."
+	category = "Charts & Special Orders"
+	price_vouchers = 2
+	price_credits = 500
+	spawn_zone = ZONE_YELLOW
+	ruin_template_path = /datum/map_template/ruin/space/rare/biolab
+	rumor_name = "Sarge's special order: Eventide"
+	rumor_desc = "A xenobiology annex drifting dark on the contested lanes. Containment failed from the inside. The extract vault is still sealed, and still full."
+
+/datum/shop_sku/ruin_chart/foundry
+	name = "special order: 'Helios-Betna'"
+	desc = "Sarge slides over a requisition form for coordinates. An automated foundry that never heard its owners defaulted — the line still runs, the custodians still patrol, and the finished-goods vault has never shipped a crate. Uploaded sealed to your helm; reveal it when your crew is ready to fight machines for their paychecks."
+	category = "Charts & Special Orders"
+	price_vouchers = 3
+	ruin_template_path = /datum/map_template/ruin/space/rare/foundry
+	rumor_name = "Sarge's special order: Helios-Betna"
+	rumor_desc = "A dead company's foundry running blind in the red band. The custodians hold the line, and the vault holds decades of certified alloy nobody ever came to collect."
+
 // Weapon schematics -- yellow-tier guns, carried or imprinted, crafted beside a bench.
 /datum/shop_sku/outfitter/smg_blueprint
 	category = "Charts & Special Orders"
@@ -443,6 +510,20 @@
 	price_vouchers = 1
 	price_credits = 400
 
+/datum/shop_sku/outfitter/rotating/missile_standard
+	category = "Ship Ordnance"
+	name = "standard missile (armed)"
+	desc = "A ready-to-fire standard missile. Solid ship-to-ship punch, straight onto the launcher."
+	item_path = /obj/structure/ship_missile/armed/standard
+	price_vouchers = 1
+	price_credits = 800
+
+/datum/shop_sku/outfitter/rotating/warhead_heavy
+	category = "Ship Ordnance"
+	item_path = /obj/item/bombcore/missile/heavy
+	price_vouchers = 1
+	price_credits = 700
+
 // ===== RARE SHOWCASE =====
 
 /datum/shop_sku/outfitter/rare/ablative_vest
@@ -461,6 +542,14 @@
 	item_path = /obj/item/gun/energy/ionrifle
 	price_vouchers = 2
 	price_credits = 1000
+
+/datum/shop_sku/outfitter/rare/missile_heavy
+	category = "Ship Ordnance"
+	name = "heavy missile (armed)"
+	desc = "A ready-to-fire heavy missile — devastating, and priced like it. Drag it onto a launcher and pity whatever's downrange."
+	item_path = /obj/structure/ship_missile/armed/heavy
+	price_vouchers = 2
+	price_credits = 800
 
 // ===== SARGE'S SALVAGE COUNTER (buybacks) =====
 // Credits only; guns and armor can come off a lathe, so they never pay vouchers.

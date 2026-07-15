@@ -274,7 +274,7 @@
 	speak = list(
 		"Rent a locker. Trust me. The yellow lanes eat cargo bays.",
 		"Last crew through here left in a hurry. Their locker's still paid up.",
-		"Sarge doesn't sleep. I've checked. It's a hologram thing.",
+		"Sarge doesn't sleep. I've checked. Nobody knows how she does it.",
 		"I stack crates and I watch the docks. The second part is the job.",
 		"Convoy's late again. Convoy's always late. Convoy might be a myth.",
 	)
@@ -303,9 +303,9 @@
 	speak = list(
 		"What'll it be? We have beer, and we have questions I won't ask.",
 		"The regulars are pirates, the pirates are regular. It evens out.",
-		"Vex doesn't drink. Holograms. Tragic, really.",
+		"Vex doesn't drink. Bad for the margins, apparently. Tragic, really.",
 		"Someone paid their tab in raw telecrystal once. Kept the lights on for a month.",
-		"You want intel, buy a rumor at the terminal. You want the TRUTH? Beer first.",
+		"You want intel, buy a rumor off Vex. You want the TRUTH? Beer first.",
 	)
 	emote_see = list("polishes a glass that was already clean.", "restacks the same three bottles.")
 
@@ -354,3 +354,20 @@
 	barefootstep = FOOTSTEP_GRASS
 	clawfootstep = FOOTSTEP_GRASS
 	tiled_dirt = FALSE
+
+// =========================================================================
+// FISHING POND
+// =========================================================================
+
+/**
+ * Halcyon's indoor fishing hole. Nobody approved it; it's load-bearing now.
+ * Water can't be pried up or scraped away (baseturfs is itself, all the way
+ * down), so the sanctuary stays sealed no matter what happens to the pond.
+ * Stocked with honest river fish — Pike insists they arrive through the
+ * water recyclers.
+ */
+/turf/open/water/outpost_pond
+	name = "waystation pond"
+	desc = "A pond sunk straight into the deck plating. The fish are real, the koi rumors are unconfirmed, and the water is warmer than it has any right to be."
+	baseturfs = /turf/open/water/outpost_pond
+	planetary_atmos = FALSE

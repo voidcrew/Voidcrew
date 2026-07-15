@@ -304,9 +304,6 @@
 /turf/open/indestructible/white/textured,
 /area/voidcrew/trader_outpost)
 "bn" = (
-/obj/machinery/computer/outpost_shop_terminal{
-	name = "Vex exchange terminal"
-	},
 /obj/effect/turf_decal/bot,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
@@ -542,10 +539,6 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "jE" = (
-/obj/machinery/computer/outpost_shop_terminal{
-	dir = 4;
-	name = "Dregs consignment terminal"
-	},
 /obj/effect/turf_decal/bot,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
@@ -668,7 +661,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "tP" = (
-/obj/machinery/outpost_trader/dregs_barkeep,
+/mob/living/basic/outpost_trader/dregs_barkeep,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "uq" = (
@@ -753,7 +746,7 @@
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
 "xe" = (
-/obj/machinery/outpost_trader,
+/mob/living/basic/outpost_trader,
 /turf/open/indestructible/light,
 /area/voidcrew/trader_outpost)
 "xj" = (
@@ -1087,7 +1080,7 @@
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
 "Ql" = (
-/obj/machinery/outpost_trader/clinic_doctor,
+/mob/living/basic/outpost_trader/clinic_doctor,
 /obj/effect/turf_decal/box/white{
 	color = "#52B4E9"
 	},
@@ -1167,9 +1160,6 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "Vy" = (
-/obj/machinery/computer/outpost_shop_terminal/patchup_clinic{
-	dir = 2
-	},
 /obj/item/radio/intercom/directional/east,
 /obj/effect/turf_decal/tile/blue/half/contrasted{
 	dir = 1
@@ -1205,10 +1195,6 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "Wy" = (
-/obj/machinery/computer/outpost_mission_board{
-	dir = 8;
-	name = "Vex work board"
-	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "WQ" = (
@@ -1244,9 +1230,7 @@
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "YU" = (
-/obj/machinery/computer/outpost_shop_terminal/dregs_bar{
-	dir = 2
-	},
+/obj/structure/table/reinforced/plastitaniumglass,
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "undertow_bar";
 	dir = 4;

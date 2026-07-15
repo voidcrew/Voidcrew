@@ -9,6 +9,8 @@
 	outpost_name = "\improper Waystation Halcyon"
 	outpost_desc = "A sleepy general store and rest stop on the safe outer ring. The coffee is bad and the prices are honest."
 	trader_name = "Barnaby"
+	trader_outfit = /datum/outfit/job/curator
+	trader_gender = MALE
 	trader_voice_pack = "goon.speak_1"
 	trader_voice_pitch = 1.18
 	categories = list(
@@ -18,6 +20,7 @@
 		"Prospecting",
 		"Galley & Comforts",
 		"Ship Sundries",
+		"Colonial Registry",
 		"Local Knowledge",
 		"Barter Deals",
 	)
@@ -71,8 +74,11 @@
 		/datum/shop_sku/general/floor_tiles,
 		/datum/shop_sku/general/spraycan,
 		/datum/shop_sku/general/soap,
+		// Colonial Registry
+		/datum/shop_sku/outpost_deed,
 		// Local Knowledge
 		/datum/shop_sku/rumor/general,
+		/datum/shop_sku/ruin_chart/hospice,
 		// Barter
 		/datum/shop_sku/barter/plasma_for_medkit,
 	)
@@ -422,6 +428,19 @@
 	desc = "Barnaby leans in, drops his voice, and tells you exactly where something interesting is parked on the outer ring. One uncharted green-band signal, marked on your helm."
 	category = "Local Knowledge"
 	price_credits = 150
+
+// Barnaby's one genuine secret: a specific rare ruin that exists nowhere
+// until somebody buys the tip and reveals it from their helm. One buyer per
+// rumor, ever — once sold, the trail is cold at every outpost.
+/datum/shop_sku/ruin_chart/hospice
+	name = "the story Barnaby doesn't tell twice: 'CSV Meridian'"
+	desc = "Barnaby stops polishing the counter. A plague evac ship, he says, scuttled under quarantine seal with the wards still full — and a pharmacy nobody ever rationed out. He'll sell you where it drifted. Once."
+	category = "Local Knowledge"
+	price_credits = 800
+	spawn_zone = ZONE_YELLOW
+	ruin_template_path = /datum/map_template/ruin/space/rare/hospice
+	rumor_name = "Barnaby's story: CSV Meridian"
+	rumor_desc = "A hospice ship parked dark under a seal that never lifted. The wards are still full. So is the pharmacy."
 
 // ===== ROTATING SHELF =====
 

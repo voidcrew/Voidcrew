@@ -2,15 +2,103 @@
  * # Outpost Security
  *
  * The economic-deterrent enforcement arm of a trader outpost: indestructible
- * lethal turrets that ONLY engage people who attacked outpost property, and
- * the indestructible airlocks of the sanctuary interior.
+ * lethal turrets that engage people who attacked outpost property or another
+ * visitor, and the indestructible airlocks of the sanctuary interior.
  *
- * Turrets never target ordinary visitors — zone PvP between players is the
- * commute's problem, not the outpost's. Aggression against the outpost itself
- * accrues warning strikes (see trader_outpost.register_aggression); the early
- * hits only issue a warning, and only once the offender crosses
- * OUTPOST_AGGRESSION_STRIKES is their mind marked and shot on sight until they leave.
+ * Aggression accrues warning strikes (see trader_outpost.register_aggression);
+ * the early hits only issue a warning, and only once the offender crosses
+ * OUTPOST_AGGRESSION_STRIKES is their mind marked and shot on sight.
  */
+
+// =========================================================================
+// PVP ENFORCEMENT
+// =========================================================================
+
+/**
+ * Watches every living mob for player-on-player attacks. Whether an attack is
+ * protected is resolved from the victim's turf at impact time, rather than by
+ * area Entered/Exited events: admin teleports and docked ships retain their own
+ * areas, so those lifecycle events cannot reliably describe who is at an
+ * outpost.
+ */
+GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
+
+/datum/outpost_pvp_enforcement/New()
+	. = ..()
+	RegisterSignal(SSdcs, COMSIG_GLOB_MOB_CREATED, PROC_REF(on_mob_created))
+	// Usually empty this early, but covers any living globals created first.
+	for(var/mob/living/living_mob as anything in GLOB.mob_living_list)
+		monitor_mob(living_mob)
+
+/datum/outpost_pvp_enforcement/proc/on_mob_created(datum/source, mob/created_mob)
+	SIGNAL_HANDLER
+	if(isliving(created_mob))
+		monitor_mob(created_mob)
+
+/datum/outpost_pvp_enforcement/proc/monitor_mob(mob/living/living_mob)
+	RegisterSignal(living_mob, COMSIG_ATOM_AFTER_ATTACKEDBY, PROC_REF(on_outpost_pvp_item_attack))
+	RegisterSignals(living_mob, list(
+			COMSIG_ATOM_ATTACK_HAND,
+			COMSIG_ATOM_ATTACK_PAW,
+			COMSIG_MOB_ATTACK_ALIEN,
+		), PROC_REF(on_outpost_pvp_unarmed_attack))
+	RegisterSignals(living_mob, list(
+			COMSIG_ATOM_ATTACK_BASIC_MOB,
+			COMSIG_ATOM_ATTACK_ANIMAL,
+		), PROC_REF(on_outpost_pvp_npc_attack))
+	RegisterSignal(living_mob, COMSIG_PROJECTILE_PREHIT, PROC_REF(on_outpost_pvp_projectile))
+	RegisterSignal(living_mob, COMSIG_ATOM_PREHITBY, PROC_REF(on_outpost_pvp_thrown_item))
+	RegisterSignal(living_mob, COMSIG_ATOM_HULK_ATTACK, PROC_REF(on_outpost_pvp_hulk_attack))
+	RegisterSignal(living_mob, COMSIG_ATOM_ATTACK_MECH, PROC_REF(on_outpost_pvp_mech_attack))
+
+/**
+ * Routes player-on-player violence through the same strike and embargo path as
+ * property damage. Both parties need minds so outpost NPCs, fauna, and ordinary
+ * interactions with them retain their existing behavior.
+ */
+/datum/outpost_pvp_enforcement/proc/register_pvp_aggression(mob/living/victim, mob/living/offender)
+	if(!victim.mind || !offender?.mind || victim == offender)
+		return
+	var/obj/structure/overmap/trader_outpost/guarding_outpost = get_trader_outpost_for_turf(get_turf(victim))
+	guarding_outpost?.register_aggression(offender)
+
+/datum/outpost_pvp_enforcement/proc/on_outpost_pvp_item_attack(mob/living/victim, obj/item/weapon, mob/living/offender, list/modifiers, list/attack_modifiers)
+	SIGNAL_HANDLER
+	if(weapon.force)
+		register_pvp_aggression(victim, offender)
+
+/datum/outpost_pvp_enforcement/proc/on_outpost_pvp_unarmed_attack(mob/living/victim, mob/living/offender, list/modifiers)
+	SIGNAL_HANDLER
+	if(offender.combat_mode || LAZYACCESS(modifiers, RIGHT_CLICK))
+		register_pvp_aggression(victim, offender)
+
+/datum/outpost_pvp_enforcement/proc/on_outpost_pvp_npc_attack(mob/living/victim, mob/living/offender)
+	SIGNAL_HANDLER
+	if(offender.melee_damage_upper > 0)
+		register_pvp_aggression(victim, offender)
+
+/datum/outpost_pvp_enforcement/proc/on_outpost_pvp_projectile(mob/living/victim, obj/projectile/hitting_projectile)
+	SIGNAL_HANDLER
+	if(hitting_projectile.is_hostile_projectile() && isliving(hitting_projectile.firer))
+		register_pvp_aggression(victim, hitting_projectile.firer)
+
+/datum/outpost_pvp_enforcement/proc/on_outpost_pvp_thrown_item(mob/living/victim, atom/movable/hitting_atom, datum/thrownthing/throwingdatum)
+	SIGNAL_HANDLER
+	if(!isitem(hitting_atom))
+		return
+	var/obj/item/thrown_item = hitting_atom
+	var/mob/living/offender = throwingdatum?.get_thrower()
+	if(thrown_item.throwforce && istype(offender))
+		register_pvp_aggression(victim, offender)
+
+/datum/outpost_pvp_enforcement/proc/on_outpost_pvp_hulk_attack(mob/living/victim, mob/living/offender)
+	SIGNAL_HANDLER
+	register_pvp_aggression(victim, offender)
+
+/datum/outpost_pvp_enforcement/proc/on_outpost_pvp_mech_attack(mob/living/victim, obj/vehicle/sealed/mecha/mecha_attacker, mob/living/pilot)
+	SIGNAL_HANDLER
+	register_pvp_aggression(victim, pilot)
+
 /obj/machinery/porta_turret/outpost
 	name = "outpost defense turret"
 	desc = "An over-engineered defense turret bearing a polite brass plaque: 'Violence is bad for business.'"
@@ -106,8 +194,8 @@
 	security_level = 6
 	normal_integrity = 1000
 
-	/// The outpost this door belongs to (set by the outpost on interior load)
-	var/obj/structure/overmap/trader_outpost/outpost
+	/// The berth host this door belongs to (set by the outpost on interior/hangar load)
+	var/obj/structure/overmap/outpost
 
 /obj/machinery/door/airlock/outpost/Destroy()
 	outpost = null

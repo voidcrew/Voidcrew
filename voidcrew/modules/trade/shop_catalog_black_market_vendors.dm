@@ -3,9 +3,9 @@
  *
  * The Undertow's side businesses: Dram behind the bar at the Dregs, and
  * Sawbones running the Patch-Up Clinic. Each is a full /datum/outpost_shop
- * (own stock, own buyback ledger, own voice) fronted by its own trader pad
- * and terminal — the machines carry a shop_type and the outpost links them
- * to their vendor shop on interior load (see outpost.dm get_shop()).
+ * (own stock, own buyback ledger, own voice) fronted by its own trader NPC —
+ * the mobs carry a shop_type and the outpost links them to their vendor shop
+ * on interior load (see outpost.dm get_shop(), trader_npc.dm for the mobs).
  *
  * Balance notes:
  * - Both stalls are credit-first; the few voucher SKUs sit on the rotating/
@@ -20,26 +20,16 @@
 // THE DREGS — Dram, barkeep
 // =========================================================================
 
-/obj/machinery/outpost_trader/dregs_barkeep
-	shop_type = /datum/outpost_shop/vendor/dregs_bar
-
-/obj/machinery/computer/outpost_shop_terminal/dregs_bar
-	name = "bar tab terminal"
-	desc = "The Dregs' till, bolted to the counter. The price list is non-negotiable and the tip jar is a decoy."
-	shop_type = /datum/outpost_shop/vendor/dregs_bar
-
-/// Dram, the Dregs' barkeep: an apron, a rag, and no follow-up questions
-/datum/preset_holoimage/outpost_trader/dregs_barkeep
-	outfit_type = /datum/outfit/job/bartender
-
 /// Abstract grouping parent for the Undertow's side businesses
 /datum/outpost_shop/vendor
 
+/// Dram, the Dregs' barkeep: an apron, a rag, and no follow-up questions
 /datum/outpost_shop/vendor/dregs_bar
 	outpost_name = "\improper The Dregs"
 	outpost_desc = "The Undertow's cantina."
 	trader_name = "Dram"
-	trader_holoimage_type = /datum/preset_holoimage/outpost_trader/dregs_barkeep
+	trader_outfit = /datum/outfit/job/bartender
+	trader_gender = MALE
 	trader_voice_pack = "goon.speak_3"
 	trader_voice_pitch = 0.82
 	categories = list(
@@ -92,7 +82,7 @@
 		TRADER_LINE_IDLE = list(
 			"We have beer, and we have questions I won't ask.",
 			"The regulars are pirates, the pirates are regular. It evens out.",
-			"Vex doesn't drink. Holograms. Tragic, really. I wouldn't know anything about that.",
+			"Vex doesn't drink. Says it's bad for the margins. Tragic, really.",
 			"Someone paid their tab in raw telecrystal once. Kept the lights on for a month.",
 			"You want intel, buy a rumor off Vex. You want the TRUTH? Beer first.",
 			"Bring me real moonshine and I'll pay real credits. The synthetic stuff insults us both.",
@@ -255,23 +245,12 @@
 // PATCH-UP CLINIC — Sawbones, practitioner (license pending since forever)
 // =========================================================================
 
-/obj/machinery/outpost_trader/clinic_doctor
-	shop_type = /datum/outpost_shop/vendor/patchup_clinic
-
-/obj/machinery/computer/outpost_shop_terminal/patchup_clinic
-	name = "clinic billing terminal"
-	desc = "The Patch-Up Clinic's front desk, minus the desk. Payment is due before anesthesia. ESPECIALLY before anesthesia."
-	shop_type = /datum/outpost_shop/vendor/patchup_clinic
-
 /// Sawbones, the Patch-Up Clinic's resident professional. Of medicine, probably.
-/datum/preset_holoimage/outpost_trader/clinic_doctor
-	outfit_type = /datum/outfit/job/doctor
-
 /datum/outpost_shop/vendor/patchup_clinic
 	outpost_name = "\improper Patch-Up Clinic"
 	outpost_desc = "The Undertow's medbay."
 	trader_name = "Sawbones"
-	trader_holoimage_type = /datum/preset_holoimage/outpost_trader/clinic_doctor
+	trader_outfit = /datum/outfit/job/doctor
 	trader_voice_pack = "goon.speak_4"
 	trader_voice_pitch = 1.12
 	categories = list(

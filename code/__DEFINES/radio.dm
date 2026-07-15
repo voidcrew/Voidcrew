@@ -68,6 +68,13 @@
 #define RADIO_TOKEN_UPLINK ":z"
 #define RADIO_COLOR_UPLINK "#8f4a4b"
 
+// VOIDCREW EDIT ADDITION BEGIN - galaxy-wide hailing channel (voidcrew/modules/comms)
+#define RADIO_CHANNEL_WIDEBAND "Wideband"
+#define RADIO_KEY_WIDEBAND "w"
+#define RADIO_TOKEN_WIDEBAND ":w"
+#define RADIO_COLOR_WIDEBAND "#d99620"
+// VOIDCREW EDIT ADDITION END
+
 #define RADIO_CHANNEL_CTF_RED "Red Team"
 #define RADIO_COLOR_CTF_RED "#ff0000"
 #define RADIO_CHANNEL_CTF_BLUE "Blue Team"
@@ -88,6 +95,7 @@
 #define FREQ_CTF_GREEN 1219 // CTF green team comms frequency, green
 #define FREQ_CTF_YELLOW 1221 // CTF yellow team comms frequency, yellow
 #define FREQ_CENTCOM 1337 // CentCom comms frequency, gray
+#define FREQ_WIDEBAND 1339 // VOIDCREW EDIT ADDITION - galaxy-wide hailing channel, amber
 #define FREQ_SUPPLY 1347 // Supply comms frequency, light brown
 #define FREQ_SERVICE 1349 // Service comms frequency, green
 #define FREQ_SCIENCE 1351 // Science comms frequency, plum

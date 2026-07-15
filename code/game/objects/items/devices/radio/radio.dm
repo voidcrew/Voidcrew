@@ -340,7 +340,7 @@
 	var/atom/movable/virtualspeaker/speaker = new(null, talking_movable, src)
 
 	// Construct the signal
-	var/datum/signal/subspace/vocal/signal = new(src, freq, speaker, language, radio_message, spans, message_mods)
+	var/datum/signal/subspace/vocal/signal = new /datum/signal/subspace/vocal/voidcrew(src, freq, speaker, language, radio_message, spans, message_mods) // VOIDCREW EDIT - telecomms-free, ship-scoped comms (voidcrew/modules/comms)
 
 	// Independent radios, on the CentCom frequency, reach all independent radios
 	if ((special_channels & RADIO_SPECIAL_CENTCOM) && (freq == FREQ_CENTCOM || freq == FREQ_STATUS_DISPLAYS))

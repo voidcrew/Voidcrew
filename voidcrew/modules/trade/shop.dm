@@ -2,7 +2,7 @@
  * # Outpost Shops
  *
  * One /datum/outpost_shop instance per trader outpost, holding the per-round
- * shared stock all of that outpost's terminals sell from. SKUs have fixed,
+ * shared stock its trader NPC sells from. SKUs have fixed,
  * simple prices: vouchers and/or credits, or an item barter — never a mixed
  * freeform payment UI.
  *
@@ -23,10 +23,12 @@
 	var/outpost_name = "trader outpost"
 	/// Overmap description
 	var/outpost_desc = "An independent trade station."
-	/// Name the trader hologram introduces itself with
+	/// Name the trader NPC introduces themselves with
 	var/trader_name = "Trader"
-	/// Preset holoimage the trader's projection is built from
-	var/trader_holoimage_type = /datum/preset_holoimage/outpost_trader/general
+	/// Outfit the trader NPC's appearance is dressed in
+	var/trader_outfit = /datum/outfit/job/curator
+	/// Pronouns for the trader NPC's emotes/examine (PLURAL = they)
+	var/trader_gender = PLURAL
 	/// Voice bark pack for the trader's spoken lines (see modules/voice_barks)
 	var/trader_voice_pack = "goon.speak_1"
 	/// Pitch multiplier for the trader's bark voice
@@ -51,8 +53,8 @@
 	var/list/datum/shop_buyback/buybacks = list()
 	/// The outpost this shop belongs to
 	var/obj/structure/overmap/trader_outpost/outpost
-	/// The trader hologram machine fronting this shop, if one is placed (set on interior link)
-	var/obj/machinery/outpost_trader/trader_machine
+	/// The trader NPC fronting this shop, if one is placed (set on interior link)
+	var/mob/living/basic/outpost_trader/trader_npc
 	/// Personality lines, keyed by TRADER_LINE_* category
 	var/list/trader_lines = list()
 	/// Supply request table for the outpost mission board: list of
@@ -81,7 +83,7 @@
 	QDEL_LIST(skus)
 	QDEL_LIST(buybacks)
 	outpost = null
-	trader_machine = null
+	trader_npc = null
 	return ..()
 
 /**
@@ -170,6 +172,92 @@
 	if(!prob(chance))
 		return
 	mission.mission_reward = pick(exclusive_rewards)
+	// Exclusives always read as rare in the reward UI
+	LAZYADD(mission.rare_reward_types, mission.mission_reward)
+
+/**
+ * Assigns a difficulty-scaled item reward to an outpost-board contract, drawn
+ * from this shop's own stock. Payment on these contracts is goods, not money —
+ * credits and vouchers come from open-market missions instead, so the reward
+ * item IS the pay and must always be set.
+ *
+ * Quality follows difficulty by reaching deeper shelves: easy contracts pay off
+ * the core shelf, medium off the rotating stock, and the hardest pay the
+ * back-room exclusives no shelf sells (falling back down the shelves if the
+ * shop happens to have none). Returns FALSE only if the shop has no stock at
+ * all, so the caller can discard an unfundable contract.
+ */
+/datum/outpost_shop/proc/roll_contract_reward(datum/mission/mission)
+	var/list/core = list()
+	var/list/rotating = list()
+	var/list/rare = list()
+	var/list/all_stock = list()
+	for(var/datum/shop_sku/sku as anything in skus)
+		if(!sku.item_path)
+			continue
+		all_stock += sku.item_path
+		switch(sku.shelf)
+			if(SHELF_RARE)
+				rare += sku.item_path
+			if(SHELF_ROTATING)
+				rotating += sku.item_path
+			else
+				core += sku.item_path
+
+	// The everyday goods; the fallback whenever a specific shelf is thin
+	var/list/non_rare = core + rotating
+	if(!length(non_rare))
+		non_rare = all_stock
+
+	var/list/rewards = list()
+	var/list/rare_rewards = list()
+
+	switch(mission.difficulty)
+		if(MISSION_DIFFICULTY_HARD)
+			// One back-room prize (exclusive, else a rare-shelf pick) plus a
+			// couple of everyday goods — the "1 rare + 2 common" bundle.
+			var/prize = length(exclusive_rewards) ? pick(exclusive_rewards) : (length(rare) ? pick(rare) : null)
+			if(prize)
+				rewards += prize
+				rare_rewards += prize
+			rewards += pick_rewards(length(rotating) ? rotating : non_rare, 2)
+		if(MISSION_DIFFICULTY_MEDIUM)
+			// A rotating pick and a staple
+			rewards += pick_rewards(length(rotating) ? rotating : non_rare, 1)
+			rewards += pick_rewards(length(core) ? core : non_rare, 1)
+		else
+			// One staple, sometimes two
+			rewards += pick_rewards(length(core) ? core : non_rare, prob(35) ? 2 : 1)
+
+	rewards -= null
+	// Guarantee at least one item so the contract is fundable
+	if(!length(rewards))
+		rewards += pick_rewards(all_stock, 1)
+		rewards -= null
+	if(!length(rewards))
+		return FALSE
+
+	mission.mission_rewards = rewards
+	mission.rare_reward_types = rare_rewards
+	return TRUE
+
+/**
+ * Draws `count` reward typepaths from a pool, preferring distinct picks but
+ * repeating once the pool is exhausted (so a one-item pool yields duplicates
+ * rather than coming up short).
+ */
+/datum/outpost_shop/proc/pick_rewards(list/pool, count)
+	var/list/picked = list()
+	if(!length(pool) || count < 1)
+		return picked
+	var/list/bag = pool.Copy()
+	for(var/i in 1 to count)
+		if(!length(bag))
+			bag = pool.Copy()
+		var/choice = pick(bag)
+		bag -= choice
+		picked += choice
+	return picked
 
 /**
  * Returns a random personality line for the given TRADER_LINE_* category.
@@ -184,7 +272,7 @@
  * # Shop SKU
  *
  * One purchasable line item. Stock is rolled once on creation and shared
- * between all terminals of the outpost.
+ * between everyone shopping at the outpost.
  */
 /datum/shop_sku
 	/// Display name (defaults to the item's name)
@@ -293,9 +381,9 @@
 
 /**
  * Attempts the purchase: validates, charges, decrements stock and dispenses
- * at the terminal. Returns TRUE on success.
+ * over the counter. Returns TRUE on success.
  */
-/datum/shop_sku/proc/try_purchase(mob/living/user, obj/machinery/computer/outpost_shop_terminal/terminal)
+/datum/shop_sku/proc/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
 	if(stock <= 0)
 		return FALSE
 
@@ -313,15 +401,15 @@
 		return FALSE
 
 	stock--
-	dispense(user, terminal)
+	dispense(user, vendor)
 	return TRUE
 
 /**
- * Spawns the goods at the terminal. Items go to hand when possible; anything
- * bigger (crates, machines) lands beside the terminal.
+ * Hands the goods over the counter. Items go to hand when possible; anything
+ * bigger (crates, machines) lands at the buyer's feet.
  */
-/datum/shop_sku/proc/dispense(mob/living/user, obj/machinery/computer/outpost_shop_terminal/terminal)
-	var/atom/drop_loc = terminal?.drop_location() || user.drop_location()
+/datum/shop_sku/proc/dispense(mob/living/user, mob/living/basic/outpost_trader/vendor)
+	var/atom/drop_loc = user.drop_location() || vendor?.drop_location()
 	var/atom/movable/goods
 	if(dispense_amount > 1 && ispath(item_path, /obj/item/stack))
 		goods = new item_path(drop_loc, dispense_amount)
@@ -330,7 +418,7 @@
 	if(isitem(goods) && user.put_in_hands(goods))
 		to_chat(user, span_notice("You receive [goods]."))
 	else
-		to_chat(user, span_notice("[goods] is dispensed beside the terminal."))
+		to_chat(user, span_notice("[goods] is set down at your feet."))
 
 /**
  * The bank account on the user's ID card.
@@ -387,7 +475,7 @@
 		return "Hold the asked item in hand: [get_price_text()]."
 	return null
 
-/datum/shop_sku/barter/try_purchase(mob/living/user, obj/machinery/computer/outpost_shop_terminal/terminal)
+/datum/shop_sku/barter/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
 	if(stock <= 0)
 		return FALSE
 	var/obj/item/offered = find_barter_item(user)
@@ -400,7 +488,7 @@
 	else
 		qdel(offered)
 	stock--
-	dispense(user, terminal)
+	dispense(user, vendor)
 	return TRUE
 
 /**
@@ -455,13 +543,13 @@
 	if(!ship)
 		return "No crew registration — you need a ship to chart the tip onto."
 
-/datum/shop_sku/rumor/try_purchase(mob/living/user, obj/machinery/computer/outpost_shop_terminal/terminal)
+/datum/shop_sku/rumor/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
 	if(stock <= 0)
 		return FALSE
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	if(!ship)
 		return FALSE
-	var/datum/outpost_shop/shop = terminal?.shop
+	var/datum/outpost_shop/shop = vendor?.shop
 	var/obj/structure/overmap/space_ruin/target = find_rumor_target(ship, shop)
 	if(!target)
 		to_chat(user, span_warning("The lanes are quiet — no fresh rumors this shift."))

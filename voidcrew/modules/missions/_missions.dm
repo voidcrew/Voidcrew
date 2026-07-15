@@ -23,8 +23,15 @@
 	var/weight = 0
 	/// Maximum number of this mission type that can be active at once (0 = unlimited)
 	var/mission_limit = 0
-	/// Item type path to spawn on completion (optional)
+	/// Item type path to spawn on completion (optional). The single-reward
+	/// convenience; get_reward_types() folds it together with mission_rewards.
 	var/mission_reward
+	/// Additional item type paths to spawn on completion — the multi-reward
+	/// channel (a whole bundle, potentially mixed rarity). May hold duplicates
+	/// (e.g. two of the same warhead), which spawn as separate items.
+	var/list/mission_rewards
+	/// Subset of the reward types that count as "rare/exclusive" for UI accent.
+	var/list/rare_reward_types
 	/// Mission difficulty (MISSION_DIFFICULTY_EASY/MEDIUM/HARD) - informational only
 	var/difficulty = MISSION_DIFFICULTY_MEDIUM
 	/// If TRUE, mission requires an item to be turned in via mission pad
@@ -128,11 +135,42 @@
 	if(author)
 		name = replacetext(name, "%AUTHOR%", author)
 		desc = replacetext(desc, "%AUTHOR%", author)
-	if(mission_reward)
-		var/obj/item/reward_item = mission_reward
-		var/reward_name = initial(reward_item.name)
+	if(length(get_reward_types()))
+		var/reward_name = get_reward_summary()
 		name = replacetext(name, "%REWARD%", reward_name)
 		desc = replacetext(desc, "%REWARD%", reward_name)
+
+/**
+ * Every item reward this mission pays, as a flat list of type paths. Folds the
+ * single-reward convenience (mission_reward) together with the multi-reward
+ * bundle (mission_rewards); may contain duplicates.
+ */
+/datum/mission/proc/get_reward_types()
+	. = list()
+	if(mission_reward)
+		. += mission_reward
+	if(length(mission_rewards))
+		. += mission_rewards
+
+/**
+ * Human-readable summary of the item rewards, e.g. "a standard missile, 2×
+ * light warhead and an ablative vest". Returns "goods" when nothing is set.
+ */
+/datum/mission/proc/get_reward_summary()
+	var/list/types = get_reward_types()
+	if(!length(types))
+		return "goods"
+	// Collapse duplicates into counts so a bundle reads "2× light missile"
+	var/list/counts = list()
+	for(var/reward_type in types)
+		counts[reward_type] = (counts[reward_type] || 0) + 1
+	var/list/parts = list()
+	for(var/reward_type in counts)
+		var/atom/reward_cast = reward_type
+		var/reward_name = initial(reward_cast.name)
+		var/count = counts[reward_type]
+		parts += count > 1 ? "[count]× [reward_name]" : reward_name
+	return english_list(parts)
 
 /**
  * Called when a ship accepts this mission.
@@ -312,11 +350,14 @@
 
 	// Notify ship
 	if(servant)
-		var/reward_text = "[value] credits"
-		if(mission_reward)
-			reward_text += " + item reward"
+		var/list/reward_parts = list()
+		if(value > 0)
+			reward_parts += "[value] credits"
+		if(length(get_reward_types()))
+			reward_parts += get_reward_summary()
 		if(voucher_count > 0)
-			reward_text += " + [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]"
+			reward_parts += "[voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]"
+		var/reward_text = length(reward_parts) ? reward_parts.Join(" + ") : "settled"
 		servant.ship_notify("[name] completed! Reward: [reward_text]", "MISSION COMPLETE", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		servant.active_missions -= src
 
@@ -379,9 +420,11 @@
 
 	var/turf/reward_turf = get_turf(reward_anchor)
 
-	// Spawn item reward at the turn-in point
-	if(mission_reward && reward_turf)
-		new mission_reward(reward_turf)
+	// Spawn every item reward in the bundle at the turn-in point
+	var/list/reward_types = get_reward_types()
+	if(length(reward_types) && reward_turf)
+		for(var/reward_type in reward_types)
+			new reward_type(reward_turf)
 		flash_reward_anchor(reward_anchor)
 
 	// Spawn voucher rewards at the turn-in point
@@ -428,17 +471,26 @@
  * Returns mission data for TGUI display.
  */
 /datum/mission/proc/get_ui_data()
-	var/reward_icon_base64 = null
-	if(mission_reward)
-		reward_icon_base64 = icon2base64(icon(initial(mission_reward:icon), initial(mission_reward:icon_state)))
+	// Every reward in the bundle, each with its own sprite and a rarity accent
+	var/list/reward_items = list()
+	for(var/reward_type in get_reward_types())
+		var/atom/reward_cast = reward_type
+		reward_items += list(list(
+			"name" = initial(reward_cast.name),
+			"icon" = icon2base64(icon(initial(reward_cast.icon), initial(reward_cast.icon_state))),
+			"rare" = (reward_type in rare_reward_types),
+		))
+	// First reward mirrored onto the legacy single-reward fields for compatibility
+	var/list/first_reward = length(reward_items) ? reward_items[1] : null
 	return list(
 		"ref" = REF(src),
 		"name" = name,
 		"desc" = desc,
 		"author" = author,
 		"value" = value,
-		"reward_item" = mission_reward ? initial(mission_reward:name) : null,
-		"reward_item_icon" = reward_icon_base64,
+		"reward_items" = reward_items,
+		"reward_item" = first_reward ? first_reward["name"] : null,
+		"reward_item_icon" = first_reward ? first_reward["icon"] : null,
 		"duration" = duration,
 		"time_remaining" = get_time_remaining(),
 		"time_remaining_text" = get_time_remaining_text(),
