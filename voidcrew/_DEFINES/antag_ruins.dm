@@ -7,6 +7,9 @@
 /// Hard cap on vestige ruins per round (also capped by how many themes exist)
 #define VESTIGE_MAX_PER_ROUND 4
 
+/// Most boon candidates a fulfilled pact offers at once (fewer if the patron has less left to give)
+#define VESTIGE_REWARD_CHOICES 3
+
 /// Unique DNA samples the Trial of Faces demands
 #define VESTIGE_FACES_SAMPLES_NEEDED 5
 /// How many of those samples must come from living targets

@@ -95,6 +95,7 @@ const IdentitySection = () => {
           </Stack>
           <Box mt={1}>
             <TextArea
+              fluid
               height="3em"
               placeholder="Public memo — shown to anyone surveying the outpost and on broadcasts..."
               value={newMemo}

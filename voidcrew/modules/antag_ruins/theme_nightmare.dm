@@ -18,6 +18,11 @@
 	trial_types = list(
 		/datum/vestige_trial/snuffed_flame,
 	)
+	// One trial, one boon: the Stranger's "choice" collapses to a single offer
+	// until it gets a second trial and more boons to pay with
+	boon_types = list(
+		/datum/vestige_boon/spell/shadow_walk,
+	)
 	idle_lines = list(
 		"You brought a light. They always bring a light. Put it out and we can talk properly.",
 		"There were four hundred lights on this ship. I remember every one of them going out.",
@@ -28,6 +33,9 @@
 	busy_line = "One debt. Then another. Not both at once."
 	fulfilled_line = "You have already learned to see."
 	renounce_line = "Then keep squinting."
+	claim_line = "You are owed. I always pay. Take it."
+	exhausted_line = "You have everything I kept. The rest went out with the lights."
+	remember_line = "You went dark. Everything does. What you earned was waiting where you left it."
 
 // ===== TRIAL OF THE SNUFFED FLAME =====
 
@@ -36,7 +44,6 @@
 	// Keep the count in sync with VESTIGE_FLAME_LIGHTS_NEEDED
 	// (initial values must be constant, so no define interpolation here)
 	desc = "Take the censer. Feed it twenty-five burning lights — fixtures, lanterns, flares, it is not picky. Lights snatched out of someone's living grip taste twice as sweet. When it is sated, you will not need eyes the way you do now."
-	boon_type = /datum/vestige_boon/spell/shadow_walk
 	/// Devour points so far (a light in someone else's grip counts double)
 	var/lights_eaten = 0
 
@@ -122,5 +129,6 @@
 // spell_requirements = NONE, and light already polices it.
 /datum/vestige_boon/spell/shadow_walk
 	name = "Shadow Walk"
+	desc = "Sink into darkness and move unseen through it. The dark stops being a place and starts being a door."
 	grant_text = "The dark stops being a place and starts being a door."
 	spell_type = /datum/action/cooldown/spell/jaunt/shadow_walk

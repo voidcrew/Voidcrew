@@ -10,8 +10,16 @@
  * - exactly one /obj/machinery/computer/camera_advanced/base_construction/ship/outpost
  * - one /obj/machinery/ore_silo (feeds the construction console's internal tools)
  * - one /obj/effect/landmark/player_outpost_arrival
- * - airlocks on each cardinal side (visitors walk in from the docks via EVA)
+ * - a hangar elevator kit on the north side: 3x3 /obj/effect/landmark/outpost_elevator_alcove
+ *   with one /obj/machinery/outpost_elevator/directional panel — so visiting ships
+ *   get hangar berths from the moment of founding (see outpost_hangar.dm)
+ * - external airlocks on the remaining cardinal sides (EVA walk-in stays possible)
  * - pressurized core, lights
+ *
+ * The bare-claim shell deliberately breaks all of these: it ships nothing but a
+ * pad, the arrival landmark and a crate of console boards. Everything the
+ * linker doesn't find is simply absent until the owner builds it (rebuilt
+ * consoles relink themselves; see outpost_management.dm / outpost_construction.dm).
  */
 
 /area/voidcrew/player_outpost
@@ -38,10 +46,31 @@
 
 /datum/map_template/player_outpost/small
 	name = "Compact Habitat"
-	catalog_desc = "A snug pressurized module: one room, the essential consoles, and not much else. Cheap on materials, quick to expand."
+	catalog_desc = "A snug pressurized module: one room, the essential consoles, a hangar elevator, and not much else. Cheap on materials, quick to expand."
 	mappath = "voidcrew/_maps/map_files/outposts/player_outpost_shell_small.dmm"
 
 /datum/map_template/player_outpost/medium
 	name = "Waystation Frame"
-	catalog_desc = "A proper station core with separated work and living space. More floor to hold down, more room to grow into."
+	catalog_desc = "A proper station core with separated work and living space, plus a hangar elevator off the main hall. More floor to hold down, more room to grow into."
 	mappath = "voidcrew/_maps/map_files/outposts/player_outpost_shell_medium.dmm"
+
+/datum/map_template/player_outpost/nothing
+	name = "Bare Claim"
+	catalog_desc = "No prefab at all: an empty sector, a survey pad, and a crate holding the registry console boards. Bring your own everything."
+	mappath = "voidcrew/_maps/map_files/outposts/player_outpost_shell_nothing.dmm"
+
+/// The bare claim's entire inheritance: the two registry console boards.
+/// Everything else — frames, materials, the silo, air — is the owner's problem.
+/obj/structure/closet/crate/player_outpost_start
+	name = "colonial registry claim crate"
+	desc = "The colonial registry's idea of a starter kit: the circuit boards for an outpost's management and construction consoles, and a packing slip wishing you luck."
+
+/obj/structure/closet/crate/player_outpost_start/PopulateContents()
+	. = ..()
+	new /obj/item/circuitboard/computer/player_outpost_management(src)
+	new /obj/item/circuitboard/computer/player_outpost_construction(src)
+	new /obj/item/paper/fluff/player_outpost_claim(src)
+
+/obj/item/paper/fluff/player_outpost_claim
+	name = "packing slip"
+	default_raw_text = "CONTENTS: outpost management console board (1), outpost construction console board (1). The Colonial Registry congratulates you on your new claim and reminds you that unimproved sectors carry no warranty, atmosphere, or floor. Good luck."

@@ -28,6 +28,8 @@
 	var/list/berths
 	/// Elevator alcove turfs on the concourse/lobby floor, in block() order
 	var/list/turf/lobby_alcove_turfs = list()
+	/// Backing-wall turfs behind the current elevator panel, reverted to plating if the elevator moves
+	var/list/turf/lobby_wall_turfs = list()
 	/// Concourse-side elevator panels
 	var/list/obj/machinery/outpost_elevator/lobby_panels = list()
 

@@ -655,6 +655,11 @@ SUBSYSTEM_DEF(overmap)
 	if(filled_area)
 		filled_area.reg_in_areas_in_z()
 
+	// Anything mapgen/ruins didn't touch is still uninitialized /turf/open/space/basic,
+	// which players can't interact with (no throwing, no construction). For space
+	// encounters, empty space and player outposts that's the ENTIRE level.
+	zlevel.initialize_space_turfs()
+
 	if(weather_controller_type)
 		new weather_controller_type(mapzone)
 

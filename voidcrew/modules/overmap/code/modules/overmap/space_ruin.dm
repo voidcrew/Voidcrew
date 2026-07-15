@@ -214,6 +214,10 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 		loading = FALSE
 		return
 
+	// The reservation's buffer space (everything outside the ruin's own footprint)
+	// is left as uninitialized /turf/open/space/basic - fix it up before anyone can reach it
+	initialize_reservation_space_turfs()
+
 	// Create docking ports on opposite sides of the ruin (same size as planets)
 	var/turf/primary_dock_turf = locate(
 		bottom_left.x + RESERVE_DOCK_DEFAULT_PADDING,
@@ -364,6 +368,15 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 
 	forceMove(SSovermap.get_unused_overmap_square())
 	concerned = FALSE
+
+/**
+ * Sweeps the reservation for uninitialized turfs (leftover /turf/open/space/basic)
+ * and initializes them so players can interact with the buffer space around the ruin.
+ */
+/obj/structure/overmap/space_ruin/proc/initialize_reservation_space_turfs()
+	if(!reservation)
+		return
+	initialize_uninitialized_block_turfs(reservation.bottom_left_turfs[1], reservation.top_right_turfs[1])
 
 /obj/structure/overmap/space_ruin/proc/remove_reservation()
 	if(reservation)

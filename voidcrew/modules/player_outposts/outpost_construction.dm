@@ -24,6 +24,7 @@
 	var/obj/structure/overmap/dynamic/player_outpost/outpost
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/outpost/Destroy()
+	stop_elevator_planning()
 	if(outpost?.construction_console == src)
 		outpost.construction_console = null
 	outpost = null
@@ -104,17 +105,9 @@
 	last_operation_success = FALSE
 	return FALSE
 
-/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/ui_data(mob/user)
-	var/list/data = ..()
-	// Report the build region instead of shuttle bounds
-	if(outpost?.build_bounds)
-		data["shipWidth"] = outpost.build_bounds[3] - outpost.build_bounds[1] + 1
-		data["shipHeight"] = outpost.build_bounds[4] - outpost.build_bounds[2] + 1
-		data["maxDimensionLong"] = data["shipWidth"]
-		data["maxDimensionShort"] = data["shipHeight"]
-	return data
-
-/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/ui_static_data(mob/user)
-	var/list/data = ..()
-	data["shipName"] = outpost ? outpost.name : null
-	return data
+// The ship construction UI (port relocator, ship status, ship name) has nothing
+// relevant to say about an outpost - skip it and drop straight into drone mode.
+/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/attack_hand(mob/user, list/modifiers)
+	if(machine_stat & (NOPOWER|BROKEN))
+		return
+	enter_construction_mode(user)

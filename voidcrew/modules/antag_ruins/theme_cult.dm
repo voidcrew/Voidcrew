@@ -18,6 +18,12 @@
 		/datum/vestige_trial/offering,
 		/datum/vestige_trial/vigil,
 	)
+	boon_types = list(
+		/datum/vestige_boon/spell/crimson_step,
+		/datum/vestige_boon/spell/crimson_step/surge,
+		/datum/vestige_boon/spell/sanguine_blade,
+		/datum/vestige_boon/spell/sanguine_blade/fang,
+	)
 	idle_lines = list(
 		"The congregation is still here. You're standing in them.",
 		"Blood is the only coin that never inflates.",
@@ -28,6 +34,9 @@
 	busy_line = "You already owe. Pay first, or renounce."
 	fulfilled_line = "That rite is already written in you."
 	renounce_line = "The Sepulcher remembers cowards too."
+	claim_line = "The altar holds your payment. Take it before you kneel again."
+	exhausted_line = "The Sepulcher's vaults are empty for you. That is its own kind of blessing."
+	remember_line = "The Sepulcher keeps its ledgers in something older than blood. Take back what is written."
 
 // ===== RITE OF OFFERING =====
 
@@ -36,7 +45,6 @@
 	// Keep the count in sync with VESTIGE_OFFERING_CANDLES
 	// (initial values must be constant, so no define interpolation here)
 	desc = "Take the satchel: chalk, candles, a knife. Far from this place, scribe the rune, ring it in three lit candles, and give it a dead body that once held a soul. The rite must be worked beyond these walls — the Sepulcher may only watch from a distance."
-	boon_type = /datum/vestige_boon/spell/crimson_step
 	/// Whether the rune has been scribed somewhere
 	var/rune_scribed = FALSE
 
@@ -167,7 +175,6 @@
 	// Keep the amount in sync with VESTIGE_VIGIL_BLOOD_TOTAL
 	// (initial values must be constant, so no define interpolation here)
 	desc = "The altar drinks. Feed it 400 units of your own living blood — as many visits as it takes. It will not take from the dead, the borrowed or the bottled. Only you, only fresh."
-	boon_type = /datum/vestige_boon/spell/sanguine_blade
 	/// Blood donated so far
 	var/blood_given = 0
 
@@ -228,8 +235,16 @@
 
 /datum/vestige_boon/spell/crimson_step
 	name = "Crimson Step"
+	desc = "Fold yourself a short distance through somewhere red and wet."
 	grant_text = "The space behind your eyes folds. Distance is a suggestion now, and it is written in red."
 	spell_type = /datum/action/cooldown/spell/teleport/radius_turf/blink/crimson
+
+/datum/vestige_boon/spell/crimson_step/surge
+	name = "Crimson Surge"
+	desc = "The fold learns your shape: it opens faster and reaches further. Distance stops being a suggestion and becomes a lie."
+	grant_text = "The red place behind your eyes widens. It knows you now, and it opens the moment you ask."
+	upgrades_from = /datum/vestige_boon/spell/crimson_step
+	spell_type = /datum/action/cooldown/spell/teleport/radius_turf/blink/crimson/surge
 
 // The wizard blink, paced down from spammable to deliberate
 /datum/action/cooldown/spell/teleport/radius_turf/blink/crimson
@@ -242,10 +257,24 @@
 	outer_tele_radius = 5
 	spell_requirements = SPELL_REQUIRES_NO_ANTIMAGIC
 
+/datum/action/cooldown/spell/teleport/radius_turf/blink/crimson/surge
+	name = "Crimson Surge"
+	desc = "Fold yourself further, faster, through somewhere red and wet."
+	cooldown_time = 8 SECONDS
+	outer_tele_radius = 7
+
 /datum/vestige_boon/spell/sanguine_blade
 	name = "Sanguine Blade"
+	desc = "Call the Sepulcher's knife into your hand from anywhere, and send it back when you're done."
 	grant_text = "A knife-shaped absence settles against your palm. It will come when called."
 	spell_type = /datum/action/cooldown/spell/vestige_sanguine_blade
+
+/datum/vestige_boon/spell/sanguine_blade/fang
+	name = "Sanguine Fang"
+	desc = "The knife comes back hungrier: a longer, crueler edge that parts armor like vestment, and answers the call twice as fast."
+	grant_text = "The knife-shaped absence against your palm grows teeth."
+	upgrades_from = /datum/vestige_boon/spell/sanguine_blade
+	spell_type = /datum/action/cooldown/spell/vestige_sanguine_blade/fang
 
 /datum/action/cooldown/spell/vestige_sanguine_blade
 	name = "Sanguine Blade"
@@ -256,18 +285,26 @@
 	cooldown_time = 10 SECONDS
 	invocation_type = INVOCATION_NONE
 	spell_requirements = NONE
+	/// The knife this spell calls
+	var/blade_type = /obj/item/knife/ritual/vestige/bound
+
+/datum/action/cooldown/spell/vestige_sanguine_blade/fang
+	name = "Sanguine Fang"
+	desc = "Call the Sepulcher's fang into your hand, or send it back."
+	cooldown_time = 5 SECONDS
+	blade_type = /obj/item/knife/ritual/vestige/bound/fang
 
 /datum/action/cooldown/spell/vestige_sanguine_blade/is_valid_target(atom/cast_on)
 	return iscarbon(cast_on)
 
 /datum/action/cooldown/spell/vestige_sanguine_blade/cast(mob/living/carbon/cast_on)
 	. = ..()
-	var/obj/item/knife/ritual/vestige/bound/blade = locate() in cast_on.held_items
+	var/obj/item/blade = locate(blade_type) in cast_on.held_items
 	if(blade)
 		cast_on.visible_message(span_warning("[blade] dissolves into red mist!"), span_notice("You send the knife back."))
 		qdel(blade)
 		return
-	var/obj/item/knife/ritual/vestige/bound/new_blade = new(cast_on)
+	var/obj/item/new_blade = new blade_type(cast_on)
 	if(!cast_on.put_in_hands(new_blade))
 		if(!QDELETED(new_blade)) // DROPDEL usually beat us to it
 			qdel(new_blade)
@@ -285,3 +322,9 @@
 	desc = "The Sepulcher's knife, bound to a pact. It goes home when it leaves the hand."
 	force = 18
 	item_flags = ABSTRACT | DROPDEL
+
+/obj/item/knife/ritual/vestige/bound/fang
+	name = "sanguine fang"
+	desc = "The Sepulcher's knife, grown long and cruel on a well-kept pact. It goes home when it leaves the hand."
+	force = 24
+	armour_penetration = 20

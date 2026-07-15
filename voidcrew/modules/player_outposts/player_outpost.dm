@@ -350,6 +350,11 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 		for(var/obj/effect/landmark/player_outpost_arrival/mark in interior_turf)
 			arrival_turf = interior_turf
 			qdel(mark)
+		// block() iterates y-major then x — same order the hangar-side alcove
+		// collects in, so the elevator's ride maps alcove turf i to alcove turf i
+		for(var/obj/effect/landmark/outpost_elevator_alcove/alcove_mark in interior_turf)
+			lobby_alcove_turfs += interior_turf
+			qdel(alcove_mark)
 		for(var/obj/machinery/machine in interior_turf)
 			if(istype(machine, /obj/machinery/computer/player_outpost_management))
 				var/obj/machinery/computer/player_outpost_management/console = machine
@@ -359,6 +364,15 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 				var/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/builder = machine
 				builder.outpost = src
 				construction_console = builder
+			else if(istype(machine, /obj/machinery/outpost_elevator))
+				// Shells ship with a hangar elevator pre-installed. Its backing
+				// wall is shell hull, so lobby_wall_turfs stays empty — relocating
+				// the elevator later leaves that wall standing instead of
+				// reverting it to plating (which could breach the shell).
+				var/obj/machinery/outpost_elevator/panel = machine
+				panel.outpost = src
+				panel.is_lobby = TRUE
+				lobby_panels += panel
 
 /obj/structure/overmap/dynamic/player_outpost/attack_ghost(mob/user)
 	if(arrival_turf)

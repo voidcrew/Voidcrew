@@ -1,71 +1,5 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "b" = (
-/obj/structure/chair{
-	dir = 8
-	},
-/turf/open/floor/iron,
-/area/voidcrew/player_outpost)
-"d" = (
-/obj/item/kirbyplants/random,
-/turf/open/floor/iron,
-/area/voidcrew/player_outpost)
-"g" = (
-/obj/machinery/light/small/directional/west,
-/turf/open/floor/iron,
-/area/voidcrew/player_outpost)
-"h" = (
-/obj/structure/table/reinforced,
-/turf/open/floor/iron,
-/area/voidcrew/player_outpost)
-"i" = (
-/obj/machinery/computer/player_outpost_management,
-/obj/effect/turf_decal/tile/neutral/half/contrasted{
-	dir = 1
-	},
-/turf/open/floor/iron,
-/area/voidcrew/player_outpost)
-"k" = (
-/obj/machinery/computer/camera_advanced/base_construction/ship/outpost,
-/obj/effect/turf_decal/tile/neutral/half/contrasted{
-	dir = 1
-	},
-/turf/open/floor/iron,
-/area/voidcrew/player_outpost)
-"p" = (
-/obj/item/radio/intercom/directional/west,
-/turf/open/floor/iron,
-/area/voidcrew/player_outpost)
-"q" = (
-/turf/open/floor/iron/white,
-/area/voidcrew/player_outpost)
-"u" = (
-/obj/structure/sign/poster/official/random,
-/turf/closed/wall/mineral/titanium,
-/area/voidcrew/player_outpost)
-"w" = (
-/obj/structure/closet/crate,
-/obj/effect/spawner/random/maintenance,
-/obj/effect/turf_decal/delivery,
-/turf/open/floor/iron,
-/area/voidcrew/player_outpost)
-"y" = (
-/obj/effect/landmark/player_outpost_arrival,
-/obj/effect/turf_decal/bot,
-/turf/open/floor/iron/white,
-/area/voidcrew/player_outpost)
-"z" = (
-/turf/open/floor/iron,
-/area/voidcrew/player_outpost)
-"F" = (
-/obj/machinery/light/warm/directional/north,
-/turf/open/floor/iron,
-/area/voidcrew/player_outpost)
-"H" = (
-/obj/machinery/ore_silo,
-/obj/effect/turf_decal/delivery,
-/turf/open/floor/iron,
-/area/voidcrew/player_outpost)
-"O" = (
 /obj/structure/bed,
 /obj/effect/spawner/random/bedsheet,
 /obj/effect/turf_decal/siding/white{
@@ -73,20 +7,98 @@
 	},
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
-"P" = (
-/turf/closed/wall/mineral/titanium,
-/area/voidcrew/player_outpost)
-"S" = (
-/obj/structure/closet/emcloset,
+"d" = (
+/obj/machinery/light/warm/directional/north,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
-"X" = (
+"g" = (
+/obj/structure/table/reinforced,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"h" = (
 /obj/machinery/door/airlock/external,
 /obj/structure/fans/tiny,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
-"Z" = (
+"i" = (
+/obj/machinery/ore_silo,
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"k" = (
+/obj/structure/closet/crate,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"l" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"n" = (
 /obj/machinery/light/warm/directional/south,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"p" = (
+/obj/machinery/computer/player_outpost_management,
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"q" = (
+/obj/item/radio/intercom/directional/west,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"u" = (
+/turf/closed/wall/mineral/titanium,
+/area/voidcrew/player_outpost)
+"w" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/machinery/outpost_elevator/directional/north,
+/turf/open/floor/light,
+/area/voidcrew/player_outpost)
+"y" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"z" = (
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"F" = (
+/obj/machinery/computer/camera_advanced/base_construction/ship/outpost,
+/obj/effect/turf_decal/tile/neutral/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"H" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/wall/mineral/titanium,
+/area/voidcrew/player_outpost)
+"N" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"O" = (
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"P" = (
+/turf/template_noop,
+/area/template_noop)
+"S" = (
+/obj/effect/landmark/player_outpost_arrival,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/white,
+/area/voidcrew/player_outpost)
+"X" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/turf/open/floor/light,
+/area/voidcrew/player_outpost)
+"Z" = (
+/obj/structure/closet/emcloset,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 
@@ -95,123 +107,64 @@ P
 P
 P
 P
-P
-P
-X
-P
-P
-P
-P
-P
-P
+u
+u
+u
+u
+u
+u
+h
+u
+u
+u
+u
+u
+u
 "}
 (2,1,1) = {"
 P
-w
-z
-p
-z
-d
-z
-z
-z
-O
-O
-g
 P
+P
+P
+u
+k
+z
+q
+z
+y
+z
+z
+z
+b
+b
+l
+u
 "}
 (3,1,1) = {"
 P
-H
-z
-z
-z
-z
-z
-z
-z
-z
-S
-z
 P
-"}
-(4,1,1) = {"
+P
+P
 u
-z
-z
-z
-z
-z
-z
-z
-z
-z
-z
-z
-P
-"}
-(5,1,1) = {"
-P
-k
-z
-z
-z
-z
-z
-z
-z
-z
-z
-z
-P
-"}
-(6,1,1) = {"
-P
 i
 z
 z
 z
-q
-q
-q
 z
 z
-z
-z
-P
-"}
-(7,1,1) = {"
-X
-z
-z
-z
-z
-q
-y
-q
-z
-z
-z
-z
-X
-"}
-(8,1,1) = {"
-P
-z
-z
-z
-z
-q
-q
-q
 z
 z
 z
 Z
-P
+z
+u
 "}
-(9,1,1) = {"
+(4,1,1) = {"
 P
+P
+P
+P
+H
 F
 z
 z
@@ -223,65 +176,176 @@ z
 z
 z
 z
-P
-"}
-(10,1,1) = {"
-P
-z
-z
-z
-z
-z
-z
-z
-z
-z
-z
-z
-P
-"}
-(11,1,1) = {"
 u
+"}
+(5,1,1) = {"
+u
+u
+u
+u
+u
+p
 z
 z
 z
 z
+z
+z
+z
+z
+z
+z
+u
+"}
+(6,1,1) = {"
+u
+X
+X
+X
+z
+z
+z
+z
+z
+O
+O
+O
+z
+z
+z
+z
+u
+"}
+(7,1,1) = {"
+u
+w
+X
+X
+z
+z
+z
+z
+z
+O
+S
+O
 z
 z
 z
 z
 h
-h
+"}
+(8,1,1) = {"
+u
+X
+X
+X
 z
+z
+z
+z
+z
+O
+O
+O
+z
+z
+z
+n
 u
 "}
-(12,1,1) = {"
-P
-z
-z
-z
-z
-z
-z
+(9,1,1) = {"
+u
+u
+u
+u
+u
 d
 z
 z
-b
 z
+z
+z
+z
+z
+z
+z
+z
+u
+"}
+(10,1,1) = {"
 P
+P
+P
+P
+u
+z
+z
+z
+z
+z
+z
+z
+z
+z
+z
+z
+u
+"}
+(11,1,1) = {"
+P
+P
+P
+P
+H
+z
+z
+z
+z
+z
+z
+z
+z
+g
+g
+z
+H
+"}
+(12,1,1) = {"
+P
+P
+P
+P
+u
+z
+z
+z
+z
+z
+z
+y
+z
+z
+N
+z
+u
 "}
 (13,1,1) = {"
 P
 P
 P
 P
-P
-P
-X
-P
-P
-P
-P
-P
-P
+u
+u
+u
+u
+u
+u
+h
+u
+u
+u
+u
+u
+u
 "}

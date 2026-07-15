@@ -10,9 +10,10 @@
  * side: they never store trial references — they resolve the wielder's
  * mind.active_vestige_trial at interaction time and istype-check it.
  *
- * One active trial per mind, each trial fulfillable once, each boon granted
- * once. Boons pay out immediately on completion, wherever the player is —
- * there is no return trip that a despawned ruin could strand.
+ * One active trial per mind, each trial fulfillable once. Completion pays out
+ * a CHOICE of boons — up to VESTIGE_REWARD_CHOICES rolled from the patron's
+ * pool, carried on a claim button (boon.dm) — wherever the player is; there is
+ * no return trip that a despawned ruin could strand.
  */
 
 /datum/mind
@@ -22,14 +23,57 @@
 	var/list/completed_vestige_trials
 	/// Typepaths of vestige boons this mind has been granted
 	var/list/vestige_boons
+	/// Sticky per-patron trial assignments (patron typepath -> trial typepath); rerolled only after fulfilment
+	var/list/vestige_trial_assignments
+	/// The unclaimed boon choice from a fulfilled pact, if any (see boon.dm)
+	var/datum/action/vestige_reward/vestige_pending_reward
+
+/**
+ * # Vestige record
+ *
+ * The soul's copy of a player's vestige ledger, keyed by ckey and round-scoped.
+ * Mind state dies with the mind when a player respawns into a new character;
+ * this record does not. Every mutation of vestige mind-state writes through to
+ * it, and any patron restores a mind that has fallen behind its record (see
+ * restore_lost_legacy in patron.dm) — so death loses your powers only until
+ * you walk back into a vestige and ask.
+ *
+ * Doubling as the anti-refarm ledger: completions and assignments restore
+ * along with the boons, so dying can't reroll an assignment or reopen a
+ * fulfilled trial.
+ */
+GLOBAL_LIST_EMPTY(vestige_records)
+
+/datum/vestige_record
+	/// Typepaths of trials fulfilled by this soul
+	var/list/completed_trials = list()
+	/// Typepaths of boons granted to this soul, in grant order (bases before their upgrades)
+	var/list/boons = list()
+	/// Sticky trial assignments (patron typepath -> trial typepath)
+	var/list/trial_assignments = list()
+	/// Candidate boon typepaths of an unclaimed reward, if they died holding one
+	var/list/pending_candidates
+	/// Name of the patron owing that reward
+	var/pending_patron_name
+
+/// The vestige record for the soul behind a mind, made on demand when create is set
+/proc/get_vestige_record(datum/mind/mind, create = FALSE)
+	var/record_key = mind?.key ? ckey(mind.key) : null
+	if(!record_key)
+		return null
+	var/datum/vestige_record/record = GLOB.vestige_records[record_key]
+	if(!record && create)
+		record = new
+		GLOB.vestige_records[record_key] = record
+	return record
 
 /datum/vestige_trial
-	/// Name shown in the patron's menu
+	/// Name shown when the patron assigns it
 	var/name = "Trial"
 	/// The patron's pitch, shown before accepting
 	var/desc = "Prove yourself."
-	/// Boon typepath granted on completion (see boon.dm)
-	var/boon_type
+	/// Boon typepaths the patron pays out of, snapshotted at accept — the mob unloads with the ruin
+	var/list/boon_pool
 	/// The mind undertaking this trial
 	var/datum/mind/owner
 	/// Name of the offering patron, kept as text — the mob unloads with the ruin
@@ -37,11 +81,12 @@
 	/// HUD reminder action, granted on accept and cleared with the pact (see below)
 	var/datum/action/vestige_pact/tracker
 
-/datum/vestige_trial/New(datum/mind/owner_mind, offering_patron_name)
+/datum/vestige_trial/New(datum/mind/owner_mind, offering_patron_name, list/reward_pool)
 	. = ..()
 	owner = owner_mind
 	if(offering_patron_name)
 		patron_name = offering_patron_name
+	boon_pool = reward_pool
 
 /datum/vestige_trial/Destroy()
 	QDEL_NULL(tracker)
@@ -80,7 +125,7 @@
 	return kit
 
 /**
- * Fulfills the pact: bookkeeping, immediate boon payout, flavor.
+ * Fulfills the pact: bookkeeping, the reward roll, flavor.
  *
  * Deletes the trial datum — callers (kit items, ritual structures) must not
  * touch the trial after calling this.
@@ -91,17 +136,41 @@
 	LAZYADD(owner.completed_vestige_trials, type)
 	if(owner.active_vestige_trial == src)
 		owner.active_vestige_trial = null
+	var/datum/vestige_record/record = get_vestige_record(owner, create = TRUE)
+	record?.completed_trials |= type
 
 	var/mob/living/user = owner.current
 	if(isliving(user))
 		to_chat(user, span_bolddanger("[patron_name]'s voice crawls up the back of your skull: \"The pact is fulfilled.\""))
 		playsound(user, 'sound/effects/magic/curse.ogg', 50, TRUE)
-		if(boon_type && !(boon_type in owner.vestige_boons))
-			var/datum/vestige_boon/boon = new boon_type()
-			boon.grant(user, owner)
-			LAZYADD(owner.vestige_boons, boon_type)
-			qdel(boon)
+		offer_reward(user)
 	qdel(src)
+
+/**
+ * Rolls the boon candidates this fulfilled pact pays out and leaves the owner
+ * holding the claim button (see boon.dm). The choice is made at the player's
+ * leisure — mid-fight completions shouldn't force a menu through the chaos.
+ */
+/datum/vestige_trial/proc/offer_reward(mob/living/user)
+	if(owner.vestige_pending_reward) // can't normally happen — patrons refuse pacts while a debt is unclaimed
+		return
+	var/list/eligible = get_eligible_vestige_boons(owner, boon_pool)
+	if(!length(eligible))
+		to_chat(user, span_notice("\"You have already taken all I had to give. Carry the debt as an heirloom.\""))
+		return
+	var/list/candidates = list()
+	for(var/pick_count in 1 to min(VESTIGE_REWARD_CHOICES, length(eligible)))
+		candidates += pick_n_take(eligible)
+	var/datum/action/vestige_reward/reward = new(owner, candidates, patron_name)
+	reward.Grant(user)
+	owner.vestige_pending_reward = reward
+	// The debt survives death: if they die unclaimed, restoration recreates it from the record
+	var/datum/vestige_record/record = get_vestige_record(owner, create = TRUE)
+	if(record)
+		record.pending_candidates = candidates.Copy()
+		record.pending_patron_name = patron_name
+	to_chat(user, span_boldnotice("\"Now — your payment. Choose.\""))
+	INVOKE_ASYNC(reward, TYPE_PROC_REF(/datum/action/vestige_reward, open_reward_menu), user)
 
 /**
  * # Vestige pact tracker

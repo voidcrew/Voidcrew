@@ -19,6 +19,12 @@
 		/datum/vestige_trial/birth,
 		/datum/vestige_trial/faces,
 	)
+	boon_types = list(
+		/datum/vestige_boon/spell/armblade,
+		/datum/vestige_boon/spell/armblade/perfected,
+		/datum/vestige_boon/spell/fleshmend,
+		/datum/vestige_boon/spell/fleshmend/deep,
+	)
 	idle_lines = list(
 		"We were a crew of thirty. Then a crew of one. The arithmetic of it still delights us.",
 		"You wear one face your whole life and call US the horror.",
@@ -29,13 +35,15 @@
 	busy_line = "One hunger at a time."
 	fulfilled_line = "We have already sung together. Let the others have their turn."
 	renounce_line = "The flesh forgets you. It will not offer twice so kindly."
+	claim_line = "Take-take-take. THEN we talk about more."
+	exhausted_line = "We have folded everything we remember into you. There is nothing left to teach."
+	remember_line = "New skin! Same song. We remember every note we taught you."
 
 // ===== TRIAL OF BIRTH =====
 
 /datum/vestige_trial/birth
 	name = "Trial of Birth"
 	desc = "Take this egg. It sleeps. Sow it in the skull of a dead humanoid and ward the body while the child wakes — three minutes, no more, and the body will not lie quietly. The child must draw its first breath. We only ask to hear it."
-	boon_type = /datum/vestige_boon/spell/armblade
 	/// Whether the egg has been sown and is incubating
 	var/incubating = FALSE
 
@@ -141,14 +149,19 @@
 	// Keep the numbers in sync with VESTIGE_FACES_SAMPLES_NEEDED / _LIVING_NEEDED
 	// (initial values must be constant, so no define interpolation here)
 	desc = "Our proboscis, on loan. Let it taste five different faces — at least two still warm and walking. The dead hold still; the living remember you. Choose with care."
-	boon_type = /datum/vestige_boon/spell/fleshmend
 	/// Assoc list of unique enzymes already tasted
 	var/list/sampled = list()
 	/// How many samples came from living targets
 	var/living_samples = 0
+	/// The loaned kit item, reclaimed (deleted) the moment the pact ends
+	var/obj/item/vestige_proboscis/proboscis
 
 /datum/vestige_trial/faces/on_accepted(mob/living/user)
-	hand_over(user, new /obj/item/vestige_proboscis(get_turf(user)))
+	proboscis = hand_over(user, new /obj/item/vestige_proboscis(get_turf(user)))
+
+/datum/vestige_trial/faces/Destroy()
+	QDEL_NULL(proboscis)
+	return ..()
 
 /datum/vestige_trial/faces/get_progress_text()
 	return "[length(sampled)]/[VESTIGE_FACES_SAMPLES_NEEDED] faces tasted; [min(living_samples, VESTIGE_FACES_LIVING_NEEDED)]/[VESTIGE_FACES_LIVING_NEEDED] living."
@@ -208,13 +221,29 @@
 
 /datum/vestige_boon/spell/armblade
 	name = "Armblade"
+	desc = "Reshape your arm into a grotesque blade of bone and flesh, and fold it away when eyes turn your way."
 	grant_text = "Your right arm itches, deep in the bone. Something new is folded in there, waiting to be asked."
 	spell_type = /datum/action/cooldown/spell/vestige_armblade
 
+/datum/vestige_boon/spell/armblade/perfected
+	name = "Perfected Armblade"
+	desc = "The hive's masterwork: a longer, denser blade that shears through armor plate, and unfolds the instant it's asked."
+	grant_text = "The thing folded into your arm reshapes itself one final time. This time it gets it right."
+	upgrades_from = /datum/vestige_boon/spell/armblade
+	spell_type = /datum/action/cooldown/spell/vestige_armblade/perfected
+
 /datum/vestige_boon/spell/fleshmend
 	name = "Fleshmend"
+	desc = "Knit your wounds closed with the hive's old trick. Useless while you are on fire."
 	grant_text = "Your flesh learns the old hive trick of forgetting its injuries."
 	spell_type = /datum/action/cooldown/spell/vestige_fleshmend
+
+/datum/vestige_boon/spell/fleshmend/deep
+	name = "Deep Fleshmend"
+	desc = "The trick sinks past flesh, into marrow: your body forgets its injuries almost as fast as it takes them."
+	grant_text = "The hive's trick sinks deeper — past flesh, into the bone."
+	upgrades_from = /datum/vestige_boon/spell/fleshmend
+	spell_type = /datum/action/cooldown/spell/vestige_fleshmend/deep
 
 /datum/action/cooldown/spell/vestige_armblade
 	name = "Form Armblade"
@@ -225,13 +254,27 @@
 	cooldown_time = 10 SECONDS
 	invocation_type = INVOCATION_NONE
 	spell_requirements = NONE
+	/// The blade this spell forms
+	var/blade_type = /obj/item/melee/arm_blade
+
+/datum/action/cooldown/spell/vestige_armblade/perfected
+	name = "Form Perfected Armblade"
+	desc = "Reshape your arm into the hive's masterwork blade, or fold it away again."
+	cooldown_time = 6 SECONDS
+	blade_type = /obj/item/melee/arm_blade/vestige_perfected
+
+/obj/item/melee/arm_blade/vestige_perfected
+	name = "perfected arm blade"
+	desc = "A grotesque blade of bone and flesh, refined by a dead hive into something the living ones never managed."
+	force = 30
+	armour_penetration = 20
 
 /datum/action/cooldown/spell/vestige_armblade/is_valid_target(atom/cast_on)
 	return iscarbon(cast_on)
 
 /datum/action/cooldown/spell/vestige_armblade/cast(mob/living/carbon/cast_on)
 	. = ..()
-	var/obj/item/melee/arm_blade/blade = locate() in cast_on.held_items
+	var/obj/item/blade = locate(blade_type) in cast_on.held_items
 	if(blade)
 		cast_on.visible_message(
 			span_warning("[cast_on]'s blade melts back into [cast_on.p_their()] arm!"),
@@ -239,7 +282,7 @@
 		)
 		qdel(blade)
 		return
-	var/obj/item/melee/arm_blade/new_blade = new(cast_on)
+	var/obj/item/new_blade = new blade_type(cast_on)
 	if(!cast_on.put_in_hands(new_blade))
 		if(!QDELETED(new_blade)) // DROPDEL usually beat us to it
 			qdel(new_blade)
@@ -255,6 +298,10 @@
 	cooldown_time = 1 MINUTES
 	invocation_type = INVOCATION_NONE
 	spell_requirements = NONE
+
+/datum/action/cooldown/spell/vestige_fleshmend/deep
+	name = "Deep Fleshmend"
+	cooldown_time = 25 SECONDS
 
 /datum/action/cooldown/spell/vestige_fleshmend/can_cast_spell(feedback = TRUE)
 	. = ..()

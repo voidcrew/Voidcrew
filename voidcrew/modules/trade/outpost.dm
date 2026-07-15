@@ -114,6 +114,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			berth.release(force = TRUE)
 	berths = null
 	lobby_alcove_turfs.Cut()
+	lobby_wall_turfs.Cut()
 	lobby_panels.Cut()
 	QDEL_NULL(shop)
 	QDEL_LIST_ASSOC_VAL(extra_shops)

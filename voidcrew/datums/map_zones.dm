@@ -122,6 +122,28 @@
 		new /turf/open/space/basic(T)
 		CHECK_TICK
 
+/**
+ * Force-initializes any uninitialized turfs in a block (i.e. /turf/open/space/basic,
+ * whose New() skips initialization as a map-loader optimization). Players can't
+ * interact with uninitialized turfs - no throwing, building, etc. - so any space
+ * handed to players must pass through here.
+ */
+/proc/initialize_uninitialized_block_turfs(turf/bottom_left, turf/top_right)
+	if(!bottom_left || !top_right)
+		return
+	if(!SSatoms.initialized) // roundstart init will sweep every atom in world anyway
+		return
+	var/list/to_init = list()
+	for(var/turf/tile as anything in block(bottom_left, top_right))
+		if(!(tile.flags_1 & INITIALIZED_1))
+			to_init += tile
+	if(length(to_init))
+		SSatoms.InitializeAtoms(to_init)
+
+/// Initializes every uninitialized turf on the level - see initialize_uninitialized_block_turfs
+/datum/space_level/proc/initialize_space_turfs()
+	initialize_uninitialized_block_turfs(locate(low_x, low_y, z_value), locate(high_x, high_y, z_value))
+
 /datum/space_level/proc/fill_in(turf/turf_type, area/area_override)
 	var/area/area_to_use = null
 	if(area_override)
