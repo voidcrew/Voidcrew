@@ -54,19 +54,18 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/template_type = /datum/map_template/trader_outpost/black_market
 	/// The loaded template instance
 	var/datum/map_template/trader_outpost/outpost_template
-	/// The turf reservation holding the interior + docks
+	/// The turf reservation holding the interior
 	var/datum/turf_reservation/reservation
-	/// Primary docking port
-	var/obj/docking_port/stationary/reserve_dock
-	/// Secondary docking port
-	var/obj/docking_port/stationary/reserve_dock_secondary
 	/// Whether the interior has been loaded
 	var/loaded = FALSE
 	/// Whether the interior is currently loading
 	var/loading = FALSE
-	/// Track dock usage (mirrors space_ruin/planet bookkeeping in ship.dm)
-	var/first_dock_taken = FALSE
-	var/second_dock_taken = FALSE
+	/// Hangar berth slots; berths[i] is the /datum/outpost_berth in slot i or null (see outpost_hangar.dm)
+	var/list/berths
+	/// Elevator alcove turfs on the concourse, from landmarks in the interior template (block() order)
+	var/list/turf/lobby_alcove_turfs = list()
+	/// Concourse-side elevator panels
+	var/list/obj/machinery/outpost_elevator/lobby_panels = list()
 	/// Bottom-left turf of the loaded template footprint
 	var/turf/template_bottom_left
 	/// Ships under trade embargo: ship -> world.time the embargo ends
@@ -89,12 +88,20 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 /obj/structure/overmap/trader_outpost/Initialize(mapload)
 	. = ..()
 	GLOB.trader_outposts += src
+	berths = new /list(OUTPOST_MAX_BERTHS)
 	shop = new shop_type(src)
 	name = shop.outpost_name
 	desc = shop.outpost_desc
 
 /obj/structure/overmap/trader_outpost/Destroy()
 	GLOB.trader_outposts -= src
+	// Admin deletion must not leak six hangar reservations
+	for(var/datum/outpost_berth/berth as anything in berths)
+		if(berth)
+			berth.release(force = TRUE)
+	berths = null
+	lobby_alcove_turfs.Cut()
+	lobby_panels.Cut()
 	QDEL_NULL(shop)
 	template_bottom_left = null
 	embargoed_ships.Cut()
@@ -128,25 +135,19 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		loading = FALSE
 		return
 
-	// Interior + buffer for docking on two sides (same dock sizes as planets/ruins)
-	var/reserve_width = outpost_template.width + (RESERVE_DOCK_MAX_SIZE_LONG * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
-	var/reserve_height = outpost_template.height + (RESERVE_DOCK_MAX_SIZE_SHORT * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
-
-	reservation = SSmapping.request_turf_block_reservation(reserve_width, reserve_height, 1)
+	// Ships dock in per-ship hangar berths (outpost_hangar.dm), so the
+	// reservation only needs to fit the interior itself.
+	reservation = SSmapping.request_turf_block_reservation(outpost_template.width, outpost_template.height, 1)
 	if(!reservation)
 		loading = FALSE
 		return
 
 	var/turf/bottom_left = reservation.bottom_left_turfs[1]
-
-	var/template_x = bottom_left.x + RESERVE_DOCK_MAX_SIZE_LONG + RESERVE_DOCK_DEFAULT_PADDING
-	var/template_y = bottom_left.y + RESERVE_DOCK_MAX_SIZE_SHORT + RESERVE_DOCK_DEFAULT_PADDING
-	var/turf/template_turf = locate(template_x, template_y, bottom_left.z)
-	template_bottom_left = template_turf
+	template_bottom_left = bottom_left
 
 	var/load_success = FALSE
 	try
-		load_success = outpost_template.load(template_turf)
+		load_success = outpost_template.load(bottom_left)
 	catch(var/exception/e)
 		log_mapping("TRADER OUTPOST: Failed to load '[outpost_template.name]': [e]")
 		load_success = FALSE
@@ -159,33 +160,6 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		return
 
 	link_interior_machinery()
-
-	// Docking ports on opposite corners of the reservation, like space ruins
-	var/turf/primary_dock_turf = locate(
-		bottom_left.x + RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.y + RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.z
-	)
-	reserve_dock = new /obj/docking_port/stationary(primary_dock_turf)
-	reserve_dock.dir = NORTH
-	reserve_dock.name = "[name] Landing Pad One"
-	reserve_dock.width = RESERVE_DOCK_MAX_SIZE_LONG
-	reserve_dock.height = RESERVE_DOCK_MAX_SIZE_SHORT
-	reserve_dock.dheight = 0
-	reserve_dock.dwidth = 0
-
-	var/turf/secondary_dock_turf = locate(
-		bottom_left.x + reserve_width - RESERVE_DOCK_MAX_SIZE_LONG - RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.y + reserve_height - RESERVE_DOCK_MAX_SIZE_SHORT - RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.z
-	)
-	reserve_dock_secondary = new /obj/docking_port/stationary(secondary_dock_turf)
-	reserve_dock_secondary.dir = NORTH
-	reserve_dock_secondary.name = "[name] Landing Pad Two"
-	reserve_dock_secondary.width = RESERVE_DOCK_MAX_SIZE_LONG
-	reserve_dock_secondary.height = RESERVE_DOCK_MAX_SIZE_SHORT
-	reserve_dock_secondary.dheight = 0
-	reserve_dock_secondary.dwidth = 0
 
 	loaded = TRUE
 	loading = FALSE
@@ -204,6 +178,11 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	if(!top_right)
 		return
 	for(var/turf/interior_turf as anything in block(template_bottom_left, top_right))
+		// block() iterates y-major then x — same order the hangar-side alcove
+		// collects in, so the elevator can map alcove turf i to alcove turf i.
+		for(var/obj/effect/landmark/outpost_elevator_alcove/alcove_mark in interior_turf)
+			lobby_alcove_turfs += interior_turf
+			qdel(alcove_mark)
 		for(var/obj/machinery/machine in interior_turf)
 			if(istype(machine, /obj/machinery/computer/outpost_shop_terminal))
 				var/obj/machinery/computer/outpost_shop_terminal/terminal = machine
@@ -224,12 +203,17 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 			else if(istype(machine, /obj/machinery/door/airlock/outpost))
 				var/obj/machinery/door/airlock/outpost/door = machine
 				door.outpost = src
+			else if(istype(machine, /obj/machinery/outpost_elevator))
+				var/obj/machinery/outpost_elevator/panel = machine
+				panel.outpost = src
+				panel.is_lobby = TRUE
+				lobby_panels += panel
 	// The projection's appearance depends on the shop, so it spawns post-link
 	trader?.activate_hologram()
 
 /obj/structure/overmap/trader_outpost/attack_ghost(mob/user)
-	if(reserve_dock)
-		user.forceMove(get_turf(reserve_dock))
+	if(length(lobby_alcove_turfs))
+		user.forceMove(pick(lobby_alcove_turfs))
 		return TRUE
 	if(template_bottom_left)
 		user.forceMove(template_bottom_left)
@@ -237,7 +221,8 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	return
 
 /**
- * Handles ship docking, mirroring the space ruin flow (lazy-load, two reserve docks).
+ * Handles ship docking: lazy-loads the interior, then allocates the ship its
+ * own hangar berth (see outpost_hangar.dm) and docks it there.
  */
 /obj/structure/overmap/trader_outpost/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
 	if(concerned)
@@ -251,49 +236,43 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 
 	load_level()
 
-	if(!reservation || !reserve_dock)
+	if(!reservation || !loaded)
 		acting.state = prev_state
 		concerned = FALSE
 		to_chat(user, span_warning("Failed to load the location."))
 		return
 
-	var/is_survey = FALSE
 	var/obj/docking_port/stationary/dock_to_use = null
-	var/selected_dock_index = 0
+	var/datum/outpost_berth/berth = null
 
 	// Port destinations are set by survey console
 	if(acting.shuttle.port_destinations)
 		dock_to_use = acting.shuttle.port_destinations
-		is_survey = TRUE
 	else
-		if(!reserve_dock.get_docked() && !first_dock_taken)
-			dock_to_use = reserve_dock
-			selected_dock_index = 1
-		else if(!reserve_dock_secondary.get_docked() && !second_dock_taken)
-			dock_to_use = reserve_dock_secondary
-			selected_dock_index = 2
+		// Cheap size gate before spending a reservation on a ship that can't fit
+		var/long_axis = max(acting.shuttle.width, acting.shuttle.height)
+		var/short_axis = min(acting.shuttle.width, acting.shuttle.height)
+		if(long_axis > RESERVE_DOCK_MAX_SIZE_LONG || short_axis > RESERVE_DOCK_MAX_SIZE_SHORT)
+			acting.state = prev_state
+			concerned = FALSE
+			to_chat(user, span_warning("Ship is too large for [name]'s hangar berths."))
+			return
 
-	if(!dock_to_use)
-		acting.state = prev_state
-		concerned = FALSE
-		to_chat(user, span_notice("All landing pads occupied."))
-		return
-
-	if(!is_survey)
-		adjust_reserve_dock_to_shuttle(dock_to_use, acting.shuttle)
+		berth = allocate_berth(acting)
+		if(!berth)
+			acting.state = prev_state
+			concerned = FALSE
+			to_chat(user, span_notice("[name] traffic control: all hangar berths are occupied. Try again later."))
+			return
+		adjust_reserve_dock_to_shuttle(berth.dock, acting.shuttle)
+		dock_to_use = berth.dock
 
 	if(acting.shuttle.height > dock_to_use.height || acting.shuttle.width > dock_to_use.width)
+		berth?.release(force = TRUE) // nothing has landed yet, safe to free immediately
 		acting.state = prev_state
 		concerned = FALSE
 		to_chat(user, span_warning("Ship is too large to dock at this location."))
 		return
-
-	if(selected_dock_index == 1)
-		first_dock_taken = TRUE
-		acting.dock_index = 1
-	else if(selected_dock_index == 2)
-		second_dock_taken = TRUE
-		acting.dock_index = 2
 
 	to_chat(user, span_notice("[acting.dock(src, dock_to_use)]"))
 

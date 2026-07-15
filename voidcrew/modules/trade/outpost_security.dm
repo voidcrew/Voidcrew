@@ -144,3 +144,15 @@
 		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(src)
 		outpost?.register_aggression(hitting_projectile.firer)
 	return ..()
+
+/turf/closed/indestructible/syndicate/outpost/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
+	if(attacking_item.force && isliving(user))
+		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(src)
+		outpost?.register_aggression(user)
+	return ..()
+
+/turf/closed/indestructible/syndicate/outpost/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
+	if(isliving(hitting_projectile.firer))
+		var/obj/structure/overmap/trader_outpost/outpost = get_trader_outpost_for_turf(src)
+		outpost?.register_aggression(hitting_projectile.firer)
+	return ..()

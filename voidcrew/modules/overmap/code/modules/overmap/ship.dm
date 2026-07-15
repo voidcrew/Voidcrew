@@ -1504,14 +1504,10 @@
 						// Another ship is still docked to this empty space - notify them we left
 						SEND_SIGNAL(other_ship, COMSIG_VOIDCREW_SHIP_UNDOCKED_BY, src)
 
-			// Handle trader outpost dock flags (no unload — outposts are permanent)
+			// Free the ship's hangar berth (the outpost itself never unloads — it's permanent)
 			if(istype(old_docked_location, /obj/structure/overmap/trader_outpost))
 				var/obj/structure/overmap/trader_outpost/outpost_place = old_docked_location
-				if(dock_index == 1)
-					outpost_place.first_dock_taken = FALSE
-				else if(dock_index == 2)
-					outpost_place.second_dock_taken = FALSE
-				dock_index = 0
+				outpost_place.on_ship_undock_complete(src)
 
 			// Handle space ruin dock flags and cleanup
 			if(istype(old_docked_location, /obj/structure/overmap/space_ruin))

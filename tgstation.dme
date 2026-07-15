@@ -7063,6 +7063,8 @@
 #include "voidcrew\modules\teams\_team.dm"
 #include "voidcrew\modules\trade\outpost.dm"
 #include "voidcrew\modules\trade\outpost_amenities.dm"
+#include "voidcrew\modules\trade\outpost_elevator.dm"
+#include "voidcrew\modules\trade\outpost_hangar.dm"
 #include "voidcrew\modules\trade\outpost_missions.dm"
 #include "voidcrew\modules\trade\outpost_security.dm"
 #include "voidcrew\modules\trade\shop.dm"

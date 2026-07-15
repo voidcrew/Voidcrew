@@ -501,6 +501,7 @@ SUBSYSTEM_DEF(overmap)
 		if(!outpost_type)
 			continue
 		var/obj/structure/overmap/trader_outpost/outpost = new outpost_type(candidate)
+		outpost.load_level() // pre-load interior at init instead of on first dock
 		wanted -= band
 		log_mapping("SSovermap: Spawned trader outpost '[outpost.name]' in zone band [band] at ([candidate.x], [candidate.y])")
 
