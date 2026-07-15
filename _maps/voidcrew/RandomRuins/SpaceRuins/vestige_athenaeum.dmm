@@ -1,0 +1,532 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"d" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"f" = (
+/obj/machinery/door/airlock/wood{
+	name = "Reading Room"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"j" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"k" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"m" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"n" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"o" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"p" = (
+/obj/structure/table/wood,
+/obj/item/book/random{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/book/random{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"q" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"r" = (
+/mob/living/basic/vestige_patron/magister{
+	dir = 8
+	},
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash/large,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"t" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"v" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash/large,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"w" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"y" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"z" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"B" = (
+/obj/item/book/random,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"C" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"E" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/paper/crumpled{
+	name = "the last page";
+	default_raw_text = "The word has nine syllables. The first eight are transcription. The ninth is pronounced by the speaker's own substance, which is why it appears in no book, including this one. My master wrote that only the humble survive the ninth syllable, and I have copied his warning here in full, as instructed, before my recital. I am confident. I have practiced eight of the nine."
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"F" = (
+/obj/structure/bookcase/random,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"G" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"H" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"J" = (
+/obj/effect/spawner/structure/window/reinforced/tinted,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"K" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"L" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"M" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"O" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"P" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"R" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"T" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"U" = (
+/turf/template_noop,
+/area/template_noop)
+"V" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"X" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Z" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+
+(1,1,1) = {"
+U
+U
+U
+U
+U
+U
+U
+U
+U
+U
+U
+U
+U
+U
+U
+"}
+(2,1,1) = {"
+U
+U
+U
+U
+U
+U
+K
+k
+q
+U
+U
+U
+U
+U
+U
+"}
+(3,1,1) = {"
+U
+U
+U
+U
+U
+U
+K
+t
+K
+U
+U
+U
+U
+U
+U
+"}
+(4,1,1) = {"
+U
+K
+K
+K
+j
+K
+K
+R
+K
+K
+j
+K
+K
+K
+U
+"}
+(5,1,1) = {"
+U
+K
+V
+H
+z
+L
+z
+H
+z
+L
+z
+H
+V
+K
+U
+"}
+(6,1,1) = {"
+U
+K
+F
+z
+F
+F
+z
+z
+z
+F
+F
+z
+F
+K
+U
+"}
+(7,1,1) = {"
+U
+K
+Z
+L
+z
+z
+B
+z
+z
+z
+L
+z
+z
+K
+U
+"}
+(8,1,1) = {"
+U
+K
+F
+z
+F
+F
+z
+z
+L
+F
+F
+B
+F
+K
+U
+"}
+(9,1,1) = {"
+U
+K
+L
+z
+z
+H
+L
+o
+z
+z
+z
+z
+G
+K
+U
+"}
+(10,1,1) = {"
+U
+K
+F
+o
+F
+F
+o
+m
+o
+F
+F
+z
+F
+K
+U
+"}
+(11,1,1) = {"
+U
+K
+M
+H
+o
+m
+m
+m
+m
+m
+o
+o
+o
+K
+U
+"}
+(12,1,1) = {"
+U
+K
+d
+d
+d
+O
+d
+f
+d
+O
+d
+d
+d
+K
+U
+"}
+(13,1,1) = {"
+U
+K
+T
+a
+a
+a
+a
+y
+a
+a
+a
+a
+w
+K
+U
+"}
+(14,1,1) = {"
+U
+K
+a
+a
+a
+T
+a
+C
+a
+T
+a
+T
+T
+K
+U
+"}
+(15,1,1) = {"
+U
+J
+a
+T
+a
+a
+y
+E
+y
+a
+a
+a
+a
+J
+U
+"}
+(16,1,1) = {"
+U
+J
+a
+a
+a
+v
+v
+r
+v
+v
+a
+a
+a
+J
+U
+"}
+(17,1,1) = {"
+U
+K
+n
+y
+y
+y
+y
+v
+y
+y
+y
+y
+P
+K
+U
+"}
+(18,1,1) = {"
+U
+K
+T
+a
+p
+a
+a
+y
+a
+a
+a
+a
+a
+K
+U
+"}
+(19,1,1) = {"
+U
+K
+w
+a
+a
+T
+a
+T
+a
+T
+a
+T
+X
+K
+U
+"}
+(20,1,1) = {"
+U
+K
+K
+K
+K
+j
+K
+K
+K
+j
+K
+K
+K
+K
+U
+"}
+(21,1,1) = {"
+U
+U
+U
+U
+U
+U
+U
+U
+U
+U
+U
+U
+U
+U
+U
+"}

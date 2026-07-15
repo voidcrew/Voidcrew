@@ -32,17 +32,28 @@
 "j" = (
 /turf/closed/wall/mineral/titanium,
 /area/voidcrew/player_outpost)
+"k" = (
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
 "l" = (
 /obj/structure/table/reinforced,
 /obj/effect/spawner/random/engineering/tool,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "m" = (
-/obj/machinery/light/warm/directional/south,
+/obj/machinery/power/port_gen/pacman,
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "n" = (
 /obj/machinery/light/warm/directional/north,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"o" = (
+/obj/structure/reagent_dispensers/water_cooler,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "q" = (
@@ -51,6 +62,13 @@
 /obj/effect/turf_decal/siding/white{
 	dir = 4
 	},
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"s" = (
+/obj/machinery/power/terminal{
+	dir = 1
+	},
+/obj/structure/cable,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "u" = (
@@ -66,7 +84,9 @@
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "x" = (
-/obj/structure/reagent_dispensers/water_cooler,
+/obj/structure/chair{
+	dir = 8
+	},
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "y" = (
@@ -115,21 +135,32 @@
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "Q" = (
-/obj/machinery/space_heater,
+/obj/machinery/power/smes/ship,
+/obj/structure/cable,
+/obj/effect/turf_decal/delivery,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "S" = (
 /obj/item/kirbyplants/random,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
+"T" = (
+/obj/machinery/space_heater,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
 "U" = (
 /obj/structure/sign/poster/official/random,
 /turf/closed/wall/mineral/titanium,
 /area/voidcrew/player_outpost)
+"V" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
 "Z" = (
-/obj/structure/chair{
-	dir = 8
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 10
 	},
+/obj/effect/turf_decal/bot,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 
@@ -175,7 +206,7 @@ N
 D
 l
 N
-Q
+T
 N
 j
 "}
@@ -265,8 +296,8 @@ N
 N
 N
 N
-N
-N
+Z
+m
 N
 N
 j
@@ -288,9 +319,9 @@ N
 N
 N
 N
-N
-N
-N
+Q
+s
+k
 N
 j
 "}
@@ -337,7 +368,7 @@ N
 N
 N
 N
-x
+o
 F
 "}
 (10,1,1) = {"
@@ -406,7 +437,7 @@ N
 N
 N
 N
-m
+V
 U
 "}
 (13,1,1) = {"
@@ -587,7 +618,7 @@ N
 N
 N
 E
-Z
+x
 N
 N
 N

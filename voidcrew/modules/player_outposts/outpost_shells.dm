@@ -15,6 +15,9 @@
  *   get hangar berths from the moment of founding (see outpost_hangar.dm)
  * - external airlocks on the remaining cardinal sides (EVA walk-in stays possible)
  * - pressurized core, lights
+ * - a starter power bay: APC + cable, charged SMES with input terminal, and an
+ *   unanchored portable generator with fuel — the area requires power, so when
+ *   the SMES buffer drains the owner keeps the generator fed or goes dark
  *
  * The bare-claim shell deliberately breaks all of these: it ships nothing but a
  * pad, the arrival landmark and a crate of console boards. Everything the
@@ -26,7 +29,6 @@
 	name = "\improper Player Outpost"
 	icon_state = "away"
 	static_lighting = TRUE
-	requires_power = FALSE
 	default_gravity = STANDARD_GRAVITY
 	// No UNIQUE_AREA: every shell load must instantiate its own area so
 	// multiple player outposts don't share one area datum
@@ -46,12 +48,12 @@
 
 /datum/map_template/player_outpost/small
 	name = "Compact Habitat"
-	catalog_desc = "A snug pressurized module: one room, the essential consoles, a hangar elevator, and not much else. Cheap on materials, quick to expand."
+	catalog_desc = "A snug pressurized module: one room, the essential consoles, a hangar elevator, a charged SMES with a portable generator, and not much else. Cheap on materials, quick to expand."
 	mappath = "voidcrew/_maps/map_files/outposts/player_outpost_shell_small.dmm"
 
 /datum/map_template/player_outpost/medium
 	name = "Waystation Frame"
-	catalog_desc = "A proper station core with separated work and living space, plus a hangar elevator off the main hall. More floor to hold down, more room to grow into."
+	catalog_desc = "A proper station core with separated work and living space, a powered workshop bay, plus a hangar elevator off the main hall. More floor to hold down, more room to grow into."
 	mappath = "voidcrew/_maps/map_files/outposts/player_outpost_shell_medium.dmm"
 
 /datum/map_template/player_outpost/nothing

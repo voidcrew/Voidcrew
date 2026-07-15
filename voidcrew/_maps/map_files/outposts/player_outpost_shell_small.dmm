@@ -1,23 +1,26 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "b" = (
-/obj/structure/bed,
-/obj/effect/spawner/random/bedsheet,
-/obj/effect/turf_decal/siding/white{
-	dir = 4
-	},
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/structure/cable,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "d" = (
 /obj/machinery/light/warm/directional/north,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
+"f" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
 "g" = (
-/obj/structure/table/reinforced,
+/obj/item/kirbyplants/random,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "h" = (
-/obj/machinery/door/airlock/external,
-/obj/structure/fans/tiny,
+/obj/machinery/power/terminal{
+	dir = 1
+	},
+/obj/structure/cable,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "i" = (
@@ -32,11 +35,16 @@
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "l" = (
-/obj/machinery/light/small/directional/west,
-/turf/open/floor/iron,
+/obj/effect/landmark/player_outpost_arrival,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/white,
 /area/voidcrew/player_outpost)
 "n" = (
-/obj/machinery/light/warm/directional/south,
+/obj/structure/bed,
+/obj/effect/spawner/random/bedsheet,
+/obj/effect/turf_decal/siding/white{
+	dir = 4
+	},
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "p" = (
@@ -47,7 +55,14 @@
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "q" = (
-/obj/item/radio/intercom/directional/west,
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 10
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"s" = (
+/obj/machinery/light/warm/directional/south,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "u" = (
@@ -59,10 +74,18 @@
 /turf/open/floor/light,
 /area/voidcrew/player_outpost)
 "y" = (
-/obj/item/kirbyplants/random,
+/obj/machinery/power/smes/ship,
+/obj/structure/cable,
+/obj/effect/turf_decal/delivery,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "z" = (
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"E" = (
+/obj/structure/chair{
+	dir = 8
+	},
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "F" = (
@@ -77,29 +100,37 @@
 /turf/closed/wall/mineral/titanium,
 /area/voidcrew/player_outpost)
 "N" = (
-/obj/structure/chair{
-	dir = 8
-	},
+/obj/machinery/door/airlock/external,
+/obj/structure/fans/tiny,
 /turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "O" = (
-/turf/open/floor/iron/white,
+/obj/machinery/power/port_gen/pacman,
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "P" = (
 /turf/template_noop,
 /area/template_noop)
+"Q" = (
+/obj/structure/table/reinforced,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
+"R" = (
+/obj/structure/closet/emcloset,
+/turf/open/floor/iron,
+/area/voidcrew/player_outpost)
 "S" = (
-/obj/effect/landmark/player_outpost_arrival,
-/obj/effect/turf_decal/bot,
-/turf/open/floor/iron/white,
+/obj/item/radio/intercom/directional/west,
+/turf/open/floor/iron,
 /area/voidcrew/player_outpost)
 "X" = (
 /obj/effect/landmark/outpost_elevator_alcove,
 /turf/open/floor/light,
 /area/voidcrew/player_outpost)
 "Z" = (
-/obj/structure/closet/emcloset,
-/turf/open/floor/iron,
+/turf/open/floor/iron/white,
 /area/voidcrew/player_outpost)
 
 (1,1,1) = {"
@@ -113,7 +144,7 @@ u
 u
 u
 u
-h
+N
 u
 u
 u
@@ -129,15 +160,15 @@ P
 u
 k
 z
-q
+S
 z
-y
+g
 z
 z
 z
-b
-b
-l
+n
+n
+f
 u
 "}
 (3,1,1) = {"
@@ -155,7 +186,7 @@ z
 z
 z
 z
-Z
+R
 z
 u
 "}
@@ -207,9 +238,9 @@ z
 z
 z
 z
-O
-O
-O
+Z
+Z
+Z
 z
 z
 z
@@ -226,14 +257,14 @@ z
 z
 z
 z
-O
-S
-O
+Z
+l
+Z
 z
 z
 z
 z
-h
+N
 "}
 (8,1,1) = {"
 u
@@ -245,13 +276,13 @@ z
 z
 z
 z
-O
-O
-O
+Z
+Z
+Z
 z
 z
 z
-n
+s
 u
 "}
 (9,1,1) = {"
@@ -298,16 +329,16 @@ P
 P
 P
 H
+q
+O
 z
 z
 z
 z
 z
 z
-z
-z
-g
-g
+Q
+Q
 z
 H
 "}
@@ -317,16 +348,16 @@ P
 P
 P
 u
-z
-z
-z
-z
-z
-z
 y
+h
+b
 z
 z
-N
+z
+g
+z
+z
+E
 z
 u
 "}
@@ -341,7 +372,7 @@ u
 u
 u
 u
-h
+N
 u
 u
 u

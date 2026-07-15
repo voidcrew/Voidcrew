@@ -9,6 +9,9 @@
 #define PLAYER_OUTPOST_BUILD_MARGIN 15
 /// Hard cap on shell template dimensions
 #define PLAYER_OUTPOST_MAX_SHELL_SIZE 40
+/// How often the outpost sweeps its build region to adopt hand-built
+/// structures into its powered area (drone builds adopt instantly)
+#define PLAYER_OUTPOST_AREA_SWEEP_INTERVAL (30 SECONDS)
 
 /// Cooldown between outpost renames
 #define PLAYER_OUTPOST_RENAME_COOLDOWN (5 MINUTES)

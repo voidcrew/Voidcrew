@@ -1,0 +1,500 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/reliquary)
+"c" = (
+/obj/machinery/door/airlock/vault{
+	name = "the Door"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"d" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/reliquary)
+"e" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/vestige/reliquary)
+"h" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"j" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"k" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/reliquary)
+"l" = (
+/obj/item/flashlight/flare/candle{
+	pixel_x = -2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"m" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/reliquary)
+"n" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/paper{
+	name = "the four-hundredth volume";
+	default_raw_text = "Day one: the door did not open. Day two: the door did not open. I abridge. Year forty: the hinges have rusted, which is remarkable, because the door has no hinges. The rust is not decay. The rust is marginalia. The door has been answering me one flake at a time, and I have spent a lifetime learning to read it. Ask it nothing. Read everything."
+	},
+/obj/item/pen{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"o" = (
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/vestige/reliquary)
+"p" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"s" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"t" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/reliquary)
+"u" = (
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"v" = (
+/mob/living/basic/vestige_patron/scrivener{
+	dir = 4
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"A" = (
+/turf/closed/wall/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"B" = (
+/obj/item/book/random,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"D" = (
+/obj/item/paper/crumpled{
+	name = "transcription fragment"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"E" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"F" = (
+/obj/structure/chair/pew{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"H" = (
+/obj/machinery/door/airlock/wood{
+	name = "Scriptorium"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"J" = (
+/turf/closed/wall/r_wall/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"K" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/reliquary)
+"L" = (
+/turf/template_noop,
+/area/template_noop)
+"N" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/reliquary)
+"P" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"Q" = (
+/obj/structure/filingcabinet,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"S" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/storage/fancy/candle_box{
+	pixel_y = 5
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = -5;
+	pixel_y = -2
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"U" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"X" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"Y" = (
+/obj/item/flashlight/flare/candle{
+	pixel_x = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+
+(1,1,1) = {"
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+"}
+(2,1,1) = {"
+L
+L
+L
+L
+L
+L
+t
+K
+t
+L
+L
+L
+L
+L
+L
+"}
+(3,1,1) = {"
+L
+L
+L
+L
+L
+L
+t
+d
+t
+L
+L
+L
+L
+L
+L
+"}
+(4,1,1) = {"
+L
+t
+t
+t
+m
+t
+t
+b
+t
+t
+m
+t
+t
+t
+L
+"}
+(5,1,1) = {"
+L
+t
+j
+X
+P
+h
+h
+o
+l
+X
+h
+P
+j
+t
+L
+"}
+(6,1,1) = {"
+L
+t
+S
+X
+X
+F
+X
+e
+X
+F
+X
+X
+h
+t
+L
+"}
+(7,1,1) = {"
+L
+t
+X
+h
+X
+F
+X
+o
+X
+F
+X
+X
+X
+t
+L
+"}
+(8,1,1) = {"
+L
+t
+U
+X
+X
+F
+X
+o
+X
+F
+X
+X
+E
+t
+L
+"}
+(9,1,1) = {"
+L
+t
+X
+X
+X
+X
+X
+o
+X
+h
+X
+X
+X
+t
+L
+"}
+(10,1,1) = {"
+L
+t
+h
+X
+X
+X
+X
+e
+X
+X
+X
+X
+X
+t
+L
+"}
+(11,1,1) = {"
+L
+t
+P
+h
+X
+h
+l
+o
+X
+X
+X
+X
+X
+t
+L
+"}
+(12,1,1) = {"
+L
+t
+N
+N
+k
+N
+N
+H
+N
+N
+k
+N
+N
+t
+L
+"}
+(13,1,1) = {"
+L
+t
+Q
+p
+u
+p
+u
+D
+u
+p
+u
+D
+p
+t
+L
+"}
+(14,1,1) = {"
+L
+t
+Q
+u
+p
+u
+u
+n
+u
+u
+p
+u
+D
+t
+L
+"}
+(15,1,1) = {"
+L
+m
+D
+u
+u
+u
+p
+v
+u
+u
+u
+u
+u
+m
+L
+"}
+(16,1,1) = {"
+L
+t
+s
+p
+B
+u
+Y
+p
+Y
+u
+u
+p
+u
+J
+L
+"}
+(17,1,1) = {"
+L
+t
+p
+u
+u
+p
+A
+c
+A
+p
+u
+s
+s
+J
+L
+"}
+(18,1,1) = {"
+L
+t
+t
+t
+t
+t
+t
+J
+t
+t
+t
+t
+t
+t
+L
+"}
+(19,1,1) = {"
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+"}

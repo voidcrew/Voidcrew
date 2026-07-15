@@ -1,0 +1,431 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"e" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"g" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/aperture)
+"j" = (
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/aperture)
+"m" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"o" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"p" = (
+/turf/template_noop,
+/area/template_noop)
+"r" = (
+/obj/structure/frame/computer{
+	anchored = 1;
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"t" = (
+/obj/structure/table/reinforced,
+/obj/item/binoculars,
+/obj/item/paper/crumpled{
+	name = "observation log";
+	default_raw_text = "Shift 1: nothing. Shift 2: nothing. Shift 3: nothing, but closer."
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"A" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/aperture)
+"B" = (
+/mob/living/basic/vestige_patron/watcher{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"F" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"J" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/aperture)
+"K" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"N" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"P" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/aperture)
+"Q" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"S" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"Y" = (
+/obj/effect/spawner/structure/window/reinforced/tinted,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/aperture)
+"Z" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/aperture)
+
+(1,1,1) = {"
+p
+p
+p
+p
+p
+p
+p
+p
+p
+p
+p
+p
+p
+p
+p
+"}
+(2,1,1) = {"
+p
+p
+p
+p
+p
+p
+A
+P
+A
+p
+p
+p
+p
+p
+p
+"}
+(3,1,1) = {"
+p
+p
+p
+p
+p
+p
+A
+J
+A
+p
+p
+p
+p
+p
+p
+"}
+(4,1,1) = {"
+p
+A
+A
+Y
+Y
+A
+A
+Z
+A
+Y
+Y
+A
+A
+A
+p
+"}
+(5,1,1) = {"
+p
+Y
+S
+Q
+N
+w
+N
+Q
+N
+w
+N
+o
+m
+Y
+p
+"}
+(6,1,1) = {"
+p
+Y
+w
+N
+o
+N
+Q
+N
+N
+N
+Q
+N
+w
+Y
+p
+"}
+(7,1,1) = {"
+p
+A
+N
+w
+N
+Q
+N
+N
+w
+N
+N
+N
+e
+A
+p
+"}
+(8,1,1) = {"
+p
+Y
+r
+N
+N
+N
+N
+w
+N
+Q
+N
+N
+N
+Y
+p
+"}
+(9,1,1) = {"
+p
+Y
+r
+N
+j
+j
+j
+j
+g
+N
+w
+Q
+N
+Y
+p
+"}
+(10,1,1) = {"
+p
+A
+N
+Q
+j
+g
+j
+g
+j
+N
+N
+N
+N
+A
+p
+"}
+(11,1,1) = {"
+p
+Y
+r
+N
+j
+j
+g
+j
+j
+N
+N
+N
+N
+Y
+p
+"}
+(12,1,1) = {"
+p
+Y
+r
+N
+N
+N
+N
+N
+Q
+N
+N
+w
+N
+Y
+p
+"}
+(13,1,1) = {"
+p
+A
+N
+N
+N
+N
+N
+t
+N
+N
+Q
+N
+N
+A
+p
+"}
+(14,1,1) = {"
+p
+Y
+w
+N
+N
+w
+Q
+N
+N
+F
+N
+N
+w
+Y
+p
+"}
+(15,1,1) = {"
+p
+Y
+N
+F
+N
+N
+N
+N
+N
+N
+N
+N
+N
+Y
+p
+"}
+(16,1,1) = {"
+p
+A
+Q
+N
+Q
+N
+N
+B
+K
+N
+N
+N
+N
+A
+p
+"}
+(17,1,1) = {"
+p
+Y
+m
+w
+N
+K
+S
+F
+N
+N
+N
+S
+m
+Y
+p
+"}
+(18,1,1) = {"
+p
+A
+A
+Y
+Y
+Y
+A
+Y
+A
+Y
+Y
+Y
+A
+A
+p
+"}
+(19,1,1) = {"
+p
+p
+p
+p
+p
+p
+p
+p
+p
+p
+p
+p
+p
+p
+p
+"}

@@ -63,6 +63,11 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	var/obj/machinery/computer/player_outpost_management/management_console
 	/// Linked construction console (from the shell)
 	var/obj/machinery/computer/camera_advanced/base_construction/ship/outpost/construction_console
+	/// The shell's loaded area instance. Turfs built in the build region get
+	/// adopted into it so they draw APC power and have gravity (see adopt_turf)
+	var/area/voidcrew/player_outpost/outpost_area
+	/// Looping timer for the adopt_built_turfs() safety-net sweep
+	var/area_sweep_timer
 	var/loaded = FALSE
 	var/loading = FALSE
 	COOLDOWN_DECLARE(rename_cooldown)
@@ -86,6 +91,9 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 		construction_console = null
 	template_bottom_left = null
 	arrival_turf = null
+	deltimer(area_sweep_timer)
+	area_sweep_timer = null
+	outpost_area = null
 	// Admin deletion must not leak hangar reservations (berths eject occupants
 	// to the lobby, so release them while the mapzone still exists)
 	for(var/datum/outpost_berth/berth as anything in berths)
@@ -309,6 +317,24 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 	link_interior_machinery()
 
+	// The loader gave the shell its own /area/voidcrew/player_outpost instance
+	// (non-UNIQUE_AREA). Grab it so built turfs can be adopted into it. Corner
+	// tiles are template_noop, so scan for it rather than trusting a corner.
+	var/turf/shell_top_right = locate(
+		bottom_left.x + shell_template.width - 1,
+		bottom_left.y + shell_template.height - 1,
+		bottom_left.z
+	)
+	for(var/turf/interior_turf as anything in block(bottom_left, shell_top_right))
+		var/area/candidate = interior_turf.loc
+		if(istype(candidate, /area/voidcrew/player_outpost))
+			outpost_area = candidate
+			break
+	if(outpost_area)
+		area_sweep_timer = addtimer(CALLBACK(src, PROC_REF(adopt_built_turfs)), PLAYER_OUTPOST_AREA_SWEEP_INTERVAL, TIMER_LOOP | TIMER_STOPPABLE | TIMER_DELETE_ME)
+	else
+		log_mapping("PLAYER OUTPOST: Shell '[shell_template.name]' loaded without a /area/voidcrew/player_outpost area; built turfs cannot be powered.")
+
 	loaded = TRUE
 	loading = FALSE
 	return TRUE
@@ -332,6 +358,42 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	if(!zlevel || target.z != zlevel.z_value)
 		return FALSE
 	return (target.x >= build_bounds[1] && target.y >= build_bounds[2] && target.x <= build_bounds[3] && target.y <= build_bounds[4])
+
+/**
+ * Adopts a turf into the outpost's area, giving it APC power coverage and
+ * gravity. Called by the construction console when the drone builds outside
+ * the current area, and by the periodic sweep for hand-built structures.
+ * Only ever claims turfs from the encounter's default space area — docked
+ * shuttles, ruins and anything else keep their own areas.
+ */
+/obj/structure/overmap/dynamic/player_outpost/proc/adopt_turf(turf/target)
+	if(!outpost_area || !is_turf_buildable(target))
+		return
+	var/area/old_area = get_area(target)
+	if(old_area == outpost_area || !istype(old_area, /area/space))
+		return
+	target.change_area(old_area, outpost_area)
+
+/**
+ * Safety-net sweep over the build region: anything constructed by hand (no
+ * console involved) still joins the outpost area — otherwise those rooms would
+ * sit in the space area forever: unpowered, dark and weightless.
+ */
+/obj/structure/overmap/dynamic/player_outpost/proc/adopt_built_turfs()
+	if(!outpost_area || !build_bounds || !mapzone)
+		return
+	var/datum/space_level/zlevel = mapzone.z_levels[1]
+	if(!zlevel)
+		return
+	var/turf/sweep_bottom_left = locate(build_bounds[1], build_bounds[2], zlevel.z_value)
+	var/turf/sweep_top_right = locate(build_bounds[3], build_bounds[4], zlevel.z_value)
+	if(!sweep_bottom_left || !sweep_top_right)
+		return
+	for(var/turf/target as anything in block(sweep_bottom_left, sweep_top_right))
+		if(isspaceturf(target))
+			continue
+		adopt_turf(target)
+		CHECK_TICK
 
 /**
  * Finds the machinery the shell spawned and links it to this outpost.

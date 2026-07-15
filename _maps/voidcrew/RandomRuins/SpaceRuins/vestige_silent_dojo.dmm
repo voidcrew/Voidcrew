@@ -1,0 +1,465 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"d" = (
+/obj/structure/sign/poster/contraband/random,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"f" = (
+/mob/living/basic/vestige_patron/hollow_master{
+	dir = 8
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"j" = (
+/obj/structure/training_machine,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"l" = (
+/obj/structure/punching_bag,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"n" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"p" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"r" = (
+/obj/effect/decal/remains/human,
+/obj/item/paper/crumpled{
+	name = "grading slip";
+	default_raw_text = "Final form: incomplete. Footwork: acceptable. Breathing: stopped. Notes: the student asked the master to demonstrate the last lesson in full. The master obliged. Grade withheld pending reassembly."
+	},
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"u" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"v" = (
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"w" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"y" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"A" = (
+/turf/closed/wall/mineral/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"C" = (
+/obj/structure/rack,
+/obj/item/claymore/weak{
+	name = "dulled clan blade"
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"F" = (
+/obj/item/flashlight/flare/candle{
+	pixel_x = 2
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"H" = (
+/turf/template_noop,
+/area/template_noop)
+"J" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"K" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"M" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"N" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"O" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"P" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"Q" = (
+/obj/structure/rack,
+/obj/item/clothing/shoes/sandal,
+/obj/item/clothing/shoes/sandal{
+	pixel_x = 3;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"R" = (
+/obj/structure/rack,
+/obj/item/throwing_star,
+/obj/item/throwing_star{
+	pixel_x = 4;
+	pixel_y = -3
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"S" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"V" = (
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"W" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+
+(1,1,1) = {"
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+"}
+(2,1,1) = {"
+H
+H
+H
+H
+H
+H
+y
+S
+y
+H
+H
+H
+H
+H
+H
+"}
+(3,1,1) = {"
+H
+H
+H
+H
+H
+H
+y
+M
+y
+H
+H
+H
+H
+H
+H
+"}
+(4,1,1) = {"
+H
+y
+y
+y
+d
+y
+y
+N
+y
+y
+d
+y
+y
+y
+H
+"}
+(5,1,1) = {"
+H
+y
+W
+Q
+p
+u
+p
+w
+p
+u
+p
+O
+P
+y
+H
+"}
+(6,1,1) = {"
+H
+y
+p
+w
+p
+p
+w
+p
+p
+p
+w
+p
+u
+y
+H
+"}
+(7,1,1) = {"
+H
+d
+u
+p
+w
+p
+p
+p
+w
+p
+p
+p
+p
+y
+H
+"}
+(8,1,1) = {"
+H
+y
+p
+p
+p
+V
+V
+J
+V
+V
+p
+w
+p
+y
+H
+"}
+(9,1,1) = {"
+H
+y
+p
+p
+p
+J
+V
+r
+V
+V
+u
+p
+n
+y
+H
+"}
+(10,1,1) = {"
+H
+y
+p
+p
+p
+V
+V
+V
+J
+V
+p
+p
+p
+y
+H
+"}
+(11,1,1) = {"
+H
+d
+p
+p
+p
+V
+J
+V
+V
+V
+p
+u
+u
+y
+H
+"}
+(12,1,1) = {"
+H
+y
+u
+l
+u
+p
+p
+p
+u
+p
+p
+j
+p
+y
+H
+"}
+(13,1,1) = {"
+H
+y
+p
+l
+w
+p
+u
+p
+p
+w
+p
+p
+W
+y
+H
+"}
+(14,1,1) = {"
+H
+y
+A
+A
+A
+A
+v
+v
+v
+A
+A
+A
+A
+y
+H
+"}
+(15,1,1) = {"
+H
+y
+P
+c
+v
+v
+F
+c
+F
+v
+c
+v
+c
+y
+H
+"}
+(16,1,1) = {"
+H
+y
+c
+v
+v
+c
+v
+f
+v
+c
+v
+c
+v
+y
+H
+"}
+(17,1,1) = {"
+H
+y
+R
+v
+c
+v
+R
+C
+R
+v
+P
+v
+K
+y
+H
+"}
+(18,1,1) = {"
+H
+y
+y
+y
+y
+d
+y
+y
+y
+y
+y
+y
+y
+y
+H
+"}
+(19,1,1) = {"
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+"}

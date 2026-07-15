@@ -71,10 +71,12 @@
 		return outpost.arrival_turf
 	return get_turf(src)
 
-// The whole build region counts as "inside": the expansion branch of the
-// build actions (expand_shuttle_to_turf on !was_in_shuttle) can never trigger
+// "Inside" = already adopted into the outpost's powered area. Building on
+// anything else routes through the expansion branch of the build actions
+// (expand_shuttle_to_turf on !was_in_shuttle), which adopts the new turf into
+// the area so it gets APC power coverage and gravity.
 /obj/machinery/computer/camera_advanced/base_construction/ship/outpost/is_in_shuttle_area(turf/T)
-	return outpost?.is_turf_buildable(T)
+	return outpost?.outpost_area && (get_area(T) == outpost.outpost_area)
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/outpost/is_adjacent_to_shuttle(turf/T)
 	return FALSE
@@ -85,12 +87,17 @@
 /obj/machinery/computer/camera_advanced/base_construction/ship/outpost/can_build_at(turf/T)
 	return T && outpost?.is_turf_buildable(T)
 
-// No shuttle to grow, shrink or re-port
+// No shuttle to grow: "expansion" just pulls the freshly built turf into the
+// outpost's area
 /obj/machinery/computer/camera_advanced/base_construction/ship/outpost/expand_shuttle_to_turf(turf/T, mob/user)
-	return FALSE
+	if(!outpost)
+		return FALSE
+	outpost.adopt_turf(T)
+	return TRUE
 
+// Expansion is bounded by the claim's survey region, not shuttle dimensions
 /obj/machinery/computer/camera_advanced/base_construction/ship/outpost/check_expansion_dimensions(turf/new_turf, obj/docking_port/mobile/port)
-	return FALSE
+	return outpost?.is_turf_buildable(new_turf)
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/outpost/cleanup_deconstructed_turfs()
 	return

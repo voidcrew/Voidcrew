@@ -45,6 +45,21 @@
 /area/ruin/space/has_grav/vestige/gloaming
 	name = "\improper The Gloaming"
 
+/area/ruin/space/has_grav/vestige/athenaeum
+	name = "\improper The Athenaeum"
+
+/area/ruin/space/has_grav/vestige/reliquary
+	name = "\improper The Reliquary"
+
+/area/ruin/space/has_grav/vestige/wake
+	name = "\improper The Wake"
+
+/area/ruin/space/has_grav/vestige/silent_dojo
+	name = "\improper The Silent Dojo"
+
+/area/ruin/space/has_grav/vestige/aperture
+	name = "\improper The Aperture"
+
 // ===== OVERMAP SIGNAL =====
 
 /obj/structure/overmap/space_ruin/vestige

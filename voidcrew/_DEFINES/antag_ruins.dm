@@ -24,3 +24,15 @@
 #define VESTIGE_VIGIL_BLOOD_PER_DONATION 100
 /// Devour points the Trial of the Snuffed Flame demands (lights in someone else's grip count double)
 #define VESTIGE_FLAME_LIGHTS_NEEDED 25
+/// Burn damage the mana geode must drink from its holder (Trial of the Singed Hand)
+#define VESTIGE_SINGED_BURN_NEEDED 100
+/// Surfaces the corroding chrism must rust (Rite of Rust)
+#define VESTIGE_RUST_TURFS_NEEDED 20
+/// Distinct corpses the pale lantern must drain (Vigil of the Last Breath)
+#define VESTIGE_LANTERN_CORPSES_NEEDED 5
+/// Thrown training-star hits the Trial of the Thrown Star demands
+#define VESTIGE_STAR_HITS_NEEDED 10
+/// Most hits any single victim can credit toward the Trial of the Thrown Star
+#define VESTIGE_STAR_HITS_PER_VICTIM 3
+/// Cumulative seconds in hard vacuum the Trial of the Long Dark demands
+#define VESTIGE_VOID_SECONDS_NEEDED 300
