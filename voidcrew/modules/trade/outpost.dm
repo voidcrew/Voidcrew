@@ -78,12 +78,14 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/list/obj/machinery/computer/outpost_shop_terminal/terminals = list()
 	/// Linked supply request boards inside the outpost
 	var/list/obj/machinery/computer/outpost_mission_board/mission_boards = list()
-	/// Posted (not yet accepted) supply request missions (see outpost_missions.dm)
-	var/list/datum/mission/outpost_supply/shop_offers = list()
+	/// Posted (not yet accepted) contracts (see outpost_missions.dm / outpost_quests.dm)
+	var/list/datum/mission/shop_offers = list()
 	/// Linked trader hologram
 	var/obj/machinery/outpost_trader/trader
 	/// Linked defense turrets
 	var/list/obj/machinery/porta_turret/outpost/turrets = list()
+	/// Looping timer id for the supply convoy restock
+	var/restock_timer
 
 /obj/structure/overmap/trader_outpost/Initialize(mapload)
 	. = ..()
@@ -92,8 +94,12 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	shop = new shop_type(src)
 	name = shop.outpost_name
 	desc = shop.outpost_desc
+	restock_timer = addtimer(CALLBACK(src, PROC_REF(convoy_restock)), OUTPOST_RESTOCK_INTERVAL, TIMER_STOPPABLE | TIMER_LOOP)
 
 /obj/structure/overmap/trader_outpost/Destroy()
+	if(restock_timer)
+		deltimer(restock_timer)
+		restock_timer = null
 	GLOB.trader_outposts -= src
 	// Admin deletion must not leak six hangar reservations
 	for(var/datum/outpost_berth/berth as anything in berths)
@@ -283,6 +289,23 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 
 	if(optional_partner)
 		ship_act(user, optional_partner)
+
+/**
+ * The supply convoy arrives: shelves refill, one rotating slot rotates, the
+ * special rerolls, buyback demand relaxes. The trader announces it and every
+ * berthed ship gets a nudge — a standing reason to swing back past the shop.
+ */
+/obj/structure/overmap/trader_outpost/proc/convoy_restock()
+	if(!shop)
+		return
+	shop.convoy_restock()
+	trader?.speak_line(TRADER_LINE_RESTOCK)
+	for(var/datum/outpost_berth/berth as anything in berths)
+		if(berth?.ship)
+			berth.ship.ship_notify("[name]: supply convoy arrived — shelves restocked, new items rotated in.", "CONVOY ARRIVAL", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 30)
+	// Open storefront UIs are looking at a stale catalog now; refresh them
+	for(var/obj/machinery/computer/outpost_shop_terminal/terminal as anything in terminals)
+		terminal.update_static_data_for_all_viewers()
 
 // ===== EMBARGO / AGGRESSION =====
 

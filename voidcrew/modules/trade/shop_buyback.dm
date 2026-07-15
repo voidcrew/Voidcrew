@@ -1,19 +1,19 @@
 /**
- * # Shop Buyback
+ * # Shop Buyback — the wanted ledger
  *
  * The sell-to-trader side of an outpost shop: one entry per thing the trader
  * is buying this round. Deliberately SKU-adjacent rather than a SKU subtype —
  * pricing runs the other direction (the trader pays out), and stock becomes
- * *demand* (how many the trader still wants this round).
+ * *demand* (how many sales the trader still wants this round).
  *
- * Same stateless payment philosophy as the buy side: hold the goods in hand,
- * click sell. Credits land on your ID's account; voucher payouts materialize
- * as a voucher stack in your hand.
+ * Selling accepts goods from anywhere in the seller's inventory (hands first),
+ * one sale-unit per click or in bulk. Credits land on your ID's account;
+ * voucher payouts materialize in hand.
  *
- * Balance note: entries that pay VOUCHERS must only ever buy loot that can't
- * be manufactured aboard a ship (mined ore, ruin finds) — vouchers are the
- * currency that can't be farmed safely, and a lathe-printable buyback would
- * break that in one shift.
+ * Balance rule: entries that pay VOUCHERS must only ever buy loot that can't
+ * be manufactured aboard a ship (planet minerals, fauna harvests, ruin finds) —
+ * vouchers are the currency that can't be farmed safely, and a lathe-printable
+ * buyback would break that in one shift.
  */
 /datum/shop_buyback
 	/// Display name of what the trader wants (defaults to the item's name)
@@ -22,6 +22,8 @@
 	var/desc
 	/// The item type the trader buys
 	var/obj/item/item_path
+	/// UI grouping label ("Exotics", "Salvage", ...)
+	var/category = "General"
 	/// Whether subtypes of item_path are accepted (turn off when a subtype is farmable)
 	var/match_subtypes = TRUE
 	/// Units consumed per sale (only meaningful for stack types)
@@ -35,6 +37,11 @@
 	var/demand_max = 4
 	/// Remaining demand this round (shared between the outpost's terminals)
 	var/demand = 0
+	/// Author override when the item's initial icon renders wrong in the UI
+	var/icon_override
+	var/icon_state_override
+	/// Cached base64 icon for the UI, computed once per instance
+	var/cached_icon
 
 /datum/shop_buyback/New()
 	..()
@@ -68,21 +75,61 @@
 	return name
 
 /**
- * Finds a matching item in the seller's hands, or null.
+ * Base64 sprite for the ledger UI, cached per instance.
  */
-/datum/shop_buyback/proc/find_offered_item(mob/living/user)
-	for(var/obj/item/offered in user.held_items)
-		if(match_subtypes ? !istype(offered, item_path) : offered.type != item_path)
+/datum/shop_buyback/proc/get_ui_icon()
+	if(cached_icon)
+		return cached_icon
+	var/obj/item/cast = item_path
+	var/icon_file = icon_override || (item_path ? initial(cast.icon) : null)
+	if(!icon_file)
+		return null
+	var/state = icon_state_override || initial(cast.icon_state)
+	cached_icon = icon2base64(icon(icon_file, state, SOUTH, frame = 1))
+	return cached_icon
+
+/**
+ * Whether this item counts for this ledger entry.
+ */
+/datum/shop_buyback/proc/matches(obj/item/offered)
+	if(match_subtypes ? !istype(offered, item_path) : offered.type != item_path)
+		return FALSE
+	// No selling the trader a projection of the goods
+	if((offered.item_flags & ABSTRACT) || (offered.flags_1 & HOLOGRAM_1))
+		return FALSE
+	return TRUE
+
+/**
+ * Every matching item on the seller, held items first so a deliberate
+ * hand-off is always the thing consumed first.
+ */
+/datum/shop_buyback/proc/find_offered_items(mob/living/user)
+	var/list/found = list()
+	for(var/obj/item/held in user.held_items)
+		if(matches(held))
+			found += held
+	for(var/obj/item/offered in user.get_all_contents())
+		if(offered in found)
 			continue
-		// No selling the trader a projection of the goods
-		if((offered.item_flags & ABSTRACT) || (offered.flags_1 & HOLOGRAM_1))
-			continue
-		if(isstack(offered))
-			var/obj/item/stack/offered_stack = offered
-			if(offered_stack.amount < amount)
-				continue
-		return offered
-	return null
+		if(matches(offered))
+			found += offered
+	return found
+
+/**
+ * How many sale-units the seller is carrying (stacks divide by `amount`).
+ */
+/datum/shop_buyback/proc/count_carried_units(mob/living/user)
+	if(!istype(user))
+		return 0
+	var/units = 0
+	if(ispath(item_path, /obj/item/stack))
+		var/total = 0
+		for(var/obj/item/stack/offered as anything in find_offered_items(user))
+			total += offered.amount
+		units = round(total / amount)
+	else
+		units = length(find_offered_items(user))
+	return units
 
 /**
  * Why the user can't sell right now — shown as a tooltip / chat line.
@@ -90,8 +137,8 @@
 /datum/shop_buyback/proc/get_denial_reason(mob/living/user)
 	if(demand <= 0)
 		return "Not buying any more this shift."
-	if(!find_offered_item(user))
-		return "Hold the goods in hand: [get_wanted_text()]."
+	if(count_carried_units(user) < 1)
+		return "Carrying none of the goods: [get_wanted_text()]."
 	if(pay_credits > 0)
 		var/obj/item/card/id/id_card = user.get_idcard(TRUE)
 		if(!id_card?.registered_account)
@@ -99,14 +146,12 @@
 	return null
 
 /**
- * Attempts the sale: validates, consumes the goods, decrements demand and
+ * Sells one sale-unit: validates, consumes the goods, decrements demand and
  * pays out at the terminal. Returns TRUE on success.
+ * * quiet - suppress the per-sale chat line (bulk mode prints its own total)
  */
-/datum/shop_buyback/proc/try_sell(mob/living/user, obj/machinery/computer/outpost_shop_terminal/terminal)
+/datum/shop_buyback/proc/try_sell(mob/living/user, obj/machinery/computer/outpost_shop_terminal/terminal, quiet = FALSE)
 	if(demand <= 0)
-		return FALSE
-	var/obj/item/offered = find_offered_item(user)
-	if(!offered)
 		return FALSE
 
 	// Credits need a live account before we consume anything
@@ -117,13 +162,23 @@
 		if(!account)
 			return FALSE
 
-	// Consume the goods
-	if(isstack(offered))
-		var/obj/item/stack/offered_stack = offered
-		if(!offered_stack.use(amount))
+	// Consume one sale-unit
+	if(ispath(item_path, /obj/item/stack))
+		var/remaining = amount
+		for(var/obj/item/stack/offered as anything in find_offered_items(user))
+			var/take = min(remaining, offered.amount)
+			if(!offered.use(take))
+				continue
+			remaining -= take
+			if(remaining <= 0)
+				break
+		if(remaining > 0) // couldn't cover a full unit; partial stacks were small — bail without pay
 			return FALSE
 	else
-		qdel(offered)
+		var/list/found = find_offered_items(user)
+		if(!length(found))
+			return FALSE
+		qdel(found[1])
 
 	demand--
 
@@ -133,9 +188,28 @@
 	if(pay_vouchers > 0)
 		var/atom/drop_loc = terminal?.drop_location() || user.drop_location()
 		var/obj/item/stack/trade_voucher/payout = new(drop_loc, pay_vouchers)
-		if(user.put_in_hands(payout))
-			to_chat(user, span_notice("You receive [pay_vouchers] trade voucher[pay_vouchers > 1 ? "s" : ""]."))
-		else
+		if(!user.put_in_hands(payout) && !quiet)
 			to_chat(user, span_notice("Your voucher payout lands at your feet."))
-	to_chat(user, span_notice("Sold: [get_wanted_text()] ([get_payment_text()])."))
+	if(!quiet)
+		to_chat(user, span_notice("Sold: [get_wanted_text()] ([get_payment_text()])."))
 	return TRUE
+
+/**
+ * Sells as many sale-units as demand and the seller's carry allow.
+ * Returns how many units were sold.
+ */
+/datum/shop_buyback/proc/try_sell_bulk(mob/living/user, obj/machinery/computer/outpost_shop_terminal/terminal)
+	var/sold = 0
+	var/safety = 50
+	while(demand > 0 && safety-- > 0)
+		if(!try_sell(user, terminal, quiet = TRUE))
+			break
+		sold++
+	if(sold > 0)
+		var/list/payout = list()
+		if(pay_vouchers > 0)
+			payout += "[pay_vouchers * sold] voucher[pay_vouchers * sold > 1 ? "s" : ""]"
+		if(pay_credits > 0)
+			payout += "[pay_credits * sold] cr"
+		to_chat(user, span_notice("Sold [sold]x [get_wanted_text()] ([payout.Join(" + ")])."))
+	return sold

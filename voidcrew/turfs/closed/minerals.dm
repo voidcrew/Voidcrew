@@ -12,6 +12,7 @@
 		/obj/item/stack/ore/plasma = 50,
 		/obj/item/stack/ore/bluespace_crystal = 20,
 		/turf/closed/mineral/gibtonite/wasteland = 4,
+		/turf/closed/mineral/telecrystal/wasteland = 6,
 	)
 
 /turf/closed/mineral/gibtonite/wasteland

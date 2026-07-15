@@ -69,7 +69,6 @@
 /area/template_noop)
 "ap" = (
 /obj/structure/sign/departments/medbay/alt,
-/turf/closed/indestructible/riveted/outpost,
 /area/voidcrew/trader_outpost)
 "aq" = (
 /turf/closed/indestructible/fakeglass,
@@ -178,7 +177,6 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "aK" = (
-/turf/closed/indestructible/riveted/outpost,
 /area/voidcrew/trader_outpost)
 "aL" = (
 /obj/effect/turf_decal/tile/yellow/half/contrasted{
@@ -213,7 +211,7 @@
 /area/voidcrew/trader_outpost)
 "aR" = (
 /obj/structure/sign/poster/official/random,
-/turf/closed/indestructible/riveted/outpost,
+/turf/closed/indestructible/reinforced/titanium,
 /area/voidcrew/trader_outpost)
 "aS" = (
 /turf/open/indestructible/white,
@@ -273,6 +271,9 @@
 	dir = 4
 	},
 /turf/open/indestructible/plating,
+/area/voidcrew/trader_outpost)
+"fP" = (
+/turf/closed/indestructible/reinforced/titanium,
 /area/voidcrew/trader_outpost)
 "ha" = (
 /obj/machinery/conveyor_switch{
@@ -432,20 +433,20 @@ ao
 ao
 ao
 ao
-aK
-aK
-aK
-aK
-aK
-aK
+fP
+fP
+fP
+fP
+fP
+fP
 aX
 aX
-aK
-aK
-aK
-aK
-aK
-aK
+fP
+fP
+fP
+fP
+fP
+fP
 "}
 (3,1,1) = {"
 ao
@@ -455,7 +456,7 @@ ao
 ao
 ao
 ao
-aK
+fP
 aZ
 ab
 ab
@@ -468,7 +469,7 @@ le
 le
 Yx
 WU
-aK
+fP
 "}
 (4,1,1) = {"
 ao
@@ -478,7 +479,7 @@ ao
 ao
 ao
 ao
-aK
+fP
 aC
 rK
 le
@@ -501,7 +502,7 @@ ao
 ao
 ao
 ao
-aK
+fP
 aC
 ab
 ab
@@ -514,7 +515,7 @@ ab
 SN
 le
 ab
-aK
+fP
 "}
 (6,1,1) = {"
 ao
@@ -524,7 +525,7 @@ ao
 ao
 ao
 ao
-aK
+fP
 aU
 ab
 Yx
@@ -537,7 +538,7 @@ le
 ab
 as
 lT
-aK
+fP
 "}
 (7,1,1) = {"
 ao
@@ -547,7 +548,7 @@ ao
 ao
 ao
 ao
-aK
+fP
 aC
 rK
 ab
@@ -560,7 +561,7 @@ Yx
 le
 ab
 ab
-aK
+fP
 "}
 (8,1,1) = {"
 ao
@@ -570,7 +571,7 @@ ao
 ao
 ao
 ao
-aK
+fP
 aC
 ab
 as
@@ -593,7 +594,7 @@ ao
 ao
 ao
 ao
-aK
+fP
 as
 ab
 ab
@@ -606,7 +607,7 @@ le
 ab
 rK
 ab
-aK
+fP
 "}
 (10,1,1) = {"
 ao
@@ -616,7 +617,7 @@ ao
 ao
 ao
 ao
-aK
+fP
 aC
 rK
 le
@@ -629,7 +630,7 @@ ab
 Yx
 le
 ab
-aK
+fP
 "}
 (11,1,1) = {"
 ao
@@ -639,7 +640,7 @@ ao
 ao
 ao
 ao
-aK
+fP
 aC
 ab
 ab
@@ -655,14 +656,14 @@ lT
 aR
 "}
 (12,1,1) = {"
-aK
-aK
-aK
-aK
-aK
-aK
-aK
-an
+fP
+fP
+fP
+fP
+fP
+fP
+fP
+fP
 aO
 an
 aO
@@ -675,10 +676,10 @@ ab
 ab
 as
 ab
-aK
+fP
 "}
 (13,1,1) = {"
-aK
+fP
 aJ
 an
 aK
@@ -698,7 +699,7 @@ ab
 Uc
 ab
 PV
-aK
+fP
 "}
 (14,1,1) = {"
 aq
@@ -744,10 +745,10 @@ mB
 as
 xk
 as
-aK
+fP
 "}
 (16,1,1) = {"
-aK
+fP
 ac
 an
 aK
@@ -767,7 +768,7 @@ QR
 mB
 QR
 aZ
-aK
+fP
 "}
 (17,1,1) = {"
 aR
@@ -780,20 +781,20 @@ an
 aE
 aL
 aL
-an
-aK
-aK
-aK
-aK
-aK
-aK
-aK
-aK
-aK
-aK
+fP
+fP
+fP
+fP
+fP
+fP
+fP
+fP
+fP
+fP
+fP
 "}
 (18,1,1) = {"
-aK
+fP
 aK
 aK
 aK
@@ -803,7 +804,7 @@ aD
 aK
 aa
 aa
-aK
+fP
 ao
 ao
 ao
@@ -816,7 +817,7 @@ ao
 ao
 "}
 (19,1,1) = {"
-aK
+fP
 aI
 ag
 aL
@@ -826,7 +827,7 @@ aD
 aK
 aM
 aP
-aK
+fP
 ao
 ao
 ao
@@ -839,7 +840,7 @@ ao
 ao
 "}
 (20,1,1) = {"
-aK
+fP
 aI
 am
 aL
@@ -862,7 +863,7 @@ ao
 ao
 "}
 (21,1,1) = {"
-aK
+fP
 aI
 am
 aL
@@ -872,7 +873,7 @@ aD
 ay
 aP
 iw
-aK
+fP
 ao
 ao
 ao
@@ -885,7 +886,7 @@ ao
 ao
 "}
 (22,1,1) = {"
-aK
+fP
 aI
 aO
 aL
@@ -895,7 +896,7 @@ aD
 aK
 aY
 iw
-aK
+fP
 ao
 ao
 ao
@@ -908,7 +909,7 @@ ao
 ao
 "}
 (23,1,1) = {"
-aK
+fP
 aK
 aK
 aK
@@ -918,7 +919,7 @@ aD
 aK
 aK
 aK
-aK
+fP
 ao
 ao
 ao
@@ -931,7 +932,7 @@ ao
 ao
 "}
 (24,1,1) = {"
-aK
+fP
 av
 aS
 aK
@@ -941,7 +942,7 @@ aD
 aK
 aH
 VF
-aK
+fP
 ao
 ao
 ao
@@ -964,7 +965,7 @@ aD
 aK
 aQ
 MI
-aK
+fP
 ao
 ao
 ao
@@ -977,7 +978,7 @@ ao
 ao
 "}
 (26,1,1) = {"
-aK
+fP
 af
 aS
 ay
@@ -987,7 +988,7 @@ aD
 ay
 at
 at
-aK
+fP
 ao
 ao
 ao
@@ -1000,7 +1001,7 @@ ao
 ao
 "}
 (27,1,1) = {"
-aK
+fP
 az
 aS
 ap
@@ -1023,7 +1024,7 @@ ao
 ao
 "}
 (28,1,1) = {"
-aK
+fP
 au
 aS
 aK
@@ -1033,7 +1034,7 @@ ak
 aK
 ai
 at
-aK
+fP
 ao
 ao
 ao
@@ -1046,7 +1047,7 @@ ao
 ao
 "}
 (29,1,1) = {"
-aK
+fP
 aB
 aS
 aK
@@ -1056,7 +1057,7 @@ al
 aK
 ah
 GH
-aK
+fP
 ao
 ao
 ao
@@ -1069,17 +1070,17 @@ ao
 ao
 "}
 (30,1,1) = {"
-aK
+fP
 aq
 aq
-aK
+fP
 aX
 aX
-aK
-aK
+fP
+fP
 aq
 aq
-aK
+fP
 ao
 ao
 ao

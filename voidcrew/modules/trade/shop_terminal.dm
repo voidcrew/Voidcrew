@@ -51,58 +51,93 @@
 		ui = new(user, src, "TraderShop", name)
 		ui.open()
 
-/obj/machinery/computer/outpost_shop_terminal/ui_data(mob/user)
+/// The full catalog: everything that doesn't change between purchases.
+/// Volatile state (stock, wallet, denials) rides ui_data and joins by ref.
+/obj/machinery/computer/outpost_shop_terminal/ui_static_data(mob/user)
 	var/list/data = list()
 
 	var/datum/outpost_shop/shop = outpost?.shop
 	data["shop_name"] = shop ? shop.outpost_name : "OFFLINE"
 	data["trader_name"] = shop ? shop.trader_name : ""
+	data["categories"] = shop ? shop.categories : list()
+
+	var/list/catalog = list()
+	if(shop)
+		for(var/datum/shop_sku/sku as anything in shop.skus)
+			catalog += list(list(
+				"ref" = REF(sku),
+				"name" = sku.name,
+				"desc" = sku.desc,
+				"category" = sku.category,
+				"shelf" = sku.shelf,
+				"icon" = sku.get_ui_icon(),
+				"price_credits" = sku.price_credits,
+				"final_credits" = sku.get_credit_price(),
+				"price_vouchers" = sku.price_vouchers,
+				"discount_pct" = sku.discount_pct,
+				"price_text" = sku.get_price_text(),
+				"barter" = istype(sku, /datum/shop_sku/barter),
+			))
+	data["catalog"] = catalog
+
+	// The wanted ledger: what the trader buys (volatile half in ui_data)
+	var/list/ledger = list()
+	if(shop)
+		for(var/datum/shop_buyback/buyback as anything in shop.buybacks)
+			ledger += list(list(
+				"ref" = REF(buyback),
+				"name" = buyback.name,
+				"desc" = buyback.desc,
+				"category" = buyback.category,
+				"icon" = buyback.get_ui_icon(),
+				"wanted_text" = buyback.get_wanted_text(),
+				"payment_text" = buyback.get_payment_text(),
+				"pays_vouchers" = buyback.pay_vouchers > 0,
+			))
+	data["ledger"] = ledger
+
+	return data
+
+/obj/machinery/computer/outpost_shop_terminal/ui_data(mob/user)
+	var/list/data = list()
+
+	var/datum/outpost_shop/shop = outpost?.shop
 	data["barred"] = outpost ? outpost.is_user_barred(user) : FALSE
 
-	// Buyer's wallet snapshot, for the header
-	var/voucher_count = 0
-	if(isliving(user))
-		var/mob/living/buyer = user
-		for(var/obj/item/stack/trade_voucher/vouchers in buyer.held_items)
-			voucher_count += vouchers.amount
-	data["held_vouchers"] = voucher_count
+	// Buyer's wallet snapshot, for the header — vouchers count from the whole
+	// inventory, same as payment accepts them
+	data["held_vouchers"] = isliving(user) ? count_trade_vouchers(user) : 0
 	var/obj/item/card/id/id_card
 	if(isliving(user))
 		var/mob/living/living_user = user
 		id_card = living_user.get_idcard(TRUE)
 	data["account_credits"] = id_card?.registered_account ? id_card.registered_account.account_balance : null
 
-	var/list/skus = list()
+	var/list/stock_states = list()
 	if(shop)
 		for(var/datum/shop_sku/sku as anything in shop.skus)
 			var/denial = isliving(user) ? sku.get_denial_reason(user) : "Unavailable."
-			skus += list(list(
+			stock_states += list(list(
 				"ref" = REF(sku),
-				"name" = sku.name,
-				"desc" = sku.desc,
-				"price_text" = sku.get_price_text(),
 				"stock" = sku.stock,
 				"can_buy" = !data["barred"] && sku.stock > 0 && isnull(denial),
 				"denial" = denial,
 			))
-	data["skus"] = skus
+	data["stock_states"] = stock_states
 
-	// Sell side: what the trader is buying this round
-	var/list/buybacks = list()
+	// Sell side volatile state: demand, what the seller is carrying, denials
+	var/list/ledger_states = list()
 	if(shop)
 		for(var/datum/shop_buyback/buyback as anything in shop.buybacks)
 			var/denial = isliving(user) ? buyback.get_denial_reason(user) : "Unavailable."
-			buybacks += list(list(
+			ledger_states += list(list(
 				"ref" = REF(buyback),
-				"name" = buyback.name,
-				"desc" = buyback.desc,
-				"wanted_text" = buyback.get_wanted_text(),
-				"payment_text" = buyback.get_payment_text(),
 				"demand" = buyback.demand,
+				"carrying" = isliving(user) ? buyback.count_carried_units(user) : 0,
 				"can_sell" = !data["barred"] && buyback.demand > 0 && isnull(denial),
 				"denial" = denial,
 			))
-	data["buybacks"] = buybacks
+	data["ledger_states"] = ledger_states
 
 	return data
 
@@ -120,37 +155,67 @@
 			if(outpost.is_user_barred(user))
 				outpost.trader?.speak_line(TRADER_LINE_REFUSAL)
 				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
+				play_denial()
 				return TRUE
 			var/datum/shop_sku/sku = locate(params["ref"]) in outpost.shop.skus
 			if(!sku)
 				return TRUE
 			if(sku.stock <= 0)
 				to_chat(user, span_warning("Out of stock."))
+				play_denial()
 				return TRUE
 			var/denial = sku.get_denial_reason(user)
 			if(denial)
 				to_chat(user, span_warning(denial))
+				play_denial()
 				return TRUE
 			if(sku.try_purchase(user, src))
-				playsound(src, 'sound/machines/ping.ogg', 40, TRUE)
+				playsound(src, 'sound/effects/cashregister.ogg', 40, TRUE)
 				outpost.trader?.speak_line(TRADER_LINE_SALE)
 			return TRUE
 		if("sell")
 			if(outpost.is_user_barred(user))
 				outpost.trader?.speak_line(TRADER_LINE_REFUSAL)
 				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
+				play_denial()
 				return TRUE
 			var/datum/shop_buyback/buyback = locate(params["ref"]) in outpost.shop.buybacks
 			if(!buyback)
 				return TRUE
 			if(buyback.demand <= 0)
 				to_chat(user, span_warning("Not buying any more this shift."))
+				play_denial()
 				return TRUE
 			var/denial = buyback.get_denial_reason(user)
 			if(denial)
 				to_chat(user, span_warning(denial))
+				play_denial()
 				return TRUE
 			if(buyback.try_sell(user, src))
 				playsound(src, 'sound/effects/cashregister.ogg', 40, TRUE)
 				outpost.trader?.speak_line(TRADER_LINE_SALE)
 			return TRUE
+		if("sell_all")
+			if(outpost.is_user_barred(user))
+				outpost.trader?.speak_line(TRADER_LINE_REFUSAL)
+				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
+				play_denial()
+				return TRUE
+			var/datum/shop_buyback/buyback = locate(params["ref"]) in outpost.shop.buybacks
+			if(!buyback)
+				return TRUE
+			var/denial = buyback.get_denial_reason(user)
+			if(denial)
+				to_chat(user, span_warning(denial))
+				play_denial()
+				return TRUE
+			if(buyback.try_sell_bulk(user, src) > 0)
+				playsound(src, 'sound/effects/cashregister.ogg', 40, TRUE)
+				outpost.trader?.speak_line(TRADER_LINE_SALE)
+			else
+				play_denial()
+			return TRUE
+
+/// The polite "no" noise for refused purchases and sales
+/obj/machinery/computer/outpost_shop_terminal/proc/play_denial()
+	playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 30, TRUE)

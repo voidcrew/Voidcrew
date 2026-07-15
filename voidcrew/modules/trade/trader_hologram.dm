@@ -75,7 +75,8 @@
 /**
  * Says a random personality line from the given TRADER_LINE_* category,
  * through the projection when it exists. Rate-limited except for aggression
- * lines, which always go through.
+ * lines, which always go through. Lines fire voice barks (same system as the
+ * pirate negotiation holograms) so each trader has an audible voice.
  */
 /obj/machinery/outpost_trader/proc/speak_line(category)
 	if(!outpost?.shop)
@@ -88,6 +89,13 @@
 	COOLDOWN_START(src, speak_cooldown, 3 SECONDS)
 	var/atom/movable/speaker = hologram || src
 	speaker.say(line)
+
+	// Audible bark through the projection, in the shop's configured voice
+	if(GLOB.voices_enabled && hologram)
+		var/datum/atom_voice/bark_voice = hologram.get_bark_voice()
+		if(bark_voice?.voicepack)
+			var/list/hearers = get_hearers_in_view(7, hologram)
+			bark_voice.start_barking(line, hearers, 7, say_test(line), FALSE, hologram)
 
 // Idle chatter on the machinery tick, roughly once every few minutes
 /obj/machinery/outpost_trader/process()
@@ -141,7 +149,8 @@
 	return ..()
 
 /**
- * Builds the figure's appearance from the shop's preset holoimage.
+ * Builds the figure's appearance from the shop's preset holoimage, and tunes
+ * its bark voice to the shop's configured pack and pitch.
  */
 /obj/effect/overlay/holo_pad_hologram/outpost_trader/proc/set_trader_appearance(datum/outpost_shop/shop)
 	name = "[shop.trader_name] (Hologram)"
@@ -154,6 +163,11 @@
 		makeHologram()
 	mouse_opacity = MOUSE_OPACITY_ICON
 	layer = FLY_LAYER
+	if(shop.trader_voice_pack)
+		set_bark_voice_pack(shop.trader_voice_pack)
+		var/datum/atom_voice/bark_voice = get_bark_voice()
+		if(bark_voice)
+			bark_voice.pitch = shop.trader_voice_pitch
 
 /obj/effect/overlay/holo_pad_hologram/outpost_trader/examine(mob/user)
 	. = ..()

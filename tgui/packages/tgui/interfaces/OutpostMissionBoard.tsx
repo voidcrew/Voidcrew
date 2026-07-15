@@ -1,9 +1,11 @@
 import {
   Box,
   Button,
+  Icon,
   NoticeBox,
   Section,
   Stack,
+  Tooltip,
 } from 'tgui-core/components';
 import type { BooleanLike } from 'tgui-core/react';
 
@@ -14,11 +16,25 @@ type Offer = {
   ref: string;
   name: string;
   desc: string;
-  wanted_text: string;
+  author: string;
+  value: number;
   reward_item: string | null;
+  reward_item_icon: string | null;
+  voucher_count: number;
   difficulty_name: string;
   difficulty_color: string;
   progress: string;
+  wanted_text: string;
+  archetype: string;
+  time_remaining_text: string;
+};
+
+type ShipMission = Offer & {
+  from_this_shop: BooleanLike;
+  location_ok: BooleanLike;
+  holding_valid_item: BooleanLike;
+  turn_in_hint: string | null;
+  requires_item: BooleanLike;
 };
 
 type Data = {
@@ -28,11 +44,142 @@ type Data = {
   ship_name: string | null;
   ship_mission_slots_free: number;
   offers: Offer[];
-  accepted: Offer[];
+  ship_missions: ShipMission[];
+};
+
+const ARCHETYPE_ICONS = {
+  procurement: 'boxes-stacked',
+  salvage: 'magnet',
+  bounty: 'crosshairs',
+  courier: 'truck-fast',
+  recovery: 'box-open',
+  contract: 'file-signature',
+} as const;
+
+const archetypeIcon = (archetype: string) =>
+  ARCHETYPE_ICONS[archetype as keyof typeof ARCHETYPE_ICONS] ??
+  ARCHETYPE_ICONS.contract;
+
+const RewardLine = (props: { offer: Offer }) => {
+  const { offer } = props;
+  return (
+    <Box>
+      <Box inline color="label">
+        Pays:{' '}
+      </Box>
+      {offer.voucher_count > 0 && (
+        <Box inline bold color="purple">
+          {offer.voucher_count} voucher{offer.voucher_count === 1 ? '' : 's'}
+        </Box>
+      )}
+      {offer.voucher_count > 0 && (offer.value > 0 || offer.reward_item) && (
+        <Box inline color="label">
+          {' + '}
+        </Box>
+      )}
+      {offer.value > 0 && (
+        <Box inline bold color="gold">
+          {offer.value} cr
+        </Box>
+      )}
+      {offer.value > 0 && offer.reward_item && (
+        <Box inline color="label">
+          {' + '}
+        </Box>
+      )}
+      {offer.reward_item && (
+        <Box inline bold color="teal">
+          {offer.reward_item}
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+const OfferCard = (props: { offer: Offer; canAccept: boolean }) => {
+  const { act } = useBackend<Data>();
+  const { offer, canAccept } = props;
+  return (
+    <Section>
+      <Stack align="center">
+        <Stack.Item>
+          <Icon name={archetypeIcon(offer.archetype)} size={1.6} color="label" />
+        </Stack.Item>
+        <Stack.Item grow>
+          <Stack vertical>
+            <Stack.Item bold>
+              {offer.name}{' '}
+              <Box inline color={offer.difficulty_color}>
+                [{offer.difficulty_name}]
+              </Box>
+            </Stack.Item>
+            <Stack.Item color="label" fontSize="0.9em">
+              {offer.desc}
+            </Stack.Item>
+            <Stack.Item>
+              <RewardLine offer={offer} />
+            </Stack.Item>
+          </Stack>
+        </Stack.Item>
+        <Stack.Item>
+          <Button
+            icon="file-signature"
+            disabled={!canAccept}
+            onClick={() => act('accept', { ref: offer.ref })}
+          >
+            Accept
+          </Button>
+        </Stack.Item>
+      </Stack>
+    </Section>
+  );
+};
+
+const ShipMissionRow = (props: { mission: ShipMission }) => {
+  const { act } = useBackend<Data>();
+  const { mission } = props;
+  const canTurnIn =
+    !!mission.requires_item &&
+    !!mission.location_ok &&
+    !!mission.holding_valid_item;
+
+  const turnInButton = (
+    <Button
+      icon="hand-holding-hand"
+      disabled={!canTurnIn}
+      onClick={() => act('turn_in', { ref: mission.ref })}
+    >
+      Turn In
+    </Button>
+  );
+
+  return (
+    <Stack align="center" py={0.5} className="candystripe">
+      <Stack.Item>
+        <Icon name={archetypeIcon(mission.archetype)} color="label" />
+      </Stack.Item>
+      <Stack.Item grow>
+        <Box bold>{mission.name}</Box>
+        <Box color="label" fontSize="0.85em">
+          {mission.progress} · {mission.time_remaining_text} left
+        </Box>
+      </Stack.Item>
+      <Stack.Item>
+        <RewardLine offer={mission} />
+      </Stack.Item>
+      <Stack.Item>
+        {!canTurnIn && mission.turn_in_hint ? (
+          <Tooltip content={mission.turn_in_hint}>{turnInButton}</Tooltip>
+        ) : (
+          turnInButton
+        )}
+      </Stack.Item>
+    </Stack>
+  );
 };
 
 export const OutpostMissionBoard = (props) => {
-  const { act, data } = useBackend<Data>();
+  const { data } = useBackend<Data>();
   const {
     shop_name,
     trader_name,
@@ -40,13 +187,13 @@ export const OutpostMissionBoard = (props) => {
     ship_name,
     ship_mission_slots_free,
     offers = [],
-    accepted = [],
+    ship_missions = [],
   } = data;
 
   const canAccept = !barred && !!ship_name && ship_mission_slots_free > 0;
 
   return (
-    <Window title={`${shop_name} — Supply Requests`} width={480} height={500}>
+    <Window title={`${shop_name} — Contract Board`} width={560} height={620}>
       <Window.Content scrollable>
         {!!barred && (
           <NoticeBox danger>
@@ -60,11 +207,11 @@ export const OutpostMissionBoard = (props) => {
           </NoticeBox>
         )}
         <Section
-          title={`${trader_name} wants hauled in:`}
+          title={`${trader_name}'s postings`}
           buttons={
             ship_name ? (
               <Box inline color="label">
-                {ship_name} · {ship_mission_slots_free} mission slot
+                {ship_name} · {ship_mission_slots_free} slot
                 {ship_mission_slots_free === 1 ? '' : 's'} free
               </Box>
             ) : null
@@ -74,59 +221,20 @@ export const OutpostMissionBoard = (props) => {
             <Box color="label">Nothing posted right now.</Box>
           )}
           {offers.map((offer) => (
-            <Section key={offer.ref}>
-              <Stack align="center">
-                <Stack.Item grow>
-                  <Stack vertical>
-                    <Stack.Item bold>
-                      {offer.wanted_text}
-                      {'  '}
-                      <Box inline color={offer.difficulty_color}>
-                        [{offer.difficulty_name}]
-                      </Box>
-                    </Stack.Item>
-                    <Stack.Item color="label" fontSize="0.9em">
-                      {offer.desc}
-                    </Stack.Item>
-                    <Stack.Item color="gold">
-                      Pay: one free {offer.reward_item ?? 'item'}
-                    </Stack.Item>
-                  </Stack>
-                </Stack.Item>
-                <Stack.Item>
-                  <Button
-                    icon="file-signature"
-                    disabled={!canAccept}
-                    tooltip={
-                      canAccept
-                        ? 'Turn in at your own ship&apos;s mission board and pad.'
-                        : undefined
-                    }
-                    onClick={() => act('accept', { ref: offer.ref })}
-                  >
-                    Accept
-                  </Button>
-                </Stack.Item>
-              </Stack>
-            </Section>
+            <OfferCard key={offer.ref} offer={offer} canAccept={canAccept} />
           ))}
         </Section>
-        {accepted.length > 0 && (
-          <Section title="Already on your ship's books">
-            {accepted.map((offer) => (
-              <Box key={offer.ref} color="label">
-                {offer.wanted_text} — free {offer.reward_item ?? 'item'} on
-                delivery
-              </Box>
+        {ship_missions.length > 0 && (
+          <Section title="Your ship's active contracts">
+            {ship_missions.map((mission) => (
+              <ShipMissionRow key={mission.ref} mission={mission} />
             ))}
+            <Box color="label" fontSize="0.85em" mt={1}>
+              Item contracts can be turned in right here — hold the goods in
+              hand. Courier pods only unseal at their destination outpost.
+            </Box>
           </Section>
         )}
-        <Section>
-          <Box color="label" fontSize="0.9em">
-            Deliver the goods to your own ship&apos;s mission pad; the reward
-            item beams onto the pad on turn-in.
-          </Box>
-        </Section>
       </Window.Content>
     </Window>
   );

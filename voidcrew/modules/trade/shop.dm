@@ -6,8 +6,17 @@
  * simple prices: vouchers and/or credits, or an item barter — never a mixed
  * freeform payment UI.
  *
+ * Stock is built from three shelves:
+ * - CORE: the sku_types list, stocked every round.
+ * - ROTATING: a few picks rolled from rotating_pool each round, limited supply.
+ * - RARE: 1-2 showcase picks rolled from rare_pool, single unit each.
+ * One credit-priced SKU per round also goes on special (discount_pct).
+ *
  * Vouchers are deliberately the only road to the best stock ("the currency
  * that can't be farmed safely"); credits cover the mundane shelf.
+ *
+ * The per-shop catalogs (SKU/buyback/line definitions) live in the
+ * shop_catalog_*.dm files; this file is the machinery.
  */
 /datum/outpost_shop
 	/// Display name the outpost takes on the overmap
@@ -18,8 +27,22 @@
 	var/trader_name = "Trader"
 	/// Preset holoimage the trader's projection is built from
 	var/trader_holoimage_type = /datum/preset_holoimage/outpost_trader/general
-	/// SKU typepaths stocked here
+	/// Voice bark pack for the trader's spoken lines (see modules/voice_barks)
+	var/trader_voice_pack = "goon.speak_1"
+	/// Pitch multiplier for the trader's bark voice
+	var/trader_voice_pitch = 1
+	/// Ordered UI category tabs; categories not listed here sort after, in first-seen order
+	var/list/categories = list()
+	/// SKU typepaths always stocked here (the core shelf)
 	var/list/sku_types = list()
+	/// SKU typepaths the rotating shelf draws from each round
+	var/list/rotating_pool = list()
+	/// How many rotating picks go on the shelf per round
+	var/rotating_picks = 3
+	/// SKU typepaths the rare showcase shelf draws from each round
+	var/list/rare_pool = list()
+	/// Max rare picks per round (min 1 whenever the pool is non-empty)
+	var/rare_picks_max = 2
 	/// Live SKU instances (hold the shared per-round stock)
 	var/list/datum/shop_sku/skus = list()
 	/// Buyback typepaths — what this trader buys from players (see shop_buyback.dm)
@@ -33,12 +56,22 @@
 	/// Supply request table for the outpost mission board: list of
 	/// list("type" = path, "name" = text, "amount" = num, "difficulty" = MISSION_DIFFICULTY_*)
 	var/list/mission_requests = list()
+	/// Items only ever awarded by this shop's hard contracts — never sold on
+	/// any shelf. The depth hook: chasing the trader's board is the sole road
+	/// to these.
+	var/list/exclusive_rewards = list()
 
 /datum/outpost_shop/New(obj/structure/overmap/trader_outpost/outpost)
 	..()
 	src.outpost = outpost
 	for(var/sku_type in sku_types)
-		skus += new sku_type
+		add_sku(sku_type, SHELF_CORE)
+	for(var/sku_type in pick_from_pool(rotating_pool, rotating_picks))
+		add_sku(sku_type, SHELF_ROTATING)
+	if(length(rare_pool))
+		for(var/sku_type in pick_from_pool(rare_pool, rand(1, rare_picks_max)))
+			add_sku(sku_type, SHELF_RARE)
+	roll_special()
 	for(var/buyback_type in buyback_types)
 		buybacks += new buyback_type
 
@@ -47,6 +80,93 @@
 	QDEL_LIST(buybacks)
 	outpost = null
 	return ..()
+
+/**
+ * Draws up to `count` distinct random typepaths from a pool list.
+ */
+/datum/outpost_shop/proc/pick_from_pool(list/pool, count)
+	var/list/picked = list()
+	if(!length(pool) || count < 1)
+		return picked
+	var/list/candidates = pool.Copy()
+	while(length(candidates) && length(picked) < count)
+		var/choice = pick(candidates)
+		candidates -= choice
+		picked += choice
+	return picked
+
+/**
+ * Instantiates a SKU onto the given shelf. Rotating stock is capped at 2,
+ * rare stock is always the single showcase unit.
+ */
+/datum/outpost_shop/proc/add_sku(sku_type, shelf)
+	var/datum/shop_sku/sku = new sku_type
+	sku.shelf = shelf
+	switch(shelf)
+		if(SHELF_ROTATING)
+			sku.stock = clamp(sku.stock, 1, 2)
+		if(SHELF_RARE)
+			sku.stock = 1
+	skus += sku
+
+/**
+ * Puts one random credit-priced SKU on special for the round (15-30% off).
+ */
+/datum/outpost_shop/proc/roll_special()
+	var/list/eligible = list()
+	for(var/datum/shop_sku/sku as anything in skus)
+		if(sku.price_credits > 0 && !sku.discount_pct)
+			eligible += sku
+	if(!length(eligible))
+		return
+	var/datum/shop_sku/special = pick(eligible)
+	special.discount_pct = pick(15, 20, 25, 30)
+
+/**
+ * The supply convoy came through: tops core stock back up, swaps one sold-out
+ * rotating slot for a fresh pool pick, rerolls the special and softens the
+ * buyback demand caps. Driven by the outpost's restock timer.
+ */
+/datum/outpost_shop/proc/convoy_restock()
+	// Core shelves creep back toward full
+	for(var/datum/shop_sku/sku as anything in skus)
+		if(sku.shelf == SHELF_CORE && sku.stock < sku.stock_max)
+			sku.stock = min(sku.stock_max, sku.stock + max(1, round(sku.stock_max / 2)))
+
+	// One sold-out rotating slot gets replaced with something new off the manifest
+	var/list/depleted = list()
+	for(var/datum/shop_sku/sku as anything in skus)
+		if(sku.shelf == SHELF_ROTATING && sku.stock <= 0)
+			depleted += sku
+	if(length(depleted))
+		var/datum/shop_sku/gone = pick(depleted)
+		var/list/unstocked = rotating_pool.Copy()
+		for(var/datum/shop_sku/sku as anything in skus)
+			unstocked -= sku.type
+		skus -= gone
+		qdel(gone)
+		add_sku(length(unstocked) ? pick(unstocked) : pick(rotating_pool), SHELF_ROTATING)
+
+	// Yesterday's special is over; roll a new one
+	for(var/datum/shop_sku/sku as anything in skus)
+		sku.discount_pct = initial(sku.discount_pct)
+	roll_special()
+
+	// The trader found room in the warehouse for a bit more of everything
+	for(var/datum/shop_buyback/buyback as anything in buybacks)
+		if(buyback.demand < buyback.demand_max)
+			buyback.demand = min(buyback.demand_max, buyback.demand + max(1, round(buyback.demand_max / 2)))
+
+/**
+ * Rolls a shop-exclusive item onto a freshly generated hard contract.
+ * The exclusive replaces any generic item reward; vouchers/credits stay.
+ */
+/datum/outpost_shop/proc/maybe_attach_exclusive(datum/mission/mission, chance = 60)
+	if(mission.difficulty != MISSION_DIFFICULTY_HARD || !length(exclusive_rewards))
+		return
+	if(!prob(chance))
+		return
+	mission.mission_reward = pick(exclusive_rewards)
 
 /**
  * Returns a random personality line for the given TRADER_LINE_* category.
@@ -68,27 +188,48 @@
 	var/name
 	/// Display description (defaults to the item's desc)
 	var/desc
-	/// What you get
-	var/obj/item/item_path
+	/// What you get — any movable atom (crates and machines dispense at the terminal's feet)
+	var/atom/movable/item_path
+	/// UI category tab this SKU lists under
+	var/category = "General"
+	/// Which shelf this SKU landed on (stamped by the shop; drives UI styling + supply caps)
+	var/shelf = SHELF_CORE
 	/// Price in credits (0 = credits play no part)
 	var/price_credits = 0
 	/// Price in trade vouchers (0 = vouchers play no part)
 	var/price_vouchers = 0
+	/// Percent off the credit price this round (set by the shop's special roll, or authored)
+	var/discount_pct = 0
+	/// For stack-type goods: units per purchase (1 leaves the stack's own default)
+	var/dispense_amount = 1
 	/// Per-round stock roll bounds
 	var/stock_min = 2
 	var/stock_max = 4
 	/// Remaining stock this round
 	var/stock = 0
+	/// Author override when the item's initial icon renders wrong in the UI (GAGS etc.)
+	var/icon_override
+	var/icon_state_override
+	/// Cached base64 icon for the UI, computed once per instance
+	var/cached_icon
 
 /datum/shop_sku/New()
 	..()
 	stock = rand(stock_min, stock_max)
 	if(item_path)
-		var/obj/item/cast = item_path
+		var/atom/movable/cast = item_path
 		if(!name)
 			name = initial(cast.name)
 		if(!desc)
 			desc = initial(cast.desc)
+
+/**
+ * The credit price after any special discount, rounded down to a clean 5.
+ */
+/datum/shop_sku/proc/get_credit_price()
+	if(!discount_pct || price_credits <= 0)
+		return price_credits
+	return max(5, round(price_credits * (100 - discount_pct) / 100, 5))
 
 /**
  * Human-readable price tag, e.g. "3 vouchers + 500 cr".
@@ -98,20 +239,34 @@
 	if(price_vouchers > 0)
 		parts += "[price_vouchers] voucher[price_vouchers > 1 ? "s" : ""]"
 	if(price_credits > 0)
-		parts += "[price_credits] cr"
+		parts += "[get_credit_price()] cr"
 	if(!length(parts))
 		return "free"
 	return parts.Join(" + ")
 
 /**
+ * Base64 sprite for the storefront UI, cached per instance.
+ */
+/datum/shop_sku/proc/get_ui_icon()
+	if(cached_icon)
+		return cached_icon
+	var/atom/movable/cast = item_path
+	var/icon_file = icon_override || (item_path ? initial(cast.icon) : null)
+	if(!icon_file)
+		return null
+	var/state = icon_state_override || initial(cast.icon_state)
+	cached_icon = icon2base64(icon(icon_file, state, SOUTH, frame = 1))
+	return cached_icon
+
+/**
  * Whether the user can pay right now (does not charge).
  */
 /datum/shop_sku/proc/can_afford(mob/living/user)
-	if(price_vouchers > 0 && !find_voucher_stack(user))
+	if(price_vouchers > 0 && count_trade_vouchers(user) < price_vouchers)
 		return FALSE
-	if(price_credits > 0)
+	if(get_credit_price() > 0)
 		var/datum/bank_account/account = get_account(user)
-		if(!account || !account.has_money(price_credits))
+		if(!account || !account.has_money(get_credit_price()))
 			return FALSE
 	return TRUE
 
@@ -121,14 +276,16 @@
 /datum/shop_sku/proc/get_denial_reason(mob/living/user)
 	if(stock <= 0)
 		return "Out of stock."
-	if(price_vouchers > 0 && !find_voucher_stack(user))
-		return "Hold [price_vouchers] trade voucher[price_vouchers > 1 ? "s" : ""] in hand."
-	if(price_credits > 0)
+	if(price_vouchers > 0)
+		var/carrying = count_trade_vouchers(user)
+		if(carrying < price_vouchers)
+			return "Need [price_vouchers] trade voucher[price_vouchers > 1 ? "s" : ""] (carrying [carrying])."
+	if(get_credit_price() > 0)
 		var/datum/bank_account/account = get_account(user)
 		if(!account)
 			return "No bank account on your ID."
-		if(!account.has_money(price_credits))
-			return "Insufficient credits ([price_credits] cr needed)."
+		if(!account.has_money(get_credit_price()))
+			return "Insufficient credits ([get_credit_price()] cr needed)."
 	return null
 
 /**
@@ -138,42 +295,39 @@
 /datum/shop_sku/proc/try_purchase(mob/living/user, obj/machinery/computer/outpost_shop_terminal/terminal)
 	if(stock <= 0)
 		return FALSE
-	if(!can_afford(user))
-		return FALSE
 
-	// Charge vouchers first (physical, can't fail after the check), then credits
-	if(price_vouchers > 0)
-		var/obj/item/stack/trade_voucher/vouchers = find_voucher_stack(user)
-		if(!vouchers || !vouchers.use(price_vouchers))
+	// Validate the credit half before consuming any vouchers
+	var/credit_price = get_credit_price()
+	var/datum/bank_account/account
+	if(credit_price > 0)
+		account = get_account(user)
+		if(!account || !account.has_money(credit_price))
 			return FALSE
-	if(price_credits > 0)
-		var/datum/bank_account/account = get_account(user)
-		if(!account || !account.adjust_money(-price_credits, "Trader Outpost: [name]"))
-			return FALSE
+
+	if(price_vouchers > 0 && !consume_trade_vouchers(user, price_vouchers))
+		return FALSE
+	if(credit_price > 0 && !account.adjust_money(-credit_price, "Trader Outpost: [name]"))
+		return FALSE
 
 	stock--
 	dispense(user, terminal)
 	return TRUE
 
 /**
- * Spawns the goods at the terminal.
+ * Spawns the goods at the terminal. Items go to hand when possible; anything
+ * bigger (crates, machines) lands beside the terminal.
  */
 /datum/shop_sku/proc/dispense(mob/living/user, obj/machinery/computer/outpost_shop_terminal/terminal)
 	var/atom/drop_loc = terminal?.drop_location() || user.drop_location()
-	var/obj/item/goods = new item_path(drop_loc)
-	if(user.put_in_hands(goods))
+	var/atom/movable/goods
+	if(dispense_amount > 1 && ispath(item_path, /obj/item/stack))
+		goods = new item_path(drop_loc, dispense_amount)
+	else
+		goods = new item_path(drop_loc)
+	if(isitem(goods) && user.put_in_hands(goods))
 		to_chat(user, span_notice("You receive [goods]."))
 	else
-		to_chat(user, span_notice("[goods] is dispensed at your feet."))
-
-/**
- * Finds a voucher stack covering the price in the user's hands.
- */
-/datum/shop_sku/proc/find_voucher_stack(mob/living/user)
-	for(var/obj/item/stack/trade_voucher/vouchers in user.held_items)
-		if(vouchers.amount >= price_vouchers)
-			return vouchers
-	return null
+		to_chat(user, span_notice("[goods] is dispensed beside the terminal."))
 
 /**
  * The bank account on the user's ID card.
@@ -186,9 +340,11 @@
  * # Barter SKU
  *
  * Item-for-item trade as its own SKU type: hand over the asked item, get the
- * goods. No vouchers or credits involved.
+ * goods. No vouchers or credits involved. Barter goods stay hold-in-hand on
+ * purpose — you slap the trade on the counter.
  */
 /datum/shop_sku/barter
+	category = "Barter Deals"
 	/// The item the trader wants
 	var/obj/item/barter_path
 	/// How many (only meaningful when barter_path is a stack type)
@@ -244,503 +400,81 @@
 	dispense(user, terminal)
 	return TRUE
 
-// =========================================================================
-// BLACK MARKET (red zone) — syndicate gear, voucher-priced at the top end
-// =========================================================================
+/**
+ * The first ship this user crews for (first team with a live ship) — the same
+ * mind-to-ship mapping the embargo and the contract board use.
+ */
+/proc/get_crew_ship(mob/user)
+	if(!user?.mind)
+		return null
+	for(var/datum/team/voidcrew/team as anything in user.mind.ship_teams)
+		if(team.ship)
+			return team.ship
+	return null
 
-/datum/outpost_shop/black_market
-	outpost_name = "\improper Undertow Exchange"
-	outpost_desc = "A heavily armored den of fences and quartermasters who don't ask questions. Somehow, nobody has ever managed to rob it."
-	trader_name = "Vex"
-	trader_holoimage_type = /datum/preset_holoimage/outpost_trader/black_market
-	sku_types = list(
-		/datum/shop_sku/black_market/energy_sword,
-		/datum/shop_sku/black_market/emag,
-		/datum/shop_sku/black_market/pistol,
-		/datum/shop_sku/black_market/pistol_mag,
-		/datum/shop_sku/black_market/revolver,
-		/datum/shop_sku/black_market/speedloader,
-		/datum/shop_sku/black_market/suppressor,
-		/datum/shop_sku/black_market/c4,
-		/datum/shop_sku/black_market/emp_grenade,
-		/datum/shop_sku/black_market/noslips,
-		/datum/shop_sku/black_market/agent_id,
-		/datum/shop_sku/black_market/syndie_key,
-		/datum/shop_sku/black_market/thermals,
-		/datum/shop_sku/black_market/sleepy_pen,
-		/datum/shop_sku/black_market/tactical_medkit,
-		/datum/shop_sku/black_market/star_chart,
-		/datum/shop_sku/black_market/saw_blueprint,
-		/datum/shop_sku/black_market/sniper_blueprint,
-		/datum/shop_sku/black_market/soap,
-	)
-	// The consignment window: Vex fences ruin loot at the best rates in the system
-	buyback_types = list(
-		/datum/shop_buyback/black_market/bluespace_crystals,
-		/datum/shop_buyback/black_market/syndicate_documents,
-		/datum/shop_buyback/black_market/hot_iron,
-	)
-	// Vex's supply requests want the rare stuff — the free item makes it worth it
-	mission_requests = list(
-		list("type" = /obj/item/stack/ore/uranium, "name" = "uranium ore", "amount" = 8, "difficulty" = MISSION_DIFFICULTY_HARD),
-		list("type" = /obj/item/stack/ore/diamond, "name" = "diamonds", "amount" = 4, "difficulty" = MISSION_DIFFICULTY_HARD),
-		list("type" = /obj/item/stack/ore/bluespace_crystal, "name" = "bluespace crystals", "amount" = 2, "difficulty" = MISSION_DIFFICULTY_HARD),
-		list("type" = /obj/item/stack/sheet/mineral/plasma, "name" = "plasma sheets", "amount" = 20, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-	)
-	trader_lines = list(
-		TRADER_LINE_GREETING = list(
-			"Welcome to the Undertow. Touch nothing you can't pay for.",
-			"Fresh faces. Vouchers up front, questions never.",
-			"You found us. That's the hard part done. Now spend.",
-		),
-		TRADER_LINE_SALE = list(
-			"Pleasure doing business. Forget you saw me.",
-			"Sold. It was never here, and neither were you.",
-			"A fine choice. No refunds, no receipts, no memories.",
-		),
-		TRADER_LINE_REFUSAL = list(
-			"Your money's no good here. Literally — check your embargo notice.",
-			"We don't serve your kind. 'Your kind' meaning people who shoot at my stock.",
-			"Come back when your ship's ledger is clean.",
-		),
-		TRADER_LINE_WARNING = list(
-			"Easy, killer. The turrets have a temper and a long memory.",
-			"That's one. Keep swinging and you'll meet the expensive part of this station.",
-			"Read the plaque. Violence is bad for business — mostly yours.",
-		),
-		TRADER_LINE_AGGRESSION = list(
-			"Bad call. The turrets were the cheap part of this station.",
-			"Violence! In MY shop! Embargo their ship and paint them, girls.",
-			"You just made the blacklist. It's laminated.",
-		),
-		TRADER_LINE_IDLE = list(
-			"I once sold a fleet admiral his own stolen flagship. Twice.",
-			"Everything's legal in the red zone. That's the whole pitch.",
-			"Stock's limited. The galaxy is not a reliable supplier.",
-		),
-	)
-
-/datum/shop_sku/black_market
-	stock_min = 1
-	stock_max = 3
-
-/datum/shop_sku/black_market/energy_sword
-	item_path = /obj/item/melee/energy/sword/saber
-	price_vouchers = 4
-	stock_min = 1
-	stock_max = 2
-
-/datum/shop_sku/black_market/emag
-	name = "cryptographic sequencer"
-	item_path = /obj/item/card/emag
-	price_vouchers = 5
-	stock_min = 1
-	stock_max = 1
-
-/datum/shop_sku/black_market/pistol
-	item_path = /obj/item/gun/ballistic/automatic/pistol
-	price_vouchers = 2
-	price_credits = 500
+/**
+ * # Rumor SKU
+ *
+ * Intel over the counter: no goods change hands — the trader marks one
+ * uncharted ruin signal from their own zone band straight onto the buyer
+ * ship's helm readout, under a "Rumors" category. The certainty ladder's
+ * cheapest rung: below star charts, above flying blind.
+ */
+/datum/shop_sku/rumor
+	name = "word on the lanes"
+	desc = "The trader knows where something interesting is parked. For a price, so do you: one uncharted signal from this zone band, marked on your helm."
+	category = "Intel & Charts"
+	icon_override = 'icons/obj/scrolls.dmi'
+	icon_state_override = "blueprints"
 	stock_min = 2
 	stock_max = 4
 
-/datum/shop_sku/black_market/pistol_mag
-	item_path = /obj/item/ammo_box/magazine/m9mm
-	price_credits = 300
-	stock_min = 4
-	stock_max = 8
+/datum/shop_sku/rumor/proc/find_rumor_target(obj/structure/overmap/ship/ship, datum/outpost_shop/shop)
+	var/outpost_zone = SSovermap_zones?.get_zone_type(get_turf(shop?.outpost))
+	var/list/candidates = list()
+	for(var/obj/structure/overmap/space_ruin/ruin as anything in GLOB.space_ruin_signals)
+		if(QDELETED(ruin) || !istype(get_turf(ruin), /turf/open/overmap))
+			continue
+		if(SSovermap_zones?.get_zone_type(get_turf(ruin)) != outpost_zone)
+			continue
+		if(ship.get_waypoint(REF(ruin)) || ship.get_waypoint("rumor_[REF(ruin)]"))
+			continue
+		candidates += ruin
+	if(!length(candidates))
+		return null
+	return pick(candidates)
 
-/datum/shop_sku/black_market/revolver
-	item_path = /obj/item/gun/ballistic/revolver
-	price_vouchers = 3
-	stock_min = 1
-	stock_max = 2
+/datum/shop_sku/rumor/get_denial_reason(mob/living/user)
+	. = ..()
+	if(.)
+		return
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship)
+		return "No crew registration — you need a ship to chart the tip onto."
 
-/datum/shop_sku/black_market/speedloader
-	item_path = /obj/item/ammo_box/a357
-	price_credits = 600
-	stock_min = 2
-	stock_max = 5
+/datum/shop_sku/rumor/try_purchase(mob/living/user, obj/machinery/computer/outpost_shop_terminal/terminal)
+	if(stock <= 0)
+		return FALSE
+	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
+	if(!ship)
+		return FALSE
+	var/datum/outpost_shop/shop = terminal?.outpost?.shop
+	var/obj/structure/overmap/space_ruin/target = find_rumor_target(ship, shop)
+	if(!target)
+		to_chat(user, span_warning("The lanes are quiet — no fresh rumors this shift."))
+		return FALSE
 
-/datum/shop_sku/black_market/suppressor
-	item_path = /obj/item/suppressor
-	price_credits = 400
-	stock_min = 2
-	stock_max = 4
+	var/credit_price = get_credit_price()
+	var/datum/bank_account/account
+	if(credit_price > 0)
+		account = get_account(user)
+		if(!account || !account.adjust_money(-credit_price, "Trader Outpost: [name]"))
+			return FALSE
+	if(price_vouchers > 0 && !consume_trade_vouchers(user, price_vouchers))
+		return FALSE
 
-/datum/shop_sku/black_market/c4
-	item_path = /obj/item/grenade/c4
-	price_vouchers = 1
-	price_credits = 250
-	stock_min = 2
-	stock_max = 4
-
-/datum/shop_sku/black_market/emp_grenade
-	item_path = /obj/item/grenade/empgrenade
-	price_vouchers = 1
-	stock_min = 2
-	stock_max = 4
-
-/datum/shop_sku/black_market/noslips
-	item_path = /obj/item/clothing/shoes/chameleon/noslip
-	price_vouchers = 2
-	price_credits = 400
-	stock_min = 1
-	stock_max = 2
-
-/datum/shop_sku/black_market/agent_id
-	item_path = /obj/item/card/id/advanced/chameleon
-	price_vouchers = 2
-	stock_min = 1
-	stock_max = 2
-
-/datum/shop_sku/black_market/syndie_key
-	item_path = /obj/item/encryptionkey/syndicate
-	price_vouchers = 1
-	price_credits = 300
-	stock_min = 1
-	stock_max = 3
-
-/datum/shop_sku/black_market/thermals
-	item_path = /obj/item/clothing/glasses/thermal/syndi
-	price_vouchers = 3
-	stock_min = 1
-	stock_max = 2
-
-/datum/shop_sku/black_market/sleepy_pen
-	item_path = /obj/item/pen/sleepy
-	price_vouchers = 3
-	stock_min = 1
-	stock_max = 1
-
-/datum/shop_sku/black_market/tactical_medkit
-	item_path = /obj/item/storage/medkit/tactical
-	price_vouchers = 1
-	price_credits = 500
-	stock_min = 1
-	stock_max = 3
-
-// Charts the lawless deep — the discovery certainty channel, voucher-priced
-/datum/shop_sku/black_market/star_chart
-	item_path = /obj/item/disk/star_chart/red
-	price_vouchers = 2
-	stock_min = 1
-	stock_max = 2
-
-// The mandatory joke item; also the cheap "see how the shop works" SKU
-/datum/shop_sku/black_market/soap
-	item_path = /obj/item/soap/syndie
-	price_credits = 150
-	stock_min = 3
-	stock_max = 6
-
-// Weapon blueprints (loot-economy item 6) -- the only trader route to these guns;
-// build them at a weapons bench. Reusable, so priced at the top of the ladder.
-/datum/shop_sku/black_market/saw_blueprint
-	item_path = /obj/item/gun_blueprint/l6_saw
-	price_vouchers = 5
-	stock_min = 1
-	stock_max = 1
-
-/datum/shop_sku/black_market/sniper_blueprint
-	item_path = /obj/item/gun_blueprint/sniper_rifle
-	price_vouchers = 5
-	stock_min = 1
-	stock_max = 1
-
-// --- Vex's consignment window (buybacks) ---
-// Voucher payouts here must stay un-farmable: natural crystals only (the
-// artificial subtype is lathe-printable), original syndicate docs only
-// (photocopies are a different subtype and worthless).
-
-/datum/shop_buyback/black_market/bluespace_crystals
-	name = "natural bluespace crystals"
-	desc = "Unrefined crystal straight out of dangerous rock. Vex can tell the lab-grown ones apart by smell, apparently."
-	item_path = /obj/item/stack/ore/bluespace_crystal
-	match_subtypes = FALSE
-	amount = 3
-	pay_vouchers = 1
-	demand_min = 3
-	demand_max = 5
-
-/datum/shop_buyback/black_market/syndicate_documents
-	name = "syndicate documents"
-	desc = "Original classified paperwork. Photocopies are an insult and priced accordingly (zero)."
-	item_path = /obj/item/documents/syndicate
-	pay_vouchers = 2
-	demand_min = 1
-	demand_max = 2
-
-/datum/shop_buyback/black_market/hot_iron
-	name = "firearm (any, no questions)"
-	desc = "Vex buys guns with a past. Serial numbers optional. Preferably absent."
-	item_path = /obj/item/gun
-	pay_credits = 250
-	demand_min = 4
-	demand_max = 8
-
-// =========================================================================
-// OUTFITTER (yellow zone) — mid-tier defensive/utility gear, credits-first
-// =========================================================================
-
-/datum/outpost_shop/outfitter
-	outpost_name = "\improper Quartermain Depot"
-	outpost_desc = "A fortified outfitter's depot serving the contested lanes. Armored like it expects its customers to be the problem."
-	trader_name = "Sarge"
-	trader_holoimage_type = /datum/preset_holoimage/outpost_trader/outfitter
-	sku_types = list(
-		/datum/shop_sku/outfitter/armor_vest,
-		/datum/shop_sku/outfitter/helmet,
-		/datum/shop_sku/outfitter/disabler,
-		/datum/shop_sku/outfitter/energy_gun,
-		/datum/shop_sku/outfitter/seclite,
-		/datum/shop_sku/outfitter/handcuffs,
-		/datum/shop_sku/outfitter/gas_mask,
-		/datum/shop_sku/outfitter/brute_kit,
-		/datum/shop_sku/outfitter/jaws,
-		/datum/shop_sku/outfitter/star_chart,
-		/datum/shop_sku/outfitter/smg_blueprint,
-	)
-	// Sarge buys serviceable salvage — arms and armor off whoever stopped needing them
-	buyback_types = list(
-		/datum/shop_buyback/outfitter/salvage_ballistics,
-		/datum/shop_buyback/outfitter/salvage_energy,
-		/datum/shop_buyback/outfitter/salvage_armor,
-	)
-	// Depot resupply runs: industrial quantities, decent free kit
-	mission_requests = list(
-		list("type" = /obj/item/stack/sheet/plasteel, "name" = "plasteel sheets", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = /obj/item/stack/ore/titanium, "name" = "titanium ore", "amount" = 12, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = /obj/item/stack/ore/silver, "name" = "silver ore", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = /obj/item/stack/cable_coil, "name" = "cable coil", "amount" = 60, "difficulty" = MISSION_DIFFICULTY_EASY),
-	)
-	trader_lines = list(
-		TRADER_LINE_GREETING = list(
-			"Quartermain Depot. State your needs, keep your sidearm holstered.",
-			"Welcome in. Everything's rated for the yellow lanes and worse.",
-		),
-		TRADER_LINE_SALE = list(
-			"Good kit. Try to bring it back in one piece. Or don't, repeat business is fine too.",
-			"Sold. Inspect it before you need it, not after.",
-		),
-		TRADER_LINE_REFUSAL = list(
-			"You're flagged. No sales until your embargo clears.",
-			"Depot policy: no service to hostiles. Take it up with your captain.",
-		),
-		TRADER_LINE_WARNING = list(
-			"Hands off the merchandise, hostile. Next one arms the grid.",
-			"That's a warning shot's worth of patience. I have exactly one to spare.",
-		),
-		TRADER_LINE_AGGRESSION = list(
-			"Weapons free. You were warned by the sign. There are several signs.",
-			"That armor you're wearing? I sell the thing that beats it. To my turrets.",
-		),
-		TRADER_LINE_IDLE = list(
-			"Inventory rotates when the convoys make it through. When.",
-			"The yellow lanes eat the unprepared. Be a customer, not a statistic.",
-		),
-	)
-
-/datum/shop_sku/outfitter
-	stock_min = 2
-	stock_max = 4
-
-/datum/shop_sku/outfitter/armor_vest
-	item_path = /obj/item/clothing/suit/armor/vest
-	price_credits = 600
-
-/datum/shop_sku/outfitter/helmet
-	item_path = /obj/item/clothing/head/helmet
-	price_credits = 400
-
-/datum/shop_sku/outfitter/disabler
-	item_path = /obj/item/gun/energy/disabler
-	price_credits = 800
-	stock_min = 1
-	stock_max = 3
-
-/datum/shop_sku/outfitter/energy_gun
-	item_path = /obj/item/gun/energy/e_gun
-	price_vouchers = 1
-	price_credits = 800
-	stock_min = 1
-	stock_max = 2
-
-/datum/shop_sku/outfitter/seclite
-	item_path = /obj/item/flashlight/seclite
-	price_credits = 150
-
-/datum/shop_sku/outfitter/handcuffs
-	item_path = /obj/item/restraints/handcuffs
-	price_credits = 200
-
-/datum/shop_sku/outfitter/gas_mask
-	item_path = /obj/item/clothing/mask/gas
-	price_credits = 150
-
-/datum/shop_sku/outfitter/brute_kit
-	item_path = /obj/item/storage/medkit/brute
-	price_credits = 400
-
-/datum/shop_sku/outfitter/jaws
-	name = "jaws of life"
-	item_path = /obj/item/crowbar/power
-	price_vouchers = 1
-	price_credits = 500
-	stock_min = 1
-	stock_max = 2
-
-// Charts the contested lanes — discovery certainty for the middle ring
-/datum/shop_sku/outfitter/star_chart
-	item_path = /obj/item/disk/star_chart/yellow
-	price_credits = 400
-	stock_min = 1
-	stock_max = 2
-
-// Weapon blueprint (loot-economy item 6) -- yellow-tier gun, build at a weapons bench.
-/datum/shop_sku/outfitter/smg_blueprint
-	item_path = /obj/item/gun_blueprint/c20r
-	price_vouchers = 3
-	stock_min = 1
-	stock_max = 1
-
-// --- Sarge's salvage counter (buybacks) --- credits only; guns and armor
-// can come off a lathe, so they never pay vouchers.
-
-/datum/shop_buyback/outfitter/salvage_ballistics
-	name = "ballistic firearm (salvage)"
-	desc = "Working ballistics, any pattern. Sarge strips them for parts or resells to the next crew through."
-	item_path = /obj/item/gun/ballistic
-	pay_credits = 200
-	demand_min = 3
-	demand_max = 6
-
-/datum/shop_buyback/outfitter/salvage_energy
-	name = "energy weapon (salvage)"
-	desc = "Cell-fed weaponry in working order. Dead cells accepted grudgingly."
-	item_path = /obj/item/gun/energy
-	pay_credits = 350
-	demand_min = 2
-	demand_max = 4
-
-/datum/shop_buyback/outfitter/salvage_armor
-	name = "armored suit (salvage)"
-	desc = "Body armor with mileage on it. Holes are a pricing conversation, not a dealbreaker."
-	item_path = /obj/item/clothing/suit/armor
-	pay_credits = 150
-	demand_min = 3
-	demand_max = 6
-
-// =========================================================================
-// GENERAL STORE (green zone) — sundries and starter resupply, credits only
-// =========================================================================
-
-/datum/outpost_shop/general
-	outpost_name = "\improper Waystation Halcyon"
-	outpost_desc = "A sleepy general store and rest stop on the safe outer ring. The coffee is bad and the prices are honest."
-	trader_name = "Barnaby"
-	sku_types = list(
-		/datum/shop_sku/general/medkit,
-		/datum/shop_sku/general/toolbelt,
-		/datum/shop_sku/general/gps,
-		/datum/shop_sku/general/oxygen_tank,
-		/datum/shop_sku/general/mesons,
-		/datum/shop_sku/general/diamond_pick,
-		/datum/shop_sku/barter/plasma_for_medkit,
-	)
-	// Barnaby buys honest prospecting hauls at honest prices
-	buyback_types = list(
-		/datum/shop_buyback/general/gold_ore,
-		/datum/shop_buyback/general/diamonds,
-	)
-	// Waystation restocking: gentle asks for the outer ring
-	mission_requests = list(
-		list("type" = /obj/item/stack/ore/iron, "name" = "iron ore", "amount" = 15, "difficulty" = MISSION_DIFFICULTY_EASY),
-		list("type" = /obj/item/stack/sheet/glass, "name" = "glass sheets", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_EASY),
-		list("type" = /obj/item/stack/ore/plasma, "name" = "plasma ore", "amount" = 8, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-	)
-	trader_lines = list(
-		TRADER_LINE_GREETING = list(
-			"Welcome to Halcyon! Mind the gift shop on your way out. We are the gift shop.",
-			"Come in, come in. Safest shop this side of the sun.",
-		),
-		TRADER_LINE_SALE = list(
-			"There you are. Safe travels out there!",
-			"Lovely. Do come again — we're literally always here.",
-		),
-		TRADER_LINE_REFUSAL = list(
-			"Oh dear. Your ship's on the naughty list, I'm afraid.",
-			"No no, I can't sell to you lot. Head office was very clear.",
-		),
-		TRADER_LINE_WARNING = list(
-			"Oh, please don't do that, dear. The turrets get ever so cross.",
-			"Now now, that's quite enough. One more and I simply can't help you.",
-		),
-		TRADER_LINE_AGGRESSION = list(
-			"In the GREEN zone?! Have you no shame? Turrets, please.",
-			"Goodness! Right. Embargo. And I'm telling everyone.",
-		),
-		TRADER_LINE_IDLE = list(
-			"They say the deep-ring traders sell terrible things. We sell sensible boots.",
-			"Forty years on this rock and the sun hasn't moved once. Reliable, that.",
-		),
-	)
-
-/datum/shop_sku/general
-	stock_min = 3
-	stock_max = 6
-
-/datum/shop_sku/general/medkit
-	item_path = /obj/item/storage/medkit/regular
-	price_credits = 200
-
-/datum/shop_sku/general/toolbelt
-	item_path = /obj/item/storage/belt/utility/atmostech
-	price_credits = 350
-
-/datum/shop_sku/general/gps
-	item_path = /obj/item/gps
-	price_credits = 150
-
-/datum/shop_sku/general/oxygen_tank
-	item_path = /obj/item/tank/internals/oxygen
-	price_credits = 100
-
-/datum/shop_sku/general/mesons
-	item_path = /obj/item/clothing/glasses/meson
-	price_credits = 250
-
-/datum/shop_sku/general/diamond_pick
-	item_path = /obj/item/pickaxe/diamond
-	price_credits = 800
-	stock_min = 1
-	stock_max = 2
-
-// --- Barnaby's prospector counter (buybacks) ---
-
-/datum/shop_buyback/general/gold_ore
-	name = "gold ore"
-	desc = "Raw gold, straight from the rock. Barnaby weighs it twice and rounds in your favor."
-	item_path = /obj/item/stack/ore/gold
-	amount = 5
-	pay_credits = 300
-	demand_min = 4
-	demand_max = 8
-
-/datum/shop_buyback/general/diamonds
-	name = "diamonds"
-	desc = "Uncut diamonds. He keeps them in a biscuit tin behind the counter."
-	item_path = /obj/item/stack/ore/diamond
-	amount = 2
-	pay_credits = 500
-	demand_min = 2
-	demand_max = 4
-
-// Barter demo SKU: Barnaby pays in kit for raw plasma
-/datum/shop_sku/barter/plasma_for_medkit
-	name = "first-aid kit (plasma trade)"
-	item_path = /obj/item/storage/medkit/regular
-	barter_path = /obj/item/stack/sheet/mineral/plasma
-	barter_amount = 10
-	stock_min = 2
-	stock_max = 4
+	stock--
+	var/list/coords = target.get_relative_overmap_coords()
+	ship.add_waypoint("rumor_[REF(target)]", "[shop?.trader_name || "Trader"]'s tip: unknown signal", coords[1], coords[2], "Rumors")
+	to_chat(user, span_notice("A new mark lands on [ship]'s helm readout: unknown signal at ([coords[1]], [coords[2]])."))
+	return TRUE

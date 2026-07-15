@@ -2,10 +2,10 @@ import { useState } from 'react';
 import {
   Box,
   Button,
+  Image,
   NoticeBox,
   Section,
   Stack,
-  Table,
   Tabs,
   Tooltip,
 } from 'tgui-core/components';
@@ -14,36 +14,66 @@ import type { BooleanLike } from 'tgui-core/react';
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
 
-type Sku = {
+type CatalogSku = {
   ref: string;
   name: string;
   desc: string;
+  category: string;
+  shelf: 'core' | 'rotating' | 'rare';
+  icon: string | null;
+  price_credits: number;
+  final_credits: number;
+  price_vouchers: number;
+  discount_pct: number;
   price_text: string;
+  barter: BooleanLike;
+};
+
+type StockState = {
+  ref: string;
   stock: number;
   can_buy: BooleanLike;
   denial: string | null;
 };
 
-type Buyback = {
+type LedgerEntry = {
   ref: string;
   name: string;
   desc: string;
+  category: string;
+  icon: string | null;
   wanted_text: string;
   payment_text: string;
+  pays_vouchers: BooleanLike;
+};
+
+type LedgerState = {
+  ref: string;
   demand: number;
+  carrying: number;
   can_sell: BooleanLike;
   denial: string | null;
 };
 
 type Data = {
+  // static
   shop_name: string;
   trader_name: string;
+  categories: string[];
+  catalog: CatalogSku[];
+  ledger: LedgerEntry[];
+  // dynamic
   barred: BooleanLike;
   held_vouchers: number;
   account_credits: number | null;
-  skus: Sku[];
-  buybacks: Buyback[];
+  stock_states: StockState[];
+  ledger_states: LedgerState[];
 };
+
+const SHELF_TAGS = {
+  rotating: { label: 'LIMITED', color: 'average' },
+  rare: { label: 'RARE FIND', color: 'purple' },
+} as const;
 
 const WalletHeader = (props: {
   held_vouchers: number;
@@ -52,8 +82,8 @@ const WalletHeader = (props: {
   const { held_vouchers, account_credits } = props;
   return (
     <Box inline color="label">
-      Holding{' '}
-      <Box inline bold color="good">
+      Carrying{' '}
+      <Box inline bold color="purple">
         {held_vouchers}
       </Box>{' '}
       voucher{held_vouchers === 1 ? '' : 's'}
@@ -63,7 +93,7 @@ const WalletHeader = (props: {
           no ID account
         </Box>
       ) : (
-        <Box inline bold>
+        <Box inline bold color="gold">
           {account_credits} cr
         </Box>
       )}
@@ -71,91 +101,286 @@ const WalletHeader = (props: {
   );
 };
 
-const BuyTab = (props: { skus: Sku[]; barred: BooleanLike }) => {
-  const { act } = useBackend<Data>();
-  const { skus, barred } = props;
+const ProductImage = (props: { icon: string | null }) => {
+  const { icon } = props;
+  if (!icon) {
+    return <Box width="32px" height="32px" />;
+  }
   return (
-    <Table>
-      {skus.map((sku) => (
-        <Table.Row key={sku.ref} className="candystripe">
-          <Table.Cell>
-            <Stack vertical>
-              <Stack.Item bold>{sku.name}</Stack.Item>
-              <Stack.Item color="label" fontSize="0.9em">
-                {sku.desc}
-              </Stack.Item>
-            </Stack>
-          </Table.Cell>
-          <Table.Cell collapsing textAlign="right" color="gold">
-            {sku.price_text}
-          </Table.Cell>
-          <Table.Cell collapsing textAlign="center" color="label">
-            x{sku.stock}
-          </Table.Cell>
-          <Table.Cell collapsing>
-            {sku.denial && !barred && sku.stock > 0 ? (
-              <Tooltip content={sku.denial}>
-                <Button disabled icon="cart-shopping">
-                  Buy
-                </Button>
-              </Tooltip>
-            ) : (
-              <Button
-                disabled={!sku.can_buy}
-                icon="cart-shopping"
-                onClick={() => act('buy', { ref: sku.ref })}
-              >
-                {sku.stock > 0 ? 'Buy' : 'Sold out'}
-              </Button>
-            )}
-          </Table.Cell>
-        </Table.Row>
-      ))}
-    </Table>
+    <Image
+      src={`data:image/png;base64,${icon}`}
+      width="32px"
+      height="32px"
+      style={{ imageRendering: 'pixelated', verticalAlign: 'middle' }}
+    />
   );
 };
 
-const SellTab = (props: { buybacks: Buyback[]; barred: BooleanLike }) => {
-  const { act } = useBackend<Data>();
-  const { buybacks, barred } = props;
+const PriceTag = (props: { sku: CatalogSku }) => {
+  const { sku } = props;
+  if (sku.barter) {
+    return (
+      <Box inline bold color="teal">
+        {sku.price_text}
+      </Box>
+    );
+  }
+  const discounted = sku.discount_pct > 0 && sku.price_credits > 0;
   return (
-    <Table>
-      {buybacks.map((buyback) => (
-        <Table.Row key={buyback.ref} className="candystripe">
-          <Table.Cell>
-            <Stack vertical>
-              <Stack.Item bold>{buyback.wanted_text}</Stack.Item>
-              <Stack.Item color="label" fontSize="0.9em">
-                {buyback.desc}
-              </Stack.Item>
-            </Stack>
-          </Table.Cell>
-          <Table.Cell collapsing textAlign="right" color="gold">
-            {buyback.payment_text}
-          </Table.Cell>
-          <Table.Cell collapsing textAlign="center" color="label">
-            wants {buyback.demand}
-          </Table.Cell>
-          <Table.Cell collapsing>
-            {buyback.denial && !barred && buyback.demand > 0 ? (
-              <Tooltip content={buyback.denial}>
-                <Button disabled icon="hand-holding-dollar">
-                  Sell
-                </Button>
-              </Tooltip>
-            ) : (
-              <Button
-                disabled={!buyback.can_sell}
-                icon="hand-holding-dollar"
-                onClick={() => act('sell', { ref: buyback.ref })}
-              >
-                {buyback.demand > 0 ? 'Sell' : 'Not buying'}
-              </Button>
-            )}
-          </Table.Cell>
-        </Table.Row>
+    <Box inline textAlign="right">
+      {sku.price_vouchers > 0 && (
+        <Box inline bold color="purple">
+          {sku.price_vouchers} vch
+        </Box>
+      )}
+      {sku.price_vouchers > 0 && sku.price_credits > 0 && (
+        <Box inline color="label">
+          {' + '}
+        </Box>
+      )}
+      {sku.price_credits > 0 && (
+        <>
+          {discounted && (
+            <Box
+              inline
+              color="label"
+              style={{ textDecoration: 'line-through' }}
+            >
+              {sku.price_credits}
+            </Box>
+          )}{' '}
+          <Box inline bold color="gold">
+            {sku.final_credits} cr
+          </Box>
+        </>
+      )}
+      {sku.price_vouchers <= 0 && sku.price_credits <= 0 && (
+        <Box inline color="good">
+          free
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+const SkuRow = (props: {
+  sku: CatalogSku;
+  live: StockState | undefined;
+  barred: BooleanLike;
+}) => {
+  const { act } = useBackend<Data>();
+  const { sku, live, barred } = props;
+  const stock = live?.stock ?? 0;
+  const soldOut = stock <= 0;
+  const shelfTag = SHELF_TAGS[sku.shelf as keyof typeof SHELF_TAGS];
+
+  const buyButton = (
+    <Button
+      disabled={!live?.can_buy}
+      icon="cart-shopping"
+      onClick={() => act('buy', { ref: sku.ref })}
+    >
+      {soldOut ? 'Sold out' : 'Buy'}
+    </Button>
+  );
+
+  return (
+    <Stack
+      align="center"
+      py={0.5}
+      className="candystripe"
+      opacity={soldOut ? 0.5 : 1}
+    >
+      <Stack.Item>
+        <ProductImage icon={sku.icon} />
+      </Stack.Item>
+      <Stack.Item grow>
+        <Box bold>
+          {sku.name}{' '}
+          {sku.discount_pct > 0 && (
+            <Box inline color="good" bold>
+              −{sku.discount_pct}%
+            </Box>
+          )}{' '}
+          {shelfTag && (
+            <Box inline color={shelfTag.color} fontSize="0.8em" bold>
+              {shelfTag.label}
+            </Box>
+          )}
+        </Box>
+        <Box color="label" fontSize="0.85em">
+          {sku.desc}
+        </Box>
+      </Stack.Item>
+      <Stack.Item textAlign="right" minWidth="90px">
+        <PriceTag sku={sku} />
+      </Stack.Item>
+      <Stack.Item color="label" minWidth="30px" textAlign="center">
+        x{stock}
+      </Stack.Item>
+      <Stack.Item>
+        {live?.denial && !barred && !soldOut ? (
+          <Tooltip content={live.denial}>{buyButton}</Tooltip>
+        ) : (
+          buyButton
+        )}
+      </Stack.Item>
+    </Stack>
+  );
+};
+
+const BuyView = (props: { barred: BooleanLike }) => {
+  const { data } = useBackend<Data>();
+  const { barred } = props;
+  const { categories = [], catalog = [], stock_states = [] } = data;
+  const [category, setCategory] = useState('All');
+
+  const liveByRef = new Map(stock_states.map((s) => [s.ref, s]));
+
+  // Shop-declared category order first, then anything unlisted in first-seen order
+  const orderedCategories: string[] = [...categories];
+  for (const sku of catalog) {
+    if (!orderedCategories.includes(sku.category)) {
+      orderedCategories.push(sku.category);
+    }
+  }
+  const withItems = orderedCategories.filter((cat) =>
+    catalog.some((sku) => sku.category === cat),
+  );
+
+  const shown =
+    category === 'All'
+      ? catalog
+      : catalog.filter((sku) => sku.category === category);
+
+  return (
+    <Stack fill>
+      <Stack.Item minWidth="130px">
+        <Tabs vertical>
+          <Tabs.Tab selected={category === 'All'} onClick={() => setCategory('All')}>
+            All ({catalog.length})
+          </Tabs.Tab>
+          {withItems.map((cat) => (
+            <Tabs.Tab
+              key={cat}
+              selected={category === cat}
+              onClick={() => setCategory(cat)}
+            >
+              {cat} ({catalog.filter((sku) => sku.category === cat).length})
+            </Tabs.Tab>
+          ))}
+        </Tabs>
+      </Stack.Item>
+      <Stack.Item grow>
+        <Section fill scrollable>
+          {shown.map((sku) => (
+            <SkuRow
+              key={sku.ref}
+              sku={sku}
+              live={liveByRef.get(sku.ref)}
+              barred={barred}
+            />
+          ))}
+        </Section>
+      </Stack.Item>
+    </Stack>
+  );
+};
+
+const LedgerRow = (props: {
+  entry: LedgerEntry;
+  live: LedgerState | undefined;
+  barred: BooleanLike;
+}) => {
+  const { act } = useBackend<Data>();
+  const { entry, live, barred } = props;
+  const demand = live?.demand ?? 0;
+  const carrying = live?.carrying ?? 0;
+  const done = demand <= 0;
+
+  const sellButtons = (
+    <>
+      <Button
+        disabled={!live?.can_sell}
+        icon="hand-holding-dollar"
+        onClick={() => act('sell', { ref: entry.ref })}
+      >
+        {done ? 'Not buying' : 'Sell'}
+      </Button>
+      {!done && carrying > 1 && (
+        <Button
+          disabled={!live?.can_sell}
+          icon="boxes-stacked"
+          tooltip="Sell everything you're carrying, up to demand"
+          onClick={() => act('sell_all', { ref: entry.ref })}
+        >
+          All
+        </Button>
+      )}
+    </>
+  );
+
+  return (
+    <Stack align="center" py={0.5} className="candystripe" opacity={done ? 0.5 : 1}>
+      <Stack.Item>
+        <ProductImage icon={entry.icon} />
+      </Stack.Item>
+      <Stack.Item grow>
+        <Box bold>
+          {entry.wanted_text}{' '}
+          {!!entry.pays_vouchers && (
+            <Box inline color="purple" fontSize="0.8em" bold>
+              VOUCHERS
+            </Box>
+          )}
+        </Box>
+        <Box color="label" fontSize="0.85em">
+          {entry.desc}
+        </Box>
+      </Stack.Item>
+      <Stack.Item
+        textAlign="right"
+        minWidth="90px"
+        color={entry.pays_vouchers ? 'purple' : 'gold'}
+      >
+        {entry.payment_text}
+      </Stack.Item>
+      <Stack.Item color="label" minWidth="70px" textAlign="center">
+        wants {demand}
+        <Box color={carrying > 0 ? 'good' : 'label'} fontSize="0.85em">
+          you: {carrying}
+        </Box>
+      </Stack.Item>
+      <Stack.Item>
+        {live?.denial && !barred && !done ? (
+          <Tooltip content={live.denial}>{sellButtons}</Tooltip>
+        ) : (
+          sellButtons
+        )}
+      </Stack.Item>
+    </Stack>
+  );
+};
+
+const SellView = (props: { barred: BooleanLike }) => {
+  const { data } = useBackend<Data>();
+  const { barred } = props;
+  const { ledger = [], ledger_states = [] } = data;
+  const liveByRef = new Map(ledger_states.map((s) => [s.ref, s]));
+  return (
+    <Section fill scrollable>
+      {ledger.length === 0 && (
+        <Box color="label">Not buying anything this shift.</Box>
+      )}
+      {ledger.map((entry) => (
+        <LedgerRow
+          key={entry.ref}
+          entry={entry}
+          live={liveByRef.get(entry.ref)}
+          barred={barred}
+        />
       ))}
-    </Table>
+    </Section>
   );
 };
 
@@ -167,62 +392,78 @@ export const TraderShop = (props) => {
     barred,
     held_vouchers,
     account_credits,
-    skus = [],
-    buybacks = [],
+    catalog = [],
+    ledger = [],
   } = data;
 
   const [tab, setTab] = useState<'buy' | 'sell'>('buy');
-  const hasBuybacks = buybacks.length > 0;
+  const hasBuybacks = ledger.length > 0;
+  const specials = catalog.filter((sku) => sku.discount_pct > 0);
 
   return (
-    <Window title={shop_name} width={560} height={620}>
-      <Window.Content scrollable>
-        {!!barred && (
-          <NoticeBox danger>
-            TRADE EMBARGO IN EFFECT — service refused. Embargoes expire;
-            grudges do not.
-          </NoticeBox>
-        )}
-        <Section
-          title={
-            hasBuybacks ? (
-              <Tabs>
-                <Tabs.Tab selected={tab === 'buy'} onClick={() => setTab('buy')}>
-                  {trader_name}&apos;s Stock
-                </Tabs.Tab>
-                <Tabs.Tab
-                  selected={tab === 'sell'}
-                  onClick={() => setTab('sell')}
-                >
-                  {trader_name} Buys
-                </Tabs.Tab>
-              </Tabs>
-            ) : (
-              `${trader_name}'s Stock`
-            )
-          }
-          buttons={
-            <WalletHeader
-              held_vouchers={held_vouchers}
-              account_credits={account_credits}
-            />
-          }
-        >
-          {tab === 'sell' && hasBuybacks ? (
-            <SellTab buybacks={buybacks} barred={barred} />
-          ) : (
-            <BuyTab skus={skus} barred={barred} />
+    <Window title={shop_name} width={720} height={640}>
+      <Window.Content>
+        <Stack fill vertical>
+          {!!barred && (
+            <Stack.Item>
+              <NoticeBox danger>
+                TRADE EMBARGO IN EFFECT — service refused. Embargoes expire;
+                grudges do not.
+              </NoticeBox>
+            </Stack.Item>
           )}
-        </Section>
-        <Section>
-          <Box color="label" fontSize="0.9em">
-            Fixed prices. Vouchers and credits charged on the spot — hold
-            vouchers or barter goods in hand, credits come off your ID. No
-            refunds.
-            {hasBuybacks &&
-              ' Selling works the same way: hold the goods in hand; payouts hit your ID or your palm.'}
-          </Box>
-        </Section>
+          {specials.length > 0 && tab === 'buy' && (
+            <Stack.Item>
+              <NoticeBox info>
+                {trader_name}&apos;s special today:{' '}
+                {specials
+                  .map((sku) => `${sku.name} (−${sku.discount_pct}%)`)
+                  .join(', ')}
+              </NoticeBox>
+            </Stack.Item>
+          )}
+          <Stack.Item grow>
+            <Section
+              fill
+              title={
+                <Tabs>
+                  <Tabs.Tab
+                    selected={tab === 'buy'}
+                    onClick={() => setTab('buy')}
+                  >
+                    {trader_name}&apos;s Stock
+                  </Tabs.Tab>
+                  {hasBuybacks && (
+                    <Tabs.Tab
+                      selected={tab === 'sell'}
+                      onClick={() => setTab('sell')}
+                    >
+                      {trader_name} Buys
+                    </Tabs.Tab>
+                  )}
+                </Tabs>
+              }
+              buttons={
+                <WalletHeader
+                  held_vouchers={held_vouchers}
+                  account_credits={account_credits}
+                />
+              }
+            >
+              {tab === 'sell' && hasBuybacks ? (
+                <SellView barred={barred} />
+              ) : (
+                <BuyView barred={barred} />
+              )}
+            </Section>
+          </Stack.Item>
+          <Stack.Item>
+            <Box color="label" fontSize="0.85em" px={1}>
+              Fixed prices, charged on the spot — vouchers from anywhere on
+              you, credits off your ID, barter goods held in hand. No refunds.
+            </Box>
+          </Stack.Item>
+        </Stack>
       </Window.Content>
     </Window>
   );

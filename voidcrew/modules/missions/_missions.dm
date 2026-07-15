@@ -47,9 +47,12 @@
 
 	/// The ship that accepted this mission
 	var/obj/structure/overmap/ship/servant
+	/// The outpost shop that posted this mission, if any (outpost-board contracts)
+	var/datum/outpost_shop/shop
 
-/datum/mission/New()
+/datum/mission/New(datum/outpost_shop/shop)
 	. = ..()
+	src.shop = shop
 	generate_mission_details()
 
 /datum/mission/Destroy()
@@ -60,6 +63,7 @@
 		servant.remove_waypoint(REF(src))
 		servant.active_missions -= src
 		servant = null
+	shop = null
 	return ..()
 
 /**
@@ -240,6 +244,27 @@
 	return can_complete()
 
 /**
+ * Whether this turn-in point (ship mission pad, outpost contract board...) is
+ * valid for this mission. Most contracts accept any; courier runs insist on
+ * their destination outpost.
+ * * reward_anchor - The machine the turn-in is happening at
+ */
+/datum/mission/proc/can_turn_in_at(atom/reward_anchor)
+	return TRUE
+
+/**
+ * User-facing reason a turn-in point was refused (pairs with can_turn_in_at).
+ */
+/datum/mission/proc/get_wrong_location_reason(atom/reward_anchor)
+	return "This contract can't be turned in here."
+
+/**
+ * Short archetype tag for UI iconography ("procurement", "bounty", ...).
+ */
+/datum/mission/proc/get_archetype()
+	return "contract"
+
+/**
  * Returns a detailed reason why the mission can't be completed or item can't be turned in.
  * Used for user-facing error messages. Override in subtypes for specific messages.
  * * item - The item being offered (may be null)
@@ -255,10 +280,11 @@
 
 /**
  * Completes the mission and distributes rewards.
- * * pad - The mission pad used for turn-in (for item rewards)
+ * * reward_anchor - The machine the turn-in happened at (ship mission pad or
+ *   outpost contract board); rewards spawn on its turf
  * * turned_in_item - Optional item that was turned in (will be consumed)
  */
-/datum/mission/proc/turn_in(obj/machinery/mission_pad/pad, obj/item/turned_in_item)
+/datum/mission/proc/turn_in(atom/reward_anchor, obj/item/turned_in_item)
 	// Validate completion - use can_turn_in for item missions, can_complete otherwise
 	if(requires_item)
 		if(!can_turn_in(turned_in_item))
@@ -282,7 +308,7 @@
 		consume_turned_in_item(turned_in_item)
 
 	// Distribute rewards
-	distribute_rewards(pad)
+	distribute_rewards(reward_anchor)
 
 	// Notify ship
 	if(servant)
@@ -340,10 +366,10 @@
 
 /**
  * Distributes mission rewards to the ship account.
- * Item rewards spawn on the mission pad.
- * * pad - The mission pad (for item reward spawning)
+ * Item rewards spawn at the turn-in point (mission pad or outpost board).
+ * * reward_anchor - The machine to spawn physical rewards at
  */
-/datum/mission/proc/distribute_rewards(obj/machinery/mission_pad/pad)
+/datum/mission/proc/distribute_rewards(atom/reward_anchor)
 	if(!servant)
 		return
 
@@ -351,15 +377,25 @@
 	if(servant.ship_account && value > 0)
 		servant.ship_account.adjust_money(value)
 
-	// Spawn item reward on pad
-	if(mission_reward && pad)
-		new mission_reward(get_turf(pad))
-		// Visual effect
-		pad.do_teleport_effect()
+	var/turf/reward_turf = get_turf(reward_anchor)
 
-	// Spawn voucher rewards on pad
-	if(voucher_count > 0 && pad)
-		new /obj/item/stack/trade_voucher(get_turf(pad), voucher_count)
+	// Spawn item reward at the turn-in point
+	if(mission_reward && reward_turf)
+		new mission_reward(reward_turf)
+		flash_reward_anchor(reward_anchor)
+
+	// Spawn voucher rewards at the turn-in point
+	if(voucher_count > 0 && reward_turf)
+		new /obj/item/stack/trade_voucher(reward_turf, voucher_count)
+		flash_reward_anchor(reward_anchor)
+
+/**
+ * Turn-in visual: pads get their teleport effect, other anchors stay quiet
+ * (the outpost board plays its own sounds).
+ */
+/datum/mission/proc/flash_reward_anchor(atom/reward_anchor)
+	if(istype(reward_anchor, /obj/machinery/mission_pad))
+		var/obj/machinery/mission_pad/pad = reward_anchor
 		pad.do_teleport_effect()
 
 /**
@@ -416,4 +452,5 @@
 		"difficulty_color" = get_difficulty_color(),
 		"requires_item" = requires_item,
 		"voucher_count" = voucher_count,
+		"archetype" = get_archetype(),
 	)

@@ -24,6 +24,11 @@
 #define TECHWEB_NODE_WEAPON_AMMO_C20R "weapon_ammo_c20r"
 #define TECHWEB_NODE_WEAPON_PART_SNIPER "weapon_part_sniper"
 #define TECHWEB_NODE_WEAPON_AMMO_SNIPER "weapon_ammo_sniper"
+#define TECHWEB_NODE_WEAPON_PART_BULLDOG "weapon_part_bulldog"
+#define TECHWEB_NODE_WEAPON_AMMO_BULLDOG "weapon_ammo_bulldog"
+#define TECHWEB_NODE_WEAPON_PART_WT550 "weapon_part_wt550"
+#define TECHWEB_NODE_WEAPON_AMMO_WT550 "weapon_ammo_wt550"
+#define TECHWEB_NODE_WEAPON_PART_CARBINE "weapon_part_carbine"
 
 // Ship Combat
 #define TECHWEB_NODE_SHIP_COMBAT "ship_combat"

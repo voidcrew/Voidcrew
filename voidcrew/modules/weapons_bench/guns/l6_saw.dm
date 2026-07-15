@@ -2,23 +2,32 @@
  * L6 SAW -- red-tier blueprint gun (the design doc's running example).
  *
  * Pipeline, all in one place:
- *   1. Blueprint (below)            -- ruin loot / black-market SKU (wired in the channels pass)
+ *   1. Schematic (below)            -- ruin loot / black-market SKU; carrying it (or a neural imprint) puts the recipe in your crafting menu
  *   2. Part node -> part design     -- deep node (prereq Exotic Ammunition, tier 4); part prints at the protolathe
  *   3. Ammo node -> ammo design     -- shallow node after the part node; mag prints at the lathe
- *   4. Weapons bench                -- blueprint + part + firing pin => the gun
+ *   4. Crafting menu, beside a weapons bench -- part + firing pin + sheets => the gun
  */
 
-// --- Blueprint + part item ---------------------------------------------------
+// --- Schematic + recipe + part -----------------------------------------------
 
-/obj/item/gun_blueprint/l6_saw
-	name = "weapon blueprint (L6 SAW)"
-	blueprint_name = "L6 SAW"
-	result_path = /obj/item/gun/ballistic/automatic/l6_saw
-	required_part = /obj/item/gun_part/l6_saw
+/obj/item/blueprint/gun/l6_saw
+	name = "weapon schematic (L6 SAW)"
+	schematic_name = "L6 SAW"
+	recipe_type = /datum/crafting_recipe/blueprint/gun/l6_saw
+	tier = BLUEPRINT_TIER_RED
+
+/datum/crafting_recipe/blueprint/gun/l6_saw
+	name = "L6 SAW"
+	result = /obj/item/gun/ballistic/automatic/l6_saw
+	reqs = list(
+		/obj/item/gun_part/l6_saw = 1,
+		/obj/item/firing_pin = 1,
+		/obj/item/stack/sheet/iron = 8,
+	)
 
 /obj/item/gun_part/l6_saw
 	name = "L6 SAW receiver"
-	desc = "The machined receiver assembly for an L6 SAW light machine gun. Plug it into a weapons assembly bench with the L6 SAW blueprint and a firing pin to build the weapon."
+	desc = "The machined receiver assembly for an L6 SAW light machine gun. Its schematic's crafting recipe turns it into the finished weapon."
 	icon_state = "l6"
 
 // --- Protolathe part design --------------------------------------------------

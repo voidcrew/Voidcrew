@@ -5,15 +5,24 @@
  * L6 SAW; see guns/l6_saw.dm for the annotated walkthrough.
  */
 
-/obj/item/gun_blueprint/sniper_rifle
-	name = "weapon blueprint (anti-materiel rifle)"
-	blueprint_name = "anti-materiel sniper rifle"
-	result_path = /obj/item/gun/ballistic/rifle/sniper_rifle
-	required_part = /obj/item/gun_part/sniper_rifle
+/obj/item/blueprint/gun/sniper_rifle
+	name = "weapon schematic (anti-materiel rifle)"
+	schematic_name = "anti-materiel sniper rifle"
+	recipe_type = /datum/crafting_recipe/blueprint/gun/sniper_rifle
+	tier = BLUEPRINT_TIER_RED
+
+/datum/crafting_recipe/blueprint/gun/sniper_rifle
+	name = "Anti-Materiel Sniper Rifle"
+	result = /obj/item/gun/ballistic/rifle/sniper_rifle
+	reqs = list(
+		/obj/item/gun_part/sniper_rifle = 1,
+		/obj/item/firing_pin = 1,
+		/obj/item/stack/sheet/iron = 8,
+	)
 
 /obj/item/gun_part/sniper_rifle
 	name = "anti-materiel rifle receiver"
-	desc = "The machined receiver and bolt assembly for an anti-materiel sniper rifle. Assemble it at a weapons bench with the matching blueprint and a firing pin."
+	desc = "The machined receiver and bolt assembly for an anti-materiel sniper rifle. Its schematic's crafting recipe turns it into the finished weapon."
 	icon_state = "sniper"
 
 /datum/design/gun_part_sniper_rifle

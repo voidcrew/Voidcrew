@@ -2621,17 +2621,19 @@
 /**
  * Completes a mission via turn-in.
  * * mission - The mission to complete
- * * pad - The mission pad used for turn-in
+ * * reward_anchor - The turn-in machine (ship mission pad or outpost contract board)
  * * item - Optional item being turned in
  * Returns TRUE on success, error string on failure.
  */
-/obj/structure/overmap/ship/proc/complete_mission(datum/mission/mission, obj/machinery/mission_pad/pad, obj/item/item)
+/obj/structure/overmap/ship/proc/complete_mission(datum/mission/mission, atom/reward_anchor, obj/item/item)
 	if(!mission)
 		return "Invalid mission."
 	if(!(mission in active_missions))
 		return "Mission not active on this ship."
 
 	// Pre-validate before attempting turn-in for better error messages
+	if(!mission.can_turn_in_at(reward_anchor))
+		return mission.get_wrong_location_reason(reward_anchor)
 	if(mission.requires_item)
 		if(!mission.can_turn_in(item))
 			return mission.get_failure_reason(item)
@@ -2639,7 +2641,7 @@
 		if(!mission.can_complete())
 			return mission.get_failure_reason(item)
 
-	if(!mission.turn_in(pad, item))
+	if(!mission.turn_in(reward_anchor, item))
 		return "Failed to complete mission."
 
 	return TRUE

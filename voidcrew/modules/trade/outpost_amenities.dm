@@ -280,6 +280,35 @@
 	)
 	emote_see = list("counts crates under his breath.", "stretches his back with an audible pop.")
 
+// --- Red: the Dregs cantina's bartender, who has poured for worse ---
+
+/mob/living/basic/outpost_loiterer/bartender
+	name = "cantina bartender"
+	desc = "Pours drinks in a red-zone bar and has never once asked a follow-up question."
+	gender = FEMALE
+	spawner_path = /obj/effect/mob_spawn/corpse/human/bartender
+	attacked_lines = list(
+		"HEY. You bleed on my bar, you buy the bar.",
+		"Swing again and you're cut off. From drinks AND oxygen, if Vex is feeling helpful.",
+	)
+	ai_controller = /datum/ai_controller/basic_controller/outpost_loiterer/bartender
+
+/datum/ai_controller/basic_controller/outpost_loiterer/bartender
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/random_speech/outpost_bartender,
+	)
+
+/datum/ai_planning_subtree/random_speech/outpost_bartender
+	speech_chance = 2
+	speak = list(
+		"What'll it be? We have beer, and we have questions I won't ask.",
+		"The regulars are pirates, the pirates are regular. It evens out.",
+		"Vex doesn't drink. Holograms. Tragic, really.",
+		"Someone paid their tab in raw telecrystal once. Kept the lights on for a month.",
+		"You want intel, buy a rumor at the terminal. You want the TRUTH? Beer first.",
+	)
+	emote_see = list("polishes a glass that was already clean.", "restacks the same three bottles.")
+
 // --- Red: the off-duty pirate who considers the Undertow neutral ground ---
 
 /mob/living/basic/outpost_loiterer/off_duty_pirate

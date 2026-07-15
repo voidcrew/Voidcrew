@@ -5,15 +5,24 @@
  * the L6 SAW; see guns/l6_saw.dm for the annotated walkthrough.
  */
 
-/obj/item/gun_blueprint/c20r
-	name = "weapon blueprint (C-20r SMG)"
-	blueprint_name = "C-20r SMG"
-	result_path = /obj/item/gun/ballistic/automatic/c20r
-	required_part = /obj/item/gun_part/c20r
+/obj/item/blueprint/gun/c20r
+	name = "weapon schematic (C-20r SMG)"
+	schematic_name = "C-20r SMG"
+	recipe_type = /datum/crafting_recipe/blueprint/gun/c20r
+	tier = BLUEPRINT_TIER_YELLOW
+
+/datum/crafting_recipe/blueprint/gun/c20r
+	name = "C-20r SMG"
+	result = /obj/item/gun/ballistic/automatic/c20r
+	reqs = list(
+		/obj/item/gun_part/c20r = 1,
+		/obj/item/firing_pin = 1,
+		/obj/item/stack/sheet/iron = 5,
+	)
 
 /obj/item/gun_part/c20r
 	name = "C-20r receiver"
-	desc = "The machined receiver assembly for a C-20r submachine gun. Assemble it at a weapons bench with the C-20r blueprint and a firing pin."
+	desc = "The machined receiver assembly for a C-20r submachine gun. Its schematic's crafting recipe turns it into the finished gun."
 	icon_state = "c20r"
 
 /datum/design/gun_part_c20r

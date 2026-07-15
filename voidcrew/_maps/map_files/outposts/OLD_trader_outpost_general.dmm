@@ -99,7 +99,7 @@
 /area/voidcrew/trader_outpost)
 "ar" = (
 /obj/machinery/light/small/directional/east,
-/turf/open/indestructible/dark,
+/turf/closed/indestructible/reinforced/titanium/outpost,
 /area/voidcrew/trader_outpost)
 "as" = (
 /obj/effect/decal/cleanable/dirt,
@@ -400,6 +400,9 @@
 /obj/structure/curtain/cloth,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
+"qg" = (
+/turf/closed/indestructible/reinforced/titanium/outpost,
+/area/template_noop)
 "qm" = (
 /obj/machinery/light/warm/directional/north,
 /turf/open/indestructible/grass,
@@ -421,6 +424,10 @@
 	dir = 1
 	},
 /turf/open/indestructible/stone,
+/area/voidcrew/trader_outpost)
+"rO" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
 "rV" = (
 /obj/machinery/outpost_trader,
@@ -510,6 +517,10 @@
 "Gb" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/kitchen,
+/area/voidcrew/trader_outpost)
+"GN" = (
+/obj/machinery/door/airlock/outpost,
+/turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "GY" = (
 /obj/structure/table/wood,
@@ -921,7 +932,7 @@ ax
 "}
 (8,1,1) = {"
 aC
-aC
+aY
 aW
 aY
 aK
@@ -956,7 +967,7 @@ ax
 "}
 (9,1,1) = {"
 aC
-aC
+rO
 aY
 aY
 aQ
@@ -991,7 +1002,7 @@ ax
 "}
 (10,1,1) = {"
 aC
-aC
+aY
 ay
 aY
 at
@@ -1001,7 +1012,7 @@ aP
 aZ
 ja
 ja
-aC
+ja
 ja
 ja
 ja
@@ -1026,7 +1037,7 @@ ax
 "}
 (11,1,1) = {"
 aC
-aC
+rO
 aY
 aS
 ay
@@ -1061,7 +1072,7 @@ ax
 "}
 (12,1,1) = {"
 aC
-aC
+aY
 aW
 ak
 ay
@@ -1096,7 +1107,7 @@ ax
 "}
 (13,1,1) = {"
 aR
-aC
+rO
 av
 aY
 ay
@@ -1114,7 +1125,7 @@ aC
 aC
 aC
 aC
-aP
+aC
 aP
 aP
 aP
@@ -1131,14 +1142,14 @@ ax
 "}
 (14,1,1) = {"
 aC
-aC
 aY
+rO
 aY
 ay
 as
 aP
 aP
-aC
+aP
 aP
 aP
 Wt
@@ -1166,7 +1177,7 @@ ax
 "}
 (15,1,1) = {"
 aC
-aP
+aC
 ak
 aY
 aZ
@@ -1184,8 +1195,8 @@ as
 aP
 aP
 aP
-HU
-HU
+aP
+aP
 aP
 aP
 aP
@@ -1221,7 +1232,7 @@ HU
 HU
 BA
 HU
-HU
+aP
 aP
 aP
 aC
@@ -1256,7 +1267,7 @@ HU
 rb
 HU
 HU
-HU
+aP
 aP
 aP
 aC
@@ -1291,7 +1302,7 @@ fZ
 Mi
 HU
 HU
-HU
+aP
 aP
 aP
 aC
@@ -1326,7 +1337,7 @@ HU
 HU
 HU
 HU
-HU
+aP
 aP
 aA
 aC
@@ -1361,7 +1372,7 @@ HU
 HU
 HU
 HU
-HU
+aP
 aP
 aP
 aC
@@ -1396,7 +1407,7 @@ HU
 HU
 HU
 HU
-HU
+aP
 as
 aP
 aC
@@ -1431,7 +1442,7 @@ HU
 HU
 HU
 HU
-HU
+aP
 aP
 aP
 aC
@@ -1466,7 +1477,7 @@ gq
 HU
 HU
 HU
-HU
+aP
 aP
 aP
 aC
@@ -1501,7 +1512,7 @@ HU
 HU
 HU
 HU
-HU
+aP
 aP
 aP
 aC
@@ -1536,7 +1547,7 @@ HU
 HU
 HU
 HU
-HU
+aP
 aP
 aP
 aZ
@@ -1571,7 +1582,7 @@ HU
 HU
 HU
 HU
-HU
+aP
 aP
 aP
 aC
@@ -1606,7 +1617,7 @@ HU
 HU
 HU
 HU
-HU
+aP
 aP
 aA
 aC
@@ -1641,7 +1652,7 @@ fZ
 Mi
 BA
 HU
-HU
+aP
 aV
 aP
 aC
@@ -1676,7 +1687,7 @@ HU
 rb
 HU
 HU
-HU
+aP
 aP
 aP
 aC
@@ -2010,7 +2021,7 @@ ax
 au
 ai
 ai
-aP
+aC
 aP
 as
 aZ
@@ -2046,7 +2057,7 @@ aC
 aT
 aC
 aC
-aP
+aC
 aA
 aC
 aX
@@ -2081,7 +2092,7 @@ aC
 aV
 aP
 aP
-aP
+GN
 aP
 aC
 qG
@@ -2135,12 +2146,12 @@ aC
 aP
 hy
 aC
+zp
+zp
+zp
+zp
+zp
 aC
-aC
-aC
-aC
-aC
-ax
 ax
 ax
 "}
@@ -2151,9 +2162,9 @@ ax
 aC
 aO
 aO
+qg
 ax
 ax
-ax
 aC
 aC
 aC
@@ -2175,7 +2186,7 @@ bw
 bw
 bw
 bw
-ax
+aC
 ax
 ax
 "}

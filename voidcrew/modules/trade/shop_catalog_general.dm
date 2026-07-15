@@ -1,0 +1,515 @@
+/**
+ * # Waystation Halcyon — the green-zone general store
+ *
+ * Sundries, survival kit and honest prices for the safe outer ring. Credits
+ * only; the most dangerous thing on the shelf is the chili in the rations.
+ * Shop machinery lives in shop.dm; this file is pure catalog.
+ */
+/datum/outpost_shop/general
+	outpost_name = "\improper Waystation Halcyon"
+	outpost_desc = "A sleepy general store and rest stop on the safe outer ring. The coffee is bad and the prices are honest."
+	trader_name = "Barnaby"
+	trader_voice_pack = "goon.speak_1"
+	trader_voice_pitch = 1.18
+	categories = list(
+		"Survival & EVA",
+		"Tools & Repair",
+		"Medical",
+		"Prospecting",
+		"Galley & Comforts",
+		"Ship Sundries",
+		"Local Knowledge",
+		"Barter Deals",
+	)
+	sku_types = list(
+		// Survival & EVA
+		/datum/shop_sku/general/oxygen_tank,
+		/datum/shop_sku/general/emergency_oxygen,
+		/datum/shop_sku/general/breath_mask,
+		/datum/shop_sku/general/eva_suit,
+		/datum/shop_sku/general/eva_helmet,
+		/datum/shop_sku/general/gps,
+		/datum/shop_sku/general/flare,
+		/datum/shop_sku/general/glowstick,
+		/datum/shop_sku/general/extinguisher,
+		/datum/shop_sku/general/survival_medipen,
+		// Tools & Repair
+		/datum/shop_sku/general/toolbelt,
+		/datum/shop_sku/general/big_welder,
+		/datum/shop_sku/general/welding_helmet,
+		/datum/shop_sku/general/cable_coil,
+		/datum/shop_sku/general/light_replacer,
+		/datum/shop_sku/general/light_box,
+		/datum/shop_sku/general/holofan,
+		/datum/shop_sku/general/plunger,
+		// Medical
+		/datum/shop_sku/general/medkit,
+		/datum/shop_sku/general/burn_kit,
+		/datum/shop_sku/general/o2_kit,
+		/datum/shop_sku/general/health_analyzer,
+		/datum/shop_sku/general/epipen,
+		/datum/shop_sku/general/gauze,
+		// Prospecting
+		/datum/shop_sku/general/pickaxe,
+		/datum/shop_sku/general/mesons,
+		/datum/shop_sku/general/ore_bag,
+		/datum/shop_sku/general/mining_scanner,
+		/datum/shop_sku/general/diamond_pick,
+		// Galley & Comforts
+		/datum/shop_sku/general/rations,
+		/datum/shop_sku/general/beans,
+		/datum/shop_sku/general/chocolate,
+		/datum/shop_sku/general/cigarettes,
+		/datum/shop_sku/general/lighter,
+		/datum/shop_sku/general/cards,
+		/datum/shop_sku/general/d20,
+		/datum/shop_sku/general/plushie,
+		/datum/shop_sku/general/fishing_rod,
+		/datum/shop_sku/general/camera,
+		/datum/shop_sku/general/radio,
+		// Ship Sundries
+		/datum/shop_sku/general/floor_tiles,
+		/datum/shop_sku/general/spraycan,
+		/datum/shop_sku/general/soap,
+		// Local Knowledge
+		/datum/shop_sku/rumor/general,
+		// Barter
+		/datum/shop_sku/barter/plasma_for_medkit,
+	)
+	rotating_pool = list(
+		/datum/shop_sku/general/rotating/freight_crate,
+		/datum/shop_sku/general/rotating/moth_plushie,
+		/datum/shop_sku/general/rotating/bikehorn,
+		/datum/shop_sku/general/rotating/welding_goggles,
+		/datum/shop_sku/general/rotating/guitar,
+	)
+	rare_pool = list(
+		/datum/shop_sku/general/rare/bluespace_bodybag,
+		/datum/shop_sku/general/rare/drill,
+	)
+	// Barnaby buys honest prospecting hauls at honest prices, plus whatever
+	// the trappers and anglers drag in off the green worlds
+	buyback_types = list(
+		/datum/shop_buyback/general/gold_ore,
+		/datum/shop_buyback/general/diamonds,
+		/datum/shop_buyback/general/fresh_catch,
+		/datum/shop_buyback/general/bear_pelt,
+	)
+	// Waystation restocking: gentle asks for the outer ring
+	mission_requests = list(
+		list("type" = /obj/item/stack/ore/iron, "name" = "iron ore", "amount" = 15, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("type" = /obj/item/stack/sheet/glass, "name" = "glass sheets", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("type" = /obj/item/stack/ore/plasma, "name" = "plasma ore", "amount" = 8, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("type" = /obj/item/fish, "name" = "fresh planet-caught fish", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("type" = /obj/item/stack/sheet/animalhide/bear, "name" = "bear hide", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+	)
+	// Under the counter: hard contracts only, never sold
+	exclusive_rewards = list(
+		/obj/item/storage/bag/ore/holding,
+		/obj/item/fishing_rod/telescopic/master,
+		/obj/item/pickaxe/drill/jackhammer,
+	)
+	trader_lines = list(
+		TRADER_LINE_GREETING = list(
+			"Welcome to Halcyon! Mind the gift shop on your way out. We are the gift shop.",
+			"Come in, come in. Safest shop this side of the sun.",
+			"Hello hello! Kettle's just boiled, shelves are just stocked.",
+			"New faces! Or old faces, I never remember. Welcome either way.",
+		),
+		TRADER_LINE_SALE = list(
+			"There you are. Safe travels out there!",
+			"Lovely. Do come again — we're literally always here.",
+			"Wonderful choice. I'd have picked the same, and I picked all of it.",
+			"All wrapped up. Wave at the mechanic on your way out, she likes that.",
+		),
+		TRADER_LINE_REFUSAL = list(
+			"Oh dear. Your ship's on the naughty list, I'm afraid.",
+			"No no, I can't sell to you lot. Head office was very clear.",
+			"I do forgive you, personally. The till doesn't. Come back later.",
+		),
+		TRADER_LINE_WARNING = list(
+			"Oh, please don't do that, dear. The turrets get ever so cross.",
+			"Now now, that's quite enough. One more and I simply can't help you.",
+		),
+		TRADER_LINE_AGGRESSION = list(
+			"In the GREEN zone?! Have you no shame? Turrets, please.",
+			"Goodness! Right. Embargo. And I'm telling everyone.",
+		),
+		TRADER_LINE_IDLE = list(
+			"They say the deep-ring traders sell terrible things. We sell sensible boots.",
+			"Forty years on this rock and the sun hasn't moved once. Reliable, that.",
+			"The anglers bring me the strangest fish. I pay for all of them. The chowder pot forgives.",
+			"Bear hide wears like iron and sleeps like a cloud. The bears disagree, of course.",
+			"Take a rumor with you, dear. The lanes talk to me and I do love to pass it on.",
+			"We had a jackhammer in the back once. Contract work only, mind. Ask at the board.",
+		),
+		TRADER_LINE_RESTOCK = list(
+			"The supply run's in! Fresh everything, and the biscuit tin's full again.",
+			"Restock day! I do love restock day. New oddments on the shelf, go look.",
+			"That's the convoy come and gone. Shelves are full and nobody was shot. A good day.",
+		),
+	)
+
+/datum/shop_sku/general
+	stock_min = 3
+	stock_max = 6
+
+// ===== SURVIVAL & EVA =====
+
+/datum/shop_sku/general/oxygen_tank
+	category = "Survival & EVA"
+	item_path = /obj/item/tank/internals/oxygen
+	price_credits = 100
+
+/datum/shop_sku/general/emergency_oxygen
+	category = "Survival & EVA"
+	item_path = /obj/item/tank/internals/emergency_oxygen/engi
+	price_credits = 50
+	stock_min = 4
+	stock_max = 8
+
+/datum/shop_sku/general/breath_mask
+	category = "Survival & EVA"
+	item_path = /obj/item/clothing/mask/breath
+	price_credits = 50
+
+/datum/shop_sku/general/eva_suit
+	category = "Survival & EVA"
+	item_path = /obj/item/clothing/suit/space/eva
+	price_credits = 400
+	stock_min = 2
+	stock_max = 3
+
+/datum/shop_sku/general/eva_helmet
+	category = "Survival & EVA"
+	item_path = /obj/item/clothing/head/helmet/space/eva
+	price_credits = 300
+	stock_min = 2
+	stock_max = 3
+
+/datum/shop_sku/general/gps
+	category = "Survival & EVA"
+	item_path = /obj/item/gps
+	price_credits = 150
+
+/datum/shop_sku/general/flare
+	category = "Survival & EVA"
+	item_path = /obj/item/flashlight/flare
+	price_credits = 30
+	stock_min = 6
+	stock_max = 10
+
+/datum/shop_sku/general/glowstick
+	category = "Survival & EVA"
+	item_path = /obj/item/flashlight/glowstick
+	price_credits = 20
+	stock_min = 6
+	stock_max = 10
+
+/datum/shop_sku/general/extinguisher
+	category = "Survival & EVA"
+	item_path = /obj/item/extinguisher
+	price_credits = 100
+
+/datum/shop_sku/general/survival_medipen
+	category = "Survival & EVA"
+	item_path = /obj/item/reagent_containers/hypospray/medipen/survival
+	price_credits = 300
+	stock_min = 2
+	stock_max = 4
+
+// ===== TOOLS & REPAIR =====
+
+/datum/shop_sku/general/toolbelt
+	category = "Tools & Repair"
+	item_path = /obj/item/storage/belt/utility/atmostech
+	price_credits = 350
+
+/datum/shop_sku/general/big_welder
+	category = "Tools & Repair"
+	item_path = /obj/item/weldingtool/largetank
+	price_credits = 200
+
+/datum/shop_sku/general/welding_helmet
+	category = "Tools & Repair"
+	item_path = /obj/item/clothing/head/utility/welding
+	price_credits = 150
+
+/datum/shop_sku/general/cable_coil
+	category = "Tools & Repair"
+	item_path = /obj/item/stack/cable_coil
+	dispense_amount = 30
+	price_credits = 30
+	stock_min = 5
+	stock_max = 10
+
+/datum/shop_sku/general/light_replacer
+	category = "Tools & Repair"
+	item_path = /obj/item/lightreplacer
+	price_credits = 250
+	stock_min = 1
+	stock_max = 3
+
+/datum/shop_sku/general/light_box
+	category = "Tools & Repair"
+	item_path = /obj/item/storage/box/lights/mixed
+	price_credits = 100
+
+/datum/shop_sku/general/holofan
+	category = "Tools & Repair"
+	name = "holofan projector"
+	item_path = /obj/item/holosign_creator/atmos
+	price_credits = 400
+	stock_min = 1
+	stock_max = 2
+
+/datum/shop_sku/general/plunger
+	category = "Tools & Repair"
+	item_path = /obj/item/plunger
+	price_credits = 40
+
+// ===== MEDICAL =====
+
+/datum/shop_sku/general/medkit
+	category = "Medical"
+	item_path = /obj/item/storage/medkit/regular
+	price_credits = 200
+
+/datum/shop_sku/general/burn_kit
+	category = "Medical"
+	item_path = /obj/item/storage/medkit/fire
+	price_credits = 250
+
+/datum/shop_sku/general/o2_kit
+	category = "Medical"
+	item_path = /obj/item/storage/medkit/o2
+	price_credits = 250
+
+/datum/shop_sku/general/health_analyzer
+	category = "Medical"
+	item_path = /obj/item/healthanalyzer
+	price_credits = 150
+
+/datum/shop_sku/general/epipen
+	category = "Medical"
+	item_path = /obj/item/reagent_containers/hypospray/medipen
+	price_credits = 100
+	stock_min = 4
+	stock_max = 8
+
+/datum/shop_sku/general/gauze
+	category = "Medical"
+	item_path = /obj/item/stack/medical/gauze
+	price_credits = 80
+	stock_min = 4
+	stock_max = 8
+
+// ===== PROSPECTING =====
+
+/datum/shop_sku/general/pickaxe
+	category = "Prospecting"
+	item_path = /obj/item/pickaxe
+	price_credits = 150
+
+/datum/shop_sku/general/mesons
+	category = "Prospecting"
+	item_path = /obj/item/clothing/glasses/meson
+	price_credits = 250
+
+/datum/shop_sku/general/ore_bag
+	category = "Prospecting"
+	item_path = /obj/item/storage/bag/ore
+	price_credits = 150
+
+/datum/shop_sku/general/mining_scanner
+	category = "Prospecting"
+	item_path = /obj/item/t_scanner/adv_mining_scanner/lesser
+	price_credits = 300
+
+/datum/shop_sku/general/diamond_pick
+	category = "Prospecting"
+	item_path = /obj/item/pickaxe/diamond
+	price_credits = 800
+	stock_min = 1
+	stock_max = 2
+
+// ===== GALLEY & COMFORTS =====
+
+/datum/shop_sku/general/rations
+	category = "Galley & Comforts"
+	item_path = /obj/item/food/rationpack
+	price_credits = 40
+	stock_min = 6
+	stock_max = 12
+
+/datum/shop_sku/general/beans
+	category = "Galley & Comforts"
+	item_path = /obj/item/food/canned/beans
+	price_credits = 30
+	stock_min = 4
+	stock_max = 8
+
+/datum/shop_sku/general/chocolate
+	category = "Galley & Comforts"
+	item_path = /obj/item/food/chocolatebar
+	price_credits = 50
+
+/datum/shop_sku/general/cigarettes
+	category = "Galley & Comforts"
+	item_path = /obj/item/storage/fancy/cigarettes
+	price_credits = 60
+
+/datum/shop_sku/general/lighter
+	category = "Galley & Comforts"
+	item_path = /obj/item/lighter
+	price_credits = 40
+
+/datum/shop_sku/general/cards
+	category = "Galley & Comforts"
+	item_path = /obj/item/toy/cards/deck
+	price_credits = 80
+
+/datum/shop_sku/general/d20
+	category = "Galley & Comforts"
+	item_path = /obj/item/dice/d20
+	price_credits = 60
+
+/datum/shop_sku/general/plushie
+	category = "Galley & Comforts"
+	item_path = /obj/item/toy/plush/lizard_plushie
+	price_credits = 120
+
+/datum/shop_sku/general/fishing_rod
+	category = "Galley & Comforts"
+	item_path = /obj/item/fishing_rod
+	price_credits = 250
+	stock_min = 2
+	stock_max = 3
+
+/datum/shop_sku/general/camera
+	category = "Galley & Comforts"
+	item_path = /obj/item/camera
+	price_credits = 150
+
+/datum/shop_sku/general/radio
+	category = "Galley & Comforts"
+	item_path = /obj/item/radio
+	price_credits = 80
+
+// ===== SHIP SUNDRIES =====
+
+/datum/shop_sku/general/floor_tiles
+	category = "Ship Sundries"
+	item_path = /obj/item/stack/tile/iron/base
+	dispense_amount = 20
+	price_credits = 80
+	stock_min = 3
+	stock_max = 6
+
+/datum/shop_sku/general/spraycan
+	category = "Ship Sundries"
+	item_path = /obj/item/toy/crayon/spraycan
+	price_credits = 60
+
+/datum/shop_sku/general/soap
+	category = "Ship Sundries"
+	item_path = /obj/item/soap
+	price_credits = 40
+
+// Barnaby's tips are friendly gossip — green-band signals
+/datum/shop_sku/rumor/general
+	name = "over-the-counter gossip"
+	desc = "Barnaby leans in, drops his voice, and tells you exactly where something interesting is parked on the outer ring. One uncharted green-band signal, marked on your helm."
+	category = "Local Knowledge"
+	price_credits = 150
+
+// ===== ROTATING SHELF =====
+
+/datum/shop_sku/general/rotating
+	category = "Galley & Comforts"
+
+/datum/shop_sku/general/rotating/freight_crate
+	category = "Ship Sundries"
+	name = "unclaimed freight"
+	desc = "A sealed crate somebody never came back for. Barnaby hasn't looked inside; that's between you and the manifest gods."
+	item_path = /obj/structure/closet/crate/zone_loot/syndicate
+	price_credits = 500
+
+/datum/shop_sku/general/rotating/moth_plushie
+	item_path = /obj/item/toy/plush/moth
+	price_credits = 120
+
+/datum/shop_sku/general/rotating/bikehorn
+	item_path = /obj/item/bikehorn
+	price_credits = 80
+
+/datum/shop_sku/general/rotating/welding_goggles
+	category = "Tools & Repair"
+	item_path = /obj/item/clothing/glasses/welding
+	price_credits = 120
+
+/datum/shop_sku/general/rotating/guitar
+	item_path = /obj/item/instrument/guitar
+	price_credits = 400
+
+// ===== RARE SHOWCASE =====
+
+/datum/shop_sku/general/rare/bluespace_bodybag
+	category = "Ship Sundries"
+	item_path = /obj/item/bodybag/bluespace
+	price_credits = 2000
+
+/datum/shop_sku/general/rare/drill
+	category = "Prospecting"
+	item_path = /obj/item/pickaxe/drill
+	price_credits = 1200
+
+// ===== BARNABY'S PROSPECTOR COUNTER (buybacks) =====
+
+/datum/shop_buyback/general/gold_ore
+	name = "gold ore"
+	desc = "Raw gold, straight from the rock. Barnaby weighs it twice and rounds in your favor."
+	category = "Prospecting"
+	item_path = /obj/item/stack/ore/gold
+	amount = 5
+	pay_credits = 300
+	demand_min = 4
+	demand_max = 8
+
+/datum/shop_buyback/general/diamonds
+	name = "diamonds"
+	desc = "Uncut diamonds. He keeps them in a biscuit tin behind the counter."
+	category = "Prospecting"
+	item_path = /obj/item/stack/ore/diamond
+	amount = 2
+	pay_credits = 500
+	demand_min = 2
+	demand_max = 4
+
+// Planet-side game: reasons to take the fishing rod and the rifle dirtside
+/datum/shop_buyback/general/fresh_catch
+	name = "fresh catch (any fish)"
+	desc = "Anything with fins, planet-caught. Freshness negotiable; the chowder pot forgives."
+	category = "Trapper & Angler"
+	item_path = /obj/item/fish
+	pay_credits = 150
+	demand_min = 5
+	demand_max = 8
+
+/datum/shop_buyback/general/bear_pelt
+	name = "bear hide"
+	desc = "Cave bear hide off the green worlds. Barnaby says it's for the guest bunks. There are no guest bunks."
+	category = "Trapper & Angler"
+	item_path = /obj/item/stack/sheet/animalhide/bear
+	pay_credits = 250
+	demand_min = 2
+	demand_max = 4
+
+// Barter demo SKU: Barnaby pays in kit for raw plasma
+/datum/shop_sku/barter/plasma_for_medkit
+	name = "first-aid kit (plasma trade)"
+	item_path = /obj/item/storage/medkit/regular
+	barter_path = /obj/item/stack/sheet/mineral/plasma
+	barter_amount = 10
+	stock_min = 2
+	stock_max = 4

@@ -12,8 +12,8 @@
  * spawns exactly like voucher/item rewards already do.
  */
 
-/// How many supply requests an outpost keeps posted at once
-#define OUTPOST_SHOP_OFFER_COUNT 2
+/// How many contracts an outpost keeps posted at once
+#define OUTPOST_SHOP_OFFER_COUNT 4
 
 /**
  * # Outpost Supply Mission
@@ -31,8 +31,6 @@
 	value_max = 0
 	duration = 40 MINUTES
 
-	/// The shop that posted this request (source of author, wants and reward)
-	var/datum/outpost_shop/shop
 	/// The type of item required for delivery
 	var/required_type
 	/// Display name for the required item
@@ -40,13 +38,8 @@
 	/// Amount required (for stacks)
 	var/required_amount = 1
 
-/datum/mission/outpost_supply/New(datum/outpost_shop/shop)
-	src.shop = shop
-	..()
-
-/datum/mission/outpost_supply/Destroy()
-	shop = null
-	return ..()
+/datum/mission/outpost_supply/get_archetype()
+	return "procurement"
 
 /datum/mission/outpost_supply/generate_mission_details()
 	if(!shop)
@@ -73,6 +66,8 @@
 		generation_failed = TRUE
 		return
 	mission_reward = pick(reward_pool)
+	// Hard asks can upgrade the pay to something off the back shelf instead
+	shop.maybe_attach_exclusive(src)
 
 	. = ..()
 
@@ -115,18 +110,37 @@
 // ===== OFFER MANAGEMENT (lives on the outpost) =====
 
 /**
- * Keeps the outpost's posted supply requests topped up. Discards failed rolls.
+ * Keeps the outpost's posted contracts topped up with a mixed archetype
+ * spread. Procurement stays the bread and butter; the rest is rolled.
+ * Discards failed rolls (e.g. courier with no second outpost).
  */
 /obj/structure/overmap/trader_outpost/proc/ensure_shop_offers()
 	if(!shop)
 		return
-	var/safety = 10
+	var/static/list/offer_mix = list(
+		/datum/mission/outpost_supply = 40,
+		/datum/mission/recovery/kill/outpost = 25,
+		/datum/mission/recovery/outpost = 20,
+		/datum/mission/outpost_courier = 15,
+	)
+	var/safety = 12
 	while(length(shop_offers) < OUTPOST_SHOP_OFFER_COUNT && safety-- > 0)
-		var/datum/mission/outpost_supply/offer = new(shop)
+		// Always keep at least one plain supply request on the board
+		var/offer_type = /datum/mission/outpost_supply
+		if(has_posted_offer_type(/datum/mission/outpost_supply))
+			offer_type = pick_weight(offer_mix)
+		var/datum/mission/offer = new offer_type(shop)
 		if(offer.generation_failed)
 			qdel(offer)
 			continue
 		shop_offers += offer
+
+/// Whether an offer of the exact given type is currently posted
+/obj/structure/overmap/trader_outpost/proc/has_posted_offer_type(offer_type)
+	for(var/datum/mission/offer as anything in shop_offers)
+		if(offer.type == offer_type)
+			return TRUE
+	return FALSE
 
 /**
  * # Outpost Mission Board Terminal
@@ -203,7 +217,7 @@
 
 	var/list/offers = list()
 	if(outpost)
-		for(var/datum/mission/outpost_supply/offer as anything in outpost.shop_offers)
+		for(var/datum/mission/offer as anything in outpost.shop_offers)
 			if(QDELETED(offer))
 				continue
 			var/list/offer_data = offer.get_ui_data()
@@ -211,14 +225,35 @@
 			offers += list(offer_data)
 	data["offers"] = offers
 
-	// Which of this ship's active missions came from this outpost (so the
-	// board can show "you're already on it")
-	var/list/accepted = list()
-	if(ship && outpost)
-		for(var/datum/mission/outpost_supply/mission in ship.active_missions)
-			if(mission.shop == outpost.shop)
-				accepted += list(mission.get_ui_data())
-	data["accepted"] = accepted
+	// The ship's active contracts, with per-contract turn-in readiness at
+	// THIS board — any item mission can be turned in here (couriers only at
+	// their destination), so crews can settle up without flying home
+	var/list/ship_missions = list()
+	if(ship)
+		for(var/datum/mission/mission as anything in ship.active_missions)
+			if(QDELETED(mission))
+				continue
+			var/list/mission_data = mission.get_ui_data()
+			mission_data["from_this_shop"] = (mission.shop == outpost?.shop)
+			var/location_ok = mission.can_turn_in_at(src)
+			mission_data["location_ok"] = location_ok
+			var/obj/item/match
+			if(isliving(user) && mission.requires_item)
+				for(var/obj/item/held in user.held_items)
+					if(mission.can_turn_in(held))
+						match = held
+						break
+			mission_data["holding_valid_item"] = !!match
+			var/turn_in_hint
+			if(!mission.requires_item)
+				turn_in_hint = "Not an item contract."
+			else if(!location_ok)
+				turn_in_hint = mission.get_wrong_location_reason(src)
+			else if(!match)
+				turn_in_hint = "Hold the contract goods in hand."
+			mission_data["turn_in_hint"] = turn_in_hint
+			ship_missions += list(mission_data)
+	data["ship_missions"] = ship_missions
 
 	return data
 
@@ -241,7 +276,7 @@
 			if(!ship)
 				balloon_alert(user, "you have no ship!")
 				return TRUE
-			var/datum/mission/outpost_supply/offer = locate(params["ref"]) in outpost.shop_offers
+			var/datum/mission/offer = locate(params["ref"]) in outpost.shop_offers
 			if(!offer || QDELETED(offer))
 				balloon_alert(user, "offer no longer posted!")
 				return TRUE
@@ -257,9 +292,37 @@
 
 			outpost.shop_offers -= offer
 			outpost.ensure_shop_offers()
-			balloon_alert(user, "request accepted!")
+			balloon_alert(user, "contract accepted!")
 			playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
 			outpost.trader?.speak_line(TRADER_LINE_GREETING)
+			return TRUE
+
+		if("turn_in")
+			if(outpost.is_user_barred(user))
+				outpost.trader?.speak_line(TRADER_LINE_REFUSAL)
+				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
+				return TRUE
+			var/obj/structure/overmap/ship/ship = get_user_ship(user)
+			if(!ship)
+				balloon_alert(user, "you have no ship!")
+				return TRUE
+			var/datum/mission/mission = locate(params["ref"]) in ship.active_missions
+			if(!mission || QDELETED(mission))
+				balloon_alert(user, "contract not found!")
+				return TRUE
+			var/obj/item/offered
+			for(var/obj/item/held in user.held_items)
+				if(mission.can_turn_in(held))
+					offered = held
+					break
+			var/result = ship.complete_mission(mission, src, offered)
+			if(result != TRUE)
+				balloon_alert(user, "[result]")
+				playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE)
+				return TRUE
+			balloon_alert(user, "contract fulfilled!")
+			playsound(src, 'sound/effects/cashregister.ogg', 50, TRUE)
+			outpost.trader?.speak_line(TRADER_LINE_SALE)
 			return TRUE
 
 #undef OUTPOST_SHOP_OFFER_COUNT
