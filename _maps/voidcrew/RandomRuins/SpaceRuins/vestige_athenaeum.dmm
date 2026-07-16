@@ -1,21 +1,118 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"a" = (
-/turf/open/floor/wood/parquet,
+"aa" = (
+/turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/vestige/athenaeum)
-"d" = (
-/turf/closed/wall,
+"ab" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
 /area/ruin/space/has_grav/vestige/athenaeum)
-"f" = (
+"ac" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/ash/large,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ad" = (
+/obj/structure/filingcabinet{
+	name = "card catalogue"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ae" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"af" = (
+/obj/item/book/random,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ag" = (
 /obj/machinery/door/airlock/wood{
 	name = "Reading Room"
 	},
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/vestige/athenaeum)
-"j" = (
-/obj/structure/sign/poster/ripped,
-/turf/closed/wall/r_wall,
+"ah" = (
+/turf/closed/wall/mineral/wood,
 /area/ruin/space/has_grav/vestige/athenaeum)
-"k" = (
+"ai" = (
+/turf/template_noop,
+/area/template_noop)
+"aj" = (
+/obj/structure/grille/broken,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ak" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash/large,
+/obj/item/stack/sheet/mineral/wood{
+	amount = 3
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"al" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"am" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "borrowing ledger";
+	default_raw_text = "OVERDUE. On the Economy of Sacrifice, out 312 years, fine compounding. OVERDUE. Pronunciation and Its Consequences, out 312 years, borrower deceased, fine transferred to estate. Estate deceased. NOTE. All fines accrued after the fire are waived. The Magister says the lesson was expensive enough.";
+	pixel_y = 3
+	},
+/obj/item/pen{
+	pixel_x = 7;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"an" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ao" = (
+/obj/machinery/door/airlock/wood{
+	name = "Scriptorium"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ap" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aq" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ar" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"as" = (
+/obj/item/book/random,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"at" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"au" = (
 /obj/machinery/door/airlock/external/ruin{
 	name = "External Airlock"
 	},
@@ -25,125 +122,79 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/vestige/athenaeum)
-"m" = (
-/obj/effect/mapping_helpers/burnt_floor,
-/obj/effect/decal/cleanable/ash,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"n" = (
-/obj/machinery/light/broken/directional/north,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood/parquet,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"o" = (
-/obj/effect/decal/cleanable/ash,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"p" = (
+"av" = (
 /obj/structure/table/wood,
-/obj/item/book/random{
+/obj/item/flashlight/flare/candle/infinite{
 	pixel_x = -3;
-	pixel_y = 4
+	pixel_y = 5
 	},
 /obj/item/book/random{
-	pixel_x = 3;
+	pixel_x = 4;
 	pixel_y = -2
 	},
-/turf/open/floor/wood/parquet,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"q" = (
-/obj/structure/sign/warning/vacuum,
-/turf/closed/wall/r_wall,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"r" = (
-/mob/living/basic/vestige_patron/magister{
-	dir = 8
-	},
-/obj/effect/mapping_helpers/burnt_floor,
-/obj/effect/decal/cleanable/ash/large,
-/turf/open/floor/wood/parquet,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"t" = (
-/obj/effect/turf_decal/caution{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"v" = (
-/obj/effect/mapping_helpers/burnt_floor,
-/obj/effect/decal/cleanable/ash/large,
-/turf/open/floor/wood/parquet,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"w" = (
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/wood/parquet,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"y" = (
-/obj/effect/decal/cleanable/ash,
-/turf/open/floor/wood/parquet,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"z" = (
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/vestige/athenaeum)
-"B" = (
+"aw" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ax" = (
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ay" = (
+/obj/machinery/door/airlock/wood{
+	name = "The Stacks"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"az" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/obj/item/stack/sheet/mineral/wood{
+	amount = 3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aA" = (
+/obj/structure/bookcase/random/reference,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aB" = (
+/turf/closed/wall/r_wall/rust,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aC" = (
+/obj/structure/closet/crate/wooden,
 /obj/item/book/random,
-/obj/effect/decal/cleanable/dirt,
+/obj/item/book/random,
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/vestige/athenaeum)
-"C" = (
-/obj/effect/decal/remains/human,
+"aD" = (
+/obj/item/shard,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aE" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aF" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall/mineral/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aG" = (
+/obj/item/book/random,
 /obj/effect/decal/cleanable/ash,
-/turf/open/floor/wood/parquet,
+/turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/vestige/athenaeum)
-"E" = (
-/obj/structure/table/wood/fancy/black,
-/obj/item/paper/crumpled{
-	name = "the last page";
-	default_raw_text = "The word has nine syllables. The first eight are transcription. The ninth is pronounced by the speaker's own substance, which is why it appears in no book, including this one. My master wrote that only the humble survive the ninth syllable, and I have copied his warning here in full, as instructed, before my recital. I am confident. I have practiced eight of the nine."
-	},
-/obj/effect/decal/cleanable/ash,
-/turf/open/floor/wood/parquet,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"F" = (
-/obj/structure/bookcase/random,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"G" = (
-/obj/machinery/light/broken/directional/south,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"H" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"J" = (
-/obj/effect/spawner/structure/window/reinforced/tinted,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"K" = (
+"aH" = (
+/obj/structure/sign/poster/ripped,
 /turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/vestige/athenaeum)
-"L" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"M" = (
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"O" = (
-/obj/structure/sign/poster/official/random,
-/turf/closed/wall,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"P" = (
-/obj/machinery/light/broken/directional/south,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood/parquet,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"R" = (
+"aI" = (
 /obj/machinery/door/airlock/external/ruin{
 	name = "External Airlock"
 	},
@@ -152,381 +203,1894 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/vestige/athenaeum)
-"T" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood/parquet,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"U" = (
-/turf/template_noop,
-/area/template_noop)
-"V" = (
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"X" = (
-/obj/item/kirbyplants/random,
-/turf/open/floor/wood/parquet,
-/area/ruin/space/has_grav/vestige/athenaeum)
-"Z" = (
-/obj/machinery/light/broken/directional/north,
+"aJ" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/vestige/athenaeum)
+"aK" = (
+/obj/structure/girder/displaced,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aL" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aM" = (
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aN" = (
+/obj/structure/bookcase,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aO" = (
+/obj/item/trash/candle,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aP" = (
+/obj/structure/bookcase/random/nonfiction,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aQ" = (
+/obj/structure/bookcase/random/fiction,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aR" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aS" = (
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aT" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aU" = (
+/obj/item/kirbyplants/random,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aV" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aW" = (
+/obj/effect/turf_decal/caution{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aX" = (
+/obj/structure/bookcase/random,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aY" = (
+/obj/effect/spawner/structure/window/reinforced/tinted,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"aZ" = (
+/obj/machinery/door/poddoor{
+	name = "emergency bulkhead"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"bb" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "unfinished transcription";
+	default_raw_text = "Copy-work, cycle 311. First Laws, line forty. The price is flesh. The price is flesh. The price is flesh. The price is fle";
+	pixel_y = 3
+	},
+/obj/item/pen/fountain{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"cp" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 2;
+	pixel_y = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"cv" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"cA" = (
+/obj/structure/table/wood,
+/obj/item/book/random{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -5;
+	pixel_y = -1
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ef" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ew" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"eP" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"fk" = (
+/obj/item/trash/candle{
+	pixel_x = -2;
+	pixel_y = 3
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"gf" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/obj/effect/decal/remains/human,
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"hw" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"hD" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/paper{
+	name = "appointment ledger";
+	default_raw_text = "The Magister sees no one during recital hours. The Magister sees no one after recital hours. Should the recital conclude early, the Magister will see everyone at once.";
+	pixel_y = 4
+	},
+/obj/item/trash/candle{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"if" = (
+/obj/item/trash/candle{
+	pixel_x = 3
+	},
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ju" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"jM" = (
+/obj/structure/rack,
+/obj/item/paper_bin{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/paper_bin{
+	pixel_x = 4
+	},
+/obj/item/book/random{
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"jY" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash/large,
+/obj/item/stack/sheet/mineral/wood{
+	amount = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ku" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"kP" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = -1
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"kX" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"lq" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"mX" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"nb" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"nR" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"nV" = (
+/obj/effect/spawner/random/structure/chair_flipped,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"pb" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"pe" = (
+/obj/structure/bookcase,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"qj" = (
+/obj/structure/table/wood,
+/obj/item/paper/crumpled{
+	name = "margin note";
+	default_raw_text = "He recites in the reading room after lights-out. Eight syllables, then the silence where the ninth should live. Last night the silence was shorter. I have started sleeping in my suit.";
+	pixel_y = 3
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"qv" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"qV" = (
+/obj/item/clothing/head/wizard{
+	name = "the Magister's hat";
+	desc = "Knocked clean off. The brim is singed in a perfect circle."
+	},
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"sj" = (
+/obj/structure/table/wood,
+/obj/item/book/random{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/clothing/glasses/regular{
+	name = "abandoned reading glasses";
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"sX" = (
+/obj/item/shard,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"tF" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"tQ" = (
+/mob/living/basic/vestige_patron/magister{
+	dir = 8
+	},
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash/large,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ui" = (
+/obj/structure/bookcase/random/reference,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"uJ" = (
+/obj/effect/decal/remains/human,
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"vB" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 1;
+	pixel_y = 1
+	},
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"vU" = (
+/obj/structure/bookcase/random,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ww" = (
+/obj/effect/spawner/random/structure/chair_flipped,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"xx" = (
+/obj/structure/table/wood/fancy/purple,
+/obj/item/paper{
+	name = "the day's assignments";
+	default_raw_text = "Forty lines each of First Laws by supper. Master Veyric reminds the hall that a cramped hand is cheap tuition, and that the Magister pays his own fees in a coin the rest of us should hope never to mint.";
+	pixel_y = 4
+	},
+/obj/item/pen/fountain{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"xP" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"yZ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"zg" = (
+/obj/machinery/light/broken/directional/east,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Ac" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"BX" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"DG" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/paper/crumpled{
+	name = "the last page";
+	default_raw_text = "The word has nine syllables. The first eight are transcription. The ninth is pronounced by the speaker's own substance, which is why it appears in no book, including this one. My master wrote that only the humble survive the ninth syllable, and I have copied his warning here in full, as instructed, before my recital. I am confident. I have practiced eight of the nine.";
+	pixel_y = 3
+	},
+/obj/item/pen/fountain{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/obj/effect/mapping_helpers/burnt_floor,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Ei" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Fq" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"FE" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	pixel_x = -2;
+	pixel_y = 3
+	},
+/obj/item/pen{
+	pixel_x = 5;
+	pixel_y = -1
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Gw" = (
+/obj/structure/fireplace,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"JU" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"KN" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 2;
+	pixel_y = 3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Le" = (
+/obj/machinery/light/broken/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"LJ" = (
+/obj/structure/bookcase,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"MG" = (
+/obj/item/paper{
+	name = "a dusted card";
+	default_raw_text = "Shelf inventory, cycle four-hundred-something. Intact. Dusted. Alphabetized. Nobody has dusted it. Nobody is left to alphabetize. Do not reshelve these books, do not borrow them, and do not ask the obvious question. The ash remembers being a library, and this shelf is what it remembers best."
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"MQ" = (
+/obj/structure/table/wood,
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Nj" = (
+/obj/item/trash/candle{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"NN" = (
+/obj/structure/bookcase,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"NS" = (
+/obj/structure/bookcase/random,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Oz" = (
+/obj/machinery/light/small/broken/directional/south,
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Pw" = (
+/obj/structure/closet/crate/wooden{
+	name = "manuscript crate"
+	},
+/obj/item/book/random,
+/obj/item/book/random,
+/obj/item/book/random,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"PI" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/paper{
+	pixel_x = 3;
+	pixel_y = -1
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"PY" = (
+/obj/effect/decal/remains/human,
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash/large,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Rp" = (
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"RI" = (
+/obj/structure/chair/comfy/brown{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Sq" = (
+/obj/effect/decal/remains/human,
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash/large,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"TT" = (
+/obj/structure/bookcase,
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"TX" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Us" = (
+/obj/item/staff{
+	name = "the Magister's staff";
+	desc = "Dropped mid-gesture and never picked up."
+	},
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Vf" = (
+/obj/item/trash/candle{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"VG" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"VW" = (
+/obj/structure/table/wood,
+/obj/item/trash/candle{
+	pixel_y = 3
+	},
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Wg" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash/large,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Xe" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash/large,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Yb" = (
+/obj/structure/table/wood,
+/obj/item/trash/candle{
+	pixel_y = 4
+	},
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"Yh" = (
+/obj/item/book/random,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ZG" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/wine{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 5;
+	pixel_y = 1
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
+"ZR" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/athenaeum)
 
 (1,1,1) = {"
-U
-U
-U
-U
-U
-U
-U
-U
-U
-U
-U
-U
-U
-U
-U
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
 "}
 (2,1,1) = {"
-U
-U
-U
-U
-U
-U
-K
-k
-q
-U
-U
-U
-U
-U
-U
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
 "}
 (3,1,1) = {"
-U
-U
-U
-U
-U
-U
-K
-t
-K
-U
-U
-U
-U
-U
-U
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+aa
+aY
+aa
+au
+aa
+aY
+aa
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
 "}
 (4,1,1) = {"
-U
-K
-K
-K
-j
-K
-K
-R
-K
-K
-j
-K
-K
-K
-U
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+ad
+aV
+an
+ar
+aT
+aJ
+aU
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
 "}
 (5,1,1) = {"
-U
-K
-V
-H
-z
-L
-z
-H
-z
-L
-z
-H
-V
-K
-U
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+ad
+aq
+aT
+aI
+aT
+aV
+aq
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
 "}
 (6,1,1) = {"
-U
-K
-F
-z
-F
-F
-z
-z
-z
-F
-F
-z
-F
-K
-U
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aH
+ad
+aV
+aq
+aV
+aq
+ap
+aw
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
 "}
 (7,1,1) = {"
-U
-K
-Z
-L
-z
-z
-B
-z
-z
-z
-L
-z
-z
-K
-U
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+aV
+ap
+av
+am
+aV
+aq
+aV
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
 "}
 (8,1,1) = {"
-U
-K
-F
-z
-F
-F
-z
-z
-L
-F
-F
-B
-F
-K
-U
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+aR
+aq
+at
+aq
+aV
+aV
+ap
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
 "}
 (9,1,1) = {"
-U
-K
-L
-z
-z
-H
-L
-o
-z
-z
-z
-z
-G
-K
-U
+ai
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aF
+ah
+ah
+ay
+ah
+aF
+ah
+aa
+aa
+aa
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
 "}
 (10,1,1) = {"
-U
-K
-F
-o
-F
-F
-o
-m
-o
-F
-F
-z
-F
-K
-U
+ai
+aa
+Ac
+qv
+Le
+aM
+qv
+qv
+ah
+aE
+aC
+aq
+aV
+af
+aV
+aV
+af
+aq
+aV
+aq
+aq
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
 "}
 (11,1,1) = {"
-U
-K
-M
-H
-o
-m
-m
-m
-m
-m
-o
-o
-o
-K
-U
+ai
+aY
+qv
+sj
+Ei
+nb
+qj
+aM
+ah
+aV
+aQ
+aX
+aP
+aX
+as
+aV
+aX
+aQ
+aX
+aP
+aV
+aa
+aa
+aa
+aH
+aa
+aa
+aa
+aa
+ai
 "}
 (12,1,1) = {"
-U
-K
-d
-d
-d
-O
-d
-f
-d
-O
-d
-d
-d
-K
-U
+ai
+aY
+aM
+ZG
+qv
+nb
+cA
+qv
+aF
+al
+aV
+aV
+aq
+aV
+aV
+aV
+aV
+as
+aq
+aV
+aw
+ah
+jM
+aV
+ap
+xx
+JU
+aV
+aa
+ai
 "}
 (13,1,1) = {"
-U
-K
-T
-a
-a
-a
-a
-y
-a
-a
-a
-a
-w
-K
-U
+ai
+aY
+qv
+aM
+yZ
+Yh
+yZ
+yZ
+ah
+aV
+aX
+aP
+aX
+aN
+ae
+ae
+aP
+aX
+aN
+aX
+aq
+ah
+Pw
+aq
+aV
+aq
+aT
+aT
+aa
+ai
 "}
 (14,1,1) = {"
-U
-K
-a
-a
-a
-T
-a
-C
-a
-T
-a
-T
-T
-K
-U
+ai
+aa
+aM
+RI
+yZ
+yZ
+aM
+qv
+ah
+aq
+aq
+ap
+aV
+ap
+ae
+ae
+aV
+aq
+ap
+ap
+aq
+ao
+aq
+aV
+aq
+aV
+aL
+aW
+ab
+ai
 "}
 (15,1,1) = {"
-U
-J
-a
-T
-a
-a
-y
-E
-y
-a
-a
-a
-a
-J
-U
+ai
+aa
+ew
+Rp
+kP
+yZ
+qv
+yZ
+ah
+aV
+aX
+aN
+aA
+aX
+ae
+ae
+aX
+aN
+aX
+aX
+aV
+ah
+aV
+ap
+aV
+ap
+aT
+an
+aa
+ai
 "}
 (16,1,1) = {"
-U
-J
-a
-a
-a
-v
-v
-r
-v
-v
-a
-a
-a
-J
-U
+ai
+aa
+Gw
+Rp
+Rp
+yZ
+yZ
+aM
+ag
+aV
+ap
+ae
+ap
+ae
+ae
+ae
+ap
+ap
+ae
+ap
+ap
+ah
+mX
+aV
+FE
+JU
+ap
+aq
+aa
+ai
 "}
 (17,1,1) = {"
-U
-K
-n
-y
-y
-y
-y
-v
-y
-y
-y
-y
-P
-K
-U
+ai
+aY
+yZ
+hw
+hw
+TX
+BX
+yZ
+ah
+ap
+NN
+aX
+NN
+NN
+ef
+ef
+NN
+aX
+NN
+aX
+ap
+ah
+ap
+ap
+PI
+JU
+aV
+as
+aa
+ai
 "}
 (18,1,1) = {"
-U
-K
-T
-a
-p
-a
-a
-y
-a
-a
-a
-a
-a
-K
-U
+ai
+aY
+BX
+Sq
+Fq
+BX
+BX
+BX
+ah
+al
+eP
+eP
+ae
+eP
+ef
+ef
+ae
+eP
+Nj
+ae
+aw
+ah
+ap
+ae
+ap
+ap
+ae
+ap
+aY
+ai
 "}
 (19,1,1) = {"
-U
-K
-w
-a
-a
-T
-a
-T
-a
-T
-a
-T
-X
-K
-U
+ai
+aY
+Fq
+BX
+ww
+Fq
+Fq
+Fq
+ah
+eP
+TT
+NN
+NN
+TT
+ef
+ef
+TT
+NN
+TT
+NN
+eP
+aF
+ae
+ap
+FE
+JU
+ap
+ae
+aY
+ai
 "}
 (20,1,1) = {"
-U
-K
-K
-K
-K
-j
-K
-K
-K
-j
-K
-K
-K
-K
-U
+ai
+aa
+BX
+Fq
+BX
+Yb
+nR
+BX
+ah
+eP
+aq
+MG
+aq
+ef
+PY
+ef
+eP
+eP
+ef
+eP
+eP
+ah
+eP
+eP
+KN
+JU
+eP
+eP
+aa
+ai
 "}
 (21,1,1) = {"
-U
-U
-U
-U
-U
-U
-U
-U
-U
-U
-U
-U
-U
-U
-U
+ai
+aH
+ew
+BX
+Fq
+MQ
+Fq
+Fq
+ah
+ef
+NS
+NS
+NS
+TT
+Wg
+Wg
+TT
+TT
+TT
+TT
+ef
+ao
+eP
+ef
+eP
+ef
+eP
+fk
+aa
+ai
+"}
+(22,1,1) = {"
+ai
+aa
+ZR
+Fq
+BX
+Fq
+Xe
+Fq
+ah
+eP
+aq
+cp
+aq
+ef
+Wg
+Wg
+ef
+ef
+eP
+ef
+ef
+ah
+eP
+eP
+bb
+gf
+ef
+ef
+aY
+ai
+"}
+(23,1,1) = {"
+ai
+aa
+aa
+aa
+aH
+aB
+aa
+aa
+aa
+ef
+TT
+jY
+TT
+TT
+Wg
+Wg
+TT
+jY
+TT
+TT
+Wg
+ah
+ef
+ef
+VW
+nV
+ef
+eP
+aY
+ai
+"}
+(24,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+Wg
+ef
+ef
+if
+ef
+Wg
+Wg
+Wg
+ef
+uJ
+ef
+Wg
+ah
+tF
+zg
+ef
+eP
+uJ
+ef
+aa
+ai
+"}
+(25,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+aa
+aB
+aH
+aa
+ah
+az
+az
+ah
+aa
+aH
+aB
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+ai
+"}
+(26,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+Ac
+Xe
+Fq
+ku
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+"}
+(27,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aH
+hD
+Xe
+Xe
+Oz
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+"}
+(28,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+nR
+Fq
+Fq
+BX
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+"}
+(29,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+aa
+aa
+aa
+aa
+ak
+ak
+aa
+aa
+aa
+aa
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+"}
+(30,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+ui
+pb
+ax
+pb
+pb
+pb
+pb
+xP
+pb
+vU
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+"}
+(31,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+pe
+ax
+xP
+vB
+ax
+vB
+ax
+vB
+pb
+pe
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+"}
+(32,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+pb
+xP
+pb
+ax
+lq
+DG
+lq
+ax
+ax
+pb
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+"}
+(33,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+cv
+xP
+xP
+vB
+qV
+tQ
+Us
+vB
+xP
+ju
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+"}
+(34,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+pb
+xP
+pb
+ax
+lq
+lq
+lq
+ax
+ax
+pb
+aB
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+"}
+(35,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aB
+LJ
+ax
+xP
+vB
+ax
+vB
+ax
+vB
+pb
+Vf
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+"}
+(36,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+kX
+pb
+VG
+pb
+sX
+xP
+pb
+xP
+ax
+xP
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+"}
+(37,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aa
+aa
+aY
+aY
+aY
+aZ
+aZ
+aY
+aY
+aY
+aa
+aa
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+"}
+(38,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aS
+aG
+ac
+aD
+aj
+aK
+aG
+aS
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+"}
+(39,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aS
+aG
+ai
+ai
+aK
+aD
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+"}
+(40,1,1) = {"
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+aO
+ai
+ai
+aK
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
 "}

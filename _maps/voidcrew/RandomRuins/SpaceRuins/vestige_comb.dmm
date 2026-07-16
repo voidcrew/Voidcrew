@@ -1,0 +1,1743 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/cable,
+/obj/machinery/power/smes/magical{
+	name = "barge power bank"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"ab" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"ac" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"ad" = (
+/obj/structure/table,
+/obj/item/paper{
+	name = "receiving manifest, shift 44";
+	default_raw_text = "Shift 44: eleven crates low-grade iron, two crates silver. Deck boss says the scratching in the ducts is the conveyor belt. It is not the conveyor belt.";
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"ae" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/comb)
+"af" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"ag" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"ah" = (
+/obj/effect/decal/remains/human,
+/obj/item/gun/energy/recharge/kinetic_accelerator{
+	pixel_x = 5;
+	pixel_y = -4
+	},
+/obj/item/paper/crumpled{
+	name = "scrawled note";
+	default_raw_text = "They come in the dark between the lights. Vasquez swears the eggs hatch faster than we can burn them. The Company says hold the bay. The Company is not here."
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"ai" = (
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"aj" = (
+/obj/structure/alien/weeds,
+/obj/effect/mapping_helpers/burnt_floor,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"ak" = (
+/obj/structure/alien/resin/membrane,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"al" = (
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_y = 3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"am" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/storage/bag/ore,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"an" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"ao" = (
+/obj/structure/barricade/wooden,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"ap" = (
+/obj/machinery/light/warm/dim/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aq" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"ar" = (
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"as" = (
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"at" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/comb)
+"au" = (
+/obj/machinery/light/small/broken/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"av" = (
+/obj/structure/grille/broken,
+/obj/item/shard,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"aw" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"ax" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/remains/xeno,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"ay" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/shreds,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"az" = (
+/obj/item/ammo_casing/spent{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/obj/item/ammo_casing/spent{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aA" = (
+/obj/effect/turf_decal/caution{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aB" = (
+/obj/structure/alien/weeds,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aC" = (
+/obj/structure/ore_box,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aD" = (
+/obj/structure/barricade/wooden/crude,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aF" = (
+/obj/structure/sign/warning/biohazard,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/comb)
+"aG" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aH" = (
+/obj/effect/decal/remains/human,
+/obj/item/flashlight/glowstick{
+	pixel_x = -4;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aI" = (
+/obj/structure/cable,
+/obj/effect/mapping_helpers/apc/full_charge,
+/obj/machinery/power/apc/auto_name/directional/north,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aJ" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/pickaxe,
+/obj/item/pickaxe/rusted,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aK" = (
+/turf/closed/wall/r_wall/rust,
+/area/ruin/space/has_grav/vestige/comb)
+"aL" = (
+/obj/effect/spawner/structure/window/reinforced/tinted,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"aM" = (
+/obj/structure/closet/secure_closet/miner/unlocked,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aN" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"aO" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/shreds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"aP" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/obj/machinery/light/broken/directional/south,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aQ" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aR" = (
+/obj/machinery/door/airlock/mining{
+	name = "Receiving Bay"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aS" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Fore Hold - DEPRESSURIZED"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"aT" = (
+/turf/closed/wall/rust,
+/area/ruin/space/has_grav/vestige/comb)
+"aU" = (
+/obj/structure/barricade/wooden,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aV" = (
+/turf/template_noop,
+/area/template_noop)
+"aW" = (
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"aX" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/comb)
+"aY" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/comb)
+"aZ" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/comb)
+"bp" = (
+/obj/structure/table,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 4
+	},
+/obj/item/wrench{
+	pixel_x = -3;
+	pixel_y = -4
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"bD" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"ce" = (
+/obj/structure/alien/weeds,
+/obj/structure/alien/egg/fake,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"fo" = (
+/obj/machinery/suit_storage_unit{
+	name = "suit storage unit";
+	desc = "An industrial unit made to hold environmental suits. The rack inside this one is empty."
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"gO" = (
+/obj/item/clothing/mask/facehugger/dead,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"hl" = (
+/obj/structure/alien/weeds,
+/obj/item/storage/bag/ore{
+	pixel_y = -2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"hp" = (
+/obj/structure/table,
+/obj/item/paper{
+	name = "vent order - FINAL";
+	default_raw_text = "Charge on plate seven. When she blows, the fore hold goes to void - eggs, crawlers, all of it. Three suits in storage. Dig in behind the receiving line and wait for the relief run. If we are not at the dock, do not come looking.";
+	pixel_y = 4
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"hz" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/remains/xeno/larva,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"ja" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"ko" = (
+/obj/machinery/light/broken/directional/south,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"kY" = (
+/obj/effect/decal/remains/human,
+/obj/item/crowbar/large{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/item/clothing/mask/breath{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"lM" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"no" = (
+/obj/effect/decal/cleanable/rubble,
+/obj/item/stack/rods{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"nL" = (
+/obj/structure/alien/weeds,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"pm" = (
+/obj/structure/alien/egg/burst,
+/obj/structure/alien/weeds,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"qe" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 1
+	},
+/obj/machinery/light/red/dim/directional/north,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"qk" = (
+/obj/structure/alien/weeds,
+/obj/item/stack/ore/iron{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/item/stack/ore/iron{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"sa" = (
+/obj/structure/alien/weeds,
+/obj/structure/alien/egg/burst,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"sb" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"tG" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"uh" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"ul" = (
+/obj/structure/bed/nest,
+/obj/effect/decal/cleanable/shreds,
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"ve" = (
+/obj/structure/closet/crate,
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"vX" = (
+/obj/structure/alien/weeds,
+/obj/structure/bed/nest,
+/mob/living/basic/vestige_patron/dowager{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"wI" = (
+/obj/structure/bed/nest,
+/obj/effect/decal/remains/human,
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"wW" = (
+/obj/item/clothing/mask/facehugger/dead,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"xg" = (
+/obj/structure/alien/egg/burst,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"zw" = (
+/obj/structure/alien/weeds,
+/obj/machinery/light/red/dim/directional/south,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"zG" = (
+/obj/machinery/light/small/broken/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"zK" = (
+/obj/structure/bed/nest,
+/obj/effect/decal/remains/human,
+/obj/item/clothing/head/utility/hardhat{
+	name = "cracked hardhat";
+	desc = "A miner's hardhat. Something has punched clean through the crown of it.";
+	pixel_y = 5
+	},
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"Ar" = (
+/obj/structure/alien/weeds,
+/obj/effect/decal/remains/xeno,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"AO" = (
+/obj/item/shard{
+	pixel_x = 2
+	},
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"Bx" = (
+/obj/structure/rack,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath{
+	pixel_x = 3;
+	pixel_y = -3
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = -4
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"Ci" = (
+/obj/structure/marker_beacon{
+	picked_color = "Burgundy"
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"Ck" = (
+/obj/structure/bed/nest,
+/obj/effect/decal/remains/human,
+/obj/item/flashlight/glowstick{
+	pixel_x = -4;
+	pixel_y = -4
+	},
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"CA" = (
+/obj/structure/bed/nest,
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"EC" = (
+/obj/structure/alien/weeds,
+/obj/structure/marker_beacon{
+	picked_color = "Jade"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"EQ" = (
+/obj/structure/alien/resin/wall,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"Fi" = (
+/obj/structure/girder,
+/obj/effect/decal/cleanable/rubble,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"GF" = (
+/obj/structure/alien/weeds,
+/obj/machinery/light/floor/broken,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"HW" = (
+/obj/structure/alien/egg/burst,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"Kb" = (
+/obj/structure/marker_beacon{
+	picked_color = "Teal"
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"Kj" = (
+/obj/structure/bed/nest,
+/obj/effect/decal/remains/human,
+/obj/item/photo/old{
+	name = "cracked locket photograph";
+	desc = "A tiny photograph pried out of a locket, worn soft at the edges. The skeletal hand beneath it is still curled around where the locket used to sit.";
+	pixel_y = 3
+	},
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"LW" = (
+/obj/structure/alien/weeds,
+/obj/item/stack/sheet/bone{
+	pixel_x = 3;
+	pixel_y = -1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"MJ" = (
+/obj/structure/bed/nest,
+/obj/effect/decal/remains/human,
+/obj/item/toy/plush/carpplushie{
+	name = "soot-stained carp plushie";
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"MZ" = (
+/obj/effect/turf_decal/caution{
+	dir = 1
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"Oe" = (
+/obj/effect/decal/cleanable/shreds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"Qy" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"QO" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/mapping_helpers/burnt_floor,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"SZ" = (
+/obj/item/stack/rods{
+	pixel_x = -4
+	},
+/obj/item/shard{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"Va" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"Vh" = (
+/obj/structure/bed/nest,
+/obj/effect/decal/remains/human,
+/obj/item/mining_scanner{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/structure/alien/weeds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"VE" = (
+/obj/effect/decal/remains/human,
+/obj/item/pickaxe/rusted{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"VT" = (
+/obj/effect/decal/remains/xeno,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"WI" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"XP" = (
+/obj/structure/alien/weeds,
+/obj/structure/marker_beacon{
+	picked_color = "Teal"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/comb)
+"Yc" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/shreds,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/comb)
+"YC" = (
+/obj/machinery/suit_storage_unit/mining,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+"Zl" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/comb)
+
+(1,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}
+(2,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+ae
+aN
+ae
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}
+(3,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+ae
+aq
+ae
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}
+(4,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+ae
+ae
+ae
+aL
+ae
+ae
+ac
+ae
+ae
+aL
+ae
+ae
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}
+(5,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+ae
+aC
+aW
+as
+as
+aE
+aA
+as
+au
+aE
+ad
+ae
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}
+(6,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+ae
+aJ
+aW
+aE
+aE
+as
+as
+aE
+as
+as
+al
+ae
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}
+(7,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+ae
+ap
+as
+aG
+as
+aG
+aE
+as
+aG
+as
+aP
+at
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}
+(8,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aL
+aM
+aE
+as
+as
+as
+aG
+as
+as
+aQ
+aC
+ae
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}
+(9,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+ae
+aM
+as
+aH
+aE
+as
+as
+aE
+as
+aQ
+am
+ae
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}
+(10,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+ae
+aE
+aG
+as
+as
+az
+ah
+az
+as
+aE
+aE
+ae
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}
+(11,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+ae
+aI
+as
+aE
+aD
+az
+ao
+az
+aU
+ab
+ag
+ae
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}
+(12,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+ae
+aa
+aE
+aB
+ax
+aj
+ay
+af
+aB
+aB
+aB
+ae
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}
+(13,1,1) = {"
+aV
+ae
+ae
+ae
+ae
+ae
+aK
+ae
+aY
+aX
+aY
+aY
+aY
+aR
+aF
+aY
+aT
+aY
+ae
+ae
+aK
+ae
+ae
+ae
+ae
+aV
+"}
+(14,1,1) = {"
+aV
+ae
+Va
+ar
+YC
+YC
+fo
+Bx
+Va
+hp
+aY
+WI
+as
+aG
+as
+aw
+ak
+ai
+Qy
+zG
+ai
+qk
+ve
+Qy
+ae
+aV
+"}
+(15,1,1) = {"
+aV
+ae
+ja
+Va
+ar
+Va
+ar
+ar
+Kb
+bp
+aY
+qe
+aE
+as
+aE
+bD
+aY
+an
+Qy
+ai
+Ar
+qk
+EQ
+EQ
+ae
+aV
+"}
+(16,1,1) = {"
+aV
+aK
+Va
+ar
+Va
+ar
+ar
+Va
+ar
+Va
+aT
+WI
+as
+uh
+as
+aw
+aT
+EQ
+EQ
+Qy
+ai
+Qy
+ai
+zK
+ae
+aV
+"}
+(17,1,1) = {"
+aV
+ae
+ar
+Ci
+ar
+ar
+Va
+ar
+Va
+ar
+aY
+sb
+Yc
+uh
+aB
+aw
+aY
+wI
+ak
+ai
+Qy
+ai
+EQ
+EQ
+aL
+aV
+"}
+(18,1,1) = {"
+aV
+av
+Fi
+Zl
+Va
+ar
+ar
+ar
+ar
+Va
+aY
+as
+aB
+aE
+EQ
+EQ
+aF
+wI
+ak
+Oe
+ai
+Qy
+ai
+Ck
+ae
+aV
+"}
+(19,1,1) = {"
+aV
+av
+no
+QO
+ar
+Va
+ar
+ar
+ar
+ar
+aZ
+EQ
+EQ
+wW
+as
+xg
+aY
+EQ
+EQ
+ai
+ai
+ai
+EQ
+EQ
+ae
+aV
+"}
+(20,1,1) = {"
+aV
+av
+SZ
+lM
+kY
+ar
+Va
+ar
+ar
+MZ
+aS
+aE
+aE
+aB
+aE
+aE
+aY
+Vh
+ai
+Qy
+aO
+ai
+ak
+Kj
+aK
+aV
+"}
+(21,1,1) = {"
+aV
+av
+Fi
+QO
+Va
+ar
+ar
+Va
+ar
+ar
+aZ
+aE
+aB
+as
+aB
+aE
+ai
+hl
+tG
+ai
+Qy
+Qy
+EQ
+EQ
+ae
+aV
+"}
+(22,1,1) = {"
+aV
+av
+AO
+lM
+gO
+ar
+ar
+nL
+Va
+ar
+aY
+ai
+aO
+ai
+Qy
+zw
+aY
+EQ
+EQ
+Ar
+ai
+ai
+Oe
+ul
+at
+aV
+"}
+(23,1,1) = {"
+aV
+ae
+Va
+ar
+ar
+nL
+nL
+nL
+nL
+Va
+aT
+ai
+Qy
+ai
+EQ
+EQ
+aT
+CA
+ai
+ai
+ai
+Qy
+EQ
+EQ
+ae
+aV
+"}
+(24,1,1) = {"
+aV
+aK
+ar
+Va
+Va
+ar
+nL
+pm
+ar
+nL
+aY
+ce
+ai
+XP
+ai
+Qy
+aY
+hz
+ai
+Qy
+Ar
+ai
+ai
+MJ
+ae
+aV
+"}
+(25,1,1) = {"
+aV
+ae
+VT
+ar
+HW
+nL
+Va
+nL
+nL
+ar
+aY
+EQ
+EQ
+ai
+an
+ai
+aY
+EQ
+EQ
+ai
+Qy
+ai
+EQ
+EQ
+ae
+aV
+"}
+(26,1,1) = {"
+aV
+ae
+Va
+ar
+ar
+nL
+pm
+ar
+nL
+ko
+aY
+ai
+an
+ai
+ai
+aO
+aY
+ai
+Qy
+ai
+ai
+Qy
+Qy
+ai
+ae
+aV
+"}
+(27,1,1) = {"
+aV
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+aY
+ak
+aO
+ak
+aY
+aY
+aY
+aY
+aF
+aY
+aY
+aY
+aT
+ae
+aV
+"}
+(28,1,1) = {"
+aV
+ae
+EQ
+EQ
+ai
+ai
+ai
+an
+ai
+ai
+ai
+Qy
+ai
+ai
+Qy
+ai
+ai
+ai
+an
+ai
+ai
+ai
+EQ
+EQ
+ae
+aV
+"}
+(29,1,1) = {"
+aV
+ae
+EQ
+ai
+ce
+Qy
+ce
+ai
+ce
+Qy
+ak
+ai
+Ar
+EC
+VE
+ai
+ak
+ce
+ai
+ce
+Qy
+sa
+ai
+EQ
+ae
+aV
+"}
+(30,1,1) = {"
+aV
+aK
+ai
+ai
+ce
+ai
+ce
+ai
+sa
+GF
+ak
+ai
+ai
+ai
+Ar
+ai
+ak
+ce
+LW
+ce
+ai
+ce
+ai
+Qy
+aK
+aV
+"}
+(31,1,1) = {"
+aV
+at
+ai
+ai
+sa
+ai
+ce
+ai
+ce
+ai
+Ar
+ai
+an
+hz
+ai
+an
+Ar
+sa
+ai
+ce
+GF
+ce
+ai
+ai
+at
+aV
+"}
+(32,1,1) = {"
+aV
+ae
+Qy
+ai
+ce
+an
+sa
+LW
+ce
+ai
+ai
+ai
+ai
+vX
+ai
+ai
+ai
+ce
+Qy
+ce
+ai
+ce
+ai
+ai
+ae
+aV
+"}
+(33,1,1) = {"
+aV
+ae
+ai
+Qy
+ce
+ai
+ce
+ai
+ce
+an
+ai
+an
+ai
+ai
+ai
+an
+ai
+ce
+ai
+sa
+ai
+ce
+ai
+ai
+ae
+aV
+"}
+(34,1,1) = {"
+aV
+ae
+EQ
+EQ
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+ai
+EQ
+EQ
+EQ
+ai
+ai
+ai
+ai
+ai
+an
+ai
+EQ
+EQ
+ae
+aV
+"}
+(35,1,1) = {"
+aV
+ae
+ae
+ae
+aK
+at
+ae
+ae
+aL
+ae
+ae
+ae
+ae
+at
+ae
+ae
+ae
+aL
+aK
+ae
+ae
+at
+ae
+ae
+ae
+aV
+"}
+(36,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}
+(37,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}
+(38,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+"}

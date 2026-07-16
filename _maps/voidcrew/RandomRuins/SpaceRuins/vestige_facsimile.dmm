@@ -1,0 +1,1902 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/machinery/door/airlock/wood/glass{
+	name = "The Dining Salon"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ab" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ac" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Service Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ad" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ae" = (
+/obj/machinery/door/airlock/wood/glass{
+	name = "The Grand Parlor"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"af" = (
+/obj/structure/table/wood/fancy,
+/obj/item/paper{
+	name = "guest manifest";
+	default_raw_text = "S.L.V. ONDINE - GRAND PROMENADE DECK. Embarked at Meridian Gate: 40 guests, 12 crew. Disembarked: 0. Currently aboard: 52. Notes: all guests are present. All guests are accounted for. All guests are still aboard.";
+	desc = "The last line has been rewritten several times, each time in slightly better handwriting.";
+	pixel_y = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ag" = (
+/turf/template_noop,
+/area/template_noop)
+"ah" = (
+/obj/item/kirbyplants/organic/plant24,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ai" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aj" = (
+/obj/effect/turf_decal/plaque,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ak" = (
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"al" = (
+/obj/structure/mirror/directional/east{
+	name = "hallway mirror";
+	desc = "A full-length mirror at the end of the corridor. Your reflection arrives half a step late, but only the once."
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/facsimile)
+"am" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"an" = (
+/obj/structure/chair/comfy/brown{
+	dir = 1
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ao" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ap" = (
+/obj/structure/sign/picture_frame/showroom/one{
+	name = "promenade painting";
+	desc = "Hung dead level. Its twin hangs exactly nine paces away, dead level."
+	},
+/turf/closed/wall/mineral/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aq" = (
+/obj/structure/table/wood/fancy,
+/obj/structure/desk_bell{
+	pixel_x = -4;
+	pixel_y = 2;
+	name = "purser bell";
+	desc = "Polished to a mirror shine. Ring for service. Something will come."
+	},
+/obj/item/pen/fountain{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ar" = (
+/obj/machinery/door/airlock/wood{
+	name = "Stateroom Three"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"as" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/facsimile)
+"at" = (
+/obj/structure/sign/picture_frame/showroom/three{
+	name = "portrait of the owner";
+	desc = "The plaque says this portrait is one of a kind. So does the other one."
+	},
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/facsimile)
+"au" = (
+/obj/structure/table/wood/fancy,
+/obj/item/toy/cards/deck{
+	pixel_y = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"av" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aw" = (
+/obj/structure/table/wood/fancy,
+/obj/item/reagent_containers/cup/glass/bottle/champagne{
+	pixel_x = 2;
+	pixel_y = 6
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ax" = (
+/obj/structure/musician/piano{
+	dir = 4
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ay" = (
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"az" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Service Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aA" = (
+/obj/structure/sign/picture_frame/showroom/one{
+	name = "seascape";
+	desc = "Two identical seascapes. The waves are in the same place in both."
+	},
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aB" = (
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aC" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Promenade Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aD" = (
+/obj/item/kirbyplants/organic/plant23,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aE" = (
+/obj/structure/sign/picture_frame/showroom/four{
+	name = "spare stateroom print";
+	desc = "Storerooms do not need paintings. It has been hung anyway, dead level, because there must be two of everything."
+	},
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aF" = (
+/obj/structure/sign/picture_frame/showroom/two{
+	name = "promenade painting";
+	desc = "Hung dead level. Its twin hangs exactly nine paces away, dead level."
+	},
+/turf/closed/wall/mineral/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aG" = (
+/turf/closed/wall/mineral/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aH" = (
+/obj/effect/turf_decal/caution{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aI" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aJ" = (
+/obj/item/kirbyplants/organic/plant2,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aK" = (
+/obj/structure/bookcase/random/fiction,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aL" = (
+/obj/structure/table/wood/fancy,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aM" = (
+/obj/structure/chair/sofa/corp{
+	dir = 2;
+	name = "promenade bench";
+	desc = "It faces its twin across the runner. Neither has ever been moved."
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aN" = (
+/obj/item/kirbyplants/organic/plant21,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aO" = (
+/obj/structure/chair/sofa/corp/right{
+	dir = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aP" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Promenade Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aQ" = (
+/obj/effect/spawner/structure/window/reinforced/tinted,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aR" = (
+/obj/structure/chair/sofa/corp{
+	dir = 1;
+	name = "promenade bench";
+	desc = "It faces its twin across the runner. Neither has ever been moved."
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aS" = (
+/obj/item/statuebust{
+	name = "bust of the shipwright";
+	desc = "Two of these were commissioned. Both are the original."
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aT" = (
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aU" = (
+/obj/machinery/door/airlock/wood{
+	name = "Inventory"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aV" = (
+/obj/machinery/door/airlock/wood{
+	name = "Service Pantry"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aW" = (
+/obj/machinery/door/airlock/wood{
+	name = "Guest Staterooms"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aX" = (
+/obj/item/kirbyplants/organic/plant21,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aY" = (
+/obj/structure/table/wood/fancy,
+/obj/item/flashlight/lamp/green{
+	pixel_y = 5
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"aZ" = (
+/obj/structure/sign/picture_frame/showroom/four{
+	name = "stateroom print";
+	desc = "A tasteful print of a seaside no one has ever visited. Every stateroom has the same one."
+	},
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/facsimile)
+"do" = (
+/obj/structure/table/wood/fancy,
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_x = -5;
+	pixel_y = 8
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 9;
+	pixel_y = 3
+	},
+/obj/item/paper{
+	name = "the day-log of the chief steward";
+	default_raw_text = "Day 1. Turndown complete by eight bells. Guests: 40. All contented. Day 6. Mr. Aury complimented the parlor. He said it looked exactly as he remembered. He said it twice, in the same voice, with the same pause. Day 11. Recount. Guests: 40. Chairs: 40. Day 15. The second Mrs. Vaillant is better at being Mrs. Vaillant than the first. We have quietly stopped seating the first. Day 19. Recount. Guests: 40. Chairs: 40. Guests: 40 chairs. Day 20. Duties for tonight: polish the brass. Lay the fires. Set the long table for twelve. Everything in its place. Everything in its place twice.";
+	desc = "The handwriting begins tired and human. By the final page it is perfect.";
+	pixel_x = -2;
+	pixel_y = -4
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ft" = (
+/obj/structure/table/wood/fancy,
+/obj/item/paper{
+	name = "dinner menu, twelve covers";
+	default_raw_text = "S.L.V. ONDINE - THE LONG DINNER. First course: consomme Ondine. Second course: consomme Ondine. Third course: consomme Ondine. Fourth course: consomme Ondine. Dessert: consomme Ondine. Wine pairing: the same wine. The kitchen regrets that substitutions are not possible. The kitchen regrets that nothing is ever different.";
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/bottle/wine{
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/obj/item/reagent_containers/cup/glass/bottle/wine{
+	pixel_x = -1;
+	pixel_y = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"gt" = (
+/obj/structure/chair/comfy/brown{
+	dir = 4;
+	name = "armchair";
+	desc = "Angled to face its twin precisely. The cushion is dented as if someone is sitting in it right now."
+	},
+/turf/open/floor/carpet/royalblue,
+/area/ruin/space/has_grav/vestige/facsimile)
+"gO" = (
+/obj/structure/table/wood/fancy,
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"hw" = (
+/obj/structure/dresser,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"jK" = (
+/obj/structure/rack,
+/obj/item/plate{
+	pixel_y = 2
+	},
+/obj/item/plate{
+	pixel_y = 5
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/facsimile)
+"jP" = (
+/obj/structure/table/wood/fancy,
+/obj/item/reagent_containers/cup/glass/bottle/whiskey{
+	pixel_x = -5;
+	pixel_y = 8
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 9;
+	pixel_y = 3
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"lM" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"lO" = (
+/obj/structure/table/wood/fancy,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ml" = (
+/obj/structure/closet/crate/wooden{
+	name = "spare settings"
+	},
+/obj/item/plate,
+/obj/item/plate,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/facsimile)
+"nd" = (
+/obj/structure/fireplace{
+	name = "parlor fireplace";
+	desc = "Swept, laid, and never lit. The fire irons are polished. So are the fire irons beside the other one."
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"ng" = (
+/obj/structure/table/wood/fancy,
+/obj/item/reagent_containers/cup/glass/bottle/champagne{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/glass/bottle/champagne{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"nt" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "stock count, in a very careful hand";
+	default_raw_text = "INVENTORY, PROMENADE DECK. Dinner plates: 40. Wine glasses: 40. Tea mugs: 40. Bed linens: 40. Candles: 40. Dining chairs: 40. Guests: 40. Nothing is missing. Nothing has ever been missing. Recount tomorrow. Recount every day until the numbers agree to stay.";
+	pixel_y = 4
+	},
+/obj/item/pen/fountain{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/facsimile)
+"og" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/cup/glass/bottle/wine{
+	pixel_x = -4
+	},
+/obj/item/reagent_containers/cup/glass/bottle/wine{
+	pixel_x = 4
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/facsimile)
+"pk" = (
+/obj/structure/chair/comfy/beige{
+	dir = 1;
+	desc = "It is facing the bed."
+	},
+/turf/open/floor/carpet/lone,
+/area/ruin/space/has_grav/vestige/facsimile)
+"qe" = (
+/obj/item/chair/wood{
+	name = "dining chair";
+	desc = "The only thing on this deck that is out of place. It has been left where it fell, which somehow feels deliberate.";
+	pixel_y = -2
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/facsimile)
+"uM" = (
+/turf/open/floor/carpet/lone,
+/area/ruin/space/has_grav/vestige/facsimile)
+"uW" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/facsimile)
+"vv" = (
+/obj/structure/table/wood/fancy,
+/obj/item/statuebust{
+	pixel_y = 6;
+	name = "bust of the owner";
+	desc = "Two of these were commissioned. Both are the original."
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"xh" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 4
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/facsimile)
+"yy" = (
+/obj/structure/rack,
+/obj/item/flashlight/flare/candle{
+	pixel_x = -4
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 4
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/facsimile)
+"yZ" = (
+/obj/item/kirbyplants/organic/plant22,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"zp" = (
+/obj/structure/bed{
+	dir = 8
+	},
+/obj/item/bedsheet/red{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"AI" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = -4
+	},
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = 4
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/facsimile)
+"Ew" = (
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/facsimile)
+"Fz" = (
+/obj/structure/mirror/directional/east,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"GZ" = (
+/obj/structure/chair/wood{
+	dir = 1;
+	name = "dining chair";
+	desc = "Pushed in to exactly the same depth as the others."
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/facsimile)
+"Ir" = (
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/item/bedsheet/red{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"Ju" = (
+/obj/item/storage/briefcase{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"Km" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_y = 6
+	},
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"Kn" = (
+/obj/structure/chair/wood{
+	dir = 2;
+	name = "dining chair";
+	desc = "Pushed in to exactly the same depth as the others."
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/facsimile)
+"LZ" = (
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/facsimile)
+"MM" = (
+/obj/machinery/power/smes/magical{
+	name = "liner power bank";
+	desc = "A high-capacity energy bank. The maintenance tag says it was last serviced yesterday. The tag says that every day."
+	},
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/facsimile)
+"Nf" = (
+/obj/structure/table/wood/fancy,
+/obj/item/plate,
+/obj/item/kitchen/fork{
+	pixel_x = -8
+	},
+/obj/item/knife/kitchen{
+	pixel_x = 8
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 7;
+	pixel_y = 9
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"Np" = (
+/obj/structure/musician/piano{
+	dir = 8
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"Nw" = (
+/mob/living/basic/vestige_patron/morph{
+	dir = 2
+	},
+/turf/open/floor/carpet/royalblue,
+/area/ruin/space/has_grav/vestige/facsimile)
+"NM" = (
+/obj/structure/table/wood/fancy,
+/obj/item/plate{
+	pixel_y = 2
+	},
+/obj/item/plate{
+	pixel_y = 5
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"QI" = (
+/turf/open/floor/carpet/royalblue,
+/area/ruin/space/has_grav/vestige/facsimile)
+"QP" = (
+/obj/item/kirbyplants/organic/plant3,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"Rp" = (
+/obj/structure/rack,
+/obj/item/bedsheet/red{
+	pixel_y = 4
+	},
+/obj/item/bedsheet/red{
+	pixel_y = 8
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/facsimile)
+"SO" = (
+/obj/structure/chair/comfy/brown{
+	dir = 8;
+	name = "armchair";
+	desc = "Angled to face its twin precisely. The cushion is dented as if someone is sitting in it right now."
+	},
+/turf/open/floor/carpet/royalblue,
+/area/ruin/space/has_grav/vestige/facsimile)
+"TK" = (
+/obj/structure/table/wood/fancy,
+/obj/item/plate,
+/obj/item/kitchen/fork{
+	pixel_x = -8
+	},
+/obj/item/knife/kitchen{
+	pixel_x = 8
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 7;
+	pixel_y = 9
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -3;
+	pixel_y = 12
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"Ub" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"Un" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"VN" = (
+/obj/structure/table/wood/fancy,
+/obj/item/flashlight/lamp{
+	pixel_y = 5
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"WB" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_y = 6
+	},
+/obj/item/paper{
+	name = "housekeeping card";
+	default_raw_text = "Stateroom Three has been made up. Stateroom Three has been made up. If a second card is found before the first, kindly do not mention it to the guest. The guest does not like to be told that there is a first.";
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+"WN" = (
+/obj/structure/chair/sofa/corp/left{
+	dir = 2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"Xw" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/facsimile)
+"Yu" = (
+/obj/structure/chair/wood{
+	dir = 8;
+	name = "dining chair";
+	desc = "Racked in perfect ranks with the others. The ranks face the door."
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/facsimile)
+
+(1,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+"}
+(2,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+aI
+aC
+aI
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+"}
+(3,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+aI
+ab
+aI
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+"}
+(4,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+aI
+aI
+aP
+aI
+aI
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+"}
+(5,1,1) = {"
+ag
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aS
+aB
+aS
+aI
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+"}
+(6,1,1) = {"
+ag
+aI
+aK
+ak
+aL
+aY
+ax
+aX
+ak
+ad
+aK
+ak
+aG
+am
+aB
+am
+aI
+aI
+aI
+aA
+aI
+aI
+aA
+aI
+aI
+aI
+ag
+ag
+"}
+(7,1,1) = {"
+ag
+aI
+ak
+ak
+ak
+ak
+ak
+ak
+ak
+au
+an
+ak
+aG
+aq
+aB
+am
+aG
+am
+am
+ft
+NM
+lO
+gO
+am
+QP
+aI
+ag
+ag
+"}
+(8,1,1) = {"
+ag
+aQ
+ak
+aO
+ak
+ak
+ak
+ak
+aw
+ak
+ak
+av
+ap
+af
+aB
+am
+aF
+am
+am
+am
+am
+am
+am
+am
+am
+aI
+ag
+ag
+"}
+(9,1,1) = {"
+ag
+aQ
+ak
+WN
+do
+an
+ak
+ak
+VN
+ak
+ak
+ak
+aG
+aN
+aB
+aN
+aG
+ao
+am
+am
+am
+am
+am
+am
+ai
+aI
+ag
+ag
+"}
+(10,1,1) = {"
+ag
+aI
+Ub
+ak
+ak
+ak
+QI
+QI
+QI
+ak
+ak
+ak
+aG
+ao
+aB
+ai
+aG
+am
+aB
+aB
+aB
+aB
+aB
+aB
+am
+aQ
+ag
+ag
+"}
+(11,1,1) = {"
+ag
+aI
+vv
+ak
+ak
+ak
+QI
+gt
+QI
+ak
+ak
+yZ
+aG
+am
+aB
+am
+aG
+am
+aB
+Kn
+Nf
+Nf
+GZ
+aB
+am
+aQ
+ag
+ag
+"}
+(12,1,1) = {"
+ag
+at
+nd
+ak
+ak
+ak
+QI
+Nw
+QI
+ak
+ak
+ak
+ae
+aj
+aB
+aj
+aa
+am
+aB
+Kn
+TK
+Nf
+GZ
+aB
+am
+aI
+ag
+ag
+"}
+(13,1,1) = {"
+ag
+at
+nd
+ak
+ak
+ak
+QI
+QI
+QI
+ak
+ak
+ak
+ae
+aj
+aB
+aj
+aa
+am
+aB
+Kn
+Nf
+Nf
+qe
+aB
+am
+aI
+ag
+ag
+"}
+(14,1,1) = {"
+ag
+aI
+vv
+ak
+ak
+ak
+QI
+SO
+QI
+ak
+ak
+yZ
+aG
+am
+aB
+am
+aG
+am
+aB
+Kn
+Nf
+Nf
+GZ
+aB
+am
+aI
+ag
+ag
+"}
+(15,1,1) = {"
+ag
+aI
+Ub
+ak
+ak
+ak
+QI
+QI
+QI
+ak
+ak
+ak
+aG
+ao
+aB
+ai
+aG
+am
+aB
+Kn
+TK
+Nf
+GZ
+aB
+am
+aI
+ag
+ag
+"}
+(16,1,1) = {"
+ag
+aQ
+ak
+aO
+jP
+an
+ak
+ak
+VN
+ak
+ak
+ak
+aG
+am
+aB
+am
+aG
+am
+aB
+Kn
+Nf
+Nf
+GZ
+aB
+am
+aQ
+ag
+ag
+"}
+(17,1,1) = {"
+ag
+aQ
+ak
+WN
+ak
+ak
+ak
+ak
+aw
+ak
+ak
+av
+ap
+am
+aB
+am
+aF
+am
+aB
+aB
+aB
+aB
+aB
+aB
+am
+aQ
+ag
+ag
+"}
+(18,1,1) = {"
+ag
+aI
+ak
+ak
+ak
+ak
+ak
+ak
+ak
+au
+an
+ak
+aG
+ay
+aB
+ay
+aG
+ao
+am
+am
+am
+am
+am
+am
+ai
+aI
+ag
+ag
+"}
+(19,1,1) = {"
+ag
+aI
+aK
+ak
+aL
+aY
+Np
+aX
+ak
+Xw
+aK
+ak
+aG
+am
+aB
+am
+aG
+am
+am
+am
+am
+am
+am
+am
+am
+aI
+ag
+ag
+"}
+(20,1,1) = {"
+ag
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+am
+aB
+am
+aG
+am
+ng
+am
+am
+am
+am
+am
+QP
+aI
+ag
+ag
+"}
+(21,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aI
+aG
+aG
+aG
+aG
+aB
+aB
+aG
+ao
+aB
+ai
+aG
+aG
+aG
+aG
+aG
+aV
+aG
+aG
+aG
+aI
+ag
+ag
+"}
+(22,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aZ
+Ir
+uM
+Ju
+aG
+aB
+aB
+aG
+am
+aB
+am
+aG
+uW
+Rp
+yy
+AI
+aT
+xh
+jK
+og
+aI
+ag
+ag
+"}
+(23,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aI
+Km
+am
+am
+ar
+aB
+aB
+aG
+am
+aB
+am
+aV
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aI
+ag
+ag
+"}
+(24,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aI
+hw
+am
+Fz
+aG
+aB
+as
+aG
+aM
+aB
+aR
+aG
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+ml
+aI
+ag
+ag
+"}
+(25,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aI
+aG
+aG
+aG
+aG
+aJ
+aB
+aG
+am
+aB
+am
+aG
+aT
+aT
+aT
+aT
+nt
+Ew
+LZ
+MM
+aI
+ag
+ag
+"}
+(26,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aZ
+Ir
+uM
+Ju
+aG
+aB
+aB
+aG
+am
+aB
+am
+aG
+aG
+aG
+aG
+aU
+aG
+aG
+aG
+aG
+aI
+ag
+ag
+"}
+(27,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aI
+Km
+am
+am
+ar
+aB
+aB
+aG
+aD
+aB
+aD
+aG
+Un
+am
+am
+am
+am
+am
+am
+am
+aI
+ag
+ag
+"}
+(28,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aI
+hw
+am
+Fz
+aG
+aB
+aB
+aW
+am
+aB
+am
+aG
+Yu
+am
+Yu
+am
+Yu
+am
+Yu
+am
+aI
+ag
+ag
+"}
+(29,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aI
+aG
+aG
+aG
+aG
+aB
+aB
+aG
+am
+aB
+am
+aG
+Yu
+am
+Yu
+am
+Yu
+am
+Yu
+am
+aE
+ag
+ag
+"}
+(30,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aZ
+Ir
+uM
+Ju
+aG
+aB
+aB
+aG
+ao
+aB
+ai
+aG
+Yu
+am
+Yu
+am
+Yu
+am
+Yu
+am
+aI
+ag
+ag
+"}
+(31,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aI
+Km
+am
+am
+ar
+aB
+aB
+aG
+aM
+aB
+aR
+aG
+Yu
+am
+Yu
+am
+Yu
+am
+Yu
+am
+aI
+ag
+ag
+"}
+(32,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aI
+hw
+am
+Fz
+aG
+aB
+as
+aG
+am
+aB
+am
+aG
+Yu
+am
+Yu
+am
+Yu
+am
+Yu
+am
+aI
+ag
+ag
+"}
+(33,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aI
+aG
+aG
+aG
+aG
+aJ
+aB
+aG
+ah
+aB
+ah
+aG
+Yu
+am
+Yu
+am
+Yu
+am
+Yu
+am
+aE
+ag
+ag
+"}
+(34,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aZ
+zp
+pk
+Ju
+aG
+aB
+aB
+aG
+am
+aB
+am
+aG
+Yu
+am
+Yu
+am
+Yu
+am
+Yu
+am
+aI
+ag
+ag
+"}
+(35,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aZ
+WB
+am
+am
+ar
+al
+aB
+aG
+am
+aB
+am
+aG
+am
+am
+am
+lM
+am
+am
+am
+am
+aI
+ag
+ag
+"}
+(36,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aI
+hw
+am
+Fz
+aG
+aI
+aI
+aI
+aI
+az
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+ag
+ag
+"}
+(37,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+aI
+aI
+aI
+aI
+aI
+ag
+ag
+ag
+aI
+aH
+aI
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+"}
+(38,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+aI
+ac
+aI
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+"}
+(39,1,1) = {"
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+ag
+"}

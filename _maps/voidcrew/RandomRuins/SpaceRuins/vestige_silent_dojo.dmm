@@ -1,128 +1,5 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"c" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/carpet/black,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"d" = (
-/obj/structure/sign/poster/contraband/random,
-/turf/closed/wall/r_wall,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"f" = (
-/mob/living/basic/vestige_patron/hollow_master{
-	dir = 8
-	},
-/turf/open/floor/carpet/black,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"j" = (
-/obj/structure/training_machine,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"l" = (
-/obj/structure/punching_bag,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"n" = (
-/obj/machinery/light/broken/directional/south,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"p" = (
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"r" = (
-/obj/effect/decal/remains/human,
-/obj/item/paper/crumpled{
-	name = "grading slip";
-	default_raw_text = "Final form: incomplete. Footwork: acceptable. Breathing: stopped. Notes: the student asked the master to demonstrate the last lesson in full. The master obliged. Grade withheld pending reassembly."
-	},
-/turf/open/floor/carpet,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"u" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"v" = (
-/turf/open/floor/carpet/black,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"w" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"y" = (
-/turf/closed/wall/r_wall,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"A" = (
-/turf/closed/wall/mineral/wood,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"C" = (
-/obj/structure/rack,
-/obj/item/claymore/weak{
-	name = "dulled clan blade"
-	},
-/turf/open/floor/carpet/black,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"F" = (
-/obj/item/flashlight/flare/candle{
-	pixel_x = 2
-	},
-/turf/open/floor/carpet/black,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"H" = (
-/turf/template_noop,
-/area/template_noop)
-"J" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/carpet,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"K" = (
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/carpet/black,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"M" = (
-/obj/effect/turf_decal/caution{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"N" = (
-/obj/machinery/door/airlock/external/ruin{
-	name = "External Airlock"
-	},
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"O" = (
-/obj/item/kirbyplants/random,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"P" = (
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"Q" = (
-/obj/structure/rack,
-/obj/item/clothing/shoes/sandal,
-/obj/item/clothing/shoes/sandal{
-	pixel_x = 3;
-	pixel_y = -3
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"R" = (
-/obj/structure/rack,
-/obj/item/throwing_star,
-/obj/item/throwing_star{
-	pixel_x = 4;
-	pixel_y = -3
-	},
-/turf/open/floor/carpet/black,
-/area/ruin/space/has_grav/vestige/silent_dojo)
-"S" = (
+"aa" = (
 /obj/machinery/door/airlock/external/ruin{
 	name = "External Airlock"
 	},
@@ -132,334 +9,1345 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/vestige/silent_dojo)
-"V" = (
-/turf/open/floor/carpet,
+"ab" = (
+/obj/effect/spawner/structure/window/reinforced/tinted,
+/turf/open/floor/plating,
 /area/ruin/space/has_grav/vestige/silent_dojo)
-"W" = (
-/obj/effect/decal/cleanable/cobweb,
+"ac" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"ad" = (
+/obj/machinery/door/airlock/wood{
+	name = "Genkan"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"ae" = (
+/obj/machinery/door/airlock/wood{
+	name = "Great Hall"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"af" = (
+/turf/template_noop,
+/area/template_noop)
+"ag" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/bamboo/tatami,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"ah" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"ai" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aj" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"ak" = (
+/turf/closed/wall/mineral/bamboo,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"al" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lantern/jade/on{
+	pixel_y = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"am" = (
+/obj/item/flashlight/lantern/jade/on{
+	pixel_y = 6
+	},
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"an" = (
+/turf/closed/wall/mineral/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"ao" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/bottle/sake{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 5;
+	pixel_y = -1
+	},
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"ap" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aq" = (
+/obj/structure/flora/rock/style_3,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"ar" = (
+/obj/structure/table/wood,
+/obj/item/clothing/under/color/black{
+	pixel_y = 4
+	},
+/obj/item/clothing/under/color/black{
+	pixel_y = -1
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -6;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"as" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"at" = (
+/turf/open/floor/bamboo/tatami/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"au" = (
+/obj/machinery/door/airlock/wood{
+	name = "Armory"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"av" = (
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aw" = (
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"ax" = (
+/obj/structure/flora/rock/pile/style_2,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"ay" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"az" = (
+/obj/machinery/door/airlock/wood{
+	name = "Rock Garden"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aA" = (
+/turf/open/floor/bamboo/tatami,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aB" = (
+/obj/structure/flora/rock/pile/style_3,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aC" = (
+/obj/structure/table/wood,
+/obj/item/clothing/under/color/black{
+	pixel_y = 2
+	},
+/obj/item/clothing/shoes/sandal{
+	pixel_y = -4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aD" = (
+/obj/structure/mannequin/wood{
+	name = "training dummy";
+	desc = "A man-shaped arrangement of wood, polished to a shine at the shoulders by ten thousand strikes. It has never once complained."
+	},
+/turf/open/floor/bamboo/tatami,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aE" = (
+/obj/machinery/door/airlock/wood{
+	name = "Sleeping Quarters"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aF" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aG" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = 4;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = 4;
+	pixel_y = -3
+	},
+/obj/item/food/onigiri{
+	pixel_x = -3;
+	pixel_y = 1
+	},
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aH" = (
+/obj/structure/rack,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath{
+	pixel_x = 3;
+	pixel_y = -3
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = -4
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aI" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = -4;
+	pixel_y = -3
+	},
+/obj/item/paper{
+	name = "instructions for the pot";
+	default_raw_text = "Four cups. Water at the first whisper, never the boil. Three steepings; the third is the honest one. If we are not returned by the third, pour ours anyway and drink yours slowly. Tea does not mind being cold. It minds being forgotten.";
+	pixel_x = 3
+	},
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aJ" = (
+/turf/open/floor/carpet/lone,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aK" = (
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aL" = (
+/obj/machinery/door/airlock/wood{
+	name = "Star Range"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aM" = (
+/obj/structure/bed,
+/obj/item/bedsheet/black,
+/obj/item/paper{
+	name = "unsent letter";
+	default_raw_text = "Mother. The master says a letter begun in anger must be finished in patience, so this one has taken two years. I am eating well. I am sleeping on time. I have stopped counting my footsteps, because I no longer make any sound worth counting. When the clan moves on I will be permitted to write where. The clan is moving on soon. I do not think where is the right question anymore.";
+	pixel_y = 6
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aN" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aO" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aP" = (
+/obj/machinery/door/airlock/wood{
+	name = "Tea Room"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aQ" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aR" = (
+/obj/structure/rack,
+/obj/item/pushbroom,
+/obj/item/paper{
+	name = "chore rotation, final";
+	default_raw_text = "Mats: swept. Racks: oiled. Cups: set. Range: raked, forty stars counted out and forty counted back. Garden: raked. Seven stones, none missing. Sandals: paired. Lamps: trimmed. Signed in full by every hand that had one. There is no one left to inspect this. It was not done for the inspection.";
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aS" = (
+/obj/structure/closet/crate/wooden,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aT" = (
+/obj/structure/flora/rock/pile,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aU" = (
+/obj/structure/flora/rock,
+/turf/open/misc/asteroid,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aV" = (
+/obj/structure/bed,
+/obj/item/bedsheet/black,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aW" = (
+/obj/structure/rack,
+/obj/item/clothing/shoes/sandal{
+	pixel_y = 5
+	},
+/obj/item/clothing/shoes/sandal{
+	pixel_y = -1
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aX" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 2;
+	pixel_y = 1
+	},
+/turf/open/floor/bamboo/tatami/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aY" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"aZ" = (
+/obj/item/banner/red{
+	name = "clan banner";
+	desc = "Black-hemmed silk, hung dead straight. The spider device is stitched so finely it only shows when the cloth moves. The cloth is not moving."
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"bp" = (
+/obj/structure/rack{
+	name = "armory rack";
+	desc = "Oiled, dusted, and empty. The outline of what hung here has been polished into the wood, which is the only way to tell anything ever did."
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"dn" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/paper{
+	name = "armory ledger, closing entry";
+	default_raw_text = "Blades: fourteen issued, fourteen returned, fourteen withdrawn. Stars: forty, withdrawn. Suits: nine, withdrawn. Cord, smoke, caltrops: withdrawn. Discrepancies: none. The blade of the master remains, by the order of the master. The master remains, by no order given to us. Inventory correct. Inventory zero.";
+	pixel_y = 3
+	},
+/obj/item/pen{
+	pixel_x = 5;
+	pixel_y = -4
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -6;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"eK" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/bamboo/tatami,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"fM" = (
+/obj/item/flashlight/lantern/jade/on{
+	pixel_y = 5
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"gS" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"kd" = (
+/obj/structure/showcase/katana{
+	name = "clan blade";
+	desc = "An energy katana rests level on its stand, cleaned, oiled, and put away. The ledger says it remains by the order of the master. The stand does not look like it would notice you. The blade does."
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"oD" = (
+/obj/structure/mannequin/wood{
+	name = "suit stand";
+	desc = "A wooden stand shaped like someone standing at attention. Nine of these once wore shozoku. It stands just as straight without one."
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"rl" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"sa" = (
+/obj/structure/mannequin/wood{
+	name = "strike dummy";
+	desc = "A man-shaped arrangement of wood, stood at the regulation eleven paces. The grain around its heart is pocked with forty small, identical bruises."
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"ue" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"BU" = (
+/obj/structure/rack{
+	name = "star rack";
+	desc = "A rack with forty shallow, star-shaped depressions worn into the felt. All forty are empty. The felt has been brushed."
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"HF" = (
+/mob/living/basic/vestige_patron/hollow_master{
+	dir = 2
+	},
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"KT" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"OJ" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "trial ledger, thrown star";
+	default_raw_text = "Aki: ten strikes of ten. Withdrawn. Harrow: ten of ten. Withdrawn. Ceto: ten of ten. Withdrawn. Six more names follow in the same hand, and every line ends the same way. The last line is ruled, blank, and waiting.";
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = -6;
+	pixel_y = -2
+	},
+/obj/item/flashlight/lantern/jade/on{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"PF" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/silent_dojo)
+"RC" = (
+/obj/item/target/syndicate,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/vestige/silent_dojo)
 
 (1,1,1) = {"
-H
-H
-H
-H
-H
-H
-H
-H
-H
-H
-H
-H
-H
-H
-H
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
 "}
 (2,1,1) = {"
-H
-H
-H
-H
-H
-H
-y
-S
-y
-H
-H
-H
-H
-H
-H
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+aF
+aa
+aF
+af
+af
+af
 "}
 (3,1,1) = {"
-H
-H
-H
-H
-H
-H
-y
-M
-y
-H
-H
-H
-H
-H
-H
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+aF
+aQ
+aF
+af
+af
+af
 "}
 (4,1,1) = {"
-H
-y
-y
-y
-d
-y
-y
-N
-y
-y
-d
-y
-y
-y
-H
+af
+af
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aO
+aF
+aF
+aF
+af
 "}
 (5,1,1) = {"
-H
-y
-W
-Q
-p
-u
-p
-w
-p
-u
-p
-O
-P
-y
-H
+af
+af
+ab
+am
+av
+av
+av
+av
+ax
+av
+av
+an
+ao
+aw
+aj
+aw
+an
+ay
+ay
+ay
+ay
+aH
+aF
+af
 "}
 (6,1,1) = {"
-H
-y
-p
-w
-p
-p
-w
-p
-p
-p
-w
-p
-u
-y
-H
+af
+af
+ab
+av
+av
+aU
+ax
+aT
+av
+av
+av
+an
+ah
+aw
+aJ
+aw
+an
+ap
+ap
+ap
+ap
+aW
+aF
+af
 "}
 (7,1,1) = {"
-H
-d
-u
-p
-w
-p
-p
-p
-w
-p
-p
-p
-p
-y
-H
+af
+af
+ab
+av
+av
+av
+av
+av
+av
+aq
+aT
+an
+aw
+aJ
+aI
+aJ
+an
+ac
+ai
+ai
+ai
+aW
+aF
+af
 "}
 (8,1,1) = {"
-H
-y
-p
-p
-p
-V
-V
-J
-V
-V
-p
-w
-p
-y
-H
+af
+af
+ab
+av
+aB
+av
+av
+av
+av
+av
+av
+an
+aw
+aJ
+aG
+aJ
+an
+ai
+ai
+ai
+ai
+aW
+aF
+af
 "}
 (9,1,1) = {"
-H
-y
-p
-p
-p
-J
-V
-r
-V
-V
-u
-p
-n
-y
-H
+af
+af
+aF
+as
+as
+as
+as
+ai
+as
+as
+as
+an
+aw
+aw
+aJ
+aw
+an
+ai
+ai
+ai
+ai
+aR
+aF
+af
 "}
 (10,1,1) = {"
-H
-y
-p
-p
-p
-V
-V
-V
-J
-V
-p
-p
-p
-y
-H
+af
+af
+aF
+aJ
+ai
+aJ
+ai
+aJ
+ai
+aJ
+ai
+an
+aY
+aw
+aw
+aw
+an
+ai
+ai
+al
+ai
+ai
+aF
+af
 "}
 (11,1,1) = {"
-H
-d
-p
-p
-p
-V
-J
-V
-V
-V
-p
-u
-u
-y
-H
+af
+aF
+aF
+an
+an
+an
+az
+an
+an
+an
+an
+an
+an
+an
+aP
+an
+an
+ad
+an
+an
+aE
+an
+aF
+af
 "}
 (12,1,1) = {"
-H
-y
-u
-l
-u
-p
-p
-p
-u
-p
-p
-j
-p
-y
-H
+af
+aF
+aK
+aK
+aK
+aX
+aA
+aA
+ag
+aA
+aA
+aA
+ag
+aA
+aA
+aA
+aA
+aA
+an
+ai
+aJ
+aV
+aF
+af
 "}
 (13,1,1) = {"
-H
-y
-p
-l
-w
-p
-u
-p
-p
-w
-p
-p
-W
-y
-H
+af
+aF
+aK
+aK
+aZ
+at
+aA
+ak
+aA
+aA
+aA
+ak
+aA
+aA
+aA
+ak
+aJ
+aA
+an
+ai
+ai
+aS
+aF
+af
 "}
 (14,1,1) = {"
-H
-y
-A
-A
-A
-A
-v
-v
-v
-A
-A
-A
-A
-y
-H
+af
+aF
+aK
+fM
+aK
+at
+aA
+at
+at
+at
+at
+at
+at
+at
+at
+aA
+aJ
+aD
+an
+ac
+aJ
+aM
+aF
+af
 "}
 (15,1,1) = {"
-H
-y
-P
-c
-v
-v
-F
-c
-F
-v
-c
-v
-c
-y
-H
+af
+ab
+aK
+aK
+gS
+at
+aA
+at
+aA
+aA
+aA
+aA
+aA
+aA
+at
+aA
+aA
+aA
+an
+ai
+ai
+aN
+aF
+af
 "}
 (16,1,1) = {"
-H
-y
-c
-v
-v
-c
-v
-f
-v
-c
-v
-c
-v
-y
-H
+af
+ab
+aK
+aK
+aK
+at
+aA
+at
+aA
+aA
+aA
+aA
+aA
+aA
+at
+aA
+aJ
+aA
+an
+ai
+aJ
+aV
+aF
+af
 "}
 (17,1,1) = {"
-H
-y
-R
-v
-c
-v
-R
-C
-R
-v
-P
-v
-K
-y
-H
+af
+aF
+kd
+HF
+aK
+at
+aA
+at
+aA
+aA
+aA
+aA
+aA
+aA
+at
+aA
+aA
+aA
+ae
+ai
+ai
+ar
+aF
+af
 "}
 (18,1,1) = {"
-H
-y
-y
-y
-y
-d
-y
-y
-y
-y
-y
-y
-y
-y
-H
+af
+aF
+aK
+aK
+aK
+at
+aA
+at
+aA
+aA
+aA
+aA
+aA
+aA
+at
+aA
+aA
+aA
+ae
+ai
+ai
+aC
+aF
+af
 "}
 (19,1,1) = {"
-H
-H
-H
-H
-H
-H
-H
-H
-H
-H
-H
-H
-H
-H
-H
+af
+ab
+aK
+aK
+gS
+at
+aA
+at
+aA
+aA
+aA
+aA
+aA
+aA
+at
+aA
+aJ
+aA
+an
+ai
+aJ
+aV
+aF
+af
+"}
+(20,1,1) = {"
+af
+ab
+aK
+fM
+aK
+at
+aA
+at
+aA
+aA
+aA
+aA
+aA
+aA
+at
+aA
+aA
+aA
+an
+ai
+ai
+aS
+aF
+af
+"}
+(21,1,1) = {"
+af
+aF
+aK
+aK
+aK
+at
+aA
+at
+at
+at
+at
+at
+at
+at
+at
+aA
+aJ
+aD
+an
+ac
+aJ
+aV
+aF
+af
+"}
+(22,1,1) = {"
+af
+aF
+aK
+aK
+aZ
+at
+aA
+ak
+aA
+aA
+aA
+ak
+aA
+aA
+aA
+ak
+aJ
+aA
+an
+ai
+ai
+aN
+aF
+af
+"}
+(23,1,1) = {"
+af
+aF
+aK
+aK
+aK
+aX
+aA
+aA
+eK
+aA
+aA
+aA
+eK
+aA
+aA
+aA
+aA
+aA
+an
+ai
+aJ
+aV
+aF
+af
+"}
+(24,1,1) = {"
+af
+aF
+aF
+aF
+aF
+aF
+au
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aL
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+af
+"}
+(25,1,1) = {"
+af
+aF
+bp
+PF
+ai
+KT
+ai
+ai
+aF
+af
+af
+aF
+BU
+aJ
+ai
+aJ
+ai
+OJ
+aF
+af
+af
+af
+af
+af
+"}
+(26,1,1) = {"
+af
+aF
+bp
+PF
+ai
+ai
+ai
+oD
+aF
+af
+af
+aF
+ai
+ue
+ue
+ue
+ue
+ai
+aF
+af
+af
+af
+af
+af
+"}
+(27,1,1) = {"
+af
+aF
+bp
+PF
+ai
+ai
+ai
+ai
+aF
+af
+af
+aF
+ac
+ai
+ai
+ai
+ai
+ai
+aF
+af
+af
+af
+af
+af
+"}
+(28,1,1) = {"
+af
+aF
+bp
+PF
+ai
+dn
+ai
+ai
+aF
+af
+af
+aF
+ai
+ai
+ai
+ai
+ai
+aN
+aF
+af
+af
+af
+af
+af
+"}
+(29,1,1) = {"
+af
+aF
+bp
+PF
+ai
+ai
+ai
+ai
+aF
+af
+af
+aF
+ai
+ai
+ai
+ai
+ai
+ai
+aF
+af
+af
+af
+af
+af
+"}
+(30,1,1) = {"
+af
+aF
+bp
+PF
+ai
+ai
+ai
+oD
+aF
+af
+af
+aF
+ai
+sa
+ai
+sa
+ai
+ai
+aF
+af
+af
+af
+af
+af
+"}
+(31,1,1) = {"
+af
+aF
+bp
+PF
+rl
+ai
+ai
+ai
+aF
+af
+af
+aF
+ai
+ai
+ai
+ai
+ai
+ai
+aF
+af
+af
+af
+af
+af
+"}
+(32,1,1) = {"
+af
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+af
+af
+aF
+ai
+ai
+ai
+ai
+ai
+ai
+aF
+af
+af
+af
+af
+af
+"}
+(33,1,1) = {"
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+aF
+RC
+ai
+RC
+ai
+RC
+ai
+aF
+af
+af
+af
+af
+af
+"}
+(34,1,1) = {"
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+af
+af
+af
+af
+af
+"}
+(35,1,1) = {"
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
 "}

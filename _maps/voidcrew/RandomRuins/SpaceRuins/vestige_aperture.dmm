@@ -1,80 +1,96 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"e" = (
-/obj/machinery/light/broken/directional/south,
+"aa" = (
+/obj/item/trash/candle,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/vestige/aperture)
-"g" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/carpet/black,
-/area/ruin/space/has_grav/vestige/aperture)
-"j" = (
-/turf/open/floor/carpet/black,
-/area/ruin/space/has_grav/vestige/aperture)
-"m" = (
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/vestige/aperture)
-"o" = (
-/obj/item/kirbyplants/random,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/vestige/aperture)
-"p" = (
-/turf/template_noop,
-/area/template_noop)
-"r" = (
-/obj/structure/frame/computer{
-	anchored = 1;
-	dir = 2
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/vestige/aperture)
-"t" = (
-/obj/structure/table/reinforced,
-/obj/item/binoculars,
-/obj/item/paper/crumpled{
-	name = "observation log";
-	default_raw_text = "Shift 1: nothing. Shift 2: nothing. Shift 3: nothing, but closer."
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/vestige/aperture)
-"w" = (
+"ab" = (
+/obj/machinery/light/broken/directional/west,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/vestige/aperture)
-"A" = (
-/turf/closed/wall/r_wall,
-/area/ruin/space/has_grav/vestige/aperture)
-"B" = (
-/mob/living/basic/vestige_patron/watcher{
-	dir = 4
+"ac" = (
+/obj/structure/bed,
+/obj/item/bedsheet/black,
+/obj/item/toy/plush/moth{
+	pixel_y = 5
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/vestige/aperture)
-"F" = (
-/obj/effect/decal/cleanable/glass,
-/obj/effect/decal/cleanable/dirt,
+"ad" = (
+/obj/structure/bed,
+/obj/item/bedsheet/black,
+/obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/vestige/aperture)
-"J" = (
-/obj/effect/turf_decal/caution{
-	dir = 4
+"ae" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Operations"
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/vestige/aperture)
-"K" = (
-/obj/structure/chair{
-	dir = 4
+"af" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Quiet Room"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/aperture)
+"ag" = (
+/obj/structure/grille/broken,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/aperture)
+"ah" = (
+/obj/structure/marker_beacon/purple,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/aperture)
+"ai" = (
+/obj/structure/table/reinforced,
+/obj/item/paper{
+	name = "specimen label";
+	default_raw_text = "EXHIBIT 1 - OBSERVER, DOMESTIC. Habitat: interiors. Diet: light. Note how it arranges the furniture to face the glass. Note how it presses close. It believes the room is on its side of the window. Do not tap on the glass.";
+	pixel_y = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/vestige/aperture)
-"N" = (
+"aj" = (
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/aperture)
+"ak" = (
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/vestige/aperture)
-"P" = (
+"al" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"am" = (
+/obj/structure/sign/warning/vacuum/external,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/aperture)
+"an" = (
+/obj/item/flashlight,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"ao" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"ap" = (
+/turf/closed/wall/r_wall/rust,
+/area/ruin/space/has_grav/vestige/aperture)
+"aq" = (
+/obj/item/paper/crumpled{
+	name = "note pinned to a bedroll";
+	default_raw_text = "We sleep in here now. It is the only room it cannot see into. Marta says that is the same as being watched from every other room at once. Marta has moved her blanket to the gallery. Marta waves at it. Do not wave at it."
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"ar" = (
 /obj/machinery/door/airlock/external/ruin{
 	name = "External Airlock"
 	},
@@ -84,19 +100,197 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/vestige/aperture)
-"Q" = (
+"as" = (
+/obj/structure/chair{
+	dir = 4
+	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/vestige/aperture)
-"S" = (
-/obj/effect/decal/cleanable/cobweb,
+"at" = (
+/obj/structure/girder,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/aperture)
+"au" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/aperture)
+"av" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/aperture)
+"aw" = (
+/obj/structure/frame/computer{
+	anchored = 1;
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/vestige/aperture)
-"Y" = (
+"ax" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/aperture)
+"ay" = (
+/obj/structure/filingcabinet,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"az" = (
+/obj/structure/sign/warning/vacuum/external,
+/turf/closed/wall/r_wall/rust,
+/area/ruin/space/has_grav/vestige/aperture)
+"aA" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"aB" = (
 /obj/effect/spawner/structure/window/reinforced/tinted,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/vestige/aperture)
-"Z" = (
+"aC" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Spine Crossing"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/aperture)
+"aD" = (
+/obj/structure/marker_beacon/indigo,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/aperture)
+"aE" = (
+/obj/structure/bed,
+/obj/item/bedsheet/black,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"aF" = (
+/obj/structure/chair/office{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"aG" = (
+/obj/structure/chair{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"aH" = (
+/obj/item/stack/sheet/rglass{
+	amount = 10
+	},
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/aperture)
+"aI" = (
+/obj/structure/rack,
+/obj/item/clothing/mask/breath,
+/obj/item/tank/internals/emergency_oxygen/engi{
+	pixel_x = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"aJ" = (
+/obj/structure/table/reinforced,
+/obj/item/flashlight{
+	pixel_y = 3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"aK" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/paper/crumpled{
+	name = "observation log";
+	default_raw_text = "Shift 1: nothing. Shift 2: nothing. Shift 3: nothing, but closer.";
+	pixel_x = 3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"aL" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/aperture)
+"aM" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall/r_wall/rust,
+/area/ruin/space/has_grav/vestige/aperture)
+"aN" = (
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/aperture)
+"aO" = (
+/turf/template_noop,
+/area/template_noop)
+"aP" = (
+/obj/item/shard,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/aperture)
+"aQ" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"aR" = (
+/obj/structure/bed,
+/obj/item/bedsheet/black,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"aS" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"aT" = (
+/obj/item/trash/candle,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"aU" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"aV" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Spine Crossing"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/aperture)
+"aW" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/aperture)
+"aX" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Instrument Room"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/aperture)
+"aY" = (
 /obj/machinery/door/airlock/external/ruin{
 	name = "External Airlock"
 	},
@@ -105,327 +299,1307 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/vestige/aperture)
+"aZ" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/aperture)
+"eL" = (
+/obj/structure/marker_beacon/purple,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"fS" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"gM" = (
+/obj/item/kirbyplants/random/dead,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"hr" = (
+/obj/item/shard,
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"hQ" = (
+/obj/structure/table/reinforced,
+/obj/item/binoculars{
+	pixel_y = 4
+	},
+/obj/item/trash/candle{
+	pixel_x = -5;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"iN" = (
+/obj/machinery/light/broken/directional/east,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"nI" = (
+/obj/structure/table/reinforced,
+/obj/item/paper{
+	name = "final focus log";
+	default_raw_text = "Day 388: resolved the figure. Day 389: the figure resolved me. Day 390: focus achieved at every magnification, including none, including eyes shut. The instrument was pointing the wrong way all along. Going out to make introductions.";
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"nJ" = (
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/aperture)
+"sG" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"uI" = (
+/obj/machinery/light/broken/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"wK" = (
+/obj/item/kirbyplants/random/dead,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"xF" = (
+/obj/structure/table/reinforced,
+/obj/item/camera{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	name = "gallery minutes";
+	default_raw_text = "Minutes, final session. Motion to stop counting shifts: carried. Motion to name the figure: denied. Motion to wave back: denied. Motion to turn the chairs around: denied. There were no further motions. There was no further session."
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"xG" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"DN" = (
+/turf/open/floor/glass/reinforced,
+/area/ruin/space/has_grav/vestige/aperture)
+"Ix" = (
+/obj/structure/chair/office{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"Ng" = (
+/obj/item/chair,
+/turf/open/floor/glass/reinforced,
+/area/ruin/space/has_grav/vestige/aperture)
+"Nm" = (
+/obj/item/chair,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"NR" = (
+/obj/structure/table/reinforced,
+/obj/item/flashlight/lantern{
+	pixel_y = 4
+	},
+/obj/item/trash/candle{
+	pixel_x = -4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"OH" = (
+/obj/item/paper/crumpled{
+	name = "requisition order";
+	default_raw_text = "REQ-0114: removal of hull frames C4 through C9, gallery approach. Reason given: the frames are in the way of the view. Reason queried. Reason repeated. Approved."
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"PZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/aperture)
+"Rj" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
+"TL" = (
+/mob/living/basic/vestige_patron/watcher{
+	dir = 8
+	},
+/turf/open/floor/glass/reinforced,
+/area/ruin/space/has_grav/vestige/aperture)
+"Ui" = (
+/obj/structure/marker_beacon/indigo,
+/turf/open/floor/glass/reinforced,
+/area/ruin/space/has_grav/vestige/aperture)
+"Vo" = (
+/obj/item/bedsheet/black,
+/obj/effect/decal/remains/human,
+/turf/open/floor/glass/reinforced,
+/area/ruin/space/has_grav/vestige/aperture)
+"WK" = (
+/obj/item/kirbyplants/random/dead,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/aperture)
 
 (1,1,1) = {"
-p
-p
-p
-p
-p
-p
-p
-p
-p
-p
-p
-p
-p
-p
-p
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (2,1,1) = {"
-p
-p
-p
-p
-p
-p
-A
-P
-A
-p
-p
-p
-p
-p
-p
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+am
+ar
+ax
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (3,1,1) = {"
-p
-p
-p
-p
-p
-p
-A
-J
-A
-p
-p
-p
-p
-p
-p
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+ax
+aL
+ax
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (4,1,1) = {"
-p
-A
-A
-Y
-Y
-A
-A
-Z
-A
-Y
-Y
-A
-A
-A
-p
+aO
+aO
+aO
+ax
+ax
+ax
+aW
+ax
+ax
+ax
+ax
+aB
+au
+aY
+ax
+aB
+aB
+ax
+ax
+aB
+aB
+aB
+aB
+ax
+ax
+aO
+aO
+aO
 "}
 (5,1,1) = {"
-p
-Y
-S
-Q
-N
-w
-N
-Q
-N
-w
-N
-o
-m
-Y
-p
+aO
+aO
+aO
+ax
+ad
+aS
+ak
+aA
+aS
+aa
+ax
+aI
+aS
+aU
+ab
+aS
+aQ
+ax
+aQ
+aw
+aw
+aw
+aS
+aA
+aB
+aO
+aO
+aO
 "}
 (6,1,1) = {"
-p
-Y
-w
-N
-o
-N
-Q
-N
-N
-N
-Q
-N
-w
-Y
-p
+aO
+aO
+aO
+ax
+aA
+ak
+an
+ak
+aA
+al
+ax
+aA
+ak
+ak
+aA
+ak
+aS
+ax
+ao
+aS
+aF
+aA
+ak
+ak
+aB
+aO
+aO
+aO
 "}
 (7,1,1) = {"
-p
-A
-N
-w
-N
-Q
-N
-N
-w
-N
-N
-N
-e
-A
-p
+aO
+aO
+aO
+aW
+aE
+aA
+aA
+aq
+ak
+ak
+af
+ak
+aA
+aS
+ak
+aA
+ak
+ae
+aA
+ak
+ak
+aS
+aA
+aS
+aB
+aO
+aO
+aO
 "}
 (8,1,1) = {"
-p
-Y
-r
-N
-N
-N
-N
-w
-N
-Q
-N
-N
-N
-Y
-p
+aO
+aO
+aO
+ax
+ak
+aS
+ak
+aS
+ak
+aa
+ax
+aS
+ak
+ak
+aS
+ak
+aA
+ax
+aS
+aA
+aS
+ak
+ak
+aK
+aB
+aO
+aO
+aO
 "}
 (9,1,1) = {"
-p
-Y
-r
-N
-j
-j
-j
-j
-g
-N
-w
-Q
-N
-Y
-p
+aO
+aO
+aO
+ax
+aR
+ak
+aS
+ac
+aA
+aS
+ax
+ak
+aS
+aA
+ak
+aS
+ak
+ax
+ay
+ak
+ak
+aA
+aS
+aJ
+aB
+aO
+aO
+aO
 "}
 (10,1,1) = {"
-p
-A
-N
-Q
-j
-g
-j
-g
-j
-N
-N
-N
-N
-A
-p
+aO
+aO
+aO
+ax
+ax
+ax
+ax
+ax
+aW
+ax
+ax
+aA
+ak
+ak
+aA
+as
+aS
+ax
+ax
+aW
+ax
+ax
+ax
+ax
+ax
+aO
+aO
+aO
 "}
 (11,1,1) = {"
-p
-Y
-r
-N
-j
-j
-g
-j
-j
-N
-N
-N
-N
-Y
-p
+aO
+aO
+aO
+ax
+ao
+ak
+aS
+ak
+aA
+ak
+aS
+ak
+aT
+aS
+ak
+ai
+ak
+aS
+ak
+aA
+ak
+aS
+ak
+al
+ax
+aO
+aO
+aO
 "}
 (12,1,1) = {"
-p
-Y
-r
-N
-N
-N
-N
-N
-Q
-N
-N
-w
-N
-Y
-p
+aO
+aO
+aO
+aB
+aS
+aA
+ak
+aS
+ak
+aA
+ak
+aS
+ak
+aA
+aB
+aB
+aB
+ak
+aA
+ak
+aS
+ak
+aA
+aS
+aB
+aO
+aO
+aO
 "}
 (13,1,1) = {"
-p
-A
-N
-N
-N
-N
-N
-t
-N
-N
-Q
-N
-N
-A
-p
+aO
+aO
+aO
+aB
+ak
+aS
+aA
+ak
+aS
+ak
+aA
+ak
+aG
+ak
+aB
+av
+aB
+aA
+ak
+aS
+ak
+aA
+ak
+ak
+aB
+aO
+aO
+aO
 "}
 (14,1,1) = {"
-p
-Y
-w
-N
-N
-w
-Q
-N
-N
-F
-N
-N
-w
-Y
-p
+aO
+aO
+aO
+aB
+aA
+ak
+aS
+aA
+ak
+aS
+ak
+aA
+aS
+aS
+aB
+aB
+aB
+ak
+aS
+ak
+aA
+ak
+aS
+aA
+aB
+aO
+aO
+aO
 "}
 (15,1,1) = {"
-p
-Y
-N
-F
-N
-N
-N
-N
-N
-N
-N
-N
-N
-Y
-p
+aO
+aO
+aO
+aB
+ak
+aA
+ak
+ak
+aS
+xG
+hr
+ak
+ak
+ak
+OH
+ak
+aS
+aS
+ak
+aA
+ak
+aS
+ak
+ak
+aB
+aO
+aO
+aO
 "}
 (16,1,1) = {"
-p
-A
-Q
-N
-Q
-N
-N
-B
-K
-N
-N
-N
-N
-A
-p
+aO
+aO
+aO
+aB
+aQ
+ak
+aS
+ak
+iN
+ak
+aA
+aS
+wK
+aU
+wK
+aA
+ak
+ak
+aA
+ak
+aS
+ak
+sG
+aS
+aB
+aO
+aO
+aO
 "}
 (17,1,1) = {"
-p
-Y
-m
-w
-N
-K
-S
-F
-N
-N
-N
-S
-m
-Y
-p
+aO
+aO
+aO
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aB
+aB
+au
+aV
+ax
+aB
+aB
+ax
+ax
+ax
+ax
+aW
+ax
+ax
+ax
+aO
+aO
+aO
 "}
 (18,1,1) = {"
-p
-A
-A
-Y
-Y
-Y
-A
-Y
-A
-Y
-Y
-Y
-A
-A
-p
+aO
+aO
+aO
+ap
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+ah
+aZ
+aP
+aO
+aO
+aO
+ap
+ap
+aM
+ap
+ap
+ap
+ap
+aO
+aO
+aO
 "}
 (19,1,1) = {"
-p
-p
-p
-p
-p
-p
-p
-p
-p
-p
-p
-p
-p
-p
-p
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+at
+aO
+aN
+aN
+aj
+aO
+aj
+aO
+ap
+aQ
+aS
+aA
+nI
+aB
+aO
+aO
+aO
+aO
+"}
+(20,1,1) = {"
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aN
+aN
+aN
+aN
+aD
+aN
+aX
+aA
+ak
+Ix
+NR
+aB
+aO
+aO
+aO
+aO
+"}
+(21,1,1) = {"
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+ag
+aO
+aO
+aH
+aN
+aN
+aO
+aO
+aO
+ap
+eL
+aA
+aS
+aA
+aB
+aO
+aO
+aO
+aO
+"}
+(22,1,1) = {"
+aO
+aO
+aO
+ap
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aN
+aZ
+ah
+aO
+aO
+aO
+ap
+ap
+ap
+az
+ap
+ap
+ap
+aO
+aO
+aO
+"}
+(23,1,1) = {"
+aO
+aO
+aO
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aB
+aB
+ax
+aC
+au
+aB
+aB
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aO
+aO
+aO
+"}
+(24,1,1) = {"
+aO
+aO
+aO
+ax
+WK
+ak
+aS
+ak
+uI
+aA
+ak
+fS
+ak
+nJ
+ak
+aS
+fS
+aS
+ak
+uI
+aA
+ak
+aS
+gM
+ax
+aO
+aO
+aO
+"}
+(25,1,1) = {"
+aO
+aO
+aO
+aB
+aS
+xF
+ak
+aS
+ak
+ak
+aS
+ak
+aA
+PZ
+aS
+ak
+aA
+ak
+aS
+ak
+ak
+aS
+ak
+aS
+aB
+aO
+aO
+aO
+"}
+(26,1,1) = {"
+aO
+aO
+aO
+aB
+ak
+hQ
+aA
+ak
+aS
+aS
+aA
+ak
+aS
+nJ
+aA
+aA
+aS
+aA
+ak
+aS
+aS
+aA
+aS
+ak
+aB
+aO
+aO
+aO
+"}
+(27,1,1) = {"
+aO
+aO
+aO
+aB
+aA
+aS
+ak
+aA
+ak
+aS
+Nm
+aA
+ak
+nJ
+ak
+aA
+ak
+aS
+aS
+aA
+aS
+ak
+aA
+ak
+aB
+aO
+aO
+aO
+"}
+(28,1,1) = {"
+aO
+aO
+aO
+aB
+ak
+aA
+aS
+aS
+aA
+ak
+ak
+aS
+aS
+PZ
+aS
+ak
+aS
+ak
+aA
+ak
+ak
+aS
+ak
+aA
+aB
+aO
+aO
+aO
+"}
+(29,1,1) = {"
+aO
+aO
+aO
+aB
+aS
+ak
+ak
+ak
+ak
+aA
+aS
+ak
+aA
+nJ
+aS
+aS
+ak
+aS
+aS
+ak
+aA
+ak
+aS
+ak
+aB
+aO
+aO
+aO
+"}
+(30,1,1) = {"
+aO
+aO
+aO
+aB
+ak
+aS
+aA
+aS
+aS
+ak
+ak
+ak
+aS
+nJ
+aA
+ak
+aA
+aS
+ak
+aS
+ak
+aS
+aA
+aS
+aB
+aO
+aO
+aO
+"}
+(31,1,1) = {"
+aO
+aO
+aO
+aB
+aA
+aA
+as
+aA
+ak
+as
+aA
+as
+ak
+PZ
+ak
+as
+ak
+Rj
+aA
+ak
+as
+aS
+ak
+ak
+aB
+aO
+aO
+aO
+"}
+(32,1,1) = {"
+aO
+aO
+aO
+aB
+ak
+ak
+aS
+aS
+aA
+ak
+aS
+ak
+aa
+nJ
+aa
+ak
+aS
+aA
+ak
+aS
+aS
+aA
+aS
+aA
+aB
+aO
+aO
+aO
+"}
+(33,1,1) = {"
+aO
+aO
+aO
+aB
+aS
+DN
+DN
+DN
+DN
+DN
+DN
+DN
+Ui
+DN
+Ui
+DN
+DN
+DN
+DN
+Ng
+DN
+DN
+DN
+aS
+aB
+aO
+aO
+aO
+"}
+(34,1,1) = {"
+aO
+aO
+aO
+ax
+ao
+DN
+DN
+DN
+Vo
+DN
+DN
+DN
+DN
+TL
+DN
+DN
+DN
+DN
+DN
+DN
+DN
+DN
+DN
+al
+ax
+aO
+aO
+aO
+"}
+(35,1,1) = {"
+aO
+aO
+aO
+ax
+ax
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+ax
+ax
+aO
+aO
+aO
+"}
+(36,1,1) = {"
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+"}
+(37,1,1) = {"
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+"}
+(38,1,1) = {"
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}

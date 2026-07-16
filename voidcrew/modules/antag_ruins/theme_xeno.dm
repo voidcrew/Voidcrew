@@ -1,0 +1,1947 @@
+/**
+ * # The Comb — xenomorph vestige (patron + trials)
+ *
+ * An ore barge taken whole by a hive: corridors narrowed into resin comb-cells,
+ * a host larder, an egg gallery kept warm off the engine bleed. Then the hosts
+ * ran out. The eggs cooled one shelf at a time. The queen starved last, on a
+ * throne her daughters built around her, having outlived her entire dynasty —
+ * and the only things still moving aboard are the salvage drones that have been
+ * chewing the comb for years, too stupid to know the court is ended. The patron
+ * is **the Dowager**: a queen of nothing, regal, patient, speaking in dynasty
+ * and inheritance, adopting supplicants as brood-by-marriage. Her grief is a
+ * monarch's — composed, dynastic, enormous.
+ *
+ * The trials are a queen's offices, farmed out: incubate the last viable egg
+ * behind walls you weave and re-weave mid-assault (the Warm Season — the
+ * defense is ARCHITECTURE, not bodyblocking), finish wild things while your
+ * acid is still working in them (the Boiling Kiss — slow corrosion demands
+ * commitment, not a fire-and-forget), and sting wild hunters in the very act
+ * of hunting (the Census — ranged interception timing, capped per subject).
+ * Every trial is built to be PLAYED at every moment: the egg draws waves that
+ * eat your walls faster than you can watch, the maw only credits melts you
+ * close on and finish, and the stinger only credits intent caught mid-charge.
+ *
+ * The boons — the caustic spit, the neuro-lash, the resin weaver, and their
+ * upgrades — live in the sibling boons file; this file only points the patron
+ * at them.
+ */
+
+// Trial tuning (file-local, #undef at bottom). Trial descs quote these
+// numbers literally — keep them in sync.
+
+/// How long the Warm Season egg must stay warm once woken
+#define VESTIGE_WARM_INCUBATION (3 MINUTES)
+/// Delay from one work-gang's landing to the next gang's herald
+#define VESTIGE_WARM_SQUAD_DELAY (20 SECONDS)
+/// Warning time between a gang announcing itself and arriving
+#define VESTIGE_WARM_WARNING_TIME (4 SECONDS)
+/// Largest work-gang the season sends at once
+#define VESTIGE_WARM_SQUAD_MAX 4
+/// Gangs landed before a salvage foreman starts leading them in
+#define VESTIGE_WARM_FOREMAN_FROM 5
+/// How far from the egg the gangs surface (never closer than 3)
+#define VESTIGE_WARM_SPAWN_RANGE 7
+/// Hard lifespan on every chewer — abandoned assaults always clean themselves up
+#define VESTIGE_WARM_CHEWER_LIFESPAN (4 MINUTES)
+/// The planted egg's integrity: three unguarded chewer bites end the dynasty
+#define VESTIGE_WARM_EGG_INTEGRITY 240
+/// A woven resin wall's integrity (resin armor quarters melee brute — ~4 chewer bites)
+#define VESTIGE_WARM_RESIN_INTEGRITY 80
+/// How long a woven wall lasts before it dries out and crumbles on its own
+#define VESTIGE_WARM_RESIN_LIFESPAN (4 MINUTES)
+/// Lengths of resin the spinneret holds at once
+#define VESTIGE_WARM_RESIN_CHARGES 5
+/// Time to draw one fresh length of resin
+#define VESTIGE_WARM_RESIN_REGEN (8 SECONDS)
+/// How far from the weaver a wall can be laid
+#define VESTIGE_WARM_WEAVE_RANGE 2
+/// The weave channel — long enough to be a decision, short enough to do under teeth
+#define VESTIGE_WARM_WEAVE_TIME (1.5 SECONDS)
+
+/// Wild things the Boiling Kiss demands dead while the acid is still working in them
+#define VESTIGE_KISS_KILLS_NEEDED 5
+/// The caustic maw's spit cooldown
+#define VESTIGE_KISS_COOLDOWN (6 SECONDS)
+/// How many tiles the acid glob flies
+#define VESTIGE_KISS_RANGE 6
+/// Burn damage the glob deals on impact, before the corrosion starts
+#define VESTIGE_KISS_SPLASH_DAMAGE 8
+/// How long the kiss clings once landed — the window the kill must fall inside
+#define VESTIGE_KISS_CLING (14 SECONDS)
+/// Corrosion tick cadence
+#define VESTIGE_KISS_TICK (2 SECONDS)
+/// The deepest single bite the ramping corrosion reaches per tick
+#define VESTIGE_KISS_BITE_CAP 6
+
+/// Entries the Census demands: wild things stung in the very act of hunting
+#define VESTIGE_CENSUS_MARKS_NEEDED 7
+/// Most entries any single subject can put in the rolls
+#define VESTIGE_CENSUS_PER_SUBJECT 2
+/// The census stinger's cooldown
+#define VESTIGE_CENSUS_COOLDOWN (4 SECONDS)
+/// How many tiles the census barb flies
+#define VESTIGE_CENSUS_RANGE 7
+/// How long a counted subject seizes for — the interception's payoff
+#define VESTIGE_CENSUS_SEIZE (1.5 SECONDS)
+/// Token toxin damage on the barb; the sting is a stamp, not a weapon
+#define VESTIGE_CENSUS_STING_DAMAGE 5
+
+/**
+ * TRUE when a mob is honest quarry for the Dowager's offices: wild fauna or
+ * feral machines (basic-mob or simple-animal stock), not a person, not a
+ * pacifist, not the hunter's own pack, and not something under godmode
+ * (patrons, trader mobs). The caustic maw and the census stinger both gate
+ * their credit through this — the court pays for hunting, never for people.
+ * (Local counterpart of the dragon theme's helper; each theme keeps its own.)
+ */
+/proc/vestige_comb_quarry(mob/living/beast, mob/living/hunter)
+	if(!isliving(beast) || beast == hunter || ishuman(beast))
+		return FALSE
+	if(!isanimal_or_basicmob(beast))
+		return FALSE
+	if(HAS_TRAIT(beast, TRAIT_PACIFISM) || HAS_TRAIT(beast, TRAIT_GODMODE))
+		return FALSE
+	if(beast.faction_check_atom(hunter)) // your own pack is not prey
+		return FALSE
+	return TRUE
+
+// ===== PATRON =====
+
+/mob/living/basic/vestige_patron/dowager
+	name = "the Dowager"
+	desc = "An alien queen, or the composure one left behind: a translucent tower of dried chitin arranged — arranged is the word — on a throne of resin, crest up, claws folded. The throne was built facing the egg gallery. The gallery is dark, and she has not looked away from it."
+	// The queen's own sprite (verified in carbon/alien/adult/queen.dm), worn like parchment
+	icon = 'icons/mob/nonhuman-player/alienqueen.dmi'
+	icon_state = "alienq"
+	gender = FEMALE
+	mob_biotypes = MOB_SPECIAL
+	appearance_tint = "#cfc0a0" // chitin gone to old ivory
+	alpha = 205
+	pixel_x = -16
+	base_pixel_x = -16
+	trial_types = list(
+		/datum/vestige_trial/warm_season,
+		/datum/vestige_trial/boiling_kiss,
+		/datum/vestige_trial/comb_census,
+	)
+	boon_types = list(
+		/datum/vestige_boon/spell/caustic_spit,
+		/datum/vestige_boon/spell/caustic_spit/vitriol,
+		/datum/vestige_boon/spell/neuro_lash,
+		/datum/vestige_boon/spell/neuro_lash/paralytic,
+		/datum/vestige_boon/spell/resin_weaver,
+		/datum/vestige_boon/spell/resin_weaver/architect,
+	)
+	idle_lines = list(
+		"This was an ore barge. Twelve crew. I made it a palace and the twelve I made courtiers — every dynasty is founded on somebody else's house. They served the line faithfully, in the end. Everything serves, in the end. That was the arithmetic I learned too late.",
+		"The larder emptied in the third month. I rationed my own children like a treasury. A queen learns bookkeeping last of all her lessons, and pays the tutor in heirs.",
+		"The eggs wanted warmth, and warmth wanted hosts, and hosts wanted mercy. Somewhere in that ledger the succession was already dead. I balanced it anyway, column by column. Composure is the last organ to starve.",
+		"My daughters built this throne around me so I would not have to watch the gallery go cold shelf by shelf. They were good children. They thought of everything. I ate them last.",
+		"You hear the little machines chewing. Vermin in the palace — they were eating the comb before I came and they will be eating it after you leave. I would have them destroyed, but a court must keep SOME subjects, and they are so very loyal to their appetite.",
+		"You are soft, warm, and entirely without lineage. Very well. A crown does not ask what marries into it — only what the marriage produces. Consider yourself brood by marriage, drone. The paperwork is a formality; I have eaten the clerk.",
+		"Ask, drone. Speak up and stand straight. A queen of nothing keeps one indulgence, and it is audience.",
+	)
+	accept_line = "Then it is sealed under what remains of my seal. Serve the line well, drone — you are all the dynasty I have."
+	busy_line = "You arrive carrying another house's errand. A drone serves one court at a time. Finish it, or renounce it and come home to mine."
+	fulfilled_line = "That office is discharged and entered in the rolls. The line does not ask the same service twice — it is beneath both of us."
+	renounce_line = "So the marriage is dissolved. Compose yourself; dynasties have died of less. Mine did."
+	claim_line = "The court owes you a dowry, and an unpaid debt is a crack in the comb. Take it before you ask anything further of me."
+	exhausted_line = "There is nothing left to settle on you. You have inherited the whole estate, drone — the acid, the sting, the comb. Wear it carefully. It wore me out."
+	remember_line = "Death is not release from a dynasty; it is merely travel. What was settled on you remains settled. Welcome home, drone."
+
+// ===== THE WARM SEASON =====
+
+/**
+ * The gallery's last viable egg, handed to a supplicant with the Dowager's own
+ * spinneret: plant the egg on ground you can hold, warm it, and keep it warm
+ * for three unbroken minutes while the comb's salvage vermin come to chew it.
+ * The defense is architecture — the chewers do trivial harm to people and
+ * ruinous harm to structures, so the loop is weaving resin, watching it be
+ * eaten, and weaving again, not standing in a doorway. Work-gangs land on a
+ * clock and escalate; every chewer carries its own despawn timer so abandoned
+ * assaults always clean themselves up (the Roost's precedent). Losing the egg
+ * resets everything but soft-locks nothing: renounce and re-accept the same
+ * sticky assignment and the court advances a fresh egg and spinneret.
+ */
+/datum/vestige_trial/warm_season
+	name = "The Warm Season"
+	// Keep the numbers in sync with VESTIGE_WARM_INCUBATION / VESTIGE_WARM_SQUAD_DELAY
+	// (initial values must be constant, so no define interpolation here)
+	desc = "The gallery cooled while I was busy being provident. One egg is still viable — I have counted, and recounted, and the count is one. Take it, and take my spinneret with it. Plant the egg on ground you can hold and warm it: it needs three unbroken minutes, and the salvage vermin will smell the warmth inside the first one. They come in work-gangs, another roughly every twenty seconds, and they chew architecture far faster than they chew you — so the defense IS architecture. Weave resin between them and the shell, let them eat the walls, and weave again. If the shell breaks, come and renounce, and the court will advance you another. Do not ask after the treasury balance. I am composed about arithmetic now."
+	/// The loaned egg, while it rides in a hand or pocket. Reclaimed the moment the pact ends.
+	var/obj/item/vestige_comb_egg/egg_item
+	/// The planted egg, once it has been bedded down. Reclaimed the moment the pact ends.
+	var/obj/structure/vestige_comb_egg/egg_structure
+	/// The loaned spinneret. Reclaimed the moment the pact ends.
+	var/obj/item/vestige_comb_spinneret/spinneret
+	/// Live walls woven this pact (each clears itself from this on Destroy)
+	var/list/woven = list()
+
+/datum/vestige_trial/warm_season/on_accepted(mob/living/user)
+	var/obj/item/vestige_comb_egg/shell = new(get_turf(user))
+	shell.bound_mind = owner
+	egg_item = hand_over(user, shell)
+	var/obj/item/vestige_comb_spinneret/organ = new(get_turf(user))
+	organ.bound_mind = owner
+	spinneret = hand_over(user, organ)
+	to_chat(user, span_notice("The egg is lighter than it looks and warmer than it has any right to be. The spinneret twitches against your palm, feeling for somewhere to begin."))
+
+/datum/vestige_trial/warm_season/Destroy()
+	QDEL_NULL(egg_item)
+	QDEL_NULL(egg_structure) // a live season dies with the pact; the structure dissolves its own vermin
+	QDEL_NULL(spinneret)
+	// Old walls dry out on their own schedule, staggered so it reads as decay, not a wipe
+	for(var/obj/structure/vestige_comb_resin/wall as anything in woven)
+		wall.bound_mind = null
+		addtimer(CALLBACK(wall, TYPE_PROC_REF(/obj/structure/vestige_comb_resin, dry_out)), rand(0.5 SECONDS, 3 SECONDS))
+	woven.Cut()
+	return ..()
+
+/datum/vestige_trial/warm_season/get_progress_text()
+	if(egg_structure && !QDELETED(egg_structure))
+		if(egg_structure.hatching)
+			return "The season is over, and the egg is deciding."
+		if(!egg_structure.assault_underway)
+			return "The egg is planted and cooling. Weave your ground, then warm it."
+		var/remaining = max(0, round((egg_structure.incubation_ends - world.time) / (1 SECONDS)))
+		return "The egg is warm — [remaining] seconds of the season remain, and [length(egg_structure.chewers)] of the vermin are on the comb."
+	if(egg_item && !QDELETED(egg_item))
+		return "The egg is warm in your keeping. Plant it on open ground you can hold, weave, and warm it."
+	return "The egg is gone, and the count is amended. Renounce the pact and [patron_name] will advance you another."
+
+// --- The egg, carried ---
+
+/obj/item/vestige_comb_egg
+	name = "dormant hive egg"
+	desc = "An egg the colour of old teeth, warm on no side at all. Against the palm it feels less dead than deferred — a delivery the universe has misfiled and might yet make."
+	icon = 'icons/mob/nonhuman-player/alien.dmi'
+	icon_state = "egg_growing"
+	color = "#a8b58c" // gallery-cold
+	w_class = WEIGHT_CLASS_BULKY
+	resistance_flags = ACID_PROOF // hive stock
+	/// Mind of the supplicant keeping this season — the egg only answers its own keeper
+	var/datum/mind/bound_mind
+
+/obj/item/vestige_comb_egg/Destroy()
+	var/datum/vestige_trial/warm_season/trial = bound_mind?.active_vestige_trial
+	if(istype(trial) && trial.egg_item == src)
+		trial.egg_item = null
+		trial.refresh_tracker()
+	bound_mind = null
+	return ..()
+
+/obj/item/vestige_comb_egg/examine(mob/user)
+	. = ..()
+	. += span_notice("Pressed to an open stretch of floor, it can be bedded down — planted, it becomes a clutch that must be warmed, then kept warm while the comb's vermin come for it. Choose ground you can wall.")
+
+/obj/item/vestige_comb_egg/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	if(!isopenturf(interacting_with))
+		return NONE
+	var/turf/open/ground = interacting_with
+	var/datum/vestige_trial/warm_season/trial = user.mind?.active_vestige_trial
+	if(!istype(trial))
+		balloon_alert(user, "the egg is cold clean through!")
+		return ITEM_INTERACT_BLOCKING
+	// Never inside the vestige: the ruin unloads the moment everyone leaves,
+	// and a clutch must not be wiped mid-season by map cleanup
+	if(istype(get_area(ground), /area/ruin/space/has_grav/vestige))
+		balloon_alert(user, "not in the comb itself!")
+		return ITEM_INTERACT_BLOCKING
+	if(ground.is_blocked_turf(exclude_mobs = TRUE))
+		balloon_alert(user, "no room to bed it down!")
+		return ITEM_INTERACT_BLOCKING
+	balloon_alert(user, "bedding it down...")
+	if(!do_after(user, 2 SECONDS, target = ground))
+		return ITEM_INTERACT_BLOCKING
+	if(!user.is_holding(src))
+		return ITEM_INTERACT_BLOCKING
+	// Re-resolve everything; the pact may have been renounced mid-plant
+	trial = user.mind?.active_vestige_trial
+	if(!istype(trial))
+		return ITEM_INTERACT_BLOCKING
+	if(ground.is_blocked_turf(exclude_mobs = TRUE))
+		balloon_alert(user, "no room to bed it down!")
+		return ITEM_INTERACT_BLOCKING
+	var/obj/structure/vestige_comb_egg/clutch = new(ground)
+	clutch.bound_mind = user.mind
+	trial.egg_structure = clutch
+	user.visible_message(
+		span_warning("[user] beds [src] down against the ground, and the ground seems to make room."),
+		span_notice("You bed the egg down. Its warmth stops feeling borrowed and starts feeling budgeted."),
+	)
+	playsound(ground, 'sound/items/weapons/tap.ogg', 50, TRUE)
+	trial.refresh_tracker()
+	qdel(src) // Destroy clears the trial's item pointer
+	return ITEM_INTERACT_SUCCESS
+
+// --- The egg, planted ---
+
+/**
+ * The clutch: a real structure with real integrity, warmed by its keeper's
+ * hand. Once warm it runs the season itself — heralds, work-gangs on a clock,
+ * escalating sizes, idle stragglers re-converged — and holds no trial
+ * reference: everything resolves through bound_mind at the moment it's needed,
+ * the same rule the kit items follow. Unlike the Roost's broodwatch, victory
+ * is not clearing the waves; it is the CLOCK — the shell must simply still be
+ * whole when three minutes of warmth have passed, which makes delaying and
+ * funneling (architecture) worth as much as killing.
+ */
+/obj/structure/vestige_comb_egg
+	name = "hive egg"
+	desc = "An egg the colour of old teeth, bedded into the ground. Something inside it is folded so carefully it must have been folded by someone who loved it."
+	icon = 'icons/mob/nonhuman-player/alien.dmi'
+	icon_state = "egg_growing"
+	color = "#a8b58c"
+	anchored = TRUE
+	density = TRUE
+	max_integrity = VESTIGE_WARM_EGG_INTEGRITY
+	resistance_flags = ACID_PROOF
+	/// Mind of the supplicant keeping this season
+	var/datum/mind/bound_mind
+	/// Whether the season has been started — set once, never unset
+	var/assault_underway = FALSE
+	/// world.time at which the warmth has been held long enough
+	var/incubation_ends = 0
+	/// Work-gangs landed so far (drives escalation)
+	var/squads_landed = 0
+	/// Whether the hatch has been scheduled (guards the deferred timer)
+	var/hatching = FALSE
+	/// Live chewers currently on the comb (culled by death/deletion signals)
+	var/list/chewers = list()
+
+/obj/structure/vestige_comb_egg/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	// Whatever ends the egg — a broken shell, a renounced pact, a hatching —
+	// the remaining vermin wind down, staggered so it reads as an ebb, not a wipe
+	for(var/mob/living/basic/hivebot/vestige_comb_chewer/vermin as anything in chewers)
+		UnregisterSignal(vermin, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
+		addtimer(CALLBACK(vermin, TYPE_PROC_REF(/mob/living/basic/hivebot/vestige_comb_chewer, wind_down)), rand(0.5 SECONDS, 3 SECONDS))
+	chewers.Cut()
+	var/datum/vestige_trial/warm_season/trial = get_bound_trial()
+	if(istype(trial) && !QDELETED(trial))
+		if(trial.egg_structure == src)
+			trial.egg_structure = null
+		trial.refresh_tracker()
+	bound_mind = null
+	return ..()
+
+/// The bound soul's warm season, if it still runs — resolved fresh every time, never stored (renounce-safe)
+/obj/structure/vestige_comb_egg/proc/get_bound_trial()
+	var/datum/vestige_trial/warm_season/trial = bound_mind?.active_vestige_trial
+	if(istype(trial))
+		return trial
+	return null
+
+/obj/structure/vestige_comb_egg/examine(mob/user)
+	. = ..()
+	if(!assault_underway)
+		// Keep the numbers in sync with VESTIGE_WARM_INCUBATION / VESTIGE_WARM_SQUAD_DELAY
+		. += span_notice("It is planted, and patient. A tap from the hand that planted it will offer to warm it — once warm, it needs three unbroken minutes, and the comb's vermin come in work-gangs, another roughly every twenty seconds, hungrier for walls than for people.")
+	else if(!hatching)
+		var/remaining = max(0, round((incubation_ends - world.time) / (1 SECONDS)))
+		. += span_boldwarning("It is warm, and everything that chews nearby knows it. [remaining] seconds of the season remain.")
+	if(atom_integrity < max_integrity * 0.35)
+		. += span_danger("The shell is webbed with cracks. It will not take much more.")
+	else if(atom_integrity < max_integrity * 0.7)
+		. += span_warning("The shell is scored and chipped.")
+
+// The same shell-noises as the ash walker eggs — a struck egg should sound like one
+/obj/structure/vestige_comb_egg/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
+	switch(damage_type)
+		if(BRUTE)
+			if(damage_amount)
+				playsound(loc, 'sound/effects/blob/attackblob.ogg', 90, TRUE)
+			else
+				playsound(src, 'sound/items/weapons/tap.ogg', 50, TRUE)
+		if(BURN)
+			if(damage_amount)
+				playsound(loc, 'sound/items/tools/welder.ogg', 90, TRUE)
+
+/obj/structure/vestige_comb_egg/attack_hand(mob/living/user, list/modifiers)
+	if(user.combat_mode)
+		return ..()
+	// tend() sleeps (tgui_alert); don't hold up the click chain
+	INVOKE_ASYNC(src, PROC_REF(tend), user)
+	return TRUE
+
+/// The keeper's hand on the shell: progress mid-season, or the warm/take-up choice before it
+/obj/structure/vestige_comb_egg/proc/tend(mob/living/user)
+	if(!user.mind || user.mind != bound_mind)
+		balloon_alert(user, "cold, and not yours!")
+		return
+	var/datum/vestige_trial/warm_season/trial = get_bound_trial()
+	if(!istype(trial))
+		balloon_alert(user, "cold clean through!")
+		return
+	if(assault_underway)
+		to_chat(user, span_boldnotice(trial.get_progress_text()))
+		return
+	var/choice = tgui_alert(user, "The egg is planted and patient. Begin the warm season here, on this ground?", name, list("Warm it", "Take it up", "Leave it"))
+	// Re-verify the whole world; the alert slept
+	if(!choice || QDELETED(src) || assault_underway || QDELETED(user) || !user.Adjacent(src) || user.mind != bound_mind)
+		return
+	trial = get_bound_trial()
+	if(!istype(trial))
+		return
+	switch(choice)
+		if("Warm it")
+			begin_season(user)
+		if("Take it up")
+			take_up(user, trial)
+
+/// Returns the egg to hand — only offered before the season begins
+/obj/structure/vestige_comb_egg/proc/take_up(mob/living/user, datum/vestige_trial/warm_season/trial)
+	var/obj/item/vestige_comb_egg/shell = new(get_turf(src))
+	shell.bound_mind = bound_mind
+	trial.egg_item = shell
+	user.put_in_hands(shell)
+	user.visible_message(
+		span_warning("[user] works [src] loose from the ground and gathers it up."),
+		span_notice("You take the egg back up. It defers, again. It is very good at deferring."),
+	)
+	qdel(src) // Destroy clears the trial's structure pointer and refreshes the tracker
+
+/// Begins the season: the shell warms, the clock starts, and the first work-gang is heralded
+/obj/structure/vestige_comb_egg/proc/begin_season(mob/living/user)
+	assault_underway = TRUE
+	incubation_ends = world.time + VESTIGE_WARM_INCUBATION
+	START_PROCESSING(SSobj, src)
+	color = "#e0c47f" // the warmth takes
+	set_light(1.5, 0.8, "#ffce7a")
+	visible_message(span_boldwarning("Warmth blooms through [src] like an account finally being settled. Somewhere across the dark, tool-motors change pitch."))
+	playsound(src, 'sound/mobs/non-humanoids/hiss/lowHiss2.ogg', 60, TRUE)
+	to_chat(user, span_bolddanger("The vermin will have felt that through the deck. Weave your ground and hold the season."))
+	var/datum/vestige_trial/warm_season/trial = get_bound_trial()
+	trial?.refresh_tracker()
+	addtimer(CALLBACK(src, PROC_REF(herald_squad)), 3 SECONDS)
+
+/// Each work-gang announces itself before it lands — the weaver's cue to spend resin
+/obj/structure/vestige_comb_egg/proc/herald_squad()
+	if(QDELETED(src) || !assault_underway || hatching)
+		return
+	if(world.time >= incubation_ends) // the season ends before the gang arrives; let it
+		return
+	visible_message(span_boldwarning("Cutter-motors shrill somewhere close — a salvage gang has smelled the warmth!"))
+	playsound(src, 'sound/machines/buzz/buzz-two.ogg', 60, TRUE)
+	addtimer(CALLBACK(src, PROC_REF(land_squad)), VESTIGE_WARM_WARNING_TIME)
+
+/// A work-gang lands: escalating numbers, a foreman leading the late gangs, most of them comb-bound
+/obj/structure/vestige_comb_egg/proc/land_squad()
+	if(QDELETED(src) || !assault_underway || hatching)
+		return
+	var/list/perches = list()
+	for(var/turf/perch as anything in RANGE_TURFS(VESTIGE_WARM_SPAWN_RANGE, src))
+		if(get_dist(perch, src) < 3)
+			continue
+		if(perch.is_blocked_turf(exclude_mobs = TRUE))
+			continue
+		perches += perch
+	// BYOND round() floors: gangs run 1, 1, 2, 3, 3, 4, 4... capped at VESTIGE_WARM_SQUAD_MAX
+	var/squad_size = min(1 + round(squads_landed * 0.7), VESTIGE_WARM_SQUAD_MAX)
+	for(var/i in 1 to squad_size)
+		var/turf/perch = length(perches) ? pick(perches) : get_turf(src)
+		var/mob/living/basic/hivebot/vestige_comb_chewer/vermin
+		if(i == 1 && squads_landed >= VESTIGE_WARM_FOREMAN_FROM)
+			vermin = new /mob/living/basic/hivebot/vestige_comb_chewer/foreman(perch)
+		else
+			vermin = new /mob/living/basic/hivebot/vestige_comb_chewer(perch)
+		do_sparks(3, TRUE, vermin)
+		// Late gangs bring a loose hunter to keep the weaver honest; everything else wants the comb
+		enlist(vermin, egg_bound = !(squad_size >= 3 && i == squad_size))
+	squads_landed++
+	visible_message(span_boldwarning("Salvage machines clatter out of the dark, cutters already spinning, and turn toward [src]!"))
+	var/datum/vestige_trial/warm_season/trial = get_bound_trial()
+	trial?.refresh_tracker()
+	if(world.time + VESTIGE_WARM_SQUAD_DELAY + VESTIGE_WARM_WARNING_TIME < incubation_ends)
+		addtimer(CALLBACK(src, PROC_REF(herald_squad)), VESTIGE_WARM_SQUAD_DELAY)
+
+/// Books a chewer into the season: siege roster, death/deletion signals, and its own despawn clock
+/obj/structure/vestige_comb_egg/proc/enlist(mob/living/basic/hivebot/vestige_comb_chewer/vermin, egg_bound = TRUE)
+	chewers += vermin
+	RegisterSignal(vermin, COMSIG_LIVING_DEATH, PROC_REF(on_chewer_slain))
+	RegisterSignal(vermin, COMSIG_QDELETING, PROC_REF(on_chewer_gone))
+	// The lifespan rides the CHEWER, not the egg — orphans always clean themselves up
+	addtimer(CALLBACK(vermin, TYPE_PROC_REF(/mob/living/basic/hivebot/vestige_comb_chewer, wind_down)), VESTIGE_WARM_CHEWER_LIFESPAN)
+	if(egg_bound)
+		vermin.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, src)
+
+/// Strikes a chewer from the roster. Safe to call twice (death then deletion).
+/obj/structure/vestige_comb_egg/proc/muster_out(mob/living/vermin)
+	if(!(vermin in chewers))
+		return
+	chewers -= vermin
+	UnregisterSignal(vermin, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
+
+/obj/structure/vestige_comb_egg/proc/on_chewer_slain(mob/living/vermin, gibbed)
+	SIGNAL_HANDLER
+	muster_out(vermin)
+	var/datum/vestige_trial/warm_season/trial = get_bound_trial()
+	trial?.refresh_tracker()
+
+/obj/structure/vestige_comb_egg/proc/on_chewer_gone(mob/living/vermin)
+	SIGNAL_HANDLER
+	muster_out(vermin)
+	var/datum/vestige_trial/warm_season/trial = get_bound_trial()
+	trial?.refresh_tracker()
+
+/**
+ * The season's clock, and its honesty: the warmth is checked here, stragglers
+ * with nothing to chew are re-pointed at the shell, and the tracker's countdown
+ * is kept roughly current without rebuilding buttons every tick.
+ */
+/obj/structure/vestige_comb_egg/process(seconds_per_tick)
+	if(!assault_underway || hatching)
+		return
+	if(world.time >= incubation_ends)
+		finish_season()
+		return
+	for(var/mob/living/basic/hivebot/vestige_comb_chewer/vermin as anything in chewers)
+		var/datum/ai_controller/directive = vermin.ai_controller
+		if(!directive || directive.blackboard[BB_BASIC_MOB_CURRENT_TARGET])
+			continue
+		if(vermin.z != z || get_dist(vermin, src) > 9)
+			continue
+		directive.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, src)
+	if(SPT_PROB(25, seconds_per_tick))
+		var/datum/vestige_trial/warm_season/trial = get_bound_trial()
+		trial?.refresh_tracker()
+	if(SPT_PROB(3, seconds_per_tick))
+		visible_message(span_warning("Something shifts its weight, once, inside [src]."))
+
+/// Three minutes of warmth held: the gangs wind down, and the shell has earned its heir
+/obj/structure/vestige_comb_egg/proc/finish_season()
+	if(hatching)
+		return
+	hatching = TRUE
+	assault_underway = FALSE // no gang lands after the season, no clock keeps running
+	for(var/mob/living/basic/hivebot/vestige_comb_chewer/vermin as anything in chewers)
+		UnregisterSignal(vermin, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
+		addtimer(CALLBACK(vermin, TYPE_PROC_REF(/mob/living/basic/hivebot/vestige_comb_chewer, wind_down)), rand(0.5 SECONDS, 3 SECONDS))
+	chewers.Cut()
+	visible_message(span_boldwarning("The salvage machines stall mid-bite, listen to something on a dead frequency, and begin to come apart. Inside [src], the shifting becomes a working."))
+	// A beat of theater between the season's end and the crack — and it keeps the
+	// hatch out of the middle of the process loop
+	addtimer(CALLBACK(src, PROC_REF(hatch)), 2 SECONDS)
+
+/// The thing the gallery never got to finish. Completes (and deletes) the trial.
+/obj/structure/vestige_comb_egg/proc/hatch()
+	if(QDELETED(src))
+		return
+	var/datum/vestige_trial/warm_season/trial = get_bound_trial()
+	var/mob/living/keeper = bound_mind?.current
+	var/turf/clutch = get_turf(src)
+	visible_message(span_boldwarning("[src] splits along a seam, and something small and pale unfolds out of it, entirely unbothered by history!"))
+	playsound(src, 'sound/effects/splat.ogg', 60, TRUE)
+	playsound(src, 'sound/mobs/non-humanoids/hiss/hiss1.ogg', 40, TRUE)
+	new /obj/item/clothing/mask/facehugger/vestige_comb_heir(clutch)
+	if(isliving(keeper))
+		to_chat(keeper, span_boldnotice("Across the dark, something very large and very composed lets out one long breath — the sound of a succession, against all bookkeeping, resuming."))
+	qdel(src) // clears the trial's structure pointer on the way out
+	if(istype(trial))
+		trial.complete() // deletes the trial — nothing touches it after this
+
+/// The shell breaks: the season fails, the vermin ebb, and the pact resets to nothing — renounceable, never soft-locked
+/obj/structure/vestige_comb_egg/atom_destruction(damage_flag)
+	assault_underway = FALSE // no gang lands on a broken shell, no clock finishes
+	visible_message(span_boldwarning("[src] caves in with a wet crack. The warmth leaves it the way a court leaves a throne room — all at once, and without looking back."))
+	playsound(src, 'sound/effects/splat.ogg', 80, TRUE)
+	var/mob/living/keeper = bound_mind?.current
+	var/datum/vestige_trial/warm_season/trial = get_bound_trial()
+	if(istype(trial) && isliving(keeper))
+		to_chat(keeper, span_bolddanger("[trial.patron_name]'s voice arrives level and unhurried: \"The count is amended. Come and renounce, and the court will advance you another. Grief is no excuse for poor bookkeeping — I have checked.\""))
+	return ..()
+
+// --- The heir ---
+
+/**
+ * What was in the egg: a hugger born sterile into a dynasty of one, harmless
+ * by biology rather than by training. It leaps at nothing, implants nothing,
+ * and can be worn as a mask by anyone with more sentiment than sense. The
+ * succession, such as it is.
+ */
+/obj/item/clothing/mask/facehugger/vestige_comb_heir
+	name = "heir of the comb"
+	desc = "A facehugger the colour of parchment, sterile from the shell out — the last edition of a dynasty, printed without the mechanism. It grips fingers with tremendous ceremony and no ambition whatsoever."
+	sterile = TRUE
+	color = "#e3d5ac" // the Dowager's ivory
+
+// --- The spinneret ---
+
+/**
+ * The Dowager's own spinneret, loaned: weaves a wall of fresh comb resin onto
+ * open ground within two tiles, from a small reserve that redraws itself over
+ * time. Weaving only answers its keeper's live Warm Season and only while the
+ * planted egg stands — the pact's fortification tool never outlives the thing
+ * it was lent to shelter. Everything it weaves dries out on its own timer, so
+ * the world never keeps the architecture either.
+ */
+/obj/item/vestige_comb_spinneret
+	name = "dowager's spinneret"
+	desc = "A resin-spinning organ, dry but not dead, its ducts still primed with something amber. It remembers the comb the way a hand remembers a signature."
+	icon = 'icons/obj/medical/organs/organs.dmi'
+	icon_state = "spinner-x"
+	color = "#d9c184"
+	w_class = WEIGHT_CLASS_SMALL
+	force = 0
+	/// Mind of the supplicant this was lent to — resolved for pointer cleanup only
+	var/datum/mind/bound_mind
+	/// Lengths of resin currently drawn and ready
+	var/charges = VESTIGE_WARM_RESIN_CHARGES
+	/// world.time at which the next length finishes drawing
+	var/next_draw_at = 0
+
+/obj/item/vestige_comb_spinneret/Initialize(mapload)
+	. = ..()
+	START_PROCESSING(SSobj, src)
+
+/obj/item/vestige_comb_spinneret/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	var/datum/vestige_trial/warm_season/trial = bound_mind?.active_vestige_trial
+	if(istype(trial) && trial.spinneret == src)
+		trial.spinneret = null
+	bound_mind = null
+	return ..()
+
+/// The reserve redraws one length at a time, on its own clock
+/obj/item/vestige_comb_spinneret/process(seconds_per_tick)
+	if(charges >= VESTIGE_WARM_RESIN_CHARGES)
+		return
+	if(world.time < next_draw_at)
+		return
+	charges++
+	next_draw_at = world.time + VESTIGE_WARM_RESIN_REGEN
+
+/obj/item/vestige_comb_spinneret/examine(mob/user)
+	. = ..()
+	. += span_notice("Pressed toward open ground within [VESTIGE_WARM_WEAVE_RANGE] tiles, it weaves a wall of fresh comb resin. It holds [VESTIGE_WARM_RESIN_CHARGES] lengths at a time and redraws one every [VESTIGE_WARM_RESIN_REGEN / (1 SECONDS)] seconds; each wall dries out and crumbles on its own after a few minutes. It only weaves while the planted egg stands — it is a shelter, not a franchise.")
+	. += span_notice("[charges] of [VESTIGE_WARM_RESIN_CHARGES] lengths are drawn and ready.")
+
+/obj/item/vestige_comb_spinneret/attack_self(mob/user, modifiers)
+	. = ..()
+	if(.)
+		return
+	balloon_alert(user, "[charges] of [VESTIGE_WARM_RESIN_CHARGES] lengths ready")
+	return TRUE
+
+/obj/item/vestige_comb_spinneret/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	if(!isopenturf(interacting_with))
+		return NONE
+	return weave(interacting_with, user)
+
+/obj/item/vestige_comb_spinneret/ranged_interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	if(!isopenturf(interacting_with))
+		return NONE
+	return weave(interacting_with, user)
+
+/// The weave: gate, channel, re-gate, wall. The mid-assault loop lives here.
+/obj/item/vestige_comb_spinneret/proc/weave(turf/open/ground, mob/living/user)
+	var/datum/vestige_trial/warm_season/trial = user.mind?.active_vestige_trial
+	if(!istype(trial))
+		balloon_alert(user, "the spinneret hangs slack — no pact fills it!")
+		return ITEM_INTERACT_BLOCKING
+	if(!trial.egg_structure || QDELETED(trial.egg_structure))
+		balloon_alert(user, "nothing planted to shelter!")
+		return ITEM_INTERACT_BLOCKING
+	if(ground.z != user.z || get_dist(user, ground) > VESTIGE_WARM_WEAVE_RANGE)
+		balloon_alert(user, "too far to weave!")
+		return ITEM_INTERACT_BLOCKING
+	if(ground.is_blocked_turf()) // mobs block too: no entombing the vermin, or yourself
+		balloon_alert(user, "no room to weave!")
+		return ITEM_INTERACT_BLOCKING
+	if(charges < 1)
+		balloon_alert(user, "the ducts are still drawing!")
+		return ITEM_INTERACT_BLOCKING
+	balloon_alert(user, "weaving...")
+	if(!do_after(user, VESTIGE_WARM_WEAVE_TIME, target = ground))
+		return ITEM_INTERACT_BLOCKING
+	if(!user.is_holding(src))
+		return ITEM_INTERACT_BLOCKING
+	// Re-resolve the world; the channel slept through renounces, chewers and worse
+	trial = user.mind?.active_vestige_trial
+	if(!istype(trial) || !trial.egg_structure || QDELETED(trial.egg_structure))
+		return ITEM_INTERACT_BLOCKING
+	if(ground.is_blocked_turf() || charges < 1)
+		balloon_alert(user, "the weave is spoiled!")
+		return ITEM_INTERACT_BLOCKING
+	charges--
+	if(next_draw_at < world.time) // the reserve was full; start the redraw clock now
+		next_draw_at = world.time + VESTIGE_WARM_RESIN_REGEN
+	var/obj/structure/vestige_comb_resin/wall = new(ground)
+	wall.bound_mind = user.mind
+	trial.woven += wall
+	user.visible_message(
+		span_warning("[user] draws a rope of amber resin from [src] and it stands up into a wall!"),
+		span_notice("You weave a length of the comb back into the world. It sets fast. It has had practice."),
+	)
+	playsound(ground, 'sound/effects/blob/attackblob.ogg', 60, TRUE)
+	return ITEM_INTERACT_SUCCESS
+
+// --- The woven wall ---
+
+/**
+ * A wall of fresh comb resin: real resin stock (melee brute quartered, burn
+ * doubled, smooths with alien walls) at a fraction of the integrity, drying
+ * out on its own timer so neither an abandoned season nor a finished one
+ * leaves fortifications lying around. Holds no trial reference — it clears
+ * itself from its weaver's ledger through bound_mind on the way out.
+ */
+/obj/structure/vestige_comb_resin
+	parent_type = /obj/structure/alien/resin/wall // real resin stock: armor profile, smoothing, shell-noises
+	name = "fresh comb resin"
+	desc = "Resin drawn warm from a loaned organ and set into a wall. It is already drying at the edges — there are perhaps four minutes of wall in it, and everything with cutters nearby knows it."
+	max_integrity = VESTIGE_WARM_RESIN_INTEGRITY
+	color = "#d9c184" // amber over the old purple; the comb as the Dowager remembers it
+	/// Mind of the weaver, for striking this wall from the trial's ledger on Destroy
+	var/datum/mind/bound_mind
+
+/obj/structure/vestige_comb_resin/Initialize(mapload)
+	. = ..()
+	addtimer(CALLBACK(src, PROC_REF(dry_out)), VESTIGE_WARM_RESIN_LIFESPAN)
+
+/obj/structure/vestige_comb_resin/Destroy()
+	var/datum/vestige_trial/warm_season/trial = bound_mind?.active_vestige_trial
+	if(istype(trial))
+		trial.woven -= src
+	bound_mind = null
+	return ..()
+
+/// The wall's clock runs out (or its pact does): it crumbles. Safe on the deleted.
+/obj/structure/vestige_comb_resin/proc/dry_out()
+	if(QDELETED(src))
+		return
+	visible_message(span_warning("[src] dries through, sags, and sifts apart into pale dust."))
+	qdel(src)
+
+// --- The vermin ---
+
+/**
+ * The comb-chewers: the barge's salvage drones, gone feral over years of
+ * eating the hive that ate their crew. Ordinary hivebot chassis with the
+ * priorities inverted — trivial harm to people, ruinous harm to structures —
+ * so the season is lost or won in resin, not in doorway bodyblocking. They
+ * never flee, they wind down rather than linger, and they leave nothing but
+ * scrap: a failed season pays nothing, and a finished one pays only through
+ * the patron.
+ */
+/mob/living/basic/hivebot/vestige_comb_chewer
+	name = "comb-chewer"
+	desc = "A salvage drone gone long feral: cutters furred with resin dust, chassis scabbed with generations of it. It is not angry. It has a quota."
+	health = 35
+	maxHealth = 35
+	melee_damage_lower = 6
+	melee_damage_upper = 6
+	obj_damage = 80 // the priorities: walls are food, people are furniture
+	death_message = "grinds to a halt and comes apart!"
+	ai_controller = /datum/ai_controller/basic_controller/vestige_comb_chewer
+
+/// A chewer's clock runs out (or its egg does): it winds down to scrap. Safe on the dead and deleted.
+/mob/living/basic/hivebot/vestige_comb_chewer/proc/wind_down()
+	if(QDELETED(src) || stat == DEAD)
+		return
+	visible_message(span_warning("[src] shudders, forgets what it was chewing, and comes apart into scrap."))
+	do_sparks(3, TRUE, src)
+	qdel(src)
+
+/// The late-season gang-leader: heavier, meaner, and much worse news for a wall
+/mob/living/basic/hivebot/vestige_comb_chewer/foreman
+	name = "salvage foreman"
+	desc = "A heavy salvage frame with a generation of smaller machines' parts riveted on. Whatever managed the barge's tear-down still lives in here, and it has never once missed a deadline."
+	icon_state = "strong"
+	icon_living = "strong"
+	icon_dead = "strong"
+	health = 90
+	maxHealth = 90
+	melee_damage_lower = 12
+	melee_damage_upper = 12
+	obj_damage = 120
+
+/**
+ * Chewer AI: the hivebot toolkit re-ordered around demolition. Same dumb
+ * bump-movement — which is the point: a blocked chewer chews (the stock
+ * attack_obstacle_in_path subtree smashes dense objects in its way), so every
+ * wall the weaver lays is time bought, not a maze solved. The targeting
+ * strategy below keeps the egg valid as a held target (the generic finder
+ * only scans mobs and hostile machines; the egg assigns itself).
+ */
+/datum/ai_controller/basic_controller/vestige_comb_chewer
+	blackboard = list(
+		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic/vestige_comb_chewer,
+	)
+	ai_movement = /datum/ai_movement/basic_avoidance
+	idle_behavior = /datum/idle_behavior/idle_random_walk
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/simple_find_target,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/basic_melee_attack_subtree,
+	)
+
+/**
+ * Standard basic targeting, plus the egg. The egg is assigned as a blackboard
+ * target by the clutch itself (find_potential_targets only scans mobs and
+ * GLOB.hostile_machines), so this strategy's job is to keep that assignment
+ * VALID: both the target-finder's keep-current-target check and the melee
+ * behavior's re-validation run through can_attack. (The Roost's brood carp
+ * proved this pattern.)
+ */
+/datum/targeting_strategy/basic/vestige_comb_chewer
+
+/datum/targeting_strategy/basic/vestige_comb_chewer/can_attack(mob/living/living_mob, atom/the_target, vision_range)
+	if(istype(the_target, /obj/structure/vestige_comb_egg))
+		if(QDELETED(the_target) || living_mob.z != the_target.z)
+			return FALSE
+		if(vision_range && get_dist(living_mob, the_target) > vision_range)
+			return FALSE
+		return TRUE
+	return ..()
+
+// ===== THE BOILING KISS =====
+
+/**
+ * The corrosion trial: only deaths YOUR acid is still working on count. The
+ * loaned maw spits a single aimed glob; the glob starts a slow, RAMPING
+ * corrosion (a status effect defined below) that clings for a fixed window —
+ * and the trial credits a wild thing only if it dies inside that window. Where
+ * the Roost's ember-jaw is a cone you sweep and a fire that either takes or
+ * doesn't, the kiss is a commitment: spit, then close on the melting target
+ * and finish it yourself before the acid dries. Attribution is honest the same
+ * way the ember-jaw's is — the maw marks what it lands on, an expired
+ * corrosion releases the mark, and only a mark that dies still melting pays.
+ */
+/datum/vestige_trial/boiling_kiss
+	name = "The Boiling Kiss"
+	// Keep the numbers in sync with VESTIGE_KISS_KILLS_NEEDED / VESTIGE_KISS_CLING
+	// (initial values must be constant, so no define interpolation here)
+	desc = "My daughters carried acid the way courtiers carry seals: a mark that what was dissolved, was dissolved by appointment. Take this maw. Its kiss clings for fourteen seconds and eats deeper with every breath — and five wild things must be finished while it is still working in them. Spit, then CLOSE. End them yourself, under your own hands, before the kiss dries or something else takes the honor. What dies unmarked is scavenge, and this court has never once counted scavenge. Almost never. There was a winter."
+	/// Prey already entered in the ledger (weakref -> TRUE) — a revived and re-melted beast is still one appointment
+	var/list/dissolved = list()
+	/// The loaned maw. Reclaimed the moment the pact ends.
+	var/obj/item/vestige_kiss_maw/maw
+
+/datum/vestige_trial/boiling_kiss/on_accepted(mob/living/user)
+	var/obj/item/vestige_kiss_maw/kit = new(get_turf(user))
+	kit.bound_mind = owner
+	maw = hand_over(user, kit)
+	to_chat(user, span_notice("The maw settles into your grip, jaws slightly parted. Something in the back of it is still swallowing."))
+
+/datum/vestige_trial/boiling_kiss/Destroy()
+	QDEL_NULL(maw)
+	return ..()
+
+/datum/vestige_trial/boiling_kiss/get_progress_text()
+	return "The kiss has finished [length(dissolved)] of [VESTIGE_KISS_KILLS_NEEDED] wild things."
+
+/// Credits a melting death. May complete (and delete) the trial. Returns FALSE if this beast was already dissolved.
+/datum/vestige_trial/boiling_kiss/proc/consume(mob/living/prey)
+	var/datum/weakref/key = WEAKREF(prey)
+	if(dissolved[key])
+		return FALSE
+	dissolved[key] = TRUE
+	refresh_tracker()
+	if(length(dissolved) >= VESTIGE_KISS_KILLS_NEEDED)
+		complete()
+	return TRUE
+
+// --- The maw ---
+
+/**
+ * The caustic maw: a royal daughter's fused mandibles that spit one aimed glob
+ * of acid on a short cooldown — a weak taste of the caustic spit boon. Inert
+ * without an active Boiling Kiss (the standing kit rule), and QDEL'd with the
+ * pact. Attribution rides mark_prey below: marks mean OUR acid is in them
+ * right now, and the corrosion status effect reports its own end.
+ */
+/obj/item/vestige_kiss_maw
+	name = "caustic maw"
+	desc = "The fused mandibles of a royal daughter, cured hard, ducts still weeping something that fumes faintly against the air. It points at whatever you are angriest with."
+	icon = 'icons/obj/medical/organs/organs.dmi'
+	icon_state = "acid"
+	color = "#b9c96a"
+	w_class = WEIGHT_CLASS_SMALL
+	force = 0
+	light_range = 1.2
+	light_power = 0.4
+	light_color = "#a4d434"
+	/// Mind of the supplicant this was lent to — resolved for pointer cleanup only
+	var/datum/mind/bound_mind
+	/// Mobs our acid is currently working in (victim -> hunter's mind), released when the corrosion ends
+	var/list/marked_prey = list()
+	COOLDOWN_DECLARE(spit_cooldown)
+
+/obj/item/vestige_kiss_maw/Destroy()
+	for(var/mob/living/prey as anything in marked_prey)
+		UnregisterSignal(prey, list(COMSIG_LIVING_DEATH, COMSIG_LIVING_STATUS_REMOVED, COMSIG_QDELETING))
+	marked_prey.Cut()
+	var/datum/vestige_trial/boiling_kiss/trial = bound_mind?.active_vestige_trial
+	if(istype(trial) && trial.maw == src)
+		trial.maw = null
+	bound_mind = null
+	return ..()
+
+/obj/item/vestige_kiss_maw/examine(mob/user)
+	. = ..()
+	. += span_notice("Aimed at a living thing within [VESTIGE_KISS_RANGE] tiles, it spits a glob of clinging acid. Only wild things that die while that acid is still working in them feed the kiss — let it dry, or let something else land the kill, and the appointment is wasted.")
+
+/obj/item/vestige_kiss_maw/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	if(!isliving(interacting_with) || interacting_with == user)
+		return NONE
+	return spit_at(interacting_with, user, modifiers)
+
+/obj/item/vestige_kiss_maw/ranged_interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	if(!isliving(interacting_with) || interacting_with == user)
+		return NONE
+	return spit_at(interacting_with, user, modifiers)
+
+/// The spit itself: one aimed glob, pact-gated, on the maw's own clock
+/obj/item/vestige_kiss_maw/proc/spit_at(mob/living/target, mob/living/hunter, list/modifiers)
+	var/datum/vestige_trial/boiling_kiss/trial = hunter.mind?.active_vestige_trial
+	if(!istype(trial))
+		balloon_alert(hunter, "the maw is dry — no pact fills it!")
+		return ITEM_INTERACT_BLOCKING
+	if(!COOLDOWN_FINISHED(src, spit_cooldown))
+		balloon_alert(hunter, "the glands are still swelling!")
+		return ITEM_INTERACT_BLOCKING
+	COOLDOWN_START(src, spit_cooldown, VESTIGE_KISS_COOLDOWN)
+	hunter.visible_message(
+		span_danger("[hunter] squeezes [src], and it spits a hissing glob of acid at [target]!"),
+		span_notice("You squeeze the maw. Something that outlived its queen spits on your behalf."),
+	)
+	playsound(hunter, 'sound/mobs/non-humanoids/bileworm/bileworm_spit.ogg', 70, TRUE)
+	var/obj/projectile/vestige_kiss_glob/gob = new(get_turf(hunter))
+	gob.aim_projectile(target, hunter, modifiers)
+	gob.firer = hunter
+	gob.fired_from = src
+	gob.fire()
+	return ITEM_INTERACT_SUCCESS
+
+/**
+ * Attribution, done properly: a mark means OUR acid is in them right now. The
+ * corrosion ending — expiry, a fullheal, anything — releases the mark, so a
+ * later death pays nothing. Death while marked (and still corroding, belt and
+ * suspenders) credits the hunter's live trial, resolved fresh at that moment.
+ */
+/obj/item/vestige_kiss_maw/proc/mark_prey(mob/living/prey, datum/mind/hunter_mind)
+	if(marked_prey[prey]) // re-spat mid-melt: freshest hunter takes the appointment
+		marked_prey[prey] = hunter_mind
+		return
+	marked_prey[prey] = hunter_mind
+	RegisterSignal(prey, COMSIG_LIVING_DEATH, PROC_REF(on_prey_died))
+	RegisterSignal(prey, COMSIG_LIVING_STATUS_REMOVED, PROC_REF(on_prey_status_lost))
+	RegisterSignal(prey, COMSIG_QDELETING, PROC_REF(on_prey_gone))
+
+/obj/item/vestige_kiss_maw/proc/unmark_prey(mob/living/prey)
+	if(!marked_prey[prey])
+		return
+	marked_prey -= prey
+	UnregisterSignal(prey, list(COMSIG_LIVING_DEATH, COMSIG_LIVING_STATUS_REMOVED, COMSIG_QDELETING))
+
+/obj/item/vestige_kiss_maw/proc/on_prey_died(mob/living/prey, gibbed)
+	SIGNAL_HANDLER
+	var/datum/mind/hunter_mind = marked_prey[prey]
+	unmark_prey(prey)
+	if(!prey.has_status_effect(/datum/status_effect/vestige_kiss_corrosion)) // the kiss dried first; the removal signal usually catches this, but be sure
+		return
+	var/datum/vestige_trial/boiling_kiss/trial = hunter_mind?.active_vestige_trial
+	if(!istype(trial))
+		return
+	var/mob/living/hunter = hunter_mind.current
+	if(trial.consume(prey) && isliving(hunter)) // consume may complete (and delete) the trial — nothing touches it after this
+		to_chat(hunter, span_notice("[prey] dies with the kiss still working. Somewhere, a very old court enters the appointment as kept."))
+		playsound(hunter, 'sound/mobs/non-humanoids/hiss/lowHiss3.ogg', 25, TRUE)
+
+/// The corrosion ended before the death did — the appointment lapses
+/obj/item/vestige_kiss_maw/proc/on_prey_status_lost(mob/living/prey, datum/status_effect/lost)
+	SIGNAL_HANDLER
+	if(!istype(lost, /datum/status_effect/vestige_kiss_corrosion))
+		return
+	unmark_prey(prey)
+
+/obj/item/vestige_kiss_maw/proc/on_prey_gone(mob/living/prey)
+	SIGNAL_HANDLER
+	unmark_prey(prey)
+
+// --- The glob ---
+
+/obj/projectile/vestige_kiss_glob
+	name = "glob of royal acid"
+	icon_state = "neurotoxin"
+	color = "#a4d434"
+	damage = VESTIGE_KISS_SPLASH_DAMAGE
+	damage_type = BURN
+	armor_flag = BIO
+	range = VESTIGE_KISS_RANGE
+	impact_effect_type = /obj/effect/temp_visual/impact_effect/neurotoxin
+	hitsound = 'sound/effects/wounds/sizzle1.ogg'
+
+/obj/projectile/vestige_kiss_glob/on_hit(atom/target, blocked = 0, pierce_hit)
+	. = ..()
+	if(!isliving(target) || blocked >= 100)
+		return
+	var/mob/living/prey = target
+	if(HAS_TRAIT(prey, TRAIT_GODMODE)) // patrons and traders do not melt
+		return
+	prey.apply_status_effect(/datum/status_effect/vestige_kiss_corrosion)
+	to_chat(prey, span_userdanger("[firer ? "[firer]'s" : "A"] glob of acid splashes across you and starts to work inward!"))
+	// The ledger only opens for honest quarry with a live pact behind the spit
+	var/obj/item/vestige_kiss_maw/maw = fired_from
+	var/mob/living/hunter = firer
+	if(!istype(maw) || !isliving(hunter))
+		return
+	if(!vestige_comb_quarry(prey, hunter))
+		return
+	var/datum/vestige_trial/boiling_kiss/trial = hunter.mind?.active_vestige_trial
+	if(!istype(trial))
+		return
+	maw.mark_prey(prey, hunter.mind)
+
+// --- The corrosion ---
+
+/**
+ * The kiss itself: a clinging corrosion that eats DEEPER the longer it works —
+ * each tick bites one point harder than the last, up to a cap — but expires on
+ * a fixed clock. Re-spitting refreshes the clock without resetting the depth
+ * (same instance, STATUS_EFFECT_REFRESH), so a committed hunter can keep a big
+ * beast melting through a long fight. On its own it rarely kills anything
+ * bigger than vermin; that is the design — the acid opens the appointment, the
+ * hunter keeps it.
+ */
+/datum/status_effect/vestige_kiss_corrosion
+	id = "vestige_kiss_corrosion"
+	duration = VESTIGE_KISS_CLING
+	tick_interval = VESTIGE_KISS_TICK
+	status_type = STATUS_EFFECT_REFRESH
+	alert_type = /atom/movable/screen/alert/status_effect/vestige_kiss_corrosion
+	/// How much burn the next tick eats — the kiss eats deeper the longer it clings
+	var/bite = 1
+
+/datum/status_effect/vestige_kiss_corrosion/on_apply()
+	owner.add_atom_colour("#9fbf4e", TEMPORARY_COLOUR_PRIORITY)
+	return TRUE
+
+/datum/status_effect/vestige_kiss_corrosion/tick(seconds_between_ticks)
+	if(owner.stat == DEAD)
+		return
+	owner.adjustFireLoss(bite)
+	bite = min(bite + 1, VESTIGE_KISS_BITE_CAP)
+	if(prob(40))
+		playsound(owner, 'sound/effects/wounds/sizzle1.ogg', 12, TRUE)
+
+/datum/status_effect/vestige_kiss_corrosion/on_remove()
+	owner.remove_atom_colour(TEMPORARY_COLOUR_PRIORITY, "#9fbf4e")
+
+/atom/movable/screen/alert/status_effect/vestige_kiss_corrosion
+	name = "Boiling Kiss"
+	desc = "Someone's acid is clinging to you, and every breath it eats a little deeper. It will run its course in seconds. Whether you do is a separate question."
+
+// ===== THE CENSUS =====
+
+/**
+ * The timing trial, at range: sting wild things in the very act of hunting.
+ * The loaned stinger fires a barb at any distance in view, but only a subject
+ * that is CURRENTLY mid-hunt — AI locked onto a living person — enters the
+ * rolls, and a counted subject seizes briefly (the interception's payoff: you
+ * can genuinely break a charge aimed at a friend). An idle beast stung is
+ * scenery: no entry, no seize, so the barb never becomes a stun weapon (the
+ * Menagerie's probe precedent). Where the Roost's Wingbeat is a two-tile
+ * melee-range parry, the Census is read-and-intercept at seven tiles — the
+ * pressure is watching OTHER hunts, not surviving your own. Capped per
+ * subject so seven entries means reading seven real hunts, not farming one
+ * persistent carp.
+ */
+/datum/vestige_trial/comb_census
+	name = "The Census"
+	// Keep the numbers in sync with VESTIGE_CENSUS_MARKS_NEEDED / VESTIGE_CENSUS_PER_SUBJECT
+	// (initial values must be constant, so no define interpolation here)
+	desc = "A queen must know her borders and what hunts along them. Take the stinger and take the census: sting the wild things in the very act of hunting — mid-charge, jaws committed, intent declared against some living soul. Seven entries. An idle beast is not an entry; it is scenery, and I do not catalogue scenery. No subject enters the rolls more than twice — a ledger with one name in it is a diary. The sting will seize what it counts, which the counted party may consider the court's stamp."
+	/// Entries in the rolls so far
+	var/entries = 0
+	/// Entries per subject (weakref -> count), capping repeat appearances
+	var/list/entries_per_subject = list()
+	/// The loaned stinger. Reclaimed the moment the pact ends.
+	var/obj/item/vestige_census_stinger/stinger
+
+/datum/vestige_trial/comb_census/on_accepted(mob/living/user)
+	var/obj/item/vestige_census_stinger/kit = new(get_turf(user))
+	kit.bound_mind = owner
+	stinger = hand_over(user, kit)
+	to_chat(user, span_notice("The stinger lies along your forearm like it was measured for it. It is very interested in everything that moves."))
+
+/datum/vestige_trial/comb_census/Destroy()
+	QDEL_NULL(stinger)
+	return ..()
+
+/datum/vestige_trial/comb_census/get_progress_text()
+	return "The rolls hold [entries] of [VESTIGE_CENSUS_MARKS_NEEDED] entries."
+
+/// Enters a mid-hunt subject in the rolls. May complete (and delete) the trial. Returns FALSE if this subject is counted out.
+/datum/vestige_trial/comb_census/proc/tally(mob/living/subject)
+	var/datum/weakref/key = WEAKREF(subject)
+	var/prior = entries_per_subject[key] || 0
+	if(prior >= VESTIGE_CENSUS_PER_SUBJECT)
+		return FALSE
+	entries_per_subject[key] = prior + 1
+	entries++
+	refresh_tracker()
+	if(entries >= VESTIGE_CENSUS_MARKS_NEEDED)
+		complete()
+	return TRUE
+
+// --- The stinger ---
+
+/**
+ * The census stinger: a royal tail-barb cured to amber, firing a neuro-barb on
+ * a short cooldown. The barb always flies and always pricks (token toxin);
+ * the SEIZE and the entry only land together, on honest quarry caught
+ * mid-hunt — judged at the moment of impact, because the whole trial is what
+ * they were doing when the barb met them. Inert without an active Census,
+ * QDEL'd with the pact.
+ */
+/obj/item/vestige_census_stinger
+	name = "census stinger"
+	desc = "A tail-barb the colour of amber, needle still weeping one slow bead at a time. Held right, it feels less like a weapon than a rubber stamp with convictions."
+	icon = 'icons/obj/medical/organs/organs.dmi'
+	icon_state = "neurotox"
+	color = "#d8c06a"
+	w_class = WEIGHT_CLASS_SMALL
+	force = 0
+	/// Mind of the supplicant this was lent to — resolved for pointer cleanup only
+	var/datum/mind/bound_mind
+	COOLDOWN_DECLARE(sting_cooldown)
+
+/obj/item/vestige_census_stinger/Destroy()
+	var/datum/vestige_trial/comb_census/trial = bound_mind?.active_vestige_trial
+	if(istype(trial) && trial.stinger == src)
+		trial.stinger = null
+	bound_mind = null
+	return ..()
+
+/obj/item/vestige_census_stinger/examine(mob/user)
+	. = ..()
+	. += span_notice("Aimed at a living thing within [VESTIGE_CENSUS_RANGE] tiles, it fires a neuro-barb. Only a wild thing caught in the very act of hunting a living person is entered in the rolls — and only entered subjects seize. The same subject can appear at most [VESTIGE_CENSUS_PER_SUBJECT] times.")
+
+/obj/item/vestige_census_stinger/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	if(!isliving(interacting_with) || interacting_with == user)
+		return NONE
+	return sting_at(interacting_with, user, modifiers)
+
+/obj/item/vestige_census_stinger/ranged_interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	if(!isliving(interacting_with) || interacting_with == user)
+		return NONE
+	return sting_at(interacting_with, user, modifiers)
+
+/// The barb itself: one aimed shot, pact-gated, on the stinger's own clock
+/obj/item/vestige_census_stinger/proc/sting_at(mob/living/target, mob/living/hunter, list/modifiers)
+	var/datum/vestige_trial/comb_census/trial = hunter.mind?.active_vestige_trial
+	if(!istype(trial))
+		balloon_alert(hunter, "the stinger hangs limp — no pact fills it!")
+		return ITEM_INTERACT_BLOCKING
+	if(!COOLDOWN_FINISHED(src, sting_cooldown))
+		balloon_alert(hunter, "the barb is still weeping!")
+		return ITEM_INTERACT_BLOCKING
+	COOLDOWN_START(src, sting_cooldown, VESTIGE_CENSUS_COOLDOWN)
+	hunter.visible_message(
+		span_danger("[hunter] flicks [src], and a barb whips out toward [target]!"),
+		span_notice("You flick the stinger. The census is taking."),
+	)
+	playsound(hunter, 'sound/items/weapons/pierce.ogg', 60, TRUE)
+	var/obj/projectile/vestige_census_barb/barb = new(get_turf(hunter))
+	barb.aim_projectile(target, hunter, modifiers)
+	barb.firer = hunter
+	barb.fired_from = src
+	barb.fire()
+	return ITEM_INTERACT_SUCCESS
+
+/**
+ * The appraisal, judged at impact: quarry, conscious, and mid-hunt against a
+ * living person. Entered subjects are seized; capped or idle subjects get the
+ * prick and nothing else — the barb pays only when the ledger does.
+ */
+/obj/item/vestige_census_stinger/proc/appraise(mob/living/subject, mob/living/hunter)
+	var/datum/vestige_trial/comb_census/trial = hunter.mind?.active_vestige_trial
+	if(!istype(trial)) // the pact ended while the barb was in the air
+		return
+	if(!vestige_comb_quarry(subject, hunter))
+		return
+	if(!is_declared_hunter(subject, hunter))
+		to_chat(hunter, span_warning("[subject] was idle when the barb landed. The Census records intent, not existence."))
+		return
+	if(!trial.tally(subject)) // may complete (and delete) the trial — nothing touches it after this
+		to_chat(hunter, span_warning("[subject] already stands [VESTIGE_CENSUS_PER_SUBJECT] times in the rolls. The ledger wants new names."))
+		return
+	subject.Paralyze(VESTIGE_CENSUS_SEIZE)
+	subject.visible_message(
+		span_danger("[subject] seizes mid-lunge, every limb stamped still at once!"),
+		span_userdanger("Something cold writes you down, and your body stops to be counted!"),
+	)
+	to_chat(hunter, span_notice("[subject] is caught in the act and entered in the rolls. Somewhere, a very old court initials the margin."))
+
+/**
+ * TRUE when a subject's sting should count: conscious and currently hunting a
+ * living person — the hunter, or anyone with a soul. Basic mobs report their
+ * hunt through the AI blackboard; the old simple_animal hostiles still carry
+ * theirs on a target var. (Quarry-ness is checked separately, above.)
+ */
+/obj/item/vestige_census_stinger/proc/is_declared_hunter(mob/living/subject, mob/living/hunter)
+	if(subject.stat != CONSCIOUS)
+		return FALSE
+	var/atom/mark
+	var/datum/ai_controller/instincts = subject.ai_controller
+	if(instincts)
+		mark = instincts.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	if(isnull(mark) && istype(subject, /mob/living/simple_animal/hostile))
+		var/mob/living/simple_animal/hostile/old_beast = subject
+		mark = old_beast.target
+	if(!isliving(mark))
+		return FALSE
+	var/mob/living/quarry = mark
+	if(quarry.stat == DEAD)
+		return FALSE
+	// The census counts hunts against people: the hunter, or any living soul
+	return quarry == hunter || quarry.mind || ishuman(quarry)
+
+// --- The barb ---
+
+/obj/projectile/vestige_census_barb
+	name = "census barb"
+	icon_state = "toxin"
+	color = "#e8cf7a"
+	damage = VESTIGE_CENSUS_STING_DAMAGE
+	damage_type = TOX
+	armor_flag = BIO
+	range = VESTIGE_CENSUS_RANGE
+	impact_effect_type = /obj/effect/temp_visual/impact_effect/neurotoxin
+	hitsound = 'sound/items/weapons/pierce.ogg'
+
+/obj/projectile/vestige_census_barb/on_hit(atom/target, blocked = 0, pierce_hit)
+	. = ..()
+	if(!isliving(target) || blocked >= 100)
+		return
+	var/obj/item/vestige_census_stinger/stinger = fired_from
+	var/mob/living/hunter = firer
+	if(!istype(stinger) || !isliving(hunter))
+		return
+	stinger.appraise(target, hunter)
+
+#undef VESTIGE_WARM_INCUBATION
+#undef VESTIGE_WARM_SQUAD_DELAY
+#undef VESTIGE_WARM_WARNING_TIME
+#undef VESTIGE_WARM_SQUAD_MAX
+#undef VESTIGE_WARM_FOREMAN_FROM
+#undef VESTIGE_WARM_SPAWN_RANGE
+#undef VESTIGE_WARM_CHEWER_LIFESPAN
+#undef VESTIGE_WARM_EGG_INTEGRITY
+#undef VESTIGE_WARM_RESIN_INTEGRITY
+#undef VESTIGE_WARM_RESIN_LIFESPAN
+#undef VESTIGE_WARM_RESIN_CHARGES
+#undef VESTIGE_WARM_RESIN_REGEN
+#undef VESTIGE_WARM_WEAVE_RANGE
+#undef VESTIGE_WARM_WEAVE_TIME
+#undef VESTIGE_KISS_KILLS_NEEDED
+#undef VESTIGE_KISS_COOLDOWN
+#undef VESTIGE_KISS_RANGE
+#undef VESTIGE_KISS_SPLASH_DAMAGE
+#undef VESTIGE_KISS_CLING
+#undef VESTIGE_KISS_TICK
+#undef VESTIGE_KISS_BITE_CAP
+#undef VESTIGE_CENSUS_MARKS_NEEDED
+#undef VESTIGE_CENSUS_PER_SUBJECT
+#undef VESTIGE_CENSUS_COOLDOWN
+#undef VESTIGE_CENSUS_RANGE
+#undef VESTIGE_CENSUS_SEIZE
+#undef VESTIGE_CENSUS_STING_DAMAGE
+
+
+/**
+ * # The Comb — xenomorph vestige boons
+ *
+ * The Dowager's half of the bargain: the arts of a dead house, granted to
+ * adoptive brood. The xenomorph's power upstream is a whole parallel biology —
+ * plasma vessels, alien organs, carbon-only action datums — so nothing here is
+ * a direct port. The upstream alien action base (/datum/action/cooldown/alien,
+ * alien_powers.dm) hard-fails IsAvailable for anyone without a plasma vessel
+ * organ (getPlasma() returns -1 for a plain human), so every art below is a
+ * standalone reimplementation on the generic spell rails, plasma economy
+ * traded for cooldowns — the same treatment the fleet gave the Mansus grasp
+ * and the morph's maw.
+ *
+ * Three chains, six boons:
+ * - the acid (Caustic Spit -> Vitriol): anti-property corrosion at range
+ * - the sting (Neurotoxic Lash -> Paralytic Lash): stamina pressure, opener not stunlock
+ * - the architecture (Resin Weaving -> Brood Architecture): real upstream resin
+ *   structures, channelled and capped
+ *
+ * Patron and trials live in the theme file; only the boons and their spells
+ * are defined here. Boon typepaths are the contract the patron's boon_types
+ * list references.
+ */
+
+// Tuning constants (file-local, #undef at bottom). Boon descs quote these
+// numbers literally — keep them in sync.
+
+// --- The acid ---
+/// Spits per Caustic Spit cooldown window
+#define VESTIGE_SPIT_COOLDOWN (12 SECONDS)
+/// Burn a glob deals to living things — deliberately mediocre; the acid is for property
+#define VESTIGE_SPIT_MOB_BURN 10
+/// Acid power handed to the acid component on struck objects (upstream xeno corrosion is 200)
+#define VESTIGE_SPIT_ACID_POWER 80
+/// Acid volume ditto (upstream 1000) — ~43 raw damage/sec decaying over ~12s; vs an airlock's
+/// 70 acid armor that's ~130-150 per glob, so 3-4 globs per standard airlock (450 integrity)
+#define VESTIGE_SPIT_ACID_VOLUME 250
+/// Spits per Vitriol cooldown window
+#define VESTIGE_SPIT_VITRIOL_COOLDOWN (10 SECONDS)
+/// Burn Vitriol deals to living things
+#define VESTIGE_SPIT_VITRIOL_MOB_BURN 15
+/// Vitriol's deeper corrosion — ~77 raw/sec over ~15s; roughly two globs per airlock
+#define VESTIGE_SPIT_VITRIOL_ACID_POWER 160
+#define VESTIGE_SPIT_VITRIOL_ACID_VOLUME 400
+/// Flat damage the vitriol glob deals a struck object on impact, before the corrosion
+#define VESTIGE_SPIT_VITRIOL_IMPACT 60
+/// Armor the impact bites through — 50 gets through window acid armor (100), which
+/// plain acid_act never touches: this is the "melts what the base cannot" mechanism
+#define VESTIGE_SPIT_VITRIOL_IMPACT_AP 50
+/// How long a vitriol splash keeps sizzling where it landed
+#define VESTIGE_SPIT_RESIDUE_LIFETIME (8 SECONDS)
+/// Burn per second for standing in the splash
+#define VESTIGE_SPIT_RESIDUE_BURN 5
+
+// --- The sting ---
+/// Stings per Neurotoxic Lash cooldown window
+#define VESTIGE_LASH_COOLDOWN (12 SECONDS)
+/// Stamina damage a dart deals (upstream alien neurotoxin is 65 at AP 50)
+#define VESTIGE_LASH_STAMINA 40
+/// Armor the dart drills through (BIO armor class, same as upstream)
+#define VESTIGE_LASH_AP 30
+/// Slurred tongue on hit
+#define VESTIGE_LASH_SLUR (6 SECONDS)
+/// Staggered (movespeed slow) on hit, and the ceiling repeated darts can stack it to
+#define VESTIGE_LASH_STAGGER (4 SECONDS)
+#define VESTIGE_LASH_STAGGER_MAX (8 SECONDS)
+/// Watering eyes on hit
+#define VESTIGE_LASH_EYEBLUR (2 SECONDS)
+/// Paralytic Lash cooldown — longer, because it carries two darts
+#define VESTIGE_LASH_PARALYTIC_COOLDOWN (16 SECONDS)
+/// Darts per Paralytic Lash cast (fired click by click; banking one part-refunds the cooldown)
+#define VESTIGE_LASH_PARALYTIC_VOLLEY 2
+/// Stamina damage a target must already carry for a paralytic dart to floor them.
+/// on_hit runs BEFORE the dart's own damage lands (atom_act.dm: bullet_act calls
+/// proj.on_hit first, living applies damage after), so this is tuned to what dart
+/// two actually sees after dart one: 40 base, less after armor
+#define VESTIGE_LASH_FLOOR_THRESHOLD 35
+/// The knockdown itself — a fold, not a leash
+#define VESTIGE_LASH_FLOOR_KNOCKDOWN (1.5 SECONDS)
+
+// --- The architecture ---
+/// Seconds of throat-work to raise one structure
+#define VESTIGE_RESIN_CHANNEL (3 SECONDS)
+/// Works per Resin Weaving cooldown window
+#define VESTIGE_RESIN_COOLDOWN (20 SECONDS)
+/// Standing works the base craft sustains — raising one past this crumbles the eldest
+#define VESTIGE_RESIN_CAP 6
+/// The architect's quicker throat
+#define VESTIGE_RESIN_ARCHITECT_CHANNEL (1.5 SECONDS)
+#define VESTIGE_RESIN_ARCHITECT_COOLDOWN (10 SECONDS)
+#define VESTIGE_RESIN_ARCHITECT_CAP 10
+/// Brute AND burn each the brood cradle knits per second of willing rest
+#define VESTIGE_RESIN_CRADLE_HEAL 2
+/// Stamina the cradle clears per second
+#define VESTIGE_RESIN_CRADLE_STAMINA 5
+
+// ===== BOONS =====
+
+// --- Chain: the acid ---
+
+/datum/vestige_boon/spell/caustic_spit
+	name = "Caustic Spit"
+	desc = "The first art of the house: the acid. Spit it up to 7 tiles, once every 12 seconds, at whatever OBJECT offends you — the glob clings and eats for ten seconds or so; three or four applications open a standard airlock, machines and clutter go faster, and glass, insolently, shrugs it off entirely. Flesh it merely scalds for 10 burn: the acid was never for flesh, it was for property. The mouth must be bare to spit. Floors and hull it will not touch — a house does not dissolve its own foundations."
+	grant_text = "A new gland settles in behind your back teeth, patient as a title deed."
+	spell_type = /datum/action/cooldown/spell/pointed/projectile/vestige_spit/caustic
+
+/datum/vestige_boon/spell/caustic_spit/vitriol
+	name = "Vitriol"
+	desc = "The acid, come into its inheritance. The glob now lands like a writ — 60 damage to the struck object on impact, biting through 50 points of armor, which is enough to eat the glass and the riot-grade things the young acid could not — the corrosion runs deeper (about two globs per airlock), and the splash lingers as a sizzling pool for 8 seconds that burns anyone standing in it for 5 a second, yourself included. Every 10 seconds, bare-mouthed. It still spares living flesh the worst of it — 15 burn — and it still refuses floors. Estates dissolve; grudges are kept in better repair."
+	grant_text = "The gland deepens its holdings. What it makes now remembers grudges."
+	upgrades_from = /datum/vestige_boon/spell/caustic_spit
+	spell_type = /datum/action/cooldown/spell/pointed/projectile/vestige_spit/caustic/vitriol
+
+// --- Chain: the sting ---
+
+/datum/vestige_boon/spell/neuro_lash
+	name = "Neurotoxic Lash"
+	desc = "The second art: the sting. A dart of neurotoxin, up to 7 tiles, every 12 seconds, bare-mouthed — 40 stamina where it lands, drilling through 30 armor, and for a few breaths after (4 seconds of slowed knees, 6 of a thick tongue, 2 of watering eyes) the stung fight like the newly disinherited. It opens arguments. It does not finish them. My daughters learned the sting before the kill for a reason, little heir: learn the same order."
+	grant_text = "Something coils at the hinge of your jaw and signs itself into the family register."
+	spell_type = /datum/action/cooldown/spell/pointed/projectile/vestige_spit/neuro
+
+/datum/vestige_boon/spell/neuro_lash/paralytic
+	name = "Paralytic Lash"
+	desc = "The sting, written twice, the way contracts are. Two darts per cooldown (16 seconds, fired click by click), each the full 40-stamina sting — and any dart that lands on someone already winded, carrying 35 or more stamina of fatigue, folds them to the floor for a moment and a half. Land both and the second always finds the knees. It is still not a leash — a breath and they are up. My house never kept what could not stand back up. That is what cradles are for."
+	grant_text = "The sting learns the second signature — the one that closes accounts."
+	upgrades_from = /datum/vestige_boon/spell/neuro_lash
+	spell_type = /datum/action/cooldown/spell/pointed/projectile/vestige_spit/neuro/paralytic
+
+// --- Chain: the architecture ---
+
+/datum/vestige_boon/spell/resin_weaver
+	name = "Resin Weaving"
+	desc = "The third art, the one that makes a house a HOUSE. Choose bare solid floor within arm's reach and work your throat for 3 seconds to raise what the moment requires: a resin wall — blunt things glance off it, but fire eats it double — or a membrane that lets the light through. One work every 20 seconds, and the house sustains six at once; raise a seventh and the eldest sloughs away. It will not entomb the standing and it will not take root on open space. Walls first, heir. Everything else my line ever lost, it lost for building the nursery before the walls."
+	grant_text = "Your throat learns the old craft: the house is wherever you are standing."
+	spell_type = /datum/action/cooldown/spell/pointed/vestige_resin_weaver
+
+/datum/vestige_boon/spell/resin_weaver/architect
+	name = "Brood Architecture"
+	desc = "The craft, matured. A breath and a half to raise, 10 seconds between works, ten works sustained — and one new art, the one I am oldest in: the brood cradle. Lie into it willingly (it takes no prisoners; I saw what taking prisoners made of my daughters) and it swaddles your hands useless and knits you whole — 2 brute, 2 burn and 5 fatigue mended each second you rest. Shrug to be let out; it never argues. Heirs are grown, not found."
+	grant_text = "The craft matures in your throat. Somewhere behind your ribs, room is made for a nursery."
+	upgrades_from = /datum/vestige_boon/spell/resin_weaver
+	spell_type = /datum/action/cooldown/spell/pointed/vestige_resin_weaver/architect
+
+// ===== THE SPIT (shared mouth) =====
+
+/**
+ * Common chassis for both of the house's spat arts. Upstream both live on
+ * /datum/action/cooldown/alien/acid (alien_powers.dm), which is welded to
+ * carbon plasma vessels; this is the same click-to-fire experience rebuilt on
+ * the pointed projectile spell rail (wholly mob-type-agnostic — verified: the
+ * whole cast chain runs off owner and the clicked atom). One upstream honesty
+ * is kept deliberately: a covered mouth cannot spit (the alien neurotoxin
+ * gland refuses through a mask, and so do we) — routed through before_cast
+ * because this fork's Activate() ignores cast() return values.
+ */
+/datum/action/cooldown/spell/pointed/projectile/vestige_spit
+	button_icon = 'icons/mob/actions/actions_xeno.dmi'
+	background_icon_state = "bg_alien"
+	overlay_icon_state = "bg_alien_border"
+	sound = 'sound/mobs/non-humanoids/hiss/hiss6.ogg'
+	spell_requirements = NONE
+	cast_range = 7
+	/// The line shouted over the deck when a glob goes out
+	var/spit_message = "spits!"
+	/// The same line, addressed to the spitter
+	var/spit_message_self = "You spit."
+
+/datum/action/cooldown/spell/pointed/projectile/vestige_spit/before_cast(atom/cast_on)
+	. = ..()
+	if(. & SPELL_CANCEL_CAST)
+		return
+	if(iscarbon(owner))
+		var/mob/living/carbon/spitter = owner
+		if(spitter.is_mouth_covered(ITEM_SLOT_MASK))
+			owner.balloon_alert(owner, "your mouth is covered!")
+			return . | SPELL_CANCEL_CAST
+
+/datum/action/cooldown/spell/pointed/projectile/vestige_spit/after_cast(atom/cast_on)
+	. = ..()
+	owner.visible_message(
+		span_danger("[owner] [spit_message]"),
+		span_noticealien(spit_message_self),
+	)
+
+// --- Caustic spit ---
+
+/datum/action/cooldown/spell/pointed/projectile/vestige_spit/caustic
+	name = "Caustic Spit"
+	desc = "Spit a glob of corrosive acid up to 7 tiles. Objects it strikes are eaten by clinging acid; living things are lightly scalded. Needs a bare mouth."
+	button_icon_state = "alien_acid"
+	cooldown_time = VESTIGE_SPIT_COOLDOWN
+	active_msg = "You work your tongue against a gland that was not there yesterday..."
+	deactive_msg = "You swallow the acid back down. It goes reluctantly."
+	projectile_type = /obj/projectile/vestige_caustic_spit
+	spit_message = "spits a hissing glob of acid!"
+	spit_message_self = "You spit a hissing glob of acid."
+
+/**
+ * The acid, in flight. Mediocre against flesh by design (the upstream
+ * corrosion refuses mobs outright because it would one-shot them; we allow a
+ * scald and nothing more), and it NEVER touches turfs: the upstream turf
+ * branch (AddComponent acid on a turf) melts walls and floors stage by stage —
+ * aboard a player ship that is a hole in the hull with extra steps, so both
+ * tiers refuse turfs entirely and say so here. Object corrosion only.
+ *
+ * Mob equipment is also left alone on purpose — acid_act on a carbon melts
+ * worn gear, which in PvP boarding is uncounterable inventory deletion.
+ */
+/obj/projectile/vestige_caustic_spit
+	name = "caustic spit"
+	icon_state = "neurotoxin"
+	color = "#c4d24a" // bile-gold: the house's acid, not the sting
+	damage = VESTIGE_SPIT_MOB_BURN
+	damage_type = BURN
+	armor_flag = BIO
+	impact_effect_type = /obj/effect/temp_visual/impact_effect/neurotoxin
+	/// Acid power handed to the corrosion component on struck objects
+	var/acid_power = VESTIGE_SPIT_ACID_POWER
+	/// Acid volume ditto — how long the meal lasts
+	var/acid_volume = VESTIGE_SPIT_ACID_VOLUME
+
+/obj/projectile/vestige_caustic_spit/on_hit(atom/target, blocked = 0, pierce_hit)
+	. = ..()
+	if(!isobj(target)) // living things got the scald from the parent; turfs get NOTHING (hull safety, see header)
+		return
+	var/obj/property = target
+	// acid_act refuses UNACIDABLE things itself and returns FALSE
+	if(property.acid_act(acid_power, acid_volume))
+		property.visible_message(span_danger("[property] sizzles and smokes under the clinging acid!"))
+
+// --- Vitriol ---
+
+/datum/action/cooldown/spell/pointed/projectile/vestige_spit/caustic/vitriol
+	name = "Vitriol"
+	desc = "Spit a glob of matured acid up to 7 tiles: heavy impact damage to objects (armor-piercing), deeper corrosion, and a sizzling pool where it lands. Needs a bare mouth."
+	cooldown_time = VESTIGE_SPIT_VITRIOL_COOLDOWN
+	projectile_type = /obj/projectile/vestige_caustic_spit/vitriol
+	spit_message = "spits a seething rope of vitriol!"
+	spit_message_self = "You spit a seething rope of vitriol."
+
+/**
+ * The impact damage is the qualitative step up: plain acid_act rides the acid
+ * component, whose damage respects acid armor with no penetration — windows
+ * (acid 100, window.dm) are flatly immune to the base glob. The vitriol
+ * impact goes through take_damage with 50 AP, so glass and riot-grade
+ * property finally answer for themselves. The residue pool is our own effect
+ * (below), not the acid component — the component on a TURF melts the turf,
+ * and no tier of this art is allowed to do that.
+ */
+/obj/projectile/vestige_caustic_spit/vitriol
+	name = "vitriolic spit"
+	color = "#96d41e"
+	damage = VESTIGE_SPIT_VITRIOL_MOB_BURN
+	acid_power = VESTIGE_SPIT_VITRIOL_ACID_POWER
+	acid_volume = VESTIGE_SPIT_VITRIOL_ACID_VOLUME
+	/// Flat impact damage to struck objects, dealt before the corrosion sets in
+	var/impact_damage = VESTIGE_SPIT_VITRIOL_IMPACT
+	/// Armor the impact bites through
+	var/impact_penetration = VESTIGE_SPIT_VITRIOL_IMPACT_AP
+
+/obj/projectile/vestige_caustic_spit/vitriol/on_hit(atom/target, blocked = 0, pierce_hit)
+	// The pool goes down wherever the glob dies. If it died against a wall,
+	// puddle at the projectile's own last open tile instead of inside the wall.
+	var/turf/splash = get_turf(target)
+	if(isclosedturf(splash))
+		splash = get_turf(src)
+	. = ..() // parent handles the scald and the object corrosion
+	if(splash)
+		new /obj/effect/vestige_vitriol_residue(splash)
+	if(!isobj(target))
+		return
+	var/obj/property = target
+	if(!property.uses_integrity || (property.resistance_flags & (INDESTRUCTIBLE|UNACIDABLE)))
+		return
+	property.take_damage(impact_damage, BURN, ACID, TRUE, null, impact_penetration)
+
+/**
+ * The splash: a few seconds of sizzling zone denial where a vitriol glob
+ * landed. Deliberately narrow — it burns LIVING things standing in it (anyone,
+ * the spitter included: acid has no loyalty) and nothing else. It never
+ * attaches acid to its turf (hull safety) and leaves loose items to the
+ * direct-hit corrosion, so the grief surface is exactly one tile of "do not
+ * stand here" on an 8-second timer. Stacked pools from multiple spitters
+ * stack their burn; one spitter's cooldown outlasts the pool's lifetime.
+ */
+/obj/effect/vestige_vitriol_residue
+	name = "sizzling vitriol"
+	desc = "A slick of spat acid, chewing on nothing and waiting for something better. It will spend itself in a few seconds."
+	icon = 'icons/effects/acid.dmi'
+	icon_state = "default"
+	color = "#96d41e"
+	alpha = 180
+	anchored = TRUE
+	layer = ABOVE_OPEN_TURF_LAYER
+	plane = FLOOR_PLANE
+	/// Throttles the "your boots are sizzling" spam
+	COOLDOWN_DECLARE(sizzle_warning)
+
+/obj/effect/vestige_vitriol_residue/Initialize(mapload)
+	. = ..()
+	QDEL_IN(src, VESTIGE_SPIT_RESIDUE_LIFETIME)
+	START_PROCESSING(SSobj, src)
+	var/static/list/loc_connections = list(
+		COMSIG_ATOM_ENTERED = PROC_REF(on_entered),
+	)
+	AddElement(/datum/element/connect_loc, loc_connections)
+
+/obj/effect/vestige_vitriol_residue/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	return ..()
+
+/obj/effect/vestige_vitriol_residue/process(seconds_per_tick)
+	for(var/mob/living/bather in loc)
+		scald(bather, VESTIGE_SPIT_RESIDUE_BURN * seconds_per_tick)
+
+/obj/effect/vestige_vitriol_residue/proc/on_entered(datum/source, atom/movable/arrived)
+	SIGNAL_HANDLER
+	if(!isliving(arrived))
+		return
+	scald(arrived, VESTIGE_SPIT_RESIDUE_BURN)
+
+/// One helping of the pool. Damage-only — no gear melting, no stun riders.
+/obj/effect/vestige_vitriol_residue/proc/scald(mob/living/bather, burn)
+	if(bather.stat == DEAD || HAS_TRAIT(bather, TRAIT_GODMODE))
+		return
+	bather.adjustFireLoss(burn)
+	if(COOLDOWN_FINISHED(src, sizzle_warning))
+		COOLDOWN_START(src, sizzle_warning, 2 SECONDS)
+		to_chat(bather, span_danger("The vitriol sizzles against you!"))
+		playsound(src, 'sound/items/tools/welder.ogg', 30, TRUE)
+
+// ===== THE STING =====
+
+/**
+ * The neurotoxin, rebuilt. Upstream's gland (alien/acid/neurotoxin) is the
+ * same welded carbon action, and its projectile (/obj/projectile/neurotoxin,
+ * spit.dm) deals 65 stamina at AP 50 — near-crit from a single hit. This
+ * house teaches a smaller sting: 40 at AP 30, plus the short sensory riders
+ * (stagger, slur, blur) that make it a fight-OPENER. The riders live on our
+ * own projectile subtype; slur/blur ride the projectile vars the engine
+ * already applies on hit (living_defense.dm apply_effects), the stagger is
+ * applied in on_hit because there is no projectile var for it.
+ */
+/datum/action/cooldown/spell/pointed/projectile/vestige_spit/neuro
+	name = "Neurotoxic Lash"
+	desc = "Spit a neurotoxin dart up to 7 tiles: heavy stamina damage plus a few seconds of stagger, slur and watering eyes. Needs a bare mouth."
+	button_icon_state = "alien_neurotoxin_0"
+	cooldown_time = VESTIGE_LASH_COOLDOWN
+	active_msg = "Your jaw aches as the sting seats itself..."
+	deactive_msg = "You unclench. The sting settles back to waiting."
+	projectile_type = /obj/projectile/vestige_neuro_lash
+	spit_message = "spits a lash of neurotoxin!"
+	spit_message_self = "You spit a lash of neurotoxin."
+
+/obj/projectile/vestige_neuro_lash
+	name = "neurotoxic lash"
+	icon_state = "neurotoxin"
+	damage = VESTIGE_LASH_STAMINA
+	damage_type = STAMINA
+	armor_flag = BIO
+	armour_penetration = VESTIGE_LASH_AP
+	slur = VESTIGE_LASH_SLUR
+	eyeblur = VESTIGE_LASH_EYEBLUR
+	impact_effect_type = /obj/effect/temp_visual/impact_effect/neurotoxin
+
+/obj/projectile/vestige_neuro_lash/on_hit(atom/target, blocked = 0, pierce_hit)
+	. = ..()
+	if(!isliving(target) || blocked >= 100)
+		return
+	var/mob/living/stung = target
+	if(stung.mob_biotypes & MOB_ROBOTIC) // no venom argues with hydraulics
+		return
+	stung.adjust_staggered_up_to(VESTIGE_LASH_STAGGER, VESTIGE_LASH_STAGGER_MAX)
+
+/**
+ * The paralytic tier: two darts per cooldown (the pointed projectile base's
+ * own charge machinery — clicking twice fires both, deactivating with one
+ * banked part-refunds the cooldown), and a knockdown rider against targets
+ * already winded. The threshold reads getStaminaLoss() in on_hit, which runs
+ * BEFORE this dart's own damage is applied (bullet_act calls proj.on_hit
+ * first, then the living target applies damage/effects — atom_act.dm 116,
+ * living_defense.dm 94) — so "already winded" honestly means damage carried
+ * INTO this hit: dart one never floors a fresh target, dart two floors
+ * whoever dart one softened. 1.5 seconds every 16 is a fold, not a chain.
+ */
+/datum/action/cooldown/spell/pointed/projectile/vestige_spit/neuro/paralytic
+	name = "Paralytic Lash"
+	desc = "Spit up to two neurotoxin darts per cooldown. A dart that hits someone already winded (35+ stamina damage) also floors them for 1.5 seconds. Needs a bare mouth."
+	cooldown_time = VESTIGE_LASH_PARALYTIC_COOLDOWN
+	projectile_amount = VESTIGE_LASH_PARALYTIC_VOLLEY
+	projectile_type = /obj/projectile/vestige_neuro_lash/paralytic
+
+/obj/projectile/vestige_neuro_lash/paralytic
+	name = "paralytic lash"
+
+/obj/projectile/vestige_neuro_lash/paralytic/on_hit(atom/target, blocked = 0, pierce_hit)
+	. = ..() // parent applies the stagger (and skips robots/full blocks)
+	if(!isliving(target) || blocked >= 100)
+		return
+	var/mob/living/stung = target
+	if(stung.mob_biotypes & MOB_ROBOTIC)
+		return
+	if(stung.getStaminaLoss() < VESTIGE_LASH_FLOOR_THRESHOLD)
+		return
+	stung.Knockdown(VESTIGE_LASH_FLOOR_KNOCKDOWN)
+	stung.visible_message(
+		span_warning("[stung]'s legs fold under the sting!"),
+		span_userdanger("The paralytic sting folds your legs out from under you!"),
+	)
+
+// ===== THE ARCHITECTURE =====
+
+/**
+ * The resin arts, rebuilt as a channelled pointed build-spell (the Reliquary's
+ * Iron Refusal precedent, minus the rusted-floor prerequisite). Upstream's
+ * builder (alien/make_structure/resin) is the same plasma-welded carbon
+ * action; the STRUCTURES it builds are entirely self-contained (aliens.dm —
+ * real integrity, air blocking, the melee-quarter/burn-double armor quirk),
+ * so those are built as-is and only the builder is replaced.
+ *
+ * The channel and every cancel live in before_cast (fork quirk: Activate()
+ * ignores cast() return values, so a cast()-side cancel would still spend the
+ * cooldown). Grief rails, each deliberate:
+ * - open, non-space turfs only (upstream refuses space too); NOTHING is ever
+ *   done to the turf itself — the wall is a structure standing on it
+ * - dense works refuse tiles with someone else standing on them: no entombing
+ *   (walling YOURSELF in is the house's oldest privilege, and is allowed)
+ * - a standing-works cap, oldest-crumbles: one weaver can plug a corridor,
+ *   not slowly resin an entire deck. The ledger lives on the spell; works
+ *   outlive the spell (an upgrade replacing it starts a fresh ledger and
+ *   abandons the old works where they stand — they are just structures).
+ */
+/datum/action/cooldown/spell/pointed/vestige_resin_weaver
+	name = "Resin Weaving"
+	desc = "Channel for a few seconds over adjacent bare floor to raise a resin wall or membrane. Blunt blows glance off resin; fire eats it double. Only so many works stand at once — the eldest crumbles for the newest."
+	button_icon = 'icons/mob/actions/actions_xeno.dmi'
+	button_icon_state = "alien_resin"
+	background_icon_state = "bg_alien"
+	overlay_icon_state = "bg_alien_border"
+	sound = 'sound/effects/splat.ogg'
+	cooldown_time = VESTIGE_RESIN_COOLDOWN
+	spell_requirements = NONE
+	cast_range = 1
+	aim_assist = FALSE // this spell wants the FLOOR the crew is standing on, never the crew
+	active_msg = "Your throat thickens with the old craft. Choose ground..."
+	deactive_msg = "You swallow the craft back down."
+	/// Seconds of conspicuous retching between choosing ground and the work standing
+	var/channel_time = VESTIGE_RESIN_CHANNEL
+	/// Standing works this weaver sustains before the eldest is reclaimed
+	var/works_cap = VESTIGE_RESIN_CAP
+	/// The shape chosen in before_cast, consumed by cast
+	var/chosen_shape
+	/// The works this weaver currently sustains, eldest first (pruned by deletion signals)
+	var/list/standing_works = list()
+
+/datum/action/cooldown/spell/pointed/vestige_resin_weaver/Destroy()
+	standing_works.Cut() // the works themselves stand; only the ledger dies
+	return ..()
+
+/// name -> structure typepath. The architect tier appends the cradle.
+/datum/action/cooldown/spell/pointed/vestige_resin_weaver/proc/get_shapes()
+	return list(
+		"resin wall" = /obj/structure/alien/resin/wall,
+		"resin membrane" = /obj/structure/alien/resin/membrane,
+	)
+
+/datum/action/cooldown/spell/pointed/vestige_resin_weaver/is_valid_target(atom/cast_on)
+	. = ..()
+	if(!.)
+		return FALSE
+	if(!isopenturf(cast_on))
+		cast_on.balloon_alert(owner, "needs bare floor!")
+		return FALSE
+	var/turf/open/ground = cast_on
+	if(isspaceturf(ground))
+		ground.balloon_alert(owner, "nothing to bind to!")
+		return FALSE
+	if(ground.is_blocked_turf(exclude_mobs = TRUE))
+		ground.balloon_alert(owner, "no room!")
+		return FALSE
+	if((locate(/obj/structure/alien/resin) in ground) || (locate(/obj/structure/bed/nest) in ground))
+		ground.balloon_alert(owner, "already resin-wrought!")
+		return FALSE
+	return TRUE
+
+// The whole conversation happens here — shape choice, channel, re-validation —
+// so any cancellation refunds the cast before the cooldown is ever paid
+/datum/action/cooldown/spell/pointed/vestige_resin_weaver/before_cast(atom/cast_on)
+	. = ..()
+	if(. & SPELL_CANCEL_CAST)
+		return
+	var/turf/open/ground = cast_on
+	var/shape_path = pick_shape() // sleeps on the radial
+	if(!shape_path || QDELETED(src) || QDELETED(owner) || !isliving(owner))
+		return . | SPELL_CANCEL_CAST
+	if(!can_raise(ground, shape_path))
+		return . | SPELL_CANCEL_CAST
+	owner.visible_message(
+		span_warning("[owner] hunches and begins working up a thick purple resin!"),
+		span_noticealien("You work your throat around the old craft."),
+	)
+	playsound(owner, 'sound/mobs/non-humanoids/alien/alien_york.ogg', 60, TRUE)
+	if(!do_after(owner, channel_time, target = ground))
+		return . | SPELL_CANCEL_CAST
+	// The world had [channel_time] to move: re-verify everything before paying
+	if(!can_raise(ground, shape_path))
+		return . | SPELL_CANCEL_CAST
+	chosen_shape = shape_path
+
+/// Radial over the house's shapes, anchored on the weaver. Returns a structure typepath or null.
+/datum/action/cooldown/spell/pointed/vestige_resin_weaver/proc/pick_shape()
+	var/list/shapes = get_shapes()
+	var/list/options = list()
+	for(var/shape_name in shapes)
+		var/obj/structure/shape_type = shapes[shape_name]
+		options[shape_name] = image(icon = initial(shape_type.icon), icon_state = initial(shape_type.icon_state))
+	var/choice = show_radial_menu(owner, owner, options, custom_check = CALLBACK(src, PROC_REF(weave_check), owner), tooltips = TRUE)
+	if(!choice)
+		return null
+	return shapes[choice]
+
+/// Menu/channel validity: the spell still exists and its owner is still up to this
+/datum/action/cooldown/spell/pointed/vestige_resin_weaver/proc/weave_check(mob/living/weaver)
+	return !QDELETED(src) && !QDELETED(weaver) && weaver == owner && !weaver.incapacitated
+
+/// Shape-aware placement check, run before AND after the channel
+/datum/action/cooldown/spell/pointed/vestige_resin_weaver/proc/can_raise(turf/open/ground, obj/structure/shape_path)
+	if(QDELETED(ground) || !isopenturf(ground) || isspaceturf(ground))
+		return FALSE
+	if(get_dist(get_turf(owner), ground) > cast_range) // the weaver may have wandered mid-channel
+		ground.balloon_alert(owner, "too far!")
+		return FALSE
+	if(ground.is_blocked_turf(exclude_mobs = TRUE))
+		ground.balloon_alert(owner, "no room!")
+		return FALSE
+	if((locate(/obj/structure/alien/resin) in ground) || (locate(/obj/structure/bed/nest) in ground))
+		ground.balloon_alert(owner, "already resin-wrought!")
+		return FALSE
+	if(initial(shape_path.density)) // no entombing the standing — except, traditionally, yourself
+		for(var/mob/living/bystander in ground)
+			if(bystander != owner)
+				ground.balloon_alert(owner, "someone is standing there!")
+				return FALSE
+	return TRUE
+
+/datum/action/cooldown/spell/pointed/vestige_resin_weaver/cast(atom/cast_on)
+	. = ..()
+	if(!chosen_shape) // belt and suspenders; before_cast always sets it on the success path
+		return
+	var/turf/ground = get_turf(cast_on)
+	var/obj/structure/work = new chosen_shape(ground)
+	chosen_shape = null
+	owner.visible_message(
+		span_warning("[owner] vomits up a sheet of resin, and it stands: [work]!"),
+		span_noticealien("The work stands. The house grows by one room."),
+	)
+	enroll(work)
+
+/// Books a work into the ledger and reclaims the eldest past the cap
+/datum/action/cooldown/spell/pointed/vestige_resin_weaver/proc/enroll(obj/structure/work)
+	standing_works += work
+	RegisterSignal(work, COMSIG_QDELETING, PROC_REF(on_work_lost))
+	while(length(standing_works) > works_cap)
+		var/obj/structure/eldest = standing_works[1]
+		standing_works -= eldest // pruned here AND by on_work_lost (list -= tolerates both), so the loop can never spin
+		if(QDELETED(eldest))
+			continue
+		eldest.visible_message(span_warning("[eldest] sloughs apart into inert slurry — the house only sustains so much of itself."))
+		playsound(eldest, 'sound/effects/splat.ogg', 50, TRUE)
+		qdel(eldest)
+
+/datum/action/cooldown/spell/pointed/vestige_resin_weaver/proc/on_work_lost(obj/structure/work)
+	SIGNAL_HANDLER
+	standing_works -= work
+
+// --- The architect ---
+
+/datum/action/cooldown/spell/pointed/vestige_resin_weaver/architect
+	name = "Brood Architecture"
+	desc = "Channel briefly over adjacent bare floor to raise a resin wall, a membrane, or a brood cradle that slowly mends whoever willingly rests in it."
+	cooldown_time = VESTIGE_RESIN_ARCHITECT_COOLDOWN
+	channel_time = VESTIGE_RESIN_ARCHITECT_CHANNEL
+	works_cap = VESTIGE_RESIN_ARCHITECT_CAP
+
+/datum/action/cooldown/spell/pointed/vestige_resin_weaver/architect/get_shapes()
+	. = ..()
+	.["brood cradle"] = /obj/structure/bed/nest/vestige_cradle
+
+/**
+ * The nursery art. The upstream alien nest (alien_nest.dm) is welded shut for
+ * a plain human in BOTH directions — user_buckle_mob demands the buckler have
+ * a plasma vessel organ and the occupant lack one, and a trapped occupant
+ * without a vessel faces a 100-second solo struggle — so both verbs are
+ * reimplemented for what this cradle actually is: a willing berth, not a
+ * restraint. Only you may lay yourself into it (drag yourself onto it), and
+ * ANYONE gets out of it instantly (resist, or a click from a helper) — no
+ * trapping lane exists. The chassis' TRAIT_HANDS_BLOCKED (post_buckle_mob)
+ * is kept deliberately: swaddled means helpless, which is the price of the
+ * mending. Heals only the living; the dead get nothing but the swaddling.
+ */
+/obj/structure/bed/nest/vestige_cradle
+	name = "brood cradle"
+	desc = "A nest of pale resin, woven inward in patient rings. It looks — and there is no way around this — comfortable."
+
+/obj/structure/bed/nest/vestige_cradle/examine(mob/user)
+	. = ..()
+	. += span_notice("Drag yourself onto it to be taken in — it accepts no one unwilling. While you rest, it swaddles your hands and knits [VESTIGE_RESIN_CRADLE_HEAL] brute, [VESTIGE_RESIN_CRADLE_HEAL] burn and [VESTIGE_RESIN_CRADLE_STAMINA] fatigue a second. Resist to be released at once.")
+
+/obj/structure/bed/nest/vestige_cradle/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	return ..()
+
+/obj/structure/bed/nest/vestige_cradle/user_buckle_mob(mob/living/occupant, mob/user, check_loc = TRUE)
+	// Deliberately NOT calling the nest parent: its plasma-vessel gates would
+	// refuse a plain human on both sides. Willing self-swaddling only.
+	if(occupant != user)
+		balloon_alert(user, "it takes only the willing!")
+		return
+	if(!istype(occupant) || get_dist(src, user) > 1 || occupant.loc != loc || user.incapacitated || occupant.buckled)
+		return
+	if(has_buckled_mobs())
+		balloon_alert(user, "occupied!")
+		return
+	if(!buckle_mob(occupant))
+		return
+	occupant.visible_message(
+		span_notice("[occupant] lies back into [src], and the resin folds over [occupant.p_them()] like a held breath."),
+		span_notice("You lie back, and the cradle takes you. Your hands are swaddled useless; the mending begins."),
+	)
+
+/obj/structure/bed/nest/vestige_cradle/user_unbuckle_mob(mob/living/occupant, mob/living/hero)
+	// No struggle timer, no plasma gate: a willing berth releases at a word
+	if(!length(buckled_mobs))
+		return
+	unbuckle_mob(occupant)
+	add_fingerprint(hero)
+	occupant.visible_message(
+		span_notice("[src] parts and lets [occupant] up without argument."),
+		span_notice("The cradle parts and lets you up without argument."),
+	)
+
+/obj/structure/bed/nest/vestige_cradle/post_buckle_mob(mob/living/occupant)
+	. = ..()
+	START_PROCESSING(SSobj, src)
+
+/obj/structure/bed/nest/vestige_cradle/post_unbuckle_mob(mob/living/occupant)
+	. = ..()
+	STOP_PROCESSING(SSobj, src)
+
+/obj/structure/bed/nest/vestige_cradle/process(seconds_per_tick)
+	if(!has_buckled_mobs())
+		return
+	for(var/mob/living/resting as anything in buckled_mobs)
+		if(resting.stat == DEAD)
+			continue
+		resting.heal_overall_damage(
+			brute = VESTIGE_RESIN_CRADLE_HEAL * seconds_per_tick,
+			burn = VESTIGE_RESIN_CRADLE_HEAL * seconds_per_tick,
+			required_bodytype = BODYTYPE_ORGANIC,
+		)
+		resting.adjustStaminaLoss(-VESTIGE_RESIN_CRADLE_STAMINA * seconds_per_tick)
+		if(SPT_PROB(3, seconds_per_tick))
+			to_chat(resting, span_notice("The cradle shifts around you, patient as a grandmother."))
+
+#undef VESTIGE_SPIT_COOLDOWN
+#undef VESTIGE_SPIT_MOB_BURN
+#undef VESTIGE_SPIT_ACID_POWER
+#undef VESTIGE_SPIT_ACID_VOLUME
+#undef VESTIGE_SPIT_VITRIOL_COOLDOWN
+#undef VESTIGE_SPIT_VITRIOL_MOB_BURN
+#undef VESTIGE_SPIT_VITRIOL_ACID_POWER
+#undef VESTIGE_SPIT_VITRIOL_ACID_VOLUME
+#undef VESTIGE_SPIT_VITRIOL_IMPACT
+#undef VESTIGE_SPIT_VITRIOL_IMPACT_AP
+#undef VESTIGE_SPIT_RESIDUE_LIFETIME
+#undef VESTIGE_SPIT_RESIDUE_BURN
+#undef VESTIGE_LASH_COOLDOWN
+#undef VESTIGE_LASH_STAMINA
+#undef VESTIGE_LASH_AP
+#undef VESTIGE_LASH_SLUR
+#undef VESTIGE_LASH_STAGGER
+#undef VESTIGE_LASH_STAGGER_MAX
+#undef VESTIGE_LASH_EYEBLUR
+#undef VESTIGE_LASH_PARALYTIC_COOLDOWN
+#undef VESTIGE_LASH_PARALYTIC_VOLLEY
+#undef VESTIGE_LASH_FLOOR_THRESHOLD
+#undef VESTIGE_LASH_FLOOR_KNOCKDOWN
+#undef VESTIGE_RESIN_CHANNEL
+#undef VESTIGE_RESIN_COOLDOWN
+#undef VESTIGE_RESIN_CAP
+#undef VESTIGE_RESIN_ARCHITECT_CHANNEL
+#undef VESTIGE_RESIN_ARCHITECT_COOLDOWN
+#undef VESTIGE_RESIN_ARCHITECT_CAP
+#undef VESTIGE_RESIN_CRADLE_HEAL
+#undef VESTIGE_RESIN_CRADLE_STAMINA

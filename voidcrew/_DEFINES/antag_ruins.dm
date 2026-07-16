@@ -1,11 +1,11 @@
 // Vestige ruin (antag boon) tuning knobs — see voidcrew/modules/antag_ruins/
 
 /// When the first vestige ruin surfaces on the overmap
-#define VESTIGE_FIRST_SPAWN_TIME (1 MINUTES)
+#define VESTIGE_FIRST_SPAWN_TIME (15 SECONDS)
 /// Delay between subsequent vestige ruin arrivals
-#define VESTIGE_SPAWN_INTERVAL (1 MINUTES)
+#define VESTIGE_SPAWN_INTERVAL (15 SECONDS)
 /// Hard cap on vestige ruins per round (also capped by how many themes exist)
-#define VESTIGE_MAX_PER_ROUND 4
+#define VESTIGE_MAX_PER_ROUND 14
 
 /// Most boon candidates a fulfilled pact offers at once (fewer if the patron has less left to give)
 #define VESTIGE_REWARD_CHOICES 3

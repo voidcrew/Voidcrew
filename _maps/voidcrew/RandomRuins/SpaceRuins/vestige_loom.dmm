@@ -1,0 +1,2181 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/machinery/door/airlock{
+	name = "Husbandry Office"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"ab" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/loom)
+"ac" = (
+/obj/structure/mannequin/wood,
+/turf/open/floor/carpet/royalblue,
+/area/ruin/space/has_grav/vestige/loom)
+"ad" = (
+/obj/structure/spider/cocoon,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"ae" = (
+/obj/structure/spider/passage,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/loom)
+"af" = (
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"ag" = (
+/obj/structure/mannequin/wood{
+	starting_items = list(/obj/item/clothing/neck/scarf/red)
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"ah" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"ai" = (
+/obj/structure/spider/stickyweb,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"aj" = (
+/obj/effect/spawner/random/structure/chair_flipped,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"ak" = (
+/obj/structure/table/wood/fancy/red,
+/obj/item/stack/sheet/durathread{
+	pixel_x = -2;
+	pixel_y = 3
+	},
+/obj/item/stack/sheet/durathread{
+	pixel_x = 4;
+	pixel_y = -1
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"al" = (
+/obj/machinery/door/airlock/wood{
+	name = "Showroom"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"am" = (
+/obj/item/stack/sheet/bone{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"an" = (
+/obj/structure/spider/stickyweb/sealed/tough,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/loom)
+"ao" = (
+/obj/machinery/door/airlock{
+	name = "Vivarium Row"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"ap" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Dock Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"aq" = (
+/obj/machinery/light/warm/dim/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"ar" = (
+/obj/structure/curtain/cloth/fancy,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"as" = (
+/turf/closed/wall/r_wall/rust,
+/area/ruin/space/has_grav/vestige/loom)
+"at" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"au" = (
+/obj/structure/table/wood/fancy/red,
+/obj/item/stack/sheet/cloth/ten{
+	pixel_x = 2;
+	pixel_y = 3
+	},
+/obj/item/stack/sheet/cloth{
+	pixel_x = -4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"av" = (
+/obj/machinery/door/airlock/wood{
+	name = "Tapestry Hall"
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"aw" = (
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"ax" = (
+/obj/effect/decal/cleanable/rubble,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"ay" = (
+/obj/effect/spawner/structure/window/reinforced/tinted,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"az" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"aA" = (
+/obj/structure/table/wood/fancy/red,
+/obj/item/clothing/neck/scarf/zebra{
+	pixel_y = 3
+	},
+/obj/item/paper{
+	name = "price card";
+	default_raw_text = "Zebra weave. One of one. If you have to ask, the answer is atmospheric.";
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"aB" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Larder Gallery"
+	},
+/obj/structure/spider/stickyweb,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"aC" = (
+/turf/closed/wall/rust,
+/area/ruin/space/has_grav/vestige/loom)
+"aD" = (
+/obj/machinery/door/airlock/wood{
+	name = "Reeling Floor"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"aE" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/loom)
+"aF" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/loom)
+"aG" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"aH" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/loom)
+"aI" = (
+/obj/machinery/light/warm/dim/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"aJ" = (
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/loom)
+"aK" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Dock Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"aL" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"aM" = (
+/obj/structure/mannequin/wood,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"aN" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"aO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"aP" = (
+/obj/structure/mirror/directional/west,
+/turf/open/floor/carpet/royalblue,
+/area/ruin/space/has_grav/vestige/loom)
+"aQ" = (
+/turf/template_noop,
+/area/template_noop)
+"aR" = (
+/obj/machinery/door/airlock{
+	name = "Reeling Floor"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"aS" = (
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/loom)
+"aT" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/loom)
+"aU" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"aV" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/loom)
+"aW" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"aX" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/loom)
+"aY" = (
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"aZ" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"br" = (
+/obj/machinery/light/warm/dim/directional/north,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"bx" = (
+/obj/structure/plaque/static_plaque/golden{
+	name = "DOWAGER";
+	desc = "Breeding female, 11 yr. Temper: matronly. Notes: counts her feed. Counts YOU.";
+	pixel_y = 30
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"by" = (
+/obj/structure/loom,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/vestige/loom)
+"bS" = (
+/obj/structure/spider/stickyweb/very_sticky,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"cl" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"cu" = (
+/obj/structure/closet/crate/wooden{
+	name = "feed crate"
+	},
+/obj/item/food/monkeycube,
+/obj/item/food/monkeycube,
+/obj/item/food/monkeycube,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"dJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"fn" = (
+/obj/item/shard,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/loom)
+"fT" = (
+/obj/structure/spider/stickyweb/sealed,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/loom)
+"hh" = (
+/obj/structure/kitchenspike_frame,
+/obj/item/stack/sheet/bone{
+	pixel_x = 2;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"hj" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"hB" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"ir" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"iK" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/stack/sheet/bone{
+	pixel_x = -3
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"iV" = (
+/obj/structure/spider/stickyweb,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/loom)
+"jZ" = (
+/obj/item/mop{
+	pixel_x = -4
+	},
+/obj/item/reagent_containers/cup/bucket{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"kl" = (
+/obj/item/stack/sheet/bone{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/stack/sheet/bone{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"kz" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"kW" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "stock ledger";
+	default_raw_text = "Breeding females: 2 (APHRODITE, DOWAGER). Silk line: 38 head. Feed: cube stock, wet-expanded, twice daily. Note in the margin: the old girl refuses cube. P. feeds her by hand and will not say with what.";
+	pixel_x = -2;
+	pixel_y = 3
+	},
+/obj/item/hand_labeler{
+	pixel_x = 4;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"lc" = (
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"lr" = (
+/obj/structure/table/wood/fancy,
+/obj/structure/desk_bell{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/paper{
+	name = "counter notice";
+	default_raw_text = "CLOSED FOR THE SEASON. Taking commissions at the Fair. The stock is fed on a timer - DO NOT enter the vivarium wing unaccompanied. - P.";
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"lt" = (
+/obj/structure/curtain/cloth/fancy,
+/turf/open/floor/carpet/royalblue,
+/area/ruin/space/has_grav/vestige/loom)
+"lC" = (
+/obj/structure/table/wood,
+/obj/item/wirecutters{
+	pixel_y = 2
+	},
+/obj/item/stack/sheet/cloth/five{
+	pixel_x = -4;
+	pixel_y = -2
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"mF" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"nN" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"oP" = (
+/obj/structure/noticeboard/directional/west{
+	name = "husbandry board";
+	desc = "Feeding rota, moult calendar, and the reading-shift roster. Every name on the roster has been crossed out except one: P."
+	},
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"pv" = (
+/obj/item/stack/sheet/cotton/wool{
+	pixel_y = 3
+	},
+/obj/item/trash/tray{
+	pixel_x = -3;
+	pixel_y = -3
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"qZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/vestige/loom)
+"ra" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "work order 771";
+	default_raw_text = "Forty bolts gossamer for the Fair - RUSH. Draw from the old girl ONLY, the line stock silk pills. P. says she spins triple when someone sits with her and reads aloud. Rota is on the board. Do not skip your reading shift.";
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"rf" = (
+/obj/item/stack/sheet/bone{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"rU" = (
+/turf/open/floor/carpet/royalblue,
+/area/ruin/space/has_grav/vestige/loom)
+"su" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"tF" = (
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"tI" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"uC" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "husbandry log, final week";
+	default_raw_text = "MON - Cage two open at first bell. Latch undamaged, opened from the inside. Stock unaccounted. TUE - cages five and six, same. The latches are on the OUTSIDE. WED - all cages open bar the empty one. Padma says burn the ship. THU - the brood is in the aft wing. They are not hunting us. They are waiting for something. FRI - the old girl let herself out last. She closed her cage behind her.";
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"uT" = (
+/obj/item/trash/tray{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"vi" = (
+/obj/item/stack/sheet/cotton{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/vestige/loom)
+"vt" = (
+/obj/structure/spider/stickyweb,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"wo" = (
+/obj/structure/plaque/static_plaque/golden{
+	name = "GOSSAMER No. 10";
+	desc = "In progress. Do not disturb her. Do not touch the warp. If she offers you the shuttle, sit down and read to her - it is only polite.";
+	pixel_y = 30
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"ws" = (
+/obj/structure/sink/kitchen/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"wu" = (
+/mob/living/basic/vestige_patron/weaver{
+	dir = 4
+	},
+/turf/open/floor/carpet/royalblue,
+/area/ruin/space/has_grav/vestige/loom)
+"wK" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"yf" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"yV" = (
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"zo" = (
+/obj/effect/mapping_helpers/broken_floor,
+/obj/item/stack/sheet/bone{
+	pixel_y = 2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"Ad" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/durathread{
+	pixel_y = 2
+	},
+/obj/item/stack/sheet/cloth/five{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"Af" = (
+/obj/structure/plaque/static_plaque/golden{
+	name = "vivarium cell nine";
+	desc = "The husbandry tag is blank. It has always been blank. The cage is spotless, the bedding fresh, the water changed. Somebody still tends it.";
+	pixel_y = 30
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"An" = (
+/obj/structure/closet/crate/wooden{
+	name = "outgoing orders crate"
+	},
+/obj/item/stack/sheet/cloth/ten,
+/obj/item/stack/sheet/cloth/ten,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"AF" = (
+/obj/machinery/door/window/left/directional/south{
+	name = "feeding hatch"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"AG" = (
+/obj/structure/table/wood,
+/obj/item/stack/sheet/cotton/durathread{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/stack/sheet/cotton/wool{
+	pixel_x = 3
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"AW" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"BW" = (
+/obj/machinery/light/floor/broken,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"Cd" = (
+/obj/structure/plaque/static_plaque/golden{
+	name = "APHRODITE";
+	desc = "Breeding female, 8 yr. Temper: vain. Notes: will not spin in front of strangers.";
+	pixel_y = -30
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"Cv" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/cotton{
+	pixel_y = 3
+	},
+/obj/item/stack/sheet/cotton{
+	pixel_x = 3;
+	pixel_y = -1
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"CV" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"Df" = (
+/obj/structure/plaque/static_plaque/golden{
+	name = "BARON VELVET";
+	desc = "Silk line, 4 yr. Temper: dramatic. Notes: bit Padma twice. Padma deserved it both times.";
+	pixel_y = -30
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"Dh" = (
+/obj/item/stack/sheet/cotton/durathread{
+	pixel_x = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"EZ" = (
+/obj/structure/plaque/static_plaque/golden{
+	name = "Penelope Silks";
+	desc = "FINEST SILK IN THE SECTOR - nine years running. Awarded by the Sectorial Textile Fair to the sericulture vessel Penelope.";
+	pixel_y = 30
+	},
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"Fs" = (
+/obj/item/paper{
+	name = "maintenance refusal";
+	default_raw_text = "Re: aft hull blowout. Request for plate and welders DENIED - see for yourself first. She mended it. Three days, wall to wall, tighter than the yard ever welded. We stopped trying to evict her after that. Just log it: hull integrity, aft - HERS.";
+	pixel_y = 3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"GC" = (
+/obj/structure/displaycase/noalert{
+	name = "prize case";
+	desc = "Sectorial Textile Fair, Grand Prize. The card reads: GOSSAMER No. 9 - spider silk, single continuous thread. Spinner: the old girl. Weaver: P.";
+	start_showpiece_type = /obj/item/stack/sheet/cloth
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"GV" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"Hm" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/loom)
+"HF" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/stack/sheet/cotton/wool{
+	pixel_x = -2;
+	pixel_y = 4
+	},
+/obj/item/paper{
+	name = "price card";
+	default_raw_text = "Wool blend, 40 cr the bolt. Durathread twill, 65. House gossamer - ask at the counter. We do not discount the gossamer.";
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"HI" = (
+/obj/structure/table/wood/fancy,
+/obj/item/stack/sheet/cotton/durathread{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/stack/sheet/cotton/durathread{
+	pixel_x = 3;
+	pixel_y = 1
+	},
+/obj/item/stack/sheet/cotton/wool{
+	pixel_x = -1;
+	pixel_y = -3
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"HO" = (
+/obj/structure/girder/displaced,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/loom)
+"If" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"ID" = (
+/obj/machinery/door/window/left/directional/north{
+	name = "feeding hatch"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"IO" = (
+/obj/structure/table/wood,
+/obj/item/stack/sheet/cloth{
+	pixel_x = 2;
+	pixel_y = 2
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"Kc" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/loom)
+"KS" = (
+/obj/item/stack/rods{
+	pixel_x = -3
+	},
+/obj/item/shard{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"KY" = (
+/obj/structure/table/wood/fancy,
+/obj/item/stack/sheet/cloth/ten{
+	pixel_y = 3
+	},
+/obj/item/stack/sheet/cloth/five{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"Lc" = (
+/obj/structure/table,
+/obj/item/food/monkeycube{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"Ll" = (
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/loom)
+"Lw" = (
+/obj/machinery/light/small/broken/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"LA" = (
+/obj/structure/table/wood/fancy,
+/obj/item/stack/sheet/durathread{
+	pixel_y = 3
+	},
+/obj/item/stack/sheet/durathread{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"Mv" = (
+/obj/structure/mannequin/wood{
+	starting_items = list(/obj/item/clothing/neck/scarf/darkblue)
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"MB" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/vestige/loom)
+"MM" = (
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/vestige/loom)
+"NA" = (
+/obj/effect/spawner/structure/window,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"NE" = (
+/obj/structure/table_frame,
+/obj/item/stack/sheet/mineral/wood{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/obj/item/stack/rods{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"Oa" = (
+/obj/item/stack/rods{
+	pixel_x = 2
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/loom)
+"Og" = (
+/obj/machinery/light/floor,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"Px" = (
+/obj/structure/closet/crate/wooden{
+	name = "feed crate"
+	},
+/obj/item/food/monkeycube,
+/obj/item/food/monkeycube,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"PM" = (
+/obj/structure/table/wood/fancy,
+/obj/item/paper{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/hand_labeler{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"PR" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = -1
+	},
+/obj/item/trash/candle{
+	pixel_x = 1;
+	pixel_y = -6
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"Rd" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/cloth/ten{
+	pixel_y = 3
+	},
+/obj/item/stack/sheet/durathread{
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"Rk" = (
+/obj/structure/table/wood/fancy/royalblue,
+/obj/item/stack/sheet/cloth/ten{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/cloth/ten{
+	pixel_x = 3;
+	pixel_y = 1
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"RR" = (
+/obj/structure/table/wood/fancy,
+/obj/item/paper{
+	name = "order ledger";
+	default_raw_text = "771 - fair stock, forty bolts, RUSH. 772 - Ottavia, twelve bolts. 773 - navy contract, pending sample. The last page is a column of cancellations, each in the same careful hand: NO LONGER WEAVING TO ORDER."
+	},
+/obj/item/pen{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"RT" = (
+/obj/structure/table/wood/fancy,
+/obj/item/stack/sheet/cloth/ten{
+	pixel_y = 3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"RW" = (
+/obj/structure/table/wood/fancy,
+/obj/item/paper{
+	name = "wrapped order tag";
+	default_raw_text = "For collection - Mme. Ottavia, 12 bolts house gossamer. PAID. Hold at counter. (Nobody came.)";
+	pixel_y = 4
+	},
+/obj/item/stack/sheet/cloth/five{
+	pixel_x = -3;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"SB" = (
+/obj/structure/plaque/static_plaque/golden{
+	name = "for P.";
+	desc = "Letters picked out in silk thread, stitched straight into the brass: FOR P., WHO TAUGHT ME THE LONG THREAD. EVERY BOLT IS YOURS.";
+	pixel_y = -30
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"SN" = (
+/obj/effect/decal/remains/human,
+/obj/item/ammo_casing/spent{
+	pixel_x = -4;
+	pixel_y = 2
+	},
+/obj/item/ammo_casing/spent{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/item/knife/kitchen{
+	pixel_x = 3;
+	pixel_y = 4
+	},
+/obj/item/paper/crumpled{
+	name = "hunter's tally";
+	default_raw_text = "Twelve weeks. Forty-one of the brood shot, skinned and reeled. That is the last of them bar the old girl in the back, and the boss says she stays - her silk is the finest we have ever pulled and she has never once raised a leg at us. You do not shoot the golden goose. You just stop doing your reading shifts. (The tally ends here. Something below it, in silk-fine thread stitched THROUGH the paper: FORTY-ONE.)"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"SS" = (
+/obj/structure/curtain/cloth/fancy,
+/turf/open/floor/carpet/purple,
+/area/ruin/space/has_grav/vestige/loom)
+"SZ" = (
+/obj/item/stack/sheet/bone{
+	pixel_x = 2;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"Tw" = (
+/obj/structure/table,
+/obj/item/knife/kitchen{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/trash/tray{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"TF" = (
+/obj/structure/closet/crate/wooden{
+	name = "raw fiber crate"
+	},
+/obj/item/stack/sheet/cotton{
+	amount = 20
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"TX" = (
+/obj/structure/grille/broken,
+/obj/item/shard{
+	pixel_x = 2
+	},
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"Ug" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"UN" = (
+/obj/structure/closet{
+	name = "husbandry locker"
+	},
+/obj/item/clothing/gloves/color/black,
+/obj/item/clothing/suit/apron,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/vestige/loom)
+"VC" = (
+/obj/structure/loom{
+	name = "great loom";
+	desc = "Twin frames yoked into one machine, warped with a thread so fine it only shows when it moves. Gossamer No. 10 is perhaps a third done. It is a picture of a crew of forty-two, rendered so exactly you can hear them."
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"VK" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"VU" = (
+/obj/machinery/power/smes/magical{
+	name = "mill dynamo";
+	desc = "A high-capacity energy bank. The charge needle has not moved in years. Neither has anything else."
+	},
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"Wi" = (
+/obj/structure/curtain/cloth/fancy,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/loom)
+"WA" = (
+/obj/structure/closet/crate/wooden{
+	name = "finished bolts crate"
+	},
+/obj/item/stack/sheet/cloth/ten,
+/obj/item/stack/sheet/cloth/ten,
+/obj/item/stack/sheet/durathread,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+"WM" = (
+/obj/structure/closet/crate/wooden{
+	name = "reeled silk crate"
+	},
+/obj/item/stack/sheet/cloth/ten,
+/obj/item/stack/sheet/cloth/ten,
+/obj/item/stack/sheet/durathread,
+/obj/item/stack/sheet/durathread,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/loom)
+"Xy" = (
+/obj/structure/table/wood/fancy,
+/obj/item/stack/sheet/cotton/wool{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 5;
+	pixel_y = 3
+	},
+/turf/open/floor/wood/parquet,
+/area/ruin/space/has_grav/vestige/loom)
+"Yx" = (
+/obj/structure/table/wood/fancy,
+/obj/item/stack/sheet/cloth/five{
+	pixel_y = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"Zu" = (
+/obj/structure/rack,
+/obj/item/clothing/neck/scarf/red{
+	pixel_y = 4
+	},
+/obj/item/clothing/neck/scarf/purple{
+	pixel_y = 1
+	},
+/obj/item/clothing/neck/scarf/cyan{
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/loom)
+"ZL" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/loom)
+
+(1,1,1) = {"
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+"}
+(2,1,1) = {"
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aE
+ap
+aE
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+"}
+(3,1,1) = {"
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aE
+aU
+aE
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+"}
+(4,1,1) = {"
+aQ
+aE
+aE
+aE
+ay
+ay
+aE
+aK
+aE
+ay
+ay
+aE
+aE
+aE
+aE
+aE
+aE
+aE
+aE
+aE
+ay
+ay
+aE
+aE
+aE
+aQ
+"}
+(5,1,1) = {"
+aQ
+aE
+az
+aL
+au
+aA
+aW
+aS
+aS
+aL
+ar
+aP
+aV
+aW
+aL
+aV
+uC
+CV
+oP
+wK
+dJ
+aw
+dJ
+UN
+aE
+aQ
+"}
+(6,1,1) = {"
+aQ
+ay
+aM
+aL
+aL
+aL
+aL
+aS
+aS
+aW
+aL
+aL
+aV
+aL
+aW
+aX
+kW
+dJ
+aw
+aw
+aw
+dJ
+aw
+UN
+ay
+aQ
+"}
+(7,1,1) = {"
+aQ
+ay
+ag
+aL
+ak
+ac
+aL
+aS
+aS
+aL
+aL
+aL
+al
+aL
+aL
+aV
+ir
+aw
+dJ
+aw
+aw
+aw
+aw
+dJ
+ay
+aQ
+"}
+(8,1,1) = {"
+aQ
+aE
+GC
+aL
+aL
+aL
+aW
+aS
+aS
+aL
+aL
+aN
+aV
+aL
+aL
+aa
+aw
+aw
+aw
+Tw
+dJ
+aw
+aw
+aw
+aE
+aQ
+"}
+(9,1,1) = {"
+aQ
+as
+EZ
+aW
+aL
+aL
+aL
+aS
+aS
+aL
+aL
+aL
+aC
+aW
+aL
+aV
+ws
+dJ
+aw
+Lc
+aw
+aw
+dJ
+aw
+aE
+aQ
+"}
+(10,1,1) = {"
+aQ
+ay
+Mv
+aL
+aL
+aL
+aL
+aS
+aS
+aL
+aL
+aL
+aV
+aq
+aL
+aV
+cu
+aw
+dJ
+aw
+aw
+aw
+aw
+jZ
+as
+aQ
+"}
+(11,1,1) = {"
+aQ
+ay
+aM
+aL
+aL
+RT
+RW
+lr
+RT
+RR
+aL
+aL
+aV
+aL
+aW
+aC
+If
+aw
+aw
+aw
+dJ
+dJ
+aw
+dJ
+aE
+aQ
+"}
+(12,1,1) = {"
+aQ
+aE
+Rk
+aL
+aL
+aL
+aL
+aL
+aL
+aL
+PM
+aN
+aX
+aL
+aL
+aV
+aV
+aV
+aV
+ao
+aV
+aV
+aV
+aV
+aE
+aQ
+"}
+(13,1,1) = {"
+aQ
+aE
+HF
+aL
+aL
+aL
+aL
+aL
+aL
+aL
+Yx
+aL
+aV
+aW
+aL
+aV
+AW
+uT
+TX
+mF
+hj
+TX
+yf
+AW
+aE
+aQ
+"}
+(14,1,1) = {"
+aQ
+aE
+Zu
+az
+Rd
+Ug
+aL
+aL
+An
+aL
+aL
+aL
+aV
+aI
+aL
+aX
+SZ
+yf
+AF
+af
+af
+ID
+uT
+aO
+aE
+aQ
+"}
+(15,1,1) = {"
+aQ
+aE
+aV
+aV
+aV
+aV
+aD
+aV
+aV
+aX
+aV
+aV
+aV
+aL
+aW
+aV
+aV
+aV
+aV
+br
+Cd
+aV
+aV
+aV
+aE
+aQ
+"}
+(16,1,1) = {"
+aQ
+aE
+VU
+mF
+Cv
+mF
+af
+Cv
+af
+TF
+TF
+mF
+aV
+aL
+aL
+aV
+lc
+Px
+af
+af
+mF
+NA
+SZ
+yf
+as
+aQ
+"}
+(17,1,1) = {"
+aQ
+aE
+yV
+af
+af
+NE
+mF
+af
+af
+mF
+af
+af
+aV
+aW
+aL
+ao
+af
+mF
+af
+mF
+hj
+KS
+aO
+SZ
+aE
+aQ
+"}
+(18,1,1) = {"
+aQ
+ay
+af
+af
+mF
+MM
+MM
+mF
+af
+af
+mF
+nN
+aV
+aq
+aW
+aV
+aV
+aV
+aV
+bx
+Lw
+aV
+aV
+aV
+aE
+aQ
+"}
+(19,1,1) = {"
+aQ
+ay
+mF
+af
+af
+by
+MB
+af
+AG
+af
+af
+af
+aX
+aL
+aL
+aV
+yf
+aO
+NA
+af
+af
+ID
+uT
+aO
+aE
+aQ
+"}
+(20,1,1) = {"
+aQ
+aE
+hB
+af
+af
+MM
+vi
+af
+ra
+af
+af
+mF
+aV
+aW
+aL
+aC
+SZ
+uT
+KS
+hj
+hj
+TX
+yf
+AW
+aE
+aQ
+"}
+(21,1,1) = {"
+aQ
+aE
+af
+af
+af
+MM
+MM
+af
+lC
+af
+tI
+af
+aR
+af
+ah
+aV
+aV
+aV
+aV
+at
+Df
+aV
+aV
+aV
+aE
+aQ
+"}
+(22,1,1) = {"
+aQ
+ay
+af
+mF
+af
+by
+MB
+af
+IO
+af
+af
+af
+aV
+ah
+af
+ab
+AW
+iK
+TX
+hj
+mF
+NA
+iK
+SZ
+aE
+aQ
+"}
+(23,1,1) = {"
+aQ
+ay
+mF
+af
+af
+MM
+MM
+mF
+AG
+af
+af
+nN
+aV
+af
+aj
+aV
+uT
+aO
+AF
+af
+hj
+KS
+yf
+uT
+as
+aQ
+"}
+(24,1,1) = {"
+aQ
+aE
+hB
+af
+af
+MM
+vi
+af
+af
+af
+af
+af
+aC
+at
+af
+aV
+aV
+aV
+aV
+Af
+Lw
+aV
+aV
+aV
+aE
+aQ
+"}
+(25,1,1) = {"
+aQ
+as
+af
+mF
+ah
+by
+MB
+af
+mF
+af
+WA
+mF
+aV
+ah
+ah
+aV
+Og
+aZ
+NA
+af
+hj
+TX
+iK
+SZ
+aE
+aQ
+"}
+(26,1,1) = {"
+aQ
+aE
+ZL
+vt
+mF
+MM
+qZ
+Ad
+af
+WA
+tF
+af
+aV
+af
+af
+aC
+pv
+aZ
+AF
+af
+af
+KS
+zo
+iK
+aE
+aQ
+"}
+(27,1,1) = {"
+aQ
+aE
+aV
+aV
+aV
+aV
+ab
+aV
+aV
+aV
+aV
+aV
+aV
+ah
+af
+aV
+aV
+aV
+aV
+av
+av
+aV
+aV
+aV
+aE
+aQ
+"}
+(28,1,1) = {"
+aQ
+aE
+ad
+aO
+ai
+aO
+aO
+aO
+ai
+aO
+bS
+WM
+aV
+aO
+ax
+aV
+su
+cl
+aY
+aY
+aY
+aY
+cl
+aY
+aE
+aQ
+"}
+(29,1,1) = {"
+aQ
+as
+ad
+ai
+aZ
+aZ
+ai
+hh
+aO
+aZ
+ai
+bS
+ab
+aO
+aO
+aV
+KY
+aY
+PR
+rU
+rU
+PR
+aY
+LA
+aE
+aQ
+"}
+(30,1,1) = {"
+aQ
+aT
+VK
+aO
+aO
+aZ
+aZ
+hh
+kl
+aO
+aZ
+aO
+aC
+ai
+aO
+ab
+Xy
+Dh
+aY
+rU
+rU
+aY
+aY
+LA
+as
+aQ
+"}
+(31,1,1) = {"
+aQ
+aE
+ad
+aZ
+ai
+aO
+aZ
+hh
+aZ
+aZ
+aO
+kz
+aV
+aG
+am
+aV
+PR
+aY
+PR
+rU
+rU
+PR
+Dh
+aY
+aE
+aQ
+"}
+(32,1,1) = {"
+aQ
+as
+ai
+ai
+aZ
+Fs
+aO
+aZ
+ai
+SN
+rf
+aO
+aV
+aO
+ai
+aC
+wo
+aY
+aY
+rU
+rU
+aY
+aY
+SB
+aE
+aQ
+"}
+(33,1,1) = {"
+aQ
+aE
+fT
+fT
+fT
+fT
+ai
+aO
+aZ
+ai
+aZ
+aZ
+ab
+ax
+aO
+aV
+BW
+aY
+PR
+rU
+rU
+PR
+aY
+BW
+aE
+aQ
+"}
+(34,1,1) = {"
+aQ
+an
+iV
+Kc
+fn
+iV
+fT
+aZ
+aO
+aZ
+aO
+ai
+aV
+aO
+ax
+aV
+cl
+aY
+aY
+rU
+wu
+aY
+aY
+cl
+aE
+aQ
+"}
+(35,1,1) = {"
+aQ
+an
+Hm
+Oa
+Kc
+Hm
+ae
+aZ
+aZ
+aO
+aZ
+aZ
+aB
+aO
+aO
+aV
+aY
+aY
+HI
+VC
+VC
+HI
+aY
+PR
+as
+aQ
+"}
+(36,1,1) = {"
+aQ
+ae
+aJ
+aJ
+iV
+fn
+fT
+ai
+aO
+aZ
+ai
+aO
+aH
+ai
+am
+ab
+cl
+Wi
+lt
+SS
+lt
+Wi
+SS
+aY
+aE
+aQ
+"}
+(37,1,1) = {"
+aQ
+an
+iV
+HO
+Hm
+iV
+fT
+ad
+ad
+ad
+aO
+ai
+aC
+ad
+ai
+aV
+aY
+rU
+Ll
+aS
+Ll
+rU
+aS
+GV
+aE
+aQ
+"}
+(38,1,1) = {"
+aQ
+an
+an
+an
+an
+aE
+aE
+aE
+aF
+aE
+aE
+aE
+aE
+aE
+aE
+aE
+aE
+aE
+aE
+aE
+aT
+aE
+aE
+aE
+aE
+aQ
+"}
+(39,1,1) = {"
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+"}

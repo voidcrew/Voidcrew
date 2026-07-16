@@ -1,0 +1,1869 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/menagerie)
+"ab" = (
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"ac" = (
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/vestige/menagerie)
+"ad" = (
+/obj/machinery/door/airlock/abductor{
+	name = "Enclosure Two"
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"ae" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/menagerie)
+"af" = (
+/obj/machinery/door/airlock/abductor{
+	name = "Enclosure One"
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"ag" = (
+/obj/machinery/door/airlock/abductor{
+	name = "Expansion Wing"
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"ah" = (
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/menagerie)
+"ai" = (
+/obj/machinery/door/airlock/abductor{
+	name = "Records"
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aj" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "stickman";
+	name = "crude drawing";
+	desc = "Two stick figures holding hands, drawn low to the floor. The taller one has too many eyes."
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/menagerie)
+"ak" = (
+/turf/closed/wall/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"al" = (
+/mob/living/carbon/human/species/monkey,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/menagerie)
+"am" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"an" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/menagerie)
+"ao" = (
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"ap" = (
+/obj/item/food/grown/wheat{
+	pixel_x = -3
+	},
+/obj/item/food/grown/wheat{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aq" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/menagerie)
+"ar" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/menagerie)
+"as" = (
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"at" = (
+/obj/structure/marker_beacon/violet,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"au" = (
+/obj/structure/marker_beacon/fuchsia,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/vestige/menagerie)
+"av" = (
+/obj/machinery/light/cold/directional/north,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aw" = (
+/obj/machinery/door/airlock/abductor{
+	name = "Operating Theater"
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"ax" = (
+/obj/machinery/light/cold/directional/east,
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"ay" = (
+/obj/structure/aquarium/prefilled,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/menagerie)
+"az" = (
+/mob/living/basic/chicken{
+	name = "Specimen 01-b"
+	},
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aA" = (
+/obj/machinery/door/airlock/abductor{
+	name = "Gland Library"
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aB" = (
+/obj/structure/marker_beacon/teal,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aC" = (
+/obj/machinery/door/airlock/abductor{
+	name = "Translocation Bay"
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aD" = (
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 2
+	},
+/obj/item/paper{
+	name = "specimen label - enclosure two";
+	default_raw_text = "ENCLOSURE TWO. TERRAN PRIMATE, ONE. Counts things. Current subject of interest: the door. Provide one enrichment object per cycle. Do not return its stare.";
+	pixel_y = 6
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aE" = (
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 2
+	},
+/obj/item/paper{
+	name = "specimen label - enclosure one";
+	default_raw_text = "ENCLOSURE ONE. TERRAN BOVID, ONE. TERRAN AVIAN, ONE. Graze substrate refreshed on cycle nine. The avian was not requisitioned. It arrived inside the feed and has been catalogued retroactively.";
+	pixel_y = 6
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aF" = (
+/obj/item/food/grown/wheat{
+	pixel_y = 2
+	},
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aG" = (
+/obj/machinery/light/cold/directional/south,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 2
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aH" = (
+/obj/structure/marker_beacon/cerulean,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aI" = (
+/obj/structure/marker_beacon/violet,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 2
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aJ" = (
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aK" = (
+/mob/living/basic/cow{
+	name = "Specimen 01";
+	desc = "The label says it is nominal. It seems pleased enough with the arrangement."
+	},
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aL" = (
+/obj/structure/marker_beacon/cerulean,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aM" = (
+/obj/effect/spawner/random/entertainment/plushie,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aN" = (
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 2
+	},
+/obj/item/paper{
+	name = "specimen label - enclosure three";
+	default_raw_text = "ENCLOSURE THREE. AQUATIC ASSORTMENT. Water changed on cycle twelve. They do not know they are in water. There is a lesson in this.";
+	pixel_y = 6
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aO" = (
+/obj/item/reagent_containers/cup/bucket{
+	pixel_y = 3
+	},
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aP" = (
+/obj/machinery/door/airlock/abductor{
+	name = "Enclosure Three"
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aQ" = (
+/obj/effect/spawner/structure/window/reinforced/tinted,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aR" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aS" = (
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aT" = (
+/obj/machinery/door/airlock/abductor{
+	name = "Observation Gallery"
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aU" = (
+/turf/template_noop,
+/area/template_noop)
+"aV" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "thinline";
+	name = "tally marks";
+	desc = "Neat groups of five, scratched to a uniform depth at knee height. The newest group has four.";
+	pixel_x = -4
+	},
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "thinline";
+	name = "tally marks";
+	desc = "Neat groups of five, scratched to a uniform depth at knee height. The newest group has four.";
+	pixel_x = 3
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aW" = (
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 2
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aX" = (
+/obj/item/kirbyplants/random/fullysynthetic,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aY" = (
+/obj/structure/bed,
+/obj/item/bedsheet/purple,
+/obj/effect/spawner/random/entertainment/plushie,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/menagerie)
+"aZ" = (
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"bD" = (
+/turf/open/floor/plating{
+	initial_gas_mix = "TEMP=2.7"
+	},
+/area/ruin/space/has_grav/vestige/menagerie)
+"cc" = (
+/obj/structure/table/abductor,
+/obj/item/surgical_drapes{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/storage/box/alienhandcuffs{
+	pixel_x = 3
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"cl" = (
+/obj/structure/dresser,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/menagerie)
+"cB" = (
+/obj/machinery/light/cold/directional/north,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"cJ" = (
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 2
+	},
+/obj/item/paper{
+	name = "specimen label - enclosure four";
+	default_raw_text = "ENCLOSURE FOUR. TERRAN SAPIENT, ZERO. RELEASED. Subject calmed in familiar surroundings. Furnishings retained pending future acquisition. The lamp stays on.";
+	pixel_y = 6
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"cO" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/paper{
+	name = "note in careful handwriting";
+	default_raw_text = "They asked me what I missed most. I said the rain. It rains in here now, sometimes, while I am asleep. If you are reading this, they kept their word, and I am home.";
+	pixel_x = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/menagerie)
+"dp" = (
+/obj/structure/table/abductor,
+/obj/item/paper{
+	name = "acquisition note, cycle 41";
+	default_raw_text = "ACQUISITION NOTE, CYCLE FORTY-ONE. Retrieved dormant mass from debris field. Reads as biological. Reads, also, as watching. Assigned to Enclosure Five pending taxonomy. Taxonomy pending. Taxonomy pending.";
+	pixel_y = 4
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"em" = (
+/obj/structure/table/abductor,
+/obj/item/retractor/alien{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/cautery/alien{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"eE" = (
+/obj/structure/table/abductor,
+/obj/item/clipboard{
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 4
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"eU" = (
+/obj/structure/bed/abductor,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"gg" = (
+/obj/structure/grille/broken,
+/obj/item/shard{
+	pixel_x = 3
+	},
+/obj/effect/decal/cleanable/rubble,
+/turf/open/floor/plating{
+	initial_gas_mix = "TEMP=2.7"
+	},
+/area/ruin/space/has_grav/vestige/menagerie)
+"gR" = (
+/obj/structure/marker_beacon/violet,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"hC" = (
+/obj/structure/closet/abductor,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"iY" = (
+/obj/item/paper{
+	name = "specimen label - enclosure five";
+	default_raw_text = "ENCLOSURE FIVE. SPECIMEN: UNCATALOGUED. Care instructions: pending. Feeding notes: declines. Handling notes: do not.";
+	pixel_y = 6
+	},
+/turf/open/floor/plating/abductor2{
+	initial_gas_mix = "TEMP=2.7"
+	},
+/area/ruin/space/has_grav/vestige/menagerie)
+"ki" = (
+/obj/structure/bed/abductor,
+/obj/item/toy/plush/abductor{
+	pixel_y = 5
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"kt" = (
+/obj/effect/decal/cleanable/rubble,
+/turf/open/floor/plating/abductor2{
+	initial_gas_mix = "TEMP=2.7"
+	},
+/area/ruin/space/has_grav/vestige/menagerie)
+"kC" = (
+/obj/structure/bed/abductor,
+/obj/item/paper{
+	name = "folded note";
+	default_raw_text = "Colleague. Your berth is kept made. Your instruments are inventoried. Your share of the findings is set aside. There is no hurry. - C";
+	pixel_y = 4
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"mc" = (
+/obj/structure/table/abductor,
+/obj/item/storage/box/monkeycubes{
+	pixel_y = 4
+	},
+/obj/item/food/monkeycube{
+	pixel_x = -4;
+	pixel_y = -2
+	},
+/obj/item/food/monkeycube{
+	pixel_x = 3;
+	pixel_y = -3
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"mv" = (
+/obj/machinery/computer/camera_advanced/abductor{
+	dir = 2
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"nf" = (
+/obj/structure/chair/office/light{
+	dir = 1
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"no" = (
+/obj/item/paper{
+	name = "notice to visitors";
+	default_raw_text = "NOTICE TO VISITORS. The collection is maintained. The collection is fed. The collection is complete, except where it is not. One exhibit is temporarily off display. We apologize for the inconvenience.";
+	pixel_y = 8
+	},
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"nT" = (
+/turf/open/floor/plating/abductor{
+	initial_gas_mix = "TEMP=2.7"
+	},
+/area/ruin/space/has_grav/vestige/menagerie)
+"qc" = (
+/obj/structure/rack,
+/obj/item/storage/box/monkeycubes{
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"qE" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "clawprint";
+	name = "gouges";
+	desc = "Four parallel channels cut through alien alloy as if it were wet clay. The spacing is perfectly even. Whatever made them was not in a hurry."
+	},
+/turf/open/floor/plating/abductor2{
+	initial_gas_mix = "TEMP=2.7"
+	},
+/area/ruin/space/has_grav/vestige/menagerie)
+"rb" = (
+/obj/structure/chair/office/light{
+	dir = 2
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"rc" = (
+/obj/structure/table/abductor,
+/obj/item/paper{
+	name = "specimen ledger, cycle 44";
+	default_raw_text = "SPECIMEN LEDGER, CYCLE FORTY-FOUR. One, bovid: nominal. One-b, avian: nominal. Two, primate: nominal, counting. Three, aquatics: nominal. Four, sapient: released per agreement, enclosure maintained. Five: PENDING.";
+	pixel_y = 4
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"rF" = (
+/obj/effect/decal/cleanable/rubble,
+/turf/open/floor/plating/abductor{
+	initial_gas_mix = "TEMP=2.7"
+	},
+/area/ruin/space/has_grav/vestige/menagerie)
+"rJ" = (
+/mob/living/basic/vestige_patron/abductor{
+	dir = 4
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"sb" = (
+/obj/structure/girder,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"sc" = (
+/obj/structure/closet/abductor,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"sA" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/mineral/abductor{
+	amount = 10
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"uv" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "clawprint";
+	name = "gouges";
+	desc = "Four parallel channels cut through alien alloy as if it were wet clay. The spacing is perfectly even. Whatever made them was not in a hurry."
+	},
+/turf/open/floor/plating/abductor{
+	initial_gas_mix = "TEMP=2.7"
+	},
+/area/ruin/space/has_grav/vestige/menagerie)
+"uC" = (
+/obj/machinery/door/airlock/abductor{
+	name = "Enclosure Four"
+	},
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"uD" = (
+/obj/structure/marker_beacon/cerulean,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"uT" = (
+/obj/structure/rack,
+/obj/item/food/grown/wheat{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/food/grown/wheat{
+	pixel_y = 1
+	},
+/obj/item/food/grown/wheat{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"vH" = (
+/obj/machinery/abductor/console{
+	dir = 2
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"wR" = (
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"xI" = (
+/obj/item/paper{
+	name = "shelf note";
+	default_raw_text = "INVENTORY. Glandular cultures, twelve. Dispensing unit, one. Specimens grown in-house. No further donors required.";
+	pixel_y = 6
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"yZ" = (
+/obj/structure/bookcase/random/fiction,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/menagerie)
+"zL" = (
+/obj/machinery/abductor/gland_dispenser,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Ax" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"AG" = (
+/obj/structure/table/abductor,
+/obj/item/clipboard{
+	pixel_y = 3
+	},
+/obj/item/pen{
+	pixel_x = 5
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"AN" = (
+/turf/open/floor/plating/abductor2{
+	initial_gas_mix = "TEMP=2.7"
+	},
+/area/ruin/space/has_grav/vestige/menagerie)
+"AR" = (
+/obj/structure/marker_beacon/purple,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Cg" = (
+/obj/structure/table/optable/abductor,
+/obj/item/surgical_drapes{
+	pixel_y = 2
+	},
+/obj/effect/turf_decal/box/white,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"GD" = (
+/obj/structure/table/abductor,
+/obj/item/scalpel/alien{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/hemostat/alien{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"GP" = (
+/obj/structure/marker_beacon/teal,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Id" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "clawprint";
+	name = "gouges";
+	desc = "Four parallel channels raked across the wall plating, shoulder height, corner to corner. They stop at the seam."
+	},
+/turf/closed/wall/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Iz" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "blueprint";
+	name = "deck plan";
+	desc = "A precise floor plan drawn directly onto the deck in white paint. Four new enclosures. One of the four has been crossed out."
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"IE" = (
+/obj/structure/door_assembly/door_assembly_abductor{
+	name = "torn enclosure door";
+	desc = "An alien airlock, folded almost in half. It was locked from the outside. It opened from the inside.";
+	anchored = 0
+	},
+/obj/effect/decal/cleanable/rubble,
+/turf/open/floor/plating/abductor2{
+	initial_gas_mix = "TEMP=2.7"
+	},
+/area/ruin/space/has_grav/vestige/menagerie)
+"Ji" = (
+/obj/machinery/light/small/broken/directional/east,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Kn" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/menagerie)
+"KR" = (
+/obj/machinery/light/cold/directional/south,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"KT" = (
+/obj/machinery/door/airlock/abductor{
+	name = "Crew Rest"
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Lg" = (
+/obj/machinery/abductor/experiment,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Lo" = (
+/obj/machinery/door/airlock/abductor{
+	name = "Sustenance Stores"
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Ot" = (
+/obj/machinery/light/cold/directional/east,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"OC" = (
+/obj/structure/table/abductor,
+/obj/item/organ/heart/gland/plasma{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"OJ" = (
+/obj/structure/table/abductor,
+/obj/item/bedsheet/purple{
+	pixel_y = 5
+	},
+/obj/item/bedsheet/purple{
+	pixel_y = 2
+	},
+/obj/item/paper{
+	name = "feed schedule";
+	default_raw_text = "FEED SCHEDULE. Bovid, two measures. Avian, incidental. Primate, one measure and one enrichment object. Aquatics, one pinch. Five, see revised schedule. Revised schedule: none. Five is not hungry in any way we can help with.";
+	pixel_y = -3
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"OQ" = (
+/obj/structure/marker_beacon/violet,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"OW" = (
+/obj/structure/table_frame/abductor,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Qx" = (
+/obj/structure/rack,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath{
+	pixel_x = 4;
+	pixel_y = -3
+	},
+/obj/item/tank/internals/oxygen{
+	pixel_x = -3
+	},
+/obj/item/tank/internals/oxygen{
+	pixel_x = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"QA" = (
+/obj/effect/turf_decal/box/white,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Sr" = (
+/obj/structure/table/abductor,
+/obj/item/clipboard{
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 5;
+	pixel_y = 2
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"SG" = (
+/obj/structure/table/abductor,
+/obj/machinery/recharger{
+	pixel_y = 3
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Td" = (
+/obj/effect/decal/cleanable/glass,
+/obj/item/shard{
+	pixel_x = -2
+	},
+/turf/open/floor/plating{
+	initial_gas_mix = "TEMP=2.7"
+	},
+/area/ruin/space/has_grav/vestige/menagerie)
+"Tf" = (
+/obj/machinery/door/airlock/abductor{
+	name = "Enclosure Five"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating/abductor2,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Tt" = (
+/obj/item/paper{
+	name = "expansion schedule";
+	default_raw_text = "EXPANSION SCHEDULE. Enclosures six through nine. Materials, staged. Labor, one. Timeline, revised. Timeline, revised. Timeline, revised.";
+	pixel_y = 5
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"TY" = (
+/obj/structure/table/abductor,
+/obj/item/circular_saw/alien{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/surgicaldrill/alien{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Ua" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"UN" = (
+/obj/structure/table/abductor,
+/obj/item/reagent_containers/cup/beaker/synthflesh{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_x = 4
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"VC" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/cup/bucket,
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_x = 5;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Wm" = (
+/obj/structure/table/abductor,
+/obj/item/paper{
+	name = "care rotation";
+	default_raw_text = "CARE ROTATION. There were two names on this rotation. There is one name on this rotation. The tasks are unchanged.";
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	pixel_x = 4
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Xs" = (
+/obj/machinery/abductor/pad,
+/obj/effect/turf_decal/box/white,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"XV" = (
+/obj/structure/table/abductor,
+/obj/item/organ/heart/gland/trauma{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"Yg" = (
+/obj/machinery/light/cold/directional/south,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+"ZA" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/mineral/abductor{
+	amount = 10;
+	pixel_y = 3
+	},
+/obj/item/stack/sheet/glass{
+	amount = 20
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating/abductor,
+/area/ruin/space/has_grav/vestige/menagerie)
+
+(1,1,1) = {"
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(2,1,1) = {"
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+ak
+aq
+ak
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(3,1,1) = {"
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+ak
+ae
+ak
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(4,1,1) = {"
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+ak
+aQ
+aQ
+ak
+am
+aR
+ak
+ak
+aQ
+aQ
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(5,1,1) = {"
+aU
+aU
+ak
+ak
+ak
+ak
+ak
+ak
+ak
+hC
+ab
+ak
+Qx
+Ua
+no
+ak
+ab
+hC
+ak
+ak
+ak
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(6,1,1) = {"
+aU
+ak
+zL
+ab
+ab
+ak
+aX
+aI
+ak
+ki
+ab
+ak
+ab
+Ua
+ab
+ak
+ab
+uT
+ak
+aZ
+aZ
+ak
+ak
+ak
+ak
+aU
+aU
+"}
+(7,1,1) = {"
+aU
+ak
+XV
+xI
+KR
+ak
+ao
+aW
+ak
+ab
+ab
+KT
+ab
+ab
+ab
+Lo
+ab
+ab
+ak
+ao
+aW
+aa
+ap
+aJ
+au
+ak
+aU
+"}
+(8,1,1) = {"
+aU
+ak
+OC
+ab
+ab
+ak
+ao
+aG
+ak
+ab
+ab
+ak
+ab
+ab
+ab
+ak
+ab
+qc
+ak
+av
+aW
+af
+aJ
+aK
+aJ
+ak
+aU
+"}
+(9,1,1) = {"
+aU
+aQ
+ab
+ab
+ab
+aA
+ao
+aW
+ak
+kC
+ab
+ak
+ab
+ab
+ab
+ak
+cB
+OJ
+ak
+ao
+aE
+aa
+aJ
+aJ
+aF
+ak
+aU
+"}
+(10,1,1) = {"
+aU
+aQ
+ab
+ab
+ab
+ak
+ao
+aW
+ak
+QA
+GP
+ak
+gR
+ab
+gR
+ak
+gR
+VC
+ak
+ao
+aW
+aa
+aO
+aJ
+az
+ak
+aU
+"}
+(11,1,1) = {"
+aU
+ak
+mc
+ab
+KR
+ak
+ao
+aW
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+aZ
+at
+aW
+ak
+ak
+ak
+ak
+ak
+aU
+"}
+(12,1,1) = {"
+aU
+ak
+hC
+AR
+ab
+ak
+ao
+aW
+aZ
+aZ
+ax
+aZ
+aZ
+aZ
+aZ
+aZ
+ax
+aZ
+aZ
+ao
+aW
+aa
+ah
+ah
+aj
+ak
+aU
+"}
+(13,1,1) = {"
+aU
+ak
+aU
+aU
+aU
+ak
+aH
+aW
+ak
+ak
+ak
+ak
+ak
+aw
+ak
+ak
+ak
+ak
+ak
+ao
+aW
+ad
+aV
+al
+ah
+ak
+aU
+"}
+(14,1,1) = {"
+aU
+ak
+Ax
+ab
+AR
+ak
+ao
+aW
+ak
+uD
+eE
+aa
+OQ
+aS
+aS
+wR
+aS
+eU
+ak
+ao
+aD
+aa
+ah
+ah
+aM
+ak
+aU
+"}
+(15,1,1) = {"
+aU
+ak
+Ax
+ab
+ab
+ak
+ao
+aG
+ak
+aS
+rb
+aa
+aS
+aS
+aS
+aS
+GD
+OQ
+ak
+ao
+aW
+aa
+aL
+ah
+ah
+ak
+aU
+"}
+(16,1,1) = {"
+aU
+ak
+Ax
+ab
+ab
+ak
+ao
+aW
+ak
+aS
+rb
+aa
+aS
+aS
+aS
+aS
+em
+Yg
+ak
+at
+aW
+ak
+ak
+ak
+ak
+ak
+aU
+"}
+(17,1,1) = {"
+aU
+ak
+Ax
+ab
+KR
+ak
+ao
+aW
+ak
+aS
+rb
+aa
+aS
+aS
+Lg
+aS
+TY
+aS
+ak
+ao
+aW
+aa
+ar
+ay
+ar
+ak
+aU
+"}
+(18,1,1) = {"
+aU
+aQ
+AG
+nf
+ab
+ai
+ao
+aW
+aT
+aS
+aS
+aa
+aS
+aS
+rJ
+aS
+aS
+aS
+ak
+av
+aW
+aP
+ar
+ar
+ar
+ak
+aU
+"}
+(19,1,1) = {"
+aU
+aQ
+rc
+ab
+ab
+ai
+ao
+aW
+aT
+aS
+aS
+aa
+aS
+aS
+Cg
+aS
+aS
+aS
+ak
+ao
+aN
+aa
+ar
+ar
+aB
+ak
+aU
+"}
+(20,1,1) = {"
+aU
+ak
+mv
+ab
+ab
+ak
+ao
+aW
+ak
+aS
+rb
+aa
+aS
+aS
+aS
+aS
+cc
+aS
+ak
+ao
+aW
+aa
+ar
+ay
+ar
+ak
+aU
+"}
+(21,1,1) = {"
+aU
+ak
+Ax
+ab
+KR
+ak
+ao
+aW
+ak
+aS
+rb
+aa
+aS
+aS
+aS
+aS
+UN
+Yg
+ak
+at
+aW
+ak
+ak
+ak
+ak
+ak
+aU
+"}
+(22,1,1) = {"
+aU
+ak
+dp
+ab
+ab
+ak
+ao
+aG
+ak
+aS
+rb
+aa
+aS
+aS
+aS
+aS
+Sr
+OQ
+ak
+ao
+aW
+aa
+an
+ac
+aY
+ak
+aU
+"}
+(23,1,1) = {"
+aU
+ak
+Wm
+ab
+AR
+ak
+ao
+aW
+ak
+uD
+eE
+aa
+OQ
+aS
+aS
+Ot
+aS
+sc
+ak
+ao
+aW
+uC
+Kn
+ac
+cO
+ak
+aU
+"}
+(24,1,1) = {"
+aU
+ak
+aU
+aU
+aU
+ak
+aH
+aW
+ak
+ak
+ak
+ak
+ak
+aw
+ak
+ak
+ak
+ak
+ak
+ao
+cJ
+aa
+Kn
+ac
+yZ
+ak
+aU
+"}
+(25,1,1) = {"
+aU
+ak
+hC
+ab
+AR
+ak
+ao
+aW
+aZ
+aZ
+as
+aZ
+aZ
+aZ
+aZ
+aZ
+as
+aZ
+aZ
+ao
+aW
+aa
+Kn
+ac
+cl
+ak
+aU
+"}
+(26,1,1) = {"
+aU
+ak
+ab
+ab
+ab
+ak
+ao
+aW
+aZ
+aZ
+aZ
+ax
+aZ
+aZ
+aZ
+ax
+aZ
+aZ
+aZ
+am
+Tf
+ak
+ak
+ak
+ak
+ak
+aU
+"}
+(27,1,1) = {"
+aU
+aQ
+ab
+ab
+KR
+ak
+ao
+aW
+ak
+ak
+ak
+ak
+ak
+ag
+ak
+ak
+ak
+ak
+ak
+AN
+iY
+Td
+nT
+nT
+rF
+ak
+aU
+"}
+(28,1,1) = {"
+aU
+aQ
+vH
+Xs
+ab
+aC
+ao
+aW
+ak
+sA
+ab
+ab
+ab
+ab
+ab
+Tt
+ab
+ab
+ak
+kt
+IE
+kt
+rF
+uv
+nT
+gg
+aU
+"}
+(29,1,1) = {"
+aU
+ak
+ab
+ab
+ab
+ak
+ao
+aG
+ak
+ZA
+ab
+sb
+ab
+ab
+OW
+ab
+ab
+sb
+ak
+qE
+kt
+Td
+nT
+nT
+nT
+gg
+aU
+"}
+(30,1,1) = {"
+aU
+ak
+SG
+ab
+ab
+ak
+ao
+aW
+ak
+sb
+ab
+sb
+ab
+ab
+OW
+Iz
+QA
+ab
+ak
+AN
+AN
+bD
+uv
+nT
+rF
+ak
+aU
+"}
+(31,1,1) = {"
+aU
+ak
+ab
+ab
+AR
+ak
+aX
+aI
+ak
+ab
+ab
+ab
+ab
+ab
+OW
+ab
+ab
+sb
+ak
+ak
+ak
+ak
+ak
+Id
+ak
+aU
+aU
+"}
+(32,1,1) = {"
+aU
+aU
+ak
+ak
+ak
+ak
+ak
+ak
+ak
+ab
+ab
+ab
+Ji
+ab
+ab
+ab
+ab
+ab
+ak
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(33,1,1) = {"
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+ak
+ak
+aQ
+aQ
+ak
+ak
+ak
+ak
+aQ
+aQ
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(34,1,1) = {"
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}

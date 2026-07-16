@@ -1,0 +1,2174 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/machinery/door/airlock{
+	name = "Processing Line"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"ab" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4;
+	dried = 1
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"ac" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/shambles)
+"ad" = (
+/obj/machinery/door/airlock/mining{
+	name = "Main Hold"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"ae" = (
+/obj/structure/fence,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"af" = (
+/turf/closed/wall/rust,
+/area/ruin/space/has_grav/vestige/shambles)
+"ag" = (
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"ah" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"ai" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/shambles)
+"aj" = (
+/obj/machinery/door/airlock/freezer{
+	name = "Cold Hold"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"ak" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/shambles)
+"al" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/obj/structure/fluff/shower_drain,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"am" = (
+/obj/machinery/light/broken/directional/south,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"an" = (
+/obj/structure/rack,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath{
+	pixel_x = 3;
+	pixel_y = -3
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = -4
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"ao" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/shambles)
+"ap" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"aq" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/obj/structure/fluff/shower_drain,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"ar" = (
+/turf/closed/wall/r_wall/rust,
+/area/ruin/space/has_grav/vestige/shambles)
+"as" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Escape Pod Berth One"
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"at" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"au" = (
+/obj/machinery/light/broken/directional/north,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"av" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"aw" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Pod Bay - DEPRESSURIZED"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"ax" = (
+/turf/template_noop,
+/area/template_noop)
+"ay" = (
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"az" = (
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"aA" = (
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"aB" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/shambles)
+"aC" = (
+/obj/machinery/light/cold/directional/north,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"aD" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"aE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"aF" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/shambles)
+"aG" = (
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"aH" = (
+/obj/machinery/door/airlock/mining{
+	name = "Receiving Bay"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"aI" = (
+/obj/structure/grille/broken,
+/obj/item/shard,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"aJ" = (
+/obj/structure/sign/warning/cold_temp,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/shambles)
+"aK" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"aL" = (
+/obj/machinery/door/airlock{
+	name = "Dry Stores"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"aM" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/shambles)
+"aN" = (
+/obj/machinery/light/cold/directional/south,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"aO" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"aP" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/shambles)
+"aQ" = (
+/obj/effect/spawner/structure/window/reinforced/tinted,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"aR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"aS" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"aT" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Escape Pod Berth Two"
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"aU" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"aV" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/shambles)
+"aW" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1;
+	dried = 1
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"aX" = (
+/obj/machinery/door/airlock/wood{
+	name = "Refectory"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"aY" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1;
+	dried = 1
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"aZ" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/shambles)
+"bc" = (
+/obj/effect/decal/cleanable/blood/gibs/old,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/shambles)
+"bp" = (
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"bO" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/food_or_drink/condiment{
+	pixel_y = 3
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"bT" = (
+/obj/effect/turf_decal/box,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"cW" = (
+/obj/item/shard,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"dw" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/paper{
+	name = "requisition form, unsent";
+	default_raw_text = "Third request for drive parts, unanswered. Cold stores at capacity. Live cargo consuming feed reserves. If we cannot make way by month's end we will have to start on the herd. - QM Halloway"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"dz" = (
+/obj/effect/turf_decal/loading_area{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"eb" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"ex" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1;
+	dried = 1
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/shambles)
+"eX" = (
+/obj/structure/fireplace,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/shambles)
+"gg" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/apron{
+	pixel_y = 2
+	},
+/obj/item/clothing/head/utility/chefhat{
+	pixel_y = -3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"hn" = (
+/obj/machinery/conveyor{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"hH" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/condiment/flour{
+	pixel_y = 3
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"ik" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/shambles)
+"io" = (
+/obj/machinery/light/small/broken/directional/north,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"iR" = (
+/obj/structure/closet/crate/freezer,
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"jv" = (
+/obj/structure/table/wood/fancy,
+/obj/item/book/manual/chef_recipes{
+	name = "the lean months - a butcher's devotional";
+	pixel_y = 5
+	},
+/obj/item/paper{
+	name = "page torn from a log";
+	default_raw_text = "It works for meat and it leaves when the work is done. That is the covenant, so we drew the circle in the cold hold and it came. The work is never done. We will keep the larder full. It only asked that we set the table.";
+	pixel_x = -4;
+	pixel_y = -2
+	},
+/obj/item/trash/candle{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"kf" = (
+/obj/effect/decal/cleanable/blood/drip{
+	dried = 1
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"kB" = (
+/obj/structure/mop_bucket,
+/obj/item/mop,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"kD" = (
+/obj/structure/kitchenspike,
+/obj/effect/decal/cleanable/blood/drip{
+	dried = 1
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"lK" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/food_or_drink/snack{
+	pixel_y = 2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"mT" = (
+/obj/structure/table/reinforced,
+/obj/item/paper{
+	name = "cargo manifest";
+	default_raw_text = "Consignment: forty head, live, plus provisions for the Meridian circuit. Note appended at Waypoint Six: drive flagged for overhaul at next port of call. There was no next port of call.";
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"nS" = (
+/obj/item/trash/candle{
+	pixel_x = 2;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"ol" = (
+/obj/structure/table/wood/fancy,
+/obj/item/plate{
+	pixel_y = 2
+	},
+/obj/item/stack/sheet/bone{
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/shambles)
+"op" = (
+/obj/structure/closet/crate/wooden,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"ou" = (
+/obj/structure/table/reinforced,
+/obj/item/sharpener{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/plate{
+	pixel_x = 4
+	},
+/obj/item/plate{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"pl" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"pz" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4;
+	dried = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/shambles)
+"pA" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"pT" = (
+/obj/structure/sink/kitchen/directional/south,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"qb" = (
+/obj/machinery/light/broken/directional/north,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"qc" = (
+/obj/machinery/conveyor{
+	dir = 4
+	},
+/obj/item/plate{
+	pixel_y = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"qh" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/shambles)
+"qY" = (
+/obj/structure/table/wood/fancy,
+/obj/item/plate{
+	pixel_y = 2
+	},
+/obj/item/kitchen/fork{
+	pixel_x = -6
+	},
+/obj/item/stack/sheet/bone{
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/shambles)
+"ty" = (
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = -4
+	},
+/obj/item/clothing/mask/breath{
+	pixel_x = 3;
+	pixel_y = -3
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"ul" = (
+/obj/structure/table/reinforced,
+/obj/item/knife/kitchen{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/item/knife/kitchen{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"uy" = (
+/obj/structure/table/wood/fancy,
+/obj/item/plate{
+	pixel_y = 2
+	},
+/obj/item/stack/sheet/bone{
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/shambles)
+"uD" = (
+/obj/machinery/gibber,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"uT" = (
+/obj/machinery/power/smes/magical{
+	name = "emergency reserve bank";
+	desc = "A high-capacity energy bank. The drive is cold; this is the only thing aboard still warm."
+	},
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"va" = (
+/obj/structure/table/wood/fancy,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/trash/candle{
+	pixel_x = 3
+	},
+/obj/item/trash/candle{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/shambles)
+"vO" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"wR" = (
+/obj/structure/kitchenspike_frame,
+/obj/item/stack/rods{
+	pixel_x = 3
+	},
+/obj/effect/decal/cleanable/blood/drip{
+	dried = 1
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"wV" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"xs" = (
+/obj/machinery/light/cold/directional/south,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"xx" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"xG" = (
+/obj/machinery/light/broken/directional/north,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/shambles)
+"yk" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4;
+	dried = 1
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"yx" = (
+/obj/structure/closet/crate/freezer,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"yN" = (
+/obj/machinery/light/cold/directional/east,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"yT" = (
+/obj/effect/spawner/random/structure/crate_abandoned,
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"zk" = (
+/obj/item/stack/sheet/bone{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/item/stack/sheet/bone{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/shambles)
+"Ab" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"Bl" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/shambles)
+"Bs" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"BM" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/shambles)
+"CL" = (
+/obj/effect/decal/cleanable/crayon/rune4,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"Dd" = (
+/obj/structure/rack,
+/obj/item/hatchet{
+	pixel_x = -3
+	},
+/obj/item/knife/kitchen{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"Dv" = (
+/obj/structure/rack,
+/obj/item/food/meat/slab{
+	pixel_y = 3
+	},
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"DF" = (
+/obj/structure/table/wood/fancy,
+/obj/item/plate{
+	pixel_y = 2
+	},
+/obj/item/knife/butcher{
+	pixel_y = 4
+	},
+/obj/item/stack/sheet/bone{
+	pixel_x = -5;
+	pixel_y = -2
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/shambles)
+"DH" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"Ek" = (
+/obj/structure/table/reinforced,
+/obj/item/plate{
+	pixel_y = 2
+	},
+/obj/item/plate{
+	pixel_y = 4
+	},
+/obj/item/plate{
+	pixel_y = 6
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"Ev" = (
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"EI" = (
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/shambles)
+"ET" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1;
+	dried = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/shambles)
+"FV" = (
+/obj/effect/decal/cleanable/food/flour,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"HE" = (
+/obj/item/stack/rods{
+	pixel_x = -3
+	},
+/obj/item/shard{
+	pixel_x = 4
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"Ii" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4;
+	dried = 1
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"IK" = (
+/obj/structure/table/wood/fancy,
+/obj/item/plate{
+	pixel_y = 2
+	},
+/obj/item/kitchen/fork{
+	pixel_x = -6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/shambles)
+"IM" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/shambles)
+"IZ" = (
+/obj/structure/rack,
+/obj/item/knife/butcher{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/item/knife/butcher{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"Jb" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/condiment/flour{
+	name = "feed sack";
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/condiment/flour{
+	name = "feed sack";
+	pixel_x = 3
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"JF" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"Kn" = (
+/obj/effect/decal/cleanable/blood/drip{
+	dried = 1
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"KT" = (
+/obj/item/chair/wood,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/shambles)
+"Lj" = (
+/obj/effect/decal/cleanable/crayon,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"Lr" = (
+/obj/machinery/light/broken/directional/south,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/shambles)
+"Mq" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/machinery/light/floor,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/shambles)
+"NF" = (
+/obj/effect/decal/cleanable/blood/splatter{
+	dried = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/shambles)
+"Oa" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"Of" = (
+/obj/structure/table/wood/fancy,
+/obj/item/plate{
+	pixel_y = 2
+	},
+/obj/item/kitchen/fork{
+	pixel_x = -6
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/shambles)
+"OI" = (
+/obj/structure/closet/secure_closet/freezer/meat,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"Pe" = (
+/mob/living/basic/vestige_patron/stain{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/shambles)
+"PI" = (
+/obj/structure/table/wood/fancy,
+/obj/item/plate{
+	pixel_y = 2
+	},
+/obj/item/stack/sheet/bone{
+	pixel_y = 3
+	},
+/obj/item/kitchen/fork{
+	pixel_x = -6
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/shambles)
+"PK" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"PS" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/shambles)
+"QA" = (
+/obj/effect/spawner/random/structure/crate_loot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"QE" = (
+/obj/structure/kitchenspike,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"QK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/shambles)
+"Sn" = (
+/obj/machinery/oven,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"Ss" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/shambles)
+"SD" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/condiment/flour{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/condiment/flour{
+	pixel_x = 3
+	},
+/obj/effect/decal/cleanable/food/flour,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/shambles)
+"SO" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1;
+	dried = 1
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"SV" = (
+/obj/item/toy/crayon/white{
+	name = "stub of chalk"
+	},
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"SW" = (
+/obj/structure/fence/door/opened,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"Tg" = (
+/obj/effect/decal/cleanable/blood/drip{
+	dried = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/shambles)
+"TO" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1;
+	dried = 1
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/vestige/shambles)
+"Ua" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/shambles)
+"VM" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/shambles)
+"Wo" = (
+/obj/structure/table/wood/fancy,
+/obj/effect/spawner/random/food_or_drink/booze{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/obj/item/paper{
+	name = "handwritten menu";
+	default_raw_text = "First course: the yearlings. Second course: the herd. Third course: the hands that fed them. The host thanks the crew of the Shambles for their attendance, and for setting so fine a table.";
+	pixel_x = 2;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/shambles)
+"Wp" = (
+/obj/machinery/light/cold/directional/north,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"WX" = (
+/obj/structure/frame/machine,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"Xn" = (
+/obj/effect/turf_decal/caution{
+	dir = 1
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/shambles)
+"XI" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/shambles)
+"XO" = (
+/obj/structure/fence{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"XZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/freezer,
+/area/ruin/space/has_grav/vestige/shambles)
+"Zd" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/shambles)
+"ZU" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1;
+	dried = 1
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+"ZX" = (
+/obj/structure/table/reinforced,
+/obj/item/clipboard{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/shambles)
+
+(1,1,1) = {"
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+"}
+(2,1,1) = {"
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ai
+av
+ai
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+"}
+(3,1,1) = {"
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aZ
+at
+aZ
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+"}
+(4,1,1) = {"
+ax
+ai
+ai
+ar
+ai
+aQ
+aQ
+ai
+ai
+ai
+ai
+ai
+aD
+ai
+ai
+ar
+ai
+ai
+aQ
+ai
+ai
+aM
+ai
+ar
+ai
+ax
+"}
+(5,1,1) = {"
+ax
+ai
+aE
+kB
+aE
+aG
+aE
+aG
+aE
+aG
+ac
+an
+ah
+aG
+ac
+aR
+ag
+ay
+aR
+ag
+ae
+aU
+aR
+aU
+ai
+ax
+"}
+(6,1,1) = {"
+ax
+aQ
+kD
+Kn
+aG
+hn
+aS
+aE
+ul
+aN
+ak
+aG
+aG
+aN
+ac
+mT
+aR
+ag
+ag
+aR
+ae
+aR
+aU
+ag
+ai
+ax
+"}
+(7,1,1) = {"
+ax
+aQ
+aG
+aG
+aE
+hn
+aO
+aG
+ou
+aG
+ac
+aG
+aS
+aG
+ac
+ZX
+Bs
+aR
+ag
+ag
+ae
+aU
+ag
+aR
+ai
+ax
+"}
+(8,1,1) = {"
+ax
+ai
+kD
+aE
+aG
+hn
+al
+aY
+aG
+aY
+aa
+aY
+aW
+aY
+aH
+ZU
+ZU
+ZU
+ZU
+ZU
+SW
+ag
+aU
+ag
+ai
+ax
+"}
+(9,1,1) = {"
+ax
+ai
+aC
+aG
+aG
+hn
+aO
+aG
+Ek
+aE
+ac
+aE
+aS
+aE
+aH
+ag
+ag
+ag
+Ii
+ag
+XO
+XO
+XO
+XO
+ar
+ax
+"}
+(10,1,1) = {"
+ax
+ai
+wR
+Kn
+aG
+hn
+aS
+aG
+aG
+aG
+ac
+aG
+al
+aG
+ac
+aR
+ag
+ag
+Ii
+ag
+ag
+ag
+aR
+Jb
+ai
+ax
+"}
+(11,1,1) = {"
+ax
+aQ
+aG
+aG
+aE
+hn
+aO
+aE
+IZ
+aG
+af
+aC
+aS
+aG
+aV
+PK
+dz
+aR
+Ii
+aR
+XO
+XO
+XO
+XO
+ai
+ax
+"}
+(12,1,1) = {"
+ax
+aQ
+kD
+aE
+aG
+hn
+aO
+aG
+Dd
+aN
+ac
+aG
+aS
+am
+ac
+yT
+dz
+ag
+ZU
+ZU
+SW
+aU
+ag
+aU
+ai
+ax
+"}
+(13,1,1) = {"
+ax
+ai
+au
+aG
+aG
+hn
+al
+aG
+gg
+aE
+ac
+aG
+aO
+aG
+ac
+iR
+dz
+ag
+ag
+ag
+ae
+aR
+aU
+pl
+ar
+ax
+"}
+(14,1,1) = {"
+ax
+ai
+kD
+Kn
+aG
+hn
+aO
+aE
+aG
+aG
+ac
+aG
+aS
+aE
+af
+ag
+aR
+aR
+ag
+aR
+ae
+aU
+aR
+aU
+ai
+ax
+"}
+(15,1,1) = {"
+ax
+ai
+aE
+aG
+aE
+hn
+aS
+aY
+aY
+aY
+aa
+aY
+aW
+aY
+ac
+aR
+ag
+ag
+aR
+ag
+ae
+ag
+aU
+aR
+ai
+ax
+"}
+(16,1,1) = {"
+ax
+ai
+pT
+aE
+aG
+qc
+aO
+aG
+aE
+aE
+ac
+aG
+al
+ab
+ac
+uT
+Ev
+yN
+ag
+aR
+ae
+eb
+aR
+ag
+ai
+ax
+"}
+(17,1,1) = {"
+ax
+ai
+aG
+aG
+aG
+uD
+aG
+aE
+aG
+aG
+ac
+aE
+aS
+ab
+ac
+ac
+ac
+af
+ac
+ac
+ac
+af
+ac
+ac
+ai
+ax
+"}
+(18,1,1) = {"
+ax
+ar
+Ua
+aG
+aE
+aE
+aG
+aG
+Sn
+aE
+ac
+aG
+aO
+ab
+ac
+ik
+va
+Wo
+ao
+Bl
+ao
+Zd
+eX
+Zd
+ai
+ax
+"}
+(19,1,1) = {"
+ax
+ai
+ac
+ac
+ac
+aj
+ac
+ac
+aV
+ac
+ac
+aG
+aS
+ab
+ac
+ao
+ao
+Zd
+EI
+EI
+EI
+ao
+Zd
+ao
+ai
+ax
+"}
+(20,1,1) = {"
+ax
+ai
+JF
+XZ
+az
+az
+az
+XZ
+az
+XZ
+ac
+aG
+aO
+aY
+aX
+ex
+ex
+ex
+TO
+IK
+EI
+PS
+ao
+ao
+aQ
+ax
+"}
+(21,1,1) = {"
+ax
+ai
+Dv
+az
+XZ
+az
+nS
+az
+az
+xs
+aV
+aC
+aS
+aE
+ac
+ao
+ao
+VM
+EI
+uy
+EI
+ao
+ao
+Zd
+aQ
+ax
+"}
+(22,1,1) = {"
+ax
+ai
+Ab
+az
+DH
+az
+Lj
+az
+DH
+az
+ac
+aG
+aq
+aG
+ac
+Zd
+ao
+ao
+EI
+qY
+KT
+PS
+Zd
+ao
+ai
+ax
+"}
+(23,1,1) = {"
+ax
+ai
+az
+az
+az
+CL
+az
+CL
+az
+XZ
+ac
+aE
+aO
+aN
+ac
+ao
+Zd
+VM
+EI
+DF
+EI
+ao
+ao
+ao
+ai
+ax
+"}
+(24,1,1) = {"
+ax
+ai
+XZ
+jv
+Lj
+az
+vO
+az
+Lj
+az
+af
+aG
+aO
+aG
+ac
+ao
+ao
+ao
+EI
+ol
+EI
+PS
+ao
+Zd
+ai
+ax
+"}
+(25,1,1) = {"
+ax
+ai
+QE
+az
+az
+CL
+SV
+CL
+az
+az
+ac
+aG
+aS
+aE
+ak
+Zd
+ao
+VM
+EI
+Of
+EI
+ao
+Zd
+ao
+aQ
+ax
+"}
+(26,1,1) = {"
+ax
+ai
+QE
+XZ
+DH
+az
+Lj
+az
+DH
+az
+ac
+au
+aO
+aG
+ac
+ao
+Zd
+ao
+EI
+PI
+EI
+PS
+ao
+ao
+aQ
+ax
+"}
+(27,1,1) = {"
+ax
+ar
+Wp
+az
+XZ
+nS
+az
+az
+XZ
+nS
+ac
+aG
+aO
+aG
+ac
+ao
+ao
+Zd
+EI
+BM
+EI
+ao
+ao
+Zd
+ai
+ax
+"}
+(28,1,1) = {"
+ax
+ai
+yx
+az
+OI
+OI
+XZ
+az
+az
+XZ
+ac
+aE
+aO
+aG
+ac
+Ss
+ao
+ao
+Zd
+IM
+ao
+ao
+Zd
+ao
+ai
+ax
+"}
+(29,1,1) = {"
+ax
+ai
+ac
+ac
+af
+ac
+aJ
+ac
+ac
+af
+ac
+ap
+ad
+ap
+ac
+ac
+ac
+ac
+ac
+ac
+ac
+aL
+ac
+ac
+ai
+ax
+"}
+(30,1,1) = {"
+ax
+ai
+WX
+HE
+aA
+aA
+ac
+QK
+aF
+QK
+aF
+QK
+qh
+aF
+QK
+aF
+zk
+QK
+ac
+io
+pA
+aK
+FV
+pA
+ar
+ax
+"}
+(31,1,1) = {"
+ax
+as
+bT
+Xn
+aA
+aA
+af
+xG
+QK
+Tg
+aF
+aF
+pz
+QK
+aF
+Tg
+aF
+aF
+ac
+SD
+aK
+pA
+pA
+hH
+ai
+ax
+"}
+(32,1,1) = {"
+ax
+ai
+qb
+aA
+aA
+aA
+ac
+aF
+Tg
+aF
+NF
+aF
+XI
+aF
+NF
+aF
+QK
+aF
+af
+bO
+pA
+aK
+aK
+pA
+ai
+ax
+"}
+(33,1,1) = {"
+ax
+ar
+aA
+aA
+aA
+aA
+aP
+aF
+Tg
+bc
+aF
+XI
+XI
+XI
+aF
+QK
+aF
+QK
+ac
+pA
+aK
+aK
+pA
+aK
+aQ
+ax
+"}
+(34,1,1) = {"
+ax
+ai
+aA
+aA
+SO
+SO
+aw
+QK
+ET
+ET
+XI
+Mq
+Pe
+XI
+XI
+ET
+Tg
+aF
+ac
+bp
+aK
+dw
+aK
+aK
+aQ
+ax
+"}
+(35,1,1) = {"
+ax
+aT
+bT
+Xn
+yk
+aA
+ac
+aF
+aF
+aF
+aF
+XI
+XI
+XI
+aF
+aF
+QK
+Lr
+ac
+aK
+pA
+QA
+aK
+wV
+ai
+ax
+"}
+(36,1,1) = {"
+ax
+ai
+aA
+kf
+yk
+aA
+af
+aF
+zk
+aF
+NF
+aF
+XI
+aF
+NF
+aF
+Tg
+aF
+af
+lK
+aK
+op
+pA
+pA
+ai
+ax
+"}
+(37,1,1) = {"
+ax
+ar
+aA
+aA
+yk
+cW
+ac
+QK
+aF
+Tg
+QK
+aF
+pz
+aF
+QK
+Tg
+aF
+QK
+ac
+pA
+aK
+aK
+bp
+op
+ar
+ax
+"}
+(38,1,1) = {"
+ax
+ai
+xx
+ty
+yk
+xx
+ac
+aF
+QK
+aF
+aF
+QK
+Tg
+aF
+Tg
+QK
+aF
+aF
+ac
+Oa
+pA
+aK
+aK
+aK
+ai
+ax
+"}
+(39,1,1) = {"
+ax
+ai
+ai
+aI
+aI
+ar
+ai
+ai
+ai
+ai
+aB
+ai
+ai
+ai
+ai
+aB
+ar
+ai
+ai
+ai
+ai
+aQ
+ai
+ai
+ai
+ax
+"}
+(40,1,1) = {"
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+"}

@@ -1,38 +1,14 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"g" = (
-/turf/template_noop,
-/area/template_noop)
-"j" = (
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/vestige/wake)
-"l" = (
-/obj/structure/sign/poster/ripped,
-/turf/closed/wall/r_wall,
-/area/ruin/space/has_grav/vestige/wake)
-"m" = (
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/vestige/wake)
-"o" = (
-/obj/machinery/iv_drip,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/vestige/wake)
-"p" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/vestige/wake)
-"r" = (
-/obj/machinery/door/airlock/medical{
-	name = "the Last Room"
+"aa" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
 	},
-/turf/open/floor/iron/white,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
 /area/ruin/space/has_grav/vestige/wake)
-"t" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/vestige/wake)
-"u" = (
+"ab" = (
 /obj/machinery/door/airlock/external/ruin{
 	name = "External Airlock"
 	},
@@ -42,52 +18,719 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/vestige/wake)
-"x" = (
+"ac" = (
 /obj/item/kirbyplants/random,
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/vestige/wake)
-"y" = (
+"ad" = (
+/obj/machinery/light/cold/dim/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"ae" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"af" = (
+/obj/machinery/light/cold/dim/directional/north,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"ag" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/wake)
+"ah" = (
+/obj/structure/table,
+/obj/item/flashlight/flare/candle{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/food/grown/poppy/lily{
+	pixel_x = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"ai" = (
+/obj/structure/sign/departments/medbay/alt,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/wake)
+"aj" = (
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/obj/effect/mob_spawn/corpse/human/skeleton,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"ak" = (
+/obj/vehicle/ridden/wheelchair,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"al" = (
+/obj/structure/table/wood,
+/obj/item/food/grown/poppy{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/food/grown/poppy/lily{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/obj/item/food/grown/poppy/geranium{
+	pixel_y = -3
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"am" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"an" = (
+/obj/effect/spawner/structure/window/reinforced/tinted,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/wake)
+"ao" = (
 /obj/effect/turf_decal/caution{
 	dir = 4
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/vestige/wake)
-"z" = (
-/obj/machinery/light/broken/directional/south,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/white,
+"ap" = (
+/turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/vestige/wake)
-"A" = (
-/obj/effect/spawner/structure/window/reinforced/tinted,
-/turf/open/floor/plating,
+"aq" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/vestige/wake)
-"C" = (
-/obj/structure/bed,
-/obj/item/bedsheet/medical/double,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/vestige/wake)
-"D" = (
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/vestige/wake)
-"H" = (
-/obj/structure/bed,
-/obj/item/bedsheet/medical,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/vestige/wake)
-"I" = (
+"ar" = (
 /obj/structure/sign/poster/official/random,
 /turf/closed/wall,
 /area/ruin/space/has_grav/vestige/wake)
-"J" = (
+"as" = (
+/obj/item/food/grown/poppy,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"at" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"au" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"av" = (
+/obj/machinery/door/airlock/wood{
+	name = "Chapel of Rest"
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"aw" = (
+/obj/structure/grille/broken,
+/obj/item/shard,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/wake)
+"ax" = (
+/obj/machinery/door/airlock/medical{
+	name = "Nurses' Station"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"ay" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"az" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aA" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aB" = (
+/obj/structure/sign/poster/ripped,
 /turf/closed/wall,
 /area/ruin/space/has_grav/vestige/wake)
-"K" = (
+"aC" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aD" = (
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aE" = (
+/obj/effect/mapping_helpers/broken_floor,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aF" = (
+/obj/item/paper{
+	name = "bed tag - 12";
+	default_raw_text = "A. MERES. Moved to the quiet room, per request. She kept asking about the window.";
+	pixel_y = 6
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aG" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aH" = (
+/obj/structure/curtain/cloth,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aI" = (
+/turf/template_noop,
+/area/template_noop)
+"aJ" = (
+/obj/item/paper{
+	name = "bed tag - 3";
+	default_raw_text = "T. OKONKWO. No visitors, by request. Likes the lights left off.";
+	pixel_y = 6
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aK" = (
+/obj/structure/sign/departments/holy,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/wake)
+"aL" = (
+/obj/machinery/light/small/broken/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aM" = (
+/obj/machinery/door/airlock/medical{
+	name = "North Ward - Beds 1 to 19"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aN" = (
+/obj/machinery/door/airlock/medical{
+	name = "South Ward - Beds 20 to 39"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aO" = (
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aP" = (
+/obj/effect/turf_decal/caution{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aQ" = (
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"aR" = (
+/obj/structure/rack,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath{
+	pixel_x = 3;
+	pixel_y = -3
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = -4
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aS" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/wake)
+"aT" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aU" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/wake)
+"aV" = (
+/obj/structure/table,
+/obj/item/bedsheet/medical{
+	pixel_y = 4
+	},
+/obj/item/bedsheet/medical{
+	pixel_y = -2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aW" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aX" = (
+/obj/machinery/door/airlock{
+	name = "Reception"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aY" = (
+/obj/machinery/iv_drip,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"aZ" = (
+/obj/machinery/door/airlock/wood{
+	name = "the Last Room"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/wake)
+"dW" = (
+/obj/item/paper{
+	name = "bed tag - 33";
+	default_raw_text = "E. VARGA. The bear stays, she says. It has better manners than most of her family.";
+	pixel_y = 6
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"fm" = (
+/obj/machinery/light/cold/dim/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"fC" = (
+/obj/item/paper{
+	name = "unsent sympathy card";
+	default_raw_text = "With deepest condolences on your loss. (The card is blank inside. Forty were ordered. None were ever addressed. There was no one left to send them to.)"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"fE" = (
+/obj/item/flashlight/flare/candle{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"hs" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/medical/minor_healing,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"hP" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -2;
+	pixel_y = 3
+	},
+/obj/item/food/grown/poppy{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/wake)
+"iZ" = (
+/obj/machinery/door/airlock/medical{
+	name = "Quiet Room"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"jc" = (
+/obj/structure/table/glass,
+/obj/item/storage/pill_bottle/psicodine{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/storage/pill_bottle/sansufentanyl{
+	pixel_x = 4
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"kk" = (
+/obj/structure/chair/office{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"kr" = (
 /obj/structure/table/wood/fancy/black,
 /obj/item/storage/fancy/candle_box{
 	pixel_y = 5
 	},
+/obj/item/trash/candle{
+	pixel_x = -4;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/wake)
+"kS" = (
+/obj/structure/table,
+/obj/item/paper{
+	name = "laundry rota";
+	default_raw_text = "Wash day is Thursday. Beds are made fresh whether occupied or not. It has been one thousand and forty Thursdays. The sheets are still clean. Somebody keeps making the beds."
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"lC" = (
+/obj/structure/filingcabinet,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"mb" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -1;
+	pixel_y = -4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/wake)
+"mj" = (
+/obj/structure/chair/pew/left{
+	dir = 1
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"mp" = (
+/obj/structure/table/wood,
+/obj/item/book/bible{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"nq" = (
+/obj/structure/table,
+/obj/item/flashlight/flare/candle{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/obj/item/food/grown/poppy{
+	pixel_x = -4;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"og" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"pw" = (
+/obj/item/book/bible,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"pB" = (
+/obj/effect/decal/cleanable/glass,
+/obj/item/shard{
+	pixel_x = 3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"qC" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -1;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"qD" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/wake)
+"qL" = (
+/obj/structure/table/glass,
+/obj/item/reagent_containers/cup/bottle/morphine{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/syringe{
+	pixel_x = 3
+	},
+/obj/item/paper{
+	name = "controlled substances register";
+	default_raw_text = "2145: morphine, bed 4, 10u, for the pain. 2210: morphine, bed 31, 10u, for the pain. 2330: morphine, bed 12, refused. She said she wanted to be awake for it. 0300: register closed. Nothing further will be required.";
+	pixel_y = -3
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"qR" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/storage/fancy/candle_box{
+	pixel_y = 5
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"sl" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/food/grown/poppy/lily{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/food/grown/poppy{
+	pixel_x = 4;
+	pixel_y = -1
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"sz" = (
+/obj/structure/table,
+/obj/item/folder/white{
+	pixel_x = -3
+	},
+/obj/item/clipboard{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"sP" = (
+/obj/structure/table,
+/obj/item/paper{
+	name = "transfer manifest";
+	default_raw_text = "Forty entries, one date. The carrier tug never arrived. Disposition: cold room, four. Chapel, one. Beds, the remainder. Handling notes: they did not seem to mind staying."
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"tH" = (
+/obj/machinery/light/broken/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"tW" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"up" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/paper{
+	name = "book of remembrance";
+	default_raw_text = "Forty names, written in the same careful hand, in ink that does not vary. It was all set down in one sitting, and the hand did not shake until the last name. There is room left for one more.";
+	pixel_y = 4
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"uN" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/book/bible{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"vR" = (
+/obj/structure/bedsheetbin,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"vS" = (
+/obj/machinery/door/airlock/medical{
+	name = "Cold Room"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"wo" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"wJ" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"xc" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"xi" = (
+/obj/structure/bed,
+/obj/item/bedsheet/medical/double,
+/obj/item/food/grown/poppy/lily{
+	pixel_y = 5
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/wake)
+"xG" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "visitor log";
+	default_raw_text = "Day 112: no visitors. Day 113: no visitors. Day 114: a delivery of flowers, sender unmarked. Forty stems, one for each bed. We put them in water. Day 115:";
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/pen{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"yk" = (
+/obj/structure/closet/body_bag,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"yt" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/wake)
+"yx" = (
+/obj/machinery/light/broken/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"yP" = (
+/obj/item/paper{
+	name = "bed tag - 12";
+	default_raw_text = "A. MERES. Window, per request.";
+	pixel_y = 6
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"zb" = (
+/obj/machinery/light/small/broken/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"zl" = (
+/obj/structure/sign/warning/vacuum/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"zB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/wake)
+"zP" = (
+/obj/machinery/light/cold/dim/directional/south,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"Az" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"AT" = (
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/obj/effect/spawner/random/entertainment/plushie{
+	pixel_y = 5
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"Bm" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"Cq" = (
+/obj/item/paper{
+	name = "bed tag - 40";
+	default_raw_text = "Reserved. It has been kept ready. It will not be a long wait, whoever you are.";
+	pixel_y = 6
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/wake)
+"ET" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/food/grown/poppy/lily{
+	pixel_y = 2
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"GP" = (
+/obj/structure/bodycontainer/morgue{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"HN" = (
+/obj/item/kirbyplants/random,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"Im" = (
+/obj/structure/table/wood,
+/obj/structure/desk_bell{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/food/grown/poppy{
+	pixel_x = 4
+	},
+/obj/item/food/grown/poppy/lily{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"IC" = (
+/obj/structure/table/wood/fancy/black,
 /obj/item/flashlight/flare/candle{
 	pixel_x = -5;
 	pixel_y = -2
@@ -96,20 +739,41 @@
 	pixel_x = 5;
 	pixel_y = -3
 	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"JL" = (
+/obj/structure/filingcabinet,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/vestige/wake)
-"N" = (
-/obj/structure/curtain/cloth,
+"JZ" = (
+/obj/item/shard{
+	pixel_x = -2;
+	pixel_y = 3
+	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/vestige/wake)
-"P" = (
-/mob/living/basic/vestige_patron/mourner{
-	dir = 1
-	},
+"KP" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/entertainment/deck,
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/vestige/wake)
-"R" = (
+"LQ" = (
+/obj/structure/chair/pew/right{
+	dir = 1
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"Mp" = (
+/obj/structure/closet/crate/coffin,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"Mt" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"My" = (
 /obj/structure/table,
 /obj/item/paper{
 	name = "night rounds, unfinished";
@@ -122,385 +786,1011 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/vestige/wake)
-"S" = (
-/obj/machinery/door/airlock/external/ruin{
-	name = "External Airlock"
+"MQ" = (
+/obj/structure/chair/wood{
+	dir = 4
 	},
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/vestige/wake)
-"T" = (
-/turf/closed/wall/r_wall,
-/area/ruin/space/has_grav/vestige/wake)
-"W" = (
-/obj/structure/filingcabinet,
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/iron/white,
-/area/ruin/space/has_grav/vestige/wake)
-"Y" = (
-/obj/structure/bed,
-/obj/item/bedsheet/medical,
-/obj/effect/mob_spawn/corpse/human/skeleton,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/vestige/wake)
+"OA" = (
+/obj/structure/noticeboard/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"OM" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/wake)
+"PU" = (
+/obj/machinery/door/airlock{
+	name = "Linen Store"
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"Rh" = (
+/obj/structure/closet/crate{
+	name = "unclaimed effects"
+	},
+/obj/item/clothing/glasses/regular,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"RD" = (
+/obj/structure/closet/crate/coffin,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"Sz" = (
+/obj/structure/rack,
+/obj/item/bedsheet/medical{
+	pixel_y = 5
+	},
+/obj/item/bedsheet/medical{
+	pixel_y = 2
+	},
+/obj/item/bedsheet/medical{
+	pixel_y = -1
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"Tu" = (
+/obj/item/paper{
+	name = "bed tag - 21";
+	default_raw_text = "S. IBRAHIM. Prefers the window seat. There is no window seat. We are working on it.";
+	pixel_y = 6
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"TZ" = (
+/mob/living/basic/vestige_patron/mourner{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/wake)
+"XO" = (
+/obj/structure/table,
+/obj/item/food/grown/poppy/lily{
+	pixel_y = 3
+	},
+/obj/item/trash/candle{
+	pixel_x = -4;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"Yn" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"Yp" = (
+/obj/structure/filingcabinet,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"Yr" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
+"Zh" = (
+/obj/structure/table,
+/obj/effect/mob_spawn/corpse/human/skeleton,
+/obj/item/bedsheet/medical,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/wake)
+"ZX" = (
+/obj/item/trash/candle{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/chapel,
+/area/ruin/space/has_grav/vestige/wake)
 
 (1,1,1) = {"
-g
-g
-g
-g
-g
-g
-g
-g
-g
-g
-g
-g
-g
-g
-g
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
 "}
 (2,1,1) = {"
-g
-g
-g
-g
-g
-g
-T
-u
-T
-g
-g
-g
-g
-g
-g
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+ap
+ab
+ap
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
 "}
 (3,1,1) = {"
-g
-g
-g
-g
-g
-g
-T
-y
-T
-g
-g
-g
-g
-g
-g
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aq
+ao
+ap
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
 "}
 (4,1,1) = {"
-g
-T
-T
-T
-l
-T
-T
-S
-T
-T
-l
-T
-T
-T
-g
+aI
+ap
+ap
+ap
+ap
+ag
+ap
+ap
+ap
+ap
+ap
+aa
+ap
+ap
+ap
+ap
+ap
+ag
+ap
+ap
+ap
+ap
+aI
 "}
 (5,1,1) = {"
-g
-T
-D
-m
-t
-m
-p
-m
-t
-W
-p
-m
-j
-T
-g
+aI
+ap
+aA
+am
+aO
+am
+am
+am
+am
+aU
+ac
+aP
+aR
+aU
+aA
+am
+aO
+am
+am
+am
+am
+ap
+aI
 "}
 (6,1,1) = {"
-g
-T
-H
-p
-m
-m
-m
-m
-m
-R
-t
-t
-H
-T
-g
+aI
+ap
+aD
+aH
+am
+aO
+aO
+aH
+aD
+aU
+at
+am
+aW
+aU
+aj
+aH
+am
+aO
+aO
+aH
+aD
+ap
+aI
 "}
 (7,1,1) = {"
-g
-T
-N
-o
-m
-t
-m
-m
-m
-m
-m
-m
-N
-T
-g
+aI
+an
+aY
+am
+aO
+am
+aC
+am
+aY
+aB
+aT
+aO
+ae
+aU
+aY
+aO
+aC
+am
+aO
+aO
+aY
+an
+aI
 "}
 (8,1,1) = {"
-g
-A
-Y
-m
-m
-m
-m
-t
-m
-p
-m
-m
-H
-A
-g
+aI
+ap
+aj
+aJ
+aC
+aO
+am
+aO
+aD
+aU
+au
+aC
+ae
+aU
+aD
+am
+aO
+aO
+aC
+Tu
+aj
+ap
+aI
 "}
 (9,1,1) = {"
-g
-A
-N
-t
-m
-m
-m
-m
-m
-m
-m
-o
-N
-A
-g
+aI
+ap
+az
+aO
+am
+al
+aO
+am
+aO
+aM
+am
+aO
+am
+aN
+aO
+aO
+am
+KP
+aO
+am
+ah
+ap
+aI
 "}
 (10,1,1) = {"
-g
-T
-H
-m
-m
-p
-m
-m
-p
-m
-m
-m
-Y
-T
-g
+aI
+ap
+aD
+aH
+aO
+ak
+am
+aO
+aL
+aU
+at
+aE
+ae
+aU
+az
+am
+aO
+MQ
+am
+aH
+aD
+ap
+aI
 "}
 (11,1,1) = {"
-g
-T
-N
-m
-m
-m
-t
-m
-m
-t
-m
-t
-N
-T
-g
+aI
+an
+ah
+am
+as
+aG
+aO
+am
+aD
+aU
+au
+aO
+ay
+aU
+aD
+aO
+aO
+mp
+aO
+aO
+am
+an
+aI
 "}
 (12,1,1) = {"
-g
-T
-Y
-m
-m
-m
-m
-m
-m
-m
-m
-m
-H
-A
-g
+aI
+ap
+aD
+aO
+am
+aV
+am
+aF
+aY
+aU
+af
+am
+aW
+aB
+ah
+aO
+am
+Yn
+aO
+aY
+aD
+ap
+aI
 "}
 (13,1,1) = {"
-g
-A
-N
-o
-t
-m
-m
-p
-m
-m
-m
-m
-N
-A
-g
+aI
+ap
+ad
+am
+aO
+am
+aC
+aO
+ah
+aU
+at
+aO
+ae
+aU
+aD
+aH
+aO
+ak
+am
+aO
+xc
+ap
+aI
 "}
 (14,1,1) = {"
-g
-A
-H
-m
-m
-m
-m
-m
-m
-m
-m
-m
-H
-T
-g
+aI
+ap
+aj
+aH
+aC
+aO
+aO
+aH
+aD
+aU
+au
+aO
+ae
+aU
+aY
+am
+aO
+am
+aO
+aH
+aj
+ap
+aI
 "}
 (15,1,1) = {"
-g
-T
-p
-m
-m
-m
-m
-m
-t
-m
-m
-p
-D
-T
-g
+aI
+an
+aY
+aO
+am
+am
+am
+am
+aO
+aM
+am
+am
+am
+aN
+aO
+aO
+aC
+aO
+aO
+am
+am
+an
+aI
 "}
 (16,1,1) = {"
-g
-T
-J
-J
-I
-J
-J
-r
-J
-J
-I
-J
-J
-T
-g
+aI
+ap
+aD
+am
+aO
+aO
+aO
+aO
+xc
+aU
+at
+aO
+aW
+aU
+AT
+dW
+am
+am
+am
+aO
+aD
+ap
+aI
 "}
 (17,1,1) = {"
-g
-T
-x
-m
-m
-t
-m
-t
-m
-D
-m
-m
-m
-T
-g
+aI
+ap
+nq
+am
+am
+am
+am
+am
+aD
+aU
+aT
+aC
+ae
+aU
+ad
+am
+aO
+aO
+aC
+am
+aY
+ap
+aI
 "}
 (18,1,1) = {"
-g
-T
-C
-p
-t
-P
-t
-m
-K
-p
-t
-m
-z
-T
-g
+aI
+ap
+wJ
+am
+aO
+aO
+aO
+aO
+wJ
+ar
+au
+aO
+ae
+aU
+wJ
+aO
+am
+am
+aO
+aO
+wJ
+ap
+aI
 "}
 (19,1,1) = {"
-g
-T
-x
-j
-m
-p
-m
-p
-m
-m
-m
-m
-D
-T
-g
+aI
+ap
+aU
+aU
+aU
+aU
+aB
+aU
+aU
+aU
+at
+am
+ae
+aU
+aU
+aB
+aU
+aU
+aU
+aU
+aU
+ap
+aI
 "}
 (20,1,1) = {"
-g
-T
-T
-T
-T
-l
-T
-T
-T
-l
-T
-T
-T
-T
-g
+aI
+ap
+Sz
+am
+am
+aU
+lC
+OA
+hs
+aU
+au
+aO
+aW
+ar
+HN
+am
+am
+aU
+am
+fm
+Rh
+ap
+aI
 "}
 (21,1,1) = {"
-g
-g
-g
-g
-g
-g
-g
-g
-g
-g
-g
-g
-g
-g
-g
+aI
+ap
+vR
+kS
+am
+PU
+am
+am
+am
+aU
+af
+aO
+ae
+aU
+xG
+wo
+aO
+aB
+Zh
+am
+aC
+ap
+aI
+"}
+(22,1,1) = {"
+aI
+ap
+am
+am
+aC
+aU
+sz
+aO
+yk
+aU
+at
+am
+ay
+aU
+Im
+aO
+fC
+aU
+am
+am
+am
+ap
+aI
+"}
+(23,1,1) = {"
+aI
+ap
+wJ
+am
+am
+aU
+My
+am
+aC
+ai
+au
+aO
+ae
+aU
+am
+aC
+am
+aU
+yk
+sP
+aO
+ap
+aI
+"}
+(24,1,1) = {"
+aI
+ap
+aU
+aU
+aU
+aU
+kk
+aO
+aO
+ax
+am
+aO
+am
+aX
+aO
+am
+aO
+vS
+aO
+aO
+am
+ag
+aI
+"}
+(25,1,1) = {"
+aI
+ap
+aE
+zb
+JZ
+aU
+zl
+am
+zP
+aU
+at
+aC
+ae
+aU
+ak
+aO
+am
+aU
+am
+am
+GP
+ap
+aI
+"}
+(26,1,1) = {"
+aI
+aw
+pB
+am
+am
+iZ
+aO
+aO
+am
+aU
+aT
+am
+aW
+aU
+az
+am
+aG
+ar
+RD
+aO
+GP
+ap
+aI
+"}
+(27,1,1) = {"
+aI
+aw
+pB
+XO
+aC
+aU
+jc
+am
+aY
+aU
+au
+ak
+ae
+aU
+JL
+aO
+aC
+aU
+RD
+aO
+GP
+ap
+aI
+"}
+(28,1,1) = {"
+aI
+ap
+aD
+yP
+am
+aU
+qL
+tH
+wJ
+aU
+at
+aO
+ae
+aU
+Yp
+am
+wJ
+aU
+wJ
+am
+GP
+ap
+aI
+"}
+(29,1,1) = {"
+aI
+ap
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aK
+av
+aU
+aU
+aU
+aU
+aB
+aU
+aU
+aU
+aU
+ap
+aI
+"}
+(30,1,1) = {"
+aI
+ap
+qD
+zB
+OM
+zB
+yt
+aU
+qC
+qR
+ZX
+aQ
+ZX
+mj
+Mt
+mj
+Az
+Mt
+sl
+ZX
+Az
+ap
+aI
+"}
+(31,1,1) = {"
+aI
+ap
+zB
+aS
+aS
+aS
+zB
+aU
+Mt
+uN
+Mt
+Mt
+Mt
+LQ
+pw
+LQ
+aQ
+aQ
+Mt
+og
+Mt
+an
+aI
+"}
+(32,1,1) = {"
+aI
+an
+mb
+aS
+zB
+aS
+aS
+aZ
+aQ
+Mt
+Bm
+aQ
+aQ
+Mt
+aQ
+Mt
+ZX
+qC
+Bm
+Mp
+Mt
+ap
+aI
+"}
+(33,1,1) = {"
+aI
+ap
+zB
+aS
+TZ
+zB
+aS
+aU
+Mt
+up
+Mt
+Bm
+Mt
+mj
+Mt
+mj
+Mt
+aQ
+ET
+Yr
+aQ
+an
+aI
+"}
+(34,1,1) = {"
+aI
+ap
+kr
+hP
+xi
+Cq
+zB
+aU
+ZX
+IC
+qC
+yx
+fE
+LQ
+aQ
+LQ
+aQ
+Mt
+Mt
+fE
+tW
+ap
+aI
+"}
+(35,1,1) = {"
+aI
+ap
+ap
+ap
+an
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+an
+ap
+an
+ap
+ap
+an
+ap
+ap
+ap
+aI
+"}
+(36,1,1) = {"
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
 "}

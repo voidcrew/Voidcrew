@@ -22,6 +22,10 @@
 	var/grant_text
 	/// Boon typepath this one grows out of. Offered only once that boon is owned; granting this replaces it.
 	var/upgrades_from
+	/// Explicit reward-radial icon file, for boons that are neither spells nor items (spell/item boons derive theirs)
+	var/radial_icon
+	/// Icon state paired with radial_icon
+	var/radial_icon_state
 
 /// Manifests the boon on the supplicant. user is owner.current at grant time.
 /datum/vestige_boon/proc/grant(mob/living/user, datum/mind/owner)
@@ -41,6 +45,11 @@
 	if(!spell_type)
 		return
 	remove_replaced_spell(user)
+	// Stripping the old ability can reshape its owner — removing a shapeshift
+	// boon mid-form unshifts the claimant and DELETES the shape mob we were
+	// handed as user. Re-resolve the body before granting the replacement.
+	if(owner?.current)
+		user = owner.current
 	var/datum/action/granted = new spell_type(owner || user)
 	granted.Grant(user)
 
@@ -86,6 +95,8 @@
 
 /// Radial menu icon for a boon typepath — the granted spell's or item's own icon where possible
 /proc/vestige_boon_radial_image(datum/vestige_boon/boon_type)
+	if(initial(boon_type.radial_icon))
+		return image(icon = initial(boon_type.radial_icon), icon_state = initial(boon_type.radial_icon_state))
 	if(ispath(boon_type, /datum/vestige_boon/spell))
 		var/datum/vestige_boon/spell/spell_boon = boon_type
 		var/datum/action/spell_type = initial(spell_boon.spell_type)

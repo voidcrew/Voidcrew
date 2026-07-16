@@ -60,6 +60,24 @@
 /area/ruin/space/has_grav/vestige/aperture
 	name = "\improper The Aperture"
 
+/area/ruin/space/has_grav/vestige/roost
+	name = "\improper The Roost"
+
+/area/ruin/space/has_grav/vestige/menagerie
+	name = "\improper The Menagerie"
+
+/area/ruin/space/has_grav/vestige/facsimile
+	name = "\improper The Facsimile"
+
+/area/ruin/space/has_grav/vestige/comb
+	name = "\improper The Comb"
+
+/area/ruin/space/has_grav/vestige/shambles
+	name = "\improper The Shambles"
+
+/area/ruin/space/has_grav/vestige/loom
+	name = "\improper The Loom"
+
 // ===== OVERMAP SIGNAL =====
 
 /obj/structure/overmap/space_ruin/vestige

@@ -1,125 +1,58 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"b" = (
-/obj/machinery/door/airlock/external/ruin{
-	name = "External Airlock"
-	},
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/vestige/reliquary)
-"c" = (
-/obj/machinery/door/airlock/vault{
-	name = "the Door"
-	},
-/obj/effect/mapping_helpers/airlock/locked,
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/vestige/reliquary)
-"d" = (
-/obj/effect/turf_decal/caution{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/vestige/reliquary)
-"e" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/carpet,
-/area/ruin/space/has_grav/vestige/reliquary)
-"h" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/reliquary)
-"j" = (
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/reliquary)
-"k" = (
+"aa" = (
 /obj/structure/sign/poster/ripped,
 /turf/closed/wall,
 /area/ruin/space/has_grav/vestige/reliquary)
-"l" = (
-/obj/item/flashlight/flare/candle{
-	pixel_x = -2
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/vestige/reliquary)
-"m" = (
-/obj/structure/sign/poster/ripped,
-/turf/closed/wall/r_wall,
-/area/ruin/space/has_grav/vestige/reliquary)
-"n" = (
+"ab" = (
 /obj/structure/table/wood/fancy/black,
 /obj/item/paper{
-	name = "the four-hundredth volume";
-	default_raw_text = "Day one: the door did not open. Day two: the door did not open. I abridge. Year forty: the hinges have rusted, which is remarkable, because the door has no hinges. The rust is not decay. The rust is marginalia. The door has been answering me one flake at a time, and I have spent a lifetime learning to read it. Ask it nothing. Read everything."
+	name = "notice to pilgrims";
+	default_raw_text = "Welcome, pilgrim. This vessel keeps the Threshold. Take a candle from the box and carry it aft, through the nave, to the Door. Light it. Sit. Read the wall, if you can bear to. Do not knock - a knock is a question, and the Door answers questions in a coin you do not want to spend. Leave quieter than you came. - Keeper Varn, year two of the vigil";
+	pixel_y = 5
 	},
-/obj/item/pen{
-	pixel_x = -5;
-	pixel_y = 3
+/obj/item/storage/fancy/candle_box{
+	pixel_y = -1
 	},
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/vestige/reliquary)
-"o" = (
-/turf/open/floor/carpet,
-/area/ruin/space/has_grav/vestige/reliquary)
-"p" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/vestige/reliquary)
-"s" = (
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/vestige/reliquary)
-"t" = (
-/turf/closed/wall/r_wall,
-/area/ruin/space/has_grav/vestige/reliquary)
-"u" = (
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/vestige/reliquary)
-"v" = (
-/mob/living/basic/vestige_patron/scrivener{
-	dir = 4
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 6;
+	pixel_y = 2
 	},
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/vestige/reliquary)
-"A" = (
-/turf/closed/wall/rust,
-/area/ruin/space/has_grav/vestige/reliquary)
-"B" = (
-/obj/item/book/random,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/vestige/reliquary)
-"D" = (
-/obj/item/paper/crumpled{
-	name = "transcription fragment"
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/vestige/reliquary)
-"E" = (
-/obj/machinery/light/broken/directional/south,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/vestige/reliquary)
-"F" = (
+"ac" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/vestige/reliquary)
+"ad" = (
 /obj/structure/chair/pew{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/vestige/reliquary)
-"H" = (
-/obj/machinery/door/airlock/wood{
-	name = "Scriptorium"
+"ae" = (
+/obj/item/trash/candle{
+	pixel_x = 3;
+	pixel_y = 2
 	},
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/vestige/reliquary)
-"J" = (
-/turf/closed/wall/r_wall/rust,
+"af" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/vestige/reliquary)
-"K" = (
+"ag" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"ah" = (
+/obj/machinery/light/small/broken/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"ai" = (
 /obj/machinery/door/airlock/external/ruin{
 	name = "External Airlock"
 	},
@@ -129,372 +62,1504 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/vestige/reliquary)
-"L" = (
-/turf/template_noop,
-/area/template_noop)
-"N" = (
-/turf/closed/wall,
-/area/ruin/space/has_grav/vestige/reliquary)
-"P" = (
+"aj" = (
+/obj/structure/dresser,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/vestige/reliquary)
-"Q" = (
-/obj/structure/filingcabinet,
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/plating/rust,
+"ak" = (
+/obj/effect/turf_decal/weather/dirt,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
 /area/ruin/space/has_grav/vestige/reliquary)
-"S" = (
+"al" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/reliquary)
+"am" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall/r_wall/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"an" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/reliquary)
+"ao" = (
+/obj/item/paper/crumpled{
+	name = "transcription fragment"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"ap" = (
+/turf/closed/wall/r_wall/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aq" = (
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/vestige/reliquary)
+"ar" = (
+/obj/item/trash/candle{
+	pixel_x = -2;
+	pixel_y = 3
+	},
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/vestige/reliquary)
+"as" = (
 /obj/structure/table/wood/fancy/black,
-/obj/item/storage/fancy/candle_box{
-	pixel_y = 5
+/obj/item/paper{
+	name = "volume nine, unfinished";
+	default_raw_text = "Volume nine. The tender came at last and the congregation went aboard it. Keeper Varn asked me to choose, and I looked at the Door, and overnight it had rusted three new lines onto a face that has no lines. I chose the way anyone chooses anything: I was already reading. I have moved my desk to the threshold. This room may keep my sleep. I will not be needing much of it.";
+	pixel_y = 4
 	},
 /obj/item/flashlight/flare/candle{
-	pixel_x = -5;
+	pixel_x = -4;
 	pixel_y = -2
 	},
-/obj/item/flashlight/flare/candle{
-	pixel_x = 5;
-	pixel_y = -3
-	},
+/obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/vestige/reliquary)
-"U" = (
-/obj/machinery/light/broken/directional/north,
+"at" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"au" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall/r_wall/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"av" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/vestige/reliquary)
-"X" = (
+"aw" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/vestige/reliquary)
-"Y" = (
+"ax" = (
+/obj/structure/sign/departments/holy,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/reliquary)
+"ay" = (
+/obj/machinery/door/airlock/wood{
+	name = "Chapel"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"az" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aA" = (
+/turf/open/floor/plating/rust/airless,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aB" = (
+/obj/machinery/door/airlock/wood{
+	name = "Scriptorium"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aC" = (
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aD" = (
+/obj/machinery/door/airlock/wood{
+	name = "Archive"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aE" = (
+/turf/closed/wall/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aF" = (
+/obj/machinery/door/airlock/wood{
+	name = "Threshold"
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aG" = (
+/obj/structure/chair/pew{
+	dir = 4
+	},
+/obj/item/book/bible{
+	pixel_y = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aH" = (
+/obj/machinery/light/small/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aI" = (
 /obj/item/flashlight/flare/candle{
-	pixel_x = 2
+	pixel_x = -3;
+	pixel_y = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aJ" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Iron Hold"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aK" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aL" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aM" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aN" = (
+/obj/structure/fireplace,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aO" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/trash/candle{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aP" = (
+/obj/structure/curtain/cloth,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aQ" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aR" = (
+/obj/machinery/door/airlock/wood{
+	name = "Cell"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aS" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aT" = (
+/obj/structure/chair/pew/left{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aU" = (
+/obj/structure/bed,
+/obj/item/bedsheet/black,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aV" = (
+/turf/template_noop,
+/area/template_noop)
+"aW" = (
+/obj/structure/chair/pew{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aY" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/hooded/chaplain_hoodie,
+/obj/item/book/bible{
+	pixel_y = 3
+	},
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"aZ" = (
+/obj/structure/chair/pew/right{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"bz" = (
+/obj/structure/filingcabinet,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"cN" = (
+/obj/machinery/light/broken/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"df" = (
+/obj/item/flashlight/flare/candle{
+	pixel_x = -3;
+	pixel_y = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"dg" = (
+/obj/machinery/light/broken/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"dA" = (
+/obj/effect/mapping_helpers/broken_floor,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust/airless,
+/area/ruin/space/has_grav/vestige/reliquary)
+"dD" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "abandoned copywork"
+	},
+/obj/item/pen{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"dZ" = (
+/obj/item/book/random{
+	pixel_x = -3
+	},
+/obj/item/book/random{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"ey" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/reliquary)
+"fK" = (
+/obj/structure/bookcase/random,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"gQ" = (
+/obj/structure/filingcabinet,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"ha" = (
+/obj/item/trash/candle{
+	pixel_x = 3;
+	pixel_y = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"jq" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 2;
+	pixel_y = 3
+	},
+/obj/item/trash/candle{
+	pixel_x = -5;
+	pixel_y = -3
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"jQ" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"ki" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"lb" = (
+/obj/item/paper_bin{
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/reliquary)
+"lO" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 1;
+	pixel_y = 2
+	},
+/obj/item/trash/candle{
+	pixel_x = -4;
+	pixel_y = -4
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"rD" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "hull integrity report - final";
+	default_raw_text = "Report forty-one. Aft hold plating is down to lace. No moisture, no oxygen, no cause. The corrosion moves inward from the Door, one plate a season, and it takes iron only - the wood it does not touch, like a reader skipping the words it already knows. Nobody reads these reports but the rust, and the rust files its own. This is my last one. Recommendation: let it finish.";
+	pixel_y = 3
+	},
+/obj/item/trash/candle{
+	pixel_x = -5;
+	pixel_y = -3
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"sn" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"sU" = (
+/obj/item/paper/crumpled{
+	name = "transcription fragment"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"ux" = (
+/obj/item/book/random{
+	pixel_x = 3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"vk" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/reliquary)
+"xd" = (
+/obj/machinery/door/airlock/vault{
+	name = "the Door"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"xw" = (
+/obj/structure/girder,
+/obj/effect/decal/cleanable/rubble,
+/turf/open/floor/plating/rust/airless,
+/area/ruin/space/has_grav/vestige/reliquary)
+"yd" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "transcription fragment";
+	default_raw_text = "...the ninth flake repeats the fourth, inverted. The Door has never said anything twice before. It is possible I am being dismissed. It is possible I am being thanked...";
+	pixel_y = 3
+	},
+/obj/item/pen/fountain{
+	pixel_x = 6
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"yR" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/storage/fancy/candle_box{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"za" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/iron{
+	pixel_y = 3
+	},
+/obj/item/stack/sheet/iron{
+	pixel_x = -2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust/airless,
+/area/ruin/space/has_grav/vestige/reliquary)
+"Ah" = (
+/obj/item/book/random{
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"EB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust/airless,
+/area/ruin/space/has_grav/vestige/reliquary)
+"Fs" = (
+/obj/effect/decal/cleanable/rubble,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust/airless,
+/area/ruin/space/has_grav/vestige/reliquary)
+"Gt" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"GJ" = (
+/obj/structure/bookcase/random,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/reliquary)
+"HX" = (
+/obj/effect/turf_decal/caution{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust/airless,
+/area/ruin/space/has_grav/vestige/reliquary)
+"IK" = (
+/mob/living/basic/vestige_patron/scrivener{
+	dir = 4
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"IZ" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"Kx" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"LQ" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/paper{
+	name = "the four-hundredth volume";
+	default_raw_text = "Day one: the door did not open. Day two: the door did not open. I abridge. Year forty: the hinges have rusted, which is remarkable, because the door has no hinges. The rust is not decay. The rust is marginalia. The door has been answering me one flake at a time, and I have spent a lifetime learning to read it. Ask it nothing. Read everything.";
+	pixel_y = 4
+	},
+/obj/item/pen/fountain{
+	pixel_x = -6;
+	pixel_y = -1
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"Ud" = (
+/obj/structure/girder/displaced,
+/obj/effect/decal/cleanable/rubble,
+/turf/open/floor/plating/rust/airless,
+/area/ruin/space/has_grav/vestige/reliquary)
+"Vh" = (
+/obj/item/stack/sheet/iron{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust/airless,
+/area/ruin/space/has_grav/vestige/reliquary)
+"VA" = (
+/obj/item/trash/candle{
+	pixel_x = 2;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/vestige/reliquary)
+"Yy" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/reliquary)
+"YH" = (
+/obj/structure/bookcase/random,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
 /area/ruin/space/has_grav/vestige/reliquary)
 
 (1,1,1) = {"
-L
-L
-L
-L
-L
-L
-L
-L
-L
-L
-L
-L
-L
-L
-L
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
 "}
 (2,1,1) = {"
-L
-L
-L
-L
-L
-L
-t
-K
-t
-L
-L
-L
-L
-L
-L
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aS
+ai
+aS
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
 "}
 (3,1,1) = {"
-L
-L
-L
-L
-L
-L
-t
-d
-t
-L
-L
-L
-L
-L
-L
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aS
+al
+aS
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
 "}
 (4,1,1) = {"
-L
-t
-t
-t
-m
-t
-t
-b
-t
-t
-m
-t
-t
-t
-L
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aS
+aS
+aS
+aS
+an
+aS
+af
+aS
+aS
+aS
+aS
+aS
+aS
+aS
+aV
 "}
 (5,1,1) = {"
-L
-t
-j
-X
-P
-h
-h
-o
-l
-X
-h
-P
-j
-t
-L
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aS
+aY
+at
+aX
+ak
+aX
+at
+aX
+aL
+aU
+at
+aX
+aj
+aS
+aV
 "}
 (6,1,1) = {"
-L
-t
-S
-X
-X
-F
-X
-e
-X
-F
-X
-X
-h
-t
-L
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aS
+aX
+aX
+ad
+aX
+ad
+aX
+at
+aL
+aP
+aX
+at
+ah
+aS
+aV
 "}
 (7,1,1) = {"
-L
-t
-X
-h
-X
-F
-X
-o
-X
-F
-X
-X
-X
-t
-L
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aS
+ab
+at
+at
+at
+at
+at
+aX
+aR
+aX
+at
+aX
+aN
+aS
+aV
 "}
 (8,1,1) = {"
-L
-t
-U
-X
-X
-F
-X
-o
-X
-F
-X
-X
-E
-t
-L
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aS
+aH
+at
+ae
+aX
+at
+ao
+at
+aL
+aX
+aX
+at
+aX
+aS
+aV
 "}
 (9,1,1) = {"
-L
-t
-X
-X
-X
-X
-X
-o
-X
-h
-X
-X
-X
-t
-L
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aS
+av
+aX
+at
+at
+aX
+aX
+aX
+aL
+as
+aQ
+aX
+aX
+aS
+aV
 "}
 (10,1,1) = {"
-L
-t
-h
-X
-X
-X
-X
-e
-X
-X
-X
-X
-X
-t
-L
+aV
+aV
+aV
+aV
+aV
+aS
+aS
+aS
+aS
+aL
+aL
+aa
+aL
+ay
+aL
+aa
+aL
+aL
+aL
+aL
+aL
+aS
+aS
+aV
 "}
 (11,1,1) = {"
-L
-t
-P
-h
-X
-h
-l
-o
-X
-X
-X
-X
-X
-t
-L
+aV
+aV
+aV
+aV
+aV
+aS
+aw
+aX
+at
+aX
+at
+aX
+ak
+ac
+ak
+aX
+at
+aX
+at
+aX
+aX
+aS
+aV
+aV
 "}
 (12,1,1) = {"
-L
-t
-N
-N
-k
-N
-N
-H
-N
-N
-k
-N
-N
-t
-L
+aV
+aV
+aV
+aV
+aV
+aS
+aX
+at
+aX
+at
+aX
+at
+at
+aq
+aX
+at
+aX
+at
+aX
+at
+aM
+aS
+aV
+aV
 "}
 (13,1,1) = {"
-L
-t
-Q
-p
-u
-p
-u
-D
-u
-p
-u
-D
-p
-t
-L
+aV
+aV
+aV
+aV
+aV
+aS
+ag
+aX
+aT
+aW
+aZ
+aX
+aX
+ac
+at
+aX
+aT
+aW
+aZ
+aX
+aX
+aS
+aV
+aV
 "}
 (14,1,1) = {"
-L
-t
-Q
-u
-p
-u
-u
-n
-u
-u
-p
-u
-D
-t
-L
+aV
+aV
+aV
+aV
+aV
+af
+at
+ae
+at
+aX
+at
+aI
+at
+aq
+aX
+at
+at
+aX
+at
+ae
+at
+aS
+aV
+aV
 "}
 (15,1,1) = {"
-L
-m
-D
-u
-u
-u
-p
-v
-u
-u
-u
-u
-u
-m
-L
+aV
+aV
+aV
+aV
+aV
+aS
+aX
+at
+aT
+aG
+aZ
+aX
+at
+aq
+at
+aX
+aT
+aW
+aZ
+at
+aX
+aS
+aV
+aV
 "}
 (16,1,1) = {"
-L
-t
-s
-p
-B
-u
-Y
-p
-Y
-u
-u
-p
-u
-J
-L
+aV
+aV
+aV
+aV
+aV
+aS
+at
+aX
+aX
+at
+at
+at
+ae
+ac
+at
+aI
+at
+aX
+at
+aX
+aM
+af
+aV
+aV
 "}
 (17,1,1) = {"
-L
-t
-p
-u
-u
-p
-A
-c
-A
-p
-u
-s
-s
-J
-L
+aV
+aV
+aV
+aV
+aV
+aS
+ag
+at
+aT
+aW
+aZ
+aX
+aX
+aq
+aX
+at
+aT
+aW
+aZ
+at
+aX
+aS
+aV
+aV
 "}
 (18,1,1) = {"
-L
-t
-t
-t
-t
-t
-t
-J
-t
-t
-t
-t
-t
-t
-L
+aV
+aV
+aV
+aV
+aV
+aS
+aX
+aX
+at
+at
+aX
+at
+at
+ar
+at
+aX
+aX
+at
+aX
+at
+at
+aS
+aV
+aV
 "}
 (19,1,1) = {"
-L
-L
-L
-L
-L
-L
-L
-L
-L
-L
-L
-L
-L
-L
-L
+aV
+aV
+aV
+aV
+aV
+aS
+az
+at
+aX
+az
+at
+az
+aO
+ac
+aO
+az
+at
+az
+aX
+aX
+az
+aS
+aV
+aV
+"}
+(20,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aS
+jQ
+az
+az
+aX
+az
+az
+az
+sU
+az
+az
+az
+aX
+az
+az
+jQ
+aS
+aV
+aV
+"}
+(21,1,1) = {"
+aV
+aS
+aS
+aS
+aS
+aS
+aL
+aL
+aa
+aL
+aE
+aL
+ax
+aB
+aL
+aL
+aE
+aa
+aL
+aS
+aS
+aS
+aV
+aV
+"}
+(22,1,1) = {"
+aV
+aS
+bz
+aX
+at
+aX
+aX
+aL
+YH
+aX
+at
+aX
+at
+aX
+at
+aX
+at
+aX
+YH
+aS
+aV
+aV
+aV
+aV
+"}
+(23,1,1) = {"
+aV
+aS
+aX
+YH
+YH
+YH
+at
+aL
+aX
+Yy
+aX
+Yy
+aX
+at
+aX
+Yy
+aX
+Yy
+aX
+aS
+aV
+aV
+aV
+aV
+"}
+(24,1,1) = {"
+aV
+af
+aH
+at
+aX
+at
+aX
+aL
+ag
+dD
+at
+yd
+at
+aX
+at
+dD
+vk
+dD
+aM
+aS
+aV
+aV
+aV
+aV
+"}
+(25,1,1) = {"
+aV
+aS
+at
+YH
+YH
+YH
+at
+aD
+vk
+vk
+lb
+ey
+aX
+vk
+ey
+vk
+ey
+vk
+vk
+af
+aV
+aV
+aV
+aV
+"}
+(26,1,1) = {"
+aV
+aS
+ux
+aX
+at
+ux
+aX
+aL
+GJ
+ey
+vk
+vk
+ey
+az
+az
+ey
+vk
+ey
+GJ
+aS
+aV
+aV
+aV
+aV
+"}
+(27,1,1) = {"
+aV
+ap
+az
+fK
+fK
+fK
+sU
+aL
+gQ
+vk
+sU
+az
+Ah
+sU
+az
+sU
+az
+Ah
+VA
+aS
+aV
+aV
+aV
+aV
+"}
+(28,1,1) = {"
+aV
+ap
+rD
+az
+Kx
+az
+az
+aE
+gQ
+dZ
+az
+sU
+az
+az
+Ah
+az
+az
+az
+az
+aS
+aV
+aV
+aV
+aV
+"}
+(29,1,1) = {"
+aV
+ap
+ap
+ap
+aJ
+am
+ap
+ap
+aE
+aE
+aE
+aE
+aE
+aF
+aE
+aE
+aK
+aE
+aE
+ap
+aV
+aV
+aV
+aV
+"}
+(30,1,1) = {"
+aV
+ap
+za
+EB
+HX
+EB
+aA
+aE
+ki
+az
+cN
+az
+aC
+ac
+az
+sU
+az
+aC
+df
+ap
+aV
+aV
+aV
+aV
+"}
+(31,1,1) = {"
+aV
+ap
+Fs
+Vh
+aA
+dA
+EB
+aE
+yR
+aC
+aC
+df
+az
+aq
+aC
+aC
+ha
+ha
+aC
+ap
+aV
+aV
+aV
+aV
+"}
+(32,1,1) = {"
+aV
+ap
+Ud
+dA
+Fs
+aA
+aA
+aE
+jq
+ha
+az
+az
+aC
+ac
+az
+az
+df
+IZ
+yR
+ap
+aV
+aV
+aV
+aV
+"}
+(33,1,1) = {"
+aV
+aV
+aV
+xw
+dA
+Fs
+EB
+aE
+sn
+az
+sU
+aC
+az
+IK
+aC
+aC
+az
+az
+jq
+au
+aV
+aV
+aV
+aV
+"}
+(34,1,1) = {"
+aV
+aV
+aV
+aV
+Ud
+Vh
+Vh
+aE
+az
+df
+az
+az
+lO
+LQ
+lO
+az
+aC
+sU
+az
+ap
+aV
+aV
+aV
+aV
+"}
+(35,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+EB
+EB
+aE
+Gt
+az
+dg
+aC
+ap
+xd
+ap
+df
+dg
+az
+aC
+ap
+aV
+aV
+aV
+aV
+"}
+(36,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+aV
+aV
+aV
+aV
+"}
+(37,1,1) = {"
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
+aV
 "}

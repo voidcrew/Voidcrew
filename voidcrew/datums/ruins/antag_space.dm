@@ -61,3 +61,45 @@
 	name = "The Aperture"
 	description = "A hull section that is mostly windows, every one of them facing nothing. Something on the far side of the glass is facing back."
 	arrival_announcement = "A new signal has surfaced in the sector. Optical sweeps of the source return images of the sweeping vessel. Approach is not advised."
+
+/datum/map_template/ruin/space/vestige/roost
+	id = "vestige_roost"
+	suffix = "vestige_roost.dmm"
+	name = "The Roost"
+	description = "A grain hauler that stopped answering hails and started growing bones. The cargo is gone. The gold is not. Nothing aboard could eat gold, and it tried."
+	arrival_announcement = "A new signal has surfaced in the sector. Thermal imaging of the source shows a heartbeat with nothing around it. Approach is not advised."
+
+/datum/map_template/ruin/space/vestige/menagerie
+	id = "vestige_menagerie"
+	suffix = "vestige_menagerie.dmm"
+	name = "The Menagerie"
+	description = "A survey craft of non-human origin, holding station with mechanical patience. Every specimen cell aboard is labeled, catalogued, and empty. One is open."
+	arrival_announcement = "A new signal has surfaced in the sector. The carrier wave is a request form. Approach is not advised."
+
+/datum/map_template/ruin/space/vestige/facsimile
+	id = "vestige_facsimile"
+	suffix = "vestige_facsimile.dmm"
+	name = "The Facsimile"
+	description = "A pleasure liner's parlor deck in perfect order. The manifest says the passengers are still aboard. The manifest counts them among the furniture."
+	arrival_announcement = "A new signal has surfaced in the sector. It is a distress call, note-perfect, in your own voice. Approach is not advised."
+
+/datum/map_template/ruin/space/vestige/comb
+	id = "vestige_comb"
+	suffix = "vestige_comb.dmm"
+	name = "The Comb"
+	description = "An ore barge that stopped shipping ore and started growing chambers. Its holds scan as full. Nothing aboard has moved in a long time, and everything is arranged in cells."
+	arrival_announcement = "A new signal has surfaced in the sector. The source scans warm, hollow, and chambered, like the inside of a nest. Approach is not advised."
+
+/datum/map_template/ruin/space/vestige/shambles
+	id = "vestige_shambles"
+	suffix = "vestige_shambles.dmm"
+	name = "The Shambles"
+	description = "A provisions barge still keeping its cold chain, years past its last port. The manifest lists the cargo by cut. Toward the end, the handwriting improves."
+	arrival_announcement = "A new signal has surfaced in the sector. The carrier wave sounds like laughter, or a saw. Approach is not advised."
+
+/datum/map_template/ruin/space/vestige/loom
+	id = "vestige_loom"
+	suffix = "vestige_loom.dmm"
+	name = "The Loom"
+	description = "A sericulture vessel adrift with its looms still threaded. Its silk was prized in a dozen ports. Production never stopped; only the staff did."
+	arrival_announcement = "A new signal has surfaced in the sector. The transmission repeats in a pattern too regular for language and too patient for machinery. Approach is not advised."

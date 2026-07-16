@@ -1,0 +1,2183 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/roost)
+"ab" = (
+/obj/machinery/door/airlock{
+	name = "Galley"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"ac" = (
+/obj/structure/rack,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath{
+	pixel_x = 3;
+	pixel_y = -3
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = -4
+	},
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"ad" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"ae" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"af" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/roost)
+"ag" = (
+/obj/machinery/light/small/broken/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"ah" = (
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"ai" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"aj" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"ak" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/paper/crumpled/bloody{
+	name = "scrawled note";
+	default_raw_text = "We heard it eating the hold for six days. Twelve of us behind this line, waiting on the relief shuttle. The shuttle came on the seventh day. It ate that too."
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"al" = (
+/obj/machinery/door/airlock/mining{
+	name = "Hold Access"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"am" = (
+/obj/item/ammo_casing/spent{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/obj/item/ammo_casing/spent{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/ammo_casing/spent{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"an" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"ao" = (
+/obj/effect/turf_decal/caution{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"ap" = (
+/turf/template_noop,
+/area/template_noop)
+"aq" = (
+/obj/machinery/door/airlock/vault{
+	name = "Strongroom"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"ar" = (
+/obj/item/stack/sheet/bone{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"as" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"at" = (
+/turf/closed/wall/rust,
+/area/ruin/space/has_grav/vestige/roost)
+"au" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/roost)
+"av" = (
+/obj/effect/decal/cleanable/food/flour,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"aw" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"ax" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Strongroom Service Hatch"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"ay" = (
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"az" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"aA" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/roost)
+"aB" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"aC" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"aD" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"aE" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"aF" = (
+/obj/machinery/door/airlock{
+	name = "Crew Berths"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"aG" = (
+/obj/structure/barricade/wooden,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"aH" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"aI" = (
+/obj/machinery/light/warm/dim/directional/north,
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"aJ" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"aK" = (
+/obj/structure/sign/poster/ripped,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/roost)
+"aL" = (
+/obj/effect/spawner/structure/window/reinforced/tinted,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"aM" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"aN" = (
+/obj/machinery/door/airlock{
+	name = "Aft Stores"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"aO" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"aP" = (
+/obj/item/gun/ballistic/automatic/pistol/no_mag{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/item/ammo_casing/spent{
+	pixel_x = -4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"aQ" = (
+/obj/machinery/door/airlock/wood{
+	name = "Master's Cabin"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"aR" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"aS" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/roost)
+"aT" = (
+/turf/closed/wall/r_wall/rust,
+/area/ruin/space/has_grav/vestige/roost)
+"aU" = (
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"aV" = (
+/obj/structure/grille/broken,
+/obj/item/shard,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"aW" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"aX" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Cargo Spine - DEPRESSURIZED"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"aY" = (
+/obj/item/stack/sheet/mineral/wood{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/item/stack/rods{
+	pixel_x = 4
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"aZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/roost)
+"bO" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"bT" = (
+/obj/structure/table_frame,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"cy" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"ef" = (
+/obj/machinery/light/small/broken/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"eE" = (
+/obj/machinery/light/broken/directional/south,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"eX" = (
+/obj/item/stack/sheet/bone{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/item/stack/sheet/mineral/gold{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/mineral/gold,
+/area/ruin/space/has_grav/vestige/roost)
+"fr" = (
+/obj/effect/mapping_helpers/broken_floor,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"fv" = (
+/obj/effect/mapping_helpers/broken_floor,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"gf" = (
+/obj/effect/turf_decal/box,
+/obj/effect/decal/cleanable/food/flour,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"gH" = (
+/obj/structure/table_frame,
+/obj/item/stack/sheet/bone{
+	pixel_y = 2
+	},
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"gP" = (
+/obj/effect/decal/cleanable/shreds,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/roost)
+"ho" = (
+/obj/structure/ash_walker_eggshell{
+	name = "cold egg";
+	desc = "A dragon's egg, man-high, nested in shredded uniforms. It never hatched. It is cold all the way through."
+	},
+/obj/effect/decal/cleanable/shreds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"hr" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"hv" = (
+/obj/effect/turf_decal/box,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"hw" = (
+/obj/effect/decal/cleanable/rubble,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"hR" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"ii" = (
+/obj/structure/table/wood,
+/obj/item/plate{
+	pixel_y = 2
+	},
+/obj/item/trash/candle{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"iJ" = (
+/obj/effect/decal/cleanable/shreds,
+/obj/item/clothing/under/color/grey{
+	pixel_x = -3;
+	pixel_y = -2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"je" = (
+/obj/structure/table/wood,
+/obj/item/trash/candle{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/clipboard{
+	pixel_x = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/roost)
+"jk" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "master's log, last entry";
+	default_raw_text = "It cannot be starved out. It IS starving - it simply will not die of it. It has stacked the payroll in the strongroom and it sleeps coiled on the pallet like a hen. It cannot eat gold. I believe it knows that. I believe that is why it keeps it: a hunger that cannot end learns to treasure the one thing it cannot swallow. If anyone reads this - do not knock on the strongroom door.";
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/roost)
+"ju" = (
+/obj/structure/dresser,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"jD" = (
+/obj/item/stack/sheet/bone{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"jG" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"jL" = (
+/obj/item/toy/plush/carpplushie,
+/obj/effect/decal/cleanable/shreds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"jN" = (
+/obj/structure/girder,
+/obj/effect/decal/cleanable/rubble,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"kI" = (
+/obj/effect/decal/cleanable/food/flour,
+/obj/item/food/grown/wheat{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"kT" = (
+/obj/effect/decal/cleanable/rubble,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"le" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"lT" = (
+/obj/effect/decal/cleanable/ash/large,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"mj" = (
+/mob/living/basic/vestige_patron/dragon{
+	dir = 2
+	},
+/turf/open/floor/mineral/gold,
+/area/ruin/space/has_grav/vestige/roost)
+"ml" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"mX" = (
+/obj/item/stack/sheet/bone{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/stack/sheet/bone{
+	pixel_x = 3
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"nm" = (
+/obj/structure/filingcabinet,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/roost)
+"oS" = (
+/obj/effect/spawner/random/structure/crate_abandoned,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"oZ" = (
+/obj/structure/table/wood,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"pg" = (
+/obj/structure/bed/double{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/roost)
+"po" = (
+/obj/item/stack/sheet/mineral/gold{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/coin/gold{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/mineral/gold,
+/area/ruin/space/has_grav/vestige/roost)
+"pA" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"pN" = (
+/obj/item/trash/tray{
+	pixel_x = 3
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"qk" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/shreds,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"rK" = (
+/obj/structure/chair/stool{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"rW" = (
+/obj/structure/closet/crate/wooden,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"rZ" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"sc" = (
+/obj/structure/table/reinforced,
+/obj/item/stack/sheet/bone{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/stack/sheet/bone{
+	pixel_x = 4
+	},
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"tv" = (
+/obj/item/stack/sheet/bone{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/stack/sheet/bone{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/blood/gibs/old,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"uv" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/roost)
+"uE" = (
+/obj/structure/dresser,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/roost)
+"vF" = (
+/obj/structure/kitchenspike_frame,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"vL" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"wt" = (
+/obj/machinery/light/small/broken/directional/west,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"wz" = (
+/obj/effect/decal/cleanable/shreds,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"xg" = (
+/obj/effect/decal/cleanable/shreds,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"xP" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"xZ" = (
+/obj/effect/spawner/random/structure/closet_maintenance,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"yB" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/roost)
+"zr" = (
+/obj/effect/decal/cleanable/shreds,
+/obj/item/bedsheet{
+	pixel_y = 3
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"zM" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/roost)
+"AD" = (
+/obj/machinery/light/floor/broken,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"Ba" = (
+/obj/effect/decal/cleanable/shreds,
+/obj/item/clothing/under/color/grey{
+	pixel_y = -3
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"BL" = (
+/obj/effect/mapping_helpers/broken_floor,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"BM" = (
+/obj/item/stack/sheet/bone{
+	pixel_x = 2;
+	pixel_y = -1
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"BQ" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"BU" = (
+/obj/item/kirbyplants/random,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/roost)
+"CL" = (
+/obj/structure/table/reinforced,
+/obj/item/plate{
+	pixel_y = 3
+	},
+/obj/item/knife/kitchen{
+	pixel_x = 4;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"Ds" = (
+/obj/effect/spawner/random/structure/closet_private,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"DA" = (
+/obj/item/stack/rods{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/obj/item/shard{
+	pixel_x = -4
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"DT" = (
+/obj/machinery/light/small/broken/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/roost)
+"DV" = (
+/obj/structure/table/reinforced,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"EI" = (
+/obj/effect/mob_spawn/corpse/human/skeleton,
+/obj/effect/decal/cleanable/shreds,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"HL" = (
+/obj/effect/decal/remains/human,
+/obj/item/tank/internals/emergency_oxygen{
+	pixel_x = 5;
+	pixel_y = -4
+	},
+/obj/item/clothing/mask/breath{
+	pixel_x = -3
+	},
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"Iw" = (
+/obj/item/stack/sheet/mineral/gold{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/stack/sheet/mineral/gold{
+	pixel_x = 3;
+	pixel_y = 1
+	},
+/obj/item/stack/sheet/mineral/gold{
+	pixel_x = -1;
+	pixel_y = -4
+	},
+/turf/open/floor/mineral/gold,
+/area/ruin/space/has_grav/vestige/roost)
+"IG" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"IW" = (
+/obj/item/stack/sheet/bone{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"Jb" = (
+/obj/effect/spawner/random/trash/food_packaging,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"Jg" = (
+/obj/structure/statue/gold/qm,
+/turf/open/floor/mineral/gold,
+/area/ruin/space/has_grav/vestige/roost)
+"JA" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"Kr" = (
+/obj/structure/statue/bone/skull,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"KK" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/condiment/flour{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/condiment/flour{
+	pixel_x = 3
+	},
+/obj/effect/decal/cleanable/food/flour,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"KU" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lantern{
+	pixel_y = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/roost)
+"LW" = (
+/obj/item/stack/sheet/mineral/silver{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/obj/item/coin/silver{
+	pixel_x = 4;
+	pixel_y = -3
+	},
+/turf/open/floor/mineral/gold,
+/area/ruin/space/has_grav/vestige/roost)
+"Md" = (
+/obj/structure/frame/machine,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"Mg" = (
+/obj/structure/table,
+/obj/item/paper{
+	name = "cargo manifest";
+	default_raw_text = "MV CHAFF'S BOUNTY - bulk grain, 40,000 tonnes, bound for the Tortuga Verde silo exchange. Appended: strongroom consignment, certified payroll gold for three colonies. Crew are reminded that the strongroom is off limits, and that payroll is not edible.";
+	pixel_y = 4
+	},
+/obj/item/clipboard{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"Mk" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/roost)
+"Mn" = (
+/obj/effect/spawner/random/entertainment/coin,
+/turf/open/floor/mineral/gold,
+/area/ruin/space/has_grav/vestige/roost)
+"No" = (
+/obj/item/stack/sheet/mineral/gold{
+	pixel_x = 2;
+	pixel_y = 1
+	},
+/turf/open/floor/mineral/gold,
+/area/ruin/space/has_grav/vestige/roost)
+"Nt" = (
+/obj/machinery/light/broken/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"NM" = (
+/obj/item/reagent_containers/condiment/flour{
+	pixel_x = 2;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/food/flour,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"NV" = (
+/obj/machinery/oven,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"NX" = (
+/obj/structure/ash_walker_eggshell{
+	name = "cold egg";
+	desc = "A dragon's egg, man-high, nested in shredded uniforms. It never hatched. It is cold all the way through."
+	},
+/obj/item/stack/sheet/bone{
+	pixel_x = 4;
+	pixel_y = -3
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"OL" = (
+/obj/effect/spawner/random/structure/steam_vent,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"Po" = (
+/obj/structure/table/reinforced,
+/obj/effect/decal/cleanable/blood/gibs/old,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"Qs" = (
+/turf/open/floor/mineral/gold,
+/area/ruin/space/has_grav/vestige/roost)
+"Qv" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"Qw" = (
+/obj/item/stack/rods{
+	pixel_x = -3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"Rv" = (
+/obj/structure/statue/bone/rib,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"Rx" = (
+/obj/effect/spawner/random/entertainment/money_small,
+/turf/open/floor/mineral/gold,
+/area/ruin/space/has_grav/vestige/roost)
+"RF" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"Sh" = (
+/obj/effect/decal/cleanable/shreds,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"Si" = (
+/obj/structure/statue/silver/janitor,
+/turf/open/floor/mineral/gold,
+/area/ruin/space/has_grav/vestige/roost)
+"Sp" = (
+/obj/item/food/grown/wheat{
+	pixel_x = -2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"To" = (
+/obj/structure/table/reinforced,
+/obj/item/paper{
+	name = "requisition log, final page";
+	default_raw_text = "Silo two is empty. Forty thousand tonnes, gone in six days. It licked the bulkheads clean and started on the carp shoal it brought in with it. Chef says if it gets in here it can have the fryer. There is no more fryer.";
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"Tz" = (
+/obj/effect/spawner/random/entertainment/money_medium,
+/turf/open/floor/mineral/gold,
+/area/ruin/space/has_grav/vestige/roost)
+"TF" = (
+/obj/effect/decal/cleanable/food/flour,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"TH" = (
+/obj/structure/bed{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"Uf" = (
+/obj/item/stack/sheet/bone{
+	pixel_x = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"Uh" = (
+/obj/effect/spawner/random/structure/chair_flipped,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"Uv" = (
+/obj/structure/girder,
+/obj/effect/decal/cleanable/rubble,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/vestige/roost)
+"VS" = (
+/obj/effect/decal/cleanable/blood/gibs/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"VY" = (
+/obj/structure/closet/crate/wooden,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"WK" = (
+/obj/item/paper{
+	name = "strongroom manifest";
+	default_raw_text = "Payroll consignment, three colonies, certified: gold bullion, coin, two commemorative statues. Auditor's appendix, in a different hand - gouged, not written: MINE. MINE. MINE.";
+	pixel_y = 3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"Xt" = (
+/obj/effect/decal/cleanable/shreds,
+/obj/item/bedsheet{
+	pixel_x = 2
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"XX" = (
+/obj/effect/mapping_helpers/broken_floor,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"Zb" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -5;
+	pixel_y = 6
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = -1
+	},
+/obj/item/trash/candle{
+	pixel_x = 1;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"Zi" = (
+/obj/machinery/light/small/broken/directional/east,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/roost)
+"Zx" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+"ZL" = (
+/obj/structure/sink/kitchen/directional/south,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/checker,
+/area/ruin/space/has_grav/vestige/roost)
+"ZU" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/roost)
+
+(1,1,1) = {"
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+"}
+(2,1,1) = {"
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+af
+aj
+af
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+"}
+(3,1,1) = {"
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+aa
+aM
+af
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+"}
+(4,1,1) = {"
+ap
+af
+af
+af
+af
+aL
+af
+af
+aL
+af
+af
+af
+af
+aD
+af
+af
+af
+af
+aL
+af
+af
+af
+aL
+af
+af
+af
+af
+ap
+"}
+(5,1,1) = {"
+ap
+af
+ZL
+an
+av
+an
+ag
+aU
+aR
+an
+an
+au
+ac
+ao
+ai
+au
+Zx
+TH
+pA
+TH
+wt
+TH
+pA
+as
+pA
+xZ
+af
+ap
+"}
+(6,1,1) = {"
+ap
+aL
+av
+NV
+aU
+aU
+aU
+Uf
+av
+BL
+aU
+au
+ad
+am
+aO
+au
+pA
+Ba
+XX
+Sh
+as
+Ba
+pA
+pA
+as
+as
+aL
+ap
+"}
+(7,1,1) = {"
+ap
+aL
+vF
+Md
+an
+cy
+an
+an
+aU
+aU
+cy
+at
+aH
+ak
+ai
+au
+Sh
+pA
+as
+BQ
+pA
+as
+XX
+as
+pA
+pA
+af
+ap
+"}
+(8,1,1) = {"
+ap
+af
+KK
+aU
+tv
+av
+aU
+aU
+Uf
+aU
+aU
+ab
+ad
+aP
+ai
+aF
+BQ
+BQ
+pA
+as
+as
+pA
+as
+Sh
+as
+pA
+af
+ap
+"}
+(9,1,1) = {"
+ap
+aT
+an
+CL
+To
+Po
+sc
+aU
+DV
+DV
+an
+au
+aG
+aY
+aG
+at
+pA
+as
+pA
+pA
+as
+BQ
+as
+pA
+as
+as
+aT
+ap
+"}
+(10,1,1) = {"
+ap
+aL
+aU
+Uh
+aU
+an
+Jb
+aU
+an
+aU
+aU
+au
+aE
+ae
+aO
+au
+as
+xZ
+as
+Ds
+pA
+as
+hr
+as
+pA
+ju
+aL
+ap
+"}
+(11,1,1) = {"
+ap
+aL
+an
+ii
+an
+Qv
+aU
+an
+bT
+an
+an
+aA
+aH
+aJ
+aw
+au
+au
+au
+aA
+au
+at
+au
+au
+au
+at
+au
+af
+ap
+"}
+(12,1,1) = {"
+ap
+af
+Nt
+oZ
+aU
+Qv
+Qv
+aU
+gH
+aU
+aU
+au
+ad
+ae
+ai
+au
+BU
+uv
+yB
+uv
+nm
+yB
+uv
+yB
+uv
+uv
+af
+ap
+"}
+(13,1,1) = {"
+ap
+af
+an
+rK
+an
+kT
+an
+tv
+aU
+Uf
+aU
+ab
+ad
+aB
+ai
+aQ
+yB
+yB
+uv
+yB
+yB
+uv
+yB
+zM
+jk
+uv
+af
+ap
+"}
+(14,1,1) = {"
+ap
+aL
+pN
+tv
+bT
+aU
+gH
+aU
+Uh
+an
+an
+at
+aH
+aJ
+aO
+au
+uv
+yB
+yB
+yB
+uv
+yB
+uv
+uv
+je
+yB
+aL
+ap
+"}
+(15,1,1) = {"
+ap
+af
+aU
+an
+Uh
+an
+aU
+an
+cy
+aU
+av
+au
+ad
+ae
+ai
+at
+gP
+pg
+gP
+uv
+yB
+yB
+yB
+yB
+yB
+uv
+af
+ap
+"}
+(16,1,1) = {"
+ap
+af
+le
+aU
+an
+aU
+ef
+aU
+aU
+le
+an
+au
+aE
+aZ
+ai
+au
+Mk
+KU
+uv
+yB
+DT
+uv
+yB
+uv
+yB
+uE
+af
+ap
+"}
+(17,1,1) = {"
+ap
+af
+au
+au
+au
+au
+au
+at
+au
+au
+au
+au
+aH
+aC
+aO
+au
+au
+au
+at
+au
+au
+au
+au
+at
+au
+au
+af
+ap
+"}
+(18,1,1) = {"
+ap
+af
+rW
+vL
+ay
+ay
+vL
+ay
+BM
+ay
+vL
+au
+ad
+ar
+ai
+au
+xP
+VY
+aW
+az
+OL
+aW
+az
+aW
+Mg
+VY
+af
+ap
+"}
+(19,1,1) = {"
+ap
+aT
+Uv
+ay
+jG
+Rv
+ay
+Rv
+ay
+HL
+ay
+au
+ad
+ah
+aw
+au
+aW
+oS
+hv
+aW
+az
+hv
+aW
+oS
+az
+aW
+af
+ap
+"}
+(20,1,1) = {"
+ap
+aV
+hR
+BM
+ay
+ay
+mX
+ay
+vL
+ay
+BM
+au
+aH
+aZ
+ai
+au
+az
+az
+RF
+TF
+aW
+az
+fv
+az
+aW
+az
+aL
+ap
+"}
+(21,1,1) = {"
+ap
+aV
+hR
+ay
+BM
+Rv
+ay
+Rv
+ay
+vL
+vL
+aS
+ad
+aC
+aO
+aA
+aW
+TF
+gf
+kI
+TF
+kI
+aW
+Sp
+hv
+eE
+af
+ap
+"}
+(22,1,1) = {"
+ap
+aV
+hR
+vL
+ay
+ay
+vL
+ay
+fr
+ay
+ay
+aX
+ad
+aZ
+ai
+al
+az
+aW
+TF
+NM
+Sp
+TF
+NM
+aW
+RF
+aW
+aT
+ap
+"}
+(23,1,1) = {"
+ap
+aV
+hR
+ay
+vL
+Rv
+BM
+Rv
+ay
+ay
+vL
+aS
+aH
+aJ
+ai
+au
+RF
+Qw
+aW
+TF
+RF
+aW
+VS
+az
+hv
+az
+af
+ap
+"}
+(24,1,1) = {"
+ap
+aV
+hR
+qk
+ay
+vL
+ay
+BM
+vL
+fr
+ay
+au
+ad
+aZ
+aO
+au
+hv
+jN
+hv
+aW
+IG
+hv
+aW
+oS
+az
+aW
+aL
+ap
+"}
+(25,1,1) = {"
+ap
+aT
+DA
+ay
+BM
+ay
+Kr
+ay
+ay
+BM
+ay
+at
+aI
+aC
+ai
+at
+ml
+aW
+az
+fv
+IG
+az
+az
+aW
+hw
+az
+af
+ap
+"}
+(26,1,1) = {"
+ap
+af
+jG
+ay
+jG
+ay
+ay
+vL
+jG
+ay
+vL
+au
+ad
+aZ
+ai
+au
+rZ
+az
+aW
+az
+az
+aW
+az
+az
+aW
+aW
+af
+ap
+"}
+(27,1,1) = {"
+ap
+af
+au
+at
+au
+au
+ax
+au
+au
+at
+aS
+au
+au
+aq
+au
+au
+au
+au
+au
+at
+aN
+au
+au
+aA
+au
+at
+af
+ap
+"}
+(28,1,1) = {"
+ap
+af
+lT
+pA
+ZU
+as
+as
+pA
+JA
+as
+pA
+ZU
+as
+as
+lT
+au
+xP
+az
+aW
+az
+az
+aW
+az
+jD
+aW
+aW
+af
+ap
+"}
+(29,1,1) = {"
+ap
+aT
+pA
+as
+as
+Zb
+pA
+as
+as
+pA
+as
+Zb
+pA
+WK
+as
+au
+aW
+aW
+jD
+az
+aW
+az
+aW
+az
+wz
+az
+aT
+ap
+"}
+(30,1,1) = {"
+ap
+af
+as
+Zb
+Qs
+Jg
+No
+po
+eX
+Mn
+LW
+Qs
+as
+AD
+pA
+at
+az
+wz
+az
+iJ
+zr
+Xt
+zr
+az
+az
+aW
+aK
+ap
+"}
+(31,1,1) = {"
+ap
+aL
+IW
+as
+No
+po
+Iw
+Mn
+No
+Iw
+No
+Rx
+Qs
+pA
+as
+aW
+az
+az
+zr
+xg
+ho
+xg
+EI
+iJ
+aW
+az
+af
+ap
+"}
+(32,1,1) = {"
+ap
+aL
+as
+AD
+po
+Iw
+po
+Qs
+mj
+No
+Mn
+po
+eX
+Zb
+as
+aW
+az
+aW
+iJ
+EI
+jL
+ho
+xg
+zr
+az
+jD
+aT
+ap
+"}
+(33,1,1) = {"
+ap
+af
+pA
+as
+No
+No
+Mn
+Iw
+Tz
+po
+No
+Qs
+Qs
+as
+JA
+au
+aW
+az
+zr
+xg
+NX
+xg
+zr
+Xt
+wz
+az
+aK
+ap
+"}
+(34,1,1) = {"
+ap
+af
+as
+Zb
+Qs
+LW
+No
+Rx
+po
+eX
+Qs
+Si
+pA
+IW
+as
+at
+az
+wz
+aW
+Xt
+zr
+iJ
+aW
+aW
+az
+aW
+af
+ap
+"}
+(35,1,1) = {"
+ap
+aT
+pA
+pA
+as
+Zb
+as
+as
+as
+as
+Zb
+as
+as
+pA
+IW
+au
+aW
+az
+az
+aW
+az
+jD
+az
+az
+bO
+az
+af
+ap
+"}
+(36,1,1) = {"
+ap
+af
+as
+as
+as
+as
+pA
+as
+as
+as
+as
+pA
+as
+as
+pA
+au
+rZ
+aW
+Zi
+az
+aW
+az
+az
+aW
+az
+rZ
+aT
+ap
+"}
+(37,1,1) = {"
+ap
+af
+af
+af
+aL
+af
+af
+aL
+af
+aL
+af
+af
+aL
+af
+af
+af
+af
+aT
+af
+af
+af
+af
+af
+aT
+af
+af
+af
+ap
+"}
+(38,1,1) = {"
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+ap
+"}
