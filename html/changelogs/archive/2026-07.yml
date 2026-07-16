@@ -467,3 +467,19 @@
       now.
   theselfish:
   - spellcheck: Dogwhistle has been removed from a bounty description.
+2026-07-16:
+  FeudeyTF:
+  - qol: Notepad can edit and save text files
+  Fghj240:
+  - bugfix: cyberheart blood regeneration properly scales with heart damage
+  JohnFulpWillard:
+  - qol: Better Emojipedia UI, better emojis, some more emojis.
+  SmArtKar:
+  - bugfix: Fixed atmos diffs and incorrect atmos in lavaland hermit ruin
+  lelandkemble:
+  - qol: crowbarring a transit tube pod out of a transit tube now provides messaging
+      when successful or unsuccessful
+  - bugfix: reinforcing plating that is then reinforced into reinforced plating no
+      longer reinforces the reinforced plating what was reinforced mid-reinforcement
+  - code_imp: 30 files (maybe 29) (maybe 28) (depends what order you're seeing these
+      changelogs in) have been converted from attackby() to item_interaction()
