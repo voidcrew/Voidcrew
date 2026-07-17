@@ -532,6 +532,8 @@
   - spellcheck: Clarified the description of aggressive healing
   LT3:
   - bugfix: Tram signs only update on signals from their linked tram
+  LemonInTheDark:
+  - bugfix: Starlight will light rock walls adjacent to space... better.
   Lotte103:
   - map: Added Thermomachines and Plasma Cannister to the HFR Room on Catwalk
   - map: Replaced glass windows with reinforced plasmaglass windows in Atmos and Ordnance
