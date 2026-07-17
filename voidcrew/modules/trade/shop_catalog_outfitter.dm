@@ -459,7 +459,7 @@
 	rumor_name = "Sarge's special order: Helios-Betna"
 	rumor_desc = "A dead company's foundry running blind in the red band. The custodians hold the line, and the vault holds decades of certified alloy nobody ever came to collect."
 
-// Weapon schematics -- yellow-tier guns, carried or imprinted, crafted beside a bench.
+// Weapon schematics -- yellow-tier guns, carried or imprinted, crafted anywhere.
 /datum/shop_sku/outfitter/smg_blueprint
 	category = "Charts & Special Orders"
 	item_path = /obj/item/blueprint/gun/c20r

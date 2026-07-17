@@ -114,7 +114,8 @@
 // contents, never playtested. Tune weights against the black-market voucher
 // prices in shop.dm.
 // loot-economy item 6: weapon blueprints seeded below (c20r in yellow; l6_saw +
-// sniper in red and rare-red). Build them at a weapons bench (modules/weapons_bench).
+// sniper in red and rare-red). Craft them from the recipe anywhere, once you
+// have the part and a firing pin (modules/weapons_bench/blueprint.dm).
 // =========================================================================
 
 /obj/structure/closet/crate/zone_loot/syndicate

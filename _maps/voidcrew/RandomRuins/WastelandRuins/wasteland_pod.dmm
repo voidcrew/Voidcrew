@@ -65,6 +65,7 @@
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "I" = (
+/obj/structure/closet/crate/zone_loot/industrial,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/blood/splatter,
 /turf/open/floor/pod/dark,

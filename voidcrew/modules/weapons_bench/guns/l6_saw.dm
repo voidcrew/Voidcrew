@@ -5,7 +5,7 @@
  *   1. Schematic (below)            -- ruin loot / black-market SKU; carrying it (or a neural imprint) puts the recipe in your crafting menu
  *   2. Part node -> part design     -- deep node (prereq Exotic Ammunition, tier 4); part prints at the protolathe
  *   3. Ammo node -> ammo design     -- shallow node after the part node; mag prints at the lathe
- *   4. Crafting menu, beside a weapons bench -- part + firing pin + sheets => the gun
+ *   4. Crafting menu, anywhere -- part + firing pin + sheets => the gun
  */
 
 // --- Schematic + recipe + part -----------------------------------------------
@@ -34,7 +34,7 @@
 
 /datum/design/gun_part_l6_saw
 	name = "L6 SAW Receiver"
-	desc = "A machined receiver assembly for an L6 SAW. Inert until assembled at a weapons bench."
+	desc = "A machined receiver assembly for an L6 SAW. Inert until crafted into the finished gun."
 	id = "vc_gun_part_l6_saw"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(

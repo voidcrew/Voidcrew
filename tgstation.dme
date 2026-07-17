@@ -7124,7 +7124,6 @@
 #include "voidcrew\modules\voice_barks\voice_packs.dm"
 #include "voidcrew\modules\voice_barks\voice_screen.dm"
 #include "voidcrew\modules\weapons_bench\blueprint.dm"
-#include "voidcrew\modules\weapons_bench\weapons_bench.dm"
 #include "voidcrew\modules\weapons_bench\guns\bulldog.dm"
 #include "voidcrew\modules\weapons_bench\guns\c20r.dm"
 #include "voidcrew\modules\weapons_bench\guns\l6_saw.dm"

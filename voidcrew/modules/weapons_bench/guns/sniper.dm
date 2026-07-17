@@ -27,7 +27,7 @@
 
 /datum/design/gun_part_sniper_rifle
 	name = "Anti-Materiel Rifle Receiver"
-	desc = "A machined receiver and bolt assembly for an anti-materiel sniper rifle. Inert until assembled at a weapons bench."
+	desc = "A machined receiver and bolt assembly for an anti-materiel sniper rifle. Inert until crafted into the finished gun."
 	id = "vc_gun_part_sniper_rifle"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(

@@ -16,10 +16,11 @@
  *
  * Machined gun parts stay the R&D clock: each gun's part design prints at
  * the protolathe behind its techweb part node (see the per-gun files), and the
- * crafting recipes consume that part. Gun recipes also want a weapons bench
- * nearby (the crafting `machinery` requirement) and a firing pin — crafted
- * guns get a clean standard pin installed in place of any faction-locked
- * default (see on_craft_completion below).
+ * crafting recipes consume that part. Gun recipes also want a firing pin —
+ * crafted guns get a clean standard pin installed in place of any
+ * faction-locked default (see on_craft_completion below). No bench or other
+ * machinery is required; the recipe and its reqs are the whole gate, so
+ * crafting can happen anywhere.
  */
 
 /// ckey -> list of /datum/crafting_recipe/blueprint types imprinted this round
@@ -116,10 +117,9 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
 	time = 10 SECONDS
 	category = CAT_WEAPON_RANGED
 
-/// Gun schematics: assembled beside a weapons bench, consume the techweb-gated
-/// machined part plus a firing pin
+/// Gun schematics: consume the techweb-gated machined part plus a firing pin.
+/// No machinery requirement — craftable anywhere the schematic is available.
 /datum/crafting_recipe/blueprint/gun
-	machinery = list(/obj/machinery/weapons_bench = CRAFTING_MACHINERY_USE)
 	tool_behaviors = list(TOOL_SCREWDRIVER, TOOL_WRENCH)
 
 /**

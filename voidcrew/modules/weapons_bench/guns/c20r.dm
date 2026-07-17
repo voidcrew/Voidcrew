@@ -27,7 +27,7 @@
 
 /datum/design/gun_part_c20r
 	name = "C-20r Receiver"
-	desc = "A machined receiver assembly for a C-20r SMG. Inert until assembled at a weapons bench."
+	desc = "A machined receiver assembly for a C-20r SMG. Inert until crafted into the finished gun."
 	id = "vc_gun_part_c20r"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(
