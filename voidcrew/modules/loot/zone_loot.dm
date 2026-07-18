@@ -165,29 +165,27 @@
 		/obj/item/blueprint/gun/sniper_rifle = 3,
 		/obj/item/blueprint/gun/bulldog = 3,
 	)
+	// Rare tables: 2-3 surviving stock entries + this theme's uniques at ~4
+	// (see voidcrew/modules/loot/uniques/syndicate.dm and the design doc)
 	rare_loot_green = list(
 		/obj/item/storage/medkit/tactical = 8,
 		/obj/item/suppressor = 6,
-		/obj/item/card/id/advanced/chameleon = 4,
-		/obj/item/clothing/glasses/thermal/syndi = 4,
+		/obj/item/radio/listening_coin = 4,
+		/obj/item/clothing/gloves/courier = 4,
 	)
 	rare_loot_yellow = list(
 		/obj/item/gun/ballistic/revolver = 8,
 		/obj/item/clothing/glasses/thermal/syndi = 6,
-		/obj/item/clothing/shoes/chameleon/noslip = 6,
-		/obj/item/melee/energy/sword/saber = 4,
-		/obj/item/pen/sleepy = 4,
+		/obj/item/static_cuff = 4,
+		/obj/item/gun/ballistic/revolver/c38/housecall = 4,
 	)
 	rare_loot_red = list(
-		/obj/item/ammo_box/magazine/smgm45 = 8,
 		/obj/item/melee/energy/sword/saber = 8,
-		/obj/item/pen/sleepy = 6,
-		/obj/item/grenade/syndieminibomb = 6,
-		/obj/item/gun/ballistic/automatic/c20r = 5,
-		/obj/item/card/emag = 4,
 		/obj/item/blueprint/gun/l6_saw = 5,
 		/obj/item/blueprint/gun/sniper_rifle = 5,
 		/obj/item/blueprint/gun/bulldog = 5,
+		/obj/item/clothing/suit/hooded/cloak/second_shadow = 4,
+		/obj/item/knife/understudy = 4,
 	)
 
 /obj/structure/closet/crate/zone_loot/syndicate/rare
@@ -246,27 +244,26 @@
 		/obj/item/assembly/signaler/anomaly/grav = 3,
 		/obj/item/storage/backpack/holding = 2,
 	)
+	// Rare tables: surviving stock entries + this theme's uniques at ~4
+	// (see voidcrew/modules/loot/uniques/research.dm and the design doc)
 	rare_loot_green = list(
 		/obj/item/stack/sheet/mineral/plasma/thirty = 8,
 		/obj/item/stock_parts/capacitor/adv = 6,
-		/obj/item/slime_extract/metal = 4,
-		/obj/item/clothing/glasses/night = 4,
+		/obj/item/clothing/glasses/science/calibration_prism = 4,
+		/obj/item/book/annex_notebook = 4,
 	)
 	rare_loot_yellow = list(
 		/obj/item/stock_parts/capacitor/super = 8,
 		/obj/item/slime_extract/bluespace = 6,
-		/obj/item/clothing/shoes/bhop = 6,
-		/obj/item/gun/energy/temperature = 4,
-		/obj/item/reagent_containers/cup/beaker/bluespace = 4,
+		/obj/item/reagent_containers/cup/beaker/entangled = 4,
+		/obj/item/displacer_fork = 4,
 	)
 	rare_loot_red = list(
 		/obj/item/stack/ore/bluespace_crystal/refined = 8,
-		/obj/item/stock_parts/matter_bin/bluespace = 8,
-		/obj/item/stock_parts/capacitor/quadratic = 6,
-		/obj/item/slime_extract/rainbow = 6,
+		/obj/item/stock_parts/matter_bin/bluespace = 6,
 		/obj/item/storage/backpack/holding = 5,
-		/obj/item/assembly/signaler/anomaly/bluespace = 4,
-		/obj/item/gun/energy/temperature/freeze = 3,
+		/obj/item/clothing/gloves/chronal_splint = 4,
+		/obj/item/clothing/suit/toggle/labcoat/eventide_courier = 4,
 	)
 
 /obj/structure/closet/crate/zone_loot/research/rare
@@ -321,27 +318,26 @@
 		/obj/item/blueprint/gun/bulldog = 3,
 		/obj/item/stack/spacecash/c10000 = 2,
 	)
+	// Rare tables: surviving stock entries + this theme's uniques at ~4
+	// (see voidcrew/modules/loot/uniques/plunder.dm and the design doc)
 	rare_loot_green = list(
 		/obj/item/coin/gold/doubloon = 8,
 		/obj/item/stack/spacecash/c500 = 6,
-		/obj/item/gun/ballistic/revolver = 6,
-		/obj/item/clothing/suit/costume/pirate/armored = 4,
+		/obj/item/toy/cards/deck/cheats = 4,
+		/obj/item/reagent_containers/cup/glass/bottle/bottomless_ration = 4,
 	)
 	rare_loot_yellow = list(
 		/obj/item/gun/ballistic/shotgun/doublebarrel = 8,
 		/obj/item/stack/spacecash/c1000 = 6,
-		/obj/item/stack/sheet/mineral/gold = 6,
-		/obj/item/melee/energy/sword/pirate = 4,
-		/obj/item/clothing/head/costume/pirate/captain = 4,
+		/obj/item/gun/magic/hook/marlinspike = 4,
+		/obj/item/clothing/glasses/eyepatch/fences_eye = 4,
 	)
 	rare_loot_red = list(
-		/obj/item/stack/spacecash/c1000 = 8,
 		/obj/item/gun/ballistic/revolver/mateba = 6,
-		/obj/item/melee/energy/sword/pirate = 6,
 		/obj/item/stack/sheet/mineral/diamond = 5,
-		/obj/item/clothing/suit/costume/pirate/captain/armored = 4,
-		/obj/item/blueprint/gun/bulldog = 4,
-		/obj/item/stack/spacecash/c10000 = 3,
+		/obj/item/claymore/cutlass/parley = 4,
+		/obj/item/gps/deadmans_compass = 4,
+		/obj/item/gun/ballistic/shotgun/musket/no_quarter = 3,
 	)
 
 /obj/structure/closet/crate/zone_loot/plunder/rare
@@ -395,25 +391,25 @@
 		/obj/item/coin/eldritch = 4,
 		/obj/item/soulstone/anybody/purified = 3,
 	)
+	// Rare tables: surviving stock entries + this theme's uniques at ~4
+	// (see voidcrew/modules/loot/uniques/occult.dm and the design doc)
 	rare_loot_green = list(
 		/obj/item/statuebust = 8,
 		/obj/item/coin/gold = 6,
-		/obj/item/flashlight/lantern = 5,
-		/obj/item/toy/cards/deck/tarot/haunted = 4,
+		/obj/item/flashlight/flare/candle/widows = 4,
+		/obj/item/clothing/gloves/color/black/pallbearer = 4,
 	)
 	rare_loot_yellow = list(
 		/obj/item/stack/sheet/mineral/diamond/five = 8,
-		/obj/item/statuebust = 6,
 		/obj/item/clothing/suit/armor/riot/knight = 5,
-		/obj/item/coin/eldritch = 5,
-		/obj/item/soulstone/anybody/purified = 3,
+		/obj/item/flashlight/lantern/censer_quiet_parish = 4,
+		/obj/item/clothing/neck/scarf/purple/confessor_stole = 4,
 	)
 	rare_loot_red = list(
 		/obj/item/stack/sheet/mineral/gold/fifty = 8,
-		/obj/item/stack/sheet/mineral/diamond/five = 8,
 		/obj/item/soulstone/anybody/purified = 6,
-		/obj/item/clothing/suit/armor/riot/knight = 5,
-		/obj/item/coin/eldritch = 5,
+		/obj/item/clothing/neck/beads/vow_ring = 4,
+		/obj/item/cane/shepherds_crook = 4,
 	)
 
 /obj/structure/closet/crate/zone_loot/occult/rare
@@ -477,26 +473,25 @@
 		/obj/item/construction/rcd = 3,
 		/obj/item/stack/sheet/mineral/diamond/fifty = 2,
 	)
+	// Rare tables: surviving stock entries + this theme's uniques at ~4
+	// (see voidcrew/modules/loot/uniques/industrial.dm and the design doc)
 	rare_loot_green = list(
 		/obj/item/stack/sheet/plasteel/twenty = 8,
 		/obj/item/stock_parts/power_store/cell/high = 6,
-		/obj/item/stack/sheet/mineral/titanium/fifty = 4,
-		/obj/item/storage/part_replacer = 4,
+		/obj/item/storage/toolbox/helios_lunch_pail = 4,
+		/obj/item/analyzer/honest_gauge = 4,
 	)
 	rare_loot_yellow = list(
 		/obj/item/stack/sheet/mineral/gold/fifty = 8,
 		/obj/item/stock_parts/power_store/cell/super = 6,
-		/obj/item/weldingtool/experimental = 4,
-		/obj/item/stock_parts/capacitor/quadratic = 4,
-		/obj/item/stock_parts/micro_laser/quadultra = 4,
+		/obj/item/weldingtool/slagmaw = 4,
+		/obj/item/clothing/gloves/cargo_gauntlet/line_gauntlet = 4,
 	)
 	rare_loot_red = list(
 		/obj/item/stack/sheet/mineral/diamond/fifty = 8,
-		/obj/item/stack/sheet/mineral/uranium/fifty = 6,
-		/obj/item/stock_parts/power_store/cell/bluespace = 6,
 		/obj/item/construction/rcd = 6,
-		/obj/item/storage/part_replacer/bluespace = 5,
-		/obj/item/mod/control/pre_equipped/loader = 4,
+		/obj/item/stock_parts/power_store/cell/forge_heart = 4,
+		/obj/item/stamp/helios_pattern = 4,
 	)
 
 /obj/structure/closet/crate/zone_loot/industrial/rare
@@ -563,30 +558,26 @@
 		/obj/item/organ/lungs/cybernetic/tier2 = 3,
 		/obj/item/reagent_containers/hypospray/medipen/survival/luxury = 2,
 	)
+	// Rare tables: surviving stock entries + this theme's uniques at ~4
+	// (see voidcrew/modules/loot/uniques/medical.dm and the design doc)
 	rare_loot_green = list(
 		/obj/item/storage/medkit/advanced = 8,
 		/obj/item/storage/medkit/surgery = 6,
-		/obj/item/storage/box/medipens = 5,
-		/obj/item/defibrillator = 4,
+		/obj/item/clothing/neck/night_sisters_watch = 4,
+		/obj/item/pen/red/triage = 4,
 	)
 	rare_loot_yellow = list(
 		/obj/item/storage/medkit/tactical_lite = 8,
 		/obj/item/defibrillator/compact = 6,
-		/obj/item/reagent_containers/hypospray/medipen/atropine = 6,
-		/obj/item/organ/heart/cybernetic = 4,
-		/obj/item/organ/eyes/robotic/shield = 4,
-		/obj/item/autosurgeon/medical_hud = 4,
+		/obj/item/meridian_drip = 4,
+		/obj/item/bedsheet/medical/hospice = 4,
 	)
 	rare_loot_red = list(
 		/obj/item/storage/medkit/tactical = 8,
-		/obj/item/reagent_containers/hypospray/medipen/survival/luxury = 6,
 		/obj/item/reagent_containers/hypospray/medipen/penthrite = 6,
-		/obj/item/organ/heart/cybernetic/tier2 = 5,
-		/obj/item/organ/liver/cybernetic/tier2 = 5,
-		/obj/item/organ/lungs/cybernetic/tier2 = 5,
-		/obj/item/organ/stomach/cybernetic/tier2 = 4,
-		/obj/item/reagent_containers/hypospray/medipen/stimulants = 4,
-		/obj/item/storage/medkit/tactical/premium = 2,
+		/obj/item/organ/heart/cybernetic/meridian = 4,
+		/obj/item/reagent_containers/cup/tube/winterkiss = 4,
+		/obj/item/reagent_containers/syringe/lazarus_line = 3,
 	)
 
 /obj/structure/closet/crate/zone_loot/medical/rare
@@ -640,24 +631,25 @@
 		/obj/item/shield/riot/tele = 3,
 		/obj/item/clothing/suit/armor/heavy = 2,
 	)
+	// Rare tables: surviving stock entries + this theme's uniques at ~4
+	// (see voidcrew/modules/loot/uniques/armory.dm and the design doc)
 	rare_loot_green = list(
 		/obj/item/clothing/suit/armor/bulletproof = 8,
 		/obj/item/gun/ballistic/automatic/pistol/m1911 = 6,
-		/obj/item/shield/riot = 5,
-		/obj/item/clothing/suit/armor/vest/marine = 4,
+		/obj/item/handloaders_vise = 4,
+		/obj/item/clothing/mask/whistle/sergeants = 4,
 	)
 	rare_loot_yellow = list(
 		/obj/item/clothing/suit/armor/riot = 8,
 		/obj/item/gun/energy/laser = 6,
-		/obj/item/clothing/head/helmet/toggleable/riot = 6,
-		/obj/item/storage/belt/military/assault = 4,
+		/obj/item/shield/riot/phalanx_buckler = 4,
+		/obj/item/clothing/glasses/marksmans_cant = 4,
 	)
 	rare_loot_red = list(
 		/obj/item/gun/energy/e_gun = 8,
 		/obj/item/clothing/suit/armor/heavy = 6,
-		/obj/item/shield/riot/tele = 6,
-		/obj/item/gun/ballistic/rifle/boltaction/prime = 5,
-		/obj/item/clothing/suit/armor/laserproof = 5,
+		/obj/item/garrison_standard = 4,
+		/obj/item/clothing/gloves/knock_knock = 4,
 	)
 
 /obj/structure/closet/crate/zone_loot/armory/rare
@@ -705,23 +697,25 @@
 		/obj/item/clothing/glasses/heat = 4,
 		/obj/item/clothing/suit/hooded/cloak/drake = 2,
 	)
+	// Rare tables: surviving stock entries + this theme's uniques at ~4
+	// (see voidcrew/modules/loot/uniques/expedition.dm and the design doc)
 	rare_loot_green = list(
 		/obj/item/gun/energy/recharge/kinetic_accelerator = 8,
 		/obj/item/storage/belt/mining/alt = 6,
-		/obj/item/wormhole_jaunter = 5,
-		/obj/item/pickaxe/diamond = 4,
+		/obj/item/pinpointer/old_hands_compass = 4,
+		/obj/item/claim_stake = 4,
 	)
 	rare_loot_yellow = list(
 		/obj/item/borg/upgrade/modkit/range = 8,
 		/obj/item/resonator = 6,
-		/obj/item/gun/energy/plasmacutter/adv = 5,
-		/obj/item/clothing/shoes/bhop = 5,
+		/obj/item/clothing/suit/hooded/second_season_duster = 4,
+		/obj/item/pickaxe/divining = 4,
 	)
 	rare_loot_red = list(
 		/obj/item/kinetic_crusher = 8,
 		/obj/item/clothing/suit/hooded/cloak/drake = 5,
-		/obj/item/clothing/glasses/heat = 5,
-		/obj/item/borg/upgrade/modkit/range = 5,
+		/obj/item/deepwell_sampler = 4,
+		/obj/item/longwalk_rig = 4,
 	)
 
 /obj/structure/closet/crate/zone_loot/expedition/rare
@@ -771,21 +765,25 @@
 		/obj/item/clothing/suit/hooded/berserker = 4,
 		/obj/item/clothing/head/hooded/berserker = 4,
 	)
+	// Rare tables: surviving stock entries + this theme's uniques at ~4
+	// (see voidcrew/modules/loot/uniques/wardrobe.dm and the design doc)
 	rare_loot_green = list(
 		/obj/item/clothing/suit/jacket/leather/biker = 8,
 		/obj/item/clothing/head/cowboy/black = 6,
-		/obj/item/clothing/suit/armor/vest/leather = 5,
+		/obj/item/clothing/neck/tie/understudys_cravat = 4,
+		/obj/item/clothing/shoes/laceup/winters_loafers = 4,
 	)
 	rare_loot_yellow = list(
 		/obj/item/clothing/head/cowboy/bounty = 8,
 		/obj/item/clothing/suit/armor/vest/warden/alt = 6,
-		/obj/item/clothing/head/helmet/knight = 5,
+		/obj/item/clothing/head/stage_presence = 4,
+		/obj/item/third_hand_kit = 4,
 	)
 	rare_loot_red = list(
-		/obj/item/clothing/head/cowboy/bounty = 8,
-		/obj/item/clothing/suit/hooded/berserker = 6,
-		/obj/item/clothing/head/hooded/berserker = 6,
-		/obj/item/clothing/head/cowboy/black/syndicate = 5,
+		/obj/item/clothing/head/cowboy/bounty = 6,
+		/obj/item/clothing/suit/hooded/berserker = 5,
+		/obj/item/clothing/suit/armor/hos/trenchcoat/heirloom_coat = 4,
+		/obj/item/clothing/suit/the_occasion = 4,
 	)
 
 /obj/structure/closet/crate/zone_loot/wardrobe/rare
