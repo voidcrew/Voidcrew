@@ -2,6 +2,9 @@
 /// the number of turfs determined by turf_weather_chance and turf_thunder_chance
 /// increasing this too high can result in severe lag so please be careful
 #define MAX_TURFS_PER_TICK 500
+/// VOIDCREW EDIT: containers-only weathers just top up open containers/trays — they don't
+/// need 500 picks a second; six concurrent storms at that rate was >3000 turf picks/sec
+#define MAX_CONTAINER_ONLY_TURFS_PER_TICK 100
 
 /**
  * Causes weather to occur on a z level in certain area types
@@ -250,7 +253,7 @@
 
 	if(weather_flags & (WEATHER_TURFS))
 		weather_turfs_per_tick = total_impacted_turfs * turf_weather_chance
-		weather_turfs_per_tick = min(weather_turfs_per_tick, MAX_TURFS_PER_TICK)
+		weather_turfs_per_tick = min(weather_turfs_per_tick, turf_act_containers_only ? MAX_CONTAINER_ONLY_TURFS_PER_TICK : MAX_TURFS_PER_TICK)
 	if(weather_flags & (WEATHER_THUNDER))
 		thunder_turfs_per_tick = total_impacted_turfs * turf_thunder_chance
 		thunder_turfs_per_tick = min(thunder_turfs_per_tick, MAX_TURFS_PER_TICK)
@@ -386,6 +389,15 @@
 		living.adjust_bodytemperature(temperature_delta)
 
 	if(!weather_reagent || !weather_reagent_holder || living.IsObscured())
+		return
+
+	// VOIDCREW EDIT: the full wash + reagent exposure runs every second per covered mob,
+	// and planets carry thousands of NPCs — under concurrent storms this alone burned
+	// ~40s of CPU per 5 minutes. Clientless mobs get the cheap ecological core
+	// (extinguish + wetness); players keep the full wash/expose treatment.
+	if(!living.client && istype(weather_reagent, /datum/reagent/water))
+		living.extinguish_mob()
+		living.adjust_wet_stacks(1)
 		return
 
 	if(istype(weather_reagent, /datum/reagent/water))

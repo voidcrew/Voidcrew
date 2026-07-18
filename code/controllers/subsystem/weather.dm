@@ -10,6 +10,11 @@ SUBSYSTEM_DEF(weather)
 	var/list/processing = list()
 	var/list/eligible_zlevels = list()
 	var/list/next_hit_by_zlevel = list() //Used by barometers to know when the next storm is coming
+	/// z ("[z]") -> list of living mobs, rebuilt at most once per fire cycle so several
+	/// concurrent storms share one scan of the global mob list instead of one scan each
+	var/list/mobs_by_z_cache
+	/// The times_fired value mobs_by_z_cache was built on
+	var/mobs_by_z_cache_fire = -1
 
 /datum/controller/subsystem/weather/fire(resumed = FALSE)
 	// process active weather
@@ -19,16 +24,30 @@ SUBSYSTEM_DEF(weather)
 
 		if(weather_event.subsystem_tasks[weather_event.task_index] == SSWEATHER_MOBS)
 			if(!resumed)
-				// Only collect mobs on the impacted z-levels, the whole world's mob list gets very large with populated planets
+				// Only collect mobs on the impacted z-levels, the whole world's mob list gets very large with populated planets.
+				// The z index is built once per fire cycle and shared by every storm processing this fire.
+				if(mobs_by_z_cache_fire != times_fired)
+					mobs_by_z_cache = list()
+					mobs_by_z_cache_fire = times_fired
+					for(var/mob/living/candidate as anything in GLOB.mob_living_list)
+						var/candidate_z = candidate.z
+						if(!candidate_z) // contained mobs report z = 0
+							var/turf/candidate_turf = get_turf(candidate)
+							if(candidate_turf)
+								candidate_z = candidate_turf.z
+						if(!candidate_z)
+							continue
+						var/z_key = "[candidate_z]"
+						var/list/z_mobs = mobs_by_z_cache[z_key]
+						if(!z_mobs)
+							z_mobs = list()
+							mobs_by_z_cache[z_key] = z_mobs
+						z_mobs += candidate
 				var/list/eligible_mobs = list()
-				for(var/mob/living/candidate as anything in GLOB.mob_living_list)
-					var/candidate_z = candidate.z
-					if(!candidate_z) // contained mobs report z = 0
-						var/turf/candidate_turf = get_turf(candidate)
-						if(candidate_turf)
-							candidate_z = candidate_turf.z
-					if(candidate_z in weather_event.impacted_z_levels)
-						eligible_mobs += candidate
+				for(var/storm_z in weather_event.impacted_z_levels)
+					var/list/z_mobs = mobs_by_z_cache["[storm_z]"]
+					if(z_mobs)
+						eligible_mobs += z_mobs
 				weather_event.current_mobs = eligible_mobs
 			var/list/current_mobs_cache = weather_event.current_mobs // cache for performance
 			while(current_mobs_cache.len)

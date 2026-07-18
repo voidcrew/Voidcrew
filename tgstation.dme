@@ -6704,6 +6704,7 @@
 #include "voidcrew\_DEFINES\techweb_nodes.dm"
 #include "voidcrew\_DEFINES\trade.dm"
 #include "voidcrew\_HELPERS\data_huds.dm"
+#include "voidcrew\_HELPERS\debug_atmos.dm"
 #include "voidcrew\_HELPERS\docking.dm"
 #include "voidcrew\_HELPERS\ships.dm"
 #include "voidcrew\_strings\star_names.dm"

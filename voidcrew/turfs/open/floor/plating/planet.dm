@@ -67,6 +67,10 @@
 	icon = 'voidcrew/icons/turf/wasteland.dmi'
 	icon_state = "dirt"
 	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	// Wasteland ground is planetary so the planet self-heals: without it, every storm,
+	// explosion or gas release ripples across the whole z-level's turfs for tens of
+	// minutes (observed as 16k+ active turfs), because nothing purges the disturbance.
+	planetary_atmos = TRUE
 	baseturfs = /turf/open/misc/dirt/dry
 
 /turf/open/misc/dirt/dry/lit
@@ -103,6 +107,8 @@
 	icon = 'voidcrew/icons/turf/wasteland.dmi'
 	icon_state = "wasteland1"
 	base_icon_state = "wasteland"
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = TRUE // see /turf/open/misc/dirt/dry
 	baseturfs = /turf/open/misc/wasteland
 	footstep = FOOTSTEP_SAND
 	barefootstep = FOOTSTEP_SAND
@@ -124,6 +130,8 @@
 	icon = 'voidcrew/icons/turf/wasteland.dmi'
 	icon_state = "rubblefull"
 	base_icon_state = "rubble"
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = TRUE // see /turf/open/misc/dirt/dry
 	baseturfs = /turf/open/floor/plating/rubble
 	footstep = FOOTSTEP_FLOOR
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
@@ -141,6 +149,8 @@
 	icon = 'voidcrew/icons/turf/wasteland.dmi'
 	icon_state = "tunnelintact"
 	base_icon_state = "tunnel"
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = TRUE // see /turf/open/misc/dirt/dry
 	baseturfs = /turf/open/floor/plating/tunnel
 	footstep = FOOTSTEP_FLOOR
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
@@ -158,6 +168,8 @@
 	icon = 'voidcrew/icons/turf/wasteland.dmi'
 	icon_state = "stone_old"
 	base_icon_state = "stone"
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = TRUE // see /turf/open/misc/dirt/dry
 	baseturfs = /turf/open/floor/plating/mossy_stone
 	footstep = FOOTSTEP_FLOOR
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
@@ -175,6 +187,8 @@
 	icon = 'voidcrew/icons/turf/wasteland.dmi'
 	icon_state = "dust1"
 	base_icon_state = "dust"
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = TRUE // see /turf/open/misc/dirt/dry
 	baseturfs = /turf/open/misc/dust
 	footstep = FOOTSTEP_SAND
 	barefootstep = FOOTSTEP_SAND

@@ -1,37 +1,16 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aa" = (
-/obj/effect/turf_decal/trimline/yellow/filled/line{
-	dir = 8
+/obj/machinery/door/poddoor/preopen{
+	id = "colo_seal";
+	name = "staging seal"
 	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/colosseum/lobby)
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
 "ab" = (
-/obj/machinery/light/warm/directional/west,
-/turf/open/indestructible/dark/textured,
+/obj/structure/stone_tile/slab/cracked,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/lobby)
 "ac" = (
-/obj/structure/chair/wood{
-	dir = 2
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"ad" = (
-/obj/machinery/light/warm/directional/west,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"ae" = (
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/spectator)
-"af" = (
-/turf/closed/indestructible/opsglass,
-/area/voidcrew/colosseum/lobby)
-"ag" = (
-/obj/structure/chair/wood{
-	dir = 8
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"ah" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
 	},
@@ -39,85 +18,116 @@
 	dir = 1
 	},
 /obj/machinery/light/warm/directional/south,
-/turf/open/indestructible/hoteltile,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"ad" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"ae" = (
+/obj/structure/stone_tile/slab,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"af" = (
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"ag" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"ah" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 5
+	},
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "ai" = (
-/obj/machinery/door/airlock/medical,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
 "aj" = (
-/obj/effect/turf_decal/siding/dark{
-	dir = 1
-	},
-/obj/machinery/light/warm/directional/north,
-/turf/open/indestructible/hoteltile,
+/obj/structure/stone_tile/slab/cracked,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "ak" = (
-/obj/machinery/light/warm/directional/east,
-/turf/open/indestructible/dark/textured,
+/obj/machinery/light/warm/directional/west,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/lobby)
 "al" = (
 /obj/item/kirbyplants/random,
-/turf/open/indestructible/hoteltile,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "am" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
 /obj/structure/chair/sofa/bench/solo{
 	dir = 4
 	},
-/turf/open/indestructible/hoteltile,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "an" = (
-/turf/open/indestructible/hoteltile,
+/obj/machinery/door/airlock/sandstone,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/lobby)
 "ao" = (
-/obj/effect/turf_decal/siding/dark{
-	dir = 1
-	},
-/obj/machinery/jukebox,
-/turf/open/indestructible/hoteltile,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "ap" = (
-/obj/structure/chair/wood{
-	dir = 1
+/obj/structure/table/wood,
+/obj/item/toy/cards/deck{
+	pixel_y = 2
 	},
-/turf/open/indestructible/hoteltile,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "aq" = (
-/obj/structure/tank_holder/extinguisher,
-/turf/open/indestructible/hoteltile,
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "ar" = (
-/obj/machinery/vending/snack,
-/turf/open/indestructible/hoteltile,
+/obj/effect/decal/cleanable/ash,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "as" = (
-/obj/machinery/vending/cola,
-/turf/open/indestructible/hoteltile,
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = 4
+	},
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "at" = (
-/turf/open/indestructible/hotelwood,
+/obj/machinery/door/airlock/sandstone,
+/obj/effect/mapping_helpers/airlock/access/all/command/general,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/spectator)
 "au" = (
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/lobby)
-"av" = (
-/obj/effect/turf_decal/siding/dark{
-	dir = 1
+/obj/machinery/door/poddoor{
+	id = "colo_gate_blue";
+	name = "blue gate"
 	},
-/turf/open/indestructible/hoteltile,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/arena)
+"av" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "aw" = (
-/obj/machinery/light/floor,
-/turf/open/indestructible/dark/textured,
+/obj/structure/marker_beacon{
+	picked_color = "Jade"
+	},
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/lobby)
 "ax" = (
-/obj/effect/turf_decal/trimline/yellow/filled/line{
-	dir = 2
-	},
-/turf/open/indestructible/dark/textured,
+/obj/machinery/light/floor,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/lobby)
 "ay" = (
 /obj/effect/turf_decal/siding/wood{
@@ -126,25 +136,25 @@
 /obj/structure/chair/sofa/bench/right{
 	dir = 1
 	},
-/turf/open/indestructible/hoteltile,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "az" = (
 /obj/machinery/door/poddoor{
 	id = "colo_gate_solo";
 	name = "arena gate"
 	},
-/turf/open/indestructible/plating,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
 "aA" = (
 /obj/machinery/door/poddoor{
-	id = "colo_gate_blue";
-	name = "blue gate"
+	id = "colo_gate_red";
+	name = "red gate"
 	},
-/turf/open/indestructible/plating,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/arena)
 "aB" = (
 /obj/effect/spawner/random/trash/garbage,
-/turf/open/indestructible/hoteltile,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "aC" = (
 /obj/effect/turf_decal/siding/wood{
@@ -153,332 +163,324 @@
 /obj/structure/chair/sofa/bench{
 	dir = 1
 	},
-/turf/open/indestructible/hoteltile,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "aD" = (
 /turf/open/misc/beach/sand,
 /area/voidcrew/colosseum/arena)
 "aE" = (
-/obj/machinery/door/poddoor{
-	id = "colo_gate_red";
-	name = "red gate"
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/arena)
+/obj/item/kirbyplants/random,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
 "aF" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/dark/textured,
+/obj/machinery/light/warm/directional/north,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/lobby)
 "aG" = (
-/obj/structure/marker_beacon{
-	picked_color = "Jade"
-	},
-/turf/open/indestructible/dark/textured,
+/obj/structure/stone_tile/slab,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/lobby)
 "aH" = (
-/obj/effect/turf_decal/trimline/yellow/filled/line{
-	dir = 4
+/obj/structure/marker_beacon{
+	picked_color = "Bronze"
 	},
-/turf/open/indestructible/dark/textured,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/lobby)
 "aI" = (
-/obj/structure/chair/wood{
-	dir = 4
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"aJ" = (
-/obj/effect/turf_decal/tile/yellow/fourcorners,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"aK" = (
-/obj/structure/table/wood,
-/obj/item/toy/cards/deck{
-	pixel_y = 2
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"aL" = (
-/obj/machinery/door/poddoor/preopen{
-	id = "colo_seal";
-	name = "staging seal"
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"aM" = (
-/obj/machinery/door/airlock/command,
-/obj/effect/mapping_helpers/airlock/access/all/command/general,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/spectator)
-"aN" = (
-/obj/structure/tank_holder/extinguisher,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/colosseum/lobby)
-"aO" = (
-/obj/structure/table/wood,
-/obj/effect/spawner/random/entertainment/money_medium,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"aP" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"aQ" = (
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"aR" = (
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/colosseum/lobby)
-"aS" = (
-/obj/machinery/door/airlock,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/lobby)
-"aT" = (
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"aU" = (
-/turf/closed/indestructible/reinforced/titanium/outpost,
-/area/voidcrew/colosseum/lobby)
-"aV" = (
-/obj/structure/sign/poster/official/random,
-/turf/closed/indestructible/reinforced/titanium/outpost,
-/area/voidcrew/colosseum/lobby)
-"aW" = (
-/obj/machinery/light/warm/directional/north,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/colosseum/lobby)
-"aX" = (
-/obj/effect/turf_decal/trimline/yellow/filled/line{
-	dir = 1
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/colosseum/lobby)
-"aY" = (
-/obj/item/kirbyplants/random,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/colosseum/lobby)
-"aZ" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
 	},
 /obj/structure/chair/sofa/bench/left{
 	dir = 1
 	},
-/turf/open/indestructible/hoteltile,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
-"bs" = (
-/obj/structure/chair/sofa/bench/left{
+"aJ" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"aK" = (
+/obj/structure/chair/wood{
 	dir = 2
 	},
-/turf/open/indestructible/plating,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"aL" = (
+/obj/structure/sign/poster/contraband/random,
+/turf/closed/indestructible/sandstone,
+/area/voidcrew/colosseum/lobby)
+"aM" = (
+/obj/structure/marker_beacon{
+	picked_color = "Bronze"
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"aN" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"aO" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"aP" = (
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"aQ" = (
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"aR" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"aS" = (
+/obj/machinery/door/airlock/sandstone/glass,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"aT" = (
+/turf/closed/indestructible/sandstone,
+/area/voidcrew/colosseum/lobby)
+"aU" = (
+/turf/closed/indestructible/rock,
+/area/voidcrew/colosseum/lobby)
+"aV" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/indestructible/sandstone,
+/area/voidcrew/colosseum/lobby)
+"aW" = (
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"aX" = (
+/turf/closed/indestructible/opsglass,
+/area/voidcrew/colosseum/lobby)
+"aY" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/indestructible/rock,
+/area/voidcrew/colosseum/lobby)
+"aZ" = (
+/obj/machinery/jukebox,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"bs" = (
+/obj/structure/stone_tile/slab,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
 "bw" = (
-/obj/structure/table/reinforced,
-/obj/item/reagent_containers/cup/glass/drinkingglass{
-	pixel_x = 4;
-	pixel_y = 3
-	},
-/obj/item/reagent_containers/cup/glass/drinkingglass{
-	pixel_x = -3
-	},
-/turf/open/indestructible/hoteltile,
+/obj/structure/table/wood,
+/obj/effect/spawner/random/food_or_drink/booze,
+/obj/effect/spawner/random/entertainment/coin,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "bD" = (
-/obj/structure/table/reinforced,
-/obj/effect/spawner/random/food_or_drink/booze,
-/turf/open/indestructible/hoteltile,
+/obj/structure/table/wood,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_y = 4
+	},
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "bP" = (
 /obj/structure/rack,
 /obj/effect/spawner/random/food_or_drink/booze,
-/turf/open/indestructible/hoteltile,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "bX" = (
-/obj/structure/stone_tile/block,
-/obj/structure/statue/gold/hop,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"bY" = (
-/obj/effect/turf_decal/tile/blue/half/contrasted{
-	dir = 1
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_y = 3
 	},
-/obj/machinery/light/warm/directional/north,
-/turf/open/indestructible/plating,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"bY" = (
+/obj/effect/turf_decal/caution/stand_clear{
+	dir = 4
+	},
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
 "cs" = (
-/obj/structure/closet/crate/secure,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
+/obj/effect/spawner/random/entertainment/plushie,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
 "cZ" = (
-/obj/effect/spawner/random/trash/garbage,
-/turf/open/indestructible/dark,
+/obj/structure/closet,
+/obj/item/storage/medkit/regular,
+/obj/item/flashlight,
+/obj/item/binoculars,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/spectator)
+"dp" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/gold/hos,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
 "en" = (
-/obj/item/food/popcorn{
-	pixel_x = -2
-	},
-/turf/open/indestructible/hotelwood,
+/obj/structure/stone_tile/slab,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/spectator)
 "ep" = (
 /obj/structure/chair/stool/bar{
 	dir = 4
 	},
-/turf/open/indestructible/hoteltile,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "eB" = (
-/obj/effect/turf_decal/delivery,
-/obj/structure/closet/crate/wooden,
-/turf/open/indestructible/plating,
+/obj/effect/spawner/random/trash/mopbucket,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/lobby)
 "eM" = (
-/obj/machinery/light/floor,
-/turf/open/indestructible/hoteltile,
+/obj/structure/table/wood,
+/obj/effect/spawner/random/entertainment/money_medium,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "fo" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
+/obj/structure/table/wood,
+/obj/effect/spawner/random/food_or_drink/booze,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_y = 5
 	},
-/turf/open/indestructible/hotelwood,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/spectator)
 "fp" = (
-/obj/effect/turf_decal/tile/blue/half/contrasted{
-	dir = 1
-	},
-/obj/structure/closet/athletic_mixed,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"fH" = (
-/obj/machinery/light/small/directional/north,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/lobby)
-"fL" = (
-/obj/structure/table/wood,
-/obj/item/food/popcorn{
-	pixel_y = 3
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"fU" = (
-/obj/machinery/light/warm/directional/south,
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"ga" = (
-/obj/effect/turf_decal/tile/blue/half/contrasted{
-	dir = 8
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"gm" = (
-/obj/structure/sink/directional/south,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"gv" = (
-/obj/structure/closet/crate/wooden,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/lobby)
-"gz" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/spectator)
-"gN" = (
-/obj/effect/turf_decal/tile/blue/fourcorners,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"gU" = (
-/obj/structure/filingcabinet,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/spectator)
-"ho" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/structure/chair/sofa/bench/right{
-	dir = 1
-	},
-/turf/open/indestructible/hotelwood,
-/area/voidcrew/colosseum/spectator)
-"iB" = (
-/obj/item/kirbyplants/random,
-/turf/open/indestructible/hotelwood,
-/area/voidcrew/colosseum/spectator)
-"iC" = (
 /obj/effect/turf_decal/caution/stand_clear{
 	dir = 8
 	},
-/turf/open/indestructible/plating,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
-"iI" = (
-/obj/structure/chair/wood{
-	dir = 1
-	},
-/turf/open/indestructible/dark,
+"fH" = (
+/obj/structure/closet/crate/wooden,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/lobby)
-"iS" = (
-/obj/structure/stone_tile/block,
-/obj/structure/statue/sandstone/venus,
-/turf/open/indestructible/hoteltile,
+"fL" = (
+/obj/effect/spawner/random/trash/food_packaging,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
-"iX" = (
-/obj/effect/landmark/outpost_elevator_alcove,
-/turf/open/indestructible/light,
-/area/voidcrew/colosseum/lobby)
-"jf" = (
-/obj/effect/turf_decal/tile/red/half/contrasted{
-	dir = 4
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"jg" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/machinery/light/warm/directional/east,
-/turf/open/indestructible/hotelwood,
-/area/voidcrew/colosseum/spectator)
-"kc" = (
-/obj/structure/stone_tile/cracked,
+"fU" = (
+/obj/effect/turf_decal/caution/stand_clear,
 /turf/open/misc/beach/sand,
 /area/voidcrew/colosseum/arena)
-"kL" = (
-/obj/structure/stone_tile/block,
-/obj/structure/statue/bronze/marx,
-/turf/open/indestructible/hoteltile,
+"ga" = (
+/obj/structure/closet/crate/wooden,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"gm" = (
+/obj/machinery/light/cold/directional/north,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
-"lb" = (
+"gv" = (
+/obj/structure/rack,
+/obj/item/stack/rods/fifty,
+/obj/item/flashlight,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"gz" = (
+/obj/machinery/button/door/directional/south{
+	id = "colo_seal";
+	name = "STAGING SEAL"
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"gN" = (
+/obj/structure/fermenting_barrel,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"gU" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"ho" = (
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"iB" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = 4
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"iC" = (
+/obj/effect/turf_decal/weather/sand,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"iD" = (
+/obj/structure/closet/crate/wooden,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"iI" = (
+/obj/structure/table/bronze,
+/obj/item/paper_bin{
+	pixel_x = -2;
+	pixel_y = 4
+	},
+/obj/item/pen,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"iS" = (
+/obj/machinery/light/floor,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"iX" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
 /obj/structure/chair/sofa/bench/right{
 	dir = 2
 	},
-/turf/open/indestructible/plating,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"jf" = (
+/obj/structure/chair/sofa/bench/right{
+	dir = 2
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"jg" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"kc" = (
+/obj/effect/decal/remains/human,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"kH" = (
+/obj/structure/marker_beacon{
+	picked_color = "Yellow"
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"kL" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/machinery/outpost_elevator/directional/south,
+/turf/open/indestructible/light,
+/area/voidcrew/colosseum/lobby)
+"lb" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
 "lk" = (
-/obj/machinery/light/warm/directional/west,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
+/obj/structure/curtain/cloth,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
 "lA" = (
-/obj/structure/table,
-/obj/item/storage/medkit/regular{
-	pixel_y = 4
-	},
-/obj/item/reagent_containers/cup/glass/waterbottle{
-	pixel_x = -5
-	},
-/turf/open/indestructible/hoteltile,
+/obj/machinery/iv_drip,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "lC" = (
-/obj/machinery/light/warm/directional/west,
-/turf/open/indestructible/hotelwood,
-/area/voidcrew/colosseum/spectator)
+/obj/structure/fermenting_barrel,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
 "lI" = (
-/obj/structure/stone_tile/block,
-/obj/structure/statue/silver/sec,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"lJ" = (
-/obj/structure/stone_tile/block,
-/obj/structure/statue/sandstone/assistant,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"lU" = (
 /obj/structure/stone_tile/slab,
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = -4;
@@ -487,35 +489,57 @@
 /obj/item/flashlight/flare/candle/infinite{
 	pixel_x = 5
 	},
-/turf/open/indestructible/dark,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
+"lJ" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/sandstone/assistant,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"lU" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/silver/md,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"me" = (
+/obj/effect/spawner/random/trash/crushed_can,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
 "mI" = (
-/obj/effect/decal/cleanable/blood/old,
+/obj/machinery/light/warm/directional/south,
 /turf/open/misc/beach/sand,
 /area/voidcrew/colosseum/arena)
 "nD" = (
-/obj/machinery/button/door/directional/south{
-	id = "colo_gate_red";
-	name = "RED GATE"
+/obj/structure/table/bronze,
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = 4;
+	pixel_y = 3
 	},
-/turf/open/indestructible/dark,
+/obj/effect/spawner/random/bureaucracy/paper,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/spectator)
 "nG" = (
-/obj/structure/closet,
-/obj/item/storage/medkit/regular,
-/obj/item/flashlight,
-/obj/item/binoculars,
-/turf/open/indestructible/dark,
+/obj/structure/table/bronze,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/effect/spawner/random/bureaucracy/folder,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/spectator)
 "nZ" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/dark,
+/obj/structure/stone_tile/block,
+/obj/structure/statue/gold/qm,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "oe" = (
-/obj/item/kirbyplants/random,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
+/obj/machinery/vending/wallmed/directional/north,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
 "pl" = (
+/obj/structure/marker_beacon{
+	picked_color = "Bronze"
+	},
 /turf/open/floor/bronze/flat,
 /area/voidcrew/colosseum/arena)
 "pw" = (
@@ -526,708 +550,165 @@
 /obj/item/pen{
 	pixel_x = -4
 	},
-/turf/open/indestructible/dark,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/spectator)
 "py" = (
-/obj/structure/chair/sofa/bench/left{
-	dir = 1
-	},
-/turf/open/indestructible/plating,
+/obj/item/kirbyplants/random,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
 "qt" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/item/food/popcorn{
-	pixel_x = 3;
-	pixel_y = 2
-	},
-/turf/open/indestructible/hotelwood,
+/obj/effect/decal/cleanable/ash,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/spectator)
 "qx" = (
-/obj/structure/marker_beacon{
-	picked_color = "Burgundy"
-	},
-/turf/open/indestructible/light,
-/area/voidcrew/colosseum/arena)
-"qJ" = (
-/obj/effect/spawner/random/trash/garbage,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"qQ" = (
-/obj/structure/chair/sofa/bench/solo{
-	dir = 2
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"qZ" = (
-/obj/effect/turf_decal/trimline/blue/filled/line{
-	dir = 2
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"ra" = (
-/turf/closed/indestructible/reinforced/titanium/outpost,
-/area/voidcrew/colosseum/staging)
-"rk" = (
-/obj/structure/stone_tile/block/cracked,
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"rF" = (
-/obj/structure/barricade/sandbags,
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"rI" = (
-/obj/structure/table/wood,
-/obj/effect/spawner/random/entertainment/money_medium,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"rK" = (
 /obj/structure/stone_tile/block,
 /obj/structure/statue/sandstone/venus,
 /turf/open/misc/beach/sand,
 /area/voidcrew/colosseum/arena)
-"rP" = (
+"qJ" = (
+/obj/structure/chair/sofa/bench{
+	dir = 1
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"qQ" = (
+/obj/structure/bed/maint,
+/obj/effect/spawner/random/bedsheet,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"qZ" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"ra" = (
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"rk" = (
 /obj/structure/marker_beacon{
-	picked_color = "Yellow"
+	picked_color = "Bronze"
 	},
-/turf/open/indestructible/dark,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"rF" = (
+/obj/structure/stone_tile/cracked,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"rI" = (
+/obj/structure/closet/crate/secure,
+/obj/effect/spawner/random/entertainment/money_medium,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
+"rJ" = (
+/obj/structure/closet/crate/secure,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"rK" = (
+/obj/structure/stone_tile/slab,
+/obj/effect/turf_decal/caution/stand_clear,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"rP" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
 "sf" = (
-/obj/effect/turf_decal/trimline/red/filled/line{
-	dir = 2
-	},
-/turf/open/indestructible/plating,
+/obj/machinery/light/warm/directional/west,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
 "sg" = (
-/obj/machinery/sleeper{
-	dir = 4
-	},
-/turf/open/indestructible/hoteltile,
+/obj/structure/closet/crate/medical,
+/obj/item/storage/medkit/brute,
+/obj/item/storage/medkit/fire,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "st" = (
-/obj/effect/landmark/outpost_elevator_alcove,
-/obj/machinery/outpost_elevator/directional/south,
-/turf/open/indestructible/light,
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "sE" = (
-/obj/effect/turf_decal/caution/stand_clear{
-	dir = 4
-	},
-/turf/open/indestructible/plating,
+/obj/machinery/light/warm/directional/south,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
 "sK" = (
-/obj/effect/turf_decal/delivery,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
+/obj/structure/bed/medical/anchored,
+/obj/effect/spawner/random/bedsheet,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
 "sQ" = (
-/obj/effect/turf_decal/trimline/yellow/filled/line{
-	dir = 4
-	},
-/turf/open/indestructible/hoteltile,
+/obj/structure/stone_tile/block,
+/obj/structure/statue/sandstone/venus,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
 "tk" = (
-/obj/structure/marker_beacon{
-	picked_color = "Cerulean"
-	},
-/turf/open/indestructible/light,
-/area/voidcrew/colosseum/arena)
-"tl" = (
-/obj/effect/turf_decal/caution/stand_clear{
-	dir = 2
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"tp" = (
-/obj/structure/closet,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"tE" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/structure/chair/sofa/bench/right{
-	dir = 2
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"tV" = (
-/obj/structure/stone_tile/block,
-/obj/structure/statue/gold/qm,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"uF" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/hotelwood,
-/area/voidcrew/colosseum/spectator)
-"uH" = (
-/obj/structure/stone_tile/slab,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"uI" = (
-/obj/structure/chair/wood{
-	dir = 2
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"va" = (
-/obj/structure/rack,
-/obj/item/mop,
-/obj/item/flashlight{
-	pixel_y = -3
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/lobby)
-"vz" = (
-/obj/effect/turf_decal/bot,
-/obj/structure/railing{
-	dir = 8
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"vA" = (
-/obj/structure/punching_bag,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"vH" = (
-/obj/effect/turf_decal/tile/red/half/contrasted{
-	dir = 1
-	},
-/obj/structure/closet/athletic_mixed,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"wN" = (
-/obj/structure/sink/directional/north,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"wQ" = (
-/obj/structure/chair/sofa/bench/right{
-	dir = 1
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"xA" = (
 /obj/structure/stone_tile/block,
 /obj/structure/statue/sandstone/assistant,
 /turf/open/misc/beach/sand,
 /area/voidcrew/colosseum/arena)
-"yO" = (
-/obj/effect/decal/remains/human,
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"yR" = (
-/obj/structure/marker_beacon{
-	picked_color = "Bronze"
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"yX" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/structure/chair/sofa/bench{
-	dir = 2
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"yZ" = (
-/obj/structure/chair/sofa/bench/right{
-	dir = 1
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"zp" = (
-/obj/structure/stone_tile/slab,
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"zA" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/structure/chair/sofa/bench/left{
-	dir = 2
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"zH" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"Ax" = (
-/obj/machinery/iv_drip,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"AG" = (
-/obj/machinery/light/warm/directional/south,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/spectator)
-"AK" = (
-/obj/structure/sign/poster/official/random,
-/turf/closed/indestructible/reinforced/titanium/outpost,
-/area/voidcrew/colosseum/staging)
-"Bs" = (
-/obj/structure/table/bronze,
-/obj/item/paper_bin{
-	pixel_x = -2;
-	pixel_y = 4
-	},
-/obj/item/pen,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/spectator)
-"BI" = (
-/obj/machinery/button/door/directional/south{
-	id = "colo_gate_blue";
-	name = "BLUE GATE"
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/spectator)
-"BO" = (
-/obj/effect/turf_decal/tile/red/half/contrasted{
-	dir = 1
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"BT" = (
-/obj/machinery/light/warm/directional/east,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"CY" = (
-/obj/structure/chair{
-	dir = 1
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"Dp" = (
-/obj/machinery/vending/snack,
-/turf/open/indestructible/hotelwood,
-/area/voidcrew/colosseum/spectator)
-"DX" = (
-/obj/structure/girder,
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"Ee" = (
-/obj/structure/stone_tile/block,
+"tl" = (
+/obj/structure/table/wood,
 /obj/item/flashlight/flare/candle/infinite{
-	pixel_y = 3
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"EC" = (
-/obj/structure/stone_tile/block,
-/obj/structure/statue/bronze/marx,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"ER" = (
-/obj/machinery/light/warm/directional/west,
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"Fd" = (
-/obj/machinery/light/warm/directional/east,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"FR" = (
-/obj/effect/turf_decal/tile/blue/half/contrasted{
-	dir = 4
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"Gm" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/lobby)
-"GD" = (
-/obj/structure/marker_beacon{
-	picked_color = "Bronze"
-	},
-/turf/open/floor/bronze/flat,
-/area/voidcrew/colosseum/arena)
-"Hb" = (
-/obj/effect/turf_decal/tile/yellow/fourcorners,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"Hi" = (
-/obj/machinery/vending/wallmed/directional/north,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"Hk" = (
-/obj/structure/table/reinforced,
-/obj/item/reagent_containers/cup/glass/shaker{
+	pixel_x = -3;
 	pixel_y = 4
 	},
-/obj/item/reagent_containers/cup/glass/drinkingglass{
-	pixel_x = -4
+/obj/item/dice/d6{
+	pixel_x = 4
 	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"HU" = (
-/obj/structure/barricade/security{
-	dir = 4
-	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"tp" = (
+/obj/machinery/light/warm/directional/east,
 /turf/open/misc/beach/sand,
 /area/voidcrew/colosseum/arena)
-"Iw" = (
-/obj/structure/stone_tile/block,
-/obj/structure/statue/silver/md,
-/turf/open/indestructible/dark,
+"tE" = (
+/obj/structure/bookcase/random,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
-"IO" = (
-/obj/structure/chair/bronze{
-	dir = 1
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/spectator)
-"IW" = (
-/obj/effect/turf_decal/delivery,
-/turf/open/indestructible/plating,
+"tV" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/food_or_drink/booze,
+/obj/effect/spawner/random/entertainment/dice,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
-"Ji" = (
-/obj/effect/turf_decal/tile/blue/half/contrasted{
-	dir = 2
-	},
-/turf/open/indestructible/plating,
+"uD" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/indestructible/sandstone,
 /area/voidcrew/colosseum/staging)
-"JB" = (
-/obj/machinery/light/warm/directional/south,
-/turf/open/indestructible/hotelwood,
+"uF" = (
+/obj/structure/stone_tile/slab/cracked,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/spectator)
-"JS" = (
-/obj/effect/turf_decal/tile/red/fourcorners,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"Ks" = (
+"uH" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/turf/open/indestructible/light,
+/area/voidcrew/colosseum/lobby)
+"uI" = (
+/obj/structure/filingcabinet,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"va" = (
 /obj/structure/rack,
-/obj/item/stack/rods/fifty,
-/obj/item/flashlight,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/lobby)
-"Kw" = (
-/obj/effect/turf_decal/tile/blue/half/contrasted{
-	dir = 1
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"KK" = (
-/obj/structure/noticeboard/directional/north,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"KZ" = (
-/obj/structure/girder,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/lobby)
-"Lc" = (
-/obj/structure/closet/crate/wooden,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"Lf" = (
-/obj/structure/table/bronze,
-/obj/item/binoculars{
-	pixel_y = 3
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/spectator)
-"Ll" = (
-/obj/effect/turf_decal/tile/blue/half/contrasted{
-	dir = 2
-	},
-/obj/structure/closet,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"Lw" = (
-/obj/effect/turf_decal/tile/red/half/contrasted{
-	dir = 8
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"Me" = (
-/obj/machinery/vending/cola,
-/turf/open/indestructible/hotelwood,
-/area/voidcrew/colosseum/spectator)
-"Mh" = (
-/obj/effect/turf_decal/bot,
-/obj/structure/railing{
-	dir = 4
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"Mk" = (
-/obj/structure/marker_beacon{
-	picked_color = "Bronze"
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"MM" = (
-/obj/structure/barricade/sandbags,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/lobby)
-"Nn" = (
-/obj/machinery/light/warm/directional/south,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"Nw" = (
-/obj/structure/displaycase/trophy,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"NS" = (
-/obj/structure/stone_tile/slab,
-/obj/machinery/light/warm/directional/north,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"Oe" = (
-/obj/effect/turf_decal/bot,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"On" = (
-/obj/effect/turf_decal/trimline/red/filled/line{
-	dir = 1
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"Oo" = (
-/obj/effect/turf_decal/tile/blue/half/contrasted{
-	dir = 1
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"Oz" = (
-/obj/structure/stone_tile/block,
-/obj/structure/statue/gold/hos,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"PO" = (
-/obj/structure/barricade/security{
-	dir = 8
-	},
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"Qe" = (
-/obj/machinery/vending/wallmed/directional/west,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"Qz" = (
-/obj/machinery/light/small/directional/north,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"QA" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/item/reagent_containers/cup/glass/drinkingglass{
+/obj/item/flashlight/flare{
 	pixel_x = -3
 	},
-/turf/open/indestructible/hotelwood,
-/area/voidcrew/colosseum/spectator)
-"QH" = (
-/obj/structure/closet/crate,
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"QP" = (
-/obj/structure/table/bronze,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/spectator)
-"QW" = (
-/obj/structure/chair/sofa/bench{
-	dir = 1
+/obj/item/flashlight/flare{
+	pixel_x = 4
 	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"Ra" = (
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"vz" = (
 /obj/structure/stone_tile/block,
-/obj/structure/statue/gold/ce,
-/turf/open/indestructible/dark,
+/obj/structure/statue/bronze/marx,
+/turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
-"Rl" = (
-/obj/effect/turf_decal/trimline/red/filled/line{
-	dir = 1
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/plating,
+"vA" = (
+/obj/structure/sink/directional/north,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
-"Rm" = (
-/obj/effect/turf_decal/tile/red/half/contrasted{
-	dir = 2
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"Ru" = (
-/obj/structure/marker_beacon{
-	picked_color = "Bronze"
-	},
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"Rw" = (
-/obj/effect/turf_decal/tile/red/half/contrasted{
-	dir = 2
-	},
-/obj/structure/closet,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"RW" = (
-/obj/structure/closet/crate/medical,
-/obj/item/storage/medkit/brute,
-/obj/item/storage/medkit/fire,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"Sb" = (
-/obj/effect/decal/cleanable/blood/old,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"Sj" = (
-/obj/structure/chair/sofa/bench/left{
-	dir = 1
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"SB" = (
-/obj/machinery/vending/boozeomat,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"SE" = (
-/obj/effect/turf_decal/stripes/line{
-	dir = 8
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/lobby)
-"Tk" = (
-/turf/open/indestructible/light,
-/area/voidcrew/colosseum/arena)
-"TF" = (
-/obj/machinery/roulette,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"TV" = (
-/obj/structure/chair/sofa/bench{
-	dir = 2
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"TW" = (
-/obj/structure/stone_tile/slab,
-/obj/effect/turf_decal/caution/stand_clear,
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"Uc" = (
-/obj/machinery/button/door/directional/south{
-	id = "colo_gate_solo";
-	name = "SOLO GATES"
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/spectator)
-"Uk" = (
+"vH" = (
 /obj/structure/table/wood,
-/obj/item/toy/cards/deck{
-	pixel_y = 2
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"UF" = (
-/obj/effect/turf_decal/caution/stand_clear,
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"UG" = (
-/obj/structure/stone_tile/slab,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"UW" = (
-/obj/structure/stone_tile/block,
-/obj/structure/statue/sandstone/venus,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"Ve" = (
-/obj/effect/turf_decal/trimline/blue/filled/line{
-	dir = 1
-	},
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"VH" = (
-/obj/machinery/button/door/directional/south{
-	id = "colo_seal";
-	name = "STAGING SEAL"
-	},
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/spectator)
-"VU" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/structure/chair/sofa/bench/left{
-	dir = 1
-	},
-/turf/open/indestructible/hotelwood,
-/area/voidcrew/colosseum/spectator)
-"Wm" = (
-/obj/machinery/light/warm/directional/west,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"Wv" = (
-/obj/effect/spawner/random/trash/garbage,
-/turf/open/indestructible/hotelwood,
-/area/voidcrew/colosseum/spectator)
-"WP" = (
-/obj/structure/table/reinforced,
-/obj/item/flashlight/flare/candle/infinite{
-	pixel_y = 4
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"Xa" = (
-/obj/machinery/light/cold/directional/north,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"XC" = (
-/obj/machinery/light/warm/directional/east,
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"XM" = (
-/obj/effect/turf_decal/tile/red/half/contrasted{
-	dir = 1
-	},
-/obj/machinery/light/warm/directional/north,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"Yv" = (
-/obj/effect/spawner/random/trash/garbage,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"YI" = (
-/obj/effect/turf_decal/trimline/blue/filled/line{
-	dir = 1
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/plating,
-/area/voidcrew/colosseum/staging)
-"Zh" = (
-/obj/structure/barricade/wooden,
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"Zo" = (
-/obj/machinery/light/warm/directional/north,
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"Zp" = (
-/obj/machinery/light/warm/directional/east,
-/turf/open/misc/beach/sand,
-/area/voidcrew/colosseum/arena)
-"ZB" = (
-/obj/machinery/computer/slot_machine,
-/turf/open/indestructible/dark,
-/area/voidcrew/colosseum/lobby)
-"ZF" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/structure/chair/sofa/bench{
-	dir = 1
-	},
-/turf/open/indestructible/hotelwood,
-/area/voidcrew/colosseum/spectator)
-"ZS" = (
-/obj/effect/turf_decal/trimline/yellow/filled/line{
-	dir = 8
-	},
-/turf/open/indestructible/hoteltile,
-/area/voidcrew/colosseum/lobby)
-"ZU" = (
-/obj/structure/table/reinforced,
 /obj/item/reagent_containers/cup/glass/waterbottle{
 	pixel_x = -4;
 	pixel_y = 3
@@ -1235,8 +716,623 @@
 /obj/item/reagent_containers/cup/glass/waterbottle{
 	pixel_x = 4
 	},
-/turf/open/indestructible/plating,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
+"vL" = (
+/obj/effect/spawner/random/entertainment/coin,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"wN" = (
+/obj/structure/closet,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"wQ" = (
+/obj/structure/chair/sofa/bench/right{
+	dir = 1
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"xA" = (
+/obj/structure/barricade/security{
+	dir = 8
+	},
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"yO" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"yR" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/left{
+	dir = 2
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"yX" = (
+/obj/structure/fermenting_barrel,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"yZ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"zp" = (
+/obj/structure/closet/crate,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"zA" = (
+/obj/structure/bookcase/random/fiction,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"zH" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Ax" = (
+/obj/machinery/sleeper{
+	dir = 4
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"AG" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"AK" = (
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = 3
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Bs" = (
+/obj/structure/chair/bronze{
+	dir = 1
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"Bv" = (
+/obj/structure/table/wood,
+/obj/item/toy/cards/deck{
+	pixel_y = 2
+	},
+/obj/item/dice/d6{
+	pixel_x = -4
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"BI" = (
+/obj/machinery/button/door/directional/south{
+	id = "colo_gate_blue";
+	name = "BLUE GATE"
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"BO" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"BT" = (
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck{
+	pixel_y = 2
+	},
+/obj/effect/spawner/random/entertainment/money_small,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"CY" = (
+/obj/structure/table,
+/obj/item/storage/medkit/regular{
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/waterbottle{
+	pixel_x = -5
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Dp" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench{
+	dir = 1
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 3;
+	pixel_y = 8
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"DX" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Ee" = (
+/turf/closed/indestructible/sandstone,
+/area/voidcrew/colosseum/staging)
+"EC" = (
+/obj/effect/spawner/random/entertainment/coin,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"EO" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/silver/sec,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"ER" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Fd" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"FR" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Gm" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"Gn" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/gold/ce,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"GD" = (
+/obj/structure/barricade/wooden,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Hb" = (
+/obj/structure/stone_tile/center,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Hi" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Hk" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -3
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"HU" = (
+/obj/structure/stone_tile/block/cracked,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Ib" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/food_or_drink/booze,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Iw" = (
+/obj/machinery/computer/slot_machine,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"IO" = (
+/obj/machinery/button/door/directional/south{
+	id = "colo_gate_red";
+	name = "RED GATE"
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"IW" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"Ji" = (
+/obj/structure/stone_tile/block,
+/obj/item/banner/red,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"JB" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/right{
+	dir = 1
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"JS" = (
+/obj/structure/chair/sofa/bench/left{
+	dir = 2
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Ks" = (
+/obj/structure/rack,
+/obj/item/mop,
+/obj/item/flashlight{
+	pixel_y = -3
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"Kw" = (
+/obj/structure/chair/sofa/bench/right{
+	dir = 1
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"KF" = (
+/obj/item/kirbyplants/random/dead,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"KK" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/left{
+	dir = 1
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"KZ" = (
+/obj/structure/barricade/sandbags,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"Lc" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Lf" = (
+/obj/machinery/button/door/directional/south{
+	id = "colo_gate_solo";
+	name = "SOLO GATES"
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"Ll" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Lw" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Me" = (
+/obj/structure/fermenting_barrel,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"Mh" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench{
+	dir = 2
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Mk" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/silver/sec,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"MM" = (
+/obj/effect/spawner/random/trash/box,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"Nn" = (
+/obj/structure/closet/athletic_mixed,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Nw" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/gold/cmo,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"NK" = (
+/obj/structure/marker_beacon{
+	picked_color = "Yellow"
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"NS" = (
+/obj/structure/chair/sofa/bench/left{
+	dir = 1
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Oe" = (
+/obj/structure/table/wood,
+/obj/item/food/popcorn{
+	pixel_y = 3
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"On" = (
+/obj/effect/spawner/random/trash/graffiti,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Oo" = (
+/obj/structure/sink/directional/south,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Oz" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/gold/hos,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"PO" = (
+/turf/open/floor/bronze/flat,
+/area/voidcrew/colosseum/arena)
+"Qe" = (
+/obj/structure/girder,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"Qz" = (
+/obj/effect/turf_decal/caution/stand_clear{
+	dir = 2
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"QA" = (
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -3
+	},
+/obj/item/food/popcorn{
+	pixel_x = 5;
+	pixel_y = 3
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"QH" = (
+/obj/structure/girder,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"QP" = (
+/obj/structure/filingcabinet,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"QU" = (
+/obj/structure/stone_tile/block,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_y = 3
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"QW" = (
+/obj/structure/chair/sofa/bench/left{
+	dir = 1
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Ra" = (
+/obj/structure/stone_tile/block,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 5
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Rl" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Rm" = (
+/obj/machinery/defibrillator_mount/directional/east,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Ru" = (
+/obj/structure/barricade/sandbags,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Rw" = (
+/obj/structure/chair/sofa/bench{
+	dir = 2
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"RW" = (
+/obj/structure/table,
+/obj/effect/spawner/random/medical/minor_healing,
+/obj/effect/spawner/random/medical/supplies,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Sb" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Sj" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/gold/rd,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"SB" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"SE" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/lobby)
+"SY" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/gold/hop,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Tk" = (
+/obj/structure/marker_beacon{
+	picked_color = "Burgundy"
+	},
+/turf/open/indestructible/light,
+/area/voidcrew/colosseum/arena)
+"TF" = (
+/obj/item/kirbyplants/random,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"TV" = (
+/obj/structure/stone_tile/slab/cracked,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"TW" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Uc" = (
+/obj/structure/table/bronze,
+/obj/item/paper_bin{
+	pixel_x = -2;
+	pixel_y = 4
+	},
+/obj/item/pen,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"Uk" = (
+/obj/structure/table/bronze,
+/obj/effect/spawner/random/entertainment/money_medium,
+/obj/effect/spawner/random/entertainment/coin,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"UF" = (
+/turf/open/indestructible/light,
+/area/voidcrew/colosseum/arena)
+"UG" = (
+/obj/structure/displaycase/trophy,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"UW" = (
+/obj/structure/stone_tile/slab,
+/obj/machinery/light/warm/directional/north,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Ve" = (
+/obj/structure/punching_bag,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"VH" = (
+/obj/structure/table/bronze,
+/obj/item/binoculars{
+	pixel_y = 3
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"VU" = (
+/obj/item/food/popcorn{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/obj/item/food/popcorn{
+	pixel_x = -5;
+	pixel_y = -1
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"Wm" = (
+/obj/structure/stone_tile/block,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = 1
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Wv" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench{
+	dir = 1
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"WP" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/shaker{
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -4
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Xa" = (
+/obj/machinery/vending/wallmed/directional/west,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"XC" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/spawner/random/food_or_drink/booze,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"XM" = (
+/obj/item/reagent_containers/cup/glass/waterbottle{
+	pixel_x = 2
+	},
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Yv" = (
+/obj/machinery/roulette,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"YI" = (
+/obj/structure/stone_tile/block,
+/obj/item/banner/blue,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
+"Zh" = (
+/obj/structure/barricade/security{
+	dir = 4
+	},
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Zo" = (
+/obj/structure/stone_tile/slab,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Zp" = (
+/obj/structure/marker_beacon{
+	picked_color = "Cerulean"
+	},
+/turf/open/indestructible/light,
+/area/voidcrew/colosseum/arena)
+"ZB" = (
+/obj/structure/noticeboard/directional/north,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"ZF" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/spectator)
+"ZS" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"ZU" = (
+/obj/structure/table,
+/obj/effect/spawner/random/medical/minor_healing,
+/obj/item/pen{
+	pixel_x = -4
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
 
 (1,1,1) = {"
 aU
@@ -1252,7 +1348,7 @@ aU
 aU
 aU
 aU
-aV
+aY
 aU
 aU
 aU
@@ -1264,7 +1360,7 @@ aU
 aU
 aU
 aU
-aV
+aY
 aU
 aU
 aU
@@ -1276,7 +1372,7 @@ aU
 aU
 aU
 aU
-aV
+aY
 aU
 aU
 aU
@@ -1288,7 +1384,7 @@ aU
 aU
 aU
 aU
-aV
+aY
 aU
 aU
 aU
@@ -1302,57 +1398,57 @@ aU
 aU
 aU
 aU
-aU
-aX
+aT
+aW
+aG
+ak
+aH
+aW
+aW
+aW
+aW
+ak
+aW
+aW
+aW
+aW
+aW
+ak
+aW
+aW
+aE
+aW
+aW
+ak
+aW
+aW
+aW
+aW
+aW
+ak
+aW
+aW
+aW
 aR
-ab
-aN
-aa
-aa
-aa
-aa
-ab
-aa
-aa
-aa
-aa
-aa
-ab
-aa
-aa
-aY
-aa
-aa
-ab
-aa
-aa
-aa
-aa
-aa
-ab
-aa
-aa
-aa
-aF
-aa
-ab
-aa
-aa
-aY
-aa
-aa
-ab
-aa
-aa
-aa
-aa
-aa
-ab
-aa
-aa
-aN
-ab
-aU
+aW
+ak
+aW
+aW
+aE
+aW
+aW
+ak
+aW
+aW
+aW
+aW
+aW
+ak
+aW
+aW
+aH
+ak
+aT
 aU
 aU
 aU
@@ -1362,57 +1458,57 @@ aU
 aU
 aU
 aU
-aU
-aX
+aT
+aW
+aw
+aW
 aG
-ax
+aG
+aG
+ab
+aG
+aG
+aG
 aR
-aR
-aR
-aR
-aR
-aR
-aR
-aF
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aU
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+ab
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+ab
+aG
+aG
+aG
+aG
+aG
+aG
+aT
 aU
 aU
 aU
@@ -1422,57 +1518,57 @@ aU
 aU
 aU
 aU
-aU
-aX
+aT
+aW
+aG
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
 aR
-ax
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aF
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aH
-aF
-aH
-aH
-aH
-aH
-aH
-aU
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aR
+aW
+aW
+aW
+aW
+aW
+aT
 aU
 aU
 aU
@@ -1482,73 +1578,71 @@ aU
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
+aT
+aW
+aG
+aW
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
 aV
-aU
-aL
-aL
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aS
-aU
-aU
-aU
-aU
-aU
-aU
+aT
 aV
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aR
-aR
-aU
-aU
-aU
-aU
+aT
+aa
+aa
+aT
+aT
+aV
+aT
+aT
+aT
+aT
+aT
+an
+aT
+aT
+aT
+aT
+aT
+aT
+aV
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aW
+aW
+aT
+aT
+aT
+aT
 aU
 "}
 (6,1,1) = {"
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-aU
-aU
+aT
+aW
+aG
+aW
+aT
 aU
 aU
 aU
@@ -1558,42 +1652,44 @@ aU
 aU
 aU
 aU
-oe
-Lw
-lk
-lk
-ZU
-ZU
-sK
-sK
-Lw
-lk
-lk
-Lw
-oe
 aU
-fH
-au
+aT
+py
+aQ
+sf
+aQ
+vH
+vH
+bs
+bs
+sf
+On
+aQ
+aQ
+py
+aT
 SE
-au
-au
-aU
-NS
+aW
+aW
+aW
+lC
 aT
 UW
-aT
-aT
 Wm
-aT
-aU
-ao
-al
+sQ
+af
+af
 ad
-an
-an
-an
+al
+aT
+aZ
 am
+ad
 am
+ao
+af
+am
+ad
 am
 al
 aU
@@ -1602,13 +1698,11 @@ aU
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-aU
-aU
+aT
+aW
+aG
+aW
+aT
 aU
 aU
 aU
@@ -1618,54 +1712,57 @@ aU
 aU
 aU
 aU
-vH
+aU
+aT
+Nn
+wN
+JS
+Sb
 aQ
+zH
 bs
+TV
+Rl
 aQ
+QW
 aQ
-sf
-aQ
-aQ
-On
-aQ
-py
-aQ
-Rm
-aU
-Ks
-au
-au
+wN
+aT
 gv
+aR
+aW
 eB
-aU
+fH
+aT
 Oz
-aT
-aT
-aT
-aT
-aT
+af
+af
 Sj
-aU
+af
+af
+NS
+aT
+aM
+af
 av
-an
-an
+af
+ae
+ae
+af
+af
+ao
 aI
-an
-an
-an
-an
-an
-aZ
 aU
 "}
 (8,1,1) = {"
 aU
 aU
 aU
-aU
+aT
+aF
+aG
 aW
-aR
-ax
+aT
 aU
 aU
 aU
@@ -1676,45 +1773,44 @@ aU
 aU
 aU
 aU
-aU
-aU
-vH
+aT
+Nn
+yZ
+Rw
 aQ
+XM
+zH
 TV
-aQ
-aQ
-sf
-aQ
-aQ
+bs
 Rl
-aQ
-QW
-aQ
+BO
+qJ
+BO
 wN
-aU
-va
-au
-au
-au
-au
-aU
-Mk
 aT
+Ks
+aW
+aW
+aW
+aW
 aT
+aM
+af
+ae
 Hb
-aT
-aT
+ao
+ae
 wQ
-aU
-aj
-an
-ac
+aT
+ae
 aK
 ap
-an
+aJ
+ae
+ae
+av
+af
 aP
-an
-an
 aC
 aU
 "}
@@ -1722,10 +1818,10 @@ aU
 aU
 aU
 aU
-aU
-aX
-aR
-ax
+aT
+aW
+aG
+aW
 aV
 aU
 aU
@@ -1737,55 +1833,56 @@ aU
 aU
 aU
 aU
-aU
-vH
+aT
+Nn
+aQ
+Rw
+XM
+aQ
 zH
-TV
+bs
+bs
+Rl
 aQ
+qJ
 aQ
-sf
-aQ
-aQ
-On
-aQ
-QW
-aQ
-wN
-aU
-Ks
-au
-au
-au
+lb
+aT
 gv
+aW
+aW
+fH
+fH
 aV
-lI
+Mk
+af
+af
+af
+af
+af
+af
 aT
-aT
-aT
-aT
-aT
-aT
-aU
-av
-an
-ac
+ag
+af
 aO
-ap
-an
-an
-an
-an
+af
+ae
+ae
 ah
+aJ
+aj
+ac
 aU
 "}
 (10,1,1) = {"
 aU
 aU
 aU
-aU
-aX
+aT
+aW
+aG
 aR
-aF
+aT
 aU
 aU
 aU
@@ -1796,59 +1893,56 @@ aU
 aU
 aU
 aU
-aU
-aU
-vH
-aQ
-TV
-aQ
+aT
+Nn
 JS
-sf
+Rw
 aQ
+yZ
+zH
+bs
+bs
+Rl
+XM
+qJ
 aQ
-On
-aQ
-QW
-Sb
-Rm
-aU
-Ks
-Gm
-au
-au
-au
-aU
-Nw
-lU
+vA
+aT
+va
+aW
+aR
+aW
+aW
+aT
 UG
-UG
-UG
-UG
-UG
-aJ
-av
-aJ
-an
-ag
-an
-an
-an
-an
-an
+lI
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+aO
+af
+af
 aC
-aV
+aY
 "}
 (11,1,1) = {"
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-aU
-aU
+aT
+aW
+aG
+aW
+aT
 aU
 aU
 aU
@@ -1858,117 +1952,117 @@ aU
 aU
 aU
 aU
-vH
-aQ
-TV
-JS
-aQ
-sf
-aQ
-aQ
-On
-aQ
-QW
-aQ
+aU
+aT
 Nn
-aU
-au
-au
-au
-au
-au
-aU
-Nw
-lU
+Rw
+Rw
+BO
+aQ
+zH
+bs
+bs
+Rl
+jf
+qJ
+lb
+vA
+aT
+aW
+Gm
+aW
+aW
+aW
+aT
 UG
-UG
-UG
-UG
-UG
-aJ
-av
-an
-an
-an
-an
-an
-an
-aJ
-an
-aC
+lI
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+af
+af
+aB
+ay
 aU
 "}
 (12,1,1) = {"
 aU
 aU
 aU
+aT
+aW
+aG
+aW
+aT
 aU
-aX
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aT
+Nn
+jf
+Rw
+aQ
+aQ
+zH
+bs
+bs
+Rl
+aQ
+qJ
+aQ
+sE
+aT
+SE
+IW
 aR
-ax
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-BO
-aQ
-TV
-aQ
-aQ
-sf
-aQ
-aQ
-On
-aQ
-QW
-aQ
-Rm
-aU
+aR
 fH
-au
-au
-Gm
-eB
-aU
-UG
 aT
+ae
+af
+af
+af
+af
+af
+af
 aT
-aT
-aT
-aT
-aT
-aU
-av
-an
-an
-an
-an
-an
-an
-an
-an
-aC
+ag
+ao
+af
+ao
+af
+af
+ae
+aq
+ao
+aB
 aU
 "}
 (13,1,1) = {"
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-aU
-aU
+aT
+aW
+aG
+aW
+aT
 aU
 aU
 aU
@@ -1978,57 +2072,57 @@ aU
 aU
 aU
 aU
+aU
+aT
+Nn
 XM
+Rw
+iC
 aQ
+zH
+bs
 TV
-aQ
-aQ
-sf
-aQ
-aQ
-On
-aQ
-QW
-aQ
+Rl
+iC
 qJ
-aU
-gv
-IW
-au
-au
-au
-aU
-Iw
+ga
+vH
 aT
+fH
+aW
+aW
+aW
+MM
 aT
+lU
+af
+ae
+Hb
+ar
+ae
+NS
 aT
-nZ
-aT
-aT
-aU
+ae
+af
 av
-an
-an
-an
-an
-aJ
-an
-an
-an
-ay
+af
+af
+af
+ar
+af
+af
+aI
 aU
 "}
 (14,1,1) = {"
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-aU
-aU
+aT
+aW
+aG
+aW
+aT
 aU
 aU
 aU
@@ -2038,163 +2132,165 @@ aU
 aU
 aU
 aU
+aU
+aT
+Ll
+aQ
+jf
+aQ
 BO
+zH
+bs
+bs
+Rl
 aQ
-lb
-aQ
-Sb
-sf
-aQ
-aQ
-On
-aQ
+Kw
 yZ
-aQ
-Rw
-aU
-au
-au
-MM
-au
-au
-aU
-Mk
+yZ
 aT
+lC
+aW
+KZ
+aW
+aW
 aT
-Hb
-aT
-aT
-Sj
+aM
+af
+af
+Nw
+af
+af
+wQ
 aV
-av
-an
-an
-aP
-an
-an
-an
-an
-an
-aB
+zA
+aK
+eM
+aJ
+as
+aJ
+as
+af
+ar
+aC
 aU
 "}
 (15,1,1) = {"
 aU
 aU
 aU
+aT
+aW
+aG
+aW
+aT
 aU
-aX
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aT
+Ve
+Rl
+aQ
+lb
+iC
+zH
+bs
+bs
+Rl
+yZ
+aQ
+aQ
+gN
+aT
+fH
 aR
-ax
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-vA
-aQ
-aQ
-aQ
-aQ
-sf
-aQ
-aQ
-On
-JS
-aQ
-aQ
-Rw
-aU
-gv
-au
-MM
-au
 KZ
-aU
-tV
+Qe
+Qe
 aT
+nZ
+Wm
+af
+af
+af
+af
+af
 aT
-aT
-aT
-aT
-wQ
-aU
-av
-an
-an
-an
-an
-an
-an
-an
-an
+tE
 aq
+aO
+af
+fL
+ao
+yX
+yX
+aM
+ay
 aU
 "}
 (16,1,1) = {"
 aU
 aU
 aU
-aU
+aT
+aF
+aG
 aW
-aR
-ax
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-BO
-vA
-aQ
-jf
-aQ
-jf
-sE
-sE
-jf
-aQ
-aQ
-jf
-oe
-aU
-au
-au
-au
-au
-KZ
-aU
-NS
-aT
-EC
-aT
-aT
-BT
 aT
 aU
-as
-ar
-an
-an
-an
-an
-an
-an
-an
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aT
+Ji
+Ve
+aQ
+aQ
+aQ
+qZ
+bY
+bY
+qZ
+aQ
+aQ
+aQ
+py
+aT
+lC
+aW
+aW
+Qe
+Qe
+aT
+UW
+af
+vz
+af
+af
+SB
+al
+aT
+al
+af
+af
+aB
+af
+af
+af
+af
+af
 al
 aU
 "}
@@ -2202,152 +2298,152 @@ aU
 aU
 aU
 aU
+aT
+aW
+aG
+aW
+aT
+aT
+aT
+aT
 aU
-aX
-aR
-ax
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aE
-aE
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-av
-an
-an
-an
-an
-an
-an
-an
-an
-an
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aA
+aA
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
 aU
 "}
 (18,1,1) = {"
 aU
 aU
 aU
-aU
+aT
+aW
+aG
+aW
+aL
+wN
+qQ
+tl
+aT
+aD
+aD
+aD
+aD
+aD
+TW
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+rK
+rK
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+TW
+aD
+aD
+aD
+aD
+aD
 aX
-aR
-ax
-aU
-tp
-aQ
-aQ
-aU
-aD
-aD
-aD
-aD
-aD
-ER
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-TW
-TW
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-ER
-aD
-aD
-aD
-aD
-aD
-af
-fo
 VU
-at
-VU
+KK
 iB
-aU
-av
-an
-an
-an
-an
-an
-an
-an
-an
-an
+KK
+TF
+aT
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
 aU
 "}
 (19,1,1) = {"
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aL
-qQ
-zH
-tl
+aT
+aW
+aG
+aW
+aa
+BO
+iC
+Qz
 az
+fU
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+qx
+Tk
 UF
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-rK
-qx
-Tk
+UF
 Tk
 qx
-rK
 aD
 aD
 aD
@@ -2359,38 +2455,38 @@ aD
 aD
 aD
 aD
-af
-qt
-ho
-at
+aX
 ho
 JB
-aU
-aj
-zA
-eM
-aZ
-an
-an
-an
-an
-an
-aZ
+iB
+JB
+fo
+aV
+ag
+yR
+iS
+aI
+af
+af
+af
+af
+af
+aI
 aU
 "}
 (20,1,1) = {"
 aU
 aU
 aU
-aU
-aX
+aT
+aW
+aG
 aR
-aF
-aU
-Qz
-aQ
-aQ
-aU
+aT
+rP
+AK
+ra
+aT
 aD
 aD
 aD
@@ -2403,38 +2499,38 @@ aD
 aD
 aD
 aD
-Tk
-Tk
-Tk
+UF
+UF
+UF
+DX
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
 mI
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-fU
-aU
-fo
-at
+aT
 en
-at
-at
-aJ
-av
-yX
-an
+ai
+en
+qt
+ai
+ae
+af
+Mh
+af
 aC
-an
-an
-an
-an
-an
+af
+af
+af
+af
+af
 aC
 aU
 "}
@@ -2442,20 +2538,31 @@ aU
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-ra
-ra
-ra
-aU
+aT
+aW
+ab
+aW
+aT
+Ee
+Ee
+Ee
+aT
+yO
+aD
+QH
+zp
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+Zo
 Zo
 aD
-DX
-QH
-aD
 aD
 aD
 aD
@@ -2465,96 +2572,85 @@ aD
 aD
 aD
 zp
-zp
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
 QH
-DX
 aD
 aD
+aX
+QA
+ZF
+uF
+ai
+ZF
+ae
 af
-fo
-at
-at
-at
-at
-aJ
-av
-yX
-fL
+Mh
+Oe
 aC
-an
-an
-an
-an
-an
-ah
+af
+af
+af
+af
+af
+ac
 aU
 "}
 (22,1,1) = {"
 aU
 aU
 aU
-aU
+aT
+aW
+aG
+aW
+aT
+wN
+qQ
+cs
+aT
+aD
+aD
+zp
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+Zo
+Zo
+aD
+aD
+kc
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+zp
+aD
+aD
 aX
-aR
-ax
-aU
-tp
-aQ
-aQ
-aU
-aD
-aD
-QH
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-zp
-zp
-aD
-aD
-yO
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-QH
-aD
-aD
+qt
+KK
+iB
+KK
+Me
+aT
 af
-fo
-VU
-at
-VU
-at
-aU
-av
-yX
-an
+Mh
+af
 aC
-an
-aP
-an
-an
-an
+af
+ao
+af
+af
+af
 aC
 aU
 "}
@@ -2562,16 +2658,16 @@ aU
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aL
-qQ
-aQ
-tl
+aT
+aW
+aG
+aW
+aa
+yZ
+iC
+Qz
 az
-UF
+fU
 aD
 aD
 aD
@@ -2584,9 +2680,9 @@ aD
 aD
 aD
 aD
-zp
-zp
-kc
+Zo
+Zo
+rF
 aD
 aD
 aD
@@ -2599,22 +2695,22 @@ aD
 aD
 aD
 aD
-af
+aX
+ZF
+Wv
+iB
+Dp
 fo
-ZF
-uF
-ZF
-at
-aU
-av
-tE
-an
+aT
+af
+iX
+af
 ay
-an
-an
-an
-an
-an
+af
+af
+af
+af
+af
 aC
 aU
 "}
@@ -2622,15 +2718,15 @@ aU
 aU
 aU
 aU
-aU
+aT
+aF
+aG
 aW
-aR
-ax
-aU
-Qz
-aQ
-aQ
-aU
+aL
+rP
+bX
+yZ
+aT
 aD
 aD
 aD
@@ -2638,20 +2734,20 @@ aD
 aD
 aD
 aD
-rF
-rF
+Ru
+Ru
 aD
 aD
 aD
 aD
-zp
-zp
+Zo
+Zo
 aD
 aD
 aD
 aD
-rF
-rF
+Ru
+Ru
 aD
 aD
 aD
@@ -2659,113 +2755,113 @@ aD
 aD
 aD
 aD
+aX
+VU
+Dp
+AG
+Wv
+jg
+aT
 af
-QA
-ZF
-at
-ZF
-JB
-aU
-av
-an
-an
-aU
-an
-an
-aU
-an
-an
+af
+af
+aT
+af
+af
+aT
+af
+af
 aC
 aU
 "}
 (25,1,1) = {"
 aU
-aU
-aU
-aU
-aX
-aR
-ax
-aU
-ra
-ra
-ra
-aU
+aT
+aT
+aT
+aW
+aG
+aW
+aT
+Ee
+Ee
+Ee
+aT
 aD
 aD
 aD
 aD
 aD
-aD
-aD
-rF
 aD
 aD
 Ru
 aD
 aD
-zp
-zp
+rk
+aD
+aD
+Zo
+Zo
+aD
+aD
+rk
 aD
 aD
 Ru
 aD
 aD
-rF
 aD
 aD
 aD
 aD
-aD
-aD
-fU
-aU
-fo
-ZF
-at
-ZF
+mI
+aT
+gU
+Wv
+iB
+Wv
 Me
-aU
-av
-an
-an
+aT
+af
+af
+af
 al
-an
-an
+af
+af
 al
-an
-an
+af
+af
 ay
 aU
 "}
 (26,1,1) = {"
 aU
-rP
-Hb
-af
+NK
+ae
 aX
-aR
-ax
-aU
-tp
-aQ
-aQ
-aU
+aW
+aG
+aW
+aL
+Ra
+qQ
+Lc
+aT
 aD
 aD
 aD
 aD
 aD
 aD
-rk
+HU
 aD
 aD
 aD
 aD
 aD
 aD
-zp
-zp
+Zo
+Zo
 aD
 aD
 aD
@@ -2779,39 +2875,39 @@ aD
 aD
 aD
 aD
-af
-qt
-ZF
-Wv
-ZF
+aX
+en
 Dp
-aU
-aj
-an
-an
-an
-an
-an
-an
-an
-an
-aq
+iB
+Wv
+QA
+aV
+ag
+af
+af
+af
+af
+af
+af
+af
+af
+aM
 aU
 "}
 (27,1,1) = {"
 aU
-cs
-aT
+rJ
 af
 aX
-aR
-ax
-aL
-qQ
-zH
-tl
+aW
+aG
+aW
+aa
+Lc
+iC
+Qz
 az
-UF
+fU
 aD
 aD
 aD
@@ -2822,14 +2918,12 @@ aD
 aD
 aD
 aD
-HU
+Zh
 aD
-zp
-zp
+Zo
+Zo
 aD
-HU
-aD
-aD
+Zh
 aD
 aD
 aD
@@ -2839,175 +2933,177 @@ aD
 aD
 aD
 aD
+aD
+aD
+aX
+QA
+JB
+ho
+JB
+TF
+aT
 af
-jg
-ho
-at
-ho
-Wv
-aU
-av
-an
-an
-aU
-an
-an
-aU
-an
-an
+af
+af
+aT
+af
+af
+aT
+af
+af
 aB
 aU
 "}
 (28,1,1) = {"
 aU
-bX
-UG
-af
+SY
+ae
 aX
-aR
-ax
-aU
-Qz
-aQ
-aQ
-aU
+aW
+aG
+aW
+aT
+rP
+wN
+bs
+aT
 aD
 aD
 aD
 aD
-Zh
-aD
-aD
-aD
-aD
-aD
-mI
-aD
-aD
-zp
-zp
+GD
 aD
 aD
 aD
 aD
 aD
+DX
+aD
+aD
+Zo
+Zo
 aD
 aD
 aD
-Zh
 aD
 aD
 aD
 aD
+aD
+GD
+aD
+aD
+aD
+aD
+aX
+aT
+aT
+at
+aT
+aT
+aT
 af
-aU
-aU
+af
+ao
+af
+af
+af
+af
 aM
-aU
-aU
-aU
-av
-an
-aP
-an
-an
-an
-an
-yR
-an
-iS
+af
+sQ
 aU
 "}
 (29,1,1) = {"
 aU
-cs
+rJ
+EC
+aX
+aW
+aG
+aW
+aT
+Ee
+uD
+Ee
+aT
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+pl
+PO
+PO
+PO
+PO
+pl
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+HU
+aD
+aD
+aD
+aX
+nD
+ai
+ai
+QP
+jg
 aT
 af
-aX
-aR
-ax
-aU
-ra
-AK
-ra
-aU
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-GD
-pl
-pl
-pl
-pl
-GD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-rk
-aD
-aD
-aD
 af
-QP
-ae
-ae
-gU
-AG
-aU
-av
-an
-an
-an
-an
-an
-Oe
-Mh
-Mh
-Mh
+af
+af
+af
+af
+af
+st
+st
+st
 aU
 "}
 (30,1,1) = {"
 aU
-aT
-Lc
 af
+iD
 aX
-aw
+aW
 ax
-aR
-Ee
-aQ
-rP
-aU
-Zo
-aD
-aD
-aD
-aD
-aD
+aW
+aW
+QU
+aW
+kH
+aT
 yO
 aD
 aD
 aD
 aD
-pl
-Tk
-Tk
-Tk
-Tk
-pl
+aD
+kc
+aD
+aD
+aD
+aD
+PO
+UF
+UF
+UF
+UF
+PO
 aD
 aD
 aD
@@ -3016,221 +3112,179 @@ aD
 aD
 aD
 aD
-mI
+DX
 aD
 aD
-af
+aX
+Uc
 Bs
+ZF
+ai
 IO
+aT
+af
 ae
 ae
-nD
-aU
-av
-sQ
-sQ
-sQ
-sQ
-sQ
-sQ
-iX
-iX
-iX
+ae
+ae
+ae
+ae
+uH
+uH
+uH
 aU
 "}
 (31,1,1) = {"
 aU
-Nw
 UG
-af
+ae
 aX
-aR
-ax
-aR
-UG
-Oz
-UG
-aU
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-pl
-Tk
-Tk
-Tk
-Tk
-pl
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-af
+aW
+aG
+aW
+aW
+aG
+dp
+aG
+aT
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+PO
+UF
+UF
+UF
+UF
+PO
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+aX
+VH
+Bs
+en
+en
 Lf
-IO
+aT
+vz
 ae
 ae
-Uc
-aU
+ae
+ae
+ae
+ae
+uH
+uH
 kL
-uH
-uH
-uH
-uH
-uH
-uH
-iX
-iX
-st
 aU
 "}
 (32,1,1) = {"
 aU
-Nw
 UG
-af
-aX
-aR
-ax
-aR
-UG
-lI
-UG
-aU
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-pl
-Tk
-Tk
-Tk
-Tk
-pl
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-zp
-af
-Lf
-IO
-gz
 ae
+aX
+aW
+aG
+aW
+aW
+aG
+EO
+aG
+aT
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+PO
+UF
+UF
+UF
+UF
+PO
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+Zo
+aX
 VH
-aU
-kL
+Bs
+en
+en
+gz
+aT
+vz
+ae
+ae
+ae
+ae
+ae
+ae
 uH
 uH
 uH
-uH
-uH
-uH
-iX
-iX
-iX
 aU
 "}
 (33,1,1) = {"
 aU
-aT
-Lc
 af
+iD
 aX
-aw
+aW
 ax
-aR
-Ee
-aQ
-rP
-aU
-Zo
-aD
-mI
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-pl
-Tk
-Tk
-Tk
-Tk
-pl
-aD
-aD
-aD
-aD
+aW
+aW
+QU
+aW
+kH
+aT
 yO
 aD
+DX
 aD
 aD
 aD
 aD
 aD
-af
-pw
-IO
-ae
-ae
-BI
-aU
-av
-ZS
-ZS
-ZS
-ZS
-ZS
-ZS
-vz
-vz
-vz
-aU
-"}
-(34,1,1) = {"
-aU
-cs
-aT
-af
-aX
-aR
-ax
-aU
-ra
-AK
-ra
-aU
+aD
+aD
+aD
+PO
+UF
+UF
+UF
+UF
+PO
+aD
 aD
 aD
 aD
@@ -3241,117 +3295,159 @@ aD
 aD
 aD
 aD
-aD
-GD
-pl
-pl
-pl
-pl
-GD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
+aX
+pw
+Bs
+ai
+ai
+BI
+aT
 af
-QP
 ae
 ae
+ae
+ae
+ae
+ae
+ZS
+ZS
+ZS
+aU
+"}
+(34,1,1) = {"
+aU
+rJ
+EC
+aX
+aW
+aG
+aW
+aT
+Ee
+uD
+Ee
+aT
+aD
+aD
+aD
+rF
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+pl
+PO
+PO
+PO
+PO
+pl
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aX
+nD
+ai
 nG
 cZ
-aU
-av
-an
-an
-an
-an
-an
-Oe
-yR
-an
+AG
+aT
+af
+af
+af
+af
+af
+af
+af
+aM
+af
 lJ
 aU
 "}
 (35,1,1) = {"
 aU
-Ra
-UG
-af
+Gn
+ae
 aX
-aR
-ax
-aU
-tp
-aQ
-aQ
-aU
+aW
+aG
+aW
+aT
+wN
+qQ
+gN
+aT
 aD
 aD
 aD
 aD
-Zh
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-zp
-zp
-aD
-aD
-mI
+GD
 aD
 aD
 aD
 aD
 aD
-Zh
+aD
+aD
+aD
+Zo
+Zo
+aD
+aD
+DX
 aD
 aD
 aD
 aD
-af
-aU
-aU
+aD
+GD
+aD
+aD
+aD
+aD
+aX
+aT
+aT
 aV
-aU
-aU
-aU
-av
-an
-an
-an
-an
-an
-an
-an
-an
-an
+aT
+aT
+aT
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
 aU
 "}
 (36,1,1) = {"
 aU
-cs
-aT
+rJ
 af
 aX
-aR
-ax
-aL
-qQ
-aQ
-tl
+aW
+aG
+aW
+aa
+yZ
+iC
+Qz
 az
-UF
+fU
 aD
 aD
 aD
@@ -3362,14 +3458,12 @@ aD
 aD
 aD
 aD
-PO
+xA
 aD
-zp
-zp
+Zo
+Zo
 aD
-PO
-aD
-aD
+xA
 aD
 aD
 aD
@@ -3379,38 +3473,100 @@ aD
 aD
 aD
 aD
+aD
+aD
+aX
+QA
+KK
+ZF
+KK
+TF
+aT
 af
-fo
-VU
-lC
-VU
-Wv
-aU
-av
-an
-an
-aU
-an
-an
-aU
-an
-an
+af
+af
+aT
+af
+af
+aT
+af
+af
 aB
 aU
 "}
 (37,1,1) = {"
 aU
-rP
-Hb
-af
+NK
+ae
 aX
-aR
-ax
+aW
+aG
+aW
+aL
+rP
+Ib
+me
+aT
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+Zo
+Zo
+aD
+aD
+aD
+aD
+aD
+aD
+HU
+aD
+aD
+aD
+aD
+aD
+aD
+aX
+en
+Dp
+iB
+Dp
+QA
+aV
+ag
+af
+af
+af
+af
+af
+af
+af
+af
+aM
 aU
-Qz
-aQ
-aQ
+"}
+(38,1,1) = {"
 aU
+aT
+aT
+aT
+aW
+aG
+aW
+aT
+Ee
+Ee
+Ee
+aT
 aD
 aD
 aD
@@ -3418,119 +3574,59 @@ aD
 aD
 aD
 aD
-aD
-aD
-aD
-aD
-aD
-aD
-zp
-zp
-aD
-aD
-aD
-aD
+Ru
 aD
 aD
 rk
 aD
 aD
+Zo
+Zo
+aD
+aD
+rk
+aD
+aD
+Ru
 aD
 aD
 aD
 aD
-af
-qt
-ZF
+aD
+aD
+mI
+aT
+gU
 Wv
-ZF
-Dp
-aU
-aj
-an
-an
-an
-an
-an
-an
-an
-an
-aq
-aU
-"}
-(38,1,1) = {"
-aU
-aU
-aU
-aU
-aX
-aR
-ax
-aU
-ra
-ra
-ra
-aU
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-rF
-aD
-aD
-Ru
-aD
-aD
-zp
-zp
-aD
-aD
-Ru
-aD
-aD
-rF
-aD
-aD
-aD
-aD
-aD
-aD
-fU
-aU
-fo
-ZF
-at
-ZF
+iB
+Wv
 Me
-aU
-av
-an
-an
+aT
+af
+af
+af
 al
-an
-an
+af
+af
 al
-an
-an
-aZ
+af
+af
+aI
 aU
 "}
 (39,1,1) = {"
 aU
 aU
 aU
-aU
+aT
+aF
+aG
 aW
-aR
-ax
-aU
-tp
-aQ
-aQ
-aU
+aL
+wN
+qQ
+lb
+aT
 aD
 aD
 aD
@@ -3538,20 +3634,20 @@ aD
 aD
 aD
 aD
-rF
-rF
+Ru
+Ru
 aD
 aD
 aD
 aD
-zp
-zp
+Zo
+Zo
 aD
 aD
 aD
 aD
-rF
-rF
+Ru
+Ru
 aD
 aD
 aD
@@ -3559,22 +3655,22 @@ aD
 aD
 aD
 aD
+aX
+VU
+Dp
+AG
+Wv
+jg
+aT
 af
-QA
-ZF
-at
-ZF
-JB
-aU
-av
-an
-an
-aU
-an
-an
-aU
-an
-an
+af
+af
+aT
+af
+af
+aT
+af
+af
 aC
 aU
 "}
@@ -3582,20 +3678,78 @@ aU
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aL
-qQ
-zH
-tl
+aT
+aW
+ab
+aW
+aa
+ra
+iC
+Qz
 az
-UF
+fU
 aD
 aD
 aD
 aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+rF
+Zo
+Zo
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aX
+ZF
+Wv
+iB
+Wv
+fo
+aT
+af
+yR
+af
+aI
+af
+af
+af
+af
+af
+aC
+aU
+"}
+(41,1,1) = {"
+aU
+aU
+aU
+aT
+aW
+aG
+aW
+aT
+rP
+Bv
+vL
+aT
+aD
+aD
+zp
 aD
 aD
 aD
@@ -3604,97 +3758,39 @@ aD
 aD
 aD
 kc
+aD
+aD
+Zo
+Zo
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
 zp
-zp
 aD
 aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-af
-fo
-ZF
-uF
-ZF
-at
-aU
-av
-zA
-an
-aZ
-an
-an
-an
-an
-an
-aC
-aU
-"}
-(41,1,1) = {"
-aU
-aU
-aU
-aU
 aX
-aR
-ax
-aU
-Qz
-aQ
-aQ
-aU
-aD
-aD
-QH
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-yO
-aD
-aD
-zp
-zp
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-QH
-aD
-aD
+qt
+JB
+iB
+JB
+Me
+aT
 af
-fo
-ho
-at
-ho
-at
-aU
-av
-yX
-an
+Mh
+af
 aC
-an
-aP
-an
-an
-an
+af
+ao
+af
+af
+af
 aC
 aU
 "}
@@ -3702,20 +3798,31 @@ aU
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-ra
-ra
-ra
-aU
+aT
+aW
+aG
+aW
+aT
+Ee
+Ee
+Ee
+aT
+yO
+aD
+QH
+zp
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+Zo
 Zo
 aD
-DX
-QH
-aD
 aD
 aD
 aD
@@ -3725,53 +3832,57 @@ aD
 aD
 aD
 zp
-zp
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
 QH
-DX
 aD
 aD
+aX
+QA
+ai
+en
+qt
+ZF
+ae
 af
-fo
-at
-at
-at
-at
-aJ
-av
-yX
-aK
+Mh
+ap
 aC
-an
-an
-an
-an
-an
-ah
+af
+af
+af
+af
+af
+ac
 aU
 "}
 (43,1,1) = {"
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-tp
-aQ
-aQ
-aU
+aT
+aW
+aG
+aW
+aT
+wN
+qQ
+KF
+aT
 aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+DX
+UF
+UF
+UF
 aD
 aD
 aD
@@ -3784,37 +3895,22 @@ aD
 aD
 aD
 mI
-Tk
-Tk
-Tk
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-fU
-aU
-fo
-at
+aT
 en
-at
-at
-aJ
-av
-yX
-an
+ZF
+uF
+ai
+ai
+ae
+af
+Mh
+af
 aC
-an
-an
-an
-an
-an
+af
+af
+af
+af
+af
 aC
 aU
 "}
@@ -3822,32 +3918,32 @@ aU
 aU
 aU
 aU
-aU
-aX
-aF
-ax
-aL
-qQ
-aQ
-tl
+aT
+aW
+aR
+aW
+aa
+BO
+iC
+Qz
 az
+fU
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+tk
+Zp
 UF
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-xA
+UF
+Zp
 tk
-Tk
-Tk
-tk
-xA
 aD
 aD
 aD
@@ -3859,22 +3955,22 @@ aD
 aD
 aD
 aD
-af
-qt
-VU
-at
-VU
-JB
-aU
-aj
-tE
-eM
+aX
+ho
+KK
+iB
+KK
+fo
+aV
+ag
+iX
+iS
 ay
-an
-an
-an
-an
-an
+af
+af
+af
+af
+af
 ay
 aU
 "}
@@ -3882,130 +3978,131 @@ aU
 aU
 aU
 aU
-aU
+aT
+aW
+aG
+aW
+aL
+rP
+BO
+On
+aT
+aD
+aD
+aD
+aD
+aD
+tp
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+rK
+rK
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+tp
+aD
+aD
+aD
+aD
+aD
 aX
-aR
-ax
-aU
-Qz
-aQ
-aQ
-aU
-aD
-aD
-aD
-aD
-aD
-Zp
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-TW
-TW
-aD
-aD
-aD
-aD
-aD
-aD
-aD
-Zp
-aD
-aD
-aD
-aD
-aD
-af
-fo
-ho
-at
-ho
+VU
+JB
 iB
-aU
-av
-an
-an
-an
-an
-an
-an
-an
-an
-an
+JB
+TF
+aT
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
 aU
 "}
 (46,1,1) = {"
 aU
 aU
 aU
+aT
+aW
+aG
+aW
+aT
+aT
+aT
+aT
 aU
-aX
-aR
-ax
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aA
-aA
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-av
-an
-an
-an
-an
-an
-an
-an
-an
-an
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+au
+au
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
 aU
 "}
 (47,1,1) = {"
 aU
 aU
 aU
-aU
+aT
+aF
+aG
 aW
-aR
-ax
+aT
 aU
 aU
 aU
@@ -4016,45 +4113,44 @@ aU
 aU
 aU
 aU
-aU
-aU
-Kw
-vA
-aQ
-ga
-aQ
-ga
-iC
-iC
-ga
+aT
+YI
+Ve
 aQ
 aQ
-ga
-oe
-aU
-an
-an
-Qe
-an
+aQ
+sf
+fp
+fp
+sf
+aQ
+aQ
+aQ
+py
+aT
 al
-aU
+af
+Xa
+af
+sg
 aT
+al
+af
+ad
+af
+ao
+af
+aq
 aT
-aT
-aT
-aT
-Wm
-Yv
-aU
-as
-ar
-an
-an
-an
-an
-an
-an
-an
+af
+af
+af
+af
+aM
+aB
+af
+af
+aq
 al
 aU
 "}
@@ -4062,13 +4158,11 @@ aU
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-aU
-aU
+aT
+aW
+aG
+aW
+aT
 aU
 aU
 aU
@@ -4078,57 +4172,57 @@ aU
 aU
 aU
 aU
-vA
-aQ
-aQ
-aQ
-aQ
-qZ
-aQ
-aQ
+aU
+aT
 Ve
+FR
+aQ
+lb
+iC
+Fd
+bs
+bs
+FR
+yZ
+aQ
+aQ
 gN
-aQ
-aQ
-Ll
-aU
-Xa
+aT
+gm
+Ax
+af
+Ax
 sg
-an
-sg
-an
-aU
-ZB
-Hb
 aT
-aT
-aT
-aT
-aT
-aU
+Iw
+aJ
 av
-an
-an
-ac
+af
+af
+NS
+af
+aT
+ag
 aK
 ap
-an
-an
-an
-aZ
+aJ
+aq
+af
+av
+af
+af
+aI
 aU
 "}
 (49,1,1) = {"
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-aU
-aU
+aT
+aW
+aG
+aW
+aT
 aU
 aU
 aU
@@ -4138,43 +4232,45 @@ aU
 aU
 aU
 aU
-Kw
-aQ
-bs
-aQ
-Sb
-qZ
-aQ
-aQ
-Ve
-aQ
-py
-aQ
+aU
+aT
 Ll
-aU
-gm
-Ax
-an
-Ax
-an
-aU
+aQ
+JS
+aQ
+BO
+Fd
+bs
+bs
+FR
+aQ
+QW
+yZ
+yZ
 aT
+Oo
+lA
+af
+lA
+ae
 aT
-uI
-Uk
-iI
-aT
-Hb
+Iw
+af
+BT
+aJ
+tV
+wQ
+ao
 aV
-av
-an
-an
-ac
+ao
+af
 aO
-ap
-an
-an
-an
+af
+af
+aP
+ah
+aJ
+ao
 aC
 aU
 "}
@@ -4182,13 +4278,11 @@ aU
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-aU
-aU
+aT
+aW
+aG
+aW
+aT
 aU
 aU
 aU
@@ -4198,114 +4292,117 @@ aU
 aU
 aU
 aU
-bY
+aU
+aT
+Nn
+XM
+Rw
+iC
 aQ
+Fd
+bs
 TV
-aQ
-aQ
-qZ
-aQ
-aQ
-Ve
-aQ
-QW
-aQ
+FR
+iC
 qJ
-aU
-an
-an
-an
-an
-an
-aU
-TF
+ga
+vH
 aT
-uI
-rI
-iI
+CY
+af
+ae
+af
+sg
 aT
+Yv
+aJ
+aO
+EC
+af
+ar
+aM
 aT
-aU
-av
-an
-aP
-an
-an
-an
-an
-an
-an
-aC
+af
+af
+ao
+af
+ao
+af
+aO
+ao
+af
+ac
 aU
 "}
 (51,1,1) = {"
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-Kw
-aQ
-TV
-aQ
-aQ
-qZ
-aQ
-aQ
-Ve
-aQ
-QW
-aQ
-Ji
-aU
-lA
-an
-Oe
-an
-an
-aU
-KK
 aT
-aT
-aT
-aT
-aT
+aW
+aG
+aW
 aT
 aU
-av
-an
-an
-an
-an
-an
-an
-an
-an
-ah
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aT
+Nn
+JS
+Rw
+aQ
+aQ
+Fd
+bs
+bs
+FR
+aQ
+qJ
+aQ
+sE
+aT
+RW
+Hi
+ae
+ao
+af
+aT
+Iw
+EC
+ao
+af
+af
+af
+EC
+aT
+af
+af
+af
+af
+af
+af
+af
+af
+aP
+aC
 aU
 "}
 (52,1,1) = {"
 aU
 aU
 aU
-aU
-aF
+aT
 aR
-ax
+aG
+aW
+aT
 aU
 aU
 aU
@@ -4316,59 +4413,56 @@ aU
 aU
 aU
 aU
-aU
-aU
-fp
-aQ
-TV
-gN
-aQ
-qZ
-aQ
-aQ
-Ve
-aQ
-QW
-aQ
+aT
 Nn
-aU
-an
-Oo
-an
-an
-an
-aU
+Rw
+Rw
+BO
+aQ
+Fd
+bs
+bs
+FR
+jf
+qJ
+lb
+vA
 aT
+oe
+af
+af
+af
+aB
 aT
-aT
-aT
-aT
-nZ
-aT
-aJ
-av
-an
-an
+ZB
+af
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
+ae
 ep
 ep
 ep
 ep
 ep
-ep
-aC
+af
+ay
 aU
 "}
 (53,1,1) = {"
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-aU
-aU
+aT
+aW
+aG
+aW
+aT
 aU
 aU
 aU
@@ -4378,54 +4472,56 @@ aU
 aU
 aU
 aU
-fp
+aU
+aT
+Nn
+jf
+Rw
 aQ
-TV
+yZ
+Fd
+bs
+bs
+FR
+XM
+qJ
 aQ
-gN
-qZ
-aQ
-aQ
-Ve
-aQ
-QW
-Sb
-Ji
-aU
-Xa
-an
-an
-an
-CY
-aU
+vA
 aT
+gm
+af
+ao
+af
+af
 aT
-aT
-aT
-aT
-aT
-aT
+Iw
 aJ
-av
-aJ
-an
-bD
+af
+af
+af
+af
+ae
+ae
+ae
+ae
+ae
+WP
 Hk
 bw
-bD
 WP
 bD
-aC
-aV
+fL
+aB
+aY
 "}
 (54,1,1) = {"
 aU
 aU
 aU
-aU
-aX
-aR
-ax
+aT
+aW
+aG
+aW
 aV
 aU
 aU
@@ -4437,55 +4533,56 @@ aU
 aU
 aU
 aU
-aU
-fp
-zH
-TV
+aT
+Nn
 aQ
+Rw
+XM
 aQ
-qZ
+Fd
+bs
+bs
+FR
 aQ
+qJ
 aQ
-Ve
-aQ
-QW
-aQ
-wN
-aU
+lb
+aT
+sK
+lk
+af
+Lw
 Hi
-an
-Oe
-aP
-CY
 aV
-ZB
-Hb
-uI
-Uk
-iI
-aT
-aT
-aU
+Iw
+aJ
 av
-an
-an
-an
-an
-an
-an
-an
-an
-ay
+EC
+iI
+af
+ao
+aT
+yX
+af
+af
+af
+af
+af
+af
+af
+af
+aI
 aU
 "}
 (55,1,1) = {"
 aU
 aU
 aU
-aU
+aT
+aF
+aG
 aW
-aR
-ax
+aT
 aU
 aU
 aU
@@ -4496,165 +4593,164 @@ aU
 aU
 aU
 aU
-aU
-aU
-fp
+aT
+Nn
+yZ
+Rw
 aQ
+XM
+Fd
 TV
-aQ
-aQ
-qZ
-aQ
-aQ
-YI
-aQ
-QW
-aQ
+bs
+FR
+BO
+qJ
+BO
 wN
-aU
-an
-an
-an
-an
-an
-aU
 aT
+sK
+lk
+af
+ZU
+af
 aT
-uI
-rI
-iI
+yX
+EC
+BT
+aJ
+Uk
+aJ
+af
 aT
-nZ
-aU
-aj
-an
-an
 bP
-an
-an
-an
-bP
-an
-aB
+af
+af
+af
+yX
+ar
+yX
+ar
+af
+aC
 aU
 "}
 (56,1,1) = {"
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-fp
-aQ
-lb
-aQ
-aQ
-qZ
-aQ
-aQ
-Ve
-aQ
-yZ
-aQ
-Ji
-aU
-RW
-an
-an
-an
-RW
-aU
-ZB
-Hb
 aT
-aT
-aT
-aT
+aW
+aG
+aW
 aT
 aU
-av
-an
-an
-an
-an
-an
-an
-an
-an
-aq
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aT
+Nn
+wN
+jf
+ER
+aQ
+Fd
+bs
+TV
+FR
+aQ
+Kw
+aQ
+wN
+aT
+sg
+Hi
+af
+af
+sg
+aT
+Iw
+ao
+aO
+EC
+uI
+aB
+ar
+aV
+bP
+XC
+yX
+bP
+af
+af
+af
+yX
+aM
+ay
 aU
 "}
 (57,1,1) = {"
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-oe
-FR
-Fd
-Fd
-ZU
-ZU
-sK
-sK
-FR
-Fd
-Fd
-FR
-oe
-aU
-an
-an
-an
-an
-an
-aU
 aT
-aT
-aT
-aT
-aT
-BT
+aW
+aG
+aW
 aT
 aU
-av
-an
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aT
+py
+aQ
+qZ
+aQ
+vH
+vH
+bs
+bs
+qZ
+On
+aQ
+aQ
+py
+aT
+af
+af
+af
+Rm
+al
+aT
+al
+af
+af
+af
 SB
-an
-an
-an
-an
-an
-XC
+rI
+af
+aT
+al
+SB
+af
+SB
+af
+af
+SB
+af
+af
 al
 aU
 "}
@@ -4662,117 +4758,117 @@ aU
 aU
 aU
 aU
-aU
-aX
-aR
-ax
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
+aT
+aW
+aG
+aW
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
 aV
-aU
-aL
-aL
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-ai
-aU
-aU
-aU
-aU
-aU
-aU
+aT
 aV
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aU
-aR
-aR
-aU
-aU
-aU
-aU
+aT
+aa
+aa
+aT
+aT
+aV
+aT
+aT
+aT
+aT
+aT
+aS
+aT
+aT
+aT
+aT
+aT
+aT
+aV
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aW
+aW
+aT
+aT
+aT
+aT
 aU
 "}
 (59,1,1) = {"
 aU
 aU
 aU
-aU
-aX
+aT
+aW
+aG
+aW
+aW
+aW
+aW
 aR
-ax
-aa
-aa
-aa
-aF
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aF
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aa
-aU
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aR
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aT
 aU
 aU
 aU
@@ -4782,57 +4878,57 @@ aU
 aU
 aU
 aU
-aU
-aX
+aT
+aW
+aw
+aW
 aG
-ax
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+ab
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+aG
+ab
+aG
+aG
+aG
+aG
+aG
 aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aR
-aF
-aR
-aR
-aR
-aU
+aG
+aG
+aG
+aT
 aU
 aU
 aU
@@ -4842,57 +4938,57 @@ aU
 aU
 aU
 aU
-aU
-aX
+aT
+aW
+aG
+aN
+aH
+aW
+aW
+aW
+aW
+aN
+aW
+aW
+aW
+aW
+aW
+aN
+aW
+aW
+aE
+aW
+aW
+aN
 aR
-ak
+aW
+aW
+aW
+aW
 aN
-aH
-aH
-aH
-aH
-ak
-aH
-aH
-aH
-aH
-aH
-ak
-aH
-aH
-aY
-aH
-aH
-ak
-aF
-aH
-aH
-aH
-aH
-ak
-aH
-aH
-aH
-aH
-aH
-ak
-aH
-aH
-aY
-aH
-aH
-ak
-aH
-aH
-aH
-aH
-aH
-ak
-aH
+aW
+aW
+aW
+aW
+aW
+aN
+aW
+aW
+aE
+aW
+aW
+aN
+aW
+aW
+aW
+aW
+aW
+aN
+aW
+aW
 aH
 aN
-ak
-aU
+aT
 aU
 aU
 aU
@@ -4912,7 +5008,7 @@ aU
 aU
 aU
 aU
-aV
+aY
 aU
 aU
 aU
@@ -4924,7 +5020,7 @@ aU
 aU
 aU
 aU
-aV
+aY
 aU
 aU
 aU
@@ -4936,7 +5032,7 @@ aU
 aU
 aU
 aU
-aV
+aY
 aU
 aU
 aU
@@ -4948,7 +5044,7 @@ aU
 aU
 aU
 aU
-aV
+aY
 aU
 aU
 aU
