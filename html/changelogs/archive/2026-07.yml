@@ -548,3 +548,21 @@
   lelandkemble:
   - rscadd: Added craftable anti-mech tripwires. A mech that foolishly steps on one
       will fall down and be immobilized temporarily. Don't let it fall on you!
+2026-07-18:
+  CabinetOnFire, Iamgoofball, SmartKar, Ben10omintrix:
+  - refactor: Replaces our AI system with behavior trees, porting all datum/ai to
+      it
+  Ghommie:
+  - balance: humanized monkeys (that were born as monkeys) should have their primitive
+      ape brain untouched (not an advanced tool user unless they have the clever trait).
+  Melbert:
+  - rscadd: Adds anomalous lure hook, a fishing hook which accepts (almost) any type
+      of anomaly core, causing unique effects depending on the core used.
+  - rscdel: Material fishing rods no longer innately catch material fish, you need
+      a dimensional anomaly core in an anomalous lure hook to catch material fish
+      now.
+  lelandkemble:
+  - bugfix: Wumborian Fugu floats
+  nPocToDark:
+  - rscadd: Curse of Ra is back. Now you can buy some pharaon costumes in DeusVend
+      (premium)
