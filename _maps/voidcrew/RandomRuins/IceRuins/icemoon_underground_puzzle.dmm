@@ -3,19 +3,19 @@
 /turf/template_noop,
 /area/template_noop)
 "b" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "e" = (
 /obj/effect/zone_mobs/cult,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "d" = (
 /obj/structure/closet/crate/zone_loot/occult,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "c" = (
 /obj/effect/sliding_puzzle/lavaland,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 
 (1,1,1) = {"

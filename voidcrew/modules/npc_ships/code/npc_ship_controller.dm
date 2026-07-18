@@ -266,30 +266,15 @@
 	clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
 	clear_blackboard_key("hailing_reminder_sent")
 
-	// Stop the holopad ringing on target ship
+	// Stop the holopads ringing on target ship
 	if(target && !QDELETED(target))
-		var/obj/machinery/holopad/ship_comms/holopad = find_ship_comms_holopad(target)
-		holopad?.stop_ringing()
+		target.stop_hail_ringing()
 
 	// Announce to pirate ship
 	our_ship?.ship_notify("Target is crossing zones. Hail cancelled.", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 	// Clear target and return to idle
 	clear_target()
-
-/**
- * Find the ship comms holopad on a ship.
- */
-/datum/ai_controller/npc_ship/proc/find_ship_comms_holopad(obj/structure/overmap/ship/target)
-	if(!target?.shuttle?.shuttle_areas)
-		return null
-
-	for(var/area/shuttle_area as anything in target.shuttle.shuttle_areas)
-		var/obj/machinery/holopad/ship_comms/found = locate() in shuttle_area
-		if(found)
-			return found
-
-	return null
 
 /**
  * Handle player aggression during HAILING or NEGOTIATING phase.

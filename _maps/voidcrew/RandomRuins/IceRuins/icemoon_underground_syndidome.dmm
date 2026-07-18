@@ -168,7 +168,7 @@
 	pixel_x = -6;
 	pixel_y = -8
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "bK" = (
 /obj/effect/decal/cleanable/blood/footprints{
@@ -197,7 +197,7 @@
 /area/ruin/syndibiodome)
 "ck" = (
 /obj/structure/flora/tree/pine/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "cm" = (
 /obj/effect/decal/cleanable/dirt,
@@ -283,7 +283,7 @@
 /area/ruin/syndibiodome)
 "cO" = (
 /obj/structure/flora/tree/pine/style_2,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "di" = (
 /obj/effect/turf_decal/weather/dirt{
@@ -417,7 +417,7 @@
 	pixel_x = 4;
 	pixel_y = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "fO" = (
 /obj/structure/flora/bush/flowers_pp/style_3,
@@ -520,7 +520,7 @@
 "ha" = (
 /obj/machinery/exoscanner,
 /obj/structure/lattice/catwalk,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "he" = (
 /obj/effect/turf_decal/siding/wood/corner{
@@ -789,7 +789,7 @@
 	pixel_x = -7;
 	pixel_y = 9
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "jT" = (
 /obj/structure/mirror/directional/east,
@@ -1203,7 +1203,7 @@
 "pg" = (
 /obj/structure/lattice,
 /obj/structure/minecart_rail,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "pj" = (
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
@@ -1560,7 +1560,7 @@
 /obj/structure/fluff/tram_rail/end{
 	dir = 4
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "uE" = (
 /obj/structure/table/reinforced/plastitaniumglass,
@@ -1834,7 +1834,7 @@
 /area/ruin/syndibiodome)
 "wQ" = (
 /obj/effect/decal/cleanable/blood/drip,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "wR" = (
 /obj/effect/mob_spawn/corpse/human/geneticist,
@@ -1987,7 +1987,7 @@
 	pixel_x = 1;
 	pixel_y = 6
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "xP" = (
 /obj/effect/turf_decal/tile/dark/opposingcorners{
@@ -2051,7 +2051,7 @@
 /turf/open/floor/iron/dark/small,
 /area/ruin/syndibiodome)
 "ys" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "yt" = (
 /obj/structure/table/wood,
@@ -2125,7 +2125,7 @@
 /area/ruin/syndibiodome)
 "zd" = (
 /obj/structure/fluff/tram_rail/end,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "ze" = (
 /obj/effect/turf_decal/siding/wood{
@@ -2157,7 +2157,7 @@
 /obj/effect/decal/cleanable/blood/footprints{
 	dir = 2
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "zD" = (
 /obj/effect/turf_decal/weather/snow/corner,
@@ -2269,7 +2269,7 @@
 	pixel_x = 7;
 	pixel_y = -9
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "AV" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
@@ -2683,7 +2683,7 @@
 /turf/open/floor/wood,
 /area/ruin/syndibiodome)
 "Gr" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/template_noop)
 "Gx" = (
 /obj/structure/fluff/tram_rail/end{
@@ -2693,7 +2693,7 @@
 	pixel_x = 6;
 	pixel_y = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "Gz" = (
 /obj/machinery/door/airlock/freezer{
@@ -2732,7 +2732,7 @@
 	pixel_x = 1;
 	pixel_y = -3
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "Hp" = (
 /obj/effect/turf_decal/siding/wood{
@@ -3146,7 +3146,7 @@
 /area/ruin/syndibiodome)
 "LN" = (
 /obj/structure/marker_beacon/burgundy,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "LR" = (
 /obj/effect/turf_decal/trimline/dark_red/warning{
@@ -3337,7 +3337,7 @@
 /area/ruin/syndibiodome)
 "Nl" = (
 /obj/machinery/light/warm/dim/directional/west,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/ruin/syndibiodome)
 "No" = (
 /obj/structure/table/reinforced,
@@ -3683,7 +3683,7 @@
 	pixel_x = 1;
 	pixel_y = 6
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "RX" = (
 /obj/effect/turf_decal/siding/wideplating/dark,
@@ -4058,7 +4058,7 @@
 /area/icemoon/surface/outdoors/noteleport)
 "UI" = (
 /obj/item/flashlight/lantern/on,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "UK" = (
 /obj/structure/table/reinforced/plastitaniumglass,
@@ -4095,7 +4095,7 @@
 /obj/structure/fluff/tram_rail/electric/anchor{
 	dir = 1
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "UW" = (
 /obj/effect/turf_decal/siding/wood/end{
@@ -4145,7 +4145,7 @@
 /area/ruin/syndibiodome)
 "VG" = (
 /obj/machinery/light/warm/directional/east,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/ruin/syndibiodome)
 "VJ" = (
 /obj/effect/decal/cleanable/blood/trail_holder{
@@ -4197,11 +4197,11 @@
 	pixel_x = -15;
 	pixel_y = -12
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "Wz" = (
 /obj/structure/fluff/tram_rail/electric/anchor,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "WB" = (
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
@@ -4241,7 +4241,7 @@
 /area/ruin/syndibiodome)
 "Xa" = (
 /obj/effect/decal/cleanable/blood/footprints,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/noteleport)
 "Xt" = (
 /obj/effect/turf_decal/weather/dirt{

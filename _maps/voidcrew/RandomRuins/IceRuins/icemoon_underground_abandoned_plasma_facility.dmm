@@ -17,7 +17,7 @@
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/smart/simple/general/hidden,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "ao" = (
 /obj/effect/decal/cleanable/dirt,
@@ -39,17 +39,17 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "az" = (
 /obj/structure/railing/corner{
 	dir = 8
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "aL" = (
 /obj/structure/fence/cut/medium,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "aM" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -128,7 +128,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /mob/living/basic/skeleton/plasmaminer/jackhammer,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "bX" = (
 /obj/structure/chair/stool/directional/south,
@@ -175,7 +175,7 @@
 /area/ruin/plasma_facility/operations)
 "cM" = (
 /obj/structure/fence,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "dc" = (
 /obj/structure/cable,
@@ -191,7 +191,7 @@
 /area/ruin/plasma_facility/commons)
 "dr" = (
 /obj/structure/lattice,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "dx" = (
 /obj/item/chair,
@@ -207,7 +207,7 @@
 /mob/living/simple_animal/hostile/asteroid/polarbear{
 	name = "Baloo"
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "dG" = (
 /obj/structure/table_frame,
@@ -224,7 +224,7 @@
 /obj/structure/railing/corner{
 	dir = 4
 	},
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "dQ" = (
 /obj/structure/bed,
@@ -241,7 +241,7 @@
 /area/ruin/plasma_facility/commons)
 "dR" = (
 /obj/structure/lattice/catwalk,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "dU" = (
 /obj/structure/fluff/tram_rail{
@@ -251,7 +251,7 @@
 /obj/structure/marker_beacon/burgundy{
 	name = "landing marker"
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "dV" = (
 /obj/structure/cable,
@@ -276,11 +276,11 @@
 /area/ruin/plasma_facility/commons)
 "ed" = (
 /obj/machinery/atmospherics/components/tank/plasma,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/ruin/plasma_facility/operations)
 "ev" = (
 /obj/structure/window/reinforced/unanchored/spawner/directional/north,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "eC" = (
 /obj/structure/cable,
@@ -294,7 +294,7 @@
 /area/icemoon/underground/explored)
 "eH" = (
 /obj/structure/fence/cut/large,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "eM" = (
 /obj/structure/window/reinforced/spawner/directional/south,
@@ -322,30 +322,30 @@
 /area/ruin/plasma_facility/commons)
 "eX" = (
 /obj/structure/bonfire,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "fx" = (
 /obj/machinery/light/small/built/directional/west,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/ruin/plasma_facility/operations)
 "fJ" = (
 /obj/structure/fence/corner{
 	dir = 1
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "fN" = (
 /obj/structure/railing/corner{
 	dir = 4
 	},
 /mob/living/basic/mimic/crate,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "fO" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/railing,
 /obj/machinery/portable_atmospherics/canister/water_vapor,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "fP" = (
 /obj/structure/fluff/tram_rail/end{
@@ -355,11 +355,11 @@
 /obj/structure/fluff/tram_rail/end{
 	dir = 4
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "gd" = (
 /mob/living/basic/mining/wolf,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "gj" = (
 /obj/structure/closet/emcloset,
@@ -371,7 +371,7 @@
 /obj/structure/railing{
 	dir = 1
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "go" = (
 /obj/machinery/conveyor{
@@ -453,7 +453,7 @@
 	name = "Feed to Mining"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "hB" = (
 /obj/effect/decal/cleanable/dirt,
@@ -465,7 +465,7 @@
 /obj/effect/turf_decal/box/corners{
 	dir = 1
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "hK" = (
 /obj/item/cigbutt/cigarbutt,
@@ -489,7 +489,7 @@
 /obj/structure/railing/corner{
 	dir = 1
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "hV" = (
 /obj/structure/window/reinforced/spawner/directional/west,
@@ -521,11 +521,11 @@
 /obj/structure/marker_beacon/burgundy{
 	name = "landing marker"
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "ie" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "if" = (
 /obj/effect/decal/cleanable/dirt,
@@ -536,7 +536,7 @@
 /obj/structure/fence/corner{
 	dir = 9
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "ij" = (
 /obj/structure/lattice/catwalk,
@@ -546,7 +546,7 @@
 /obj/structure/railing/corner{
 	dir = 4
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "il" = (
 /obj/effect/decal/cleanable/ants{
@@ -571,7 +571,7 @@
 /obj/item/grown/log{
 	pixel_y = 7
 	},
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "iM" = (
 /obj/machinery/conveyor{
@@ -620,13 +620,13 @@
 /obj/item/hatchet{
 	pixel_y = 17
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "jO" = (
 /obj/structure/railing{
 	dir = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "jT" = (
 /obj/structure/window/reinforced/spawner/directional/south,
@@ -678,15 +678,15 @@
 /obj/item/stack/ore/plasma,
 /obj/item/stack/ore/plasma,
 /obj/item/stack/ore/plasma,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "kG" = (
 /obj/structure/flora/grass/both/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "kP" = (
 /obj/structure/fence,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "lc" = (
 /obj/structure/sink/directional/east,
@@ -704,7 +704,7 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "lm" = (
 /obj/structure/lattice/catwalk,
@@ -731,7 +731,7 @@
 /obj/structure/fluff/tram_rail{
 	pixel_y = 17
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "lL" = (
 /obj/machinery/button/door/directional/north{
@@ -766,7 +766,7 @@
 	},
 /area/ruin/plasma_facility/operations)
 "ms" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "mt" = (
 /obj/structure/fluff/tram_rail/end{
@@ -776,13 +776,13 @@
 /obj/structure/fluff/tram_rail/end{
 	dir = 1
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "mu" = (
 /obj/structure/fence/cut/medium{
 	dir = 4
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "mA" = (
 /obj/effect/decal/cleanable/dirt,
@@ -815,7 +815,7 @@
 /obj/machinery/atmospherics/pipe/smart/simple/general/hidden{
 	dir = 5
 	},
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "nl" = (
 /obj/item/stack/sheet/iron,
@@ -827,7 +827,7 @@
 /obj/item/stack/sheet/iron{
 	pixel_x = 4
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "nm" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
@@ -881,14 +881,14 @@
 "oc" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/railing,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "oe" = (
 /obj/machinery/atmospherics/pipe/smart/simple/general/hidden{
 	dir = 6
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "oi" = (
 /obj/effect/spawner/structure/window/hollow/reinforced/directional,
@@ -933,7 +933,7 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "oS" = (
 /obj/structure/window/reinforced/spawner/directional/north,
@@ -964,7 +964,7 @@
 /obj/structure/railing{
 	dir = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "pj" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
@@ -1035,7 +1035,7 @@
 /area/ruin/plasma_facility/operations)
 "qk" = (
 /obj/structure/flora/grass/green/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "qv" = (
 /obj/structure/window/reinforced/spawner/directional/west,
@@ -1059,7 +1059,7 @@
 	name = "Explosive Resistant Airlock"
 	},
 /obj/effect/mapping_helpers/airlock/abandoned,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/ruin/plasma_facility/operations)
 "qT" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1089,7 +1089,7 @@
 /area/ruin/plasma_facility/commons)
 "rk" = (
 /obj/structure/girder,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/ruin/plasma_facility/operations)
 "ro" = (
 /obj/effect/decal/cleanable/glass,
@@ -1097,10 +1097,10 @@
 	color = "#0560fc"
 	},
 /obj/structure/ore_box,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "rs" = (
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "rE" = (
 /obj/effect/spawner/structure/window/hollow/reinforced/directional{
@@ -1155,7 +1155,7 @@
 /obj/item/stack/ore/silver,
 /obj/item/stack/ore/silver,
 /obj/item/stack/ore/silver,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "su" = (
 /obj/structure/chair/stool/directional/south,
@@ -1185,7 +1185,7 @@
 /area/ruin/plasma_facility/commons)
 "sP" = (
 /obj/machinery/light/small/built/directional/east,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/plasma_facility/operations)
 "sX" = (
 /obj/structure/cable,
@@ -1232,21 +1232,21 @@
 /area/icemoon/underground/explored)
 "tP" = (
 /obj/machinery/light/small/broken/directional/south,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/ruin/plasma_facility/commons)
 "tX" = (
 /obj/structure/fluff/tram_rail,
 /obj/structure/fluff/tram_rail{
 	pixel_y = 17
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "ui" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/railing{
 	dir = 5
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "ul" = (
 /obj/effect/spawner/structure/window/hollow/reinforced/middle{
@@ -1295,7 +1295,7 @@
 	name = "Mining to Feed"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "uU" = (
 /obj/structure/fluff/clockwork/alloy_shards,
@@ -1310,7 +1310,7 @@
 /obj/structure/lattice/catwalk,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "vt" = (
 /turf/closed/wall,
@@ -1318,13 +1318,13 @@
 "vz" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/floor,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "vI" = (
 /obj/structure/fence{
 	dir = 4
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "vY" = (
 /turf/closed/mineral/random/snow,
@@ -1341,7 +1341,7 @@
 /area/ruin/plasma_facility/commons)
 "wc" = (
 /obj/structure/fence/cut/medium,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "wg" = (
 /obj/structure/frame/computer{
@@ -1444,11 +1444,11 @@
 	dir = 1;
 	pixel_y = -8
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "zF" = (
 /obj/structure/flora/grass/brown/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "zO" = (
 /obj/effect/zone_mobs/undead,
@@ -1472,14 +1472,14 @@
 /obj/structure/railing/corner{
 	dir = 4
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "zX" = (
 /obj/structure/flora/grass/green/style_random,
 /obj/structure/railing{
 	dir = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "Ad" = (
 /obj/structure/cable,
@@ -1526,7 +1526,7 @@
 "AT" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/railing/corner,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "AZ" = (
 /obj/structure/lattice/catwalk,
@@ -1536,7 +1536,7 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "Bc" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1580,14 +1580,14 @@
 	dir = 1
 	},
 /obj/structure/railing/corner,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "BY" = (
 /obj/structure/fence{
 	dir = 4
 	},
 /obj/structure/sign/warning,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "BZ" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1604,7 +1604,7 @@
 	dir = 1
 	},
 /obj/structure/railing/corner,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "Cm" = (
 /obj/effect/spawner/structure/window/hollow/reinforced/end{
@@ -1657,12 +1657,12 @@
 /obj/structure/fence/door{
 	dir = 4
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "Dp" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/general/hidden,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "Dr" = (
 /obj/machinery/door/poddoor/shutters/window/preopen{
@@ -1675,7 +1675,7 @@
 /obj/structure/fluff/tram_rail{
 	pixel_y = 9
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "DN" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1689,10 +1689,10 @@
 /area/ruin/plasma_facility/commons)
 "DR" = (
 /obj/machinery/light/small/broken/directional/north,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/ruin/plasma_facility/operations)
 "DZ" = (
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "Ea" = (
 /obj/effect/spawner/structure/window/hollow/reinforced/directional{
@@ -1706,7 +1706,7 @@
 	dir = 4;
 	pixel_y = -17
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "Ef" = (
 /obj/effect/spawner/structure/window/hollow/reinforced/directional{
@@ -1719,7 +1719,7 @@
 	dir = 1
 	},
 /obj/structure/flora/tree/stump,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "EZ" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1737,7 +1737,7 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "Fh" = (
 /obj/structure/lattice/catwalk,
@@ -1746,7 +1746,7 @@
 	dir = 8
 	},
 /obj/machinery/light/small/broken/directional/north,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/ruin/plasma_facility/operations)
 "FD" = (
 /obj/structure/lattice/catwalk,
@@ -1756,7 +1756,7 @@
 /obj/item/stack/sheet/mineral/uranium/five,
 /obj/item/stack/sheet/mineral/uranium/five,
 /obj/item/stack/sheet/mineral/uranium/five,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "FG" = (
 /obj/structure/lattice/catwalk,
@@ -1767,12 +1767,12 @@
 /obj/structure/fluff/tram_rail{
 	pixel_y = 17
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "FI" = (
 /obj/machinery/atmospherics/components/tank/plasma,
 /obj/machinery/light/small/broken/directional/east,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/ruin/plasma_facility/operations)
 "FO" = (
 /turf/open/floor/plating/icemoon,
@@ -1789,7 +1789,7 @@
 "Gb" = (
 /obj/machinery/power/port_gen/pacman,
 /obj/structure/cable,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "Gd" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -1806,7 +1806,7 @@
 /area/ruin/plasma_facility/operations)
 "Hp" = (
 /obj/structure/railing/corner,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "Hq" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1823,7 +1823,7 @@
 /area/ruin/plasma_facility/commons)
 "Hz" = (
 /mob/living/basic/mining/wolf,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "HA" = (
 /obj/effect/turf_decal/siding/wood{
@@ -1836,23 +1836,23 @@
 /obj/structure/lattice/catwalk,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "HG" = (
 /obj/structure/girder,
 /obj/item/stack/sheet/iron,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/ruin/plasma_facility/operations)
 "HK" = (
 /obj/effect/spawner/structure/window/hollow/reinforced/middle,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/ruin/plasma_facility/commons)
 "HS" = (
 /obj/machinery/atmospherics/pipe/smart/simple/general/hidden{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "HX" = (
 /obj/effect/spawner/structure/window/hollow/reinforced/directional{
@@ -1872,7 +1872,7 @@
 "Id" = (
 /obj/structure/lattice,
 /obj/machinery/light/small/directional/north,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/ruin/plasma_facility/operations)
 "Ij" = (
 /obj/structure/grille,
@@ -1885,12 +1885,12 @@
 "In" = (
 /obj/structure/flora/grass/green/style_random,
 /obj/machinery/light/small/broken/directional/east,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/ruin/plasma_facility)
 "II" = (
 /obj/structure/lattice,
 /obj/machinery/light/small/broken/directional/south,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/ruin/plasma_facility/operations)
 "IJ" = (
 /obj/structure/window/reinforced/spawner/directional/south,
@@ -1905,7 +1905,7 @@
 	},
 /obj/machinery/atmospherics/pipe/smart/simple/general/hidden,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "Ja" = (
 /obj/structure/lattice/catwalk,
@@ -1927,7 +1927,7 @@
 /obj/structure/railing/corner{
 	dir = 8
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "Jn" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1989,7 +1989,7 @@
 /obj/structure/fence/end{
 	dir = 1
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "JX" = (
 /obj/effect/turf_decal/siding/wood,
@@ -2005,7 +2005,7 @@
 /turf/open/floor/stone,
 /area/ruin/plasma_facility/commons)
 "Kd" = (
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/plasma_facility/operations)
 "Kf" = (
 /obj/structure/bed,
@@ -2024,7 +2024,7 @@
 /area/ruin/plasma_facility/commons)
 "Kr" = (
 /obj/effect/turf_decal/box/corners,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "Kw" = (
 /obj/effect/turf_decal/siding/wood/corner{
@@ -2073,22 +2073,22 @@
 /obj/structure/fence/door/opened{
 	dir = 4
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "KV" = (
 /mob/living/basic/mimic/crate,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "KY" = (
 /obj/machinery/light/small/built/directional/south,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/plasma_facility/commons)
 "Lh" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/railing/corner{
 	dir = 4
 	},
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "Lu" = (
 /obj/structure/railing/corner{
@@ -2098,7 +2098,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "LD" = (
 /obj/effect/decal/cleanable/glass,
@@ -2108,7 +2108,7 @@
 /obj/effect/turf_decal/box/corners{
 	dir = 4
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "LM" = (
 /obj/structure/table,
@@ -2134,7 +2134,7 @@
 /area/ruin/plasma_facility/commons)
 "LZ" = (
 /obj/structure/flora/rock/icy/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "Mc" = (
 /obj/structure/closet/firecloset,
@@ -2149,20 +2149,20 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "Mz" = (
 /obj/structure/railing{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "MH" = (
 /obj/structure/girder,
 /obj/item/stack/sheet/iron,
 /obj/item/stack/sheet/iron,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/ruin/plasma_facility/operations)
 "MN" = (
 /obj/structure/grille/broken,
@@ -2175,7 +2175,7 @@
 /obj/structure/railing/corner{
 	dir = 4
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "MT" = (
 /obj/structure/cable,
@@ -2197,20 +2197,20 @@
 /obj/structure/railing{
 	dir = 8
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "Na" = (
 /obj/structure/railing/corner{
 	dir = 4
 	},
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "Ne" = (
 /obj/structure/flora/grass/brown/style_random,
 /obj/structure/railing{
 	dir = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "Nf" = (
 /obj/structure/grille/broken,
@@ -2247,7 +2247,7 @@
 	pixel_x = -3;
 	pixel_y = -3
 	},
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "Nw" = (
 /obj/machinery/atmospherics/components/binary/valve{
@@ -2305,7 +2305,7 @@
 	color = "#0560fc"
 	},
 /obj/item/crowbar/red,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "OC" = (
 /obj/structure/chair/office/light{
@@ -2338,7 +2338,7 @@
 /area/ruin/plasma_facility/operations)
 "OM" = (
 /obj/item/storage/toolbox/mechanical/old,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "Ps" = (
 /obj/structure/window/reinforced/spawner/directional/east,
@@ -2384,14 +2384,14 @@
 	dir = 8
 	},
 /obj/item/wrench,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "Pz" = (
 /obj/structure/fluff/tram_rail{
 	pixel_y = 17
 	},
 /obj/structure/fluff/tram_rail,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "PB" = (
 /obj/effect/decal/cleanable/dirt,
@@ -2413,7 +2413,7 @@
 /area/ruin/plasma_facility/commons)
 "PQ" = (
 /obj/structure/flora/tree/dead/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "PR" = (
 /obj/structure/girder,
@@ -2426,11 +2426,11 @@
 /obj/structure/railing{
 	dir = 1
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "PX" = (
 /obj/structure/flora/tree/pine/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "PZ" = (
 /obj/effect/turf_decal/bot_red,
@@ -2454,7 +2454,7 @@
 	dir = 1;
 	pixel_y = -17
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "QA" = (
 /obj/item/plate/oven_tray{
@@ -2465,7 +2465,7 @@
 	pixel_y = 2
 	},
 /obj/item/screwdriver,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "QJ" = (
 /obj/machinery/computer/order_console/mining,
@@ -2477,7 +2477,7 @@
 /obj/structure/fence/cut/medium{
 	dir = 8
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "QQ" = (
 /obj/structure/dresser,
@@ -2509,7 +2509,7 @@
 /area/ruin/plasma_facility/operations)
 "Rt" = (
 /obj/machinery/light/small/blacklight/directional/north,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/plasma_facility/commons)
 "RK" = (
 /obj/structure/cable,
@@ -2540,7 +2540,7 @@
 	dir = 8
 	},
 /obj/structure/flora/tree/pine/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "Sf" = (
 /obj/effect/decal/cleanable/dirt,
@@ -2579,7 +2579,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/fluff/broken_canister_frame,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "Tr" = (
 /obj/effect/turf_decal/tile/brown/half{
@@ -2625,20 +2625,20 @@
 /obj/item/storage/fancy/cigarettes/cigpack_robustgold,
 /obj/item/lighter,
 /obj/item/stock_parts/matter_bin,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "Ue" = (
 /obj/structure/transit_tube/horizontal,
 /obj/structure/lattice,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "UN" = (
 /obj/structure/fence/cut/large{
 	dir = 4
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "UP" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
@@ -2650,7 +2650,7 @@
 /area/ruin/plasma_facility/operations)
 "Ve" = (
 /obj/structure/flora/tree/stump,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "Vy" = (
 /obj/machinery/door/poddoor/shutters/window/preopen{
@@ -2676,7 +2676,7 @@
 /area/ruin/plasma_facility/operations)
 "VT" = (
 /obj/item/chair/wood,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "VZ" = (
 /obj/structure/windoor_assembly,
@@ -2713,7 +2713,7 @@
 /area/ruin/plasma_facility/operations)
 "WG" = (
 /obj/machinery/light/small/broken/directional/west,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/ruin/plasma_facility/operations)
 "WK" = (
 /obj/effect/decal/cleanable/dirt,
@@ -2769,7 +2769,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "XS" = (
 /obj/structure/window/reinforced/spawner/directional/west,
@@ -2805,10 +2805,10 @@
 /area/ruin/plasma_facility/commons)
 "Yl" = (
 /obj/structure/flora/rock/pile/icy/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "Yw" = (
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "YC" = (
 /obj/effect/decal/cleanable/dirt,
@@ -2825,7 +2825,7 @@
 /area/ruin/plasma_facility/commons)
 "YN" = (
 /obj/structure/fence/end,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "YP" = (
 /obj/effect/spawner/structure/window/hollow/reinforced/middle,
@@ -2833,7 +2833,7 @@
 /area/ruin/plasma_facility/commons)
 "Zf" = (
 /obj/structure/girder,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "Zh" = (
 /obj/structure/fluff/tram_rail{
@@ -2844,7 +2844,7 @@
 /obj/structure/marker_beacon/burgundy{
 	name = "landing marker"
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "Zk" = (
 /obj/item/paper/crumpled/bloody{
@@ -2863,7 +2863,7 @@
 /obj/structure/railing{
 	dir = 8
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "Zr" = (
 /obj/structure/table,
@@ -2917,7 +2917,7 @@
 "ZC" = (
 /obj/effect/decal/cleanable/glass,
 /obj/machinery/light/small/built/directional/east,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "ZH" = (
 /obj/effect/decal/cleanable/dirt,

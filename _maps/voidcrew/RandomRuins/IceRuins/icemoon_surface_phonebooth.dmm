@@ -7,15 +7,15 @@
 /turf/open/floor/iron/dark/smooth_large,
 /area/ruin/powered/icemoon_phone_booth)
 "c" = (
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "b" = (
 /obj/effect/zone_mobs/wildlife,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "e" = (
 /obj/structure/lattice,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "k" = (
 /obj/machinery/vending/cigarette{
@@ -34,7 +34,7 @@
 "q" = (
 /obj/structure/lattice,
 /obj/structure/billboard/Phone_booth,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "v" = (
 /obj/structure/window/reinforced/spawner/directional/west,
@@ -95,7 +95,7 @@
 /turf/open/floor/plating/icemoon,
 /area/ruin/powered/icemoon_phone_booth)
 "W" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 
 (1,1,1) = {"

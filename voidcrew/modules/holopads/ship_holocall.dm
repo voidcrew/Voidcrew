@@ -142,10 +142,6 @@
 	for(var/obj/machinery/holopad/pad as anything in holopads)
 		if(pad == src || !pad.on_network || !pad.is_operational)
 			continue
-		// Pirate negotiation arrays (voidcrew/modules/npc_ships) replace the pad
-		// UI with a radial menu, so a call to one could never be answered.
-		if(istype(pad, /obj/machinery/holopad/ship_comms))
-			continue
 		if(!voidcrew_holocall_gate(pad))
 			continue
 		var/obj/docking_port/mobile/voidcrew/pad_ship = pad.voidcrew_ship_port()

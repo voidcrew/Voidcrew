@@ -1,0 +1,4960 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"ab" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"ac" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"ad" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"ae" = (
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"af" = (
+/turf/closed/indestructible/opsglass,
+/area/voidcrew/colosseum/lobby)
+"ag" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"ah" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/chair/sofa/bench{
+	dir = 1
+	},
+/obj/machinery/light/warm/directional/south,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"ai" = (
+/obj/machinery/door/airlock/medical,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"aj" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/machinery/light/warm/directional/north,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"ak" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"al" = (
+/obj/item/kirbyplants/random,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"am" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/chair/sofa/bench/solo{
+	dir = 4
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"an" = (
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"ao" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/machinery/jukebox,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"ap" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"aq" = (
+/obj/structure/tank_holder/extinguisher,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"ar" = (
+/obj/machinery/vending/snack,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"as" = (
+/obj/machinery/vending/cola,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"at" = (
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"au" = (
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/lobby)
+"av" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"aw" = (
+/obj/machinery/light/floor,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"ax" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 2
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"ay" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/chair/sofa/bench/right{
+	dir = 1
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"az" = (
+/obj/machinery/door/poddoor{
+	id = "colo_gate_solo";
+	name = "arena gate"
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"aA" = (
+/obj/machinery/door/poddoor{
+	id = "colo_gate_blue";
+	name = "blue gate"
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/arena)
+"aB" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"aC" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/chair/sofa/bench{
+	dir = 1
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"aD" = (
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"aE" = (
+/obj/machinery/door/poddoor{
+	id = "colo_gate_red";
+	name = "red gate"
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/arena)
+"aF" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"aG" = (
+/obj/structure/marker_beacon{
+	picked_color = "Jade"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"aH" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"aI" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"aJ" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"aK" = (
+/obj/structure/table/wood,
+/obj/item/toy/cards/deck{
+	pixel_y = 2
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"aL" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "colo_seal";
+	name = "staging seal"
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"aM" = (
+/obj/machinery/door/airlock/command,
+/obj/effect/mapping_helpers/airlock/access/all/command/general,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"aN" = (
+/obj/structure/tank_holder/extinguisher,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"aO" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/entertainment/money_medium,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"aP" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"aQ" = (
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"aR" = (
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"aS" = (
+/obj/machinery/door/airlock,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/lobby)
+"aT" = (
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"aU" = (
+/turf/closed/indestructible/reinforced/titanium/outpost,
+/area/voidcrew/colosseum/lobby)
+"aV" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/indestructible/reinforced/titanium/outpost,
+/area/voidcrew/colosseum/lobby)
+"aW" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"aX" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"aY" = (
+/obj/item/kirbyplants/random,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/colosseum/lobby)
+"aZ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/chair/sofa/bench/left{
+	dir = 1
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"bs" = (
+/obj/structure/chair/sofa/bench/left{
+	dir = 2
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"bw" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -3
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"bD" = (
+/obj/structure/table/reinforced,
+/obj/effect/spawner/random/food_or_drink/booze,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"bP" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/food_or_drink/booze,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"bX" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/gold/hop,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"bY" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/light/warm/directional/north,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"cs" = (
+/obj/structure/closet/crate/secure,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"cZ" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"en" = (
+/obj/item/food/popcorn{
+	pixel_x = -2
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"ep" = (
+/obj/structure/chair/stool/bar{
+	dir = 4
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"eB" = (
+/obj/effect/turf_decal/delivery,
+/obj/structure/closet/crate/wooden,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/lobby)
+"eM" = (
+/obj/machinery/light/floor,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"fo" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"fp" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/obj/structure/closet/athletic_mixed,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"fH" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/lobby)
+"fL" = (
+/obj/structure/table/wood,
+/obj/item/food/popcorn{
+	pixel_y = 3
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"fU" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"ga" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 8
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"gm" = (
+/obj/structure/sink/directional/south,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"gv" = (
+/obj/structure/closet/crate/wooden,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/lobby)
+"gz" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"gN" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"gU" = (
+/obj/structure/filingcabinet,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"ho" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/right{
+	dir = 1
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"iB" = (
+/obj/item/kirbyplants/random,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"iC" = (
+/obj/effect/turf_decal/caution/stand_clear{
+	dir = 8
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"iI" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"iS" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/sandstone/venus,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"iX" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/turf/open/indestructible/light,
+/area/voidcrew/colosseum/lobby)
+"jf" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 4
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"jg" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/machinery/light/warm/directional/east,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"kc" = (
+/obj/structure/stone_tile/cracked,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"kL" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/bronze/marx,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"lb" = (
+/obj/structure/chair/sofa/bench/right{
+	dir = 2
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"lk" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"lA" = (
+/obj/structure/table,
+/obj/item/storage/medkit/regular{
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/waterbottle{
+	pixel_x = -5
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"lC" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"lI" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/silver/sec,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"lJ" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/sandstone/assistant,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"lU" = (
+/obj/structure/stone_tile/slab,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 5
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"mI" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"nD" = (
+/obj/machinery/button/door/directional/south{
+	id = "colo_gate_red";
+	name = "RED GATE"
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"nG" = (
+/obj/structure/closet,
+/obj/item/storage/medkit/regular,
+/obj/item/flashlight,
+/obj/item/binoculars,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"nZ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"oe" = (
+/obj/item/kirbyplants/random,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"pl" = (
+/turf/open/floor/bronze/flat,
+/area/voidcrew/colosseum/arena)
+"pw" = (
+/obj/structure/table/bronze,
+/obj/item/folder{
+	pixel_x = 2
+	},
+/obj/item/pen{
+	pixel_x = -4
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"py" = (
+/obj/structure/chair/sofa/bench/left{
+	dir = 1
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"qt" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/item/food/popcorn{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"qx" = (
+/obj/structure/marker_beacon{
+	picked_color = "Burgundy"
+	},
+/turf/open/indestructible/light,
+/area/voidcrew/colosseum/arena)
+"qJ" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"qQ" = (
+/obj/structure/chair/sofa/bench/solo{
+	dir = 2
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"qZ" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 2
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"ra" = (
+/turf/closed/indestructible/reinforced/titanium/outpost,
+/area/voidcrew/colosseum/staging)
+"rk" = (
+/obj/structure/stone_tile/block/cracked,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"rF" = (
+/obj/structure/barricade/sandbags,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"rI" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/entertainment/money_medium,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"rK" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/sandstone/venus,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"rP" = (
+/obj/structure/marker_beacon{
+	picked_color = "Yellow"
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"sf" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"sg" = (
+/obj/machinery/sleeper{
+	dir = 4
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"st" = (
+/obj/effect/landmark/outpost_elevator_alcove,
+/obj/machinery/outpost_elevator/directional/south,
+/turf/open/indestructible/light,
+/area/voidcrew/colosseum/lobby)
+"sE" = (
+/obj/effect/turf_decal/caution/stand_clear{
+	dir = 4
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"sK" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"sQ" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"tk" = (
+/obj/structure/marker_beacon{
+	picked_color = "Cerulean"
+	},
+/turf/open/indestructible/light,
+/area/voidcrew/colosseum/arena)
+"tl" = (
+/obj/effect/turf_decal/caution/stand_clear{
+	dir = 2
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"tp" = (
+/obj/structure/closet,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"tE" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/right{
+	dir = 2
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"tV" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/gold/qm,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"uF" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"uH" = (
+/obj/structure/stone_tile/slab,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"uI" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"va" = (
+/obj/structure/rack,
+/obj/item/mop,
+/obj/item/flashlight{
+	pixel_y = -3
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/lobby)
+"vz" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"vA" = (
+/obj/structure/punching_bag,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"vH" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/structure/closet/athletic_mixed,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"wN" = (
+/obj/structure/sink/directional/north,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"wQ" = (
+/obj/structure/chair/sofa/bench/right{
+	dir = 1
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"xA" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/sandstone/assistant,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"yO" = (
+/obj/effect/decal/remains/human,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"yR" = (
+/obj/structure/marker_beacon{
+	picked_color = "Bronze"
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"yX" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench{
+	dir = 2
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"yZ" = (
+/obj/structure/chair/sofa/bench/right{
+	dir = 1
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"zp" = (
+/obj/structure/stone_tile/slab,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"zA" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/left{
+	dir = 2
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"zH" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"Ax" = (
+/obj/machinery/iv_drip,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"AG" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"AK" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/indestructible/reinforced/titanium/outpost,
+/area/voidcrew/colosseum/staging)
+"Bs" = (
+/obj/structure/table/bronze,
+/obj/item/paper_bin{
+	pixel_x = -2;
+	pixel_y = 4
+	},
+/obj/item/pen,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"BI" = (
+/obj/machinery/button/door/directional/south{
+	id = "colo_gate_blue";
+	name = "BLUE GATE"
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"BO" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"BT" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"CY" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"Dp" = (
+/obj/machinery/vending/snack,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"DX" = (
+/obj/structure/girder,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Ee" = (
+/obj/structure/stone_tile/block,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_y = 3
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"EC" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/bronze/marx,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"ER" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Fd" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"FR" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 4
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"Gm" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/lobby)
+"GD" = (
+/obj/structure/marker_beacon{
+	picked_color = "Bronze"
+	},
+/turf/open/floor/bronze/flat,
+/area/voidcrew/colosseum/arena)
+"Hb" = (
+/obj/effect/turf_decal/tile/yellow/fourcorners,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"Hi" = (
+/obj/machinery/vending/wallmed/directional/north,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"Hk" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/glass/shaker{
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -4
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"HU" = (
+/obj/structure/barricade/security{
+	dir = 4
+	},
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Iw" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/silver/md,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"IO" = (
+/obj/structure/chair/bronze{
+	dir = 1
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"IW" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/lobby)
+"Ji" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"JB" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"JS" = (
+/obj/effect/turf_decal/tile/red/fourcorners,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"Ks" = (
+/obj/structure/rack,
+/obj/item/stack/rods/fifty,
+/obj/item/flashlight,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/lobby)
+"Kw" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"KK" = (
+/obj/structure/noticeboard/directional/north,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"KZ" = (
+/obj/structure/girder,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/lobby)
+"Lc" = (
+/obj/structure/closet/crate/wooden,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"Lf" = (
+/obj/structure/table/bronze,
+/obj/item/binoculars{
+	pixel_y = 3
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"Ll" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 2
+	},
+/obj/structure/closet,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"Lw" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"Me" = (
+/obj/machinery/vending/cola,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"Mh" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"Mk" = (
+/obj/structure/marker_beacon{
+	picked_color = "Bronze"
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"MM" = (
+/obj/structure/barricade/sandbags,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/lobby)
+"Nn" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"Nw" = (
+/obj/structure/displaycase/trophy,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"NS" = (
+/obj/structure/stone_tile/slab,
+/obj/machinery/light/warm/directional/north,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"Oe" = (
+/obj/effect/turf_decal/bot,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"On" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"Oo" = (
+/obj/effect/turf_decal/tile/blue/half/contrasted{
+	dir = 1
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"Oz" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/gold/hos,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"PO" = (
+/obj/structure/barricade/security{
+	dir = 8
+	},
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Qe" = (
+/obj/machinery/vending/wallmed/directional/west,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"Qz" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"QA" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -3
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"QH" = (
+/obj/structure/closet/crate,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"QP" = (
+/obj/structure/table/bronze,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"QW" = (
+/obj/structure/chair/sofa/bench{
+	dir = 1
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"Ra" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/gold/ce,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"Rl" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"Rm" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 2
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"Ru" = (
+/obj/structure/marker_beacon{
+	picked_color = "Bronze"
+	},
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Rw" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 2
+	},
+/obj/structure/closet,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"RW" = (
+/obj/structure/closet/crate/medical,
+/obj/item/storage/medkit/brute,
+/obj/item/storage/medkit/fire,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"Sb" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"Sj" = (
+/obj/structure/chair/sofa/bench/left{
+	dir = 1
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"SB" = (
+/obj/machinery/vending/boozeomat,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"SE" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/lobby)
+"Tk" = (
+/turf/open/indestructible/light,
+/area/voidcrew/colosseum/arena)
+"TF" = (
+/obj/machinery/roulette,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"TV" = (
+/obj/structure/chair/sofa/bench{
+	dir = 2
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"TW" = (
+/obj/structure/stone_tile/slab,
+/obj/effect/turf_decal/caution/stand_clear,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Uc" = (
+/obj/machinery/button/door/directional/south{
+	id = "colo_gate_solo";
+	name = "SOLO GATES"
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"Uk" = (
+/obj/structure/table/wood,
+/obj/item/toy/cards/deck{
+	pixel_y = 2
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"UF" = (
+/obj/effect/turf_decal/caution/stand_clear,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"UG" = (
+/obj/structure/stone_tile/slab,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"UW" = (
+/obj/structure/stone_tile/block,
+/obj/structure/statue/sandstone/venus,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"Ve" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"VH" = (
+/obj/machinery/button/door/directional/south{
+	id = "colo_seal";
+	name = "STAGING SEAL"
+	},
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/spectator)
+"VU" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench/left{
+	dir = 1
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"Wm" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"Wv" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"WP" = (
+/obj/structure/table/reinforced,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_y = 4
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"Xa" = (
+/obj/machinery/light/cold/directional/north,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"XC" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"XM" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/obj/machinery/light/warm/directional/north,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"Yv" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"YI" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+"Zh" = (
+/obj/structure/barricade/wooden,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Zo" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"Zp" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
+"ZB" = (
+/obj/machinery/computer/slot_machine,
+/turf/open/indestructible/dark,
+/area/voidcrew/colosseum/lobby)
+"ZF" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/structure/chair/sofa/bench{
+	dir = 1
+	},
+/turf/open/indestructible/hotelwood,
+/area/voidcrew/colosseum/spectator)
+"ZS" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/turf/open/indestructible/hoteltile,
+/area/voidcrew/colosseum/lobby)
+"ZU" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/glass/waterbottle{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/glass/waterbottle{
+	pixel_x = 4
+	},
+/turf/open/indestructible/plating,
+/area/voidcrew/colosseum/staging)
+
+(1,1,1) = {"
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aV
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aV
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aV
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aV
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}
+(2,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ab
+aN
+aa
+aa
+aa
+aa
+ab
+aa
+aa
+aa
+aa
+aa
+ab
+aa
+aa
+aY
+aa
+aa
+ab
+aa
+aa
+aa
+aa
+aa
+ab
+aa
+aa
+aa
+aF
+aa
+ab
+aa
+aa
+aY
+aa
+aa
+ab
+aa
+aa
+aa
+aa
+aa
+ab
+aa
+aa
+aN
+ab
+aU
+aU
+aU
+aU
+aU
+"}
+(3,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aG
+ax
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aF
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aU
+aU
+aU
+aU
+aU
+"}
+(4,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aF
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aH
+aF
+aH
+aH
+aH
+aH
+aH
+aU
+aU
+aU
+aU
+aU
+"}
+(5,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aV
+aU
+aL
+aL
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aS
+aU
+aU
+aU
+aU
+aU
+aU
+aV
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aR
+aR
+aU
+aU
+aU
+aU
+aU
+"}
+(6,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+oe
+Lw
+lk
+lk
+ZU
+ZU
+sK
+sK
+Lw
+lk
+lk
+Lw
+oe
+aU
+fH
+au
+SE
+au
+au
+aU
+NS
+aT
+UW
+aT
+aT
+Wm
+aT
+aU
+ao
+al
+ad
+an
+an
+an
+am
+am
+am
+al
+aU
+"}
+(7,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+vH
+aQ
+bs
+aQ
+aQ
+sf
+aQ
+aQ
+On
+aQ
+py
+aQ
+Rm
+aU
+Ks
+au
+au
+gv
+eB
+aU
+Oz
+aT
+aT
+aT
+aT
+aT
+Sj
+aU
+av
+an
+an
+aI
+an
+an
+an
+an
+an
+aZ
+aU
+"}
+(8,1,1) = {"
+aU
+aU
+aU
+aU
+aW
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+vH
+aQ
+TV
+aQ
+aQ
+sf
+aQ
+aQ
+Rl
+aQ
+QW
+aQ
+wN
+aU
+va
+au
+au
+au
+au
+aU
+Mk
+aT
+aT
+Hb
+aT
+aT
+wQ
+aU
+aj
+an
+ac
+aK
+ap
+an
+aP
+an
+an
+aC
+aU
+"}
+(9,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aV
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+vH
+zH
+TV
+aQ
+aQ
+sf
+aQ
+aQ
+On
+aQ
+QW
+aQ
+wN
+aU
+Ks
+au
+au
+au
+gv
+aV
+lI
+aT
+aT
+aT
+aT
+aT
+aT
+aU
+av
+an
+ac
+aO
+ap
+an
+an
+an
+an
+ah
+aU
+"}
+(10,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+aF
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+vH
+aQ
+TV
+aQ
+JS
+sf
+aQ
+aQ
+On
+aQ
+QW
+Sb
+Rm
+aU
+Ks
+Gm
+au
+au
+au
+aU
+Nw
+lU
+UG
+UG
+UG
+UG
+UG
+aJ
+av
+aJ
+an
+ag
+an
+an
+an
+an
+an
+aC
+aV
+"}
+(11,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+vH
+aQ
+TV
+JS
+aQ
+sf
+aQ
+aQ
+On
+aQ
+QW
+aQ
+Nn
+aU
+au
+au
+au
+au
+au
+aU
+Nw
+lU
+UG
+UG
+UG
+UG
+UG
+aJ
+av
+an
+an
+an
+an
+an
+an
+aJ
+an
+aC
+aU
+"}
+(12,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+BO
+aQ
+TV
+aQ
+aQ
+sf
+aQ
+aQ
+On
+aQ
+QW
+aQ
+Rm
+aU
+fH
+au
+au
+Gm
+eB
+aU
+UG
+aT
+aT
+aT
+aT
+aT
+aT
+aU
+av
+an
+an
+an
+an
+an
+an
+an
+an
+aC
+aU
+"}
+(13,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+XM
+aQ
+TV
+aQ
+aQ
+sf
+aQ
+aQ
+On
+aQ
+QW
+aQ
+qJ
+aU
+gv
+IW
+au
+au
+au
+aU
+Iw
+aT
+aT
+aT
+nZ
+aT
+aT
+aU
+av
+an
+an
+an
+an
+aJ
+an
+an
+an
+ay
+aU
+"}
+(14,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+BO
+aQ
+lb
+aQ
+Sb
+sf
+aQ
+aQ
+On
+aQ
+yZ
+aQ
+Rw
+aU
+au
+au
+MM
+au
+au
+aU
+Mk
+aT
+aT
+Hb
+aT
+aT
+Sj
+aV
+av
+an
+an
+aP
+an
+an
+an
+an
+an
+aB
+aU
+"}
+(15,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+vA
+aQ
+aQ
+aQ
+aQ
+sf
+aQ
+aQ
+On
+JS
+aQ
+aQ
+Rw
+aU
+gv
+au
+MM
+au
+KZ
+aU
+tV
+aT
+aT
+aT
+aT
+aT
+wQ
+aU
+av
+an
+an
+an
+an
+an
+an
+an
+an
+aq
+aU
+"}
+(16,1,1) = {"
+aU
+aU
+aU
+aU
+aW
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+BO
+vA
+aQ
+jf
+aQ
+jf
+sE
+sE
+jf
+aQ
+aQ
+jf
+oe
+aU
+au
+au
+au
+au
+KZ
+aU
+NS
+aT
+EC
+aT
+aT
+BT
+aT
+aU
+as
+ar
+an
+an
+an
+an
+an
+an
+an
+al
+aU
+"}
+(17,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aE
+aE
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+av
+an
+an
+an
+an
+an
+an
+an
+an
+an
+aU
+"}
+(18,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+tp
+aQ
+aQ
+aU
+aD
+aD
+aD
+aD
+aD
+ER
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+TW
+TW
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+ER
+aD
+aD
+aD
+aD
+aD
+af
+fo
+VU
+at
+VU
+iB
+aU
+av
+an
+an
+an
+an
+an
+an
+an
+an
+an
+aU
+"}
+(19,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aL
+qQ
+zH
+tl
+az
+UF
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+rK
+qx
+Tk
+Tk
+qx
+rK
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+af
+qt
+ho
+at
+ho
+JB
+aU
+aj
+zA
+eM
+aZ
+an
+an
+an
+an
+an
+aZ
+aU
+"}
+(20,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+aF
+aU
+Qz
+aQ
+aQ
+aU
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+Tk
+Tk
+Tk
+mI
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+fU
+aU
+fo
+at
+en
+at
+at
+aJ
+av
+yX
+an
+aC
+an
+an
+an
+an
+an
+aC
+aU
+"}
+(21,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+ra
+ra
+ra
+aU
+Zo
+aD
+DX
+QH
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+zp
+zp
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+QH
+DX
+aD
+aD
+af
+fo
+at
+at
+at
+at
+aJ
+av
+yX
+fL
+aC
+an
+an
+an
+an
+an
+ah
+aU
+"}
+(22,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+tp
+aQ
+aQ
+aU
+aD
+aD
+QH
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+zp
+zp
+aD
+aD
+yO
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+QH
+aD
+aD
+af
+fo
+VU
+at
+VU
+at
+aU
+av
+yX
+an
+aC
+an
+aP
+an
+an
+an
+aC
+aU
+"}
+(23,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aL
+qQ
+aQ
+tl
+az
+UF
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+zp
+zp
+kc
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+af
+fo
+ZF
+uF
+ZF
+at
+aU
+av
+tE
+an
+ay
+an
+an
+an
+an
+an
+aC
+aU
+"}
+(24,1,1) = {"
+aU
+aU
+aU
+aU
+aW
+aR
+ax
+aU
+Qz
+aQ
+aQ
+aU
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+rF
+rF
+aD
+aD
+aD
+aD
+zp
+zp
+aD
+aD
+aD
+aD
+rF
+rF
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+af
+QA
+ZF
+at
+ZF
+JB
+aU
+av
+an
+an
+aU
+an
+an
+aU
+an
+an
+aC
+aU
+"}
+(25,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+ra
+ra
+ra
+aU
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+rF
+aD
+aD
+Ru
+aD
+aD
+zp
+zp
+aD
+aD
+Ru
+aD
+aD
+rF
+aD
+aD
+aD
+aD
+aD
+aD
+fU
+aU
+fo
+ZF
+at
+ZF
+Me
+aU
+av
+an
+an
+al
+an
+an
+al
+an
+an
+ay
+aU
+"}
+(26,1,1) = {"
+aU
+rP
+Hb
+af
+aX
+aR
+ax
+aU
+tp
+aQ
+aQ
+aU
+aD
+aD
+aD
+aD
+aD
+aD
+rk
+aD
+aD
+aD
+aD
+aD
+aD
+zp
+zp
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+af
+qt
+ZF
+Wv
+ZF
+Dp
+aU
+aj
+an
+an
+an
+an
+an
+an
+an
+an
+aq
+aU
+"}
+(27,1,1) = {"
+aU
+cs
+aT
+af
+aX
+aR
+ax
+aL
+qQ
+zH
+tl
+az
+UF
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+HU
+aD
+zp
+zp
+aD
+HU
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+af
+jg
+ho
+at
+ho
+Wv
+aU
+av
+an
+an
+aU
+an
+an
+aU
+an
+an
+aB
+aU
+"}
+(28,1,1) = {"
+aU
+bX
+UG
+af
+aX
+aR
+ax
+aU
+Qz
+aQ
+aQ
+aU
+aD
+aD
+aD
+aD
+Zh
+aD
+aD
+aD
+aD
+aD
+mI
+aD
+aD
+zp
+zp
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+Zh
+aD
+aD
+aD
+aD
+af
+aU
+aU
+aM
+aU
+aU
+aU
+av
+an
+aP
+an
+an
+an
+an
+yR
+an
+iS
+aU
+"}
+(29,1,1) = {"
+aU
+cs
+aT
+af
+aX
+aR
+ax
+aU
+ra
+AK
+ra
+aU
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+GD
+pl
+pl
+pl
+pl
+GD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+rk
+aD
+aD
+aD
+af
+QP
+ae
+ae
+gU
+AG
+aU
+av
+an
+an
+an
+an
+an
+Oe
+Mh
+Mh
+Mh
+aU
+"}
+(30,1,1) = {"
+aU
+aT
+Lc
+af
+aX
+aw
+ax
+aR
+Ee
+aQ
+rP
+aU
+Zo
+aD
+aD
+aD
+aD
+aD
+yO
+aD
+aD
+aD
+aD
+pl
+Tk
+Tk
+Tk
+Tk
+pl
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+mI
+aD
+aD
+af
+Bs
+IO
+ae
+ae
+nD
+aU
+av
+sQ
+sQ
+sQ
+sQ
+sQ
+sQ
+iX
+iX
+iX
+aU
+"}
+(31,1,1) = {"
+aU
+Nw
+UG
+af
+aX
+aR
+ax
+aR
+UG
+Oz
+UG
+aU
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+pl
+Tk
+Tk
+Tk
+Tk
+pl
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+af
+Lf
+IO
+ae
+ae
+Uc
+aU
+kL
+uH
+uH
+uH
+uH
+uH
+uH
+iX
+iX
+st
+aU
+"}
+(32,1,1) = {"
+aU
+Nw
+UG
+af
+aX
+aR
+ax
+aR
+UG
+lI
+UG
+aU
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+pl
+Tk
+Tk
+Tk
+Tk
+pl
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+zp
+af
+Lf
+IO
+gz
+ae
+VH
+aU
+kL
+uH
+uH
+uH
+uH
+uH
+uH
+iX
+iX
+iX
+aU
+"}
+(33,1,1) = {"
+aU
+aT
+Lc
+af
+aX
+aw
+ax
+aR
+Ee
+aQ
+rP
+aU
+Zo
+aD
+mI
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+pl
+Tk
+Tk
+Tk
+Tk
+pl
+aD
+aD
+aD
+aD
+yO
+aD
+aD
+aD
+aD
+aD
+aD
+af
+pw
+IO
+ae
+ae
+BI
+aU
+av
+ZS
+ZS
+ZS
+ZS
+ZS
+ZS
+vz
+vz
+vz
+aU
+"}
+(34,1,1) = {"
+aU
+cs
+aT
+af
+aX
+aR
+ax
+aU
+ra
+AK
+ra
+aU
+aD
+aD
+aD
+kc
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+GD
+pl
+pl
+pl
+pl
+GD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+af
+QP
+ae
+ae
+nG
+cZ
+aU
+av
+an
+an
+an
+an
+an
+Oe
+yR
+an
+lJ
+aU
+"}
+(35,1,1) = {"
+aU
+Ra
+UG
+af
+aX
+aR
+ax
+aU
+tp
+aQ
+aQ
+aU
+aD
+aD
+aD
+aD
+Zh
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+zp
+zp
+aD
+aD
+mI
+aD
+aD
+aD
+aD
+aD
+Zh
+aD
+aD
+aD
+aD
+af
+aU
+aU
+aV
+aU
+aU
+aU
+av
+an
+an
+an
+an
+an
+an
+an
+an
+an
+aU
+"}
+(36,1,1) = {"
+aU
+cs
+aT
+af
+aX
+aR
+ax
+aL
+qQ
+aQ
+tl
+az
+UF
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+PO
+aD
+zp
+zp
+aD
+PO
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+af
+fo
+VU
+lC
+VU
+Wv
+aU
+av
+an
+an
+aU
+an
+an
+aU
+an
+an
+aB
+aU
+"}
+(37,1,1) = {"
+aU
+rP
+Hb
+af
+aX
+aR
+ax
+aU
+Qz
+aQ
+aQ
+aU
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+zp
+zp
+aD
+aD
+aD
+aD
+aD
+aD
+rk
+aD
+aD
+aD
+aD
+aD
+aD
+af
+qt
+ZF
+Wv
+ZF
+Dp
+aU
+aj
+an
+an
+an
+an
+an
+an
+an
+an
+aq
+aU
+"}
+(38,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+ra
+ra
+ra
+aU
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+rF
+aD
+aD
+Ru
+aD
+aD
+zp
+zp
+aD
+aD
+Ru
+aD
+aD
+rF
+aD
+aD
+aD
+aD
+aD
+aD
+fU
+aU
+fo
+ZF
+at
+ZF
+Me
+aU
+av
+an
+an
+al
+an
+an
+al
+an
+an
+aZ
+aU
+"}
+(39,1,1) = {"
+aU
+aU
+aU
+aU
+aW
+aR
+ax
+aU
+tp
+aQ
+aQ
+aU
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+rF
+rF
+aD
+aD
+aD
+aD
+zp
+zp
+aD
+aD
+aD
+aD
+rF
+rF
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+af
+QA
+ZF
+at
+ZF
+JB
+aU
+av
+an
+an
+aU
+an
+an
+aU
+an
+an
+aC
+aU
+"}
+(40,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aL
+qQ
+zH
+tl
+az
+UF
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+kc
+zp
+zp
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+af
+fo
+ZF
+uF
+ZF
+at
+aU
+av
+zA
+an
+aZ
+an
+an
+an
+an
+an
+aC
+aU
+"}
+(41,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+Qz
+aQ
+aQ
+aU
+aD
+aD
+QH
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+yO
+aD
+aD
+zp
+zp
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+QH
+aD
+aD
+af
+fo
+ho
+at
+ho
+at
+aU
+av
+yX
+an
+aC
+an
+aP
+an
+an
+an
+aC
+aU
+"}
+(42,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+ra
+ra
+ra
+aU
+Zo
+aD
+DX
+QH
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+zp
+zp
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+QH
+DX
+aD
+aD
+af
+fo
+at
+at
+at
+at
+aJ
+av
+yX
+aK
+aC
+an
+an
+an
+an
+an
+ah
+aU
+"}
+(43,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+tp
+aQ
+aQ
+aU
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+mI
+Tk
+Tk
+Tk
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+fU
+aU
+fo
+at
+en
+at
+at
+aJ
+av
+yX
+an
+aC
+an
+an
+an
+an
+an
+aC
+aU
+"}
+(44,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aF
+ax
+aL
+qQ
+aQ
+tl
+az
+UF
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+xA
+tk
+Tk
+Tk
+tk
+xA
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+af
+qt
+VU
+at
+VU
+JB
+aU
+aj
+tE
+eM
+ay
+an
+an
+an
+an
+an
+ay
+aU
+"}
+(45,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+Qz
+aQ
+aQ
+aU
+aD
+aD
+aD
+aD
+aD
+Zp
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+TW
+TW
+aD
+aD
+aD
+aD
+aD
+aD
+aD
+Zp
+aD
+aD
+aD
+aD
+aD
+af
+fo
+ho
+at
+ho
+iB
+aU
+av
+an
+an
+an
+an
+an
+an
+an
+an
+an
+aU
+"}
+(46,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aA
+aA
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+av
+an
+an
+an
+an
+an
+an
+an
+an
+an
+aU
+"}
+(47,1,1) = {"
+aU
+aU
+aU
+aU
+aW
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+Kw
+vA
+aQ
+ga
+aQ
+ga
+iC
+iC
+ga
+aQ
+aQ
+ga
+oe
+aU
+an
+an
+Qe
+an
+al
+aU
+aT
+aT
+aT
+aT
+aT
+Wm
+Yv
+aU
+as
+ar
+an
+an
+an
+an
+an
+an
+an
+al
+aU
+"}
+(48,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+vA
+aQ
+aQ
+aQ
+aQ
+qZ
+aQ
+aQ
+Ve
+gN
+aQ
+aQ
+Ll
+aU
+Xa
+sg
+an
+sg
+an
+aU
+ZB
+Hb
+aT
+aT
+aT
+aT
+aT
+aU
+av
+an
+an
+ac
+aK
+ap
+an
+an
+an
+aZ
+aU
+"}
+(49,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+Kw
+aQ
+bs
+aQ
+Sb
+qZ
+aQ
+aQ
+Ve
+aQ
+py
+aQ
+Ll
+aU
+gm
+Ax
+an
+Ax
+an
+aU
+aT
+aT
+uI
+Uk
+iI
+aT
+Hb
+aV
+av
+an
+an
+ac
+aO
+ap
+an
+an
+an
+aC
+aU
+"}
+(50,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+bY
+aQ
+TV
+aQ
+aQ
+qZ
+aQ
+aQ
+Ve
+aQ
+QW
+aQ
+qJ
+aU
+an
+an
+an
+an
+an
+aU
+TF
+aT
+uI
+rI
+iI
+aT
+aT
+aU
+av
+an
+aP
+an
+an
+an
+an
+an
+an
+aC
+aU
+"}
+(51,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+Kw
+aQ
+TV
+aQ
+aQ
+qZ
+aQ
+aQ
+Ve
+aQ
+QW
+aQ
+Ji
+aU
+lA
+an
+Oe
+an
+an
+aU
+KK
+aT
+aT
+aT
+aT
+aT
+aT
+aU
+av
+an
+an
+an
+an
+an
+an
+an
+an
+ah
+aU
+"}
+(52,1,1) = {"
+aU
+aU
+aU
+aU
+aF
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+fp
+aQ
+TV
+gN
+aQ
+qZ
+aQ
+aQ
+Ve
+aQ
+QW
+aQ
+Nn
+aU
+an
+Oo
+an
+an
+an
+aU
+aT
+aT
+aT
+aT
+aT
+nZ
+aT
+aJ
+av
+an
+an
+ep
+ep
+ep
+ep
+ep
+ep
+aC
+aU
+"}
+(53,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+fp
+aQ
+TV
+aQ
+gN
+qZ
+aQ
+aQ
+Ve
+aQ
+QW
+Sb
+Ji
+aU
+Xa
+an
+an
+an
+CY
+aU
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aJ
+av
+aJ
+an
+bD
+Hk
+bw
+bD
+WP
+bD
+aC
+aV
+"}
+(54,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aV
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+fp
+zH
+TV
+aQ
+aQ
+qZ
+aQ
+aQ
+Ve
+aQ
+QW
+aQ
+wN
+aU
+Hi
+an
+Oe
+aP
+CY
+aV
+ZB
+Hb
+uI
+Uk
+iI
+aT
+aT
+aU
+av
+an
+an
+an
+an
+an
+an
+an
+an
+ay
+aU
+"}
+(55,1,1) = {"
+aU
+aU
+aU
+aU
+aW
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+fp
+aQ
+TV
+aQ
+aQ
+qZ
+aQ
+aQ
+YI
+aQ
+QW
+aQ
+wN
+aU
+an
+an
+an
+an
+an
+aU
+aT
+aT
+uI
+rI
+iI
+aT
+nZ
+aU
+aj
+an
+an
+bP
+an
+an
+an
+bP
+an
+aB
+aU
+"}
+(56,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+fp
+aQ
+lb
+aQ
+aQ
+qZ
+aQ
+aQ
+Ve
+aQ
+yZ
+aQ
+Ji
+aU
+RW
+an
+an
+an
+RW
+aU
+ZB
+Hb
+aT
+aT
+aT
+aT
+aT
+aU
+av
+an
+an
+an
+an
+an
+an
+an
+an
+aq
+aU
+"}
+(57,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+oe
+FR
+Fd
+Fd
+ZU
+ZU
+sK
+sK
+FR
+Fd
+Fd
+FR
+oe
+aU
+an
+an
+an
+an
+an
+aU
+aT
+aT
+aT
+aT
+aT
+BT
+aT
+aU
+av
+an
+SB
+an
+an
+an
+an
+an
+XC
+al
+aU
+"}
+(58,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aV
+aU
+aL
+aL
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+ai
+aU
+aU
+aU
+aU
+aU
+aU
+aV
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aR
+aR
+aU
+aU
+aU
+aU
+aU
+"}
+(59,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ax
+aa
+aa
+aa
+aF
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aF
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aU
+aU
+aU
+aU
+aU
+"}
+(60,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aG
+ax
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aR
+aF
+aR
+aR
+aR
+aU
+aU
+aU
+aU
+aU
+"}
+(61,1,1) = {"
+aU
+aU
+aU
+aU
+aX
+aR
+ak
+aN
+aH
+aH
+aH
+aH
+ak
+aH
+aH
+aH
+aH
+aH
+ak
+aH
+aH
+aY
+aH
+aH
+ak
+aF
+aH
+aH
+aH
+aH
+ak
+aH
+aH
+aH
+aH
+aH
+ak
+aH
+aH
+aY
+aH
+aH
+ak
+aH
+aH
+aH
+aH
+aH
+ak
+aH
+aH
+aN
+ak
+aU
+aU
+aU
+aU
+aU
+"}
+(62,1,1) = {"
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aV
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aV
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aV
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aV
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+aU
+"}

@@ -1,119 +1,105 @@
 /**
- * Ship Communications Holopad
+ * Pirate hails on the standard holopad
  *
- * A specialized holopad for ship-to-ship communications.
- * Allows players to hail hostile pirate ships for negotiation.
+ * Every holopad doubles as the ship's comms array: pirate hails ring the
+ * ship's pads and show up as incoming calls in the stock Holopad TGUI,
+ * right alongside regular holo-calls (see the VOIDCREW EDIT hooks in
+ * code/game/machinery/hologram.dm ui_data/ui_act). Answering one spawns the
+ * pirate captain hologram and starts a /datum/pirate_negotiation.
+ *
+ * There is deliberately no holopad subtype: the ship the pad belongs to is
+ * resolved live via voidcrew_ship_port() (voidcrew/modules/holopads), same
+ * lazy-resolution idiom as ship-to-ship holo-calls.
  */
-/obj/machinery/holopad/ship_comms
-	name = "ship communications array"
-	desc = "A holographic communication system for contacting nearby vessels. Can be used to negotiate with hostile ships."
-	icon_state = "holopad0"
-	/// The ship this holopad is installed on
-	var/obj/structure/overmap/ship/linked_ship
-	/// Active negotiation (if any)
+/obj/machinery/holopad
+	/// Active pirate negotiation displayed on this pad (if any)
 	var/datum/pirate_negotiation/active_negotiation
-	/// Whether we're currently ringing from an incoming hail
+	/// Whether we're currently ringing from an incoming pirate hail
 	var/incoming_hail = FALSE
-	/// Timer for the ring sound loop
-	var/ring_timer_id
+	/// Timer for the pirate hail ring sound loop
+	var/hail_ring_timer_id
 
-/obj/machinery/holopad/ship_comms/Initialize(mapload)
-	. = ..()
-	// Try to find our ship on init
-	find_linked_ship()
+/// The overmap ship this pad is aboard, or null. Resolved live, never cached.
+/obj/machinery/holopad/proc/voidcrew_comms_ship()
+	var/obj/docking_port/mobile/voidcrew/ship_port = voidcrew_ship_port()
+	return ship_port?.current_ship
 
-/obj/machinery/holopad/ship_comms/Destroy()
-	stop_ringing()
-	if(active_negotiation)
-		active_negotiation.holopad = null
-		active_negotiation = null
-	linked_ship = null
-	return ..()
+// ===== HAIL RINGING =====
 
 /**
- * Start ringing to indicate an incoming pirate hail.
+ * Start ringing to indicate an incoming pirate hail. Reuses the upstream
+ * `ringing` icon state; the loop timer is ours because process()-driven
+ * ringing only runs while holo-calls exist.
  */
-/obj/machinery/holopad/ship_comms/proc/start_ringing()
+/obj/machinery/holopad/proc/start_hail_ringing()
 	if(incoming_hail)
-		return  // Already ringing
+		return // Already ringing
 	if(active_negotiation)
-		return  // Already in a negotiation, don't ring
+		return // Already in a negotiation, don't ring
 
 	incoming_hail = TRUE
+	ringing = TRUE
 	update_appearance(UPDATE_ICON_STATE)
 
-	// Play ring sound immediately
+	// Play ring sound immediately, then every 3 seconds
 	playsound(src, 'sound/machines/beep/twobeep.ogg', 75, FALSE)
-
-	// Set up repeating ring sound every 3 seconds
-	ring_timer_id = addtimer(CALLBACK(src, PROC_REF(ring_sound)), 3 SECONDS, TIMER_LOOP | TIMER_STOPPABLE)
+	hail_ring_timer_id = addtimer(CALLBACK(src, PROC_REF(hail_ring_sound)), 3 SECONDS, TIMER_LOOP | TIMER_STOPPABLE)
 
 /**
- * Stop ringing (hail answered or expired).
+ * Stop ringing (hail answered, expired, or escalated to combat).
  */
-/obj/machinery/holopad/ship_comms/proc/stop_ringing()
+/obj/machinery/holopad/proc/stop_hail_ringing()
+	if(hail_ring_timer_id)
+		deltimer(hail_ring_timer_id)
+		hail_ring_timer_id = null
 	if(!incoming_hail)
 		return
 
 	incoming_hail = FALSE
+	// process() re-raises `ringing` next tick if ordinary holo-calls are still waiting
+	ringing = FALSE
 	update_appearance(UPDATE_ICON_STATE)
 
-	if(ring_timer_id)
-		deltimer(ring_timer_id)
-		ring_timer_id = null
-
-/**
- * Play ring sound (called by timer).
- */
-/obj/machinery/holopad/ship_comms/proc/ring_sound()
+/// Ring sound loop (called by timer).
+/obj/machinery/holopad/proc/hail_ring_sound()
 	// Stop ringing if no longer appropriate
 	if(!incoming_hail || active_negotiation)
-		stop_ringing()
+		stop_hail_ringing()
 		return
 	playsound(src, 'sound/machines/beep/twobeep.ogg', 75, FALSE)
 
-/obj/machinery/holopad/ship_comms/update_icon_state()
-	// Don't call parent - it would overwrite our icon_state
-	if(incoming_hail)
-		icon_state = "holopad_ringing"
+// Ship-wide ring control: the pirate AI rings/silences the whole ship, not one pad.
+
+/// Every holopad aboard this ship.
+/obj/structure/overmap/ship/proc/get_comms_holopads()
+	. = list()
+	if(!shuttle?.shuttle_areas)
 		return
-	if(active_negotiation)
-		icon_state = "holopad1"
-		return
-	icon_state = "holopad0"
+	for(var/area/shuttle_area as anything in shuttle.shuttle_areas)
+		for(var/obj/machinery/holopad/pad in shuttle_area)
+			. += pad
+
+/// Ring every holopad aboard (incoming pirate hail).
+/obj/structure/overmap/ship/proc/start_hail_ringing()
+	for(var/obj/machinery/holopad/pad as anything in get_comms_holopads())
+		pad.start_hail_ringing()
+
+/// Silence every holopad aboard (hail answered, expired, or escalated).
+/obj/structure/overmap/ship/proc/stop_hail_ringing()
+	for(var/obj/machinery/holopad/pad as anything in get_comms_holopads())
+		pad.stop_hail_ringing()
+
+// ===== HAIL DISCOVERY / ANSWERING =====
 
 /**
- * Find the ship this holopad is installed on.
+ * Pirate ships actively hailing this pad's ship (in HAILING state and
+ * targeting us), waiting for a crew member to answer.
  */
-/obj/machinery/holopad/ship_comms/proc/find_linked_ship()
-	if(linked_ship)
-		return linked_ship
-
-	// Find ship by checking if we're in a shuttle area
-	var/area/our_area = get_area(src)
-	if(!our_area)
-		return null
-
-	// Search for simulated ships - check if our area is in the shuttle's areas
-	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
-		if(!ship.shuttle?.shuttle_areas)
-			continue
-		if(our_area in ship.shuttle.shuttle_areas)
-			linked_ship = ship
-			return ship
-
-	return null
-
-/**
- * Get list of pirate ships that are actively hailing us (waiting for us to answer).
- * These are pirates in HAILING state targeting our ship.
- */
-/obj/machinery/holopad/ship_comms/proc/get_hailing_pirates()
+/obj/machinery/holopad/proc/get_hailing_pirates()
 	var/list/hailing = list()
 
-	if(!linked_ship)
-		find_linked_ship()
-	if(!linked_ship)
+	var/obj/structure/overmap/ship/our_ship = voidcrew_comms_ship()
+	if(!our_ship)
 		return hailing
 
 	for(var/obj/structure/overmap/ship/npc/pirate/pirate as anything in SSnpc_ships.active_ships)
@@ -125,11 +111,9 @@
 			continue
 
 		// Must be in HAILING state and targeting us
-		var/combat_state = controller.get_combat_state()
-		if(combat_state != NPC_COMBAT_HAILING)
+		if(controller.get_combat_state() != NPC_COMBAT_HAILING)
 			continue
-
-		if(controller.get_target() != linked_ship)
+		if(controller.get_target() != our_ship)
 			continue
 
 		hailing += pirate
@@ -137,11 +121,41 @@
 	return hailing
 
 /**
+ * Incoming pirate hails shaped like holo-call entries for the Holopad TGUI's
+ * "holo_calls" list (spliced in by the VOIDCREW EDIT in ui_data). The ref is
+ * the pirate ship's, which ui_act("connectcall") hands back to
+ * voidcrew_try_answer_hail().
+ */
+/obj/machinery/holopad/proc/voidcrew_hail_call_data()
+	var/list/entries = list()
+	for(var/obj/structure/overmap/ship/npc/pirate/pirate as anything in get_hailing_pirates())
+		entries += list(list(
+			"caller" = "[pirate.name] (hostile vessel)",
+			"connected" = FALSE,
+			"ref" = REF(pirate),
+		))
+	return entries
+
+/**
+ * ui_act("connectcall") hook: if the ref belongs to a hailing pirate, answer
+ * it and return TRUE; FALSE falls through to the normal holo-call path.
+ */
+/obj/machinery/holopad/proc/voidcrew_try_answer_hail(pirate_ref, mob/user)
+	if(!pirate_ref)
+		return FALSE
+	var/obj/structure/overmap/ship/npc/pirate/pirate = locate(pirate_ref) in SSnpc_ships.active_ships
+	if(!istype(pirate))
+		return FALSE
+	answer_hail(pirate, user)
+	return TRUE // ref was a pirate: consume the action even if answering failed (user got feedback)
+
+/**
  * Answer a hail from a pirate ship that is already trying to contact us.
  * Transitions pirate from HAILING to NEGOTIATING state.
  */
-/obj/machinery/holopad/ship_comms/proc/answer_hail(obj/structure/overmap/ship/npc/pirate/pirate, mob/user)
-	if(!pirate || !linked_ship)
+/obj/machinery/holopad/proc/answer_hail(obj/structure/overmap/ship/npc/pirate/pirate, mob/user)
+	var/obj/structure/overmap/ship/our_ship = voidcrew_comms_ship()
+	if(!pirate || !our_ship)
 		return FALSE
 
 	if(active_negotiation)
@@ -158,12 +172,12 @@
 		to_chat(user, span_warning("[pirate.name] is no longer hailing."))
 		return FALSE
 
-	if(controller.get_target() != linked_ship)
+	if(controller.get_target() != our_ship)
 		to_chat(user, span_warning("[pirate.name] is not hailing us."))
 		return FALSE
 
 	// Create negotiation
-	var/datum/pirate_negotiation/negotiation = new(pirate, linked_ship, src)
+	var/datum/pirate_negotiation/negotiation = new(pirate, our_ship, src)
 	if(QDELETED(negotiation))
 		to_chat(user, span_warning("Failed to establish connection."))
 		return FALSE
@@ -182,111 +196,37 @@
 	controller.clear_blackboard_key("hailing_reminder_sent")
 
 	// Stop the ringing on ALL holopads on this ship - call has been answered
-	stop_all_holopads_ringing()
+	our_ship.stop_hail_ringing()
 
 	to_chat(user, span_notice("Connection established with [pirate.name]."))
 	return TRUE
 
-/**
- * Stop ringing on all ship_comms holopads on our ship.
- */
-/obj/machinery/holopad/ship_comms/proc/stop_all_holopads_ringing()
-	if(!linked_ship?.shuttle?.shuttle_areas)
-		stop_ringing()  // At least stop this one
-		return
-
-	for(var/area/shuttle_area as anything in linked_ship.shuttle.shuttle_areas)
-		for(var/obj/machinery/holopad/ship_comms/pad in shuttle_area)
-			pad.stop_ringing()
+// ===== HELPERS =====
 
 /**
- * End the current communication.
+ * Called when a negotiation hologram is placed on this pad. The hologram is
+ * managed by the negotiation datum; we just light up.
  */
-/obj/machinery/holopad/ship_comms/proc/end_communication()
-	if(!active_negotiation)
+/obj/machinery/holopad/proc/on_negotiation_hologram_set(obj/effect/overlay/holo_pad_hologram/holo)
+	if(!holo)
 		return
+	SetLightsAndPower()
+	if(active_negotiation)
+		set_light(2) // negotiation hologram isn't in masters, light the pad ourselves
+	update_appearance()
 
-	// Don't directly end - let negotiation handle its own cleanup
-	active_negotiation = null
-	update_appearance(UPDATE_ICON_STATE)
-
-// ========== CLICK INTERACTIONS ==========
-
-/obj/machinery/holopad/ship_comms/attack_hand(mob/living/user, list/modifiers)
-	// If there's an active negotiation hologram, clicking the pad redirects to hologram
-	if(active_negotiation?.hologram)
-		active_negotiation.hologram.attack_hand(user, modifiers)
-		return
-
-	// Otherwise show radial menu for hailing
-	show_comms_radial(user)
-
-/**
- * Show the communications radial menu.
- * Displays options to answer incoming hails from pirates.
- */
-/obj/machinery/holopad/ship_comms/proc/show_comms_radial(mob/user)
-	if(!linked_ship)
-		find_linked_ship()
-	if(!linked_ship)
-		to_chat(user, span_warning("Communications array not linked to ship systems."))
-		return
-
-	var/list/choices = list()
-	var/list/choice_data = list()  // Maps choice text to pirate ref
-
-	// Pirates actively hailing us (incoming calls)
-	var/list/hailing = get_hailing_pirates()
-	for(var/obj/structure/overmap/ship/npc/pirate/pirate in hailing)
-		var/choice_text = "Answer: [pirate.name]"
-		choices[choice_text] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_yes")
-		choice_data[choice_text] = list("ref" = REF(pirate))
-
-	// No incoming hails
-	if(!length(choices))
-		to_chat(user, span_notice("No incoming transmissions."))
-		return
-
-	// Show radial menu
-	var/choice = show_radial_menu(user, src, choices, tooltips = TRUE, require_near = TRUE)
-
-	if(!choice || !choice_data[choice])
-		return
-
-	var/list/data = choice_data[choice]
-	var/obj/structure/overmap/ship/npc/pirate/pirate = locate(data["ref"]) in SSnpc_ships.active_ships
-	if(!pirate)
-		to_chat(user, span_warning("Lost contact with vessel."))
-		return
-
-	answer_hail(pirate, user)
-
-/obj/machinery/holopad/ship_comms/examine(mob/user)
-	. = ..()
-
+/// Extra examine lines for hail/negotiation state (hooked from holopad examine()).
+/obj/machinery/holopad/proc/voidcrew_comms_examine()
+	. = list()
 	if(active_negotiation)
 		. += span_notice("Currently in negotiation with [active_negotiation.pirate_ship?.name].")
-		. += span_notice("Click the hologram or this pad to interact.")
+		. += span_notice("Click the hologram to interact.")
 		return
 
-	// Check for incoming hails
 	var/list/hailing = get_hailing_pirates()
-	if(length(hailing))
-		. += span_boldwarning("INCOMING HAIL from [length(hailing)] vessel(s)!")
-		for(var/obj/structure/overmap/ship/npc/pirate/pirate in hailing)
-			. += span_warning("- [pirate.name] is hailing!")
-		. += span_notice("Click to answer.")
-	else
-		. += span_notice("No incoming transmissions.")
-
-// ========== HELPER PROCS ==========
-
-/**
- * Called when a negotiation hologram is placed on this pad.
- */
-/obj/machinery/holopad/ship_comms/proc/on_negotiation_hologram_set(obj/effect/overlay/holo_pad_hologram/holo)
-	// For ship comms, we just track that there's a hologram
-	// The actual hologram is managed by the negotiation datum
-	if(holo)
-		SetLightsAndPower()
-		update_appearance()
+	if(!length(hailing))
+		return
+	. += span_boldwarning("INCOMING HAIL from [length(hailing)] vessel(s)!")
+	for(var/obj/structure/overmap/ship/npc/pirate/pirate as anything in hailing)
+		. += span_warning("- [pirate.name] is hailing!")
+	. += span_notice("Answer via the holopad interface.")

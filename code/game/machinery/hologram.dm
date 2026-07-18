@@ -183,6 +183,7 @@ Possible to do for anyone motivated enough:
 		replay_start()
 
 /obj/machinery/holopad/Destroy()
+	stop_hail_ringing() // VOIDCREW EDIT ADDITION - pirate hails (voidcrew/modules/npc_ships/code/negotiation/pirate_comms_holopad.dm)
 	if(outgoing_call)
 		outgoing_call.ConnectionFailure(src)
 
@@ -228,6 +229,7 @@ Possible to do for anyone motivated enough:
 	. = ..()
 	if(isAI(user) || in_range(user, src) || isobserver(user))
 		. += span_notice("The status display reads: Current projection range: <b>[holo_range]</b> units.")
+	. += voidcrew_comms_examine() // VOIDCREW EDIT ADDITION - incoming pirate hail / negotiation status
 
 	if(!isAI(user))
 		return
@@ -313,6 +315,7 @@ Possible to do for anyone motivated enough:
 			"ref" = REF(HC)
 		)
 		data["holo_calls"] += list(call_data)
+	data["holo_calls"] += voidcrew_hail_call_data() // VOIDCREW EDIT ADDITION - pirate hails ride the incoming-call list
 	return data
 
 /obj/machinery/holopad/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -375,6 +378,10 @@ Possible to do for anyone motivated enough:
 			else
 				to_chat(usr, span_warning("You must stand on the holopad to make a call!"))
 		if("connectcall")
+			// VOIDCREW EDIT ADDITION BEGIN - answering a pirate hail (pirate_comms_holopad.dm)
+			if(voidcrew_try_answer_hail(params["holopad"], usr))
+				return TRUE
+			// VOIDCREW EDIT ADDITION END
 			var/datum/holocall/call_to_connect = locate(params["holopad"]) in holo_calls
 			if(!QDELETED(call_to_connect))
 				call_to_connect.Answer(src)
@@ -623,7 +630,7 @@ For the other part of the code, check silicon say.dm. Particularly robot talk.*/
 	if(panel_open)
 		icon_state = "[base_icon_state]_open"
 		return ..()
-	icon_state = "[base_icon_state][(total_users || replay_mode) ? 1 : 0]"
+	icon_state = "[base_icon_state][(total_users || replay_mode || active_negotiation) ? 1 : 0]" // VOIDCREW EDIT CHANGE - pirate negotiation hologram lights the pad
 	return ..()
 
 /obj/machinery/holopad/proc/set_holo(datum/owner, obj/effect/overlay/holo_pad_hologram/h)

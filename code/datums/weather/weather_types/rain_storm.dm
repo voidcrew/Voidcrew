@@ -24,9 +24,8 @@
 	immunity_type = TRAIT_RAINSTORM_IMMUNE
 	probability = 90
 
-	// no WEATHER_TURFS: mob wetness comes from the mob task, and at planet scale the turf task
-	// is hundreds of reagent exposes per second for effects (wet tiles, container fill, washing) nobody sees
-	weather_flags = (WEATHER_MOBS | WEATHER_THUNDER | WEATHER_BAROMETER)
+	weather_flags = (WEATHER_TURFS | WEATHER_MOBS | WEATHER_THUNDER | WEATHER_BAROMETER)
+	turf_act_containers_only = TRUE // planet-scale storms strike hundreds of turfs/second, full reagent exposure at that rate eats whole ticks
 	turf_thunder_chance = THUNDER_CHANCE_VERY_RARE // planet-wide areas are tens of thousands of turfs, anything above this is a constant barrage of strikes
 	whitelist_weather_reagents = list(/datum/reagent/water)
 
@@ -66,6 +65,7 @@
 	weather_temperature = 455 // just hot enough to apply the fried effect
 	whitelist_weather_reagents = list(/datum/reagent/consumable/nutriment/fat/oil)
 	weather_flags = (WEATHER_TURFS | WEATHER_INDOORS)
+	turf_act_containers_only = FALSE // admeme event on station z-levels, wants the full frying splash
 	probability = 0 // admeme event
 
 /datum/weather/rain_storm/acid
@@ -115,6 +115,7 @@
 	whitelist_weather_reagents = list()
 	probability = 0 // shouldn't spawn normally
 	weather_flags = (WEATHER_TURFS | WEATHER_MOBS | WEATHER_INDOORS | WEATHER_BAROMETER)
+	turf_act_containers_only = FALSE // wizard event on the station z, the chaotic reagent splashing is the whole point
 
 /datum/weather/rain_storm/wizard/New(z_levels, list/weather_data)
 	if(length(GLOB.wizard_rain_reagents)) // the wizard event has already been run once and setup the whitelist

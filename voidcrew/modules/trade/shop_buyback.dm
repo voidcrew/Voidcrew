@@ -195,6 +195,37 @@
 	return TRUE
 
 /**
+ * # Exotic gas buyback
+ *
+ * A ledger entry that buys gas rather than a specific item type: any carried
+ * tank holding at least required_moles of gas_type counts. The tank is
+ * consumed with its contents, so the gas actually leaves the economy.
+ *
+ * The intended source is deep-band nebula scooping (fill a tank off the
+ * scooped pipenet at a connector port) — the gases bought are the red-zone
+ * nebula exotics, so the voucher payout is danger-gated by supply.
+ */
+/datum/shop_buyback/exotic_gas
+	item_path = /obj/item/tank
+	category = "Nebula Exotics"
+	/// The /datum/gas typepath the tank must carry
+	var/gas_type
+	/// Minimum moles of that gas in one tank for it to count as a sale-unit
+	var/required_moles = 200
+
+/datum/shop_buyback/exotic_gas/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	var/obj/item/tank/tank = offered
+	var/datum/gas_mixture/mix = tank.return_air()
+	if(!mix || !(gas_type in mix.gases))
+		return FALSE
+	return mix.gases[gas_type][MOLES] >= required_moles
+
+/datum/shop_buyback/exotic_gas/get_wanted_text()
+	return "[name] ([required_moles]+ mol in one tank)"
+
+/**
  * Sells as many sale-units as demand and the seller's carry allow.
  * Returns how many units were sold.
  */

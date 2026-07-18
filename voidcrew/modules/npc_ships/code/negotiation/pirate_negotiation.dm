@@ -10,7 +10,7 @@
 	/// The player ship being extorted
 	var/obj/structure/overmap/ship/player_ship
 	/// The holopad displaying the negotiation
-	var/obj/machinery/holopad/ship_comms/holopad
+	var/obj/machinery/holopad/holopad
 	/// The hologram of the pirate captain
 	var/obj/effect/overlay/holo_pad_hologram/pirate/hologram
 	/// Mission pads linked for tribute delivery (all pads on player ship)
@@ -53,7 +53,7 @@
 	/// Multiplier applied to demand when caught fleeing
 	var/flee_penalty_multiplier = 1.5
 
-/datum/pirate_negotiation/New(obj/structure/overmap/ship/npc/pirate/pirate, obj/structure/overmap/ship/player, obj/machinery/holopad/ship_comms/pad)
+/datum/pirate_negotiation/New(obj/structure/overmap/ship/npc/pirate/pirate, obj/structure/overmap/ship/player, obj/machinery/holopad/pad)
 	. = ..()
 	if(!pirate || !player || !pad)
 		qdel(src)
@@ -96,6 +96,7 @@
 	if(holopad)
 		UnregisterSignal(holopad, COMSIG_QDELETING)
 		holopad.active_negotiation = null
+		holopad.SetLightsAndPower() // restore baseline lighting (negotiation lit the pad manually)
 		holopad.update_appearance(UPDATE_ICON_STATE)
 
 	// Cancel timeout timer

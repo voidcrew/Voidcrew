@@ -18,6 +18,7 @@
 		"Tools & Repair",
 		"Medical",
 		"Prospecting",
+		"Fuel & Gas",
 		"Galley & Comforts",
 		"Ship Sundries",
 		"Colonial Registry",
@@ -58,6 +59,9 @@
 		/datum/shop_sku/general/ore_bag,
 		/datum/shop_sku/general/mining_scanner,
 		/datum/shop_sku/general/diamond_pick,
+		// Fuel & Gas
+		/datum/shop_sku/general/plasma_canister,
+		/datum/shop_sku/general/scoop_board,
 		// Galley & Comforts
 		/datum/shop_sku/general/rations,
 		/datum/shop_sku/general/beans,
@@ -411,6 +415,26 @@
 	price_credits = 80
 	stock_min = 3
 	stock_max = 6
+
+// The fuel dock: plasma at a comfortable waystation markup. The deeper depots
+// pump it cheaper — the commute is the discount.
+/datum/shop_sku/general/plasma_canister
+	name = "plasma canister (full)"
+	desc = "A full canister of thruster-grade plasma. Barnaby's markup is honest by his lights: you're paying for how far this had to be hauled from the dark lanes."
+	category = "Fuel & Gas"
+	item_path = /obj/machinery/portable_atmospherics/canister/plasma
+	price_credits = 1200
+	stock_min = 2
+	stock_max = 3
+
+/datum/shop_sku/general/scoop_board
+	name = "nebula ram scoop board"
+	desc = "The circuit board for a nebula ram scoop — park inside a nebula and drink your fuel straight out of the cloud. Barnaby stocks them next to the fishing rods; he considers it the same hobby."
+	category = "Fuel & Gas"
+	item_path = /obj/item/circuitboard/machine/shuttle/scoop
+	price_credits = 400
+	stock_min = 1
+	stock_max = 2
 
 /datum/shop_sku/general/spraycan
 	category = "Ship Sundries"

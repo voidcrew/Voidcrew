@@ -125,7 +125,7 @@
 /area/ruin/smoking_room/house)
 "w" = (
 /obj/machinery/hydroponics/soil,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "x" = (
 /obj/item/chair/wood{
@@ -240,18 +240,18 @@
 /area/ruin/smoking_room/house)
 "M" = (
 /obj/effect/decal/cleanable/glass,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "O" = (
 /obj/structure/flora/tree/pine/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "P" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/wood,
 /area/ruin/smoking_room/house)
 "Q" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "R" = (
 /obj/structure/showcase/machinery/tv/broken,

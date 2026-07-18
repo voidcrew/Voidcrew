@@ -1,6 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aM" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "bp" = (
 /turf/open/floor/grass/fairy,
@@ -38,7 +38,7 @@
 /area/ruin/powered/hermit)
 "il" = (
 /obj/structure/barricade/wooden/crude/snow,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "io" = (
 /obj/item/storage/bag/plants/portaseeder,
@@ -88,7 +88,7 @@
 /area/ruin/powered/hermit)
 "CR" = (
 /obj/item/flashlight/lantern,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "GU" = (
 /obj/item/paper/guides/jobs/hydroponics,
@@ -104,7 +104,7 @@
 /area/ruin/powered/hermit)
 "Qr" = (
 /obj/structure/barricade/wooden/snowed,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "QD" = (
 /turf/template_noop,
@@ -115,7 +115,7 @@
 /area/ruin/powered/hermit)
 "Rr" = (
 /obj/structure/flora/tree/pine/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "Si" = (
 /obj/structure/flora/tree/jungle/small/style_random,

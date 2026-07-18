@@ -18,13 +18,13 @@
 /obj/effect/decal/cleanable/blood/footprints{
 	dir = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "aV" = (
 /obj/effect/decal/cleanable/blood/trail_holder{
 	dir = 1
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "be" = (
 /obj/effect/turf_decal/weather/snow/corner{
@@ -305,7 +305,7 @@
 /turf/open/floor/wood/large,
 /area/ruin/huntinglodge)
 "fK" = (
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "fO" = (
 /obj/item/ammo_casing/shotgun/buckshot/spent{
@@ -458,7 +458,7 @@
 /obj/effect/decal/cleanable/blood/footprints{
 	dir = 1
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "hK" = (
 /obj/effect/turf_decal/siding/wood/end{
@@ -563,7 +563,7 @@
 	pixel_x = 1;
 	pixel_y = 13
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "jF" = (
 /obj/effect/turf_decal/siding/wood{
@@ -703,7 +703,7 @@
 /area/ruin/huntinglodge)
 "lv" = (
 /obj/machinery/light/small/dim/directional/west,
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/ruin/huntinglodge)
 "lC" = (
 /obj/effect/turf_decal/siding/wood{
@@ -818,7 +818,7 @@
 /area/ruin/huntinglodge)
 "mA" = (
 /obj/machinery/light/small/dim/directional/south,
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/ruin/huntinglodge)
 "mG" = (
 /obj/effect/turf_decal/siding/wood{
@@ -1097,7 +1097,7 @@
 	pixel_x = -8;
 	pixel_y = 17
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "qZ" = (
 /obj/effect/decal/cleanable/blood/splatter,
@@ -1156,7 +1156,7 @@
 /area/ruin/huntinglodge)
 "ta" = (
 /obj/effect/decal/cleanable/blood/drip,
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "tk" = (
 /obj/effect/turf_decal/siding/wood/end,
@@ -1233,7 +1233,7 @@
 	pixel_x = -19;
 	pixel_y = -2
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "vg" = (
 /obj/effect/turf_decal/siding/wood{
@@ -1268,7 +1268,7 @@
 /obj/effect/decal/cleanable/blood/trail_holder{
 	dir = 5
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "vH" = (
 /obj/effect/turf_decal/siding/wood{
@@ -1422,7 +1422,7 @@
 /obj/structure/chair/sofa/bench/left{
 	dir = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "xB" = (
 /obj/effect/turf_decal/siding/wood/corner{
@@ -1642,7 +1642,7 @@
 	dir = 8;
 	color = "#463934"
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "zN" = (
 /turf/open/floor/iron/stairs{
@@ -1809,7 +1809,7 @@
 /area/ruin/huntinglodge)
 "CE" = (
 /obj/machinery/light/small/dim/directional/north,
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/ruin/huntinglodge)
 "CL" = (
 /obj/effect/turf_decal/siding/wood{
@@ -1856,11 +1856,11 @@
 	pixel_x = -9;
 	pixel_y = -2
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "DF" = (
 /obj/structure/flora/tree/pine/style_2,
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "DH" = (
 /obj/effect/turf_decal/siding/wood{
@@ -2050,7 +2050,7 @@
 	pixel_x = -2;
 	pixel_y = 4
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "FN" = (
 /obj/effect/turf_decal/siding/wood{
@@ -2148,7 +2148,7 @@
 /obj/structure/chair/sofa/bench{
 	dir = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "GN" = (
 /obj/item/ammo_casing/c45{
@@ -2165,7 +2165,7 @@
 	},
 /obj/effect/decal/cleanable/blood/splatter,
 /obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "GU" = (
 /obj/effect/turf_decal/weather/snow/corner{
@@ -2221,7 +2221,7 @@
 	pixel_x = -1;
 	pixel_y = -4
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "Hq" = (
 /obj/effect/turf_decal/siding/wood/end{
@@ -2519,7 +2519,7 @@
 	pixel_x = 5;
 	pixel_y = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "Mc" = (
 /obj/effect/zone_mobs/wildlife,
@@ -2531,7 +2531,7 @@
 /area/ruin/huntinglodge)
 "Mf" = (
 /obj/machinery/light/warm/directional/west,
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/ruin/huntinglodge)
 "Mw" = (
 /obj/effect/turf_decal/siding/wood{
@@ -2672,7 +2672,7 @@
 /area/ruin/huntinglodge)
 "ON" = (
 /obj/item/flashlight/lantern/on,
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "OY" = (
 /obj/machinery/light/small/dim/directional/south,
@@ -2792,7 +2792,7 @@
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "QS" = (
 /obj/effect/decal/cleanable/blood/footprints,
@@ -2831,7 +2831,7 @@
 /obj/structure/chair/sofa/bench/right{
 	dir = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "So" = (
 /obj/item/ammo_casing/shotgun/buckshot/spent{
@@ -2895,11 +2895,11 @@
 /obj/effect/decal/cleanable/blood/footprints{
 	dir = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "Th" = (
 /obj/effect/decal/cleanable/blood/gibs,
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "Tp" = (
 /obj/effect/turf_decal/siding/wood,
@@ -3259,7 +3259,7 @@
 /area/ruin/huntinglodge)
 "Zk" = (
 /obj/effect/mob_spawn/corpse/human/skeleton/cultist,
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "Zr" = (
 /obj/effect/decal/cleanable/blood/trail_holder{

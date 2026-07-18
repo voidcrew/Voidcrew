@@ -10,6 +10,12 @@
 	icon_state = "heater"
 	icon = 'voidcrew/modules/shuttle/icons/shuttle.dmi'
 
+/datum/armor/shuttle_heater
+	energy = 100
+	bio = 100
+	fire = 100
+	acid = 30
+
 /obj/machinery/atmospherics/components/unary/shuttle/heater
 	name = "engine heater"
 	desc = "Directs energy into compressed particles in order to power an attached thruster."
@@ -21,7 +27,7 @@
 
 	density = TRUE
 	max_integrity = 400
-	armor = list("melee" = 0, "bullet" = 0, "laser" = 0, "energy" = 100, "bomb" = 0, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 30)
+	armor_type = /datum/armor/shuttle_heater
 	layer = OBJ_LAYER
 	move_resist = MOVE_RESIST_DEFAULT
 	//showpipe = TRUE // TODO: Fix showpipe

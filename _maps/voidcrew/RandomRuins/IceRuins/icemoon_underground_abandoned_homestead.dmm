@@ -1,7 +1,7 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "bf" = (
 /obj/machinery/hydroponics/soil,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "cP" = (
 /mob/living/simple_animal/hostile/asteroid/polarbear,
@@ -16,7 +16,7 @@
 /obj/item/hatchet/wooden{
 	pixel_y = -19
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "fd" = (
 /obj/structure/table/bronze{
@@ -30,14 +30,14 @@
 /area/ruin/powered/shuttle)
 "ht" = (
 /obj/structure/flora/tree/dead/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "kj" = (
 /obj/structure/railing{
 	color = "#8a7453";
 	dir = 4
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "mq" = (
 /obj/structure/railing{
@@ -45,7 +45,7 @@
 	dir = 8
 	},
 /obj/machinery/hydroponics/soil,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "ng" = (
 /turf/open/floor/wood/large{
@@ -71,7 +71,7 @@
 /obj/item/grown/log{
 	pixel_y = 6
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "ol" = (
 /turf/closed/wall/mineral/wood,
@@ -86,14 +86,14 @@
 /area/ruin/powered/shuttle)
 "qd" = (
 /mob/living/basic/tree,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "sF" = (
-/turf/open/openspace/icemoon/keep_below,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "tD" = (
 /obj/structure/flora/rock/pile/icy/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "uc" = (
 /obj/structure/table/bronze{
@@ -114,7 +114,7 @@
 /obj/item/grown/log{
 	pixel_y = 13
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "uH" = (
 /obj/structure/closet/cabinet,
@@ -133,7 +133,7 @@
 	dir = 10
 	},
 /obj/machinery/hydroponics/soil,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "vI" = (
 /obj/effect/turf_decal/siding/wood{
@@ -160,7 +160,7 @@
 	},
 /area/ruin/powered/shuttle)
 "wN" = (
-/turf/open/openspace/icemoon/keep_below,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/ruin/powered/shuttle)
 "ym" = (
 /obj/structure/chair/wood{
@@ -175,14 +175,14 @@
 	name = "Homestead Sign";
 	pixel_y = 7
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "zd" = (
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "ab" = (
 /obj/effect/zone_mobs/wildlife,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "zT" = (
 /obj/structure/bed/dogbed,
@@ -226,20 +226,20 @@
 	color = "#8a7453"
 	},
 /obj/machinery/hydroponics/soil,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "Fg" = (
 /obj/structure/flora/rock/icy/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "FS" = (
 /obj/structure/railing{
 	color = "#8a7453"
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "Ht" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "Hv" = (
 /obj/structure/chair/wood{
@@ -285,7 +285,7 @@
 	color = "#8a7453"
 	},
 /obj/structure/flora/tree/pine/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "Nz" = (
 /obj/structure/bed,
@@ -323,7 +323,7 @@
 	dir = 1
 	},
 /obj/item/reagent_containers/cup/bucket/wooden,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "RO" = (
 /obj/effect/turf_decal/siding/wood,
@@ -345,18 +345,18 @@
 	dir = 8
 	},
 /obj/machinery/hydroponics/soil,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "Tf" = (
 /obj/structure/railing{
 	color = "#8a7453"
 	},
 /obj/machinery/hydroponics/soil,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "TP" = (
 /obj/machinery/hydroponics/soil,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "Vf" = (
 /obj/structure/barricade/wooden/snowed,
@@ -367,7 +367,7 @@
 /area/ruin/powered/shuttle)
 "VV" = (
 /obj/structure/bonfire,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "XZ" = (
 /obj/structure/toilet{

@@ -36,6 +36,26 @@
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
 
+/datum/design/board/shuttle/scoop
+	name = "Machine Design (Nebula Ram Scoop Board)"
+	desc = "The circuit board for a nebula ram scoop, which harvests gas from nebulas the ship holds station inside."
+	id = "shuttle_scoop"
+	build_path = /obj/item/circuitboard/machine/shuttle/scoop
+	category = list(
+		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+
+/datum/design/board/shuttle/sublimator
+	name = "Machine Design (Plasma Sublimation Chamber Board)"
+	desc = "The circuit board for a plasma sublimation chamber, which bakes plasma sheets into thruster-grade plasma gas."
+	id = "shuttle_sublimator"
+	build_path = /obj/item/circuitboard/machine/shuttle/sublimator
+	category = list(
+		RND_CATEGORY_COMPUTER + RND_SUBCATEGORY_COMPUTER_ENGINEERING
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING | DEPARTMENT_BITFLAG_SCIENCE
+
 /datum/design/board/shuttle/shuttle_helm
 	name = "Computer Design (Shuttle Helm Console)"
 	desc = "Allows for the construction of circuit boards used to pilot a spacecraft."

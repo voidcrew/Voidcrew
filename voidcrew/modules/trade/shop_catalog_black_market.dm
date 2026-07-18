@@ -83,6 +83,9 @@
 		/datum/shop_buyback/black_market/bluespace_crystals,
 		/datum/shop_buyback/black_market/syndicate_documents,
 		/datum/shop_buyback/black_market/hot_iron,
+		/datum/shop_buyback/exotic_gas/hypernoblium,
+		/datum/shop_buyback/exotic_gas/pluoxium,
+		/datum/shop_buyback/exotic_gas/nitrium,
 	)
 	// Vex's supply requests want the rare stuff — the free item makes it worth it
 	mission_requests = list(
@@ -504,3 +507,29 @@
 	pay_credits = 250
 	demand_min = 4
 	demand_max = 8
+
+// The gas window: tanks of red-band nebula exotics, scooped where the lanes
+// are worst. Sold with the tank — Vex doesn't do decanting.
+/datum/shop_buyback/exotic_gas/hypernoblium
+	name = "hypernoblium"
+	desc = "A tank of the coldest, noblest gas in the cloud charts. Vex's buyer pays in advance and collects in an unmarked hauler."
+	gas_type = /datum/gas/hypernoblium
+	pay_vouchers = 2
+	demand_min = 2
+	demand_max = 3
+
+/datum/shop_buyback/exotic_gas/pluoxium
+	name = "pluoxium"
+	desc = "Breathing gas for people who can't afford to exhale bubbles. Deep-lane nebulas are the only place it pools for free."
+	gas_type = /datum/gas/pluoxium
+	pay_vouchers = 1
+	demand_min = 3
+	demand_max = 5
+
+/datum/shop_buyback/exotic_gas/nitrium
+	name = "nitrium"
+	desc = "Combat stim chemistry starts with this. Vex has never met the customers and intends to keep it that way."
+	gas_type = /datum/gas/nitrium
+	pay_vouchers = 1
+	demand_min = 3
+	demand_max = 5

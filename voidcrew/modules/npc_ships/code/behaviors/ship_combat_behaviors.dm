@@ -323,8 +323,8 @@
 		// Announce to player ship - this is the key notification!
 		target.ship_notify("INCOMING HAIL from [ship.name]! Report to comms array to respond. 20 seconds before they open fire!", "PRIORITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
 
-		// Make the ship comms holopad ring
-		start_target_holopad_ringing(target)
+		// Make every holopad on the target ship ring
+		target.start_hail_ringing()
 
 	// Check timeout
 	var/hail_start = controller.blackboard[BB_NPC_HAILING_START]
@@ -358,8 +358,8 @@
 	controller.clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
 	controller.clear_blackboard_key("hailing_reminder_sent")
 
-	// Stop the holopad ringing
-	stop_target_holopad_ringing(target)
+	// Stop the holopads ringing
+	target.stop_hail_ringing()
 
 	// Announce escalation
 	if(reason == "ignored")
@@ -381,34 +381,6 @@
 
 	// Fallback: Transition to ENGAGING (will acquire lock then fight)
 	controller.set_combat_state(NPC_COMBAT_ENGAGING)
-
-/**
- * Find and start ringing the ship comms holopad on the target ship.
- */
-/datum/ai_behavior/npc_ship/hailing/proc/start_target_holopad_ringing(obj/structure/overmap/ship/target)
-	var/obj/machinery/holopad/ship_comms/holopad = find_ship_comms_holopad(target)
-	holopad?.start_ringing()
-
-/**
- * Find and stop ringing the ship comms holopad on the target ship.
- */
-/datum/ai_behavior/npc_ship/hailing/proc/stop_target_holopad_ringing(obj/structure/overmap/ship/target)
-	var/obj/machinery/holopad/ship_comms/holopad = find_ship_comms_holopad(target)
-	holopad?.stop_ringing()
-
-/**
- * Find the ship comms holopad on a ship.
- */
-/datum/ai_behavior/npc_ship/hailing/proc/find_ship_comms_holopad(obj/structure/overmap/ship/target)
-	if(!target?.shuttle?.shuttle_areas)
-		return null
-
-	for(var/area/shuttle_area as anything in target.shuttle.shuttle_areas)
-		var/obj/machinery/holopad/ship_comms/found = locate() in shuttle_area
-		if(found)
-			return found
-
-	return null
 
 // ========== ACQUIRE LOCK ==========
 

@@ -15,7 +15,8 @@
 	var/object_name
 
 /datum/surveyed_celestial_object/nebula
-	var/datum/gas/gas_type
+	/// Readable name of the gas the nebula carries (shown directly in the survey UI)
+	var/gas_type
 
 /datum/surveyed_celestial_object/asteroid
 	var/list/datum/material/minerals
@@ -88,7 +89,7 @@
 
 /datum/surveyed_celestial_object/nebula/set_values(var/obj/structure/overmap/event/nebula/object)
 	. = ..()
-	gas_type = object.gas_type
+	gas_type = object.get_gas_name()
 
 /datum/surveyed_celestial_object/asteroid/set_values(var/obj/structure/overmap/event/meteor/object)
 	. = ..()
@@ -207,7 +208,7 @@
 			survey_objects_by_type[related_celestial_list] |= celestial
 
 /datum/survey_research/proc/get_related_celestial_list(type)
-	if(type == /obj/structure/overmap/event/nebula)
+	if(type in typesof(/obj/structure/overmap/event/nebula))
 		return "nebulas"
 	if(type in typesof(/obj/structure/overmap/event/meteor))
 		return "asteroids"

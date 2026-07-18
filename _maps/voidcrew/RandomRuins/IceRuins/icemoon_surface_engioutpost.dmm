@@ -1,6 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aa" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "ag" = (
 /obj/structure/cable,
@@ -154,13 +154,13 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/manifold{
 	dir = 1
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "aR" = (
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 10
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "aT" = (
 /obj/structure/window/reinforced/spawner/directional/east,
@@ -180,7 +180,7 @@
 /area/ruin/planetengi)
 "aX" = (
 /obj/structure/flora/rock/icy/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "ba" = (
 /obj/effect/spawner/structure/window/reinforced,
@@ -213,23 +213,23 @@
 /obj/machinery/atmospherics/components/unary/passive_vent{
 	dir = 8
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "bj" = (
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 5
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "bl" = (
 /obj/machinery/atmospherics/pipe/heat_exchanging/manifold,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "bm" = (
 /obj/machinery/atmospherics/pipe/heat_exchanging/manifold{
 	dir = 4
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "bo" = (
 /obj/effect/spawner/structure/window/reinforced,
@@ -299,7 +299,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 4
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "bF" = (
 /obj/machinery/atmospherics/components/unary/portables_connector{
@@ -366,7 +366,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 10
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "bV" = (
 /obj/effect/turf_decal/trimline/yellow/filled/corner{
@@ -439,7 +439,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 9
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "ci" = (
 /obj/machinery/power/energy_accumulator/grounding_rod/anchored,
@@ -509,7 +509,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 6
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "cx" = (
 /obj/item/pipe_dispenser,
@@ -563,7 +563,7 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 4
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "cP" = (
 /obj/machinery/atmospherics/components/binary/pump{
@@ -675,7 +675,7 @@
 "dl" = (
 /obj/effect/mob_spawn/corpse/human/engineer/mod,
 /obj/effect/decal/cleanable/blood/tracks,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "dn" = (
 /obj/effect/spawner/structure/window/reinforced,
@@ -718,7 +718,7 @@
 /area/ruin/planetengi)
 "du" = (
 /obj/effect/decal/cleanable/blood/tracks,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "dv" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/on{
@@ -777,13 +777,13 @@
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 9
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "gK" = (
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "kS" = (
 /obj/effect/turf_decal/box/corners{
@@ -796,7 +796,7 @@
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 6
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "sc" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -825,7 +825,7 @@
 /turf/open/floor/iron,
 /area/ruin/planetengi)
 "Ai" = (
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "GG" = (
 /obj/effect/turf_decal/tile/yellow,

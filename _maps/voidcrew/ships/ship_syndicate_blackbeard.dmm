@@ -782,7 +782,6 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/blackbeard/cargo)
 "Rt" = (
-/obj/machinery/atmospherics/miner/plasma,
 /obj/structure/window/reinforced/plasma/spawner,
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
 /obj/structure/window/reinforced/plasma/spawner/directional/north,

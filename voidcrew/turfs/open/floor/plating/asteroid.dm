@@ -19,10 +19,14 @@
 /turf/open/misc/asteroid/snow/icemoon/breathable
 	initial_gas_mix = FROZEN_ATMOS
 	planetary_atmos = TRUE
+	// Parent's baseturf is /turf/open/openspace/icemoon (planetary ICEMOON mix): every crater,
+	// scrape or dig would spawn a chasm turf whose atmos fights the FROZEN planet forever
+	baseturfs = /turf/open/misc/asteroid/snow/icemoon/breathable
 
 /turf/open/misc/ice/icemoon/breathable
 	initial_gas_mix = FROZEN_ATMOS
 	planetary_atmos = TRUE
+	baseturfs = /turf/open/misc/ice/icemoon/breathable
 
 /turf/open/misc/asteroid/snow/under
 	icon_state = "snow_dug"

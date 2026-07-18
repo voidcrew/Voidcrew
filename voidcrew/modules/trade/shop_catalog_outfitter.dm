@@ -21,6 +21,7 @@
 		"Security Gear",
 		"Combat Medical",
 		"Utility",
+		"Fuel & Gas",
 		"Colonial Registry",
 		"Charts & Special Orders",
 		"Barter Deals",
@@ -68,6 +69,8 @@
 		/datum/shop_sku/outfitter/binoculars,
 		/datum/shop_sku/outfitter/mod_flashlight,
 		/datum/shop_sku/outfitter/mod_tether,
+		// Fuel & Gas
+		/datum/shop_sku/outfitter/plasma_canister,
 		// Colonial Registry
 		/datum/shop_sku/outpost_deed,
 		// Charts & Special Orders
@@ -417,6 +420,19 @@
 	price_credits = 500
 	stock_min = 1
 	stock_max = 2
+
+// ===== FUEL & GAS =====
+
+// The contested-lane fuel dock: closer to the supply, cheaper than Halcyon's
+// comfort markup — if you can make the drive
+/datum/shop_sku/outfitter/plasma_canister
+	name = "plasma canister (full)"
+	desc = "A full canister of thruster-grade plasma at depot rates. Sarge doesn't do markup; she does volume."
+	category = "Fuel & Gas"
+	item_path = /obj/machinery/portable_atmospherics/canister/plasma
+	price_credits = 750
+	stock_min = 3
+	stock_max = 5
 
 // ===== CHARTS & SPECIAL ORDERS =====
 

@@ -711,7 +711,7 @@
 /turf/open/floor/iron/co2_pressurized,
 /area/ruin/space/has_grav/atmosasteroid)
 "UR" = (
-/obj/machinery/atmospherics/miner/plasma,
+/obj/machinery/portable_atmospherics/canister/plasma,
 /turf/open/floor/engine/plasma,
 /area/ruin/space/has_grav/atmosasteroid)
 "VH" = (

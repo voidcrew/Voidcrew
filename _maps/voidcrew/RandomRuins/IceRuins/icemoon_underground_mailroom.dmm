@@ -22,13 +22,13 @@
 /area/ruin/powered/mailroom)
 "bK" = (
 /obj/structure/holobox,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "cg" = (
 /obj/effect/turf_decal/stripes{
 	dir = 8
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/powered/mailroom)
 "ch" = (
 /obj/structure/chair/plastic{
@@ -50,16 +50,16 @@
 /area/template_noop)
 "dR" = (
 /obj/structure/fence,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "ft" = (
 /obj/structure/holobox,
 /obj/effect/turf_decal/stripes/red/box,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/powered/mailroom)
 "gi" = (
 /obj/structure/holobox,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/powered/mailroom)
 "hj" = (
 /obj/structure/filingcabinet/chestdrawer/wheeled,
@@ -81,7 +81,7 @@
 /turf/open/floor/iron/smooth_large,
 /area/ruin/powered/mailroom)
 "iV" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "jh" = (
 /obj/structure/closet/crate/bin,
@@ -127,7 +127,7 @@
 /area/ruin/powered/mailroom)
 "mA" = (
 /obj/structure/fence/corner,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "np" = (
 /obj/machinery/ticket_machine/directional/north{
@@ -141,23 +141,23 @@
 /turf/open/floor/iron,
 /area/ruin/powered/mailroom)
 "nS" = (
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/powered/mailroom)
 "nT" = (
 /turf/closed/indestructible/rock,
 /area/icemoon/underground/explored)
 "oI" = (
 /obj/machinery/light/small/red/directional/east,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/powered/mailroom)
 "oU" = (
 /obj/structure/closet/crate/mail/preopen,
 /obj/item/mail/junkmail,
 /obj/item/mail/junkmail,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/powered/mailroom)
 "pd" = (
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "qp" = (
 /obj/item/pressure_plate/hologrid{
@@ -170,14 +170,14 @@
 /area/ruin/powered/mailroom)
 "qv" = (
 /obj/structure/marker_beacon/burgundy,
-/turf/open/floor/plating/snowed/icemoon,
+/turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "qP" = (
 /obj/effect/turf_decal/stripes{
 	dir = 8
 	},
 /obj/machinery/light/small/red/directional/west,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/powered/mailroom)
 "sA" = (
 /obj/machinery/modular_computer/preset/civilian{
@@ -191,7 +191,7 @@
 /area/ruin/powered/mailroom)
 "uA" = (
 /obj/effect/spawner/random/structure/crate_abandoned,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/powered/mailroom)
 "uI" = (
 /obj/effect/decal/cleanable/blood/drip,
@@ -200,7 +200,7 @@
 "uK" = (
 /obj/effect/decal/cleanable/plasma,
 /obj/machinery/light/small/red/directional/north,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/powered/mailroom)
 "vU" = (
 /obj/structure/sign/departments/cargo,
@@ -222,7 +222,7 @@
 /area/ruin/powered/mailroom)
 "xL" = (
 /obj/item/trash/can,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "yb" = (
 /obj/item/screwdriver{
@@ -230,17 +230,17 @@
 	pixel_y = 6
 	},
 /obj/structure/flora/rock/icy/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "zr" = (
 /obj/structure/fence{
 	dir = 4
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "AP" = (
 /obj/structure/closet/crate/secure,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/powered/mailroom)
 "AS" = (
 /obj/structure/filingcabinet,
@@ -267,7 +267,7 @@
 /obj/structure/fence/post{
 	dir = 4
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "DY" = (
 /obj/structure/table/reinforced,
@@ -316,7 +316,7 @@
 /obj/structure/fence/corner{
 	dir = 1
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "KK" = (
 /obj/machinery/light/cold/directional/east,
@@ -369,14 +369,14 @@
 "Pk" = (
 /obj/item/multitool,
 /obj/structure/ice_stasis,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "PD" = (
 /obj/structure/holobox,
 /obj/effect/turf_decal/stripes{
 	dir = 8
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/powered/mailroom)
 "PO" = (
 /obj/effect/decal/cleanable/blood/drip,
@@ -394,7 +394,7 @@
 /obj/effect/turf_decal/stripes{
 	dir = 8
 	},
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/powered/mailroom)
 "Qx" = (
 /obj/structure/sign/poster/official/obey,
@@ -441,7 +441,7 @@
 /area/ruin/powered/mailroom)
 "UB" = (
 /obj/structure/flora/rock/icy/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "US" = (
 /obj/item/food/grown/coffee/robusta,
@@ -449,7 +449,7 @@
 /area/ruin/powered/mailroom)
 "Vq" = (
 /obj/structure/flora/tree/pine/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "Vz" = (
 /obj/item/paper_bin{
@@ -461,7 +461,7 @@
 "VG" = (
 /obj/effect/spawner/random/structure/crate_abandoned,
 /obj/effect/turf_decal/stripes/red/box,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/powered/mailroom)
 "Wj" = (
 /obj/machinery/status_display/evac/directional/west,
@@ -517,7 +517,7 @@
 /area/ruin/powered/mailroom)
 "YS" = (
 /obj/structure/fence/door,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "Ze" = (
 /obj/machinery/vending/coffee,

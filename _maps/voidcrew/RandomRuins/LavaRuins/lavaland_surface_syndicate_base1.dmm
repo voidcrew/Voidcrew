@@ -373,7 +373,7 @@
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/ruin/syndicate_lava_base/testlab)
 "dV" = (
-/obj/machinery/atmospherics/miner/plasma,
+/obj/machinery/portable_atmospherics/canister/plasma,
 /turf/open/floor/engine/plasma,
 /area/ruin/syndicate_lava_base/engineering)
 "dY" = (

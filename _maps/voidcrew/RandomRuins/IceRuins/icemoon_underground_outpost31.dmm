@@ -403,7 +403,7 @@
 /area/ruin/outpost31/medical)
 "hi" = (
 /obj/item/ammo_casing/spent,
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "ho" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
@@ -427,7 +427,7 @@
 "hC" = (
 /obj/structure/reagent_dispensers/fueltank,
 /obj/structure/sign/warning/no_smoking/directional/south,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "hD" = (
 /obj/effect/turf_decal/stripes/line{
@@ -630,7 +630,7 @@
 /area/ruin/outpost31/medical)
 "lW" = (
 /obj/effect/decal/cleanable/blood/old,
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "me" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -876,7 +876,7 @@
 /area/ruin/outpost31)
 "rb" = (
 /obj/machinery/light/small/directional/west,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/ruin/outpost31)
 "rf" = (
 /obj/machinery/washing_machine,
@@ -893,7 +893,7 @@
 /area/ruin/outpost31/lab)
 "rm" = (
 /obj/machinery/light/small/dim/directional/south,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "ru" = (
 /obj/effect/turf_decal/stripes/corner,
@@ -967,7 +967,7 @@
 /turf/open/floor/wood,
 /area/ruin/outpost31/commander_room)
 "sK" = (
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "sL" = (
 /obj/structure/window/spawner/directional/east,
@@ -1465,7 +1465,7 @@
 /area/ruin/outpost31)
 "BQ" = (
 /obj/structure/flora/rock/icy/style_random,
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "BU" = (
 /obj/machinery/shower/directional/south,
@@ -1827,7 +1827,7 @@
 /area/ruin/outpost31/lab)
 "IL" = (
 /obj/structure/reagent_dispensers/fueltank,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "IT" = (
 /obj/structure/sign/poster/random/directional/west,
@@ -2223,7 +2223,7 @@
 /area/ruin/outpost31)
 "RL" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "RO" = (
 /obj/machinery/door/airlock/grunge,
@@ -2296,7 +2296,7 @@
 	dir = 8
 	},
 /obj/machinery/light/small/dim/directional/north,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "SW" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -2359,7 +2359,7 @@
 /area/ruin/outpost31)
 "TP" = (
 /obj/structure/reagent_dispensers/fueltank,
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "TX" = (
 /obj/effect/turf_decal/siding/white{
@@ -2515,7 +2515,7 @@
 /area/ruin/outpost31/kitchendiningroom)
 "Wy" = (
 /obj/machinery/light/small/dim/directional/north,
-/turf/open/floor/plating/snowed/smoothed/icemoon,
+/turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "WD" = (
 /obj/machinery/door/airlock/external/glass/ruin,
@@ -2609,7 +2609,7 @@
 /turf/open/floor/iron/white/textured_large,
 /area/ruin/outpost31/crewquarters)
 "Yo" = (
-/turf/open/misc/asteroid/snow/icemoon/do_not_chasm,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "YG" = (
 /obj/machinery/power/apc/auto_name/directional/east,

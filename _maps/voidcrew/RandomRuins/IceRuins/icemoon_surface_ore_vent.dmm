@@ -3,19 +3,19 @@
 /turf/template_noop,
 /area/template_noop)
 "l" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/unexplored/rivers/no_monsters)
 "c" = (
 /obj/effect/zone_mobs/wildlife,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/unexplored/rivers/no_monsters)
 "b" = (
 /obj/structure/closet/crate/zone_loot/expedition,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/unexplored/rivers/no_monsters)
 "L" = (
 /obj/structure/ore_vent/random/icebox,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/unexplored/rivers/no_monsters)
 
 (1,1,1) = {"

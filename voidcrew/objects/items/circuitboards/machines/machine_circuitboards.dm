@@ -42,3 +42,16 @@
 	build_path = /obj/machinery/atmospherics/components/unary/shuttle/heater
 	req_components = list(/obj/item/stock_parts/micro_laser = 2,
 		/obj/item/stock_parts/matter_bin = 1)
+
+/obj/item/circuitboard/machine/shuttle/scoop
+	name = "Nebula Ram Scoop (Machine Board)"
+	build_path = /obj/machinery/atmospherics/components/unary/shuttle/scoop
+	req_components = list(/obj/item/stock_parts/micro_laser = 2,
+		/obj/item/stock_parts/matter_bin = 1,
+		/obj/item/stack/cable_coil = 2)
+
+/obj/item/circuitboard/machine/shuttle/sublimator
+	name = "Plasma Sublimation Chamber (Machine Board)"
+	build_path = /obj/machinery/atmospherics/components/unary/shuttle/sublimator
+	req_components = list(/obj/item/stock_parts/micro_laser = 1,
+		/obj/item/stock_parts/matter_bin = 1)

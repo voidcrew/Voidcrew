@@ -97,6 +97,10 @@
 	/// The chance, per tick, a turf will have weather effects applied to it. This is a decimal value, 1.00 = 100%, 0.50 = 50%, etc.
 	/// Recommend setting this low near 0.01 (results in 1 in 100 affected turfs having weather reagents applied per tick)
 	var/turf_weather_chance = 0.01
+	/// If TRUE, weather_act_turf() only tops up open reagent containers (and waters hydroponics trays when
+	/// the reagent is water) instead of running full reagent exposure + washing on every struck turf.
+	/// Planet-scale weathers pick hundreds of turfs per second — full exposure at that rate eats whole ticks.
+	var/turf_act_containers_only = FALSE
 	/// The chance, per tick, a turf will have a thunder strike applied to it. This is a decimal value, 1.00 = 100%, 0.50 = 50%, etc.
 	/// Recommend setting this really low near 0.001 (results in 1 in 1000 affected turfs having thunder strikes applied per tick)
 	var/turf_thunder_chance = THUNDER_CHANCE_AVERAGE // does nothing without the WEATHER_THUNDER weather_flag
@@ -394,6 +398,19 @@
  */
 /datum/weather/proc/weather_act_turf(turf/open/weather_turf)
 	if(!weather_reagent || !weather_reagent_holder)
+		return
+
+	if(turf_act_containers_only)
+		for(var/atom/movable/thing as anything in weather_turf)
+			if(is_reagent_container(thing))
+				var/obj/item/reagent_containers/container = thing
+				if(!container.is_open_container() || container.reagents.holder_full() || container.IsObscured())
+					continue
+				container.reagents.add_reagent(weather_reagent.type, WEATHER_REAGENT_VOLUME, TURF_REAGENT_VOLUME_MULTIPLIER)
+			else if(istype(thing, /obj/machinery/hydroponics) && istype(weather_reagent, /datum/reagent/water))
+				var/obj/machinery/hydroponics/tray = thing
+				if(!tray.IsObscured())
+					tray.adjust_waterlevel(rand(5, 10))
 		return
 
 	weather_reagent_holder.reagents.expose(weather_turf, TOUCH, TURF_REAGENT_VOLUME_MULTIPLIER)

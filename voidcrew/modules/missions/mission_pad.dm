@@ -88,9 +88,9 @@
 /obj/machinery/mission_pad/proc/check_for_active_negotiation()
 	if(!linked_ship?.shuttle?.shuttle_areas)
 		return
-	// Find ship comms holopad with active negotiation
+	// Find a holopad with an active negotiation
 	for(var/area/ship_area as anything in linked_ship.shuttle.shuttle_areas)
-		for(var/obj/machinery/holopad/ship_comms/holopad in ship_area)
+		for(var/obj/machinery/holopad/holopad in ship_area)
 			if(holopad.active_negotiation)
 				// Link ourselves to the active negotiation
 				holopad.active_negotiation.link_mission_pad(src)

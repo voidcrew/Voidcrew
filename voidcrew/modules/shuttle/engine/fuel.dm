@@ -82,6 +82,8 @@
 /obj/machinery/power/shuttle_engine/ship/fueled/proc/set_heater()
 	for(var/direction in GLOB.cardinals)
 		for(var/obj/machinery/atmospherics/components/unary/shuttle/heater/found in get_step(get_turf(src), direction))
+			if(QDELETED(found)) //a mid-Destroy heater is still on its turf but its weakref resolves null - relatching would recurse forever
+				continue
 			if(found.dir != dir)
 				continue
 			if(found.panel_open)
@@ -89,7 +91,6 @@
 			if(!found.anchored)
 				continue
 			attached_heater = WEAKREF(found)
-			update_icon_state()
 			return TRUE
 
 /obj/machinery/power/shuttle_engine/ship/fueled/plasma

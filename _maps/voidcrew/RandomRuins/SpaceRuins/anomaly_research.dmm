@@ -13,7 +13,7 @@
 "aK" = (
 /obj/structure/lattice/catwalk,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/misc/anomaly_research)
 "aX" = (
 /obj/machinery/light/broken/directional/north,
@@ -42,7 +42,7 @@
 "cr" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/railing,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/misc/anomaly_research)
 "cv" = (
 /obj/machinery/door/airlock/vault,
@@ -72,7 +72,7 @@
 /area/misc/anomaly_research)
 "dr" = (
 /obj/effect/spawner/random/environmentally_safe_anomaly/bioscramblerless,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/misc/anomaly_research)
 "ds" = (
 /obj/machinery/duct,
@@ -91,7 +91,7 @@
 "dD" = (
 /obj/structure/lattice/catwalk,
 /obj/effect/spawner/random/environmentally_safe_anomaly/bioscramblerless,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/misc/anomaly_research)
 "eq" = (
 /obj/structure/window/reinforced/spawner/directional/south,
@@ -114,7 +114,7 @@
 /area/misc/anomaly_research)
 "eM" = (
 /obj/structure/flora/tree/stump,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "eT" = (
 /obj/effect/turf_decal/siding/purple{
@@ -186,7 +186,7 @@
 /obj/structure/railing{
 	dir = 1
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/misc/anomaly_research)
 "gB" = (
 /obj/effect/turf_decal/trimline/purple/line{
@@ -249,7 +249,7 @@
 "hV" = (
 /obj/structure/flora/grass/green/style_random,
 /obj/structure/flora/grass/green/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "ih" = (
 /obj/effect/turf_decal/siding/purple{
@@ -346,7 +346,7 @@
 /obj/structure/railing{
 	dir = 10
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/misc/anomaly_research)
 "kp" = (
 /obj/effect/spawner/random/environmentally_safe_anomaly/immobile,
@@ -898,11 +898,11 @@
 /turf/closed/wall,
 /area/misc/anomaly_research)
 "xE" = (
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/misc/anomaly_research)
 "xI" = (
 /obj/structure/flora/grass/green/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "xQ" = (
 /obj/item/kirbyplants/random,
@@ -928,7 +928,7 @@
 /obj/structure/flora/tree/pine/style_random,
 /obj/structure/flora/grass/green/style_random,
 /obj/structure/flora/grass/green/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "yv" = (
 /obj/effect/turf_decal/stripes/line{
@@ -967,7 +967,7 @@
 /area/misc/anomaly_research)
 "AE" = (
 /obj/structure/statue/snow/snowman,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "AO" = (
 /obj/structure/sign/warning/test_chamber,
@@ -1007,7 +1007,7 @@
 /area/misc/anomaly_research)
 "BK" = (
 /obj/machinery/light/floor,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "Ce" = (
 /obj/effect/turf_decal/tile/purple/half/contrasted{
@@ -1079,7 +1079,7 @@
 /area/misc/anomaly_research)
 "Ek" = (
 /obj/structure/lattice,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/misc/anomaly_research)
 "En" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1088,7 +1088,7 @@
 "Eo" = (
 /obj/structure/lattice,
 /obj/item/anomaly_releaser,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/misc/anomaly_research)
 "Et" = (
 /obj/item/paper/fluff/ruins/anomaly_research/stabilizer,
@@ -1152,7 +1152,7 @@
 "Fs" = (
 /obj/structure/flora/tree/pine/style_random,
 /obj/structure/flora/grass/green/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "Ft" = (
 /obj/effect/turf_decal/tile/purple/half/contrasted,
@@ -1162,7 +1162,7 @@
 /area/misc/anomaly_research)
 "Fu" = (
 /obj/structure/flora/tree/pine/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "FE" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1410,7 +1410,7 @@
 /area/misc/anomaly_research)
 "LL" = (
 /obj/structure/flora/grass/brown/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "LU" = (
 /obj/structure/sink/kitchen/directional/west,
@@ -1441,11 +1441,11 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/misc/anomaly_research)
 "Mt" = (
 /obj/structure/flora/bush/snow/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "MG" = (
 /obj/structure/sign/warning/no_smoking,
@@ -1457,7 +1457,7 @@
 "MN" = (
 /obj/structure/flora/grass/green/style_random,
 /obj/machinery/light/floor,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "MX" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1539,7 +1539,7 @@
 	dir = 1
 	},
 /obj/structure/lattice/catwalk,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/misc/anomaly_research)
 "PY" = (
 /turf/open/floor/wood,
@@ -1575,7 +1575,7 @@
 /obj/structure/railing{
 	dir = 8
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/misc/anomaly_research)
 "Qz" = (
 /obj/effect/turf_decal/stripes/line{
@@ -1705,7 +1705,7 @@
 /area/misc/anomaly_research)
 "Ud" = (
 /obj/structure/lattice/catwalk,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/misc/anomaly_research)
 "Uo" = (
 /obj/machinery/recharge_station,
@@ -1798,7 +1798,7 @@
 /obj/structure/fence{
 	dir = 4
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "Xr" = (
 /obj/effect/turf_decal/stripes/line{
@@ -1809,7 +1809,7 @@
 /area/misc/anomaly_research)
 "XH" = (
 /obj/item/shovel/spade,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "Ya" = (
 /turf/closed/mineral/snowmountain/cavern,
@@ -1829,7 +1829,7 @@
 /area/misc/anomaly_research)
 "YU" = (
 /obj/structure/fence/door,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "Zh" = (
 /turf/open/floor/iron/smooth,
@@ -1864,7 +1864,7 @@
 /turf/open/floor/iron/smooth,
 /area/misc/anomaly_research)
 "ZJ" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "ZL" = (
 /obj/effect/spawner/random/environmentally_safe_anomaly/bioscramblerless,

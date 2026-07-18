@@ -276,13 +276,34 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 
 /// Ensures that the contained_turfs list properly represents the turfs actually inside us
 /area/proc/cannonize_contained_turfs_by_zlevel(zlevel_to_clean, _autoclean = TRUE)
-	// This is massively suboptimal for LARGE removal lists
 	// Try and keep the mass removal as low as you can. We'll do this by ensuring
 	// We only actually add to contained turfs after large changes (Also the management subsystem)
 	// Do your damndest to keep turfs out of /area/space as a stepping stone
 	// That sucker gets HUGE and will make this take actual seconds
 	if (zlevel_to_clean <= length(turfs_by_zlevel) && zlevel_to_clean <= length(turfs_to_uncontain_by_zlevel))
-		turfs_by_zlevel[zlevel_to_clean] -= turfs_to_uncontain_by_zlevel[zlevel_to_clean]
+		var/list/contained_turfs = turfs_by_zlevel[zlevel_to_clean]
+		var/list/turfs_to_cut = turfs_to_uncontain_by_zlevel[zlevel_to_clean]
+		// list -= list rescans the contained list once per cut turf: O(contained * cut).
+		// A planet-scale area (~65k turfs) with a large cut (ship landing, ruin load)
+		// turns that into tens of millions of comparisons in one unyielding call, so
+		// past a small cut we rebuild in O(contained + cut) instead. Both lists can
+		// hold duplicates (a turf that left and re-entered the area is listed twice),
+		// so occurrences are counted and only that many copies dropped.
+		if (length(turfs_to_cut) > 64 && length(contained_turfs) > 1024)
+			var/list/cut_counts = list()
+			for (var/turf/gone as anything in turfs_to_cut)
+				cut_counts[gone] += 1
+			var/list/kept_turfs = list()
+			for (var/turf/candidate as anything in contained_turfs)
+				if (cut_counts[candidate])
+					cut_counts[candidate] -= 1
+					continue
+				kept_turfs += candidate
+			// Mutate in place so any caller holding a ref to this list stays coherent
+			contained_turfs.Cut()
+			contained_turfs += kept_turfs
+		else
+			turfs_by_zlevel[zlevel_to_clean] -= turfs_to_cut
 
 	if (!_autoclean) // Removes empty lists from the end of this list
 		turfs_to_uncontain_by_zlevel[zlevel_to_clean] = list()

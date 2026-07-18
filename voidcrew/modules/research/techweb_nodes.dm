@@ -6,7 +6,10 @@
 	design_ids = list(
 		"engine_plasma",
 		"engine_ion",
+		"shuttle_heater", // was orphaned from every node — the heater design existed but nothing unlocked it
 		"shuttle_helm",
+		"shuttle_scoop",
+		"shuttle_sublimator",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_1_POINTS)
 

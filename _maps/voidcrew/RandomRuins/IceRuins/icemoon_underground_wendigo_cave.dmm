@@ -4,11 +4,11 @@
 /area/template_noop)
 "c" = (
 /obj/structure/flora/rock/pile/icy/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/unexplored)
 "d" = (
 /obj/structure/flora/tree/pine/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "e" = (
 /obj/effect/turf_decal/weather/snow/corner{
@@ -20,7 +20,7 @@
 /area/icemoon/underground/explored)
 "g" = (
 /obj/structure/flora/rock/pile/icy/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "h" = (
 /obj/effect/turf_decal/weather/snow/corner{
@@ -44,7 +44,7 @@
 /area/icemoon/underground/explored)
 "k" = (
 /obj,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/unexplored)
 "l" = (
 /turf/closed/indestructible/rock/snow/ice/ore,
@@ -65,7 +65,7 @@
 	},
 /area/icemoon/underground/explored)
 "o" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/unexplored)
 "p" = (
 /obj/effect/turf_decal/weather/snow/corner{
@@ -94,7 +94,7 @@
 /area/icemoon/underground/unexplored)
 "u" = (
 /obj/effect/decal/cleanable/blood/old,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "w" = (
 /obj/effect/decal/cleanable/blood/drip,
@@ -102,15 +102,15 @@
 	pixel_x = 11;
 	pixel_y = 18
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "y" = (
 /obj/structure/flora/grass/both/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/unexplored)
 "z" = (
 /obj/structure/flora/grass/brown/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "A" = (
 /obj/effect/decal/cleanable/blood/gibs/torso,
@@ -128,7 +128,7 @@
 "C" = (
 /obj/effect/mob_spawn/corpse/human/miner/explorer,
 /obj/effect/decal/cleanable/blood/gibs/old,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/unexplored)
 "D" = (
 /obj/effect/decal/cleanable/blood/splatter,
@@ -155,14 +155,14 @@
 "G" = (
 /obj/structure/flora/rock/pile/icy/style_random,
 /obj/structure/flora/grass/brown/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "H" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "f" = (
 /obj/effect/zone_mobs/wildlife,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "I" = (
 /turf/closed/indestructible/rock/snow/ice/ore,
@@ -202,7 +202,7 @@
 /area/icemoon/underground/explored)
 "M" = (
 /obj/structure/flora/tree/pine/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/unexplored)
 "N" = (
 /obj/effect/turf_decal/weather/snow/corner{
@@ -243,14 +243,14 @@
 	pixel_x = 10;
 	pixel_y = 7
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/unexplored)
 "R" = (
 /obj/effect/landmark/portal_exit{
 	id = "wendigo arena"
 	},
 /obj/effect/decal/cleanable/blood/drip,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "S" = (
 /obj/structure/flora/grass/brown/style_random,
@@ -258,7 +258,7 @@
 /area/icemoon/underground/explored)
 "T" = (
 /obj/structure/flora/rock/pile/icy/style_3,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "U" = (
 /obj/effect/turf_decal/weather/snow/corner{
@@ -272,7 +272,7 @@
 /obj/effect/landmark/portal_exit{
 	id = "wendigo arena exit"
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/unexplored)
 "W" = (
 /mob/living/simple_animal/hostile/megafauna/wendigo,

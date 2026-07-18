@@ -472,13 +472,102 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	chain_rate = 6
 	intensity = 2
 
+/**
+ * === Gas-bearing nebulas ===
+ *
+ * Every nebula carries a harvestable gas: hold still inside one with a nebula
+ * ram scoop mounted (see modules/shuttle/engine/gas_harvest.dm) and it feeds
+ * the ship's pipenet. Which gas is rolled from the tile's zone band at spawn —
+ * the safe outer ring is plasma fuel stops and inert wisps, the deep bands
+ * carry tritium and the exotics no cargo console sells. Scooping is loud:
+ * it blocks and breaks nebula concealment (see ship.dm notify_scoop_activity()),
+ * so the fuel stop is also the ambush spot.
+ */
+
+/// Weighted gas tables per zone band — deeper bands carry rarer gas
+GLOBAL_LIST_INIT(nebula_gas_tables_by_band, list(
+	"[ZONE_GREEN]" = list(
+		/datum/gas/plasma = 55,
+		/datum/gas/nitrogen = 30,
+		/datum/gas/water_vapor = 15,
+	),
+	"[ZONE_YELLOW]" = list(
+		/datum/gas/plasma = 40,
+		/datum/gas/tritium = 30,
+		/datum/gas/nitrogen = 15,
+		/datum/gas/water_vapor = 10,
+		/datum/gas/miasma = 5,
+	),
+	"[ZONE_RED]" = list(
+		/datum/gas/tritium = 30,
+		/datum/gas/hypernoblium = 20,
+		/datum/gas/pluoxium = 15,
+		/datum/gas/nitrium = 15,
+		/datum/gas/plasma = 10,
+		/datum/gas/miasma = 10,
+	),
+))
+
+/// Moles per second a rating-1 ram scoop pulls from a nebula of each gas —
+/// the precious stuff comes slower on top of already being red-band-only
+GLOBAL_LIST_INIT(nebula_gas_scoop_rates, list(
+	/datum/gas/plasma = 8,
+	/datum/gas/nitrogen = 8,
+	/datum/gas/water_vapor = 8,
+	/datum/gas/miasma = 8,
+	/datum/gas/tritium = 5,
+	/datum/gas/hypernoblium = 3,
+	/datum/gas/pluoxium = 3,
+	/datum/gas/nitrium = 3,
+))
+
 /obj/structure/overmap/event/nebula
 	name = "nebula"
 	icon_state = "nebula"
 	chain_rate = 8
 	spread_chance = 75
 	opacity = TRUE
-	var/datum/gas/gas_type = "plasma"
+	/// The /datum/gas typepath this nebula carries. Null rolls one from the
+	/// zone band's table on Init; the fixed subtypes below force a specific gas.
+	var/datum/gas/gas_type
+
+/obj/structure/overmap/event/nebula/Initialize(mapload)
+	. = ..()
+	if(!gas_type)
+		var/band = SSovermap.get_zone_band_for_turf(get_turf(src))
+		var/list/table = GLOB.nebula_gas_tables_by_band["[band]"] || GLOB.nebula_gas_tables_by_band["[ZONE_GREEN]"]
+		gas_type = pick_weight(table)
+	name = "[LOWER_TEXT(get_gas_name())] nebula"
+	color = initial(gas_type.primary_color)
+
+/// Display name of the carried gas, for survey readouts and examine
+/obj/structure/overmap/event/nebula/proc/get_gas_name()
+	if(!gas_type)
+		return "unknown"
+	return initial(gas_type.name)
+
+/// Base harvest rate (mol/s at stock parts) for this nebula's gas
+/obj/structure/overmap/event/nebula/proc/get_scoop_rate()
+	return GLOB.nebula_gas_scoop_rates[gas_type] || 0
+
+// Fixed-gas variants for admin spawning / mapped encounters — natural spawns
+// stay the base type and roll from their zone band's table instead
+/obj/structure/overmap/event/nebula/plasma
+	gas_type = /datum/gas/plasma
+/obj/structure/overmap/event/nebula/nitrogen
+	gas_type = /datum/gas/nitrogen
+/obj/structure/overmap/event/nebula/water_vapor
+	gas_type = /datum/gas/water_vapor
+/obj/structure/overmap/event/nebula/miasma
+	gas_type = /datum/gas/miasma
+/obj/structure/overmap/event/nebula/tritium
+	gas_type = /datum/gas/tritium
+/obj/structure/overmap/event/nebula/hypernoblium
+	gas_type = /datum/gas/hypernoblium
+/obj/structure/overmap/event/nebula/pluoxium
+	gas_type = /datum/gas/pluoxium
+/obj/structure/overmap/event/nebula/nitrium
+	gas_type = /datum/gas/nitrium
 
 /obj/structure/overmap/event/nebula/ship_act(mob/user, obj/structure/overmap/ship/acting)
 	// If already hidden, unhide
@@ -492,6 +581,8 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	if(!acting.can_hide_in_nebula())
 		if(acting.is_interdicted)
 			to_chat(user, span_warning("Cannot hide while interdicted!"))
+		else if(acting.is_scoop_hot())
+			to_chat(user, span_warning("Ram scoop emissions are lighting the ship up — cannot engage concealment!"))
 		else
 			to_chat(user, span_warning("Cannot engage nebula concealment here."))
 		return

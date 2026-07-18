@@ -47,7 +47,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "do" = (
 /turf/open/floor/iron/white,
@@ -100,7 +100,7 @@
 /obj/effect/turf_decal/siding/wood/corner{
 	dir = 1
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "gY" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -128,7 +128,7 @@
 /area/ruin/comms_agent)
 "ig" = (
 /obj/effect/turf_decal/siding/wood,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "ij" = (
 /obj/effect/turf_decal/siding/wideplating/light/corner{
@@ -144,11 +144,11 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "jc" = (
 /obj/structure/flora/tree/pine/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "jB" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
@@ -166,7 +166,7 @@
 "kA" = (
 /obj/effect/turf_decal/siding/wood,
 /obj/structure/fluff/fokoff_sign,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "kB" = (
 /obj/structure/cable,
@@ -209,7 +209,7 @@
 "ly" = (
 /obj/structure/flora/tree/pine/style_random,
 /obj/structure/flora/grass/green/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "mb" = (
 /obj/effect/turf_decal/siding/wood/corner{
@@ -243,7 +243,7 @@
 /obj/machinery/atmospherics/components/unary/passive_vent/layer2{
 	dir = 4
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "nL" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -260,13 +260,13 @@
 /area/ruin/comms_agent)
 "oE" = (
 /obj/item/tape/frozen,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "pg" = (
 /obj/machinery/atmospherics/components/unary/passive_vent/layer2{
 	dir = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "pV" = (
 /obj/machinery/light/small/directional/south,
@@ -297,7 +297,7 @@
 /area/ruin/comms_agent)
 "sB" = (
 /obj/structure/flora/rock/pile/icy/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "tb" = (
 /obj/machinery/power/port_gen/pacman,
@@ -311,7 +311,7 @@
 /obj/effect/turf_decal/siding/wood/corner{
 	dir = 4
 	},
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "tu" = (
 /obj/structure/table,
@@ -458,7 +458,7 @@
 /obj/effect/turf_decal/siding/wood/corner{
 	dir = 8
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "BZ" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -585,7 +585,7 @@
 /area/ruin/comms_agent/maint)
 "GY" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "HX" = (
 /obj/structure/cable,
@@ -595,7 +595,7 @@
 /area/ruin/comms_agent)
 "Ie" = (
 /obj/effect/turf_decal/siding/wood/corner,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "IJ" = (
 /obj/machinery/griddle,
@@ -792,7 +792,7 @@
 /obj/effect/turf_decal/siding/wood/corner{
 	dir = 1
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "Oy" = (
 /obj/effect/decal/cleanable/dirt,
@@ -802,10 +802,10 @@
 /turf/open/floor/plating/snowed/standard_air,
 /area/ruin/comms_agent)
 "OB" = (
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/planetary,
 /area/icemoon/underground/explored)
 "OM" = (
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "Pj" = (
 /obj/structure/bed/maint,
@@ -816,7 +816,7 @@
 /obj/effect/turf_decal/siding/wood/corner{
 	dir = 4
 	},
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "PX" = (
 /obj/item/storage/toolbox/fishing{
@@ -880,11 +880,11 @@
 /area/ruin/comms_agent)
 "TH" = (
 /obj/structure/flora/tree/dead/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "TV" = (
 /obj/structure/flora/grass/green/style_random,
-/turf/open/misc/asteroid/snow/icemoon,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "Uv" = (
 /obj/effect/decal/cleanable/cobweb/cobweb2,

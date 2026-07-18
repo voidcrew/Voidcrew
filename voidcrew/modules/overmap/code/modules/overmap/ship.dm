@@ -187,6 +187,9 @@
 	var/hidden_in_nebula = FALSE
 	/// Timer ID for nebula hide warmup
 	var/nebula_hide_timer
+	/// world.time of the last tick a mounted nebula ram scoop actually harvested —
+	/// concealment stays blocked while this is recent (see is_scoop_hot())
+	var/last_scoop_activity = 0
 
 	// ===== ZONE TRANSITION =====
 	/// Whether we're currently transitioning between zones (10 second delay)
@@ -1169,6 +1172,26 @@
 
 /// Warmup time for nebula concealment in deciseconds
 #define NEBULA_HIDE_WARMUP_TIME (10 SECONDS)
+/// How long after a ram scoop harvest tick the ship stays too loud to conceal
+#define SCOOP_EMISSIONS_LOCKOUT (10 SECONDS)
+
+/// Whether recent ram scoop activity is lighting the ship up (blocks nebula concealment)
+/obj/structure/overmap/ship/proc/is_scoop_hot()
+	return world.time < last_scoop_activity + SCOOP_EMISSIONS_LOCKOUT
+
+/**
+ * Called by a mounted nebula ram scoop every tick it actually harvests gas.
+ * Scooping is deliberately loud — it blocks new concealment attempts and rips
+ * away any active concealment, so the fuel stop is also the ambush spot.
+ */
+/obj/structure/overmap/ship/proc/notify_scoop_activity()
+	last_scoop_activity = world.time
+	if(nebula_hide_timer)
+		cancel_nebula_hide()
+		ship_notify("Ram scoop emissions disrupted nebula concealment!", "WARNING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
+	if(hidden_in_nebula)
+		unhide_from_nebula()
+		ship_notify("Ram scoop emissions have revealed the ship!", "WARNING", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 
 /// Checks if the ship can start hiding in a nebula
 /obj/structure/overmap/ship/proc/can_hide_in_nebula()
@@ -1178,6 +1201,10 @@
 
 	// Can't hide while interdicted
 	if(is_interdicted)
+		return FALSE
+
+	// Active ram scoop emissions light the ship up
+	if(is_scoop_hot())
 		return FALSE
 
 	// Must be on a nebula tile
@@ -1219,7 +1246,7 @@
 			on_nebula = TRUE
 			break
 
-	if(!on_nebula || is_interdicted)
+	if(!on_nebula || is_interdicted || is_scoop_hot())
 		return FALSE
 
 	hidden_in_nebula = TRUE
