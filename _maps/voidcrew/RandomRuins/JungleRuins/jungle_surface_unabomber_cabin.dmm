@@ -74,6 +74,14 @@
 	},
 /turf/open/floor/wood,
 /area/ruin/powered)
+"b" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"c" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/wood,
+/area/ruin/powered)
 
 (1,1,1) = {"
 a
@@ -86,7 +94,7 @@ a
 (2,1,1) = {"
 a
 E
-i
+b
 i
 S
 a
@@ -104,7 +112,7 @@ a
 y
 Z
 i
-i
+c
 N
 "}
 (5,1,1) = {"

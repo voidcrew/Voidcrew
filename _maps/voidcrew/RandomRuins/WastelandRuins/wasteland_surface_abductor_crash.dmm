@@ -5,8 +5,28 @@
 "b" = (
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
+"c" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/misc/wasteland/lit,
+/area/overmap_encounter/planetoid/wasteland)
 "d" = (
 /turf/closed/wall/mineral/abductor,
+/area/ruin/unpowered)
+"e" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/misc/dust/lit,
+/area/overmap_encounter/planetoid/wasteland)
+"f" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/plating/abductor{
+	initial_gas_mix = "ws_atmos"
+	},
+/area/ruin/unpowered)
+"g" = (
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/floor/plating/abductor{
+	initial_gas_mix = "ws_atmos"
+	},
 /area/ruin/unpowered)
 "j" = (
 /obj/machinery/abductor/experiment{
@@ -40,7 +60,7 @@
 	},
 /area/ruin/unpowered)
 "p" = (
-/obj/effect/mob_spawn/human/abductor,
+/obj/effect/mob_spawn/corpse/human/abductor,
 /turf/open/floor/plating/abductor{
 	initial_gas_mix = "ws_atmos"
 	},
@@ -155,7 +175,7 @@ a
 a
 d
 j
-k
+f
 k
 n
 y
@@ -180,7 +200,7 @@ a
 d
 l
 p
-k
+g
 w
 A
 d
@@ -213,7 +233,7 @@ a
 (10,1,1) = {"
 a
 a
-b
+c
 X
 X
 X
@@ -299,7 +319,7 @@ a
 b
 b
 b
-X
+e
 X
 b
 b

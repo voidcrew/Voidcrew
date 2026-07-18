@@ -7,255 +7,253 @@
 /obj/item/disk/data,
 /obj/item/disk/data,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "aP" = (
-/obj/item/kirbyplants/fullysynthetic,
+/obj/item/kirbyplants/synthetic,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "bI" = (
 /turf/closed/wall/r_wall,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "ce" = (
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "dJ" = (
 /obj/structure/closet/crate/radiation,
 /turf/open/floor/iron,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "dR" = (
 /turf/closed/wall/r_wall,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "ez" = (
 /obj/structure/bed,
 /obj/item/bedsheet/medical,
 /turf/open/floor/iron,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
 "eQ" = (
 /obj/machinery/washing_machine,
 /turf/open/floor/iron,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
 "fM" = (
 /obj/structure/chair/greyscale{
 	dir = 8
 	},
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "fR" = (
 /obj/effect/gibspawner/xeno,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "gb" = (
 /obj/structure/table,
 /obj/item/plant_analyzer,
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/hallway)
+/area/overmap_encounter/planet_ruin)
 "hl" = (
 /obj/structure/cable,
 /obj/machinery/door/airlock,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "hm" = (
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "ii" = (
 /obj/structure/closet/secure_closet/hydroponics,
 /turf/open/floor/iron,
-/area/ship/hallway)
+/area/overmap_encounter/planet_ruin)
 "ik" = (
 /obj/effect/decal/cleanable/blood/gibs/up,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "iv" = (
 /obj/structure/closet/crate/bin,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "iG" = (
 /obj/machinery/vending/cigarette,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "jb" = (
 /obj/effect/gibspawner/xeno,
 /turf/open/floor/iron,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
 "jc" = (
 /obj/machinery/seed_extractor,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "jf" = (
 /obj/structure/closet/crate/large,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "ji" = (
 /obj/machinery/vending/hydroseeds,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "js" = (
 /obj/structure/cable,
 /obj/effect/decal/cleanable/blood/tracks,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "jK" = (
-/obj/machinery/door/unpowered/shuttle,
+/obj/machinery/door/airlock/shuttle,
 /turf/open/floor/iron,
-/area/ship/hallway)
+/area/overmap_encounter/planet_ruin)
 "ke" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "kj" = (
 /obj/machinery/vending/sovietsoda,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "kG" = (
 /turf/closed/wall/r_wall,
-/area/ship/hallway)
+/area/overmap_encounter/planet_ruin)
 "lb" = (
 /obj/machinery/power/smes,
 /turf/open/floor/iron,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "lK" = (
 /obj/machinery/hydroponics/constructable,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "lO" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "mg" = (
 /obj/structure/cable,
 /obj/machinery/door/airlock/public/glass,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "mL" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/hallway)
+/area/overmap_encounter/planet_ruin)
 "mN" = (
 /obj/effect/gibspawner/xeno,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "nl" = (
 /obj/structure/cable,
-/obj/effect/decal/cleanable/xenoblood/xgibs,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "nF" = (
 /obj/structure/girder/reinforced,
 /turf/open/floor/plating,
-/area/ship/hallway)
+/area/overmap_encounter/planet_ruin)
 "nJ" = (
 /obj/structure/flora/ausbushes/sparsegrass,
 /turf/open/floor/grass,
-/area/ruin/jungle)
+/area/overmap_encounter/planet_ruin)
 "nQ" = (
 /obj/machinery/power/apc,
 /turf/closed/wall/r_wall,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "nS" = (
 /obj/structure/cable,
 /obj/effect/decal/cleanable/blood/tracks,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "oc" = (
 /obj/machinery/door/airlock/glass,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "om" = (
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 10
 	},
-/obj/effect/mob_spawn/human/corpse/pirate,
+/obj/effect/mob_spawn/corpse/human/pirate,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "oR" = (
 /obj/structure/table,
 /obj/item/storage/fancy/cigarettes/cigpack_robust,
 /obj/item/paper/fluff/ruins/forgottenship/powerissues,
 /turf/open/floor/iron,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
 "pt" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "pM" = (
 /turf/closed/wall/r_wall,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "qM" = (
 /obj/structure/sign/poster/contraband/ambrosia_vulgaris,
 /turf/closed/wall/r_wall,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "ru" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "sU" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "tb" = (
 /obj/structure/grille/broken,
 /turf/open/floor/plating,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "uC" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
 "uK" = (
 /obj/structure/flora/ausbushes/sparsegrass,
 /obj/structure/flora/grass/jungle,
 /turf/open/floor/grass,
-/area/ruin/jungle)
+/area/overmap_encounter/planet_ruin)
 "uM" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "vo" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "wl" = (
 /obj/structure/table,
 /obj/item/storage/belt/utility,
 /turf/open/floor/iron,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "wP" = (
 /obj/structure/closet/crate/medical,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "wU" = (
 /obj/structure/flora/ausbushes/grassybush,
 /turf/open/floor/grass,
-/area/ruin/jungle)
+/area/overmap_encounter/planet_ruin)
 "xa" = (
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "yt" = (
 /obj/structure/cable,
 /obj/machinery/door/airlock/public/glass,
 /turf/open/floor/iron,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
 "yR" = (
 /obj/machinery/hydroponics/constructable,
-/obj/effect/decal/cleanable/xenoblood,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "yS" = (
 /obj/structure/table,
 /obj/item/storage/toolbox/mechanical,
 /obj/item/storage/toolbox/electrical,
 /turf/open/floor/iron,
-/area/ship/hallway)
+/area/overmap_encounter/planet_ruin)
 "zm" = (
 /obj/structure/cable,
-/obj/effect/mob_spawn/human/corpse/pirate,
+/obj/effect/mob_spawn/corpse/human/pirate,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "zz" = (
 /obj/effect/spawner/structure/window/hollow/reinforced,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "Aq" = (
 /obj/structure/table,
 /obj/item/paper_bin,
@@ -263,194 +261,191 @@
 /obj/item/folder,
 /obj/item/stamp,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "AD" = (
 /obj/structure/bed,
 /obj/item/bedsheet/black,
 /turf/open/floor/iron,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
 "AJ" = (
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "Cj" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/hallway)
+/area/overmap_encounter/planet_ruin)
 "CO" = (
 /obj/machinery/power/apc,
 /turf/closed/wall/r_wall,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "Dr" = (
 /obj/item/xenos_claw,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "DL" = (
 /obj/machinery/power/port_gen/pacman,
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "DS" = (
 /obj/structure/closet/crate/bin,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "EJ" = (
 /obj/structure/cable,
 /obj/effect/gibspawner/xeno,
 /turf/open/floor/iron,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
 "FF" = (
-/obj/effect/decal/cleanable/xenoblood,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "FG" = (
 /obj/machinery/door/airlock/public,
 /turf/open/floor/iron,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
 "FN" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "FZ" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "Gq" = (
 /obj/structure/table,
 /obj/item/book/manual/hydroponics_pod_people,
 /turf/open/floor/iron,
-/area/ship/hallway)
+/area/overmap_encounter/planet_ruin)
 "Gx" = (
 /obj/structure/cable,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
 	},
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "GY" = (
 /obj/structure/girder/reinforced,
 /turf/open/floor/plating,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "Hm" = (
 /obj/structure/chair/greyscale{
 	dir = 8
 	},
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "Hu" = (
 /turf/open/floor/iron,
-/area/ship/hallway)
+/area/overmap_encounter/planet_ruin)
 "HQ" = (
 /obj/effect/mob_spawn/corpse/human/cargo_tech,
 /turf/open/floor/iron,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "Ie" = (
 /obj/structure/table,
-/obj/machinery/plantgenes,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "Ig" = (
 /obj/structure/table,
 /obj/item/clothing/glasses/meson,
 /turf/open/floor/iron,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "IG" = (
 /obj/structure/closet/crate/large,
 /turf/open/floor/iron,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "IT" = (
 /obj/machinery/power/apc,
 /turf/closed/wall/r_wall,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "Ji" = (
 /obj/effect/spawner/structure/window/hollow/reinforced,
 /turf/open/floor/iron,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
 "JU" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/hallway)
+/area/overmap_encounter/planet_ruin)
 "Ke" = (
 /obj/structure/cable,
 /obj/effect/gibspawner/xeno,
 /turf/open/floor/iron,
-/area/ship/hallway)
+/area/overmap_encounter/planet_ruin)
 "Kn" = (
 /obj/structure/sign/departments/botany,
 /turf/closed/wall/r_wall,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "Kt" = (
 /obj/structure/chair/greyscale{
 	dir = 4
 	},
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "KE" = (
 /obj/structure/girder/reinforced,
 /turf/open/floor/plating,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "Nk" = (
 /obj/structure/table,
 /obj/item/storage/box/donkpockets/donkpocketberry,
 /obj/item/storage/box/donkpockets/donkpockethonk,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "Nn" = (
 /turf/open/floor/iron,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
 "Np" = (
 /obj/structure/girder/reinforced,
 /turf/open/floor/plating,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "OX" = (
 /turf/open/floor/iron,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "Pm" = (
 /obj/structure/sign/departments/engineering,
 /turf/closed/wall/r_wall,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "Pp" = (
 /obj/structure/grille/broken,
 /turf/open/floor/plating,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "Pq" = (
-/obj/effect/decal/cleanable/xenoblood,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "Qc" = (
 /obj/effect/spawner/structure/window/hollow/reinforced,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "Qg" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "Qu" = (
 /obj/machinery/door/airlock,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "QJ" = (
 /obj/structure/cable,
 /obj/machinery/door/airlock/engineering{
 	locked = 1
 	},
 /turf/open/floor/iron,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "Rj" = (
 /obj/structure/closet/crate{
 	icon_state = "crateopen"
 	},
-/obj/item/stack/sheet/mineral/plasma/twenty,
+/obj/item/stack/sheet/mineral/plasma/thirty,
 /turf/open/floor/iron,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "Se" = (
 /obj/structure/closet/secure_closet/personal,
 /turf/open/floor/iron,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
 "Sh" = (
 /obj/structure/flora/grass/jungle,
 /turf/open/floor/grass,
-/area/ruin/jungle)
+/area/overmap_encounter/planet_ruin)
 "Ss" = (
 /obj/machinery/power/terminal{
 	dir = 1
@@ -458,74 +453,83 @@
 /obj/structure/cable,
 /obj/effect/gibspawner/xeno,
 /turf/open/floor/iron,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "SB" = (
 /obj/machinery/vending/hydronutrients,
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "SQ" = (
 /obj/structure/cable,
 /turf/closed/wall/r_wall,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "Uo" = (
 /obj/structure/table,
 /obj/machinery/microwave,
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "Vn" = (
 /obj/structure/table,
 /turf/open/floor/iron,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "Vu" = (
 /obj/machinery/power/apc,
 /turf/closed/wall/r_wall,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
 "VH" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "Wo" = (
 /obj/structure/sign/poster/contraband/donut_corp,
 /turf/closed/wall/r_wall,
-/area/ship/engineering)
+/area/overmap_encounter/planet_ruin)
 "Ws" = (
 /obj/machinery/power/apc,
 /turf/closed/wall/r_wall,
-/area/ship/hallway)
+/area/overmap_encounter/planet_ruin)
 "WE" = (
 /obj/structure/cable,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "Xq" = (
 /obj/machinery/power/apc,
 /turf/closed/wall/r_wall,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "XO" = (
 /turf/closed/wall/r_wall,
-/area/ship/bridge)
+/area/overmap_encounter/planet_ruin)
 "Yc" = (
-/obj/effect/mob_spawn/human/corpse/charredskeleton,
+/obj/effect/mob_spawn/corpse/human/charredskeleton,
 /turf/open/floor/iron,
-/area/ship/crew/hydroponics)
+/area/ruin/powered)
 "YN" = (
 /obj/structure/table,
 /obj/item/toy/cards/deck/tarot,
 /turf/open/floor/iron,
-/area/ship/crew/canteen)
+/area/overmap_encounter/planet_ruin)
 "Zq" = (
 /obj/machinery/suit_storage_unit/ert/engineer,
 /turf/open/floor/iron,
-/area/ship/hallway)
+/area/overmap_encounter/planet_ruin)
 "ZO" = (
 /obj/structure/bed,
 /obj/item/bedsheet/green,
 /turf/open/floor/iron,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
 "ZU" = (
 /turf/closed/wall/r_wall,
-/area/ship/crew/dorm)
+/area/overmap_encounter/planet_ruin)
+"zX" = (
+/obj/structure/cable,
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"zY" = (
+/obj/effect/zone_mobs/bug,
+/turf/open/floor/iron,
+/area/ruin/powered)
 
 (1,1,1) = {"
 kG
@@ -629,7 +633,7 @@ XO
 bI
 qM
 ji
-hm
+zY
 hm
 lK
 pM
@@ -659,7 +663,7 @@ zz
 lK
 ru
 FN
-FN
+zX
 mg
 VH
 ke

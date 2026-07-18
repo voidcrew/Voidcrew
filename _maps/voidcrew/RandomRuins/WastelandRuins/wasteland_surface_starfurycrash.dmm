@@ -1,4 +1,35 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/syndicate/rare,
+/turf/open/floor/plating{
+	initial_gas_mix = "ws_atmos"
+	},
+/area/ruin/unpowered)
+"ab" = (
+/obj/effect/zone_mobs/syndicate/boss,
+/turf/open/floor/plating{
+	initial_gas_mix = "ws_atmos"
+	},
+/area/ruin/unpowered)
+"ac" = (
+/obj/effect/zone_mobs/syndicate,
+/turf/open/floor/engine{
+	initial_gas_mix = "ws_atmos"
+	},
+/area/ruin/unpowered)
+"ae" = (
+/obj/effect/mapping_helpers/burnt_floor,
+/obj/effect/zone_mobs/syndicate,
+/turf/open/floor/plating{
+	initial_gas_mix = "ws_atmos"
+	},
+/area/ruin/unpowered)
+"af" = (
+/obj/effect/zone_mobs/syndicate,
+/turf/open/floor/plating{
+	initial_gas_mix = "ws_atmos"
+	},
+/area/ruin/unpowered)
 "ad" = (
 /obj/machinery/atmospherics/components/unary/portables_connector/visible{
 	dir = 4
@@ -138,7 +169,7 @@
 "rp" = (
 /obj/machinery/suit_storage_unit{
 	mask_type = /obj/item/clothing/mask/gas/syndicate;
-	suit_type = /obj/item/clothing/suit/space/hardsuit/syndi
+	suit_type = /obj/item/clothing/suit/space/syndicate
 	},
 /turf/open/floor/plating{
 	initial_gas_mix = "ws_atmos"
@@ -391,9 +422,9 @@
 /area/overmap_encounter/planetoid/wasteland)
 "ZX" = (
 /obj/machinery/suit_storage_unit{
-	helmet_type = /obj/item/clothing/head/helmet/infiltrator;
+	helmet_type = /obj/item/clothing/head/helmet/space/syndicate;
 	mask_type = /obj/item/clothing/mask/gas/syndicate;
-	suit_type = /obj/item/clothing/suit/armor/vest/infiltrator
+	suit_type = /obj/item/clothing/suit/armor/vest
 	},
 /turf/open/floor/mineral/plastitanium/red{
 	initial_gas_mix = "ws_atmos"
@@ -653,7 +684,7 @@ Uw
 BW
 BW
 yj
-Eu
+ae
 Ts
 CM
 CM
@@ -715,8 +746,8 @@ kZ
 WX
 WX
 NA
-WX
-kZ
+ac
+aa
 WX
 WX
 WX
@@ -743,7 +774,7 @@ cS
 ox
 Dz
 gt
-kZ
+ab
 TT
 cS
 WX
@@ -758,7 +789,7 @@ RJ
 RJ
 RJ
 RJ
-kZ
+af
 kZ
 ZX
 rp

@@ -348,7 +348,9 @@
 	weight = 8
 	mission_limit = 2
 
-	/// Mob type pools per difficulty (space-capable faction pirates)
+	/// Mob type pools per difficulty (space-capable faction pirates).
+	/// Hard pool is the real faction bosses — red-zone bounties are the
+	/// named monsters of the sector, not just another captain.
 	var/static/list/easy_targets = list(
 		/mob/living/basic/trooper/pirate/faction/silverscale/melee,
 		/mob/living/basic/trooper/pirate/faction/skeleton/melee,
@@ -358,11 +360,27 @@
 		/mob/living/basic/trooper/pirate/faction/silverscale/ranged,
 		/mob/living/basic/trooper/pirate/faction/skeleton/ranged,
 		/mob/living/basic/trooper/pirate/faction/lustrous/ranged,
+		/mob/living/basic/trooper/pirate/faction/grey/captain,
 	)
 	var/static/list/hard_targets = list(
-		/mob/living/basic/trooper/pirate/faction/silverscale/captain,
-		/mob/living/basic/trooper/pirate/faction/skeleton/captain,
-		/mob/living/basic/trooper/pirate/faction/interdyne/captain,
+		/mob/living/basic/trooper/pirate/faction/boss/silverscale,
+		/mob/living/basic/trooper/pirate/faction/boss/skeleton,
+		/mob/living/basic/trooper/pirate/faction/boss/grey,
+		/mob/living/basic/trooper/pirate/faction/boss/lustrous,
+		/mob/living/basic/trooper/pirate/faction/boss/interdyne,
+		/mob/living/basic/trooper/pirate/faction/boss/medieval,
+	)
+	/// Entourage pools: bounty targets above easy keep hired muscle around
+	var/static/list/medium_guards = list(
+		/mob/living/basic/trooper/pirate/faction/grey/melee,
+		/mob/living/basic/trooper/pirate/faction/skeleton/melee,
+		/mob/living/basic/trooper/pirate/faction/silverscale/melee,
+	)
+	var/static/list/hard_guards = list(
+		/mob/living/basic/trooper/pirate/faction/silverscale/ranged,
+		/mob/living/basic/trooper/pirate/faction/skeleton/ranged,
+		/mob/living/basic/trooper/pirate/faction/lustrous/ranged,
+		/mob/living/basic/trooper/pirate/faction/interdyne/ranged,
 	)
 	/// Whether the target has been killed (the proof item exists)
 	var/target_killed = FALSE
@@ -392,18 +410,37 @@
 	if(!spawn_turf)
 		return
 	var/mob_type
+	var/list/guard_pool
+	var/guard_count = 0
 	switch(difficulty)
 		if(MISSION_DIFFICULTY_EASY)
 			mob_type = pick(easy_targets)
 		if(MISSION_DIFFICULTY_MEDIUM)
 			mob_type = pick(medium_targets)
+			guard_pool = medium_guards
+			guard_count = 1
 		else
 			mob_type = pick(hard_targets)
+			guard_pool = hard_guards
+			guard_count = 2
 	var/mob/living/target = new mob_type(spawn_turf)
 	target.name = objective_name
 	target.desc += " They look like they're worth something dead."
 	RegisterSignal(target, COMSIG_LIVING_DEATH, PROC_REF(on_target_death))
 	register_objective(target)
+	// The entourage: untracked muscle around the target. Killing them pays
+	// nothing — the contract is the name on the tag.
+	for(var/_ in 1 to guard_count)
+		var/guard_type = pick(guard_pool)
+		var/turf/guard_turf = spawn_turf
+		var/list/open_neighbors = list()
+		for(var/turf/open/tile in RANGE_TURFS(2, spawn_turf))
+			if(!tile.is_blocked_turf(exclude_mobs = TRUE))
+				open_neighbors += tile
+		if(length(open_neighbors))
+			guard_turf = pick(open_neighbors)
+		var/mob/living/guard = new guard_type(guard_turf)
+		guard.desc += " They're on somebody's payroll."
 
 /**
  * The target died: drop the proof item and start tracking it instead.

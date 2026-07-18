@@ -170,6 +170,16 @@
 	},
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
+"z" = (
+/obj/structure/stone_tile{
+	dir = 4
+	},
+/obj/structure/stone_tile{
+	dir = 1
+	},
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/misc/dust/lit,
+/area/overmap_encounter/planetoid/wasteland)
 
 (1,1,1) = {"
 a
@@ -273,7 +283,7 @@ c
 c
 c
 c
-q
+z
 t
 w
 x

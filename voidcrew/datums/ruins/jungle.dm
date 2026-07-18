@@ -12,7 +12,7 @@
 	description = "A recently abandoned standard SolGov exploration pod. It may not be powerful or resilient, but it can fly in a pinch."
 	suffix = "jungle_surface_abandonedsolgov.dmm"
 
-/datum/map_template/ruin/jungle/solgov_crash
+/datum/map_template/ruin/jungle/monkies // was a duplicate /solgov_crash block that silently overrode the real one
 	name = "Enlightenment"
 	id = "jungle-monkies"
 	description = "Ook. Ooh Ooh Aah. AAH. OOK OOK OOK. OOK OOK AAH AAAH AAAAAAAAAAAAAAAH!"
@@ -128,3 +128,9 @@
 	id = "ninjashrine"
 	description = "A ninja shrine."
 	suffix = "jungle_surface_ninjashrine.dmm"
+
+/datum/map_template/ruin/jungle/botany
+	name = "Overgrown Botany Lab"
+	id = "jungle-botany"
+	description = "A botanical research post the jungle took back."
+	suffix = "jungle_botany.dmm"

@@ -29,7 +29,7 @@
 /area/ruin/unpowered)
 "i" = (
 /obj/structure/table,
-/obj/item/kitchen/knife/combat,
+/obj/item/knife/combat,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "j" = (
@@ -65,6 +65,7 @@
 /area/ruin/powered)
 "p" = (
 /obj/effect/decal/remains/human,
+/obj/effect/zone_mobs/syndicate/boss,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "q" = (
@@ -114,7 +115,7 @@
 /area/ruin/powered)
 "A" = (
 /obj/structure/rack,
-/obj/item/ammo_box/magazine/mm712x82,
+/obj/item/ammo_box/magazine/sniper_rounds,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -123,6 +124,7 @@
 /obj/item/clothing/gloves/combat,
 /obj/item/clothing/shoes/combat,
 /obj/item/clothing/mask/gas/syndicate,
+/obj/structure/closet/crate/zone_loot/syndicate/rare,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "E" = (
@@ -137,7 +139,7 @@
 /area/ruin/powered)
 "G" = (
 /obj/structure/cable,
-/mob/living/simple_animal/hostile/syndicate,
+/mob/living/basic/trooper/syndicate,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "H" = (
@@ -156,7 +158,7 @@
 /area/ruin/unpowered)
 "K" = (
 /obj/structure/chair/plastic,
-/mob/living/simple_animal/hostile/syndicate/ranged,
+/mob/living/basic/trooper/syndicate/ranged,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "M" = (
@@ -208,6 +210,7 @@
 /area/ruin/powered)
 "Z" = (
 /obj/structure/cable,
+/obj/effect/zone_mobs/syndicate,
 /turf/open/floor/plating,
 /area/ruin/powered)
 

@@ -6,7 +6,7 @@
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "b" = (
-/obj/machinery/modular_computer/console/preset/civilian,
+/obj/machinery/modular_computer/preset/civilian,
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/noslip,
 /area/ruin/unpowered)
@@ -26,7 +26,7 @@
 /turf/open/floor/noslip,
 /area/ruin/unpowered)
 "f" = (
-/obj/effect/decal/cleanable/oil/slippery,
+/obj/effect/decal/cleanable/blood/oil/slippery,
 /obj/item/grown/bananapeel,
 /obj/structure/cable,
 /turf/open/misc/wasteland/lit,
@@ -46,7 +46,7 @@
 /turf/open/misc/wasteland/lit,
 /area/ruin/unpowered)
 "j" = (
-/mob/living/simple_animal/bot/honkbot,
+/mob/living/basic/bot/honkbot,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "k" = (
@@ -62,12 +62,22 @@
 	},
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
+"n" = (
+/obj/machinery/modular_computer/preset/civilian,
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/closet/crate/zone_loot/wardrobe,
+/turf/open/floor/noslip,
+/area/ruin/unpowered)
 "o" = (
 /obj/structure/table/reinforced,
 /obj/item/bikehorn/airhorn,
 /obj/item/nullrod/clown,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
+"p" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/noslip,
+/area/ruin/unpowered)
 "r" = (
 /obj/structure/table/reinforced,
 /obj/item/stack/ore/bananium,
@@ -95,7 +105,7 @@
 /obj/structure/chair/comfy/shuttle{
 	dir = 1
 	},
-/mob/living/simple_animal/hostile/retaliate/clown,
+/mob/living/basic/clown,
 /turf/open/floor/noslip,
 /area/ruin/unpowered)
 "y" = (
@@ -103,7 +113,7 @@
 /turf/closed/wall/mineral/titanium,
 /area/ruin/unpowered)
 "z" = (
-/obj/structure/window/shuttle,
+/obj/structure/window/reinforced/shuttle,
 /obj/structure/grille,
 /turf/open/floor/noslip,
 /area/ruin/unpowered)
@@ -161,7 +171,7 @@
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "N" = (
-/obj/effect/decal/cleanable/oil/slippery,
+/obj/effect/decal/cleanable/blood/oil/slippery,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "O" = (
@@ -197,7 +207,7 @@
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "V" = (
-/obj/item/clothing/suit/space/hardsuit/clown,
+/obj/item/clothing/suit/space/eva,
 /obj/structure/rack,
 /turf/open/floor/noslip,
 /area/ruin/unpowered)
@@ -208,7 +218,7 @@
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "X" = (
-/obj/effect/decal/cleanable/oil/slippery,
+/obj/effect/decal/cleanable/blood/oil/slippery,
 /obj/structure/cable,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
@@ -223,7 +233,7 @@
 /area/ruin/unpowered)
 "Z" = (
 /obj/structure/table/reinforced,
-/obj/item/reagent_containers/food/snacks/honkdae,
+/obj/item/food/honkdae,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 
@@ -295,7 +305,7 @@ U
 (6,1,1) = {"
 k
 B
-b
+n
 x
 P
 P
@@ -310,7 +320,7 @@ k
 w
 Y
 t
-P
+p
 P
 V
 E

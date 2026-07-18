@@ -4,30 +4,37 @@
 /area/template_noop)
 "t" = (
 /turf/open/floor/grass/fairy/reebe,
-/area/overmap_encounter/planetoid/reebe)
+/area/ruin/reebe)
 "u" = (
 /obj/structure/flora/tree/jungle{
-	icon = 'icons/obj/flora/chapeltree.dmi';
+	icon = 'icons/obj/structure/flora/tree/jungle.dmi';
 	icon_state = "churchtree";
 	pixel_x = -16;
 	pixel_y = 0
 	},
 /turf/open/floor/grass/fairy/reebe,
-/area/overmap_encounter/planetoid/reebe)
+/area/ruin/reebe)
 "x" = (
-/mob/living/simple_animal/hostile/asteroid/hivelord/legion/crystal,
+/mob/living/basic/mining/legion/crystal/wasteland,
 /turf/open/floor/grass/fairy/reebe,
-/area/overmap_encounter/planetoid/reebe)
+/area/ruin/reebe)
 "N" = (
 /turf/closed/mineral/random/reebe,
 /area/ruin/reebe)
 "R" = (
-/mob/living/simple_animal/hostile/megafauna/swarmer_swarm_beacon,
 /turf/open/floor/grass/fairy/reebe,
 /area/ruin/reebe)
 "X" = (
 /turf/closed/mineral/random/reebe,
-/area/overmap_encounter/planetoid/reebe)
+/area/ruin/reebe)
+"b" = (
+/obj/structure/closet/crate/zone_loot/industrial,
+/turf/open/floor/grass/fairy/reebe,
+/area/ruin/reebe)
+"c" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/grass/fairy/reebe,
+/area/ruin/reebe)
 
 (1,1,1) = {"
 a
@@ -86,7 +93,7 @@ t
 N
 N
 t
-t
+c
 t
 t
 N
@@ -272,7 +279,7 @@ t
 a
 "}
 (12,1,1) = {"
-t
+c
 t
 t
 N
@@ -333,7 +340,7 @@ N
 N
 N
 N
-t
+b
 a
 a
 "}
@@ -355,7 +362,7 @@ N
 N
 N
 N
-t
+c
 t
 a
 "}

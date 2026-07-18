@@ -10,7 +10,7 @@
 /area/ruin/unpowered)
 "c" = (
 /obj/structure/table/reinforced,
-/obj/item/pda/clear{
+/obj/item/modular_computer/pda/clear{
 	pixel_x = 3;
 	pixel_y = -3
 	},
@@ -32,10 +32,10 @@
 /area/ruin/unpowered)
 "f" = (
 /obj/structure/rack,
-/obj/item/reagent_containers/food/snacks/cornchips,
-/obj/item/reagent_containers/food/snacks/butterdog,
-/obj/item/reagent_containers/food/snacks/candy,
-/obj/item/reagent_containers/food/snacks/canned/peaches,
+/obj/item/food/cornchips,
+/obj/item/food/butterdog,
+/obj/item/food/candy,
+/obj/item/food/canned/peaches,
 /obj/item/reagent_containers/food/drinks/bottle/sarsaparilla,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -52,9 +52,9 @@
 /area/ruin/unpowered)
 "k" = (
 /obj/structure/rack,
-/obj/item/reagent_containers/food/snacks/cheesyfries,
-/obj/item/reagent_containers/food/snacks/chips,
-/obj/item/reagent_containers/food/snacks/cheesewedge,
+/obj/item/food/cheesyfries,
+/obj/item/food/chips,
+/obj/item/food/cheese/wedge,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -88,7 +88,7 @@
 	},
 /area/ruin/unpowered)
 "q" = (
-/obj/machinery/door/window/northleft{
+/obj/machinery/door/window/left/directional/north{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -96,15 +96,15 @@
 /area/ruin/unpowered)
 "r" = (
 /obj/structure/rack,
-/obj/item/gun/energy/kinetic_accelerator{
+/obj/item/gun/energy/recharge/kinetic_accelerator{
 	pixel_x = 3;
 	pixel_y = -3
 	},
-/obj/item/gun/energy/kinetic_accelerator{
+/obj/item/gun/energy/recharge/kinetic_accelerator{
 	pixel_x = -3;
 	pixel_y = 3
 	},
-/obj/item/storage/pill_bottle/floorpill,
+/obj/item/storage/pill_bottle,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "s" = (
@@ -149,7 +149,7 @@
 	},
 /area/ruin/unpowered)
 "A" = (
-/obj/machinery/vending/cola/random,
+/obj/machinery/vending/cola,
 /obj/machinery/light{
 	dir = 8
 	},
@@ -187,7 +187,7 @@
 /obj/item/borg/upgrade/modkit/range{
 	pixel_x = -7
 	},
-/obj/item/storage/pill_bottle/floorpill,
+/obj/item/storage/pill_bottle,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "G" = (
@@ -210,16 +210,15 @@
 /area/ruin/unpowered)
 "J" = (
 /obj/structure/rack,
-/obj/item/reagent_containers/food/snacks/chewable/bubblegum/nicotine,
-/obj/item/reagent_containers/food/snacks/burger/fivealarm,
-/obj/item/reagent_containers/food/snacks/cherrycupcake,
+/obj/item/food/burger,
+/obj/item/food/cherrycupcake,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "K" = (
 /obj/structure/rack,
-/obj/item/reagent_containers/food/snacks/chococornet,
-/obj/item/reagent_containers/food/snacks/candy,
-/obj/item/reagent_containers/food/snacks/canned/peaches,
+/obj/item/food/chococornet,
+/obj/item/food/candy,
+/obj/item/food/canned/peaches,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "M" = (
@@ -235,22 +234,22 @@
 /area/ruin/unpowered)
 "N" = (
 /obj/structure/bed,
-/obj/item/bedsheet/dorms,
+/obj/effect/spawner/random/bedsheet,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "O" = (
 /obj/structure/rack,
-/obj/item/reagent_containers/food/snacks/chewable/bubblegum/happiness,
-/obj/item/reagent_containers/food/snacks/candy_corn,
-/obj/item/reagent_containers/food/snacks/chocolatebar,
+/obj/item/food/bubblegum/happiness,
+/obj/item/food/candy_corn,
+/obj/item/food/chocolatebar,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "Q" = (
 /obj/structure/rack,
-/obj/item/reagent_containers/food/snacks/chocolatebunny,
-/obj/item/reagent_containers/food/snacks/candy,
-/obj/item/reagent_containers/food/snacks/canned/beans,
+/obj/item/food/chocolatebunny,
+/obj/item/food/candy,
+/obj/item/food/canned/beans,
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/light{
 	dir = 1
@@ -259,9 +258,9 @@
 /area/ruin/unpowered)
 "R" = (
 /obj/structure/rack,
-/obj/item/reagent_containers/food/snacks/cheesynachos,
-/obj/item/reagent_containers/food/snacks/branrequests,
-/obj/item/reagent_containers/food/snacks/canned/beans,
+/obj/item/food/cheesynachos,
+/obj/item/food/branrequests,
+/obj/item/food/canned/beans,
 /obj/item/reagent_containers/food/drinks/bottle/sarsaparilla,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -299,7 +298,7 @@
 /obj/item/stack/spacecash/c20,
 /obj/item/stack/spacecash/c200,
 /obj/item/stack/spacecash/c50,
-/obj/item/storage/pill_bottle/floorpill/full,
+/obj/item/storage/pill_bottle,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "Y" = (
@@ -310,6 +309,15 @@
 /area/ruin/unpowered)
 "Z" = (
 /turf/open/floor/plating,
+/area/ruin/unpowered)
+"L" = (
+/obj/structure/closet/crate/zone_loot/medical,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"P" = (
+/obj/effect/zone_mobs/undead,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
 /area/ruin/unpowered)
 
 (1,1,1) = {"
@@ -387,7 +395,7 @@ C
 (9,1,1) = {"
 d
 y
-U
+P
 u
 U
 t
@@ -414,7 +422,7 @@ S
 (12,1,1) = {"
 a
 Y
-m
+L
 m
 a
 S

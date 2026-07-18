@@ -9,6 +9,11 @@
 /obj/structure/sign/warning/radiation,
 /turf/closed/wall/r_wall,
 /area/ruin/unpowered)
+"d" = (
+/obj/item/stack/sheet/mineral/uranium/five,
+/obj/structure/closet/crate/zone_loot/industrial,
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
 "e" = (
 /obj/structure/reagent_dispensers/fueltank,
 /turf/open/floor/plating/rust,
@@ -19,7 +24,7 @@
 /area/ruin/unpowered)
 "j" = (
 /obj/item/grenade/syndieminibomb,
-/obj/item/ammo_box/magazine/aknt,
+/obj/item/ammo_box/magazine/wt550m9,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "k" = (
@@ -28,18 +33,17 @@
 /area/overmap_encounter/planetoid/wasteland)
 "l" = (
 /obj/structure/table/reinforced,
-/obj/item/ammo_box/magazine/aknt{
+/obj/item/ammo_box/magazine/wt550m9{
 	pixel_x = -15;
 	pixel_y = -9
 	},
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "m" = (
-/obj/effect/radiation,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "n" = (
-/obj/item/ammo_box/magazine/aknt,
+/obj/item/ammo_box/magazine/wt550m9,
 /turf/open/floor/plating/rust{
 	initial_gas_mix = "plasma=70000;TEMP=293.15"
 	},
@@ -55,7 +59,7 @@
 /area/ruin/unpowered)
 "q" = (
 /obj/structure/table/reinforced,
-/obj/item/gun/ballistic/automatic/ak47/nt,
+/obj/item/gun/ballistic/automatic/wt550,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "r" = (
@@ -74,7 +78,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "u" = (
-/obj/effect/radiation,
+/obj/effect/zone_mobs/undead,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "v" = (
@@ -161,7 +165,7 @@
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "S" = (
-/obj/structure/sign/warning/longtermwaste{
+/obj/structure/sign/warning/radiation{
 	pixel_y = 32
 	},
 /obj/structure/radioactive,
@@ -178,7 +182,7 @@
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "Y" = (
-/obj/item/ammo_box/magazine/aknt,
+/obj/item/ammo_box/magazine/wt550m9,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "Z" = (
@@ -322,7 +326,7 @@ M
 (8,1,1) = {"
 B
 F
-r
+d
 p
 H
 b

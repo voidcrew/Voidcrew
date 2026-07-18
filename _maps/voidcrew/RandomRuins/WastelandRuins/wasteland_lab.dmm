@@ -1,6 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "av" = (
-/obj/effect/turf_decal/corner/purple/border{
+/obj/effect/turf_decal/tile/purple/anticorner{
 	dir = 9
 	},
 /turf/open/floor/iron/white,
@@ -20,7 +20,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "bG" = (
-/obj/effect/turf_decal/corner/purple/border{
+/obj/effect/turf_decal/tile/purple/anticorner{
 	dir = 1
 	},
 /obj/structure/sign/poster/official/random{
@@ -29,20 +29,19 @@
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "bM" = (
-/obj/effect/turf_decal/corner/purple/border{
+/obj/effect/turf_decal/tile/purple/anticorner{
 	dir = 1
 	},
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "cr" = (
 /obj/structure/table,
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 1
 	},
-/obj/item/desk_flag/solgov,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "cz" = (
@@ -50,7 +49,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "cH" = (
-/obj/effect/turf_decal/corner/purple/border{
+/obj/effect/turf_decal/tile/purple/anticorner{
 	dir = 5
 	},
 /turf/open/floor/iron/white,
@@ -83,10 +82,10 @@
 /area/ruin/powered)
 "dS" = (
 /obj/structure/table,
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -94,13 +93,13 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "dZ" = (
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 1
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "ej" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/computer/order_console/mining,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "eV" = (
@@ -111,12 +110,12 @@
 "fq" = (
 /obj/structure/table,
 /obj/item/ammo_box/n762,
-/turf/open/floor/plasteel/mono/white,
+/turf/open/floor/iron/white,
 /area/ruin/powered)
 "fJ" = (
 /obj/structure/rack,
-/obj/item/stock_parts/cell/gun/empty,
-/obj/effect/turf_decal/industrial/outline/yellow,
+/obj/item/stock_parts/power_store/cell/empty,
+/obj/effect/turf_decal/siding/yellow,
 /obj/structure/sign/poster/official/random{
 	pixel_y = 32
 	},
@@ -135,16 +134,16 @@
 /obj/structure/table,
 /obj/item/ammo_box/c45,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/white,
+/turf/open/floor/iron/white,
 /area/ruin/powered)
 "gx" = (
 /obj/structure/table,
 /obj/item/ammo_box/c9mm,
-/turf/open/floor/plasteel/mono/white,
+/turf/open/floor/iron/white,
 /area/ruin/powered)
 "gz" = (
-/obj/effect/turf_decal/corner/green,
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green,
+/obj/effect/turf_decal/tile/green{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -156,25 +155,25 @@
 /area/ruin/powered)
 "gX" = (
 /obj/structure/barricade/sandbags,
-/obj/effect/turf_decal/industrial/warning{
+/obj/effect/turf_decal/stripes/line{
 	dir = 9
 	},
 /obj/structure/railing{
 	dir = 1
 	},
-/turf/open/floor/plasteel/mono/white,
+/turf/open/floor/iron/white,
 /area/ruin/powered)
 "hb" = (
 /obj/structure/table,
-/obj/effect/turf_decal/corner/green,
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green,
+/obj/effect/turf_decal/tile/green{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "hl" = (
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/powered)
 "hL" = (
 /obj/structure/displaycase/noalert{
@@ -183,17 +182,17 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "ih" = (
-/obj/structure/table/wood/reinforced,
+/obj/structure/table/wood/fancy,
 /obj/item/stack/sheet/mineral/uranium/five,
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /obj/structure/sign/poster/official/random{
 	pixel_x = -32
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "ii" = (
-/obj/effect/turf_decal/corner/green,
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green,
+/obj/effect/turf_decal/tile/green{
 	dir = 8
 	},
 /turf/open/floor/iron,
@@ -213,25 +212,25 @@
 	pixel_y = 32
 	},
 /obj/structure/rack,
-/obj/item/stock_parts/cell/gun/empty,
-/obj/effect/turf_decal/industrial/outline/yellow,
+/obj/item/stock_parts/power_store/cell/empty,
+/obj/effect/turf_decal/siding/yellow,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "iE" = (
 /obj/structure/displaycase/noalert{
-	start_showpiece_type = /obj/item/ammo_box/magazine/mm712x82
+	start_showpiece_type = /obj/item/ammo_box/magazine/sniper_rounds
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "jn" = (
-/obj/effect/turf_decal/industrial/warning{
+/obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
 /obj/structure/railing{
 	dir = 1
 	},
-/turf/open/floor/plasteel/mono/white,
+/turf/open/floor/iron/white,
 /area/ruin/powered)
 "jo" = (
 /obj/structure/railing{
@@ -240,26 +239,26 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "jD" = (
-/obj/machinery/door/window/westleft{
+/obj/machinery/door/window/left/directional/west{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "kb" = (
 /obj/item/target,
-/obj/effect/turf_decal/industrial/warning{
+/obj/effect/turf_decal/stripes/line{
 	dir = 5
 	},
 /obj/structure/railing{
 	dir = 1
 	},
-/turf/open/floor/plasteel/mono/white,
+/turf/open/floor/iron/white,
 /area/ruin/powered)
 "kj" = (
-/obj/effect/turf_decal/corner/purple/border{
+/obj/effect/turf_decal/tile/purple/anticorner{
 	dir = 4
 	},
 /turf/open/floor/iron/white,
@@ -273,13 +272,13 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "kV" = (
-/obj/structure/table/wood/reinforced,
+/obj/structure/table/wood/fancy,
 /obj/item/storage/medkit/surgery,
 /obj/item/storage/medkit/fire{
 	pixel_y = 8
 	},
-/obj/effect/turf_decal/corner/neutral/diagonal,
-/obj/effect/turf_decal/corner/blue/diagonal{
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
+/obj/effect/turf_decal/tile/blue/diagonal_edge{
 	dir = 4
 	},
 /obj/structure/sign/poster/official/random{
@@ -289,10 +288,10 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "lw" = (
-/obj/structure/table/wood/reinforced,
-/obj/item/storage/backpack/duffelbag/med/surgery,
-/obj/effect/turf_decal/corner/neutral/diagonal,
-/obj/effect/turf_decal/corner/blue/diagonal{
+/obj/structure/table/wood/fancy,
+/obj/item/storage/backpack/duffelbag/med,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
+/obj/effect/turf_decal/tile/blue/diagonal_edge{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -319,8 +318,8 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "oe" = (
-/obj/structure/table/wood/reinforced,
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/structure/table/wood/fancy,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /obj/item/modular_computer/laptop/preset,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
@@ -331,7 +330,7 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "ov" = (
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /obj/machinery/autolathe/hacked,
 /obj/structure/sign/poster/official/random{
 	pixel_y = 32
@@ -350,7 +349,7 @@
 /area/ruin/powered)
 "pf" = (
 /obj/structure/rack,
-/obj/item/stock_parts/cell/gun/empty,
+/obj/item/stock_parts/power_store/cell/empty,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
@@ -359,57 +358,56 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "qg" = (
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /obj/machinery/plate_press,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "qn" = (
 /obj/structure/barricade/sandbags,
-/obj/effect/turf_decal/industrial/warning{
+/obj/effect/turf_decal/stripes/line{
 	dir = 10
 	},
 /obj/structure/railing,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/white,
+/turf/open/floor/iron/white,
 /area/ruin/powered)
 "re" = (
-/obj/effect/turf_decal/corner/neutral/diagonal,
-/obj/effect/turf_decal/corner/blue/diagonal{
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
+/obj/effect/turf_decal/tile/blue/diagonal_edge{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "rw" = (
-/obj/structure/table/wood/reinforced,
-/obj/item/desk_flag/solgov,
-/obj/effect/turf_decal/corner/neutral/diagonal,
-/obj/effect/turf_decal/corner/blue/diagonal{
+/obj/structure/table/wood/fancy,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
+/obj/effect/turf_decal/tile/blue/diagonal_edge{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "rS" = (
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "rV" = (
-/obj/effect/turf_decal/industrial/warning,
+/obj/effect/turf_decal/stripes/line,
 /obj/structure/railing,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/white,
+/turf/open/floor/iron/white,
 /area/ruin/powered)
 "sv" = (
 /obj/structure/rack,
-/obj/item/stock_parts/cell/gun/empty,
-/obj/effect/turf_decal/industrial/outline/yellow,
+/obj/item/stock_parts/power_store/cell/empty,
+/obj/effect/turf_decal/siding/yellow,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
@@ -422,13 +420,12 @@
 /obj/item/paper,
 /obj/item/paper,
 /obj/effect/decal/cleanable/dirt,
-/obj/item/desk_flag/trans,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "sQ" = (
-/obj/effect/turf_decal/industrial/warning,
+/obj/effect/turf_decal/stripes/line,
 /obj/structure/railing,
-/turf/open/floor/plasteel/mono/white,
+/turf/open/floor/iron/white,
 /area/ruin/powered)
 "to" = (
 /obj/item/target/clown,
@@ -456,7 +453,7 @@
 /turf/template_noop,
 /area/template_noop)
 "uB" = (
-/obj/structure/table/wood/reinforced,
+/obj/structure/table/wood/fancy,
 /obj/item/pen/blue,
 /obj/item/pen{
 	pixel_x = 7;
@@ -468,8 +465,8 @@
 /obj/structure/chair/office{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/neutral/diagonal,
-/obj/effect/turf_decal/corner/blue/diagonal{
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
+/obj/effect/turf_decal/tile/blue/diagonal_edge{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -483,33 +480,33 @@
 /area/ruin/powered)
 "uW" = (
 /obj/structure/table,
-/obj/effect/turf_decal/corner/green,
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green,
+/obj/effect/turf_decal/tile/green{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "vq" = (
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "vY" = (
-/obj/effect/turf_decal/corner/purple/border{
+/obj/effect/turf_decal/tile/purple/anticorner{
 	dir = 8
 	},
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "wf" = (
 /obj/structure/displaycase/noalert{
-	start_showpiece_type = /obj/item/ammo_box/magazine/co9mm
+	start_showpiece_type = /obj/item/ammo_box/magazine/m9mm
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "wp" = (
 /obj/structure/displaycase/noalert{
-	start_showpiece_type = /obj/item/gun/energy/laser/captain/brazil
+	start_showpiece_type = /obj/item/gun/energy/laser/captain
 	},
-/turf/open/floor/plasteel/mono/white,
+/turf/open/floor/iron/white,
 /area/ruin/powered)
 "ww" = (
 /obj/structure/table,
@@ -521,7 +518,7 @@
 /area/ruin/powered)
 "wM" = (
 /obj/machinery/door/airlock/public/glass,
-/turf/open/floor/plasteel/mono,
+/turf/open/floor/iron,
 /area/ruin/powered)
 "wT" = (
 /obj/structure/closet/cardboard,
@@ -542,15 +539,15 @@
 /area/ruin/powered)
 "xo" = (
 /obj/structure/window/reinforced,
-/obj/structure/table/wood/reinforced,
+/obj/structure/table/wood/fancy,
 /obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/mineral/titanium/five,
+/obj/item/stack/sheet/mineral/titanium,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "xz" = (
 /obj/structure/rack,
-/obj/item/stock_parts/cell/gun/upgraded/empty,
+/obj/item/stock_parts/power_store/cell/empty,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
@@ -567,10 +564,10 @@
 /area/ruin/powered)
 "yv" = (
 /obj/structure/table,
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 1
 	},
 /turf/open/floor/iron,
@@ -585,12 +582,12 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "zx" = (
-/obj/structure/table/wood/reinforced,
+/obj/structure/table/wood/fancy,
 /obj/machinery/computer/crew{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/neutral/diagonal,
-/obj/effect/turf_decal/corner/blue/diagonal{
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
+/obj/effect/turf_decal/tile/blue/diagonal_edge{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -611,42 +608,41 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "AG" = (
-/obj/structure/table/wood/reinforced,
+/obj/structure/table/wood/fancy,
 /obj/item/documents/syndicate/blue,
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Bf" = (
-/obj/effect/turf_decal/corner/purple/border{
+/obj/effect/turf_decal/tile/purple/anticorner{
 	dir = 10
 	},
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "Bv" = (
-/obj/effect/turf_decal/corner/purple/border,
+/obj/effect/turf_decal/tile/purple/anticorner,
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "BK" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/displaycase/noalert{
-	start_showpiece_type = /obj/item/ammo_box/magazine/mm712x82
+	start_showpiece_type = /obj/item/ammo_box/magazine/sniper_rounds
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Cl" = (
-/obj/effect/turf_decal/corner/purple/border,
+/obj/effect/turf_decal/tile/purple/anticorner,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "CK" = (
-/obj/effect/turf_decal/corner/purple/border{
+/obj/effect/turf_decal/tile/purple/anticorner{
 	dir = 6
 	},
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "CN" = (
 /obj/structure/closet/cardboard,
-/obj/item/weaponcrafting/gunkit/capgun_ugrade_kit,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
@@ -673,9 +669,9 @@
 /obj/structure/window/reinforced{
 	dir = 1
 	},
-/obj/structure/table/wood/reinforced,
+/obj/structure/table/wood/fancy,
 /obj/machinery/computer/security/wooden_tv,
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
@@ -686,33 +682,33 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Gc" = (
-/obj/structure/table/wood/reinforced,
+/obj/structure/table/wood/fancy,
 /obj/structure/window/reinforced{
 	dir = 1
 	},
 /obj/item/stack/cable_coil/cut,
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Ge" = (
 /obj/structure/window/reinforced{
 	dir = 1
 	},
-/obj/machinery/door/window/westleft{
+/obj/machinery/door/window/left/directional/west{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Gj" = (
-/obj/machinery/door/window/westleft{
+/obj/machinery/door/window/left/directional/west{
 	dir = 1
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "GP" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/powered)
 "GR" = (
 /turf/closed/wall/rust,
@@ -727,7 +723,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "HW" = (
-/obj/machinery/vending/cola/random,
+/obj/machinery/vending/cola,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Ie" = (
@@ -743,7 +739,7 @@
 /area/ruin/powered)
 "JR" = (
 /obj/machinery/door/airlock/security,
-/turf/open/floor/plasteel/mono,
+/turf/open/floor/iron,
 /area/ruin/powered)
 "Kd" = (
 /obj/structure/window/reinforced{
@@ -752,7 +748,7 @@
 /obj/structure/window/reinforced{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
@@ -760,13 +756,13 @@
 /obj/structure/closet/cardboard,
 /obj/structure/fluff/paper/stack,
 /obj/item/paper,
-/obj/item/gun/ballistic/automatic/pistol/commander/no_mag,
+/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Kz" = (
 /obj/structure/window/reinforced,
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "KH" = (
@@ -792,8 +788,8 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Ma" = (
-/obj/structure/table/wood/reinforced,
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/structure/table/wood/fancy,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /obj/structure/sign/poster/official/random{
 	pixel_x = -32
 	},
@@ -804,14 +800,14 @@
 /obj/structure/chair/office{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Mt" = (
 /obj/structure/window/reinforced{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
@@ -821,26 +817,26 @@
 /area/ruin/powered)
 "Nm" = (
 /obj/structure/closet/firecloset,
-/obj/effect/turf_decal/industrial/outline/yellow,
+/obj/effect/turf_decal/siding/yellow,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "QL" = (
 /obj/machinery/door/airlock/public/glass,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono,
+/turf/open/floor/iron,
 /area/ruin/powered)
 "QR" = (
-/obj/machinery/door/window/westleft{
+/obj/machinery/door/window/left/directional/west{
 	dir = 2
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Ra" = (
-/obj/effect/turf_decal/corner/red/half{
+/obj/effect/turf_decal/tile/red/half{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -853,30 +849,30 @@
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "RT" = (
-/obj/effect/turf_decal/corner/red/half{
+/obj/effect/turf_decal/tile/red/half{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Sj" = (
-/obj/effect/turf_decal/corner/red/half{
+/obj/effect/turf_decal/tile/red/half{
 	dir = 1
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Ta" = (
 /obj/structure/displaycase/noalert{
-	start_showpiece_type = /obj/item/ammo_box/magazine/ebr
+	start_showpiece_type = /obj/item/ammo_box/magazine/sniper_rounds/marksman
 	},
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Tb" = (
 /obj/structure/table,
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 1
 	},
 /obj/item/clipboard,
@@ -889,10 +885,10 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Vw" = (
-/obj/effect/turf_decal/corner/red/half{
+/obj/effect/turf_decal/tile/red/half{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -913,13 +909,13 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "WB" = (
-/obj/structure/table/wood/reinforced,
+/obj/structure/table/wood/fancy,
 /obj/item/weldingtool/hugetank,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "WJ" = (
-/obj/effect/turf_decal/corner/neutral/diagonal,
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
@@ -927,15 +923,15 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Xf" = (
-/obj/effect/turf_decal/corner/neutral/diagonal,
-/obj/effect/turf_decal/corner/blue/diagonal{
+/obj/effect/turf_decal/tile/neutral/diagonal_edge,
+/obj/effect/turf_decal/tile/blue/diagonal_edge{
 	dir = 4
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "XA" = (
 /obj/structure/window/reinforced,
-/obj/machinery/door/window/westleft{
+/obj/machinery/door/window/left/directional/west{
 	dir = 4
 	},
 /turf/open/floor/plating/rust,
@@ -961,14 +957,14 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "YX" = (
-/obj/effect/turf_decal/corner/red/half{
+/obj/effect/turf_decal/tile/red/half{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/red,
+/obj/effect/turf_decal/tile/red,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Zd" = (
-/obj/effect/turf_decal/corner/red/half,
+/obj/effect/turf_decal/tile/red/half,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
@@ -977,7 +973,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Zu" = (
-/obj/effect/turf_decal/corner/red/half,
+/obj/effect/turf_decal/tile/red/half,
 /obj/structure/reagent_dispensers/water_cooler,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
@@ -989,14 +985,46 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "ZX" = (
-/obj/effect/turf_decal/corner/red/half{
+/obj/effect/turf_decal/tile/red/half{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
+/area/ruin/powered)
+"aa" = (
+/obj/effect/zone_mobs/robot,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
+"aA" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"aX" = (
+/obj/effect/zone_mobs/robot,
+/obj/effect/turf_decal/tile/red/half{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"qq" = (
+/obj/effect/zone_mobs/robot,
+/obj/structure/fluff/paper/stack{
+	dir = 5
+	},
+/obj/item/paper,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/powered)
+"qZ" = (
+/obj/effect/zone_mobs/robot/boss,
+/obj/structure/fluff/paper/stack{
+	dir = 9
+	},
+/turf/open/floor/iron/dark,
 /area/ruin/powered)
 
 (1,1,1) = {"
@@ -1315,7 +1343,7 @@ bz
 bz
 GR
 xz
-Rt
+aA
 cz
 ii
 yv
@@ -1346,7 +1374,7 @@ bz
 Zi
 iy
 Tb
-cz
+aa
 fZ
 xB
 "}
@@ -1467,7 +1495,7 @@ sQ
 wD
 Cl
 GR
-Sj
+aX
 cz
 GR
 HL
@@ -1576,7 +1604,7 @@ wT
 wT
 KH
 VP
-cJ
+qZ
 EW
 Ea
 Kk
@@ -1602,7 +1630,7 @@ tr
 yY
 Ea
 KW
-Wn
+qq
 Yl
 df
 sN

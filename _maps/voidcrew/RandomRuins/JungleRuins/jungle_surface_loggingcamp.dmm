@@ -7,7 +7,7 @@
 "bA" = (
 /obj/effect/decal/cleanable/blood/gibs,
 /obj/effect/decal/cleanable/blood/gibs/body,
-/turf/closed/wall/mineral/titanium/exterior,
+/turf/closed/wall/mineral/titanium/overspace,
 /area/ruin/powered)
 "bV" = (
 /obj/structure/rack,
@@ -44,7 +44,6 @@
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "ej" = (
-/obj/structure/flora/stump,
 /turf/open/misc/grass/jungle,
 /area/ruin/unpowered)
 "ev" = (
@@ -59,13 +58,12 @@
 /turf/open/floor/mineral/titanium,
 /area/ruin/powered)
 "eM" = (
-/obj/effect/mob_spawn/human/corpse/assistant{
+/obj/effect/mob_spawn/corpse/human/assistant{
 	outfit = /datum/outfit/job/botanist
 	},
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "gd" = (
-/obj/structure/flora/stump,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "hs" = (
@@ -75,7 +73,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "iO" = (
-/obj/effect/turf_decal/industrial/warning/corner{
+/obj/effect/turf_decal/stripes/corner{
 	dir = 4
 	},
 /turf/open/floor/plating,
@@ -86,7 +84,7 @@
 	force_on = 35;
 	name = "THE GREAT TREEFELLER"
 	},
-/obj/item/clothing/suit/space/hardsuit/solgov{
+/obj/item/clothing/suit/space/syndicate/black{
 	name = "Lumberjack Powersuit"
 	},
 /obj/structure/safe/floor,
@@ -108,7 +106,7 @@
 /turf/open/misc/grass/jungle,
 /area/ruin/unpowered)
 "kA" = (
-/obj/effect/mob_spawn/human/corpse/assistant{
+/obj/effect/mob_spawn/corpse/human/assistant{
 	outfit = /datum/outfit/job/botanist
 	},
 /obj/effect/gibspawner/human,
@@ -123,8 +121,8 @@
 "lz" = (
 /obj/structure/railing,
 /obj/effect/mob_spawn/human/corpse/solgov/officer,
-/obj/item/organ/internal/heart,
-/obj/item/organ/internal/liver,
+/obj/item/organ/heart,
+/obj/item/organ/liver,
 /obj/item/organ/stomach,
 /obj/item/organ/lungs,
 /obj/effect/decal/cleanable/blood/splatter,
@@ -138,7 +136,6 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "mA" = (
-/obj/structure/flora/stump,
 /obj/structure/flora/junglebush/b,
 /turf/open/misc/grass/jungle,
 /area/ruin/unpowered)
@@ -156,7 +153,7 @@
 "nM" = (
 /mob/living/basic/tree{
 	health = 100;
-	icon = 'icons/obj/flora/jungletrees.dmi';
+	icon = 'icons/obj/structure/flora/tree/jungle.dmi';
 	icon_dead = "tree5";
 	icon_gib = "tree5";
 	icon_living = "tree5";
@@ -171,12 +168,12 @@
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "nX" = (
-/obj/effect/spawner/structure/window/shuttle,
+/obj/effect/spawner/structure/window/reinforced/shuttle,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "ps" = (
 /obj/effect/decal/cleanable/blood/gibs,
-/turf/closed/wall/mineral/titanium/exterior,
+/turf/closed/wall/mineral/titanium/overspace,
 /area/ruin/powered)
 "rd" = (
 /obj/effect/decal/cleanable/blood/tracks{
@@ -225,7 +222,7 @@
 /turf/open/floor/carpet/royalblack,
 /area/ruin/powered)
 "wP" = (
-/turf/closed/wall/mineral/titanium/exterior,
+/turf/closed/wall/mineral/titanium/overspace,
 /area/ruin/powered)
 "wZ" = (
 /obj/machinery/light{
@@ -244,7 +241,7 @@
 /turf/open/misc/grass/jungle,
 /area/ruin/unpowered)
 "yj" = (
-/obj/effect/turf_decal/industrial/warning{
+/obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
 /turf/open/misc/dirt/jungle,
@@ -253,8 +250,8 @@
 /obj/structure/railing,
 /obj/effect/mob_spawn/human/corpse/solgov/officer,
 /obj/effect/decal/cleanable/blood,
-/obj/item/organ/internal/heart,
-/obj/item/organ/internal/liver,
+/obj/item/organ/heart,
+/obj/item/organ/liver,
 /obj/item/organ/stomach,
 /obj/item/organ/lungs,
 /obj/effect/gibspawner/human,
@@ -303,7 +300,7 @@
 	name = "Deliveries Shuttle Shutters";
 	pixel_y = -25
 	},
-/obj/effect/turf_decal/industrial/warning/corner,
+/obj/effect/turf_decal/stripes/corner,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Df" = (
@@ -311,14 +308,14 @@
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "Ds" = (
-/obj/effect/turf_decal/industrial/warning,
+/obj/effect/turf_decal/stripes/line,
 /obj/effect/gibspawner/human,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "EU" = (
 /mob/living/basic/tree{
 	health = 100;
-	icon = 'icons/obj/flora/jungletrees.dmi';
+	icon = 'icons/obj/structure/flora/tree/jungle.dmi';
 	icon_dead = "tree9";
 	icon_gib = "tree9";
 	icon_living = "tree9";
@@ -361,7 +358,7 @@
 /area/ruin/powered)
 "GN" = (
 /obj/effect/decal/cleanable/blood,
-/obj/effect/mob_spawn/human/corpse/assistant,
+/obj/effect/mob_spawn/corpse/human/assistant,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Hw" = (
@@ -382,7 +379,7 @@
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "Ij" = (
-/obj/effect/turf_decal/industrial/warning/corner{
+/obj/effect/turf_decal/stripes/corner{
 	dir = 1
 	},
 /turf/open/floor/plating,
@@ -391,7 +388,7 @@
 /obj/structure/railing,
 /mob/living/basic/tree{
 	health = 100;
-	icon = 'icons/obj/flora/jungletrees.dmi';
+	icon = 'icons/obj/structure/flora/tree/jungle.dmi';
 	icon_dead = "tree5";
 	icon_gib = "tree5";
 	icon_living = "tree5";
@@ -414,7 +411,7 @@
 "Ll" = (
 /mob/living/basic/tree{
 	health = 100;
-	icon = 'icons/obj/flora/jungletreesmall.dmi';
+	icon = 'icons/obj/structure/flora/tree/jungle/small.dmi';
 	icon_dead = "tree2";
 	icon_gib = "tree2";
 	icon_living = "tree2";
@@ -529,7 +526,6 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "RE" = (
-/obj/structure/flora/stump,
 /obj/effect/decal/cleanable/blood/tracks,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
@@ -544,18 +540,18 @@
 /area/ruin/powered)
 "RM" = (
 /obj/effect/decal/cleanable/blood,
-/obj/effect/mob_spawn/human/corpse/assistant,
+/obj/effect/mob_spawn/corpse/human/assistant,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "RV" = (
 /obj/machinery/light,
-/obj/effect/turf_decal/industrial/warning/corner{
+/obj/effect/turf_decal/stripes/corner{
 	dir = 8
 	},
 /turf/open/floor/plating,
 /area/ruin/powered)
 "SD" = (
-/obj/effect/turf_decal/industrial/warning{
+/obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
 /turf/open/floor/plating,
@@ -563,7 +559,7 @@
 "SE" = (
 /mob/living/basic/tree{
 	health = 100;
-	icon = 'icons/obj/flora/jungletreesmall.dmi';
+	icon = 'icons/obj/structure/flora/tree/jungle/small.dmi';
 	icon_dead = "tree2";
 	icon_gib = "tree2";
 	icon_living = "tree2";
@@ -613,7 +609,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "VH" = (
-/obj/effect/turf_decal/industrial/warning,
+/obj/effect/turf_decal/stripes/line,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "VR" = (
@@ -639,7 +635,7 @@
 "Zh" = (
 /mob/living/basic/tree{
 	health = 100;
-	icon = 'icons/obj/flora/jungletrees.dmi';
+	icon = 'icons/obj/structure/flora/tree/jungle.dmi';
 	icon_dead = "tree9";
 	icon_gib = "tree9";
 	icon_living = "tree9";
@@ -658,6 +654,32 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 
+"za" = (
+/obj/effect/decal/cleanable/blood/gibs,
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered)
+"zb" = (
+/obj/item/crowbar/red/caravan,
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 5
+	},
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"zc" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"zd" = (
+/obj/machinery/light/floor,
+/obj/effect/decal/cleanable/blood,
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/plating,
+/area/ruin/powered)
 (1,1,1) = {"
 Cc
 Cc
@@ -868,7 +890,7 @@ Fo
 Nj
 AR
 AR
-jC
+zd
 AR
 RK
 AR
@@ -979,7 +1001,7 @@ ZU
 dE
 AR
 rd
-AR
+zc
 AR
 De
 Pb
@@ -1022,7 +1044,7 @@ uu
 un
 AR
 ps
-BH
+zb
 xu
 wP
 VH
@@ -1067,7 +1089,7 @@ un
 AR
 nX
 Kc
-ey
+za
 nX
 VH
 Ta

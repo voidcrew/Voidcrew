@@ -1,7 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "bT" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/industrial/outline,
 /obj/machinery/door/poddoor{
 	id = "whiteship_starboard"
 	},
@@ -18,14 +17,14 @@
 /area/ruin/unpowered)
 "du" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/neutral,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
 /turf/open/floor/iron/dark,
@@ -33,17 +32,17 @@
 "dy" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/neutral,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer1{
 	dir = 4
 	},
 /turf/open/floor/iron/dark,
@@ -59,14 +58,14 @@
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "fF" = (
-/obj/machinery/power/smes/shuttle/precharged{
+/obj/machinery/power/smes{
 	dir = 4
 	},
 /obj/structure/cable,
 /obj/structure/window/reinforced{
 	dir = 8
 	},
-/obj/machinery/door/window/northright{
+/obj/machinery/door/window/right/directional/north{
 	dir = 4;
 	name = "Engine Access"
 	},
@@ -74,7 +73,7 @@
 /area/ruin/unpowered)
 "gg" = (
 /obj/structure/lattice,
-/turf/open/floor/plating/asteroid/whitesands/dried,
+/turf/open/misc/asteroid/sand/dark,
 /area/overmap_encounter/planetoid/wasteland)
 "hD" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -86,8 +85,8 @@
 	dir = 1
 	},
 /obj/machinery/door/firedoor/border_only,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/simple/orange/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/smart/simple/orange/hidden,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "kp" = (
@@ -97,14 +96,14 @@
 "kw" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
-/obj/effect/decal/cleanable/oil,
-/obj/machinery/atmospherics/pipe/simple/orange/hidden{
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/simple/orange/hidden{
 	dir = 4
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "kO" = (
-/mob/living/simple_animal/hostile/pirate/melee,
+/mob/living/basic/trooper/pirate/melee,
 /turf/open/floor/plating{
 	icon_state = "panelscorched"
 	},
@@ -122,7 +121,7 @@
 /obj/machinery/door/firedoor/border_only{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer1{
 	dir = 4
 	},
 /turf/open/floor/plating,
@@ -134,15 +133,15 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/simple/orange/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/smart/simple/orange/hidden,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "nD" = (
 /obj/machinery/door/airlock/external,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer1{
 	dir = 4
 	},
 /turf/open/floor/plating,
@@ -152,7 +151,7 @@
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/industrial/outline/yellow,
+/obj/effect/turf_decal/siding/yellow,
 /obj/structure/frame/machine,
 /obj/item/circuitboard/machine/smes,
 /obj/item/stack/cable_coil/cut,
@@ -164,23 +163,22 @@
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "oF" = (
-/obj/effect/turf_decal/industrial/outline,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/rack,
-/obj/item/reagent_containers/glass/bucket,
+/obj/item/reagent_containers/cup/bucket,
 /obj/item/mop,
 /obj/item/storage/bag/trash{
 	pixel_x = 6
 	},
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/neutral,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
 /turf/open/floor/iron/dark,
@@ -188,21 +186,21 @@
 "pJ" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
-/obj/effect/turf_decal/industrial/traffic{
+/obj/effect/turf_decal/delivery{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/neutral,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/orange/hidden,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/smart/simple/orange/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer1,
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "pP" = (
@@ -223,11 +221,11 @@
 /turf/open/misc/dust/lit,
 /area/ruin/unpowered)
 "qi" = (
-/obj/effect/spawner/structure/window/shuttle,
+/obj/effect/spawner/structure/window/reinforced/shuttle,
 /obj/machinery/door/poddoor{
 	id = "whiteship_windows"
 	},
-/obj/machinery/door/firedoor/window,
+/obj/machinery/door/firedoor,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "qK" = (
@@ -236,11 +234,11 @@
 /obj/machinery/firealarm{
 	pixel_y = 24
 	},
-/obj/effect/turf_decal/industrial/outline/yellow,
+/obj/effect/turf_decal/siding/yellow,
 /obj/structure/table,
 /obj/machinery/cell_charger,
-/obj/item/stack/cable_coil/red,
-/obj/item/stock_parts/cell/high,
+/obj/item/stack/cable_coil,
+/obj/item/stock_parts/power_store/cell/high,
 /obj/item/multitool,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
@@ -248,7 +246,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/closet/crate/medical,
 /obj/item/storage/medkit/fire,
-/obj/item/reagent_containers/glass/bottle/morphine,
+/obj/item/reagent_containers/cup/bottle/morphine,
 /obj/item/reagent_containers/syringe,
 /obj/item/storage/medkit/advanced,
 /turf/open/floor/iron/dark,
@@ -280,24 +278,23 @@
 /area/ruin/unpowered)
 "wg" = (
 /obj/structure/lattice,
-/turf/open/floor/plating/asteroid/whitesands,
+/turf/open/misc/asteroid/sand,
 /area/overmap_encounter/planetoid/wasteland)
 "wo" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/closet/emcloset/anchored,
-/obj/effect/turf_decal/industrial/outline,
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "xA" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/table,
 /obj/machinery/cell_charger,
-/obj/item/stack/cable_coil/red{
+/obj/item/stack/cable_coil{
 	pixel_x = 2;
 	pixel_y = 6
 	},
-/obj/item/stock_parts/cell/high/plus,
+/obj/item/stock_parts/power_store/cell/high,
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "yi" = (
@@ -311,8 +308,8 @@
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "Az" = (
-/obj/effect/spawner/structure/window/shuttle,
-/obj/machinery/door/firedoor/window,
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/firedoor,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "AA" = (
@@ -330,8 +327,8 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
 /obj/structure/closet/crate,
-/obj/effect/turf_decal/industrial/outline/yellow,
-/obj/item/disk/design_disk/disposable_gun,
+/obj/effect/turf_decal/siding/yellow,
+/obj/item/disk/design_disk/liberator,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "BY" = (
@@ -342,21 +339,21 @@
 	dir = 8;
 	pixel_x = -26
 	},
-/obj/effect/turf_decal/industrial/traffic/corner{
+/obj/effect/turf_decal/stripes/corner{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/neutral,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/simple/orange/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/smart/simple/orange/hidden,
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "Ed" = (
@@ -379,7 +376,7 @@
 	},
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/industrial/outline/yellow,
+/obj/effect/turf_decal/siding/yellow,
 /obj/item/wrench,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
@@ -395,7 +392,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "Gs" = (
-/mob/living/simple_animal/hostile/pirate/melee,
+/mob/living/basic/trooper/pirate/melee,
 /turf/open/floor/plating{
 	icon_state = "platingdmg1"
 	},
@@ -414,7 +411,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "Hb" = (
-/obj/effect/turf_decal/industrial/warning{
+/obj/effect/turf_decal/stripes/line{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -422,13 +419,13 @@
 /obj/machinery/power/terminal{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/orange/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/orange/hidden{
 	dir = 4
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "HY" = (
-/obj/effect/turf_decal/industrial/warning{
+/obj/effect/turf_decal/stripes/line{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -437,12 +434,12 @@
 	dir = 8
 	},
 /obj/structure/cable,
-/mob/living/simple_animal/hostile/pirate/ranged,
+/mob/living/basic/trooper/pirate/ranged,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "Iv" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "Kj" = (
@@ -453,45 +450,44 @@
 /obj/machinery/light/small/built{
 	dir = 1
 	},
-/obj/machinery/atmospherics/components/unary/vent_pump/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump{
 	dir = 4
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "Ku" = (
-/mob/living/simple_animal/hostile/pirate/melee,
+/mob/living/basic/trooper/pirate/melee,
 /turf/open/floor/plating{
 	icon_state = "titanium_dam5"
 	},
 /area/ruin/unpowered)
 "KX" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/neutral,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on,
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "Lp" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer1{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/orange/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/orange/hidden{
 	dir = 9
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "Mc" = (
-/obj/effect/turf_decal/industrial/outline,
 /obj/machinery/door/poddoor{
 	id = "whiteship_starboard"
 	},
@@ -527,17 +523,17 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/neutral,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer1{
 	dir = 4
 	},
 /turf/open/floor/iron/dark,
@@ -548,7 +544,6 @@
 	},
 /area/ruin/unpowered)
 "NP" = (
-/obj/effect/turf_decal/industrial/outline,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/rack,
@@ -559,14 +554,14 @@
 	pixel_y = 3
 	},
 /obj/item/clothing/mask/breath,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/neutral,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
 /turf/open/floor/iron/dark,
@@ -590,13 +585,13 @@
 /area/ruin/unpowered)
 "Po" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/airalarm/all_access{
+/obj/machinery/airalarm{
 	pixel_y = 24
 	},
 /obj/machinery/light/small/built{
 	dir = 1
 	},
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 4
 	},
 /obj/machinery/autolathe,
@@ -613,7 +608,7 @@
 "PW" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/industrial/outline/yellow,
+/obj/effect/turf_decal/siding/yellow,
 /obj/structure/cable,
 /obj/machinery/computer/monitor{
 	dir = 1
@@ -627,7 +622,7 @@
 /area/ruin/unpowered)
 "RQ" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/mob/living/simple_animal/hostile/pirate/ranged,
+/mob/living/basic/trooper/pirate/ranged,
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "RV" = (
@@ -637,24 +632,23 @@
 /obj/structure/window/reinforced{
 	dir = 8
 	},
-/obj/machinery/door/window/northleft{
+/obj/machinery/door/window/left/directional/north{
 	dir = 4;
 	name = "Engine Access"
 	},
 /turf/open/floor/plating/airless,
 /area/ruin/unpowered)
 "Sf" = (
-/obj/effect/turf_decal/industrial/outline,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/tank_dispenser/oxygen,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/neutral,
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/neutral{
+/obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
 /turf/open/floor/iron/dark,
@@ -678,7 +672,7 @@
 /obj/structure/closet/crate,
 /obj/item/shovel,
 /obj/item/storage/box/lights/mixed,
-/obj/effect/turf_decal/industrial/outline/yellow,
+/obj/effect/turf_decal/siding/yellow,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "TB" = (
@@ -690,7 +684,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/orange/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/orange/hidden{
 	dir = 4
 	},
 /turf/open/floor/plating,
@@ -722,7 +716,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/space_heater,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 8
 	},
 /turf/open/floor/iron/dark,
@@ -736,12 +730,46 @@
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "Zz" = (
-/obj/machinery/power/shuttle/engine/fueled/plasma{
+/obj/machinery/power/shuttle_engine/ship/fueled/plasma{
 	dir = 4
 	},
 /turf/open/floor/plating/airless,
 /area/ruin/unpowered)
 
+"za" = (
+/obj/structure/closet/crate/zone_loot/plunder/rare,
+/turf/open/floor/plating{
+	icon_state = "panelscorched"
+	},
+/area/ruin/unpowered)
+"zb" = (
+/obj/effect/zone_mobs/pirate/boss,
+/turf/open/floor/plating{
+	icon_state = "platingdmg1"
+	},
+/area/ruin/unpowered)
+"zc" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/plating{
+	initial_gas_mix = "LAVALAND_ATMOS"
+	},
+/area/ruin/unpowered)
+"zd" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/plating{
+	initial_gas_mix = "LAVALAND_ATMOS"
+	},
+/area/ruin/unpowered)
+"ze" = (
+/obj/machinery/light/built{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable,
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/iron/dark,
+/area/ruin/unpowered)
 (1,1,1) = {"
 Xl
 Xl
@@ -808,7 +836,7 @@ Xl
 Um
 lN
 Kj
-SV
+zc
 qi
 lN
 qK
@@ -854,7 +882,7 @@ yi
 ui
 Ya
 xA
-SV
+zd
 lN
 lN
 lf
@@ -885,7 +913,7 @@ FW
 du
 MV
 TB
-Wv
+ze
 Sv
 QX
 GW
@@ -914,8 +942,8 @@ No
 du
 du
 Gz
-QX
-Oe
+zb
+za
 KX
 Ku
 kp

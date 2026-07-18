@@ -16,7 +16,7 @@
 "d" = (
 /obj/machinery/light,
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/asteroid/goliath/beast/wasteland,
+/mob/living/basic/mining/goliath/wasteland,
 /turf/open/floor/wood{
 	icon_state = "wood-broken5"
 	},
@@ -47,14 +47,14 @@
 /area/overmap_encounter/planetoid/wasteland)
 "h" = (
 /obj/structure/closet/secure_closet/hydroponics,
-/obj/item/circuitboard/machine/plantgenes,
-/obj/item/gun/ballistic/automatic/ebr,
-/obj/item/ammo_box/magazine/ebr,
+/obj/item/circuitboard/machine/seed_extractor,
+/obj/item/gun/ballistic/rifle/sniper_rifle,
+/obj/item/ammo_box/magazine/sniper_rounds/marksman,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "i" = (
 /obj/machinery/hydroponics/soil,
-/turf/open/floor/plating/dirt/dry/lit,
+/turf/open/misc/dirt/dry/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "j" = (
 /obj/structure/table/wood,
@@ -67,7 +67,7 @@
 "k" = (
 /obj/machinery/hydroponics/soil,
 /obj/item/cultivator/rake,
-/turf/open/floor/plating/dirt/dry/lit,
+/turf/open/misc/dirt/dry/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "l" = (
 /turf/open/misc/wasteland/lit,
@@ -147,7 +147,7 @@
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "y" = (
-/mob/living/simple_animal/hostile/asteroid/goliath/beast/wasteland,
+/mob/living/basic/mining/goliath/wasteland,
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "z" = (
@@ -166,17 +166,17 @@
 "B" = (
 /obj/machinery/hydroponics/soil,
 /obj/item/shovel,
-/turf/open/floor/plating/dirt/dry/lit,
+/turf/open/misc/dirt/dry/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "C" = (
 /obj/structure/mineral_door/wood,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "D" = (
-/obj/machinery/door/window/northleft,
+/obj/machinery/door/window/left/directional/north,
 /obj/item/circuitboard/machine/seed_extractor,
 /obj/structure/frame/machine,
-/obj/item/stack/cable_coil/cut/red,
+/obj/item/stack/cable_coil/cut,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "E" = (
@@ -187,7 +187,7 @@
 /area/overmap_encounter/planetoid/wasteland)
 "F" = (
 /obj/machinery/biogenerator,
-/obj/machinery/door/window/northleft,
+/obj/machinery/door/window/left/directional/north,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "G" = (
@@ -196,7 +196,7 @@
 /area/ruin/unpowered)
 "H" = (
 /obj/structure/bed,
-/obj/item/bedsheet/dorms,
+/obj/effect/spawner/random/bedsheet,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "I" = (
@@ -244,7 +244,7 @@
 /turf/template_noop,
 /area/overmap_encounter/planetoid/wasteland)
 "P" = (
-/turf/open/floor/plating/dirt/dry/lit,
+/turf/open/misc/dirt/dry/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "Q" = (
 /obj/structure/table/wood,
@@ -296,7 +296,7 @@
 /area/overmap_encounter/planetoid/wasteland)
 "X" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/glass/bucket,
+/obj/item/reagent_containers/cup/bucket,
 /obj/item/reagent_containers/spray/weedspray{
 	pixel_x = 7
 	},
@@ -326,6 +326,15 @@
 	},
 /turf/template_noop,
 /area/overmap_encounter/planetoid/wasteland)
+"p" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
 
 (1,1,1) = {"
 L
@@ -428,7 +437,7 @@ L
 L
 L
 L
-s
+q
 L
 x
 i
@@ -442,7 +451,7 @@ U
 (8,1,1) = {"
 L
 V
-r
+p
 L
 t
 G

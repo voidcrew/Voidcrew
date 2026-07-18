@@ -8,7 +8,7 @@
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "ez" = (
-/obj/item/reagent_containers/food/snacks/grown/tomato/blood,
+/obj/item/food/grown/tomato/blood,
 /turf/open/floor/grass,
 /area/ruin/unpowered)
 "fj" = (
@@ -36,6 +36,7 @@
 /area/ruin/unpowered)
 "mh" = (
 /obj/structure/flora/grass/jungle,
+/obj/structure/closet/crate/zone_loot/research,
 /turf/open/floor/grass,
 /area/ruin/unpowered)
 "ms" = (
@@ -150,8 +151,12 @@
 "JL" = (
 /turf/open/water/jungle,
 /area/ruin/unpowered)
+"bg" = (
+/obj/effect/zone_mobs/bug,
+/turf/open/water/jungle,
+/area/ruin/unpowered)
 "Lt" = (
-/mob/living/simple_animal/hostile/jungle/seedling{
+/mob/living/basic/seedling{
 	health = 300;
 	maxHealth = 300
 	},
@@ -165,7 +170,7 @@
 /area/ruin/unpowered)
 "Pg" = (
 /obj/structure/flora/ausbushes/reedbush,
-/obj/item/organ/internal/heart/cursed,
+/obj/item/organ/heart/cursed,
 /turf/open/water/jungle,
 /area/ruin/unpowered)
 "Py" = (
@@ -182,7 +187,7 @@
 /turf/open/floor/grass,
 /area/ruin/unpowered)
 "QV" = (
-/obj/item/organ/internal/liver/plasmaman,
+/obj/item/organ/liver/bone/plasmaman,
 /turf/open/water/jungle,
 /area/ruin/unpowered)
 "Rg" = (
@@ -317,7 +322,7 @@ SH
 Uv
 BS
 Qe
-JL
+bg
 Pg
 SH
 Rg

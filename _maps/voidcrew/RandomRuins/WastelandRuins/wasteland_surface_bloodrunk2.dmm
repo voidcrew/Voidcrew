@@ -96,6 +96,10 @@
 	},
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
+"r" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/misc/dust/lit,
+/area/overmap_encounter/planetoid/wasteland)
 "s" = (
 /mob/living/simple_animal/hostile/megafauna/blood_drunk_miner/guidance{
 	dir = 8
@@ -294,7 +298,7 @@ x
 P
 z
 d
-P
+r
 b
 "}
 (9,1,1) = {"

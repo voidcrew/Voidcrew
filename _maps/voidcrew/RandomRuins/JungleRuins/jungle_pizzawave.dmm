@@ -21,7 +21,7 @@
 /turf/open/floor/grass,
 /area/ruin/powered)
 "f" = (
-/mob/living/simple_animal/hostile/lizard/space,
+/mob/living/basic/lizard/space,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/vaporwave,
 /area/ruin/powered)
@@ -41,7 +41,7 @@
 /turf/open/floor/grass,
 /area/ruin/powered)
 "k" = (
-/mob/living/simple_animal/butterfly,
+/mob/living/basic/butterfly,
 /turf/open/floor/grass,
 /area/ruin/powered)
 "l" = (
@@ -50,7 +50,7 @@
 /area/ruin/powered)
 "m" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/food/drinks/colocup/lean,
+/obj/item/reagent_containers/cup/glass/colocup,
 /turf/open/floor/grass,
 /area/ruin/powered)
 "n" = (
@@ -99,7 +99,7 @@
 /turf/open/floor/iron/vaporwave,
 /area/ruin/powered)
 "x" = (
-/obj/structure/sink/puddle,
+/obj/structure/water_source/puddle,
 /turf/open/floor/grass,
 /area/ruin/powered)
 "z" = (
@@ -115,7 +115,6 @@
 /turf/open/floor/grass,
 /area/ruin/powered)
 "D" = (
-/mob/living/simple_animal/pet/gondola,
 /turf/open/floor/grass,
 /area/ruin/powered)
 "E" = (
@@ -181,7 +180,7 @@
 /turf/closed/wall,
 /area/ruin/powered)
 "S" = (
-/mob/living/simple_animal/hostile/lightgeist,
+/mob/living/basic/lightgeist,
 /turf/open/floor/iron/vaporwave,
 /area/ruin/powered)
 "T" = (
@@ -192,6 +191,16 @@
 /obj/structure/table/wood/fancy/purple,
 /obj/item/clothing/suit/jacket/det_suit,
 /obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/vaporwave,
+/area/ruin/powered)
+"o" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/iron/vaporwave,
+/area/ruin/powered)
+"q" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/zone_mobs/wildlife,
 /turf/open/floor/iron/vaporwave,
 /area/ruin/powered)
 
@@ -320,7 +329,7 @@ i
 i
 w
 I
-h
+o
 O
 S
 O
@@ -339,7 +348,7 @@ w
 Q
 O
 f
-h
+q
 O
 O
 F

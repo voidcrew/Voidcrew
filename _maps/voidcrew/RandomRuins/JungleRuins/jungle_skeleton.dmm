@@ -6,12 +6,12 @@
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "b" = (
-/obj/effect/mob_spawn/human/skeleton/alive,
-/mob/living/simple_animal/hostile/skeleton/plasmaminer/jackhammer,
+/obj/effect/mob_spawn/ghost_role/human/skeleton,
+/mob/living/basic/skeleton/plasmaminer/jackhammer,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "d" = (
-/obj/effect/mob_spawn/human/skeleton/alive,
+/obj/effect/mob_spawn/ghost_role/human/skeleton,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "e" = (
@@ -24,7 +24,7 @@
 /area/ruin/unpowered)
 "g" = (
 /obj/effect/decal/cleanable/blood/tracks,
-/obj/effect/mob_spawn/human/skeleton/alive,
+/obj/effect/mob_spawn/ghost_role/human/skeleton,
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "h" = (
@@ -32,7 +32,7 @@
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "i" = (
-/obj/item/kitchen/knife/combat/bone,
+/obj/item/knife/combat/bone,
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "j" = (
@@ -43,6 +43,7 @@
 "k" = (
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/item/book/granter/crafting_recipe/boneyard_notes,
+/obj/structure/closet/crate/zone_loot/occult/rare,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "l" = (
@@ -70,7 +71,7 @@
 /area/ruin/unpowered)
 "t" = (
 /obj/effect/decal/cleanable/blood/tracks,
-/obj/item/nullrod/scythe,
+/obj/item/nullrod/claymore/darkblade,
 /obj/item/storage/box/holy/follower,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
@@ -86,7 +87,7 @@
 /area/ruin/unpowered)
 "x" = (
 /obj/item/slime_cookie/black,
-/mob/living/simple_animal/hostile/skeleton/templar,
+/mob/living/basic/skeleton/templar,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "y" = (
@@ -99,13 +100,13 @@
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "B" = (
-/obj/effect/mob_spawn/human/skeleton/alive,
+/obj/effect/mob_spawn/ghost_role/human/skeleton,
 /obj/structure/flora/rock/jungle,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "C" = (
 /obj/effect/decal/cleanable/blood/tracks,
-/obj/effect/mob_spawn/human/skeleton/alive,
+/obj/effect/mob_spawn/ghost_role/human/skeleton,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "D" = (
@@ -125,23 +126,23 @@
 /area/ruin/unpowered)
 "G" = (
 /obj/effect/decal/cleanable/blood/tracks,
-/mob/living/simple_animal/hostile/skeleton/plasmaminer/jackhammer,
+/mob/living/basic/skeleton/plasmaminer/jackhammer,
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "H" = (
-/mob/living/simple_animal/hostile/retaliate/ghost,
+/mob/living/basic/ghost,
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "I" = (
-/mob/living/simple_animal/hostile/skeleton/plasmaminer/jackhammer,
+/mob/living/basic/skeleton/plasmaminer/jackhammer,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "J" = (
-/mob/living/simple_animal/hostile/retaliate/ghost,
+/mob/living/basic/ghost,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "K" = (
-/mob/living/simple_animal/hostile/skeleton/templar,
+/mob/living/basic/skeleton/templar,
 /obj/structure/flora/grass/jungle/b,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
@@ -160,7 +161,7 @@
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "R" = (
-/obj/effect/mob_spawn/human/skeleton/alive,
+/obj/effect/mob_spawn/ghost_role/human/skeleton,
 /obj/item/stack/sheet/bone,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
@@ -170,7 +171,7 @@
 /area/ruin/unpowered)
 "T" = (
 /obj/effect/decal/cleanable/blood/tracks,
-/mob/living/simple_animal/hostile/skeleton/templar,
+/mob/living/basic/skeleton/templar,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "U" = (
@@ -183,7 +184,7 @@
 /area/ruin/unpowered)
 "W" = (
 /obj/structure/spawner/skeleton,
-/obj/item/reagent_containers/food/snacks/meat/slab/human/mutant/skeleton,
+/obj/item/food/meat/slab/human/mutant/skeleton,
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "X" = (
@@ -202,6 +203,17 @@
 "Z" = (
 /obj/structure/statue/bone/rib,
 /turf/open/misc/dirt/jungle,
+/area/ruin/unpowered)
+"A" = (
+/obj/structure/spawner/skeleton,
+/obj/item/food/meat/slab/human/mutant/skeleton,
+/obj/effect/zone_mobs/undead/boss,
+/turf/open/misc/dirt/jungle/dark,
+/area/ruin/unpowered)
+"M" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/effect/zone_mobs/undead,
+/turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 
 (1,1,1) = {"
@@ -247,7 +259,7 @@ T
 t
 E
 h
-h
+M
 h
 E
 g
@@ -258,7 +270,7 @@ H
 (4,1,1) = {"
 m
 P
-W
+A
 i
 V
 n

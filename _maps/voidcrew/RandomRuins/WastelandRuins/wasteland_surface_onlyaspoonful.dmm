@@ -30,7 +30,7 @@
 /area/ruin/powered)
 "bo" = (
 /obj/effect/decal/cleanable/blood/gibs/core,
-/obj/item/kitchen/knife/combat,
+/obj/item/knife/combat,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "bz" = (
@@ -190,7 +190,7 @@
 	pixel_y = 6
 	},
 /obj/effect/decal/cleanable/blood,
-/obj/item/ammo_box/magazine/co9mm,
+/obj/item/ammo_box/magazine/m9mm,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "ka" = (
@@ -208,7 +208,7 @@
 /obj/item/kitchen/spoon/plastic,
 /obj/item/kitchen/spoon/plastic,
 /obj/item/kitchen/spoon/plastic,
-/obj/item/shovel/spoon,
+/obj/item/shovel,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "km" = (
@@ -239,7 +239,7 @@
 /obj/item/kitchen/spoon/plastic,
 /obj/item/kitchen/spoon/plastic,
 /obj/item/kitchen/spoon/plastic,
-/obj/item/shovel/spoon,
+/obj/item/shovel,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "pl" = (
@@ -250,7 +250,7 @@
 /obj/item/kitchen/spoon/plastic,
 /obj/item/kitchen/spoon/plastic,
 /obj/item/kitchen/spoon/plastic,
-/obj/item/shovel/spoon,
+/obj/item/shovel,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "pZ" = (
@@ -260,7 +260,7 @@
 /area/ruin/powered)
 "qa" = (
 /obj/machinery/icecream_vat,
-/obj/item/shovel/spoon,
+/obj/item/shovel,
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "sl" = (
@@ -287,7 +287,7 @@
 /obj/item/kitchen/spoon/plastic,
 /obj/item/kitchen/spoon/plastic,
 /obj/item/kitchen/spoon/plastic,
-/obj/item/shovel/spoon,
+/obj/item/shovel,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "tl" = (
@@ -381,7 +381,7 @@
 /area/ruin/powered)
 "AE" = (
 /obj/structure/table,
-/obj/item/reagent_containers/food/snacks/donut/meat{
+/obj/item/food/donut/meat{
 	pixel_x = 2;
 	pixel_y = 5
 	},
@@ -478,7 +478,7 @@
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "Hl" = (
-/obj/effect/mob_spawn/human/corpse/nanotrasensoldier,
+/obj/effect/mob_spawn/corpse/human/nanotrasensoldier,
 /obj/effect/decal/cleanable/blood{
 	icon_state = "floor6"
 	},
@@ -539,7 +539,7 @@
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "KY" = (
-/obj/effect/mob_spawn/human/corpse/nanotrasensoldier,
+/obj/effect/mob_spawn/corpse/human/nanotrasensoldier,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plastic,
@@ -689,7 +689,7 @@
 /area/ruin/powered)
 "Sw" = (
 /obj/effect/decal/remains/human,
-/obj/item/clothing/head/utility/hardhat/weldhat/orange,
+/obj/item/clothing/head/utility/hardhat/welding/orange,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "ST" = (
@@ -702,7 +702,7 @@
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "Tt" = (
-/obj/item/gun/ballistic/automatic/pistol/commander,
+/obj/item/gun/ballistic/automatic/pistol/m1911,
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "TA" = (
@@ -747,10 +747,29 @@
 /turf/open/floor/plastic,
 /area/ruin/powered)
 "Zr" = (
-/obj/effect/mob_spawn/human/corpse/nanotrasensoldier,
+/obj/effect/mob_spawn/corpse/human/nanotrasensoldier,
 /obj/effect/decal/cleanable/blood{
 	icon_state = "floor4"
 	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plastic,
+/area/ruin/powered)
+"WW" = (
+/obj/effect/zone_mobs/robot,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/material,
+/area/ruin/powered)
+"XX" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/plastic,
+/area/ruin/powered)
+"YY" = (
+/obj/effect/zone_mobs/robot,
+/obj/effect/decal/cleanable/blood/tracks,
+/turf/open/floor/plastic,
+/area/ruin/powered)
+"ZZ" = (
+/obj/structure/closet/crate/zone_loot/industrial,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plastic,
 /area/ruin/powered)
@@ -849,7 +868,7 @@ VR
 jw
 zb
 Rz
-PO
+WW
 PO
 PO
 Ro
@@ -945,7 +964,7 @@ MG
 gK
 Ze
 tl
-VR
+XX
 TM
 fm
 Nd
@@ -1000,7 +1019,7 @@ ct
 dl
 XL
 Lm
-Mu
+YY
 Hi
 ga
 vZ
@@ -1040,7 +1059,7 @@ ct
 dl
 CU
 hw
-Ze
+ZZ
 dl
 Qp
 Ze

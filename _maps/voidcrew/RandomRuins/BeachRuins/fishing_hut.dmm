@@ -335,6 +335,24 @@
 /area/ruin/powered{
 	name = "\improper Cold Storage"
 	})
+"ab" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/powered{
+	name = "\improper Dining Hall"
+	})
+"ac" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/carpet/red,
+/area/ruin/powered{
+	name = "\improper Dining Hall"
+	})
+"ad" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/ruin/powered{
+	name = "\improper Cold Storage"
+	})
 
 (1,1,1) = {"
 Ko
@@ -500,7 +518,7 @@ ep
 ae
 ut
 hK
-oE
+ac
 tV
 oE
 hK
@@ -509,7 +527,7 @@ ep
 Xp
 QO
 vL
-QO
+ad
 ep
 "}
 (12,1,1) = {"
@@ -566,7 +584,7 @@ ut
 ut
 ut
 ut
-ut
+ab
 ut
 ut
 Ko

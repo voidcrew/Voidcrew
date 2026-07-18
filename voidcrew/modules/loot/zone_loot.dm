@@ -596,5 +596,202 @@
 	base_icon_state = "freezer"
 	rare = TRUE
 
+// ARMORY CACHE — military/security hardware for ruins with a garrison story
+// (weapons labs, chokepoints, fortresses, crashed patrol ships). Green is
+// mall-cop kit, yellow is line infantry, red is the riot line's back room.
+// TODO: review/balance-pass all six tables — first-draft weights and
+// contents, never playtested.
+/obj/structure/closet/crate/zone_loot/armory
+	name = "armory resupply cache"
+	desc = "A stenciled munitions cache, requisition slip long gone. The lock was cut by someone in a hurry."
+	icon_state = "weaponcrate"
+	base_icon_state = "weaponcrate"
+	loot_green = list(
+		/obj/item/clothing/suit/armor/vest = 10,
+		/obj/item/clothing/head/helmet/sec = 10,
+		/obj/item/gun/energy/disabler = 7,
+		/obj/item/flashlight/seclite = 7,
+		/obj/item/grenade/flashbang = 6,
+		/obj/item/clothing/glasses/hud/security/sunglasses = 5,
+		/obj/item/melee/baton/security/loaded = 4,
+		/obj/item/clothing/mask/balaclava = 4,
+	)
+	loot_yellow = list(
+		/obj/item/clothing/suit/armor/bulletproof = 10,
+		/obj/item/gun/ballistic/automatic/pistol/m1911 = 8,
+		/obj/item/ammo_box/magazine/m45 = 8,
+		/obj/item/gun/ballistic/shotgun/riot = 6,
+		/obj/item/shield/riot = 6,
+		/obj/item/clothing/suit/armor/vest/marine = 5,
+		/obj/item/clothing/gloves/combat = 5,
+		/obj/item/clothing/shoes/combat = 5,
+		/obj/item/gun/ballistic/rifle/boltaction = 4,
+		/obj/item/clothing/under/syndicate/tacticool = 3,
+	)
+	loot_red = list(
+		/obj/item/clothing/suit/armor/riot = 9,
+		/obj/item/clothing/head/helmet/toggleable/riot = 8,
+		/obj/item/gun/energy/laser = 8,
+		/obj/item/clothing/suit/armor/laserproof = 6,
+		/obj/item/clothing/head/helmet/marine = 6,
+		/obj/item/storage/belt/military/assault = 5,
+		/obj/item/gun/energy/e_gun = 4,
+		/obj/item/gun/ballistic/rifle/boltaction/prime = 3,
+		/obj/item/shield/riot/tele = 3,
+		/obj/item/clothing/suit/armor/heavy = 2,
+	)
+	rare_loot_green = list(
+		/obj/item/clothing/suit/armor/bulletproof = 8,
+		/obj/item/gun/ballistic/automatic/pistol/m1911 = 6,
+		/obj/item/shield/riot = 5,
+		/obj/item/clothing/suit/armor/vest/marine = 4,
+	)
+	rare_loot_yellow = list(
+		/obj/item/clothing/suit/armor/riot = 8,
+		/obj/item/gun/energy/laser = 6,
+		/obj/item/clothing/head/helmet/toggleable/riot = 6,
+		/obj/item/storage/belt/military/assault = 4,
+	)
+	rare_loot_red = list(
+		/obj/item/gun/energy/e_gun = 8,
+		/obj/item/clothing/suit/armor/heavy = 6,
+		/obj/item/shield/riot/tele = 6,
+		/obj/item/gun/ballistic/rifle/boltaction/prime = 5,
+		/obj/item/clothing/suit/armor/laserproof = 5,
+	)
+
+/obj/structure/closet/crate/zone_loot/armory/rare
+	name = "sealed ordnance cache"
+	desc = "A munitions cache still under factory seal. Someone paid extra for what's in here."
+	rare = TRUE
+
+// EXPEDITION CACHE — prospector and frontier kit (mining camps, crash
+// sites, survey posts). Green keeps you alive, yellow makes you faster,
+// red makes the planet regret you landed.
+// TODO: review/balance-pass all six tables — first-draft weights and
+// contents, never playtested.
+/obj/structure/closet/crate/zone_loot/expedition
+	name = "expedition supply cache"
+	desc = "A trail-battered supply cache plastered in claim stickers. The last crew never came back for it."
+	icon_state = "mining"
+	base_icon_state = "mining"
+	loot_green = list(
+		/obj/item/clothing/suit/hooded/explorer = 10,
+		/obj/item/knife/combat/survival = 9,
+		/obj/item/gps/mining = 8,
+		/obj/item/flashlight/flare = 8,
+		/obj/item/stack/marker_beacon/thirty = 6,
+		/obj/item/mining_scanner = 6,
+		/obj/item/climbing_hook = 5,
+		/obj/item/reagent_containers/hypospray/medipen/survival = 4,
+		/obj/item/pickaxe = 4,
+	)
+	loot_yellow = list(
+		/obj/item/gun/energy/recharge/kinetic_accelerator = 10,
+		/obj/item/storage/belt/mining/alt = 8,
+		/obj/item/pickaxe/diamond = 7,
+		/obj/item/t_scanner/adv_mining_scanner/lesser = 6,
+		/obj/item/wormhole_jaunter = 6,
+		/obj/item/survivalcapsule = 5,
+		/obj/item/clothing/suit/hooded/cloak/goliath = 4,
+		/obj/item/gun/energy/plasmacutter = 4,
+	)
+	loot_red = list(
+		/obj/item/borg/upgrade/modkit/range = 9,
+		/obj/item/clothing/shoes/bhop = 7,
+		/obj/item/resonator = 7,
+		/obj/item/gun/energy/plasmacutter/adv = 6,
+		/obj/item/kinetic_crusher = 5,
+		/obj/item/clothing/glasses/heat = 4,
+		/obj/item/clothing/suit/hooded/cloak/drake = 2,
+	)
+	rare_loot_green = list(
+		/obj/item/gun/energy/recharge/kinetic_accelerator = 8,
+		/obj/item/storage/belt/mining/alt = 6,
+		/obj/item/wormhole_jaunter = 5,
+		/obj/item/pickaxe/diamond = 4,
+	)
+	rare_loot_yellow = list(
+		/obj/item/borg/upgrade/modkit/range = 8,
+		/obj/item/resonator = 6,
+		/obj/item/gun/energy/plasmacutter/adv = 5,
+		/obj/item/clothing/shoes/bhop = 5,
+	)
+	rare_loot_red = list(
+		/obj/item/kinetic_crusher = 8,
+		/obj/item/clothing/suit/hooded/cloak/drake = 5,
+		/obj/item/clothing/glasses/heat = 5,
+		/obj/item/borg/upgrade/modkit/range = 5,
+	)
+
+/obj/structure/closet/crate/zone_loot/expedition/rare
+	name = "prospector's claim chest"
+	desc = "A claim chest with the assay office's wax still on it. Whoever staked this claim struck something."
+	rare = TRUE
+
+// WARDROBE CACHE — identity loot: clothes and character pieces so crews
+// stop looking like quintuplets. Green is thrift-store, yellow is somebody's
+// good coat, red is armored fashion you'll be recognized by.
+// TODO: review/balance-pass all six tables — first-draft weights and
+// contents, never playtested.
+/obj/structure/closet/crate/zone_loot/wardrobe
+	name = "lost luggage cache"
+	desc = "A dented luggage container from a liner that stopped existing. The name tags have all faded."
+	icon_state = "cargo"
+	base_icon_state = "cargo"
+	loot_green = list(
+		/obj/item/clothing/suit/jacket/leather = 10,
+		/obj/item/clothing/suit/jacket/bomber = 8,
+		/obj/item/clothing/head/beret = 8,
+		/obj/item/clothing/under/pants/jeans = 7,
+		/obj/item/clothing/suit/costume/poncho = 7,
+		/obj/item/clothing/head/cowboy/brown = 6,
+		/obj/item/clothing/mask/bandana/skull = 6,
+		/obj/item/clothing/head/costume/ushanka = 5,
+		/obj/item/clothing/suit/hooded/wintercoat = 5,
+		/obj/item/clothing/suit/costume/hawaiian = 4,
+		/obj/item/clothing/neck/scarf/red = 4,
+	)
+	loot_yellow = list(
+		/obj/item/clothing/suit/jacket/leather/biker = 10,
+		/obj/item/clothing/suit/armor/vest/leather = 8,
+		/obj/item/clothing/head/cowboy/black = 7,
+		/obj/item/clothing/head/hats/warden/police = 6,
+		/obj/item/clothing/under/costume/soviet = 6,
+		/obj/item/clothing/suit/costume/judgerobe = 5,
+		/obj/item/clothing/gloves/tackler/combat = 5,
+		/obj/item/clothing/under/rank/prisoner = 4,
+		/obj/item/clothing/mask/gas/sechailer/swat = 4,
+	)
+	loot_red = list(
+		/obj/item/clothing/head/cowboy/bounty = 9,
+		/obj/item/clothing/suit/armor/vest/warden/alt = 8,
+		/obj/item/clothing/head/helmet/knight = 7,
+		/obj/item/clothing/head/cowboy/black/syndicate = 6,
+		/obj/item/clothing/suit/hooded/berserker = 4,
+		/obj/item/clothing/head/hooded/berserker = 4,
+	)
+	rare_loot_green = list(
+		/obj/item/clothing/suit/jacket/leather/biker = 8,
+		/obj/item/clothing/head/cowboy/black = 6,
+		/obj/item/clothing/suit/armor/vest/leather = 5,
+	)
+	rare_loot_yellow = list(
+		/obj/item/clothing/head/cowboy/bounty = 8,
+		/obj/item/clothing/suit/armor/vest/warden/alt = 6,
+		/obj/item/clothing/head/helmet/knight = 5,
+	)
+	rare_loot_red = list(
+		/obj/item/clothing/head/cowboy/bounty = 8,
+		/obj/item/clothing/suit/hooded/berserker = 6,
+		/obj/item/clothing/head/hooded/berserker = 6,
+		/obj/item/clothing/head/cowboy/black/syndicate = 5,
+	)
+
+/obj/structure/closet/crate/zone_loot/wardrobe/rare
+	name = "couturier's trunk"
+	desc = "A tailor's traveling trunk, latches polished by use. Dressing well is the best revenge."
+	rare = TRUE
+
 #undef ZONE_LOOT_RESOLVE_ATTEMPTS
 #undef ZONE_LOOT_RESOLVE_RETRY_DELAY

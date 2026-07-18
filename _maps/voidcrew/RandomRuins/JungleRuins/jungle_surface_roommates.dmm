@@ -2,9 +2,17 @@
 "a" = (
 /turf/template_noop,
 /area/template_noop)
+"c" = (
+/obj/structure/closet/crate/zone_loot/wardrobe,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"d" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/zone_mobs/undead,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
 "b" = (
 /obj/structure/closet/cabinet,
-/obj/item/clothing/neck/tie/lesbian,
 /obj/item/clothing/under/dress/sailor,
 /obj/item/clothing/under/dress/skirt,
 /obj/item/clothing/under/dress/striped,
@@ -45,11 +53,9 @@
 /area/ruin/unpowered)
 "A" = (
 /obj/structure/closet/cabinet,
-/obj/item/clothing/neck/tie/lesbian,
-/obj/item/clothing/under/dress/skirt/red,
+/obj/item/clothing/under/dress/skirt,
 /obj/item/clothing/under/syndicate/tacticool/skirt,
-/obj/item/clothing/under/dress/skirt/plaid/blue,
-/obj/item/toy/plush/hornet/gay,
+/obj/item/clothing/under/dress/skirt/plaid,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "C" = (
@@ -137,9 +143,9 @@ a
 (5,1,1) = {"
 a
 I
-X
+c
 w
-w
+d
 X
 o
 K

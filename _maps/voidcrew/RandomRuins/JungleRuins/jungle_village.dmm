@@ -36,7 +36,7 @@
 "ds" = (
 /mob/living/carbon/human/species/monkey,
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/oil/slippery,
+/obj/effect/decal/cleanable/blood/oil/slippery,
 /turf/open/floor/grass,
 /area/ruin/unpowered)
 "ey" = (
@@ -84,6 +84,7 @@
 "lr" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/ash,
+/obj/structure/closet/crate/zone_loot/plunder,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "mj" = (
@@ -150,11 +151,11 @@
 /turf/open/floor/grass,
 /area/ruin/unpowered)
 "tL" = (
-/obj/effect/decal/cleanable/oil/slippery,
+/obj/effect/decal/cleanable/blood/oil/slippery,
 /turf/open/floor/grass,
 /area/ruin/unpowered)
 "vk" = (
-/obj/effect/decal/cleanable/oil/slippery,
+/obj/effect/decal/cleanable/blood/oil/slippery,
 /turf/open/misc/dirt,
 /area/ruin/unpowered)
 "vv" = (
@@ -281,7 +282,7 @@
 /turf/open/floor/grass,
 /area/ruin/unpowered)
 "NM" = (
-/obj/structure/sink/puddle,
+/obj/structure/water_source/puddle,
 /turf/open/floor/grass,
 /area/ruin/unpowered)
 "Ph" = (
@@ -332,6 +333,10 @@
 /obj/item/flashlight/lamp/bananalamp,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/floor/wood,
+/area/ruin/unpowered)
+"zz" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/grass,
 /area/ruin/unpowered)
 
 (1,1,1) = {"
@@ -481,7 +486,7 @@ sz
 sz
 sz
 sz
-sz
+zz
 sz
 sz
 NM

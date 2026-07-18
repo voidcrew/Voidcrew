@@ -24,7 +24,7 @@
 /area/ruin/unpowered)
 "h" = (
 /turf/open/misc/grass/jungle,
-/area/mine/unexplored)
+/area/overmap_encounter/planet_ruin)
 "j" = (
 /obj/structure/table/wood,
 /obj/item/storage/toolbox/mechanical{
@@ -48,15 +48,15 @@
 "q" = (
 /obj/structure/closet/crate/coffin,
 /turf/open/misc/dirt/jungle/dark,
-/area/mine/unexplored)
+/area/overmap_encounter/planet_ruin)
 "r" = (
 /obj/structure/flora/junglebush/c,
 /turf/open/misc/grass/jungle,
-/area/mine/unexplored)
+/area/overmap_encounter/planet_ruin)
 "s" = (
-/obj/structure/sink/puddle,
+/obj/structure/water_source/puddle,
 /turf/open/misc/grass/jungle,
-/area/mine/unexplored)
+/area/overmap_encounter/planet_ruin)
 "u" = (
 /obj/structure/closet/crate/coffin,
 /obj/effect/decal/cleanable/dirt,
@@ -79,7 +79,7 @@
 "y" = (
 /obj/structure/flora/junglebush/b,
 /turf/open/misc/grass/jungle,
-/area/mine/unexplored)
+/area/overmap_encounter/planet_ruin)
 "z" = (
 /obj/structure/closet/cabinet,
 /obj/item/clothing/head/costume/pirate{
@@ -99,22 +99,22 @@
 /area/ruin/unpowered)
 "E" = (
 /turf/open/misc/dirt/jungle/dark,
-/area/mine/unexplored)
+/area/overmap_encounter/planet_ruin)
 "F" = (
 /obj/item/food/grown/banana,
 /turf/open/misc/dirt/jungle/dark,
-/area/mine/unexplored)
+/area/overmap_encounter/planet_ruin)
 "G" = (
 /obj/machinery/hydroponics/soil,
 /turf/open/misc/dirt/jungle/dark,
-/area/mine/unexplored)
+/area/overmap_encounter/planet_ruin)
 "H" = (
 /obj/structure/closet/crate/coffin,
 /obj/effect/decal/cleanable/dirt,
-/obj/item/reagent_containers/food/drinks/beer{
+/obj/item/reagent_containers/cup/glass/bottle/beer{
 	pixel_x = 8
 	},
-/obj/item/reagent_containers/food/drinks/beer{
+/obj/item/reagent_containers/cup/glass/bottle/beer{
 	pixel_x = -6
 	},
 /turf/open/floor/wood,
@@ -140,7 +140,7 @@
 /obj/item/food/grown/banana,
 /obj/item/food/grown/banana,
 /obj/item/food/grown/banana,
-/obj/item/reagent_containers/food/snacks/grown/bungofruit,
+/obj/item/food/grown/bungofruit,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -148,7 +148,7 @@
 /obj/structure/closet/crate/coffin,
 /obj/item/food/monkeycube,
 /turf/open/misc/dirt/jungle/dark,
-/area/mine/unexplored)
+/area/overmap_encounter/planet_ruin)
 "L" = (
 /obj/structure/mineral_door/wood,
 /turf/open/floor/wood,
@@ -156,7 +156,7 @@
 "M" = (
 /obj/structure/closet/crate/coffin,
 /turf/open/misc/grass/jungle,
-/area/mine/unexplored)
+/area/overmap_encounter/planet_ruin)
 "R" = (
 /obj/structure/bed/dogbed{
 	name = "Palmo's bed"
@@ -179,11 +179,11 @@
 "T" = (
 /obj/structure/flora/grass/jungle,
 /turf/open/misc/grass/jungle,
-/area/mine/unexplored)
+/area/overmap_encounter/planet_ruin)
 "U" = (
 /obj/structure/bed,
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/mob_spawn/human/corpse/pirate,
+/obj/effect/mob_spawn/corpse/human/pirate,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "V" = (
@@ -201,7 +201,15 @@
 "Z" = (
 /obj/structure/flora/junglebush,
 /turf/open/misc/grass/jungle,
-/area/mine/unexplored)
+/area/overmap_encounter/planet_ruin)
+"c" = (
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"d" = (
+/obj/effect/zone_mobs/undead,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
 
 (1,1,1) = {"
 a
@@ -259,7 +267,7 @@ a
 E
 l
 z
-b
+c
 b
 R
 l
@@ -328,7 +336,7 @@ l
 e
 b
 b
-b
+d
 x
 A
 l

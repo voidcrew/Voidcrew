@@ -6,7 +6,7 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "aR" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "ch" = (
@@ -119,7 +119,7 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/pirate/ranged,
+/mob/living/basic/trooper/pirate/ranged,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "qL" = (
@@ -199,11 +199,11 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "DH" = (
-/mob/living/simple_animal/hostile/pirate/ranged/space,
+/mob/living/basic/trooper/pirate/ranged/space,
 /turf/open/floor/carpet/red,
 /area/ruin/unpowered)
 "DS" = (
-/mob/living/simple_animal/hostile/pirate/ranged,
+/mob/living/basic/trooper/pirate/ranged,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "DV" = (
@@ -218,7 +218,7 @@
 "Ew" = (
 /obj/structure/table/wood/poker,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
-/mob/living/simple_animal/parrot{
+/mob/living/basic/parrot{
 	faction = list("pirate");
 	name = "Pegwing"
 	},
@@ -253,7 +253,7 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "LT" = (
-/mob/living/simple_animal/hostile/pirate/melee,
+/mob/living/basic/trooper/pirate/melee,
 /obj/structure/chair/wood,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
@@ -338,7 +338,7 @@
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "UX" = (
-/mob/living/simple_animal/hostile/pirate/melee,
+/mob/living/basic/trooper/pirate/melee,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "Vf" = (
@@ -347,7 +347,7 @@
 "Wk" = (
 /obj/structure/closet/crate/critter,
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/parrot{
+/mob/living/basic/parrot{
 	faction = list("pirate")
 	},
 /turf/open/floor/wood,
@@ -360,7 +360,7 @@
 /area/ruin/unpowered)
 "WA" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "Xb" = (
@@ -374,7 +374,7 @@
 /turf/open/floor/carpet/red,
 /area/ruin/unpowered)
 "XA" = (
-/mob/living/simple_animal/hostile/pirate/melee,
+/mob/living/basic/trooper/pirate/melee,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -386,6 +386,28 @@
 /obj/structure/closet/crate/goldcrate,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
+/area/ruin/unpowered)
+"ab" = (
+/obj/structure/closet/crate/zone_loot/plunder/rare,
+/turf/open/floor/carpet/red,
+/area/ruin/unpowered)
+"ac" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/pirate/boss,
+/turf/open/floor/carpet/red,
+/area/ruin/unpowered)
+"ad" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/carpet/red,
+/area/ruin/unpowered)
+"ae" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"af" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/pod/dark,
 /area/ruin/unpowered)
 
 (1,1,1) = {"
@@ -545,10 +567,10 @@ Kl
 LT
 sH
 of
-cM
+af
 of
 WA
-sH
+ae
 sH
 oj
 sH
@@ -603,7 +625,7 @@ Er
 Xb
 qL
 Xt
-Vf
+ad
 pd
 kh
 DV
@@ -618,8 +640,8 @@ tG
 kh
 eK
 DH
-Xb
-Vf
+ac
+ab
 Vf
 ZM
 kh

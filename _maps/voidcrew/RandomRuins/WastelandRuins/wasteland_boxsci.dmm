@@ -4,7 +4,7 @@
 /obj/item/mmi/syndie,
 /obj/item/mmi/syndie,
 /obj/item/mmi/syndie,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "aq" = (
 /turf/open/floor/iron/white,
@@ -12,7 +12,7 @@
 "aH" = (
 /obj/structure/table,
 /obj/item/retractor,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "aI" = (
 /obj/effect/spawner/structure/window/reinforced,
@@ -41,7 +41,7 @@
 /area/ruin/unpowered)
 "cB" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "cY" = (
 /obj/effect/spawner/structure/window/reinforced,
@@ -109,13 +109,12 @@
 	},
 /area/ruin/unpowered)
 "iE" = (
-/obj/effect/turf_decal/industrial/outline/yellow,
+/obj/effect/turf_decal/siding/yellow,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "jk" = (
-/obj/effect/turf_decal/industrial/warning,
-/obj/machinery/aug_manipulator,
+/obj/effect/turf_decal/stripes/line,
 /obj/machinery/light{
 	dir = 4
 	},
@@ -123,7 +122,7 @@
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "ks" = (
-/obj/machinery/computer/rdconsole/core,
+/obj/machinery/computer/rdconsole,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
@@ -160,7 +159,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "oh" = (
-/obj/effect/turf_decal/industrial/warning{
+/obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -182,14 +181,12 @@
 /obj/machinery/computer/operating{
 	dir = 1
 	},
-/obj/effect/turf_decal/borderfloor,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "oM" = (
 /obj/structure/table/optable,
-/obj/effect/turf_decal/borderfloor,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "oY" = (
 /obj/effect/spawner/structure/window,
@@ -218,7 +215,7 @@
 	pixel_y = 12
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "rr" = (
 /obj/machinery/door/airlock/research,
@@ -265,7 +262,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "tF" = (
-/obj/effect/turf_decal/industrial/warning/corner,
+/obj/effect/turf_decal/stripes/corner,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating{
 	icon_state = "panelscorched"
@@ -277,7 +274,7 @@
 	},
 /area/ruin/unpowered)
 "uD" = (
-/obj/effect/turf_decal/industrial/warning/corner{
+/obj/effect/turf_decal/stripes/corner{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -292,23 +289,22 @@
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "uQ" = (
-/obj/effect/turf_decal/industrial/warning,
+/obj/effect/turf_decal/stripes/line,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "vc" = (
 /obj/structure/table,
-/obj/item/clothing/gloves/color/latex,
+/obj/item/clothing/gloves/latex,
 /obj/item/razor,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "wF" = (
-/obj/effect/turf_decal/rechargefloor,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "xq" = (
-/obj/structure/window/reinforced/spawner/west,
+/obj/structure/window/reinforced/spawner/directional/west,
 /obj/machinery/disposal/bin,
 /obj/structure/disposalpipe/trunk{
 	dir = 4
@@ -373,9 +369,8 @@
 /area/ruin/unpowered)
 "DV" = (
 /obj/item/kirbyplants/random,
-/obj/effect/turf_decal/borderfloor,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "ET" = (
 /obj/structure/table_frame,
@@ -390,16 +385,15 @@
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 9
 	},
-/obj/structure/reagent_dispensers/peppertank{
+/obj/structure/reagent_dispensers/wall/peppertank{
 	pixel_x = -32
 	},
 /obj/structure/closet/secure_closet/security/science,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "Gb" = (
-/obj/effect/turf_decal/borderfloor,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "Gk" = (
 /obj/machinery/door/airlock/research,
@@ -407,7 +401,7 @@
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "Hp" = (
-/obj/effect/turf_decal/industrial/warning{
+/obj/effect/turf_decal/stripes/line{
 	dir = 1
 	},
 /obj/structure/frame/machine{
@@ -420,7 +414,7 @@
 /obj/item/storage/box/bodybags,
 /obj/item/pen,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono/dark,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "Jg" = (
 /obj/structure/frame/machine{
@@ -443,7 +437,7 @@
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "Kj" = (
-/obj/effect/turf_decal/industrial/warning{
+/obj/effect/turf_decal/stripes/line{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -472,7 +466,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "LZ" = (
-/obj/effect/turf_decal/industrial/warning{
+/obj/effect/turf_decal/stripes/line{
 	dir = 4
 	},
 /obj/machinery/conveyor_switch/oneway,
@@ -563,7 +557,6 @@
 /area/ruin/unpowered)
 "Rg" = (
 /obj/structure/bodycontainer/morgue,
-/obj/effect/turf_decal/borderfloor,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "RV" = (
@@ -574,12 +567,12 @@
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "Tl" = (
-/obj/structure/window/reinforced/spawner/west,
+/obj/structure/window/reinforced/spawner/directional/west,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
 "Ts" = (
-/turf/closed/wall/r_wall/syndicate,
+/turf/closed/wall/r_wall/plastitanium/syndicate,
 /area/ruin/unpowered)
 "TF" = (
 /obj/structure/door_assembly/door_assembly_com,
@@ -594,7 +587,7 @@
 /area/ruin/unpowered)
 "UH" = (
 /obj/effect/spawner/structure/window/reinforced,
-/obj/machinery/atmospherics/pipe/simple/general/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/general/hidden{
 	dir = 8
 	},
 /turf/open/floor/plating,
@@ -634,7 +627,6 @@
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "Xw" = (
-/obj/effect/turf_decal/rechargefloor,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
@@ -648,7 +640,7 @@
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "Yj" = (
-/obj/machinery/door/window/eastright{
+/obj/machinery/door/window/right/directional/east{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -656,7 +648,7 @@
 /area/ruin/unpowered)
 "YE" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/mono,
+/turf/open/floor/iron,
 /area/ruin/unpowered)
 "YK" = (
 /obj/structure/disposalpipe/broken,
@@ -669,6 +661,24 @@
 	},
 /area/ruin/unpowered)
 
+"za" = (
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"zb" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/iron,
+/area/ruin/unpowered)
+"zc" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
+"zd" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/engine,
+/area/ruin/unpowered)
 (1,1,1) = {"
 Ts
 aO
@@ -789,14 +799,14 @@ rB
 UH
 Ts
 MQ
-MQ
+za
 MQ
 MQ
 CR
 "}
 (6,1,1) = {"
 KZ
-Ap
+zb
 oH
 Xw
 QP
@@ -839,7 +849,7 @@ NP
 nS
 Ts
 MQ
-MQ
+zd
 MQ
 Ts
 hK
@@ -878,7 +888,7 @@ Kj
 hS
 Cu
 LZ
-lv
+zc
 uD
 Ts
 Vp

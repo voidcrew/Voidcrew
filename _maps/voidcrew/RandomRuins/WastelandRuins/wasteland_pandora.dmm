@@ -41,7 +41,7 @@
 /turf/open/indestructible/hierophant/two,
 /area/ruin)
 "C" = (
-/mob/living/simple_animal/hostile/asteroid/elite/pandora/dungeon,
+/mob/living/simple_animal/hostile/asteroid/elite/pandora,
 /obj/effect/light_emitter{
 	set_cap = 3;
 	set_luminosity = 5
@@ -53,7 +53,7 @@
 /turf/open/indestructible/hierophant/two,
 /area/ruin)
 "J" = (
-/obj/machinery/door/poddoor/gates/indestructible{
+/obj/machinery/door/poddoor/shutters/indestructible{
 	id = "pandora_dead"
 	},
 /turf/open/indestructible/hierophant/two,
@@ -72,7 +72,7 @@
 /turf/open/indestructible/hierophant/two,
 /area/ruin)
 "X" = (
-/obj/machinery/door/poddoor/gates/indestructible{
+/obj/machinery/door/poddoor/shutters/indestructible{
 	id = "pandora_dead"
 	},
 /turf/open/indestructible/hierophant,
@@ -80,6 +80,10 @@
 "Y" = (
 /turf/template_noop,
 /area/template_noop)
+"a" = (
+/obj/structure/closet/crate/zone_loot/occult,
+/turf/open/indestructible/hierophant/two,
+/area/ruin)
 
 (1,1,1) = {"
 M
@@ -319,7 +323,7 @@ s
 M
 z
 x
-x
+a
 x
 z
 M

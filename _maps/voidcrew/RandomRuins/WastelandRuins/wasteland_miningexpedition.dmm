@@ -1,4 +1,18 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"AA" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/floor/iron/smooth_half{
+	dir = 1
+	},
+/area/ruin/unpowered)
+"AB" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/iron/smooth_large,
+/area/ruin/unpowered)
+"AC" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/misc/wasteland/lit,
+/area/overmap_encounter/planetoid/wasteland)
 "an" = (
 /obj/machinery/door/airlock,
 /turf/open/floor/iron/grimy,
@@ -564,7 +578,7 @@ yZ
 ll
 tN
 tN
-oj
+AC
 oj
 Wv
 ll
@@ -658,7 +672,7 @@ tN
 oj
 oj
 oj
-oj
+AC
 oj
 tN
 tN
@@ -872,7 +886,7 @@ ll
 ll
 oj
 pg
-oj
+AC
 oj
 oj
 oj
@@ -967,7 +981,7 @@ ll
 tN
 Vw
 Pz
-pl
+AB
 yT
 PK
 Vw
@@ -992,7 +1006,7 @@ tN
 Vw
 Uu
 JC
-BR
+AA
 NV
 CL
 ll

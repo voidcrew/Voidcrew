@@ -1,4 +1,16 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/cult,
+/turf/open/floor/bronze,
+/area/ruin/reebe)
+"ab" = (
+/obj/effect/zone_mobs/cult/boss,
+/turf/open/floor/bronze,
+/area/ruin/reebe)
+"ac" = (
+/obj/structure/closet/crate/zone_loot/armory/rare,
+/turf/open/floor/bronze,
+/area/ruin/reebe)
 "ai" = (
 /obj/structure/lattice/catwalk/clockwork,
 /turf/template_noop,
@@ -50,7 +62,7 @@
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "qj" = (
-/mob/living/simple_animal/hostile/asteroid/goliath/beast/ancient/crystal,
+/mob/living/basic/mining/goliath/ancient,
 /obj/structure/fans/tiny/invisible,
 /turf/open/floor/bronze,
 /area/ruin/reebe)
@@ -70,7 +82,7 @@
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "vZ" = (
-/obj/item/ammo_box/magazine/co9mm,
+/obj/item/ammo_box/magazine/m9mm,
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "xy" = (
@@ -107,7 +119,7 @@
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "DY" = (
-/mob/living/simple_animal/hostile/asteroid/hivelord/legion/crystal,
+/mob/living/basic/mining/legion/crystal/wasteland,
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "Eg" = (
@@ -115,7 +127,7 @@
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "Em" = (
-/obj/item/gun/ballistic/automatic/pistol/commander/no_mag,
+/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "Ep" = (
@@ -138,7 +150,7 @@
 /area/ruin/reebe)
 "FT" = (
 /obj/structure/lattice/catwalk/clockwork,
-/obj/item/ammo_box/magazine/co9mm,
+/obj/item/ammo_box/magazine/m9mm,
 /turf/template_noop,
 /area/template_noop)
 "HK" = (
@@ -153,7 +165,7 @@
 /area/ruin/reebe)
 "Ib" = (
 /obj/structure/table/bronze,
-/obj/item/storage/firstaid/regular,
+/obj/item/storage/medkit/regular,
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "Ij" = (
@@ -181,7 +193,7 @@
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "Oh" = (
-/mob/living/simple_animal/hostile/asteroid/basilisk/watcher/forgotten,
+/mob/living/basic/mining/watcher/forgotten,
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "Pn" = (
@@ -194,7 +206,7 @@
 /area/ruin/reebe)
 "QS" = (
 /obj/structure/table/bronze,
-/obj/item/toy/plush/plushvar,
+/obj/item/toy/plush/carpplushie,
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "Rc" = (
@@ -206,7 +218,7 @@
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "Sa" = (
-/mob/living/simple_animal/hostile/asteroid/goliath/beast/ancient/crystal,
+/mob/living/basic/mining/goliath/ancient,
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "TM" = (
@@ -239,7 +251,7 @@
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "XX" = (
-/obj/effect/mob_spawn/human/corpse/nanotrasensoldier,
+/obj/effect/mob_spawn/corpse/human/nanotrasensoldier,
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "Yz" = (
@@ -2621,7 +2633,7 @@ pm
 UU
 lB
 Eg
-pm
+aa
 De
 pm
 Ep
@@ -2693,7 +2705,7 @@ pm
 pm
 pm
 pm
-pm
+aa
 Jz
 pm
 pm
@@ -2709,7 +2721,7 @@ dM
 eT
 pm
 pm
-pm
+aa
 pm
 pm
 pm
@@ -2720,7 +2732,7 @@ qj
 zc
 Ij
 pm
-pm
+aa
 AT
 pm
 Em
@@ -2803,10 +2815,10 @@ De
 "}
 (42,1,1) = {"
 Cj
-pm
+ac
 pm
 Ux
-pm
+ab
 pm
 Cj
 pm

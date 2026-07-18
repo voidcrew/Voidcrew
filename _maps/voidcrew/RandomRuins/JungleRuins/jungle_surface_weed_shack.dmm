@@ -1,4 +1,27 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/medical,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"ab" = (
+/obj/machinery/hydroponics/constructable,
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/light{
+	currentcolor = "#FFFFFF"
+	},
+/area/ruin/unpowered)
+"ac" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/wood{
+	icon_state = "wood-broken2"
+	},
+/area/ruin/unpowered)
+"ad" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
 "aj" = (
 /obj/structure/cable,
 /obj/item/cigbutt/roach,
@@ -16,14 +39,14 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "br" = (
-/mob/living/simple_animal/hostile/cockroach,
+/mob/living/basic/cockroach,
 /obj/effect/decal/cleanable/dirt,
 /obj/item/cigbutt/roach,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "cR" = (
 /obj/structure/cable,
-/mob/living/simple_animal/hostile/cockroach,
+/mob/living/basic/cockroach,
 /obj/item/cigbutt/roach,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -50,7 +73,7 @@
 /area/ruin/unpowered)
 "fP" = (
 /obj/structure/cable,
-/obj/item/reagent_containers/food/snacks/grown/cannabis,
+/obj/item/food/grown/cannabis,
 /obj/item/cigbutt/roach,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -86,7 +109,7 @@
 	},
 /area/ruin/unpowered)
 "kM" = (
-/mob/living/simple_animal/hostile/cockroach,
+/mob/living/basic/cockroach,
 /obj/item/trash/cheesie,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -171,7 +194,7 @@
 	pixel_x = 15
 	},
 /obj/item/seeds/cannabis/rainbow,
-/obj/item/clothing/head/beanie/rasta,
+/obj/item/clothing/head/beanie/red,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "sF" = (
@@ -226,7 +249,7 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "Av" = (
-/mob/living/simple_animal/hostile/cockroach,
+/mob/living/basic/cockroach,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "AJ" = (
@@ -255,7 +278,7 @@
 "DN" = (
 /obj/structure/cable,
 /obj/item/cigbutt/roach,
-/obj/item/reagent_containers/glass/bucket,
+/obj/item/reagent_containers/cup/bucket,
 /turf/open/floor/wood{
 	icon_state = "wood-broken7"
 	},
@@ -272,7 +295,7 @@
 /area/template_noop)
 "EM" = (
 /obj/structure/cable,
-/mob/living/simple_animal/hostile/cockroach,
+/mob/living/basic/cockroach,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "FK" = (
@@ -316,12 +339,12 @@
 "Hp" = (
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/item/reagent_containers/glass/bucket,
+/obj/item/reagent_containers/cup/bucket,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "HG" = (
 /obj/structure/table/wood,
-/obj/item/clothing/mask/cigarette/rollie/mindbreaker,
+/obj/item/cigarette/rollie/mindbreaker,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "HJ" = (
@@ -337,7 +360,7 @@
 /turf/open/floor/wood,
 /area/template_noop)
 "JY" = (
-/mob/living/simple_animal/hostile/cockroach/glockroach,
+/mob/living/basic/cockroach/glockroach,
 /turf/open/misc/dirt/jungle,
 /area/template_noop)
 "Kg" = (
@@ -345,7 +368,7 @@
 /obj/machinery/power/terminal{
 	dir = 1
 	},
-/obj/machinery/power/apc/auto_name/north,
+/obj/machinery/power/apc/auto_name/directional/north,
 /obj/item/trash/cheesie,
 /obj/item/cigbutt/roach,
 /turf/open/floor/wood,
@@ -381,7 +404,7 @@
 /turf/template_noop,
 /area/template_noop)
 "Pk" = (
-/mob/living/simple_animal/hostile/cockroach/glockroach,
+/mob/living/basic/cockroach/glockroach,
 /obj/effect/decal/cleanable/dirt,
 /obj/item/cigbutt/roach,
 /turf/open/floor/wood,
@@ -402,7 +425,7 @@
 /turf/open/floor/wood,
 /area/template_noop)
 "Qs" = (
-/mob/living/simple_animal/hostile/cockroach,
+/mob/living/basic/cockroach,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -420,8 +443,8 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "Rj" = (
-/mob/living/simple_animal/hostile/cockroach,
-/obj/item/reagent_containers/food/snacks/grown/cannabis,
+/mob/living/basic/cockroach,
+/obj/item/food/grown/cannabis,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -442,28 +465,28 @@
 /area/ruin/unpowered)
 "TK" = (
 /obj/structure/table/wood,
-/obj/item/clothing/mask/cigarette/rollie/cannabis{
+/obj/item/cigarette/rollie/cannabis{
 	pixel_x = 8;
 	pixel_y = 8
 	},
-/obj/item/clothing/mask/cigarette/rollie/cannabis{
+/obj/item/cigarette/rollie/cannabis{
 	pixel_x = 4;
 	pixel_y = 4
 	},
-/obj/item/clothing/mask/cigarette/rollie/cannabis,
+/obj/item/cigarette/rollie/cannabis,
 /obj/item/storage/fancy/rollingpapers,
 /obj/item/storage/fancy/rollingpapers,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "Up" = (
 /obj/structure/table/wood,
-/obj/item/clothing/head/beanie/rasta,
+/obj/item/clothing/head/beanie/red,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "UC" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/item/reagent_containers/glass/bucket,
+/obj/item/reagent_containers/cup/bucket,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "Vn" = (
@@ -478,7 +501,7 @@
 /area/template_noop)
 "VY" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/food/snacks/grown/cannabis,
+/obj/item/food/grown/cannabis,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "Wo" = (
@@ -682,7 +705,7 @@ ZK
 Yj
 Rj
 Ma
-LD
+ab
 Xd
 Hp
 TK
@@ -701,13 +724,13 @@ ZK
 Yj
 Yj
 Ma
-YL
+aa
 gP
 Tx
 Yj
 Yj
 il
-PS
+ac
 YL
 Yj
 wn
@@ -746,7 +769,7 @@ Qt
 mx
 Cw
 HG
-Mj
+ad
 qI
 Cs
 Qr

@@ -1,9 +1,47 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/plating,
+/area/ruin/powered)
 "ab" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/plating,
+/area/ruin/powered)
+"ac" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/zone_loot/industrial/rare,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"ad" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/robot/boss,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"ae" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/robot,
+/obj/machinery/atmospherics/components/unary/vent_pump/on,
+/turf/open/floor/iron,
+/area/ruin/powered)
+"af" = (
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/robot,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/ruin/powered)
+"ag" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/iron,
 /area/ruin/powered)
 "ao" = (
 /obj/effect/gibspawner,
@@ -11,14 +49,14 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 8
 	},
-/turf/open/floor/plasteel/white/airless,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "au" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
@@ -54,25 +92,25 @@
 /area/ruin/powered)
 "bx" = (
 /obj/structure/table,
-/obj/effect/turf_decal/corner/red,
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/item/storage/fancy/donut_box,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "bE" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible,
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible,
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "bQ" = (
@@ -91,32 +129,32 @@
 	pixel_x = 3;
 	pixel_y = -3
 	},
-/obj/item/multitool/old,
-/obj/item/screwdriver/old,
+/obj/item/multitool,
+/obj/item/screwdriver,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "cU" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "cV" = (
-/obj/effect/turf_decal/corner/red,
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/turf/open/floor/plasteel/white/airless,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "dc" = (
 /obj/structure/table,
-/obj/effect/turf_decal/corner/red,
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -124,33 +162,33 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "dd" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible{
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible{
 	dir = 4
 	},
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "dx" = (
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "dA" = (
-/turf/open/floor/plating/asteroid/sand/beach/lit,
+/turf/open/misc/asteroid/sand/beach/lit,
 /area/ruin/powered)
 "dD" = (
 /obj/structure/chair/office,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/plating,
 /area/ruin/powered)
 "eh" = (
-/turf/open/floor/plating/asteroid/sand/lit,
+/turf/open/misc/asteroid/sand/lit,
 /area/ruin/powered)
 "et" = (
 /obj/item/chair/stool,
@@ -161,13 +199,13 @@
 /turf/closed/wall/r_wall,
 /area/ruin/powered)
 "eV" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
@@ -178,19 +216,19 @@
 /area/ruin/powered)
 "fn" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 6
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "fo" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
 /turf/open/floor/iron,
@@ -211,18 +249,18 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "gr" = (
-/obj/effect/turf_decal/industrial/loading{
+/obj/effect/turf_decal/loading_area{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "gW" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
@@ -236,7 +274,7 @@
 /area/ruin/powered)
 "hk" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -256,35 +294,34 @@
 "hI" = (
 /obj/structure/table,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "ih" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/red,
+/obj/effect/turf_decal/tile/red,
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/chair/office{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "il" = (
-/obj/effect/turf_decal/industrial/outline/yellow,
+/obj/effect/turf_decal/siding/yellow,
 /obj/machinery/portable_atmospherics/canister/water_vapor,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "io" = (
-/obj/effect/turf_decal/number/zero,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 10
 	},
 /turf/open/floor/iron,
@@ -293,8 +330,8 @@
 /obj/structure/table,
 /obj/item/paper_bin,
 /obj/item/pen,
-/obj/effect/turf_decal/corner/green,
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green,
+/obj/effect/turf_decal/tile/green{
 	dir = 4
 	},
 /turf/open/floor/iron,
@@ -306,42 +343,41 @@
 	pixel_y = -3
 	},
 /obj/item/pen/blue,
-/obj/item/pen/fountain/solgov{
+/obj/item/pen/fountain{
 	pixel_x = 1;
 	pixel_y = 4
 	},
 /turf/open/floor/plating,
 /area/ruin/powered)
 "ji" = (
-/obj/machinery/atmospherics/pipe/manifold/general{
+/obj/machinery/atmospherics/pipe/smart/manifold/general{
 	dir = 4
 	},
 /turf/open/floor/engine,
 /area/ruin/powered)
 "jo" = (
-/obj/effect/overlay/palmtree_l,
-/mob/living/simple_animal/parrot,
-/turf/open/floor/plating/asteroid/sand/lit,
+/mob/living/basic/parrot,
+/turf/open/misc/asteroid/sand/lit,
 /area/ruin/powered)
 "jt" = (
 /obj/structure/sign/poster/official/safety_report{
 	pixel_y = 32
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/red,
+/obj/effect/turf_decal/tile/red,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "jw" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible{
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible{
 	dir = 5
 	},
 /turf/closed/wall/r_wall/rust,
@@ -363,12 +399,11 @@
 	dir = 8
 	},
 /obj/machinery/portable_atmospherics/canister/water_vapor,
-/obj/effect/turf_decal/number,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "kD" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible{
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible{
 	dir = 10
 	},
 /turf/closed/wall,
@@ -384,7 +419,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/plating,
@@ -401,13 +436,13 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "lu" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible{
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible{
 	dir = 4
 	},
 /turf/closed/wall/rust,
 /area/ruin/powered)
 "ly" = (
-/obj/machinery/power/compressor{
+/obj/machinery/atmospherics/components/unary/vent_pump{
 	comp_id = "incineratorturbine";
 	dir = 1;
 	luminosity = 2
@@ -422,28 +457,28 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "lF" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "lN" = (
 /obj/structure/table/wood/fancy,
-/obj/item/reagent_containers/food/snacks/cakeslice/lime,
+/obj/item/food/cakeslice/lime,
 /turf/open/floor/carpet,
 /area/ruin/powered)
 "lQ" = (
-/obj/effect/turf_decal/industrial/loading{
+/obj/effect/turf_decal/loading_area{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "mc" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "mi" = (
@@ -455,40 +490,40 @@
 /area/ruin/powered)
 "mj" = (
 /obj/machinery/door/airlock/security/glass,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "mr" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "mP" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "mQ" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 6
 	},
 /turf/open/floor/plating,
 /area/ruin/powered)
 "ne" = (
-/obj/item/reagent_containers/glass/bucket{
+/obj/item/reagent_containers/cup/bucket{
 	pixel_x = -2;
 	pixel_y = 3
 	},
@@ -496,17 +531,17 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "nh" = (
-/obj/effect/turf_decal/corner/red,
+/obj/effect/turf_decal/tile/red,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "ni" = (
 /obj/item/reagent_containers/food/drinks/bottle/sarsaparilla,
-/turf/open/floor/plating/asteroid/sand/lit,
+/turf/open/misc/asteroid/sand/lit,
 /area/ruin/powered)
 "np" = (
 /obj/structure/table,
@@ -519,62 +554,59 @@
 	pixel_x = 3;
 	pixel_y = -3
 	},
-/obj/effect/turf_decal/corner/red,
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/white/airless,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "nE" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/red,
+/obj/effect/turf_decal/tile/red,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "nJ" = (
-/obj/effect/turf_decal/industrial/loading{
+/obj/effect/turf_decal/loading_area{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "nZ" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "oo" = (
-/obj/effect/turf_decal/industrial/outline/yellow,
+/obj/effect/turf_decal/siding/yellow,
 /obj/structure/reagent_dispensers/watertank,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "op" = (
 /obj/machinery/door/airlock/security/glass,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "oq" = (
-/obj/effect/turf_decal/number{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "oy" = (
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 1
 	},
 /turf/open/floor/iron,
@@ -587,10 +619,10 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "oE" = (
-/obj/effect/turf_decal/corner/red,
+/obj/effect/turf_decal/tile/red,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
@@ -598,14 +630,14 @@
 "oK" = (
 /obj/structure/table,
 /obj/item/healthanalyzer,
-/obj/effect/turf_decal/corner/red,
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/turf/open/floor/plasteel/white/airless,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "oT" = (
 /obj/structure/reagent_dispensers/watertank,
@@ -613,7 +645,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "pf" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
@@ -622,13 +654,13 @@
 /obj/structure/bed,
 /obj/machinery/iv_drip,
 /obj/effect/decal/cleanable/blood/old,
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
-/turf/open/floor/plasteel/white/airless,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "pI" = (
 /obj/effect/decal/cleanable/dirt,
@@ -637,17 +669,16 @@
 /area/ruin/powered)
 "qi" = (
 /obj/machinery/atmospherics/components/binary/volume_pump,
-/obj/effect/turf_decal/number,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "qn" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "qo" = (
-/obj/machinery/atmospherics/components/unary/tank/air{
+/obj/machinery/atmospherics/components/tank{
 	dir = 4
 	},
 /turf/open/floor/plating,
@@ -656,27 +687,27 @@
 /obj/machinery/door/airlock/security/glass{
 	name = "Break Room"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "qv" = (
 /obj/structure/table/wood/fancy,
-/obj/item/reagent_containers/food/snacks/cakeslice/chocolate,
+/obj/item/food/cakeslice/chocolate,
 /turf/open/floor/carpet,
 /area/ruin/powered)
 "qC" = (
 /obj/structure/rack,
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/red,
+/obj/effect/turf_decal/tile/red,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/white/airless,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "qD" = (
 /obj/structure/table/reinforced,
@@ -692,8 +723,8 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "qK" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/closed/wall/rust,
@@ -706,37 +737,37 @@
 "re" = (
 /obj/structure/chair/stool,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "rh" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "ri" = (
-/obj/structure/sink/puddle,
-/turf/open/floor/plating/asteroid/sand/lit,
+/obj/structure/water_source/puddle,
+/turf/open/misc/asteroid/sand/lit,
 /area/ruin/powered)
 "rr" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 5
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "rK" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/red,
+/obj/effect/turf_decal/tile/red,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
@@ -756,27 +787,27 @@
 /area/ruin/powered)
 "sD" = (
 /obj/machinery/door/airlock/public/glass/incinerator/atmos_exterior,
-/obj/machinery/atmospherics/pipe/simple/general/visible,
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible,
 /turf/open/floor/engine,
 /area/ruin/powered)
 "sE" = (
 /obj/structure/table,
 /obj/item/flashlight/lamp,
-/obj/effect/turf_decal/corner/green,
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green,
+/obj/effect/turf_decal/tile/green{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "sK" = (
-/obj/effect/turf_decal/corner/red,
+/obj/effect/turf_decal/tile/red,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "sR" = (
-/obj/effect/turf_decal/industrial/loading{
+/obj/effect/turf_decal/loading_area{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -787,9 +818,6 @@
 /turf/closed/wall,
 /area/ruin/powered)
 "tk" = (
-/obj/effect/turf_decal/dept{
-	dir = 1
-	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "to" = (
@@ -801,38 +829,38 @@
 /obj/structure/chair/stool,
 /obj/structure/chair/stool,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 5
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "tF" = (
 /obj/structure/table/reinforced,
-/obj/machinery/door/window/brigdoor/northright{
+/obj/machinery/door/window/brigdoor/right/directional/north{
 	dir = 4;
 	name = "Warden's Desk";
 	req_access_txt = "3"
 	},
-/obj/machinery/door/window/westleft{
+/obj/machinery/door/window/left/directional/west{
 	name = "Warden's Desk"
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "tI" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible,
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible,
 /turf/closed/wall/r_wall,
 /area/ruin/powered)
 "tL" = (
 /obj/machinery/door/airlock/vault,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/turf/open/floor/plating/asteroid/whitesands,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
+/turf/open/misc/asteroid/sand,
 /area/ruin/powered)
 "tY" = (
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -863,8 +891,8 @@
 /area/ruin/powered)
 "uO" = (
 /obj/effect/turf_decal/arrows,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "uZ" = (
@@ -873,29 +901,29 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "vW" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "wh" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "wk" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible{
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible{
 	dir = 6
 	},
 /turf/closed/wall,
@@ -908,10 +936,10 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "wt" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 10
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 10
 	},
 /turf/open/floor/plating,
@@ -919,54 +947,54 @@
 "wx" = (
 /obj/effect/turf_decal/arrows,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "wD" = (
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
-/obj/item/reagent_containers/food/drinks/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
+/obj/item/reagent_containers/cup/glass/waterbottle/large/empty,
 /obj/structure/closet/crate,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/plating,
 /area/ruin/powered)
 "wJ" = (
 /obj/machinery/door/airlock/security/glass,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "wR" = (
 /obj/effect/gibspawner,
-/obj/effect/turf_decal/corner/red,
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/turf/open/floor/plasteel/white/airless,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "wW" = (
 /obj/machinery/hydroponics/constructable,
@@ -974,7 +1002,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "xc" = (
-/obj/item/reagent_containers/glass/bucket{
+/obj/item/reagent_containers/cup/bucket{
 	pixel_x = -2;
 	pixel_y = 3
 	},
@@ -982,35 +1010,35 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "xe" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden{
 	dir = 8
 	},
 /turf/open/floor/plating,
 /area/ruin/powered)
 "xh" = (
 /obj/effect/spawner/structure/window/reinforced,
-/obj/machinery/atmospherics/pipe/simple/general/visible,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "xv" = (
-/obj/effect/turf_decal/number/two,
+/obj/effect/turf_decal/board_number/two,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "xG" = (
-/obj/machinery/door/window/westleft,
-/obj/effect/turf_decal/corner/green{
+/obj/machinery/door/window/left/directional/west,
+/obj/effect/turf_decal/tile/green{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "xN" = (
 /obj/machinery/atmospherics/components/unary/portables_connector/visible,
-/obj/machinery/portable_atmospherics/canister/toxins,
+/obj/machinery/portable_atmospherics/canister/plasma,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
@@ -1026,7 +1054,7 @@
 	reagent_id = /datum/reagent/water
 	},
 /obj/machinery/plumbing/liquid_pump,
-/turf/open/floor/plating/asteroid/sand/lit,
+/turf/open/misc/asteroid/sand/lit,
 /area/ruin/powered)
 "yQ" = (
 /obj/item/chair/stool,
@@ -1035,13 +1063,13 @@
 /area/ruin/powered)
 "zq" = (
 /obj/machinery/door/airlock/engineering,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "zA" = (
@@ -1052,17 +1080,17 @@
 /area/ruin/powered)
 "zJ" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 5
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Aj" = (
 /obj/structure/table/wood/fancy,
-/obj/item/reagent_containers/food/snacks/cakeslice/cheese,
+/obj/item/food/cakeslice/cheese,
 /turf/open/floor/carpet,
 /area/ruin/powered)
 "AC" = (
@@ -1070,22 +1098,22 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "AE" = (
-/obj/item/reagent_containers/glass/bucket{
+/obj/item/reagent_containers/cup/bucket{
 	pixel_x = -2;
 	pixel_y = 3
 	},
-/turf/open/floor/plating/asteroid/sand/lit,
+/turf/open/misc/asteroid/sand/lit,
 /area/ruin/powered)
 "AM" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible{
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible{
 	dir = 4
 	},
 /turf/closed/wall/r_wall,
 /area/ruin/powered)
 "AT" = (
-/obj/effect/turf_decal/corner/red,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+/obj/effect/turf_decal/tile/red,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
@@ -1100,16 +1128,16 @@
 	reagent_id = /datum/reagent/water
 	},
 /obj/machinery/plumbing/liquid_pump,
-/turf/open/floor/plating/asteroid/sand/lit,
+/turf/open/misc/asteroid/sand/lit,
 /area/ruin/powered)
 "Bx" = (
 /obj/machinery/door/airlock/public/glass,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Bz" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
@@ -1118,30 +1146,30 @@
 /turf/open/floor/carpet,
 /area/ruin/powered)
 "BQ" = (
-/obj/effect/turf_decal/industrial/loading{
+/obj/effect/turf_decal/loading_area{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 6
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "BV" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Ci" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Cm" = (
@@ -1149,56 +1177,56 @@
 /turf/closed/wall/r_wall,
 /area/ruin/powered)
 "Cq" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible,
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible,
 /turf/open/floor/engine,
 /area/ruin/powered)
 "Ct" = (
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 1
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Cu" = (
-/obj/effect/turf_decal/industrial/loading{
+/obj/effect/turf_decal/loading_area{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Cw" = (
-/obj/structure/sign/warning/securearea,
+/obj/structure/sign/warning/secure_area,
 /turf/closed/wall/r_wall,
 /area/ruin/powered)
 "Dd" = (
-/obj/effect/turf_decal/industrial/loading{
+/obj/effect/turf_decal/loading_area{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Do" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Dp" = (
 /obj/structure/table,
-/obj/effect/turf_decal/corner/red,
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -1206,8 +1234,8 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Dz" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "DT" = (
@@ -1216,8 +1244,8 @@
 /area/ruin/powered)
 "DU" = (
 /obj/effect/spawner/structure/window/reinforced,
-/obj/machinery/atmospherics/pipe/simple/general/visible,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 6
 	},
 /turf/open/floor/plating,
@@ -1228,12 +1256,12 @@
 /area/ruin/powered)
 "En" = (
 /obj/structure/rack,
-/obj/item/reagent_containers/food/drinks/waterbottle/large{
+/obj/item/reagent_containers/cup/glass/waterbottle/large{
 	pixel_x = -3;
 	pixel_y = 3
 	},
-/obj/item/reagent_containers/food/drinks/waterbottle/large,
-/obj/item/reagent_containers/food/drinks/waterbottle/large{
+/obj/item/reagent_containers/cup/glass/waterbottle/large,
+/obj/item/reagent_containers/cup/glass/waterbottle/large{
 	pixel_x = 3;
 	pixel_y = -3
 	},
@@ -1243,7 +1271,7 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "EW" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible{
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible{
 	dir = 9
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -1251,19 +1279,19 @@
 /area/ruin/powered)
 "Fg" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Fn" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 6
 	},
 /turf/open/floor/plating,
@@ -1272,8 +1300,8 @@
 /obj/structure/sign/poster/official/random{
 	pixel_x = -32
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "FF" = (
@@ -1282,10 +1310,10 @@
 /area/ruin/powered)
 "FT" = (
 /obj/effect/decal/cleanable/blood/gibs/limb,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/plasteel/white/airless,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "FW" = (
 /obj/structure/fluff/paper/stack{
@@ -1295,7 +1323,7 @@
 /area/ruin/powered)
 "Gu" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/plating,
@@ -1306,7 +1334,7 @@
 /area/ruin/powered)
 "Hc" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/plating,
@@ -1332,7 +1360,7 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "HJ" = (
-/obj/machinery/atmospherics/pipe/manifold/general{
+/obj/machinery/atmospherics/pipe/smart/manifold/general{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -1352,12 +1380,12 @@
 "HQ" = (
 /obj/effect/turf_decal/arrows,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Ij" = (
-/obj/structure/sign/warning/securearea,
+/obj/structure/sign/warning/secure_area,
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "It" = (
@@ -1372,8 +1400,8 @@
 /obj/item/folder/blue,
 /obj/item/folder/red,
 /obj/item/folder/yellow,
-/obj/effect/turf_decal/corner/green,
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green,
+/obj/effect/turf_decal/tile/green{
 	dir = 4
 	},
 /turf/open/floor/iron,
@@ -1388,11 +1416,11 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "IO" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible,
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible,
 /turf/closed/wall,
 /area/ruin/powered)
 "IR" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/carpet,
@@ -1407,32 +1435,29 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Jg" = (
-/obj/effect/turf_decal/number{
-	dir = 8
-	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Jv" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/plating,
 /area/ruin/powered)
 "JK" = (
-/obj/effect/turf_decal/radiation,
+/obj/effect/turf_decal/caution,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "JT" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible,
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
@@ -1440,13 +1465,13 @@
 /obj/structure/bed,
 /obj/machinery/iv_drip,
 /obj/effect/decal/cleanable/blood/old,
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/turf/open/floor/plasteel/white/airless,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "KB" = (
 /obj/machinery/door/airlock/security/glass,
@@ -1457,10 +1482,10 @@
 	pixel_x = 32
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 10
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 10
 	},
 /turf/open/floor/plating,
@@ -1482,12 +1507,12 @@
 /area/overmap_encounter/planetoid/wasteland)
 "LN" = (
 /obj/structure/rack,
-/obj/item/reagent_containers/food/drinks/waterbottle/large{
+/obj/item/reagent_containers/cup/glass/waterbottle/large{
 	pixel_x = -3;
 	pixel_y = 3
 	},
-/obj/item/reagent_containers/food/drinks/waterbottle/large,
-/obj/item/reagent_containers/food/drinks/waterbottle/large{
+/obj/item/reagent_containers/cup/glass/waterbottle/large,
+/obj/item/reagent_containers/cup/glass/waterbottle/large{
 	pixel_x = 3;
 	pixel_y = -3
 	},
@@ -1502,8 +1527,8 @@
 /area/ruin/powered)
 "Me" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "My" = (
@@ -1512,7 +1537,7 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "MQ" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -1524,10 +1549,10 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "MW" = (
-/obj/item/reagent_containers/glass/bucket,
+/obj/item/reagent_containers/cup/bucket,
 /obj/effect/decal/remains/human,
 /obj/structure/fluff/beach_umbrella,
-/turf/open/floor/plating/asteroid/sand/lit,
+/turf/open/misc/asteroid/sand/lit,
 /area/ruin/powered)
 "MZ" = (
 /obj/structure/sign/poster/official/nanotrasen_logo{
@@ -1536,13 +1561,10 @@
 /turf/template_noop,
 /area/template_noop)
 "Nk" = (
-/obj/effect/turf_decal/number{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 5
 	},
 /turf/open/floor/iron,
@@ -1553,9 +1575,9 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "No" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "NM" = (
@@ -1565,14 +1587,14 @@
 /area/ruin/powered)
 "NP" = (
 /obj/effect/decal/cleanable/blood/gibs/limb,
-/turf/open/floor/plasteel/white/airless,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "NS" = (
 /obj/effect/turf_decal/arrows,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
@@ -1581,7 +1603,7 @@
 /turf/closed/wall,
 /area/ruin/powered)
 "NX" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/atmos/engine_waste{
+/obj/machinery/atmospherics/components/unary/outlet_injector{
 	dir = 8
 	},
 /turf/open/misc/wasteland/lit,
@@ -1595,10 +1617,10 @@
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "Oo" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/plating,
@@ -1615,49 +1637,46 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "OC" = (
-/obj/effect/turf_decal/dept{
-	dir = 1
-	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Pc" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Pk" = (
-/obj/effect/turf_decal/corner/red,
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+/obj/effect/turf_decal/tile/red,
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Pm" = (
 /obj/machinery/door/airlock/security/glass,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Ps" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Pu" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 9
 	},
 /turf/open/floor/iron,
@@ -1670,7 +1689,6 @@
 /obj/machinery/atmospherics/components/trinary/filter/on{
 	dir = 1
 	},
-/obj/effect/turf_decal/number,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
@@ -1679,7 +1697,7 @@
 	name = "Cell 1";
 	req_access_txt = "2"
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
@@ -1696,14 +1714,14 @@
 /obj/item/bodypart/leg/left{
 	pixel_y = 5
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/red,
-/turf/open/floor/plasteel/white/airless,
+/obj/effect/turf_decal/tile/red,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "Qw" = (
 /obj/item/kirbyplants/random,
@@ -1712,7 +1730,7 @@
 /area/ruin/powered)
 "Qy" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
@@ -1722,19 +1740,19 @@
 	name = "Cell 3";
 	req_access_txt = "2"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "QO" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "QU" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/white/airless,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "QY" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1745,38 +1763,38 @@
 /area/ruin/powered)
 "Re" = (
 /obj/structure/table,
-/obj/effect/turf_decal/corner/red,
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/recharger,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Ru" = (
 /mob/living/simple_animal/crab,
-/turf/open/floor/plating/asteroid/sand/lit,
+/turf/open/misc/asteroid/sand/lit,
 /area/ruin/powered)
 "RH" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "RR" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -1786,13 +1804,13 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "RU" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/closed/wall/r_wall,
 /area/ruin/powered)
 "RW" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/closed/wall/r_wall,
@@ -1803,10 +1821,10 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Su" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 6
 	},
 /turf/open/floor/plating,
@@ -1815,16 +1833,16 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "SW" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
-/turf/open/floor/plasteel/white/airless,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "SZ" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 6
 	},
 /turf/open/floor/iron,
@@ -1835,8 +1853,8 @@
 /area/ruin/powered)
 "Tc" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 5
 	},
 /turf/open/floor/plating,
@@ -1848,7 +1866,7 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Tz" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
 /turf/open/floor/iron,
@@ -1866,10 +1884,10 @@
 /obj/machinery/door/airlock/security/glass{
 	req_access_txt = "3"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron,
@@ -1883,14 +1901,14 @@
 /area/ruin/powered)
 "TO" = (
 /obj/machinery/door/airlock/security/glass,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Ug" = (
-/obj/effect/turf_decal/corner/red,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/effect/turf_decal/tile/red,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 6
 	},
 /turf/open/floor/iron,
@@ -1907,10 +1925,10 @@
 /area/ruin/powered)
 "UG" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden{
 	dir = 8
 	},
 /turf/open/floor/plating,
@@ -1928,27 +1946,26 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Vs" = (
-/obj/effect/turf_decal/corner/red,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+/obj/effect/turf_decal/tile/red,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Vv" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/atmos/incinerator_input{
+/obj/machinery/atmospherics/components/unary/outlet_injector/monitored/incinerator_input{
 	dir = 1
 	},
 /turf/open/floor/engine/vacuum,
 /area/ruin/powered)
 "VF" = (
-/obj/effect/turf_decal/number/one,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
@@ -1970,10 +1987,10 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Wa" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -1983,11 +2000,11 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Ww" = (
-/obj/item/reagent_containers/glass/bucket{
+/obj/item/reagent_containers/cup/bucket{
 	pixel_x = -4;
 	pixel_y = -6
 	},
-/turf/open/floor/plating/asteroid/sand/lit,
+/turf/open/misc/asteroid/sand/lit,
 /area/ruin/powered)
 "WD" = (
 /obj/structure/sign/poster/official/random{
@@ -1998,18 +2015,18 @@
 /area/ruin/powered)
 "WF" = (
 /obj/machinery/door/airlock/public/glass,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "WV" = (
 /obj/effect/spawner/structure/window/reinforced,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/plating,
 /area/ruin/powered)
 "WY" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible{
+/obj/machinery/atmospherics/pipe/smart/simple/general/visible{
 	dir = 6
 	},
 /turf/open/floor/engine,
@@ -2026,17 +2043,17 @@
 /area/ruin/powered)
 "XA" = (
 /obj/machinery/door/airlock/security/glass,
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
-/obj/effect/turf_decal/corner/white,
-/obj/effect/turf_decal/corner/white{
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
 /turf/open/floor/iron/airless,
@@ -2051,20 +2068,20 @@
 /obj/structure/chair/office{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 8
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Yt" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
@@ -2072,24 +2089,24 @@
 "YC" = (
 /obj/structure/table,
 /obj/item/mmi,
-/obj/effect/turf_decal/corner/red,
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red,
+/obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/turf/open/floor/plasteel/white/airless,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "YV" = (
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
-/obj/effect/turf_decal/corner/red{
+/obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 5
 	},
 /turf/open/floor/iron,
@@ -2097,45 +2114,44 @@
 "YW" = (
 /obj/structure/table,
 /obj/item/storage/box/cups,
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 8
 	},
-/obj/effect/turf_decal/corner/green{
+/obj/effect/turf_decal/tile/green{
 	dir = 1
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "YY" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/white/airless,
+/turf/open/floor/iron/white/airless,
 /area/ruin/powered)
 "Zh" = (
-/obj/effect/turf_decal/corner/red,
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden,
+/obj/effect/turf_decal/tile/red,
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Zs" = (
 /obj/structure/table,
-/obj/item/reagent_containers/food/drinks/britcup,
-/obj/effect/turf_decal/corner/green,
-/obj/effect/turf_decal/corner/green{
+/obj/item/reagent_containers/cup/glass/mug/britcup,
+/obj/effect/turf_decal/tile/green,
+/obj/effect/turf_decal/tile/green{
 	dir = 4
 	},
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Zt" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "Zv" = (
-/obj/effect/turf_decal/number/zero,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
 "ZE" = (
@@ -2143,15 +2159,13 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "ZH" = (
-/obj/effect/overlay/palmtree_r,
-/turf/open/floor/plating/asteroid/sand/lit,
+/turf/open/misc/asteroid/sand/lit,
 /area/ruin/powered)
 "ZJ" = (
-/obj/effect/turf_decal/number/three,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 8
 	},
 /turf/open/floor/iron,
@@ -2364,7 +2378,7 @@ kG
 Jb
 SE
 SE
-SE
+aa
 SE
 tk
 oo
@@ -2593,7 +2607,7 @@ au
 bt
 SE
 le
-vW
+af
 mr
 Tz
 ab
@@ -2784,7 +2798,7 @@ ZE
 Qy
 LE
 ha
-ZE
+ag
 io
 NS
 HQ
@@ -2945,9 +2959,9 @@ bn
 SE
 bQ
 ZE
-qL
+ae
 cU
-hk
+ad
 Me
 tL
 Dz
@@ -2980,7 +2994,7 @@ ne
 ZE
 xc
 xc
-Jb
+ac
 Cw
 gm
 ul

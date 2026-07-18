@@ -20,6 +20,7 @@
 	icon_state = "mirror_broke";
 	pixel_x = 28
 	},
+/obj/structure/closet/crate/zone_loot/occult,
 /turf/open/floor/plating{
 	icon_state = "panelscorched"
 	},
@@ -41,6 +42,10 @@
 "i" = (
 /turf/open/floor/plating,
 /area/ruin/unpowered)
+"b" = (
+/obj/effect/zone_mobs/undead,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
 "j" = (
 /obj/effect/decal/cleanable/blood/splatter,
 /turf/open/floor/plating,
@@ -52,7 +57,7 @@
 	icon_state = "mirror_broke";
 	pixel_y = 28
 	},
-/obj/item/kitchen/knife/envy,
+/obj/item/knife/envy,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "l" = (
@@ -228,7 +233,7 @@ k
 i
 i
 i
-i
+b
 i
 i
 i

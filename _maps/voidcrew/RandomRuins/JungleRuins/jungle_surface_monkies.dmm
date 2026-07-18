@@ -57,6 +57,14 @@
 /mob/living/carbon/human/species/monkey/angry,
 /turf/open/misc/dirt/jungle/dark,
 /area/template_noop)
+"b" = (
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/misc/dirt/jungle/dark,
+/area/template_noop)
+"d" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/misc/dirt/jungle/dark,
+/area/template_noop)
 
 (1,1,1) = {"
 a
@@ -121,10 +129,10 @@ a
 (6,1,1) = {"
 a
 a
-J
+b
 J
 c
-J
+d
 J
 N
 J

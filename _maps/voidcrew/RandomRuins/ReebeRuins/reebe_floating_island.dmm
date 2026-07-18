@@ -2,11 +2,23 @@
 "a" = (
 /turf/template_noop,
 /area/template_noop)
+"b" = (
+/obj/effect/zone_mobs/cult,
+/turf/open/floor/grass/fairy/reebe,
+/area/ruin/reebe)
+"c" = (
+/obj/effect/zone_mobs/cult,
+/turf/open/floor/grass/fairy,
+/area/ruin/reebe)
+"d" = (
+/obj/structure/closet/crate/zone_loot/occult,
+/turf/open/floor/grass/fairy,
+/area/ruin/reebe)
 "f" = (
 /turf/closed/mineral/random/reebe,
 /area/ruin/reebe)
 "v" = (
-/obj/structure/sink/puddle,
+/obj/structure/water_source/puddle,
 /turf/open/floor/grass/fairy,
 /area/ruin/reebe)
 "F" = (
@@ -14,43 +26,32 @@
 /area/ruin/reebe)
 "I" = (
 /turf/open/floor/grass/fairy/reebe,
-/area/overmap_encounter/planetoid/reebe)
+/area/ruin/reebe)
 "O" = (
-/obj/item/ammo_casing/caseless/arrow/bronze,
-/obj/item/ammo_casing/caseless/arrow/bronze,
-/obj/item/ammo_casing/caseless/arrow/bronze,
-/obj/item/ammo_casing/caseless/arrow/bronze,
-/obj/item/ammo_casing/caseless/arrow/bronze,
-/obj/item/ammo_casing/caseless/arrow/bronze,
-/obj/item/ammo_casing/caseless/arrow/bronze,
-/obj/item/ammo_casing/caseless/arrow/bronze,
 /obj/item/gun/ballistic/bow,
-/obj/item/ammo_casing/caseless/arrow/bronze,
-/obj/item/ammo_casing/caseless/arrow/bronze,
-/obj/item/ammo_casing/caseless/arrow/bronze,
-/obj/item/clothing/suit/bronze,
-/obj/item/clothing/head/bronze,
+/obj/item/clothing/suit/costume/bronze,
+/obj/item/clothing/head/costume/bronze,
 /obj/item/clothing/shoes/bronze,
-/mob/living/simple_animal/hostile/asteroid/goliath/beast/ancient/crystal,
+/mob/living/basic/mining/goliath/ancient,
 /turf/open/floor/bronze,
 /area/ruin/reebe)
 "R" = (
-/mob/living/simple_animal/hostile/asteroid/goliath/beast/ancient/crystal,
+/mob/living/basic/mining/goliath/ancient,
 /turf/open/floor/grass/fairy,
 /area/ruin/reebe)
 "T" = (
-/mob/living/simple_animal/hostile/asteroid/hivelord/legion/crystal,
+/mob/living/basic/mining/legion/crystal/wasteland,
 /turf/open/floor/grass/fairy/reebe,
 /area/ruin/reebe)
 "V" = (
 /obj/structure/flora/tree/jungle{
-	icon = 'icons/obj/flora/chapeltree.dmi';
+	icon = 'icons/obj/structure/flora/tree/jungle.dmi';
 	icon_state = "churchtree";
 	pixel_x = -16;
 	pixel_y = 0
 	},
 /turf/open/floor/grass/fairy/reebe,
-/area/overmap_encounter/planetoid/reebe)
+/area/ruin/reebe)
 "Z" = (
 /turf/closed/wall/mineral/bronze,
 /area/ruin/reebe)
@@ -79,7 +80,7 @@ a
 "}
 (2,1,1) = {"
 a
-I
+b
 a
 a
 a
@@ -350,7 +351,7 @@ T
 f
 f
 F
-F
+c
 F
 f
 f
@@ -394,7 +395,7 @@ I
 f
 f
 F
-F
+d
 F
 f
 f
@@ -437,7 +438,7 @@ I
 a
 a
 I
-I
+b
 I
 I
 I

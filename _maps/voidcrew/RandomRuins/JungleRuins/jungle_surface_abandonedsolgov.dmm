@@ -14,12 +14,19 @@
 	dheight = 3;
 	height = 6;
 	name = "Jungle Planet";
-	roundstart_template = /datum/map_template/shuttle/ruin/solgov_exploration_pod;
 	width = 4
 	},
 /turf/open/misc/dirt/jungle/dark,
 /area/template_noop)
 "A" = (
+/turf/open/misc/dirt/jungle/dark,
+/area/template_noop)
+"b" = (
+/obj/structure/closet/crate/zone_loot/armory,
+/turf/open/misc/dirt/jungle/dark,
+/area/template_noop)
+"c" = (
+/obj/effect/zone_mobs/wildlife,
 /turf/open/misc/dirt/jungle/dark,
 /area/template_noop)
 "D" = (
@@ -67,7 +74,7 @@ i
 M
 A
 A
-A
+c
 A
 F
 "}
@@ -84,7 +91,7 @@ m
 A
 A
 A
-A
+b
 D
 "}
 (7,1,1) = {"

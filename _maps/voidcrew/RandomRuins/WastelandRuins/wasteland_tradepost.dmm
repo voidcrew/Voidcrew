@@ -2,7 +2,7 @@
 "aj" = (
 /obj/structure/rack,
 /obj/effect/spawner/random/aimodule/harmless,
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "bY" = (
@@ -59,7 +59,7 @@
 "kf" = (
 /obj/structure/ore_box,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/industrial/warning/fulltile,
+/obj/effect/turf_decal/stripes/full,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
 /area/overmap_encounter/planetoid/wasteland)
@@ -146,7 +146,7 @@
 "tU" = (
 /obj/structure/closet/crate,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/industrial/warning/fulltile,
+/obj/effect/turf_decal/stripes/full,
 /turf/open/floor/plating/rust,
 /area/overmap_encounter/planetoid/wasteland)
 "uc" = (
@@ -172,7 +172,7 @@
 /area/overmap_encounter/planetoid/wasteland)
 "xr" = (
 /obj/structure/closet/crate,
-/obj/effect/turf_decal/industrial/warning/fulltile,
+/obj/effect/turf_decal/stripes/full,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/overmap_encounter/planetoid/wasteland)
@@ -186,7 +186,7 @@
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "zq" = (
-/obj/machinery/modular_computer/console/preset/civilian,
+/obj/machinery/modular_computer/preset/civilian,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/pod/light,
@@ -197,12 +197,12 @@
 /turf/open/floor/pod/light,
 /area/ruin/unpowered)
 "Ag" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "AK" = (
 /obj/structure/closet/crate,
-/obj/effect/turf_decal/industrial/warning/fulltile,
+/obj/effect/turf_decal/stripes/full,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
 /area/overmap_encounter/planetoid/wasteland)
@@ -223,8 +223,8 @@
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "Cl" = (
-/obj/mecha/working/ripley/cargo,
-/obj/effect/turf_decal/industrial/warning/fulltile,
+/obj/vehicle/sealed/mecha/ripley/cargo,
+/obj/effect/turf_decal/stripes/full,
 /turf/open/floor/plating,
 /area/overmap_encounter/planetoid/wasteland)
 "CC" = (
@@ -257,7 +257,7 @@
 /area/overmap_encounter/planetoid/wasteland)
 "IN" = (
 /obj/structure/grille,
-/obj/structure/window/shuttle,
+/obj/structure/window/reinforced/shuttle,
 /turf/open/floor/pod/light,
 /area/ruin/unpowered)
 "IU" = (
@@ -266,7 +266,7 @@
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "IZ" = (
-/obj/effect/decal/cleanable/robot_debris,
+/obj/effect/decal/cleanable/blood/gibs/robot_debris,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "Lm" = (
@@ -276,12 +276,12 @@
 /turf/open/floor/carpet/red,
 /area/ruin/unpowered)
 "LG" = (
-/obj/effect/turf_decal/industrial/warning/fulltile,
+/obj/effect/turf_decal/stripes/full,
 /turf/open/floor/plating,
 /area/overmap_encounter/planetoid/wasteland)
 "Ma" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "MR" = (
@@ -330,7 +330,7 @@
 /area/ruin/unpowered)
 "Rn" = (
 /obj/structure/closet/crate,
-/obj/effect/turf_decal/industrial/warning/fulltile,
+/obj/effect/turf_decal/stripes/full,
 /turf/open/floor/plating/rust,
 /area/overmap_encounter/planetoid/wasteland)
 "RB" = (
@@ -362,7 +362,7 @@
 /area/ruin/unpowered)
 "TB" = (
 /obj/structure/closet/crate/miningcar,
-/obj/effect/turf_decal/industrial/warning/fulltile,
+/obj/effect/turf_decal/stripes/full,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
 /area/overmap_encounter/planetoid/wasteland)
@@ -374,7 +374,7 @@
 /turf/open/floor/plating,
 /area/overmap_encounter/planetoid/wasteland)
 "VU" = (
-/mob/living/simple_animal/pet/cat/kitten,
+/mob/living/basic/pet/cat/kitten,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "Xc" = (
@@ -391,6 +391,14 @@
 /obj/item/storage/pill_bottle/zoom,
 /turf/open/floor/carpet/red,
 /area/ruin/unpowered)
+"zz" = (
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/carpet/red,
+/area/ruin/unpowered)
+"zZ" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/misc/wasteland/lit,
+/area/overmap_encounter/planetoid/wasteland)
 
 (1,1,1) = {"
 Ue
@@ -536,7 +544,7 @@ MR
 kF
 nV
 yd
-Ya
+zZ
 Qt
 Lm
 zq
@@ -582,7 +590,7 @@ De
 (12,1,1) = {"
 Ue
 MR
-Ln
+zz
 RB
 Sn
 nO

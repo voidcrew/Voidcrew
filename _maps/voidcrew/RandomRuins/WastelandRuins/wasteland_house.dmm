@@ -2,6 +2,14 @@
 "a" = (
 /turf/closed/wall/rust,
 /area/ruin/unpowered)
+"b" = (
+/obj/structure/closet/crate/zone_loot/wardrobe,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"c" = (
+/obj/effect/zone_mobs/undead,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
 "g" = (
 /obj/machinery/door/airlock/wood,
 /obj/structure/barricade/wooden,
@@ -102,10 +110,10 @@ X
 (3,1,1) = {"
 A
 h
+c
 H
 H
-H
-H
+b
 X
 "}
 (4,1,1) = {"

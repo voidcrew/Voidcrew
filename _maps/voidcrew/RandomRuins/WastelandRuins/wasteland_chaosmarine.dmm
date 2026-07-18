@@ -1,31 +1,43 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/occult/rare,
+/turf/open/indestructible,
+/area/ruin/space/has_grav/powered)
+"ab" = (
+/obj/effect/zone_mobs/cult/boss,
+/turf/open/indestructible,
+/area/ruin/space/has_grav/powered)
+"ac" = (
+/obj/effect/zone_mobs/cult,
+/turf/open/indestructible,
+/area/ruin/space/has_grav/powered)
 "aW" = (
 /obj/structure/table/wood,
 /obj/item/book/granter/crafting_recipe/boneyard_notes,
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "bi" = (
-/mob/living/simple_animal/hostile/cult_demon,
-/turf/open/indestructible/cult,
+/mob/living/basic/demon,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "bH" = (
 /obj/effect/landmark/portal_exit{
 	id = "puzzle_entrance"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "dH" = (
 /obj/effect/landmark/portal_exit{
 	id = "nw"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "fn" = (
 /obj/structure/destructible/cult/pylon{
 	corrupt_delay = 1e+031;
 	last_corrupt = 1e+031
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "fA" = (
 /obj/structure/table/wood,
@@ -33,12 +45,12 @@
 	color = "green";
 	id = "green"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "hu" = (
-/mob/living/simple_animal/hostile/cult_demon,
+/mob/living/basic/demon,
 /obj/item/ammo_box/c10mm,
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "li" = (
 /obj/structure/table/wood,
@@ -49,18 +61,18 @@
 /obj/item/reagent_containers/hypospray/medipen/salacid{
 	pixel_y = 8
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "lv" = (
-/obj/machinery/door/poddoor/gates/indestructible{
+/obj/machinery/door/poddoor/shutters/indestructible{
 	color = "red";
 	id = "templar_entrance"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "lN" = (
-/obj/structure/destructible/cult/talisman,
-/turf/open/indestructible/cult,
+/obj/structure/destructible/cult/pylon,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "nl" = (
 /turf/closed/indestructible/reinforced,
@@ -71,7 +83,7 @@
 	color = "yellow";
 	id = "yellow"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "py" = (
 /obj/structure/table/wood,
@@ -79,7 +91,7 @@
 	pixel_x = -7;
 	pixel_y = 3
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "qo" = (
 /obj/structure/fans/tiny/invisible,
@@ -88,34 +100,34 @@
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/powered)
 "rc" = (
-/mob/living/simple_animal/hostile/megafauna/cult_templar,
-/turf/open/indestructible/cult,
+/mob/living/simple_animal/hostile/megafauna/legion,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "uf" = (
 /obj/effect/portal/permanent/one_way{
 	id = "sw"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "vp" = (
 /obj/machinery/door/poddoor/shutters/indestructible/preopen{
 	color = "yellow";
 	id = "yellow"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "vG" = (
 /obj/effect/landmark/portal_exit{
 	id = "se"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "wM" = (
 /obj/structure/chair/wood/wings{
 	dir = 1;
 	icon_state = "wooden_chair_wings"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "wO" = (
 /obj/effect/portal/permanent/one_way{
@@ -135,7 +147,7 @@
 	color = "yellow";
 	id = "yellow"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "xw" = (
 /turf/closed/indestructible/fakeglass{
@@ -143,12 +155,12 @@
 	},
 /area/ruin/space/has_grav/powered)
 "xz" = (
-/obj/structure/destructible/cult/tome,
-/turf/open/indestructible/cult,
+/obj/item/tome,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "xP" = (
 /obj/structure/trap/cult,
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "yz" = (
 /turf/closed/indestructible/cult{
@@ -157,18 +169,18 @@
 /area/ruin/space/has_grav/powered)
 "yR" = (
 /obj/structure/fans/tiny/invisible,
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "zO" = (
-/mob/living/simple_animal/hostile/construct/proteon/hostile,
-/turf/open/indestructible/cult,
+/mob/living/basic/construct/proteon/hostile,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "Bu" = (
 /obj/machinery/door/poddoor/shutters/indestructible/preopen{
 	color = "blue";
 	id = "blue"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "Cg" = (
 /obj/effect/decal/remains/human{
@@ -194,7 +206,7 @@
 	pixel_y = 6
 	},
 /obj/structure/chair/wood/wings,
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "DW" = (
 /obj/structure/destructible/cult/pylon{
@@ -202,73 +214,73 @@
 	desc = "A floating crystal intended to increase the power of those who serve the Blood God.";
 	last_corrupt = 1e+031
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "GH" = (
 /obj/effect/landmark/portal_exit{
 	id = "sw"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "GP" = (
 /obj/effect/landmark/portal_exit{
 	id = "chaos_marine_exit"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "Ig" = (
 /obj/effect/landmark/portal_exit{
 	id = "chaos_marine_enter"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "Ir" = (
 /obj/effect/portal/permanent/one_way{
 	id = "se"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "IG" = (
 /obj/structure/table/wood,
 /obj/item/borg/upgrade/modkit/cooldown,
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "Jb" = (
-/mob/living/simple_animal/hostile/cult_demon,
-/obj/item/ammo_box/magazine/co9mm,
-/turf/open/indestructible/cult,
+/mob/living/basic/demon,
+/obj/item/ammo_box/magazine/m9mm,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "JI" = (
 /obj/machinery/door/poddoor/shutters/indestructible{
 	color = "blue";
 	id = "blue"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "JO" = (
 /obj/effect/portal/permanent/one_way{
 	id = "ne"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "Kn" = (
-/obj/machinery/door/poddoor/gates/indestructible{
+/obj/machinery/door/poddoor/shutters/indestructible{
 	color = "red";
 	id = "templar_dead"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "Kq" = (
 /obj/machinery/door/poddoor/shutters/indestructible/preopen{
 	color = "green";
 	id = "green"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "KC" = (
 /turf/closed/indestructible/reinforced{
 	base_icon_state = "rusty_reinforced_wall";
-	icon = 'icons/turf/walls/rusty_reinforced_wall.dmi';
+	icon = 'icons/turf/closed/wall/r_wall/rust.dmi';
 	icon_state = "rusty_reinforced_wall-0"
 	},
 /area/ruin/space/has_grav/powered)
@@ -276,13 +288,13 @@
 /obj/effect/portal/permanent/one_way{
 	id = "nw"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "KV" = (
 /obj/effect/landmark/portal_exit{
 	id = "ne"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "La" = (
 /obj/effect/decal/cleanable/dirt,
@@ -294,23 +306,23 @@
 	color = "blue";
 	id = "blue"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "Mh" = (
 /obj/structure/table/wood,
-/obj/item/gun/energy/kinetic_accelerator,
-/turf/open/indestructible/cult,
+/obj/item/gun/energy/recharge/kinetic_accelerator,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "My" = (
 /obj/structure/table/wood,
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "OJ" = (
 /obj/machinery/door/poddoor/shutters/indestructible{
 	color = "green";
 	id = "green"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "QB" = (
 /obj/effect/decal/cleanable/dirt,
@@ -318,8 +330,8 @@
 /area/ruin/space/has_grav/powered)
 "Ta" = (
 /obj/structure/table/wood,
-/obj/item/storage/book/bible/syndicate,
-/turf/open/indestructible/cult,
+/obj/item/book/bible/booze,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "Ub" = (
 /obj/structure/table/wood,
@@ -328,11 +340,11 @@
 	id = "templar_entrance";
 	name = "OPEN THE GATES"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "Vc" = (
-/obj/structure/destructible/cult/forge,
-/turf/open/indestructible/cult,
+/obj/structure/destructible/cult/item_dispenser/forge,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "Wv" = (
 /obj/effect/portal/permanent/one_way{
@@ -344,37 +356,37 @@
 	light_range = 2;
 	name = "dark portal"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "WA" = (
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "WW" = (
 /obj/machinery/door/airlock/cult/friendly,
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "Yl" = (
 /obj/structure/fans/tiny/invisible,
-/obj/machinery/door/poddoor/multi_tile/three_tile_hor{
+/obj/machinery/door/poddoor{
 	color = null;
 	id = "templar_dead"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "YV" = (
 /obj/machinery/door/airlock/cult/friendly{
 	name = "The Lair"
 	},
-/obj/machinery/door/poddoor/gates/indestructible{
+/obj/machinery/door/poddoor/shutters/indestructible{
 	color = "red";
 	id = "templar_entrance"
 	},
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "ZV" = (
 /obj/structure/table/wood,
 /obj/item/reagent_containers/hypospray/medipen/survival,
-/turf/open/indestructible/cult,
+/turf/open/indestructible,
 /area/ruin/space/has_grav/powered)
 "ZX" = (
 /turf/template_noop,
@@ -1476,28 +1488,28 @@ WA
 yz
 Cg
 rc
+ab
+WA
+ac
 WA
 WA
 WA
 WA
 WA
 WA
-WA
-WA
-WA
-WA
+ac
 WA
 WA
 Ig
 Kn
 Wv
 YV
-WA
+ac
 GP
 WA
 lv
 WA
-WA
+ac
 WA
 yR
 wO
@@ -1523,7 +1535,7 @@ WA
 yz
 fn
 WA
-WA
+aa
 WA
 WA
 WA

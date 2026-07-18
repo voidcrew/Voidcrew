@@ -19,7 +19,7 @@
 	pixel_y = -2
 	},
 /turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "cD" = (
 /obj/item/chair{
 	dir = 8
@@ -50,13 +50,13 @@
 /area/ruin/powered)
 "ff" = (
 /turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "fo" = (
 /obj/structure/rack,
 /obj/item/toy/plush/moth{
 	pixel_x = -4
 	},
-/obj/item/toy/plush/lizardplushie{
+/obj/item/toy/plush/lizard_plushie{
 	pixel_x = 8;
 	pixel_y = -1
 	},
@@ -93,7 +93,7 @@
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "nB" = (
-/mob/living/simple_animal/hostile/cockroach,
+/mob/living/basic/cockroach,
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "pd" = (
@@ -122,12 +122,12 @@
 	pixel_y = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/mob/living/simple_animal/hostile/cockroach,
+/mob/living/basic/cockroach,
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "sP" = (
 /obj/structure/rack,
-/obj/item/kitchen/knife/plastic{
+/obj/item/knife/plastic{
 	pixel_x = -5
 	},
 /obj/item/kitchen/spoon/plastic{
@@ -167,7 +167,7 @@
 /turf/template_noop,
 /area/template_noop)
 "uM" = (
-/obj/machinery/vending/snack/random,
+/obj/effect/spawner/random/vending/snackvend,
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "wp" = (
@@ -184,14 +184,14 @@
 /area/ruin/powered)
 "xv" = (
 /obj/structure/rack,
-/obj/item/paicard{
+/obj/item/pai_card{
 	pixel_y = 2
 	},
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "yQ" = (
 /obj/structure/rack,
-/obj/item/reagent_containers/food/snacks/syndicake{
+/obj/item/food/syndicake{
 	pixel_x = -1;
 	pixel_y = 4
 	},
@@ -226,7 +226,7 @@
 /turf/closed/wall,
 /area/ruin/powered)
 "FX" = (
-/obj/machinery/vending/cola/random,
+/obj/machinery/vending/cola,
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "Gr" = (
@@ -247,7 +247,6 @@
 /area/ruin/powered)
 "Kr" = (
 /obj/structure/rack,
-/obj/item/toy/plush/hornet/gay,
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "KZ" = (
@@ -270,7 +269,7 @@
 /area/ruin/powered)
 "MZ" = (
 /obj/structure/rack,
-/obj/item/clothing/under/pants/khaki{
+/obj/item/clothing/under/pants/slacks{
 	pixel_y = 2
 	},
 /turf/open/floor/iron/white,
@@ -291,7 +290,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/closet/crate/bin,
 /obj/machinery/light/broken,
-/obj/item/toy/plush/among,
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "Tr" = (
@@ -313,7 +311,7 @@
 /obj/structure/window{
 	dir = 8
 	},
-/obj/item/reagent_containers/food/snacks/pizzaslice/custom{
+/obj/item/food/pizzaslice{
 	pixel_x = -1;
 	pixel_y = 3
 	},
@@ -343,7 +341,7 @@
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "WJ" = (
-/obj/machinery/door/window/southright,
+/obj/machinery/door/window/right/directional/south,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/white,
 /area/ruin/powered)
@@ -354,7 +352,7 @@
 /area/ruin/powered)
 "Xd" = (
 /obj/structure/rack,
-/obj/item/reagent_containers/food/snacks/canned/beans{
+/obj/item/food/canned/beans{
 	pixel_x = 1;
 	pixel_y = 9
 	},
@@ -368,7 +366,7 @@
 /area/ruin/powered)
 "Yd" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/mob/living/simple_animal/hostile/cockroach,
+/mob/living/basic/cockroach,
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "Yf" = (
@@ -376,15 +374,15 @@
 /area/ruin/powered)
 "Zu" = (
 /obj/structure/rack,
-/obj/item/reagent_containers/food/drinks/waterbottle{
+/obj/item/reagent_containers/cup/glass/waterbottle{
 	pixel_x = 9;
 	pixel_y = 4
 	},
-/obj/item/reagent_containers/food/drinks/waterbottle{
+/obj/item/reagent_containers/cup/glass/waterbottle{
 	pixel_x = -9;
 	pixel_y = 4
 	},
-/obj/item/reagent_containers/food/drinks/waterbottle{
+/obj/item/reagent_containers/cup/glass/waterbottle{
 	pixel_y = 4
 	},
 /turf/open/floor/iron/white,
@@ -398,6 +396,19 @@
 	pixel_x = 5
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"aa" = (
+/obj/item/chair{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"ab" = (
+/obj/effect/zone_mobs/undead,
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 
@@ -497,7 +508,7 @@ lS
 ZA
 Gr
 tJ
-Yf
+ab
 cJ
 Wt
 Zu
@@ -554,7 +565,7 @@ ux
 (11,1,1) = {"
 ux
 lS
-cD
+aa
 IJ
 zP
 xo

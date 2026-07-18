@@ -7,7 +7,7 @@
 /turf/open/misc/wasteland/lit,
 /area/ruin/powered)
 "f" = (
-/turf/open/floor/plating/dirt/old/dark/lit,
+/turf/open/misc/dirt/old/dark/lit,
 /area/ruin/powered)
 "g" = (
 /obj/structure/table/survival_pod,
@@ -25,7 +25,7 @@
 /area/ruin/powered)
 "m" = (
 /obj/machinery/hydroponics/soil,
-/turf/open/floor/plating/dirt/old/lit,
+/turf/open/misc/dirt/old/lit,
 /area/ruin/powered)
 "n" = (
 /turf/open/misc/dust/lit,
@@ -73,14 +73,14 @@
 	},
 /area/ruin/powered)
 "x" = (
-/obj/structure/sink/puddle,
+/obj/structure/water_source/puddle,
 /obj/item/reagent_containers/cup/bucket/wooden,
-/turf/open/floor/plating/dirt/jungle/dark/lit,
+/turf/open/misc/dirt/jungle/dark/lit,
 /area/ruin/powered)
 "y" = (
 /obj/structure/rack,
 /obj/item/pickaxe/improvised,
-/obj/item/kitchen/knife/combat/survival,
+/obj/item/knife/combat/survival,
 /obj/item/storage/medkit/surgery,
 /turf/open/misc/wasteland/lit,
 /area/ruin/powered)
@@ -111,12 +111,12 @@
 /obj/item/seeds/plump,
 /obj/item/seeds/tower,
 /obj/item/seeds/reishi,
-/obj/item/reagent_containers/food/snacks/grown/mushroom/glowshroom,
+/obj/item/food/grown/mushroom/glowshroom,
 /turf/open/misc/wasteland/lit,
 /area/ruin/powered)
 "G" = (
 /obj/machinery/hydroponics/soil,
-/turf/open/floor/plating/dirt/jungle/dark/lit,
+/turf/open/misc/dirt/jungle/dark/lit,
 /area/ruin/powered)
 "H" = (
 /obj/item/storage/toolbox/emergency,
@@ -136,7 +136,7 @@
 /obj/item/clothing/suit/space/orange,
 /obj/item/clothing/head/helmet/space/orange,
 /obj/structure/rack,
-/obj/item/gun/ballistic/rifle/boltaction/polymer,
+/obj/item/gun/ballistic/rifle/boltaction,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "L" = (
@@ -164,11 +164,11 @@
 /turf/open/floor/wood,
 /area/ruin/powered)
 "W" = (
-/obj/effect/mob_spawn/human/hermit,
+/obj/effect/mob_spawn/corpse/human/hermit,
 /turf/open/misc/wasteland/lit,
 /area/ruin/powered)
 "X" = (
-/turf/open/floor/plating/dirt/old/lit,
+/turf/open/misc/dirt/old/lit,
 /area/ruin/powered)
 "Y" = (
 /obj/item/flashlight/lantern,
@@ -177,9 +177,15 @@
 	},
 /area/ruin/powered)
 "Z" = (
+/obj/structure/closet/crate/zone_loot/expedition,
 /turf/open/floor/plating{
 	icon_state = "platingdmg2"
 	},
+/area/ruin/powered)
+"N" = (
+/obj/effect/zone_mobs/wildlife,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/misc/dust/lit,
 /area/ruin/powered)
 
 (1,1,1) = {"
@@ -291,7 +297,7 @@ J
 a
 X
 Q
-j
+N
 j
 W
 g

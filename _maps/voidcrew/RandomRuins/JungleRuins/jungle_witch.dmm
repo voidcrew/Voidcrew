@@ -65,7 +65,6 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "y" = (
-/obj/effect/spawner/trap,
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "z" = (
@@ -74,11 +73,9 @@
 /area/ruin/unpowered)
 "A" = (
 /obj/structure/flora/grass/jungle/b,
-/obj/effect/spawner/trap,
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "B" = (
-/obj/effect/spawner/trap,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "E" = (
@@ -95,7 +92,7 @@
 "H" = (
 /obj/item/bedsheet/black,
 /obj/structure/bed,
-/mob/living/simple_animal/hostile/dark_wizard,
+/mob/living/basic/dark_wizard,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -155,6 +152,14 @@
 "Z" = (
 /obj/structure/flora/rock/jungle,
 /turf/open/misc/dirt/jungle/dark,
+/area/ruin/unpowered)
+"c" = (
+/obj/structure/closet/crate/zone_loot/occult,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"e" = (
+/obj/effect/zone_mobs/cult,
+/turf/open/floor/wood,
 /area/ruin/unpowered)
 
 (1,1,1) = {"
@@ -223,8 +228,8 @@ w
 W
 b
 V
-p
-p
+c
+e
 P
 p
 V

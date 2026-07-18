@@ -37,10 +37,10 @@
 /turf/open/floor/iron/freezer,
 /area/ruin/powered/seedvault)
 "ai" = (
-/obj/item/reagent_containers/glass/beaker/bluespace,
-/obj/item/reagent_containers/glass/beaker/bluespace,
-/obj/item/reagent_containers/glass/beaker/bluespace,
-/obj/item/reagent_containers/glass/beaker/bluespace,
+/obj/item/reagent_containers/cup/beaker/bluespace,
+/obj/item/reagent_containers/cup/beaker/bluespace,
+/obj/item/reagent_containers/cup/beaker/bluespace,
+/obj/item/reagent_containers/cup/beaker/bluespace,
 /obj/structure/table/wood,
 /obj/effect/turf_decal/trimline/green/filled/line,
 /turf/open/floor/iron/dark,
@@ -56,7 +56,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered/seedvault)
 "ak" = (
-/obj/effect/mob_spawn/human/seed_vault,
+/obj/effect/mob_spawn/ghost_role/human/seed_vault,
 /obj/machinery/light{
 	dir = 1
 	},
@@ -85,14 +85,14 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/obj/effect/mob_spawn/human/seed_vault,
+/obj/effect/mob_spawn/ghost_role/human/seed_vault,
 /turf/open/floor/iron/freezer,
 /area/ruin/powered/seedvault)
 "aq" = (
 /obj/machinery/light{
 	dir = 1
 	},
-/obj/effect/mob_spawn/human/seed_vault,
+/obj/effect/mob_spawn/ghost_role/human/seed_vault,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/floor/iron/freezer,
 /area/ruin/powered/seedvault)
@@ -109,7 +109,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered/seedvault)
 "as" = (
-/obj/machinery/door/airlock/glass_large,
+/obj/machinery/door/airlock/glass,
 /turf/open/floor/iron/freezer,
 /area/ruin/powered/seedvault)
 "at" = (
@@ -151,17 +151,11 @@
 /area/ruin/powered/seedvault)
 "ax" = (
 /obj/structure/reagent_dispensers/watertank/high,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 9
-	},
 /obj/effect/turf_decal/trimline/green/filled/corner,
 /turf/open/floor/iron/dark,
 /area/ruin/powered/seedvault)
 "ay" = (
 /obj/structure/reagent_dispensers/watertank/high,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 5
-	},
 /obj/effect/turf_decal/trimline/green/filled/corner{
 	dir = 8
 	},
@@ -232,7 +226,7 @@
 /area/ruin/powered/seedvault)
 "aH" = (
 /obj/machinery/door/airlock/vault,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
 /turf/open/floor/iron/freezer,
 /area/ruin/powered/seedvault)
 "aI" = (
@@ -243,9 +237,6 @@
 /area/ruin/powered/seedvault)
 "aJ" = (
 /obj/structure/reagent_dispensers/watertank/high,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 10
-	},
 /obj/effect/turf_decal/trimline/green/filled/corner{
 	dir = 4
 	},
@@ -263,9 +254,6 @@
 /area/ruin/powered/seedvault)
 "aL" = (
 /obj/structure/table/wood,
-/obj/item/storage/box/disks_plantgene,
-/obj/item/storage/box/disks_plantgene,
-/obj/item/storage/box/disks_plantgene,
 /turf/open/floor/vault,
 /area/ruin/powered/seedvault)
 "aM" = (
@@ -283,9 +271,6 @@
 	dir = 4
 	},
 /obj/structure/reagent_dispensers/watertank/high,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 6
-	},
 /obj/effect/turf_decal/trimline/green/filled/corner{
 	dir = 1
 	},
@@ -314,11 +299,11 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered/seedvault)
 "aT" = (
-/obj/item/reagent_containers/glass/bucket,
+/obj/item/reagent_containers/cup/bucket,
 /obj/structure/table/wood,
-/obj/item/reagent_containers/glass/bucket,
-/obj/item/reagent_containers/glass/bucket,
-/obj/item/reagent_containers/glass/bucket,
+/obj/item/reagent_containers/cup/bucket,
+/obj/item/reagent_containers/cup/bucket,
+/obj/item/reagent_containers/cup/bucket,
 /obj/effect/turf_decal/trimline/green/filled/line{
 	dir = 5
 	},
@@ -329,10 +314,6 @@
 /turf/open/floor/iron/freezer,
 /area/ruin/powered/seedvault)
 "aV" = (
-/obj/effect/turf_decal/trimline/green/line,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 1
-	},
 /obj/structure/table/reinforced,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
@@ -376,12 +357,6 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered/seedvault)
 "ba" = (
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 4
-	},
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 8
-	},
 /obj/structure/table/reinforced,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
@@ -395,27 +370,14 @@
 	},
 /obj/machinery/hydroponics/constructable,
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 4
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
 "bd" = (
 /obj/machinery/chem_dispenser/mutagensaltpeter,
 /obj/effect/turf_decal/trimline/green/corner,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 9
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
 "be" = (
-/obj/effect/turf_decal/trimline/green/line,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 1
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
 "bf" = (
@@ -423,9 +385,6 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/trimline/green/corner{
 	dir = 8
-	},
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 5
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
@@ -436,39 +395,21 @@
 /obj/machinery/hydroponics/constructable,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 4
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
 "bh" = (
 /obj/machinery/hydroponics/constructable,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 6
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
 "bi" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 4
-	},
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 8
-	},
 /obj/structure/table/reinforced,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
 "bj" = (
 /obj/machinery/hydroponics/constructable,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 10
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
 "bk" = (
@@ -487,12 +428,6 @@
 	},
 /obj/machinery/hydroponics/constructable,
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 4
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
 "bm" = (
@@ -508,7 +443,7 @@
 /turf/open/floor/grass,
 /area/ruin/powered/seedvault)
 "bn" = (
-/obj/structure/window/spawner/east,
+/obj/structure/window/spawner/directional/east,
 /obj/structure/flora/ausbushes/palebush,
 /obj/structure/flora/ausbushes/ppflowers,
 /turf/open/floor/grass,
@@ -518,18 +453,12 @@
 /obj/effect/turf_decal/trimline/green/corner{
 	dir = 4
 	},
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 10
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
 "bp" = (
 /obj/machinery/seed_extractor,
 /obj/effect/turf_decal/trimline/green/corner{
 	dir = 1
-	},
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 6
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
@@ -539,12 +468,6 @@
 	},
 /obj/machinery/hydroponics/constructable,
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 4
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
 "br" = (
@@ -553,7 +476,7 @@
 /turf/open/floor/grass,
 /area/ruin/powered/seedvault)
 "bs" = (
-/obj/structure/window/spawner/east,
+/obj/structure/window/spawner/directional/east,
 /obj/structure/flora/ausbushes/sparsegrass,
 /turf/open/floor/grass,
 /area/ruin/powered/seedvault)
@@ -565,7 +488,7 @@
 /turf/open/floor/grass,
 /area/ruin/powered/seedvault)
 "bu" = (
-/obj/structure/window/spawner/east,
+/obj/structure/window/spawner/directional/east,
 /obj/structure/flora/ausbushes/fernybush,
 /obj/structure/flora/ausbushes/ywflowers,
 /obj/structure/flora/ausbushes/sparsegrass,
@@ -576,10 +499,6 @@
 /obj/machinery/light,
 /obj/machinery/hydroponics/constructable,
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/green/line,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
 "bw" = (
@@ -587,10 +506,6 @@
 /obj/machinery/hydroponics/constructable,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/green/line,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
 "bx" = (
@@ -617,20 +532,14 @@
 /area/ruin/powered/seedvault)
 "bB" = (
 /obj/machinery/hydroponics/constructable,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 5
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
 "bC" = (
 /obj/machinery/hydroponics/constructable,
-/obj/effect/turf_decal/trimline/green/line{
-	dir = 9
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/powered/seedvault)
 "ca" = (
-/obj/machinery/atmospherics/components/unary/tank/air{
+/obj/machinery/atmospherics/components/tank{
 	dir = 4
 	},
 /turf/open/floor/iron/freezer,
@@ -647,21 +556,21 @@
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "oR" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 10
 	},
 /turf/open/floor/iron/freezer,
 /area/ruin/powered/seedvault)
 "pW" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
 /turf/open/floor/iron/freezer,
 /area/ruin/powered/seedvault)
 "qQ" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden,
 /turf/open/floor/iron/freezer,
 /area/ruin/powered/seedvault)
 "sv" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
 /turf/open/floor/vault,
 /area/ruin/powered/seedvault)
 "uK" = (
@@ -677,24 +586,24 @@
 /turf/open/floor/grass,
 /area/overmap_encounter/planetoid/wasteland)
 "Bb" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
 /turf/open/floor/iron/freezer,
 /area/ruin/powered/seedvault)
 "DA" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
 /turf/open/floor/mineral/titanium/blue,
 /area/ruin/powered/seedvault)
 "Eu" = (
 /obj/machinery/light,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron/freezer,
 /area/ruin/powered/seedvault)
 "KF" = (
 /obj/machinery/door/airlock/titanium,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
 /turf/open/floor/vault,
 /area/ruin/powered/seedvault)
 "Ou" = (
@@ -705,13 +614,13 @@
 /turf/open/floor/iron/dark,
 /area/ruin/powered/seedvault)
 "PH" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/iron/freezer,
 /area/ruin/powered/seedvault)
 "QJ" = (
-/obj/machinery/plantgenes/seedvault{
+/obj/machinery/seed_extractor{
 	pixel_y = 6
 	},
 /obj/structure/table/wood,
@@ -734,6 +643,26 @@
 /obj/structure/flora/ausbushes/ppflowers,
 /turf/open/floor/grass,
 /area/overmap_encounter/planetoid/wasteland)
+"aG" = (
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/floor/vault,
+/area/ruin/powered/seedvault)
+"aP" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/obj/effect/zone_mobs/bug,
+/turf/open/floor/iron/dark,
+/area/ruin/powered/seedvault)
+"bD" = (
+/obj/effect/zone_mobs/bug,
+/turf/open/floor/mineral/titanium/blue,
+/area/ruin/powered/seedvault)
+"bE" = (
+/obj/effect/zone_mobs/bug,
+/turf/open/floor/vault,
+/area/ruin/powered/seedvault)
 
 (1,1,1) = {"
 aa
@@ -854,7 +783,7 @@ Bb
 qQ
 ah
 av
-Ou
+aP
 aR
 xa
 nH
@@ -925,7 +854,7 @@ ac
 ac
 bb
 bb
-aN
+bD
 aN
 aN
 aN
@@ -1097,8 +1026,8 @@ PH
 ac
 aX
 aE
-aA
-aA
+bE
+aG
 QJ
 ac
 bm

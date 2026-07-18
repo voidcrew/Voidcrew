@@ -1,4 +1,16 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"AA" = (
+/obj/structure/closet/crate/zone_loot/industrial/rare,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
+"AB" = (
+/obj/effect/zone_mobs/robot/boss,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
+"AC" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
 "am" = (
 /obj/structure/table,
 /turf/open/floor/plating/rust,
@@ -12,13 +24,13 @@
 	dir = 4;
 	id = "rockplanet_ore_process"
 	},
-/obj/machinery/door/poddoor/crusher/automatic,
+/obj/machinery/door/poddoor,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "bE" = (
 /turf/closed/indestructible/reinforced{
 	base_icon_state = "rusty_reinforced_wall";
-	icon = 'icons/turf/walls/rusty_reinforced_wall.dmi';
+	icon = 'icons/turf/closed/wall/r_wall/rust.dmi';
 	icon_state = "rusty_reinforced_wall-0"
 	},
 /area/ruin/powered)
@@ -33,7 +45,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "ce" = (
-/obj/machinery/door/poddoor/crusher/automatic,
+/obj/machinery/door/poddoor,
 /obj/machinery/conveyor/auto{
 	dir = 4;
 	id = "rockplanet_ore_process"
@@ -61,7 +73,7 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/mob/living/simple_animal/bot/medbot,
+/mob/living/basic/bot/medbot,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "cO" = (
@@ -73,14 +85,14 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "ed" = (
-/obj/machinery/door/poddoor/crusher/automatic,
+/obj/machinery/door/poddoor,
 /obj/machinery/conveyor/auto{
 	id = "rockplanet_ore_process"
 	},
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "eo" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/computer/order_console/mining,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "ey" = (
@@ -95,7 +107,7 @@
 	dir = 4;
 	id = "rockplanet_ore_process"
 	},
-/obj/machinery/door/poddoor/crusher/automatic/preopen,
+/obj/machinery/door/poddoor/shutters/preopen,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "hv" = (
@@ -213,7 +225,7 @@
 /obj/machinery/conveyor_switch{
 	id = "rockplanet_ore_process"
 	},
-/mob/living/simple_animal/bot/medbot,
+/mob/living/basic/bot/medbot,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "pm" = (
@@ -279,7 +291,7 @@
 /obj/machinery/conveyor/auto{
 	id = "rockplanet_ore_process"
 	},
-/obj/machinery/door/poddoor/crusher/automatic,
+/obj/machinery/door/poddoor,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "rH" = (
@@ -423,7 +435,7 @@
 	},
 /area/ruin/powered)
 "zK" = (
-/mob/living/simple_animal/bot/secbot/ed209/rockplanet,
+/mob/living/simple_animal/bot/secbot/ed209,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Af" = (
@@ -553,7 +565,7 @@
 	dir = 1;
 	id = "rockplanet_ore_process"
 	},
-/obj/machinery/door/poddoor/crusher/automatic,
+/obj/machinery/door/poddoor,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Ka" = (
@@ -578,11 +590,11 @@
 	dir = 8;
 	id = "rockplanet_ore_process"
 	},
-/obj/machinery/door/poddoor/crusher/automatic,
+/obj/machinery/door/poddoor,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Lc" = (
-/obj/machinery/door/poddoor/crusher/automatic/preopen,
+/obj/machinery/door/poddoor/shutters/preopen,
 /obj/structure/railing,
 /obj/structure/railing{
 	dir = 1
@@ -601,7 +613,7 @@
 	dir = 8;
 	id = "rockplanet_ore_process"
 	},
-/obj/machinery/door/poddoor/crusher/automatic/preopen,
+/obj/machinery/door/poddoor/shutters/preopen,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "LR" = (
@@ -622,14 +634,14 @@
 /obj/machinery/conveyor/auto{
 	id = "rockplanet_ore_process"
 	},
-/obj/machinery/door/poddoor/crusher/automatic/preopen,
+/obj/machinery/door/poddoor/shutters/preopen,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "NV" = (
 /obj/machinery/conveyor/auto{
 	id = "rockplanet_ore_process"
 	},
-/obj/machinery/door/poddoor/crusher/automatic,
+/obj/machinery/door/poddoor,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "NZ" = (
@@ -697,7 +709,7 @@
 	dir = 8;
 	id = "rockplanet_ore_process"
 	},
-/obj/machinery/door/poddoor/crusher/automatic,
+/obj/machinery/door/poddoor,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "VR" = (
@@ -715,7 +727,7 @@
 	dir = 1;
 	id = "rockplanet_ore_process"
 	},
-/obj/machinery/door/poddoor/crusher/automatic,
+/obj/machinery/door/poddoor,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Yk" = (
@@ -726,7 +738,6 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Yo" = (
-/obj/structure/mopbucket,
 /obj/item/mop,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
@@ -854,7 +865,7 @@ rx
 wB
 qk
 FH
-wB
+AC
 rx
 rx
 rx
@@ -965,7 +976,7 @@ xD
 hv
 wB
 wB
-wB
+AC
 wB
 db
 wB
@@ -1075,7 +1086,7 @@ wW
 sY
 pv
 rx
-wB
+AC
 db
 wB
 rx
@@ -1465,7 +1476,7 @@ Yq
 Yq
 bE
 Ff
-wB
+AC
 kI
 db
 Cj
@@ -1496,8 +1507,8 @@ eo
 pb
 kI
 aD
-wB
-wB
+AA
+AB
 wB
 bE
 MX

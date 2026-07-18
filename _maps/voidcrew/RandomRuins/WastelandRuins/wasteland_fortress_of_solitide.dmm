@@ -1,18 +1,68 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aa" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
+"ab" = (
+/obj/effect/zone_mobs/syndicate,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
+"ac" = (
+/obj/effect/zone_mobs/syndicate,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/powered)
 "ad" = (
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /obj/effect/decal/cleanable/generic,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
+"ae" = (
+/obj/effect/zone_mobs/syndicate,
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/powered)
+"af" = (
+/obj/effect/zone_mobs/syndicate,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"ag" = (
+/obj/effect/zone_mobs/syndicate/boss,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
+"ah" = (
+/obj/structure/closet/crate/zone_loot/armory/rare,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "am" = (
@@ -20,23 +70,23 @@
 /obj/effect/spawner/random/maintenance/three,
 /obj/item/flashlight/glowstick,
 /obj/item/hand_labeler_refill,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 9
 	},
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "as" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /obj/effect/decal/cleanable/cobweb,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -47,10 +97,10 @@
 /area/ruin/powered)
 "az" = (
 /obj/structure/grille,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -62,10 +112,10 @@
 	},
 /obj/effect/decal/cleanable/blood,
 /obj/item/assembly/mousetrap/armed,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -74,10 +124,10 @@
 "aH" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/blood/footprints,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -119,17 +169,17 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/blood/old,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
 /turf/open/floor/carpet/royalblack,
 /area/ruin/powered)
 "bp" = (
-/obj/effect/mob_spawn/human/corpse/assistant,
+/obj/effect/mob_spawn/corpse/human/assistant,
 /obj/effect/decal/cleanable/blood,
 /obj/machinery/light,
 /turf/open/floor/plating/rust,
@@ -154,7 +204,7 @@
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "bF" = (
-/obj/item/gun/ballistic/shotgun/doublebarrel/improvised,
+/obj/item/gun/ballistic/shotgun/doublebarrel,
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -169,8 +219,8 @@
 "bI" = (
 /obj/machinery/door/airlock/maintenance,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -181,7 +231,7 @@
 /turf/closed/wall/rust,
 /area/ruin/powered)
 "bR" = (
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "bS" = (
@@ -193,15 +243,15 @@
 "bT" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/rack,
-/obj/item/trash/plate,
+/obj/item/trash/tray,
 /obj/effect/spawner/random/maintenance,
 /obj/item/toner,
 /obj/item/mop,
 /obj/item/weldingtool/empty,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -209,17 +259,17 @@
 /area/ruin/powered)
 "cf" = (
 /obj/effect/decal/cleanable/blood/splatter,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
 /turf/open/floor/carpet/royalblack,
 /area/ruin/powered)
 "cj" = (
-/obj/structure/window/plasma/spawner/east,
+/obj/structure/window/plasma/spawner/directional/east,
 /obj/item/clothing/gloves/color/yellow,
 /obj/effect/decal/cleanable/glass/plasma,
 /turf/open/floor/plating,
@@ -242,7 +292,7 @@
 "co" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "ct" = (
@@ -257,10 +307,10 @@
 /obj/effect/decal/cleanable/blood/footprints{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -268,10 +318,10 @@
 /area/ruin/powered)
 "cE" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 6
 	},
 /obj/structure/cable,
@@ -292,7 +342,7 @@
 /area/ruin/powered)
 "cS" = (
 /obj/structure/table/wood/fancy/orange,
-/obj/item/reagent_containers/food/snacks/store/cake/clown_cake,
+/obj/item/food/cake/clown_cake,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "cU" = (
@@ -343,17 +393,17 @@
 /area/ruin/powered)
 "dM" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/item/trash/cheesie,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "dP" = (
 /obj/effect/gibspawner/human,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -366,15 +416,15 @@
 /area/ruin/powered)
 "dU" = (
 /obj/structure/table,
-/obj/item/stack/tape/industrial/electrical,
+/obj/item/stack/sticky_tape,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "ec" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -389,7 +439,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "eh" = (
-/obj/effect/mob_spawn/human/corpse/assistant,
+/obj/effect/mob_spawn/corpse/human/assistant,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
@@ -404,7 +454,7 @@
 /area/ruin/powered)
 "ep" = (
 /obj/effect/spawner/random/maintenance/two,
-/obj/item/reagent_containers/food/snacks/butterdog,
+/obj/item/food/butterdog,
 /obj/structure/table,
 /obj/item/coin/plastic,
 /turf/open/floor/plating,
@@ -422,7 +472,7 @@
 "ev" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/blood/old,
-/mob/living/simple_animal/hostile/rat{
+/mob/living/basic/mouse/rat{
 	dir = 8
 	},
 /turf/open/floor/plating/rust,
@@ -430,7 +480,7 @@
 "ez" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/rack,
-/obj/item/trash/plate,
+/obj/item/trash/tray,
 /obj/item/trash/sosjerky,
 /obj/effect/spawner/random/maintenance,
 /obj/item/assembly/igniter,
@@ -438,7 +488,7 @@
 /obj/item/electronics/airlock,
 /obj/item/hand_labeler_refill,
 /obj/item/photo,
-/obj/item/wrench/old,
+/obj/item/wrench,
 /obj/item/poster/random_contraband,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
@@ -447,7 +497,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "eL" = (
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -474,18 +524,18 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/visible/layer2{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/visible/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "eW" = (
-/obj/effect/decal/cleanable/oil/streak,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -495,7 +545,7 @@
 /obj/structure/closet/crate/bin,
 /obj/item/clothing/mask/gas/mime,
 /obj/item/clothing/under/rank/civilian/mime,
-/obj/item/clothing/head/frenchberet,
+/obj/item/clothing/head/beret,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "fh" = (
@@ -514,10 +564,10 @@
 /area/ruin/powered)
 "fn" = (
 /obj/effect/gibspawner/human,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 10
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 10
 	},
 /obj/structure/cable,
@@ -535,7 +585,7 @@
 /obj/item/stack/sheet/mineral/wood,
 /obj/item/stack/sheet/mineral/wood,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
-/obj/item/trash/waffles,
+/obj/item/trash,
 /obj/effect/spawner/random/maintenance,
 /obj/item/flashlight/glowstick,
 /turf/open/floor/plating,
@@ -555,10 +605,10 @@
 /area/ruin/powered)
 "fB" = (
 /obj/effect/decal/cleanable/blood/drip,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -567,10 +617,10 @@
 "fE" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -585,10 +635,10 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "fJ" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -605,10 +655,10 @@
 "ga" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -621,12 +671,12 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "gp" = (
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -672,14 +722,14 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "hd" = (
-/obj/item/reagent_containers/food/snacks/cakeslice/clown_slice,
+/obj/item/food/cakeslice/plain,
 /turf/open/floor/mineral/bananium,
 /area/ruin/powered)
 "he" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 9
 	},
 /obj/structure/cable,
@@ -692,7 +742,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "hD" = (
-/obj/structure/sign/poster/contraband/steppyflag,
+/obj/structure/sign/poster/contraband/random,
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "hH" = (
@@ -707,27 +757,27 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/blood/old,
 /obj/item/trash/can/food/beans,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "hW" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "hZ" = (
-/obj/effect/mob_spawn/human/corpse/assistant,
+/obj/effect/mob_spawn/corpse/human/assistant,
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
@@ -752,10 +802,10 @@
 /obj/item/trash/candy,
 /obj/effect/spawner/random/maintenance,
 /obj/item/assembly/prox_sensor,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -769,10 +819,10 @@
 	pixel_x = -7;
 	pixel_y = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -792,17 +842,17 @@
 "iH" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/blood/old,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "iI" = (
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "iK" = (
@@ -810,16 +860,16 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "iR" = (
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "iZ" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -827,8 +877,8 @@
 /area/ruin/powered)
 "ja" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -847,7 +897,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "jn" = (
-/mob/living/simple_animal/hostile/retaliate/clown/mutant/blob,
+/mob/living/basic/blob_minion/blobbernaut/wasteland,
 /obj/effect/gibspawner/human,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
@@ -862,10 +912,10 @@
 "jy" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -873,7 +923,7 @@
 /area/ruin/powered)
 "jz" = (
 /obj/effect/decal/cleanable/blood,
-/obj/effect/mob_spawn/human/clown/corpse,
+/obj/effect/mob_spawn/corpse/human/clown,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "jA" = (
@@ -881,37 +931,36 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "jD" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "jF" = (
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/glass,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "jG" = (
 /obj/structure/closet/cabinet,
-/obj/item/clothing/accessory/holster/detective,
+/obj/item/storage/belt/holster/detective,
 /obj/item/clothing/under/rank/security/detective,
 /obj/item/clothing/suit/jacket/det_suit,
 /obj/item/clothing/neck/tie/detective,
 /obj/item/clothing/head/fedora/det_hat,
-/obj/item/cartridge/detective,
 /obj/item/evidencebag,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "jM" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -921,7 +970,7 @@
 /obj/structure/chair/sofa/right{
 	dir = 1
 	},
-/mob/living/simple_animal/hostile/retaliate/goose/vomit{
+/mob/living/basic/goose/vomit{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/vomit/old,
@@ -937,10 +986,10 @@
 	},
 /obj/structure/fans/tiny,
 /obj/item/assembly/mousetrap/armed,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -957,7 +1006,7 @@
 /area/ruin/powered)
 "ki" = (
 /obj/effect/decal/cleanable/blood,
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "kj" = (
@@ -971,7 +1020,7 @@
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "kn" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -1005,7 +1054,7 @@
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "kF" = (
-/mob/living/simple_animal/hostile/rat{
+/mob/living/basic/mouse/rat{
 	dir = 8
 	},
 /obj/machinery/light,
@@ -1013,7 +1062,7 @@
 /area/ruin/powered)
 "kK" = (
 /obj/effect/decal/cleanable/blood,
-/obj/effect/mob_spawn/human/clown/corpse,
+/obj/effect/mob_spawn/corpse/human/clown,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/mineral/bananium,
 /area/ruin/powered)
@@ -1036,17 +1085,17 @@
 /obj/item/laser_pointer/upgraded,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
-/obj/item/trash/plate,
+/obj/item/trash/tray,
 /obj/effect/spawner/random/maintenance/two,
 /obj/item/electronics/airlock,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "kX" = (
 /obj/structure/grille,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1055,10 +1104,10 @@
 "lf" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/generic,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1066,10 +1115,10 @@
 /area/ruin/powered)
 "lk" = (
 /obj/effect/decal/cleanable/blood,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -1082,10 +1131,10 @@
 "lm" = (
 /obj/machinery/door/airlock/maintenance,
 /obj/item/assembly/mousetrap/armed,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -1093,10 +1142,10 @@
 /area/ruin/powered)
 "lp" = (
 /obj/effect/decal/cleanable/blood/old,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -1140,10 +1189,10 @@
 "lM" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1151,17 +1200,17 @@
 /area/ruin/powered)
 "lO" = (
 /obj/structure/bed,
-/obj/item/bedsheet/random,
-/obj/effect/mob_spawn/human/corpse/assistant,
+/obj/item/bedsheet,
+/obj/effect/mob_spawn/corpse/human/assistant,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "lQ" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/glass,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -1213,7 +1262,7 @@
 /area/ruin/powered)
 "mG" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/food/drinks/flask/det,
+/obj/item/reagent_containers/cup/glass/flask/det,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/folder{
 	pixel_x = -6;
@@ -1226,7 +1275,7 @@
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "mP" = (
-/obj/effect/mob_spawn/human/corpse/assistant,
+/obj/effect/mob_spawn/corpse/human/assistant,
 /obj/effect/decal/cleanable/blood,
 /obj/item/spear,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1239,21 +1288,21 @@
 /obj/item/clothing/suit/jacket/leather,
 /obj/item/clothing/suit/jacket/leather,
 /obj/item/clothing/suit/jacket/leather,
-/obj/item/clothing/glasses/cheapsuns,
-/obj/item/clothing/glasses/cheapsuns,
-/obj/item/clothing/glasses/cheapsuns,
-/obj/item/clothing/glasses/cheapsuns,
+/obj/item/clothing/glasses/sunglasses,
+/obj/item/clothing/glasses/sunglasses,
+/obj/item/clothing/glasses/sunglasses,
+/obj/item/clothing/glasses/sunglasses,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "mW" = (
 /obj/effect/decal/cleanable/blood,
-/obj/effect/mob_spawn/human/corpse/assistant,
+/obj/effect/mob_spawn/corpse/human/assistant,
 /obj/effect/decal/cleanable/vomit/old,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -1262,23 +1311,23 @@
 "na" = (
 /obj/structure/table/reinforced,
 /obj/machinery/door/window/brigdoor,
-/obj/machinery/door/window/brigdoor/northleft,
+/obj/machinery/door/window/brigdoor/left/directional/north,
 /obj/item/paper_bin,
 /obj/item/trash/tray,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "nc" = (
 /obj/structure/table/reinforced,
-/obj/item/reagent_containers/food/snacks/cakeslice/brain,
+/obj/item/food/cakeslice/brain,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "nd" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 5
 	},
 /obj/structure/cable,
@@ -1292,7 +1341,7 @@
 "nk" = (
 /obj/structure/table,
 /obj/item/stock_parts/micro_laser/ultra,
-/obj/item/reagent_containers/glass/beaker{
+/obj/item/reagent_containers/cup/beaker{
 	name = "standard-sized beaker";
 	pixel_x = -9;
 	pixel_y = 3
@@ -1301,34 +1350,34 @@
 /area/ruin/powered)
 "nt" = (
 /obj/effect/decal/cleanable/blood,
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/trash/cheesie,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "nv" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 6
 	},
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "nw" = (
-/obj/effect/mob_spawn/human/clown/corpse,
+/obj/effect/mob_spawn/corpse/human/clown,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "nz" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -1336,12 +1385,12 @@
 /area/ruin/powered)
 "nE" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/blood/footprints,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1356,7 +1405,7 @@
 "nK" = (
 /obj/structure/table,
 /obj/effect/spawner/random/maintenance/five,
-/obj/item/shovel/spoon,
+/obj/item/shovel,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "nM" = (
@@ -1378,7 +1427,7 @@
 /area/ruin/powered)
 "nS" = (
 /obj/structure/rack,
-/obj/item/melee/baton/cattleprod,
+/obj/item/melee/baton/security/cattleprod,
 /obj/item/restraints/handcuffs/cable/pink,
 /obj/item/clothing/mask/muzzle,
 /obj/effect/spawner/random/maintenance,
@@ -1396,8 +1445,8 @@
 /obj/item/trash/sosjerky,
 /obj/item/trash/candy,
 /obj/item/assembly/igniter,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1405,11 +1454,11 @@
 /area/ruin/powered)
 "oj" = (
 /obj/effect/spawner/random/trash/grille_or_waste,
-/obj/effect/decal/cleanable/oil,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -1423,10 +1472,10 @@
 "ow" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/blood/drip,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1436,7 +1485,7 @@
 /area/ruin/powered)
 "oB" = (
 /obj/structure/bed,
-/obj/item/bedsheet/random,
+/obj/item/bedsheet,
 /obj/effect/gibspawner/human,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -1447,8 +1496,8 @@
 /area/ruin/powered)
 "oJ" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1456,7 +1505,7 @@
 /area/ruin/powered)
 "oM" = (
 /obj/structure/bed,
-/obj/item/bedsheet/random,
+/obj/item/bedsheet,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
@@ -1466,7 +1515,7 @@
 /obj/item/toy/plush/snakeplushie,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
-/obj/item/trash/waffles,
+/obj/item/trash,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "oR" = (
@@ -1478,11 +1527,11 @@
 "oU" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/oil/streak,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -1498,10 +1547,10 @@
 /area/ruin/powered)
 "oY" = (
 /obj/effect/decal/cleanable/blood/footprints,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 6
 	},
 /obj/structure/cable,
@@ -1516,16 +1565,16 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "pp" = (
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "pq" = (
 /obj/effect/decal/cleanable/blood/old,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1586,8 +1635,8 @@
 /area/ruin/powered)
 "pW" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1598,8 +1647,8 @@
 /obj/item/ammo_box/c9mm{
 	pixel_y = 6
 	},
-/obj/item/gun/ballistic/automatic/zip_pistol,
-/obj/item/ammo_box/magazine/zip_ammo_9mm,
+/obj/item/gun/ballistic/rifle/boltaction/pipegun/pistol,
+/obj/item/ammo_box/magazine/m9mm,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
@@ -1614,7 +1663,7 @@
 /area/ruin/powered)
 "qn" = (
 /obj/effect/decal/cleanable/blood,
-/obj/effect/mob_spawn/human/corpse/assistant,
+/obj/effect/mob_spawn/corpse/human/assistant,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "qo" = (
@@ -1636,9 +1685,9 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "qE" = (
-/obj/effect/decal/cleanable/oil/streak,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1679,10 +1728,10 @@
 	armed = 1;
 	trap_damage = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1696,18 +1745,18 @@
 /area/ruin/powered)
 "qT" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer2,
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "rl" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/food/snacks/grown/cannabis{
+/obj/item/food/grown/cannabis{
 	pixel_x = -6;
 	pixel_y = 4
 	},
-/obj/item/reagent_containers/food/snacks/grown/cannabis{
+/obj/item/food/grown/cannabis{
 	pixel_x = 3;
 	pixel_y = 9
 	},
@@ -1724,17 +1773,17 @@
 /area/ruin/powered)
 "rn" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 5
 	},
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "rp" = (
-/obj/effect/mob_spawn/human/corpse/assistant,
+/obj/effect/mob_spawn/corpse/human/assistant,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
@@ -1742,10 +1791,10 @@
 "ru" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/glass,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -1753,9 +1802,9 @@
 /area/ruin/powered)
 "rx" = (
 /obj/structure/bed,
-/obj/item/bedsheet/random,
+/obj/item/bedsheet,
 /obj/effect/decal/cleanable/blood,
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
@@ -1766,7 +1815,6 @@
 /area/ruin/powered)
 "rJ" = (
 /obj/structure/falsewall/reinforced,
-/obj/structure/sign/poster/retro/smile,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "rO" = (
@@ -1776,9 +1824,9 @@
 /area/ruin/powered)
 "rU" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/oil,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1786,20 +1834,20 @@
 /area/ruin/powered)
 "rY" = (
 /obj/structure/bed,
-/obj/item/bedsheet/random,
+/obj/item/bedsheet,
 /obj/machinery/light/small{
 	dir = 4
 	},
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "sg" = (
-/mob/living/simple_animal/hostile/rat{
+/mob/living/basic/mouse/rat{
 	dir = 1
 	},
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "sk" = (
-/obj/effect/mob_spawn/human/corpse/assistant,
+/obj/effect/mob_spawn/corpse/human/assistant,
 /obj/effect/decal/cleanable/blood,
 /obj/machinery/light{
 	dir = 8
@@ -1807,11 +1855,11 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "sl" = (
-/mob/living/simple_animal/hostile/rat,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/mob/living/basic/mouse/rat,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -1826,10 +1874,10 @@
 /area/ruin/powered)
 "sr" = (
 /obj/item/rack_parts,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1843,7 +1891,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "sE" = (
-/mob/living/simple_animal/hostile/asteroid/goliath{
+/mob/living/basic/mining/goliath{
 	desc = "Douglas! Everyone's pal! What a guy!";
 	dir = 1;
 	faction = list("neutral");
@@ -1862,7 +1910,7 @@
 /area/ruin/powered)
 "sH" = (
 /obj/effect/decal/cleanable/blood,
-/obj/effect/mob_spawn/human/corpse/assistant,
+/obj/effect/mob_spawn/corpse/human/assistant,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "sO" = (
@@ -1884,10 +1932,10 @@
 	pixel_x = 1;
 	pixel_y = -6
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -1897,8 +1945,8 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/trash/sosjerky,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1910,7 +1958,7 @@
 /area/ruin/powered)
 "tA" = (
 /obj/structure/table/reinforced,
-/obj/item/reagent_containers/glass/mortar/gold,
+/obj/item/reagent_containers/cup/bowl,
 /obj/item/pestle,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -1924,15 +1972,15 @@
 /obj/structure/chair/wood{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/russian{
+/mob/living/basic/trooper/russian{
 	dir = 8
 	},
 /turf/open/floor/wood,
 /area/ruin/powered)
 "tI" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -1942,7 +1990,7 @@
 /area/ruin/powered)
 "tK" = (
 /obj/effect/decal/cleanable/blood,
-/obj/item/reagent_containers/food/snacks/deadmouse,
+/obj/item/food/deadmouse,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -1955,7 +2003,7 @@
 	name = "The Barracks"
 	},
 /obj/effect/decal/cleanable/blood,
-/obj/effect/decal/cleanable/oil/slippery,
+/obj/effect/decal/cleanable/blood/oil/slippery,
 /obj/item/assembly/mousetrap/armed,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -1969,8 +2017,8 @@
 /area/ruin/powered)
 "ul" = (
 /obj/structure/table,
-/obj/item/reagent_containers/food/snacks/chewable/bubblegum,
-/obj/item/reagent_containers/food/snacks/chewable/bubblegum{
+/obj/item/food/gumball,
+/obj/item/food/gumball{
 	pixel_y = 5
 	},
 /turf/open/floor/plating/rust,
@@ -2022,10 +2070,10 @@
 /area/ruin/powered)
 "uS" = (
 /obj/effect/decal/cleanable/glass,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2047,10 +2095,10 @@
 /area/ruin/powered)
 "ve" = (
 /obj/effect/decal/cleanable/glass,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2075,7 +2123,7 @@
 /area/ruin/powered)
 "vp" = (
 /obj/structure/bed,
-/obj/item/bedsheet/random,
+/obj/item/bedsheet,
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
@@ -2089,17 +2137,17 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "vy" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "vD" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2119,10 +2167,10 @@
 /area/ruin/powered)
 "vG" = (
 /obj/effect/decal/cleanable/blood,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2134,7 +2182,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/visible/layer2{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/visible/layer2{
 	dir = 8
 	},
 /obj/structure/cable,
@@ -2155,8 +2203,8 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "vR" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2166,7 +2214,7 @@
 /obj/structure/bed,
 /obj/item/bedsheet/clown,
 /obj/effect/decal/cleanable/blood,
-/obj/effect/mob_spawn/human/clown/corpse,
+/obj/effect/mob_spawn/corpse/human/clown,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/mineral/bananium,
 /area/ruin/powered)
@@ -2175,7 +2223,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "wb" = (
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "we" = (
@@ -2183,7 +2231,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "wi" = (
-/obj/structure/window/spawner/north,
+/obj/structure/window/spawner/directional/north,
 /mob/living/carbon/human/species/monkey,
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/plating/rust,
@@ -2193,10 +2241,10 @@
 /obj/effect/decal/cleanable/blood/footprints{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2208,7 +2256,7 @@
 /area/ruin/powered)
 "wq" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "wu" = (
@@ -2216,10 +2264,10 @@
 /obj/effect/decal/cleanable/blood/footprints{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2247,7 +2295,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "wM" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /turf/open/floor/plating,
@@ -2290,13 +2338,13 @@
 /area/ruin/powered)
 "xI" = (
 /obj/structure/table/wood/fancy/orange,
-/obj/item/reagent_containers/food/snacks/pie/cream,
+/obj/item/food/pie/cream,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "xL" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2307,10 +2355,10 @@
 /obj/effect/decal/cleanable/blood/old,
 /obj/effect/decal/cleanable/generic,
 /obj/effect/spawner/random/maintenance,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2324,7 +2372,7 @@
 /area/ruin/powered)
 "yj" = (
 /obj/structure/closet/cardboard,
-/mob/living/simple_animal/hostile/retaliate/poison/snake,
+/mob/living/basic/snake,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/light/small{
 	dir = 8
@@ -2333,10 +2381,10 @@
 /area/ruin/powered)
 "yl" = (
 /obj/structure/falsewall/gold,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2368,8 +2416,8 @@
 /area/ruin/powered)
 "yS" = (
 /obj/effect/decal/cleanable/greenglow/filled,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2378,11 +2426,11 @@
 /area/ruin/powered)
 "yV" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/oil/streak,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 10
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 10
 	},
 /obj/structure/cable,
@@ -2414,10 +2462,10 @@
 "zg" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2451,10 +2499,10 @@
 "zC" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/blood/drip,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2472,7 +2520,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "zG" = (
-/obj/item/gun/ballistic/automatic/pistol/commander,
+/obj/item/gun/ballistic/automatic/pistol/m1911,
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "zK" = (
@@ -2480,10 +2528,10 @@
 /area/ruin/powered)
 "zL" = (
 /obj/effect/decal/cleanable/blood/old,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2491,10 +2539,10 @@
 /area/ruin/powered)
 "zV" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2510,8 +2558,8 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/glass,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2537,10 +2585,10 @@
 /area/ruin/powered)
 "Av" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 5
 	},
 /obj/structure/cable,
@@ -2548,10 +2596,10 @@
 /area/ruin/powered)
 "Az" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2559,10 +2607,10 @@
 /area/ruin/powered)
 "AC" = (
 /obj/effect/decal/cleanable/ash,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2575,10 +2623,10 @@
 "AE" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/generic,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2590,8 +2638,8 @@
 /obj/effect/spawner/random/maintenance,
 /obj/item/toner,
 /obj/item/assembly/prox_sensor,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2602,10 +2650,10 @@
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2621,10 +2669,10 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "AY" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 5
 	},
 /obj/structure/cable,
@@ -2636,11 +2684,11 @@
 /area/ruin/powered)
 "Bk" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Bl" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
@@ -2651,13 +2699,13 @@
 /area/ruin/powered)
 "Bn" = (
 /obj/effect/decal/cleanable/blood,
-/obj/effect/mob_spawn/human/corpse/damaged,
+/obj/effect/mob_spawn/corpse/human/damaged,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Bp" = (
 /obj/structure/table/wood,
-/obj/effect/mob_spawn/human/clown/corpse,
+/obj/effect/mob_spawn/corpse/human/clown,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
@@ -2672,8 +2720,8 @@
 /obj/item/trash/sosjerky,
 /obj/item/trash/syndi_cakes,
 /obj/effect/spawner/random/maintenance/two,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2694,10 +2742,10 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "BF" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2706,11 +2754,11 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "BI" = (
-/mob/living/simple_animal/hostile/rat,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/mob/living/basic/mouse/rat,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2725,11 +2773,11 @@
 /turf/closed/wall/rust,
 /area/ruin/powered)
 "BU" = (
-/obj/effect/decal/cleanable/oil/streak,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2738,10 +2786,10 @@
 "BV" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2749,12 +2797,12 @@
 /area/ruin/powered)
 "BY" = (
 /obj/structure/bed,
-/obj/item/bedsheet/random,
+/obj/item/bedsheet,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Cc" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Ce" = (
@@ -2770,10 +2818,10 @@
 /area/ruin/powered)
 "Cu" = (
 /obj/effect/decal/cleanable/insectguts,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2784,7 +2832,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/visible/layer2{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/visible/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2793,14 +2841,14 @@
 "Cy" = (
 /obj/structure/closet/cardboard,
 /obj/item/coin/bananium,
-/obj/item/reagent_containers/food/snacks/soup/clownstears,
+/obj/item/reagent_containers/cup/bottle/clownstears,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "CF" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2828,7 +2876,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Db" = (
-/mob/living/simple_animal/hostile/rat{
+/mob/living/basic/mouse/rat{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/blood,
@@ -2850,14 +2898,14 @@
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "Dl" = (
-/mob/living/simple_animal/hostile/rat{
+/mob/living/basic/mouse/rat{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/blood,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2874,15 +2922,15 @@
 /area/ruin/powered)
 "DJ" = (
 /obj/structure/closet/crate/trashcart,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "DR" = (
-/obj/effect/mob_spawn/human/corpse/assistant,
+/obj/effect/mob_spawn/corpse/human/assistant,
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -2919,10 +2967,10 @@
 /obj/machinery/door/airlock/maintenance{
 	name = "The Grey Fortress"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -2951,10 +2999,10 @@
 /obj/item/trash/candy,
 /obj/effect/spawner/random/maintenance,
 /obj/item/book/manual/random,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -2963,17 +3011,17 @@
 "Ei" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/blood/old,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "El" = (
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/generic,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
@@ -2989,10 +3037,10 @@
 /obj/machinery/door/airlock/maintenance/glass{
 	name = "Waiting Lobby"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -3002,7 +3050,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/visible/layer2{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/visible/layer2{
 	dir = 8
 	},
 /obj/structure/cable,
@@ -3018,10 +3066,10 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "ED" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -3029,10 +3077,10 @@
 /area/ruin/powered)
 "EE" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -3041,8 +3089,8 @@
 "EH" = (
 /obj/effect/decal/cleanable/blood/old,
 /obj/effect/decal/cleanable/generic,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -3073,17 +3121,17 @@
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "Fl" = (
-/obj/effect/decal/cleanable/robot_debris,
-/mob/living/simple_animal/hostile/rat{
+/obj/effect/decal/cleanable/blood/gibs/robot_debris,
+/mob/living/basic/mouse/rat{
 	dir = 8
 	},
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Fm" = (
 /obj/effect/decal/cleanable/blood,
-/mob/living/simple_animal/hostile/rat,
-/obj/effect/decal/cleanable/oil,
+/mob/living/basic/mouse/rat,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Fn" = (
@@ -3092,22 +3140,22 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Fs" = (
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/vomit/old,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Fw" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 6
 	},
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "FG" = (
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "FH" = (
@@ -3137,19 +3185,19 @@
 /area/ruin/powered)
 "Gg" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/glass,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Gq" = (
-/mob/living/simple_animal/hostile/retaliate/clown/fleshclown,
+/mob/living/basic/clown/fleshclown,
 /obj/effect/gibspawner/human,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
@@ -3158,10 +3206,10 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -3172,10 +3220,10 @@
 /obj/effect/decal/cleanable/cobweb,
 /obj/effect/decal/cleanable/generic,
 /obj/effect/decal/cleanable/ash,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 6
 	},
 /obj/structure/cable,
@@ -3201,11 +3249,11 @@
 /area/ruin/powered)
 "GN" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/oil,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -3229,14 +3277,14 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Hw" = (
-/obj/structure/window/plasma/spawner/west,
+/obj/structure/window/plasma/spawner/directional/west,
 /obj/item/storage/toolbox/syndicate,
 /obj/effect/decal/cleanable/glass,
 /obj/effect/decal/cleanable/ash,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "HC" = (
-/obj/effect/mob_spawn/human/corpse/damaged,
+/obj/effect/mob_spawn/corpse/human/damaged,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -3245,13 +3293,13 @@
 /area/ruin/powered)
 "HD" = (
 /obj/effect/decal/cleanable/blood,
-/obj/effect/mob_spawn/human/clown/corpse,
-/mob/living/simple_animal/hostile/rat,
+/obj/effect/mob_spawn/corpse/human/clown,
+/mob/living/basic/mouse/rat,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "HH" = (
 /obj/effect/gibspawner/human,
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/trash/can/food/beans,
 /turf/open/floor/plating/rust,
@@ -3262,7 +3310,7 @@
 /area/ruin/powered)
 "HR" = (
 /obj/structure/table,
-/obj/item/clothing/gloves/color/captain,
+/obj/item/clothing/gloves/captain,
 /obj/item/storage/belt/utility/chief/full,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
@@ -3287,7 +3335,7 @@
 /area/ruin/powered)
 "Ie" = (
 /obj/structure/closet/cardboard,
-/mob/living/simple_animal/hostile/retaliate/poison/snake,
+/mob/living/basic/snake,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -3301,10 +3349,6 @@
 /area/ruin/powered)
 "Im" = (
 /obj/structure/closet/crate/trashcart,
-/obj/item/toy/plush/among{
-	pixel_x = 4;
-	pixel_y = -1
-	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
@@ -3312,10 +3356,10 @@
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -3332,10 +3376,10 @@
 	name = "Throneroom Reception"
 	},
 /obj/item/assembly/mousetrap/armed,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -3344,10 +3388,10 @@
 "Iv" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/generic,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -3355,10 +3399,10 @@
 /area/ruin/powered)
 "Iz" = (
 /obj/item/trash/chips,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -3392,8 +3436,8 @@
 	armed = 1;
 	trap_damage = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -3430,10 +3474,10 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "IY" = (
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -3447,8 +3491,8 @@
 "Jg" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/blood/old,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -3473,7 +3517,7 @@
 /area/ruin/powered)
 "Jp" = (
 /obj/structure/closet/cardboard,
-/mob/living/simple_animal/hostile/retaliate/poison/snake,
+/mob/living/basic/snake,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Jx" = (
@@ -3489,8 +3533,8 @@
 "JA" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -3500,7 +3544,7 @@
 /area/ruin/powered)
 "JK" = (
 /obj/structure/closet/crate,
-/obj/item/trash/plate,
+/obj/item/trash/tray,
 /obj/effect/spawner/random/maintenance,
 /obj/item/clipboard,
 /turf/open/floor/plating,
@@ -3510,7 +3554,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/visible/layer2{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/visible/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -3525,10 +3569,10 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 10
 	},
 /obj/structure/cable,
@@ -3561,17 +3605,17 @@
 "Kq" = (
 /obj/structure/grille,
 /obj/item/assembly/mousetrap/armed,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Ky" = (
-/mob/living/simple_animal/hostile/rat{
+/mob/living/basic/mouse/rat{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/blood,
@@ -3586,11 +3630,11 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "KC" = (
-/obj/effect/decal/cleanable/oil,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -3619,8 +3663,8 @@
 "KX" = (
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -3632,10 +3676,10 @@
 	},
 /obj/effect/mapping_helpers/airlock/locked,
 /obj/item/assembly/mousetrap/armed,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -3646,12 +3690,12 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Ld" = (
-/obj/effect/mob_spawn/human/corpse/assistant,
+/obj/effect/mob_spawn/corpse/human/assistant,
 /obj/item/clothing/head/utility/chefhat,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Lj" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Lr" = (
@@ -3691,10 +3735,10 @@
 /area/ruin/powered)
 "Lv" = (
 /obj/effect/decal/cleanable/blood/old,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -3719,7 +3763,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "LR" = (
-/obj/structure/sign/poster/contraband/steppyflag,
+/obj/structure/sign/poster/contraband/random,
 /turf/closed/wall/rust,
 /area/ruin/powered)
 "LU" = (
@@ -3736,10 +3780,10 @@
 "LY" = (
 /obj/effect/mine/sound/bwoink,
 /obj/structure/grille,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -3761,7 +3805,7 @@
 /area/ruin/powered)
 "Mo" = (
 /obj/structure/closet/cardboard,
-/mob/living/simple_animal/hostile/retaliate/poison/snake,
+/mob/living/basic/snake,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -3785,8 +3829,7 @@
 /area/ruin/powered)
 "Ni" = (
 /obj/structure/table,
-/obj/item/organ/internal/ears/cat,
-/obj/item/organ/external/tail/cat,
+/obj/item/organ/tail/cat,
 /obj/item/restraints/handcuffs/cable,
 /obj/item/restraints/handcuffs/cable,
 /obj/effect/decal/cleanable/cobweb,
@@ -3795,10 +3838,10 @@
 "Nj" = (
 /obj/structure/grille,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -3811,15 +3854,15 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Nr" = (
-/obj/effect/mob_spawn/human/clown/corpse,
+/obj/effect/mob_spawn/corpse/human/clown,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -3844,8 +3887,8 @@
 	name = "The Grey Fortress"
 	},
 /obj/structure/fans/tiny,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -3857,7 +3900,7 @@
 /area/ruin/powered)
 "NI" = (
 /obj/structure/closet/cardboard,
-/mob/living/simple_animal/hostile/retaliate/poison/snake,
+/mob/living/basic/snake,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "NK" = (
@@ -3871,17 +3914,17 @@
 /area/ruin/powered)
 "NO" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/structure/rack,
 /obj/item/trash/candy,
 /obj/item/folder/yellow,
 /obj/effect/spawner/random/maintenance,
 /obj/item/electronics/airlock,
 /obj/item/hot_potato/harmless/toy,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -3889,7 +3932,7 @@
 /area/ruin/powered)
 "NP" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "NR" = (
@@ -3903,9 +3946,9 @@
 /area/ruin/powered)
 "NT" = (
 /obj/structure/bed,
-/obj/item/bedsheet/random,
+/obj/item/bedsheet,
 /obj/effect/decal/cleanable/blood,
-/obj/effect/mob_spawn/human/corpse/damaged,
+/obj/effect/mob_spawn/corpse/human/damaged,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -3916,12 +3959,12 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "NW" = (
-/obj/item/reagent_containers/food/drinks/beer,
-/obj/item/reagent_containers/food/drinks/beer,
+/obj/item/reagent_containers/cup/glass/bottle/beer,
+/obj/item/reagent_containers/cup/glass/bottle/beer,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Og" = (
-/obj/item/trash/waffles,
+/obj/item/trash,
 /obj/item/broken_bottle,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -3931,11 +3974,11 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Oo" = (
-/mob/living/simple_animal/hostile/rat,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/mob/living/basic/mouse/rat,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -3960,7 +4003,7 @@
 /area/ruin/powered)
 "Ou" = (
 /obj/structure/curtain/cloth/fancy,
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/generic,
 /turf/open/floor/plating/rust,
@@ -3998,10 +4041,10 @@
 "OM" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -4009,9 +4052,9 @@
 /area/ruin/powered)
 "OO" = (
 /obj/structure/closet,
-/obj/item/gun/ballistic/automatic/zip_pistol,
-/obj/item/ammo_box/magazine/zip_ammo_9mm,
-/obj/item/ammo_box/magazine/zip_ammo_9mm,
+/obj/item/gun/ballistic/rifle/boltaction/pipegun/pistol,
+/obj/item/ammo_box/magazine/m9mm,
+/obj/item/ammo_box/magazine/m9mm,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "OQ" = (
@@ -4021,7 +4064,7 @@
 /area/ruin/powered)
 "OV" = (
 /obj/structure/closet/cardboard,
-/mob/living/simple_animal/hostile/retaliate/poison/snake,
+/mob/living/basic/snake,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
@@ -4030,10 +4073,10 @@
 /obj/machinery/door/airlock/maintenance{
 	name = "The Grey Fortress"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -4057,10 +4100,10 @@
 /area/ruin/powered)
 "Pg" = (
 /obj/structure/grille,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -4076,11 +4119,11 @@
 /turf/open/floor/mineral/bananium,
 /area/ruin/powered)
 "Px" = (
-/mob/living/simple_animal/hostile/rat,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/mob/living/basic/mouse/rat,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 9
 	},
 /obj/structure/cable,
@@ -4092,10 +4135,10 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "PE" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 10
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 10
 	},
 /obj/structure/cable,
@@ -4103,14 +4146,14 @@
 /area/ruin/powered)
 "PM" = (
 /obj/structure/closet/cardboard,
-/mob/living/simple_animal/hostile/retaliate/poison/snake,
+/mob/living/basic/snake,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/generic,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "PS" = (
 /obj/structure/curtain/cloth/fancy,
-/obj/effect/mob_spawn/human/corpse/damaged,
+/obj/effect/mob_spawn/corpse/human/damaged,
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -4119,7 +4162,7 @@
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "PW" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Qc" = (
@@ -4146,8 +4189,8 @@
 "Qh" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/blood/footprints,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -4164,10 +4207,10 @@
 	armed = 1;
 	trap_damage = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -4180,22 +4223,22 @@
 /obj/effect/spawner/random/maintenance,
 /obj/item/toner,
 /obj/item/flashlight/glowstick,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Qx" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/generic,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -4203,7 +4246,7 @@
 /area/ruin/powered)
 "Qy" = (
 /obj/structure/table,
-/obj/item/paicard,
+/obj/item/pai_card,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "QH" = (
@@ -4213,15 +4256,15 @@
 /area/ruin/powered)
 "QI" = (
 /obj/structure/bed,
-/obj/item/bedsheet/random,
-/obj/effect/mob_spawn/human/corpse/damaged,
+/obj/item/bedsheet,
+/obj/effect/mob_spawn/corpse/human/damaged,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "QK" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/rack,
-/obj/item/trash/plate,
+/obj/item/trash/tray,
 /obj/item/trash/raisins,
 /obj/effect/spawner/random/maintenance,
 /obj/item/book/manual/random,
@@ -4233,15 +4276,15 @@
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "QT" = (
-/obj/effect/mob_spawn/human/corpse/pirate,
+/obj/effect/mob_spawn/corpse/human/pirate,
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "QU" = (
-/mob/living/simple_animal/hostile/rat{
+/mob/living/basic/mouse/rat{
 	dir = 4
 	},
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/machinery/light{
 	dir = 1
 	},
@@ -4268,7 +4311,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/visible/layer2{
+/obj/machinery/atmospherics/pipe/smart/manifold/supply/visible/layer2{
 	dir = 8
 	},
 /obj/structure/cable,
@@ -4281,10 +4324,10 @@
 "Rw" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/glass,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -4328,10 +4371,10 @@
 "Sa" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/ash,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -4365,10 +4408,10 @@
 "SC" = (
 /obj/machinery/door/airlock/maintenance,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -4380,7 +4423,7 @@
 /area/ruin/powered)
 "SF" = (
 /obj/effect/decal/cleanable/blood,
-/obj/effect/mob_spawn/human/corpse/damaged,
+/obj/effect/mob_spawn/corpse/human/damaged,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "SG" = (
@@ -4402,7 +4445,7 @@
 /obj/structure/window/reinforced/spawner{
 	dir = 1
 	},
-/obj/machinery/computer/med_data,
+/obj/machinery/computer/records/medical,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Ta" = (
@@ -4412,10 +4455,10 @@
 /area/ruin/powered)
 "Tb" = (
 /obj/effect/decal/cleanable/generic,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -4435,7 +4478,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Tf" = (
-/obj/effect/mob_spawn/human/corpse/damaged,
+/obj/effect/mob_spawn/corpse/human/damaged,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
@@ -4446,10 +4489,10 @@
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/assembly/mousetrap/armed,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -4481,14 +4524,14 @@
 	dir = 8;
 	name = "The Great Throne"
 	},
-/mob/living/simple_animal/hostile/regalrat{
+/mob/living/basic/regal_rat{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/blood,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -4499,7 +4542,7 @@
 /obj/item/trash/boritos,
 /obj/item/trash/can/food/peaches/maint,
 /obj/effect/spawner/random/maintenance,
-/obj/item/decal_painter,
+/obj/item/airlock_painter/decal,
 /obj/item/poster/random_official,
 /obj/item/poster/random_contraband,
 /turf/open/floor/plating,
@@ -4518,8 +4561,8 @@
 /area/ruin/powered)
 "TC" = (
 /obj/structure/bed,
-/obj/item/bedsheet/random,
-/mob/living/simple_animal/hostile/rat{
+/obj/item/bedsheet,
+/mob/living/basic/mouse/rat{
 	dir = 4
 	},
 /turf/open/floor/plating/rust,
@@ -4535,10 +4578,10 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "TH" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/effect/spawner/random/trash/grille_or_waste,
@@ -4551,21 +4594,21 @@
 /area/ruin/powered)
 "TM" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/oil/streak,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "TO" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -4581,28 +4624,28 @@
 /area/ruin/powered)
 "TX" = (
 /obj/structure/table/reinforced,
-/obj/effect/mob_spawn/human/corpse/damaged,
+/obj/effect/mob_spawn/corpse/human/damaged,
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Ub" = (
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Ue" = (
-/mob/living/simple_animal/hostile/mimic/crate,
+/mob/living/basic/mimic/crate,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/item/trash/waffles,
+/obj/item/trash,
 /obj/item/trash/sosjerky,
-/obj/item/trash/plate,
+/obj/item/trash/tray,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Uk" = (
 /obj/effect/decal/cleanable/blood/gibs/down,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -4627,10 +4670,10 @@
 /area/ruin/powered)
 "UA" = (
 /obj/effect/decal/cleanable/generic,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -4652,10 +4695,10 @@
 /obj/effect/spawner/random/trash/grille_or_waste,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/glass,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -4668,10 +4711,10 @@
 "UT" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/glass,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -4682,13 +4725,13 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Vd" = (
-/obj/effect/mob_spawn/human/corpse/damaged,
+/obj/effect/mob_spawn/corpse/human/damaged,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/blood/old,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -4701,7 +4744,7 @@
 /area/ruin/powered)
 "Vf" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Vm" = (
@@ -4724,15 +4767,15 @@
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "Vu" = (
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /obj/effect/decal/cleanable/food/salt,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "VF" = (
 /obj/structure/bed,
-/obj/item/bedsheet/random,
+/obj/item/bedsheet,
 /obj/effect/decal/cleanable/blood,
-/obj/effect/mob_spawn/human/corpse/pirate,
+/obj/effect/mob_spawn/corpse/human/pirate,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "VJ" = (
@@ -4741,15 +4784,15 @@
 	armed = 1;
 	trap_damage = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "VK" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/generic,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
@@ -4776,10 +4819,10 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Wt" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -4799,10 +4842,10 @@
 /area/ruin/powered)
 "WL" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -4811,15 +4854,15 @@
 /area/ruin/powered)
 "WM" = (
 /obj/effect/decal/cleanable/generic,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "WN" = (
-/mob/living/simple_animal/hostile/retaliate/clown/fleshclown,
+/mob/living/basic/clown/fleshclown,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
@@ -4837,8 +4880,8 @@
 "Xd" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -4849,15 +4892,15 @@
 /area/ruin/powered)
 "Xg" = (
 /obj/structure/mecha_wreckage/phazon,
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Xi" = (
-/obj/effect/decal/cleanable/oil,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -4873,12 +4916,12 @@
 "Xp" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/rack,
-/obj/item/trash/plate,
+/obj/item/trash/tray,
 /obj/effect/spawner/random/maintenance/two,
 /obj/item/assembly/prox_sensor,
 /obj/item/hand_labeler_refill,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -4905,10 +4948,10 @@
 /obj/effect/decal/cleanable/blood/footprints{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -4916,10 +4959,10 @@
 /area/ruin/powered)
 "XQ" = (
 /obj/machinery/door/airlock/maintenance,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -4927,10 +4970,10 @@
 /area/ruin/powered)
 "XR" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -4946,14 +4989,14 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "XW" = (
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "XY" = (
-/mob/living/simple_animal/hostile/rat,
-/obj/effect/decal/cleanable/oil/streak,
+/mob/living/basic/mouse/rat,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Yb" = (
@@ -4968,7 +5011,7 @@
 /area/ruin/powered)
 "Yd" = (
 /obj/structure/rack,
-/obj/item/trash/plate,
+/obj/item/trash/tray,
 /obj/effect/spawner/random/maintenance,
 /obj/item/assembly/igniter,
 /obj/item/camera,
@@ -4981,7 +5024,7 @@
 /obj/structure/chair/comfy/beige{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/rat,
+/mob/living/basic/mouse/rat,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Yr" = (
@@ -4993,10 +5036,10 @@
 "Yu" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/vomit/old,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -5005,10 +5048,10 @@
 "Yy" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/blood/old,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -5039,10 +5082,10 @@
 "YF" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/blood/splatter,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable,
@@ -5056,7 +5099,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "YL" = (
-/obj/machinery/grill/cat,
+/obj/machinery/grill,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
@@ -5069,10 +5112,10 @@
 /turf/closed/wall/rust,
 /area/ruin/powered)
 "YT" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -5113,7 +5156,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/closet/crate,
-/obj/item/trash/plate,
+/obj/item/trash/tray,
 /obj/effect/spawner/random/maintenance,
 /obj/item/assembly/igniter,
 /obj/item/flashlight/glowstick,
@@ -5126,7 +5169,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Zo" = (
-/mob/living/simple_animal/hostile/cat_butcherer{
+/mob/living/basic/cat_butcherer{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/blood,
@@ -5135,9 +5178,9 @@
 /area/ruin/powered)
 "Zt" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/oil/streak,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/effect/decal/cleanable/blood/oil,
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
@@ -5145,7 +5188,7 @@
 /area/ruin/powered)
 "ZC" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/food/snacks/pizza/sassysage,
+/obj/item/food/pizza/sassysage,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "ZE" = (
@@ -5157,7 +5200,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "ZL" = (
-/mob/living/simple_animal/hostile/retaliate/clown/fleshclown,
+/mob/living/basic/clown/fleshclown,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/plating,
@@ -5165,15 +5208,15 @@
 "ZN" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
 	},
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "ZR" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -5282,7 +5325,7 @@ Gg
 wj
 nE
 aa
-YT
+ac
 wu
 aH
 GN
@@ -5872,7 +5915,7 @@ vc
 FG
 zC
 vP
-TE
+ab
 NR
 Og
 Xe
@@ -6199,7 +6242,7 @@ xx
 av
 bs
 XF
-In
+ae
 kS
 OI
 nw
@@ -6861,7 +6904,7 @@ YB
 av
 XF
 JX
-wM
+af
 wM
 IM
 HR
@@ -6904,7 +6947,7 @@ zK
 xx
 Hp
 Ke
-kn
+ag
 Pb
 nK
 pN
@@ -6991,7 +7034,7 @@ xx
 zK
 xx
 fw
-av
+ah
 IV
 av
 XS

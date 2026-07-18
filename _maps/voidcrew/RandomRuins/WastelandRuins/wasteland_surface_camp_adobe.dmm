@@ -17,8 +17,8 @@
 /area/overmap_encounter/planetoid/wasteland)
 "e" = (
 /obj/structure/table,
-/obj/item/ammo_box/aac_300blk_stripper,
-/obj/item/ammo_box/aac_300blk_stripper,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "f" = (
@@ -29,14 +29,14 @@
 /area/ruin/unpowered)
 "g" = (
 /turf/closed/wall,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "h" = (
 /obj/structure/table,
-/obj/item/gun/ballistic/rifle/boltaction/polymer,
+/obj/item/gun/ballistic/rifle/boltaction,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "i" = (
-/obj/item/stack/sheet/mineral/gold/five,
+/obj/item/stack/sheet/mineral/gold,
 /obj/structure/table,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
@@ -55,8 +55,8 @@
 /area/ruin/unpowered)
 "n" = (
 /obj/structure/table,
-/obj/item/gun/ballistic/automatic/aks74u,
-/obj/item/ammo_box/magazine/aks74u,
+/obj/item/gun/ballistic/automatic/wt550,
+/obj/item/ammo_box/magazine/m9mm,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
@@ -65,7 +65,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "p" = (
-/obj/item/stack/sheet/mineral/plasma/twenty,
+/obj/item/stack/sheet/mineral/plasma/thirty,
 /obj/structure/table,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
@@ -118,6 +118,7 @@
 /area/ruin/unpowered)
 "z" = (
 /obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/wildlife,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "A" = (
@@ -155,6 +156,7 @@
 	faction = list("adobe")
 	},
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/zone_loot/wardrobe,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "F" = (
@@ -189,7 +191,7 @@
 /area/overmap_encounter/planetoid/wasteland)
 "L" = (
 /turf/closed/wall/rust,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "M" = (
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
@@ -218,7 +220,7 @@
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "R" = (
-/obj/effect/mob_spawn/human/corpse/damaged,
+/obj/effect/mob_spawn/corpse/human/damaged,
 /obj/effect/decal/cleanable/blood/old{
 	icon_state = "floor2-old"
 	},

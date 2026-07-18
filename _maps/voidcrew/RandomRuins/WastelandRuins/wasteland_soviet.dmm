@@ -192,6 +192,7 @@
 "Fg" = (
 /obj/structure/chair/comfy/beige,
 /mob/living/basic/trooper/russian/ranged,
+/obj/structure/closet/crate/zone_loot/armory,
 /turf/open/floor/wood,
 /area/ruin)
 "Ge" = (
@@ -273,6 +274,10 @@
 /area/ruin)
 "WO" = (
 /obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin)
+"zz" = (
+/obj/effect/zone_mobs/syndicate,
 /turf/open/floor/plating,
 /area/ruin)
 
@@ -366,7 +371,7 @@ xs
 GW
 WO
 iw
-WO
+zz
 zb
 nP
 If

@@ -22,7 +22,7 @@
 /turf/open/floor/bronze,
 /area/ruin/unpowered)
 "fy" = (
-/mob/living/carbon/human/species/golem/bronze,
+/mob/living/carbon/human/species/golem,
 /turf/open/floor/bronze,
 /area/ruin/unpowered)
 "fK" = (
@@ -65,7 +65,7 @@
 /turf/open/floor/bronze,
 /area/ruin/unpowered)
 "jK" = (
-/obj/effect/decal/cleanable/robot_debris/limb,
+/obj/effect/decal/cleanable/blood/gibs/robot_debris/limb,
 /turf/open/floor/bronze,
 /area/ruin/unpowered)
 "kd" = (
@@ -98,7 +98,7 @@
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "oW" = (
-/mob/living/simple_animal/hostile/jungle/mook,
+/mob/living/basic/mining/mook,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "pi" = (
@@ -159,7 +159,7 @@
 /turf/open/floor/bronze,
 /area/ruin/unpowered)
 "wv" = (
-/obj/effect/decal/cleanable/robot_debris,
+/obj/effect/decal/cleanable/blood/gibs/robot_debris,
 /turf/open/floor/bronze,
 /area/ruin/unpowered)
 "xb" = (
@@ -179,7 +179,7 @@
 /turf/open/floor/bronze,
 /area/ruin/unpowered)
 "zj" = (
-/obj/effect/decal/cleanable/robot_debris/old,
+/obj/effect/decal/cleanable/blood/gibs/robot_debris,
 /turf/open/floor/bronze,
 /area/ruin/unpowered)
 "zz" = (
@@ -312,7 +312,7 @@
 /area/overmap_encounter/planetoid/wasteland)
 "Wx" = (
 /obj/effect/decal/cleanable/greenglow,
-/obj/effect/decal/cleanable/robot_debris/limb,
+/obj/effect/decal/cleanable/blood/gibs/robot_debris/limb,
 /turf/open/floor/bronze,
 /area/ruin/unpowered)
 "WK" = (
@@ -358,6 +358,14 @@
 /obj/structure/chair/bronze{
 	dir = 8
 	},
+/turf/open/floor/bronze,
+/area/ruin/unpowered)
+"Aa" = (
+/obj/structure/closet/crate/zone_loot/occult,
+/turf/open/floor/bronze,
+/area/ruin/unpowered)
+"Ab" = (
+/obj/effect/zone_mobs/cult,
 /turf/open/floor/bronze,
 /area/ruin/unpowered)
 
@@ -552,7 +560,7 @@ Nr
 XY
 ur
 uS
-NP
+Aa
 NP
 Bh
 WK
@@ -574,7 +582,7 @@ WK
 Bh
 WK
 Os
-NP
+Ab
 zj
 YQ
 XY

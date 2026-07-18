@@ -1,6 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "a" = (
-/obj/effect/turf_decal/industrial/warning/dust{
+/obj/effect/turf_decal/caution{
 	dir = 10
 	},
 /turf/open/floor/plating/rust,
@@ -13,7 +13,7 @@
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "e" = (
-/obj/effect/turf_decal/industrial/warning/dust{
+/obj/effect/turf_decal/caution{
 	dir = 9
 	},
 /turf/open/floor/plating/rust,
@@ -28,11 +28,11 @@
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "h" = (
-/obj/effect/turf_decal/industrial/warning/dust,
+/obj/effect/turf_decal/caution,
 /turf/open/floor/plating/rust,
 /area/overmap_encounter/planetoid/wasteland)
 "i" = (
-/obj/machinery/power/apc/auto_name/north,
+/obj/machinery/power/apc/auto_name/directional/north,
 /obj/structure/cable,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
@@ -63,11 +63,11 @@
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "q" = (
-/obj/effect/turf_decal/industrial/warning/dust/corner,
+/obj/effect/turf_decal/stripes/red/corner,
 /turf/open/floor/plating/rust,
 /area/overmap_encounter/planetoid/wasteland)
 "r" = (
-/obj/effect/turf_decal/industrial/warning/dust/corner{
+/obj/effect/turf_decal/stripes/red/corner{
 	dir = 4
 	},
 /turf/open/floor/plating/rust,
@@ -94,11 +94,11 @@
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "x" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/computer/order_console/mining,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "y" = (
-/obj/effect/turf_decal/industrial/warning/dust{
+/obj/effect/turf_decal/caution{
 	dir = 5
 	},
 /turf/open/floor/plating/rust,
@@ -129,7 +129,7 @@
 /turf/closed/wall/rust,
 /area/ruin/unpowered)
 "G" = (
-/obj/effect/turf_decal/industrial/warning/dust{
+/obj/effect/turf_decal/caution{
 	dir = 6
 	},
 /turf/open/floor/plating/rust,
@@ -155,13 +155,13 @@
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "M" = (
-/obj/effect/turf_decal/industrial/warning/dust{
+/obj/effect/turf_decal/caution{
 	dir = 4
 	},
 /turf/open/floor/plating/rust,
 /area/overmap_encounter/planetoid/wasteland)
 "O" = (
-/obj/effect/turf_decal/industrial/warning/dust{
+/obj/effect/turf_decal/caution{
 	dir = 1
 	},
 /turf/open/floor/plating/rust,
@@ -203,7 +203,7 @@
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "W" = (
-/obj/effect/turf_decal/industrial/warning/dust{
+/obj/effect/turf_decal/caution{
 	dir = 8
 	},
 /turf/open/floor/plating/rust,
@@ -219,6 +219,18 @@
 "Z" = (
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
+"c" = (
+/obj/structure/closet/crate/zone_loot/wardrobe,
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
+"j" = (
+/obj/effect/zone_mobs/bug,
+/turf/open/floor/iron,
+/area/ruin/unpowered)
+"o" = (
+/obj/effect/zone_mobs/bug,
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
 
 (1,1,1) = {"
 e
@@ -356,7 +368,7 @@ u
 p
 p
 F
-t
+j
 P
 t
 t
@@ -461,7 +473,7 @@ l
 d
 F
 H
-l
+o
 U
 l
 l
@@ -470,7 +482,7 @@ F
 (20,1,1) = {"
 T
 t
-l
+c
 l
 K
 l
@@ -509,7 +521,7 @@ Z
 (23,1,1) = {"
 F
 t
-l
+o
 t
 F
 t

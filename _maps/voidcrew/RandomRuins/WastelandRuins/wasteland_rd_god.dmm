@@ -14,7 +14,7 @@
 	desc = "Director?";
 	name = "the research director"
 	},
-/obj/item/gun/energy/e_gun/rdgun,
+/obj/item/gun/energy/e_gun,
 /obj/item/clothing/suit/toggle/labcoat,
 /obj/item/clothing/under/rank/rnd/research_director/skirt,
 /obj/item/clothing/shoes/sneakers/brown,
@@ -26,6 +26,26 @@
 /turf/open/misc/dirt/jungle/wasteland,
 /area/overmap_encounter/planetoid/wasteland)
 
+"b" = (
+/obj/structure/closet/crate/zone_loot/research/rare,
+/turf/open/misc/dirt/jungle/wasteland,
+/area/overmap_encounter/planetoid/wasteland)
+"c" = (
+/obj/effect/zone_mobs/robot/boss,
+/turf/open/misc/dirt/jungle/wasteland,
+/area/overmap_encounter/planetoid/wasteland)
+"e" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/misc/dirt/jungle/wasteland,
+/area/overmap_encounter/planetoid/wasteland)
+"f" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/misc/dirt/jungle/wasteland,
+/area/overmap_encounter/planetoid/wasteland)
+"g" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/misc/dirt/jungle/wasteland,
+/area/overmap_encounter/planetoid/wasteland)
 (1,1,1) = {"
 a
 a
@@ -319,17 +339,17 @@ a
 a
 k
 k
+f
 k
 k
 k
-k
-k
+c
 D
 k
 k
 k
 k
-k
+e
 k
 k
 k
@@ -348,7 +368,7 @@ k
 k
 k
 k
-k
+b
 k
 k
 k
@@ -372,7 +392,7 @@ k
 k
 k
 k
-k
+g
 k
 k
 k

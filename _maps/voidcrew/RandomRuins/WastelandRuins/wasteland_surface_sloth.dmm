@@ -3,7 +3,7 @@
 /turf/closed/indestructible/riveted,
 /area/ruin/unpowered)
 "b" = (
-/turf/open/indestructible/supermatter_cascade/stationary,
+/turf/open/indestructible/boss,
 /area/ruin/unpowered)
 "c" = (
 /obj/item/paper/fluff/stations/lavaland/sloth/note{
@@ -42,6 +42,30 @@
 	},
 /area/ruin/unpowered)
 
+"f" = (
+/obj/effect/zone_mobs/undead,
+/turf/open/floor/sepia{
+	slowdown = 10
+	},
+/area/ruin/unpowered)
+"h" = (
+/obj/structure/closet/crate/zone_loot/occult,
+/turf/open/floor/sepia{
+	slowdown = 10
+	},
+/area/ruin/unpowered)
+"i" = (
+/obj/effect/zone_mobs/undead,
+/turf/open/floor/sepia{
+	slowdown = 10
+	},
+/area/ruin/unpowered)
+"k" = (
+/obj/effect/zone_mobs/undead,
+/turf/open/floor/sepia{
+	slowdown = 10
+	},
+/area/ruin/unpowered)
 (1,1,1) = {"
 a
 a
@@ -133,7 +157,7 @@ a
 a
 a
 a
-d
+f
 a
 b
 a
@@ -373,7 +397,7 @@ a
 a
 a
 a
-d
+k
 a
 b
 a
@@ -623,9 +647,9 @@ a
 b
 a
 d
+h
 d
-d
-d
+i
 a
 b
 a

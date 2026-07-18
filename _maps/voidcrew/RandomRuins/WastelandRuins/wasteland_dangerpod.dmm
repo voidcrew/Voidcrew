@@ -2,13 +2,27 @@
 "a" = (
 /turf/closed/wall/mineral/titanium/survival/pod,
 /area/ruin/powered)
+"b" = (
+/obj/item/gps/computer,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/closet/crate/zone_loot/armory,
+/turf/open/floor/pod/dark,
+/area/ruin/powered)
 "c" = (
 /obj/machinery/smartfridge/survival_pod,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/pod/dark,
 /area/ruin/powered)
+"d" = (
+/obj/machinery/sleeper/survival_pod,
+/obj/effect/mob_spawn/corpse/human/cargo_tech,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/zone_mobs/syndicate,
+/turf/open/floor/pod/dark,
+/area/ruin/powered)
 "h" = (
-/mob/living/simple_animal/hostile/skeleton/plasmaminer/jackhammer,
+/mob/living/basic/skeleton/plasmaminer/jackhammer,
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/pod/dark,
 /area/ruin/powered)
@@ -33,7 +47,7 @@
 	},
 /obj/structure/tubes,
 /obj/effect/decal/cleanable/blood/old,
-/mob/living/simple_animal/hostile/mining_drone/rockplanet,
+/mob/living/basic/mining_drone,
 /turf/open/floor/pod/dark,
 /area/ruin/powered)
 "Q" = (
@@ -69,7 +83,7 @@ a
 (2,1,1) = {"
 a
 v
-Q
+d
 Y
 a
 "}
@@ -82,7 +96,7 @@ U
 "}
 (4,1,1) = {"
 a
-u
+b
 S
 M
 a

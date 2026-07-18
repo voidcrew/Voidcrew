@@ -6,9 +6,9 @@
 /obj/structure/closet/secure_closet{
 	icon_state = "sec"
 	},
-/obj/item/gun/ballistic/automatic/pistol/commander,
-/obj/item/ammo_box/magazine/co9mm,
-/obj/item/ammo_box/magazine/co9mm,
+/obj/item/gun/ballistic/automatic/pistol/m1911,
+/obj/item/ammo_box/magazine/m9mm,
+/obj/item/ammo_box/magazine/m9mm,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "e" = (
@@ -18,11 +18,11 @@
 "f" = (
 /obj/item/banner/security/mundane,
 /turf/open/misc/dust/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "g" = (
 /obj/structure/bed,
 /obj/item/bedsheet/hos,
-/mob/living/simple_animal/hostile/nanotrasen/ranged{
+/mob/living/basic/trooper/nanotrasen/ranged{
 	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 999, "min_n2" = 0, "max_n2" = 0);
 	damage_coeff = list("brute" = 1, "fire" = 1, "toxin" = 1, "clone" = 1, "stamina" = 0, "oxygen" = 0);
 	name = "\improper NanoTrasen Stranded Security Officer"
@@ -33,23 +33,23 @@
 	},
 /area/ruin/unpowered)
 "h" = (
-/mob/living/simple_animal/hostile/nanotrasen/ranged{
+/mob/living/basic/trooper/nanotrasen/ranged{
 	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 999, "min_n2" = 0, "max_n2" = 0);
 	damage_coeff = list("brute" = 1, "fire" = 1, "toxin" = 1, "clone" = 1, "stamina" = 0, "oxygen" = 0);
 	dir = 4;
 	name = "\improper NanoTrasen Stranded Security Officer"
 	},
 /turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "j" = (
 /obj/item/banner/security,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "k" = (
-/obj/effect/mob_spawn/human/corpse/whitesands/survivor,
+/obj/effect/mob_spawn/corpse/human/hermit/survivor,
 /obj/effect/decal/cleanable/blood,
 /turf/open/misc/dust/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "m" = (
 /turf/open/floor/plating,
 /area/ruin/unpowered)
@@ -61,6 +61,10 @@
 /obj/structure/sign/poster/official/safety_report,
 /turf/closed/wall,
 /area/ruin/unpowered)
+"q" = (
+/obj/effect/zone_mobs/syndicate,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
 "r" = (
 /obj/structure/closet/cabinet,
 /obj/item/clothing/head/helmet/knight/blue,
@@ -71,16 +75,16 @@
 /area/ruin/unpowered)
 "u" = (
 /turf/open/misc/dust/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "v" = (
-/mob/living/simple_animal/hostile/nanotrasen/ranged{
+/mob/living/basic/trooper/nanotrasen/ranged{
 	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 999, "min_n2" = 0, "max_n2" = 0);
 	damage_coeff = list("brute" = 1, "fire" = 1, "toxin" = 1, "clone" = 1, "stamina" = 0, "oxygen" = 0);
 	dir = 8;
 	name = "\improper NanoTrasen Stranded Security Officer"
 	},
 /turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "w" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
@@ -91,6 +95,10 @@
 /area/ruin/unpowered)
 "y" = (
 /turf/closed/wall,
+/area/ruin/unpowered)
+"z" = (
+/obj/structure/closet/crate/zone_loot/armory,
+/turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "B" = (
 /turf/open/floor/plating{
@@ -103,7 +111,7 @@
 "E" = (
 /obj/item/banner/security/mundane,
 /turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "F" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
@@ -124,11 +132,11 @@
 	},
 /obj/structure/barricade/sandbags,
 /turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "K" = (
 /obj/structure/barricade/sandbags,
 /turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "L" = (
 /obj/structure/sign/poster/official/love_ian,
 /turf/closed/wall/rust,
@@ -149,7 +157,7 @@
 /obj/structure/table/wood,
 /obj/item/holosign_creator/security,
 /turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "R" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating{
@@ -157,12 +165,12 @@
 	},
 /area/ruin/unpowered)
 "S" = (
-/obj/effect/mob_spawn/human/corpse/whitesands/survivor,
+/obj/effect/mob_spawn/corpse/human/hermit/survivor,
 /obj/effect/decal/cleanable/blood{
 	icon_state = "floor3"
 	},
 /turf/open/misc/dust/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "T" = (
 /obj/structure/table/wood,
 /obj/item/reagent_containers/cup/glass/bottle/whiskey{
@@ -177,7 +185,7 @@
 /area/ruin/unpowered)
 "U" = (
 /turf/open/misc/wasteland/lit,
-/area/whitesands/surface/outdoors)
+/area/overmap_encounter/planetoid/wasteland)
 "W" = (
 /obj/structure/sign/poster/official/obey,
 /turf/closed/wall/rust,
@@ -304,7 +312,7 @@ U
 U
 U
 M
-m
+q
 R
 N
 X
@@ -335,7 +343,7 @@ U
 h
 x
 j
-C
+z
 g
 P
 a

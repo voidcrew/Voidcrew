@@ -25,7 +25,7 @@
 /obj/item/borg/upgrade/transform{
 	desc = "Allows you to to turn a cyborg into a... something.";
 	name = "borg module picker (Unknown)";
-	new_module = /obj/item/robot_module/syndicate_medical
+	new_module = /obj/item/robot_model/syndicate_medical
 	},
 /turf/open/floor/wood,
 /area/ruin/powered)
@@ -50,39 +50,26 @@
 /area/ruin/powered)
 "r" = (
 /obj/structure/table/wood,
-/obj/item/aiModule/core/full/damaged{
+/obj/item/ai_module/core/full/hulkamania{
 	name = "Unknown AI Core Module"
 	},
-/obj/item/aiModule/core/full/hulkamania{
+/obj/item/ai_module/reset/purge,
+/obj/item/ai_module/core/full/paladin_devotion{
 	name = "Unknown AI Core Module"
 	},
-/obj/item/aiModule/reset/purge,
-/obj/item/aiModule/core/full/paladin_devotion{
+/obj/item/ai_module/core/full/reporter{
 	name = "Unknown AI Core Module"
 	},
-/obj/item/aiModule/reset,
-/obj/item/aiModule/core/full/tyrant{
+/obj/item/ai_module/core/full/corp{
 	name = "Unknown AI Core Module"
 	},
-/obj/item/aiModule/core/full/maintain{
-	name = "Unknown AI Core Module"
-	},
-/obj/item/aiModule/core/full/reporter{
-	name = "Unknown AI Core Module"
-	},
-/obj/item/aiModule/core/full/cybersun{
-	name = "Unknown AI Core Module"
-	},
-/obj/item/aiModule/core/full/corp{
-	name = "Unknown AI Core Module"
-	},
-/obj/item/aiModule/core/full/asimov{
+/obj/item/ai_module/core/full/asimov{
 	name = "Unknown AI Core Module"
 	},
 /turf/open/floor/wood,
 /area/ruin/powered)
 "u" = (
-/obj/item/stock_parts/cell/hyper,
+/obj/item/stock_parts/power_store/cell/hyper,
 /turf/open/floor/wood,
 /area/ruin/powered)
 "w" = (
@@ -107,11 +94,12 @@
 /area/ruin/powered)
 "F" = (
 /obj/item/robot_suit/prebuilt,
+/obj/structure/closet/crate/zone_loot/industrial,
 /turf/open/floor/wood,
 /area/ruin/powered)
 "G" = (
 /obj/item/assembly/flash,
-/obj/item/stock_parts/cell/hyper,
+/obj/item/stock_parts/power_store/cell/hyper,
 /turf/open/floor/wood,
 /area/ruin/powered)
 "H" = (
@@ -124,6 +112,7 @@
 /area/ruin/powered)
 "J" = (
 /obj/structure/ai_core/latejoin_inactive,
+/obj/effect/zone_mobs/robot,
 /turf/open/floor/wood,
 /area/ruin/powered)
 "L" = (
@@ -161,7 +150,6 @@
 /turf/template_noop,
 /area/template_noop)
 "V" = (
-/obj/item/aiModule/core/freeformcore,
 /obj/item/stack/cable_coil,
 /turf/open/floor/wood,
 /area/ruin/powered)
