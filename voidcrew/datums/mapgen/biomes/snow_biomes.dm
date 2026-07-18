@@ -20,6 +20,12 @@
 		/mob/living/basic/mining/ice_demon/random = 20,
 		/mob/living/basic/mining/ice_whelp = 20,
 	)
+	// Meaner tier for dangerous-zone planets (see dangerous_mob_spawn_list)
+	dangerous_mob_spawn_list = list(
+		/mob/living/basic/mining/ice_demon/random = 2,
+		/mob/living/basic/mining/ice_whelp = 2,
+		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 1,
+	)
 	feature_spawn_chance = 0.1
 	feature_spawn_list = list(
 		/obj/structure/spawner/ice_moon/demonic_portal = 1,
@@ -91,6 +97,11 @@
 		/mob/living/basic/mining/ice_whelp = 15,
 	)
 	mob_spawn_chance = 1
+	dangerous_mob_spawn_list = list(
+		/mob/living/basic/mining/ice_demon/random = 2,
+		/mob/living/basic/mining/ice_whelp = 2,
+		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 1,
+	)
 
 /datum/biome/arctic/rocky
 	flora_spawn_chance = 5
@@ -109,6 +120,11 @@
 		/mob/living/basic/mining/goldgrub = 10,
 		/mob/living/basic/mining/ice_demon/random = 15,
 		/mob/living/basic/mining/ice_whelp = 15,
+	)
+	dangerous_mob_spawn_list = list(
+		/mob/living/basic/mining/ice_demon/random = 2,
+		/mob/living/basic/mining/ice_whelp = 2,
+		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 1,
 	)
 	feature_spawn_chance = 0.2
 	feature_spawn_list = list(
@@ -148,6 +164,11 @@
 		/mob/living/basic/mining/ice_demon/random = 15,
 		/mob/living/basic/mining/ice_whelp = 15
 	)
+	dangerous_mob_spawn_list = list(
+		/mob/living/basic/mining/ice_demon/random = 2,
+		/mob/living/basic/mining/ice_whelp = 2,
+		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 1,
+	)
 	feature_spawn_chance = 0.1
 	feature_spawn_list = list(
 		/obj/structure/spawner/ice_moon/demonic_portal = 1,
@@ -174,6 +195,11 @@
 		/mob/living/basic/mining/goldgrub = 10,
 		/mob/living/basic/mining/ice_demon/random = 15,
 		/mob/living/basic/mining/ice_whelp = 15,
+	)
+	dangerous_mob_spawn_list = list(
+		/mob/living/basic/mining/ice_demon/random = 2,
+		/mob/living/basic/mining/ice_whelp = 2,
+		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 1,
 	)
 	flora_spawn_chance = 3
 	flora_spawn_list = list(

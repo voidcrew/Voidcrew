@@ -2,6 +2,7 @@
 	name = "\improper SolGov Helmet"
 	desc = "A helmet manufactured by SolGov to protect craniums. Painted in green to provide some degree of camoflauge."
 	icon = 'voidcrew/icons/obj/clothing/hats.dmi'
+	worn_icon = 'voidcrew/icons/mob/clothing/solgov_head.dmi'
 	icon_state = "helmet_terragov"
 	dog_fashion = null
 

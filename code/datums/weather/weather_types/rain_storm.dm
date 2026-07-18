@@ -24,7 +24,10 @@
 	immunity_type = TRAIT_RAINSTORM_IMMUNE
 	probability = 90
 
-	weather_flags = (WEATHER_TURFS | WEATHER_MOBS | WEATHER_THUNDER | WEATHER_BAROMETER)
+	// no WEATHER_TURFS: mob wetness comes from the mob task, and at planet scale the turf task
+	// is hundreds of reagent exposes per second for effects (wet tiles, container fill, washing) nobody sees
+	weather_flags = (WEATHER_MOBS | WEATHER_THUNDER | WEATHER_BAROMETER)
+	turf_thunder_chance = THUNDER_CHANCE_VERY_RARE // planet-wide areas are tens of thousands of turfs, anything above this is a constant barrage of strikes
 	whitelist_weather_reagents = list(/datum/reagent/water)
 
 /datum/weather/rain_storm/telegraph()

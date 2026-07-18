@@ -5,40 +5,40 @@
 /obj/machinery/chem_dispenser/drinks/beer{
 	dir = 8
 	},
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "aW" = (
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
 /obj/item/storage/bag/books,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "bB" = (
 /obj/structure/alien/weeds,
 /obj/structure/mecha_wreckage/seraph,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "ce" = (
 /obj/structure/alien/weeds,
 /obj/effect/mob_spawn/corpse/human/cargo_tech,
 /obj/effect/decal/cleanable/blood/old,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "cj" = (
 /obj/structure/alien/weeds,
 /obj/item/clothing/head/costume/crown,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "cO" = (
 /obj/structure/alien/weeds,
 /obj/structure/barricade/wooden,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "dj" = (
 /obj/structure/alien/weeds,
 /obj/structure/alien/weeds/node,
 /obj/effect/decal/cleanable/blood/old,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "eA" = (
 /obj/structure/flora/ausbushes/pointybush,
@@ -51,12 +51,12 @@
 "eG" = (
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "fj" = (
 /obj/structure/alien/weeds,
 /obj/structure/mecha_wreckage/ripley,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "fZ" = (
 /obj/structure/flora/ausbushes/grassybush,
@@ -65,13 +65,13 @@
 "gU" = (
 /obj/structure/alien/weeds,
 /obj/effect/decal/remains/xeno,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "hu" = (
 /obj/structure/alien/weeds,
 /obj/structure/alien/weeds/node,
 /obj/machinery/vending/boozeomat,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "iF" = (
 /turf/closed/mineral/random/jungle,
@@ -83,26 +83,26 @@
 "kd" = (
 /obj/structure/alien/resin/membrane,
 /obj/structure/alien/weeds,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "lh" = (
 /obj/structure/alien/weeds,
 /obj/structure/sink/oil_well,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "lS" = (
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
 /obj/item/clothing/glasses/night,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "mW" = (
 /obj/structure/alien/weeds,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "nn" = (
 /obj/structure/barricade/wooden,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "oB" = (
 /turf/open/misc/dirt/jungle,
@@ -111,7 +111,7 @@
 /obj/structure/alien/weeds,
 /obj/structure/alien/egg,
 /obj/item/toy/toy_xeno,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "qK" = (
 /obj/structure/flora/junglebush,
@@ -122,7 +122,7 @@
 /obj/structure/table/wood/fancy,
 /obj/item/reagent_containers/cup/glass/bottle/fernet,
 /obj/item/reagent_containers/cup/glass/bottle/champagne,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "sw" = (
 /obj/structure/alien/resin/wall,
@@ -135,14 +135,14 @@
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
 /obj/item/storage/box/alienhandcuffs,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "uo" = (
 /obj/structure/alien/weeds,
 /obj/effect/mob_spawn/corpse/human/assistant,
 /obj/structure/bed/nest,
 /obj/effect/decal/cleanable/blood/old,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "uR" = (
 /obj/effect/decal/cleanable/blood/gibs,
@@ -152,7 +152,7 @@
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
 /obj/item/clothing/under/costume/mech_suit,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "vt" = (
 /obj/structure/alien/resin/wall,
@@ -162,22 +162,22 @@
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/plasma,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "wc" = (
 /obj/structure/alien/weeds,
 /obj/structure/alien/egg,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "wg" = (
 /obj/structure/alien/weeds,
 /obj/effect/decal/cleanable/blood/old,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "wl" = (
 /obj/structure/alien/weeds,
 /obj/effect/decal/cleanable/blood/gibs,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "wt" = (
 /obj/structure/alien/weeds,
@@ -189,7 +189,7 @@
 /obj/structure/alien/weeds,
 /obj/effect/mob_spawn/corpse/human/assistant,
 /obj/structure/bed/nest,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "ya" = (
 /turf/open/misc/dirt/jungle,
@@ -202,7 +202,7 @@
 "yG" = (
 /obj/structure/alien/weeds,
 /mob/living/basic/alien/maid,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "yV" = (
 /obj/structure/alien/resin/wall,
@@ -226,30 +226,30 @@
 "zz" = (
 /obj/structure/alien/weeds,
 /obj/effect/decal/remains/xeno/larva,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "AC" = (
 /obj/structure/alien/weeds,
 /obj/structure/barricade/wooden/crude,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "AE" = (
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
 /obj/item/clothing/head/helmet/toggleable/riot,
 /obj/item/shield/riot,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "AI" = (
 /obj/structure/alien/weeds,
 /obj/structure/alien/weeds/node,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "Du" = (
 /obj/structure/alien/weeds,
 /obj/effect/mob_spawn/corpse/human/nanotrasensoldier,
 /obj/structure/bed/nest,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "DP" = (
 /obj/structure/alien/resin/wall,
@@ -260,41 +260,41 @@
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
 /obj/item/knife/combat/survival,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "EC" = (
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
 /obj/effect/spawner/random/maintenance/two,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "Fe" = (
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
 /obj/item/clothing/under/rank/civilian/curator,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "FA" = (
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
 /obj/item/clothing/head/helmet/space/eva,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "Gk" = (
 /obj/structure/alien/weeds,
 /mob/living/basic/alien/sentinel,
 /obj/effect/decal/cleanable/blood/old,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "Gt" = (
 /obj/structure/alien/weeds,
 /obj/structure/alien/resin/membrane,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "Hh" = (
 /obj/structure/alien/weeds,
 /mob/living/basic/alien/drone,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "Hs" = (
 /turf/closed/mineral/random/jungle,
@@ -302,7 +302,7 @@
 "Hz" = (
 /obj/structure/alien/weeds,
 /obj/structure/alien/egg/burst,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "II" = (
 /turf/open/misc/dirt/jungle,
@@ -311,7 +311,7 @@
 /obj/structure/alien/weeds,
 /obj/structure/table/wood/fancy,
 /obj/machinery/dish_drive,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "Lg" = (
 /obj/structure/alien/weeds,
@@ -321,23 +321,23 @@
 "Lh" = (
 /obj/structure/alien/weeds,
 /mob/living/basic/alien/queen/large,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "MJ" = (
 /obj/structure/alien/weeds,
 /obj/effect/decal/remains/human,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "Ne" = (
 /obj/structure/alien/weeds,
 /obj/structure/alien/weeds/node,
 /mob/living/basic/alien,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "NK" = (
 /obj/structure/alien/weeds,
 /obj/item/bodypart/chest/larva,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "RG" = (
 /obj/structure/alien/weeds,
@@ -347,7 +347,7 @@
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
 /obj/item/mecha_parts/mecha_equipment/drill/diamonddrill,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "TY" = (
 /obj/structure/flora/junglebush/large,
@@ -355,7 +355,7 @@
 /area/ruin/powered)
 "UV" = (
 /obj/structure/alien/weeds,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "VK" = (
 /obj/structure/flora/tree/jungle/small,
@@ -367,7 +367,7 @@
 /obj/machinery/chem_dispenser/drinks{
 	dir = 8
 	},
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "Wb" = (
 /turf/template_noop,
@@ -383,17 +383,17 @@
 "zN" = (
 /obj/structure/alien/weeds,
 /obj/structure/closet/crate/zone_loot/research/rare,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "zO" = (
 /obj/structure/alien/weeds,
 /obj/effect/zone_mobs/bug/boss,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "zP" = (
 /obj/structure/alien/weeds,
 /obj/effect/zone_mobs/bug,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/powered)
 "zQ" = (
 /obj/structure/alien/weeds,

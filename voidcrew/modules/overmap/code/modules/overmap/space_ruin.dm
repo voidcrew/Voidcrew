@@ -2,8 +2,9 @@
  * Space Ruin Overmap Object
  *
  * Represents a space ruin that appears as a mysterious signal on the overmap.
- * When surveyed, reveals its true nature (derelict, station, asteroid, etc.).
- * Ships can dock and explore the ruin.
+ * When surveyed, reveals its true nature (derelict, station, syndicate, etc.).
+ * Ships can dock and explore the ruin. Asteroid mining lives elsewhere now -
+ * see /obj/structure/overmap/event/meteor in events.dm for landable asteroid fields.
  */
 
 /// All space ruin signals currently on the overmap (used by recovery missions to pick targets)
@@ -39,7 +40,9 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	var/true_name
 	/// The true description of the ruin (revealed on survey)
 	var/true_desc
-	/// Category for grouping (derelict, station, asteroid, syndicate, misc)
+	/// Category for grouping (derelict, station, syndicate, misc). "asteroid" retired -
+	/// asteroid-flavored templates (asteroid1-6 etc.) now fall through to "unknown";
+	/// dedicated mining sites are landable meteor storm events (see events.dm) instead.
 	var/ruin_category = "unknown"
 	/// Bottom-left turf of the loaded ruin template footprint (set by load_level, cleared on unload)
 	var/turf/ruin_bottom_left
@@ -78,25 +81,31 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 /obj/structure/overmap/space_ruin/proc/categorize_ruin()
 	if(!ruin_template)
 		return
+	ruin_category = space_ruin_template_category(ruin_template)
 
-	var/ruin_id = ruin_template.id
-	var/ruin_name = lowertext(ruin_template.name)
+/**
+ * Returns the overmap category ("derelict", "station", ...) a space ruin template falls into,
+ * based on keywords in its id/name. Shared by the overmap signal object and by
+ * setup_space_ruins(). No longer matches "asteroid" - those templates (asteroid1-6 etc.)
+ * fall through to "unknown" like any other generic ruin; dedicated asteroid mining moved to
+ * landable meteor storm field events (see events.dm) so ruin signals no longer double as it.
+ */
+/proc/space_ruin_template_category(datum/map_template/ruin/space/template)
+	var/ruin_id = template.id
+	var/ruin_name = lowertext(template.name)
 
 	// Check for category keywords
 	if(findtext(ruin_id, "derelict") || findtext(ruin_name, "derelict"))
-		ruin_category = "derelict"
-	else if(findtext(ruin_id, "asteroid") || findtext(ruin_name, "asteroid"))
-		ruin_category = "asteroid"
+		return "derelict"
 	else if(findtext(ruin_id, "syndicate") || findtext(ruin_name, "syndicate") || findtext(ruin_id, "listening") || findtext(ruin_id, "infiltrator"))
-		ruin_category = "syndicate"
+		return "syndicate"
 	else if(findtext(ruin_name, "station") || findtext(ruin_name, "outpost") || findtext(ruin_name, "hotel") || findtext(ruin_name, "waystation"))
-		ruin_category = "station"
+		return "station"
 	else if(findtext(ruin_name, "ship") || findtext(ruin_name, "shuttle") || findtext(ruin_name, "frigate") || findtext(ruin_name, "transport"))
-		ruin_category = "ship"
+		return "ship"
 	else if(findtext(ruin_name, "research") || findtext(ruin_name, "lab") || findtext(ruin_name, "facility"))
-		ruin_category = "research"
-	else
-		ruin_category = "unknown"
+		return "research"
+	return "unknown"
 
 /**
  * Flags this signal as a rumor-chart rare ruin: gold on every map view, and
@@ -119,8 +128,6 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 
 	// Surveyed - show category-appropriate icon
 	switch(ruin_category)
-		if("asteroid")
-			icon_state = "asteroid"
 		if("derelict", "ship")
 			icon_state = "object"
 		if("station", "research")
@@ -419,32 +426,12 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 		reserve_dock_secondary = null
 
 /**
- * Checks if any players with clients are within the reservation bounds
+ * Checks if any players with clients are within the reservation bounds.
+ * Thin wrapper around the shared helper (see map_zones.dm) - kept as an instance
+ * proc since several ruin subtypes (contested_cache, vestige) call it by name.
  */
 /obj/structure/overmap/space_ruin/proc/has_players_in_reservation()
-	if(!reservation)
-		return FALSE
-
-	var/turf/bottom_left = reservation.bottom_left_turfs[1]
-	if(!bottom_left)
-		return FALSE
-
-	// Get the reservation bounds
-	var/min_x = bottom_left.x
-	var/min_y = bottom_left.y
-	var/max_x = min_x + reservation.width - 1
-	var/max_y = min_y + reservation.height - 1
-	var/res_z = bottom_left.z
-
-	// Check all clients on this z-level to see if any are within bounds
-	for(var/mob/player in SSmobs.clients_by_zlevel[res_z])
-		var/turf/player_turf = get_turf(player)
-		if(!player_turf)
-			continue
-		if(player_turf.x >= min_x && player_turf.x <= max_x && player_turf.y >= min_y && player_turf.y <= max_y)
-			return TRUE
-
-	return FALSE
+	return turf_reservation_has_players(reservation)
 
 /**
  * Called when a ship undocks - checks if the ruin should be cleaned up and respawned
@@ -485,8 +472,13 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 /**
  * Spawns a new space ruin on the overmap to replace one that was cleaned up
  * Tries to pick a different ruin template if possible
+ *
+ * If preserved_category is set, only templates of that category are considered,
+ * falling back to the full pool if no template of the category is available.
+ * Unused by the normal respawn path (ruin categories no longer need to be preserved
+ * now that "asteroid" was retired) but kept generic in case a future category needs it.
  */
-/proc/spawn_replacement_ruin(datum/map_template/ruin/space/excluded_template)
+/proc/spawn_replacement_ruin(datum/map_template/ruin/space/excluded_template, preserved_category = null)
 	var/list/available_ruins = SSmapping.space_ruins_templates
 	if(!available_ruins || !length(available_ruins))
 		return
@@ -501,6 +493,17 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 		if(ruin == excluded_template && !ruin.allow_duplicates)
 			continue
 		ruin_pool += ruin
+
+	if(preserved_category)
+		var/list/category_pool = list()
+		for(var/datum/map_template/ruin/space/ruin in ruin_pool)
+			if(space_ruin_template_category(ruin) == preserved_category)
+				category_pool += ruin
+		if(length(category_pool))
+			ruin_pool = category_pool
+		else if(excluded_template && space_ruin_template_category(excluded_template) == preserved_category)
+			// Only one template of this category exists - reuse it
+			ruin_pool = list(excluded_template)
 
 	if(!length(ruin_pool))
 		// Fall back to including the excluded template

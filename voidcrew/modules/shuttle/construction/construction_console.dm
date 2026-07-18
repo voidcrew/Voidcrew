@@ -1428,8 +1428,14 @@
 	var/new_dir = REVERSE_DIR(outside_dir)
 
 	// Calculate new port_direction (ship-relative direction)
-	var/world_port_facing = REVERSE_DIR(new_dir)
-	var/angle_diff = SIMPLIFY_DEGREES(dir2angle(world_port_facing) - dir2angle(port.preferred_direction))
+	// The ship is docked and may be rotated away from preferred_direction, so we can't
+	// derive the ship-relative direction from world dirs alone. Instead, rotate the
+	// current port_direction by how far the port itself turned in the world frame -
+	// that delta is the same in both frames. (Assuming the ship faced
+	// preferred_direction here baked the dock rotation into port_direction, which made
+	// the regenerated transit dock match the docked orientation, so the ship never
+	// rotated back to its original heading on undock.)
+	var/angle_diff = SIMPLIFY_DEGREES(dir2angle(new_dir) - dir2angle(port.dir) + dir2angle(port.port_direction))
 	var/new_port_direction = angle2dir(angle_diff)
 
 	// Get the current stationary dock before moving (if docked)

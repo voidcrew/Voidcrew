@@ -2,12 +2,6 @@
 "a" = (
 /turf/closed/wall/mineral/wood,
 /area/ruin/unpowered)
-"b" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood{
-	icon_state = "wood-broken5"
-	},
-/area/ruin/unpowered)
 "c" = (
 /obj/structure/table/reinforced,
 /obj/item/modular_computer/pda/clear{
@@ -36,14 +30,8 @@
 /obj/item/food/butterdog,
 /obj/item/food/candy,
 /obj/item/food/canned/peaches,
-/obj/item/reagent_containers/food/drinks/bottle/sarsaparilla,
+/obj/item/reagent_containers/cup/glass/bottle/sarsaparilla,
 /turf/open/floor/wood,
-/area/ruin/unpowered)
-"g" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood{
-	icon_state = "wood-broken4"
-	},
 /area/ruin/unpowered)
 "h" = (
 /obj/effect/decal/cleanable/dirt,
@@ -70,12 +58,12 @@
 	dir = 4
 	},
 /turf/open/floor/wood{
-	icon_state = "wood-broken7"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "o" = (
 /turf/open/floor/wood{
-	icon_state = "wood-broken3"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "p" = (
@@ -84,7 +72,7 @@
 /obj/item/pen,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
-	icon_state = "wood-broken7"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "q" = (
@@ -143,11 +131,6 @@
 /obj/item/storage/medkit,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"z" = (
-/turf/open/floor/wood{
-	icon_state = "wood-broken5"
-	},
-/area/ruin/unpowered)
 "A" = (
 /obj/machinery/vending/cola,
 /obj/machinery/light{
@@ -155,20 +138,10 @@
 	},
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"B" = (
-/turf/open/floor/wood{
-	icon_state = "wood-broken4"
-	},
-/area/ruin/unpowered)
 "C" = (
 /obj/structure/mineral_door/wood,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
-/area/ruin/unpowered)
-"D" = (
-/turf/open/floor/wood{
-	icon_state = "wood-broken"
-	},
 /area/ruin/unpowered)
 "E" = (
 /obj/effect/spawner/random/clothing/costume,
@@ -199,13 +172,7 @@
 "H" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
-	icon_state = "wood-broken7"
-	},
-/area/ruin/unpowered)
-"I" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood{
-	icon_state = "wood-broken2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "J" = (
@@ -219,6 +186,10 @@
 /obj/item/food/chococornet,
 /obj/item/food/candy,
 /obj/item/food/canned/peaches,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"L" = (
+/obj/structure/closet/crate/zone_loot/medical,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "M" = (
@@ -245,6 +216,11 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
+"P" = (
+/obj/effect/zone_mobs/undead,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
 "Q" = (
 /obj/structure/rack,
 /obj/item/food/chocolatebunny,
@@ -261,7 +237,7 @@
 /obj/item/food/cheesynachos,
 /obj/item/food/branrequests,
 /obj/item/food/canned/beans,
-/obj/item/reagent_containers/food/drinks/bottle/sarsaparilla,
+/obj/item/reagent_containers/cup/glass/bottle/sarsaparilla,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "S" = (
@@ -310,15 +286,6 @@
 "Z" = (
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"L" = (
-/obj/structure/closet/crate/zone_loot/medical,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"P" = (
-/obj/effect/zone_mobs/undead,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
 
 (1,1,1) = {"
 a
@@ -343,14 +310,14 @@ a
 O
 n
 H
-b
+H
 o
 E
 "}
 (4,1,1) = {"
 a
 Q
-D
+o
 f
 J
 H
@@ -362,7 +329,7 @@ c
 q
 u
 U
-z
+o
 M
 "}
 (6,1,1) = {"
@@ -370,7 +337,7 @@ d
 r
 o
 p
-B
+o
 U
 G
 "}
@@ -379,16 +346,16 @@ s
 F
 H
 V
-b
+H
 e
 a
 "}
 (8,1,1) = {"
 a
 W
-g
+H
 u
-I
+H
 m
 C
 "}

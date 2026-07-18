@@ -36,3 +36,26 @@
 
 /// If defined, missile launchers may fire in the yellow zone when locked onto a raidable player outpost
 #define PLAYER_OUTPOST_YELLOW_SIEGE_ENABLED
+
+// ===== OUTPOST SHIELD GENERATOR (see outpost_shield.dm) =====
+// A siege missile drains charge equal to its damage: light 200 / standard 400 / heavy 600.
+// Base pool of 1000 therefore stops ~2 standard missiles before depleting.
+
+/// Base shield charge pool of an outpost shield generator (before capacitor upgrades)
+#define OUTPOST_SHIELD_BASE_CHARGE 1000
+/// Capacitor: +50% max charge per tier above 1
+#define OUTPOST_SHIELD_CAPACITOR_CHARGE_MULT 0.5
+/// Charge drained per point of missile damage (1 = full damage value)
+#define OUTPOST_SHIELD_MISSILE_DRAIN_MULT 1
+/// Minimum charge drained per absorbed missile (chemical missiles list ~0 damage)
+#define OUTPOST_SHIELD_MIN_DRAIN 100
+/// Base recharge rate in charge per second (full base pool from empty in ~3m20s)
+#define OUTPOST_SHIELD_BASE_RECHARGE 5
+/// Micro-laser: +30% recharge rate per tier above 1
+#define OUTPOST_SHIELD_LASER_RECHARGE_MULT 0.3
+/// Recharging pauses for this long after every absorbed hit (shields don't heal under fire)
+#define OUTPOST_SHIELD_RECHARGE_DELAY (10 SECONDS)
+/// APC equipment-channel power draw while actively recharging (watts)
+#define OUTPOST_SHIELD_CHARGE_POWER (10 KILO WATTS)
+/// APC equipment-channel power draw while holding a charged/idle field (watts)
+#define OUTPOST_SHIELD_IDLE_POWER (1 KILO WATTS)

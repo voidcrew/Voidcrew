@@ -1,5 +1,6 @@
 /obj/item/clothing/under/solgov
 	icon = 'voidcrew/icons/obj/clothing/under/solgov.dmi'
+	worn_icon = 'voidcrew/icons/mob/clothing/under/solgov.dmi'
 	icon_state = "fatigues"
 	name = "\improper SolGov fatigues"
 	desc = "Standard combat uniform for SolGov's officers."

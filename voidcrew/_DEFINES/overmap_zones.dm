@@ -74,3 +74,28 @@
 /// Check if forced docking is allowed in a zone type
 #define ZONE_FORCED_DOCKING_ALLOWED(zone_type) (zone_type != ZONE_GREEN)
 
+// ========== ZONE PLANET EFFECTS ==========
+// Planet surfaces feel their overmap zone: storms come more often, hit with
+// less warning and last longer in dangerous space, and biome fauna spawns
+// denser and meaner. Zones gate risk, never reward — loot/ore stay untouched.
+
+/// Multiplier on the downtime between scheduled storms (SSweather's 5-10 minute gap) per zone
+#define ZONE_WEATHER_DOWNTIME_MULT_YELLOW 0.75
+#define ZONE_WEATHER_DOWNTIME_MULT_RED 0.5
+
+/// Multiplier on the storm warning time (telegraph) per zone
+#define ZONE_WEATHER_TELEGRAPH_MULT_YELLOW 0.75
+#define ZONE_WEATHER_TELEGRAPH_MULT_RED 0.5
+
+/// Multiplier on how long a storm lasts once it hits, per zone
+#define ZONE_WEATHER_DURATION_MULT_YELLOW 1.25
+#define ZONE_WEATHER_DURATION_MULT_RED 1.5
+
+/// Multiplier on biome mob spawn chance during planet terrain population, per zone
+#define ZONE_PLANET_MOB_CHANCE_MULT_YELLOW 1.3
+#define ZONE_PLANET_MOB_CHANCE_MULT_RED 1.6
+
+/// Chance (percent) that a biome mob roll upgrades to the biome's dangerous_mob_spawn_list, per zone
+#define ZONE_PLANET_MOB_UPGRADE_PROB_YELLOW 20
+#define ZONE_PLANET_MOB_UPGRADE_PROB_RED 40
+

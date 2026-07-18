@@ -50,12 +50,15 @@
 	light_power = 0.8
 	light_color = LIGHT_COLOR_BLUEGREEN
 /turf/open/misc/dirt/old
+	icon = 'voidcrew/icons/turf/legacy_ruin_floors.dmi'
 	icon_state = "oldsmoothdirt"
+	base_icon_state = "oldsmoothdirt"
 /turf/open/misc/dirt/old/lit
 	light_power = 1
 	light_range = 2
 /turf/open/misc/dirt/old/dark
 	icon_state =  "oldsmoothdarkdirt"
+	base_icon_state = "oldsmoothdarkdirt"
 /turf/open/misc/dirt/old/dark/lit
 	light_power = 1
 	light_range = 2
@@ -186,3 +189,29 @@
 /turf/open/misc/dust/lit
 	light_power = 1
 	light_range = 2
+
+// Planet-specific ruin floors. These retain their parent turf's appearance while
+// matching the generated planet bucket at exposed ruin boundaries.
+/turf/open/floor/iron/dark/lavaland
+	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
+
+/turf/open/misc/dirt/old/lit/wasteland
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+
+/turf/open/misc/dirt/old/dark/lit/wasteland
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+
+/turf/open/indestructible/hierophant/wasteland
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+
+/turf/open/indestructible/hierophant/two/wasteland
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+
+/turf/open/floor/bronze/reebe
+	initial_gas_mix = REEBE_DEFAULT_ATMOS
+
+/turf/open/floor/engine/reebe
+	initial_gas_mix = REEBE_DEFAULT_ATMOS
+
+/turf/open/indestructible/boss/reebe
+	initial_gas_mix = REEBE_DEFAULT_ATMOS

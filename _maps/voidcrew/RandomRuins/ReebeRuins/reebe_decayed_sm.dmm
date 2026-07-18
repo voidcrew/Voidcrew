@@ -3,55 +3,55 @@
 /turf/template_noop,
 /area/template_noop)
 "c" = (
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "d" = (
 /obj/item/nullrod/spear,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "e" = (
-/turf/open/floor/engine,
+/turf/open/floor/engine/reebe,
 /area/ruin/reebe)
 "f" = (
 /obj/structure/closet/crate/zone_loot/industrial,
-/turf/open/indestructible/boss,
+/turf/open/indestructible/boss/reebe,
 /area/ruin/reebe)
 "g" = (
 /obj/effect/zone_mobs/robot,
-/turf/open/indestructible/boss,
+/turf/open/indestructible/boss/reebe,
 /area/ruin/reebe)
 "o" = (
 /obj/item/stack/spacecash/c10000,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "v" = (
 /obj/machinery/door/airlock/bronze,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "x" = (
 /obj/item/construction/rcd/combat,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "y" = (
 /obj/structure/window/bronze{
 	dir = 8
 	},
 /obj/item/hand_tele,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "z" = (
 /obj/structure/window/bronze{
 	dir = 4
 	},
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "B" = (
 /obj/structure/window/bronze/fulltile,
 /obj/structure/grille,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "C" = (
-/turf/open/indestructible/boss,
+/turf/open/indestructible/boss/reebe,
 /area/ruin/reebe)
 "E" = (
 /obj/structure/lattice/clockwork,
@@ -59,17 +59,17 @@
 /area/template_noop)
 "M" = (
 /obj/item/stack/spacecash/c10000,
-/turf/open/floor/engine,
+/turf/open/floor/engine/reebe,
 /area/ruin/reebe)
 "O" = (
 /turf/closed/wall/mineral/bronze,
 /area/ruin/reebe)
 "Y" = (
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Z" = (
 /obj/effect/decal/remains/human,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 
 (1,1,1) = {"

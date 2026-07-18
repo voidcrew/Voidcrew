@@ -50,3 +50,108 @@
 
 	return ..(turfs_to_gen)
 
+/**
+ * Landable meteor storm rock field generator (see events.dm /obj/structure/overmap/event/meteor).
+ *
+ * Same recipe as /datum/map_generator/cave_generator/asteroid above (cellular-automata
+ * rock/sand mix, mining mob/geyser spawn tables, shared /area/centcom/asteroid/voidcrew)
+ * but scattered as several independent blobs instead of one solid field, with real vacuum
+ * left between and around them - "an asteroid field", not a single asteroid. Ore seeding
+ * itself is handled separately by seed_asteroid_ore_block() (events.dm) after generation,
+ * the way space ruin asteroid signals used to be seeded before that category was retired.
+ *
+ * Unlike /datum/map_generator/cave_generator/asteroid, weighted_* vars are used (not the
+ * expanded open_turf_types/closed_turf_types/mob_spawn_list/feature_spawn_list directly) -
+ * New() unconditionally rebuilds those from the weighted_* lists, so setting the expanded
+ * vars straight would just get silently overwritten by the base class defaults.
+ */
+/datum/map_generator/cave_generator/asteroid_field
+	name = "Asteroid Field Generator"
+	weighted_open_turf_types = list(/turf/open/misc/asteroid/airless = 1)
+	weighted_closed_turf_types = list(/turf/closed/mineral/random = 1)
+
+	feature_spawn_chance = 1
+	weighted_feature_spawn_list = list(/obj/structure/geyser/random = 1)
+	weighted_mob_spawn_list = list(/mob/living/basic/mining/goliath/ancient = 25, /obj/structure/spawner/mining/goliath = 30, \
+		/mob/living/basic/mining/basilisk = 25, /obj/structure/spawner/mining = 30, \
+		/mob/living/basic/mining/hivelord = 25, /obj/structure/spawner/mining/hivelord = 30, \
+		/mob/living/basic/mining/goldgrub = 10)
+
+	initial_closed_chance = 55
+	smoothing_iterations = 50
+	birth_limit = 4
+	death_limit = 3
+	// Sparse ambience only: the real danger comes from the zone-scaled mob packs
+	// the meteor event scatters after generation (events.dm populate_field_extras)
+	mob_spawn_chance = 1
+
+	/// Number of scattered rock blobs to carve - minor/majour subtypes below scale this with severity
+	var/blob_count_min = EVENT_FIELD_MIN_BLOBS
+	var/blob_count_max = EVENT_FIELD_MAX_BLOBS
+
+/datum/map_generator/cave_generator/asteroid_field/minor
+	blob_count_min = 3
+	blob_count_max = 5
+
+/datum/map_generator/cave_generator/asteroid_field/majour
+	blob_count_min = 6
+	blob_count_max = 10
+
+/**
+ * Carves several jittered-radius circular blobs out of the turf block (instead of
+ * AsteroidCaves.dm's single field above) and runs the parent cave_generator's CA-based
+ * open/closed terrain pass only across those blobs, so the rest of the reservation is
+ * left untouched - real vacuum between and around the rock. Returns the list of turfs
+ * actually generated, so the caller can pass the exact same list to populate_terrain()
+ * without re-scanning the shared /area/centcom/asteroid/voidcrew (which may also contain
+ * turfs from other, currently-loaded fields).
+ */
+/datum/map_generator/cave_generator/asteroid_field/generate_terrain(list/turfs, area/generate_in)
+	var/list/turfs_to_gen = list()
+	if(!length(turfs))
+		return turfs_to_gen
+
+	var/turf/first_turf = turfs[1]
+	var/z = first_turf.z
+
+	var/maxx
+	var/maxy
+	var/minx
+	var/miny
+	for(var/turf/T as anything in turfs)
+		if(T.x < minx || !minx)
+			minx = T.x
+		else if(T.x > maxx)
+			maxx = T.x
+		if(T.y < miny || !miny)
+			miny = T.y
+		else if(T.y > maxy)
+			maxy = T.y
+
+	var/blob_count = rand(blob_count_min, blob_count_max)
+	var/area/centcom/asteroid/voidcrew/asteroid_area = GLOB.areas_by_type[/area/centcom/asteroid/voidcrew] || new
+
+	for(var/i in 1 to blob_count)
+		var/radius = rand(EVENT_FIELD_BLOB_RADIUS_MIN, EVENT_FIELD_BLOB_RADIUS_MAX)
+		if((maxx - minx) <= radius * 2 || (maxy - miny) <= radius * 2)
+			continue // block too small for this blob, skip rather than clamp into overlap
+		var/center_x = rand(minx + radius, maxx - radius)
+		var/center_y = rand(miny + radius, maxy - radius)
+
+		for(var/turf/candidate as anything in block(
+			locate(center_x - radius, center_y - radius, z),
+			locate(center_x + radius, center_y + radius, z)))
+			var/jittered_radius = rand(radius - 1, radius + 1)
+			if((candidate.x - center_x) ** 2 + (candidate.y - center_y) ** 2 > jittered_radius ** 2)
+				continue
+			var/area/old_area = get_area(candidate)
+			candidate.change_area(old_area, asteroid_area)
+			turfs_to_gen += candidate
+
+	if(!length(turfs_to_gen))
+		return turfs_to_gen
+
+	asteroid_area.reg_in_areas_in_z()
+	..(turfs_to_gen, asteroid_area)
+	return turfs_to_gen
+

@@ -3,7 +3,8 @@
 	desc = "A legendary sword made with 3 replica katanas nailed together and dipped in heavy narcotics."
 	icon = 'voidcrew/icons/obj/items_and_weapons.dmi'
 	icon_state = "grey_sword"
-	//item_state = "swordoff"
+	inhand_icon_state = "katana"
+	worn_icon_state = "katana"
 	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	obj_flags = CONDUCTS_ELECTRICITY
@@ -53,7 +54,7 @@
 	user.visible_message("<span class='suicide'>[user] is cutting [user.p_them()]self on [user.p_their()] own edge!")
 	return (BRUTELOSS) //appropriate
 
-/obj/item/kitchen/knife/letter_opener
+/obj/item/knife/kitchen/letter_opener
 	name = "letter opener"
 	icon = 'voidcrew/icons/obj/items_and_weapons.dmi'
 	icon_state = "letter_opener"

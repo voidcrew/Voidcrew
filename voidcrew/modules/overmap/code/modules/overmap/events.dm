@@ -6,26 +6,427 @@
 	/// How many additional tiles to spawn at once in the selected orbit
 	var/chain_rate = 0
 
+/// Every meteor storm event on the overmap, loaded or not — zone resolution traces
+/// field-interior turfs back to their event through this (see zone_controller.dm)
+GLOBAL_LIST_EMPTY(meteor_fields)
+
 /obj/structure/overmap/event/meteor
 	name = "asteroid storm (moderate)"
 	icon_state = "meteor1"
 	spread_chance = 50
 	chain_rate = 4
-	var/mineral_types = list(/datum/material/gold, /datum/material/iron, /datum/material/silver)
+	/// Notable minerals shown on the survey report — keep in sync with ore_weights
+	var/mineral_types = list(/datum/material/iron, /datum/material/plasma, /datum/material/silver, /datum/material/titanium, /datum/material/gold)
+
+	/// Map generator used to carve this severity's landable rock field (see AsteroidCaves.dm)
+	var/datum/map_generator/cave_generator/asteroid_field/mapgen_type = /datum/map_generator/cave_generator/asteroid_field
+	/// Weighted ore table seeded into this severity's rock (seed_asteroid_ore_block);
+	/// higher severities carry rarer minerals — braving the worse storm pays better
+	var/list/ore_weights = list(
+		/obj/item/stack/ore/iron = 40,
+		/obj/item/stack/ore/plasma = 20,
+		/obj/item/stack/ore/silver = 12,
+		/obj/item/stack/ore/titanium = 12,
+		/obj/item/stack/ore/gold = 10,
+		/obj/item/stack/ore/uranium = 5,
+		/obj/item/stack/ore/diamond = 2,
+		/obj/item/stack/ore/bluespace_crystal = 1,
+	)
+	/// Fraction of the field's rock turfs seeded ore-bearing
+	var/ore_target_ratio = EVENT_FIELD_ORE_TARGET_RATIO
+	/// Chance (0-100) the field hides a zone-scaled expedition cache (zone_loot.dm)
+	var/crate_chance = 40
+	/// Chance (0-100) that a spawned cache upgrades to the rare variant
+	var/rare_crate_chance = 15
+	/// How many roaming zone-scaled mob packs guard the field: list(min, max)
+	var/list/mob_pack_count = list(2, 3)
+	/// Turf reservation backing the landable rock field, once loaded
+	var/datum/turf_reservation/reservation
+	/// Primary docking port
+	var/obj/docking_port/stationary/reserve_dock
+	/// Secondary docking port
+	var/obj/docking_port/stationary/reserve_dock_secondary
+	/// Whether the field has been loaded
+	var/loaded = FALSE
+	/// Whether the field is currently loading
+	var/loading = FALSE
+	/// Track dock usage
+	var/first_dock_taken = FALSE
+	var/second_dock_taken = FALSE
+	/// Which docking port the ship is occupying
+	var/dock_index
+	/// Bottom-left turf of the field's interior working area (set by load_level, cleared on unload)
+	var/turf/field_bottom_left
 
 /obj/structure/overmap/event/meteor/Initialize(mapload)
 	. = ..()
 	icon_state = "meteor[rand(1, 4)]"
+	GLOB.meteor_fields += src
+
+/obj/structure/overmap/event/meteor/Destroy()
+	GLOB.meteor_fields -= src
+	field_bottom_left = null
+	return ..()
 
 /obj/structure/overmap/event/meteor/minor
 	name = "asteroid storm (minor)"
 	chain_rate = 3
+	mapgen_type = /datum/map_generator/cave_generator/asteroid_field/minor
+	mineral_types = list(/datum/material/iron, /datum/material/plasma, /datum/material/silver, /datum/material/titanium)
+	// Common rock only: no uranium, diamond or bluespace this shallow
+	ore_weights = list(
+		/obj/item/stack/ore/iron = 50,
+		/obj/item/stack/ore/plasma = 22,
+		/obj/item/stack/ore/silver = 12,
+		/obj/item/stack/ore/titanium = 12,
+		/obj/item/stack/ore/gold = 4,
+	)
+	ore_target_ratio = 0.25
+	crate_chance = 20
+	rare_crate_chance = 0
+	mob_pack_count = list(1, 2)
 
 /obj/structure/overmap/event/meteor/majour
 	name = "asteroid storm (majour)"
 	spread_chance = 25
 	chain_rate = 6
-	mineral_types = list(/datum/material/diamond, /datum/material/uranium, /datum/material/bluespace)
+	mineral_types = list(/datum/material/gold, /datum/material/uranium, /datum/material/diamond, /datum/material/bluespace)
+	mapgen_type = /datum/map_generator/cave_generator/asteroid_field/majour
+	// The deep-storm payout: still mostly working rock, but the precious tail
+	// is fat enough that a full strip run banks real diamond/bluespace
+	ore_weights = list(
+		/obj/item/stack/ore/iron = 18,
+		/obj/item/stack/ore/plasma = 14,
+		/obj/item/stack/ore/silver = 12,
+		/obj/item/stack/ore/titanium = 12,
+		/obj/item/stack/ore/gold = 16,
+		/obj/item/stack/ore/uranium = 14,
+		/obj/item/stack/ore/diamond = 9,
+		/obj/item/stack/ore/bluespace_crystal = 5,
+	)
+	ore_target_ratio = 0.4
+	crate_chance = 65
+	rare_crate_chance = 30
+	mob_pack_count = list(3, 4)
+
+/**
+ * === Landable asteroid fields (meteor storm hazard) ===
+ *
+ * Flying through a meteor storm already damages the ship (see ship_damage.dm
+ * apply_meteor_damage()). This lets a ship dock INSIDE the storm's own hazard
+ * tile and mine the rock that's causing the damage - braving live meteor traffic
+ * is the toll for a denser payout than sitting at an undefended signal.
+ *
+ * Mirrors /obj/structure/overmap/space_ruin's turf-reservation docking pattern
+ * (see space_ruin.dm) but the interior is generated procedurally by a proper
+ * /datum/map_generator (AsteroidCaves.dm's asteroid_field generator - the same
+ * cellular-automata rock/sand technique roundstart planets use) instead of a
+ * static ruin template: one or more scattered rock blobs with real vacuum
+ * between and around them, matching the upstream asteroid1-6.dmm palette
+ * (regolith floor + mineral rock) without loading a fixed layout.
+ */
+
+/**
+ * Loads (or reuses) the field's turf reservation: carves the procedural rock
+ * field, seeds ore, and stands up docking ports on opposite sides - the same
+ * recipe as /obj/structure/overmap/space_ruin/load_level(), minus the static template.
+ */
+/obj/structure/overmap/event/meteor/proc/load_level()
+	if(reservation)
+		return
+	if(loading)
+		return
+	loading = TRUE
+
+	var/reserve_width = EVENT_FIELD_WIDTH + (RESERVE_DOCK_MAX_SIZE_LONG * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
+	var/reserve_height = EVENT_FIELD_HEIGHT + (RESERVE_DOCK_MAX_SIZE_SHORT * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
+
+	reservation = SSmapping.request_turf_block_reservation(reserve_width, reserve_height, 1)
+	if(!reservation)
+		loading = FALSE
+		return
+
+	var/turf/bottom_left = reservation.bottom_left_turfs[1]
+	var/turf/top_right = reservation.top_right_turfs[1]
+
+	field_bottom_left = locate(
+		bottom_left.x + RESERVE_DOCK_MAX_SIZE_LONG + RESERVE_DOCK_DEFAULT_PADDING,
+		bottom_left.y + RESERVE_DOCK_MAX_SIZE_SHORT + RESERVE_DOCK_DEFAULT_PADDING,
+		bottom_left.z
+	)
+	var/turf/field_top_right = locate(
+		field_bottom_left.x + EVENT_FIELD_WIDTH - 1,
+		field_bottom_left.y + EVENT_FIELD_HEIGHT - 1,
+		bottom_left.z
+	)
+
+	// Carve the rock field via the map generator framework (same architecture as
+	// planets - see AsteroidCaves.dm) then top up ore the same way asteroid space
+	// ruin signals used to, before that category was retired in favor of this field
+	var/datum/map_generator/cave_generator/asteroid_field/mapgen = new mapgen_type()
+	var/list/field_turfs = mapgen.generate_terrain(block(field_bottom_left, field_top_right))
+	if(length(field_turfs))
+		var/area/centcom/asteroid/voidcrew/asteroid_area = GLOB.areas_by_type[/area/centcom/asteroid/voidcrew]
+		if(asteroid_area)
+			mapgen.populate_terrain(field_turfs, asteroid_area)
+		seed_asteroid_ore_block(field_bottom_left, field_top_right, ore_target_ratio, "hazard field '[name]'", ore_weights)
+		populate_field_extras(field_turfs)
+
+	// Leftover turfs (vacuum between/around the blobs, and the docking buffer) are
+	// uninitialized /turf/open/space/basic - fix them up before anyone can reach them
+	initialize_uninitialized_block_turfs(bottom_left, top_right)
+
+	// Create docking ports on opposite sides of the reservation (same size as planets/ruins)
+	var/turf/primary_dock_turf = locate(
+		bottom_left.x + RESERVE_DOCK_DEFAULT_PADDING,
+		bottom_left.y + RESERVE_DOCK_DEFAULT_PADDING,
+		bottom_left.z
+	)
+	reserve_dock = new /obj/docking_port/stationary(primary_dock_turf)
+	reserve_dock.dir = NORTH
+	reserve_dock.name = "\improper Meteor Field"
+	reserve_dock.width = RESERVE_DOCK_MAX_SIZE_LONG
+	reserve_dock.height = RESERVE_DOCK_MAX_SIZE_SHORT
+	reserve_dock.dheight = 0
+	reserve_dock.dwidth = 0
+
+	var/turf/secondary_dock_turf = locate(
+		bottom_left.x + reserve_width - RESERVE_DOCK_MAX_SIZE_LONG - RESERVE_DOCK_DEFAULT_PADDING,
+		bottom_left.y + reserve_height - RESERVE_DOCK_MAX_SIZE_SHORT - RESERVE_DOCK_DEFAULT_PADDING,
+		bottom_left.z
+	)
+	reserve_dock_secondary = new /obj/docking_port/stationary(secondary_dock_turf)
+	reserve_dock_secondary.dir = NORTH
+	reserve_dock_secondary.name = "\improper Meteor Field"
+	reserve_dock_secondary.width = RESERVE_DOCK_MAX_SIZE_LONG
+	reserve_dock_secondary.height = RESERVE_DOCK_MAX_SIZE_SHORT
+	reserve_dock_secondary.dheight = 0
+	reserve_dock_secondary.dwidth = 0
+
+	loaded = TRUE
+	loading = FALSE
+
+	SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADED, TRUE)
+
+/obj/structure/overmap/event/meteor/attack_ghost(mob/user)
+	if(reserve_dock)
+		user.forceMove(get_turf(reserve_dock))
+		return TRUE
+	else if(reservation)
+		var/turf/bottom_left = reservation.bottom_left_turfs[1]
+		if(!bottom_left)
+			return
+		var/turf/center = locate(
+			bottom_left.x + round(reservation.width / 2),
+			bottom_left.y + round(reservation.height / 2),
+			bottom_left.z
+		)
+		user.forceMove(center)
+		return TRUE
+	return
+
+/**
+ * Handles ship interaction with this field - mirrors /obj/structure/overmap/space_ruin/ship_act()
+ */
+/obj/structure/overmap/event/meteor/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
+	if(concerned)
+		to_chat(user, span_notice("Too much traffic, try again later!"))
+		return
+	concerned = TRUE
+
+	var/prev_state = acting.state
+	acting.state = OVERMAP_SHIP_ACTING
+	balloon_alert(user, "starting docking process..")
+
+	// Load the level first
+	load_level()
+
+	if(!reservation || !reserve_dock)
+		acting.state = prev_state
+		concerned = FALSE
+		to_chat(user, span_warning("Failed to load the location."))
+		return
+
+	var/is_survey = FALSE
+	var/obj/docking_port/stationary/dock_to_use = null
+	var/selected_dock_index = 0
+
+	// Port destinations are set by survey console
+	if(acting.shuttle.port_destinations)
+		dock_to_use = acting.shuttle.port_destinations
+		is_survey = TRUE
+	else
+		if(!reserve_dock.get_docked() && !first_dock_taken)
+			dock_to_use = reserve_dock
+			selected_dock_index = 1
+		else if(!reserve_dock_secondary.get_docked() && !second_dock_taken)
+			dock_to_use = reserve_dock_secondary
+			selected_dock_index = 2
+
+	if(!dock_to_use)
+		acting.state = prev_state
+		concerned = FALSE
+		to_chat(user, span_notice("All potential docking locations occupied."))
+		return
+
+	// Adjust dock and check if shuttle can fit BEFORE committing to docking
+	if(!is_survey)
+		adjust_dock_to_shuttle(dock_to_use, acting.shuttle)
+
+	// Check if shuttle can actually fit in the dock
+	if(acting.shuttle.height > dock_to_use.height || acting.shuttle.width > dock_to_use.width)
+		acting.state = prev_state
+		concerned = FALSE
+		to_chat(user, span_warning("Ship is too large to dock at this location."))
+		return
+
+	// Now that we know docking will work, set the flags
+	if(selected_dock_index == 1)
+		first_dock_taken = TRUE
+		acting.dock_index = 1
+	else if(selected_dock_index == 2)
+		second_dock_taken = TRUE
+		acting.dock_index = 2
+
+	to_chat(user, span_notice("[acting.dock(src, dock_to_use)]"))
+
+	concerned = FALSE
+
+	if(optional_partner)
+		ship_act(user, optional_partner)
+
+/**
+ * Adjusts dock position for the shuttle (shared helper; see _HELPERS/docking.dm)
+ */
+/obj/structure/overmap/event/meteor/proc/adjust_dock_to_shuttle(obj/docking_port/stationary/dock_to_adjust, obj/docking_port/mobile/shuttle)
+	adjust_reserve_dock_to_shuttle(dock_to_adjust, shuttle)
+
+/**
+ * Danger-scaled extras over the freshly carved rock: maybe a zone-tiered
+ * expedition cache (with a mob pack standing guard) plus roaming zone-scaled
+ * packs (zone_mobs.dm). Severity controls how MANY packs and whether a cache
+ * drops at all; the overmap zone controls how nasty each pack rolls and what
+ * the cache holds — resolution works because get_overmap_object_for_turf()
+ * traces the field's reservation back to this event's overmap tile.
+ */
+/obj/structure/overmap/event/meteor/proc/populate_field_extras(list/field_turfs)
+	var/list/open_turfs = list()
+	for(var/turf/tile as anything in field_turfs)
+		if(!isopenturf(tile) || tile.is_blocked_turf(exclude_mobs = TRUE))
+			continue
+		open_turfs += tile
+	if(!length(open_turfs))
+		return
+
+	// The prize: a zone-scaled cache, never left unguarded
+	if(prob(crate_chance))
+		var/turf/crate_turf = pick_n_take(open_turfs)
+		var/crate_type = prob(rare_crate_chance) \
+			? /obj/structure/closet/crate/zone_loot/expedition/rare \
+			: /obj/structure/closet/crate/zone_loot/expedition
+		new crate_type(crate_turf)
+		new /obj/effect/zone_mobs/asteroid(crate_turf)
+
+	// Roaming packs scattered across the blobs
+	for(var/_ in 1 to rand(mob_pack_count[1], mob_pack_count[2]))
+		if(!length(open_turfs))
+			break
+		new /obj/effect/zone_mobs/asteroid(pick_n_take(open_turfs))
+
+/**
+ * Releases the field's reservation and docks when nobody's using it. Unlike space ruins,
+ * the event itself is never deleted or moved - only its (lazily-loaded) interior is freed.
+ */
+/obj/structure/overmap/event/meteor/proc/unload_level()
+	if(concerned || !reservation)
+		return
+
+	// Check if any ships are still docked
+	for(var/obj/structure/overmap/ship/docked_ship in contents)
+		return
+
+	// Check for players within the reservation's own bounds - transit z-levels host many
+	// reservations side by side, so a level-wide check would false-positive on neighbours
+	if(turf_reservation_has_players(reservation))
+		return
+
+	concerned = TRUE
+	remove_docks()
+	remove_reservation()
+	loaded = FALSE
+	concerned = FALSE
+
+/obj/structure/overmap/event/meteor/proc/remove_docks()
+	if(reserve_dock)
+		qdel(reserve_dock, TRUE)
+		reserve_dock = null
+	if(reserve_dock_secondary)
+		qdel(reserve_dock_secondary, TRUE)
+		reserve_dock_secondary = null
+
+/obj/structure/overmap/event/meteor/proc/remove_reservation()
+	if(reservation)
+		qdel(reservation)
+		reservation = null
+	field_bottom_left = null
+
+/**
+ * Seeds ore deposits into a rectangular block of rock turfs, converting barren
+ * /turf/closed/mineral rock into ore deposits until target_ratio of the mineral
+ * turfs in the block are ore-bearing. Originally shared with space ruin asteroid
+ * signals; those were retired in favor of landable fields, so this is now solely
+ * the field ore-seeding step, called from load_level() above.
+ *
+ * source_desc is a human-readable label for the mapping log line only.
+ * ore_weights optionally overrides the default weighted ore table — the meteor
+ * severity tiers pass their own so worse storms seed richer rock.
+ *
+ * Mining itself needs no z-level traits: off mining levels, prox_to_vent() returns 0 and
+ * the mineral turf machinery falls back to flat random yields, so this works fine inside
+ * a turf reservation on a transit z-level.
+ */
+/proc/seed_asteroid_ore_block(turf/bottom_left, turf/top_right, target_ratio, source_desc, list/ore_weights)
+	if(!bottom_left || !top_right)
+		return
+
+	// Default weighted ore table - iron/plasma-heavy like planet rock, no bananium, and
+	// no gibtonite (its detonation admin-alerts are tuned for mining levels, and surprise
+	// bombs shouldn't be procedurally injected into rock the mapper made inert)
+	var/static/list/asteroid_ore_weights = list(
+		/obj/item/stack/ore/iron = 40,
+		/obj/item/stack/ore/plasma = 20,
+		/obj/item/stack/ore/silver = 12,
+		/obj/item/stack/ore/titanium = 12,
+		/obj/item/stack/ore/gold = 10,
+		/obj/item/stack/ore/uranium = 5,
+		/obj/item/stack/ore/diamond = 2,
+		/obj/item/stack/ore/bluespace_crystal = 1,
+	)
+	var/list/table = (length(ore_weights)) ? ore_weights : asteroid_ore_weights
+
+	var/mineral_turf_count = 0
+	var/ore_bearing_count = 0
+	var/list/barren_rock = list()
+	for(var/turf/closed/mineral/rock in block(bottom_left, top_right))
+		mineral_turf_count++
+		// Already has ore, a boulder, or is gibtonite (mineralType-less but very much not barren)
+		if(rock.mineralType || rock.spawned_boulder || istype(rock, /turf/closed/mineral/gibtonite))
+			ore_bearing_count++
+			continue
+		barren_rock += rock
+
+	var/target = CEILING(mineral_turf_count * target_ratio, 1)
+	var/to_seed = target - ore_bearing_count
+	var/seeded = 0
+	while(to_seed > 0 && length(barren_rock))
+		var/turf/closed/mineral/rock = pick_n_take(barren_rock)
+		rock.Change_Ore(pick_weight(table))
+		rock.mineralAmt = rand(ASTEROID_ORE_AMOUNT_MIN, ASTEROID_ORE_AMOUNT_MAX)
+		to_seed--
+		seeded++
+
+	if(seeded)
+		log_mapping("SPACE RUIN: Seeded [seeded] ore deposits into [source_desc] ([ore_bearing_count]/[mineral_turf_count] rock was already ore-bearing)")
 
 /obj/structure/overmap/event/emp
 	name = "ion storm (moderate)"

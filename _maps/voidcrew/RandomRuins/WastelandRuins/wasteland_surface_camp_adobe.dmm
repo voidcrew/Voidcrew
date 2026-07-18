@@ -83,7 +83,7 @@
 /area/ruin/unpowered)
 "t" = (
 /obj/structure/table,
-/obj/item/reagent_containers/food/drinks/bottle/sarsaparilla,
+/obj/item/reagent_containers/cup/glass/bottle/sarsaparilla,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "u" = (
@@ -161,7 +161,9 @@
 /area/ruin/unpowered)
 "F" = (
 /obj/effect/decal/cleanable/blood/old{
-	icon_state = "floor5-old"
+	icon = 'voidcrew/icons/effects/legacy_blood.dmi';
+	icon_state = "floor5-old";
+	random_icon_states = null
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
@@ -172,7 +174,9 @@
 /area/ruin/unpowered)
 "H" = (
 /obj/effect/decal/cleanable/blood/old{
-	icon_state = "floor3-old"
+	icon = 'voidcrew/icons/effects/legacy_blood.dmi';
+	icon_state = "floor3-old";
+	random_icon_states = null
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
@@ -222,7 +226,9 @@
 "R" = (
 /obj/effect/mob_spawn/corpse/human/damaged,
 /obj/effect/decal/cleanable/blood/old{
-	icon_state = "floor2-old"
+	icon = 'voidcrew/icons/effects/legacy_blood.dmi';
+	icon_state = "floor2-old";
+	random_icon_states = null
 	},
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)

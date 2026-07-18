@@ -70,7 +70,7 @@
 	anchored = 1
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "fV" = (
@@ -90,7 +90,7 @@
 "ha" = (
 /obj/structure/table_frame,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "hK" = (
@@ -105,7 +105,7 @@
 /area/ruin/unpowered)
 "hS" = (
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "iE" = (
@@ -164,11 +164,6 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/white,
-/area/ruin/unpowered)
-"oo" = (
-/turf/open/floor/plating{
-	icon_state = "platingdmg3"
-	},
 /area/ruin/unpowered)
 "oH" = (
 /obj/machinery/mech_bay_recharge_port{
@@ -265,12 +260,12 @@
 /obj/effect/turf_decal/stripes/corner,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "tW" = (
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "uD" = (
@@ -317,6 +312,24 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/circuit/red/telecomms,
+/area/ruin/unpowered)
+"za" = (
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"zb" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/iron,
+/area/ruin/unpowered)
+"zc" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/plating/rust,
+/area/ruin/unpowered)
+"zd" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/engine,
 /area/ruin/unpowered)
 "zv" = (
 /obj/structure/table_frame,
@@ -391,10 +404,6 @@
 /obj/structure/closet/secure_closet/security/science,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
-"Gb" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark,
-/area/ruin/unpowered)
 "Gk" = (
 /obj/machinery/door/airlock/research,
 /obj/machinery/door/poddoor/shutters,
@@ -422,13 +431,13 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Jx" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "JY" = (
@@ -450,7 +459,7 @@
 "Lt" = (
 /obj/structure/girder/reinforced,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "LG" = (
@@ -582,7 +591,7 @@
 "Ub" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "UH" = (
@@ -626,18 +635,11 @@
 /obj/machinery/recharge_station,
 /turf/open/floor/iron,
 /area/ruin/unpowered)
-"Xw" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron,
-/area/ruin/unpowered)
 "XI" = (
 /obj/structure/disposalpipe/segment{
 	dir = 9
 	},
 /turf/open/floor/iron/white,
-/area/ruin/unpowered)
-"Yd" = (
-/turf/open/floor/iron,
 /area/ruin/unpowered)
 "Yj" = (
 /obj/machinery/door/window/right/directional/east{
@@ -646,10 +648,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
-"YE" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron,
-/area/ruin/unpowered)
 "YK" = (
 /obj/structure/disposalpipe/broken,
 /obj/machinery/light_switch{
@@ -657,28 +655,10 @@
 	pixel_y = 8
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg3"
+	broken = 1
 	},
 /area/ruin/unpowered)
 
-"za" = (
-/obj/structure/closet/crate/zone_loot/research,
-/turf/open/floor/engine,
-/area/ruin/unpowered)
-"zb" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/zone_mobs/robot,
-/turf/open/floor/iron,
-/area/ruin/unpowered)
-"zc" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/zone_mobs/robot,
-/turf/open/floor/plating/rust,
-/area/ruin/unpowered)
-"zd" = (
-/obj/effect/zone_mobs/robot,
-/turf/open/floor/engine,
-/area/ruin/unpowered)
 (1,1,1) = {"
 Ts
 aO
@@ -739,7 +719,7 @@ gW
 Ts
 Od
 cB
-Gb
+cB
 Ts
 aq
 Cu
@@ -808,7 +788,7 @@ CR
 KZ
 zb
 oH
-Xw
+gW
 QP
 WO
 Ts
@@ -945,7 +925,7 @@ Vp
 Vp
 Ts
 zz
-YE
+gW
 tW
 Fk
 Ca
@@ -957,7 +937,7 @@ Cq
 (12,1,1) = {"
 ra
 sp
-oo
+hS
 lv
 tW
 iE
@@ -995,7 +975,7 @@ Vp
 Vp
 aI
 uE
-YE
+gW
 tW
 Ca
 Ca
@@ -1013,7 +993,7 @@ ET
 bN
 bN
 My
-Yd
+wF
 Hp
 oY
 lv

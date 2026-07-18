@@ -4,6 +4,7 @@
 /area/template_noop)
 "d" = (
 /obj/structure/closet/secure_closet{
+	base_icon_state = "sec";
 	icon_state = "sec"
 	},
 /obj/item/gun/ballistic/automatic/pistol/m1911,
@@ -29,7 +30,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "h" = (
@@ -50,9 +51,6 @@
 /obj/effect/decal/cleanable/blood,
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"m" = (
-/turf/open/floor/plating,
-/area/ruin/unpowered)
 "n" = (
 /obj/structure/sign/poster/official/ion_rifle,
 /turf/closed/wall/rust,
@@ -102,11 +100,8 @@
 /area/ruin/unpowered)
 "B" = (
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
-/area/ruin/unpowered)
-"C" = (
-/turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "E" = (
 /obj/item/banner/security/mundane,
@@ -161,7 +156,7 @@
 "R" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "S" = (

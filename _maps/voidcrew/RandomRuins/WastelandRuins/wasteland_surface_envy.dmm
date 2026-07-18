@@ -1,4 +1,8 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/zone_mobs/undead,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
 "d" = (
 /turf/closed/wall/rust,
 /area/ruin/unpowered)
@@ -22,7 +26,7 @@
 	},
 /obj/structure/closet/crate/zone_loot/occult,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "g" = (
@@ -40,10 +44,6 @@
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "i" = (
-/turf/open/floor/plating,
-/area/ruin/unpowered)
-"b" = (
-/obj/effect/zone_mobs/undead,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "j" = (
@@ -80,7 +80,7 @@
 /area/ruin/unpowered)
 "n" = (
 /turf/open/floor/plating{
-	icon_state = "platingdmg2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "o" = (
@@ -91,7 +91,7 @@
 	pixel_x = -28
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "p" = (

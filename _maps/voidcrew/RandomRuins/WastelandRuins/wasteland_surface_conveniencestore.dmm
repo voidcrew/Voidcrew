@@ -1,4 +1,17 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/item/chair{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
+"ab" = (
+/obj/effect/zone_mobs/undead,
+/turf/open/floor/iron/white,
+/area/ruin/powered)
 "aX" = (
 /obj/structure/rack,
 /obj/item/instrument/guitar{
@@ -20,14 +33,6 @@
 	},
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"cD" = (
-/obj/item/chair{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/turf/open/floor/iron/white,
-/area/ruin/powered)
 "cJ" = (
 /obj/item/trash/can{
 	pixel_x = -3;
@@ -89,7 +94,7 @@
 /obj/structure/window{
 	dir = 8
 	},
-/obj/item/reagent_containers/food/drinks/bottle/sarsaparilla,
+/obj/item/reagent_containers/cup/glass/bottle/sarsaparilla,
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "nB" = (
@@ -97,7 +102,7 @@
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 "pd" = (
-/obj/item/kitchen/knife{
+/obj/item/knife/kitchen{
 	pixel_x = 6;
 	pixel_y = 1
 	},
@@ -396,19 +401,6 @@
 	pixel_x = 5
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/white,
-/area/ruin/powered)
-"aa" = (
-/obj/item/chair{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/obj/structure/closet/crate/zone_loot/plunder,
-/turf/open/floor/iron/white,
-/area/ruin/powered)
-"ab" = (
-/obj/effect/zone_mobs/undead,
 /turf/open/floor/iron/white,
 /area/ruin/powered)
 

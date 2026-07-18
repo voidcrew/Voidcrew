@@ -181,7 +181,7 @@
 	tgui_data["surveyValue"] = get_survey_value(celestial_object)
 	tgui_data["theme"] = theme
 	tgui_data["surveyDataDisk"] = survey_disk ? TRUE : FALSE
-	tgui_data["mappingEnabled"] = istype(celestial_object, /obj/structure/overmap/planet) ? mapping_enabled : FALSE
+	tgui_data["mappingEnabled"] = (istype(celestial_object, /obj/structure/overmap/planet) || istype(celestial_object, /obj/structure/overmap/space_ruin) || istype(celestial_object, /obj/structure/overmap/event/meteor)) ? mapping_enabled : FALSE
 
 	return tgui_data
 
@@ -717,6 +717,11 @@
 	if(!T)
 		return SHUTTLE_DOCKER_BLOCKED
 
+	// On reserved z-levels, every turf of the footprint must lie inside the
+	// orbited space ruin's own reservation - never a neighbouring reservation
+	// or unallocated transit space
+	if(SSmapping.level_has_any_trait(T.z, locked_traits) && !turf_in_current_ruin_reservation(T))
+		return SHUTTLE_DOCKER_BLOCKED
 
 	var/allowed_mob = TRUE
 	for(var/mob in T.contents)
@@ -737,12 +742,34 @@
 		return SHUTTLE_DOCKER_BLOCKED_BY_AREA
 
 
+/// Returns TRUE if the given turf lies inside the turf reservation of the space ruin
+/// OR landable asteroid field the ship is currently orbiting. Both live on
+/// ZTRAIT_RESERVED transit z-levels, which are normally forbidden for custom docking -
+/// this is the one exception, scoped to the orbited object's own footprint so
+/// neighbouring reservations and unallocated transit space stay off-limits.
+/obj/machinery/computer/camera_advanced/shuttle_docker/survey/proc/turf_in_current_ruin_reservation(turf/tile)
+	if(!tile)
+		return FALSE
+	var/obj/structure/overmap/celestial = get_current_celestial_object()
+	var/datum/turf_reservation/res
+	if(istype(celestial, /obj/structure/overmap/space_ruin))
+		var/obj/structure/overmap/space_ruin/ruin = celestial
+		res = ruin.reservation
+	else if(istype(celestial, /obj/structure/overmap/event/meteor))
+		var/obj/structure/overmap/event/meteor/field = celestial
+		res = field.reservation
+	if(!res)
+		return FALSE
+	return SSmapping.used_turfs[tile] == res
+
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/checkLandingSpot()
 	var/mob/eye/camera/remote/shuttle_docker/the_eye = eyeobj
 	var/turf/eyeturf = get_turf(the_eye)
 	if(!eyeturf)
 		return SHUTTLE_DOCKER_BLOCKED
-	if(!eyeturf.z || SSmapping.level_has_any_trait(eyeturf.z, locked_traits))
+	if(!eyeturf.z)
+		return SHUTTLE_DOCKER_BLOCKED
+	if(SSmapping.level_has_any_trait(eyeturf.z, locked_traits) && !turf_in_current_ruin_reservation(eyeturf))
 		return SHUTTLE_DOCKER_BLOCKED
 
 	. = SHUTTLE_DOCKER_LANDING_CLEAR
@@ -1016,3 +1043,32 @@
 		else
 			var/datum/space_level/lvl = planet.mapzone.z_levels[1]
 			docking_location = locate(1, 1, lvl.z_value)
+	else if(istype(o, /obj/structure/overmap/space_ruin))
+		var/obj/structure/overmap/space_ruin/ruin = o
+		// Ensure the ruin's reservation and docking ports exist
+		ruin.load_level()
+		if(!ruin.reservation)
+			remove_old_ports()
+			docking_location = null
+			return
+		// Use the reserve dock location for camera placement
+		if(ruin.reserve_dock)
+			docking_location = get_turf(ruin.reserve_dock)
+		else
+			docking_location = ruin.reservation.bottom_left_turfs[1]
+	else if(istype(o, /obj/structure/overmap/event/meteor))
+		var/obj/structure/overmap/event/meteor/field = o
+		// Ensure the field's reservation and docking ports exist
+		field.load_level()
+		if(!field.reservation)
+			remove_old_ports()
+			docking_location = null
+			return
+		// Use the reserve dock location for camera placement
+		if(field.reserve_dock)
+			docking_location = get_turf(field.reserve_dock)
+		else
+			docking_location = field.reservation.bottom_left_turfs[1]
+	else
+		// No dockable celestial in orbit - don't reuse a stale location from a previous target
+		docking_location = null

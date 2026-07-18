@@ -280,7 +280,7 @@
 "KC" = (
 /turf/closed/indestructible/reinforced{
 	base_icon_state = "rusty_reinforced_wall";
-	icon = 'icons/turf/closed/wall/r_wall/rust.dmi';
+	icon = 'icons/turf/walls/rusty_reinforced_wall.dmi';
 	icon_state = "rusty_reinforced_wall-0"
 	},
 /area/ruin/space/has_grav/powered)

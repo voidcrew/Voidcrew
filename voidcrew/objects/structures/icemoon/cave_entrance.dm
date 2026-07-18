@@ -281,15 +281,15 @@
 			if(prob(35))
 				new /obj/item/rod_of_asclepius(loc)
 			if(prob(25))
-				new /obj/effect/mob_spawn/human/corpse/solgov/infantry(loc)
+				new /obj/effect/mob_spawn/corpse/human/solgov/infantry(loc)
 			else
 				new /obj/effect/mob_spawn/corpse/human/doctor(loc)
 			if(prob(25))
-				new /obj/effect/mob_spawn/human/corpse/solgov/infantry(loc)
+				new /obj/effect/mob_spawn/corpse/human/solgov/infantry(loc)
 			else
 				new /obj/effect/mob_spawn/corpse/human/doctor(loc)
 			if(prob(25))
-				new /obj/effect/mob_spawn/human/corpse/solgov/infantry(loc)
+				new /obj/effect/mob_spawn/corpse/human/solgov/infantry(loc)
 			else
 				new /obj/effect/mob_spawn/corpse/human/doctor(loc)
 			new /obj/item/healthanalyzer(loc)

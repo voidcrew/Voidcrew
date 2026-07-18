@@ -546,10 +546,6 @@
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/cult,
 /area/ruin/unpowered)
-"ua" = (
-/obj/effect/decal/cleanable/blood/tracks,
-/turf/open/floor/cult,
-/area/ruin/unpowered)
 "ul" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/supply/hidden{
 	dir = 8
@@ -577,7 +573,7 @@
 /obj/machinery/reagentgrinder{
 	pixel_y = 6
 	},
-/obj/item/kitchen/knife{
+/obj/item/knife/kitchen{
 	pixel_x = 16
 	},
 /obj/item/kitchen/rollingpin{

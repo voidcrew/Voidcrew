@@ -1,4 +1,32 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ab" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/plating{
+	broken = 1
+	},
+/area/ruin/unpowered)
+"ac" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/plating{
+	broken = 1
+	},
+/area/ruin/unpowered)
+"ad" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/glass,
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/wood{
+	broken = 1
+	},
+/area/ruin/unpowered)
+"ae" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
 "aL" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
 	dir = 1
@@ -7,7 +35,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "bK" = (
@@ -20,7 +48,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "bU" = (
@@ -48,7 +76,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/table/wood,
 /turf/open/floor/wood{
-	icon_state = "wood-broken2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "dR" = (
@@ -76,7 +104,7 @@
 	},
 /obj/structure/table/wood,
 /turf/open/floor/wood{
-	icon_state = "wood-broken"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "el" = (
@@ -86,7 +114,7 @@
 "eP" = (
 /obj/structure/barricade/sandbags,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "fn" = (
@@ -98,15 +126,9 @@
 /obj/effect/turf_decal/box,
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
-"fG" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
-	},
-/area/ruin/unpowered)
 "gp" = (
 /turf/open/floor/wood{
-	icon_state = "wood-broken4"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "gR" = (
@@ -115,7 +137,7 @@
 	dir = 1
 	},
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "gX" = (
@@ -135,7 +157,7 @@
 	dir = 8
 	},
 /turf/open/floor/wood{
-	icon_state = "wood-broken7"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "hf" = (
@@ -165,7 +187,7 @@
 	},
 /obj/structure/table/wood,
 /turf/open/floor/wood{
-	icon_state = "wood-broken3"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "iD" = (
@@ -175,7 +197,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4,
 /obj/structure/cable,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "iV" = (
@@ -187,14 +209,14 @@
 	},
 /obj/structure/cable,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "jT" = (
 /obj/item/paper_bin,
 /obj/structure/table/wood,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "kk" = (
@@ -223,7 +245,7 @@
 /obj/effect/decal/cleanable/glass,
 /obj/structure/table/wood,
 /turf/open/floor/wood{
-	icon_state = "wood-broken3"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "lI" = (
@@ -237,7 +259,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/food/flour,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "ni" = (
@@ -259,7 +281,7 @@
 	faction = list("saloon")
 	},
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "pa" = (
@@ -277,15 +299,7 @@
 	},
 /obj/structure/barricade/sandbags,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
-	},
-/area/ruin/unpowered)
-"qx" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/glass,
-/turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "qy" = (
@@ -315,7 +329,7 @@
 "rR" = (
 /obj/structure/chair/stool/bar,
 /turf/open/floor/wood{
-	icon_state = "wood-broken3"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "rY" = (
@@ -342,7 +356,7 @@
 /obj/structure/chair/wood,
 /obj/effect/decal/cleanable/generic,
 /turf/open/floor/wood{
-	icon_state = "wood-broken3"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "sN" = (
@@ -362,18 +376,18 @@
 	icon_state = "floor7"
 	},
 /turf/open/floor/wood{
-	icon_state = "wood-broken3"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "tV" = (
 /obj/structure/barricade/sandbags,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "ud" = (
 /turf/open/floor/plating{
-	icon_state = "platingdmg2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "uD" = (
@@ -384,13 +398,13 @@
 	dir = 8
 	},
 /turf/open/floor/wood{
-	icon_state = "wood-broken"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "vc" = (
 /obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "vR" = (
@@ -402,7 +416,7 @@
 "wy" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating{
-	icon_state = "platingdmg2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "wL" = (
@@ -412,12 +426,6 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"wP" = (
-/obj/structure/chair/stool/bar,
-/turf/open/floor/wood{
-	icon_state = "wood-broken6"
-	},
-/area/ruin/unpowered)
 "xh" = (
 /obj/structure/closet/secure_closet/bar{
 	req_access = null
@@ -426,7 +434,7 @@
 /obj/item/storage/box/lethalshot,
 /obj/item/storage/box/lethalshot,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "xX" = (
@@ -440,17 +448,6 @@
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/rust,
-/area/ruin/unpowered)
-"yv" = (
-/obj/structure/chair/stool/bar,
-/turf/open/floor/wood{
-	icon_state = "wood-broken2"
-	},
-/area/ruin/unpowered)
-"yU" = (
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
-	},
 /area/ruin/unpowered)
 "zn" = (
 /obj/machinery/door/airlock,
@@ -543,7 +540,7 @@
 	},
 /obj/machinery/holopad,
 /turf/open/floor/wood{
-	icon_state = "wood-broken2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Eq" = (
@@ -561,7 +558,7 @@
 	dir = 9
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Fc" = (
@@ -574,14 +571,14 @@
 	dir = 8
 	},
 /turf/open/floor/wood{
-	icon_state = "wood-broken"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "FI" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "FV" = (
@@ -592,13 +589,7 @@
 	faction = list("saloon")
 	},
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
-	},
-/area/ruin/unpowered)
-"Gz" = (
-/obj/effect/decal/cleanable/glass,
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "Ha" = (
@@ -633,18 +624,12 @@
 "HZ" = (
 /obj/structure/table/wood,
 /turf/open/floor/wood{
-	icon_state = "wood-broken2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Ig" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/closed/wall,
-/area/ruin/unpowered)
-"IX" = (
-/obj/structure/barricade/sandbags,
-/turf/open/floor/plating{
-	icon_state = "platingdmg2"
-	},
 /area/ruin/unpowered)
 "Jw" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
@@ -688,7 +673,7 @@
 /obj/effect/decal/remains/human,
 /obj/effect/decal/cleanable/blood/splatter,
 /turf/open/floor/wood{
-	icon_state = "wood-broken4"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Ka" = (
@@ -696,7 +681,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood{
-	icon_state = "wood-broken4"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Ko" = (
@@ -713,7 +698,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/ash,
 /turf/open/floor/wood{
-	icon_state = "wood-broken4"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "KB" = (
@@ -725,7 +710,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "KZ" = (
@@ -770,7 +755,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/table/wood,
 /turf/open/floor/wood{
-	icon_state = "wood-broken4"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Np" = (
@@ -789,7 +774,7 @@
 /obj/machinery/holopad,
 /obj/effect/decal/cleanable/generic,
 /turf/open/floor/wood{
-	icon_state = "wood-broken"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "NH" = (
@@ -817,7 +802,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
-	icon_state = "wood-broken4"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Ox" = (
@@ -831,7 +816,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/table/wood,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "OM" = (
@@ -846,7 +831,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood{
-	icon_state = "wood-broken4"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "OZ" = (
@@ -886,7 +871,7 @@
 "QG" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
-	icon_state = "wood-broken4"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "QJ" = (
@@ -895,15 +880,11 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"RC" = (
-/obj/structure/lattice,
-/turf/open/misc/wasteland/lit,
-/area/ruin/unpowered)
 "RK" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "Sd" = (
@@ -915,7 +896,7 @@
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "TU" = (
@@ -925,7 +906,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood{
-	icon_state = "wood-broken4"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Uc" = (
@@ -936,14 +917,14 @@
 /obj/structure/chair/stool/bar,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
-	icon_state = "wood-broken2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Uu" = (
 /obj/structure/girder,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Uy" = (
@@ -952,7 +933,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
-	icon_state = "wood-broken4"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "UH" = (
@@ -981,7 +962,7 @@
 /obj/structure/barricade/sandbags,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Wv" = (
@@ -998,7 +979,7 @@
 /obj/structure/chair/stool/bar,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating{
-	icon_state = "platingdmg2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "XT" = (
@@ -1030,7 +1011,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/table/wood,
 /turf/open/floor/wood{
-	icon_state = "wood-broken4"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Yy" = (
@@ -1041,7 +1022,7 @@
 /area/ruin/unpowered)
 "ZL" = (
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "ZO" = (
@@ -1062,36 +1043,8 @@
 	faction = list("saloon")
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
-/area/ruin/unpowered)
-"ab" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/closet/crate/zone_loot/plunder,
-/turf/open/floor/plating{
-	icon_state = "platingdmg2"
-	},
-/area/ruin/unpowered)
-"ac" = (
-/obj/effect/decal/cleanable/glass,
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
-	},
-/area/ruin/unpowered)
-"ad" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/glass,
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/wood{
-	icon_state = "wood-broken5"
-	},
-/area/ruin/unpowered)
-"ae" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/plating,
 /area/ruin/unpowered)
 
 (1,1,1) = {"
@@ -1115,12 +1068,12 @@ Wv
 Wv
 Wv
 Ar
-RC
-RC
-RC
+Np
+Np
+Np
 Ar
-RC
-RC
+Np
+Np
 Np
 Ar
 Wv
@@ -1135,20 +1088,20 @@ Np
 Fc
 cP
 cP
-RC
-RC
+Np
+Np
 cP
 cP
-RC
-RC
-RC
+Np
+Np
+Np
 Wv
 Wv
 "}
 (4,1,1) = {"
 Wv
-RC
-IX
+Np
+tV
 Wu
 hm
 ZL
@@ -1163,8 +1116,8 @@ Wv
 Wv
 "}
 (5,1,1) = {"
-RC
-RC
+Np
+Np
 qe
 xX
 Nt
@@ -1176,11 +1129,11 @@ Ai
 ZU
 cP
 Ax
-RC
+Np
 Wv
 "}
 (6,1,1) = {"
-RC
+Np
 Ar
 hf
 ZO
@@ -1194,11 +1147,11 @@ wy
 ac
 kk
 el
-RC
+Np
 "}
 (7,1,1) = {"
-RC
-RC
+Np
+Np
 Br
 FA
 QG
@@ -1211,14 +1164,14 @@ vc
 eP
 el
 Sd
-RC
+Np
 "}
 (8,1,1) = {"
 Wv
-RC
+Np
 JH
 BE
-yv
+rR
 pa
 JJ
 Uy
@@ -1228,16 +1181,16 @@ HU
 tV
 Ox
 kk
-RC
+Np
 "}
 (9,1,1) = {"
-RC
+Np
 Ox
 Jw
 bU
 gp
 rR
-wP
+rR
 XE
 tI
 rR
@@ -1245,11 +1198,11 @@ TU
 XT
 Ar
 Sd
-RC
+Np
 "}
 (10,1,1) = {"
 Ar
-RC
+Np
 Vw
 HM
 Ut
@@ -1260,7 +1213,7 @@ lH
 Ys
 lx
 ME
-RC
+Np
 el
 Wv
 "}
@@ -1282,8 +1235,8 @@ Sd
 Wv
 "}
 (12,1,1) = {"
-RC
-RC
+Np
+Np
 Yp
 XT
 Yy
@@ -1294,13 +1247,13 @@ uD
 MO
 xh
 XT
-RC
+Np
 Wv
 Wv
 "}
 (13,1,1) = {"
-RC
-RC
+Np
+Np
 dR
 Ha
 Eq
@@ -1311,13 +1264,13 @@ zn
 Ig
 HA
 HA
-RC
+Np
 Wv
 Wv
 "}
 (14,1,1) = {"
 Ar
-RC
+Np
 iV
 Uc
 OZ
@@ -1343,15 +1296,15 @@ ry
 QJ
 KB
 ud
-fG
+wy
 WV
-RC
+Np
 Wv
 Wv
 "}
 (16,1,1) = {"
-RC
-RC
+Np
+Np
 ud
 Hc
 Bn
@@ -1359,10 +1312,10 @@ Ko
 ae
 FV
 qW
-yU
-fG
+ud
+wy
 Cn
-RC
+Np
 Wv
 Wv
 "}
@@ -1379,13 +1332,13 @@ BQ
 Ar
 el
 XT
-RC
+Np
 Wv
 Wv
 "}
 (18,1,1) = {"
 Wv
-RC
+Np
 Ar
 OZ
 Qk
@@ -1396,32 +1349,32 @@ RK
 Ar
 XT
 XT
-RC
-RC
+Np
+Np
 Wv
 "}
 (19,1,1) = {"
 Wv
-RC
+Np
 Ar
 OZ
 OZ
 PG
 rY
-fG
+wy
 Nr
 OZ
 OZ
 Ox
-RC
-RC
+Np
+Np
 Wv
 "}
 (20,1,1) = {"
 Wv
 Wv
 Wv
-RC
+Np
 OZ
 OZ
 XT
@@ -1430,7 +1383,7 @@ XT
 OZ
 Ar
 Ar
-RC
+Np
 Wv
 Wv
 "}
@@ -1438,14 +1391,14 @@ Wv
 Wv
 Wv
 Wv
-RC
-RC
+Np
+Np
 Ar
 hm
-RC
+Np
 Ar
 Ar
-RC
+Np
 Ar
 Wv
 Wv
@@ -1457,11 +1410,11 @@ Wv
 Wv
 Wv
 Np
-RC
-RC
+Np
+Np
 Ar
-RC
-RC
+Np
+Np
 Ar
 Wv
 Wv

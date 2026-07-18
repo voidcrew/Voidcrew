@@ -164,7 +164,7 @@
 "fD" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
 /obj/structure/window/reinforced/plasma/spawner/directional/north,
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 4
 	},
 /turf/open/floor/plating,
@@ -1520,7 +1520,7 @@
 "Wy" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
 /obj/structure/window/reinforced/plasma/spawner,
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 4
 	},
 /turf/open/floor/plating,

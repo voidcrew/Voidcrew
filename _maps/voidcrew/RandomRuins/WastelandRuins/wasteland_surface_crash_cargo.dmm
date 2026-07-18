@@ -69,7 +69,7 @@
 	dir = 4;
 	name = "Engine Access"
 	},
-/turf/open/floor/plating/airless,
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "gg" = (
 /obj/structure/lattice,
@@ -105,7 +105,7 @@
 "kO" = (
 /mob/living/basic/trooper/pirate/melee,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "lf" = (
@@ -263,7 +263,7 @@
 	id = "whiteship_starboard"
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "ui" = (
@@ -298,14 +298,38 @@
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "yi" = (
-/turf/open/floor/plating{
-	initial_gas_mix = "LAVALAND_ATMOS"
-	},
+/turf/open/floor/plating,
 /area/overmap_encounter/planetoid/wasteland)
 "yS" = (
 /obj/machinery/door/airlock/external,
 /obj/structure/cable,
 /turf/open/floor/plating,
+/area/ruin/unpowered)
+"za" = (
+/obj/structure/closet/crate/zone_loot/plunder/rare,
+/turf/open/floor/plating{
+	burnt = 1
+	},
+/area/ruin/unpowered)
+"zb" = (
+/obj/effect/zone_mobs/pirate/boss,
+/turf/open/floor/plating{
+	broken = 1
+	},
+/area/ruin/unpowered)
+"zc" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"ze" = (
+/obj/machinery/light/built{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable,
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "Az" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
@@ -321,7 +345,7 @@
 /area/ruin/unpowered)
 "Bb" = (
 /obj/structure/cable,
-/turf/open/floor/plating/airless,
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "BN" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -394,12 +418,7 @@
 "Gs" = (
 /mob/living/basic/trooper/pirate/melee,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
-	},
-/area/ruin/unpowered)
-"Gz" = (
-/turf/open/floor/plating{
-	icon_state = "platingdmg2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "GW" = (
@@ -457,8 +476,8 @@
 /area/ruin/unpowered)
 "Ku" = (
 /mob/living/basic/trooper/pirate/melee,
-/turf/open/floor/plating{
-	icon_state = "titanium_dam5"
+/turf/open/floor/mineral/titanium{
+	broken = 1
 	},
 /area/ruin/unpowered)
 "KX" = (
@@ -515,9 +534,7 @@
 /obj/machinery/door/poddoor{
 	id = "whiteship_starboard"
 	},
-/turf/open/floor/plating{
-	initial_gas_mix = "LAVALAND_ATMOS"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "Np" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -539,8 +556,8 @@
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "NI" = (
-/turf/open/floor/plating{
-	icon_state = "titanium_dam5"
+/turf/open/floor/mineral/titanium{
+	broken = 1
 	},
 /area/ruin/unpowered)
 "NP" = (
@@ -568,7 +585,7 @@
 /area/ruin/unpowered)
 "Oe" = (
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "OM" = (
@@ -617,7 +634,7 @@
 /area/ruin/unpowered)
 "QX" = (
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "RQ" = (
@@ -636,7 +653,7 @@
 	dir = 4;
 	name = "Engine Access"
 	},
-/turf/open/floor/plating/airless,
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "Sf" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -662,9 +679,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "SV" = (
-/turf/open/floor/plating{
-	initial_gas_mix = "LAVALAND_ATMOS"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "Tp" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -700,15 +715,6 @@
 /obj/effect/spawner/random/maintenance,
 /turf/open/floor/iron/dark,
 /area/ruin/unpowered)
-"Wv" = (
-/obj/machinery/light/built{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/turf/open/floor/iron/dark,
-/area/ruin/unpowered)
 "Xl" = (
 /turf/template_noop,
 /area/template_noop)
@@ -733,43 +739,9 @@
 /obj/machinery/power/shuttle_engine/ship/fueled/plasma{
 	dir = 4
 	},
-/turf/open/floor/plating/airless,
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 
-"za" = (
-/obj/structure/closet/crate/zone_loot/plunder/rare,
-/turf/open/floor/plating{
-	icon_state = "panelscorched"
-	},
-/area/ruin/unpowered)
-"zb" = (
-/obj/effect/zone_mobs/pirate/boss,
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
-	},
-/area/ruin/unpowered)
-"zc" = (
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/plating{
-	initial_gas_mix = "LAVALAND_ATMOS"
-	},
-/area/ruin/unpowered)
-"zd" = (
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/plating{
-	initial_gas_mix = "LAVALAND_ATMOS"
-	},
-/area/ruin/unpowered)
-"ze" = (
-/obj/machinery/light/built{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/iron/dark,
-/area/ruin/unpowered)
 (1,1,1) = {"
 Xl
 Xl
@@ -866,7 +838,7 @@ Um
 yi
 BY
 pJ
-Gz
+QX
 Oe
 hD
 mz
@@ -882,7 +854,7 @@ yi
 ui
 Ya
 xA
-zd
+zc
 lN
 lN
 lf
@@ -941,7 +913,7 @@ fE
 No
 du
 du
-Gz
+QX
 zb
 za
 KX
@@ -975,7 +947,7 @@ AA
 UV
 OM
 QX
-Gz
+QX
 pP
 fC
 bT

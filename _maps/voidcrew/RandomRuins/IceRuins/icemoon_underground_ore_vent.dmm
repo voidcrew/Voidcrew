@@ -1,0 +1,35 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/template_noop,
+/area/template_noop)
+"l" = (
+/turf/open/misc/asteroid/snow/icemoon,
+/area/icemoon/underground/unexplored)
+"c" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/misc/asteroid/snow/icemoon,
+/area/icemoon/underground/unexplored)
+"b" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/misc/asteroid/snow/icemoon,
+/area/icemoon/underground/unexplored)
+"L" = (
+/obj/structure/ore_vent/random/icebox/lower,
+/turf/open/misc/asteroid/snow/icemoon,
+/area/icemoon/underground/unexplored)
+
+(1,1,1) = {"
+a
+l
+a
+"}
+(2,1,1) = {"
+b
+L
+c
+"}
+(3,1,1) = {"
+a
+l
+a
+"}

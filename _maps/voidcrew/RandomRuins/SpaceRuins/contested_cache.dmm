@@ -1,0 +1,323 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/structure/contested_cache_vault,
+/turf/open/floor/plating/reinforced/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+"h" = (
+/obj/structure/girder,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+"j" = (
+/obj/item/stack/rods,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+"q" = (
+/obj/structure/marker_beacon/burgundy,
+/turf/open/floor/plating/reinforced/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+"s" = (
+/obj/structure/fluff/commsbuoy_broadcaster,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+"v" = (
+/obj/structure/closet/crate,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+"y" = (
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+"z" = (
+/obj/structure/lattice/catwalk,
+/turf/template_noop,
+/area/space/nearstation)
+"A" = (
+/turf/open/floor/plating/reinforced/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+"b" = (
+/obj/structure/closet/crate/zone_loot/industrial,
+/turf/open/floor/plating/reinforced/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+"L" = (
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+"d" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+"c" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+"M" = (
+/obj/structure/fluff/commsbuoy_receiver,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+"O" = (
+/turf/template_noop,
+/area/template_noop)
+"R" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+"W" = (
+/obj/structure/fluff/commsbuoy_processor,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav/powered/contested_cache)
+
+(1,1,1) = {"
+O
+O
+O
+O
+O
+O
+O
+z
+O
+O
+O
+O
+O
+O
+O
+"}
+(2,1,1) = {"
+O
+O
+O
+O
+O
+O
+O
+z
+O
+O
+O
+O
+O
+O
+O
+"}
+(3,1,1) = {"
+O
+O
+z
+z
+z
+z
+z
+z
+z
+z
+z
+z
+z
+O
+O
+"}
+(4,1,1) = {"
+O
+O
+z
+L
+h
+L
+L
+L
+L
+L
+v
+L
+z
+O
+O
+"}
+(5,1,1) = {"
+O
+O
+z
+h
+L
+h
+L
+L
+L
+v
+L
+v
+z
+O
+O
+"}
+(6,1,1) = {"
+O
+O
+z
+L
+j
+L
+R
+L
+L
+L
+L
+L
+z
+O
+O
+"}
+(7,1,1) = {"
+O
+O
+z
+R
+L
+L
+q
+b
+q
+L
+y
+L
+z
+O
+O
+"}
+(8,1,1) = {"
+z
+z
+z
+L
+L
+c
+A
+a
+A
+d
+L
+R
+z
+z
+z
+"}
+(9,1,1) = {"
+O
+O
+z
+L
+L
+R
+q
+A
+q
+y
+L
+L
+z
+O
+O
+"}
+(10,1,1) = {"
+O
+O
+z
+L
+L
+L
+L
+L
+R
+L
+j
+h
+z
+O
+O
+"}
+(11,1,1) = {"
+O
+O
+z
+L
+W
+L
+L
+L
+L
+h
+L
+L
+z
+O
+O
+"}
+(12,1,1) = {"
+O
+O
+z
+s
+L
+M
+L
+R
+L
+L
+v
+R
+z
+O
+O
+"}
+(13,1,1) = {"
+O
+O
+z
+z
+z
+z
+z
+z
+z
+z
+z
+z
+z
+O
+O
+"}
+(14,1,1) = {"
+O
+O
+O
+O
+O
+O
+O
+z
+O
+O
+O
+O
+O
+O
+O
+"}
+(15,1,1) = {"
+O
+O
+O
+O
+O
+O
+O
+z
+O
+O
+O
+O
+O
+O
+O
+"}

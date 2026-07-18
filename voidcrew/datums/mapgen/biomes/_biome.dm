@@ -22,6 +22,11 @@
 	var/list/mob_spawn_list
 	var/list/flora_spawn_list
 	var/list/megafauna_spawn_list
+	/// Optional weighted table of this biome's meaner-tier fauna. On planets in
+	/// dangerous overmap zones, a fraction of mob rolls upgrade to this table
+	/// (see ZONE_PLANET_MOB_UPGRADE_PROB_* and planet_generator/populate_terrain).
+	/// Never used for megafauna rolls. Biomes without one only get denser spawns.
+	var/list/dangerous_mob_spawn_list
 	var/mob_spawn_chance = 6
 	var/flora_spawn_chance = 2
 	var/feature_spawn_chance = 0.1

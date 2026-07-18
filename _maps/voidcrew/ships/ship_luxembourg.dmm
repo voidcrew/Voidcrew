@@ -892,6 +892,9 @@
 /area/shuttle/voidcrew/luxembourg/engineering)
 "wE" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 1
+	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/luxembourg/engineering)
 "wN" = (
@@ -1474,7 +1477,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/luxembourg/cargo/mining)
 "RH" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 1
 	},
 /obj/structure/window/reinforced/plasma/spawner/directional/north,

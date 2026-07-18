@@ -20,28 +20,31 @@
 	var/heat_creation = FALSE
 	///A weakref of the connected engine heater with fuel.
 	var/datum/weakref/attached_heater
-	var/thrust = 0
 
-/obj/machinery/power/shuttle_engine/ship/fueled/burn_engine(percentage = 100, ship_mass = REFERENCE_SHIP_MASS)
+/obj/machinery/power/shuttle_engine/ship/fueled/burn_engine(percentage = 100, ship_mass = REFERENCE_SHIP_MASS, burn_seconds = 1)
 	..()
-	var/obj/machinery/atmospherics/components/unary/shuttle/heater/resolved_heater = attached_heater.resolve()
+	var/obj/machinery/atmospherics/components/unary/shuttle/heater/resolved_heater = attached_heater?.resolve()
+	if(!resolved_heater)
+		return 0
 	if(heat_creation)
 		heat_engine()
 	var/mass_multiplier = get_mass_fuel_multiplier(ship_mass)
-	var/to_use = fuel_use * (percentage / 100) * mass_multiplier
-	var/actually_burned = resolved_heater?.consume_fuel(to_use, fuel_type)
+	var/to_use = fuel_use * (percentage / 100) * mass_multiplier * burn_seconds
+	if(to_use <= 0)
+		return 0
+	var/actually_burned = resolved_heater.consume_fuel(to_use, fuel_type)
 	if(!actually_burned)
 		return 0
-	return (actually_burned / to_use) * thrust //This proc returns how much was actually burned, so let's use that and multiply it by the thrust to get all the thrust we CAN give.
+	return (actually_burned / to_use) * engine_power //This proc returns how much was actually burned, so let's use that and multiply it by the thrust to get all the thrust we CAN give.
 
 /obj/machinery/power/shuttle_engine/ship/fueled/return_fuel()
 	. = ..()
-	var/obj/machinery/atmospherics/components/unary/shuttle/heater/resolved_heater = attached_heater.resolve()
+	var/obj/machinery/atmospherics/components/unary/shuttle/heater/resolved_heater = attached_heater?.resolve()
 	return resolved_heater?.return_gas(fuel_type)
 
 /obj/machinery/power/shuttle_engine/ship/fueled/return_fuel_cap()
 	. = ..()
-	var/obj/machinery/atmospherics/components/unary/shuttle/heater/resolved_heater = attached_heater.resolve()
+	var/obj/machinery/atmospherics/components/unary/shuttle/heater/resolved_heater = attached_heater?.resolve()
 	return resolved_heater?.return_gas_capacity()
 
 /obj/machinery/power/shuttle_engine/ship/fueled/screwdriver_act(mob/living/user, obj/item/I)
@@ -70,7 +73,8 @@
 	. = ..()
 	if(!.)
 		return
-	if(!attached_heater)
+	if(!attached_heater?.resolve()) //no heater, or our heater was destroyed - try to find a new one
+		attached_heater = null
 		if(!set_heater())
 			thruster_active = FALSE
 			return FALSE
@@ -92,14 +96,14 @@
 	name = "plasma thruster"
 	desc = "A thruster that burns plasma from an adjacent heater to create thrust."
 	circuit = /obj/item/circuitboard/machine/shuttle/engine/plasma
+	engine_power = 25
 	fuel_type = /datum/gas/plasma
 	fuel_use = 20
-	thrust = 25
 
 /obj/machinery/power/shuttle_engine/ship/fueled/expulsion
 	name = "expulsion thruster"
 	desc = "A thruster that expels gas inefficiently to create thrust."
 	circuit = /obj/item/circuitboard/machine/shuttle/engine/expulsion
+	engine_power = 15
 	fuel_use = 80
-	thrust = 15
 	//All fuel code already handled

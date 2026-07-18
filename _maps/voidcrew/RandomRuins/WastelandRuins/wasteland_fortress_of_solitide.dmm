@@ -585,7 +585,7 @@
 /obj/item/stack/sheet/mineral/wood,
 /obj/item/stack/sheet/mineral/wood,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
-/obj/item/trash,
+/obj/item/trash/waffles,
 /obj/effect/spawner/random/maintenance,
 /obj/item/flashlight/glowstick,
 /turf/open/floor/plating,
@@ -740,10 +740,6 @@
 	name = "Self-Service Shoppery"
 	},
 /turf/open/floor/plating,
-/area/ruin/powered)
-"hD" = (
-/obj/structure/sign/poster/contraband/random,
-/turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
 "hH" = (
 /obj/structure/table,
@@ -1019,13 +1015,6 @@
 /obj/structure/sign/poster/contraband/space_cola,
 /turf/closed/wall/r_wall/rust,
 /area/ruin/powered)
-"kn" = (
-/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable,
-/turf/open/floor/plating/rust,
-/area/ruin/powered)
 "kp" = (
 /obj/machinery/door/airlock/maintenance{
 	name = "Detective Halligan's Office"
@@ -1257,7 +1246,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood{
-	icon_state = "wood-broken2"
+	broken = 1
 	},
 /area/ruin/powered)
 "mG" = (
@@ -1515,7 +1504,7 @@
 /obj/item/toy/plush/snakeplushie,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
-/obj/item/trash,
+/obj/item/trash/waffles,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "oR" = (
@@ -2682,11 +2671,6 @@
 /obj/structure/sign/poster/contraband/random,
 /turf/closed/wall/rust,
 /area/ruin/powered)
-"Bk" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/blood/oil,
-/turf/open/floor/plating/rust,
-/area/ruin/powered)
 "Bl" = (
 /obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -2731,7 +2715,7 @@
 /obj/effect/decal/cleanable/vomit/old,
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/wood{
-	icon_state = "wood-broken6"
+	broken = 1
 	},
 /area/ruin/powered)
 "BA" = (
@@ -3241,7 +3225,7 @@
 /obj/item/clothing/head/costume/chicken{
 	pixel_y = 11
 	},
-/obj/item/kitchen/knife{
+/obj/item/knife/kitchen{
 	pixel_x = -9
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -3352,19 +3336,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"In" = (
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
-	dir = 4
-	},
-/obj/structure/cable,
-/turf/open/floor/carpet/royalblack,
-/area/ruin/powered)
 "Is" = (
 /obj/structure/table,
 /obj/item/storage/fancy/donut_box,
@@ -3694,10 +3665,6 @@
 /obj/item/clothing/head/utility/chefhat,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
-"Lj" = (
-/obj/effect/decal/cleanable/blood/oil,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "Lr" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/blood/splatter,
@@ -3761,10 +3728,6 @@
 /obj/item/clothing/under/misc/assistantformal,
 /obj/effect/spawner/random/maintenance,
 /turf/open/floor/plating,
-/area/ruin/powered)
-"LR" = (
-/obj/structure/sign/poster/contraband/random,
-/turf/closed/wall/rust,
 /area/ruin/powered)
 "LU" = (
 /obj/effect/decal/remains/human,
@@ -3964,7 +3927,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Og" = (
-/obj/item/trash,
+/obj/item/trash/waffles,
 /obj/item/broken_bottle,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -4098,17 +4061,6 @@
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
-"Pg" = (
-/obj/structure/grille,
-/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
-	dir = 1
-	},
-/obj/structure/cable,
-/turf/open/floor/plating/rust,
-/area/ruin/powered)
 "Pq" = (
 /obj/structure/curtain/cloth/fancy,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -4160,10 +4112,6 @@
 "PT" = (
 /obj/structure/sign/poster/contraband/robust_softdrinks,
 /turf/closed/wall/r_wall/rust,
-/area/ruin/powered)
-"PW" = (
-/obj/effect/decal/cleanable/blood/oil,
-/turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Qc" = (
 /obj/effect/gibspawner/generic,
@@ -4567,11 +4515,6 @@
 	},
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
-"TE" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/glass,
-/turf/open/floor/plating/rust,
-/area/ruin/powered)
 "TF" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/trash/can/food/beans,
@@ -4636,7 +4579,7 @@
 "Ue" = (
 /mob/living/basic/mimic/crate,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/item/trash,
+/obj/item/trash/waffles,
 /obj/item/trash/sosjerky,
 /obj/item/trash/tray,
 /turf/open/floor/plating/rust,
@@ -4702,10 +4645,6 @@
 	dir = 4
 	},
 /obj/structure/cable,
-/turf/open/floor/plating,
-/area/ruin/powered)
-"UR" = (
-/obj/structure/falsewall/reinforced,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "UT" = (
@@ -4789,11 +4728,6 @@
 	dir = 1
 	},
 /obj/structure/cable,
-/turf/open/floor/plating/rust,
-/area/ruin/powered)
-"VK" = (
-/obj/effect/decal/cleanable/blood/oil,
-/obj/effect/decal/cleanable/generic,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "VN" = (
@@ -5176,16 +5110,6 @@
 /obj/effect/decal/cleanable/blood/gibs,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"Zt" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/blood/oil,
-/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer2{
-	dir = 1
-	},
-/obj/structure/cable,
-/turf/open/floor/plating/rust,
-/area/ruin/powered)
 "ZC" = (
 /obj/structure/table/wood,
 /obj/item/food/pizza/sassysage,
@@ -5394,7 +5318,7 @@ bG
 hW
 av
 Vf
-Lj
+bR
 fi
 in
 in
@@ -5738,7 +5662,7 @@ Jc
 xx
 cX
 we
-VK
+El
 nt
 Pr
 yX
@@ -5791,7 +5715,7 @@ zV
 bG
 av
 XF
-Lj
+bR
 El
 xx
 in
@@ -6085,7 +6009,7 @@ hf
 XF
 WD
 hH
-PW
+wb
 Ue
 XF
 xx
@@ -6136,7 +6060,7 @@ kl
 zV
 xx
 Xe
-LR
+Bd
 xx
 vt
 iv
@@ -6303,7 +6227,7 @@ Ot
 Hp
 Ha
 Rc
-Bk
+wq
 UH
 wi
 pR
@@ -6442,7 +6366,7 @@ Rc
 Vu
 NC
 sU
-UR
+rJ
 mh
 pR
 bF
@@ -6537,7 +6461,7 @@ Xe
 xx
 DZ
 xx
-hD
+fi
 Im
 sO
 IA
@@ -6603,7 +6527,7 @@ PE
 IY
 ja
 xL
-Zt
+rU
 Ro
 Cw
 vR
@@ -6784,7 +6708,7 @@ ga
 ph
 Xe
 XY
-PW
+wb
 qs
 FT
 iR
@@ -6957,7 +6881,7 @@ zK
 xx
 Gd
 vM
-Lj
+bR
 xx
 xx
 Dc
@@ -7061,7 +6985,7 @@ ED
 Qt
 ED
 BI
-Pg
+kX
 ED
 Px
 av

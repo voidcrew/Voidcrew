@@ -2,6 +2,7 @@
 	name = "\improper SolGov armor vest"
 	desc = "A standard armor vest fielded for SolGov's infantry."
 	icon = 'voidcrew/icons/obj/clothing/suits.dmi'
+	worn_icon = 'voidcrew/icons/mob/clothing/solgov_suits.dmi'
 	icon_state = "armor_solgov"
 
 /obj/item/clothing/suit/armor/vest/solgov/Initialize()

@@ -56,6 +56,28 @@
 				shuttle_areas[cur_area] = TRUE
 	link_to_z_level()
 
+/**
+ * Voidcrew ships are loaded straight onto their transit dock and begin the round
+ * "flying" in deep space with no destination. action_load() leaves the port at
+ * SHUTTLE_IDLE with timer = 0, which makes check_effects() treat us as "about to
+ * arrive" on every SSshuttle fire and call parallax_slowdown(), permanently wiping
+ * parallax_movedir on the ship's areas — so space looks frozen for the whole first
+ * flight. Mirror enterTransit()'s destination-less state instead (SHUTTLE_CALL with
+ * an infinite timer), which is exactly the state any ship is in after a normal
+ * undock, and re-assert the scroll direction on our areas in case a mid-load
+ * SSshuttle fire already wiped it.
+ */
+/obj/docking_port/mobile/voidcrew/postregister(replace = FALSE)
+	. = ..()
+	if(!istype(get_docked(), /obj/docking_port/stationary/transit) || mode != SHUTTLE_IDLE)
+		return
+	mode = SHUTTLE_CALL
+	timer = INFINITY
+	for(var/area/shuttle_area as anything in shuttle_areas)
+		shuttle_area.parallax_movedir = preferred_direction
+	if(assigned_transit?.assigned_area)
+		assigned_transit.assigned_area.parallax_movedir = preferred_direction
+
 /obj/docking_port/mobile/voidcrew/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)
 	old_z_level = z
 	return ..()

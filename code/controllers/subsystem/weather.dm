@@ -19,7 +19,17 @@ SUBSYSTEM_DEF(weather)
 
 		if(weather_event.subsystem_tasks[weather_event.task_index] == SSWEATHER_MOBS)
 			if(!resumed)
-				weather_event.current_mobs = GLOB.mob_living_list.Copy()
+				// Only collect mobs on the impacted z-levels, the whole world's mob list gets very large with populated planets
+				var/list/eligible_mobs = list()
+				for(var/mob/living/candidate as anything in GLOB.mob_living_list)
+					var/candidate_z = candidate.z
+					if(!candidate_z) // contained mobs report z = 0
+						var/turf/candidate_turf = get_turf(candidate)
+						if(candidate_turf)
+							candidate_z = candidate_turf.z
+					if(candidate_z in weather_event.impacted_z_levels)
+						eligible_mobs += candidate
+				weather_event.current_mobs = eligible_mobs
 			var/list/current_mobs_cache = weather_event.current_mobs // cache for performance
 			while(current_mobs_cache.len)
 				var/mob/living/target = current_mobs_cache[current_mobs_cache.len]
@@ -66,6 +76,7 @@ SUBSYSTEM_DEF(weather)
 		run_weather(weather_event, list(text2num(z)))
 		eligible_zlevels -= z
 		var/randTime = rand(5 MINUTES, 10 MINUTES)
+		randTime *= SSovermap_zones.weather_downtime_multiplier_for_z(text2num(z)) // VOIDCREW EDIT — storms come more often on planets in dangerous overmap zones
 		next_hit_by_zlevel["[z]"] = addtimer(CALLBACK(src, PROC_REF(make_eligible), z, possible_weather), randTime + initial(weather_event.weather_duration_upper), TIMER_UNIQUE|TIMER_STOPPABLE)
 
 /datum/controller/subsystem/weather/Initialize()

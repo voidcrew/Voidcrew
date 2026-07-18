@@ -336,6 +336,26 @@
 		/mob/living/simple_animal/hostile/megafauna/dragon/lesser = 1,
 	)
 
+/// Airless rock fauna: mining wildlife that shrugs off vacuum. Used by the
+/// landable meteor storm fields (overmap/events.dm) and fits any airless
+/// asteroid ruin — everything in these tables survives space.
+/obj/effect/zone_mobs/asteroid
+	name = "zone mob spawner (asteroid)"
+	mobs_green = list(
+		/mob/living/basic/mining/goldgrub = 8,
+		/mob/living/basic/mining/hivelord = 6,
+	)
+	mobs_yellow = list(
+		/mob/living/basic/mining/basilisk = 8,
+		/mob/living/basic/mining/hivelord = 6,
+		/mob/living/basic/mining/goliath = 4,
+	)
+	mobs_red = list(
+		/mob/living/basic/mining/basilisk = 8,
+		/mob/living/basic/mining/goliath/ancient = 6,
+		/mob/living/basic/mining/legion = 4,
+	)
+
 /// Malfunctioning automation: hivebots and shredders in dead facilities.
 /obj/effect/zone_mobs/robot
 	name = "zone mob spawner (robot)"

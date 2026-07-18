@@ -1,28 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"AA" = (
-/obj/structure/closet/crate/zone_loot/medical/rare,
-/turf/open/floor/engine,
-/area/ruin/unpowered)
-"AB" = (
-/obj/effect/zone_mobs/robot/boss,
-/turf/open/floor/engine,
-/area/ruin/unpowered)
-"AC" = (
-/obj/effect/zone_mobs/robot,
-/turf/open/floor/engine,
-/area/ruin/unpowered)
-"AD" = (
-/obj/effect/zone_mobs/robot,
-/turf/open/floor/iron/white,
-/area/ruin/unpowered)
-"AE" = (
-/obj/effect/turf_decal/tile/neutral{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/neutral,
-/obj/effect/zone_mobs/robot,
-/turf/open/floor/iron/dark,
-/area/ruin/unpowered)
 "ad" = (
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
@@ -130,7 +106,7 @@
 "dE" = (
 /obj/machinery/plumbing/filter,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "dR" = (
@@ -180,12 +156,6 @@
 	},
 /obj/effect/turf_decal/tile/neutral,
 /turf/open/floor/iron/dark,
-/area/ruin/unpowered)
-"eI" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating{
-	icon_state = "platingdmg3"
-	},
 /area/ruin/unpowered)
 "fg" = (
 /obj/structure/table_frame,
@@ -278,7 +248,7 @@
 "gy" = (
 /obj/item/reagent_containers/hypospray/medipen/oxandrolone,
 /turf/open/floor/plating{
-	icon_state = "platingdmg2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "gS" = (
@@ -466,7 +436,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "li" = (
@@ -496,7 +466,7 @@
 /obj/structure/door_assembly/door_assembly_research,
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
 /turf/open/floor/plating{
-	icon_state = "platingdmg3"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "mK" = (
@@ -654,7 +624,7 @@
 	dir = 8
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "rf" = (
@@ -684,11 +654,6 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/computer/order_console/mining,
 /turf/open/floor/iron/dark,
-/area/ruin/unpowered)
-"rN" = (
-/turf/open/floor/plating{
-	icon_state = "platingdmg3"
-	},
 /area/ruin/unpowered)
 "sz" = (
 /obj/effect/turf_decal/stripes/line{
@@ -738,7 +703,7 @@
 	dir = 8
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "tu" = (
@@ -891,7 +856,7 @@
 /obj/structure/door_assembly/door_assembly_research,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "yg" = (
@@ -913,7 +878,7 @@
 /area/ruin/unpowered)
 "zk" = (
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "zQ" = (
@@ -950,6 +915,30 @@
 /obj/structure/table_frame,
 /turf/open/floor/iron/white,
 /area/ruin/unpowered)
+"AA" = (
+/obj/structure/closet/crate/zone_loot/medical/rare,
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"AB" = (
+/obj/effect/zone_mobs/robot/boss,
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"AC" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"AD" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/iron/white,
+/area/ruin/unpowered)
+"AE" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/iron/dark,
+/area/ruin/unpowered)
 "AK" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
 	dir = 9
@@ -973,7 +962,7 @@
 "Bb" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Bn" = (
@@ -982,12 +971,6 @@
 	dir = 4
 	},
 /turf/open/floor/plating,
-/area/ruin/unpowered)
-"BH" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating{
-	icon_state = "platingdmg2"
-	},
 /area/ruin/unpowered)
 "BS" = (
 /obj/effect/turf_decal/stripes/line{
@@ -1029,11 +1012,6 @@
 	dir = 8
 	},
 /turf/open/floor/iron/dark,
-/area/ruin/unpowered)
-"Eh" = (
-/turf/open/floor/plating{
-	icon_state = "platingdmg2"
-	},
 /area/ruin/unpowered)
 "Ei" = (
 /obj/effect/turf_decal/stripes/line{
@@ -1109,13 +1087,13 @@
 	dir = 8
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Hb" = (
 /obj/machinery/plumbing,
 /turf/open/floor/plating{
-	icon_state = "platingdmg3"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Hp" = (
@@ -1211,7 +1189,7 @@
 	dir = 8
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Lw" = (
@@ -1233,7 +1211,7 @@
 	dir = 8
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "LT" = (
@@ -1249,7 +1227,7 @@
 "Mq" = (
 /obj/machinery/plumbing/grinder_chemical,
 /turf/open/floor/plating{
-	icon_state = "platingdmg3"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "MB" = (
@@ -1349,7 +1327,7 @@
 /obj/item/shard,
 /obj/structure/table_frame,
 /turf/open/floor/plating{
-	icon_state = "platingdmg3"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Qa" = (
@@ -1450,15 +1428,8 @@
 	dir = 8
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
-/area/ruin/unpowered)
-"SE" = (
-/obj/effect/turf_decal/stripes/line{
-	dir = 4
-	},
-/obj/structure/cable,
-/turf/open/floor/iron,
 /area/ruin/unpowered)
 "SL" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1482,17 +1453,6 @@
 "Te" = (
 /obj/effect/turf_decal/stripes/line,
 /turf/open/floor/iron/white,
-/area/ruin/unpowered)
-"Ub" = (
-/obj/effect/turf_decal/tile/neutral{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/neutral,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden{
-	dir = 8
-	},
-/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "Ud" = (
 /obj/structure/rack,
@@ -1867,10 +1827,10 @@ Go
 UH
 oH
 Bb
-Eh
-eI
-BH
-eI
+zk
+Bb
+Bb
+Bb
 Tb
 UH
 oH
@@ -1902,7 +1862,7 @@ zk
 dE
 sA
 UH
-rN
+zk
 UH
 ir
 ad
@@ -1955,7 +1915,7 @@ iJ
 vB
 sE
 yx
-Ub
+wF
 Jb
 sQ
 lO
@@ -1989,12 +1949,12 @@ sE
 wF
 Jb
 vO
-rN
+zk
 ad
 re
-rN
+zk
 ok
-rN
+zk
 oH
 OB
 ad
@@ -2085,9 +2045,9 @@ qs
 Wa
 Qk
 fJ
-eI
+Bb
 zk
-rN
+zk
 iP
 BS
 hC
@@ -2116,11 +2076,11 @@ sz
 Rs
 Lj
 sT
-SE
+LT
 kS
-SE
-SE
-SE
+LT
+LT
+LT
 zR
 cy
 LT
@@ -2207,11 +2167,11 @@ UT
 Go
 od
 oH
-rN
+zk
 Ps
 zk
 oH
-rN
+zk
 Bb
 LF
 zk
@@ -2238,7 +2198,7 @@ nt
 Jb
 IA
 ad
-rN
+zk
 Lo
 zk
 Bb
@@ -2268,7 +2228,7 @@ gn
 AK
 Go
 qG
-rN
+zk
 oH
 GJ
 sA
@@ -2298,14 +2258,14 @@ Jb
 Go
 Go
 Go
-rN
-rN
+zk
+zk
 UH
 ad
 sA
 Hb
 Bb
-eI
+Bb
 ad
 Bb
 zk
@@ -2332,8 +2292,8 @@ Jb
 IA
 oH
 ad
-rN
-rN
+zk
+zk
 oH
 MF
 Bb
@@ -2364,8 +2324,8 @@ IA
 UH
 oH
 oH
-rN
-rN
+zk
+zk
 ir
 ad
 zk

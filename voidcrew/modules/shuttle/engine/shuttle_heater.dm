@@ -43,8 +43,8 @@
 	update_adjacent_engines()
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/Destroy()
-	. = ..()
-	update_adjacent_engines()
+	update_adjacent_engines() //must run before parent moves us to nullspace, or the engines are never told
+	return ..()
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/on_construction()
 	..(dir, dir)
@@ -132,7 +132,9 @@
 		return
 	if(!gas_type)
 		var/datum/gas_mixture/removed = air_contents.remove(amount)
-		return removed.return_volume()
+		if(!removed)
+			return 0
+		return removed.total_moles()
 	else
 		air_contents.assert_gas(gas_type)
 		var/starting_amt = air_contents.gases[gas_type][MOLES]
@@ -207,4 +209,9 @@
 /obj/machinery/atmospherics/components/unary/shuttle/heater/tank/Initialize()
 	. = ..()
 	fuel_tank = new /obj/item/tank/internals/plasma/full(src)
-	// Defaults to atmos mode; alt-click to switch to the included tank
+	// Defaults to tank mode so pipe-less ships have working thrusters out of the box; alt-click to switch to atmos
+	use_tank = TRUE
+	icon_state_closed = "heater"
+	icon_state_open = "heater_open"
+	if(!panel_open)
+		icon_state = icon_state_closed

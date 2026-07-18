@@ -144,6 +144,37 @@
 /datum/space_level/proc/initialize_space_turfs()
 	initialize_uninitialized_block_turfs(locate(low_x, low_y, z_value), locate(high_x, high_y, z_value))
 
+/**
+ * Whether any client-having player is standing within a turf reservation's bounds.
+ * Reservations share their z-level with other reservations (space ruins, landable
+ * meteor fields, player outposts, ...), so a level-wide clients_by_zlevel check would
+ * false-positive whenever a neighbouring reservation has visitors - this scopes
+ * strictly to the given reservation's own footprint. Shared by space_ruin.dm and
+ * events.dm's landable field cleanup guards.
+ */
+/proc/turf_reservation_has_players(datum/turf_reservation/reservation)
+	if(!reservation)
+		return FALSE
+
+	var/turf/bottom_left = reservation.bottom_left_turfs[1]
+	if(!bottom_left)
+		return FALSE
+
+	var/min_x = bottom_left.x
+	var/min_y = bottom_left.y
+	var/max_x = min_x + reservation.width - 1
+	var/max_y = min_y + reservation.height - 1
+	var/res_z = bottom_left.z
+
+	for(var/mob/player in SSmobs.clients_by_zlevel[res_z])
+		var/turf/player_turf = get_turf(player)
+		if(!player_turf)
+			continue
+		if(player_turf.x >= min_x && player_turf.x <= max_x && player_turf.y >= min_y && player_turf.y <= max_y)
+			return TRUE
+
+	return FALSE
+
 /datum/space_level/proc/fill_in(turf/turf_type, area/area_override)
 	var/area/area_to_use = null
 	if(area_override)

@@ -58,6 +58,8 @@
 	var/area_type = /area/space
 	/// Areas to be affected by the weather, calculated when the weather begins
 	var/list/impacted_areas = list()
+	/// Assoc mirror of impacted_areas (area = TRUE), for cheap membership checks in the per-mob hot path
+	var/list/impacted_areas_lookup = list()
 	/// A weighted list of areas impacted by weather, where weights reflect the total turf count in each area.
 	var/list/impacted_areas_weighted = list()
 	/// The total number of turfs impacted by weather across all z-levels and areas.
@@ -208,6 +210,7 @@
 				continue
 
 			impacted_areas |= affected_area
+			impacted_areas_lookup[affected_area] = TRUE
 
 			if(!(weather_flags & (WEATHER_THUNDER|WEATHER_TURFS)))
 				continue
@@ -329,7 +332,7 @@
 	if(!(mob_turf.z in impacted_z_levels))
 		return
 
-	if(!(mob_turf.loc in impacted_areas))
+	if(!impacted_areas_lookup[mob_turf.loc])
 		return
 
 	var/atom/to_check = mob_to_check

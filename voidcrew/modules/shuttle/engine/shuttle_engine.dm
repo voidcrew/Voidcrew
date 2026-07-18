@@ -39,8 +39,9 @@
   * Fuel consumption scales with ship mass - heavier ships use more fuel per burn.
   * * percentage - The percentage of total thrust that should be used
   * * ship_mass - The mass of the ship, used to scale fuel consumption
+  * * burn_seconds - How many seconds of burn this call represents; fuel costs are per second of full burn
   */
-/obj/machinery/power/shuttle_engine/ship/proc/burn_engine(percentage = 100, ship_mass = REFERENCE_SHIP_MASS)
+/obj/machinery/power/shuttle_engine/ship/proc/burn_engine(percentage = 100, ship_mass = REFERENCE_SHIP_MASS, burn_seconds = 1)
 	SHOULD_CALL_PARENT(TRUE)
 	update_appearance(UPDATE_ICON)
 	return FALSE

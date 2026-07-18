@@ -68,6 +68,9 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	var/area/voidcrew/player_outpost/outpost_area
 	/// Looping timer for the adopt_built_turfs() safety-net sweep
 	var/area_sweep_timer
+	/// Shield generators built on this outpost's z-level, in registration order.
+	/// Only the first operational one holds the shield at any moment (see outpost_shield.dm). Lazy.
+	var/list/shield_generators
 	var/loaded = FALSE
 	var/loading = FALSE
 	COOLDOWN_DECLARE(rename_cooldown)
@@ -89,6 +92,9 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	if(construction_console)
 		construction_console.outpost = null
 		construction_console = null
+	for(var/obj/machinery/outpost_shield_generator/generator as anything in shield_generators)
+		generator.outpost = null
+	shield_generators = null
 	template_bottom_left = null
 	arrival_turf = null
 	deltimer(area_sweep_timer)
@@ -133,6 +139,8 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 			. += span_warning("Docking clearance revoked for all outside vessels.")
 	if(raidable)
 		. += span_danger("This deep-space claim is outside patrolled space. It can be attacked.")
+		if(get_shield_generator()?.charge > 0)
+			. += span_boldnotice("Sensor sweep: an energy shield envelops the claim.")
 	else
 		. += span_notice("Registered in patrolled space — protected from ship weapons.")
 
@@ -223,6 +231,40 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 
 /obj/structure/overmap/dynamic/player_outpost/get_combat_default_turf()
 	return arrival_turf
+
+// ===== SHIELD GENERATORS (see outpost_shield.dm) =====
+
+/// Registers a shield generator built on this outpost's z-level. Idempotent.
+/obj/structure/overmap/dynamic/player_outpost/proc/register_shield_generator(obj/machinery/outpost_shield_generator/generator)
+	LAZYOR(shield_generators, generator)
+
+/// Unregisters a destroyed/deconstructed shield generator
+/obj/structure/overmap/dynamic/player_outpost/proc/unregister_shield_generator(obj/machinery/outpost_shield_generator/generator)
+	LAZYREMOVE(shield_generators, generator)
+
+/**
+ * The generator currently holding the shield: the first registered one that is
+ * anchored and powered. Only this unit charges and absorbs — extra generators
+ * are cold standbys that take over (empty) if it's destroyed or loses power,
+ * so stacking generators never multiplies effective shield charge.
+ */
+/obj/structure/overmap/dynamic/player_outpost/proc/get_shield_generator()
+	for(var/obj/machinery/outpost_shield_generator/generator as anything in shield_generators)
+		if(generator.is_operational_unit())
+			return generator
+	return null
+
+/**
+ * Siege damage interception: while the active generator has charge, the hit is
+ * absorbed (charge drains by damage) and the outpost is unharmed. Returns TRUE
+ * when absorbed. Depleted, unpowered or absent shields let everything through.
+ */
+/obj/structure/overmap/dynamic/player_outpost/proc/try_absorb_siege_damage(damage, turf/impact_loc, obj/structure/overmap/ship/attacker)
+	var/obj/machinery/outpost_shield_generator/generator = get_shield_generator()
+	if(!generator || generator.charge <= 0)
+		return FALSE
+	generator.absorb_hit(damage, impact_loc, attacker)
+	return TRUE
 
 // ===== FOUNDING =====
 

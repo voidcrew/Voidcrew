@@ -30,16 +30,20 @@
 	for(var/reagent in fuel_reagents)
 		reagent_amount_holder += fuel_reagents[reagent]
 
-/obj/machinery/power/shuttle_engine/ship/liquid/burn_engine(percentage = 100, ship_mass = REFERENCE_SHIP_MASS)
+/obj/machinery/power/shuttle_engine/ship/liquid/burn_engine(percentage = 100, ship_mass = REFERENCE_SHIP_MASS, burn_seconds = 1)
 	. = ..()
 	var/mass_multiplier = get_mass_fuel_multiplier(ship_mass)
 	var/true_percentage = 1
 	for(var/reagent in fuel_reagents)
-		var/to_use = fuel_reagents[reagent] * (percentage / 100) * mass_multiplier
+		var/to_use = fuel_reagents[reagent] * (percentage / 100) * mass_multiplier * burn_seconds
+		if(to_use <= 0)
+			return 0
 		true_percentage *= reagents.remove_reagent(reagent, to_use) / to_use
 	return engine_power * true_percentage
 
 /obj/machinery/power/shuttle_engine/ship/liquid/return_fuel()
+	if(!length(fuel_reagents))
+		return 0
 	var/true_percentage = INFINITY
 	for(var/reagent in fuel_reagents)
 		true_percentage = min(reagents.get_reagent_amount(reagent) / fuel_reagents[reagent], true_percentage)

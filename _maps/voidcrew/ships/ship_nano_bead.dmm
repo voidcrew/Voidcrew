@@ -83,7 +83,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/bead/maintenance/aft)
 "gf" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 4
 	},
 /obj/structure/window/reinforced/plasma/spawner,

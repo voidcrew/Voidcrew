@@ -1,16 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"AA" = (
-/obj/structure/closet/crate/zone_loot/industrial/rare,
-/turf/open/floor/plating/rust,
-/area/ruin/powered)
-"AB" = (
-/obj/effect/zone_mobs/robot/boss,
-/turf/open/floor/plating/rust,
-/area/ruin/powered)
-"AC" = (
-/obj/effect/zone_mobs/robot,
-/turf/open/floor/plating/rust,
-/area/ruin/powered)
 "am" = (
 /obj/structure/table,
 /turf/open/floor/plating/rust,
@@ -30,7 +18,7 @@
 "bE" = (
 /turf/closed/indestructible/reinforced{
 	base_icon_state = "rusty_reinforced_wall";
-	icon = 'icons/turf/closed/wall/r_wall/rust.dmi';
+	icon = 'icons/turf/walls/rusty_reinforced_wall.dmi';
 	icon_state = "rusty_reinforced_wall-0"
 	},
 /area/ruin/powered)
@@ -445,6 +433,18 @@
 /obj/machinery/conveyor/auto{
 	id = "rockplanet_ore_process"
 	},
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
+"AA" = (
+/obj/structure/closet/crate/zone_loot/industrial/rare,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
+"AB" = (
+/obj/effect/zone_mobs/robot/boss,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
+"AC" = (
+/obj/effect/zone_mobs/robot,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "AP" = (

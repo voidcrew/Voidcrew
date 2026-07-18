@@ -28,9 +28,46 @@
 
 	var/list/planets = list()
 
+	/// Working pool for dealing roundstart planets their overmap zone bands (see next_planet_zone_band())
+	var/list/planet_zone_band_pool = list()
+
 /datum/controller/subsystem/mapping/Initialize(timeofday)
 	load_ship_templates()
 	return ..()
+
+/**
+ * Deals out a zone band (ZONE_GREEN/YELLOW/RED) for the next roundstart planet.
+ *
+ * Roundstart planet z-levels are generated and populated during SSmapping init,
+ * BEFORE SSovermap places the planets on the overmap — so the zone must be
+ * decided up front. The band is stored on the planet's SSmapping.planets entry;
+ * SSovermap.setup_planets() then places the planet on an overmap tile inside
+ * that band, keeping the pre-generated content honest.
+ *
+ * Bands are dealt from a reshuffled set of all three, so every round gets at
+ * least one planet per band while the ordering stays random.
+ */
+/datum/controller/subsystem/mapping/proc/next_planet_zone_band()
+	if(!length(planet_zone_band_pool))
+		planet_zone_band_pool = shuffle(list(ZONE_GREEN, ZONE_YELLOW, ZONE_RED))
+	var/band = planet_zone_band_pool[1]
+	planet_zone_band_pool.Cut(1, 2)
+	return band
+
+/**
+ * The pre-assigned zone band for a roundstart planet z-level, or null if the
+ * z-level isn't one. Each planet loads as a pair of z-levels (surface = the
+ * stored z, underground = z - 1), so both resolve to the planet's band.
+ */
+/datum/controller/subsystem/mapping/proc/get_planet_zone_band_for_z(z)
+	if(!z)
+		return null
+	for(var/planet_key in planets)
+		var/list/planet_info = planets[planet_key]
+		var/planet_z = planet_info["z"]
+		if(z == planet_z || z == planet_z - 1)
+			return planet_info["zone_band"]
+	return null
 
 #define INIT_ANNOUNCE(X) to_chat(world, span_boldannounce("[X]")); log_world(X)
 /datum/controller/subsystem/mapping/loadWorld()
@@ -40,31 +77,34 @@
 	for(var/i in 1 to lava_planet_count)
 		LoadGroup(FailedZs, "Planet lava [i]", "map_files/voidcrew", "lava.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM)))
 		z_count += 2
-		var/list/p = list(type = /datum/overmap/planet/lava, z = z_count)
+		var/list/p = list(type = /datum/overmap/planet/lava, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("lava [i]" = p)
 
 	for(var/i in 1 to ice_planet_count)
 		LoadGroup(FailedZs, "Planet ice [i]", "map_files/voidcrew", "ice.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM)))
 		z_count += 2
-		var/list/p = list(type = /datum/overmap/planet/ice, z = z_count)
+		var/list/p = list(type = /datum/overmap/planet/ice, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("ice [i]" = p)
 
+	// VOIDCREW: jungle/beach/wasteland carry their weather traits here so SSweather
+	// schedules storms on them like it already does for lava/ice (their /datum/overmap/planet
+	// entries always declared these weather types, but the roundstart z-levels never got the traits)
 	for(var/i in 1 to jungle_planet_count)
-		LoadGroup(FailedZs, "Planet jungle [i]", "map_files/voidcrew", "jungle.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_JUNGLE_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_JUNGLE_RUINS)))
+		LoadGroup(FailedZs, "Planet jungle [i]", "map_files/voidcrew", "jungle.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_JUNGLE_RUINS, ZTRAIT_RAINSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_JUNGLE_RUINS, ZTRAIT_RAINSTORM)))
 		z_count += 2
-		var/list/p = list(type = /datum/overmap/planet/jungle, z = z_count)
+		var/list/p = list(type = /datum/overmap/planet/jungle, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("jungle [i]" = p)
 
 	for(var/i in 1 to beach_planet_count)
-		LoadGroup(FailedZs, "Planet beach [i]", "map_files/voidcrew", "beach.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_BEACH_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_BEACH_RUINS)))
+		LoadGroup(FailedZs, "Planet beach [i]", "map_files/voidcrew", "beach.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_BEACH_RUINS, ZTRAIT_RAINSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_BEACH_RUINS, ZTRAIT_RAINSTORM)))
 		z_count += 2
-		var/list/p = list(type = /datum/overmap/planet/beach, z = z_count)
+		var/list/p = list(type = /datum/overmap/planet/beach, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("beach [i]" = p)
 
 	for(var/i in 1 to wasteland_planet_count)
-		LoadGroup(FailedZs, "Planet wasteland [i]", "map_files/voidcrew", "wasteland.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_WASTELAND_RUINS), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_WASTELAND_RUINS)))
+		LoadGroup(FailedZs, "Planet wasteland [i]", "map_files/voidcrew", "wasteland.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_WASTELAND_RUINS, ZTRAIT_SANDSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_WASTELAND_RUINS, ZTRAIT_SANDSTORM)))
 		z_count += 2
-		var/list/p = list(type = /datum/overmap/planet/wasteland, z = z_count)
+		var/list/p = list(type = /datum/overmap/planet/wasteland, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("wasteland [i]" = p)
 
 	if(LAZYLEN(FailedZs)) //but seriously, unless the server's filesystem is messed up this will never happen

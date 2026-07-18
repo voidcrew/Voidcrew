@@ -6,7 +6,7 @@
 "bz" = (
 /obj/item/grown/bananapeel,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "bO" = (
 /obj/effect/turf_decal/siding/wood{
@@ -52,7 +52,7 @@
 /area/ruin/unpowered)
 "gU" = (
 /obj/structure/flora/tree/jungle/small,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "he" = (
 /obj/effect/decal/cleanable/ash,
@@ -105,7 +105,7 @@
 "pb" = (
 /obj/structure/barricade/wooden/crude,
 /obj/structure/barricade/wooden,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "qh" = (
 /obj/structure/table/wood,
@@ -117,7 +117,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/insectguts,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "qY" = (
 /obj/effect/decal/cleanable/ash,
@@ -156,7 +156,7 @@
 /area/ruin/unpowered)
 "vk" = (
 /obj/effect/decal/cleanable/blood/oil/slippery,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "vv" = (
 /turf/closed/indestructible/wood,
@@ -202,7 +202,7 @@
 "zG" = (
 /obj/structure/barricade/wooden,
 /obj/structure/barricade/wooden/crude,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "AQ" = (
 /obj/structure/table/wood,
@@ -230,7 +230,7 @@
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "Ch" = (
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "CG" = (
 /obj/structure/table/wood,
@@ -302,7 +302,7 @@
 /obj/structure/barricade/wooden/crude,
 /obj/structure/barricade/wooden,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/misc/dirt,
+/turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)
 "RO" = (
 /obj/effect/turf_decal/siding/wood,

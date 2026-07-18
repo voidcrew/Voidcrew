@@ -378,6 +378,13 @@
 
 	ship_notify("Electrical storm detected! Lighting systems overloading!", "HAZARD", SHIP_NOTIFY_WARNING, 'sound/effects/sparks/sparks1.ogg', 50)
 
+	// Silver lining: the charged atmosphere passively feeds the ship's power storage
+	// Minor: 0.5x, Moderate: 1x, Majour: 2x (via intensity)
+	var/charge_mult = intensity
+	if(istype(storm, /obj/structure/overmap/event/electric/minor))
+		charge_mult = ELECTRICAL_STORM_SMES_CHARGE_MULT_MINOR
+	electrical_storm_charge_smes(charge_mult)
+
 	// Spawn real lightning strikes - but not on minor storms
 	// Minor: no lightning, Moderate: 1 strike (40% chance each), Major: 2-3 strikes
 	if(!istype(storm, /obj/structure/overmap/event/electric/minor))
@@ -491,6 +498,25 @@
 	// Chance to break the light based on intensity
 	if(prob(20 * intensity))
 		source_light.break_light_tube()
+
+/**
+ * Electrical Storm Silver Lining
+ * The storm's charged particles induce current in the ship's SMES units,
+ * passively charging them - an upside to braving the storm.
+ * charge_mult scales with storm severity. Capacity caps are respected by adjust_charge().
+ */
+/obj/structure/overmap/ship/proc/electrical_storm_charge_smes(charge_mult = 1)
+	if(!shuttle?.shuttle_areas)
+		return
+
+	for(var/area/ship_area as anything in shuttle.shuttle_areas)
+		for(var/obj/machinery/power/smes/unit in ship_area)
+			if(QDELETED(unit) || (unit.machine_stat & (BROKEN | EMPED)))
+				continue
+			var/gained = unit.adjust_charge(ELECTRICAL_STORM_SMES_CHARGE * charge_mult)
+			if(gained > 0)
+				// Small visual telegraph that the storm is feeding the unit
+				do_sparks(2, TRUE, unit)
 
 /**
  * Meteor Storm Effect

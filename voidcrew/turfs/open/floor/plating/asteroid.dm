@@ -61,6 +61,7 @@
 /turf/open/misc/asteroid/sand
 	name = "sand"
 	icon = 'voidcrew/icons/turf/wasteland.dmi'
+	damaged_dmi = 'voidcrew/icons/turf/wasteland.dmi'
 	icon_state = "desert"
 	base_icon_state = "desert"
 	baseturfs = /turf/open/misc/asteroid/sand
@@ -89,6 +90,7 @@
 /turf/open/misc/asteroid/sand/beach
 	planetary_atmos = TRUE
 	icon = 'voidcrew/icons/misc/beach.dmi'
+	damaged_dmi = 'voidcrew/icons/misc/beach.dmi'
 	icon_state = "sand"
 	base_icon_state = "sand"
 

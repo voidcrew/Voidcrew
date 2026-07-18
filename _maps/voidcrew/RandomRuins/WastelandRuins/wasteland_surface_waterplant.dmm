@@ -272,12 +272,6 @@
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"hk" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "hs" = (
 /obj/structure/reagent_dispensers/water_cooler,
 /obj/effect/decal/cleanable/dirt,
@@ -540,7 +534,7 @@
 /turf/open/floor/iron,
 /area/ruin/powered)
 "ni" = (
-/obj/item/reagent_containers/food/drinks/bottle/sarsaparilla,
+/obj/item/reagent_containers/cup/glass/bottle/sarsaparilla,
 /turf/open/misc/asteroid/sand/lit,
 /area/ruin/powered)
 "np" = (
@@ -729,11 +723,6 @@
 	},
 /turf/closed/wall/rust,
 /area/ruin/powered)
-"qL" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/components/unary/vent_pump/on,
-/turf/open/floor/iron,
-/area/ruin/powered)
 "re" = (
 /obj/structure/chair/stool,
 /obj/effect/decal/cleanable/dirt,
@@ -816,9 +805,6 @@
 "ti" = (
 /obj/machinery/atmospherics/pipe/layer_manifold/visible,
 /turf/closed/wall,
-/area/ruin/powered)
-"tk" = (
-/turf/open/floor/iron,
 /area/ruin/powered)
 "to" = (
 /obj/structure/rack,
@@ -1434,9 +1420,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/ruin/powered)
-"Jg" = (
-/turf/open/floor/iron,
-/area/ruin/powered)
 "Jv" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
@@ -1502,7 +1485,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "LM" = (
-/obj/machinery/power/turbine,
+/obj/machinery/power/turbine/core_rotor,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "LN" = (
@@ -1628,7 +1611,7 @@
 "Ow" = (
 /obj/item/storage/bottles/sandblast,
 /turf/open/floor/wood{
-	icon_state = "wood-broken2"
+	broken = 1
 	},
 /area/ruin/powered)
 "Oz" = (
@@ -1781,7 +1764,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "Ru" = (
-/mob/living/simple_animal/crab,
+/mob/living/basic/crab,
 /turf/open/misc/asteroid/sand/lit,
 /area/ruin/powered)
 "RH" = (
@@ -1964,10 +1947,6 @@
 	dir = 1
 	},
 /turf/open/floor/engine/vacuum,
-/area/ruin/powered)
-"VF" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron,
 /area/ruin/powered)
 "VG" = (
 /obj/structure/closet/crate/large,
@@ -2154,13 +2133,6 @@
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden,
 /turf/open/floor/iron,
 /area/ruin/powered)
-"ZE" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron,
-/area/ruin/powered)
-"ZH" = (
-/turf/open/misc/asteroid/sand/lit,
-/area/ruin/powered)
 "ZJ" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden{
 	dir = 4
@@ -2292,7 +2264,7 @@ lA
 Ty
 to
 SE
-ZE
+OC
 to
 Ty
 kG
@@ -2316,15 +2288,15 @@ Jb
 OC
 Jb
 SE
-tk
+rX
 il
 kG
 Hs
-ZE
+OC
 SE
 FW
-ZE
-ZE
+OC
+OC
 ln
 SE
 wk
@@ -2345,7 +2317,7 @@ Va
 kG
 Jb
 Jb
-tk
+rX
 SE
 Jb
 Jb
@@ -2380,7 +2352,7 @@ SE
 SE
 aa
 SE
-tk
+rX
 oo
 kG
 oy
@@ -2397,7 +2369,7 @@ aU
 MQ
 oq
 Nk
-Jg
+rX
 SE
 cl
 Va
@@ -2409,7 +2381,7 @@ Va
 kG
 NM
 SE
-ZE
+OC
 Xg
 Xg
 SE
@@ -2461,7 +2433,7 @@ Fw
 mP
 Ps
 gr
-ZE
+OC
 SE
 AM
 Va
@@ -2479,7 +2451,7 @@ SE
 VG
 rX
 aY
-ZE
+OC
 SE
 SE
 rX
@@ -2489,7 +2461,7 @@ rX
 zA
 aY
 Jb
-ZE
+OC
 bt
 ue
 JK
@@ -2503,12 +2475,12 @@ kG
 kG
 kG
 NT
-ZE
+OC
 SE
-ZE
+OC
 SE
 Jb
-ZE
+OC
 SE
 kG
 SE
@@ -2558,7 +2530,7 @@ Fn
 Me
 Zt
 Jb
-ZE
+OC
 dd
 Va
 "}
@@ -2634,7 +2606,7 @@ WV
 NT
 NT
 fo
-ZE
+OC
 Oo
 nE
 cl
@@ -2654,7 +2626,7 @@ jt
 Dp
 bx
 Jb
-ZE
+OC
 dd
 Va
 "}
@@ -2685,7 +2657,7 @@ cl
 wt
 YV
 IL
-ZE
+OC
 rX
 AM
 Va
@@ -2718,7 +2690,7 @@ pI
 Li
 zJ
 My
-ZE
+OC
 AM
 Va
 "}
@@ -2730,7 +2702,7 @@ QU
 wR
 ha
 ct
-ZE
+OC
 gW
 qD
 It
@@ -2770,7 +2742,7 @@ Qw
 Cu
 oB
 Jb
-ZE
+OC
 lQ
 rX
 Jb
@@ -2794,7 +2766,7 @@ cl
 It
 cl
 fH
-ZE
+OC
 Qy
 LE
 ha
@@ -2808,8 +2780,8 @@ HQ
 uO
 wx
 Tc
-ZE
-ZE
+OC
+OC
 ha
 Ow
 IR
@@ -2831,13 +2803,13 @@ Xy
 AC
 ha
 ff
-VF
+OC
 QY
-ZE
+OC
 Jb
 xv
 SE
-ZE
+OC
 HH
 ZJ
 Jb
@@ -2929,11 +2901,11 @@ Cw
 xc
 ne
 xc
-ZE
+OC
 xc
 Cw
 Nn
-ZE
+OC
 fn
 re
 hI
@@ -2958,7 +2930,7 @@ eh
 bn
 SE
 bQ
-ZE
+OC
 ae
 cU
 ad
@@ -2983,7 +2955,7 @@ cl
 Py
 cl
 eh
-ZH
+eh
 Ww
 AE
 eh
@@ -2991,7 +2963,7 @@ cl
 It
 Ij
 ne
-ZE
+OC
 xc
 xc
 ac
@@ -2999,7 +2971,7 @@ Cw
 gm
 ul
 Oz
-ZE
+OC
 yQ
 rX
 It

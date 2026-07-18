@@ -30,6 +30,12 @@
 		/mob/living/basic/spider/giant/tarantula/wasteland = 1,
 		/mob/living/basic/mining/legion/wasteland = 3
 	)
+	// Meaner tier for dangerous-zone planets (see dangerous_mob_spawn_list)
+	dangerous_mob_spawn_list = list(
+		/mob/living/basic/mining/legion/wasteland = 3,
+		/mob/living/basic/spider/giant/tarantula/wasteland = 2,
+		/mob/living/basic/spider/giant/wasteland = 2,
+	)
 
 /datum/biome/wasteland/plains
 	open_turf_types = list(/turf/open/misc/dust/lit = 1)
@@ -70,6 +76,10 @@
 		/mob/living/basic/spider/giant/wasteland = 1,
 		/mob/living/basic/spider/giant/tarantula/wasteland = 1
 	)
+	dangerous_mob_spawn_list = list(
+		/mob/living/basic/hivebot/rapid/wasteland = 3,
+		/mob/living/basic/spider/giant/tarantula/wasteland = 1,
+	)
 
 /datum/biome/ruins
 	open_turf_types = list(/turf/open/misc/dust/lit = 45, /turf/open/floor/plating/rust = 1)
@@ -98,6 +108,10 @@
 		/mob/living/basic/mining/legion/crystal/wasteland = 1,
 		/mob/living/basic/mining/watcher/forgotten/wasteland = 1
 	)
+	dangerous_mob_spawn_list = list(
+		/mob/living/basic/mining/legion/crystal/wasteland = 1,
+		/mob/living/basic/mining/watcher/forgotten/wasteland = 1,
+	)
 
 /datum/biome/cave/wasteland
 	open_turf_types = list(/turf/open/misc/dirt/dry = 1, /turf/open/misc/dust = 1)
@@ -108,6 +122,10 @@
 		/mob/living/basic/mining/wolf/wasteland/random = 15,
 		/obj/structure/spawner/ice_moon/demonic_portal/blobspore = 1,
 		/obj/structure/spawner/ice_moon/demonic_portal/hivebot = 1
+	)
+	dangerous_mob_spawn_list = list(
+		/mob/living/basic/mining/goliath/wasteland = 3,
+		/mob/living/basic/mining/goliath/ancient/wasteland = 1,
 	)
 	flora_spawn_chance = 10
 	flora_spawn_list = list(

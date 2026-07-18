@@ -1,5 +1,11 @@
 //Yes, they can only be rectangular.
 //Yes, I'm sorry.
+
+/// Above this many turfs, reservation teardown in Release() spreads itself over
+/// multiple ticks instead of running atomically. Small reservations keep the
+/// historical no-sleep behavior, so qdel() from tick-sensitive contexts stays safe.
+#define RESERVATION_RELEASE_YIELD_THRESHOLD 2500
+
 /datum/turf_reservation
 	/// All turfs that we've reserved
 	var/list/reserved_turfs = list()
@@ -52,12 +58,20 @@
 
 	var/release_turfs = reserved_copy + cordon_copy
 
+	// Landable overmap encounters reserve >20k turfs - tearing those down atomically
+	// hard-freezes the server for seconds, so large releases yield. This is safe even
+	// from qdel(): our turf lists were already emptied above, so a reentrant Release()
+	// during a yield has nothing left to double-process.
+	var/can_yield = length(release_turfs) > RESERVATION_RELEASE_YIELD_THRESHOLD
+
 	for(var/turf/reserved_turf as anything in release_turfs)
 		SEND_SIGNAL(reserved_turf, COMSIG_TURF_RESERVATION_RELEASED, src)
 
 		// immediately disconnect from atmos
 		reserved_turf.blocks_air = TRUE
 		CALCULATE_ADJACENT_TURFS(reserved_turf, KILL_EXCITED)
+		if(can_yield)
+			CHECK_TICK
 
 	// Makes the linter happy, even tho we don't await this
 	INVOKE_ASYNC(SSmapping, TYPE_PROC_REF(/datum/controller/subsystem/mapping, reserve_turfs), release_turfs)
@@ -96,11 +110,13 @@
 		cordon_area.contents += cordon_turf
 
 		// Its no longer unused, but its also not "used"
+		// (not removed from SSmapping.unused_turfs - stale entries there are cheap,
+		// per-turf removal is not; see _reserve_area())
 		cordon_turf.turf_flags &= ~UNUSED_RESERVATION_TURF
 		cordon_turf.empty(/turf/cordon, /turf/cordon)
-		SSmapping.unused_turfs["[cordon_turf.z]"] -= cordon_turf
 		// still gets linked to us though
 		SSmapping.used_turfs[cordon_turf] = src
+		CHECK_TICK
 
 	//swap the area with the pre-cordoning area
 	for(var/turf/pre_cordon_turf as anything in pre_cordon_turfs)
@@ -185,13 +201,29 @@
 		break
 	if(!passing || !istype(BL) || !istype(TR))
 		return FALSE
-	for(var/i in final)
-		var/turf/T = i
-		reserved_turfs |= T
-		SSmapping.unused_turfs["[T.z]"] -= T
+
+	// Claim every validated turf (ours AND the cordon ring) BEFORE doing any expensive
+	// work: the empty() pass below yields via CHECK_TICK, and a turf left
+	// validated-but-unclaimed across a yield could be grabbed by a concurrent reserve().
+	// Claiming is pure flag/bookkeeping work, so this pass never sleeps.
+	// Claimed turfs are deliberately NOT removed from SSmapping.unused_turfs: per-turf
+	// removal from a list that size is a linear scan each (quadratic overall - seconds
+	// of hard freeze for big reservations). The reserve scan above already skips
+	// anything without UNUSED_RESERVATION_TURF, and the unused_turfs lists are assoc
+	// keyed by turf, so handing a turf back later just updates its existing key.
+	reserved_turfs += final
+	for(var/turf/T as anything in final)
 		SSmapping.used_turfs[T] = src
 		T.turf_flags = (T.turf_flags | RESERVATION_TURF) & ~UNUSED_RESERVATION_TURF
+	for(var/turf/cordon_turf as anything in cordon_turfs)
+		cordon_turf.turf_flags &= ~UNUSED_RESERVATION_TURF
+		SSmapping.used_turfs[cordon_turf] = src
+
+	// The actual turf conversion is by far the expensive part (a full ChangeTurf per
+	// turf) - now that everything is claimed it can safely spread over multiple ticks
+	for(var/turf/T as anything in final)
 		T.empty(turf_type, turf_type_is_baseturf ? turf_type : null)
+		CHECK_TICK
 
 	bottom_left_turfs += BL
 	top_right_turfs += TR
@@ -272,6 +304,8 @@
 	var/offset_y = bounds_info["offset_y"]
 	var/turf/bottom_left = bottom_left_turfs[z_idx - 1]
 	return locate(bottom_left.x + offset_x, bottom_left.y + offset_y, bottom_left.z)
+
+#undef RESERVATION_RELEASE_YIELD_THRESHOLD
 
 /datum/turf_reservation/New()
 	LAZYADD(SSmapping.turf_reservations, src)

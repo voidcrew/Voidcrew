@@ -325,7 +325,9 @@
 	name = "ushanka"
 	desc = "Perfect for winter in Siberia, da?"
 	icon_state = "ushankadown"
-	inhand_icon_state = null
+	inhand_icon_state = "ushanka"
+	lefthand_file = 'voidcrew/icons/mob/inhands/clothing/ushanka_lefthand.dmi'
+	righthand_file = 'voidcrew/icons/mob/inhands/clothing/ushanka_righthand.dmi'
 	flags_inv = HIDEEARS|HIDEHAIR
 	cold_protection = HEAD
 	min_cold_protection_temperature = FIRE_HELM_MIN_TEMP_PROTECT
@@ -339,11 +341,9 @@
 /obj/item/clothing/head/costume/ushanka/attack_self(mob/user)
 	if(earflaps)
 		icon_state = upsprite
-		inhand_icon_state = upsprite
 		to_chat(user, span_notice("You raise the ear flaps on the ushanka."))
 	else
 		icon_state = downsprite
-		inhand_icon_state = downsprite
 		to_chat(user, span_notice("You lower the ear flaps on the ushanka."))
 	earflaps = !earflaps
 
@@ -351,6 +351,7 @@
 	name = "bear hunter's ushanka"
 	desc = "Handcrafted in Siberia from real polar bears."
 	icon_state = "ushankadown_polar"
+	inhand_icon_state = "ushanka_polar"
 	upsprite = "ushankaup_polar"
 	downsprite = "ushankadown_polar"
 

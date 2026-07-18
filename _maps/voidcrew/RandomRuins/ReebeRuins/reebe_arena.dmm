@@ -1,15 +1,15 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aa" = (
 /obj/effect/zone_mobs/cult,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "ab" = (
 /obj/effect/zone_mobs/cult/boss,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "ac" = (
 /obj/structure/closet/crate/zone_loot/armory/rare,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "ai" = (
 /obj/structure/lattice/catwalk/clockwork,
@@ -21,75 +21,75 @@
 /area/template_noop)
 "dM" = (
 /obj/structure/fluff/clockwork/fallen_armor,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "eT" = (
 /obj/structure/bonfire/prelit,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "hr" = (
 /obj/structure/girder/bronze,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "hB" = (
 /obj/machinery/computer{
 	icon_keyboard = "ratvar_key1";
 	name = "abandoned computer"
 	},
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "hO" = (
 /obj/structure/chair/bronze{
 	dir = 4
 	},
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "la" = (
 /obj/machinery/sleeper{
 	dir = 4
 	},
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "lB" = (
 /obj/structure/lattice/clockwork,
 /turf/open/chasm/reebe_void,
 /area/ruin/reebe)
 "pm" = (
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "pW" = (
 /obj/item/nullrod/spear,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "qj" = (
 /mob/living/basic/mining/goliath/ancient,
 /obj/structure/fans/tiny/invisible,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "qC" = (
 /obj/structure/chair/bronze,
 /obj/item/nullrod/spear,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "vz" = (
 /obj/structure/grille,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "vP" = (
 /obj/structure/railing{
 	dir = 1
 	},
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "vZ" = (
 /obj/item/ammo_box/magazine/m9mm,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "xy" = (
 /obj/machinery/door/airlock/bronze/seethru{
 	name = "Infirmary"
 	},
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "zc" = (
 /obj/structure/lattice/catwalk/clockwork,
@@ -99,16 +99,16 @@
 /obj/structure/chair/bronze{
 	dir = 8
 	},
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Ag" = (
 /obj/structure/table/bronze,
 /obj/item/nullrod/spear,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "AT" = (
 /obj/machinery/door/airlock/bronze/seethru,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Cj" = (
 /turf/closed/wall/mineral/bronze,
@@ -116,37 +116,37 @@
 "De" = (
 /obj/structure/grille,
 /obj/structure/window/bronze/fulltile,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "DY" = (
 /mob/living/basic/mining/legion/crystal/wasteland,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Eg" = (
 /obj/effect/decal/remains/human,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Em" = (
 /obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Ep" = (
 /obj/structure/table/bronze,
 /obj/item/toy/clockwork_watch,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Fz" = (
 /obj/machinery/sleeper,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "FD" = (
 /obj/structure/table/bronze,
 /obj/item/radio/intercom,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "FK" = (
 /obj/structure/railing,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "FT" = (
 /obj/structure/lattice/catwalk/clockwork,
@@ -156,7 +156,7 @@
 "HK" = (
 /obj/structure/window/bronze/fulltile,
 /obj/structure/grille,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "HX" = (
 /obj/structure/grille,
@@ -166,11 +166,11 @@
 "Ib" = (
 /obj/structure/table/bronze,
 /obj/item/storage/medkit/regular,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Ij" = (
 /obj/structure/fans/tiny/invisible,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "IC" = (
 /turf/template_noop,
@@ -179,22 +179,22 @@
 /obj/machinery/door/airlock/bronze/seethru{
 	name = "Ark Chamber"
 	},
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "JC" = (
 /obj/structure/chair/bronze{
 	dir = 1
 	},
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "KK" = (
 /obj/machinery/door/airlock/bronze/seethru,
 /obj/structure/fans/tiny,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Oh" = (
 /mob/living/basic/mining/watcher/forgotten,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Pn" = (
 /obj/machinery/computer{
@@ -202,12 +202,12 @@
 	icon_keyboard = "ratvar_key1";
 	name = "abandoned computer"
 	},
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "QS" = (
 /obj/structure/table/bronze,
 /obj/item/toy/plush/carpplushie,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Rc" = (
 /obj/machinery/computer{
@@ -215,44 +215,44 @@
 	icon_keyboard = "ratvar_key1";
 	name = "abandoned computer"
 	},
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Sa" = (
 /mob/living/basic/mining/goliath/ancient,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "TM" = (
 /obj/machinery/door/airlock/bronze/seethru{
 	name = "Listening Station"
 	},
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Uo" = (
 /obj/structure/dresser,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Ux" = (
 /obj/item/spear,
 /obj/item/grenade/c4,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "UU" = (
 /turf/open/chasm/reebe_void,
 /area/ruin/reebe)
 "VT" = (
 /obj/structure/table/bronze,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Xr" = (
 /obj/machinery/door/airlock/bronze/seethru{
 	name = "Summoning Chamber"
 	},
 /obj/structure/fans/tiny,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "XX" = (
 /obj/effect/mob_spawn/corpse/human/nanotrasensoldier,
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "Yz" = (
 /obj/structure/lattice/clockwork,
@@ -262,13 +262,13 @@
 /obj/structure/mirror/magic/lesser{
 	pixel_x = 32
 	},
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "ZO" = (
 /obj/machinery/door/airlock/bronze/seethru{
 	name = "Observation Room"
 	},
-/turf/open/floor/bronze,
+/turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 
 (1,1,1) = {"

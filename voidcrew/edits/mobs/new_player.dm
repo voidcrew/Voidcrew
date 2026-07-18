@@ -134,6 +134,8 @@
 	SSticker.queue_delay = 4
 
 	if(!SSjob.assign_role(src, job, TRUE))
+		//Give back the job slot we took, or it leaks whenever assignment fails (job ban, playtime, etc.)
+		joined_ship.job_slots[job]++
 		tgui_alert(usr, "There was an unexpected error putting you into your requested job. If you cannot join with any job, you should contact an admin.")
 		return FALSE
 

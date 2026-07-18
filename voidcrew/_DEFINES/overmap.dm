@@ -23,3 +23,41 @@
 #define MAX_OVERMAP_SPACE_RUINS 24
 /// Minimum number of space ruins to spawn
 #define MIN_OVERMAP_SPACE_RUINS 12
+
+// Asteroid mining now lives entirely on landable meteor storm / asteroid field hazard
+// events (see events.dm) - a proper /datum/map_generator, same architecture as planets,
+// carves one or more rock blobs into a lazily-loaded turf reservation, with real vacuum
+// between and around them, instead of loading a static space-ruin template. The old
+// asteroid-category space ruin signals (upstream asteroid1-6 etc.) were retired as the
+// mining vehicle; they still spawn as ordinary ("unknown"-category) explorable ruins.
+/// Minimum number of landable asteroid field events guaranteed on the overmap at roundstart,
+/// so crews always have somewhere to mine in space (was MIN_OVERMAP_ASTEROID_SIGNALS, pointed
+/// at ruin signals, before mining moved to field events)
+#define MIN_OVERMAP_ASTEROID_FIELDS 3
+/// Ore stack size bounds for seeded asteroid deposits (planet rock yields rand(1,5) off mining z-levels)
+#define ASTEROID_ORE_AMOUNT_MIN 2
+#define ASTEROID_ORE_AMOUNT_MAX 5
+/// Interior working-area footprint (tiles) of a landable meteor storm rock field, before the docking buffer
+#define EVENT_FIELD_WIDTH 48
+#define EVENT_FIELD_HEIGHT 48
+/// Default rock blob count bounds (see /datum/map_generator/cave_generator/asteroid_field in
+/// AsteroidCaves.dm) - minor/majour subtypes override these to scale field density with severity
+#define EVENT_FIELD_MIN_BLOBS 4
+#define EVENT_FIELD_MAX_BLOBS 10
+/// Blob radius bounds (tiles). Each blob is a jittered circle of rock - the same technique
+/// /datum/map_generator/cave_generator/asteroid uses for its single field (AsteroidCaves.dm),
+/// just applied per-blob so the field is several scattered clusters with vacuum between them
+#define EVENT_FIELD_BLOB_RADIUS_MIN 3
+#define EVENT_FIELD_BLOB_RADIUS_MAX 7
+/// Target fraction of a hazard field's rock turfs that should bear ore after seeding - denser
+/// than the old lone asteroid signal's ratio (~20%) since reaching this rock means flying
+/// through live meteor traffic first (see ship_damage.dm apply_meteor_damage)
+#define EVENT_FIELD_ORE_TARGET_RATIO 0.3
+
+// Electrical storm SMES charging
+/// Base energy fed into each SMES on a ship per electrical storm effect tick, before severity scaling.
+/// Effect ticks are gated by the 3 second hazard cooldown, so this is roughly what a default
+/// 50 kW SMES input terminal would deliver over the same window - a small passive freebie.
+#define ELECTRICAL_STORM_SMES_CHARGE (150 KILO JOULES)
+/// Charge multiplier for minor electrical storms (moderate uses intensity 1, majour intensity 2)
+#define ELECTRICAL_STORM_SMES_CHARGE_MULT_MINOR 0.5

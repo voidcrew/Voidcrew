@@ -260,7 +260,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/mechaton/engineering)
 "nR" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 4
 	},
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
@@ -489,7 +489,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/mechaton/concourse)
 "yN" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 4
 	},
 /obj/structure/window/reinforced/plasma/spawner/directional/east,

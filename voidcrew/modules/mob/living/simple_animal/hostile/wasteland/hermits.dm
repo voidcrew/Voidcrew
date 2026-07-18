@@ -5,7 +5,7 @@
 	icon_state = "survivor_base"
 	icon_living = "survivor_base"
 	icon_dead = null
-	icon_gib = "syndicate_gib"
+	icon_gib = null
 	mob_biotypes = MOB_ORGANIC
 	minbodytemp = 180
 	unsuitable_atmos_damage = 15

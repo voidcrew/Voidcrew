@@ -956,7 +956,7 @@
 /obj/effect/turf_decal/stripes{
 	dir = 8
 	},
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 8
 	},
 /obj/structure/window/reinforced/plasma/spawner/directional/west,
@@ -1360,7 +1360,7 @@
 /obj/effect/turf_decal/stripes{
 	dir = 8
 	},
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 8
 	},
 /obj/structure/window/reinforced/plasma/spawner/directional/west,

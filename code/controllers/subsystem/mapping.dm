@@ -53,7 +53,10 @@ SUBSYSTEM_DEF(mapping)
 	var/max_plane_offset = 0
 
 	var/loading_ruins = FALSE
-	var/list/turf/unused_turfs = list() //Not actually unused turfs they're unused but reserved for use for whatever requests them. "[zlevel_of_turf]" = list(turfs)
+	//Not actually unused turfs they're unused but reserved for use for whatever requests them. "[zlevel_of_turf]" = list(turf = TRUE)
+	//Assoc keyed by turf so handing turfs back is a keyed update instead of a linear scan. May contain
+	//stale (currently claimed) entries - UNUSED_RESERVATION_TURF on the turf itself is the ground truth.
+	var/list/turf/unused_turfs = list()
 	var/list/datum/turf_reservations //list of turf reservations
 	var/list/used_turfs = list() //list of turf = datum/turf_reservation
 	/// List of lists of turfs to reserve
@@ -184,7 +187,7 @@ SUBSYSTEM_DEF(mapping)
 			var/turf/reserving_turf = packet[packetlen]
 			reserving_turf.empty(RESERVED_TURF_TYPE, RESERVED_TURF_TYPE, null, TRUE)
 			LAZYINITLIST(unused_turfs["[reserving_turf.z]"])
-			unused_turfs["[reserving_turf.z]"] |= reserving_turf
+			unused_turfs["[reserving_turf.z]"][reserving_turf] = TRUE
 			var/area/old_area = reserving_turf.loc
 			LISTASSERTLEN(old_area.turfs_to_uncontain_by_zlevel, reserving_turf.z, list())
 			old_area.turfs_to_uncontain_by_zlevel[reserving_turf.z] += reserving_turf
@@ -653,17 +656,21 @@ ADMIN_VERB(load_away_mission, R_FUN, "Load Away Mission", "Load a specific away 
 		SHUTTLE_TRANSIT_BORDER, SHUTTLE_TRANSIT_BORDER, z,
 		world.maxx - SHUTTLE_TRANSIT_BORDER, world.maxy - SHUTTLE_TRANSIT_BORDER, z
 	)
+	// Assoc keyed by turf, so reservations can hand turfs back with a keyed update
+	// instead of a linear scan (see the unused_turfs declaration)
+	var/list/reservable_turfs = list()
 	for(var/turf/T as anything in reserved_block)
 		// No need to empty() these, because they just got created and are already /turf/open/space/basic.
 		T.turf_flags = UNUSED_RESERVATION_TURF
 		T.blocks_air = TRUE
+		reservable_turfs[T] = TRUE
 		CHECK_TICK
 
 	// Gotta create these suckers if we've not done so already
 	if(SSatoms.initialized)
 		SSatoms.InitializeAtoms(Z_TURFS(z))
 
-	unused_turfs["[z]"] = reserved_block
+	unused_turfs["[z]"] = reservable_turfs
 	reservation_ready["[z]"] = TRUE
 	clearing_reserved_turfs = FALSE
 

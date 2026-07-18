@@ -1,12 +1,13 @@
-/obj/item/reagent_containers/food/drinks/bottle/sarsaparilla
+/obj/item/reagent_containers/cup/glass/bottle/sarsaparilla
 	name = "Sandblast Sarsaparilla"
 	desc = "Sealed for a guaranteed fresh taste in every bottle."
+	icon = 'voidcrew/icons/obj/drinks.dmi'
 	icon_state = "sandbottle"
 	volume = 50
 	list_reagents = list(/datum/reagent/medicine/molten_bubbles/sand = 50)
 	reagent_flags = null //Cap's on
 /*
-/obj/item/reagent_containers/food/drinks/bottle/sarsaparilla/attack_self(mob/user)
+/obj/item/reagent_containers/cup/glass/bottle/sarsaparilla/attack_self(mob/user)
 	if(!is_drainable()) // Uses the reagents.flags cause reagent_flags is only the init value
 		playsound(src, 'whitesands/sound/items/openbottle.ogg', 30, 1)
 		user.visible_message("<span class='notice'>[user] takes the cap off \the [src].</span>", "<span class='notice'>You take the cap off [src].</span>")
@@ -18,7 +19,7 @@
 	else
 		. = ..()
 */
-/obj/item/reagent_containers/food/drinks/bottle/sarsaparilla/examine(mob/user)
+/obj/item/reagent_containers/cup/glass/bottle/sarsaparilla/examine(mob/user)
 	. = ..()
 	if(!is_drainable())
 		. += "<span class='info'>The cap is still sealed.</span>"
@@ -37,7 +38,7 @@
 	name = "bottle crate"
 	desc = "A small crate for storing bottles"
 	icon = 'voidcrew/icons/obj/storage.dmi'
-	icon_state = "bottlecrate"
+	icon_state = "bottlecrate_0"
 	lefthand_file = 'icons/mob/inhands/items_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/items_righthand.dmi'
 	custom_materials = list(/datum/material/wood = 800)
@@ -87,8 +88,9 @@
 /obj/item/storage/bottles/sandblast
 	name = "sarsaparilla bottle crate"
 	desc = "Holds six bottles of the finest sarsaparilla this side of the sector."
+	icon_state = "bottlecrate_seal"
 	sealed = TRUE
 
 /obj/item/storage/bottles/sandblast/PopulateContents()
 	for(var/i in 1 to 6)
-		new /obj/item/reagent_containers/food/drinks/bottle/sarsaparilla(src)
+		new /obj/item/reagent_containers/cup/glass/bottle/sarsaparilla(src)

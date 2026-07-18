@@ -13,6 +13,11 @@
 	flora_spawn_chance = 20
 	mob_spawn_chance = 0.3
 	mob_spawn_list = list(/mob/living/carbon/human/species/monkey = 5)
+	// Meaner tier for dangerous-zone planets (see dangerous_mob_spawn_list)
+	dangerous_mob_spawn_list = list(
+		/mob/living/basic/gorilla/beach = 3,
+		/mob/living/basic/spider/giant/tarantula = 1,
+	)
 
 /datum/biome/jungle/dense
 	flora_spawn_chance = 30
@@ -40,6 +45,7 @@
 	open_turf_types = list(/turf/open/water/jungle/lit = 1)
 	mob_spawn_chance = 1
 	mob_spawn_list = list(/mob/living/basic/carp = 1)
+	dangerous_mob_spawn_list = null // no jungle land predators in the water
 	flora_spawn_chance = 1
 	flora_spawn_list = list(/obj/structure/flora/rock = 1)
 
@@ -59,6 +65,7 @@
 	)
 	mob_spawn_chance = 1
 	mob_spawn_list = list(/mob/living/basic/mining/wolf/random = 1, /mob/living/basic/bat = 1, /mob/living/basic/snake)
+	dangerous_mob_spawn_list = list(/mob/living/basic/spider/giant/tarantula = 1)
 	feature_spawn_chance = 1
 //	feature_spawn_list = list(/obj/item/pickaxe/rusted = 1, /obj/structure/closet/crate/grave/lead_researcher = 1, /obj/structure/closet/crate/grave = 1, /obj/item/shovel = 1, /obj/structure/closet/crate/secure/loot = 1)
 

@@ -65,10 +65,11 @@
 /datum/techweb_node/ship_combat_shields
 	id = TECHWEB_NODE_SHIP_COMBAT_SHIELDS
 	display_name = "Shuttle Shield Systems"
-	description = "Deflector shield technology that protects shuttles from attackers. Power requirements scale with shuttle size."
+	description = "Deflector shield technology that protects shuttles and outpost claims from attackers. Power requirements scale with shuttle size."
 	prereq_ids = list(TECHWEB_NODE_SHIP_COMBAT)
 	design_ids = list(
 		"ship_shield_generator",
+		"outpost_shield_generator", // player outposts (see player_outposts/outpost_shield.dm)
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 

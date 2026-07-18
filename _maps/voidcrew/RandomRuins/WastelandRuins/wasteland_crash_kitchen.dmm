@@ -23,7 +23,7 @@
 	dir = 8
 	},
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "dr" = (
@@ -33,7 +33,7 @@
 /obj/structure/extinguisher_cabinet,
 /obj/structure/girder,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "fE" = (
@@ -48,7 +48,7 @@
 /area/ruin/unpowered)
 "gg" = (
 /turf/open/floor/plating{
-	icon_state = "platingdmg2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "gO" = (
@@ -80,11 +80,6 @@
 	},
 /turf/open/floor/carpet/purple,
 /area/ruin/unpowered)
-"jX" = (
-/turf/open/floor/plating{
-	icon_state = "platingdmg1"
-	},
-/area/ruin/unpowered)
 "lN" = (
 /obj/structure/table/reinforced,
 /obj/item/reagent_containers/condiment/saltshaker{
@@ -113,7 +108,7 @@
 /obj/structure/table,
 /obj/item/circuitboard/machine/chem_dispenser/drinks/beer,
 /turf/open/floor/plating{
-	icon_state = "platingdmg2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "pa" = (
@@ -139,12 +134,12 @@
 	dir = 4
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "sQ" = (
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "sV" = (
@@ -211,20 +206,20 @@
 	dir = 8
 	},
 /turf/open/floor/plating{
-	icon_state = "platingdmg2"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "wG" = (
 /obj/structure/girder,
 /obj/structure/girder,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "xh" = (
 /obj/structure/girder,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "xi" = (
@@ -237,7 +232,7 @@
 /obj/item/reagent_containers/cup/glass/shaker,
 /obj/item/rag,
 /obj/item/reagent_containers/condiment/enzyme,
-/obj/item/kitchen/knife,
+/obj/item/knife/kitchen,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -278,12 +273,22 @@
 /obj/structure/sign/warning/docking,
 /turf/closed/wall/mineral/titanium,
 /area/ruin/unpowered)
+"zy" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/plating{
+	burnt = 1
+	},
+/area/ruin/unpowered)
+"zz" = (
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
 "Al" = (
 /obj/structure/window/reinforced/tinted/frosted{
 	dir = 1
 	},
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "DF" = (
@@ -300,7 +305,7 @@
 "Fq" = (
 /obj/item/electronics/apc,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Hv" = (
@@ -365,7 +370,7 @@
 	},
 /obj/effect/mob_spawn/corpse/human/assistant,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "Mi" = (
@@ -375,7 +380,7 @@
 "Nb" = (
 /obj/structure/girder,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "QS" = (
@@ -399,7 +404,7 @@
 /obj/structure/lattice,
 /obj/structure/girder,
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "Sh" = (
@@ -410,7 +415,7 @@
 /obj/structure/window/reinforced/spawner,
 /obj/machinery/atmospherics/components/binary/pump/layer2,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Te" = (
@@ -472,7 +477,7 @@
 	dir = 4
 	},
 /turf/open/floor/plating{
-	icon_state = "panelscorched"
+	burnt = 1
 	},
 /area/ruin/unpowered)
 "Vn" = (
@@ -525,16 +530,6 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"zz" = (
-/obj/structure/closet/crate/zone_loot/plunder,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
-"zy" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/plating{
-	icon_state = "panelscorched"
-	},
-/area/ruin/unpowered)
 
 (1,1,1) = {"
 ut
@@ -544,7 +539,7 @@ uM
 uM
 uM
 wq
-jX
+gg
 sQ
 uM
 uM
@@ -597,7 +592,7 @@ tm
 Te
 xh
 sQ
-jX
+gg
 gS
 dr
 QS
@@ -621,7 +616,7 @@ dr
 Fq
 ga
 Al
-jX
+gg
 KR
 uM
 uM
@@ -629,11 +624,11 @@ uM
 (6,1,1) = {"
 Rt
 me
-jX
+gg
 Lz
 aq
 zy
-jX
+gg
 HU
 pa
 HV
@@ -669,8 +664,8 @@ pa
 xi
 wG
 gg
-jX
-jX
+gg
+gg
 sQ
 Nb
 uM

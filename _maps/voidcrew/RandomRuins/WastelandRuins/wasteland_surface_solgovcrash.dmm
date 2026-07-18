@@ -1,15 +1,45 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/template_noop,
+/area/template_noop)
 "b" = (
 /obj/item/clothing/suit/armor/vest/solgov,
-/obj/effect/mob_spawn/human/corpse,
+/obj/effect/mob_spawn/corpse/human,
 /obj/structure/closet/crate/zone_loot/armory,
 /turf/open/floor/plating,
+/area/ruin/unpowered)
+"c" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/obj/item/card/id/solgov,
+/obj/effect/mob_spawn/corpse/human/solgov/infantry,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"d" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/yellow,
 /area/ruin/unpowered)
 "e" = (
 /obj/item/stack/rods,
 /obj/effect/turf_decal/stripes/line,
 /obj/effect/zone_mobs/syndicate,
 /turf/open/floor/mineral/titanium/white,
+/area/ruin/unpowered)
+"f" = (
+/obj/structure/frame/machine,
+/obj/item/stack/cable_coil/five,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"g" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/obj/item/stack/sheet/iron,
+/obj/effect/mob_spawn/corpse/human/solgov/officer,
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "h" = (
 /obj/effect/zone_mobs/syndicate,
@@ -27,38 +57,8 @@
 /obj/effect/zone_mobs/syndicate,
 /turf/open/floor/mineral/titanium/yellow,
 /area/ruin/unpowered)
-"a" = (
-/turf/template_noop,
-/area/template_noop)
-"c" = (
-/obj/structure/chair/comfy/shuttle{
-	dir = 1
-	},
-/obj/item/card/id/solgov,
-/obj/effect/mob_spawn/human/corpse/solgov/infantry,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
-"d" = (
-/obj/effect/turf_decal/stripes/line{
-	dir = 1
-	},
-/turf/open/floor/mineral/titanium/yellow,
-/area/ruin/unpowered)
-"f" = (
-/obj/structure/frame/machine,
-/obj/item/stack/cable_coil/five,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
-"g" = (
-/obj/structure/chair/comfy/shuttle{
-	dir = 1
-	},
-/obj/item/stack/sheet/iron,
-/obj/effect/mob_spawn/human/corpse/solgov/officer,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
 "l" = (
-/obj/item/kitchen/knife/letter_opener,
+/obj/item/knife/kitchen/letter_opener,
 /turf/open/floor/mineral/titanium/blue,
 /area/ruin/unpowered)
 "p" = (
@@ -70,11 +70,6 @@
 	},
 /turf/open/floor/mineral/titanium/blue,
 /area/ruin/unpowered)
-"r" = (
-/obj/item/clothing/suit/armor/vest/solgov,
-/obj/effect/mob_spawn/human/corpse,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
 "t" = (
 /obj/structure/frame/computer,
 /obj/item/circuitboard/computer/shuttle/helm,
@@ -84,33 +79,14 @@
 /obj/machinery/door/airlock/glass,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
-"w" = (
-/turf/open/floor/mineral/titanium/yellow,
-/area/ruin/unpowered)
 "D" = (
 /obj/structure/table/reinforced,
 /obj/item/pen/fountain,
 /turf/open/floor/mineral/titanium/blue,
 /area/ruin/unpowered)
-"E" = (
-/obj/item/stack/rods,
-/obj/effect/turf_decal/stripes/line{
-	dir = 5
-	},
-/obj/item/clothing/head/helmet/solgov,
-/obj/item/gun/energy/laser,
-/obj/item/clothing/under/solgov/elite,
-/obj/effect/gibspawner/human,
-/turf/open/floor/mineral/titanium/yellow,
-/area/ruin/unpowered)
 "G" = (
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"H" = (
-/obj/item/stack/rods,
-/obj/effect/turf_decal/stripes/line,
-/turf/open/floor/mineral/titanium/white,
-/area/ruin/unpowered)
 "K" = (
 /turf/closed/wall/mineral/titanium,
 /area/ruin/unpowered)
@@ -160,7 +136,7 @@
 /area/ruin/unpowered)
 "Y" = (
 /obj/item/stack/sheet/iron,
-/obj/effect/mob_spawn/human/corpse/solgov/infantry,
+/obj/effect/mob_spawn/corpse/human/solgov/infantry,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "Z" = (

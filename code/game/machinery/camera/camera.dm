@@ -149,6 +149,11 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/xray, 0)
 	return ..()
 
 /obj/machinery/camera/connect_to_shuttle(mapload, obj/docking_port/mobile/port, obj/docking_port/stationary/dock)
+	// VOIDCREW EDIT ADDITION BEGIN - cameras aboard player ships join a single per-ship network (voidcrew/edits/machinery/camera.dm)
+	if(istype(port, /obj/docking_port/mobile/voidcrew))
+		network = list(voidcrew_ship_camera_net(port))
+		return
+	// VOIDCREW EDIT ADDITION END
 	for(var/i in network)
 		network -= i
 		network += "[port.shuttle_id]_[i]"
@@ -221,13 +226,14 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/xray, 0)
 		return
 	if(!prob(150 / severity))
 		return
+	var/list/previous_network = network // VOIDCREW EDIT ADDITION - capture before clearing, or post_emp_reset "restores" the emptied list and the camera drops off its network (and thus every console) forever
 	network = list()
 	GLOB.cameranet.removeCamera(src)
 	set_machine_stat(machine_stat | EMPED)
 	set_light(0)
 	emped++ //Increase the number of consecutive EMP's
 	update_appearance()
-	addtimer(CALLBACK(src, PROC_REF(post_emp_reset), emped, network), reset_time)
+	addtimer(CALLBACK(src, PROC_REF(post_emp_reset), emped, previous_network), reset_time) // VOIDCREW EDIT - was `network`, see above
 	for(var/mob/M as anything in GLOB.player_list)
 		if (M.client?.eye == src)
 			M.reset_perspective(null)

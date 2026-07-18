@@ -58,6 +58,9 @@ SUBSYSTEM_DEF(overmap_zones)
 	// Cache blocked turfs for O(1) pathfinding lookups
 	cache_blocked_turfs()
 
+	// Hook storm telegraphs so planet weather scales with zone danger (zone_weather.dm)
+	setup_weather_scaling()
+
 	zones_active = TRUE
 
 	log_world("SSovermap_zones: Initialization complete!")
@@ -197,6 +200,10 @@ SUBSYSTEM_DEF(overmap_zones)
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in GLOB.space_ruin_signals)
 		if(reservation_contains_turf(ruin.reservation, T))
 			return ruin
+	// Meteor storm fields: lazily-loaded reservations, same bounds check
+	for(var/obj/structure/overmap/event/meteor/field as anything in GLOB.meteor_fields)
+		if(reservation_contains_turf(field.reservation, T))
+			return field
 	// Trader outposts: same reservation pattern
 	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
 		if(reservation_contains_turf(outpost.reservation, T))

@@ -32,6 +32,12 @@
 		/mob/living/basic/deer/beach = 1
 	)
 	mob_spawn_chance = 1
+	// Meaner tier for dangerous-zone planets (see dangerous_mob_spawn_list)
+	dangerous_mob_spawn_list = list(
+		/mob/living/basic/snake/beach = 2,
+		/mob/living/basic/bee/toxin = 1,
+		/mob/living/basic/slime/random/beach = 1,
+	)
 
 /datum/biome/grass/dense
 	flora_spawn_chance = 65
@@ -86,6 +92,10 @@
 		/mob/living/simple_animal/beachcarp/perch = 1
 	)
 	mob_spawn_chance = 1.4
+	dangerous_mob_spawn_list = list(
+		/mob/living/basic/carp/beach = 3,
+		/mob/living/basic/trooper/pirate/melee/beach/boat = 1,
+	)
 	flora_spawn_list = list(
 		/obj/structure/flora/rock/beach = 1,
 		/obj/structure/flora/rock/pile = 1

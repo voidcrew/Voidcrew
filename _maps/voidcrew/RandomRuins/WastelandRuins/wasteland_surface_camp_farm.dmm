@@ -18,7 +18,7 @@
 /obj/effect/decal/cleanable/dirt,
 /mob/living/basic/mining/goliath/wasteland,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "e" = (
@@ -61,7 +61,7 @@
 /obj/item/watertank,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
-	icon_state = "wood-broken7"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "k" = (
@@ -80,7 +80,7 @@
 "n" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
-	icon_state = "wood-broken7"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "o" = (
@@ -113,6 +113,15 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
+"p" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
 "r" = (
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -120,19 +129,13 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"t" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood{
-	icon_state = "wood-broken6"
-	},
-/area/ruin/unpowered)
 "u" = (
 /obj/structure/chair/plastic{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "v" = (
@@ -251,13 +254,7 @@
 /obj/machinery/reagentgrinder,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
-	},
-/area/ruin/unpowered)
-"R" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "S" = (
@@ -277,7 +274,7 @@
 	dir = 4
 	},
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "U" = (
@@ -326,15 +323,6 @@
 	},
 /turf/template_noop,
 /area/overmap_encounter/planetoid/wasteland)
-"p" = (
-/obj/structure/closet/crate/zone_loot/expedition,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"q" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
 
 (1,1,1) = {"
 L
@@ -370,7 +358,7 @@ E
 "}
 (3,1,1) = {"
 I
-R
+n
 Q
 j
 s
@@ -402,7 +390,7 @@ U
 "}
 (5,1,1) = {"
 S
-t
+n
 o
 X
 s
@@ -453,7 +441,7 @@ L
 V
 p
 L
-t
+n
 G
 l
 x
@@ -485,7 +473,7 @@ L
 H
 w
 L
-R
+n
 L
 x
 i

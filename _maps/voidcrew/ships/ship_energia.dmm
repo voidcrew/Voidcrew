@@ -377,7 +377,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/energia/maintenance)
 "uF" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 4
 	},
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
@@ -674,7 +674,7 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/energia/cargo_bay)
 "KL" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 4
 	},
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
@@ -824,7 +824,7 @@
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/energia/dorms)
 "QY" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 4
 	},
 /obj/structure/window/reinforced/plasma/spawner/directional/east,

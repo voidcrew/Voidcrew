@@ -1,34 +1,24 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aa" = (
 /obj/structure/closet/crate/zone_loot/syndicate/rare,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "ab" = (
 /obj/effect/zone_mobs/syndicate/boss,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "ac" = (
 /obj/effect/zone_mobs/syndicate,
-/turf/open/floor/engine{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/engine,
 /area/ruin/unpowered)
 "ae" = (
 /obj/effect/mapping_helpers/burnt_floor,
 /obj/effect/zone_mobs/syndicate,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "af" = (
 /obj/effect/zone_mobs/syndicate,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "ad" = (
 /obj/machinery/atmospherics/components/unary/portables_connector/visible{
@@ -47,9 +37,7 @@
 /area/ruin/unpowered)
 "cS" = (
 /obj/effect/mapping_helpers/broken_floor,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "dX" = (
 /obj/item/gun/ballistic/automatic/pistol{
@@ -67,44 +55,32 @@
 /area/ruin/unpowered)
 "fw" = (
 /obj/structure/frame/machine,
-/turf/open/floor/mineral/plastitanium/red{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/mineral/plastitanium/red,
 /area/ruin/unpowered)
 "gt" = (
 /obj/machinery/atmospherics/components/binary/pump,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "gK" = (
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "hz" = (
 /obj/item/storage/toolbox/syndicate,
-/turf/open/floor/engine{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/engine,
 /area/ruin/unpowered)
 "hG" = (
 /obj/machinery/atmospherics/components/binary/pump{
 	dir = 4
 	},
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "hQ" = (
 /obj/structure/chair/comfy,
 /obj/effect/mapping_helpers/burnt_floor,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "jf" = (
-/turf/open/floor/mineral/plastitanium/red{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/mineral/plastitanium/red,
 /area/ruin/unpowered)
 "jI" = (
 /turf/template_noop,
@@ -112,14 +88,10 @@
 "kW" = (
 /obj/effect/decal/cleanable/ash/large,
 /obj/effect/mapping_helpers/burnt_floor,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "kZ" = (
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "lN" = (
 /obj/item/clothing/head/utility/hardhat/red{
@@ -129,17 +101,13 @@
 /obj/machinery/atmospherics/components/unary/portables_connector/visible{
 	dir = 8
 	},
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "ns" = (
 /obj/structure/frame/machine,
 /obj/item/circuitboard/machine/smes,
 /obj/item/stock_parts/capacitor,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "nA" = (
 /obj/item/storage/medkit/ancient,
@@ -147,9 +115,7 @@
 /area/ruin/unpowered)
 "ox" = (
 /obj/machinery/atmospherics/components/binary/pump,
-/turf/open/floor/engine{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/engine,
 /area/ruin/unpowered)
 "oT" = (
 /turf/open/misc/dust/lit,
@@ -162,30 +128,22 @@
 /obj/machinery/atmospherics/components/binary/circulator{
 	dir = 4
 	},
-/turf/open/floor/engine{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/engine,
 /area/ruin/unpowered)
 "rp" = (
 /obj/machinery/suit_storage_unit{
 	mask_type = /obj/item/clothing/mask/gas/syndicate;
 	suit_type = /obj/item/clothing/suit/space/syndicate
 	},
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "rE" = (
 /obj/machinery/power/smes,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "sB" = (
 /obj/machinery/atmospherics/components/unary/portables_connector/visible,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "wh" = (
 /obj/item/clothing/shoes/jackboots,
@@ -193,16 +151,12 @@
 /area/overmap_encounter/planetoid/wasteland)
 "wp" = (
 /obj/structure/frame/machine,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "wH" = (
 /obj/machinery/atmospherics/components/unary/portables_connector/visible,
 /obj/machinery/portable_atmospherics/canister/oxygen,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "yj" = (
 /obj/machinery/door/airlock/hatch,
@@ -220,9 +174,7 @@
 /obj/structure/frame/machine,
 /obj/item/circuitboard/machine/sleeper,
 /obj/effect/mapping_helpers/burnt_floor,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "BW" = (
 /turf/open/floor/iron/dark,
@@ -232,9 +184,7 @@
 /area/ruin/unpowered)
 "CW" = (
 /mob/living/basic/trooper/syndicate/ranged/space,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "CX" = (
 /mob/living/basic/trooper/syndicate/ranged/smg/space,
@@ -244,9 +194,7 @@
 /obj/machinery/atmospherics/components/binary/circulator/cold{
 	dir = 8
 	},
-/turf/open/floor/engine{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/engine,
 /area/ruin/unpowered)
 "Eg" = (
 /obj/machinery/power/terminal{
@@ -258,15 +206,11 @@
 /obj/machinery/atmospherics/components/unary/thermomachine/freezer{
 	dir = 8
 	},
-/turf/open/floor/engine{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/engine,
 /area/ruin/unpowered)
 "Eu" = (
 /obj/effect/mapping_helpers/burnt_floor,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "Gd" = (
 /obj/item/grenade/c4/x4,
@@ -275,25 +219,18 @@
 /obj/item/grenade/syndieminibomb/concussion,
 /obj/item/grenade/c4,
 /obj/item/grenade/c4,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "GO" = (
 /obj/item/circuitboard/machine/sleeper,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "Iz" = (
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/overmap_encounter/planetoid/wasteland)
 "IY" = (
 /obj/machinery/power/smes,
 /turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
 	})
 "Jn" = (
 /turf/open/floor/pod/dark,
@@ -312,28 +249,21 @@
 /obj/item/ammo_box/magazine/smgm45,
 /obj/effect/mapping_helpers/burnt_floor,
 /turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
 	},
 /area/ruin/unpowered)
 "NA" = (
 /obj/structure/frame/machine,
-/turf/open/floor/engine{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/engine,
 /area/ruin/unpowered)
 "Or" = (
 /obj/machinery/atmospherics/components/binary/pump{
 	dir = 1
 	},
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "Pr" = (
 /obj/machinery/door/airlock/engineering,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "Ri" = (
 /obj/item/pickaxe/improvised,
@@ -350,9 +280,7 @@
 	default_raw_text = "Well, we failed. The undoable has been done. We were taken out. The great Starfury is stuck in orbit, and many of our systems are damaged. There is no other choice but to evacuate. However, me and a group of talented indviduals will go with me. I will activate the hyperdrive, one last time to scuttle the ship before Nanotrasen can get their grubby little hands on it, on the planet of our greatest victory.  If you are worried about me, I have my tegu plushie and all i need to survive for a year. Men and women, its been a honour."
 	},
 /obj/effect/mapping_helpers/burnt_floor,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "Sx" = (
 /turf/open/misc/wasteland/lit,
@@ -368,15 +296,11 @@
 	pixel_y = -2
 	},
 /obj/effect/mapping_helpers/burnt_floor,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "TT" = (
 /obj/item/pipe_dispenser,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "TZ" = (
 /obj/machinery/atmospherics/components/binary/pump{
@@ -386,35 +310,25 @@
 /area/ruin/unpowered)
 "Uw" = (
 /obj/structure/door_assembly/door_assembly_hatch,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "UD" = (
 /obj/machinery/portable_atmospherics/scrubber,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "Vl" = (
 /obj/machinery/power/terminal{
 	dir = 1
 	},
 /obj/effect/mapping_helpers/broken_floor,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "Wh" = (
 /obj/item/clothing/neck/stethoscope,
-/turf/open/floor/plating{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/plating,
 /area/ruin/unpowered)
 "WX" = (
-/turf/open/floor/engine{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/engine,
 /area/ruin/unpowered)
 "Yo" = (
 /obj/machinery/portable_atmospherics/scrubber,
@@ -426,9 +340,7 @@
 	mask_type = /obj/item/clothing/mask/gas/syndicate;
 	suit_type = /obj/item/clothing/suit/armor/vest
 	},
-/turf/open/floor/mineral/plastitanium/red{
-	initial_gas_mix = "ws_atmos"
-	},
+/turf/open/floor/mineral/plastitanium/red,
 /area/ruin/unpowered)
 
 (1,1,1) = {"

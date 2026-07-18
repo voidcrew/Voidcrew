@@ -422,7 +422,7 @@
 "dZ" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
 /obj/structure/window/reinforced/plasma/spawner/directional/north,
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 1
 	},
 /turf/open/floor/plating,
@@ -3814,7 +3814,7 @@
 "KN" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/west,
 /obj/structure/window/reinforced/plasma/spawner/directional/north,
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 1
 	},
 /turf/open/floor/plating,
@@ -4025,6 +4025,9 @@
 /area/shuttle/voidcrew/osprey/service/dormitories)
 "Nb" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 1
+	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/osprey/maintenance/port)
 "Ng" = (
@@ -4263,13 +4266,16 @@
 "PC" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/east,
 /obj/structure/window/reinforced/plasma/spawner/directional/north,
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 1
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/osprey/maintenance/starboard)
 "PL" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 1
+	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/osprey/maintenance/starboard)
 "PU" = (
@@ -4928,7 +4934,7 @@
 "Xi" = (
 /obj/structure/window/reinforced/plasma/spawner/directional/west,
 /obj/structure/window/reinforced/plasma/spawner/directional/north,
-/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 1
 	},
 /turf/open/floor/plating,

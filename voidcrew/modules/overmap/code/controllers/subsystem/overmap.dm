@@ -65,6 +65,7 @@ SUBSYSTEM_DEF(overmap)
 	setup_space_ruins()
 	setup_trader_outposts()
 	schedule_vestige_ruins()
+	schedule_contested_caches()
 	spawn_initial_ship()
 
 	return SS_INIT_SUCCESS
@@ -249,6 +250,12 @@ SUBSYSTEM_DEF(overmap)
 	for (var/i in 2 to LAZYLEN(radius_tiles))
 		orbits += "[i]"
 
+	// Tracks landable meteor storm / asteroid field events spawned below (main +
+	// spread copies), so we can top up to MIN_OVERMAP_ASTEROID_FIELDS afterward.
+	// This is the mining-content guarantee that used to target space ruin asteroid
+	// signals (MIN_OVERMAP_ASTEROID_SIGNALS) before that category was retired.
+	var/meteor_count = 0
+
 	// Phase 1: Spawn guaranteed event types first to ensure map diversity
 	var/list/guaranteed_events = GLOB.overmap_event_guaranteed_list.Copy()
 	for (var/event_type in guaranteed_events)
@@ -263,12 +270,16 @@ SUBSYSTEM_DEF(overmap)
 			orbits -= "[selected_orbit]"
 			continue
 		var/obj/structure/overmap/event/event_to_spawn = new event_type(turf_for_event)
+		if (istype(event_to_spawn, /obj/structure/overmap/event/meteor))
+			meteor_count++
 		for (var/turf/turf_to_spawn as anything in radius_tiles[selected_orbit])
 			if (locate(/obj/structure/overmap) in turf_to_spawn)
 				continue
 			if (!prob(event_to_spawn.spread_chance))
 				continue
-			new event_type(turf_to_spawn)
+			var/obj/structure/overmap/event/spread_event = new event_type(turf_to_spawn)
+			if (istype(spread_event, /obj/structure/overmap/event/meteor))
+				meteor_count++
 
 	// Phase 2: Fill remaining clusters with weighted random picks
 	var/clusters_spawned = length(GLOB.overmap_event_guaranteed_list)
@@ -285,12 +296,26 @@ SUBSYSTEM_DEF(overmap)
 			continue
 		var/event_type = pick_weight(GLOB.overmap_event_pick_list)
 		var/obj/structure/overmap/event/event_to_spawn = new event_type(turf_for_event)
+		if (istype(event_to_spawn, /obj/structure/overmap/event/meteor))
+			meteor_count++
 		for (var/turf/turf_to_spawn as anything in radius_tiles[selected_orbit])
 			if (locate(/obj/structure/overmap) in turf_to_spawn)
 				continue
 			if (!prob(event_to_spawn.spread_chance))
 				continue
-			new event_type(turf_to_spawn)
+			var/obj/structure/overmap/event/spread_event = new event_type(turf_to_spawn)
+			if (istype(spread_event, /obj/structure/overmap/event/meteor))
+				meteor_count++
+
+	// Guarantee a minimum number of landable asteroid field events per round, so space
+	// mining is a dependable resource loop rather than a lucky roll of the weighted picker
+	while (meteor_count < MIN_OVERMAP_ASTEROID_FIELDS)
+		var/turf/turf_for_field = get_unused_overmap_square()
+		if (!turf_for_field)
+			break
+		new /obj/structure/overmap/event/meteor(turf_for_field)
+		meteor_count++
+		log_mapping("SSovermap: Spawned guaranteed asteroid field event")
 
 /datum/controller/subsystem/overmap/proc/setup_planets()
 	// Init planets
@@ -303,14 +328,23 @@ SUBSYSTEM_DEF(overmap)
 		orbits += "[i]"
 
 	for (var/planet in planets)
-		if (LAZYLEN(orbits) == 0 || !orbits)
-			break // can't fit anymore in
-		var/selected_orbit = text2num(pick(orbits))
-
-		var/turf/turf_for_planet = get_unused_overmap_square_in_radius(selected_orbit)
-		if (!turf_for_planet || !istype(turf_for_planet))
-			orbits -= "[selected_orbit]" // this one is full
-			continue
+		var/turf/turf_for_planet
+		// Roundstart planets pre-rolled a zone band before their terrain generated
+		// (SSmapping.next_planet_zone_band()) — place them inside that band so the
+		// zone-scaled mobs/weather they were built with match their overmap tile
+		var/wanted_band = planets[planet]["zone_band"]
+		if(wanted_band)
+			turf_for_planet = get_unused_overmap_square_in_zone_band(wanted_band, tries = 80) // red band is ~9% of tiles, needs generous sampling
+			if(!turf_for_planet)
+				log_mapping("SSovermap: Failed to place planet '[planet]' in its assigned zone band [wanted_band], falling back to any orbit")
+		if(!turf_for_planet) // fallback: legacy random-orbit placement
+			if (LAZYLEN(orbits) == 0 || !orbits)
+				break // can't fit anymore in
+			var/selected_orbit = text2num(pick(orbits))
+			turf_for_planet = get_unused_overmap_square_in_radius(selected_orbit)
+			if (!turf_for_planet || !istype(turf_for_planet))
+				orbits -= "[selected_orbit]" // this one is full
+				continue
 		var/datum/overmap/planet/planet_type = planets[planet]["type"]
 		var/obj/structure/overmap/planet/planet_to_spawn = new
 		planet_to_spawn.planet = planet_type
@@ -459,6 +493,9 @@ SUBSYSTEM_DEF(overmap)
 
 		log_mapping("SSovermap: Spawned space ruin '[selected_ruin.name]' at orbit [selected_orbit]")
 
+	// Asteroid mining no longer has a guarantee here - space ruin signals retired the
+	// "asteroid" category entirely. The equivalent guarantee (MIN_OVERMAP_ASTEROID_FIELDS)
+	// now targets landable meteor storm field events instead; see setup_dangers().
 	log_mapping("SSovermap: Finished spawning [length(used_ruins)] space ruins")
 
 /**
@@ -632,6 +669,14 @@ SUBSYSTEM_DEF(overmap)
 		else
 			zlevel = SSmapping.add_new_zlevel(encounter_name, zlevel_traits)
 			mapzone.add_space_level(zlevel)
+
+	// Encounter levels appear after SSweather.Initialize scanned for storm-eligible
+	// z-levels, so register them explicitly — without this, planets loaded/reloaded
+	// midround never get scheduled weather. The storm's zone scaling (zone_weather.dm)
+	// then resolves against the planet's live overmap tile.
+	if(weather_trait && zlevel)
+		zlevel.traits[weather_trait] = TRUE
+		SSweather.update_z_level(zlevel)
 
 	mapzone.taken = TRUE
 

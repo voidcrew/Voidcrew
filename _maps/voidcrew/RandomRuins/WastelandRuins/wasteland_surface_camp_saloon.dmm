@@ -2,14 +2,14 @@
 "aq" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "aO" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/item/chair/stool/bar,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "aZ" = (
@@ -25,7 +25,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/item/ammo_casing/c357,
 /turf/open/floor/wood{
-	icon_state = "wood-broken7"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "er" = (
@@ -63,7 +63,7 @@
 "hr" = (
 /obj/structure/chair/stool/bar,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "hL" = (
@@ -74,7 +74,7 @@
 	name = "Whitesands Bartender"
 	},
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "ih" = (
@@ -116,13 +116,13 @@
 /obj/structure/table/wood/poker,
 /obj/item/reagent_containers/cup/glass/bottle/beer,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "kD" = (
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/wood{
-	icon_state = "wood-broken7"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "kO" = (
@@ -144,7 +144,7 @@
 	faction = list("saloon")
 	},
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "mx" = (
@@ -179,11 +179,6 @@
 /obj/item/reagent_containers/cup/glass/bottle/absinthe,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"oL" = (
-/turf/open/floor/wood{
-	icon_state = "wood-broken7"
-	},
-/area/ruin/unpowered)
 "qB" = (
 /obj/item/shard{
 	icon_state = "tiny"
@@ -211,7 +206,7 @@
 /area/ruin/unpowered)
 "tq" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/food/drinks/bottle/sarsaparilla,
+/obj/item/reagent_containers/cup/glass/bottle/sarsaparilla,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "tQ" = (
@@ -224,7 +219,7 @@
 /area/ruin/unpowered)
 "xB" = (
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "yb" = (
@@ -260,6 +255,30 @@
 /obj/item/reagent_containers/cup/glass/drinkingglass{
 	list_reagents = list(/datum/reagent/consumable/ethanol/quintuple_sec = 20)
 	},
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"zA" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"zB" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/wood{
+	broken = 1
+	},
+/area/ruin/unpowered)
+"zC" = (
+/obj/structure/chair/stool/bar,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"zD" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/zone_mobs/pirate,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "AW" = (
@@ -325,7 +344,7 @@
 "FN" = (
 /obj/machinery/vending/cigarette,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "GG" = (
@@ -442,7 +461,7 @@
 /obj/structure/table/wood/poker,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Px" = (
@@ -453,7 +472,7 @@
 /obj/item/stack/sheet/mineral/wood,
 /obj/item/stack/sheet/mineral/wood,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Qs" = (
@@ -491,17 +510,11 @@
 /obj/structure/table/wood,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"Td" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood{
-	icon_state = "wood-broken7"
-	},
-/area/ruin/unpowered)
 "UO" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/food/drinks/bottle/sarsaparilla,
+/obj/item/reagent_containers/cup/glass/bottle/sarsaparilla,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "UT" = (
@@ -515,7 +528,7 @@
 /obj/machinery/light,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
-	icon_state = "wood-broken7"
+	broken = 1
 	},
 /area/ruin/unpowered)
 "Wd" = (
@@ -581,32 +594,8 @@
 /obj/structure/table/wood,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood{
-	icon_state = "wood-broken5"
+	broken = 1
 	},
-/area/ruin/unpowered)
-"zA" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/closet/crate/zone_loot/plunder,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"zB" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/wood{
-	icon_state = "wood-broken7"
-	},
-/area/ruin/unpowered)
-"zC" = (
-/obj/structure/chair/stool/bar,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"zD" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/blood/old,
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/wood,
 /area/ruin/unpowered)
 
 (1,1,1) = {"
@@ -649,7 +638,7 @@ gF
 "}
 (3,1,1) = {"
 yt
-oL
+xB
 cI
 rv
 VF
@@ -688,13 +677,13 @@ gF
 (5,1,1) = {"
 Jx
 yZ
-oL
+xB
 xr
 VF
 gC
 xr
 YJ
-oL
+xB
 Px
 Ov
 kD
@@ -806,7 +795,7 @@ CB
 Px
 VF
 Wd
-oL
+xB
 MX
 xB
 Lj
@@ -877,9 +866,9 @@ gF
 "}
 (15,1,1) = {"
 Yo
-Td
+aq
 Px
-Td
+aq
 er
 xr
 xr

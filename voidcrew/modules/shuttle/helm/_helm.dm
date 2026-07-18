@@ -473,8 +473,8 @@
 		else
 			engine_data = list(
 				name = E.name,
-				fuel = E.return_fuel(),
-				maxFuel = E.return_fuel_cap(),
+				fuel = E.return_fuel() || 0,
+				maxFuel = E.return_fuel_cap() || 100,
 				enabled = E.enabled,
 				ref = REF(E)
 			)
@@ -755,6 +755,8 @@
 					return
 				if("toggle_engine")
 					var/obj/machinery/power/shuttle_engine/ship/E = locate(params["engine"])
+					if(!istype(E))
+						return
 					E.enabled = !E.enabled
 					current_ship.refresh_engines()
 					return

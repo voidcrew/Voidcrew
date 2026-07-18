@@ -804,7 +804,7 @@
 		stage = GIBTONITE_ACTIVE
 		visible_message(span_danger("There's gibtonite inside! It's going to explode!"))
 
-		var/notify_admins = !is_mining_level(z)
+		var/notify_admins = !is_mining_level(z) && !is_reserved_level(z) // VOIDCREW EDIT: asteroid encounters load into reserved-z turf reservations; gibtonite there is expected mining, not smuggled ordnance
 
 		if(user)
 			log_bomber(user, "has triggered a gibtonite deposit reaction via", src, null, notify_admins)

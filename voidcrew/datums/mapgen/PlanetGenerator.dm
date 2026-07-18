@@ -138,6 +138,24 @@
 
 	var/start_time = REALTIMEOFDAY
 	var/megafauna_spawned = FALSE
+
+	// Zone danger scaling: planets in dangerous overmap zones spawn denser and
+	// meaner fauna. Population runs during SSmapping init (before SSovermap
+	// places the planets), so the zone comes from the band SSmapping dealt this
+	// planet pair up front — placement honors it later (setup_planets).
+	// Decided once here so it costs nothing at runtime. Loot is never scaled.
+	var/mob_chance_mult = 1
+	var/mob_upgrade_prob = 0
+	if(length(turfs))
+		var/turf/zone_sample = turfs[1]
+		switch(SSmapping.get_planet_zone_band_for_z(zone_sample.z))
+			if(ZONE_YELLOW)
+				mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_YELLOW
+				mob_upgrade_prob = ZONE_PLANET_MOB_UPGRADE_PROB_YELLOW
+			if(ZONE_RED)
+				mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_RED
+				mob_upgrade_prob = ZONE_PLANET_MOB_UPGRADE_PROB_RED
+
 	for(var/turf/target_turf as anything in turfs)
 
 		if(!target_turf.generating_biome)
@@ -197,7 +215,7 @@
 					spawned_something = TRUE
 
 		//MOB SPAWNING HERE
-		if(fauna_allowed && !spawned_something && prob(selected_biome.mob_spawn_chance))
+		if(fauna_allowed && !spawned_something && prob(selected_biome.mob_spawn_chance * mob_chance_mult))
 			var/atom/picked_mob = pickweight(selected_biome.mob_spawn_list)
 			if(!picked_mob)
 				continue
@@ -210,6 +228,11 @@
 			else if(picked_mob == SPAWN_MEGAFAUNA && megafauna_spawned )
 				while(picked_mob == SPAWN_MEGAFAUNA)
 					picked_mob = pickweight(selected_biome.mob_spawn_list)
+
+			// Zone danger scaling: some rolls upgrade to the biome's meaner tier.
+			// Megafauna rolls are explicitly exempt — apex content stays untouched.
+			if(!is_megafauna && mob_upgrade_prob && length(selected_biome.dangerous_mob_spawn_list) && prob(mob_upgrade_prob))
+				picked_mob = pickweight(selected_biome.dangerous_mob_spawn_list)
 
 			var/can_spawn = TRUE
 

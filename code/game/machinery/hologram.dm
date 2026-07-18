@@ -343,6 +343,9 @@ Possible to do for anyone motivated enough:
 			if(outgoing_call)
 				return
 			if(usr.loc == loc)
+				// VOIDCREW EDIT CHANGE BEGIN - site-aware dial list: own ship by area, other
+				// ships/outposts by name (voidcrew/modules/holopads/ship_holocall.dm)
+				/* VOIDCREW EDIT ORIGINAL:
 				var/list/callnames = list()
 				for(var/I in holopads)
 					var/area/A = get_area(I)
@@ -350,6 +353,13 @@ Possible to do for anyone motivated enough:
 						LAZYADD(callnames[A], I)
 				callnames -= get_area(src)
 				var/result = tgui_input_list(usr, "Choose an area to call", "Holocall", sort_names(callnames))
+				*/
+				var/list/callnames = voidcrew_holocall_targets()
+				if(!length(callnames))
+					to_chat(usr, span_warning("No reachable holopads."))
+					return
+				var/result = tgui_input_list(usr, "Choose a destination to call", "Holocall", callnames)
+				// VOIDCREW EDIT CHANGE END
 				if(isnull(result))
 					return
 				if(QDELETED(usr) || outgoing_call)
@@ -357,7 +367,7 @@ Possible to do for anyone motivated enough:
 				if(usr.loc == loc)
 					var/input = text2num(params["headcall"])
 					var/headcall = input == 1 ? TRUE : FALSE
-					var/datum/holocall/holo_call = new(usr, src, callnames[result], headcall)
+					var/datum/holocall/holo_call = new /datum/holocall/voidcrew(usr, src, callnames[result], headcall) // VOIDCREW EDIT CHANGE - was `new(...)`; subtype handles cross-ship transit drops
 					if(QDELETED(holo_call)) //can delete itself if the target pad was destroyed
 						return FALSE
 					calling = TRUE

@@ -493,9 +493,9 @@
 			if(is_still())
 				burn_direction = BURN_NONE
 			else
-				burn_engines(null, burn_percentage)
+				burn_engines(null, burn_percentage, seconds_per_tick)
 		else if(can_thrust())
-			burn_engines(burn_direction, burn_percentage)
+			burn_engines(burn_direction, burn_percentage, seconds_per_tick)
 
 	// Handle shield regeneration
 	if(shields_active && !shields_broken)
@@ -634,7 +634,7 @@
 	if(!shuttle)
 		est_thrust = 0
 		return
-	var/calculated_thrust
+	var/calculated_thrust = 0
 	for(var/obj/machinery/power/shuttle_engine/ship/E in shuttle.engine_list)
 		// Remove deleted engines
 		if(QDELETED(E))
@@ -1554,6 +1554,18 @@
 				// Check if we should unload and respawn (small delay to ensure ship is fully moved)
 				addtimer(CALLBACK(ruin_place, TYPE_PROC_REF(/obj/structure/overmap/space_ruin, check_and_respawn)), 0.5 SECONDS)
 
+			// Handle landable asteroid field (meteor storm) dock flags and cleanup - unlike
+			// space ruins, the event itself never respawns/relocates, only its reservation frees up
+			if(istype(old_docked_location, /obj/structure/overmap/event/meteor))
+				var/obj/structure/overmap/event/meteor/field_place = old_docked_location
+				if(dock_index == 1)
+					field_place.first_dock_taken = FALSE
+				else if(dock_index == 2)
+					field_place.second_dock_taken = FALSE
+				dock_index = 0
+				// Check if we should unload the field (small delay to ensure ship is fully moved)
+				addtimer(CALLBACK(field_place, TYPE_PROC_REF(/obj/structure/overmap/event/meteor, unload_level)), 0.5 SECONDS)
+
 			// Always set state to FLYING when undocking completes
 			state = OVERMAP_SHIP_FLYING
 			SEND_SIGNAL(src, COMSIG_VOIDCREW_SHIP_UNDOCKED)
@@ -1649,6 +1661,7 @@
 	speed[2] += n_y
 
 	update_icon_state()
+	update_flight_parallax()
 
 	if(is_still() || QDELETED(src) || movement_callback_id)
 		return
@@ -1710,6 +1723,60 @@
 
 	var/timer = 1 / current_speed
 	movement_callback_id = addtimer(CALLBACK(src, PROC_REF(tick_move)), timer, TIMER_STOPPABLE)
+
+/**
+ * Keeps the interior space parallax scrolling to match the ship's overmap heading
+ * while it flies through transit space.
+ *
+ * Only acts while the shuttle interior is parked at its transit dock (i.e. the ship
+ * is in flight); docked/landed interiors keep upstream behavior (no scroll). The
+ * current scroll direction is kept as long as it still describes our motion, which
+ * avoids direction flip-flopping during diagonal burns; a fresh direction is picked
+ * from the dominant velocity axis otherwise. A still ship keeps whatever direction
+ * it already had (drifting stars settle via upstream slowdown on arrival), falling
+ * back to the shuttle's preferred_direction if it was wiped.
+ */
+/obj/structure/overmap/ship/proc/update_flight_parallax()
+	if(!shuttle)
+		return
+	if(!istype(shuttle.get_docked(), /obj/docking_port/stationary/transit))
+		return
+
+	// Ground truth for what's currently applied — any shuttle area will do
+	var/current_dir = NONE
+	for(var/area/shuttle_area as anything in shuttle.shuttle_areas)
+		current_dir = shuttle_area.parallax_movedir
+		break
+
+	// Keep the current direction while it still matches our motion on that axis
+	if(current_dir)
+		var/current_component = (current_dir & (EAST|WEST)) ? speed[1] : speed[2]
+		if((current_dir & (NORTH|EAST)) ? (current_component > 0) : (current_component < 0))
+			return
+		if(is_still()) // parked in deep space: keep the drift we already show
+			return
+
+	var/new_dir = shuttle.preferred_direction
+	if(speed[1] && abs(speed[1]) >= abs(speed[2]))
+		new_dir = speed[1] > 0 ? EAST : WEST
+	else if(speed[2])
+		new_dir = speed[2] > 0 ? NORTH : SOUTH
+
+	if(new_dir == current_dir)
+		return
+
+	for(var/area/shuttle_area as anything in shuttle.shuttle_areas)
+		shuttle_area.parallax_movedir = new_dir
+	if(shuttle.assigned_transit?.assigned_area)
+		shuttle.assigned_transit.assigned_area.parallax_movedir = new_dir
+
+	// Poke every client aboard so their parallax picks up the new direction
+	for(var/turf/shuttle_turf as anything in shuttle.return_ordered_turfs(shuttle.x, shuttle.y, shuttle.z, shuttle.dir))
+		if(!shuttle_turf || !istype(shuttle_turf.loc, shuttle.area_type))
+			continue
+		for(var/atom/movable/movable as anything in shuttle_turf)
+			if(movable.client_mobs_in_contents)
+				movable.update_parallax_contents()
 
 // ===== ZONE TRANSITION PROCS =====
 
@@ -2405,7 +2472,10 @@
 	for(var/obj/machinery/power/shuttle_engine/ship/E in shuttle.engine_list)
 		if(!E.enabled || E.thruster_active == 0)
 			continue
-		fuel_avg += E.return_fuel() / E.return_fuel_cap()
+		var/fuel_cap = E.return_fuel_cap()
+		if(!fuel_cap) //no (or zero) capacity reported - can't divide by it
+			continue
+		fuel_avg += clamp(E.return_fuel() / fuel_cap, 0, 1)
 		engine_amnt++
 	if(!engine_amnt || !fuel_avg)
 		avg_fuel_amnt = 0
@@ -2539,8 +2609,10 @@
  * Unsimulated ships use the acceleration_speed var, simulated ships check eacch engine's thrust and fuel.
  * If no dir variable is provided, it decelerates the vessel.
  * * n_dir - The direction to move in
+ * * percentage - Throttle percentage (1-100)
+ * * burn_seconds - How many seconds of burn this call represents (fuel costs are per second of full burn)
  */
-/obj/structure/overmap/ship/proc/burn_engines(n_dir = null, percentage = 100)
+/obj/structure/overmap/ship/proc/burn_engines(n_dir = null, percentage = 100, burn_seconds = 1)
 	if(state != OVERMAP_SHIP_FLYING)
 		return
 
@@ -2597,7 +2669,7 @@
 	for(var/obj/machinery/power/shuttle_engine/ship/E in shuttle.engine_list)
 		if(!E.enabled || E.thruster_active == 0)
 			continue
-		thrust_used += E.burn_engine(percentage, mass)
+		thrust_used += E.burn_engine(percentage, mass, burn_seconds)
 	est_thrust = thrust_used //cheeky way of rechecking the thrust, check it every time it's used
 
 	// No thrust means no movement - engines need fuel/power to work
