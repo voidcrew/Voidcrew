@@ -155,6 +155,7 @@
 		UnregisterSignal(src, COMSIG_QDELETING)
 	current = new_current
 	if(current)
+		current.ever_had_mind = TRUE
 		RegisterSignal(src, COMSIG_QDELETING, PROC_REF(clear_current))
 
 /datum/mind/proc/clear_current(datum/source)

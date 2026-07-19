@@ -30,8 +30,7 @@
 /obj/machinery/atmospherics/components/unary/shuttle/scoop
 	name = "nebula ram scoop"
 	desc = "An external intake manifold that skims gas out of a nebula while the ship holds station inside one. Feeds whatever pipe network it's wrenched onto."
-	icon_state = "heater_pipe"
-	color = "#9fd4ff"
+	icon_state = "scoop"
 	idle_power_usage = 25
 	circuit = /obj/item/circuitboard/machine/shuttle/scoop
 
@@ -104,7 +103,7 @@
 	ship.notify_scoop_activity()
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/screwdriver_act(mob/living/user, obj/item/tool)
-	if(default_deconstruction_screwdriver(user, "heater_pipe_open", "heater_pipe", tool))
+	if(default_deconstruction_screwdriver(user, "scoop", "scoop", tool))
 		return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/wrench_act(mob/living/user, obj/item/tool)
@@ -127,8 +126,7 @@
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator
 	name = "plasma sublimation chamber"
 	desc = "A sealed retort that bakes raw plasma sheets down into clean plasma gas — the sanctioned cousin of boiling ground ore in an open beaker. Feeds whatever pipe network it's wrenched onto."
-	icon_state = "heater_pipe"
-	color = "#ffb3c6"
+	icon_state = "sublimator"
 	idle_power_usage = 50
 	circuit = /obj/item/circuitboard/machine/shuttle/sublimator
 
@@ -213,7 +211,7 @@
 	update_parents()
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/screwdriver_act(mob/living/user, obj/item/tool)
-	if(default_deconstruction_screwdriver(user, "heater_pipe_open", "heater_pipe", tool))
+	if(default_deconstruction_screwdriver(user, "sublimator", "sublimator", tool))
 		return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/wrench_act(mob/living/user, obj/item/tool)

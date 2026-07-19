@@ -1,3 +1,4 @@
+#define COLOSSEUM_DRYRUN
 // DM Environment file for tgstation.dme.
 // All manual changes should be made outside the BEGIN_ and END_ blocks.
 // New source code should be placed in .dm files: choose File/New --> Code File.
@@ -6875,6 +6876,7 @@
 #include "voidcrew\modules\drop_pod\drop_pod.dm"
 #include "voidcrew\modules\dynamic_events\dynamic_events_subsystem.dm"
 #include "voidcrew\modules\dynamic_events\event_base.dm"
+#include "voidcrew\modules\dynamic_events\ship_event_helpers.dm"
 #include "voidcrew\modules\dynamic_events\events\anomalies.dm"
 #include "voidcrew\modules\dynamic_events\events\brand_intelligence.dm"
 #include "voidcrew\modules\dynamic_events\events\camera_failure.dm"
@@ -6889,7 +6891,6 @@
 #include "voidcrew\modules\dynamic_events\events\stray_cargo_market.dm"
 #include "voidcrew\modules\dynamic_events\events\vent_clog.dm"
 #include "voidcrew\modules\dynamic_events\events\wormholes.dm"
-#include "voidcrew\modules\dynamic_events\ship_event_helpers.dm"
 #include "voidcrew\modules\food_and_drinks\drinks\bottles.dm"
 #include "voidcrew\modules\holopads\ship_holocall.dm"
 #include "voidcrew\modules\intents\_defines.dm"
@@ -7038,8 +7039,8 @@
 #include "voidcrew\modules\overmap\code\modules\overmap\ship_damage.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\ship_sensors.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\ship_waypoints.dm"
-#include "voidcrew\modules\overmap\code\modules\overmap\star_chart.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\space_ruin.dm"
+#include "voidcrew\modules\overmap\code\modules\overmap\star_chart.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\stars.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\behaviour\planets.dm"
 #include "voidcrew\modules\overmap\code\modules\overmap\behaviour\stars.dm"
@@ -7053,8 +7054,8 @@
 #include "voidcrew\modules\player_outposts\outpost_deed.dm"
 #include "voidcrew\modules\player_outposts\outpost_elevator_placement.dm"
 #include "voidcrew\modules\player_outposts\outpost_management.dm"
-#include "voidcrew\modules\player_outposts\outpost_shield.dm"
 #include "voidcrew\modules\player_outposts\outpost_shells.dm"
+#include "voidcrew\modules\player_outposts\outpost_shield.dm"
 #include "voidcrew\modules\player_outposts\player_outpost.dm"
 #include "voidcrew\modules\power\port_gen.dm"
 #include "voidcrew\modules\preferences\ship_categories_middleware.dm"
@@ -7183,11 +7184,11 @@
 #include "voidcrew\modules\weapons_bench\guns\wt550.dm"
 #include "voidcrew\objects\items\blueprints.dm"
 #include "voidcrew\objects\items\cards_ids.dm"
+#include "voidcrew\objects\items\trash.dm"
 #include "voidcrew\objects\items\circuitboards\machines\machine_circuitboards.dm"
 #include "voidcrew\objects\items\melee\misc.dm"
 #include "voidcrew\objects\items\storage\ammo_printer.dm"
 #include "voidcrew\objects\items\storage\belt.dm"
-#include "voidcrew\objects\items\trash.dm"
 #include "voidcrew\objects\structures\barrel.dm"
 #include "voidcrew\objects\structures\flora.dm"
 #include "voidcrew\objects\structures\planet_ladders.dm"

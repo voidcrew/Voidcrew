@@ -20,11 +20,13 @@
 /// Clears all of what's inside the z levels managed by the mapzone.
 /datum/map_zone/proc/clear_reservation()
 	for(var/datum/space_level/zlevel as anything in z_levels)
+		SSweather.set_z_level_weather_trait(zlevel, null)
 		zlevel.clear_reservation()
 
 /// Clears contents and resets turfs to uninitialized space (for empty space cleanup)
 /datum/map_zone/proc/clear_to_uninitialized_space()
 	for(var/datum/space_level/zlevel as anything in z_levels)
+		SSweather.set_z_level_weather_trait(zlevel, null)
 		zlevel.clear_to_uninitialized_space()
 
 /datum/map_zone/proc/add_space_level(datum/space_level/level)

@@ -10,6 +10,37 @@
 	icon_state = "heater"
 	icon = 'voidcrew/modules/shuttle/icons/shuttle.dmi'
 
+/// Re-point the single pipe node after a rotation and rebuild the pipenet.
+/// Shared by every unary shuttle atmos device so they can all be turned to
+/// face their pipe network; the heater overrides this to also refresh engines.
+/obj/machinery/atmospherics/components/unary/shuttle/default_change_direction_wrench(mob/user, obj/item/I)
+	if(!..())
+		return FALSE
+	set_init_directions()
+	var/obj/machinery/atmospherics/node = nodes[1]
+	if(node)
+		node.disconnect(src)
+		nodes[1] = null
+	if(!parents[1])
+		return TRUE
+	nullify_pipenet(parents[1])
+
+	atmos_init()
+	node = nodes[1]
+	if(node)
+		node.atmos_init()
+		node.add_member(src)
+	SSair.add_to_rebuild_queue(src)
+	return TRUE
+
+/obj/machinery/atmospherics/components/unary/shuttle/wrench_act_secondary(mob/living/user, obj/item/tool)
+	if(!panel_open)
+		balloon_alert(user, "open panel first!")
+		return ITEM_INTERACT_SUCCESS
+	if(default_change_direction_wrench(user, tool))
+		return ITEM_INTERACT_SUCCESS
+	return ITEM_INTERACT_BLOCKING
+
 /datum/armor/shuttle_heater
 	energy = 100
 	bio = 100

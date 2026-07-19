@@ -29,8 +29,6 @@
 
 
 /datum/weather/floor_is_lava/can_weather_act_mob(mob/living/mob_to_check)
-	if(!mob_to_check.client) //Only sentient people are going along with it!
-		return FALSE
 	. = ..()
 	if(!. || issilicon(mob_to_check) || istype(mob_to_check.buckled, /obj/structure/bed))
 		return FALSE

@@ -24,22 +24,29 @@
 
 	weather_flags = (WEATHER_MOBS | WEATHER_BAROMETER)
 
+	var/list/weak_sounds = list()
+	var/list/strong_sounds = list()
+
 /datum/weather/sand_storm/telegraph()
-	GLOB.sand_storm_sounds.Cut()
 	for(var/area/impacted_area as anything in impacted_areas)
-		GLOB.sand_storm_sounds[impacted_area] = /datum/looping_sound/weak_outside_ashstorm
+		weak_sounds[impacted_area] = /datum/looping_sound/weak_outside_ashstorm
+		strong_sounds[impacted_area] = /datum/looping_sound/active_outside_ashstorm
+	GLOB.sand_storm_sounds += weak_sounds
 	return ..()
 
 /datum/weather/sand_storm/start()
-	GLOB.sand_storm_sounds.Cut()
-	for(var/area/impacted_area as anything in impacted_areas)
-		GLOB.sand_storm_sounds[impacted_area] = /datum/looping_sound/active_outside_ashstorm
+	GLOB.sand_storm_sounds -= weak_sounds
+	GLOB.sand_storm_sounds += strong_sounds
 	return ..()
 
 /datum/weather/sand_storm/wind_down()
-	GLOB.sand_storm_sounds.Cut()
-	for(var/area/impacted_area as anything in impacted_areas)
-		GLOB.sand_storm_sounds[impacted_area] = /datum/looping_sound/weak_outside_ashstorm
+	GLOB.sand_storm_sounds -= strong_sounds
+	GLOB.sand_storm_sounds += weak_sounds
+	return ..()
+
+/datum/weather/sand_storm/end()
+	GLOB.sand_storm_sounds -= weak_sounds
+	GLOB.sand_storm_sounds -= strong_sounds
 	return ..()
 
 /datum/weather/sand_storm/weather_act_mob(mob/living/victim)

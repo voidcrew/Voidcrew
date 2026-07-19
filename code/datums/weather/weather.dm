@@ -331,6 +331,10 @@
  * Returns TRUE if the living mob can be affected by the weather
  */
 /datum/weather/proc/can_weather_act_mob(mob/living/mob_to_check)
+	// Preserve effects on abandoned player bodies while excluding ordinary fauna.
+	if(!mob_to_check.mind && !mob_to_check.ever_had_mind)
+		return
+
 	var/turf/mob_turf = get_turf(mob_to_check)
 
 	if(!mob_turf)
@@ -391,15 +395,6 @@
 	if(!weather_reagent || !weather_reagent_holder || living.IsObscured())
 		return
 
-	// VOIDCREW EDIT: the full wash + reagent exposure runs every second per covered mob,
-	// and planets carry thousands of NPCs — under concurrent storms this alone burned
-	// ~40s of CPU per 5 minutes. Clientless mobs get the cheap ecological core
-	// (extinguish + wetness); players keep the full wash/expose treatment.
-	if(!living.client && istype(weather_reagent, /datum/reagent/water))
-		living.extinguish_mob()
-		living.adjust_wet_stacks(1)
-		return
-
 	if(istype(weather_reagent, /datum/reagent/water))
 		living.wash()
 
@@ -456,6 +451,8 @@
 		thunder.color = thunder_color
 
 	for(var/mob/living/hit_mob in weather_turf)
+		if(!can_weather_act_mob(hit_mob))
+			continue
 		to_chat(hit_mob, span_userdanger("You've been struck by lightning!"))
 		hit_mob.electrocute_act(50, "thunder", flags = SHOCK_TESLA|SHOCK_NOGLOVES)
 
@@ -471,7 +468,9 @@
 		hit_thing.take_damage(20, BURN, ENERGY, FALSE)
 	playsound(weather_turf, 'sound/effects/magic/lightningbolt.ogg', 100, extrarange = 10, falloff_distance = 10)
 	weather_turf.visible_message(span_danger("A thunderbolt strikes [weather_turf]!"))
-	explosion(weather_turf, light_impact_range = 1, flame_range = 1, silent = TRUE, adminlog = FALSE)
+	// A generic explosion cannot honor can_weather_act_mob() and would queue damage
+	// against ordinary fauna on this and adjacent turfs. The direct strike above and
+	// object burn retain the intended lightning effects without bypassing eligibility.
 
 /**
  * Updates the overlays on impacted areas

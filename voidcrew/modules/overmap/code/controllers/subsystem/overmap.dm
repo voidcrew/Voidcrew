@@ -628,7 +628,6 @@ SUBSYSTEM_DEF(overmap)
 	var/list/ruin_list
 	var/datum/map_generator/mapgen
 	var/area/target_area
-	var/datum/weather/weather_controller_type
 	var/weather_trait
 	var/datum/planet/planet_template
 	if(!isnull(planet_type))
@@ -637,7 +636,6 @@ SUBSYSTEM_DEF(overmap)
 		if(!isnull(planet_type.mapgen))
 			mapgen = new planet_type.mapgen
 		target_area = planet_type.target_area
-		weather_controller_type = planet_type.weather_controller_type
 		weather_trait = planet_type.weather_trait
 		if(!(isnull(planet_type.planet_template)))
 			planet_template = new planet_type.planet_template
@@ -663,20 +661,14 @@ SUBSYSTEM_DEF(overmap)
 	else
 		if(mapzone.z_levels[1])
 			zlevel = mapzone.z_levels[1]
-			// Add weather trait to existing z-level if needed
-			if(weather_trait)
-				SSmapping.z_trait_levels[weather_trait] += list(zlevel.z_value)
 		else
 			zlevel = SSmapping.add_new_zlevel(encounter_name, zlevel_traits)
 			mapzone.add_space_level(zlevel)
 
-	// Encounter levels appear after SSweather.Initialize scanned for storm-eligible
-	// z-levels, so register them explicitly — without this, planets loaded/reloaded
-	// midround never get scheduled weather. The storm's zone scaling (zone_weather.dm)
-	// then resolves against the planet's live overmap tile.
-	if(weather_trait && zlevel)
-		zlevel.traits[weather_trait] = TRUE
-		SSweather.update_z_level(zlevel)
+	// Dynamic levels appear after SSweather.Initialize and map zones are recycled.
+	// Replace any prior encounter's trait, active storm, and cooldown before registering
+	// the new planet's weather.
+	SSweather.set_z_level_weather_trait(zlevel, weather_trait)
 
 	mapzone.taken = TRUE
 
@@ -704,9 +696,6 @@ SUBSYSTEM_DEF(overmap)
 	// which players can't interact with (no throwing, no construction). For space
 	// encounters, empty space and player outposts that's the ENTIRE level.
 	zlevel.initialize_space_turfs()
-
-	if(weather_controller_type)
-		new weather_controller_type(mapzone)
 
 	// locates the first dock in the bottom left, accounting for padding and the border
 	var/turf/primary_docking_turf = locate(
@@ -749,7 +738,4 @@ SUBSYSTEM_DEF(overmap)
 	for(var/datum/map_zone/mapzone as anything in map_zones)
 		if(!mapzone.taken)
 			return(mapzone)
-
-
-
 

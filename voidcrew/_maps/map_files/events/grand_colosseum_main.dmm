@@ -373,6 +373,10 @@
 /obj/machinery/light/cold/directional/north,
 /turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
+"gs" = (
+/obj/effect/landmark/colosseum/koth,
+/turf/open/indestructible/light,
+/area/voidcrew/colosseum/arena)
 "gv" = (
 /obj/structure/rack,
 /obj/item/stack/rods/fifty,
@@ -398,6 +402,15 @@
 /obj/effect/spawner/random/trash/cigbutt,
 /turf/open/indestructible/stone,
 /area/voidcrew/colosseum/spectator)
+"iw" = (
+/obj/effect/landmark/colosseum/infirmary,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"iz" = (
+/obj/structure/stone_tile/slab,
+/obj/effect/landmark/colosseum/infirmary,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
 "iB" = (
 /obj/structure/table/wood,
 /obj/item/reagent_containers/cup/glass/mug{
@@ -556,6 +569,10 @@
 /obj/item/kirbyplants/random,
 /turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
+"pA" = (
+/obj/effect/landmark/colosseum/arena_event,
+/turf/open/misc/beach/sand,
+/area/voidcrew/colosseum/arena)
 "qt" = (
 /obj/effect/decal/cleanable/ash,
 /turf/open/indestructible/stone,
@@ -628,6 +645,11 @@
 	},
 /turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
+"sy" = (
+/obj/structure/stone_tile/slab,
+/obj/effect/landmark/colosseum/spawn_red,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
 "sE" = (
 /obj/machinery/light/warm/directional/south,
 /turf/open/indestructible/rockyground,
@@ -773,6 +795,10 @@
 	},
 /turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
+"Ao" = (
+/obj/effect/landmark/colosseum/flag_red,
+/turf/open/indestructible/light,
+/area/voidcrew/colosseum/arena)
 "Ax" = (
 /obj/machinery/sleeper{
 	dir = 4
@@ -824,6 +850,11 @@
 /obj/effect/spawner/random/entertainment/money_small,
 /turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
+"Ca" = (
+/obj/effect/turf_decal/weather/sand,
+/obj/effect/landmark/colosseum/spawn_cell,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
 "CY" = (
 /obj/structure/table,
 /obj/item/storage/medkit/regular{
@@ -911,6 +942,10 @@
 	},
 /turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
+"Hp" = (
+/obj/effect/landmark/colosseum/arena_event,
+/turf/open/floor/bronze/flat,
+/area/voidcrew/colosseum/arena)
 "HU" = (
 /obj/structure/stone_tile/block/cracked,
 /turf/open/misc/beach/sand,
@@ -1029,6 +1064,11 @@
 /obj/effect/spawner/random/trash/box,
 /turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/lobby)
+"MO" = (
+/obj/structure/stone_tile/slab/cracked,
+/obj/effect/landmark/colosseum/spawn_red,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
 "Nn" = (
 /obj/structure/closet/athletic_mixed,
 /turf/open/indestructible/rockyground,
@@ -1114,6 +1154,12 @@
 	},
 /turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
+"QY" = (
+/obj/machinery/computer/colosseum_signup{
+	dir = 8
+	},
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
 "Ra" = (
 /obj/structure/stone_tile/block,
 /obj/item/flashlight/flare/candle/infinite{
@@ -1160,6 +1206,10 @@
 /obj/structure/statue/gold/rd,
 /turf/open/indestructible/stone,
 /area/voidcrew/colosseum/lobby)
+"Sp" = (
+/obj/effect/landmark/colosseum/flag_blue,
+/turf/open/indestructible/light,
+/area/voidcrew/colosseum/arena)
 "SB" = (
 /obj/machinery/light/warm/directional/east,
 /turf/open/indestructible/stone,
@@ -1205,6 +1255,10 @@
 /obj/effect/spawner/random/entertainment/money_medium,
 /obj/effect/spawner/random/entertainment/coin,
 /turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Uw" = (
+/obj/machinery/colosseum_vault,
+/turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/lobby)
 "UF" = (
 /turf/open/indestructible/light,
@@ -1286,6 +1340,16 @@
 	},
 /turf/open/indestructible/rockyground,
 /area/voidcrew/colosseum/staging)
+"XO" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/colosseum/infirmary,
+/turf/open/indestructible/stone,
+/area/voidcrew/colosseum/lobby)
+"Yp" = (
+/obj/structure/stone_tile/slab,
+/obj/effect/landmark/colosseum/spawn_blue,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
 "Yv" = (
 /obj/machinery/roulette,
 /turf/open/indestructible/stone,
@@ -1311,6 +1375,11 @@
 	},
 /turf/open/indestructible/light,
 /area/voidcrew/colosseum/arena)
+"Zz" = (
+/obj/structure/stone_tile/slab/cracked,
+/obj/effect/landmark/colosseum/spawn_blue,
+/turf/open/indestructible/rockyground,
+/area/voidcrew/colosseum/staging)
 "ZB" = (
 /obj/structure/noticeboard/directional/north,
 /turf/open/indestructible/stone,
@@ -2020,8 +2089,8 @@ Rw
 aQ
 aQ
 zH
-bs
-bs
+sy
+sy
 Rl
 aQ
 qJ
@@ -2080,8 +2149,8 @@ Rw
 iC
 aQ
 zH
-bs
-TV
+sy
+MO
 Rl
 iC
 qJ
@@ -2140,8 +2209,8 @@ jf
 aQ
 BO
 zH
-bs
-bs
+sy
+sy
 Rl
 aQ
 Kw
@@ -2424,7 +2493,7 @@ aG
 aW
 aa
 BO
-iC
+Ca
 Qz
 az
 fU
@@ -2501,7 +2570,7 @@ aD
 aD
 UF
 UF
-UF
+Ao
 DX
 aD
 aD
@@ -2611,7 +2680,7 @@ aD
 aD
 zp
 aD
-aD
+pA
 aD
 aD
 aD
@@ -2630,7 +2699,7 @@ aD
 aD
 aD
 aD
-aD
+pA
 aD
 zp
 aD
@@ -2664,7 +2733,7 @@ aG
 aW
 aa
 yZ
-iC
+Ca
 Qz
 az
 fU
@@ -2904,7 +2973,7 @@ aG
 aW
 aa
 Lc
-iC
+Ca
 Qz
 az
 fU
@@ -3041,7 +3110,7 @@ aD
 pl
 PO
 PO
-PO
+Hp
 PO
 pl
 aD
@@ -3099,10 +3168,10 @@ aD
 aD
 aD
 PO
-UF
-UF
-UF
-UF
+gs
+gs
+gs
+gs
 PO
 aD
 aD
@@ -3111,7 +3180,7 @@ aD
 aD
 aD
 aD
-aD
+pA
 DX
 aD
 aD
@@ -3159,10 +3228,10 @@ Zo
 Zo
 Zo
 PO
-UF
-UF
-UF
-UF
+gs
+gs
+gs
+gs
 PO
 Zo
 Zo
@@ -3199,7 +3268,7 @@ aU
 UG
 ae
 aX
-aW
+Uw
 aG
 aW
 aW
@@ -3219,10 +3288,10 @@ Zo
 Zo
 Zo
 PO
-UF
-UF
-UF
-UF
+gs
+gs
+gs
+gs
 PO
 Zo
 Zo
@@ -3279,10 +3348,10 @@ aD
 aD
 aD
 PO
-UF
-UF
-UF
-UF
+gs
+gs
+gs
+gs
 PO
 aD
 aD
@@ -3341,7 +3410,7 @@ aD
 pl
 PO
 PO
-PO
+Hp
 PO
 pl
 aD
@@ -3363,7 +3432,7 @@ cZ
 AG
 aT
 af
-af
+QY
 af
 af
 af
@@ -3390,7 +3459,7 @@ aT
 aD
 aD
 aD
-aD
+pA
 GD
 aD
 aD
@@ -3444,7 +3513,7 @@ aG
 aW
 aa
 yZ
-iC
+Ca
 Qz
 az
 fU
@@ -3684,7 +3753,7 @@ ab
 aW
 aa
 ra
-iC
+Ca
 Qz
 az
 fU
@@ -3751,7 +3820,7 @@ aD
 aD
 zp
 aD
-aD
+pA
 aD
 aD
 aD
@@ -3770,7 +3839,7 @@ aD
 aD
 aD
 aD
-aD
+pA
 aD
 zp
 aD
@@ -3881,7 +3950,7 @@ aD
 aD
 DX
 UF
-UF
+Sp
 UF
 aD
 aD
@@ -3924,7 +3993,7 @@ aR
 aW
 aa
 BO
-iC
+Ca
 Qz
 az
 fU
@@ -4240,8 +4309,8 @@ JS
 aQ
 BO
 Fd
-bs
-bs
+Yp
+Yp
 FR
 aQ
 QW
@@ -4300,8 +4369,8 @@ Rw
 iC
 aQ
 Fd
-bs
-TV
+Yp
+Zz
 FR
 iC
 qJ
@@ -4310,7 +4379,7 @@ vH
 aT
 CY
 af
-ae
+iz
 af
 sg
 aT
@@ -4360,8 +4429,8 @@ Rw
 aQ
 aQ
 Fd
-bs
-bs
+Yp
+Yp
 FR
 aQ
 qJ
@@ -4371,7 +4440,7 @@ aT
 RW
 Hi
 ae
-ao
+XO
 af
 aT
 Iw
@@ -4430,7 +4499,7 @@ vA
 aT
 oe
 af
-af
+iw
 af
 aB
 aT
@@ -4550,7 +4619,7 @@ lb
 aT
 sK
 lk
-af
+iw
 Lw
 Hi
 aV

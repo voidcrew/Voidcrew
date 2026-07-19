@@ -29,9 +29,7 @@
 	var/list/strong_sounds = list()
 
 /datum/weather/ash_storm/telegraph()
-	log_game("WEATHER_AUDIO DEBUG: ash_storm telegraph() called. impacted_areas count=[length(impacted_areas)]")
 	for(var/area/impacted_area as anything in impacted_areas)
-		log_game("WEATHER_AUDIO DEBUG: Processing area [impacted_area] ([impacted_area.type]), outdoors=[impacted_area.outdoors]")
 		if(impacted_area.outdoors)
 			weak_sounds[impacted_area] = /datum/looping_sound/weak_outside_ashstorm
 			strong_sounds[impacted_area] = /datum/looping_sound/active_outside_ashstorm
@@ -42,7 +40,6 @@
 	//We modify this list instead of setting it to weak/stron sounds in order to preserve things that hold a reference to it
 	//It's essentially a playlist for a bunch of components that chose what sound to loop based on the area a player is in
 	GLOB.ash_storm_sounds += weak_sounds
-	log_game("WEATHER_AUDIO DEBUG: ash_storm telegraph() done. GLOB.ash_storm_sounds length=[length(GLOB.ash_storm_sounds)]")
 	return ..()
 
 /datum/weather/ash_storm/start()
@@ -69,6 +66,7 @@
 
 /datum/weather/ash_storm/end()
 	GLOB.ash_storm_sounds -= weak_sounds
+	GLOB.ash_storm_sounds -= strong_sounds
 	for(var/turf/open/misc/asteroid/basalt/basalt as anything in GLOB.dug_up_basalt)
 		if(!(basalt.loc in impacted_areas) || !(basalt.z in impacted_z_levels))
 			continue

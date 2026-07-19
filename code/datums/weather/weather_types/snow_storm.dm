@@ -30,14 +30,16 @@
 	// snowstorms temperature ignores any clothing insulation
 	weather_flags = (WEATHER_MOBS | WEATHER_BAROMETER | WEATHER_TEMPERATURE_BYPASS_CLOTHING)
 
+	var/list/active_sounds = list()
+
 /datum/weather/snow_storm/start()
-	GLOB.snowstorm_sounds.Cut() // it's passed by ref
 	for(var/area/impacted_area as anything in impacted_areas)
-		GLOB.snowstorm_sounds[impacted_area] = /datum/looping_sound/snowstorm
+		active_sounds[impacted_area] = /datum/looping_sound/snowstorm
+	GLOB.snowstorm_sounds += active_sounds
 	return ..()
 
 /datum/weather/snow_storm/end()
-	GLOB.snowstorm_sounds.Cut()
+	GLOB.snowstorm_sounds -= active_sounds
 	return ..()
 
 // since snowstorm is on a station z level, add extra checks to not annoy everyone

@@ -29,26 +29,32 @@
 	turf_thunder_chance = THUNDER_CHANCE_VERY_RARE // planet-wide areas are tens of thousands of turfs, anything above this is a constant barrage of strikes
 	whitelist_weather_reagents = list(/datum/reagent/water)
 
+	var/list/start_sounds = list()
+	var/list/middle_sounds = list()
+	var/list/ending_sounds = list()
+
 /datum/weather/rain_storm/telegraph()
-	GLOB.rain_storm_sounds.Cut()
 	for(var/area/impacted_area as anything in impacted_areas)
-		GLOB.rain_storm_sounds[impacted_area] = /datum/looping_sound/rain/start
+		start_sounds[impacted_area] = /datum/looping_sound/rain/start
+		middle_sounds[impacted_area] = /datum/looping_sound/rain/middle
+		ending_sounds[impacted_area] = /datum/looping_sound/rain/end
+	GLOB.rain_storm_sounds += start_sounds
 	return ..()
 
 /datum/weather/rain_storm/start()
-	GLOB.rain_storm_sounds.Cut()
-	for(var/area/impacted_area as anything in impacted_areas)
-		GLOB.rain_storm_sounds[impacted_area] = /datum/looping_sound/rain/middle
+	GLOB.rain_storm_sounds -= start_sounds
+	GLOB.rain_storm_sounds += middle_sounds
 	return ..()
 
 /datum/weather/rain_storm/wind_down()
-	GLOB.rain_storm_sounds.Cut()
-	for(var/area/impacted_area as anything in impacted_areas)
-		GLOB.rain_storm_sounds[impacted_area] = /datum/looping_sound/rain/end
+	GLOB.rain_storm_sounds -= middle_sounds
+	GLOB.rain_storm_sounds += ending_sounds
 	return ..()
 
 /datum/weather/rain_storm/end()
-	GLOB.rain_storm_sounds.Cut()
+	GLOB.rain_storm_sounds -= start_sounds
+	GLOB.rain_storm_sounds -= middle_sounds
+	GLOB.rain_storm_sounds -= ending_sounds
 	return ..()
 
 /datum/weather/rain_storm/blood
