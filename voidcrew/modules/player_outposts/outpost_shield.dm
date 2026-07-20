@@ -27,8 +27,8 @@
 /obj/machinery/outpost_shield_generator
 	name = "outpost shield generator"
 	desc = "A colonial-pattern deflector field projector. While powered and charged, it detonates incoming ordnance at the edge of the claim's survey bounds."
-	icon = 'icons/obj/machines/shield_generator.dmi'
-	icon_state = "shield_wall_gen"
+	icon = 'voidcrew/modules/player_outposts/icons/outpost.dmi'
+	icon_state = "shieldgen"
 	density = TRUE
 	anchored = TRUE
 	power_channel = AREA_USAGE_EQUIP
@@ -144,7 +144,11 @@
 
 /obj/machinery/outpost_shield_generator/update_icon_state()
 	. = ..()
-	icon_state = (was_shield_up && !(machine_stat & (BROKEN | NOPOWER))) ? "shield_wall_gen_on" : "shield_wall_gen"
+	icon_state = "shieldgen"
+	if(was_shield_up && !(machine_stat & (BROKEN | NOPOWER)))
+		icon_state += "_on"
+	if(panel_open)
+		icon_state += "_open"
 
 /obj/machinery/outpost_shield_generator/examine(mob/user)
 	. = ..()
@@ -176,7 +180,8 @@
 	return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/outpost_shield_generator/attackby(obj/item/attacking_item, mob/user, list/modifiers, list/attack_modifiers)
-	if(default_deconstruction_screwdriver(user, icon_state, icon_state, attacking_item))
+	if(default_deconstruction_screwdriver(user, "shieldgen_open", "shieldgen", attacking_item))
+		update_appearance()
 		return
 	if(default_deconstruction_crowbar(attacking_item))
 		return
@@ -198,8 +203,8 @@
 	name = "Outpost Shield Generator Board"
 	desc = "Allows for the construction of a deflector shield generator for player-founded outposts."
 	id = "outpost_shield_generator"
-	research_icon = 'icons/obj/machines/shield_generator.dmi'
-	research_icon_state = "shield_wall_gen"
+	research_icon = 'voidcrew/modules/player_outposts/icons/outpost.dmi'
+	research_icon_state = "shieldgen"
 	build_path = /obj/item/circuitboard/machine/outpost_shield_generator
 	category = list(
 		RND_CATEGORY_MACHINE + RND_SUBCATEGORY_MACHINE_ENGINEERING

@@ -181,9 +181,8 @@
 /obj/item/vestige_gnash_maw
 	name = "gnash-maw"
 	desc = "A ring of someone else's teeth around a stomach that is mostly opinion. It only has appetite for the recently-held — things still warm from another hand. Everything else it politely declines."
-	icon = 'icons/obj/medical/organs/organs.dmi'
-	icon_state = "stomach"
-	color = "#b8d49c"
+	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
+	icon_state = "gnash_maw"
 	w_class = WEIGHT_CLASS_SMALL
 	force = 5
 	attack_verb_continuous = list("gnashes", "gums", "chews on")

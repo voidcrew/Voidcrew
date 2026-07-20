@@ -44,40 +44,50 @@ GLOBAL_LIST_EMPTY(extracted_this_round)
 		to_chat(player, span_warning("You have already extracted parts this round!"))
 		return list()
 
-	// Find all extraction cases on the player
+	// Find all extraction cases on the player. Colosseum champion's cases are
+	// prize plunder and extract ALONGSIDE the standard one-case limit.
 	var/list/cases = find_extraction_cases_on_mob(player)
+	var/list/standard_cases = list()
+	var/list/cases_to_extract = list()
+	for(var/obj/item/storage/briefcase/secure/extraction/case as anything in cases)
+		if(istype(case, /obj/item/storage/briefcase/secure/extraction/tournament))
+			cases_to_extract += case
+		else
+			standard_cases += case
 
-	if(!length(cases))
+	// Only extract from the FIRST standard case - prevents hoarding multiple cases
+	if(length(standard_cases))
+		cases_to_extract.Insert(1, standard_cases[1])
+
+	if(!length(cases_to_extract))
 		return list()
 
-	// Only extract from the FIRST case - prevents hoarding multiple cases
-	var/obj/item/storage/briefcase/secure/extraction/primary_case = cases[1]
-
-	// Warn if they have multiple cases
-	if(length(cases) > 1)
-		to_chat(player, span_warning("You have multiple extraction cases! Only the first one found will be extracted."))
+	// Warn if they have multiple standard cases
+	if(length(standard_cases) > 1)
+		to_chat(player, span_warning("You have multiple extraction cases! Only the first one found will be extracted (champion's cases always extract)."))
 
 	// Count parts by class
 	var/list/extracted_counts = list()
 	for(var/part_class in GLOB.ship_part_classes)
 		extracted_counts[part_class] = 0
 
-	// Extract parts from the primary case only
+	// Extract parts from the eligible cases
 	var/list/parts_to_delete = list()
-	for(var/obj/item/ship_parts/part in primary_case.contents)
-		var/part_class = part.part_class
+	for(var/obj/item/storage/briefcase/secure/extraction/case as anything in cases_to_extract)
+		for(var/obj/item/ship_parts/part in case.contents)
+			var/part_class = part.part_class
 
-		// Try to add to database
-		if(GLOB.ship_economy_db?.add_part(ckey, part_class, 1, extraction_type))
-			extracted_counts[part_class]++
-			parts_to_delete += part
+			// Try to add to database
+			if(GLOB.ship_economy_db?.add_part(ckey, part_class, 1, extraction_type))
+				extracted_counts[part_class]++
+				parts_to_delete += part
 
-			// Log the extraction
-			GLOB.ship_economy_db?.log_extraction(ckey, part_class, extraction_type, "\ref[part]")
-		else
-			// Failed to add - queue for retry
-			GLOB.ship_economy_db?.queue_pending_extraction(ckey, part_class, "\ref[part]")
-			parts_to_delete += part // Still delete the item to prevent duplication
+				// Log the extraction
+				GLOB.ship_economy_db?.log_extraction(ckey, part_class, extraction_type, "\ref[part]")
+			else
+				// Failed to add - queue for retry
+				GLOB.ship_economy_db?.queue_pending_extraction(ckey, part_class, "\ref[part]")
+				parts_to_delete += part // Still delete the item to prevent duplication
 
 	// Delete extracted parts
 	for(var/obj/item/ship_parts/part in parts_to_delete)

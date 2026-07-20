@@ -146,6 +146,8 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
 /obj/item/gun_part
 	name = "weapon component"
 	desc = "A machined firearm component. Inert on its own — combine it with the matching schematic's recipe in the crafting menu."
-	icon = 'icons/obj/weapons/guns/ballistic.dmi'
-	icon_state = "detective"
+	icon = 'voidcrew/modules/weapons_bench/icons/gun_parts.dmi'
+	icon_state = "gun_part"
+	lefthand_file = 'voidcrew/modules/weapons_bench/icons/gun_parts_lefthand.dmi'
+	righthand_file = 'voidcrew/modules/weapons_bench/icons/gun_parts_righthand.dmi'
 	w_class = WEIGHT_CLASS_NORMAL

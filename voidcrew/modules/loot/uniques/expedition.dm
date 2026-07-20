@@ -62,6 +62,8 @@
 /obj/item/pinpointer/old_hands_compass
 	name = "old hand's compass"
 	desc = "A prospector's compass, glass sanded to frost. It has never pointed north in its working life."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "brass_compass"
 	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 3, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 2)
 	/// Cached overmap turf of whatever's carrying the compass, set by scan_for_target()
 	var/turf/cached_reference_turf
@@ -170,8 +172,8 @@
 /obj/item/claim_stake
 	name = "claim stake"
 	desc = "A steel stake with a brass claim-plate. The frontier respects exactly one thing and this is the shape of it."
-	icon = 'icons/obj/mining.dmi'
-	icon_state = "marker"
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "claim_stake"
 	worn_icon_state = "marker"
 	w_class = WEIGHT_CLASS_SMALL
 	force = 5
@@ -324,26 +326,26 @@
  * random event). Rad-storm immunity is granted anyway since the trait is
  * real and free; it just never fires on a planet in this fork.
  */
-/obj/item/clothing/suit/hooded/second_season_duster
+/obj/item/clothing/suit/hooded/explorer/second_season_duster
 	name = "\"Second Season\""
 	desc = "A duster gone the color of every planet it's been on. The weather gave up on the previous owner's schedule."
 	clothing_traits = list(TRAIT_ASHSTORM_IMMUNE, TRAIT_SNOWSTORM_IMMUNE, TRAIT_SANDSTORM_IMMUNE, TRAIT_RAINSTORM_IMMUNE, TRAIT_RADSTORM_IMMUNE)
 
-/obj/item/clothing/suit/hooded/second_season_duster/Initialize(mapload)
+/obj/item/clothing/suit/hooded/explorer/second_season_duster/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
-/obj/item/clothing/suit/hooded/second_season_duster/equipped(mob/user, slot, initial)
+/obj/item/clothing/suit/hooded/explorer/second_season_duster/equipped(mob/user, slot, initial)
 	. = ..()
 	if(slot_flags & slot)
 		RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_wearer_moved))
 		user.remove_movespeed_modifier(/datum/movespeed_modifier/turf_slowdown)
 
-/obj/item/clothing/suit/hooded/second_season_duster/dropped(mob/user, silent)
+/obj/item/clothing/suit/hooded/explorer/second_season_duster/dropped(mob/user, silent)
 	. = ..()
 	UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
 
-/obj/item/clothing/suit/hooded/second_season_duster/proc/on_wearer_moved(mob/source, atom/old_loc, movement_dir, forced, list/old_locs, momentum_change)
+/obj/item/clothing/suit/hooded/explorer/second_season_duster/proc/on_wearer_moved(mob/source, atom/old_loc, movement_dir, forced, list/old_locs, momentum_change)
 	SIGNAL_HANDLER
 	source.remove_movespeed_modifier(/datum/movespeed_modifier/turf_slowdown)
 
@@ -487,11 +489,8 @@
 /obj/item/deepwell_sampler
 	name = "core sampler"
 	desc = "A core sampler crated in claim-office gray. The warranty excludes 'attention.'"
-	icon = 'icons/obj/mining.dmi'
-	icon_state = "handdrill"
-	inhand_icon_state = "handdrill"
-	lefthand_file = 'icons/mob/inhands/equipment/mining_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/equipment/mining_righthand.dmi'
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "deepwell_item"
 	w_class = WEIGHT_CLASS_BULKY
 	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 3, /datum/material/glass = SHEET_MATERIAL_AMOUNT)
 
@@ -522,8 +521,8 @@
 /obj/machinery/deepwell_sampler
 	name = "deepwell sampler"
 	desc = "A core sampler, bolted down and working the vein on its own. The drilling carries."
-	icon = 'icons/obj/machines/mining_machines.dmi'
-	icon_state = "ore_redemption"
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "deepwell"
 	density = TRUE
 	anchored = TRUE
 	use_power = NO_POWER_USE
@@ -651,10 +650,10 @@
 /obj/item/longwalk_rig
 	name = "longwalk rig"
 	desc = "A leg harness of pistons and cable, trail-patched. Built by someone who was tired of going around."
-	icon = 'icons/obj/clothing/shoes.dmi'
-	icon_state = "jetboots"
-	lefthand_file = 'icons/mob/inhands/clothing/shoes_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/clothing/shoes_righthand.dmi'
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "longwalk_rig"
+	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
+	worn_icon_state = "longwalk_rig"
 	inhand_icon_state = null
 	slot_flags = ITEM_SLOT_BELT
 	w_class = WEIGHT_CLASS_SMALL

@@ -39,7 +39,10 @@
 /obj/item/clothing/neck/night_sisters_watch
 	name = "night sister's watch"
 	desc = "A fob watch on a chain, the kind nurses pinned upside-down so patients couldn't read their own odds."
-	icon_state = "stethoscope"
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "fob_watch"
+	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
+	worn_icon_state = "fob_watch"
 	/// How often we re-scan the deck for freshly-critical mobs.
 	var/scan_interval = 4 SECONDS
 	/// world.time of the next allowed scan.

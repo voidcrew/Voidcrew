@@ -1,11 +1,220 @@
 /**
  * # Colosseum service machinery
  *
- * The concourse signup console and the spoils vault. Both are indestructible
- * venue fixtures (matching the building's indestructible fiction) and both
- * tolerate deferred linking: the site wires their `site` var in
- * link_interior(), and every interaction re-checks it.
+ * The concourse signup console, the spoils vault, the venue doors, the ETA
+ * boards and the arena camera net. Everything here is an indestructible venue
+ * fixture (matching the building's indestructible fiction) and everything
+ * tolerates deferred linking: the site wires `site` vars in link_interior(),
+ * and every interaction re-checks them (or falls back to GLOB.colosseum_site —
+ * safe, the venue is one-per-round).
  */
+
+// ===== VENUE DOORS =====
+
+/**
+ * The venue's interior airlocks. Same hardening recipe as the trader-outpost
+ * sanctuary doors: no damage, no hacking, no emag — the fiction says the
+ * building has shrugged off worse than your weapons.
+ */
+/obj/machinery/door/airlock/sandstone/colosseum
+	name = "colosseum door"
+	desc = "A sandstone-faced door hung on mechanisms far older and far tougher than it looks."
+	use_power = NO_POWER_USE
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	damage_deflection = 100
+	explosion_block = 3
+	hackProof = TRUE
+	aiControlDisabled = AI_WIRE_DISABLED
+	security_level = 6
+	normal_integrity = 1000
+
+/obj/machinery/door/airlock/sandstone/colosseum/emag_act(mob/user, obj/item/card/emag/emag_card)
+	balloon_alert(user, "the mechanism shrugs it off!")
+	return FALSE
+
+/// The referee box door. Access comes from the mapped access helper.
+/obj/machinery/door/airlock/sandstone/colosseum/admin
+	name = "referee box door"
+	desc = "The Master of Games' box. The plaque reads: 'If you can read this, you are not invited.'"
+
+/**
+ * The spoils chamber door. While a claim window runs it answers only to the
+ * match's winners; the rest of the time it opens for anyone, matching the
+ * vault's public-after-the-window behavior.
+ */
+/obj/machinery/door/airlock/sandstone/colosseum/vault
+	name = "spoils chamber door"
+	desc = "A heavy sandstone door onto the trophy chamber. It knows who won."
+
+/obj/machinery/door/airlock/sandstone/colosseum/vault/allowed(mob/M)
+	var/datum/colosseum_controller/controller = GLOB.colosseum_site?.controller
+	if(controller?.claim_window_active())
+		return M.mind && controller.winner_minds[M.mind]
+	return ..()
+
+/// Glass variant of the hardened venue door (concourse side rooms).
+/obj/machinery/door/airlock/sandstone/glass/colosseum
+	name = "colosseum door"
+	desc = "A glazed sandstone-faced door hung on mechanisms far older and far tougher than it looks."
+	use_power = NO_POWER_USE
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	damage_deflection = 100
+	explosion_block = 3
+	hackProof = TRUE
+	aiControlDisabled = AI_WIRE_DISABLED
+	security_level = 6
+	normal_integrity = 1000
+
+/obj/machinery/door/airlock/sandstone/glass/colosseum/emag_act(mob/user, obj/item/card/emag/emag_card)
+	balloon_alert(user, "the mechanism shrugs it off!")
+	return FALSE
+
+// ===== ETA BOARDS =====
+
+/// "M:SS" countdown text for the ETA boards (deciseconds in, clamped at zero).
+/proc/colosseum_timer_text(deciseconds)
+	var/seconds = max(0, round(deciseconds / 10))
+	return "[round(seconds / 60)]:[add_leading(num2text(seconds % 60), 2, "0")]"
+
+/**
+ * Venue ETA board: shows the match loop's current phase and, above all, when
+ * the fighting starts. Driven two ways — a tick on SSmachines while any
+ * countdown is running, and site.update_status_displays() kicks on every
+ * state flip so the boards never show a stale phase.
+ */
+/obj/machinery/status_display/colosseum
+	name = "games board"
+	desc = "An ancient annunciator board, retrofitted a dozen times over. It has counted down to more bloodshed than any living thing in the sector."
+	current_mode = SD_MESSAGE
+	use_power = NO_POWER_USE
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	/// The venue this board serves (wired by link_interior; GLOB fallback)
+	var/obj/structure/overmap/colosseum/site
+
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/status_display/colosseum, 32)
+
+/obj/machinery/status_display/colosseum/Initialize(mapload)
+	. = ..()
+	update()
+
+/obj/machinery/status_display/colosseum/Destroy()
+	if(site)
+		site.status_displays -= src
+		site = null
+	return ..()
+
+// Venue fixture: no tool does anything — not unboltable, not deconstructable.
+/obj/machinery/status_display/colosseum/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(tool.tool_behaviour)
+		balloon_alert(user, "set into the stone!")
+		return ITEM_INTERACT_BLOCKING
+	return ..()
+
+/obj/machinery/status_display/colosseum/process()
+	var/datum/colosseum_controller/controller = (site || GLOB.colosseum_site)?.controller
+	if(!controller)
+		set_messages("- GAMES -", "DORMANT")
+		return PROCESS_KILL
+	switch(controller.state)
+		if(COLOSSEUM_STATE_IDLE)
+			// The claim window (5 min) outlives the arena reset (15 s) — keep
+			// the winners' countdown up until it lapses.
+			if(controller.claim_window_active())
+				set_messages("- SPOILS -", "CLAIM [colosseum_timer_text(controller.claim_until - world.time)]")
+				return
+			if(world.time < controller.next_signup_at)
+				set_messages("- GAMES -", "NEXT [colosseum_timer_text(controller.next_signup_at - world.time)]")
+				return
+			set_messages("- GAMES -", "SIGNUP AT THE CONCOURSE")
+			return PROCESS_KILL
+		if(COLOSSEUM_STATE_SIGNUP)
+			set_messages("SIGNUP [colosseum_timer_text(controller.signup_closes_at - world.time)]", "FIGHT [colosseum_timer_text(controller.time_to_gates())]")
+		if(COLOSSEUM_STATE_SEATING)
+			set_messages("SEATING", "FIGHT [colosseum_timer_text(controller.time_to_gates())]")
+		if(COLOSSEUM_STATE_LIVE)
+			var/clock = controller.match_timer ? timeleft(controller.match_timer) : 0
+			set_messages("LIVE [colosseum_timer_text(clock)]", uppertext(controller.mode?.name || "match"))
+		if(COLOSSEUM_STATE_RESOLVED, COLOSSEUM_STATE_RESET)
+			if(controller.claim_window_active())
+				set_messages("- SPOILS -", "CLAIM [colosseum_timer_text(controller.claim_until - world.time)]")
+			else
+				set_messages("- ARENA -", "RESETTING")
+
+// ===== ARENA CAMERAS =====
+
+/**
+ * Arena camera: fixed network so the observation consoles list exactly the
+ * fight and nothing else. Long view range — the arena is 28 tiles across and
+ * the cameras hang on its perimeter. The voidcrew camera edit auto-names
+ * these per-area ("Colosseum Arena #1", ...) and leaves the network alone
+ * because the venue isn't a shuttle.
+ */
+/obj/machinery/camera/colosseum
+	network = list(COLOSSEUM_CAMERA_NETWORK)
+	view_range = 14
+	use_power = NO_POWER_USE
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/colosseum, 0)
+
+/obj/machinery/camera/colosseum/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/empprotection, EMP_PROTECT_SELF | EMP_PROTECT_WIRES)
+
+// No panel, no rewiring, no upgrades: a contestant with a screwdriver must
+// not be able to blind the stands (reset_arena can't rebuild machinery).
+/obj/machinery/camera/colosseum/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(tool.tool_behaviour)
+		balloon_alert(user, "sealed against tampering!")
+		return ITEM_INTERACT_BLOCKING
+	return ..()
+
+/// Spectator-side observation console: watch the whole fight from the stands.
+/obj/machinery/computer/security/colosseum
+	name = "arena observation console"
+	desc = "A spectator's window onto the sand. Every angle of the arena, none of the shrapnel."
+	icon_screen = "cameras"
+	network = list(COLOSSEUM_CAMERA_NETWORK)
+	use_power = NO_POWER_USE
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+
+/obj/machinery/computer/security/colosseum/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(tool.tool_behaviour)
+		balloon_alert(user, "set into the stone!")
+		return ITEM_INTERACT_BLOCKING
+	return ..()
+
+// ===== CHAMPION'S CASE =====
+
+/// Champion's case storage: same ship-parts-only rule as the standard
+/// extraction case, sized for a whole prize pool.
+/datum/storage/briefcase/extraction/tournament
+	max_slots = 16
+	max_total_storage = 48
+
+/**
+ * The tournament prize case. Awarded through the spoils vault (one per
+ * winner, the prize parts dealt between them) and extracted ALONGSIDE a
+ * standard extraction case rather than competing with it for the
+ * one-case-per-player rule — see extract_ship_parts_from_player().
+ */
+/obj/item/storage/briefcase/secure/extraction/tournament
+	name = "champion's extraction case"
+	desc = "A gilded extraction case bearing the Grand Colosseum's laurels. Spoils in this case are honored over and above a standard extraction case."
+	icon = 'voidcrew/modules/colosseum/icons/colosseum.dmi'
+	icon_state = "tournament_case"
+	inhand_icon_state = "tournament_case"
+	lefthand_file = 'voidcrew/modules/colosseum/icons/colosseum_lefthand.dmi'
+	righthand_file = 'voidcrew/modules/colosseum/icons/colosseum_righthand.dmi'
+	storage_type = /datum/storage/briefcase/extraction/tournament
+
+/obj/item/storage/briefcase/secure/extraction/tournament/examine(mob/user)
+	. = ..()
+	. += span_boldnotice("Colosseum plunder: this case extracts in addition to your standard extraction case.")
+	var/part_count = 0
+	for(var/obj/item/ship_parts/part in contents)
+		part_count++
+	. += span_notice("Currently holding [part_count] ship part\s.")
 
 // ===== SIGNUP CONSOLE =====
 
@@ -23,6 +232,14 @@
 	if(site?.signup_console == src)
 		site.signup_console = null
 	site = null
+	return ..()
+
+// Computers deconstruct into frames via screwdriver regardless of
+// resistance_flags; venue fixtures don't.
+/obj/machinery/computer/colosseum_signup/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(tool.tool_behaviour)
+		balloon_alert(user, "set into the stone!")
+		return ITEM_INTERACT_BLOCKING
 	return ..()
 
 /// Refreshes any open interaction feedback after state flips. (The console is
@@ -108,8 +325,8 @@
 /obj/machinery/colosseum_vault
 	name = "spoils vault"
 	desc = "An armored prize vault. Everything that falls on the sand ends up in here — and the winners get first pick."
-	icon = 'icons/obj/structures.dmi'
-	icon_state = "safe"
+	icon = 'voidcrew/modules/colosseum/icons/colosseum.dmi'
+	icon_state = "colosseum_vault"
 	density = TRUE
 	anchored = TRUE
 	use_power = NO_POWER_USE
@@ -139,16 +356,14 @@
 /// Whether this user may take things out right now.
 /obj/machinery/colosseum_vault/proc/can_claim(mob/user)
 	var/datum/colosseum_controller/controller = site?.controller
-	if(!controller)
-		return TRUE
-	if(controller.claim_until && world.time < controller.claim_until && length(controller.winner_minds))
+	if(controller?.claim_window_active())
 		return user.mind && controller.winner_minds[user.mind]
 	return TRUE
 
 /obj/machinery/colosseum_vault/examine(mob/user)
 	. = ..()
 	var/datum/colosseum_controller/controller = site?.controller
-	if(controller?.claim_until && world.time < controller.claim_until && length(controller.winner_minds))
+	if(controller?.claim_window_active())
 		. += span_boldwarning("Winners-only claim window: [DisplayTimeText(controller.claim_until - world.time)] remaining.")
 	else
 		. += span_notice("The vault is unlocked to the public.")
@@ -163,7 +378,7 @@
 /obj/machinery/colosseum_vault/ui_data(mob/user)
 	var/list/data = list()
 	var/datum/colosseum_controller/controller = site?.controller
-	var/claim_active = controller?.claim_until && world.time < controller.claim_until && length(controller.winner_minds)
+	var/claim_active = controller?.claim_window_active()
 	data["claim_active"] = !!claim_active
 	data["claim_seconds"] = claim_active ? round((controller.claim_until - world.time) / 10) : 0
 	data["is_winner"] = !!(claim_active && user.mind && controller.winner_minds[user.mind])

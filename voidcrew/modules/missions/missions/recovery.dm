@@ -485,11 +485,11 @@
 /obj/item/mission_recovery
 	name = "recovery objective"
 	desc = "Salvage flagged for recovery under a standing contract. The mission pad will accept it."
-	icon = 'icons/obj/machines/telecomms.dmi'
-	icon_state = "blackcube"
-	inhand_icon_state = "blackcube"
-	lefthand_file = 'icons/mob/inhands/items_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/items_righthand.dmi'
+	icon = 'voidcrew/modules/missions/icons/recovery.dmi'
+	icon_state = "recovery"
+	inhand_icon_state = "recovery"
+	lefthand_file = 'voidcrew/modules/missions/icons/recovery_lefthand.dmi'
+	righthand_file = 'voidcrew/modules/missions/icons/recovery_righthand.dmi'
 	w_class = WEIGHT_CLASS_NORMAL
 
 	/// Weakref to the mission this item satisfies
@@ -506,20 +506,8 @@
 /obj/item/mission_recovery/proof
 	name = "identification tag"
 	desc = "Proof that somebody's career ended violently. The mission pad will accept it."
-	icon = 'icons/obj/clothing/accessories.dmi'
-	icon_state = "skull"
+	icon_state = "recovery_proof"
 	inhand_icon_state = null
 	w_class = WEIGHT_CLASS_TINY
-
-/obj/item/mission_recovery/proof/Initialize(mapload)
-	. = ..()
-	update_appearance()
-
-// Holochip-style two-part sprite: base state + colorable "-color" card overlay
-/obj/item/mission_recovery/proof/update_overlays()
-	. = ..()
-	var/mutable_appearance/card_overlay = mutable_appearance('icons/obj/economy.dmi', "holochip-color")
-	card_overlay.color = "#8E2E38"
-	. += card_overlay
 
 #undef MAX_RECOVERY_RETARGETS

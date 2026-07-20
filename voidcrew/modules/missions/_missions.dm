@@ -321,15 +321,17 @@
  * * reward_anchor - The machine the turn-in happened at (ship mission pad or
  *   outpost contract board); rewards spawn on its turf
  * * turned_in_item - Optional item that was turned in (will be consumed)
+ * * force - Skip objective validation (admin testing); state guards still apply
  */
-/datum/mission/proc/turn_in(atom/reward_anchor, obj/item/turned_in_item)
+/datum/mission/proc/turn_in(atom/reward_anchor, obj/item/turned_in_item, force = FALSE)
 	// Validate completion - use can_turn_in for item missions, can_complete otherwise
-	if(requires_item)
-		if(!can_turn_in(turned_in_item))
-			return FALSE
-	else
-		if(!can_complete())
-			return FALSE
+	if(!force)
+		if(requires_item)
+			if(!can_turn_in(turned_in_item))
+				return FALSE
+		else
+			if(!can_complete())
+				return FALSE
 
 	if(failed || completed)
 		return FALSE

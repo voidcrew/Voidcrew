@@ -9,7 +9,8 @@
 /obj/item/disk/star_chart
 	name = "star chart"
 	desc = "A survey slate preloaded with the coordinates of one region of the system. Use it aboard a ship to chart those contacts onto the navigation readout."
-	icon_state = "datadisk2"
+	icon = 'voidcrew/modules/overmap/icons/obj/star_chart.dmi'
+	icon_state = "star_chart"
 	/// Zone band this chart reveals (a ZONE_* constant).
 	var/chart_zone_type = ZONE_RED
 	/// Human-readable region label for the upload notification.
@@ -31,13 +32,13 @@
 /obj/item/disk/star_chart/yellow
 	name = "star chart (contested lanes)"
 	desc = "A survey slate mapping the contested lanes. Use it aboard a ship to chart every station and signal in yellow-zone space."
-	icon_state = "datadisk3"
+	icon_state = "star_chart_yellow"
 	chart_zone_type = ZONE_YELLOW
 	zone_label = "the contested lanes"
 
 /obj/item/disk/star_chart/red
 	name = "star chart (lawless deep)"
 	desc = "A survey slate mapping the lawless deep. Use it aboard a ship to chart every station and signal in red-zone space."
-	icon_state = "datadisk4"
+	icon_state = "star_chart_red"
 	chart_zone_type = ZONE_RED
 	zone_label = "the lawless deep"

@@ -1136,12 +1136,9 @@
 /obj/item/vestige_rending_claw
 	name = "rending claws"
 	desc = "A fan of hooked claws grown straight out of the hand. They are not for making wounds. They are for finding the ones already made, and holding the door open."
-	icon = 'icons/obj/weapons/changeling_items.dmi'
-	icon_state = "arm_blade"
-	inhand_icon_state = "arm_blade"
-	icon_angle = 180
-	lefthand_file = 'icons/mob/inhands/antag/changeling_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/antag/changeling_righthand.dmi'
+	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
+	icon_state = "rending_claw"
+	inhand_icon_state = null
 	color = "#a03535"
 	item_flags = ABSTRACT | DROPDEL
 	w_class = WEIGHT_CLASS_HUGE

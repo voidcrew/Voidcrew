@@ -571,6 +571,7 @@
 	desc = "A carp the colour of banked embers, fresh from a shell it had no business fitting inside. It is extremely certain it is a dragon. Nothing so far has dared correct it."
 	gender = NEUTER
 	greyscale_config = NONE
+	color = "#e8975a" // banked-ember tint over the borrowed carp sprite
 	icon_state = "base"
 	icon_living = "base"
 	icon_dead = "base_dead"
@@ -631,9 +632,8 @@
 /obj/item/vestige_ember_jaw
 	name = "ember-jaw"
 	desc = "The fused jawbone of something that starved with its mouth full. The teeth are soot-black, and deep in the marrow something still glows when you tilt it toward the dark."
-	icon = 'icons/obj/mining.dmi'
-	icon_state = "skull"
-	color = "#d9a55a"
+	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
+	icon_state = "ember_jaw"
 	w_class = WEIGHT_CLASS_SMALL
 	light_range = 1.2
 	light_power = 0.5
@@ -818,9 +818,8 @@
 /obj/item/vestige_gust_charm
 	name = "gust charm"
 	desc = "A stretch of wing-leather dried around a hollow fang, strung on braided sinew. Held tight, the air within arm's reach feels very slightly ashamed of itself."
-	icon = 'icons/obj/mining.dmi'
-	icon_state = "sinew"
-	color = "#b9c6d6"
+	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
+	icon_state = "gust_charm"
 	w_class = WEIGHT_CLASS_SMALL
 	COOLDOWN_DECLARE(gust_cooldown)
 

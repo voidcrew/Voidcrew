@@ -30,9 +30,9 @@
 /obj/machinery/blueprint_imprinter
 	name = "neural schematic imprinter"
 	desc = "A skull-shaped scanner cradle wired into a schematic shredder. Slot a schematic, climb in, pay the fee, know the schematic. The shredder half is not optional."
-	icon = 'icons/obj/machines/implant_chair.dmi'
-	icon_state = "implantchair"
-	density = TRUE
+	icon = 'voidcrew/modules/trade/icons/trade.dmi'
+	icon_state = "imprinter"
+	density = FALSE // Becomes dense only while the cradle is sealed shut
 	use_power = NO_POWER_USE
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	occupant_typecache = list(/mob/living/carbon)
@@ -112,6 +112,10 @@
 	return GLOB.contained_state
 
 /obj/machinery/blueprint_imprinter/relaymove(mob/living/user, direction)
+	open_machine()
+
+// The cradle has no lock; resisting pops the door without having to walk out.
+/obj/machinery/blueprint_imprinter/container_resist_act(mob/living/user)
 	open_machine()
 
 /obj/machinery/blueprint_imprinter/open_machine(drop = TRUE, density_to_set = FALSE)
@@ -358,6 +362,9 @@
 			if(working)
 				return TRUE
 			eject_cash(occupant)
+			return TRUE
+		if("open_door")
+			open_machine()
 			return TRUE
 
 // --- Outpost aggression -------------------------------------------------

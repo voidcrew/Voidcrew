@@ -146,8 +146,8 @@
 /obj/structure/mission_survey_pylon
 	name = "survey pylon"
 	desc = "A tripod-mounted survey unit, dropped from orbit and still waiting on a field tech. The calibration routine is not subtle."
-	icon = 'icons/obj/devices/tracker.dmi'
-	icon_state = "beacon"
+	icon = 'voidcrew/modules/missions/icons/recovery.dmi'
+	icon_state = "survey_pylon"
 	anchored = TRUE
 	density = TRUE
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
@@ -181,6 +181,7 @@
 		return TRUE
 	calibrated = TRUE
 	name = "calibrated [initial(name)]"
+	icon_state = "survey_pylon_calibrated"
 	playsound(src, 'sound/machines/chime.ogg', 80, TRUE)
 	balloon_alert(user, "calibrated")
 	mission.on_pylon_calibrated(src, user)
@@ -273,6 +274,7 @@
  */
 /obj/item/mission_recovery/anchored
 	desc = "Flagged for recovery under a standing contract — and bolted to the deck. Freeing it will take a minute, and it won't be quiet."
+	icon_state = "recovery_anchored"
 	anchored = TRUE
 	w_class = WEIGHT_CLASS_BULKY
 

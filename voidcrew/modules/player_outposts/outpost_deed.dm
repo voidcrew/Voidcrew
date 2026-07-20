@@ -13,8 +13,8 @@
 /obj/item/outpost_deed
 	name = "outpost deed"
 	desc = "A colonial registry land claim for one sector of open space, notarized in triplicate. Registered to its buyer alone."
-	icon = 'icons/obj/service/bureaucracy.dmi'
-	icon_state = "docs_verified"
+	icon = 'voidcrew/modules/player_outposts/icons/outpost.dmi'
+	icon_state = "outpost_deed"
 	w_class = WEIGHT_CLASS_SMALL
 	resistance_flags = FIRE_PROOF | ACID_PROOF // losing the physical copy to a house fire would be embarrassing
 	/// Ckey the deed is registered to; only they can found with it

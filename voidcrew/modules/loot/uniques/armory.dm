@@ -57,12 +57,8 @@
 /obj/item/handloaders_vise
 	name = "handloader's vise"
 	desc = "A pocket reloading press, armory-issue, serial filed by regulation rather than intent."
-	icon = 'icons/obj/devices/tool.dmi'
-	icon_state = "multitool"
-	inhand_icon_state = "multitool"
-	lefthand_file = 'icons/mob/inhands/equipment/tools_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/equipment/tools_righthand.dmi'
-	icon_angle = -90
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "handloaders_vise"
 	force = 5
 	throwforce = 0
 	w_class = WEIGHT_CLASS_SMALL
@@ -318,7 +314,7 @@
 // (COMSIG_PROJECTILE_SELF_ON_HIT). One settle, one shot - moving breaks it.
 // =============================================================================
 
-/obj/item/clothing/glasses/marksmans_cant
+/obj/item/clothing/glasses/sunglasses/marksmans_cant
 	name = "marksman's cant"
 	desc = "Shooting glasses with a spirit level etched into the top rim. Breathe. Settle. Squeeze."
 	/// Whether the cant has settled and is ready to true up the next shot
@@ -326,11 +322,11 @@
 	/// The mob currently wearing the cant, tracked for signal cleanup
 	var/mob/living/wearer
 
-/obj/item/clothing/glasses/marksmans_cant/Initialize(mapload)
+/obj/item/clothing/glasses/sunglasses/marksmans_cant/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
-/obj/item/clothing/glasses/marksmans_cant/equipped(mob/living/user, slot)
+/obj/item/clothing/glasses/sunglasses/marksmans_cant/equipped(mob/living/user, slot)
 	. = ..()
 	if(!(slot & ITEM_SLOT_EYES))
 		return
@@ -341,7 +337,7 @@
 	RegisterSignal(user, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE, PROC_REF(on_projectile_before_fire))
 	reset_stillness_timer()
 
-/obj/item/clothing/glasses/marksmans_cant/dropped(mob/user)
+/obj/item/clothing/glasses/sunglasses/marksmans_cant/dropped(mob/user)
 	if(wearer)
 		UnregisterSignal(wearer, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_FIRED_GUN, COMSIG_PROJECTILE_FIRER_BEFORE_FIRE))
 	settled = FALSE
@@ -349,25 +345,25 @@
 	return ..()
 
 /// (Re)schedules the settle timer, keyed uniquely per glasses instance so movement just pushes it back.
-/obj/item/clothing/glasses/marksmans_cant/proc/reset_stillness_timer()
+/obj/item/clothing/glasses/sunglasses/marksmans_cant/proc/reset_stillness_timer()
 	addtimer(CALLBACK(src, PROC_REF(become_settled)), MARKSMANS_CANT_STILLNESS, TIMER_UNIQUE | TIMER_OVERRIDE)
 
 /// Signal handler: any movement by the wearer breaks the settle and restarts the stillness clock.
-/obj/item/clothing/glasses/marksmans_cant/proc/on_wearer_moved(atom/source, atom/old_loc, dir, forced, list/old_locs)
+/obj/item/clothing/glasses/sunglasses/marksmans_cant/proc/on_wearer_moved(atom/source, atom/old_loc, dir, forced, list/old_locs)
 	SIGNAL_HANDLER
 	if(settled)
 		balloon_alert(wearer, "cant lost")
 	settled = FALSE
 	reset_stillness_timer()
 
-/obj/item/clothing/glasses/marksmans_cant/proc/become_settled()
+/obj/item/clothing/glasses/sunglasses/marksmans_cant/proc/become_settled()
 	if(QDELETED(wearer) || wearer.stat == DEAD || loc != wearer)
 		return
 	settled = TRUE
 	balloon_alert(wearer, "settled")
 
 /// Signal handler for COMSIG_MOB_FIRED_GUN: zeroes bonus spread on the settled shot.
-/obj/item/clothing/glasses/marksmans_cant/proc/on_fired_gun(mob/living/user, obj/item/gun/gun_fired, atom/target, params, zone_override, list/bonus_spread_values)
+/obj/item/clothing/glasses/sunglasses/marksmans_cant/proc/on_fired_gun(mob/living/user, obj/item/gun/gun_fired, atom/target, params, zone_override, list/bonus_spread_values)
 	SIGNAL_HANDLER
 	if(!settled)
 		return
@@ -375,7 +371,7 @@
 	bonus_spread_values[MAX_BONUS_SPREAD_INDEX] = 0
 
 /// Signal handler for COMSIG_PROJECTILE_FIRER_BEFORE_FIRE: trues up and marks the settled shot, then consumes the settle.
-/obj/item/clothing/glasses/marksmans_cant/proc/on_projectile_before_fire(mob/living/user, obj/projectile/projectile, datum/fired_from, atom/original)
+/obj/item/clothing/glasses/sunglasses/marksmans_cant/proc/on_projectile_before_fire(mob/living/user, obj/projectile/projectile, datum/fired_from, atom/original)
 	SIGNAL_HANDLER
 	if(!settled)
 		return
@@ -388,7 +384,7 @@
 	reset_stillness_timer()
 
 /// Signal handler for COMSIG_PROJECTILE_SELF_ON_HIT on the trued-up shot: staggers whatever it hits.
-/obj/item/clothing/glasses/marksmans_cant/proc/on_settled_hit(obj/projectile/source, atom/movable/firer, atom/target, angle, hit_limb_zone, blocked, pierce_hit)
+/obj/item/clothing/glasses/sunglasses/marksmans_cant/proc/on_settled_hit(obj/projectile/source, atom/movable/firer, atom/target, angle, hit_limb_zone, blocked, pierce_hit)
 	SIGNAL_HANDLER
 	UnregisterSignal(source, COMSIG_PROJECTILE_SELF_ON_HIT)
 	if(blocked >= 100 || !isliving(target))
@@ -514,8 +510,10 @@
 /obj/item/clothing/gloves/knock_knock
 	name = "\"Knock-Knock\""
 	desc = "A powered breaching gauntlet. The knuckle plate is stamped with a courtesy: AFTER YOU."
-	icon_state = "boxing"
-	greyscale_colors = "#21211f"
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "knock_gauntlet"
+	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
+	worn_icon_state = "knock_gauntlet"
 	force = 10
 	obj_flags = CONDUCTS_ELECTRICITY
 	/// Current internal cell charge, in punches

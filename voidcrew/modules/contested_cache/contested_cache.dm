@@ -263,8 +263,8 @@
 /obj/structure/contested_cache_vault
 	name = "bonded courier vault"
 	desc = "An armored escrow vault, bolted through the platform's keel. The seal schedule is broadcast sector-wide; the armor plating is the courier firm's famous last word in dispute resolution."
-	icon = 'icons/obj/structures.dmi'
-	icon_state = "safe_locked"
+	icon = 'voidcrew/modules/contested_cache/icons/cache.dmi'
+	icon_state = "cache_vault"
 	anchored = TRUE
 	density = TRUE
 	max_integrity = 500
@@ -356,7 +356,7 @@
 /// when the interior reloads after the prize was already claimed.
 /obj/structure/contested_cache_vault/proc/set_breached()
 	breached = TRUE
-	icon_state = "safe"
+	icon_state = "cache_vault_open"
 	update_appearance()
 
 /// First open cardinal turf beside the vault (the vault itself is dense), falling back to our own turf.

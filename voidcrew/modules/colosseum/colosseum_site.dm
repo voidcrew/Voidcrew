@@ -12,6 +12,13 @@
  * /turf/open/indestructible, and the only ways onto the fighting floor are the
  * ten id-tagged poddoors this site collects at load.
  *
+ * The venue is two levels: the arena floor (dmm z2) and an upstairs
+ * observation gallery (dmm z1) — an openspace ring behind an indestructible
+ * glass parapet, plus a sealed glass-deck cross over the arena, reached by the
+ * two grand staircases in the south stands. z-slices are stacked into a
+ * virtual z-stack at load; every landmark coordinate (and the dry-run
+ * harness's) is expressed on the arena-floor slice.
+ *
  * Unlike trader outposts the site is event-spawned, but like them it never
  * unloads once open: matches must be repeatable indefinitely, so the interior
  * (and all match state on it) stays for the rest of the round.
@@ -24,6 +31,59 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 /datum/map_template/colosseum
 	name = "Grand Colosseum"
 	mappath = "voidcrew/_maps/map_files/events/grand_colosseum_main.dmm"
+	/// Number of z-slices in the map file. Slice 1 is the TOP of the virtual
+	/// z-stack (/datum/turf_reservation indexes top-down), so a multi-z venue
+	/// puts its observation deck at dmm z1 and the arena floor at the last z.
+	var/z_count = 1
+
+/datum/map_template/colosseum/preload_size(path, cache)
+	. = ..()
+	if(islist(.))
+		z_count = max(1, .[MAP_MAXZ])
+
+/**
+ * Loads a single z-slice of the (possibly multi-z) map file at T, mirroring
+ * /datum/map_template/load for one slice. Slices are stacked into a
+ * virtual-z turf reservation the same way /datum/lazy_template does it:
+ * every slice lands on the same real z-level, side by side, and
+ * GET_TURF_ABOVE/BELOW resolve between them through the reservation.
+ */
+/datum/map_template/colosseum/proc/load_z_slice(turf/placement, slice)
+	if(!placement)
+		return FALSE
+	if((placement.x + width) - 1 > world.maxx)
+		return FALSE
+	if((placement.y + height) - 1 > world.maxy)
+		return FALSE
+
+	// clear the border from active atmos processing, as load() does
+	var/list/to_rebuild = SSair.adjacent_rebuild
+	for(var/turf/border_turf as anything in CORNER_BLOCK_OFFSET(placement, width + 2, height + 2, -1, -1))
+		SSair.remove_from_active(border_turf)
+		to_rebuild -= border_turf
+		for(var/turf/sub_turf as anything in border_turf.atmos_adjacent_turfs)
+			sub_turf.atmos_adjacent_turfs?.Remove(border_turf)
+		border_turf.atmos_adjacent_turfs?.Cut()
+
+	var/datum/parsed_map/parsed = new(file(mappath))
+	if(!parsed.load(
+		placement.x,
+		placement.y,
+		placement.z,
+		crop_map = TRUE,
+		no_changeturf = (SSatoms.initialized == INITIALIZATION_INSSATOMS),
+		z_lower = slice,
+		z_upper = slice,
+		place_on_top = should_place_on_top,
+	))
+		return FALSE
+	var/list/bounds = parsed.bounds
+	if(!bounds)
+		return FALSE
+	require_area_resort()
+	initTemplateBounds(bounds)
+	log_game("[name] (z-slice [slice]) loaded at [placement.x],[placement.y],[placement.z]")
+	return TRUE
 
 // ===== INTERIOR LANDMARKS =====
 // Consumed (or indexed) by link_interior(). All are optional in the map:
@@ -69,9 +129,11 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 /obj/structure/overmap/colosseum
 	name = "the Grand Colosseum"
 	desc = "An ancient monumental arena drum, carved into a bedrock shard. Its hull has shrugged off worse than your weapons. A standing broadcast invites all comers: fight, wager, spectate."
-	icon_state = "station"
-	color = "#e8b84a"
+	icon = 'voidcrew/modules/colosseum/icons/colosseum.dmi'
+	icon_state = "colosseum_token"
 
+	/// Which template datum to load (set before open_venue)
+	var/template_type = /datum/map_template/colosseum
 	/// The interior template instance
 	var/datum/map_template/colosseum/template
 	/// The permanent turf reservation holding the interior
@@ -88,9 +150,13 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	var/obj/machinery/computer/colosseum_signup/signup_console
 	/// The spoils vault (mapped, or fallback-spawned at link)
 	var/obj/machinery/colosseum_vault/spoils_vault
+	/// The wagering hall's bookmaker console (mapped, or fallback-spawned at link)
+	var/obj/machinery/computer/colosseum_bookmaker/bookmaker
 
 	/// Arena gate poddoors, keyed by mapped id ("colo_gate_red" -> list of doors)
 	var/list/gate_doors = list()
+	/// Every mapped ETA board in the venue (wired by link_interior)
+	var/list/obj/machinery/status_display/colosseum/status_displays = list()
 	/// All interior turfs per colosseum area typepath (area typepath -> list of turfs)
 	var/list/area_turfs = list()
 	/// Landmark-marked turfs, keyed by landmark typepath -> list of turfs.
@@ -118,6 +184,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	QDEL_NULL(radio)
 	signup_console = null
 	spoils_vault = null
+	bookmaker = null
 	// Admin deletion must not leak hangar reservations
 	for(var/datum/outpost_berth/berth as anything in berths)
 		if(berth)
@@ -127,6 +194,9 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	lobby_wall_turfs.Cut()
 	lobby_panels.Cut()
 	gate_doors.Cut()
+	for(var/obj/machinery/status_display/colosseum/board as anything in status_displays)
+		board.site = null
+	status_displays.Cut()
 	area_turfs.Cut()
 	landmark_turfs.Cut()
 	template_bottom_left = null
@@ -170,6 +240,8 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 		return FALSE
 	surveyed = TRUE
 	controller = new(src)
+	// The boards loaded before the controller existed and parked themselves
+	update_status_displays()
 
 	var/list/coords = get_relative_overmap_coords()
 	broadcast_galaxy("Hear ye, spacers! The Grand Colosseum has surfaced at [coords_text()]. Glory and prizes await contestants; wagering and refreshments await everyone else. Dock and register at the concourse.")
@@ -202,26 +274,36 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	loading = TRUE
 
 	if(!template)
-		template = new
+		template = new template_type
 
 	if(!template.width || !template.height)
 		log_mapping("COLOSSEUM: template has no dimensions, cannot load.")
 		loading = FALSE
 		return
 
-	reservation = SSmapping.request_turf_block_reservation(template.width, template.height, 1)
+	reservation = SSmapping.request_turf_block_reservation(template.width, template.height, template.z_count)
 	if(!reservation)
+		log_mapping("COLOSSEUM: turf reservation request failed ([template.width]x[template.height]x[template.z_count]).")
 		loading = FALSE
 		return
 
-	var/turf/bottom_left = reservation.bottom_left_turfs[1]
+	// The virtual z-stack indexes 1 = top … z_size = bottom. The arena floor is
+	// always the file's LAST slice, and every landmark coordinate (DESIGN.md,
+	// local_turf) is expressed on it.
+	var/turf/bottom_left = reservation.bottom_left_turfs[reservation.z_size]
 	template_bottom_left = bottom_left
 
-	var/load_success = FALSE
+	var/load_success = TRUE
 	try
-		load_success = template.load(bottom_left)
+		// Bottom-up, so openspace on upper slices initializes with its
+		// below-turf already in place.
+		for(var/slice in template.z_count to 1 step -1)
+			if(!template.load_z_slice(reservation.bottom_left_turfs[slice], slice))
+				log_mapping("COLOSSEUM: failed to load z-slice [slice].")
+				load_success = FALSE
+				break
 	catch(var/exception/e)
-		log_mapping("COLOSSEUM: failed to load template: [e]")
+		log_mapping("COLOSSEUM: failed to load template: [e] ([e.file], line [e.line])")
 		load_success = FALSE
 
 	if(!load_success)
@@ -249,19 +331,17 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
  * it only ever runs once per load, but collections are rebuilt from scratch.
  */
 /obj/structure/overmap/colosseum/proc/link_interior()
-	if(!template_bottom_left || !template?.width || !template?.height)
-		return
-	var/turf/top_right = locate(
-		template_bottom_left.x + template.width - 1,
-		template_bottom_left.y + template.height - 1,
-		template_bottom_left.z
-	)
-	if(!top_right)
+	if(!reservation || !length(reservation.bottom_left_turfs))
 		return
 	gate_doors = list()
 	area_turfs = list()
 	landmark_turfs = list()
-	for(var/turf/interior_turf as anything in block(template_bottom_left, top_right))
+	// Every slice of the virtual z-stack — a multi-z venue can mount boards
+	// (or, one day, gates/landmarks) on its upper decks too.
+	var/list/interior_turfs = list()
+	for(var/z_idx in 1 to length(reservation.bottom_left_turfs))
+		interior_turfs += block(reservation.bottom_left_turfs[z_idx], reservation.top_right_turfs[z_idx])
+	for(var/turf/interior_turf as anything in interior_turfs)
 		var/area/turf_area = interior_turf.loc
 		if(istype(turf_area, /area/voidcrew/colosseum))
 			LAZYADDASSOCLIST(area_turfs, turf_area.type, interior_turf)
@@ -291,6 +371,14 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 				var/obj/machinery/colosseum_vault/vault = machine
 				vault.site = src
 				spoils_vault = vault
+			else if(istype(machine, /obj/machinery/computer/colosseum_bookmaker))
+				var/obj/machinery/computer/colosseum_bookmaker/book_console = machine
+				book_console.site = src
+				bookmaker = book_console
+			else if(istype(machine, /obj/machinery/status_display/colosseum))
+				var/obj/machinery/status_display/colosseum/board = machine
+				board.site = src
+				status_displays += board
 	// The venue must function even if a map edit loses the service machinery —
 	// fall back to spawning it on any clear concourse tile.
 	if(!signup_console)
@@ -305,6 +393,12 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 			spoils_vault = new(vault_turf)
 			spoils_vault.site = src
 			log_mapping("COLOSSEUM: template has no spoils vault — fallback-spawned one at ([vault_turf.x], [vault_turf.y]).")
+	if(!bookmaker)
+		var/turf/book_turf = get_random_lobby_turf()
+		if(book_turf)
+			bookmaker = new(book_turf)
+			bookmaker.site = src
+			log_mapping("COLOSSEUM: template has no bookmaker console — fallback-spawned one at ([book_turf.x], [book_turf.y]).")
 	if(!length(lobby_alcove_turfs))
 		log_mapping("COLOSSEUM: template has no elevator alcove landmarks — ships cannot reach the concourse.")
 	if(!length(lobby_panels))
@@ -355,11 +449,65 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	var/turf/last_resort = get_random_lobby_turf()
 	return last_resort ? list(last_resort) : list()
 
-/// Sends a chat line to every player currently inside the venue.
+/**
+ * Whether a mob counts as present at the venue: inside the building proper,
+ * standing in one of its hangar berths, or aboard a ship parked in one. Used
+ * by the seating-close roster check (gearing up on your own docked ship must
+ * not get you struck as a no-show) and by venue_message's reach.
+ */
+/obj/structure/overmap/colosseum/proc/mob_at_venue(mob/visitor)
+	var/area/mob_area = get_area(visitor)
+	if(istype(mob_area, /area/voidcrew/colosseum))
+		return TRUE
+	for(var/datum/outpost_berth/berth as anything in berths)
+		if(!berth)
+			continue
+		// Each hangar load gets its own area instance, so comparing instances
+		// pins the mob to one of OUR berths, not some other outpost's hangar.
+		if(berth.hangar_bottom_left && mob_area == get_area(berth.hangar_bottom_left))
+			return TRUE
+		if(berth.arrived && berth.ship?.shuttle?.shuttle_areas[mob_area])
+			return TRUE
+	return FALSE
+
+/// Sends a chat line to every player currently at the venue (docked ships included).
 /obj/structure/overmap/colosseum/proc/venue_message(message)
 	for(var/mob/player as anything in GLOB.player_list)
-		if(istype(get_area(player), /area/voidcrew/colosseum))
+		if(mob_at_venue(player))
 			to_chat(player, message)
+
+/// Refreshes every ETA board (state flips re-arm their countdown processing).
+/obj/structure/overmap/colosseum/proc/update_status_displays()
+	for(var/obj/machinery/status_display/colosseum/board as anything in status_displays)
+		if(!QDELETED(board))
+			board.update()
+
+/// Warden escort: drops a mob on a clear concourse tile with a message.
+/// Callback target for the area boundary guards (staging, spoils chamber).
+/obj/structure/overmap/colosseum/proc/bounce_to_lobby(mob/living/visitor, message)
+	if(QDELETED(visitor) || QDELETED(src))
+		return
+	var/turf/eject_to = get_random_lobby_turf()
+	if(!eject_to)
+		return
+	visitor.forceMove(eject_to)
+	if(message)
+		to_chat(visitor, span_warning(message))
+
+/**
+ * Claim window opening: anyone in the spoils chamber who isn't one of this
+ * match's winners is walked out before the winners come collect. The chamber
+ * door and the area guard keep it that way for the rest of the window.
+ */
+/obj/structure/overmap/colosseum/proc/secure_vault_chamber()
+	var/datum/colosseum_controller/controller = src.controller
+	for(var/turf/chamber_turf as anything in get_area_turfs_cached(/area/voidcrew/colosseum/vault))
+		for(var/mob/living/loiterer in chamber_turf)
+			if(loiterer.mind && controller?.winner_minds[loiterer.mind])
+				continue
+			if(!loiterer.mind && !loiterer.client)
+				continue
+			bounce_to_lobby(loiterer, "Colosseum wardens clear the spoils chamber for the victors.")
 
 // ===== GATE CONTROL =====
 // Event code drives the mapped ids directly; the referee-box buttons keep

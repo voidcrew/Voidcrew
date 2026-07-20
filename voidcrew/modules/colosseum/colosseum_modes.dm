@@ -42,8 +42,11 @@
 
 /**
  * Team assignment at roster lock. Team modes keep shipmates together:
- * contestants are grouped by ship and whole groups are dealt to the smaller
- * team, largest group first. Solo modes leave everyone COLOSSEUM_TEAM_SOLO.
+ * contestants are grouped by crew team and whole groups are dealt to the
+ * smaller team, largest group first. Unaffiliated contestants are each their
+ * own group (keyed by their own entry — grouping them by the shared
+ * "Unaffiliated" ship NAME would deal every random to one side as a block).
+ * Solo modes leave everyone COLOSSEUM_TEAM_SOLO.
  */
 /datum/colosseum_game/proc/assign_teams(list/datum/colosseum_contestant/entries)
 	if(!team_based)
@@ -52,7 +55,7 @@
 		return
 	var/list/by_ship = list()
 	for(var/datum/colosseum_contestant/entry as anything in entries)
-		LAZYADDASSOCLIST(by_ship, entry.ship_name, entry)
+		LAZYADDASSOCLIST(by_ship, entry.crew_team || entry, entry)
 	// Largest crews first so the balancer has room to even things out
 	var/list/groups = list()
 	for(var/ship_name in by_ship)
@@ -132,7 +135,7 @@
 	if(!isliving(entry.body) || !spot)
 		return
 	entry.body.forceMove(spot)
-	to_chat(entry.body, span_boldnotice("You are seated for the [name]. When the gate opens — fight!"))
+	to_chat(entry.body, span_boldnotice("You are seated for the [name]. [desc] When the gate opens — fight!"))
 
 // ===== MATCH HOOKS =====
 
@@ -193,12 +196,12 @@
 /// One-line stakes description for the roster-lock announcement.
 /datum/colosseum_game/proc/stakes_text(contestant_count)
 	var/list/tier = controller.get_prize_tier(contestant_count)
-	var/list/parts_text = list("[tier[1] * reward_multiplier] ship part\s")
+	var/list/parts_text = list("[tier[1] * reward_multiplier] ship part\s in champion's cases")
 	if(tier[2])
 		parts_text += "[round(tier[2] * reward_multiplier)] credits"
 	if(tier[3])
 		parts_text += "[round(tier[3] * reward_multiplier)] trade voucher\s"
-	return "[english_list(parts_text)] — plus everything that falls on the sand"
+	return "[english_list(parts_text)], split between the victors — plus everything that falls on the sand"
 
 // ===== FREE-FOR-ALL DEATHMATCH =====
 
@@ -262,6 +265,8 @@
 	var/list/turf/dais_turfs
 	/// Progress thresholds already announced (mind -> last announced quarter)
 	var/list/announced_quarter = list()
+	/// Whether we've already called out the current contested standoff
+	var/contested_announced = FALSE
 
 /datum/colosseum_game/king_of_the_hill/Destroy()
 	STOP_PROCESSING(SSprocessing, src)
@@ -294,10 +299,15 @@
 		if(!(get_turf(entry.body) in dais_turfs))
 			continue
 		if(holder) // contested — nobody accrues
+			if(!contested_announced)
+				contested_announced = TRUE
+				controller.site.venue_message(span_notice("The dais is CONTESTED — nobody's count is climbing!"))
 			return
 		holder = entry
 	if(!holder)
+		contested_announced = FALSE
 		return
+	contested_announced = FALSE
 	var/total = (hold_seconds[holder.mind] || 0) + seconds_per_tick
 	hold_seconds[holder.mind] = total
 	if(total >= KOTH_HOLD_REQUIRED)

@@ -266,9 +266,8 @@
 /obj/item/vestige_snare_spinneret
 	name = "loaned spinneret"
 	desc = "A spinneret the length of a forearm, still warm, sheared from something that no longer needs it — or that grew tired of what it was used for. Silk beads at the tip when you hold it too tight."
-	icon = 'icons/obj/stack_objects.dmi'
-	icon_state = "sheet-durathreadraw"
-	color = "#dfe4ef" // raw silk
+	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
+	icon_state = "snare_spinneret"
 	w_class = WEIGHT_CLASS_SMALL
 	/// Mind of the supplicant this kit was cut for — Destroy bookkeeping only; interactions resolve the wielder
 	var/datum/mind/bound_mind
@@ -501,9 +500,8 @@
 /obj/item/vestige_wrap_spool
 	name = "wrapping spool"
 	desc = "A hand-spool of grey binding silk, wound so tight it hums. The loose end finds your knuckles on its own, in a friendly sort of way."
-	icon = 'icons/obj/stack_objects.dmi'
-	icon_state = "coil"
-	color = "#e3e7f2"
+	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
+	icon_state = "silk_spool"
 	w_class = WEIGHT_CLASS_SMALL
 	force = 0
 	/// Mind of the supplicant this kit was cut for — Destroy bookkeeping only; interactions resolve the wielder
@@ -1108,9 +1106,8 @@
 /obj/item/vestige_tremor_spool
 	name = "tremor spool"
 	desc = "A spool of silk drawn so fine it is mostly a rumor with tension. Held to the ear, it carries sounds from somewhere else — small ones, with teeth."
-	icon = 'icons/obj/stack_objects.dmi'
-	icon_state = "wire"
-	color = "#dfe4ef"
+	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
+	icon_state = "silk_spool"
 	w_class = WEIGHT_CLASS_SMALL
 	/// Mind of the supplicant this kit was cut for — Destroy bookkeeping only; interactions resolve the wielder
 	var/datum/mind/bound_mind
@@ -1294,11 +1291,10 @@
 /mob/living/basic/vestige_silk_thief
 	name = "silk thief"
 	desc = "A moth the size of a terrier, dust-grey and single-minded, with mouthparts that were clearly designed by somebody who hated textiles. It is here for the silk. It is always here for the silk."
-	icon = 'icons/mob/simple/animal.dmi'
-	icon_state = "mothroach"
-	icon_living = "mothroach"
-	icon_dead = "mothroach_dead"
-	color = "#bcc2d4"
+	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
+	icon_state = "silk_thief"
+	icon_living = "silk_thief"
+	icon_dead = "silk_thief"
 	gender = NEUTER
 	mob_size = MOB_SIZE_SMALL
 	mob_biotypes = MOB_ORGANIC | MOB_BUG

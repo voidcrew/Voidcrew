@@ -231,12 +231,9 @@
 /obj/item/static_cuff
 	name = "static cuff"
 	desc = "A wrist unit with no branding and one switch. The switch position is labeled in grease pencil: NO."
-	icon = 'icons/obj/weapons/restraints.dmi'
-	icon_state = "handcuff"
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "static_cuff"
 	worn_icon_state = "handcuff"
-	inhand_icon_state = "handcuff"
-	lefthand_file = 'icons/mob/inhands/equipment/security_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/equipment/security_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	slot_flags = ITEM_SLOT_BELT
 	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 2)
@@ -375,6 +372,14 @@
 /obj/item/gun/ballistic/revolver/c38/housecall
 	name = "\"Housecall\""
 	desc = "An integrally-suppressed .38 revolver with a doctor's-bag handle. For patients who talk too much."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "housecall"
+	// c38 sets base_icon_state = "c38" and ballistic/update_icon_state() rebuilds
+	// icon_state from it on every update — without this the gun turns invisible.
+	base_icon_state = "housecall"
+	inhand_icon_state = "housecall"
+	lefthand_file = 'voidcrew/modules/loot/icons/uniques_lefthand.dmi'
+	righthand_file = 'voidcrew/modules/loot/icons/uniques_righthand.dmi'
 	suppressed = TRUE
 	spawn_magazine_type = /obj/item/ammo_box/magazine/internal/cylinder/rev38/housecall
 
@@ -442,14 +447,23 @@
  *    inside a signal handler mid-attack, with no opportunity for a
  *    do_after/UI prompt to ask the (about to be stunned) player anything.
  */
+// The cloak's hood, tinted to match — an untinted goliath hood renders bright red.
+/obj/item/clothing/head/hooded/cloakhood/goliath/second_shadow
+	color = "#3a3a45"
+
 /obj/item/clothing/suit/hooded/cloak/second_shadow
 	name = "Second Shadow"
 	desc = "A cloak the color of a corridor at 3 AM. It moves a half-second after you do."
-	// The bare cloak parent has no icon_state (invisible) and defaults its
-	// hood to the winter hood — borrow the goliath cloak's sprite and hood,
-	// darkened to match the flavor
-	icon_state = "goliath_cloak"
-	hoodtype = /obj/item/clothing/head/hooded/cloakhood/goliath
+	// Custom folded-cloak obj icon. The worn sprite borrows the goliath cloak,
+	// darkened to match the flavor, copied into uniques_worn.dmi: the hood
+	// component (toggle_attached_clothing) overwrites worn_icon_state with
+	// icon_state on every toggle, so both files must share state names
+	// (shadow_cloak / shadow_cloak_t) or the worn sprite silently breaks.
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "shadow_cloak"
+	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
+	worn_icon_state = "shadow_cloak"
+	hoodtype = /obj/item/clothing/head/hooded/cloakhood/goliath/second_shadow
 	color = "#3a3a45"
 	/// Whether the hood is currently deployed on the wearer's head.
 	var/hood_up = FALSE

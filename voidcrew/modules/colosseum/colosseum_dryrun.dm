@@ -62,6 +62,8 @@ SUBSYSTEM_DEF(colosseum_dryrun)
 	log_game("COLOSSEUM DRYRUN: starting")
 
 	// ===== VENUE SPAWN + LINK =====
+	// The shipping map is the two-level venue (observation gallery over the
+	// arena); the gallery checks below run against its upper slice.
 	var/obj/structure/overmap/colosseum/site = spawn_colosseum_site()
 	report("site spawned", !!site)
 	if(!site)
@@ -87,6 +89,39 @@ SUBSYSTEM_DEF(colosseum_dryrun)
 	report("landmarks: flags", length(site.get_landmark_turfs(/obj/effect/landmark/colosseum/flag_red)) == 1 && length(site.get_landmark_turfs(/obj/effect/landmark/colosseum/flag_blue)) == 1)
 	report("landmarks: arena events 8", length(site.get_landmark_turfs(/obj/effect/landmark/colosseum/arena_event)) == 8)
 	report("infirmary berths 4", length(site.get_infirmary_turfs()) == 4)
+
+	// ===== MULTI-Z GALLERY =====
+	if(site.reservation?.z_size >= 2)
+		var/turf/arena_mid = site.local_turf(32, 32)
+		var/turf/over_arena = arena_mid ? GET_TURF_ABOVE(arena_mid) : null
+		report("gallery: glass deck over arena center", istype(over_arena, /turf/open/indestructible/glass))
+		report("gallery: spectator area above", istype(over_arena?.loc, /area/voidcrew/colosseum/spectator))
+		var/turf/stair_turf = site.local_turf(22, 15)
+		report("gallery: south grand stairs mapped", !!(stair_turf && (locate(/obj/structure/stairs) in stair_turf)))
+		var/turf/stair_turf_east = site.local_turf(40, 16)
+		report("gallery: east grand stairs mapped", !!(stair_turf_east && (locate(/obj/structure/stairs) in stair_turf_east)))
+		var/turf/stairwell = stair_turf ? GET_TURF_ABOVE(stair_turf) : null
+		report("gallery: stairwell openspace", istype(stairwell, /turf/open/openspace))
+		var/turf/landing_ground = site.local_turf(22, 17)
+		var/turf/landing = landing_ground ? GET_TURF_ABOVE(landing_ground) : null
+		report("gallery: landing is stone deck", istype(landing, /turf/open/indestructible/stone))
+		var/turf/parapet_ground = site.local_turf(17, 30)
+		var/turf/parapet = parapet_ground ? GET_TURF_ABOVE(parapet_ground) : null
+		report("gallery: parapet indestructible glass", istype(parapet, /turf/closed/indestructible/opsglass))
+		var/turf/bridge_ground = site.local_turf(20, 33)
+		var/turf/bridge = bridge_ground ? GET_TURF_ABOVE(bridge_ground) : null
+		report("gallery: west bridge glass deck", istype(bridge, /turf/open/indestructible/glass))
+		// Rail sits 2 tiles off the glass (y=31/32 are a buffer strip) so the
+		// parapet turf is never Chebyshev-adjacent to a transparent tile —
+		// see [[turf_z_transparency]]'s 3x3 spillover, which otherwise
+		// projects the arena floor onto any solid turf touching openspace/glass.
+		var/turf/bridge_edge_ground = site.local_turf(20, 30)
+		var/turf/bridge_edge = bridge_edge_ground ? GET_TURF_ABOVE(bridge_edge_ground) : null
+		report("gallery: bridge edge parapet", istype(bridge_edge, /turf/closed/indestructible/opsglass))
+		var/turf/quadrant_ground = site.local_turf(22, 40)
+		var/turf/quadrant = quadrant_ground ? GET_TURF_ABOVE(quadrant_ground) : null
+		report("gallery: openspace quadrant survives", istype(quadrant, /turf/open/openspace))
+		report("gallery: deck resolves back down", arena_mid && over_arena && (GET_TURF_BELOW(over_arena) == arena_mid))
 	var/datum/colosseum_controller/controller = site.controller
 	report("controller exists", !!controller)
 	if(!controller)
@@ -110,6 +145,13 @@ SUBSYSTEM_DEF(colosseum_dryrun)
 		controller.mode.controller = controller
 		controller.mode.assign_teams(controller.roster)
 		report("forced FFA for determinism", TRUE)
+	report("modifier rolled", !!controller.modifier, "[controller.modifier?.name]")
+	var/datum/colosseum_book/test_book = controller.book
+	report("book open at lock", !!test_book?.open)
+	// 100 on the eventual winner, 300 on a loser: winner should collect
+	// 100 + (300 losing pool * 0.9 rake-adjusted) = 370, loser slips void.
+	report("stake on winner recorded", test_book.record_stake(dummies[4].mind, 100))
+	report("stake on loser recorded", test_book.record_stake(dummies[1].mind, 300))
 	stage_roster(controller)
 	controller.close_seating()
 	report("seating closed (countdown)", controller.state == COLOSSEUM_STATE_SEATING && length(controller.live_entries()) == 4)
@@ -136,6 +178,10 @@ SUBSYSTEM_DEF(colosseum_dryrun)
 			items_in_vault++
 	report("sweep: 3 corpses in vault", corpses_in_vault == 3, "[corpses_in_vault]")
 	report("prizes banked", items_in_vault >= 5, "[items_in_vault] items (3 parts + credits + voucher + knife expected)")
+	report("book settled + closed", test_book.settled && !test_book.open)
+	report("winning bet pays 370", test_book.payout_for(dummies[4].mind, 100) == 370, "[test_book.payout_for(dummies[4].mind, 100)]")
+	report("losing bet pays 0", test_book.payout_for(dummies[1].mind, 300) == 0)
+	report("bookmaker console linked", !!site.bookmaker)
 	var/mob/living/carbon/human/winner = dummies[4]
 	report("winner can claim", vault.can_claim(winner))
 	var/mob/living/carbon/human/outsider = make_dummy(site.get_random_lobby_turf(), "Outsider")

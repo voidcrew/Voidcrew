@@ -33,6 +33,9 @@
 	var/display_name
 	/// Ship affiliation recorded at signup ("Unaffiliated" if none)
 	var/ship_name = "Unaffiliated"
+	/// The crew team recorded at signup (null when unaffiliated). Team modes
+	/// group by this ref — names can collide, team datums can't.
+	var/datum/team/voidcrew/crew_team
 	/// Team id (COLOSSEUM_TEAM_*), assigned at roster lock
 	var/team = COLOSSEUM_TEAM_SOLO
 	/// The body being tracked (signals registered on it). Re-synced on body swaps.
@@ -51,6 +54,7 @@
 	var/datum/team/voidcrew/crew = LAZYACCESS(mind.ship_teams, 1)
 	if(crew?.ship)
 		ship_name = crew.ship.name
+		crew_team = crew
 
 /datum/colosseum_contestant/Destroy()
 	if(disconnect_timer)
@@ -58,6 +62,7 @@
 		disconnect_timer = null
 	mind = null
 	body = null
+	crew_team = null
 	return ..()
 
 /datum/colosseum_controller
@@ -75,6 +80,8 @@
 	var/match_timer
 	/// world.time the signup window closes (for countdown displays)
 	var/signup_closes_at = 0
+	/// Whether the SEATING phase has passed its roster cut (gate countdown running)
+	var/seals_closed = FALSE
 	/// world.time the next signup may open (post-match cooldown)
 	var/next_signup_at = 0
 	/// Winning minds of the last resolved match (assoc mind -> TRUE)
@@ -83,6 +90,12 @@
 	var/claim_until = 0
 	/// Dynamic arena event scheduler, running only while a match that wants it is LIVE
 	var/datum/colosseum_arena_scheduler/arena_scheduler
+	/// Match modifier rolled at roster lock (beasts, temperature, walls, ...)
+	var/datum/colosseum_modifier/modifier
+	/// The wagering book for the current match cycle (null when no match forming)
+	var/datum/colosseum_book/book
+	/// Settled books kept alive so old betting slips stay redeemable all round
+	var/list/datum/colosseum_book/old_books = list()
 	/// Arena floor baseline: turf -> turf typepath, captured at first load
 	var/list/arena_baseline_turfs
 	/// Arena furniture baseline: list of list(typepath, turf, dir)
@@ -102,6 +115,9 @@
 		deltimer(match_timer)
 		match_timer = null
 	QDEL_NULL(arena_scheduler)
+	QDEL_NULL(modifier)
+	QDEL_NULL(book)
+	QDEL_LIST(old_books)
 	clear_roster()
 	QDEL_NULL(mode)
 	winner_minds.Cut()
@@ -124,6 +140,34 @@
 		if(entry.mind == mind)
 			return entry
 	return null
+
+/// Whether the winners-only spoils claim window is running right now.
+/datum/colosseum_controller/proc/claim_window_active()
+	return claim_until && world.time < claim_until && length(winner_minds)
+
+/// Number of distinct crew groups on the roster — each crewed ship is one
+/// group, each unaffiliated contestant their own. Team modes need at least
+/// two, or one side of the arena would stand empty.
+/datum/colosseum_controller/proc/count_ship_groups()
+	var/list/crews_seen = list()
+	var/singletons = 0
+	for(var/datum/colosseum_contestant/entry as anything in roster)
+		if(entry.crew_team)
+			crews_seen[entry.crew_team] = TRUE
+		else
+			singletons++
+	return length(crews_seen) + singletons
+
+/// Estimated deciseconds until the arena gates pop (0 outside SIGNUP/SEATING).
+/// The ETA boards' headline number.
+/datum/colosseum_controller/proc/time_to_gates()
+	switch(state)
+		if(COLOSSEUM_STATE_SIGNUP)
+			return max(0, signup_closes_at - world.time) + COLOSSEUM_SEATING_DURATION + COLOSSEUM_GATE_COUNTDOWN
+		if(COLOSSEUM_STATE_SEATING)
+			var/phase_left = phase_timer ? timeleft(phase_timer) : 0
+			return max(0, phase_left) + (seals_closed ? 0 : COLOSSEUM_GATE_COUNTDOWN)
+	return 0
 
 /// Unregisters and clears the whole roster.
 /datum/colosseum_controller/proc/clear_roster()
@@ -164,6 +208,7 @@
 	var/datum/colosseum_contestant/entry = new(user.mind)
 	roster += entry
 	site.venue_message(span_notice("<b>[entry.display_name]</b> ([entry.ship_name]) has entered the roster! ([length(roster)] registered)"))
+	to_chat(user, span_boldnotice("You are on the roster. Stay at the venue (your berthed ship counts) — when the roster locks, the wardens will carry you to your gate."))
 	return TRUE
 
 /// Withdraws a mind during the signup window.
@@ -204,45 +249,104 @@
 		return
 	mode.controller = src
 	mode.assign_teams(roster)
+	modifier = pick_modifier()
+	book = new(src)
+	book.open = TRUE
 
+	seals_closed = FALSE
 	set_state(COLOSSEUM_STATE_SEATING)
 	for(var/datum/colosseum_contestant/entry as anything in roster)
 		track_contestant(entry)
 	phase_timer = addtimer(CALLBACK(src, PROC_REF(close_seating)), COLOSSEUM_SEATING_DURATION, TIMER_STOPPABLE)
-	site.broadcast_galaxy("The roster is LOCKED: [length(roster)] contestants. Tonight's game: [mode.name]. Stakes: [mode.stakes_text(length(roster))]. Contestants, report to the staging halls — the seals close in [DisplayTimeText(COLOSSEUM_SEATING_DURATION)].")
-	log_game("COLOSSEUM: roster locked with [length(roster)] contestants, mode [mode.name].")
+	site.broadcast_galaxy("The roster is LOCKED: [length(roster)] contestants. Tonight's game: [mode.name]. Arena condition: [modifier.name]. Stakes: [mode.stakes_text(length(roster))]. Contestants: stay at the venue — your berthed ship counts — and the wardens will carry you to your gate when the seals close in [DisplayTimeText(COLOSSEUM_SEATING_DURATION)]. The wagering hall takes bets until the gates open.")
+	site.venue_message(span_notice("<b>[mode.name]</b> — [mode.desc]<br><b>[modifier.name]</b> — [modifier.desc]"))
+	log_game("COLOSSEUM: roster locked with [length(roster)] contestants, mode [mode.name], modifier [modifier.name].")
+
+/// Weighted-random match modifier eligible for the roster size. Never null.
+/datum/colosseum_controller/proc/pick_modifier()
+	var/list/eligible = list()
+	var/n = length(roster)
+	for(var/modifier_type in subtypesof(/datum/colosseum_modifier))
+		var/datum/colosseum_modifier/candidate = modifier_type
+		if(!initial(candidate.name))
+			continue
+		if(n < initial(candidate.min_roster))
+			continue
+		eligible[modifier_type] = initial(candidate.weight)
+	var/chosen_type = pick_weight(eligible) || /datum/colosseum_modifier/clean
+	var/datum/colosseum_modifier/chosen = new chosen_type
+	chosen.controller = src
+	return chosen
 
 /// Weighted-random mode eligible for the roster size.
 /datum/colosseum_controller/proc/pick_mode()
 	var/list/eligible = list()
 	var/n = length(roster)
+	var/groups = count_ship_groups()
 	for(var/mode_type in subtypesof(/datum/colosseum_game))
 		var/datum/colosseum_game/candidate = mode_type
 		if(!initial(candidate.name)) // abstract bases
 			continue
 		if(n < initial(candidate.min_players) || n > initial(candidate.max_players))
 			continue
+		if(initial(candidate.team_based) && groups < 2)
+			continue // a lone crew rolling red-vs-blue would win at the bell
 		eligible[mode_type] = initial(candidate.weight)
 	var/chosen_type = pick_weight(eligible)
+	if(!chosen_type)
+		// Every mode's max_players is exceeded — a full house. Waive the caps
+		// rather than fizzle the best-attended match of the round; seating
+		// round-robins overflow into the ready rooms, so big fields still work.
+		for(var/fallback_type in subtypesof(/datum/colosseum_game))
+			var/datum/colosseum_game/fallback = fallback_type
+			if(!initial(fallback.name) || n < initial(fallback.min_players))
+				continue
+			if(initial(fallback.team_based) && groups < 2)
+				continue
+			eligible[fallback_type] = initial(fallback.weight)
+		chosen_type = pick_weight(eligible)
 	return chosen_type ? new chosen_type : null
 
 /// Any-state failure exit back to IDLE, with an announcement.
 /datum/colosseum_controller/proc/fizzle(message)
 	site.broadcast_galaxy(message)
+	var/was_live = (state == COLOSSEUM_STATE_LIVE)
 	stop_phase_timer()
 	stop_match_timer()
 	QDEL_NULL(arena_scheduler)
+	if(modifier?.started)
+		modifier.on_match_end() // admin cancel mid-LIVE: beasts/walls must not linger
+	QDEL_NULL(modifier)
+	settle_book(list()) // all bets refund at face value
+	// A cancel mid-fight leaves contestants sealed behind closed gates — collect
+	// their bodies now, walk them out once the tracking signals are gone.
+	var/list/mob/living/stranded = list()
+	for(var/datum/colosseum_contestant/entry as anything in roster)
+		var/mob/living/body = entry.mind?.current || entry.body
+		if(isliving(body))
+			stranded += body
 	clear_roster()
 	QDEL_NULL(mode)
 	site.gates_to_idle()
 	next_signup_at = world.time + COLOSSEUM_SIGNUP_COOLDOWN
 	set_state(COLOSSEUM_STATE_IDLE)
+	for(var/mob/living/stranded_body as anything in stranded)
+		if(QDELETED(stranded_body))
+			continue
+		var/area/body_area = get_area(stranded_body)
+		if(istype(body_area, /area/voidcrew/colosseum/arena) || istype(body_area, /area/voidcrew/colosseum/staging))
+			site.bounce_to_lobby(stranded_body, "The match is off — the wardens walk you back to the concourse.")
+	if(was_live)
+		reset_arena() // rake the blood and hazard debris out of a half-fought match
 
 // ===== SEATING =====
 
 /**
  * SEATING -> LIVE. Drops absentees, ejects gatecrashers, seals staging, seats
  * everyone in their mode-assigned positions and starts the gate countdown.
+ * Contestants don't walk to staging themselves — being anywhere inside the
+ * venue is enough, and seat_contestants() teleports them to their assigned
+ * cell or ready room (one contestant per solo cell).
  */
 /datum/colosseum_controller/proc/close_seating()
 	if(state != COLOSSEUM_STATE_SEATING)
@@ -250,11 +354,12 @@
 	stop_phase_timer()
 
 	// Re-sync bodies (people swap bodies, get borged, etc.) and drop anyone
-	// not physically in staging. Dead contestants count as absent.
+	// not physically inside the venue. Dead contestants count as absent.
 	for(var/datum/colosseum_contestant/entry as anything in roster.Copy())
 		var/mob/living/current_body = entry.mind?.current
-		if(!isliving(current_body) || current_body.stat == DEAD || !istype(get_area(current_body), /area/voidcrew/colosseum/staging))
-			site.venue_message(span_warning("<b>[entry.display_name]</b> failed to report to staging and is struck from the roster."))
+		if(!isliving(current_body) || current_body.stat == DEAD || !site.mob_at_venue(current_body))
+			site.venue_message(span_warning("<b>[entry.display_name]</b> was nowhere to be found at the venue and is struck from the roster."))
+			book?.scratch(entry.mind) // their backers get their money back
 			untrack_contestant(entry)
 			roster -= entry
 			qdel(entry)
@@ -279,6 +384,20 @@
 		fizzle("Too many no-shows — the [mode.name] match is called off.")
 		return
 
+	// A team match with an empty side would resolve at the bell — no free purses.
+	if(mode.team_based)
+		var/red_present = FALSE
+		var/blue_present = FALSE
+		for(var/datum/colosseum_contestant/entry as anything in live_entries())
+			if(entry.team == COLOSSEUM_TEAM_RED)
+				red_present = TRUE
+			else if(entry.team == COLOSSEUM_TEAM_BLUE)
+				blue_present = TRUE
+		if(!red_present || !blue_present)
+			fizzle("An entire side failed to appear — the [mode.name] match is called off.")
+			return
+
+	seals_closed = TRUE
 	site.set_gates(COLOSSEUM_SEAL, FALSE)
 	mode.seat_contestants()
 	site.venue_message(span_boldannounce("The staging seals grind shut. The gates open in [COLOSSEUM_GATE_COUNTDOWN / 10] seconds!"))
@@ -297,6 +416,11 @@
 	if(mode.arena_events)
 		arena_scheduler = new(src)
 	mode.on_match_start()
+	modifier?.on_match_start()
+	if(book)
+		book.close_book()
+		if(book.total_pool)
+			site.venue_message(span_boldannounce("The book is CLOSED — [book.total_pool] credits ride on this match!"))
 	site.broadcast_galaxy("The gates are OPEN — [mode.name] has begun at the Grand Colosseum! [length(live_entries())] contestants. Time limit: [DisplayTimeText(time_limit)].")
 	log_game("COLOSSEUM: match live — [mode.name], [length(live_entries())] contestants.")
 	// A death during the countdown can already have decided things
@@ -399,6 +523,22 @@
 	if(entry)
 		eliminate(entry, COLOSSEUM_ELIM_FLED)
 
+/// The announcement predicate for an elimination reason ("X <phrase>!").
+/// The COLOSSEUM_ELIM_* strings themselves stay terse for logs and rosters.
+/datum/colosseum_controller/proc/elimination_phrase(reason)
+	switch(reason)
+		if(COLOSSEUM_ELIM_DEATH)
+			return "has been slain"
+		if(COLOSSEUM_ELIM_DELETED)
+			return "is lost"
+		if(COLOSSEUM_ELIM_DISCONNECT)
+			return "has abandoned the match"
+		if(COLOSSEUM_ELIM_FLED)
+			return "has fled the arena"
+		if(COLOSSEUM_ELIM_CUT)
+			return "has been cut from the bracket"
+	return "is out of the running"
+
 /**
  * Knocks a contestant out of the running and lets the mode react. The corpse
  * (if any) stays where it fell — the end-of-match sweep collects it.
@@ -411,7 +551,9 @@
 	if(entry.disconnect_timer)
 		deltimer(entry.disconnect_timer)
 		entry.disconnect_timer = null
-	site.venue_message(span_boldannounce("[entry.display_name] ([entry.ship_name]) has been [reason]! [length(live_entries())] remain[length(live_entries()) == 1 ? "s" : ""]."))
+	if(state == COLOSSEUM_STATE_SEATING)
+		book?.scratch(entry.mind) // out before the gates ever opened: backers refund
+	site.venue_message(span_boldannounce("[entry.display_name] ([entry.ship_name]) [elimination_phrase(reason)]! [length(live_entries())] remain[length(live_entries()) == 1 ? "s" : ""]."))
 	log_game("COLOSSEUM: [entry.ckey] eliminated ([reason]).")
 	if(state == COLOSSEUM_STATE_LIVE)
 		mode?.on_elimination(entry)
@@ -458,6 +600,11 @@
 		winner_names += entry ? "[entry.display_name] ([entry.ship_name])" : (winner.current?.real_name || winner.key)
 
 	mode.on_match_end()
+	// Modifier cleanup + bonus payouts land before the sweep and claim window
+	if(modifier?.started)
+		modifier.on_match_end()
+	QDEL_NULL(modifier)
+	settle_book(winners)
 
 	if(length(winner_names))
 		site.broadcast_galaxy("The match is DECIDED! Victor[length(winner_names) > 1 ? "s" : ""] of the [mode.name]: [english_list(winner_names)]. Spoils and prizes await them in the vault — the claim window closes in [DisplayTimeText(COLOSSEUM_CLAIM_WINDOW)].")
@@ -474,6 +621,7 @@
 	award_prizes(length(roster))
 
 	claim_until = world.time + COLOSSEUM_CLAIM_WINDOW
+	site.secure_vault_chamber()
 	site.spoils_vault?.on_match_resolved()
 	addtimer(CALLBACK(src, PROC_REF(end_claim_window)), COLOSSEUM_CLAIM_WINDOW, TIMER_STOPPABLE)
 
@@ -494,13 +642,31 @@
 				continue
 			if(isliving(thing))
 				var/mob/living/casualty = thing
+				if(!casualty.mind && !casualty.client)
+					qdel(casualty) // stray beasts and carcasses get dragged back to the undercroft
+					continue
 				if(casualty.stat == DEAD)
 					if(vault)
 						casualty.forceMove(vault)
 						swept++
-				else if(!winner_minds[casualty.mind] && length(infirmary))
+					continue
+				if(winner_minds[casualty.mind])
+					continue
+				var/datum/colosseum_contestant/entry = casualty.mind ? entry_for_mind(casualty.mind) : null
+				if(state == COLOSSEUM_STATE_LIVE && entry && !entry.eliminated)
+					continue // mid-tournament turnaround: still in the fight, leave them be
+				if(length(infirmary))
 					casualty.forceMove(pick(infirmary))
 					to_chat(casualty, span_notice("Colosseum stretcher-bearers carry you off the sand to the infirmary."))
+				continue
+			if(istype(thing, /obj/structure/closet) && vault)
+				// Crates don't get to keep their loot: the reset would delete the
+				// weapons inside along with the crate, and the fiction says
+				// everything that falls on the sand ends up in the vault.
+				var/obj/structure/closet/box = thing
+				for(var/obj/item/loot in box.contents.Copy())
+					loot.forceMove(vault)
+					swept++
 				continue
 			if(isitem(thing) && !thing.anchored && vault)
 				thing.forceMove(vault)
@@ -524,6 +690,13 @@
 		else
 			return list(7, 3000, 3)
 
+/**
+ * The prize pool is one pot per MATCH, split between however many minds won
+ * it: a team victory deals the same parts/credits/vouchers out in equal
+ * shares, one champion's extraction case per winner (parts ride in the cases
+ * so they extract alongside a standard case — see extraction.dm). A draw
+ * banks a single unclaimed case for whoever dares the public vault.
+ */
 /datum/colosseum_controller/proc/award_prizes(contestant_count)
 	var/obj/machinery/colosseum_vault/vault = site.spoils_vault
 	if(!vault)
@@ -533,6 +706,11 @@
 	var/parts = round(tier[1] * multiplier)
 	var/credits = round(tier[2] * multiplier)
 	var/vouchers = round(tier[3] * multiplier)
+	var/shares = max(1, length(winner_minds))
+
+	var/list/obj/item/storage/briefcase/secure/extraction/tournament/cases = list()
+	for(var/i in 1 to shares)
+		cases += new /obj/item/storage/briefcase/secure/extraction/tournament(vault)
 
 	var/static/list/part_weights = list(
 		/obj/item/ship_parts/combat = 55,
@@ -542,11 +720,14 @@
 	)
 	for(var/i in 1 to parts)
 		var/part_type = pick_weight(part_weights)
-		new part_type(vault)
-	if(credits)
-		new /obj/item/holochip(vault, credits)
-	if(vouchers)
-		new /obj/item/stack/trade_voucher(vault, vouchers)
+		new part_type(cases[((i - 1) % shares) + 1])
+	for(var/i in 1 to shares)
+		var/credit_share = round(credits / shares) + (i <= (credits % shares) ? 1 : 0)
+		if(credit_share)
+			new /obj/item/holochip(vault, credit_share)
+		var/voucher_share = round(vouchers / shares) + (i <= (vouchers % shares) ? 1 : 0)
+		if(voucher_share)
+			new /obj/item/stack/trade_voucher(vault, voucher_share)
 
 /**
  * Claim window over: the vault unlocks for everyone and the dead are laid out
@@ -563,6 +744,7 @@
 			casualty.forceMove(pick(infirmary))
 	site.venue_message(span_notice("The spoils vault unlocks for the public. The fallen have been moved to the infirmary."))
 	site.spoils_vault?.update_static_ui()
+	site.update_status_displays() // boards drop the CLAIM countdown immediately
 
 // ===== RESET =====
 
@@ -603,12 +785,22 @@
 			if(isobserver(thing) || istype(thing, /obj/effect/landmark) || istype(thing, /obj/docking_port))
 				continue
 			if(ismob(thing))
+				var/mob/straggler = thing
+				if(isliving(straggler) && !straggler.mind && !straggler.client)
+					qdel(straggler) // leftover arena beasts don't get to tour the concourse
+					continue
+				if(state == COLOSSEUM_STATE_LIVE && straggler.mind)
+					var/datum/colosseum_contestant/entry = entry_for_mind(straggler.mind)
+					if(entry && !entry.eliminated)
+						continue // mid-tournament turnaround: fighters stay on the sand
 				var/turf/eject_to = site.get_random_lobby_turf()
 				if(eject_to)
-					thing.forceMove(eject_to)
+					straggler.forceMove(eject_to)
+					if(straggler.client)
+						to_chat(straggler, span_notice("The wardens usher you off the sand while the arena is reset."))
 				continue
-			if(istype(thing, /obj/machinery/door))
-				continue // gate poddoors stay put whatever happens
+			if(istype(thing, /obj/machinery))
+				continue // gates, mapped lights and cameras are venue fixtures; nothing match-spawned is machinery
 			qdel(thing)
 		var/baseline_type = arena_baseline_turfs?[arena_turf]
 		if(baseline_type && arena_turf.type != baseline_type)
@@ -621,12 +813,59 @@
 		var/obj/fixture = new fixture_type(home_turf)
 		fixture.setDir(fixture_entry[3])
 
+// ===== SHARED ARENA EVENT HELPERS =====
+// Used by both the one-off scheduler and match modifiers.
+
+/**
+ * A clear tile for an arena event: a mapped arena_event landmark spot if one
+ * is free, else random clear sand. Null only if the floor is somehow full.
+ */
+/datum/colosseum_controller/proc/arena_event_turf()
+	var/list/marked = site.get_landmark_turfs(/obj/effect/landmark/colosseum/arena_event)
+	if(length(marked))
+		var/list/candidates = shuffle(marked.Copy())
+		for(var/turf/spot as anything in candidates)
+			if(!spot.is_blocked_turf())
+				return spot
+	return site.get_random_clear_turf(/area/voidcrew/colosseum/arena)
+
+/// Telegraphed supply-pod delivery of a crate of arena weapons.
+/datum/colosseum_controller/proc/drop_weapon_crate()
+	var/turf/landing_turf = arena_event_turf()
+	if(!landing_turf)
+		return
+	var/static/list/weapon_weights = list(
+		/obj/item/spear = 25,
+		/obj/item/knife/combat = 20,
+		/obj/item/melee/baseball_bat = 20,
+		/obj/item/shield/riot = 10,
+		/obj/item/gun/ballistic/shotgun/doublebarrel = 10,
+		/obj/item/gun/energy/laser = 10,
+		/obj/item/restraints/legcuffs/beartrap = 5,
+	)
+	var/obj/structure/closet/crate/weapon_crate = new()
+	for(var/i in 1 to rand(2, 3))
+		var/weapon_type = pick_weight(weapon_weights)
+		new weapon_type(weapon_crate)
+	var/obj/structure/closet/supplypod/pod = new
+	new /obj/effect/pod_landingzone(landing_turf, pod, weapon_crate)
+	site.venue_message(span_boldannounce("The crowd roars — an arms crate is falling onto the sand!"))
+
+/// Settles the current book (empty winners = refunds) and archives it.
+/datum/colosseum_controller/proc/settle_book(list/datum/mind/winners)
+	if(!book)
+		return
+	book.settle(winners)
+	old_books += book
+	book = null
+
 // ===== PLUMBING =====
 
 /datum/colosseum_controller/proc/set_state(new_state)
 	state = new_state
 	site.signup_console?.update_static_ui()
 	site.spoils_vault?.update_static_ui()
+	site.update_status_displays()
 
 /datum/colosseum_controller/proc/stop_phase_timer()
 	if(phase_timer)

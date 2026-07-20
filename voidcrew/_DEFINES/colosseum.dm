@@ -55,3 +55,7 @@
 #define COLOSSEUM_EVENT_TELEGRAPH (4 SECONDS)
 /// How long hazard turf swaps last before the sand is restored.
 #define COLOSSEUM_HAZARD_DURATION (12 SECONDS)
+
+/// Camera network shared by the arena cameras and the observation consoles.
+/// Safe as a static string: the venue is one-per-round by construction.
+#define COLOSSEUM_CAMERA_NETWORK "colosseum"

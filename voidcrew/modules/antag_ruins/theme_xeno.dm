@@ -726,6 +726,7 @@
 /mob/living/basic/hivebot/vestige_comb_chewer
 	name = "comb-chewer"
 	desc = "A salvage drone gone long feral: cutters furred with resin dust, chassis scabbed with generations of it. It is not angry. It has a quota."
+	color = "#d8bf9a" // resin-scabbed amber tint over the borrowed hivebot sprite
 	health = 35
 	maxHealth = 35
 	melee_damage_lower = 6
@@ -746,9 +747,12 @@
 /mob/living/basic/hivebot/vestige_comb_chewer/foreman
 	name = "salvage foreman"
 	desc = "A heavy salvage frame with a generation of smaller machines' parts riveted on. Whatever managed the barge's tear-down still lives in here, and it has never once missed a deadline."
-	icon_state = "strong"
-	icon_living = "strong"
-	icon_dead = "strong"
+	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
+	icon_state = "foreman"
+	icon_living = "foreman"
+	icon_dead = "foreman_dead"
+	basic_mob_flags = NONE // leaves a wreck behind instead of blowing apart like a hivebot
+	color = null // custom sprite already carries the rust-and-resin palette
 	health = 90
 	maxHealth = 90
 	melee_damage_lower = 12

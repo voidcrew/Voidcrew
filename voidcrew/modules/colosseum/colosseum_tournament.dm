@@ -81,9 +81,13 @@
 			entry.body.forceMove(pick(infirmary))
 			to_chat(entry.body, span_notice("Cut from the bracket — the wardens walk you out through the infirmary. Enjoy the stands."))
 
+	// Survivors leave the sand FIRST: reseating them into their cells before
+	// the sweep means the wardens never mistake a live fighter for a straggler
+	// (being carried off the floor mid-LIVE would trip the area-departure
+	// forfeit and eliminate the whole field).
+	mode_reseat()
 	controller.sweep_arena()
 	controller.reset_arena()
-	mode_reseat()
 
 	var/survivors = length(controller.live_entries())
 	site.venue_message(span_boldannounce("Round [round_number] is over — [survivors] advance. The next round begins in [COLOSSEUM_TOURNAMENT_INTERMISSION / 10] seconds."))

@@ -103,7 +103,7 @@
 	ship.notify_scoop_activity()
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/screwdriver_act(mob/living/user, obj/item/tool)
-	if(default_deconstruction_screwdriver(user, "scoop", "scoop", tool))
+	if(default_deconstruction_screwdriver(user, "scoop_open", "scoop", tool))
 		return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/wrench_act(mob/living/user, obj/item/tool)
@@ -211,7 +211,7 @@
 	update_parents()
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/screwdriver_act(mob/living/user, obj/item/tool)
-	if(default_deconstruction_screwdriver(user, "sublimator", "sublimator", tool))
+	if(default_deconstruction_screwdriver(user, "sublimator_open", "sublimator", tool))
 		return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/wrench_act(mob/living/user, obj/item/tool)

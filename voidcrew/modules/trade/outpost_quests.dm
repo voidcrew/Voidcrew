@@ -242,12 +242,11 @@
 /obj/item/freight_pod
 	name = "sealed freight pod"
 	desc = "A tamper-sealed courier pod, bonded and manifest-locked. The seals only release at its destination outpost's contract board."
-	icon = 'icons/obj/machines/telecomms.dmi'
-	icon_state = "blackcube"
-	inhand_icon_state = "blackcube"
-	lefthand_file = 'icons/mob/inhands/items_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/items_righthand.dmi'
-	color = "#c9a54a" // bonded-courier gold, until it gets its own sprite
+	icon = 'voidcrew/modules/trade/icons/trade.dmi'
+	icon_state = "freight_pod"
+	inhand_icon_state = "freight_pod"
+	lefthand_file = 'voidcrew/modules/trade/icons/freight_lefthand.dmi'
+	righthand_file = 'voidcrew/modules/trade/icons/freight_righthand.dmi'
 	w_class = WEIGHT_CLASS_HUGE // never disappears into a backpack
 	throw_range = 3
 	throw_speed = 1

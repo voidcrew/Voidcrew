@@ -16,10 +16,8 @@
 	name = "raw telecrystal"
 	desc = "A cloudy, unrefined telecrystal shard straight out of planetary crust. Too impure to power anything, but the Undertow pays well for the feedstock. Scanners can't pick the veins out of ordinary rock — prospectors find these the hard way."
 	singular_name = "raw telecrystal shard"
-	icon = 'icons/obj/stack_objects.dmi'
-	icon_state = "telecrystal"
-	// Duller than the refined article until it gets its own sprite (sprite pass, phase 5)
-	color = "#b8cbb0"
+	icon = 'voidcrew/modules/trade/icons/trade.dmi'
+	icon_state = "telecrystal_raw"
 	w_class = WEIGHT_CLASS_TINY
 	max_amount = 30
 	merge_type = /obj/item/stack/telecrystal_raw

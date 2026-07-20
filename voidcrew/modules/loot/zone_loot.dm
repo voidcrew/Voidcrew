@@ -262,7 +262,7 @@
 		/obj/item/stack/ore/bluespace_crystal/refined = 8,
 		/obj/item/stock_parts/matter_bin/bluespace = 6,
 		/obj/item/storage/backpack/holding = 5,
-		/obj/item/clothing/gloves/chronal_splint = 4,
+		/obj/item/clothing/gloves/fingerless/chronal_splint = 4,
 		/obj/item/clothing/suit/toggle/labcoat/eventide_courier = 4,
 	)
 
@@ -643,7 +643,7 @@
 		/obj/item/clothing/suit/armor/riot = 8,
 		/obj/item/gun/energy/laser = 6,
 		/obj/item/shield/riot/phalanx_buckler = 4,
-		/obj/item/clothing/glasses/marksmans_cant = 4,
+		/obj/item/clothing/glasses/sunglasses/marksmans_cant = 4,
 	)
 	rare_loot_red = list(
 		/obj/item/gun/energy/e_gun = 8,
@@ -708,7 +708,7 @@
 	rare_loot_yellow = list(
 		/obj/item/borg/upgrade/modkit/range = 8,
 		/obj/item/resonator = 6,
-		/obj/item/clothing/suit/hooded/second_season_duster = 4,
+		/obj/item/clothing/suit/hooded/explorer/second_season_duster = 4,
 		/obj/item/pickaxe/divining = 4,
 	)
 	rare_loot_red = list(

@@ -294,6 +294,10 @@
 /obj/item/clothing/glasses/eyepatch/fences_eye
 	name = "fence's eye"
 	desc = "A jeweler's monocle on a chain of five different broken chains."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "monocle"
+	base_icon_state = "monocle"
+	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
 	// attack_self only works in-hand; the action button keeps "call the
 	// market" reachable while the monocle is actually being worn
 	actions_types = list(/datum/action/item_action/toggle)
@@ -462,7 +466,8 @@
 /obj/item/gps/deadmans_compass
 	name = "dead man's compass"
 	desc = "The needle is a splinter of bone. It doesn't point north. It never claimed to."
-	icon_state = "gps-c"
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "brass_compass"
 	gpstag = null
 	/// Ranked candidates from the last scan, most valuable first.
 	var/list/obj/item/tracked_candidates = list()
@@ -567,6 +572,14 @@
 /obj/item/gun/ballistic/shotgun/musket/no_quarter
 	name = "\"No Quarter\""
 	desc = "A flintlock hand cannon dressed up as a boltloading musket. The bore is wide enough to be a design statement."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "no_quarter"
+	// base musket sets inhand_icon_state = "donk_musket" — override so the
+	// custom states in the files below are actually used. inhand_x/y_dimension
+	// stay inherited at 64 from the shotgun base, matching the 64x64 files.
+	inhand_icon_state = "no_quarter"
+	lefthand_file = 'voidcrew/modules/loot/icons/uniques_64x_lefthand.dmi'
+	righthand_file = 'voidcrew/modules/loot/icons/uniques_64x_righthand.dmi'
 	accepted_magazine_type = /obj/item/ammo_box/magazine/internal/shot/single/no_quarter
 	/// Whether the slow reload ritual is currently in progress.
 	var/priming = FALSE

@@ -38,7 +38,7 @@
  * from everywhere, not parked in the deadly core) and opens it. Shared by the
  * natural event and the admin force-spawn. Returns the site or null.
  */
-/proc/spawn_colosseum_site()
+/proc/spawn_colosseum_site(template_type = /datum/map_template/colosseum)
 	if(GLOB.colosseum_site)
 		return null
 	var/turf/spawn_turf = SSovermap.get_unused_overmap_square_in_zone_band(ZONE_YELLOW)
@@ -50,6 +50,7 @@
 	var/obj/structure/overmap/colosseum/site = new(spawn_turf)
 	if(QDELETED(site))
 		return null
+	site.template_type = template_type
 	// Async: open_venue() loads a 62x58 template, which can sleep — never
 	// block the event subsystem's fire on it.
 	INVOKE_ASYNC(site, TYPE_PROC_REF(/obj/structure/overmap/colosseum, open_venue))

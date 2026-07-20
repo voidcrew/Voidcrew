@@ -189,23 +189,19 @@
  * /obj/item/clothing/head/costume/pirate/captain, and fight its inherited
  * piratespeak-grant/fishing-difficulty behavior (both wired into that
  * type's own equipped()/dropped()/Initialize(), which can't be selectively
- * un-inherited), this is a fresh root under /obj/item/clothing/head with
- * every icon var copied verbatim from that same pirate captain hat's
- * resolved chain (code/modules/clothing/head/pirate.dm +
- * code/modules/clothing/head/_head.dm): icon_state "hgpiratecap" off the
- * shared default.dmi sheet, inhand_icon_state null, base head
- * lefthand/righthand files. Flagged: visually a pirate captain's hat, not
- * literally the plumed cavalier hat the flavor text describes — closest
- * available sprite.
+ * un-inherited), this is a fresh root under /obj/item/clothing/head.
+ * Obj icon is the custom "stage_presence" state in uniques.dmi; the worn
+ * sprite is a matching custom state in uniques_worn.dmi derived from the
+ * same cavalier-hat art (previously borrowed "hgpiratecap").
  */
 /obj/item/clothing/head/stage_presence
 	name = "stage presence"
 	desc = "A plumed cavalier hat that has never once entered a room quietly."
-	// "hgpiratecap" lives on the costume sheets (set by /obj/item/clothing/head/costume),
-	// not default.dmi — pointing at the wrong file renders nothing
-	icon = 'icons/obj/clothing/head/costume.dmi'
-	icon_state = "hgpiratecap"
-	worn_icon = 'icons/mob/clothing/head/costume.dmi'
+	// Custom obj icon; custom worn sprite derived from the same cavalier-hat art
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "stage_presence"
+	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
+	worn_icon_state = "stage_presence"
 	inhand_icon_state = null
 	lefthand_file = 'icons/mob/inhands/clothing/hats_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/clothing/hats_righthand.dmi'
@@ -292,11 +288,8 @@
 /obj/item/third_hand_kit
 	name = "third hand sewing kit"
 	desc = "A rosewood sewing kit. The needle threads itself, which the previous owner found either delightful or damning."
-	icon = 'icons/obj/storage/case.dmi'
-	icon_state = "lockbox"
-	inhand_icon_state = "lockbox"
-	lefthand_file = 'icons/mob/inhands/equipment/briefcase_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/equipment/briefcase_righthand.dmi'
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "third_hand_kit"
 	w_class = WEIGHT_CLASS_SMALL
 	force = 0
 	throwforce = 0

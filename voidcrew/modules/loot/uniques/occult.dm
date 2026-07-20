@@ -219,9 +219,9 @@
 /obj/item/flashlight/lantern/censer_quiet_parish
 	name = "censer of the quiet parish"
 	desc = "A brass censer on a short chain, dented in a pattern suggesting it has been used as a censer and also not."
-	icon_state = "lantern"
-	inhand_icon_state = "lantern"
-	color = "#b08d57"
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "censer"
+	inhand_icon_state = null
 	light_color = "#c9a768"
 	/// Fauna we've currently granted peace to
 	var/list/mob/living/basic/peaceful_fauna = list()
@@ -444,7 +444,10 @@
 /obj/item/clothing/neck/beads/vow_ring
 	name = "iron vow ring"
 	desc = "A plain iron ring, threaded on a cord and worn at the throat. The inscription inside has worn smooth against its twin."
-	color = "#4a4a4d"
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "vow_ring"
+	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
+	worn_icon_state = "vow_ring"
 	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 0.5)
 	// attack_self is unreachable for a worn (and, once vowed, NODROP-locked)
 	// neck item — the action buttons are the only reliable activation path

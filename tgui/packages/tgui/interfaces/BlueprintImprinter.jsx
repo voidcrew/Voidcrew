@@ -156,7 +156,7 @@ const InsertedSchematic = (props) => {
 };
 
 export const BlueprintImprinter = (props) => {
-  const { data } = useBackend();
+  const { act, data } = useBackend();
   const { working, timeleft, has_occupant, barred } = data;
 
   return (
@@ -180,6 +180,15 @@ export const BlueprintImprinter = (props) => {
         )}
         <InsertedSchematic />
         <LoadedCash />
+        <Button
+          fluid
+          icon="door-open"
+          mt={1}
+          disabled={!has_occupant}
+          onClick={() => act('open_door')}
+          content="Open Cradle"
+          tooltip="Pop the cradle door from the inside and step out."
+        />
       </Window.Content>
     </Window>
   );

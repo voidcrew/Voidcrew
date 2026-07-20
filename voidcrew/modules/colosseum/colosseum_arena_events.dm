@@ -63,41 +63,15 @@
 			raise_cover()
 	schedule()
 
-/**
- * A clear tile for an event: a mapped arena_event spot if one is free, else
- * random clear sand. Null only if the whole floor is somehow blocked.
- */
+/// A clear event tile (mapped spot or clear sand) — delegated to the controller
+/// so match modifiers can use the same placement rules without a scheduler.
 /datum/colosseum_arena_scheduler/proc/get_event_turf()
-	var/list/marked = controller.site.get_landmark_turfs(/obj/effect/landmark/colosseum/arena_event)
-	if(length(marked))
-		var/list/candidates = shuffle(marked.Copy())
-		for(var/turf/spot as anything in candidates)
-			if(!spot.is_blocked_turf())
-				return spot
-	return controller.site.get_random_clear_turf(/area/voidcrew/colosseum/arena)
+	return controller.arena_event_turf()
 
 // ===== WEAPON CRATE =====
 
 /datum/colosseum_arena_scheduler/proc/drop_weapon_crate()
-	var/turf/landing_turf = get_event_turf()
-	if(!landing_turf)
-		return
-	var/static/list/weapon_weights = list(
-		/obj/item/spear = 25,
-		/obj/item/knife/combat = 20,
-		/obj/item/melee/baseball_bat = 20,
-		/obj/item/shield/riot = 10,
-		/obj/item/gun/ballistic/shotgun/doublebarrel = 10,
-		/obj/item/gun/energy/laser = 10,
-		/obj/item/restraints/legcuffs/beartrap = 5,
-	)
-	var/obj/structure/closet/crate/weapon_crate = new()
-	for(var/i in 1 to rand(2, 3))
-		var/weapon_type = pick_weight(weapon_weights)
-		new weapon_type(weapon_crate)
-	var/obj/structure/closet/supplypod/pod = new
-	new /obj/effect/pod_landingzone(landing_turf, pod, weapon_crate)
-	controller.site.venue_message(span_boldannounce("The crowd roars — an arms crate is falling onto the sand!"))
+	controller.drop_weapon_crate()
 
 // ===== HAZARD ERUPTION =====
 

@@ -268,11 +268,8 @@
 /obj/item/displacer_fork
 	name = "displacer fork"
 	desc = "A tuning fork machined from something that hums back."
-	icon = 'icons/obj/mining.dmi'
-	icon_state = "resonator"
-	inhand_icon_state = "resonator"
-	lefthand_file = 'icons/mob/inhands/equipment/mining_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/equipment/mining_righthand.dmi'
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "displacer_fork"
 	w_class = WEIGHT_CLASS_SMALL
 	force = 0
 	throwforce = 0
@@ -353,7 +350,7 @@
  * mob/living setXLoss() setters, reviving first if the wearer died) and
  * then destroys itself. One rewind per splint.
  */
-/obj/item/clothing/gloves/chronal_splint
+/obj/item/clothing/gloves/fingerless/chronal_splint
 	name = "chronal splint"
 	desc = "A wrist brace of overlapping brass leaves, ticking very slightly out of sync with the room."
 	/// The wearer currently being tracked, if any.
@@ -365,11 +362,11 @@
 	/// One rewind per splint.
 	var/used = FALSE
 
-/obj/item/clothing/gloves/chronal_splint/Initialize(mapload)
+/obj/item/clothing/gloves/fingerless/chronal_splint/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
-/obj/item/clothing/gloves/chronal_splint/Destroy()
+/obj/item/clothing/gloves/fingerless/chronal_splint/Destroy()
 	STOP_PROCESSING(SSobj, src)
 	if(wearer)
 		UnregisterSignal(wearer, COMSIG_MOB_STATCHANGE)
@@ -377,7 +374,7 @@
 	snapshots = null
 	return ..()
 
-/obj/item/clothing/gloves/chronal_splint/equipped(mob/user, slot, initial = FALSE)
+/obj/item/clothing/gloves/fingerless/chronal_splint/equipped(mob/user, slot, initial = FALSE)
 	. = ..()
 	if(!(slot & ITEM_SLOT_GLOVES))
 		return
@@ -385,7 +382,7 @@
 	START_PROCESSING(SSobj, src)
 	RegisterSignal(user, COMSIG_MOB_STATCHANGE, PROC_REF(on_statchange))
 
-/obj/item/clothing/gloves/chronal_splint/dropped(mob/user, silent = FALSE)
+/obj/item/clothing/gloves/fingerless/chronal_splint/dropped(mob/user, silent = FALSE)
 	. = ..()
 	STOP_PROCESSING(SSobj, src)
 	if(wearer)
@@ -393,7 +390,7 @@
 	wearer = null
 	snapshots.Cut()
 
-/obj/item/clothing/gloves/chronal_splint/process(seconds_per_tick)
+/obj/item/clothing/gloves/fingerless/chronal_splint/process(seconds_per_tick)
 	if(used || !wearer || QDELETED(wearer))
 		return
 	var/turf/wearer_turf = get_turf(wearer)
@@ -410,7 +407,7 @@
 	if(length(snapshots) > max_snapshots)
 		snapshots.Cut(1, 2)
 
-/obj/item/clothing/gloves/chronal_splint/proc/on_statchange(mob/living/user, new_stat)
+/obj/item/clothing/gloves/fingerless/chronal_splint/proc/on_statchange(mob/living/user, new_stat)
 	SIGNAL_HANDLER
 	if(used || new_stat < HARD_CRIT || !length(snapshots))
 		return
@@ -423,7 +420,7 @@
 	addtimer(CALLBACK(src, PROC_REF(rewind), user), 1)
 
 /// Performs the one-shot rewind: position, then damage, then revival if needed.
-/obj/item/clothing/gloves/chronal_splint/proc/rewind(mob/living/user)
+/obj/item/clothing/gloves/fingerless/chronal_splint/proc/rewind(mob/living/user)
 	if(QDELETED(user) || !length(snapshots))
 		qdel(src)
 		return

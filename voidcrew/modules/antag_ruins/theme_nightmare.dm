@@ -97,6 +97,7 @@
 	desc = "A lantern that burns backwards. Whatever light it touches goes somewhere else, and does not come back."
 	icon = 'icons/obj/lighting.dmi'
 	icon_state = "syndilantern"
+	color = "#6a6a8a" // darkened, light-eating tint until it gets its own sprite
 	w_class = WEIGHT_CLASS_SMALL
 	force = 5
 
