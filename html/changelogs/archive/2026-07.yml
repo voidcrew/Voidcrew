@@ -618,3 +618,6 @@
   SmArtKar:
   - bugfix: Fixed the Four Hands wizard perk
   - bugfix: Fixed quick tile replacement
+2026-07-21:
+  timothymtorres:
+  - rscadd: Add water bottles to booze-o-mat non-alcoholic category
