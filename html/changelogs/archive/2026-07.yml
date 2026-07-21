@@ -622,6 +622,7 @@
   CabinetOnFire:
   - bugfix: Fixes cats getting permanent zoomies after being chased away by a superior
       male
+  - bugfix: Fixes mechs not qdel'ing when destroyed if they spawn a wreck
   FalloutFalcon:
   - qol: per department sorting for character setup matches latejoin menu
   SmArtKar:
