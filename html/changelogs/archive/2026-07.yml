@@ -637,3 +637,7 @@
       you out properly
   - bugfix: fixed an issue where the lights would stay dark after reloading the same
       hilberts hotel room
+2026-07-22:
+  CabinetOnFire:
+  - refactor: Ruin loading should now be more robust and should spawn less orphaned
+      genturfs
