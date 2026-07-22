@@ -650,19 +650,16 @@
 	switch(action) // Universal topics
 		if("rename_ship")
 			var/new_name = params["newName"]
-			var/old_name = current_ship.name
 			if(!new_name)
 				return
-			new_name = trim(new_name)
-			if (!length(new_name) || new_name == current_ship.name)
-				return
-			if(!reject_bad_text(new_name, MAX_CHARTER_LEN))
+			new_name = reject_bad_text(trim(new_name), MAX_NAME_LEN)
+			if(!new_name)
 				say("Error: Replacement designation rejected by system.")
 				return
-			if(!current_ship.set_ship_name(new_name))
-				say("Error: [COOLDOWN_TIMELEFT(current_ship, rename_cooldown)/10] seconds until ship designation can be changed..")
-			else
-				log_shuttle("[usr] changed shuttle [old_name] to [new_name]")
+			if(!current_ship.can_rename_ship(usr))
+				say("Error: Registry changes require the commanding officer's authorization.")
+				return
+			current_ship.set_ship_name(new_name, usr)
 			update_static_data(usr, ui)
 			return
 			/*

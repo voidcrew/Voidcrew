@@ -49,7 +49,9 @@
 		if(18)
 			new /obj/item/borg/upgrade/modkit/lifesteal(src)
 			new /obj/item/bedsheet/cult(src)
-		if(29)
+		// was if(29) — unreachable on a rand(1,19) roll, so a 19 landed in the
+		// CRASH below with an empty chest and memento mori could never drop
+		if(19)
 			new /obj/item/clothing/neck/necklace/memento_mori(src)
 	if(!contents.len)
 		CRASH("Failed to generate loot. loot number: [loot][mod ? "subloot: [mod]" : null]")

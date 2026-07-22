@@ -138,6 +138,7 @@
 /turf/open/misc/asteroid/airless,
 /area/space)
 "b" = (
+/obj/effect/spawner/random/ship_parts/research_site,
 /obj/structure/closet/crate/zone_loot/research,
 /turf/open/misc/asteroid/airless,
 /area/space)

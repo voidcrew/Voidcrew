@@ -2,17 +2,15 @@
  * # Plunder Uniques — the quartermaster's strongbox
  *
  * Seven one-of-a-kind prizes for the PLUNDER rare loot tables (see
- * voidcrew/modules/loot/zone_loot.dm, the `/obj/structure/closet/crate/zone_loot/plunder/rare`
- * config). Each item is a subtype of an existing, already-sprited item so no
- * new art is required — see the header comment on each item for its sprite
- * donor.
+ * voidcrew/modules/loot/themes/plunder.dm — the rare_loot_* tables on
+ * /datum/loot_theme/plunder, read by the quartermaster's strongbox). Each
+ * item is a subtype of an existing, already-sprited item so no new art is
+ * required — see the header comment on each item for its sprite donor.
  *
  * Every item here is a genuine one-off: Initialize() always adds
  * TRAIT_NO_REPLICATE (voidcrew/_DEFINES/loot.dm) so the Helios pattern stamp
- * (and any future duplicator) refuses to copy it.
- *
- * Not wired into any loot table yet — that's a follow-up pass alongside the
- * other cache themes (see the TODO in zone_loot.dm).
+ * (and any future duplicator) refuses to copy it, and caches roll without
+ * replacement so one strongbox can never pay the same prize twice.
  */
 
 // =========================================================================

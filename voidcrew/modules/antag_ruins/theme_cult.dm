@@ -233,45 +233,138 @@
 
 // ===== BOONS =====
 
+// Tuning constants for the Sepulcher's boons (file-local, #undef at bottom).
+// Boon descs quote these numbers literally — keep them in sync.
+/// Blood units one Crimson Step drinks
+#define VESTIGE_STEP_BLOOD_COST 15
+/// The fold refuses a body already drained below this — blood is the coin, not the corpse
+#define VESTIGE_STEP_BLOOD_FLOOR BLOOD_VOLUME_OKAY
+/// Tiles the base step reaches
+#define VESTIGE_STEP_RANGE 5
+/// Tiles the surge reaches
+#define VESTIGE_SURGE_RANGE 7
+/// Bonus force the sanguine blade lends against the fallen
+#define VESTIGE_BLADE_ALTAR_BONUS 6
+/// Bonus force the fang lends against the fallen
+#define VESTIGE_FANG_ALTAR_BONUS 10
+
 /datum/vestige_boon/spell/crimson_step
 	name = "Crimson Step"
-	desc = "Fold yourself a short distance through somewhere red and wet."
-	grant_text = "The space behind your eyes folds. Distance is a suggestion now, and it is written in red."
-	spell_type = /datum/action/cooldown/spell/teleport/radius_turf/blink/crimson
+	// Keep the numbers in sync with VESTIGE_STEP_BLOOD_COST / VESTIGE_STEP_RANGE
+	// (initial values must be constant, so no define interpolation here)
+	desc = "Fix your eyes on ground you can see, up to five paces out, and fold through somewhere red and wet to stand on it. Every fold drinks fifteen units of your own blood and leaves a little of you pooled where you left — the Sepulcher extends no credit, and it refuses a body already drained pale."
+	grant_text = "The space behind your eyes folds. Distance is a suggestion now, and every suggestion has a price in red."
+	spell_type = /datum/action/cooldown/spell/pointed/vestige_crimson_step
 
 /datum/vestige_boon/spell/crimson_step/surge
 	name = "Crimson Surge"
-	desc = "The fold learns your shape: it opens faster and reaches further. Distance stops being a suggestion and becomes a lie."
+	// Keep the numbers in sync with VESTIGE_SURGE_RANGE
+	desc = "The fold learns your shape: it opens the moment you ask and reaches seven paces. The price does not change. The altar drinks; the altar pays its debts; the altar has never once made change."
 	grant_text = "The red place behind your eyes widens. It knows you now, and it opens the moment you ask."
 	upgrades_from = /datum/vestige_boon/spell/crimson_step
-	spell_type = /datum/action/cooldown/spell/teleport/radius_turf/blink/crimson/surge
+	spell_type = /datum/action/cooldown/spell/pointed/vestige_crimson_step/surge
 
-// The wizard blink, paced down from spammable to deliberate
-/datum/action/cooldown/spell/teleport/radius_turf/blink/crimson
+/**
+ * The Sepulcher's step: a pointed, aimed fold to visible ground, paid for in
+ * the caster's own blood. Deliberately NOT the wizard blink chassis — the
+ * Athenaeum's Word of Passage already owns the random-destination blink, and
+ * two patrons selling the same spell cheapens both. This one is precise where
+ * the wizard's is random, and costed where the wizard's is free: blood is the
+ * cult's currency (the Vigil of Blood trial teaches exactly that), the fold
+ * refuses a drained body, and both ends of the step are loudly advertised —
+ * the pool left behind is real blood, with everything that implies for anyone
+ * who can read a deck (or bloodcrawl through it).
+ *
+ * do_teleport runs unforced on the magic channel, so NOTELEPORT areas and
+ * TRAIT_NO_TELEPORT keep their veto; a refused fold spends no blood (the
+ * cooldown is lost — this fork's Activate() ignores cast()'s return value,
+ * and everything refusable up front already lives in before_cast).
+ */
+/datum/action/cooldown/spell/pointed/vestige_crimson_step
 	name = "Crimson Step"
-	desc = "Fold yourself a short distance through somewhere red and wet."
+	desc = "Fold yourself to a spot you can see, a few paces out. Each fold costs blood and leaves a pool of it where you left; it refuses a body already drained pale."
 	button_icon = 'icons/mob/actions/actions_cult.dmi'
 	button_icon_state = "tele"
+	school = SCHOOL_FORBIDDEN
 	cooldown_time = 15 SECONDS
-	cooldown_reduction_per_rank = 0 SECONDS
-	outer_tele_radius = 5
+	invocation_type = INVOCATION_NONE
 	spell_requirements = SPELL_REQUIRES_NO_ANTIMAGIC
+	cast_range = VESTIGE_STEP_RANGE
+	aim_assist = FALSE // the step wants ground; a clicked mob resolves to its turf anyway
+	active_msg = "The world folds along a red crease, waiting for you to choose where..."
+	deactive_msg = "You let the crease smooth back out."
+	/// Blood units one fold drinks
+	var/blood_cost = VESTIGE_STEP_BLOOD_COST
 
-/datum/action/cooldown/spell/teleport/radius_turf/blink/crimson/surge
+/datum/action/cooldown/spell/pointed/vestige_crimson_step/surge
 	name = "Crimson Surge"
-	desc = "Fold yourself further, faster, through somewhere red and wet."
+	desc = "Fold yourself to a spot you can see, further and faster. Each fold costs blood and leaves a pool of it where you left; it refuses a body already drained pale."
 	cooldown_time = 8 SECONDS
-	outer_tele_radius = 7
+	cast_range = VESTIGE_SURGE_RANGE
+
+/datum/action/cooldown/spell/pointed/vestige_crimson_step/is_valid_target(atom/cast_on)
+	. = ..()
+	if(!.)
+		return FALSE
+	var/turf/destination = get_turf(cast_on)
+	if(!isopenturf(destination))
+		destination?.balloon_alert(owner, "no footing there!")
+		return FALSE
+	if(destination == get_turf(owner))
+		destination.balloon_alert(owner, "already standing there!")
+		return FALSE
+	if(destination.is_blocked_turf(exclude_mobs = TRUE))
+		destination.balloon_alert(owner, "no room to arrive!")
+		return FALSE
+	return TRUE
+
+// The blood check lives here so a refused fold never pays the cooldown
+/datum/action/cooldown/spell/pointed/vestige_crimson_step/before_cast(atom/cast_on)
+	. = ..()
+	if(. & SPELL_CANCEL_CAST)
+		return
+	var/mob/living/caster = owner
+	if(!isliving(caster))
+		return . | SPELL_CANCEL_CAST
+	if(HAS_TRAIT(caster, TRAIT_NOBLOOD) || !caster.blood_volume)
+		caster.balloon_alert(caster, "no blood to pay with!")
+		return . | SPELL_CANCEL_CAST
+	if(caster.blood_volume < VESTIGE_STEP_BLOOD_FLOOR)
+		caster.balloon_alert(caster, "too drained to fold!")
+		to_chat(caster, span_warning("The fold refuses dregs — the Sepulcher's own rule. Come back fuller."))
+		return . | SPELL_CANCEL_CAST
+
+/datum/action/cooldown/spell/pointed/vestige_crimson_step/cast(atom/cast_on)
+	. = ..()
+	var/mob/living/caster = owner
+	var/turf/origin = get_turf(caster)
+	var/turf/destination = get_turf(cast_on)
+	if(!destination || !do_teleport(caster, destination, no_effects = TRUE, channel = TELEPORT_CHANNEL_MAGIC))
+		caster.balloon_alert(caster, "something refuses the fold!")
+		return
+	// Paid on arrival only: a warded destination costs the cooldown, never the blood
+	caster.blood_volume = max(caster.blood_volume - blood_cost, 0)
+	if(origin)
+		new /obj/effect/decal/cleanable/blood(origin)
+		origin.visible_message(span_warning("[caster] folds out of the world, leaving [caster.p_their()] own blood pooled where [caster.p_they()] stood!"))
+		playsound(origin, 'sound/effects/magic/enter_blood.ogg', 50, TRUE)
+	playsound(destination, 'sound/effects/magic/exit_blood.ogg', 50, TRUE)
+	caster.visible_message(
+		span_warning("[caster] unfolds out of somewhere red and wet!"),
+		span_notice("You step through the red place. It takes its coin on the way."),
+	)
 
 /datum/vestige_boon/spell/sanguine_blade
 	name = "Sanguine Blade"
-	desc = "Call the Sepulcher's knife into your hand from anywhere, and send it back when you're done."
+	// Keep the number in sync with VESTIGE_BLADE_ALTAR_BONUS
+	desc = "Call the Sepulcher's knife into your hand from anywhere, and send it back when you're done. It is a sacrificial edge, and it remembers the altar: it cuts six points crueler into anyone already brought low to the floor. The congregation always knelt first."
 	grant_text = "A knife-shaped absence settles against your palm. It will come when called."
 	spell_type = /datum/action/cooldown/spell/vestige_sanguine_blade
 
 /datum/vestige_boon/spell/sanguine_blade/fang
 	name = "Sanguine Fang"
-	desc = "The knife comes back hungrier: a longer, crueler edge that parts armor like vestment, and answers the call twice as fast."
+	// Keep the number in sync with VESTIGE_FANG_ALTAR_BONUS
+	desc = "The knife comes back hungrier: a longer, crueler edge that parts armor like vestment, answers the call twice as fast, and bites ten points deeper into the fallen. The altar never asked its offerings to stand."
 	grant_text = "The knife-shaped absence against your palm grows teeth."
 	upgrades_from = /datum/vestige_boon/spell/sanguine_blade
 	spell_type = /datum/action/cooldown/spell/vestige_sanguine_blade/fang
@@ -297,19 +390,37 @@
 /datum/action/cooldown/spell/vestige_sanguine_blade/is_valid_target(atom/cast_on)
 	return iscarbon(cast_on)
 
+// The cancel lives here: no knife to send back and no hand to call one into
+// means the cast never happens and the cooldown is never paid — this fork's
+// Activate() ignores cast()'s return value, so an in-cast
+// reset_spell_cooldown() is dead code
+/datum/action/cooldown/spell/vestige_sanguine_blade/before_cast(atom/cast_on)
+	. = ..()
+	if(. & SPELL_CANCEL_CAST)
+		return
+	var/mob/living/carbon/carbon_cast_on = cast_on
+	if(locate(/obj/item/knife/ritual/vestige/bound) in carbon_cast_on.held_items)
+		return
+	if(!length(carbon_cast_on.get_empty_held_indexes()))
+		carbon_cast_on.balloon_alert(carbon_cast_on, "no free hand!")
+		return . | SPELL_CANCEL_CAST
+
 /datum/action/cooldown/spell/vestige_sanguine_blade/cast(mob/living/carbon/cast_on)
 	. = ..()
-	var/obj/item/blade = locate(blade_type) in cast_on.held_items
-	if(blade)
-		cast_on.visible_message(span_warning("[blade] dissolves into red mist!"), span_notice("You send the knife back."))
-		qdel(blade)
-		return
+	var/obj/item/knife/ritual/vestige/bound/held = locate(/obj/item/knife/ritual/vestige/bound) in cast_on.held_items
+	if(held)
+		var/outdated = held.type != blade_type
+		if(!outdated)
+			cast_on.visible_message(span_warning("[held] dissolves into red mist!"), span_notice("You send the knife back."))
+			qdel(held)
+			return
+		// An old model from before the upgrade: reshape it in place
+		qdel(held)
 	var/obj/item/new_blade = new blade_type(cast_on)
 	if(!cast_on.put_in_hands(new_blade))
 		if(!QDELETED(new_blade)) // DROPDEL usually beat us to it
 			qdel(new_blade)
 		cast_on.balloon_alert(cast_on, "no free hand!")
-		reset_spell_cooldown()
 		return
 	cast_on.visible_message(
 		span_warning("A knife condenses out of red mist in [cast_on]'s hand!"),
@@ -317,14 +428,38 @@
 	)
 	playsound(cast_on, 'sound/effects/magic/enter_blood.ogg', 30, TRUE)
 
+/**
+ * The Sepulcher's knife: a summoned sacrificial edge whose identity is the
+ * altar, not the arm — flat force stays modest, but the fallen (anyone alive
+ * and flat on the deck) are cut altar_bonus points deeper. Pairs with the
+ * Crimson Step's burst arrival; distinct on purpose from the armblade (flat
+ * heavy melee) and the demon claws (bleed-and-rhythm melee).
+ */
 /obj/item/knife/ritual/vestige/bound
 	name = "sanguine blade"
-	desc = "The Sepulcher's knife, bound to a pact. It goes home when it leaves the hand."
+	desc = "The Sepulcher's knife, bound to a pact. It goes home when it leaves the hand, and it cuts deepest into whatever has already been brought low."
 	force = 18
 	item_flags = ABSTRACT | DROPDEL
+	/// Bonus force against living targets already flat on the deck — the altar's edge
+	var/altar_bonus = VESTIGE_BLADE_ALTAR_BONUS
 
 /obj/item/knife/ritual/vestige/bound/fang
 	name = "sanguine fang"
-	desc = "The Sepulcher's knife, grown long and cruel on a well-kept pact. It goes home when it leaves the hand."
+	desc = "The Sepulcher's knife, grown long and cruel on a well-kept pact. It goes home when it leaves the hand, and it bites deepest into whatever has already been brought low."
 	force = 24
 	armour_penetration = 20
+	altar_bonus = VESTIGE_FANG_ALTAR_BONUS
+
+// The altar's edge: the fallen are offerings, not opponents. Living only —
+// the dead are the lantern's business, and corpse-sawing needs no buff.
+/obj/item/knife/ritual/vestige/bound/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
+	if(isliving(target) && target.stat != DEAD && target.body_position == LYING_DOWN)
+		MODIFY_ATTACK_FORCE(attack_modifiers, altar_bonus)
+	return ..()
+
+#undef VESTIGE_STEP_BLOOD_COST
+#undef VESTIGE_STEP_BLOOD_FLOOR
+#undef VESTIGE_STEP_RANGE
+#undef VESTIGE_SURGE_RANGE
+#undef VESTIGE_BLADE_ALTAR_BONUS
+#undef VESTIGE_FANG_ALTAR_BONUS

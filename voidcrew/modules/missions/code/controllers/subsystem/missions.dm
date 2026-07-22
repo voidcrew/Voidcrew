@@ -45,11 +45,18 @@ SUBSYSTEM_DEF(missions)
 /datum/controller/subsystem/missions/proc/refresh_ship_missions(obj/structure/overmap/ship/ship)
 	if(!ship)
 		return
+	// NPC ships never read their board; don't generate (and churn ruin refs) for them
+	if(istype(ship, /obj/structure/overmap/ship/npc))
+		return
 
-	// Remove any null/deleted missions from available list
+	// Remove deleted missions and rotate out offers that sat unaccepted too long
 	for(var/datum/mission/mission as anything in ship.available_missions)
 		if(QDELETED(mission))
 			ship.available_missions -= mission
+			continue
+		if(world.time - mission.posted_at > MISSION_BOARD_EXPIRY)
+			ship.available_missions -= mission
+			qdel(mission)
 
 	// Fill up to default count
 	var/missions_needed = DEFAULT_AVAILABLE_MISSIONS - length(ship.available_missions)

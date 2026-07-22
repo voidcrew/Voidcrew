@@ -19,7 +19,13 @@
 		C.parallax_layers_cached = list()
 		C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/layer_1(null, src)
 		C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/layer_2(null, src)
-		C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/planet(null, src)
+		// VOIDCREW EDIT REMOVAL - the station planet backdrop keys off is_station_level(), which is
+		// TRUE for every player ship z-level here (link_to_z_level() flags them ZTRAIT_STATION), so
+		// every crew saw it. It isn't tiled by update_o(), so the in-transit scroll loop made it
+		// visibly race down the screen and snap back every loop. Voidcrew shows planet backdrops
+		// contextually instead (see "context-aware overmap parallax" in
+		// voidcrew/modules/overmap/code/modules/overmap/_overmap.dm).
+		// VOIDCREW EDIT ORIGINAL: C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/planet(null, src)
 		if(SSparallax.random_layer)
 			C.parallax_layers_cached += new SSparallax.random_layer.type(null, src, FALSE, SSparallax.random_layer)
 		C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/layer_3(null, src)
@@ -28,6 +34,12 @@
 
 	if (length(C.parallax_layers) > C.parallax_layers_max)
 		C.parallax_layers.len = C.parallax_layers_max
+
+	// VOIDCREW EDIT ADDITION BEGIN - overmap-context layers (asteroid fields, nebulas, planet
+	// backdrops) ride above the pref-based layer cap: they ARE the scenery, not extra fluff
+	if(length(C.overmap_parallax_layers))
+		C.parallax_layers |= C.overmap_parallax_layers
+	// VOIDCREW EDIT ADDITION END
 
 	C.parallax_rock.vis_contents = C.parallax_layers
 	// We could do not do parallax for anything except the main plane group
@@ -133,6 +145,12 @@
 		deltimer(C.parallax_animate_timers[key])
 	C.parallax_animate_timers = list()
 	for(var/atom/movable/screen/parallax_layer/layer as anything in C.parallax_layers)
+		// VOIDCREW EDIT ADDITION BEGIN - untiled backdrops (station planet, overmap planet
+		// backdrops) must sit still: the 480px wraparound jump below is only invisible on
+		// layers update_o() tiles at a 480px period, anything else visibly snaps every loop
+		if(!layer.scroll_loops)
+			continue
+		// VOIDCREW EDIT ADDITION END
 		var/scaled_time = PARALLAX_LOOP_TIME / layer.speed
 		if(new_parallax_movedir == NONE) // If we're stopping, we need to stop on the same dime, yeah?
 			scaled_time = PARALLAX_LOOP_TIME
@@ -158,6 +176,8 @@
 	if(!C)
 		return
 	C.parallax_animate_timers -= layer
+	if(!layer.scroll_loops) // VOIDCREW EDIT ADDITION - see set_parallax_movedir()
+		return
 
 	// If we are moving in a direction, we used the QUAD_EASING function with EASE_IN
 	// This means our position function is x^2. This is always LESS then the linear we're using here
@@ -184,6 +204,7 @@
 	if(!C.previous_turf || (C.previous_turf.z != posobj.z))
 		C.previous_turf = posobj
 		force = TRUE
+		update_overmap_parallax(screenmob) // VOIDCREW EDIT ADDITION - re-theme context parallax when the eye changes z (see voidcrew overmap _overmap.dm)
 
 	//Doing it this way prevents parallax layers from "jumping" when you change Z-Levels.
 	var/offset_x = posobj.x - C.previous_turf.x
@@ -267,6 +288,10 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/parallax_layer)
 	var/offset_x = 0
 	var/offset_y = 0
 	var/absolute = FALSE
+	// VOIDCREW EDIT ADDITION - whether this layer joins the shuttle-transit scroll loop.
+	// Only layers update_o() tiles at a 480px period can loop seamlessly; untiled
+	// backdrops (the station planet, voidcrew overmap_backdrop layers) must opt out
+	var/scroll_loops = TRUE
 	appearance_flags = APPEARANCE_UI | KEEP_TOGETHER
 	blend_mode = BLEND_ADD
 	plane = PLANE_SPACE_PARALLAX
@@ -339,6 +364,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/parallax_layer)
 	absolute = TRUE //Status of separation
 	speed = 3
 	layer = 30
+	scroll_loops = FALSE // VOIDCREW EDIT ADDITION - untiled backdrop, must not join the transit scroll loop
 
 /atom/movable/screen/parallax_layer/planet/Initialize(mapload, datum/hud/hud_owner)
 	. = ..()

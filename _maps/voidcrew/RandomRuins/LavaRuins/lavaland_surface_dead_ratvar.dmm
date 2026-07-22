@@ -32,6 +32,7 @@
 /turf/open/floor/bronze/filled/lavaland,
 /area/ruin/unpowered/ratvar)
 "q" = (
+/obj/effect/zone_mobs/cult/boss,
 /obj/structure/closet/crate/zone_loot/occult/rare,
 /turf/open/floor/bronze/filled/lavaland,
 /area/ruin/unpowered/ratvar)

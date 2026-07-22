@@ -1,24 +1,19 @@
 /**
  * # Delivery Mission
  *
- * A mission that requires delivering a specific item type to the mission pad.
- * The item is consumed upon turn-in.
+ * Bring N of a listed commodity to the mission pad. One deliver objective,
+ * generated off a static table of asks.
  */
 /datum/mission/delivery
 	name = "Delivery Contract"
-	desc = "Deliver %ITEM_NAME% to the mission pad to complete this contract."
 	weight = 10
-	requires_item = TRUE
 
-	/// The type of item required for delivery
+	/// The rolled ask (kept for UI keys)
 	var/required_type = /obj/item/stack/ore/iron
-	/// Display name for the required item
 	var/required_name = "iron ore"
-	/// Amount required (for stacks)
 	var/required_amount = 1
 
-/datum/mission/delivery/generate_mission_details()
-	// Pick a random delivery target from a predefined list
+/datum/mission/delivery/generate_details()
 	// Each target defines its own difficulty, amount, and value range
 	var/static/list/delivery_targets = list(
 		// Easy - common ores, low amounts
@@ -38,58 +33,25 @@
 		list("type" = /obj/item/stack/ore/bluespace_crystal, "name" = "bluespace crystals", "amount" = 2, "value_min" = 2500, "value_max" = 3500, "difficulty" = MISSION_DIFFICULTY_HARD),
 	)
 
-	var/list/target = pick(delivery_targets)
-	required_type = target["type"]
-	required_name = target["name"]
-	required_amount = target["amount"]
-	value_min = target["value_min"]
-	value_max = target["value_max"]
-	difficulty = target["difficulty"]
+	var/list/ask = pick(delivery_targets)
+	required_type = ask["type"]
+	required_name = ask["name"]
+	required_amount = ask["amount"]
+	value_min = ask["value_min"]
+	value_max = ask["value_max"]
+	difficulty = ask["difficulty"]
 
-	// Call parent to randomize value and generate author
-	. = ..()
+/datum/mission/delivery/build_objectives()
+	var/datum/mission_objective/deliver/ask = new
+	ask.required_type = required_type
+	ask.required_name = required_name
+	ask.required_amount = required_amount
+	add_objective(ask)
 
-/datum/mission/delivery/apply_text_substitutions()
-	. = ..()
+/datum/mission/delivery/update_text()
 	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
-	name = replacetext(name, "%ITEM_NAME%", item_text)
-	desc = replacetext(desc, "%ITEM_NAME%", item_text)
-
-/datum/mission/delivery/can_turn_in(obj/item/item)
-	if(!item)
-		return FALSE
-	if(!istype(item, required_type))
-		return FALSE
-
-	// Check stack amount if applicable
-	if(istype(item, /obj/item/stack))
-		var/obj/item/stack/stack = item
-		if(stack.amount < required_amount)
-			return FALSE
-
-	return TRUE
-
-/datum/mission/delivery/get_failure_reason(obj/item/item)
-	if(!item)
-		return "No item provided."
-	if(!istype(item, required_type))
-		return "Wrong item type."
-	if(istype(item, /obj/item/stack))
-		var/obj/item/stack/stack = item
-		if(stack.amount < required_amount)
-			return "Need [required_amount], only have [stack.amount]."
-	return ..()  // Fall back to base reasons
-
-/datum/mission/delivery/consume_turned_in_item(obj/item/item)
-	// Consume the required amount from stack, or the whole item
-	if(istype(item, /obj/item/stack))
-		var/obj/item/stack/stack = item
-		stack.use(required_amount)
-	else
-		qdel(item)
-
-/datum/mission/delivery/get_progress_string()
-	return "Deliver [required_amount] [required_name]"
+	name = "Delivery Contract: [item_text]"
+	desc = "Deliver [item_text] to the mission pad to complete this contract."
 
 /datum/mission/delivery/get_ui_data()
 	var/list/data = ..()

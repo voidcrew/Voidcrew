@@ -215,6 +215,7 @@
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/ruin/unpowered)
 "DZ" = (
+/obj/effect/spawner/random/ship_parts/wreck,
 /obj/structure/closet/crate/zone_loot/expedition,
 /obj/effect/mapping_helpers/burnt_floor,
 /turf/open/floor/mineral/titanium/yellow{

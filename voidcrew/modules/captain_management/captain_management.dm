@@ -163,21 +163,12 @@
 			var/new_name = params["name"]
 			if(!new_name)
 				return TRUE
-			new_name = trim(new_name)
-			if(length(new_name) < 2 || length(new_name) > 42)
-				to_chat(captain, span_warning("Ship name must be 2-42 characters."))
+			new_name = reject_bad_text(trim(new_name), MAX_NAME_LEN)
+			if(!new_name)
+				to_chat(captain, span_warning("Invalid ship name: [MAX_NAME_LEN] plain characters at most."))
 				return TRUE
-			if(!COOLDOWN_FINISHED(ship, rename_cooldown))
-				to_chat(captain, span_warning("Ship rename is on cooldown."))
-				return TRUE
-
-			var/old_name = ship.name
-			ship.name = new_name
-			if(ship.ship_team)
-				ship.ship_team.name = new_name
-			COOLDOWN_START(ship, rename_cooldown, 5 MINUTES)
-			ship.ship_notify("This vessel has been renamed from [old_name] to [new_name].", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
-			log_game("[key_name(captain)] renamed ship from [old_name] to [new_name]")
+			// set_ship_name handles the cooldown, propagation, crew notification, and logging
+			ship.set_ship_name(new_name, captain)
 			return TRUE
 
 		if("set_memo")

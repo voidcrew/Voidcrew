@@ -724,6 +724,7 @@
 /turf/open/floor/circuit/green/anim,
 /area/ruin/space/has_grav/powered/hilbertresearchfacility/secretroom)
 "aa" = (
+/obj/effect/zone_mobs/bug/boss,
 /obj/structure/closet/crate/zone_loot/research/rare,
 /turf/open/floor/circuit/green/anim,
 /area/ruin/space/has_grav/powered/hilbertresearchfacility/secretroom)

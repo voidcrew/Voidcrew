@@ -131,3 +131,181 @@
 			continue
 		LAZYOR(close_overmap_objects, other)
 		LAZYOR(other.close_overmap_objects, src)
+
+// ===================== CONTEXT-AWARE OVERMAP PARALLAX =====================
+//
+// What a crew sees out the windows follows what their ship is flying over: sitting on
+// (or docked to / landed inside) an asteroid field shows drifting asteroids, a gas
+// nebula shows tinted space gas, an ice planet hangs an icemoon backdrop in the sky,
+// a lava planet a scorched planet backdrop, and plain space stays plain stars.
+//
+// HOW THE MAPPING WORKS
+// Every /obj/structure/overmap has a `parallax_theme` var (a PARALLAX_THEME_* define,
+// see voidcrew/_DEFINES/overmap.dm). Null means "plain space". The theme is turned
+// into concrete layer typepaths by get_overmap_parallax_layer_types() below. Planets
+// carry their theme on the /datum/overmap/planet info datum (behaviour/planets.dm)
+// and copy it onto the overmap object at Initialize, so theming another planet type
+// is one line on its datum; any other overmap object type is one line on the type
+// itself (see events.dm for the meteor/nebula lines).
+//
+// HOW IT REACHES THE CLIENT
+// Context layers are per-client instances kept in client.overmap_parallax_layers,
+// appended after the pref-capped base layers (see the VOIDCREW EDITs in
+// code/_onclick/hud/parallax/parallax.dm create_parallax()). They are (re)resolved by
+// /datum/hud/proc/update_overmap_parallax below, triggered from:
+// - update_parallax()'s z-change branch (boarding/leaving encounters, ghosting,
+//   login, teleports) - VOIDCREW EDIT in parallax.dm
+// - /obj/structure/overmap/ship/proc/update_crew_parallax_context (ship.dm), poked
+//   from the ship token's Moved() (overmap tile crossings, dock/undock completion)
+
+/obj/structure/overmap
+	/// Parallax theme (PARALLAX_THEME_* define) crews see while their ship sits on
+	/// this object's overmap tile or inside its loaded interior. Null = plain space.
+	var/parallax_theme
+
+/// Layer typepaths composing a theme. All types reuse stock icons/effects/parallax.dmi states.
+/proc/get_overmap_parallax_layer_types(theme)
+	switch(theme)
+		if(PARALLAX_THEME_ASTEROIDS)
+			return list(/atom/movable/screen/parallax_layer/random/asteroids)
+		if(PARALLAX_THEME_SPACE_GAS)
+			return list(/atom/movable/screen/parallax_layer/random/space_gas)
+		if(PARALLAX_THEME_ICEMOON)
+			return list(/atom/movable/screen/parallax_layer/overmap_backdrop/icemoon)
+		if(PARALLAX_THEME_PLANET)
+			return list(/atom/movable/screen/parallax_layer/overmap_backdrop/planet)
+	return null
+
+/// Post-creation hook to customize a freshly built context layer instance
+/// (e.g. nebulas tint their gas layer, see events.dm). No-op by default.
+/obj/structure/overmap/proc/configure_parallax_layer(atom/movable/screen/parallax_layer/layer)
+	return
+
+/**
+ * A single, untiled celestial backdrop (planet/moon sprite) hanging in the parallax.
+ * Unlike the star layers this is NOT tiled by update_o(), so it must never join the
+ * in-transit 480px scroll loop - hence scroll_loops = FALSE (see the VOIDCREW EDITs
+ * in code/_onclick/hud/parallax/parallax.dm set_parallax_movedir()).
+ */
+/atom/movable/screen/parallax_layer/overmap_backdrop
+	blend_mode = BLEND_OVERLAY
+	speed = 0.4
+	layer = 30
+	scroll_loops = FALSE
+
+/atom/movable/screen/parallax_layer/overmap_backdrop/update_o(view)
+	return // single centered sprite, no tiling
+
+/atom/movable/screen/parallax_layer/overmap_backdrop/icemoon
+	icon_state = "icemoon"
+
+/atom/movable/screen/parallax_layer/overmap_backdrop/planet
+	icon_state = "planet"
+
+/**
+ * Finds the voidcrew player ship whose interior contains the given turf.
+ * Exact-z shuttle bounds first (the cheap common case), then the stacked
+ * z-levels of multi-z ships, which get_containing_shuttle() can't see.
+ */
+/proc/get_voidcrew_ship_for_turf(turf/checked_turf)
+	if(!checked_turf)
+		return null
+	var/obj/docking_port/mobile/voidcrew/port = SSshuttle.get_containing_shuttle(checked_turf)
+	if(istype(port) && port.current_ship)
+		return port.current_ship
+	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
+		var/obj/docking_port/mobile/voidcrew/ship_port = ship.shuttle
+		if(!istype(ship_port) || ship_port.z == checked_turf.z) // exact z handled above
+			continue
+		if(checked_turf.z < ship_port.z - ship_port.z_levels_below || checked_turf.z > ship_port.z + ship_port.z_levels_above)
+			continue
+		var/list/bounds = ship_port.return_coords()
+		if(checked_turf.x >= min(bounds[1], bounds[3]) && checked_turf.x <= max(bounds[1], bounds[3]) \
+			&& checked_turf.y >= min(bounds[2], bounds[4]) && checked_turf.y <= max(bounds[2], bounds[4]))
+			return ship
+	return null
+
+/**
+ * The overmap object that should theme parallax for a viewer standing on `viewed_turf`,
+ * or null for plain space. Aboard a ship, the ship's overmap situation decides;
+ * off-ship, the overmap object owning the loaded interior around the turf does.
+ */
+/proc/get_overmap_parallax_source(turf/viewed_turf)
+	if(!viewed_turf)
+		return null
+	var/obj/structure/overmap/ship/ship = get_voidcrew_ship_for_turf(viewed_turf)
+	if(ship)
+		return ship.get_parallax_source()
+	var/obj/structure/overmap/holder = SSovermap_zones.get_overmap_object_for_turf(viewed_turf)
+	if(holder?.parallax_theme)
+		return holder
+	return null
+
+/client
+	/// Overmap-context parallax layer instances currently applied to this client.
+	/// Kept out of parallax_layers_cached so the pref-based layer cap never eats them.
+	var/list/overmap_parallax_layers
+	/// Cache key ("theme-ref") of the applied overmap parallax context; null = plain space
+	var/overmap_parallax_key
+
+/**
+ * Resolves the viewer's overmap context and swaps the client's context layers if it
+ * changed. Safe to call often - it early-outs on an unchanged context key.
+ */
+/datum/hud/proc/update_overmap_parallax(mob/viewmob)
+	var/mob/screenmob = viewmob || mymob
+	var/client/C = screenmob?.client
+	if(!C)
+		return
+	var/turf/posobj = get_turf(C.eye)
+	var/obj/structure/overmap/source = get_overmap_parallax_source(posobj)
+	var/new_key = source ? "[source.parallax_theme]-[REF(source)]" : null
+	if(new_key == C.overmap_parallax_key)
+		return
+	C.overmap_parallax_key = new_key
+
+	// Tear down the previous context's layers
+	if(length(C.overmap_parallax_layers))
+		for(var/atom/movable/screen/parallax_layer/old_layer as anything in C.overmap_parallax_layers)
+			if(C.parallax_layers)
+				C.parallax_layers -= old_layer
+			if(C.parallax_rock)
+				C.parallax_rock.vis_contents -= old_layer
+			qdel(old_layer)
+	C.overmap_parallax_layers = null
+
+	if(!source)
+		return
+	var/list/layer_types = get_overmap_parallax_layer_types(source.parallax_theme)
+	if(!length(layer_types))
+		return
+	if(isnull(C.parallax_rock) || isnull(C.parallax_layers))
+		return // parallax not built for this client (pref-disabled, NOPARALLAX z); nothing to attach to
+
+	C.overmap_parallax_layers = list()
+	for(var/layer_type in layer_types)
+		var/atom/movable/screen/parallax_layer/layer = new layer_type(null, src)
+		if(QDELETED(layer)) // no canon client - see parallax_layer/Initialize
+			continue
+		source.configure_parallax_layer(layer)
+		C.overmap_parallax_layers += layer
+		C.parallax_layers += layer
+		C.parallax_rock.vis_contents += layer
+
+	// If an in-transit scroll is already running, fold the new tiled layers into the
+	// same loop set_parallax_movedir()/update_parallax_motionblur() would have set up
+	if(C.parallax_movedir)
+		var/matrix/scroll_transform
+		switch(C.parallax_movedir)
+			if(NORTH)
+				scroll_transform = matrix(1, 0, 0, 0, 1, 480)
+			if(SOUTH)
+				scroll_transform = matrix(1, 0, 0, 0, 1, -480)
+			if(EAST)
+				scroll_transform = matrix(1, 0, 480, 0, 1, 0)
+			if(WEST)
+				scroll_transform = matrix(1, 0, -480, 0, 1, 0)
+		if(scroll_transform)
+			for(var/atom/movable/screen/parallax_layer/layer as anything in C.overmap_parallax_layers)
+				if(layer.scroll_loops)
+					update_parallax_motionblur(C, layer, C.parallax_movedir, scroll_transform)

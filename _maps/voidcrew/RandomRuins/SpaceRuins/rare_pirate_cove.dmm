@@ -51,6 +51,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "ak" = (
+/obj/effect/zone_mobs/pirate,
 /obj/structure/closet/crate/zone_loot/plunder,
 /turf/open/misc/asteroid,
 /area/ruin/space/has_grav/powered)
@@ -116,6 +117,7 @@
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
 "az" = (
+/obj/effect/zone_mobs/pirate,
 /obj/structure/closet/crate/zone_loot/plunder,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
@@ -251,6 +253,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "bF" = (
+/obj/effect/zone_mobs/pirate/boss,
 /obj/structure/closet/crate/zone_loot/plunder/rare,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)

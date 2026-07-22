@@ -2060,7 +2060,8 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/film_studio/stage)
 "Kk" = (
-/obj/structure/closet/crate/zone_loot/wardrobe,
+/obj/effect/zone_mobs/robot/boss,
+/obj/structure/closet/crate/zone_loot/wardrobe/rare,
 /obj/effect/turf_decal/siding/thinplating_new/terracotta{
 	dir = 1
 	},

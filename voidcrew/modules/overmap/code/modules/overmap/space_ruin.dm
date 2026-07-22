@@ -49,6 +49,8 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	/// Rare ruins come from rumor charts, not natural seeding: tinted gold on
 	/// the map, and cleaning one out never spawns a replacement.
 	var/rare = FALSE
+	/// Live missions currently pointed at this ruin; target picks prefer unclaimed ruins
+	var/mission_claims = 0
 
 /obj/structure/overmap/space_ruin/Initialize(mapload, datum/map_template/ruin/space/template)
 	. = ..()

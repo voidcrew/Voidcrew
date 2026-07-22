@@ -25,6 +25,10 @@
 	var/weather_trait
 	///A planet template that contains a list of biomes to use
 	var/datum/planet/planet_template
+	///Parallax theme (PARALLAX_THEME_* define) crews see while over/inside this planet,
+	///copied onto the overmap object at Initialize. Null = plain space. One line here
+	///themes a planet type - see the context-parallax system in modules/overmap/_overmap.dm
+	var/parallax_theme
 
 /datum/overmap/planet/lava
 	name = "Lava Planet"
@@ -38,6 +42,7 @@
 	weather_controller_type = /datum/weather/ash_storm
 	weather_trait = ZTRAIT_ASHSTORM
 	planet_template = /datum/planet/lava
+	parallax_theme = PARALLAX_THEME_PLANET
 
 /datum/overmap/planet/ice
 	name = "Frozen Planet"
@@ -51,6 +56,7 @@
 	weather_controller_type = /datum/weather/snow_storm
 	weather_trait = ZTRAIT_SNOWSTORM
 	planet_template = /datum/planet/snow
+	parallax_theme = PARALLAX_THEME_ICEMOON
 
 /datum/overmap/planet/beach
 	name = "Oceanic Planet"
@@ -100,6 +106,7 @@
 	//spawn_rate = 30
 	spawn_rate = -1
 	mapgen = /datum/map_generator/cave_generator/asteroid
+	parallax_theme = PARALLAX_THEME_ASTEROIDS
 
 /datum/overmap/planet/space // not a planet but freak off!!
 	name = "weak energy signal"

@@ -606,6 +606,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "BG" = (
+/obj/effect/zone_mobs/cult/boss,
 /obj/structure/closet/crate/zone_loot/occult/rare,
 /turf/open/floor/engine/cult,
 /area/ruin/space/has_grav/powered)
@@ -704,6 +705,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "LG" = (
+/obj/effect/zone_mobs/cult,
 /obj/structure/closet/crate/zone_loot/occult,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)

@@ -1,0 +1,175 @@
+/**
+ * # Deliver Objectives
+ *
+ * The "bring me X" family: a typed item ask handed over at the mission pad
+ * or an outpost trader. One shared implementation covers stacks (consume N
+ * off one stack), loose items (counted one hand-over at a time), and the
+ * specialty asks (bound quest items, gas tanks, fish).
+ */
+/datum/mission_objective/deliver
+	requires_item = TRUE
+	/// The item type that satisfies the ask
+	var/required_type
+	/// Display name for the ask
+	var/required_name = "goods"
+	/// How many are asked for. Stacks consume this off one stack in a single
+	/// turn-in; loose items are handed over one at a time and counted.
+	var/required_amount = 1
+	/// Loose-item hand-overs so far
+	var/delivered_count = 0
+
+/datum/mission_objective/deliver/reset()
+	. = ..()
+	delivered_count = 0
+
+/// The ask as a short phrase: "10 iron ore" / "silver ring"
+/datum/mission_objective/deliver/proc/describe_ask()
+	return required_amount > 1 ? "[required_amount] [required_name]" : required_name
+
+/datum/mission_objective/deliver/get_progress_string()
+	if(required_amount > 1 && delivered_count > 0)
+		return "Deliver [describe_ask()] ([delivered_count]/[required_amount])"
+	return "Deliver [describe_ask()]"
+
+/datum/mission_objective/deliver/can_turn_in(obj/item/item)
+	if(!item || !istype(item, required_type))
+		return FALSE
+	if(isstack(item))
+		var/obj/item/stack/stack = item
+		if(stack.amount < required_amount)
+			return FALSE
+	return TRUE
+
+/datum/mission_objective/deliver/describe_turn_in_failure(obj/item/item)
+	if(!item)
+		return "No item provided."
+	if(!istype(item, required_type))
+		return "Wrong item type."
+	if(isstack(item))
+		var/obj/item/stack/stack = item
+		if(stack.amount < required_amount)
+			return "Need [required_amount], only have [stack.amount]."
+	return ..()
+
+/datum/mission_objective/deliver/accept_item(obj/item/item, atom/reward_anchor)
+	if(isstack(item))
+		var/obj/item/stack/stack = item
+		stack.use(required_amount)
+		complete()
+		return MISSION_ITEM_COMPLETE
+	qdel(item)
+	delivered_count++
+	if(delivered_count >= required_amount)
+		complete()
+		return MISSION_ITEM_COMPLETE
+	notify_crew("[mission.name]: [delivered_count]/[required_amount] [required_name] received.")
+	return MISSION_ITEM_PROGRESS
+
+// =========================================================================
+// BOUND ITEM — a specific quest item this mission spawned
+// =========================================================================
+
+/**
+ * Accepts only an /obj/item/mission_recovery whose binding resolves to this
+ * objective's mission — the recovery family's carry-home step.
+ */
+/datum/mission_objective/deliver/bound
+	required_name = "the objective"
+	required_amount = 1
+
+/datum/mission_objective/deliver/bound/describe_ask()
+	return mission?.objective_name || required_name
+
+/datum/mission_objective/deliver/bound/get_progress_string()
+	return "Return the [describe_ask()] to the pad"
+
+/datum/mission_objective/deliver/bound/can_turn_in(obj/item/item)
+	if(!istype(item, /obj/item/mission_recovery))
+		return FALSE
+	var/obj/item/mission_recovery/bound_item = item
+	if(bound_item.mission_ref?.resolve() != mission)
+		return FALSE
+	return bound_item.binding_serial == mission.binding_serial
+
+/datum/mission_objective/deliver/bound/describe_turn_in_failure(obj/item/item)
+	if(!item)
+		return "No item provided."
+	if(!istype(item, /obj/item/mission_recovery))
+		return "Wrong item type."
+	var/obj/item/mission_recovery/bound_item = item
+	if(bound_item.mission_ref?.resolve() != mission)
+		return "That item belongs to a different contract."
+	if(bound_item.binding_serial != mission.binding_serial)
+		return "That item's contract binding lapsed when the target relocated."
+	return ..()
+
+// =========================================================================
+// GAS TANK — a tank carrying enough of a specific gas
+// =========================================================================
+
+/**
+ * Any tank holding at least required_moles of gas_type counts; the tank is
+ * consumed with its contents. Same matching pattern as the exotic-gas
+ * buyback ledgers (shop_buyback.dm).
+ */
+/datum/mission_objective/deliver/gas_tank
+	required_type = /obj/item/tank
+	/// The /datum/gas typepath the tank must carry
+	var/gas_type
+	/// Minimum moles of that gas in the one offered tank
+	var/required_moles = 400
+
+/datum/mission_objective/deliver/gas_tank/describe_ask()
+	return "a tank holding [required_moles] mol of [required_name]"
+
+/datum/mission_objective/deliver/gas_tank/get_progress_string()
+	return "Deliver [required_moles] mol of [required_name] in one tank"
+
+/datum/mission_objective/deliver/gas_tank/can_turn_in(obj/item/item)
+	if(!istype(item, /obj/item/tank))
+		return FALSE
+	var/obj/item/tank/tank = item
+	var/datum/gas_mixture/mix = tank.return_air()
+	if(!mix || !(gas_type in mix.gases))
+		return FALSE
+	return mix.gases[gas_type][MOLES] >= required_moles
+
+/datum/mission_objective/deliver/gas_tank/describe_turn_in_failure(obj/item/item)
+	if(!item)
+		return "No item provided."
+	if(!istype(item, /obj/item/tank))
+		return "The contract wants a gas tank."
+	var/obj/item/tank/tank = item
+	var/datum/gas_mixture/mix = tank.return_air()
+	var/carried = (mix && (gas_type in mix.gases)) ? mix.gases[gas_type][MOLES] : 0
+	return "Tank holds [round(carried)]/[required_moles] mol of [required_name]."
+
+// =========================================================================
+// FISH — the angler's ask
+// =========================================================================
+
+/**
+ * Real fish, optionally over a trophy weight. Counted one hand-over at a
+ * time like any loose-item ask.
+ */
+/datum/mission_objective/deliver/fish
+	required_type = /obj/item/fish
+	required_name = "fresh fish"
+	/// Minimum weight in grams (0 = any fish)
+	var/min_weight = 0
+
+/datum/mission_objective/deliver/fish/can_turn_in(obj/item/item)
+	if(!..())
+		return FALSE
+	if(min_weight > 0)
+		var/obj/item/fish/offered_fish = item
+		if(offered_fish.weight < min_weight)
+			return FALSE
+	return TRUE
+
+/datum/mission_objective/deliver/fish/describe_turn_in_failure(obj/item/item)
+	if(item && istype(item, required_type) && min_weight > 0)
+		var/obj/item/fish/offered_fish = item
+		if(offered_fish.weight < min_weight)
+			return "Too small - [required_name] means [min_weight / 1000] kg or better."
+	return ..()

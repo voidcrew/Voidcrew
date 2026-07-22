@@ -293,6 +293,7 @@
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/crashedship/aft)
 "nl" = (
+/obj/effect/spawner/random/ship_parts/wreck,
 /obj/structure/closet/crate/zone_loot/expedition,
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/crashedship/fore)

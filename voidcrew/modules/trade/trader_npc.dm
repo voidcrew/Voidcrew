@@ -126,9 +126,11 @@
  * before the menu even opens.
  */
 /mob/living/basic/outpost_trader/proc/open_trader_menu(mob/living/user)
-	if(!shop || !outpost)
+	// outpost may legitimately be null: standalone stalls (the colosseum's
+	// lanista) run a shop with no station behind it
+	if(!shop)
 		return
-	if(outpost.is_user_barred(user))
+	if(outpost?.is_user_barred(user))
 		speak_line(TRADER_LINE_REFUSAL)
 		return
 	var/list/options = list(
@@ -373,12 +375,12 @@
 
 	var/mob/living/user = ui.user
 	var/datum/outpost_shop/shop = npc.shop
-	if(!istype(user) || !npc.outpost || !shop)
+	if(!istype(user) || !shop)
 		return
 
 	switch(action)
 		if("buy")
-			if(npc.outpost.is_user_barred(user))
+			if(npc.outpost?.is_user_barred(user))
 				npc.speak_line(TRADER_LINE_REFUSAL)
 				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
 				npc.play_denial()
@@ -400,7 +402,7 @@
 				npc.speak_line(TRADER_LINE_SALE)
 			return TRUE
 		if("sell")
-			if(npc.outpost.is_user_barred(user))
+			if(npc.outpost?.is_user_barred(user))
 				npc.speak_line(TRADER_LINE_REFUSAL)
 				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
 				npc.play_denial()
@@ -422,7 +424,7 @@
 				npc.speak_line(TRADER_LINE_SALE)
 			return TRUE
 		if("sell_all")
-			if(npc.outpost.is_user_barred(user))
+			if(npc.outpost?.is_user_barred(user))
 				npc.speak_line(TRADER_LINE_REFUSAL)
 				to_chat(user, span_warning("Trade embargo in effect. Service refused."))
 				npc.play_denial()
@@ -575,7 +577,8 @@
 				npc.balloon_alert(user, "[result]")
 				npc.play_denial()
 				return TRUE
-			npc.balloon_alert(user, "contract fulfilled!")
+			// Counted hand-overs accept the item but keep the contract open
+			npc.balloon_alert(user, QDELETED(mission) ? "contract fulfilled!" : "goods received!")
 			playsound(npc, 'sound/effects/cashregister.ogg', 50, TRUE)
 			npc.speak_line(TRADER_LINE_SALE)
 			return TRUE

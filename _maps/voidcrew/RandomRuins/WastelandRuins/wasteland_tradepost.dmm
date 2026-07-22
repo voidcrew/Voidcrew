@@ -392,6 +392,7 @@
 /turf/open/floor/carpet/red,
 /area/ruin/unpowered)
 "zz" = (
+/obj/effect/spawner/random/ship_parts/trade_post,
 /obj/structure/closet/crate/zone_loot/plunder,
 /turf/open/floor/carpet/red,
 /area/ruin/unpowered)

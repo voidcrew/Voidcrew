@@ -251,6 +251,7 @@
 /turf/open/floor/mineral/titanium/blue,
 /area/ruin/space/has_grav/derelictoutpost/dockedship)
 "ad" = (
+/obj/effect/spawner/random/ship_parts/wreck,
 /obj/structure/closet/crate/zone_loot/plunder,
 /obj/structure/alien/weeds/creature,
 /turf/open/floor/mineral/titanium/blue,

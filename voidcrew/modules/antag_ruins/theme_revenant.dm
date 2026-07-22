@@ -427,8 +427,8 @@
 
 /datum/vestige_boon/spell/widows_walk
 	name = "Widow's Walk"
-	desc = "Step out of the world of the living for the space of one held breath. Walls are a concern for people with bodies. Blessed ground refuses you, and coming back is slow, and loud."
-	grant_text = "For one heartbeat you cannot feel the floor. It is fairly sure it cannot feel you either."
+	desc = "Step out of the world of the living — but only where the living have already left it: the walk begins within arm's reach of the dead. The dead hold the door; walls are a concern for people with bodies. Blessed ground refuses you, and coming back is slow, and loud."
+	grant_text = "For one heartbeat you cannot feel the floor. It is fairly sure it cannot feel you either. Somewhere nearby, the dead notice you noticing."
 	spell_type = /datum/action/cooldown/spell/jaunt/ethereal_jaunt/vestige_widows_walk
 
 /**
@@ -639,27 +639,46 @@
 		light.flicker(20) // spooky
 
 /**
- * A sliver of the revenant's incorporeality, worn secondhand: a short
- * ethereal jaunt on the standard wizard chassis (no revenant code involved)
- * with revenant dressing. Two seconds of phasing, then a slow, audible
- * materialization the jaunt chassis enforces — arriving somewhere is the
- * loud part. Blessed ground blocks the walk, as it should.
+ * A sliver of the revenant's incorporeality, worn secondhand: an ethereal
+ * jaunt on the standard wizard chassis (no revenant code involved) with
+ * revenant dressing — and the Wake's own gate: the walk only BEGINS within
+ * arm's reach of the dead. Every other phase in the module has a gate
+ * (darkness, blood pools, glass, ash's short leash); this one's is grief.
+ * In exchange the walk itself is generous — five seconds behind the veil —
+ * and the slow, audible materialization the jaunt chassis enforces still
+ * makes arriving the loud part. Blessed ground blocks the walk, as it should.
+ * The gate is checked in can_cast_spell so a refused walk never pays the
+ * cooldown; a walker already behind the veil is never gated (belt and
+ * suspenders — the ethereal jaunt times out on its own).
  */
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/vestige_widows_walk
 	name = "Widow's Walk"
-	desc = "Step out of the world of the living for the space of one held breath, passing through walls as rumor. Coming back is slow, and loud."
+	desc = "Step out of the world of the living, passing through walls as rumor — but the walk only begins within arm's reach of the dead. Coming back is slow, and loud."
 	background_icon_state = "bg_revenant"
 	overlay_icon_state = "bg_revenant_border"
 	sound = 'sound/effects/ghost2.ogg'
 	exit_jaunt_sound = 'sound/effects/ghost2.ogg'
-	cooldown_time = 45 SECONDS
+	cooldown_time = 35 SECONDS
 	cooldown_reduction_per_rank = 0 SECONDS
 	spell_requirements = SPELL_REQUIRES_NO_ANTIMAGIC
 	antimagic_flags = MAGIC_RESISTANCE_HOLY
-	jaunt_duration = 2 SECONDS
+	jaunt_duration = 5 SECONDS
 	jaunt_in_time = 0.6 SECONDS
 	jaunt_in_type = /obj/effect/temp_visual/dir_setting/wraith
 	jaunt_out_type = /obj/effect/temp_visual/dir_setting/wraith/out
+
+/datum/action/cooldown/spell/jaunt/ethereal_jaunt/vestige_widows_walk/can_cast_spell(feedback = TRUE)
+	. = ..()
+	if(!.)
+		return FALSE
+	if(is_jaunting(owner)) // leaving the veil is never gated
+		return TRUE
+	for(var/mob/living/departed in range(1, owner))
+		if(departed.stat == DEAD)
+			return TRUE
+	if(feedback)
+		to_chat(owner, span_warning("The veil opens only at the side of the dead. Find where the living have left."))
+	return FALSE
 
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/vestige_widows_walk/do_steam_effects(turf/loc)
 	return

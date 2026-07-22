@@ -37,6 +37,7 @@
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/ruin/unpowered/xenonest)
 "c" = (
+/obj/effect/zone_mobs/bug/boss,
 /obj/structure/closet/crate/zone_loot/research/rare,
 /obj/structure/alien/weeds,
 /turf/open/misc/asteroid/basalt/lava_land_surface,

@@ -1,5 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aa" = (
+/obj/effect/zone_mobs/undead,
 /obj/structure/closet/crate/zone_loot/medical,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
@@ -436,6 +437,7 @@
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "jl" = (
+/obj/effect/zone_mobs/undead/boss,
 /obj/structure/closet/crate/zone_loot/medical/rare,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
@@ -529,6 +531,7 @@
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "sE" = (
+/obj/effect/zone_mobs/undead,
 /obj/structure/closet/crate/zone_loot/medical,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)

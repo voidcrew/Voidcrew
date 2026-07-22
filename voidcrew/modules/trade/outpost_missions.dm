@@ -19,43 +19,34 @@
 /**
  * # Outpost Supply Mission
  *
- * Delivery-style: haul the asked goods to your ship's mission pad. Pays no
- * credits — the reward is one free item rolled off the posting shop's SKU
- * list at creation time.
+ * Delivery-style: haul the asked goods to your ship's mission pad or any
+ * trader. Pays no credits — the reward is one free item rolled off the
+ * posting shop's SKU list at creation time.
  */
 /datum/mission/outpost_supply
-	name = "Supply Request: %ITEM_NAME%"
-	desc = "%AUTHOR% is paying in kit: deliver %ITEM_NAME% to your ship's mission pad and a %REWARD% comes off the shelf, free."
+	name = "Supply Request"
 	weight = 0 // never rolled by the mission subsystem; outposts post these themselves
-	requires_item = TRUE
 	value_min = 0
 	value_max = 0
 	duration = 40 MINUTES
 
-	/// The type of item required for delivery
+	/// The rolled ask
 	var/required_type
-	/// Display name for the required item
 	var/required_name
-	/// Amount required (for stacks)
 	var/required_amount = 1
 
 /datum/mission/outpost_supply/get_archetype()
 	return "procurement"
 
-/datum/mission/outpost_supply/generate_mission_details()
+/datum/mission/outpost_supply/generate_details()
 	if(!shop)
 		generation_failed = TRUE
 		return
 	author = shop.trader_name
 
-	var/list/request = length(shop.mission_requests) ? pick(shop.mission_requests) : null
-	if(!request)
-		generation_failed = TRUE
+	pick_request()
+	if(generation_failed)
 		return
-	required_type = request["type"]
-	required_name = request["name"]
-	required_amount = request["amount"] || 1
-	difficulty = request["difficulty"] || MISSION_DIFFICULTY_MEDIUM
 
 	// The pay: one free item off the shelf. Rolled from the SKU list so the
 	// reward is always something the shop actually sells.
@@ -70,50 +61,81 @@
 	// Hard asks can upgrade the pay to something off the back shelf instead
 	shop.maybe_attach_exclusive(src)
 
-	. = ..()
+/// Rolls the ask off the shop's request table. Override for themed asks.
+/datum/mission/outpost_supply/proc/pick_request()
+	var/list/request = length(shop.mission_requests) ? pick(shop.mission_requests) : null
+	if(!request)
+		generation_failed = TRUE
+		return
+	required_type = request["type"]
+	required_name = request["name"]
+	required_amount = request["amount"] || 1
+	difficulty = request["difficulty"] || MISSION_DIFFICULTY_MEDIUM
 
-/datum/mission/outpost_supply/apply_text_substitutions()
-	. = ..()
+/datum/mission/outpost_supply/build_objectives()
+	var/datum/mission_objective/deliver/ask = new
+	ask.required_type = required_type
+	ask.required_name = required_name
+	ask.required_amount = required_amount
+	add_objective(ask)
+
+/datum/mission/outpost_supply/update_text()
 	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
-	name = replacetext(name, "%ITEM_NAME%", item_text)
-	desc = replacetext(desc, "%ITEM_NAME%", item_text)
+	name = "Supply Request: [item_text]"
+	desc = "[author] is paying in kit: deliver [item_text] to your ship's mission pad or any outpost trader and a [get_reward_summary()] comes off the shelf, free."
 
-/datum/mission/outpost_supply/can_turn_in(obj/item/item)
-	if(!item || !istype(item, required_type))
-		return FALSE
-	if(istype(item, /obj/item/stack))
-		var/obj/item/stack/stack = item
-		if(stack.amount < required_amount)
-			return FALSE
-	return TRUE
+/**
+ * # Angler's Request
+ *
+ * "Pike at the general outpost wants three unusual fish. Yes, really.
+ * Bring a rod."
+ *
+ * A fish-shaped supply request posted only by outposts that actually run a
+ * fishing stall (see the shop's extra_offer_mix). Same goods-for-goods deal;
+ * trophy asks reach the exclusive shelf like any hard contract.
+ */
+/datum/mission/outpost_supply/angler
+	/// Trophy gate in grams (0 = any fish)
+	var/min_fish_weight = 0
 
-/datum/mission/outpost_supply/get_failure_reason(obj/item/item)
-	if(!item)
-		return "No item provided."
-	if(!istype(item, required_type))
-		return "Wrong item type."
-	if(istype(item, /obj/item/stack))
-		var/obj/item/stack/stack = item
-		if(stack.amount < required_amount)
-			return "Need [required_amount], only have [stack.amount]."
-	return ..()
+/datum/mission/outpost_supply/angler/get_archetype()
+	return "angling"
 
-/datum/mission/outpost_supply/consume_turned_in_item(obj/item/item)
-	if(istype(item, /obj/item/stack))
-		var/obj/item/stack/stack = item
-		stack.use(required_amount)
-	else
-		qdel(item)
+/datum/mission/outpost_supply/angler/pick_request()
+	var/static/list/fish_asks = list(
+		list("name" = "fresh fish", "amount" = 2, "min_weight" = 0, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("name" = "fresh fish", "amount" = 3, "min_weight" = 0, "difficulty" = MISSION_DIFFICULTY_EASY),
+		list("name" = "a keeper over 1.5 kg", "amount" = 1, "min_weight" = 1500, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("name" = "keepers over 1.5 kg", "amount" = 2, "min_weight" = 1500, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("name" = "a trophy catch over 2.5 kg", "amount" = 1, "min_weight" = 2500, "difficulty" = MISSION_DIFFICULTY_HARD),
+	)
+	var/list/ask = pick(fish_asks)
+	required_type = /obj/item/fish
+	required_name = ask["name"]
+	required_amount = ask["amount"]
+	difficulty = ask["difficulty"]
+	min_fish_weight = ask["min_weight"]
 
-/datum/mission/outpost_supply/get_progress_string()
-	return "Deliver [required_amount > 1 ? "[required_amount] " : ""][required_name]"
+/datum/mission/outpost_supply/angler/build_objectives()
+	var/datum/mission_objective/deliver/fish/ask = new
+	ask.required_name = required_name
+	ask.required_amount = required_amount
+	ask.min_weight = min_fish_weight
+	add_objective(ask)
+
+/datum/mission/outpost_supply/angler/update_text()
+	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
+	name = "Angler's Request: [item_text]"
+	desc = "[author] wants [item_text] — line-caught, still glistening. Yes, really. Bring a rod. \
+		Hand the catch to any outpost trader or your own mission pad and a [get_reward_summary()] comes off the shelf, free."
 
 // ===== OFFER MANAGEMENT (lives on the outpost) =====
 
 /**
  * Keeps the outpost's posted contracts topped up with a mixed archetype
- * spread. Procurement stays the bread and butter; the rest is rolled.
- * Discards failed rolls (e.g. courier with no second outpost).
+ * spread. Procurement stays the bread and butter; the rest is rolled, with
+ * the shop's own extra_offer_mix (the general outpost's angling requests)
+ * folded in. Discards failed rolls (e.g. courier with no second outpost).
  */
 /obj/structure/overmap/trader_outpost/proc/ensure_shop_offers()
 	if(!shop)
@@ -124,12 +146,17 @@
 		/datum/mission/recovery/outpost = 20,
 		/datum/mission/outpost_courier = 15,
 	)
+	var/list/mix = offer_mix
+	if(length(shop.extra_offer_mix))
+		mix = offer_mix.Copy()
+		for(var/offer_type in shop.extra_offer_mix)
+			mix[offer_type] = shop.extra_offer_mix[offer_type]
 	var/safety = 12
 	while(length(shop_offers) < OUTPOST_SHOP_OFFER_COUNT && safety-- > 0)
 		// Always keep at least one plain supply request on the board
 		var/offer_type = /datum/mission/outpost_supply
 		if(has_posted_offer_type(/datum/mission/outpost_supply))
-			offer_type = pick_weight(offer_mix)
+			offer_type = pick_weight(mix)
 		var/datum/mission/offer = new offer_type(shop)
 		if(offer.generation_failed)
 			qdel(offer)

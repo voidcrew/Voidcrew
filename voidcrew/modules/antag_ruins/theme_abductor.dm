@@ -825,6 +825,9 @@
 /datum/vestige_boon/gland_graft/grant(mob/living/user, datum/mind/owner)
 	..()
 	var/obj/item/organ/heart/gland/heal/gift = new()
+	// Decommissioned like the trial kit's graft: the upstream gland ships with
+	// 3 mind-control charges any abductor console could spend on the bearer
+	gift.mind_control_uses = 0
 	// Boons must land on plain humans, and they will — but a granting ritual
 	// should never eat the pick on an exotic body. Non-carbons get the organ
 	// in hand for later surgical installation instead.

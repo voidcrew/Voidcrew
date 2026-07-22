@@ -272,22 +272,39 @@
 /datum/action/cooldown/spell/vestige_armblade/is_valid_target(atom/cast_on)
 	return iscarbon(cast_on)
 
+// The cancel lives here: no blade to fold and no hand to grow one in means the
+// cast never happens and the cooldown is never paid — this fork's Activate()
+// ignores cast()'s return value, so an in-cast reset_spell_cooldown() is dead code
+/datum/action/cooldown/spell/vestige_armblade/before_cast(atom/cast_on)
+	. = ..()
+	if(. & SPELL_CANCEL_CAST)
+		return
+	var/mob/living/carbon/carbon_cast_on = cast_on
+	if(locate(/obj/item/melee/arm_blade) in carbon_cast_on.held_items)
+		return
+	if(!length(carbon_cast_on.get_empty_held_indexes()))
+		carbon_cast_on.balloon_alert(carbon_cast_on, "no free hand!")
+		return . | SPELL_CANCEL_CAST
+
 /datum/action/cooldown/spell/vestige_armblade/cast(mob/living/carbon/cast_on)
 	. = ..()
-	var/obj/item/blade = locate(blade_type) in cast_on.held_items
-	if(blade)
-		cast_on.visible_message(
-			span_warning("[cast_on]'s blade melts back into [cast_on.p_their()] arm!"),
-			span_notice("You fold the blade away."),
-		)
-		qdel(blade)
-		return
+	var/obj/item/melee/arm_blade/held = locate(/obj/item/melee/arm_blade) in cast_on.held_items
+	if(held)
+		var/outdated = held.type != blade_type
+		qdel(held)
+		if(!outdated)
+			cast_on.visible_message(
+				span_warning("[cast_on]'s blade melts back into [cast_on.p_their()] arm!"),
+				span_notice("You fold the blade away."),
+			)
+			return
+		// An old model from before the upgrade: the blade is NODROP, so an
+		// upgrade claimed mid-form must reshape it in place or strand it forever
 	var/obj/item/new_blade = new blade_type(cast_on)
 	if(!cast_on.put_in_hands(new_blade))
 		if(!QDELETED(new_blade)) // DROPDEL usually beat us to it
 			qdel(new_blade)
 		cast_on.balloon_alert(cast_on, "no free hand!")
-		reset_spell_cooldown()
 
 /datum/action/cooldown/spell/vestige_fleshmend
 	name = "Fleshmend"

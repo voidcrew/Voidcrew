@@ -434,6 +434,21 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 
+"xh" = (
+/obj/effect/zone_mobs/robot/boss,
+/obj/structure/closet/crate/zone_loot/armory/rare,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"xi" = (
+/obj/effect/zone_mobs/robot,
+/obj/structure/closet/crate/zone_loot/armory,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"xj" = (
+/obj/effect/zone_mobs/robot,
+/obj/structure/closet/crate/zone_loot/armory,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
 (1,1,1) = {"
 aB
 aB
@@ -727,7 +742,7 @@ aL
 aO
 ax
 ax
-ax
+xi
 aL
 aR
 aZ
@@ -1011,7 +1026,7 @@ aB
 aL
 ai
 aT
-ax
+xh
 ax
 ax
 ax
@@ -1053,7 +1068,7 @@ aZ
 Ta
 aZ
 HI
-aZ
+xj
 Tc
 aR
 aB

@@ -364,13 +364,18 @@ ADMIN_VERB(preview_zone_loot_tables, R_ADMIN|R_DEBUG, "Loot: Preview Zone Tables
 	var/cache_type = choices[choice]
 
 	var/obj/structure/closet/crate/zone_loot/sample = new cache_type(null)
+	var/datum/loot_theme/theme = GLOB.loot_themes[sample.theme]
+	if(!theme)
+		to_chat(user, span_warning("[cache_type] has no registered loot theme."))
+		qdel(sample)
+		return
 	var/list/sections = list(
-		"Green" = sample.loot_green,
-		"Yellow" = sample.loot_yellow,
-		"Red" = sample.loot_red,
-		"Rare green" = sample.rare_loot_green,
-		"Rare yellow" = sample.rare_loot_yellow,
-		"Rare red" = sample.rare_loot_red,
+		"Green" = theme.loot_green,
+		"Yellow" = theme.loot_yellow,
+		"Red" = theme.loot_red,
+		"Rare green" = theme.rare_loot_green,
+		"Rare yellow" = theme.rare_loot_yellow,
+		"Rare red" = theme.rare_loot_red,
 	)
 	var/list/html = list("<h2>[sample.name]</h2><p>[sample.loot_rolls_min]-[sample.loot_rolls_max] rolls per open[sample.rare ? "; this variant reads the rare tables first" : ""].</p>")
 	for(var/section in sections)

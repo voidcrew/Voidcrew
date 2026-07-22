@@ -54,6 +54,17 @@
 /// through live meteor traffic first (see ship_damage.dm apply_meteor_damage)
 #define EVENT_FIELD_ORE_TARGET_RATIO 0.3
 
+// Overmap parallax themes - what a crew sees out the windows while their ship sits
+// over (or inside) an overmap object. Themes are applied by the context-parallax
+// system (see "Context-aware overmap parallax" in
+// voidcrew/modules/overmap/code/modules/overmap/_overmap.dm): add a define here plus
+// a case in get_overmap_parallax_layer_types(), then tag any overmap object type (or
+// /datum/overmap/planet) with one `parallax_theme = ...` line.
+#define PARALLAX_THEME_ASTEROIDS "parallax_theme_asteroids"
+#define PARALLAX_THEME_SPACE_GAS "parallax_theme_space_gas"
+#define PARALLAX_THEME_ICEMOON "parallax_theme_icemoon"
+#define PARALLAX_THEME_PLANET "parallax_theme_planet"
+
 // Electrical storm SMES charging
 /// Base energy fed into each SMES on a ship per electrical storm effect tick, before severity scaling.
 /// Effect ticks are gated by the 3 second hazard cooldown, so this is roughly what a default

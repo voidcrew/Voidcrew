@@ -5,6 +5,8 @@
 #define SHIP_DELETE (10 MINUTES)
 #define SHIP_VIEW_RANGE 4
 #define SHIP_SPEED_MULTIPLIER_DEFAULT 1
+/// How long crews must wait between ship renames
+#define SHIP_RENAME_COOLDOWN (5 MINUTES)
 
 /// Burn direction constants for throttle system
 #define BURN_NONE 0
@@ -52,6 +54,8 @@
 	var/map_name
 	///Short memo of the ship, set by the crew, and shown to latejoiners.
 	var/memo
+	///Whether the crew has already picked a custom name. The first rename is quiet; later ones are broadcast galaxy-wide.
+	var/renamed_once = FALSE
 	///ONLY USED FOR NON-SIMULATED SHIPS. The amount per burn that this ship accelerates
 	var/acceleration_speed = 0.02
 	///Cooldown until the ship can be renamed again
@@ -67,6 +71,8 @@
 	COOLDOWN_DECLARE(job_slot_adjustment_cooldown)
 	///The overmap object the ship is docked to, if any
 	var/obj/structure/overmap/docked
+	///Cache key of the overmap parallax context last broadcast to the crew (see update_crew_parallax_context)
+	var/parallax_context_key
 	///Manifest list of people on the ship
 	var/list/manifest = list()
 	///Assoc list of remaining open job slots (job = remaining slots)
@@ -837,6 +843,25 @@
 		if(member.assigned_role?.type == captain_job.type && member.current?.client)
 			return member.current
 	return null
+
+/**
+ * Whether this mob may rename the ship: the captain always can; if no captain is
+ * available to object (dead, offline, or none assigned), any crew member can.
+ */
+/obj/structure/overmap/ship/proc/can_rename_ship(mob/living/user)
+	if(!user?.mind || !(user.mind in ship_team?.members))
+		return FALSE
+	if(is_ship_captain(user))
+		return TRUE
+	// A claimed captain who is alive and connected keeps rename authority to themselves
+	var/mob/living/claimed = claimed_captain?.current
+	if(claimed?.client && claimed.stat != DEAD)
+		return FALSE
+	// Same for a role-assigned captain
+	var/mob/living/captain_mob = get_captain()
+	if(captain_mob && captain_mob.stat != DEAD)
+		return FALSE
+	return TRUE
 
 /**
  * Claims an abandoned ship for a new owner.
@@ -1656,22 +1681,65 @@
 	if(length(turfs_to_init))
 		SSatoms.InitializeAtoms(turfs_to_init)
 
-/obj/structure/overmap/ship/proc/set_ship_name(new_name, ignore_cooldown = FALSE, bypass_same_name = FALSE)
-	if(bypass_same_name == FALSE)
-		if(!new_name || new_name == name)
-			return
-	if(!COOLDOWN_FINISHED(src, rename_cooldown))
-		return
-	if(name != initial(name))
-		priority_announce("The [name] has been renamed to the [new_name].", "Docking Announcement", sender_override = display_name)
-	message_admins("[key_name_admin(usr)] renamned vessel '[name]' to '[new_name]'")
+/**
+ * Renames the ship, propagating the new name to everything that stores a copy of it:
+ * the overmap token, the nav/combat display name, the shuttle docking port, the crew
+ * team, the ship bank account, and crew paycheck departments. Everything else
+ * (comms tags, hails, sensors, dock listings) reads `name`/`display_name` live.
+ *
+ * Input is trimmed and validated here so every caller gets the same rules.
+ * Returns TRUE on success, FALSE otherwise (bad name, same name, or on cooldown).
+ *
+ * Arguments:
+ * * new_name - The requested name. Trimmed, and rejected if empty/too long/bad characters.
+ * * user - The mob performing the rename, for feedback and logging. May be null for code/admin calls.
+ * * ignore_cooldown - Skips the cooldown check and does not start a new cooldown (code/admin use).
+ */
+/obj/structure/overmap/ship/proc/set_ship_name(new_name, mob/user, ignore_cooldown = FALSE)
+	if(!new_name)
+		return FALSE
+	new_name = reject_bad_text(trim(new_name), MAX_NAME_LEN)
+	if(!new_name)
+		if(user)
+			to_chat(user, span_warning("Invalid ship name."))
+		return FALSE
+	if(new_name == name)
+		return FALSE
+	if(!ignore_cooldown && !COOLDOWN_FINISHED(src, rename_cooldown))
+		if(user)
+			to_chat(user, span_warning("The registry was updated too recently: [DisplayTimeText(COOLDOWN_TIMELEFT(src, rename_cooldown))] until this ship can be renamed again."))
+		return FALSE
+
+	var/old_name = name
+	var/old_team_name = ship_team?.name
 	name = new_name
-	shuttle.name = new_name
-	display_name = name
+	display_name = new_name
+	if(shuttle)
+		shuttle.name = new_name
+	if(ship_team)
+		ship_team.name = new_name
+		// Keep crew paychecks pointed at the renamed ship budget
+		for(var/datum/mind/crewmate as anything in ship_team.members)
+			if(crewmate.assigned_role?.paycheck_department == old_team_name)
+				crewmate.assigned_role.paycheck_department = new_name
+	if(ship_account)
+		SSeconomy.department_accounts -= list("[ship_account.account_holder]" = "[ship_account.account_holder] Budget")
+		ship_account.account_holder = new_name
+		SSeconomy.department_accounts += list("[new_name]" = "[new_name] Budget")
+
 	if(!ignore_cooldown)
-		COOLDOWN_START(src, rename_cooldown, 5 MINUTES)
-	for(var/area/shuttle_area as anything in shuttle.shuttle_areas)
-//		shuttle_area.rename_area("[display_name] [initial(shuttle_area.name)]")
+		COOLDOWN_START(src, rename_cooldown, SHIP_RENAME_COOLDOWN)
+
+	// The first custom name is free and quiet; changing an established identity is
+	// broadcast galaxy-wide so a rename can't quietly shed a reputation.
+	if(renamed_once)
+		priority_announce("The vessel formerly registered as [old_name] has been renamed to [new_name].", "Galactic Registry")
+	renamed_once = TRUE
+
+	ship_notify("Vessel registry updated: [old_name] is now registered as [new_name].", "SHIP SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	if(user)
+		message_admins("[key_name_admin(user)] renamed vessel '[old_name]' to '[new_name]'")
+		log_shuttle("[key_name(user)] renamed ship [old_name] to [new_name]")
 	return TRUE
 
 /obj/structure/overmap/ship/proc/adjust_speed(n_x, n_y)
@@ -1805,6 +1873,62 @@
 			if(movable.client_mobs_in_contents)
 				movable.update_parallax_contents()
 
+// ===== CONTEXT-AWARE PARALLAX (see _overmap.dm for the system overview) =====
+
+/**
+ * The overmap object theming this ship's exterior view right now: whatever we're
+ * docked to (following carrier ships to THEIR context), else the first themed
+ * object sharing our overmap tile. Null = plain space.
+ */
+/obj/structure/overmap/ship/proc/get_parallax_source()
+	if(docked)
+		if(istype(docked, /obj/structure/overmap/ship))
+			var/obj/structure/overmap/ship/carrier = docked
+			if(carrier == src) // should be impossible, but never recurse into ourselves
+				return null
+			return carrier.get_parallax_source()
+		return docked.parallax_theme ? docked : null
+	var/turf/tile = loc
+	if(!istype(tile, /turf/open/overmap))
+		return null
+	for(var/obj/structure/overmap/object in tile)
+		if(object == src || !object.parallax_theme)
+			continue
+		return object
+	return null
+
+/// Overmap token moved (tile crossing, dock/undock forceMove) - re-theme the crew
+/obj/structure/overmap/ship/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	. = ..()
+	update_crew_parallax_context()
+
+/**
+ * Re-resolves the ship's parallax context and re-themes every client aboard if it
+ * changed. Cheap no-op while the context is stable, so it's safe to call from every
+ * token move. Also forwards to ships docked to us, so a carrier flying into a nebula
+ * updates its passengers' crews too.
+ */
+/obj/structure/overmap/ship/proc/update_crew_parallax_context()
+	if(!shuttle)
+		return
+	var/obj/structure/overmap/source = get_parallax_source()
+	var/new_key = source ? "[source.parallax_theme]-[REF(source)]" : null
+	if(new_key != parallax_context_key)
+		parallax_context_key = new_key
+		// Same crew-enumeration pattern as update_flight_parallax()
+		for(var/turf/shuttle_turf as anything in shuttle.return_ordered_turfs(shuttle.x, shuttle.y, shuttle.z, shuttle.dir))
+			if(!shuttle_turf || !istype(shuttle_turf.loc, shuttle.area_type))
+				continue
+			for(var/atom/movable/movable as anything in shuttle_turf)
+				if(!movable.client_mobs_in_contents)
+					continue
+				for(var/mob/client_mob as anything in movable.client_mobs_in_contents)
+					if(client_mob?.hud_used)
+						client_mob.hud_used.update_overmap_parallax(client_mob)
+	// Ships docked to us live in our contents and see whatever we see
+	for(var/obj/structure/overmap/ship/rider in contents)
+		rider.update_crew_parallax_context()
+
 // ===== ZONE TRANSITION PROCS =====
 
 /**
@@ -1923,6 +2047,10 @@
 		if(E.loading)
 			return "Empty space is loading, try again in a moment."
 
+		// Restore any stale dock geometry left over from a previous ship-to-ship
+		// or cargo-shuttle pairing before computing our placement
+		E.reset_free_reserve_docks()
+
 		// Assign port destinations and immediately dock
 		var/obj/docking_port/stationary/dock_to_use = null
 		if(E.reserve_dock && !E.first_dock_taken && !E.reserve_dock.get_docked())
@@ -1964,6 +2092,11 @@
 /obj/structure/overmap/ship/proc/dock_ships_directly(obj/structure/overmap/ship/other_ship, mob/user, instant = FALSE)
 	if(!other_ship || !shuttle || !other_ship.shuttle)
 		return "Invalid ships for docking."
+
+	// dock() refuses interdicted ships AFTER we've claimed the dock flags below -
+	// check up front so an abort can't leave the encounter's docks marked taken forever
+	if(!instant && (is_interdicted || other_ship.is_interdicted))
+		return "Cannot dock while interdicted!"
 
 	// Create or find shared empty space
 	var/obj/structure/overmap/planet/empty/E = locate() in get_turf(src)
@@ -2019,6 +2152,11 @@
 	if(!other_ship || !shuttle || !other_ship.shuttle)
 		return "Invalid ships for docking."
 
+	// dock() refuses interdicted ships AFTER we've claimed the dock flags below -
+	// check up front so an abort can't leave the encounter's docks marked taken forever
+	if(!instant && (is_interdicted || other_ship.is_interdicted))
+		return "Cannot dock while interdicted!"
+
 	// Create or find shared empty space
 	var/obj/structure/overmap/planet/empty/E = locate() in get_turf(src)
 	if(!E)
@@ -2034,6 +2172,10 @@
 
 	if(!E.reserve_dock || !E.reserve_dock_secondary)
 		return "No docking ports available in empty space."
+
+	// Restore any stale dock geometry left over from a previous ship-to-ship
+	// or cargo-shuttle pairing before computing placement
+	E.reset_free_reserve_docks()
 
 	// Check if at least one dock is available for each ship
 	var/obj/docking_port/stationary/dock_for_us
@@ -2838,6 +2980,7 @@
 
 #undef SHIP_SIZE_THRESHOLD
 #undef SHIP_SPEED_MULTIPLIER_DEFAULT
+#undef SHIP_RENAME_COOLDOWN
 
 #undef SHIP_RUIN
 #undef SHIP_DELETE

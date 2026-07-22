@@ -64,6 +64,9 @@
 	/// any shelf. The depth hook: chasing the trader's board is the sole road
 	/// to these.
 	var/list/exclusive_rewards = list()
+	/// Extra contract types this shop's board can post beyond the standard
+	/// mix, as typepath -> weight (the general outpost's angling requests)
+	var/list/extra_offer_mix = list()
 
 /datum/outpost_shop/New(obj/structure/overmap/trader_outpost/outpost)
 	..()

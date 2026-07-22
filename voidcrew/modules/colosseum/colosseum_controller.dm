@@ -619,6 +619,8 @@
 
 	sweep_arena()
 	award_prizes(length(roster))
+	// The games end, the convoy lands: the concourse gear stall restocks
+	site.restock_armory()
 
 	claim_until = world.time + COLOSSEUM_CLAIM_WINDOW
 	site.secure_vault_chamber()

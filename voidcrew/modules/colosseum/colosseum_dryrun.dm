@@ -20,6 +20,10 @@ SUBSYSTEM_DEF(colosseum_dryrun)
 	var/failures = 0
 
 /datum/controller/subsystem/colosseum_dryrun/Initialize()
+	// The MC suspends a clientless world's tick after init (sleep_offline),
+	// which freezes every sleep/timer — the harness would die at its first
+	// sleep. Same opt-out the autowiki harness uses.
+	Master.sleep_offline_after_initializations = FALSE
 	// A playerless headless round "ends" instantly and reboots the world about
 	// 45 seconds after init — hold it open or the test dies mid-flight.
 	SSticker.delay_end = TRUE
@@ -29,8 +33,11 @@ SUBSYSTEM_DEF(colosseum_dryrun)
 	return SS_INIT_SUCCESS
 
 /datum/controller/subsystem/colosseum_dryrun/proc/launch()
+	log_game("COLOSSEUM DRYRUN: launch() entered, ticker state [SSticker ? SSticker.current_state : "no ticker"]")
 	UNTIL(SSticker.current_state >= GAME_STATE_PREGAME) // MC init finished
+	log_game("COLOSSEUM DRYRUN: pregame reached (state [SSticker.current_state]), settling 15s")
 	sleep(15 SECONDS)
+	log_game("COLOSSEUM DRYRUN: settle sleep done, ticker state [SSticker.current_state]")
 	SSticker.delay_end = TRUE
 	run_test()
 
@@ -91,7 +98,7 @@ SUBSYSTEM_DEF(colosseum_dryrun)
 	report("infirmary berths 4", length(site.get_infirmary_turfs()) == 4)
 
 	// ===== MULTI-Z GALLERY =====
-	if(site.reservation?.z_size >= 2)
+	if(length(site.interior_levels) >= 2)
 		var/turf/arena_mid = site.local_turf(32, 32)
 		var/turf/over_arena = arena_mid ? GET_TURF_ABOVE(arena_mid) : null
 		report("gallery: glass deck over arena center", istype(over_arena, /turf/open/indestructible/glass))

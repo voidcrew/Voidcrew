@@ -173,15 +173,11 @@
  */
 /obj/machinery/mission_pad/proc/process_tribute_item(obj/item/item)
 	if(!tribute_negotiation)
-		message_admins("DEBUG process_tribute_item: no tribute_negotiation")
 		return
 
-	message_admins("DEBUG process_tribute_item: calling process_item_payment for [item] ([item.type])")
 	// Check if this item is accepted as tribute
 	if(tribute_negotiation.process_item_payment(item))
 		visible_message(span_notice("The [item.name] is teleported away as tribute!"))
-	else
-		message_admins("DEBUG process_tribute_item: process_item_payment returned FALSE")
 
 /obj/machinery/mission_pad/examine(mob/user)
 	. = ..()

@@ -770,6 +770,7 @@
 /turf/open/floor/iron/showroomfloor,
 /area/ruin/space/has_grav/derelictsulaco)
 "zw" = (
+/obj/effect/spawner/random/ship_parts/wreck,
 /obj/structure/closet/crate/zone_loot/armory,
 /turf/open/floor/iron/smooth,
 /area/ruin/space/has_grav/derelictsulaco)

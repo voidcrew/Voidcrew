@@ -231,7 +231,8 @@
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/hotel)
 "aa" = (
-/obj/structure/closet/crate/zone_loot/wardrobe,
+/obj/effect/zone_mobs/robot/boss,
+/obj/structure/closet/crate/zone_loot/wardrobe/rare,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/hotel)
 "ch" = (

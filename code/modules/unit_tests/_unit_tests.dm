@@ -317,6 +317,7 @@
 #include "unit_test.dm"
 #include "verify_config_tags.dm"
 #include "verify_emoji_names.dm"
+#include "voidcrew_loot.dm"
 #include "washing.dm"
 #include "weather_mob_targeting.dm"
 #include "weird_food.dm"

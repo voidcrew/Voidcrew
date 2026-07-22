@@ -15,6 +15,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	icon_state = "meteor1"
 	spread_chance = 50
 	chain_rate = 4
+	parallax_theme = PARALLAX_THEME_ASTEROIDS // crews over/inside the field see drifting asteroids
 	/// Notable minerals shown on the survey report — keep in sync with ore_weights
 	var/mineral_types = list(/datum/material/iron, /datum/material/plasma, /datum/material/silver, /datum/material/titanium, /datum/material/gold)
 
@@ -521,24 +522,33 @@ GLOBAL_LIST_INIT(nebula_gas_scoop_rates, list(
 	/datum/gas/nitrium = 3,
 ))
 
+/// All live nebula event tiles (gas-harvest missions poll this for what's scoopable)
+GLOBAL_LIST_EMPTY(nebula_events)
+
 /obj/structure/overmap/event/nebula
 	name = "nebula"
 	icon_state = "nebula"
 	chain_rate = 8
 	spread_chance = 75
 	opacity = TRUE
+	parallax_theme = PARALLAX_THEME_SPACE_GAS // crews inside see space gas, tinted below
 	/// The /datum/gas typepath this nebula carries. Null rolls one from the
 	/// zone band's table on Init; the fixed subtypes below force a specific gas.
 	var/datum/gas/gas_type
 
 /obj/structure/overmap/event/nebula/Initialize(mapload)
 	. = ..()
+	GLOB.nebula_events += src
 	if(!gas_type)
 		var/band = SSovermap.get_zone_band_for_turf(get_turf(src))
 		var/list/table = GLOB.nebula_gas_tables_by_band["[band]"] || GLOB.nebula_gas_tables_by_band["[ZONE_GREEN]"]
 		gas_type = pick_weight(table)
 	name = "[LOWER_TEXT(get_gas_name())] nebula"
 	color = initial(gas_type.primary_color)
+
+/obj/structure/overmap/event/nebula/Destroy()
+	GLOB.nebula_events -= src
+	return ..()
 
 /// Display name of the carried gas, for survey readouts and examine
 /obj/structure/overmap/event/nebula/proc/get_gas_name()
@@ -549,6 +559,11 @@ GLOBAL_LIST_INIT(nebula_gas_scoop_rates, list(
 /// Base harvest rate (mol/s at stock parts) for this nebula's gas
 /obj/structure/overmap/event/nebula/proc/get_scoop_rate()
 	return GLOB.nebula_gas_scoop_rates[gas_type] || 0
+
+/// Tint the crew's space-gas parallax with the carried gas' color (set in Initialize)
+/obj/structure/overmap/event/nebula/configure_parallax_layer(atom/movable/screen/parallax_layer/layer)
+	if(color)
+		layer.add_atom_colour(color, ADMIN_COLOUR_PRIORITY)
 
 // Fixed-gas variants for admin spawning / mapped encounters — natural spawns
 // stay the base type and roll from their zone band's table instead

@@ -199,6 +199,7 @@
 /area/ruin/space/has_grav/powered)
 "aO" = (
 /obj/effect/turf_decal/delivery,
+/obj/effect/zone_mobs/robot,
 /obj/structure/closet/crate/zone_loot/industrial,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
@@ -274,6 +275,7 @@
 /area/ruin/space/has_grav/powered)
 "bs" = (
 /obj/effect/turf_decal/delivery,
+/obj/effect/zone_mobs/robot,
 /obj/structure/closet/crate/zone_loot/industrial,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/space/has_grav/powered)
@@ -506,6 +508,7 @@
 /area/ruin/space/has_grav/powered)
 "Ec" = (
 /obj/effect/turf_decal/delivery,
+/obj/effect/zone_mobs/robot/boss,
 /obj/structure/closet/crate/zone_loot/industrial/rare,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)

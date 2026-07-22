@@ -1,27 +1,26 @@
 /**
  * # Survey Mission
  *
- * A mission that requires surveying celestial objects using the survey console.
- * Tracks surveys via the COMSIG_VOIDCREW_SURVEY_COMPLETED signal.
+ * Scan celestial objects with the orbital survey console. One scan objective,
+ * generated off a static table of asks.
  */
 /datum/mission/survey
 	name = "Survey Contract"
-	desc = "Use the orbital survey console to scan %AMOUNT% %TARGET_NAME%."
 	weight = 10
 
-	/// Type key of celestial objects to survey (e.g., "planets", "asteroids", or "any")
+	/// The rolled ask (kept for UI keys)
 	var/target_type = "any"
-	/// Display name for the target type (plural)
 	var/target_name = "celestial objects"
-	/// Display name for the target type (singular)
 	var/target_name_singular = "celestial object"
-	/// Number of objects required to survey
 	var/required_amount = 3
-	/// Current progress
-	var/current_amount = 0
+	/// The scan objective, for UI progress keys
+	var/datum/mission_objective/scan_celestial/scan
 
-/datum/mission/survey/generate_mission_details()
-	// Define survey targets with their properties
+/datum/mission/survey/Destroy()
+	scan = null
+	return ..()
+
+/datum/mission/survey/generate_details()
 	// Types match the keys from survey_research.survey_objects_by_type
 	var/static/list/survey_targets = list(
 		// Easy - common, easy to find objects
@@ -51,14 +50,14 @@
 		/obj/item/gun/ballistic/automatic/wt550,
 	)
 
-	var/list/target = pick(survey_targets)
-	target_type = target["type"]
-	target_name = target["name"]
-	target_name_singular = target["name_singular"]
-	required_amount = target["amount"]
-	value_min = target["value_min"]
-	value_max = target["value_max"]
-	difficulty = target["difficulty"]
+	var/list/ask = pick(survey_targets)
+	target_type = ask["type"]
+	target_name = ask["name"]
+	target_name_singular = ask["name_singular"]
+	required_amount = ask["amount"]
+	value_min = ask["value_min"]
+	value_max = ask["value_max"]
+	difficulty = ask["difficulty"]
 
 	// Assign random item reward based on difficulty
 	switch(difficulty)
@@ -68,75 +67,23 @@
 		if(MISSION_DIFFICULTY_HARD)
 			mission_reward = pick(hard_rewards) // Always get a reward for hard
 
-	// Call parent to randomize value and generate author
-	. = ..()
+/datum/mission/survey/build_objectives()
+	scan = new
+	scan.target_type = target_type
+	scan.target_name = target_name
+	scan.target_name_singular = target_name_singular
+	scan.required_amount = required_amount
+	add_objective(scan)
 
-/datum/mission/survey/apply_text_substitutions()
-	. = ..()
+/datum/mission/survey/update_text()
 	var/display_name = required_amount == 1 ? target_name_singular : target_name
-	name = replacetext(name, "%AMOUNT%", "[required_amount]")
-	name = replacetext(name, "%TARGET_NAME%", display_name)
-	desc = replacetext(desc, "%AMOUNT%", "[required_amount]")
-	desc = replacetext(desc, "%TARGET_NAME%", display_name)
-
-/datum/mission/survey/start_mission(obj/structure/overmap/ship/ship)
-	. = ..()
-	if(!.)
-		return FALSE
-
-	// Register for survey completion signals
-	RegisterSignal(ship, COMSIG_VOIDCREW_SURVEY_COMPLETED, PROC_REF(on_survey_completed))
-	return TRUE
-
-/datum/mission/survey/Destroy()
-	if(servant)
-		UnregisterSignal(servant, COMSIG_VOIDCREW_SURVEY_COMPLETED)
-	return ..()
-
-/**
- * Called when the ship completes a survey.
- * * source - The ship that completed the survey
- * * celestial_type - The type key of the surveyed object (e.g., "planets", "asteroids")
- */
-/datum/mission/survey/proc/on_survey_completed(datum/source, celestial_type)
-	SIGNAL_HANDLER
-
-	if(failed || completed)
-		return
-
-	// Check if this survey counts toward our goal
-	if(target_type == "any" || celestial_type == target_type)
-		current_amount++
-
-		// Notify crew of progress
-		if(servant && current_amount < required_amount)
-			var/display_name = required_amount == 1 ? target_name_singular : target_name
-			servant.ship_notify("Surveyed [current_amount]/[required_amount] [display_name].", "MISSION PROGRESS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify2.ogg', 50)
-
-/datum/mission/survey/can_complete()
-	if(failed || completed)
-		return FALSE
-	return current_amount >= required_amount
-
-/datum/mission/survey/get_progress_string()
-	var/display_name = required_amount == 1 ? target_name_singular : target_name
-	return "[current_amount]/[required_amount] [display_name]"
-
-/datum/mission/survey/get_failure_reason(obj/item/item)
-	if(failed)
-		return "Mission already failed."
-	if(completed)
-		return "Mission already completed."
-	if(current_amount < required_amount)
-		var/remaining = required_amount - current_amount
-		var/display_name = remaining == 1 ? target_name_singular : target_name
-		return "Need to survey [remaining] more [display_name]."
-	return ..()
+	name = "Survey Contract: [display_name]"
+	desc = "Use the orbital survey console to scan [required_amount] [display_name]."
 
 /datum/mission/survey/get_ui_data()
 	var/list/data = ..()
 	data["target_type"] = target_type
 	data["target_name"] = target_name
 	data["required_amount"] = required_amount
-	data["current_amount"] = current_amount
+	data["current_amount"] = scan ? scan.current_amount : 0
 	return data

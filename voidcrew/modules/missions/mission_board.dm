@@ -5,7 +5,6 @@
  * - View available and active missions
  * - Accept new missions
  * - Turn in completed missions
- * - Captain can adjust crew share percentage
  */
 /obj/machinery/computer/mission_board
 	name = "mission board"
@@ -196,7 +195,8 @@
 				balloon_alert(usr, result)
 				playsound(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE)
 			else
-				balloon_alert(usr, "mission completed!")
+				// Counted hand-overs accept the item but keep the mission open
+				balloon_alert(usr, QDELETED(mission) ? "mission completed!" : "turn-in accepted!")
 				playsound(src, 'sound/machines/ding.ogg', 50, TRUE)
 			return TRUE
 

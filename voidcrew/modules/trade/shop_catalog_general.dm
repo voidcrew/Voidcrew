@@ -106,6 +106,10 @@
 		/datum/shop_buyback/general/bear_pelt,
 	)
 	// Waystation restocking: gentle asks for the outer ring
+	// Pike's fishing stall makes this the outpost that posts angling requests
+	extra_offer_mix = list(
+		/datum/mission/outpost_supply/angler = 15,
+	)
 	mission_requests = list(
 		list("type" = /obj/item/stack/ore/iron, "name" = "iron ore", "amount" = 15, "difficulty" = MISSION_DIFFICULTY_EASY),
 		list("type" = /obj/item/stack/sheet/glass, "name" = "glass sheets", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_EASY),

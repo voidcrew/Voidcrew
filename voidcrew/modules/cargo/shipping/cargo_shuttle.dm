@@ -122,6 +122,10 @@
 	// Moving causes baseturfs accumulation issues
 	destroy_shuttle()
 
+	// Restore the freed reserve dock's default geometry - we left it resized and
+	// parked right against the player ship's dock
+	docked_at?.reset_free_reserve_docks()
+
 	docked_at = null
 
 /**
@@ -434,6 +438,10 @@
 
 	// Now fully destroy the shuttle (don't move to transit first - causes baseturfs issues)
 	destroy_shuttle()
+
+	// Restore the freed reserve dock's default geometry - we left it resized and
+	// parked right against the player ship's dock
+	docked_at?.reset_free_reserve_docks()
 
 	state = CARGO_SHUTTLE_AWAY
 	target_ship = null

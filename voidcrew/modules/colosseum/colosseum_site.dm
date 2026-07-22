@@ -4,19 +4,22 @@
  * A monumental PvP event venue surfaced mid-round by the Grand Colosseum
  * dynamic event (colosseum_event.dm), never at roundstart. One per round.
  *
- * Mirrors the trader-outpost pattern: the interior template loads permanently
- * into a turf reservation, ships dock into per-ship hangar berths
- * (voidcrew/modules/trade/outpost_hangar.dm) and ride the alcove elevator up to
- * the concourse. The building itself is indestructible by construction — every
- * structural turf in the template is /turf/closed/indestructible or
- * /turf/open/indestructible, and the only ways onto the fighting floor are the
- * ten id-tagged poddoors this site collects at load.
+ * Mirrors the trader-outpost pattern for docking: ships dock into per-ship
+ * hangar berths (voidcrew/modules/trade/outpost_hangar.dm) and ride the alcove
+ * elevator up to the concourse. The building itself is indestructible by
+ * construction — every structural turf in the template is
+ * /turf/closed/indestructible or /turf/open/indestructible, and the only ways
+ * onto the fighting floor are the ten id-tagged poddoors this site collects at
+ * load.
  *
- * The venue is two levels: the arena floor (dmm z2) and an upstairs
- * observation gallery (dmm z1) — an openspace ring behind an indestructible
- * glass parapet, plus a sealed glass-deck cross over the arena, reached by the
- * two grand staircases in the south stands. z-slices are stacked into a
- * virtual z-stack at load; every landmark coordinate (and the dry-run
+ * The venue is two levels: the arena floor (dmm z1) and an upstairs
+ * observation gallery (dmm z2) — an openspace ring behind an indestructible
+ * glass parapet, reached by the staircases in the lobby pockets. The file
+ * follows the standard tg multi-z convention (z1 = bottom), so editors pair
+ * the floors correctly. Unlike trader outposts the interior loads onto REAL
+ * stacked z-levels minted at open (linked with ZTRAIT_UP/ZTRAIT_DOWN, so the
+ * engine's native multiz rendering and plane offsets apply — no
+ * reservation-faked verticality). Every landmark coordinate (and the dry-run
  * harness's) is expressed on the arena-floor slice.
  *
  * Unlike trader outposts the site is event-spawned, but like them it never
@@ -31,9 +34,9 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 /datum/map_template/colosseum
 	name = "Grand Colosseum"
 	mappath = "voidcrew/_maps/map_files/events/grand_colosseum_main.dmm"
-	/// Number of z-slices in the map file. Slice 1 is the TOP of the virtual
-	/// z-stack (/datum/turf_reservation indexes top-down), so a multi-z venue
-	/// puts its observation deck at dmm z1 and the arena floor at the last z.
+	/// Number of z-slices in the map file. Standard tg multi-z convention:
+	/// slice 1 is the BOTTOM of the stack (the arena floor), higher slices
+	/// stack upward. load_level() loads slice i onto the i-th minted z-level.
 	var/z_count = 1
 
 /datum/map_template/colosseum/preload_size(path, cache)
@@ -43,10 +46,9 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 
 /**
  * Loads a single z-slice of the (possibly multi-z) map file at T, mirroring
- * /datum/map_template/load for one slice. Slices are stacked into a
- * virtual-z turf reservation the same way /datum/lazy_template does it:
- * every slice lands on the same real z-level, side by side, and
- * GET_TURF_ABOVE/BELOW resolve between them through the reservation.
+ * /datum/map_template/load for one slice. load_level() places each slice on
+ * its own real z-level of the venue's stack, so GET_TURF_ABOVE/BELOW resolve
+ * through the engine's own z linkage.
  */
 /datum/map_template/colosseum/proc/load_z_slice(turf/placement, slice)
 	if(!placement)
@@ -136,8 +138,10 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	var/template_type = /datum/map_template/colosseum
 	/// The interior template instance
 	var/datum/map_template/colosseum/template
-	/// The permanent turf reservation holding the interior
-	var/datum/turf_reservation/reservation
+	/// The real z-levels holding the interior, bottom (arena floor) to top
+	/// (gallery). Minted once by load_level(); real z-levels cannot be
+	/// unminted, and the venue never unloads anyway.
+	var/list/datum/space_level/interior_levels
 	/// Whether the interior has been loaded
 	var/loaded = FALSE
 	/// Whether the interior is currently loading
@@ -152,6 +156,8 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	var/obj/machinery/colosseum_vault/spoils_vault
 	/// The wagering hall's bookmaker console (mapped, or fallback-spawned at link)
 	var/obj/machinery/computer/colosseum_bookmaker/bookmaker
+	/// The concourse gear stall's lanista (mapped, or fallback-spawned at link)
+	var/mob/living/basic/outpost_trader/colosseum/armory_trader
 
 	/// Arena gate poddoors, keyed by mapped id ("colo_gate_red" -> list of doors)
 	var/list/gate_doors = list()
@@ -185,6 +191,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	signup_console = null
 	spoils_vault = null
 	bookmaker = null
+	armory_trader = null
 	// Admin deletion must not leak hangar reservations
 	for(var/datum/outpost_berth/berth as anything in berths)
 		if(berth)
@@ -200,6 +207,9 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	area_turfs.Cut()
 	landmark_turfs.Cut()
 	template_bottom_left = null
+	// The interior z-levels themselves persist — z-levels can't be deleted.
+	// Admin-deleting the site just leaves them as sealed, unreachable space.
+	interior_levels = null
 	return ..()
 
 /obj/structure/overmap/colosseum/examine(mob/user)
@@ -265,11 +275,13 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 // ===== INTERIOR LOAD / LINK =====
 
 /**
- * Loads the colosseum interior into a permanent turf reservation.
- * Same approach as trader outposts: load once, keep for the round.
+ * Loads the colosseum interior onto freshly minted REAL z-levels, one per map
+ * slice, linked into a stack with ZTRAIT_UP/ZTRAIT_DOWN. Load once, keep for
+ * the round — z-levels cannot be unminted, which the permanent venue never
+ * needed anyway.
  */
 /obj/structure/overmap/colosseum/proc/load_level()
-	if(reservation || loading)
+	if(loading || length(interior_levels))
 		return
 	loading = TRUE
 
@@ -281,25 +293,39 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 		loading = FALSE
 		return
 
-	reservation = SSmapping.request_turf_block_reservation(template.width, template.height, template.z_count)
-	if(!reservation)
-		log_mapping("COLOSSEUM: turf reservation request failed ([template.width]x[template.height]x[template.z_count]).")
-		loading = FALSE
-		return
+	// Mint the stack bottom-up with LoadGroup-style trait autosetup (bottom
+	// gets UP, top gets DOWN, middles both) so manage_z_level assigns real
+	// plane offsets. GET_TURF_ABOVE/update_plane_tracking assume linked levels
+	// sit on consecutive z indices; back-to-back add_new_zlevel calls guarantee
+	// that (no sleeps between our calls), the check below is pure paranoia.
+	interior_levels = list()
+	for(var/stack_index in 1 to template.z_count)
+		var/list/level_traits = list()
+		if(stack_index > 1)
+			level_traits[ZTRAIT_DOWN] = TRUE
+		if(stack_index < template.z_count)
+			level_traits[ZTRAIT_UP] = TRUE
+		var/datum/space_level/level = SSmapping.add_new_zlevel("Grand Colosseum ([stack_index] of [template.z_count])", level_traits)
+		if(length(interior_levels) && level.z_value != interior_levels[length(interior_levels)].z_value + 1)
+			log_mapping("COLOSSEUM: interior z-levels came out non-consecutive ([interior_levels[length(interior_levels)].z_value] then [level.z_value]) — multiz linkage would be wrong, aborting load.")
+			loading = FALSE
+			return
+		interior_levels += level
 
-	// The virtual z-stack indexes 1 = top … z_size = bottom. The arena floor is
-	// always the file's LAST slice, and every landmark coordinate (DESIGN.md,
-	// local_turf) is expressed on it.
-	var/turf/bottom_left = reservation.bottom_left_turfs[reservation.z_size]
-	template_bottom_left = bottom_left
+	var/placement_x = round((world.maxx - template.width) / 2) + 1
+	var/placement_y = round((world.maxy - template.height) / 2) + 1
+	// The arena floor is always the file's FIRST slice, and every landmark
+	// coordinate (DESIGN.md, local_turf) is expressed on it.
+	template_bottom_left = locate(placement_x, placement_y, interior_levels[1].z_value)
 
 	var/load_success = TRUE
 	try
 		// Bottom-up, so openspace on upper slices initializes with its
-		// below-turf already in place.
-		for(var/slice in template.z_count to 1 step -1)
-			if(!template.load_z_slice(reservation.bottom_left_turfs[slice], slice))
-				log_mapping("COLOSSEUM: failed to load z-slice [slice].")
+		// below-turf already in place. dmm slice 1 is the bottom of the stack.
+		for(var/stack_index in 1 to template.z_count)
+			var/datum/space_level/level = interior_levels[stack_index]
+			if(!template.load_z_slice(locate(placement_x, placement_y, level.z_value), stack_index))
+				log_mapping("COLOSSEUM: failed to load z-slice [stack_index].")
 				load_success = FALSE
 				break
 	catch(var/exception/e)
@@ -307,8 +333,8 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 		load_success = FALSE
 
 	if(!load_success)
-		qdel(reservation)
-		reservation = null
+		// The minted levels can't be freed; leave them referenced so a retry
+		// can't mint more. open_venue() retires the site on !loaded.
 		template_bottom_left = null
 		loading = FALSE
 		return
@@ -331,16 +357,19 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
  * it only ever runs once per load, but collections are rebuilt from scratch.
  */
 /obj/structure/overmap/colosseum/proc/link_interior()
-	if(!reservation || !length(reservation.bottom_left_turfs))
+	if(!template_bottom_left || !length(interior_levels))
 		return
 	gate_doors = list()
 	area_turfs = list()
 	landmark_turfs = list()
-	// Every slice of the virtual z-stack — a multi-z venue can mount boards
+	// Every level of the z-stack — a multi-z venue can mount boards
 	// (or, one day, gates/landmarks) on its upper decks too.
 	var/list/interior_turfs = list()
-	for(var/z_idx in 1 to length(reservation.bottom_left_turfs))
-		interior_turfs += block(reservation.bottom_left_turfs[z_idx], reservation.top_right_turfs[z_idx])
+	for(var/datum/space_level/level as anything in interior_levels)
+		interior_turfs += block(
+			locate(template_bottom_left.x, template_bottom_left.y, level.z_value),
+			locate(template_bottom_left.x + template.width - 1, template_bottom_left.y + template.height - 1, level.z_value),
+		)
 	for(var/turf/interior_turf as anything in interior_turfs)
 		var/area/turf_area = interior_turf.loc
 		if(istype(turf_area, /area/voidcrew/colosseum))
@@ -353,6 +382,10 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 		for(var/obj/effect/landmark/colosseum/colo_mark in interior_turf)
 			LAZYADDASSOCLIST(landmark_turfs, colo_mark.type, interior_turf)
 			qdel(colo_mark)
+		// The gear stall's shopkeeper is self-sufficient (owns its own shop
+		// datum) — indexing it here only wires the post-match restock hook
+		for(var/mob/living/basic/outpost_trader/colosseum/merchant in interior_turf)
+			armory_trader = merchant
 		for(var/obj/machinery/machine in interior_turf)
 			if(istype(machine, /obj/machinery/outpost_elevator))
 				var/obj/machinery/outpost_elevator/panel = machine
@@ -399,6 +432,11 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 			bookmaker = new(book_turf)
 			bookmaker.site = src
 			log_mapping("COLOSSEUM: template has no bookmaker console — fallback-spawned one at ([book_turf.x], [book_turf.y]).")
+	if(!armory_trader)
+		var/turf/stall_turf = get_random_lobby_turf()
+		if(stall_turf)
+			armory_trader = new(stall_turf)
+			log_mapping("COLOSSEUM: template has no gear stall lanista — fallback-spawned one at ([stall_turf.x], [stall_turf.y]).")
 	if(!length(lobby_alcove_turfs))
 		log_mapping("COLOSSEUM: template has no elevator alcove landmarks — ships cannot reach the concourse.")
 	if(!length(lobby_panels))
@@ -475,6 +513,15 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	for(var/mob/player as anything in GLOB.player_list)
 		if(mob_at_venue(player))
 			to_chat(player, message)
+
+/// Post-match supply run for the gear stall: tops up core stock, swaps
+/// sold-out rotating slots and rerolls the special. Fired by the match
+/// controller when a match resolves.
+/obj/structure/overmap/colosseum/proc/restock_armory()
+	if(QDELETED(armory_trader) || !armory_trader.shop)
+		return
+	armory_trader.shop.convoy_restock()
+	armory_trader.speak_line(TRADER_LINE_RESTOCK)
 
 /// Refreshes every ETA board (state flips re-arm their countdown processing).
 /obj/structure/overmap/colosseum/proc/update_status_displays()
@@ -555,7 +602,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 
 	load_level()
 
-	if(!reservation || !loaded)
+	if(!loaded)
 		acting.state = prev_state
 		concerned = FALSE
 		to_chat(user, span_warning("Failed to load the location."))
