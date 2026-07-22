@@ -641,3 +641,7 @@
   CabinetOnFire:
   - refactor: Ruin loading should now be more robust and should spawn less orphaned
       genturfs
+  lelandkemble:
+  - code_imp: converted calls to attackby() to calls to item_interaction()
+  - bugfix: MODsuit drill module manual activation works again
+  - bugfix: you can put c4s on safes
