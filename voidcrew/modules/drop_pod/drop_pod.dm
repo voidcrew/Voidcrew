@@ -75,17 +75,16 @@
 		return TRUE
 	if(I.tool_behaviour == TOOL_MULTITOOL)
 		var/obj/item/multitool/tool = I
-		if(tool.buffer)
-			linked_pad  = tool.buffer
-			balloon_alert(user, "Data uploaded from buffer")
+		if(istype(tool.buffer, /obj/machinery/quantumpad))
+			linked_pad = tool.buffer
+			balloon_alert(user, "quantum pad linked")
 			return TRUE
-		else
-			balloon_alert(user, "No quantum pad data found!")
-			return TRUE
+		balloon_alert(user, "no quantum pad data found!")
+		return TRUE
 	return ..()
 
 /obj/structure/closet/supplypod/drop_pod/proc/teleport()
-	if(teleport_used)
+	if(teleport_used || teleporting)
 		return
 	if(!linked_pad)
 		return
@@ -95,20 +94,19 @@
 	addtimer(CALLBACK(src, PROC_REF(teleport_contents)), teleport_speed)
 
 /obj/structure/closet/supplypod/drop_pod/proc/teleport_contents()
-	// teleporting = FALSE
-	teleport_used = TRUE
+	teleporting = FALSE
+	if(teleport_used)
+		return
 	if(QDELETED(linked_pad) || linked_pad.machine_stat & (BROKEN|NOPOWER))
+		// Failed ping doesn't consume the one-shot teleport
 		if(ui_user)
 			to_chat(ui_user, span_warning("Linked pad is not responding to ping. Teleport aborted."))
 		return
-	// last_teleport = world.time
+	teleport_used = TRUE
 
-	// use a lot of power
-	// use_energy(active_power_usage / power_efficiency)
 	sparks()
 	linked_pad.sparks()
 
-	// flick("qpad-beam", src)
 	playsound(get_turf(src), 'sound/items/weapons/emitter2.ogg', 25, TRUE)
 	flick("qpad-beam", linked_pad)
 	playsound(get_turf(linked_pad), 'sound/items/weapons/emitter2.ogg', 25, TRUE)
@@ -154,8 +152,13 @@
 	pod.remove_eye_control(owner)
 
 /obj/structure/closet/supplypod/drop_pod/Destroy()
-	. = ..()
+	if(map_user)
+		remove_eye_control(map_user)
+	QDEL_NULL(eyeobj)
+	QDEL_LIST(actions)
 	unsync_research_servers()
+	linked_pad = null
+	return ..()
 
 /obj/structure/closet/supplypod/drop_pod/setClosed()
 	if(opened == FALSE)
@@ -236,8 +239,10 @@
 				balloon_alert(ui_user, "close doors first!")
 				to_chat(ui_user, text = "cannot launch pod as doors are not closed")
 				return
+			// ui.close() nulls ui_user via ui_close - grab the user first
+			var/mob/living/drop_user = ui_user
 			ui.close()
-			choose_random_drop_location(ui_user)
+			choose_random_drop_location(drop_user)
 		if("map")
 			if(opened)
 				balloon_alert(ui_user, "close doors first!")
@@ -288,13 +293,13 @@
 		if(isProbablyWallMounted(obj_to_insert))
 			return !!reverse_option_list["Wallmounted"]
 
-		if(!obj_to_insert.anchored && reverse_option_list["Unanchored"])
+		if(!obj_to_insert.anchored && reverse_option_list["Objects"])
 			return TRUE
 		if(obj_to_insert.anchored && !ismecha(obj_to_insert) && reverse_option_list["Anchored"]) //Mecha are anchored but there is a separate option for them
 			return TRUE
 		if(ismecha(obj_to_insert) && reverse_option_list["Mecha"])
 			return TRUE
-		return TRUE
+		return FALSE
 
 	else if (isturf(to_insert))
 		if(isfloorturf(to_insert) && reverse_option_list["Floors"])
@@ -392,11 +397,11 @@
 		if(istype(area, /area/overmap_encounter/planetoid))
 			planet_areas += area
 	if(length(planet_areas) < 1)
-		if(debug_enabled)
-			if(istype(current_planet, /obj/structure/overmap/planet/empty))
-				var/area/space/space_area = get_area_instance_from_text("/area/space")
+		if(debug_enabled && istype(current_planet, /obj/structure/overmap/planet/empty))
+			var/area/space/space_area = get_area_instance_from_text("/area/space")
+			if(space_area)
 				planet_areas += space_area
-		else
+		if(length(planet_areas) < 1)
 			balloon_alert(user, "nowhere to land")
 			return
 	for (var/i in 1 to 5)
@@ -590,20 +595,22 @@
 	remove_eye_control(map_user)
 
 /obj/structure/closet/supplypod/drop_pod/proc/remove_eye_control(mob/living/user)
-	if(isnull(user?.client))
-		return
+	// Clean up even if the user is gone or clientless - otherwise the pod stays
+	// flagged as in-use forever and the eye leaks
+	if(user)
+		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
+		for(var/datum/action/actions_removed as anything in actions)
+			actions_removed.Remove(user)
+		user.reset_perspective(null)
+		if(user.client && eyeobj)
+			user.client.images -= eyeobj.placed_image
+			user.client.images -= eyeobj.placement_image
+		if(user.remote_control == eyeobj)
+			user.remote_control = null
 
-	UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
-
-	for(var/datum/action/actions_removed as anything in actions)
-		actions_removed.Remove(user)
-	eyeobj.clear_camera_chunks()
-
-	user.reset_perspective(null)
-	user.client.images -= eyeobj.placed_image
-	user.client.images -= eyeobj.placement_image
-	user.remote_control = null
+	eyeobj?.clear_camera_chunks()
 	map_user = null
+	eye_initialized = FALSE
 	playsound(src, 'sound/machines/terminal/terminal_off.ogg', 25, FALSE)
 	QDEL_NULL(eyeobj)
 

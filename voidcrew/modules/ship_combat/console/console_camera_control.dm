@@ -85,13 +85,6 @@
 		// Register for hull damage to update static when breaches occur
 		combat_eye.RegisterSignal(target_ship, COMSIG_SHIP_HULL_HIT, TYPE_PROC_REF(/mob/eye/camera/remote/ship_combat, on_target_hull_hit))
 
-	// Register for ship movement to detect when ships move out of range
-	// Use COMSIG_MOVABLE_MOVED to catch both engine burns AND momentum-based movement
-	// Note: Zone change signals are already registered in complete_targeting() and attempt_ship_connection()
-	RegisterSignal(target_ship, COMSIG_MOVABLE_MOVED, PROC_REF(on_target_ship_moved_attack))
-	if(current_ship)
-		RegisterSignal(current_ship, COMSIG_MOVABLE_MOVED, PROC_REF(on_our_ship_moved_attack))
-
 	// Get the mobile docking port turf for the TARGET ship
 	var/turf/target_turf = get_target_ship_port_turf()
 	if(!target_turf)
@@ -100,6 +93,15 @@
 	if(!target_turf)
 		to_chat(user, span_warning("Cannot locate target ship interior!"))
 		return FALSE
+
+	// Register for ship movement to detect when ships move out of range
+	// Use COMSIG_MOVABLE_MOVED to catch both engine burns AND momentum-based movement
+	// Registered only after every failure check above, so a failed activation can't
+	// leave signals behind (which would runtime as duplicates on the next attempt)
+	// Note: Zone change signals are already registered in complete_targeting() and attempt_ship_connection()
+	RegisterSignal(target_ship, COMSIG_MOVABLE_MOVED, PROC_REF(on_target_ship_moved_attack), override = TRUE)
+	if(current_ship)
+		RegisterSignal(current_ship, COMSIG_MOVABLE_MOVED, PROC_REF(on_our_ship_moved_attack), override = TRUE)
 
 	attack_mode = TRUE
 

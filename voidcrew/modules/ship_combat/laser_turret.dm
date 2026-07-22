@@ -526,7 +526,7 @@
 	// Drain cell charge based on severity (heavy EMP = more drain)
 	if(cell)
 		var/drain_amount = cell.maxcharge * (0.5 / severity)  // 50% drain for severity 1, 25% for severity 2
-		cell.use(drain_amount)
+		cell.use(drain_amount, force = TRUE)  // force - drain whatever is left even below the target amount
 
 	// Disable turret temporarily - longer for stronger EMP
 	var/disable_time = rand(5 SECONDS, 15 SECONDS) / severity

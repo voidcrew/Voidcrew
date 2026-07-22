@@ -184,7 +184,7 @@
 		to_chat(user, span_danger("Target lock acquired on [target_ship.display_name]!"))
 	current_ship?.ship_notify("Target lock acquired: [target_ship.display_name]", "TARGETING", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
-	return TRUE\
+	return TRUE
 
 /// Cancels an in-progress targeting attempt
 /obj/machinery/computer/camera_advanced/ship_combat/proc/cancel_targeting()

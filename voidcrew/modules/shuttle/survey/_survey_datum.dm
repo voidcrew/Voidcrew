@@ -107,7 +107,9 @@
 	. = ..()
 	visited = object.visited
 	weather_type = object.weather_type
-	// Set the number of players found on the planet
+	// Set the number of players found on the planet (unloaded planets have no mapzone yet)
+	if(!object.mapzone || !length(object.mapzone.z_levels))
+		return
 	var/datum/space_level/level = object.mapzone.z_levels[1]
 	if(level && level.z_value)
 		living_player_count = length(SSmobs.clients_by_zlevel[level.z_value])
