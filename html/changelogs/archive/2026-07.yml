@@ -668,6 +668,9 @@
   - bugfix: Fixed meteor changelings being killed by defense sats
   SyncIt21:
   - bugfix: monkey powder reaction gives multiple monkeys
+  YesterdaysPromise:
+  - bugfix: Plastitanium wall fillings now fill up the walls correctly at rate of
+      1 per wall, and correctly make survival pod walls.
   lelandkemble:
   - bugfix: medbots can no longer be thrown, all bots no longer have AA
   nPocToDark:
