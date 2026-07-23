@@ -654,11 +654,22 @@
   CabinetOnFire:
   - rscadd: Monkeys now know how to yakety sax and how to shove people into walls
   - bugfix: Monkeys no longer trip on monkeys.
+  Happyowl93:
+  - bugfix: you should be able to hit cave spawners with melee items again
+  - bugfix: you can place lattices over ice again.
   Melbert:
   - code_imp: Roughly doubled the performance speed of the crafting UI, report anything
       broken with it
+  PapaMichael:
+  - bugfix: It no longer looks like you have accessories attached after you've removed
+      them.
   SmArtKar:
   - bugfix: Fixed negative moles left by gas scrubbers
+  - bugfix: Fixed meteor changelings being killed by defense sats
+  SyncIt21:
+  - bugfix: monkey powder reaction gives multiple monkeys
+  lelandkemble:
+  - bugfix: medbots can no longer be thrown, all bots no longer have AA
   nPocToDark:
   - qol: Raptor eggs now floor placeable (even in lava). It's now easier to immerse
       them in lava to accelerate their growth.
