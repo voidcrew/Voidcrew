@@ -650,3 +650,10 @@
   vinylspiders:
   - bugfix: fixed tails and ears not updating on your dummy when changing the pref
       until you change species or switch characters
+2026-07-23:
+  CabinetOnFire:
+  - rscadd: Monkeys now know how to yakety sax and how to shove people into walls
+  - bugfix: Monkeys no longer trip on monkeys.
+  nPocToDark:
+  - qol: Raptor eggs now floor placeable (even in lava). It's now easier to immerse
+      them in lava to accelerate their growth.
