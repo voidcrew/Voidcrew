@@ -654,6 +654,9 @@
   CabinetOnFire:
   - rscadd: Monkeys now know how to yakety sax and how to shove people into walls
   - bugfix: Monkeys no longer trip on monkeys.
+  Melbert:
+  - code_imp: Roughly doubled the performance speed of the crafting UI, report anything
+      broken with it
   nPocToDark:
   - qol: Raptor eggs now floor placeable (even in lava). It's now easier to immerse
       them in lava to accelerate their growth.
