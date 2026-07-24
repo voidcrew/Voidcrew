@@ -197,7 +197,7 @@
 /turf/open/floor/light,
 /area/ruin/powered)
 "Cz" = (
-/obj/effect/mob_spawn/human/corpse/solgov/infantry,
+/obj/effect/mob_spawn/corpse/human/nanotrasensoldier,
 /turf/open/floor/light,
 /area/ruin/powered)
 "CI" = (

@@ -698,16 +698,18 @@
 		controller.clear_target()
 		return AI_BEHAVIOR_DELAY
 
-	// Check if target escaped to a different zone - lose target entirely
-	var/turf/ship_turf = get_turf(ship)
-	var/turf/target_turf = get_turf(target)
-	if(ship_turf && target_turf)
-		var/datum/overmap_zone/ship_zone = SSovermap_zones.get_zone(ship_turf)
-		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
-		if(ship_zone != target_zone)
-			SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
-			controller.clear_target()
-			return AI_BEHAVIOR_DELAY
+	// Check if target escaped to a different zone - lose target entirely.
+	// Unconfined hunters chase across zone lines instead.
+	if(ship.zone_confined)
+		var/turf/ship_turf = get_turf(ship)
+		var/turf/target_turf = get_turf(target)
+		if(ship_turf && target_turf)
+			var/datum/overmap_zone/ship_zone = SSovermap_zones.get_zone(ship_turf)
+			var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
+			if(ship_zone != target_zone)
+				SEND_SIGNAL(target, COMSIG_SHIP_TARGETING_STOPPED, ship)
+				controller.clear_target()
+				return AI_BEHAVIOR_DELAY
 
 	// Check if another (active, non-disabled) pirate is engaging this target - yield to them
 	// Exception: don't yield if we're actively boarding - we have priority

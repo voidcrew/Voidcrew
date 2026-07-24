@@ -1,0 +1,79 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/turf/closed/mineral/iron/volcanic,
+/area/template_noop)
+"f" = (
+/turf/template_noop,
+/area/template_noop)
+"k" = (
+/turf/open/misc/asteroid/planetary_basalt/lava_land_surface/lit,
+/area/template_noop)
+"r" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/misc/asteroid/planetary_basalt/lava_land_surface/lit,
+/area/template_noop)
+"x" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/ash,
+/turf/open/misc/asteroid/planetary_basalt/lava_land_surface/lit,
+/area/template_noop)
+"E" = (
+/turf/closed/mineral/random/volcanic/voidcrew,
+/area/template_noop)
+"I" = (
+/turf/closed/mineral/gibtonite/volcanic,
+/area/template_noop)
+"Q" = (
+/obj/effect/decal/cleanable/ash/large,
+/obj/item/stack/ore/iron{
+	pixel_x = -4
+	},
+/obj/item/stack/ore/gold{
+	pixel_x = 5;
+	pixel_y = 3
+	},
+/turf/open/misc/asteroid/planetary_basalt/lava_land_surface/lit,
+/area/template_noop)
+"T" = (
+/turf/closed/mineral/gold/volcanic,
+/area/template_noop)
+"X" = (
+/obj/structure/flora/rock/pile/lava,
+/turf/open/misc/asteroid/planetary_basalt/lava_land_surface/lit,
+/area/template_noop)
+
+(1,1,1) = {"
+f
+r
+k
+k
+f
+"}
+(2,1,1) = {"
+k
+E
+T
+X
+k
+"}
+(3,1,1) = {"
+r
+I
+Q
+r
+k
+"}
+(4,1,1) = {"
+k
+c
+E
+x
+k
+"}
+(5,1,1) = {"
+k
+k
+r
+k
+f
+"}

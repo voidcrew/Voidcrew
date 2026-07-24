@@ -348,6 +348,9 @@ SUBSYSTEM_DEF(overmap)
 		var/datum/overmap/planet/planet_type = planets[planet]["type"]
 		var/obj/structure/overmap/planet/planet_to_spawn = new
 		planet_to_spawn.planet = planet_type
+		// Roundstart planets are static: their z-pair was generated once during SSmapping
+		// init and can never be rebuilt, so no unload path may ever clear it
+		planet_to_spawn.preserve_level = TRUE
 		planet_to_spawn.forceMove(turf_for_planet)
 
 		// Transfer all of the data from the planet datum onto the planet object

@@ -1,0 +1,477 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/structure/closet/crate,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"b" = (
+/obj/structure/closet/crate/zone_loot/industrial,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"c" = (
+/obj/effect/spawner/random/structure/crate_abandoned,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"d" = (
+/turf/template_noop,
+/area/template_noop)
+"e" = (
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"f" = (
+/turf/closed/wall/rust,
+/area/ruin/powered)
+"g" = (
+/obj/structure/table,
+/obj/effect/spawner/random/food_or_drink/snack,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"h" = (
+/obj/effect/spawner/random/structure/crate_loot,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"i" = (
+/obj/effect/decal/cleanable/rubble,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"k" = (
+/obj/effect/zone_mobs/robot,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"l" = (
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"m" = (
+/obj/structure/girder/displaced,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"n" = (
+/obj/structure/broken_flooring/pile,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/powered)
+"o" = (
+/obj/machinery/light/small/broken/directional/north,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"p" = (
+/obj/structure/girder,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/powered)
+"t" = (
+/obj/machinery/light/red/dim/directional/south,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"u" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"v" = (
+/obj/structure/frame/computer,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"w" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/powered)
+"x" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"y" = (
+/obj/machinery/conveyor{
+	dir = 4
+	},
+/obj/structure/closet/crate,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"z" = (
+/obj/machinery/door/airlock/hatch,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"A" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"C" = (
+/turf/open/floor/plating,
+/area/ruin/powered)
+"D" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"E" = (
+/obj/effect/decal/cleanable/rubble,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"F" = (
+/obj/structure/frame/machine,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"G" = (
+/turf/closed/wall,
+/area/ruin/powered)
+"H" = (
+/obj/effect/mob_spawn/corpse/human/laborer,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/paper/crumpled/bloody{
+	name = "water-stained log page";
+	default_raw_text = "ran her aground on purpose. the drones would not let us near the hold. swim for it"
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"I" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"J" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"K" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"L" = (
+/obj/structure/chair{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"M" = (
+/obj/item/toy/seashell,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"N" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"O" = (
+/obj/structure/tank_holder/oxygen,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"Q" = (
+/obj/structure/broken_flooring/singular,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"R" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"S" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/maintenance/two,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"T" = (
+/obj/machinery/conveyor{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/powered)
+"U" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"V" = (
+/obj/structure/sign/poster/contraband/random,
+/turf/closed/wall,
+/area/ruin/powered)
+"W" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plating,
+/area/ruin/powered)
+"Y" = (
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/powered)
+"Z" = (
+/obj/effect/spawner/random/trash/graffiti,
+/turf/open/floor/plating,
+/area/ruin/powered)
+
+(1,1,1) = {"
+d
+d
+d
+d
+d
+d
+d
+d
+d
+d
+d
+d
+"}
+(2,1,1) = {"
+d
+d
+f
+f
+f
+f
+f
+f
+f
+d
+d
+d
+"}
+(3,1,1) = {"
+d
+f
+b
+k
+D
+W
+D
+C
+T
+f
+d
+d
+"}
+(4,1,1) = {"
+d
+f
+a
+h
+C
+C
+C
+D
+T
+f
+d
+d
+"}
+(5,1,1) = {"
+d
+J
+D
+C
+m
+D
+C
+C
+T
+f
+d
+d
+"}
+(6,1,1) = {"
+d
+f
+U
+D
+C
+C
+D
+C
+y
+f
+d
+d
+"}
+(7,1,1) = {"
+d
+f
+A
+C
+D
+C
+C
+C
+T
+f
+d
+d
+"}
+(8,1,1) = {"
+d
+f
+S
+Q
+C
+C
+C
+C
+T
+f
+d
+d
+"}
+(9,1,1) = {"
+d
+f
+G
+G
+G
+z
+G
+G
+G
+f
+d
+d
+"}
+(10,1,1) = {"
+d
+f
+R
+g
+D
+C
+D
+n
+Y
+Y
+i
+d
+"}
+(11,1,1) = {"
+d
+f
+o
+L
+C
+E
+C
+w
+Y
+Y
+c
+d
+"}
+(12,1,1) = {"
+d
+f
+D
+C
+C
+D
+Z
+p
+Y
+Y
+M
+d
+"}
+(13,1,1) = {"
+d
+f
+G
+G
+z
+G
+V
+G
+G
+f
+e
+d
+"}
+(14,1,1) = {"
+d
+f
+x
+D
+C
+G
+O
+F
+E
+f
+d
+d
+"}
+(15,1,1) = {"
+d
+J
+v
+u
+l
+G
+C
+D
+C
+f
+d
+d
+"}
+(16,1,1) = {"
+d
+f
+v
+H
+C
+z
+C
+C
+t
+f
+d
+d
+"}
+(17,1,1) = {"
+d
+J
+v
+C
+D
+G
+D
+A
+D
+f
+d
+d
+"}
+(18,1,1) = {"
+d
+f
+K
+N
+C
+G
+C
+C
+I
+f
+d
+d
+"}
+(19,1,1) = {"
+d
+d
+f
+f
+f
+f
+f
+f
+f
+d
+d
+d
+"}
+(20,1,1) = {"
+d
+d
+d
+d
+d
+d
+d
+d
+d
+d
+d
+d
+"}

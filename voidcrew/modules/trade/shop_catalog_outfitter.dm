@@ -100,13 +100,14 @@
 		/datum/shop_sku/outfitter/rare/missile_heavy,
 	)
 	// Sarge buys serviceable salvage — arms and armor off whoever stopped
-	// needing them — plus field materials off planet megafauna
+	// needing them — plus field materials off planet megafauna and crust
 	buyback_types = list(
 		/datum/shop_buyback/outfitter/salvage_ballistics,
 		/datum/shop_buyback/outfitter/salvage_energy,
 		/datum/shop_buyback/outfitter/salvage_armor,
 		/datum/shop_buyback/outfitter/goliath_plates,
 		/datum/shop_buyback/outfitter/sinew,
+		/datum/shop_buyback/outfitter/glacial_core,
 	)
 	// Depot resupply runs: industrial quantities, decent free kit
 	mission_requests = list(
@@ -116,6 +117,7 @@
 		list("type" = /obj/item/stack/cable_coil, "name" = "cable coil", "amount" = 60, "difficulty" = MISSION_DIFFICULTY_EASY),
 		list("type" = /obj/item/stack/sheet/animalhide/goliath_hide, "name" = "goliath hide plates", "amount" = 4, "difficulty" = MISSION_DIFFICULTY_HARD),
 		list("type" = /obj/item/stack/sheet/sinew, "name" = "beast sinew", "amount" = 4, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("type" = /obj/item/stack/glacial_core, "name" = "glacial cores", "amount" = 5, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 	)
 	// The armory back room: hard contracts only, never sold
 	exclusive_rewards = list(
@@ -156,6 +158,7 @@
 			"Inventory rotates when the convoys make it through. When.",
 			"The yellow lanes eat the unprepared. Be a customer, not a statistic.",
 			"Goliath plate lines the good vests. Bring me plates, walk out richer.",
+			"Glacial cores off the ice worlds. Coolant loops love them, scanners can't find them, wolves guard them. Good hunting.",
 			"Firing pins. Everyone forgets the firing pins. Don't be everyone.",
 			"The schematics I stock are legal. The fun ones are two zones that way.",
 		),
@@ -617,6 +620,19 @@
 	pay_credits = 200
 	demand_min = 4
 	demand_max = 6
+
+// The ice planets' good: permafrost crystal out of unscannable veins in the
+// snow rock (see planetary_goods.dm). Credits only — telecrystal keeps the
+// voucher spigot.
+/datum/shop_buyback/outfitter/glacial_core
+	name = "glacial cores"
+	desc = "Permafrost crystal cut whole out of the frozen worlds. The depot packs them around coolant loops and the cold lockers; they hold a chill for years and never sweat."
+	category = "Field Materials"
+	item_path = /obj/item/stack/glacial_core
+	amount = 3
+	pay_credits = 400
+	demand_min = 3
+	demand_max = 5
 
 // Barter: the depot always needs hull stock
 /datum/shop_sku/barter/plasteel_for_shield

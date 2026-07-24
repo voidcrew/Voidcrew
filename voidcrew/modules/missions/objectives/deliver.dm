@@ -52,6 +52,11 @@
 	return ..()
 
 /datum/mission_objective/deliver/accept_item(obj/item/item, atom/reward_anchor)
+	// The delivered item is often the mission's tracked quest atom; stop the
+	// destruction watch before consuming it, or qdel fires it synchronously and
+	// handle_quest_loss() voids the contract mid-turn-in (outpost_quests.dm
+	// already forgets-first for the same reason)
+	mission?.forget_quest_atom(item)
 	if(isstack(item))
 		var/obj/item/stack/stack = item
 		stack.use(required_amount)

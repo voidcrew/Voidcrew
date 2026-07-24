@@ -1,0 +1,107 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lantern,
+/turf/open/misc/dirt/jungle/dark/lit,
+/area/template_noop)
+"f" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/remains/human,
+/turf/open/misc/dirt/jungle/dark/lit,
+/area/template_noop)
+"g" = (
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/misc/dirt/jungle/dark/lit,
+/area/template_noop)
+"h" = (
+/obj/effect/zone_mobs/bug,
+/turf/open/misc/dirt/jungle/dark/lit,
+/area/template_noop)
+"j" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/misc/dirt/jungle/dark/lit,
+/area/template_noop)
+"l" = (
+/obj/structure/flora/rock/pile/jungle,
+/turf/open/misc/dirt/jungle/dark/lit,
+/area/template_noop)
+"o" = (
+/obj/structure/flora/junglebush/c,
+/turf/open/misc/grass/jungle/lit,
+/area/template_noop)
+"C" = (
+/turf/open/misc/grass/jungle/lit,
+/area/template_noop)
+"L" = (
+/obj/structure/barricade/wooden,
+/turf/open/misc/dirt/jungle/dark/lit,
+/area/template_noop)
+"O" = (
+/turf/open/chasm/jungle,
+/area/template_noop)
+"Q" = (
+/obj/structure/flora/grass/jungle/b,
+/turf/open/misc/grass/jungle/lit,
+/area/template_noop)
+"R" = (
+/obj/structure/table/wood,
+/obj/item/pickaxe{
+	pixel_y = 5
+	},
+/obj/item/shovel{
+	pixel_y = -3
+	},
+/turf/open/misc/dirt/jungle/dark/lit,
+/area/template_noop)
+"X" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+X
+C
+C
+C
+C
+X
+"}
+(2,1,1) = {"
+C
+l
+L
+R
+c
+C
+"}
+(3,1,1) = {"
+C
+L
+O
+O
+f
+C
+"}
+(4,1,1) = {"
+o
+L
+O
+O
+g
+Q
+"}
+(5,1,1) = {"
+C
+j
+L
+h
+C
+C
+"}
+(6,1,1) = {"
+X
+C
+C
+C
+C
+X
+"}

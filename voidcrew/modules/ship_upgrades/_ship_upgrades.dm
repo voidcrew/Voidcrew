@@ -51,6 +51,11 @@ GLOBAL_LIST_EMPTY(ship_themes)
 	/// Can be a single string (e.g., "medical") or a list (e.g., list("medical", "syndicate"))
 	/// Modules without for_theme won't appear in the upgrade selector for themed ships.
 	var/for_theme
+	/// Extra job slots this module contributes to the ship's crew.
+	/// Same format as /datum/ship_theme job_slots: list of list(name, outfit, category, slots, ...).
+	/// Merged into the ship's job list at launch, after the theme's own slots
+	/// (e.g. a hydroponics module adds its Botanist). Mention added jobs in desc.
+	var/list/job_slots_add
 
 /datum/ship_upgrade_module/New()
 	. = ..()
@@ -221,6 +226,27 @@ GLOBAL_VAR_INIT(ship_upgrades_initialized, FALSE)
 				filtered[module_id] = module
 
 	return filtered
+
+/**
+ * Collect the raw job-slot definitions contributed by a ship's effective modules.
+ *
+ * For each upgrade slot, the effective module is the player's selection if one exists,
+ * otherwise the slot's default module - mirroring what modular_map_root/ship_upgrade
+ * will actually load. Returns a list of job definition lists (same format as theme
+ * job_slots), ready to append to a list fed to assemble_job_slots_from_list().
+ */
+/proc/get_module_job_definitions(ship_template_type, list/upgrade_selections, list/slot_ids)
+	var/list/definitions = list()
+	if(!length(slot_ids))
+		return definitions
+	for(var/slot_key in slot_ids)
+		var/datum/ship_upgrade_module/module = upgrade_selections?[slot_key]
+		if(!module)
+			module = get_default_module_for_ship_slot(ship_template_type, slot_key)
+		if(!istype(module) || !length(module.job_slots_add))
+			continue
+		definitions += module.job_slots_add
+	return definitions
 
 /**
  * Check if a module is available for a specific theme

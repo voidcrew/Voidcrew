@@ -278,6 +278,10 @@
 	name = "IRS Head Auditor"
 	outfit = /datum/outfit/piratecorpse/faction/irs/captain
 
+/obj/effect/mob_spawn/corpse/human/pirate/faction/irs/chief
+	name = "IRS Chief Auditor"
+	outfit = /datum/outfit/piratecorpse/faction/irs/chief
+
 /datum/outfit/piratecorpse/faction/irs
 	name = "IRS Agent Corpse"
 	uniform = /obj/item/clothing/under/costume/buttondown/slacks

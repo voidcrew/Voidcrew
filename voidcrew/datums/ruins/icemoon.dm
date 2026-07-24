@@ -24,3 +24,28 @@
 
 /datum/map_template/ruin/icemoon/underground/free_golem
 	prefix = "_maps/voidcrew/RandomRuins/AnywhereRuins/"
+
+// ---- Voidcrew micro-POIs ----
+// Tiny (4x4 to 7x5) scattered setpieces that soak up leftover ruin budget:
+// cost 1-2, duplicates allowed, low weight so they season the pool rather
+// than dominate. Voidcrew-native (not upstream copies); they inherit the
+// redirected prefix above. Base icemoon defaults are cost = 5 and
+// allow_duplicates = FALSE, so both must be overridden here.
+
+/datum/map_template/ruin/icemoon/micro_pod
+	name = "Ice-Micro Crashed Escape Pod"
+	id = "micro-ice-pod"
+	description = "An escape pod that made it down in one piece. The crew froze waiting — the cold kept them fresh."
+	suffix = "icemoon_micro_pod.dmm"
+	cost = 2
+	allow_duplicates = TRUE
+	placement_weight = 0.5
+
+/datum/map_template/ruin/icemoon/micro_cairn
+	name = "Ice-Micro Frozen Cairn"
+	id = "micro-ice-cairn"
+	description = "Somebody buried a friend out on the white and stacked what stones the ice would give up."
+	suffix = "icemoon_micro_cairn.dmm"
+	cost = 1
+	allow_duplicates = TRUE
+	placement_weight = 0.5

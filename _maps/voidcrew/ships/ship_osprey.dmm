@@ -3650,7 +3650,7 @@
 /obj/structure/disposalpipe/segment{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/lizard/wags_his_tail,
+/mob/living/basic/lizard/wags_his_tail,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/osprey/service/janitor)

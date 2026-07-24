@@ -1,0 +1,425 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass/shotglass{
+	pixel_x = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/powered)
+"b" = (
+/mob/living/basic/turtle/beach,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"c" = (
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"d" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/powered)
+"e" = (
+/obj/structure/chair/plastic{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/powered)
+"f" = (
+/obj/structure/sign/poster/contraband/random,
+/turf/closed/wall/mineral/wood,
+/area/ruin/powered)
+"g" = (
+/obj/item/toy/seashell,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"h" = (
+/turf/template_noop,
+/area/template_noop)
+"i" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/beer/almost_empty{
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/powered)
+"j" = (
+/obj/structure/flora/tree/palm,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"k" = (
+/obj/structure/chair/plastic{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/ruin/powered)
+"m" = (
+/obj/machinery/jukebox,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"n" = (
+/obj/structure/table/wood,
+/obj/item/storage/cans/sixbeer,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"o" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"q" = (
+/obj/structure/chair/stool/bar{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/ruin/powered)
+"r" = (
+/obj/structure/flora/rock/beach,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"s" = (
+/obj/structure/fence,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"t" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"v" = (
+/obj/structure/bonfire/prelit,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"w" = (
+/obj/structure/chair/plastic{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/powered)
+"x" = (
+/mob/living/basic/crab/beach,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"z" = (
+/turf/closed/wall/mineral/wood,
+/area/ruin/powered)
+"A" = (
+/obj/item/toy/seashell,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"B" = (
+/obj/structure/flora/coconuts,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"D" = (
+/obj/structure/chair/plastic{
+	dir = 4
+	},
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"E" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/random/trash/cigbutt,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"F" = (
+/obj/machinery/barsign/all_access/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"G" = (
+/obj/structure/chair/plastic{
+	dir = 1
+	},
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"H" = (
+/obj/machinery/vending/boozeomat,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"I" = (
+/obj/structure/fermenting_barrel,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"J" = (
+/obj/item/storage/cans/sixbeer,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"K" = (
+/turf/open/floor/wood,
+/area/ruin/powered)
+"M" = (
+/obj/structure/rack,
+/obj/item/reagent_containers/cup/glass/bottle/rum{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/glass/bottle/beer{
+	pixel_x = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/powered)
+"O" = (
+/obj/structure/fluff/beach_umbrella,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"Q" = (
+/obj/effect/spawner/random/trash/garbage,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"S" = (
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"T" = (
+/obj/structure/chair/plastic{
+	dir = 8
+	},
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"U" = (
+/obj/effect/spawner/random/trash/crushed_can,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"V" = (
+/obj/machinery/door/airlock/wood,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"W" = (
+/obj/item/toy/beach_ball,
+/turf/open/misc/asteroid/sand/beach/lit,
+/area/ruin/unpowered)
+"X" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"Y" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/food_or_drink/booze,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"Z" = (
+/obj/machinery/grill,
+/turf/open/floor/wood,
+/area/ruin/powered)
+
+(1,1,1) = {"
+h
+h
+h
+h
+h
+h
+h
+h
+h
+h
+h
+h
+"}
+(2,1,1) = {"
+z
+z
+z
+z
+z
+S
+r
+S
+S
+S
+S
+h
+"}
+(3,1,1) = {"
+z
+H
+d
+X
+z
+S
+S
+g
+S
+S
+x
+h
+"}
+(4,1,1) = {"
+z
+o
+E
+q
+z
+S
+S
+S
+D
+S
+S
+h
+"}
+(5,1,1) = {"
+z
+M
+Y
+t
+V
+S
+S
+S
+S
+J
+S
+h
+"}
+(6,1,1) = {"
+z
+Z
+i
+q
+z
+S
+S
+S
+v
+S
+G
+h
+"}
+(7,1,1) = {"
+z
+F
+a
+q
+f
+S
+S
+S
+S
+S
+S
+h
+"}
+(8,1,1) = {"
+z
+I
+t
+Q
+z
+S
+S
+S
+T
+S
+S
+h
+"}
+(9,1,1) = {"
+z
+z
+z
+z
+z
+S
+S
+S
+S
+W
+S
+h
+"}
+(10,1,1) = {"
+h
+s
+n
+K
+A
+S
+S
+x
+S
+S
+g
+h
+"}
+(11,1,1) = {"
+h
+s
+e
+t
+K
+S
+S
+S
+S
+S
+S
+h
+"}
+(12,1,1) = {"
+h
+s
+c
+k
+t
+S
+g
+S
+S
+j
+S
+h
+"}
+(13,1,1) = {"
+h
+m
+K
+K
+K
+S
+S
+O
+S
+S
+B
+h
+"}
+(14,1,1) = {"
+h
+X
+U
+t
+w
+b
+S
+S
+S
+S
+S
+h
+"}
+(15,1,1) = {"
+h
+h
+h
+h
+h
+h
+h
+h
+h
+h
+h
+h
+"}

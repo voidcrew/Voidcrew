@@ -1,0 +1,1748 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/turf/template_noop,
+/area/template_noop)
+"aA" = (
+/obj/machinery/porta_turret/centcom_shuttle/weak{
+	dir = 4;
+	name = "Guardian Angel"
+	},
+/turf/closed/wall/mineral/titanium/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"aO" = (
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/obj/machinery/turretid{
+	locked = 0;
+	name = "NTMS-037 Guardian Angel control panel";
+	pixel_x = 28;
+	pixel_y = 6;
+	req_access = null
+	},
+/obj/machinery/light_switch{
+	dir = 4;
+	pixel_x = 23
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"br" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"cT" = (
+/obj/machinery/door/airlock/external{
+	name = "External Freight Airlock"
+	},
+/obj/machinery/door/firedoor,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/docking_port/mobile/voidcrew/kilo/c{
+	dir = 2
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"di" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/conveyor_switch/oneway{
+	id = "NTMSLoad";
+	name = "unloading ramp switch"
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"dv" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"dE" = (
+/obj/structure/sign/warning/fire,
+/turf/closed/wall/mineral/titanium/dollhouse/nodiagonal,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"dP" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"dY" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/shuttle{
+	name = "Sleepover Nook A"
+	},
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"er" = (
+/obj/structure/closet/secure_closet/personal{
+	name = "bestie wardrobe"
+	},
+/obj/effect/turf_decal/trimline/white/filled/line{
+	color = "#ff9ecd";
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/item/gun/energy/e_gun/mini,
+/obj/item/clothing/shoes/sneakers/white,
+/obj/item/clothing/shoes/sneakers/white,
+/obj/item/clothing/shoes/sneakers/white,
+/obj/machinery/firealarm/directional/west,
+/obj/item/clothing/head/costume/kitty,
+/obj/item/clothing/head/costume/kitty,
+/obj/item/toy/plush/carpplushie,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"fa" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/shuttle{
+	name = "Sleepover Nook B"
+	},
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"gO" = (
+/obj/machinery/power/terminal{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"hi" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/power/shuttle_engine/ship/fueled/plasma{
+	dir = 8
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"hy" = (
+/obj/structure/plasticflaps,
+/obj/machinery/conveyor{
+	dir = 1;
+	id = "NTMSLoad";
+	name = "off ramp"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"iv" = (
+/obj/machinery/porta_turret/centcom_shuttle/weak{
+	dir = 4;
+	name = "Guardian Angel"
+	},
+/turf/closed/wall/mineral/titanium/dollhouse,
+/area/shuttle/voidcrew/kilo/cafe/c)
+"iJ" = (
+/obj/effect/turf_decal/stripes,
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/machinery/cryopod,
+/obj/machinery/computer/cryopod{
+	pixel_y = 32
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"iZ" = (
+/obj/machinery/computer/crew{
+	dir = 1
+	},
+/obj/machinery/light,
+/obj/machinery/computer/security/telescreen{
+	dir = 1;
+	name = "NTMS-037 Monitor";
+	network = list("ntms");
+	pixel_y = -30
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"jh" = (
+/obj/machinery/porta_turret/centcom_shuttle/weak{
+	dir = 4;
+	name = "Guardian Angel"
+	},
+/turf/closed/wall/mineral/titanium/dollhouse,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"jD" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"ke" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/suit_storage_unit/mining/eva,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"lk" = (
+/obj/structure/table,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 4
+	},
+/obj/item/flashlight{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/west{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/love_ian/directional/south,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"ll" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/external{
+	name = "NTMS-037 Gem Hunt Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"ln" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"lW" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/mob/living/basic/pet/cat{
+	desc = "The real captain of the Dollhouse. Her fur is brushed to a mirror shine and she knows it.";
+	name = "Princess"
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"mo" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"mp" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/shuttle{
+	name = "Dress-Up Room"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"mU" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/command{
+	name = "Dollhouse Bridge"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"nJ" = (
+/obj/structure/table,
+/obj/item/toy/plush/lizard_plushie{
+	pixel_y = 6
+	},
+/obj/item/stack/spacecash/c200,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"nT" = (
+/obj/structure/tank_dispenser/oxygen,
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"oa" = (
+/turf/closed/wall/mineral/titanium/dollhouse/nodiagonal,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"oe" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"op" = (
+/obj/structure/rack,
+/obj/item/storage/belt/utility,
+/obj/item/radio/off{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/radio/off,
+/obj/item/toy/plush/ratplush,
+/obj/effect/turf_decal/trimline/neutral/warning,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"oA" = (
+/obj/structure/table,
+/obj/item/toy/plush/pkplush{
+	pixel_x = -5;
+	pixel_y = 9
+	},
+/obj/item/folder/blue{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/pen,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"oM" = (
+/obj/machinery/door/poddoor{
+	id = "kilo_bay";
+	name = "NTMS-037 Bay Blast Door"
+	},
+/obj/machinery/conveyor{
+	id = "NTMSLoad2";
+	name = "on ramp"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"oT" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"pf" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/item/areaeditor/shuttle,
+/obj/structure/table,
+/obj/item/toy/plush/nukeplushie{
+	pixel_y = 5
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"pl" = (
+/obj/structure/table,
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/recharger,
+/obj/item/radio/intercom/directional/north,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"qx" = (
+/obj/machinery/atmospherics/components/tank/air{
+	piping_layer = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"qL" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/machinery/airalarm/directional/west,
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"rd" = (
+/obj/structure/plasticflaps,
+/obj/machinery/conveyor{
+	id = "NTMSLoad2";
+	name = "on ramp"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"rB" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"rO" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/external{
+	id_tag = "ntms_exterior";
+	name = "NTMS-037 Gem Hunt Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"se" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"ss" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"sL" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"sO" = (
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"tx" = (
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"tR" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"tY" = (
+/obj/structure/reagent_dispensers/watertank,
+/obj/item/reagent_containers/cup/bucket,
+/obj/item/mop,
+/obj/item/storage/bag/trash{
+	pixel_x = 6
+	},
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/effect/turf_decal/stripes{
+	dir = 10
+	},
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/south,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"ua" = (
+/obj/machinery/computer/security{
+	dir = 1;
+	network = list("ntms")
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"uc" = (
+/obj/effect/turf_decal/trimline/white/filled/line{
+	color = "#ff9ecd";
+	dir = 1
+	},
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/cryopod,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"ur" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/shuttle{
+	name = "Glitter Works"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"ut" = (
+/obj/structure/chair/comfy/brown{
+	buildstackamount = 0;
+	color = "#f5a9c9";
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/west{
+	dir = 8
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/turf/open/floor/carpet/neon/simple/pink/nodots,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"uL" = (
+/obj/effect/turf_decal/stripes,
+/obj/machinery/light_switch{
+	pixel_y = -23
+	},
+/obj/machinery/light/small/built,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"uY" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 1;
+	name = "engine fuel pump"
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"vw" = (
+/obj/structure/sign/warning/vacuum/external,
+/turf/closed/wall/mineral/titanium/dollhouse/nodiagonal,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"vB" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"wl" = (
+/obj/effect/turf_decal/stripes{
+	dir = 10
+	},
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/suit_storage_unit/engine,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"wy" = (
+/turf/closed/wall/mineral/titanium/dollhouse/nodiagonal,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"xq" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/command{
+	name = "Dollhouse Bridge"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"xW" = (
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes{
+	dir = 9
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer4,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"ys" = (
+/obj/structure/table,
+/obj/machinery/cell_charger,
+/obj/item/stock_parts/cell/high,
+/obj/effect/turf_decal/stripes,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"yB" = (
+/obj/structure/closet/secure_closet/personal{
+	name = "glitter wardrobe"
+	},
+/obj/effect/turf_decal/trimline/white/filled/line{
+	color = "#ff9ecd";
+	dir = 1
+	},
+/obj/item/gun/energy/e_gun/mini,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/head/costume/kitty/genuine,
+/obj/item/toy/plush/moth,
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"yM" = (
+/obj/effect/turf_decal/box/corners,
+/obj/effect/turf_decal/box/corners{
+	dir = 4
+	},
+/obj/item/wrench,
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"yQ" = (
+/obj/machinery/door/airlock/external{
+	name = "External Freight Airlock"
+	},
+/obj/machinery/door/firedoor,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"zl" = (
+/obj/structure/reagent_dispensers/fueltank,
+/obj/item/weldingtool/largetank,
+/obj/effect/turf_decal/stripes{
+	dir = 9
+	},
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"zq" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/corner,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"zD" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "kilo_windows";
+	name = "Exterior Window Blast Door"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"zV" = (
+/turf/closed/wall/mineral/titanium/dollhouse/nodiagonal,
+/area/shuttle/voidcrew/kilo/cafe/c)
+"zY" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/structure/cable,
+/mob/living/basic/butterfly{
+	name = "Sprinkles"
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 2
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 2
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"Av" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"AJ" = (
+/turf/closed/wall/mineral/titanium/dollhouse/nodiagonal,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"AN" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/button/door{
+	id = "kilo_bay";
+	name = "Cargo Bay Control";
+	pixel_x = -24;
+	pixel_y = 24
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/obj/machinery/conveyor_switch/oneway{
+	id = "NTMSLoad2";
+	name = "loading ramp switch"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"AT" = (
+/obj/machinery/door/poddoor{
+	id = "kilo_bay";
+	name = "NTMS-037 Bay Blast Door"
+	},
+/obj/machinery/conveyor{
+	dir = 1;
+	id = "NTMSLoad";
+	name = "off ramp"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"AU" = (
+/turf/closed/wall/mineral/titanium/dollhouse/nodiagonal,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"AV" = (
+/obj/structure/dresser,
+/obj/structure/mirror/directional/north,
+/turf/open/floor/carpet/neon/simple/pink/nodots,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"Ba" = (
+/obj/effect/turf_decal/stripes{
+	dir = 10
+	},
+/obj/machinery/atmospherics/components/tank/plasma{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"Bo" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "kilo_hold"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"Bp" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/storage/toolbox/emergency,
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/item/circuitboard/machine/ore_redemption,
+/obj/item/toy/plush/slimeplushie,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"BI" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "kilo_windows";
+	name = "Exterior Window Blast Door"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"BN" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/carpet/neon/simple/pink/nodots,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"BP" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 8
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"Cq" = (
+/obj/machinery/status_display/evac{
+	pixel_x = 32;
+	pixel_y = 32
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/obj/machinery/holopad,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"CA" = (
+/obj/structure/table,
+/obj/item/folder/yellow{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/paper{
+	default_raw_text = "HOUSE RULES!!! 1. Wipe your boots, the deck is PINK for a reason. 2. Plushies get seatbelts before you do. 3. Glitter spills are NOT a code red, stop calling them in. 4. Whoever eats the last candy heart restocks the tin. XOXO - management";
+	name = "house rules";
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/obj/item/gps{
+	gpstag = "NTMS-037";
+	pixel_x = -9;
+	pixel_y = 4
+	},
+/obj/machinery/firealarm/directional/north,
+/obj/item/areaeditor/shuttle,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"CQ" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cafe/c)
+"Db" = (
+/obj/effect/turf_decal/bot_white,
+/obj/machinery/door/poddoor{
+	id = "kilo_bay";
+	name = "NTMS-037 Bay Blast Door"
+	},
+/obj/machinery/conveyor{
+	dir = 1;
+	id = "NTMSLoad";
+	name = "off ramp"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"Dj" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "kilo_windows";
+	name = "Exterior Window Blast Door"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"Dp" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"DM" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/storage/box/lights/mixed,
+/obj/item/toy/plush/beeplushie,
+/obj/structure/sign/poster/official/foam_force_ad{
+	pixel_x = -32
+	},
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"Fs" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"FT" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "kilo_dock"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"Gt" = (
+/obj/effect/turf_decal/stripes,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"HM" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"Ic" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/wrench,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/toy/plush/shark{
+	pixel_y = 8
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"IK" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"IL" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/machinery/power/smes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/door/window/left/directional/west,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"Jn" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 8
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"Jw" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"JM" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"Ks" = (
+/obj/effect/turf_decal/stripes/corner,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"KJ" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"KK" = (
+/obj/structure/bed,
+/obj/item/bedsheet/runtime,
+/obj/item/toy/plush/unicorn{
+	pixel_y = 6
+	},
+/turf/open/floor/carpet/neon/simple/pink/nodots,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"Ls" = (
+/obj/structure/table,
+/obj/machinery/button/door{
+	id = "kilo_windows";
+	name = "NTMS-037 Windows Blast Door Control";
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/obj/item/radio{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"LN" = (
+/obj/effect/turf_decal/stripes,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"Mt" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/extinguisher_cabinet/directional/north,
+/obj/structure/cable,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"MJ" = (
+/obj/structure/sign/warning/engine_safety,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/closed/wall/mineral/titanium/dollhouse/nodiagonal,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"Nq" = (
+/obj/effect/turf_decal/stripes,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"Oj" = (
+/obj/effect/turf_decal/stripes{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"Pb" = (
+/obj/structure/closet/secure_closet/personal{
+	name = "captain's wardrobe"
+	},
+/obj/item/gun/energy/laser/retro,
+/obj/item/lipstick/random,
+/obj/item/storage/fancy/heart_box,
+/obj/structure/plaque/static_plaque/golden/captain{
+	pixel_x = 32
+	},
+/obj/machinery/status_display/evac{
+	pixel_y = 32
+	},
+/obj/item/pai_card,
+/turf/open/floor/carpet/neon/simple/pink/nodots,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"Pk" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "kilo_service"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cafe/c)
+"Pt" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "kilo_windows";
+	name = "Exterior Window Blast Door"
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"Qb" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/light,
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/obj/item/wrench,
+/obj/effect/turf_decal/stripes,
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"Qe" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 8
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/structure/window/reinforced/plasma/spawner,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"Qf" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"Qs" = (
+/turf/closed/wall/mineral/titanium/dollhouse/nodiagonal,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"Rf" = (
+/obj/effect/turf_decal/stripes{
+	dir = 9
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"Rr" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/shuttle{
+	name = "Princess Suite"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"RK" = (
+/obj/structure/ore_box,
+/obj/effect/turf_decal/box/corners{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"Sh" = (
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/portable_atmospherics/scrubber/huge,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"SN" = (
+/obj/structure/chair/comfy/shuttle,
+/obj/effect/turf_decal/stripes{
+	dir = 10
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"SZ" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "kilo_windows";
+	name = "Exterior Window Blast Door"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"Ta" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/shuttle{
+	name = "Gem Hunting Dock"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"TA" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"Vd" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/emcloset/anchored,
+/obj/structure/sign/warning/vacuum/external/directional/west,
+/obj/machinery/light/small,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"VE" = (
+/obj/structure/falsewall/titanium/dollhouse,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"VG" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"VH" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"VL" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/shower/directional/south,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/extinguisher_cabinet/directional/north,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"Wx" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/ore_box,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/corner,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"Xa" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/shuttle{
+	name = "Tea Room"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"Xn" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"Xt" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/external{
+	name = "NTMS-037 Gem Hunt Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"Xu" = (
+/obj/effect/turf_decal/bot_white,
+/obj/machinery/door/poddoor{
+	id = "kilo_bay";
+	name = "NTMS-037 Bay Blast Door"
+	},
+/obj/machinery/conveyor{
+	id = "NTMSLoad2";
+	name = "on ramp"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/c)
+"Xy" = (
+/obj/effect/turf_decal/stripes,
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/machinery/cryopod,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"XJ" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"XM" = (
+/obj/machinery/power/smes/engineering{
+	charge = 1e+006
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/obj/structure/sign/warning/electric_shock/directional/north,
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"XZ" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/machinery/power/smes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/door/window/right/directional/west,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/kilo/engineering/c)
+"Yb" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 10
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"Yk" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/emcloset/anchored,
+/obj/machinery/button/door{
+	id = "ntms_exterior";
+	name = "NTMS-037 External Lock";
+	normaldoorcontrol = 1;
+	pixel_x = -24;
+	pixel_y = -8;
+	specialfunctions = 4
+	},
+/obj/structure/sign/warning/xeno_mining/directional/north,
+/obj/machinery/firealarm/directional/west{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 1
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"YG" = (
+/obj/effect/turf_decal/stripes,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"YO" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "kilo_windows";
+	name = "Exterior Window Blast Door"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cafe/c)
+"YR" = (
+/obj/structure/chair/comfy/shuttle,
+/obj/effect/turf_decal/stripes,
+/obj/structure/cable,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/bridge/c)
+"Zf" = (
+/obj/machinery/computer/security/telescreen/entertainment,
+/turf/closed/wall/mineral/titanium/dollhouse/nodiagonal,
+/area/shuttle/voidcrew/kilo/dorms/c)
+"ZX" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/computer/helm{
+	dir = 4
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
+
+(1,1,1) = {"
+aa
+aA
+AU
+rO
+rO
+AU
+aA
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(2,1,1) = {"
+aa
+AU
+Yk
+dP
+YG
+Vd
+wy
+SZ
+wy
+SZ
+SZ
+aa
+aa
+"}
+(3,1,1) = {"
+aa
+AU
+AU
+Xt
+ll
+vw
+wy
+CA
+qL
+ZX
+SZ
+SZ
+aa
+"}
+(4,1,1) = {"
+aa
+AU
+VL
+zY
+zq
+VG
+mU
+vB
+HM
+Yb
+Ls
+SZ
+SZ
+"}
+(5,1,1) = {"
+aa
+AU
+Av
+FT
+Gt
+op
+wy
+sO
+lW
+sL
+SN
+ua
+SZ
+"}
+(6,1,1) = {"
+aa
+Dj
+Av
+Av
+Gt
+ke
+wy
+pl
+Cq
+XJ
+YR
+iZ
+wy
+"}
+(7,1,1) = {"
+aa
+Dj
+Av
+Av
+Gt
+nT
+wy
+wy
+oA
+aO
+Nq
+nJ
+SZ
+"}
+(8,1,1) = {"
+aa
+AU
+Ic
+AU
+Ta
+AU
+wy
+wy
+wy
+wy
+xq
+wy
+wy
+"}
+(9,1,1) = {"
+oa
+oa
+oa
+oa
+Fs
+Bp
+DM
+zV
+CQ
+CQ
+CQ
+Pk
+YO
+"}
+(10,1,1) = {"
+oM
+rd
+Xu
+AN
+tR
+JM
+Ks
+zV
+CQ
+CQ
+CQ
+CQ
+zV
+"}
+(11,1,1) = {"
+cT
+Dp
+yQ
+di
+RK
+yM
+LN
+Xa
+CQ
+CQ
+CQ
+CQ
+YO
+"}
+(12,1,1) = {"
+AT
+hy
+Db
+mo
+oe
+oe
+Bo
+zV
+CQ
+CQ
+CQ
+CQ
+iv
+"}
+(13,1,1) = {"
+oa
+oa
+oa
+Mt
+oe
+oe
+oa
+zV
+zV
+mp
+zV
+zV
+aa
+"}
+(14,1,1) = {"
+aa
+dv
+Pt
+Wx
+oe
+oe
+Qs
+iJ
+dY
+Rf
+er
+BI
+aa
+"}
+(15,1,1) = {"
+aa
+aa
+AJ
+MJ
+ur
+AJ
+AJ
+Zf
+Qs
+oT
+yB
+Qs
+aa
+"}
+(16,1,1) = {"
+aa
+aa
+AJ
+ys
+jD
+lk
+AJ
+Xy
+fa
+tx
+uc
+BI
+aa
+"}
+(17,1,1) = {"
+aa
+aa
+zD
+xW
+Xn
+tY
+AJ
+Qs
+Qs
+Rr
+Qs
+jh
+aa
+"}
+(18,1,1) = {"
+aa
+aa
+zD
+qx
+VH
+uL
+AJ
+AV
+ut
+BN
+BI
+aa
+aa
+"}
+(19,1,1) = {"
+aa
+aa
+AJ
+XM
+gO
+Qb
+dE
+Qs
+Pb
+KK
+BI
+aa
+aa
+"}
+(20,1,1) = {"
+aa
+aa
+AJ
+AJ
+ss
+Jw
+wl
+AJ
+VE
+AJ
+AJ
+aa
+aa
+"}
+(21,1,1) = {"
+aa
+aa
+AJ
+zl
+br
+KJ
+se
+IK
+uY
+Ba
+zD
+aa
+aa
+"}
+(22,1,1) = {"
+aa
+aa
+AJ
+Sh
+rB
+rB
+pf
+Qf
+Qf
+Oj
+zD
+aa
+aa
+"}
+(23,1,1) = {"
+aa
+aa
+ln
+Qe
+XZ
+IL
+ln
+XZ
+IL
+Jn
+ln
+aa
+aa
+"}
+(24,1,1) = {"
+aa
+aa
+TA
+hi
+BP
+BP
+ln
+BP
+BP
+hi
+TA
+aa
+aa
+"}

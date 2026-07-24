@@ -33,9 +33,11 @@
 	blackboard[BB_NPC_MOVEMENT_MODE] = NPC_MOVEMENT_PATROL
 	blackboard[BB_NPC_CIRCUIT_INDEX] = 1
 
-	// Store spawn zone - ship cannot leave this zone
-	if(new_pawn)
-		var/turf/spawn_turf = get_turf(new_pawn)
+	// Store spawn zone - ship cannot leave this zone. Unconfined hunters skip
+	// this entirely; every zone check downstream is null-safe.
+	var/obj/structure/overmap/ship/npc/npc_pawn = new_pawn
+	if(istype(npc_pawn) && npc_pawn.zone_confined)
+		var/turf/spawn_turf = get_turf(npc_pawn)
 		if(spawn_turf)
 			blackboard[BB_NPC_SPAWN_ZONE] = SSovermap_zones.get_zone(spawn_turf)
 
@@ -249,7 +251,11 @@
 
 	var/combat_state = get_combat_state()
 
-	// If we're hailing, cancel the hail - they're getting away
+	// If we're hailing, cancel the hail - they're getting away. Unconfined
+	// hunters keep the call open and just follow them over the line.
+	var/obj/structure/overmap/ship/npc/our_ship = get_ship()
+	if(our_ship && !our_ship.zone_confined)
+		return
 	if(combat_state == NPC_COMBAT_HAILING)
 		INVOKE_ASYNC(src, PROC_REF(handle_target_escaping_via_zone))
 

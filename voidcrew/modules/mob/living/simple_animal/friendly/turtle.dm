@@ -1,2 +1,2 @@
-/mob/living/simple_animal/turtle/beach
+/mob/living/basic/turtle/beach
 	faction = list(FACTION_BEACH)

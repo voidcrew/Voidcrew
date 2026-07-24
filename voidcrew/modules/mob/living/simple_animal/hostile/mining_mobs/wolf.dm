@@ -6,17 +6,37 @@
 	icon_state = "alphawolf"
 	icon_living = "alphawolf"
 	icon_dead = "alphawolf_dead"
-	speed = 15
+	speed = 2
 	maxHealth = 100
 	health = 100
 	melee_damage_lower = 10
 	melee_damage_upper = 10
-	//charger = TRUE
-	//charge_distance = 7
-	//knockdown_time = 1 SECONDS
-	//charge_frequency = 20 SECONDS
-	//butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/slab = 2, /obj/item/stack/sheet/sinew/wolf = 4, /obj/item/stack/sheet/sinew/wolf = 4, /obj/item/stack/sheet/bone = 5)
 	crusher_loot = /obj/item/crusher_trophy/fang
+	ai_controller = /datum/ai_controller/basic_controller/wolf/alpha
+	/// Our lunge ability
+	var/datum/action/cooldown/mob_cooldown/charge/basic_charge/lunge
+
+/mob/living/basic/mining/wolf/alpha/Initialize(mapload)
+	. = ..()
+	lunge = new(src)
+	lunge.Grant(src)
+	ai_controller.set_blackboard_key(BB_TARGETED_ACTION, lunge)
+
+/mob/living/basic/mining/wolf/alpha/Destroy()
+	QDEL_NULL(lunge)
+	return ..()
+
+/datum/ai_controller/basic_controller/wolf/alpha
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/escape_captivity,
+		/datum/ai_planning_subtree/pet_planning,
+		/datum/ai_planning_subtree/call_reinforcements/wolf,
+		/datum/ai_planning_subtree/target_retaliate,
+		/datum/ai_planning_subtree/simple_find_target,
+		/datum/ai_planning_subtree/targeted_mob_ability,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/basic_melee_attack_subtree,
+	)
 
 /mob/living/basic/mining/wolf/alpha/gib()
 	move_force = MOVE_FORCE_DEFAULT
@@ -24,13 +44,13 @@
 	pull_force = PULL_FORCE_DEFAULT
 	if(prob(75))
 		new /obj/item/crusher_trophy/fang(loc)
-		visible_message("<span class='warning'>You find an intact fang that looks salvagable.</span>")
+		visible_message(span_warning("You find an intact fang that looks salvagable."))
 	..()
 
 /obj/item/crusher_trophy/fang
 	name = "battle-stained fang"
 	desc = "A wolf fang, displaying the wear and tear associated with a long and colorful life. Could be attached to a kinetic crusher or used to make a trophy."
-	icon = 'icons/obj/mining_zones/artefacts.dmi'
+	icon = 'voidcrew/icons/obj/elite_trophies.dmi'
 	icon_state = "fang"
 	denied_type = /obj/item/crusher_trophy/fang
 	var/bleed_stacks_per_hit = 5
@@ -63,4 +83,3 @@
 	if(prob(15))
 		new /mob/living/basic/mining/wolf/alpha/wasteland(loc)
 		return INITIALIZE_HINT_QDEL
-

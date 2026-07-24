@@ -18,6 +18,10 @@
 		/mob/living/basic/gorilla/beach = 3,
 		/mob/living/basic/spider/giant/tarantula = 1,
 	)
+	// Wild spice pods — the jungle export good; foraged off the ground and sold
+	// at the general store (see modules/trade/planetary_goods.dm)
+	feature_spawn_chance = 0.5
+	feature_spawn_list = list(/obj/item/stack/spice_pods = 1)
 
 /datum/biome/jungle/dense
 	flora_spawn_chance = 30
@@ -48,6 +52,7 @@
 	dangerous_mob_spawn_list = null // no jungle land predators in the water
 	flora_spawn_chance = 1
 	flora_spawn_list = list(/obj/structure/flora/rock = 1)
+	feature_spawn_list = null // no ground pods in the water
 
 /datum/biome/cave/jungle
 	open_turf_types = list(/turf/open/misc/dirt/jungle = 10, /turf/open/misc/dirt/jungle/dark = 10)
@@ -109,7 +114,7 @@
 		///obj/structure/flora/ash/space/voidmelon = 1
 	)
 	mob_spawn_chance = 1
-	mob_spawn_list = list(/mob/living/basic/bee/toxin = 1, /mob/living/simple_animal/hostile/mushroom = 1, /mob/living/basic/slime/pet = 1)
+	mob_spawn_list = list(/mob/living/basic/bee/toxin = 1, /mob/living/basic/mushroom = 1, /mob/living/basic/slime/pet = 1)
 
 /datum/biome/cave/lush/bright
 	open_turf_types = list(/turf/open/misc/grass/jungle = 12, /turf/open/water/jungle = 1)

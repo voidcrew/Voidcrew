@@ -98,12 +98,14 @@
 		/datum/shop_sku/general/rare/drill,
 	)
 	// Barnaby buys honest prospecting hauls at honest prices, plus whatever
-	// the trappers and anglers drag in off the green worlds
+	// the trappers, anglers and foragers drag in off the green worlds
 	buyback_types = list(
 		/datum/shop_buyback/general/gold_ore,
 		/datum/shop_buyback/general/diamonds,
 		/datum/shop_buyback/general/fresh_catch,
 		/datum/shop_buyback/general/bear_pelt,
+		/datum/shop_buyback/general/spice_pods,
+		/datum/shop_buyback/general/pearl_clam,
 	)
 	// Waystation restocking: gentle asks for the outer ring
 	// Pike's fishing stall makes this the outpost that posts angling requests
@@ -116,6 +118,7 @@
 		list("type" = /obj/item/stack/ore/plasma, "name" = "plasma ore", "amount" = 8, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/fish, "name" = "fresh planet-caught fish", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_EASY),
 		list("type" = /obj/item/stack/sheet/animalhide/bear, "name" = "bear hide", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
+		list("type" = /obj/item/stack/spice_pods, "name" = "wild spice pods", "amount" = 6, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 	)
 	// Under the counter: hard contracts only, never sold
 	exclusive_rewards = list(
@@ -154,6 +157,8 @@
 			"Forty years on this rock and the sun hasn't moved once. Reliable, that.",
 			"The anglers bring me the strangest fish. I pay for all of them. The chowder pot forgives.",
 			"Bear hide wears like iron and sleeps like a cloud. The bears disagree, of course.",
+			"The pod foragers come back smelling like a spice rack and looking like they lost a fight. I pay them anyway.",
+			"Pearl clams! Don't shake them, dear. I candle them cold in the back and never, ever peek.",
 			"Take a rumor with you, dear. The lanes talk to me and I do love to pass it on.",
 			"We had a jackhammer in the back once. Contract work only, mind. Ask at the board.",
 		),
@@ -549,6 +554,29 @@
 	category = "Trapper & Angler"
 	item_path = /obj/item/stack/sheet/animalhide/bear
 	pay_credits = 250
+	demand_min = 2
+	demand_max = 4
+
+// The jungle planets' good: pod clusters foraged off the surface biomes.
+// Wild stock only — the vine can't be grown aboard, so there's nothing to farm.
+/datum/shop_buyback/general/spice_pods
+	name = "wild spice pods"
+	desc = "Strangler-vine pods off the jungle worlds, wild-picked under a canopy that bites. Barnaby's chowder pot has a lid he locks when these are in stock."
+	category = "Forage"
+	item_path = /obj/item/stack/spice_pods
+	amount = 3
+	pay_credits = 250
+	demand_min = 3
+	demand_max = 5
+
+// The beach planets' good: a rare live catch off the shore-water fishing table.
+// Bought sealed — Barnaby does the candling, and the pearl never leaves the back room.
+/datum/shop_buyback/general/pearl_clam
+	name = "pearl clam (unopened)"
+	desc = "A live lagoon clam off the beach worlds, shell shut tight. Barnaby candles them behind the counter and pays for the glow — cracked or shucked ones are worth exactly nothing."
+	category = "Trapper & Angler"
+	item_path = /obj/item/pearl_clam
+	pay_credits = 350
 	demand_min = 2
 	demand_max = 4
 

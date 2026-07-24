@@ -51,6 +51,9 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	var/rare = FALSE
 	/// Live missions currently pointed at this ruin; target picks prefer unclaimed ruins
 	var/mission_claims = 0
+	/// A mission owns this ruin's lifecycle: the empty-ruin cleanup in
+	/// check_and_respawn() is suppressed until the mission releases it
+	var/mission_locked = FALSE
 
 /obj/structure/overmap/space_ruin/Initialize(mapload, datum/map_template/ruin/space/template)
 	. = ..()
@@ -440,6 +443,11 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
  * If no living players remain in the ruin, unloads it and spawns a new one elsewhere
  */
 /obj/structure/overmap/space_ruin/proc/check_and_respawn()
+	// A live mission still needs this site; its cleanup path clears the lock
+	// and re-runs this check when it's done with the ruin
+	if(mission_locked)
+		return
+
 	// Don't do anything if reservation doesn't exist (never loaded)
 	if(!reservation)
 		return

@@ -101,6 +101,7 @@
 	if(movement_callback_id)
 		deltimer(movement_callback_id)
 		movement_callback_id = null
+	update_flight_parallax() // dead in the water: stop the starfield scroll
 
 	// Cascade failures - fires, explosions, EMPs throughout the ship
 	var/failure_count = rand(1, 7)

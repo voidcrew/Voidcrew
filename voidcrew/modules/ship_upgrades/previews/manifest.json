@@ -1,0 +1,709 @@
+{
+ "tile_px": 32,
+ "hulls": {
+  "kilo_a": {
+   "png": "ship_kilo_a.png",
+   "width": 24,
+   "height": 13,
+   "slots": {
+    "kilo_dock": [
+     5,
+     10
+    ],
+    "kilo_service": [
+     9,
+     2
+    ],
+    "kilo_hold": [
+     12,
+     7
+    ]
+   }
+  },
+  "kilo_b": {
+   "png": "ship_kilo_b.png",
+   "width": 24,
+   "height": 13,
+   "slots": {
+    "kilo_dock": [
+     5,
+     10
+    ],
+    "kilo_service": [
+     9,
+     2
+    ],
+    "kilo_hold": [
+     12,
+     7
+    ]
+   }
+  },
+  "kilo_c": {
+   "png": "ship_kilo_c.png",
+   "width": 24,
+   "height": 13,
+   "slots": {
+    "kilo_dock": [
+     5,
+     10
+    ],
+    "kilo_service": [
+     9,
+     2
+    ],
+    "kilo_hold": [
+     12,
+     7
+    ]
+   }
+  },
+  "kilo_d": {
+   "png": "ship_kilo_d.png",
+   "width": 24,
+   "height": 13,
+   "slots": {
+    "kilo_dock": [
+     5,
+     10
+    ],
+    "kilo_service": [
+     9,
+     2
+    ],
+    "kilo_hold": [
+     12,
+     7
+    ]
+   }
+  },
+  "scarab_a": {
+   "png": "ship_scarab_a.png",
+   "width": 33,
+   "height": 20,
+   "slots": {
+    "scarab_engineering": [
+     11,
+     6
+    ],
+    "scarab_cargo": [
+     11,
+     13
+    ],
+    "scarab_common": [
+     19,
+     10
+    ],
+    "scarab_med": [
+     23,
+     7
+    ]
+   }
+  },
+  "scarab_b": {
+   "png": "ship_scarab_b.png",
+   "width": 33,
+   "height": 20,
+   "slots": {
+    "scarab_engineering": [
+     11,
+     6
+    ],
+    "scarab_cargo": [
+     11,
+     13
+    ],
+    "scarab_common": [
+     19,
+     10
+    ],
+    "scarab_med": [
+     23,
+     7
+    ]
+   }
+  },
+  "scarab_c": {
+   "png": "ship_scarab_c.png",
+   "width": 33,
+   "height": 20,
+   "slots": {
+    "scarab_engineering": [
+     11,
+     6
+    ],
+    "scarab_cargo": [
+     11,
+     13
+    ],
+    "scarab_common": [
+     19,
+     10
+    ],
+    "scarab_med": [
+     23,
+     7
+    ]
+   }
+  },
+  "test_modular": {
+   "png": "ship_test_modular.png",
+   "width": 8,
+   "height": 9,
+   "slots": {
+    "engineroom": [
+     3,
+     3
+    ],
+    "cargobay": [
+     3,
+     7
+    ]
+   }
+  },
+  "test_modular_pirate": {
+   "png": "ship_test_modular_pirate.png",
+   "width": 8,
+   "height": 9,
+   "slots": {
+    "engineroom": [
+     3,
+     3
+    ],
+    "cargobay": [
+     3,
+     7
+    ]
+   }
+  }
+ },
+ "modules": {
+  "kilo/kilo_service_galley.dmm": {
+   "width": 4,
+   "height": 4,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "kilo_kilo_service_galley.png",
+   "themes": {
+    "clean": {
+     "width": 4,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_service_galley_clean.png"
+    },
+    "pink": {
+     "width": 4,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_service_galley_pink.png"
+    },
+    "saloon": {
+     "width": 4,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_service_galley_saloon.png"
+    }
+   }
+  },
+  "kilo/kilo_service_hydroponics.dmm": {
+   "width": 4,
+   "height": 4,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "kilo_kilo_service_hydroponics.png"
+  },
+  "kilo/kilo_service_surgery.dmm": {
+   "width": 4,
+   "height": 4,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "kilo_kilo_service_surgery.png"
+  },
+  "kilo/kilo_service_saloon_bar.dmm": {
+   "width": 4,
+   "height": 4,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "kilo_kilo_service_saloon_bar.png"
+  },
+  "kilo/kilo_dock_prep.dmm": {
+   "width": 3,
+   "height": 2,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "kilo_kilo_dock_prep.png"
+  },
+  "kilo/kilo_dock_refinery.dmm": {
+   "width": 3,
+   "height": 2,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "kilo_kilo_dock_refinery.png"
+  },
+  "kilo/kilo_hold_freight.dmm": {
+   "width": 3,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "kilo_kilo_hold_freight.png"
+  },
+  "kilo/kilo_hold_eva.dmm": {
+   "width": 3,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "kilo_kilo_hold_eva.png"
+  },
+  "kilo/kilo_hold_vault.dmm": {
+   "width": 3,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "kilo_kilo_hold_vault.png"
+  },
+  "scarab/scarab_med_basic.dmm": {
+   "width": 3,
+   "height": 4,
+   "connector": [
+    2,
+    3
+   ],
+   "themes": {
+    "medical": {
+     "width": 3,
+     "height": 4,
+     "connector": [
+      2,
+      3
+     ],
+     "png": "scarab_scarab_med_basic_medical.png"
+    },
+    "mining": {
+     "width": 3,
+     "height": 4,
+     "connector": [
+      2,
+      3
+     ],
+     "png": "scarab_scarab_med_basic_mining.png"
+    },
+    "syndicate": {
+     "width": 3,
+     "height": 4,
+     "connector": [
+      2,
+      3
+     ],
+     "png": "scarab_scarab_med_basic_syndicate.png"
+    }
+   }
+  },
+  "scarab/scarab_med_surgery.dmm": {
+   "width": 3,
+   "height": 4,
+   "connector": [
+    2,
+    3
+   ],
+   "themes": {
+    "medical": {
+     "width": 3,
+     "height": 4,
+     "connector": [
+      2,
+      3
+     ],
+     "png": "scarab_scarab_med_surgery_medical.png"
+    },
+    "mining": {
+     "width": 3,
+     "height": 4,
+     "connector": [
+      2,
+      3
+     ],
+     "png": "scarab_scarab_med_surgery_mining.png"
+    },
+    "syndicate": {
+     "width": 3,
+     "height": 4,
+     "connector": [
+      2,
+      3
+     ],
+     "png": "scarab_scarab_med_surgery_syndicate.png"
+    }
+   }
+  },
+  "scarab/scarab_med_chem.dmm": {
+   "width": 3,
+   "height": 4,
+   "connector": [
+    2,
+    3
+   ],
+   "themes": {
+    "medical": {
+     "width": 3,
+     "height": 4,
+     "connector": [
+      2,
+      3
+     ],
+     "png": "scarab_scarab_med_chem_medical.png"
+    },
+    "mining": {
+     "width": 3,
+     "height": 4,
+     "connector": [
+      2,
+      3
+     ],
+     "png": "scarab_scarab_med_chem_mining.png"
+    },
+    "syndicate": {
+     "width": 3,
+     "height": 4,
+     "connector": [
+      2,
+      3
+     ],
+     "png": "scarab_scarab_med_chem_syndicate.png"
+    }
+   }
+  },
+  "scarab/scarab_engineering_basic.dmm": {
+   "width": 8,
+   "height": 6,
+   "connector": [
+    3,
+    4
+   ],
+   "themes": {
+    "medical": {
+     "width": 8,
+     "height": 6,
+     "connector": [
+      3,
+      4
+     ],
+     "png": "scarab_scarab_engineering_basic_medical.png"
+    },
+    "mining": {
+     "width": 8,
+     "height": 6,
+     "connector": [
+      3,
+      4
+     ],
+     "png": "scarab_scarab_engineering_basic_mining.png"
+    },
+    "syndicate": {
+     "width": 8,
+     "height": 6,
+     "connector": [
+      3,
+      4
+     ],
+     "png": "scarab_scarab_engineering_basic_syndicate.png"
+    }
+   }
+  },
+  "scarab/scarab_engineering_teg.dmm": {
+   "width": 8,
+   "height": 6,
+   "connector": [
+    3,
+    4
+   ],
+   "themes": {
+    "medical": {
+     "width": 8,
+     "height": 6,
+     "connector": [
+      3,
+      4
+     ],
+     "png": "scarab_scarab_engineering_teg_medical.png"
+    },
+    "mining": {
+     "width": 8,
+     "height": 6,
+     "connector": [
+      3,
+      4
+     ],
+     "png": "scarab_scarab_engineering_teg_mining.png"
+    },
+    "syndicate": {
+     "width": 8,
+     "height": 6,
+     "connector": [
+      3,
+      4
+     ],
+     "png": "scarab_scarab_engineering_teg_syndicate.png"
+    }
+   }
+  },
+  "scarab/scarab_common_basic.dmm": {
+   "width": 8,
+   "height": 6,
+   "connector": [
+    4,
+    1
+   ],
+   "themes": {
+    "medical": {
+     "width": 8,
+     "height": 6,
+     "connector": [
+      4,
+      1
+     ],
+     "png": "scarab_scarab_common_basic_medical.png"
+    },
+    "mining": {
+     "width": 8,
+     "height": 6,
+     "connector": [
+      4,
+      1
+     ],
+     "png": "scarab_scarab_common_basic_mining.png"
+    },
+    "syndicate": {
+     "width": 8,
+     "height": 6,
+     "connector": [
+      4,
+      1
+     ],
+     "png": "scarab_scarab_common_basic_syndicate.png"
+    }
+   }
+  },
+  "scarab/scarab_common_cryo.dmm": {
+   "width": 8,
+   "height": 6,
+   "connector": [
+    4,
+    1
+   ],
+   "themes": {
+    "medical": {
+     "width": 8,
+     "height": 6,
+     "connector": [
+      4,
+      1
+     ],
+     "png": "scarab_scarab_common_cryo_medical.png"
+    },
+    "mining": {
+     "width": 8,
+     "height": 6,
+     "connector": [
+      4,
+      1
+     ],
+     "png": "scarab_scarab_common_cryo_mining.png"
+    },
+    "syndicate": {
+     "width": 8,
+     "height": 6,
+     "connector": [
+      4,
+      1
+     ],
+     "png": "scarab_scarab_common_cryo_syndicate.png"
+    }
+   }
+  },
+  "scarab/scarab_cargo_basic.dmm": {
+   "width": 7,
+   "height": 6,
+   "connector": [
+    4,
+    2
+   ],
+   "themes": {
+    "medical": {
+     "width": 7,
+     "height": 6,
+     "connector": [
+      4,
+      2
+     ],
+     "png": "scarab_scarab_cargo_basic_medical.png"
+    },
+    "mining": {
+     "width": 7,
+     "height": 6,
+     "connector": [
+      4,
+      2
+     ],
+     "png": "scarab_scarab_cargo_basic_mining.png"
+    },
+    "syndicate": {
+     "width": 7,
+     "height": 6,
+     "connector": [
+      4,
+      2
+     ],
+     "png": "scarab_scarab_cargo_basic_syndicate.png"
+    }
+   }
+  },
+  "scarab/scarab_cargo_engi.dmm": {
+   "width": 7,
+   "height": 6,
+   "connector": [
+    4,
+    2
+   ],
+   "themes": {
+    "medical": {
+     "width": 7,
+     "height": 6,
+     "connector": [
+      4,
+      2
+     ],
+     "png": "scarab_scarab_cargo_engi_medical.png"
+    },
+    "mining": {
+     "width": 7,
+     "height": 6,
+     "connector": [
+      4,
+      2
+     ],
+     "png": "scarab_scarab_cargo_engi_mining.png"
+    },
+    "syndicate": {
+     "width": 7,
+     "height": 6,
+     "connector": [
+      4,
+      2
+     ],
+     "png": "scarab_scarab_cargo_engi_syndicate.png"
+    }
+   }
+  },
+  "scarab/scarab_cargo_med.dmm": {
+   "width": 7,
+   "height": 6,
+   "connector": [
+    4,
+    2
+   ],
+   "themes": {
+    "medical": {
+     "width": 7,
+     "height": 6,
+     "connector": [
+      4,
+      2
+     ],
+     "png": "scarab_scarab_cargo_med_medical.png"
+    },
+    "mining": {
+     "width": 7,
+     "height": 6,
+     "connector": [
+      4,
+      2
+     ],
+     "png": "scarab_scarab_cargo_med_mining.png"
+    },
+    "syndicate": {
+     "width": 7,
+     "height": 6,
+     "connector": [
+      4,
+      2
+     ],
+     "png": "scarab_scarab_cargo_med_syndicate.png"
+    }
+   }
+  },
+  "test_modular/cargo_basic.dmm": {
+   "width": 3,
+   "height": 3,
+   "connector": [
+    2,
+    2
+   ],
+   "png": "test_modular_cargo_basic.png",
+   "themes": {
+    "pirate": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      2,
+      2
+     ],
+     "png": "test_modular_cargo_basic_pirate.png"
+    }
+   }
+  },
+  "test_modular/cargo_expanded.dmm": {
+   "width": 3,
+   "height": 3,
+   "connector": [
+    2,
+    2
+   ],
+   "png": "test_modular_cargo_expanded.png"
+  },
+  "test_modular/engine_basic.dmm": {
+   "width": 3,
+   "height": 3,
+   "connector": [
+    2,
+    2
+   ],
+   "png": "test_modular_engine_basic.png"
+  },
+  "test_modular/engine_advanced.dmm": {
+   "width": 3,
+   "height": 3,
+   "connector": [
+    2,
+    2
+   ],
+   "png": "test_modular_engine_advanced.png"
+  }
+ }
+}

@@ -95,6 +95,11 @@ SUBSYSTEM_DEF(npc_ships)
 	if(!initialized_pirates)
 		return  // Don't replace during initialization
 
+	// Only ships from the pirate faction pool get replacements; one-off ships
+	// (mission-dispatched patrols and the like) resolve without a successor
+	if(!(resolved_type in all_factions))
+		return
+
 	// Remove from active tracking
 	active_faction_types -= resolved_type
 

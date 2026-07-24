@@ -1,0 +1,60 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"j" = (
+/turf/open/misc/asteroid/snow/breathable/lit,
+/area/template_noop)
+"w" = (
+/obj/structure/closet/crate/grave/filled,
+/turf/open/misc/asteroid/snow/breathable/lit,
+/area/template_noop)
+"y" = (
+/obj/item/flashlight/flare/candle{
+	pixel_x = -4
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/turf/open/misc/asteroid/snow/breathable/lit,
+/area/template_noop)
+"F" = (
+/obj/item/shovel{
+	pixel_y = -2
+	},
+/turf/open/misc/asteroid/snow/breathable/lit,
+/area/template_noop)
+"N" = (
+/obj/structure/flora/tree/dead,
+/turf/open/misc/asteroid/snow/breathable/lit,
+/area/template_noop)
+"S" = (
+/obj/structure/flora/rock/pile/icy,
+/turf/open/misc/asteroid/snow/breathable/lit,
+/area/template_noop)
+"W" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+W
+j
+j
+W
+"}
+(2,1,1) = {"
+j
+S
+y
+j
+"}
+(3,1,1) = {"
+N
+w
+F
+j
+"}
+(4,1,1) = {"
+W
+j
+j
+W
+"}

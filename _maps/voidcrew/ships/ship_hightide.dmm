@@ -976,7 +976,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hightide/maintenance/cargo)
 "RI" = (
-/mob/living/simple_animal/hostile/pirate/ranged{
+/mob/living/basic/trooper/pirate/ranged{
 	desc = "Timmy is a classic pirate cosplayer. He was locked in this room by the previous owner. He's survived by eating the rats, this is why there are ZERO rats in the universe.";
 	health = 25;
 	name = "Timothy"

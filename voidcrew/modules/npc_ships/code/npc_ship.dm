@@ -21,6 +21,9 @@
 
 	/// How close player ships need to be to trigger aggression (in tiles)
 	var/territory_range = 2
+	/// Whether this ship is confined to the zone it spawned in. Hunter-type
+	/// ships (customs patrols) clear this to chase a quarry across the map.
+	var/zone_confined = TRUE
 
 	/// Ship color tint for faction identification (set in subtypes)
 	var/ship_color = null
@@ -582,6 +585,10 @@
 	var/max_negotiation_demand = 10000
 	/// Faction identifier for dialog and appearance
 	var/pirate_faction
+	/// Fixed negotiation item demand as list(type, quantity, name) — set by
+	/// mission dispatch code so the ship asks for specific cargo instead of a
+	/// random pick (e.g. a customs patrol demanding the contraband itself)
+	var/list/fixed_item_demand
 
 	// ========== BOARDING POD CONFIG ==========
 	/// Whether this pirate can launch boarding pods

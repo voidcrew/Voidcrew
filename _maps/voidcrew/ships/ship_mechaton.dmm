@@ -857,7 +857,7 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/mob/living/simple_animal/crab{
+/mob/living/basic/crab{
 	name = "Walter"
 	},
 /turf/open/floor/carpet/neon/simple/purple,

@@ -102,6 +102,10 @@
 			continue
 		if(candidate == previous)
 			continue
+		// A mission owns this ruin's whole lifecycle (the drug run's hidden
+		// lab): never point another contract's objectives into it
+		if(candidate.mission_locked)
+			continue
 		if(!istype(get_turf(candidate), /turf/open/overmap))
 			continue
 		candidates += candidate
@@ -187,6 +191,12 @@
 /datum/mission_target/planet
 	/// The planet this mission targets
 	var/obj/structure/overmap/planet/planet
+	/// Optional /datum/overmap/planet typepath filter: when set, resolve() only
+	/// accepts planets of exactly that type ("the lava planet"). Null = any
+	/// planet, the original behavior. NOTE: with one planet of each type per
+	/// round, a filtered RE-resolve (retarget) finds nothing — the previous
+	/// planet is excluded — so filtered missions should use the FAIL loss policy.
+	var/wanted_planet
 
 /datum/mission_target/planet/resolve()
 	var/obj/structure/overmap/planet/previous = planet
@@ -196,6 +206,8 @@
 		if(QDELETED(candidate))
 			continue
 		if(candidate == previous)
+			continue
+		if(wanted_planet && candidate.planet != wanted_planet)
 			continue
 		if(!istype(get_turf(candidate), /turf/open/overmap))
 			continue

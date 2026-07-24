@@ -27,6 +27,11 @@
 		shuttle_loading = FALSE
 		return FALSE
 
+	// No theme picked but the ship is themed (roundstart list, admin spawn): use the
+	// default theme so the ship gets its job slots and the right base dmm
+	if(!selected_theme && length(template_instance.available_themes))
+		selected_theme = get_default_theme_for_ship(template_instance.type)
+
 	// If a theme is selected, update the template's suffix, mappath, and theme ID for map loading
 	if(selected_theme)
 		template_instance.suffix = selected_theme.template_suffix
@@ -44,6 +49,12 @@
 		shuttle_loading = FALSE
 		return FALSE
 
+	// Store upgrade selections and theme BEFORE setup_from_template (module job_slots_add
+	// reads them) and BEFORE the map loads (modular_map_root reads them)
+	if(length(upgrade_selections))
+		ship_to_spawn.upgrade_selections = upgrade_selections.Copy()
+	ship_to_spawn.theme = selected_theme?.id || template_instance.theme
+
 	// Manually initialize the ship with the template since arg passing through Initialize chain is broken
 	// Pass the selected theme so job_slots can be set from theme
 	if(!ship_to_spawn.setup_from_template(template_instance, selected_theme))
@@ -51,11 +62,6 @@
 		qdel(ship_to_spawn)
 		shuttle_loading = FALSE
 		return FALSE
-
-	// Store upgrade selections and theme on ship BEFORE map loads (so modular_map_root can read them)
-	if(length(upgrade_selections))
-		ship_to_spawn.upgrade_selections = upgrade_selections.Copy()
-	ship_to_spawn.theme = selected_theme?.id || template_instance.theme
 
 	// Set loading_ship so modular_map_root/ship_upgrade can find the ship during map loading
 	loading_ship = ship_to_spawn
@@ -77,6 +83,10 @@
 	loaded.current_ship = ship_to_spawn
 	ship_to_spawn.name = loaded.name
 	ship_to_spawn.shuttle = loaded
+
+	// Fresh ships spawn parked in deep space with zero speed - still the starfield
+	// the template load asserted on our areas
+	ship_to_spawn.update_flight_parallax()
 
 	SEND_SIGNAL(loaded, COMSIG_VOIDCREW_SHIP_LOADED)
 

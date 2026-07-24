@@ -91,9 +91,10 @@
 				uses -= 1
 				if (uses == 0)
 					to_chat(user, "<span class='warning'>You've emptied out the [name]!</span>")
-					qdel(spawner_type)
+					qdel(src)
+					return
 			else
-				to_chat(user, "<span class='warning'>You didn't find anything, maybe try looking again?")
+				to_chat(user, "<span class='warning'>You didn't find anything, maybe try looking again?</span>")
 	else
 		to_chat(user, "<span class='warning'><b>Your search was interrupted!</b></span>")
 	in_use = FALSE

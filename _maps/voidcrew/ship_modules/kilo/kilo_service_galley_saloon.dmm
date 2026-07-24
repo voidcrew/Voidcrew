@@ -1,0 +1,182 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/template_noop)
+"l" = (
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/stack/spacecash/c50{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/obj/item/dice/d6{
+	pixel_x = 8;
+	pixel_y = 7
+	},
+/obj/effect/spawner/random/food_or_drink/booze,
+/obj/machinery/light/small{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"n" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/template_noop)
+"v" = (
+/obj/structure/table/wood,
+/obj/machinery/microwave{
+	pixel_y = 5
+	},
+/obj/item/storage/box/donkpockets{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/storage/bag/tray{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/obj/item/food/burger/bearger{
+	pixel_x = 6;
+	pixel_y = -1
+	},
+/obj/item/flashlight/lamp/green{
+	pixel_x = -9;
+	pixel_y = 12
+	},
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/wood,
+/area/template_noop)
+"w" = (
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/template_noop)
+"y" = (
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/template_noop)
+"B" = (
+/obj/structure/closet/secure_closet/freezer{
+	locked = 0;
+	name = "fridge"
+	},
+/obj/item/food/sausage,
+/obj/item/food/sosjerky,
+/obj/item/reagent_containers/cup/glass/bottle/whiskey,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/template_noop)
+"E" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/template_noop)
+"F" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/template_noop)
+"G" = (
+/obj/machinery/vending/boozeomat,
+/turf/open/floor/wood,
+/area/template_noop)
+"J" = (
+/obj/structure/chair/sofa/left{
+	color = "#c45c57";
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"R" = (
+/obj/structure/chair/sofa/right{
+	color = "#c45c57";
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 2
+	},
+/obj/structure/sign/poster/contraband/random{
+	pixel_x = -32
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"S" = (
+/obj/modular_map_connector,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"U" = (
+/obj/structure/closet/crate/bin,
+/obj/item/trash/syndi_cakes,
+/obj/machinery/light_switch{
+	dir = 1;
+	pixel_y = 23
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/wood,
+/area/template_noop)
+"W" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/template_noop)
+
+(1,1,1) = {"
+J
+R
+y
+S
+"}
+(2,1,1) = {"
+B
+c
+E
+v
+"}
+(3,1,1) = {"
+W
+E
+w
+F
+"}
+(4,1,1) = {"
+U
+n
+l
+G
+"}

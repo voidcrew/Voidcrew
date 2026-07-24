@@ -217,8 +217,9 @@
 	if(demanded_credits < min_demand)
 		demanded_credits = min_demand
 
-	// Pick a random item demand as alternative
-	var/list/item_demand = pick_pirate_item_demand()
+	// Pick a random item demand as alternative; ships with a fixed demand
+	// (customs patrols after specific contraband) always ask for that instead
+	var/list/item_demand = length(pirate_ship.fixed_item_demand) ? pirate_ship.fixed_item_demand : pick_pirate_item_demand()
 	if(item_demand && length(item_demand) >= 3)
 		demanded_item_type = item_demand[1]
 		demanded_item_quantity = item_demand[2]
@@ -274,26 +275,19 @@
  */
 /datum/pirate_negotiation/proc/link_ship_mission_pads()
 	if(!player_ship)
-		message_admins("DEBUG: link_ship_mission_pads - no player_ship")
 		return
-
-	message_admins("DEBUG: link_ship_mission_pads - player_ship=[player_ship], linked_mission_pads=[length(player_ship.linked_mission_pads)]")
 
 	// Use the ship's registered mission pads
 	if(length(player_ship.linked_mission_pads))
 		for(var/obj/machinery/mission_pad/pad as anything in player_ship.linked_mission_pads)
 			link_mission_pad(pad)
-		message_admins("DEBUG: linked [length(tribute_pads)] pads from ship registry")
 		return
 
 	// Fallback: search through shuttle areas (in case pads haven't registered yet)
-	message_admins("DEBUG: Trying fallback - shuttle=[player_ship.shuttle], shuttle_areas=[player_ship.shuttle?.shuttle_areas ? length(player_ship.shuttle.shuttle_areas) : "null"]")
 	if(player_ship.shuttle?.shuttle_areas)
 		for(var/area/ship_area as anything in player_ship.shuttle.shuttle_areas)
 			for(var/obj/machinery/mission_pad/found_pad in ship_area)
 				link_mission_pad(found_pad)
-				message_admins("DEBUG: Found pad [found_pad] in area [ship_area]")
-	message_admins("DEBUG: After fallback, tribute_pads=[length(tribute_pads)]")
 
 /**
  * Spawn the pirate hologram on the holopad.
@@ -399,18 +393,14 @@
  * Returns TRUE if item was accepted, FALSE otherwise.
  */
 /datum/pirate_negotiation/proc/process_item_payment(obj/item/item)
-	message_admins("DEBUG process_item_payment: state=[negotiation_state], demanded_type=[demanded_item_type], item=[item.type]")
 	if(negotiation_state != NEGOTIATION_ACTIVE && negotiation_state != NEGOTIATION_PAYING)
-		message_admins("DEBUG process_item_payment: wrong state (need ACTIVE=1 or PAYING=2, got [negotiation_state])")
 		return FALSE
 
 	if(!demanded_item_type)
-		message_admins("DEBUG process_item_payment: no demanded_item_type")
 		return FALSE
 
 	// Check if item matches demanded type
 	if(!istype(item, demanded_item_type))
-		message_admins("DEBUG process_item_payment: type mismatch - wanted [demanded_item_type], got [item.type]")
 		// Debounce rejection messages to prevent spam when stacks are dropped
 		if(COOLDOWN_FINISHED(src, rejection_message_cooldown))
 			pirate_say("That's not what I asked for. I want [demanded_item_name]!")

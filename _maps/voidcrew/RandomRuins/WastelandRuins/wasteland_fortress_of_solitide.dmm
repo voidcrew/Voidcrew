@@ -963,7 +963,7 @@
 /turf/open/floor/plating,
 /area/ruin/powered)
 "jS" = (
-/obj/structure/chair/sofa/right{
+/obj/structure/chair/sofa/left{
 	dir = 1
 	},
 /mob/living/basic/goose/vomit{
@@ -1886,7 +1886,7 @@
 	faction = list("neutral");
 	name = "Douglas the Friendly Maintenance Goliath"
 	},
-/obj/structure/chair/sofa/left{
+/obj/structure/chair/sofa/right{
 	dir = 1
 	},
 /turf/open/floor/plating,

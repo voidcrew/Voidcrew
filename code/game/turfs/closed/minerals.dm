@@ -212,6 +212,7 @@
 	if(istype(user))
 		SEND_SIGNAL(user, COMSIG_MOB_MINED, src, exp_multiplier)
 	if(mineralType && (mineralAmt > 0))
+		mineralAmt = zone_scaled_ore_amount(mineralAmt) // VOIDCREW EDIT: deeper-zone planets yield more ore per wall (see voidcrew/turfs/closed/minerals.dm)
 		new mineralType(src, mineralAmt)
 		SSblackbox.record_feedback("tally", "ore_mined", mineralAmt, mineralType)
 	if(spawned_boulder)
@@ -455,6 +456,7 @@
 		/obj/item/stack/ore/titanium = 11,
 		/obj/item/stack/ore/uranium = 5,
 		/turf/closed/mineral/gibtonite/ice/icemoon = 4,
+		/turf/closed/mineral/glacial = 5, // VOIDCREW EDIT: glacial core veins — the ice planets' trade good (see voidcrew/modules/trade/planetary_goods.dm)
 	)
 
 /// Near exact same subtype as parent, just used in ruins to prevent other ruins/chasms from spawning on top of it.

@@ -13,6 +13,11 @@
 	trader_outfit = /datum/outfit/job/detective
 	trader_voice_pack = "goon.speak_2"
 	trader_voice_pitch = 0.92
+	// Vex's board also runs the drug-run contract: the only place in the
+	// galaxy that posts it, and the only counter that takes the product
+	extra_offer_mix = list(
+		/datum/mission/drug_run = 20,
+	)
 	categories = list(
 		"Weapons",
 		"Explosives",

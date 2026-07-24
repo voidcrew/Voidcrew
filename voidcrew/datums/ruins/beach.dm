@@ -17,3 +17,31 @@
 	prefix = "_maps/voidcrew/RandomRuins/BeachRuins/"
 	suffix = "push_it.dmm"
 	cost = 15
+
+/datum/map_template/ruin/beach/tikibar
+	name = "Tidewater Tiki Bar"
+	id = "tikibar"
+	description = "An abandoned beachfront tiki bar. The boozeomat still hums; the crabs run the place now."
+	suffix = "tiki_bar.dmm"
+	cost = 5
+
+/datum/map_template/ruin/beach/cargowreck
+	name = "Wreck of the MV Seagrass"
+	id = "cargowreck"
+	description = "A rusted cargo hauler run aground years ago. The company's salvage drones never got the order to stop guarding the manifest."
+	suffix = "cargo_wreck.dmm"
+	cost = 10
+
+/datum/map_template/ruin/beach/floodedlab
+	name = "Halocline Field Lab"
+	id = "floodedlab"
+	description = "A marine-biology field station with its wet lab breached to the sea. The specimens got out. The staff didn't."
+	suffix = "flooded_lab.dmm"
+	cost = 12
+
+/datum/map_template/ruin/beach/smugglercove
+	name = "Smuggler's Dropoff"
+	id = "smugglercove"
+	description = "A hidden contraband handoff point on a lonely stretch of shore. The last delivery is still waiting on the dock."
+	suffix = "smuggler_cove.dmm"
+	cost = 15

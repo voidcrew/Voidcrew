@@ -558,10 +558,19 @@
 	chat_color = pick(ship_chat_colors)
 
 	// Build job slots from theme if provided, otherwise from template
+	var/list/job_slot_definitions
 	if(selected_theme?.job_slots && length(selected_theme.job_slots))
-		job_slots = assemble_job_slots_from_list(selected_theme.job_slots)
+		job_slot_definitions = selected_theme.job_slots.Copy()
 	else
-		job_slots = source_template.assemble_job_slots()
+		job_slot_definitions = source_template.job_slots.Copy()
+
+	// Modules can contribute extra crew via job_slots_add; appended after the theme's
+	// own slots so the first entry (the captain) stays the supervisor
+	if(source_template.has_upgrade_slots)
+		var/list/slot_ids = selected_theme?.upgrade_slot_ids || source_template.upgrade_slot_ids
+		job_slot_definitions += get_module_job_definitions(source_template.type, upgrade_selections, slot_ids)
+
+	job_slots = assemble_job_slots_from_list(job_slot_definitions)
 
 	// Store initial slot counts for max slot calculations in cryo console
 	// This is an assoc list (job datum -> slot count), same format as job_slots
@@ -1250,6 +1259,7 @@
 	// Stop all movement first - we're holding position to hide
 	speed[1] = 0
 	speed[2] = 0
+	update_flight_parallax() // holding position means the starfield stops too
 
 	// Start the warmup timer
 	nebula_hide_timer = addtimer(CALLBACK(src, PROC_REF(complete_nebula_hide)), NEBULA_HIDE_WARMUP_TIME, TIMER_STOPPABLE)
@@ -1827,9 +1837,9 @@
  * is in flight); docked/landed interiors keep upstream behavior (no scroll). The
  * current scroll direction is kept as long as it still describes our motion, which
  * avoids direction flip-flopping during diagonal burns; a fresh direction is picked
- * from the dominant velocity axis otherwise. A still ship keeps whatever direction
- * it already had (drifting stars settle via upstream slowdown on arrival), falling
- * back to the shuttle's preferred_direction if it was wiped.
+ * from the dominant velocity axis otherwise. A still ship (no speed on either axis)
+ * gets NONE, which makes set_parallax_movedir() ease the scroll to a stop — no
+ * thrust means no drifting stars.
  */
 /obj/structure/overmap/ship/proc/update_flight_parallax()
 	if(!shuttle)
@@ -1844,14 +1854,13 @@
 		break
 
 	// Keep the current direction while it still matches our motion on that axis
-	if(current_dir)
+	if(current_dir && !is_still())
 		var/current_component = (current_dir & (EAST|WEST)) ? speed[1] : speed[2]
 		if((current_dir & (NORTH|EAST)) ? (current_component > 0) : (current_component < 0))
 			return
-		if(is_still()) // parked in deep space: keep the drift we already show
-			return
 
-	var/new_dir = shuttle.preferred_direction
+	// No thrust, no drift: a still ship stops the starfield (NONE = upstream ease-out)
+	var/new_dir = NONE
 	if(speed[1] && abs(speed[1]) >= abs(speed[2]))
 		new_dir = speed[1] > 0 ? EAST : WEST
 	else if(speed[2])

@@ -88,23 +88,31 @@
 	/// Number of scattered rock blobs to carve - minor/majour subtypes below scale this with severity
 	var/blob_count_min = EVENT_FIELD_MIN_BLOBS
 	var/blob_count_max = EVENT_FIELD_MAX_BLOBS
+	/// Radius bounds for each blob - higher severity fields contain larger rocks as well as more of them
+	var/blob_radius_min = EVENT_FIELD_BLOB_RADIUS_MIN
+	var/blob_radius_max = EVENT_FIELD_BLOB_RADIUS_MAX
 
 /datum/map_generator/cave_generator/asteroid_field/minor
-	blob_count_min = 3
-	blob_count_max = 5
+	blob_count_min = 22
+	blob_count_max = 28
+	blob_radius_min = 4
+	blob_radius_max = 7
 
 /datum/map_generator/cave_generator/asteroid_field/majour
-	blob_count_min = 6
-	blob_count_max = 10
+	blob_count_min = 46
+	blob_count_max = 58
+	blob_radius_min = 6
+	blob_radius_max = 11
 
 /**
- * Carves several jittered-radius circular blobs out of the turf block (instead of
+ * Carves several jittered-radius circular blobs across the supplied turf set (instead of
  * AsteroidCaves.dm's single field above) and runs the parent cave_generator's CA-based
- * open/closed terrain pass only across those blobs, so the rest of the reservation is
- * left untouched - real vacuum between and around the rock. Returns the list of turfs
- * actually generated, so the caller can pass the exact same list to populate_terrain()
- * without re-scanning the shared /area/centcom/asteroid/voidcrew (which may also contain
- * turfs from other, currently-loaded fields).
+ * open/closed terrain pass only across those blobs. Respecting the supplied set lets the
+ * caller cut non-rectangular ship-berth holes out of the field; everything else is left as
+ * real vacuum between and around the rock. Returns the unique turfs actually generated, so
+ * the caller can pass the exact same list to populate_terrain() without re-scanning the
+ * shared /area/centcom/asteroid/voidcrew (which may also contain turfs from other,
+ * currently-loaded fields).
  */
 /datum/map_generator/cave_generator/asteroid_field/generate_terrain(list/turfs, area/generate_in)
 	var/list/turfs_to_gen = list()
@@ -113,6 +121,10 @@
 
 	var/turf/first_turf = turfs[1]
 	var/z = first_turf.z
+	var/list/allowed_turfs = list()
+	for(var/turf/allowed_turf as anything in turfs)
+		allowed_turfs[allowed_turf] = TRUE
+	var/list/selected_turfs = list()
 
 	var/maxx
 	var/maxy
@@ -132,18 +144,22 @@
 	var/area/centcom/asteroid/voidcrew/asteroid_area = GLOB.areas_by_type[/area/centcom/asteroid/voidcrew] || new
 
 	for(var/i in 1 to blob_count)
-		var/radius = rand(EVENT_FIELD_BLOB_RADIUS_MIN, EVENT_FIELD_BLOB_RADIUS_MAX)
+		var/radius = rand(blob_radius_min, blob_radius_max)
 		if((maxx - minx) <= radius * 2 || (maxy - miny) <= radius * 2)
 			continue // block too small for this blob, skip rather than clamp into overlap
-		var/center_x = rand(minx + radius, maxx - radius)
-		var/center_y = rand(miny + radius, maxy - radius)
+		var/turf/blob_center = pick(turfs)
+		var/center_x = blob_center.x
+		var/center_y = blob_center.y
 
 		for(var/turf/candidate as anything in block(
-			locate(center_x - radius, center_y - radius, z),
-			locate(center_x + radius, center_y + radius, z)))
+			locate(max(minx, center_x - radius), max(miny, center_y - radius), z),
+			locate(min(maxx, center_x + radius), min(maxy, center_y + radius), z)))
+			if(!allowed_turfs[candidate] || selected_turfs[candidate])
+				continue
 			var/jittered_radius = rand(radius - 1, radius + 1)
 			if((candidate.x - center_x) ** 2 + (candidate.y - center_y) ** 2 > jittered_radius ** 2)
 				continue
+			selected_turfs[candidate] = TRUE
 			var/area/old_area = get_area(candidate)
 			candidate.change_area(old_area, asteroid_area)
 			turfs_to_gen += candidate
@@ -154,4 +170,3 @@
 	asteroid_area.reg_in_areas_in_z()
 	..(turfs_to_gen, asteroid_area)
 	return turfs_to_gen
-

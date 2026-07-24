@@ -56,7 +56,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	var/second_dock_taken = FALSE
 	/// Which docking port the ship is occupying
 	var/dock_index
-	/// Bottom-left turf of the field's interior working area (set by load_level, cleared on unload)
+	/// Bottom-left turf of the field's padded generation footprint (set by load_level, cleared on unload)
 	var/turf/field_bottom_left
 
 /obj/structure/overmap/event/meteor/Initialize(mapload)
@@ -151,21 +151,36 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	var/turf/top_right = reservation.top_right_turfs[1]
 
 	field_bottom_left = locate(
-		bottom_left.x + RESERVE_DOCK_MAX_SIZE_LONG + RESERVE_DOCK_DEFAULT_PADDING,
-		bottom_left.y + RESERVE_DOCK_MAX_SIZE_SHORT + RESERVE_DOCK_DEFAULT_PADDING,
+		bottom_left.x + RESERVE_DOCK_DEFAULT_PADDING,
+		bottom_left.y + RESERVE_DOCK_DEFAULT_PADDING,
 		bottom_left.z
 	)
 	var/turf/field_top_right = locate(
-		field_bottom_left.x + EVENT_FIELD_WIDTH - 1,
-		field_bottom_left.y + EVENT_FIELD_HEIGHT - 1,
+		top_right.x - RESERVE_DOCK_DEFAULT_PADDING,
+		top_right.y - RESERVE_DOCK_DEFAULT_PADDING,
 		bottom_left.z
 	)
 
+	// Use the whole padded reservation as the potential field, except for both
+	// maximum-size ship berths and a clearance collar around them. The dock helper
+	// may rotate or recenter a ship inside these rectangles, but never outside them.
+	var/primary_clearance_max_x = field_bottom_left.x + RESERVE_DOCK_MAX_SIZE_LONG + EVENT_FIELD_DOCK_CLEARANCE - 1
+	var/primary_clearance_max_y = field_bottom_left.y + RESERVE_DOCK_MAX_SIZE_SHORT + EVENT_FIELD_DOCK_CLEARANCE - 1
+	var/secondary_clearance_min_x = field_top_right.x - RESERVE_DOCK_MAX_SIZE_LONG - EVENT_FIELD_DOCK_CLEARANCE + 1
+	var/secondary_clearance_min_y = field_top_right.y - RESERVE_DOCK_MAX_SIZE_SHORT - EVENT_FIELD_DOCK_CLEARANCE + 1
+	var/list/field_candidates = list()
+	for(var/turf/candidate as anything in block(field_bottom_left, field_top_right))
+		var/in_primary_clearance = candidate.x <= primary_clearance_max_x && candidate.y <= primary_clearance_max_y
+		var/in_secondary_clearance = candidate.x >= secondary_clearance_min_x && candidate.y >= secondary_clearance_min_y
+		if(in_primary_clearance || in_secondary_clearance)
+			continue
+		field_candidates += candidate
+
 	// Carve the rock field via the map generator framework (same architecture as
 	// planets - see AsteroidCaves.dm) then top up ore the same way asteroid space
-	// ruin signals used to, before that category was retired in favor of this field
+	// ruin signals used to, before that category was retired in favor of this field.
 	var/datum/map_generator/cave_generator/asteroid_field/mapgen = new mapgen_type()
-	var/list/field_turfs = mapgen.generate_terrain(block(field_bottom_left, field_top_right))
+	var/list/field_turfs = mapgen.generate_terrain(field_candidates)
 	if(length(field_turfs))
 		var/area/centcom/asteroid/voidcrew/asteroid_area = GLOB.areas_by_type[/area/centcom/asteroid/voidcrew]
 		if(asteroid_area)
@@ -636,4 +651,3 @@ GLOBAL_LIST_INIT(overmap_event_pick_list, list(
 	/obj/structure/overmap/event/meteor = 40,
 	/obj/structure/overmap/event/meteor/majour = 35
 ))
-

@@ -520,6 +520,34 @@ voidcrew/
 
 ---
 
+## Ship Previews (map viewer in the selector UI)
+
+The ship customization UI shows a live top-down preview of the composited ship:
+the hull PNG with the selected module's PNG overlaid on each slot, exactly where
+the loader will place it. The images and geometry are **generated offline** and
+committed:
+
+```
+python tools/ship_previews/generate_ship_previews.py
+```
+
+This scans every `_maps/voidcrew/ships/ship_*.dmm` containing
+`/obj/modular_map_root/ship_upgrade` markers, every module DMM registered via
+`map_file` in `voidcrew/modules/ship_upgrades/ships/*.dm` (plus any themed
+`<base>_<theme>.dmm` reskins found beside them), renders them with dmm-tools,
+and writes PNGs + `manifest.json` to `voidcrew/modules/ship_upgrades/previews/`.
+
+**Re-run the script and commit the output whenever you:**
+- Edit a modular hull DMM (slot markers moved, hull redecorated)
+- Add or edit a module DMM (including themed reskins)
+- Add a new modular ship or theme
+
+Requires `dmm-tools.exe` (set `$DMM_TOOLS` or place at
+`~/code/tg-tools/bin/dmm-tools.exe`). If the manifest or a PNG is missing, the
+UI silently hides the preview — nothing breaks, players just don't see the map.
+
+---
+
 ## Checklists
 
 ### New Ship with Themes
@@ -544,6 +572,7 @@ voidcrew/
   - [ ] Each module has `/obj/modular_map_connector`
   - [ ] Uses `/area/template_noop`
 - [ ] Add DM files to `tgstation.dme`
+- [ ] Regenerate previews: `python tools/ship_previews/generate_ship_previews.py`
 
 ### New Theme for Existing Ship
 
@@ -562,6 +591,7 @@ voidcrew/
 - [ ] Set `is_default = TRUE` if it's the default for a slot
 - [ ] Create module DMM with connector marker
 - [ ] Add to ship's modules directory
+- [ ] Regenerate previews: `python tools/ship_previews/generate_ship_previews.py`
 
 ---
 

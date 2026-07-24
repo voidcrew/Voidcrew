@@ -37,18 +37,19 @@
 /// Ore stack size bounds for seeded asteroid deposits (planet rock yields rand(1,5) off mining z-levels)
 #define ASTEROID_ORE_AMOUNT_MIN 2
 #define ASTEROID_ORE_AMOUNT_MAX 5
-/// Interior working-area footprint (tiles) of a landable meteor storm rock field, before the docking buffer
+/// Open span between the two maximum-size ship berths in a landable meteor storm reservation
 #define EVENT_FIELD_WIDTH 48
 #define EVENT_FIELD_HEIGHT 48
-/// Default rock blob count bounds (see /datum/map_generator/cave_generator/asteroid_field in
-/// AsteroidCaves.dm) - minor/majour subtypes override these to scale field density with severity
-#define EVENT_FIELD_MIN_BLOBS 4
-#define EVENT_FIELD_MAX_BLOBS 10
-/// Blob radius bounds (tiles). Each blob is a jittered circle of rock - the same technique
-/// /datum/map_generator/cave_generator/asteroid uses for its single field (AsteroidCaves.dm),
-/// just applied per-blob so the field is several scattered clusters with vacuum between them
-#define EVENT_FIELD_BLOB_RADIUS_MIN 3
-#define EVENT_FIELD_BLOB_RADIUS_MAX 7
+/// Extra vacuum kept around each maximum-size ship berth, beyond the normal reservation padding
+#define EVENT_FIELD_DOCK_CLEARANCE 3
+/// Moderate-field rock blob count bounds (see /datum/map_generator/cave_generator/asteroid_field
+/// in AsteroidCaves.dm). Minor/majour subtypes override these along with the radius bounds.
+#define EVENT_FIELD_MIN_BLOBS 34
+#define EVENT_FIELD_MAX_BLOBS 42
+/// Moderate-field blob radius bounds (tiles). Each blob is a jittered circle of rock - the
+/// same technique /datum/map_generator/cave_generator/asteroid uses for its single field.
+#define EVENT_FIELD_BLOB_RADIUS_MIN 5
+#define EVENT_FIELD_BLOB_RADIUS_MAX 9
 /// Target fraction of a hazard field's rock turfs that should bear ore after seeding - denser
 /// than the old lone asteroid signal's ratio (~20%) since reaching this rock means flying
 /// through live meteor traffic first (see ship_damage.dm apply_meteor_damage)

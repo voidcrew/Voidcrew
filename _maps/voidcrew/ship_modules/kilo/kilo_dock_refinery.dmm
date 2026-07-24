@@ -1,0 +1,59 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"e" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"k" = (
+/obj/machinery/autolathe,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"x" = (
+/obj/machinery/mineral/ore_redemption{
+	dir = 2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"M" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"W" = (
+/obj/item/stack/ore/iron,
+/obj/effect/decal/cleanable/ash,
+/obj/effect/turf_decal/trimline/neutral/warning,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+x
+e
+"}
+(2,1,1) = {"
+k
+M
+"}
+(3,1,1) = {"
+W
+c
+"}

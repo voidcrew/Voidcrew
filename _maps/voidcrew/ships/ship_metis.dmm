@@ -212,7 +212,7 @@
 /area/shuttle/voidcrew/metis/science/xenobiology)
 "eT" = (
 /obj/effect/decal/cleanable/xenoblood,
-/mob/living/simple_animal/hostile/hivebot/strong,
+/mob/living/basic/hivebot/strong,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/titanium/tiled/white,
@@ -720,7 +720,7 @@
 /area/shuttle/voidcrew/metis/science/xenobiology)
 "oB" = (
 /obj/machinery/camera/autoname/directional/south,
-/mob/living/simple_animal/hostile/hivebot/mechanic,
+/mob/living/basic/hivebot/mechanic,
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/metis/hallway/aft)
 "oJ" = (
@@ -1498,7 +1498,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/metis/eepsoffice)
 "DT" = (
-/mob/living/simple_animal/hostile/hivebot/range,
+/mob/living/basic/hivebot/range,
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1698,7 +1698,7 @@
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/metis/hallway/fore)
 "HA" = (
-/mob/living/simple_animal/slime,
+/mob/living/basic/slime,
 /turf/open/floor/circuit/telecomms{
 	name = "coldroom"
 	},
@@ -2146,7 +2146,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/metis/science/xenobiology)
 "PY" = (
-/mob/living/simple_animal/hostile/alien/sentinel{
+/mob/living/basic/alien/sentinel{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -2217,7 +2217,7 @@
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/metis/hallway/aft)
 "Rj" = (
-/mob/living/simple_animal/hostile/hivebot/strong,
+/mob/living/basic/hivebot/strong,
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/metis/science/robotics)
 "Rk" = (
@@ -2273,7 +2273,7 @@
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/metis/eepsoffice)
 "Sj" = (
-/mob/living/simple_animal/slime,
+/mob/living/basic/slime,
 /obj/machinery/camera/autoname{
 	dir = 10
 	},
@@ -2294,7 +2294,7 @@
 /turf/open/floor/mineral/titanium/tiled/purple,
 /area/shuttle/voidcrew/metis/ai_core)
 "SN" = (
-/mob/living/simple_animal/pet/cat/original{
+/mob/living/basic/pet/cat/original{
 	mob_size = 1.1
 	},
 /obj/structure/bed/dogbed{
@@ -2686,7 +2686,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/metis/maintenance)
 "Yk" = (
-/mob/living/simple_animal/hostile/hivebot,
+/mob/living/basic/hivebot,
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/metis/science/robotics)

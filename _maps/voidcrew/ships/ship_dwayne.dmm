@@ -862,7 +862,7 @@
 /area/shuttle/voidcrew/dwayne/engineering)
 "zF" = (
 /obj/structure/cable,
-/mob/living/simple_animal/sloth/paperwork,
+/mob/living/basic/sloth/paperwork,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron,
@@ -1073,7 +1073,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/dwayne/engineering)
 "HP" = (
-/mob/living/simple_animal/butterfly{
+/mob/living/basic/butterfly{
 	color = "#DBB17F";
 	desc = "A moth.";
 	name = "moth"

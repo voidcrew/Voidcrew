@@ -226,7 +226,7 @@
 /turf/open/floor/wood/parquet,
 /area/ruin/space/has_grav/vestige/facsimile)
 "aM" = (
-/obj/structure/chair/sofa/corp{
+/obj/structure/chair/comfy{
 	dir = 2;
 	name = "promenade bench";
 	desc = "It faces its twin across the runner. Neither has ever been moved."
@@ -257,7 +257,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/vestige/facsimile)
 "aR" = (
-/obj/structure/chair/sofa/corp{
+/obj/structure/chair/comfy{
 	dir = 1;
 	name = "promenade bench";
 	desc = "It faces its twin across the runner. Neither has ever been moved."

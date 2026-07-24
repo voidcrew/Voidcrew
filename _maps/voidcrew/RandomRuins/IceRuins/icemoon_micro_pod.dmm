@@ -1,0 +1,102 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/machinery/door/airlock/survival_pod,
+/obj/structure/fans/tiny,
+/turf/open/floor/pod/dark,
+/area/ruin/powered)
+"d" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/pod/dark,
+/area/ruin/powered)
+"j" = (
+/obj/effect/zone_mobs/undead,
+/turf/open/misc/asteroid/snow/breathable/lit,
+/area/template_noop)
+"k" = (
+/turf/closed/wall/mineral/titanium/survival/pod,
+/area/template_noop)
+"p" = (
+/obj/structure/flora/rock/pile/icy,
+/turf/open/misc/asteroid/snow/breathable/lit,
+/area/template_noop)
+"w" = (
+/obj/structure/closet/crate/zone_loot/medical,
+/turf/open/floor/pod/dark,
+/area/ruin/powered)
+"B" = (
+/obj/structure/girder/displaced,
+/obj/item/stack/rods{
+	pixel_y = -3
+	},
+/turf/open/misc/asteroid/snow/breathable/lit,
+/area/template_noop)
+"G" = (
+/turf/template_noop,
+/area/template_noop)
+"P" = (
+/obj/effect/decal/cleanable/glass/titanium,
+/turf/open/misc/asteroid/snow/breathable/lit,
+/area/template_noop)
+"Q" = (
+/turf/open/misc/asteroid/snow/breathable/lit,
+/area/template_noop)
+"W" = (
+/obj/effect/decal/cleanable/ash,
+/obj/item/stack/sheet/iron,
+/turf/open/misc/asteroid/snow/breathable/lit,
+/area/template_noop)
+"X" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/mob_spawn/corpse/human/skeleton,
+/turf/open/misc/asteroid/snow/breathable/lit,
+/area/template_noop)
+
+(1,1,1) = {"
+G
+k
+k
+k
+G
+"}
+(2,1,1) = {"
+Q
+k
+w
+k
+Q
+"}
+(3,1,1) = {"
+Q
+k
+d
+k
+Q
+"}
+(4,1,1) = {"
+P
+k
+a
+k
+p
+"}
+(5,1,1) = {"
+Q
+Q
+j
+W
+Q
+"}
+(6,1,1) = {"
+G
+B
+X
+Q
+Q
+"}
+(7,1,1) = {"
+G
+Q
+Q
+G
+G
+"}

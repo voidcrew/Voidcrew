@@ -1,0 +1,99 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/structure/closet/crate/grave,
+/turf/open/misc/dust/lit,
+/area/template_noop)
+"g" = (
+/turf/open/misc/dust/lit,
+/area/template_noop)
+"j" = (
+/obj/structure/headpike/bone,
+/turf/open/misc/dust/lit,
+/area/template_noop)
+"w" = (
+/obj/structure/closet/crate/grave/filled,
+/turf/open/misc/dust/lit,
+/area/template_noop)
+"z" = (
+/obj/item/flashlight/flare/candle{
+	pixel_x = -4
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 4;
+	pixel_y = 5
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_y = -3
+	},
+/turf/open/misc/dust/lit,
+/area/template_noop)
+"A" = (
+/turf/open/misc/dirt/dry/lit,
+/area/template_noop)
+"D" = (
+/obj/effect/decal/remains/human,
+/turf/open/misc/dust/lit,
+/area/template_noop)
+"I" = (
+/obj/effect/zone_mobs/undead,
+/turf/open/misc/dirt/dry/lit,
+/area/template_noop)
+"R" = (
+/obj/structure/closet/crate/zone_loot/occult,
+/turf/open/misc/dust/lit,
+/area/template_noop)
+"T" = (
+/obj/structure/flora/tree/dead/barren,
+/turf/open/misc/dust/lit,
+/area/template_noop)
+"Y" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/shovel,
+/turf/open/misc/dust/lit,
+/area/template_noop)
+"Z" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+Z
+g
+g
+g
+Z
+"}
+(2,1,1) = {"
+g
+c
+A
+Y
+g
+"}
+(3,1,1) = {"
+T
+w
+A
+R
+g
+"}
+(4,1,1) = {"
+g
+c
+A
+z
+D
+"}
+(5,1,1) = {"
+g
+j
+I
+g
+g
+"}
+(6,1,1) = {"
+Z
+g
+g
+g
+Z
+"}

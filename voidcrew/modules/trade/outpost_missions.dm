@@ -151,12 +151,21 @@
 		mix = offer_mix.Copy()
 		for(var/offer_type in shop.extra_offer_mix)
 			mix[offer_type] = shop.extra_offer_mix[offer_type]
+	// Prune offers that died on the board (e.g. their pinned target vanished
+	// before anyone accepted) so they don't hold a slot or count against caps
+	for(var/datum/mission/posted as anything in shop_offers.Copy())
+		if(QDELETED(posted))
+			shop_offers -= posted
 	var/safety = 12
 	while(length(shop_offers) < OUTPOST_SHOP_OFFER_COUNT && safety-- > 0)
 		// Always keep at least one plain supply request on the board
 		var/offer_type = /datum/mission/outpost_supply
 		if(has_posted_offer_type(/datum/mission/outpost_supply))
 			offer_type = pick_weight(mix)
+		// Capped types (drug runs) count live missions AND posted offers; the
+		// ship-board roll enforces this in SSmissions, boards must match
+		if(!mission_type_within_limit(offer_type))
+			continue
 		var/datum/mission/offer = new offer_type(shop)
 		if(offer.generation_failed)
 			qdel(offer)
@@ -169,5 +178,26 @@
 		if(offer.type == offer_type)
 			return TRUE
 	return FALSE
+
+/**
+ * Whether another mission of this type may exist right now, per its
+ * mission_limit: counts live accepted missions plus every outpost board's
+ * unaccepted offers, so a capped contract can't be double-posted (or posted
+ * while one is already being run). Limit 0 = uncapped.
+ */
+/proc/mission_type_within_limit(mission_type)
+	var/datum/mission/mission_cast = mission_type
+	var/limit = initial(mission_cast.mission_limit)
+	if(limit <= 0)
+		return TRUE
+	var/count = 0
+	for(var/datum/mission/active as anything in SSmissions.all_active_missions)
+		if(active.type == mission_type)
+			count++
+	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
+		for(var/datum/mission/offer as anything in outpost.shop_offers)
+			if(!QDELETED(offer) && offer.type == mission_type)
+				count++
+	return count < limit
 
 #undef OUTPOST_SHOP_OFFER_COUNT

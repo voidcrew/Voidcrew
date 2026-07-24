@@ -1,0 +1,69 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/machinery/autolathe,
+/obj/machinery/status_display/evac{
+	pixel_y = 32
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"c" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"j" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"m" = (
+/obj/structure/table,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/glass/fifty{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/obj/item/stack/rods/fifty,
+/obj/item/storage/toolbox/electrical{
+	pixel_x = -3;
+	pixel_y = 8
+	},
+/obj/item/stock_parts/cell/high{
+	pixel_x = 3;
+	pixel_y = -1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"t" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"G" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+
+(1,1,1) = {"
+b
+j
+"}
+(2,1,1) = {"
+m
+c
+"}
+(3,1,1) = {"
+G
+t
+"}

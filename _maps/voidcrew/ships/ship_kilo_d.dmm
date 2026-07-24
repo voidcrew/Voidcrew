@@ -1,0 +1,1726 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/turf/template_noop,
+/area/template_noop)
+"aA" = (
+/obj/machinery/porta_turret/centcom_shuttle/weak{
+	dir = 4;
+	name = "Old Mining Turret"
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"aO" = (
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/obj/machinery/turretid{
+	locked = 0;
+	name = "NTMS-037 Mining Turret control panel";
+	pixel_x = 28;
+	pixel_y = 6;
+	req_access = null
+	},
+/obj/machinery/light_switch{
+	dir = 4;
+	pixel_x = 23
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"br" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"cT" = (
+/obj/machinery/door/airlock/external{
+	name = "External Freight Airlock"
+	},
+/obj/machinery/door/firedoor,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/docking_port/mobile/voidcrew/kilo/d{
+	dir = 2
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"di" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/conveyor_switch/oneway{
+	id = "NTMSLoad";
+	name = "unloading ramp switch"
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"dv" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"dE" = (
+/obj/structure/sign/warning/fire,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"dP" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"dY" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/shuttle{
+	name = "Bunk A"
+	},
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"er" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/effect/turf_decal/trimline/white/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/item/gun/energy/e_gun/mini,
+/obj/item/clothing/shoes/workboots,
+/obj/item/clothing/shoes/workboots,
+/obj/item/clothing/shoes/workboots,
+/obj/machinery/firealarm/directional/west,
+/obj/item/clothing/shoes/laceup,
+/obj/item/clothing/shoes/laceup,
+/obj/item/clothing/shoes/laceup,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"fa" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/shuttle{
+	name = "Bunk B"
+	},
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"gO" = (
+/obj/machinery/power/terminal{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"hi" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/power/shuttle_engine/ship/fueled/plasma{
+	dir = 8
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"hy" = (
+/obj/structure/plasticflaps,
+/obj/machinery/conveyor{
+	dir = 1;
+	id = "NTMSLoad";
+	name = "off ramp"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"iv" = (
+/obj/machinery/porta_turret/centcom_shuttle/weak{
+	dir = 4;
+	name = "Old Mining Turret"
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/kilo/cafe/d)
+"iJ" = (
+/obj/effect/turf_decal/stripes,
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/machinery/cryopod,
+/obj/machinery/computer/cryopod{
+	pixel_y = 32
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"iZ" = (
+/obj/machinery/computer/crew{
+	dir = 1
+	},
+/obj/machinery/light,
+/obj/machinery/computer/security/telescreen{
+	dir = 1;
+	name = "NTMS-037 Monitor";
+	network = list("ntms");
+	pixel_y = -30
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"jh" = (
+/obj/machinery/porta_turret/centcom_shuttle/weak{
+	dir = 4;
+	name = "Old Mining Turret"
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"jD" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"ke" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/suit_storage_unit/mining/eva,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"lk" = (
+/obj/structure/table,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 4
+	},
+/obj/item/flashlight{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/west{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/random/directional/south,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"ll" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/external{
+	name = "NTMS-037 Mining Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"ln" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"lW" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/mob/living/basic/pet/dog/corgi{
+	desc = "Came with the refit. Nobody has told him he is a company asset.";
+	name = "Quarterly"
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"mo" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"mp" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/shuttle{
+	name = "Ship Lockers"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"mU" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/command{
+	name = "Ship Control"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"nJ" = (
+/obj/structure/table,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 6
+	},
+/obj/item/stack/spacecash/c200,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"nT" = (
+/obj/structure/tank_dispenser/oxygen,
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"oa" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"oe" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"op" = (
+/obj/structure/rack,
+/obj/item/storage/belt/utility,
+/obj/item/radio/off{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/radio/off,
+/obj/effect/turf_decal/trimline/neutral/warning,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"oA" = (
+/obj/structure/table,
+/obj/item/folder/blue{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/pen,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"oM" = (
+/obj/machinery/door/poddoor{
+	id = "kilo_bay";
+	name = "NTMS-037 Bay Blast Door"
+	},
+/obj/machinery/conveyor{
+	id = "NTMSLoad2";
+	name = "on ramp"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"oT" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"pf" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/item/areaeditor/shuttle,
+/obj/structure/table,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"pl" = (
+/obj/structure/table,
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/recharger,
+/obj/item/radio/intercom/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"qx" = (
+/obj/machinery/atmospherics/components/tank/air{
+	piping_layer = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"qL" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/machinery/airalarm/directional/west,
+/obj/item/kirbyplants/random,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"rd" = (
+/obj/structure/plasticflaps,
+/obj/machinery/conveyor{
+	id = "NTMSLoad2";
+	name = "on ramp"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"rB" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"rO" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/external{
+	id_tag = "ntms_exterior";
+	name = "NTMS-037 Mining Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"se" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"ss" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"sL" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"sO" = (
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/north,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"tx" = (
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"tR" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"tY" = (
+/obj/structure/reagent_dispensers/watertank,
+/obj/item/reagent_containers/cup/bucket,
+/obj/item/mop,
+/obj/item/storage/bag/trash{
+	pixel_x = 6
+	},
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/effect/turf_decal/stripes{
+	dir = 10
+	},
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/south,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"ua" = (
+/obj/machinery/computer/security{
+	dir = 1;
+	network = list("ntms")
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"uc" = (
+/obj/effect/turf_decal/trimline/white/filled/line{
+	dir = 1
+	},
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/cryopod,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"ur" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/shuttle{
+	name = "Engineering"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"ut" = (
+/obj/structure/chair/comfy/brown{
+	buildstackamount = 0;
+	color = "#c45c57";
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/west{
+	dir = 8
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/turf/open/floor/carpet,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"uL" = (
+/obj/effect/turf_decal/stripes,
+/obj/machinery/light_switch{
+	pixel_y = -23
+	},
+/obj/machinery/light/small/built,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"uY" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 1;
+	name = "engine fuel pump"
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"vw" = (
+/obj/structure/sign/warning/vacuum/external,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"vB" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"wl" = (
+/obj/effect/turf_decal/stripes{
+	dir = 10
+	},
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/suit_storage_unit/engine,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"wy" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"xq" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/command{
+	name = "Ship Control"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"xW" = (
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes{
+	dir = 9
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer4,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"ys" = (
+/obj/structure/table,
+/obj/machinery/cell_charger,
+/obj/item/stock_parts/cell/high,
+/obj/effect/turf_decal/stripes,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"yB" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/effect/turf_decal/trimline/white/filled/line{
+	dir = 1
+	},
+/obj/item/gun/energy/e_gun/mini,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hooded/wintercoat/engineering,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/suit/hazardvest,
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"yM" = (
+/obj/effect/turf_decal/box/corners,
+/obj/effect/turf_decal/box/corners{
+	dir = 4
+	},
+/obj/item/wrench,
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"yQ" = (
+/obj/machinery/door/airlock/external{
+	name = "External Freight Airlock"
+	},
+/obj/machinery/door/firedoor,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"zl" = (
+/obj/structure/reagent_dispensers/fueltank,
+/obj/item/weldingtool/largetank,
+/obj/effect/turf_decal/stripes{
+	dir = 9
+	},
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"zq" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/corner,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"zD" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "kilo_windows";
+	name = "Exterior Window Blast Door"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"zV" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/kilo/cafe/d)
+"zY" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/structure/cable,
+/mob/living/basic/bot/cleanbot{
+	name = "Buffer"
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 2
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"Av" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"AJ" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"AN" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/button/door{
+	id = "kilo_bay";
+	name = "Cargo Bay Control";
+	pixel_x = -24;
+	pixel_y = 24
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/obj/machinery/conveyor_switch/oneway{
+	id = "NTMSLoad2";
+	name = "loading ramp switch"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"AT" = (
+/obj/machinery/door/poddoor{
+	id = "kilo_bay";
+	name = "NTMS-037 Bay Blast Door"
+	},
+/obj/machinery/conveyor{
+	dir = 1;
+	id = "NTMSLoad";
+	name = "off ramp"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"AU" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"AV" = (
+/obj/structure/table/wood,
+/obj/item/storage/fancy/cigarettes/cigars/havana{
+	pixel_y = 5
+	},
+/obj/item/crowbar/red,
+/obj/item/lighter{
+	pixel_x = -8;
+	pixel_y = 8
+	},
+/turf/open/floor/carpet,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"Ba" = (
+/obj/effect/turf_decal/stripes{
+	dir = 10
+	},
+/obj/machinery/atmospherics/components/tank/plasma{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"Bo" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "kilo_hold"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"Bp" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/storage/toolbox/emergency,
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/item/circuitboard/machine/ore_redemption,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"BI" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "kilo_windows";
+	name = "Exterior Window Blast Door"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"BN" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/carpet,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"BP" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 8
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"Cq" = (
+/obj/machinery/status_display/evac{
+	pixel_x = 32;
+	pixel_y = 32
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/obj/machinery/holopad,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"CA" = (
+/obj/structure/table,
+/obj/item/folder/yellow{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/paper{
+	default_raw_text = "NTMS-037 REFIT COMPLETION CERTIFICATE. All systems restored to factory specification. Deviation from approved configuration voids the warranty. Thank you for choosing Nanotrasen Fleet Services.";
+	name = "refit certificate";
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/obj/item/gps{
+	gpstag = "NTMS-037";
+	pixel_x = -9;
+	pixel_y = 4
+	},
+/obj/machinery/firealarm/directional/north,
+/obj/item/areaeditor/shuttle,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"CQ" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cafe/d)
+"Db" = (
+/obj/effect/turf_decal/bot_white,
+/obj/machinery/door/poddoor{
+	id = "kilo_bay";
+	name = "NTMS-037 Bay Blast Door"
+	},
+/obj/machinery/conveyor{
+	dir = 1;
+	id = "NTMSLoad";
+	name = "off ramp"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"Dj" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "kilo_windows";
+	name = "Exterior Window Blast Door"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"Dp" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"DM" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/storage/box/lights/mixed,
+/obj/structure/sign/poster/official/random{
+	pixel_x = -32
+	},
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"Fs" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"FT" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "kilo_dock"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"Gt" = (
+/obj/effect/turf_decal/stripes,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"HM" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"Ic" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/wrench,
+/obj/item/tank/internals/emergency_oxygen,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"IK" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"IL" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/machinery/power/smes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/door/window/left/directional/west,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"Jn" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 8
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"Jw" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"JM" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"Ks" = (
+/obj/effect/turf_decal/stripes/corner,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"KJ" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"KK" = (
+/obj/structure/bed,
+/obj/item/bedsheet/captain,
+/turf/open/floor/carpet,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"Ls" = (
+/obj/structure/table,
+/obj/machinery/button/door{
+	id = "kilo_windows";
+	name = "NTMS-037 Windows Blast Door Control";
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/obj/item/radio{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"LN" = (
+/obj/effect/turf_decal/stripes,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"Mt" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/extinguisher_cabinet/directional/north,
+/obj/structure/cable,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"MJ" = (
+/obj/structure/sign/warning/engine_safety,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"Nq" = (
+/obj/effect/turf_decal/stripes,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"Oj" = (
+/obj/effect/turf_decal/stripes{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"Pb" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/item/gun/energy/laser/retro,
+/obj/structure/plaque/static_plaque/golden/captain{
+	pixel_x = 32
+	},
+/obj/machinery/status_display/evac{
+	pixel_y = 32
+	},
+/obj/item/pai_card,
+/turf/open/floor/carpet,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"Pk" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "kilo_service"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cafe/d)
+"Pt" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "kilo_windows";
+	name = "Exterior Window Blast Door"
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"Qb" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/light,
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/obj/item/wrench,
+/obj/effect/turf_decal/stripes,
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"Qe" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 8
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/west,
+/obj/structure/window/reinforced/plasma/spawner,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"Qf" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"Qs" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"Rf" = (
+/obj/effect/turf_decal/stripes{
+	dir = 9
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"Rr" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/shuttle{
+	name = "Captain's Quarters"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"RK" = (
+/obj/structure/ore_box,
+/obj/effect/turf_decal/box/corners{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"Sh" = (
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/portable_atmospherics/scrubber/huge,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"SN" = (
+/obj/structure/chair/comfy/shuttle,
+/obj/effect/turf_decal/stripes{
+	dir = 10
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"SZ" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "kilo_windows";
+	name = "Exterior Window Blast Door"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"Ta" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/shuttle{
+	name = "Mining Dock"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"TA" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"Vd" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/emcloset/anchored,
+/obj/structure/sign/warning/vacuum/external/directional/west,
+/obj/machinery/light/small,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"VE" = (
+/obj/structure/falsewall/titanium,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"VG" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"VH" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"VL" = (
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/shower/directional/south,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/extinguisher_cabinet/directional/north,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"Wx" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/ore_box,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/corner,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"Xa" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/shuttle{
+	name = "Ship Services"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"Xn" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"Xt" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/machinery/door/airlock/external{
+	name = "NTMS-037 Mining Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"Xu" = (
+/obj/effect/turf_decal/bot_white,
+/obj/machinery/door/poddoor{
+	id = "kilo_bay";
+	name = "NTMS-037 Bay Blast Door"
+	},
+/obj/machinery/conveyor{
+	id = "NTMSLoad2";
+	name = "on ramp"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/d)
+"Xy" = (
+/obj/effect/turf_decal/stripes,
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/machinery/cryopod,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"XJ" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"XM" = (
+/obj/machinery/power/smes/engineering{
+	charge = 1e+006
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/obj/structure/sign/warning/electric_shock/directional/north,
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"XZ" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/machinery/power/smes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/door/window/right/directional/west,
+/turf/open/floor/plating/airless,
+/area/shuttle/voidcrew/kilo/engineering/d)
+"Yb" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 10
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"Yk" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/emcloset/anchored,
+/obj/machinery/button/door{
+	id = "ntms_exterior";
+	name = "NTMS-037 External Lock";
+	normaldoorcontrol = 1;
+	pixel_x = -24;
+	pixel_y = -8;
+	specialfunctions = 4
+	},
+/obj/structure/sign/warning/xeno_mining/directional/north,
+/obj/machinery/firealarm/directional/west{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"YG" = (
+/obj/effect/turf_decal/stripes,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/cargo/mining_dock/d)
+"YO" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "kilo_windows";
+	name = "Exterior Window Blast Door"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cafe/d)
+"YR" = (
+/obj/structure/chair/comfy/shuttle,
+/obj/effect/turf_decal/stripes,
+/obj/structure/cable,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/kilo/bridge/d)
+"Zf" = (
+/obj/machinery/computer/security/telescreen/entertainment,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/kilo/dorms/d)
+"ZX" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/computer/helm{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/d)
+
+(1,1,1) = {"
+aa
+aA
+AU
+rO
+rO
+AU
+aA
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(2,1,1) = {"
+aa
+AU
+Yk
+dP
+YG
+Vd
+wy
+SZ
+wy
+SZ
+SZ
+aa
+aa
+"}
+(3,1,1) = {"
+aa
+AU
+AU
+Xt
+ll
+vw
+wy
+CA
+qL
+ZX
+SZ
+SZ
+aa
+"}
+(4,1,1) = {"
+aa
+AU
+VL
+zY
+zq
+VG
+mU
+vB
+HM
+Yb
+Ls
+SZ
+SZ
+"}
+(5,1,1) = {"
+aa
+AU
+Av
+FT
+Gt
+op
+wy
+sO
+lW
+sL
+SN
+ua
+SZ
+"}
+(6,1,1) = {"
+aa
+Dj
+Av
+Av
+Gt
+ke
+wy
+pl
+Cq
+XJ
+YR
+iZ
+wy
+"}
+(7,1,1) = {"
+aa
+Dj
+Av
+Av
+Gt
+nT
+wy
+wy
+oA
+aO
+Nq
+nJ
+SZ
+"}
+(8,1,1) = {"
+aa
+AU
+Ic
+AU
+Ta
+AU
+wy
+wy
+wy
+wy
+xq
+wy
+wy
+"}
+(9,1,1) = {"
+oa
+oa
+oa
+oa
+Fs
+Bp
+DM
+zV
+CQ
+CQ
+CQ
+Pk
+YO
+"}
+(10,1,1) = {"
+oM
+rd
+Xu
+AN
+tR
+JM
+Ks
+zV
+CQ
+CQ
+CQ
+CQ
+zV
+"}
+(11,1,1) = {"
+cT
+Dp
+yQ
+di
+RK
+yM
+LN
+Xa
+CQ
+CQ
+CQ
+CQ
+YO
+"}
+(12,1,1) = {"
+AT
+hy
+Db
+mo
+oe
+oe
+Bo
+zV
+CQ
+CQ
+CQ
+CQ
+iv
+"}
+(13,1,1) = {"
+oa
+oa
+oa
+Mt
+oe
+oe
+oa
+zV
+zV
+mp
+zV
+zV
+aa
+"}
+(14,1,1) = {"
+aa
+dv
+Pt
+Wx
+oe
+oe
+Qs
+iJ
+dY
+Rf
+er
+BI
+aa
+"}
+(15,1,1) = {"
+aa
+aa
+AJ
+MJ
+ur
+AJ
+AJ
+Zf
+Qs
+oT
+yB
+Qs
+aa
+"}
+(16,1,1) = {"
+aa
+aa
+AJ
+ys
+jD
+lk
+AJ
+Xy
+fa
+tx
+uc
+BI
+aa
+"}
+(17,1,1) = {"
+aa
+aa
+zD
+xW
+Xn
+tY
+AJ
+Qs
+Qs
+Rr
+Qs
+jh
+aa
+"}
+(18,1,1) = {"
+aa
+aa
+zD
+qx
+VH
+uL
+AJ
+AV
+ut
+BN
+BI
+aa
+aa
+"}
+(19,1,1) = {"
+aa
+aa
+AJ
+XM
+gO
+Qb
+dE
+Qs
+Pb
+KK
+BI
+aa
+aa
+"}
+(20,1,1) = {"
+aa
+aa
+AJ
+AJ
+ss
+Jw
+wl
+AJ
+VE
+AJ
+AJ
+aa
+aa
+"}
+(21,1,1) = {"
+aa
+aa
+AJ
+zl
+br
+KJ
+se
+IK
+uY
+Ba
+zD
+aa
+aa
+"}
+(22,1,1) = {"
+aa
+aa
+AJ
+Sh
+rB
+rB
+pf
+Qf
+Qf
+Oj
+zD
+aa
+aa
+"}
+(23,1,1) = {"
+aa
+aa
+ln
+Qe
+XZ
+IL
+ln
+XZ
+IL
+Jn
+ln
+aa
+aa
+"}
+(24,1,1) = {"
+aa
+aa
+TA
+hi
+BP
+BP
+ln
+BP
+BP
+hi
+TA
+aa
+aa
+"}

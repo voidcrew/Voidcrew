@@ -46,6 +46,8 @@
 			return "goon.buwoo" // Ethereal wooshing voice
 		if("irs")
 			return "goon.bottalk_1" // Bureaucratic monotone
+		if("nt_patrol")
+			return "goon.bottalk_1" // Corporate compliance monotone
 		if("grey")
 			return "goon.speak_2" // Chaotic normal voice
 		if("medieval")
@@ -118,6 +120,8 @@
 			return new /datum/preset_holoimage/pirate_captain/interdyne()
 		if("lustrous")
 			return new /datum/preset_holoimage/pirate_captain/lustrous()
+		if("nt_patrol")
+			return new /datum/preset_holoimage/pirate_captain/nt_patrol()
 	// Default to generic pirate
 	return new /datum/preset_holoimage/pirate_captain()
 

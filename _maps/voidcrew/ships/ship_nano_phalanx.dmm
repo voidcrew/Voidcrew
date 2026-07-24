@@ -3149,7 +3149,7 @@
 /area/shuttle/voidcrew/phalanx/engineering/storage)
 "UR" = (
 /obj/structure/bed/dogbed/renault,
-/mob/living/simple_animal/pet/fox/renault,
+/mob/living/basic/pet/fox/renault,
 /obj/machinery/camera{
 	dir = 10
 	},

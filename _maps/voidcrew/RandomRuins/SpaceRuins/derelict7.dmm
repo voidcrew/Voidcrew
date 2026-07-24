@@ -106,7 +106,7 @@
 	},
 /area/ruin/space/has_grav)
 "kI" = (
-/obj/structure/chair/sofa/left/brown,
+/obj/structure/chair/comfy/brown,
 /turf/open/floor/carpet/airless,
 /area/ruin/space/has_grav)
 "lQ" = (

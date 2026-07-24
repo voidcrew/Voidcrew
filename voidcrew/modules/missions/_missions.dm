@@ -305,7 +305,14 @@
 	if(current_objective() != objective)
 		return
 	objective_index++
-	if(current_objective())
+	// Skip anything that already completed out of order (e.g. a cook wrapped
+	// while the gather step was still current) so the chain can't wedge on a
+	// pre-completed step that will never fire again
+	var/datum/mission_objective/next_objective = current_objective()
+	while(next_objective?.completed)
+		objective_index++
+		next_objective = current_objective()
+	if(next_objective)
 		activate_current_objective()
 		push_waypoint()
 

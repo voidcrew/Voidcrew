@@ -86,6 +86,11 @@
 	unlink_from_z_level()
 	link_to_z_level()
 	recalculate_shuttle_areas() // this also readds VALID_TERRITORY
+	// Moving into transit asserts a preferred_direction scroll on our areas
+	// (shuttle_move.dm); reconcile it with the ship's real speed - a ship with no
+	// thrust should show a still starfield, not a drifting one
+	if(current_ship && istype(get_docked(), /obj/docking_port/stationary/transit))
+		current_ship.update_flight_parallax()
 	// Initialize space turfs if we're docking to empty space
 	if(current_ship && istype(current_ship.docked, /obj/structure/overmap/planet/empty))
 		current_ship.initialize_nearby_space_turfs()

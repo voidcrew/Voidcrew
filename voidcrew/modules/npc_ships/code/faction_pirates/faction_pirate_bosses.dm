@@ -199,8 +199,8 @@
 	attack_verb_simple = "audit"
 	attack_sound = 'sound/items/weapons/blade1.ogg'
 	attack_vis_effect = ATTACK_EFFECT_PUNCH
-	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/captain
-	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/captain
+	mob_spawner = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/chief
+	corpse = /obj/effect/mob_spawn/corpse/human/pirate/faction/irs/chief
 	r_hand = /obj/item/gun/energy/e_gun/lethal
 	loot_pool = list(/obj/item/gun/energy/e_gun/nuclear, /obj/item/storage/bag/money/dutchmen)
 	plunder_credits = 3000

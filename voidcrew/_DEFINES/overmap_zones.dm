@@ -77,7 +77,8 @@
 // ========== ZONE PLANET EFFECTS ==========
 // Planet surfaces feel their overmap zone: storms come more often, hit with
 // less warning and last longer in dangerous space, and biome fauna spawns
-// denser and meaner. Zones gate risk, never reward — loot/ore stay untouched.
+// denser and meaner. Zones scale AMOUNTS, never kinds — deeper bands mine
+// more of the same ores, but no zone-gated ore types or loot tables.
 
 /// Multiplier on the downtime between scheduled storms (SSweather's 5-10 minute gap) per zone
 #define ZONE_WEATHER_DOWNTIME_MULT_YELLOW 0.75
@@ -98,4 +99,8 @@
 /// Chance (percent) that a biome mob roll upgrades to the biome's dangerous_mob_spawn_list, per zone
 #define ZONE_PLANET_MOB_UPGRADE_PROB_YELLOW 20
 #define ZONE_PLANET_MOB_UPGRADE_PROB_RED 40
+
+/// Multiplier on ore mined per planet rock wall (mineralAmt), per zone — green stays baseline (x1). Applied in /turf/closed/mineral/proc/zone_scaled_ore_amount()
+#define ZONE_PLANET_ORE_MULT_YELLOW 1.5
+#define ZONE_PLANET_ORE_MULT_RED 2
 

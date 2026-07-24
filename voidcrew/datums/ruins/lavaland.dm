@@ -25,3 +25,27 @@
 
 /datum/map_template/ruin/lavaland/fountain
 	prefix = "_maps/voidcrew/RandomRuins/AnywhereRuins/"
+
+// ---- Voidcrew micro-POIs ----
+// Tiny (5x5) scattered setpieces that soak up leftover ruin budget: cost 1-2,
+// duplicates allowed, low weight so they season the pool rather than dominate.
+// These are voidcrew-native (not upstream copies) and inherit the redirected
+// prefix above.
+
+/datum/map_template/ruin/lavaland/micro_camp
+	name = "Lava-Micro Claim-Jumped Prospector Camp"
+	id = "micro-lava-camp"
+	description = "A one-man mining claim on the basalt flats. The bedroll is still occupied, technically."
+	suffix = "lavaland_micro_camp.dmm"
+	cost = 2
+	allow_duplicates = TRUE
+	placement_weight = 0.5
+
+/datum/map_template/ruin/lavaland/micro_meteor
+	name = "Lava-Micro Meteor Impact Scar"
+	id = "micro-lava-meteor"
+	description = "Something hit hard enough to glass the basalt and shove fresh ore up through the crust."
+	suffix = "lavaland_micro_meteor.dmm"
+	cost = 1
+	allow_duplicates = TRUE
+	placement_weight = 0.5

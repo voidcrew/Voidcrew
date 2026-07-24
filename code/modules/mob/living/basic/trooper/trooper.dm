@@ -28,10 +28,13 @@
 	var/r_hand
 	/// Path of the left hand held item we give to the mob's visuals.
 	var/l_hand
+	/// VOIDCREW EDIT: subtypes with bespoke static sprites (e.g. boat pirates) set this FALSE to keep their own icon.
+	var/use_dynamic_appearance = TRUE
 
 /mob/living/basic/trooper/Initialize(mapload)
 	. = ..()
-	apply_dynamic_human_appearance(src, mob_spawn_path = mob_spawner, r_hand = r_hand, l_hand = l_hand)
+	if(use_dynamic_appearance) // VOIDCREW EDIT
+		apply_dynamic_human_appearance(src, mob_spawn_path = mob_spawner, r_hand = r_hand, l_hand = l_hand)
 	if(LAZYLEN(loot) || corpse)
 		LAZYOR(loot, corpse)
 		loot = string_list(loot)

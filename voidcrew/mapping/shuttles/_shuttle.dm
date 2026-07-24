@@ -40,6 +40,11 @@
 			part_requirements[part_class] = 0
 
 /datum/map_template/shuttle/voidcrew/proc/assemble_job_slots()
+	// Themed ships keep their jobs on the default theme, not the template
+	if(!length(job_slots) && length(available_themes))
+		var/datum/ship_theme/default_theme = get_default_theme_for_ship(type)
+		if(default_theme?.job_slots)
+			return assemble_job_slots_from_list(default_theme.job_slots)
 	return assemble_job_slots_from_list(job_slots)
 
 /**

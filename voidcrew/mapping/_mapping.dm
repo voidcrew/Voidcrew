@@ -20,11 +20,11 @@
 	// This is a balancing act.
 	// Each planet will consume a significant amount of memory,
 	// so we need to be careful about how many starting planets we include
-	var/lava_planet_count = 0
-	var/ice_planet_count = 0
-	var/jungle_planet_count = 0
-	var/beach_planet_count = 0
-	var/wasteland_planet_count = 0
+	var/lava_planet_count = 1
+	var/ice_planet_count = 1
+	var/jungle_planet_count = 1
+	var/beach_planet_count = 1
+	var/wasteland_planet_count = 1
 
 	var/list/planets = list()
 
@@ -75,13 +75,13 @@
 	var/list/FailedZs = list()
 	var/z_count = 1
 	for(var/i in 1 to lava_planet_count)
-		LoadGroup(FailedZs, "Planet lava [i]", "map_files/voidcrew", "lava.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM)))
+		LoadGroup(FailedZs, "Planet lava [i]", "map_files/voidcrew", "lava.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_LAVA_RUINS, ZTRAIT_ASHSTORM)))
 		z_count += 2
 		var/list/p = list(type = /datum/overmap/planet/lava, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("lava [i]" = p)
 
 	for(var/i in 1 to ice_planet_count)
-		LoadGroup(FailedZs, "Planet ice [i]", "map_files/voidcrew", "ice.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM)))
+		LoadGroup(FailedZs, "Planet ice [i]", "map_files/voidcrew", "ice.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_ICE_RUINS, ZTRAIT_SNOWSTORM)))
 		z_count += 2
 		var/list/p = list(type = /datum/overmap/planet/ice, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("ice [i]" = p)
@@ -90,19 +90,19 @@
 	// schedules storms on them like it already does for lava/ice (their /datum/overmap/planet
 	// entries always declared these weather types, but the roundstart z-levels never got the traits)
 	for(var/i in 1 to jungle_planet_count)
-		LoadGroup(FailedZs, "Planet jungle [i]", "map_files/voidcrew", "jungle.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_JUNGLE_RUINS, ZTRAIT_RAINSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_JUNGLE_RUINS, ZTRAIT_RAINSTORM)))
+		LoadGroup(FailedZs, "Planet jungle [i]", "map_files/voidcrew", "jungle.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_JUNGLE_RUINS, ZTRAIT_RAINSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_JUNGLE_RUINS, ZTRAIT_RAINSTORM)))
 		z_count += 2
 		var/list/p = list(type = /datum/overmap/planet/jungle, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("jungle [i]" = p)
 
 	for(var/i in 1 to beach_planet_count)
-		LoadGroup(FailedZs, "Planet beach [i]", "map_files/voidcrew", "beach.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_BEACH_RUINS, ZTRAIT_RAINSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_BEACH_RUINS, ZTRAIT_RAINSTORM)))
+		LoadGroup(FailedZs, "Planet beach [i]", "map_files/voidcrew", "beach.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_BEACH_RUINS, ZTRAIT_RAINSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_BEACH_RUINS, ZTRAIT_RAINSTORM)))
 		z_count += 2
 		var/list/p = list(type = /datum/overmap/planet/beach, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("beach [i]" = p)
 
 	for(var/i in 1 to wasteland_planet_count)
-		LoadGroup(FailedZs, "Planet wasteland [i]", "map_files/voidcrew", "wasteland.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING, ZTRAIT_WASTELAND_RUINS, ZTRAIT_SANDSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING, ZTRAIT_WASTELAND_RUINS, ZTRAIT_SANDSTORM)))
+		LoadGroup(FailedZs, "Planet wasteland [i]", "map_files/voidcrew", "wasteland.dmm", list(list(ZTRAIT_UP=1, ZTRAIT_MINING = TRUE, ZTRAIT_WASTELAND_RUINS, ZTRAIT_SANDSTORM), list(ZTRAIT_DOWN=1, ZTRAIT_MINING = TRUE, ZTRAIT_WASTELAND_RUINS, ZTRAIT_SANDSTORM)))
 		z_count += 2
 		var/list/p = list(type = /datum/overmap/planet/wasteland, z = z_count, zone_band = next_planet_zone_band())
 		planets += list("wasteland [i]" = p)

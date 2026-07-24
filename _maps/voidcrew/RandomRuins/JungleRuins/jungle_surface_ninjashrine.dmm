@@ -26,7 +26,7 @@
 /turf/open/floor/wood/yew,
 /area/overmap_encounter/planet_ruin)
 "i" = (
-/mob/living/simple_animal/hostile/jungle/mega_arachnid,
+/mob/living/basic/mega_arachnid,
 /turf/open/misc/dirt/jungle/dark,
 /area/overmap_encounter/planet_ruin)
 "j" = (

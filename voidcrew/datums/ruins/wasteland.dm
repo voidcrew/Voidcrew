@@ -336,3 +336,27 @@
 	description = "It'll keep. It always keeps."
 	suffix = "wasteland_surface_sloth.dmm"
 	allow_duplicates = FALSE
+
+// ---- Voidcrew micro-POIs ----
+// Tiny (5x4, 6x5) scattered setpieces that soak up leftover ruin budget:
+// cost 1-2, duplicates allowed, low weight so they season the pool rather
+// than dominate. Base wasteland defaults are cost = 5 and
+// allow_duplicates = FALSE, so both must be overridden here.
+
+/datum/map_template/ruin/wasteland/micro_graves
+	name = "Wasteland-Micro Caravan Burial Ground"
+	id = "micro-ws-graves"
+	description = "A caravan buried its dead after a bad night on the flats and left a votive chest so they would stay put."
+	suffix = "wasteland_micro_graves.dmm"
+	cost = 2
+	allow_duplicates = TRUE
+	placement_weight = 0.5
+
+/datum/map_template/ruin/wasteland/micro_wreck
+	name = "Wasteland-Micro Burnt-Out Hauler"
+	id = "micro-ws-wreck"
+	description = "A cargo hauler burned to the frame. Scavvers took everything worth taking except the driver."
+	suffix = "wasteland_micro_wreck.dmm"
+	cost = 1
+	allow_duplicates = TRUE
+	placement_weight = 0.5

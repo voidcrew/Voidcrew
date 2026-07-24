@@ -53,16 +53,17 @@
 
 /mob/living/simple_animal/hostile/asteroid/hermit/survivor/random/Initialize()
 	. = ..()
-	if(prob(35))
-		new /mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter(loc)
 	if(prob(10))
 		new /mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger(loc)
+		return INITIALIZE_HINT_QDEL
+	if(prob(35))
+		new /mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter(loc)
 		return INITIALIZE_HINT_QDEL
 
 /mob/living/simple_animal/hostile/asteroid/hermit/ranged
 	icon_state = "survivor_hunter"
 	icon_living = "survivor_hunter"
-	projectiletype = null
+	casingtype = /obj/item/ammo_casing/c38
 	projectilesound = 'sound/items/weapons/gun/rifle/shot.ogg'
 	ranged = 1
 	rapid_fire_delay = 6
@@ -81,8 +82,9 @@
 	desc = "The miner's rebellion, though mostly underground, recieved a few good weapon shipments from an off-sector source. You should probably start running."
 	icon_state = "survivor_gunslinger"
 	icon_living = "survivor_gunslinger"
+	casingtype = /obj/item/ammo_casing/c46x30mm
 	projectilesound = 'sound/items/weapons/gun/smg/shot.ogg'
-	speed = 10
+	speed = 1
 	rapid = 4
 	rapid_fire_delay = 3
 	loot = list(

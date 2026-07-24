@@ -1,7 +1,15 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ad" = (
+/obj/structure/chair/sofa/bench/right,
+/turf/open/floor/eighties,
+/area/ruin/space/has_grav/the_outlet/storefront)
 "ae" = (
 /obj/effect/spawner/random/food_or_drink/refreshing_beverage,
 /obj/structure/table/wood,
+/turf/open/floor/eighties,
+/area/ruin/space/has_grav/the_outlet/storefront)
+"af" = (
+/obj/structure/chair/sofa/bench/left,
 /turf/open/floor/eighties,
 /area/ruin/space/has_grav/the_outlet/storefront)
 "ai" = (
@@ -1864,10 +1872,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/the_outlet/employeesection)
-"SM" = (
-/obj/structure/chair/sofa/bench,
-/turf/open/floor/eighties,
-/area/ruin/space/has_grav/the_outlet/storefront)
 "SU" = (
 /obj/machinery/door/airlock/external/glass/ruin,
 /turf/open/floor/iron,
@@ -3158,7 +3162,7 @@ xj
 IJ
 Ts
 od
-SM
+ad
 xI
 Ie
 wI
@@ -3204,7 +3208,7 @@ BH
 Hg
 uE
 od
-SM
+af
 xI
 xI
 TM

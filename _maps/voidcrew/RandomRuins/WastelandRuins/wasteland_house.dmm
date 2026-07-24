@@ -65,7 +65,7 @@
 /turf/open/floor/carpet/donk,
 /area/ruin/unpowered)
 "O" = (
-/obj/structure/chair/sofa{
+/obj/structure/chair/sofa/middle{
 	dir = 4
 	},
 /turf/open/floor/carpet,

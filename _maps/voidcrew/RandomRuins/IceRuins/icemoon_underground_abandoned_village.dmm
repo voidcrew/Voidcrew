@@ -157,7 +157,6 @@
 /turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "nR" = (
-/obj/structure/chair/sofa/left/brown,
 /turf/closed/mineral/snowmountain/cavern/icemoon,
 /area/icemoon/underground/explored)
 "oB" = (

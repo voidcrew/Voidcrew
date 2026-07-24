@@ -134,3 +134,27 @@
 	id = "jungle-botany"
 	description = "A botanical research post the jungle took back."
 	suffix = "jungle_botany.dmm"
+
+// ---- Voidcrew micro-POIs ----
+// Tiny (5x5, 6x6) scattered setpieces that soak up leftover ruin budget:
+// cost 1-2, duplicates allowed, low weight so they season the pool rather
+// than dominate. Base jungle defaults are cost = 5 and
+// allow_duplicates = FALSE, so both must be overridden here.
+
+/datum/map_template/ruin/jungle/micro_digsite
+	name = "Jungle-Micro Abandoned Dig Site"
+	id = "micro-jungle-digsite"
+	description = "A survey crew cut a pit into the jungle floor and broke into something's burrow. They left overnight."
+	suffix = "jungle_micro_digsite.dmm"
+	cost = 2
+	allow_duplicates = TRUE
+	placement_weight = 0.5
+
+/datum/map_template/ruin/jungle/micro_shrine
+	name = "Jungle-Micro Moss-Eaten Shrine"
+	id = "micro-jungle-shrine"
+	description = "A goddess left in the green a long time ago. Offerings still turn up."
+	suffix = "jungle_micro_shrine.dmm"
+	cost = 1
+	allow_duplicates = TRUE
+	placement_weight = 0.5

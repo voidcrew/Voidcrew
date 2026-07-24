@@ -1,0 +1,88 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/machinery/hydroponics/constructable,
+/turf/open/floor/grass,
+/area/template_noop)
+"i" = (
+/obj/machinery/hydroponics/constructable,
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/grass,
+/area/template_noop)
+"v" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/template_noop)
+"w" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/grass,
+/area/template_noop)
+"x" = (
+/obj/machinery/biogenerator,
+/obj/machinery/light/small{
+	dir = 4
+	},
+/turf/open/floor/grass,
+/area/template_noop)
+"H" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/template_noop)
+"I" = (
+/obj/modular_map_connector,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/turf/open/floor/grass,
+/area/template_noop)
+"M" = (
+/obj/machinery/hydroponics/constructable,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/grass,
+/area/template_noop)
+"P" = (
+/obj/structure/reagent_dispensers/watertank,
+/obj/item/reagent_containers/cup/bucket,
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/grass,
+/area/template_noop)
+"W" = (
+/obj/item/plant_analyzer,
+/obj/item/storage/bag/plants/portaseeder,
+/turf/open/floor/grass,
+/area/template_noop)
+"Y" = (
+/obj/machinery/vending/hydroseeds,
+/turf/open/floor/grass,
+/area/template_noop)
+
+(1,1,1) = {"
+b
+v
+w
+I
+"}
+(2,1,1) = {"
+M
+H
+w
+P
+"}
+(3,1,1) = {"
+w
+w
+w
+W
+"}
+(4,1,1) = {"
+i
+w
+Y
+x
+"}
