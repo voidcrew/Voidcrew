@@ -687,6 +687,8 @@
   Melbert:
   - rscadd: Whispering while facing a table will project the whisper across the table
       (allowing anyone on the other side to hear the whisper clearly)
+  - rscdel: Newscasters no longer have tiny 2x2 pixel animation upon receiving a muted
+      alert
   QuiteLiterallyAnything:
   - bugfix: If a tree "falls" in zero gravity, it doesn't make a sound.
   - balance: The sound of tree felling has a bit more range.
