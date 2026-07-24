@@ -690,6 +690,10 @@
   QuiteLiterallyAnything:
   - bugfix: If a tree "falls" in zero gravity, it doesn't make a sound.
   - balance: The sound of tree felling has a bit more range.
+  - bugfix: Tramstation's hidden Syndicate outpost is no longer considered a "vacant
+      room" station area.
+  - map: Tramstation's hidden Syndicate outpost has been given lighting and a bit
+      of detailing.
   SmArtKar:
   - bugfix: Fixes hair gradient alpha on ethereals
   timothymtorres:
