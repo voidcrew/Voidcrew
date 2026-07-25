@@ -66,6 +66,7 @@ SUBSYSTEM_DEF(overmap)
 	setup_trader_outposts()
 	schedule_vestige_ruins()
 	schedule_contested_caches()
+	schedule_lich_lair()
 	spawn_initial_ship()
 
 	return SS_INIT_SUCCESS

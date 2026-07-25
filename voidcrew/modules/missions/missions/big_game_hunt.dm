@@ -38,7 +38,9 @@
 	/// Per-planet hunt tables, keyed by /datum/overmap/planet typepath:
 	/// the apex beast, its entourage pool, its possible names, the trophy the
 	/// guild pays on, the hunting-ground flavor, and the trophy-grade health.
-	/// EXISTING mobs only; elites are the ceiling.
+	/// Elites are the ceiling - never megafauna, never the /boss tier (enforced by
+	/// the voidcrew_loot unit test). Rows may front either a scaled-up existing mob
+	/// (via "health") or a purpose-built boss with its own tuned kit (health 0).
 	var/static/list/hunt_tables = list(
 		/datum/overmap/planet/lava = list(
 			"beast" = /mob/living/basic/mining/goliath/ancient,
@@ -48,13 +50,17 @@
 			"ground" = "ash wastes",
 			"health" = 450,
 		),
+		// The Frozen row is the first hunt fronted by a PURPOSE-BUILT boss rather
+		// than a scaled-up existing mob. The Matriarch's numbers are tuned against
+		// her own 3-ability/2-phase kit, so health stays 0 ("leave alone") - see
+		// health_override below. Do not reintroduce a health figure here.
 		/datum/overmap/planet/ice = list(
-			"beast" = /mob/living/simple_animal/hostile/asteroid/old_demon,
+			"beast" = /mob/living/basic/hoarfrost_matriarch,
 			"guards" = list(/mob/living/basic/mining/wolf/random, /mob/living/basic/mining/ice_whelp),
 			"names" = list("the Widow Beneath", "Hollowfrost", "the White Silence", "Old Grief", "Mother Midnight"),
-			"trophy" = "frost-rimed heart",
+			"trophy" = "hoarfrost crown",
 			"ground" = "glacier fields",
-			"health" = 400,
+			"health" = 0,
 		),
 		/datum/overmap/planet/jungle = list(
 			// NOTE: entourage must share a faction with the beast or they

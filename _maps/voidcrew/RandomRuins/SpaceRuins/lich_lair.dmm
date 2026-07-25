@@ -1,0 +1,3071 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/item/stack/sheet/bone{
+	amount = 3;
+	pixel_x = -4
+	},
+/obj/item/stack/sheet/bone{
+	pixel_x = 5;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"ab" = (
+/obj/structure/sign/departments/holy,
+/turf/closed/indestructible/cult,
+/area/ruin/space/has_grav/powered/lich_lair)
+"ac" = (
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"ad" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Verdigris Breach"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"ae" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Verdigris Breach"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"af" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"ag" = (
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"ah" = (
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"ai" = (
+/obj/item/flashlight/flare/candle{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aj" = (
+/obj/machinery/light/small/directional/north{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"ak" = (
+/obj/effect/decal/cleanable/greenglow,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"al" = (
+/turf/template_noop,
+/area/template_noop)
+"am" = (
+/turf/closed/indestructible/fakeglass,
+/area/ruin/space/has_grav/powered/lich_lair)
+"an" = (
+/turf/closed/indestructible/cult,
+/area/ruin/space/has_grav/powered/lich_lair)
+"ao" = (
+/obj/machinery/door/poddoor/shutters/indestructible{
+	id = "lich_ward_ossuary";
+	name = "warded gate";
+	color = "#3fdd6a"
+	},
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"ap" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aq" = (
+/obj/machinery/light/small/directional/south{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"ar" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"as" = (
+/obj/effect/zone_mobs/undead,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"at" = (
+/obj/structure/barricade/wooden,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"au" = (
+/obj/effect/decal/cleanable/greenglow/ecto,
+/obj/effect/decal/cleanable/ash,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"av" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Verdigris Breach"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aw" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Verdigris Breach"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"ax" = (
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/lich_lair)
+"ay" = (
+/obj/effect/turf_decal/caution{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"az" = (
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"aA" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 3;
+	pixel_y = 5
+	},
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aB" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aC" = (
+/obj/structure/sign/warning/vacuum/external,
+/turf/closed/indestructible/reinforced,
+/area/ruin/space/has_grav/powered/lich_lair)
+"aD" = (
+/obj/machinery/door/poddoor/shutters/indestructible{
+	id = "lich_ward_warrens";
+	name = "warded gate";
+	color = "#3fdd6a"
+	},
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"aE" = (
+/obj/machinery/lich_ward/atrium,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aF" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 8
+	},
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aG" = (
+/obj/effect/spawner/random/trash/garbage,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aH" = (
+/obj/effect/spawner/random/structure/crate_abandoned,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aI" = (
+/obj/effect/turf_decal/caution{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aJ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aK" = (
+/obj/structure/sign/warning/secure_area,
+/turf/closed/indestructible/cult,
+/area/ruin/space/has_grav/powered/lich_lair)
+"aL" = (
+/obj/machinery/door/poddoor/shutters/indestructible{
+	id = "lich_ward_atrium";
+	name = "warded gate";
+	color = "#3fdd6a"
+	},
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aM" = (
+/obj/structure/sign/departments/holy_alt,
+/turf/closed/indestructible/cult,
+/area/ruin/space/has_grav/powered/lich_lair)
+"aN" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aO" = (
+/obj/structure/fluff/paper/stack,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aP" = (
+/obj/structure/closet/crate/coffin,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aQ" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aR" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/bone{
+	amount = 6;
+	pixel_y = 4
+	},
+/obj/item/stack/sheet/bone{
+	amount = 3;
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aS" = (
+/obj/machinery/door/poddoor/shutters/indestructible{
+	id = "lich_ward_sanctum";
+	name = "reliquary seal";
+	color = "#3fdd6a"
+	},
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"aT" = (
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aU" = (
+/obj/structure/closet/crate/coffin,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aV" = (
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"aW" = (
+/obj/effect/spawner/random/maintenance,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aX" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aY" = (
+/obj/structure/headpike/bone,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"aZ" = (
+/obj/structure/sign/departments/morgue,
+/turf/closed/indestructible/cult,
+/area/ruin/space/has_grav/powered/lich_lair)
+"bH" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/bone{
+	amount = 8;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/bone{
+	amount = 5;
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"bO" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"cu" = (
+/obj/item/coin/silver{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/toy/cards/deck/tarot{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"cw" = (
+/obj/structure/statue/bone/skull/half,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"cF" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"cL" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"cU" = (
+/obj/machinery/light/small/directional/east{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"ek" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"eG" = (
+/obj/effect/zone_mobs/cult,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"fa" = (
+/obj/item/stack/sheet/bone{
+	amount = 3;
+	pixel_x = -4
+	},
+/obj/item/stack/sheet/bone{
+	pixel_x = 5;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"fg" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"gr" = (
+/obj/structure/closet/crate/coffin,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"hc" = (
+/obj/effect/decal/cleanable/greenglow,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"hS" = (
+/obj/effect/decal/cleanable/greenglow,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"ik" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"jF" = (
+/obj/item/stack/sheet/bone{
+	amount = 3;
+	pixel_x = -4
+	},
+/obj/item/stack/sheet/bone{
+	pixel_x = 5;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"kH" = (
+/obj/machinery/light/small/directional/east{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"kV" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "the sealing order";
+	default_raw_text = "By the hand of the Warden of Wards. Four seals, set outward-in, each keyed to the dead standing behind it, so that nothing may pass a hall it has not emptied. We could not kill him. We could only make him expensive. Read that again, whoever you are, and count how many halls you have emptied to reach this one.";
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"lW" = (
+/obj/item/flashlight/flare/candle{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"lY" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"mL" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"mX" = (
+/obj/structure/fluff/paper/stack,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"na" = (
+/obj/effect/zone_mobs/undead,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"nN" = (
+/obj/structure/closet/crate/zone_loot/occult,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"op" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 3;
+	pixel_y = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"oQ" = (
+/obj/structure/closet/crate/coffin,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"oS" = (
+/obj/effect/zone_mobs/undead,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"pX" = (
+/obj/effect/landmark/lich/loot_spot,
+/obj/effect/decal/cleanable/greenglow,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair)
+"rk" = (
+/obj/machinery/light/small/directional/south{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"rq" = (
+/obj/structure/statue/bone/rib,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"rQ" = (
+/obj/item/coin/silver{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/toy/cards/deck/tarot{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"rW" = (
+/obj/machinery/light/small/directional/west{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"sr" = (
+/obj/structure/table/wood,
+/obj/item/statuebust{
+	pixel_y = 6
+	},
+/obj/item/coin/gold{
+	pixel_x = -5;
+	pixel_y = -3
+	},
+/obj/item/coin/silver{
+	pixel_x = 5;
+	pixel_y = -4
+	},
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"sX" = (
+/obj/effect/decal/cleanable/greenglow,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"tj" = (
+/obj/structure/headpike/bone,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"tZ" = (
+/obj/structure/closet/crate/zone_loot/occult,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"uH" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"uY" = (
+/obj/structure/closet/crate/zone_loot/occult,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"wh" = (
+/obj/item/stack/sheet/bone{
+	amount = 12
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"wB" = (
+/obj/effect/landmark/lich/boss_spawn,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"xB" = (
+/obj/machinery/light/small/directional/west{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"xK" = (
+/obj/structure/fluff/paper/stack,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"xN" = (
+/obj/structure/rack,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/storage/fancy/candle_box{
+	pixel_x = 4;
+	pixel_y = -1
+	},
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"xT" = (
+/obj/machinery/light/small/directional/east{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"yv" = (
+/obj/structure/statue/bone/skull/half,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"yJ" = (
+/obj/effect/landmark/lich/summon_spot,
+/obj/effect/decal/cleanable/greenglow,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"yR" = (
+/obj/machinery/light/small/directional/north{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"zf" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair)
+"zr" = (
+/obj/effect/decal/cleanable/greenglow/ecto,
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"zG" = (
+/obj/structure/statue/bone/skull/half,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"Ai" = (
+/obj/machinery/light/small/directional/south{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"Ak" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"Bq" = (
+/obj/effect/decal/cleanable/greenglow/ecto,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"Br" = (
+/obj/machinery/light/small/directional/west{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"Cq" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"CI" = (
+/obj/structure/closet/crate/zone_loot/occult,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 7;
+	pixel_y = -6
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"Db" = (
+/obj/machinery/light/small/directional/south{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"DB" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"DR" = (
+/obj/machinery/lich_ward/warrens,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"EH" = (
+/obj/structure/bodycontainer/morgue{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"EN" = (
+/obj/structure/fluff/paper/stack,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"EO" = (
+/obj/item/book/bible{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"Fh" = (
+/obj/effect/decal/cleanable/greenglow/ecto,
+/obj/effect/decal/cleanable/ash,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"Fy" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"FP" = (
+/obj/structure/glowshroom/single,
+/obj/effect/decal/cleanable/greenglow,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"FR" = (
+/obj/structure/headpike/bone,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"FS" = (
+/obj/effect/decal/cleanable/greenglow,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"FV" = (
+/obj/effect/decal/cleanable/greenglow,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"Gk" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -5;
+	pixel_y = 6
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -1;
+	pixel_y = -5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"Ha" = (
+/obj/effect/decal/cleanable/greenglow/ecto,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"Ii" = (
+/obj/structure/bodycontainer/morgue{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"Iw" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"IB" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/bone{
+	amount = 4;
+	pixel_y = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"II" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"Jw" = (
+/obj/item/stack/sheet/bone{
+	amount = 3;
+	pixel_x = -4
+	},
+/obj/item/stack/sheet/bone{
+	pixel_x = 5;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"JZ" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"Kk" = (
+/obj/machinery/light/small/directional/north{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"KR" = (
+/obj/item/stack/sheet/bone{
+	amount = 9
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"Lx" = (
+/obj/structure/statue/bone/rib,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"Lz" = (
+/obj/item/flashlight/flare/candle{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"LW" = (
+/obj/item/stack/sheet/bone{
+	amount = 3;
+	pixel_x = -4
+	},
+/obj/item/stack/sheet/bone{
+	pixel_x = 5;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/ash,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"Mh" = (
+/obj/effect/decal/cleanable/ash,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"Ny" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"NA" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"NS" = (
+/obj/machinery/lich_ward/sanctum,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"NT" = (
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"Ou" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"OZ" = (
+/obj/structure/bodycontainer/morgue{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"Pb" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"Pd" = (
+/obj/machinery/light/small/directional/north{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"PC" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/mineral/gold{
+	amount = 8;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/mineral/silver{
+	amount = 6;
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"PM" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"QH" = (
+/obj/structure/statue/bone/rib,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"Sv" = (
+/obj/structure/closet/crate/zone_loot/occult/rare,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"SB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"Tm" = (
+/obj/structure/statue/bone/skull/half,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"Tq" = (
+/obj/effect/zone_mobs/cult/boss,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"TV" = (
+/obj/item/flashlight/flare/candle{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle{
+	pixel_x = 4;
+	pixel_y = -4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"TW" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "intake manifest, ninth silence";
+	default_raw_text = "Received this cycle: eleven. Interred: eleven. Note for the Warden of Wards: the eleventh sat up on the tray and asked, in our own voices, whether the seals were on the inside or the outside. We have decided not to answer it. Keep the gates cold. Do not open the sanctum for any reason, not even ours.";
+	pixel_x = -3;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"Uf" = (
+/obj/item/coin/silver{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/toy/cards/deck/tarot{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/vault/sandstone,
+/area/ruin/space/has_grav/powered/lich_lair)
+"Un" = (
+/obj/effect/zone_mobs/undead/boss,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"Wn" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"Xl" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/bone{
+	amount = 7;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/bone{
+	amount = 2;
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"Xm" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"Xs" = (
+/obj/machinery/light/small/directional/north{
+	bulb_colour = "#3fdd6a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"Yo" = (
+/obj/structure/closet/crate/coffin,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"Ys" = (
+/obj/structure/rack,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -4;
+	pixel_y = 6
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 4;
+	pixel_y = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/dark/textured,
+/area/ruin/space/has_grav/powered/lich_lair/atrium)
+"Yx" = (
+/obj/item/coin/silver{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/toy/cards/deck/tarot{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/stone,
+/area/ruin/space/has_grav/powered/lich_lair/sanctum)
+"Yz" = (
+/obj/structure/statue/bone/rib,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/necropolis/air,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+"YA" = (
+/obj/effect/spawner/random/trash/garbage,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/fakebasalt,
+/area/ruin/space/has_grav/powered/lich_lair/warrens)
+"Zj" = (
+/turf/closed/indestructible/rock,
+/area/ruin/space/has_grav/powered/lich_lair)
+"ZN" = (
+/obj/machinery/lich_ward/ossuary,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/powered/lich_lair/ossuary)
+
+(1,1,1) = {"
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+"}
+(2,1,1) = {"
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+"}
+(3,1,1) = {"
+al
+al
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aC
+ax
+ax
+aC
+ax
+ax
+ax
+al
+al
+"}
+(4,1,1) = {"
+al
+al
+ax
+Xs
+Wn
+Zj
+yR
+Wn
+Zj
+Wn
+rk
+Zj
+an
+rW
+cw
+an
+bH
+xN
+bH
+an
+SB
+tZ
+fg
+an
+oQ
+EH
+EH
+Mh
+an
+af
+aJ
+ar
+aN
+af
+aJ
+af
+ar
+ax
+al
+al
+"}
+(5,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Zj
+Wn
+PM
+Zj
+FP
+Wn
+Zj
+an
+uH
+SB
+an
+SB
+SB
+SB
+an
+lY
+lY
+SB
+an
+SB
+SB
+SB
+SB
+an
+aA
+aT
+aa
+af
+aJ
+af
+af
+aJ
+ax
+al
+al
+"}
+(6,1,1) = {"
+al
+al
+ax
+FP
+fa
+Zj
+Wn
+rk
+Zj
+Wn
+Wn
+Zj
+aK
+ZN
+Ak
+an
+SB
+NA
+fg
+an
+SB
+SB
+SB
+an
+Ak
+cu
+uH
+SB
+aK
+aE
+aX
+af
+af
+af
+ap
+aQ
+af
+ax
+al
+al
+"}
+(7,1,1) = {"
+al
+al
+ax
+Zj
+Wn
+Zj
+Yo
+Wn
+Zj
+Wn
+Wn
+ag
+ao
+aV
+jF
+SB
+SB
+SB
+Ou
+SB
+lW
+SB
+jF
+SB
+SB
+SB
+SB
+aV
+aL
+aT
+aT
+aJ
+aJ
+aJ
+af
+af
+aq
+ax
+al
+al
+"}
+(8,1,1) = {"
+al
+al
+ax
+Wn
+Fy
+Zj
+Wn
+Wn
+Zj
+fa
+Wn
+ag
+ao
+aV
+SB
+lY
+Un
+EO
+SB
+SB
+SB
+na
+SB
+hc
+na
+SB
+lW
+aV
+aL
+aT
+aT
+af
+af
+ai
+af
+af
+af
+ax
+al
+al
+"}
+(9,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Zj
+Wn
+Wn
+Wn
+Wn
+Wn
+Zj
+aK
+SB
+hc
+SB
+SB
+SB
+cu
+Mh
+Fh
+SB
+SB
+SB
+SB
+NA
+SB
+SB
+aK
+aA
+aA
+ak
+af
+af
+af
+an
+an
+aC
+al
+al
+"}
+(10,1,1) = {"
+al
+al
+ax
+sX
+Wn
+Zj
+Wn
+Wn
+sX
+Wn
+Bq
+Zj
+an
+SB
+oQ
+SB
+an
+SB
+SB
+SB
+an
+SB
+lY
+SB
+an
+SB
+oQ
+SB
+an
+aj
+af
+af
+au
+af
+af
+ad
+aI
+av
+al
+al
+"}
+(11,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Zj
+FP
+Wn
+Zj
+Pb
+Wn
+Zj
+an
+Yz
+SB
+SB
+an
+SB
+SB
+SB
+an
+CI
+SB
+mX
+an
+oQ
+SB
+SB
+an
+aP
+aJ
+af
+af
+aJ
+aJ
+ad
+aI
+av
+al
+al
+"}
+(12,1,1) = {"
+al
+al
+ax
+Xs
+Wn
+Zj
+YA
+oS
+Zj
+Wn
+Wn
+Zj
+an
+SB
+kH
+SB
+an
+Ii
+Ii
+Ii
+an
+SB
+kH
+SB
+an
+SB
+kH
+tj
+an
+aU
+aQ
+aP
+af
+af
+af
+an
+an
+aC
+al
+al
+"}
+(13,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Zj
+Wn
+Wn
+Zj
+Wn
+rk
+Zj
+an
+an
+an
+aZ
+an
+an
+an
+aZ
+an
+an
+an
+an
+aZ
+an
+an
+an
+an
+af
+af
+aG
+aO
+af
+aF
+af
+af
+ax
+al
+al
+"}
+(14,1,1) = {"
+al
+al
+ax
+Zj
+Wn
+Zj
+Wn
+rk
+Zj
+Fy
+Wn
+Zj
+an
+yv
+Xm
+xB
+Xm
+Xl
+Xm
+xB
+Xm
+Xm
+Lx
+Xm
+Xm
+xB
+Xm
+FR
+an
+aP
+aR
+af
+af
+af
+af
+af
+aq
+ax
+al
+al
+"}
+(15,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Zj
+Pb
+Wn
+Zj
+Wn
+YA
+Zj
+an
+Xm
+yJ
+TV
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+JZ
+Xm
+yJ
+Xm
+an
+aP
+af
+af
+aW
+as
+af
+af
+af
+ax
+al
+al
+"}
+(16,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Wn
+Wn
+Wn
+Zj
+Wn
+Wn
+Zj
+an
+Pd
+Xm
+Xm
+cL
+Xm
+Xm
+ik
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Ai
+an
+af
+af
+at
+af
+af
+aJ
+aY
+af
+ax
+al
+al
+"}
+(17,1,1) = {"
+al
+al
+aC
+Wn
+sX
+Bq
+Wn
+wh
+Zj
+Wn
+Wn
+Wn
+am
+Gk
+Xm
+gr
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+gr
+Xm
+Gk
+an
+ar
+af
+af
+af
+af
+aG
+af
+aN
+ax
+al
+al
+"}
+(18,1,1) = {"
+al
+al
+ax
+PM
+Wn
+Zj
+Wn
+fa
+Zj
+Wn
+Wn
+Bq
+am
+Gk
+Ny
+Xm
+an
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+an
+Xm
+Ny
+Xm
+an
+ap
+aH
+at
+at
+at
+af
+af
+af
+ax
+al
+al
+"}
+(19,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Zj
+yR
+Wn
+Zj
+Wn
+sX
+Zj
+an
+Xm
+Xm
+Xm
+Xm
+Xm
+zr
+Xm
+cF
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+cL
+an
+QH
+af
+aJ
+af
+af
+af
+af
+aB
+ax
+al
+al
+"}
+(20,1,1) = {"
+al
+al
+ax
+Zj
+Wn
+Zj
+Wn
+rk
+Zj
+Wn
+Wn
+Zj
+an
+cL
+Xm
+Xm
+Xm
+Xm
+Xm
+cF
+cF
+cF
+Xm
+Xm
+Xm
+Xm
+bO
+LW
+aZ
+af
+af
+af
+af
+af
+ak
+aJ
+aG
+ax
+al
+al
+"}
+(21,1,1) = {"
+al
+al
+ax
+Wn
+wh
+Zj
+Zj
+Wn
+Zj
+Zj
+Zj
+Zj
+an
+Xm
+bO
+Xm
+Xm
+Xm
+cF
+cF
+cF
+Cq
+cF
+Xm
+Xm
+Xm
+Xm
+Xm
+an
+aP
+Ys
+af
+af
+af
+af
+af
+af
+ax
+al
+al
+"}
+(22,1,1) = {"
+al
+al
+ax
+Xs
+Wn
+Zj
+Wn
+Wn
+Zj
+Zj
+Zj
+Zj
+ab
+Pd
+Xm
+Xm
+Xm
+cF
+FS
+Cq
+cF
+cF
+cF
+cF
+Xm
+Xm
+Xm
+Ai
+an
+aU
+af
+aB
+af
+af
+aH
+af
+aq
+ax
+al
+al
+"}
+(23,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Zj
+rq
+Wn
+Zj
+Wn
+Wn
+Zj
+an
+Xm
+Xm
+Xm
+cF
+Cq
+cF
+cF
+FS
+cF
+FS
+cF
+cF
+Xm
+Xm
+Xm
+an
+aj
+af
+af
+aJ
+af
+af
+aa
+af
+ax
+al
+al
+"}
+(24,1,1) = {"
+al
+al
+ax
+FP
+Wn
+Zj
+sX
+Wn
+Zj
+Wn
+rk
+Zj
+an
+LW
+yJ
+cF
+FS
+cF
+cF
+cF
+wB
+cF
+cF
+Cq
+FS
+cF
+yJ
+EN
+an
+af
+aG
+af
+af
+aJ
+af
+af
+aJ
+ax
+al
+al
+"}
+(25,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Zj
+yR
+Wn
+Zj
+Wn
+rk
+Zj
+an
+Xm
+Xm
+Xm
+cF
+mL
+cF
+cF
+FS
+cF
+cF
+cF
+cF
+Xm
+Xm
+Xm
+an
+af
+aJ
+af
+ar
+af
+aO
+af
+aq
+ax
+al
+al
+"}
+(26,1,1) = {"
+al
+al
+ax
+FP
+Wn
+Zj
+Wn
+rk
+Zj
+Wn
+Wn
+Zj
+aM
+Xm
+Xm
+Xm
+Xm
+cF
+Cq
+cF
+cF
+cF
+cF
+cF
+Xm
+Xm
+Xm
+Xm
+an
+OZ
+af
+ap
+af
+af
+af
+aJ
+af
+ax
+al
+al
+"}
+(27,1,1) = {"
+al
+al
+ax
+Wn
+Fy
+Zj
+Wn
+Wn
+Zj
+FP
+Wn
+Zj
+an
+Pd
+Xm
+Xm
+Xm
+Xm
+cF
+FS
+cF
+cF
+cF
+Xm
+Xm
+Xm
+hS
+Ai
+aZ
+OZ
+af
+af
+aG
+aJ
+af
+af
+aN
+ax
+al
+al
+"}
+(28,1,1) = {"
+al
+al
+ax
+Xs
+Wn
+Zj
+Wn
+Wn
+Zj
+Wn
+Wn
+Zj
+an
+Xm
+hS
+Xm
+Xm
+Xm
+Xm
+cF
+cF
+cF
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+an
+af
+aQ
+af
+af
+af
+aP
+af
+af
+ax
+al
+al
+"}
+(29,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Zj
+Pb
+Wn
+Zj
+Wn
+Wn
+Wn
+am
+Gk
+Xm
+Xm
+Xm
+LW
+Xm
+Xm
+cF
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+an
+aj
+af
+aJ
+af
+af
+aP
+af
+af
+ax
+al
+al
+"}
+(30,1,1) = {"
+al
+al
+ax
+Wn
+fa
+Zj
+Zj
+Zj
+Zj
+Wn
+Wn
+Bq
+am
+Gk
+Xm
+Xm
+an
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+an
+Xm
+Xm
+Gk
+an
+zG
+af
+af
+at
+af
+af
+aB
+af
+ax
+al
+al
+"}
+(31,1,1) = {"
+al
+al
+ax
+Zj
+Wn
+Zj
+Zj
+Zj
+Zj
+fa
+DR
+Zj
+aK
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+an
+af
+af
+aP
+af
+af
+ai
+af
+aq
+ax
+al
+al
+"}
+(32,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Zj
+Wn
+Tq
+Zj
+Wn
+Wn
+ag
+aD
+az
+Xm
+gr
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+gr
+Xm
+cL
+an
+OZ
+af
+af
+af
+aJ
+af
+af
+af
+ax
+al
+al
+"}
+(33,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Zj
+Wn
+Wn
+Zj
+Wn
+Wn
+ag
+aD
+az
+Xm
+Xm
+cL
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Yx
+Xm
+Xm
+Xm
+Xm
+an
+OZ
+aJ
+af
+af
+as
+af
+IB
+af
+ax
+al
+al
+"}
+(34,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Wn
+YA
+Wn
+sX
+Wn
+Wn
+Zj
+aK
+Xm
+yJ
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+Xm
+ik
+TV
+yJ
+Xm
+an
+af
+aG
+au
+af
+af
+af
+af
+aJ
+ax
+al
+al
+"}
+(35,1,1) = {"
+al
+al
+aC
+Wn
+Wn
+sX
+Wn
+Wn
+Wn
+Wn
+rk
+Zj
+an
+Pd
+Xm
+cU
+Xm
+Xm
+NS
+az
+az
+cU
+Xm
+Xm
+Xm
+cU
+Xm
+Ai
+an
+ar
+af
+aa
+aY
+af
+af
+af
+af
+ax
+al
+al
+"}
+(36,1,1) = {"
+al
+al
+ax
+sX
+Wn
+Zj
+Wn
+Wn
+Zj
+Pb
+Wn
+Zj
+an
+an
+an
+an
+an
+an
+ab
+aS
+aS
+ab
+an
+an
+an
+an
+an
+an
+an
+aP
+af
+af
+af
+at
+af
+aG
+af
+ax
+al
+al
+"}
+(37,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Zj
+KR
+Wn
+Zj
+Wn
+Bq
+Zj
+an
+Kk
+ek
+ek
+Br
+ek
+ek
+ah
+ah
+ek
+ek
+Br
+ek
+ek
+ek
+Db
+an
+aP
+TW
+af
+af
+af
+ap
+af
+aq
+ax
+al
+al
+"}
+(38,1,1) = {"
+al
+al
+ax
+Zj
+Wn
+Zj
+Wn
+rq
+Zj
+Wn
+YA
+Zj
+an
+ek
+DB
+ek
+ek
+xK
+ek
+ek
+ek
+ek
+kV
+ek
+ek
+Tm
+ek
+ek
+aM
+aj
+af
+IB
+af
+aW
+af
+aJ
+aa
+ax
+al
+al
+"}
+(39,1,1) = {"
+al
+al
+ax
+Wn
+Bq
+Zj
+Wn
+fa
+Zj
+Wn
+Wn
+Zj
+an
+Iw
+ek
+op
+ek
+ek
+ek
+NT
+ek
+NT
+ek
+ek
+op
+ek
+II
+Iw
+an
+af
+aH
+af
+aF
+af
+af
+af
+ar
+ax
+al
+al
+"}
+(40,1,1) = {"
+al
+al
+ax
+Xs
+Wn
+Zj
+yR
+Wn
+Zj
+Fy
+Wn
+Zj
+an
+an
+an
+ab
+an
+an
+an
+zf
+zf
+zf
+an
+an
+ab
+an
+an
+an
+an
+QH
+af
+af
+af
+ak
+af
+af
+af
+ax
+al
+al
+"}
+(41,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Zj
+Wn
+Fy
+Zj
+Wn
+rk
+Zj
+an
+ek
+NT
+ek
+ek
+ek
+ek
+ek
+ek
+ek
+Lz
+ek
+Ha
+ek
+ek
+ek
+an
+af
+af
+aF
+af
+af
+af
+au
+af
+ax
+al
+al
+"}
+(42,1,1) = {"
+al
+al
+ax
+uY
+Wn
+Zj
+Wn
+Wn
+Zj
+Wn
+Wn
+Zj
+an
+II
+ek
+ek
+Ha
+ek
+ek
+ek
+FV
+ek
+ek
+ek
+ek
+ek
+DB
+ek
+an
+aB
+ak
+af
+af
+af
+aH
+af
+af
+ax
+al
+al
+"}
+(43,1,1) = {"
+al
+al
+ax
+Wn
+eG
+Zj
+Wn
+Wn
+Zj
+FP
+Wn
+Zj
+an
+ek
+PC
+ek
+ek
+Sv
+ek
+Ha
+pX
+Ha
+ek
+Sv
+ek
+ek
+ek
+xK
+an
+af
+af
+af
+af
+af
+af
+rQ
+aq
+ax
+al
+al
+"}
+(44,1,1) = {"
+al
+al
+ax
+KR
+Wn
+Zj
+sX
+Wn
+Zj
+Wn
+sX
+Zj
+an
+ek
+ek
+sr
+ek
+Uf
+ek
+ek
+ek
+ek
+PC
+ek
+ek
+sr
+Jw
+ek
+an
+af
+an
+aw
+aw
+an
+af
+af
+af
+ax
+al
+al
+"}
+(45,1,1) = {"
+al
+al
+ax
+Wn
+Wn
+Zj
+Wn
+rk
+Zj
+Wn
+Wn
+Zj
+an
+Kk
+Uf
+ek
+xT
+ek
+nN
+ek
+ek
+xT
+ek
+ek
+ek
+xT
+ek
+Db
+an
+aj
+an
+ay
+ay
+an
+aJ
+af
+aJ
+ax
+al
+al
+"}
+(46,1,1) = {"
+al
+al
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aC
+ae
+ae
+aC
+ax
+ax
+ax
+ax
+al
+al
+"}
+(47,1,1) = {"
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+"}
+(48,1,1) = {"
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+al
+"}

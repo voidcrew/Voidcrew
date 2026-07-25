@@ -25,6 +25,17 @@
 	var/requires_flying = FALSE
 	/// If TRUE this event may hit ships docked at a trader outpost. Defaults off: outposts are safe harbors.
 	var/allow_in_safe_harbor = FALSE
+	/// If TRUE this event ignores the per-ship DYNAMIC_EVENT_SHIP_COOLDOWN when picking a
+	/// target. Reserved for events belonging to a driven pressure system with its own
+	/// cadence — the lich's rituals (voidcrew/modules/lich/) are the reason this exists:
+	/// LICH_RITUAL_INTERVAL and DYNAMIC_EVENT_SHIP_COOLDOWN are both 4 minutes, so on a
+	/// single-crewed-ship server the ambient cooldown would eat nearly every ritual, and
+	/// an unrelated ambient event landing first would silently swallow the next one.
+	/// Events that set this still STAMP last_dynamic_event (see /datum/round_event/voidcrew/New),
+	/// so ambient events keep backing off a ship a driven system just hit — the exemption
+	/// is one-directional on purpose. Do not set this on ambient events; the cooldown is
+	/// what stops one crew being singled out for a spam wave.
+	var/ignores_ship_cooldown = FALSE
 	/// Ship chosen for the next run_event() call. Set by the scheduler (or picked on demand when admin-forced).
 	var/obj/structure/overmap/ship/pending_target
 
@@ -52,7 +63,7 @@
 /datum/round_event_control/voidcrew/proc/is_valid_target(obj/structure/overmap/ship/ship)
 	if(QDELETED(ship) || ship.abandoned || !ship.shuttle)
 		return FALSE
-	if(world.time < ship.last_dynamic_event + DYNAMIC_EVENT_SHIP_COOLDOWN)
+	if(!ignores_ship_cooldown && world.time < ship.last_dynamic_event + DYNAMIC_EVENT_SHIP_COOLDOWN)
 		return FALSE
 	if(!allow_in_safe_harbor && istype(ship.docked, /obj/structure/overmap/trader_outpost))
 		return FALSE
