@@ -69,13 +69,21 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 
 /obj/structure/overmap/planet/empty
 	planet = /datum/overmap/planet/empty
-	sensor_detectable = FALSE // dynamic dock-in-empty-space placeholder, not a real celestial
+	// Dock-in-empty-space placeholder, not a real celestial: neither scannable nor
+	// drawn on the chart when the ship is sitting on top of it.
+	sensor_detectable = FALSE
+	sensor_visible = FALSE
 	/// How many times we've tried to unload this level
 	var/unload_attempts = 0
 	/// Maximum number of unload retry attempts
 	var/max_unload_attempts = 5
 	/// Delay between unload retries in seconds
 	var/unload_retry_delay = 10 SECONDS
+
+// Not a docking target in its own right — it IS empty space, and the helm's
+// dock_in_empty_space() path already finds and reuses any placeholder on the tile.
+/obj/structure/overmap/planet/empty/get_dock_description()
+	return null
 
 /obj/structure/overmap/planet/empty/crashed_ship
 	planet = /datum/overmap/planet/crashed_ship

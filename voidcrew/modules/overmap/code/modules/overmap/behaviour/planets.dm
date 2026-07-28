@@ -29,6 +29,10 @@
 	///copied onto the overmap object at Initialize. Null = plain space. One line here
 	///themes a planet type - see the context-parallax system in modules/overmap/_overmap.dm
 	var/parallax_theme
+	///Which terrain the helm chart colours this planet as. The chart has one planet
+	///glyph and tells the types apart by colour alone, so this is the whole of what
+	///a navigator sees before landing - see PLANET_COLOR in HelmComputer.tsx.
+	var/chart_variant = "rock"
 
 /datum/overmap/planet/lava
 	name = "Lava Planet"
@@ -43,6 +47,7 @@
 	weather_trait = ZTRAIT_ASHSTORM
 	planet_template = /datum/planet/lava
 	parallax_theme = PARALLAX_THEME_PLANET
+	chart_variant = "lava"
 
 /datum/overmap/planet/ice
 	name = "Frozen Planet"
@@ -57,6 +62,7 @@
 	weather_trait = ZTRAIT_SNOWSTORM
 	planet_template = /datum/planet/snow
 	parallax_theme = PARALLAX_THEME_ICEMOON
+	chart_variant = "ice"
 
 /datum/overmap/planet/beach
 	name = "Oceanic Planet"
@@ -70,6 +76,7 @@
 	weather_controller_type = /datum/weather/rain_storm
 	weather_trait = ZTRAIT_RAINSTORM
 	planet_template = /datum/planet/beach
+	chart_variant = "ocean"
 
 /datum/overmap/planet/jungle
 	name = "Tropical Planet"
@@ -83,6 +90,7 @@
 	weather_controller_type = /datum/weather/rain_storm
 	weather_trait = ZTRAIT_RAINSTORM
 	planet_template = /datum/planet/jungle
+	chart_variant = "jungle"
 
 /datum/overmap/planet/wasteland
 	name = "Apocalyptic Planet"
@@ -96,6 +104,7 @@
 	weather_controller_type = /datum/weather/sand_storm
 	weather_trait = ZTRAIT_SANDSTORM
 	planet_template = /datum/planet/wasteland
+	chart_variant = "wasteland"
 
 /datum/overmap/planet/asteroid
 	name = "large asteroid"
@@ -107,6 +116,7 @@
 	spawn_rate = -1
 	mapgen = /datum/map_generator/cave_generator/asteroid
 	parallax_theme = PARALLAX_THEME_ASTEROIDS
+	chart_variant = "asteroid"
 
 /datum/overmap/planet/space // not a planet but freak off!!
 	name = "weak energy signal"
@@ -115,6 +125,7 @@
 	icon_state = "strange_event"
 
 	ruin_type = ZTRAIT_SPACE_RUINS
+	chart_variant = "signal"
 
 /datum/overmap/planet/empty // not a planet but freak off!!
 	name = "Empty Space"
@@ -129,3 +140,4 @@
 	color = "#ff4444"
 	icon_state = "strange_event"
 	spawn_rate = -1
+	chart_variant = "wreck"

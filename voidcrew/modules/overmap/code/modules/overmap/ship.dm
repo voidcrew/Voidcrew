@@ -3,7 +3,8 @@
 
 #define SHIP_RUIN (10 MINUTES)
 #define SHIP_DELETE (10 MINUTES)
-#define SHIP_VIEW_RANGE 4
+// SHIP_VIEW_RANGE now lives in voidcrew/_DEFINES/overmap.dm — the helm's sensor
+// code needs it too, and a file-local define was going out of scope before it.
 #define SHIP_SPEED_MULTIPLIER_DEFAULT 1
 /// How long crews must wait between ship renames
 #define SHIP_RENAME_COOLDOWN (5 MINUTES)
@@ -142,8 +143,12 @@
 	/**
 	 * Stuff needed to render the map
 	 */
-	/// The actual map screen (using camera subtype for proper rendering)
+	/// The actual map screen (using camera subtype for proper rendering). Unused
+	/// since the helm chart moved client-side; see the note in Initialize().
 	var/atom/movable/screen/map_view/camera/cam_screen
+	/// Helm consoles bound to this ship. Each is pushed a UI frame as the ship
+	/// crosses a tile so the chart's glide stays in step with the move loop.
+	var/list/obj/machinery/computer/helm/helm_consoles
 
 	var/datum/weakref/survey_console
 	var/datum/survey_research/survey_data
@@ -581,13 +586,11 @@
 
 	display_name = template.name
 
-	if(render_map)	// Initialize map objects
-		map_name = "overmap_[REF(src)]_map"
-
-		// Use camera subtype which properly handles cam_background internally
-		cam_screen = new /atom/movable/screen/map_view/camera()
-		cam_screen.generate_view(map_name)
-		update_screen()
+	// The helm used to render the overmap through this camera map instance; it now
+	// draws the chart client-side from get_contact_snapshot(), and nothing else
+	// consumed cam_screen. Left unallocated so update_screen() short-circuits and
+	// the move loop stops paying for a view() sweep nobody looks at. Re-enable
+	// here if a console ever needs a real camera feed of the overmap again.
 
 	SSovermap.simulated_ships += src
 	survey_data = new()
@@ -625,10 +628,20 @@
 	initial_job_slots?.Cut()
 	QDEL_NULL(ship_team)
 	QDEL_NULL(cam_screen) // cam_background is inside cam_screen and deleted with it
+	LAZYNULL(helm_consoles)
+	contact_snapshot = null
+	discovered_contacts = null
+	identified_ships = null
+	surveyed_tiles = null
 	QDEL_NULL(combat_alarm)
 	// Clean up processing (thrust and/or shields)
 	burn_direction = BURN_NONE
 	thrust_processing = FALSE
+	autopilot_engaged = FALSE
+	autopilot_path = null
+	if(autopilot_poll_timer)
+		deltimer(autopilot_poll_timer)
+		autopilot_poll_timer = null
 	STOP_PROCESSING(SSfastprocess, src)
 	STOP_PROCESSING(SSobj, src)
 	// Clean up missions
@@ -706,6 +719,12 @@
 	else
 		y_thrust = 0
 
+// NOTE: try_move / apply_thrust / do_move / calculate_thrust below are legacy and
+// dead — real movement runs through adjust_speed() -> tick_move(), and the only
+// caller of apply_thrust() is the commented-out ui_act block in _helm.dm. Because
+// nothing sets x_thrust/y_thrust any more, calculate_thrust() always returns 0.
+// Don't hang new behaviour off them.
+
 /// Move the ship object
 /obj/structure/overmap/ship/proc/try_move()
 	var/x_dir = (x_thrust > 0) ? 1 : -1
@@ -732,6 +751,18 @@
 	try_move()
 	update_screen()
 	addtimer(CALLBACK(src, PROC_REF(do_move)), (1 / calculate_thrust()) SECONDS)
+
+/**
+ * Pushes a UI frame to every helm bound to this ship, so the chart starts a fresh
+ * glide the instant the ship crosses a tile.
+ *
+ * SStgui's own heartbeat is 0.9s while tick_move() runs at 1/speed deciseconds —
+ * far faster than that under any real burn. Without this the client would see the
+ * ship teleport several tiles per update and the interpolation would lurch.
+ */
+/obj/structure/overmap/ship/proc/push_helm_frame()
+	for(var/obj/machinery/computer/helm/console as anything in helm_consoles)
+		SStgui.update_uis(console)
 
 /// Calculates the current thrust of the ship
 /obj/structure/overmap/ship/proc/calculate_thrust()
@@ -993,31 +1024,10 @@
 		return get_turf(shuttle)
 	return null
 
-/**
- * Broadcasts a message as runechat above the ship on the overmap.
- * All crew members will see the floating text appear above the ship.
- */
-/obj/structure/overmap/ship/proc/ship_broadcast_runechat(message)
-	// Create a mutable appearance for the text overlay
-	var/mutable_appearance/text_overlay = new
-	text_overlay.plane = RUNECHAT_PLANE
-	text_overlay.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA | KEEP_APART | RESET_TRANSFORM
-	text_overlay.alpha = 255
-	text_overlay.pixel_y = 32
-	text_overlay.maptext_width = 128
-	text_overlay.maptext_height = 48
-	text_overlay.maptext_x = -48
-	text_overlay.maptext = MAPTEXT("<span style='text-align: center; color: [chat_color || "#FFFFFF"]'>[message]</span>")
-
-	// Add as overlay to ship (visible through cam_screen vis_contents)
-	overlays += text_overlay
-
-	// Remove after delay
-	addtimer(CALLBACK(src, PROC_REF(remove_broadcast_overlay), text_overlay), 3 SECONDS)
-
-/// Removes a broadcast overlay from the ship
-/obj/structure/overmap/ship/proc/remove_broadcast_overlay(mutable_appearance/text_overlay)
-	overlays -= text_overlay
+// ship_broadcast_runechat() moved to ship_transmissions.dm. It used to paint a
+// maptext overlay onto this atom for the helm's camera map to render; that camera
+// is gone, so the overlay had no renderer and hails were invisible to everyone.
+// Transmissions are data the helm reads now.
 
 /**
  * Mob death/revive
@@ -1087,6 +1097,8 @@
 	speed_multiplier = new_multiplier
 	interdiction_strength = strength
 	is_interdicted = TRUE
+
+	interrupt_autopilot("interdiction field")
 
 	// Cancel nebula hide warmup if interdicted during it
 	if(nebula_hide_timer)
@@ -1768,11 +1780,22 @@
 	update_icon_state()
 	update_flight_parallax()
 
-	if(is_still() || QDELETED(src) || movement_callback_id)
+	if(QDELETED(src))
+		return
+
+	if(is_still() || movement_callback_id)
+		// Coming to a stop is a change the chart has to hear about too, or it keeps
+		// gliding the token toward a tile the ship is no longer heading for.
+		push_helm_frame()
 		return
 
 	var/timer = 1 / MAGNITUDE(speed[1], speed[2]) * offset
 	movement_callback_id = addtimer(CALLBACK(src, PROC_REF(tick_move)), timer, TIMER_STOPPABLE)
+	// The chart glides over exactly get_move_interval(), which this call has just
+	// rewritten. Push it now rather than letting the console wait for the next tile
+	// crossing: otherwise a throttle change keeps interpolating at the old rate and
+	// the ship visibly snaps forward when it arrives early.
+	push_helm_frame()
 
 /**
   * Called by /proc/adjust_speed(), this continually moves the ship according to it's speed
@@ -1810,6 +1833,27 @@
 
 	reschedule_movement()
 	update_screen()
+	push_helm_frame()
+	// One tile crossed is one steering decision — there is no sub-tile position to
+	// steer with in between (see ship_autopilot.dm).
+	if(autopilot_engaged)
+		autopilot_steer()
+
+/**
+  * Deciseconds the ship takes to cross one overmap tile at its current speed, or
+  * 0 when it isn't moving. Single source of truth for both the movement timer and
+  * the interval the helm chart glides its token over, so the two can't drift.
+  */
+/obj/structure/overmap/ship/proc/get_move_interval()
+	var/current_speed = MAGNITUDE(speed[1], speed[2])
+	if(!current_speed)
+		return 0
+
+	// Apply speed multiplier as hard cap (for interdiction effects)
+	if(speed_multiplier < SHIP_SPEED_MULTIPLIER_DEFAULT)
+		current_speed *= speed_multiplier
+
+	return 1 / current_speed
 
 /**
   * Helper proc to reschedule the movement timer
@@ -1818,15 +1862,10 @@
 	if(movement_callback_id)
 		deltimer(movement_callback_id)
 
-	var/current_speed = MAGNITUDE(speed[1], speed[2])
-	if(!current_speed)
+	var/timer = get_move_interval()
+	if(!timer)
 		return
 
-	// Apply speed multiplier as hard cap (for interdiction effects)
-	if(speed_multiplier < SHIP_SPEED_MULTIPLIER_DEFAULT)
-		current_speed *= speed_multiplier
-
-	var/timer = 1 / current_speed
 	movement_callback_id = addtimer(CALLBACK(src, PROC_REF(tick_move)), timer, TIMER_STOPPABLE)
 
 /**
@@ -2751,6 +2790,50 @@
 	else if(speed[2])
 		adjust_speed(0, -SIGN(speed[2]) * min(acceleration, abs(speed[2])))
 
+/**
+ * Kills all velocity in one call, rather than shedding it a tick at a time.
+ *
+ * The same thing `decelerate(max_speed)` already does at the dock, on undock and
+ * on a zone transition, given a name so the autopilot can ask for it directly.
+ *
+ * Routed through adjust_speed() rather than writing `speed` so the movement timer,
+ * the flight parallax and the helm chart all hear about it — the chart in
+ * particular keeps gliding its token toward a tile the ship is no longer heading
+ * for otherwise.
+ */
+/obj/structure/overmap/ship/proc/full_stop()
+	if(burn_direction != BURN_NONE)
+		change_heading(BURN_NONE)
+	if(is_still())
+		return
+	adjust_speed(-speed[1], -speed[2])
+
+/**
+ * Zeroes one or both axes of the velocity and leaves the other alone.
+ *
+ * What a turn actually needs. tick_move() steps by the SIGN of each axis, so
+ * changing course is a matter of getting the two signs right rather than of
+ * shedding speed — and an axis already carrying the ship the right way should keep
+ * every bit of the speed it has instead of being braked along with the bad one.
+ */
+/obj/structure/overmap/ship/proc/kill_drift(kill_x = FALSE, kill_y = FALSE)
+	if(!kill_x && !kill_y)
+		return
+	adjust_speed(kill_x ? -speed[1] : 0, kill_y ? -speed[2] : 0)
+
+/**
+ * Trims the velocity to a magnitude ceiling, keeping its direction.
+ *
+ * Scaling both axes by the same factor is what preserves the heading: tick_move()
+ * reads the SIGNS, and scaling by a positive factor cannot change one.
+ */
+/obj/structure/overmap/ship/proc/clamp_speed(ceiling)
+	var/magnitude = MAGNITUDE(speed[1], speed[2])
+	if(!magnitude || magnitude <= ceiling)
+		return
+	var/scale = ceiling / magnitude
+	adjust_speed(speed[1] * (scale - 1), speed[2] * (scale - 1))
+
 /obj/structure/overmap/ship/Bump(atom/A)
 /*
 	if(istype(A, /turf/open/overmap/edge))
@@ -2957,6 +3040,10 @@
 	// Track when the attacker is deleted so we can clean up
 	RegisterSignal(attacker, COMSIG_QDELETING, PROC_REF(on_attacker_deleted))
 
+	// Nobody should be flying a plotted course while someone has a firing solution
+	// on them (see ship_autopilot.dm).
+	interrupt_autopilot("weapons lock detected")
+
 	// Start the combat alarm if this is the first lock
 	// if(length(locked_on_by) == 1 && combat_alarm)
 	// 	combat_alarm.start()
@@ -2993,7 +3080,6 @@
 
 #undef SHIP_RUIN
 #undef SHIP_DELETE
-#undef SHIP_VIEW_RANGE
 #undef DOCK_WARMUP_TIME
 #undef UNDOCK_WARMUP_TIME
 #undef UNDOCK_COOLDOWN_TIME

@@ -332,6 +332,12 @@
 	// Send signal that we've entered a hazard (decloaks ship, etc.)
 	SEND_SIGNAL(src, COMSIG_SHIP_HAZARD_TRIGGERED, hazard)
 
+	// A plotted course routes around storms, so ending up inside one means the
+	// route was planned before we could see it. Hand the ship back rather than
+	// fly deeper in. Nebulas are not a threat and don't count (ship_autopilot.dm).
+	if(!istype(hazard, /obj/structure/overmap/event/nebula))
+		interrupt_autopilot("[hazard.name] ahead")
+
 	// Meteors always trigger per tile - no cooldown
 	if(istype(hazard, /obj/structure/overmap/event/meteor))
 		apply_meteor_damage(hazard)

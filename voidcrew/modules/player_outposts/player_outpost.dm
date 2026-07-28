@@ -76,6 +76,10 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	COOLDOWN_DECLARE(rename_cooldown)
 	COOLDOWN_DECLARE(advert_cooldown)
 
+/// Somebody's colony, as against a trader's market — both are "Outposts" on the readout.
+/obj/structure/overmap/dynamic/player_outpost/get_contact_variant()
+	return "colony"
+
 /obj/structure/overmap/dynamic/player_outpost/Initialize(mapload)
 	. = ..()
 	GLOB.player_outposts += src
@@ -513,6 +517,11 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
  * Handles a visiting ship: access control first, then the planet-style
  * two-dock allocation. The level is always loaded (founding loads it).
  */
+/obj/structure/overmap/dynamic/player_outpost/get_dock_description()
+	// Access control still runs on the actual dock attempt — this only promises the
+	// button will ask, not that the outpost will say yes.
+	return "[name] (hangar berth)"
+
 /obj/structure/overmap/dynamic/player_outpost/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
 	if(concerned)
 		to_chat(user, span_notice("Too much traffic, try again later!"))

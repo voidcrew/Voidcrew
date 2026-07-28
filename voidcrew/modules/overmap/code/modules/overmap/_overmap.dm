@@ -38,6 +38,23 @@
 /obj/structure/overmap/proc/ship_act(mob/user, obj/structure/overmap/ship/acting)
 	to_chat(user, "<span class='notice'>You don't think there's anything you can do here.</span>")
 
+/**
+ * What the helm's Dock button means when this object shares the ship's tile —
+ * a short noun phrase ("Trader Halcyon", "derelict signal"), or null if a ship
+ * can't dock with this at all.
+ *
+ * Null is the default and covers everything a ship flies past rather than lands
+ * on: storms, and nebulas (whose ship_act conceals rather than docks — that's the
+ * Cloak control's job). Other vessels are excluded by the helm itself, since
+ * ship-to-ship docking is a consensual flow with its own request/accept handshake.
+ *
+ * Overriding this is what puts an object on the Dock button. If you give a new
+ * overmap type a docking ship_act(), give it one of these too or the helm will
+ * offer to dock into empty space right on top of it.
+ */
+/obj/structure/overmap/proc/get_dock_description()
+	return null
+
 // Empty planets inherit ship_act from parent planet class to enable proper docking
 
 /obj/structure/overmap/Initialize(mapload)

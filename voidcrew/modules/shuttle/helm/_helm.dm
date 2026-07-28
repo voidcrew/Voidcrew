@@ -59,6 +59,9 @@
 
 /obj/machinery/computer/helm/Destroy()
 	QDEL_NULL(console_ambience)
+	if(current_ship)
+		LAZYREMOVE(current_ship.helm_consoles, src)
+		current_ship = null
 	return ..()
 
 /obj/machinery/computer/helm/viewscreen
@@ -75,6 +78,14 @@
 	// Handle ship authorization key
 	if(istype(I, /obj/item/ship_key))
 		attempt_claim_ship(I, user)
+		return TRUE
+	// Handle star chart uploads
+	if(istype(I, /obj/item/disk/star_chart))
+		var/obj/item/disk/star_chart/chart = I
+		if(!current_ship && !attempt_ship_connection(last_resort = TRUE))
+			to_chat(user, span_warning("This console is not connected to a ship!"))
+			return TRUE
+		chart.upload_to_ship(current_ship, user)
 		return TRUE
 	return ..()
 
@@ -186,6 +197,19 @@
 
 	return TRUE
 
+/**
+ * Faceplate art for the helm interface. Composited by tools/helm_plate/make_plate.py
+ * from a generated metal texture; re-run that script if the panel GEOMETRY in
+ * HelmComputer.tsx changes, or the bezels will no longer line up with the wells.
+ */
+/datum/asset/simple/helm_faceplate
+	assets = list(
+		"helm_faceplate.png" = 'voidcrew/modules/shuttle/helm/helm_faceplate.png',
+	)
+
+/obj/machinery/computer/helm/ui_assets(mob/user)
+	return list(get_asset_datum(/datum/asset/simple/helm_faceplate))
+
 /obj/machinery/computer/helm/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
 	if(!current_ship && !attempt_ship_connection(last_resort = TRUE))
@@ -195,19 +219,10 @@
 	if(!ui)
 		ui = new(user, src, "HelmComputer", name)
 		ui.open()
-		ui.set_autoupdate(TRUE) // Enable continuous UI updates
-		// Register map after UI opens, passing window so it waits for visibility
-		current_ship.cam_screen.display_to(user, ui.window)
-	else
-		// For existing UI, just refresh the display
-		current_ship.cam_screen.display_to(user)
-
-	// Update screen content after display registration
-	current_ship.update_screen()
-
-/obj/machinery/computer/helm/ui_close(mob/user)
-	. = ..()
-	current_ship.cam_screen.hide_from(user)
+		// The chart is drawn client-side from contact data, so the helm no longer
+		// needs the ship's camera map instance. Autoupdate is the idle heartbeat;
+		// while under thrust the ship pushes a frame per tile from do_move().
+		ui.set_autoupdate(TRUE)
 /*
 /obj/machinery/computer/helm/ui_act(action, list/params)
 	. = ..()
@@ -236,7 +251,6 @@
 	// var/list/data = list()
 	var/list/data = ..()
 
-	data["thrust"] = current_ship.calculate_thrust()
 	data["integrity"] = current_ship.get_integrity_percent()
 	data["overhealth"] = current_ship.get_overhealth_percent()
 
@@ -285,76 +299,33 @@
 	data["sensorRange"] = current_ship.get_sensor_range()
 	data["scanCooldown"] = !COOLDOWN_FINISHED(current_ship, sensor_scan_cooldown)
 	data["scanCooldownRemaining"] = COOLDOWN_TIMELEFT(current_ship, sensor_scan_cooldown)
+	// The contact set itself is cached on the ship and shared by every console on
+	// it; distance and bearing are derived here so they stay live between rebuilds
+	// even while the ship is moving a tile at a time.
 	data["waypoints"] = list()
-	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
-		var/list/outpost_coords = outpost.get_relative_overmap_coords()
-		if(!outpost_coords)
-			continue
-		var/dx = outpost_coords[1] - data["x"]
-		var/dy = outpost_coords[2] - data["y"]
-		var/dist = round(sqrt(dx * dx + dy * dy))
-		data["waypoints"] += list(list(
-			"name" = "Trader [outpost.shop.trader_name]",
-			"x" = outpost_coords[1],
-			"y" = outpost_coords[2],
-			"dist" = dist,
-			"bearing" = overmap_delta_to_compass(dx, dy),
-			"category" = "Outposts",
-			"ref" = null,
+	for(var/list/contact as anything in current_ship.get_contact_snapshot())
+		var/dx = contact["x"] - data["x"]
+		var/dy = contact["y"] - data["y"]
+		// Copy so the per-read distance never writes back into the shared cache.
+		var/list/entry = contact.Copy()
+		entry["dist"] = round(sqrt(dx * dx + dy * dy))
+		entry["bearing"] = overmap_delta_to_compass(dx, dy)
+		data["waypoints"] += list(entry)
+	// Hails heard by this ship. Newest last, as the log stores them; `live` marks
+	// the ones still young enough to pulse on the chart (see ship_transmissions.dm).
+	data["transmissions"] = list()
+	for(var/datum/overmap_transmission/transmission as anything in current_ship.comms_log)
+		var/obj/structure/overmap/ship/sender = transmission.sender_ref?.resolve()
+		data["transmissions"] += list(list(
+			"message" = transmission.message,
+			"sender" = transmission.sender_name || "unknown contact",
+			"x" = transmission.coord_x,
+			"y" = transmission.coord_y,
+			"age" = transmission.age_seconds(),
+			"live" = transmission.is_live(),
+			"own" = sender == current_ship,
 		))
-	// Advertising player outposts buy their way onto every helm chart for the
-	// advert's duration (see voidcrew/modules/player_outposts/outpost_adverts.dm)
-	for(var/datum/outpost_advert/advert as anything in GLOB.outpost_adverts)
-		var/dx = advert.coord_x - data["x"]
-		var/dy = advert.coord_y - data["y"]
-		var/dist = round(sqrt(dx * dx + dy * dy))
-		data["waypoints"] += list(list(
-			"name" = advert.outpost_name,
-			"x" = advert.coord_x,
-			"y" = advert.coord_y,
-			"dist" = dist,
-			"bearing" = overmap_delta_to_compass(dx, dy),
-			"category" = "Outposts",
-			"ref" = null,
-		))
-	if(current_ship.can_scan_ships())
-		var/ship_scan_range = data["sensorRange"]
-		for(var/obj/structure/overmap/ship/other as anything in SSovermap.simulated_ships)
-			// Any vessel in range registers — including pirates; that's the
-			// point of vessel tracking. Nebula-hidden ships stay concealed.
-			if(other == current_ship || other.hidden_in_nebula)
-				continue
-			var/list/other_coords = other.get_relative_overmap_coords()
-			if(!other_coords)
-				continue
-			var/dx = other_coords[1] - data["x"]
-			var/dy = other_coords[2] - data["y"]
-			var/dist = round(sqrt(dx * dx + dy * dy))
-			if(dist > ship_scan_range)
-				continue
-			data["waypoints"] += list(list(
-				"name" = other.name,
-				"x" = other_coords[1],
-				"y" = other_coords[2],
-				"dist" = dist,
-				"bearing" = overmap_delta_to_compass(dx, dy),
-				"category" = "Ships",
-				"ref" = null,
-			))
-	for(var/datum/ship_waypoint/waypoint as anything in current_ship.waypoints)
-		var/list/waypoint_coords = waypoint.get_coords()
-		var/dx = waypoint_coords[1] - data["x"]
-		var/dy = waypoint_coords[2] - data["y"]
-		var/dist = round(sqrt(dx * dx + dy * dy))
-		data["waypoints"] += list(list(
-			"name" = waypoint.name,
-			"x" = waypoint_coords[1],
-			"y" = waypoint_coords[2],
-			"dist" = dist,
-			"bearing" = overmap_delta_to_compass(dx, dy),
-			"category" = waypoint.category,
-			"ref" = REF(waypoint),
-		))
+
 	// Sealed rumors bought from traders, waiting on the reveal button
 	data["pendingRumors"] = list()
 	for(var/datum/rumor_chart/chart as anything in current_ship.pending_rumors)
@@ -366,11 +337,33 @@
 	data["heading"] = dir2text(current_ship.get_heading()) || "None"
 	data["speed"] = current_ship.get_speed()
 	data["eta"] = current_ship.get_eta()
+	// Exactly the interval tick_move() is scheduled on, in milliseconds. The chart
+	// glides its token over this long, so each move lands as the next one starts
+	// and a tile-by-tile jump reads as continuous flight.
+	data["moveIntervalMs"] = round(current_ship.get_move_interval() * 100)
 	data["est_thrust"] = current_ship.est_thrust
 	data["burnDirection"] = current_ship.burn_direction
 	data["burnPercentage"] = current_ship.burn_percentage
 	data["engineInfo"] = list()
 	data["canLand"] = current_ship.shuttle.port_destinations ? TRUE : FALSE
+	data["autopilot"] = current_ship.get_autopilot_data()
+
+	// What the Dock button will actually do from this tile. It used to only ever
+	// dock into empty space and refused outright when anything shared the tile,
+	// which meant landing on a ruin had to be done from the contact list instead.
+	var/obj/structure/overmap/dock_candidate = get_dock_candidate()
+	var/dock_name = dock_candidate?.get_dock_description()
+	if(!dock_name)
+		// Nebulas aren't a docking target — concealment is the Cloak control's job —
+		// but sitting in one and being told only "empty space" reads as the console
+		// having missed it, so the label says where the empty space is.
+		dock_name = (locate(/obj/structure/overmap/event/nebula) in T) \
+			? "empty space (inside nebula)" \
+			: "empty space"
+	data["dockTarget"] = list(
+		"name" = dock_name,
+		"isEmpty" = !dock_candidate,
+	)
 
 	// Undock cooldown data (after docking)
 	data["undockCooldown"] = !COOLDOWN_FINISHED(current_ship, undock_cooldown)
@@ -485,24 +478,80 @@
 /obj/machinery/computer/helm/ui_static_data(mob/user)
 	var/list/data = list()
 
-	data["mapRef"] = current_ship.map_name
 	data["isViewer"] = viewer
-	data["mapRef"] = current_ship.map_name
 	data["shipInfo"] = list(
 		name = current_ship.display_name,
 		class = current_ship.source_template?.name,
 		mass = current_ship.mass,
-		//sensor_range = current_ship.sensor_range
 	)
 	data["canFly"] = TRUE
 
+	// Chart geometry. Zones are concentric bands around the sun and never rotate,
+	// so the client can draw the whole ring system from these four numbers instead
+	// of us shipping per-tile colour data.
+	data["chart"] = list(
+		"size" = OVERMAP_SIZE,
+		// Must match SSovermap_zones' own centre, not the grid's true geometric
+		// middle: overmap_centre (and the sun placed on it) sits at index
+		// (OVERMAP_SIZE - 1) / 2, one tile off from round((SIZE + 1) / 2), because
+		// setup_overmap() computes it that way ("not actually the centre but close
+		// enough" — see overmap.dm). calculate_zone_for_turf() measures every
+		// zone boundary from that same off-centre point, so the rings drawn here
+		// have to be centred on it too, or the yellow/red boundaries on the chart
+		// read as smaller than where a ship actually crosses into them.
+		"centre" = (OVERMAP_SIZE - 1) / 2,
+		"ringInner" = ZONE_INNER_RING_RATIO,
+		"ringMiddle" = ZONE_MIDDLE_RING_RATIO,
+		// The free sight radius, drawn as the solid inner ring. Fixed forever —
+		// research moves the sensor ring, never this one (see ship_sensors.dm).
+		"viewRange" = SHIP_VIEW_RANGE,
+	)
+
 	// Check if user is a crew member of this ship
+	// Everything the ship has ever seen. Static because it only changes on a new
+	// discovery, which pushes a refresh (see get_charted_contacts) — it is much
+	// the largest table the helm sends, and re-sending it every frame was the
+	// whole cost of charting the map as you go.
+	data["chartedContacts"] = current_ship.get_charted_contacts()
+
 	data["isNotCrew"] = !is_crew_member(user)
 
 	// Abandoned ship status
 	data["isAbandoned"] = current_ship?.abandoned
 
 	return data
+
+/**
+ * The object the Dock button will dock into from the ship's current tile, or null
+ * when there is nothing here and docking means holding station in empty space.
+ *
+ * Other vessels are skipped deliberately: ship-to-ship docking is a consensual
+ * request/accept handshake, not something the Dock button should trigger by
+ * happening to share a tile. Everything else opts in by overriding
+ * get_dock_description() (see _overmap.dm).
+ */
+/obj/machinery/computer/helm/proc/get_dock_candidate()
+	if(!current_ship)
+		return null
+	for(var/obj/structure/overmap/object as anything in current_ship.close_overmap_objects)
+		if(istype(object, /obj/structure/overmap/ship))
+			continue
+		if(isnull(object.get_dock_description()))
+			continue
+		return object
+	return null
+
+/**
+ * Names an autopilot destination from the ship's own contact set, so the label the
+ * crew sees in chat is one the server already knows about. The client never gets to
+ * supply this text — it ends up inside ship_notify() output, and a client-supplied
+ * string there is an injection waiting to happen.
+ */
+/obj/machinery/computer/helm/proc/describe_autopilot_destination(rel_x, rel_y)
+	for(var/list/contact as anything in current_ship.get_contact_snapshot())
+		if(contact["x"] == rel_x && contact["y"] == rel_y)
+			return contact["name"]
+	return "([rel_x], [rel_y])"
 
 /**
  * Checks if the given user is a member of this ship's crew
@@ -603,12 +652,16 @@
 	// Unregister from old ship
 	if(current_ship)
 		UnregisterSignal(current_ship, COMSIG_SHIP_INTEGRITY_CHANGED)
+		LAZYREMOVE(current_ship.helm_consoles, src)
 
 	current_ship = new_ship
 
 	// Register to new ship for auto UI updates
 	if(current_ship)
 		RegisterSignal(current_ship, COMSIG_SHIP_INTEGRITY_CHANGED, PROC_REF(on_ship_integrity_changed))
+		// The ship pushes a UI frame to every linked console as it crosses a tile,
+		// so the chart's glide stays in step with the move loop (see do_move).
+		LAZYOR(current_ship.helm_consoles, src)
 
 /**
  * Signal handler - refreshes UI when ship integrity changes
@@ -736,18 +789,32 @@
 					var/category = params["category"]
 					var/found = current_ship.active_scan(category)
 					var/label = lowertext(category) || "object"
+					// Vessels are identified where they float rather than charted, and
+					// only as far as the crew can see. Say what actually happened.
+					var/vessels = category == "Ships"
+					var/outcome = vessels ? "identified" : "charted"
+					var/reach = vessels ? "visual range" : "sensor range"
 					if(found < 0)
 						say("Sensors recharging. ETA: [DisplayTimeText(COOLDOWN_TIMELEFT(current_ship, sensor_scan_cooldown))].")
 						playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
 					else if(found > 0)
-						say("Active scan complete: [found] [label] contact[found > 1 ? "s" : ""] charted.")
+						say("Active scan complete: [found] [label] contact[found > 1 ? "s" : ""] [outcome].")
 						playsound(src, 'sound/machines/ping.ogg', 40)
 					else
-						say("Active scan complete: no new [label] contacts in sensor range.")
+						say("Active scan complete: no new [label] contacts in [reach].")
 						playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
 					return
 				if("act_overmap")
 					var/obj/structure/overmap/to_act = locate(params["ship_to_act"])
+					// overmap_object_act() only checks that we're stopped, not that the
+					// target is reachable, and the chart now hands the client a ref for
+					// every contact it can see. close_overmap_objects is strictly
+					// same-tile (see /obj/structure/overmap/on_entered), so it is the
+					// honest reachability test.
+					if(!to_act || !(to_act in current_ship.close_overmap_objects))
+						say("ERROR: No such contact at this position.")
+						playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
+						return
 					say(current_ship.overmap_object_act(usr, to_act))
 					return
 				if("toggle_engine")
@@ -759,17 +826,45 @@
 					return
 				if("change_heading")
 					var/new_direction = text2num(params["dir"])
+					// Touching the helm takes the ship off autopilot. Quietly — the
+					// crew just did it on purpose and doesn't need to be told.
+					current_ship.disengage_autopilot("manual heading", notify = FALSE)
 					// Toggle off if clicking same direction
 					if(new_direction == current_ship.burn_direction)
 						current_ship.change_heading(BURN_NONE)
 					else
 						current_ship.change_heading(new_direction)
 					return
+				if("autopilot")
+					// Chart coordinates arrive relative; the ship works in absolute
+					// turf coordinates.
+					var/dest_x = text2num(params["x"])
+					var/dest_y = text2num(params["y"])
+					if(isnull(dest_x) || isnull(dest_y))
+						return
+					dest_x = round(dest_x)
+					dest_y = round(dest_y)
+					var/label = describe_autopilot_destination(dest_x, dest_y)
+					var/result = current_ship.engage_autopilot(
+						dest_x + OVERMAP_LEFT_SIDE_COORD - 1,
+						dest_y + OVERMAP_SOUTH_SIDE_COORD - 1,
+						label,
+						usr,
+					)
+					say(result)
+					playsound(src, findtext(result, "ERROR") ? 'sound/machines/terminal/terminal_error.ogg' : 'sound/machines/ping.ogg', 40)
+					return
+				if("autopilot_cancel")
+					if(!current_ship.autopilot_engaged)
+						return
+					current_ship.disengage_autopilot("stood down at the helm")
+					return
 				if("change_burn_percentage")
 					var/new_percentage = clamp(text2num(params["percentage"]), 1, 100)
 					current_ship.burn_percentage = new_percentage
 					return
 				if("stop")
+					current_ship.disengage_autopilot("manual override", notify = FALSE)
 					// Cancel zone transition if in progress
 					if(current_ship.zone_transitioning)
 						current_ship.cancel_zone_transition()
@@ -789,13 +884,20 @@
 							return
 						calibrate_jump()
 						return
-				if("dock_empty")
-					if(length(current_ship.close_overmap_objects))
-						for(var/obj/structure/overmap/o in current_ship.close_overmap_objects)
-							if(!istype(o, /obj/structure/overmap/planet/empty) && !istype(o, /obj/structure/overmap/ship))
-								playsound(src, 'sound/machines/terminal/terminal_error.ogg', 20)
-								balloon_alert(usr, "something is in the way!")
-								return
+				if("dock")
+					// Dock into whatever is actually here. Previously this refused
+					// outright whenever a ruin or planet shared the tile, so the only
+					// way to land on one was the contact list's Interact button.
+					var/obj/structure/overmap/dock_candidate = get_dock_candidate()
+					if(dock_candidate)
+						if(!current_ship.is_still())
+							playsound(src, 'sound/machines/terminal/terminal_error.ogg', 20)
+							balloon_alert(usr, "come to a full stop first!")
+							return
+						current_ship.disengage_autopilot("docking", notify = FALSE)
+						current_ship.overmap_object_act(usr, dock_candidate)
+						return
+					current_ship.disengage_autopilot("docking", notify = FALSE)
 					say(current_ship.dock_in_empty_space(usr))
 					return
 				if("hide_in_nebula")

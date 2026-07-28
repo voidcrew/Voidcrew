@@ -590,6 +590,9 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
  * outpost_hangar.dm) and docks it there. The interior is already loaded —
  * open_venue() ran at spawn — but load_level() is retried defensively.
  */
+/obj/structure/overmap/colosseum/get_dock_description()
+	return "[name] (arena berth)"
+
 /obj/structure/overmap/colosseum/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
 	if(concerned)
 		to_chat(user, span_notice("Too much traffic, try again later!"))

@@ -1,4 +1,8 @@
 /obj/structure/overmap/star
+	// The helm chart already draws the star as its own sunglow visualization at
+	// the map centre (see HelmComputer.tsx); charting it as a generic contact too
+	// would put two marks on the same spot.
+	sensor_visible = FALSE
 	/// Datum containing all of the information for the star
 	var/datum/overmap/star/star_datum = /datum/overmap/star
 	var/star_type = "basic"

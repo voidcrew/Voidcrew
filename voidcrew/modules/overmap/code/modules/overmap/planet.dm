@@ -27,6 +27,10 @@
 	var/dock_index
 	var/datum/weather/weather_type
 
+/// The chart colours planets by terrain, and the terrain is the planet datum's business.
+/obj/structure/overmap/planet/get_contact_variant()
+	return planet ? initial(planet.chart_variant) : null
+
 /**
   * Load a level for a ship that's visiting the level.
   * * visiting shuttle - The docking port of the shuttle visiting the level.
@@ -111,6 +115,9 @@
 	adjust_reserve_dock_to_shuttle(dock_to_adjust, shuttle)
 	if(shuttle.height > dock_to_adjust.height || shuttle.width > dock_to_adjust.width)
 		CRASH("Shuttle cannot fit in dock!")
+
+/obj/structure/overmap/planet/get_dock_description()
+	return "[display_name || name] (planetfall)"
 
 /obj/structure/overmap/planet/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
 	if(concerned)

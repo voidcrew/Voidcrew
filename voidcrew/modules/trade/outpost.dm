@@ -45,6 +45,9 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	name = "trader outpost"
 	desc = "An independent trade station broadcasting an open docking invitation. Its hull shrugs off weapons fire."
 	icon_state = "station"
+	// Outposts broadcast their position sector-wide, so the helm lists them from
+	// GLOB.trader_outposts at any range — the sensor bubble would only duplicate it.
+	sensor_visible = FALSE
 
 	/// Shop datum type stocking this outpost (zone-specific)
 	var/shop_type = /datum/outpost_shop/black_market
@@ -81,6 +84,10 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	var/list/obj/machinery/porta_turret/outpost/turrets = list()
 	/// Looping timer id for the supply convoy restock
 	var/restock_timer
+
+/// A market, as against a crew's own colony — both are "Outposts" on the readout.
+/obj/structure/overmap/trader_outpost/get_contact_variant()
+	return "market"
 
 /obj/structure/overmap/trader_outpost/Initialize(mapload)
 	. = ..()
@@ -262,6 +269,9 @@ GLOBAL_LIST_EMPTY(trader_outposts)
  * Handles ship docking: lazy-loads the interior, then allocates the ship its
  * own hangar berth (see outpost_hangar.dm) and docks it there.
  */
+/obj/structure/overmap/trader_outpost/get_dock_description()
+	return "Trader [shop?.trader_name || name] (hangar berth)"
+
 /obj/structure/overmap/trader_outpost/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
 	if(concerned)
 		to_chat(user, span_notice("Too much traffic, try again later!"))

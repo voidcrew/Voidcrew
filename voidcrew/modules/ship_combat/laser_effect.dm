@@ -412,6 +412,8 @@
 	// Signal that hull was hit (for combat camera static updates)
 	if(target_ship)
 		SEND_SIGNAL(target_ship, COMSIG_SHIP_HULL_HIT, impact_loc)
+		// Being shot ends any plotted course (see ship_autopilot.dm)
+		target_ship.interrupt_autopilot("hull damage taken")
 
 // ========== BEAM SEGMENT EFFECT ==========
 

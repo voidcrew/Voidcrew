@@ -123,6 +123,16 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	color = "#ffc94d"
 
 /**
+ * What the chart draws this signal as. An unsurveyed ruin is a signal and nothing
+ * more, so it deliberately gives up nothing but the encryption — which is already
+ * public, being the whole point of a rumour chart.
+ */
+/obj/structure/overmap/space_ruin/get_contact_variant()
+	if(!surveyed)
+		return rare ? "encrypted" : null
+	return ruin_category
+
+/**
  * Updates the icon based on category and survey status
  */
 /obj/structure/overmap/space_ruin/proc/update_icon_for_category()
@@ -284,6 +294,11 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 /**
  * Handles ship interaction with this ruin
  */
+/obj/structure/overmap/space_ruin/get_dock_description()
+	// Deliberately whatever the helm currently calls it: an unidentified ruin stays
+	// "unknown signal" on the Dock button too, rather than leaking its true name.
+	return "[name] (boarding)"
+
 /obj/structure/overmap/space_ruin/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
 	if(concerned)
 		to_chat(user, span_notice("Too much traffic, try again later!"))

@@ -1,10 +1,27 @@
 /obj/structure/overmap/event
 	name = "generic overmap event"
+	// Hazards show on the helm chart whenever they are inside the sensor bubble,
+	// but sensor_detectable stays FALSE: no scan of ours can pin a storm, so one
+	// you have flown clear of is lost until you go looking again — or until you
+	// buy the region's star chart, which records them the same as anything else.
+	sensor_category = "Hazards"
 
 	/// Chance to spread to nearby tiles if spawned
 	var/spread_chance = 0
 	/// How many additional tiles to spawn at once in the selected orbit
 	var/chain_rate = 0
+	/// Which storm the helm chart draws for this event. Each family gets its own
+	/// silhouette — a rock field and an ion front are steered around differently,
+	/// so they must not share a glyph.
+	var/chart_variant = null
+	/// 1 minor / 2 moderate / 3 majour. Sizes the glyph, nothing else.
+	var/chart_severity = 2
+
+/obj/structure/overmap/event/get_contact_variant()
+	return chart_variant
+
+/obj/structure/overmap/event/get_contact_severity()
+	return chart_severity
 
 /// Every meteor storm event on the overmap, loaded or not — zone resolution traces
 /// field-interior turfs back to their event through this (see zone_controller.dm)
@@ -15,6 +32,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	icon_state = "meteor1"
 	spread_chance = 50
 	chain_rate = 4
+	chart_variant = "rock"
 	parallax_theme = PARALLAX_THEME_ASTEROIDS // crews over/inside the field see drifting asteroids
 	/// Notable minerals shown on the survey report — keep in sync with ore_weights
 	var/mineral_types = list(/datum/material/iron, /datum/material/plasma, /datum/material/silver, /datum/material/titanium, /datum/material/gold)
@@ -72,6 +90,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 /obj/structure/overmap/event/meteor/minor
 	name = "asteroid storm (minor)"
 	chain_rate = 3
+	chart_severity = 1
 	mapgen_type = /datum/map_generator/cave_generator/asteroid_field/minor
 	mineral_types = list(/datum/material/iron, /datum/material/plasma, /datum/material/silver, /datum/material/titanium)
 	// Common rock only: no uranium, diamond or bluespace this shallow
@@ -91,6 +110,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	name = "asteroid storm (majour)"
 	spread_chance = 25
 	chain_rate = 6
+	chart_severity = 3
 	mineral_types = list(/datum/material/gold, /datum/material/uranium, /datum/material/diamond, /datum/material/bluespace)
 	mapgen_type = /datum/map_generator/cave_generator/asteroid_field/majour
 	// The deep-storm payout: still mostly working rock, but the precious tail
@@ -244,6 +264,9 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 /**
  * Handles ship interaction with this field - mirrors /obj/structure/overmap/space_ruin/ship_act()
  */
+/obj/structure/overmap/event/meteor/get_dock_description()
+	return "[name] (mining anchorage)"
+
 /obj/structure/overmap/event/meteor/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
 	if(concerned)
 		to_chat(user, span_notice("Too much traffic, try again later!"))
@@ -449,6 +472,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	icon_state = "ion1"
 	spread_chance = 20
 	chain_rate = 2
+	chart_variant = "ion"
 	var/intensity = 1
 
 /obj/structure/overmap/event/emp/Initialize(mapload)
@@ -459,17 +483,20 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	name = "ion storm (minor)"
 	chain_rate = 1
 	intensity = 1
+	chart_severity = 1
 
 /obj/structure/overmap/event/emp/majour
 	name = "ion storm (majour)"
 	chain_rate = 4
 	intensity = 2
+	chart_severity = 3
 
 /obj/structure/overmap/event/electric
 	name = "electrical storm (moderate)"
 	icon_state = "electrical1"
 	spread_chance = 30
 	chain_rate = 3
+	chart_variant = "electrical"
 	var/intensity = 1
 
 /obj/structure/overmap/event/electric/Initialize(mapload)
@@ -481,12 +508,14 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	spread_chance = 40
 	chain_rate = 2
 	intensity = 1
+	chart_severity = 1
 
 /obj/structure/overmap/event/electric/majour
 	name = "electrical storm (majour)"
 	spread_chance = 15
 	chain_rate = 6
 	intensity = 2
+	chart_severity = 3
 
 /**
  * === Gas-bearing nebulas ===
@@ -543,6 +572,9 @@ GLOBAL_LIST_EMPTY(nebula_events)
 /obj/structure/overmap/event/nebula
 	name = "nebula"
 	icon_state = "nebula"
+	// Own group on the helm: nebulas are cover and fuel, not just something to
+	// steer around, and the concealment control keys off standing in one.
+	sensor_category = "Nebulae"
 	chain_rate = 8
 	spread_chance = 75
 	opacity = TRUE
@@ -564,6 +596,19 @@ GLOBAL_LIST_EMPTY(nebula_events)
 /obj/structure/overmap/event/nebula/Destroy()
 	GLOB.nebula_events -= src
 	return ..()
+
+/**
+ * The chart tints a nebula with the gas it carries, so a crew hunting tritium can
+ * pick the right cloud out of a bank without flying into each one. The gas `id`
+ * rather than its display name: it is a stable key, and the helm holds the
+ * palette (see NEBULA_COLOR in HelmComputer.tsx).
+ */
+/obj/structure/overmap/event/nebula/get_contact_variant()
+	return gas_type ? initial(gas_type.id) : null
+
+/// Nebulas are cover and fuel, not a storm to be graded.
+/obj/structure/overmap/event/nebula/get_contact_severity()
+	return 0
 
 /// Display name of the carried gas, for survey readouts and examine
 /obj/structure/overmap/event/nebula/proc/get_gas_name()
