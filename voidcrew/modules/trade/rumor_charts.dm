@@ -8,13 +8,21 @@
  * marks it on the helm readout and paints the overmap signal gold.
  *
  * One chart per template per round, one use each: the reveal is the delivery.
- * The generic coordinate-tip rumors (/datum/shop_sku/rumor) are unrelated and
- * still sold by the softer outposts.
+ * The generic coordinate-tip rumor (/datum/shop_sku/rumor) is a separate, much
+ * cheaper thing and every outpost sells it. Both live in shop_catalog_charts.dm;
+ * this file is the reveal machinery.
  */
 
 /// Ruin template typepaths already sold as charts this round, so two outposts
 /// (or a convoy restock) can never lead to the same rare ruin spawning twice.
 GLOBAL_LIST_EMPTY(claimed_rumor_charts)
+
+/// Ruin chart SKU typepaths already dealt onto some outpost's chart shelf this
+/// round. Charts are drawn from one galaxy-wide pool, so without this two
+/// outposts could stock a tip to the same ruin and the second buyer would be
+/// turned away at the counter by claimed_rumor_charts above. This one is about
+/// what goes on sale; that one is about what has been sold.
+GLOBAL_LIST_EMPTY(dealt_rumor_charts)
 
 /**
  * # Sealed rumor
@@ -117,6 +125,7 @@ GLOBAL_LIST_EMPTY(claimed_rumor_charts)
 	category = "Intel & Charts"
 	icon_override = 'icons/obj/scrolls.dmi'
 	icon_state_override = "blueprints"
+	is_chart = TRUE
 	stock_min = 1
 	stock_max = 1
 	/// The rare ruin template this chart reveals

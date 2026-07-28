@@ -51,7 +51,7 @@
  */
 /obj/item/flashlight/flare/candle/widows
 	name = "widow's candle"
-	desc = "A squat candle of gray wax. The wick was braided by someone patient."
+	desc = "A squat candle of gray wax. Light it beside a corpse and the dead get one last chance to speak."
 	icon_state = "candle1"
 	/// Has this candle already made its one offer to speak for the dead?
 	var/last_words_spoken = FALSE
@@ -86,7 +86,7 @@
 	// Consumed here, before the (blocking) prompt: the offer is one-shot
 	// whether or not they take it, matching "before the light gutters."
 	last_words_spoken = TRUE
-	to_chat(ghost, span_purple(span_italics("A candle gutters to life beside your body. For a moment, the wax feels warm enough to speak through.")))
+	to_chat(ghost, span_purple(span_italics("A candle gutters to life beside your body. For a moment, you could speak through the flame.")))
 	var/final_words = tgui_input_text(
 		ghost,
 		"Speak through the candle's flame? Anyone nearby will hear it. Leave blank to stay silent.",
@@ -122,7 +122,7 @@
  */
 /obj/item/clothing/gloves/color/black/pallbearer
 	name = "pallbearer's gloves"
-	desc = "Black cotton gloves, worn thin at the palms. They've carried more than their share."
+	desc = "Black cotton gloves, worn thin at the palms. Nothing you drag slows you down, and corpses you're pulling stop rotting."
 	/// The wearer's own slowed_by_drag value, saved so we can restore it exactly on removal
 	var/restore_slowed_by_drag = TRUE
 	/// Whether we're actually worn on the hands and negating drag right now —
@@ -218,7 +218,7 @@
  */
 /obj/item/flashlight/lantern/censer_quiet_parish
 	name = "censer of the quiet parish"
-	desc = "A brass censer on a short chain, dented in a pattern suggesting it has been used as a censer and also not."
+	desc = "A brass censer on a short chain, dented from being swung at more than incense. Lit and hung on your belt, the local wildlife leaves you alone."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "censer"
 	inhand_icon_state = null
@@ -343,7 +343,7 @@
 	patience_broken_until = world.time + CENSER_PATIENCE_BREAK_DURATION
 	end_all_peace()
 	if(current_wearer)
-		to_chat(current_wearer, span_warning("The parish's patience with you ends."))
+		to_chat(current_wearer, span_warning("You swung first. The censer stops keeping the peace for a while."))
 
 // =========================================================================
 // YELLOW — Confessor's stole
@@ -360,7 +360,7 @@
  */
 /obj/item/clothing/neck/scarf/purple/confessor_stole
 	name = "confessor's stole"
-	desc = "A purple stole gone gray at the fold. It has heard everything and repeats none of it."
+	desc = "A purple stole gone gray at the fold. Anyone you have in an aggressive grab can't bring themselves to fight back."
 	greyscale_colors = "#6E6079#6E6079"
 	/// Who we're currently pacifying, if anyone
 	var/mob/living/confessed
@@ -396,7 +396,7 @@
 	release_confession()
 	confessed = target
 	ADD_TRAIT(confessed, TRAIT_PACIFISM, CONFESSOR_STOLE_TRAIT)
-	to_chat(confessed, span_notice("Something in your captor's grip makes fighting seem pointless. You could talk, instead."))
+	to_chat(confessed, span_notice("Something about your captor's grip takes the fight right out of you. You can still talk."))
 
 /obj/item/clothing/neck/scarf/purple/confessor_stole/proc/release_confession()
 	if(!confessed)
@@ -434,7 +434,7 @@
 /// Action button: speak the vow, or pull the partner's wounds once it's spoken.
 /datum/action/item_action/vow_hold
 	name = "Hold the Vow"
-	desc = "Speak the vow with your ring's twin — or, once spoken, pull your partner's fresh wounds onto yourself."
+	desc = "Speak the vow with your ring's twin. Once it's spoken, this pulls your partner's wounds onto yourself instead."
 
 /// Action button: voluntarily release the vow (the living consent path).
 /datum/action/item_action/vow_release
@@ -443,7 +443,7 @@
 
 /obj/item/clothing/neck/beads/vow_ring
 	name = "iron vow ring"
-	desc = "A plain iron ring, threaded on a cord and worn at the throat. The inscription inside has worn smooth against its twin."
+	desc = "A plain iron ring threaded on a cord and worn at the throat. It came as a pair, and the inscription inside is worn smooth."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "vow_ring"
 	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
@@ -498,10 +498,10 @@
 	var/obj/item/clothing/neck/beads/vow_ring/partner = partner_ref?.resolve()
 	var/mob/living/other = partner?.bonded_wearer
 	if(!other || QDELETED(other))
-		. += span_notice("The vow has nothing left to hold onto.")
+		. += span_notice("There's no one on the other end anymore.")
 		return
 	if(other.stat == DEAD)
-		. += span_notice("You feel nothing from the other end. The vow waits on a funeral.")
+		. += span_notice("You feel nothing from the other end. They're dead.")
 		return
 	var/dist = get_dist(user, other)
 	var/dir_text = dir2text(get_dir(user, other))
@@ -547,8 +547,8 @@
 	ADD_TRAIT(partner, TRAIT_NODROP, VOW_RING_TRAIT)
 	var/mob/living/other = partner.bonded_wearer
 	user.visible_message(span_notice("[user] and [other] speak a quiet vow together."))
-	to_chat(user, span_notice("You will always know where [other] is, and what it's costing them."))
-	to_chat(other, span_notice("You will always know where [user] is, and what it's costing them."))
+	to_chat(user, span_notice("You'll always know where [other] is and how badly they're hurt."))
+	to_chat(other, span_notice("You'll always know where [user] is and how badly they're hurt."))
 
 /obj/item/clothing/neck/beads/vow_ring/proc/try_pull_wound(mob/living/user)
 	var/obj/item/clothing/neck/beads/vow_ring/partner = partner_ref?.resolve()
@@ -557,10 +557,10 @@
 		to_chat(user, span_warning("There's no one on the other end of the vow."))
 		return
 	if(!COOLDOWN_FINISHED(src, pull_cooldown))
-		balloon_alert(user, "still theirs to bear")
+		balloon_alert(user, "still cooling down")
 		return
 	if(other.stat == DEAD)
-		to_chat(user, span_warning("[other] is beyond this."))
+		to_chat(user, span_warning("[other] is dead. There's nothing left to take."))
 		return
 
 	var/pulled = 0
@@ -579,12 +579,12 @@
 			pulled += burn_pull
 
 	if(!pulled)
-		to_chat(user, span_notice("There's nothing fresh to take from [other] right now."))
+		to_chat(user, span_notice("[other] isn't hurt right now."))
 		return
 
 	COOLDOWN_START(src, pull_cooldown, VOW_PULL_COOLDOWN)
-	user.visible_message(span_notice("[user] flinches as [other]'s hurt becomes [user.p_their()] own."))
-	to_chat(other, span_notice("A weight lifts, taken up by [user]."))
+	user.visible_message(span_notice("[user] flinches as [other]'s injuries open up on [user.p_their()] own body."))
+	to_chat(other, span_notice("Your wounds close up. [user] is carrying them now."))
 
 /// Funeral clause — either wearer dying ends the bond
 /obj/item/clothing/neck/beads/vow_ring/proc/on_wearer_death(mob/living/source, gibbed)
@@ -621,7 +621,7 @@
  */
 /obj/item/cane/shepherds_crook
 	name = "shepherd's crook"
-	desc = "A tall crook of black wood, smooth as a church rail. Flocks are a matter of perspective."
+	desc = "A tall crook of black wood, worn smooth as a church rail. Tap a hostile beast with it and it'll follow you instead."
 	/// The beasts currently following us
 	var/list/mob/living/basic/flock = list()
 
@@ -645,8 +645,8 @@
 	if(!isliving(target_mob))
 		return FALSE
 	if(ismegafauna(target_mob))
-		balloon_alert(user, "declines, firmly")
-		to_chat(user, span_notice("[target_mob] declines the invitation. Firmly."))
+		balloon_alert(user, "won't be herded")
+		to_chat(user, span_notice("[target_mob] is not going to follow anyone anywhere."))
 		return TRUE
 	if(!istype(target_mob, /mob/living/basic))
 		return FALSE

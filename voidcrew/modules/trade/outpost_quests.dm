@@ -235,6 +235,6 @@
 	var/datum/mission/outpost_courier/mission = mission_ref?.resolve()
 	if(istype(mission) && !mission.failed && !mission.completed)
 		var/obj/structure/overmap/trader_outpost/destination = mission.get_destination()
-		. += span_notice("The manifest reads: deliver to <b>[destination?.name || "unknown"]</b>. Whoever delivers it, gets paid.")
+		. += span_notice("The manifest reads: deliver to <b>[destination?.name || "unknown"]</b>. Whoever hands it over gets paid.")
 	else
 		. += span_warning("Its contract has lapsed; the seals will never release.")

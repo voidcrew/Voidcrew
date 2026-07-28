@@ -11,12 +11,17 @@
 	desc = "A survey slate preloaded with the coordinates of one region of the system. Use it aboard a ship to chart those contacts onto the navigation readout."
 	icon = 'voidcrew/modules/overmap/icons/obj/star_chart.dmi'
 	icon_state = "star_chart"
-	/// Zone band this chart reveals (a ZONE_* constant).
-	var/chart_zone_type = ZONE_RED
-	/// Human-readable region label for the upload notification.
-	var/zone_label = "the lawless deep"
+	/// Zone band this chart reveals (a ZONE_* constant). Unset on this base
+	/// type, which is only the shared parent - every sold chart is a subtype.
+	var/chart_zone_type = null
+	/// Human-readable region label for the upload notification. Unset here for
+	/// the same reason as chart_zone_type.
+	var/zone_label = null
 
 /obj/item/disk/star_chart/attack_self(mob/user)
+	if(isnull(chart_zone_type))
+		balloon_alert(user, "slate is blank!")
+		return
 	var/obj/structure/overmap/ship/ship = get_ship_from_atom(user)
 	if(!ship)
 		balloon_alert(user, "must be aboard a ship!")
@@ -28,6 +33,12 @@
 	else
 		to_chat(user, span_notice("You upload [src], but the navigation readout already covers [zone_label]."))
 	qdel(src)
+
+/obj/item/disk/star_chart/green
+	name = "star chart (neutral ring)"
+	desc = "A survey slate mapping the neutral ring. Use it aboard a ship to chart every station and signal in green-zone space."
+	chart_zone_type = ZONE_GREEN
+	zone_label = "the neutral ring"
 
 /obj/item/disk/star_chart/yellow
 	name = "star chart (contested lanes)"

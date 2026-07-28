@@ -42,7 +42,7 @@
 
 /datum/colosseum_modifier/clean
 	name = "Clean Sands"
-	desc = "A pure contest. No tricks, no beasts — just you and them."
+	desc = "No tricks, no beasts. Just you and them."
 	weight = 30
 
 // ===== BEAST INTERLUDE (PvE waves) =====
@@ -54,7 +54,7 @@
  */
 /datum/colosseum_modifier/beast_interlude
 	name = "Beast Interlude"
-	desc = "The undercroft cages are open. Beasts share the sand with you — every kill fattens the purse."
+	desc = "The undercroft cages are open. Beasts on the sand with you, and every kill adds to the purse."
 	weight = 15
 	min_roster = 3
 	/// Waves still to release
@@ -204,7 +204,7 @@
 
 /datum/colosseum_modifier/temperature/freezing
 	name = "Freezing Gale"
-	desc = "The vents breathe glacier-cold. Keep moving or freeze on the sand."
+	desc = "The vents are blasting glacier-cold air. Keep moving or freeze."
 	weight = 10
 	delta = -8
 	min_temp = 252
@@ -288,7 +288,7 @@
  */
 /datum/colosseum_modifier/raining_steel
 	name = "Raining Steel"
-	desc = "The armory sky is generous tonight. Crates fall without pause — control the drops, control the match."
+	desc = "Weapon crates keep falling all match. Control the drops and you control the match."
 	weight = 12
 	/// Pending drop timer (TIMER_STOPPABLE)
 	var/drop_timer

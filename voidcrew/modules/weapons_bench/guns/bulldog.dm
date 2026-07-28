@@ -22,12 +22,12 @@
 
 /obj/item/gun_part/bulldog
 	name = "Bulldog receiver"
-	desc = "The machined receiver and drum-feed assembly for a Bulldog shotgun. Its schematic's crafting recipe turns it into the finished weapon."
+	desc = "The machined receiver and drum-feed assembly for a Bulldog shotgun. You'll need the matching schematic to build it into a working gun."
 	icon_state = "bulldog"
 
 /datum/design/gun_part_bulldog
 	name = "Bulldog Receiver"
-	desc = "A machined receiver and drum-feed assembly for a Bulldog shotgun. Inert until crafted into the finished gun."
+	desc = "A machined receiver and drum-feed assembly for a Bulldog shotgun. Not a working gun on its own."
 	id = "vc_gun_part_bulldog"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(

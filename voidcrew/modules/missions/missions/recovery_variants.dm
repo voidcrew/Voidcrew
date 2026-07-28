@@ -62,7 +62,7 @@
 /datum/mission/recovery/survey/update_text()
 	name = "Survey Contract: [objective_name]"
 	desc = "Our probes seeded [chain ? chain.points_total : 3] survey pylons through the signal at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Calibrate them one after another — fair warning: calibration is loud, and something always answers — then return the finished survey core to the mission pad. \
+		Calibrate them one at a time. Calibration is loud and something always turns up, so go armed. The last pylon prints the survey core; bring that back to the mission pad. \
 		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
 		Tap a GPS unit on the mission board to receive the active pylon's beacon ([gps_tag])."
 
@@ -77,7 +77,7 @@
  */
 /obj/structure/mission_survey_pylon
 	name = "survey pylon"
-	desc = "A tripod-mounted survey unit, dropped from orbit and still waiting on a field tech. The calibration routine is not subtle."
+	desc = "A tripod-mounted survey unit, dropped from orbit and waiting on someone to calibrate it. The routine is very loud."
 	icon = 'voidcrew/modules/missions/icons/recovery.dmi'
 	icon_state = "survey_pylon"
 	anchored = TRUE
@@ -93,7 +93,7 @@
 	if(calibrated)
 		. += span_notice("Its display reads: SURVEY SEGMENT COMPLETE.")
 	else
-		. += span_notice("Its display blinks: AWAITING FIELD CALIBRATION. Use an empty hand and stand by — the routine takes a while and it is <b>loud</b>.")
+		. += span_notice("Its display blinks: AWAITING FIELD CALIBRATION. Use an empty hand to start it. The routine takes a while, and it is <b>loud</b>.")
 
 /obj/structure/mission_survey_pylon/attack_hand(mob/living/user, list/modifiers)
 	. = ..()
@@ -110,6 +110,13 @@
 	playsound(src, 'sound/machines/terminal/terminal_processing.ogg', 60, TRUE)
 	if(!do_after(user, SURVEY_CALIBRATE_TIME, target = src))
 		balloon_alert(user, "calibration interrupted!")
+		return TRUE
+	if(calibrated)
+		balloon_alert(user, "already calibrated")
+		return TRUE
+	objective = objective_ref?.resolve()
+	if(!objective?.active || !objective.mission || objective.mission.failed || objective.mission.completed)
+		balloon_alert(user, "contract expired")
 		return TRUE
 	calibrated = TRUE
 	name = "calibrated [initial(name)]"
@@ -133,6 +140,13 @@
 	var/wave_theme
 	/// Whether the unbolting alarm already fired
 	var/alarm_tripped = FALSE
+	/// Timer id for the alarm's pending second wave
+	var/second_wave_timer
+
+/datum/mission/recovery/extraction/Destroy()
+	deltimer(second_wave_timer)
+	second_wave_timer = null
+	return ..()
 
 /datum/mission/recovery/extraction/generate_details()
 	var/static/list/extraction_prizes = list(
@@ -152,13 +166,15 @@
 	add_objective(new /datum/mission_objective/deliver/bound)
 
 /datum/mission/recovery/extraction/retarget(reason)
+	deltimer(second_wave_timer)
+	second_wave_timer = null
 	alarm_tripped = FALSE
 	return ..()
 
 /datum/mission/recovery/extraction/update_text()
 	name = "Extraction Contract: [objective_name]"
 	desc = "A [objective_name] is bolted down inside the signal at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Wrenching it free takes time and WILL trip whatever's watching the site — plan for company, then haul it to the mission pad. \
+		Use an empty hand to start wrenching it loose. It takes a while and it will trip the site's alarm, so plan for company, then haul it to the mission pad. \
 		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
 		Tap a GPS unit on the mission board to receive the cargo's beacon ([gps_tag])."
 
@@ -166,7 +182,7 @@
 	return "Extraction: [objective_name]"
 
 /**
- * First wrench on the bolts: the site answers in two waves.
+ * The bolts come free: the site answers in two waves.
  */
 /datum/mission/recovery/extraction/proc/trigger_extraction_alarm(obj/item/mission_recovery/anchored/cargo)
 	if(alarm_tripped || failed || completed)
@@ -174,10 +190,11 @@
 	alarm_tripped = TRUE
 	var/turf/site = get_turf(cargo)
 	new wave_theme(site, list(1, 2))
-	addtimer(CALLBACK(src, PROC_REF(second_wave), site), EXTRACTION_SECOND_WAVE_DELAY)
+	second_wave_timer = addtimer(CALLBACK(src, PROC_REF(second_wave), site), EXTRACTION_SECOND_WAVE_DELAY, TIMER_STOPPABLE)
 	servant?.ship_notify("[name]: site security tripped. Expect resistance in waves.", "MISSION UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
 
 /datum/mission/recovery/extraction/proc/second_wave(turf/site)
+	second_wave_timer = null
 	if(failed || completed || !site)
 		return
 	new wave_theme(site, list(1, 2))
@@ -189,7 +206,7 @@
  * the deck. Unbolting is a channel that trips the mission's alarm.
  */
 /obj/item/mission_recovery/anchored
-	desc = "Flagged for recovery under a standing contract — and bolted to the deck. Freeing it will take a minute, and it won't be quiet."
+	desc = "Flagged for recovery under a standing contract, and bolted to the deck. Getting it loose takes a while, and it won't be quiet."
 	icon_state = "recovery_anchored"
 	anchored = TRUE
 	w_class = WEIGHT_CLASS_BULKY
@@ -202,17 +219,20 @@
 /obj/item/mission_recovery/anchored/attack_hand(mob/living/user, list/modifiers)
 	if(!anchored)
 		return ..()
-	var/datum/mission/recovery/extraction/mission = mission_ref?.resolve()
 	balloon_alert(user, "wrenching it free...")
 	playsound(src, 'sound/items/tools/ratchet.ogg', 60, TRUE)
-	if(istype(mission))
-		mission.trigger_extraction_alarm(src)
 	if(!do_after(user, EXTRACTION_UNBOLT_TIME, target = src))
 		balloon_alert(user, "still bolted!")
+		return TRUE
+	if(!anchored)
+		balloon_alert(user, "already free")
 		return TRUE
 	anchored = FALSE
 	balloon_alert(user, "wrenched free")
 	playsound(src, 'sound/machines/click.ogg', 60, TRUE)
+	var/datum/mission/recovery/extraction/mission = mission_ref?.resolve()
+	if(istype(mission))
+		mission.trigger_extraction_alarm(src)
 	return TRUE
 
 #undef SURVEY_CALIBRATE_TIME

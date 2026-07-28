@@ -84,8 +84,8 @@
 /datum/round_event/voidcrew/lich/mockery_of_heroes/announce(fake)
 	lich_announce_galaxy(
 		"You have been telling yourselves you are heroes. I have written it down for you, \
-		with the numbers, so that everyone can see precisely how much of a hero you are. \
-		Mine says nothing at all. There is no number for what I am.",
+		with the numbers, so that everyone can see exactly how much of a hero you are. \
+		Mine is blank.",
 		"Mockery of Heroes",
 	)
 
@@ -115,8 +115,8 @@
 
 /datum/round_event/voidcrew/lich/mockery_of_treasure/announce(fake)
 	lich_announce_galaxy(
-		"Grave goods. All of it. Every hammer, every mug, every gun you are so proud of — \
-		it is all grave goods, it has only been waiting for the grave. I have given each \
-		piece the name it will be catalogued under. Do try to acquire a good one.",
+		"Grave goods. All of it. Every hammer, every mug, every gun you are so proud of has \
+		only ever been waiting for a grave. I have given each piece the name it will be \
+		catalogued under. Do try to get a good one.",
 		"Mockery of Treasure",
 	)

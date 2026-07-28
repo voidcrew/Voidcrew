@@ -49,16 +49,16 @@
 		"I mispronounced one syllable. ONE. The rest of me is still apologizing for it somewhere.",
 		"Four thousand books, and every one of them said the same thing: the price is flesh. I thought I was the exception. So does everyone.",
 		"You want the words? The words are easy. Surviving your own mouth is the discipline.",
-		"Do not lean on the shelves. The ash remembers being a library, and it is sentimental.",
+		"Don't lean on the shelves. The ash still thinks it's a library, and it's sentimental about it.",
 		"The library kept silence for thirty years after the fire. Finest lecture ever delivered here. I took notes.",
 	)
 	accept_line = "Then burn. Properly, this time. Not like I did."
-	busy_line = "You are already spoken for. I can smell the other pact on you."
-	fulfilled_line = "That lesson is learned. There is no learning it twice."
+	busy_line = "You're already spoken for. I can smell the other pact on you."
+	fulfilled_line = "You've learned that one. There's no learning it twice."
 	renounce_line = "Unsinged. Unlettered. Unremarkable."
-	claim_line = "Your tuition is paid. Collect your diploma before you ask for another course."
-	exhausted_line = "I have taught you every word I still remember how to say."
-	remember_line = "Death mispronounced you back. It happens. Your education, at least, was fireproof."
+	claim_line = "Your tuition is paid. Collect your diploma before you sign up for another course."
+	exhausted_line = "I've taught you every word I still remember how to say."
+	remember_line = "Death mispronounced you. It happens. Your education was fireproof, at least."
 
 // ===== TRIAL OF THE SINGED HAND =====
 
@@ -66,7 +66,7 @@
 	name = "Trial of the Singed Hand"
 	// Keep the count in sync with VESTIGE_SINGED_BURN_NEEDED
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the geode. It drinks one thing only: fire that burns YOU. Feed it a hundred measures of burns suffered while it rides on your person — flame, plasma, a welder held wrong, the Echo is not particular — and you will have learned the first law well enough to be taught a word."
+	desc = "Take the geode and keep it on you. It feeds on one thing: burns, yours specifically. Take a hundred points of burn damage with it on your person and you've paid the first law's tuition. I don't care how you catch fire."
 	/// Burn damage drunk so far
 	var/burn_drunk = 0
 
@@ -74,7 +74,7 @@
 	hand_over(user, new /obj/item/vestige_geode(get_turf(user)))
 
 /datum/vestige_trial/singed_hand/get_progress_text()
-	return "The geode has drunk [round(burn_drunk)] of [VESTIGE_SINGED_BURN_NEEDED] measures of fire."
+	return "Burns fed to the geode: [round(burn_drunk)] of [VESTIGE_SINGED_BURN_NEEDED]."
 
 /// May complete (and delete) the trial
 /datum/vestige_trial/singed_hand/proc/drink(amount)
@@ -85,7 +85,7 @@
 
 /obj/item/vestige_geode
 	name = "mana geode"
-	desc = "A cracked-open stone lined with crystal the colour of a banked fire. It is warm in exactly the way a hand on your shoulder shouldn't be."
+	desc = "A cracked-open stone lined with crystal the colour of banked embers. It's warmer than it has any business being."
 	icon = 'icons/obj/ore.dmi'
 	icon_state = "diamond"
 	color = "#ff9a4d"
@@ -137,7 +137,7 @@
 	name = "Trial of the Steady Tongue"
 	// Keep the count in sync with VESTIGE_TONGUE_VERSES_NEEDED (file-local, above)
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the primer. Three verses of the first-year liturgy, spoken aloud and spoken WHOLE, while you yourself are alight. I do not care how you catch fire; I care how you sound while it happens. Stand still. Enunciate. The verses bite students who chew them — I am the proof. What is left of it."
+	desc = "Take the primer. Three verses of first-year liturgy, read out loud and finished properly, while you are on fire. I don't care how you catch fire. Stand still and don't stumble - the verses bite students who chew them."
 	/// Verses recited whole so far
 	var/verses_spoken = 0
 
@@ -146,7 +146,7 @@
 	to_chat(user, span_notice("The primer is warm. Books from the Athenaeum never really cooled."))
 
 /datum/vestige_trial/steady_tongue/get_progress_text()
-	return "You have spoken [verses_spoken] of [VESTIGE_TONGUE_VERSES_NEEDED] verses whole."
+	return "Verses recited in full: [verses_spoken] of [VESTIGE_TONGUE_VERSES_NEEDED]."
 
 /// May complete (and delete) the trial
 /datum/vestige_trial/steady_tongue/proc/recite()
@@ -179,7 +179,7 @@
 
 /obj/item/vestige_primer/examine(mob/user)
 	. = ..()
-	. += span_notice("Embossed on the cover: THE STUDENT MUST BE ALIGHT. A verse takes [DisplayTimeText(VESTIGE_TONGUE_VERSE_TIME)] of steady recital — stand still, stay burning, and do not stumble.")
+	. += span_notice("Embossed on the cover: THE STUDENT MUST BE ALIGHT. Each verse takes [DisplayTimeText(VESTIGE_TONGUE_VERSE_TIME)] of steady reading. Stand still, stay on fire, and don't get interrupted.")
 
 /obj/item/vestige_primer/attack_self(mob/user, modifiers)
 	. = ..()
@@ -203,13 +203,13 @@
 		balloon_alert(user, "your voice fails you!")
 		return
 	if(!user.on_fire)
-		balloon_alert(user, "you are not alight!")
+		balloon_alert(user, "you're not on fire!")
 		to_chat(user, span_warning("The primer stays shut. The cover repeats itself: THE STUDENT MUST BE ALIGHT."))
 		return
 	var/verse_index = min(trial.verses_spoken + 1, length(verses))
 	user.visible_message(
 		span_warning("[user] opens [src] and begins to recite over the sound of [user.p_their()] own burning!"),
-		span_notice("You open [src] and give the verse your full attention. So does the fire."),
+		span_notice("You open [src] and read aloud over the sound of your own burning."),
 	)
 	to_chat(user, span_notice(margin_notes[verse_index]))
 	user.say(verses[verse_index], forced = "vestige recitation")
@@ -225,7 +225,7 @@
 	if(!user.is_holding(src))
 		return
 	if(!user.on_fire)
-		to_chat(user, span_warning("The fire dies before the verse does. The primer snaps shut, unimpressed."))
+		to_chat(user, span_warning("The fire goes out before you finish, and the primer snaps shut."))
 		return
 	// Re-resolve; the pact may have been renounced mid-verse
 	trial = user.mind?.active_vestige_trial
@@ -243,7 +243,7 @@
 	name = "Trial of the Swallowed Word"
 	// Keep the duration in sync with VESTIGE_WORD_SETTLE_TIME (file-local, above)
 	// (initial values must be constant, so no define interpolation here)
-	desc = "The counterpart lesson: knowing when NOT to speak. Here — a word nobody has ever said, under glass. Words are jealous things; it will not settle into a busy mouth. Carry it on your person, in the open — pocket, belt, hand, never a bag — and say NOTHING for four unbroken minutes. One syllable, whispered, sung or screamed, and it scalds its way back up and begins its sulk over. The Athenaeum kept silence for thirty years. You will manage four minutes."
+	desc = "The other half of the lesson: knowing when not to speak. Take the phial and keep it on you - pocket, belt or hand, never in a bag - and say nothing at all for four unbroken minutes. One word and it burns its way back up your throat and the clock starts over."
 	/// world.time at which the carried word settles, or 0 while it isn't listening
 	var/settle_at = 0
 	/// Times the word has fled a mouth that could not stay shut
@@ -252,7 +252,7 @@
 	var/obj/item/vestige_syllable/phial
 
 /datum/vestige_trial/swallowed_word/on_accepted(mob/living/user)
-	to_chat(user, span_notice("[patron_name] hands it over with exaggerated care, and — pointedly — says nothing at all."))
+	to_chat(user, span_notice("[patron_name] hands it over with exaggerated care and, pointedly, says nothing at all."))
 	phial = hand_over(user, new /obj/item/vestige_syllable(get_turf(user)))
 
 /datum/vestige_trial/swallowed_word/Destroy()
@@ -260,14 +260,14 @@
 	return ..()
 
 /datum/vestige_trial/swallowed_word/get_progress_text()
-	var/flights = escapes ? " It has fled your voice [escapes] time[escapes == 1 ? "" : "s"]." : ""
+	var/flights = escapes ? " It has escaped your mouth [escapes] time[escapes == 1 ? "" : "s"]." : ""
 	if(!settle_at)
-		return "The word is not listening. Carry it on your person — never in a bag — and be silent.[flights]"
-	return "The word is settling: [DisplayTimeText(max(settle_at - world.time, 1 SECONDS))] of silence to go.[flights]"
+		return "The word isn't listening. Carry it on your person, never in a bag, and stay quiet.[flights]"
+	return "The word is settling. [DisplayTimeText(max(settle_at - world.time, 1 SECONDS))] of silence to go.[flights]"
 
 /obj/item/vestige_syllable
 	name = "sealed syllable"
-	desc = "A stoppered phial with something small and bright circling inside, mouthing itself over and over. Held to the ear, it stops — embarrassed."
+	desc = "A stoppered phial with something small and bright circling inside, mouthing itself over and over. It stops if you hold it up to your ear."
 	icon = 'icons/obj/mining_zones/artefacts.dmi'
 	icon_state = "vial"
 	w_class = WEIGHT_CLASS_TINY
@@ -288,7 +288,7 @@
 
 /obj/item/vestige_syllable/examine(mob/user)
 	. = ..()
-	. += span_notice("It settles only against a silent bearer: keep it on your person — never in a bag — and say nothing for [DisplayTimeText(VESTIGE_WORD_SETTLE_TIME)]. Speaking, or putting it down, starts its sulk over.")
+	. += span_notice("It only settles for someone who stays quiet. Keep it on your person, never in a bag, and say nothing for [DisplayTimeText(VESTIGE_WORD_SETTLE_TIME)]. Speaking or putting it down restarts the clock.")
 
 /obj/item/vestige_syllable/equipped(mob/user, slot, initial)
 	. = ..()
@@ -318,7 +318,7 @@
 		return
 	var/datum/vestige_trial/swallowed_word/trial = user.mind?.active_vestige_trial
 	if(!istype(trial))
-		balloon_alert(user, "it does not know your voice!")
+		balloon_alert(user, "it doesn't know your voice!")
 		return TRUE
 	if(!trial.settle_at && listening_to == user)
 		begin_settling(trial, user)
@@ -340,7 +340,7 @@
 /obj/item/vestige_syllable/proc/begin_settling(datum/vestige_trial/swallowed_word/trial, mob/living/user)
 	trial.settle_at = world.time + VESTIGE_WORD_SETTLE_TIME
 	trial.refresh_tracker()
-	to_chat(user, span_notice("[src] goes quiet against you. It is listening for nothing."))
+	to_chat(user, span_notice("[src] goes quiet against you. It's listening now."))
 	addtimer(CALLBACK(src, PROC_REF(try_settle)), VESTIGE_WORD_SETTLE_TIME + 1)
 
 /// The word left this mob's person — or only changed slots, in which case equipped() beat us
@@ -356,7 +356,7 @@
 	if(istype(trial) && trial.settle_at)
 		trial.settle_at = 0
 		trial.refresh_tracker()
-		to_chat(former, span_warning("Away from your skin, [src] stirs again. The word has stopped listening."))
+		to_chat(former, span_warning("[src] stirs again the moment it leaves your person. The word has stopped listening."))
 
 /obj/item/vestige_syllable/proc/on_holder_spoke(mob/living/source, list/say_args)
 	SIGNAL_HANDLER
@@ -367,7 +367,7 @@
 	trial.escapes++
 	trial.refresh_tracker()
 	source.apply_damage(VESTIGE_WORD_SCALD_BURN, BURN, BODY_ZONE_HEAD)
-	to_chat(source, span_danger("The word bolts back up your throat, scalding. It will not settle in a busy mouth."))
+	to_chat(source, span_danger("The word bolts back up your throat, scalding on the way. It won't settle in a mouth that keeps talking."))
 	playsound(source, 'sound/effects/wounds/sizzle1.ogg', 30, TRUE)
 	addtimer(CALLBACK(src, PROC_REF(try_settle)), VESTIGE_WORD_SETTLE_TIME + 1)
 
@@ -383,7 +383,7 @@
 		return
 	holder.visible_message(
 		span_warning("[src] cracks with a sound like a struck bell."),
-		span_notice("The glass parts, and the word slips down your throat and settles — warm as a coal, patient as a book."),
+		span_notice("The glass parts, and the word slips down your throat and settles, warm as a swallowed coal."),
 	)
 	playsound(holder, 'sound/effects/magic/fireball.ogg', 20, TRUE)
 	trial.complete()
@@ -399,55 +399,70 @@
 // (GARB|NO_ANTIMAGIC), so its local subtype below relaxes the garb half.
 /datum/vestige_boon/spell/fireball
 	name = "Fireball"
-	desc = "The first word of destruction: point, speak, and a sphere of flame unmakes whatever it lands on. The Echo recommends not standing next to anything you are pointing at."
+	desc = "Point at something and throw a ball of fire at it, once every forty-five seconds. Don't stand next to whatever you're pointing at."
 	grant_text = "A word settles in behind your teeth, hot as a swallowed coal."
-	spell_type = /datum/action/cooldown/spell/pointed/projectile/fireball
+	spell_type = /datum/action/cooldown/spell/pointed/projectile/fireball/vestige
 
 /datum/vestige_boon/spell/fireball/refined
 	name = "Refined Fireball"
-	desc = "The word of destruction, pared to what it means: quicker between utterances, quiet enough to whisper, and the blast keeps its manners — it eats what it is pointed at and less of everything around it. Enunciation is everything. Ask the Athenaeum."
-	grant_text = "The coal behind your teeth settles and stops crackling. It has learned to wait for you."
+	desc = "The same fireball every thirty seconds instead of forty-five, cast with a whisper instead of a shout, and with a tighter blast that wrecks less of what's around the target."
+	grant_text = "The coal behind your teeth settles and stops crackling."
 	upgrades_from = /datum/vestige_boon/spell/fireball
-	spell_type = /datum/action/cooldown/spell/pointed/projectile/fireball/vestige_refined
+	spell_type = /datum/action/cooldown/spell/pointed/projectile/fireball/vestige/refined
 
 /datum/vestige_boon/spell/knock
 	name = "Knock"
-	desc = "The first word of opening. Speak it, and every bolt, lock and latch nearby remembers that it used to be loose."
+	desc = "Speak the word and every door, locker and lock nearby pops open."
 	grant_text = "A word settles in behind your teeth. Every door in earshot feels briefly nervous."
 	spell_type = /datum/action/cooldown/spell/aoe/knock
 
 /datum/vestige_boon/spell/knock/greater
 	name = "Greater Knock"
-	desc = "The word of opening, spoken with its full weight: it reaches further, returns to the tongue sooner, and bolted doors throw their own bolts to let it past. Welds and dead motors still argue. Even the art respects a stubborn hinge."
-	grant_text = "The word behind your teeth grows a second syllable. Somewhere nearby, a bolt shivers in its housing."
+	desc = "The same word with more range and a shorter cooldown, and it unbolts bolted airlocks on the way through. Welded or unpowered doors still hold."
+	grant_text = "The word behind your teeth grows a second syllable."
 	upgrades_from = /datum/vestige_boon/spell/knock
 	spell_type = /datum/action/cooldown/spell/aoe/knock/vestige_greater
 
 /datum/vestige_boon/spell/word_of_passage
 	name = "Word of Passage"
-	desc = "A word for being elsewhere, quickly. Mind the grammar: it says AWAY, never WHERE. The art chooses your landing, and the art has a sense of humor about hulls."
+	desc = "Teleport a short distance. You don't get to pick where - the spell does, and it isn't careful about it."
 	grant_text = "A word settles in behind your teeth, and immediately starts fidgeting."
 	spell_type = /datum/action/cooldown/spell/teleport/radius_turf/blink/vestige_passage
 
 /datum/vestige_boon/spell/word_of_denial
 	name = "Word of Denial"
-	desc = "The word of opening has an opposite: a spoken NO, three paces wide, that nothing crosses but you, for half a minute. The Athenaeum's wards were built on it. Draw what conclusions you like about relying on it."
-	grant_text = "A word settles in behind your teeth, flat and immovable as a shelf of reference volumes."
+	desc = "Raise a three-tile barrier that nobody but you can walk through. It holds for half a minute."
+	grant_text = "A word settles in behind your teeth, flat and immovable."
 	spell_type = /datum/action/cooldown/spell/forcewall/vestige_denial
 
 // ===== LOCAL SPELLS =====
 
 /**
- * The refined word of destruction. Upstream fireball's whole chain is clean —
- * pointed/_pointed.dm and projectile/magic.dm carry no antag or garb coupling,
- * and antimagic_flags propagate onto the bolt — so this subtype only retunes:
- * a shorter cooldown, a whispered invocation in place of the shout, and a
- * tighter-blast projectile. Contact damage is untouched.
+ * The word of destruction, slowed to something a crew can live around.
+ * Upstream fireball's whole chain is clean — pointed/_pointed.dm and
+ * projectile/magic.dm carry no antag or garb coupling, and antimagic_flags
+ * propagate onto the bolt — so the only thing this subtype changes is the
+ * tempo. Upstream speaks it every SIX seconds, which is a wizard mid-ascension
+ * with a spellbook to answer for; a permanent ranged explosive on a six second
+ * loop in crew hands is not a boon, it is artillery. Forty-five seconds puts it
+ * with the other heavy boons (rusted grasp, ashen passage) and makes each cast
+ * a decision. Subtyped rather than retuned in place so the wizard's own
+ * fireball keeps upstream's numbers, and rank scaling is switched off since a
+ * boon has no spellbook to level.
  */
-/datum/action/cooldown/spell/pointed/projectile/fireball/vestige_refined
+/datum/action/cooldown/spell/pointed/projectile/fireball/vestige
+	cooldown_time = 45 SECONDS
+	cooldown_reduction_per_rank = 0 SECONDS
+
+/**
+ * The refined word: the same bolt, thirty seconds instead of forty-five, a
+ * whispered invocation in place of the shout, and a tighter blast. Contact
+ * damage is untouched — the upgrade buys tempo and control, not more damage.
+ */
+/datum/action/cooldown/spell/pointed/projectile/fireball/vestige/refined
 	name = "Refined Fireball"
-	desc = "A quicker, quieter word of destruction, with a tighter blast."
-	cooldown_time = 4 SECONDS // upstream fireball speaks every 6; mastery, not spam
+	desc = "Throw a fireball. Thirty seconds between casts, whispered instead of shouted, and a tighter blast."
+	cooldown_time = 30 SECONDS
 	invocation = "oni soma."
 	invocation_type = INVOCATION_WHISPER
 	projectile_type = /obj/projectile/magic/fireball/vestige_refined
@@ -490,7 +505,7 @@
  */
 /datum/action/cooldown/spell/teleport/radius_turf/blink/vestige_passage
 	name = "Word of Passage"
-	desc = "This spell teleports you a short distance, in a direction of the art's choosing."
+	desc = "This spell teleports you a short distance in a random direction."
 	cooldown_time = 10 SECONDS
 	invocation = "sic itur."
 	invocation_type = INVOCATION_WHISPER

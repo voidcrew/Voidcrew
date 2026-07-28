@@ -38,7 +38,7 @@
  */
 /obj/item/clothing/neck/night_sisters_watch
 	name = "night sister's watch"
-	desc = "A fob watch on a chain, the kind nurses pinned upside-down so patients couldn't read their own odds."
+	desc = "A fob watch on a chain, pinned upside-down the way nurses wear them. It chimes when someone on your deck drops into crit."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "fob_watch"
 	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
@@ -91,7 +91,7 @@
 		currently_critical += candidate
 		if(!(candidate in known_crit))
 			var/direction = get_dir(wearer, candidate)
-			to_chat(wearer, span_notice("[src] chimes, softly. Someone on your deck just dropped into crit[direction ? " - somewhere to the [dir2text(direction)]" : ""]."))
+			to_chat(wearer, span_notice("[src] chimes softly. Someone on your deck just dropped into crit[direction ? " - somewhere to the [dir2text(direction)]" : ""]."))
 	known_crit = currently_critical
 
 /**
@@ -109,7 +109,7 @@
  */
 /obj/item/pen/red/triage
 	name = "triage pen"
-	desc = "A red grease pencil, chewed at one end. Somebody's system for deciding who goes first."
+	desc = "A red grease pencil, chewed at one end. Mark up to three patients and it reads their vitals back to whoever's holding it."
 	/// Weakrefs to the (up to three) patients this specific pen is tracking.
 	var/list/datum/weakref/marked_patients = list()
 	/// Hard cap on simultaneous marks — "triage means choosing."
@@ -144,7 +144,7 @@
 
 	if(length(marked_patients) >= max_marked)
 		balloon_alert(user, "tracking 3 already")
-		to_chat(user, span_warning("[src] is already tracking three patients. Triage means choosing."))
+		to_chat(user, span_warning("[src] is already tracking three patients. Unmark one first."))
 		return
 
 	var/datum/status_effect/triage_marked/marked = target.apply_status_effect(/datum/status_effect/triage_marked, src)
@@ -231,7 +231,7 @@
  */
 /obj/machinery/iv_drip/meridian_drip
 	name = "Meridian drip"
-	desc = "A wheeled IV stand with a chemistry unit where the bag should hang. It doesn't take a beaker; whatever's dripping, it's making itself."
+	desc = "A wheeled IV stand with a chemistry unit where the bag should hang. It doesn't take a beaker - it brews whatever the patient needs on its own."
 	use_internal_storage = TRUE
 	inject_only = TRUE
 	internal_volume_maximum = 30
@@ -335,7 +335,7 @@
  */
 /obj/item/bedsheet/medical/hospice
 	name = "hospice blanket"
-	desc = "A wool blanket, hospital corners ironed in permanently. Warm the way a hand on your shoulder is warm."
+	desc = "A wool blanket with the hospital corners ironed in permanently. Tuck a downed patient in and they'll stop getting worse."
 	dream_messages = list("warmth", "a steady hand", "borrowed time")
 
 /obj/item/bedsheet/medical/hospice/Initialize(mapload)
@@ -398,7 +398,7 @@
  */
 /obj/item/organ/heart/cybernetic/meridian
 	name = "Meridian heart"
-	desc = "A cybernetic heart, cold-chain crated. The label reads DO NOT INSTALL IN STAFF. The label lost that argument."
+	desc = "A cybernetic heart in a cold-chain crate, labeled DO NOT INSTALL IN STAFF. It carries one built-in defib charge."
 	icon_state = "heart-c-on"
 	base_icon_state = "heart-c"
 	/// Whether the internal defib charge is ready to fire.
@@ -414,7 +414,7 @@
 	if(!charge_available && COOLDOWN_FINISHED(src, recharge_cd))
 		charge_available = TRUE
 		if(owner)
-			to_chat(owner, span_notice("You feel a faint, complete click from your chest. The Meridian heart is charged again."))
+			to_chat(owner, span_notice("You feel a soft click in your chest. The Meridian heart is charged again."))
 
 /obj/item/organ/heart/cybernetic/meridian/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -492,7 +492,7 @@
  */
 /obj/item/reagent_containers/cup/tube/winterkiss
 	name = "Winterkiss ampoule"
-	desc = "A frosted glass ampoule from the bottom drawer of the cold-chain. The name is handwritten. The handwriting is fond."
+	desc = "A frosted glass ampoule from the bottom of the cold-chain drawer. One dose freezes the patient where they stand for five minutes, safe from everything."
 	volume = 15
 	possible_transfer_amounts = list(5, 15)
 	list_reagents = list(/datum/reagent/winterkiss = 15)
@@ -504,9 +504,9 @@
 /// One dose, injected any way (syringe, syringe gun, direct contact) triggers hard stasis on first metabolization tick.
 /datum/reagent/winterkiss
 	name = "Winterkiss"
-	description = "A frosted, syrupy solution that drops the subject into a hard, protective stasis. Handle with intention."
+	description = "A frosted, syrupy solution that drops the subject into a hard, protective stasis for five minutes."
 	color = "#BFEFFF"
-	taste_description = "frost and silence"
+	taste_description = "bitter frost"
 	metabolization_rate = 0.5 * REAGENTS_METABOLISM
 	ph = 6.8
 	/// Have we already fired for this dose? Prevents re-triggering every metabolism tick.
@@ -523,7 +523,7 @@
 	triggered = TRUE
 	affected_mob.visible_message(
 		span_notice("[affected_mob] goes rigid and still, frost blooming faintly across [affected_mob.p_their()] skin."),
-		span_notice("The cold reaches in and holds you, gently, exactly where you are."),
+		span_notice("The cold spreads through you and you can't move a muscle."),
 	)
 	affected_mob.apply_status_effect(/datum/status_effect/grouped/stasis/winterkiss, REF(src))
 
@@ -559,7 +559,7 @@
  */
 /obj/item/reagent_containers/syringe/lazarus_line
 	name = "Lazarus line"
-	desc = "One glass syringe in a velvet case. The case has room for regrets."
+	desc = "One glass syringe in a velvet case. It'll bring back the long dead, once, and then it's finished."
 	volume = 5
 	amount_per_transfer_from_this = 5
 	possible_transfer_amounts = list()
@@ -572,7 +572,7 @@
 
 /obj/item/reagent_containers/syringe/lazarus_line/interact_with_atom(atom/target, mob/living/user, list/modifiers)
 	if(spent)
-		to_chat(user, span_warning("[src] is spent. Whatever was in it, it's gone now."))
+		to_chat(user, span_warning("[src] is spent. There's nothing left in it."))
 		return ITEM_INTERACT_BLOCKING
 	if(!isliving(target) || !iscarbon(target))
 		return ..()
@@ -592,7 +592,7 @@
 	if(attempt_lazarus_revival(patient, user))
 		spent = TRUE
 		name = "spent Lazarus line"
-		desc = "An empty glass syringe in a velvet case. Whatever was inside it found its way home."
+		desc = "An empty glass syringe in a velvet case. Whatever was in it is gone."
 	return ITEM_INTERACT_SUCCESS
 
 /// The bypass revival itself. Returns TRUE on a successful revival.
@@ -600,23 +600,23 @@
 	if(QDELETED(target) || target.stat != DEAD)
 		return FALSE
 	if(HAS_TRAIT(target, TRAIT_SUICIDED) || HAS_TRAIT(target, TRAIT_DEFIB_BLACKLISTED))
-		to_chat(user, span_warning("The line finds nothing in [target] willing to come back."))
+		to_chat(user, span_warning("Nothing in [target] responds. They don't want to come back."))
 		return FALSE
 	var/obj/item/organ/brain/target_brain = target.get_organ_slot(ORGAN_SLOT_BRAIN)
 	if(!target_brain || (target_brain.organ_flags & ORGAN_FAILING))
-		to_chat(user, span_warning("There's nowhere left in [target] for the line to reach."))
+		to_chat(user, span_warning("[target]'s brain is gone. There's nothing left to bring back."))
 		return FALSE
 
 	target.grab_ghost(force = TRUE)
 	target.fully_heal(HEAL_ALL) // also cures husk, unconditionally - see /mob/living/proc/fully_heal
 	target.revive(force_grab_ghost = TRUE)
 	if(target.stat == DEAD)
-		to_chat(user, span_warning("[target] convulses, then lies still. The line couldn't reach far enough."))
+		to_chat(user, span_warning("[target] convulses, then lies still. It didn't take."))
 		return FALSE
 
 	target.visible_message(
 		span_boldnotice("[target] draws a sudden breath, alive again!"),
-		span_boldnotice("You're alive. It feels like you never left. That's the worst part."),
+		span_boldnotice("You're alive again, and you feel worse for it."),
 	)
 	target.emote("gasp")
 	apply_lazarus_fragility(target)
@@ -624,7 +624,7 @@
 
 /// Permanent +10% incoming brute/burn, plus a bespoke scar, marking a Lazarus revival.
 /obj/item/reagent_containers/syringe/lazarus_line/proc/apply_lazarus_fragility(mob/living/carbon/target)
-	to_chat(target, span_userdanger("Something in you feels thinner than it used to. You'll feel everything a little harder, from now on."))
+	to_chat(target, span_userdanger("Something in you feels thinner than it was. You'll take more damage from now on."))
 	if(!ishuman(target))
 		return
 	var/mob/living/carbon/human/human_target = target

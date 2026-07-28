@@ -10,6 +10,18 @@
 /// Most boon candidates a fulfilled pact offers at once (fewer if the patron has less left to give)
 #define VESTIGE_REWARD_CHOICES 3
 
+// ===== ASCENSION (endgame capstone boons — see modules/antag_ruins/ascension.dm) =====
+
+/// Round time before a patron will discuss ascension at all.
+/// TEST VALUE, matched to the 15-second ruin schedule above. PRODUCTION: (90 MINUTES).
+#define VESTIGE_ASCENSION_UNLOCK_TIME (60 SECONDS)
+/// Hard ceiling on one ascension run. Expiry returns a living supplicant home, failed.
+#define VESTIGE_ASCENSION_TIME_LIMIT (30 MINUTES)
+/// Grace period after the boss dies before the arena pulls the victor out on its own.
+#define VESTIGE_ASCENSION_VICTORY_GRACE (3 MINUTES)
+/// Blank turfs left around the arena template inside its reservation.
+#define VESTIGE_ASCENSION_ARENA_PADDING 3
+
 /// Unique DNA samples the Trial of Faces demands
 #define VESTIGE_FACES_SAMPLES_NEEDED 5
 /// How many of those samples must come from living targets

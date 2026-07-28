@@ -21,7 +21,7 @@
 
 /obj/item/drug_ingredient/chromacap_spores
 	name = "chromacap spores"
-	desc = "A pouch of spores shaken from a mushroom that flashes every color at once. Looking directly at the dust for too long gives you a headache with a rhythm."
+	desc = "A pouch of spores shaken from a mushroom that flashes every color at once. Looking at the dust too long gives you a pounding headache."
 	icon_state = "chromacap_spores"
 	biome = /datum/overmap/planet/jungle
 
@@ -33,7 +33,7 @@
 
 /obj/item/drug_ingredient/magmatic_salt
 	name = "magmatic salt"
-	desc = "A jagged chunk of mineral salt crusted around a volcanic vent. It crackles quietly, like it remembers erupting and wants to do it again."
+	desc = "A jagged chunk of mineral salt crusted around a volcanic vent. It crackles quietly and stays warm in your hand."
 	icon_state = "magmatic_salt"
 	biome = /datum/overmap/planet/lava
 
@@ -45,7 +45,7 @@
 
 /obj/item/drug_ingredient/glimmerfrost_crystal
 	name = "glimmerfrost crystal"
-	desc = "A shard of ice that never melts, chipped from a glacier that hums at night. It sparkles from angles that shouldn't have any light."
+	desc = "A shard of ice that never melts, chipped from a glacier that hums at night. It sparkles even in the dark."
 	icon_state = "glimmerfrost_crystal"
 	biome = /datum/overmap/planet/ice
 
@@ -57,7 +57,7 @@
 
 /obj/item/drug_ingredient/driftcoral_powder
 	name = "driftcoral powder"
-	desc = "Ground coral washed ashore in bone-white branches. The powder shifts hue with the humidity, like it hasn't accepted being dead."
+	desc = "Ground coral washed ashore in bone-white branches. The powder changes color with the humidity."
 	icon_state = "driftcoral_powder"
 	biome = /datum/overmap/planet/beach
 
@@ -69,7 +69,7 @@
 
 /obj/item/drug_ingredient/scrapland_lichen
 	name = "scrapland lichen"
-	desc = "A dried mat of lichen peeled off irradiated wreckage. It's the only thing that grows out there, and it grows angry."
+	desc = "A dried mat of lichen peeled off irradiated wreckage. It's the only thing that grows out there, and handling it makes your fingers itch."
 	icon_state = "scrapland_lichen"
 	biome = /datum/overmap/planet/wasteland
 

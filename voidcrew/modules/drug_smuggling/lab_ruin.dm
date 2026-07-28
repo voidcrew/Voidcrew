@@ -11,6 +11,6 @@
 	prefix = "_maps/voidcrew/RandomRuins/SpaceRuins/"
 	suffix = "drug_lab.dmm"
 	name = "Duster's Kitchen"
-	description = "A clandestine drug lab mothballed between cooks: reactors drained, hoppers scrubbed, and the whole rig parked dark on an unlisted orbit. The equipment still works — all it's missing is a crew with a formula and worse judgment."
+	description = "A clandestine drug lab, mothballed between cooks: reactors drained, hoppers scrubbed, the whole rig parked dark on an unlisted orbit. The equipment still works. All it needs is a crew with a formula and bad judgment."
 	unpickable = TRUE
 	allow_duplicates = FALSE

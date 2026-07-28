@@ -67,7 +67,7 @@
 
 /mob/living/basic/vestige_patron/morph
 	name = "the Understudy"
-	desc = "A parlor-pink heap that keeps almost being things: a chair leg, a hand, half of a fond expression. Nothing holds for longer than a breath. It watches you the way a portraitist watches a bowl of fruit."
+	desc = "A parlor-pink heap that keeps almost turning into things: a chair leg, a hand, half of a smile. Nothing holds for more than a second. It watches you the way a painter watches a bowl of fruit."
 	gender = NEUTER
 	icon = 'icons/mob/simple/animal.dmi'
 	icon_state = "morph"
@@ -89,20 +89,20 @@
 	)
 	idle_lines = list(
 		"You are... a chair. No. A person. Yes! A person. Forgive me. The parlor had a great many chairs, and only some of them screamed.",
-		"I was a grand piano for three weeks once. No one played me. That is the loneliest shape there is.",
-		"Hold still a moment. The way the light commits to you — one face, every single day, the same face. You wear it beautifully. I would know.",
-		"I ate the passengers, and then I was the passengers, and then I practiced them so long the practicing wore through. Now I am only the rehearsal.",
-		"Being a person is mostly edges. You keep yours in the same places every day. Astonishing. Bravo.",
-		"Say something else. I am learning your mouth. It is a fine mouth — the vowels would sit crooked in mine.",
-		"Everything on that deck, I was twice. The second time is the important one. The first time is only tracing.",
+		"I was a grand piano for three weeks once. Nobody played me. Not once.",
+		"Hold still a moment. One face, every single day, the same face. I don't know how you manage it.",
+		"I ate the passengers, then I was the passengers, and then I practiced being them until there was nothing left to practice with.",
+		"Being a person is mostly edges. You keep yours in the same places every single day. Astonishing.",
+		"Say something else, I'm learning your mouth. It's a good mouth. The vowels would come out crooked in mine.",
+		"I was everything on that deck twice over. The first go is only tracing. The second one is where you get it right.",
 	)
-	accept_line = "Yes! Go. Be something. Be someone. You will be marvelous — you have such a committed outline."
-	busy_line = "You are already wearing someone else's errand. Two roles at once is how I ended up like this. Finish it, or take it off."
-	fulfilled_line = "You already performed that one, and beautifully. An encore is just the same shape, wilting."
-	renounce_line = "Oh. You can just... take it off. I never learned that part. Only the part where you stop being able to put things on."
-	claim_line = "Wait — the applause! You are owed applause. Take it, take it, you were wonderful."
-	exhausted_line = "I have shown you every shape I still remember being. All that is left of me is the pause between them."
-	remember_line = "You stopped! You went all loose, like a coat off its hook. But I kept your part for you — every line. Back into yourself, go on."
+	accept_line = "Yes! Go. Be something, be someone. You'll be wonderful, you have such a committed outline."
+	busy_line = "You're already wearing someone else's errand. Two roles at once is how I ended up like this. Finish it or take it off."
+	fulfilled_line = "You did that one already, and you did it well. An encore would just be the same shape, worse."
+	renounce_line = "Oh. You can just... take it off. I never learned that part."
+	claim_line = "Wait, the applause! You're owed applause. Take it, take it, you were wonderful."
+	exhausted_line = "I've shown you every shape I still remember being. There isn't anything after that."
+	remember_line = "You stopped! Went all loose, like a coat off its hook. I kept your part for you though, every line of it. Go on, back into yourself."
 
 // ===== THE PERFECT COPY =====
 
@@ -110,7 +110,7 @@
 	name = "The Perfect Copy"
 	// Keep the numbers in sync with VESTIGE_STARTLES_NEEDED / VESTIGE_SKIN_FORM_TIME
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the skin and press it to some honest thing — a crate, a mop bucket, anything with a silhouette you admire. Wear the thing. Creep if you must; things are allowed to creep, nobody believes their eyes fast enough. When a person is one step away, burst. The gasp! There is no better review. Three faces, each new, and a new shape for each — a worn shape goes baggy and never plays twice, and the skin only commits to any shape for three-quarters of a minute. Keep moving. Keep choosing. That is the craft."
+	desc = "Take the skin and press it against something ordinary — a crate, a mop bucket, whatever is handy — and you will be that thing. You can creep around in it, slowly. When somebody wanders within a step of you, burst out at them. Three different people, and a different shape for each one; a shape you have already used goes baggy and won't play twice. The skin only holds any shape for three-quarters of a minute, so keep moving."
 	/// Victims already startled (weakref -> TRUE); each face jumps for you exactly once
 	var/list/startled = list()
 	/// Object typepaths already worn for a credited reveal; a worn shape never plays twice
@@ -120,14 +120,14 @@
 
 /datum/vestige_trial/perfect_copy/on_accepted(mob/living/user)
 	skin = hand_over(user, new /obj/item/vestige_second_skin(get_turf(user)))
-	to_chat(user, span_notice("The second skin drapes itself over your arm and hugs it, hopefully."))
+	to_chat(user, span_notice("The second skin drapes itself over your arm and holds on."))
 
 /datum/vestige_trial/perfect_copy/Destroy()
 	QDEL_NULL(skin)
 	return ..()
 
 /datum/vestige_trial/perfect_copy/get_progress_text()
-	return "You have burst out upon [length(startled)] of [VESTIGE_STARTLES_NEEDED] unwary faces. A worn shape never plays twice."
+	return "You have burst out at [length(startled)] of [VESTIGE_STARTLES_NEEDED] unsuspecting people. A shape you have used won't work twice."
 
 /**
  * Credits a burst-out reveal. May complete (and delete) the trial — and the
@@ -151,7 +151,7 @@
 	name = "The Snatched Meal"
 	// Keep the numbers in sync with VESTIGE_MEALS_NEEDED / VESTIGE_MAW_MEMORY_WINDOW
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the maw. It was my mouth once — one of them. It only has appetite for warm things: what a living hand held ten heartbeats ago, and then lost. Knock a thing from a grip, wrestle it away, or have a brave friend pass one over — then feed it down before it cools. Three morsels, from three different owners. Everything I ever loved eating was interrupted mid-belonging. You will see."
+	desc = "Take the maw. It was one of my mouths, once. It only wants things that are still warm: something a living person was holding ten seconds ago and isn't holding now. Disarm somebody, wrestle it off them, or get a friend to hand one over, then feed it to the maw before it cools. Three items, from three different owners."
 	/// Owners the maw has already tasted a morsel from (weakref -> TRUE); one dish per table
 	var/list/fed_from = list()
 
@@ -159,10 +159,10 @@
 	// Not reclaimed on pact end: without a pact the maw is toothless (see below),
 	// same deal as the Stranger's censer and the clan seal
 	hand_over(user, new /obj/item/vestige_gnash_maw(get_turf(user)))
-	to_chat(user, span_notice("The gnash-maw works its jaw once, tasting the air off your fingers."))
+	to_chat(user, span_notice("The gnash-maw works its jaw once, tasting your fingers."))
 
 /datum/vestige_trial/snatched_meal/get_progress_text()
-	return "The maw has swallowed [length(fed_from)] of [VESTIGE_MEALS_NEEDED] warm-handed morsels."
+	return "The maw has swallowed [length(fed_from)] of [VESTIGE_MEALS_NEEDED] still-warm items."
 
 /**
  * Credits a devoured morsel against its last holder. May complete (and delete)
@@ -180,7 +180,7 @@
 
 /obj/item/vestige_gnash_maw
 	name = "gnash-maw"
-	desc = "A ring of someone else's teeth around a stomach that is mostly opinion. It only has appetite for the recently-held — things still warm from another hand. Everything else it politely declines."
+	desc = "A ring of someone else's teeth wrapped around a very small stomach. It only eats things that were in another person's hand a moment ago. Everything else it turns down."
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "gnash_maw"
 	w_class = WEIGHT_CLASS_SMALL
@@ -201,7 +201,7 @@
 
 /obj/item/vestige_gnash_maw/examine(mob/user)
 	. = ..()
-	. += span_notice("Used on an item that left a living person's grip only moments ago — knocked loose, snatched away, or handed over — it swallows it whole. It never accepts two courses from the same person, and anything it has not just watched being held is beneath its standards.")
+	. += span_notice("Use it on an item that left a living person's hand moments ago — knocked loose, taken, or handed over — and it swallows the item whole. It won't take two items from the same person, and it ignores anything it didn't just watch being held.")
 
 // The maw watches the room from its carrier's person, noting every item in a
 // living hand it can see. This memory — not any global last-owner var, which
@@ -235,7 +235,7 @@
 		return NONE
 	var/datum/vestige_trial/snatched_meal/trial = user.mind?.active_vestige_trial
 	if(!istype(trial))
-		balloon_alert(user, "the maw yawns, toothless")
+		balloon_alert(user, "the maw just yawns")
 		return ITEM_INTERACT_BLOCKING
 	if(morsel.resistance_flags & INDESTRUCTIBLE)
 		balloon_alert(user, "it would chip a tooth!")
@@ -250,16 +250,16 @@
 	var/list/memory = seen_warm[WEAKREF(morsel)]
 	if(!memory || world.time - memory[2] > VESTIGE_MAW_MEMORY_WINDOW)
 		balloon_alert(user, "gone cold!")
-		to_chat(user, span_warning("The maw only wants what it just watched leave a living hand. This has been ownerless too long."))
+		to_chat(user, span_warning("The maw only wants what it just watched leave somebody's hand. This has been lying around too long."))
 		return ITEM_INTERACT_BLOCKING
 	var/datum/weakref/holder_ref = memory[1]
 	var/mob/living/last_holder = holder_ref?.resolve()
 	if(!last_holder || last_holder == user)
-		balloon_alert(user, "no stranger's warmth on it!")
+		balloon_alert(user, "nobody else's warmth on it!")
 		return ITEM_INTERACT_BLOCKING
 	if(trial.fed_from[WEAKREF(last_holder)])
 		balloon_alert(user, "already tasted them!")
-		to_chat(user, span_warning("The maw remembers [last_holder]'s flavor and declines seconds. A new dish, a new table."))
+		to_chat(user, span_warning("The maw remembers the taste of [last_holder] and won't take seconds. Go find someone else's."))
 		return ITEM_INTERACT_BLOCKING
 	balloon_alert(user, "gulping...")
 	if(!do_after(user, VESTIGE_MAW_GULP_TIME, target = morsel))
@@ -276,7 +276,7 @@
 		return ITEM_INTERACT_BLOCKING
 	user.visible_message(
 		span_warning("[src] unhinges far wider than it has any right to and swallows [morsel] whole!"),
-		span_notice("The maw takes [morsel] down in one delighted spasm — still warm from [last_holder]'s hands."),
+		span_notice("The maw gulps [morsel] down in one go, still warm from [last_holder]'s hands."),
 	)
 	playsound(src, 'sound/items/eatfood.ogg', 50, TRUE)
 	seen_warm -= WEAKREF(morsel)
@@ -290,7 +290,7 @@
 	name = "The Understudy"
 	// Keep the numbers in sync with VESTIGE_SHADOW_SECONDS_NEEDED / VESTIGE_STUDY_TIME
 	// (initial values must be constant, so no define interpolation here)
-	desc = "The advanced class: a person. Stand close and study one — five seconds of honest looking; they will feel it, everyone feels it. Then wear them, and follow. Walk where they walk, a step behind their own life, while they are up and doing — a full minute in their wake, all told. If they stop, the scene stops; furniture is the beginner course. Lose the trail or shed the face and you lose nothing already earned. Understudy them. It is the sincerest theft there is."
+	desc = "Now a person. Stand next to one and study them for five seconds — they will notice, everyone notices — then put their face on and follow them. Stay close while they are up and moving: a full minute of tailing them, all told. If they stop moving the clock stops too, and losing them or taking the face off doesn't cost you anything you have already banked."
 	/// Cumulative deciseconds spent actively shadowing the quarry
 	var/shadow_time = 0
 	/// The loaned skin, reclaimed (deleted, breaking any worn face) the moment the pact ends
@@ -298,7 +298,7 @@
 
 /datum/vestige_trial/understudy/on_accepted(mob/living/user)
 	skin = hand_over(user, new /obj/item/vestige_second_skin(get_turf(user)))
-	to_chat(user, span_notice("The second skin settles across your shoulders and waits, politely, to be introduced to someone."))
+	to_chat(user, span_notice("The second skin settles across your shoulders and waits to be introduced to someone."))
 
 /datum/vestige_trial/understudy/Destroy()
 	QDEL_NULL(skin)
@@ -334,7 +334,7 @@
  */
 /obj/item/vestige_second_skin
 	name = "second skin"
-	desc = "A shawl of pale morph-hide that has never quite finished deciding what it is. Pressed against something — or someone, after a long honest look — it remembers how to be them, and takes you along."
+	desc = "A shawl of pale morph hide that never quite finished deciding what it was. Press it against something, or someone, and it remembers how to be them and brings you along."
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "sheet-hide"
 	color = "#b8d49c"
@@ -371,7 +371,7 @@
 
 /obj/item/vestige_second_skin/examine(mob/user)
 	. = ..()
-	. += span_notice("Pressed against an object, it wears that shape — creep close, then use it in hand to burst out. Held to a person after a five-second study, it wears them instead — then follow. Taking damage, doing violence, or letting go of the skin breaks any form.")
+	. += span_notice("Use it on an object to wear that object's shape, creep close to somebody, then use it in hand to burst out. Use it on a person to study them for five seconds and wear them instead, then follow them around. Taking damage, attacking anyone, or letting go of the skin breaks the disguise.")
 
 // The disguise is the skin; letting go of one is letting go of the other
 /obj/item/vestige_second_skin/dropped(mob/user, silent = FALSE)
@@ -417,18 +417,18 @@
 			return ITEM_INTERACT_BLOCKING
 	var/datum/vestige_trial/perfect_copy/copy_trial = user.mind?.active_vestige_trial
 	if(!istype(copy_trial))
-		balloon_alert(user, "the skin will not take a thing's shape!")
+		balloon_alert(user, "the skin won't copy objects for you!")
 		return ITEM_INTERACT_BLOCKING
 	if(form != SKIN_FORM_NONE)
 		balloon_alert(user, "already wearing a shape!")
 		return ITEM_INTERACT_BLOCKING
 	if(shape.type in copy_trial.spent_shapes)
 		balloon_alert(user, "that shape is spent!")
-		to_chat(user, span_warning("The skin sags off [shape] like an old joke. A worn shape never plays twice — find a new one."))
+		to_chat(user, span_warning("The skin sags off [shape] and won't take. You have already used that shape once — find a new one."))
 		return ITEM_INTERACT_BLOCKING
 	user.visible_message(
 		span_warning("[user]'s outline runs like wax, pooling into the shape of [shape]!"),
-		span_notice("You pull the skin over yourself and become [shape]. Creep close, let someone wander near — then give them the performance."),
+		span_notice("You pull the skin over yourself and become [shape]. Creep close, wait for someone to wander past, then burst out."),
 	)
 	playsound(user, 'sound/effects/blob/attackblob.ogg', 30, TRUE)
 	apply_form(user, shape)
@@ -446,7 +446,7 @@
 /obj/item/vestige_second_skin/proc/study_person(mob/living/target, mob/living/user)
 	var/datum/vestige_trial/understudy/tail_trial = user.mind?.active_vestige_trial
 	if(!istype(tail_trial))
-		balloon_alert(user, "the skin will not take a face!")
+		balloon_alert(user, "the skin won't copy people for you!")
 		return ITEM_INTERACT_BLOCKING
 	if(form != SKIN_FORM_NONE)
 		balloon_alert(user, "already wearing a shape!")
@@ -459,7 +459,7 @@
 		return ITEM_INTERACT_BLOCKING
 	var/mob/living/carbon/human/quarry = target
 	if(quarry.stat != CONSCIOUS)
-		balloon_alert(user, "the role wants them lively!")
+		balloon_alert(user, "they need to be awake!")
 		return ITEM_INTERACT_BLOCKING
 	if(!quarry.mind)
 		balloon_alert(user, "nobody home to study!")
@@ -467,7 +467,7 @@
 	// The study is loud on purpose: the subject is told, and the room can see the stare
 	user.visible_message(
 		span_warning("[user] holds [src] up and stares at [quarry], hard."),
-		span_notice("You begin committing [quarry] to the skin. Five seconds of honest looking."),
+		span_notice("You start committing [quarry] to the skin. Five seconds of staring."),
 	)
 	to_chat(quarry, span_userdanger("You feel eyes crawling over you, taking measurements. Someone is studying you."))
 	if(!do_after(user, VESTIGE_STUDY_TIME, target = quarry))
@@ -483,7 +483,7 @@
 		return ITEM_INTERACT_BLOCKING
 	user.visible_message(
 		span_warning("[user]'s outline runs like tallow and sets again as [quarry]'s exact double!"),
-		span_notice("You pull [quarry] on. Now follow — the role only pays while they are out living it."),
+		span_notice("You pull [quarry] on. Now follow them — the clock only runs while they are up and moving."),
 	)
 	playsound(user, 'sound/effects/blob/attackblob.ogg', 30, TRUE)
 	apply_form(user, quarry)
@@ -547,10 +547,10 @@
 		span_notice("You burst out of the [shape_name]!"),
 	)
 	if(!startled_anyone)
-		to_chat(user, span_warning("...at an empty room. Somewhere, something winces on your behalf."))
+		to_chat(user, span_warning("...at an empty room. Nobody saw it."))
 		return
 	if(!istype(copy_trial) || !credit_victim)
-		to_chat(user, span_warning("Gasps, but no new ones. A fresh shape and a fresh face, or it does not count."))
+		to_chat(user, span_warning("Plenty of gasps, but no new ones. It only counts with a new shape and someone who hasn't jumped for you before."))
 		return
 	to_chat(user, span_notice("The jump! The little scream! Somewhere, something applauds."))
 	copy_trial.startle(credit_victim, shape_type) // may complete (and delete) the trial — and us with it; nothing after this
@@ -569,7 +569,7 @@
 			shed_form(wearer)
 			return
 		if(form_expires && world.time >= form_expires)
-			to_chat(wearer, span_warning("The shape goes baggy and sloughs away — the skin can only commit for so long. Choose another."))
+			to_chat(wearer, span_warning("The shape goes baggy and sloughs off. The skin can only hold one for so long — pick another."))
 			shed_form(wearer)
 			return
 		stamp_form(wearer)
@@ -596,14 +596,14 @@
 		return
 	if(wearer.z != quarry.z || get_dist(wearer, quarry) > VESTIGE_SHADOW_RANGE)
 		if(SPT_PROB(4, seconds_per_tick))
-			to_chat(wearer, span_warning("You have lost your quarry. The role pays nothing to an understudy who misses the scene."))
+			to_chat(wearer, span_warning("You have lost them. The clock doesn't run while you can't see who you are copying."))
 		return
 	if(!quarry_last_moved || world.time - quarry_last_moved > VESTIGE_QUARRY_IDLE_GRACE)
 		if(SPT_PROB(4, seconds_per_tick))
-			to_chat(wearer, span_notice("Your quarry has gone still. Furniture is the beginner course — the clock waits for them to live a little."))
+			to_chat(wearer, span_notice("They have stopped moving, so the clock has stopped too. Wait for them to get going again."))
 		return
 	if(SPT_PROB(3, seconds_per_tick))
-		to_chat(wearer, span_notice("You fall into their gait, a step behind their life. The skin approves."))
+		to_chat(wearer, span_notice("You fall into step behind them. The skin approves."))
 	tail_trial.shadow(seconds_per_tick * (1 SECONDS)) // may complete (and delete) the trial — and us with it; nothing after this
 
 /// Re-applies the disguise snapshot. Humans rebuild their icon on all sorts of
@@ -655,13 +655,13 @@
 	SIGNAL_HANDLER
 	if(damage <= 0)
 		return
-	to_chat(source, span_warning("The hurt jolts through the borrowed shape and it cannot hold!"))
+	to_chat(source, span_warning("The hit jolts through the borrowed shape and it can't hold!"))
 	shed_form(source)
 
 /// Swinging a weapon while worn ends the act — violence and the shape cannot share one body
 /obj/item/vestige_second_skin/proc/on_wearer_armed_attack(mob/living/source, mob/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
 	SIGNAL_HANDLER
-	to_chat(source, span_warning("The shape convulses off you — violence is not in its repertoire."))
+	to_chat(source, span_warning("The shape convulses off you. It doesn't do violence."))
 	shed_form(source)
 
 /// Likewise bare-handed violence. Non-combat fumbling (doors, buttons) is
@@ -670,7 +670,7 @@
 	SIGNAL_HANDLER
 	if(!source.combat_mode)
 		return
-	to_chat(source, span_warning("The shape convulses off you — violence is not in its repertoire."))
+	to_chat(source, span_warning("The shape convulses off you. It doesn't do violence."))
 	shed_form(source)
 
 /// The morph's classic tell, ported to the worn disguise: up close, it is never quite right
@@ -763,14 +763,14 @@
 
 /datum/vestige_boon/spell/mimic_form
 	name = "Borrowed Shape"
-	desc = "Pick any ordinary prop on the stage and I will teach you to BE it — the shape, the name, the little dents. You may even creep about, slowly; I am still rehearsing the creep, do not lean on it. One blow given or taken and the role is over, and the shape sulks a while before it lets you wear it again. It does read a touch damp up close. I am working on the damp."
-	grant_text = "Your outline goes briefly negotiable, waiting to be told what it is."
+	desc = "Point at any ordinary object next to you and I will teach you to BE it — the shape, the name, the little dents and all. You can even creep around in it, slowly. One hit given or taken and the role is over, and it takes a while before you can put the shape back on. Up close you do look a bit damp. I am working on the damp."
+	grant_text = "Your outline goes soft for a moment, waiting to be told what it is."
 	spell_type = /datum/action/cooldown/spell/shapeshift/vestige_mimic
 
 /datum/vestige_boon/spell/mimic_form/flawless
 	name = "Perfect Facsimile"
-	desc = "My best work — no, YOUR best work, I only coached. The dampness is gone; I fixed the dampness; nobody mentions the dampness anymore. You move at very nearly your own pace, and the audience can press their nose to you and find nothing to report. And between roles? Barely a breath."
-	grant_text = "The last tell dries up. Even you are no longer sure which of you is the impression."
+	desc = "My best work. No — YOUR best work, I only coached. The damp is gone, I fixed the damp, nobody mentions the damp anymore. You move at very nearly your own pace, and anyone can put their nose right up against you and find nothing wrong. Swapping shapes is almost instant now, too."
+	grant_text = "The last tell dries up. You are bone dry and completely convincing."
 	upgrades_from = /datum/vestige_boon/spell/mimic_form
 	spell_type = /datum/action/cooldown/spell/shapeshift/vestige_mimic/flawless
 
@@ -778,14 +778,14 @@
 
 /datum/vestige_boon/spell/devour
 	name = "The Gullet"
-	desc = "A pocket! Inside! I made you a pocket inside. Swallow a thing — a modest thing, I am still widening it — and it stays down, past any pat-down, any scanner wave, any polite request, until you ask for it back. It comes back intact. Slightly damp. The damp again, yes. I am working on it."
+	desc = "A pocket! Inside! I made you a pocket on the inside. Swallow something — nothing too big yet, I am still widening it — and it stays down there, past any pat-down or scanner, until you ask for it back. It comes back in one piece. Slightly damp. Yes, the damp again."
 	grant_text = "Something in your throat unhinges, politely, and waits."
 	spell_type = /datum/action/cooldown/spell/vestige_devour
 
 /datum/vestige_boon/spell/devour/gluttony
 	name = "Bottomless Gullet"
-	desc = "Wider! Three keepings now, and big ones — I practiced on furniture. And should you swallow something that was food all along, the gullet says thank you the only way flesh knows how: it mends you a little on the way down."
-	grant_text = "Your new pocket yawns. It is not picky anymore, and it is a little grateful."
+	desc = "Wider! Three things at once now, and bigger ones — I practiced on furniture. And if what you swallow happens to be food, the gullet patches you up a little on the way down."
+	grant_text = "Your new pocket yawns. It isn't picky anymore."
 	upgrades_from = /datum/vestige_boon/spell/devour
 	spell_type = /datum/action/cooldown/spell/vestige_devour/gluttony
 
@@ -793,16 +793,16 @@
 
 /datum/vestige_boon/spell/ambush_instinct
 	name = "Ambush Instinct"
-	desc = "The oldest scene in the repertoire: the still thing that suddenly is not. A short pounce — two strides, three at the outside, I counted — that puts whoever you land on flat on the deck, and for a breath afterward your next blow arrives like you had meant it your whole life. It pairs beautifully with having just been a crate. It also works if you were merely standing very still; I do not judge."
-	grant_text = "Your weight settles onto the balls of your feet, the way a held breath settles."
+	desc = "The oldest trick there is: the thing that was standing still and suddenly isn't. A short pounce — three tiles, I counted — that knocks whoever you land on flat, and for a moment afterward your next melee hit lands much harder. Works best right after being a crate, but standing very still does the job too."
+	grant_text = "Your weight settles onto the balls of your feet."
 	spell_type = /datum/action/cooldown/mob_cooldown/charge/vestige_pounce
 
 // --- Standalone: the boneless squeeze ---
 
 /datum/vestige_boon/rubber_bones
 	name = "Rubber Bones"
-	desc = "I loosened everything. Do not ask how; you would not enjoy the how. Undressed — it must be undressed, the ducting is firm on this — you pour through ventilation the way I do, and vaulting and short falls become other people's problems. One honesty, because you have earned it: this is worked into the meat, not the soul. Wear a new body someday and I shall simply loosen that one too. I keep notes."
-	grant_text = "Every joint in you loosens by one quiet degree that no anatomy chart allows."
+	desc = "I loosened everything. Don't ask how, you wouldn't enjoy the answer. Strip down — all the way down, the ducting insists — and you can pour yourself through the vents the way I do. Climbing gets quick and short falls stop hurting. Fair warning: this is in the meat, not the soul. Get yourself a new body and I will have to loosen that one too."
+	grant_text = "Every joint in you loosens by a degree no anatomy chart allows."
 	radial_icon = 'icons/obj/antags/abductor.dmi'
 	radial_icon_state = "vent"
 
@@ -830,7 +830,7 @@
 /datum/vestige_boon/rubber_bones/grant(mob/living/user, datum/mind/owner)
 	..()
 	user.add_traits(list(TRAIT_VENTCRAWLER_NUDE, TRAIT_FREERUNNING), VESTIGE_MORPH_TRAIT)
-	to_chat(user, span_notice("Stripped bare, you could pour yourself through a ventilation duct. Falls and fences already look negotiable."))
+	to_chat(user, span_notice("Stripped bare, you could pour yourself through a ventilation duct. Fences and short drops suddenly look easy."))
 
 // ===== BORROWED SHAPE =====
 
@@ -875,7 +875,7 @@
  */
 /datum/action/cooldown/spell/shapeshift/vestige_mimic
 	name = "Borrowed Shape"
-	desc = "Become a copy of an ordinary object beside you. You may creep, slowly; you cannot act. Striking or being struck ends the role, and a broken shape takes time to re-form. Recast to shrug it off."
+	desc = "Click an ordinary object next to you to become a copy of it. You can creep around slowly, but you can't do anything else. Striking or being struck ends it, and a broken shape takes time before you can wear it again. Press the ability again to shrug it off."
 	button_icon = 'icons/mob/actions/actions_changeling.dmi'
 	button_icon_state = "chameleon_skin"
 	background_icon_state = "bg_changeling"
@@ -883,9 +883,14 @@
 	cooldown_time = VESTIGE_MIMIC_REFORM_COOLDOWN
 	invocation_type = INVOCATION_NONE
 	spell_requirements = NONE
+	// The model is picked by clicking it, the morph's own grammar (assume_form.dm):
+	// point at the thing you want to be. What actually changes is always the
+	// caster, so the shapeshift rail below is handed the owner, never the click
+	click_to_activate = TRUE
+	ranged_mousepointer = 'icons/effects/mouse_pointers/supplypod_target.dmi'
 	possible_shapes = list(/mob/living/basic/vestige_mimic)
 	die_with_shapeshifted_form = FALSE
-	/// The object picked in before_cast, consumed by create_shapeshift_mob. Same-cast handoff only.
+	/// The object clicked in before_cast, consumed by create_shapeshift_mob. Same-cast handoff only.
 	var/atom/movable/chosen_model
 	/// Stuff no understudy should play. Mirrors the morph's own blacklist, minus entries view() can't return.
 	var/static/list/blacklist_typecache = typecacheof(list(
@@ -897,7 +902,7 @@
 
 /datum/action/cooldown/spell/shapeshift/vestige_mimic/flawless
 	name = "Perfect Facsimile"
-	desc = "Become a copy of an ordinary object beside you — at very nearly a walking pace, with no tell to examine. Striking or being struck ends the role. Recast to shrug it off."
+	desc = "Click an ordinary object next to you to become a copy of it, at very nearly walking pace and with no tell when examined. Striking or being struck ends it. Press the ability again to shrug it off."
 	button_icon_state = "transform"
 	cooldown_time = VESTIGE_MIMIC_FLAWLESS_REFORM
 	possible_shapes = list(/mob/living/basic/vestige_mimic/flawless)
@@ -915,67 +920,81 @@
 		return FALSE
 	if(owner.movement_type & VENTCRAWLING)
 		if(feedback)
-			to_chat(owner, span_warning("Not in the ducting — there is no room in here to be anything else."))
+			to_chat(owner, span_warning("There is no room in here to be anything else."))
 		return FALSE
 	return TRUE
 
-// Forming picks its model here (the radial sleeps, which is what before_cast
-// is for — the parent shapeshift shows its own radial the same way), and
-// forming skips the immediate cooldown so the shape can always be shrugged
-// off at will. Unforming falls through untouched: Activate's StartCooldown
-// after cast() is exactly the reform lockout.
+// Shedding a shape needs no target — someone caught out as a crate should not
+// have to arm a cursor and click themselves to stop being a crate. Only picking
+// a NEW shape asks for a click.
+/datum/action/cooldown/spell/shapeshift/vestige_mimic/Trigger(mob/clicker, trigger_flags, atom/target)
+	if(isnull(target) && wearing_a_shape())
+		if(!IsAvailable(feedback = TRUE))
+			return FALSE
+		return PreActivate(owner)
+	return ..()
+
+/// Whether the owner is currently inside a borrowed shape
+/datum/action/cooldown/spell/shapeshift/vestige_mimic/proc/wearing_a_shape()
+	if(!isliving(owner))
+		return FALSE
+	var/mob/living/living_owner = owner
+	return !!living_owner.has_status_effect(/datum/status_effect/shapechange_mob/from_spell)
+
+// Clicking yourself (or the ability, while wearing a shape) sheds it; clicking
+// anything else offers it as a model.
+/datum/action/cooldown/spell/shapeshift/vestige_mimic/is_valid_target(atom/cast_on)
+	if(cast_on == owner)
+		if(!wearing_a_shape())
+			owner.balloon_alert(owner, "point at something else!")
+			return FALSE
+		return TRUE
+	if(wearing_a_shape())
+		owner.balloon_alert(owner, "already wearing one!")
+		return FALSE
+	return can_copy(cast_on)
+
+// Forming takes its model from the click and skips the immediate cooldown, so
+// the shape can always be shrugged off at will. Unforming falls through
+// untouched: Activate's StartCooldown after cast() is exactly the reform
+// lockout. Either way the shapeshift rail upstream is handed the OWNER — the
+// click target is a model to copy, not a thing to transform.
 /datum/action/cooldown/spell/shapeshift/vestige_mimic/before_cast(atom/cast_on)
-	. = ..()
+	var/atom/movable/model = (cast_on == owner) ? null : cast_on
+	. = ..(owner)
 	if(. & SPELL_CANCEL_CAST)
 		return
 	chosen_model = null
-	if(isliving(cast_on))
-		var/mob/living/living_cast_on = cast_on
-		if(living_cast_on.has_status_effect(/datum/status_effect/shapechange_mob/from_spell))
-			return // unforming: no model to pick, and the cooldown SHOULD start
-	var/atom/movable/model = pick_model()
-	if(!model)
+	if(wearing_a_shape())
+		return // unforming: no model to copy, and the cooldown SHOULD start
+	// The prop can be picked up or destroyed between the click and here
+	if(QDELETED(model) || !can_copy(model))
 		return . | SPELL_CANCEL_CAST
 	if(QDELETED(src) || QDELETED(owner) || !can_cast_spell(feedback = FALSE))
 		return . | SPELL_CANCEL_CAST
 	chosen_model = model
 	return . | SPELL_NO_IMMEDIATE_COOLDOWN
 
-/// Radial of copyable objects in arm's reach. Returns the pick, or null if the caster backed out (or everything did).
-/datum/action/cooldown/spell/shapeshift/vestige_mimic/proc/pick_model()
-	var/list/options = list()
-	var/list/by_name = list()
-	for(var/obj/model in view(1, owner))
-		if(!isturf(model.loc)) // free-standing props only; nothing out of someone's hand
-			continue
-		if(model.invisibility)
-			continue
-		if(is_type_in_typecache(model, blacklist_typecache))
-			continue
-		if(isitem(model))
-			var/obj/item/item_model = model
-			if(item_model.item_flags & ABSTRACT)
-				continue
-		if(by_name[model.name]) // identical names look identical; first one stands in for all
-			continue
-		by_name[model.name] = model
-		options[model.name] = image(icon = model.icon, icon_state = model.icon_state)
-	if(!length(options))
-		owner.balloon_alert(owner, "nothing here to become!")
-		return null
-	var/choice = show_radial_menu(owner, owner, options, custom_check = CALLBACK(src, PROC_REF(model_menu_check)), tooltips = TRUE)
-	if(!choice)
-		return null
-	var/atom/movable/model = by_name[choice]
-	// The prop may have walked off (or been picked up) while the menu was open
-	if(QDELETED(model) || !isturf(model.loc) || !(model in view(1, owner)))
-		owner.balloon_alert(owner, "it slipped away!")
-		return null
-	return model
-
-/// Menu validity for the model radial
-/datum/action/cooldown/spell/shapeshift/vestige_mimic/proc/model_menu_check()
-	return !QDELETED(src) && !QDELETED(owner) && owner.stat == CONSCIOUS
+/// Whether a clicked atom is something an understudy could pass for: a free-standing, visible, ordinary object within arm's reach.
+/datum/action/cooldown/spell/shapeshift/vestige_mimic/proc/can_copy(atom/movable/model)
+	if(!isobj(model))
+		owner.balloon_alert(owner, "can't be that!")
+		return FALSE
+	if(!isturf(model.loc)) // free-standing props only; nothing out of someone's hand
+		owner.balloon_alert(owner, "not while it's held!")
+		return FALSE
+	if(model.invisibility || is_type_in_typecache(model, blacklist_typecache))
+		owner.balloon_alert(owner, "can't be that!")
+		return FALSE
+	if(isitem(model))
+		var/obj/item/item_model = model
+		if(item_model.item_flags & ABSTRACT)
+			owner.balloon_alert(owner, "can't be that!")
+			return FALSE
+	if(!(model in view(1, owner)))
+		owner.balloon_alert(owner, "too far to study!")
+		return FALSE
+	return TRUE
 
 // The imprint happens at birth, before the shapechange status effect moves
 // the player in — one tick, no visible blob frame in practice
@@ -997,16 +1016,17 @@
 // The transformation theatre: sound, wobble, and a message that names the
 // prop rather than the player (the crowd saw who melted; the fun is in what
 // stands there after)
-/datum/action/cooldown/spell/shapeshift/vestige_mimic/cast(mob/living/cast_on)
-	var/unforming = isliving(cast_on) && cast_on.has_status_effect(/datum/status_effect/shapechange_mob/from_spell)
-	. = ..()
+/datum/action/cooldown/spell/shapeshift/vestige_mimic/cast(atom/cast_on)
+	var/unforming = wearing_a_shape()
+	// cast_on is whatever was clicked; the shift itself always happens to the caster
+	. = ..(owner)
 	if(QDELETED(owner))
 		return
 	if(unforming)
 		playsound(owner, 'sound/effects/splat.ogg', 50, TRUE)
 		owner.visible_message(
 			span_warning("[owner] shrugs the borrowed shape off like a wet coat!"),
-			span_notice("You let the role go. Your own outline has never felt so roomy."),
+			span_notice("You let the shape go. Your own outline feels roomy by comparison."),
 		)
 		return
 	// Formed: owner is now the shape, already wearing the prop's face.
@@ -1017,7 +1037,7 @@
 	playsound(owner, 'sound/effects/magic/mutate.ogg', 50, TRUE)
 	owner.visible_message(
 		span_warning("With a wet squelch, where they stood there is only... [owner]."),
-		span_boldnotice("You pour yourself into the part. Hold still. Be believed."),
+		span_boldnotice("You pour yourself into the shape. Now hold still."),
 	)
 	apply_wibbly_filters(owner)
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_wibbly_filters), owner, 0.5 SECONDS), 1 SECONDS)
@@ -1038,7 +1058,7 @@
  */
 /mob/living/basic/vestige_mimic
 	name = "borrowed shape"
-	desc = "Something doing an impression of a thing, caught between takes."
+	desc = "Something doing an impression of a thing. It hasn't quite landed it."
 	gender = NEUTER
 	icon = 'icons/mob/simple/animal.dmi'
 	icon_state = "morph"
@@ -1138,7 +1158,7 @@
 		return
 	visible_message(
 		span_boldwarning("[src] shudders, splits along no seam at all, and comes apart!"),
-		span_userdanger("The role is over — the shape gives way!"),
+		span_userdanger("The shape gives way under you!"),
 	)
 	playsound(src, 'sound/effects/splat.ogg', 60, TRUE)
 	var/datum/action/cooldown/spell/shapeshift/source_spell = shift.source_weakref?.resolve()
@@ -1173,7 +1193,7 @@
  */
 /datum/action/cooldown/spell/vestige_devour
 	name = "The Gullet"
-	desc = "Swallow the item in your active hand down into an internal stash, or cast empty-handed to bring a keeping back up. It comes back intact. Slightly damp."
+	desc = "Swallow the item in your active hand into an internal stash, or cast with an empty hand to bring something back up. It comes back intact. Slightly damp."
 	button_icon = 'icons/mob/actions/actions_animal.dmi'
 	button_icon_state = "regurgitate"
 	background_icon_state = "bg_changeling"
@@ -1196,7 +1216,7 @@
 
 /datum/action/cooldown/spell/vestige_devour/gluttony
 	name = "Bottomless Gullet"
-	desc = "Swallow the item in your active hand — up to bulky, three keepings deep — or cast empty-handed to bring one back up. Edible matter mends you a little on the way down."
+	desc = "Swallow the item in your active hand, up to bulky and three items deep, or cast with an empty hand to bring one back up. Swallowing food heals you a little on the way down."
 	button_icon = 'icons/mob/actions/actions_slime.dmi'
 	button_icon_state = "slimeconsume"
 	gullet_slots = VESTIGE_GLUTTONY_SLOTS
@@ -1214,7 +1234,7 @@
 	if(spill_loc && length(stash?.contents))
 		owner.visible_message(
 			span_warning("[owner] doubles over and heaves [owner.p_their()] gullet inside out!"),
-			span_notice("The old gullet turns itself out to make room for the new one. Collect your keepings."),
+			span_notice("The old gullet turns itself inside out to make room for the new one. Pick your things back up."),
 		)
 		playsound(owner, 'sound/effects/splat.ogg', 50, TRUE)
 	empty_gullet(spill_loc)
@@ -1245,7 +1265,7 @@
 	if(!spill_loc)
 		return
 	source.visible_message(
-		span_warning("[source]'s throat convulses, and [source.p_their()] gullet gives up its keepings!"),
+		span_warning("[source]'s throat convulses, and everything in [source.p_their()] gullet comes back up!"),
 		blind_message = span_hear("You hear something wet coming back up."),
 	)
 	playsound(spill_loc, 'sound/effects/splat.ogg', 50, TRUE)
@@ -1275,7 +1295,7 @@
 			return . | SPELL_CANCEL_CAST
 		owner.visible_message(
 			span_warning("[owner]'s throat begins to work, horribly, around [held]..."),
-			span_notice("You unhinge something no chart says you have, and start [held] on its way down."),
+			span_notice("You unhinge something no anatomy chart says you have, and start [held] on its way down."),
 		)
 		playsound(owner, 'sound/items/eatfood.ogg', 40, TRUE)
 		if(!do_after(owner, VESTIGE_GULLET_SWALLOW_TIME, target = held))
@@ -1360,7 +1380,7 @@
 		if(organic_heal && IS_EDIBLE(meal) && isliving(owner))
 			var/mob/living/fed = owner
 			fed.heal_overall_damage(brute = organic_heal, burn = organic_heal, required_bodytype = BODYTYPE_ORGANIC)
-			to_chat(fed, span_boldnotice("The gullet takes its tithe of the meal and mends you a little. It seems pleased with itself."))
+			to_chat(fed, span_boldnotice("The gullet takes its cut of the meal and patches you up a little."))
 		return
 	if(pending_regurgitate)
 		var/obj/item/prize = pending_regurgitate
@@ -1425,9 +1445,10 @@
 	var/mob/living/pouncer = owner
 	pouncer.apply_status_effect(/datum/status_effect/vestige_predation)
 
-// A coiled hiss of movement instead of the base charge's bubblegum theatrics
+// A wet uncoiling instead of the base charge's bubblegum theatrics — the thing
+// that leaves the floor is meat, not a swinging weapon, and it should sound it
 /datum/action/cooldown/mob_cooldown/charge/vestige_pounce/do_charge_indicator(atom/charger, atom/charge_target)
-	playsound(charger, 'sound/items/weapons/thudswoosh.ogg', 60, TRUE)
+	playsound(charger, 'sound/effects/blob/attackblob.ogg', 60, TRUE)
 
 // The base charge plays a 200-volume meteor impact on every tile moved.
 // Ambushes do not.
@@ -1468,7 +1489,7 @@
 /datum/status_effect/vestige_predation/on_apply()
 	RegisterSignal(owner, COMSIG_MOB_ITEM_ATTACK, PROC_REF(on_armed_strike))
 	RegisterSignal(owner, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_strike))
-	to_chat(owner, span_boldnotice("For one breath, your whole weight knows where it wants to land."))
+	to_chat(owner, span_boldnotice("For a moment, your whole weight knows exactly where it wants to land."))
 	return TRUE
 
 /datum/status_effect/vestige_predation/on_remove()

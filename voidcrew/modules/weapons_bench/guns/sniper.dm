@@ -22,12 +22,12 @@
 
 /obj/item/gun_part/sniper_rifle
 	name = "anti-materiel rifle receiver"
-	desc = "The machined receiver and bolt assembly for an anti-materiel sniper rifle. Its schematic's crafting recipe turns it into the finished weapon."
+	desc = "The machined receiver and bolt assembly for an anti-materiel sniper rifle. You'll need the matching schematic to build it into a working gun."
 	icon_state = "sniper"
 
 /datum/design/gun_part_sniper_rifle
 	name = "Anti-Materiel Rifle Receiver"
-	desc = "A machined receiver and bolt assembly for an anti-materiel sniper rifle. Inert until crafted into the finished gun."
+	desc = "A machined receiver and bolt assembly for an anti-materiel sniper rifle. Not a working gun on its own."
 	id = "vc_gun_part_sniper_rifle"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(

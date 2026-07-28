@@ -1,0 +1,1498 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/item/tank/internals/oxygen,
+/obj/item/clothing/mask/breath{
+	pixel_x = 7
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"ab" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"ac" = (
+/obj/structure/rack,
+/obj/item/storage/toolbox/emergency,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"ad" = (
+/obj/structure/table/abductor,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 5
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"ae" = (
+/obj/effect/decal/cleanable/glass,
+/obj/item/shard,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"af" = (
+/obj/item/reagent_containers/cup/bucket,
+/obj/item/mop{
+	pixel_x = -5
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"ag" = (
+/obj/item/light/tube,
+/obj/item/shard{
+	pixel_x = -6
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"ah" = (
+/obj/machinery/iv_drip,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"ai" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_y = 5
+	},
+/obj/item/paper{
+	pixel_x = -6
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aj" = (
+/obj/item/restraints/handcuffs,
+/obj/item/stack/medical/gauze{
+	pixel_x = 6
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"ak" = (
+/obj/structure/bed/abductor,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"al" = (
+/obj/machinery/power/apc/auto_name/directional/south,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"am" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/bed/abductor,
+/obj/item/restraints/handcuffs,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"an" = (
+/obj/structure/sign/warning/biohazard,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"ao" = (
+/obj/structure/table/abductor,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"ap" = (
+/obj/machinery/computer/operating{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aq" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"ar" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"as" = (
+/obj/structure/table/abductor,
+/obj/item/wrench{
+	pixel_y = 6
+	},
+/obj/item/crowbar{
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"at" = (
+/obj/structure/sign/warning/electric_shock,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"au" = (
+/obj/structure/table/abductor,
+/obj/item/light/tube{
+	pixel_y = 6
+	},
+/obj/item/shard{
+	pixel_x = -6
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"av" = (
+/obj/structure/extinguisher_cabinet/directional/west,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/paper/crumpled,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"ax" = (
+/obj/effect/landmark/vestige_arena/boss,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"ay" = (
+/obj/structure/table/abductor,
+/obj/item/reagent_containers/cup/beaker{
+	pixel_y = 6
+	},
+/obj/item/paper/crumpled{
+	pixel_x = -6
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"az" = (
+/obj/item/crowbar,
+/obj/item/stack/cable_coil{
+	pixel_y = 5
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aA" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aB" = (
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aC" = (
+/obj/structure/closet/crate,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aD" = (
+/obj/structure/chair/office,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aE" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/plasteel{
+	amount = 5
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aF" = (
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aG" = (
+/turf/open/floor/light,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aH" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aI" = (
+/obj/structure/chair/stool,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aJ" = (
+/obj/item/reagent_containers/cup/beaker,
+/obj/item/trash/can{
+	pixel_x = 6
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aK" = (
+/obj/effect/decal/cleanable/glass,
+/obj/item/shard,
+/obj/item/stack/rods{
+	amount = 2;
+	pixel_x = 5
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aL" = (
+/obj/structure/sign/departments/science,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aM" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aN" = (
+/obj/structure/bed,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aO" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/iron{
+	amount = 10
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aP" = (
+/obj/structure/table/reinforced,
+/obj/item/clipboard{
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aQ" = (
+/obj/machinery/door/airlock/maintenance,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aR" = (
+/obj/structure/table/reinforced,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aS" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aT" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aU" = (
+/obj/item/storage/toolbox/mechanical,
+/obj/item/wrench{
+	pixel_x = 6
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aV" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aW" = (
+/obj/item/stack/sheet/iron{
+	amount = 8
+	},
+/obj/item/stack/rods{
+	amount = 6;
+	pixel_x = 6
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aX" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aY" = (
+/obj/structure/table/abductor,
+/obj/item/tank/internals/oxygen{
+	pixel_y = 6
+	},
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"aZ" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/mineral/abductor,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"bR" = (
+/obj/effect/landmark/vestige_arena/entry,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"ga" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"jH" = (
+/obj/machinery/iv_drip,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"pW" = (
+/obj/machinery/door/airlock/abductor{
+	welded = 1
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"sJ" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"td" = (
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"tL" = (
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"vx" = (
+/obj/structure/rack{
+	density = 0
+	},
+/obj/item/stack/rods{
+	amount = 5
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"xT" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/can,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"yw" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"za" = (
+/obj/structure/girder,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"zg" = (
+/obj/structure/sign/warning/electric_shock,
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"zy" = (
+/obj/structure/grille/broken,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"BE" = (
+/obj/structure/closet/emcloset,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"Li" = (
+/obj/structure/sign/warning/secure_area,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"Lq" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"Lz" = (
+/obj/structure/bed,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"SU" = (
+/obj/structure/closet/firecloset,
+/turf/open/floor/iron/white,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+"TE" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/vestige/arena/mutant)
+
+(1,1,1) = {"
+aT
+aT
+aT
+at
+aT
+aT
+an
+aT
+aT
+at
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+at
+aT
+aT
+aT
+aT
+"}
+(2,1,1) = {"
+aT
+aB
+aB
+aG
+aB
+aB
+aG
+aB
+aB
+aG
+aW
+aB
+aT
+av
+aF
+aq
+aT
+aF
+av
+aF
+td
+td
+an
+BE
+ab
+aF
+av
+aF
+SU
+aT
+"}
+(3,1,1) = {"
+aT
+aE
+aW
+af
+aB
+az
+aB
+aB
+ag
+aB
+aE
+aB
+aT
+aF
+aF
+aq
+aT
+ab
+aD
+aF
+td
+td
+aT
+BE
+aF
+Lz
+aF
+aF
+SU
+aT
+"}
+(4,1,1) = {"
+aT
+aB
+aC
+aU
+aJ
+aB
+aB
+aj
+aa
+aB
+aB
+aC
+ar
+ap
+aF
+aF
+aQ
+aF
+aF
+ab
+td
+td
+aT
+sJ
+aF
+aF
+aw
+aF
+aF
+aT
+"}
+(5,1,1) = {"
+aT
+aG
+aE
+aB
+aB
+aB
+aB
+aB
+aB
+ay
+aB
+aG
+ar
+aF
+aF
+ab
+aT
+aq
+aF
+aD
+td
+td
+aT
+aF
+Lz
+aF
+aF
+ab
+aF
+aT
+"}
+(6,1,1) = {"
+aT
+aZ
+aB
+aB
+aB
+aB
+aB
+aB
+aI
+ad
+aM
+aC
+ar
+aF
+aD
+aF
+aT
+aq
+aF
+aF
+td
+yw
+aT
+aF
+ab
+aF
+aF
+aF
+aw
+at
+"}
+(7,1,1) = {"
+aT
+aB
+aB
+aI
+aB
+aB
+aB
+aB
+aI
+aY
+aB
+aU
+ar
+ap
+aF
+aw
+aT
+aT
+aT
+aT
+td
+td
+aT
+aF
+aF
+aF
+bR
+aF
+aF
+aT
+"}
+(8,1,1) = {"
+aT
+aB
+aM
+aT
+aM
+aB
+aB
+aM
+aT
+as
+aB
+aJ
+ar
+aF
+aF
+al
+aT
+aH
+aH
+TE
+td
+Lq
+aT
+aF
+aF
+aq
+aF
+aF
+aF
+aT
+"}
+(9,1,1) = {"
+aT
+aB
+aB
+aI
+aB
+aB
+aB
+aB
+aI
+au
+aB
+af
+aT
+aF
+ab
+aF
+an
+aN
+aH
+TE
+td
+td
+aL
+aR
+aF
+aF
+ab
+aw
+aF
+aT
+"}
+(10,1,1) = {"
+aT
+aB
+aB
+af
+aB
+aJ
+aB
+aB
+aI
+ao
+aM
+aV
+aT
+ap
+aF
+aA
+aT
+aH
+aH
+aQ
+td
+td
+aT
+aR
+aF
+aF
+aF
+aF
+aA
+aT
+"}
+(11,1,1) = {"
+aL
+aB
+aB
+aB
+aU
+aB
+aB
+aB
+aB
+ay
+ae
+az
+aT
+aF
+aF
+aF
+aL
+aS
+jH
+TE
+td
+td
+aT
+aP
+aD
+aF
+aw
+aF
+aF
+aT
+"}
+(12,1,1) = {"
+aT
+ae
+ao
+aM
+aa
+aB
+aB
+aB
+aB
+aB
+aU
+aj
+aT
+aF
+aD
+aF
+aT
+aH
+aH
+TE
+Lq
+td
+aT
+aF
+aF
+ab
+aF
+ac
+ac
+aT
+"}
+(13,1,1) = {"
+aT
+aJ
+ad
+aI
+aB
+aB
+aB
+aB
+ae
+aB
+aB
+aG
+aT
+ap
+ab
+aF
+aT
+aT
+aK
+Li
+td
+td
+aT
+TE
+TE
+pW
+TE
+Li
+zy
+aT
+"}
+(14,1,1) = {"
+aT
+aZ
+ay
+aB
+aB
+ae
+ah
+aB
+aB
+aB
+aB
+aa
+aT
+aF
+aF
+aR
+aT
+aX
+aX
+TE
+td
+yw
+aT
+td
+td
+td
+TE
+Lq
+td
+aT
+"}
+(15,1,1) = {"
+aT
+aB
+au
+aB
+aB
+aB
+ak
+aM
+aB
+aB
+aB
+ag
+an
+aF
+aw
+aP
+aT
+aj
+aX
+zy
+td
+td
+aT
+ga
+td
+td
+TE
+td
+td
+aT
+"}
+(16,1,1) = {"
+aT
+aa
+ao
+aI
+aB
+aM
+aB
+aB
+aB
+aB
+aB
+aj
+aT
+aF
+aF
+aF
+aT
+am
+aX
+aK
+Lq
+td
+aT
+td
+tL
+td
+zg
+td
+td
+aT
+"}
+(17,1,1) = {"
+aT
+af
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aM
+aB
+aK
+aF
+aD
+aF
+aT
+aX
+aj
+zy
+za
+za
+aT
+td
+td
+td
+TE
+Lq
+td
+aT
+"}
+(18,1,1) = {"
+an
+aE
+aB
+aB
+aB
+ax
+aM
+aB
+ao
+aB
+aB
+aC
+aK
+aF
+aF
+aA
+aT
+aS
+aX
+TE
+vx
+za
+aT
+td
+tL
+td
+TE
+td
+yw
+aT
+"}
+(19,1,1) = {"
+aT
+af
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aM
+aB
+aK
+aF
+aF
+aw
+aT
+aT
+aK
+Li
+xT
+td
+aT
+xT
+td
+td
+TE
+td
+td
+aT
+"}
+(20,1,1) = {"
+aT
+aa
+ao
+aB
+aB
+aM
+aB
+aB
+aB
+aB
+aB
+aa
+aT
+aF
+aF
+aR
+aT
+aH
+aH
+TE
+td
+xT
+aT
+td
+td
+td
+aQ
+td
+td
+aT
+"}
+(21,1,1) = {"
+aT
+aB
+au
+aI
+aB
+aB
+ak
+aM
+aB
+aB
+aB
+ag
+an
+aF
+aD
+ai
+aT
+aN
+aH
+TE
+Lq
+td
+aT
+td
+td
+Lq
+TE
+td
+td
+aT
+"}
+(22,1,1) = {"
+aT
+aZ
+ay
+aB
+aB
+ae
+ah
+aB
+aB
+aB
+aU
+aG
+aT
+ap
+aF
+aF
+aT
+aS
+aH
+aQ
+td
+td
+aT
+td
+aO
+td
+TE
+td
+td
+at
+"}
+(23,1,1) = {"
+aT
+aJ
+ad
+aM
+aB
+aB
+aB
+aB
+ae
+aB
+aB
+az
+aT
+aF
+ab
+aF
+an
+aH
+jH
+TE
+td
+td
+aT
+td
+aO
+td
+zg
+Lq
+td
+aT
+"}
+(24,1,1) = {"
+aT
+ae
+ao
+aI
+aa
+aB
+aB
+aB
+aB
+ay
+ae
+aV
+aT
+aF
+aF
+aD
+aT
+aH
+aH
+TE
+td
+td
+aT
+td
+td
+td
+TE
+za
+za
+aT
+"}
+(25,1,1) = {"
+aL
+aB
+aB
+aB
+aU
+aB
+aB
+aB
+aI
+ao
+aB
+af
+aT
+ap
+aF
+aF
+aT
+aT
+aT
+Li
+td
+yw
+aT
+td
+td
+td
+TE
+vx
+aW
+aT
+"}
+(26,1,1) = {"
+aT
+aB
+aB
+af
+aB
+aJ
+aB
+aB
+aB
+au
+aM
+aJ
+aT
+aF
+aF
+aA
+aT
+aH
+aH
+TE
+td
+Lq
+aT
+td
+td
+td
+aQ
+td
+td
+aT
+"}
+(27,1,1) = {"
+aT
+aB
+aB
+aI
+aB
+aB
+aB
+aB
+aI
+as
+aM
+aB
+aT
+aF
+aD
+aF
+aL
+aN
+aH
+TE
+xT
+td
+aT
+td
+td
+td
+TE
+td
+td
+aT
+"}
+(28,1,1) = {"
+aT
+aB
+aM
+aT
+aM
+aB
+aB
+aM
+aT
+aY
+aB
+aB
+ar
+ap
+aF
+aw
+aT
+aS
+aH
+aQ
+td
+td
+aT
+td
+td
+Lq
+td
+td
+td
+aT
+"}
+(29,1,1) = {"
+aT
+aB
+aB
+aI
+aB
+aB
+aB
+aB
+aI
+ad
+aB
+aU
+ar
+aF
+aF
+aF
+aT
+aH
+jH
+TE
+td
+td
+aL
+td
+Lq
+td
+td
+td
+xT
+aT
+"}
+(30,1,1) = {"
+aT
+aZ
+aB
+aB
+aB
+aB
+aB
+aB
+aI
+ay
+aB
+aC
+ar
+aF
+ab
+aF
+aT
+aH
+aH
+TE
+td
+Lq
+aT
+td
+aO
+td
+td
+td
+yw
+aT
+"}
+(31,1,1) = {"
+aT
+aG
+aE
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aB
+aG
+ar
+ap
+aw
+aF
+aT
+aT
+aT
+Li
+td
+td
+aQ
+td
+aO
+td
+td
+td
+td
+aT
+"}
+(32,1,1) = {"
+aT
+aB
+aC
+aU
+aJ
+aB
+aB
+aj
+aa
+aB
+aB
+aC
+ar
+aF
+aF
+aF
+aT
+aO
+aO
+TE
+td
+td
+aT
+ga
+td
+td
+td
+td
+td
+aT
+"}
+(33,1,1) = {"
+aT
+aE
+aW
+af
+aB
+az
+aB
+aB
+ag
+aB
+aE
+aB
+aT
+aF
+aF
+ac
+aT
+td
+td
+aQ
+td
+yw
+aT
+td
+td
+td
+td
+Lq
+td
+aT
+"}
+(34,1,1) = {"
+aT
+aB
+aB
+aG
+aB
+aB
+aG
+aB
+aB
+aG
+aW
+aB
+aT
+aF
+ah
+ac
+aT
+aO
+aO
+TE
+td
+td
+aT
+td
+td
+xT
+td
+td
+td
+aT
+"}
+(35,1,1) = {"
+aT
+aT
+aT
+at
+aT
+aT
+an
+aT
+aT
+at
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+aT
+at
+aT
+aT
+aT
+aT
+"}

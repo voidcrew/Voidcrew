@@ -27,14 +27,14 @@
 
 /obj/item/gun_part/l6_saw
 	name = "L6 SAW receiver"
-	desc = "The machined receiver assembly for an L6 SAW light machine gun. Its schematic's crafting recipe turns it into the finished weapon."
+	desc = "The machined receiver assembly for an L6 SAW light machine gun. You'll need the matching schematic to build it into a working gun."
 	icon_state = "l6"
 
 // --- Protolathe part design --------------------------------------------------
 
 /datum/design/gun_part_l6_saw
 	name = "L6 SAW Receiver"
-	desc = "A machined receiver assembly for an L6 SAW. Inert until crafted into the finished gun."
+	desc = "A machined receiver assembly for an L6 SAW. Not a working gun on its own."
 	id = "vc_gun_part_l6_saw"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(
@@ -70,7 +70,7 @@
 /datum/techweb_node/weapon_part_l6_saw
 	id = TECHWEB_NODE_WEAPON_PART_L6_SAW
 	display_name = "L6 SAW Schematics"
-	description = "Reverse-engineered receiver schematics for the L6 SAW. Unlocks protolathe production of its receiver assembly -- the gated half of the gun."
+	description = "Reverse-engineered receiver schematics for the L6 SAW. Unlocks protolathe production of its receiver assembly, the hard half of the gun."
 	prereq_ids = list(TECHWEB_NODE_EXOTIC_AMMO)
 	design_ids = list("vc_gun_part_l6_saw")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)

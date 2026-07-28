@@ -36,8 +36,8 @@
 
 /obj/machinery/cloning_vat
 	name = "cloning vat"
-	desc = "A tank of murky nutrient fluid that can slowly grow a spare body from an imprinted genetic pattern. \
-		The pattern must be taken from a living subject - it cannot raise the dead, only those who planned ahead."
+	desc = "A tank of murky nutrient fluid that slowly grows a spare body from an imprinted genetic pattern. \
+		The pattern has to be taken from someone who's still alive, so you need to plan ahead."
 	icon = 'voidcrew/icons/obj/machines/cloning_vat.dmi'
 	icon_state = "pod_0"
 	base_icon_state = "pod"
@@ -114,7 +114,7 @@
 		return
 	. += span_notice("It is imprinted with the genetic pattern of <b>[imprint_name]</b>. Re-imprinting it will discard that pattern.")
 	if(body_ready)
-		. += span_boldnotice("The clone inside is fully grown. Should [imprint_name] die, their ghost can click the vat to be reborn.")
+		. += span_boldnotice("The clone inside is fully grown. If [imprint_name] dies, their ghost can click the vat to wake up in it.")
 	else
 		. += span_notice("The clone inside is [get_growth_percent()]% grown.")
 	if(!is_operational || !anchored)
@@ -140,14 +140,14 @@
 		return null
 	var/datum/mind/mind = imprint_mind_ref.resolve()
 	if(isnull(mind))
-		expire_imprint("The stored pattern has degraded into static.")
+		expire_imprint("The stored pattern has degraded into noise.")
 		return null
 	// If the player behind this mind is off being someone else (alive), the imprint is stale.
 	var/client/holder_client = GLOB.directory[ckey(mind.key)]
 	if(holder_client && isliving(holder_client.mob))
 		var/mob/living/live_mob = holder_client.mob
 		if(live_mob.stat != DEAD && live_mob.mind && live_mob.mind != mind)
-			expire_imprint("The stored pattern no longer matches any living neural signature, and is purged.")
+			expire_imprint("The stored pattern no longer matches a living neural signature, and is purged.")
 			return null
 	return mind
 
@@ -184,10 +184,10 @@
 		growth_progress = max(0, growth_progress - seconds_per_tick * 10 * CLONING_VAT_DECAY_MULT)
 		if(body_ready && growth_progress < growth_time)
 			body_ready = FALSE
-			visible_message(span_warning("The clone in [src] twitches as its nutrient supply fails."))
+			visible_message(span_warning("The clone in [src] twitches as the nutrient feed cuts out."))
 			update_appearance(UPDATE_ICON_STATE)
 		if(growth_progress <= 0)
-			visible_message(span_warning("The half-formed clone in [src] dissolves into the murk."))
+			visible_message(span_warning("The half-formed clone in [src] dissolves into the fluid."))
 			update_appearance(UPDATE_ICON_STATE)
 		return
 
@@ -284,7 +284,7 @@
 	else if(existing)
 		prompt = "The vat holds the pattern of [imprint_name]. Overwrite it with your own[growth_progress > 0 ? ", dissolving the clone inside" : ""]?"
 	else
-		prompt = "Imprint your genetic pattern? The vat will begin growing a mindless spare body for you to wake up in should you die."
+		prompt = "Imprint your genetic pattern? The vat will start growing a mindless spare body for you to wake up in if you die."
 
 	if(tgui_alert(user, prompt, name, list("Imprint", "Cancel")) != "Imprint")
 		return
@@ -309,7 +309,7 @@
 	if(had_clone)
 		visible_message(span_warning("The old clone in [src] dissolves as a new pattern is imprinted."))
 	balloon_alert(user, "pattern imprinted")
-	to_chat(user, span_notice("[src] hums to life and begins growing a new body. It will take about [DisplayTimeText(growth_time)] to finish - and to regrow after every use."))
+	to_chat(user, span_notice("[src] hums to life and starts growing a new body. It'll take about [DisplayTimeText(growth_time)], and just as long to regrow after every use."))
 
 // ---------------------------------------------------------------------------
 // Claiming (ghosts)
@@ -366,7 +366,7 @@
 	clone.adjust_dizzy(30 SECONDS)
 	clone.adjust_eye_blur(20 SECONDS)
 	clone.emote("gasp")
-	to_chat(clone, span_boldnotice("Consciousness floods back into a brand-new body. You gasp and retch as the vat's fluids drain from your lungs."))
+	to_chat(clone, span_boldnotice("You wake up in a brand-new body, gasping and retching as the vat's fluid drains out of your lungs."))
 	to_chat(clone, span_notice("Everything you were carrying is still on your old corpse."))
 	clone.log_message("was reborn from a cloning vat imprint.", LOG_GAME)
 
@@ -445,7 +445,7 @@
 /datum/techweb_node/vat_cloning
 	id = "vat_cloning"
 	display_name = "Vat Cloning"
-	description = "Grow a mindless spare body from a genetic imprint, ready to wake up in when the worst happens. Strictly pay-in-advance."
+	description = "Grows a mindless spare body from a genetic imprint, ready to wake up in when you die. The imprint has to be taken while you're still alive."
 	prereq_ids = list(TECHWEB_NODE_MEDBAY_EQUIP_ADV)
 	design_ids = list("cloning_vat")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)

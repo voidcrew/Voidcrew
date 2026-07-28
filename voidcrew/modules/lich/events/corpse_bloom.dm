@@ -119,8 +119,8 @@
 		return FALSE
 
 	riser.name = "risen [corpse.real_name || corpse.name]"
-	riser.desc = "The skeleton of [corpse.real_name || corpse.name], walking around outside of them. \
-		It is wearing a faint green light where its eyes used to be."
+	riser.desc = "The skeleton of [corpse.real_name || corpse.name], up and walking without the rest of them. \
+		There's a faint green light where the eyes should be."
 	rise_turf.visible_message(span_boldwarning("The bones tear their way out of [corpse] and stand up!"))
 	playsound(rise_turf, 'sound/effects/magic/RATTLEMEBONES2.ogg', 60, TRUE)
 	do_smoke(0, holder = riser, location = rise_turf)

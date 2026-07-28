@@ -62,9 +62,9 @@
 
 /datum/round_event/voidcrew/lich/unquiet_menagerie/announce(fake)
 	lich_announce_ship(
-		"I reached for your dead and found only pets. Very well — a lesser working, then. \
-		Life is a pattern and patterns can be repeated, and repeated, and repeated. \
-		You may cull them if it comforts you. It comforts me either way.",
+		"I reached for your dead and found only pets. Fine. A living thing is a pattern, \
+		and a pattern can be copied, and copied, and copied. \
+		Cull them if it makes you feel better.",
 		"Unquiet Menagerie",
 	)
 

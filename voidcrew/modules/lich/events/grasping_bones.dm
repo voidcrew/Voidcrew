@@ -61,8 +61,8 @@
 /datum/round_event/voidcrew/lich/grasping_bones/announce(fake)
 	lich_announce_ship(
 		"Everything you have ever picked up remembers being held. I have reminded it. \
-		Your tools want to be inside you now, and I have granted them the shape to manage it. \
-		Throw nothing. Drop nothing. Try to be still.",
+		Your tools want to be inside you now, and I have given them the shape for it. \
+		Throw nothing. Drop nothing.",
 		"Grasping Bones",
 		'sound/effects/magic/summon_magic.ogg',
 	)

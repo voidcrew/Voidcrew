@@ -95,7 +95,7 @@
 /// wearer's own voice back into the channel.
 /obj/item/radio/headset/listening_coin_earpiece
 	name = "unmarked earpiece"
-	desc = "A tiny earpiece with no manufacturer stamp. Tuned to something."
+	desc = "A tiny earpiece with no manufacturer stamp. It's locked to one private frequency."
 	// Same clamp-dodge as the coin — the pair lives outside the public band
 	freerange = TRUE
 
@@ -122,7 +122,7 @@
  */
 /obj/item/clothing/gloves/courier
 	name = "courier's palm"
-	desc = "One thin glove, kid leather, fingertips shiny with use. The other one is wherever the courier is."
+	desc = "One thin kid-leather glove, fingertips shiny with use. Lifting something from a person's hands or pockets takes no time at all."
 	// Sprite copied via subtyping botanic_leather (code/modules/clothing/gloves/botany.dm)
 	icon_state = "leather"
 	inhand_icon_state = null
@@ -230,7 +230,7 @@
  */
 /obj/item/static_cuff
 	name = "static cuff"
-	desc = "A wrist unit with no branding and one switch. The switch position is labeled in grease pencil: NO."
+	desc = "A wrist unit with no branding and a single switch, labeled in grease pencil: NO. Switched on, cameras and the AI can't track you."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "static_cuff"
 	worn_icon_state = "handcuff"
@@ -453,7 +453,7 @@
 
 /obj/item/clothing/suit/hooded/cloak/second_shadow
 	name = "Second Shadow"
-	desc = "A cloak the color of a corridor at 3 AM. It moves a half-second after you do."
+	desc = "A heavy dark cloak that seems to move half a second after you do. With the hood up, a hit that would put you down leaves a decoy standing there instead."
 	// Custom folded-cloak obj icon. The worn sprite borrows the goliath cloak,
 	// darkened to match the flavor, copied into uniques_worn.dmi: the hood
 	// component (toggle_attached_clothing) overwrites worn_icon_state with
@@ -530,7 +530,7 @@
 	decoy.setDir(wearer.dir)
 
 	wearer.visible_message(
-		span_warning("The blow passes clean through [wearer] as their shape flickers and slips aside!"),
+		span_warning("The blow passes clean through [wearer], and the shape flickers and slips aside!"),
 		span_userdanger("The cloak snaps you out of the way — the hit lands on empty air!"),
 	)
 
@@ -615,10 +615,10 @@
 /obj/item/knife/understudy/attack_self(mob/user)
 	. = ..()
 	if(!ishuman(user))
-		to_chat(user, span_warning("You'd need a human face to sell this performance."))
+		to_chat(user, span_warning("You'd need a human face to pull this off."))
 		return
 	if(isnull(marked_target_ref))
-		to_chat(user, span_warning("There's nobody to take the part of right now."))
+		to_chat(user, span_warning("You haven't put anyone down recently enough to copy."))
 		return
 	var/mob/living/carbon/human/target = marked_target_ref.resolve()
 	if(!istype(target))
@@ -631,7 +631,7 @@
 	if(existing)
 		qdel(existing) // one performance at a time; taking a new face ends the old one
 	actor.apply_status_effect(/datum/status_effect/understudy_disguise, target, disguise_duration)
-	to_chat(actor, span_notice("You take on [target]'s part."))
+	to_chat(actor, span_notice("You take on [target]'s face and voice."))
 	deltimer(mark_timer_id)
 	clear_mark()
 

@@ -612,7 +612,7 @@ GLOBAL_LIST_EMPTY(nebula_events)
 		if(acting.is_interdicted)
 			to_chat(user, span_warning("Cannot hide while interdicted!"))
 		else if(acting.is_scoop_hot())
-			to_chat(user, span_warning("Ram scoop emissions are lighting the ship up — cannot engage concealment!"))
+			to_chat(user, span_warning("Cannot hide while the ram scoop is running!"))
 		else
 			to_chat(user, span_warning("Cannot engage nebula concealment here."))
 		return

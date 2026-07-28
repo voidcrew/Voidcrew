@@ -207,7 +207,7 @@
 
 /datum/shop_buyback/dregs/moonshine
 	name = "genuine moonshine"
-	desc = "The real article, still-made and proud of it. The red-zone regulars can taste a lie."
+	desc = "The real article, still-made. Dram's regulars can tell the difference, and they will say so loudly."
 	category = "The Cellar"
 	item_path = /obj/item/reagent_containers/cup/glass/bottle/moonshine
 	pay_credits = 150
@@ -409,7 +409,7 @@
 /datum/shop_sku/clinic/morphine_bottle
 	category = "Pharmacy"
 	name = "morphine bottle"
-	desc = "For pain management. The management of whose pain is left to the customer."
+	desc = "For pain management. Whose pain is your business."
 	item_path = /obj/item/reagent_containers/cup/bottle/morphine
 	price_credits = 300
 	stock_min = 1
@@ -449,7 +449,7 @@
 /datum/shop_sku/clinic/mystery_pills
 	category = "Back Room"
 	name = "mystery pills"
-	desc = "A bottle of assorted maintenance-grade pharmaceuticals. Sawbones calls it a sampler. The label calls it nothing."
+	desc = "A bottle of assorted maintenance-grade pharmaceuticals. Sawbones calls it a sampler. There is no label."
 	item_path = /obj/item/storage/pill_bottle/maintenance_pill
 	price_credits = 75
 	stock_min = 2
@@ -494,7 +494,7 @@
 /datum/shop_sku/clinic/autosurgeon
 	category = "Spare Parts"
 	name = "autosurgeon"
-	desc = "Load an organ, press against chest, look away. Sawbones calls it 'the layaway plan'."
+	desc = "Load an organ, press it against your chest, look away. Surgery for people who don't have a surgeon."
 	item_path = /obj/item/autosurgeon
 	price_credits = 400
 	stock_min = 1

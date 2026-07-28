@@ -683,11 +683,11 @@
 				return
 			var/obj/structure/overmap/space_ruin/ruin = current_ship.reveal_pending_rumor(chart)
 			if(!ruin)
-				say("ERROR: Unable to fix the rumor's coordinates. Retry shortly.")
+				say("ERROR: Unable to pin down the rumor's coordinates. Retry shortly.")
 				playsound(src, 'sound/machines/terminal/terminal_error.ogg', 30)
 				return
 			var/list/coords = ruin.get_relative_overmap_coords()
-			say("Rumor decrypted: rare signal fixed at ([coords[1]], [coords[2]]). Charted under Rumors.")
+			say("Rumor decrypted: rare signal located at ([coords[1]], [coords[2]]). Charted under Rumors.")
 			playsound(src, 'sound/machines/ping.ogg', 40)
 			return
 		if("reload_ship")

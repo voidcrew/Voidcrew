@@ -106,7 +106,7 @@
 			user.add_movespeed_modifier(/datum/movespeed_modifier/cheats_deck_luck)
 			addtimer(CALLBACK(user, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/cheats_deck_luck), 5 SECONDS)
 		if("nerve")
-			to_chat(user, span_notice("Luck holds the door for you, just this once."))
+			to_chat(user, span_notice("You feel steady. Nothing's knocking you down right now."))
 			ADD_TRAIT(user, TRAIT_STUNIMMUNE, CHEATS_DECK_TRAIT_SOURCE)
 			addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cheats_deck_clear_stunimmune), user), 4 SECONDS)
 		if("heal")
@@ -114,7 +114,7 @@
 			user.adjustBruteLoss(-5)
 			user.adjustStaminaLoss(-15)
 		if("windfall")
-			to_chat(user, span_notice("A coin turns up in your pocket you don't remember having."))
+			to_chat(user, span_notice("You find a coin in your pocket you don't remember putting there."))
 			var/obj/item/stack/spacecash/c10/found_coin = new(get_turf(user))
 			user.put_in_hands(found_coin)
 		if("tangle")
@@ -154,7 +154,7 @@
 /// stacking real drunkenness on top (it's still just rum).
 /obj/item/reagent_containers/cup/glass/bottle/bottomless_ration
 	name = "the bottomless ration"
-	desc = "A rum bottle with a false bottom that turned out not to be false enough."
+	desc = "A rum bottle with a false bottom. However much you drink, there's always exactly as much left."
 	/// Recent swig timestamps, keyed by drinker ref, trimmed to the last minute.
 	var/list/swig_log = list()
 
@@ -194,7 +194,7 @@
 		if(2)
 			to_chat(target_mob, span_warning("The rum's really working now."))
 		if(3 to INFINITY)
-			to_chat(target_mob, span_userdanger("Third swig — you're in no shape to be trusted with the rigging."))
+			to_chat(target_mob, span_userdanger("Third swig, and you're properly drunk now."))
 
 /obj/item/reagent_containers/cup/glass/bottle/bottomless_ration/proc/clear_liquid_courage(mob/living/target_mob)
 	if(!QDELETED(target_mob))
@@ -221,7 +221,7 @@
 /// you, or — if you hook something anchored — hauls you to it instead.
 /obj/item/gun/magic/hook/marlinspike
 	name = "marlinspike"
-	desc = "A boarding hook on six meters of braided line. The knots have names."
+	desc = "A boarding hook on six meters of braided line. Yanks a target to you, or yanks you to it if the target is bolted down."
 	ammo_type = /obj/item/ammo_casing/magic/hook/marlinspike
 	force = 10
 
@@ -291,13 +291,15 @@
 /// view glint through crates and containers.
 /obj/item/clothing/glasses/eyepatch/fences_eye
 	name = "fence's eye"
-	desc = "A jeweler's monocle on a chain of five different broken chains."
+	desc = "A jeweler's monocle hung on a chain cobbled together from five other chains. Look twice at anything to see what a trader would pay for it."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "monocle"
 	base_icon_state = "monocle"
 	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
-	// attack_self only works in-hand; the action button keeps "call the
-	// market" reachable while the monocle is actually being worn
+	// The squint lives on the action button, not attack_self: an in-hand
+	// click flips the patch (inherited behavior) and must not burn the
+	// ten-minute cooldown. Item actions are granted in the hands as well as
+	// in the eye slot, so the button covers both cases.
 	actions_types = list(/datum/action/item_action/toggle)
 	COOLDOWN_DECLARE(squint_cooldown)
 
@@ -328,22 +330,23 @@
 
 /// The click-to-use "call the market" squint: outlines the most valuable
 /// visible item (even through crates/lockers) for a few seconds.
-/obj/item/clothing/glasses/eyepatch/fences_eye/attack_self(mob/user, modifiers)
-	. = ..() // preserves the inherited eyepatch flip toggle
-	squint(user)
-
-/// Worn-slot route to the squint — the action button's default would call
-/// attack_self, which also flips the eyepatch; go straight to the squint.
+/// Hung off the action button rather than attack_self: attack_self is the
+/// parent eyepatch's cosmetic flip, and flipping the patch must not burn the
+/// squint's ten-minute cooldown.
 /obj/item/clothing/glasses/eyepatch/fences_eye/ui_action_click(mob/user, actiontype)
 	squint(user)
 
 /obj/item/clothing/glasses/eyepatch/fences_eye/proc/squint(mob/living/user)
 	if(!COOLDOWN_FINISHED(src, squint_cooldown))
-		balloon_alert(user, "the market's still quiet")
+		balloon_alert(user, "still cooling down")
 		return
 	COOLDOWN_START(src, squint_cooldown, FENCES_EYE_SQUINT_COOLDOWN)
 	var/list/candidates = list()
 	for(var/atom/movable/nearby in view(FENCES_EYE_SQUINT_RANGE, user))
+		// Skip the living: a mob's contents are its worn gear and its organs,
+		// and neither is treasure the eye should be pricing up.
+		if(isliving(nearby))
+			continue
 		if(isitem(nearby))
 			candidates += nearby
 		for(var/obj/item/stashed in nearby.contents)
@@ -356,7 +359,7 @@
 			best_value = value
 			best = candidate
 	if(!best)
-		balloon_alert(user, "nothing worth calling about")
+		balloon_alert(user, "nothing valuable nearby")
 		return
 	to_chat(user, span_notice("Something glints through the clutter: [best]."))
 	best.add_filter("fences_eye_glint", 2, list("type" = "outline", "color" = COLOR_GOLD, "size" = 1))
@@ -392,7 +395,7 @@
 /// target is staggered, or if Parley itself just blocked something.
 /obj/item/claymore/cutlass/parley
 	name = "\"Parley\""
-	desc = "A cutlass with a swept guard full of notches. They're not kills. They're confiscations."
+	desc = "A cutlass with a swept guard full of notches. Every so often a hit will twist a weapon clean out of someone's hand."
 	COOLDOWN_DECLARE(disarm_cooldown)
 	/// world.time of the last successful block with this blade.
 	var/last_block_time = 0
@@ -463,7 +466,7 @@
 /// GPS signal of its own.
 /obj/item/gps/deadmans_compass
 	name = "dead man's compass"
-	desc = "The needle is a splinter of bone. It doesn't point north. It never claimed to."
+	desc = "A brass compass with a splinter of bone for a needle. It doesn't point north - it points at the most valuable thing nearby."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "brass_compass"
 	gpstag = null
@@ -534,11 +537,11 @@
 /obj/item/gps/deadmans_compass/attack_self(mob/user, modifiers)
 	. = ..()
 	if(!length(tracked_candidates))
-		balloon_alert(user, "the needle just drifts")
+		balloon_alert(user, "the needle just spins")
 		return
 	candidate_index = (candidate_index + 1) % length(tracked_candidates)
 	sulking_until = world.time + COMPASS_SULK_TIME
-	balloon_alert(user, "the needle sulks, then settles")
+	balloon_alert(user, "the needle swings around")
 
 #undef COMPASS_SULK_TIME
 #undef COMPASS_SCAN_INTERVAL
@@ -569,7 +572,7 @@
 /// six tiles. A full minute, at a bench, to load the next cartridge.
 /obj/item/gun/ballistic/shotgun/musket/no_quarter
 	name = "\"No Quarter\""
-	desc = "A flintlock hand cannon dressed up as a boltloading musket. The bore is wide enough to be a design statement."
+	desc = "A flintlock hand cannon dressed up as a boltloading musket. One shot, and the bore is wide enough to put your thumb in."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "no_quarter"
 	// base musket sets inhand_icon_state = "donk_musket" — override so the

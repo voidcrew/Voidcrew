@@ -44,7 +44,7 @@
  */
 /obj/machinery/door/airlock/sandstone/colosseum/vault
 	name = "spoils chamber door"
-	desc = "A heavy sandstone door onto the trophy chamber. It knows who won."
+	desc = "A heavy sandstone door onto the trophy chamber. While a claim window is running it only opens for the winners."
 
 /obj/machinery/door/airlock/sandstone/colosseum/vault/allowed(mob/M)
 	var/datum/colosseum_controller/controller = GLOB.colosseum_site?.controller
@@ -84,7 +84,7 @@
  */
 /obj/machinery/status_display/colosseum
 	name = "games board"
-	desc = "An ancient annunciator board, retrofitted a dozen times over. It has counted down to more bloodshed than any living thing in the sector."
+	desc = "An ancient annunciator board, retrofitted a dozen times over. It counts down to the next fight."
 	current_mode = SD_MESSAGE
 	use_power = NO_POWER_USE
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
@@ -200,7 +200,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/colosseum, 0)
  */
 /obj/item/storage/briefcase/secure/extraction/tournament
 	name = "champion's extraction case"
-	desc = "A gilded extraction case bearing the Grand Colosseum's laurels. Spoils in this case are honored over and above a standard extraction case."
+	desc = "A gilded extraction case stamped with the Grand Colosseum's laurels. It extracts on top of your normal extraction case, not instead of it."
 	icon = 'voidcrew/modules/colosseum/icons/colosseum.dmi'
 	icon_state = "tournament_case"
 	inhand_icon_state = "tournament_case"
@@ -251,13 +251,13 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/colosseum, 0)
 	. = ..()
 	var/datum/colosseum_controller/controller = site?.controller
 	if(!controller)
-		. += span_warning("The ledger is blank — the venue is dormant.")
+		. += span_warning("The ledger is blank. The venue is dormant.")
 		return
 	switch(controller.state)
 		if(COLOSSEUM_STATE_IDLE)
 			. += span_notice("Registration is closed. [controller.can_open_signup() ? "Anyone may petition the Master of Games to open it." : "The wardens are still preparing the venue."]")
 		if(COLOSSEUM_STATE_SIGNUP)
-			. += span_boldnotice("Registration is OPEN — [DisplayTimeText(controller.signup_closes_at - world.time)] remaining.")
+			. += span_boldnotice("Registration is OPEN. [DisplayTimeText(controller.signup_closes_at - world.time)] remaining.")
 		if(COLOSSEUM_STATE_SEATING)
 			. += span_notice("The roster is locked. Contestants are being seated.")
 		if(COLOSSEUM_STATE_LIVE)
@@ -296,7 +296,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/colosseum, 0)
 				balloon_alert(user, "registration open!")
 		if(COLOSSEUM_STATE_SIGNUP)
 			if(user.stat == DEAD)
-				balloon_alert(user, "the dead may only spectate!")
+				balloon_alert(user, "dead can only spectate!")
 				return
 			if(controller.entry_for_mind(user.mind))
 				var/choice = tgui_alert(user, "You are on the roster. Withdraw?", "Withdraw", list("Withdraw", "Stay In"))
@@ -324,7 +324,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/camera/colosseum, 0)
  */
 /obj/machinery/colosseum_vault
 	name = "spoils vault"
-	desc = "An armored prize vault. Everything that falls on the sand ends up in here — and the winners get first pick."
+	desc = "An armored prize vault. Everything left on the sand ends up in here, and the winners get first pick."
 	icon = 'voidcrew/modules/colosseum/icons/colosseum.dmi'
 	icon_state = "colosseum_vault"
 	density = TRUE

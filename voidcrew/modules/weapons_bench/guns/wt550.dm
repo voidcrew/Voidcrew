@@ -22,12 +22,12 @@
 
 /obj/item/gun_part/wt550
 	name = "WT-550 receiver"
-	desc = "The machined receiver assembly for a WT-550 autorifle. Its schematic's crafting recipe turns it into the finished weapon."
+	desc = "The machined receiver assembly for a WT-550 autorifle. You'll need the matching schematic to build it into a working gun."
 	icon_state = "wt550"
 
 /datum/design/gun_part_wt550
 	name = "WT-550 Receiver"
-	desc = "A machined receiver assembly for a WT-550 autorifle. Inert until crafted into the finished gun."
+	desc = "A machined receiver assembly for a WT-550 autorifle. Not a working gun on its own."
 	id = "vc_gun_part_wt550"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(

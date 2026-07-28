@@ -19,6 +19,7 @@
 
 #define PATRON_OPTION_SPEAK "Speak"
 #define PATRON_OPTION_PACT "Pact"
+#define PATRON_OPTION_ASCEND "Ascend"
 
 /mob/living/basic/vestige_patron
 	name = "vestige"
@@ -36,7 +37,20 @@
 
 	/// Trial typepaths this patron can assign (one rolled per supplicant, sticky until fulfilled)
 	var/list/trial_types = list()
-	/// Boon typepaths this patron pays out of (see boon.dm; upgrades gate themselves via upgrades_from)
+	/**
+	 * Boon typepaths this patron pays out of (see boon.dm; upgrades gate themselves
+	 * via upgrades_from).
+	 *
+	 * POOLS MUST STAY DISJOINT. No boon typepath may appear in two patrons' lists.
+	 * A trial snapshots its patron's pool when the pact is struck and only rechecks
+	 * eligibility at completion, and a supplicant may hold only one pact and one
+	 * unclaimed reward at a time. Together those keep a pool from emptying out
+	 * underneath a running pact. Share a boon between two patrons and that breaks:
+	 * the supplicant can take the shared boon elsewhere mid-pact, complete to an
+	 * empty pool, and spend the trial for nothing (trial.dm, offer_reward) with no
+	 * way to retake it. If you ever need two patrons to offer the same ability,
+	 * give each its own /datum/vestige_boon subtype rather than sharing one.
+	 */
 	var/list/boon_types = list()
 	/// Outfit dressed onto the appearance dummy
 	var/outfit_path
@@ -45,19 +59,19 @@
 	/// Random lines for Speak
 	var/list/idle_lines = list()
 	/// Said when a pact is struck
-	var/accept_line = "It is agreed."
+	var/accept_line = "Then we have a deal."
 	/// Said when the supplicant already carries a different unfinished pact
-	var/busy_line = "Finish what you began, or renounce it."
+	var/busy_line = "Finish what you started, or renounce it."
 	/// Said about a trial already fulfilled
-	var/fulfilled_line = "That debt is paid."
+	var/fulfilled_line = "You've done everything I had to ask."
 	/// Said when a pact is renounced
 	var/renounce_line = "Weakness."
 	/// Said when the supplicant has an unclaimed boon owed to them
-	var/claim_line = "You are owed. Claim it before you ask for more."
+	var/claim_line = "I still owe you. Take your payment before you ask for more work."
 	/// Said when no boon remains that this patron could pay out
-	var/exhausted_line = "You have taken all I had to give."
+	var/exhausted_line = "You've taken everything I had to give."
 	/// Said when a respawned soul's lost vestige legacy is restored
-	var/remember_line = "The pact outlives the flesh. What was yours returns to you."
+	var/remember_line = "Dying doesn't cancel our deal. Take back what was yours."
 	COOLDOWN_DECLARE(speak_cooldown)
 
 /mob/living/basic/vestige_patron/Initialize(mapload)
@@ -71,13 +85,13 @@
 
 /mob/living/basic/vestige_patron/examine(mob/user)
 	. = ..()
-	. += span_notice("A tap on the shoulder — if you dare — opens negotiations.")
+	. += span_notice("Touch it if you want to talk.")
 	var/datum/vestige_trial/active = user.mind?.active_vestige_trial
 	if(active && (active.type in trial_types))
 		. += span_boldnotice("Your pact: [active.name]. [active.get_progress_text()]")
 	var/datum/action/vestige_reward/pending = user.mind?.vestige_pending_reward
 	if(pending && pending.patron_name == name)
-		. += span_boldnotice("A debt is owed to you. Speak, and claim it.")
+		. += span_boldnotice("It still owes you a boon. Talk to it to collect.")
 
 /mob/living/basic/vestige_patron/attack_hand(mob/living/carbon/human/user, list/modifiers)
 	if(user.combat_mode)
@@ -88,12 +102,16 @@
 
 /mob/living/basic/vestige_patron/proc/open_patron_menu(mob/living/user)
 	if(!user.mind)
-		to_chat(user, span_warning("[src] looks through you as if you weren't there at all."))
+		to_chat(user, span_warning("[src] doesn't react to you at all."))
 		return
 	var/list/options = list(
 		PATRON_OPTION_SPEAK = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_talk"),
-		PATRON_OPTION_PACT = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_lore"),
+		PATRON_OPTION_PACT = image(icon = 'voidcrew/icons/hud/radial.dmi', icon_state = "radial_quest"),
 	)
+	// The capstone option only exists once this patron has nothing left to ask
+	// (ascension.dm). Every other refusal is spoken rather than hidden.
+	if(should_offer_ascension(user))
+		options[PATRON_OPTION_ASCEND] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_lore")
 	var/choice = show_radial_menu(user, src, options, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE, tooltips = TRUE)
 	if(!choice || !check_menu(user))
 		return
@@ -102,6 +120,25 @@
 			speak_line()
 		if(PATRON_OPTION_PACT)
 			offer_pact(user)
+		if(PATRON_OPTION_ASCEND)
+			offer_ascension(user)
+
+/**
+ * Whether to show the capstone option at all: this patron hosts one, and this
+ * soul has fulfilled every trial it has. Deliberately NOT the full eligibility
+ * check — the round-time gate and the one-capstone-per-soul lock are refusals the
+ * patron says out loud, so a maxed-out supplicant always sees that the door exists.
+ */
+/mob/living/basic/vestige_patron/proc/should_offer_ascension(mob/living/user)
+	if(!hosts_ascension())
+		return FALSE
+	var/datum/vestige_record/record = get_vestige_record(user?.mind)
+	if(!record)
+		return FALSE
+	for(var/trial_type in trial_types)
+		if(!(trial_type in record.completed_trials))
+			return FALSE
+	return TRUE
 
 /// Radial validity: supplicant still there, still conscious, still adjacent
 /mob/living/basic/vestige_patron/proc/check_menu(mob/living/user)
@@ -238,3 +275,4 @@
 
 #undef PATRON_OPTION_SPEAK
 #undef PATRON_OPTION_PACT
+#undef PATRON_OPTION_ASCEND

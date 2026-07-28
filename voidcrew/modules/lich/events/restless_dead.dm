@@ -39,9 +39,8 @@
 
 /datum/round_event/voidcrew/lich/restless_dead/announce(fake)
 	lich_announce_galaxy(
-		"I have opened a small door. Nothing has come through it — nothing needed to. \
-		Your dead were always standing exactly where you left them; you were simply \
-		spared the sight. You are spared nothing now. Look at them. Learn their faces. \
-		You will be joining the arrangement shortly.",
+		"I have opened a small door. Nothing came through it; nothing needed to. \
+		Your dead have always been standing exactly where you left them, and now you can \
+		see them. Look at their faces. You will be joining them soon enough.",
 		"A Small Courtesy",
 	)

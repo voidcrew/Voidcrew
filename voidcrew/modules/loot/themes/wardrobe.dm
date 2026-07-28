@@ -81,5 +81,5 @@
 
 /obj/structure/closet/crate/zone_loot/wardrobe/rare
 	name = "couturier's trunk"
-	desc = "A tailor's traveling trunk, latches polished by use. Dressing well is the best revenge."
+	desc = "A tailor's traveling trunk, latches polished by use. Somebody's entire wardrobe is packed in here."
 	rare = TRUE

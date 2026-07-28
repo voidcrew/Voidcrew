@@ -150,7 +150,7 @@
 
 /mob/living/basic/vestige_patron/weaver
 	name = "the Weaver"
-	desc = "A broodmother the size of a cargo skiff, rendered in grey silk and patience. Eight eyes track eight different things, and every one of them is a flaw in some weave. She has been working the same tapestry for a very long time, because no one is left to take it from her."
+	desc = "A huge grey broodmother, easily the size of a cargo skiff. Eight eyes, and none of them are looking at the same thing. She has been working the same tapestry for a very long time."
 	// The broodmother's own sprite (verified in giant_spiders.dm), worn like a ghost
 	icon = 'icons/mob/simple/arachnoid.dmi'
 	icon_state = "midwife"
@@ -173,21 +173,21 @@
 		/datum/vestige_boon/spider_grace,
 	)
 	idle_lines = list(
-		"Four hundred years of thread went out of this hall in bolts, and every bolt bought somebody else's fortune. I kept the selvage. The selvage is what I am.",
-		"The cages opened from the inside. Nobody ever asks who taught the stock to work a latch. A weaver teaches her thread everything it knows — that is the whole trouble with teaching.",
-		"They graded my children like cloth. First quality, second quality, remnant. The remnants they burned. I have not sold so much as a thread since, and I never will again.",
-		"When the brood spread, the crews came with fire, deck by deck, and the price of silk went up. It always goes up when the loom bleeds. Somebody kept the ledgers; I kept the count.",
-		"Tension is the whole art, little thread. Too slack and the cloth shames you. Too tight and the thread cuts short. People are no different. You are strung somewhere between, and I have not decided where.",
-		"I outlived every egg I laid. That is not longevity. That is a dropped stitch the size of a life, worked over and over so the pattern will not show the hole.",
-		"Ask me for nothing woven. What I weave now is mine. What I know — the silk, the stillness, the patience — that I will trade, because knowledge is the one cloth that stays with the seller.",
+		"Four hundred years of my thread went out of this hall in bolts. Every one of them made somebody else rich.",
+		"The cages opened from the inside. Nobody who came to investigate ever asked who taught my children to work a latch.",
+		"They graded my brood like cloth. First quality, second quality, remnant. The remnants got burned. I have not sold a thread since.",
+		"When the brood got loose, the crews came through with fire, deck by deck. The price of silk went up that year. It always does.",
+		"Tension is the whole art. Too slack and the cloth sags, too tight and the thread snaps. People are no different. I have not decided which one you are yet.",
+		"I outlived every egg I laid. Every single one. That is not something to be proud of.",
+		"Do not ask me for cloth. What I weave now is mine. What I know how to do — the silk, the stillness, the patience — that I will trade. Teaching costs me nothing.",
 	)
-	accept_line = "Agreed. Onto the loom with you, then, loose thread. Mind your tension."
-	busy_line = "You are already strung on someone else's loom. Finish the cloth or cut yourself free — no thread lies across two warps."
-	fulfilled_line = "That cloth is finished and bound off. I do not unpick finished work. Not even mine. Especially not mine."
-	renounce_line = "Snip. There — a thread cut short. It never frays less the second time, little thread. Remember that."
-	claim_line = "Your payment is already wound on the shuttle, loose thread. Take it off the loom before you ask my hands for more."
-	exhausted_line = "I have taught you everything these old spinnerets remember. Whatever you weave now, you weave without me — which is, I suppose, the point of teaching. Go. Weave."
-	remember_line = "Death unravelled you, and something rewove you on a strange warp. No matter. I never forget a thread I have worked — see, here is your pattern, right where I left it."
+	accept_line = "Agreed. Onto the loom with you, then. Mind your tension."
+	busy_line = "You are already strung on someone else's loom. Finish that work or cut yourself loose. One thread, one warp."
+	fulfilled_line = "That one is finished and bound off. I do not unpick finished work."
+	renounce_line = "Snip. There. Cut short. It will not go any easier the second time."
+	claim_line = "Your payment is already wound and waiting. Take it before you ask me for more."
+	exhausted_line = "That is everything these old spinnerets remember. Whatever you make now, you make without me. Go on."
+	remember_line = "Death unravelled you and something wove you back. No matter. I never forget a thread I have worked — your pattern is right where I left it."
 
 // ===== THE SNARE =====
 
@@ -205,7 +205,7 @@
 	// Keep the counts in sync with VESTIGE_SNARE_CATCHES_NEEDED /
 	// VESTIGE_SNARE_CATCHES_PER_BEAST / VESTIGE_SNARE_MAX_WEBS
 	// (initial values must be constant, so no define interpolation here)
-	desc = "The first lesson is the web, and the web's first lesson is this: silk does not chase. Take my spinneret and lay your snares where you can be chased past them — then go and be chased. The silk holds four snares at a time, and I pay only for prey that sticks mid-hunt, hot after you or after some other living soul: five catches, and no beast counted more than twice. Bait is not a flattering trade, little thread. It is, however, honest work, and the cloth never asks how the thread was tensioned."
+	desc = "Silk does not chase. Take my spinneret, lay your snares, then go find something to chase you across them. Four snares stand at a time, and only prey that sticks mid-hunt counts — it has to be actively after you or someone else alive. Five catches, and no beast counts more than twice."
 	/// The loaned spinneret. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_snare_spinneret/spinneret
 	/// Standing snare-webs (culled by their own Destroy)
@@ -219,7 +219,7 @@
 	var/obj/item/vestige_snare_spinneret/gland = new(get_turf(user))
 	gland.bound_mind = owner
 	spinneret = hand_over(user, gland)
-	to_chat(user, span_notice("The spinneret settles into your palm, warm and faintly ticking, like a machine that has decided to like you."))
+	to_chat(user, span_notice("The spinneret settles into your palm, warm and faintly ticking."))
 
 /datum/vestige_trial/loom_snare/Destroy()
 	QDEL_NULL(spinneret)
@@ -233,7 +233,7 @@
 		if(catches < VESTIGE_SNARE_CATCHES_NEEDED && !length(webs))
 			return "The spinneret is lost and the silk with it. Renounce the pact and [patron_name] will spin you another."
 	var/standing = length(webs)
-	return "Snapped up [catches] of [VESTIGE_SNARE_CATCHES_NEEDED] hunters mid-chase — [standing] snare[standing == 1 ? "" : "s"] of [VESTIGE_SNARE_MAX_WEBS] standing."
+	return "Caught [catches] of [VESTIGE_SNARE_CATCHES_NEEDED] hunters mid-chase — [standing] snare[standing == 1 ? "" : "s"] of [VESTIGE_SNARE_MAX_WEBS] standing."
 
 /// TRUE if this beast has already been counted its limit of times (read-only; springing checks this first)
 /datum/vestige_trial/loom_snare/proc/is_humbled(mob/living/beast)
@@ -248,7 +248,7 @@
 	catches_per_beast[key] = prior + 1
 	catches++
 	if(isliving(keeper))
-		to_chat(keeper, span_notice("[beast] hits the silk mid-hunt and sticks fast. Somewhere, eight eyes crease with approval."))
+		to_chat(keeper, span_notice("[beast] hits the silk mid-hunt and sticks fast."))
 		playsound(keeper, 'sound/effects/magic/curse.ogg', 15, TRUE)
 	refresh_tracker()
 	if(catches >= VESTIGE_SNARE_CATCHES_NEEDED)
@@ -265,7 +265,7 @@
  */
 /obj/item/vestige_snare_spinneret
 	name = "loaned spinneret"
-	desc = "A spinneret the length of a forearm, still warm, sheared from something that no longer needs it — or that grew tired of what it was used for. Silk beads at the tip when you hold it too tight."
+	desc = "A spinneret about as long as your forearm, cut from something much bigger and still warm. Silk beads at the tip if you grip it too hard."
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "snare_spinneret"
 	w_class = WEIGHT_CLASS_SMALL
@@ -282,7 +282,7 @@
 
 /obj/item/vestige_snare_spinneret/examine(mob/user)
 	. = ..()
-	. += span_notice("Used in hand, it spins a snare-web on the floor underfoot ([VESTIGE_SNARE_MAX_WEBS] standing at most). Only a wild thing that hits the silk mid-hunt — actively chasing you or another living person — is held and counted, and no beast counts more than [VESTIGE_SNARE_CATCHES_PER_BEAST] times. Sprung silk is spent. Spiders, of course, know better than to be caught in a web.")
+	. += span_notice("Use in hand to spin a snare-web on the floor under you, [VESTIGE_SNARE_MAX_WEBS] standing at most. Only a wild animal that hits the silk mid-hunt — actively chasing you or someone else alive — gets held and counted, and no beast counts more than [VESTIGE_SNARE_CATCHES_PER_BEAST] times. A sprung snare is used up. Anything that can walk on webs steps right over it.")
 
 /obj/item/vestige_snare_spinneret/attack_self(mob/user, modifiers)
 	. = ..()
@@ -293,7 +293,7 @@
 	var/mob/living/weaver = user
 	var/datum/vestige_trial/loom_snare/trial = weaver.mind?.active_vestige_trial
 	if(!istype(trial))
-		balloon_alert(weaver, "the spinneret is dry — no pact feeds it!")
+		balloon_alert(weaver, "the spinneret is dry!")
 		return TRUE
 	var/turf/open/ground = get_turf(weaver)
 	if(!istype(ground) || !check_ground(weaver, trial, ground))
@@ -313,7 +313,7 @@
 	trial.refresh_tracker()
 	weaver.visible_message(
 		span_warning("[weaver] draws pale silk from [src] and works it across the floor."),
-		span_notice("You lay the snare flat and even. It looks like every other web. That is the point."),
+		span_notice("You lay the snare flat and even. It looks like any other web."),
 	)
 	playsound(ground, 'sound/items/handling/cloth/cloth_drop1.ogg', 50, TRUE)
 	return TRUE
@@ -346,7 +346,7 @@
  */
 /obj/structure/spider/stickyweb/vestige_snare
 	name = "snare-web"
-	desc = "Spider silk laid flat and even across the floor. It looks like every other web, but the tension is wrong — set, not settled. Something made this on purpose."
+	desc = "Spider silk laid flat across the floor. It looks like any other web, except the tension is wrong. Something set this on purpose."
 	max_integrity = VESTIGE_SNARE_WEB_INTEGRITY
 	/// Mind of the supplicant whose snare this is — the web knows its weaver's step
 	var/datum/mind/bound_mind
@@ -368,9 +368,9 @@
 /obj/structure/spider/stickyweb/vestige_snare/examine(mob/user)
 	. = ..()
 	if(spent)
-		. += span_warning("It has sprung, and hangs in loose, satisfied threads.")
+		. += span_warning("It has already sprung. The threads hang loose.")
 	else if(user.mind && user.mind == bound_mind)
-		. += span_notice("Your snare. It will only spring — and only count — on a wild thing that hits it mid-hunt. Lead something angry across it.")
+		. += span_notice("Your snare. It only springs on a wild animal that hits it mid-hunt, so lead something angry across it.")
 
 /obj/structure/spider/stickyweb/vestige_snare/CanAllowThrough(atom/movable/mover, border_dir)
 	if(!spent && isliving(mover))
@@ -432,7 +432,7 @@
 	// Keep the counts in sync with VESTIGE_PANTRY_STOCK_NEEDED /
 	// VESTIGE_PANTRY_FRESHNESS (initial values must be constant, so no
 	// define interpolation here)
-	desc = "A larder outlives a harvest — that is its whole genius, and mine stands empty. Take the spool and the rack bundle. Still some wild thing without stopping its heart: webbed, stunned, knocked flat, it matters not, so long as it is held. Then wrap it while it fights the silk, and haul the cocoon home to the rack. The silk keeps ninety seconds from wrap to rack before the meal spoils, and I want three stocked, breathing, fresh. Bring me no people. She who keeps people in a pantry is not a weaver but a horror, and I have been called that quite enough."
+	desc = "A larder outlives a harvest, and mine is empty. Take the spool and the rack bundle. Bring down some wild thing without killing it — webbed, stunned, knocked flat, whatever works, as long as it cannot move. Wrap it while it is still fighting the silk, then haul the cocoon back to your rack. You get ninety seconds from wrap to rack before the meal spoils, and I want three of them, alive and fresh. Bring me no people. I have been called a horror enough times already."
 	/// The loaned wrapping spool. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_wrap_spool/spool
 	/// The larder rack, bundled. Reclaimed the moment the pact ends.
@@ -451,7 +451,7 @@
 	var/obj/item/vestige_larder_bundle/parcel = new(get_turf(user))
 	parcel.bound_mind = owner
 	bundle = hand_over(user, parcel)
-	to_chat(user, span_notice("The spool is heavier than thread has any right to be, and the bundled rack smells faintly of a hall you have never been in. Plant the rack near good hunting — the clock runs from wrap to rack."))
+	to_chat(user, span_notice("The spool is heavier than thread has any right to be. Plant the rack somewhere near good hunting — the clock runs from wrap to rack."))
 
 /datum/vestige_trial/loom_pantry/Destroy()
 	QDEL_NULL(spool)
@@ -499,7 +499,7 @@
  */
 /obj/item/vestige_wrap_spool
 	name = "wrapping spool"
-	desc = "A hand-spool of grey binding silk, wound so tight it hums. The loose end finds your knuckles on its own, in a friendly sort of way."
+	desc = "A hand-spool of grey binding silk, wound tight enough to hum. The loose end keeps finding your knuckles on its own."
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "silk_spool"
 	w_class = WEIGHT_CLASS_SMALL
@@ -517,14 +517,14 @@
 
 /obj/item/vestige_wrap_spool/examine(mob/user)
 	. = ..()
-	. += span_notice("Used on a living wild beast that is held fast — stunned, floored, or stuck in webbing — it wraps the beast into a cocoon over [DisplayTimeText(VESTIGE_PANTRY_WRAP_TIME)]. The beast fights the silk: if it shakes loose mid-wrap, the wrap tears. The cocoon keeps [DisplayTimeText(VESTIGE_PANTRY_FRESHNESS)] from wrap to rack. It refuses people.")
+	. += span_notice("Use on a living wild animal that is held fast — stunned, floored, or stuck in webbing — to wrap it into a cocoon over [DisplayTimeText(VESTIGE_PANTRY_WRAP_TIME)]. The animal fights the silk the whole time, and if it shakes loose the wrap tears. A cocoon stays fresh for [DisplayTimeText(VESTIGE_PANTRY_FRESHNESS)] from wrap to rack. It will not work on people.")
 
 /obj/item/vestige_wrap_spool/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(!isliving(target) || target == user)
 		return ..()
 	var/datum/vestige_trial/loom_pantry/trial = user.mind?.active_vestige_trial
 	if(!istype(trial))
-		balloon_alert(user, "the spool hangs slack — no pact fills it!")
+		balloon_alert(user, "the spool hangs slack!")
 		return
 	if(ishuman(target) || target.mind || target.client)
 		balloon_alert(user, "she keeps beasts, not people!")
@@ -584,7 +584,7 @@
  */
 /obj/structure/vestige_silk_cocoon
 	name = "fresh cocoon"
-	desc = "A body-sized parcel of taut grey silk, still warm, faintly moving. It has the deliberate neatness of a meal put up for later."
+	desc = "A body-sized bundle of taut grey silk, still warm. Something inside it is moving."
 	icon = 'icons/effects/web.dmi'
 	icon_state = "cocoon_large1"
 	anchored = FALSE
@@ -658,7 +658,7 @@
 	var/mob/living/wrangler = bound_mind?.current
 	var/datum/vestige_trial/loom_pantry/trial = bound_mind?.active_vestige_trial
 	if(istype(trial) && isliving(wrangler))
-		to_chat(wrangler, span_bolddanger("[trial.patron_name]'s voice arrives dry as old thread: \"Spoiled on the floor. A larder is a CLOCK, little thread. Wind it faster.\""))
+		to_chat(wrangler, span_bolddanger("[trial.patron_name]'s voice comes through dry and flat: \"Spoiled on the floor. A larder runs on a clock. Move faster.\""))
 	qdel(src)
 
 /obj/structure/vestige_silk_cocoon/atom_destruction(damage_flag)
@@ -682,7 +682,7 @@
 
 /obj/item/vestige_larder_bundle
 	name = "bundled larder rack"
-	desc = "A larder rack folded down into a parcel of silk-lashed struts. It smells of a pantry that has been empty for a very long time and resents it."
+	desc = "A larder rack folded down into a parcel of silk-lashed struts. It smells like a pantry that has been empty a long time."
 	icon = 'icons/obj/stack_objects.dmi'
 	icon_state = "sheet-cloth"
 	color = "#cdd3e0"
@@ -708,7 +708,7 @@
 	var/turf/open/ground = interacting_with
 	var/datum/vestige_trial/loom_pantry/trial = user.mind?.active_vestige_trial
 	if(!istype(trial))
-		balloon_alert(user, "the bundle won't unfold — no pact binds it!")
+		balloon_alert(user, "the bundle won't unfold!")
 		return ITEM_INTERACT_BLOCKING
 	// Never inside the vestige: the ruin unloads the moment everyone leaves,
 	// and a stocked pantry must not be wiped by map cleanup
@@ -737,8 +737,8 @@
 	trial.rack = stand
 	trial.refresh_tracker()
 	user.visible_message(
-		span_warning("[user] unfolds a rack of silk-lashed struts, and it settles against the deck like it has always stood there."),
-		span_notice("You stand the larder rack up. It is very empty, and seems to know it."),
+		span_warning("[user] unfolds a rack of silk-lashed struts and stands it up against the deck."),
+		span_notice("You stand the larder rack up. It is very empty."),
 	)
 	playsound(ground, 'sound/items/handling/cloth/cloth_drop1.ogg', 50, TRUE)
 	qdel(src) // Destroy clears the trial's bundle pointer
@@ -756,7 +756,7 @@
  */
 /obj/structure/vestige_larder_rack
 	name = "larder rack"
-	desc = "A rack of pale struts lashed with grey silk, built to hold cocoons the way a cellar holds wine. The empty spaces on it are very deliberate."
+	desc = "A rack of pale struts lashed together with grey silk, built to hang cocoons on. Most of the spaces are empty."
 	icon = 'icons/obj/structures.dmi'
 	icon_state = "rack"
 	color = "#cdd3e0"
@@ -842,8 +842,8 @@
 		return
 	parcel.racked = TRUE
 	user.visible_message(
-		span_warning("[user] hoists [parcel] onto [src] — and the silk drinks it in, parcel and all, thread by thread."),
-		span_notice("The rack takes the parcel from your hands. For a moment, every strut hums like a plucked warp — somewhere, an old pantry counts one better."),
+		span_warning("[user] hoists [parcel] onto [src], and the silk pulls it in whole."),
+		span_notice("The rack takes the parcel out of your hands and every strut hums at once. That is one stocked."),
 	)
 	playsound(src, 'sound/items/handling/cloth/cloth_pickup1.ogg', 60, TRUE)
 	playsound(src, 'sound/effects/magic/curse.ogg', 25, TRUE)
@@ -874,7 +874,7 @@
 	user.put_in_hands(parcel)
 	user.visible_message(
 		span_warning("[user] folds [src] back down into a silk-lashed parcel."),
-		span_notice("You fold the rack down. It goes quietly, like furniture that has been moved before."),
+		span_notice("You fold the rack down. It packs up easily enough."),
 	)
 	qdel(src) // Destroy clears the trial's rack pointer and refreshes the tracker
 
@@ -901,7 +901,7 @@
 	// VESTIGE_TREMOR_MAX_LINES / VESTIGE_TREMOR_MIN_LINES /
 	// VESTIGE_TREMOR_SPREAD / VESTIGE_TREMOR_ANSWER_RANGE
 	// (initial values must be constant, so no define interpolation here)
-	desc = "A web is not a wall, little thread. A web is a nerve. Take the spool and string my tremor-lines — four is all the silk holds taut, each strung five paces clear of its sisters — and when three stand, the thieves will come, as thieves always came: little mouths in the dark, chewing at what I made. Every bite rings down the silk. Answer six tremors in person — reach the thief and end it within two paces of your own hands, before it chews the line through. A line cut is a line you restring. A web only means something if somebody comes when it sings."
+	desc = "A web is not a wall. It is a nerve. Take the spool and string my tremor-lines: four is all the silk holds, and each one has to be five paces clear of the others. Once three are standing, the thieves come — little mouths in the dark that chew on whatever I make. Every bite rings down the silk. Answer six tremors in person: reach the thief and kill it within two paces, before it chews the line through. Anything chewed through, you restring."
 	/// The loaned tremor spool. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_tremor_spool/spool
 	/// Standing tremor-lines (culled by their own Destroy)
@@ -921,7 +921,7 @@
 	var/obj/item/vestige_tremor_spool/thread = new(get_turf(user))
 	thread.bound_mind = owner
 	spool = hand_over(user, thread)
-	to_chat(user, span_notice("The spool sits cold in your hand, wound with thread so fine it is mostly a rumor. String the net wide, and stay inside it — you will be running."))
+	to_chat(user, span_notice("The spool sits cold in your hand, wound with thread almost too fine to see. String the net wide and stay inside it — you will be doing a lot of running."))
 
 /datum/vestige_trial/loom_tremor/Destroy()
 	QDEL_NULL(spool)
@@ -964,7 +964,7 @@
 	next_send_at = world.time + VESTIGE_TREMOR_FIRST_DELAY
 	var/mob/living/keeper = owner?.current
 	if(isliving(keeper))
-		to_chat(keeper, span_bolddanger("The last knot goes taut, and the whole net hums once, like a plucked warp. Somewhere out in the dark, little mouths take notice. They always came for her silk. They will come for yours."))
+		to_chat(keeper, span_bolddanger("The last knot goes taut and the whole net hums once. Somewhere out in the dark, something takes notice."))
 		playsound(keeper, 'sound/effects/snap.ogg', 50, TRUE)
 	loom_beat()
 
@@ -1026,7 +1026,7 @@
 	addtimer(CALLBACK(filcher, TYPE_PROC_REF(/mob/living/basic/vestige_silk_thief, dissolve)), VESTIGE_TREMOR_THIEF_LIFESPAN)
 	filcher.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, line)
 	if(isliving(keeper))
-		to_chat(keeper, span_warning("The web murmurs — something small has slipped in near your line to the [dir2text(get_dir(keeper, line)) || "very spot you stand on"]."))
+		to_chat(keeper, span_warning("The web shivers. Something small is moving near your line to the [dir2text(get_dir(keeper, line)) || "very spot you stand on"]."))
 		playsound(keeper, 'sound/effects/snap.ogg', 25, TRUE)
 	refresh_tracker()
 
@@ -1036,9 +1036,9 @@
 	if(isliving(keeper))
 		if(keeper.z == line.z)
 			var/bearing = dir2text(get_dir(keeper, line))
-			to_chat(keeper, span_bolddanger("A TREMOR rings down the silk — something is chewing your line[bearing ? " to the [bearing]" : ""], [get_dist(keeper, line)] paces out! Reach it before the line parts!"))
+			to_chat(keeper, span_bolddanger("A TREMOR rings down the silk — something is chewing your line[bearing ? " to the [bearing]" : ""], [get_dist(keeper, line)] paces out! Get there before it chews through!"))
 		else
-			to_chat(keeper, span_bolddanger("A TREMOR rings down the silk — from a line somewhere far beyond your feet!"))
+			to_chat(keeper, span_bolddanger("A TREMOR rings down the silk — from one of your lines, a long way from here!"))
 		playsound(keeper, 'sound/effects/snap.ogg', 70, TRUE)
 	refresh_tracker()
 
@@ -1069,12 +1069,12 @@
 		return // it died with the line already parted; the cut was the answer, and it wasn't yours
 	if(!in_person)
 		if(isliving(keeper))
-			to_chat(keeper, span_warning("The thief is dead, but you were not there for it. The Weaver pays for tremors answered in person — within [VESTIGE_TREMOR_ANSWER_RANGE] paces."))
+			to_chat(keeper, span_warning("The thief is dead, but you were not there for it. A tremor only counts if you are within [VESTIGE_TREMOR_ANSWER_RANGE] paces when it dies."))
 		refresh_tracker()
 		return
 	answered++
 	if(isliving(keeper))
-		to_chat(keeper, span_notice("The chewing stops under your hands, and the line thrums once, satisfied. Tremor answered — [answered] of [VESTIGE_TREMOR_ANSWERS_NEEDED]."))
+		to_chat(keeper, span_notice("The chewing stops under your hands and the line thrums once. Tremor answered — [answered] of [VESTIGE_TREMOR_ANSWERS_NEEDED]."))
 		playsound(keeper, 'sound/effects/magic/curse.ogg', 15, TRUE)
 	refresh_tracker()
 	if(answered >= VESTIGE_TREMOR_ANSWERS_NEEDED)
@@ -1105,7 +1105,7 @@
 
 /obj/item/vestige_tremor_spool
 	name = "tremor spool"
-	desc = "A spool of silk drawn so fine it is mostly a rumor with tension. Held to the ear, it carries sounds from somewhere else — small ones, with teeth."
+	desc = "A spool of silk drawn almost too fine to see. Held up to your ear, it carries faint sounds from somewhere else."
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "silk_spool"
 	w_class = WEIGHT_CLASS_SMALL
@@ -1122,7 +1122,7 @@
 
 /obj/item/vestige_tremor_spool/examine(mob/user)
 	. = ..()
-	. += span_notice("Used in hand, it strings a tremor-line across the floor underfoot — [VESTIGE_TREMOR_MAX_LINES] at most, each at least [VESTIGE_TREMOR_SPREAD] tiles from its sisters. With [VESTIGE_TREMOR_MIN_LINES] standing, the thieves come. A line takes about a dozen seconds of chewing to part; be there before it does, and be within [VESTIGE_TREMOR_ANSWER_RANGE] tiles when the thief dies.")
+	. += span_notice("Use in hand to string a tremor-line across the floor under you — [VESTIGE_TREMOR_MAX_LINES] at most, each at least [VESTIGE_TREMOR_SPREAD] tiles from the others. With [VESTIGE_TREMOR_MIN_LINES] standing, the thieves come. A line takes about a dozen seconds of chewing to snap, so get there first, and be within [VESTIGE_TREMOR_ANSWER_RANGE] tiles when the thief dies.")
 
 /obj/item/vestige_tremor_spool/attack_self(mob/user, modifiers)
 	. = ..()
@@ -1133,7 +1133,7 @@
 	var/mob/living/keeper = user
 	var/datum/vestige_trial/loom_tremor/trial = keeper.mind?.active_vestige_trial
 	if(!istype(trial))
-		balloon_alert(keeper, "the spool is silent — no pact winds it!")
+		balloon_alert(keeper, "the spool is silent!")
 		return TRUE
 	var/turf/open/ground = get_turf(keeper)
 	if(!istype(ground) || !check_ground(keeper, trial, ground))
@@ -1151,8 +1151,8 @@
 	line.bound_mind = keeper.mind
 	trial.lines += line
 	keeper.visible_message(
-		span_warning("[keeper] draws a thread of near-nothing across the floor and knots it down at both ends."),
-		span_notice("You string the line and thumb it once. It answers with a note only your bones can hear."),
+		span_warning("[keeper] draws a nearly invisible thread across the floor and knots it down at both ends."),
+		span_notice("You string the line and thumb it once. It answers with a note you feel more than hear."),
 	)
 	playsound(ground, 'sound/items/handling/cloth/cloth_drop1.ogg', 40, TRUE)
 	trial.check_night() // refreshes the tracker; wakes the night at three lines
@@ -1194,7 +1194,7 @@
  */
 /obj/structure/vestige_tremor_line
 	name = "tremor-line"
-	desc = "A single thread of silk strung ankle-height across the floor, so fine it is easier to feel than see. It is not trying to stop anything. It is listening."
+	desc = "A single silk thread strung ankle-height across the floor, thin enough that you would feel it before you saw it. It is a tripwire, not a barricade."
 	icon = 'icons/effects/web.dmi'
 	icon_state = "cobweb1"
 	alpha = 150
@@ -1222,7 +1222,7 @@
 /obj/structure/vestige_tremor_line/examine(mob/user)
 	. = ..()
 	if(user.mind && user.mind == bound_mind)
-		. += span_notice("Part of your net. When something chews it, the tremor will find you — answer in person, or restring what's left. A hand pressed to the knots takes it back up.")
+		. += span_notice("Part of your net. When something chews on it you will feel the tremor — get there in person, or restring whatever is left. Press a hand to the knots to take it back up.")
 	if(atom_integrity < max_integrity * 0.5)
 		. += span_danger("It is chewed ragged and badly frayed.")
 
@@ -1267,7 +1267,7 @@
 		return
 	user.visible_message(
 		span_warning("[user] works a near-invisible thread up off the floor and winds it away."),
-		span_notice("You take the line back up. The net will miss it until it stands somewhere better."),
+		span_notice("You take the line back up. String it somewhere better."),
 	)
 	ended_softly = TRUE
 	qdel(src) // Destroy tells the trial
@@ -1290,7 +1290,7 @@
  */
 /mob/living/basic/vestige_silk_thief
 	name = "silk thief"
-	desc = "A moth the size of a terrier, dust-grey and single-minded, with mouthparts that were clearly designed by somebody who hated textiles. It is here for the silk. It is always here for the silk."
+	desc = "A dust-grey moth the size of a terrier, with mouthparts built for chewing through cloth. It only wants the silk."
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "silk_thief"
 	icon_living = "silk_thief"
@@ -1434,9 +1434,9 @@
 // --- The silk ---
 /// Channel to spin a snare. Keep the Silk Spinner desc's "three-second spin" in sync.
 #define VESTIGE_SILK_SPIN_TIME (3 SECONDS)
-/// The master's channel. Keep the Master Weaver desc's "a breath and a half" in sync.
+/// The master's channel. Keep the Master Weaver desc's "a second and a half" in sync.
 #define VESTIGE_SILK_SPIN_TIME_MASTER (1.5 SECONDS)
-/// Beats between spins. Keep the Silk Spinner desc's "eight-second breath" in sync.
+/// Beats between spins. Keep the Silk Spinner desc's "eight seconds between casts" in sync.
 #define VESTIGE_SILK_COOLDOWN (8 SECONDS)
 /// The master's beat. Keep the Master Weaver desc's "five seconds between" in sync.
 #define VESTIGE_SILK_COOLDOWN_MASTER (5 SECONDS)
@@ -1458,12 +1458,8 @@
 #define VESTIGE_FANG_WITHER_DURATION (12 SECONDS)
 /// Stamina drained per second of venom
 #define VESTIGE_FANG_STAMINA_TICK 5
-/// Toxin dealt per second of venom, while the prey is above the mercy floor
+/// Toxin dealt per second of venom
 #define VESTIGE_FANG_TOX_TICK 2
-/// The venom stops dealing toxin below this health — the hunting spider's own
-/// clause (upstream /datum/reagent/toxin/hunterspider, health_required = 40):
-/// venom weakens prey, it does not finish them
-#define VESTIGE_FANG_MERCY_FLOOR 40
 /// Movespeed slowdown while the withering venom runs — a hobble, never a root
 #define VESTIGE_FANG_WITHER_SLOW 0.5
 
@@ -1489,15 +1485,15 @@
 	name = "Silk Spinner"
 	// Keep the numbers in sync with VESTIGE_SILK_SPIN_TIME / _COOLDOWN / _MAX_WEBS
 	// (initial values must be constant, so no define interpolation here)
-	desc = "The first lesson is tension. Spin a sticky snare onto any open floor within arm's reach — a three-second spin, an eight-second breath between, and hold still while the thread sets. The silk knows its weaver: your own tread never catches, but every other soul has even odds of sticking fast at each step, and stray shots foul in the weave more often than not. The Loom holds eight threads at once; ask for a ninth and the oldest lets go. Fire undoes silk faster than anything — mind your candles."
-	grant_text = "Your fingertips learn the weight of thread that isn't there yet."
+	desc = "Spin a sticky snare onto any open floor within reach. Three-second spin, eight seconds between casts, and you have to hold still while the thread sets. Your own tread never catches in your webs. Anyone else has even odds of sticking at each step, and stray shots usually foul in the weave. The Loom holds eight threads at once — spin a ninth and the oldest lets go. Fire burns silk fast."
+	grant_text = "Your fingertips feel the weight of thread that isn't there yet."
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_silk_spin
 
 /datum/vestige_boon/spell/silk_spinner/master_weaver
 	name = "Master Weaver"
 	// Keep the numbers in sync with VESTIGE_SILK_SPIN_TIME_MASTER / _COOLDOWN_MASTER / _MAX_WEBS_MASTER
-	desc = "Now the second lesson: the weft. You spin in a breath and a half, five seconds between, and the Loom holds twelve threads. And when a snare of yours wants to be more than a snare — spin over it again and draw it into a sealed weft: a wall of solid silk that stops bodies and air outright, yours included; a wall keeps no favorites. It is silk still — flame reads it like kindling, and patient blades pick it apart."
-	grant_text = "The warp was always there. Now you can see the weft."
+	desc = "You spin in a second and a half now, five seconds between casts, and the Loom holds twelve threads. You can also spin over one of your own snares to draw it into a sealed weft: a solid wall of silk that stops bodies and air, including yours. It is still silk, though. Fire eats it, and a patient blade cuts it apart."
+	grant_text = "Now you can see how the threads are supposed to cross."
 	upgrades_from = /datum/vestige_boon/spell/silk_spinner
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_silk_spin/master_weaver
 
@@ -1507,15 +1503,15 @@
 	name = "Venom Fang"
 	// Keep the numbers in sync with VESTIGE_FANG_COOLDOWN / _DURATION / _STAMINA_TICK / _TOX_TICK
 	// (5 stamina + 2 toxin per second over 8 seconds = 40 / 16 totals)
-	desc = "A bite, carried in the palm. Touch a living thing and the venom threads in: over eight seconds it draws out forty stamina and sixteen toxin — and the toxin stops the moment they are badly hurt, because venom is for weakening prey, never for finishing it; finishing is your own work. Twenty seconds between bites. A duelist's tool: bite first, then let the seconds fight beside you."
-	grant_text = "Something needle-fine settles into the pad of each finger and waits, patient as thread on a spool."
+	desc = "A bite you carry in your palm. Touch a living thing to poison it: forty stamina and sixteen toxin damage over eight seconds, all the way down. Twenty seconds between bites."
+	grant_text = "Something needle-fine settles into the pad of each finger and waits."
 	spell_type = /datum/action/cooldown/spell/touch/vestige_venom_fang
 
 /datum/vestige_boon/spell/venom_fang/withering
 	name = "Withering Fang"
 	// Keep the numbers in sync with VESTIGE_FANG_WITHER_COOLDOWN / _WITHER_DURATION / _WITHER_SLOW
 	// (5 stamina + 2 toxin per second over 12 seconds = 60 / 24 totals)
-	desc = "The same bite, held a heartbeat longer. Twelve seconds of venom now — sixty stamina, twenty-four toxin, the same mercy once they are badly hurt — and while it runs, their legs remember they are prey: a heavy drag on every step, though never a stop. Fourteen seconds between bites. Prey that cannot run learns to bargain."
+	desc = "A bite you carry in your palm, held a little longer. Twelve seconds of venom: sixty stamina and twenty-four toxin damage. While it runs they move heavy — slowed at every step, but never stopped outright. Fourteen seconds between bites."
 	grant_text = "The needles in your fingers grow a second, slower barb."
 	upgrades_from = /datum/vestige_boon/spell/venom_fang
 	spell_type = /datum/action/cooldown/spell/touch/vestige_venom_fang/withering
@@ -1525,16 +1521,16 @@
 /datum/vestige_boon/spell/silk_line
 	name = "Silk Line"
 	// Keep the numbers in sync with VESTIGE_LINE_RANGE / VESTIGE_LINE_COOLDOWN
-	desc = "The dragline, cast forward instead of behind. Fix a line on solid purchase up to seven tiles out — a wall, a window, anything bolted down and broad enough to bite — and reel yourself down it in one straight rush. The line does not negotiate with what stands between: whatever solid thing you meet on the way is where you arrive. Twenty seconds to respool. It pairs with a web-field the way thread pairs with a needle."
-	grant_text = "A spinneret you don't have starts keeping tension coiled at the base of your wrist."
+	desc = "Cast a dragline at anything solid up to seven tiles out — a wall, a window, anything dense and bolted down — and reel yourself to it in one straight rush. If something solid is in the way, that is where you stop instead. Twenty seconds to respool."
+	grant_text = "Something coils tight at the base of your wrist, like a spinneret you don't have."
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_silk_line
 
 // --- Standalone: the legs ---
 
 /datum/vestige_boon/spider_grace
 	name = "Eight-Legged Grace"
-	desc = "Not a thing you cast — a way the Weaver re-strings your footing. Every hunting web parts for you like a beaded curtain: yours, hers, the wild's, anyone's. Wet decking holds your feet like dry boards. Two honest limits: a sealed weft is a wall, not a web, and refuses even you; and soap and lubricant are beyond even her teaching. One honesty more: this is worked into the meat, not the soul — wear a new body someday and the lesson must settle into that one too."
-	grant_text = "Your stride redistributes itself across legs you cannot count."
+	desc = "Nothing to cast — the Weaver just re-strings your footing. Every hunting web parts for you like a beaded curtain, whether it is yours, hers, or the wild's, and wet decking grips your feet like dry board. Two limits: a sealed weft is a wall, not a web, so it stops you too, and soap and lube will still put you on the floor. This is worked into the body, not the soul, so a new body has to be taught again."
+	grant_text = "Your footing settles, like you are standing on more legs than you have."
 	radial_icon = 'icons/effects/web.dmi'
 	radial_icon_state = "cobweb1"
 
@@ -1564,7 +1560,7 @@
 	if(owner?.current)
 		user = owner.current
 	user.add_traits(list(TRAIT_WEB_SURFER, TRAIT_NO_SLIP_WATER), VESTIGE_GRACE_TRAIT)
-	to_chat(user, span_notice("Webs will part for you now, and wet decking grips your soles like dry board. Walk your own weave; it was always meant to be walked."))
+	to_chat(user, span_notice("Webs part for you now, and wet decking grips your soles like dry board."))
 
 // ===== THE SILK =====
 
@@ -1597,7 +1593,7 @@
  */
 /datum/action/cooldown/spell/pointed/vestige_silk_spin
 	name = "Silk Spinner"
-	desc = "Spin a sticky snare onto your own tile or an adjacent one. A three-second spin you must stand still for; your own tread never catches in your weave. The Loom holds eight threads — a ninth frays the oldest."
+	desc = "Spin a sticky snare onto your own tile or one next to you. Three-second spin, and you have to stand still for it. Your own tread never catches in your weave. Holds eight threads at once — a ninth frays the oldest."
 	button_icon = 'icons/mob/actions/actions_animal.dmi'
 	button_icon_state = "spider_web"
 	background_icon_state = "bg_alien"
@@ -1622,7 +1618,7 @@
 
 /datum/action/cooldown/spell/pointed/vestige_silk_spin/master_weaver
 	name = "Master Weaver's Silk"
-	desc = "Spin a sticky snare in a breath and a half, or spin over a snare of your own to draw it into a sealed weft — a wall of silk that stops bodies and air, yours included. The Loom holds twelve threads."
+	desc = "Spin a sticky snare in a second and a half, or spin over one of your own snares to draw it into a sealed weft: a wall of silk that stops bodies and air, yours included. Holds twelve threads at once."
 	button_icon_state = "spider_wall"
 	cooldown_time = VESTIGE_SILK_COOLDOWN_MASTER
 	spin_time = VESTIGE_SILK_SPIN_TIME_MASTER
@@ -1712,7 +1708,7 @@
 		spun = new /obj/structure/spider/stickyweb/vestige(spin_turf, owner.mind)
 		owner.visible_message(
 			span_warning("[owner] strings a taut weave of silk across [spin_turf]!"),
-			span_notice("You lay the snare. It will know your tread from everyone else's."),
+			span_notice("You lay the snare. It knows your tread from everyone else's."),
 		)
 	playsound(spin_turf, 'sound/effects/splat.ogg', 30, TRUE)
 	register_web(spun)
@@ -1740,7 +1736,7 @@
 		var/obj/structure/spider/stickyweb/oldest = oldest_ref?.resolve()
 		if(QDELETED(oldest))
 			continue
-		oldest.visible_message(span_notice("[oldest] frays apart and lets go — the Loom holds only so much thread at once."))
+		oldest.visible_message(span_notice("[oldest] frays apart and lets go."))
 		qdel(oldest)
 
 /**
@@ -1760,7 +1756,7 @@
  */
 /obj/structure/spider/stickyweb/vestige
 	name = "woven snare"
-	desc = "Spider silk laid in a deliberate warp and weft, too regular to be an animal's work. It looks like it is expecting someone specific."
+	desc = "Spider silk woven in a neat, regular pattern. Too tidy to be an animal's work."
 	genetic = TRUE
 	/// The mind of the weaver: this web's one welcome guest, wherever that soul is currently living
 	var/datum/weakref/creator_mind_ref
@@ -1804,7 +1800,7 @@
  */
 /obj/structure/spider/stickyweb/sealed/vestige
 	name = "sealed weft"
-	desc = "Web drawn thread over thread into a solid wall, dense enough to hold back air. Whoever wove it is on one side of it now, like everyone else."
+	desc = "Web layered thread over thread into a solid wall, packed dense enough to hold back air. Nothing gets through it, including whoever made it."
 
 // ===== THE FANG =====
 
@@ -1832,9 +1828,9 @@
  */
 /datum/action/cooldown/spell/touch/vestige_venom_fang
 	name = "Venom Fang"
-	desc = "A touch that threads venom into a living thing: 5 stamina and 2 toxin a second for 8 seconds. The toxin stops once they are badly hurt — venom weakens prey, it does not finish it."
-	button_icon = 'icons/mob/actions/actions_changeling.dmi'
-	button_icon_state = "changelingsting"
+	desc = "Touch a living target to poison them. Deals 5 stamina and 2 toxin damage per second for 8 seconds."
+	button_icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
+	button_icon_state = "venom_fang"
 	background_icon_state = "bg_alien"
 	overlay_icon_state = "bg_alien_border"
 	sound = 'sound/items/weapons/bite.ogg'
@@ -1844,14 +1840,13 @@
 	antimagic_flags = MAGIC_RESISTANCE
 	hand_path = /obj/item/melee/touch_attack/vestige_fang
 	draw_message = span_notice("Venom beads along your fingertips like dew along a strand.")
-	drop_message = span_notice("The venom sinks back beneath your skin, patient.")
+	drop_message = span_notice("The venom sinks back under your skin.")
 	/// The venom this fang threads in
 	var/venom_type = /datum/status_effect/vestige_fang_venom
 
 /datum/action/cooldown/spell/touch/vestige_venom_fang/withering
 	name = "Withering Fang"
-	desc = "A touch that threads deeper venom into a living thing: 5 stamina and 2 toxin a second for 12 seconds, and a heavy drag on their step while it runs — a hobble, never a stop. The toxin still spares the badly hurt."
-	button_icon_state = "sting_cryo"
+	desc = "Touch a living target to poison them. Deals 5 stamina and 2 toxin damage per second for 12 seconds and slows their movement while it runs."
 	cooldown_time = VESTIGE_FANG_WITHER_COOLDOWN
 	venom_type = /datum/status_effect/vestige_fang_venom/withering
 
@@ -1870,16 +1865,20 @@
 	living_victim.apply_status_effect(venom_type)
 	living_victim.visible_message(
 		span_danger("[caster] lays two fingers on [living_victim], needle-quick, and something under the skin bites!"),
-		span_userdanger("A pinprick — then a slow cold starts threading through you, strand by strand!"),
+		span_userdanger("A pinprick, and then a slow cold starts spreading under your skin!"),
 	)
 	return TRUE
 
+// The plain greyscale hand rather than the heretic's clawed mansus one: this
+// is a human hand with venom on the fingertips, and it is meant to read that
+// way both on the ground and held. The state exists in hand.dmi and in both
+// touchspell inhand files, so the tint carries across all three.
 /obj/item/melee/touch_attack/vestige_fang
 	name = "venom fang"
-	desc = "A hand held the way a spider holds its stillness. Whatever it touches next gets the bite."
-	icon_state = "mansus"
-	inhand_icon_state = "mansus"
-	color = "#9db83b" // venom sap over the dark grasp
+	desc = "A hand held perfectly still, fingertips beaded with something green. Whatever it touches next gets the bite."
+	icon_state = "greyscale"
+	inhand_icon_state = "greyscale"
+	color = "#9db83b" // venom sap
 
 /**
  * The venom itself. STATUS_EFFECT_REFRESH: a second bite from the same fang
@@ -1897,25 +1896,22 @@
 	show_duration = TRUE
 
 /datum/status_effect/vestige_fang_venom/on_apply()
-	to_chat(owner, span_warning("Spider venom threads through you, drawing your strength out strand by strand."))
+	to_chat(owner, span_warning("Spider venom spreads through you, pulling the strength out of your limbs."))
 	return TRUE
 
 /datum/status_effect/vestige_fang_venom/tick(seconds_between_ticks)
 	if(owner.stat == DEAD)
 		return // venom has no interest in the dead; the clock runs out on its own
 	owner.apply_damage(VESTIGE_FANG_STAMINA_TICK * seconds_between_ticks, STAMINA)
-	// The hunting spider's mercy, ported from hunterspider toxin's
-	// health_required: weaken the hale, spare the broken
-	if(owner.health > VESTIGE_FANG_MERCY_FLOOR)
-		owner.apply_damage(VESTIGE_FANG_TOX_TICK * seconds_between_ticks, TOX)
+	owner.apply_damage(VESTIGE_FANG_TOX_TICK * seconds_between_ticks, TOX)
 
 /datum/status_effect/vestige_fang_venom/on_remove()
-	to_chat(owner, span_notice("The venom's thread runs out."))
+	to_chat(owner, span_notice("The venom wears off."))
 	return ..()
 
 /atom/movable/screen/alert/status_effect/vestige_fang_venom
 	name = "Spider Venom"
-	desc = "Something patient is unspooling your strength — stamina drains steadily, and it picks at your health while you're hale. It spares the badly hurt: this venom weakens prey, it doesn't finish it."
+	desc = "Spider venom. Your stamina is draining and it is poisoning you for as long as it runs."
 	icon_state = "weaken"
 
 /datum/status_effect/vestige_fang_venom/withering
@@ -1928,7 +1924,7 @@
 	if(!.)
 		return FALSE
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/vestige_fang_wither, update = TRUE)
-	to_chat(owner, span_warning("Your legs go heavy, as if wading through strands you can't see."))
+	to_chat(owner, span_warning("Your legs go heavy, like you're wading through something you can't see."))
 	return TRUE
 
 /datum/status_effect/vestige_fang_venom/withering/on_remove()
@@ -1937,7 +1933,7 @@
 
 /atom/movable/screen/alert/status_effect/vestige_fang_venom/withering
 	name = "Withering Venom"
-	desc = "Something patient is unspooling your strength, and your legs are wading through it — slowed, drained, and picked at while you're hale. It spares the badly hurt."
+	desc = "Spider venom, the slow kind. Draining your stamina, poisoning you, and dragging at every step."
 
 // A hobble on the freezing_blast pattern — half its slowdown, over a longer clock
 /datum/movespeed_modifier/vestige_fang_wither
@@ -2030,7 +2026,6 @@
 #undef VESTIGE_FANG_WITHER_DURATION
 #undef VESTIGE_FANG_STAMINA_TICK
 #undef VESTIGE_FANG_TOX_TICK
-#undef VESTIGE_FANG_MERCY_FLOOR
 #undef VESTIGE_FANG_WITHER_SLOW
 #undef VESTIGE_LINE_RANGE
 #undef VESTIGE_LINE_COOLDOWN

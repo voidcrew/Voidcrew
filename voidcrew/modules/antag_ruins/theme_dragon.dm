@@ -76,7 +76,7 @@
 
 /mob/living/basic/vestige_patron/dragon
 	name = "the Unfed"
-	desc = "A space dragon, or the appetite one left behind: coil after translucent coil heaped over a hoard of gnawed crates and stripped hull. It is not guarding the hoard. It is remembering it."
+	desc = "A space dragon, or what's left of one: coil after translucent coil heaped over a pile of gnawed crates and stripped hull plating. It doesn't seem to be guarding any of it."
 	// The dragon's own sprite (verified in space_dragon.dm), worn like a ghost
 	icon = 'icons/mob/nonhuman-player/spacedragon.dmi'
 	icon_state = "spacedragon"
@@ -100,21 +100,21 @@
 		/datum/vestige_boon/spell/carrion_feast/marrow,
 	)
 	idle_lines = list(
-		"I ate this ship in eleven days. Bulkheads, cargo, crew, the captain's chair. On the twelfth day I understood: the hunger was never for any of it. By then the hunger was all that was left of me.",
+		"I ate this ship in eleven days. Bulkheads, cargo, crew, the captain's chair. On the twelfth day I worked out that the hunger was never about any of it, and by then the hunger was all there was of me.",
 		"You are small. That is not an insult. Small things live on small portions. I never had your talent.",
 		"There were eggs once, far aft, where the engines kept the dark warm. I meant to go back before they cooled. I was still eating when they did.",
-		"Everything is a meal if you are patient enough. Distance. Hulls. Time. Time took the longest to chew, and tasted of nothing.",
-		"The carp still follow me. They cannot tell worship from appetite. In fairness, neither could I.",
-		"Do not count my hoard. It is not wealth. It is everything I put in my mouth instead of going home.",
+		"Everything is a meal if you're patient enough. Distance. Hulls. Time. Time took the longest to chew and didn't taste of anything.",
+		"The carp still follow me. They can't tell worship from appetite. In fairness, neither could I.",
+		"Don't count my hoard. It isn't wealth. It's everything I put in my mouth instead of going home.",
 		"Ask what you came to ask. I have swallowed much larger things than a question.",
 	)
 	accept_line = "Good. Go and be hungry on my behalf. Mind the portions."
-	busy_line = "You are still carrying another table's scraps. Finish them, or spit them out where you found them."
+	busy_line = "You're still carrying scraps from another table. Finish them, or spit them out where you found them."
 	fulfilled_line = "That meal is eaten. Even I never chewed the same bite twice."
 	renounce_line = "Then starve politely, like everything else out here."
-	claim_line = "A portion is owed to you. Take it now — I keep nothing warm. I know where that ends."
-	exhausted_line = "There is nothing of mine left to serve. You have eaten a dragon down to the appetite, little thing. Savor that."
-	remember_line = "Death swallowed you and spat you back. It does that with the stringy ones. Your portions are still yours — I do not lend to strangers."
+	claim_line = "You're owed a portion. Take it now — I don't keep anything warm."
+	exhausted_line = "There's nothing of mine left to serve. You have eaten a dragon down to nothing but the appetite."
+	remember_line = "Death swallowed you and spat you back out. It does that with the stringy ones. Your portions are still yours."
 
 // ===== THE BROODWATCH =====
 
@@ -131,7 +131,7 @@
 	name = "The Broodwatch"
 	// Keep the count in sync with VESTIGE_BROOD_WAVES
 	// (initial values must be constant, so no define interpolation here)
-	desc = "There were eggs once, and I was elsewhere, being enormous. Take this one — cold, but cold is not dead; cold is patient. Plant it where you can hold ground and wake it. The little cousins will come to eat it: three tides of them, each hungrier than the last, and they can smell an heir. Keep the shell whole until the last of them is dealt with, and you will see the thing I never came home to. If the shell breaks, the cold keeps the clutch — renounce, and I will cut you another."
+	desc = "There were eggs once, and I was elsewhere being enormous. Take this one. It's cold, but cold isn't dead, only patient. Plant it somewhere you can hold and wake it up. The little cousins will come to eat it: three waves of them, each one worse than the last. Keep the shell in one piece until the last of them is dealt with and you will see what I never came home to. If it breaks, renounce the pact and I will cut you another."
 	/// The loaned egg, while it rides in a hand or pocket. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_dragon_egg/egg_item
 	/// The planted egg, once it has been bedded down. Reclaimed the moment the pact ends.
@@ -141,7 +141,7 @@
 	var/obj/item/vestige_dragon_egg/shell = new(get_turf(user))
 	shell.bound_mind = owner
 	egg_item = hand_over(user, shell)
-	to_chat(user, span_notice("The egg is heavier than it looks and colder than it should be. Something inside is waiting to be convinced."))
+	to_chat(user, span_notice("The egg is heavier than it looks and colder than it should be. Something inside it is waiting."))
 
 /datum/vestige_trial/broodwatch/Destroy()
 	QDEL_NULL(egg_item)
@@ -151,21 +151,21 @@
 /datum/vestige_trial/broodwatch/get_progress_text()
 	if(egg_structure && !QDELETED(egg_structure))
 		if(!egg_structure.assault_underway)
-			return "The egg sleeps where you planted it. Wake it when your ground is chosen."
+			return "The egg sits where you planted it. Wake it once you have picked your ground."
 		if(egg_structure.stage < VESTIGE_BROOD_WAVES)
-			return "Tide [egg_structure.stage] of [VESTIGE_BROOD_WAVES] — [length(egg_structure.brood)] of the brood still circle the egg."
+			return "Wave [egg_structure.stage] of [VESTIGE_BROOD_WAVES] — [length(egg_structure.brood)] of the brood are still circling the egg."
 		if(length(egg_structure.brood))
-			return "The last tide — [length(egg_structure.brood)] of the brood still circle the egg."
-		return "The brood is spent. The egg is deciding."
+			return "Last wave — [length(egg_structure.brood)] of the brood are still circling the egg."
+		return "The brood is dealt with. Something is moving inside the egg."
 	if(egg_item && !QDELETED(egg_item))
-		return "The egg is cold in your keeping. Plant it on open ground you can hold, and wake it."
-	return "The egg is gone, and the cold keeps the clutch. Renounce the pact and [patron_name] will cut you another."
+		return "The egg is still cold in your hands. Plant it on open ground you can hold, then wake it."
+	return "The egg is gone. Renounce the pact and [patron_name] will cut you another."
 
 // --- The egg, carried ---
 
 /obj/item/vestige_dragon_egg
 	name = "cold dragon egg"
-	desc = "An egg the size of a curled child, shell like slate cooled far past patience. Held against the ear it is perfectly silent, in the specific way of something listening back."
+	desc = "An egg the size of a curled-up child, with a shell like cold slate. Hold it to your ear and you hear absolutely nothing, which is somehow worse."
 	icon = 'icons/mob/simple/lavaland/lavaland_monsters.dmi'
 	icon_state = "large_egg"
 	color = "#7c8fb5" // cold through and through
@@ -184,7 +184,7 @@
 
 /obj/item/vestige_dragon_egg/examine(mob/user)
 	. = ..()
-	. += span_notice("Pressed to an open stretch of floor, it can be bedded down — planted, it becomes a nest that must be woken, then defended. Choose ground you can hold.")
+	. += span_notice("Use it on an open stretch of floor to bed it down. Once planted it has to be woken up and then defended, so pick ground you can hold.")
 
 /obj/item/vestige_dragon_egg/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	if(!isopenturf(interacting_with))
@@ -218,8 +218,8 @@
 	nest.bound_mind = user.mind
 	trial.egg_structure = nest
 	user.visible_message(
-		span_warning("[user] beds [src] down against the ground, and the ground seems to accept it."),
-		span_notice("You bed the egg down. The cold in it stops feeling like absence and starts feeling like waiting."),
+		span_warning("[user] beds [src] down into the ground."),
+		span_notice("You bed the egg down. The cold in it starts to feel less like a dead thing and more like a waiting one."),
 	)
 	playsound(ground, 'sound/items/weapons/tap.ogg', 50, TRUE)
 	trial.refresh_tracker()
@@ -238,7 +238,7 @@
  */
 /obj/structure/vestige_dragon_egg
 	name = "dragon egg"
-	desc = "An egg the size of a curled child, bedded into the ground. Up close, the shell is faintly warm on one side — the side facing you, whichever side that is."
+	desc = "An egg the size of a curled-up child, bedded into the ground. The shell is faintly warm on whichever side happens to be facing you."
 	icon = 'icons/mob/simple/lavaland/lavaland_monsters.dmi'
 	icon_state = "large_egg"
 	color = "#7c8fb5"
@@ -284,11 +284,11 @@
 	. = ..()
 	if(!assault_underway)
 		// Keep the count in sync with VESTIGE_BROOD_WAVES
-		. += span_notice("It is planted, and patient. A tap from the hand that planted it will offer to wake it — once woken, the brood comes in [VESTIGE_BROOD_WAVES] tides, and the shell must hold through all of them.")
+		. += span_notice("It's planted and waiting. A tap from whoever planted it will offer to wake it up. Once it's awake the brood comes in [VESTIGE_BROOD_WAVES] waves, and the shell has to survive all of them.")
 	else
 		. += span_boldwarning("It is awake, and everything hungry nearby knows it.")
 	if(atom_integrity < max_integrity * 0.35)
-		. += span_danger("The shell is webbed with cracks. It will not take much more.")
+		. += span_danger("The shell is webbed with cracks. It won't take much more.")
 	else if(atom_integrity < max_integrity * 0.7)
 		. += span_warning("The shell is chipped and scored.")
 
@@ -323,7 +323,7 @@
 	if(assault_underway)
 		to_chat(user, span_boldnotice(trial.get_progress_text()))
 		return
-	var/choice = tgui_alert(user, "The egg is planted and patient. Wake the brood here, on this ground?", name, list("Wake it", "Take it up", "Leave it"))
+	var/choice = tgui_alert(user, "The egg is planted and waiting. Wake the brood here, on this ground?", name, list("Wake it", "Take it up", "Leave it"))
 	// Re-verify the whole world; the alert slept
 	if(!choice || QDELETED(src) || assault_underway || QDELETED(user) || !user.Adjacent(src) || user.mind != bound_mind)
 		return
@@ -344,7 +344,7 @@
 	user.put_in_hands(shell)
 	user.visible_message(
 		span_warning("[user] works [src] loose from the ground and gathers it up."),
-		span_notice("You take the egg back up. It does not object. It has waited through worse."),
+		span_notice("You take the egg back up. It doesn't object."),
 	)
 	qdel(src) // Destroy clears the trial's structure pointer and refreshes the tracker
 
@@ -354,7 +354,7 @@
 	START_PROCESSING(SSobj, src)
 	color = "#d8905a" // the cold gives way
 	set_light(1.5, 0.8, "#ff9a4d")
-	visible_message(span_boldwarning("Warmth spreads through [src] like something remembering how. Far off, in no particular direction, the dark starts paying attention."))
+	visible_message(span_boldwarning("Warmth spreads through [src]. Somewhere out in the dark, something starts paying attention."))
 	playsound(src, 'sound/mobs/non-humanoids/space_dragon/space_dragon_roar.ogg', 40, TRUE)
 	to_chat(user, span_bolddanger("The little cousins will have smelled that. Hold the ground."))
 	var/datum/vestige_trial/broodwatch/trial = get_bound_trial()
@@ -460,7 +460,7 @@
 	// Hatched into the keeper's care: the carp constructor takes a tamer
 	new /mob/living/basic/carp/pet/vestige_hatchling(nest, isliving(keeper) ? keeper : null)
 	if(isliving(keeper))
-		to_chat(keeper, span_boldnotice("Somewhere across the dark, coils shift — very slowly, very carefully, the way something enormous moves when it does not want to frighten something small."))
+		to_chat(keeper, span_boldnotice("Somewhere far off, something enormous shifts its coils, very slowly and very carefully."))
 	qdel(src) // clears the trial's structure pointer on the way out
 	if(istype(trial))
 		trial.complete() // deletes the trial — nothing touches it after this
@@ -468,12 +468,12 @@
 /// The shell breaks: the watch fails, the brood ebbs, and the pact resets to nothing — renounceable, never soft-locked
 /obj/structure/vestige_dragon_egg/atom_destruction(damage_flag)
 	assault_underway = FALSE // no tide lands on a broken shell, no hatch check passes
-	visible_message(span_boldwarning("[src] caves in with a wet crack. The warmth goes out of it all at once, and whatever was waking inside goes back to being cold."))
+	visible_message(span_boldwarning("[src] caves in with a wet crack, and the warmth goes out of it all at once."))
 	playsound(src, 'sound/effects/splat.ogg', 80, TRUE)
 	var/mob/living/keeper = bound_mind?.current
 	var/datum/vestige_trial/broodwatch/trial = get_bound_trial()
 	if(istype(trial) && isliving(keeper))
-		to_chat(keeper, span_bolddanger("[trial.patron_name]'s voice arrives flat and unsurprised: \"Cold keeps the clutch. It kept mine. Come and renounce, and I will cut you another — the cold is patient, even when you are not.\""))
+		to_chat(keeper, span_bolddanger("[trial.patron_name]'s voice arrives flat and unsurprised: \"That happens. It happened to mine. Come and renounce the pact and I will cut you another one.\""))
 	return ..()
 
 // --- The brood ---
@@ -487,7 +487,7 @@
  */
 /mob/living/basic/carp/vestige_brood
 	name = "brood carp"
-	desc = "A space carp rendered in pale light and appetite. It moves like a fish and wants like a debt."
+	desc = "A space carp made out of pale light and teeth. It moves like a fish and looks extremely hungry."
 	greyscale_config = NONE
 	icon_state = "base"
 	icon_living = "base"
@@ -601,13 +601,13 @@
 	name = "The Ember Feast"
 	// Keep the count in sync with VESTIGE_EMBER_KILLS_NEEDED
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the jaw. It remembers a fraction of my fire — enough to season a meal, not enough to skip the hunt. Six wild things, dead while my flame is still eating them: find them, burn them, and finish the work before the fire goes out or something else steals the bite. Do not bring me meat killed cold with metal. Cold meals are for scavengers, and I was never that. Almost never."
+	desc = "Take the jaw. It remembers a little of my fire — enough to start a meal, not enough to skip the hunt. Six wild things, dead while my flame is still on them. Burn them and finish the job yourself, before the fire goes out or something else takes the kill. Nothing killed cold with a crowbar counts."
 	/// Prey already savored (weakref -> TRUE) — a revived and re-cooked beast is still one meal
 	var/list/devoured = list()
 
 /datum/vestige_trial/ember_feast/on_accepted(mob/living/user)
 	hand_over(user, new /obj/item/vestige_ember_jaw(get_turf(user)))
-	to_chat(user, span_notice("The jaw settles into your grip, warm side down. It is pointing at everything, one thing at a time."))
+	to_chat(user, span_notice("The jaw settles into your grip, warm side down."))
 
 /datum/vestige_trial/ember_feast/get_progress_text()
 	return "The flame has finished [length(devoured)] of [VESTIGE_EMBER_KILLS_NEEDED] wild things."
@@ -631,7 +631,7 @@
  */
 /obj/item/vestige_ember_jaw
 	name = "ember-jaw"
-	desc = "The fused jawbone of something that starved with its mouth full. The teeth are soot-black, and deep in the marrow something still glows when you tilt it toward the dark."
+	desc = "The fused jawbone of something that starved with its mouth full. The teeth are soot-black, and something still glows deep in the marrow."
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "ember_jaw"
 	w_class = WEIGHT_CLASS_SMALL
@@ -650,7 +650,7 @@
 
 /obj/item/vestige_ember_jaw/examine(mob/user)
 	. = ..()
-	. += span_notice("Squeezed in the hand, it exhales a short cone of dragonfire the way you are facing. Only wild things that die while that flame is still on them feed the feast — douse the fire, or let something else land the kill, and the bite is wasted.")
+	. += span_notice("Squeeze it in your hand to breathe a short cone of dragonfire in the direction you're facing. Only wild things that die while that flame is still on them count — if the fire goes out, or something else lands the kill, it doesn't.")
 
 /obj/item/vestige_ember_jaw/attack_self(mob/user, modifiers)
 	. = ..()
@@ -661,7 +661,7 @@
 	var/mob/living/hunter = user
 	var/datum/vestige_trial/ember_feast/trial = hunter.mind?.active_vestige_trial
 	if(!istype(trial))
-		balloon_alert(hunter, "the jaw is cold — no pact feeds it!")
+		balloon_alert(hunter, "the jaw stays cold!")
 		return TRUE
 	if(!COOLDOWN_FINISHED(src, breath_cooldown))
 		balloon_alert(hunter, "the ember is banked!")
@@ -756,7 +756,7 @@
 		return
 	var/mob/living/hunter = hunter_mind.current
 	if(trial.savor(prey) && isliving(hunter)) // savor may complete (and delete) the trial — nothing touches it after this
-		to_chat(hunter, span_notice("[prey] dies with the flame still feeding. Somewhere, an old hunger notes the portion, and approves."))
+		to_chat(hunter, span_notice("[prey] dies with your flame still on it. Somewhere, an old hunger counts the portion."))
 		playsound(hunter, 'sound/effects/magic/demon_attack1.ogg', 20, TRUE)
 
 /obj/item/vestige_ember_jaw/proc/on_prey_doused(mob/living/prey)
@@ -781,7 +781,7 @@
 	// Keep the counts in sync with VESTIGE_WINGBEAT_PARRIES_NEEDED /
 	// VESTIGE_WINGBEAT_PARRIES_PER_MENACE (initial values must be constant,
 	// so no define interpolation here)
-	desc = "Teeth are the second lesson. The first is the wing. Take the charm and go stand somewhere with teeth in it. When some wild thing commits its whole body to the lunge — refuse it. At the last length, mid-hunt, no sooner: a gust thrown at empty air teaches nothing, and neither does bullying something that has already learned. Eight lunges turned aside, and no beast humbled more than twice. Even I never chewed the same bite twice."
+	desc = "Teeth are the second lesson. The wing is the first. Take the charm and go stand somewhere with teeth in it. When a wild thing throws itself at somebody, beat it back. It only counts if the beast was actually mid-hunt and close enough to reach — a gust at empty air teaches nothing. Eight lunges turned aside, and no single beast counts more than twice."
 	/// Total lunges turned aside so far
 	var/parries = 0
 	/// Parries credited per beast (weakref -> count), capping repeat lessons
@@ -789,7 +789,7 @@
 
 /datum/vestige_trial/wingbeat/on_accepted(mob/living/user)
 	hand_over(user, new /obj/item/vestige_gust_charm(get_turf(user)))
-	to_chat(user, span_notice("The charm settles against your palm. The air around your knuckles goes taut, like a held breath with opinions."))
+	to_chat(user, span_notice("The charm settles against your palm, and the air around your knuckles goes tight."))
 
 /datum/vestige_trial/wingbeat/get_progress_text()
 	return "You have turned aside [parries] of [VESTIGE_WINGBEAT_PARRIES_NEEDED] lunges."
@@ -817,7 +817,7 @@
  */
 /obj/item/vestige_gust_charm
 	name = "gust charm"
-	desc = "A stretch of wing-leather dried around a hollow fang, strung on braided sinew. Held tight, the air within arm's reach feels very slightly ashamed of itself."
+	desc = "A strip of wing leather dried around a hollow fang, strung on braided sinew. Hold it tight and the air around your hand goes very still."
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "gust_charm"
 	w_class = WEIGHT_CLASS_SMALL
@@ -825,7 +825,7 @@
 
 /obj/item/vestige_gust_charm/examine(mob/user)
 	. = ..()
-	. += span_notice("Squeezed in the hand, it beats one wing's worth of storm outward, hurling back everything within [VESTIGE_WINGBEAT_REACH] tiles. Only a wild thing caught that close, mid-lunge at a living person, counts as a parry — and the same beast can only be humbled [VESTIGE_WINGBEAT_PARRIES_PER_MENACE] times.")
+	. += span_notice("Squeeze it in your hand to beat one wing's worth of storm outward, hurling back everything within [VESTIGE_WINGBEAT_REACH] tiles. It only counts as a parry if the beast was wild, that close, and mid-lunge at a living person — and the same beast only counts [VESTIGE_WINGBEAT_PARRIES_PER_MENACE] times.")
 
 /obj/item/vestige_gust_charm/attack_self(mob/user, modifiers)
 	. = ..()
@@ -836,7 +836,7 @@
 	var/mob/living/keeper = user
 	var/datum/vestige_trial/wingbeat/trial = keeper.mind?.active_vestige_trial
 	if(!istype(trial))
-		balloon_alert(keeper, "the charm hangs slack — no pact fills it!")
+		balloon_alert(keeper, "the charm hangs slack!")
 		return TRUE
 	if(!COOLDOWN_FINISHED(src, gust_cooldown))
 		balloon_alert(keeper, "the wing is still folding!")
@@ -871,9 +871,9 @@
 		if(!istype(trial)) // completed (or renounced) partway through the pile — the rest were just thrown
 			break
 		if(trial.parry(menace)) // may complete (and delete) the trial — resolved fresh each loop
-			to_chat(keeper, span_notice("[menace] is beaten out of the air mid-lunge. Somewhere, vast wings approve."))
+			to_chat(keeper, span_notice("[menace] is beaten out of the air mid-lunge."))
 		else
-			to_chat(keeper, span_warning("[menace] has been humbled enough. The wing wants fresh insolence."))
+			to_chat(keeper, span_warning("[menace] has been thrown around enough. Find something else."))
 
 /**
  * TRUE when a beast's throw should count as a parry: wild quarry (shared gate
@@ -951,7 +951,7 @@
 /// Fire stacks Dragonfire slathers on before igniting
 #define VESTIGE_BREATH_STACKS 2
 /// Breaths per Dragonfire cooldown
-#define VESTIGE_BREATH_COOLDOWN (20 SECONDS)
+#define VESTIGE_BREATH_COOLDOWN (40 SECONDS)
 /// How hot the breath burns (carp 700, drake 500 — hot enough to hurt, not to remodel the ship)
 #define VESTIGE_BREATH_TEMP 600
 /// Tiles of corridor Consuming Flame reaches
@@ -961,7 +961,7 @@
 /// Fire stacks Consuming Flame slathers on — victims stay lit
 #define VESTIGE_CONSUMING_STACKS 4
 /// Breaths per Consuming Flame cooldown
-#define VESTIGE_CONSUMING_COOLDOWN (12 SECONDS)
+#define VESTIGE_CONSUMING_COOLDOWN (25 SECONDS)
 /// How long the inner fire keeps its own flame off the breather
 #define VESTIGE_INNER_FIRE_DURATION (5 SECONDS)
 
@@ -989,7 +989,7 @@
 /// Brute the meal itself is mauled for — mostly-consumed, not destroyed
 #define VESTIGE_FEAST_MAULING 60
 /// Feedings per Carrion Feast cooldown
-#define VESTIGE_FEAST_COOLDOWN (60 SECONDS)
+#define VESTIGE_FEAST_COOLDOWN (35 SECONDS)
 /// Brute AND burn each that one Marrow Feast closes (~60 total)
 #define VESTIGE_MARROW_HEAL 30
 /// Blood units a Marrow Feast restores (never past a healthy volume)
@@ -997,7 +997,7 @@
 /// Stamina damage a Marrow Feast clears
 #define VESTIGE_MARROW_STAMINA 60
 /// Feedings per Marrow Feast cooldown
-#define VESTIGE_MARROW_COOLDOWN (45 SECONDS)
+#define VESTIGE_MARROW_COOLDOWN (20 SECONDS)
 /// Incoming brute/burn multiplier while fed (0.8 = 20% resist), human physiology only
 #define VESTIGE_FED_RESIST_MULT 0.8
 /// How long the fed-dragon hide lasts after a Marrow Feast
@@ -1012,14 +1012,14 @@
 
 /datum/vestige_boon/spell/dragon_breath
 	name = "Dragonfire"
-	desc = "The smallest mouthful of my fire, lent to your little lungs: a corridor's length of flame that clings to whatever it tastes. Everything I have ever eaten, I cooked first. Start there."
+	desc = "The smallest mouthful of my fire, lent to your little lungs. A corridor's length of flame, and it sticks to whatever it touches. Everything I ever ate, I cooked first."
 	grant_text = "Your next breath goes out warmer than it came in, and the one after that is warmer still."
 	spell_type = /datum/action/cooldown/mob_cooldown/fire_breath/vestige
 
 /datum/vestige_boon/spell/dragon_breath/consuming
 	name = "Consuming Flame"
-	desc = "The same fire, fed properly: it reaches further, it hungers harder, and it remembers whose mouth it came from — for a few heartbeats after you breathe, flame parts around you like a school of frightened carp. Cook. Wade in. Eat."
-	grant_text = "The fire stops being something you spit and starts being somewhere you live."
+	desc = "The same fire, fed properly. It reaches further, it burns harder, and for a few seconds after you breathe it refuses to burn you at all. Cook something, then walk in after it."
+	grant_text = "Fire suddenly looks like somewhere you could comfortably stand."
 	upgrades_from = /datum/vestige_boon/spell/dragon_breath
 	spell_type = /datum/action/cooldown/mob_cooldown/fire_breath/vestige/consuming
 
@@ -1027,14 +1027,14 @@
 
 /datum/vestige_boon/spell/wing_gust
 	name = "Wing Gust"
-	desc = "One beat of wings you do not have. The crowd around you learns what every small hungry thing between hulls already knows: when something vast moves, you get out of its way, or its way is where you stop."
+	desc = "One beat of wings you don't have. Everyone standing near you gets hurled off their feet, stopping at whatever they hit."
 	grant_text = "Your shoulders ache, once, where the wings should be."
 	spell_type = /datum/action/cooldown/spell/aoe/vestige_wing_gust
 
 /datum/vestige_boon/spell/wing_gust/hurricane
 	name = "Hurricane Beat"
-	desc = "The wingbeat, grown into weather: it reaches further, floors them longer, strips the loose clutter off the deck around you — and blows out any fire impudent enough to be riding you when you beat it. Storms do not burn."
-	grant_text = "The ache in your shoulders deepens. Whatever is growing there is done apologizing for it."
+	desc = "The wingbeat grown into weather. It reaches further, keeps them down longer, sweeps the loose clutter off the deck, and blows out any fire that happens to be burning on you at the time."
+	grant_text = "The ache in your shoulders deepens into something that feels almost like muscle."
 	upgrades_from = /datum/vestige_boon/spell/wing_gust
 	spell_type = /datum/action/cooldown/spell/aoe/vestige_wing_gust/hurricane
 
@@ -1042,14 +1042,14 @@
 
 /datum/vestige_boon/spell/carrion_feast
 	name = "Carrion Feast"
-	desc = "The oldest meal there is: what stopped moving. Kneel at a corpse and take back the strength it was hoarding — the dead keep it badly, and you will keep it well. I have eaten moons, little one. Every one of them tasted of this."
+	desc = "The oldest meal there is. Kneel over a corpse and take back the strength it isn't using anymore. I have eaten moons, and every one of them tasted like this."
 	grant_text = "Your stomach turns over once — and then, horribly, settles."
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_carrion_feast
 
 /datum/vestige_boon/spell/carrion_feast/marrow
 	name = "Marrow Feast"
-	desc = "Feeding, done properly: down to the marrow. The dead lend you their blood, their wind, their stubbornness — and for a while after, your hide answers wounds the way mine does. Which is: barely, and with contempt."
-	grant_text = "Hunger stops being a warning and becomes an instrument."
+	desc = "Feeding done properly, right down to the marrow. You get their blood and their wind along with the meal, and for a while afterward your skin shrugs off hits the way mine does."
+	grant_text = "Hunger stops feeling like a warning and starts feeling like a tool."
 	upgrades_from = /datum/vestige_boon/spell/carrion_feast
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_carrion_feast/marrow
 
@@ -1093,7 +1093,7 @@
  */
 /datum/action/cooldown/mob_cooldown/fire_breath/vestige/consuming
 	name = "Consuming Flame"
-	desc = "Breathe a longer, hungrier line of flame. For a few seconds after, fire — including your own — declines to burn you."
+	desc = "Breathe a longer, hungrier line of flame. For a few seconds after, fire — including your own — won't burn you."
 	cooldown_time = VESTIGE_CONSUMING_COOLDOWN
 	fire_range = VESTIGE_CONSUMING_RANGE
 	fire_damage = VESTIGE_CONSUMING_DAMAGE
@@ -1123,16 +1123,16 @@
 /datum/status_effect/vestige_inner_fire/on_apply()
 	owner.extinguish_mob()
 	owner.add_traits(list(TRAIT_NOFIRE, TRAIT_RESISTHEAT), TRAIT_STATUS_EFFECT(id))
-	to_chat(owner, span_boldnotice("The fire knows its own. Walk where you please."))
+	to_chat(owner, span_boldnotice("Fire won't touch you for a few seconds. Walk where you like."))
 	return TRUE
 
 /datum/status_effect/vestige_inner_fire/on_remove()
 	owner.remove_traits(list(TRAIT_NOFIRE, TRAIT_RESISTHEAT), TRAIT_STATUS_EFFECT(id))
-	to_chat(owner, span_warning("The fire forgets your face. Step carefully again."))
+	to_chat(owner, span_warning("Fire can burn you again. Watch your step."))
 
 /atom/movable/screen/alert/status_effect/vestige_inner_fire
 	name = "Inner Fire"
-	desc = "For the moment, flame — including your own — declines to burn you."
+	desc = "For the moment, fire — including your own — won't burn you."
 	icon_state = "fire"
 
 // ===== WING GUST =====
@@ -1197,7 +1197,7 @@
 	new wave_type(get_turf(owner))
 	owner.visible_message(
 		span_boldwarning("The air around [owner] slams outward, beaten by wings that are not there!"),
-		span_notice("You beat wings you do not have, and the room agrees to leave."),
+		span_notice("You beat wings you don't have, and everyone nearby leaves in a hurry."),
 	)
 	// A little hop on the downbeat, in place of the dragon's whole ascent
 	var/base_y = owner.pixel_y
@@ -1234,7 +1234,7 @@
 	var/mob/living/beater = owner
 	if(beater.on_fire)
 		beater.extinguish_mob()
-		to_chat(beater, span_notice("The downdraft tears the fire off you. Storms do not burn."))
+		to_chat(beater, span_notice("The downdraft tears the fire off you."))
 
 /obj/effect/temp_visual/circle_wave/vestige_gust
 	color = "#d8d4c8"
@@ -1261,8 +1261,8 @@
 /datum/action/cooldown/spell/pointed/vestige_carrion_feast
 	name = "Carrion Feast"
 	desc = "Feed on an adjacent organic corpse: a few seconds of grisly work that closes your wounds. Any given body only ever feeds one feast."
-	button_icon = 'icons/mob/actions/actions_slime.dmi'
-	button_icon_state = "consume"
+	button_icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
+	button_icon_state = "carrion_feast"
 	background_icon_state = "bg_demon"
 	overlay_icon_state = "bg_demon_border"
 	sound = 'sound/effects/magic/demon_attack1.ogg'
@@ -1305,7 +1305,7 @@
 	var/mob/living/meal = cast_on
 	owner.visible_message(
 		span_boldwarning("[owner] kneels over [meal] and begins to feed!"),
-		span_notice("You kneel over [meal] and begin taking back what the dead were hoarding."),
+		span_notice("You kneel over [meal] and start taking back what it isn't using."),
 	)
 	playsound(meal, 'sound/items/eatfood.ogg', 60, TRUE)
 	if(!do_after(owner, channel_time, target = meal))
@@ -1333,7 +1333,7 @@
 /// The payoff, split out so the marrow feast can deepen it
 /datum/action/cooldown/spell/pointed/vestige_carrion_feast/proc/feast_effects(mob/living/feaster)
 	feaster.heal_overall_damage(brute = heal_amount, burn = heal_amount, required_bodytype = BODYTYPE_ORGANIC)
-	to_chat(feaster, span_boldnotice("The stolen strength settles in. The dead were keeping it badly anyway."))
+	to_chat(feaster, span_boldnotice("The stolen strength settles in. It wasn't doing them any good."))
 
 /**
  * The feed taken all the way down: bigger heal, the meal's blood and wind
@@ -1371,7 +1371,7 @@
 		var/mob/living/carbon/human/human_owner = owner
 		human_owner.physiology.brute_mod *= VESTIGE_FED_RESIST_MULT
 		human_owner.physiology.burn_mod *= VESTIGE_FED_RESIST_MULT
-	to_chat(owner, span_boldnotice("The meal settles over you like scale. Fed things are hard to hurt."))
+	to_chat(owner, span_boldnotice("The meal settles over you like scale. You feel much harder to hurt."))
 	return TRUE
 
 /datum/status_effect/vestige_fed_dragon/on_remove()
@@ -1379,7 +1379,7 @@
 		var/mob/living/carbon/human/human_owner = owner
 		human_owner.physiology.brute_mod /= VESTIGE_FED_RESIST_MULT
 		human_owner.physiology.burn_mod /= VESTIGE_FED_RESIST_MULT
-	to_chat(owner, span_warning("The fed feeling fades, and your skin remembers it is only skin."))
+	to_chat(owner, span_warning("The fed feeling fades, and your skin goes back to being skin."))
 
 /atom/movable/screen/alert/status_effect/vestige_fed_dragon
 	name = "Fed"

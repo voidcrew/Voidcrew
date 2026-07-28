@@ -30,7 +30,7 @@
 	id = "contested_cache"
 	suffix = "contested_cache.dmm"
 	name = "Bonded Courier Drop Platform"
-	description = "An automated freight-escrow platform. The courier firm that built it liquidated decades ago, but the vault never missed a cycle - and its beacon still tells the whole sector when a drop goes live."
+	description = "An automated freight-escrow platform. The courier firm that built it went under decades ago, but the vault still runs on schedule and still tells the whole sector when a drop goes live."
 	unpickable = TRUE // never naturally seeded; only the event scheduler surfaces it
 	allow_duplicates = TRUE
 
@@ -43,7 +43,7 @@
 
 /obj/structure/overmap/space_ruin/contested_cache
 	name = "bonded courier beacon"
-	desc = "A logistics beacon broadcasting an escrow drop notice on every open channel. Everyone in the sector heard the same thing you did."
+	desc = "A logistics beacon broadcasting a drop notice on every open channel. Every ship in the sector got the same message you did."
 
 	/// world.time at which the vault unseals. 0 until start_event().
 	var/unlock_at = 0
@@ -81,9 +81,9 @@
 	else if(vault_opened)
 		. += span_boldwarning("The cache has been claimed - but whoever claimed it still has to make it home.")
 	else if(unlock_at && world.time < unlock_at)
-		. += span_boldwarning("The vault unseals in [DisplayTimeText(unlock_at - world.time)]. Everyone knows.")
+		. += span_boldwarning("The vault unseals in [DisplayTimeText(unlock_at - world.time)]. Expect company.")
 	else if(unlock_at)
-		. += span_boldwarning("The vault is unsealed. The cache belongs to whoever cracks it and keeps it.")
+		. += span_boldwarning("The vault is unsealed. Whoever cracks it first gets the cache.")
 
 /// Unique helm-waypoint key for this event site.
 /obj/structure/overmap/space_ruin/contested_cache/proc/waypoint_key()
@@ -104,7 +104,7 @@
 	var/pvp_window_minutes = round(CONTESTED_CACHE_UNLOCK_DELAY / (1 MINUTES))
 
 	broadcast_galaxy(
-		"Sector drop notice: bonded courier cache active at [where]. Escrow seals disengage in [pvp_window_minutes] minutes. Contents: ship-grade components, bonded to no one. All claims settled on-site.",
+		"Sector drop notice: bonded courier cache active at [where]. Escrow seals disengage in [pvp_window_minutes] minutes. Contents: ship-grade components, unclaimed. All claims settled on-site.",
 		"Contested Cache",
 	)
 
@@ -262,7 +262,7 @@
  */
 /obj/structure/contested_cache_vault
 	name = "bonded courier vault"
-	desc = "An armored escrow vault, bolted through the platform's keel. The seal schedule is broadcast sector-wide; the armor plating is the courier firm's famous last word in dispute resolution."
+	desc = "An armored escrow vault bolted through the platform's keel. It only opens on schedule, and the plating is there for everyone who didn't want to wait."
 	icon = 'voidcrew/modules/contested_cache/icons/cache.dmi'
 	icon_state = "cache_vault"
 	anchored = TRUE
@@ -280,13 +280,13 @@
 	. = ..()
 	var/obj/structure/overmap/space_ruin/contested_cache/signal = signal_ref?.resolve()
 	if(breached || signal?.vault_opened)
-		. += span_notice("The vault hangs open, its escrow contract settled.")
+		. += span_notice("The vault hangs open and empty.")
 	else if(!signal)
 		. += span_notice("The seal display is dark. The vault is dormant.")
 	else if(world.time < signal.unlock_at)
 		. += span_boldwarning("The seal display counts down: [DisplayTimeText(signal.unlock_at - world.time)] until the escrow seals disengage.")
 	else
-		. += span_boldwarning("The seals are disengaged. A sustained manual override ([CONTESTED_CACHE_OPEN_TIME / 10] seconds) would crack it open.")
+		. += span_boldwarning("The seals are disengaged. Forcing it open by hand would take [CONTESTED_CACHE_OPEN_TIME / 10] seconds.")
 
 /obj/structure/contested_cache_vault/attack_hand(mob/living/user, list/modifiers)
 	. = ..()
@@ -306,7 +306,7 @@
 		balloon_alert(user, "vault dormant!")
 		return
 	if(world.time < signal.unlock_at)
-		to_chat(user, span_warning("The escrow seals hold fast. The display reads: [DisplayTimeText(signal.unlock_at - world.time)] until disengagement."))
+		to_chat(user, span_warning("The seals are still locked. The display reads [DisplayTimeText(signal.unlock_at - world.time)] until they disengage."))
 		return
 	if(busy)
 		balloon_alert(user, "someone is already cracking it!")
@@ -314,8 +314,8 @@
 
 	busy = TRUE
 	user.visible_message(
-		span_warning("[user] starts forcing an override on [src]'s escrow locks!"),
-		span_notice("You start forcing an override on the escrow locks... Hold still - any hit will break your grip."),
+		span_warning("[user] starts forcing [src]'s escrow locks!"),
+		span_notice("You start forcing the escrow locks... hold still, any hit will break your grip."),
 	)
 	playsound(src, 'sound/machines/click.ogg', 50, TRUE)
 	var/health_at_start = user.health
@@ -344,8 +344,8 @@
 	set_breached()
 	playsound(src, 'sound/machines/airlock/boltsup.ogg', 75, TRUE)
 	user.visible_message(
-		span_boldwarning("[src] shudders open - the bonded cache is out!"),
-		span_boldnotice("The escrow locks release. The cache is yours - if you can keep it."),
+		span_boldwarning("[src] grinds open!"),
+		span_boldnotice("The escrow locks release. The cache is yours."),
 	)
 	var/obj/structure/closet/crate/secure/ship_part_prize/crate = spawn_ship_part_prize(get_drop_turf())
 	if(crate)

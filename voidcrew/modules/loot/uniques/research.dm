@@ -211,7 +211,7 @@
  */
 /obj/item/reagent_containers/cup/beaker/entangled
 	name = "entangled beaker"
-	desc = "Two beakers, serial numbers identical. The manual says not to separate them. There is no manual."
+	desc = "Two beakers with identical serial numbers. Anything you pour into one turns up in the other instead."
 	/// Weakref to this beaker's paired twin.
 	var/datum/weakref/linked_twin
 	/// Reentrancy guard so a relay doesn't relay itself back and forth forever.
@@ -267,7 +267,7 @@
  */
 /obj/item/displacer_fork
 	name = "displacer fork"
-	desc = "A tuning fork machined from something that hums back."
+	desc = "A tuning fork machined out of some dark alloy. Strike it and you trade places with whatever's in front of you."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "displacer_fork"
 	w_class = WEIGHT_CLASS_SMALL
@@ -292,7 +292,7 @@
 
 	var/atom/movable/target = find_swap_target(user)
 	if(!target)
-		to_chat(user, span_notice("[src] hums and finds nothing worth trading places with."))
+		to_chat(user, span_notice("[src] hums, but there's nothing ahead of you to swap with."))
 		return
 
 	COOLDOWN_START(src, fork_cooldown, 20 SECONDS)
@@ -352,7 +352,7 @@
  */
 /obj/item/clothing/gloves/fingerless/chronal_splint
 	name = "chronal splint"
-	desc = "A wrist brace of overlapping brass leaves, ticking very slightly out of sync with the room."
+	desc = "A wrist brace of overlapping brass leaves, ticking slightly out of time with everything else. If you go down, it rewinds you ten seconds and snaps in half."
 	/// The wearer currently being tracked, if any.
 	var/mob/living/wearer
 	/// Ring buffer of recent (turf, damage) snapshots, oldest first.
@@ -440,8 +440,8 @@
 	if(user.stat == DEAD)
 		user.revive(NONE)
 
-	user.visible_message(span_warning("[user]'s wrist brace flares and cracks in half — [user.p_theyre()] weren't there a moment ago!"), \
-		span_userdanger("The last ten seconds unwind. You're back where you were, and the splint is dead weight."))
+	user.visible_message(span_warning("[user]'s wrist brace flares and cracks in half, and suddenly [user.p_theyre()] standing somewhere else!"), \
+		span_userdanger("The last ten seconds unwind. You're back where you were, and the splint is scrap."))
 
 	qdel(src)
 
@@ -472,7 +472,7 @@
  */
 /obj/item/clothing/suit/toggle/labcoat/eventide_courier
 	name = "Eventide courier coat"
-	desc = "A lab coat with one inside pocket the tailor refuses to discuss."
+	desc = "A lab coat with an inside pocket that holds absolutely anything, whatever the size. Drag something onto the coat to stash it."
 	/// The one object stashed in the inside pocket, if any.
 	var/atom/movable/stashed_object
 

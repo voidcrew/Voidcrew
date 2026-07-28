@@ -48,7 +48,7 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
  */
 /obj/item/blueprint
 	name = "schematic"
-	desc = "A rolled fabrication schematic. Carry it and its recipe appears in your crafting menu; feed it to an outpost's neural imprinter to learn it for the round."
+	desc = "A rolled-up fabrication schematic. Carry it and its recipe shows up in your crafting menu."
 	icon = 'icons/obj/scrolls.dmi'
 	icon_state = "blueprints"
 	inhand_icon_state = "blueprints"
@@ -105,7 +105,7 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
 				var/atom/machine_cast = machine_path
 				machine_names += initial(machine_cast.name)
 			. += span_notice("Needs a [machine_names.Join(" or ")] nearby.")
-	. += span_notice("While this schematic is on you, the recipe is in your crafting menu. An outpost <b>neural imprinter</b> can burn it into your memory for the round — destroying the scroll.")
+	. += span_notice("While you're carrying this, the recipe is in your crafting menu. An outpost <b>neural imprinter</b> can burn it into your memory for the rest of the round, but the scroll is destroyed doing it.")
 
 /**
  * # Blueprint recipes
@@ -145,7 +145,7 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
  */
 /obj/item/gun_part
 	name = "weapon component"
-	desc = "A machined firearm component. Inert on its own — combine it with the matching schematic's recipe in the crafting menu."
+	desc = "A machined firearm component. You'll need the matching schematic to build it into a working gun."
 	icon = 'voidcrew/modules/weapons_bench/icons/gun_parts.dmi'
 	icon_state = "gun_part"
 	lefthand_file = 'voidcrew/modules/weapons_bench/icons/gun_parts_lefthand.dmi'

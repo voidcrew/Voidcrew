@@ -141,9 +141,12 @@ GLOBAL_LIST_EMPTY(vestige_records)
 
 	var/mob/living/user = owner.current
 	if(isliving(user))
-		to_chat(user, span_bolddanger("[patron_name]'s voice crawls up the back of your skull: \"The pact is fulfilled.\""))
+		to_chat(user, span_bolddanger("You hear [patron_name] in the back of your head: \"The pact is done.\""))
 		playsound(user, 'sound/effects/magic/curse.ogg', 50, TRUE)
-		offer_reward(user)
+	// Runs body or no body. Deferred completions (the egg's hatch beat, the Red
+	// Road's concluding beat) can land after the keeper has been gibbed, and the
+	// pact is spent either way, so the debt has to be booked regardless.
+	offer_reward(user)
 	qdel(src)
 
 /**
@@ -156,20 +159,25 @@ GLOBAL_LIST_EMPTY(vestige_records)
 		return
 	var/list/eligible = get_eligible_vestige_boons(owner, boon_pool)
 	if(!length(eligible))
-		to_chat(user, span_notice("\"You have already taken all I had to give. Carry the debt as an heirloom.\""))
+		if(isliving(user))
+			to_chat(user, span_notice("\"You've already taken everything I had to give.\""))
 		return
 	var/list/candidates = list()
 	for(var/pick_count in 1 to min(VESTIGE_REWARD_CHOICES, length(eligible)))
 		candidates += pick_n_take(eligible)
-	var/datum/action/vestige_reward/reward = new(owner, candidates, patron_name)
-	reward.Grant(user)
-	owner.vestige_pending_reward = reward
-	// The debt survives death: if they die unclaimed, restoration recreates it from the record
+	// The ledger is written FIRST, so the debt survives both death and a completion
+	// that fires with no body left to hand the button to. Either way the next patron
+	// rebuilds the claim from it (restore_lost_legacy in patron.dm).
 	var/datum/vestige_record/record = get_vestige_record(owner, create = TRUE)
 	if(record)
 		record.pending_candidates = candidates.Copy()
 		record.pending_patron_name = patron_name
-	to_chat(user, span_boldnotice("\"Now — your payment. Choose.\""))
+	if(!isliving(user)) // nobody to hand it to; the ledger holds it until they come back
+		return
+	var/datum/action/vestige_reward/reward = new(owner, candidates, patron_name)
+	reward.Grant(user)
+	owner.vestige_pending_reward = reward
+	to_chat(user, span_boldnotice("\"Now for your payment. Pick one.\""))
 	INVOKE_ASYNC(reward, TYPE_PROC_REF(/datum/action/vestige_reward, open_reward_menu), user)
 
 /**
@@ -186,7 +194,7 @@ GLOBAL_LIST_EMPTY(vestige_records)
  */
 /datum/action/vestige_pact
 	name = "Vestige Pact"
-	desc = "You carry an unfulfilled pact. Click to recall its terms."
+	desc = "You have an unfinished pact. Click to review it."
 	button_icon = 'icons/mob/actions/actions_ecult.dmi'
 	button_icon_state = "eye"
 	background_icon_state = "bg_heretic"
@@ -203,7 +211,7 @@ GLOBAL_LIST_EMPTY(vestige_records)
 	// Keep the tooltip title stable (the button's saved position keys off name);
 	// the live details ride in the description, which the tooltip reads on hover.
 	desc = trial \
-		? "[trial.name] — [trial.patron_name]'s pact.\n[trial.get_progress_text()]\nClick to recall the full terms." \
+		? "[trial.name] — [trial.patron_name]'s pact.\n[trial.get_progress_text()]\nClick to review the full terms." \
 		: initial(desc)
 	return ..()
 

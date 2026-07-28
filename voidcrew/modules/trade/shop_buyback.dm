@@ -102,14 +102,22 @@
 /**
  * Every matching item on the seller, held items first so a deliberate
  * hand-off is always the thing consumed first.
+ *
+ * Anything the seller is currently wearing is skipped. The contents sweep goes
+ * through get_all_contents(), which reaches into worn slots as readily as into
+ * a backpack, so without this a salvage ledger would quietly sell the armor off
+ * the seller's own back — or the MODsuit they are standing in. Held items still
+ * count (that hand-off is the whole gesture), and so does anything in a bag or
+ * a pocket, because carrying it there is already a decision to bring it.
  */
 /datum/shop_buyback/proc/find_offered_items(mob/living/user)
 	var/list/found = list()
 	for(var/obj/item/held in user.held_items)
 		if(matches(held))
 			found += held
+	var/list/worn = user.get_equipped_items()
 	for(var/obj/item/offered in user.get_all_contents())
-		if(offered in found)
+		if((offered in found) || (offered in worn))
 			continue
 		if(matches(offered))
 			found += offered

@@ -8,12 +8,14 @@
  * Undertow's stalls (see outpost.dm get_shop(), trader_npc.dm for the mobs).
  *
  * Balance notes:
- * - No overlap with Barnaby's counter: he keeps the starter fishing rod and
- *   the groceries; Fern owns seeds/botany kit, Pike owns tackle and the
- *   serious rods.
- * - Fern's produce buyback pays pocket change on purpose — it's the "sell
- *   your harvest at the waystation" fantasy, not an economy. Her real asks
- *   (grafts, ash flora) only come off planets.
+ * - No overlap with Barnaby's counter: he keeps the groceries, Fern owns seeds
+ *   and grower's supply, Pike owns tackle and the rods. Neither stall stocks
+ *   anything a stock ship autolathe prints for free — that ruled out the plant
+ *   analyzer, watering can, cultivator, secateurs, aquarium kit and fish case.
+ * - Fern's produce and graft buybacks pay pocket change on purpose — it's the
+ *   "sell your harvest at the waystation" fantasy, not an economy. Her graft
+ *   ledger refuses plain repeated-harvest cuttings so a tray of wheat can't be
+ *   farmed into credits; see the matches() override below.
  * - Pike never buys what his own pond stocks at meaningful prices; the
  *   trophy ledger wants the weird stuff.
  */
@@ -48,14 +50,13 @@
 		/datum/shop_sku/potting/sugarcane,
 		/datum/shop_sku/potting/berry,
 		// Grower's Supply
-		/datum/shop_sku/potting/plant_analyzer,
-		/datum/shop_sku/potting/watering_can,
-		/datum/shop_sku/potting/cultivator,
-		/datum/shop_sku/potting/secateurs,
 		/datum/shop_sku/potting/plantbgone,
+		/datum/shop_sku/potting/pestspray,
 		/datum/shop_sku/potting/leather_gloves,
 		/datum/shop_sku/potting/plant_bag,
 		/datum/shop_sku/potting/ez_nutrient,
+		/datum/shop_sku/potting/robust_harvest,
+		/datum/shop_sku/potting/left4zed,
 		/datum/shop_sku/potting/overalls,
 		// The Apiary
 		/datum/shop_sku/potting/honeycomb,
@@ -89,13 +90,13 @@
 		TRADER_LINE_REFUSAL = list(
 			"Barnaby says your ship's flagged, and I don't argue with Barnaby.",
 			"No seeds for embargoed crews. Plants pick up on that sort of thing.",
-			"Come back when your ledger's greener. Everything here is about being greener.",
+			"Come back when your ledger's a bit greener.",
 		),
 		TRADER_LINE_IDLE = list(
 			"Every plant in this room has a name. The turrets don't, that felt wrong.",
 			"Real dirt. Shipped in eighty crates, one apology to customs at a time.",
 			"The bees know the way to the pond and back. Nobody taught them. I don't ask.",
-			"Grafts! Bring me grafts. The weirder the plant, the better the tea.",
+			"Bring me grafts with something actually in them. A cutting off a wheat stalk is just a cutting.",
 			"Ash flora seeds off the burning worlds — I pay proper credits. They grow ANYWHERE. It's terrifying. I love them.",
 			"Pike keeps saying fish fertilizer would double my yield. Pike is banned from the conservatory.",
 		),
@@ -159,33 +160,14 @@
 
 // ===== GROWER'S SUPPLY =====
 
-/datum/shop_sku/potting/plant_analyzer
-	category = "Grower's Supply"
-	item_path = /obj/item/plant_analyzer
-	price_credits = 150
-	stock_min = 2
-	stock_max = 3
-
-/datum/shop_sku/potting/watering_can
-	category = "Grower's Supply"
-	item_path = /obj/item/reagent_containers/cup/watering_can
-	price_credits = 60
-
-/datum/shop_sku/potting/cultivator
-	category = "Grower's Supply"
-	item_path = /obj/item/cultivator
-	price_credits = 50
-
-/datum/shop_sku/potting/secateurs
-	category = "Grower's Supply"
-	item_path = /obj/item/secateurs
-	price_credits = 80
-	stock_min = 2
-	stock_max = 3
-
 /datum/shop_sku/potting/plantbgone
 	category = "Grower's Supply"
 	item_path = /obj/item/reagent_containers/spray/plantbgone
+	price_credits = 80
+
+/datum/shop_sku/potting/pestspray
+	category = "Grower's Supply"
+	item_path = /obj/item/reagent_containers/spray/pestspray
 	price_credits = 80
 
 /datum/shop_sku/potting/leather_gloves
@@ -206,6 +188,24 @@
 	price_credits = 40
 	stock_min = 4
 	stock_max = 8
+
+/datum/shop_sku/potting/robust_harvest
+	name = "Robust Harvest bottle"
+	desc = "Nutrient that pushes yield up and holds the plant's genes still. Fern's standard advice for anyone growing food rather than experiments."
+	category = "Grower's Supply"
+	item_path = /obj/item/reagent_containers/cup/bottle/nutrient/rh
+	price_credits = 90
+	stock_min = 3
+	stock_max = 6
+
+/datum/shop_sku/potting/left4zed
+	name = "Left 4 Zed bottle"
+	desc = "Nutrient that makes a plant mutate far more often. Fern sells it with a warning she does not expect anyone to take."
+	category = "Grower's Supply"
+	item_path = /obj/item/reagent_containers/cup/bottle/nutrient/l4z
+	price_credits = 90
+	stock_min = 2
+	stock_max = 4
 
 /datum/shop_sku/potting/overalls
 	category = "Grower's Supply"
@@ -233,7 +233,7 @@
 /datum/shop_sku/potting/queen_bee
 	category = "The Apiary"
 	name = "packaged queen bee"
-	desc = "A queen and her patience, boxed for transit. Fern includes handwritten care instructions whether you want them or not."
+	desc = "A live queen and a starter retinue, boxed for transit. Fern includes handwritten care instructions whether you want them or not."
 	item_path = /obj/item/queen_bee
 	price_credits = 400
 	stock_min = 1
@@ -289,18 +289,31 @@
 
 // ===== FERN'S CUTTINGS LEDGER (buybacks) =====
 
+// Fern buys genetics, not clippings. Grafts taken off a plant with no
+// graft_gene of its own come out carrying the default repeated-harvest trait,
+// which she already has on everything and will not pay for — that closes the
+// "buy a cheap seed, snip it forever" loop without touching the seed rack.
+// Priced and demanded low on purpose: secateurs print free on a stock ship
+// autolathe, so the supply side of this ledger can't be gated, only the
+// payout.
 /datum/shop_buyback/potting/graft
-	name = "plant graft (any)"
-	desc = "A snipped cutting carrying a trait worth keeping. Fern trades credits for genetics and considers it a bargain."
+	name = "plant graft (with a trait)"
+	desc = "A snipped cutting carrying a real trait. Fern pays for genetics she doesn't already have, so a cutting off a wheat stalk is worth nothing to her."
 	category = "Cuttings & Curiosities"
 	item_path = /obj/item/graft
-	pay_credits = 200
-	demand_min = 2
-	demand_max = 4
+	pay_credits = 150
+	demand_min = 1
+	demand_max = 2
+
+/datum/shop_buyback/potting/graft/matches(obj/item/offered)
+	if(!..())
+		return FALSE
+	var/obj/item/graft/snip = offered
+	return !istype(snip.stored_trait, /datum/plant_gene/trait/repeated_harvest)
 
 /datum/shop_buyback/potting/ash_flora
 	name = "ash flora seeds (any)"
-	desc = "Seed stock off the burning worlds — cactus, mushroom, moss, whatever survives down there. It all grows up here, which keeps Fern awake at night in a good way."
+	desc = "Seed stock off the burning worlds — cactus, mushroom, moss, whatever survives down there. All of it grows just fine up here, which Fern finds thrilling and slightly alarming."
 	category = "Cuttings & Curiosities"
 	item_path = /obj/item/seeds/lavaland
 	pay_credits = 150
@@ -313,8 +326,8 @@
 	category = "The Farm Stand"
 	item_path = /obj/item/food/grown
 	pay_credits = 15
-	demand_min = 8
-	demand_max = 15
+	demand_min = 5
+	demand_max = 10
 
 // =========================================================================
 // PIKE'S BAIT & TACKLE — Pike, resident angler
@@ -335,7 +348,8 @@
 		"Aquarist Corner",
 	)
 	sku_types = list(
-		// Rods & Reels — Barnaby sells the starter rod; Pike sells the ones that catch
+		// Rods & Reels — the basic rod prints on any ship lathe, so Pike only
+		// stocks the ones worth carrying out to a planet
 		/datum/shop_sku/bait/telescopic_rod,
 		// Bait & Tackle
 		/datum/shop_sku/bait/hook_box,
@@ -345,9 +359,9 @@
 		/datum/shop_sku/bait/premium_worms,
 		/datum/shop_sku/bait/fishing_hat,
 		// Aquarist Corner
-		/datum/shop_sku/bait/aquarium_kit,
 		/datum/shop_sku/bait/fish_feed,
-		/datum/shop_sku/bait/fish_case,
+		/datum/shop_sku/bait/fishy_reagent,
+		/datum/shop_sku/bait/revival_kit,
 	)
 	rotating_pool = list(
 		/datum/shop_sku/bait/rotating/rescue_rod,
@@ -377,7 +391,7 @@
 		),
 		TRADER_LINE_IDLE = list(
 			"Nobody approved the pond. That was forty years ago. It has a name now.",
-			"Caught a pike in there once. That's why it's me telling you and not him.",
+			"Caught a pike in there once. Big one. That's how I got the name, more or less.",
 			"The fish come in with the water recyclers. Nobody believes me. The fish don't care.",
 			"Bring me a donkfish and I'll pay stupid money. I have a THEORY.",
 			"Barnaby buys anything with fins for the chowder. I buy the ones worth mounting.",
@@ -447,13 +461,6 @@
 
 // ===== AQUARIST CORNER =====
 
-/datum/shop_sku/bait/aquarium_kit
-	category = "Aquarist Corner"
-	item_path = /obj/item/aquarium_kit
-	price_credits = 200
-	stock_min = 1
-	stock_max = 3
-
 /datum/shop_sku/bait/fish_feed
 	category = "Aquarist Corner"
 	item_path = /obj/item/reagent_containers/cup/fish_feed
@@ -461,12 +468,23 @@
 	stock_min = 3
 	stock_max = 6
 
-/datum/shop_sku/bait/fish_case
+/datum/shop_sku/bait/fishy_reagent
+	name = "bottle of fishy reagent"
+	desc = "Splash two to ten units on a dead fish and it comes back. Pike keeps a crate of it behind the bench and does not explain where it comes from."
 	category = "Aquarist Corner"
-	item_path = /obj/item/storage/fish_case
-	price_credits = 50
+	item_path = /obj/item/reagent_containers/cup/bottle/fishy_reagent
+	price_credits = 90
 	stock_min = 3
 	stock_max = 6
+
+/datum/shop_sku/bait/revival_kit
+	name = "fish revival kit"
+	desc = "A lazarus injector, a bottle of the fishy stuff and two transport cases. Everything you need to bring a rare catch home breathing."
+	category = "Aquarist Corner"
+	item_path = /obj/item/storage/box/fish_revival_kit
+	price_credits = 350
+	stock_min = 1
+	stock_max = 2
 
 // ===== ROTATING BENCH =====
 
@@ -477,7 +495,7 @@
 /datum/shop_sku/bait/rotating/rescue_rod
 	category = "Rods & Reels"
 	name = "rescue rod"
-	desc = "A rod rigged with a rescue hook — casts at people, not fish. Pike sells one every time somebody falls in the pond, which is more often than the pond deserves."
+	desc = "A rod rigged with a rescue hook — it casts at people, not fish. Pike sells one every time somebody falls in the pond, which is more often than you'd think."
 	item_path = /obj/item/fishing_rod/rescue
 	price_credits = 350
 

@@ -140,9 +140,9 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	if(raidable)
 		. += span_danger("This deep-space claim is outside patrolled space. It can be attacked.")
 		if(get_shield_generator()?.charge > 0)
-			. += span_boldnotice("Sensor sweep: an energy shield envelops the claim.")
+			. += span_boldnotice("Sensors show an energy shield up around the claim.")
 	else
-		. += span_notice("Registered in patrolled space — protected from ship weapons.")
+		. += span_notice("Registered in patrolled space. Protected from ship weapons.")
 
 // ===== OWNERSHIP =====
 

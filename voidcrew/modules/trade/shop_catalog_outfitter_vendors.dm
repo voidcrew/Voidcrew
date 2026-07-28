@@ -7,8 +7,12 @@
  * wiring as the Undertow's stalls (see outpost.dm get_shop(), trader_npc.dm).
  *
  * Balance notes:
- * - No overlap with Sarge's counter: she owns arms, armor and MOD modules;
- *   Boffin owns gadgets, ship retrofit parts and power cells.
+ * - No overlap with Sarge's counter: she owns arms, armor, hull stock and the
+ *   ship-systems boards; Boffin owns gadgets, machine retrofit parts and power
+ *   cells. MOD suits and modules belong to the suit fitter's stall.
+ * - Boffin's tier-2 stock parts are the point of this stall. Only 9 of 48 ships
+ *   can research parts, and a laser turret takes a swappable cell, so the cell
+ *   ladder here is a real ship upgrade path. Don't thin it out.
  * - The buyback ledger only wants what a ship can't print: anomaly cores,
  *   slime extracts, and raw exotics out of the ground. No circuit boards —
  *   anything a lathe spits out is a money loop waiting to happen.
@@ -34,7 +38,6 @@
 	)
 	sku_types = list(
 		// Gadgetry
-		/datum/shop_sku/skunk/multitool,
 		/datum/shop_sku/skunk/signaler,
 		/datum/shop_sku/skunk/adv_analyzer,
 		/datum/shop_sku/skunk/science_gps,
@@ -75,7 +78,7 @@
 			"Payment logged. If it hums at a frequency you can taste, power it down.",
 		),
 		TRADER_LINE_REFUSAL = list(
-			"You're flagged in the system and the system, unlike me, holds grudges.",
+			"You're flagged in the system. I'd let it slide. The system won't.",
 			"No sales under embargo. Sarge's rule. Sarge has all the rules and the armory.",
 			"Science is neutral. My till, regrettably, is not.",
 		),
@@ -84,7 +87,7 @@
 			"Bring me anomaly cores. Intact, please. INTACT. We've had incidents.",
 			"The imprinter is perfectly safe. The screaming is a licensing formality.",
 			"Slime extracts, glands, crystals — if a planet made it and it shouldn't exist, I'm buying.",
-			"A tier-two servo doubles your lathe speed. That's not a sales pitch, that's physics with a price tag.",
+			"A tier-two servo doubles your lathe speed. That's not a sales pitch, that's just the spec sheet.",
 			"The convoy escort calls this annex 'the spooky room'. The convoy escort is correct.",
 		),
 		TRADER_LINE_RESTOCK = list(
@@ -99,11 +102,6 @@
 	stock_max = 4
 
 // ===== GADGETRY =====
-
-/datum/shop_sku/skunk/multitool
-	category = "Gadgetry"
-	item_path = /obj/item/multitool
-	price_credits = 150
 
 /datum/shop_sku/skunk/signaler
 	category = "Gadgetry"
@@ -207,7 +205,7 @@
 /datum/shop_sku/skunk/rotating/foam_grenade
 	category = "Gadgetry"
 	name = "smart metal foam grenade"
-	desc = "Hull breach in a can, in reverse. The foam knows where the hole is better than you do."
+	desc = "A hull-patch grenade. Set it off near a breach and the foam finds the hole on its own."
 	item_path = /obj/item/grenade/chem_grenade/smart_metal_foam
 	price_credits = 350
 
@@ -222,7 +220,7 @@
 /datum/shop_sku/skunk/rare/deluxe_parts
 	category = "Ship Retrofit"
 	name = "deluxe stock part crate"
-	desc = "A boxed set of top-shelf components, straight off a convoy that Boffin refuses to name. The future, sold by the kilogram."
+	desc = "A boxed set of top-shelf components, straight off a convoy that Boffin refuses to name."
 	item_path = /obj/item/storage/box/stockparts/deluxe
 	price_vouchers = 2
 	price_credits = 1500
@@ -247,7 +245,7 @@
 
 /datum/shop_buyback/skunk/slime_extract
 	name = "slime extract (any)"
-	desc = "Cores out of the wobbling things. Every color tells Boffin something new, mostly about his own risk tolerance."
+	desc = "Cores cut out of slimes. Every color does something different, and Boffin intends to try all of them."
 	category = "Specimens"
 	item_path = /obj/item/slime_extract
 	pay_credits = 200

@@ -1,0 +1,1843 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"ab" = (
+/obj/structure/chair/sofa/bench/right{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"ac" = (
+/obj/machinery/door/airlock{
+	name = "Galley"
+	},
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered)
+"ad" = (
+/obj/machinery/door/airlock/wood/glass{
+	name = "Grand Foyer"
+	},
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"ae" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"af" = (
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"ag" = (
+/obj/machinery/door/airlock/wood{
+	name = "Cabin 1"
+	},
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"ah" = (
+/obj/machinery/door/airlock/wood{
+	name = "Dining Saloon"
+	},
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"ai" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"aj" = (
+/obj/machinery/door/airlock/wood{
+	name = "Purser's Office"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"ak" = (
+/obj/machinery/light/broken/directional/south,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"al" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"am" = (
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"an" = (
+/obj/machinery/door/airlock/wood{
+	name = "Dining Saloon"
+	},
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"ao" = (
+/obj/item/storage/backpack/duffelbag,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"ap" = (
+/obj/machinery/door/airlock/wood{
+	name = "Cabin Deck"
+	},
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aq" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ar" = (
+/obj/machinery/door/airlock/wood/glass{
+	name = "Dining Saloon"
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"as" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/powered)
+"at" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"au" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"av" = (
+/turf/template_noop,
+/area/template_noop)
+"aw" = (
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"ax" = (
+/obj/structure/sign/poster/contraband/random,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"ay" = (
+/obj/machinery/door/airlock/wood{
+	name = "Cabin 2"
+	},
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"az" = (
+/obj/machinery/door/poddoor{
+	id = "ambassador_hold";
+	name = "baggage hold seal"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aA" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aB" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"aC" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aD" = (
+/obj/item/storage/toolbox/mechanical,
+/obj/item/weldingtool/largetank,
+/obj/effect/decal/cleanable/rubble,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aE" = (
+/obj/machinery/door/airlock/wood{
+	name = "Cabin 4"
+	},
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aF" = (
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"aG" = (
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered)
+"aH" = (
+/obj/item/paper/crumpled{
+	name = "torn notebook page";
+	default_raw_text = "The hold door is thicker than anything on the spec sheet and we are two fuel bottles in with nothing to show. Kez thinks the purser kept a release button somewhere forward. If she is not back by six we go back to cutting."
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aI" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aJ" = (
+/obj/effect/zone_mobs/pirate/boss,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aK" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"aL" = (
+/obj/machinery/door/airlock/wood{
+	name = "Crew Berth"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"aM" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aN" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aO" = (
+/obj/structure/chair/sofa/bench{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"aP" = (
+/obj/machinery/door/airlock/wood/glass{
+	name = "Reception"
+	},
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"aQ" = (
+/obj/effect/turf_decal/caution{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aR" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"aS" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aT" = (
+/obj/item/storage/briefcase,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"aU" = (
+/obj/structure/chair/comfy/brown{
+	dir = 8
+	},
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"aV" = (
+/obj/effect/spawner/random/clothing/costume,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aW" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aX" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aY" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aZ" = (
+/obj/machinery/door/airlock/wood{
+	name = "Cabin 3"
+	},
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"bg" = (
+/obj/structure/table/wood,
+/obj/item/paper_bin{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"bq" = (
+/obj/structure/table/wood,
+/obj/structure/desk_bell{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/paper{
+	pixel_x = 3
+	},
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"bJ" = (
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ch" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/food_or_drink/booze,
+/obj/effect/spawner/random/food_or_drink/booze,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"cQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"dZ" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"el" = (
+/obj/machinery/light/small/red/directional/north,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"eE" = (
+/obj/structure/closet/secure_closet/freezer/kitchen,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered)
+"fc" = (
+/obj/item/storage/backpack/duffelbag,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"gQ" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"hh" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"ig" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"ii" = (
+/obj/structure/rack,
+/obj/item/storage/briefcase,
+/obj/item/storage/briefcase{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"iM" = (
+/obj/item/storage/briefcase,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"iU" = (
+/obj/structure/bookcase/random,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"kJ" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/spawner/random/entertainment/money_small,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ld" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ly" = (
+/obj/structure/bed,
+/obj/item/bedsheet,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"lI" = (
+/obj/structure/dresser,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"me" = (
+/obj/machinery/griddle,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered)
+"mm" = (
+/obj/structure/rack,
+/obj/item/storage/backpack/duffelbag,
+/obj/effect/spawner/random/clothing/costume,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"nm" = (
+/obj/structure/closet/cabinet,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"nq" = (
+/obj/structure/closet/crate/zone_loot/wardrobe,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"nS" = (
+/obj/structure/bed,
+/obj/item/bedsheet/blue,
+/obj/item/toy/plush/beeplushie{
+	pixel_y = 5
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"oj" = (
+/obj/item/plate,
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"oB" = (
+/obj/item/cigbutt,
+/obj/item/cigbutt{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"oN" = (
+/obj/item/cigbutt,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"pb" = (
+/obj/structure/table/wood/fancy,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 4
+	},
+/obj/item/reagent_containers/cup/glass/bottle/champagne{
+	pixel_y = 5
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"po" = (
+/obj/structure/table,
+/obj/item/toy/cards/deck{
+	pixel_y = 3
+	},
+/obj/item/cigbutt{
+	pixel_x = -5
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"qP" = (
+/obj/machinery/vending/snack/teal,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"ra" = (
+/obj/structure/fluff/paper/stack,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"rf" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"rl" = (
+/obj/item/toy/beach_ball,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"rx" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/spawner/random/maintenance,
+/obj/effect/spawner/random/maintenance,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"rG" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "unsent postcard";
+	default_raw_text = "Day 12. The band knows nine songs and the bar ran out of the decent wine on Tuesday. Marta says I complain too much for a man on holiday. Wish you were here."
+	},
+/obj/item/pen{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"rV" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"sc" = (
+/obj/structure/safe,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"st" = (
+/obj/machinery/oven/range,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered)
+"sW" = (
+/obj/structure/table,
+/obj/item/knife/kitchen{
+	pixel_y = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered)
+"ve" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/reagent_containers/cup/glass/bottle/wine,
+/obj/item/reagent_containers/cup/glass/bottle/wine,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"vw" = (
+/obj/structure/closet/crate/zone_loot/wardrobe,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"vT" = (
+/obj/item/kirbyplants/random,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"vV" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"vY" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "purser's memorandum";
+	default_raw_text = "Main power is out and we are abandoning ship, so I have sealed the baggage hold per company procedure. The release button is behind my desk. Passengers can claim their luggage once the company sends a recovery ship. - R. Okafor, Purser, MV Ambassador"
+	},
+/obj/item/pen/fountain{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"wB" = (
+/obj/effect/spawner/random/trash/garbage,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"wD" = (
+/obj/structure/bed,
+/obj/item/bedsheet/brown,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"wL" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"xm" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/glass/bottle/champagne{
+	pixel_y = 4
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -5
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"xn" = (
+/obj/structure/table/wood,
+/obj/item/storage/wallet{
+	pixel_y = 3
+	},
+/obj/item/pen{
+	pixel_x = 5
+	},
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"xT" = (
+/obj/item/storage/briefcase,
+/obj/item/storage/briefcase{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"xX" = (
+/obj/structure/table/wood/fancy,
+/obj/item/plate,
+/obj/item/kitchen/fork{
+	pixel_x = -6
+	},
+/obj/item/reagent_containers/cup/glass/bottle/wine{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"yw" = (
+/obj/machinery/light/broken/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"yz" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"zB" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"zH" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/spawner/random/clothing/costume,
+/obj/effect/spawner/random/clothing/costume,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Am" = (
+/obj/structure/chair/sofa/bench/left{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Ap" = (
+/obj/effect/turf_decal/caution{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"BW" = (
+/obj/effect/spawner/random/trash/garbage,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered)
+"Cj" = (
+/obj/machinery/light/small/red/directional/east,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Cm" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered)
+"Cr" = (
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"CD" = (
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"CR" = (
+/obj/structure/table,
+/obj/item/plate{
+	pixel_y = 2
+	},
+/obj/item/plate{
+	pixel_y = 5
+	},
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered)
+"CV" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"CZ" = (
+/obj/structure/bed,
+/obj/item/bedsheet/black,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"Da" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/food_or_drink/booze,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered)
+"Dc" = (
+/obj/item/cigbutt,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered)
+"Dg" = (
+/obj/structure/table/wood/fancy,
+/obj/item/plate,
+/obj/item/kitchen/fork{
+	pixel_x = -6
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"DE" = (
+/obj/structure/rack,
+/obj/item/storage/briefcase,
+/obj/item/storage/backpack/duffelbag{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Ek" = (
+/obj/structure/mirror/directional/north,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"EF" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Fe" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"FE" = (
+/obj/structure/table/wood/fancy,
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = -3;
+	pixel_y = 2
+	},
+/obj/item/reagent_containers/cup/glass/drinkingglass{
+	pixel_x = 5
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"FF" = (
+/obj/structure/closet/crate/zone_loot/wardrobe,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"FN" = (
+/obj/structure/sink/kitchen/directional/south,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered)
+"Gs" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"GI" = (
+/obj/structure/table/wood,
+/obj/item/paper_bin{
+	pixel_x = -2;
+	pixel_y = 3
+	},
+/obj/item/flashlight/lamp{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"GP" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"GW" = (
+/obj/item/radio/intercom/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Hs" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"HB" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"Il" = (
+/obj/structure/rack,
+/obj/effect/spawner/random/clothing/costume,
+/obj/effect/spawner/random/clothing/costume,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"IR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Md" = (
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"Mo" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Aft Service Hatch"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Mt" = (
+/obj/structure/musician/piano,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"My" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"MH" = (
+/obj/item/storage/briefcase,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"MO" = (
+/obj/structure/closet,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"Nh" = (
+/obj/item/bedsheet/brown,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"Pj" = (
+/obj/structure/closet/crate/zone_loot/wardrobe/rare,
+/obj/effect/turf_decal/box,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"QV" = (
+/obj/structure/table/wood,
+/obj/item/toy/cards/deck{
+	pixel_y = 3
+	},
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"Rn" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"RP" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered)
+"SO" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"Tl" = (
+/mob/living/basic/mouse,
+/turf/open/floor/iron/kitchen,
+/area/ruin/space/has_grav/powered)
+"Uk" = (
+/obj/item/storage/backpack/duffelbag,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"UK" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"Vh" = (
+/obj/machinery/light/small/red/directional/south,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"VR" = (
+/obj/structure/frame/computer{
+	anchored = 1
+	},
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"Xo" = (
+/obj/machinery/light/broken/directional/north,
+/turf/open/floor/carpet/red,
+/area/ruin/space/has_grav/powered)
+"XL" = (
+/obj/machinery/button/door/directional/north{
+	id = "ambassador_hold";
+	name = "baggage hold release"
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"Ym" = (
+/obj/structure/bed/double,
+/obj/item/bedsheet/blue/double,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"Yr" = (
+/obj/machinery/vending/cola,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"YJ" = (
+/obj/item/storage/briefcase,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/large,
+/area/ruin/space/has_grav/powered)
+"Zb" = (
+/obj/structure/closet/cabinet,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+
+(1,1,1) = {"
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+"}
+(2,1,1) = {"
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+"}
+(3,1,1) = {"
+av
+av
+av
+av
+al
+al
+al
+al
+al
+al
+al
+al
+al
+aq
+aq
+aq
+al
+al
+aA
+al
+al
+av
+av
+av
+av
+"}
+(4,1,1) = {"
+av
+av
+av
+av
+al
+nm
+ao
+al
+aC
+aw
+al
+gQ
+aK
+VR
+aB
+ai
+aB
+aI
+aQ
+zB
+al
+av
+av
+av
+av
+"}
+(5,1,1) = {"
+av
+av
+av
+av
+al
+lI
+aw
+ag
+aw
+aw
+ap
+aF
+aF
+bq
+aF
+aF
+aF
+al
+au
+aR
+al
+av
+av
+av
+av
+"}
+(6,1,1) = {"
+av
+av
+av
+av
+aq
+Ym
+aV
+al
+aw
+aS
+al
+ra
+wL
+xn
+aF
+aB
+aF
+aP
+aR
+aR
+aq
+av
+av
+av
+av
+"}
+(7,1,1) = {"
+av
+av
+av
+av
+al
+xm
+ae
+al
+aV
+aw
+al
+ai
+aB
+bg
+aF
+rV
+aF
+al
+aa
+MH
+aq
+av
+av
+av
+av
+"}
+(8,1,1) = {"
+av
+av
+av
+av
+al
+al
+al
+al
+aw
+ae
+aW
+xT
+Uk
+aF
+Nh
+hh
+rx
+al
+ab
+aR
+aq
+av
+av
+av
+av
+"}
+(9,1,1) = {"
+av
+av
+av
+av
+aq
+wD
+ae
+al
+aM
+aw
+al
+nq
+YJ
+aB
+oB
+Rn
+aB
+aW
+aO
+zB
+al
+av
+av
+av
+av
+"}
+(10,1,1) = {"
+av
+av
+av
+av
+al
+Ek
+aw
+ay
+aw
+aw
+al
+al
+al
+an
+al
+al
+al
+al
+Am
+aR
+al
+av
+av
+av
+av
+"}
+(11,1,1) = {"
+av
+av
+av
+av
+al
+Zb
+rG
+al
+aw
+aS
+al
+ch
+ig
+af
+SO
+af
+SO
+al
+My
+aR
+aq
+av
+av
+av
+av
+"}
+(12,1,1) = {"
+av
+av
+av
+av
+al
+al
+al
+al
+ao
+aw
+al
+ch
+CD
+af
+Fe
+rf
+FE
+al
+GW
+aa
+aq
+av
+av
+av
+av
+"}
+(13,1,1) = {"
+av
+av
+av
+av
+al
+vw
+iM
+al
+ae
+am
+al
+pb
+SO
+rf
+Dg
+Md
+af
+al
+aa
+aR
+aq
+av
+av
+av
+av
+"}
+(14,1,1) = {"
+av
+av
+av
+av
+aq
+lI
+aw
+aZ
+aw
+ae
+al
+CV
+af
+af
+Hs
+oj
+af
+ar
+aR
+MH
+al
+av
+av
+av
+av
+"}
+(15,1,1) = {"
+av
+av
+av
+av
+al
+CZ
+aV
+al
+aw
+aw
+ah
+af
+af
+dZ
+af
+af
+af
+ar
+aR
+aR
+al
+av
+av
+av
+av
+"}
+(16,1,1) = {"
+av
+av
+av
+av
+al
+al
+al
+al
+aw
+ak
+al
+SO
+af
+af
+Fe
+af
+CD
+al
+yw
+aR
+aq
+av
+av
+av
+av
+"}
+(17,1,1) = {"
+av
+av
+av
+av
+al
+nS
+ae
+al
+ae
+aw
+al
+Mt
+af
+rf
+xX
+Md
+af
+al
+ab
+aR
+aq
+av
+av
+av
+av
+"}
+(18,1,1) = {"
+av
+av
+av
+av
+aq
+lI
+aw
+aE
+aw
+aw
+al
+Xo
+SO
+af
+Hs
+af
+SO
+al
+aO
+aa
+aq
+av
+av
+av
+av
+"}
+(19,1,1) = {"
+av
+av
+av
+av
+al
+QV
+rl
+al
+aw
+aV
+al
+vT
+af
+SO
+af
+SO
+af
+aW
+Am
+zB
+al
+av
+av
+av
+av
+"}
+(20,1,1) = {"
+av
+av
+av
+av
+al
+al
+al
+al
+aX
+aw
+al
+al
+al
+aW
+al
+al
+al
+al
+aa
+aR
+al
+av
+av
+av
+av
+"}
+(21,1,1) = {"
+av
+av
+av
+av
+al
+ly
+UK
+al
+aH
+aY
+al
+aB
+aF
+aK
+aF
+aF
+ai
+al
+aR
+aR
+aq
+av
+av
+av
+av
+"}
+(22,1,1) = {"
+av
+av
+av
+av
+ax
+HB
+Cr
+aL
+aw
+aJ
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+ad
+aR
+aR
+aq
+av
+av
+av
+av
+"}
+(23,1,1) = {"
+av
+av
+av
+av
+al
+MO
+po
+al
+aN
+aD
+al
+aB
+aF
+aT
+aF
+aF
+aU
+al
+oN
+fc
+aq
+av
+av
+av
+av
+"}
+(24,1,1) = {"
+av
+av
+av
+av
+as
+as
+as
+as
+az
+aq
+as
+al
+aj
+al
+aW
+al
+al
+al
+GP
+aR
+al
+av
+av
+av
+av
+"}
+(25,1,1) = {"
+av
+av
+av
+av
+as
+ii
+IR
+at
+at
+at
+as
+zB
+aR
+cQ
+al
+eE
+Cm
+al
+My
+aa
+al
+av
+av
+av
+av
+"}
+(26,1,1) = {"
+av
+av
+av
+av
+as
+mm
+at
+FF
+IR
+Vh
+as
+aR
+GI
+aR
+al
+st
+RP
+al
+ab
+fc
+aq
+av
+av
+av
+av
+"}
+(27,1,1) = {"
+av
+av
+av
+av
+as
+ii
+at
+bJ
+at
+IR
+as
+aR
+vY
+vV
+al
+sW
+aR
+al
+Am
+wB
+aq
+av
+av
+av
+av
+"}
+(28,1,1) = {"
+av
+av
+av
+av
+as
+Il
+bJ
+at
+Pj
+at
+as
+XL
+aR
+aR
+aW
+aR
+aR
+ac
+aR
+aR
+aq
+av
+av
+av
+av
+"}
+(29,1,1) = {"
+av
+av
+av
+av
+as
+el
+at
+kJ
+at
+bJ
+as
+iU
+aR
+aR
+al
+FN
+aR
+al
+My
+zB
+al
+av
+av
+av
+av
+"}
+(30,1,1) = {"
+av
+av
+av
+av
+as
+DE
+at
+ve
+at
+zH
+as
+yz
+aR
+aR
+al
+CR
+BW
+aW
+qP
+aR
+al
+av
+av
+av
+av
+"}
+(31,1,1) = {"
+av
+av
+av
+av
+as
+mm
+at
+bJ
+IR
+mm
+as
+yz
+cQ
+aR
+al
+me
+Dc
+al
+Yr
+aa
+al
+av
+av
+av
+av
+"}
+(32,1,1) = {"
+av
+av
+av
+av
+as
+ld
+IR
+Cj
+Gs
+IR
+as
+sc
+aR
+EF
+al
+Da
+Tl
+al
+Ap
+aR
+al
+av
+av
+av
+av
+"}
+(33,1,1) = {"
+av
+av
+av
+av
+as
+as
+as
+as
+as
+as
+as
+al
+al
+al
+al
+al
+al
+al
+Mo
+aI
+al
+av
+av
+av
+av
+"}
+(34,1,1) = {"
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+"}
+(35,1,1) = {"
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+"}
+(36,1,1) = {"
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+av
+"}

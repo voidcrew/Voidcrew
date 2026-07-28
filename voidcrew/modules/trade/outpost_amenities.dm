@@ -232,7 +232,7 @@
 	spawner_path = /obj/effect/mob_spawn/corpse/human/engineer
 	attacked_lines = list(
 		"Oi! I'm covered in welding fuel, you maniac!",
-		"Swing at the walls, they're rated for it. I'm not. Well. Actually.",
+		"Swing at the walls if you have to, they're rated for it. I'd rather you didn't swing at me.",
 	)
 	ai_controller = /datum/ai_controller/basic_controller/outpost_loiterer/mechanic
 
@@ -278,7 +278,7 @@
 		"I stack crates and I watch the docks. The second part is the job.",
 		"Convoy's late again. Convoy's always late. Convoy might be a myth.",
 	)
-	emote_see = list("counts crates under his breath.", "stretches his back with an audible pop.")
+	emote_see = list("counts crates under their breath.", "stretches their back with an audible pop.")
 
 // --- Red: the Dregs cantina's bartender, who has poured for worse ---
 
@@ -301,11 +301,11 @@
 /datum/ai_planning_subtree/random_speech/outpost_bartender
 	speech_chance = 2
 	speak = list(
-		"What'll it be? We have beer, and we have questions I won't ask.",
-		"The regulars are pirates, the pirates are regular. It evens out.",
-		"Vex doesn't drink. Bad for the margins, apparently. Tragic, really.",
-		"Someone paid their tab in raw telecrystal once. Kept the lights on for a month.",
-		"You want intel, buy a rumor off Vex. You want the TRUTH? Beer first.",
+		"Dram works the counter. I work the floor. Guess which of us breaks up the fights.",
+		"Ice machine's been dead since the last convoy. Everything's warm. So am I.",
+		"Two rules. Pay first, and don't lean on the tap handles.",
+		"Third stool from the end wobbles. Always has. Sit somewhere else.",
+		"Glasses go back on the bar, not the floor. I sweep, and I remember who made me sweep.",
 	)
 	emote_see = list("polishes a glass that was already clean.", "restacks the same three bottles.")
 
@@ -313,7 +313,7 @@
 
 /mob/living/basic/outpost_loiterer/off_duty_pirate
 	name = "off-duty pirate"
-	desc = "Off duty. The cutlass is decorative. The scars aren't."
+	desc = "Off duty, and about as relaxed as a pirate gets. The cutlass is mostly decorative."
 	spawner_path = /obj/effect/mob_spawn/corpse/human/pirate
 	attacked_lines = list(
 		"Ha! In the Undertow? Vex would skin you if I were worth skinning.",
@@ -330,9 +330,9 @@
 	speech_chance = 2
 	speak = list(
 		"Everyone's armed in the red zone. That's why it's polite here.",
-		"I sold Vex a fleet admiral's flagship once. Or maybe Vex sold it to me. Long night.",
+		"My captain thinks I'm out resupplying. I am. Slowly.",
 		"The turrets only shoot rude people. Beautiful system. No survivors— I mean, no complaints.",
-		"Best drink this side of the sun is two zones that way. Don't go. Not worth it.",
+		"Shore leave's four days. Two getting here, one drinking, one regretting it.",
 		"You didn't see me here. I'm not here. Nobody's ever here.",
 	)
 	emote_see = list("polishes a decorative cutlass.", "eyes your ship through the viewport.")
@@ -368,6 +368,6 @@
  */
 /turf/open/water/outpost_pond
 	name = "waystation pond"
-	desc = "A pond sunk straight into the deck plating. The fish are real, the koi rumors are unconfirmed, and the water is warmer than it has any right to be."
+	desc = "A pond sunk straight into the deck plating. The fish are real and the water is warmer than you'd expect. Nobody has confirmed the koi."
 	baseturfs = /turf/open/water/outpost_pond
 	planetary_atmos = FALSE

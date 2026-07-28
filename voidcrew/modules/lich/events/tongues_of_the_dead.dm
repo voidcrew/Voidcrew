@@ -77,7 +77,7 @@
 /datum/round_event/voidcrew/lich/tongues_of_the_dead/announce(fake)
 	lich_announce_galaxy(
 		"Speech was always a courtesy you extended to each other. I am withdrawing it. \
-		Scream if you like — the shape of it will not survive the trip across the room. \
-		You will find the dead have managed for centuries without.",
+		Scream if you like; it will not survive the trip across the room. \
+		The dead have managed for centuries without it.",
 		"Tongues of the Dead",
 	)

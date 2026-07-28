@@ -42,9 +42,8 @@
 
 /datum/round_event/voidcrew/lich/bodysnatch/announce(fake)
 	lich_announce_ship(
-		"You have grown attached to standing where you stand. It is a habit, and habits are \
-		for the living, and I am correcting the misapprehension that you qualify. \
-		Hold still. Or do not. It makes no difference to the arithmetic.",
+		"You have grown attached to standing where you stand. That is a habit, and habits \
+		are for the living. Hold still, or don't. It makes no difference.",
 		"Bodysnatch",
 		'sound/effects/magic/blink.ogg',
 	)

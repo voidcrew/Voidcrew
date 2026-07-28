@@ -11,7 +11,7 @@
 
 /mob/living/basic/vestige_patron/chrysalis
 	name = "the Vestige of Hive Wren"
-	desc = "Something wearing a ship doctor's uniform and most of a face. The parts that fit together fit too well; the rest of it never settled on a shape."
+	desc = "Something wearing a ship doctor's uniform and most of a face. The parts that fit together fit too well. The rest never settled on a shape."
 	gender = NEUTER
 	outfit_path = /datum/outfit/job/doctor
 	appearance_tint = "#d8cfe0"
@@ -33,17 +33,17 @@
 	)
 	accept_line = "Yes. Yes-yes-yes. Go."
 	busy_line = "One hunger at a time."
-	fulfilled_line = "We have already sung together. Let the others have their turn."
-	renounce_line = "The flesh forgets you. It will not offer twice so kindly."
+	fulfilled_line = "We've already sung together. Let the others have their turn."
+	renounce_line = "The flesh forgets you. It won't offer so kindly next time."
 	claim_line = "Take-take-take. THEN we talk about more."
-	exhausted_line = "We have folded everything we remember into you. There is nothing left to teach."
+	exhausted_line = "We've folded everything we remember into you. There's nothing left."
 	remember_line = "New skin! Same song. We remember every note we taught you."
 
 // ===== TRIAL OF BIRTH =====
 
 /datum/vestige_trial/birth
 	name = "Trial of Birth"
-	desc = "Take this egg. It sleeps. Sow it in the skull of a dead humanoid and ward the body while the child wakes — three minutes, no more, and the body will not lie quietly. The child must draw its first breath. We only ask to hear it."
+	desc = "Take the egg and plant it in the skull of a dead humanoid. Then guard the body for three minutes while the child wakes up. The corpse won't lie quietly about it."
 	/// Whether the egg has been sown and is incubating
 	var/incubating = FALSE
 
@@ -52,7 +52,7 @@
 	to_chat(user, span_notice("The egg settles into your palm, warm and wrong."))
 
 /datum/vestige_trial/birth/get_progress_text()
-	return incubating ? "The child stirs. Ward the body until it wakes." : "The egg sleeps. Find it a cradle: the skull of a dead humanoid."
+	return incubating ? "The child is stirring. Guard the body until it wakes." : "The egg is asleep. It needs a cradle - the skull of a dead humanoid."
 
 /obj/item/vestige_egg
 	name = "chrysalis egg"
@@ -74,7 +74,7 @@
 
 /obj/item/vestige_egg/examine(mob/user)
 	. = ..()
-	. += span_notice("Used on a dead humanoid, it burrows in and begins to wake. It needs [DisplayTimeText(VESTIGE_EGG_INCUBATION)] in its cradle — and the cradle will draw attention.")
+	. += span_notice("Use it on a dead humanoid and it burrows in and starts waking up. It needs [DisplayTimeText(VESTIGE_EGG_INCUBATION)] in the body, and the body makes noise the whole time.")
 
 /obj/item/vestige_egg/attack(mob/living/target, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(!ishuman(target))
@@ -148,7 +148,7 @@
 	name = "Trial of Faces"
 	// Keep the numbers in sync with VESTIGE_FACES_SAMPLES_NEEDED / _LIVING_NEEDED
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Our proboscis, on loan. Let it taste five different faces — at least two still warm and walking. The dead hold still; the living remember you. Choose with care."
+	desc = "Our proboscis, on loan. Let it taste five different faces, at least two of them still alive. The dead hold still. The living remember you."
 	/// Assoc list of unique enzymes already tasted
 	var/list/sampled = list()
 	/// How many samples came from living targets
@@ -181,7 +181,7 @@
 
 /obj/item/vestige_proboscis
 	name = "borrowed proboscis"
-	desc = "A coil of somebody else's flesh that flexes toward faces. It wants to be given back full."
+	desc = "A coil of somebody else's flesh that twitches toward faces."
 	icon = 'icons/obj/weapons/changeling_items.dmi'
 	icon_state = "tentacle"
 	w_class = WEIGHT_CLASS_SMALL
@@ -221,13 +221,13 @@
 
 /datum/vestige_boon/spell/armblade
 	name = "Armblade"
-	desc = "Reshape your arm into a grotesque blade of bone and flesh, and fold it away when eyes turn your way."
-	grant_text = "Your right arm itches, deep in the bone. Something new is folded in there, waiting to be asked."
+	desc = "Reshape your arm into a blade of bone and flesh, and fold it away again when you're done with it."
+	grant_text = "Your right arm itches, deep in the bone. There's something new folded in there."
 	spell_type = /datum/action/cooldown/spell/vestige_armblade
 
 /datum/vestige_boon/spell/armblade/perfected
 	name = "Perfected Armblade"
-	desc = "The hive's masterwork: a longer, denser blade that shears through armor plate, and unfolds the instant it's asked."
+	desc = "A longer, denser blade that cuts through armor, and it forms a lot faster than the first one."
 	grant_text = "The thing folded into your arm reshapes itself one final time. This time it gets it right."
 	upgrades_from = /datum/vestige_boon/spell/armblade
 	spell_type = /datum/action/cooldown/spell/vestige_armblade/perfected
@@ -240,8 +240,8 @@
 
 /datum/vestige_boon/spell/fleshmend/deep
 	name = "Deep Fleshmend"
-	desc = "The trick sinks past flesh, into marrow: your body forgets its injuries almost as fast as it takes them."
-	grant_text = "The hive's trick sinks deeper — past flesh, into the bone."
+	desc = "Knit your wounds closed with the hive's old trick, ready twice as often — one minute between mendings instead of two. Still useless while you are on fire."
+	grant_text = "The hive's trick sinks deeper, past flesh and into the bone."
 	upgrades_from = /datum/vestige_boon/spell/fleshmend
 	spell_type = /datum/action/cooldown/spell/vestige_fleshmend/deep
 
@@ -265,7 +265,7 @@
 
 /obj/item/melee/arm_blade/vestige_perfected
 	name = "perfected arm blade"
-	desc = "A grotesque blade of bone and flesh, refined by a dead hive into something the living ones never managed."
+	desc = "A grotesque blade of bone and flesh, refined by a dead hive into something better than the living ones ever managed."
 	force = 30
 	armour_penetration = 20
 
@@ -297,9 +297,13 @@
 				span_warning("[cast_on]'s blade melts back into [cast_on.p_their()] arm!"),
 				span_notice("You fold the blade away."),
 			)
+			playsound(cast_on, 'sound/effects/splat.ogg', 50, TRUE)
 			return
 		// An old model from before the upgrade: the blade is NODROP, so an
 		// upgrade claimed mid-form must reshape it in place or strand it forever
+	// The blade announces its own arrival (arm_blade's Initialize prints the
+	// visible message), but it does it silently — the noise is ours to make
+	playsound(cast_on, 'sound/effects/blob/blobattack.ogg', 60, TRUE)
 	var/obj/item/new_blade = new blade_type(cast_on)
 	if(!cast_on.put_in_hands(new_blade))
 		if(!QDELETED(new_blade)) // DROPDEL usually beat us to it
@@ -312,13 +316,13 @@
 	button_icon = 'icons/mob/actions/actions_changeling.dmi'
 	button_icon_state = "fleshmend"
 	school = SCHOOL_TRANSMUTATION
-	cooldown_time = 1 MINUTES
+	cooldown_time = 2 MINUTES
 	invocation_type = INVOCATION_NONE
 	spell_requirements = NONE
 
 /datum/action/cooldown/spell/vestige_fleshmend/deep
 	name = "Deep Fleshmend"
-	cooldown_time = 25 SECONDS
+	cooldown_time = 1 MINUTES
 
 /datum/action/cooldown/spell/vestige_fleshmend/can_cast_spell(feedback = TRUE)
 	. = ..()

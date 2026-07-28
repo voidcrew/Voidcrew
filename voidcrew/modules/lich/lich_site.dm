@@ -45,7 +45,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	id = "lich_lair"
 	suffix = "lich_lair.dmm"
 	name = "The Verdigris"
-	description = "A tomb-hulk of fused wreckage and quarried bone, lit from inside by something green. Four sealed wards stand between its docking breach and whatever is doing the lighting."
+	description = "A tomb-hulk of fused wreckage and quarried bone, lit green from the inside. Four sealed wards stand between the docking breach and whatever is at the middle of it."
 	unpickable = TRUE // never naturally seeded; only the scheduler or an admin surfaces it
 	allow_duplicates = FALSE
 
@@ -53,7 +53,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 
 /obj/structure/overmap/space_ruin/lich_lair
 	name = "necrotic signal"
-	desc = "A signal that arrives before its own carrier wave, in a voice, in a language that predates every charter in the sector. It knows the name of your ship."
+	desc = "A voice transmitting on every band at once, in a language older than any charter in the sector. It uses your ship's name."
 
 	/// Rituals completed. Doubles as the potency of the last one, so the number
 	/// the crew hears announced is the number the roster filters on. Climbs one
@@ -150,7 +150,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	var/where = coords ? "grid [coords[1]], [coords[2]]" : "an unknown position"
 
 	broadcast_galaxy(
-		"You have all been very busy. I have been busy longer. My name is Ilthuun and my house has come up out of the dark at [where] — come and see it, or do not, it makes no difference to the working. Every hour I will cut another rite, and every rite you will feel. There is one way to stop me and it is a short walk down four sealed halls.",
+		"You have all been very busy. I have been busy longer. My name is Ilthuun, and my house has come up out of the dark at [where]. Come and look at it or don't, it changes nothing. I am going to keep cutting rites, and you are going to keep feeling them. There is one way to stop me, and it is a short walk down four sealed halls.",
 		"The Verdigris",
 	)
 
@@ -276,39 +276,39 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	switch(potency)
 		if(0, 1)
 			return pick(
-				"The first stone of a long green stair is laid. You will feel it as a chill in the teeth, nothing worse. Not yet. Ilthuun thanks you for your patience.",
-				"It has begun, and it began quietly, the way everything that matters begins. Somewhere aboard your ship something that was still is no longer quite still.",
+				"That is the first rite done. You will feel it as a chill in your teeth and nothing worse. That will not be true for long.",
+				"It has started, and it started quietly. Somewhere on your ship, something that was not moving is moving now.",
 			)
 		if(2)
 			return pick(
-				"Second rite cut. Your dead are listening now. They have always been listening — only now do they answer, and only to me.",
-				"Do you hear the humming? That is my work settling into the marrow of your crew. Sit with it. I am in no hurry; I have never once had to be.",
+				"Second rite done. Your dead are listening now. They always were. The difference is that now they answer me.",
+				"Can you hear the humming? That is my work settling into your crew's bones. Take your time with it. I am not in any hurry.",
 			)
 		if(3)
 			return pick(
-				"Third. The green is in your water and your air and the small warm rooms you sleep in. Nobody has come knocking. I confess I expected knocking.",
-				"Three stones laid. I have started keeping a list of your ships. It is not a long list and I am not writing it in ink.",
+				"Third. The green is in your water, your air, and the little warm rooms you sleep in. Nobody has come to stop me yet. I did expect somebody by now.",
+				"Three rites down. I have started a list of your ships. It is not a long list, and I am not writing it in ink.",
 			)
 		if(4)
 			return pick(
-				"Fourth rite. I can see you now — little bright things, so certain of yourselves. I will keep one of you. The rest I will give back changed.",
-				"The stair is half built. Come and break it, little crews, or stand very still and be built into it. Both are acceptable outcomes to me.",
+				"Fourth rite. I can see you now. I am going to keep one of you and give the rest back changed.",
+				"I am halfway done. Come and stop me, or stand still and get built into it. Either one works for me.",
 			)
 		if(5)
 			return pick(
-				"FIFTH. The green runs to the edge of the chart. Your names are being written on the inside of my teeth and the ink is your own.",
-				"I no longer have to reach for you. You are inside the working already, every one of you, breathing it. Say my name if it comforts you. It will not.",
+				"FIFTH. The green runs all the way to the edge of the chart now. I have your names written down, and I did not use ink.",
+				"I do not have to reach for you any more. Every one of you is inside this already, breathing it. Say my name if you think it will help.",
 			)
 		if(6)
 			return pick(
-				"SIX. THE GALAXY IS A LUNG AND I AM THE ROT IN IT. BREATHE. BREATHE. BREATHE FOR ME.",
-				"Sixth rite! Your engines, your lights, your little lit corridors — all of it is scaffolding for my sanctum now. Do you like what I have done with your sky?",
+				"SIX. THE ROT IS IN THE AIR OF EVERY SHIP STILL FLYING. BREATHE. BREATHE. BREATHE IT IN FOR ME.",
+				"Sixth rite. Your engines, your lights, your corridors: all of it is scaffolding for my sanctum now. Do you like what I have done with your sky?",
 			)
 		else
 			return pick(
-				"SEVEN. SEVEN. THERE IS NO EIGHTH. THERE IS ONLY THIS, FOREVER, AND ALL OF YOU INSIDE IT.",
-				"THE VERDIGRIS IS COMPLETE AND STILL I AM WORKING. I WILL GO ON WORKING ON YOUR BONES LONG AFTER THE STARS HAVE GONE OUT.",
-				"I HAVE STOPPED COUNTING. COUNTING WAS FOR WHEN THERE WAS GOING TO BE AN AFTER.",
+				"SEVEN. THERE IS NO EIGHTH. THERE IS ONLY THIS NOW, AND ALL OF YOU INSIDE IT.",
+				"THE WORK IS FINISHED AND I AM STILL WORKING. I WILL BE WORKING ON YOUR BONES LONG AFTER THE STARS GO OUT.",
+				"I HAVE STOPPED COUNTING. THERE IS NOTHING LEFT TO COUNT TOWARDS.",
 			)
 
 // ===== VICTORY =====
@@ -335,12 +335,12 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	lich_ref = null
 
 	name = "the Verdigris"
-	desc = "A tomb-hulk with the light gone out of it. Whatever was working in there has stopped working."
+	desc = "A tomb-hulk with the light gone out of it. Whatever was working in there has stopped."
 	color = "#6c8f76"
 	clear_waypoints()
 
 	broadcast_galaxy(
-		"...oh. Oh, that was well done. That was very well done. I had the whole of it in my hands and you walked four halls and took it back. Remember this when the green comes again, and it will come again, and it will remember you too. Ilthuun is finished. The rites are finished. Go and take what is left of me.",
+		"...oh. Oh, that was well done. That was very well done. I had the whole of it in my hands, and you walked four halls and took it back off me. Remember that the next time something green comes calling. Ilthuun is finished. The rites are finished. Go and take what is left of me.",
 		"The Verdigris",
 	)
 	notify_ghosts("Ilthuun has been slain — the Verdigris rituals have stopped.", source = src, header = "The Verdigris")

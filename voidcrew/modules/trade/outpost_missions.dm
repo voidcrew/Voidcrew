@@ -126,7 +126,7 @@
 /datum/mission/outpost_supply/angler/update_text()
 	var/item_text = required_amount > 1 ? "[required_amount] [required_name]" : required_name
 	name = "Angler's Request: [item_text]"
-	desc = "[author] wants [item_text] — line-caught, still glistening. Yes, really. Bring a rod. \
+	desc = "[author] wants [item_text], line-caught and fresh. Bring a rod. \
 		Hand the catch to any outpost trader or your own mission pad and a [get_reward_summary()] comes off the shelf, free."
 
 // ===== OFFER MANAGEMENT (lives on the outpost) =====

@@ -100,7 +100,7 @@
  */
 /obj/structure/closet/crate/secure/ship_part_prize
 	name = "bonded prize crate"
-	desc = "A courier-bonded strongcrate. Whatever escrow contract once protected its contents has been settled - by someone, somehow."
+	desc = "A heavy-duty bonded courier crate. Somebody has already dealt with the lock, so it opens right up."
 	icon_state = "secgearcrate"
 	base_icon_state = "secgearcrate"
 	locked = FALSE

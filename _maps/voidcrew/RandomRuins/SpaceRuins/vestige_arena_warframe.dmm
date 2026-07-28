@@ -1,0 +1,1508 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/rack{
+	name = "stripped rack";
+	desc = "Nine pegs, oiled and empty. Whatever hung here left an outline polished into the wood, which is the only way to tell anything ever did."
+	},
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"ab" = (
+/obj/machinery/light/warm/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"ac" = (
+/obj/structure/rack,
+/obj/item/wirecutters{
+	pixel_y = 4
+	},
+/obj/item/crowbar{
+	pixel_y = -3
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"ad" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/bamboo/tatami,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"ae" = (
+/obj/structure/warframe_lever/breaker/west,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"af" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/bamboo/tatami,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"ag" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"ah" = (
+/obj/structure/warframe_gate,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"ai" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/bamboo/tatami/black,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aj" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"ak" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"al" = (
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"am" = (
+/obj/machinery/light/warm/directional/south,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"an" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"ao" = (
+/obj/structure/closet/crate/wooden,
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"ap" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aq" = (
+/turf/closed/wall/mineral/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"ar" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"as" = (
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"at" = (
+/obj/machinery/door/airlock/wood,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"au" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/turf/open/floor/bamboo/tatami,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"av" = (
+/obj/structure/cable,
+/obj/machinery/power/smes,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aw" = (
+/obj/structure/rack,
+/obj/item/clothing/shoes/sandal{
+	pixel_y = 5
+	},
+/obj/item/clothing/shoes/sandal{
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"ax" = (
+/obj/effect/turf_decal/bot,
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"ay" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"az" = (
+/obj/structure/rack{
+	name = "tool rack";
+	desc = "Hooks for the things a hall like this wears out. Most of the hooks are bare."
+	},
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aA" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/bamboo/tatami/black,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aB" = (
+/obj/structure/closet/crate/wooden,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aC" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aD" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/bamboo/tatami,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aE" = (
+/turf/closed/wall/mineral/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aF" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/bamboo/tatami,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aG" = (
+/obj/effect/spawner/structure/window/reinforced/tinted,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aH" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/bamboo/tatami,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aI" = (
+/turf/open/floor/bamboo/tatami/black,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aJ" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = 5;
+	pixel_y = 2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aK" = (
+/obj/effect/landmark/vestige_arena/boss,
+/turf/open/floor/carpet/black,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aL" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aM" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aN" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/bamboo/tatami,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aO" = (
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aP" = (
+/obj/machinery/light/warm/directional/east,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aQ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/bamboo/tatami,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aR" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aS" = (
+/obj/structure/rack,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aT" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aU" = (
+/obj/structure/mannequin/wood{
+	name = "wrecked dummy";
+	desc = "A training dummy cut cleanly in half at the waist and stood back up anyway. The cut is a hundred years old and still smooth."
+	},
+/turf/open/floor/bamboo/tatami/black,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aV" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/paper{
+	name = "match record";
+	default_raw_text = "Bouts on the lower floor are scored by the machine and countersigned by the master. Three clean strikes ends it. The machine does not concede and has never been asked to. Last countersigned entry: two hundred and six wins, no losses. Under that, in a different hand: 207, 208, 209. The column runs off the bottom of the page and carries on up the wall.";
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = -6;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aW" = (
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aX" = (
+/obj/machinery/light/warm/directional/west,
+/turf/open/floor/bamboo/tatami/black,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aY" = (
+/obj/effect/turf_decal/caution{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"aZ" = (
+/obj/item/banner/red{
+	name = "clan banner";
+	desc = "Black-hemmed silk with the spider device stitched into it. Somebody has kept the hem straight."
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"et" = (
+/obj/effect/landmark/vestige_arena/entry,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"gX" = (
+/obj/effect/turf_decal/caution{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"jv" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/paper{
+	name = "floor circuit log";
+	default_raw_text = "Floor circuit log. The mat plates draw more every year and nobody can find where it is going. Breaker in the hall trips it clean if it gets loud. Do not leave the breaker down - the hall lights are on the same run and the opponent does not need them.";
+	pixel_y = 3
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"md" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"mP" = (
+/obj/structure/mannequin/wood{
+	name = "strike dummy";
+	desc = "A man-shaped arrangement of wood, stood at the regulation eleven paces. Every bruise in the grain is the same height."
+	},
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"rK" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lantern/jade/on{
+	pixel_y = 5
+	},
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"su" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"Ai" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"Bg" = (
+/obj/structure/warframe_lever/gate/east,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"Eu" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"FT" = (
+/obj/structure/table/wood/fancy/black,
+/obj/item/paper{
+	name = "lower floor rules";
+	default_raw_text = "Lower floor rules, posted for students. Sandals off at the step. No blades on the mat that you did not sign out. If you are here to be graded, wait for the gates and do not knock. The opponent does not answer knocking and it does not stop for it either.";
+	pixel_y = 3
+	},
+/obj/item/flashlight/flare/candle/infinite{
+	pixel_x = -6;
+	pixel_y = -2
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"JN" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"JS" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"Kj" = (
+/obj/structure/closet/crate/wooden,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"KS" = (
+/obj/structure/table/wood,
+/obj/item/clothing/shoes/sandal{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"PV" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"Up" = (
+/obj/item/target/syndicate,
+/turf/open/floor/bamboo,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"Yl" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"Yx" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+"YZ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/vestige/arena/warframe)
+
+(1,1,1) = {"
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+"}
+(2,1,1) = {"
+aM
+ab
+aJ
+aW
+aq
+ab
+aB
+an
+aS
+aj
+aS
+aW
+ae
+an
+aS
+aj
+aS
+aB
+aW
+aq
+ap
+aW
+aB
+aW
+md
+JN
+JN
+JN
+aB
+aM
+"}
+(3,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aZ
+aW
+aW
+aW
+aW
+aW
+aW
+aq
+aw
+aW
+aW
+ak
+aW
+ak
+aW
+aW
+aW
+aM
+"}
+(4,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+aF
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aQ
+aH
+am
+aq
+aj
+aW
+aW
+aW
+YZ
+aW
+aW
+aW
+ak
+aM
+"}
+(5,1,1) = {"
+aM
+ay
+ay
+ak
+aG
+aW
+ad
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+au
+ak
+aq
+aw
+ak
+aW
+aW
+YZ
+et
+aW
+aW
+Ai
+aM
+"}
+(6,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+ak
+ad
+aU
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aU
+au
+aW
+aq
+aj
+aW
+aW
+aW
+YZ
+aW
+aW
+aW
+aW
+aM
+"}
+(7,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+ad
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+ai
+aI
+aI
+au
+aW
+aq
+aw
+aW
+ak
+aW
+aW
+aW
+aW
+ak
+aW
+aM
+"}
+(8,1,1) = {"
+aM
+ab
+aW
+aW
+at
+aW
+ad
+aI
+aE
+aE
+aI
+aI
+aI
+aE
+aE
+aI
+aI
+au
+aW
+aq
+ap
+aW
+aJ
+FT
+aW
+aW
+aW
+ak
+aW
+aM
+"}
+(9,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+ad
+aI
+aE
+aE
+aI
+aI
+aI
+aE
+aE
+aI
+aI
+au
+ak
+aq
+aS
+aW
+aW
+Yl
+aW
+JS
+JS
+JS
+aS
+aM
+"}
+(10,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+ad
+aI
+aA
+aX
+aI
+aI
+aI
+aI
+aI
+aA
+aI
+au
+aW
+aq
+aq
+aq
+aq
+aq
+at
+aq
+aq
+aq
+aq
+aM
+"}
+(11,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+ak
+ad
+aI
+aI
+aI
+aA
+aI
+aI
+aI
+aA
+aI
+aI
+au
+am
+aq
+ag
+aT
+az
+az
+aO
+az
+az
+az
+rK
+aM
+"}
+(12,1,1) = {"
+aM
+ay
+ay
+ak
+aG
+aW
+ad
+aA
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aA
+au
+aW
+aq
+aa
+aL
+aO
+aO
+aO
+aO
+aO
+mP
+su
+aM
+"}
+(13,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+ad
+aI
+aI
+aI
+aI
+aI
+aA
+aI
+aI
+aI
+aI
+au
+aW
+aq
+aa
+aO
+aO
+aL
+aO
+aO
+aO
+aO
+aL
+aM
+"}
+(14,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+ad
+aA
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aA
+au
+aW
+aq
+aa
+aO
+ax
+aO
+aO
+KS
+aO
+ax
+aO
+aM
+"}
+(15,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+ad
+aI
+aA
+aI
+aI
+aI
+aI
+aI
+aA
+aI
+aI
+au
+aW
+ah
+aO
+aO
+aO
+aO
+aL
+KS
+aO
+aO
+aO
+aM
+"}
+(16,1,1) = {"
+aM
+ay
+ay
+ak
+aG
+aW
+ad
+aI
+aI
+al
+al
+al
+al
+al
+aI
+aI
+aI
+au
+aW
+aq
+aO
+aO
+aO
+aL
+aO
+KS
+aO
+aO
+Up
+aM
+"}
+(17,1,1) = {"
+aM
+aS
+ay
+aW
+aG
+aW
+ad
+aI
+aI
+al
+al
+al
+al
+al
+aI
+aI
+aI
+au
+aW
+aq
+aa
+aL
+ax
+aO
+aO
+aO
+aO
+ax
+su
+aM
+"}
+(18,1,1) = {"
+aM
+aV
+aW
+am
+aq
+ab
+ad
+aA
+aI
+al
+al
+aK
+al
+al
+aI
+aI
+aA
+au
+aW
+aq
+aa
+aL
+aO
+aO
+aL
+aO
+aO
+mP
+aO
+aM
+"}
+(19,1,1) = {"
+aM
+aS
+ay
+aW
+aG
+aW
+ad
+aI
+aI
+al
+al
+al
+al
+al
+aI
+aI
+aI
+au
+aW
+aq
+aO
+ao
+ao
+aO
+aO
+aO
+aO
+aO
+Up
+aM
+"}
+(20,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+ad
+aI
+aI
+al
+al
+al
+al
+al
+aI
+aI
+aI
+au
+aW
+aq
+ag
+aO
+aC
+az
+az
+az
+aO
+az
+aO
+aM
+"}
+(21,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+ad
+aI
+aA
+aI
+aI
+aI
+aI
+aI
+aA
+aI
+aI
+au
+am
+aq
+aq
+aq
+aq
+aq
+aq
+aq
+at
+aq
+aq
+aM
+"}
+(22,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+ak
+ad
+aA
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aA
+au
+aW
+aq
+aW
+aY
+aW
+gX
+aG
+ak
+aW
+aW
+Ai
+aM
+"}
+(23,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+ad
+aI
+aI
+aI
+aI
+aI
+aA
+aI
+aI
+aI
+aI
+au
+aW
+aq
+ak
+aW
+aG
+gX
+aG
+aW
+aW
+ak
+aB
+aM
+"}
+(24,1,1) = {"
+aM
+ay
+ay
+ak
+aG
+aW
+ad
+aA
+aA
+aI
+aI
+aI
+aI
+aI
+aI
+aA
+aA
+au
+ak
+aq
+aS
+aW
+aG
+ak
+aG
+aW
+aW
+aW
+ak
+aM
+"}
+(25,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+ad
+aI
+aI
+aI
+aA
+aI
+aI
+aI
+aA
+aI
+aI
+au
+aW
+aq
+ap
+aW
+aG
+Yl
+aW
+aY
+aY
+ak
+aW
+aM
+"}
+(26,1,1) = {"
+aM
+ay
+ay
+ak
+aG
+ak
+ad
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+ai
+aI
+aI
+au
+aW
+aq
+aq
+at
+aq
+aq
+aq
+aq
+aq
+aq
+aq
+aM
+"}
+(27,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+ad
+aI
+aE
+aE
+aI
+aI
+aI
+aE
+aE
+aI
+aI
+au
+ak
+aq
+aR
+aR
+aR
+jv
+aJ
+aR
+PV
+aR
+Yx
+aM
+"}
+(28,1,1) = {"
+aM
+ab
+aW
+aW
+at
+aW
+ad
+aI
+aE
+aE
+aI
+aI
+aI
+aE
+aE
+aI
+aI
+au
+am
+aq
+av
+as
+Eu
+aR
+aR
+aR
+PV
+aR
+ac
+aM
+"}
+(29,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+ad
+aI
+aI
+aX
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+au
+aW
+aq
+aR
+as
+Eu
+aR
+aR
+PV
+aR
+aR
+ac
+aM
+"}
+(30,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+ad
+aU
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aU
+au
+aW
+ah
+aR
+as
+Eu
+PV
+aR
+aR
+aR
+Kj
+aR
+aM
+"}
+(31,1,1) = {"
+aM
+ay
+ay
+ak
+aG
+aW
+ad
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+aI
+au
+ak
+aq
+as
+as
+Eu
+aR
+PV
+aR
+aR
+Kj
+aR
+aM
+"}
+(32,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+ak
+af
+aN
+aN
+aN
+aN
+aN
+aN
+aN
+aN
+aN
+aN
+aD
+aW
+aq
+av
+as
+Eu
+aR
+aR
+aR
+aR
+aR
+PV
+aM
+"}
+(33,1,1) = {"
+aM
+ay
+ay
+aW
+aG
+aW
+aW
+aW
+aW
+aW
+aW
+aW
+aZ
+aW
+aW
+aW
+aW
+aW
+am
+aq
+as
+ac
+Eu
+aR
+PV
+aR
+PV
+aR
+Yx
+aM
+"}
+(34,1,1) = {"
+aM
+ab
+aJ
+aW
+aq
+ab
+aS
+aB
+aP
+aS
+aW
+aB
+aW
+aS
+aP
+aB
+aW
+aS
+aW
+aq
+ar
+aR
+aR
+aR
+Bg
+aR
+aR
+aR
+Kj
+aM
+"}
+(35,1,1) = {"
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+aM
+"}

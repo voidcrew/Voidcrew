@@ -99,8 +99,8 @@
 /datum/ship_upgrade_module/kilo/hold_eva
 	id = "kilo_hold_eva"
 	name = "Salvage Bay"
-	desc = "An extra EVA suit, a recharging bench and a wreck-cracking rack: \
-		plasma cutter, fulton extraction rig and mining GPS."
+	desc = "An extra EVA suit, a recharging bench and a salvage rack: plasma \
+		cutter, fulton extraction rig and mining GPS."
 	slot = "kilo_hold"
 	map_file = "kilo/kilo_hold_eva.dmm"
 	part_cost = list(PART_CLASS_COMBAT = 1)
@@ -170,8 +170,8 @@
 	name = "Saloon"
 	desc = "A full timber refit, bow to stern: wooden walls and swinging doors \
 		throughout, a piano hall in the cargo bay, and a card game running in \
-		the galley. Only the engine block is still iron - Barkeep on the \
-		manifest."
+		the galley. Only the engine block is still iron. Comes with a Barkeep \
+		on the manifest."
 	part_cost = list(PART_CLASS_TRADE = 1)
 	template_suffix = "kilo_b"
 	upgrade_slot_ids = list(

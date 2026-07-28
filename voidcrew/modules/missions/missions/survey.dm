@@ -78,7 +78,8 @@
 /datum/mission/survey/update_text()
 	var/display_name = required_amount == 1 ? target_name_singular : target_name
 	name = "Survey Contract: [display_name]"
-	desc = "Use the orbital survey console to scan [required_amount] [display_name]."
+	desc = "Use the orbital survey console to scan [required_amount] [display_name]. \
+		Nothing to bring back - payment is settled at the mission board once the scans are logged."
 
 /datum/mission/survey/get_ui_data()
 	var/list/data = ..()

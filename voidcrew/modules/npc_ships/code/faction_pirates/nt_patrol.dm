@@ -179,16 +179,25 @@
 // Referenced by ship_nt_patrol.dmm - same pattern as the pirate turrets in
 // faction_pirate_equipment.dm, but keyed to the NT crew's faction so they
 // don't gun down their own officers.
+//
+// req_access is deliberately an access nobody aboard carries. The crew are
+// basic mobs with no ID cards, so the swipe lock only ever gates boarders -
+// and the inherited ACCESS_SYNDICATE gated it the wrong way round, since
+// voidcrew's syndicate job outfits hand players that access at roundstart.
+// The counterplay is the turretid console, which ship_nt_patrol.dmm maps
+// unlocked on purpose.
 
 /obj/machinery/porta_turret/syndicate/nt_patrol
 	name = "corporate security turret"
 	desc = "A ballistic auto-turret keyed to Nanotrasen security transponders."
 	faction = list(ROLE_DEATHSQUAD)
+	req_access = list(ACCESS_CENT_GENERAL)
 
 /obj/machinery/porta_turret/syndicate/energy/nt_patrol
 	name = "corporate laser turret"
 	desc = "An energy blaster auto-turret keyed to Nanotrasen security transponders."
 	faction = list(ROLE_DEATHSQUAD)
+	req_access = list(ACCESS_CENT_GENERAL)
 
 // ==================== CREW MOBS ====================
 // Space-capable customs variants of the upstream NT troopers
@@ -199,7 +208,7 @@
 /// Customs guard - melee escort with a stun baton
 /mob/living/basic/trooper/nanotrasen/customs
 	name = "\improper Nanotrasen Customs Officer"
-	desc = "A Nanotrasen customs enforcement officer. The clipboard is metaphorical; the baton is not."
+	desc = "A Nanotrasen customs officer, here to search your ship. The baton is standard issue."
 	maxHealth = 110
 	health = 110
 	melee_damage_lower = 12
@@ -253,7 +262,7 @@
 
 /mob/living/basic/trooper/pirate/faction/boss/nt_patrol
 	name = "NT Compliance Director"
-	desc = "A senior Nanotrasen compliance executive in tactical dress. Their signature closes accounts. Permanently."
+	desc = "A senior Nanotrasen compliance executive in body armor, sent out when the paperwork stops working."
 	maxHealth = 350
 	health = 350
 	melee_damage_lower = 20
@@ -295,7 +304,7 @@
 	greetings = list(
 		"This is Nanotrasen Customs Enforcement. Your vessel has been flagged under Controlled Substances Directive 7-C.",
 		"NTSV Vigilant to unidentified trafficker. Cut your engines. A compliance inspection is now in progress.",
-		"Attention vessel. Nanotrasen Customs. Your cargo manifest has been reviewed and found... incomplete.",
+		"Attention vessel. Nanotrasen Customs. We have reviewed your cargo manifest and it is not complete.",
 	)
 	demand_lines = list(
 		"You are in violation of Nanotrasen Controlled Substances Directive 7-C. A compliance fine of %CREDITS% credits has been assessed. Alternatively, surrender %QUANTITY% %ITEM% for destruction. Payment resolves this incident.",
@@ -308,12 +317,12 @@
 		"Transaction logged. Consider retaining a licensed customs broker in future. Good day.",
 	)
 	rejection_lines = list(
-		"Refusal noted for the record. Escalating to compliance action. Boarding teams, you are billable from this moment.",
+		"Refusal noted for the record. Escalating to compliance action. Boarding teams are launching, and you are paying for them.",
 		"Non-payment has been logged as an admission of liability. Commencing asset recovery.",
-		"Very well. Your file has been transferred to Enforcement. They do not negotiate.",
+		"Very well. Your file goes to Enforcement. They don't negotiate.",
 	)
 	timeout_lines = list(
-		"Your payment window has closed. Late-stage remediation is now in effect. It is considerably less pleasant.",
+		"Your payment window has closed. We do this the expensive way now.",
 		"Processing window expired. Escalating per standard operating procedure.",
 	)
 	impatience_lines = list(
@@ -321,16 +330,16 @@
 		"%SECONDS% seconds remain on this offer. Interest accrues thereafter.",
 	)
 	flee_warning_lines = list(
-		"Attempting to leave an active inspection is itself a violation. Interdiction engaged. Your fine has been recalculated upward.",
-		"Flight from customs is a Class II infraction. You are not going anywhere, and the assessment just grew.",
+		"Leaving an active inspection is its own violation. Interdiction engaged, and your fine just went up.",
+		"Running from customs is a Class II infraction. You are not going anywhere, and that just cost you extra.",
 	)
 	movement_betrayal_lines = list(
-		"Second evasion attempt logged. Lethal enforcement is now authorized and, regrettably, billable.",
+		"Second evasion attempt logged. Lethal enforcement is authorized. You will be billed for that as well.",
 		"You were warned. Weapons free. The paperwork will describe this as 'aggressive remediation'.",
 	)
 	escape_warning_lines = list(
 		"Do not attempt to flee or target this vessel. Any hostile act will be met with immediate enforcement action.",
-		"For your records: evasion or aggression during an inspection voids your right to arbitration. Permanently.",
+		"For the record: running or shooting during an inspection voids your right to arbitration.",
 	)
 
 // ==================== CAPTAIN HOLOGRAM PRESET ====================
@@ -484,7 +493,7 @@
 	controller.clear_blackboard_key("hailing_reminder_sent")
 	SEND_SIGNAL(quarry, COMSIG_SHIP_BEING_TARGETED, patrol_ship)
 
-	quarry.ship_notify("[patrol_ship.name]: \"Attention [quarry.name]. This is Nanotrasen Customs Enforcement. You are ordered to cut engines and submit to inspection. Compliance is mandatory and non-compliance is expensive.\"", "CUSTOMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn2.ogg', 25)
+	quarry.ship_notify("[patrol_ship.name]: \"Attention [quarry.name]. This is Nanotrasen Customs Enforcement. Cut your engines and stand by for inspection. Non-compliance gets expensive.\"", "CUSTOMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn2.ogg', 25)
 
 	timer_id = addtimer(CALLBACK(src, PROC_REF(hunt_tick)), NT_PATROL_TICK_INTERVAL, TIMER_STOPPABLE | TIMER_LOOP)
 	return TRUE
@@ -564,7 +573,7 @@
 	if(patrol_ship && !QDELETED(patrol_ship))
 		if(!silent)
 			var/obj/structure/overmap/ship/quarry = quarry_ref?.resolve()
-			quarry?.ship_notify("[patrol_ship.name]: \"Pursuit cost projections exceed recoverable fines. Breaking off pursuit. Your file remains open.\"", "CUSTOMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+			quarry?.ship_notify("[patrol_ship.name]: \"You are costing us more than your fine is worth. Breaking off pursuit. Your file stays open.\"", "CUSTOMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		patrol_ship.warp_out()
 	finish_hunt()
 

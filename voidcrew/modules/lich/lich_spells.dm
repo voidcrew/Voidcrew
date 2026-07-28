@@ -94,7 +94,7 @@
  */
 /datum/action/cooldown/spell/conjure/limit_summons/raise_thrall
 	name = "Raise Thrall"
-	desc = "Calls up a servant from whatever is lying around, bound to you and to nothing else. It follows you, it fights what comes at you, and it can be told to stay, heel or go loose. It will not last, and it did not consent."
+	desc = "Raises a skeleton at your feet to fight for you. It follows you, attacks whatever attacks you, and can be told to stay, heel or go loose. Two at a time, and they do not last long."
 	button_icon = 'icons/mob/actions/actions_spells.dmi'
 	button_icon_state = "skeleton"
 	sound = 'sound/effects/magic/RATTLEMEBONES.ogg'
@@ -116,7 +116,7 @@
 /datum/action/cooldown/spell/conjure/limit_summons/raise_thrall/can_cast_spell(feedback = TRUE)
 	if(number_of_summons >= max_summons)
 		if(feedback && owner)
-			to_chat(owner, span_warning("You are already holding up as much of the dead as you can carry."))
+			to_chat(owner, span_warning("You can't hold up any more of the dead at once."))
 		return FALSE
 	return ..()
 
@@ -171,7 +171,7 @@
 /// (40 HP / 15 melee) because it is free, repeatable and disposable.
 /mob/living/basic/skeleton/verdigris_thrall
 	name = "verdigris thrall"
-	desc = "A skeleton held together by somebody's opinion. The green light in the joints is doing all the structural work and it knows it."
+	desc = "A skeleton lit green at every joint. Whatever is holding it together, it isn't bone."
 	maxHealth = 45
 	health = 45
 	melee_damage_lower = 12
@@ -234,7 +234,7 @@
 
 /mob/living/basic/skeleton/verdigris_thrall/examine(mob/user)
 	. = ..()
-	. += span_green("It is not going to be here long. You can see straight through the parts that are already leaving.")
+	. += span_green("It won't last long. Parts of it are already going transparent.")
 
 // =========================================================================
 // DESTRUCTION — Verdigris Bolt
@@ -250,7 +250,7 @@
  */
 /datum/action/cooldown/spell/pointed/projectile/verdigris_bolt
 	name = "Verdigris Bolt"
-	desc = "Throws a bolt of grave-light. It rots the living and it mends the dead, and it does not much care which of those you were aiming at."
+	desc = "Fires a bolt of grave-light at one target. Deals 25 burn and 20 toxin to the living. The undead take no damage from it and are healed 25 instead."
 	button_icon = 'icons/mob/actions/actions_spells.dmi'
 	// Existing states only — actions_spells.dmi has no green/necro bolt button,
 	// and asking track F for one for a rarely-seen button isn't worth the sprite.
@@ -334,8 +334,8 @@
 
 	victim.adjustToxLoss(VERDIGRIS_BOLT_ROT, forced = TRUE)
 	victim.visible_message(
-		span_danger("The green sinks into [victim] and starts working."),
-		span_userdanger("Something green gets under your skin and begins, patiently, to rot you."),
+		span_danger("The green soaks into [victim] and starts to rot [victim.p_them()]."),
+		span_userdanger("Something green gets under your skin and starts rotting you."),
 	)
 
 /**
@@ -362,7 +362,7 @@
 	new /obj/effect/temp_visual/heal(get_turf(victim), COLOR_GREEN)
 	victim.visible_message(
 		span_green("The grave-light soaks into [victim], and the damage closes over."),
-		span_green("The grave-light finds you and puts you back the way you were."),
+		span_green("The grave-light soaks into you and closes your wounds."),
 	)
 
 // =========================================================================
@@ -392,7 +392,7 @@
  */
 /datum/action/cooldown/spell/grave_mirage
 	name = "Grave Mirage"
-	desc = "Stands three of your own corpses up around you and steps into the line. Anything that was hunting you loses the thread and goes for a copy instead, and a copy bursts on the first hit and takes 25 brute out of whoever swung. They will not hold anyone's attention forever, but they will hold it."
+	desc = "Puts three copies of you on the tiles around you and moves you in among them. Anything hunting you switches to a copy instead. A copy bursts on the first hit and deals 25 brute to whoever hit it. They last 20 seconds."
 	button_icon = 'icons/mob/actions/actions_spells.dmi'
 	// "swap" is the closest existing state: two figures, and you genuinely do
 	// end up standing where one of them was.
@@ -446,15 +446,15 @@
 		QDEL_IN(mirage, VERDIGRIS_MIRAGE_LIFESPAN)
 
 	if(!length(fresh_copies))
-		to_chat(caster, span_warning("The grave-light gathers and finds no room to stand in."))
+		to_chat(caster, span_warning("The grave-light gathers, but there's no room for it."))
 		return
 
 	caster.forceMove(pick(free_steps))
 	new /obj/effect/temp_visual/small_smoke/halfsecond(get_turf(caster))
-	caster.visible_message(span_warning("[caster] comes apart into several of [caster.p_them()]self, all equally unwell."))
+	caster.visible_message(span_warning("[caster] comes apart into several of [caster.p_them()]self."))
 
 	if(misdirect_hunters(caster, fresh_copies))
-		to_chat(caster, span_green("Something that was looking for you loses the thread and goes for one of the others."))
+		to_chat(caster, span_green("Something that was hunting you goes for one of the copies instead."))
 
 /**
  * The distraction. Anything within VERDIGRIS_MIRAGE_DISTRACT_RANGE that was hunting
@@ -544,7 +544,7 @@
  */
 /mob/living/basic/verdigris_mirage
 	name = "mirage"
-	desc = "It is standing exactly the way you do. That is the part that gets people."
+	desc = "Somebody's double, lit green from the inside."
 	icon = 'icons/mob/simple/simple_human.dmi'
 	gender = NEUTER
 	mob_biotypes = MOB_UNDEAD|MOB_HUMANOID
@@ -634,7 +634,7 @@
 
 	stung = TRUE
 	attacker.adjustBruteLoss(VERDIGRIS_MIRAGE_STING)
-	to_chat(attacker, span_userdanger("The mirage bursts, and the green in it goes through your arm on the way out!"))
+	to_chat(attacker, span_userdanger("The mirage bursts, spraying green light through your arm!"))
 	new /obj/effect/temp_visual/small_smoke/halfsecond(get_turf(src))
 	QDEL_IN(src, 0)
 
@@ -660,7 +660,7 @@
 
 /obj/item/book/granter/action/spell/raise_thrall
 	name = "codex of borrowed hands"
-	desc = "A slim codex bound in something that used to help. The instructions are written as an apology and then crossed out."
+	desc = "A slim book bound in cracked green leather. It is very thorough about how to make a skeleton do what it is told."
 	icon_state = "book3"
 	color = "#77c9a0"
 	granted_action = /datum/action/cooldown/spell/conjure/limit_summons/raise_thrall
@@ -668,10 +668,10 @@
 	remarks = list(
 		"It keeps saying 'ask' and then correcting itself to 'tell'...",
 		"So they only need to be ABOUT the right shape. Good...",
-		"Two is the number. Three is a habit and four is a lifestyle...",
-		"Apparently they resent it. That's fine, they resent it briefly...",
+		"Two at a time. It is very firm about two at a time...",
+		"Apparently they resent it. Not for long, though...",
 		"There's a whole page on what to do when it turns around...",
-		"'The dead are agreeable. The dead have never once been asked.'",
+		"'The dead don't argue. Nobody has ever asked them to.'",
 	)
 
 /obj/item/book/granter/action/spell/raise_thrall/recoil(mob/living/user)
@@ -681,7 +681,7 @@
 
 /obj/item/book/granter/action/spell/verdigris_bolt
 	name = "codex of the working green"
-	desc = "A codex whose margins are entirely taken up with a single ongoing argument about whether rot counts as craftsmanship."
+	desc = "A green book about rot magic. Someone has argued with the author in the margins on every single page."
 	icon_state = "book5"
 	color = "#77c9a0"
 	granted_action = /datum/action/cooldown/spell/pointed/projectile/verdigris_bolt
@@ -691,29 +691,29 @@
 		"It says the bolt is 'polite to its own' — what does that mean...",
 		"Oh. It means it heals skeletons. That's going to come up...",
 		"Why is the diagram of a hand labelled 'yours, afterward'...",
-		"'Rot is only slow work. I have all the time there is.'",
-		"My fingers have gone a colour I would describe as agricultural...",
+		"'Rot is just slow work, and I have plenty of time.'",
+		"My fingers have gone green and I don't think that's the ink...",
 	)
 
 /obj/item/book/granter/action/spell/verdigris_bolt/recoil(mob/living/user)
 	. = ..()
-	user.visible_message(span_warning("[src] exhales a wash of green, and the air around [user] smells like a turned field."))
+	user.visible_message(span_warning("[src] coughs out a wash of green, and the air around [user] starts to smell like wet soil."))
 	user.adjustToxLoss(15, forced = TRUE)
 
 /obj/item/book/granter/action/spell/grave_mirage
 	name = "codex of the fourth corpse"
-	desc = "A codex with four identical figures inked on the cover. Three of them are labelled. The fourth has been scratched out so hard the vellum gave up."
+	desc = "A green book with four identical figures inked on the cover. Three of them are labelled. The fourth has been scratched out hard enough to tear the page."
 	icon_state = "book7"
 	color = "#77c9a0"
 	granted_action = /datum/action/cooldown/spell/grave_mirage
 	action_name = "grave mirage"
 	remarks = list(
 		"The trick isn't making the copies. The trick is not flinching...",
-		"'Stand where they expect the corpse and they will look for you elsewhere.'",
-		"There's a note here about being hit by mistake by your own side...",
+		"'Stand where they expect a corpse and they'll look for you somewhere else.'",
+		"There's a note here about your own side hitting you by mistake...",
 		"Apparently people can tell if they look properly. So don't let them...",
-		"Four figures, three labels. I don't like the arithmetic on this one...",
-		"It is very insistent that you must not point out which one you are...",
+		"Four figures on the cover, three labels. I don't like that...",
+		"It's very insistent that you don't point out which one you are...",
 	)
 
 /obj/item/book/granter/action/spell/grave_mirage/recoil(mob/living/user)

@@ -65,8 +65,8 @@
 
 /datum/round_event/voidcrew/lich/summon_magic/announce(fake)
 	lich_announce_galaxy(
-		"You have been dying of me very slowly and it has become tedious. Here — take a \
-		little of what I am. Real power, in your soft hands, with no instruction whatsoever. \
+		"You have been dying of me very slowly and it has become tedious. Here, take some of \
+		what I have. Real power, in your soft hands, with no instructions at all. \
 		I expect most of you will not reach me. I expect several of you will not reach the \
 		end of the corridor.",
 		"An Unkind Gift",

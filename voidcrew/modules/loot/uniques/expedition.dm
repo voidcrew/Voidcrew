@@ -61,7 +61,7 @@
  */
 /obj/item/pinpointer/old_hands_compass
 	name = "old hand's compass"
-	desc = "A prospector's compass, glass sanded to frost. It has never pointed north in its working life."
+	desc = "A prospector's compass with the glass sanded to frost. The needle points toward the nearest ruin nobody's set foot in yet."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "brass_compass"
 	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 3, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 2)
@@ -171,7 +171,7 @@
  */
 /obj/item/claim_stake
 	name = "claim stake"
-	desc = "A steel stake with a brass claim-plate. The frontier respects exactly one thing and this is the shape of it."
+	desc = "A steel stake with a brass claim-plate. Drive it into the ground and local wildlife won't start fights nearby."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "claim_stake"
 	worn_icon_state = "marker"
@@ -328,7 +328,7 @@
  */
 /obj/item/clothing/suit/hooded/explorer/second_season_duster
 	name = "\"Second Season\""
-	desc = "A duster gone the color of every planet it's been on. The weather gave up on the previous owner's schedule."
+	desc = "A duster gone the color of every planet it's been on. Storms don't touch you in it, and rough ground doesn't slow you down."
 	clothing_traits = list(TRAIT_ASHSTORM_IMMUNE, TRAIT_SNOWSTORM_IMMUNE, TRAIT_SANDSTORM_IMMUNE, TRAIT_RAINSTORM_IMMUNE, TRAIT_RADSTORM_IMMUNE)
 
 /obj/item/clothing/suit/hooded/explorer/second_season_duster/Initialize(mapload)
@@ -375,7 +375,7 @@
  */
 /obj/item/pickaxe/divining
 	name = "divining pick"
-	desc = "A pickaxe with a forked tip and opinions. It hums when you're warm."
+	desc = "A pickaxe with a forked tip that hums when there's good rock nearby. Breaking one seam tends to crack open the ones next to it."
 	toolspeed = 0.8
 	force = 16
 	/// Chance the first adjacent mineral turf cascades in
@@ -488,7 +488,7 @@
  */
 /obj/item/deepwell_sampler
 	name = "core sampler"
-	desc = "A core sampler crated in claim-office gray. The warranty excludes 'attention.'"
+	desc = "A core sampler crated in claim-office gray. Deploy it on a mineral seam and it works the whole vein by itself."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "deepwell_item"
 	w_class = WEIGHT_CLASS_BULKY
@@ -520,7 +520,7 @@
 
 /obj/machinery/deepwell_sampler
 	name = "deepwell sampler"
-	desc = "A core sampler, bolted down and working the vein on its own. The drilling carries."
+	desc = "A core sampler, bolted down and drilling the vein on its own. It's extremely loud, and the wildlife comes to look."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "deepwell"
 	density = TRUE
@@ -649,7 +649,7 @@
  */
 /obj/item/longwalk_rig
 	name = "longwalk rig"
-	desc = "A leg harness of pistons and cable, trail-patched. Built by someone who was tired of going around."
+	desc = "A leg harness of pistons and cable, patched up on the trail. Dashes you four tiles forward, straight over lava and chasms."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "longwalk_rig"
 	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'

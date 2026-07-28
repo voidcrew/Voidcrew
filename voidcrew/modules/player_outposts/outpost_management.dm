@@ -133,7 +133,7 @@
 
 	// Everything below is owner-only
 	if(!outpost.is_owner(usr))
-		to_chat(usr, span_warning("The console rejects you — you are not the registered owner."))
+		to_chat(usr, span_warning("The console rejects you. You aren't the registered owner."))
 		return
 
 	. = TRUE

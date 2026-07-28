@@ -1,0 +1,1686 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"ab" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ac" = (
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"ad" = (
+/obj/machinery/computer/old{
+	name = "optical tracker alignment"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ae" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"af" = (
+/obj/structure/tank_holder/oxygen,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ag" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ah" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"ai" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"aj" = (
+/obj/effect/zone_mobs/wildlife,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ak" = (
+/obj/item/radio/intercom/directional/north,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"al" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "Greenhouse Airlock"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"am" = (
+/obj/effect/spawner/random/structure/chair_flipped,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"an" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/space/eva{
+	pixel_y = 4
+	},
+/obj/item/clothing/head/helmet/space/eva{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"ao" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"ap" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aq" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"ar" = (
+/obj/structure/table/wood,
+/obj/item/paper{
+	name = "transit sightings";
+	default_raw_text = "Cycle 4099: two contacts on the long lens, both rocks. Cycle 4100: one contact, also a rock. Logged all three for the survey office anyway."
+	},
+/obj/item/pen{
+	pixel_x = 5
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"as" = (
+/obj/structure/chair/comfy{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"at" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"au" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/powered)
+"av" = (
+/obj/structure/table/wood,
+/obj/item/binoculars,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aw" = (
+/obj/machinery/door/airlock{
+	name = "Observation Deck"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"ax" = (
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"ay" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"az" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aA" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aB" = (
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"aC" = (
+/obj/machinery/door/airlock/mining{
+	name = "Equipment Lobby"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aD" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aE" = (
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"aF" = (
+/turf/template_noop,
+/area/template_noop)
+"aG" = (
+/obj/structure/table,
+/obj/item/clipboard{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/pen,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aH" = (
+/obj/structure/closet/emcloset,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aI" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aJ" = (
+/obj/structure/rack,
+/obj/item/clothing/mask/breath{
+	pixel_y = 4
+	},
+/obj/item/tank/internals/oxygen{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aK" = (
+/obj/structure/sign/warning/secure_area,
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/powered)
+"aL" = (
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"aM" = (
+/obj/structure/chair/comfy{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aN" = (
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"aO" = (
+/obj/machinery/door/airlock/external/ruin{
+	name = "External Airlock"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"aP" = (
+/obj/structure/sign/poster/official/random,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aQ" = (
+/obj/machinery/door/airlock/mining{
+	name = "Sample Processing"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"aR" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aS" = (
+/obj/machinery/door/airlock{
+	name = "Crew Quarters"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"aT" = (
+/obj/structure/chair/office{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aU" = (
+/obj/machinery/door/airlock{
+	name = "Sensor Operations"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"aV" = (
+/obj/machinery/door/airlock{
+	name = "Greenhouse"
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"aW" = (
+/obj/structure/sign/departments/botany,
+/turf/closed/wall,
+/area/ruin/space/has_grav/powered)
+"aX" = (
+/obj/structure/chair/office{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aY" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"aZ" = (
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"bh" = (
+/obj/structure/flora/grass/brown,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"bv" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"ci" = (
+/obj/structure/rack,
+/obj/item/mining_scanner{
+	pixel_y = 4
+	},
+/obj/item/flashlight/flare{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"cr" = (
+/obj/structure/flora/bush/flowers_pp,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"cI" = (
+/obj/structure/table,
+/obj/effect/spawner/random/food_or_drink/snack,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"dL" = (
+/obj/machinery/computer/old{
+	name = "sensor array control"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ex" = (
+/obj/structure/rack,
+/obj/item/stack/ore/silver{
+	amount = 10;
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"fS" = (
+/obj/structure/bed,
+/obj/item/bedsheet/grey,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"gc" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"gq" = (
+/obj/effect/decal/cleanable/food/plant_smudge,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"gz" = (
+/obj/structure/flora/bush/fullgrass,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"hs" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"hD" = (
+/obj/machinery/button/door/directional/east{
+	id = "longwatch_vault";
+	name = "sample vault release"
+	},
+/obj/effect/turf_decal/caution{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"hV" = (
+/obj/structure/flora/bush/ferny,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"ib" = (
+/obj/machinery/light/small/red/directional/west,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"jI" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"kd" = (
+/obj/effect/zone_mobs/wildlife,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"lc" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"lC" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"mv" = (
+/obj/structure/table,
+/obj/item/reagent_containers/cup/watering_can{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/plant_analyzer{
+	pixel_x = 4
+	},
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"mz" = (
+/obj/structure/flora/bush/pointy,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"mE" = (
+/obj/structure/chair/stool,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"mN" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"mT" = (
+/obj/structure/flora/bush/lavendergrass,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"mW" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"mZ" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"nv" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"pg" = (
+/obj/structure/flora/grass/both,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"pT" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"qy" = (
+/obj/effect/spawner/random/entertainment/plushie,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"qW" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"rp" = (
+/obj/machinery/hydroponics/constructable,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"tk" = (
+/obj/structure/table/wood,
+/obj/effect/spawner/random/food_or_drink/snack,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"uf" = (
+/obj/machinery/door/airlock/mining{
+	name = "Sample Vault Antechamber"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"up" = (
+/obj/structure/bed,
+/obj/item/bedsheet/purple,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"us" = (
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"uw" = (
+/obj/structure/table,
+/obj/effect/spawner/random/food_or_drink/condiment,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"uD" = (
+/obj/machinery/rnd/server,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"vi" = (
+/obj/structure/table/reinforced,
+/obj/item/folder{
+	pixel_x = 4
+	},
+/obj/item/pen{
+	pixel_x = -4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"vw" = (
+/obj/machinery/computer/old{
+	name = "telemetry archive"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"vN" = (
+/obj/structure/bookcase/random,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"wY" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"xB" = (
+/obj/effect/spawner/random/trash/garbage,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"yj" = (
+/obj/machinery/biogenerator,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"yI" = (
+/obj/effect/zone_mobs/wildlife/boss,
+/obj/structure/closet/crate/zone_loot/expedition/rare,
+/obj/effect/turf_decal/box,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"zK" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"Ad" = (
+/obj/structure/flora/grass/green,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"Af" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Ag" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"AB" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"AU" = (
+/obj/effect/turf_decal/caution{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"AX" = (
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"Bd" = (
+/obj/machinery/computer/old{
+	name = "long-range survey uplink"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Bv" = (
+/obj/structure/table,
+/obj/item/cultivator{
+	pixel_y = 4
+	},
+/obj/item/storage/bag/plants{
+	pixel_y = -2
+	},
+/obj/item/paper/crumpled{
+	name = "hydro schedule";
+	default_raw_text = "The creeper in tray four came out of sample 89 and does not keep to the watering schedule, or any schedule. Cut it back on Tuesdays and wear the thick gloves."
+	},
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"CH" = (
+/obj/machinery/hydroponics/soil,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"CU" = (
+/obj/effect/spawner/random/trash/grime,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"CY" = (
+/obj/structure/ore_box,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Db" = (
+/obj/effect/spawner/random/structure/chair_flipped,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"DU" = (
+/obj/machinery/door/airlock{
+	name = "Canteen"
+	},
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"Eq" = (
+/obj/machinery/space_heater,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"Fi" = (
+/obj/structure/table/reinforced,
+/obj/item/clipboard{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/obj/item/paper/crumpled{
+	name = "transmission log";
+	default_raw_text = "Cycle 4102: survey packet sent, no acknowledgment. Cycle 4103: survey packet sent, no acknowledgment. Marden's position is that nobody has told us to stop."
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Fs" = (
+/obj/effect/spawner/random/structure/chair_flipped,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"Gj" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/paper/crumpled/bloody{
+	name = "incident report";
+	default_raw_text = "Specimen 112 breached its case on third shift and is loose in the station. The vault stays sealed. 107 is still in there and it has grown. Release control is upstairs in sensor operations if it comes to that."
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"GB" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"GF" = (
+/obj/structure/flora/bush/grassy,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"Hn" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"HL" = (
+/obj/structure/table,
+/obj/machinery/microwave,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"HO" = (
+/obj/effect/spawner/random/food_or_drink/seed,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"HQ" = (
+/obj/machinery/seed_extractor,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"HY" = (
+/obj/machinery/vending/coffee,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"It" = (
+/obj/structure/bedsheetbin,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"Jn" = (
+/obj/effect/spawner/random/structure/chair_flipped,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"JR" = (
+/obj/structure/table,
+/obj/item/geiger_counter{
+	pixel_x = -4;
+	pixel_y = 4
+	},
+/obj/item/gps/mining{
+	pixel_x = 4
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"Ks" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"KD" = (
+/obj/structure/rack,
+/obj/item/stack/ore/gold{
+	amount = 8;
+	pixel_y = 4
+	},
+/obj/item/stack/marker_beacon/thirty{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"KY" = (
+/obj/effect/spawner/random/trash/grime,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"KZ" = (
+/obj/machinery/door/poddoor{
+	id = "longwatch_vault";
+	name = "sample vault door"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Lq" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"My" = (
+/obj/structure/table,
+/obj/item/paper/crumpled{
+	name = "resupply request 34";
+	default_raw_text = "Request 34 filed this morning, same wording as the other thirty-three. We are fine for food, the greenhouse grows more than five people can eat. Send coffee filters."
+	},
+/obj/item/pen{
+	pixel_x = 5
+	},
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"MR" = (
+/obj/item/radio/intercom/directional/north,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Nh" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"Ns" = (
+/obj/structure/table,
+/obj/item/paper/crumpled{
+	name = "intake log";
+	default_raw_text = "12 Aug: batch 112 in from the outer belt sweep. Six cores, two ice samples, one sealed case with something alive in it. The case was scratched from the inside at pickup and it is worse now. Vaulted it next to 107."
+	},
+/obj/item/stack/ore/iron{
+	amount = 5;
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"ND" = (
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"NJ" = (
+/obj/machinery/light/small/red/directional/east,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"OI" = (
+/obj/structure/rack,
+/obj/item/stack/ore/diamond{
+	amount = 4;
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Px" = (
+/obj/structure/ore_box,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"PW" = (
+/obj/structure/dresser,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"Sa" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"So" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Tb" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"Ue" = (
+/obj/structure/frame/computer,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"UF" = (
+/obj/structure/grille/broken,
+/obj/item/shard,
+/obj/item/stack/rods{
+	amount = 2
+	},
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"US" = (
+/obj/machinery/vending/hydroseeds,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"UV" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Vb" = (
+/obj/structure/rack,
+/obj/item/stack/ore/titanium{
+	amount = 15;
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"Vc" = (
+/obj/structure/bed,
+/obj/item/bedsheet/blue,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"Vi" = (
+/obj/structure/flora/bush/leafy,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"Vx" = (
+/obj/machinery/computer/old{
+	name = "environment monitor"
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"VR" = (
+/obj/structure/rack,
+/obj/item/stack/ore/uranium{
+	amount = 10;
+	pixel_y = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"WZ" = (
+/obj/structure/sink/directional/east,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"Xh" = (
+/obj/structure/rack,
+/obj/item/pickaxe{
+	pixel_y = 3
+	},
+/obj/item/shovel/spade{
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"Xk" = (
+/obj/machinery/vending/snack,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+"Ys" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"YD" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/obj/structure/flora/bush/fullgrass,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"YP" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"YT" = (
+/obj/item/shard,
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered)
+"YZ" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/grass,
+/area/ruin/space/has_grav/powered)
+"Zj" = (
+/obj/structure/closet/secure_closet/personal,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
+"ZF" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ZO" = (
+/obj/structure/sink/directional/west,
+/turf/open/floor/iron/cafeteria,
+/area/ruin/space/has_grav/powered)
+
+(1,1,1) = {"
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+"}
+(2,1,1) = {"
+aF
+ax
+ax
+ax
+aD
+aD
+ax
+ax
+ax
+ax
+aO
+ax
+ax
+ax
+ax
+aD
+aD
+ax
+ax
+ax
+ax
+aP
+ax
+aP
+ax
+ax
+ax
+aF
+"}
+(3,1,1) = {"
+aF
+ax
+ab
+aY
+aM
+aZ
+aZ
+az
+ax
+an
+ap
+aH
+ax
+Vc
+mZ
+fS
+aL
+up
+Ys
+ax
+HY
+aB
+Ag
+Sa
+ND
+mW
+ax
+aF
+"}
+(4,1,1) = {"
+aF
+aD
+as
+aZ
+aZ
+ae
+aZ
+ae
+ax
+aJ
+ag
+ah
+ax
+Ys
+aL
+aL
+Jn
+Ys
+aL
+ax
+Xk
+mE
+aB
+aB
+Ag
+aB
+aD
+aF
+"}
+(5,1,1) = {"
+aF
+aD
+as
+ae
+aZ
+am
+aZ
+aZ
+ax
+ag
+ag
+aA
+ax
+Zj
+Ys
+aL
+aL
+aL
+aL
+DU
+aB
+cI
+mE
+Ag
+aB
+Ag
+aD
+aF
+"}
+(6,1,1) = {"
+aF
+aD
+av
+aZ
+aG
+aZ
+aj
+aZ
+ax
+af
+ag
+ag
+ax
+PW
+aL
+xB
+aL
+aL
+aL
+ax
+HL
+My
+mE
+aB
+aB
+aB
+ax
+aF
+"}
+(7,1,1) = {"
+aF
+ax
+aI
+aZ
+aX
+aZ
+aZ
+aR
+ax
+ax
+aC
+ax
+ax
+Lq
+aL
+aL
+Ys
+aL
+Ys
+ax
+Nh
+mE
+aB
+aB
+aB
+Eq
+ax
+aF
+"}
+(8,1,1) = {"
+aF
+ax
+ad
+aT
+aZ
+aZ
+ae
+aZ
+ax
+aN
+aN
+aN
+aS
+aL
+Ys
+aL
+PW
+aL
+aL
+ax
+uw
+aB
+Db
+aB
+Ag
+wY
+ax
+aF
+"}
+(9,1,1) = {"
+aF
+aD
+as
+aZ
+ae
+aZ
+aZ
+ae
+ax
+aN
+aN
+aq
+ax
+hs
+It
+qy
+Zj
+AX
+Hn
+ax
+ZO
+Ag
+jI
+nv
+aB
+KY
+ax
+aF
+"}
+(10,1,1) = {"
+aF
+aD
+as
+ae
+aZ
+aZ
+aZ
+aZ
+aw
+aN
+ah
+aN
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aF
+"}
+(11,1,1) = {"
+aF
+aD
+ar
+aZ
+aZ
+ae
+aZ
+aZ
+ax
+aN
+aN
+aN
+ax
+US
+gz
+hV
+rp
+rp
+WZ
+rp
+rp
+rp
+ac
+Ad
+hV
+pg
+ax
+aF
+"}
+(12,1,1) = {"
+aF
+ax
+tk
+vN
+ay
+aZ
+aZ
+aZ
+ax
+ai
+aN
+aN
+ax
+HQ
+ac
+ac
+pg
+ac
+gq
+ac
+HO
+ac
+YD
+ac
+ac
+gq
+aD
+aF
+"}
+(13,1,1) = {"
+aF
+ax
+UV
+aZ
+aZ
+gc
+ab
+ae
+aP
+ah
+aN
+ah
+aW
+Tb
+gq
+ac
+ac
+cr
+ac
+mv
+ac
+mz
+YZ
+Bv
+ac
+ac
+ax
+aF
+"}
+(14,1,1) = {"
+aF
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+ax
+aN
+aN
+aN
+aV
+ac
+ac
+YZ
+YP
+ac
+gz
+ac
+YZ
+ac
+ac
+gq
+YZ
+So
+al
+aF
+"}
+(15,1,1) = {"
+aF
+ax
+MR
+aZ
+aZ
+aY
+aZ
+az
+ax
+aN
+aN
+aN
+ax
+yj
+Ad
+ac
+ac
+HO
+ac
+gq
+ac
+gq
+mT
+ac
+ac
+YZ
+ax
+aF
+"}
+(16,1,1) = {"
+aF
+ax
+Ue
+aZ
+ae
+aZ
+pT
+aZ
+ax
+aN
+aN
+aE
+ax
+gq
+ac
+Vi
+gq
+Ad
+YZ
+GF
+bh
+ac
+ac
+YZ
+HO
+ac
+aD
+aF
+"}
+(17,1,1) = {"
+aF
+aD
+Bd
+aT
+aZ
+aZ
+pT
+ae
+aP
+aN
+aN
+aN
+ax
+Ks
+qW
+ac
+CH
+CH
+ac
+ac
+ac
+ac
+CH
+CH
+qW
+GB
+ax
+aF
+"}
+(18,1,1) = {"
+aF
+aD
+dL
+aT
+aZ
+ae
+aZ
+aZ
+ax
+aN
+aN
+aN
+ax
+ax
+ax
+ax
+ax
+ax
+au
+au
+au
+au
+au
+au
+au
+au
+au
+aF
+"}
+(19,1,1) = {"
+aF
+aD
+vw
+aZ
+am
+aZ
+aZ
+aZ
+ax
+ah
+aN
+aN
+ax
+Xh
+aN
+Ns
+aN
+ah
+au
+ib
+aZ
+ae
+au
+KD
+ib
+az
+au
+aF
+"}
+(20,1,1) = {"
+aF
+ax
+aI
+ae
+aZ
+aZ
+ae
+aZ
+aU
+aN
+at
+aN
+ax
+ci
+ah
+aN
+lc
+aN
+au
+ae
+Af
+aZ
+au
+OI
+ae
+aZ
+au
+aF
+"}
+(21,1,1) = {"
+aF
+ax
+Vx
+aZ
+aZ
+ae
+aZ
+aZ
+ax
+aN
+at
+ah
+aP
+ai
+aN
+ah
+aN
+us
+au
+aZ
+ae
+AU
+au
+aZ
+aZ
+ae
+au
+aF
+"}
+(22,1,1) = {"
+aF
+aD
+Fi
+aZ
+ae
+aZ
+aZ
+ae
+ax
+ai
+aN
+aN
+aQ
+aN
+kd
+aN
+ah
+aN
+uf
+aZ
+aZ
+AU
+KZ
+ZF
+yI
+aZ
+aK
+aF
+"}
+(23,1,1) = {"
+aF
+aD
+vi
+aT
+aZ
+aZ
+ae
+aZ
+ax
+aN
+aN
+aq
+ax
+JR
+aN
+Fs
+aN
+ah
+aK
+UF
+lC
+AU
+KZ
+ae
+aZ
+CY
+au
+aF
+"}
+(24,1,1) = {"
+aF
+aD
+ae
+aZ
+aZ
+CU
+aZ
+aR
+ax
+ak
+aN
+aN
+ax
+Px
+mN
+aN
+ah
+aN
+au
+Gj
+aZ
+AU
+au
+aZ
+Vb
+aZ
+au
+aF
+"}
+(25,1,1) = {"
+aF
+ax
+ab
+aZ
+aZ
+aZ
+aZ
+aZ
+ax
+aN
+aN
+ao
+ax
+ah
+aN
+ao
+aN
+YT
+au
+aZ
+ae
+aZ
+au
+VR
+aZ
+ex
+au
+aF
+"}
+(26,1,1) = {"
+aF
+ax
+UV
+uD
+uD
+aZ
+hD
+ae
+ax
+aa
+aN
+aN
+ax
+bv
+AB
+aN
+aN
+zK
+au
+UV
+NJ
+aZ
+au
+NJ
+aZ
+UV
+au
+aF
+"}
+(27,1,1) = {"
+aF
+ax
+ax
+ax
+aD
+aD
+ax
+ax
+ax
+ax
+aD
+ax
+ax
+ax
+ax
+aD
+aD
+ax
+au
+au
+au
+au
+au
+au
+au
+au
+au
+aF
+"}
+(28,1,1) = {"
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+aF
+"}

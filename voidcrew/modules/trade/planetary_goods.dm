@@ -68,7 +68,7 @@
 
 /obj/item/stack/glacial_core
 	name = "glacial core"
-	desc = "A fist-sized crystal of ancient compressed ice, cut whole out of deep permafrost. It never melts and drinks heat like a sponge, so the depots pack cold storage and coolant jackets with them. Mining scanners read the lattice as plain ice — prospectors find these pick-first."
+	desc = "A fist-sized crystal of ancient compressed ice, cut whole out of deep permafrost. It never melts and soaks up heat, so the depots pack cold storage and coolant jackets with them. Mining scanners read the lattice as plain ice, so the only way to find one is to swing at the wall and get lucky."
 	singular_name = "glacial core"
 	icon = 'icons/obj/mining_zones/artefacts.dmi'
 	icon_state = "ice_crystal"

@@ -232,7 +232,7 @@
 
 /obj/machinery/drug_lab/crystallizer
 	name = "crystallization chamber"
-	desc = "A glass-domed growth chamber, its seals yellowed with age. Where the batch either becomes product or becomes evidence."
+	desc = "A glass-domed growth chamber with seals yellowed by age. This is where the batch becomes product, or evidence."
 	icon_state = "crystallizer"
 	base_icon_state = "crystallizer"
 	station_index = DRUG_STATION_CRYSTALLIZER

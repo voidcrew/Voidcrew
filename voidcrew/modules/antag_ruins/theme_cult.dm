@@ -35,8 +35,8 @@
 	fulfilled_line = "That rite is already written in you."
 	renounce_line = "The Sepulcher remembers cowards too."
 	claim_line = "The altar holds your payment. Take it before you kneel again."
-	exhausted_line = "The Sepulcher's vaults are empty for you. That is its own kind of blessing."
-	remember_line = "The Sepulcher keeps its ledgers in something older than blood. Take back what is written."
+	exhausted_line = "The Sepulcher has nothing left for you. Count that as a blessing."
+	remember_line = "The Sepulcher keeps its ledgers somewhere death can't reach. Take back what's yours."
 
 // ===== RITE OF OFFERING =====
 
@@ -44,7 +44,7 @@
 	name = "Rite of Offering"
 	// Keep the count in sync with VESTIGE_OFFERING_CANDLES
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the satchel: chalk, candles, a knife. Far from this place, scribe the rune, ring it in three lit candles, and give it a dead body that once held a soul. The rite must be worked beyond these walls — the Sepulcher may only watch from a distance."
+	desc = "Take the satchel - chalk, candles, a knife. Somewhere away from here, draw the rune, ring it with three lit candles, and lay a dead body on it that once had a soul. It won't work inside these walls."
 	/// Whether the rune has been scribed somewhere
 	var/rune_scribed = FALSE
 
@@ -52,7 +52,7 @@
 	hand_over(user, new /obj/item/storage/box/vestige_ritual(get_turf(user)))
 
 /datum/vestige_trial/offering/get_progress_text()
-	return rune_scribed ? "The rune waits: candlelight, and a body that once held a soul." : "Scribe the rune somewhere far from the Sepulcher."
+	return rune_scribed ? "The rune is drawn. It needs lit candles and a body that once had a soul." : "Draw the rune somewhere well away from the Sepulcher."
 
 /obj/item/storage/box/vestige_ritual
 	name = "ritual satchel"
@@ -98,7 +98,7 @@
 	trial.refresh_tracker()
 	user.visible_message(
 		span_warning("[user] scribes a wide crimson rune across the floor."),
-		span_notice("You scribe the rune. Candlelight next — then the offering."),
+		span_notice("You finish the rune. Candles next, then the body."),
 	)
 	return ITEM_INTERACT_SUCCESS
 
@@ -116,7 +116,7 @@
 
 /obj/structure/vestige_rune/examine(mob/user)
 	. = ..()
-	. += span_notice("It wants a ring of [VESTIGE_OFFERING_CANDLES] lit candles, a dead humanoid that once held a soul laid upon it, and a knife with intent behind it.")
+	. += span_notice("It needs [VESTIGE_OFFERING_CANDLES] lit candles around it, a dead humanoid that once had a soul laid on top of it, and someone willing to use the knife.")
 
 /obj/structure/vestige_rune/attackby(obj/item/attacking_item, mob/user, params)
 	if(!istype(attacking_item, /obj/item/knife/ritual/vestige))
@@ -142,7 +142,7 @@
 			offering = body
 			break
 	if(!offering)
-		balloon_alert(user, "needs a soul-touched corpse on the rune!")
+		balloon_alert(user, "needs a corpse with a soul on it!")
 		return
 	user.visible_message(
 		span_bolddanger("[user] raises the knife over [offering] and begins a rite!"),
@@ -166,7 +166,7 @@
 
 /obj/item/knife/ritual/vestige
 	name = "sepulcher knife"
-	desc = "A ritual knife whose edge stays warm. It knows exactly one prayer."
+	desc = "A ritual knife. The edge stays warm no matter how long you leave it lying around."
 
 // ===== VIGIL OF BLOOD =====
 
@@ -174,7 +174,7 @@
 	name = "Vigil of Blood"
 	// Keep the amount in sync with VESTIGE_VIGIL_BLOOD_TOTAL
 	// (initial values must be constant, so no define interpolation here)
-	desc = "The altar drinks. Feed it 400 units of your own living blood — as many visits as it takes. It will not take from the dead, the borrowed or the bottled. Only you, only fresh."
+	desc = "Feed the altar 400 units of your own blood, over as many visits as it takes. It only takes it fresh, out of a living body, and it won't take anyone else's."
 	/// Blood donated so far
 	var/blood_given = 0
 
@@ -209,13 +209,13 @@
 		return
 	var/datum/vestige_trial/vigil/trial = user.mind?.active_vestige_trial
 	if(!istype(trial))
-		to_chat(user, span_warning("You press a palm to the stone. Nothing happens — no pact binds your blood to it."))
+		to_chat(user, span_warning("You press a palm to the stone. Nothing happens."))
 		return
 	if(HAS_TRAIT(user, TRAIT_NOBLOOD) || !user.blood_volume)
 		to_chat(user, span_warning("The altar finds nothing in you worth drinking."))
 		return
 	if(user.blood_volume < BLOOD_VOLUME_SAFE)
-		to_chat(user, span_warning("You are too drained. The altar refuses dregs — come back fuller."))
+		to_chat(user, span_warning("You've lost too much blood already. Come back when you've recovered."))
 		return
 	user.visible_message(
 		span_warning("[user] presses [user.p_their()] palm into the altar's groove..."),
@@ -228,7 +228,7 @@
 		return
 	user.blood_volume -= VESTIGE_VIGIL_BLOOD_PER_DONATION
 	playsound(src, 'sound/effects/magic/enter_blood.ogg', 50, TRUE)
-	to_chat(user, span_notice("Your blood runs along the groove and disappears. The altar drinks deep."))
+	to_chat(user, span_notice("Your blood runs down the groove and disappears."))
 	trial.donate(VESTIGE_VIGIL_BLOOD_PER_DONATION)
 
 // ===== BOONS =====
@@ -252,15 +252,15 @@
 	name = "Crimson Step"
 	// Keep the numbers in sync with VESTIGE_STEP_BLOOD_COST / VESTIGE_STEP_RANGE
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Fix your eyes on ground you can see, up to five paces out, and fold through somewhere red and wet to stand on it. Every fold drinks fifteen units of your own blood and leaves a little of you pooled where you left — the Sepulcher extends no credit, and it refuses a body already drained pale."
-	grant_text = "The space behind your eyes folds. Distance is a suggestion now, and every suggestion has a price in red."
+	desc = "Teleport to any open ground you can see, up to five tiles away. Each use costs fifteen units of your own blood and leaves a pool of it where you were standing. It won't work if you're already low on blood."
+	grant_text = "The space behind your eyes folds. Distance costs blood now."
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_crimson_step
 
 /datum/vestige_boon/spell/crimson_step/surge
 	name = "Crimson Surge"
 	// Keep the numbers in sync with VESTIGE_SURGE_RANGE
-	desc = "The fold learns your shape: it opens the moment you ask and reaches seven paces. The price does not change. The altar drinks; the altar pays its debts; the altar has never once made change."
-	grant_text = "The red place behind your eyes widens. It knows you now, and it opens the moment you ask."
+	desc = "The same step, but it reaches seven tiles and comes back much faster. The blood cost doesn't change."
+	grant_text = "The red place behind your eyes widens. It opens the moment you ask now."
 	upgrades_from = /datum/vestige_boon/spell/crimson_step
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_crimson_step/surge
 
@@ -282,7 +282,7 @@
  */
 /datum/action/cooldown/spell/pointed/vestige_crimson_step
 	name = "Crimson Step"
-	desc = "Fold yourself to a spot you can see, a few paces out. Each fold costs blood and leaves a pool of it where you left; it refuses a body already drained pale."
+	desc = "Teleport to a spot you can see a few tiles away. Costs blood and leaves a pool of it behind. Won't work if you're already low."
 	button_icon = 'icons/mob/actions/actions_cult.dmi'
 	button_icon_state = "tele"
 	school = SCHOOL_FORBIDDEN
@@ -291,14 +291,14 @@
 	spell_requirements = SPELL_REQUIRES_NO_ANTIMAGIC
 	cast_range = VESTIGE_STEP_RANGE
 	aim_assist = FALSE // the step wants ground; a clicked mob resolves to its turf anyway
-	active_msg = "The world folds along a red crease, waiting for you to choose where..."
+	active_msg = "A red crease opens in the world. Pick where you're going..."
 	deactive_msg = "You let the crease smooth back out."
 	/// Blood units one fold drinks
 	var/blood_cost = VESTIGE_STEP_BLOOD_COST
 
 /datum/action/cooldown/spell/pointed/vestige_crimson_step/surge
 	name = "Crimson Surge"
-	desc = "Fold yourself to a spot you can see, further and faster. Each fold costs blood and leaves a pool of it where you left; it refuses a body already drained pale."
+	desc = "Teleport to a spot you can see, further out and on a shorter cooldown. Costs blood and leaves a pool of it behind. Won't work if you're already low."
 	cooldown_time = 8 SECONDS
 	cast_range = VESTIGE_SURGE_RANGE
 
@@ -331,7 +331,7 @@
 		return . | SPELL_CANCEL_CAST
 	if(caster.blood_volume < VESTIGE_STEP_BLOOD_FLOOR)
 		caster.balloon_alert(caster, "too drained to fold!")
-		to_chat(caster, span_warning("The fold refuses dregs — the Sepulcher's own rule. Come back fuller."))
+		to_chat(caster, span_warning("You've lost too much blood to pay for the fold. Come back when you've recovered."))
 		return . | SPELL_CANCEL_CAST
 
 /datum/action/cooldown/spell/pointed/vestige_crimson_step/cast(atom/cast_on)
@@ -340,7 +340,7 @@
 	var/turf/origin = get_turf(caster)
 	var/turf/destination = get_turf(cast_on)
 	if(!destination || !do_teleport(caster, destination, no_effects = TRUE, channel = TELEPORT_CHANNEL_MAGIC))
-		caster.balloon_alert(caster, "something refuses the fold!")
+		caster.balloon_alert(caster, "something blocks the fold!")
 		return
 	// Paid on arrival only: a warded destination costs the cooldown, never the blood
 	caster.blood_volume = max(caster.blood_volume - blood_cost, 0)
@@ -351,29 +351,31 @@
 	playsound(destination, 'sound/effects/magic/exit_blood.ogg', 50, TRUE)
 	caster.visible_message(
 		span_warning("[caster] unfolds out of somewhere red and wet!"),
-		span_notice("You step through the red place. It takes its coin on the way."),
+		span_notice("You step through the red place. It takes its cut of you on the way."),
 	)
 
 /datum/vestige_boon/spell/sanguine_blade
 	name = "Sanguine Blade"
 	// Keep the number in sync with VESTIGE_BLADE_ALTAR_BONUS
-	desc = "Call the Sepulcher's knife into your hand from anywhere, and send it back when you're done. It is a sacrificial edge, and it remembers the altar: it cuts six points crueler into anyone already brought low to the floor. The congregation always knelt first."
-	grant_text = "A knife-shaped absence settles against your palm. It will come when called."
+	desc = "Summon the Sepulcher's knife into your hand from anywhere, and dismiss it when you're done. It hits six points harder against anyone already lying on the floor."
+	grant_text = "A knife-shaped weight settles against your palm. It comes when you call."
 	spell_type = /datum/action/cooldown/spell/vestige_sanguine_blade
 
 /datum/vestige_boon/spell/sanguine_blade/fang
 	name = "Sanguine Fang"
 	// Keep the number in sync with VESTIGE_FANG_ALTAR_BONUS
-	desc = "The knife comes back hungrier: a longer, crueler edge that parts armor like vestment, answers the call twice as fast, and bites ten points deeper into the fallen. The altar never asked its offerings to stand."
-	grant_text = "The knife-shaped absence against your palm grows teeth."
+	desc = "A longer, meaner version of the knife. It cuts through armor, comes back twice as fast, and hits ten points harder against anyone lying down."
+	grant_text = "The weight against your palm grows teeth."
 	upgrades_from = /datum/vestige_boon/spell/sanguine_blade
 	spell_type = /datum/action/cooldown/spell/vestige_sanguine_blade/fang
 
 /datum/action/cooldown/spell/vestige_sanguine_blade
 	name = "Sanguine Blade"
 	desc = "Call the Sepulcher's knife into your hand, or send it back."
-	button_icon = 'icons/mob/actions/actions_cult.dmi'
-	button_icon_state = "dagger"
+	// The knife's own world sprite, so the button and the thing in your hand are
+	// recognisably the same object (/obj/item/knife/ritual, knives.dm)
+	button_icon = 'icons/obj/weapons/khopesh.dmi'
+	button_icon_state = "bone_blade"
 	school = SCHOOL_CONJURATION
 	cooldown_time = 10 SECONDS
 	invocation_type = INVOCATION_NONE
@@ -412,6 +414,7 @@
 		var/outdated = held.type != blade_type
 		if(!outdated)
 			cast_on.visible_message(span_warning("[held] dissolves into red mist!"), span_notice("You send the knife back."))
+			playsound(cast_on, 'sound/effects/magic/exit_blood.ogg', 50, TRUE)
 			qdel(held)
 			return
 		// An old model from before the upgrade: reshape it in place
@@ -426,7 +429,7 @@
 		span_warning("A knife condenses out of red mist in [cast_on]'s hand!"),
 		span_notice("The knife answers."),
 	)
-	playsound(cast_on, 'sound/effects/magic/enter_blood.ogg', 30, TRUE)
+	playsound(cast_on, 'sound/effects/magic/enter_blood.ogg', 50, TRUE)
 
 /**
  * The Sepulcher's knife: a summoned sacrificial edge whose identity is the
@@ -437,7 +440,7 @@
  */
 /obj/item/knife/ritual/vestige/bound
 	name = "sanguine blade"
-	desc = "The Sepulcher's knife, bound to a pact. It goes home when it leaves the hand, and it cuts deepest into whatever has already been brought low."
+	desc = "The Sepulcher's knife, bound to a pact. It vanishes the moment it leaves your hand, and it cuts deepest into anyone already lying down."
 	force = 18
 	item_flags = ABSTRACT | DROPDEL
 	/// Bonus force against living targets already flat on the deck — the altar's edge
@@ -445,7 +448,7 @@
 
 /obj/item/knife/ritual/vestige/bound/fang
 	name = "sanguine fang"
-	desc = "The Sepulcher's knife, grown long and cruel on a well-kept pact. It goes home when it leaves the hand, and it bites deepest into whatever has already been brought low."
+	desc = "The Sepulcher's knife, grown long and mean on a well-kept pact. It vanishes the moment it leaves your hand, and it cuts deepest into anyone already lying down."
 	force = 24
 	armour_penetration = 20
 	altar_bonus = VESTIGE_FANG_ALTAR_BONUS

@@ -37,7 +37,7 @@
  */
 /datum/action/cooldown/mob_cooldown/fire_breath/ice/rimebreath
 	name = "Rimebreath"
-	desc = "Breathe a cone of killing frost."
+	desc = "Breathe a cone of frost five tiles long. Deals 20 burn and badly slows anything it hits for 4 seconds."
 	// The fire_breath parent's button is a flame; hers is not.
 	button_icon = 'voidcrew/icons/mob/actions/hoarfrost.dmi'
 	button_icon_state = "rimebreath"
@@ -194,7 +194,7 @@
  */
 /datum/action/cooldown/mob_cooldown/hoarfrost_killing_cold
 	name = "Killing Cold"
-	desc = "Plant, roar, and turn everything past arm's reach into a killing field."
+	desc = "Plant yourself and freeze everything more than two tiles away for 5 seconds, dealing 16 burn a second. You cannot move, attack or cast while it runs."
 	button_icon = 'voidcrew/icons/mob/actions/hoarfrost.dmi'
 	button_icon_state = "killing_cold"
 	cooldown_time = 35 SECONDS
@@ -223,7 +223,7 @@
 	StartCooldown()
 	var/mob/living/caster = owner
 	caster.visible_message(
-		span_boldwarning("[caster] plants [caster.p_their()] feet and ROARS - the air past arm's reach turns to knives!"),
+		span_boldwarning("[caster] plants [caster.p_their()] feet and ROARS - the air starts freezing everywhere but right beside [caster.p_them()]!"),
 		span_boldwarning("You plant yourself and let the cold out."),
 	)
 	playsound(caster, 'sound/mobs/non-humanoids/space_dragon/space_dragon_roar.ogg', 100, TRUE)
@@ -274,7 +274,7 @@
  */
 /datum/action/cooldown/mob_cooldown/hoarfrost_avalanche
 	name = "Avalanche"
-	desc = "Bring a ring of the glacier down around you."
+	desc = "Drop a ring of ice chunks three to four tiles out. They block movement and sight, and melt after 20 seconds."
 	button_icon = 'voidcrew/icons/mob/actions/hoarfrost.dmi'
 	button_icon_state = "avalanche"
 	cooldown_time = 20 SECONDS
@@ -382,12 +382,12 @@
 
 /atom/movable/screen/alert/status_effect/hoarfrost_chill
 	name = "Rimebitten"
-	desc = "Hoarfrost has flash-frozen you to the bone. Everything you do is slower until it burns off."
+	desc = "You have been flash-frozen to the bone. You are moving much slower until it wears off."
 	icon_state = "cold3"
 
 /atom/movable/screen/alert/status_effect/hoarfrost_chill/mild
 	name = "Frostbitten"
-	desc = "You are walking through rime. The footing is bad."
+	desc = "You are walking through rime. It is slowing you down."
 	icon_state = "cold1"
 
 /datum/movespeed_modifier/hoarfrost_chill

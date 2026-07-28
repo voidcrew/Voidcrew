@@ -53,7 +53,7 @@
 /// Contestants of the opposing team may take it; own team touching it afield returns it.
 /obj/item/colosseum_flag/attack_hand(mob/living/user, list/modifiers)
 	if(!game?.controller || game.controller.state != COLOSSEUM_STATE_LIVE)
-		to_chat(user, span_warning("The banner is ceremonial right now."))
+		to_chat(user, span_warning("There's no match running - the banner is just decoration."))
 		return
 	var/datum/colosseum_contestant/entry = game.controller.entry_for_body(user)
 	if(!entry || entry.eliminated)

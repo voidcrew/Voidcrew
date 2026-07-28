@@ -10,96 +10,96 @@
 	id = "vestige_chrysalis"
 	suffix = "vestige_chrysalis.dmm"
 	name = "The Chrysalis"
-	description = "A medical frigate that reported a single crew casualty, then stopped reporting. The hull has been growing ever since."
+	description = "A medical frigate that reported one crew death, then went quiet. Something inside the hull has been growing ever since."
 	arrival_announcement = "A new signal has surfaced in the sector. Biological interference on every band. Approach is not advised."
 
 /datum/map_template/ruin/space/vestige/sepulcher
 	id = "vestige_sepulcher"
 	suffix = "vestige_sepulcher.dmm"
 	name = "The Scarlet Sepulcher"
-	description = "A votive barge whose congregation bled themselves dry waiting for an ending that never came. One acolyte is still keeping the vigil."
-	arrival_announcement = "A new signal has surfaced in the sector. The carrier wave resembles plainsong. Approach is not advised."
+	description = "A prayer barge whose congregation bled themselves dry waiting for a god that never showed up. One acolyte is still keeping the vigil."
+	arrival_announcement = "A new signal has surfaced in the sector. The carrier wave sounds like chanting. Approach is not advised."
 
 /datum/map_template/ruin/space/vestige/gloaming
 	id = "vestige_gloaming"
 	suffix = "vestige_gloaming.dmm"
 	name = "The Gloaming"
-	description = "A freighter that went dark mid-burn, in every sense. Nothing aboard has emitted a photon since."
+	description = "A freighter that went dark mid-burn. Every light aboard is out, and none of them will turn back on."
 	arrival_announcement = "A new signal has surfaced in the sector. The source reads as a hole in the starfield. Approach is not advised."
 
 /datum/map_template/ruin/space/vestige/athenaeum
 	id = "vestige_athenaeum"
 	suffix = "vestige_athenaeum.dmm"
 	name = "The Athenaeum"
-	description = "A library barge that burned from the inside out. The fire is long over; something in the ashes is still mid-sentence."
-	arrival_announcement = "A new signal has surfaced in the sector. The carrier wave is a voice, reciting. Approach is not advised."
+	description = "A library barge that burned from the inside out. The fire is long out, but something in the ashes is still talking."
+	arrival_announcement = "A new signal has surfaced in the sector. The carrier wave is someone reading out loud. Approach is not advised."
 
 /datum/map_template/ruin/space/vestige/reliquary
 	id = "vestige_reliquary"
 	suffix = "vestige_reliquary.dmm"
 	name = "The Reliquary"
-	description = "A shrine ship rusting in perfect stillness before a door that has never opened. The rust is not idle — it is transcription."
-	arrival_announcement = "A new signal has surfaced in the sector. Instruments touching it report corrosion. Approach is not advised."
+	description = "A shrine ship rusting away in front of a door that has never opened. The rust is spreading a lot faster than rust should."
+	arrival_announcement = "A new signal has surfaced in the sector. Instruments pointed at it come back corroded. Approach is not advised."
 
 /datum/map_template/ruin/space/vestige/wake
 	id = "vestige_wake"
 	suffix = "vestige_wake.dmm"
 	name = "The Wake"
-	description = "A hospice barge whose every passenger died the same night. Something stayed behind to grieve, and it has had a long time to practice."
-	arrival_announcement = "A new signal has surfaced in the sector. The pattern matches a funeral toll. Approach is not advised."
+	description = "A hospice barge where every passenger died on the same night. Something is still aboard, and it is still mourning them."
+	arrival_announcement = "A new signal has surfaced in the sector. The pattern matches a funeral bell. Approach is not advised."
 
 /datum/map_template/ruin/space/vestige/silent_dojo
 	id = "vestige_silent_dojo"
 	suffix = "vestige_silent_dojo.dmm"
 	name = "The Silent Dojo"
-	description = "A Spider Clan training hall adrift and cold, mats still swept. The master's suit still kneels at the head of the room. The master does not appear to be in it."
-	arrival_announcement = "A new signal has surfaced in the sector. The channel is silent in a way that suggests it is being held silent. Approach is not advised."
+	description = "A Spider Clan training hall, adrift and cold, mats still swept. The master's suit is still kneeling at the head of the room. The master isn't in it."
+	arrival_announcement = "A new signal has surfaced in the sector. The channel is silent, and something is working to keep it that way. Approach is not advised."
 
 /datum/map_template/ruin/space/vestige/aperture
 	id = "vestige_aperture"
 	suffix = "vestige_aperture.dmm"
 	name = "The Aperture"
-	description = "A hull section that is mostly windows, every one of them facing nothing. Something on the far side of the glass is facing back."
-	arrival_announcement = "A new signal has surfaced in the sector. Optical sweeps of the source return images of the sweeping vessel. Approach is not advised."
+	description = "A hull section that is mostly windows, all of them looking out at empty space. Something is looking back through one of them."
+	arrival_announcement = "A new signal has surfaced in the sector. Camera sweeps of the source come back showing your own ship. Approach is not advised."
 
 /datum/map_template/ruin/space/vestige/roost
 	id = "vestige_roost"
 	suffix = "vestige_roost.dmm"
 	name = "The Roost"
-	description = "A grain hauler that stopped answering hails and started growing bones. The cargo is gone. The gold is not. Nothing aboard could eat gold, and it tried."
+	description = "A grain hauler that stopped answering hails and started growing bones. The grain is long gone. The gold is still aboard, chewed on but uneaten."
 	arrival_announcement = "A new signal has surfaced in the sector. Thermal imaging of the source shows a heartbeat with nothing around it. Approach is not advised."
 
 /datum/map_template/ruin/space/vestige/menagerie
 	id = "vestige_menagerie"
 	suffix = "vestige_menagerie.dmm"
 	name = "The Menagerie"
-	description = "A survey craft of non-human origin, holding station with mechanical patience. Every specimen cell aboard is labeled, catalogued, and empty. One is open."
+	description = "A survey craft of non-human make, parked and waiting. Every specimen cell aboard is labeled, catalogued, and empty. One of them is standing open."
 	arrival_announcement = "A new signal has surfaced in the sector. The carrier wave is a request form. Approach is not advised."
 
 /datum/map_template/ruin/space/vestige/facsimile
 	id = "vestige_facsimile"
 	suffix = "vestige_facsimile.dmm"
 	name = "The Facsimile"
-	description = "A pleasure liner's parlor deck in perfect order. The manifest says the passengers are still aboard. The manifest counts them among the furniture."
-	arrival_announcement = "A new signal has surfaced in the sector. It is a distress call, note-perfect, in your own voice. Approach is not advised."
+	description = "A pleasure liner's parlor deck, still in perfect order. The manifest says the passengers are aboard. It also lists them under furniture."
+	arrival_announcement = "A new signal has surfaced in the sector. It is a distress call in your own voice, word for word. Approach is not advised."
 
 /datum/map_template/ruin/space/vestige/comb
 	id = "vestige_comb"
 	suffix = "vestige_comb.dmm"
 	name = "The Comb"
-	description = "An ore barge that stopped shipping ore and started growing chambers. Its holds scan as full. Nothing aboard has moved in a long time, and everything is arranged in cells."
-	arrival_announcement = "A new signal has surfaced in the sector. The source scans warm, hollow, and chambered, like the inside of a nest. Approach is not advised."
+	description = "An ore barge that stopped shipping ore and started growing chambers. The holds still scan as full, but everything in them is packed into neat cells and none of it has moved in years."
+	arrival_announcement = "A new signal has surfaced in the sector. The source scans warm and hollow, like the inside of a nest. Approach is not advised."
 
 /datum/map_template/ruin/space/vestige/shambles
 	id = "vestige_shambles"
 	suffix = "vestige_shambles.dmm"
 	name = "The Shambles"
-	description = "A provisions barge still keeping its cold chain, years past its last port. The manifest lists the cargo by cut. Toward the end, the handwriting improves."
+	description = "A provisions barge still running its freezers, years after its last port call. The manifest lists the cargo by cut. Toward the end, the handwriting gets neater."
 	arrival_announcement = "A new signal has surfaced in the sector. The carrier wave sounds like laughter, or a saw. Approach is not advised."
 
 /datum/map_template/ruin/space/vestige/loom
 	id = "vestige_loom"
 	suffix = "vestige_loom.dmm"
 	name = "The Loom"
-	description = "A sericulture vessel adrift with its looms still threaded. Its silk was prized in a dozen ports. Production never stopped; only the staff did."
-	arrival_announcement = "A new signal has surfaced in the sector. The transmission repeats in a pattern too regular for language and too patient for machinery. Approach is not advised."
+	description = "A silk farming vessel adrift with its looms still threaded and still running. Nobody has been alive to work them for years."
+	arrival_announcement = "A new signal has surfaced in the sector. The transmission repeats on a pattern too regular to be speech. Approach is not advised."

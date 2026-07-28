@@ -83,7 +83,7 @@ GLOBAL_LIST_INIT(lich_ward_ignored_factions, list(
 /obj/machinery/lich_ward/examine(mob/user)
 	. = ..()
 	if(unsealed)
-		. += span_notice("The crystal is dark and still. Whatever it was holding shut, it is not holding shut any more.")
+		. += span_notice("The crystal is dark and still. Whatever it was holding shut is open now.")
 	else
 		. += span_boldwarning("It is humming. The [layer_name] is not clear — something in here is still standing.")
 	var/obj/structure/overmap/space_ruin/lich_lair/site = site_ref?.resolve()
@@ -102,7 +102,7 @@ GLOBAL_LIST_INIT(lich_ward_ignored_factions, list(
 	if(unsealed)
 		balloon_alert(user, "already dark")
 		return TRUE
-	to_chat(user, span_warning("Your hand passes through the crystal's glow and comes back cold. The hum does not falter. Whatever opens this, it is not you."))
+	to_chat(user, span_warning("Your hand passes through the crystal's glow and comes back cold. The hum doesn't falter. You aren't going to open this by hand."))
 	playsound(src, 'sound/effects/magic/curse.ogg', 40, TRUE)
 	return TRUE
 
@@ -215,7 +215,7 @@ GLOBAL_LIST_INIT(lich_ward_ignored_factions, list(
 /// which is exactly the point: it seals the reliquary his garb is kept in.
 /obj/machinery/lich_ward/sanctum
 	name = "verdigris ward of the sanctum"
-	desc = "The largest of the wards, and the only one that appears to be looking back at you. It hums lower than the others, almost below hearing, and the sound arrives in your teeth before it arrives in your ears. Behind it, something is very badly sealed."
+	desc = "The largest of the wards. It hums lower than the others, low enough that you feel it in your teeth before you hear it."
 	ward_id = LICH_WARD_SANCTUM
 	layer_area = /area/ruin/space/has_grav/powered/lich_lair/sanctum
 	layer_name = "sanctum"

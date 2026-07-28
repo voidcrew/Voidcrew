@@ -181,8 +181,12 @@ SUBSYSTEM_DEF(colosseum_dryrun)
 	for(var/atom/movable/thing as anything in vault.contents)
 		if(ismob(thing))
 			corpses_in_vault++
-		else
-			items_in_vault++
+			continue
+		items_in_vault++
+		// Parts, credits and vouchers all ride inside the champion's case
+		if(istype(thing, /obj/item/storage/briefcase/secure/extraction/tournament))
+			var/obj/item/storage/briefcase/secure/extraction/tournament/prize_case = thing
+			items_in_vault += length(prize_case.contents)
 	report("sweep: 3 corpses in vault", corpses_in_vault == 3, "[corpses_in_vault]")
 	report("prizes banked", items_in_vault >= 5, "[items_in_vault] items (3 parts + credits + voucher + knife expected)")
 	report("book settled + closed", test_book.settled && !test_book.open)

@@ -134,13 +134,13 @@
 		do_sparks(3, TRUE, src)
 		visible_message(span_bolddanger("[src] whines as its deflector field collapses!"))
 		playsound(src, 'sound/effects/empulse.ogg', 80, TRUE, extrarange = 10)
-		outpost?.ship_notify("SHIELD DEPLETED — incoming fire will now strike the outpost!", "SHIELD", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn.ogg', 40)
+		outpost?.ship_notify("SHIELD DEPLETED - incoming fire will hit the outpost!", "SHIELD", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn.ogg', 40)
 	else
 		outpost?.ship_notify("Shield absorbed a missile strike. Charge at [charge_percent]%.", "SHIELD", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 25)
 
 	// The besieger learns their shot was eaten
 	if(attacker && outpost)
-		attacker.ship_notify("Missile detonated against an energy shield protecting [outpost.display_name][charge <= 0 ? " — the shield has collapsed" : ""].", "WEAPONS", SHIP_NOTIFY_WARNING)
+		attacker.ship_notify("Missile detonated against a shield protecting [outpost.display_name][charge <= 0 ? " - the shield has collapsed" : ""].", "WEAPONS", SHIP_NOTIFY_WARNING)
 
 /obj/machinery/outpost_shield_generator/update_icon_state()
 	. = ..()
@@ -153,22 +153,22 @@
 /obj/machinery/outpost_shield_generator/examine(mob/user)
 	. = ..()
 	if(!outpost)
-		. += span_warning("Not linked to a claim registry — it must be built on a player outpost's level.")
+		. += span_warning("Not linked to a claim registry. It has to be built on a player outpost.")
 		return
 	var/charge_percent = max_charge > 0 ? round(charge / max_charge * 100) : 0
 	if(!is_operational_unit())
 		if(!anchored)
 			. += span_warning("It isn't secured to the deck. Wrench it down inside the claim's survey bounds.")
 		else if(machine_stat & NOPOWER)
-			. += span_warning("It has no power — the deflector field is DOWN.")
+			. += span_warning("It has no power. The field is DOWN.")
 		else if(!outpost.is_turf_buildable(get_turf(src)))
-			. += span_warning("It sits outside [outpost.name]'s survey bounds and cannot project a field from here.")
+			. += span_warning("It's outside [outpost.name]'s survey bounds and can't project a field from here.")
 		else
 			. += span_warning("It is inoperable.")
 	else if(!is_active_unit())
 		. += span_notice("STANDBY: another generator currently holds [outpost.name]'s deflector field.")
 	else if(charge <= 0)
-		. += span_warning("Field DEPLETED — recharging from outpost power.")
+		. += span_warning("Field DEPLETED. Recharging from outpost power.")
 	else
 		. += span_notice("Deflector field ACTIVE.")
 	. += span_notice("Charge: [round(charge)]/[round(max_charge)] ([charge_percent]%).")

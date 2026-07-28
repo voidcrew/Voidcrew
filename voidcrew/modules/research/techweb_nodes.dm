@@ -378,7 +378,7 @@
 /datum/techweb_node/radar_array_advanced
 	id = TECHWEB_NODE_RADAR_ARRAY_ADV
 	display_name = "Radar Array — Signal Analysis"
-	description = "Spectral analysis of charted signals. Further widens the scan radius and identifies what a space ruin actually is the moment it's charted, no survey required."
+	description = "Spectral analysis of charted signals. Widens the scan radius further, and identifies what a space ruin actually is as soon as it's charted, no survey needed."
 	prereq_ids = list(TECHWEB_NODE_RADAR_ARRAY)
 	design_ids = list()
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
@@ -386,7 +386,7 @@
 /datum/techweb_node/radar_array_elite
 	id = TECHWEB_NODE_RADAR_ARRAY_ELITE
 	display_name = "Radar Array — Vessel Tracking"
-	description = "Active vessel tracking. Maximises the scan radius and continuously plots other crews' ships within sensor range — contacts that vanish the instant either ship leaves the bubble."
+	description = "Active vessel tracking. Maximises the scan radius and plots other crews' ships within sensor range. Those contacts disappear as soon as either ship moves out of range."
 	prereq_ids = list(TECHWEB_NODE_RADAR_ARRAY_ADV)
 	design_ids = list()
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)

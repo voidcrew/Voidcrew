@@ -24,7 +24,7 @@
 
 /mob/living/basic/outpost_trader
 	name = "trader"
-	desc = "An independent merchant. The stock is behind the counter, the prices are non-negotiable, and the turrets are on their side."
+	desc = "An independent merchant. The prices aren't negotiable, and the turrets are on their side."
 	icon = 'icons/mob/simple/simple_human.dmi'
 	unique_name = FALSE
 	combat_mode = FALSE
@@ -105,7 +105,7 @@
 /mob/living/basic/outpost_trader/examine(mob/user)
 	. = ..()
 	if(shop)
-		. += span_notice("[name] runs [shop.outpost_name]'s counter. A tap on the shoulder opens negotiations.")
+		. += span_notice("[name] runs the counter at [shop.outpost_name]. Tap them on the shoulder to do business.")
 	if(outpost?.is_user_barred(user))
 		. += span_warning("[name] is pointedly ignoring you.")
 
@@ -138,7 +138,7 @@
 		TRADER_NPC_OPTION_TALK = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_talk"),
 	)
 	if(isnull(shop_type)) // the main trader also runs the contract ledger
-		options[TRADER_NPC_OPTION_CONTRACTS] = image(icon = 'icons/hud/radial.dmi', icon_state = "radial_lore")
+		options[TRADER_NPC_OPTION_CONTRACTS] = image(icon = 'voidcrew/icons/hud/radial.dmi', icon_state = "radial_quest")
 	var/choice = show_radial_menu(user, src, options, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE, tooltips = TRUE)
 	if(!choice || !check_menu(user))
 		return
@@ -229,10 +229,14 @@
 /mob/living/basic/outpost_trader/bait_shop
 	shop_type = /datum/outpost_shop/vendor/bait_shop
 
-// The Quartermain's stall (shop_catalog_outfitter_vendors.dm)
+// The Quartermain's stalls (shop_catalog_outfitter_vendors.dm,
+// shop_catalog_suit_vendor.dm)
 
 /mob/living/basic/outpost_trader/skunkworks
 	shop_type = /datum/outpost_shop/vendor/skunkworks
+
+/mob/living/basic/outpost_trader/suit_fitter
+	shop_type = /datum/outpost_shop/vendor/suit_fitter
 
 // =========================================================================
 // UI FACETS

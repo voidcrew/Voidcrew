@@ -85,7 +85,7 @@
 
 /mob/living/basic/vestige_patron/stain
 	name = "the Stain"
-	desc = "A slaughter demon — or most of one. It stands waist-deep in a spill gone rust-brown and hard as lacquer, set into it like a fly in amber, and it is smiling the way a shopkeeper smiles at the day's first customer. The blood it arrived through dried while it was still complimenting the cook."
+	desc = "A slaughter demon, or most of one. It's stuck waist-deep in a rust-brown spill that dried hard as lacquer, and it's smiling the way a shopkeeper smiles at the first customer of the day."
 	// The slaughter demon's own sprite (verified in demon.dm / demon_subtypes.dm), worn like old work clothes
 	icon = 'icons/mob/simple/demon.dmi'
 	icon_state = "slaughter_demon"
@@ -111,19 +111,19 @@
 	idle_lines = list(
 		"They asked for help with the butchering! Ha! I have never once declined an invitation, and that one was practically engraved.",
 		"The crew? Dressed, hung, and portioned, every one, and not a cut wasted. Say what you like about how the evening ended — the WORK was clean.",
-		"I stayed for the meal. The meal became a banquet, the banquet became — ha — a residency. And the floor dried while I was still giving my compliments to the cook.",
+		"I stayed for the meal. The meal became a banquet, the banquet became — ha! — a permanent arrangement. And the floor dried while I was still complimenting the cook.",
 		"A thing that travels by blood cannot leave by dried blood, apprentice. Write that down. On something. IN something.",
 		"You hold that knife like it owes you money. It owes you nothing. You owe IT a steady hand. We will fix this together, you and I.",
 		"The old shops called this a shambles — the wet floor, the gutter, the hooks, the honest work. The whole ship is a shambles now. I find that very tidy.",
 		"Do you know the difference between slaughter and butchery? Patience. One of us in this room had none, and look where it — HA! — look where it got me.",
 	)
 	accept_line = "Excellent! Apron on, chin up. The floor teaches, the knife grades, and I laugh either way."
-	busy_line = "You are still carrying another kitchen's order, apprentice. Finish that plate or scrape it — I serve no seconds before firsts."
+	busy_line = "You're still carrying another kitchen's order, apprentice. Finish that plate or scrape it."
 	fulfilled_line = "That cut is made and hung. Even I never butchered the same beast twice. Ha! Well. Not on purpose."
 	renounce_line = "Hanging up the apron? Fine, fine. The floor was too wet for you. It gets everyone eventually — usually by the ankles."
-	claim_line = "Wages before work — shop law, older than me. Take what you are owed. I insist. I INSIST."
-	exhausted_line = "The larder is bare and the hooks are empty — you have carried off my whole craft, one parcel at a time. I would applaud, but the stain keeps my hands."
-	remember_line = "Back from the walk-in, are we? The cold suits you. Your tools kept — I oiled them myself. A good shop never loses an apprentice's kit. Only, occasionally, the apprentice."
+	claim_line = "Wages before work, that's shop law, older than me. Take what you're owed. I insist. I INSIST."
+	exhausted_line = "The larder's bare and the hooks are empty. You've carried off my whole trade, one parcel at a time. I'd applaud, but the stain has my hands."
+	remember_line = "Back from the walk-in, are we? The cold suits you. Your tools are fine, I oiled them myself. A good shop never loses an apprentice's kit. Only, occasionally, the apprentice."
 
 // ===== THE RED ROAD =====
 
@@ -143,7 +143,7 @@
 	name = "The Red Road"
 	// Keep the count in sync with VESTIGE_ROAD_KILLS_NEEDED
 	// (initial values must be constant, so no define interpolation here)
-	desc = "The first lesson is the floor. Take the knife — I dressed the edge myself; it spills generously. Open your beast so the floor drinks, then put your boots in the red and land the LAST cut standing in it: wet blood underfoot, or the kill is just noise. Dried is a wall. Wet is a door. A butcher works on a wet floor or not at all. Five wild things brought down this way, and no beast counted twice, however many times somebody props it back up. Ha!"
+	desc = "First lesson is the floor. Take the knife — I dressed the edge myself, it spills generously. Cut your beast open so the floor gets wet, then stand in the wet and land the killing blow from there. Wet blood under your boots, or it doesn't count. Five wild things brought down that way, and no beast counts twice however many times somebody props it back up. Ha!"
 	/// The loaned knife, while it survives. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_flensing_knife/knife
 	/// Beasts already walked down the road (weakref -> TRUE) — a revived and re-felled beast is still one meal
@@ -155,7 +155,7 @@
 	var/obj/item/vestige_flensing_knife/loaned = new(get_turf(user))
 	loaned.bound_mind = owner
 	knife = hand_over(user, loaned)
-	to_chat(user, span_notice("The knife settles into your hand like it has been waiting there. The edge is not sharp so much as opinionated."))
+	to_chat(user, span_notice("The knife settles into your hand like it has been waiting there. The edge is unreasonably sharp."))
 
 /datum/vestige_trial/red_road/Destroy()
 	QDEL_NULL(knife)
@@ -163,8 +163,8 @@
 
 /datum/vestige_trial/red_road/get_progress_text()
 	if(!knife || QDELETED(knife))
-		return "The knife is lost, and the road stops where it dropped. Renounce the pact and [patron_name] will dress you another."
-	return "The road has drunk [length(felled)] of [VESTIGE_ROAD_KILLS_NEEDED] wild things, felled with wet blood underfoot."
+		return "The knife is lost. Renounce the pact and [patron_name] will dress you another."
+	return "You have felled [length(felled)] of [VESTIGE_ROAD_KILLS_NEEDED] wild things with wet blood underfoot."
 
 /// Credits a kill made standing in the red. Returns FALSE if this beast already walked the road.
 /datum/vestige_trial/red_road/proc/fell(mob/living/prey)
@@ -197,7 +197,7 @@
  */
 /obj/item/vestige_flensing_knife
 	name = "flensing knife"
-	desc = "A cleaver of demon-dark iron, balanced so well it feels like a suggestion. The fuller is stained a deep, patient brown that no whetstone touches, and the edge drinks light the way a gutter drinks rain."
+	desc = "A cleaver of demon-dark iron, balanced well enough that it does most of the work for you. The groove down the blade is stained a deep brown that no amount of scrubbing touches."
 	icon = 'icons/obj/weapons/khopesh.dmi'
 	icon_state = "render"
 	/// Mind of the supplicant this knife was loaned to — Destroy-time bookkeeping only; credit resolves the WIELDER at swing time
@@ -213,7 +213,7 @@
 
 /obj/item/vestige_flensing_knife/examine(mob/user)
 	. = ..()
-	. += span_notice("Every cut into a wild thing wets the floor beneath it. Only a killing blow from this knife counts for the Red Road — and only if YOUR boots stand in wet blood when it lands. [VESTIGE_ROAD_KILLS_NEEDED] wild things, no beast twice.")
+	. += span_notice("Every cut into a wild thing wets the floor beneath it. Only a killing blow from this knife counts for the Red Road, and only if your own boots are standing in wet blood when it lands. [VESTIGE_ROAD_KILLS_NEEDED] wild things, no beast twice.")
 
 /obj/item/vestige_flensing_knife/attack(mob/living/prey, mob/living/butcher, list/modifiers, list/attack_modifiers)
 	var/was_alive = isliving(prey) && prey.stat != DEAD
@@ -239,14 +239,14 @@
 			road = pool
 			break
 	if(!road)
-		to_chat(butcher, span_warning("[prey] falls — onto a dry floor. Somewhere, a tongue clicks twice: the LAST cut wants wet blood under your boots, apprentice."))
+		to_chat(butcher, span_warning("[prey] falls on a dry floor. Somewhere, a tongue clicks twice. The killing blow only counts with wet blood under your boots, apprentice."))
 		return
 	// fell() may schedule completion (which later deletes the trial) — nothing touches trial after this
 	if(trial.fell(prey))
 		to_chat(butcher, span_notice("[prey] drops with your boots planted in the red. From nowhere in particular: two slow, delighted claps."))
 		playsound(butcher, 'sound/effects/magic/demon_attack1.ogg', 20, TRUE)
 	else
-		to_chat(butcher, span_warning("[prey] has already been served once. The road wants new meat, not encores."))
+		to_chat(butcher, span_warning("[prey] has already been served once. Go and find something new."))
 
 /**
  * Guarantees a wet pool under the beast: its own blood first (species-correct,
@@ -293,7 +293,7 @@
 	// Keep the counts in sync with VESTIGE_TRAPDOOR_AMBUSHES_NEEDED /
 	// _STRIKES_PER_PREY / _STRIKE_WINDOW / _LURK_MAX / _TOLL
 	// (initial values must be constant, so no define interpolation here)
-	desc = "The second lesson is the pounce. I will lend you the crawl — the apprentice's cut of it. Sink into wet blood, and the floor is yours for ten seconds before it spits you back out; no pool in reach, and the door comes out of your own palm — five drops, shop price. Rise under something MOVING and put the first strike in within two seconds of surfacing. Flat-footed prey is a queue, not a pounce. Six pounces, and no beast surprised more than twice — after that, it has learned where the floor keeps its doors. Ha!"
+	desc = "Second lesson is the pounce. I'll lend you the crawl — the apprentice's version of it. Sink into wet blood and the floor is yours for ten seconds before it spits you back out. No pool in reach and the door comes out of your own palm, five brute, shop price. Come up under something that is MOVING and land your first strike within two seconds of surfacing. Something standing still doesn't count. Six pounces, and no beast counts more than twice — after that it knows where the floor keeps its doors. Ha!"
 	/// The loaned crawl. Mind-targeted like the boon spells; reclaimed (and any lurker ejected) the moment the pact ends.
 	var/datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_trapdoor/crawl
 	/// Pounces landed so far
@@ -306,7 +306,7 @@
 /datum/vestige_trial/trapdoor_feast/on_accepted(mob/living/user)
 	crawl = new(owner) // mind-targeted, same as granted boon spells — it rides across bodies with the pact
 	crawl.Grant(user)
-	to_chat(user, span_notice("Something teaches your bones the trick of it, laughing gently the whole time: the floor is a door, if the floor is red."))
+	to_chat(user, span_notice("Something teaches your bones the trick of it, laughing gently the whole time. A red floor is a door."))
 
 /datum/vestige_trial/trapdoor_feast/Destroy()
 	// Action Destroy runs Remove, and the jaunt machinery's Remove force-exits
@@ -315,7 +315,7 @@
 	return ..()
 
 /datum/vestige_trial/trapdoor_feast/get_progress_text()
-	return "You have risen into [ambushes] of [VESTIGE_TRAPDOOR_AMBUSHES_NEEDED] moving meals."
+	return "You have pounced on [ambushes] of [VESTIGE_TRAPDOOR_AMBUSHES_NEEDED] moving targets."
 
 /// Credits a pounce. May schedule completion. Returns FALSE if this beast has been surprised out.
 /datum/vestige_trial/trapdoor_feast/proc/pounce(mob/living/prey)
@@ -354,7 +354,7 @@
 	name = "Trapdoor Crawl"
 	// Keep the quoted numbers in sync with VESTIGE_TRAPDOOR_LURK_MAX / VESTIGE_TRAPDOOR_TOLL
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Sink into wet blood and travel beneath the floor — for 10 seconds at most before the blood spits you back out. With no pool in reach, the dive cuts its own door out of your palm (5 brute, shop price). An apprentice's cut of an old, laughing power: it lasts exactly as long as the Trapdoor Feast does."
+	desc = "Sink into wet blood and travel beneath the floor for up to 10 seconds before the blood spits you back out. With no pool in reach, the dive cuts its own door out of your palm for 5 brute. It only works while the Trapdoor Feast is running."
 	cooldown_time = VESTIGE_TRAPDOOR_COOLDOWN
 	exit_blood_time = 0 SECONDS // an ambush that bubbles and gargles first is not an ambush
 	equip_blood_hands = FALSE // the knife rises with you — the trial is the strike, not the swim
@@ -398,7 +398,7 @@
 	if(istype(trial))
 		return TRUE
 	if(feedback)
-		to_chat(owner, span_warning("The trapdoor answers only a standing pact — and yours has ended."))
+		to_chat(owner, span_warning("The trapdoor only opens for a standing pact, and yours has ended."))
 	return FALSE
 
 /// The parent's finder, kept honest: a real, crawlable pool within reach, or null
@@ -442,7 +442,7 @@
 		return null
 	lurker.visible_message(
 		span_warning("[lurker] draws a palm along an edge and shakes the price onto the floor."),
-		span_notice("No pool in reach — so the door comes out of you. [VESTIGE_TRAPDOOR_TOLL] drops, shop price."),
+		span_notice("No pool in reach, so the door comes out of you. [VESTIGE_TRAPDOOR_TOLL] brute, shop price."),
 	)
 	lurker.adjustBruteLoss(VESTIGE_TRAPDOOR_TOLL)
 	// The lurker's own blood where the engine gives them any...
@@ -461,7 +461,7 @@
 	// The clock rides the timer subsystem, not the holder — a renounced pact's
 	// Destroy deltimers it, and the jaunt machinery ejects the lurker itself
 	lurk_timer = addtimer(CALLBACK(src, PROC_REF(spit_out), jaunter), VESTIGE_TRAPDOOR_LURK_MAX, TIMER_STOPPABLE)
-	to_chat(jaunter, span_notice("The red closes over you. [VESTIGE_TRAPDOOR_LURK_MAX / 10] seconds, apprentice — the blood has other appointments."))
+	to_chat(jaunter, span_notice("The red closes over you. [VESTIGE_TRAPDOOR_LURK_MAX / 10] seconds, apprentice, then it puts you back."))
 
 /**
  * Any exit — voluntary rise, the clock, a renounce, a stat change — lands
@@ -494,7 +494,7 @@
 	StartCooldown()
 	lurker.visible_message(
 		span_warning("The floor heaves, and spits [lurker] back out!"),
-		span_warning("The blood spits you out — it was never yours to keep."),
+		span_warning("The blood spits you back out."),
 	)
 
 /// Nearest open turf to eject onto: the holder's own, else the closest unblocked within 2. Falls back to wherever (the upstream machinery accepts worse).
@@ -551,10 +551,10 @@
 		return
 	var/turf/seen_at = LAZYACCESS(positions_at_rise, WEAKREF(quarry))
 	if(seen_at && seen_at == get_turf(quarry))
-		to_chat(butcher, span_warning("[quarry] was standing flat-footed when you rose. A pounce wants a moving meal — that was a queue."))
+		to_chat(butcher, span_warning("[quarry] was standing still when you came up. A pounce only counts on something that was moving."))
 		return
 	if(!trial.pounce(quarry))
-		to_chat(butcher, span_warning("[quarry] has been surprised enough. It knows where the floor keeps its doors now — find it fresh insolence."))
+		to_chat(butcher, span_warning("[quarry] has been surprised enough times. It knows where the floor keeps its doors now — go find something else."))
 		return
 	credited_this_rise = TRUE
 	to_chat(butcher, span_notice("Up through the red and into [quarry] mid-stride. From under the floor, briefly: laughter."))
@@ -581,7 +581,7 @@
 	name = "Set the Table"
 	// Keep the counts in sync with VESTIGE_TABLE_SETTINGS / _FRESHNESS
 	// (initial values must be constant, so no define interpolation here)
-	desc = "The last lesson is the table, and it is the one every butcher skips. Take the gambrel and plant it where the hunting is good. Everything brought down goes on the hooks while it still steams — forty-five seconds from last breath to hook, not one more, because I seat no cold meat. Five settings, hung fresh, while the hunt goes on around you: kill, haul, hang, again. A butcher who cannot set a table is only a murderer with a very good knife. Ha!"
+	desc = "Last lesson is the table, and it's the one every butcher skips. Take the gambrel and plant it somewhere the hunting is good. Everything you bring down goes on the hooks while it's still warm — forty-five seconds from last breath to hook, no more, I don't seat cold meat. Five carcasses hung fresh while the hunt goes on around you: kill, haul, hang, repeat. A butcher who can't set a table is just a murderer with a very good knife. Ha!"
 	/// The loaned gambrel, folded, while it rides in hand. Reclaimed the moment the pact ends.
 	var/obj/item/vestige_gambrel/gambrel_item
 	/// The gambrel, planted. Reclaimed the moment the pact ends (hung meat drops free).
@@ -597,7 +597,7 @@
 	var/obj/item/vestige_gambrel/folded = new(get_turf(user))
 	folded.bound_mind = owner
 	gambrel_item = hand_over(user, folded)
-	to_chat(user, span_notice("The gambrel folds itself into your arms, hooks tucked in like a sleeping thing's fingers. It is heavier than iron and warmer than it has any business being."))
+	to_chat(user, span_notice("The gambrel folds itself into your arms with its hooks tucked in. It is heavier than iron and much warmer than it should be."))
 
 /datum/vestige_trial/set_the_table/Destroy()
 	QDEL_NULL(gambrel_item)
@@ -609,7 +609,7 @@
 	if(gambrel_structure && !QDELETED(gambrel_structure))
 		status = "The gambrel stands planted"
 	else if(gambrel_item && !QDELETED(gambrel_item))
-		status = "The gambrel rides folded in your keeping — plant it where the hunting is good"
+		status = "The gambrel is folded up in your hands — plant it somewhere the hunting is good"
 	else
 		status = "The gambrel is gone. Renounce the pact and [patron_name] will fold you another"
 	return "[status]. [settings] of [VESTIGE_TABLE_SETTINGS] settings hung fresh."
@@ -638,7 +638,7 @@
 
 /obj/item/vestige_gambrel
 	name = "traveling gambrel"
-	desc = "A folding rack of demon-dark iron, hooks tucked in on themselves like a sleeping thing's fingers. Butchers' shops hung their meat from these for centuries; this one hums very faintly, as if remembering a tune from a kitchen you hope never to visit."
+	desc = "A folding rack of demon-dark iron with its hooks curled in on themselves. Butcher shops have hung meat from these for centuries. This one hums, very faintly."
 	icon = 'icons/obj/service/kitchen.dmi'
 	icon_state = "spikeframe"
 	color = "#a86a54" // demon-dark iron gone rustward
@@ -656,7 +656,7 @@
 
 /obj/item/vestige_gambrel/examine(mob/user)
 	. = ..()
-	. += span_notice("Pressed to an open stretch of floor, it unfolds into a hanging rack. Plant it where the hunting is good — the table wants its meat within [VESTIGE_TABLE_FRESHNESS / 10] seconds of the kill.")
+	. += span_notice("Use it on an open stretch of floor to unfold it into a hanging rack. Plant it somewhere the hunting is good — it only takes meat within [VESTIGE_TABLE_FRESHNESS / 10] seconds of the kill.")
 
 /obj/item/vestige_gambrel/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	if(!isopenturf(interacting_with))
@@ -664,7 +664,7 @@
 	var/turf/open/ground = interacting_with
 	var/datum/vestige_trial/set_the_table/trial = user.mind?.active_vestige_trial
 	if(!istype(trial))
-		balloon_alert(user, "the hooks hang slack — no pact holds them!")
+		balloon_alert(user, "the hooks hang slack!")
 		return ITEM_INTERACT_BLOCKING
 	// Never inside the vestige: the ruin unloads the moment everyone leaves,
 	// and a planted table must not be wiped mid-hunt by map cleanup
@@ -691,7 +691,7 @@
 	trial.gambrel_structure = rack
 	user.visible_message(
 		span_warning("[user] stands [src] up, and its hooks unfold with a sound like knuckles cracking."),
-		span_notice("You stand the gambrel up. The hooks spread themselves, unhurried, the way a craftsman lays out tools."),
+		span_notice("You stand the gambrel up. The hooks spread themselves out, unhurried."),
 	)
 	playsound(ground, 'sound/items/weapons/tap.ogg', 50, TRUE)
 	trial.refresh_tracker()
@@ -711,7 +711,7 @@
  */
 /obj/structure/vestige_gambrel
 	name = "traveling gambrel"
-	desc = "A hanging rack of demon-dark iron, hooks spread and patient. The metal is warm on the side facing you, whichever side that is."
+	desc = "A hanging rack of demon-dark iron, hooks spread and waiting. The metal is warm to the touch, which it has no reason to be."
 	icon = 'icons/obj/service/kitchen.dmi'
 	icon_state = "spike"
 	color = "#a86a54"
@@ -743,7 +743,7 @@
 
 /obj/structure/vestige_gambrel/examine(mob/user)
 	. = ..()
-	. += span_notice("Drag a fresh wild carcass onto it to hang it — within [VESTIGE_TABLE_FRESHNESS / 10] seconds of the kill, and only by the hand that struck the pact. [VESTIGE_TABLE_SETTINGS] settings finish the table.")
+	. += span_notice("Drag a fresh wild carcass onto it to hang it — within [VESTIGE_TABLE_FRESHNESS / 10] seconds of the kill, and only by whoever made the pact. [VESTIGE_TABLE_SETTINGS] settings finish the table.")
 	var/datum/vestige_trial/set_the_table/trial = get_bound_trial()
 	if(istype(trial) && user.mind == bound_mind)
 		. += span_boldnotice(trial.get_progress_text())
@@ -777,7 +777,7 @@
 	user.put_in_hands(folded)
 	user.visible_message(
 		span_warning("[user] folds [src] down, hooks tucking themselves away."),
-		span_notice("You fold the gambrel back up. It goes willingly. It likes being carried to work."),
+		span_notice("You fold the gambrel back up. It comes away easily."),
 	)
 	qdel(src) // Destroy clears the trial's structure pointer and refreshes the tracker
 
@@ -972,13 +972,13 @@
 // The consume-victims subtype is never granted by anything in this file.
 /datum/vestige_boon/spell/blood_crawl
 	name = "Blood Crawl"
-	desc = "The trade's front door: step into any decent pool of blood and stop existing until you step back out. Going under is instant; coming up takes a two-second boil that everyone nearby can watch. Your hands drop whatever they're holding at the edge of the pool — the work goes in, the tools stay topside."
+	desc = "The trade's front door. Step into any decent pool of blood and stop existing until you step back out. Going under is instant; coming up takes a two-second boil that everyone nearby can watch. You drop whatever you're holding at the edge of the pool."
 	grant_text = "The Stain claps you on the back, fondly. \"First lesson, apprentice: never track blood THROUGH a room when you can travel AS it.\""
 	spell_type = /datum/action/cooldown/spell/jaunt/bloodcrawl
 
 /datum/vestige_boon/spell/blood_crawl/red_undertow
 	name = "Red Undertow"
-	desc = "The crawl, finished properly: surface with your whole weight behind it, and anyone standing within a tile of the pool is bowled off their feet for a second and a half. The pool still boils for two seconds first — a patient audience keeps its footing. An honest trick, loudly performed."
+	desc = "The crawl, finished properly. Surface with your whole weight behind it and anyone standing within a tile of the pool gets knocked flat for a second and a half. The pool still boils for two seconds first, so a patient audience keeps its footing."
 	grant_text = "\"Second lesson: the pool is not the trick. The ARRIVAL is the trick.\" The Stain mimes surfacing, with tremendous theatre."
 	upgrades_from = /datum/vestige_boon/spell/blood_crawl
 	spell_type = /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_undertow
@@ -987,13 +987,13 @@
 
 /datum/vestige_boon/spell/rending_claws
 	name = "Rending Claws"
-	desc = "Grow the trade's own knives out of your hand: force 21, and 8 more against anything already bleeding — the craft is not making the cut, it is finding the one somebody else started. Folds away when eyes turn your way. They can also dress a carcass, because of course they can."
+	desc = "Grow the trade's own knives out of your hand: force 21, and 8 more against anything that's already bleeding. Fold them away whenever you need the hand back. They butcher carcasses too, obviously."
 	grant_text = "Your knuckles ache, then split, then settle. \"Mind the edge, apprentice. It minds you.\""
 	spell_type = /datum/action/cooldown/spell/vestige_rending_claws
 
 /datum/vestige_boon/spell/rending_claws/butchers_rhythm
 	name = "Butcher's Rhythm"
-	desc = "The claws, taught tempo: force 23, and each consecutive hit on the same living prey cuts deeper wounds than the last — five points of wounding a stroke, fifteen at full rhythm — until the work bleeds and the rend bonus starts paying. Change targets and the rhythm resets. Butchery is a percussion instrument."
+	desc = "The claws with the tempo taught in: force 23, and every consecutive hit on the same living target wounds deeper than the last — five points a stroke, up to fifteen. Once they're bleeding, the rend bonus starts paying too. Switch targets and the rhythm resets."
 	grant_text = "\"One-two-THREE, one-two-THREE. It is a waltz, apprentice. The partner just objects more.\""
 	upgrades_from = /datum/vestige_boon/spell/rending_claws
 	spell_type = /datum/action/cooldown/spell/vestige_rending_claws/butchers
@@ -1002,16 +1002,16 @@
 
 /datum/vestige_boon/spell/slaughters_mirth
 	name = "Slaughter's Mirth"
-	desc = "Laugh the way the trade laughs. Everyone in earshot — five tiles, line of sight — takes a four-second stagger, humans are flooded with raw dread (shaking, stuttering, a racing heart; never a stun), and simple creatures cower on the deck for three seconds. Forty-second cooldown, and there is no version of this that is subtle."
-	grant_text = "Something in your chest learns a new shape of breathing. It is not, strictly, breathing."
+	desc = "Laugh the way the trade laughs. Everyone in earshot — five tiles, line of sight — is staggered for four seconds, humans get hit with raw dread (shaking, stuttering, a racing heart, but never a stun), and simple creatures cower on the deck for three seconds. Forty-second cooldown, and there is no subtle way to do it."
+	grant_text = "Something in your chest learns a new way to breathe, though breathing isn't quite what it's doing."
 	spell_type = /datum/action/cooldown/spell/aoe/vestige_mirth
 
 // --- Standalone: the nose ---
 
 /datum/vestige_boon/spell/scent_of_blood
 	name = "Scent of Blood"
-	desc = "Open the trade's nose. While it is open, a compass on your HUD swings toward the nearest bleeding or badly wounded creature within ten tiles — walls mean nothing to a smell — refreshed every two seconds. And on blood-wet flooring your feet remember the work fondly: a brisk step quicker while you stand in it. Close it whenever the knowing gets loud."
-	grant_text = "\"Last lesson, apprentice, and the most important: the wounded are never lost. Only mislaid.\" You inhale, and the room confesses."
+	desc = "Open the trade's nose. A compass on your HUD swings toward the nearest bleeding or badly wounded creature within ten tiles, walls or no walls, refreshed every two seconds. You also move a little quicker while standing on blood-wet flooring. Use it again to close it."
+	grant_text = "\"Last lesson, apprentice, and the most important: the wounded are never lost. Only mislaid.\""
 	spell_type = /datum/action/cooldown/spell/vestige_blood_scent
 
 // ===== RED UNDERTOW =====
@@ -1082,6 +1082,8 @@
 /datum/action/cooldown/spell/vestige_rending_claws/butchers
 	name = "Form Butcher's Claws"
 	desc = "Split your hand into the trade's knives — the ones that keep time — or fold them away again."
+	button_icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
+	button_icon_state = "butcher_claws"
 	claw_type = /obj/item/vestige_rending_claw/butchers
 
 /datum/action/cooldown/spell/vestige_rending_claws/is_valid_target(atom/cast_on)
@@ -1135,7 +1137,7 @@
  */
 /obj/item/vestige_rending_claw
 	name = "rending claws"
-	desc = "A fan of hooked claws grown straight out of the hand. They are not for making wounds. They are for finding the ones already made, and holding the door open."
+	desc = "A fan of hooked claws grown straight out of the hand. They are much better at opening a wound somebody else already started than at making a new one."
 	icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	icon_state = "rending_claw"
 	inhand_icon_state = null
@@ -1186,7 +1188,7 @@
  */
 /obj/item/vestige_rending_claw/butchers
 	name = "butcher's claws"
-	desc = "The rending claws with the tempo taught in. The first stroke is an introduction. The third is a conversation. The fifth is a confession."
+	desc = "The rending claws, with the tempo taught in. Every stroke on the same target lands worse than the one before it."
 	color = "#7a1f1f"
 	force = VESTIGE_CLAWS_BUTCHER_FORCE
 	wound_bonus = 0
@@ -1332,8 +1334,8 @@
 /datum/action/cooldown/spell/vestige_blood_scent
 	name = "Scent of Blood"
 	desc = "Open the trade's nose: a compass toward the nearest bleeding or badly wounded creature, and quicker footing on blood-wet floors. Use again to close it."
-	button_icon = 'icons/obj/devices/tracker.dmi'
-	button_icon_state = "pinpointer_sniffer"
+	button_icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
+	button_icon_state = "scent_of_blood"
 	background_icon_state = "bg_demon"
 	overlay_icon_state = "bg_demon_border"
 	cooldown_time = 2 SECONDS
@@ -1351,7 +1353,7 @@
 		return
 	cast_on.apply_status_effect(/datum/status_effect/agent_pinpointer/vestige_scent)
 	cast_on.balloon_alert(cast_on, "the nose opens")
-	to_chat(cast_on, span_notice("You inhale, and the room confesses what it has been doing to its people."))
+	to_chat(cast_on, span_notice("You inhale, and you can smell every open wound in the room."))
 
 // The stance drops with the spell — an upgrade swap, a borging, a body left
 // behind: the nose never outlives the lesson that opened it
@@ -1433,8 +1435,9 @@
 		return
 	on_blood = wet
 	if(wet)
+		// No balloon: the footing changes every few steps in a messy room, and
+		// announcing each one buried everything else the player needed to read
 		owner.add_movespeed_modifier(/datum/movespeed_modifier/vestige_blood_scent)
-		owner.balloon_alert(owner, "familiar footing")
 	else
 		owner.remove_movespeed_modifier(/datum/movespeed_modifier/vestige_blood_scent)
 

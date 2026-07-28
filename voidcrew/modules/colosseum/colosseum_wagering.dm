@@ -133,7 +133,7 @@
 
 /obj/item/colosseum_bet_slip
 	name = "betting slip"
-	desc = "A stamped wager chit from the Grand Colosseum's wagering hall. Redeem at the bookmaker after the match — if you backed the right fighter."
+	desc = "A stamped wager chit from the Grand Colosseum's wagering hall. Redeem it at the bookmaker after the match, if you picked right."
 	icon = 'icons/obj/service/bureaucracy.dmi'
 	icon_state = "paper"
 	w_class = WEIGHT_CLASS_TINY
@@ -151,16 +151,16 @@
 	. += span_notice("Match [match_number]: [amount] cr on <b>[target_name]</b>.")
 	var/datum/colosseum_book/book = book_ref?.resolve()
 	if(!book)
-		. += span_warning("The book stamp has faded — this wager can no longer be honored.")
+		. += span_warning("The book stamp has faded. This wager can't be redeemed.")
 		return
 	var/datum/mind/backed = target_ref?.resolve()
 	if(backed && book.scratched[backed])
-		. += span_notice("SCRATCHED — [target_name] never made it to the sand. The slip refunds [amount] credits at the bookmaker.")
+		. += span_notice("SCRATCHED: [target_name] never made it to the sand. This slip refunds [amount] credits at the bookmaker.")
 	else if(!book.settled)
 		. += span_notice("The match is not yet settled.")
 	else
 		var/payout = book.payout_for(backed, amount)
-		. += payout ? span_boldnotice("It pays [payout] credits at the bookmaker.") : span_warning("It pays nothing. Condolences.")
+		. += payout ? span_boldnotice("It pays [payout] credits at the bookmaker.") : span_warning("It pays nothing.")
 
 // ===== BOOKMAKER CONSOLE =====
 
@@ -238,7 +238,7 @@
 		// the money straight back rather than printing a dead slip.
 		var/obj/item/holochip/refund = new(get_turf(user), amount)
 		user.put_in_hands(refund)
-		balloon_alert(user, "fighter withdrawn — refunded!")
+		balloon_alert(user, "fighter withdrawn, refunded!")
 		return
 	var/obj/item/colosseum_bet_slip/slip = new(get_turf(user))
 	slip.book_ref = WEAKREF(book)
@@ -258,7 +258,7 @@
 	var/obj/item/colosseum_bet_slip/slip = attacking_item
 	var/datum/colosseum_book/book = slip.book_ref?.resolve()
 	if(!book)
-		to_chat(user, span_warning("The console rejects the slip — its book no longer exists."))
+		to_chat(user, span_warning("The console rejects the slip. Its book no longer exists."))
 		return TRUE
 	var/datum/mind/backed = slip.target_ref?.resolve()
 	if(!book.settled && !(backed && book.scratched[backed]))

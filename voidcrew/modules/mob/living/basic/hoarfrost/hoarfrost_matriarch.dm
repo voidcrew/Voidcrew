@@ -15,8 +15,9 @@
  * She is deliberately **not** `/mob/living/basic/boss` and deliberately not
  * megafauna. `code/modules/unit_tests/voidcrew_loot.dm` bans both tiers from
  * every zone and guard table, so subtyping either would make her unplaceable -
- * and the boss tier drags in MOB_SIZE_HUGE, wall tearing and spacewalk, none of
- * which this tier wants.
+ * and the boss tier drags in MOB_SIZE_HUGE, reinforced-wall tearing and
+ * spacewalk, none of which this tier wants. She does smash ordinary walls -
+ * ENVIRONMENT_SMASH_WALLS, below the RWALLS tier - so a door cannot cheese her.
  *
  * Faction is FACTION_MINING and must stay that way: Big Game Hunt spawns her
  * with a wolf/ice-whelp entourage, and a faction mismatch would have them
@@ -38,7 +39,7 @@
 
 /mob/living/basic/hoarfrost_matriarch
 	name = "hoarfrost matriarch"
-	desc = "Something very old that learned to hunt in a place where nothing should. Frost sheets off her in a haze, and the ground under her stays white."
+	desc = "A huge white predator, built like a bear and about twice the size of one. Frost pours off her in a haze, and the ground she walks on stays white."
 	icon = 'voidcrew/icons/mob/icemoon/hoarfrost.dmi'
 	icon_state = "hoarfrost_matriarch"
 	icon_living = "hoarfrost_matriarch"
@@ -215,7 +216,7 @@
 		return
 	calved = TRUE
 
-	visible_message(span_boldwarning("[src] throws [p_their()] head back and BELLOWS - sheets of ice slough off [p_them()] and the cold gets worse."))
+	visible_message(span_boldwarning("[src] throws [p_their()] head back and BELLOWS! Sheets of ice slough off [p_them()], and the cold gets worse."))
 	playsound(src, 'sound/mobs/non-humanoids/space_dragon/space_dragon_roar.ogg', 110, TRUE)
 	new /obj/effect/temp_visual/circle_wave/hoarfrost(get_turf(src))
 	for(var/mob/living/witness in view(7, src))
@@ -301,7 +302,7 @@
 		return
 	victim.visible_message(
 		span_boldwarning("[src] catches [victim] with a shoulder and sends [victim.p_them()] sprawling!"),
-		span_userdanger("[src] hits you like a falling wall - you leave the ground."),
+		span_userdanger("[src] hits you like a falling wall and knocks you off your feet!"),
 	)
 	playsound(src, 'sound/effects/gravhit.ogg', 75, TRUE)
 	victim.Knockdown(maul_knockdown)
@@ -382,6 +383,6 @@
 	new /obj/item/stack/sheet/animalhide/hoarfrost(spot, hide_dropped)
 	var/jackpot_type = pick(jackpot_pool)
 	new jackpot_type(spot)
-	visible_message(span_boldnotice("Something inside [src] cracks and works its way free as [p_they()] settle[p_s()] into the ice."))
+	visible_message(span_boldnotice("Something inside [src] cracks loose as [p_they()] settle[p_s()] into the ice."))
 
 #undef HOARFROST_CALVING_FILTER

@@ -12,7 +12,7 @@
 
 /obj/item/outpost_deed
 	name = "outpost deed"
-	desc = "A colonial registry land claim for one sector of open space, notarized in triplicate. Registered to its buyer alone."
+	desc = "A colonial registry land claim for one sector of open space, notarized in triplicate. Only the buyer can use it."
 	icon = 'voidcrew/modules/player_outposts/icons/outpost.dmi'
 	icon_state = "outpost_deed"
 	w_class = WEIGHT_CLASS_SMALL
@@ -35,7 +35,7 @@
 	if(user.ckey && user.ckey == owner_ckey)
 		. += span_notice("Use it in hand while your ship holds still over an empty overmap tile to found your outpost.")
 	else
-		. += span_warning("It isn't registered to you — the colonial registry won't honor it in your hands.")
+		. += span_warning("It isn't registered to you. The registry won't honor it.")
 
 /obj/item/outpost_deed/attack_self(mob/user)
 	. = ..()
@@ -57,9 +57,9 @@
 	if(!user.ckey || user.ckey != owner_ckey)
 		return "The deed isn't registered to you."
 	if(user.ckey in GLOB.player_outpost_founder_ckeys)
-		return "The colonial registry already lists an active claim under your name this shift."
+		return "The registry already has an active claim under your name this shift."
 	if(SSovermap.jump_mode != BS_JUMP_IDLE)
-		return "The colonial registry has suspended new claims — bluespace exodus in progress."
+		return "The registry has suspended new claims. Bluespace exodus in progress."
 	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
 	if(!ship)
 		return "You need to be a crew member of a ship to stake a claim."
@@ -166,17 +166,17 @@
 		to_chat(usr, span_warning("Your outpost needs a name."))
 		return
 	if(!reject_bad_text(outpost_name, MAX_CHARTER_LEN))
-		to_chat(usr, span_warning("The colonial registry rejected that name."))
+		to_chat(usr, span_warning("The registry rejected that name."))
 		return
 
 	var/obj/structure/overmap/ship/ship = get_crew_ship(usr)
 	var/obj/structure/overmap/dynamic/player_outpost/outpost = new(get_turf(ship))
 	if(!outpost.found(usr, shell, outpost_name))
-		to_chat(usr, span_warning("Claim registration failed — the site couldn't be prepared. The deed remains valid."))
+		to_chat(usr, span_warning("Registration failed - the site couldn't be prepared. Your deed is still good."))
 		return
 
 	ui.close()
-	to_chat(usr, span_boldnotice("Claim registered. [outpost_name] is yours — fly to it and dock to move in."))
+	to_chat(usr, span_boldnotice("Claim registered. [outpost_name] is yours. Fly over and dock to move in."))
 	qdel(deed) // also tears this UI down via Destroy
 
 /**
@@ -189,7 +189,7 @@
  */
 /datum/shop_sku/outpost_deed
 	name = "outpost deed"
-	desc = "A colonial registry claim for one sector of open space. Found your own outpost — one active claim per registrant per shift."
+	desc = "A colonial registry claim for one sector of open space. Found your own outpost. One active claim per person per shift."
 	item_path = /obj/item/outpost_deed
 	category = "Colonial Registry"
 	price_credits = OUTPOST_DEED_COST_CREDITS
@@ -201,7 +201,7 @@
 	if(!user.ckey)
 		return "The registry can't establish your identity."
 	if(user.ckey in GLOB.player_outpost_founder_ckeys)
-		return "The colonial registry already lists an active claim under your name this shift."
+		return "The registry already has an active claim under your name this shift."
 	return ..()
 
 /datum/shop_sku/outpost_deed/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)

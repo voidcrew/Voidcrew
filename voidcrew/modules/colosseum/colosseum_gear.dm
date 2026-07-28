@@ -28,12 +28,14 @@
  */
 /obj/item/clothing/head/costume/crown/laurel
 	name = "laurel of the games"
-	desc = "A wreath of gilt laurel leaves, the pattern struck for Grand Colosseum champions. It confers no rank, no access, and no protection worth the price — only the certainty that everyone who sees it knows what you did on the sand."
+	desc = "A wreath of gilt laurel leaves, struck for Grand Colosseum champions. It isn't armor and it isn't access - it just tells everyone you won."
 	icon = 'voidcrew/modules/colosseum/icons/gear.dmi'
 	icon_state = "laurel"
 	worn_icon = 'voidcrew/modules/colosseum/icons/gear_worn.dmi'
 	worn_icon_state = "laurel"
 	armor_type = /datum/armor/crown_laurel
+	/// Whether we put the mood event on our current wearer (only worn on the head does)
+	var/mood_applied = FALSE
 
 /datum/armor/crown_laurel
 	melee = 20
@@ -50,13 +52,19 @@
 	. = ..()
 	if(slot & ITEM_SLOT_HEAD)
 		user.add_mood_event("colosseum_laurel", /datum/mood_event/colosseum_laurel)
+		mood_applied = TRUE
 
 /obj/item/clothing/head/costume/crown/laurel/dropped(mob/living/user)
 	. = ..()
+	// Only clear what we added: dropping a spare laurel from hand must not wipe
+	// the mood event another one is granting from the head slot.
+	if(!mood_applied)
+		return
+	mood_applied = FALSE
 	user.clear_mood_event("colosseum_laurel")
 
 /datum/mood_event/colosseum_laurel
-	description = "The laurels of the games rest on my brow. Let them look."
+	description = "I'm wearing the laurels of the games. Everyone can see it."
 	mood_change = LAUREL_MOOD_BONUS
 
 /**
@@ -68,7 +76,7 @@
  */
 /obj/item/clothing/head/helmet/gladiator/galea
 	name = "galea of the undefeated"
-	desc = "A bronze fighting helm in the old Colosseum pattern, visor grille and all. The crest sockets are worn smooth — every plume it ever carried retired unbeaten."
+	desc = "A bronze fighting helm in the old Colosseum pattern, visor grille and all. Great against swords, a lot less so against lasers."
 	icon = 'voidcrew/modules/colosseum/icons/gear.dmi'
 	icon_state = "galea"
 	worn_icon_state = "gladiator"
@@ -96,7 +104,7 @@
  */
 /obj/item/clothing/suit/armor/spaulder
 	name = "pit champion's spaulder"
-	desc = "A single bronze pauldron and half-cuirass on a leather harness, cut so the sword arm swings free. The strap loops fit arena kit and nothing else — armorers this side of the galaxy have stopped arguing with the pattern."
+	desc = "A single bronze pauldron and half-cuirass on a leather harness, cut so the sword arm swings free. The strap loops only fit arena kit: a spear, a bola, a shield or a whetstone."
 	icon = 'voidcrew/modules/colosseum/icons/gear.dmi'
 	icon_state = "spaulder"
 	worn_icon = 'voidcrew/modules/colosseum/icons/gear_worn.dmi'
@@ -137,7 +145,7 @@
  */
 /obj/item/clothing/shoes/sandal/sandstrider
 	name = "sandstrider sandals"
-	desc = "Arena-pattern fighting sandals: cork sole, bronze toe cap, and a tread carved for footing that stays under you on wet stone and bloody sand alike."
+	desc = "Arena-pattern fighting sandals with a cork sole and a bronze toe cap. The tread keeps you upright on wet stone and bloody sand."
 	icon = 'voidcrew/modules/colosseum/icons/gear.dmi'
 	icon_state = "sandstriders"
 	worn_icon = 'voidcrew/modules/colosseum/icons/gear_worn.dmi'
@@ -170,7 +178,7 @@
  */
 /obj/item/spear/bestiarius
 	name = "bestiarius pike"
-	desc = "A boar-spear of the beast interludes: bronze-shod haft, cross-lugged blade, point weighted for things with more legs than manners. Fighters swear the lugs have stopped charges the glass in the stands wouldn't have."
+	desc = "A boar-spear with a bronze-shod haft and a cross-lugged blade. Built for the beast interludes, and it hits beasts a lot harder than it hits people."
 	icon = 'voidcrew/modules/colosseum/icons/gear.dmi'
 	icon_state = "bestiarius0"
 	base_icon_state = "bestiarius0"
@@ -201,7 +209,7 @@
  */
 /obj/item/restraints/legcuffs/bola/retiarius
 	name = "retiarius' weighted net"
-	desc = "A lead-weighted throwing net in the old net-fighter pattern. Wraps the legs, takes the target off their feet, and takes its time coming off — the trident is sold separately, and always has been."
+	desc = "A lead-weighted throwing net. Tangles the legs, puts the target on the floor, and takes a while to get out of. Trident sold separately."
 	icon = 'voidcrew/modules/colosseum/icons/gear.dmi'
 	icon_state = "retiarius_net"
 	knockdown = 3 SECONDS
@@ -218,7 +226,7 @@
  */
 /obj/item/shield/buckler/parmula
 	name = "parmula of the pit"
-	desc = "A small round parrying shield, hide over cork over a bronze rim. Light enough to box with, tough enough to answer a saber, and scarred enough to prove both."
+	desc = "A small round parrying shield: hide over cork over a bronze rim. Light enough to box with, tough enough to stop a saber."
 	icon_state = "parmula"
 	icon = 'voidcrew/modules/colosseum/icons/gear.dmi'
 	block_chance = 35
@@ -240,7 +248,7 @@
  */
 /obj/item/storage/medkit/pit_doctor
 	name = "pit doctor's satchel"
-	desc = "A sand-scoured leather satchel in Grand Colosseum infirmary colors. Stocked for exactly the injuries the arena hands out, by people who watch it hand them out all day."
+	desc = "A scuffed leather satchel in Grand Colosseum infirmary colors. Stocked for exactly the kind of injuries the arena hands out."
 	icon = 'voidcrew/modules/colosseum/icons/gear.dmi'
 	icon_state = "pit_satchel"
 	damagetype_healed = BRUTE
@@ -268,7 +276,7 @@
  */
 /obj/item/sharpener/grindstone
 	name = "grindstone of the games"
-	desc = "A disc of arena-quarried stone, dished by generations of pre-match edge work. Good for several blades before it wears smooth — the pit armorers buy them by the crate."
+	desc = "A worn disc of arena stone for putting an edge on a blade. Good for several sharpenings before it wears smooth."
 	icon = 'voidcrew/modules/colosseum/icons/gear.dmi'
 	icon_state = "grindstone"
 	uses = 5

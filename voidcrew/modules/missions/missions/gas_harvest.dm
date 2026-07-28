@@ -67,6 +67,7 @@
 
 /datum/mission/gas_harvest/update_text()
 	name = "Gas Harvest: [gas_name]"
+	var/voucher_line = voucher_count > 0 ? " Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]." : ""
 	desc = "Deliver a tank holding at least [required_moles] mol of [LOWER_TEXT(gas_name)] to the mission pad. \
-		The [LOWER_TEXT(gas_name)] nebulas are out there - survey for them, mount a ram scoop, hold still and fill up. \
-		Any tank will do; we keep the tank. Payment on chemistry, not promises."
+		Survey for a [LOWER_TEXT(gas_name)] nebula, mount a ram scoop, hold still and fill up. \
+		Any tank works, and we keep the tank.[voucher_line]"

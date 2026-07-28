@@ -45,6 +45,13 @@
 	var/list/rare_pool = list()
 	/// Max rare picks per round (min 1 whenever the pool is non-empty)
 	var/rare_picks_max = 2
+	/// Chart/rumor SKU typepaths this shop's chart shelf draws from. Every
+	/// outpost draws from the same galaxy-wide pool: charts are deliberately
+	/// zone-mixed, so which band a tip points at has nothing to do with which
+	/// band you bought it in (see shop_catalog_charts.dm).
+	var/list/chart_pool = list()
+	/// How many chart picks land on the shelf per round
+	var/chart_picks = 3
 	/// Live SKU instances (hold the shared per-round stock)
 	var/list/datum/shop_sku/skus = list()
 	/// Buyback typepaths — what this trader buys from players (see shop_buyback.dm)
@@ -78,6 +85,10 @@
 	if(length(rare_pool))
 		for(var/sku_type in pick_from_pool(rare_pool, rand(1, rare_picks_max)))
 			add_sku(sku_type, SHELF_RARE)
+	// Charts deal last, because the deal is global: it has to see what the
+	// outposts built before this one already took.
+	for(var/sku_type in deal_chart_picks())
+		add_sku(sku_type, SHELF_ROTATING)
 	roll_special()
 	for(var/buyback_type in buyback_types)
 		buybacks += new buyback_type
@@ -102,6 +113,38 @@
 		candidates -= choice
 		picked += choice
 	return picked
+
+/**
+ * Deals this shop's chart shelf: up to `chart_picks` distinct typepaths out of
+ * chart_pool.
+ *
+ * Ruin charts are dealt globally without repeats. Each one names a specific
+ * ruin that only ever exists because somebody bought the tip, so two outposts
+ * stocking the same chart would be selling the same ruin twice — the second
+ * buyer's purchase would be refused at the counter. GLOB.dealt_rumor_charts
+ * remembers every ruin chart handed to any shop this round and this deal skips
+ * them. Star charts and the generic rumor tip are not unique and stay eligible
+ * everywhere.
+ *
+ * Picks are stamped SHELF_ROTATING by the caller so the existing stock, reward
+ * and UI logic keeps working without a fourth shelf constant.
+ */
+/datum/outpost_shop/proc/deal_chart_picks()
+	var/list/dealt = list()
+	if(!length(chart_pool) || chart_picks < 1)
+		return dealt
+	var/list/candidates = list()
+	for(var/sku_type in chart_pool)
+		if(ispath(sku_type, /datum/shop_sku/ruin_chart) && GLOB.dealt_rumor_charts[sku_type])
+			continue
+		candidates += sku_type
+	while(length(candidates) && length(dealt) < chart_picks)
+		var/choice = pick(candidates)
+		candidates -= choice
+		dealt += choice
+		if(ispath(choice, /datum/shop_sku/ruin_chart))
+			GLOB.dealt_rumor_charts[choice] = TRUE
+	return dealt
 
 /**
  * Instantiates a SKU onto the given shelf. Rotating stock is capped at 2,
@@ -141,10 +184,16 @@
 		if(sku.shelf == SHELF_CORE && sku.stock < sku.stock_max)
 			sku.stock = min(sku.stock_max, sku.stock + max(1, round(sku.stock_max / 2)))
 
-	// One sold-out rotating slot gets replaced with something new off the manifest
+	// One sold-out rotating slot gets replaced with something new off the manifest.
+	// Chart picks are deliberately excluded: they ride the rotating shelf but came
+	// from chart_pool, so the replacement drawn from rotating_pool would silently
+	// swap a sold tip for an unrelated good. Re-dealing instead is worse — a ruin
+	// chart is claimed globally on purchase, so the reissued copy would name a ruin
+	// that can never be revealed again and would be refused at the counter. A sold
+	// chart is meant to stay sold, so the slot just stays empty.
 	var/list/depleted = list()
 	for(var/datum/shop_sku/sku as anything in skus)
-		if(sku.shelf == SHELF_ROTATING && sku.stock <= 0)
+		if(sku.shelf == SHELF_ROTATING && !sku.is_chart && sku.stock <= 0)
 			depleted += sku
 	if(length(depleted))
 		var/datum/shop_sku/gone = pick(depleted)
@@ -288,6 +337,10 @@
 	var/category = "General"
 	/// Which shelf this SKU landed on (stamped by the shop; drives UI styling + supply caps)
 	var/shelf = SHELF_CORE
+	/// TRUE on the intel SKUs (star charts, ruin charts, rumor tips). Whenever
+	/// one of these lands on the rotating shelf, convoy_restock must never
+	/// refill its slot from rotating_pool — see the comment there.
+	var/is_chart = FALSE
 	/// Price in credits (0 = credits play no part)
 	var/price_credits = 0
 	/// Price in trade vouchers (0 = vouchers play no part)
@@ -506,69 +559,5 @@
 			return team.ship
 	return null
 
-/**
- * # Rumor SKU
- *
- * Intel over the counter: no goods change hands — the trader marks one
- * uncharted ruin signal from their own zone band straight onto the buyer
- * ship's helm readout, under a "Rumors" category. The certainty ladder's
- * cheapest rung: below star charts, above flying blind.
- */
-/datum/shop_sku/rumor
-	name = "word on the lanes"
-	desc = "The trader knows where something interesting is parked. For a price, so do you: one uncharted signal from this zone band, marked on your helm."
-	category = "Intel & Charts"
-	icon_override = 'icons/obj/scrolls.dmi'
-	icon_state_override = "blueprints"
-	stock_min = 2
-	stock_max = 4
-
-/datum/shop_sku/rumor/proc/find_rumor_target(obj/structure/overmap/ship/ship, datum/outpost_shop/shop)
-	var/outpost_zone = SSovermap_zones?.get_zone_type(get_turf(shop?.outpost))
-	var/list/candidates = list()
-	for(var/obj/structure/overmap/space_ruin/ruin as anything in GLOB.space_ruin_signals)
-		if(QDELETED(ruin) || !istype(get_turf(ruin), /turf/open/overmap))
-			continue
-		if(SSovermap_zones?.get_zone_type(get_turf(ruin)) != outpost_zone)
-			continue
-		if(ship.get_waypoint(REF(ruin)) || ship.get_waypoint("rumor_[REF(ruin)]"))
-			continue
-		candidates += ruin
-	if(!length(candidates))
-		return null
-	return pick(candidates)
-
-/datum/shop_sku/rumor/get_denial_reason(mob/living/user)
-	. = ..()
-	if(.)
-		return
-	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
-	if(!ship)
-		return "No crew registration — you need a ship to chart the tip onto."
-
-/datum/shop_sku/rumor/try_purchase(mob/living/user, mob/living/basic/outpost_trader/vendor)
-	if(stock <= 0)
-		return FALSE
-	var/obj/structure/overmap/ship/ship = get_crew_ship(user)
-	if(!ship)
-		return FALSE
-	var/datum/outpost_shop/shop = vendor?.shop
-	var/obj/structure/overmap/space_ruin/target = find_rumor_target(ship, shop)
-	if(!target)
-		to_chat(user, span_warning("The lanes are quiet — no fresh rumors this shift."))
-		return FALSE
-
-	var/credit_price = get_credit_price()
-	var/datum/bank_account/account
-	if(credit_price > 0)
-		account = get_account(user)
-		if(!account || !account.adjust_money(-credit_price, "Trader Outpost: [name]"))
-			return FALSE
-	if(price_vouchers > 0 && !consume_trade_vouchers(user, price_vouchers))
-		return FALSE
-
-	stock--
-	var/list/coords = target.get_relative_overmap_coords()
-	ship.add_waypoint("rumor_[REF(target)]", "[shop?.trader_name || "Trader"]'s tip: unknown signal", coords[1], coords[2], "Rumors")
-	to_chat(user, span_notice("A new mark lands on [ship]'s helm readout: unknown signal at ([coords[1]], [coords[2]])."))
-	return TRUE
+// The rumor SKU and every other chart line now live in shop_catalog_charts.dm,
+// keeping this file to machinery as its header describes.

@@ -158,11 +158,11 @@
 		var/datum/overmap/planet/biome = entry["biome"]
 		shopping_list += "[entry["name"]] ([initial(biome.name)])"
 	name = "Drug Run: [recipe.street_name]"
-	desc = "Vex wants a batch of [recipe.street_name] cooked quiet and moved quieter. \
-		The formula chip lands on your mission pad at signing. \
+	desc = "Vex wants a batch of [recipe.street_name] cooked quietly and sold quietly. \
+		The formula chip lands on your mission pad when you sign. \
 		Shopping list: [english_list(shopping_list)]. \
-		Cook it at the kitchen — [active ? "an encrypted signal at ([target.target_x], [target.target_y]) in the [target_zone_name]" : "coordinates transmitted on signing, somewhere in the [target_zone_name]"] — \
-		then bring the product back to the counter. No names on anything, no questions from anyone. \
+		Cook it at the kitchen: [active ? "an encrypted signal at ([target.target_x], [target.target_y]) in the [target_zone_name]" : "coordinates transmitted on signing, somewhere in the [target_zone_name]"]. \
+		Then hand the finished product to an outpost trader. No names on anything, no questions from anyone. \
 		Tap a GPS unit on your mission board to upload located harvest-site beacons; the batch itself broadcasts ([gps_tag]) once cooked. \
 		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]."
 

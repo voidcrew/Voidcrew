@@ -29,7 +29,7 @@
 
 /obj/machinery/blueprint_imprinter
 	name = "neural schematic imprinter"
-	desc = "A skull-shaped scanner cradle wired into a schematic shredder. Slot a schematic, climb in, pay the fee, know the schematic. The shredder half is not optional."
+	desc = "A skull-shaped scanner cradle wired into a schematic shredder. Slot a schematic, climb in, pay the fee, and you'll know the recipe by heart. The shredder isn't optional."
 	icon = 'voidcrew/modules/trade/icons/trade.dmi'
 	icon_state = "imprinter"
 	density = FALSE // Becomes dense only while the cradle is sealed shut
@@ -59,7 +59,7 @@
 /obj/machinery/blueprint_imprinter/examine(mob/user)
 	. = ..()
 	. += span_notice("Imprint fees: [IMPRINT_FEE_GREEN] cr (green-tier) / [IMPRINT_FEE_YELLOW] cr (yellow-tier) / [IMPRINT_FEE_RED] cr (red-tier). Load cash into the cradle or pay by ID; the schematic is shredded.")
-	. += span_notice("An imprint lasts the rest of the round and can't be stolen. The paper copy could have been sold. Choose.")
+	. += span_notice("An imprint lasts the rest of the round and nobody can steal it. The paper copy could have been sold instead.")
 	if(loaded_credits)
 		. += span_notice("Cradle holds <b>[loaded_credits] cr</b> in loaded cash.")
 	var/list/known = get_user_imprints(user)
@@ -259,7 +259,7 @@
 	playsound(src, 'sound/machines/ping.ogg', 50, TRUE)
 	carbon_occupant.visible_message(
 		span_notice("[src] scans [carbon_occupant] and shreds [print] into confetti."),
-		span_notice("Cold light sweeps your skull. You know the [print.schematic_name] by heart now — and the schematic is confetti."),
+		span_notice("Cold light sweeps across your skull. You know the [print.schematic_name] by heart now, and the schematic is confetti."),
 	)
 	inserted_blueprint = null
 	qdel(print)

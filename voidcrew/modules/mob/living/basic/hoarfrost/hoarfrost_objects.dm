@@ -52,7 +52,7 @@
  */
 /obj/effect/hoarfrost_killing_zone
 	name = "killing cold"
-	desc = "The air has turned murderous. It is warmer near the source."
+	desc = "The air here is cold enough to kill. It gets warmer closer to the source."
 	icon = 'icons/effects/effects.dmi'
 	icon_state = "nothing"
 	anchored = TRUE
@@ -124,7 +124,7 @@
 	if(!COOLDOWN_FINISHED(src, warn_cooldown))
 		return
 	COOLDOWN_START(src, warn_cooldown, 1 SECONDS)
-	to_chat(victim, span_userdanger("The cold is flaying you alive - it is WARMER NEAR THE SOURCE!"))
+	to_chat(victim, span_userdanger("The cold is killing you - it is WARMER NEAR THE SOURCE!"))
 	victim.playsound_local(get_turf(victim), 'sound/effects/magic/ethereal_exit.ogg', 40, TRUE)
 
 /**
@@ -178,7 +178,7 @@
  */
 /obj/structure/hoarfrost_ice_chunk
 	name = "hoarfrost chunk"
-	desc = "A slab of blue-black glacier ice, dropped hard enough to bury itself in the ground. It will not last, but it is in the way now."
+	desc = "A slab of blue-black glacier ice, dropped hard enough to bury itself in the floor. It will melt soon enough."
 	icon = 'voidcrew/icons/obj/hoarfrost.dmi'
 	icon_state = "ice_chunk"
 	density = TRUE
@@ -242,7 +242,7 @@
  */
 /obj/effect/hoarfrost_rime
 	name = "rime"
-	desc = "A crust of hoarfrost. The footing under it is treacherous."
+	desc = "A crust of hoarfrost on the floor. Slow going."
 	icon = 'voidcrew/icons/obj/hoarfrost.dmi'
 	icon_state = "rime"
 	// The art is already sparse frost flecks on transparency (~8% coverage), so

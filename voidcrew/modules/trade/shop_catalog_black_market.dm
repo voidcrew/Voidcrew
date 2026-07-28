@@ -5,6 +5,17 @@
  * filed off. The top shelf only moves for vouchers — the currency you can't
  * farm in safety.
  * Shop machinery lives in shop.dm; this file is pure catalog.
+ *
+ * Two shelves are the reason this shop exists:
+ *
+ * - MODsuits. The suit stall at Quartermain sells civilian through advanced.
+ *   Vex sells the tier it won't touch: syndicate, infiltrator and Interdyne
+ *   control units, plus the antag modules. Bare chassis are the mid rungs —
+ *   cheaper, but the buyer has to kit them out at a bench themselves.
+ * - Ship systems. Every combat board is a protolathe-only research design and
+ *   only 9 of 48 ships can research anything, so most crews have no route to a
+ *   shield generator at all. This is that route. Quartermain covers engines and
+ *   the laser turret; the defensive and dirty boards are Vex's.
  */
 /datum/outpost_shop/black_market
 	outpost_name = "\improper Undertow Exchange"
@@ -21,6 +32,8 @@
 	categories = list(
 		"Weapons",
 		"Explosives",
+		"MODsuits",
+		"Ship Systems",
 		"Infiltration",
 		"Combat Medical",
 		"Intel & Charts",
@@ -42,22 +55,32 @@
 		/datum/shop_sku/black_market/emp_grenade,
 		/datum/shop_sku/black_market/frag_grenade,
 		/datum/shop_sku/black_market/smoke_bomb,
+		// MODsuits
+		/datum/shop_sku/black_market/mod_chassis_syndicate,
+		/datum/shop_sku/black_market/mod_chassis_elite,
+		/datum/shop_sku/black_market/mod_interdyne,
+		/datum/shop_sku/black_market/mod_infiltrator,
+		/datum/shop_sku/black_market/mod_traitor,
+		/datum/shop_sku/black_market/mod_storage,
+		/datum/shop_sku/black_market/mod_plate_compression,
+		/datum/shop_sku/black_market/mod_energy_shield,
+		/datum/shop_sku/black_market/mod_wraith_cloak,
+		// Ship Systems
+		/datum/shop_sku/black_market/shield_generator_board,
+		/datum/shop_sku/black_market/interdictor_board,
+		/datum/shop_sku/black_market/data_siphon_board,
 		// Infiltration
 		/datum/shop_sku/black_market/emag,
-		/datum/shop_sku/black_market/agent_id,
 		/datum/shop_sku/black_market/thermals,
 		/datum/shop_sku/black_market/noslips,
-		/datum/shop_sku/black_market/syndie_key,
 		/datum/shop_sku/black_market/sleepy_pen,
 		/datum/shop_sku/black_market/chameleon_mask,
 		// Combat Medical
 		/datum/shop_sku/black_market/tactical_medkit,
 		/datum/shop_sku/black_market/stimulants,
-		// Intel & Charts
-		/datum/shop_sku/black_market/star_chart,
-		/datum/shop_sku/ruin_chart/armory,
-		/datum/shop_sku/ruin_chart/pirate_cove,
-		/datum/shop_sku/ruin_chart/reliquary,
+		// Intel & Charts — named ruin tips are dealt onto the rotating shelf
+		// from chart_pool below; the generic tip is the cheap standing rung.
+		/datum/shop_sku/rumor,
 		// Blueprints
 		/datum/shop_sku/black_market/saw_blueprint,
 		/datum/shop_sku/black_market/sniper_blueprint,
@@ -70,15 +93,34 @@
 		/datum/shop_sku/black_market/donk_pockets,
 		/datum/shop_sku/black_market/syndie_cigarettes,
 	)
+	chart_pool = list(
+		/datum/shop_sku/chart/green,
+		/datum/shop_sku/chart/yellow,
+		/datum/shop_sku/chart/red,
+		/datum/shop_sku/ruin_chart/armory,
+		/datum/shop_sku/ruin_chart/biolab,
+		/datum/shop_sku/ruin_chart/pirate_cove,
+		/datum/shop_sku/ruin_chart/reliquary,
+		/datum/shop_sku/ruin_chart/foundry,
+		/datum/shop_sku/ruin_chart/hospice,
+		/datum/shop_sku/ruin_chart/liner,
+		/datum/shop_sku/ruin_chart/survey,
+		/datum/shop_sku/ruin_chart/blacksite,
+	)
+	chart_picks = 3
 	rotating_pool = list(
 		/datum/shop_sku/black_market/rotating/mateba,
 		/datum/shop_sku/black_market/rotating/ebow,
 		/datum/shop_sku/black_market/rotating/minibomb,
 		/datum/shop_sku/black_market/rotating/dart_pistol,
+		/datum/shop_sku/black_market/rotating/mod_flamethrower,
+		/datum/shop_sku/black_market/rotating/mod_chameleon,
+		/datum/shop_sku/black_market/rotating/mod_active_sonar,
 	)
 	rare_pool = list(
 		/datum/shop_sku/black_market/rare/energy_sword,
 		/datum/shop_sku/black_market/rare/energy_shield,
+		/datum/shop_sku/black_market/rare/mod_adrenaline,
 	)
 	// The consignment window: Vex fences planet exotics and ruin loot at the
 	// best rates in the system. Voucher payouts are strictly planet/danger-gated.
@@ -88,6 +130,7 @@
 		/datum/shop_buyback/black_market/bluespace_crystals,
 		/datum/shop_buyback/black_market/syndicate_documents,
 		/datum/shop_buyback/black_market/hot_iron,
+		/datum/shop_buyback/black_market/hot_iron_energy,
 		/datum/shop_buyback/exotic_gas/hypernoblium,
 		/datum/shop_buyback/exotic_gas/pluoxium,
 		/datum/shop_buyback/exotic_gas/nitrium,
@@ -101,11 +144,14 @@
 		list("type" = /obj/item/stack/telecrystal_raw, "name" = "raw telecrystal", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_HARD),
 		list("type" = /obj/item/organ/monster_core/regenerative_core/legion, "name" = "legion core", "amount" = 1, "difficulty" = MISSION_DIFFICULTY_HARD),
 	)
-	// The back shelf: hard contracts only, never sold
+	// The back shelf: hard contracts only, never sold. Each of these is the top
+	// of a ladder Vex otherwise stops short of — the elite suit above the
+	// syndicate one, the Spider Clan chassis above that, and the one combat
+	// board that is on no shelf anywhere.
 	exclusive_rewards = list(
-		/obj/item/storage/box/syndie_kit/chameleon,
-		/obj/item/pen/edagger,
-		/obj/item/clothing/suit/hooded/explorer/syndicate,
+		/obj/item/mod/control/pre_equipped/traitor_elite,
+		/obj/item/mod/control/pre_equipped/empty/ninja,
+		/obj/item/circuitboard/machine/ship_combat/cloak_device,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -113,14 +159,14 @@
 			"Fresh faces. Vouchers up front, questions never.",
 			"You found us. That's the hard part done. Now spend.",
 			"Come in, come in. Leave the airlock drama outside — that's a dock problem.",
-			"Ah, customers. Or corpses with good timing. The red zone blurs the line.",
+			"Ah, customers. Or corpses with good timing. Either way, welcome.",
 		),
 		TRADER_LINE_SALE = list(
 			"Pleasure doing business. Forget you saw me.",
 			"Sold. It was never here, and neither were you.",
 			"A fine choice. No refunds, no receipts, no memories.",
 			"Wrap it yourself. Discretion is complimentary.",
-			"That one has a history. Congratulations — now it has a future.",
+			"That one's got a history. I'd stop asking about it right around now.",
 		),
 		TRADER_LINE_REFUSAL = list(
 			"Your money's no good here. Literally — check your embargo notice.",
@@ -146,6 +192,9 @@
 			"The mystery caches? Sealed when they got here. I make a point of not knowing.",
 			"Somebody asked what the imprinter does with the schematics. Confetti. Expensive confetti.",
 			"Legion cores keep better than legionnaires. Cooler's under the counter.",
+			"Quartermain will sell you a mining suit. I sell the ones with the Cybersun stamp still on the plating.",
+			"The bare chassis are cheaper for a reason. You're buying a frame and a cell, not a loadout.",
+			"Nobody else in the galaxy will sell you a shield generator. Think about what that's worth before you haggle.",
 		),
 		TRADER_LINE_RESTOCK = list(
 			"Convoy's in. Don't ask which flag it flew — new stock on the shelves.",
@@ -241,22 +290,150 @@
 	stock_min = 2
 	stock_max = 4
 
-// ===== INFILTRATION =====
+// ===== MODSUITS =====
+// The illegal half of the suit market. Quartermain's fitter stocks civilian
+// through advanced; everything here is a control unit or module that shop will
+// not carry, and all of it is voucher-gated.
+//
+// Two rules shape the ladder:
+// - Nothing with a req_access list. /pre_equipped/elite and /nuclear spawn
+//   locked to ACCESS_SYNDICATE (mod_control.dm:99), so a buyer could not seal
+//   the suit they just paid five vouchers for. /empty/* and the traitor,
+//   infiltrator and interdyne units carry no access list and are safe to sell.
+// - The bare /empty chassis are the mid rungs on purpose: a working core and
+//   cell and no modules at all, so the cheap route into a syndicate suit is the
+//   one that still owes a bench a full loadout.
 
-/datum/shop_sku/black_market/emag
-	category = "Infiltration"
-	name = "cryptographic sequencer"
-	item_path = /obj/item/card/emag
+/datum/shop_sku/black_market/mod_chassis_syndicate
+	category = "MODsuits"
+	name = "syndicate MOD chassis"
+	desc = "A blood-red MODsuit frame with a super cell in the core and no modules whatsoever. Cheaper than a kitted suit because you're buying the armor and nothing else."
+	item_path = /obj/item/mod/control/pre_equipped/empty/syndicate
+	price_vouchers = 2
+	price_credits = 600
+	stock_min = 1
+	stock_max = 2
+
+/datum/shop_sku/black_market/mod_chassis_elite
+	category = "MODsuits"
+	name = "elite MOD chassis"
+	desc = "The heavier plating the Syndicate issues to people it expects to get shot at, sold bare. Same deal as the red one: frame, core, cell, no modules."
+	item_path = /obj/item/mod/control/pre_equipped/empty/elite
+	price_vouchers = 3
+	price_credits = 900
+	stock_min = 1
+	stock_max = 1
+
+/datum/shop_sku/black_market/mod_interdyne
+	category = "MODsuits"
+	name = "Interdyne MODsuit"
+	desc = "A field surgery suit: combat defibrillator, health analyzer, injector and a loaded surgical processor. Sawbones next door thinks it's the best thing Vex sells."
+	item_path = /obj/item/mod/control/pre_equipped/interdyne
+	price_vouchers = 4
+	price_credits = 500
+	stock_min = 1
+	stock_max = 1
+
+/datum/shop_sku/black_market/mod_infiltrator
+	category = "MODsuits"
+	name = "infiltrator MODsuit"
+	desc = "Silent footsteps, no name on examine, and it doesn't register as contraband. Comes with the stealth core programs already welded in."
+	item_path = /obj/item/mod/control/pre_equipped/infiltrator
+	price_vouchers = 4
+	stock_min = 1
+	stock_max = 1
+
+/datum/shop_sku/black_market/mod_traitor
+	category = "MODsuits"
+	name = "syndicate MODsuit (equipped)"
+	desc = "The full loadout: syndicate storage, EMP shielding, shock absorbers, magnetic harness, jetpack and a DNA lock. An expedition's worth of vouchers, and it shows."
+	item_path = /obj/item/mod/control/pre_equipped/traitor
 	price_vouchers = 5
 	stock_min = 1
 	stock_max = 1
 
-/datum/shop_sku/black_market/agent_id
-	category = "Infiltration"
-	item_path = /obj/item/card/id/advanced/chameleon
-	price_vouchers = 2
+/datum/shop_sku/black_market/mod_storage
+	category = "MODsuits"
+	desc = "Cybersun compression storage. Twenty-one items in a back panel, and it fits things a normal storage module won't."
+	item_path = /obj/item/mod/module/storage/syndicate
+	price_vouchers = 1
+	stock_min = 1
+	stock_max = 3
+
+/datum/shop_sku/black_market/mod_plate_compression
+	category = "MODsuits"
+	desc = "Squeezes a stowed suit down to normal size so it fits in a bag. Nothing else fits in the suit afterwards."
+	item_path = /obj/item/mod/module/plate_compression
+	price_vouchers = 1
+	price_credits = 300
 	stock_min = 1
 	stock_max = 2
+
+/datum/shop_sku/black_market/mod_energy_shield
+	category = "MODsuits"
+	desc = "A back-mounted deflector that eats one incoming attack and then needs ten seconds to come back. The best defensive module money can buy here."
+	item_path = /obj/item/mod/module/energy_shield
+	price_vouchers = 3
+	stock_min = 1
+	stock_max = 1
+
+/datum/shop_sku/black_market/mod_wraith_cloak
+	category = "MODsuits"
+	desc = "Bends light around the suit until you're nearly invisible. Taking a hit or throwing a punch drops it, and it drinks power."
+	item_path = /obj/item/mod/module/stealth/wraith
+	price_vouchers = 3
+	stock_min = 1
+	stock_max = 1
+
+// ===== SHIP SYSTEMS =====
+// All six ship-combat boards are protolathe research designs and only nine of
+// forty-eight ships can research anything, so most crews have no way to build
+// one. Quartermain covers engines and the laser turret. These three are the
+// defensive and dirty half, and the cloak board is a contract reward only.
+
+/datum/shop_sku/black_market/shield_generator_board
+	category = "Ship Systems"
+	name = "shield generator board"
+	desc = "The machine board for a ship shield generator. If your ship didn't spawn with one, this is the only place in the galaxy that will sell you the part."
+	item_path = /obj/item/circuitboard/machine/ship_combat/shield_generator
+	price_vouchers = 4
+	price_credits = 1000
+	stock_min = 1
+	stock_max = 1
+
+/datum/shop_sku/black_market/interdictor_board
+	category = "Ship Systems"
+	name = "interdiction system board"
+	desc = "Board for an interdictor. Holds a ship in place so it can't jump away from the fight it started."
+	item_path = /obj/item/circuitboard/machine/ship_combat/interdictor
+	price_vouchers = 3
+	price_credits = 800
+	stock_min = 1
+	stock_max = 1
+
+/datum/shop_sku/black_market/data_siphon_board
+	category = "Ship Systems"
+	name = "data siphon board"
+	desc = "Pirate hardware that pulls credits off another ship's account while you hold a lock on it. Vex sells it without comment."
+	item_path = /obj/item/circuitboard/machine/ship_combat/data_siphon
+	price_vouchers = 3
+	price_credits = 600
+	stock_min = 1
+	stock_max = 1
+
+// ===== INFILTRATION =====
+// What's left of the old shelf. Every door on every player ship and every
+// outpost has req_access stripped, so nothing here is priced as an access tool
+// — these are boarding tools and they're priced like boarding tools.
+
+/datum/shop_sku/black_market/emag
+	category = "Infiltration"
+	name = "cryptographic sequencer"
+	desc = "Opens outpost rental lockers, the cargo console's restricted list, and some colosseum machinery. That's the whole list, hence the price."
+	item_path = /obj/item/card/emag
+	price_vouchers = 2
+	stock_min = 1
+	stock_max = 1
 
 /datum/shop_sku/black_market/thermals
 	category = "Infiltration"
@@ -273,18 +450,11 @@
 	stock_min = 1
 	stock_max = 2
 
-/datum/shop_sku/black_market/syndie_key
-	category = "Infiltration"
-	item_path = /obj/item/encryptionkey/syndicate
-	price_vouchers = 1
-	price_credits = 300
-	stock_min = 1
-	stock_max = 3
-
 /datum/shop_sku/black_market/sleepy_pen
 	category = "Infiltration"
 	item_path = /obj/item/pen/sleepy
-	price_vouchers = 3
+	price_vouchers = 1
+	price_credits = 400
 	stock_min = 1
 	stock_max = 1
 
@@ -293,7 +463,8 @@
 	name = "chameleon mask"
 	desc = "A shape-shifting mask with a built-in voice modulator. Be anyone, sound like them too."
 	item_path = /obj/item/clothing/mask/chameleon
-	price_vouchers = 2
+	price_vouchers = 1
+	price_credits = 500
 	stock_min = 1
 	stock_max = 2
 
@@ -315,41 +486,8 @@
 	stock_max = 2
 
 // ===== INTEL & CHARTS =====
-
-// Charts the lawless deep — the discovery certainty channel, voucher-priced
-/datum/shop_sku/black_market/star_chart
-	category = "Intel & Charts"
-	item_path = /obj/item/disk/star_chart/red
-	price_vouchers = 2
-	stock_min = 1
-	stock_max = 2
-
-// Vex's whispers name a specific prize now: each chart is one rare ruin that
-// exists nowhere until somebody buys the tip and reveals it from their helm.
-// One buyer per rumor, ever — the trail goes cold for everyone else.
-/datum/shop_sku/ruin_chart/armory
-	name = "whisper from the deep lanes: 'Bastion-6'"
-	desc = "Vex trades you a coordinates-shaped rumor: a mothballed NT munitions barge, vault never emptied, security grid never stood down. Uploaded sealed to your helm — reveal it when your crew is ready to race for it."
-	price_vouchers = 3
-	ruin_template_path = /datum/map_template/ruin/space/rare/armory
-	rumor_name = "Vex's whisper: Bastion-6"
-	rumor_desc = "A deadstock munitions barge parked dark in the red band. The grid is still live. The vault is still full."
-
-/datum/shop_sku/ruin_chart/pirate_cove
-	name = "whisper from the deep lanes: 'The Scuppers'"
-	desc = "Vex trades you a coordinates-shaped rumor: a smugglers' freeport dug into a hollow rock, crews that shot each other over the split, and a quartermaster's hoard still sealed behind its blast door. Uploaded sealed to your helm — reveal it when your crew is ready to race for it."
-	price_vouchers = 3
-	ruin_template_path = /datum/map_template/ruin/space/rare/pirate_cove
-	rumor_name = "Vex's whisper: The Scuppers"
-	rumor_desc = "A freeport gone quiet in a hollow asteroid. The crews settled the split with guns. The hoard never got divided — and the survivors are still holding the door."
-
-/datum/shop_sku/ruin_chart/reliquary
-	name = "whisper from the deep lanes: 'Pilgrim's Vow'"
-	desc = "Vex trades you a coordinates-shaped rumor: a votive barge that went dark on pilgrimage a generation ago, congregation still keeping the service, crypt never once robbed. Uploaded sealed to your helm — reveal it when your crew is ready to kneel."
-	price_vouchers = 3
-	ruin_template_path = /datum/map_template/ruin/space/rare/reliquary
-	rumor_name = "Vex's whisper: Pilgrim's Vow"
-	rumor_desc = "A pilgrim barge adrift with every candle still burning. The service never ended. The grave-goods never left."
+// Every chart SKU now lives in shop_catalog_charts.dm and reaches this shelf
+// through chart_pool above. The generic rumor rides the core shelf.
 
 // ===== BLUEPRINTS =====
 // The only trader route to these guns; build them via their schematics.
@@ -446,6 +584,24 @@
 	item_path = /obj/item/gun/syringe/syndicate
 	price_vouchers = 2
 
+/datum/shop_sku/black_market/rotating/mod_flamethrower
+	category = "MODsuits"
+	desc = "A suit-mounted flamethrower. Three seconds between bursts and it costs a lot of charge, so pick your moment."
+	item_path = /obj/item/mod/module/flamethrower
+	price_vouchers = 3
+
+/datum/shop_sku/black_market/rotating/mod_chameleon
+	category = "MODsuits"
+	desc = "Disguises the whole stowed suit as some other object. Useful for walking a MODsuit past people who would object to a MODsuit."
+	item_path = /obj/item/mod/module/chameleon
+	price_vouchers = 2
+
+/datum/shop_sku/black_market/rotating/mod_active_sonar
+	category = "MODsuits"
+	desc = "Pings for living things around you and puts them on your HUD. Everyone in earshot hears the ping too."
+	item_path = /obj/item/mod/module/active_sonar
+	price_vouchers = 2
+
 // ===== RARE SHOWCASE =====
 
 /datum/shop_sku/black_market/rare/energy_sword
@@ -456,6 +612,12 @@
 /datum/shop_sku/black_market/rare/energy_shield
 	category = "Weapons"
 	item_path = /obj/item/shield/energy
+	price_vouchers = 3
+
+/datum/shop_sku/black_market/rare/mod_adrenaline
+	category = "MODsuits"
+	desc = "Spider Clan chemistry in a suit module. Clears stamina damage and every immobilizing effect, then needs 20u of radium before it will do it again. Can't be uninstalled once fitted."
+	item_path = /obj/item/mod/module/adrenaline_boost
 	price_vouchers = 3
 
 // ===== VEX'S CONSIGNMENT WINDOW (buybacks) =====
@@ -504,20 +666,35 @@
 	demand_min = 1
 	demand_max = 2
 
+// The fence pays above Quartermain's counter — that's the whole point of
+// flying the goods out to the red band. The general line takes anything that
+// fires; the energy line is separate and pays more, because Sarge's armory
+// window buys energy weapons at 350 and a black market that undercuts the
+// legal shop on stolen guns is not a black market. Its demand is deliberately
+// short so the premium stays a premium.
 /datum/shop_buyback/black_market/hot_iron
 	name = "firearm (any, no questions)"
 	desc = "Vex buys guns with a past. Serial numbers optional. Preferably absent."
 	category = "Fencing"
 	item_path = /obj/item/gun
-	pay_credits = 250
-	demand_min = 4
-	demand_max = 8
+	pay_credits = 300
+	demand_min = 3
+	demand_max = 6
+
+/datum/shop_buyback/black_market/hot_iron_energy
+	name = "energy weapon (any, no questions)"
+	desc = "Cell-fed guns fetch more here than at any legitimate armory window. Vex has a buyer who only takes the ones that don't need ammunition."
+	category = "Fencing"
+	item_path = /obj/item/gun/energy
+	pay_credits = 450
+	demand_min = 2
+	demand_max = 3
 
 // The gas window: tanks of red-band nebula exotics, scooped where the lanes
 // are worst. Sold with the tank — Vex doesn't do decanting.
 /datum/shop_buyback/exotic_gas/hypernoblium
 	name = "hypernoblium"
-	desc = "A tank of the coldest, noblest gas in the cloud charts. Vex's buyer pays in advance and collects in an unmarked hauler."
+	desc = "A tank of the rarest gas on the cloud charts. Vex's buyer pays in advance and collects in an unmarked hauler."
 	gas_type = /datum/gas/hypernoblium
 	pay_vouchers = 2
 	demand_min = 2
@@ -525,7 +702,7 @@
 
 /datum/shop_buyback/exotic_gas/pluoxium
 	name = "pluoxium"
-	desc = "Breathing gas for people who can't afford to exhale bubbles. Deep-lane nebulas are the only place it pools for free."
+	desc = "Dense breathing gas. A tank of it goes a lot further than a tank of oxygen. Deep-lane nebulas are the only place it pools for free."
 	gas_type = /datum/gas/pluoxium
 	pay_vouchers = 1
 	demand_min = 3

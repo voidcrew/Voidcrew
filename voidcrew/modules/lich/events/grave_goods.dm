@@ -80,8 +80,8 @@
 
 /datum/round_event/voidcrew/lich/grave_goods/announce(fake)
 	lich_announce_ship(
-		"It is customary to be buried in something. I find your uniforms insulting to the \
-		occasion, so I have taken the liberty. Wear them well. Wear them a while. \
+		"It is customary to be buried in something. Your uniforms are insulting to the \
+		occasion, so I have made other arrangements. Wear them a while. \
 		You will not be taking them off by hand.",
 		"Grave Goods",
 		'sound/effects/magic/curse.ogg',

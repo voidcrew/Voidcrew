@@ -62,8 +62,8 @@
 
 /mob/living/basic/lich
 	name = "Ilthuun, the Verdigris Lich"
-	desc = "A tall dry thing in a green robe, wearing a horned skull it did not grow. \
-		Something behind the eye sockets is still counting."
+	desc = "A tall, dry thing in a green robe, wearing a horned skull that did not grow on its own head. \
+		Green light moves behind the eye sockets."
 	gender = MALE
 
 	icon = 'voidcrew/modules/lich/icons/lich.dmi'
@@ -497,7 +497,7 @@
 /mob/living/basic/lich/mirror_image/examine(mob/user)
 	. = ..()
 	if(isobserver(user))
-		. += span_notice("It isn't there. Which means the real one isn't where you think it is.")
+		. += span_notice("It isn't real. The actual Ilthuun is standing somewhere else.")
 		return
 	new /obj/effect/temp_visual/small_smoke/halfsecond(get_turf(src))
 	qdel(src) // Seen through.

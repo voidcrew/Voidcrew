@@ -75,9 +75,10 @@
 
 /datum/mission/prospect_stake/update_text()
 	name = "Prospect Stake: ([target.target_x], [target.target_y])"
-	desc = "File our mineral-rights claim at ([target.target_x], [target.target_y]) in the [target_zone_name]: fly out, deploy the claim beacon aboard your ship while holding station, and keep the beacon alive until the claim matures. \
-		Fair warning - the filing broadcasts on Wideband, and [target_zone_name == ZONE_NAME_RED ? "red-zone law is whoever's left" : "the lane will hear it"]. \
-		The matured deed prints at the beacon; bring it to the mission pad. \
+	desc = "File our mineral-rights claim at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
+		A claim beacon kit lands on your mission pad when you sign. Fly out, deploy it aboard your ship while holding at those coordinates, and keep it in one piece for [defense ? round(defense.defend_duration / (1 MINUTES)) : 8] minutes. The clock only runs while the ship holds station. \
+		The filing goes out on Wideband, so [target_zone_name == ZONE_NAME_RED ? "every pirate in red space will know exactly where you are" : "the whole lane will hear it"]. Expect boarders. \
+		The deed prints at the beacon once the claim matures; bring it to the mission pad. \
 		Pays [pays_ship_parts ? "a bonded crate of ship-grade components" : "[voucher_count] trade vouchers"] on top of the fee."
 
 /datum/mission/prospect_stake/waypoint_label()
@@ -100,7 +101,7 @@
  */
 /obj/item/claim_beacon_kit
 	name = "claim beacon kit"
-	desc = "A folded prospecting claim beacon, bonded and pre-registered. Deploy it in hand while your ship holds at the contracted coordinates - and remember that filings are public."
+	desc = "A folded prospecting claim beacon, bonded and pre-registered. Use it in hand while your ship holds at the contracted coordinates. Filings are public, so expect company."
 	icon = 'voidcrew/modules/missions/icons/recovery.dmi'
 	icon_state = "recovery_anchored"
 	w_class = WEIGHT_CLASS_BULKY
@@ -139,7 +140,7 @@
  */
 /obj/structure/mission_claim_beacon
 	name = "prospecting claim beacon"
-	desc = "A registered mineral-rights beacon, transmitting its claim on every open channel. It would be a shame if something happened to it."
+	desc = "A registered mineral-rights beacon, broadcasting its claim on every open channel. Keeping it in one piece is the whole job."
 	icon = 'voidcrew/modules/missions/icons/recovery.dmi'
 	icon_state = "survey_pylon"
 	anchored = TRUE

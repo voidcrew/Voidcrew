@@ -14,13 +14,13 @@
 	id = "rare_armory"
 	suffix = "rare_armory.dmm"
 	name = "Bastion-6 Deadstock Depot"
-	description = "A mothballed Nanotrasen munitions barge whose asset-denial grid never stood down. The decommissioning crew died locked out of their own vault — their breach is still half-cut, and the deadstock is still racked."
+	description = "A mothballed Nanotrasen munitions barge with its automated defenses still live. The decommissioning crew died locked out of their own vault. Their cutting job is half finished and the guns are still on the racks."
 
 /datum/map_template/ruin/space/rare/biolab
 	id = "rare_biolab"
 	suffix = "rare_biolab.dmm"
 	name = "Eventide Exotics Annex"
-	description = "An off-ledger Nanotrasen xenobiology annex that stopped filing reports mid-shift. The specimens are loose, the staff are part of the inventory now, and the extract vault never got the evacuation order."
+	description = "An off-the-books Nanotrasen xenobiology lab that stopped filing reports mid-shift. The specimens got loose and ate the staff. Nobody made it to the extract vault."
 
 /datum/map_template/ruin/space/rare/pirate_cove
 	id = "rare_pirate_cove"
@@ -32,16 +32,34 @@
 	id = "rare_reliquary"
 	suffix = "rare_reliquary.dmm"
 	name = "Pilgrim's Vow Reliquary"
-	description = "A votive barge that went dark on pilgrimage a generation ago. Something answered the congregation's prayers, and it has never let the service end. The crypt still holds the grave-goods of every soul aboard."
+	description = "A prayer barge that went dark on pilgrimage a generation ago. Something answered the congregation's prayers, and the service never ended. The crypt below still holds the grave goods of everyone aboard."
 
 /datum/map_template/ruin/space/rare/foundry
 	id = "rare_foundry"
 	suffix = "rare_foundry.dmm"
 	name = "Helios-Betna Forgeworks"
-	description = "An automated alloy foundry whose owners defaulted decades ago. The overseer system never got the memo: the line still runs, the custodian units still patrol, and the finished-goods vault has never shipped a single crate."
+	description = "An automated alloy foundry whose owners went bankrupt decades ago. The overseer system never got the memo. The line still runs, the custodian bots still patrol, and the finished-goods vault has never shipped a crate."
 
 /datum/map_template/ruin/space/rare/hospice
 	id = "rare_hospice"
 	suffix = "rare_hospice.dmm"
 	name = "CSV Meridian"
-	description = "A plague evacuation ship scuttled under permanent quarantine seal with the patients still in their beds. The wards never emptied and the pharmacy was never rationed out — the seal held better than the cure did."
+	description = "A plague evacuation ship scuttled under permanent quarantine with the patients still in their beds. Nobody ever emptied the wards, and nobody ever touched the pharmacy."
+
+/datum/map_template/ruin/space/rare/blacksite
+	id = "rare_blacksite"
+	suffix = "rare_blacksite.dmm"
+	name = "Kestrel Anchorage"
+	description = "A Syndicate forward depot that stopped answering its handlers two years ago. The garrison is still on station and still following its last orders. The equipment lockers were never stripped."
+
+/datum/map_template/ruin/space/rare/liner
+	id = "rare_liner"
+	suffix = "rare_liner.dmm"
+	name = "MV Ambassador"
+	description = "A passenger liner that lost main power halfway through a long crossing and was written off with everyone's luggage still aboard. The purser's hold was sealed before the crew abandoned ship."
+
+/datum/map_template/ruin/space/rare/survey
+	id = "rare_survey"
+	suffix = "rare_survey.dmm"
+	name = "Longwatch Station"
+	description = "A deep-range survey post that kept transmitting for eleven years after its last resupply. The sample vault is intact, and so is whatever the crew brought back inside with them."

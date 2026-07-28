@@ -148,9 +148,9 @@
 	trophy_part = hunt_row["trophy"]
 	flavor_line = pick(list(
 		"The last crew that took this contract came home as a salvage claim - [objective_name] is still wearing a piece of their hull.",
-		"Three prospecting teams have gone quiet on this rock. The guild stopped calling it coincidence and started calling it [objective_name].",
-		"[objective_name] has been culling survey parties for two seasons. The lodge wants an end to it, mounted and lacquered.",
-		"Our client watched [objective_name] take their business partner. They are paying for closure.",
+		"Three prospecting teams have gone quiet on this rock. The guild has stopped calling it bad luck and started calling it [objective_name].",
+		"[objective_name] has been eating survey parties for two seasons. The lodge wants it dead and mounted on a wall.",
+		"Our client watched [objective_name] take their business partner. Now they want it killed.",
 		"Whatever [objective_name] can't eat, it breaks. The insurance underwriters are funding this hunt personally.",
 	))
 	author = pick(list(
@@ -199,7 +199,7 @@
 	name = "Big Game Hunt: [objective_name]"
 	desc = "[flavor_line] \
 		[objective_name] holds the [hunt_row["ground"]] of the [planet_name] at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Fly out, stake the lure we've delivered to your mission pad in open ground on the surface, and kill what answers it. \
+		A hunting lure has been delivered to your mission pad. Fly out, stake it in open ground on the surface, and kill whatever comes for it. \
 		The guild pays on the [trophy_part] - bring it back to the mission pad. \
 		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
 		Tap a GPS unit on the mission board to follow the hunt's beacon ([gps_tag])."
@@ -318,8 +318,8 @@
 	for(var/guard_type in guard_types)
 		var/mob/living/guard = new guard_type(get_nearby_open_turf(spawn_turf))
 		guard.desc += " It followed something much bigger here."
-	beast.visible_message(span_boldwarning("[beast] breaks cover and takes the lure!"))
-	notify_crew("The lure is taken - [mission.objective_name] has broken cover. Good hunting.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
+	beast.visible_message(span_boldwarning("[beast] comes crashing in and goes straight for the lure!"))
+	notify_crew("The lure's been taken. [mission.objective_name] is out in the open - good hunting.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')
 
 /**
  * The beast died: drop the bound trophy, track it instead, and advance.
@@ -365,8 +365,8 @@
  */
 /obj/item/hunting_lure
 	name = "apex hunting lure"
-	desc = "A guild-issue lure rig: chum reservoir, pheromone wicks and a seismic thumper, folded for carry. \
-		Stake it in hand, in open ground on the contracted planet - and be somewhere defensible when it starts calling."
+	desc = "A folding guild lure rig: chum reservoir, pheromone wicks and a seismic thumper. \
+		Use it in hand to stake it in open ground on the contracted planet, then get somewhere defensible."
 	icon = 'voidcrew/modules/missions/icons/recovery.dmi'
 	icon_state = "recovery_anchored"
 	w_class = WEIGHT_CLASS_NORMAL
@@ -398,7 +398,7 @@
 		return TRUE
 	if(!objective.active || objective.completed)
 		return TRUE
-	user.visible_message(span_warning("[user] stakes [src] into the ground. It starts pumping out blood-scent and low-frequency thumps."))
+	user.visible_message(span_warning("[user] stakes [src] into the ground. It starts pumping out blood scent and low, heavy thumps."))
 	objective.on_planted(user, get_turf(user))
 	return TRUE
 

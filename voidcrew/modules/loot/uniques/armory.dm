@@ -56,7 +56,7 @@
 
 /obj/item/handloaders_vise
 	name = "handloader's vise"
-	desc = "A pocket reloading press, armory-issue, serial filed by regulation rather than intent."
+	desc = "A pocket reloading press, armory-issue. Clamp it to a table stocked with spent casings and iron and it turns them back into live rounds."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "handloaders_vise"
 	force = 5
@@ -149,7 +149,7 @@
 
 /obj/item/clothing/mask/whistle/sergeants
 	name = "sergeant's whistle"
-	desc = "A brass pea whistle on a bootlace. It has outlasted four owners and intends to continue."
+	desc = "A brass pea whistle on a bootlace. One blast shakes everyone in earshot out of a stun and gets them moving - enemies included."
 	actions_types = list(/datum/action/item_action/sergeants_whistle_blast)
 
 /obj/item/clothing/mask/whistle/sergeants/Initialize(mapload)
@@ -158,7 +158,7 @@
 
 /obj/item/clothing/mask/whistle/sergeants/ui_action_click(mob/living/user, action)
 	if(!COOLDOWN_FINISHED(src, whistle_cooldown))
-		balloon_alert(user, "still catching its breath")
+		balloon_alert(user, "still cooling down")
 		return
 	COOLDOWN_START(src, whistle_cooldown, SERGEANTS_WHISTLE_COOLDOWN)
 	user.visible_message(
@@ -211,7 +211,7 @@
 
 /obj/item/shield/riot/phalanx_buckler
 	name = "Phalanx buckler"
-	desc = "A tower shield cut down and re-plated until it stopped being anyone's design in particular."
+	desc = "A tower shield cut down and re-plated by hand. Raised, it stops shots coming at you or at whoever's standing right behind you."
 	/// Whether the shield is currently raised, covering the wielder's front and their rear-flank ally
 	var/raised = FALSE
 	/// The mob currently wielding this shield, tracked while raised for cleanup
@@ -316,7 +316,7 @@
 
 /obj/item/clothing/glasses/sunglasses/marksmans_cant
 	name = "marksman's cant"
-	desc = "Shooting glasses with a spirit level etched into the top rim. Breathe. Settle. Squeeze."
+	desc = "Shooting glasses with a spirit level etched into the top rim. Stand still a couple of seconds and your next shot goes exactly where you point it."
 	/// Whether the cant has settled and is ready to true up the next shot
 	var/settled = FALSE
 	/// The mob currently wearing the cant, tracked for signal cleanup
@@ -407,7 +407,7 @@
 
 /obj/item/garrison_standard
 	name = "the garrison standard"
-	desc = "A unit banner, colors faded to roughly the idea of colors. Someone carried this out of somewhere."
+	desc = "A unit banner, colors faded almost to gray. Wrench it down to plant it."
 	icon = 'icons/obj/banner.dmi'
 	icon_state = "banner"
 	inhand_icon_state = "banner"
@@ -509,7 +509,7 @@
 
 /obj/item/clothing/gloves/knock_knock
 	name = "\"Knock-Knock\""
-	desc = "A powered breaching gauntlet. The knuckle plate is stamped with a courtesy: AFTER YOU."
+	desc = "A powered breaching gauntlet with AFTER YOU stamped across the knuckle plate. Punches straight through walls and airlocks."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "knock_gauntlet"
 	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'

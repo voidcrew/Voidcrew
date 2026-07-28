@@ -130,7 +130,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 
 /obj/structure/overmap/colosseum
 	name = "the Grand Colosseum"
-	desc = "An ancient monumental arena drum, carved into a bedrock shard. Its hull has shrugged off worse than your weapons. A standing broadcast invites all comers: fight, wager, spectate."
+	desc = "A huge stone arena carved into a bedrock shard, tougher than anything you're carrying. The standing broadcast invites all comers: fight, wager, or watch."
 	icon = 'voidcrew/modules/colosseum/icons/colosseum.dmi'
 	icon_state = "colosseum_token"
 
@@ -254,12 +254,12 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 	update_status_displays()
 
 	var/list/coords = get_relative_overmap_coords()
-	broadcast_galaxy("Hear ye, spacers! The Grand Colosseum has surfaced at [coords_text()]. Glory and prizes await contestants; wagering and refreshments await everyone else. Dock and register at the concourse.")
+	broadcast_galaxy("The Grand Colosseum has surfaced at [coords_text()]! Prizes for contestants, wagering and drinks for everyone else. Dock and register at the concourse.")
 	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
 		if(QDELETED(ship))
 			continue
 		ship.add_waypoint(waypoint_key(), "Grand Colosseum", coords ? coords[1] : 0, coords ? coords[2] : 0, "Events", track_target = src)
-	notify_ghosts("The Grand Colosseum has surfaced — blood and prizes at [coords_text()]!", source = src, header = "Grand Colosseum")
+	notify_ghosts("The Grand Colosseum has surfaced at [coords_text()]!", source = src, header = "Grand Colosseum")
 	log_game("Grand Colosseum surfaced at overmap [coords_text()].")
 	return TRUE
 
@@ -554,7 +554,7 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 				continue
 			if(!loiterer.mind && !loiterer.client)
 				continue
-			bounce_to_lobby(loiterer, "Colosseum wardens clear the spoils chamber for the victors.")
+			bounce_to_lobby(loiterer, "Colosseum wardens clear the spoils chamber for the winners.")
 
 // ===== GATE CONTROL =====
 // Event code drives the mapped ids directly; the referee-box buttons keep

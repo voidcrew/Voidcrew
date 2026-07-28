@@ -22,7 +22,7 @@
 
 /mob/living/basic/vestige_patron/watcher
 	name = "the Watcher Behind Glass"
-	desc = "A tall silhouette standing at the window — or in it, or just past it; the pane never quite agrees. It watches you the way you watch an aquarium."
+	desc = "A tall silhouette standing at the window. Or just past it - hard to tell. It watches you the way you'd watch a fish tank."
 	gender = NEUTER
 	outfit_path = /datum/outfit/job/assistant
 	appearance_tint = "#141428"
@@ -40,20 +40,20 @@
 		/datum/vestige_boon/spell/glass_phase,
 	)
 	idle_lines = list(
-		"You call it nothing. It is not nothing. It is everything, minus the parts you were told to look at.",
-		"Glass is the politest kind of lie: both sides get to believe they are the ones inside.",
-		"Your ship is a held breath. One day every ship exhales. I simply prefer not to wait indoors.",
-		"The void has never killed anyone. The vacuum does that. The void just watches, like me.",
-		"Knock, sometime, from the outside. Watch how quickly a room full of air remembers it is a bubble.",
-		"Nothing thrown into the void is lost. It is exactly where it stopped being yours.",
+		"You call it nothing. It isn't nothing. It's just the part nobody bothered to name.",
+		"Glass is a polite lie. Both sides get to think they're the one on the inside.",
+		"Your ship is a held breath. Every ship exhales eventually. I'd rather not be indoors when yours does.",
+		"The void has never killed anyone. Vacuum does that. The void just watches, same as me.",
+		"Knock on a window from the outside sometime. You'll see how fast a room full of air remembers it's a bubble.",
+		"Nothing thrown into the void is lost. It's exactly where you left it. You just can't reach it.",
 	)
-	accept_line = "Good. Step outside. I will make the introductions."
-	busy_line = "Something else already holds your leash. I do not share windows."
-	fulfilled_line = "You have already been introduced. It remembers you."
+	accept_line = "Good. Step outside. I'll make the introductions."
+	busy_line = "Something else already has a claim on you. I don't share."
+	fulfilled_line = "You've already been introduced. It remembers you."
 	renounce_line = "Back behind the glass, then. It suits you."
 	claim_line = "Something was set aside for you out there. Take it before you ask for more."
-	exhausted_line = "I have shown you everything visible from this window. The rest you would have to see from the other side."
-	remember_line = "You stopped. The void did not — it kept your things exactly where you dropped them."
+	exhausted_line = "I've shown you everything you can see from this window. The rest you'd have to see from outside."
+	remember_line = "You stopped for a while. The void didn't. What was yours is still yours."
 
 // ===== TRIAL OF THE LONG DARK =====
 
@@ -61,7 +61,7 @@
 	name = "Trial of the Long Dark"
 	// Keep the count in sync with VESTIGE_VOID_SECONDS_NEEDED
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the shard. Carry it out into the nothing between hulls and stay — five minutes, all told, alive, with the shard on your person. The void does not want you dead. It wants you introduced."
+	desc = "Take the shard and carry it out into open space. Five minutes out there, alive, with the shard on you. It doesn't have to be all in one go."
 	/// Cumulative seconds spent in hard vacuum with the shard
 	var/seconds_in_void = 0
 
@@ -69,7 +69,7 @@
 	hand_over(user, new /obj/item/vestige_shard(get_turf(user)))
 
 /datum/vestige_trial/long_dark/get_progress_text()
-	return "The shard has soaked [round(seconds_in_void)] of [VESTIGE_VOID_SECONDS_NEEDED] seconds of void."
+	return "Time spent in the void: [round(seconds_in_void)] of [VESTIGE_VOID_SECONDS_NEEDED] seconds."
 
 /// May complete (and delete) the trial
 /datum/vestige_trial/long_dark/proc/soak(seconds)
@@ -80,7 +80,7 @@
 
 /obj/item/vestige_shard
 	name = "void shard"
-	desc = "A splinter of crystal that is a slightly deeper black than whatever is behind it. Held to your ear, it sounds like a window being looked through."
+	desc = "A splinter of crystal, a shade blacker than whatever is behind it. Cold enough to feel through gloves."
 	icon = 'icons/obj/ore.dmi'
 	icon_state = "bluespace_crystal"
 	color = "#3c1a5c"
@@ -133,7 +133,7 @@
 	name = "Trial of the Other Side"
 	// Keep the count in sync with VESTIGE_CALLER_ROOMS_NEEDED
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the card. All your life the glass has been between you and the nothing, and you have always stood on the flattering side. Trade places: stand in the void and press it to the panes of five different rooms that still hold their breath. Let whoever looks up see an aquarium from the correct side, just once."
+	desc = "Take the card. Step outside and press it against the windows of five different rooms that still have air in them. You have to be on the void side of the glass. Let whoever looks up get a good look at you."
 	/// Rooms already called upon (area weakref -> TRUE) — every introduction needs a new room
 	var/list/rooms_called = list()
 	/// The loaned card, reclaimed (deleted) the moment the pact ends
@@ -141,14 +141,14 @@
 
 /datum/vestige_trial/other_side/on_accepted(mob/living/user)
 	card = hand_over(user, new /obj/item/vestige_calling_card(get_turf(user)))
-	to_chat(user, span_notice("The card settles into your palm with the weight of an appointment."))
+	to_chat(user, span_notice("The card settles into your palm. It is colder than the room."))
 
 /datum/vestige_trial/other_side/Destroy()
 	QDEL_NULL(card)
 	return ..()
 
 /datum/vestige_trial/other_side/get_progress_text()
-	return "The card has been pressed to the glass of [length(rooms_called)] of [VESTIGE_CALLER_ROOMS_NEEDED] breathing rooms."
+	return "Rooms called on: [length(rooms_called)] of [VESTIGE_CALLER_ROOMS_NEEDED]."
 
 /// Credits one room. May complete (and delete) the trial. Returns FALSE if this room has already been called upon.
 /datum/vestige_trial/other_side/proc/call_upon(area/room)
@@ -163,7 +163,7 @@
 
 /obj/item/vestige_calling_card
 	name = "caller's card"
-	desc = "A calling card cut from windowpane, its edges too smooth to have been cut at all. Whichever side of it you examine, you get the feeling you are looking in from outside."
+	desc = "A calling card cut from a windowpane. The edges are far too smooth to have been cut."
 	icon = 'icons/obj/debris.dmi'
 	icon_state = "medium"
 	color = "#3c1a5c"
@@ -171,7 +171,7 @@
 
 /obj/item/vestige_calling_card/examine(mob/user)
 	. = ..()
-	. += span_notice("Pressed to a window from the void's side — hard vacuum at your back, a room still holding its breath beyond the pane — it makes an introduction. It expects [VESTIGE_CALLER_ROOMS_NEEDED] different rooms.")
+	. += span_notice("Press it to a window from outside, with vacuum at your back and a pressurized room on the far side. It needs [VESTIGE_CALLER_ROOMS_NEEDED] different rooms.")
 
 /obj/item/vestige_calling_card/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	if(!istype(interacting_with, /obj/structure/window))
@@ -191,14 +191,14 @@
 		balloon_alert(user, "square up to the glass!")
 		return ITEM_INTERACT_BLOCKING
 	if(void_side(far_turf))
-		balloon_alert(user, "no held breath beyond this pane!")
+		balloon_alert(user, "no air beyond this pane!")
 		return ITEM_INTERACT_BLOCKING
 	var/area/room = get_area(far_turf)
 	if(istype(room, /area/ruin/space/has_grav/vestige))
-		balloon_alert(user, "this glass already knows you!")
+		balloon_alert(user, "this ruin's glass doesn't count!")
 		return ITEM_INTERACT_BLOCKING
 	if(trial.rooms_called[WEAKREF(room)])
-		balloon_alert(user, "this room has been called upon!")
+		balloon_alert(user, "already called this room!")
 		return ITEM_INTERACT_BLOCKING
 	// The tell fires before the press lands: the knock is the point
 	pane.visible_message(span_warning("Something knocks, once, and presses flat against [pane] — from the outside."))
@@ -212,7 +212,7 @@
 	if(QDELETED(pane) || !pane.density)
 		return ITEM_INTERACT_BLOCKING
 	if(!void_side(get_turf(user)) || void_side(far_turf))
-		balloon_alert(user, "the introduction fell through!")
+		balloon_alert(user, "the moment passed!")
 		return ITEM_INTERACT_BLOCKING
 	if(!trial.call_upon(room))
 		return ITEM_INTERACT_BLOCKING
@@ -272,7 +272,7 @@
 	name = "Trial of the Little Moon"
 	// Keep the count in sync with VESTIGE_MOON_DRIFT_NEEDED
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the keepsake. Throw it into the nothing — a true throw, twenty tiles of open void without one interruption — and where its flight ends it will stop, and shine, and wait. Then go out and bring it home. If the dark keeps it, renounce your pact and I will cut you another; I will mind less than you will."
+	desc = "Take the keepsake and throw it into open space. It needs twenty tiles of clear flight, no interruptions. Wherever it stops it will light up and wait, and then you go out and bring it back. Lose it and you can renounce the pact for a new one."
 	/// Longest unbroken flight so far, in space turfs (a mirror of the keepsake's live count, for the readout)
 	var/best_flight = 0
 	/// Whether the keepsake has finished its flight and now waits to be brought home
@@ -282,7 +282,7 @@
 
 /datum/vestige_trial/little_moon/on_accepted(mob/living/user)
 	keepsake = hand_over(user, new /obj/item/vestige_keepsake(get_turf(user)))
-	to_chat(user, span_notice("The keepsake tugs at your grip — gently, constantly, in no particular direction."))
+	to_chat(user, span_notice("The keepsake tugs gently at your grip, in no particular direction."))
 
 /datum/vestige_trial/little_moon/Destroy()
 	QDEL_NULL(keepsake)
@@ -290,8 +290,8 @@
 
 /datum/vestige_trial/little_moon/get_progress_text()
 	if(keepsake_settled)
-		return "The keepsake waits, shining, where its flight ended. Bring it home."
-	return "The keepsake's longest unbroken flight: [best_flight] of [VESTIGE_MOON_DRIFT_NEEDED] tiles of nothing."
+		return "The keepsake is shining somewhere out there, where its flight ended. Go and get it."
+	return "Longest unbroken flight: [best_flight] of [VESTIGE_MOON_DRIFT_NEEDED] tiles."
 
 /// Mirrors the keepsake's live flight distance into the pact readout
 /datum/vestige_trial/little_moon/proc/track_flight(tiles)
@@ -307,7 +307,7 @@
 
 /obj/item/vestige_keepsake
 	name = "void keepsake"
-	desc = "A knuckle of glass fused the wrong way round, dark all the way through. Held still, it leans very slightly toward the nearest window."
+	desc = "A knuckle of dark glass, fused smooth. Hold it still and it pulls, very slightly, toward the nearest window."
 	icon = 'icons/obj/ore.dmi'
 	icon_state = "slag"
 	color = "#9b7fc4"
@@ -333,9 +333,9 @@
 /obj/item/vestige_keepsake/examine(mob/user)
 	. = ..()
 	if(settled)
-		. += span_notice("Its flight is finished. Now it waits to be brought home.")
+		. += span_notice("It is done flying. Now it just needs picking up.")
 	else
-		. += span_notice("Thrown into open space, it flies until something ends the flight. It wants [VESTIGE_MOON_DRIFT_NEEDED] uninterrupted tiles of nothing — being caught, pulled or grounded starts the count over.")
+		. += span_notice("Throw it into open space and it drifts until something stops it. It needs [VESTIGE_MOON_DRIFT_NEEDED] tiles in a row - catching it, pulling it or hitting a floor resets the count.")
 
 // A settled keepsake keeps its provenance: couriers who ferry it home for the
 // thrower must not steal (or break) the binding by putting it down
@@ -395,12 +395,12 @@
 	if(drift_handler)
 		qdel(drift_handler)
 	set_light(2, 1, "#7a5db8")
-	visible_message(span_warning("[src] stops dead, mid-nothing, and begins to shine."))
+	visible_message(span_warning("[src] stops dead in open space and starts to glow."))
 	var/datum/vestige_trial/little_moon/trial = get_bound_trial()
 	trial?.mark_settled()
 	var/mob/living/thrower = bound_mind?.current
 	if(istype(thrower))
-		to_chat(thrower, span_boldnotice("Somewhere out in the dark, the keepsake stops — and shines, and waits, exactly where it stopped being yours."))
+		to_chat(thrower, span_boldnotice("Somewhere out in the dark, the keepsake stops and starts to glow. It is waiting for you."))
 		playsound(thrower, 'sound/effects/magic/voidblink.ogg', 30, TRUE)
 
 // Retrieval is the completion: the settled keepsake returning to the thrower's
@@ -415,47 +415,47 @@
 	var/datum/vestige_trial/little_moon/trial = get_bound_trial()
 	if(!istype(trial))
 		return
-	to_chat(user, span_notice("The keepsake is warm for exactly one heartbeat. Then your hand closes on nothing at all: reclaimed, and delivered."))
+	to_chat(user, span_notice("The keepsake goes warm for a second, then vanishes out of your hand. Delivered."))
 	trial.complete() // deletes the trial, which reclaims the keepsake — touch neither afterward
 
 // ===== BOONS =====
 
 /datum/vestige_boon/spell/cosmic_dash
 	name = "Cosmic Dash"
-	desc = "Hurl yourself across a gap like something the void spat out — anyone standing where you land will wish they hadn't been."
-	grant_text = "Distance quietly stops feeling like your problem."
+	desc = "Throw yourself across a gap fast enough to flatten whatever you land on."
+	grant_text = "Distance stops being your problem."
 	spell_type = /datum/action/cooldown/mob_cooldown/charge/vestige_dash
 
 /datum/vestige_boon/spell/cosmic_dash/unbroken
 	name = "Unbroken Dash"
-	desc = "The dash, corrected. You no longer stop where the first thing you meet thinks you should — pass through them, and let the floor make the introductions."
-	grant_text = "Stopping begins to feel like a habit you picked up from other people."
+	desc = "The dash, improved. You no longer stop at the first thing you hit - you go through it, and it goes down."
+	grant_text = "Nothing gets to stop you halfway anymore."
 	upgrades_from = /datum/vestige_boon/spell/cosmic_dash
 	spell_type = /datum/action/cooldown/mob_cooldown/charge/vestige_dash/unbroken
 
 /datum/vestige_boon/spell/held_breath
 	name = "Held Breath"
-	desc = "Step outside and the void will hold its breath for you — a short while in which the cold and the emptiness decline to notice. Bring your own air; it has none to lend."
-	grant_text = "Somewhere on the far side of every window, something vast inhales, and waits."
+	desc = "For a short while, cold and low pressure stop hurting you. Bring your own air - this doesn't provide any."
+	grant_text = "The cold loses interest in you."
 	spell_type = /datum/action/cooldown/spell/vestige_held_breath
 
 /datum/vestige_boon/spell/held_breath/long_exposure
 	name = "Long Exposure"
-	desc = "Stay in the frame long enough and the void stops checking. It holds its breath longer for you now — and lets you breathe the nothing, and walk on it like floor. Try not to be smug about it indoors."
-	grant_text = "The void files you under scenery. Come and go as the weather does."
+	desc = "For seventy-five seconds, cold, low pressure and lack of air all stop hurting you, and empty space holds your feet like floor. Long enough to work out there instead of counting down to the nearest airlock."
+	grant_text = "The void has stopped treating you as a visitor."
 	upgrades_from = /datum/vestige_boon/spell/held_breath
 	spell_type = /datum/action/cooldown/spell/vestige_held_breath/long_exposure
 
 /datum/vestige_boon/spell/beckon
 	name = "Come to the Window"
-	desc = "Fix your eyes on someone distant and disagree with the distance. The air thins first — the watchful will feel it coming — but feeling and stopping are different hobbies."
-	grant_text = "Everything you can see is now, technically, within arm's reach. Do be polite about it."
+	desc = "Mark someone at range and drag them toward you. They get a moment's warning first, and breaking your line of sight defeats it."
+	grant_text = "Anything you can see is within reach now."
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_beckon
 
 /datum/vestige_boon/spell/glass_phase
 	name = "Through the Pane"
-	desc = "Press yourself to the glass and wait until both sides agree you were always on the other one. Live lattice still refuses you; electricity has no imagination."
-	grant_text = "Glass stops taking sides. Windows were only ever doors with opinions."
+	desc = "Press against a window or grille and pass through to the other side. Electrified grilles still stop you."
+	grant_text = "Windows stop counting as walls."
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_glass_phase
 
 // ===== COSMIC DASH =====
@@ -467,7 +467,7 @@
 // actions_voidwalker.dmi, which only holds the telepathy button.
 /datum/action/cooldown/mob_cooldown/charge/vestige_dash
 	name = "Cosmic Dash"
-	desc = "Hurl yourself at a target, trampling whatever you connect with."
+	desc = "Charge at a target, trampling whatever you hit on the way."
 	button_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "void_dash"
 	cooldown_time = 20 SECONDS
@@ -488,7 +488,7 @@
  */
 /datum/action/cooldown/mob_cooldown/charge/vestige_dash/unbroken
 	name = "Unbroken Dash"
-	desc = "Hurl yourself at a target and pass straight through them — whoever you connect with is trampled flat and left behind you."
+	desc = "Charge at a target and pass straight through. Whoever you hit gets knocked down and left behind you."
 	cooldown_time = 15 SECONDS
 	charge_distance = 9
 	charge_past = 1
@@ -508,7 +508,7 @@
  */
 /datum/action/cooldown/spell/vestige_held_breath
 	name = "Held Breath"
-	desc = "For a while, cold and low pressure decline to harm you. The void has no air to lend — carry your own."
+	desc = "For a while, cold and low pressure stop hurting you. You still need to bring your own air."
 	button_icon = 'icons/mob/actions/actions_ecult.dmi'
 	button_icon_state = "space_crawl"
 	background_icon_state = "bg_void"
@@ -522,7 +522,7 @@
 
 /datum/action/cooldown/spell/vestige_held_breath/long_exposure
 	name = "Long Exposure"
-	desc = "For a good while, cold, low pressure and the want of air decline to harm you, and the void underfoot behaves like floor."
+	desc = "For longer, cold, low pressure and lack of air all stop hurting you, and empty space holds you up like floor."
 	cooldown_time = 2 MINUTES
 	adaptation_type = /datum/status_effect/vestige_held_breath/long_exposure
 
@@ -530,7 +530,7 @@
 	. = ..()
 	cast_on.apply_status_effect(adaptation_type)
 	playsound(cast_on, 'sound/effects/magic/voidblink.ogg', 50, TRUE)
-	to_chat(cast_on, span_notice("Something vast inhales on your behalf, and the cold loses your address."))
+	to_chat(cast_on, span_notice("Something inhales somewhere behind you, and the cold stops finding you."))
 
 /datum/status_effect/vestige_held_breath
 	id = "vestige_held_breath"
@@ -548,7 +548,7 @@
 
 /datum/status_effect/vestige_held_breath/on_remove()
 	owner.remove_traits(adaptation_traits, TRAIT_STATUS_EFFECT(id))
-	to_chat(owner, span_warning("Somewhere just past the glass, the void lets its breath back out."))
+	to_chat(owner, span_warning("Somewhere behind you the breath lets out, and the cold remembers you're out here."))
 
 // The upgrade holds longer and adds vacuum breathing plus footing on space
 // turfs (the trait the void-native fauna use), so the hold becomes a real
@@ -559,7 +559,7 @@
 
 /atom/movable/screen/alert/status_effect/vestige_held_breath
 	name = "Held Breath"
-	desc = "The void is holding its breath on your behalf. Cold and vacuum decline to notice you — for now."
+	desc = "Cold and vacuum are not hurting you right now."
 	icon_state = "weightless"
 
 // ===== COME TO THE WINDOW =====
@@ -586,8 +586,8 @@
 	spell_requirements = SPELL_REQUIRES_NO_ANTIMAGIC
 	antimagic_flags = MAGIC_RESISTANCE_HOLY
 	cast_range = 7
-	active_msg = "You fix your attention on the middle distance..."
-	deactive_msg = "You let the distance keep its opinion."
+	active_msg = "You fix your attention on something in the distance..."
+	deactive_msg = "You let it go."
 	/// Delay between the telegraph and the yank — the victim's window to break line of sight
 	var/windup = 1.25 SECONDS
 	/// How many tiles the victim is dragged toward the caster
@@ -616,20 +616,20 @@
 	if(QDELETED(victim) || QDELETED(owner) || !isliving(owner) || owner.stat == DEAD)
 		return
 	if(!isturf(victim.loc) || victim.z != owner.z || get_dist(owner, victim) > cast_range + 1)
-		owner.balloon_alert(owner, "slipped out of the frame!")
+		owner.balloon_alert(owner, "they got too far away!")
 		return
 	if(!(victim in view(cast_range + 1, owner)))
 		owner.balloon_alert(owner, "line of sight broken!")
 		return
 	if(victim.can_block_magic(antimagic_flags))
-		owner.balloon_alert(owner, "something refuses the pull!")
+		owner.balloon_alert(owner, "something blocked the pull!")
 		return
 	if(victim.buckled || victim.anchored)
 		owner.balloon_alert(owner, "held fast!")
 		return
 	victim.visible_message(
-		span_danger("[victim] is wrenched through the air, as if something behind the world pulled a thread!"),
-		span_userdanger("The distance between you and [owner] is abruptly withdrawn!"),
+		span_danger("[victim] is wrenched through the air by nothing at all!"),
+		span_userdanger("Something yanks you hard toward [owner]!"),
 	)
 	playsound(victim, 'sound/effects/curse/curse1.ogg', 60, TRUE)
 	victim.Knockdown(1 SECONDS)
@@ -651,7 +651,7 @@
  */
 /datum/action/cooldown/spell/pointed/vestige_glass_phase
 	name = "Through the Pane"
-	desc = "Press against an adjacent window or grille and slowly pass to the far side. Electrified lattice will refuse you."
+	desc = "Press against an adjacent window or grille and slowly pass through to the far side. Electrified grilles will stop you."
 	button_icon = 'icons/mob/actions/actions_minor_antag.dmi'
 	button_icon_state = "ninja_phase"
 	background_icon_state = "bg_void"
@@ -662,8 +662,8 @@
 	spell_requirements = NONE
 	cast_range = 1
 	aim_assist = FALSE
-	active_msg = "You prepare to take the glass's side of the argument..."
-	deactive_msg = "You concede the pane."
+	active_msg = "You get ready to press yourself into the glass..."
+	deactive_msg = "You step back from the glass."
 	/// Length of the channel, spent visibly pressed against the glass
 	var/phase_time = 3 SECONDS
 	/// The pane a successful before_cast carried the owner through, for cast()'s flavor. Same-tick handoff only.
@@ -721,7 +721,7 @@
 		return . | SPELL_CANCEL_CAST
 	owner.visible_message(
 		span_warning("[owner] presses flat against [pane]..."),
-		span_notice("You press yourself against [pane] and wait for it to take your side."),
+		span_notice("You press yourself against [pane] and start working your way into it."),
 	)
 	playsound(pane, 'sound/effects/glass/glassknock.ogg', 60, TRUE)
 	if(!do_after(owner, phase_time, target = pane))
@@ -731,14 +731,14 @@
 	// Live lattice is the hard counter, exactly as it is for the voidwalker
 	for(var/obj/structure/grille/lattice in destination)
 		if(lattice.is_shocked())
-			owner.balloon_alert(owner, "the lattice is live!")
+			owner.balloon_alert(owner, "the grille is live!")
 			return . | SPELL_CANCEL_CAST
 	// The step itself: PASSWINDOW crosses window and grille borders; any other dense thing still refuses
 	passwindow_on(owner, REF(src))
 	var/moved = owner.Move(destination)
 	passwindow_off(owner, REF(src))
 	if(!moved)
-		owner.balloon_alert(owner, "something on the far side refuses!")
+		owner.balloon_alert(owner, "something blocks the far side!")
 		return . | SPELL_CANCEL_CAST
 	passed_pane = pane
 
@@ -753,7 +753,7 @@
 	playsound(pane, 'sound/effects/magic/blind.ogg', 60, TRUE)
 	owner.visible_message(
 		span_warning("[owner] passes through [pane] like a smear on the glass!"),
-		span_notice("Both sides of [pane] briefly agree about you, and then you are on the other one."),
+		span_notice("You slide through [pane] and come out the other side."),
 	)
 
 #undef VESTIGE_CALLER_ROOMS_NEEDED

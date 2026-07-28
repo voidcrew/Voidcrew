@@ -107,7 +107,7 @@
 		var/obj/item/item_type = initial(item_boon.item_type)
 		if(item_type)
 			return image(icon = initial(item_type.icon), icon_state = initial(item_type.icon_state))
-	return image(icon = 'icons/hud/radial.dmi', icon_state = "radial_lore")
+	return image(icon = 'voidcrew/icons/hud/radial.dmi', icon_state = "radial_boon")
 
 /**
  * # Vestige boon claim
@@ -166,10 +166,20 @@
 	var/datum/mind/mind = target
 	if(!istype(mind))
 		return
+	// The soul's ledger is the one authority on whether a debt is still outstanding.
+	// A claim button can outlive the debt it was made for: dying strands one on the
+	// old mind while restore_lost_legacy (patron.dm) builds a fresh one on the new
+	// mind, and both read the same ckey-keyed record. Whichever is spent first clears
+	// the record, and this voids the other instead of paying the boon out twice.
+	var/datum/vestige_record/record = get_vestige_record(mind)
+	if(record && !length(record.pending_candidates))
+		to_chat(user, span_notice("[patron_name] has already settled this debt."))
+		qdel(src)
+		return
 	// The roll may have gone stale since completion; drop anything now owned or out of reach
 	var/list/live_candidates = get_eligible_vestige_boons(mind, candidates)
 	if(!length(live_candidates))
-		to_chat(user, span_notice("The debt dissolves — [patron_name] has nothing left that you lack."))
+		to_chat(user, span_notice("[patron_name] has nothing left to give you."))
 		clear_recorded_pending(mind)
 		qdel(src)
 		return
@@ -193,7 +203,7 @@
 		if(!choice || !menu_check(user))
 			return null
 		var/datum/vestige_boon/chosen = by_name[choice]
-		var/pitch = initial(chosen.desc) || "No bargainer ever learned more by asking."
+		var/pitch = initial(chosen.desc) || "It doesn't elaborate."
 		var/confirm = tgui_alert(user, pitch, "[patron_name] offers: [choice]", list("Take it", "Reconsider"))
 		if(confirm == "Take it")
 			return menu_check(user) ? chosen : null
@@ -215,7 +225,7 @@
 		record.boons |= choice_type
 	clear_recorded_pending(mind)
 	playsound(user, 'sound/effects/magic/curse.ogg', 50, TRUE)
-	to_chat(user, span_bolddanger("[patron_name]'s voice, satisfied: \"Paid in full.\""))
+	to_chat(user, span_bolddanger("[patron_name] sounds satisfied. \"Paid in full.\""))
 	qdel(src)
 
 /// Settles the pending entry on the soul's ledger — NOT called from Destroy, which

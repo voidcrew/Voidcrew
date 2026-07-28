@@ -1717,7 +1717,7 @@
 		return FALSE
 	if(!ignore_cooldown && !COOLDOWN_FINISHED(src, rename_cooldown))
 		if(user)
-			to_chat(user, span_warning("The registry was updated too recently: [DisplayTimeText(COOLDOWN_TIMELEFT(src, rename_cooldown))] until this ship can be renamed again."))
+			to_chat(user, span_warning("The registry was updated too recently. [DisplayTimeText(COOLDOWN_TIMELEFT(src, rename_cooldown))] until this ship can be renamed again."))
 		return FALSE
 
 	var/old_name = name

@@ -89,7 +89,7 @@
 	name = "Protocol: Acquisition"
 	// Keep the numbers in sync with VESTIGE_READING_DURATION / VESTIGE_READING_RADIUS
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Take the tag and the lens. Select a live, conscious humanoid — the protocol requires someone behind the eyes — and affix the tag. Deploy the lens, begin the reading, and hold the subject within three tiles of it for thirty unbroken seconds, alive and out of collapse. How is the subject's own variable: barricades, bargains, a firm grip, or plain consent all produce identical data. A finished reading releases the subject intact. This is a catalogue, not a larder."
+	desc = "Take the tag and the lens. Pick a live, conscious humanoid — the protocol needs someone actually home behind the eyes — and affix the tag. Deploy the lens, start the reading, and keep the subject within three tiles of it for thirty unbroken seconds, alive and out of crit. How you manage that is up to you: barricades, bargains, a firm grip or plain consent all produce the same data. A finished reading releases the subject unharmed."
 	/// The currently tagged subject (weakref; retagging moves the tag and restarts any reading)
 	var/datum/weakref/tagged_ref
 	/// Deciseconds of the current reading, zeroed whenever it aborts
@@ -100,7 +100,7 @@
 /datum/vestige_trial/acquisition/on_accepted(mob/living/user)
 	hand_over(user, new /obj/item/vestige_specimen_tag(get_turf(user)))
 	hand_over(user, new /obj/item/vestige_observation_lens(get_turf(user)))
-	to_chat(user, span_notice("The applicator and the folded lens settle into your hands, humming at two slightly different pitches. Neither of them is idle."))
+	to_chat(user, span_notice("The applicator and the folded lens settle into your hands, humming at two slightly different pitches."))
 
 /datum/vestige_trial/acquisition/get_progress_text()
 	var/mob/living/subject = tagged_ref?.resolve()
@@ -148,7 +148,7 @@
 
 /obj/item/vestige_specimen_tag
 	name = "specimen tag applicator"
-	desc = "A silver abductor instrument ending in a ring of fine, polite needles. It affixes nothing you could find again with a scalpel — just a point of violet light, filed under the skin, that something else can read from across a room."
+	desc = "A silver abductor instrument ending in a ring of fine needles. It leaves nothing a scalpel could find later — just a point of violet light under the skin that something else can read from across a room."
 	icon = 'icons/obj/antags/abductor.dmi'
 	icon_state = "gizmo_mark"
 	inhand_icon_state = "silencer"
@@ -202,11 +202,11 @@
 	playsound(subject, 'sound/machines/ping.ogg', 30, TRUE)
 	balloon_alert(user, "subject tagged")
 	to_chat(user, span_notice("The applicator clicks once, satisfied. [subject] is on file. Now keep [subject.p_them()] where the lens can look."))
-	to_chat(subject, span_warning("Something clicks shut against your shoulder, and a point of violet light settles under your skin. It doesn't hurt. It is very interested in you."))
+	to_chat(subject, span_warning("Something clicks shut against your shoulder, and a point of violet light settles under your skin. It doesn't hurt at all."))
 
 /obj/item/vestige_observation_lens
 	name = "folded observation lens"
-	desc = "An abductor field instrument folded down into its carrying shape. It is warm on one side, like something sleeping with one eye open."
+	desc = "An abductor field instrument folded down into its carrying shape. It is warm on one side."
 	icon = 'icons/obj/antags/abductor.dmi'
 	icon_state = "beacon"
 	w_class = WEIGHT_CLASS_SMALL
@@ -232,8 +232,8 @@
 	lens.keeper = user.mind
 	playsound(here, 'sound/effects/phasein.ogg', 40, TRUE)
 	user.visible_message(
-		span_warning("[user] sets something small on the deck, and it unfolds — and unfolds, and unfolds — into an alien lens assembly."),
-		span_notice("You set the lens down and it unfolds itself to working height, swiveling once around the room before settling into a patient rest position."),
+		span_warning("[user] sets something small on the deck, and it unfolds itself into a tall alien lens assembly."),
+		span_notice("You set the lens down. It unfolds to working height, sweeps the room once, and settles."),
 	)
 	qdel(src)
 
@@ -246,7 +246,7 @@
  */
 /obj/structure/vestige_observation_lens
 	name = "observation lens"
-	desc = "An alien lens assembly unfolded to tripod height. Whatever it is looking at, it is looking at it very hard, and it has been doing so since before you noticed it."
+	desc = "An alien lens assembly unfolded to tripod height. Whatever it is pointed at, it is watching very closely."
 	icon = 'icons/obj/antags/abductor.dmi'
 	icon_state = "camera"
 	anchored = TRUE
@@ -294,7 +294,7 @@
 	if(user.mind && user.mind == keeper)
 		begin_reading(user)
 		return TRUE
-	to_chat(user, span_notice("The lens ignores you with what feels like professional courtesy."))
+	to_chat(user, span_notice("The lens ignores you completely."))
 	return TRUE
 
 /// Starts a reading on the keeper's tagged subject, with a word about anything missing
@@ -322,7 +322,7 @@
 	visible_message(
 		span_warning("[src] swivels, finds its mark, and floods with violet light!"),
 		)
-	to_chat(subject, span_userdanger("The lens turns, finds you, and settles. You are being read. Something would prefer you stayed put for it."))
+	to_chat(subject, span_userdanger("The lens turns, finds you, and settles. You are being read, and something would very much prefer you stayed put."))
 
 /// A bystander (or the keeper) breaking off a reading in progress. Sleeps; call async.
 /obj/structure/vestige_observation_lens/proc/try_disrupt(mob/living/user)
@@ -405,13 +405,13 @@
 	if(SPT_PROB(60, seconds_per_tick))
 		Beam(subject, icon_state = "purple_lightning", time = 1 SECONDS)
 	if(SPT_PROB(8, seconds_per_tick))
-		to_chat(subject, span_warning("The lens's regard rests on you like a hand on the back of your neck."))
+		to_chat(subject, span_warning("You can feel the lens watching you, steady and unblinking."))
 	if(trial.advance_reading(seconds_per_tick * (1 SECONDS))) // may complete the pact, deleting the trial — touch it no further
 		scanning = FALSE
 		STOP_PROCESSING(SSobj, src)
 		set_light(l_on = FALSE)
 		playsound(src, 'sound/machines/chime.ogg', 50, TRUE)
-		visible_message(span_boldnotice("[src] chimes once, politely, and begins folding itself flat. The catalogue is satisfied."))
+		visible_message(span_boldnotice("[src] chimes once and begins folding itself flat. The reading is done."))
 		fold_up()
 
 // ===== PROTOCOL: GRAFT =====
@@ -420,7 +420,7 @@
 	name = "Protocol: Graft"
 	// Keep the count in sync with VESTIGE_GRAFT_STEPS (initial values must be
 	// constant, so no define interpolation here)
-	desc = "Take the kit. Select a live humanoid subject — conscious, or sedated by arrangement — and lay them on a table or bed. The graft proceeds in four bedside steps: incise, calibrate, implant, seal. An interrupted step costs only that step. The implant is a replicator gland, and it is a gift: it will spend the rest of the subject's life quietly repairing the subject. We have taken so very much, over the years. The study of giving back is new, and the early data is promising."
+	desc = "Take the kit. Pick a live humanoid subject — conscious, or sedated by arrangement — and lay them on a table or bed. The graft runs in four bedside steps: incise, calibrate, implant, seal. An interrupted step costs only that step. The implant is a replicator gland, and it is a gift: it will spend the rest of the subject's life quietly repairing them. We have taken a great deal over the years. Giving something back is new, and the early data is promising."
 	/// The subject mid-procedure (weakref; switching subjects restarts the graft)
 	var/datum/weakref/patient_ref
 	/// Steps completed on the current subject, of VESTIGE_GRAFT_STEPS
@@ -468,21 +468,21 @@
 	/// What the room sees as each step begins — order matches step_names
 	var/static/list/step_start_messages = list(
 		"draws a glowing line down %PATIENT%'s sternum with an instrument from the kit",
-		"holds a chattering instrument over the incision, letting it argue with %PATIENT%'s biology",
+		"holds a chattering instrument over the incision while it reads %PATIENT%'s biology",
 		"lifts a fist-sized gland from the kit and seats it, unhurried, in %PATIENT%'s chest",
-		"draws a sealing wand along the incision, which closes without comment",
+		"draws a sealing wand along the incision, and it closes over",
 	)
 	/// What the subject feels as each step begins — order matches step_names
 	var/static/list/step_feel_messages = list(
-		"A line of painless cold draws itself down your chest. It does not bleed. It waits.",
+		"A line of painless cold draws itself down your chest. It doesn't even bleed.",
 		"Something reads you, organ by organ, and takes notes.",
-		"Something warm and patient settles in behind your ribs and introduces itself to your blood.",
-		"The cold line on your chest zips itself shut. You are, as far as you can tell, exactly as you were. Almost.",
+		"Something warm settles in behind your ribs and starts working.",
+		"The cold line on your chest zips itself shut. As far as you can tell, you are exactly as you were.",
 	)
 
 /obj/item/vestige_graft_kit/examine(mob/user)
 	. = ..()
-	. += span_notice("Used on a live humanoid lying on a table or bed, it performs the graft in [VESTIGE_GRAFT_STEPS] bedside steps: incise, calibrate, implant, seal. The recipient keeps the gland. The gland keeps the recipient.")
+	. += span_notice("Use it on a live humanoid lying on a table or bed to perform the graft in [VESTIGE_GRAFT_STEPS] steps: incise, calibrate, implant, seal. The recipient keeps the gland afterwards.")
 
 /obj/item/vestige_graft_kit/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	if(!ishuman(interacting_with))
@@ -493,7 +493,7 @@
 		balloon_alert(user, "the kit refuses to open!")
 		return ITEM_INTERACT_BLOCKING
 	if(patient == user)
-		balloon_alert(user, "the protocol requires a second pair of hands!")
+		balloon_alert(user, "you can't graft yourself!")
 		return ITEM_INTERACT_BLOCKING
 	if(!check_patient(patient, user))
 		return ITEM_INTERACT_BLOCKING
@@ -570,11 +570,11 @@
 	// Insert leaves the replaced heart at the subject's feet; hand it back sleeved
 	if(old_heart && !QDELETED(old_heart))
 		user.put_in_hands(old_heart)
-		to_chat(user, span_notice("The kit sleeves [patient]'s original [old_heart.name] in preservative film and returns it to you. Its owner may want it back someday. The kit's notes doubt it."))
+		to_chat(user, span_notice("The kit sleeves [patient]'s original [old_heart.name] in preservative film and hands it back to you."))
 	playsound(patient, 'sound/machines/chime.ogg', 40, TRUE)
 	patient.visible_message(
 		span_notice("[patient]'s color improves at once, as if [patient.p_their()] body has just come under new management."),
-		span_boldnotice("Something in your chest settles into a rhythm not quite yours, and begins — very quietly — to look after you."),
+		span_boldnotice("Something in your chest settles into a rhythm that isn't quite yours, and quietly starts looking after you."),
 	)
 	patient.add_mood_event("vestige_grafted", /datum/mood_event/vestige_grafted)
 	return TRUE
@@ -591,7 +591,7 @@
 	// Keep the counts in sync with VESTIGE_PROBE_READINGS_NEEDED /
 	// VESTIGE_PROBE_READINGS_PER_SUBJECT (initial values must be constant, so
 	// no define interpolation here)
-	desc = "Take the probe. The catalogue requires baseline telemetry from humanoids under load — conscious, upright, unrestrained. Six readings, and no more than two from any one subject; a sample of one is an anecdote. The probe announces itself on contact. This is by design: a subject who knows it is being measured pushes back, and the pushing back is the data."
+	desc = "Take the probe. The catalogue needs baseline telemetry from humanoids under load: conscious, upright and unrestrained. Six readings, and no more than two from any one subject. The probe announces itself on contact, which is deliberate — a subject who knows they are being measured pushes back, and the pushing back is the data."
 	/// Readings credited so far
 	var/readings_taken = 0
 	/// Readings credited per subject (weakref -> count), capping farm-a-friend
@@ -619,7 +619,7 @@
 
 /obj/item/vestige_probe_baton
 	name = "telemetric probe"
-	desc = "An abductor probe-wand tuned all the way down: it cannot stun, it cannot cuff, and it has never once apologized. The tip drinks a reading on contact and stings just enough to make the reading honest."
+	desc = "An abductor probe-wand tuned all the way down. It can't stun and it can't cuff. The tip takes a reading on contact, and stings just enough to make that reading honest."
 	icon = 'icons/obj/antags/abductor.dmi'
 	icon_state = "wonderprodProbe"
 	inhand_icon_state = "wonderprodProbe"
@@ -661,7 +661,7 @@
 		span_danger("[user] presses a humming probe against [subject]!"),
 		span_userdanger("You feel a cold instrument take a reading!"),
 	)
-	to_chat(user, span_notice("The probe drinks its reading and files it. Somewhere, a column fills in."))
+	to_chat(user, span_notice("The probe takes its reading and files it."))
 
 #undef VESTIGE_TAG_APPLY_TIME
 #undef VESTIGE_READING_DURATION
@@ -706,8 +706,10 @@
 #define VESTIGE_INSTRUMENT_SLEEP_RECHARGE (20 SECONDS)
 /// Channel time to fabricate restraints around a target's wrists (upstream: 3 seconds)
 #define VESTIGE_INSTRUMENT_CUFF_TIME (3 SECONDS)
-/// The recall anchor's short action cooldown — anti-spam on the button, NOT the teleport gate
+/// The cooldown planting the tag leaves behind, and the one a pull that never landed is refunded to
 #define VESTIGE_ANCHOR_BUTTON_COOLDOWN (2 SECONDS)
+/// How long the pull spends winding up before it lands. Any change of loc breaks it.
+#define VESTIGE_ANCHOR_WARMUP (5 SECONDS)
 /// Recharge on the anchor's return-teleport half
 #define VESTIGE_ANCHOR_RECALL_COOLDOWN (60 SECONDS)
 /// Recharge on the paired anchor's return-teleport half
@@ -715,7 +717,7 @@
 /// Radius of the null field, in tiles around the caster
 #define VESTIGE_NULL_FIELD_RADIUS 3
 /// How long the null field's silence holds those caught in it
-#define VESTIGE_NULL_FIELD_DURATION (6 SECONDS)
+#define VESTIGE_NULL_FIELD_DURATION (20 SECONDS)
 /// Recharge between null fields
 #define VESTIGE_NULL_FIELD_COOLDOWN (60 SECONDS)
 
@@ -724,41 +726,43 @@
 // The instrument is a local port of the abductor baton (abductor_items.dm):
 // same sprite family, same mode structure, minus the training lock, the probe
 // mode, and the worst of the numbers. Modes are trimmed from four to two —
-// stun and sleep — with per-mode internal recharges so the tool is a scalpel,
-// not a crowd-control firehose.
+// stun and restraints — with per-mode internal recharges so the tool is a
+// scalpel, not a crowd-control firehose. Sleep induction is held back for the
+// revision, since taking a specimen off the board entirely is the strongest
+// thing the tool does.
 /datum/vestige_boon/item/alien_baton
 	name = "The Instrument"
 	// Keep the numbers in sync with VESTIGE_INSTRUMENT_STUN_RECHARGE /
-	// VESTIGE_INSTRUMENT_SLEEP_TIME (initial values must be constant, so no
+	// VESTIGE_INSTRUMENT_CUFF_TIME (initial values must be constant, so no
 	// define interpolation here)
-	desc = "The subject will be issued a two-setting handling tool. Setting one interrupts a target's motor function on contact; the instrument then meters its own recharge — eight seconds — because hurried collection damages the collection. Setting two induces half a minute of sleep, effective only on targets already down. Specimens acquired asleep file fewer complaints."
-	grant_text = "A cool alien weight settles into your hand, already humming. Somewhere, a checklist is amended: ISSUED."
+	desc = "A handling tool with two settings. The first stuns a target on contact, then takes eight seconds to recharge. The second spends three seconds fabricating restraints around a target's wrists, and they are very hard to get off again. Specimens arrive in better condition when they are not chased."
+	grant_text = "A cool alien weight settles into your hand, already humming."
 	item_type = /obj/item/melee/baton/vestige_instrument
 
 /datum/vestige_boon/item/alien_baton/perfected
 	name = "The Perfected Instrument"
-	// Keep the number in sync with VESTIGE_INSTRUMENT_STUN_RECHARGE_PERFECTED
-	// (initial values must be constant, so no define interpolation here)
-	desc = "The same tool, post-revision: recharge interval reduced to five seconds, and a third setting added — restraints that assemble themselves around a target's wrists and object strenuously to being removed. The subject's previous unit will be reclaimed on issue. The Curator does not run a museum. Technically."
-	grant_text = "Your instrument is revised. The replacement hums at a slightly more confident pitch."
+	// Keep the numbers in sync with VESTIGE_INSTRUMENT_STUN_RECHARGE_PERFECTED
+	// / VESTIGE_INSTRUMENT_SLEEP_TIME (initial values must be constant, so no
+	// define interpolation here)
+	desc = "The tool you already carry, revised in place. The stun recharge drops to five seconds, and a third setting is added: sleep induction, which puts a target to sleep for thirty seconds but only works on someone already down."
+	grant_text = "Your instrument reworks itself in your grip, and comes back humming at a slightly more confident pitch."
 	upgrades_from = /datum/vestige_boon/item/alien_baton
 	item_type = /obj/item/melee/baton/vestige_instrument/perfected
 
 /**
  * /datum/vestige_boon/item has no upgrade-replacement logic (only spells do),
- * so the perfected boon reclaims the superseded tool by hand: the first
- * carried base-pattern instrument (exact type — never another perfected) is
- * unmade before the new one is issued. A base instrument stashed off-body
- * (locker, floor) escapes the recall and lingers as a duplicate; acceptable —
- * the boon ledger still prevents the boon itself from being granted twice.
+ * so the perfected boon handles the swap itself — and it revises rather than
+ * replaces: the first unrevised instrument the claimant is carrying is
+ * upgraded where it sits, so the tool keeps its slot, its bag, and its charge
+ * timers. Only a claimant carrying no instrument at all (stashed in a locker,
+ * dropped, lost with a body) is issued a fresh perfected one.
  */
 /datum/vestige_boon/item/alien_baton/perfected/grant(mob/living/user, datum/mind/owner)
 	for(var/obj/item/melee/baton/vestige_instrument/prior in user.get_all_contents())
-		if(prior.type != /obj/item/melee/baton/vestige_instrument)
+		if(!prior.perfect())
 			continue
-		to_chat(user, span_notice("Your instrument disassembles itself into a brief silver swarm and is reclaimed. The Curator does not issue duplicates."))
-		qdel(prior)
-		break
+		to_chat(user, span_boldnotice(grant_text))
+		return
 	return ..()
 
 // The recall anchor is a rebuild of the OLD abductor vest's blink-back; this
@@ -772,16 +776,16 @@
 	name = "Recall Anchor"
 	// Keep the duration in sync with VESTIGE_ANCHOR_RECALL_COOLDOWN
 	// (initial values must be constant, so no define interpolation here)
-	desc = "The subject will be taught to fix a return point: a tag, planted where the subject stands, and a pull, exercised from anywhere on the same celestial body. The pull requires a minute between uses and observes local wards; moving the tag is free, and the Curator encourages good exit hygiene. Right-click the ability to plant or move the tag."
-	grant_text = "A small silver certainty is pressed into your understanding, the way a tool is pressed into a hand."
+	desc = "Plant a tag where you stand, then pull yourself back to it from anywhere on the same world. The pull spends five seconds winding up, and anything that moves you during those five seconds breaks it. Landing it costs a minute of recharge, and it still respects local teleport wards. Moving the tag is free. Right-click the ability to plant or move it."
+	grant_text = "A sense of exactly where you last stood settles into the back of your head."
 	spell_type = /datum/action/cooldown/spell/vestige_recall_anchor
 
 /datum/vestige_boon/spell/anchor_tag/paired
 	name = "Paired Anchor"
 	// Keep the duration in sync with VESTIGE_ANCHOR_RECALL_COOLDOWN_PAIRED
 	// (initial values must be constant, so no define interpolation here)
-	desc = "The pull, recalibrated for two: whatever living thing the subject is holding onto — grabbed, or riding on the subject's back — arrives as well. Recharge interval reduced to forty seconds. The Curator notes that specimens transported this way arrive in measurably better condition than specimens dragged the whole distance."
-	grant_text = "The tag learns a second signature. Plant it afresh; the Curator disapproves of stale coordinates."
+	desc = "The pull takes a passenger now: whatever living thing you have grabbed, or that is riding on your back, arrives with you. Recharge drops to forty seconds. Specimens transported this way arrive in measurably better condition than specimens dragged the whole way."
+	grant_text = "The tag learns a second signature."
 	upgrades_from = /datum/vestige_boon/spell/anchor_tag
 	spell_type = /datum/action/cooldown/spell/vestige_recall_anchor/paired
 
@@ -796,8 +800,8 @@
 	// Keep the numbers in sync with VESTIGE_NULL_FIELD_RADIUS /
 	// VESTIGE_NULL_FIELD_DURATION (initial values must be constant, so no
 	// define interpolation here)
-	desc = "On command, every voice within three paces of the subject — excepting the subject's own — declines to function for six seconds. No harm is recorded. No sound is, either. The Curator finds most procedures go smoother without commentary."
-	grant_text = "A word is removed from the room's future. You are holding the gap where it was."
+	desc = "Silence every voice within three paces of you for twenty seconds. Yours keeps working. It does no damage and makes no noise doing it — most procedures go smoother without commentary."
+	grant_text = "You find you know exactly how to take a room's voice away."
 	spell_type = /datum/action/cooldown/spell/aoe/vestige_null_field
 
 /**
@@ -817,8 +821,8 @@
  */
 /datum/vestige_boon/gland_graft
 	name = "The Gift"
-	desc = "A replicator gland, grafted in place of the subject's original pump. It ejects foreign implants, regrows failing organs and limbs, and replaces lost blood — enthusiastically, and usually via the mouth. The original pump is returned to the subject at installation. The subject will find the modification persists poorly across bodies; reapplication is complimentary."
-	grant_text = "Something turns over in your chest, twice, and settles into a rhythm that is almost — not quite — yours."
+	desc = "A replicator gland grafted in where your heart used to be. It ejects foreign implants, regrows failing organs and limbs, and replaces lost blood — enthusiastically, and usually via the mouth. Your original heart is handed back at installation. It does not survive a change of bodies, but reapplication is free."
+	grant_text = "Something turns over in your chest twice and settles into a rhythm that isn't quite yours."
 	radial_icon = 'icons/obj/antags/abductor.dmi'
 	radial_icon_state = "health"
 
@@ -833,7 +837,7 @@
 	// in hand for later surgical installation instead.
 	if(!iscarbon(user))
 		user.put_in_hands(gift)
-		to_chat(user, span_warning("The Curator's voice, faintly annoyed: \"Incompatible chassis. Installation is left as an exercise.\""))
+		to_chat(user, span_warning("The Curator's voice, faintly annoyed: \"Incompatible chassis. You will have to install it yourself.\""))
 		return
 	var/mob/living/carbon/subject = user
 	if(!gift.Insert(subject)) // paranoia; carbon is checked above
@@ -842,7 +846,7 @@
 	playsound(subject, 'sound/effects/splat.ogg', 50, TRUE)
 	subject.visible_message(
 		span_warning("[subject] clutches [subject.p_their()] chest as something under the ribs rearranges itself!"),
-		span_userdanger("Something slides into place behind your sternum and begins, methodically, to beat. Your original is set down at your feet. The Curator suggests a jar."),
+		span_userdanger("Something slides into place behind your sternum and starts beating. Your original heart is on the floor at your feet."),
 	)
 
 // ===== THE INSTRUMENT =====
@@ -855,13 +859,13 @@
  *
  * The base pipeline's shared stun cooldown (var/cooldown) gates EVERY
  * left-click mode behind one timer, which would break the tool's identity
- * combo (stun, switch settings, sleep) — so it is zeroed, upstream-style, and
- * each mode meters itself inside baton_effect() instead. A stun attempt
+ * combo (stun, switch settings, restrain) — so it is zeroed, upstream-style,
+ * and each mode meters itself inside baton_effect() instead. A stun attempt
  * during recharge is a harmless zero-force bonk with a balloon.
  */
 /obj/item/melee/baton/vestige_instrument
 	name = "alien instrument"
-	desc = "A slim alien rod that drinks the light. Two settings: one for stopping a specimen, one for putting a stopped specimen to sleep. Between uses it hums quietly to itself, counting."
+	desc = "A slim alien rod that drinks the light. Two settings: one for stopping a specimen, one for fitting a stopped specimen with restraints. Between uses it hums quietly to itself, counting."
 	desc_controls = "Left-click to apply the active setting. Right-click to strike. Use in hand to switch settings."
 	icon = 'icons/obj/antags/abductor.dmi'
 	icon_state = "wonderprodStun"
@@ -877,12 +881,14 @@
 	affect_cyborg = TRUE
 	actions_types = list(/datum/action/item_action/toggle_mode)
 	action_slots = ALL
-	/// Current setting: BATON_STUN or BATON_SLEEP (the perfected pattern adds BATON_CUFF)
+	/// Current setting — always one of the entries in modes
 	var/mode = BATON_STUN
-	/// How many settings the cycle covers (the global mode defines run 0..n-1 in cycle order)
-	var/mode_count = 2
+	/// The settings this pattern carries, in cycle order (the revision splices in BATON_SLEEP)
+	var/list/modes = list(BATON_STUN, BATON_CUFF)
 	/// Recharge between successful stun discharges
 	var/stun_recharge = VESTIGE_INSTRUMENT_STUN_RECHARGE
+	/// Whether the perfected revision has been applied to this instrument
+	var/perfected = FALSE
 	/// Ready-time gate on the stun setting
 	COOLDOWN_DECLARE(stun_ready)
 	/// Ready-time gate on the sleep setting
@@ -925,7 +931,8 @@
 
 /// Cycles to the next setting. No training check: the Curator issues, it does not gatekeep.
 /obj/item/melee/baton/vestige_instrument/proc/toggle(mob/living/user)
-	mode = (mode + 1) % mode_count
+	// Find() on a setting that somehow isn't in the list returns 0, which lands on the first entry
+	mode = modes[(modes.Find(mode) % length(modes)) + 1]
 	var/setting
 	switch(mode)
 		if(BATON_STUN)
@@ -974,12 +981,12 @@
 	return FALSE
 
 /**
- * Sleep induction, ported from upstream SleepAttack with the round-deleting
- * edges filed off: full effect only lands on a target already stopped —
- * incapacitated (ignoring mere cuffs or grabs, upstream's own test) or flat
- * on the deck — sleeps for 30 seconds instead of two minutes, and the
- * inducer recharges 20 seconds between doses. Standing targets get token
- * drowsiness; the stun setting exists for a reason.
+ * Sleep induction (perfected pattern only), ported from upstream SleepAttack
+ * with the round-deleting edges filed off: full effect only lands on a target
+ * already stopped — incapacitated (ignoring mere cuffs or grabs, upstream's
+ * own test) or flat on the deck — sleeps for 30 seconds instead of two
+ * minutes, and the inducer recharges 20 seconds between doses. Standing
+ * targets get token drowsiness; the stun setting exists for a reason.
  */
 /obj/item/melee/baton/vestige_instrument/proc/sleep_attack(mob/living/target, mob/living/user)
 	if(!COOLDOWN_FINISHED(src, sleep_ready))
@@ -1014,11 +1021,11 @@
 	)
 
 /**
- * Restraint fabrication (perfected pattern only), ported from upstream
- * CuffAttack unchanged in the ways that matter: a 3 second channel, then
- * upstream's self-tightening hard-light restraints — 45 second breakout,
- * and they discharge into sparks the moment they come off (energy/used is
- * DROPDEL; verified in abductor_items.dm).
+ * Restraint fabrication, ported from upstream CuffAttack unchanged in the
+ * ways that matter: a 3 second channel, then upstream's self-tightening
+ * hard-light restraints — 45 second breakout, and they discharge into sparks
+ * the moment they come off (energy/used is DROPDEL; verified in
+ * abductor_items.dm).
  */
 /obj/item/melee/baton/vestige_instrument/proc/cuff_attack(mob/living/victim, mob/living/user)
 	if(!iscarbon(victim))
@@ -1044,13 +1051,32 @@
 	to_chat(user, span_notice("You restrain [carbon_victim]."))
 	log_combat(user, carbon_victim, "handcuffed", src.name)
 
-// The revised pattern: quicker between discharges, and the restraint
-// fabricator is unlocked as a third setting in the cycle.
-/obj/item/melee/baton/vestige_instrument/perfected
+/**
+ * The revision, applied to an instrument that already exists: quicker between
+ * discharges, and sleep induction spliced onto the end of the setting cycle.
+ *
+ * The perfected boon calls this on the tool the claimant is already carrying,
+ * so the upgrade keeps the same object rather than handing over a replacement.
+ * Returns FALSE if this instrument has already been revised, which is what
+ * lets the boon walk a claimant's contents and stop at the first unrevised one.
+ */
+/obj/item/melee/baton/vestige_instrument/proc/perfect()
+	if(perfected)
+		return FALSE
+	perfected = TRUE
 	name = "perfected alien instrument"
-	desc = "A slim alien rod that drinks the light. Three settings: stopping a specimen, putting a stopped specimen to sleep, and fabricating restraints that assemble themselves. The hum between uses is shorter now, and sounds faintly pleased about it."
-	mode_count = 3
+	desc = "A slim alien rod that drinks the light. Three settings: stopping a specimen, fitting a stopped specimen with restraints, and putting one to sleep. The hum between uses is shorter now."
+	modes = list(BATON_STUN, BATON_CUFF, BATON_SLEEP)
 	stun_recharge = VESTIGE_INSTRUMENT_STUN_RECHARGE_PERFECTED
+	update_appearance()
+	return TRUE
+
+// The revised pattern issued whole, for a claimant who no longer has the tool
+// they were given. Everything the revision changes lives in perfect(), so a
+// spawned copy and an upgraded-in-place copy cannot drift apart.
+/obj/item/melee/baton/vestige_instrument/perfected/Initialize(mapload)
+	. = ..()
+	perfect()
 
 // ===== RECALL ANCHOR =====
 
@@ -1060,10 +1086,17 @@
  * the button plants or moves the tag (the same input split the heretic living
  * heart uses). With no tag planted, any cast plants one.
  *
- * Only the PULL pays the long recharge: the action's own cooldown is a token
- * anti-spam tick, and the 60 second gate lives on a separate cooldown checked
- * in before_cast — this fork's Activate() ignores cast()'s return value, so
- * per-outcome cooldown control has to happen before the cast, not after.
+ * The pull is not instant: it winds up for five seconds first, drawn on the
+ * caster's tile, and any change of loc during those seconds breaks it. The
+ * channel runs in before_cast, so a broken pull cancels the cast outright and
+ * costs nothing but the time spent standing there.
+ *
+ * Only the PULL pays the long recharge, but that recharge IS the action's
+ * cooldown_time rather than a private timer, so the button displays it. The
+ * halves that shouldn't pay it (planting, a pull that never landed) wave off
+ * the automatic cooldown with SPELL_NO_IMMEDIATE_COOLDOWN and start the short
+ * one by hand; a right-click replant lifts the timer for the length of its own
+ * trigger so moving the tag stays free while the pull recharges.
  *
  * The pull refuses to cross z-levels. There is no upstream rule to match
  * (this tree's vest lost its blink-back), and in an overmap fork a cross-z
@@ -1075,25 +1108,23 @@
  */
 /datum/action/cooldown/spell/vestige_recall_anchor
 	name = "Recall Anchor"
-	desc = "Cast to return to your planted anchor tag; right-click the ability to plant the tag where you stand, or move it. Returning recharges slowly. Moving the tag is free. The pull cannot reach across the void between celestial bodies."
+	desc = "Cast to return to your planted anchor tag: the pull takes five seconds to wind up, and breaks if anything moves you. Right-click the ability to plant the tag where you stand, or move it. A landed pull recharges slowly. Moving the tag is free. The pull cannot reach across the void between celestial bodies."
 	button_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "vortex_recall"
 	background_icon_state = "bg_alien"
 	overlay_icon_state = "bg_alien_border"
 	school = SCHOOL_TRANSLOCATION
-	cooldown_time = VESTIGE_ANCHOR_BUTTON_COOLDOWN
+	cooldown_time = VESTIGE_ANCHOR_RECALL_COOLDOWN
 	invocation_type = INVOCATION_NONE
 	spell_requirements = NONE
-	/// Recharge on the return half; planting rides only the short action cooldown
-	var/recall_cooldown_time = VESTIGE_ANCHOR_RECALL_COOLDOWN
-	/// Ready-time gate on the return half
-	COOLDOWN_DECLARE(recall_ready)
 	/// The planted tag. A physical object so it rides whatever deck it is planted on.
 	var/obj/effect/vestige_anchor_tag/anchor
 	/// Whether the activation in flight arrived via right-click (a replant request)
 	var/replant_requested = FALSE
 	/// Resolved intent for the cast in flight: TRUE plants/moves the tag, FALSE pulls to it
 	var/planting_this_cast = TRUE
+	/// TRUE while a pull is winding up, so a second click can't stack channels
+	var/channelling = FALSE
 
 /datum/action/cooldown/spell/vestige_recall_anchor/Destroy()
 	QDEL_NULL(anchor)
@@ -1101,7 +1132,18 @@
 
 /datum/action/cooldown/spell/vestige_recall_anchor/Trigger(mob/clicker, trigger_flags, atom/target)
 	replant_requested = !!(trigger_flags & TRIGGER_SECONDARY_ACTION)
-	return ..()
+	if(!replant_requested)
+		return ..()
+	// The button's timer is the pull's recharge, which is the number a player
+	// needs to see — but planting was never gated by it. Lift the timer for the
+	// length of this trigger and hand back whatever is left of it, so a replant
+	// during the recharge goes through without clearing (or refreshing) it.
+	// Nothing on the planting path sleeps, so no tick can land in the gap.
+	var/pull_ready_at = next_use_time
+	next_use_time = 0
+	. = ..()
+	next_use_time = max(next_use_time, pull_ready_at)
+	build_all_button_icons(UPDATE_BUTTON_STATUS)
 
 /// The tag's current turf, or null while it is unplanted (or has somehow been destroyed)
 /datum/action/cooldown/spell/vestige_recall_anchor/proc/get_anchor_turf()
@@ -1116,13 +1158,14 @@
 	replant_requested = FALSE // never let a stale right-click steer a later keybind cast
 	if(. & SPELL_CANCEL_CAST)
 		return
+	// Both halves start their own cooldown (plant_tag and pull_to_tag), so the
+	// automatic one is waved off — otherwise planting, which is free, would
+	// stamp the pull's minute onto the button on its way out
+	. |= SPELL_NO_IMMEDIATE_COOLDOWN
 	if(planting_this_cast)
 		return
-	// The pull half meters itself here — cancelling in before_cast leaves the
-	// (short) action cooldown untouched, so a refused pull never eats the button
-	if(!COOLDOWN_FINISHED(src, recall_ready))
-		owner.balloon_alert(owner, "pull recharging!")
-		to_chat(owner, span_warning("The pull is spent for another [DisplayTimeText(COOLDOWN_TIMELEFT(src, recall_ready))]."))
+	if(channelling)
+		owner.balloon_alert(owner, "already pulling!")
 		return . | SPELL_CANCEL_CAST
 	var/turf/here = get_turf(cast_on)
 	var/turf/destination = get_anchor_turf()
@@ -1133,6 +1176,20 @@
 		owner.balloon_alert(owner, "anchor out of reach!")
 		to_chat(owner, span_warning("The tag answers faintly, from somewhere the pull cannot reach."))
 		return . | SPELL_CANCEL_CAST
+	// The wind-up lives here rather than in cast(): a broken pull cancels the
+	// whole cast, so it pays no recharge at all — standing still IS the cost
+	if(!channel_pull(cast_on))
+		return . | SPELL_CANCEL_CAST
+	// Five seconds is long enough for the world to move underneath the tag — or
+	// for the caster to stop being one
+	if(QDELETED(owner) || QDELETED(cast_on))
+		return . | SPELL_CANCEL_CAST
+	here = get_turf(cast_on)
+	destination = get_anchor_turf()
+	if(!here || !destination || here == destination || here.z != destination.z)
+		owner.balloon_alert(owner, "anchor out of reach!")
+		to_chat(owner, span_warning("The fold closes on nothing. The tag is no longer somewhere the pull can reach."))
+		return . | SPELL_CANCEL_CAST
 
 /datum/action/cooldown/spell/vestige_recall_anchor/cast(mob/living/cast_on)
 	. = ..()
@@ -1140,6 +1197,32 @@
 		plant_tag(cast_on)
 	else
 		pull_to_tag(cast_on)
+
+/**
+ * The wind-up. Five seconds of standing still while the tag takes hold, drawn
+ * on the caster's own tile so anyone watching gets the same warning the caster
+ * does. do_after does the enforcing: walking off, being dragged, being thrown
+ * or being stunned all break it, and a broken pull costs only the time. What
+ * the caster is holding is left out of it — the pull is a thing done to the
+ * body, and there is no reason swapping hands should interrupt it.
+ */
+/datum/action/cooldown/spell/vestige_recall_anchor/proc/channel_pull(mob/living/user)
+	var/turf/here = get_turf(user)
+	user.visible_message(
+		span_warning("[user] goes rigid, and the air folds inward around [user.p_them()]!"),
+		span_notice("The tag takes hold and starts reeling you in. Hold still."),
+	)
+	playsound(here, 'sound/effects/magic/lightning_chargeup.ogg', 35, TRUE, -2)
+	var/obj/effect/temp_visual/vestige_recall_pull/winding = new(here)
+	channelling = TRUE
+	. = do_after(user, VESTIGE_ANCHOR_WARMUP, timed_action_flags = IGNORE_HELD_ITEM)
+	channelling = FALSE
+	if(!QDELETED(winding))
+		qdel(winding)
+	if(. || QDELETED(user))
+		return
+	user.balloon_alert(user, "pull broken!")
+	to_chat(user, span_warning("The fold comes apart, and the deck is still under you."))
 
 /// Plants the tag at the caster's feet, or drags the existing one over
 /datum/action/cooldown/spell/vestige_recall_anchor/proc/plant_tag(mob/living/user)
@@ -1152,6 +1235,7 @@
 		anchor.forceMove(spot)
 	playsound(spot, 'sound/machines/click.ogg', 30, TRUE)
 	user.balloon_alert(user, "anchor planted")
+	StartCooldown(VESTIGE_ANCHOR_BUTTON_COOLDOWN) // planting is free; this is only anti-spam
 	// A tag in a warded area plants fine and then refuses every pull —
 	// complain now, not at the worst possible moment
 	var/area/spot_area = get_area(spot)
@@ -1163,13 +1247,12 @@
 /// pattern's business, captured before the jump breaks the pull.
 /datum/action/cooldown/spell/vestige_recall_anchor/proc/pull_to_tag(mob/living/user)
 	var/turf/destination = get_anchor_turf()
-	if(!destination)
+	var/mob/living/passenger = destination ? gather_passenger(user) : null
+	if(!destination || !do_teleport(user, destination, asoundout = 'sound/effects/phasein.ogg', channel = TELEPORT_CHANNEL_MAGIC))
+		// do_teleport balloons the refusal itself; a pull that never landed spends no recharge
+		StartCooldown(VESTIGE_ANCHOR_BUTTON_COOLDOWN)
 		return
-	var/mob/living/passenger = gather_passenger(user)
-	if(!do_teleport(user, destination, asoundout = 'sound/effects/phasein.ogg', channel = TELEPORT_CHANNEL_MAGIC))
-		// do_teleport balloons the refusal itself; a refused pull spends no recharge
-		return
-	COOLDOWN_START(src, recall_ready, recall_cooldown_time)
+	StartCooldown() // the recharge the button counts down
 	if(!passenger || QDELETED(passenger))
 		return
 	if(do_teleport(passenger, destination, channel = TELEPORT_CHANNEL_MAGIC, no_effects = TRUE))
@@ -1184,8 +1267,8 @@
 
 /datum/action/cooldown/spell/vestige_recall_anchor/paired
 	name = "Paired Anchor"
-	desc = "Cast to return to your planted anchor tag, carrying whoever you are grabbing or carrying; right-click the ability to plant or move the tag. Returning recharges slowly. Moving the tag is free. The pull cannot reach across the void between celestial bodies."
-	recall_cooldown_time = VESTIGE_ANCHOR_RECALL_COOLDOWN_PAIRED
+	desc = "Cast to return to your planted anchor tag, carrying whoever you are grabbing or carrying; the pull still takes five seconds to wind up and still breaks if anything moves you. Right-click the ability to plant or move the tag. A landed pull recharges slowly. Moving the tag is free. The pull cannot reach across the void between celestial bodies."
+	cooldown_time = VESTIGE_ANCHOR_RECALL_COOLDOWN_PAIRED
 
 // Grabbed-or-willing, by this fork's own teleport grammar: a pulled living
 // thing (grabs are adjacency by definition) is ferried by hand below, and
@@ -1202,7 +1285,7 @@
 /// spotting it (it glows, faintly) and camping it — not breaking it.
 /obj/effect/vestige_anchor_tag
 	name = "recall anchor"
-	desc = "A stubby alien beacon, planted with a surveyor's confidence. It is fixed to this spot the way a filing label is fixed to a drawer: it does not care where the drawer goes, only that it can be found again."
+	desc = "A stubby alien beacon planted flat against the deck. It stays with whatever it is stuck to, wherever that ends up going."
 	icon = 'icons/obj/antags/abductor.dmi'
 	icon_state = "beacon"
 	layer = LOW_OBJ_LAYER
@@ -1211,6 +1294,28 @@
 	light_range = 1.2
 	light_power = 0.4
 	light_color = "#9fd8cf"
+
+/**
+ * The pull winding up, drawn on the caster's tile for the length of the
+ * channel. It borrows the abductor pad's own teleport silhouette (pad.dm) so
+ * the wind-up reads as the same technology as the tag, and grows as it charges
+ * so a bystander can see how much time is left to do something about it.
+ */
+/obj/effect/temp_visual/vestige_recall_pull
+	name = "folding air"
+	icon = 'icons/obj/antags/abductor.dmi'
+	icon_state = "teleport"
+	duration = VESTIGE_ANCHOR_WARMUP
+	randomdir = FALSE
+	alpha = 70
+	light_range = 1.5
+	light_power = 0.5
+	light_color = "#9fd8cf"
+
+/obj/effect/temp_visual/vestige_recall_pull/Initialize(mapload)
+	. = ..()
+	transform = matrix().Scale(0.5)
+	animate(src, transform = matrix(), alpha = 230, time = duration, easing = SINE_EASING)
 
 // ===== NULL FIELD =====
 
@@ -1227,11 +1332,11 @@
  * Mind-antimagic bearers shrug it off (charge-free check, the same courtesy
  * the instrument's sleep inducer pays) so a warded target keeps their voice.
  * range() rather than view(): it is a field, and glass or a shut door is no
- * defense against six seconds of nothing.
+ * defense against twenty seconds of nothing.
  */
 /datum/action/cooldown/spell/aoe/vestige_null_field
 	name = "Null Field"
-	desc = "Enforce six seconds of silence on every voice within three paces of you. Yours still works. No one will hear what they were about to say."
+	desc = "Silence every voice within three paces of you for twenty seconds. Yours still works."
 	button_icon = 'icons/mob/actions/actions_mime.dmi'
 	button_icon_state = "mime_speech"
 	background_icon_state = "bg_alien"
@@ -1255,7 +1360,7 @@
 		to_chat(victim, span_notice("A pressure closes around your throat for a heartbeat — and something you carry shrugs it away."))
 		return
 	victim.set_silence_if_lower(VESTIGE_NULL_FIELD_DURATION)
-	to_chat(victim, span_warning("Your voice is filed away somewhere you cannot reach. The room has gone perfectly, wrongly quiet."))
+	to_chat(victim, span_warning("Your voice goes somewhere you can't reach it. The room has gone completely silent."))
 
 /datum/action/cooldown/spell/aoe/vestige_null_field/after_cast(atom/cast_on)
 	. = ..()
@@ -1268,6 +1373,7 @@
 #undef VESTIGE_INSTRUMENT_SLEEP_RECHARGE
 #undef VESTIGE_INSTRUMENT_CUFF_TIME
 #undef VESTIGE_ANCHOR_BUTTON_COOLDOWN
+#undef VESTIGE_ANCHOR_WARMUP
 #undef VESTIGE_ANCHOR_RECALL_COOLDOWN
 #undef VESTIGE_ANCHOR_RECALL_COOLDOWN_PAIRED
 #undef VESTIGE_NULL_FIELD_RADIUS

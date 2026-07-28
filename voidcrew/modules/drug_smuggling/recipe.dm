@@ -67,9 +67,9 @@
 	)
 	var/static/list/desc_lines = list(
 		"It hums faintly against the packaging, which nobody involved wants to explain.",
-		"The crystals catch the light in a way that feels illegal all by itself.",
+		"The crystals catch the light in a way that feels illegal on its own.",
 		"It smells like ozone, fruit, and very poor decisions.",
-		"Rumor says one dose paints the whole galaxy in colors that don't have names.",
+		"Rumor says one dose makes the whole galaxy look brand new.",
 		"The cook swore the shimmer means it's working. The cook also has no eyebrows.",
 	)
 

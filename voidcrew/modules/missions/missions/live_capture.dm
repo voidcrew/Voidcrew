@@ -134,10 +134,10 @@
 /datum/mission/live_capture/generate_details()
 	objective_name = capture_row["ask"]
 	flavor_line = pick(list(
-		"The Ostrand Xenozoological Institute's breeding program is down to one aging bloodline. They are paying for fresh genes - breathing ones.",
-		"A private collector wants a living centerpiece for their habitat dome. Taxidermy was offered, and declined in strong terms.",
-		"A terraforming concern needs a proven survivor to seed its pilot biome. Dead stock seeds nothing.",
-		"A university exobiology wing lost its last live specimen to a customs incident nobody will discuss. You are the discreet replacement plan.",
+		"The Ostrand Xenozoological Institute's breeding program is down to one aging bloodline. They need fresh breeding stock, and it has to be alive.",
+		"A private collector wants a living centerpiece for their habitat dome. Taxidermy was offered and firmly declined.",
+		"A terraforming concern needs a proven survivor to seed its pilot biome. It only works if the animal arrives alive.",
+		"A university exobiology wing lost its last live specimen to a customs incident nobody will talk about. You're the quiet replacement.",
 		"A licensed wildlife broker has a standing buyer on retainer: one live specimen, subdued, sealed, unspoiled.",
 	))
 	author = pick(list(
@@ -170,7 +170,7 @@
 	name = "Live Capture: [capture_row["title"]]"
 	desc = "[flavor_line] \
 		The guild survey has tagged [objective_name] in the [capture_row["ground"]] of [planet_name] at ([target.target_x], [target.target_y]) in the [target_zone_name]. \
-		Fly out with the capture crate delivered to your mission pad, wear the marked specimen down without killing it, and seal it inside - the crate only takes the tagged animal, and only subdued. \
+		A capture crate has been delivered to your mission pad. Fly out, wear the marked specimen down without killing it, then use the crate on it - it only takes the tagged animal, and only once it's badly hurt. \
 		Bring the sealed crate back breathing; a dead specimen voids the contract. \
 		Payment includes [voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]. \
 		Tap a GPS unit on the mission board to follow the specimen's survey tag ([gps_tag])."
@@ -255,7 +255,7 @@
 /datum/mission_objective/field/capture_beast/spawn_field_objects(turf/spawn_turf)
 	var/mob/living/beast = new target_mob_type(spawn_turf)
 	beast.name = "marked [beast.name]"
-	beast.desc += " A guild survey tag glints on it - this is the contracted specimen, and it is worth nothing dead."
+	beast.desc += " It's wearing a guild survey tag. This is the contracted specimen, and it's worth nothing dead."
 	target_mob = beast
 	RegisterSignal(beast, COMSIG_LIVING_DEATH, PROC_REF(on_target_death))
 	mission.register_quest_atom(beast)
@@ -294,7 +294,7 @@
 	if(deliver_objective)
 		deliver_objective.crate = crate
 		deliver_objective.beast = beast
-	notify_crew("Specimen sealed and stable in suspension. Bring the crate back to the mission pad - breathing.", sound = 'voidcrew/sound/notify2.ogg')
+	notify_crew("Specimen sealed and stable in suspension. Bring the crate back to the mission pad alive.", sound = 'voidcrew/sound/notify2.ogg')
 	complete()
 
 /datum/mission_objective/field/capture_beast/get_progress_string()
@@ -444,8 +444,8 @@
  */
 /obj/item/mission_recovery/capture_crate
 	name = "capture crate"
-	desc = "A guild-issue xenofauna transport pod: reinforced shell, intake maw and a suspension-field emitter. \
-		It only takes the survey-marked specimen, only subdued - and once it seals, only the client's assayer opens it."
+	desc = "A guild-issue xenofauna transport pod: reinforced shell, intake maw, suspension-field emitter. \
+		It only takes the survey-marked specimen, and only once it's been worn down. After it seals, nobody opens it but the client's assayer."
 	icon = 'icons/obj/pet_carrier.dmi'
 	icon_state = "biopod_open"
 	base_icon_state = "biopod"
@@ -480,9 +480,9 @@
 	. = ..()
 	if(sealed && occupant)
 		if(occupant.stat == DEAD)
-			. += span_warning("Through the viewport, [occupant] hangs limp. The suspension field has nothing left to suspend.")
+			. += span_warning("Through the viewport, [occupant] hangs limp. It's dead.")
 		else
-			. += span_notice("Through the viewport, [occupant] hangs motionless in dormant suspension - alive, and going nowhere.")
+			. += span_notice("Through the viewport, [occupant] floats motionless in the suspension field, alive and completely out of it.")
 	else if(!sealed)
 		. += span_notice("Its intake maw stands open. It will only take the survey-marked specimen, and only subdued.")
 
@@ -578,7 +578,7 @@
 		return
 	var/mob/living/freed = occupant
 	freed.forceMove(drop_location()) // Exited() wakes it and strips the field
-	freed.visible_message(span_boldwarning("[freed] bursts out of the ruptured [name], and it is not grateful!"))
+	freed.visible_message(span_boldwarning("[freed] bursts out of the ruptured [name], furious!"))
 
 /obj/item/mission_recovery/capture_crate/atom_destruction(damage_flag)
 	release_angry()
@@ -596,7 +596,7 @@
 
 /// ESCAPE PATH 2 (pet carrier: reach the lock / push out over a channel): no channel exists
 /obj/item/mission_recovery/capture_crate/container_resist_act(mob/living/user)
-	to_chat(user, span_warning("The suspension field damps every motion before it starts. [src] does not so much as rattle."))
+	to_chat(user, span_warning("The suspension field kills every movement before it starts. [src] doesn't even rattle."))
 
 /obj/item/mission_recovery/capture_crate/attack_self(mob/user)
 	. = ..()

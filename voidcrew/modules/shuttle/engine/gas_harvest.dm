@@ -29,7 +29,7 @@
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop
 	name = "nebula ram scoop"
-	desc = "An external intake manifold that skims gas out of a nebula while the ship holds station inside one. Feeds whatever pipe network it's wrenched onto."
+	desc = "An external intake manifold that skims gas out of a nebula while the ship sits still inside one. Feeds whatever pipe network it's wrenched onto."
 	icon_state = "scoop"
 	idle_power_usage = 25
 	circuit = /obj/item/circuitboard/machine/shuttle/scoop
@@ -63,7 +63,8 @@
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/examine(mob/user)
 	. = ..()
-	. += span_notice("The intake is [intake_open ? "open" : "closed"] — click to toggle. Harvesting requires holding the ship still inside a nebula, and lights the ship up on everyone's sensors.")
+	. += span_notice("The intake is [intake_open ? "open" : "closed"]. Click to toggle it.")
+	. += span_notice("It only harvests while the ship is sitting still inside a nebula, and running it lights the ship up on everyone's sensors.")
 	. += span_notice("Harvested gas feeds the connected pipe network; run it to an engine heater in pipe mode, or to a connector port to fill tanks and canisters.")
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop/attack_hand(mob/living/user, list/modifiers)
@@ -125,7 +126,7 @@
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator
 	name = "plasma sublimation chamber"
-	desc = "A sealed retort that bakes raw plasma sheets down into clean plasma gas — the sanctioned cousin of boiling ground ore in an open beaker. Feeds whatever pipe network it's wrenched onto."
+	desc = "A sealed retort that bakes raw plasma sheets down into clean plasma gas. Feeds whatever pipe network it's wrenched onto."
 	icon_state = "sublimator"
 	idle_power_usage = 50
 	circuit = /obj/item/circuitboard/machine/shuttle/sublimator
@@ -160,7 +161,7 @@
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/examine(mob/user)
 	. = ..()
-	. += span_notice("The hopper holds [stored_sheets]/[SUBLIMATOR_MAX_SHEETS] plasma sheets — feed it sheets by hand, alt-click to empty it. Each sheet bakes into [SUBLIMATOR_MOLES_PER_SHEET] moles of plasma gas.")
+	. += span_notice("The hopper holds [stored_sheets]/[SUBLIMATOR_MAX_SHEETS] plasma sheets. Feed it sheets by hand, or alt-click to empty it. Each sheet bakes down into [SUBLIMATOR_MOLES_PER_SHEET] moles of plasma gas.")
 	. += span_notice("Output feeds the connected pipe network; run it to an engine heater in pipe mode, or to a connector port to fill tanks and canisters.")
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/attackby(obj/item/attacking_item, mob/living/user, params)

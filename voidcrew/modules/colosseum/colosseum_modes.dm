@@ -58,8 +58,8 @@
 		LAZYADDASSOCLIST(by_ship, entry.crew_team || entry, entry)
 	// Largest crews first so the balancer has room to even things out
 	var/list/groups = list()
-	for(var/ship_name in by_ship)
-		groups += list(by_ship[ship_name])
+	for(var/group_key in by_ship)
+		groups += list(by_ship[group_key])
 	sortTim(groups, GLOBAL_PROC_REF(cmp_colosseum_group_desc))
 	var/red_count = 0
 	var/blue_count = 0
@@ -135,7 +135,7 @@
 	if(!isliving(entry.body) || !spot)
 		return
 	entry.body.forceMove(spot)
-	to_chat(entry.body, span_boldnotice("You are seated for the [name]. [desc] When the gate opens — fight!"))
+	to_chat(entry.body, span_boldnotice("You're seated for the [name]. [desc] When the gate opens, fight!"))
 
 // ===== MATCH HOOKS =====
 
@@ -201,7 +201,7 @@
 		parts_text += "[round(tier[2] * reward_multiplier)] credits"
 	if(tier[3])
 		parts_text += "[round(tier[3] * reward_multiplier)] trade voucher\s"
-	return "[english_list(parts_text)], split between the victors — plus everything that falls on the sand"
+	return "[english_list(parts_text)], split between the winners, plus everything that falls on the sand"
 
 // ===== FREE-FOR-ALL DEATHMATCH =====
 
@@ -301,7 +301,7 @@
 		if(holder) // contested — nobody accrues
 			if(!contested_announced)
 				contested_announced = TRUE
-				controller.site.venue_message(span_notice("The dais is CONTESTED — nobody's count is climbing!"))
+				controller.site.venue_message(span_notice("The dais is CONTESTED - nobody gains time!"))
 			return
 		holder = entry
 	if(!holder)
@@ -316,7 +316,7 @@
 	var/quarter = round((total / KOTH_HOLD_REQUIRED) * 4)
 	if(quarter > (announced_quarter[holder.mind] || 0))
 		announced_quarter[holder.mind] = quarter
-		controller.site.venue_message(span_boldannounce("[holder.display_name] holds the dais — [round(total)]/[KOTH_HOLD_REQUIRED] seconds!"))
+		controller.site.venue_message(span_boldannounce("[holder.display_name] holds the dais: [round(total)]/[KOTH_HOLD_REQUIRED] seconds!"))
 
 /// Clock expiry: longest total hold takes it; a tie (or nobody ever holding) is a draw.
 /datum/colosseum_game/king_of_the_hill/expiry_winners()

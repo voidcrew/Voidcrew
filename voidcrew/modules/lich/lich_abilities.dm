@@ -329,7 +329,7 @@
  */
 /datum/action/cooldown/spell/pointed/projectile/lich_necrotic_bolt
 	name = "Bolt of Necropotence"
-	desc = "A thin green bolt that takes something with it on the way out."
+	desc = "A fast green bolt, three per cast. It rots whatever it hits."
 	button_icon = 'icons/mob/actions/actions_spells.dmi'
 	button_icon_state = "spell_default"
 	sound = 'sound/effects/magic/curse.ogg'
@@ -341,7 +341,7 @@
 	spell_requirements = NONE
 
 	cast_range = 9
-	projectile_type = /obj/projectile/magic/verdigris_bolt
+	projectile_type = /obj/projectile/magic/verdigris_necropotence
 	projectile_amount = 3
 
 // ===== ILLUSION =====
@@ -442,6 +442,12 @@
  * spell, the same call `/datum/action/cooldown/spell/pointed/dominate` makes
  * (spell_types/pointed/dominate.dm:17). Anyone carrying mind-affecting antimagic shrugs
  * it off and is told so.
+ *
+ * [thrall_type] and [on_thrall_applied] exist because this delivery chain is shared with
+ * the verdigris bridle (lich_loot.dm), the player-wielded version of the same possession:
+ * the bridle swaps in the shorter-duration status effect and spends one of its charges on
+ * a landed possession, and inherits the targeting, the range check, the antimagic
+ * propagation and the eligibility gate from here without copying any of it.
  */
 /datum/action/cooldown/spell/pointed/lich_corruption
 	name = "Wear Them"
@@ -459,7 +465,17 @@
 
 	cast_range = 7
 
+	/// The possession this delivers. Subtyped, not retuned in place — see lich_loot.dm.
+	var/thrall_type = /datum/status_effect/lich_thrall
+
+/// `..()` first for the pointed spell's own "not on yourself" rejection. It never fires for
+/// Ilthuun — `can_be_lich_thralled` already refuses anything in FACTION_LICH, himself
+/// included — but the bridle's wielder is not in his faction, and a player must not be able
+/// to click the bridle onto their own head.
 /datum/action/cooldown/spell/pointed/lich_corruption/is_valid_target(atom/cast_on)
+	. = ..()
+	if(!.)
+		return FALSE
 	return can_be_lich_thralled(cast_on) // defined in lich_thrall.dm
 
 /datum/action/cooldown/spell/pointed/lich_corruption/cast(mob/living/cast_on)
@@ -477,7 +493,16 @@
 	var/turf/victim_turf = get_turf(cast_on)
 	if(victim_turf)
 		new /obj/effect/temp_visual/circle_wave/verdigris(victim_turf)
-	cast_on.apply_status_effect(/datum/status_effect/lich_thrall, owner)
+	// apply_status_effect returns the instance, or null if on_apply refused it (the third
+	// and last eligibility check) — so this is the honest "did the possession land" answer.
+	var/datum/status_effect/lich_thrall/possession = cast_on.apply_status_effect(thrall_type, owner)
+	if(possession)
+		on_thrall_applied(cast_on, possession)
+
+/// Hook for a caster that pays something per landed possession. Ilthuun pays nothing; the
+/// bridle spends a charge. Deliberately not called on a whiffed or refused cast.
+/datum/action/cooldown/spell/pointed/lich_corruption/proc/on_thrall_applied(mob/living/victim, datum/status_effect/lich_thrall/possession)
+	return
 
 // ===== PROJECTILES =====
 
@@ -499,7 +524,7 @@
  * `on_hit` soul-taps the victim's maxHealth away permanently, which is not an acceptable
  * cost to attach to a boss ability the crew will eat a dozen of per attempt.
  */
-/obj/projectile/magic/verdigris_bolt
+/obj/projectile/magic/verdigris_necropotence
 	name = "bolt of necropotence"
 	icon_state = "necropotence"
 	color = LICH_GREEN
@@ -507,17 +532,21 @@
 	damage_type = BURN
 	speed = 1.4
 
-/obj/projectile/magic/verdigris_bolt/on_hit(atom/target, blocked = 0, pierce_hit)
+/obj/projectile/magic/verdigris_necropotence/on_hit(atom/target, blocked = 0, pierce_hit)
 	. = ..()
 	if(!isliving(target))
 		return
 	var/mob/living/victim = target
 	// Negative energy: it feeds his own kind and rots everyone else.
 	if(victim.mob_biotypes & MOB_UNDEAD)
-		victim.heal_overall_damage(brute = 10, burn = 10)
+		// forced, because damage_coeff is armour and this is a heal: without it an
+		// armoured undead (templar, damage_coeff = list(BRUTE = 0.5, ...)) would be
+		// worse at accepting the mend than a plain skeleton. Same reason as
+		// mend_the_dead() in lich_spells.dm.
+		victim.heal_overall_damage(brute = 10, burn = 10, forced = TRUE)
 		return
 	victim.adjustToxLoss(8, forced = TRUE)
-	to_chat(victim, span_danger("Something goes out of you where the bolt went in."))
+	to_chat(victim, span_danger("Something starts rotting where the bolt went in."))
 
 #undef VERDIGRIS_TINT
 #undef LICH_PHASE_CONJURATION

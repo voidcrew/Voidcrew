@@ -183,9 +183,9 @@
 	flavor_line = pick(list(
 		"The [protected_species] take three seasons to recover from one bad harvest. [objective_name] have been at it all year.",
 		"[objective_name] shot a warden survey drone out of the sky last week. The service is done writing citations.",
-		"Every buyer between here and the core knows the brand of [objective_name] on a crate of [protected_species]. The supply ends now.",
+		"Every fence between here and the core knows [objective_name]'s brand on a crate of [protected_species]. That supply ends now.",
 		"Two protected ranges have gone silent where [objective_name] set up camp. The third is where you come in.",
-		"The wardens seized the last shipment; [objective_name] shot the seizure team. The service wants the ledger closed.",
+		"The wardens seized the last shipment, and [objective_name] shot the seizure team. The service wants this finished.",
 	))
 	author = pick(list(
 		"Warden-Captain Ilesa",

@@ -82,7 +82,7 @@
 
 /obj/structure/overmap/space_ruin/vestige
 	name = "dread signal"
-	desc = "A signal that reads wrong on every instrument. Whatever broadcasts it does not want cargo — it wants visitors."
+	desc = "A signal that reads wrong on every instrument. Whatever is broadcasting it wants visitors, not cargo."
 
 /obj/structure/overmap/space_ruin/vestige/Initialize(mapload, datum/map_template/ruin/space/template)
 	. = ..()
@@ -96,7 +96,7 @@
 
 /obj/structure/overmap/space_ruin/vestige/examine(mob/user)
 	. = ..()
-	. += span_boldwarning("The signal is an invitation. Something in there is offering work.")
+	. += span_boldwarning("Something in there is offering work.")
 
 // Vestige ruins persist all round: unload when empty like anything else, but
 // stay on the overmap and never spawn a replacement — crews come back for

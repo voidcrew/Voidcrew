@@ -43,17 +43,28 @@
  *
  * These are about legibility and attribution, not about softening the mechanic:
  *
- * - Loud `visible_message` naming Ilthuun at apply **and** at expiry.
+ * - Loud `visible_message` naming the possessor at apply **and** at expiry.
  * - A pulsing green outline plus a green colour wash for the whole duration, on the mob's
  *   appearance, so every player in the room can see who is being worn.
- * - `log_message(..., LOG_ATTACK)` on both the victim and Ilthuun, plus a `log_game`
- *   line, so the possession window is reconstructable from the logs.
+ * - `log_message(..., LOG_ATTACK)` on both the victim and whoever is doing it, plus a
+ *   `log_game` line, so the possession window is reconstructable from the logs.
  * - Never applies to a dead or unconscious mob, never stacks, and leaves a
  *   [LICH_THRALL_IMMUNITY]-long per-victim immunity behind so one player cannot be
  *   chain-locked for the whole fight.
  * - Antimagic blocks it (`MAGIC_RESISTANCE|MAGIC_RESISTANCE_MIND`), like any other spell
  *   here — the same flags `/datum/action/cooldown/spell/pointed/dominate` uses.
  * - Dies with its caster: [tick] drops the effect if Ilthuun is gone or dead.
+ *
+ * ## Attribution is threaded, not hardcoded
+ *
+ * Ilthuun is not the only thing that can cast this any more — the verdigris bridle
+ * (lich_loot.dm) is a player-wielded, charge-limited version of the same possession, and a
+ * player taking another player's body away must be named for it everywhere. So every place
+ * this effect says *who is doing it* goes through [attribution_name] (chat) and
+ * [attribution_log] (logs and admin readback) rather than naming Ilthuun inline, and the
+ * lines spoken with the victim's mouth go through [possessed_line]. The base
+ * implementations answer "Ilthuun"; `/datum/status_effect/lich_thrall/bridle` answers with
+ * the wielder. Nothing about the possession itself is duplicated for the player version.
  */
 
 /// How long a possession lasts.
@@ -139,8 +150,8 @@
 		"HOLD STILL. THIS IS EASIER IF YOU HOLD STILL.",
 		"THEY ARE STANDING SO CLOSE TOGETHER.",
 		"THESE HANDS ARE BETTER THAN MINE. WARMER.",
-		"I HAVE WORN BETTER. I HAVE WORN WORSE.",
-		"DO NOT BLAME THEM. THEY ARE NOT DRIVING.",
+		"I HAVE WORN BETTER BODIES THAN THIS ONE.",
+		"DO NOT BLAME THEM. THEY ARE NOT THE ONE DOING THIS.",
 	)
 
 /datum/status_effect/lich_thrall/on_creation(mob/living/new_owner, mob/living/new_master)
@@ -162,17 +173,22 @@
 	take_the_wheel()
 
 	var/mob/living/master = master_ref?.resolve()
+	// `duration` is read through initial() because /datum/status_effect/on_creation rewrites
+	// the var into an absolute world.time the moment on_apply returns — and because the
+	// bridle subtype runs shorter than Ilthuun does, so the define is the wrong number to
+	// quote here.
+	var/seconds_of_it = initial(duration) / 10
 	owner.visible_message(
-		span_boldwarning("Green light pours out of [owner]'s eyes and mouth. [LICH_ANNOUNCER] has [owner.p_them()]."),
-		span_userdanger("A cold green weight settles over your mind. [LICH_ANNOUNCER] is wearing you — \
-			you can feel your own hands moving and you are not the one moving them."),
+		span_boldwarning("Green light pours out of [owner]'s eyes and mouth. [attribution_name()] has [owner.p_them()]."),
+		span_userdanger("A cold green weight settles over your mind. [attribution_name()] is wearing you. \
+			You can feel your own hands moving, and you are not the one moving them."),
 	)
 	owner.balloon_alert_to_viewers("possessed!")
 	playsound(owner, 'sound/effects/magic/curse.ogg', 65, vary = TRUE)
 
-	owner.log_message("was possessed by [LICH_ANNOUNCER] for [LICH_THRALL_DURATION / 10] seconds (lich_thrall)", LOG_ATTACK, color = "green")
-	master?.log_message("possessed [key_name(owner)] with lich_thrall for [LICH_THRALL_DURATION / 10] seconds", LOG_ATTACK, color = "green")
-	log_game("LICH: [key_name(owner)] possessed by Ilthuun (lich_thrall) at [AREACOORD(owner)].")
+	owner.log_message("was possessed by [attribution_log()] for [seconds_of_it] seconds (lich_thrall)", LOG_ATTACK, color = "green")
+	master?.log_message("possessed [key_name(owner)] with lich_thrall for [seconds_of_it] seconds", LOG_ATTACK, color = "green")
+	log_game("LICH: [key_name(owner)] possessed by [attribution_log()] (lich_thrall) at [AREACOORD(owner)].")
 
 	return TRUE
 
@@ -190,12 +206,12 @@
 	remove_green_wash()
 
 	owner.visible_message(
-		span_boldwarning("The green drains out of [owner]'s eyes. [LICH_ANNOUNCER] has let go of [owner.p_them()]."),
-		span_userdanger("The weight lifts. Your hands are yours again — and you remember every second of it."),
+		span_boldwarning("The green drains out of [owner]'s eyes. [attribution_name()] has let go of [owner.p_them()]."),
+		span_userdanger("The weight lifts. Your hands are yours again, and you remember every second of it."),
 	)
 	owner.balloon_alert_to_viewers("released")
 	playsound(owner, 'sound/effects/magic/blind.ogg', 45, vary = TRUE)
-	owner.log_message("was released from [LICH_ANNOUNCER]'s possession (lich_thrall)", LOG_ATTACK, color = "green")
+	owner.log_message("was released from possession by [attribution_log()] (lich_thrall)", LOG_ATTACK, color = "green")
 
 	// No chain-locking one player for the whole fight.
 	ADD_TRAIT(owner, TRAIT_LICH_THRALL_SPENT, LICH_THRALL_TRAIT)
@@ -215,10 +231,37 @@
 	retarget()
 
 	if(prob(35))
-		owner.visible_message(span_boldwarning("\"[pick(possessed_lines)]\" — [owner]'s mouth moves, but that is not [owner.p_their()] voice."))
+		owner.visible_message(span_boldwarning("\"[possessed_line()]\" — [owner]'s mouth moves, but that is not [owner.p_their()] voice."))
+
+// ===== ATTRIBUTION =====
+
+/**
+ * Who is doing this, for chat.
+ *
+ * Named in the apply message, the victim's own message, the expiry message and (via
+ * [possessed_line]) out of the victim's mouth. Ilthuun by default because he is the only
+ * caster in the fight itself; the bridle answers with whoever is holding it.
+ */
+/datum/status_effect/lich_thrall/proc/attribution_name()
+	return LICH_ANNOUNCER
+
+/**
+ * Who is doing this, for the logs.
+ *
+ * Kept separate from [attribution_name] because chat and logs want different things: chat
+ * wants the name a bystander would actually see (a masked wielder reads as "Unknown", the
+ * same as everything else they do), and the logs want a ckey an admin can act on.
+ */
+/datum/status_effect/lich_thrall/proc/attribution_log()
+	return LICH_ANNOUNCER
+
+/// One line said with the victim's mouth. A proc rather than an inlined `pick()` so a
+/// subtype can name whoever is actually driving.
+/datum/status_effect/lich_thrall/proc/possessed_line()
+	return pick(possessed_lines)
 
 /datum/status_effect/lich_thrall/get_examine_text()
-	return span_boldwarning("[owner.p_They()] [owner.p_are()] lit from inside with a cold green light, and [owner.p_they()] [owner.p_do()]n't look like [owner.p_theyre()] steering.")
+	return span_boldwarning("[owner.p_They()] [owner.p_are()] lit from the inside with a cold green light, and [owner.p_they()] [owner.p_do()]n't look like [owner.p_theyre()] in control.")
 
 // ===== THE VISIBLE TELL =====
 

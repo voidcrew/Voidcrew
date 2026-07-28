@@ -22,12 +22,12 @@
 
 /obj/item/gun_part/c20r
 	name = "C-20r receiver"
-	desc = "The machined receiver assembly for a C-20r submachine gun. Its schematic's crafting recipe turns it into the finished gun."
+	desc = "The machined receiver assembly for a C-20r submachine gun. You'll need the matching schematic to build it into a working gun."
 	icon_state = "c20r"
 
 /datum/design/gun_part_c20r
 	name = "C-20r Receiver"
-	desc = "A machined receiver assembly for a C-20r SMG. Inert until crafted into the finished gun."
+	desc = "A machined receiver assembly for a C-20r SMG. Not a working gun on its own."
 	id = "vc_gun_part_c20r"
 	build_type = PROTOLATHE | AWAY_LATHE
 	materials = list(

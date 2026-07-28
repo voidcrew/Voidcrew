@@ -208,6 +208,20 @@ ADMIN_VERB(vestige_grant_boon, R_ADMIN|R_DEBUG, "Vestige: Grant Boon", "Grant a 
 				if(prerequisite && !(prerequisite in mind.vestige_boons))
 					flag = " (upgrade of [initial(prerequisite.name)])"
 			choices["[entry["name"]] — [initial(boon_type.name)][flag]"] = boon_type
+
+	// Capstones hang off /datum/vestige_ascension rather than any patron's boon pool
+	// (ascension.dm), so the registry cannot see them — and must not, because
+	// vestige_assign_trial pays a forced trial out of that same list and a capstone
+	// must never drop from an ordinary trial. Fold them in here, for this verb only.
+	for(var/patron_type in registry)
+		var/datum/vestige_ascension/capstone = get_vestige_ascension(patron_type)
+		if(!capstone?.boon_type)
+			continue
+		var/list/entry = registry[patron_type]
+		var/datum/vestige_boon/capstone_boon = capstone.boon_type
+		var/flag = (capstone_boon in mind.vestige_boons) ? " (owned)" : " (CAPSTONE)"
+		choices["[entry["name"]] — [initial(capstone_boon.name)][flag]"] = capstone_boon
+
 	var/choice = tgui_input_list(user, "Which boon should [target] receive?", "Grant Vestige Boon", choices)
 	if(!choice)
 		return

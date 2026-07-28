@@ -66,13 +66,13 @@
 			"The Rack picks its customers. It didn't pick you.",
 		),
 		TRADER_LINE_IDLE = list(
-			"Every piece on this rack came off a champion. The champions came off the sand. Feet first, mostly.",
+			"Every piece on this rack came off a champion. Most of them came off the sand feet first.",
 			"I outfitted six of the names in the Hall out there. The statues never mention the fitting fees.",
 			"The grindstones sell to cooks, mostly. The cooks worry me more than the fighters.",
 			"No, the trident is not for sale. The trident was never for sale. Stop asking about the trident.",
 			"Buy the net. Everyone laughs at the net until they've been IN the net.",
 			"House rule: no refunds once there's blood in the tread. That's most of my no-refunds, honestly.",
-			"The laurel? Purely decorative. So is a statue, and look how many of THOSE they built upstairs.",
+			"The laurel? Purely decorative. So are the statues upstairs, and people still fight for those.",
 		),
 		TRADER_LINE_RESTOCK = list(
 			"Match settled, convoy's in. The rack is full again — for now.",
@@ -167,7 +167,7 @@
  */
 /mob/living/basic/outpost_trader/colosseum
 	name = "lanista"
-	desc = "The Grand Colosseum's gear merchant. The stock survived the arena; the prices assume you won't."
+	desc = "The Grand Colosseum's gear merchant. Everything on the rack survived the arena, and it's priced like it."
 	shop_type = /datum/outpost_shop/vendor/colosseum_armory
 
 /mob/living/basic/outpost_trader/colosseum/Initialize(mapload)

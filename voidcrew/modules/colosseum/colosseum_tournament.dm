@@ -79,7 +79,7 @@
 			continue
 		if(length(infirmary))
 			entry.body.forceMove(pick(infirmary))
-			to_chat(entry.body, span_notice("Cut from the bracket — the wardens walk you out through the infirmary. Enjoy the stands."))
+			to_chat(entry.body, span_notice("Cut from the bracket. The wardens walk you out through the infirmary. Enjoy the stands."))
 
 	// Survivors leave the sand FIRST: reseating them into their cells before
 	// the sweep means the wardens never mistake a live fighter for a straggler

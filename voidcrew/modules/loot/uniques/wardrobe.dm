@@ -44,7 +44,7 @@
  */
 /obj/item/clothing/neck/tie/understudys_cravat
 	name = "understudy's cravat"
-	desc = "A silk cravat that is a slightly different color every time you look away."
+	desc = "A silk cravat that's a slightly different color every time you look away."
 	custom_price = PAYCHECK_CREW * 4
 	// attack_self only fires in-hand, but the disguise requires the cravat
 	// worn — the action button (default click routes to attack_self) is the
@@ -151,7 +151,7 @@
  */
 /obj/item/clothing/shoes/laceup/winters_loafers
 	name = "Winter's loafers"
-	desc = "Loafers, resoled so many times the soles are the original part. Mrs. Winter knew what she was about."
+	desc = "Laceup loafers, resoled more times than anyone can count. Nothing you're wearing slows you down in them, and nobody hears you coming."
 	custom_price = PAYCHECK_CREW * 4
 
 /obj/item/clothing/shoes/laceup/winters_loafers/Initialize(mapload)
@@ -196,7 +196,7 @@
  */
 /obj/item/clothing/head/stage_presence
 	name = "stage presence"
-	desc = "A plumed cavalier hat that has never once entered a room quietly."
+	desc = "A plumed cavalier hat. Sweep it off and every head in the room turns your way, friendly or not."
 	// Custom obj icon; custom worn sprite derived from the same cavalier-hat art
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "stage_presence"
@@ -287,7 +287,7 @@
  */
 /obj/item/third_hand_kit
 	name = "third hand sewing kit"
-	desc = "A rosewood sewing kit. The needle threads itself, which the previous owner found either delightful or damning."
+	desc = "A rosewood sewing kit with a needle that threads itself. Click one garment to pin it as a pattern, then click another to make it look exactly the same."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "third_hand_kit"
 	w_class = WEIGHT_CLASS_SMALL
@@ -310,7 +310,7 @@
 	// First leg: pin the donor pattern.
 	if(!loaded_donor)
 		if(HAS_TRAIT(garment, TRAIT_NO_REPLICATE))
-			balloon_alert(user, "too singular to copy from!")
+			balloon_alert(user, "too unique to copy!")
 			return
 		loaded_donor = WEAKREF(garment)
 		balloon_alert(user, "pattern pinned")
@@ -321,7 +321,7 @@
 	var/obj/item/clothing/donor = loaded_donor.resolve()
 	if(!donor || QDELETED(donor))
 		loaded_donor = null
-		balloon_alert(user, "pattern's gone — pin a new one")
+		balloon_alert(user, "pattern's gone - pin another")
 		return
 	if(donor == garment)
 		balloon_alert(user, "that's the pattern piece!")
@@ -332,7 +332,7 @@
 	if(!do_after(user, 3 SECONDS, target = garment))
 		return
 	retailor(garment, donor)
-	to_chat(user, span_notice("[garment] takes on the exact look of [donor]. Stitch by stitch, it stops being what it was."))
+	to_chat(user, span_notice("[garment] takes on the exact look of [donor]."))
 	qdel(donor)
 	loaded_donor = null
 
@@ -418,7 +418,7 @@
  */
 /obj/item/clothing/suit/armor/hos/trenchcoat/heirloom_coat
 	name = "the heirloom coat"
-	desc = "A long coat, older than the shipping line that lost it. It takes a while to decide about people."
+	desc = "A long coat, older than the shipping line that lost it. The longer you keep it on without taking it off, the tougher it gets."
 	icon_state = "hostrench"
 	inhand_icon_state = "hostrench"
 	flags_inv = 0
@@ -437,8 +437,8 @@
 	)
 	/// Flavor message printed on stepping into stage 1/2/3 (index 1 == stage 1)
 	var/static/list/wear_stage_messages = list(
-		"settles in around your shoulders, a little less like borrowed cloth",
-		"has gone noticeably heavier — it's learning your shape",
+		"settles in around your shoulders and stops feeling borrowed",
+		"has gone noticeably heavier, and it's holding your shape now",
 		"has gone stiff at every seam, closer to plate than cloth",
 	)
 	/// Timer id for the next stage step, so it can be cancelled on unequip
@@ -540,7 +540,7 @@
  */
 /obj/item/clothing/suit/the_occasion
 	name = "\"the occasion\""
-	desc = "Formalwear in a garment bag labeled only FOR THE OCCASION. It does not specify. It expects you to know."
+	desc = "Formalwear in a garment bag labeled only FOR THE OCCASION. Armored like a riot suit, right up until it gets dirty."
 	icon = 'icons/obj/clothing/under/suits.dmi'
 	icon_state = "tuxedo"
 	worn_icon = 'icons/mob/clothing/under/suits.dmi'
@@ -610,7 +610,7 @@
 	set_armor(/datum/armor/occasion_dirty)
 	var/mob/living/wearer = loc
 	if(istype(wearer))
-		to_chat(wearer, span_warning("[src] is ruined — until it's washed, it's merely a very good suit."))
+		to_chat(wearer, span_warning("[src] is ruined. Until someone washes it, it's just a very nice suit."))
 		wearer.unignore_slowdown(REF(src))
 
 /// Washing machine / mop restores the clean tier on the spot.
@@ -622,7 +622,7 @@
 	set_armor(/datum/armor/occasion_clean)
 	var/mob/living/wearer = loc
 	if(istype(wearer))
-		to_chat(wearer, span_notice("[src] comes out spotless — impeccable lines restored."))
+		to_chat(wearer, span_notice("[src] comes out spotless, good as new."))
 		wearer.ignore_slowdown(REF(src))
 	return COMPONENT_CLEANED
 
@@ -636,7 +636,7 @@
  */
 /obj/item/clothing/head/hats/tophat/the_occasion
 	name = "\"the occasion\" top hat"
-	desc = "The garment bag's matching hatbox says the same three words. It does not elaborate."
+	desc = "The matching top hat from the garment bag. Purely for show."
 	custom_price = PAYCHECK_CREW * 2
 
 /obj/item/clothing/head/hats/tophat/the_occasion/Initialize(mapload)

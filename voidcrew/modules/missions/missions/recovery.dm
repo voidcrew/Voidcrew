@@ -159,9 +159,9 @@
 	. = ..()
 	var/datum/mission/mission = mission_ref?.resolve()
 	if(mission && !mission.failed && !mission.completed && mission.binding_serial == binding_serial)
-		. += span_notice("Wanted under contract: <b>[mission.name]</b>.")
+		. += span_notice("Tagged for contract: <b>[mission.name]</b>.")
 	else
-		. += span_warning("Whatever contract wanted this has expired.")
+		. += span_warning("The contract this was tagged for has expired.")
 
 /obj/item/mission_recovery/proof
 	name = "identification tag"

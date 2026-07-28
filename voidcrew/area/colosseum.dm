@@ -41,7 +41,7 @@
 	if(visitor.mind && site.controller.entry_for_mind(visitor.mind))
 		return
 	// Deferred: ejecting inside Entered would reenter movement code mid-move.
-	addtimer(CALLBACK(site, TYPE_PROC_REF(/obj/structure/overmap/colosseum, bounce_to_lobby), visitor, "Colosseum wardens haul you out of the staging halls — contestants only past this point."), 1)
+	addtimer(CALLBACK(site, TYPE_PROC_REF(/obj/structure/overmap/colosseum, bounce_to_lobby), visitor, "Colosseum wardens drag you out of the staging halls. Contestants only."), 1)
 
 /// The fighting floor itself.
 /area/voidcrew/colosseum/arena
@@ -71,4 +71,4 @@
 		return
 	if(visitor.mind && controller.winner_minds[visitor.mind])
 		return
-	addtimer(CALLBACK(site, TYPE_PROC_REF(/obj/structure/overmap/colosseum, bounce_to_lobby), visitor, "Colosseum wardens shoulder you out of the spoils chamber — victors only until the claim window closes."), 1)
+	addtimer(CALLBACK(site, TYPE_PROC_REF(/obj/structure/overmap/colosseum, bounce_to_lobby), visitor, "Colosseum wardens shove you out of the spoils chamber. Winners only until the claim window closes."), 1)

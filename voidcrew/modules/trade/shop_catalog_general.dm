@@ -22,7 +22,7 @@
 		"Galley & Comforts",
 		"Ship Sundries",
 		"Colonial Registry",
-		"Local Knowledge",
+		"Intel & Charts",
 		"Barter Deals",
 	)
 	sku_types = list(
@@ -35,17 +35,13 @@
 		/datum/shop_sku/general/gps,
 		/datum/shop_sku/general/flare,
 		/datum/shop_sku/general/glowstick,
-		/datum/shop_sku/general/extinguisher,
 		/datum/shop_sku/general/survival_medipen,
 		// Tools & Repair
 		/datum/shop_sku/general/toolbelt,
 		/datum/shop_sku/general/big_welder,
-		/datum/shop_sku/general/welding_helmet,
-		/datum/shop_sku/general/cable_coil,
+		/datum/shop_sku/general/welding_fuel,
 		/datum/shop_sku/general/light_replacer,
-		/datum/shop_sku/general/light_box,
 		/datum/shop_sku/general/holofan,
-		/datum/shop_sku/general/plunger,
 		// Medical
 		/datum/shop_sku/general/medkit,
 		/datum/shop_sku/general/burn_kit,
@@ -53,6 +49,8 @@
 		/datum/shop_sku/general/health_analyzer,
 		/datum/shop_sku/general/epipen,
 		/datum/shop_sku/general/gauze,
+		/datum/shop_sku/general/suture,
+		/datum/shop_sku/general/regen_mesh,
 		// Prospecting
 		/datum/shop_sku/general/pickaxe,
 		/datum/shop_sku/general/mesons,
@@ -69,26 +67,24 @@
 		/datum/shop_sku/general/cigarettes,
 		/datum/shop_sku/general/lighter,
 		/datum/shop_sku/general/cards,
-		/datum/shop_sku/general/d20,
 		/datum/shop_sku/general/plushie,
-		/datum/shop_sku/general/fishing_rod,
-		/datum/shop_sku/general/camera,
-		/datum/shop_sku/general/radio,
 		// Ship Sundries
 		/datum/shop_sku/general/floor_tiles,
-		/datum/shop_sku/general/spraycan,
+		/datum/shop_sku/general/iron_sheets,
+		/datum/shop_sku/general/glass_sheets,
+		/datum/shop_sku/general/plasteel,
 		/datum/shop_sku/general/soap,
 		// Colonial Registry
 		/datum/shop_sku/outpost_deed,
-		// Local Knowledge
-		/datum/shop_sku/rumor/general,
-		/datum/shop_sku/ruin_chart/hospice,
+		// Intel & Charts — the cheap always-available rung; the dealt chart
+		// shelf below stocks the star charts and the named ruin coordinates
+		/datum/shop_sku/rumor,
 		// Barter
 		/datum/shop_sku/barter/plasma_for_medkit,
 	)
 	rotating_pool = list(
 		/datum/shop_sku/general/rotating/freight_crate,
-		/datum/shop_sku/general/rotating/moth_plushie,
+		/datum/shop_sku/general/rotating/metalfoam,
 		/datum/shop_sku/general/rotating/bikehorn,
 		/datum/shop_sku/general/rotating/welding_goggles,
 		/datum/shop_sku/general/rotating/guitar,
@@ -97,6 +93,23 @@
 		/datum/shop_sku/general/rare/bluespace_bodybag,
 		/datum/shop_sku/general/rare/drill,
 	)
+	// Charts are a mix — any outpost can end up holding the coordinates for
+	// anywhere. Named ruins are dealt without repeats across all three shops.
+	chart_pool = list(
+		/datum/shop_sku/chart/green,
+		/datum/shop_sku/chart/yellow,
+		/datum/shop_sku/chart/red,
+		/datum/shop_sku/ruin_chart/armory,
+		/datum/shop_sku/ruin_chart/biolab,
+		/datum/shop_sku/ruin_chart/pirate_cove,
+		/datum/shop_sku/ruin_chart/reliquary,
+		/datum/shop_sku/ruin_chart/foundry,
+		/datum/shop_sku/ruin_chart/hospice,
+		/datum/shop_sku/ruin_chart/liner,
+		/datum/shop_sku/ruin_chart/survey,
+		/datum/shop_sku/ruin_chart/blacksite,
+	)
+	chart_picks = 3
 	// Barnaby buys honest prospecting hauls at honest prices, plus whatever
 	// the trappers, anglers and foragers drag in off the green worlds
 	buyback_types = list(
@@ -158,7 +171,7 @@
 			"The anglers bring me the strangest fish. I pay for all of them. The chowder pot forgives.",
 			"Bear hide wears like iron and sleeps like a cloud. The bears disagree, of course.",
 			"The pod foragers come back smelling like a spice rack and looking like they lost a fight. I pay them anyway.",
-			"Pearl clams! Don't shake them, dear. I candle them cold in the back and never, ever peek.",
+			"Pearl clams! Don't shake them, dear. I candle them cold in the back and never crack a single one.",
 			"Take a rumor with you, dear. The lanes talk to me and I do love to pass it on.",
 			"We had a jackhammer in the back once. Contract work only, mind. Ask at the board.",
 		),
@@ -225,11 +238,6 @@
 	stock_min = 6
 	stock_max = 10
 
-/datum/shop_sku/general/extinguisher
-	category = "Survival & EVA"
-	item_path = /obj/item/extinguisher
-	price_credits = 100
-
 /datum/shop_sku/general/survival_medipen
 	category = "Survival & EVA"
 	item_path = /obj/item/reagent_containers/hypospray/medipen/survival
@@ -244,23 +252,21 @@
 	item_path = /obj/item/storage/belt/utility/atmostech
 	price_credits = 350
 
+// The large-tank welder only prints on a hacked lathe, so this is the cheap
+// rung on a shelf that otherwise starts at 250 cr.
 /datum/shop_sku/general/big_welder
 	category = "Tools & Repair"
 	item_path = /obj/item/weldingtool/largetank
 	price_credits = 200
 
-/datum/shop_sku/general/welding_helmet
+/datum/shop_sku/general/welding_fuel
+	name = "welding fuel tank"
+	desc = "A thousand units of industrial welding fuel in a tank you can drag aboard. Enough to keep a repair crew going for a long shift. Don't weld it."
 	category = "Tools & Repair"
-	item_path = /obj/item/clothing/head/utility/welding
-	price_credits = 150
-
-/datum/shop_sku/general/cable_coil
-	category = "Tools & Repair"
-	item_path = /obj/item/stack/cable_coil
-	dispense_amount = 30
-	price_credits = 30
-	stock_min = 5
-	stock_max = 10
+	item_path = /obj/structure/reagent_dispensers/fueltank
+	price_credits = 250
+	stock_min = 2
+	stock_max = 4
 
 /datum/shop_sku/general/light_replacer
 	category = "Tools & Repair"
@@ -269,11 +275,6 @@
 	stock_min = 1
 	stock_max = 3
 
-/datum/shop_sku/general/light_box
-	category = "Tools & Repair"
-	item_path = /obj/item/storage/box/lights/mixed
-	price_credits = 100
-
 /datum/shop_sku/general/holofan
 	category = "Tools & Repair"
 	name = "holofan projector"
@@ -281,11 +282,6 @@
 	price_credits = 400
 	stock_min = 1
 	stock_max = 2
-
-/datum/shop_sku/general/plunger
-	category = "Tools & Repair"
-	item_path = /obj/item/plunger
-	price_credits = 40
 
 // ===== MEDICAL =====
 
@@ -320,6 +316,26 @@
 	category = "Medical"
 	item_path = /obj/item/stack/medical/gauze
 	price_credits = 80
+	stock_min = 4
+	stock_max = 8
+
+/datum/shop_sku/general/suture
+	name = "sutures (pack of 10)"
+	desc = "Sterile sutures for cuts and heavy bleeding. Ten to a pack, and a pack does not go far on a bad day."
+	category = "Medical"
+	item_path = /obj/item/stack/medical/suture
+	dispense_amount = 10
+	price_credits = 120
+	stock_min = 4
+	stock_max = 8
+
+/datum/shop_sku/general/regen_mesh
+	name = "regenerative mesh (pack of 15)"
+	desc = "Bacteriostatic mesh for dressing burns. Fifteen pieces, sealed."
+	category = "Medical"
+	item_path = /obj/item/stack/medical/mesh
+	dispense_amount = 15
+	price_credits = 120
 	stock_min = 4
 	stock_max = 8
 
@@ -388,32 +404,10 @@
 	item_path = /obj/item/toy/cards/deck
 	price_credits = 80
 
-/datum/shop_sku/general/d20
-	category = "Galley & Comforts"
-	item_path = /obj/item/dice/d20
-	price_credits = 60
-
 /datum/shop_sku/general/plushie
 	category = "Galley & Comforts"
 	item_path = /obj/item/toy/plush/lizard_plushie
 	price_credits = 120
-
-/datum/shop_sku/general/fishing_rod
-	category = "Galley & Comforts"
-	item_path = /obj/item/fishing_rod
-	price_credits = 250
-	stock_min = 2
-	stock_max = 3
-
-/datum/shop_sku/general/camera
-	category = "Galley & Comforts"
-	item_path = /obj/item/camera
-	price_credits = 150
-
-/datum/shop_sku/general/radio
-	category = "Galley & Comforts"
-	item_path = /obj/item/radio
-	price_credits = 80
 
 // ===== SHIP SUNDRIES =====
 
@@ -425,11 +419,43 @@
 	stock_min = 3
 	stock_max = 6
 
+// Hull stock. Ships take damage and not every crew can mine — Barnaby is the
+// boring, reliable place to buy the material back.
+/datum/shop_sku/general/iron_sheets
+	name = "iron sheets (30)"
+	desc = "Thirty sheets of iron off the waystation's own stock. Barnaby sells it by the bundle because nobody ever wants just one."
+	category = "Ship Sundries"
+	item_path = /obj/item/stack/sheet/iron
+	dispense_amount = 30
+	price_credits = 150
+	stock_min = 3
+	stock_max = 6
+
+/datum/shop_sku/general/glass_sheets
+	name = "glass sheets (30)"
+	desc = "Thirty sheets of glass, packed in straw. Barnaby will remind you that he does not do refunds on glass."
+	category = "Ship Sundries"
+	item_path = /obj/item/stack/sheet/glass
+	dispense_amount = 30
+	price_credits = 150
+	stock_min = 3
+	stock_max = 6
+
+/datum/shop_sku/general/plasteel
+	name = "plasteel sheets (20)"
+	desc = "Twenty sheets of plasteel for serious hull work. It needs a smelter to make and most ships don't carry one, so this is the honest way to get it."
+	category = "Ship Sundries"
+	item_path = /obj/item/stack/sheet/plasteel
+	dispense_amount = 20
+	price_credits = 600
+	stock_min = 1
+	stock_max = 3
+
 // The fuel dock: plasma at a comfortable waystation markup. The deeper depots
 // pump it cheaper — the commute is the discount.
 /datum/shop_sku/general/plasma_canister
 	name = "plasma canister (full)"
-	desc = "A full canister of thruster-grade plasma. Barnaby's markup is honest by his lights: you're paying for how far this had to be hauled from the dark lanes."
+	desc = "A full canister of thruster-grade plasma. It costs more here than at the deep depots — you're paying for the haul out to the safe ring."
 	category = "Fuel & Gas"
 	item_path = /obj/machinery/portable_atmospherics/canister/plasma
 	price_credits = 1200
@@ -438,42 +464,20 @@
 
 /datum/shop_sku/general/scoop_board
 	name = "nebula ram scoop board"
-	desc = "The circuit board for a nebula ram scoop — park inside a nebula and drink your fuel straight out of the cloud. Barnaby stocks them next to the fishing rods; he considers it the same hobby."
+	desc = "The circuit board for a nebula ram scoop. Park inside a nebula and drink your fuel straight out of the cloud. Barnaby keeps them behind the counter with the good stock."
 	category = "Fuel & Gas"
 	item_path = /obj/item/circuitboard/machine/shuttle/scoop
 	price_credits = 400
 	stock_min = 1
 	stock_max = 2
 
-/datum/shop_sku/general/spraycan
-	category = "Ship Sundries"
-	item_path = /obj/item/toy/crayon/spraycan
-	price_credits = 60
-
 /datum/shop_sku/general/soap
 	category = "Ship Sundries"
 	item_path = /obj/item/soap
 	price_credits = 40
 
-// Barnaby's tips are friendly gossip — green-band signals
-/datum/shop_sku/rumor/general
-	name = "over-the-counter gossip"
-	desc = "Barnaby leans in, drops his voice, and tells you exactly where something interesting is parked on the outer ring. One uncharted green-band signal, marked on your helm."
-	category = "Local Knowledge"
-	price_credits = 150
-
-// Barnaby's one genuine secret: a specific rare ruin that exists nowhere
-// until somebody buys the tip and reveals it from their helm. One buyer per
-// rumor, ever — once sold, the trail is cold at every outpost.
-/datum/shop_sku/ruin_chart/hospice
-	name = "the story Barnaby doesn't tell twice: 'CSV Meridian'"
-	desc = "Barnaby stops polishing the counter. A plague evac ship, he says, scuttled under quarantine seal with the wards still full — and a pharmacy nobody ever rationed out. He'll sell you where it drifted. Once."
-	category = "Local Knowledge"
-	price_credits = 800
-	spawn_zone = ZONE_YELLOW
-	ruin_template_path = /datum/map_template/ruin/space/rare/hospice
-	rumor_name = "Barnaby's story: CSV Meridian"
-	rumor_desc = "A hospice ship parked dark under a seal that never lifted. The wards are still full. So is the pharmacy."
+// Chart and rumor SKUs live in shop_catalog_charts.dm — Barnaby draws his
+// through chart_pool above rather than defining his own.
 
 // ===== ROTATING SHELF =====
 
@@ -483,13 +487,16 @@
 /datum/shop_sku/general/rotating/freight_crate
 	category = "Ship Sundries"
 	name = "unclaimed freight"
-	desc = "A sealed crate somebody never came back for. Barnaby hasn't looked inside; that's between you and the manifest gods."
+	desc = "A sealed crate somebody never came back for. Barnaby hasn't looked inside, and he'd rather you opened it somewhere else."
 	item_path = /obj/structure/closet/crate/zone_loot/syndicate
 	price_credits = 500
 
-/datum/shop_sku/general/rotating/moth_plushie
-	item_path = /obj/item/toy/plush/moth
-	price_credits = 120
+/datum/shop_sku/general/rotating/metalfoam
+	category = "Ship Sundries"
+	name = "metal foam grenades (box of 7)"
+	desc = "Seven foam grenades for sealing a hull breach in a hurry. The foam is weak and ugly and it will hold long enough to get the plating on."
+	item_path = /obj/item/storage/box/metalfoam
+	price_credits = 350
 
 /datum/shop_sku/general/rotating/bikehorn
 	item_path = /obj/item/bikehorn
@@ -561,7 +568,7 @@
 // Wild stock only — the vine can't be grown aboard, so there's nothing to farm.
 /datum/shop_buyback/general/spice_pods
 	name = "wild spice pods"
-	desc = "Strangler-vine pods off the jungle worlds, wild-picked under a canopy that bites. Barnaby's chowder pot has a lid he locks when these are in stock."
+	desc = "Pods snipped off jungle-world strangler vines, picked wild. Barnaby buys every cluster that comes through the door — apparently they do wonders for a stew."
 	category = "Forage"
 	item_path = /obj/item/stack/spice_pods
 	amount = 3

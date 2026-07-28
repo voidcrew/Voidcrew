@@ -32,7 +32,7 @@
 
 /obj/item/stack/sheet/animalhide/hoarfrost
 	name = "hoarfrost hide"
-	desc = "Slabs of pelt off something that lived its whole life on a glacier. Cold to the touch, and it stays cold no matter where you put it."
+	desc = "Slabs of thick white pelt. Cold to the touch, and it stays cold no matter where you put it."
 	icon = 'voidcrew/icons/obj/hoarfrost.dmi'
 	// novariants = FALSE, so /obj/item/stack/update_icon_state() swaps to
 	// "_2" past a third of max_amount and "_3" past two thirds. All three
@@ -67,7 +67,7 @@
 
 /obj/item/clothing/suit/hooded/cloak/rimeward
 	name = "rimeward cloak"
-	desc = "A heavy cape of hoarfrost pelt, hood and all. The cold does not get through it, and neither does anything the cold does to you."
+	desc = "A heavy hooded cape of hoarfrost pelt. Cold does not get through it, hers included."
 	icon = 'voidcrew/icons/obj/hoarfrost.dmi'
 	icon_state = "rimeward_cloak"
 	// Worn overlay is ours too. It was built by restyling the goliath cloak's
@@ -110,7 +110,7 @@
 
 /obj/item/clothing/head/hooded/cloakhood/rimeward
 	name = "rimeward hood"
-	desc = "A deep hood of hoarfrost pelt. Everything you can hear through it sounds like it is happening on the other side of a wall."
+	desc = "A deep hood of hoarfrost pelt. Warm, and it muffles just about everything."
 	icon = 'voidcrew/icons/obj/hoarfrost.dmi'
 	worn_icon = 'voidcrew/icons/mob/clothing/head/hoarfrost.dmi'
 	icon_state = "rimeward_hood"
@@ -141,7 +141,7 @@
  */
 /obj/item/matriarchs_heart
 	name = "Matriarch's Heart"
-	desc = "A fist of blue-black ice cut out of something that was still using it. It has not melted and it is not going to. Squeeze it and the cold goes out of you and into everything more than a couple of paces away."
+	desc = "A lump of blue-black ice the size of a fist, cut out of something that was still using it. It hasn't melted and it isn't going to. Squeeze it to freeze everything more than two tiles away."
 	icon = 'voidcrew/icons/obj/hoarfrost.dmi'
 	icon_state = "matriarchs_heart"
 	w_class = WEIGHT_CLASS_SMALL
@@ -155,7 +155,7 @@
 
 /obj/item/matriarchs_heart/examine(mob/user)
 	. = ..()
-	. += span_notice("The safe ground is the two tiles around wherever you arm it. Everything past that is not.")
+	. += span_notice("Safe ground is the two tiles around wherever you arm it. Everything further out freezes.")
 	if(!COOLDOWN_FINISHED(src, deploy_cooldown))
 		. += span_warning("It is still refreezing - about [round(COOLDOWN_TIMELEFT(src, deploy_cooldown) / 10)] seconds.")
 
@@ -198,7 +198,7 @@
 
 /obj/item/rimebreath_horn
 	name = "rimebreath horn"
-	desc = "A length of the Matriarch's horn, hollow, and rimed white the whole way down the inside. Breathe through it and what leaves the far end is not breath."
+	desc = "A hollow length of the Matriarch's horn, rimed white all the way down the inside. Breathe into it and frost comes out the far end."
 	icon = 'voidcrew/icons/obj/hoarfrost.dmi'
 	icon_state = "rimebreath_horn"
 	w_class = WEIGHT_CLASS_NORMAL
@@ -212,7 +212,7 @@
 
 /obj/item/rimebreath_horn/examine(mob/user)
 	. = ..()
-	. += span_notice("Hold it and use the ability, then click where you want the cone. It carries her chill.")
+	. += span_notice("Hold it and use the ability, then click where you want the cone.")
 
 /**
  * Her cone, scaled to something a person can hold: same shape, same chill, less
@@ -220,7 +220,7 @@
  */
 /datum/action/cooldown/mob_cooldown/fire_breath/ice/rimebreath/horn
 	name = "Rimebreath"
-	desc = "Breathe a cone of killing frost at whatever you click."
+	desc = "Breathe a cone of frost four tiles long at whatever you click. Deals 15 burn and badly slows anything it hits for 3 seconds."
 	cooldown_time = 18 SECONDS
 	fire_range = 4
 	fire_damage = 15

@@ -84,7 +84,7 @@
 
 /obj/structure/closet/crate/zone_loot/plunder/rare
 	name = "quartermaster's strongbox"
-	desc = "A strongbox off some quartermaster's books. Nobody splits shares on what nobody declared."
+	desc = "A strongbox that never made it onto any quartermaster's books. Nobody splits shares on cargo nobody declared."
 	rare = TRUE
 
 /// Pirate crews: scattered faction pirates. Fits crash sites, coves, freeports.

@@ -87,9 +87,9 @@
 	. = ..()
 	var/mob/following = following_ref?.resolve()
 	if(following)
-		. += span_notice("They're sticking close to [following]. An empty hand asks them to wait here.")
+		. += span_notice("They're sticking close to [following]. An empty hand tells them to stay put.")
 	else
-		. += span_notice("An empty hand offer gets them moving with you.")
+		. += span_notice("Offer them an empty hand and they'll follow you.")
 
 /mob/living/basic/mission_survivor/attack_hand(mob/living/user, list/modifiers)
 	. = ..()

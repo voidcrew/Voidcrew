@@ -141,7 +141,7 @@
  */
 /obj/item/analyzer/honest_gauge
 	name = "the honest gauge"
-	desc = "An analyzer with the plastic worn through to the metal. The needle has never been wrong, which cost it three owners."
+	desc = "An analyzer with the plastic worn through to the metal. Reads machines and turfs, and the needle has never been wrong yet."
 
 /obj/item/analyzer/honest_gauge/Initialize(mapload)
 	. = ..()
@@ -200,7 +200,7 @@
  */
 /obj/item/weldingtool/slagmaw
 	name = "Slagmaw"
-	desc = "A welding torch rebuilt around an intake hopper. The hopper has teeth marks. Outgoing."
+	desc = "A welding torch rebuilt around an intake hopper. Feed it scrap and it makes its own fuel."
 	/// Fuel granted per weight class of whatever's fed to it
 	var/fuel_per_weight_class = 4
 
@@ -248,7 +248,7 @@
 			return ITEM_INTERACT_SUCCESS
 		interacting_with.repair_damage(INFINITY)
 		user.visible_message(
-			span_notice("[user] passes [src] over [interacting_with], and the damage simply isn't there anymore."),
+			span_notice("[user] passes [src] over [interacting_with], and the damage closes right up."),
 			span_notice("You restore [interacting_with] to full integrity in a single pass."),
 		)
 		return ITEM_INTERACT_SUCCESS
@@ -266,7 +266,7 @@
  */
 /obj/item/clothing/gloves/cargo_gauntlet/line_gauntlet
 	name = "Line gauntlet"
-	desc = "A power-assisted work glove stenciled STATION 6 — DISASSEMBLY. Six was the fast station."
+	desc = "A power-assisted work glove stenciled STATION 6 - DISASSEMBLY. Takes machines and structures apart with your bare hands."
 	/// How long the strike takes to finish tearing something down
 	var/deconstruct_time = 3 SECONDS
 
@@ -351,7 +351,7 @@
 
 /obj/item/stock_parts/power_store/cell/forge_heart/examine(mob/user)
 	. = ..()
-	. += span_warning("It's running warm to the touch. Whatever holds it will run warm too.")
+	. += span_warning("It's warm to the touch, and it heats up the air around it.")
 
 /obj/item/stock_parts/power_store/cell/forge_heart/process(seconds_per_tick)
 	charge = maxcharge
@@ -382,7 +382,7 @@
  */
 /obj/item/stamp/helios_pattern
 	name = "Helios pattern stamp"
-	desc = "A heavy seal-stamp, FINAL INSPECTION — PASSED. Inspection was apparently very thorough."
+	desc = "A heavy seal-stamp reading FINAL INSPECTION - PASSED. It remembers the shape of whatever it stamps."
 	/// Typepath currently memorized, if any
 	var/memorized_type
 	/// Display name of the memorized item, for examine/chat text
@@ -403,7 +403,7 @@
 /obj/item/stamp/helios_pattern/examine(mob/user)
 	. = ..()
 	if(!memorized_type)
-		. += span_notice("No pattern held. Press it against an honest piece of work to memorize it.")
+		. += span_notice("No pattern held. Press it against a crafted item to memorize it.")
 		return
 	. += span_notice("Pattern held: <b>[memorized_name]</b>.")
 	var/list/cost_lines = list()
@@ -429,7 +429,7 @@
 		balloon_alert(user, "too unique to copy")
 		return FALSE
 	if(istype(target, /obj/item/gun))
-		balloon_alert(user, "too dishonest")
+		balloon_alert(user, "no guns")
 		return FALSE
 	if(istype(target, /obj/item/stock_parts/power_store/cell))
 		balloon_alert(user, "no cells")

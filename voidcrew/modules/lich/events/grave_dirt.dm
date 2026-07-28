@@ -80,14 +80,14 @@
 	if(!target_valid())
 		return
 	lich_announce_ship(
-		"There is soil under your deck plating. There is soil under every deck plating; you \
-		have simply been walking on the lid. I am lifting the lid. \
+		"There is soil under your deck plating. There is soil under everybody's deck plating; you \
+		have just been walking on the lid. I am lifting the lid now. \
 		Get your feet off my ground.",
 		"The Floor Is Grave-Dirt",
 		'sound/effects/magic/curse.ogg',
 	)
 	for(var/mob/living/warned as anything in target_ship.get_all_mobs_aboard())
-		to_chat(warned, span_warning("The deck beneath you softens and begins to steam. Waves of grave-heat distort the air."))
+		to_chat(warned, span_warning("The deck under you softens and starts to steam. The air above it wavers with heat."))
 
 /datum/round_event/voidcrew/lich/grave_dirt/start()
 	if(!target_valid())
@@ -111,7 +111,7 @@
 	if(!target_valid())
 		return
 	for(var/mob/living/victim as anything in target_ship.get_all_mobs_aboard())
-		to_chat(victim, span_danger("The ground cools and hardens back into deck plating. It does not feel any more solid than before."))
+		to_chat(victim, span_danger("The ground cools and hardens back into deck plating."))
 
 /**
  * Whether this mob is standing on burning ground right now.

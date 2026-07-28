@@ -5,6 +5,18 @@
  * the good hardware wants a voucher on top. Also the galaxy's most reliable
  * source of loose firing pins.
  * Shop machinery lives in shop.dm; this file is pure catalog.
+ *
+ * Balance notes:
+ * - The Ship Systems shelf is the depot's reason to exist. Only 9 of 48 ships
+ *   can research thruster and turret boards, so for everyone else Sarge is the
+ *   only route to one. She sells the boards the protolathe designs build
+ *   (the /obj/item/circuitboard/machine/engine subtypes, see
+ *   voidcrew/modules/shuttle/boards.dm) so the shop is a true substitute for a
+ *   research bay.
+ * - Charts and rumors come off the shared chart shelf (chart_pool below); the
+ *   SKUs themselves live in shop_catalog_charts.dm.
+ * - Nothing here is meant to be printable on a stock ship autolathe. Every
+ *   dead line got replaced by a consumable, hull stock, or a ship part.
  */
 /datum/outpost_shop/outfitter
 	outpost_name = "\improper Quartermain Depot"
@@ -17,13 +29,16 @@
 	categories = list(
 		"Armor",
 		"Firearms & Ammo",
+		"Ship Systems",
 		"Ship Ordnance",
 		"Security Gear",
 		"Combat Medical",
 		"Utility",
+		"Hull Stock",
 		"Fuel & Gas",
 		"Colonial Registry",
-		"Charts & Special Orders",
+		"Intel & Charts",
+		"Blueprints",
 		"Barter Deals",
 	)
 	sku_types = list(
@@ -41,18 +56,24 @@
 		/datum/shop_sku/outfitter/lethalshot,
 		/datum/shop_sku/outfitter/boltaction,
 		/datum/shop_sku/outfitter/rifle_clip,
+		/datum/shop_sku/outfitter/smg_mag,
+		/datum/shop_sku/outfitter/wt550_mag,
 		/datum/shop_sku/outfitter/firing_pin,
+		// Ship Systems
+		/datum/shop_sku/outfitter/engine_plasma,
+		/datum/shop_sku/outfitter/engine_expulsion,
+		/datum/shop_sku/outfitter/engine_ion,
+		/datum/shop_sku/outfitter/engine_oil,
+		/datum/shop_sku/outfitter/engine_heater,
+		/datum/shop_sku/outfitter/laser_turret_board,
 		// Ship Ordnance
 		/datum/shop_sku/outfitter/missile_tracking,
 		/datum/shop_sku/outfitter/warhead_standard,
 		/datum/shop_sku/outfitter/missile_light,
 		// Security Gear
-		/datum/shop_sku/outfitter/handcuffs,
-		/datum/shop_sku/outfitter/zipties,
 		/datum/shop_sku/outfitter/seclite,
 		/datum/shop_sku/outfitter/flash,
 		/datum/shop_sku/outfitter/bola,
-		/datum/shop_sku/outfitter/sechud,
 		/datum/shop_sku/outfitter/security_belt,
 		/datum/shop_sku/outfitter/pepper_spray,
 		/datum/shop_sku/outfitter/riot_shield,
@@ -62,28 +83,47 @@
 		/datum/shop_sku/outfitter/advanced_medkit,
 		/datum/shop_sku/outfitter/stimpack,
 		/datum/shop_sku/outfitter/suture,
+		/datum/shop_sku/outfitter/health_hud,
 		// Utility
 		/datum/shop_sku/outfitter/gas_mask,
 		/datum/shop_sku/outfitter/jaws,
 		/datum/shop_sku/outfitter/magboots,
-		/datum/shop_sku/outfitter/binoculars,
-		/datum/shop_sku/outfitter/mod_flashlight,
-		/datum/shop_sku/outfitter/mod_tether,
+		// Hull Stock
+		/datum/shop_sku/outfitter/plasteel_stock,
+		/datum/shop_sku/outfitter/iron_stock,
+		/datum/shop_sku/outfitter/glass_stock,
 		// Fuel & Gas
 		/datum/shop_sku/outfitter/plasma_canister,
+		/datum/shop_sku/outfitter/welding_fuel,
+		/datum/shop_sku/outfitter/oxygen_tank,
 		// Colonial Registry
 		/datum/shop_sku/outpost_deed,
-		// Charts & Special Orders
-		/datum/shop_sku/outfitter/star_chart,
-		/datum/shop_sku/rumor/outfitter,
-		/datum/shop_sku/ruin_chart/biolab,
-		/datum/shop_sku/ruin_chart/foundry,
+		// Intel & Charts — the dealt chart shelf adds to this from chart_pool
+		/datum/shop_sku/rumor,
+		// Blueprints
 		/datum/shop_sku/outfitter/smg_blueprint,
 		/datum/shop_sku/outfitter/wt550_blueprint,
 		/datum/shop_sku/outfitter/carbine_blueprint,
 		// Barter
 		/datum/shop_sku/barter/plasteel_for_shield,
 	)
+	// Charts are a mix now — any station can stock any zone's chart. The shelf
+	// is dealt from this pool each round; ruin charts never repeat galaxy-wide.
+	chart_pool = list(
+		/datum/shop_sku/chart/green,
+		/datum/shop_sku/chart/yellow,
+		/datum/shop_sku/chart/red,
+		/datum/shop_sku/ruin_chart/armory,
+		/datum/shop_sku/ruin_chart/biolab,
+		/datum/shop_sku/ruin_chart/pirate_cove,
+		/datum/shop_sku/ruin_chart/reliquary,
+		/datum/shop_sku/ruin_chart/foundry,
+		/datum/shop_sku/ruin_chart/hospice,
+		/datum/shop_sku/ruin_chart/liner,
+		/datum/shop_sku/ruin_chart/survey,
+		/datum/shop_sku/ruin_chart/blacksite,
+	)
+	chart_picks = 3
 	rotating_pool = list(
 		/datum/shop_sku/outfitter/rotating/riot_suit,
 		/datum/shop_sku/outfitter/rotating/telescopic_baton,
@@ -119,12 +159,13 @@
 		list("type" = /obj/item/stack/sheet/sinew, "name" = "beast sinew", "amount" = 4, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/stack/glacial_core, "name" = "glacial cores", "amount" = 5, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 	)
-	// The armory back room: hard contracts only, never sold
+	// The armory back room: hard contracts only, never sold. Everything here has
+	// to be unobtainable elsewhere, so no item that drops in a zone loot theme
+	// and nothing that appears on the Ship Systems shelf.
 	exclusive_rewards = list(
-		/obj/item/storage/belt/military/assault,
-		/obj/item/shield/riot/tele,
-		/obj/item/clothing/gloves/tackler/combat,
 		/obj/item/circuitboard/machine/ship_combat/missile_launcher,
+		/obj/item/circuitboard/machine/engine/void,
+		/obj/item/gun/energy/laser/captain,
 	)
 	trader_lines = list(
 		TRADER_LINE_GREETING = list(
@@ -146,7 +187,7 @@
 		),
 		TRADER_LINE_WARNING = list(
 			"Hands off the merchandise, hostile. Next one arms the grid.",
-			"That's a warning shot's worth of patience. I have exactly one to spare.",
+			"That's one warning. I only ever give the one.",
 			"Test the armor on your own time. Not on my fixtures.",
 		),
 		TRADER_LINE_AGGRESSION = list(
@@ -160,6 +201,8 @@
 			"Goliath plate lines the good vests. Bring me plates, walk out richer.",
 			"Glacial cores off the ice worlds. Coolant loops love them, scanners can't find them, wolves guard them. Good hunting.",
 			"Firing pins. Everyone forgets the firing pins. Don't be everyone.",
+			"Thruster boards are on the back wall. If your ship's limping, that's the fix, and it beats buying a new ship.",
+			"Most crews can't build a turret. Most crews also can't afford mine. Work on the second problem.",
 			"The schematics I stock are legal. The fun ones are two zones that way.",
 		),
 		TRADER_LINE_RESTOCK = list(
@@ -258,6 +301,26 @@
 	stock_min = 3
 	stock_max = 6
 
+// Magazines for the two ballistics whose blueprints are on the shelf below.
+// Print the gun once, buy the ammo forever.
+/datum/shop_sku/outfitter/smg_mag
+	category = "Firearms & Ammo"
+	name = "c-20r magazine"
+	desc = "A loaded .45 magazine for a C-20r. Sarge stocks these because the schematic's on her own shelf."
+	item_path = /obj/item/ammo_box/magazine/smgm45
+	price_credits = 200
+	stock_min = 3
+	stock_max = 6
+
+/datum/shop_sku/outfitter/wt550_mag
+	category = "Firearms & Ammo"
+	name = "wt-550 magazine"
+	desc = "A loaded 4.6x30mm magazine for a WT-550. Armor-piercing, and priced accordingly."
+	item_path = /obj/item/ammo_box/magazine/wt550m9
+	price_credits = 250
+	stock_min = 2
+	stock_max = 5
+
 // The quiet backbone of the blueprint economy: no pin, no gun
 /datum/shop_sku/outfitter/firing_pin
 	category = "Firearms & Ammo"
@@ -265,6 +328,67 @@
 	price_credits = 300
 	stock_min = 3
 	stock_max = 5
+
+// ===== SHIP SYSTEMS =====
+// Machine boards for the ship itself. Only 9 of 48 ships can research these,
+// so for everyone else this shelf is the whole route. Note these are the
+// /machine/engine/ boards from voidcrew/modules/shuttle/boards.dm — the same
+// ones the protolathe designs build, so the shop stands in for a research bay.
+
+/datum/shop_sku/outfitter/engine_plasma
+	category = "Ship Systems"
+	name = "plasma thruster board"
+	desc = "Board for a plasma thruster, the standard workhorse drive. It draws fuel from a heater mounted right behind it, so you need one of those in the line too."
+	item_path = /obj/item/circuitboard/machine/engine/plasma
+	price_credits = 800
+	stock_min = 1
+	stock_max = 3
+
+/datum/shop_sku/outfitter/engine_expulsion
+	category = "Ship Systems"
+	name = "expulsion thruster board"
+	desc = "Board for an expulsion thruster. It burns whatever gas is in the heater and wastes most of it, which is the point when plasma is scarce."
+	item_path = /obj/item/circuitboard/machine/engine/expulsion
+	price_credits = 600
+	stock_min = 1
+	stock_max = 3
+
+/datum/shop_sku/outfitter/engine_ion
+	category = "Ship Systems"
+	name = "ion thruster board"
+	desc = "Board for an ion thruster. No fuel line and no heater, just a heavy draw on the powernet, at about 40% of a plasma thruster's push."
+	item_path = /obj/item/circuitboard/machine/engine/electric
+	price_credits = 900
+	stock_min = 1
+	stock_max = 2
+
+/datum/shop_sku/outfitter/engine_oil
+	category = "Ship Systems"
+	name = "oil thruster board"
+	desc = "Board for an oil thruster, which burns liquid fuel instead of gas. There's no lathe design for it anywhere, so the depot is the only source."
+	item_path = /obj/item/circuitboard/machine/engine/oil
+	price_credits = 700
+	stock_min = 1
+	stock_max = 2
+
+/datum/shop_sku/outfitter/engine_heater
+	category = "Ship Systems"
+	name = "engine heater board"
+	desc = "Board for a fueled engine heater. Plasma and expulsion thrusters latch onto one to draw fuel and won't fire without it."
+	item_path = /obj/item/circuitboard/machine/shuttle/heater
+	price_credits = 500
+	stock_min = 2
+	stock_max = 4
+
+/datum/shop_sku/outfitter/laser_turret_board
+	category = "Ship Systems"
+	name = "laser turret board"
+	desc = "Board for a hull-mounted laser turret. It takes a standard power cell you can swap out for a bigger one, and Sarge will not discuss where the crate came from."
+	item_path = /obj/item/circuitboard/machine/ship_combat/laser_turret
+	price_vouchers = 2
+	price_credits = 700
+	stock_min = 1
+	stock_max = 2
 
 // ===== SHIP ORDNANCE =====
 // Ship-to-ship missiles and the parts to feed a launcher. The armed missiles
@@ -296,18 +420,6 @@
 
 // ===== SECURITY GEAR =====
 
-/datum/shop_sku/outfitter/handcuffs
-	category = "Security Gear"
-	item_path = /obj/item/restraints/handcuffs
-	price_credits = 200
-
-/datum/shop_sku/outfitter/zipties
-	category = "Security Gear"
-	item_path = /obj/item/restraints/handcuffs/cable/zipties
-	price_credits = 100
-	stock_min = 4
-	stock_max = 8
-
 /datum/shop_sku/outfitter/seclite
 	category = "Security Gear"
 	item_path = /obj/item/flashlight/seclite
@@ -322,13 +434,6 @@
 	category = "Security Gear"
 	item_path = /obj/item/restraints/legcuffs/bola
 	price_credits = 200
-
-/datum/shop_sku/outfitter/sechud
-	category = "Security Gear"
-	item_path = /obj/item/clothing/glasses/hud/security/sunglasses
-	price_credits = 500
-	stock_min = 1
-	stock_max = 3
 
 /datum/shop_sku/outfitter/security_belt
 	category = "Security Gear"
@@ -384,6 +489,17 @@
 	stock_min = 3
 	stock_max = 6
 
+// Triage glasses. Reads live health off everyone in view, which is worth more
+// in a boarding action than knowing who a station flagged as wanted.
+/datum/shop_sku/outfitter/health_hud
+	category = "Combat Medical"
+	name = "medical HUD sunglasses"
+	desc = "Tinted health-scanner glasses. Everyone in view gets a status icon, so you can tell who's down from who's dead without walking over."
+	item_path = /obj/item/clothing/glasses/hud/health/sunglasses
+	price_credits = 500
+	stock_min = 1
+	stock_max = 3
+
 // ===== UTILITY =====
 
 /datum/shop_sku/outfitter/gas_mask
@@ -407,22 +523,39 @@
 	stock_min = 1
 	stock_max = 2
 
-/datum/shop_sku/outfitter/binoculars
-	category = "Utility"
-	item_path = /obj/item/binoculars
-	price_credits = 200
+// ===== HULL STOCK =====
+// Bulk repair material for crews who can't mine or can't wait. Sold by the
+// stack, priced above what an ore redemption run costs you in time.
 
-/datum/shop_sku/outfitter/mod_flashlight
-	category = "Utility"
-	item_path = /obj/item/mod/module/flashlight
-	price_credits = 300
-
-/datum/shop_sku/outfitter/mod_tether
-	category = "Utility"
-	item_path = /obj/item/mod/module/tether
+/datum/shop_sku/outfitter/plasteel_stock
+	category = "Hull Stock"
+	name = "plasteel (10 sheets)"
+	desc = "Ten sheets of plasteel off the depot's own pallet. Reinforced walls, blast doors, and every airlock you'll rebuild this round."
+	item_path = /obj/item/stack/sheet/plasteel
+	dispense_amount = 10
 	price_credits = 500
-	stock_min = 1
-	stock_max = 2
+	stock_min = 2
+	stock_max = 4
+
+/datum/shop_sku/outfitter/iron_stock
+	category = "Hull Stock"
+	name = "iron (30 sheets)"
+	desc = "Thirty sheets of iron. Not glamorous, but a hull breach doesn't care."
+	item_path = /obj/item/stack/sheet/iron
+	dispense_amount = 30
+	price_credits = 200
+	stock_min = 3
+	stock_max = 6
+
+/datum/shop_sku/outfitter/glass_stock
+	category = "Hull Stock"
+	name = "glass (20 sheets)"
+	desc = "Twenty sheets of glass. Windows, and everything else that wants a sheet of glass in it."
+	item_path = /obj/item/stack/sheet/glass
+	dispense_amount = 20
+	price_credits = 150
+	stock_min = 3
+	stock_max = 6
 
 // ===== FUEL & GAS =====
 
@@ -437,64 +570,44 @@
 	stock_min = 3
 	stock_max = 5
 
-// ===== CHARTS & SPECIAL ORDERS =====
+/datum/shop_sku/outfitter/welding_fuel
+	name = "welding fuel tank"
+	desc = "A full tank of welding fuel on a wheeled frame. Drag it aboard and stop rationing your repairs."
+	category = "Fuel & Gas"
+	item_path = /obj/structure/reagent_dispensers/fueltank
+	price_credits = 250
+	stock_min = 2
+	stock_max = 4
 
-// Charts the contested lanes — discovery certainty for the middle ring
-/datum/shop_sku/outfitter/star_chart
-	category = "Charts & Special Orders"
-	item_path = /obj/item/disk/star_chart/yellow
-	price_credits = 400
-	stock_min = 1
-	stock_max = 2
+/datum/shop_sku/outfitter/oxygen_tank
+	name = "oxygen tank (full)"
+	desc = "A filled oxygen tank at depot rates. Halcyon charges more for the same air and a nicer waiting room."
+	category = "Fuel & Gas"
+	item_path = /obj/item/tank/internals/oxygen
+	price_credits = 80
+	stock_min = 4
+	stock_max = 8
 
-// Sarge's tips are convoy scuttlebutt — yellow-band signals
-/datum/shop_sku/rumor/outfitter
-	name = "convoy scuttlebutt"
-	desc = "The convoy crews see everything on the contested lanes and shut up about none of it. One uncharted yellow-band signal, marked on your helm."
-	category = "Charts & Special Orders"
-	price_credits = 300
+// ===== BLUEPRINTS =====
+// Yellow-tier guns, carried or imprinted, crafted anywhere. The charts and
+// rumor tips that used to share this shelf now come off chart_pool.
 
-// Sarge's special orders name a specific prize: each chart is one rare ruin
-// that exists nowhere until somebody buys the tip and reveals it from their
-// helm. One buyer per rumor, ever — once sold, the trail is cold at every
-// outpost.
-/datum/shop_sku/ruin_chart/biolab
-	name = "special order: 'Eventide'"
-	desc = "Sarge slides over a requisition form for coordinates. An off-ledger NT xenobiology annex that stopped filing reports mid-shift — specimens loose, extract vault never emptied. Uploaded sealed to your helm; reveal it when your crew is kitted for what's inside."
-	category = "Charts & Special Orders"
-	price_vouchers = 2
-	price_credits = 500
-	spawn_zone = ZONE_YELLOW
-	ruin_template_path = /datum/map_template/ruin/space/rare/biolab
-	rumor_name = "Sarge's special order: Eventide"
-	rumor_desc = "A xenobiology annex drifting dark on the contested lanes. Containment failed from the inside. The extract vault is still sealed, and still full."
-
-/datum/shop_sku/ruin_chart/foundry
-	name = "special order: 'Helios-Betna'"
-	desc = "Sarge slides over a requisition form for coordinates. An automated foundry that never heard its owners defaulted — the line still runs, the custodians still patrol, and the finished-goods vault has never shipped a crate. Uploaded sealed to your helm; reveal it when your crew is ready to fight machines for their paychecks."
-	category = "Charts & Special Orders"
-	price_vouchers = 3
-	ruin_template_path = /datum/map_template/ruin/space/rare/foundry
-	rumor_name = "Sarge's special order: Helios-Betna"
-	rumor_desc = "A dead company's foundry running blind in the red band. The custodians hold the line, and the vault holds decades of certified alloy nobody ever came to collect."
-
-// Weapon schematics -- yellow-tier guns, carried or imprinted, crafted anywhere.
 /datum/shop_sku/outfitter/smg_blueprint
-	category = "Charts & Special Orders"
+	category = "Blueprints"
 	item_path = /obj/item/blueprint/gun/c20r
 	price_vouchers = 3
 	stock_min = 1
 	stock_max = 1
 
 /datum/shop_sku/outfitter/wt550_blueprint
-	category = "Charts & Special Orders"
+	category = "Blueprints"
 	item_path = /obj/item/blueprint/gun/wt550
 	price_vouchers = 3
 	stock_min = 1
 	stock_max = 1
 
 /datum/shop_sku/outfitter/carbine_blueprint
-	category = "Charts & Special Orders"
+	category = "Blueprints"
 	item_path = /obj/item/blueprint/gun/laser_carbine
 	price_vouchers = 2
 	price_credits = 500
@@ -603,7 +716,7 @@
 // Planet megafauna materials — armor-grade feedstock the depot can't lathe
 /datum/shop_buyback/outfitter/goliath_plates
 	name = "goliath hide plates"
-	desc = "Tentacle-scarred plate off a live goliath. Sarge lines the good vests with it and asks no questions about the tentacle marks on YOU."
+	desc = "Hide plate cut off a live goliath. Sarge lines the good vests with it, and asks no questions about the tentacle marks on YOU."
 	category = "Field Materials"
 	item_path = /obj/item/stack/sheet/animalhide/goliath_hide
 	amount = 2
