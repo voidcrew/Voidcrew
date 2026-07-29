@@ -7235,6 +7235,7 @@
 #include "voidcrew\modules\trade\shop_catalog_charts.dm"
 #include "voidcrew\modules\trade\shop_catalog_general.dm"
 #include "voidcrew\modules\trade\shop_catalog_general_vendors.dm"
+#include "voidcrew\modules\trade\shop_catalog_job_packs.dm"
 #include "voidcrew\modules\trade\shop_catalog_outfitter.dm"
 #include "voidcrew\modules\trade\shop_catalog_outfitter_vendors.dm"
 #include "voidcrew\modules\trade\shop_catalog_suit_vendor.dm"

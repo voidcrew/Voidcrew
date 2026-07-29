@@ -322,13 +322,17 @@ GLOBAL_LIST_EMPTY(vestige_ascensions_by_patron)
 
 	var/turf/bottom_left = reservation.bottom_left_turfs[1]
 	arena_bottom_left = locate(bottom_left.x + pad, bottom_left.y + pad, bottom_left.z)
-	var/loaded = FALSE
-	try
-		loaded = template.load(arena_bottom_left)
-	catch(var/exception/error)
-		log_mapping("VESTIGE ASCENSION: failed to load '[template.name]': [error]")
-		loaded = FALSE
+	// Deliberately NOT wrapped in try/catch. stack_trace() is CRASH-based: left alone
+	// it ends its own frame and the caller carries on, but inside a try block it
+	// unwinds everything up to the catch. Loading an arena raises those warnings as a
+	// matter of course — a reservation hands back recycled turfs and turfs keep their
+	// signal registrations when they are replaced, so every wall built where a wall
+	// already stood warns once as it re-registers itself. Catching that threw away a
+	// working arena and made the second run of any arena impossible. A missing or
+	// unreadable .dmm is caught by the bounds check above instead.
+	var/loaded = template.load(arena_bottom_left)
 	if(!loaded)
+		log_mapping("VESTIGE ASCENSION: '[template.name]' failed to load from '[template.mappath]'")
 		QDEL_NULL(reservation)
 		arena_bottom_left = null
 		return FALSE

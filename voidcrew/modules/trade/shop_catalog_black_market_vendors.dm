@@ -258,6 +258,7 @@
 		"Pharmacy",
 		"Back Room",
 		"Spare Parts",
+		"Job Packs",
 	)
 	sku_types = list(
 		// Field Medicine
@@ -284,6 +285,8 @@
 		/datum/shop_sku/clinic/liver,
 		/datum/shop_sku/clinic/lungs,
 		/datum/shop_sku/clinic/autosurgeon,
+		// Job Packs — the crate lives in shop_catalog_job_packs.dm
+		/datum/shop_sku/clinic/job_pack_genetics,
 	)
 	rotating_pool = list(
 		/datum/shop_sku/clinic/rotating/tactical_lite_medkit,
@@ -342,28 +345,28 @@
 /datum/shop_sku/clinic/advanced_medkit
 	category = "Field Medicine"
 	item_path = /obj/item/storage/medkit/advanced
-	price_credits = 600
+	price_credits = 900
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/clinic/surgery_kit
 	category = "Field Medicine"
 	item_path = /obj/item/storage/medkit/surgery
-	price_credits = 500
+	price_credits = 750
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/clinic/o2_medkit
 	category = "Field Medicine"
 	item_path = /obj/item/storage/medkit/o2
-	price_credits = 200
+	price_credits = 300
 	stock_min = 2
 	stock_max = 3
 
 /datum/shop_sku/clinic/toxin_medkit
 	category = "Field Medicine"
 	item_path = /obj/item/storage/medkit/toxin
-	price_credits = 200
+	price_credits = 300
 	stock_min = 2
 	stock_max = 3
 
@@ -372,7 +375,7 @@
 	name = "O- blood pack"
 	desc = "Universal donor blood. Sawbones swears it's O negative and mostly blood."
 	item_path = /obj/item/reagent_containers/blood/o_minus
-	price_credits = 200
+	price_credits = 300
 	stock_min = 2
 	stock_max = 4
 
@@ -381,28 +384,28 @@
 /datum/shop_sku/clinic/mutadone_bottle
 	category = "Pharmacy"
 	item_path = /obj/item/storage/pill_bottle/mutadone
-	price_credits = 250
+	price_credits = 400
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/clinic/mannitol_bottle
 	category = "Pharmacy"
 	item_path = /obj/item/storage/pill_bottle/mannitol
-	price_credits = 150
+	price_credits = 200
 	stock_min = 1
 	stock_max = 3
 
 /datum/shop_sku/clinic/penacid_bottle
 	category = "Pharmacy"
 	item_path = /obj/item/storage/pill_bottle/penacid
-	price_credits = 200
+	price_credits = 300
 	stock_min = 1
 	stock_max = 3
 
 /datum/shop_sku/clinic/psicodine_bottle
 	category = "Pharmacy"
 	item_path = /obj/item/storage/pill_bottle/psicodine
-	price_credits = 150
+	price_credits = 200
 	stock_min = 1
 	stock_max = 2
 
@@ -411,7 +414,7 @@
 	name = "morphine bottle"
 	desc = "For pain management. Whose pain is your business."
 	item_path = /obj/item/reagent_containers/cup/bottle/morphine
-	price_credits = 300
+	price_credits = 450
 	stock_min = 1
 	stock_max = 2
 
@@ -469,7 +472,7 @@
 	name = "pre-owned heart"
 	desc = "One careful owner. Sawbones guarantees it was beating recently."
 	item_path = /obj/item/organ/heart
-	price_credits = 300
+	price_credits = 450
 	stock_min = 1
 	stock_max = 2
 
@@ -478,7 +481,7 @@
 	name = "lightly used liver"
 	desc = "Some cosmetic wear, consistent with the previous owner drinking at the Dregs."
 	item_path = /obj/item/organ/liver
-	price_credits = 250
+	price_credits = 400
 	stock_min = 1
 	stock_max = 2
 
@@ -487,7 +490,7 @@
 	name = "reconditioned lungs"
 	desc = "Aired out and everything. Non-smoker, allegedly."
 	item_path = /obj/item/organ/lungs
-	price_credits = 250
+	price_credits = 400
 	stock_min = 1
 	stock_max = 2
 
@@ -496,7 +499,7 @@
 	name = "autosurgeon"
 	desc = "Load an organ, press it against your chest, look away. Surgery for people who don't have a surgeon."
 	item_path = /obj/item/autosurgeon
-	price_credits = 400
+	price_credits = 600
 	stock_min = 1
 	stock_max = 2
 
@@ -510,17 +513,17 @@
 /datum/shop_sku/clinic/rotating/atropine_pen
 	category = "Pharmacy"
 	item_path = /obj/item/reagent_containers/hypospray/medipen/atropine
-	price_credits = 300
+	price_credits = 450
 
 /datum/shop_sku/clinic/rotating/penthrite_pen
 	category = "Pharmacy"
 	item_path = /obj/item/reagent_containers/hypospray/medipen/penthrite
-	price_credits = 350
+	price_credits = 500
 
 /datum/shop_sku/clinic/rotating/survival_pen
 	category = "Field Medicine"
 	item_path = /obj/item/reagent_containers/hypospray/medipen/survival
-	price_credits = 250
+	price_credits = 400
 
 /datum/shop_sku/clinic/rotating/prescription_stimulants
 	category = "Back Room"

@@ -37,6 +37,7 @@
 		"Seed Rack",
 		"Grower's Supply",
 		"The Apiary",
+		"Job Packs",
 	)
 	sku_types = list(
 		// Seed Rack — honest staples for a ship galley
@@ -62,6 +63,8 @@
 		/datum/shop_sku/potting/honeycomb,
 		/datum/shop_sku/potting/honey_frame,
 		/datum/shop_sku/potting/queen_bee,
+		// Job Packs — the crate lives in shop_catalog_job_packs.dm
+		/datum/shop_sku/potting/job_pack_botany,
 	)
 	rotating_pool = list(
 		/datum/shop_sku/potting/rotating/glowshroom,

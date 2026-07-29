@@ -41,7 +41,7 @@ const Wallet = (props) => {
 
 const SuitSummary = (props) => {
   const { act } = useBackend();
-  const { suit, held_vouchers, account_credits } = props;
+  const { suit, charging, locked, held_vouchers, account_credits } = props;
   const used = suit.complexity;
   const max = suit.complexity_max;
   return (
@@ -53,6 +53,11 @@ const SuitSummary = (props) => {
             held_vouchers={held_vouchers}
             account_credits={account_credits}
           />{' '}
+          <Tooltip content="Engrave a new designation — free.">
+            <Button icon="pen" disabled={locked} onClick={() => act('rename')}>
+              Engrave
+            </Button>
+          </Tooltip>{' '}
           <Button icon="door-open" onClick={() => act('open_frame')}>
             Open frame
           </Button>
@@ -76,9 +81,16 @@ const SuitSummary = (props) => {
         </LabeledList.Item>
         <LabeledList.Item label="Slowdown">
           {suit.slowdown > 0 ? suit.slowdown : 'none'}
+          {' · seals in '}
+          {suit.seal_time}s per part
         </LabeledList.Item>
         <LabeledList.Item label="Core">
           {suit.core_name ? `${suit.core_name} — ${suit.charge_text}` : 'none'}
+          {!!charging && (
+            <Box inline color="good" ml={1}>
+              ⚡ charging off the frame
+            </Box>
+          )}
         </LabeledList.Item>
       </LabeledList>
     </Section>
@@ -156,8 +168,8 @@ const ModulesTab = (props) => {
               action="install_module"
               buttonIcon="plus"
               buttonText="Install"
-              disabled={locked || !module.fits}
-              note={!module.fits ? 'Not enough module capacity left.' : null}
+              disabled={locked || !!module.denial}
+              note={module.denial}
             />
           ))}
         </Section>
@@ -173,12 +185,18 @@ const UpgradeRow = (props) => {
 
   const button = (
     <Button
-      icon={upgrade.installed ? 'check' : 'screwdriver-wrench'}
+      icon={
+        upgrade.installed
+          ? 'check'
+          : upgrade.repeatable
+            ? 'arrows-rotate'
+            : 'screwdriver-wrench'
+      }
       color={upgrade.installed ? 'good' : null}
       disabled={blocked}
       onClick={() => act('buy_upgrade', { id: upgrade.id })}
     >
-      {upgrade.installed ? 'Fitted' : 'Fit'}
+      {upgrade.installed ? 'Fitted' : upgrade.repeatable ? 'Service' : 'Fit'}
     </Button>
   );
 
@@ -297,13 +315,22 @@ const PaintTab = (props) => {
         <Section
           title="Paint"
           buttons={
-            <Button
-              icon="eraser"
-              disabled={locked}
-              onClick={() => act('clear_paint')}
-            >
-              Strip paint
-            </Button>
+            <>
+              <Button
+                icon="palette"
+                disabled={locked}
+                onClick={() => act('custom_paint')}
+              >
+                Custom colour
+              </Button>{' '}
+              <Button
+                icon="eraser"
+                disabled={locked}
+                onClick={() => act('clear_paint')}
+              >
+                Strip paint
+              </Button>
+            </>
           }
         >
           {paints.map((paint) => (
@@ -339,6 +366,7 @@ export const ModsuitBench = (props) => {
     has_suit,
     barred,
     suit,
+    charging,
     held_vouchers,
     account_credits,
   } = data;
@@ -381,6 +409,8 @@ export const ModsuitBench = (props) => {
           <Stack.Item>
             <SuitSummary
               suit={suit}
+              charging={charging}
+              locked={locked}
               held_vouchers={held_vouchers}
               account_credits={account_credits}
             />
@@ -414,8 +444,9 @@ export const ModsuitBench = (props) => {
           </Stack.Item>
           <Stack.Item>
             <Box color="label" fontSize="0.85em" px={1}>
-              Module swaps and paint are free. Upgrades are permanent, charged
-              on the spot, and stay with the suit. No refunds.
+              Module swaps, paint and engraving are free. Upgrades are
+              permanent, charged on the spot, and stay with the suit. Servicing
+              is charged per visit. No refunds.
             </Box>
           </Stack.Item>
         </Stack>

@@ -243,7 +243,7 @@
 	desc = "A light powered suit fitted with storage, a welder and a light. It is not spaceworthy. The civilian frame trades the seal for speed and takes fewer modules than the industrial ones."
 	item_path = /obj/item/mod/control/pre_equipped/civilian
 	icon_state_override = "civilian-control"
-	price_credits = 1200
+	price_credits = 7200
 	stock_min = 1
 	stock_max = 2
 
@@ -254,37 +254,51 @@
 	item_path = /obj/item/mod/control/pre_equipped/engineering
 	icon_state_override = "engineering-control"
 	price_vouchers = 1
-	price_credits = 1200
+	price_credits = 7200
 	stock_min = 1
 	stock_max = 2
 
+// Build-vs-buy parity. A suit assembled from parts costs exactly what Wick
+// charges for the same suit finished, so neither route is punished:
+//
+//   shell 1600 + helmet 750 + chestplate 900 + gauntlets 650 + boots 600
+//   + standard core 700 + cell 200                              = 5400
+//   + plating                            civilian  1800 -> 7200 = suit_civilian
+//                                     engineering  1800 -> 7200 = suit_engineering
+//                                         medical  1800 -> 7200 = suit_medical
+//                                        security  1800 -> 7200 = suit_security
+//                                    atmospheric   3000 -> 8400 = suit_atmospheric
+//
+// The theme premium lives entirely in the plating, which is why the platings
+// carry the same voucher price as their finished suit. If a suit's price moves,
+// move its plating by the same amount or the parity breaks.
 /datum/shop_sku/fitter/shell
 	category = "MOD Chassis"
 	desc = "The empty frame a suit gets built inside. Core first, then helmet, chestplate, gauntlets, boots, then plating, with a screwdriver and a wrench along the way."
 	item_path = /obj/item/mod/construction/shell
-	price_credits = 500
+	price_credits = 1600
 	stock_min = 1
 	stock_max = 3
 
 /datum/shop_sku/fitter/frame_helmet
 	category = "MOD Chassis"
 	item_path = /obj/item/mod/construction/helmet
-	price_credits = 200
+	price_credits = 750
 
 /datum/shop_sku/fitter/frame_chestplate
 	category = "MOD Chassis"
 	item_path = /obj/item/mod/construction/chestplate
-	price_credits = 250
+	price_credits = 900
 
 /datum/shop_sku/fitter/frame_gauntlets
 	category = "MOD Chassis"
 	item_path = /obj/item/mod/construction/gauntlets
-	price_credits = 150
+	price_credits = 650
 
 /datum/shop_sku/fitter/frame_boots
 	category = "MOD Chassis"
 	item_path = /obj/item/mod/construction/boots
-	price_credits = 150
+	price_credits = 600
 
 /datum/shop_sku/fitter/plating_civilian
 	category = "MOD Chassis"
@@ -292,7 +306,7 @@
 	desc = "The last piece of a build. Finishes a shell into a civilian suit: light, quick, and no protection from vacuum."
 	item_path = /obj/item/mod/construction/plating/civilian
 	icon_state_override = "civilian-plating"
-	price_credits = 300
+	price_credits = 1800
 	stock_min = 1
 	stock_max = 3
 
@@ -305,7 +319,7 @@
 	name = "MOD standard core"
 	desc = "The baseline power core. It ships empty, so drop a cell in it or the suit won't run. Boffin stocks the higher grades."
 	item_path = /obj/item/mod/core/standard
-	price_credits = 450
+	price_credits = 700
 	stock_min = 2
 	stock_max = 3
 
@@ -315,7 +329,7 @@
 	desc = "Refuels on plasma ore and plasma sheets instead of a charger. If your ship burns plasma you're already carrying the fuel."
 	item_path = /obj/item/mod/core/plasma
 	price_vouchers = 1
-	price_credits = 500
+	price_credits = 750
 	stock_min = 1
 	stock_max = 2
 
@@ -323,7 +337,7 @@
 	category = "Cores & Power"
 	desc = "A basic cell to seat in a standard core. Fine for a shift; the Skunkworks sells the ones that last."
 	item_path = /obj/item/stock_parts/power_store/cell
-	price_credits = 150
+	price_credits = 200
 	stock_min = 3
 	stock_max = 6
 
@@ -332,14 +346,14 @@
 /datum/shop_sku/fitter/mod_tether
 	category = "Mobility"
 	item_path = /obj/item/mod/module/tether
-	price_credits = 500
+	price_credits = 1500
 	stock_min = 1
 	stock_max = 3
 
 /datum/shop_sku/fitter/mod_magboot
 	category = "Mobility"
 	item_path = /obj/item/mod/module/magboot
-	price_credits = 600
+	price_credits = 1800
 	stock_min = 1
 	stock_max = 3
 
@@ -347,76 +361,76 @@
 	category = "Mobility"
 	item_path = /obj/item/mod/module/jetpack
 	price_vouchers = 1
-	price_credits = 600
+	price_credits = 1800
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/fitter/mod_longfall
 	category = "Mobility"
 	item_path = /obj/item/mod/module/longfall
-	price_credits = 350
+	price_credits = 1050
 
 // ===== UTILITY MODULES =====
 
 /datum/shop_sku/fitter/mod_storage
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/storage
-	price_credits = 300
+	price_credits = 900
 
 /datum/shop_sku/fitter/mod_flashlight
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/flashlight
-	price_credits = 250
+	price_credits = 750
 
 /datum/shop_sku/fitter/mod_mouthhole
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/mouthhole
-	price_credits = 200
+	price_credits = 600
 
 /datum/shop_sku/fitter/mod_thermal_regulator
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/thermal_regulator
-	price_credits = 400
+	price_credits = 1200
 
 /datum/shop_sku/fitter/mod_status_readout
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/status_readout
-	price_credits = 300
+	price_credits = 900
 
 // ===== INDUSTRIAL MODULES =====
 
 /datum/shop_sku/fitter/mod_welding
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/welding
-	price_credits = 300
+	price_credits = 900
 
 /datum/shop_sku/fitter/mod_gps
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/gps
-	price_credits = 250
+	price_credits = 750
 
 /datum/shop_sku/fitter/mod_rad_protection
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/rad_protection
-	price_credits = 450
+	price_credits = 1350
 
 /datum/shop_sku/fitter/mod_headprotector
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/headprotector
-	price_credits = 250
+	price_credits = 750
 
 /datum/shop_sku/fitter/mod_drill
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/drill
 	price_vouchers = 1
-	price_credits = 400
+	price_credits = 1200
 	stock_min = 1
 	stock_max = 3
 
 /datum/shop_sku/fitter/mod_orebag
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/orebag
-	price_credits = 400
+	price_credits = 1200
 	stock_min = 1
 	stock_max = 3
 
@@ -425,37 +439,37 @@
 /datum/shop_sku/fitter/mod_health_analyzer
 	category = "Medical Modules"
 	item_path = /obj/item/mod/module/health_analyzer
-	price_credits = 350
+	price_credits = 1050
 
 /datum/shop_sku/fitter/mod_injector
 	category = "Medical Modules"
 	item_path = /obj/item/mod/module/injector
 	price_vouchers = 1
-	price_credits = 400
+	price_credits = 1200
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/fitter/mod_quick_carry
 	category = "Medical Modules"
 	item_path = /obj/item/mod/module/quick_carry
-	price_credits = 400
+	price_credits = 1200
 
 // ===== VISORS & SENSORS =====
 
 /datum/shop_sku/fitter/mod_visor_meson
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/visor/meson
-	price_credits = 400
+	price_credits = 1200
 
 /datum/shop_sku/fitter/mod_visor_medhud
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/visor/medhud
-	price_credits = 350
+	price_credits = 1050
 
 /datum/shop_sku/fitter/mod_visor_diaghud
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/visor/diaghud
-	price_credits = 350
+	price_credits = 1050
 
 // ===== ENVIRONMENT GEAR =====
 // The non-MOD half of the stall. Barnaby has the EVA suit and the breath
@@ -465,14 +479,14 @@
 	category = "Environment Gear"
 	desc = "A heavy old voidsuit. Slower than an EVA rig and far harder to tear, which is the trade the salvage crews keep making."
 	item_path = /obj/item/clothing/suit/space/nasavoid
-	price_credits = 500
+	price_credits = 750
 	stock_min = 1
 	stock_max = 3
 
 /datum/shop_sku/fitter/nasa_helmet
 	category = "Environment Gear"
 	item_path = /obj/item/clothing/head/helmet/space/nasavoid
-	price_credits = 350
+	price_credits = 500
 	stock_min = 1
 	stock_max = 3
 
@@ -480,18 +494,18 @@
 	category = "Environment Gear"
 	desc = "Sealed envirosuit sized for a plasmaman, rated for vacuum. Wick keeps a rack of them because nobody else out here does."
 	item_path = /obj/item/clothing/suit/space/eva/plasmaman
-	price_credits = 250
+	price_credits = 400
 
 /datum/shop_sku/fitter/plasmaman_helmet
 	category = "Environment Gear"
 	item_path = /obj/item/clothing/head/helmet/space/plasmaman
-	price_credits = 200
+	price_credits = 300
 
 /datum/shop_sku/fitter/insuls
 	category = "Environment Gear"
 	desc = "Insulated gloves. The suit's own insulation stops at the wrist on most frames, so these still matter."
 	item_path = /obj/item/clothing/gloves/color/yellow
-	price_credits = 300
+	price_credits = 450
 	stock_min = 1
 	stock_max = 3
 
@@ -499,7 +513,7 @@
 	category = "Environment Gear"
 	desc = "A hooded coat that holds body heat on the ice worlds. Cheap, and it fits over a jumpsuit instead of replacing it."
 	item_path = /obj/item/clothing/suit/hooded/wintercoat
-	price_credits = 150
+	price_credits = 200
 	stock_min = 3
 	stock_max = 5
 
@@ -522,7 +536,7 @@
 	item_path = /obj/item/mod/control/pre_equipped/atmospheric
 	icon_state_override = "atmospheric-control"
 	price_vouchers = 1
-	price_credits = 1400
+	price_credits = 8400
 
 /datum/shop_sku/fitter/rotating/suit_mining
 	category = "MOD Chassis"
@@ -531,7 +545,7 @@
 	item_path = /obj/item/mod/control/pre_equipped/mining
 	icon_state_override = "mining-control"
 	price_vouchers = 1
-	price_credits = 1400
+	price_credits = 8400
 
 /datum/shop_sku/fitter/rotating/suit_medical
 	category = "MOD Chassis"
@@ -540,7 +554,7 @@
 	item_path = /obj/item/mod/control/pre_equipped/medical
 	icon_state_override = "medical-control"
 	price_vouchers = 1
-	price_credits = 1200
+	price_credits = 7200
 
 /datum/shop_sku/fitter/rotating/suit_rescue
 	category = "MOD Chassis"
@@ -549,7 +563,7 @@
 	item_path = /obj/item/mod/control/pre_equipped/rescue
 	icon_state_override = "rescue-control"
 	price_vouchers = 1
-	price_credits = 1500
+	price_credits = 9000
 
 /datum/shop_sku/fitter/rotating/suit_research
 	category = "MOD Chassis"
@@ -558,7 +572,7 @@
 	item_path = /obj/item/mod/control/pre_equipped/research
 	icon_state_override = "research-control"
 	price_vouchers = 1
-	price_credits = 1400
+	price_credits = 8400
 
 /datum/shop_sku/fitter/rotating/suit_security
 	category = "MOD Chassis"
@@ -567,7 +581,7 @@
 	item_path = /obj/item/mod/control/pre_equipped/security
 	icon_state_override = "security-control"
 	price_vouchers = 2
-	price_credits = 1200
+	price_credits = 7200
 
 /datum/shop_sku/fitter/rotating/suit_loader
 	category = "MOD Chassis"
@@ -576,7 +590,7 @@
 	item_path = /obj/item/mod/control/pre_equipped/loader
 	icon_state_override = "loader-control"
 	price_vouchers = 1
-	price_credits = 1300
+	price_credits = 7800
 
 // ----- plating of the week -----
 
@@ -586,7 +600,8 @@
 	desc = "Finishes a shell into an engineering suit: sealed, heat-resistant, and insulated against high voltage."
 	item_path = /obj/item/mod/construction/plating/engineering
 	icon_state_override = "engineering-plating"
-	price_credits = 600
+	price_vouchers = 1
+	price_credits = 1800
 
 /datum/shop_sku/fitter/rotating/plating_atmospheric
 	category = "MOD Chassis"
@@ -594,7 +609,8 @@
 	desc = "Finishes a shell into an atmospheric suit, rated for fire and unbreathable air."
 	item_path = /obj/item/mod/construction/plating/atmospheric
 	icon_state_override = "atmospheric-plating"
-	price_credits = 700
+	price_vouchers = 1
+	price_credits = 3000
 
 /datum/shop_sku/fitter/rotating/plating_medical
 	category = "MOD Chassis"
@@ -602,7 +618,8 @@
 	desc = "Finishes a shell into a medical suit. Light, sealed, and it doesn't slow you down over a patient."
 	item_path = /obj/item/mod/construction/plating/medical
 	icon_state_override = "medical-plating"
-	price_credits = 600
+	price_vouchers = 1
+	price_credits = 1800
 
 /datum/shop_sku/fitter/rotating/plating_security
 	category = "MOD Chassis"
@@ -610,213 +627,213 @@
 	desc = "Finishes a shell into a security suit. This is the armored plate, and it costs like it."
 	item_path = /obj/item/mod/construction/plating/security
 	icon_state_override = "security-plating"
-	price_vouchers = 1
-	price_credits = 500
+	price_vouchers = 2
+	price_credits = 1800
 
 // ----- rotating modules -----
 
 /datum/shop_sku/fitter/rotating/mod_joint_torsion
 	category = "Mobility"
 	item_path = /obj/item/mod/module/joint_torsion
-	price_credits = 400
+	price_credits = 1200
 
 /datum/shop_sku/fitter/rotating/mod_shock_absorber
 	category = "Mobility"
 	item_path = /obj/item/mod/module/shock_absorber
-	price_credits = 450
+	price_credits = 1350
 
 /datum/shop_sku/fitter/rotating/mod_emp_shield
 	category = "Mobility"
 	item_path = /obj/item/mod/module/emp_shield
-	price_credits = 500
+	price_credits = 1500
 
 /datum/shop_sku/fitter/rotating/mod_storage_large
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/storage/large_capacity
-	price_credits = 550
+	price_credits = 1650
 
 /datum/shop_sku/fitter/rotating/mod_dna_lock
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/dna_lock
-	price_credits = 450
+	price_credits = 1350
 
 /datum/shop_sku/fitter/rotating/mod_signlang_radio
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/signlang_radio
-	price_credits = 250
+	price_credits = 750
 
 /datum/shop_sku/fitter/rotating/mod_plasma_stabilizer
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/plasma_stabilizer
-	price_credits = 300
+	price_credits = 900
 
 /datum/shop_sku/fitter/rotating/mod_recycler
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/recycler
-	price_credits = 500
+	price_credits = 1500
 
 /datum/shop_sku/fitter/rotating/mod_hat_stabilizer
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/hat_stabilizer
-	price_credits = 200
+	price_credits = 600
 
 /datum/shop_sku/fitter/rotating/mod_fishing_glove
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/fishing_glove
-	price_credits = 350
+	price_credits = 1050
 
 /datum/shop_sku/fitter/rotating/mod_dispenser
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/dispenser
-	price_credits = 400
+	price_credits = 1200
 
 /datum/shop_sku/fitter/rotating/mod_microwave_beam
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/microwave_beam
-	price_credits = 350
+	price_credits = 1050
 
 /datum/shop_sku/fitter/rotating/mod_t_ray
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/t_ray
-	price_credits = 300
+	price_credits = 900
 
 /datum/shop_sku/fitter/rotating/mod_constructor
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/constructor
 	price_vouchers = 1
-	price_credits = 600
+	price_credits = 1800
 
 /datum/shop_sku/fitter/rotating/mod_mister_atmos
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/mister/atmos
-	price_credits = 400
+	price_credits = 1200
 
 /datum/shop_sku/fitter/rotating/mod_mister_cleaner
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/mister/cleaner
-	price_credits = 300
+	price_credits = 900
 
 /datum/shop_sku/fitter/rotating/mod_clamp
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/clamp
-	price_credits = 400
+	price_credits = 1200
 
 /datum/shop_sku/fitter/rotating/mod_hydraulic
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/hydraulic
-	price_credits = 500
+	price_credits = 1500
 
 /datum/shop_sku/fitter/rotating/mod_magnet
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/magnet
 	price_vouchers = 1
-	price_credits = 500
+	price_credits = 1500
 
 /datum/shop_sku/fitter/rotating/mod_disposal_connector
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/disposal_connector
-	price_credits = 350
+	price_credits = 1050
 
 /datum/shop_sku/fitter/rotating/mod_paper_dispenser
 	category = "Industrial Modules"
 	item_path = /obj/item/mod/module/paper_dispenser
-	price_credits = 200
+	price_credits = 600
 
 /datum/shop_sku/fitter/rotating/mod_defibrillator
 	category = "Medical Modules"
 	item_path = /obj/item/mod/module/defibrillator
 	price_vouchers = 1
-	price_credits = 700
+	price_credits = 2100
 
 /datum/shop_sku/fitter/rotating/mod_organizer
 	category = "Medical Modules"
 	item_path = /obj/item/mod/module/organizer
-	price_credits = 500
+	price_credits = 1500
 
 /datum/shop_sku/fitter/rotating/mod_thread_ripper
 	category = "Medical Modules"
 	item_path = /obj/item/mod/module/thread_ripper
-	price_credits = 450
+	price_credits = 1350
 
 /datum/shop_sku/fitter/rotating/mod_patient_transport
 	category = "Medical Modules"
 	item_path = /obj/item/mod/module/criminalcapture/patienttransport
-	price_credits = 500
+	price_credits = 1500
 
 /datum/shop_sku/fitter/rotating/mod_visor_night
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/visor/night
-	price_credits = 700
+	price_credits = 2100
 
 /datum/shop_sku/fitter/rotating/mod_reagent_scanner
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/reagent_scanner
-	price_credits = 400
+	price_credits = 1200
 
 /datum/shop_sku/fitter/rotating/mod_active_sonar
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/active_sonar
 	price_vouchers = 1
-	price_credits = 500
+	price_credits = 1500
 
 /datum/shop_sku/fitter/rotating/mod_magnetic_harness
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/magnetic_harness
-	price_credits = 400
+	price_credits = 1200
 
 /datum/shop_sku/fitter/rotating/mod_holster
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/holster
-	price_credits = 450
+	price_credits = 1350
 
 /datum/shop_sku/fitter/rotating/mod_megaphone
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/megaphone
-	price_credits = 250
+	price_credits = 750
 
 // ----- rotating environment gear -----
 
 /datum/shop_sku/fitter/rotating/firesuit
 	category = "Environment Gear"
 	item_path = /obj/item/clothing/suit/utility/fire
-	price_credits = 350
+	price_credits = 500
 
 /datum/shop_sku/fitter/rotating/fire_helmet
 	category = "Environment Gear"
 	item_path = /obj/item/clothing/head/utility/hardhat/red
-	price_credits = 200
+	price_credits = 300
 
 /datum/shop_sku/fitter/rotating/rad_suit
 	category = "Environment Gear"
 	item_path = /obj/item/clothing/suit/utility/radiation
-	price_credits = 400
+	price_credits = 600
 
 /datum/shop_sku/fitter/rotating/rad_hood
 	category = "Environment Gear"
 	item_path = /obj/item/clothing/head/utility/radiation
-	price_credits = 250
+	price_credits = 400
 
 /datum/shop_sku/fitter/rotating/explorer_suit
 	category = "Environment Gear"
 	desc = "An armored hooded suit cut for hot, hostile ground. Popular with anyone who works a lava world on foot."
 	item_path = /obj/item/clothing/suit/hooded/explorer
-	price_credits = 600
+	price_credits = 900
 
 /datum/shop_sku/fitter/rotating/explorer_mask
 	category = "Environment Gear"
 	item_path = /obj/item/clothing/mask/gas/explorer
-	price_credits = 250
+	price_credits = 400
 
 /datum/shop_sku/fitter/rotating/engine_goggles
 	category = "Environment Gear"
 	desc = "Meson and t-ray scanning in one pair of goggles. Worth carrying even once you have the visor module, since goggles work without a suit."
 	item_path = /obj/item/clothing/glasses/meson/engine
-	price_credits = 500
+	price_credits = 750
 
 /datum/shop_sku/fitter/rotating/hazard_vest
 	category = "Environment Gear"
 	item_path = /obj/item/clothing/suit/hazardvest
-	price_credits = 150
+	price_credits = 200
 
 // =========================================================================
 // RARE RACK
@@ -830,25 +847,25 @@
 	item_path = /obj/item/mod/control/pre_equipped/advanced
 	icon_state_override = "advanced-control"
 	price_vouchers = 3
-	price_credits = 1500
+	price_credits = 9000
 
 /datum/shop_sku/fitter/rare/mod_jetpack_advanced
 	category = "Mobility"
 	item_path = /obj/item/mod/module/jetpack/advanced
 	price_vouchers = 2
-	price_credits = 900
+	price_credits = 2700
 
 /datum/shop_sku/fitter/rare/mod_jump_jet
 	category = "Mobility"
 	item_path = /obj/item/mod/module/jump_jet
 	price_vouchers = 2
-	price_credits = 1000
+	price_credits = 3000
 
 /datum/shop_sku/fitter/rare/mod_storage_bluespace
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/storage/bluespace
 	price_vouchers = 2
-	price_credits = 1000
+	price_credits = 3000
 
 /datum/shop_sku/fitter/rare/mod_antigrav
 	category = "Mobility"
@@ -856,13 +873,13 @@
 	desc = "An anti-gravity module with a gravitational anomaly core already seated, so it works the moment it's installed. Wick does not say where the core came from."
 	item_path = /obj/item/mod/module/anomaly_locked/antigrav/prebuilt
 	price_vouchers = 2
-	price_credits = 800
+	price_credits = 2400
 
 /datum/shop_sku/fitter/rare/mod_visor_thermal
 	category = "Visors & Sensors"
 	item_path = /obj/item/mod/module/visor/thermal
 	price_vouchers = 2
-	price_credits = 700
+	price_credits = 2100
 
 /datum/shop_sku/fitter/rare/mod_surgical_processor
 	category = "Medical Modules"
@@ -870,26 +887,26 @@
 	desc = "A wrist-mounted surgical suite with the common operation programs already loaded."
 	item_path = /obj/item/mod/module/surgical_processor/preloaded
 	price_vouchers = 2
-	price_credits = 700
+	price_credits = 2100
 
 /datum/shop_sku/fitter/rare/mod_emp_shield_advanced
 	category = "Utility Modules"
 	item_path = /obj/item/mod/module/emp_shield/advanced
 	price_vouchers = 1
-	price_credits = 800
+	price_credits = 2400
 
 /datum/shop_sku/fitter/rare/mod_projectile_dampener
 	category = "Mobility"
 	item_path = /obj/item/mod/module/projectile_dampener
 	price_vouchers = 2
-	price_credits = 900
+	price_credits = 2700
 
 /datum/shop_sku/fitter/rare/bomb_suit
 	category = "Environment Gear"
 	desc = "Full blast plate for handling live ordnance. Heavy enough that you won't run anywhere in it, which is the point."
 	item_path = /obj/item/clothing/suit/utility/bomb_suit
 	price_vouchers = 1
-	price_credits = 800
+	price_credits = 1200
 
 // =========================================================================
 // WICK'S SALVAGE BENCH (buybacks)

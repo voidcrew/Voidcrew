@@ -12,7 +12,10 @@
 #define DEFAULT_AVAILABLE_MISSIONS 5
 #define DEFAULT_MAX_ACTIVE_MISSIONS 3
 #define DEFAULT_MISSION_DURATION (30 MINUTES)
-#define MISSION_REFRESH_COOLDOWN (60 SECONDS)
+/// Board reroll wipes all five offers, so a short cooldown made it free to fish
+/// for the top-paying contract type. Five minutes makes the posted board a hand
+/// you play rather than one you redraw.
+#define MISSION_REFRESH_COOLDOWN (5 MINUTES)
 /// Unaccepted board offers older than this are rotated out by SSmissions
 #define MISSION_BOARD_EXPIRY (20 MINUTES)
 

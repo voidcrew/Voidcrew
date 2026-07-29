@@ -142,8 +142,6 @@
 	// Sarge buys serviceable salvage — arms and armor off whoever stopped
 	// needing them — plus field materials off planet megafauna and crust
 	buyback_types = list(
-		/datum/shop_buyback/outfitter/salvage_ballistics,
-		/datum/shop_buyback/outfitter/salvage_energy,
 		/datum/shop_buyback/outfitter/salvage_armor,
 		/datum/shop_buyback/outfitter/goliath_plates,
 		/datum/shop_buyback/outfitter/sinew,
@@ -221,24 +219,24 @@
 /datum/shop_sku/outfitter/armor_vest
 	category = "Armor"
 	item_path = /obj/item/clothing/suit/armor/vest
-	price_credits = 600
+	price_credits = 1800
 
 /datum/shop_sku/outfitter/helmet
 	category = "Armor"
 	item_path = /obj/item/clothing/head/helmet
-	price_credits = 400
+	price_credits = 1200
 
 /datum/shop_sku/outfitter/riot_helmet
 	category = "Armor"
 	item_path = /obj/item/clothing/head/helmet/toggleable/riot
-	price_credits = 600
+	price_credits = 1800
 	stock_min = 1
 	stock_max = 3
 
 /datum/shop_sku/outfitter/bulletproof_vest
 	category = "Armor"
 	item_path = /obj/item/clothing/suit/armor/bulletproof
-	price_credits = 900
+	price_credits = 2700
 	stock_min = 1
 	stock_max = 2
 
@@ -247,7 +245,7 @@
 /datum/shop_sku/outfitter/disabler
 	category = "Firearms & Ammo"
 	item_path = /obj/item/gun/energy/disabler
-	price_credits = 800
+	price_credits = 2400
 	stock_min = 1
 	stock_max = 3
 
@@ -255,49 +253,49 @@
 	category = "Firearms & Ammo"
 	item_path = /obj/item/gun/energy/e_gun
 	price_vouchers = 1
-	price_credits = 800
+	price_credits = 2400
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/outfitter/laser_gun
 	category = "Firearms & Ammo"
 	item_path = /obj/item/gun/energy/laser
-	price_credits = 1000
+	price_credits = 3000
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/outfitter/double_barrel
 	category = "Firearms & Ammo"
 	item_path = /obj/item/gun/ballistic/shotgun/doublebarrel
-	price_credits = 700
+	price_credits = 2100
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/outfitter/rubbershot
 	category = "Firearms & Ammo"
 	item_path = /obj/item/storage/box/rubbershot
-	price_credits = 200
+	price_credits = 600
 	stock_min = 3
 	stock_max = 6
 
 /datum/shop_sku/outfitter/lethalshot
 	category = "Firearms & Ammo"
 	item_path = /obj/item/storage/box/lethalshot
-	price_credits = 400
+	price_credits = 1200
 	stock_min = 2
 	stock_max = 4
 
 /datum/shop_sku/outfitter/boltaction
 	category = "Firearms & Ammo"
 	item_path = /obj/item/gun/ballistic/rifle/boltaction
-	price_credits = 900
+	price_credits = 2700
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/outfitter/rifle_clip
 	category = "Firearms & Ammo"
 	item_path = /obj/item/ammo_box/strilka310
-	price_credits = 150
+	price_credits = 450
 	stock_min = 3
 	stock_max = 6
 
@@ -308,7 +306,7 @@
 	name = "c-20r magazine"
 	desc = "A loaded .45 magazine for a C-20r. Sarge stocks these because the schematic's on her own shelf."
 	item_path = /obj/item/ammo_box/magazine/smgm45
-	price_credits = 200
+	price_credits = 600
 	stock_min = 3
 	stock_max = 6
 
@@ -317,7 +315,7 @@
 	name = "wt-550 magazine"
 	desc = "A loaded 4.6x30mm magazine for a WT-550. Armor-piercing, and priced accordingly."
 	item_path = /obj/item/ammo_box/magazine/wt550m9
-	price_credits = 250
+	price_credits = 750
 	stock_min = 2
 	stock_max = 5
 
@@ -325,7 +323,7 @@
 /datum/shop_sku/outfitter/firing_pin
 	category = "Firearms & Ammo"
 	item_path = /obj/item/firing_pin
-	price_credits = 300
+	price_credits = 900
 	stock_min = 3
 	stock_max = 5
 
@@ -340,7 +338,7 @@
 	name = "plasma thruster board"
 	desc = "Board for a plasma thruster, the standard workhorse drive. It draws fuel from a heater mounted right behind it, so you need one of those in the line too."
 	item_path = /obj/item/circuitboard/machine/engine/plasma
-	price_credits = 800
+	price_credits = 4800
 	stock_min = 1
 	stock_max = 3
 
@@ -349,7 +347,7 @@
 	name = "expulsion thruster board"
 	desc = "Board for an expulsion thruster. It burns whatever gas is in the heater and wastes most of it, which is the point when plasma is scarce."
 	item_path = /obj/item/circuitboard/machine/engine/expulsion
-	price_credits = 600
+	price_credits = 3600
 	stock_min = 1
 	stock_max = 3
 
@@ -358,7 +356,7 @@
 	name = "ion thruster board"
 	desc = "Board for an ion thruster. No fuel line and no heater, just a heavy draw on the powernet, at about 40% of a plasma thruster's push."
 	item_path = /obj/item/circuitboard/machine/engine/electric
-	price_credits = 900
+	price_credits = 5400
 	stock_min = 1
 	stock_max = 2
 
@@ -367,7 +365,7 @@
 	name = "oil thruster board"
 	desc = "Board for an oil thruster, which burns liquid fuel instead of gas. There's no lathe design for it anywhere, so the depot is the only source."
 	item_path = /obj/item/circuitboard/machine/engine/oil
-	price_credits = 700
+	price_credits = 4200
 	stock_min = 1
 	stock_max = 2
 
@@ -376,7 +374,7 @@
 	name = "engine heater board"
 	desc = "Board for a fueled engine heater. Plasma and expulsion thrusters latch onto one to draw fuel and won't fire without it."
 	item_path = /obj/item/circuitboard/machine/shuttle/heater
-	price_credits = 500
+	price_credits = 3000
 	stock_min = 2
 	stock_max = 4
 
@@ -386,7 +384,7 @@
 	desc = "Board for a hull-mounted laser turret. It takes a standard power cell you can swap out for a bigger one, and Sarge will not discuss where the crate came from."
 	item_path = /obj/item/circuitboard/machine/ship_combat/laser_turret
 	price_vouchers = 2
-	price_credits = 700
+	price_credits = 4200
 	stock_min = 1
 	stock_max = 2
 
@@ -397,14 +395,14 @@
 /datum/shop_sku/outfitter/missile_tracking
 	category = "Ship Ordnance"
 	item_path = /obj/item/electronics/ship_missile_tracking
-	price_credits = 250
+	price_credits = 1500
 	stock_min = 2
 	stock_max = 4
 
 /datum/shop_sku/outfitter/warhead_standard
 	category = "Ship Ordnance"
 	item_path = /obj/item/bombcore/missile
-	price_credits = 500
+	price_credits = 3000
 	stock_min = 1
 	stock_max = 3
 
@@ -414,7 +412,7 @@
 	desc = "A ready-to-fire light missile. Drag it straight onto a ship launcher — no assembly, no fuss."
 	item_path = /obj/structure/ship_missile/armed/light
 	price_vouchers = 1
-	price_credits = 400
+	price_credits = 2400
 	stock_min = 1
 	stock_max = 2
 
@@ -423,41 +421,41 @@
 /datum/shop_sku/outfitter/seclite
 	category = "Security Gear"
 	item_path = /obj/item/flashlight/seclite
-	price_credits = 150
+	price_credits = 450
 
 /datum/shop_sku/outfitter/flash
 	category = "Security Gear"
 	item_path = /obj/item/assembly/flash/handheld
-	price_credits = 250
+	price_credits = 750
 
 /datum/shop_sku/outfitter/bola
 	category = "Security Gear"
 	item_path = /obj/item/restraints/legcuffs/bola
-	price_credits = 200
+	price_credits = 600
 
 /datum/shop_sku/outfitter/security_belt
 	category = "Security Gear"
 	item_path = /obj/item/storage/belt/security/full
-	price_credits = 900
+	price_credits = 2700
 	stock_min = 1
 	stock_max = 1
 
 /datum/shop_sku/outfitter/pepper_spray
 	category = "Security Gear"
 	item_path = /obj/item/reagent_containers/spray/pepper
-	price_credits = 150
+	price_credits = 450
 
 /datum/shop_sku/outfitter/riot_shield
 	category = "Security Gear"
 	item_path = /obj/item/shield/riot
-	price_credits = 800
+	price_credits = 2400
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/outfitter/barrier_grenade
 	category = "Security Gear"
 	item_path = /obj/item/grenade/barrier
-	price_credits = 350
+	price_credits = 1050
 	stock_min = 2
 	stock_max = 4
 
@@ -466,26 +464,26 @@
 /datum/shop_sku/outfitter/brute_kit
 	category = "Combat Medical"
 	item_path = /obj/item/storage/medkit/brute
-	price_credits = 400
+	price_credits = 1200
 
 /datum/shop_sku/outfitter/advanced_medkit
 	category = "Combat Medical"
 	item_path = /obj/item/storage/medkit/advanced
-	price_credits = 800
+	price_credits = 2400
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/outfitter/stimpack
 	category = "Combat Medical"
 	item_path = /obj/item/reagent_containers/hypospray/medipen/stimpack
-	price_credits = 400
+	price_credits = 1200
 	stock_min = 2
 	stock_max = 4
 
 /datum/shop_sku/outfitter/suture
 	category = "Combat Medical"
 	item_path = /obj/item/stack/medical/suture
-	price_credits = 120
+	price_credits = 350
 	stock_min = 3
 	stock_max = 6
 
@@ -496,7 +494,7 @@
 	name = "medical HUD sunglasses"
 	desc = "Tinted health-scanner glasses. Everyone in view gets a status icon, so you can tell who's down from who's dead without walking over."
 	item_path = /obj/item/clothing/glasses/hud/health/sunglasses
-	price_credits = 500
+	price_credits = 1500
 	stock_min = 1
 	stock_max = 3
 
@@ -505,21 +503,21 @@
 /datum/shop_sku/outfitter/gas_mask
 	category = "Utility"
 	item_path = /obj/item/clothing/mask/gas
-	price_credits = 150
+	price_credits = 200
 
 /datum/shop_sku/outfitter/jaws
 	category = "Utility"
 	name = "jaws of life"
 	item_path = /obj/item/crowbar/power
 	price_vouchers = 1
-	price_credits = 500
+	price_credits = 750
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/outfitter/magboots
 	category = "Utility"
 	item_path = /obj/item/clothing/shoes/magboots
-	price_credits = 800
+	price_credits = 1200
 	stock_min = 1
 	stock_max = 2
 
@@ -533,7 +531,7 @@
 	desc = "Ten sheets of plasteel off the depot's own pallet. Reinforced walls, blast doors, and every airlock you'll rebuild this round."
 	item_path = /obj/item/stack/sheet/plasteel
 	dispense_amount = 10
-	price_credits = 500
+	price_credits = 750
 	stock_min = 2
 	stock_max = 4
 
@@ -543,7 +541,7 @@
 	desc = "Thirty sheets of iron. Not glamorous, but a hull breach doesn't care."
 	item_path = /obj/item/stack/sheet/iron
 	dispense_amount = 30
-	price_credits = 200
+	price_credits = 300
 	stock_min = 3
 	stock_max = 6
 
@@ -553,7 +551,7 @@
 	desc = "Twenty sheets of glass. Windows, and everything else that wants a sheet of glass in it."
 	item_path = /obj/item/stack/sheet/glass
 	dispense_amount = 20
-	price_credits = 150
+	price_credits = 200
 	stock_min = 3
 	stock_max = 6
 
@@ -566,7 +564,7 @@
 	desc = "A full canister of thruster-grade plasma at depot rates. Sarge doesn't do markup; she does volume."
 	category = "Fuel & Gas"
 	item_path = /obj/machinery/portable_atmospherics/canister/plasma
-	price_credits = 750
+	price_credits = 1100
 	stock_min = 3
 	stock_max = 5
 
@@ -575,7 +573,7 @@
 	desc = "A full tank of welding fuel on a wheeled frame. Drag it aboard and stop rationing your repairs."
 	category = "Fuel & Gas"
 	item_path = /obj/structure/reagent_dispensers/fueltank
-	price_credits = 250
+	price_credits = 400
 	stock_min = 2
 	stock_max = 4
 
@@ -584,7 +582,7 @@
 	desc = "A filled oxygen tank at depot rates. Halcyon charges more for the same air and a nicer waiting room."
 	category = "Fuel & Gas"
 	item_path = /obj/item/tank/internals/oxygen
-	price_credits = 80
+	price_credits = 120
 	stock_min = 4
 	stock_max = 8
 
@@ -610,7 +608,7 @@
 	category = "Blueprints"
 	item_path = /obj/item/blueprint/gun/laser_carbine
 	price_vouchers = 2
-	price_credits = 500
+	price_credits = 3000
 	stock_min = 1
 	stock_max = 1
 
@@ -619,28 +617,28 @@
 /datum/shop_sku/outfitter/rotating/riot_suit
 	category = "Armor"
 	item_path = /obj/item/clothing/suit/armor/riot
-	price_credits = 1500
+	price_credits = 4500
 
 /datum/shop_sku/outfitter/rotating/telescopic_baton
 	category = "Security Gear"
 	item_path = /obj/item/melee/baton/telescopic
-	price_credits = 800
+	price_credits = 2400
 
 /datum/shop_sku/outfitter/rotating/tackler_gloves
 	category = "Security Gear"
 	item_path = /obj/item/clothing/gloves/tackler
-	price_credits = 400
+	price_credits = 1200
 
 /datum/shop_sku/outfitter/rotating/flashbang
 	category = "Security Gear"
 	item_path = /obj/item/grenade/flashbang
-	price_credits = 300
+	price_credits = 900
 
 /datum/shop_sku/outfitter/rotating/frag_grenade
 	category = "Security Gear"
 	item_path = /obj/item/grenade/frag
 	price_vouchers = 1
-	price_credits = 400
+	price_credits = 1200
 
 /datum/shop_sku/outfitter/rotating/missile_standard
 	category = "Ship Ordnance"
@@ -648,13 +646,13 @@
 	desc = "A ready-to-fire standard missile. Solid ship-to-ship punch, straight onto the launcher."
 	item_path = /obj/structure/ship_missile/armed/standard
 	price_vouchers = 1
-	price_credits = 800
+	price_credits = 4800
 
 /datum/shop_sku/outfitter/rotating/warhead_heavy
 	category = "Ship Ordnance"
 	item_path = /obj/item/bombcore/missile/heavy
 	price_vouchers = 1
-	price_credits = 700
+	price_credits = 4200
 
 // ===== RARE SHOWCASE =====
 
@@ -662,18 +660,18 @@
 	category = "Armor"
 	item_path = /obj/item/clothing/suit/armor/laserproof
 	price_vouchers = 1
-	price_credits = 1200
+	price_credits = 3600
 
 /datum/shop_sku/outfitter/rare/compact_defib
 	category = "Combat Medical"
 	item_path = /obj/item/defibrillator/compact
-	price_credits = 2000
+	price_credits = 6000
 
 /datum/shop_sku/outfitter/rare/ion_rifle
 	category = "Firearms & Ammo"
 	item_path = /obj/item/gun/energy/ionrifle
 	price_vouchers = 2
-	price_credits = 1000
+	price_credits = 3000
 
 /datum/shop_sku/outfitter/rare/missile_heavy
 	category = "Ship Ordnance"
@@ -681,28 +679,16 @@
 	desc = "A ready-to-fire heavy missile — devastating, and priced like it. Drag it onto a launcher and pity whatever's downrange."
 	item_path = /obj/structure/ship_missile/armed/heavy
 	price_vouchers = 2
-	price_credits = 800
+	price_credits = 4800
 
 // ===== SARGE'S SALVAGE COUNTER (buybacks) =====
 // Credits only; guns and armor can come off a lathe, so they never pay vouchers.
-
-/datum/shop_buyback/outfitter/salvage_ballistics
-	name = "ballistic firearm (salvage)"
-	desc = "Working ballistics, any pattern. Sarge strips them for parts or resells to the next crew through."
-	category = "Salvage"
-	item_path = /obj/item/gun/ballistic
-	pay_credits = 200
-	demand_min = 3
-	demand_max = 6
-
-/datum/shop_buyback/outfitter/salvage_energy
-	name = "energy weapon (salvage)"
-	desc = "Cell-fed weaponry in working order. Dead cells accepted grudgingly."
-	category = "Salvage"
-	item_path = /obj/item/gun/energy
-	pay_credits = 350
-	demand_min = 2
-	demand_max = 4
+//
+// No gun line here either. Any buyback typed at /obj/item/gun or
+// /obj/item/gun/energy pays out on cargo's toy crates — 400 cr buys eight foam
+// shotguns or six laser-tag rifles, and none of them can be told apart from the
+// real thing at the counter. Armor stays, because cargo's armor crate works out
+// to 200 cr a vest and this pays less than that.
 
 /datum/shop_buyback/outfitter/salvage_armor
 	name = "armored suit (salvage)"

@@ -101,38 +101,38 @@
 /datum/shop_sku/colosseum/grindstone
 	category = "Pit Kit"
 	item_path = /obj/item/sharpener/grindstone
-	price_credits = 350
+	price_credits = 1050
 	stock_min = 2
 	stock_max = 3
 
 /datum/shop_sku/colosseum/pit_satchel
 	category = "Pit Kit"
 	item_path = /obj/item/storage/medkit/pit_doctor
-	price_credits = 500
+	price_credits = 1500
 	stock_min = 2
 	stock_max = 3
 
 /datum/shop_sku/colosseum/retiarius_net
 	category = "Armaments"
 	item_path = /obj/item/restraints/legcuffs/bola/retiarius
-	price_credits = 600
+	price_credits = 1800
 
 // ===== ROTATING — THE FIGHTING KIT =====
 
 /datum/shop_sku/colosseum/rotating/sandstriders
 	category = "Panoply"
 	item_path = /obj/item/clothing/shoes/sandal/sandstrider
-	price_credits = 800
+	price_credits = 2400
 
 /datum/shop_sku/colosseum/rotating/parmula
 	category = "Armaments"
 	item_path = /obj/item/shield/buckler/parmula
-	price_credits = 900
+	price_credits = 2700
 
 /datum/shop_sku/colosseum/rotating/bestiarius_pike
 	category = "Armaments"
 	item_path = /obj/item/spear/bestiarius
-	price_credits = 1100
+	price_credits = 3300
 
 // ===== RARE — THE SHOWCASE =====
 
@@ -140,19 +140,19 @@
 	category = "Panoply"
 	item_path = /obj/item/clothing/head/helmet/gladiator/galea
 	price_vouchers = 1
-	price_credits = 800
+	price_credits = 2400
 
 /datum/shop_sku/colosseum/rare/spaulder
 	category = "Panoply"
 	item_path = /obj/item/clothing/suit/armor/spaulder
 	price_vouchers = 1
-	price_credits = 1000
+	price_credits = 3000
 
 /datum/shop_sku/colosseum/rare/laurel
 	category = "Panoply"
 	item_path = /obj/item/clothing/head/costume/crown/laurel
 	price_vouchers = 2
-	price_credits = 1500
+	price_credits = 4500
 
 // =========================================================================
 // THE LANISTA

@@ -191,57 +191,57 @@
 /datum/shop_sku/general/oxygen_tank
 	category = "Survival & EVA"
 	item_path = /obj/item/tank/internals/oxygen
-	price_credits = 100
+	price_credits = 150
 
 /datum/shop_sku/general/emergency_oxygen
 	category = "Survival & EVA"
 	item_path = /obj/item/tank/internals/emergency_oxygen/engi
-	price_credits = 50
+	price_credits = 80
 	stock_min = 4
 	stock_max = 8
 
 /datum/shop_sku/general/breath_mask
 	category = "Survival & EVA"
 	item_path = /obj/item/clothing/mask/breath
-	price_credits = 50
+	price_credits = 80
 
 /datum/shop_sku/general/eva_suit
 	category = "Survival & EVA"
 	item_path = /obj/item/clothing/suit/space/eva
-	price_credits = 400
+	price_credits = 600
 	stock_min = 2
 	stock_max = 3
 
 /datum/shop_sku/general/eva_helmet
 	category = "Survival & EVA"
 	item_path = /obj/item/clothing/head/helmet/space/eva
-	price_credits = 300
+	price_credits = 450
 	stock_min = 2
 	stock_max = 3
 
 /datum/shop_sku/general/gps
 	category = "Survival & EVA"
 	item_path = /obj/item/gps
-	price_credits = 150
+	price_credits = 200
 
 /datum/shop_sku/general/flare
 	category = "Survival & EVA"
 	item_path = /obj/item/flashlight/flare
-	price_credits = 30
+	price_credits = 40
 	stock_min = 6
 	stock_max = 10
 
 /datum/shop_sku/general/glowstick
 	category = "Survival & EVA"
 	item_path = /obj/item/flashlight/glowstick
-	price_credits = 20
+	price_credits = 30
 	stock_min = 6
 	stock_max = 10
 
 /datum/shop_sku/general/survival_medipen
 	category = "Survival & EVA"
 	item_path = /obj/item/reagent_containers/hypospray/medipen/survival
-	price_credits = 300
+	price_credits = 450
 	stock_min = 2
 	stock_max = 4
 
@@ -250,28 +250,28 @@
 /datum/shop_sku/general/toolbelt
 	category = "Tools & Repair"
 	item_path = /obj/item/storage/belt/utility/atmostech
-	price_credits = 350
+	price_credits = 500
 
 // The large-tank welder only prints on a hacked lathe, so this is the cheap
 // rung on a shelf that otherwise starts at 250 cr.
 /datum/shop_sku/general/big_welder
 	category = "Tools & Repair"
 	item_path = /obj/item/weldingtool/largetank
-	price_credits = 200
+	price_credits = 300
 
 /datum/shop_sku/general/welding_fuel
 	name = "welding fuel tank"
 	desc = "A thousand units of industrial welding fuel in a tank you can drag aboard. Enough to keep a repair crew going for a long shift. Don't weld it."
 	category = "Tools & Repair"
 	item_path = /obj/structure/reagent_dispensers/fueltank
-	price_credits = 250
+	price_credits = 400
 	stock_min = 2
 	stock_max = 4
 
 /datum/shop_sku/general/light_replacer
 	category = "Tools & Repair"
 	item_path = /obj/item/lightreplacer
-	price_credits = 250
+	price_credits = 400
 	stock_min = 1
 	stock_max = 3
 
@@ -279,7 +279,7 @@
 	category = "Tools & Repair"
 	name = "holofan projector"
 	item_path = /obj/item/holosign_creator/atmos
-	price_credits = 400
+	price_credits = 600
 	stock_min = 1
 	stock_max = 2
 
@@ -288,34 +288,34 @@
 /datum/shop_sku/general/medkit
 	category = "Medical"
 	item_path = /obj/item/storage/medkit/regular
-	price_credits = 200
+	price_credits = 300
 
 /datum/shop_sku/general/burn_kit
 	category = "Medical"
 	item_path = /obj/item/storage/medkit/fire
-	price_credits = 250
+	price_credits = 400
 
 /datum/shop_sku/general/o2_kit
 	category = "Medical"
 	item_path = /obj/item/storage/medkit/o2
-	price_credits = 250
+	price_credits = 400
 
 /datum/shop_sku/general/health_analyzer
 	category = "Medical"
 	item_path = /obj/item/healthanalyzer
-	price_credits = 150
+	price_credits = 200
 
 /datum/shop_sku/general/epipen
 	category = "Medical"
 	item_path = /obj/item/reagent_containers/hypospray/medipen
-	price_credits = 100
+	price_credits = 150
 	stock_min = 4
 	stock_max = 8
 
 /datum/shop_sku/general/gauze
 	category = "Medical"
 	item_path = /obj/item/stack/medical/gauze
-	price_credits = 80
+	price_credits = 120
 	stock_min = 4
 	stock_max = 8
 
@@ -325,7 +325,7 @@
 	category = "Medical"
 	item_path = /obj/item/stack/medical/suture
 	dispense_amount = 10
-	price_credits = 120
+	price_credits = 180
 	stock_min = 4
 	stock_max = 8
 
@@ -335,7 +335,7 @@
 	category = "Medical"
 	item_path = /obj/item/stack/medical/mesh
 	dispense_amount = 15
-	price_credits = 120
+	price_credits = 180
 	stock_min = 4
 	stock_max = 8
 
@@ -344,27 +344,27 @@
 /datum/shop_sku/general/pickaxe
 	category = "Prospecting"
 	item_path = /obj/item/pickaxe
-	price_credits = 150
+	price_credits = 200
 
 /datum/shop_sku/general/mesons
 	category = "Prospecting"
 	item_path = /obj/item/clothing/glasses/meson
-	price_credits = 250
+	price_credits = 400
 
 /datum/shop_sku/general/ore_bag
 	category = "Prospecting"
 	item_path = /obj/item/storage/bag/ore
-	price_credits = 150
+	price_credits = 200
 
 /datum/shop_sku/general/mining_scanner
 	category = "Prospecting"
 	item_path = /obj/item/t_scanner/adv_mining_scanner/lesser
-	price_credits = 300
+	price_credits = 450
 
 /datum/shop_sku/general/diamond_pick
 	category = "Prospecting"
 	item_path = /obj/item/pickaxe/diamond
-	price_credits = 800
+	price_credits = 1200
 	stock_min = 1
 	stock_max = 2
 
@@ -415,7 +415,7 @@
 	category = "Ship Sundries"
 	item_path = /obj/item/stack/tile/iron/base
 	dispense_amount = 20
-	price_credits = 80
+	price_credits = 120
 	stock_min = 3
 	stock_max = 6
 
@@ -427,7 +427,7 @@
 	category = "Ship Sundries"
 	item_path = /obj/item/stack/sheet/iron
 	dispense_amount = 30
-	price_credits = 150
+	price_credits = 200
 	stock_min = 3
 	stock_max = 6
 
@@ -437,7 +437,7 @@
 	category = "Ship Sundries"
 	item_path = /obj/item/stack/sheet/glass
 	dispense_amount = 30
-	price_credits = 150
+	price_credits = 200
 	stock_min = 3
 	stock_max = 6
 
@@ -447,7 +447,7 @@
 	category = "Ship Sundries"
 	item_path = /obj/item/stack/sheet/plasteel
 	dispense_amount = 20
-	price_credits = 600
+	price_credits = 900
 	stock_min = 1
 	stock_max = 3
 
@@ -458,7 +458,7 @@
 	desc = "A full canister of thruster-grade plasma. It costs more here than at the deep depots — you're paying for the haul out to the safe ring."
 	category = "Fuel & Gas"
 	item_path = /obj/machinery/portable_atmospherics/canister/plasma
-	price_credits = 1200
+	price_credits = 1800
 	stock_min = 2
 	stock_max = 3
 
@@ -467,14 +467,14 @@
 	desc = "The circuit board for a nebula ram scoop. Park inside a nebula and drink your fuel straight out of the cloud. Barnaby keeps them behind the counter with the good stock."
 	category = "Fuel & Gas"
 	item_path = /obj/item/circuitboard/machine/shuttle/scoop
-	price_credits = 400
+	price_credits = 600
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/general/soap
 	category = "Ship Sundries"
 	item_path = /obj/item/soap
-	price_credits = 40
+	price_credits = 60
 
 // Chart and rumor SKUs live in shop_catalog_charts.dm — Barnaby draws his
 // through chart_pool above rather than defining his own.
@@ -489,14 +489,14 @@
 	name = "unclaimed freight"
 	desc = "A sealed crate somebody never came back for. Barnaby hasn't looked inside, and he'd rather you opened it somewhere else."
 	item_path = /obj/structure/closet/crate/zone_loot/syndicate
-	price_credits = 500
+	price_credits = 750
 
 /datum/shop_sku/general/rotating/metalfoam
 	category = "Ship Sundries"
 	name = "metal foam grenades (box of 7)"
 	desc = "Seven foam grenades for sealing a hull breach in a hurry. The foam is weak and ugly and it will hold long enough to get the plating on."
 	item_path = /obj/item/storage/box/metalfoam
-	price_credits = 350
+	price_credits = 500
 
 /datum/shop_sku/general/rotating/bikehorn
 	item_path = /obj/item/bikehorn
@@ -505,7 +505,7 @@
 /datum/shop_sku/general/rotating/welding_goggles
 	category = "Tools & Repair"
 	item_path = /obj/item/clothing/glasses/welding
-	price_credits = 120
+	price_credits = 180
 
 /datum/shop_sku/general/rotating/guitar
 	item_path = /obj/item/instrument/guitar
@@ -516,12 +516,12 @@
 /datum/shop_sku/general/rare/bluespace_bodybag
 	category = "Ship Sundries"
 	item_path = /obj/item/bodybag/bluespace
-	price_credits = 2000
+	price_credits = 3000
 
 /datum/shop_sku/general/rare/drill
 	category = "Prospecting"
 	item_path = /obj/item/pickaxe/drill
-	price_credits = 1200
+	price_credits = 1800
 
 // ===== BARNABY'S PROSPECTOR COUNTER (buybacks) =====
 

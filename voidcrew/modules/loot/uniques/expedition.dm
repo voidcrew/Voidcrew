@@ -64,6 +64,12 @@
 	desc = "A prospector's compass with the glass sanded to frost. The needle points toward the nearest ruin nobody's set foot in yet."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "brass_compass"
+	// Bare-string overlays (the "pinon*" needle states the parent appends) resolve
+	// against this atom's own icon, not the base pinpointer's tracker.dmi — so the
+	// needle set is mirrored into uniques.dmi under this suffix, exactly as the
+	// "_hunter" pinpointer variant does inside tracker.dmi. Without it the compass
+	// renders no needle at all, not even the "no signal" state.
+	icon_suffix = "_compass"
 	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 3, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 2)
 	/// Cached overmap turf of whatever's carrying the compass, set by scan_for_target()
 	var/turf/cached_reference_turf

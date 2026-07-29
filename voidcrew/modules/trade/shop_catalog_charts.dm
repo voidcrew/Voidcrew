@@ -37,11 +37,11 @@
 // low rung of the ladder.
 /datum/shop_sku/chart/green
 	item_path = /obj/item/disk/star_chart/green
-	price_credits = 200
+	price_credits = 1200
 
 /datum/shop_sku/chart/yellow
 	item_path = /obj/item/disk/star_chart/yellow
-	price_credits = 400
+	price_credits = 2400
 
 // Nobody surveys the lawless deep for credits.
 /datum/shop_sku/chart/red
@@ -68,7 +68,7 @@
 	is_chart = TRUE
 	// One price at every outpost, since all three now sell the same galaxy-wide
 	// tip rather than their own band's local gossip.
-	price_credits = 250
+	price_credits = 1500
 	stock_min = 2
 	stock_max = 4
 
@@ -154,7 +154,7 @@
 /datum/shop_sku/ruin_chart/hospice
 	name = "contested-lane tip: 'CSV Meridian'"
 	desc = "A plague evacuation ship, scuttled under quarantine seal and never reopened. The wards are still full and the pharmacy was never rationed out. Uploaded sealed to your helm; reveal it when your crew has suits that seal."
-	price_credits = 800
+	price_credits = 4800
 	spawn_zone = ZONE_YELLOW
 	ruin_template_path = /datum/map_template/ruin/space/rare/hospice
 	rumor_name = "CSV Meridian"
@@ -164,7 +164,7 @@
 	name = "contested-lane tip: 'Eventide'"
 	desc = "An off-ledger xenobiology annex that stopped filing reports mid-shift. The specimens are loose and the extract vault was never emptied. Uploaded sealed to your helm; reveal it when your crew is kitted for what's inside."
 	price_vouchers = 2
-	price_credits = 500
+	price_credits = 3000
 	spawn_zone = ZONE_YELLOW
 	ruin_template_path = /datum/map_template/ruin/space/rare/biolab
 	rumor_name = "Eventide"
@@ -174,7 +174,7 @@
 	name = "contested-lane tip: 'MV Ambassador'"
 	desc = "A passenger liner that lost power mid-crossing and got written off with the luggage still aboard. Scavengers are working it now, and they haven't cracked the purser's hold. Uploaded sealed to your helm; the people already inside are the only thing between you and it."
 	price_vouchers = 1
-	price_credits = 600
+	price_credits = 3600
 	spawn_zone = ZONE_YELLOW
 	ruin_template_path = /datum/map_template/ruin/space/rare/liner
 	rumor_name = "MV Ambassador"
@@ -226,7 +226,7 @@
 	name = "deep-lane tip: 'Kestrel Anchorage'"
 	desc = "A Syndicate forward depot that stopped answering its handlers two years ago. The garrison never stood down, so nothing has been looted and nothing has been abandoned. Uploaded sealed to your helm; reveal it when your crew is ready to fight soldiers who are still on duty."
 	price_vouchers = 3
-	price_credits = 500
+	price_credits = 3000
 	ruin_template_path = /datum/map_template/ruin/space/rare/blacksite
 	rumor_name = "Kestrel Anchorage"
 	rumor_desc = "A Syndicate depot in the lawless deep, still garrisoned and still following orders nobody has updated. The equipment lockers were never stripped."

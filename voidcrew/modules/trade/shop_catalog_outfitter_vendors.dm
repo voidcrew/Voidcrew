@@ -35,6 +35,7 @@
 		"Gadgetry",
 		"Ship Retrofit",
 		"Power & Optics",
+		"Job Packs",
 	)
 	sku_types = list(
 		// Gadgetry
@@ -53,6 +54,9 @@
 		/datum/shop_sku/skunk/science_glasses,
 		/datum/shop_sku/skunk/diagnostic_hud,
 		/datum/shop_sku/skunk/night_vision,
+		// Job Packs — the crates live in shop_catalog_job_packs.dm
+		/datum/shop_sku/skunk/job_pack_robotics,
+		/datum/shop_sku/skunk/job_pack_xenobiology,
 	)
 	rotating_pool = list(
 		/datum/shop_sku/skunk/rotating/experimental_welder,
@@ -106,21 +110,21 @@
 /datum/shop_sku/skunk/signaler
 	category = "Gadgetry"
 	item_path = /obj/item/assembly/signaler
-	price_credits = 100
+	price_credits = 150
 	stock_min = 3
 	stock_max = 6
 
 /datum/shop_sku/skunk/adv_analyzer
 	category = "Gadgetry"
 	item_path = /obj/item/healthanalyzer/advanced
-	price_credits = 600
+	price_credits = 900
 	stock_min = 1
 	stock_max = 2
 
 /datum/shop_sku/skunk/science_gps
 	category = "Gadgetry"
 	item_path = /obj/item/gps/science
-	price_credits = 250
+	price_credits = 400
 	stock_min = 1
 	stock_max = 3
 
@@ -129,34 +133,34 @@
 /datum/shop_sku/skunk/capacitor
 	category = "Ship Retrofit"
 	item_path = /obj/item/stock_parts/capacitor/adv
-	price_credits = 200
+	price_credits = 1200
 
 /datum/shop_sku/skunk/servo
 	category = "Ship Retrofit"
 	item_path = /obj/item/stock_parts/servo/nano
-	price_credits = 200
+	price_credits = 1200
 
 /datum/shop_sku/skunk/micro_laser
 	category = "Ship Retrofit"
 	item_path = /obj/item/stock_parts/micro_laser/high
-	price_credits = 200
+	price_credits = 1200
 
 /datum/shop_sku/skunk/scanning_module
 	category = "Ship Retrofit"
 	item_path = /obj/item/stock_parts/scanning_module/adv
-	price_credits = 200
+	price_credits = 1200
 
 /datum/shop_sku/skunk/matter_bin
 	category = "Ship Retrofit"
 	item_path = /obj/item/stock_parts/matter_bin/adv
-	price_credits = 200
+	price_credits = 1200
 
 /datum/shop_sku/skunk/rped
 	category = "Ship Retrofit"
 	name = "rapid part exchange device"
 	desc = "Point at machine, click, parts swap themselves. Sold empty; the parts are the shelf above."
 	item_path = /obj/item/storage/part_replacer
-	price_credits = 400
+	price_credits = 2400
 	stock_min = 1
 	stock_max = 2
 
@@ -165,24 +169,24 @@
 /datum/shop_sku/skunk/high_cell
 	category = "Power & Optics"
 	item_path = /obj/item/stock_parts/power_store/cell/high
-	price_credits = 300
+	price_credits = 1800
 
 /datum/shop_sku/skunk/science_glasses
 	category = "Power & Optics"
 	item_path = /obj/item/clothing/glasses/science
-	price_credits = 150
+	price_credits = 900
 
 /datum/shop_sku/skunk/diagnostic_hud
 	category = "Power & Optics"
 	item_path = /obj/item/clothing/glasses/hud/diagnostic
-	price_credits = 300
+	price_credits = 1800
 	stock_min = 1
 	stock_max = 3
 
 /datum/shop_sku/skunk/night_vision
 	category = "Power & Optics"
 	item_path = /obj/item/clothing/glasses/night
-	price_credits = 900
+	price_credits = 5400
 	stock_min = 1
 	stock_max = 2
 
@@ -195,25 +199,25 @@
 /datum/shop_sku/skunk/rotating/experimental_welder
 	category = "Gadgetry"
 	item_path = /obj/item/weldingtool/experimental
-	price_credits = 500
+	price_credits = 750
 
 /datum/shop_sku/skunk/rotating/super_cell
 	category = "Power & Optics"
 	item_path = /obj/item/stock_parts/power_store/cell/super
-	price_credits = 800
+	price_credits = 4800
 
 /datum/shop_sku/skunk/rotating/foam_grenade
 	category = "Gadgetry"
 	name = "smart metal foam grenade"
 	desc = "A hull-patch grenade. Set it off near a breach and the foam finds the hole on its own."
 	item_path = /obj/item/grenade/chem_grenade/smart_metal_foam
-	price_credits = 350
+	price_credits = 500
 
 /datum/shop_sku/skunk/rotating/thermal_glasses
 	category = "Power & Optics"
 	item_path = /obj/item/clothing/glasses/thermal
 	price_vouchers = 2
-	price_credits = 800
+	price_credits = 4800
 
 // ===== RARE SHOWCASE =====
 
@@ -223,13 +227,13 @@
 	desc = "A boxed set of top-shelf components, straight off a convoy that Boffin refuses to name."
 	item_path = /obj/item/storage/box/stockparts/deluxe
 	price_vouchers = 2
-	price_credits = 1500
+	price_credits = 9000
 
 /datum/shop_sku/skunk/rare/hyper_cell
 	category = "Power & Optics"
 	item_path = /obj/item/stock_parts/power_store/cell/hyper
 	price_vouchers = 1
-	price_credits = 1200
+	price_credits = 7200
 
 // ===== BOFFIN'S SPECIMEN LEDGER (buybacks) =====
 // Nothing a lathe can print. Planet exotics and things that glow wrong.

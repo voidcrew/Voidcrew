@@ -129,8 +129,6 @@
 		/datum/shop_buyback/black_market/legion_core,
 		/datum/shop_buyback/black_market/bluespace_crystals,
 		/datum/shop_buyback/black_market/syndicate_documents,
-		/datum/shop_buyback/black_market/hot_iron,
-		/datum/shop_buyback/black_market/hot_iron_energy,
 		/datum/shop_buyback/exotic_gas/hypernoblium,
 		/datum/shop_buyback/exotic_gas/pluoxium,
 		/datum/shop_buyback/exotic_gas/nitrium,
@@ -213,14 +211,14 @@
 	category = "Weapons"
 	item_path = /obj/item/gun/ballistic/automatic/pistol
 	price_vouchers = 2
-	price_credits = 500
+	price_credits = 1500
 	stock_min = 2
 	stock_max = 4
 
 /datum/shop_sku/black_market/pistol_mag
 	category = "Weapons"
 	item_path = /obj/item/ammo_box/magazine/m9mm
-	price_credits = 300
+	price_credits = 900
 	stock_min = 4
 	stock_max = 8
 
@@ -234,28 +232,28 @@
 /datum/shop_sku/black_market/speedloader
 	category = "Weapons"
 	item_path = /obj/item/ammo_box/a357
-	price_credits = 600
+	price_credits = 1800
 	stock_min = 2
 	stock_max = 5
 
 /datum/shop_sku/black_market/suppressor
 	category = "Weapons"
 	item_path = /obj/item/suppressor
-	price_credits = 400
+	price_credits = 1200
 	stock_min = 2
 	stock_max = 4
 
 /datum/shop_sku/black_market/combat_knife
 	category = "Weapons"
 	item_path = /obj/item/knife/combat
-	price_credits = 350
+	price_credits = 1050
 	stock_min = 2
 	stock_max = 4
 
 /datum/shop_sku/black_market/switchblade
 	category = "Weapons"
 	item_path = /obj/item/switchblade
-	price_credits = 300
+	price_credits = 900
 	stock_min = 2
 	stock_max = 4
 
@@ -265,7 +263,7 @@
 	category = "Explosives"
 	item_path = /obj/item/grenade/c4
 	price_vouchers = 1
-	price_credits = 250
+	price_credits = 750
 	stock_min = 2
 	stock_max = 4
 
@@ -286,7 +284,7 @@
 /datum/shop_sku/black_market/smoke_bomb
 	category = "Explosives"
 	item_path = /obj/item/grenade/smokebomb
-	price_credits = 300
+	price_credits = 900
 	stock_min = 2
 	stock_max = 4
 
@@ -310,7 +308,7 @@
 	desc = "A blood-red MODsuit frame with a super cell in the core and no modules whatsoever. Cheaper than a kitted suit because you're buying the armor and nothing else."
 	item_path = /obj/item/mod/control/pre_equipped/empty/syndicate
 	price_vouchers = 2
-	price_credits = 600
+	price_credits = 3600
 	stock_min = 1
 	stock_max = 2
 
@@ -320,7 +318,7 @@
 	desc = "The heavier plating the Syndicate issues to people it expects to get shot at, sold bare. Same deal as the red one: frame, core, cell, no modules."
 	item_path = /obj/item/mod/control/pre_equipped/empty/elite
 	price_vouchers = 3
-	price_credits = 900
+	price_credits = 5400
 	stock_min = 1
 	stock_max = 1
 
@@ -330,7 +328,7 @@
 	desc = "A field surgery suit: combat defibrillator, health analyzer, injector and a loaded surgical processor. Sawbones next door thinks it's the best thing Vex sells."
 	item_path = /obj/item/mod/control/pre_equipped/interdyne
 	price_vouchers = 4
-	price_credits = 500
+	price_credits = 3000
 	stock_min = 1
 	stock_max = 1
 
@@ -365,7 +363,7 @@
 	desc = "Squeezes a stowed suit down to normal size so it fits in a bag. Nothing else fits in the suit afterwards."
 	item_path = /obj/item/mod/module/plate_compression
 	price_vouchers = 1
-	price_credits = 300
+	price_credits = 1800
 	stock_min = 1
 	stock_max = 2
 
@@ -397,7 +395,7 @@
 	desc = "The machine board for a ship shield generator. If your ship didn't spawn with one, this is the only place in the galaxy that will sell you the part."
 	item_path = /obj/item/circuitboard/machine/ship_combat/shield_generator
 	price_vouchers = 4
-	price_credits = 1000
+	price_credits = 6000
 	stock_min = 1
 	stock_max = 1
 
@@ -407,7 +405,7 @@
 	desc = "Board for an interdictor. Holds a ship in place so it can't jump away from the fight it started."
 	item_path = /obj/item/circuitboard/machine/ship_combat/interdictor
 	price_vouchers = 3
-	price_credits = 800
+	price_credits = 4800
 	stock_min = 1
 	stock_max = 1
 
@@ -417,7 +415,7 @@
 	desc = "Pirate hardware that pulls credits off another ship's account while you hold a lock on it. Vex sells it without comment."
 	item_path = /obj/item/circuitboard/machine/ship_combat/data_siphon
 	price_vouchers = 3
-	price_credits = 600
+	price_credits = 3600
 	stock_min = 1
 	stock_max = 1
 
@@ -446,7 +444,7 @@
 	category = "Infiltration"
 	item_path = /obj/item/clothing/shoes/chameleon/noslip
 	price_vouchers = 2
-	price_credits = 400
+	price_credits = 1200
 	stock_min = 1
 	stock_max = 2
 
@@ -454,7 +452,7 @@
 	category = "Infiltration"
 	item_path = /obj/item/pen/sleepy
 	price_vouchers = 1
-	price_credits = 400
+	price_credits = 1200
 	stock_min = 1
 	stock_max = 1
 
@@ -464,7 +462,7 @@
 	desc = "A shape-shifting mask with a built-in voice modulator. Be anyone, sound like them too."
 	item_path = /obj/item/clothing/mask/chameleon
 	price_vouchers = 1
-	price_credits = 500
+	price_credits = 1500
 	stock_min = 1
 	stock_max = 2
 
@@ -474,7 +472,7 @@
 	category = "Combat Medical"
 	item_path = /obj/item/storage/medkit/tactical
 	price_vouchers = 1
-	price_credits = 500
+	price_credits = 1500
 	stock_min = 1
 	stock_max = 3
 
@@ -666,37 +664,22 @@
 	demand_min = 1
 	demand_max = 2
 
-// The fence pays above Quartermain's counter — that's the whole point of
-// flying the goods out to the red band. The general line takes anything that
-// fires; the energy line is separate and pays more, because Sarge's armory
-// window buys energy weapons at 350 and a black market that undercuts the
-// legal shop on stolen guns is not a black market. Its demand is deliberately
-// short so the premium stays a premium.
-/datum/shop_buyback/black_market/hot_iron
-	name = "firearm (any, no questions)"
-	desc = "Vex buys guns with a past. Serial numbers optional. Preferably absent."
-	category = "Fencing"
-	item_path = /obj/item/gun
-	pay_credits = 300
-	demand_min = 3
-	demand_max = 6
-
-/datum/shop_buyback/black_market/hot_iron_energy
-	name = "energy weapon (any, no questions)"
-	desc = "Cell-fed guns fetch more here than at any legitimate armory window. Vex has a buyer who only takes the ones that don't need ammunition."
-	category = "Fencing"
-	item_path = /obj/item/gun/energy
-	pay_credits = 450
-	demand_min = 2
-	demand_max = 3
+// No gun-fencing window. It was a flat-rate buyback typed at the top of the gun
+// tree, which meant cargo's 400 cr crate of toy shotguns fenced for thousands,
+// and nobody with a real gun was ever going to sell it for less than the
+// outfitter charges. Sell salvaged arms to Sarge, who at least pretends to
+// inspect them.
 
 // The gas window: tanks of red-band nebula exotics, scooped where the lanes
-// are worst. Sold with the tank — Vex doesn't do decanting.
+// are worst. Sold with the tank — Vex doesn't do decanting. Pays cash, never
+// vouchers: pluoxium and nitrium both come out of an ordinary atmospherics
+// setup, and a voucher you can synthesise aboard ship stops being the currency
+// that has to be earned in dangerous places.
 /datum/shop_buyback/exotic_gas/hypernoblium
 	name = "hypernoblium"
 	desc = "A tank of the rarest gas on the cloud charts. Vex's buyer pays in advance and collects in an unmarked hauler."
 	gas_type = /datum/gas/hypernoblium
-	pay_vouchers = 2
+	pay_credits = 1200
 	demand_min = 2
 	demand_max = 3
 
@@ -704,7 +687,7 @@
 	name = "pluoxium"
 	desc = "Dense breathing gas. A tank of it goes a lot further than a tank of oxygen. Deep-lane nebulas are the only place it pools for free."
 	gas_type = /datum/gas/pluoxium
-	pay_vouchers = 1
+	pay_credits = 300
 	demand_min = 3
 	demand_max = 5
 
@@ -712,6 +695,6 @@
 	name = "nitrium"
 	desc = "Combat stim chemistry starts with this. Vex has never met the customers and intends to keep it that way."
 	gas_type = /datum/gas/nitrium
-	pay_vouchers = 1
+	pay_credits = 300
 	demand_min = 3
 	demand_max = 5
