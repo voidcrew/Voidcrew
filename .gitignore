@@ -263,3 +263,7 @@ rust_g64.dll
 # SpacemanDMM dev tools (local map rendering/linting)
 /bin/dmm-tools.exe
 /bin/dreamchecker.exe
+
+/_bench_previews/
+/vc/
+/unit_test_run.dme
