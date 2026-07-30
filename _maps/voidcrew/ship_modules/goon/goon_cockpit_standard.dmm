@@ -1,0 +1,65 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"l" = (
+/obj/structure/table/reinforced,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/item/storage/medkit/regular,
+/obj/item/storage/medkit/regular,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"p" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/table/reinforced,
+/obj/item/radio,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"q" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"K" = (
+/obj/structure/chair/comfy/brown{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/item/radio/intercom{
+	pixel_y = 28
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"Q" = (
+/obj/modular_map_connector,
+/obj/structure/chair/comfy/brown{
+	dir = 4
+	},
+/obj/machinery/light/small,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"Y" = (
+/obj/structure/chair/comfy/brown{
+	dir = 4
+	},
+/obj/item/toy/plush/beeplushie{
+	desc = "A cute toy resembling THE motherfucking captain.";
+	name = "The Captain of This God Damn Ship"
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+
+(1,1,1) = {"
+K
+Y
+Q
+"}
+(2,1,1) = {"
+p
+q
+l
+"}

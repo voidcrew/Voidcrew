@@ -1,0 +1,124 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"e" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"g" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed,
+/obj/item/bedsheet/grey,
+/obj/item/clothing/head/soft{
+	pixel_x = 7;
+	pixel_y = -7
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"i" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"j" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"l" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/storage/box/matches{
+	pixel_x = 8;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"m" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/wardrobe/grey,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"p" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/structure/closet/wardrobe/mixed,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"v" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral,
+/turf/open/floor/iron,
+/area/template_noop)
+"z" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"E" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed,
+/obj/item/bedsheet/grey,
+/obj/item/toy/plush/lizard_plushie{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"G" = (
+/turf/template_noop,
+/area/template_noop)
+"Y" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed,
+/obj/item/bedsheet/brown,
+/obj/item/paper{
+	pixel_x = -7;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+m
+g
+i
+"}
+(2,1,1) = {"
+p
+Y
+v
+"}
+(3,1,1) = {"
+e
+E
+v
+"}
+(4,1,1) = {"
+e
+z
+v
+"}
+(5,1,1) = {"
+b
+l
+v
+"}
+(6,1,1) = {"
+G
+j
+v
+"}

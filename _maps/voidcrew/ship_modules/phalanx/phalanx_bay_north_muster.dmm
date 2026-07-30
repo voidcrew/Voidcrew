@@ -1,0 +1,160 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"g" = (
+/obj/structure/closet/crate/internals,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"j" = (
+/obj/structure/ore_box,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"p" = (
+/obj/structure/table,
+/obj/item/gps/mining,
+/obj/item/mining_scanner{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"q" = (
+/obj/machinery/suit_storage_unit/mining,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"s" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"x" = (
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"z" = (
+/obj/effect/turf_decal/box/corners,
+/obj/effect/turf_decal/box/corners{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"B" = (
+/obj/machinery/light/floor,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"H" = (
+/obj/structure/table/reinforced,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/glass/fifty{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/weldingtool,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"I" = (
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"J" = (
+/obj/structure/rack,
+/obj/item/pickaxe,
+/obj/item/pickaxe{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/mining_scanner,
+/obj/item/mining_scanner{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"M" = (
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/iron/twenty,
+/obj/item/storage/box/lights/mixed,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"U" = (
+/obj/machinery/mineral/ore_redemption,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+x
+q
+s
+"}
+(2,1,1) = {"
+q
+B
+c
+"}
+(3,1,1) = {"
+J
+x
+c
+"}
+(4,1,1) = {"
+j
+I
+c
+"}
+(5,1,1) = {"
+U
+I
+c
+"}
+(6,1,1) = {"
+H
+I
+c
+"}
+(7,1,1) = {"
+j
+I
+c
+"}
+(8,1,1) = {"
+g
+x
+c
+"}
+(9,1,1) = {"
+p
+B
+c
+"}
+(10,1,1) = {"
+z
+x
+c
+"}
+(11,1,1) = {"
+M
+x
+c
+"}

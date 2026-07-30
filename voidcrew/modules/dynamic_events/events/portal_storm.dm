@@ -18,6 +18,9 @@
 	min_crew_aboard = 3
 	allowed_zones = list(ZONE_RED)
 	requires_flying = TRUE
+	/// Boarders are only a fight if there is somewhere to fight them. A Pill-class can hold
+	/// the three crew this event asks for and still have nowhere for them to stand.
+	min_ship_mass = SHIP_MASS_MEDIUM
 
 /// Requires at least one open floor aboard where a boarding portal can form.
 /datum/round_event_control/voidcrew/portal_storm_syndicate/is_valid_target(obj/structure/overmap/ship/ship)
@@ -46,6 +49,7 @@
 	min_crew_aboard = 3
 	allowed_zones = list(ZONE_RED)
 	requires_flying = TRUE
+	min_ship_mass = SHIP_MASS_MEDIUM
 
 /// Applies the same open-floor eligibility requirement as the syndicate storm.
 /datum/round_event_control/voidcrew/portal_storm_narsie/is_valid_target(obj/structure/overmap/ship/ship)

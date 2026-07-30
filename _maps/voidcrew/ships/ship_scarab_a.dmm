@@ -205,6 +205,12 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/scarab/bridge/a)
+"fC" = (
+/obj/machinery/computer/mission_board{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/commons/a)
 "fL" = (
 /obj/machinery/airalarm/directional/north,
 /obj/item/radio/intercom/directional/west,
@@ -286,6 +292,10 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/bridge/a)
+"iI" = (
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering/a)
 "iW" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 4
@@ -328,6 +338,12 @@
 /obj/effect/turf_decal/bot,
 /obj/machinery/suit_storage_unit/standard_unit,
 /turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay/a)
+"kC" = (
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 1
+	},
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
 "kI" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
@@ -1112,6 +1128,12 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/a)
+"Fy" = (
+/obj/machinery/computer/bank_machine{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/cargo_bay/a)
 "FX" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/scarab/medbay/a)
@@ -1602,6 +1624,10 @@
 	},
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/scarab/dormitories/a)
+"Sp" = (
+/obj/machinery/mission_pad,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/commons/a)
 "SE" = (
 /obj/structure/cable,
 /obj/effect/spawner/structure/window/reinforced/plasma,
@@ -1631,6 +1657,10 @@
 /obj/structure/handrail,
 /turf/open/floor/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
+"Uc" = (
+/obj/machinery/holopad,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/commons/a)
 "UM" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -2004,7 +2034,7 @@ eW
 eW
 eW
 eW
-eW
+iI
 Nk
 hx
 pz
@@ -2018,7 +2048,7 @@ Eo
 Eo
 Eo
 Eo
-Eo
+kC
 sb
 qm
 rw
@@ -2084,7 +2114,7 @@ Eo
 Eo
 Eo
 Eo
-Eo
+Fy
 We
 sb
 Lu
@@ -2172,7 +2202,7 @@ iZ
 pF
 SO
 Iz
-Iz
+Uc
 Iz
 Iz
 xO
@@ -2193,8 +2223,8 @@ pz
 iZ
 SO
 SO
-Iz
-Iz
+fC
+Sp
 Iz
 Iz
 xO

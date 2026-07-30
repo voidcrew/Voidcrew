@@ -35,6 +35,9 @@
 	allowed_zones = list(ZONE_YELLOW, ZONE_RED)
 	/// A lone crew member has no one to drag them out of a chemical foam flood.
 	min_crew_aboard = 2
+	/// Being dragged clear only helps if there is a clear tile to be dragged to — on a small
+	/// hull the foam covers everything at once.
+	min_ship_mass = SHIP_MASS_MEDIUM
 	description = "The scrubbers release a tide of moderately harmless froth."
 
 /datum/round_event_control/voidcrew/scrubber_overflow/catastrophic
@@ -45,6 +48,7 @@
 	earliest_start = 45 MINUTES
 	allowed_zones = list(ZONE_YELLOW, ZONE_RED)
 	min_crew_aboard = 2
+	min_ship_mass = SHIP_MASS_MEDIUM
 	description = "The scrubbers release a tide of mildly harmless froth."
 
 /datum/round_event/voidcrew/scrubber_overflow
@@ -149,3 +153,20 @@
 /datum/round_event/voidcrew/scrubber_overflow/catastrophic
 	danger_chance = 30
 	reagents_amount = 150
+
+/**
+ * Admin-only variant, as upstream: every unwelded scrubber aboard goes off at once
+ * instead of half of them. Weight and occurrence cap are zero so it stays out of the
+ * random roster and only fires from the Trigger Event panel.
+ */
+/datum/round_event_control/voidcrew/scrubber_overflow/every_vent
+	name = "Scrubber Overflow: Every Vent"
+	typepath = /datum/round_event/voidcrew/scrubber_overflow/every_vent
+	weight = 0
+	max_occurrences = 0
+	min_ship_mass = SHIP_MASS_MEDIUM
+	description = "The scrubbers release a tide of mostly harmless froth, but every scrubber aboard is affected."
+
+/datum/round_event/voidcrew/scrubber_overflow/every_vent
+	overflow_probability = 100
+	reagents_amount = 100

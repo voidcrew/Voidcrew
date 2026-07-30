@@ -301,6 +301,130 @@ for_theme = list("civilian", "military", "pirate")  // All themes (explicit)
 - `PART_CLASS_TRADE` - Trade parts
 - `PART_CLASS_MISC` - Miscellaneous parts
 
+---
+
+## Pricing New Content
+
+Parts are the fleet's long-term currency. An engaged player banks roughly
+**1.5 parts per round** (see the faucet breakdown below), so a hull priced at 20
+is about a month of play. Price new content against that, not against vibes.
+
+**Faucet, for reference.** Sources, in rough order of how much they contribute:
+
+| Source | Parts | Notes |
+|--------|-------|-------|
+| Zone loot caches | 1 | ~25% of yellow caches, ~33% of red; class matches the theme |
+| Round-end participation | 1 | Random class, everyone who played a character |
+| Contested cache | 5 | 1-2 a round, to one crew |
+| Colosseum spoils | 2-7 | Split between winners |
+| Prospect Stake | 5 | On 35% of hard stakes |
+| Pirate bounty | 1 light / 3 heavy | Repeatable |
+| Map spawners | 1 | Only 7 across the whole ruin pool |
+
+Everything except the participation grant is a **physical item** that has to ride
+home in an extraction case, and a player can bank at most 5 that way per round -
+one case, 5 slots, one case per player. The participation part is a direct
+account grant and skips the case, so the real ceiling is 6 a round.
+
+That works out to **~3.5 parts a round for an engaged player and ~1.5 for a
+casual one**. Price against those.
+
+Two rules the tables follow, worth keeping if you add more:
+
+- **Green tables never pay parts.** The zone tiering exists so reward tracks
+  risk; progression currency dropping in the safe ring defeats it.
+- **Rare tables never pay parts.** Those are the curated one-of-a-kind channel,
+  and a generic commodity dilutes the no-replacement roll that keeps their
+  uniques unique per cache.
+
+### Hull cost
+
+Cost scales superlinearly with interior size, so a battlecruiser is a season-long
+goal and a shuttle is a month's:
+
+```
+total = round(6 * (interior_tiles / 200) ** 1.6)
+```
+
+Split that total across part classes by the hull's identity, and **always use at
+least two classes** - a single-class hull is farmable from one activity, which
+collapses the grind. Combat parts are the most over-supplied class (bounties,
+cache and Colosseum all lean combat), so a combat hull priced purely in combat
+parts is the *cheapest* thing on the shelf, not the dearest.
+
+| Hull | Tiles | Total | Split |
+|------|-------|-------|-------|
+| Goon | 209 | 10 | trade 5, misc 3, science 2 (owner-priced above the formula's 6) |
+| Kilo | 312 | 12 | trade 6, misc 4, science 2 |
+| Delta | 476 | 22 | combat 8, misc 8, trade 6 |
+| Scarab | 660 | 36 | science 14, misc 10, trade 8, combat 4 |
+| Phalanx | 1680 | 60 | combat 24, science 12, trade 12, misc 12 (hand-set, far below the formula's ~181) |
+
+No modular hull is free (owner call, 2026-07-30): new players crew the roundstart
+ships rather than founding their own, and the only free hulls on the shelf are the
+pill gag ships.
+
+**The curve is calibrated for hulls up to ~700 tiles.** Goon, Kilo, Delta and
+Scarab all land within ~10% of it, but the 1.6 exponent runs away at the top end -
+the Phalanx's 1680 tiles come out at ~181, which is a year of play for a casual
+crew. It is hand-set to 60 (owner call, 2026-07-30) so the capstone stays
+reachable. Price anything bigger than the Scarab by hand against this table, not
+by plugging tiles into the formula:
+
+| Hull | Cost | Engaged (~3.5/round) | Casual (~1.5/round) |
+|------|------|----------------------|---------------------|
+| Goon | 10 | ~3 rounds | ~7 rounds |
+| Kilo | 12 | ~4 rounds | ~8 rounds |
+| Delta | 22 | ~6 rounds | ~15 rounds |
+| Scarab | 36 | ~10 rounds | ~24 rounds |
+| Phalanx | 60 | ~17 rounds | ~40 rounds |
+
+Those are floors - a hull's cost is spread across classes, so the real wait is
+somewhat longer than cost divided by income. At roughly 13 rounds a month, the
+ladder is about one hull a month for an engaged player and one every two to three
+for a casual one, with modules and themes soaking up the surplus in between.
+
+### Size multiplier
+
+Themes and modules are priced off the hull they sit on - the same greenhouse is
+worth more bolted to a battlecruiser than to a shuttle:
+
+| Hull | Goon | Kilo | Delta | Scarab | Phalanx |
+|------|------|------|-------|--------|---------|
+| Multiplier | 1.0 | 1.25 | 1.5 | 2.0 | 2.0 |
+
+The Phalanx shares the Scarab's multiplier despite being 2.5x its size. That is
+deliberate (owner call, 2026-07-30): its hull was hand-cut to 60, and leaving the
+fitout on a size-derived 3.0 would have made kitting the ship cost three times
+buying it. **Sanity-check any new hull's multiplier against the content-to-hull
+ratio, not just its tile count** - every hull in the fleet lands between 2.0x and
+4.5x, and that band is the real constraint.
+
+### Theme cost
+
+```
+theme = 6 * multiplier
+```
+
+Goon 6, Kilo 8, Delta 9, Scarab 12, Phalanx 12. The default theme is always free.
+
+### Module cost
+
+```
+module = tier_base * multiplier
+```
+
+| Tier | Base | What it means |
+|------|------|---------------|
+| Default | 0 | The slot's baseline fitout. Always free. |
+| T1 - sidegrade | 2 | Different flavour, same capability. Mess hall, den, gym, vault. |
+| T2 - capability | 4 | Adds a real department or machine, usually a job slot. Chem lab, surgery, brig, greenhouse. |
+| T3 - power spike | 7 | Raises the ship's ceiling outright. TEG, mech garage, xenobiology, full armory, onboard ore redemption. |
+
+Tier by what the module *does*, not by how much map it fills. The Goon's TEG
+ships unplumbed and is a project rather than a working plant, so it is T2 while
+the Scarab's working TEG is T3.
+
 ### Upgrade Slot Marker
 
 **Type:** `/obj/modular_map_root/ship_upgrade`

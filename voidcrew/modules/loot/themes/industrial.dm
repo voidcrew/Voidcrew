@@ -51,6 +51,7 @@
 		/obj/item/flamethrower/full = 3,
 		/obj/item/stack/sheet/mineral/gold/fifty = 3,
 		/obj/item/weldingtool/experimental = 3,
+		/obj/item/ship_parts/trade = 8,
 	)
 	loot_red = list(
 		/obj/item/stack/sheet/plasteel/fifty = 9,
@@ -65,6 +66,7 @@
 		/obj/item/stack/sheet/bluespace_crystal = 4,
 		/obj/item/construction/rcd = 3,
 		/obj/item/stack/sheet/mineral/diamond/fifty = 2,
+		/obj/item/ship_parts/trade = 11,
 	)
 	// Rare tables: surviving stock entries + this theme's uniques at ~4
 	// (see voidcrew/modules/loot/uniques/industrial.dm and the design doc)

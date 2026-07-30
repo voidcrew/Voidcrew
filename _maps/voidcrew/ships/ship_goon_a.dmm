@@ -1,0 +1,802 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bj" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/a)
+"bY" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/goon/engineering/a)
+"dC" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_port"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/a)
+"fz" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 8
+	},
+/obj/machinery/power/terminal,
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/medbay/a)
+"fI" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"fV" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_lounge"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/a)
+"gb" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/goon/bridge/a)
+"hQ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/a)
+"iD" = (
+/obj/machinery/firealarm/directional/west{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"jg" = (
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/a)
+"jk" = (
+/obj/machinery/atmospherics/components/tank/plasma{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/engineering/a)
+"kc" = (
+/obj/structure/cable,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/a)
+"ks" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/a)
+"kw" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/obj/machinery/cryopod,
+/turf/open/floor/mineral/titanium/purple,
+/area/shuttle/voidcrew/goon/commons/a)
+"lu" = (
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/engineering/a)
+"lX" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/a)
+"mK" = (
+/obj/machinery/cryopod,
+/obj/machinery/computer/cryopod{
+	pixel_y = -32
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/shuttle/voidcrew/goon/commons/a)
+"nj" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/engineering/a)
+"ol" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"pO" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Engineering"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/engineering/a)
+"pP" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/machinery/airalarm/directional/west,
+/obj/machinery/computer/mission_board{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"qu" = (
+/obj/machinery/light,
+/obj/machinery/shower/directional/west,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/south,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/medbay/a)
+"qO" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/a)
+"rt" = (
+/obj/structure/chair/comfy/brown{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/bridge/a)
+"si" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/a)
+"tG" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/a)
+"tP" = (
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/a)
+"tX" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Cockpit"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/bridge/a)
+"uq" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"uJ" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_mining"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/a)
+"vm" = (
+/obj/structure/closet/crate/engineering/electrical,
+/obj/item/clothing/gloves/color/yellow,
+/obj/item/multitool,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/storage/toolbox/electrical,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/east,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/engineering/a)
+"vy" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/engineering/a)
+"vI" = (
+/obj/machinery/vending/wallmed,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/goon/medbay/a)
+"vU" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Infirmary"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/medbay/a)
+"wn" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/a)
+"xj" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/bridge/a)
+"zq" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/window/reinforced/spawner/directional/west{
+	pixel_y = 2
+	},
+/obj/machinery/power/smes/engineering{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/a)
+"zs" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/a)
+"zA" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/engineering/a)
+"zJ" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/docking_port/mobile/voidcrew/goon/a{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/a)
+"Aj" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_engineering"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/a)
+"Bq" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/a)
+"Ct" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/computer/bank_machine{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"CF" = (
+/obj/structure/fans/tiny,
+/obj/machinery/button/door{
+	id = "goon_bay";
+	pixel_x = 26
+	},
+/obj/machinery/door/poddoor{
+	id = "goon_bay"
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/goon/commons/a)
+"Ei" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/window/reinforced/spawner/directional/west{
+	pixel_y = 2
+	},
+/obj/machinery/power/smes/engineering{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/a)
+"En" = (
+/obj/structure/table/reinforced,
+/obj/structure/window/reinforced/spawner/directional/south,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/bridge/a)
+"Ex" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 8
+	},
+/obj/structure/reagent_dispensers/fueltank,
+/obj/structure/cable,
+/obj/machinery/power/terminal,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/engineering/a)
+"EW" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/machinery/computer/bank_machine{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"Ff" = (
+/obj/machinery/power/shuttle_engine/ship/fueled/plasma{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/a)
+"FT" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/goon/medbay/a)
+"GI" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/computer/mission_board{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"He" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"Hw" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/machinery/mission_pad,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"HF" = (
+/obj/structure/chair/comfy/brown{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/bridge/a)
+"HU" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/a)
+"IH" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"IK" = (
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"IW" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/a)
+"IZ" = (
+/turf/template_noop,
+/area/template_noop)
+"JK" = (
+/obj/machinery/firealarm/directional/south,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
+/obj/machinery/atmospherics/components/tank/air{
+	piping_layer = 4
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/engineering/a)
+"Km" = (
+/obj/machinery/camera/autoname/directional/north,
+/obj/structure/table,
+/obj/machinery/door/window,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/item/storage/medkit/toxin{
+	pixel_x = 5;
+	pixel_y = 5
+	},
+/obj/item/storage/medkit/regular,
+/obj/item/mod/control/pre_equipped/medical,
+/obj/item/storage/medkit/brute{
+	pixel_x = -5;
+	pixel_y = -5
+	},
+/obj/item/storage/belt/medical,
+/obj/item/storage/belt/medical,
+/obj/item/reagent_containers/cup/bottle/formaldehyde,
+/obj/structure/window/reinforced/spawner/directional/west{
+	pixel_y = 2
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/medbay/a)
+"Lc" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/goon/commons/a)
+"Lx" = (
+/obj/structure/closet/secure_closet/engineering_electrical,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/engineering/a)
+"NJ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/a)
+"OG" = (
+/obj/machinery/camera/autoname/directional/west,
+/obj/structure/table,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/storage/toolbox/electrical{
+	pixel_x = -10;
+	pixel_y = -10
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/engineering/a)
+"OT" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/a)
+"Ph" = (
+/obj/machinery/door/airlock/titanium{
+	name = "Emergency Shuttle Airlock"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"Pv" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"PO" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/goon/engineering/a)
+"Qm" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_cockpit"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/a)
+"Qn" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/machinery/airalarm/directional/west,
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"Rx" = (
+/obj/structure/sign/nanotrasen,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"Ry" = (
+/obj/structure/cable,
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/engineering/a)
+"Us" = (
+/obj/machinery/door/poddoor{
+	id = "goon_bay"
+	},
+/obj/structure/fans/tiny,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/goon/commons/a)
+"VA" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/a)
+"VM" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"VO" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/emergency,
+/obj/structure/window/reinforced/spawner/directional/north,
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/bridge/a)
+"WO" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/a)
+"XJ" = (
+/obj/machinery/camera/autoname/directional/west,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"Ye" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/a)
+"Yg" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"Yp" = (
+/obj/structure/closet/supplypod/drop_pod,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"Yx" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
+"Zm" = (
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/a)
+
+(1,1,1) = {"
+IZ
+Ff
+FT
+FT
+FT
+PO
+PO
+PO
+PO
+Ff
+IZ
+"}
+(2,1,1) = {"
+kc
+Zm
+zs
+zs
+dC
+PO
+OG
+jk
+Lx
+jg
+kc
+"}
+(3,1,1) = {"
+zq
+fz
+zs
+zs
+zs
+si
+vy
+nj
+lu
+Ex
+Ei
+"}
+(4,1,1) = {"
+FT
+Km
+zs
+VA
+zs
+PO
+wn
+NJ
+Aj
+JK
+PO
+"}
+(5,1,1) = {"
+FT
+vI
+zs
+VA
+zs
+PO
+wn
+tG
+tP
+bY
+PO
+"}
+(6,1,1) = {"
+IZ
+FT
+zs
+VA
+zs
+si
+wn
+lX
+tP
+PO
+IZ
+"}
+(7,1,1) = {"
+IZ
+IW
+zs
+qO
+qu
+PO
+wn
+Ye
+vm
+si
+IZ
+"}
+(8,1,1) = {"
+Rx
+FT
+FT
+vU
+FT
+PO
+PO
+pO
+PO
+PO
+Rx
+"}
+(9,1,1) = {"
+Ph
+IK
+XJ
+VM
+pP
+fI
+Ct
+VM
+XJ
+iD
+Ph
+"}
+(10,1,1) = {"
+Ph
+Yp
+IK
+He
+Pv
+Hw
+Pv
+Pv
+IK
+IK
+Ph
+"}
+(11,1,1) = {"
+Rx
+uq
+HU
+HU
+uJ
+ol
+HU
+hQ
+fV
+uq
+Rx
+"}
+(12,1,1) = {"
+Bq
+Us
+ks
+ks
+hQ
+ol
+HU
+hQ
+HU
+WO
+IZ
+"}
+(13,1,1) = {"
+IZ
+CF
+HU
+HU
+HU
+ol
+HU
+HU
+HU
+WO
+IZ
+"}
+(14,1,1) = {"
+IZ
+uq
+HU
+HU
+HU
+ol
+kw
+mK
+Lc
+uq
+IZ
+"}
+(15,1,1) = {"
+IZ
+uq
+gb
+bj
+gb
+tX
+gb
+bj
+gb
+uq
+IZ
+"}
+(16,1,1) = {"
+IZ
+IZ
+bj
+VO
+HF
+xj
+rt
+En
+bj
+IZ
+IZ
+"}
+(17,1,1) = {"
+IZ
+IZ
+gb
+gb
+OT
+OT
+Qm
+gb
+gb
+IZ
+IZ
+"}
+(18,1,1) = {"
+IZ
+IZ
+IZ
+bj
+OT
+OT
+OT
+bj
+IZ
+IZ
+IZ
+"}
+(19,1,1) = {"
+IZ
+IZ
+IZ
+gb
+bj
+zJ
+bj
+gb
+IZ
+IZ
+IZ
+"}

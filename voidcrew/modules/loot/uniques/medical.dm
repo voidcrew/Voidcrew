@@ -8,8 +8,9 @@
  * Every item below carries TRAIT_NO_REPLICATE (voidcrew/_DEFINES/loot.dm) so
  * duplicators (Helios pattern stamp, etc.) refuse to copy them.
  *
- * Sprite policy: no new art. Every item below subtypes (or verbatim-copies the
- * icon fields of) an existing item so it inherits real, shipped sprites.
+ * Sprites: custom art in voidcrew/modules/loot/icons/uniques.dmi (worn states in
+ * uniques_worn.dmi). Inhand states are still the stock ones where the vanilla
+ * inhand reads correctly for the object.
  */
 
 /// Trait applied briefly after a Winterkiss stasis ends, so the dose can't be
@@ -99,8 +100,10 @@
  * their vitals streamed to the pen's current holder on a short interval, and
  * unmark automatically once they're stable again.
  *
- * Sprite donor: /obj/item/pen/red ("pen_red" icon_state, a real red-pen
- * sprite already shipped in pen.dmi) — exact fit for "a red grease pencil."
+ * Sprite: "triage_pen" in uniques.dmi. can_click is turned off because a grease
+ * pencil has no clicker — that also stops /obj/item/pen's transforming component
+ * from flipping icon_state to "triage_pen_retracted", a state that doesn't (and
+ * shouldn't) exist. Inhand/ear-slot states stay on the stock pen sprites.
  *
  * Deviation (flagged): the doc's "every med HUD in the sector flags them"
  * would need a new HUD icon state, which isn't allowed here. Per the task's
@@ -110,6 +113,9 @@
 /obj/item/pen/red/triage
 	name = "triage pen"
 	desc = "A red grease pencil, chewed at one end. Mark up to three patients and it reads their vitals back to whoever's holding it."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "triage_pen"
+	can_click = FALSE
 	/// Weakrefs to the (up to three) patients this specific pen is tracking.
 	var/list/datum/weakref/marked_patients = list()
 	/// Hard cap on simultaneous marks — "triage means choosing."
@@ -220,9 +226,15 @@
  * Base: /obj/machinery/iv_drip (voidcrew doc suggested /obj/structure, but
  * the codebase's IV stand is /obj/machinery/iv_drip — deviated to match the
  * real base class rather than inventing a structure duplicate of it).
- * Sprite donor: iv_drip's own icons ('icons/obj/medical/iv_drip.dmi',
- * "iv_drip") — inherited automatically via subtyping, plus reused verbatim
- * for the folded item form below.
+ *
+ * Sprites: gold-and-brass custom art in uniques.dmi. The parent's
+ * update_icon_state() builds "[base_icon_state]_injecting" / "_injectidle" (and
+ * "_donating" / "_donateidle", which this drip can never reach — toggle_mode()
+ * bails out early on inject_only stands), so base_icon_state points at the two
+ * "meridian_drip_*" states. The parent's update_overlays() only draws the
+ * beaker and reagent-fill overlays when there's an external reagent_container,
+ * and this stand uses internal storage, so nothing needs re-anchoring: the lit
+ * chemistry unit and the drop are painted into the "_injecting" state itself.
  *
  * "Folds into a carry item": no fold/deploy convention exists elsewhere in
  * this codebase, so this adds a bespoke pair — a verb to fold the structure
@@ -232,6 +244,9 @@
 /obj/machinery/iv_drip/meridian_drip
 	name = "Meridian drip"
 	desc = "A wheeled IV stand with a chemistry unit where the bag should hang. It doesn't take a beaker - it brews whatever the patient needs on its own."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "meridian_drip_injectidle"
+	base_icon_state = "meridian_drip"
 	use_internal_storage = TRUE
 	inject_only = TRUE
 	internal_volume_maximum = 30
@@ -303,11 +318,14 @@
 	qdel(src)
 
 /// The carried, folded form of the Meridian drip.
+/// Inhand state is the stock "rods" bundle — it's the right shape for a folded
+/// pole and uniques_lefthand.dmi has no rod sprite.
 /obj/item/meridian_drip
 	name = "folded Meridian drip"
 	desc = "A collapsed IV stand, chemistry unit tucked in against the frame. Unfold it and it's back to work."
-	icon = 'icons/obj/medical/iv_drip.dmi'
-	icon_state = "iv_drip"
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "meridian_drip_folded"
+	inhand_icon_state = "rods"
 	w_class = WEIGHT_CLASS_BULKY
 	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 2)
 
@@ -331,16 +349,35 @@
  * Base: /obj/item/bedsheet/medical — reuses its existing "cover a lying mob"
  * interaction (coverup/on_pickup/smooth_sheets), including its built-in
  * "ends when the sleeper moves, or the sheet is picked up" cleanup hooks,
- * for free. Sprite: inherited ("sheetmedical", icons/obj/bedsheets.dmi).
+ * for free.
+ *
+ * Sprites: custom cream-wool art, 4 dirs, in uniques.dmi (the draped-over-a-
+ * patient sprite, which is the one players actually look at) and uniques_worn.dmi
+ * (worn on the neck slot, recoloured from the vanilla worn sheet so the body-zone
+ * layout stays correct). The inhand stays the stock bedsheet inhand. undyeable is
+ * set because /obj/item/proc/dye_item overwrites icon, icon_state, name and desc
+ * wholesale from whatever plain bedsheet you dyed it to — a washing machine would
+ * otherwise strip this thing back down to a white sheet.
  */
 /obj/item/bedsheet/medical/hospice
 	name = "hospice blanket"
 	desc = "A wool blanket with the hospital corners ironed in permanently. Tuck a downed patient in and they'll stop getting worse."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "hospice_blanket"
+	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
+	worn_icon_state = "hospice_blanket"
+	undyeable = TRUE
 	dream_messages = list("warmth", "a steady hand", "borrowed time")
 
 /obj/item/bedsheet/medical/hospice/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
+
+/obj/item/bedsheet/medical/hospice/Destroy()
+	// Burned, shredded or admin-deleted mid-tuck: don't strand the patient in stasis.
+	var/mob/living/tucked_in = signal_sleeper?.resolve()
+	tucked_in?.remove_status_effect(/datum/status_effect/hospice_tuck)
+	return ..()
 
 /obj/item/bedsheet/medical/hospice/coverup(mob/living/sleeper)
 	..()
@@ -376,9 +413,21 @@
 	REMOVE_TRAIT(owner, TRAIT_STASIS, TRAIT_STATUS_EFFECT(id))
 
 /datum/status_effect/hospice_tuck/tick(seconds_between_ticks)
+	// The blanket normally ends this itself, but it can also be dragged, thrown or
+	// deleted off the patient without ever firing those hooks. If nothing's covering
+	// them any more, stop.
+	var/turf/patient_turf = get_turf(owner)
+	if(!patient_turf || !(locate(/obj/item/bedsheet/medical/hospice) in patient_turf))
+		qdel(src)
+		return
+	var/mending = owner.getBruteLoss() || owner.getFireLoss()
 	owner.adjustBruteLoss(-1 * seconds_between_ticks, updating_health = FALSE)
 	owner.adjustFireLoss(-1 * seconds_between_ticks, updating_health = FALSE)
 	owner.updatehealth()
+	// Visible sign that the blanket is doing something - same pulse the lightgeist
+	// and healing-touch effects use. Only while there's actually damage to mend.
+	if(mending)
+		new /obj/effect/temp_visual/heal(patient_turf, COLOR_HEALING_CYAN)
 
 // =========================================================================
 // RED
@@ -386,7 +435,7 @@
 
 /**
  * The Meridian heart — holds one internal defib charge. Thirty seconds after
- * its owner dies, it fires on its own; recharges over an hour of the owner
+ * its owner dies, it fires on its own; recharges over 20 minutes of the owner
  * staying alive.
  *
  * Base: /obj/item/organ/heart/cybernetic (matches doc exactly). Revival
@@ -395,19 +444,38 @@
  * the same can_defib() gate, so DNR (TRAIT_SUICIDED), decapitation/no
  * brain, missing/failing heart, and blacklisting are all respected exactly
  * as they are for a normal defibrillator.
+ *
+ * Sprite: custom art in uniques.dmi. /obj/item/organ/heart/update_icon_state()
+ * builds "[base_icon_state]-on" / "-off" off the beating flag, so both states
+ * exist ("meridian_heart-on" is the 4-frame beat, "-off" is the stopped one).
+ *
+ * PLAYTEST FIX (2026-07-28) — "1 hour recharge is crazy. do 20 minutes."
+ * Recharge is now 20 minutes, and the item says so: the desc states the number,
+ * examine prints the exact time left while it's charging, and the owner is told
+ * the number when the charge is spent.
  */
 /obj/item/organ/heart/cybernetic/meridian
 	name = "Meridian heart"
-	desc = "A cybernetic heart in a cold-chain crate, labeled DO NOT INSTALL IN STAFF. It carries one built-in defib charge."
-	icon_state = "heart-c-on"
-	base_icon_state = "heart-c"
+	desc = "A cybernetic heart in a cold-chain crate, labeled DO NOT INSTALL IN STAFF. It carries one built-in defib charge that fires 30 seconds after its owner dies, then takes 20 minutes to recharge."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "meridian_heart-on"
+	base_icon_state = "meridian_heart"
 	/// Whether the internal defib charge is ready to fire.
 	var/charge_available = TRUE
+	/// How long the internal charge takes to come back after it fires.
+	var/recharge_time = 20 MINUTES
 	COOLDOWN_DECLARE(recharge_cd)
 
 /obj/item/organ/heart/cybernetic/meridian/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
+
+/obj/item/organ/heart/cybernetic/meridian/examine(mob/user)
+	. = ..()
+	if(charge_available)
+		. += span_notice("The internal charge is ready. It fires 30 seconds after the owner dies.")
+	else
+		. += span_warning("The internal charge is spent. It recharges in [DisplayTimeText(COOLDOWN_TIMELEFT(src, recharge_cd))].")
 
 /obj/item/organ/heart/cybernetic/meridian/on_life(seconds_per_tick, times_fired)
 	. = ..()
@@ -428,7 +496,7 @@
 	SIGNAL_HANDLER
 	if(new_stat != DEAD || !charge_available)
 		return
-	addtimer(CALLBACK(src, PROC_REF(attempt_revival), source), 30 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(attempt_revival), source), 30 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE)
 
 /// Fires the internal charge, if the owner is still dead, still ours, and still defib-eligible.
 /obj/item/organ/heart/cybernetic/meridian/proc/attempt_revival(mob/living/carbon/patient)
@@ -442,13 +510,14 @@
 		return // DNR, decapitated/no brain, husk, blacklisted, etc - same gate a real defib respects
 
 	charge_available = FALSE
-	COOLDOWN_START(src, recharge_cd, 1 HOURS)
+	COOLDOWN_START(src, recharge_cd, recharge_time)
 
 	playsound(patient, 'sound/machines/defib/defib_zap.ogg', 50, TRUE, -1)
 	patient.visible_message(
 		span_boldwarning("[patient] convulses as something inside [patient.p_their()] chest discharges!"),
 		span_userdanger("Something inside your chest jolts, hard. You gasp back to life."),
 	)
+	to_chat(patient, span_notice("The Meridian heart is out of charge. It'll be ready again in 20 minutes."))
 
 	// Same health redistribution as a normal defib "help" revival (defib.dm do_help()).
 	var/target_health = (HEALTH_THRESHOLD_CRIT + HEALTH_THRESHOLD_DEAD) * 0.5
@@ -477,12 +546,15 @@
  * Winterkiss ampoule — one dose drops the subject into hard stasis where
  * they stand: frozen, untouchable, unhurtable, for exactly five minutes.
  *
- * Sprite donor: /obj/item/reagent_containers/cup/tube ("test_tube" icon
- * state) — closest existing small glass container to "a frosted glass
- * ampoule." Deviated from the doc's bare /obj/item/reagent_containers/
- * winterkiss typepath to nest under cup/tube so it inherits full, working
- * cup/syringe-draw behavior instead of hand-rolling the reagent_containers
- * base vars; flagged in the report.
+ * Nests under /obj/item/reagent_containers/cup/tube so it inherits full,
+ * working cup/syringe-draw behavior instead of hand-rolling the
+ * reagent_containers base vars (deviation from the doc's bare
+ * /obj/item/reagent_containers/winterkiss typepath).
+ *
+ * Sprite: custom art in uniques.dmi, two states - full and drained. The tube's
+ * inherited fill_icon_thresholds are cleared, because those overlays come out of
+ * icons/obj/medical/reagent_fillings.dmi and are drawn to fit the vanilla test
+ * tube silhouette; the ampoule shows its contents through the icon state instead.
  *
  * The hard stasis reuses the real /datum/status_effect/grouped/stasis (the
  * same one the stasis bed uses) via a dedicated subtype with a fixed 5
@@ -493,6 +565,9 @@
 /obj/item/reagent_containers/cup/tube/winterkiss
 	name = "Winterkiss ampoule"
 	desc = "A frosted glass ampoule from the bottom of the cold-chain drawer. One dose freezes the patient where they stand for five minutes, safe from everything."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "winterkiss"
+	fill_icon_thresholds = null
 	volume = 15
 	possible_transfer_amounts = list(5, 15)
 	list_reagents = list(/datum/reagent/winterkiss = 15)
@@ -500,6 +575,11 @@
 /obj/item/reagent_containers/cup/tube/winterkiss/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
+
+/obj/item/reagent_containers/cup/tube/winterkiss/update_icon_state()
+	// on_reagent_change() calls update_appearance() for us whenever it's drawn from.
+	icon_state = reagents?.total_volume ? "winterkiss" : "winterkiss_empty"
+	return ..()
 
 /// One dose, injected any way (syringe, syringe gun, direct contact) triggers hard stasis on first metabolization tick.
 /datum/reagent/winterkiss
@@ -527,6 +607,18 @@
 	)
 	affected_mob.apply_status_effect(/datum/status_effect/grouped/stasis/winterkiss, REF(src))
 
+/**
+ * PLAYTEST FIX (2026-07-28) — "when i click around and im stasis'd i can look
+ * around (aka move what direction im facing)."
+ *
+ * The parent stasis effect adds TRAIT_IMMOBILIZED and TRAIT_HANDS_BLOCKED, which
+ * kill arrow-key movement and item use, but neither one touches facing: clicking
+ * a tile runs face_atom() -> setDir(), which nothing was blocking. Same fix the
+ * unobserved_actor component uses for its "can't turn while watched" case — hook
+ * COMSIG_ATOM_PRE_DIR_CHANGE and return COMPONENT_ATOM_BLOCK_DIR_CHANGE, which
+ * /atom/proc/setDir checks before it does anything. Unregistered on removal, and
+ * the registration lives on this datum, which is built fresh per application.
+ */
 /datum/status_effect/grouped/stasis/winterkiss
 	id = "winterkiss_stasis"
 	duration = 5 MINUTES
@@ -536,8 +628,15 @@
 	if(!.)
 		return
 	ADD_TRAIT(owner, TRAIT_GODMODE, TRAIT_STATUS_EFFECT(id))
+	RegisterSignal(owner, COMSIG_ATOM_PRE_DIR_CHANGE, PROC_REF(block_turning))
+
+/// Frozen means frozen - no turning to face what you clicked on.
+/datum/status_effect/grouped/stasis/winterkiss/proc/block_turning(atom/source, old_dir, new_dir)
+	SIGNAL_HANDLER
+	return COMPONENT_ATOM_BLOCK_DIR_CHANGE
 
 /datum/status_effect/grouped/stasis/winterkiss/on_remove()
+	UnregisterSignal(owner, COMSIG_ATOM_PRE_DIR_CHANGE)
 	REMOVE_TRAIT(owner, TRAIT_GODMODE, TRAIT_STATUS_EFFECT(id))
 	ADD_TRAIT(owner, TRAIT_WINTERKISS_IMMUNE, TRAIT_STATUS_EFFECT(id))
 	addtimer(TRAIT_CALLBACK_REMOVE(owner, TRAIT_WINTERKISS_IMMUNE, TRAIT_STATUS_EFFECT(id)), 1 MINUTES)
@@ -549,17 +648,26 @@
  * and decapitation (no brain to reach). The returned keep a permanent flatline
  * scar and take 10% more of everything, forever.
  *
- * Base: /obj/item/reagent_containers/syringe (matches doc exactly, and gives
- * us the "syringe" sprite for free). This is intentionally reagent-free and
- * mechanical rather than reagent-triggered: reagents only metabolize on
- * living carbons (see /datum/reagents/proc/metabolize), so a reagent payload
- * can't reliably fire on an already-dead target. The syringe instead performs
- * the revival directly as an item interaction, then permanently empties/spends
- * itself.
+ * Base: /obj/item/reagent_containers/syringe (matches doc exactly). This is
+ * intentionally reagent-free and mechanical rather than reagent-triggered:
+ * reagents only metabolize on living carbons (see
+ * /datum/reagents/proc/metabolize), so a reagent payload can't reliably fire on
+ * an already-dead target. The syringe instead performs the revival directly as
+ * an item interaction, then permanently empties/spends itself.
+ *
+ * Sprite: custom art in uniques.dmi, one state for the loaded syringe and one
+ * for the spent one. The parent's update_icon_state() drives icon_state off the
+ * volume in the barrel ("[base_icon_state]_0/_5/_10/_15"), so this overrides it
+ * afterwards and keeps base_icon_state on "syringe" - inhand_icon_state is built
+ * from the same string and has to keep resolving inside the stock medical inhand
+ * dmis. update_reagent_overlay() is dropped for the same reason: those fill
+ * overlays are drawn to sit on the vanilla syringe silhouette.
  */
 /obj/item/reagent_containers/syringe/lazarus_line
 	name = "Lazarus line"
 	desc = "One glass syringe in a velvet case. It'll bring back the long dead, once, and then it's finished."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "lazarus_line"
 	volume = 5
 	amount_per_transfer_from_this = 5
 	possible_transfer_amounts = list()
@@ -569,6 +677,13 @@
 /obj/item/reagent_containers/syringe/lazarus_line/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
+
+/obj/item/reagent_containers/syringe/lazarus_line/update_icon_state()
+	. = ..()
+	icon_state = spent ? "lazarus_line_spent" : "lazarus_line"
+
+/obj/item/reagent_containers/syringe/lazarus_line/update_reagent_overlay()
+	return null
 
 /obj/item/reagent_containers/syringe/lazarus_line/interact_with_atom(atom/target, mob/living/user, list/modifiers)
 	if(spent)
@@ -593,6 +708,7 @@
 		spent = TRUE
 		name = "spent Lazarus line"
 		desc = "An empty glass syringe in a velvet case. Whatever was in it is gone."
+		update_appearance(UPDATE_ICON)
 	return ITEM_INTERACT_SUCCESS
 
 /// The bypass revival itself. Returns TRUE on a successful revival.

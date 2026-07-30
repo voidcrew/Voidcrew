@@ -44,6 +44,11 @@
 "ai" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/engineering)
+"aj" = (
+/obj/effect/landmark/event_spawn,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/delta/cargo)
 "ak" = (
 /obj/machinery/shower/directional/south,
 /obj/item/soap,
@@ -164,6 +169,12 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/firealarm/directional/south,
 /obj/structure/closet/crate/bin,
+/obj/effect/turf_decal/tile/bar/diagonal_centre,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/delta/cafe)
+"av" = (
+/obj/effect/landmark/event_spawn,
+/obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/tile/bar/diagonal_centre,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/delta/cafe)
@@ -2611,7 +2622,7 @@ aa
 aa
 HJ
 cJ
-dK
+aj
 dC
 dK
 dY
@@ -2620,7 +2631,7 @@ HJ
 (23,1,1) = {"
 ae
 au
-bx
+av
 as
 bx
 cw

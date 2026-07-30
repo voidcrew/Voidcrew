@@ -1,9 +1,9 @@
 // Vestige ruin (antag boon) tuning knobs — see voidcrew/modules/antag_ruins/
 
 /// When the first vestige ruin surfaces on the overmap
-#define VESTIGE_FIRST_SPAWN_TIME (15 SECONDS)
+#define VESTIGE_FIRST_SPAWN_TIME (20 MINUTES)
 /// Delay between subsequent vestige ruin arrivals
-#define VESTIGE_SPAWN_INTERVAL (15 SECONDS)
+#define VESTIGE_SPAWN_INTERVAL (15 MINUTES)
 /// Hard cap on vestige ruins per round (also capped by how many themes exist)
 #define VESTIGE_MAX_PER_ROUND 14
 
@@ -14,11 +14,11 @@
 
 /// Round time before a patron will discuss ascension at all.
 /// TEST VALUE, matched to the 15-second ruin schedule above. PRODUCTION: (90 MINUTES).
-#define VESTIGE_ASCENSION_UNLOCK_TIME (60 SECONDS)
+#define VESTIGE_ASCENSION_UNLOCK_TIME (90 MINUTES)
 /// Hard ceiling on one ascension run. Expiry returns a living supplicant home, failed.
 #define VESTIGE_ASCENSION_TIME_LIMIT (30 MINUTES)
 /// Grace period after the boss dies before the arena pulls the victor out on its own.
-#define VESTIGE_ASCENSION_VICTORY_GRACE (3 MINUTES)
+#define VESTIGE_ASCENSION_VICTORY_GRACE (6 MINUTES)
 /// Blank turfs left around the arena template inside its reservation.
 #define VESTIGE_ASCENSION_ARENA_PADDING 3
 

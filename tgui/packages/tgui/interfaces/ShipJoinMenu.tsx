@@ -58,8 +58,8 @@ const PurchaseShipSection = () => {
       <Stack vertical>
         <Stack.Item>
           <Box color="gray" fontSize="13px" mb={1}>
-            Purchase a ship from the catalog and become its captain. You&apos;ll
-            be able to customize your crew and set your own course.
+            Buy a ship and become its captain. You&apos;ll pick its hull, theme
+            and upgrade modules in the shipyard, then set your own course.
           </Box>
         </Stack.Item>
         <Stack.Item>
@@ -71,7 +71,7 @@ const PurchaseShipSection = () => {
             textAlign="center"
             onClick={() => act('purchase_ship')}
           >
-            Browse Ship Catalog
+            Open Shipyard
           </Button>
         </Stack.Item>
       </Stack>

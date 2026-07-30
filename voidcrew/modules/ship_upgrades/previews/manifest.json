@@ -1,6 +1,206 @@
 {
  "tile_px": 32,
  "hulls": {
+  "delta_a": {
+   "png": "ship_delta_a.png",
+   "width": 28,
+   "height": 17,
+   "slots": {
+    "delta_med": [
+     9,
+     2
+    ],
+    "delta_dorms": [
+     9,
+     14
+    ],
+    "delta_cargo": [
+     20,
+     2
+    ],
+    "delta_cafe": [
+     20,
+     12
+    ]
+   }
+  },
+  "delta_b": {
+   "png": "ship_delta_b.png",
+   "width": 28,
+   "height": 17,
+   "slots": {
+    "delta_med": [
+     9,
+     2
+    ],
+    "delta_dorms": [
+     9,
+     14
+    ],
+    "delta_cargo": [
+     20,
+     2
+    ],
+    "delta_cafe": [
+     20,
+     12
+    ]
+   }
+  },
+  "delta_c": {
+   "png": "ship_delta_c.png",
+   "width": 28,
+   "height": 17,
+   "slots": {
+    "delta_med": [
+     9,
+     2
+    ],
+    "delta_dorms": [
+     9,
+     14
+    ],
+    "delta_cargo": [
+     20,
+     2
+    ],
+    "delta_cafe": [
+     20,
+     12
+    ]
+   }
+  },
+  "delta_d": {
+   "png": "ship_delta_d.png",
+   "width": 28,
+   "height": 17,
+   "slots": {
+    "delta_med": [
+     9,
+     2
+    ],
+    "delta_dorms": [
+     9,
+     14
+    ],
+    "delta_cargo": [
+     20,
+     2
+    ],
+    "delta_cafe": [
+     20,
+     12
+    ]
+   }
+  },
+  "goon_a": {
+   "png": "ship_goon_a.png",
+   "width": 19,
+   "height": 11,
+   "slots": {
+    "goon_port": [
+     2,
+     7
+    ],
+    "goon_engineering": [
+     4,
+     3
+    ],
+    "goon_lounge": [
+     11,
+     3
+    ],
+    "goon_mining": [
+     11,
+     7
+    ],
+    "goon_cockpit": [
+     17,
+     5
+    ]
+   }
+  },
+  "goon_b": {
+   "png": "ship_goon_b.png",
+   "width": 19,
+   "height": 11,
+   "slots": {
+    "goon_port": [
+     2,
+     7
+    ],
+    "goon_engineering": [
+     4,
+     3
+    ],
+    "goon_lounge": [
+     11,
+     3
+    ],
+    "goon_mining": [
+     11,
+     7
+    ],
+    "goon_cockpit": [
+     17,
+     5
+    ]
+   }
+  },
+  "goon_c": {
+   "png": "ship_goon_c.png",
+   "width": 19,
+   "height": 11,
+   "slots": {
+    "goon_port": [
+     2,
+     7
+    ],
+    "goon_engineering": [
+     4,
+     3
+    ],
+    "goon_lounge": [
+     11,
+     3
+    ],
+    "goon_mining": [
+     11,
+     7
+    ],
+    "goon_cockpit": [
+     17,
+     5
+    ]
+   }
+  },
+  "goon_d": {
+   "png": "ship_goon_d.png",
+   "width": 19,
+   "height": 11,
+   "slots": {
+    "goon_port": [
+     2,
+     7
+    ],
+    "goon_engineering": [
+     4,
+     3
+    ],
+    "goon_lounge": [
+     11,
+     3
+    ],
+    "goon_mining": [
+     11,
+     7
+    ],
+    "goon_cockpit": [
+     17,
+     5
+    ]
+   }
+  },
   "kilo_a": {
    "png": "ship_kilo_a.png",
    "width": 24,
@@ -76,6 +276,131 @@
      7
     ]
    }
+  },
+  "nano_phalanx_a": {
+   "png": "ship_nano_phalanx_a.png",
+   "width": 56,
+   "height": 30,
+   "slots": {
+    "phalanx_bay_south": [
+     18,
+     2
+    ],
+    "phalanx_bay_north": [
+     18,
+     27
+    ],
+    "phalanx_medical": [
+     21,
+     11
+    ],
+    "phalanx_lab": [
+     21,
+     18
+    ],
+    "phalanx_armory": [
+     46,
+     7
+    ]
+   }
+  },
+  "nano_phalanx_b": {
+   "png": "ship_nano_phalanx_b.png",
+   "width": 56,
+   "height": 30,
+   "slots": {
+    "phalanx_bay_south": [
+     18,
+     2
+    ],
+    "phalanx_bay_north": [
+     18,
+     27
+    ],
+    "phalanx_medical": [
+     21,
+     11
+    ],
+    "phalanx_lab": [
+     21,
+     18
+    ],
+    "phalanx_armory": [
+     46,
+     7
+    ]
+   }
+  },
+  "nano_phalanx_c": {
+   "png": "ship_nano_phalanx_c.png",
+   "width": 56,
+   "height": 30,
+   "slots": {
+    "phalanx_bay_south": [
+     18,
+     2
+    ],
+    "phalanx_bay_north": [
+     18,
+     27
+    ],
+    "phalanx_medical": [
+     21,
+     11
+    ],
+    "phalanx_lab": [
+     21,
+     18
+    ],
+    "phalanx_armory": [
+     46,
+     7
+    ]
+   }
+  },
+  "nano_phalanx_d": {
+   "png": "ship_nano_phalanx_d.png",
+   "width": 56,
+   "height": 30,
+   "slots": {
+    "phalanx_bay_south": [
+     18,
+     2
+    ],
+    "phalanx_bay_north": [
+     18,
+     27
+    ],
+    "phalanx_medical": [
+     21,
+     11
+    ],
+    "phalanx_lab": [
+     21,
+     18
+    ],
+    "phalanx_armory": [
+     46,
+     7
+    ]
+   }
+  },
+  "pill": {
+   "png": "ship_pill.png",
+   "width": 4,
+   "height": 1,
+   "slots": {
+    "pill_extra": [
+     4,
+     1
+    ]
+   }
+  },
+  "pill_black": {
+   "png": "ship_pill_black.png",
+   "width": 3,
+   "height": 1,
+   "slots": {}
   },
   "scarab_a": {
    "png": "ship_scarab_a.png",
@@ -178,6 +503,289 @@
   }
  },
  "modules": {
+  "delta/delta_cargo_salvage.dmm": {
+   "width": 7,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "delta_delta_cargo_salvage.png"
+  },
+  "delta/delta_cargo_mining.dmm": {
+   "width": 7,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "delta_delta_cargo_mining.png"
+  },
+  "delta/delta_cargo_gundeck.dmm": {
+   "width": 7,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "delta_delta_cargo_gundeck.png"
+  },
+  "delta/delta_cafe_diner.dmm": {
+   "width": 7,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "delta_delta_cafe_diner.png",
+   "themes": {
+    "archive": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cafe_diner_archive.png"
+    },
+    "lightship": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cafe_diner_lightship.png"
+    },
+    "market": {
+     "width": 7,
+     "height": 5,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_cafe_diner_market.png"
+    }
+   }
+  },
+  "delta/delta_cafe_greenhouse.dmm": {
+   "width": 7,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "delta_delta_cafe_greenhouse.png"
+  },
+  "delta/delta_cafe_shop.dmm": {
+   "width": 7,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "delta_delta_cafe_shop.png"
+  },
+  "delta/delta_med_clinic.dmm": {
+   "width": 6,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "delta_delta_med_clinic.png"
+  },
+  "delta/delta_med_chem.dmm": {
+   "width": 6,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "delta_delta_med_chem.png"
+  },
+  "delta/delta_med_cryo.dmm": {
+   "width": 6,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "delta_delta_med_cryo.png"
+  },
+  "delta/delta_dorms_cabins.dmm": {
+   "width": 6,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "delta_delta_dorms_cabins.png",
+   "themes": {
+    "archive": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_dorms_cabins_archive.png"
+    },
+    "lightship": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_dorms_cabins_lightship.png"
+    },
+    "market": {
+     "width": 6,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "delta_delta_dorms_cabins_market.png"
+    }
+   }
+  },
+  "delta/delta_dorms_bunkhouse.dmm": {
+   "width": 6,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "delta_delta_dorms_bunkhouse.png"
+  },
+  "delta/delta_dorms_den.dmm": {
+   "width": 6,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "delta_delta_dorms_den.png"
+  },
+  "goon/goon_port_infirmary.dmm": {
+   "width": 6,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "goon_goon_port_infirmary.png"
+  },
+  "goon/goon_port_brig.dmm": {
+   "width": 6,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "goon_goon_port_brig.png"
+  },
+  "goon/goon_port_chemlab.dmm": {
+   "width": 6,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "goon_goon_port_chemlab.png"
+  },
+  "goon/goon_engineering_pacman.dmm": {
+   "width": 4,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "goon_goon_engineering_pacman.png"
+  },
+  "goon/goon_engineering_rtg.dmm": {
+   "width": 4,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "goon_goon_engineering_rtg.png"
+  },
+  "goon/goon_engineering_teg.dmm": {
+   "width": 4,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "goon_goon_engineering_teg.png"
+  },
+  "goon/goon_mining_prospector.dmm": {
+   "width": 4,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "goon_goon_mining_prospector.png"
+  },
+  "goon/goon_mining_salvage.dmm": {
+   "width": 4,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "goon_goon_mining_salvage.png"
+  },
+  "goon/goon_mining_freight.dmm": {
+   "width": 4,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "goon_goon_mining_freight.png"
+  },
+  "goon/goon_lounge_bunks.dmm": {
+   "width": 3,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "goon_goon_lounge_bunks.png"
+  },
+  "goon/goon_lounge_mess.dmm": {
+   "width": 3,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "goon_goon_lounge_mess.png"
+  },
+  "goon/goon_cockpit_standard.dmm": {
+   "width": 2,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "goon_goon_cockpit_standard.png"
+  },
+  "goon/goon_cockpit_command.dmm": {
+   "width": 2,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "goon_goon_cockpit_command.png"
+  },
   "kilo/kilo_service_galley.dmm": {
    "width": 4,
    "height": 4,
@@ -223,7 +831,36 @@
     1,
     1
    ],
-   "png": "kilo_kilo_service_hydroponics.png"
+   "png": "kilo_kilo_service_hydroponics.png",
+   "themes": {
+    "clean": {
+     "width": 4,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_service_hydroponics_clean.png"
+    },
+    "pink": {
+     "width": 4,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_service_hydroponics_pink.png"
+    },
+    "saloon": {
+     "width": 4,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_service_hydroponics_saloon.png"
+    }
+   }
   },
   "kilo/kilo_service_surgery.dmm": {
    "width": 4,
@@ -232,7 +869,36 @@
     1,
     1
    ],
-   "png": "kilo_kilo_service_surgery.png"
+   "png": "kilo_kilo_service_surgery.png",
+   "themes": {
+    "clean": {
+     "width": 4,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_service_surgery_clean.png"
+    },
+    "pink": {
+     "width": 4,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_service_surgery_pink.png"
+    },
+    "saloon": {
+     "width": 4,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_service_surgery_saloon.png"
+    }
+   }
   },
   "kilo/kilo_service_saloon_bar.dmm": {
    "width": 4,
@@ -241,7 +907,27 @@
     1,
     1
    ],
-   "png": "kilo_kilo_service_saloon_bar.png"
+   "png": "kilo_kilo_service_saloon_bar.png",
+   "themes": {
+    "clean": {
+     "width": 4,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_service_saloon_bar_clean.png"
+    },
+    "pink": {
+     "width": 4,
+     "height": 4,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_service_saloon_bar_pink.png"
+    }
+   }
   },
   "kilo/kilo_dock_prep.dmm": {
    "width": 3,
@@ -250,7 +936,36 @@
     1,
     1
    ],
-   "png": "kilo_kilo_dock_prep.png"
+   "png": "kilo_kilo_dock_prep.png",
+   "themes": {
+    "clean": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_dock_prep_clean.png"
+    },
+    "pink": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_dock_prep_pink.png"
+    },
+    "saloon": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_dock_prep_saloon.png"
+    }
+   }
   },
   "kilo/kilo_dock_refinery.dmm": {
    "width": 3,
@@ -259,7 +974,36 @@
     1,
     1
    ],
-   "png": "kilo_kilo_dock_refinery.png"
+   "png": "kilo_kilo_dock_refinery.png",
+   "themes": {
+    "clean": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_dock_refinery_clean.png"
+    },
+    "pink": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_dock_refinery_pink.png"
+    },
+    "saloon": {
+     "width": 3,
+     "height": 2,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_dock_refinery_saloon.png"
+    }
+   }
   },
   "kilo/kilo_hold_freight.dmm": {
    "width": 3,
@@ -268,7 +1012,36 @@
     1,
     1
    ],
-   "png": "kilo_kilo_hold_freight.png"
+   "png": "kilo_kilo_hold_freight.png",
+   "themes": {
+    "clean": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_hold_freight_clean.png"
+    },
+    "pink": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_hold_freight_pink.png"
+    },
+    "saloon": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_hold_freight_saloon.png"
+    }
+   }
   },
   "kilo/kilo_hold_eva.dmm": {
    "width": 3,
@@ -277,7 +1050,36 @@
     1,
     1
    ],
-   "png": "kilo_kilo_hold_eva.png"
+   "png": "kilo_kilo_hold_eva.png",
+   "themes": {
+    "clean": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_hold_eva_clean.png"
+    },
+    "pink": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_hold_eva_pink.png"
+    },
+    "saloon": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_hold_eva_saloon.png"
+    }
+   }
   },
   "kilo/kilo_hold_vault.dmm": {
    "width": 3,
@@ -286,7 +1088,256 @@
     1,
     1
    ],
-   "png": "kilo_kilo_hold_vault.png"
+   "png": "kilo_kilo_hold_vault.png",
+   "themes": {
+    "clean": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_hold_vault_clean.png"
+    },
+    "pink": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_hold_vault_pink.png"
+    },
+    "saloon": {
+     "width": 3,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "kilo_kilo_hold_vault_saloon.png"
+    }
+   }
+  },
+  "phalanx/phalanx_bay_north_muster.dmm": {
+   "width": 11,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_bay_north_muster.png",
+   "themes": {
+    "hearth": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_north_muster_hearth.png"
+    },
+    "springs": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_north_muster_springs.png"
+    },
+    "verdant": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_north_muster_verdant.png"
+    }
+   }
+  },
+  "phalanx/phalanx_bay_north_mech.dmm": {
+   "width": 11,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_bay_north_mech.png"
+  },
+  "phalanx/phalanx_bay_north_garden.dmm": {
+   "width": 11,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_bay_north_garden.png"
+  },
+  "phalanx/phalanx_bay_south_freight.dmm": {
+   "width": 11,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_bay_south_freight.png",
+   "themes": {
+    "hearth": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_south_freight_hearth.png"
+    },
+    "springs": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_south_freight_springs.png"
+    },
+    "verdant": {
+     "width": 11,
+     "height": 3,
+     "connector": [
+      1,
+      1
+     ],
+     "png": "phalanx_phalanx_bay_south_freight_verdant.png"
+    }
+   }
+  },
+  "phalanx/phalanx_bay_south_workshop.dmm": {
+   "width": 11,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_bay_south_workshop.png"
+  },
+  "phalanx/phalanx_bay_south_gym.dmm": {
+   "width": 11,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_bay_south_gym.png"
+  },
+  "phalanx/phalanx_lab_nanite.dmm": {
+   "width": 10,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_lab_nanite.png"
+  },
+  "phalanx/phalanx_lab_chem.dmm": {
+   "width": 10,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_lab_chem.png"
+  },
+  "phalanx/phalanx_lab_xenobio.dmm": {
+   "width": 10,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_lab_xenobio.png"
+  },
+  "phalanx/phalanx_medical_theatre.dmm": {
+   "width": 10,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_medical_theatre.png"
+  },
+  "phalanx/phalanx_medical_ward.dmm": {
+   "width": 10,
+   "height": 3,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_medical_ward.png"
+  },
+  "phalanx/phalanx_armory_post.dmm": {
+   "width": 6,
+   "height": 4,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_armory_post.png"
+  },
+  "phalanx/phalanx_armory_full.dmm": {
+   "width": 6,
+   "height": 4,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_armory_full.png"
+  },
+  "phalanx/phalanx_armory_brig.dmm": {
+   "width": 6,
+   "height": 4,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "phalanx_phalanx_armory_brig.png"
+  },
+  "pill/pill_extra_empty.dmm": {
+   "width": 1,
+   "height": 1,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "pill_pill_extra_empty.png"
+  },
+  "pill/pill_extra_workshop.dmm": {
+   "width": 1,
+   "height": 1,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "pill_pill_extra_workshop.png"
+  },
+  "pill/pill_extra_ore.dmm": {
+   "width": 1,
+   "height": 1,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "pill_pill_extra_ore.png"
+  },
+  "pill/pill_extra_infirmary.dmm": {
+   "width": 1,
+   "height": 1,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "pill_pill_extra_infirmary.png"
   },
   "scarab/scarab_med_basic.dmm": {
    "width": 3,

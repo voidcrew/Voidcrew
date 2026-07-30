@@ -48,6 +48,15 @@ MARKER_PATH = "/obj/modular_map_root/ship_upgrade"
 CONNECTOR_PATH = "/obj/modular_map_connector"
 TILE_PX = 32
 
+# Non-modular hulls sold anyway (force_purchasable in DM): rendered with no slots
+# so the upgrade selector still gets a preview image.
+EXTRA_HULLS = ("ship_pill.dmm", "ship_pill_black.dmm")
+
+# Must be passed explicitly: left to itself dmm-tools picks up the gitignored,
+# always-stale `tgstation.test.dme` and renders anything it defines as a black
+# tile ("bad path: ...").
+ENVIRONMENT = "tgstation.dme"
+
 # --- Smoothing repair registries ---------------------------------------------
 # Turf types whose smoothed sprite we paint as an underlay.
 # type path -> (dmi path, base_icon_state, join group)
@@ -69,6 +78,7 @@ SMOOTH_TURFS = {
     "/turf/closed/wall/mineral/abductor": ("icons/turf/walls/abductor_wall.dmi", "abductor_wall", "wall"),
     "/turf/closed/wall/mineral/titanium": ("icons/turf/walls/shuttle_wall.dmi", "shuttle_wall", "wall"),
     "/turf/closed/wall/mineral/titanium/survival": ("icons/turf/walls/survival_pod_walls.dmi", "survival_pod_walls", "wall"),
+    "/turf/closed/wall/mineral/titanium/dollhouse": ("voidcrew/icons/turf/walls/dollhouse_wall.dmi", "shuttle_wall", "wall"),
     "/turf/closed/wall/mineral/plastitanium": ("icons/turf/walls/plastitanium_wall.dmi", "plastitanium_wall", "wall"),
     "/turf/open/floor/carpet": ("icons/turf/floors/carpet.dmi", "carpet", "carpet"),
 }
@@ -329,7 +339,7 @@ def render_pass(dmm_tools: Path, dmm_path: Path, tmp_dir: Path, extra_args: list
     out_dir = tmp_dir / ("nosmooth" if extra_args else "normal")
     out_dir.mkdir(parents=True, exist_ok=True)
     result = subprocess.run(
-        [str(dmm_tools), "minimap", *extra_args, "-o", str(out_dir), str(dmm_path)],
+        [str(dmm_tools), "-e", ENVIRONMENT, "minimap", *extra_args, "-o", str(out_dir), str(dmm_path)],
         cwd=REPO_ROOT, capture_output=True, text=True,
     )
     rendered = out_dir / f"{dmm_path.stem}-1.png"
@@ -362,9 +372,10 @@ def main() -> None:
 
     manifest: dict = {"tile_px": TILE_PX, "hulls": {}, "modules": {}}
 
-    # --- Hulls: any ship dmm containing upgrade slot markers ---
+    # --- Hulls: any ship dmm containing upgrade slot markers, plus EXTRA_HULLS ---
     for ship_dmm in sorted(SHIPS_DIR.glob("ship_*.dmm")):
-        if MARKER_PATH not in ship_dmm.read_text(encoding="utf-8"):
+        is_extra = ship_dmm.name in EXTRA_HULLS
+        if not is_extra and MARKER_PATH not in ship_dmm.read_text(encoding="utf-8"):
             continue
         dmm = Dmm(ship_dmm)
         slots: dict[str, list[int]] = {}
@@ -374,7 +385,7 @@ def main() -> None:
                 print(f"WARN: {ship_dmm.name}: slot marker at ({x},{y}) has no key, skipped")
                 continue
             slots[key_match.group(1)] = [x, y]
-        if not slots:
+        if not slots and not is_extra:
             continue
         hull_key = ship_dmm.stem.removeprefix("ship_")
         png_name = f"{ship_dmm.stem}.png"

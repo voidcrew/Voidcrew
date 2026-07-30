@@ -1,0 +1,174 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/structure/closet/crate,
+/obj/item/stack/cable_coil,
+/obj/item/stack/cable_coil{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/stock_parts/power_store/cell/high,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"f" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"g" = (
+/obj/structure/table/reinforced,
+/obj/item/wrench,
+/obj/item/weldingtool{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/obj/item/screwdriver{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"i" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/crowbar{
+	pixel_x = 4;
+	pixel_y = 5
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"j" = (
+/obj/machinery/recycler{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"n" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"o" = (
+/obj/structure/closet/crate,
+/obj/item/shovel,
+/obj/item/pickaxe,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"t" = (
+/obj/item/stack/sheet/iron{
+	amount = 5
+	},
+/obj/effect/turf_decal/trimline/neutral/warning,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"v" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/glass{
+	amount = 10
+	},
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 10
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"w" = (
+/obj/structure/ore_box,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"E" = (
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"L" = (
+/obj/structure/rack,
+/obj/item/gun/energy/plasmacutter,
+/obj/item/extraction_pack,
+/obj/item/fulton_core,
+/obj/item/gps/mining,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"P" = (
+/obj/effect/turf_decal/caution/stand_clear,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"T" = (
+/obj/machinery/light/floor,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"X" = (
+/obj/machinery/conveyor_switch/oneway{
+	id = "phalanx_salvage"
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Y" = (
+/obj/machinery/conveyor{
+	dir = 4;
+	id = "phalanx_salvage"
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+
+(1,1,1) = {"
+w
+E
+n
+"}
+(2,1,1) = {"
+E
+E
+X
+"}
+(3,1,1) = {"
+E
+T
+Y
+"}
+(4,1,1) = {"
+f
+E
+Y
+"}
+(5,1,1) = {"
+f
+P
+j
+"}
+(6,1,1) = {"
+f
+E
+t
+"}
+(7,1,1) = {"
+f
+E
+g
+"}
+(8,1,1) = {"
+f
+E
+i
+"}
+(9,1,1) = {"
+E
+E
+L
+"}
+(10,1,1) = {"
+E
+T
+v
+"}
+(11,1,1) = {"
+o
+E
+b
+"}

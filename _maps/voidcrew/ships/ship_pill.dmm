@@ -14,10 +14,8 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers{
 	dir = 8
 	},
-/obj/structure/window/reinforced/spawner,
-/obj/structure/window/reinforced/spawner{
-	dir = 1
-	},
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/window/reinforced/spawner/directional/north,
 /obj/machinery/cryopod{
 	density = 0
 	},
@@ -26,9 +24,7 @@
 	density = 0
 	},
 /obj/machinery/power/apc/auto_name/directional/west,
-/obj/structure/window/reinforced/spawner{
-	dir = 8
-	},
+/obj/structure/window/reinforced/spawner/directional/west,
 /obj/machinery/computer/cryopod{
 	pixel_y = 8
 	},
@@ -46,7 +42,7 @@
 /obj/item/storage/bag/ore,
 /obj/item/storage/bag/ore,
 /obj/item/weldingtool/experimental,
-/obj/item/areaeditor/shuttle,
+/obj/item/blueprints/shuttle,
 /obj/item/clothing/suit/hooded/carp_costume/spaceproof/old,
 /obj/item/clothing/suit/hooded/carp_costume/spaceproof/old,
 /obj/item/clothing/suit/hooded/carp_costume/spaceproof/old,
@@ -65,13 +61,10 @@
 	},
 /obj/item/storage/medkit/toxin,
 /obj/item/storage/medkit/advanced,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/backpack/duffelbag/sec/surgery,
 /obj/item/storage/medkit/o2,
 /obj/machinery/light/floor,
-/obj/structure/window/reinforced/spawner{
-	dir = 4
-	},
-/obj/structure/window/reinforced/spawner,
+/obj/structure/window/reinforced/spawner/directional/south,
 /obj/structure/fans/tiny,
 /obj/machinery/door/window{
 	dir = 1
@@ -88,6 +81,16 @@
 	},
 /turf/open/floor/carpet/neon/simple/red,
 /area/shuttle/voidcrew/pill)
+"d" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/machinery/light/floor,
+/obj/modular_map_root/ship_upgrade{
+	key = "pill_extra"
+	},
+/turf/open/floor/carpet/neon/simple/red,
+/area/shuttle/voidcrew/pill)
 
 (1,1,1) = {"
 a
@@ -97,4 +100,7 @@ b
 "}
 (3,1,1) = {"
 c
+"}
+(4,1,1) = {"
+d
 "}

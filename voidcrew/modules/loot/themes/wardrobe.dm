@@ -34,6 +34,7 @@
 		/obj/item/clothing/gloves/tackler/combat = 5,
 		/obj/item/clothing/under/rank/prisoner = 4,
 		/obj/item/clothing/mask/gas/sechailer/swat = 4,
+		/obj/item/ship_parts/trade = 6,
 	)
 	loot_red = list(
 		/obj/item/clothing/head/cowboy/bounty = 9,
@@ -42,6 +43,7 @@
 		/obj/item/clothing/head/cowboy/black/syndicate = 6,
 		/obj/item/clothing/suit/hooded/berserker = 4,
 		/obj/item/clothing/head/hooded/berserker = 4,
+		/obj/item/ship_parts/trade = 6,
 	)
 	// Rare tables: surviving stock entries + this theme's uniques at ~4
 	// (see voidcrew/modules/loot/uniques/wardrobe.dm and the design doc).
@@ -52,7 +54,6 @@
 	rare_loot_green = list(
 		/obj/item/clothing/suit/jacket/leather/biker = 8,
 		/obj/item/clothing/head/cowboy/black = 6,
-		/obj/item/clothing/neck/tie/understudys_cravat = 4,
 		/obj/item/clothing/shoes/laceup/winters_loafers = 4,
 		/obj/item/megaphone/clown = 2,
 	)

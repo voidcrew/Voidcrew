@@ -61,6 +61,26 @@
 			return candidate
 	return null
 
+/**
+ * Mapper-placed /obj/effect/landmark/event_spawn markers aboard this ship — the
+ * ship-scoped replacement for GLOB.generic_event_spawns.
+ *
+ * The global list spans every loaded z: ruins, outposts and other crews' hulls are all
+ * in it, so an event that picks from it directly is not ship-scoped no matter what it
+ * does afterwards. Filtering by area membership is the only correct read.
+ *
+ * Markers are optional. Events that use this must fall back to a random turf aboard
+ * when a hull has none, or they would only ever fire on the maps that got marked up.
+ */
+/obj/structure/overmap/ship/proc/get_ship_event_spawns()
+	var/list/aboard = list()
+	if(!shuttle?.shuttle_areas)
+		return aboard
+	for(var/obj/effect/landmark/event_spawn/marker as anything in GLOB.generic_event_spawns)
+		if(is_aboard(marker))
+			aboard += marker
+	return aboard
+
 /// All machines of the given type (and subtypes) aboard this ship.
 /obj/structure/overmap/ship/proc/get_ship_machines(machine_type)
 	var/list/machines = list()

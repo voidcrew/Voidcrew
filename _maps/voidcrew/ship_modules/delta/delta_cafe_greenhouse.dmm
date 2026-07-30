@@ -1,0 +1,231 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"d" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"h" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/vending/hydronutrients,
+/turf/open/floor/iron,
+/area/template_noop)
+"k" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/effect/turf_decal/tile/neutral,
+/turf/open/floor/iron,
+/area/template_noop)
+"l" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"n" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral,
+/turf/open/floor/iron,
+/area/template_noop)
+"o" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"q" = (
+/obj/machinery/light/floor,
+/obj/structure/flora/bush/fullgrass,
+/turf/open/floor/grass,
+/area/template_noop)
+"s" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/frame/computer{
+	dir = 8
+	},
+/obj/item/shard{
+	pixel_x = -7;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"t" = (
+/obj/machinery/hydroponics/constructable,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/grass,
+/area/template_noop)
+"u" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/glass,
+/obj/item/reagent_containers/cup/glass/mug{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/food/grown/tomato{
+	pixel_x = 6;
+	pixel_y = 3
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"x" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/south,
+/obj/machinery/biogenerator,
+/turf/open/floor/iron,
+/area/template_noop)
+"z" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/glass,
+/obj/item/stack/rods{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/item/shard{
+	pixel_x = -6
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"B" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/vending/hydroseeds,
+/turf/open/floor/iron,
+/area/template_noop)
+"C" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/light/small/broken/directional/south,
+/obj/structure/rack,
+/obj/item/shovel{
+	pixel_y = 6
+	},
+/obj/item/hatchet{
+	pixel_y = 1
+	},
+/obj/item/reagent_containers/cup/bucket{
+	pixel_y = -5
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"D" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/glass,
+/turf/open/floor/iron,
+/area/template_noop)
+"E" = (
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/grass,
+/area/template_noop)
+"J" = (
+/obj/structure/girder/displaced,
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/stack/rods,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating/airless,
+/area/template_noop)
+"O" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/closet/crate/hydroponics,
+/obj/item/seeds/tomato,
+/obj/item/seeds/wheat,
+/obj/item/seeds/potato,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Q" = (
+/obj/machinery/hydroponics/constructable,
+/turf/open/floor/grass,
+/area/template_noop)
+"S" = (
+/obj/structure/flora/bush/flowers_yw,
+/obj/item/plant_analyzer{
+	pixel_x = 7;
+	pixel_y = -6
+	},
+/turf/open/floor/grass,
+/area/template_noop)
+"U" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral,
+/obj/item/reagent_containers/cup/watering_can{
+	pixel_x = -7;
+	pixel_y = 3
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"V" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/template_noop)
+"X" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/shard{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Y" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/built/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Z" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral,
+/obj/item/storage/bag/plants{
+	pixel_x = 6;
+	pixel_y = -5
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+
+(1,1,1) = {"
+k
+n
+n
+n
+B
+"}
+(2,1,1) = {"
+Q
+q
+U
+n
+h
+"}
+(3,1,1) = {"
+t
+S
+n
+D
+x
+"}
+(4,1,1) = {"
+Q
+E
+n
+u
+Z
+"}
+(5,1,1) = {"
+Y
+d
+o
+d
+l
+"}
+(6,1,1) = {"
+X
+V
+s
+V
+z
+"}
+(7,1,1) = {"
+O
+V
+J
+V
+C
+"}

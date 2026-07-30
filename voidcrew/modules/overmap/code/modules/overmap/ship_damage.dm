@@ -545,65 +545,19 @@
 	spawn_meteor_at_ship(meteor_type)
 
 /**
- * Spawns a single meteor from the edge of the virtual level aimed at a random ship turf
- * Shield walls will physically intercept the meteor if shields are active
+ * Spawns a single meteor just outside the hull, aimed at a random ship turf.
+ * Shield walls will physically intercept the meteor if shields are active.
+ *
+ * Launching goes through the dynamic-events debris corridor (see
+ * voidcrew/modules/dynamic_events/ship_debris.dm), which confines the rock to this
+ * ship's own footprint. Rocks used to be spawned on the reservation edge with no
+ * termination condition at all: one that missed kept flying for its full three-minute
+ * lifetime, straight across the transit z-level and into whatever ship was parked next
+ * to us — and on reaching the reservation's hard cordon was teleported onto a live
+ * space z-level rather than deleted.
  */
 /obj/structure/overmap/ship/proc/spawn_meteor_at_ship(meteor_type)
-	// Pick a random target inside the ship
-	var/turf/target = get_random_ship_turf()
-	if(!target)
-		return
-
-	// Get the virtual level bounds from the turf reservation
-	var/datum/turf_reservation/reservation = SSmapping.get_reservation_from_turf(target)
-	var/turf/spawn_turf
-
-	if(reservation && length(reservation.bottom_left_turfs) && length(reservation.top_right_turfs))
-		// Use the reservation bounds to spawn at the edge of the virtual level
-		var/turf/bottom_left = reservation.bottom_left_turfs[1]
-		var/turf/top_right = reservation.top_right_turfs[1]
-
-		// Add small padding from the cordon edge
-		var/padding = 3
-		var/min_x = bottom_left.x + padding
-		var/min_y = bottom_left.y + padding
-		var/max_x = top_right.x - padding
-		var/max_y = top_right.y - padding
-
-		// Pick a random edge to spawn from
-		var/direction = pick(NORTH, SOUTH, EAST, WEST)
-		switch(direction)
-			if(NORTH)
-				spawn_turf = locate(rand(min_x, max_x), max_y, target.z)
-			if(SOUTH)
-				spawn_turf = locate(rand(min_x, max_x), min_y, target.z)
-			if(EAST)
-				spawn_turf = locate(max_x, rand(min_y, max_y), target.z)
-			if(WEST)
-				spawn_turf = locate(min_x, rand(min_y, max_y), target.z)
-	else
-		// Fallback for non-reserved turfs - use fixed distance
-		var/spawn_distance = 15
-		var/direction = pick(NORTH, SOUTH, EAST, WEST)
-		switch(direction)
-			if(NORTH)
-				spawn_turf = locate(target.x, target.y + spawn_distance, target.z)
-			if(SOUTH)
-				spawn_turf = locate(target.x, target.y - spawn_distance, target.z)
-			if(EAST)
-				spawn_turf = locate(target.x + spawn_distance, target.y, target.z)
-			if(WEST)
-				spawn_turf = locate(target.x - spawn_distance, target.y, target.z)
-
-	if(!spawn_turf)
-		return
-
-	// Spawn meteor - pass target as second arg (becomes mapload, but meteor still chases it)
-	var/obj/effect/meteor/M = new meteor_type(spawn_turf, target)
-	// Add traits to let it move through hyperspace/cordon areas without being deleted or drifted
-	ADD_TRAIT(M, TRAIT_FREE_HYPERSPACE_MOVEMENT, INNATE_TRAIT)
-	ADD_TRAIT(M, TRAIT_FREE_HYPERSPACE_SOFTCORDON_MOVEMENT, INNATE_TRAIT)
-	ADD_TRAIT(M, TRAIT_HYPERSPACED, INNATE_TRAIT) // Prevent shuttle_cling component
+	return launch_ship_debris(meteor_type)
 
 /**
  * Nebula Effect

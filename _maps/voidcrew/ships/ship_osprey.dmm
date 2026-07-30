@@ -1,4 +1,8 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/landmark/event_spawn,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/osprey/medbay)
 "ab" = (
 /obj/machinery/power/apc/auto_name/directional/south,
 /obj/structure/cable,
@@ -7,6 +11,10 @@
 "ac" = (
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/osprey/hallway/starboard)
+"ad" = (
+/obj/effect/landmark/event_spawn,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/osprey/cargo/mining_dock)
 "ae" = (
 /obj/machinery/light/small,
 /obj/structure/curtain/cloth/fancy,
@@ -5949,7 +5957,7 @@ tf
 tM
 bn
 MJ
-PU
+aa
 Dc
 tO
 ab
@@ -6157,7 +6165,7 @@ XU
 XU
 wo
 jh
-FG
+ad
 Xb
 ue
 Qq

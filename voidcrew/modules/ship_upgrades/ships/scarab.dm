@@ -19,7 +19,7 @@
 		Comes with extra prosthetic limbs."
 	slot = "scarab_med"
 	map_file = "scarab/scarab_med_surgery.dmm"
-	part_cost = list(PART_CLASS_MISC = 1)
+	part_cost = list(PART_CLASS_MISC = 8)
 
 /datum/ship_upgrade_module/scarab/med_chem
 	id = "scarab_med_chem"
@@ -28,7 +28,7 @@
 		Comes with a syringe gun."
 	slot = "scarab_med"
 	map_file = "scarab/scarab_med_chem.dmm"
-	part_cost = list(PART_CLASS_SCIENCE = 1)
+	part_cost = list(PART_CLASS_SCIENCE = 8)
 
 /datum/ship_upgrade_module/scarab/engineering_basic
 	id = "scarab_engineering_basic"
@@ -46,7 +46,7 @@
 		providing an immense amount of sustainable power to the ship."
 	slot = "scarab_engineering"
 	map_file = "scarab/scarab_engineering_teg.dmm"
-	part_cost = list(PART_CLASS_TRADE = 2) // TEG is pretty OP
+	part_cost = list(PART_CLASS_TRADE = 14) // TEG is pretty OP
 
 /datum/ship_upgrade_module/scarab/common_quarters
 	id = "scarab_common_basic"
@@ -63,7 +63,7 @@
 	desc = "A fully functional cryogentics bay with two cryo tubes that can heal most injuries over time."
 	slot = "scarab_common"
 	map_file = "scarab/scarab_common_cryo.dmm"
-	part_cost = list(PART_CLASS_SCIENCE = 1)
+	part_cost = list(PART_CLASS_SCIENCE = 8)
 
 /datum/ship_upgrade_module/scarab/cargo_basic
 	id = "scarab_cargo_basic"
@@ -80,7 +80,7 @@
 		Comes with recharging stations intended for quicker EVA operations."
 	slot = "scarab_cargo"
 	map_file = "scarab/scarab_cargo_engi.dmm"
-	part_cost = list(PART_CLASS_COMBAT = 1) // Basically just a cargo bay but with stuff that makes space combat easier
+	part_cost = list(PART_CLASS_COMBAT = 8) // Basically just a cargo bay but with stuff that makes space combat easier
 
 /datum/ship_upgrade_module/scarab/cargo_med
 	id = "scarab_cargo_med"
@@ -89,7 +89,7 @@
 		Intended to supplement the main medical area of the ship."
 	slot = "scarab_cargo"
 	map_file = "scarab/scarab_cargo_med.dmm"
-	part_cost = list(PART_CLASS_MISC = 1)
+	part_cost = list(PART_CLASS_MISC = 8)
 
 // ========== SCARAB THEMES ==========
 
@@ -154,7 +154,7 @@
 	name = "Reinforced Variant"
 	desc = "Chemistry-focused variant with reinforced hull. \
 		Designed for pharmaceutical operations and hazardous material handling."
-	part_cost = list(PART_CLASS_SCIENCE = 1)
+	part_cost = list(PART_CLASS_SCIENCE = 12)
 	template_suffix = "scarab_b"
 	upgrade_slot_ids = list(
 		"scarab_med",
@@ -213,7 +213,7 @@
 	name = "Security Variant"
 	desc = "Patrol-focused variant with security crew. \
 		Designed for sector patrol and law enforcement operations."
-	part_cost = list(PART_CLASS_COMBAT = 1)
+	part_cost = list(PART_CLASS_COMBAT = 12)
 	template_suffix = "scarab_c"
 	upgrade_slot_ids = list(
 		"scarab_med",

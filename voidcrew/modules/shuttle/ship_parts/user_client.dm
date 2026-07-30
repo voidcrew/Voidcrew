@@ -18,6 +18,14 @@
 /// Base credits awarded at round end
 #define ROUND_END_BASE_CREDITS 100
 
+/// Ship parts awarded at round end just for having played a character.
+/// This is the progression FLOOR, not the main faucet - the bulk of a player's
+/// parts should still come from loot caches, bounties, the contested cache and
+/// Colosseum spoils, all of which have to be carried home in an extraction case.
+/// Keep this small enough that winning an event is still worth more than
+/// showing up. See the faucet notes in ship_upgrades/MAPPER_GUIDE.md.
+#define ROUND_END_PARTICIPATION_PARTS 1
+
 /**
  * Gives credits at round end
  * Parts are extracted separately via the extraction system
@@ -39,6 +47,32 @@
 		to_chat(src, span_notice("You have earned [credits_earned] ship credits for completing the round!"))
 	else
 		to_chat(src, span_warning("Failed to receive your credit reward. Please contact an admin."))
+
+/**
+ * Grants the round-end participation part.
+ *
+ * Unlike every other part source this is a direct account grant: it does not
+ * ride an extraction case and cannot be stolen, because its whole job is to
+ * guarantee that a round which went badly still moved the player forward. The
+ * class is rolled at random, so the floor still leaves class scarcity intact -
+ * you can't farm it toward one specific hull.
+ *
+ * Gated on GLOB.joined_player_list, which the ticker fills at roundstart
+ * (ticker.dm) and new_player.dm fills on latejoin. Lobby observers who never
+ * took a character are not in it and get nothing.
+ */
+/client/proc/give_round_end_participation_parts()
+	if(!ckey)
+		return
+	if(!(ckey in GLOB.joined_player_list))
+		return
+
+	var/part_class = pick(GLOB.ship_part_classes)
+	if(!GLOB.ship_economy_db?.add_part(ckey, part_class, ROUND_END_PARTICIPATION_PARTS, "round_end_participation"))
+		to_chat(src, span_warning("Failed to receive your participation ship part. Please contact an admin."))
+		return
+
+	to_chat(src, span_notice("Salvage rights on this tour paid out [ROUND_END_PARTICIPATION_PARTS] [part_class] ship part[ROUND_END_PARTICIPATION_PARTS > 1 ? "s" : ""], added to your account."))
 
 /**
  * Returns the player's current credit balance

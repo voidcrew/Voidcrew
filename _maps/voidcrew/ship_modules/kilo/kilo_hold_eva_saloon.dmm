@@ -1,0 +1,96 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"e" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/item/storage/bag/ore{
+	pixel_x = -7;
+	pixel_y = -5
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/template_noop)
+"j" = (
+/obj/machinery/suit_storage_unit/mining/eva,
+/obj/effect/turf_decal/bot,
+/obj/structure/sign/warning/xeno_mining/directional/south,
+/turf/open/floor/wood,
+/area/template_noop)
+"v" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/trimline/neutral/warning,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"D" = (
+/obj/structure/table/wood,
+/obj/machinery/recharger,
+/obj/machinery/cell_charger,
+/obj/item/stock_parts/power_store/cell/high,
+/obj/item/clothing/head/cowboy/brown{
+	pixel_x = -9;
+	pixel_y = 9
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/warm{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"J" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/neutral/warning,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"K" = (
+/turf/template_noop,
+/area/template_noop)
+"U" = (
+/obj/modular_map_connector,
+/obj/structure/rack,
+/obj/item/gun/energy/plasmacutter,
+/obj/item/extraction_pack,
+/obj/item/fulton_core,
+/obj/item/gps/mining,
+/obj/item/clothing/glasses/meson{
+	pixel_x = 8;
+	pixel_y = -6
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/sign/poster/contraband/random/directional/south,
+/turf/open/floor/wood,
+/area/template_noop)
+
+(1,1,1) = {"
+v
+e
+U
+"}
+(2,1,1) = {"
+J
+j
+K
+"}
+(3,1,1) = {"
+c
+D
+K
+"}

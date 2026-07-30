@@ -37,7 +37,7 @@
 	pixel_x = -3;
 	pixel_y = 8
 	},
-/obj/item/stock_parts/cell/high{
+/obj/item/stock_parts/power_store/cell/high{
 	pixel_x = 3;
 	pixel_y = -1
 	},

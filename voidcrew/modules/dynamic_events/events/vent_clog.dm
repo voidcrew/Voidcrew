@@ -47,6 +47,8 @@
 	earliest_start = 10 MINUTES
 	description = "Dangerous pests climb out of a vent aboard the target ship."
 	allowed_zones = list(ZONE_YELLOW, ZONE_RED)
+	/// Hostile pests on a hull with one room are hostile pests in that room, with the crew.
+	min_ship_mass = SHIP_MASS_SMALL
 
 /**
  * Produces one selected mob type from one vent, tracking living products so a
@@ -339,4 +341,123 @@
 	target_ship.ship_event_announce(
 		"Major biological obstruction detected aboard the vessel. The infestation is believed to be emerging from ventilation in [event_area.name].",
 		"Infestation Alert",
+	)
+
+/**
+ * Genuinely dangerous pests: toxin bees, carp, glockroaches. Deep bands only, and it
+ * wants a hull big enough that "back out of the compartment and weld the vent" is a
+ * plan rather than a description of the whole ship.
+ */
+/datum/round_event_control/voidcrew/vent_clog/critical
+	name = "Ventilation Clog: Critical"
+	typepath = /datum/round_event/voidcrew/vent_clog/critical
+	weight = 8
+	max_occurrences = 3
+	earliest_start = 25 MINUTES
+	description = "Really dangerous pests climb out of a vent aboard the target ship."
+	allowed_zones = list(ZONE_YELLOW, ZONE_RED)
+	min_crew_aboard = 2
+	min_ship_mass = SHIP_MASS_MEDIUM
+	min_wizard_trigger_potency = 3
+	max_wizard_trigger_potency = 6
+
+/datum/round_event/voidcrew/vent_clog/critical/setup()
+	. = ..()
+	if(!target_valid() || QDELETED(vent) || !target_ship.is_aboard(vent))
+		return
+	spawn_delay = rand(15, 25)
+	maximum_spawns = min(rand(1, 3), length(target_ship.get_event_crew()) + 1)
+	filth_spawn_types = list(
+		/obj/effect/decal/cleanable/blood,
+		/obj/effect/decal/cleanable/blood/splatter,
+	)
+
+/datum/round_event/voidcrew/vent_clog/critical/get_mob()
+	var/static/list/mob_list = list(
+		/mob/living/basic/bee/toxin,
+		/mob/living/basic/carp,
+		/mob/living/basic/cockroach/glockroach,
+	)
+	return pick(mob_list)
+
+/datum/round_event/voidcrew/vent_clog/critical/announce(fake)
+	if(!target_valid())
+		finish_event()
+		return
+	if(QDELETED(vent) || !target_ship.is_aboard(vent))
+		finish_event()
+		return
+
+	var/area/event_area = get_area(vent)
+	if(!event_area)
+		finish_event()
+		return
+	target_ship.ship_event_announce(
+		"Hazardous lifesigns in the ventilation network around [event_area.name]. Arm yourselves before opening that compartment.",
+		"Security Alert",
+	)
+
+/**
+ * The grab bag. Anything from a lightgeist to a bear, so the crew have no idea what they
+ * are dealing with until it is already out of the vent — which is the entire joke.
+ *
+ * No zone gate and no size gate on purpose: most of this table is harmless, and the ones
+ * that are not are the reason it is funny. It is the one clog that can still surprise a
+ * crew who have learned what the other three mean.
+ */
+/datum/round_event_control/voidcrew/vent_clog/strange
+	name = "Ventilation Clog: Strange"
+	typepath = /datum/round_event/voidcrew/vent_clog/strange
+	weight = 5
+	max_occurrences = 2
+	earliest_start = 15 MINUTES
+	description = "Strange creatures climb out of a vent aboard the target ship. Harmfulness varies."
+	min_ship_mass = SHIP_MASS_SMALL
+	min_wizard_trigger_potency = 0
+	max_wizard_trigger_potency = 7
+
+/datum/round_event/voidcrew/vent_clog/strange/setup()
+	. = ..()
+	if(!target_valid() || QDELETED(vent) || !target_ship.is_aboard(vent))
+		return
+	end_when = rand(600, 900)
+	spawn_delay = rand(6, 25)
+	// TG allows up to 10. A ship gets the crew-scaled cap the base port already applies.
+	maximum_spawns = min(rand(2, 5), length(target_ship.get_event_crew()) + 1)
+	filth_spawn_types = list(
+		/obj/effect/decal/cleanable/blood/xeno,
+		/obj/effect/decal/cleanable/fuel_pool,
+		/obj/effect/decal/cleanable/greenglow,
+		/obj/effect/decal/cleanable/vomit,
+	)
+
+/datum/round_event/voidcrew/vent_clog/strange/get_mob()
+	var/static/list/mob_list = list(
+		/mob/living/basic/bear,
+		/mob/living/basic/cockroach/glockroach/mobroach,
+		/mob/living/basic/goose,
+		/mob/living/basic/lightgeist,
+		/mob/living/basic/mothroach,
+		/mob/living/basic/mushroom,
+		/mob/living/basic/viscerator,
+		/mob/living/basic/pet/gondola,
+	)
+	return pick(mob_list)
+
+/datum/round_event/voidcrew/vent_clog/strange/announce(fake)
+	if(!target_valid())
+		finish_event()
+		return
+	if(QDELETED(vent) || !target_ship.is_aboard(vent))
+		finish_event()
+		return
+
+	var/area/event_area = get_area(vent)
+	if(!event_area)
+		finish_event()
+		return
+	target_ship.ship_event_announce(
+		"Unusual lifesign readings in the ventilation network around [event_area.name]. We have no match for the profile.",
+		"Lifesign Alert",
+		ANNOUNCER_ALIENS,
 	)

@@ -39,6 +39,7 @@
 		/obj/item/clothing/suit/costume/pirate/armored = 4,
 		/obj/item/reagent_containers/cup/glass/bottle/rum/aged = 4,
 		/obj/item/blueprint/gun/laser_carbine = 3,
+		/obj/item/ship_parts/combat = 7,
 	)
 	loot_red = list(
 		/obj/item/stack/spacecash/c1000 = 9,
@@ -52,6 +53,7 @@
 		/obj/item/clothing/head/costume/pirate/captain = 3,
 		/obj/item/blueprint/gun/bulldog = 3,
 		/obj/item/stack/spacecash/c10000 = 2,
+		/obj/item/ship_parts/combat = 8,
 	)
 	// Rare tables: surviving stock entries + this theme's uniques at ~4
 	// (see voidcrew/modules/loot/uniques/plunder.dm and the design doc)
@@ -71,7 +73,7 @@
 		/obj/item/gun/ballistic/revolver/mateba = 6,
 		/obj/item/stack/sheet/mineral/diamond = 5,
 		/obj/item/claymore/cutlass/parley = 4,
-		/obj/item/gps/deadmans_compass = 4,
+		/obj/item/heave_ho = 4,
 		/obj/item/gun/ballistic/shotgun/musket/no_quarter = 3,
 	)
 

@@ -11,8 +11,8 @@
  * duplicators (Helios pattern stamp, any future replicator) refuse to copy
  * it — see that define's doc comment.
  *
- * Not wired into any loot table yet — that's the coordinating pass, not
- * this file. This file only defines the six typepaths.
+ * Wired into the expedition rare table in
+ * voidcrew/modules/loot/themes/expedition.dm.
  */
 
 // =========================================================================
@@ -58,10 +58,24 @@
  *   rather than pointing north — north is reserved specifically for
  *   "every reachable ruin has been visited," matching the doc's "when
  *   you've been everywhere" framing.
+ *
+ * PLAYTEST FIX (2026-07-28) — "doesn't seem to work, not sure how it works".
+ * The tracking itself resolves fine; the problem was that the *only* output
+ * was the needle overlay on the item icon, and that needle points along
+ * OVERMAP axes. Standing in a ship interior, a north-east needle means
+ * nothing about the room you're in, and it doesn't move at all while the
+ * ship is parked — so a working compass is indistinguishable from a dead
+ * one. On top of that, `scan_for_target()` is throttled to one scan per
+ * `scan_interval`, and switching the compass on did not force a scan, so
+ * the first thing you saw after clicking it could be up to 3 seconds of the
+ * "no signal" needle. Fixes: activation forces an immediate scan and prints
+ * a readout, examine() prints the same readout any time, and the compass
+ * speaks up in chat whenever the tracked signal changes or you arrive on
+ * top of it. The needle overlay is unchanged.
  */
 /obj/item/pinpointer/old_hands_compass
 	name = "old hand's compass"
-	desc = "A prospector's compass with the glass sanded to frost. The needle points toward the nearest ruin nobody's set foot in yet."
+	desc = "A prospector's compass with the glass sanded to frost. Switched on, the needle points at the nearest space ruin nobody's docked at yet. Click it in hand to switch it on or off; examine it for the bearing and range."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "brass_compass"
 	// Bare-string overlays (the "pinon*" needle states the parent appends) resolve
@@ -79,19 +93,88 @@
 	var/found_everything = FALSE
 	/// Throttle: the expensive GLOB.space_ruin_signals scan only runs this often
 	var/next_scan_time = 0
+	/// How often that scan runs. Printed in the examine text.
+	var/scan_interval = 3 SECONDS
+	/// Last signal reported to whoever's carrying it, so chat only fires on a change
+	var/atom/movable/last_reported
+	/// TRUE once the "you're on top of it" line has been printed for last_reported
+	var/reported_arrival = FALSE
 
 /obj/item/pinpointer/old_hands_compass/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
+/obj/item/pinpointer/old_hands_compass/Destroy()
+	cached_reference_turf = null
+	cached_target_turf = null
+	last_reported = null
+	return ..()
+
 /obj/item/pinpointer/old_hands_compass/attack_self(mob/living/user)
 	toggle_on()
 	user.visible_message(span_notice("[user] [active ? "" : "de"]activates [user.p_their()] compass."), span_notice("You [active ? "" : "de"]activate your compass."))
+	last_reported = null
+	reported_arrival = FALSE
+	if(!active)
+		cached_target_turf = null
+		return
+	// Scan right now instead of waiting out the throttle on the next process
+	// tick, so switching it on always produces a readout immediately.
+	next_scan_time = 0
+	scan_for_target()
+	update_appearance()
+	to_chat(user, span_notice(needle_readout()))
+	last_reported = target
+
+/**
+ * One plain sentence describing what the needle is doing right now. Shared by
+ * examine(), the activation message and the in-chat updates so they can never
+ * disagree with each other.
+ */
+/obj/item/pinpointer/old_hands_compass/proc/needle_readout()
+	if(!active)
+		return "The needle sits loose in the housing. Click it in hand to switch it on."
+	if(found_everything)
+		return "The needle holds due north and won't move. Every signal on the map has been docked at least once."
+	if(!cached_reference_turf)
+		return "The needle wanders. It only gets a bearing aboard a ship or somewhere charted on the overmap."
+	if(!target || !cached_target_turf)
+		return "The needle wanders. There's nothing for it to point at."
+	var/distance = get_dist(cached_reference_turf, cached_target_turf)
+	if(distance <= 0)
+		return "The needle points straight down. You're on top of the signal."
+	return "The needle points [dir2text(get_dir(cached_reference_turf, cached_target_turf))], [distance] tile\s out on the overmap."
+
+/obj/item/pinpointer/old_hands_compass/examine(mob/user)
+	. = ..()
+	. += span_notice(needle_readout())
+	if(active)
+		. += span_notice("It re-checks the map every [DisplayTimeText(scan_interval)].")
+
+/obj/item/pinpointer/old_hands_compass/process(seconds_per_tick)
+	. = ..()
+	if(!active)
+		return
+	var/mob/holder = get(src, /mob)
+	if(!holder)
+		return
+	if(target != last_reported)
+		last_reported = target
+		reported_arrival = FALSE
+		balloon_alert(holder, "needle swings")
+		to_chat(holder, span_notice("[src] ticks over. [needle_readout()]"))
+		return
+	if(reported_arrival || !target || !cached_reference_turf || !cached_target_turf)
+		return
+	if(get_dist(cached_reference_turf, cached_target_turf) > 0)
+		return
+	reported_arrival = TRUE
+	to_chat(holder, span_notice("[src]'s needle drops flat. You're on top of the signal."))
 
 /obj/item/pinpointer/old_hands_compass/scan_for_target()
 	if(world.time < next_scan_time)
 		return
-	next_scan_time = world.time + 3 SECONDS
+	next_scan_time = world.time + scan_interval
 
 	var/obj/structure/overmap/reference_obj = get_ship_from_atom(src)
 	var/turf/here = get_turf(src)
@@ -167,6 +250,20 @@
  * time (it's a single physical object), and pulling it up clears the
  * entire claim in one shot — there's no lingering aura after retrieval.
  *
+ * PLAYTEST FIX (2026-07-28) — "seems like it keeps the effect after you pull
+ * it out". The teardown was only wired to two paths: attack_hand() and
+ * Destroy(). A planted stake is anchored, which stops `/obj/item/attack_hand`
+ * from picking it up, but it does NOT stop the other pickup routes —
+ * mouse-dragging it onto yourself calls `attempt_pickup()` directly (no
+ * anchored check, see code/game/objects/items.dm), and storage inserts,
+ * explosions, telekinesis and singularity pulls all just move the object.
+ * Any of those left `deployed` TRUE with the stake in someone's hand: it kept
+ * processing, kept the GPS beacon, and kept lending planet factions to
+ * everything within 5 tiles of the *carrier*, which is exactly the reported
+ * "effect follows you around after you pull it out". Fixed by hanging the
+ * teardown off Moved() instead, so the claim strictly tracks "the stake is
+ * sitting on the turf it was driven into".
+ *
  * Deviation: fauna already mid-retaliation bypass the faction check by
  * design — `target_retaliate` sets BB_TEMPORARILY_IGNORE_FACTION when
  * picking a target off its "recently attacked me" list
@@ -177,7 +274,7 @@
  */
 /obj/item/claim_stake
 	name = "claim stake"
-	desc = "A steel stake with a brass claim-plate. Drive it into the ground and local wildlife won't start fights nearby."
+	desc = "A steel stake with a brass claim-plate. Driven into the ground it keeps local wildlife from starting fights within 5 tiles. The claim ends the moment the stake leaves the ground."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "claim_stake"
 	worn_icon_state = "marker"
@@ -204,12 +301,28 @@
 	clear_claim()
 	return ..()
 
+/**
+ * The claim only exists while the stake is standing in the ground, so any move
+ * at all ends it. drive_claim() forceMoves the stake onto the turf *before* it
+ * sets deployed, and retract_claim() clears the claim before put_in_hands(), so
+ * neither of the intended paths trips this — it only catches the ones that
+ * bypass attack_hand() (drag-to-hand, storage inserts, explosions, telekinesis).
+ */
+/obj/item/claim_stake/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change)
+	. = ..()
+	if(!deployed)
+		return
+	visible_message(span_notice("[src] comes out of the ground. The claim ends."))
+	clear_claim()
+
 /obj/item/claim_stake/examine(mob/user)
 	. = ..()
 	if(deployed)
-		. += span_notice("It's driven into the ground, claim radius [claim_radius] tiles, staked under [owner_name].")
+		. += span_notice("It's in the ground under [owner_name]. Wildlife won't start fights within [claim_radius] tiles of it.")
+		. += span_notice("Click it with an empty hand to pull it back out. Takes 2 seconds, and the claim ends the moment it's out.")
 	else
-		. += span_notice("Use in hand to drive it into solid ground.")
+		. += span_notice("Use it in hand to drive it into solid ground. Takes 3 seconds.")
+		. += span_notice("While it's planted, wildlife won't start fights within [claim_radius] tiles of it. Picking it up ends the claim.")
 
 /obj/item/claim_stake/attack_self(mob/user)
 	if(deployed)
@@ -266,7 +379,7 @@
 
 /obj/item/claim_stake/process(seconds_per_tick)
 	if(!deployed)
-		return
+		return PROCESS_KILL
 	var/list/currently_in_range = list()
 	for(var/mob/living/nearby_mob in range(claim_radius, src))
 		if(nearby_mob.stat == DEAD)
@@ -275,7 +388,9 @@
 		if(!(nearby_mob in protected_mobs))
 			protect_mob(nearby_mob)
 	for(var/mob/living/protected_mob as anything in protected_mobs.Copy())
-		if(!(protected_mob in currently_in_range))
+		// QDELETED mobs can't be in range any more, but drop the hard ref explicitly
+		// rather than waiting on the range() check to notice
+		if(QDELETED(protected_mob) || !(protected_mob in currently_in_range))
 			release_mob(protected_mob)
 
 /obj/item/claim_stake/proc/protect_mob(mob/living/target_mob)
@@ -288,7 +403,8 @@
 
 /obj/item/claim_stake/proc/release_mob(mob/living/target_mob)
 	var/list/added = protected_mobs[target_mob]
-	if(added)
+	// a deleted mob has nothing left to strip, but its entry still has to go
+	if(added && !QDELETED(target_mob))
 		for(var/faction_string in added)
 			target_mob.faction -= faction_string
 	protected_mobs -= target_mob
@@ -302,10 +418,20 @@
  * been on.
  *
  * Subtypes /obj/item/clothing/suit/hooded/explorer
- * (code/modules/mining/equipment/explorer_gear.dm) for its sprite, hood,
- * and armor — already reused as loot-table content in this same crate's
- * green table (voidcrew/modules/loot/zone_loot.dm), so it stays visually
- * consistent with "expedition gear."
+ * (code/modules/mining/equipment/explorer_gear.dm) for its hood and armor.
+ *
+ * Sprite (2026-07-28, was flagged in playtest as still wearing the stock
+ * explorer suit art): custom "second_season" states in uniques.dmi (item) and
+ * uniques_worn.dmi (worn, 4 dirs). The worn state is drawn on the vanilla
+ * labcoat worn pixel mask (icons/mob/clothing/suits/labcoat.dmi) so the body
+ * zones line up exactly, recoloured to sun-bleached tan canvas with dust
+ * ground into the hem. `hood_up_affix` is blanked deliberately: the base
+ * hooded-suit type otherwise points icon_state AND worn_icon_state at
+ * "<state>_t" the moment the hood goes up (see
+ * /datum/component/toggle_attached_clothing), and there is no
+ * "second_season_t" state — the coat would vanish. With the affix blank the
+ * coat sprite simply doesn't change, which is a supported mode of the base
+ * type, and the hood itself still renders on the head.
  *
  * Weather immunity uses the idiomatic path: `clothing_traits`
  * (auto-applied/removed by the base equipped()/dropped() in
@@ -334,17 +460,26 @@
  */
 /obj/item/clothing/suit/hooded/explorer/second_season_duster
 	name = "\"Second Season\""
-	desc = "A duster gone the color of every planet it's been on. Storms don't touch you in it, and rough ground doesn't slow you down."
+	desc = "A long canvas duster bleached by every planet it's been on. Storms don't touch you in it, and rough ground doesn't slow you down."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "second_season"
+	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
+	hood_up_affix = ""
 	clothing_traits = list(TRAIT_ASHSTORM_IMMUNE, TRAIT_SNOWSTORM_IMMUNE, TRAIT_SANDSTORM_IMMUNE, TRAIT_RAINSTORM_IMMUNE, TRAIT_RADSTORM_IMMUNE)
 
 /obj/item/clothing/suit/hooded/explorer/second_season_duster/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
+/obj/item/clothing/suit/hooded/explorer/second_season_duster/examine(mob/user)
+	. = ..()
+	. += span_notice("Worn, it blocks ash, snow, sand and rain storms outright.")
+	. += span_notice("Rough ground - sand, snow, mud - doesn't slow you down while you've got it on.")
+
 /obj/item/clothing/suit/hooded/explorer/second_season_duster/equipped(mob/user, slot, initial)
 	. = ..()
 	if(slot_flags & slot)
-		RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_wearer_moved))
+		RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_wearer_moved), override = TRUE)
 		user.remove_movespeed_modifier(/datum/movespeed_modifier/turf_slowdown)
 
 /obj/item/clothing/suit/hooded/explorer/second_season_duster/dropped(mob/user, silent)
@@ -369,25 +504,37 @@
  * "Cracks the seam wider": while held, it listens on its wielder for
  * COMSIG_MOB_MINED — the signal every successful `gets_drilled()` call
  * sends to the mining mob regardless of tool
- * (code/game/turfs/closed/minerals.dm) — and, on that signal, rolls a
- * one-hop cascade into the mined turf's immediate neighbors with a
- * decaying per-tile chance, the same orange(1, turf) neighbor-walk idiom
- * the resonator's burst() uses
+ * (code/game/turfs/closed/minerals.dm) — and, on that signal, walks a
+ * cascade outward from the mined tile, using the same orange(1, turf)
+ * neighbor-walk idiom the resonator's burst() uses
  * (code/modules/mining/equipment/resonator.dm). This is done via signal
  * registration on the *wielder*, not by overriding
  * `/turf/closed/mineral/gets_drilled()` itself — that proc lives in
  * upstream code this file must not edit, and the signal hook reaches the
  * exact same event without touching it.
+ *
+ * PLAYTEST CHANGE (2026-07-28) — "make it cascade even further, like up to 3
+ * adjacent in each direction". The cascade was one hop: it only ever looked at
+ * the eight tiles touching the one you broke. It's now a bounded
+ * breadth-first walk out to `cascade_range` steps, where each tile that cracks
+ * open becomes a new front for the next step, so a good roll reaches three
+ * tiles out in every direction. It stays cheap because the walk is synchronous
+ * over at most a 7x7 block, every tile is visited once (`seen`), and the total
+ * is hard-capped at `cascade_max_tiles`.
  */
 /obj/item/pickaxe/divining
 	name = "divining pick"
-	desc = "A pickaxe with a forked tip that hums when there's good rock nearby. Breaking one seam tends to crack open the ones next to it."
+	desc = "A pickaxe with a forked tip that hums when there's good rock nearby. Breaking a seam cracks open the rock around it, up to 3 tiles out in every direction."
 	toolspeed = 0.8
 	force = 16
-	/// Chance the first adjacent mineral turf cascades in
-	var/cascade_base_chance = 55
-	/// How much the chance drops for each further neighbor checked this trigger
-	var/cascade_decay = 15
+	/// How many steps out from the mined tile the cascade can reach
+	var/cascade_range = 3
+	/// Chance a tile one step out cracks open
+	var/cascade_base_chance = 65
+	/// How much that chance drops for every further step out
+	var/cascade_decay = 18
+	/// Hard cap on tiles cracked open per swing, so a big field can't chain forever
+	var/cascade_max_tiles = 24
 
 /obj/item/pickaxe/divining/Initialize(mapload)
 	. = ..()
@@ -397,7 +544,7 @@
 	. = ..()
 	// only while actually wielded — belted/backpacked shouldn't cascade off a different tool's mining
 	if(slot & ITEM_SLOT_HANDS)
-		RegisterSignal(user, COMSIG_MOB_MINED, PROC_REF(on_wielder_mined))
+		RegisterSignal(user, COMSIG_MOB_MINED, PROC_REF(on_wielder_mined), override = TRUE)
 
 /obj/item/pickaxe/divining/dropped(mob/user, silent)
 	. = ..()
@@ -408,14 +555,37 @@
 	if(!istype(rock))
 		return
 	var/mob/user = source
-	var/chance = cascade_base_chance
+	// Breadth-first walk outward: `frontier` is the set of tiles that cracked
+	// open on the previous step, and only those seed the next step, so the
+	// cascade actually travels instead of only touching the first ring. `seen`
+	// means no tile is ever rolled twice and the walk can't loop back.
+	var/list/seen = list()
+	seen[rock] = TRUE
+	var/list/frontier = list(rock)
+	var/list/cracked = list()
+	for(var/step in 1 to cascade_range)
+		var/chance = max(cascade_base_chance - (cascade_decay * (step - 1)), 5)
+		var/list/next_frontier = list()
+		for(var/turf/closed/mineral/front as anything in frontier)
+			for(var/turf/closed/mineral/neighbor in orange(1, front))
+				if(seen[neighbor])
+					continue
+				seen[neighbor] = TRUE
+				if(!prob(chance))
+					continue
+				cracked += neighbor
+				next_frontier += neighbor
+				if(length(cracked) >= cascade_max_tiles)
+					break
+			if(length(cracked) >= cascade_max_tiles)
+				break
+		if(!length(next_frontier) || length(cracked) >= cascade_max_tiles)
+			break
+		frontier = next_frontier
 	var/stagger = 0
-	for(var/turf/closed/mineral/neighbor in orange(1, rock))
-		if(!prob(chance))
-			continue
-		chance = max(chance - cascade_decay, 0)
-		stagger += 3
-		addtimer(CALLBACK(src, PROC_REF(cascade_drill), neighbor, user), stagger)
+	for(var/turf/closed/mineral/cracked_turf as anything in cracked)
+		stagger += 2
+		addtimer(CALLBACK(src, PROC_REF(cascade_drill), cracked_turf, user), stagger)
 
 /obj/item/pickaxe/divining/proc/cascade_drill(turf/closed/mineral/target_turf, mob/user)
 	if(!ismineralturf(target_turf))
@@ -454,13 +624,32 @@
  * Deepwell — RED. A core sampler crated in claim-office gray, deploying
  * into an autonomous mining machine.
  *
+ * PLAYTEST REDESIGN (2026-07-28) — "I'm not sure how this is actually
+ * useful... it only works once? it only mines one time."
+ *
+ * Two things made it read as single-use. First, the rig only ever worked the
+ * one seam it was bolted next to: the dig queue was a flood-fill through
+ * *connected* mineral turfs, with a permanent `seen_turfs` list, so the moment
+ * that seam ran out it went silent forever and nothing could ever put work
+ * back in the queue. Planet ore seams are small, so that was usually a handful
+ * of walls. Second, deploying consumed the item and nothing in the game told
+ * you the machine could be wrenched back into its crate, so a spent rig looked
+ * like a wasted red-tier prize.
+ *
+ * Redesign, keeping the identity (plant it, it deep-samples and auto-smelts):
+ * - It is a RADIUS miner, not a vein-follower. It drills any mineral wall
+ *   within `dig_radius` (7) tiles, nearest ring first, connected or not.
+ * - One wall every `pulse_interval` (2) seconds — that's a full 7-tile field
+ *   worked in a few minutes, unattended, with the ore already smelted.
+ * - When it runs out it goes idle instead of dying: it rescans every
+ *   `idle_rescan_interval` (15) seconds, so rock you blast open nearby later
+ *   gets picked up without touching the rig.
+ * - Wrenching it packs it back into the crate, and the examine text says so.
+ * All the numbers above are stated in the item desc and the machine examine.
+ *
  * No autonomous/deployable mining machine exists anywhere in this
  * codebase (verified) — this is new machinery, but every mechanic it
  * uses is a direct reuse of an existing pattern:
- * - Flood-fill: a breadth-first queue seeded from orange(1, turf) and
- *   re-seeded from each drilled tile's own neighbors, the same
- *   neighbor-walk idiom as the resonator's burst()
- *   (code/modules/mining/equipment/resonator.dm).
  * - Drilling: calls the turf's own `gets_drilled()` — the universal
  *   mining entry point ~30 other sources already call
  *   (code/game/turfs/closed/minerals.dm).
@@ -493,104 +682,152 @@
  * fire-and-forget.
  */
 /obj/item/deepwell_sampler
-	name = "core sampler"
-	desc = "A core sampler crated in claim-office gray. Deploy it on a mineral seam and it works the whole vein by itself."
+	name = "deepwell core sampler"
+	desc = "A drill rig crated in claim-office gray. Bolted down, it drills one wall of rock every 2 seconds anywhere within 7 tiles and smelts what it pulls up into sheets at its feet. Wrench it to pack it back into the crate."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "deepwell_item"
 	w_class = WEIGHT_CLASS_BULKY
 	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 3, /datum/material/glass = SHEET_MATERIAL_AMOUNT)
+	/// Must match the machine's dig_radius — checked before letting anyone bolt it down
+	var/dig_radius = 7
 
 /obj/item/deepwell_sampler/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
+/obj/item/deepwell_sampler/examine(mob/user)
+	. = ..()
+	. += span_notice("Use it in hand to bolt it down. Takes 3 seconds, and there has to be rock within [dig_radius] tiles.")
+	. += span_notice("It keeps working on its own, and it's loud enough that wildlife comes to look. Wrench it to pack it up and move it.")
+
 /obj/item/deepwell_sampler/attack_self(mob/user)
 	var/turf/target_turf = get_turf(user)
-	var/list/mineral_neighbors = target_turf ? get_adjacent_mineral_turfs(target_turf) : list()
-	if(!target_turf || (!length(mineral_neighbors) && !ismineralturf(target_turf)))
-		to_chat(user, span_warning("[src] needs to go down on or right beside a mineral seam."))
+	if(!target_turf || !length(mineral_turfs_in_range(target_turf, dig_radius)))
+		to_chat(user, span_warning("[src] needs rock within [dig_radius] tiles to be worth bolting down. There's nothing here to drill."))
 		return
 	to_chat(user, span_notice("You start bolting [src] down..."))
 	if(!do_after(user, 3 SECONDS, target = src))
 		return
 	if(!isturf(user.loc) || QDELETED(src))
 		return
-	user.visible_message(span_notice("[user] deploys [src]."), span_notice("You deploy [src]. Somebody should stay with it."))
+	user.visible_message(span_notice("[user] bolts [src] down."), span_notice("You bolt [src] down. It'll work the rock around it on its own - somebody should stay with it."))
 	new /obj/machinery/deepwell_sampler(get_turf(user))
 	qdel(src)
 
-/obj/item/deepwell_sampler/proc/get_adjacent_mineral_turfs(turf/center)
+/// Every mineral wall within `radius` of `center`. Shared by the crate's deploy check and the rig's queue refill.
+/proc/mineral_turfs_in_range(turf/center, radius)
 	. = list()
-	for(var/turf/closed/mineral/neighbor in orange(1, center))
-		. += neighbor
+	if(!center)
+		return
+	for(var/turf/closed/mineral/rock in range(radius, center))
+		. += rock
 
 /obj/machinery/deepwell_sampler
 	name = "deepwell sampler"
-	desc = "A core sampler, bolted down and drilling the vein on its own. It's extremely loud, and the wildlife comes to look."
+	desc = "A core sampler bolted to the ground, drilling out the rock around it and smelting what it brings up. It's extremely loud, and the wildlife comes to look."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "deepwell"
 	density = TRUE
 	anchored = TRUE
 	use_power = NO_POWER_USE
+	/// Tiles out from the rig it will drill. Any mineral wall in here is fair game,
+	/// connected to the last one or not — that's what makes it a site miner
+	/// rather than a one-seam machine.
+	var/dig_radius = 7
 	/// Seconds between drill pulses — plain seconds, matching process()'s
 	/// seconds_per_tick accumulator (a `X SECONDS` value here would be
 	/// deciseconds and slow the drill down tenfold)
-	var/pulse_interval = 4
+	var/pulse_interval = 2
+	/// Seconds between rescans once there's nothing left in range
+	var/idle_rescan_interval = 15
 	var/pulse_accumulator = 0
+	/// TRUE while there's no rock left in range; it keeps rescanning, slower
+	var/idle = FALSE
 	/// Tile radius the fauna-attraction ping reaches
 	var/attraction_range = 12
 	/// Pulses between fauna-attraction pings
 	var/pulses_since_ping = 0
-	/// Turfs still queued to drill, breadth-first from the deploy point
+	/// Sheets stacked up since it was bolted down, reported on examine
+	var/sheets_produced = 0
+	/// Walls still queued from the last scan, nearest ring first
 	var/list/turf/closed/mineral/dig_queue = list()
-	/// Turfs already queued or drilled, so the flood-fill doesn't loop
-	var/list/turf/seen_turfs = list()
 
 /obj/machinery/deepwell_sampler/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
-	seed_queue()
+	refill_queue()
 
 /obj/machinery/deepwell_sampler/Destroy()
 	dig_queue = null
-	seen_turfs = null
 	return ..()
 
-/obj/machinery/deepwell_sampler/proc/seed_queue()
+/obj/machinery/deepwell_sampler/examine(mob/user)
+	. = ..()
+	. += span_notice("It drills one wall every [pulse_interval] seconds, anywhere within [dig_radius] tiles, and smelts what it brings up into sheets at its feet.")
+	if(idle)
+		. += span_warning("It's idle - no rock left within [dig_radius] tiles. It rechecks every [idle_rescan_interval] seconds, so blasting open more rock nearby will start it again.")
+	else
+		. += span_notice("[length(dig_queue)] wall\s left in this pass.")
+	. += span_notice("It's smelted [sheets_produced] sheet\s so far. Wrench it to pack it back into its crate.")
+
+/**
+ * Rebuilds the whole dig queue from a fresh scan of the surrounding tiles,
+ * nearest ring first so the rig eats outward instead of jumping around. Called
+ * on deploy and every time the queue runs dry — the rescan is what lets a rig
+ * pick up rock that got opened up after it was planted, instead of being
+ * permanently spent the way the old connected-vein flood fill was.
+ */
+/obj/machinery/deepwell_sampler/proc/refill_queue()
+	dig_queue = list()
 	var/turf/here = get_turf(src)
-	seen_turfs[here] = TRUE
-	for(var/turf/closed/mineral/adjacent in orange(1, here))
-		if(seen_turfs[adjacent])
+	if(!here)
+		return
+	var/list/rings = list()
+	for(var/ring in 1 to dig_radius)
+		rings += list(list())
+	for(var/turf/closed/mineral/rock as anything in mineral_turfs_in_range(here, dig_radius))
+		var/distance = get_dist(here, rock)
+		if(distance < 1 || distance > dig_radius)
 			continue
-		seen_turfs[adjacent] = TRUE
-		dig_queue += adjacent
+		var/list/bucket = rings[distance]
+		bucket += rock
+	for(var/list/bucket as anything in rings)
+		dig_queue += bucket
 
 /obj/machinery/deepwell_sampler/process(seconds_per_tick)
 	pulse_accumulator += seconds_per_tick
-	if(pulse_accumulator < pulse_interval)
+	if(pulse_accumulator < (idle ? idle_rescan_interval : pulse_interval))
 		return
 	pulse_accumulator = 0
 	do_pulse()
 
 /obj/machinery/deepwell_sampler/proc/do_pulse()
-	playsound(src, 'sound/effects/break_stone.ogg', 100, TRUE, 20)
+	if(!length(dig_queue))
+		refill_queue()
+	if(!length(dig_queue))
+		if(!idle)
+			idle = TRUE
+			visible_message(span_notice("[src] winds down. There's no rock left within [dig_radius] tiles of it."))
+		return
+	if(idle)
+		idle = FALSE
+		visible_message(span_notice("[src] spins back up and bites into the rock."))
 	pulses_since_ping++
-	if(pulses_since_ping >= 3)
+	if(pulses_since_ping >= 5)
 		pulses_since_ping = 0
 		attract_fauna()
-	if(!length(dig_queue))
-		seed_queue()
-		if(!length(dig_queue))
-			return
-	var/turf/closed/mineral/vein_turf = dig_queue[1]
-	dig_queue.Cut(1, 2)
-	if(!ismineralturf(vein_turf))
+	// pop stale entries (someone else mined that wall since the last scan) rather
+	// than burning a whole pulse on each one
+	var/turf/closed/mineral/vein_turf
+	while(length(dig_queue))
+		var/turf/candidate = dig_queue[1]
+		dig_queue.Cut(1, 2)
+		if(ismineralturf(candidate))
+			vein_turf = candidate
+			break
+	if(!vein_turf)
 		return
-	for(var/turf/closed/mineral/neighbor in orange(1, vein_turf))
-		if(seen_turfs[neighbor])
-			continue
-		seen_turfs[neighbor] = TRUE
-		dig_queue += neighbor
+	playsound(src, 'sound/effects/break_stone.ogg', 70, TRUE, 14)
 	vein_turf.gets_drilled(null, 0)
 	for(var/obj/item/stack/ore/dropped_ore in vein_turf)
 		smelt_and_deposit(dropped_ore)
@@ -605,6 +842,7 @@
 		refined.add(raw_ore.amount)
 	else
 		new raw_ore.refined_type(base, raw_ore.amount)
+	sheets_produced += raw_ore.amount
 	qdel(raw_ore)
 
 /obj/machinery/deepwell_sampler/proc/attract_fauna()
@@ -615,7 +853,7 @@
 
 /obj/machinery/deepwell_sampler/wrench_act(mob/living/user, obj/item/tool)
 	tool.play_tool_sound(src)
-	to_chat(user, span_notice("You unbolt [src]."))
+	to_chat(user, span_notice("You unbolt [src] and pack it back into its crate."))
 	new /obj/item/deepwell_sampler(get_turf(src))
 	qdel(src)
 	return ITEM_INTERACT_SUCCESS
@@ -647,15 +885,24 @@
  *
  * Sprite/slot deviation: worn at the belt (ITEM_SLOT_BELT), not the feet
  * slot, so it never competes with the wearer's actual boots — matches
- * the doc's own "belt/legs item" framing. Since no distinct "leg rig"
- * sprite exists, it copies jump boots' icon fields verbatim (per the
- * sprite-reuse rule for fresh root types); this means it'll render as a
- * boot icon while belted/in-hand, which may look odd — flagged for
- * review.
+ * the doc's own "belt/legs item" framing.
+ *
+ * PLAYTEST CHANGE (2026-07-28) — "should make you move faster too". The rig
+ * now grants /datum/movespeed_modifier/longwalk_rig while it's worn on the
+ * belt: -0.25 multiplicative_slowdown, in the same band as the heretic shadow
+ * cloak (-0.25) and berserk (-0.2), which is a clear step up in pace without
+ * touching sprint-tier numbers like the sphere transformation (-0.5). It goes
+ * through the movespeed modifier system rather than any slowdown var, so it
+ * stacks and unstacks correctly with armour, gravity and turf slowdown. The
+ * dash cooldown also moved onto the COOLDOWN_* macros so the "still resetting"
+ * message can print the real time left.
  */
+/datum/movespeed_modifier/longwalk_rig
+	multiplicative_slowdown = -0.25
+
 /obj/item/longwalk_rig
 	name = "longwalk rig"
-	desc = "A leg harness of pistons and cable, patched up on the trail. Dashes you four tiles forward, straight over lava and chasms."
+	desc = "A leg harness of pistons and cable, patched up on the trail. Worn on the belt it keeps you moving noticeably faster, and it can throw you four tiles forward straight over lava and chasms."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "longwalk_rig"
 	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
@@ -667,9 +914,9 @@
 	/// Tiles thrown — matches jump boots' -1 quirk: 5 = 4 tiles crossed
 	var/jumpdistance = 5
 	var/jumpspeed = 3
-	/// Cooldown between dashes
-	var/recharging_rate = 80
-	var/recharging_time = 0
+	/// Wait between dashes
+	var/dash_cooldown_length = 8 SECONDS
+	COOLDOWN_DECLARE(dash_cooldown)
 
 /datum/action/item_action/longwalk_dash
 	name = "Longwalk Dash"
@@ -681,11 +928,37 @@
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
+/obj/item/longwalk_rig/Destroy()
+	// destroyed while still strapped on: hand the speed back before we go
+	var/mob/wearer = loc
+	if(ismob(wearer))
+		wearer.remove_movespeed_modifier(/datum/movespeed_modifier/longwalk_rig)
+	return ..()
+
+/obj/item/longwalk_rig/examine(mob/user)
+	. = ..()
+	. += span_notice("Worn on the belt, the pistons take some of your weight - you move noticeably faster with it on.")
+	. += span_notice("Its dash throws you four tiles forward over anything underfoot: lava, chasms, open water. [DisplayTimeText(dash_cooldown_length)] between dashes.")
+	if(!COOLDOWN_FINISHED(src, dash_cooldown))
+		. += span_warning("The pistons are still resetting: [DisplayTimeText(COOLDOWN_TIMELEFT(src, dash_cooldown))] left.")
+
+/obj/item/longwalk_rig/equipped(mob/user, slot, initial)
+	. = ..()
+	if(slot & slot_flags)
+		user.add_movespeed_modifier(/datum/movespeed_modifier/longwalk_rig)
+	else
+		// picked up rather than strapped on — no speed from carrying it
+		user.remove_movespeed_modifier(/datum/movespeed_modifier/longwalk_rig)
+
+/obj/item/longwalk_rig/dropped(mob/user, silent)
+	. = ..()
+	user?.remove_movespeed_modifier(/datum/movespeed_modifier/longwalk_rig)
+
 /obj/item/longwalk_rig/ui_action_click(mob/user, action)
 	if(!isliving(user))
 		return
-	if(recharging_time > world.time)
-		to_chat(user, span_warning("The rig's pistons are still resetting."))
+	if(!COOLDOWN_FINISHED(src, dash_cooldown))
+		to_chat(user, span_warning("The rig's pistons are still resetting - [DisplayTimeText(COOLDOWN_TIMELEFT(src, dash_cooldown))] left."))
 		return
 
 	var/atom/dash_target = get_edge_target_turf(user, user.dir)
@@ -694,7 +967,7 @@
 	if(user.throw_at(dash_target, jumpdistance, jumpspeed, spin = FALSE, diagonals_first = TRUE, callback = TRAIT_CALLBACK_REMOVE(user, TRAIT_MOVE_FLOATING, LEAPING_TRAIT)))
 		playsound(src, 'sound/effects/stealthoff.ogg', 50, TRUE, TRUE)
 		user.visible_message(span_warning("[user] surges forward on [user.p_their()] longwalk rig!"), span_notice("You dash forward, feet never touching down."))
-		recharging_time = world.time + recharging_rate
+		COOLDOWN_START(src, dash_cooldown, dash_cooldown_length)
 	else
 		REMOVE_TRAIT(user, TRAIT_MOVE_FLOATING, LEAPING_TRAIT)
 		to_chat(user, span_warning("Something blocks the rig's dash!"))

@@ -22,6 +22,10 @@
 	description = "A pod containing a random supply crate lands on the target ship."
 	requires_flying = TRUE // Pods do not punch into a ship parked inside a hangar.
 	min_crew_aboard = 1
+	/// A pod arrives with a light explosion and takes a tile with it. On a hull the size of
+	/// a Pill-class that is a breach across most of the ship, and the "free loot with a
+	/// dent" trade this event is built around stops being a trade.
+	min_ship_mass = SHIP_MASS_MEDIUM
 
 /datum/round_event/voidcrew/stray_cargo
 	announce_chance = 75
@@ -32,6 +36,8 @@
 	var/impact_area_name
 	/// Supply pack typepaths the pod may contain. Filtered from the cargo list once, as in the original.
 	var/static/list/stray_spawnable_supply_packs
+	/// Explicit pack pool for variants. Null falls back to the filtered cargo list above.
+	var/list/possible_pack_types
 
 /**
  * Picks the landing turf and randomizes the warning delay (the original's
@@ -71,21 +77,49 @@
 		landing_turf = target_ship.get_random_open_ship_turf()
 	if(!landing_turf)
 		return
-	var/pack_type = pick(stray_spawnable_supply_packs)
+	var/pack_type = pick(length(possible_pack_types) ? possible_pack_types : stray_spawnable_supply_packs)
 	var/datum/supply_pack/supply_pack = new pack_type
 	var/obj/structure/closet/crate/crate = supply_pack.generate(null)
 	if(crate) // Empty supply packs are a thing, as in the original.
 		crate.locked = FALSE // Unlock secure crates.
 		crate.update_appearance()
-	var/obj/structure/closet/supplypod/pod = new // The original's make_pod(): a stock pod, small explosion included.
+	var/obj/structure/closet/supplypod/pod = make_pod()
 	var/obj/effect/pod_landingzone/landing_marker = new(landing_turf, pod, crate)
 	var/static/mutable_appearance/target_appearance = mutable_appearance('icons/obj/supplypods_32x32.dmi', "LZ")
 	notify_ghosts("[control.name] has summoned a supply crate!", source = get_turf(landing_marker), header = "Cargo Inbound", alert_overlay = target_appearance)
+
+/// The pod itself, so variants can reskin it. A stock pod, small explosion included.
+/datum/round_event/voidcrew/stray_cargo/proc/make_pod()
+	return new /obj/structure/closet/supplypod
 
 /// Nothing to clean up — the pod and crate belong to the crew now.
 /datum/round_event/voidcrew/stray_cargo/end()
 	if(!target_valid())
 		return
+
+/**
+ * The rare one: a syndicate pod carrying thirty telecrystals of uplink gear, picked the
+ * same way surplus crates are. Kept to a single occurrence and pushed late — this is the
+ * best thing a crew can be handed for free, and it should stay a story rather than a
+ * supply line.
+ */
+/datum/round_event_control/voidcrew/stray_cargo/syndicate
+	name = "Stray Syndicate Cargo Pod"
+	typepath = /datum/round_event/voidcrew/stray_cargo/syndicate
+	weight = 6
+	max_occurrences = 1
+	earliest_start = 30 MINUTES
+	description = "A pod containing syndicate gear lands on the target ship."
+	min_wizard_trigger_potency = 3
+	max_wizard_trigger_potency = 6
+
+/datum/round_event/voidcrew/stray_cargo/syndicate
+	possible_pack_types = list(/datum/supply_pack/misc/syndicate)
+
+/datum/round_event/voidcrew/stray_cargo/syndicate/make_pod()
+	var/obj/structure/closet/supplypod/pod = new
+	pod.setStyle(/datum/pod_style/syndicate)
+	return pod
 
 /datum/round_event_control/voidcrew/market_crash
 	name = "Market Crash"

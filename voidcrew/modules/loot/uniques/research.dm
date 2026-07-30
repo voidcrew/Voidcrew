@@ -23,8 +23,37 @@
  */
 
 // =========================================================================
+// File-local defines, #undef'd at the bottom so they don't leak into the
+// global namespace (same convention as occult.dm and zone_loot.dm).
+// =========================================================================
+/// Alpha at or below which the calibration prism's pulse treats something as
+/// hiding. The MOD cloaking modules sit at 50 (prototype) and 20 (ninja), and
+/// the guardian assassin's stealth at 15. Merely translucent things — the
+/// heretic ascension buff at 180, say — are left alone.
+#define PRISM_STEALTH_ALPHA 120
+/// How far the prism's pulse reaches, in tiles.
+#define PRISM_PULSE_RANGE 7
+/// How long a target the pulse catches is held at full visibility.
+#define PRISM_REVEAL_DURATION (12 SECONDS)
+/// Time between pulses.
+#define PRISM_PULSE_COOLDOWN (45 SECONDS)
+/// add_filter() key for the outline the prism paints on whatever it reveals.
+#define PRISM_OUTLINE_FILTER "prism_reveal_outline"
+/// How long it takes to work something into the Eventide coat's inside pocket.
+#define EVENTIDE_STASH_TIME (3 SECONDS)
+/// How long it takes to get it back out again.
+#define EVENTIDE_RUMMAGE_TIME (2 SECONDS)
+
+// =========================================================================
 // GREEN — Calibration prism
 // =========================================================================
+
+/// Action button: fire the reveal pulse. /datum/action/item_action's default
+/// Trigger() routes through ui_action_click() to attack_self(), so the item
+/// only needs the attack_self override below.
+/datum/action/item_action/prism_pulse
+	name = "Pulse Prism"
+	desc = "Throw a band of hard light that forces anything cloaked nearby back into view."
 
 /**
  * Calibration prism — subtypes science goggles purely for the sprite AND
@@ -35,11 +64,34 @@
  * That means the doc's first bullet ("examine any reagent container to see
  * its exact contents") is inherited for free — no new examine hook needed.
  *
- * The second bullet (shimmer on cloaked/invisible/phased things) is
- * implemented as a straight see_invisible bump. The doc also asks for
- * "you can't target them" — that would need touching the click/targeting
- * pipeline, which is out of scope for a single new file and risky to get
- * right blind, so it's deliberately NOT implemented. Flagged in the report.
+ * The second bullet (see cloaked/invisible things) needs TWO mechanisms,
+ * because this codebase hides people in two unrelated ways:
+ *
+ * 1. Invisibility. The atom's `invisibility` var is raised above the viewer's
+ *    `see_invisible` — ghosts, revenants, jaunting mobs. `invis_override`
+ *    below counters this passively, and that is the part that already worked.
+ *    (`invis_view` would not: carbon/update_sight() min()s it against the
+ *    wearer's base see_invisible, so it can only ever REDUCE what you see.)
+ *
+ * 2. Alpha. The mob's `alpha` is animated down toward 0 and its `invisibility`
+ *    is never touched at all — /obj/item/mod/module/stealth (both the
+ *    prototype and the ninja advanced module, code/modules/mod/modules/modules_ninja.dm)
+ *    does exactly `animate(mod.wearer, alpha = stealth_alpha)` with
+ *    stealth_alpha 50/20, and the guardian assassin's stealth status effect
+ *    does the same at 15. Alpha is a render-blend property with no
+ *    relationship to see_invisible whatsoever, so no amount of invis_override
+ *    will ever reveal a ninja cloak. That was the playtest bug.
+ *
+ * The pulse below is the counter for case 2: it sweeps for nearby atoms that
+ * have been faded out and forces them back to full opacity for a while. It
+ * lives on an action button rather than attack_self alone, because attack_self
+ * is unreachable while the prism is on your eyes.
+ *
+ * Not countered, and out of scope: appearance-swap stealth, which is a third
+ * mechanism again — the heretic's shadow cloak (add_alt_appearance with an
+ * override image) and the chameleon projector (walking around inside an
+ * /obj/effect/dummy/chameleon) both leave alpha and invisibility completely
+ * normal, so neither lever here touches them.
  *
  * Typepath nests under .../glasses/science/calibration_prism (not the doc's
  * flat .../glasses/calibration_prism) so it can subtype science goggles
@@ -48,26 +100,136 @@
 /obj/item/clothing/glasses/science/calibration_prism
 	name = "calibration prism"
 	desc = "Lab glasses with a wedge of doped crystal where the left lens should be. Property of E.E.A. — return if found, please."
-	// invis_view gets min()'d against the wearer's base see_invisible in
-	// carbon/update_sight() — it can only ever REDUCE what you see.
-	// invis_override is the actual "see more" lever, so that's what we set.
-	// Observer tier means ghosts shimmer at the edge of the lens too; the
-	// E.E.A. would call that a feature.
+	// Counters invisibility-based hiding (ghosts and the like). Observer tier
+	// means ghosts shimmer at the edge of the lens too; the E.E.A. would call
+	// that a feature. Alpha-based cloaks are handled by the pulse instead.
 	invis_override = SEE_INVISIBLE_OBSERVER
+	// attack_self only fires with the item in hand, and this is worn on the
+	// eyes — the action button is the only reachable activation path.
+	actions_types = list(/datum/action/item_action/prism_pulse)
+	COOLDOWN_DECLARE(pulse_cooldown)
 
 /obj/item/clothing/glasses/science/calibration_prism/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
+
+/obj/item/clothing/glasses/science/calibration_prism/examine(mob/user)
+	. = ..()
+	. += span_notice("Pulsing the prism forces anything cloaked within [PRISM_PULSE_RANGE] tiles back into view for [DisplayTimeText(PRISM_REVEAL_DURATION)].")
+	if(COOLDOWN_FINISHED(src, pulse_cooldown))
+		. += span_notice("It's charged.")
+	else
+		. += span_notice("It's recharging. Ready in [DisplayTimeText(COOLDOWN_TIMELEFT(src, pulse_cooldown))].")
+
+/obj/item/clothing/glasses/science/calibration_prism/attack_self(mob/user, modifiers)
+	. = ..()
+	if(!COOLDOWN_FINISHED(src, pulse_cooldown))
+		to_chat(user, span_warning("[src] hasn't recharged. Ready in [DisplayTimeText(COOLDOWN_TIMELEFT(src, pulse_cooldown))]."))
+		return
+	COOLDOWN_START(src, pulse_cooldown, PRISM_PULSE_COOLDOWN)
+	pulse_reveal(user)
+
+/// Sweeps nearby turfs for atoms that have been faded out by an alpha cloak and forces them back to full visibility.
+/obj/item/clothing/glasses/science/calibration_prism/proc/pulse_reveal(mob/user)
+	var/turf/origin = get_turf(user)
+	if(!origin)
+		return
+
+	playsound(src, 'sound/effects/stealthoff.ogg', 50, TRUE)
+	user.visible_message(span_notice("[src] throws off a hard band of light."), \
+		span_notice("You pulse [src]."))
+
+	var/revealed = 0
+	for(var/mob/living/hidden_mob in view(PRISM_PULSE_RANGE, origin))
+		if(hidden_mob == user || hidden_mob.alpha > PRISM_STEALTH_ALPHA)
+			continue
+		hidden_mob.apply_status_effect(/datum/status_effect/prism_revealed)
+		revealed++
+
+	for(var/obj/hidden_object in view(PRISM_PULSE_RANGE, origin))
+		// /obj/effect covers a great deal of deliberately translucent scenery
+		// and visual-only atoms. None of it is hiding anybody, and repainting
+		// it opaque would just look broken.
+		if(istype(hidden_object, /obj/effect) || hidden_object.alpha > PRISM_STEALTH_ALPHA)
+			continue
+		// Already caught by an earlier pulse: re-revealing would overwrite the
+		// saved alpha with 255 and strand it there when the timer fires.
+		// (Mobs don't need this guard — the status effect is STATUS_EFFECT_UNIQUE
+		// and refreshes rather than stacking.)
+		if(hidden_object.get_filter(PRISM_OUTLINE_FILTER))
+			continue
+		reveal_object(hidden_object)
+		revealed++
+
+	if(!revealed)
+		to_chat(user, span_notice("Nothing within [PRISM_PULSE_RANGE] tiles is hiding."))
+		return
+	to_chat(user, span_notice("[revealed] hidden thing[revealed == 1 ? "" : "s"] light[revealed == 1 ? "s" : ""] up."))
+
+/// Objects can't carry status effects, so a revealed one gets the same treatment on a plain timer.
+/obj/item/clothing/glasses/science/calibration_prism/proc/reveal_object(obj/hidden_object)
+	var/old_alpha = hidden_object.alpha
+	animate(hidden_object, alpha = 255, time = 0.3 SECONDS)
+	hidden_object.add_filter(PRISM_OUTLINE_FILTER, 2, outline_filter(1, COLOR_CYAN))
+	addtimer(CALLBACK(src, PROC_REF(unreveal_object), hidden_object, old_alpha), PRISM_REVEAL_DURATION)
+
+/// Puts a revealed object back how it was. Objects, unlike mobs, do get their old alpha restored — plenty of them are translucent for reasons that have nothing to do with stealth.
+/obj/item/clothing/glasses/science/calibration_prism/proc/unreveal_object(obj/hidden_object, old_alpha)
+	if(QDELETED(hidden_object))
+		return
+	hidden_object.remove_filter(PRISM_OUTLINE_FILTER)
+	animate(hidden_object, alpha = old_alpha, time = 0.3 SECONDS)
+
+/**
+ * Forced visibility, applied by the calibration prism's pulse.
+ *
+ * Alpha-based stealth is not invisibility, so the only counter is to push the
+ * target's alpha back up and hold it there. A cloak switched back on during
+ * the window re-runs its own animate() against the same var, so this
+ * re-asserts on every tick — a non-parallel animate() replaces whatever
+ * animation is pending, so the prism wins inside a second.
+ */
+/datum/status_effect/prism_revealed
+	id = "prism_revealed"
+	duration = PRISM_REVEAL_DURATION
+	tick_interval = 1 SECONDS
+	alert_type = null
+
+/datum/status_effect/prism_revealed/on_apply()
+	. = ..()
+	if(!.)
+		return FALSE
+	animate(owner, alpha = 255, time = 0.3 SECONDS)
+	owner.add_filter(PRISM_OUTLINE_FILTER, 2, outline_filter(1, COLOR_CYAN))
+	to_chat(owner, span_warning("A band of light washes over you. Anything hiding you stops working for the next [DisplayTimeText(PRISM_REVEAL_DURATION)]."))
+	return TRUE
+
+/datum/status_effect/prism_revealed/tick(seconds_between_ticks)
+	if(owner.alpha < 255)
+		animate(owner, alpha = 255, time = 0.3 SECONDS)
+
+/datum/status_effect/prism_revealed/on_remove()
+	owner.remove_filter(PRISM_OUTLINE_FILTER)
+	// The alpha found on the way in is deliberately not restored. The point of
+	// the pulse is that the cloak stops working, and putting the old value
+	// back would re-hide someone who had already switched their cloak off in
+	// the meantime. Anyone who re-activates their stealth animates their own
+	// alpha back down.
+	to_chat(owner, span_notice("The glare fades."))
+	return ..()
 
 // =========================================================================
 // GREEN — Annex notebook, vol. IX
 // =========================================================================
 
 /**
- * Annex notebook, vol. IX — subtypes a plain book for the sprite (no
- * "notebook" sprite exists in this codebase; /obj/item/book's library icon
- * is the closest reasonable stand-in and the type is safe to subtype, it's
- * spawned standalone elsewhere).
+ * Annex notebook, vol. IX — subtypes a plain book for its behaviour (the type
+ * is safe to subtype, it's spawned standalone elsewhere) with a custom
+ * "annex_notebook" state in uniques.dmi over the top, since the library book
+ * sprite read as generic set dressing in playtest. Overriding icon_state is
+ * safe here: /obj/item/book only ever reassigns it via gen_random_icon_state(),
+ * which is called from /obj/item/book/random and the library machines, never
+ * from the plain book's own Initialize().
  *
  * Use on a machine: prints its parts manifest (machinery/display_parts(),
  * the same readout the RPED uses — code/game/machinery/_machinery.dm) and
@@ -84,6 +246,8 @@
 /obj/item/book/annex_notebook
 	name = "Annex notebook, vol. IX"
 	desc = "A lab notebook in three different handwritings. The third one was in a hurry."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "annex_notebook"
 	/// Legible pages left. Each successful use on a machine burns one.
 	var/pages_left = 3
 
@@ -192,11 +356,22 @@
 // =========================================================================
 
 /**
- * Entangled pair — subtypes a plain beaker for the sprite. Spawns linked:
- * the first instance's Initialize() spawns its twin alongside it and links
- * both weakrefs in one pass (an explicit `..(mapload)` keeps the twin's
- * partner arg from leaking further up the beaker/reagent_containers
- * Initialize chain).
+ * Entangled pair — subtypes a plain beaker. Spawns linked: the first
+ * instance's Initialize() spawns its twin alongside it and links both
+ * weakrefs in one pass (an explicit `..(mapload)` keeps the twin's partner
+ * arg from leaking further up the beaker/reagent_containers Initialize
+ * chain). Both halves are the same type, so the custom sprite covers both.
+ *
+ * Sprite note: the "entangled_beaker" state in uniques.dmi is drawn on the
+ * vanilla beaker's exact silhouette, tinted violet with a brass collar and
+ * serial tag. That geometry is load-bearing, not laziness — the liquid
+ * overlay does NOT come from `icon`. reagent_containers/update_overlays()
+ * builds it from a separate file, `fill_icon`
+ * ('icons/obj/medical/reagent_fillings.dmi'), keyed "[fill_icon_state ||
+ * icon_state][threshold]". A custom icon_state with no fill_icon_state would
+ * therefore look for "entangled_beaker20" in that file and silently render
+ * nothing, so fill_icon_state is pinned to "beaker" and the body is kept
+ * where the "beaker20".."beaker100" art expects it.
  *
  * Mechanic: hooks the same on_reagent_change() signal handler every
  * reagent_containers item already uses for its fill-icon update
@@ -212,6 +387,11 @@
 /obj/item/reagent_containers/cup/beaker/entangled
 	name = "entangled beaker"
 	desc = "Two beakers with identical serial numbers. Anything you pour into one turns up in the other instead."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "entangled_beaker"
+	// Keeps the liquid overlay pointed at the vanilla beaker fill art — see
+	// the sprite note above.
+	fill_icon_state = "beaker"
 	/// Weakref to this beaker's paired twin.
 	var/datum/weakref/linked_twin
 	/// Reentrancy guard so a relay doesn't relay itself back and forth forever.
@@ -336,9 +516,21 @@
 // =========================================================================
 
 /**
- * Chronal splint — subtypes fingerless gloves for the sprite/slot. There is
- * no wrist inventory slot in this codebase, so the "wrist brace" flavor is
- * kept as description text on a hand-slot item; flagged as a deviation.
+ * Chronal splint — subtypes fingerless gloves for the slot. There is no wrist
+ * inventory slot in this codebase, so the "wrist brace" flavor is kept as
+ * description text on a hand-slot item; flagged as a deviation.
+ *
+ * Sprite: custom "chronal_splint" states in uniques.dmi (item) and
+ * uniques_worn.dmi (worn, 4 dirs, drawn on the vanilla fingerless-glove hand
+ * mask so the hands land in the right places). worn_icon_state MUST be set
+ * alongside icon_state — build_worn_icon() resolves the worn state as
+ * `worn_icon_state || icon_state` (code/modules/mob/living/carbon/human/human_update_icons.dm),
+ * so a custom icon_state on its own would send the glove layer looking for
+ * "chronal_splint" in the stock hands.dmi and render nothing. Overriding the
+ * icon fields is safe on this type: /obj/item/clothing/gloves only wires
+ * greyscale_config_inhand_left/right, so its GAGS setup feeds the inhand
+ * sprites and nothing else (same reasoning as the pallbearer's gloves in
+ * occult.dm).
  *
  * Mechanic: every SSobj tick (2 seconds, matching the doc's sample rate
  * exactly — code/controllers/subsystem/processing/obj.dm) while worn, it
@@ -353,6 +545,10 @@
 /obj/item/clothing/gloves/fingerless/chronal_splint
 	name = "chronal splint"
 	desc = "A wrist brace of overlapping brass leaves, ticking slightly out of time with everything else. If you go down, it rewinds you ten seconds and snaps in half."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "chronal_splint"
+	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
+	worn_icon_state = "chronal_splint"
 	/// The wearer currently being tracked, if any.
 	var/mob/living/wearer
 	/// Ring buffer of recent (turf, damage) snapshots, oldest first.
@@ -378,9 +574,15 @@
 	. = ..()
 	if(!(slot & ITEM_SLOT_GLOVES))
 		return
+	// equipped() can fire again without an intervening dropped() (equipping
+	// straight from one wearer's hands into another's glove slot, say), so
+	// drop the old hook first and let the new one overwrite rather than
+	// stacking a duplicate registration.
+	if(wearer && wearer != user)
+		UnregisterSignal(wearer, COMSIG_MOB_STATCHANGE)
 	wearer = user
 	START_PROCESSING(SSobj, src)
-	RegisterSignal(user, COMSIG_MOB_STATCHANGE, PROC_REF(on_statchange))
+	RegisterSignal(user, COMSIG_MOB_STATCHANGE, PROC_REF(on_statchange), override = TRUE)
 
 /obj/item/clothing/gloves/fingerless/chronal_splint/dropped(mob/user, silent = FALSE)
 	. = ..()
@@ -450,7 +652,19 @@
 // =========================================================================
 
 /**
- * Eventide courier coat — subtypes the plain labcoat for the sprite.
+ * Eventide courier coat — subtypes the plain labcoat.
+ *
+ * Sprite: custom states in uniques.dmi (item) and uniques_worn.dmi (worn,
+ * 4 dirs, drawn on the vanilla labcoat's worn pixel mask so the body zones
+ * line up), recoloured to dark slate canvas with a tan courier strap.
+ * BOTH a closed and an open state are required, and they must be named
+ * "<state>" and "<state>_t": /obj/item/clothing/suit/toggle adds
+ * /datum/component/toggle_icon, whose do_icon_toggle() flips icon_state
+ * between base_icon_state and "[base_icon_state]_t" on alt-click. This type
+ * deliberately does NOT set worn_icon_state — exactly like the vanilla
+ * labcoat — so build_worn_icon()'s `worn_icon_state || icon_state` fallback
+ * lets the worn sprite follow the toggle too. Pinning worn_icon_state would
+ * freeze the worn sprite in the closed state forever.
  *
  * There's no storage-component way to hold an object "of any size"
  * (max_specific_storage caps by w_class, and mobs/structures aren't
@@ -464,15 +678,20 @@
  * the same drag-and-drop hook /obj/structure/closet uses to accept items
  * and mobs dragged into it, code/game/objects/structures/crates_lockers/closets.dm).
  * Works whether the coat is on the ground or worn (dragging onto the
- * inventory slot icon routes to the same proc). Retrieval: click the worn
- * coat with an empty hand (attack_hand()) to start a 2-second rummage.
+ * inventory slot icon routes to the same proc). Getting something in takes a
+ * visible do_after; nothing moves until it completes, so an interrupted
+ * stash simply leaves the target where it was. Retrieval: click the worn coat
+ * with an empty hand (attack_hand()) to start a rummage.
  *
  * Blocklist, per spec: no anchored objects, no live-and-conscious
  * ("unwilling") mobs, exactly one object at a time.
  */
 /obj/item/clothing/suit/toggle/labcoat/eventide_courier
 	name = "Eventide courier coat"
-	desc = "A lab coat with an inside pocket that holds absolutely anything, whatever the size. Drag something onto the coat to stash it."
+	desc = "A lab coat with an inside pocket that holds absolutely anything, whatever the size. Drag something onto the coat to work it in."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "eventide_coat"
+	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
 	/// The one object stashed in the inside pocket, if any.
 	var/atom/movable/stashed_object
 
@@ -481,37 +700,69 @@
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
 /obj/item/clothing/suit/toggle/labcoat/eventide_courier/Destroy()
-	if(stashed_object && !QDELETED(stashed_object))
-		stashed_object.forceMove(drop_location())
-	stashed_object = null
+	if(stashed_object)
+		UnregisterSignal(stashed_object, COMSIG_QDELETING)
+		if(!QDELETED(stashed_object))
+			stashed_object.forceMove(drop_location())
+		stashed_object = null
 	return ..()
 
 /obj/item/clothing/suit/toggle/labcoat/eventide_courier/examine(mob/user)
 	. = ..()
+	. += span_notice("Dragging something onto the coat works it into the inside pocket. Takes [DisplayTimeText(EVENTIDE_STASH_TIME)].")
 	if(stashed_object)
 		. += span_notice("Something's tucked into the inside pocket. It weighs exactly the same as the coat without it.")
+		. += span_notice("Click the coat with an empty hand to dig it back out. Takes [DisplayTimeText(EVENTIDE_RUMMAGE_TIME)].")
 
 /obj/item/clothing/suit/toggle/labcoat/eventide_courier/mouse_drop_receive(atom/movable/dropped, mob/user, params)
 	. = ..()
 	if(!istype(dropped) || dropped == src || dropped == user)
 		return
-
-	if(stashed_object)
-		to_chat(user, span_warning("[src]'s inside pocket is already full."))
+	if(!can_stash(dropped, user))
 		return
-	if(dropped.anchored)
-		to_chat(user, span_warning("[dropped] won't budge."))
-		return
-	if(isliving(dropped))
-		var/mob/living/living_dropped = dropped
-		if(living_dropped.stat == CONSCIOUS)
-			to_chat(user, span_warning("[living_dropped] isn't going to just climb in there."))
-			return
 
-	user.visible_message(span_notice("[user] tucks [dropped] into [src]'s inside pocket."), \
-		span_notice("You tuck [dropped] into the inside pocket."))
+	user.visible_message(span_notice("[user] starts working [dropped] into [src]'s inside pocket."), \
+		span_notice("You start working [dropped] into the inside pocket."))
+
+	if(!do_after(user, EVENTIDE_STASH_TIME, dropped))
+		to_chat(user, span_warning("You stop before [dropped] is all the way in."))
+		return
+
+	// do_after slept, so everything checked before it has to be checked again:
+	// the pocket may have been filled, the target may have woken up, been
+	// anchored, been deleted, or been carried out of reach.
+	if(QDELETED(src) || QDELETED(dropped) || !can_stash(dropped, user))
+		return
+	if(!user.can_perform_action(dropped, FORBID_TELEKINESIS_REACH))
+		return
+
 	dropped.forceMove(src)
 	stashed_object = dropped
+	// Without this the ref dangles (and holds a harddel) if whatever is in the
+	// pocket gets deleted out from under us.
+	RegisterSignal(dropped, COMSIG_QDELETING, PROC_REF(on_stash_deleted))
+	user.visible_message(span_notice("[user] works [dropped] into [src]'s inside pocket."), \
+		span_notice("You work [dropped] into the inside pocket."))
+
+/// Shared gate for the stash checks, run both before and after the do_after.
+/obj/item/clothing/suit/toggle/labcoat/eventide_courier/proc/can_stash(atom/movable/target, mob/user)
+	if(stashed_object)
+		to_chat(user, span_warning("[src]'s inside pocket is already full."))
+		return FALSE
+	if(target.anchored)
+		to_chat(user, span_warning("[target] won't budge."))
+		return FALSE
+	if(isliving(target))
+		var/mob/living/living_target = target
+		if(living_target.stat == CONSCIOUS)
+			to_chat(user, span_warning("[living_target] isn't going to just climb in there."))
+			return FALSE
+	return TRUE
+
+/// Keeps stashed_object from dangling if the thing in the pocket is deleted.
+/obj/item/clothing/suit/toggle/labcoat/eventide_courier/proc/on_stash_deleted(datum/source)
+	SIGNAL_HANDLER
+	stashed_object = null
 
 /obj/item/clothing/suit/toggle/labcoat/eventide_courier/attack_hand(mob/user, list/modifiers)
 	if(loc == user && stashed_object)
@@ -519,19 +770,28 @@
 		return TRUE
 	return ..()
 
-/// 2-second rummage that produces the stashed object at the user's feet.
+/// Rummage that produces the stashed object at the user's feet.
 /obj/item/clothing/suit/toggle/labcoat/eventide_courier/proc/rummage(mob/user)
 	if(!stashed_object)
 		to_chat(user, span_notice("The inside pocket is empty."))
 		return
 	to_chat(user, span_notice("You rummage through the inside pocket..."))
-	if(!do_after(user, 2 SECONDS, src))
+	if(!do_after(user, EVENTIDE_RUMMAGE_TIME, src))
 		return
-	if(!stashed_object || QDELETED(stashed_object))
+	if(QDELETED(stashed_object))
 		stashed_object = null
 		return
 	var/atom/movable/produced = stashed_object
+	UnregisterSignal(produced, COMSIG_QDELETING)
 	stashed_object = null
 	produced.forceMove(get_turf(user))
 	user.visible_message(span_notice("[user] draws [produced] out of [src]'s inside pocket."), \
 		span_notice("You draw [produced] out of the inside pocket."))
+
+#undef PRISM_STEALTH_ALPHA
+#undef PRISM_PULSE_RANGE
+#undef PRISM_REVEAL_DURATION
+#undef PRISM_PULSE_COOLDOWN
+#undef PRISM_OUTLINE_FILTER
+#undef EVENTIDE_STASH_TIME
+#undef EVENTIDE_RUMMAGE_TIME

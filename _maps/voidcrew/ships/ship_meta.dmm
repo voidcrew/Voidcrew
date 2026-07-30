@@ -5,6 +5,17 @@
 "ab" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/meta/cargo)
+"ac" = (
+/obj/effect/landmark/event_spawn,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/meta/cargo)
+"ad" = (
+/obj/effect/landmark/event_spawn,
+/obj/effect/turf_decal/tile/green,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/meta/kitchen)
 "ae" = (
 /obj/machinery/door/poddoor{
 	id = "whiteship_port"
@@ -2262,7 +2273,7 @@ de
 ap
 ap
 dq
-RG
+ac
 hv
 ap
 ap
@@ -2496,7 +2507,7 @@ FU
 st
 dn
 dF
-dU
+ad
 eg
 st
 "}

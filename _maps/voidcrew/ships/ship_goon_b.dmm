@@ -1,0 +1,992 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/b)
+"ac" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Engineering"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/engineering/b)
+"an" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"aX" = (
+/turf/closed/wall/mineral/titanium{
+	color = "#6E63A8"
+	},
+/area/shuttle/voidcrew/goon/engineering/b)
+"by" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
+"bJ" = (
+/turf/closed/wall/mineral/titanium/nodiagonal{
+	color = "#6E63A8"
+	},
+/area/shuttle/voidcrew/goon/engineering/b)
+"bS" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_cockpit"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/b)
+"bX" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Cockpit"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/shuttle/voidcrew/goon/bridge/b)
+"ca" = (
+/obj/machinery/light/blacklight{
+	dir = 4
+	},
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/obj/machinery/cryopod,
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"ce" = (
+/obj/machinery/camera/autoname/directional/west,
+/obj/structure/sign/calendar/directional/west,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"cm" = (
+/turf/closed/wall/mineral/titanium{
+	color = "#6E63A8"
+	},
+/area/shuttle/voidcrew/goon/medbay/b)
+"cy" = (
+/turf/closed/wall/mineral/titanium/nodiagonal{
+	color = "#6E63A8"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"cQ" = (
+/obj/structure/chair/comfy/black{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/shuttle/voidcrew/goon/bridge/b)
+"dg" = (
+/obj/machinery/door/airlock/titanium{
+	name = "Emergency Shuttle Airlock"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"dQ" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/machinery/mission_pad,
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"eI" = (
+/obj/machinery/camera/autoname/directional/west,
+/obj/structure/table,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/storage/toolbox/electrical{
+	pixel_x = -10;
+	pixel_y = -10
+	},
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/engineering/b)
+"eQ" = (
+/obj/structure/closet/secure_closet/engineering_electrical,
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/engineering/b)
+"fh" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Infirmary"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/medbay/b)
+"fI" = (
+/obj/machinery/cryopod,
+/obj/machinery/computer/cryopod{
+	pixel_y = -32
+	},
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"fQ" = (
+/obj/machinery/vending/wallmed,
+/turf/closed/wall/mineral/titanium/nodiagonal{
+	color = "#6E63A8"
+	},
+/area/shuttle/voidcrew/goon/medbay/b)
+"fR" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/b)
+"ho" = (
+/obj/machinery/light/cold{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/obj/machinery/computer/mission_board{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"hA" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"nB" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/obj/machinery/computer/bank_machine{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"nC" = (
+/obj/structure/closet/crate/engineering/electrical,
+/obj/item/clothing/gloves/color/yellow,
+/obj/item/multitool,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/storage/toolbox/electrical,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/east,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/engineering/b)
+"oL" = (
+/obj/machinery/light/cold{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"oS" = (
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
+"qH" = (
+/obj/machinery/atmospherics/components/tank/plasma{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/corporate_perks_vacation/directional/west,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/engineering/b)
+"rZ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"sg" = (
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"ss" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
+"sK" = (
+/obj/structure/cable,
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/engineering/b)
+"sS" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
+"td" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_engineering"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
+"tE" = (
+/obj/structure/chair/comfy/black{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/shuttle/voidcrew/goon/bridge/b)
+"tS" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_port"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/b)
+"ui" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/b)
+"uq" = (
+/obj/structure/sign/clock/directional/west,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"wg" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"xH" = (
+/obj/machinery/light/cold{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/obj/machinery/computer/bank_machine{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"xT" = (
+/obj/machinery/door/poddoor{
+	id = "goon_bay"
+	},
+/obj/structure/fans/tiny,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/light/cold/directional/west,
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/commons/b)
+"yG" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_mining"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/b)
+"yN" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/b)
+"zO" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/docking_port/mobile/voidcrew/goon/b{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/b)
+"AC" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 8
+	},
+/obj/machinery/power/terminal,
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/medbay/b)
+"AF" = (
+/obj/structure/sign/flag/ssc,
+/turf/closed/wall/mineral/titanium{
+	color = "#6E63A8"
+	},
+/area/shuttle/voidcrew/goon/bridge/b)
+"Bh" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/b)
+"BK" = (
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
+"BU" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/b)
+"BZ" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall/mineral/titanium{
+	color = "#6E63A8"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"Dq" = (
+/obj/machinery/door/airlock/titanium{
+	name = "Emergency Shuttle Airlock"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"ED" = (
+/obj/machinery/power/shuttle_engine/ship/fueled/plasma{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
+"EQ" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
+"HX" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/shuttle/voidcrew/goon/bridge/b)
+"Ie" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/engineering/b)
+"Ik" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/b)
+"Io" = (
+/turf/closed/wall/mineral/titanium{
+	color = "#6E63A8"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"IZ" = (
+/turf/template_noop,
+/area/template_noop)
+"Jk" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 8
+	},
+/obj/structure/reagent_dispensers/fueltank,
+/obj/structure/cable,
+/obj/machinery/power/terminal,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/engineering/b)
+"Ky" = (
+/obj/machinery/camera/autoname/directional/west,
+/obj/machinery/light/cold/directional/west,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"KM" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/b)
+"Lh" = (
+/obj/machinery/light,
+/obj/machinery/shower/directional/west,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/south,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/medbay/b)
+"Lv" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"Md" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/window/reinforced/spawner/directional/west{
+	pixel_y = 2
+	},
+/obj/machinery/power/smes/engineering{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
+"Mf" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/b)
+"Mi" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_lounge"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/b)
+"Om" = (
+/obj/structure/table/reinforced,
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/machinery/light/cold/directional/east,
+/obj/item/disk/star_chart/green{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/binoculars{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/shuttle/voidcrew/goon/bridge/b)
+"Ot" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/machinery/airalarm/directional/west,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/obj/machinery/computer/mission_board{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"OT" = (
+/obj/machinery/camera/autoname/directional/north,
+/obj/structure/table,
+/obj/machinery/door/window,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/item/storage/medkit/toxin{
+	pixel_x = 5;
+	pixel_y = 5
+	},
+/obj/item/storage/medkit/regular,
+/obj/item/mod/control/pre_equipped/medical,
+/obj/item/storage/medkit/brute{
+	pixel_x = -5;
+	pixel_y = -5
+	},
+/obj/item/storage/belt/medical,
+/obj/item/storage/belt/medical,
+/obj/item/reagent_containers/cup/bottle/formaldehyde,
+/obj/structure/window/reinforced/spawner/directional/west{
+	pixel_y = 2
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/machinery/light/cold/directional/north,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/medbay/b)
+"Pd" = (
+/obj/structure/fans/tiny,
+/obj/machinery/button/door{
+	id = "goon_bay";
+	pixel_x = 26
+	},
+/obj/machinery/door/poddoor{
+	id = "goon_bay"
+	},
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/commons/b)
+"Pl" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/machinery/airalarm/directional/west,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"Pm" = (
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
+"Ql" = (
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/engineering/b)
+"Qv" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/engineering/b)
+"Rg" = (
+/obj/structure/closet/supplypod/drop_pod,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"RN" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/machinery/airalarm/directional/west,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"RQ" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/emergency,
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/machinery/light/cold/directional/east,
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_x = -7;
+	pixel_y = 7
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/shuttle/voidcrew/goon/bridge/b)
+"Th" = (
+/obj/machinery/firealarm/directional/west{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"Tk" = (
+/turf/closed/wall/mineral/titanium{
+	color = "#6E63A8"
+	},
+/area/shuttle/voidcrew/goon/bridge/b)
+"Uq" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
+"Vj" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"VE" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/b)
+"VW" = (
+/obj/structure/cable,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
+"Wu" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/window/reinforced/spawner/directional/west{
+	pixel_y = 2
+	},
+/obj/machinery/power/smes/engineering{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
+"Wv" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/engineering/b)
+"XS" = (
+/obj/machinery/firealarm/directional/south,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
+/obj/machinery/atmospherics/components/tank/air{
+	piping_layer = 4
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/goon/engineering/b)
+"XZ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/b)
+"Yx" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/b)
+"YL" = (
+/obj/machinery/light/cold/directional/east,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+
+(1,1,1) = {"
+IZ
+ED
+cm
+cm
+cm
+aX
+aX
+aX
+aX
+ED
+IZ
+"}
+(2,1,1) = {"
+VW
+Pm
+aa
+aa
+tS
+aX
+eI
+qH
+eQ
+oS
+VW
+"}
+(3,1,1) = {"
+Wu
+AC
+aa
+aa
+aa
+by
+Wv
+Ie
+Ql
+Jk
+Md
+"}
+(4,1,1) = {"
+cm
+OT
+aa
+ui
+aa
+aX
+Uq
+ss
+td
+XS
+aX
+"}
+(5,1,1) = {"
+cm
+fQ
+aa
+ui
+aa
+aX
+Uq
+sS
+BK
+bJ
+aX
+"}
+(6,1,1) = {"
+IZ
+cm
+aa
+ui
+aa
+by
+Uq
+Yx
+BK
+aX
+IZ
+"}
+(7,1,1) = {"
+IZ
+BU
+aa
+Mf
+Lh
+aX
+Uq
+EQ
+nC
+by
+IZ
+"}
+(8,1,1) = {"
+BZ
+cm
+cm
+fh
+cm
+aX
+aX
+ac
+aX
+aX
+BZ
+"}
+(9,1,1) = {"
+dg
+uq
+Ky
+Vj
+Ot
+hA
+xH
+Vj
+ce
+Th
+Dq
+"}
+(10,1,1) = {"
+dg
+Rg
+sg
+wg
+rZ
+dQ
+rZ
+rZ
+sg
+YL
+Dq
+"}
+(11,1,1) = {"
+BZ
+Io
+Bh
+Bh
+yG
+an
+Bh
+yN
+Mi
+Io
+BZ
+"}
+(12,1,1) = {"
+Ik
+xT
+XZ
+XZ
+yN
+an
+Bh
+yN
+Bh
+VE
+IZ
+"}
+(13,1,1) = {"
+IZ
+Pd
+Bh
+Bh
+Bh
+an
+Bh
+Bh
+Bh
+VE
+IZ
+"}
+(14,1,1) = {"
+IZ
+Io
+Bh
+Bh
+Bh
+an
+ca
+fI
+cy
+Io
+IZ
+"}
+(15,1,1) = {"
+IZ
+Io
+Tk
+KM
+Tk
+bX
+Tk
+KM
+Tk
+Io
+IZ
+"}
+(16,1,1) = {"
+IZ
+IZ
+KM
+RQ
+cQ
+HX
+tE
+Om
+KM
+IZ
+IZ
+"}
+(17,1,1) = {"
+IZ
+IZ
+Tk
+AF
+fR
+fR
+bS
+Tk
+Tk
+IZ
+IZ
+"}
+(18,1,1) = {"
+IZ
+IZ
+IZ
+KM
+fR
+fR
+fR
+KM
+IZ
+IZ
+IZ
+"}
+(19,1,1) = {"
+IZ
+IZ
+IZ
+Tk
+KM
+zO
+KM
+Tk
+IZ
+IZ
+IZ
+"}

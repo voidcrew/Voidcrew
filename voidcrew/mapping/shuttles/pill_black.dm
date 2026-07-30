@@ -2,7 +2,10 @@
 	name = "Pill-class-B(lack) Suicide Device"
 	suffix = "pill_black"
 	short_name = "Blackpill-class"
-	part_requirements = list(PART_CLASS_MISC = 1)
+	catalog_desc = "A Pill with orange hardsuits and a self-destruct charge wired into the \
+		cabin floor. Three bunks, the same drills and ore bags, the same complete lack of \
+		facilities. Free to take."
+	force_purchasable = TRUE // 3 tiles and a bomb, no upgrade slots, free and on the shelf anyway
 
 	job_slots = list(
 		list(
@@ -26,7 +29,7 @@
 	name = "Pill-class-B(lack) Suicide Device"
 	area_type = /area/shuttle/voidcrew/pill_black
 	port_direction = 1
-	preferred_direction = 8
+	preferred_direction = 1 // must match the aspect-ratio guess in adjust_reserve_dock_to_shuttle or the ship spins every dock
 
 
 /// AREAS ///

@@ -38,6 +38,14 @@
 		template_instance.theme = selected_theme.id
 		// Recalculate mappath since suffix changed (mappath is set in New() before we can change suffix)
 		template_instance.mappath = "[template_instance.prefix][template_instance.port_id]_[template_instance.suffix].dmm"
+		// New() measured the DEFAULT suffix's dmm. load_template() sizes the transit
+		// reservation from width/height, and calculate_docking_port_information() takes the
+		// port bounds from width/height/port_x_offset/port_y_offset, so a theme whose map is
+		// a different size - or has its docking port somewhere else - has to re-measure here.
+		if(fexists(template_instance.mappath))
+			template_instance.preload_size(template_instance.mappath)
+		else
+			stack_trace("Ship theme [selected_theme.id] points at a missing map: [template_instance.mappath]")
 
 	// Create ship and set template directly as a workaround for Initialize arg passing
 	// Ships spawn in the green zone (outer ring) for safety
@@ -148,6 +156,8 @@
 			qdel(ship)
 		SSovermap.initial_ships.Cut()
 		SSovermap.initial_ship = null
+	// Fresh fleet, fresh draw - otherwise the reroll avoids every class it just deleted
+	SSovermap.spent_roundstart_hulls.Cut()
 	SSovermap.spawn_initial_ship()
 #undef RESPAWN_FORCE
 

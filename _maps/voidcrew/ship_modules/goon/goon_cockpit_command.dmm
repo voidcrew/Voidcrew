@@ -1,0 +1,57 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"i" = (
+/obj/structure/chair/comfy/brown{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"p" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/machinery/computer/security{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"r" = (
+/obj/structure/chair/comfy/brown{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/machinery/camera/autoname/directional/north,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"x" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/machinery/computer/communications{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"S" = (
+/obj/modular_map_connector,
+/obj/machinery/light/small,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"U" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+
+(1,1,1) = {"
+r
+i
+S
+"}
+(2,1,1) = {"
+x
+U
+p
+"}

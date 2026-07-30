@@ -14,6 +14,9 @@
 	category = EVENT_CATEGORY_ANOMALIES
 	description = "This anomaly shocks and explodes. This is the base type."
 	allowed_zones = list(ZONE_RED)
+	/// Every anomaly needs floor to be walked away from. Subtypes that eat or ignite the
+	/// hull raise this further.
+	min_ship_mass = SHIP_MASS_SMALL
 
 /datum/round_event_control/voidcrew/anomaly/is_valid_target(obj/structure/overmap/ship/ship)
 	. = ..()
@@ -239,6 +242,8 @@
 	min_wizard_trigger_potency = 1
 	max_wizard_trigger_potency = 4
 	allowed_zones = list(ZONE_RED)
+	/// A fire needs somewhere to be fought from. On a small hull the whole ship is the fire.
+	min_ship_mass = SHIP_MASS_MEDIUM
 
 /datum/round_event/voidcrew/anomaly/anomaly_pyro
 	start_when = ANOMALY_START_HARMFUL_TIME
@@ -257,6 +262,9 @@
 	min_wizard_trigger_potency = 3
 	max_wizard_trigger_potency = 7
 	allowed_zones = list(ZONE_RED)
+	/// This one detonates what it pulls in and takes hull with it. A small ship does not
+	/// survive to the point where the crew could do anything about it.
+	min_ship_mass = SHIP_MASS_MEDIUM
 
 /datum/round_event/voidcrew/anomaly/anomaly_vortex
 	start_when = ANOMALY_START_DANGEROUS_TIME

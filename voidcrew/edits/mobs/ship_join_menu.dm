@@ -78,11 +78,12 @@
 
 	switch(action)
 		if("purchase_ship")
-			// Close this menu and open ship catalog
+			// Close this menu and open the ship shop - hull, theme and modules all
+			// live in the one UI that shows you what you're buying
 			ui.close()
-			var/datum/callback/cb = CALLBACK(user, TYPE_PROC_REF(/mob/dead/new_player, on_ship_catalog_selection))
-			var/datum/ship_catalog_ui/catalog = new(user, latejoin = TRUE, selection_callback = cb)
-			catalog.ui_interact(user)
+			var/datum/callback/cb = CALLBACK(user, TYPE_PROC_REF(/mob/dead/new_player, on_upgrades_confirmed))
+			var/datum/ship_upgrade_selector/selector = new(user, null, cb)
+			selector.ui_interact(user)
 
 		if("select_ship")
 			var/ship_ref = params["ship_ref"]

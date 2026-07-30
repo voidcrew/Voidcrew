@@ -1,0 +1,271 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/structure/girder/displaced,
+/obj/item/stack/sheet/mineral/titanium,
+/obj/item/stack/rods,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating/airless,
+/area/template_noop)
+"b" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"c" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/t_scanner{
+	pixel_x = 7;
+	pixel_y = -6
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"d" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/south,
+/obj/structure/table/reinforced,
+/obj/machinery/cell_charger,
+/obj/item/stock_parts/power_store/cell/high{
+	pixel_x = -8;
+	pixel_y = 3
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"e" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron,
+/area/template_noop)
+"f" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/rnd/production/techfab,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"h" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"i" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/toolcloset,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"n" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"p" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"q" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sheet/iron{
+	pixel_x = -6;
+	pixel_y = -4
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"s" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/template_noop)
+"v" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"x" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/sheet/glass{
+	pixel_y = 6
+	},
+/obj/item/stack/sheet/iron{
+	pixel_y = 2
+	},
+/obj/item/stack/cable_coil/five{
+	pixel_y = -4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"y" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/glass,
+/obj/item/stack/rods{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/item/shard{
+	pixel_x = -6
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"A" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"D" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/assembly/prox_sensor{
+	pixel_x = -6;
+	pixel_y = 6
+	},
+/obj/item/storage/part_replacer{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"E" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/built/directional/north,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"F" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/item/stack/rods{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/shard{
+	pixel_x = 6;
+	pixel_y = -5
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"L" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/closet/crate/engineering,
+/obj/item/stack/sheet/iron,
+/obj/item/analyzer,
+/obj/item/pipe_dispenser,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"R" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"S" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/frame/computer{
+	dir = 8
+	},
+/obj/item/shard{
+	pixel_x = -7;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"T" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/light/small/broken/directional/south,
+/obj/structure/rack,
+/obj/item/weldingtool{
+	pixel_y = 7
+	},
+/obj/item/wirecutters{
+	pixel_y = 1
+	},
+/obj/item/screwdriver{
+	pixel_y = -5
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"U" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/rnd/production/circuit_imprinter/offstation,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"W" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/matter_bin{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/micro_laser{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_y = -4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"X" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/electrical{
+	pixel_y = 4
+	},
+/obj/item/multitool{
+	pixel_x = 7;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+h
+n
+n
+X
+i
+"}
+(2,1,1) = {"
+U
+n
+c
+W
+A
+"}
+(3,1,1) = {"
+f
+q
+e
+v
+A
+"}
+(4,1,1) = {"
+x
+e
+e
+D
+d
+"}
+(5,1,1) = {"
+E
+e
+b
+p
+R
+"}
+(6,1,1) = {"
+F
+s
+S
+s
+y
+"}
+(7,1,1) = {"
+L
+s
+a
+s
+T
+"}

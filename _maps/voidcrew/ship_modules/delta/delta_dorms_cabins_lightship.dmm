@@ -1,0 +1,148 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"j" = (
+/turf/open/floor/iron/white,
+/area/template_noop)
+"k" = (
+/obj/structure/closet/wardrobe/mixed,
+/obj/structure/noticeboard/directional/north,
+/obj/item/paper{
+	name = "watch roster";
+	default_raw_text = "Two on watch, two asleep, and whoever is cooking. Wake your relief before you turn in, and put your kit back in the locker you took it from."
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"p" = (
+/obj/machinery/light/directional/north,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"r" = (
+/obj/structure/sign/departments/restroom,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/template_noop)
+"u" = (
+/obj/effect/turf_decal/tile/dark_blue{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"w" = (
+/obj/machinery/door/airlock{
+	name = "Restroom"
+	},
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"z" = (
+/obj/machinery/cryopod{
+	dir = 4
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"B" = (
+/obj/effect/turf_decal/tile/dark_blue,
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/red{
+	dir = 1
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"C" = (
+/obj/machinery/light/directional/north,
+/obj/structure/bed,
+/obj/item/bedsheet/blue,
+/obj/item/pillow/random{
+	pixel_y = 6
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"E" = (
+/obj/structure/bed,
+/obj/item/bedsheet/blue,
+/obj/item/pillow/random{
+	pixel_y = 6
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"F" = (
+/turf/template_noop,
+/area/template_noop)
+"G" = (
+/obj/structure/closet/secure_closet/personal,
+/obj/item/clothing/suit/hooded/wintercoat,
+/obj/item/clothing/mask/breath,
+/obj/item/flashlight,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"N" = (
+/obj/machinery/light/small/directional/north,
+/obj/machinery/shower/directional/south,
+/obj/item/soap,
+/obj/structure/curtain,
+/obj/structure/toilet{
+	dir = 1
+	},
+/obj/structure/sink/directional/east,
+/obj/structure/mirror/directional/west,
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"P" = (
+/obj/effect/turf_decal/tile/dark_blue,
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"S" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/tile/dark_blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"Y" = (
+/obj/machinery/light/directional/south,
+/obj/effect/turf_decal/tile/dark_blue,
+/obj/effect/turf_decal/siding/red{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+
+(1,1,1) = {"
+N
+w
+S
+"}
+(2,1,1) = {"
+k
+r
+B
+"}
+(3,1,1) = {"
+C
+z
+Y
+"}
+(4,1,1) = {"
+E
+j
+P
+"}
+(5,1,1) = {"
+p
+G
+P
+"}
+(6,1,1) = {"
+F
+u
+P
+"}

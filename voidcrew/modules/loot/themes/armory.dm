@@ -44,6 +44,7 @@
 		/obj/item/clothing/shoes/combat = 5,
 		/obj/item/gun/ballistic/rifle/boltaction = 4,
 		/obj/item/clothing/under/syndicate/tacticool = 3,
+		/obj/item/ship_parts/combat = 7,
 	)
 	loot_red = list(
 		/obj/item/clothing/suit/armor/riot = 9,
@@ -56,6 +57,7 @@
 		/obj/item/gun/ballistic/rifle/boltaction/prime = 3,
 		/obj/item/shield/riot/tele = 3,
 		/obj/item/clothing/suit/armor/heavy = 2,
+		/obj/item/ship_parts/combat = 9,
 	)
 	// Rare tables: surviving stock entries + this theme's uniques at ~4
 	// (see voidcrew/modules/loot/uniques/armory.dm and the design doc)

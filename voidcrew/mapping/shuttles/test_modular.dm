@@ -13,6 +13,7 @@
 
 	has_upgrade_slots = TRUE
 	upgrade_slot_ids = list("cargobay", "engineroom")
+	player_hidden = TRUE // dev fixture, not a hull players can buy
 
 	job_slots = list(
 		list(

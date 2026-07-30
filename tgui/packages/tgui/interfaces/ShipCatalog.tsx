@@ -26,7 +26,6 @@ type ShipCatalogData = {
   unlocked_ships: string[];
   selected_faction: string | null;
   search_query: string;
-  latejoin_mode?: boolean;
 };
 
 type ShipEntry = {
@@ -69,8 +68,8 @@ const CLASS_ICONS: Record<string, string> = {
 const CLASS_ORDER = ['free', 'combat', 'science', 'trade', 'misc'];
 
 export const ShipCatalog = (props) => {
-  const { act, data } = useBackend<ShipCatalogData>();
-  const { credits, parts, ships, unlocked_ships, latejoin_mode } = data;
+  const { data } = useBackend<ShipCatalogData>();
+  const { credits, parts, ships, unlocked_ships } = data;
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
 
   // Filter ships by primary class
@@ -181,7 +180,6 @@ export const ShipCatalog = (props) => {
                         ship={ship}
                         parts={parts}
                         isUnlocked={isShipUnlocked(ship.id)}
-                        latejoinMode={latejoin_mode}
                       />
                     </Stack.Item>
                   ))}
@@ -199,17 +197,8 @@ const ShipCard = (props: {
   ship: ShipEntry;
   parts: PartsInventory;
   isUnlocked: boolean;
-  latejoinMode?: boolean;
 }) => {
-  const { act } = useBackend<ShipCatalogData>();
-  const { ship, parts, isUnlocked, latejoinMode } = props;
-
-  // Calculate if player can afford to unlock
-  const canAfford =
-    !isUnlocked &&
-    Object.entries(ship.parts_required).every(([partClass, cost]) => {
-      return (parts[partClass as keyof PartsInventory] || 0) >= (cost || 0);
-    });
+  const { ship, parts, isUnlocked } = props;
 
   // Format unlock cost for display
   const formatUnlockCost = () => {
@@ -311,56 +300,24 @@ const ShipCard = (props: {
               </Stack.Item>
             )}
 
-            {/* Status and Actions */}
+            {/* Ownership status. Buying happens in the shipyard, where you can
+                see the hull and pick its theme and modules. */}
             <Stack.Item mt={1}>
-              <Stack>
-                {isUnlocked ? (
-                  <>
-                    <Stack.Item>
-                      <Box color="good" fontSize="14px">
-                        <Icon name="check-circle" mr={1} />
-                        Unlocked
-                      </Box>
-                    </Stack.Item>
-                    <Stack.Item ml={2}>
-                      <Button
-                        icon="rocket"
-                        color="good"
-                        onClick={() =>
-                          act(
-                            latejoinMode ? 'select_for_latejoin' : 'spawn_ship',
-                            {
-                              ship_id: ship.id,
-                            },
-                          )
-                        }
-                      >
-                        {latejoinMode ? 'SELECT SHIP' : 'SPAWN SHIP'}
-                      </Button>
-                    </Stack.Item>
-                  </>
-                ) : (
-                  <Stack.Item>
-                    <Button
-                      icon="unlock"
-                      color={canAfford ? 'blue' : 'gray'}
-                      disabled={!canAfford}
-                      tooltip={
-                        !canAfford
-                          ? 'You do not have enough parts to unlock this ship'
-                          : 'Spend parts to unlock this ship'
-                      }
-                      onClick={() =>
-                        act('unlock_ship', {
-                          ship_id: ship.id,
-                        })
-                      }
-                    >
-                      {canAfford ? 'UNLOCK SHIP' : 'INSUFFICIENT PARTS'}
-                    </Button>
-                  </Stack.Item>
-                )}
-              </Stack>
+              {ship.total_parts === 0 ? (
+                <Box color="good" fontSize="14px">
+                  <Icon name="gift" mr={1} />
+                  Free — fly it whenever you like
+                </Box>
+              ) : isUnlocked ? (
+                <Box color="good" fontSize="14px">
+                  <Icon name="check-circle" mr={1} />
+                  Owned
+                </Box>
+              ) : (
+                <Box color="label" fontSize="12px">
+                  Buy it from the shipyard when you start a ship.
+                </Box>
+              )}
             </Stack.Item>
           </Stack>
         </Stack.Item>

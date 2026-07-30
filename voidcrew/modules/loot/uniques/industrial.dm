@@ -21,10 +21,11 @@
 /**
  * # Helios lunch pail
  *
- * Subtypes the plain steel toolbox for its sprite (a "steel lunchbox" reads
- * fine on a toolbox-shaped case). Restocks a coffee, a sandwich, and a
- * boiled egg once an hour; finishing any one of them to the last bite grants
- * a timed buff. TRAIT_QUICK_BUILD is the closest existing hook to a generic
+ * Subtypes the toolbox for its storage behaviour only — the sprite is its own
+ * green lunch pail in uniques.dmi, with recoloured toolbox in-hands to match.
+ * Restocks a coffee, a sandwich, and a boiled egg once an hour; finishing any
+ * one of them to the last bite grants a timed buff with its own HUD alert.
+ * TRAIT_QUICK_BUILD is the closest existing hook to a generic
  * "construction/repair/machine interaction" speedup in this codebase (it's
  * checked ad hoc by girder building and CRAFT_APPLIES_MATS stack recipes,
  * not a universal do_after multiplier) — see the deviation note in the
@@ -32,9 +33,15 @@
  */
 /obj/item/storage/toolbox/helios_lunch_pail
 	name = "Helios lunch pail"
-	desc = "A steel lunchbox, HELIOS-BETNA CANTEEN SERVICES. The thermos has never once been washed."
-	icon_state = "toolbox_default"
-	inhand_icon_state = "toolbox_default"
+	desc = "A green steel lunchbox, HELIOS-BETNA CANTEEN SERVICES. The thermos has never once been washed."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "helios_lunch_pail"
+	inhand_icon_state = "helios_lunch_pail"
+	lefthand_file = 'voidcrew/modules/loot/icons/uniques_lefthand.dmi'
+	righthand_file = 'voidcrew/modules/loot/icons/uniques_righthand.dmi'
+	// The toolbox latch overlay state lives in icons/obj/storage/toolbox.dmi. With our
+	// own icon file it would resolve to nothing, and the pail already has latches drawn on.
+	has_latches = FALSE
 	material_flags = NONE
 	/// Ration types kept stocked in the pail
 	var/list/ration_types = list(
@@ -68,8 +75,9 @@
 
 /obj/item/storage/toolbox/helios_lunch_pail/examine(mob/user)
 	. = ..()
-	. += span_notice("A hand-written union sticker reads: <i>finish a full ration and the work goes easier for a while.</i>")
-	. += span_notice("Restocks itself once an hour.")
+	var/datum/status_effect/helios_break/break_effect
+	. += span_notice("Eat a whole canteen ration and construction work goes faster for [DisplayTimeText(initial(break_effect.duration))].")
+	. += span_notice("Restocks itself every [DisplayTimeText(restock_interval)].")
 
 /// Canteen coffee — flavor only, no buff hook (drinks aren't run through the edible component in this codebase).
 /obj/item/reagent_containers/cup/glass/coffee/helios_canteen
@@ -111,24 +119,32 @@
  * that trait is checked ad hoc by girder/plating construction
  * (code/game/objects/structures/girders.dm) and by stack recipes flagged
  * trait_booster/trait_modifier (most platform/wall recipes) — the closest
- * existing thing to a generic "construction runs faster" hook. No alert
- * icon: this status effect intentionally carries none rather than reuse an
- * unrelated sprite.
+ * existing thing to a generic "construction runs faster" hook. It carries its
+ * own HUD alert with a live countdown so the buff is visible while it lasts.
  */
 /datum/status_effect/helios_break
 	id = "helios_break"
 	duration = 3 MINUTES
 	tick_interval = STATUS_EFFECT_NO_TICK
 	status_type = STATUS_EFFECT_REFRESH
-	alert_type = null
+	alert_type = /atom/movable/screen/alert/status_effect/helios_break
+	show_duration = TRUE
 
 /datum/status_effect/helios_break/on_apply()
 	ADD_TRAIT(owner, TRAIT_QUICK_BUILD, id)
-	to_chat(owner, span_notice("The meal sits well. Construction work will go easier for a while."))
+	to_chat(owner, span_notice("The meal sits well. Construction work goes faster for the next [DisplayTimeText(duration)]."))
 	return TRUE
 
 /datum/status_effect/helios_break/on_remove()
 	REMOVE_TRAIT(owner, TRAIT_QUICK_BUILD, id)
+	to_chat(owner, span_notice("The lunch break wears off."))
+
+/// HUD alert for the lunch break, so the speedup is visible with a countdown.
+/atom/movable/screen/alert/status_effect/helios_break
+	name = "Lunch Break"
+	desc = "You finished a full canteen ration. Construction work goes faster until this runs out."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "alert_helios_break"
 
 /**
  * # The honest gauge
@@ -189,20 +205,33 @@
 /**
  * # Slagmaw
  *
- * Subtypes the standard welding tool for its sprite. Still burns ordinary
- * welder fuel, but will also grind up almost anything fed to it (attacking
- * the welder with another item) into extra fuel. As a repair tool it calls
- * the universal /atom/proc/repair_damage() directly for a one-pass full
- * restore — there's no single "reweld to full" proc for walls in this
- * codebase (walls only expose cosmetic dent-fixing and deconstruction via
- * welder), so this goes straight to the integrity API instead of trying to
- * replicate wall-specific do_after chains.
+ * A welding tool with its own sprite in uniques.dmi (plus the fuel-gauge and
+ * lit overlay states the welder base builds from `initial(icon_state)`, so the
+ * stock update_overlays() still works). Still burns ordinary welder fuel, but
+ * will also grind scrap fed to it (attacking the welder with another item)
+ * into extra fuel. As a repair tool it calls the universal
+ * /atom/proc/repair_damage() directly for a one-pass full restore — there's no
+ * single "reweld to full" proc for walls in this codebase (walls only expose
+ * cosmetic dent-fixing and deconstruction via welder), so this goes straight
+ * to the integrity API instead of trying to replicate wall-specific do_after
+ * chains.
+ *
+ * The hopper only takes items with reclaimable custom_materials, and pays fuel
+ * per sheet's worth of that material rather than per weight class, so a bulky
+ * worthless item is refused outright instead of being worth 16 fuel. Every
+ * refusal names its reason, and a feed takes a three-second do_after with a
+ * progress bar. Stacks are consumed a sheet at a time, only up to what the
+ * hopper has room for.
  */
 /obj/item/weldingtool/slagmaw
 	name = "Slagmaw"
-	desc = "A welding torch rebuilt around an intake hopper. Feed it scrap and it makes its own fuel."
-	/// Fuel granted per weight class of whatever's fed to it
-	var/fuel_per_weight_class = 4
+	desc = "A welding torch rebuilt around an intake hopper. Feed it metal scrap and it makes its own fuel."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "slagmaw"
+	/// Fuel granted per sheet's worth of reclaimable material in whatever's fed to it
+	var/fuel_per_sheet = 3
+	/// How long a feed takes, with a progress bar
+	var/feed_time = 3 SECONDS
 
 /obj/item/weldingtool/slagmaw/Initialize(mapload)
 	. = ..()
@@ -210,31 +239,90 @@
 
 /obj/item/weldingtool/slagmaw/examine(mob/user)
 	. = ..()
-	. += span_notice("Feeding it another item (attack [src] while holding one) converts the mass into fuel.")
+	. += span_notice("Feeding it a metal item (attack [src] while holding one) grinds it down into fuel. Takes [DisplayTimeText(feed_time)].")
+	. += span_notice("It won't take anything without reclaimable material in it, and it won't take a loaded container.")
 	. += span_notice("While lit, a single pass fully repairs a damaged wall, window, or breach.")
 
 /obj/item/weldingtool/slagmaw/attackby(obj/item/tool, mob/user, list/modifiers, list/attack_modifiers)
-	if(istype(tool, /obj/item/stack/rods))
+	// Rods build a flamethrower on the welder base; leave that alone.
+	if(istype(tool, /obj/item/stack/rods) || tool == src)
 		return ..()
-	if(feed(tool, user))
-		return TRUE
-	return ..()
+	feed(tool, user)
+	return TRUE
 
-/// Grinds an arbitrary item into fuel. Returns FALSE (and does nothing) for rods, ourself, or a full hopper.
-/obj/item/weldingtool/slagmaw/proc/feed(obj/item/morsel, mob/user)
-	if(morsel == src || istype(morsel, /obj/item/weldingtool))
+/// Total reclaimable material in an item, in material units.
+/obj/item/weldingtool/slagmaw/proc/material_worth(obj/item/morsel)
+	var/total = 0
+	for(var/mat_key in morsel.custom_materials)
+		total += morsel.custom_materials[mat_key]
+	return total
+
+/**
+ * Whether the hopper will take this item at all. Alerts the user with the
+ * reason on every rejection — the whole complaint about the old version was
+ * that it silently ate anything you were holding.
+ */
+/obj/item/weldingtool/slagmaw/proc/can_feed(obj/item/morsel, mob/user)
+	if(!isitem(morsel) || (morsel.item_flags & (ABSTRACT|DROPDEL)))
+		balloon_alert(user, "can't feed that")
+		return FALSE
+	if(istype(morsel, /obj/item/weldingtool))
+		balloon_alert(user, "not another torch")
+		return FALSE
+	if(HAS_TRAIT(morsel, TRAIT_NODROP))
+		balloon_alert(user, "stuck to your hand")
+		return FALSE
+	if(HAS_TRAIT(morsel, TRAIT_NO_REPLICATE))
+		balloon_alert(user, "too rare to scrap")
+		return FALSE
+	if(morsel.resistance_flags & INDESTRUCTIBLE)
+		balloon_alert(user, "hopper can't cut it")
+		return FALSE
+	if(length(morsel.contents))
+		balloon_alert(user, "empty it out first")
 		return FALSE
 	if(get_fuel() >= max_fuel)
 		balloon_alert(user, "hopper full")
 		return FALSE
-	var/fuel_gain = clamp(round(morsel.w_class * fuel_per_weight_class), 2, max_fuel)
-	user.visible_message(
-		span_notice("[user] feeds [morsel] into [src]'s intake hopper."),
-		span_notice("You feed [morsel] into [src]. The hopper grinds it to slag."),
-	)
+	if(!length(morsel.custom_materials) || material_worth(morsel) <= 0)
+		balloon_alert(user, "no metal in it")
+		return FALSE
+	return TRUE
+
+/// Grinds a metal item into fuel after a timed pass. Everything it refuses says why.
+/obj/item/weldingtool/slagmaw/proc/feed(obj/item/morsel, mob/user)
+	if(!can_feed(morsel, user))
+		return FALSE
+	balloon_alert(user, "feeding...")
 	playsound(src, 'sound/items/tools/welder.ogg', 30, TRUE)
-	qdel(morsel)
-	reagents.add_reagent(/datum/reagent/fuel, min(fuel_gain, max_fuel - get_fuel()))
+	if(!do_after(user, feed_time, target = src))
+		balloon_alert(user, "interrupted")
+		return FALSE
+	// Three seconds is long enough for all of this to have changed. Recheck before deleting anything.
+	if(QDELETED(morsel) || !user.is_holding(morsel) || !can_feed(morsel, user))
+		return FALSE
+	var/fuel_room = max_fuel - get_fuel()
+	var/fuel_gain
+	var/obj/item/stack/scrap_stack = istype(morsel, /obj/item/stack) ? morsel : null
+	if(scrap_stack && scrap_stack.amount > 0)
+		// Take only the sheets the hopper has room for, so nobody loses a full stack for two fuel.
+		var/per_sheet = max(1, round(material_worth(scrap_stack) / scrap_stack.amount / SHEET_MATERIAL_AMOUNT * fuel_per_sheet))
+		var/sheets_taken = clamp(CEILING(fuel_room / per_sheet, 1), 1, scrap_stack.amount)
+		fuel_gain = sheets_taken * per_sheet
+		user.visible_message(
+			span_notice("[user] feeds [sheets_taken] [scrap_stack.singular_name]\s into [src]'s intake hopper."),
+			span_notice("You feed [sheets_taken] [scrap_stack.singular_name]\s into [src]. The hopper grinds them to slag."),
+		)
+		scrap_stack.use(sheets_taken)
+	else
+		fuel_gain = max(1, round(material_worth(morsel) / SHEET_MATERIAL_AMOUNT * fuel_per_sheet))
+		user.visible_message(
+			span_notice("[user] feeds [morsel] into [src]'s intake hopper."),
+			span_notice("You feed [morsel] into [src]. The hopper grinds it to slag."),
+		)
+		qdel(morsel)
+	playsound(src, 'sound/items/tools/welder.ogg', 30, TRUE)
+	reagents.add_reagent(/datum/reagent/fuel, min(fuel_gain, fuel_room))
 	update_appearance()
 	return TRUE
 
@@ -370,19 +458,30 @@
 /**
  * # Helios pattern stamp
  *
- * Subtypes the ordinary rubber stamp for its sprite. Memorizes one item's
+ * A rubber stamp with its own sprite in uniques.dmi. Memorizes one item's
  * typepath + custom_materials cost at a time (press it against an eligible
  * item); feed it matching material stacks to bank the cost; strike a copy
  * once fully banked, on a 5-minute cooldown. Blacklist: TRAIT_NO_REPLICATE
  * (every unique in this file, and the hook this whole trait exists for),
- * storage with contents, power cells, and guns. Memorization failures fall
- * through to the normal attack chain (return ..()) rather than blocking it,
- * so pressing the stamp against ordinary paper still stamps the paper
- * normally instead of silently eating the click.
+ * storage with contents, power cells, and guns.
+ *
+ * Paperwork (paper, folders, clipboards, photos) is skipped before any
+ * memorize check runs, so ordinary stamping keeps working. Machinery, fixed
+ * structures, material stacks and items with nothing to reclaim now say why
+ * they can't be copied instead of doing nothing at all. Every refusal still
+ * falls through to the normal attack chain rather than blocking it, so
+ * setting the stamp down or feeding it into a machine is unaffected.
+ *
+ * Because the item's icon_state is no longer one of the bureaucracy.dmi stamp
+ * states, get_writing_implement_details() is overridden to keep reporting the
+ * stock "stamp-ok" impression; the paper spritesheet asset is keyed by state
+ * name and would otherwise have no sprite to draw on the page.
  */
 /obj/item/stamp/helios_pattern
 	name = "Helios pattern stamp"
-	desc = "A heavy seal-stamp reading FINAL INSPECTION - PASSED. It remembers the shape of whatever it stamps."
+	desc = "A heavy seal-stamp reading FINAL INSPECTION - PASSED. It memorizes an item you press it against, and can strike one copy every 5 minutes."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "helios_stamp"
 	/// Typepath currently memorized, if any
 	var/memorized_type
 	/// Display name of the memorized item, for examine/chat text
@@ -393,15 +492,43 @@
 	var/list/banked_materials
 	/// Cooldown between strikes
 	var/strike_cooldown = 5 MINUTES
-	/// world.time the stamp is next allowed to strike
-	var/next_strike = 0
+	/// Ticks down between strikes
+	COOLDOWN_DECLARE(strike_timer)
+	/// Paperwork the stamp is genuinely meant to be used on — never intercepted.
+	var/static/list/paperwork_typecache = typecacheof(list(
+		/obj/item/paper,
+		/obj/item/paper_bin,
+		/obj/item/clipboard,
+		/obj/item/folder,
+		/obj/item/photo,
+		/obj/item/documents,
+	))
+	/// Structures you put things on or in, so setting the stamp down doesn't nag you.
+	var/static/list/surface_typecache = typecacheof(list(
+		/obj/structure/table,
+		/obj/structure/rack,
+		/obj/structure/closet,
+		/obj/structure/displaycase,
+		/obj/structure/filingcabinet,
+	))
 
 /obj/item/stamp/helios_pattern/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
+// The paper spritesheet is keyed by icon_state and has no entry for our custom
+// sprite, so report the stock impression instead of a blank stamp on the page.
+/obj/item/stamp/helios_pattern/get_writing_implement_details()
+	var/datum/asset/spritesheet_batched/sheet = get_asset_datum(/datum/asset/spritesheet/simple/paper)
+	return list(
+		interaction_mode = MODE_STAMPING,
+		stamp_icon_state = "stamp-ok",
+		stamp_class = sheet.icon_class_name("stamp-ok"),
+	)
+
 /obj/item/stamp/helios_pattern/examine(mob/user)
 	. = ..()
+	. += span_notice("Strikes one copy every [DisplayTimeText(strike_cooldown)].")
 	if(!memorized_type)
 		. += span_notice("No pattern held. Press it against a crafted item to memorize it.")
 		return
@@ -412,10 +539,20 @@
 		cost_lines += "[banked_materials[mat_key]]/[memorized_materials[mat_key]] [initial(mat.name)]"
 	if(length(cost_lines))
 		. += span_notice("Banked: [cost_lines.Join(", ")].")
-	. += span_notice(next_strike <= world.time ? "Ready to strike." : "Cooling down: ready in [DisplayTimeText(next_strike - world.time)].")
+	. += span_notice(COOLDOWN_FINISHED(src, strike_timer) ? "Ready to strike." : "Cooling down: ready in [DisplayTimeText(COOLDOWN_TIMELEFT(src, strike_timer))].")
 
 /obj/item/stamp/helios_pattern/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
-	if(!isitem(interacting_with) || interacting_with == src)
+	if(interacting_with == src)
+		return ..()
+	if(!isitem(interacting_with))
+		// Machines and fixed structures are the thing players kept pressing it against.
+		// Say why nothing happened, then still fall through so any real interaction
+		// (feeding it into a machine, setting it down on a table) keeps working.
+		if(ismachinery(interacting_with) || (isstructure(interacting_with) && !is_type_in_typecache(interacting_with, surface_typecache)))
+			balloon_alert(user, "only handheld items")
+		return ..()
+	// Paperwork goes straight through so the stamp still works as a stamp.
+	if(is_type_in_typecache(interacting_with, paperwork_typecache))
 		return ..()
 	var/obj/item/target = interacting_with
 	if(!can_memorize(target, user))
@@ -423,7 +560,11 @@
 	memorize(target, user)
 	return ITEM_INTERACT_SUCCESS
 
-/// Whether target is honest enough work for the stamp to remember.
+/**
+ * Whether target is honest enough work for the stamp to remember. Alerts the user
+ * with the reason on every refusal except stowing the stamp in a loaded container,
+ * which is an ordinary thing to do and shouldn't nag.
+ */
 /obj/item/stamp/helios_pattern/proc/can_memorize(obj/item/target, mob/user)
 	if(HAS_TRAIT(target, TRAIT_NO_REPLICATE))
 		balloon_alert(user, "too unique to copy")
@@ -435,14 +576,15 @@
 		balloon_alert(user, "no cells")
 		return FALSE
 	if(istype(target, /obj/item/stack))
-		return FALSE // raw material, not a finished pattern — quietly decline
+		balloon_alert(user, "raw material, not a pattern")
+		return FALSE
 	if(istype(target, /obj/item/storage))
 		var/obj/item/storage/storage_target = target
 		if(length(storage_target.contents))
-			balloon_alert(user, "empty it first")
-			return FALSE
+			return FALSE // you're putting the stamp away, not copying the bag
 	if(!length(target.custom_materials))
-		return FALSE // nothing to reclaim — quietly decline (also protects ordinary paper etc.)
+		balloon_alert(user, "nothing in it to measure")
+		return FALSE
 	return TRUE
 
 /obj/item/stamp/helios_pattern/proc/memorize(obj/item/target, mob/user)
@@ -452,7 +594,6 @@
 	banked_materials = list()
 	for(var/mat_key in memorized_materials)
 		banked_materials[mat_key] = 0
-	next_strike = max(next_strike, world.time)
 	user.visible_message(
 		span_notice("[user] presses [src] against [target]. It hums as it memorizes a perfect impression."),
 		span_notice("[src] memorizes [target]."),
@@ -503,8 +644,8 @@
 	if(!memorized_type)
 		balloon_alert(user, "no pattern held")
 		return
-	if(next_strike > world.time)
-		balloon_alert(user, "cooling down")
+	if(!COOLDOWN_FINISHED(src, strike_timer))
+		balloon_alert(user, "ready in [DisplayTimeText(COOLDOWN_TIMELEFT(src, strike_timer))]")
 		return
 	if(!materials_ready())
 		balloon_alert(user, "needs more material")
@@ -516,4 +657,4 @@
 		span_notice("You strike a fresh copy of [memorized_name]."),
 	)
 	playsound(src, 'sound/items/handling/standard_stamp.ogg', 50, TRUE)
-	next_strike = world.time + strike_cooldown
+	COOLDOWN_START(src, strike_timer, strike_cooldown)

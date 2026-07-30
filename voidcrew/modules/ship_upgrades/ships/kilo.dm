@@ -25,7 +25,7 @@
 		genuine grass lawn. Adds a Botanist to the crew."
 	slot = "kilo_service"
 	map_file = "kilo/kilo_service_hydroponics.dmm"
-	part_cost = list(PART_CLASS_TRADE = 1)
+	part_cost = list(PART_CLASS_TRADE = 5)
 	job_slots_add = list(
 		list(
 			name = "Botanist",
@@ -42,7 +42,7 @@
 		frontier's finest needs. Adds a Ship's Doctor to the crew."
 	slot = "kilo_service"
 	map_file = "kilo/kilo_service_surgery.dmm"
-	part_cost = list(PART_CLASS_MISC = 1)
+	part_cost = list(PART_CLASS_MISC = 5)
 	job_slots_add = list(
 		list(
 			name = "Ship's Doctor",
@@ -59,7 +59,7 @@
 		and a fully stocked bar."
 	slot = "kilo_service"
 	map_file = "kilo/kilo_service_saloon_bar.dmm"
-	part_cost = list(PART_CLASS_TRADE = 1)
+	part_cost = list(PART_CLASS_TRADE = 3)
 
 // -- kilo_dock: the mining prep strip (3x2, open pocket in the Mining Dock).
 // The hull keeps that room's APC/air alarm/vent/scrubber; dock modules bring
@@ -82,7 +82,7 @@
 		either home."
 	slot = "kilo_dock"
 	map_file = "kilo/kilo_dock_refinery.dmm"
-	part_cost = list(PART_CLASS_TRADE = 1)
+	part_cost = list(PART_CLASS_TRADE = 9)
 
 // -- kilo_hold: the cargo east pocket (3x3 minus two wall tiles, open pocket).
 // Hull APC/air alarm cover it; the (13,8)/(13,9)/(14,9) lane must stay walkable
@@ -103,7 +103,7 @@
 		cutter, fulton extraction rig and mining GPS."
 	slot = "kilo_hold"
 	map_file = "kilo/kilo_hold_eva.dmm"
-	part_cost = list(PART_CLASS_COMBAT = 1)
+	part_cost = list(PART_CLASS_COMBAT = 5)
 
 /datum/ship_upgrade_module/kilo/hold_vault
 	id = "kilo_hold_vault"
@@ -112,7 +112,7 @@
 		would rather keep."
 	slot = "kilo_hold"
 	map_file = "kilo/kilo_hold_vault.dmm"
-	part_cost = list(PART_CLASS_MISC = 1)
+	part_cost = list(PART_CLASS_MISC = 3)
 
 // ========== KILO THEMES ==========
 
@@ -172,7 +172,7 @@
 		throughout, a piano hall in the cargo bay, and a card game running in \
 		the galley. Only the engine block is still iron. Comes with a Barkeep \
 		on the manifest."
-	part_cost = list(PART_CLASS_TRADE = 1)
+	part_cost = list(PART_CLASS_TRADE = 8)
 	template_suffix = "kilo_b"
 	upgrade_slot_ids = list(
 		"kilo_service",
@@ -225,7 +225,7 @@
 	desc = "Straight out of the Nanotrasen refit yard: white composite decking, \
 		working consoles, a corporate art programme and not one speck of dust. \
 		The warranty seal is still on the airlock."
-	part_cost = list(PART_CLASS_TRADE = 1)
+	part_cost = list(PART_CLASS_TRADE = 8)
 	template_suffix = "kilo_d"
 	upgrade_slot_ids = list(
 		"kilo_service",
@@ -272,7 +272,7 @@
 	desc = "Pastel bulkheads, a checkerboard tea room, a plushie on every \
 		shelf and a Princess Suite that smells like strawberries. The void \
 		has never been this cute."
-	part_cost = list(PART_CLASS_MISC = 1)
+	part_cost = list(PART_CLASS_MISC = 8)
 	template_suffix = "kilo_c"
 	upgrade_slot_ids = list(
 		"kilo_service",

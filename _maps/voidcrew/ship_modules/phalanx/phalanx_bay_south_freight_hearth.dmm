@@ -1,0 +1,271 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"e" = (
+/obj/structure/closet/crate/freezer,
+/obj/effect/turf_decal/bot,
+/obj/item/food/cheese/wheel{
+	
+	pixel_y = 6
+	
+	},
+/obj/item/food/meat/slab{
+	
+	pixel_x = 6;
+	
+	pixel_y = -4
+	
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"f" = (
+/obj/structure/rack,
+/obj/item/storage/box,
+/obj/item/storage/box{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/storage/box/lights/mixed{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/bot,
+/obj/item/reagent_containers/condiment/honey{
+	
+	pixel_x = -6;
+	
+	pixel_y = 5
+	
+	},
+/obj/item/reagent_containers/condiment/milk{
+	
+	pixel_x = 4;
+	
+	pixel_y = 6
+	
+	},
+/obj/item/storage/fancy/egg_box{
+	
+	pixel_x = -2;
+	
+	pixel_y = -5
+	
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"g" = (
+/obj/machinery/light/floor,
+/turf/open/floor/plating,
+/area/template_noop)
+"h" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/turf_decal/bot,
+/obj/item/food/grown/apple{
+	
+	pixel_x = -5;
+	
+	pixel_y = 6
+	
+	},
+/obj/item/food/grown/wheat{
+	
+	pixel_x = 5;
+	
+	pixel_y = 5
+	
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"k" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"m" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/template_noop)
+"n" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/stack/sheet/iron/twenty,
+/obj/item/stack/sheet/glass{
+	amount = 10
+	},
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 10
+	},
+/obj/item/storage/box/lights/bulbs,
+/obj/effect/turf_decal/bot,
+/obj/effect/spawner/random/food_or_drink/snack,
+/obj/item/food/canned/beans{
+	
+	pixel_x = -6;
+	
+	pixel_y = 5
+	
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"r" = (
+/turf/open/floor/plating,
+/area/template_noop)
+"v" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/plating,
+/area/template_noop)
+"B" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/template_noop)
+"L" = (
+/obj/effect/turf_decal/box/corners,
+/obj/effect/turf_decal/box/corners{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/template_noop)
+"P" = (
+/obj/structure/closet/crate/internals,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/template_noop)
+"R" = (
+/obj/structure/rack,
+/obj/item/storage/box,
+/obj/item/storage/box{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/storage/box/lights/mixed{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/bot,
+/obj/item/reagent_containers/condiment/flour{
+	
+	pixel_x = -7;
+	
+	pixel_y = 6
+	
+	},
+/obj/item/reagent_containers/condiment/sugar{
+	
+	pixel_x = 1;
+	
+	pixel_y = 7
+	
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"S" = (
+/obj/effect/turf_decal/box,
+/turf/open/floor/plating,
+/area/template_noop)
+"T" = (
+/obj/effect/turf_decal/box/corners,
+/obj/effect/turf_decal/box/corners{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"U" = (
+/obj/structure/reagent_dispensers/watertank,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/template_noop)
+"W" = (
+/obj/structure/closet/crate/wooden,
+/obj/effect/turf_decal/bot,
+/obj/item/stack/sheet/cloth{
+	
+	pixel_y = 4
+	
+	},
+/obj/item/bedsheet/brown{
+	
+	pixel_x = 6;
+	
+	pixel_y = -4
+	
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"X" = (
+/obj/structure/reagent_dispensers/fueltank,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/template_noop)
+
+(1,1,1) = {"
+R
+r
+c
+"}
+(2,1,1) = {"
+S
+B
+e
+"}
+(3,1,1) = {"
+r
+g
+P
+"}
+(4,1,1) = {"
+k
+T
+n
+"}
+(5,1,1) = {"
+k
+r
+f
+"}
+(6,1,1) = {"
+k
+r
+v
+"}
+(7,1,1) = {"
+k
+L
+U
+"}
+(8,1,1) = {"
+k
+r
+X
+"}
+(9,1,1) = {"
+r
+g
+m
+"}
+(10,1,1) = {"
+S
+r
+m
+"}
+(11,1,1) = {"
+W
+h
+T
+"}

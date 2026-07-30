@@ -10,7 +10,6 @@ Performance Note:
 #define MAX_OVERMAP_EVENT_CLUSTERS 24
 #define MAX_OVERMAP_EVENTS 200
 #define MAX_OVERMAP_PLACEMENT_ATTEMPTS 40
-#define MAX_OVERMAP_PLANETS_TO_SPAWN 15
 
 SUBSYSTEM_DEF(overmap)
 	name = "Overmap"
@@ -46,16 +45,17 @@ SUBSYSTEM_DEF(overmap)
 	/// Time taken for a bluespace jump to complete after it initiates (in deciseconds)
 	var/jump_completion_time = 1200
 
-	/// Type paths of ship templates to spawn at round start. Change this list to control what ships appear.
-	var/list/roundstart_ship_templates = list(
-		/datum/map_template/shuttle/voidcrew/scarab,
-		/datum/map_template/shuttle/voidcrew/meta,
-		/datum/map_template/shuttle/voidcrew/box,
-	)
-	/// The primary roundstart ship (first in the list). Kept for backward compatibility.
+	/// Ready players each roundstart hull is expected to carry. The fleet scales off
+	/// this once turnout is known - see SSticker.create_characters().
+	var/roundstart_crew_per_ship = 6
+	/// Hard ceiling on roundstart hulls, however big the turnout is.
+	var/roundstart_max_ships = 4
+	/// The first roundstart ship spawned. Kept for backward compatibility.
 	var/obj/structure/overmap/ship/initial_ship
 	/// All ships spawned at round start.
 	var/list/obj/structure/overmap/ship/initial_ships = list()
+	/// Hull types the roundstart fleet has already rolled, so a second hull is a different class
+	var/list/spent_roundstart_hulls = list()
 
 /datum/controller/subsystem/overmap/Initialize(start_timeofday)
 	create_map()
@@ -318,6 +318,20 @@ SUBSYSTEM_DEF(overmap)
 		meteor_count++
 		log_mapping("SSovermap: Spawned guaranteed asteroid field event")
 
+/**
+ * Places the round's planets on the overmap.
+ *
+ * Two supply models feed this. Anything SSmapping preloaded (the *_planet_count knobs
+ * in _mapping.dm) already owns a generated z-level pair at boot and only needs a marker
+ * wired to it. Every other planet type spawns as a DYNAMIC marker: an overmap contact
+ * with no interior at all - no map zone, no z-level, no docks - whose surface is
+ * generated the first time a ship docks or a survey shuttle maps it
+ * (planet/load_level() -> spawn_dynamic_encounter()).
+ *
+ * An unvisited dynamic planet costs nothing but its overmap tile, which is why the
+ * preloaded counts are all zero: each of those is a full 255x255 z-pair sitting in
+ * memory whether or not anyone ever goes there.
+ */
 /datum/controller/subsystem/overmap/proc/setup_planets()
 	// Init planets
 	var/list/planets = SSmapping.planets
@@ -380,39 +394,49 @@ SUBSYSTEM_DEF(overmap)
 		planet_to_spawn.mapzone = mapzone
 		planet_to_spawn.loaded = TRUE
 
-	// Midgame planets
-	// var/list/datum/overmap/planet/midgame_planets = list()
-	// for(var/datum/overmap/planet/planet_type as anything in subtypesof(/datum/overmap/planet))
-	// 	if(initial(planet_type.spawn_rate) > 0)
-	// 		midgame_planets += planet_type
+	// Dynamic planets: one marker per planet type SSmapping did not preload. They are
+	// full overmap contacts - named, charted, scannable - with no interior at all until
+	// someone visits. Bands come from the same shuffled pool the preloaded planets draw
+	// from, so the first three cover green, yellow and red instead of every planet
+	// piling into the safe outer ring.
+	var/list/preloaded_types = list()
+	for(var/planet_key in planets)
+		preloaded_types |= planets[planet_key]["type"]
 
+	var/list/dynamic_planet_markers = list(
+		/obj/structure/overmap/planet/lava,
+		/obj/structure/overmap/planet/ice,
+		/obj/structure/overmap/planet/jungle,
+		/obj/structure/overmap/planet/beach,
+		/obj/structure/overmap/planet/wasteland,
+	)
+	for(var/obj/structure/overmap/planet/marker_type as anything in dynamic_planet_markers.Copy())
+		if(initial(marker_type.planet) in preloaded_types)
+			dynamic_planet_markers -= marker_type
 
-	// var/list/midgame_orbits = list()
-	// for (var/i in 2 to LAZYLEN(radius_tiles))
-	// 	midgame_orbits += "[i]"
+	for(var/obj/structure/overmap/planet/marker_type as anything in dynamic_planet_markers)
+		var/wanted_band = SSmapping.next_planet_zone_band()
+		var/turf/turf_for_planet = get_unused_overmap_square_in_zone_band(wanted_band, tries = 80) // red band is ~9% of tiles, needs generous sampling
+		if(!turf_for_planet)
+			log_mapping("SSovermap: Failed to place dynamic planet [marker_type] in zone band [wanted_band], falling back to any free square")
+			turf_for_planet = get_unused_overmap_square()
+		if(!turf_for_planet)
+			log_mapping("SSovermap: Failed to place dynamic planet [marker_type] - no free overmap square")
+			continue
+		var/obj/structure/overmap/planet/planet_to_spawn = new marker_type(turf_for_planet)
 
-	// for (var/_ in 1 to MAX_OVERMAP_PLANETS_TO_SPAWN)
-	// 	if (LAZYLEN(midgame_orbits) == 0 || !midgame_orbits)
-	// 		break // can't fit anymore in
-	// 	var/selected_orbit = text2num(pick(midgame_orbits))
+		// SSovermap initializes before SSatoms, so the marker's Initialize() - which is
+		// what normally copies the planet datum's identity onto it - has not run yet and
+		// will not until SSatoms drains its queue. Copy the identity across now so the
+		// contact is never briefly a nameless "weak energy signature".
+		var/datum/overmap/planet/planet_info = new planet_to_spawn.planet
+		planet_to_spawn.name = planet_info.name
+		planet_to_spawn.desc = planet_info.desc
+		planet_to_spawn.icon_state = planet_info.icon_state
+		planet_to_spawn.color = planet_info.color
+		qdel(planet_info)
 
-	// 	var/turf/turf_for_planet = get_unused_overmap_square_in_radius(selected_orbit)
-	// 	if (!turf_for_planet || !istype(turf_for_planet))
-	// 		midgame_orbits -= "[selected_orbit]" // this one is full
-	// 		continue
-
-	// 	var/datum/overmap/planet/planet_type = pick(midgame_planets)
-	// 	var/obj/structure/overmap/planet/planet_to_spawn = new
-	// 	planet_to_spawn.planet = planet_type
-	// 	planet_to_spawn.forceMove(turf_for_planet)
-
-	// 	// Transfer all of the data from the planet datum onto the planet object
-	// 	var/datum/overmap/planet/planet_info = new planet_to_spawn.planet
-	// 	planet_to_spawn.name = planet_info.name
-	// 	planet_to_spawn.desc = planet_info.desc
-	// 	planet_to_spawn.icon_state = planet_info.icon_state
-	// 	planet_to_spawn.color = planet_info.color
-	// 	qdel(planet_info)
+		log_mapping("SSovermap: Spawned dynamic planet '[planet_to_spawn.name]' (unloaded) in zone band [wanted_band] at ([turf_for_planet.x], [turf_for_planet.y])")
 
 // TODO - MULTI-Z VLEVELS
 /datum/controller/subsystem/overmap/proc/calculate_turf_above(turf/T)
@@ -551,9 +575,12 @@ SUBSYSTEM_DEF(overmap)
 		log_mapping("SSovermap: WARNING - failed to place a trader outpost in zone band [band]")
 
 /**
- * Spawns all ships defined in roundstart_ship_templates.
- * The first successfully spawned ship becomes initial_ship (backward compat).
- * All spawned ships are tracked in initial_ships.
+ * Spawns the ship the round is anchored on.
+ *
+ * Only one hull spawns here. Fleet size follows turnout, and nobody has readied up
+ * yet at SSovermap init - the rest of the fleet is spawned by scale_roundstart_fleet()
+ * once SSticker knows how many players it has. This one still has to exist now, since
+ * it carries the observer_start landmark pre-round ghosts spawn on.
  */
 /datum/controller/subsystem/overmap/proc/spawn_initial_ship()
 #ifdef UNIT_TESTS
@@ -568,22 +595,68 @@ SUBSYSTEM_DEF(overmap)
 		else
 			log_mapping("[src] failed to load ship [templates].")
 #else
-	if(!length(roundstart_ship_templates))
-		CRASH("No roundstart ship templates configured.")
-
-	for(var/ship_type in roundstart_ship_templates)
-		var/obj/structure/overmap/ship/spawned = SSshuttle.create_ship(ship_type)
-		if(!spawned)
-			stack_trace("Failed to spawn roundstart ship: [ship_type]")
-			continue
-		initial_ships += spawned
-		RegisterSignal(spawned, COMSIG_QDELETING, PROC_REF(handle_initial_ship_deletion))
-
-	if(!length(initial_ships))
+	if(!spawn_roundstart_hull())
 		CRASH("Failed to spawn any roundstart ships.")
-
-	initial_ship = initial_ships[1]
 #endif
+
+/**
+ * Rolls and spawns one roundstart hull: a random modular hull, a random theme on it,
+ * and a random module in every one of its upgrade slots.
+ *
+ * Costs are ignored throughout - nobody is paying for these. Hull classes are drawn
+ * without replacement while the pool lasts, so a three-ship round is three different
+ * classes rather than three Scarabs.
+ *
+ * Returns the spawned ship, or null on failure.
+ */
+/datum/controller/subsystem/overmap/proc/spawn_roundstart_hull()
+	var/list/pool = get_roundstart_hull_templates()
+	if(!length(pool))
+		CRASH("No modular hulls are eligible to spawn at round start.")
+
+	var/list/unused = pool - spent_roundstart_hulls
+	var/datum/map_template/shuttle/voidcrew/hull = pick(length(unused) ? unused : pool)
+
+	var/datum/ship_theme/theme = roll_random_ship_theme(hull.type)
+	var/list/selections = roll_random_upgrade_selections(hull, theme)
+
+	// Pass the type path, not the catalog instance: create_ship rewrites suffix and
+	// mappath on whatever template object it's handed
+	var/obj/structure/overmap/ship/spawned = SSshuttle.create_ship(hull.type, selections, theme)
+	if(!spawned)
+		stack_trace("Failed to spawn roundstart ship: [hull.type]")
+		return null
+
+	spent_roundstart_hulls += hull
+	initial_ships += spawned
+	if(!initial_ship)
+		initial_ship = spawned
+	RegisterSignal(spawned, COMSIG_QDELETING, PROC_REF(handle_initial_ship_deletion))
+
+	var/list/rolled = list()
+	for(var/slot_key in selections)
+		var/datum/ship_upgrade_module/module = selections[slot_key]
+		rolled += "[slot_key]=[module.id]"
+	log_mapping("SSovermap: roundstart hull [hull.name] spawned as '[spawned.name]' \
+		(theme: [theme?.id || "none"], modules: [length(rolled) ? rolled.Join(", ") : "defaults"])")
+
+	return spawned
+
+/**
+ * Grows the roundstart fleet to match how many players actually readied up.
+ *
+ * Called from SSticker.create_characters() before anyone is assigned a job, so the
+ * hulls exist by the time crews are dealt out. Never shrinks the fleet.
+ *
+ * Returns the number of hulls in the fleet.
+ */
+/datum/controller/subsystem/overmap/proc/scale_roundstart_fleet(ready_count)
+	var/wanted = clamp(CEILING(ready_count / roundstart_crew_per_ship, 1), 1, roundstart_max_ships)
+	while(length(initial_ships) < wanted)
+		if(!spawn_roundstart_hull())
+			break
+	log_mapping("SSovermap: roundstart fleet scaled to [length(initial_ships)] hull(s) for [ready_count] ready player(s) (wanted [wanted]).")
+	return length(initial_ships)
 
 /datum/controller/subsystem/overmap/proc/handle_initial_ship_deletion(datum/source)
 	SIGNAL_HANDLER
@@ -627,7 +700,7 @@ SUBSYSTEM_DEF(overmap)
 		if (ZTRAIT_WASTELAND_RUINS)
 			return SSmapping.wasteland_ruins_templates
 
-/datum/controller/subsystem/overmap/proc/spawn_dynamic_encounter(datum/overmap/planet/planet_type, ruin = TRUE, ignore_cooldown = FALSE, datum/map_template/ruin/ruin_type)
+/datum/controller/subsystem/overmap/proc/spawn_dynamic_encounter(datum/overmap/planet/planet_type, ruin = TRUE, ignore_cooldown = FALSE, datum/map_template/ruin/ruin_type, zone_band)
 	log_shuttle("SSOVERMAP: SPAWNING DYNAMIC ENCOUNTER STARTED")
 	var/list/ruin_list
 	var/datum/map_generator/mapgen
@@ -689,6 +762,12 @@ SUBSYSTEM_DEF(overmap)
 
 	if (!isnull(mapgen) && (istype(mapgen, /datum/map_generator/planet_generator)) && !isnull(planet_template))
 		mapgen.generate_terrain(zlevel.get_block(), planet_template, FALSE, FALSE)
+		// Terrain generation only lays turfs down and tags each one with the biome it
+		// came from - every scrap of flora, fauna and ground feature comes from the
+		// population pass, which historically only SSmapping's roundstart init ever
+		// ran. Without this a dynamically generated planet is bare landscape. The turf
+		// list is rebuilt because generation replaced every turf on the level.
+		mapgen.populate_terrain(zlevel.get_block(), filled_area, zone_band)
 	else
 		if (!isnull(mapgen))
 			mapgen.generate_terrain(zlevel.get_block(), planet_template)

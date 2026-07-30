@@ -1,0 +1,120 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"i" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood/large,
+/area/template_noop)
+"A" = (
+/turf/template_noop,
+/area/template_noop)
+"K" = (
+/obj/structure/closet/crate/wooden{
+	name = "outfitters crate"
+	},
+/obj/item/shovel,
+/obj/item/pickaxe,
+/obj/item/storage/box/lights/mixed,
+/obj/item/mining_scanner,
+/obj/item/gun/energy/recharge/kinetic_accelerator,
+/obj/effect/turf_decal/box/corners,
+/obj/effect/turf_decal/box/corners{
+	dir = 1
+	},
+/obj/structure/sign/departments/cargo/directional/south,
+/turf/open/floor/wood,
+/area/template_noop)
+"L" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/structure/closet/crate/internals,
+/obj/item/tank/internals/oxygen,
+/obj/item/tank/internals/oxygen{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/sign/warning/gas_mask/directional/south,
+/turf/open/floor/wood,
+/area/template_noop)
+"O" = (
+/obj/structure/closet/crate/wooden{
+	name = "timber freight crate"
+	},
+/obj/item/stack/sheet/iron/twenty,
+/obj/item/stack/sheet/glass{
+	amount = 10
+	},
+/obj/item/storage/box/lights/bulbs,
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 10
+	},
+/obj/item/reagent_containers/cup/glass/bottle/whiskey,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/warm{
+	dir = 4
+	},
+/obj/structure/sign/poster/contraband/random/directional/east,
+/turf/open/floor/wood,
+/area/template_noop)
+"S" = (
+/obj/effect/turf_decal/box/corners{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/item/stack/sheet/mineral/wood{
+	amount = 20
+	},
+/obj/item/flashlight/lantern{
+	pixel_x = 8;
+	pixel_y = -5
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/template_noop)
+"Z" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/wood/large,
+/area/template_noop)
+
+(1,1,1) = {"
+i
+S
+L
+"}
+(2,1,1) = {"
+Z
+K
+A
+"}
+(3,1,1) = {"
+c
+O
+A
+"}

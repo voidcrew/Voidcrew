@@ -1,0 +1,1201 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ay" = (
+/obj/machinery/camera/autoname/directional/west,
+/obj/structure/table,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/storage/toolbox/electrical{
+	pixel_x = -10;
+	pixel_y = -10
+	},
+/obj/structure/sign/poster/official/midtown_slice/directional/north,
+/obj/item/clothing/under/misc/pj/red{
+	pixel_x = 7;
+	pixel_y = 7
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/goon/engineering/d)
+"aI" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/item/pillow/random{
+	pixel_x = 6;
+	pixel_y = -5
+	},
+/obj/item/food/candy{
+	pixel_x = -6;
+	pixel_y = -8
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"aL" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/item/pillow/random{
+	pixel_x = -4;
+	pixel_y = -8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/goon/commons/d)
+"bl" = (
+/turf/closed/wall/mineral/titanium/dollhouse{
+	name = "cream wall";
+	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
+	},
+/area/shuttle/voidcrew/goon/commons/d)
+"cx" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/d)
+"cW" = (
+/obj/structure/cable,
+/obj/item/clothing/suit/hooded/wintercoat{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/clothing/under/misc/pj/blue{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/item/clothing/shoes/sandal{
+	pixel_x = 8;
+	pixel_y = -9
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/goon/engineering/d)
+"df" = (
+/obj/structure/closet/secure_closet/engineering_electrical,
+/obj/structure/sign/poster/official/moth_hardhat/directional/west,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/goon/engineering/d)
+"dp" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_port"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/d)
+"dD" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/d)
+"dS" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/item/food/cookie/chocolate_chip_cookie{
+	pixel_x = -8;
+	pixel_y = -7
+	},
+/obj/machinery/computer/bank_machine{
+	dir = 4
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"eX" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/item/pillow/random{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/shoes/sandal{
+	pixel_x = 8;
+	pixel_y = -8
+	},
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = 2;
+	pixel_y = 9
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/goon/commons/d)
+"fe" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/d)
+"fM" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/d)
+"ga" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/d)
+"gy" = (
+/obj/machinery/light{
+	dir = 8;
+	bulb_colour = "#ffbfd4"
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"gM" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/d)
+"gY" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/d)
+"hZ" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/item/reagent_containers/cup/soda_cans/cola{
+	pixel_x = 9;
+	pixel_y = 6
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"iQ" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/machinery/airalarm/directional/west,
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = -9;
+	pixel_y = 5
+	},
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 4
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"iY" = (
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/d)
+"jy" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/item/food/cookie/chocolate_chip_cookie{
+	pixel_x = -8;
+	pixel_y = -7
+	},
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 4
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"jL" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/machinery/airalarm/directional/west,
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = -9;
+	pixel_y = 5
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"jR" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/item/bedsheet/purple,
+/obj/item/pillow/random{
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"mv" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/item/food/cookie/chocolate_chip_cookie{
+	pixel_x = -8;
+	pixel_y = -7
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"mL" = (
+/turf/closed/wall/mineral/titanium/dollhouse{
+	name = "cream wall";
+	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
+	},
+/area/shuttle/voidcrew/goon/engineering/d)
+"no" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/item/newspaper{
+	pixel_x = -7;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/cup/soda_cans/cola{
+	pixel_x = 8;
+	pixel_y = -7
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/goon/bridge/d)
+"oj" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/item/newspaper{
+	pixel_x = 4;
+	pixel_y = -5
+	},
+/obj/item/food/candy{
+	pixel_x = -8;
+	pixel_y = 6
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"pN" = (
+/obj/machinery/light{
+	dir = 8;
+	bulb_colour = "#ffbfd4"
+	},
+/obj/structure/cable,
+/obj/machinery/computer/bank_machine{
+	dir = 4
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"pR" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/machinery/airalarm/directional/west,
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = -9;
+	pixel_y = 5
+	},
+/obj/machinery/computer/mission_board{
+	dir = 4
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"pY" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 8
+	},
+/obj/structure/reagent_dispensers/fueltank,
+/obj/structure/cable,
+/obj/machinery/power/terminal,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/goon/engineering/d)
+"qd" = (
+/obj/structure/cable,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/d)
+"qG" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/goon/engineering/d)
+"qR" = (
+/obj/machinery/light/small/directional/east{
+	bulb_colour = "#ffbfd4"
+	},
+/obj/item/reagent_containers/cup/soda_cans/cola{
+	pixel_x = 8;
+	pixel_y = -7
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"rd" = (
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/window/reinforced/spawner/directional/west{
+	pixel_y = 2
+	},
+/obj/machinery/power/smes/engineering{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/d)
+"rI" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/d)
+"sh" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/item/bedsheet/orange,
+/obj/item/pillow/random{
+	pixel_x = 8;
+	pixel_y = 6
+	},
+/obj/machinery/mission_pad,
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"sq" = (
+/turf/closed/wall/mineral/titanium/dollhouse/nodiagonal{
+	name = "cream wall";
+	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
+	},
+/area/shuttle/voidcrew/goon/commons/d)
+"sE" = (
+/obj/machinery/camera/autoname/directional/west,
+/obj/machinery/light/small/directional/west{
+	bulb_colour = "#ffbfd4"
+	},
+/obj/item/bedsheet/rainbow,
+/obj/item/pillow/random{
+	pixel_x = 7;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"uu" = (
+/obj/machinery/camera/autoname/directional/west,
+/obj/machinery/light/small/directional/west{
+	bulb_colour = "#ffbfd4"
+	},
+/obj/structure/table/wood,
+/obj/item/storage/fancy/donut_box{
+	pixel_y = 5
+	},
+/obj/item/food/popcorn{
+	pixel_x = -8;
+	pixel_y = 3
+	},
+/obj/item/toy/cards/deck{
+	pixel_x = 7;
+	pixel_y = -3
+	},
+/obj/item/dice{
+	pixel_x = 10;
+	pixel_y = 4
+	},
+/obj/item/dice{
+	pixel_x = 6;
+	pixel_y = 7
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"uW" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/d)
+"vn" = (
+/obj/item/pillow/random{
+	pixel_x = 5;
+	pixel_y = 7
+	},
+/obj/item/toy/plush/moth{
+	pixel_x = -5;
+	pixel_y = -4
+	},
+/obj/item/food/chips{
+	pixel_x = 9;
+	pixel_y = -8
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"vs" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/item/bedsheet/orange,
+/obj/item/pillow/random{
+	pixel_x = 8;
+	pixel_y = 6
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"vv" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/item/reagent_containers/cup/glass/mug/coco{
+	pixel_x = -7;
+	pixel_y = 4
+	},
+/obj/item/newspaper{
+	pixel_x = 5;
+	pixel_y = -7
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/goon/commons/d)
+"vz" = (
+/obj/structure/closet/crate/engineering/electrical,
+/obj/item/clothing/gloves/color/yellow,
+/obj/item/multitool,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/storage/toolbox/electrical,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/east,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/goon/engineering/d)
+"vG" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/item/bedsheet/purple,
+/obj/item/pillow/random{
+	pixel_x = -8;
+	pixel_y = -6
+	},
+/obj/item/toy/plush/bubbleplush{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/goon/commons/d)
+"wU" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/d)
+"xE" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/d)
+"yu" = (
+/turf/closed/wall/mineral/titanium/dollhouse/nodiagonal{
+	name = "cream wall";
+	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
+	},
+/area/shuttle/voidcrew/goon/engineering/d)
+"zs" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/d)
+"zA" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Infirmary"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/goon/medbay/d)
+"Al" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/item/reagent_containers/cup/soda_cans/space_up{
+	pixel_x = -7;
+	pixel_y = 5
+	},
+/obj/item/food/cookie/chocolate_chip_cookie{
+	pixel_x = 7;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"Bn" = (
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/d)
+"Bo" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/d)
+"Bv" = (
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/d)
+"Cm" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/docking_port/mobile/voidcrew/goon/d{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/d)
+"CD" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_lounge"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/d)
+"DV" = (
+/obj/machinery/door/poddoor{
+	id = "goon_bay"
+	},
+/obj/structure/fans/tiny,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/sign/poster/official/tactical_game_cards/directional/west,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/goon/commons/d)
+"Ed" = (
+/obj/structure/sign/poster/official/love_ian/directional/west,
+/obj/item/reagent_containers/cup/soda_cans/dr_gibb{
+	pixel_x = -8;
+	pixel_y = -6
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"Eh" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/d)
+"El" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/d)
+"EB" = (
+/turf/closed/wall/mineral/titanium/dollhouse{
+	name = "cream wall";
+	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
+	},
+/area/shuttle/voidcrew/goon/bridge/d)
+"GD" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/goon/engineering/d)
+"GR" = (
+/turf/closed/wall/mineral/titanium/dollhouse{
+	name = "cream wall";
+	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
+	},
+/area/shuttle/voidcrew/goon/medbay/d)
+"GV" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_engineering"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/d)
+"Hf" = (
+/obj/machinery/power/shuttle_engine/ship/fueled/plasma{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/d)
+"IG" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/medbay/d)
+"IZ" = (
+/turf/template_noop,
+/area/template_noop)
+"KA" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/emergency,
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/machinery/light/small/directional/east{
+	bulb_colour = "#ffbfd4"
+	},
+/obj/item/reagent_containers/cup/glass/mug/coco{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/food/chips{
+	pixel_x = -7;
+	pixel_y = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/goon/bridge/d)
+"Mx" = (
+/obj/machinery/door/airlock/titanium{
+	name = "Emergency Shuttle Airlock"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/goon/commons/d)
+"Nd" = (
+/obj/structure/chair/comfy/beige{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/airalarm/directional/west,
+/obj/item/bedsheet/rainbow{
+	pixel_y = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/goon/bridge/d)
+"NP" = (
+/obj/structure/fans/tiny,
+/obj/machinery/button/door{
+	id = "goon_bay";
+	pixel_x = 26
+	},
+/obj/machinery/door/poddoor{
+	id = "goon_bay"
+	},
+/obj/item/clothing/suit/hooded/wintercoat{
+	pixel_x = -7;
+	pixel_y = 7
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/goon/commons/d)
+"Om" = (
+/obj/machinery/firealarm/directional/west{
+	dir = 4
+	},
+/obj/item/bedsheet/blue,
+/obj/item/clothing/shoes/sandal{
+	pixel_x = -7;
+	pixel_y = -6
+	},
+/obj/item/clothing/shoes/sandal{
+	pixel_x = -2;
+	pixel_y = -9
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"OT" = (
+/obj/structure/sign/nanotrasen,
+/turf/closed/wall/mineral/titanium/dollhouse{
+	name = "cream wall";
+	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
+	},
+/area/shuttle/voidcrew/goon/commons/d)
+"Pk" = (
+/obj/structure/table/reinforced,
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/mirror/directional/east,
+/obj/item/lipstick{
+	name = "nail polish";
+	desc = "A small bottle of nail polish. It applies like lipstick.";
+	lipstick_color = "#ff7fae";
+	pixel_x = -7;
+	pixel_y = 6
+	},
+/obj/item/lipstick/purple{
+	name = "nail polish";
+	desc = "A small bottle of nail polish. It applies like lipstick.";
+	pixel_x = -1;
+	pixel_y = 7
+	},
+/obj/item/lipstick/white{
+	name = "nail polish";
+	desc = "A small bottle of nail polish. It applies like lipstick.";
+	pixel_x = 5;
+	pixel_y = 6
+	},
+/obj/item/newspaper{
+	pixel_x = 3;
+	pixel_y = -4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/goon/bridge/d)
+"Pu" = (
+/obj/machinery/atmospherics/components/tank/plasma{
+	dir = 4
+	},
+/obj/machinery/light/small/directional/west{
+	bulb_colour = "#ffbfd4"
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/goon/engineering/d)
+"Qj" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_mining"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/commons/d)
+"QF" = (
+/obj/machinery/light,
+/obj/machinery/shower/directional/west,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/south,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/goon/medbay/d)
+"QG" = (
+/obj/machinery/light{
+	dir = 4;
+	bulb_colour = "#ffbfd4"
+	},
+/obj/structure/window/reinforced/survival_pod/spawner/directional/north,
+/obj/machinery/cryopod,
+/obj/item/bedsheet/purple{
+	pixel_y = 5
+	},
+/obj/item/pillow/random{
+	pixel_x = 7;
+	pixel_y = -7
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/goon/commons/d)
+"Rq" = (
+/obj/machinery/camera/autoname/directional/north,
+/obj/structure/table,
+/obj/machinery/door/window,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/item/storage/medkit/toxin{
+	pixel_x = 5;
+	pixel_y = 5
+	},
+/obj/item/storage/medkit/regular,
+/obj/item/mod/control/pre_equipped/medical,
+/obj/item/storage/medkit/brute{
+	pixel_x = -5;
+	pixel_y = -5
+	},
+/obj/item/storage/belt/medical,
+/obj/item/storage/belt/medical,
+/obj/item/reagent_containers/cup/bottle/formaldehyde,
+/obj/structure/window/reinforced/spawner/directional/west{
+	pixel_y = 2
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/machinery/light/small/directional/north{
+	bulb_colour = "#ffbfd4"
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/goon/medbay/d)
+"RF" = (
+/obj/structure/cable,
+/obj/item/clothing/suit/hooded/wintercoat{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/clothing/under/misc/pj/blue{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/obj/item/clothing/shoes/sandal{
+	pixel_x = 8;
+	pixel_y = -9
+	},
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/goon/engineering/d)
+"RR" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Cockpit"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/goon/bridge/d)
+"Sz" = (
+/obj/structure/sign/blank{
+	name = "hand-lettered sign";
+	desc = "A blank sign backing with GUESTS THIS WAY written on it in pink marker."
+	},
+/turf/closed/wall/mineral/titanium/dollhouse{
+	name = "cream wall";
+	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
+	},
+/area/shuttle/voidcrew/goon/commons/d)
+"SM" = (
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 8
+	},
+/obj/machinery/power/terminal,
+/obj/structure/cable,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/goon/medbay/d)
+"TC" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_cockpit"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/d)
+"Un" = (
+/obj/structure/closet/supplypod/drop_pod,
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"UH" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/d)
+"Vh" = (
+/obj/machinery/vending/wallmed,
+/turf/closed/wall/mineral/titanium/dollhouse/nodiagonal{
+	name = "cream wall";
+	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
+	},
+/area/shuttle/voidcrew/goon/medbay/d)
+"Vk" = (
+/obj/structure/chair/comfy/beige{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/item/pillow/random{
+	pixel_x = 5;
+	pixel_y = 7
+	},
+/obj/item/reagent_containers/cup/glass/mug/tea{
+	pixel_x = -8;
+	pixel_y = -6
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/goon/bridge/d)
+"VI" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/window/reinforced/spawner/directional/west{
+	pixel_y = 2
+	},
+/obj/machinery/power/smes/engineering{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/engineering/d)
+"VM" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/item/bedsheet/purple,
+/obj/item/pillow/random{
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/obj/machinery/mission_pad,
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"VN" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/goon/engineering/d)
+"WS" = (
+/obj/machinery/firealarm/directional/south,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
+/obj/machinery/atmospherics/components/tank/air{
+	piping_layer = 4
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/goon/engineering/d)
+"XO" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/obj/item/bedsheet/red,
+/obj/item/pillow/random{
+	pixel_x = -5;
+	pixel_y = 6
+	},
+/obj/item/clothing/under/misc/pj/blue{
+	pixel_x = 8;
+	pixel_y = -7
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"Yy" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Emergency Shuttle Engineering"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/goon/engineering/d)
+"Zb" = (
+/obj/machinery/light{
+	dir = 8;
+	bulb_colour = "#ffbfd4"
+	},
+/obj/structure/cable,
+/obj/machinery/computer/mission_board{
+	dir = 4
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+"Zg" = (
+/obj/machinery/cryopod,
+/obj/machinery/computer/cryopod{
+	pixel_y = -32
+	},
+/obj/item/bedsheet/brown{
+	pixel_y = 6
+	},
+/obj/item/pillow/random{
+	pixel_x = -8;
+	pixel_y = -6
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/goon/commons/d)
+"ZV" = (
+/obj/machinery/washing_machine,
+/obj/item/clothing/under/misc/pj/red{
+	pixel_x = -9;
+	pixel_y = -8
+	},
+/obj/item/clothing/suit/hooded/wintercoat{
+	pixel_x = 8;
+	pixel_y = -9
+	},
+/turf/open/floor/iron/dollhouse/checker,
+/area/shuttle/voidcrew/goon/commons/d)
+
+(1,1,1) = {"
+IZ
+Hf
+GR
+GR
+GR
+mL
+mL
+mL
+mL
+Hf
+IZ
+"}
+(2,1,1) = {"
+qd
+Bv
+Eh
+Eh
+dp
+mL
+ay
+Pu
+df
+iY
+qd
+"}
+(3,1,1) = {"
+VI
+SM
+Eh
+Eh
+Eh
+rI
+VN
+qG
+cW
+pY
+rd
+"}
+(4,1,1) = {"
+GR
+Rq
+Eh
+IG
+Eh
+mL
+gY
+zs
+GV
+WS
+mL
+"}
+(5,1,1) = {"
+GR
+Vh
+Eh
+IG
+Eh
+mL
+gY
+UH
+Bn
+yu
+mL
+"}
+(6,1,1) = {"
+IZ
+GR
+Eh
+IG
+Eh
+rI
+gY
+gM
+Bn
+mL
+IZ
+"}
+(7,1,1) = {"
+IZ
+uW
+Eh
+cx
+QF
+mL
+gY
+dD
+vz
+rI
+IZ
+"}
+(8,1,1) = {"
+OT
+GR
+GR
+zA
+GR
+mL
+mL
+Yy
+mL
+mL
+Sz
+"}
+(9,1,1) = {"
+Mx
+Ed
+sE
+XO
+pR
+jy
+pN
+jR
+uu
+Om
+Mx
+"}
+(10,1,1) = {"
+Mx
+Un
+ZV
+hZ
+aI
+sh
+Al
+oj
+vn
+qR
+Mx
+"}
+(11,1,1) = {"
+OT
+bl
+wU
+wU
+Qj
+eX
+wU
+El
+CD
+bl
+Sz
+"}
+(12,1,1) = {"
+fM
+DV
+xE
+xE
+El
+vG
+wU
+El
+wU
+Bo
+IZ
+"}
+(13,1,1) = {"
+IZ
+NP
+wU
+wU
+wU
+vv
+wU
+wU
+wU
+Bo
+IZ
+"}
+(14,1,1) = {"
+IZ
+bl
+wU
+wU
+wU
+aL
+QG
+Zg
+sq
+bl
+IZ
+"}
+(15,1,1) = {"
+IZ
+bl
+EB
+fe
+EB
+RR
+EB
+fe
+EB
+bl
+IZ
+"}
+(16,1,1) = {"
+IZ
+IZ
+fe
+KA
+Vk
+no
+Nd
+Pk
+fe
+IZ
+IZ
+"}
+(17,1,1) = {"
+IZ
+IZ
+EB
+EB
+ga
+ga
+TC
+EB
+EB
+IZ
+IZ
+"}
+(18,1,1) = {"
+IZ
+IZ
+IZ
+fe
+ga
+ga
+ga
+fe
+IZ
+IZ
+IZ
+"}
+(19,1,1) = {"
+IZ
+IZ
+IZ
+EB
+fe
+Cm
+fe
+EB
+IZ
+IZ
+IZ
+"}

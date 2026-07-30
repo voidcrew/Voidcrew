@@ -4,6 +4,18 @@
 /obj/machinery/suit_storage_unit/atmos,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/midway/engineering/storage)
+"ab" = (
+/obj/effect/landmark/event_spawn,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/midway/hallway)
+"ac" = (
+/obj/effect/landmark/event_spawn,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue/anticorner,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/midway/bridge)
 "ao" = (
 /obj/structure/cable,
 /obj/machinery/power/shuttle_engine/ship/electric{
@@ -1905,7 +1917,7 @@ ku
 qr
 Zn
 Td
-ud
+ab
 jk
 Td
 Zn
@@ -2268,7 +2280,7 @@ ri
 CG
 Lg
 OV
-Yl
+ac
 kH
 Zn
 Zn

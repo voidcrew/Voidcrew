@@ -35,6 +35,9 @@
 	event_scope = EVENT_SCOPE_SHIP
 	min_wizard_trigger_potency = 0
 	max_wizard_trigger_potency = 3
+	/// Two pods a tick for half a minute is a mess to sweep up in a compartment and a
+	/// pile-driver in a hull that only has three tiles for the crew to stand on.
+	min_ship_mass = SHIP_MASS_SMALL
 
 /// Needs somewhere open aboard for a pod to land.
 /datum/round_event_control/voidcrew/lich/ossuary_rain/is_valid_target(obj/structure/overmap/ship/ship)

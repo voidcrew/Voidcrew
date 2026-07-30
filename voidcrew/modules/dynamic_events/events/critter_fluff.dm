@@ -123,6 +123,9 @@
 	var/role_name = "random animal"
 	/// Number of ghost signups required for the event to go through.
 	var/minimum_required = 1
+	/// How many animals to uplift. Bounded in practice by whichever runs out first,
+	/// the volunteers or the livestock.
+	var/animals_to_uplift = 1
 
 /datum/round_event/voidcrew/sentience/announce(fake)
 	if(!target_valid())
@@ -157,28 +160,49 @@
 	if(!length(potential))
 		announce_chance = 0
 		return
-	var/mob/living/selected = popleft(potential)
-	var/mob/dead/observer/volunteer = pick_n_take(candidates)
-	if(QDELETED(selected) || QDELETED(volunteer))
+	var/uplifted = 0
+	while(uplifted < animals_to_uplift && length(potential) && length(candidates))
+		var/mob/living/selected = popleft(potential)
+		var/mob/dead/observer/volunteer = pick_n_take(candidates)
+		if(QDELETED(selected) || QDELETED(volunteer))
+			continue
+
+		selected.PossessByPlayer(volunteer.key)
+		selected.grant_all_languages(UNDERSTOOD_LANGUAGE, grant_omnitongue = FALSE, source = LANGUAGE_ATOM)
+
+		if(isanimal(selected))
+			var/mob/living/simple_animal/animal_selected = selected
+			animal_selected.sentience_act()
+			animal_selected.del_on_death = FALSE
+		else if(isbasicmob(selected))
+			var/mob/living/basic/animal_selected = selected
+			animal_selected.basic_mob_flags &= ~DEL_ON_DEATH
+
+		selected.maxHealth = max(selected.maxHealth, 200)
+		selected.health = selected.maxHealth
+
+		to_chat(selected, span_userdanger("Hello world!"))
+		to_chat(selected, span_warning("Due to freak radiation and/or chemicals \
+			and/or lucky chance, you have gained human level intelligence \
+			and the ability to speak and understand human language!"))
+		announce_to_ghosts(selected)
+		uplifted++
+
+	if(!uplifted)
 		announce_chance = 0
-		return
 
-	selected.PossessByPlayer(volunteer.key)
-	selected.grant_all_languages(UNDERSTOOD_LANGUAGE, grant_omnitongue = FALSE, source = LANGUAGE_ATOM)
+/**
+ * Admin-only variant, as upstream: every animal and bot aboard wakes up, or as many as
+ * there are ghosts willing to be one. Weight and occurrence cap are zero so it never
+ * enters the random roster.
+ */
+/datum/round_event_control/voidcrew/sentience/all
+	name = "Ship-wide Human-level Intelligence"
+	typepath = /datum/round_event/voidcrew/sentience/all
+	weight = 0
+	max_occurrences = 0
+	description = "EVERY animal and robot aboard the target ship becomes sentient, ghosts permitting."
 
-	if(isanimal(selected))
-		var/mob/living/simple_animal/animal_selected = selected
-		animal_selected.sentience_act()
-		animal_selected.del_on_death = FALSE
-	else if(isbasicmob(selected))
-		var/mob/living/basic/animal_selected = selected
-		animal_selected.basic_mob_flags &= ~DEL_ON_DEATH
-
-	selected.maxHealth = max(selected.maxHealth, 200)
-	selected.health = selected.maxHealth
-
-	to_chat(selected, span_userdanger("Hello world!"))
-	to_chat(selected, span_warning("Due to freak radiation and/or chemicals \
-		and/or lucky chance, you have gained human level intelligence \
-		and the ability to speak and understand human language!"))
-	announce_to_ghosts(selected)
+/datum/round_event/voidcrew/sentience/all
+	role_name = "ship-wide animal uplift"
+	animals_to_uplift = INFINITY

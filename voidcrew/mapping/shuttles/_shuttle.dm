@@ -6,6 +6,12 @@
 	///Short name of the ship
 	var/short_name
 
+	/// Player-facing summary shown on the hull shelf in the shipyard and in the ship
+	/// catalog. A sentence or three on what the hull is and how it plays, so someone
+	/// can tell it apart from the rest of the shelf before spending parts on it.
+	/// Falls back to a generated "N-class with capacity for N crew" line when unset.
+	var/catalog_desc
+
 	/**
 	 * Class-based part requirements for unlocking this ship.
 	 * Format: list("combat" = X, "science" = Y, "trade" = Z, "misc" = W)
@@ -31,6 +37,12 @@
 	/// List of available theme IDs for this ship class (e.g., list("medical", "syndicate", "mining"))
 	/// If set, ship has selectable themes. If empty/null, ship has no theme selection.
 	var/list/available_themes
+	/// Keeps a hull out of every player-facing list (dev/test hulls). Admins can still
+	/// spawn it with Spawn Specific Ship. See is_player_purchasable_ship().
+	var/player_hidden = FALSE
+	/// Puts a non-modular hull on the shelf despite the modular-only rule (curated
+	/// joke/legacy hulls like the pills). See is_player_purchasable_ship().
+	var/force_purchasable = FALSE
 
 /datum/map_template/shuttle/voidcrew/New()
 	. = ..()

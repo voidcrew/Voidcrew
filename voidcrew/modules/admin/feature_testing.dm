@@ -6,7 +6,8 @@
  *
  * - Vestige system: surface a chosen ruin, hand a chosen trial to a player,
  *   force-fulfill it, grant boons directly, inspect or wipe a player's ledger.
- * - Zone loot: spawn any cache with a forced zone tier, preview every table.
+ * - Zone loot: spawn any cache with a forced zone tier, preview every table,
+ *   spawn every rare-loot unique at once.
  * - Dynamic events: fire a chosen event at a chosen ship.
  * - Missions: hand a chosen mission type to a ship, force-resolve any active one.
  * - Trade: grant vouchers, reveal rare rumor-chart ruins, spawn gun blueprints.
@@ -410,6 +411,47 @@ ADMIN_VERB(preview_zone_loot_tables, R_ADMIN|R_DEBUG, "Loot: Preview Zone Tables
 	popup.set_content(html.Join(""))
 	popup.open()
 	BLACKBOX_LOG_ADMIN_VERB("Preview Zone Loot Tables")
+
+ADMIN_VERB(spawn_all_uniques, R_ADMIN|R_DEBUG, "Loot: Spawn All Uniques", "Spawn every rare-loot unique in rows south of you, one row per cache theme.", ADMIN_CATEGORY_DEBUG)
+	var/turf/origin = get_turf(user.mob)
+	if(!origin)
+		to_chat(user, span_warning("You need a physical location to spawn the uniques at."))
+		return
+	// The rare tables mix uniques with stock filler, and "unique" is defined by
+	// the trait rather than a hand-kept list: spawn each table entry and keep it
+	// only if it carries TRAIT_NO_REPLICATE (every unique ADD_TRAITs it in
+	// Initialize, so this never drifts when items are added or cut). Companion
+	// spawns (the Vow's twin ring, No Quarter's ammo kit) ride along with their
+	// owner automatically.
+	var/list/seen_types = list()
+	var/list/summary = list()
+	var/total = 0
+	var/row = 0
+	for(var/theme_path in GLOB.loot_themes)
+		var/datum/loot_theme/theme = GLOB.loot_themes[theme_path]
+		var/col = 0
+		for(var/list/table in list(theme.rare_loot_green, theme.rare_loot_yellow, theme.rare_loot_red))
+			for(var/entry in table)
+				if(seen_types[entry])
+					continue
+				seen_types[entry] = TRUE
+				var/turf/drop = locate(origin.x + col, origin.y - 1 - row, origin.z) || origin
+				var/atom/movable/candidate = new entry(drop)
+				if(!HAS_TRAIT(candidate, TRAIT_NO_REPLICATE))
+					qdel(candidate)
+					continue
+				col++
+				total++
+		if(col)
+			summary += "[theme.name] [col]"
+			row++
+	if(!total)
+		to_chat(user, span_warning("No uniques found in any rare loot table."))
+		return
+	to_chat(user, span_notice("Spawned [total] uniques south of you, one row per theme, green to red running east: [summary.Join(", ")]."))
+	message_admins("[key_name_admin(user)] spawned all [total] rare-loot uniques at [ADMIN_VERBOSEJMP(origin)].")
+	log_admin("[key_name(user)] spawned all [total] rare-loot uniques.")
+	BLACKBOX_LOG_ADMIN_VERB("Spawn All Uniques")
 
 // ===== DYNAMIC EVENTS =====
 

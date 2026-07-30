@@ -45,7 +45,9 @@
 	if(loading)
 		return
 	loading = TRUE
-	var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(planet, TRUE, ruin_type = template)
+	// The band comes from where the marker actually sits, not from SSmapping's
+	// roundstart table - a dynamic planet has no entry there to look up.
+	var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(planet, TRUE, ruin_type = template, zone_band = SSovermap.get_zone_band_for_turf(get_turf(src)))
 	mapzone = dynamic_encounter_values[1]
 	reserve_dock = dynamic_encounter_values[2]
 	reserve_dock_secondary = dynamic_encounter_values[3]

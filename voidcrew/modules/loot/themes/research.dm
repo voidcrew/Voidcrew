@@ -34,6 +34,7 @@
 		/obj/item/reagent_containers/cup/beaker/noreact = 4,
 		/obj/item/raw_anomaly_core/random = 4,
 		/obj/item/blueprint/gun/laser_carbine = 3,
+		/obj/item/ship_parts/science = 7,
 	)
 	loot_red = list(
 		/obj/item/stack/ore/bluespace_crystal/refined = 10,
@@ -47,6 +48,7 @@
 		/obj/item/reagent_containers/cup/beaker/bluespace = 3,
 		/obj/item/assembly/signaler/anomaly/grav = 3,
 		/obj/item/storage/backpack/holding = 2,
+		/obj/item/ship_parts/science = 10,
 	)
 	// Rare tables: surviving stock entries + this theme's uniques at ~4
 	// (see voidcrew/modules/loot/uniques/research.dm and the design doc)

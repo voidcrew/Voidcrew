@@ -1,0 +1,80 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/modular_map_connector,
+/obj/structure/safe,
+/obj/effect/turf_decal/delivery,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/sign/poster/official/high_class_martini/directional/south,
+/turf/open/floor/carpet/neon/simple/pink/nodots,
+/area/template_noop)
+"l" = (
+/turf/template_noop,
+/area/template_noop)
+"z" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot_red,
+/turf/open/floor/iron/dollhouse/checker,
+/area/template_noop)
+"N" = (
+/obj/structure/closet/crate/secure{
+	name = "treasure chest"
+	},
+/obj/effect/spawner/random/maintenance/three,
+/obj/item/toy/plush/unicorn,
+/obj/item/storage/fancy/heart_box,
+/obj/item/coin/silver,
+/obj/effect/turf_decal/delivery,
+/obj/machinery/light/warm{
+	dir = 4
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/template_noop)
+"O" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dollhouse/checker,
+/area/template_noop)
+"R" = (
+/obj/structure/closet/secure_closet/personal{
+	name = "jewellery locker"
+	},
+/obj/effect/turf_decal/delivery,
+/obj/structure/sign/departments/vault/directional/south,
+/turf/open/floor/iron/dollhouse/white,
+/area/template_noop)
+"T" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/turf_decal/trimline/white/filled/line{
+	color = "#ff9ecd";
+	dir = 8
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/template_noop)
+"Z" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/bot_red,
+/turf/open/floor/iron/dollhouse/checker,
+/area/template_noop)
+
+(1,1,1) = {"
+Z
+T
+b
+"}
+(2,1,1) = {"
+z
+R
+l
+"}
+(3,1,1) = {"
+O
+N
+l
+"}

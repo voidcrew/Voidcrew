@@ -2,10 +2,11 @@
  * # Occult uniques — the reliquary casket
  *
  * The six named prizes for `/obj/structure/closet/crate/zone_loot/occult/rare`
- * (see `voidcrew/modules/loot/zone_loot.dm`). Every item here is a subtype of
- * an existing, already-sprited item so no new DMI assets are required; see
- * the per-item comment for its sprite donor and any flavor liberties taken
- * to make that donor fit.
+ * (see `voidcrew/modules/loot/zone_loot.dm`). Each item subtypes an existing
+ * item for its behavior; the candle, gloves and crook carry custom sprites in
+ * `voidcrew/modules/loot/icons/uniques.dmi` (plus a worn glove state in
+ * `uniques_worn.dmi`), and the rest inherit their donor's sprite — see the
+ * per-item comment for which, and for any flavor liberties taken.
  *
  * Every unique in this file carries TRAIT_NO_REPLICATE (voidcrew/_DEFINES/loot.dm)
  * so future duplicators (e.g. the Helios pattern stamp) refuse to copy them.
@@ -18,7 +19,10 @@
 // =========================================================================
 /// Trait source key for the stasis pallbearer's gloves apply to a carried corpse
 #define PALLBEARER_STASIS_TRAIT "pallbearer_gloves"
-/// Trait source key for the pacification confessor's stole applies to a grab victim
+/// Blocker bit the gloves hand to /datum/component/rot to pause bodily rot.
+/// That component's own blockers are bits 0-2 (code/datums/components/rot.dm), so bit 3 is ours alone.
+#define PALLBEARER_ROT_BLOCKER (1 << 3)
+/// Trait source key for the pacification confessor's stole applies to whoever it's pulling
 #define CONFESSOR_STOLE_TRAIT "confessor_stole"
 /// How far the censer scans for wildlife to keep the peace with
 #define CENSER_SCAN_RANGE 7
@@ -32,13 +36,16 @@
 #define VOW_PULL_COOLDOWN (30 SECONDS)
 /// Max beasts a single Shepherd's crook can keep in its flock at once
 #define CROOK_MAX_FLOCK 3
+/// Cooldown between taming taps with the crook
+#define CROOK_TAME_COOLDOWN (5 SECONDS)
 
 // =========================================================================
 // GREEN — Widow's candle
 // Subtypes /obj/item/flashlight/flare/candle (code/game/objects/items/devices/flashlight.dm)
-// wholesale: icon, icon_state, inhand states, wax-level overlay logic all
-// inherited verbatim. Only the ignition hook and a one-shot ghost prompt are
-// new.
+// for its fuel/wax-level/ignition behavior. Custom sprites live in
+// uniques.dmi as widow_candle1/2/3 plus a lit (3-frame flicker) state for
+// each wax level, so every state the parent's update_icon_state can ask for
+// exists. Inhand states stay the vanilla candle ones.
 // =========================================================================
 
 /**
@@ -51,14 +58,22 @@
  */
 /obj/item/flashlight/flare/candle/widows
 	name = "widow's candle"
-	desc = "A squat candle of gray wax. Light it beside a corpse and the dead get one last chance to speak."
-	icon_state = "candle1"
+	desc = "A candle of gray wax with a plain cotton wick. Light it beside a corpse and the dead get one last chance to speak."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "widow_candle1"
 	/// Has this candle already made its one offer to speak for the dead?
 	var/last_words_spoken = FALSE
 
 /obj/item/flashlight/flare/candle/widows/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
+
+/// The parent points icon_state at the vanilla candle states; swap in ours.
+/// Runs after the parent so its inhand_icon_state assignment (a vanilla state
+/// in items_lefthand/righthand.dmi, which we don't override) still stands.
+/obj/item/flashlight/flare/candle/widows/update_icon_state()
+	. = ..()
+	icon_state = "widow_candle[current_wax_level][light_on ? "_lit" : ""]"
 
 /obj/item/flashlight/flare/candle/widows/try_light_candle(obj/item/fire_starter, mob/user)
 	. = ..()
@@ -86,7 +101,7 @@
 	// Consumed here, before the (blocking) prompt: the offer is one-shot
 	// whether or not they take it, matching "before the light gutters."
 	last_words_spoken = TRUE
-	to_chat(ghost, span_purple(span_italics("A candle gutters to life beside your body. For a moment, you could speak through the flame.")))
+	to_chat(ghost, span_purple(span_italics("Someone lit a candle next to your body. You have 30 seconds to say one last thing through it.")))
 	var/final_words = tgui_input_text(
 		ghost,
 		"Speak through the candle's flame? Anyone nearby will hear it. Leave blank to stay silent.",
@@ -98,61 +113,86 @@
 	if(QDELETED(src) || QDELETED(departed) || !final_words || !length(final_words))
 		return
 
-	src.audible_message(span_purple(span_italics("The candle gutters, and a voice drifts from the flame: \"[final_words]\"")))
+	src.audible_message(span_purple(span_italics("The flame dips, and a voice comes out of it: \"[final_words]\"")))
 	if(fuel != INFINITY || !can_be_extinguished)
 		turn_off()
 
 // =========================================================================
 // GREEN — Pallbearer's gloves
 // Subtypes /obj/item/clothing/gloves/color/black (code/modules/clothing/gloves/color.dm)
-// verbatim for icon/icon_state/protection values.
+// for its protection values; icon/worn_icon are custom states in uniques.dmi
+// and uniques_worn.dmi. The parent's greyscale setup only feeds the inhand
+// sprites, so overriding icon/icon_state here is safe.
 // =========================================================================
 
 /**
  * While worn: dragging or carrying anything doesn't slow the wearer down
  * (negates the game's normal "dragging a limp body" slowdown, not just for
  * corpses specifically — the gloves don't discriminate), and any corpse the
- * wearer is actively pulling is held in TRAIT_STASIS, which halts the
- * dead-metabolization/organ decay pass in Life() — i.e. it stops rotting
- * while in the wearer's care.
+ * wearer is dragging or fireman-carrying is held out of decay until they let
+ * go of it.
  *
- * Scope note: stasis is only applied/removed at the moment a pull starts or
- * stops. A living pull target who dies mid-drag isn't retroactively caught;
- * re-grabbing them (or a fresh pull) will.
+ * "Held out of decay" means both of the game's corpse decay paths at once:
+ * - TRAIT_STASIS, which makes /mob/living/carbon/Life() skip handle_organs(),
+ *   the pass that runs organ decay on a dead body (code/modules/mob/living/carbon/life.dm).
+ * - /datum/component/rot paused via its own rest()/start_up() blocker system,
+ *   which is what actually rots a body and hands out diseases on contact. It
+ *   runs off world.time, not Life(), so TRAIT_STASIS alone does nothing to it.
+ *   rest() banks the elapsed time, so a body picked up and put down repeatedly
+ *   doesn't lose or gain rot progress.
+ *
+ * Every mob the wearer is dragging or carrying is watched for death, revival
+ * and deletion, so someone who dies mid-drag is caught without re-grabbing
+ * them, and someone revived mid-drag comes straight back out of stasis.
  */
 /obj/item/clothing/gloves/color/black/pallbearer
 	name = "pallbearer's gloves"
-	desc = "Black cotton gloves, worn thin at the palms. Nothing you drag slows you down, and corpses you're pulling stop rotting."
+	desc = "Black cotton gloves, worn thin at the palms. Nothing you drag slows you down, and any corpse you're dragging or carrying stops decaying until you let go."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "pallbearer_gloves"
+	worn_icon = 'voidcrew/modules/loot/icons/uniques_worn.dmi'
+	worn_icon_state = "pallbearer_gloves"
 	/// The wearer's own slowed_by_drag value, saved so we can restore it exactly on removal
 	var/restore_slowed_by_drag = TRUE
 	/// Whether we're actually worn on the hands and negating drag right now —
 	/// dropped() fires for hand-drops too, and must not "restore" anything then
 	var/drag_negated = FALSE
-	/// The corpse we've currently put into stasis for the wearer, if any
-	var/mob/living/stasis_target
+	/// Who's wearing us on their hands, if anyone
+	var/mob/living/current_wearer
+	/// Every mob the wearer is currently dragging or carrying, dead or alive — we hold death/revive/deletion hooks on all of them
+	var/list/mob/living/watched = list()
+	/// The subset of watched that is dead and currently held out of decay
+	var/list/mob/living/preserved = list()
 
 /obj/item/clothing/gloves/color/black/pallbearer/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
 /obj/item/clothing/gloves/color/black/pallbearer/Destroy()
-	release_stasis_target()
+	unwatch_all()
+	current_wearer = null
 	return ..()
 
 /obj/item/clothing/gloves/color/black/pallbearer/equipped(mob/living/user, slot, initial)
 	. = ..()
 	if(!(slot & ITEM_SLOT_GLOVES))
 		return
+	current_wearer = user
 	restore_slowed_by_drag = user.slowed_by_drag
 	drag_negated = TRUE
 	user.slowed_by_drag = FALSE
 	user.update_pull_movespeed()
-	RegisterSignal(user, COMSIG_ATOM_START_PULL, PROC_REF(on_start_pull))
-	RegisterSignal(user, COMSIG_ATOM_NO_LONGER_PULLING, PROC_REF(on_stop_pulling))
-	if(isliving(user.pulling))
-		var/mob/living/already_pulling = user.pulling
-		if(already_pulling.stat == DEAD)
-			apply_stasis(already_pulling)
+	// /mob/living/start_pulling doesn't call its /atom/movable parent, so
+	// COMSIG_ATOM_START_PULL never fires for a person pulling something —
+	// COMSIG_LIVING_START_PULL is the one that does (code/modules/mob/living/living.dm).
+	// The buckle pair covers fireman carries.
+	RegisterSignals(user, list(
+		COMSIG_LIVING_START_PULL,
+		COMSIG_ATOM_NO_LONGER_PULLING,
+		COMSIG_MOVABLE_BUCKLE,
+		COMSIG_MOVABLE_UNBUCKLE,
+	), PROC_REF(on_load_changed))
+	refresh_pallbearing()
 
 /obj/item/clothing/gloves/color/black/pallbearer/dropped(mob/living/user, silent = FALSE)
 	. = ..()
@@ -161,34 +201,85 @@
 	drag_negated = FALSE
 	user.slowed_by_drag = restore_slowed_by_drag
 	user.update_pull_movespeed()
-	UnregisterSignal(user, list(COMSIG_ATOM_START_PULL, COMSIG_ATOM_NO_LONGER_PULLING))
-	release_stasis_target()
+	UnregisterSignal(user, list(
+		COMSIG_LIVING_START_PULL,
+		COMSIG_ATOM_NO_LONGER_PULLING,
+		COMSIG_MOVABLE_BUCKLE,
+		COMSIG_MOVABLE_UNBUCKLE,
+	))
+	current_wearer = null
+	unwatch_all()
 
-/// Puts a freshly-grabbed corpse into stasis for as long as we're pulling it
-/obj/item/clothing/gloves/color/black/pallbearer/proc/on_start_pull(mob/living/source, atom/movable/pulled_atom, state, force)
+/// The wearer picked something up, put something down, or swapped what they're dragging
+/obj/item/clothing/gloves/color/black/pallbearer/proc/on_load_changed(datum/source)
 	SIGNAL_HANDLER
-	release_stasis_target()
-	if(!isliving(pulled_atom))
+	refresh_pallbearing()
+
+/// Recomputes who we should be preserving right now: whatever the wearer is dragging, plus anyone they're carrying
+/obj/item/clothing/gloves/color/black/pallbearer/proc/refresh_pallbearing()
+	var/list/mob/living/carrying = list()
+	if(current_wearer && !QDELETED(current_wearer))
+		if(isliving(current_wearer.pulling))
+			carrying += current_wearer.pulling
+		for(var/mob/living/rider in current_wearer.buckled_mobs)
+			carrying |= rider
+	for(var/mob/living/let_go as anything in watched - carrying)
+		unwatch(let_go)
+	for(var/mob/living/held as anything in carrying)
+		if(!(held in watched))
+			watch(held)
+		if(held.stat == DEAD)
+			begin_preserving(held)
+		else
+			stop_preserving(held)
+
+/// Starts tracking a mob the wearer has hold of, alive or dead
+/obj/item/clothing/gloves/color/black/pallbearer/proc/watch(mob/living/held)
+	watched |= held
+	RegisterSignals(held, list(COMSIG_LIVING_DEATH, COMSIG_LIVING_REVIVE), PROC_REF(on_held_state_changed), override = TRUE)
+	RegisterSignal(held, COMSIG_QDELETING, PROC_REF(on_held_deleted), override = TRUE)
+
+/obj/item/clothing/gloves/color/black/pallbearer/proc/unwatch(mob/living/held)
+	stop_preserving(held)
+	watched -= held
+	if(!QDELETED(held))
+		UnregisterSignal(held, list(COMSIG_LIVING_DEATH, COMSIG_LIVING_REVIVE, COMSIG_QDELETING))
+
+/obj/item/clothing/gloves/color/black/pallbearer/proc/unwatch_all()
+	for(var/mob/living/held as anything in watched.Copy())
+		unwatch(held)
+
+/// Someone we're carrying just died or came back — recheck whether they should be preserved
+/obj/item/clothing/gloves/color/black/pallbearer/proc/on_held_state_changed(mob/living/source)
+	SIGNAL_HANDLER
+	refresh_pallbearing()
+
+/obj/item/clothing/gloves/color/black/pallbearer/proc/on_held_deleted(datum/source)
+	SIGNAL_HANDLER
+	watched -= source
+	preserved -= source
+
+/// Stops both decay paths on a corpse for as long as the wearer has hold of it
+/obj/item/clothing/gloves/color/black/pallbearer/proc/begin_preserving(mob/living/corpse)
+	if(corpse in preserved)
 		return
-	var/mob/living/corpse = pulled_atom
-	if(corpse.stat == DEAD)
-		apply_stasis(corpse)
-
-/// Releases stasis the moment we stop pulling, regardless of why
-/obj/item/clothing/gloves/color/black/pallbearer/proc/on_stop_pulling(mob/living/source, atom/movable/old_pulling)
-	SIGNAL_HANDLER
-	release_stasis_target()
-
-/obj/item/clothing/gloves/color/black/pallbearer/proc/apply_stasis(mob/living/corpse)
+	preserved += corpse
 	ADD_TRAIT(corpse, TRAIT_STASIS, PALLBEARER_STASIS_TRAIT)
-	stasis_target = corpse
+	var/datum/component/rot/decay = corpse.GetComponent(/datum/component/rot)
+	decay?.rest(PALLBEARER_ROT_BLOCKER)
+	if(current_wearer)
+		to_chat(current_wearer, span_notice("[corpse] stops decaying while you've got hold of [corpse.p_them()]."))
 
-/obj/item/clothing/gloves/color/black/pallbearer/proc/release_stasis_target()
-	if(!stasis_target)
+/obj/item/clothing/gloves/color/black/pallbearer/proc/stop_preserving(mob/living/corpse)
+	if(!(corpse in preserved))
 		return
-	if(!QDELETED(stasis_target))
-		REMOVE_TRAIT(stasis_target, TRAIT_STASIS, PALLBEARER_STASIS_TRAIT)
-	stasis_target = null
+	preserved -= corpse
+	if(QDELETED(corpse))
+		return
+	REMOVE_TRAIT(corpse, TRAIT_STASIS, PALLBEARER_STASIS_TRAIT)
+	// re-fetched rather than cached: reviving the mob deletes its rot component
+	var/datum/component/rot/decay = corpse.GetComponent(/datum/component/rot)
+	decay?.start_up(PALLBEARER_ROT_BLOCKER)
 
 // =========================================================================
 // YELLOW — Censer of the Quiet Parish
@@ -353,14 +444,19 @@
 // =========================================================================
 
 /**
- * While worn: whoever the wearer holds in an aggressive-or-stronger grab
- * gets TRAIT_PACIFISM for the duration of that grab — they can't fight, but
- * they can still talk. Releasing the grab (or downgrading below aggressive,
- * or the wearer taking the stole off) lifts it immediately.
+ * While worn: whoever the wearer is pulling gets TRAIT_PACIFISM for as long
+ * as the pull lasts — they can't attack anyone, but they can still talk, walk
+ * out of the pull, and resist out of a grab. Letting go (or the wearer taking
+ * the stole off) lifts it immediately.
+ *
+ * Keyed to plain pulling rather than grab state: an aggressive grab already
+ * locks the victim out of acting, so a pacifism rider on it did nothing. A
+ * passive pull is the one hold where the victim can still fight back, so
+ * that's where the stole is worth something.
  */
 /obj/item/clothing/neck/scarf/purple/confessor_stole
 	name = "confessor's stole"
-	desc = "A purple stole gone gray at the fold. Anyone you have in an aggressive grab can't bring themselves to fight back."
+	desc = "A purple stole gone gray at the fold. Anyone you're pulling can't bring themselves to attack, though they can still talk and pull away."
 	greyscale_colors = "#6E6079#6E6079"
 	/// Who we're currently pacifying, if anyone
 	var/mob/living/confessed
@@ -377,32 +473,50 @@
 	. = ..()
 	if(!(slot & ITEM_SLOT_NECK))
 		return
-	RegisterSignal(user, COMSIG_MOVABLE_SET_GRAB_STATE, PROC_REF(on_wearer_grab_state))
+	// COMSIG_LIVING_START_PULL, not COMSIG_ATOM_START_PULL: /mob/living/start_pulling
+	// never calls its /atom/movable parent, so the atom-level one never fires for a person.
+	RegisterSignal(user, COMSIG_LIVING_START_PULL, PROC_REF(on_wearer_pull))
+	RegisterSignal(user, COMSIG_ATOM_NO_LONGER_PULLING, PROC_REF(on_wearer_let_go))
+	if(isliving(user.pulling))
+		begin_confession(user.pulling)
 
 /obj/item/clothing/neck/scarf/purple/confessor_stole/dropped(mob/living/user, silent = FALSE)
 	. = ..()
-	UnregisterSignal(user, COMSIG_MOVABLE_SET_GRAB_STATE)
+	UnregisterSignal(user, list(COMSIG_LIVING_START_PULL, COMSIG_ATOM_NO_LONGER_PULLING))
 	release_confession()
 
-/// Fires whenever the wearer's own grab_state changes (grab_state and pulling live on the grabber, not the victim)
-/obj/item/clothing/neck/scarf/purple/confessor_stole/proc/on_wearer_grab_state(mob/living/wearer, newstate)
+/// The wearer started pulling something — any pull counts, passive included
+/obj/item/clothing/neck/scarf/purple/confessor_stole/proc/on_wearer_pull(mob/living/wearer, atom/movable/pulled_atom, state, force)
 	SIGNAL_HANDLER
-	if(newstate < GRAB_AGGRESSIVE || !isliving(wearer.pulling))
+	if(!isliving(pulled_atom))
 		release_confession()
 		return
-	var/mob/living/target = wearer.pulling
+	begin_confession(pulled_atom)
+
+/obj/item/clothing/neck/scarf/purple/confessor_stole/proc/on_wearer_let_go(mob/living/wearer, atom/movable/old_pulling)
+	SIGNAL_HANDLER
+	release_confession()
+
+/obj/item/clothing/neck/scarf/purple/confessor_stole/proc/begin_confession(mob/living/target)
 	if(target == confessed)
 		return
 	release_confession()
 	confessed = target
 	ADD_TRAIT(confessed, TRAIT_PACIFISM, CONFESSOR_STOLE_TRAIT)
-	to_chat(confessed, span_notice("Something about your captor's grip takes the fight right out of you. You can still talk."))
+	RegisterSignal(confessed, COMSIG_QDELETING, PROC_REF(on_confessed_deleted), override = TRUE)
+	to_chat(confessed, span_notice("The hold on you takes the fight right out of you. You can't attack anyone until you're loose, but you can still talk."))
 
 /obj/item/clothing/neck/scarf/purple/confessor_stole/proc/release_confession()
 	if(!confessed)
 		return
 	if(!QDELETED(confessed))
 		REMOVE_TRAIT(confessed, TRAIT_PACIFISM, CONFESSOR_STOLE_TRAIT)
+		UnregisterSignal(confessed, COMSIG_QDELETING)
+		to_chat(confessed, span_notice("You could fight back now, if you wanted to."))
+	confessed = null
+
+/obj/item/clothing/neck/scarf/purple/confessor_stole/proc/on_confessed_deleted(datum/source)
+	SIGNAL_HANDLER
 	confessed = null
 
 // =========================================================================
@@ -603,8 +717,10 @@
 
 // =========================================================================
 // RED — Shepherd's crook
-// Subtypes /obj/item/cane (code/game/objects/items/weaponry.dm) verbatim for
-// icon/icon_state/inhand states.
+// Subtypes /obj/item/cane (code/game/objects/items/weaponry.dm) for its
+// weight class, force and inhand states; the item sprite is a custom state in
+// uniques.dmi. It's a WEIGHT_CLASS_SMALL cane, not an oversized two-hander,
+// so the standard 32x32 melee inhand files still apply.
 // =========================================================================
 
 /**
@@ -614,16 +730,24 @@
  * stop attacking their tamer — code/modules/mob/living/basic/lavaland/goliath/goliath.dm,
  * code/modules/mob/living/basic/icemoon/wolf/wolf.dm), plus the standard
  * obeys_commands component (follow + protect owner) if the beast has an
- * ai_controller. Up to CROOK_MAX_FLOCK beasts at once; one dying (or being
- * deleted) frees its slot. Megafauna — both /mob/living/simple_animal/hostile/megafauna
+ * ai_controller. Megafauna — both /mob/living/simple_animal/hostile/megafauna
  * and this fork's /mob/living/basic/boss tier, per the ismegafauna() macro —
  * decline the tap outright: no taming, no damage, just a refusal.
+ *
+ * CROOK_MAX_FLOCK beasts at once, CROOK_TAME_COOLDOWN between taps. A full
+ * flock refuses new taps rather than dropping an existing follower, since
+ * silently losing the beast you spent a tap on reads worse than being told
+ * no; using the crook in hand dismisses the whole flock to make room. A slot
+ * also frees up when a follower dies or is deleted.
  */
 /obj/item/cane/shepherds_crook
 	name = "shepherd's crook"
-	desc = "A tall crook of black wood, worn smooth as a church rail. Tap a hostile beast with it and it'll follow you instead."
+	desc = "A tall crook of black wood, worn smooth as a church rail. Tap a hostile beast with it and it'll follow you instead. It handles three at a time, with 5 seconds between taps."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "shepherds_crook"
 	/// The beasts currently following us
 	var/list/mob/living/basic/flock = list()
+	COOLDOWN_DECLARE(tame_cooldown)
 
 /obj/item/cane/shepherds_crook/Initialize(mapload)
 	. = ..()
@@ -634,6 +758,32 @@
 		UnregisterSignal(beast, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
 	flock = null
 	return ..()
+
+/obj/item/cane/shepherds_crook/examine(mob/user, thats)
+	. = ..()
+	. += span_notice("Following you: [length(flock)] of [CROOK_MAX_FLOCK]. Use it in your hand to send them all away.")
+	if(!COOLDOWN_FINISHED(src, tame_cooldown))
+		. += span_notice("Ready to tame again in [DisplayTimeText(COOLDOWN_TIMELEFT(src, tame_cooldown))].")
+
+/obj/item/cane/shepherds_crook/attack_self(mob/user, modifiers)
+	. = ..()
+	if(!length(flock))
+		balloon_alert(user, "nothing following you")
+		return
+	var/sent_off = length(flock)
+	dismiss_flock()
+	balloon_alert(user, "flock dismissed ([sent_off])")
+	user.visible_message(
+		span_notice("[user] waves [src], and the beasts following [user.p_them()] wander off."),
+		span_notice("You wave [src]. The beasts following you wander off. They won't turn on you."),
+	)
+
+/// Sends every follower away: frees their slots and stops the follow behavior. They stay friendly, they just stop tagging along.
+/obj/item/cane/shepherds_crook/proc/dismiss_flock()
+	for(var/mob/living/basic/beast as anything in flock.Copy())
+		if(!QDELETED(beast))
+			qdel(beast.GetComponent(/datum/component/obeys_commands))
+		release_flock_member(beast)
 
 /obj/item/cane/shepherds_crook/attack(mob/living/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
 	if(try_tame(target_mob, user))
@@ -661,7 +811,11 @@
 		// Already friendly to us (someone else's pet, neutral critter, etc) — let a normal hit happen instead of pretending to tame it.
 		return FALSE
 	if(length(flock) >= CROOK_MAX_FLOCK)
-		balloon_alert(user, "the flock is full")
+		balloon_alert(user, "flock full ([length(flock)]/[CROOK_MAX_FLOCK])")
+		to_chat(user, span_warning("[src] only handles [CROOK_MAX_FLOCK] beasts at a time. Use it in your hand to send the ones you have away."))
+		return TRUE
+	if(!COOLDOWN_FINISHED(src, tame_cooldown))
+		balloon_alert(user, "[DisplayTimeText(COOLDOWN_TIMELEFT(src, tame_cooldown))] left")
 		return TRUE
 
 	if(beast.ai_controller)
@@ -674,6 +828,7 @@
 	beast.befriend(user)
 	beast.faction = user.faction.Copy()
 
+	COOLDOWN_START(src, tame_cooldown, CROOK_TAME_COOLDOWN)
 	flock += beast
 	RegisterSignal(beast, COMSIG_LIVING_DEATH, PROC_REF(on_flock_member_death))
 	RegisterSignal(beast, COMSIG_QDELETING, PROC_REF(on_flock_member_gone))
@@ -695,6 +850,7 @@
 	UnregisterSignal(beast, list(COMSIG_LIVING_DEATH, COMSIG_QDELETING))
 
 #undef PALLBEARER_STASIS_TRAIT
+#undef PALLBEARER_ROT_BLOCKER
 #undef CONFESSOR_STOLE_TRAIT
 #undef CENSER_SCAN_RANGE
 #undef CENSER_PATIENCE_BREAK_DURATION
@@ -702,3 +858,4 @@
 #undef VOW_PULL_CAP
 #undef VOW_PULL_COOLDOWN
 #undef CROOK_MAX_FLOCK
+#undef CROOK_TAME_COOLDOWN

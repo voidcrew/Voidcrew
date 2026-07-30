@@ -42,3 +42,8 @@
 
 // Missions
 #define TECHWEB_NODE_MISSION_LOGISTICS "mission_logistics"
+
+// Transporter
+#define TECHWEB_NODE_TRANSPORTER "transporter"
+#define TECHWEB_NODE_TRANSPORTER_TARGETING "transporter_targeting"
+#define TECHWEB_NODE_TRANSPORTER_BIOFILTER "transporter_biofilter"

@@ -30,16 +30,27 @@
  * Deviation from the design doc: the doc's suggested typepath was
  * /obj/item/listening_coin, but the "relay nearby speech" mechanic only
  * exists on /obj/item/radio and its subtypes, so this inherits from radio
- * instead and wears a coin's sprite.
+ * instead and wears a credit chit's sprite.
  */
 /obj/item/radio/listening_coin
 	name = "worn credit chit"
-	desc = "A worn credit-chit with a hairline seam. It's heavier than it should be."
-	// Sprite copied verbatim from /obj/item/coin (code/modules/mining/ores_coins.dm)
-	icon = 'icons/obj/economy.dmi'
-	icon_state = "coin"
-	worn_icon_state = "coin"
-	inhand_icon_state = null // coins don't render an inhand sprite either
+	desc = "A worn credit chit with a hairline seam down one side. It's heavier than a chit this size should be."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "credit_chit"
+	inhand_icon_state = null // too small to draw in someone's hand, same as a coin
+	// /obj/item/radio/update_overlays() adds its mic and speaker overlays
+	// ("m_idle"/"s_idle") as bare state names, which resolve against the radio's
+	// OWN icon file. Those states only exist in voice.dmi, so anywhere else
+	// BYOND falls back to that file's default state - in economy.dmi that's the
+	// magenta error sprite, which is what this used to render as. Headsets null
+	// them out for the same reason (code/game/objects/items/devices/radio/headset.dm).
+	overlay_speaker_idle = null
+	overlay_speaker_active = null
+	overlay_mic_idle = null
+	overlay_mic_active = null
+	// the inherited radio dog overlay would look for "credit_chit" in the corgi
+	// icon file and come up empty
+	dog_fashion = null
 	w_class = WEIGHT_CLASS_TINY
 	throw_speed = 3
 	throw_range = 7
@@ -78,7 +89,7 @@
 	if(user.stat != CONSCIOUS)
 		return
 	being_searched = TRUE
-	to_chat(user, span_notice("You start prying at the coin's seam..."))
+	to_chat(user, span_notice("You start prying at the chit's seam..."))
 	if(!do_after(user, 2 SECONDS, src))
 		being_searched = FALSE
 		return
@@ -86,7 +97,7 @@
 		return
 	user.visible_message(
 		span_warning("[user] cracks open [src], and a scorched hairline transmitter sparks and burns out inside!"),
-		span_warning("You crack the coin open — there's a bugged transmitter wired inside. It sparks and burns out in your hand."),
+		span_warning("You crack the chit open. There's a bugged transmitter wired inside, and it sparks and burns out in your hand."),
 	)
 	qdel(src)
 
@@ -122,7 +133,7 @@
  */
 /obj/item/clothing/gloves/courier
 	name = "courier's palm"
-	desc = "One thin kid-leather glove, fingertips shiny with use. Lifting something from a person's hands or pockets takes no time at all."
+	desc = "One thin kid-leather glove, fingertips shiny with use. Lifting something out of a person's hands or pockets takes no time at all, then the glove needs 30 seconds before it'll do it again."
 	// Sprite copied via subtyping botanic_leather (code/modules/clothing/gloves/botany.dm)
 	icon_state = "leather"
 	inhand_icon_state = null
@@ -131,21 +142,60 @@
 	/// Cooldown between instant strip/plant attempts.
 	COOLDOWN_DECLARE(snatch_cooldown)
 	var/snatch_cooldown_time = 30 SECONDS
+	/// Who is currently being shown the recharge alert, so we can clear it off
+	/// the right mob when the glove comes off.
+	var/mob/living/alerted_wearer
 
 /obj/item/clothing/gloves/courier/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
+/obj/item/clothing/gloves/courier/Destroy()
+	clear_recharge_alert()
+	return ..()
+
+/obj/item/clothing/gloves/courier/examine(mob/user)
+	. = ..()
+	if(COOLDOWN_FINISHED(src, snatch_cooldown))
+		. += span_notice("It's ready.")
+	else
+		. += span_notice("It's recharging. [DisplayTimeText(COOLDOWN_TIMELEFT(src, snatch_cooldown))] left.")
+
 /obj/item/clothing/gloves/courier/equipped(mob/user, slot)
 	. = ..()
 	if(slot & ITEM_SLOT_GLOVES)
-		RegisterSignal(user, COMSIG_TRY_STRIP, PROC_REF(on_try_strip))
+		RegisterSignal(user, COMSIG_TRY_STRIP, PROC_REF(on_try_strip), override = TRUE)
+		// picking the glove back up mid-cooldown should pick the countdown back up too
+		if(!COOLDOWN_FINISHED(src, snatch_cooldown))
+			show_recharge_alert(user)
 		return
 	UnregisterSignal(user, COMSIG_TRY_STRIP)
+	clear_recharge_alert()
 
 /obj/item/clothing/gloves/courier/dropped(mob/user)
 	. = ..()
 	UnregisterSignal(user, COMSIG_TRY_STRIP)
+	clear_recharge_alert()
+
+/// Puts the countdown alert on the wearer for whatever is left of the cooldown.
+/obj/item/clothing/gloves/courier/proc/show_recharge_alert(mob/living/wearer)
+	clear_recharge_alert()
+	if(!isliving(wearer))
+		return
+	var/time_left = COOLDOWN_TIMELEFT(src, snatch_cooldown)
+	if(time_left <= 0)
+		return
+	alerted_wearer = wearer
+	wearer.apply_status_effect(/datum/status_effect/syndicate_recharge/courier_palm, time_left)
+
+/// Takes the alert back off. Removing it early is silent - see the status
+/// effect's on_remove().
+/obj/item/clothing/gloves/courier/proc/clear_recharge_alert()
+	if(isnull(alerted_wearer))
+		return
+	if(!QDELETED(alerted_wearer))
+		alerted_wearer.remove_status_effect(/datum/status_effect/syndicate_recharge/courier_palm)
+	alerted_wearer = null
 
 /**
  * Signal handler for COMSIG_TRY_STRIP, fired on the wearer whenever they
@@ -156,22 +206,30 @@
 /obj/item/clothing/gloves/courier/proc/on_try_strip(mob/living/user, atom/strip_target, obj/item/relevant_item)
 	SIGNAL_HANDLER
 
-	if(!COOLDOWN_FINISHED(src, snatch_cooldown))
-		return NONE
 	if(!isliving(strip_target) || isnull(relevant_item))
 		return NONE
 
 	var/mob/living/target = strip_target
-	var/success = FALSE
-	if(relevant_item.loc == user)
-		success = try_plant(user, target, relevant_item)
-	else if(relevant_item.loc == target && is_hand_or_pocket_item(target, relevant_item))
-		success = try_snatch(user, target, relevant_item)
+	// planting only works into a free pocket, same as try_plant(), so don't
+	// claim the attempt (or moan about the cooldown) when there isn't one
+	var/planting = (relevant_item.loc == user) && !isnull(free_pocket_slot(target))
+	var/lifting = (relevant_item.loc == target && is_hand_or_pocket_item(target, relevant_item))
+	// anything else (armor, masks, ears) was never ours to speed up, so don't
+	// complain about the cooldown for it either
+	if(!planting && !lifting)
+		return NONE
 
+	if(!COOLDOWN_FINISHED(src, snatch_cooldown))
+		to_chat(user, span_warning("\The [src] is still recharging - [DisplayTimeText(COOLDOWN_TIMELEFT(src, snatch_cooldown))] left. You'll have to do this the slow way."))
+		return NONE
+
+	var/success = planting ? try_plant(user, target, relevant_item) : try_snatch(user, target, relevant_item)
 	if(!success)
 		return NONE
 
+	to_chat(user, span_notice("You [planting ? "plant [relevant_item] on [target]" : "lift [relevant_item] off [target]"] in one motion. \The [src] needs [DisplayTimeText(snatch_cooldown_time)] to recharge."))
 	COOLDOWN_START(src, snatch_cooldown, snatch_cooldown_time)
+	show_recharge_alert(user)
 	return COMPONENT_CANT_STRIP
 
 /obj/item/clothing/gloves/courier/proc/is_hand_or_pocket_item(mob/living/target, obj/item/relevant_item)
@@ -186,13 +244,17 @@
 	user.put_in_hands(relevant_item)
 	return TRUE
 
-/obj/item/clothing/gloves/courier/proc/try_plant(mob/living/user, mob/living/target, obj/item/relevant_item)
-	var/free_slot = NONE
+/// Which pocket, if either, is empty on the target. Null if both are full.
+/obj/item/clothing/gloves/courier/proc/free_pocket_slot(mob/living/target)
 	if(isnull(target.get_item_by_slot(ITEM_SLOT_LPOCKET)))
-		free_slot = ITEM_SLOT_LPOCKET
-	else if(isnull(target.get_item_by_slot(ITEM_SLOT_RPOCKET)))
-		free_slot = ITEM_SLOT_RPOCKET
-	if(!free_slot)
+		return ITEM_SLOT_LPOCKET
+	if(isnull(target.get_item_by_slot(ITEM_SLOT_RPOCKET)))
+		return ITEM_SLOT_RPOCKET
+	return null
+
+/obj/item/clothing/gloves/courier/proc/try_plant(mob/living/user, mob/living/target, obj/item/relevant_item)
+	var/free_slot = free_pocket_slot(target)
+	if(isnull(free_slot))
 		return FALSE
 	if(!user.temporarilyRemoveItemFromInventory(relevant_item))
 		return FALSE
@@ -217,12 +279,15 @@
  *    half of "AI tracking on you fails".
  *  - Hiding from silicon AI huds, mirroring /datum/element/digitalcamo's
  *    HideFromAIHuds/UnhideFromAIHuds pattern.
- *  - As a cosmetic stand-in for "cameras show static", nearby operational
- *    cameras get their own existing EMP-look icon state (base_icon_state +
- *    "_emp", see /obj/machinery/camera/update_icon_state()) flicked on a
- *    pulse. This is purely a visible flick() on the physical camera prop —
- *    it does not touch camera_enabled/network, so the feed itself keeps
- *    working for everyone watching it.
+ *  - As a cosmetic stand-in for "cameras show static", every operational
+ *    camera in range is held on its own existing EMP-look icon state
+ *    (base_icon_state + "_emp", see /obj/machinery/camera/update_icon_state())
+ *    for as long as the cuff is on. This is purely the physical camera prop's
+ *    sprite — it does not touch camera_enabled/network, so the feed itself
+ *    keeps working for everyone watching it.
+ *    The hold works by listening to COMSIG_ATOM_UPDATE_ICON_STATE, which the
+ *    camera sends at the END of its own update_icon_state(), so our write is
+ *    the last one and nothing can flip it back mid-effect.
  * Fresh root type: sprite copied verbatim from /obj/item/restraints/handcuffs
  * (code/game/objects/items/handcuffs.dm) rather than subtyping it, since
  * inheriting handcuffs would also inherit "cuff other people" combat behavior
@@ -230,7 +295,7 @@
  */
 /obj/item/static_cuff
 	name = "static cuff"
-	desc = "A wrist unit with no branding and a single switch, labeled in grease pencil: NO. Switched on, cameras and the AI can't track you."
+	desc = "A wrist unit with no branding and a single switch, labeled in grease pencil: NO. Switched on, the AI and camera consoles can't track you, and every camera around you sits there showing static. Runs about 4 minutes on a charge and recharges slowly while it's off."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "static_cuff"
 	worn_icon_state = "handcuff"
@@ -252,11 +317,16 @@
 	var/max_charge = 4 MINUTES
 	/// Recharge speed while off, as a fraction of real time.
 	var/recharge_rate = 0.25
-	/// Accumulated seconds since the last camera-static pulse.
-	var/camera_pulse_accum = 0
-	/// How often, in real seconds (matches camera_pulse_accum's unit, not deciseconds),
-	/// nearby cameras get a static flicker while active.
-	var/camera_pulse_interval = 4
+	/// Cameras currently held on their static sprite, so we can put every one
+	/// of them back exactly when we let go.
+	var/list/jammed_cameras
+	/// How far the static reaches, in tiles.
+	var/camera_range = 7
+	/// Accumulated seconds since the last sweep for cameras entering or leaving range.
+	var/camera_sweep_accum = 0
+	/// How often, in real seconds (matches camera_sweep_accum's unit, not
+	/// deciseconds), we re-sweep for cameras as the wearer moves around.
+	var/camera_sweep_interval = 2
 
 /obj/item/static_cuff/Initialize(mapload)
 	. = ..()
@@ -265,6 +335,7 @@
 
 /obj/item/static_cuff/Destroy()
 	set_active(FALSE)
+	release_all_cameras() // set_active() early-returns if it was already off
 	STOP_PROCESSING(SSobj, src)
 	return ..()
 
@@ -297,16 +368,19 @@
 		shielded_wearer = wearer
 		RegisterSignal(wearer, COMSIG_LIVING_CAN_TRACK, PROC_REF(on_can_track))
 		hide_from_ai_huds(wearer)
+		camera_sweep_accum = 0
+		sweep_cameras()
 		if(user)
-			to_chat(user, span_notice("You flip the switch. [src] hums faintly."))
+			to_chat(user, span_notice("You flip the switch. \The [src] hums faintly, and the cameras around you drop to static."))
 	else
 		active = FALSE
 		if(shielded_wearer)
 			UnregisterSignal(shielded_wearer, COMSIG_LIVING_CAN_TRACK)
 			unhide_from_ai_huds(shielded_wearer)
 			shielded_wearer = null
+		release_all_cameras()
 		if(user)
-			to_chat(user, span_notice("You flip the switch off."))
+			to_chat(user, span_notice("You flip the switch off. The cameras clear up."))
 	update_processing()
 
 /obj/item/static_cuff/proc/update_processing()
@@ -318,10 +392,10 @@
 /obj/item/static_cuff/process(seconds_per_tick)
 	if(active)
 		charge = max(charge - (seconds_per_tick SECONDS), 0)
-		camera_pulse_accum += seconds_per_tick
-		if(camera_pulse_accum >= camera_pulse_interval)
-			camera_pulse_accum = 0
-			pulse_nearby_cameras()
+		camera_sweep_accum += seconds_per_tick
+		if(camera_sweep_accum >= camera_sweep_interval)
+			camera_sweep_accum = 0
+			sweep_cameras()
 		if(charge <= 0)
 			set_active(FALSE)
 			return
@@ -334,16 +408,60 @@
 	SIGNAL_HANDLER
 	return COMPONENT_CANT_TRACK
 
-/// Cosmetic-only flicker of nearby cameras' existing EMP look — see the
-/// class doc comment for why this can't touch the actual feed.
-/obj/item/static_cuff/proc/pulse_nearby_cameras()
+/// Brings the set of held cameras in line with what's actually in range right
+/// now: cameras that just came into range get pinned, anything the wearer
+/// walked away from gets released. Cosmetic only — see the class doc comment
+/// for why this can't touch the actual feed.
+/obj/item/static_cuff/proc/sweep_cameras()
 	var/turf/here = get_turf(src)
-	if(!here)
+	var/list/should_be_jammed = list()
+	if(here)
+		for(var/obj/machinery/camera/nearby_camera in view(camera_range, here))
+			if(!nearby_camera.can_use())
+				continue
+			should_be_jammed += nearby_camera
+
+	// copy first: release_camera() edits jammed_cameras out from under us
+	for(var/obj/machinery/camera/old_camera as anything in jammed_cameras?.Copy())
+		if(!(old_camera in should_be_jammed))
+			release_camera(old_camera)
+
+	for(var/obj/machinery/camera/new_camera as anything in should_be_jammed)
+		jam_camera(new_camera)
+
+/// Pins one camera on its static sprite until we let go of it.
+/obj/item/static_cuff/proc/jam_camera(obj/machinery/camera/target_camera)
+	if(LAZYFIND(jammed_cameras, target_camera))
 		return
-	for(var/obj/machinery/camera/nearby_camera in view(7, here))
-		if(!nearby_camera.can_use())
-			continue
-		flick("[nearby_camera.base_icon_state]_emp", nearby_camera)
+	LAZYADD(jammed_cameras, target_camera)
+	RegisterSignal(target_camera, COMSIG_ATOM_UPDATE_ICON_STATE, PROC_REF(on_jammed_camera_update))
+	RegisterSignal(target_camera, COMSIG_QDELETING, PROC_REF(on_jammed_camera_deleted))
+	target_camera.update_appearance(UPDATE_ICON_STATE)
+
+/// Hands one camera back and lets it draw itself normally again.
+/obj/item/static_cuff/proc/release_camera(obj/machinery/camera/target_camera)
+	if(!LAZYFIND(jammed_cameras, target_camera))
+		return
+	LAZYREMOVE(jammed_cameras, target_camera)
+	UnregisterSignal(target_camera, list(COMSIG_ATOM_UPDATE_ICON_STATE, COMSIG_QDELETING))
+	if(!QDELETED(target_camera))
+		target_camera.update_appearance(UPDATE_ICON_STATE)
+
+/obj/item/static_cuff/proc/release_all_cameras()
+	for(var/obj/machinery/camera/held_camera as anything in jammed_cameras?.Copy())
+		release_camera(held_camera)
+	jammed_cameras = null
+
+/// COMSIG_ATOM_UPDATE_ICON_STATE fires at the tail of the camera's own
+/// update_icon_state(), so writing icon_state here is the last word and the
+/// static look holds steady instead of flickering.
+/obj/item/static_cuff/proc/on_jammed_camera_update(obj/machinery/camera/source)
+	SIGNAL_HANDLER
+	source.icon_state = "[source.isXRay(TRUE) ? "xray" : ""][source.base_icon_state]_emp"
+
+/obj/item/static_cuff/proc/on_jammed_camera_deleted(obj/machinery/camera/source)
+	SIGNAL_HANDLER
+	LAZYREMOVE(jammed_cameras, source)
 
 /// Mirrors /datum/element/digitalcamo's AI hud hiding (code/datums/elements/digitalcamo.dm).
 /obj/item/static_cuff/proc/hide_from_ai_huds(mob/living/target)
@@ -371,7 +489,7 @@
  */
 /obj/item/gun/ballistic/revolver/c38/housecall
 	name = "\"Housecall\""
-	desc = "An integrally-suppressed .38 revolver with a doctor's-bag handle. For patients who talk too much."
+	desc = "An integrally-suppressed .38 revolver with a doctor's-bag handle. Its rounds carry an anesthetic dart instead of a slug: 15 seconds of silence, 8 seconds of staggering, confusion, a chunk of stamina, and enough sedative to leave the target drowsy."
 	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
 	icon_state = "housecall"
 	// c38 sets base_icon_state = "c38" and ballistic/update_icon_state() rebuilds
@@ -397,15 +515,26 @@
 
 /obj/item/ammo_casing/c38/housecall
 	name = "subdermal .38 bullet casing"
-	desc = "A .38 bullet casing loaded with a hair-fine anesthetic dart instead of a slug."
+	desc = "A .38 bullet casing loaded with a hair-fine anesthetic dart instead of a slug. Whoever it hits can't talk for 15 seconds and has a hard time staying upright."
 	projectile_type = /obj/projectile/bullet/c38/housecall
 
-/// Modest damage; the payload is the mute, not the hole.
+/// Modest damage; the payload is the anesthetic, not the hole. The dart mutes,
+/// staggers, muddles and pushes the target toward sleep — enough to take
+/// someone out of a fight without killing them outright.
 /obj/projectile/bullet/c38/housecall
 	name = "subdermal dart"
 	damage = 15
+	stamina = 25
 	/// How long the anesthetic silences a hit target for.
 	var/mute_duration = 15 SECONDS
+	/// How long the target staggers for.
+	var/stagger_duration = 8 SECONDS
+	/// Confusion added on hit.
+	var/confusion_duration = 6 SECONDS
+	/// Drowsiness added on hit, capped so repeat hits can't stack it forever.
+	var/drowsy_duration = 10 SECONDS
+	/// Ceiling for the drowsiness this dart will push someone to.
+	var/drowsy_cap = 30 SECONDS
 
 /obj/projectile/bullet/c38/housecall/on_hit(atom/target, blocked, pierce_hit)
 	. = ..()
@@ -417,6 +546,10 @@
 	if(victim.stat == DEAD)
 		return .
 	victim.apply_status_effect(/datum/status_effect/silenced, mute_duration)
+	victim.adjust_staggered_up_to(stagger_duration, stagger_duration * 2)
+	victim.adjust_confusion(confusion_duration)
+	victim.adjust_drowsiness_up_to(drowsy_duration, drowsy_cap)
+	to_chat(victim, span_danger("Your throat closes up and the room tilts."))
 	return .
 
 // =============================================================================
@@ -453,7 +586,7 @@
 
 /obj/item/clothing/suit/hooded/cloak/second_shadow
 	name = "Second Shadow"
-	desc = "A heavy dark cloak that seems to move half a second after you do. With the hood up, a hit that would put you down leaves a decoy standing there instead."
+	desc = "A heavy dark cloak that seems to move half a second after you do. With the hood up, a hit that would put you down leaves a decoy standing there instead. 3 minute cooldown between saves."
 	// Custom folded-cloak obj icon. The worn sprite borrows the goliath cloak,
 	// darkened to match the flavor, copied into uniques_worn.dmi: the hood
 	// component (toggle_attached_clothing) overwrites worn_icon_state with
@@ -470,8 +603,14 @@
 	/// Cooldown between decoy triggers.
 	COOLDOWN_DECLARE(decoy_cooldown)
 	var/decoy_cooldown_time = 3 MINUTES
+	/// Stops "still recharging" from printing on every single hit in a beating.
+	COOLDOWN_DECLARE(fail_message_cooldown)
+	var/fail_message_cooldown_time = 10 SECONDS
 	/// How long the wearer stays invisible/displaced after triggering.
 	var/decoy_effect_duration = 3 SECONDS
+	/// Who is currently being shown the recharge alert, so we can clear it off
+	/// the right mob when the cloak comes off.
+	var/mob/living/alerted_wearer
 	/// The five "disabling hit" signals we intercept, mirroring stun_absorption's list.
 	var/static/list/intercepted_signals = list(
 		COMSIG_LIVING_STATUS_IMMOBILIZE,
@@ -485,6 +624,17 @@
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
+/obj/item/clothing/suit/hooded/cloak/second_shadow/Destroy()
+	clear_recharge_alert()
+	return ..()
+
+/obj/item/clothing/suit/hooded/cloak/second_shadow/examine(mob/user)
+	. = ..()
+	if(COOLDOWN_FINISHED(src, decoy_cooldown))
+		. += span_notice("It's ready. Put the hood up and it'll take the next hit that would put you down.")
+	else
+		. += span_notice("It's recharging. [DisplayTimeText(COOLDOWN_TIMELEFT(src, decoy_cooldown))] left.")
+
 /obj/item/clothing/suit/hooded/cloak/second_shadow/on_hood_up(obj/item/clothing/head/hooded/hood)
 	. = ..()
 	hood_up = TRUE
@@ -496,15 +646,40 @@
 /obj/item/clothing/suit/hooded/cloak/second_shadow/equipped(mob/user, slot)
 	. = ..()
 	if(slot & ITEM_SLOT_OCLOTHING)
-		RegisterSignals(user, intercepted_signals, PROC_REF(try_intercept))
+		RegisterSignals(user, intercepted_signals, PROC_REF(try_intercept), override = TRUE)
+		// putting the cloak back on mid-cooldown picks the countdown back up
+		if(!COOLDOWN_FINISHED(src, decoy_cooldown))
+			show_recharge_alert(user)
 		return
 	UnregisterSignal(user, intercepted_signals)
+	clear_recharge_alert()
 	hood_up = FALSE
 
 /obj/item/clothing/suit/hooded/cloak/second_shadow/dropped(mob/user)
 	. = ..()
 	UnregisterSignal(user, intercepted_signals)
+	clear_recharge_alert()
 	hood_up = FALSE
+
+/// Puts the countdown alert on the wearer for whatever is left of the cooldown.
+/obj/item/clothing/suit/hooded/cloak/second_shadow/proc/show_recharge_alert(mob/living/wearer)
+	clear_recharge_alert()
+	if(!isliving(wearer))
+		return
+	var/time_left = COOLDOWN_TIMELEFT(src, decoy_cooldown)
+	if(time_left <= 0)
+		return
+	alerted_wearer = wearer
+	wearer.apply_status_effect(/datum/status_effect/syndicate_recharge/second_shadow, time_left)
+
+/// Takes the alert back off. Removing it early is silent - see the status
+/// effect's on_remove().
+/obj/item/clothing/suit/hooded/cloak/second_shadow/proc/clear_recharge_alert()
+	if(isnull(alerted_wearer))
+		return
+	if(!QDELETED(alerted_wearer))
+		alerted_wearer.remove_status_effect(/datum/status_effect/syndicate_recharge/second_shadow)
+	alerted_wearer = null
 
 /// Signal handler for the incapacitation signals — see intercepted_signals.
 /// All five share the (source, amount, ignore_canstun) shape.
@@ -514,9 +689,14 @@
 	if(!hood_up || amount <= 0 || ignore_canstun)
 		return NONE
 	if(!COOLDOWN_FINISHED(src, decoy_cooldown))
+		// tell them why the cloak didn't save them, but not once per punch
+		if(COOLDOWN_FINISHED(src, fail_message_cooldown))
+			COOLDOWN_START(src, fail_message_cooldown, fail_message_cooldown_time)
+			to_chat(source, span_warning("The cloak hangs dead on your shoulders. It's still recharging - [DisplayTimeText(COOLDOWN_TIMELEFT(src, decoy_cooldown))] left."))
 		return NONE
 
 	COOLDOWN_START(src, decoy_cooldown, decoy_cooldown_time)
+	show_recharge_alert(source)
 	spawn_decoy(source)
 	return COMPONENT_NO_STUN
 
@@ -579,8 +759,9 @@
  */
 /obj/item/knife/understudy
 	name = "\"Understudy\""
-	desc = "A chameleon-finish knife that never has fingerprints on it, including yours."
-	// Sprite inherited from /obj/item/knife/combat.
+	desc = "A chameleon-finish knife that never has fingerprints on it, including yours. Put someone down with it and you have 10 seconds to take their face and voice for 10 minutes. Use it in your hand again to drop the disguise."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "understudy"
 	/// Weakref to whoever we most recently downed/killed.
 	var/datum/weakref/marked_target_ref
 	/// Window during which "take their part" is available after a kill/knockdown.
@@ -593,6 +774,22 @@
 /obj/item/knife/understudy/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
+
+/obj/item/knife/understudy/Destroy()
+	deltimer(mark_timer_id)
+	mark_timer_id = null
+	marked_target_ref = null
+	return ..()
+
+/obj/item/knife/understudy/examine(mob/user)
+	. = ..()
+	var/mob/living/carbon/human/actor = user
+	if(ishuman(actor) && actor.has_status_effect(/datum/status_effect/understudy_disguise))
+		. += span_notice("You're wearing someone else's face right now. Use this in your hand to drop it.")
+		return
+	var/mob/living/carbon/human/marked = marked_target_ref?.resolve()
+	if(istype(marked))
+		. += span_notice("[marked]'s face is still fresh enough to copy. Use this in your hand to take it.")
 
 /obj/item/knife/understudy/attack(mob/living/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
 	var/was_downed = istype(target_mob) && target_mob.stat != DEAD && target_mob.stat < UNCONSCIOUS
@@ -617,6 +814,14 @@
 	if(!ishuman(user))
 		to_chat(user, span_warning("You'd need a human face to pull this off."))
 		return
+
+	var/mob/living/carbon/human/actor = user
+	var/datum/status_effect/understudy_disguise/existing = actor.has_status_effect(/datum/status_effect/understudy_disguise)
+	// second use drops the act - the disguise used to have no off switch at all
+	if(existing)
+		qdel(existing)
+		return
+
 	if(isnull(marked_target_ref))
 		to_chat(user, span_warning("You haven't put anyone down recently enough to copy."))
 		return
@@ -626,18 +831,16 @@
 		clear_mark()
 		return
 
-	var/mob/living/carbon/human/actor = user
-	var/datum/status_effect/understudy_disguise/existing = actor.has_status_effect(/datum/status_effect/understudy_disguise)
-	if(existing)
-		qdel(existing) // one performance at a time; taking a new face ends the old one
 	actor.apply_status_effect(/datum/status_effect/understudy_disguise, target, disguise_duration)
-	to_chat(actor, span_notice("You take on [target]'s face and voice."))
+	to_chat(actor, span_notice("You take on [target]'s face and voice for [DisplayTimeText(disguise_duration)]. Use [src] in your hand again to drop it."))
 	deltimer(mark_timer_id)
 	clear_mark()
 
 /datum/status_effect/understudy_disguise
 	id = "understudy_disguise"
-	alert_type = null
+	alert_type = /atom/movable/screen/alert/status_effect/understudy_disguise
+	show_duration = TRUE
+	tick_interval = STATUS_EFFECT_NO_TICK
 	remove_on_fullheal = FALSE
 	/// The name we're overriding, restored on removal.
 	var/old_name
@@ -654,11 +857,73 @@
 		return FALSE
 	var/mob/living/carbon/human/actor = owner
 	old_name = actor.name
+	wear_appearance(actor, copied_from)
 	actor.name = copied_from.name
 	actor.SetSpecialVoice(copied_from.real_name)
-	actor.appearance = copy_appearance_filter_overlays(copied_from.appearance)
 	copied_from = null // done with it, don't hold the ref for the full 10 minutes
 	return TRUE
+
+/**
+ * Puts the target's look on the actor without dragging along the vars that
+ * describe the actor's own body rather than their appearance.
+ *
+ * A BYOND /appearance carries transform, dir, layer, plane, pixel offsets and
+ * a pile of other atom vars with it. Copying someone who was lying down when
+ * you knifed them used to hand you their rotation matrix permanently: nothing
+ * ever resets transform from scratch, update_transform() applies each later
+ * lying/standing change on top of whatever matrix is already on the mob, so
+ * the borrowed rotation stuck for the rest of the round. Keeping our own copies
+ * of those vars across the assignment means the body never desyncs in the first
+ * place, and removal only has to put the name, voice and overlays back.
+ */
+/datum/status_effect/understudy_disguise/proc/wear_appearance(mob/living/carbon/human/actor, mob/living/carbon/human/target)
+	var/matrix/own_transform = actor.transform
+	var/own_dir = actor.dir
+	var/own_layer = actor.layer
+	var/own_plane = actor.plane
+	var/own_pixel_x = actor.pixel_x
+	var/own_pixel_y = actor.pixel_y
+	var/own_pixel_w = actor.pixel_w
+	var/own_pixel_z = actor.pixel_z
+	var/own_alpha = actor.alpha
+	var/own_invisibility = actor.invisibility
+	var/own_opacity = actor.opacity
+	var/own_luminosity = actor.luminosity
+	var/own_mouse_opacity = actor.mouse_opacity
+	var/own_render_target = actor.render_target
+	var/own_render_source = actor.render_source
+	var/own_gender = actor.gender
+	var/own_desc = actor.desc
+	var/own_maptext = actor.maptext
+	var/own_maptext_width = actor.maptext_width
+	var/own_maptext_height = actor.maptext_height
+	var/own_maptext_x = actor.maptext_x
+	var/own_maptext_y = actor.maptext_y
+
+	actor.appearance = copy_appearance_filter_overlays(target.appearance)
+
+	actor.transform = own_transform
+	actor.setDir(own_dir)
+	actor.layer = own_layer
+	actor.plane = own_plane
+	actor.pixel_x = own_pixel_x
+	actor.pixel_y = own_pixel_y
+	actor.pixel_w = own_pixel_w
+	actor.pixel_z = own_pixel_z
+	actor.alpha = own_alpha
+	actor.invisibility = own_invisibility
+	actor.opacity = own_opacity
+	actor.luminosity = own_luminosity
+	actor.mouse_opacity = own_mouse_opacity
+	actor.render_target = own_render_target
+	actor.render_source = own_render_source
+	actor.gender = own_gender
+	actor.desc = own_desc
+	actor.maptext = own_maptext
+	actor.maptext_width = own_maptext_width
+	actor.maptext_height = own_maptext_height
+	actor.maptext_x = own_maptext_x
+	actor.maptext_y = own_maptext_y
 
 /datum/status_effect/understudy_disguise/on_remove()
 	if(!ishuman(owner))
@@ -669,5 +934,71 @@
 	// Full rebuild: the disguise replaced the whole appearance snapshot, and
 	// update_body() alone wouldn't restore worn gear / held item overlays
 	actor.regenerate_icons()
+	to_chat(actor, span_notice("You drop the act. Your own face comes back."))
+
+/// HUD alert for the stolen face, with a countdown on how long it holds.
+/atom/movable/screen/alert/status_effect/understudy_disguise
+	name = "Borrowed Face"
+	desc = "You're wearing someone else's face and voice. Use the knife in your hand to drop it early."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "alert_understudy"
+
+// =============================================================================
+// Shared — "this thing is recharging" HUD countdown
+// =============================================================================
+
+/**
+ * Cooldowns on these items live on the item (COOLDOWN_DECLARE), which is
+ * invisible to the player. This puts that timer on their screen: a HUD alert
+ * with a live countdown for as long as the item is recharging, then one line
+ * and a beep the moment it comes back.
+ *
+ * The item hands us the time remaining, so putting the item back on partway
+ * through the cooldown picks the countdown back up where it left off. Removing
+ * the effect early (taking the item off) is silent — only the countdown
+ * actually running out counts as "ready".
+ */
+/datum/status_effect/syndicate_recharge
+	id = "syndicate_recharge"
+	tick_interval = STATUS_EFFECT_NO_TICK
+	status_type = STATUS_EFFECT_REPLACE
+	show_duration = TRUE
+	remove_on_fullheal = FALSE
+	/// Printed to the owner when the countdown runs out.
+	var/ready_message = "Your gear is ready again."
+
+/datum/status_effect/syndicate_recharge/on_creation(mob/living/new_owner, duration = 30 SECONDS)
+	src.duration = duration
+	return ..()
+
+/datum/status_effect/syndicate_recharge/on_remove()
+	// duration is a world.time deadline by this point: still in the future
+	// means something removed us early, which shouldn't announce anything
+	if(duration != STATUS_EFFECT_PERMANENT && duration > world.time)
+		return
+	to_chat(owner, span_notice(ready_message))
+	SEND_SOUND(owner, sound('sound/machines/beep/twobeep.ogg', volume = 25))
+
+/datum/status_effect/syndicate_recharge/courier_palm
+	id = "courier_palm_recharge"
+	alert_type = /atom/movable/screen/alert/status_effect/courier_palm_recharge
+	ready_message = "The courier's palm goes warm again. It's ready."
+
+/atom/movable/screen/alert/status_effect/courier_palm_recharge
+	name = "Palm Recharging"
+	desc = "The courier's palm is recharging. Until it's done, lifting things off people takes the usual time."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "alert_courier_palm"
+
+/datum/status_effect/syndicate_recharge/second_shadow
+	id = "second_shadow_recharge"
+	alert_type = /atom/movable/screen/alert/status_effect/second_shadow_recharge
+	ready_message = "Second Shadow settles on your shoulders again. It'll take the next hit."
+
+/atom/movable/screen/alert/status_effect/second_shadow_recharge
+	name = "Cloak Recharging"
+	desc = "Second Shadow is recharging. Until it's done, a hit that puts you down just puts you down."
+	icon = 'voidcrew/modules/loot/icons/uniques.dmi'
+	icon_state = "alert_second_shadow"
 
 #undef FREQ_LISTENING_COIN

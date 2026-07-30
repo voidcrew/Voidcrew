@@ -1,4 +1,12 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/landmark/event_spawn,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/high/hallway/main)
+"ab" = (
+/obj/effect/landmark/event_spawn,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/high/cargo_bay)
 "ar" = (
 /obj/item/storage/medkit,
 /turf/open/floor/bamboo,
@@ -2718,7 +2726,7 @@ WH
 wq
 vp
 za
-za
+ab
 MW
 Hu
 Hu
@@ -2871,7 +2879,7 @@ AO
 QM
 cW
 dK
-jQ
+aa
 kv
 DP
 KD

@@ -1,0 +1,118 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"j" = (
+/obj/machinery/vending/hydroseeds,
+/turf/open/floor/grass,
+/area/template_noop)
+"k" = (
+/obj/machinery/biogenerator,
+/turf/open/floor/grass,
+/area/template_noop)
+"B" = (
+/obj/structure/flora/bush/flowers_yw,
+/turf/open/floor/grass,
+/area/template_noop)
+"H" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/cup/watering_can,
+/obj/item/plant_analyzer{
+	pixel_x = 5;
+	pixel_y = 5
+	},
+/obj/item/cultivator{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/turf/open/floor/grass,
+/area/template_noop)
+"J" = (
+/obj/machinery/hydroponics/constructable,
+/turf/open/floor/grass,
+/area/template_noop)
+"N" = (
+/obj/structure/flora/bush/sunny,
+/turf/open/floor/grass,
+/area/template_noop)
+"O" = (
+/obj/modular_map_connector,
+/turf/open/floor/grass,
+/area/template_noop)
+"Q" = (
+/obj/structure/flora/tree/stonepine,
+/turf/open/floor/grass,
+/area/template_noop)
+"R" = (
+/turf/open/floor/grass,
+/area/template_noop)
+"T" = (
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/grass,
+/area/template_noop)
+"U" = (
+/obj/machinery/light/floor,
+/turf/open/floor/grass,
+/area/template_noop)
+"V" = (
+/obj/machinery/vending/hydronutrients,
+/turf/open/floor/grass,
+/area/template_noop)
+"Z" = (
+/obj/item/reagent_containers/cup/watering_can/wood,
+/obj/structure/flora/bush/fullgrass,
+/turf/open/floor/grass,
+/area/template_noop)
+
+(1,1,1) = {"
+Q
+H
+O
+"}
+(2,1,1) = {"
+j
+B
+R
+"}
+(3,1,1) = {"
+J
+R
+R
+"}
+(4,1,1) = {"
+J
+U
+R
+"}
+(5,1,1) = {"
+J
+R
+R
+"}
+(6,1,1) = {"
+J
+Z
+R
+"}
+(7,1,1) = {"
+J
+U
+R
+"}
+(8,1,1) = {"
+J
+R
+R
+"}
+(9,1,1) = {"
+V
+U
+R
+"}
+(10,1,1) = {"
+k
+N
+R
+"}
+(11,1,1) = {"
+Q
+T
+R
+"}

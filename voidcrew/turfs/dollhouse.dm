@@ -43,3 +43,21 @@
 	desc = "Pink and white checkerboard tiling, like a milkshake parlor."
 	icon_state = "dollhouse_checker"
 	base_icon_state = "dollhouse_checker"
+
+// ---------- Grass ----------
+
+// Behaves exactly like stock grass; the sheet is the same four tufts run through
+// the theme's pink ramp, so the hydroponics lawn can stay a lawn on a pink ship.
+/turf/open/floor/grass/dollhouse
+	name = "pink lawn"
+	desc = "Soft pastel turf. It smells faintly of strawberry."
+	icon = 'voidcrew/icons/turf/floors/dollhouse_grass.dmi'
+	icon_state = "dollhouse_grass0"
+
+/turf/open/floor/grass/dollhouse/spawniconchange()
+	icon_state = "dollhouse_grass[rand(0, 3)]"
+
+// Our sheet carries no damage frame - borrow the stock grass scuff, which lives
+// in damaged_dmi rather than in icon.
+/turf/open/floor/grass/dollhouse/broken_states()
+	return list("grass_damaged")

@@ -37,6 +37,7 @@
 		/obj/item/survivalcapsule = 5,
 		/obj/item/clothing/suit/hooded/cloak/goliath = 4,
 		/obj/item/gun/energy/plasmacutter = 4,
+		/obj/item/ship_parts/misc = 6,
 	)
 	loot_red = list(
 		/obj/item/borg/upgrade/modkit/range = 9,
@@ -46,6 +47,7 @@
 		/obj/item/kinetic_crusher = 5,
 		/obj/item/clothing/glasses/heat = 4,
 		/obj/item/clothing/suit/hooded/cloak/drake = 2,
+		/obj/item/ship_parts/misc = 6,
 	)
 	// Rare tables: surviving stock entries + this theme's uniques at ~4
 	// (see voidcrew/modules/loot/uniques/expedition.dm and the design doc)

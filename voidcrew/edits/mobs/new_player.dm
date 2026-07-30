@@ -59,27 +59,8 @@
 /mob/dead/new_player/var/spawning_ship = FALSE
 
 /**
- * Callback when player selects a ship from the catalog
- * The catalog has already handled unlocking/part deduction
- */
-/mob/dead/new_player/proc/on_ship_catalog_selection(datum/map_template/shuttle/voidcrew/template)
-	if(!template)
-		return select_ship() // Cancelled, return to menu
-
-	// Check if this ship has upgrade slots OR themes - if so, open upgrade selector
-	// (Theme selection happens in the upgrade selector UI)
-	if((template.has_upgrade_slots && length(template.upgrade_slot_ids)) || length(template.available_themes))
-		var/datum/callback/cb = CALLBACK(src, PROC_REF(on_upgrades_confirmed))
-		var/datum/ship_upgrade_selector/selector = new(src, template, cb)
-		selector.ui_interact(src)
-		return
-
-	// No upgrades or themes, spawn directly with default theme if available
-	var/datum/ship_theme/default_theme = get_default_theme_for_ship(template.type)
-	spawn_ship_with_upgrades(template, list(), default_theme)
-
-/**
- * Callback when player confirms upgrade selections
+ * Callback when player confirms their hull, theme and upgrade selections.
+ * The selector has already handled the hull unlock and part deduction.
  */
 /mob/dead/new_player/proc/on_upgrades_confirmed(datum/map_template/shuttle/voidcrew/template, list/upgrade_selections, datum/ship_theme/selected_theme)
 	if(!template)

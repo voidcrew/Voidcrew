@@ -9,6 +9,12 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/tiled/blue,
 /area/shuttle/voidcrew/scarab/medbay/b)
+"an" = (
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/cargo_bay/b)
 "aJ" = (
 /obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
 	dir = 1
@@ -310,6 +316,12 @@
 	color = "#333135"
 	},
 /area/shuttle/voidcrew/scarab/bridge/b)
+"ly" = (
+/obj/machinery/computer/mission_board{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/commons/b)
 "lJ" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "scarab_cargo"
@@ -563,6 +575,10 @@
 	dir = 4
 	},
 /area/shuttle/voidcrew/scarab/dormitories/b)
+"te" = (
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/engineering/b)
 "tl" = (
 /obj/machinery/door/airlock/command{
 	name = "Bridge"
@@ -607,6 +623,10 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/scarab/cargo_bay/b)
+"tP" = (
+/obj/machinery/holopad,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/commons/b)
 "ux" = (
 /obj/machinery/atmospherics/pipe/smart/manifold/scrubbers/hidden/layer2{
 	dir = 8
@@ -837,6 +857,10 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/b)
+"Cy" = (
+/obj/machinery/mission_pad,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/commons/b)
 "CL" = (
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 8
@@ -1423,6 +1447,12 @@
 	dir = 1
 	},
 /turf/open/floor/pod/dark,
+/area/shuttle/voidcrew/scarab/cargo_bay/b)
+"Qk" = (
+/obj/machinery/computer/bank_machine{
+	dir = 1
+	},
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/cargo_bay/b)
 "QB" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -2057,7 +2087,7 @@ qs
 qs
 qs
 qs
-qs
+te
 HV
 Ad
 jY
@@ -2071,7 +2101,7 @@ sD
 sD
 sD
 sD
-sD
+an
 tH
 gu
 hp
@@ -2137,7 +2167,7 @@ sD
 sD
 sD
 sD
-sD
+Qk
 uB
 tH
 rr
@@ -2225,7 +2255,7 @@ yo
 gT
 PI
 zc
-zc
+tP
 zc
 zc
 Vt
@@ -2246,8 +2276,8 @@ jY
 yo
 PI
 PI
-zc
-zc
+ly
+Cy
 zc
 zc
 Vt

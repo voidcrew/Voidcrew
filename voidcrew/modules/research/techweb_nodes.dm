@@ -390,3 +390,41 @@
 	prereq_ids = list(TECHWEB_NODE_RADAR_ARRAY_ADV)
 	design_ids = list()
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
+
+// Transporter — the late-game replacement for the drop pod. A drop pod is a one-way
+// crate you fire at a planet; a transporter moves people both ways, from orbit, over
+// and over. The ladder below is deliberately expensive: the first node is a working
+// but crude lift, and the two above it are what make it precise and safe.
+/datum/techweb_node/transporter
+	id = TECHWEB_NODE_TRANSPORTER
+	display_name = "Molecular Transporter"
+	description = "A pad and a console that take a person apart on one deck and put them back together on a planet. The pattern lock is coarse at this tier - the computer picks open ground for you, and it can only recover people who are carrying a transponder and standing out in the open."
+	prereq_ids = list(TECHWEB_NODE_BLUESPACE_TRAVEL, TECHWEB_NODE_SURVEY_CONSOLE_ADV)
+	design_ids = list(
+		"transporter_pad",
+		"transporter_console",
+		"transporter_transponder",
+	)
+	required_surveyed_objects = list(planets = 3)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 12000)
+
+/datum/techweb_node/transporter_targeting
+	id = TECHWEB_NODE_TRANSPORTER_TARGETING
+	display_name = "Transporter Pattern Targeting"
+	description = "A targeting scanner for the control console. Pick the exact turf at either end of a beam, hold a lock through a roof, and pull up whatever is standing on the coordinates - transponder or not, willing or not."
+	prereq_ids = list(TECHWEB_NODE_TRANSPORTER, TECHWEB_NODE_SURVEY_CONSOLE_SUPERIOR)
+	design_ids = list(
+		"transporter_targeting",
+	)
+	required_surveyed_objects = list(planets = 5, asteroids = 2)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 20000)
+
+/datum/techweb_node/transporter_biofilter
+	id = TECHWEB_NODE_TRANSPORTER_BIOFILTER
+	display_name = "Transporter Biofilter Matrix"
+	description = "Filters the pattern properly on the way through. Nobody arrives burned any more, the pad recharges faster, and the console can finally tell you when someone has cut a pad's safety interlocks."
+	prereq_ids = list(TECHWEB_NODE_TRANSPORTER_TARGETING, TECHWEB_NODE_PARTS_BLUESPACE)
+	design_ids = list(
+		"transporter_biofilter",
+	)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 30000)

@@ -1,0 +1,93 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"h" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger,
+/obj/machinery/cell_charger,
+/obj/item/stock_parts/power_store/cell/high,
+/obj/item/clipboard{
+	pixel_x = -9;
+	pixel_y = 8
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/bot,
+/obj/machinery/light/cold{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"j" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/neutral/warning,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"r" = (
+/obj/modular_map_connector,
+/obj/structure/rack,
+/obj/item/gun/energy/plasmacutter,
+/obj/item/extraction_pack,
+/obj/item/fulton_core,
+/obj/item/gps/mining,
+/obj/item/hand_labeler{
+	pixel_x = 8;
+	pixel_y = -6
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/sign/poster/official/safety_eye_protection/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"D" = (
+/obj/machinery/suit_storage_unit/mining/eva,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/obj/structure/sign/warning/vacuum/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"E" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/trimline/neutral/warning,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"L" = (
+/turf/template_noop,
+/area/template_noop)
+"R" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"S" = (
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+
+(1,1,1) = {"
+E
+S
+r
+"}
+(2,1,1) = {"
+j
+D
+L
+"}
+(3,1,1) = {"
+R
+h
+L
+"}

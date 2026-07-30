@@ -136,6 +136,23 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/showroomfloor,
 /area/shuttle/voidcrew/kilo/dorms/a)
+"gg" = (
+/obj/effect/turf_decal/box/corners,
+/obj/effect/turf_decal/box/corners{
+	dir = 4
+	},
+/obj/item/wrench,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/a)
 "hb" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/components/tank/air{
@@ -472,6 +489,22 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/dorms/a)
+"qy" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/turf_decal/stripes,
+/obj/machinery/light_switch{
+	pixel_y = -23
+	},
+/obj/machinery/light/small/built,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/computer/mission_board{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/engineering/a)
 "rg" = (
 /obj/structure/frame/computer{
 	anchored = 1;
@@ -566,6 +599,19 @@
 	},
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/engineering/a)
+"ue" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/item/storage/box/rndboards/all,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/a)
 "vM" = (
@@ -712,6 +758,19 @@
 	},
 /turf/open/floor/carpet,
 /area/shuttle/voidcrew/kilo/dorms/a)
+"yK" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/machinery/computer/bank_machine{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/engineering/a)
 "zp" = (
 /obj/effect/turf_decal/stripes{
 	dir = 1
@@ -1316,6 +1375,22 @@
 /obj/machinery/holopad,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/kilo/bridge/a)
+"TN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/power/terminal{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/greenglow,
+/obj/effect/turf_decal/stripes/corner{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/mission_pad,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/engineering/a)
 "TO" = (
 /obj/structure/bed,
 /obj/item/bedsheet/captain,
@@ -1694,7 +1769,7 @@ MH
 Tr
 li
 sU
-MB
+gg
 PL
 UC
 jn
@@ -1799,7 +1874,7 @@ aa
 wD
 hb
 Xa
-lA
+qy
 Wm
 hi
 yk
@@ -1813,7 +1888,7 @@ aa
 aa
 Wm
 oS
-dD
+TN
 Ww
 aM
 Iq
@@ -1829,7 +1904,7 @@ aa
 Wm
 Wm
 bC
-FR
+yK
 vM
 Wm
 bc
@@ -1846,7 +1921,7 @@ OE
 rC
 KJ
 Yc
-ap
+ue
 Vi
 Pt
 wD

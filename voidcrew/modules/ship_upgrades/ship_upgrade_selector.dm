@@ -1,21 +1,23 @@
 /**
  * # Ship Upgrade Selector UI
  *
- * TGUI interface for unlocking and selecting ship themes and upgrades before spawning.
+ * The ship shop. It's the only UI that shows you what a hull actually looks
+ * like, so it's where every purchase happens:
  *
- * Three-phase approach:
- * 1. THEME: Select ship theme (affects jobs, aesthetics, available modules)
- * 2. UNLOCK: Purchase upgrade modules permanently (one-time cost)
- * 3. SELECT: Choose from unlocked upgrades when spawning (free)
+ * 1. HULL: Pick a modular hull and buy it (one-time cost)
+ * 2. THEME: Buy and select a ship theme (affects jobs, aesthetics, available modules)
+ * 3. UPGRADES: Buy upgrade modules permanently, then pick which ones fly with you
  *
- * Default themes and modules are always available (no unlock required).
+ * Default themes and modules are always available (no unlock required), as are
+ * hulls that cost no parts - the Pills are free and come unlocked. Any hull with
+ * a part cost must be bought before you can launch it.
  */
 
 /**
  * Ship Upgrade Selector Datum
  *
- * Opens after player selects a ship from the catalog to allow
- * unlocking themes, selecting a theme, and customizing upgrade modules before spawning.
+ * Opened straight from the join menu. Handles hull purchase, theme selection,
+ * and upgrade module customization before spawning.
  */
 /datum/ship_upgrade_selector
 	/// The user viewing this UI
@@ -36,27 +38,20 @@
 	var/list/unlocked_upgrade_ids = list()
 	/// Cached list of unlocked theme IDs for this ship
 	var/list/unlocked_theme_ids = list()
+	/// Every hull on the shelf, cached: /datum/map_template/shuttle/voidcrew instances
+	var/list/purchasable_hulls = list()
 
 /datum/ship_upgrade_selector/New(mob/viewing_user, datum/map_template/shuttle/voidcrew/ship_template, datum/callback/completion_callback)
 	. = ..()
 	user = viewing_user
-	template = ship_template
 	on_complete = completion_callback
 
-	// Initialize upgrade system and cache modules/themes
+	// Initialize upgrade system and cache the hulls we're allowed to sell
 	ensure_ship_upgrades_initialized()
-	available_modules = get_modules_for_ship(template.type)
-	available_themes = get_themes_for_ship(template.type)
+	purchasable_hulls = get_purchasable_ship_templates()
 
-	// Get unlocked upgrades and themes for this ship
-	refresh_unlocked_upgrades()
-	refresh_unlocked_themes()
-
-	// Select default theme
-	selected_theme = get_default_theme_for_ship(template.type)
-
-	// Pre-select default modules for each slot based on selected theme
-	refresh_default_module_selections()
+	// No hull handed to us (opened straight from the join menu): start on the first one
+	set_template(ship_template || (length(purchasable_hulls) ? purchasable_hulls[1] : null))
 
 /datum/ship_upgrade_selector/Destroy()
 	user = null
@@ -68,7 +63,50 @@
 	selected_theme = null
 	unlocked_upgrade_ids = null
 	unlocked_theme_ids = null
+	purchasable_hulls = null
 	return ..()
+
+/**
+ * Point the selector at a hull and rebuild everything that depends on it:
+ * its modules, themes, unlock state, and the default theme/module selections.
+ */
+/datum/ship_upgrade_selector/proc/set_template(datum/map_template/shuttle/voidcrew/new_template)
+	if(!istype(new_template))
+		return FALSE
+
+	template = new_template
+	available_modules = get_modules_for_ship(template.type)
+	available_themes = get_themes_for_ship(template.type)
+
+	refresh_unlocked_upgrades()
+	refresh_unlocked_themes()
+
+	selected_theme = get_default_theme_for_ship(template.type)
+	refresh_default_module_selections()
+	return TRUE
+
+/**
+ * Resolve a hull type path string sent by the UI against the shelf.
+ * Returns null for anything not on it, so the UI can't name an arbitrary type.
+ */
+/datum/ship_upgrade_selector/proc/find_purchasable_hull(hull_id)
+	if(!hull_id)
+		return null
+	for(var/datum/map_template/shuttle/voidcrew/candidate as anything in purchasable_hulls)
+		if("[candidate.type]" == hull_id)
+			return candidate
+	return null
+
+/**
+ * Whether the player owns the hull currently being customized
+ */
+/datum/ship_upgrade_selector/proc/is_hull_unlocked()
+	if(!user?.client || !template)
+		return FALSE
+	// Free hulls need no purchase - everyone owns them
+	if(is_ship_free(template))
+		return TRUE
+	return GLOB.ship_economy_db?.is_ship_unlocked(user.client.ckey, "[template.type]")
 
 /**
  * Refresh the cached list of unlocked upgrade IDs
@@ -139,7 +177,7 @@
 /datum/ship_upgrade_selector/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		ui = new(user, src, "ShipUpgradeSelector", "Customize Ship")
+		ui = new(user, src, "ShipUpgradeSelector", "Shipyard")
 		ui.open()
 
 /datum/ship_upgrade_selector/ui_state(mob/user)
@@ -150,13 +188,36 @@
 
 /datum/ship_upgrade_selector/ui_close(mob/user)
 	. = ..()
-	// Don't invoke callback on close - they may reopen catalog
+	// This is the last UI in the chain, so closing it any other way than launching -
+	// Cancel, or the window's X - has to hand the player back to the join menu
+	report_completion(null, null, null)
 
 /**
- * Static data - ship info and available themes (doesn't change)
+ * Invoke the completion callback exactly once, whichever way the UI was closed.
+ * A null template tells the caller the player backed out.
+ */
+/datum/ship_upgrade_selector/proc/report_completion(datum/map_template/shuttle/voidcrew/chosen, list/upgrades, datum/ship_theme/theme)
+	if(!on_complete)
+		return
+	var/datum/callback/completion = on_complete
+	on_complete = null
+	completion.Invoke(chosen, upgrades, theme)
+
+/**
+ * Static data - hull shelf, current hull info and its themes.
+ * Switching hulls changes all of this, so select_hull pushes a full update.
  */
 /datum/ship_upgrade_selector/ui_static_data(mob/user)
 	var/list/data = list()
+
+	// The hull shelf
+	data["hulls"] = build_hulls_data()
+
+	if(!template)
+		data["themes"] = list()
+		data["has_themes"] = FALSE
+		data["preview"] = null
+		return data
 
 	// Ship info
 	data["ship_name"] = template.name
@@ -202,6 +263,48 @@
 	data["preview"] = build_preview_data()
 
 	return data
+
+/**
+ * Build the hull shelf: one entry per modular hull the player can buy, with the
+ * unlock cost and a summary of what the hull gets you before any customization.
+ */
+/datum/ship_upgrade_selector/proc/build_hulls_data()
+	var/list/hulls_data = list()
+
+	for(var/datum/map_template/shuttle/voidcrew/hull as anything in purchasable_hulls)
+		// Unlock cost (only the classes that actually cost something)
+		var/list/part_cost = list()
+		for(var/part_class in hull.part_requirements)
+			var/cost = hull.part_requirements[part_class]
+			if(cost > 0)
+				part_cost[part_class] = cost
+
+		// Crew comes from the default theme on themed hulls, the template otherwise
+		var/list/job_slots_to_use = hull.job_slots
+		if(!length(job_slots_to_use) && length(hull.available_themes))
+			var/datum/ship_theme/hull_default_theme = get_default_theme_for_ship(hull.type)
+			if(hull_default_theme?.job_slots)
+				job_slots_to_use = hull_default_theme.job_slots
+
+		var/crew_capacity = 0
+		for(var/list/job_definition in job_slots_to_use)
+			crew_capacity += job_definition["slots"]
+
+		var/list/hull_themes = get_themes_for_ship(hull.type)
+
+		hulls_data += list(list(
+			"id" = "[hull.type]",
+			"name" = hull.name,
+			"short_name" = hull.short_name || hull.name,
+			"description" = hull.catalog_desc || generate_ship_description(hull),
+			"part_cost" = part_cost,
+			"crew_capacity" = crew_capacity,
+			"theme_count" = length(hull_themes),
+			"slot_count" = length(hull.upgrade_slot_ids),
+			"is_free" = is_ship_free(hull),
+		))
+
+	return hulls_data
 
 /**
  * Build the map-preview block for the UI: hull images keyed by theme id and
@@ -261,6 +364,16 @@
 		for(var/part_class in GLOB.ship_part_classes)
 			parts[part_class] = 0
 	data["parts"] = parts
+
+	// Which hull is on the bench, and whether it's been bought yet
+	data["selected_hull"] = template ? "[template.type]" : null
+	data["unlocked_ships"] = get_effective_unlocked_ships(ckey)
+	data["hull_unlocked"] = is_hull_unlocked()
+
+	if(!template)
+		data["slots"] = list()
+		data["selected_upgrades"] = list()
+		return data
 
 	// Refresh and send unlocked upgrades and themes
 	refresh_unlocked_upgrades()
@@ -329,6 +442,37 @@
 	. = TRUE
 
 	switch(action)
+		if("select_hull")
+			// Put a different hull on the bench. Free - buying it is a separate step.
+			var/datum/map_template/shuttle/voidcrew/new_hull = find_purchasable_hull(params["hull_id"])
+			if(!new_hull)
+				to_chat(user, span_warning("That ship isn't available."))
+				return FALSE
+
+			if(new_hull == template)
+				return FALSE
+
+			if(!set_template(new_hull))
+				return FALSE
+
+			// Themes, slots and preview art all changed - push the whole payload
+			update_static_data(user, ui)
+
+		if("unlock_hull")
+			// Buy a hull. One-time cost, then it's yours forever.
+			// A named hull has to be one we're selling; no name means the one on the bench.
+			var/hull_id = params["hull_id"]
+			var/datum/map_template/shuttle/voidcrew/hull = hull_id ? find_purchasable_hull(hull_id) : template
+			if(!hull)
+				to_chat(user, span_warning("That ship isn't available."))
+				return FALSE
+
+			if(!attempt_ship_unlock(user, hull))
+				// Error messages handled in attempt_ship_unlock
+				return FALSE
+
+			to_chat(user, span_notice("Successfully unlocked [hull.name]!"))
+
 		if("select_theme")
 			// Select a theme (must be unlocked)
 			var/theme_id = params["theme_id"]
@@ -448,6 +592,14 @@
 				selected_upgrades[slot_key] = module
 
 		if("confirm")
+			// You can't fly a hull you haven't bought
+			if(!template)
+				return FALSE
+
+			if(!is_hull_unlocked())
+				to_chat(user, span_warning("You need to purchase the [template.name] before you can launch it."))
+				return FALSE
+
 			// Validate theme is unlocked
 			if(selected_theme && !is_theme_unlocked(selected_theme))
 				to_chat(user, span_warning("You have selected a theme you don't own!"))
@@ -460,15 +612,19 @@
 					to_chat(user, span_warning("You have selected upgrades you don't own!"))
 					return FALSE
 
-			// Close UI and invoke callback with theme
+			// Claim the callback before closing, or ui_close reads this as a cancel
+			var/datum/map_template/shuttle/voidcrew/launching = template
+			var/list/launching_upgrades = selected_upgrades.Copy()
+			var/datum/ship_theme/launching_theme = selected_theme
+			var/datum/callback/completion = on_complete
+			on_complete = null
+
 			ui.close()
-			if(on_complete)
-				on_complete.Invoke(template, selected_upgrades.Copy(), selected_theme)
+			completion?.Invoke(launching, launching_upgrades, launching_theme)
 
 		if("cancel")
+			// ui_close reports the cancellation for us
 			ui.close()
-			if(on_complete)
-				on_complete.Invoke(null, null, null)
 
 /**
  * Check if player can afford to unlock a theme

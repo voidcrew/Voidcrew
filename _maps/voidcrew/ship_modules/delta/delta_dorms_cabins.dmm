@@ -1,0 +1,130 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"f" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/template_noop)
+"h" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/clothing/head/soft{
+	pixel_x = -8;
+	pixel_y = -6
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"s" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"t" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/template_noop)
+"v" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/door/airlock{
+	name = "Restroom"
+	},
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"z" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed,
+/obj/item/bedsheet/grey,
+/obj/item/toy/plush/moth{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"B" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/wardrobe/mixed,
+/turf/open/floor/wood,
+/area/template_noop)
+"G" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral,
+/turf/open/floor/iron,
+/area/template_noop)
+"I" = (
+/turf/template_noop,
+/area/template_noop)
+"J" = (
+/obj/structure/sign/departments/restroom,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/template_noop)
+"M" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/machinery/cryopod{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"O" = (
+/obj/machinery/shower/directional/south,
+/obj/item/soap,
+/obj/structure/curtain,
+/obj/structure/toilet{
+	dir = 1
+	},
+/obj/structure/sink/directional/east,
+/obj/structure/mirror/directional/west,
+/obj/machinery/light/small/built/directional/north,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/freezer,
+/area/template_noop)
+"R" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/cryopod{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+"V" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/structure/bed,
+/obj/item/bedsheet/brown,
+/obj/item/pai_card{
+	pixel_x = 7;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/template_noop)
+
+(1,1,1) = {"
+O
+v
+s
+"}
+(2,1,1) = {"
+B
+J
+G
+"}
+(3,1,1) = {"
+V
+R
+G
+"}
+(4,1,1) = {"
+z
+h
+G
+"}
+(5,1,1) = {"
+M
+f
+G
+"}
+(6,1,1) = {"
+I
+t
+G
+"}

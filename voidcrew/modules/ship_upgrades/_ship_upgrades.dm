@@ -249,6 +249,64 @@ GLOBAL_VAR_INIT(ship_upgrades_initialized, FALSE)
 	return definitions
 
 /**
+ * The upgrade slots a hull actually loads under a given theme.
+ *
+ * Themes may override the hull's own slot list, so this mirrors what the upgrade
+ * selector's get_current_slot_ids() resolves to.
+ */
+/proc/get_upgrade_slot_ids_for_theme(datum/map_template/shuttle/voidcrew/template, datum/ship_theme/theme)
+	if(length(theme?.upgrade_slot_ids))
+		return theme.upgrade_slot_ids
+	return template?.upgrade_slot_ids || list()
+
+/**
+ * Every module registered for one slot on a hull that the given theme allows.
+ *
+ * Returns: list of /datum/ship_upgrade_module
+ */
+/proc/get_modules_for_ship_slot(ship_template_type, theme_id, slot_key)
+	var/list/candidates = list()
+	var/list/available = get_modules_for_ship_theme(ship_template_type, theme_id)
+	for(var/module_id in available)
+		var/datum/ship_upgrade_module/module = available[module_id]
+		if(module.slot == slot_key)
+			candidates += module
+	return candidates
+
+/**
+ * Roll a random theme for a hull.
+ *
+ * Unlock state and part cost are ignored on purpose: this is for ships nobody paid
+ * for (the roundstart fleet, admin spawns), not for anything sold in the shop.
+ */
+/proc/roll_random_ship_theme(ship_template_type)
+	var/list/themes = get_themes_for_ship(ship_template_type)
+	if(!length(themes))
+		return null
+	return themes[pick(themes)]
+
+/**
+ * Roll a random module into every upgrade slot on a hull, in the format create_ship
+ * expects (slot_key -> /datum/ship_upgrade_module).
+ *
+ * Cost is ignored for the same reason as roll_random_ship_theme(). A slot with no
+ * module valid for the theme is left out of the result, which makes
+ * modular_map_root/ship_upgrade fall back to that slot's default module.
+ */
+/proc/roll_random_upgrade_selections(datum/map_template/shuttle/voidcrew/template, datum/ship_theme/theme)
+	var/list/selections = list()
+	if(!template?.has_upgrade_slots)
+		return selections
+
+	for(var/slot_key in get_upgrade_slot_ids_for_theme(template, theme))
+		var/list/candidates = get_modules_for_ship_slot(template.type, theme?.id, slot_key)
+		if(!length(candidates))
+			continue
+		selections[slot_key] = pick(candidates)
+
+	return selections
+
+/**
  * Check if a module is available for a specific theme
  *
  * Modules MUST have for_theme set to appear for themed ships.

@@ -134,27 +134,29 @@
 		picked_turf.change_area(turf_area, cave_area)
 	picked_turf.generating_biome = selected_cave_biome
 
-/datum/map_generator/planet_generator/populate_terrain(list/turfs)
+/datum/map_generator/planet_generator/populate_terrain(list/turfs, area/generate_in, zone_band)
 
 	var/start_time = REALTIMEOFDAY
 	var/megafauna_spawned = FALSE
 
 	// Zone danger scaling: planets in dangerous overmap zones spawn denser and
-	// meaner fauna. Population runs during SSmapping init (before SSovermap
-	// places the planets), so the zone comes from the band SSmapping dealt this
-	// planet pair up front — placement honors it later (setup_planets).
+	// meaner fauna. Preloaded planets populate during SSmapping init (before
+	// SSovermap places them), so their zone comes from the band SSmapping dealt the
+	// planet pair up front — placement honors it later (setup_planets). Dynamic
+	// planets populate at load time instead, and pass their marker's live band in.
 	// Decided once here so it costs nothing at runtime. Loot is never scaled.
 	var/mob_chance_mult = 1
 	var/mob_upgrade_prob = 0
-	if(length(turfs))
+	if(isnull(zone_band) && length(turfs))
 		var/turf/zone_sample = turfs[1]
-		switch(SSmapping.get_planet_zone_band_for_z(zone_sample.z))
-			if(ZONE_YELLOW)
-				mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_YELLOW
-				mob_upgrade_prob = ZONE_PLANET_MOB_UPGRADE_PROB_YELLOW
-			if(ZONE_RED)
-				mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_RED
-				mob_upgrade_prob = ZONE_PLANET_MOB_UPGRADE_PROB_RED
+		zone_band = SSmapping.get_planet_zone_band_for_z(zone_sample.z)
+	switch(zone_band)
+		if(ZONE_YELLOW)
+			mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_YELLOW
+			mob_upgrade_prob = ZONE_PLANET_MOB_UPGRADE_PROB_YELLOW
+		if(ZONE_RED)
+			mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_RED
+			mob_upgrade_prob = ZONE_PLANET_MOB_UPGRADE_PROB_RED
 
 	for(var/turf/target_turf as anything in turfs)
 

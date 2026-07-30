@@ -18,6 +18,18 @@
 	var/event_scope = EVENT_SCOPE_SHIP
 	/// Minimum living, client-connected players physically aboard for a ship to be targetable.
 	var/min_crew_aboard = 1
+	/// Minimum hull size a target ship must have — one of the SHIP_MASS_* bands.
+	///
+	/// This is the size gate, and it is a separate question from min_crew_aboard: a full
+	/// crew aboard a tiny hull is still a tiny hull, and the crew count says nothing about
+	/// whether there is a second compartment to run to. Destructive events set this so they
+	/// leave the small hulls alone. A Pill-class is three tiles with no airlock and no
+	/// medbay; a supply pod, a vortex anomaly or a boarding party is not an event there,
+	/// it is the end of the round for all four people aboard before they can react.
+	///
+	/// Ships whose mass has not been calculated read as 0 and fail every band above
+	/// SHIP_MASS_ANY. That is the safe direction to fail.
+	var/min_ship_mass = SHIP_MASS_ANY
 	/// Zone bands (ZONE_GREEN/ZONE_YELLOW/ZONE_RED) the target ship must be in. Null = any zone.
 	/// Use this to keep dangerous events out of the safe outer ring.
 	var/list/allowed_zones = null
@@ -62,6 +74,8 @@
 /// Whether the given ship may be targeted by this event right now. Crew count is checked separately.
 /datum/round_event_control/voidcrew/proc/is_valid_target(obj/structure/overmap/ship/ship)
 	if(QDELETED(ship) || ship.abandoned || !ship.shuttle)
+		return FALSE
+	if(min_ship_mass > SHIP_MASS_ANY && ship.mass < min_ship_mass)
 		return FALSE
 	if(!ignores_ship_cooldown && world.time < ship.last_dynamic_event + DYNAMIC_EVENT_SHIP_COOLDOWN)
 		return FALSE

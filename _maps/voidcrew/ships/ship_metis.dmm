@@ -1,4 +1,9 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/landmark/event_spawn,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/titanium/tiled,
+/area/shuttle/voidcrew/metis/dorms)
 "ab" = (
 /obj/item/trash/semki,
 /obj/item/trash/boritos,
@@ -9,6 +14,11 @@
 /mob/living/basic/mouse/rat,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/metis/maintenance)
+"ac" = (
+/obj/effect/landmark/event_spawn,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/metis/science/xenobiology)
 "ag" = (
 /obj/structure/table/reinforced,
 /obj/machinery/button/door{
@@ -2866,7 +2876,7 @@ qe
 VI
 wz
 Er
-eN
+ac
 DM
 VI
 xv
@@ -3315,7 +3325,7 @@ At
 vE
 Xl
 JM
-ih
+aa
 dT
 lk
 nm

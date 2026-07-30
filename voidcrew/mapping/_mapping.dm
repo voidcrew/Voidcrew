@@ -17,9 +17,12 @@
 	var/list/wasteland_ruins_templates = list()
 	var/list/yellow_ruins_templates = list()
 
-	// This is a balancing act.
-	// Each planet will consume a significant amount of memory,
-	// so we need to be careful about how many starting planets we include
+	// PRELOADED planets: generated in full at boot by loadWorld() below, one surface +
+	// one cave z-level each, held in memory for the whole round whether or not a single
+	// crew ever lands on them. All zeroed on purpose — the round's planet supply comes
+	// from dynamic markers instead (SSovermap.setup_planets), which generate their
+	// surface on first visit. Raise a count here only to pin a specific planet type to
+	// a pre-generated, fully seeded z-pair, and budget ~2 z-levels of memory for it.
 	var/lava_planet_count = 0
 	var/ice_planet_count = 0
 	var/jungle_planet_count = 0
@@ -38,11 +41,14 @@
 /**
  * Deals out a zone band (ZONE_GREEN/YELLOW/RED) for the next roundstart planet.
  *
- * Roundstart planet z-levels are generated and populated during SSmapping init,
+ * Preloaded planet z-levels are generated and populated during SSmapping init,
  * BEFORE SSovermap places the planets on the overmap — so the zone must be
  * decided up front. The band is stored on the planet's SSmapping.planets entry;
  * SSovermap.setup_planets() then places the planet on an overmap tile inside
  * that band, keeping the pre-generated content honest.
+ *
+ * Dynamic planets draw from the same pool when setup_planets() places them, so
+ * the two supply models can't both crowd into the same ring.
  *
  * Bands are dealt from a reshuffled set of all three, so every round gets at
  * least one planet per band while the ordering stays random.

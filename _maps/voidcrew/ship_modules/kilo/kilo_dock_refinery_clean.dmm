@@ -1,0 +1,75 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/machinery/mineral/ore_redemption{
+	dir = 2
+	},
+/obj/structure/sign/warning/electric_shock/directional/north,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"b" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"c" = (
+/obj/machinery/autolathe,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"d" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 2
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"e" = (
+/obj/item/stack/ore/iron,
+/obj/item/clothing/head/utility/hardhat{
+	pixel_x = 8;
+	pixel_y = 7
+	},
+/obj/effect/turf_decal/delivery,
+/obj/effect/turf_decal/trimline/neutral/warning,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"f" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/structure/sign/poster/official/safety_eye_protection{
+	pixel_x = 32
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+
+(1,1,1) = {"
+a
+b
+"}
+(2,1,1) = {"
+c
+d
+"}
+(3,1,1) = {"
+e
+f
+"}

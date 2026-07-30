@@ -20,6 +20,35 @@
 	/// Loaded coupons that can be applied to orders
 	var/list/obj/item/coupon/loaded_coupons
 
+/obj/machinery/computer/voidcrew_cargo/Initialize(mapload)
+	. = ..()
+	//Mapped-in consoles have no multitool link yet, so adopt the ship's own bank machine.
+	//Deferred because the bank machine may not have initialized when we do.
+	return INITIALIZE_HINT_LATELOAD
+
+/obj/machinery/computer/voidcrew_cargo/LateInitialize()
+	. = ..()
+	if(bank_account_holder)
+		return
+	var/obj/machinery/computer/bank_machine/bank = find_ship_bank()
+	if(!bank)
+		return
+	bank_account_holder = bank
+	RegisterSignal(bank, COMSIG_QDELETING, PROC_REF(on_bank_deletion))
+
+/**
+ * Finds a bank machine aboard the same shuttle as this console.
+ * Used to auto-link mapped-in consoles; a multitool still overrides the choice.
+ */
+/obj/machinery/computer/voidcrew_cargo/proc/find_ship_bank()
+	var/obj/docking_port/mobile/port = SSshuttle.get_containing_shuttle(src)
+	if(!port)
+		return null
+	for(var/area/shuttle_area as anything in port.shuttle_areas)
+		for(var/obj/machinery/computer/bank_machine/bank in shuttle_area)
+			return bank
+	return null
+
 /obj/machinery/computer/voidcrew_cargo/Destroy()
 	if(bank_account_holder)
 		on_bank_deletion(bank_account_holder)

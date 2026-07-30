@@ -1,0 +1,186 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"e" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"f" = (
+/obj/structure/rack,
+/obj/item/gun/energy/e_gun/mini,
+/obj/item/gun/energy/e_gun/mini,
+/obj/item/gun/energy/disabler,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"g" = (
+/obj/effect/turf_decal/bot,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"j" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"m" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/template_noop)
+"n" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"s" = (
+/obj/structure/closet/secure_closet/armory1,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"v" = (
+/turf/open/floor/iron,
+/area/template_noop)
+"z" = (
+/obj/structure/closet/secure_closet/security,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"A" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/sheet/iron/fifty,
+/obj/item/stack/sheet/plasteel{
+	amount = 5
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"E" = (
+/obj/effect/turf_decal/box/corners{
+	dir = 4
+	},
+/obj/structure/closet/crate,
+/obj/item/storage/toolbox/electrical,
+/obj/item/stack/cable_coil,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"J" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"L" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 6;
+	pixel_y = -3
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"P" = (
+/obj/structure/closet/secure_closet/security,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"T" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger,
+/obj/item/stock_parts/power_store/cell/high{
+	pixel_x = 7;
+	pixel_y = -3
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"U" = (
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"V" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"W" = (
+/obj/structure/table/reinforced,
+/obj/item/wallframe/turret_control{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/multitool{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"Z" = (
+/obj/structure/rack,
+/obj/item/storage/box/zipties,
+/obj/item/flashlight/seclite,
+/obj/item/flashlight/seclite,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+z
+J
+m
+U
+j
+"}
+(2,1,1) = {"
+P
+J
+v
+U
+P
+"}
+(3,1,1) = {"
+g
+J
+v
+U
+c
+"}
+(4,1,1) = {"
+f
+J
+v
+e
+W
+"}
+(5,1,1) = {"
+T
+J
+v
+U
+L
+"}
+(6,1,1) = {"
+s
+n
+v
+U
+A
+"}
+(7,1,1) = {"
+Z
+V
+V
+V
+E
+"}

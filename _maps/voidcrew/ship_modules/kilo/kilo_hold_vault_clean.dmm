@@ -1,0 +1,79 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/template_noop)
+"m" = (
+/obj/modular_map_connector,
+/obj/structure/safe,
+/obj/effect/turf_decal/delivery,
+/obj/effect/turf_decal/box,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/sign/poster/official/do_not_question/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/template_noop)
+"p" = (
+/obj/structure/closet/crate/secure{
+	name = "sealed document crate"
+	},
+/obj/effect/spawner/random/maintenance/three,
+/obj/item/folder/blue,
+/obj/item/stamp,
+/obj/effect/turf_decal/delivery,
+/obj/machinery/light/cold{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"t" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot_red,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"u" = (
+/turf/template_noop,
+/area/template_noop)
+"C" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/bot_red,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"F" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/template_noop)
+"T" = (
+/obj/structure/closet/secure_closet/personal{
+	name = "records locker"
+	},
+/obj/effect/turf_decal/delivery,
+/obj/structure/sign/warning/secure_area/directional/south,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+
+(1,1,1) = {"
+C
+b
+m
+"}
+(2,1,1) = {"
+t
+T
+u
+"}
+(3,1,1) = {"
+F
+p
+u
+"}

@@ -47,6 +47,7 @@
 		/obj/item/clothing/head/chaplain/bishopmitre = 5,
 		/obj/item/toy/cards/deck/tarot/haunted = 4,
 		/obj/item/coin/eldritch = 3,
+		/obj/item/ship_parts/science = 5,
 	)
 	loot_red = list(
 		/obj/item/statuebust = 9,
@@ -58,6 +59,7 @@
 		/obj/item/coin/eldritch = 4,
 		/obj/item/knife/bloodletter = 3,
 		/obj/item/soulstone/anybody/purified = 3,
+		/obj/item/ship_parts/science = 8,
 	)
 	// Rare tables: surviving stock entries + this theme's uniques at ~4
 	// (see voidcrew/modules/loot/uniques/occult.dm and the design doc).

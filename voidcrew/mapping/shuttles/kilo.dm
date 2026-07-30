@@ -14,7 +14,11 @@
 	name = "Kilo-class Mining Ship"
 	short_name = "Kilo-Class"
 	suffix = "kilo_a" // Default suffix, overridden by selected theme
-	part_requirements = list(PART_CLASS_TRADE = 3)
+	catalog_desc = "A frontier mining barge built around an east-side cargo hold and an external \
+		dock prep strip. Helm, engine column, SMES bay and cryopods are all permanent, so \
+		the bare hull flies as bought. Its slots cover the service room, the dock strip and \
+		the hold, which lets it run as a pure ore hauler or a small freighter."
+	part_requirements = list(PART_CLASS_TRADE = 6, PART_CLASS_MISC = 4, PART_CLASS_SCIENCE = 2)
 	has_upgrade_slots = TRUE
 	upgrade_slot_ids = list(
 		"kilo_service",

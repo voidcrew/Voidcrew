@@ -50,6 +50,7 @@
 		/obj/item/organ/eyes/robotic/basic = 3,
 		/obj/item/organ/liver/cybernetic = 3,
 		/obj/item/organ/lungs/cybernetic = 3,
+		/obj/item/ship_parts/science = 9,
 	)
 	loot_red = list(
 		/obj/item/storage/medkit/advanced = 9,
@@ -65,6 +66,7 @@
 		/obj/item/organ/liver/cybernetic/tier2 = 3,
 		/obj/item/organ/lungs/cybernetic/tier2 = 3,
 		/obj/item/reagent_containers/hypospray/medipen/survival/luxury = 2,
+		/obj/item/ship_parts/science = 11,
 	)
 	// Rare tables: surviving stock entries + this theme's uniques at ~4
 	// (see voidcrew/modules/loot/uniques/medical.dm and the design doc)

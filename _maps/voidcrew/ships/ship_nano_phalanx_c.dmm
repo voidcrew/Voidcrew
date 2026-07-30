@@ -1,0 +1,5452 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/cable,
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"ab" = (
+/obj/effect/landmark/event_spawn,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"ac" = (
+/obj/effect/landmark/event_spawn,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"af" = (
+/obj/machinery/door/airlock/medical,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"ag" = (
+/obj/item/kirbyplants/organic/plant9,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"al" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"an" = (
+/obj/structure/cable,
+/obj/structure/chair/sofa/bench/right{
+	dir = 1
+	},
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"ar" = (
+/obj/machinery/door/airlock/highsecurity{
+	name = "Armory"
+	},
+/obj/structure/cable,
+/obj/effect/mapping_helpers/airlock/access/all/security/armory,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/security/c)
+"as" = (
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"ax" = (
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"aG" = (
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/cable,
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"aN" = (
+/obj/machinery/light_switch{
+	pixel_x = -23
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"aQ" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"aU" = (
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"aW" = (
+/obj/structure/sign/directions/science,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/nanites/c)
+"aX" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"be" = (
+/obj/structure/sign/poster/official/random{
+	pixel_x = -32
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"bt" = (
+/obj/structure/fans/tiny,
+/obj/effect/turf_decal/siding/thinplating{
+	icon_state = "danger"
+	},
+/obj/machinery/door/poddoor{
+	id = "phalanx_bay_north_outer"
+	},
+/turf/open/floor/iron{
+	icon_state = "steel_ridged"
+	},
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"by" = (
+/obj/machinery/camera/directional/north,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/spawner/random/trash/mopbucket,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"bC" = (
+/obj/machinery/vending/dinnerware,
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"bF" = (
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"bJ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/chair/sofa/bench/right{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"bM" = (
+/obj/machinery/door/airlock/highsecurity{
+	name = "Armory"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/security/armory,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/security/c)
+"bS" = (
+/obj/structure/cable,
+/obj/item/kirbyplants/organic/plant1,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"bZ" = (
+/obj/machinery/holopad,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"cc" = (
+/obj/item/kirbyplants/random,
+/obj/machinery/light/small{
+	dir = 8
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"cd" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/closet/crate/engineering,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/storage/toolbox/electrical,
+/obj/item/wrench,
+/obj/item/stack/sheet/mineral/plasma/thirty,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"cf" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	on = 1
+	},
+/obj/machinery/atmospherics/pipe/bridge_pipe/green/visible{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"cj" = (
+/obj/machinery/atmospherics/pipe/layer_manifold/scrubbers/hidden{
+	dir = 4
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"cp" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"cq" = (
+/obj/machinery/vending/modularpc,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"cA" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/structure/flora/bush/grassy,
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"cF" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"cI" = (
+/obj/machinery/button/door{
+	id = "phalanx_bay_north_inner";
+	name = "Internal Blastdoor Control";
+	pixel_y = -24
+	},
+/obj/machinery/light,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"cK" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/trinary/filter/atmos/o2{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"cQ" = (
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"cS" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/item/food/grown/poppy/lily{
+	pixel_y = -4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"cV" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"db" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"df" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/machinery/suit_storage_unit/atmos,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"dn" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"do" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/security/armory/c)
+"dp" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"dq" = (
+/obj/machinery/button/door{
+	id = "phalanx_bay_north_outer";
+	name = "External Hanger Blastdoor Control";
+	pixel_y = 24
+	},
+/obj/machinery/camera{
+	dir = 10
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"dt" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lantern{
+	pixel_x = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 5
+	},
+/obj/item/food/grown/poppy{
+	pixel_x = -8;
+	pixel_y = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"dy" = (
+/obj/structure/flora/bush/flowers_yw,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"dA" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"dC" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"dH" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/iv_drip,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"dL" = (
+/obj/structure/fans/tiny,
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1;
+	icon_state = "danger"
+	},
+/obj/machinery/door/poddoor{
+	id = "phalanx_bay_south_outer"
+	},
+/turf/open/floor/iron{
+	icon_state = "steel_ridged"
+	},
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"dP" = (
+/obj/machinery/deepfryer,
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"dQ" = (
+/obj/structure/table/wood,
+/obj/item/cultivator{
+	pixel_x = -8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/item/hatchet{
+	pixel_x = 6
+	},
+/obj/machinery/light_switch{
+	pixel_x = 3;
+	pixel_y = -32
+	},
+/obj/effect/turf_decal/siding/wood,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"dV" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"eb" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"ee" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/machinery/hydroponics/soil,
+/turf/open/misc/dirt/station,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"em" = (
+/obj/structure/flora/bush/flowers_pp,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"ep" = (
+/turf/open/floor/engine/o2,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"eu" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/machinery/hydroponics/soil,
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"ex" = (
+/obj/machinery/button/door{
+	id = "phalanx_bay_south_inner";
+	name = "Internal Hanger Blast Door Control";
+	pixel_y = -24
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"ey" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Engineering"
+	},
+/obj/machinery/door/firedoor,
+/obj/effect/mapping_helpers/airlock/access/any/engineering/general,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"eD" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"eF" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "phalanx_armory"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/security/armory/c)
+"eJ" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"eN" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"eX" = (
+/obj/effect/turf_decal/trimline/yellow/filled/warning{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"ff" = (
+/obj/machinery/light,
+/obj/structure/cable,
+/obj/structure/flora/bush/ferny,
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"fh" = (
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"fw" = (
+/obj/machinery/door/airlock/external,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"fz" = (
+/obj/structure/cable,
+/obj/machinery/door/airlock/engineering{
+	name = "Engineering"
+	},
+/obj/machinery/door/firedoor,
+/obj/effect/mapping_helpers/airlock/access/any/engineering/general,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"fD" = (
+/obj/machinery/power/port_gen/pacman/pre_loaded,
+/obj/structure/cable,
+/obj/machinery/light/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"fK" = (
+/obj/item/kirbyplants/organic/plant17,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"fL" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"fQ" = (
+/obj/machinery/button/door{
+	id = "phalanx_bay_south_inner";
+	name = "Internal Hanger Blast Door Control";
+	pixel_y = 24
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"gd" = (
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"gf" = (
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"gi" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/chair/sofa/bench/right{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"gj" = (
+/obj/structure/cable,
+/obj/machinery/power/shuttle_engine/ship/electric{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"gw" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"gA" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible,
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"gC" = (
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"gI" = (
+/obj/machinery/button/door{
+	id = "phalanx_bay_south_outer";
+	name = "External Hanger Blast Door Control";
+	pixel_y = -24
+	},
+/obj/machinery/camera{
+	dir = 10
+	},
+/obj/effect/turf_decal/siding/thinplating,
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"gL" = (
+/obj/machinery/door/firedoor,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"gQ" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/electrical,
+/obj/item/pipe_dispenser,
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"gT" = (
+/obj/structure/closet/secure_closet/captains,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"gV" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"gX" = (
+/obj/item/kirbyplants/organic/plant2,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"gY" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"hf" = (
+/obj/item/kirbyplants/organic/plant14,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"hl" = (
+/obj/structure/table/wood,
+/obj/item/pen/fountain,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/obj/machinery/camera{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/wood,
+/obj/item/paper_bin,
+/obj/item/plant_analyzer{
+	pixel_x = -7;
+	pixel_y = 6
+	},
+/obj/item/shovel/spade{
+	pixel_x = 7;
+	pixel_y = -2
+	},
+/obj/item/reagent_containers/cup/watering_can/wood{
+	pixel_x = 6;
+	pixel_y = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"hq" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/security/armory/c)
+"hx" = (
+/obj/machinery/door/airlock/science,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"hL" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"hQ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"hZ" = (
+/obj/structure/chair/sofa/right{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"id" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"ie" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/trinary/filter/atmos/n2{
+	dir = 8
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"ij" = (
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/turf/open/floor/engine/o2,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"il" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"im" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/flora/tree/jungle/small,
+/turf/open/misc/dirt/station,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"ir" = (
+/obj/machinery/door/poddoor{
+	id = "phalanx_massdriver"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"is" = (
+/obj/machinery/door/airlock/science,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"it" = (
+/obj/machinery/airalarm/directional/north,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"ix" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"iA" = (
+/obj/machinery/camera/directional/east,
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"iS" = (
+/obj/machinery/button/door{
+	id = "phalanx_bay_north_outer";
+	name = "External Hanger Blastdoor Control";
+	pixel_y = 24
+	},
+/obj/machinery/camera/directional/east,
+/obj/structure/sign/poster/official/random{
+	pixel_x = 32
+	},
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"iU" = (
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"iZ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/item/storage/bag/plants/portaseeder,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"je" = (
+/obj/machinery/power/port_gen/pacman/pre_loaded,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"jf" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"jg" = (
+/obj/effect/turf_decal/siding/thinplating{
+	icon_state = "danger"
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/door/poddoor{
+	id = "phalanx_bay_north_inner"
+	},
+/obj/machinery/door/firedoor/heavy,
+/turf/open/floor/iron{
+	icon_state = "steel_ridged"
+	},
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"js" = (
+/obj/structure/closet/secure_closet/medical3,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"jN" = (
+/obj/machinery/door/airlock/shuttle/glass,
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"jP" = (
+/obj/structure/sign/directions/science{
+	dir = 4
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/nanites/c)
+"jW" = (
+/obj/structure/rack,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/item/pickaxe,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"kb" = (
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"ko" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"kq" = (
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"kB" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/machinery/airalarm/directional/west,
+/obj/machinery/atmospherics/pipe/smart/simple/green/visible{
+	dir = 5
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"kJ" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"lf" = (
+/obj/structure/sign/poster/contraband/atmosia_independence{
+	pixel_y = 32
+	},
+/obj/machinery/atmospherics/pipe/bridge_pipe/green/visible{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"lj" = (
+/obj/structure/flora/bush/flowers_yw,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"ln" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"lo" = (
+/obj/structure/sign/poster/official/fruit_bowl{
+	pixel_y = 32
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"lp" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/light/floor,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"lr" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"lz" = (
+/obj/structure/window/reinforced/tinted{
+	dir = 8
+	},
+/obj/item/kirbyplants/random,
+/obj/machinery/light,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"lH" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/door/window/left/directional/east,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"lI" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"lR" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Morgue"
+	},
+/obj/machinery/door/firedoor,
+/obj/effect/turf_decal/trimline/white/filled/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/blue{
+	dir = 4
+	},
+/obj/effect/mapping_helpers/airlock/access/any/medical/morgue,
+/obj/effect/mapping_helpers/airlock/access/any/service/crematorium,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
+"lT" = (
+/obj/structure/rack,
+/obj/item/mining_scanner,
+/obj/item/mining_scanner,
+/obj/item/mining_scanner,
+/obj/item/mining_scanner,
+/obj/item/mining_scanner,
+/obj/item/mining_scanner,
+/obj/item/tank/internals/emergency_oxygen/double/empty,
+/obj/item/tank/internals/emergency_oxygen/double/empty,
+/obj/item/tank/internals/emergency_oxygen/double/empty,
+/obj/item/tank/internals/emergency_oxygen/double/empty,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"lZ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/structure/flora/bush/flowers_yw,
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"mf" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"mh" = (
+/obj/machinery/door/window/right/directional/east,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"mj" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/rnd/production/techfab/department/medical,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"ml" = (
+/obj/machinery/airalarm/directional/east,
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"mm" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"mp" = (
+/obj/machinery/door/firedoor,
+/obj/effect/turf_decal/siding/wood{
+	dir = 9
+	},
+/obj/machinery/door/airlock/grunge{
+	name = "Chapel"
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"ms" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"mx" = (
+/obj/machinery/computer/atmos_alert,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"my" = (
+/obj/machinery/vending/wardrobe/medi_wardrobe,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"mP" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"mT" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"na" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"nk" = (
+/obj/structure/grille,
+/obj/structure/window/reinforced/shuttle,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"no" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/hydroponics/soil,
+/turf/open/misc/dirt/station,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"nr" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"nx" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"nE" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"nL" = (
+/obj/structure/table/wood,
+/obj/item/food/grown/harebell{
+	pixel_x = -6;
+	pixel_y = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"nO" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"nY" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/item/kirbyplants/organic/plant2,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"nZ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"og" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"oj" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"ol" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"oC" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/item/kirbyplants/organic/plant8,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"oH" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/hydroponics/soil,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"oK" = (
+/obj/structure/sign/warning/electric_shock/directional/south,
+/obj/effect/turf_decal/trimline/yellow/filled/warning{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"oL" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/machinery/atmospherics/components/unary/outlet_injector/monitored/oxygen_input,
+/turf/open/floor/engine/o2,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"oM" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"oO" = (
+/obj/machinery/vending/engivend,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"oW" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1;
+	icon_state = "danger"
+	},
+/obj/machinery/door/poddoor{
+	id = "phalanx_bay_south_inner"
+	},
+/obj/machinery/door/firedoor/heavy,
+/turf/open/floor/iron{
+	icon_state = "steel_ridged"
+	},
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"oY" = (
+/obj/machinery/light/small{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"oZ" = (
+/turf/template_noop,
+/area/template_noop)
+"ph" = (
+/obj/structure/sign/nanotrasen,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"px" = (
+/obj/structure/cable,
+/obj/structure/closet/secure_closet/engineering_personal,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"pz" = (
+/obj/machinery/light,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"pD" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"pE" = (
+/obj/item/kirbyplants/organic/plant11,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"pJ" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger{
+	pixel_x = -6
+	},
+/obj/machinery/camera/directional/east,
+/obj/machinery/firealarm/directional/north,
+/obj/machinery/recharger{
+	pixel_x = 6
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"pW" = (
+/obj/structure/window/reinforced/tinted{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"pZ" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"qi" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"ql" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1;
+	icon_state = "danger"
+	},
+/obj/machinery/door/poddoor{
+	id = "phalanx_bay_south_inner"
+	},
+/obj/machinery/door/firedoor/heavy,
+/obj/structure/cable,
+/turf/open/floor/iron{
+	icon_state = "steel_ridged"
+	},
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"qp" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"qy" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"qI" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"qU" = (
+/obj/machinery/button/door{
+	id = "phalanx_bay_south_outer";
+	name = "External Hanger Blast Door Control";
+	pixel_y = -24
+	},
+/obj/machinery/camera{
+	dir = 10
+	},
+/obj/effect/turf_decal/siding/thinplating,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"rb" = (
+/obj/structure/flora/bush/ferny,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"rc" = (
+/obj/structure/flora/bush/fullgrass,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"rj" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"ro" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"rs" = (
+/obj/effect/turf_decal/trimline/white/filled/warning{
+	dir = 4
+	},
+/obj/item/kirbyplants/organic/plant21,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
+"ru" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"rw" = (
+/obj/machinery/airalarm/directional/north,
+/obj/machinery/light/directional/north,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"rC" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"rN" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored/nitrogen_output,
+/turf/open/floor/engine/n2,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"rX" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"rZ" = (
+/obj/machinery/iv_drip,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"sa" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"sc" = (
+/obj/structure/flora/bush/flowers_pp,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"sn" = (
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"sp" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lantern{
+	pixel_x = -8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/effect/turf_decal/siding/wood{
+	dir = 9
+	},
+/obj/item/food/grown/poppy{
+	pixel_x = 8;
+	pixel_y = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"ss" = (
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"st" = (
+/obj/machinery/button/door{
+	id = "phalanx_bay_north_inner";
+	name = "Internal Hanger Blastdoor Control";
+	pixel_y = -24
+	},
+/obj/machinery/light,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"sv" = (
+/obj/structure/chair/sofa/left,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"sE" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"sK" = (
+/obj/machinery/vending/hydroseeds,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/obj/machinery/light/small,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"sV" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/closet/crate/freezer/surplus_limbs,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"sW" = (
+/obj/machinery/door/airlock/command{
+	name = "Bridge"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"sX" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"tb" = (
+/obj/machinery/door/window/right/directional/east,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"tg" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
+/obj/structure/closet/secure_closet/atmospherics,
+/obj/machinery/light/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"tt" = (
+/obj/machinery/light,
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/door/airlock/public/glass,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"tw" = (
+/obj/machinery/door/airlock/shuttle/glass,
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"tN" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"tQ" = (
+/obj/structure/chair/stool/bar/directional/west,
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"ud" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Morgue"
+	},
+/obj/machinery/door/firedoor,
+/obj/effect/turf_decal/trimline/white/filled/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/white/filled/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/blue,
+/obj/effect/mapping_helpers/airlock/access/all/service/chapel_office,
+/obj/effect/mapping_helpers/airlock/access/all/service/chapel_office,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"ui" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/computer/mission_board{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"um" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"uo" = (
+/obj/machinery/door/airlock/command{
+	name = "Captain's Quarters"
+	},
+/obj/structure/cable,
+/obj/effect/mapping_helpers/airlock/access/any/command/captain,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"ut" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"uu" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"uv" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/trimline/yellow/filled/warning{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"uH" = (
+/obj/structure/chair/pew/left,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"uQ" = (
+/obj/structure/table,
+/obj/machinery/processor{
+	pixel_y = 6
+	},
+/obj/item/food/grown/potato{
+	pixel_x = -7;
+	pixel_y = 10
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"uR" = (
+/obj/machinery/door/poddoor{
+	id = "phalanx_public_shutters"
+	},
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"vc" = (
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/structure/flora/bush/leafy,
+/obj/structure/railing/wooden_fence{
+	dir = 4
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"vd" = (
+/obj/machinery/mineral/ore_redemption,
+/obj/machinery/door/firedoor/heavy,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"vo" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/chair/sofa/right,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"vt" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"vu" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"vy" = (
+/obj/machinery/vending/security,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"vE" = (
+/obj/machinery/button/door{
+	id = "phalanx_bay_south_inner";
+	name = "Internal Hanger Blast Door Control";
+	pixel_y = 24
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"vI" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/closet/secure_closet/security,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"vN" = (
+/obj/machinery/door/airlock/external,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"vP" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/closet/secure_closet/security,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"vS" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"vW" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/nanites/c)
+"wa" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/security/armory/c)
+"wd" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/structure/flora/bush/ferny,
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"wk" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/machinery/computer/mission_board{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"wm" = (
+/obj/structure/cable,
+/obj/machinery/hydroponics/soil,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"wn" = (
+/obj/item/kirbyplants/random,
+/obj/machinery/light/small{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"wr" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored/oxygen_output,
+/turf/open/floor/engine/o2,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"wu" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"wB" = (
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"wC" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"wD" = (
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"wE" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"wR" = (
+/obj/structure/chair/stool/bar/directional/west,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"wU" = (
+/obj/structure/cable,
+/obj/machinery/light/directional/south,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"wX" = (
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"xc" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"xl" = (
+/obj/machinery/computer/rdconsole{
+	dir = 8
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"xm" = (
+/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"xp" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/door/airlock/grunge{
+	name = "Chaplain's Quarters"
+	},
+/obj/machinery/door/firedoor,
+/obj/effect/mapping_helpers/airlock/access/all/service/chapel_office,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"xr" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"xv" = (
+/obj/machinery/atmospherics/pipe/smart/simple/green/visible{
+	dir = 10
+	},
+/obj/machinery/light/directional/north,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"xy" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/door/airlock/glass{
+	name = "Kitchen"
+	},
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/mapping_helpers/airlock/access/all/service/kitchen,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"xS" = (
+/obj/machinery/atmospherics/pipe/layer_manifold/orange/visible,
+/obj/structure/closet/secure_closet/engineering_electrical,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"yb" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"yh" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Engineering"
+	},
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/layer_manifold/supply/hidden{
+	dir = 4
+	},
+/obj/effect/mapping_helpers/airlock/access/any/engineering/general,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"yl" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible,
+/obj/structure/cable,
+/obj/item/kirbyplants/organic/plant13,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"yn" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/sign/poster/contraband/hacking_guide{
+	pixel_x = 32
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/trimline/yellow/filled/warning,
+/obj/machinery/power/smes/engineering,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"yr" = (
+/obj/effect/decal/cleanable/oil,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"ys" = (
+/obj/machinery/door/window/right/directional/east{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"yt" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/phalanx/medbay/c)
+"yu" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"yv" = (
+/obj/machinery/camera{
+	dir = 10
+	},
+/obj/structure/table,
+/obj/item/food/grown/tomato{
+	pixel_x = -6;
+	pixel_y = 7
+	},
+/obj/item/food/grown/tomato{
+	pixel_x = 3;
+	pixel_y = 9
+	},
+/obj/item/food/grown/carrot{
+	pixel_x = 7;
+	pixel_y = 2
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"yE" = (
+/obj/structure/flora/bush/lavendergrass,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"yK" = (
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"yN" = (
+/obj/structure/table/wood,
+/obj/item/food/grown/poppy{
+	pixel_x = -5;
+	pixel_y = 9
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"yO" = (
+/obj/machinery/suit_storage_unit/security,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"yR" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"yW" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/hydroponics/soil,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"ze" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner/directional/north,
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"zi" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"zv" = (
+/obj/machinery/camera{
+	dir = 9
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"zx" = (
+/obj/machinery/portable_atmospherics/canister/nitrogen,
+/turf/open/floor/engine/n2,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"zG" = (
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"zH" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/security/armory/c)
+"zL" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green,
+/obj/structure/cable,
+/obj/item/food/grown/harebell{
+	pixel_x = 8;
+	pixel_y = 5
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"zN" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/sign/departments/botany/directional/south,
+/obj/structure/cable,
+/obj/machinery/light/floor,
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"zV" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"Aa" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"Ai" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Ak" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"Al" = (
+/obj/structure/cable,
+/obj/structure/closet/secure_closet/engineering_personal,
+/obj/machinery/light/directional/east,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"Aq" = (
+/obj/structure/table/wood,
+/obj/item/food/grown/sunflower{
+	pixel_x = 5;
+	pixel_y = 9
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"Ar" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/light/directional/west,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"As" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"AC" = (
+/obj/machinery/mass_driver{
+	id = "phalanx_massdriver"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"AD" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/item/kirbyplants/organic/plant4,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"AF" = (
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"AK" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"AO" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible,
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"AS" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Morgue"
+	},
+/obj/machinery/door/firedoor,
+/obj/effect/turf_decal/siding/blue{
+	dir = 1
+	},
+/obj/effect/mapping_helpers/airlock/access/any/medical/morgue,
+/obj/effect/mapping_helpers/airlock/access/any/service/crematorium,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
+"AW" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"AY" = (
+/obj/machinery/door/window/left/directional/east,
+/obj/machinery/button/massdriver{
+	pixel_y = 32
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"Bt" = (
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Bz" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/random{
+	pixel_y = -32
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"BB" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"BE" = (
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/structure/table,
+/obj/item/reagent_containers/cup/bucket,
+/obj/item/mop,
+/obj/structure/cable,
+/obj/machinery/light/directional/south,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"BG" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"Cj" = (
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"Ck" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
+"Cm" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "phalanx_lab"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/nanites/c)
+"Cq" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"Cs" = (
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"Cx" = (
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"CE" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"CM" = (
+/obj/structure/plaque/static_plaque/golden{
+	desc = "A golden plaque made to remember the hardworking engineers that sacrificed their lives to make this ship functional. Never forget.";
+	name = "Golden Plaque";
+	pixel_y = 30
+	},
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"CV" = (
+/obj/structure/closet/secure_closet/freezer/kitchen{
+	req_access = null
+	},
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"CZ" = (
+/obj/machinery/airalarm/directional/north,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/corner,
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/east,
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"Dc" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"Dd" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Dl" = (
+/obj/structure/ore_box,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"Dy" = (
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"DA" = (
+/obj/machinery/computer/helm{
+	dir = 8
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"DC" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"DE" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"DG" = (
+/obj/effect/turf_decal/siding/thinplating{
+	icon_state = "danger"
+	},
+/obj/machinery/door/poddoor{
+	id = "phalanx_bay_north_inner"
+	},
+/obj/machinery/door/firedoor/heavy,
+/turf/open/floor/iron{
+	icon_state = "steel_ridged"
+	},
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"DN" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/cable,
+/obj/effect/turf_decal/trimline/yellow/filled/warning,
+/obj/machinery/power/smes/engineering,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"DP" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"DQ" = (
+/obj/machinery/door/airlock/highsecurity{
+	name = "Security Access"
+	},
+/obj/machinery/door/firedoor/heavy,
+/obj/effect/mapping_helpers/airlock/access/any/security/general,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/security/c)
+"DS" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"Ea" = (
+/obj/structure/sign/directions/medical{
+	dir = 8
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/security/c)
+"Ex" = (
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"EG" = (
+/obj/structure/table/reinforced,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/obj/structure/window/reinforced/spawner/directional/south,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"EJ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/door/airlock/command{
+	name = "Bridge"
+	},
+/obj/structure/cable,
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"EL" = (
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"EN" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"ER" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"EX" = (
+/obj/machinery/button/door{
+	id = "phalanx_bay_south_outer";
+	name = "External Hanger Blast Door Control";
+	pixel_y = -24
+	},
+/obj/machinery/camera/directional/east,
+/obj/effect/turf_decal/siding/thinplating,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"Fh" = (
+/obj/structure/curtain/bounty,
+/obj/item/bedsheet/captain,
+/obj/structure/bed,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"Fq" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/white/filled/corner,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
+"Fr" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"Ft" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"FH" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"FQ" = (
+/obj/structure/sign/directions/science{
+	dir = 8
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/security/c)
+"FR" = (
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"FS" = (
+/obj/structure/plaque/static_plaque{
+	desc = "Commissioned in 2462, This Battlecruiser SN:0121 was Made on Sevastapol XI in accordance with Nanotrasen Combat-Carrier Guidelines";
+	name = "Phalanx-Class Super Battlecruiser Comissioning Plaque";
+	pixel_y = 32
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"FV" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"FZ" = (
+/obj/structure/chair/sofa/middle{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"Gb" = (
+/obj/structure/cable,
+/obj/machinery/door/airlock/engineering,
+/obj/effect/mapping_helpers/airlock/access/any/engineering/general,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"Ge" = (
+/obj/item/kirbyplants/organic/plant8,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"Gs" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/item/kirbyplants/organic/plant7,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"Gx" = (
+/obj/machinery/camera{
+	dir = 10
+	},
+/obj/machinery/atmospherics/components/binary/dp_vent_pump/layer4{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"GA" = (
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/machinery/vending/medical,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"GC" = (
+/obj/machinery/door/poddoor{
+	id = "phalanx_public_shutters"
+	},
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"GD" = (
+/obj/structure/sign/departments/medbay/alt,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/medbay/c)
+"GG" = (
+/obj/machinery/computer/security{
+	dir = 1
+	},
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"GQ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"GR" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/nanites/c)
+"GT" = (
+/obj/machinery/door/poddoor{
+	id = "phalanx_bridge_blast"
+	},
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"GX" = (
+/obj/machinery/door/airlock/science,
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"GZ" = (
+/obj/machinery/power/port_gen/pacman,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"Hc" = (
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/machinery/airalarm/directional/north,
+/obj/structure/table,
+/obj/item/wrench,
+/obj/item/crowbar,
+/obj/item/storage/box/bodybags,
+/obj/structure/cable,
+/obj/item/food/grown/poppy/lily{
+	pixel_x = -7;
+	pixel_y = 8
+	},
+/obj/item/food/grown/poppy/lily{
+	pixel_x = 2;
+	pixel_y = 10
+	},
+/obj/item/flashlight/lantern{
+	pixel_x = 9;
+	pixel_y = 4
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
+"He" = (
+/obj/machinery/button/door{
+	id = "phalanx_bay_south_inner";
+	name = "Internal Hanger Blast Door Control";
+	pixel_y = -24
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Hg" = (
+/obj/structure/cable,
+/obj/machinery/door/airlock/engineering,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible,
+/obj/effect/mapping_helpers/airlock/access/any/engineering/general,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"Hk" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/item/flashlight/lantern{
+	pixel_x = -6
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"Hr" = (
+/obj/machinery/light/small{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"Hw" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"Hy" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/structure/chair/sofa/bench/left{
+	dir = 1
+	},
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"HK" = (
+/obj/structure/table/reinforced,
+/obj/item/kirbyplants/organic/plant16{
+	pixel_y = 8
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"HN" = (
+/obj/machinery/hydroponics/soil,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"HR" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/item/kirbyplants/fern,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"HU" = (
+/obj/structure/cable,
+/obj/structure/chair/sofa/bench/left{
+	dir = 1
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"Ib" = (
+/obj/machinery/cryopod{
+	dir = 8
+	},
+/obj/machinery/computer/cryopod{
+	pixel_y = 32
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"Ih" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/door/airlock/freezer{
+	name = "Kitchen Coldroom"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/mapping_helpers/airlock/access/all/service/kitchen,
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"Ij" = (
+/obj/structure/sign/nanotrasen,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"Ik" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/machinery/suit_storage_unit/engine,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"It" = (
+/obj/machinery/microwave,
+/obj/structure/table/reinforced,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"Iw" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/firealarm/directional/south,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"IJ" = (
+/obj/machinery/vending/coffee,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"IM" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "phalanx_bay_south"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"IN" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"IS" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"IV" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"IX" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"IY" = (
+/obj/machinery/power/apc/auto_name/directional/west,
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"Jb" = (
+/obj/machinery/light/floor,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Jh" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"Jj" = (
+/obj/machinery/cryopod{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"Jn" = (
+/obj/machinery/griddle,
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"Jp" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"Jy" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/structure/reagent_dispensers/wall/peppertank{
+	pixel_x = 32
+	},
+/obj/machinery/suit_storage_unit/security,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"JC" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "phalanx_medical"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/medbay/c)
+"JJ" = (
+/obj/machinery/atmospherics/components/binary/dp_vent_pump/layer4{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"JO" = (
+/obj/machinery/power/terminal{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"JU" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
+"Kc" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"Kn" = (
+/obj/machinery/firealarm/directional/north,
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"Ks" = (
+/obj/machinery/button/door{
+	id = "phalanx_bridge_blast";
+	name = "Bridge Blastdoor Control";
+	pixel_x = -24;
+	pixel_y = -5
+	},
+/obj/machinery/button/door{
+	id = "phalanx_public_shutters";
+	name = "Public Area Shutters";
+	pixel_x = -24;
+	pixel_y = 5
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"Kv" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"KF" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"KH" = (
+/obj/machinery/door/airlock/command{
+	name = "Captain's Quarters"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/command/captain,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"KQ" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"KT" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/medbay/c)
+"KW" = (
+/obj/machinery/fax{
+	fax_name = "Phalanx Fax";
+	name = "Phalanx Fax Machine"
+	},
+/obj/structure/table/wood,
+/obj/machinery/light/small{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"KX" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"Lb" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"Lc" = (
+/obj/machinery/suit_storage_unit/captain,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"Le" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"Lf" = (
+/obj/item/kirbyplants/organic/plant20,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Lj" = (
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"Lo" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"Ls" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"LB" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/structure/closet/crate/hydroponics,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"LE" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/east,
+/obj/structure/window/reinforced/plasma/spawner,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"LG" = (
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"LJ" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"LL" = (
+/obj/machinery/atmospherics/pipe/smart/simple/green/visible,
+/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"LX" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"Mc" = (
+/obj/machinery/oven,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"Mg" = (
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"Mk" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/effect/turf_decal/trimline/white/filled/warning{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
+"Mm" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/nanites/c)
+"Mp" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"Mr" = (
+/obj/structure/flora/bush/leafy,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Mw" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"ME" = (
+/obj/machinery/atmospherics/components/unary/passive_vent{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"Nk" = (
+/obj/structure/sign/directions/science{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/nanites/c)
+"Ns" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"Nv" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/machinery/door/firedoor,
+/obj/machinery/door/airlock/public/glass,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"Nz" = (
+/obj/machinery/gibber,
+/obj/machinery/camera/directional/east,
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"NH" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/flora/bush/ferny,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"NO" = (
+/obj/machinery/microwave,
+/obj/structure/table,
+/obj/item/food/grown/herbs{
+	pixel_x = -8;
+	pixel_y = 9
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"NQ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/flora/bush/lavendergrass,
+/obj/structure/railing/wooden_fence{
+	dir = 8
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"NS" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/mission_pad,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"NV" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"Og" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"Oq" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1;
+	icon_state = "danger"
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/door/poddoor{
+	id = "phalanx_bay_south_inner"
+	},
+/obj/machinery/door/firedoor/heavy,
+/turf/open/floor/iron{
+	icon_state = "steel_ridged"
+	},
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"Ot" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"Oy" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"Oz" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/item/kirbyplants/organic/plant5,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"OA" = (
+/obj/machinery/atmospherics/pipe/smart/simple/cyan/visible{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"OD" = (
+/obj/machinery/power/apc/auto_name/directional/west{
+	auto_name = 0;
+	name = "Medbay Storage APC"
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"OE" = (
+/obj/machinery/hydroponics/soil,
+/turf/open/misc/dirt/station,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"OF" = (
+/obj/machinery/atmospherics/pipe/smart/simple/green/visible,
+/obj/item/kirbyplants/organic/plant7,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"OG" = (
+/obj/structure/flora/bush/sunny,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"OJ" = (
+/obj/structure/cable,
+/obj/structure/flora/bush/ferny,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"OL" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"OM" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/random{
+	pixel_x = 32
+	},
+/obj/structure/chair/stool/directional/west,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"OP" = (
+/obj/machinery/computer/monitor,
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"OR" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"OS" = (
+/obj/structure/fans/tiny,
+/obj/effect/turf_decal/siding/thinplating{
+	icon_state = "danger"
+	},
+/obj/machinery/door/poddoor{
+	id = "phalanx_bay_north_outer"
+	},
+/obj/docking_port/mobile/voidcrew/phalanx/c{
+	dir = 2
+	},
+/turf/open/floor/iron{
+	icon_state = "steel_ridged"
+	},
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"Pi" = (
+/obj/machinery/door/airlock/external,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"Pj" = (
+/obj/structure/grille,
+/obj/structure/window/reinforced/shuttle,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"Pm" = (
+/obj/structure/table/reinforced,
+/obj/effect/spawner/random/food_or_drink/donkpockets,
+/obj/machinery/door/firedoor,
+/obj/item/food/grown/apple{
+	pixel_x = 6;
+	pixel_y = 9
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"Pu" = (
+/obj/structure/closet/secure_closet/freezer/meat,
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"Pz" = (
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/power/apc/auto_name/directional/east,
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"PA" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"PB" = (
+/obj/structure/reagent_dispensers/watertank,
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"PO" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/item/kirbyplants/organic/plant5,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"PW" = (
+/turf/open/floor/engine/n2,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"Qd" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/item/kirbyplants/organic/plant11,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Qm" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"Qn" = (
+/obj/effect/turf_decal/trimline/white/filled/warning,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
+"Qt" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/medbay/c)
+"QB" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/security/c)
+"QF" = (
+/obj/machinery/atmospherics/components/trinary/mixer/airmix/flipped{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"QJ" = (
+/obj/machinery/vending/drugs,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"QQ" = (
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/c)
+"Rb" = (
+/obj/structure/bed/dogbed/renault,
+/mob/living/basic/pet/fox/renault,
+/obj/machinery/camera{
+	dir = 10
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"Re" = (
+/obj/structure/sign/warning/electric_shock/directional/south,
+/obj/effect/turf_decal/trimline/yellow/filled/warning{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"Rm" = (
+/obj/structure/table/wood,
+/obj/item/food/grown/poppy/lily{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"Rn" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Rq" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"Rr" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/structure/window/reinforced/tinted{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"RA" = (
+/obj/effect/turf_decal/trimline/yellow/filled/warning{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"RC" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/chair/sofa/bench/left{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"RJ" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 10
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"RK" = (
+/obj/machinery/vending/robotics,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"RL" = (
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/structure/bodycontainer/crematorium{
+	dir = 4;
+	id = "phalanx_crema"
+	},
+/obj/machinery/button/crematorium{
+	id = "phalanx_crema";
+	pixel_x = -24
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
+"RM" = (
+/obj/structure/closet/crate/freezer/blood,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"RN" = (
+/obj/structure/cable,
+/obj/structure/flora/bush/flowers_pp,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"RO" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"RP" = (
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"RR" = (
+/obj/structure/reagent_dispensers/water_cooler,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"Sd" = (
+/obj/machinery/door/airlock/medical,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"Sg" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"Sk" = (
+/obj/structure/curtain/bounty,
+/obj/structure/bed,
+/obj/effect/spawner/random/bedsheet,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"Sm" = (
+/obj/structure/bodycontainer/morgue,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
+"So" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"Sq" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/item/kirbyplants/organic/plant14,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Sv" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/door/airlock/highsecurity{
+	name = "Security Access"
+	},
+/obj/machinery/door/firedoor/heavy,
+/obj/structure/cable,
+/obj/effect/mapping_helpers/airlock/access/any/security/general,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/security/c)
+"SA" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"SD" = (
+/obj/machinery/button/door{
+	id = "phalanx_bay_north_inner";
+	name = "Internal Hanger Blast Door Control";
+	pixel_y = 24
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"SF" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"SJ" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
+/obj/structure/closet/secure_closet/engineering_welding,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"SN" = (
+/obj/machinery/light,
+/obj/structure/cable,
+/obj/machinery/light/floor,
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"SO" = (
+/obj/machinery/door/airlock/medical,
+/obj/machinery/door/firedoor,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/tiled/blue,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"ST" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"SV" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	on = 1
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"SX" = (
+/obj/machinery/door/poddoor{
+	id = "phalanx_public_shutters"
+	},
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"Td" = (
+/obj/machinery/mission_pad,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Tg" = (
+/obj/structure/chair/stool/directional/west,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"Ti" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/closet/secure_closet/evidence,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"Ts" = (
+/obj/machinery/power/smes/engineering,
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"TF" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Engineering"
+	},
+/obj/structure/cable,
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/layer_manifold/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/mapping_helpers/airlock/access/any/engineering/general,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"TV" = (
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"TY" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/computer/bank_machine{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Uf" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/turf/open/floor/mineral/titanium/tiled/purple,
+/area/shuttle/voidcrew/phalanx/nanites/c)
+"Un" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/light,
+/obj/structure/cable,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Uq" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/machinery/computer/bank_machine{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Ut" = (
+/obj/structure/closet/secure_closet/personal/cabinet,
+/obj/item/soulstone/anybody/chaplain,
+/obj/item/mod/control/pre_equipped/responsory/inquisitory,
+/obj/item/book/granter/action/spell/smoke/lesser,
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/bless_this_spess{
+	pixel_y = 32
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"UB" = (
+/obj/structure/window/reinforced/tinted{
+	dir = 8
+	},
+/obj/item/kirbyplants/random,
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/item/gun/ballistic/shotgun/doublebarrel,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"UE" = (
+/obj/structure/cable,
+/obj/item/kirbyplants/organic/plant11,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"UJ" = (
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/structure/window/reinforced/plasma/spawner/directional/south,
+/obj/machinery/atmospherics/components/unary/outlet_injector/monitored/nitrogen_input,
+/turf/open/floor/engine/n2,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"UP" = (
+/obj/item/kirbyplants/organic/plant12,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"UV" = (
+/obj/machinery/camera{
+	dir = 6
+	},
+/obj/machinery/firealarm/directional/south,
+/obj/structure/cable,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"UW" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"UX" = (
+/obj/machinery/door/airlock/shuttle/glass,
+/obj/machinery/door/firedoor,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"Vf" = (
+/obj/structure/table/wood,
+/obj/effect/turf_decal/siding/wood,
+/obj/item/seeds/wheat{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/seeds/tomato{
+	pixel_x = 5;
+	pixel_y = 5
+	},
+/obj/item/seeds/carrot{
+	pixel_x = -5;
+	pixel_y = -3
+	},
+/obj/item/seeds/onion{
+	pixel_x = 5;
+	pixel_y = -3
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"Vh" = (
+/obj/structure/chair/pew/right,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"Vi" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/structure/flora/bush/leafy,
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"Vp" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
+"Vr" = (
+/obj/structure/cable,
+/obj/structure/table/reinforced,
+/obj/item/clothing/gloves/color/yellow,
+/obj/item/clothing/gloves/color/yellow,
+/obj/machinery/light/directional/west,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"Vz" = (
+/obj/machinery/airalarm/directional/south,
+/obj/structure/ore_box,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"VA" = (
+/obj/structure/table/wood/poker,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"VE" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/displaycase/captain,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"VS" = (
+/obj/machinery/vending/clothing,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"VY" = (
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/trimline/yellow/filled/warning{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/c)
+"Wa" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/light,
+/obj/structure/cable,
+/obj/structure/flora/bush/flowers_br,
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"Wf" = (
+/obj/machinery/camera{
+	dir = 5
+	},
+/obj/machinery/atmospherics/components/tank/plasma{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"Wh" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/door/firedoor,
+/obj/effect/turf_decal/siding/wood{
+	dir = 5
+	},
+/obj/machinery/door/airlock/grunge{
+	name = "Chapel"
+	},
+/obj/structure/cable,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"Wm" = (
+/obj/structure/sign/directions/medical{
+	dir = 4
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/medbay/c)
+"Wn" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/machinery/vending/wardrobe/sec_wardrobe,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"Ww" = (
+/obj/machinery/hydroponics/soil,
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"WG" = (
+/obj/effect/turf_decal/siding/wood/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/corner,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"WM" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/light/floor,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"WO" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"WP" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/machinery/autolathe,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"WQ" = (
+/obj/machinery/camera{
+	dir = 10
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"Xj" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/door/airlock/grunge{
+	name = "Morgue"
+	},
+/obj/machinery/door/firedoor,
+/obj/effect/turf_decal/trimline/white/filled/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/blue{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/effect/mapping_helpers/airlock/access/any/medical/morgue,
+/obj/effect/mapping_helpers/airlock/access/any/service/crematorium,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
+"Xm" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"Xn" = (
+/obj/structure/window/reinforced/spawner/directional/west,
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
+"Xs" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 8;
+	name = "engine fuel pump"
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"XD" = (
+/obj/structure/cable,
+/obj/machinery/power/apc/auto_name/directional/south,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"XG" = (
+/obj/structure/flora/bush/ferny,
+/obj/structure/railing/wooden_fence{
+	dir = 8
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/dorms/c)
+"XI" = (
+/obj/structure/chair/sofa/bench/left{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"XK" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/firedoor,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"Yi" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible,
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/item/storage/box/rndboards/all,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/atmospherics/c)
+"Yp" = (
+/obj/machinery/vending/cola,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Yr" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/security/c)
+"YC" = (
+/obj/machinery/power/shuttle_engine/ship/fueled/plasma{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"YF" = (
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/random{
+	pixel_x = -32
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/cafeteria/c)
+"YN" = (
+/obj/structure/closet/crate/hydroponics,
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+"YS" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"YU" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"Zd" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "phalanx_bay_north"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"Zg" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/door/airlock/grunge{
+	name = "Morgue"
+	},
+/obj/machinery/door/firedoor,
+/obj/effect/turf_decal/trimline/white/filled/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/blue,
+/obj/effect/turf_decal/siding/blue,
+/obj/structure/cable,
+/obj/effect/mapping_helpers/airlock/access/all/service/chapel_office,
+/obj/effect/mapping_helpers/airlock/access/all/service/chapel_office,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/chapel/office/c)
+"Zk" = (
+/obj/machinery/button/door{
+	id = "phalanx_bay_north_inner";
+	name = "Internal Hanger Blast Door Control";
+	pixel_y = 24
+	},
+/obj/structure/chair/sofa/middle,
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/hallway/aft/c)
+"Zm" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/structure/sign/departments/botany/directional/south,
+/obj/structure/cable,
+/obj/structure/chair/sofa/bench/right{
+	dir = 1
+	},
+/obj/structure/railing/wooden_fence{
+	dir = 2
+	},
+/turf/open/floor/grass,
+/area/shuttle/voidcrew/phalanx/hallway/central/c)
+"Zv" = (
+/obj/structure/bodycontainer/morgue{
+	dir = 8
+	},
+/obj/machinery/camera{
+	dir = 5
+	},
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/phalanx/medbay/morgue/c)
+"ZD" = (
+/obj/structure/chair/sofa/left{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/shuttle/voidcrew/phalanx/chapel/c)
+"ZF" = (
+/obj/machinery/power/smes/engineering{
+	dir = 4
+	},
+/obj/structure/window/reinforced/spawner/directional/west,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"ZI" = (
+/obj/structure/table/reinforced,
+/obj/item/kirbyplants/organic/plant19{
+	pixel_y = 8
+	},
+/turf/open/floor/carpet/executive,
+/area/shuttle/voidcrew/phalanx/bridge/c)
+"ZN" = (
+/obj/effect/turf_decal/siding/thinplating{
+	icon_state = "danger"
+	},
+/obj/machinery/door/poddoor{
+	id = "phalanx_bay_north_inner"
+	},
+/obj/machinery/door/firedoor/heavy,
+/obj/structure/cable,
+/turf/open/floor/iron{
+	icon_state = "steel_ridged"
+	},
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"ZO" = (
+/obj/machinery/airalarm/directional/west,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
+"ZQ" = (
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"ZS" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
+/obj/structure/fireaxecabinet/directional/east,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/c)
+"ZZ" = (
+/obj/structure/closet/secure_closet/freezer/fridge/open,
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/shuttle/voidcrew/phalanx/kitchen/c)
+
+(1,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+rj
+gj
+gj
+gj
+gj
+YC
+YC
+YC
+YC
+gj
+gj
+gj
+gj
+rj
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(2,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+rj
+ZF
+df
+Ik
+ZF
+ze
+mm
+mm
+LE
+ZF
+ST
+KX
+ZF
+rj
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(3,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+rj
+cd
+ZQ
+ZQ
+JO
+bS
+Kv
+Jh
+ZQ
+JO
+ZQ
+ZQ
+Bz
+rj
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(4,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+rj
+rw
+Mp
+Mw
+Kc
+Kc
+wC
+Xs
+Mp
+Mp
+Mp
+Mp
+BE
+rj
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(5,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+rj
+by
+GZ
+je
+fD
+GZ
+xc
+YU
+ZS
+tg
+SJ
+xS
+Wf
+rj
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(6,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+rj
+rj
+eD
+eD
+eD
+eD
+ey
+fz
+dC
+dC
+dC
+dC
+ol
+ol
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(7,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+CE
+ep
+wr
+kB
+ut
+LG
+dC
+DN
+Ts
+Vr
+gQ
+ol
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(8,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+CE
+ij
+oL
+cf
+xm
+wU
+dC
+CM
+uv
+RA
+Re
+ol
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(9,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+CE
+eD
+eD
+lf
+OA
+Hw
+Hg
+yl
+OL
+OL
+gA
+eb
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(10,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+CE
+eD
+eD
+xv
+LL
+cK
+Gb
+AF
+Cx
+yr
+AF
+eb
+ME
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(11,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+CE
+PW
+rN
+OF
+LL
+ie
+dC
+zG
+VY
+eX
+oK
+ol
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(12,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+CE
+zx
+UJ
+SV
+QF
+AO
+dC
+yn
+Ts
+Al
+px
+ol
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(13,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+aQ
+ln
+SF
+CE
+CE
+eD
+yh
+TF
+dC
+ol
+DP
+Jp
+DP
+ol
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(14,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+vN
+JJ
+fw
+zv
+Ar
+OD
+IS
+Xm
+ZO
+Ar
+NV
+vN
+Gx
+Pi
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(15,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+vS
+aQ
+cj
+aQ
+my
+FR
+ko
+AD
+lr
+FR
+OE
+js
+aQ
+cj
+aQ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(16,1,1) = {"
+um
+um
+um
+um
+um
+mP
+vS
+vS
+Bt
+Rn
+aQ
+QJ
+FR
+rZ
+NV
+lr
+RM
+OE
+js
+aQ
+Dd
+vS
+vS
+vS
+mT
+al
+al
+al
+al
+al
+"}
+(17,1,1) = {"
+mP
+dq
+WP
+Dl
+PA
+mP
+Qd
+sa
+sa
+fL
+aQ
+GA
+nx
+dH
+lH
+mh
+sV
+nx
+mj
+aQ
+Rn
+IV
+KF
+Sq
+mT
+nE
+be
+Oy
+qU
+mT
+"}
+(18,1,1) = {"
+bt
+Cq
+Cq
+Zd
+cQ
+vd
+sa
+rb
+Bt
+oC
+sa
+sa
+Uq
+wk
+sa
+sa
+PO
+sa
+OR
+nY
+sa
+sa
+OJ
+sa
+mT
+gC
+DC
+DC
+IM
+dL
+"}
+(19,1,1) = {"
+bt
+Cq
+Cq
+Cq
+st
+mP
+SD
+Ww
+Bt
+Ex
+Bt
+Bt
+Bt
+Td
+KF
+bF
+Bt
+Bt
+Bt
+Bt
+Ex
+AK
+Ww
+ex
+mT
+vE
+DC
+DC
+DC
+dL
+"}
+(20,1,1) = {"
+bt
+Cq
+Cq
+Cq
+Vz
+mP
+eN
+Jb
+pz
+vW
+vW
+vW
+vW
+jP
+Nv
+tt
+Wm
+Qt
+Qt
+Qt
+Qt
+rX
+Jb
+Un
+mT
+QQ
+DC
+DC
+DC
+dL
+"}
+(21,1,1) = {"
+bt
+Cq
+Cq
+Cq
+cQ
+DG
+sa
+dy
+XI
+Uf
+GR
+GR
+Cm
+Uf
+lI
+wm
+yt
+KT
+KT
+JC
+yt
+bJ
+dy
+sa
+oW
+gC
+DC
+DC
+DC
+dL
+"}
+(22,1,1) = {"
+bt
+Cq
+Cq
+Cq
+gV
+jg
+sa
+aX
+gi
+Uf
+GR
+GR
+GR
+Uf
+FH
+HU
+yt
+KT
+KT
+KT
+yt
+RC
+wD
+sa
+Oq
+Ls
+DC
+DC
+DC
+dL
+"}
+(23,1,1) = {"
+bt
+Cq
+Cq
+Cq
+yR
+DG
+og
+yE
+AK
+vW
+GR
+GR
+GR
+vW
+lI
+an
+Qt
+KT
+KT
+KT
+Qt
+AK
+yE
+og
+oW
+sX
+DC
+DC
+DC
+dL
+"}
+(24,1,1) = {"
+OS
+Cq
+Cq
+Cq
+sE
+DG
+yb
+wD
+LJ
+aW
+GR
+GR
+GR
+Nk
+qy
+ff
+GD
+KT
+KT
+KT
+GD
+LJ
+wD
+yb
+oW
+xr
+DC
+DC
+DC
+dL
+"}
+(25,1,1) = {"
+bt
+Cq
+Cq
+Cq
+wX
+ZN
+yb
+cV
+gY
+GX
+GR
+GR
+GR
+is
+GQ
+dA
+af
+KT
+KT
+KT
+SO
+gY
+cV
+yb
+ql
+PB
+DC
+DC
+DC
+dL
+"}
+(26,1,1) = {"
+bt
+Cq
+Cq
+Cq
+Mg
+mP
+vo
+sc
+Bt
+GX
+GR
+GR
+GR
+hx
+lI
+FV
+Sd
+KT
+KT
+KT
+SO
+Bt
+sc
+pz
+mT
+Cs
+DC
+DC
+DC
+dL
+"}
+(27,1,1) = {"
+bt
+Cq
+Cq
+Cq
+cI
+mP
+Zk
+Jb
+pz
+aW
+GR
+GR
+GR
+Nk
+qy
+SN
+GD
+KT
+KT
+KT
+GD
+Ai
+Jb
+He
+mT
+fQ
+DC
+DC
+DC
+dL
+"}
+(28,1,1) = {"
+bt
+Cq
+Cq
+Cq
+jW
+mP
+sv
+Ww
+Bt
+Uf
+GR
+GR
+GR
+Uf
+lI
+wm
+yt
+KT
+KT
+KT
+yt
+ab
+Ww
+Bt
+mT
+kq
+DC
+DC
+DC
+dL
+"}
+(29,1,1) = {"
+mP
+iS
+So
+il
+lT
+mP
+fK
+Mr
+Bt
+Uf
+GR
+GR
+GR
+Uf
+lI
+RN
+yt
+KT
+KT
+KT
+yt
+Bt
+Mr
+Lf
+mT
+gC
+gC
+wE
+EX
+mT
+"}
+(30,1,1) = {"
+um
+um
+um
+Ij
+um
+mP
+VS
+IJ
+Yp
+vW
+GR
+GR
+GR
+vW
+lI
+lZ
+Qt
+KT
+KT
+KT
+Qt
+oO
+cq
+RK
+mT
+al
+ph
+al
+al
+al
+"}
+(31,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+ER
+qI
+qI
+qI
+qI
+Mm
+vW
+Mm
+vW
+Mm
+gL
+ix
+Ck
+Vp
+Ck
+Vp
+kJ
+kJ
+kJ
+kJ
+Og
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(32,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+ER
+ZZ
+Pu
+CV
+qI
+Mc
+LB
+yv
+It
+qI
+sn
+cA
+Ck
+Sm
+RL
+Sm
+Og
+Ut
+IY
+Vf
+Og
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(33,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+ER
+iU
+ms
+cF
+Ih
+zV
+rC
+zV
+NO
+ER
+qi
+Rq
+Xj
+Mk
+Mk
+Mk
+Zg
+no
+iZ
+hl
+Og
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(34,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+ER
+aG
+YN
+nO
+ER
+uQ
+pD
+ro
+AW
+ER
+it
+Rq
+AS
+JU
+Fq
+rs
+ud
+ee
+HR
+dQ
+Og
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(35,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+qI
+bC
+dP
+Nz
+ER
+Jn
+RP
+As
+Iw
+ER
+TV
+Vi
+Ck
+Hc
+Qn
+Zv
+Og
+CZ
+db
+sK
+Og
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(36,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+qI
+qI
+ER
+ER
+qI
+Pm
+XK
+EG
+xy
+qI
+uu
+eu
+Vp
+Vp
+lR
+Vp
+Og
+Og
+xp
+kJ
+Og
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(37,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+SX
+Ot
+YF
+Lb
+wR
+wR
+tQ
+jf
+jN
+WO
+zN
+cp
+cc
+em
+aN
+cc
+WQ
+NH
+cc
+cp
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(38,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+uR
+gd
+Rm
+nL
+HN
+OG
+BG
+Aa
+UX
+TV
+Wa
+KQ
+Lj
+uH
+uH
+uH
+rc
+yu
+as
+GC
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(39,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+SX
+gd
+Aq
+yN
+HN
+lj
+zL
+DE
+nk
+TV
+Rq
+mp
+RJ
+Vh
+Vh
+Vh
+Ft
+sp
+dp
+GC
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(40,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+uR
+ax
+vu
+eJ
+DE
+DE
+Pz
+DE
+Pj
+uu
+Rq
+pZ
+WG
+WM
+DS
+lp
+na
+im
+Dy
+GC
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(41,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+IX
+Qm
+Qm
+LX
+BB
+LX
+Qm
+Qm
+IX
+TV
+Rq
+Wh
+IN
+uH
+uH
+uH
+as
+dt
+hQ
+GC
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(42,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+RO
+Ib
+XG
+oH
+Tg
+yW
+NQ
+oj
+tw
+nr
+Hy
+KQ
+Cj
+Vh
+Vh
+Vh
+vc
+fh
+fh
+GC
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(43,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+RO
+UB
+pW
+hf
+VA
+UE
+Rr
+lz
+RO
+SA
+Zm
+cp
+Kn
+YS
+dp
+dp
+cp
+AY
+tb
+cp
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(44,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+RO
+Jj
+Jj
+iA
+OM
+kb
+Jj
+Sk
+zi
+FS
+wd
+cp
+wn
+hZ
+FZ
+ZD
+Le
+AC
+oY
+ir
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(45,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+zi
+Ns
+EN
+EN
+EN
+EN
+QB
+QB
+FQ
+DQ
+Sv
+Ea
+QB
+QB
+hq
+hq
+hq
+hq
+hq
+hq
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(46,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+Ns
+Rb
+KW
+Lc
+EN
+RR
+Wn
+Ak
+aU
+id
+Sg
+Fr
+vy
+hq
+zH
+zH
+zH
+eF
+hq
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(47,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+EN
+UP
+Dc
+Gs
+EN
+aa
+id
+id
+id
+id
+id
+Oz
+id
+wa
+zH
+zH
+zH
+zH
+hq
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(48,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+EN
+EL
+qp
+cS
+uo
+Yr
+nZ
+vI
+vI
+vP
+vI
+aU
+gf
+ar
+zH
+zH
+zH
+zH
+hq
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(49,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+EN
+yK
+Hk
+ac
+KH
+aU
+pE
+Ti
+UW
+tN
+Ti
+Ge
+gf
+bM
+zH
+zH
+zH
+zH
+hq
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(50,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+EN
+Xn
+ys
+VE
+EN
+lo
+Lo
+oM
+oM
+nZ
+gw
+wu
+XD
+hq
+zH
+zH
+zH
+zH
+hq
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(51,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+EN
+Fh
+Hr
+gT
+EN
+pJ
+Jy
+yO
+aU
+id
+ml
+dV
+UV
+hq
+zH
+zH
+zH
+zH
+do
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(52,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+Ns
+EN
+EN
+EN
+EN
+mf
+mf
+mf
+sW
+EJ
+mf
+mf
+mf
+hq
+hq
+hq
+hq
+do
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(53,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+GT
+OP
+ss
+dn
+vt
+Ks
+GG
+GT
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(54,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+GT
+mx
+ag
+ru
+hL
+bZ
+gX
+GT
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(55,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+GT
+GT
+ZI
+DA
+xl
+HK
+GT
+GT
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}
+(56,1,1) = {"
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+GT
+GT
+GT
+GT
+GT
+GT
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+oZ
+"}

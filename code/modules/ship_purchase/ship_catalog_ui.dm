@@ -47,10 +47,180 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 	return null
 
 /**
+ * Whether players are allowed to buy this hull.
+ *
+ * Only modular hulls are for sale: a hull the player can actually preview and
+ * configure in the upgrade selector. Legacy fixed hulls stay registered for
+ * roundstart/NPC/admin spawning, they're just not on the shelf — unless they're
+ * explicitly curated back in with force_purchasable.
+ */
+/proc/is_player_purchasable_ship(datum/map_template/shuttle/voidcrew/template)
+	if(!istype(template))
+		return FALSE
+	if(template.player_hidden)
+		return FALSE
+	if(template.force_purchasable)
+		return TRUE
+	if(!template.has_upgrade_slots)
+		return FALSE
+	// A hull with slots but nothing to put in them and no themes has nothing to configure
+	return length(template.upgrade_slot_ids) || length(template.available_themes)
+
+/**
+ * Whether a hull is allowed to be one of the ships the round starts on.
+ *
+ * Stricter than is_player_purchasable_ship(): the roundstart fleet is rolled at
+ * random, hull, theme and modules alike, so it only uses hulls that actually have
+ * slots to roll modules into. The curated force_purchasable oddities (the pills)
+ * stay on the shelf but off the starting line, and fixed legacy hulls are out
+ * entirely.
+ */
+/proc/is_roundstart_eligible_hull(datum/map_template/shuttle/voidcrew/template)
+	if(!istype(template))
+		return FALSE
+	if(!is_roundstart_eligible_hull_type(template.type))
+		return FALSE
+	// A hull with no slots has nothing to roll modules into
+	return length(template.upgrade_slot_ids)
+
+/**
+ * is_roundstart_eligible_hull() for callers that only have a type path.
+ *
+ * Skips the upgrade_slot_ids check, which needs an instance to read - and instancing a
+ * map template parses its whole .dmm, which is far too expensive for the early-init
+ * callers this exists for (see /datum/job/map_check).
+ */
+/proc/is_roundstart_eligible_hull_type(datum/map_template/shuttle/voidcrew/hull_type)
+	if(!ispath(hull_type, /datum/map_template/shuttle/voidcrew))
+		return FALSE
+	if(initial(hull_type.player_hidden))
+		return FALSE
+	return initial(hull_type.has_upgrade_slots)
+
+/// Every hull the roundstart fleet is allowed to roll
+/proc/get_roundstart_hull_templates()
+	ensure_ship_catalog_initialized()
+	var/list/eligible = list()
+	for(var/datum/map_template/shuttle/voidcrew/template as anything in GLOB.ship_catalog_templates)
+		if(is_roundstart_eligible_hull(template))
+			eligible += template
+	return eligible
+
+/// Total parts a hull costs to unlock, across every part class
+/proc/ship_template_total_part_cost(datum/map_template/shuttle/voidcrew/template)
+	var/total = 0
+	for(var/part_class in template.part_requirements)
+		total += template.part_requirements[part_class] || 0
+	return total
+
+/**
+ * Whether a hull costs nothing to unlock.
+ *
+ * Free hulls are owned by everyone from the start - there's no purchase step and
+ * nothing is written to the database for them.
+ */
+/proc/is_ship_free(datum/map_template/shuttle/voidcrew/template)
+	if(!istype(template))
+		return FALSE
+	return !ship_template_total_part_cost(template)
+
+/**
+ * Every hull a player can fly right now: the ones they've bought, plus every free
+ * hull on the shelf. Use this instead of the raw database list anywhere ownership
+ * is displayed or enforced.
+ */
+/proc/get_effective_unlocked_ships(ckey)
+	var/list/unlocked = GLOB.ship_economy_db?.get_unlocked_ships(ckey) || list()
+	for(var/datum/map_template/shuttle/voidcrew/template as anything in get_purchasable_ship_templates())
+		if(is_ship_free(template))
+			unlocked |= "[template.type]"
+	return unlocked
+
+/// Cheapest hulls first, then alphabetical, so the free starter is always on top
+/proc/cmp_ship_template_cost_asc(datum/map_template/shuttle/voidcrew/a, datum/map_template/shuttle/voidcrew/b)
+	var/difference = ship_template_total_part_cost(a) - ship_template_total_part_cost(b)
+	if(difference)
+		return difference
+	return sorttext(b.name, a.name)
+
+/// Every hull players can buy, cheapest first
+/proc/get_purchasable_ship_templates()
+	ensure_ship_catalog_initialized()
+	var/list/purchasable = list()
+	for(var/datum/map_template/shuttle/voidcrew/template as anything in GLOB.ship_catalog_templates)
+		if(is_player_purchasable_ship(template))
+			purchasable += template
+	return sortTim(purchasable, GLOBAL_PROC_REF(cmp_ship_template_cost_asc))
+
+/**
+ * Spend a player's parts to unlock a hull permanently.
+ *
+ * Used by the ship upgrade selector, which is where hulls are bought.
+ * Chats the reason to the user on every failure path.
+ *
+ * @param user The user attempting the unlock
+ * @param template The ship template to unlock
+ * @return TRUE if successful, FALSE otherwise
+ */
+/proc/attempt_ship_unlock(mob/user, datum/map_template/shuttle/voidcrew/template)
+	if(!user?.client || !template)
+		return FALSE
+
+	var/ckey = user.client.ckey
+
+	// Free hulls come unlocked - nothing to spend, nothing to record
+	if(is_ship_free(template))
+		return TRUE
+
+	// Check if ship is already unlocked
+	if(GLOB.ship_economy_db.is_ship_unlocked(ckey, "[template.type]"))
+		to_chat(user, span_warning("You have already unlocked this ship!"))
+		return FALSE
+
+	// Build requirements from template's class-based part_requirements
+	var/list/requirements = list()
+	for(var/part_class in template.part_requirements)
+		var/count = template.part_requirements[part_class] || 0
+		if(count > 0)
+			requirements[part_class] = count
+
+	// Check if player has sufficient parts
+	var/list/current_parts = GLOB.ship_economy_db.get_parts(ckey)
+	if(!current_parts)
+		to_chat(user, span_warning("Unable to retrieve your parts inventory."))
+		return FALSE
+
+	for(var/part_class in requirements)
+		var/needed = requirements[part_class]
+		var/have = current_parts[part_class] || 0
+
+		if(have < needed)
+			to_chat(user, span_warning("Insufficient [part_class] parts! You need [needed] but only have [have]."))
+			return FALSE
+
+	// Attempt to spend parts
+	if(!GLOB.ship_economy_db.spend_parts(ckey, requirements))
+		to_chat(user, span_warning("Failed to deduct parts. Transaction failed."))
+		return FALSE
+
+	// Unlock the ship
+	if(!GLOB.ship_economy_db.unlock_ship(ckey, "[template.type]"))
+		// Parts were deducted but unlock failed - this is bad!
+		// In production, this should trigger a compensating transaction or alert
+		log_game("SHIP_CATALOG ERROR: Parts deducted but unlock failed for [ckey] - ship [template.type]")
+		to_chat(user, span_userdanger("Unlock failed! Please contact an administrator - parts were deducted but unlock did not complete."))
+		return FALSE
+
+	// Success!
+	log_game("SHIP_CATALOG: [ckey] unlocked ship [template.type] ([template.name])")
+	return TRUE
+
+/**
  * Ship Catalog UI Datum
  *
- * Provides TGUI interface for ship browsing and purchasing.
- * Accessible from character creation or in-game admin panel.
+ * Read-only browser for the hulls on offer: what they cost, what crew they
+ * carry, and which ones you already own. Buying a hull happens in the ship
+ * upgrade selector, which is the only place that shows you what you're buying.
  */
 /datum/ship_catalog_ui
 	/// Reference to the user viewing the catalog
@@ -62,17 +232,9 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 	/// Search query for filtering ships
 	var/search_query = ""
 
-	/// Optional callback when player selects a ship (for latejoin integration)
-	var/datum/callback/on_ship_selected
-
-	/// Flag to indicate if this is in latejoin mode vs browse mode
-	var/latejoin_mode = FALSE
-
-/datum/ship_catalog_ui/New(mob/viewing_user, latejoin = FALSE, datum/callback/selection_callback = null)
+/datum/ship_catalog_ui/New(mob/viewing_user)
 	. = ..()
 	user = viewing_user
-	latejoin_mode = latejoin
-	on_ship_selected = selection_callback
 
 /datum/ship_catalog_ui/Destroy()
 	user = null
@@ -105,10 +267,10 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 	// Also ensure ship upgrades/themes are initialized for themed ships
 	ensure_ship_upgrades_initialized()
 
-	// Build ship catalog
+	// Build ship catalog - only the modular hulls players can actually buy
 	var/list/ships = list()
 
-	for(var/datum/map_template/shuttle/voidcrew/template as anything in GLOB.ship_catalog_templates)
+	for(var/datum/map_template/shuttle/voidcrew/template as anything in get_purchasable_ship_templates())
 		// Get job slots - either from template directly or from default theme
 		var/list/job_slots_to_use = template.job_slots
 		var/theme_count = 0
@@ -164,7 +326,7 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 			"name" = template.name,
 			"short_name" = template.short_name || template.name,
 			"suffix" = template.suffix,
-			"description" = generate_ship_description(template),
+			"description" = template.catalog_desc || generate_ship_description(template),
 			"crew_capacity" = crew_capacity,
 			"total_parts" = total_parts,
 			"primary_class" = primary_class,
@@ -211,21 +373,17 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 			parts[part_class] = 0
 	data["parts"] = parts
 
-	// Get list of unlocked ships
-	var/list/unlocked_ships = GLOB.ship_economy_db?.get_unlocked_ships(ckey) || list()
-	data["unlocked_ships"] = unlocked_ships
+	// Get list of unlocked ships (bought hulls plus the free ones everyone owns)
+	data["unlocked_ships"] = get_effective_unlocked_ships(ckey)
 
 	// Current filters
 	data["selected_faction"] = selected_faction
 	data["search_query"] = search_query
 
-	// Latejoin mode flag
-	data["latejoin_mode"] = latejoin_mode
-
 	return data
 
 /**
- * Handle UI actions (unlock ship, filter, search)
+ * Handle UI actions (filter, search)
  */
 /datum/ship_catalog_ui/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	if(..())
@@ -234,26 +392,6 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 	. = TRUE
 
 	switch(action)
-		if("unlock_ship")
-			var/ship_id = params["ship_id"]
-			if(!ship_id)
-				return FALSE
-
-			// Find the ship template by type path
-			var/datum/map_template/shuttle/voidcrew/template = find_ship_template_by_type(ship_id)
-			if(!template)
-				to_chat(user, span_warning("Invalid ship template."))
-				return FALSE
-
-			// Attempt to unlock
-			if(attempt_ship_unlock(user, template))
-				to_chat(user, span_notice("Successfully unlocked [template.name]!"))
-				// Update UI data
-				SStgui.update_uis(src)
-			else
-				// Error messages handled in attempt_ship_unlock
-				return FALSE
-
 		if("set_faction_filter")
 			selected_faction = params["faction"]
 			if(selected_faction == "all")
@@ -266,123 +404,11 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 			selected_faction = null
 			search_query = ""
 
-		if("spawn_ship")
-			// Admin-only action to immediately spawn a ship
-			if(!check_rights(R_ADMIN))
-				return FALSE
-
-			var/ship_id = params["ship_id"]
-			if(!ship_id)
-				return FALSE
-
-			var/datum/map_template/shuttle/voidcrew/template = find_ship_template_by_type(ship_id)
-			if(!template)
-				return FALSE
-
-			// TODO: Implement ship spawning logic when ready
-			to_chat(user, span_notice("Ship spawning not yet implemented. Coming soon!"))
-
-		if("select_for_latejoin")
-			var/ship_id = params["ship_id"]
-			if(!ship_id)
-				return FALSE
-
-			// Find the ship template by type path
-			var/datum/map_template/shuttle/voidcrew/template = find_ship_template_by_type(ship_id)
-			if(!template)
-				to_chat(user, span_warning("Invalid ship template."))
-				return FALSE
-
-			var/ckey = user.client?.ckey
-			if(!ckey)
-				return FALSE
-
-			// Check if ship is unlocked
-			if(!GLOB.ship_economy_db.is_ship_unlocked(ckey, "[template.type]"))
-				// Try to unlock it
-				if(!attempt_ship_unlock(user, template))
-					// Error messages handled in attempt_ship_unlock
-					return FALSE
-				to_chat(user, span_notice("Successfully unlocked [template.name]!"))
-
-			// Close the UI immediately before spawning
-			ui.close()
-
-			// Ship is unlocked (either was already, or just unlocked)
-			// Invoke callback with the template
-			if(on_ship_selected)
-				on_ship_selected.Invoke(template)
-
 /**
- * Attempt to unlock a ship by spending parts
- *
- * @param user The user attempting the unlock
- * @param template The ship template to unlock
- * @return TRUE if successful, FALSE otherwise
+ * Generate a description for a ship based on its properties.
+ * Only a fallback for hulls with no hand-written catalog_desc - prefer that.
  */
-/datum/ship_catalog_ui/proc/attempt_ship_unlock(mob/user, datum/map_template/shuttle/voidcrew/template)
-	if(!user || !user.client || !template)
-		return FALSE
-
-	var/ckey = user.client.ckey
-
-	// Check if ship is already unlocked
-	if(GLOB.ship_economy_db.is_ship_unlocked(ckey, "[template.type]"))
-		to_chat(user, span_warning("You have already unlocked this ship!"))
-		return FALSE
-
-	// Build requirements from template's class-based part_requirements
-	var/list/requirements = list()
-	var/has_requirements = FALSE
-	for(var/part_class in template.part_requirements)
-		var/count = template.part_requirements[part_class] || 0
-		if(count > 0)
-			requirements[part_class] = count
-			has_requirements = TRUE
-
-	// If no requirements, ship is free - just unlock it
-	if(!has_requirements)
-		if(!GLOB.ship_economy_db.unlock_ship(ckey, "[template.type]"))
-			to_chat(user, span_warning("Failed to unlock ship. Please try again."))
-			return FALSE
-		log_game("SHIP_CATALOG: [ckey] unlocked free ship [template.type] ([template.name])")
-		return TRUE
-
-	// Check if player has sufficient parts
-	var/list/current_parts = GLOB.ship_economy_db.get_parts(ckey)
-	if(!current_parts)
-		to_chat(user, span_warning("Unable to retrieve your parts inventory."))
-		return FALSE
-
-	for(var/part_class in requirements)
-		var/needed = requirements[part_class]
-		var/have = current_parts[part_class] || 0
-
-		if(have < needed)
-			to_chat(user, span_warning("Insufficient [part_class] parts! You need [needed] but only have [have]."))
-			return FALSE
-
-	// Attempt to spend parts
-	if(!GLOB.ship_economy_db.spend_parts(ckey, requirements))
-		to_chat(user, span_warning("Failed to deduct parts. Transaction failed."))
-		return FALSE
-
-	// Unlock the ship
-	if(!GLOB.ship_economy_db.unlock_ship(ckey, "[template.type]"))
-		// Parts were deducted but unlock failed - this is bad!
-		// In production, this should trigger a compensating transaction or alert
-		log_game("SHIP_CATALOG ERROR: Parts deducted but unlock failed for [ckey] - ship [template.type]")
-		to_chat(user, span_userdanger("Unlock failed! Please contact an administrator - parts were deducted but unlock did not complete."))
-		return FALSE
-
-	// Success!
-	log_game("SHIP_CATALOG: [ckey] unlocked ship [template.type] ([template.name])")
-	return TRUE
-
-/**
- * Generate a description for a ship based on its properties
- */
-/datum/ship_catalog_ui/proc/generate_ship_description(datum/map_template/shuttle/voidcrew/template)
+/proc/generate_ship_description(datum/map_template/shuttle/voidcrew/template)
 	// Get job slots - either from template directly or from default theme
 	var/list/job_slots_to_use = template.job_slots
 

@@ -1,0 +1,115 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/turf_decal/tile/blue/fourcorners,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"g" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/box/beakers{
+	pixel_x = -4;
+	pixel_y = 5
+	},
+/obj/item/storage/box/syringes{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/storage/box/pillbottles{
+	pixel_x = -1;
+	pixel_y = -4
+	},
+/obj/item/reagent_containers/dropper{
+	pixel_x = 6;
+	pixel_y = -5
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"h" = (
+/obj/machinery/plumbing/input{
+	dir = 4
+	},
+/obj/effect/turf_decal/box,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"i" = (
+/obj/structure/closet/secure_closet/chemical,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"n" = (
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"q" = (
+/obj/machinery/plumbing/pill_press{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/east,
+/obj/effect/turf_decal/box,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"r" = (
+/obj/machinery/chem_dispenser,
+/obj/machinery/light/small/directional/west,
+/obj/effect/turf_decal/box,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"v" = (
+/obj/machinery/smartfridge/chemistry/preloaded,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"w" = (
+/obj/structure/table/reinforced,
+/obj/machinery/reagentgrinder,
+/obj/item/reagent_containers/cup/beaker/large{
+	pixel_x = -8;
+	pixel_y = 5
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"B" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"C" = (
+/obj/modular_map_connector,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+"N" = (
+/turf/template_noop,
+/area/template_noop)
+"X" = (
+/obj/machinery/chem_master,
+/obj/machinery/airalarm/directional/north,
+/obj/effect/turf_decal/box,
+/turf/open/floor/mineral/titanium/blue,
+/area/template_noop)
+
+(1,1,1) = {"
+r
+w
+C
+"}
+(2,1,1) = {"
+b
+g
+b
+"}
+(3,1,1) = {"
+b
+n
+B
+"}
+(4,1,1) = {"
+X
+n
+v
+"}
+(5,1,1) = {"
+h
+n
+i
+"}
+(6,1,1) = {"
+q
+n
+N
+"}

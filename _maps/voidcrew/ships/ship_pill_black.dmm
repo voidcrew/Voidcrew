@@ -79,7 +79,7 @@
 /obj/item/reagent_containers/cup/beaker/large,
 /obj/item/reagent_containers/cup/beaker/large,
 /obj/item/reagent_containers/cup/beaker/large,
-/obj/item/areaeditor/shuttle,
+/obj/item/blueprints/shuttle,
 /obj/structure/window/reinforced/tinted,
 /obj/structure/window/reinforced/tinted{
 	dir = 4

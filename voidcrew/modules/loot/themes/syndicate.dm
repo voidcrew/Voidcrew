@@ -55,6 +55,7 @@
 		/obj/item/blueprint/gun/c20r = 4,
 		/obj/item/blueprint/gun/wt550 = 3,
 		/obj/item/blueprint/gun/laser_carbine = 3,
+		/obj/item/ship_parts/combat = 8,
 	)
 	loot_red = list(
 		/obj/item/ammo_box/a357 = 9,
@@ -71,6 +72,7 @@
 		/obj/item/blueprint/gun/l6_saw = 3,
 		/obj/item/blueprint/gun/sniper_rifle = 3,
 		/obj/item/blueprint/gun/bulldog = 3,
+		/obj/item/ship_parts/combat = 12,
 	)
 	// Rare tables: 2-3 surviving stock entries + this theme's uniques at ~4
 	// (see voidcrew/modules/loot/uniques/syndicate.dm and the design doc)

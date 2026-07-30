@@ -15,6 +15,9 @@
 	event_scope = EVENT_SCOPE_SHIP
 	allowed_zones = list(ZONE_YELLOW, ZONE_RED)
 	requires_flying = TRUE
+	/// The event's whole shape is "shelter in an interior compartment". A hull too small to
+	/// have an interior is all exposed, so there is nothing to do but stand there and take it.
+	min_ship_mass = SHIP_MASS_SMALL
 
 /// Washes a target ship's exposed compartments with several moderate radiation pulses.
 /datum/round_event/voidcrew/radiation_storm
