@@ -222,6 +222,18 @@
 	rumor_name = "Longwatch Station"
 	rumor_desc = "A survey post in the lawless deep that outlived its own recall order. The sample vault is intact and so is what got loose inside."
 
+// Top of the ladder. Same three-voucher toll every deep-lane tip carries, plus
+// the largest credit premium on the shelf: the guard is the hardest thing any
+// chart points at, and the prize is a working machine rather than a locker.
+/datum/shop_sku/ruin_chart/bitrunner_den
+	name = "deep-lane tip: 'Nullstack Arcade'"
+	desc = "An unlicensed netpod parlour that ran its server past what the cooling could take. The safeties failed with a domain live and the forge started printing the domain's hostiles into the room. Nobody has stripped the place, server included. Uploaded sealed to your helm; reveal it when your crew is ready to fight what came out of it."
+	price_vouchers = 3
+	price_credits = 4000
+	ruin_template_path = /datum/map_template/ruin/space/rare/bitrunner_den
+	rumor_name = "Nullstack Arcade"
+	rumor_desc = "A bitrunning parlour gone quiet in the lawless deep. Its server malfunctioned with runners plugged in, and what it printed is still on the floor."
+
 /datum/shop_sku/ruin_chart/blacksite
 	name = "deep-lane tip: 'Kestrel Anchorage'"
 	desc = "A Syndicate forward depot that stopped answering its handlers two years ago. The garrison never stood down, so nothing has been looted and nothing has been abandoned. Uploaded sealed to your helm; reveal it when your crew is ready to fight soldiers who are still on duty."

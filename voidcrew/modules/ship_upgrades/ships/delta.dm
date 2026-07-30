@@ -146,6 +146,24 @@
 		),
 	)
 
+/datum/ship_upgrade_module/delta/cafe_bitrunning
+	id = "delta_cafe_bitrunning"
+	name = "Bitrunning Den"
+	desc = "Three netpods wired to a quantum server, a console to pick the \
+		domain, and a byteforge that materializes the crate at the end of a \
+		run. Adds a Bitrunner to the crew."
+	slot = "delta_cafe"
+	map_file = "delta/delta_cafe_bitrunning.dmm"
+	part_cost = list(PART_CLASS_SCIENCE = 10)
+	job_slots_add = list(
+		list(
+			name = "Bitrunner",
+			outfit = /datum/outfit/job/bitrunner,
+			category = JOB_CAT_CARGO,
+			slots = 1,
+		),
+	)
+
 // -- delta_med: the medbay.
 
 /datum/ship_upgrade_module/delta/med_clinic

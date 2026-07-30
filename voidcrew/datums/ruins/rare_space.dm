@@ -63,3 +63,9 @@
 	suffix = "rare_survey.dmm"
 	name = "Longwatch Station"
 	description = "A deep-range survey post that kept transmitting for eleven years after its last resupply. The sample vault is intact, and so is whatever the crew brought back inside with them."
+
+/datum/map_template/ruin/space/rare/bitrunner_den
+	id = "rare_bitrunner_den"
+	suffix = "rare_bitrunner_den.dmm"
+	name = "Nullstack Arcade"
+	description = "An unlicensed parlour that rented netpod time by the hour and sold whatever its forge printed. The server ran past its cooling limit for years and the safeties gave out mid-session, so it started compiling the domain's hostiles into the room instead of the loot. The runners died in their pods. The rig is still powered and still bolted down."
