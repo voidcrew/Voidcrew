@@ -6,6 +6,14 @@
 
 	true_spawn = FALSE
 
+	// true_spawn gates the GPS component, but that is read in Initialize() and we run
+	// well after it, so the component is already attached by the time we get here. Left
+	// alone, every megafauna domain broadcasts a lavaland signal out of the turf
+	// reservation to anyone holding a GPS.
+	var/datum/component/gps/beacon = GetComponent(/datum/component/gps)
+	if(beacon)
+		qdel(beacon)
+
 	loot.Cut()
 	loot += /obj/structure/closet/crate/secure/bitrunning/encrypted
 

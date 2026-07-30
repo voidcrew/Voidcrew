@@ -586,6 +586,15 @@
    ],
    "png": "delta_delta_cafe_shop.png"
   },
+  "delta/delta_cafe_bitrunning.dmm": {
+   "width": 7,
+   "height": 5,
+   "connector": [
+    1,
+    1
+   ],
+   "png": "delta_delta_cafe_bitrunning.png"
+  },
   "delta/delta_med_clinic.dmm": {
    "width": 6,
    "height": 3,

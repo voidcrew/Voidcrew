@@ -2,6 +2,11 @@
 #define BITRUNNER_COST_LOW 1
 #define BITRUNNER_COST_MEDIUM 2
 #define BITRUNNER_COST_HIGH 3
+/// Megafauna arenas. Priced above what they pay back so a boss dive is funded by
+/// running the rest of the roster, instead of paying for itself forever.
+#define BITRUNNER_COST_BOSS 5
+/// The four hardest megafauna arenas. Same idea, steeper.
+#define BITRUNNER_COST_APEX_BOSS 8
 #define BITRUNNER_COST_EXTREME 20
 
 /// Yay you did it

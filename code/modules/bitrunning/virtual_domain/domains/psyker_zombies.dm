@@ -1,6 +1,9 @@
 /datum/lazy_template/virtual_domain/psyker_zombies
 	name = "Infected Domain"
-	cost = BITRUNNER_COST_MEDIUM
+	// Was COST_MEDIUM, which made this the only domain in the roster paying net +3
+	// while also being BEPIS-eligible - strictly better than the megafauna arenas it
+	// is supposed to fund. Priced back onto the flat +2 ladder everything else uses.
+	cost = BITRUNNER_COST_HIGH
 	desc = "Another neglected corner of the virtual world. This one had to be abandoned due to zombie virus. \
 		Warning -- Virtual domain does not support visual display. This mission must be completed using echolocation."
 	difficulty = BITRUNNER_DIFFICULTY_MEDIUM

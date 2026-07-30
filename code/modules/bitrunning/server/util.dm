@@ -83,6 +83,11 @@
 	for(var/obj/machinery/byteforge/forge in oview(MAX_DISTANCE, src))
 		nearby_forges += forge
 
+	// A ship can map or build a server without a forge in range. Callers already
+	// handle a null forge; pick() on an empty list would runtime before they got it.
+	if(!length(nearby_forges))
+		return null
+
 	return pick(nearby_forges)
 
 

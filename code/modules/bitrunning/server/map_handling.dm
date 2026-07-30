@@ -127,7 +127,15 @@
 	var/turf/cache_turfs = list()
 	var/turf/curiosity_turfs = list()
 
+	// GLOB.landmarks_list is global, but a fleet can have a server on every
+	// ship. Two of them cold booting at once would consume each other's
+	// landmarks, so only claim the ones inside our own reservation.
+	var/datum/turf_reservation/our_reservation = LAZYACCESS(generated_domain.reservations, 1)
+
 	for(var/obj/effect/landmark/bitrunning/thing in GLOB.landmarks_list)
+		if(our_reservation && !our_reservation.contains_turf(get_turf(thing)))
+			continue
+
 		if(istype(thing, /obj/effect/landmark/bitrunning/hololadder_spawn))
 			exit_turfs += get_turf(thing)
 			qdel(thing) // i'm worried about multiple servers getting confused so lets clean em up
@@ -212,8 +220,15 @@
 	sever_connections() /// just in case someone's connected
 	SEND_SIGNAL(src, COMSIG_BITRUNNER_DOMAIN_SCRUBBED) // avatar cleanup just in case
 
+	// Drop the reservation from the domain before releasing it. lazy_load() appends to
+	// this list and nothing else ever removes from it, so leaving spent entries behind
+	// means index 1 is the first reservation the domain ever made - already released,
+	// with its corner turfs cut. Every later run would then release the wrong (dead)
+	// reservation and, because load_map_items() scopes landmark claiming to index 1,
+	// find no landmarks at all and CRASH on "Failed to find exit turfs".
 	if(length(generated_domain.reservations))
 		var/datum/turf_reservation/res = generated_domain.reservations[1]
+		generated_domain.reservations -= res
 		res.Release()
 
 	var/list/creatures = spawned_threat_refs + mutation_candidate_refs
