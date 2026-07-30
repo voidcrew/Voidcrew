@@ -16,7 +16,9 @@ SUBSYSTEM_DEF(overmap)
 	wait = 10 // Fires every 1 second (10 deciseconds)
 	init_order = INIT_ORDER_OVERMAP
 	flags = NONE
-	runlevels = RUNLEVEL_SETUP | RUNLEVEL_GAME
+	// LOBBY is in here so the roundstart planets can generate while players are still
+	// picking characters - see prebuild_roundstart_planets()
+	runlevels = RUNLEVEL_LOBBY | RUNLEVEL_SETUP | RUNLEVEL_GAME
 	dependencies = list(
 		/datum/controller/subsystem/mapping,
 	)
@@ -56,6 +58,8 @@ SUBSYSTEM_DEF(overmap)
 	var/list/obj/structure/overmap/ship/initial_ships = list()
 	/// Hull types the roundstart fleet has already rolled, so a second hull is a different class
 	var/list/spent_roundstart_hulls = list()
+	/// Whether the lobby pre-build pass has been kicked off. One-shot.
+	var/roundstart_planets_prebuilt = FALSE
 
 /datum/controller/subsystem/overmap/Initialize(start_timeofday)
 	create_map()
@@ -81,6 +85,38 @@ SUBSYSTEM_DEF(overmap)
 	for(var/obj/structure/overmap/ship/ship as anything in simulated_ships)
 		if(QDELETED(ship))
 			simulated_ships -= ship
+
+	// First tick after init: start generating the roundstart planets in the background.
+	// Flag is set before the call so a long build can't be started twice.
+	if(!roundstart_planets_prebuilt)
+		roundstart_planets_prebuilt = TRUE
+		INVOKE_ASYNC(src, PROC_REF(prebuild_roundstart_planets))
+
+/**
+ * Generates the roundstart planets during the pre-round lobby.
+ *
+ * Planets build themselves on first visit, which is what keeps an unvisited one free -
+ * but for the planets that exist at roundstart there is nothing to save: the crew is
+ * going to find them. Doing it now means the ~20s per planet is spent while people are
+ * still in the lobby picking characters, instead of stalling the first ship to try
+ * landing somewhere.
+ *
+ * Sequential on purpose. Each build is already CHECK_TICK'd throughout and allocating
+ * z-levels serialises anyway, so running them in parallel would just interleave the
+ * lag. Anything not finished by the time the round starts still builds on arrival.
+ */
+/datum/controller/subsystem/overmap/proc/prebuild_roundstart_planets()
+	var/built = 0
+	var/start = REALTIMEOFDAY
+	for(var/obj/structure/overmap/planet/marker as anything in GLOB.overmap_planets.Copy())
+		if(QDELETED(marker) || marker.mapzone || marker.loading)
+			continue
+		if(!marker.is_terrain_planet())
+			continue
+		marker.load_level()
+		built++
+	if(built)
+		log_mapping("SSovermap: Pre-built [built] roundstart planet(s) in [(REALTIMEOFDAY - start) / 10]s")
 
 /*
  * Bluespace jump procs

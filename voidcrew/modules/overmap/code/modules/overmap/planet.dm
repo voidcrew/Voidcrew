@@ -56,8 +56,13 @@
 		return
 	if(mapzone)
 		return
-	if(loading || unloading)
-		return
+	// Busy. Returning truthy aborts the caller's docking attempt cleanly - falling
+	// through would hand it a null reserve_dock. Planets are pre-built during the lobby
+	// and rebuilt after being abandoned, so arriving mid-build is a real possibility.
+	if(loading)
+		return "Planetary survey in progress, stand by."
+	if(unloading)
+		return "Orbit is being recalculated, stand by."
 	loading = TRUE
 	if(is_terrain_planet())
 		build_planet()
@@ -320,6 +325,7 @@
 	balloon_alert(user, "starting docking process..")
 	. = load_level(acting.shuttle)
 	if(.)
+		to_chat(user, span_notice("[.]"))
 		acting.state = prev_state
 		concerned = FALSE
 	else

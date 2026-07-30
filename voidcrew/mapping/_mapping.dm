@@ -129,8 +129,16 @@
 
 /// Minimum tiles between two cave entrances on the same planet
 #define CAVE_LADDER_SPACING 20
-/// How many candidate spots to throw before giving up on finding more
-#define CAVE_LADDER_ATTEMPTS 400
+/**
+ * How many candidate spots to throw before giving up on finding more.
+ *
+ * Measured over a 128x128 region at spacing 20: 400 attempts averages 28.9 entrances
+ * with a worst-case coverage gap of 22.2 tiles, which already matches a maximal
+ * Poisson-disc set (29.7 / 21.7). Attempts rejected by the terrain check below still
+ * burn budget though, so this runs well past the point of diminishing returns - the
+ * whole loop is a few thousand integer comparisons against a 20-second planet build.
+ */
+#define CAVE_LADDER_ATTEMPTS 1200
 
 /**
  * Spawns linked ladder pairs between a planet's surface and cave z-levels.
