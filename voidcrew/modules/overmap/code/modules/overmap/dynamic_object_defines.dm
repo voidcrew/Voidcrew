@@ -89,10 +89,11 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	planet = /datum/overmap/planet/crashed_ship
 
 /obj/structure/overmap/planet/empty/Entered(atom/movable/arrived, atom/old_loc, list/atom/old_locs)
+	// The parent registers COMSIG_VOIDCREW_SHIP_UNDOCKED for us - registering it again
+	// here would be a duplicate registration on the same source. Our on_ship_undocked()
+	// override below is what that registration ends up calling.
 	. = ..()
 	if(istype(arrived, /obj/structure/overmap/ship))
-		// Register for undock signal so we can clean up when the ship leaves
-		RegisterSignal(arrived, COMSIG_VOIDCREW_SHIP_UNDOCKED, PROC_REF(on_ship_undocked))
 		// If an NPC ship docks here, show its name on the overmap instead of "Empty Space"
 		if(istype(arrived, /obj/structure/overmap/ship/npc))
 			name = arrived.name
@@ -100,8 +101,10 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 // Note: We don't override Exited() because the ship exits BEFORE the undock signal fires
 // The signal handler in on_ship_undocked() cleans up the registration
 
-/// Signal handler - called when a ship that was docked here finishes undocking
-/obj/structure/overmap/planet/empty/proc/on_ship_undocked(obj/structure/overmap/ship/source)
+/// Signal handler - called when a ship that was docked here finishes undocking.
+/// Overrides the planet countdown: empty space has no terrain worth keeping, so it
+/// tears down and deletes itself instead of waiting out a despawn timer.
+/obj/structure/overmap/planet/empty/on_ship_undocked(obj/structure/overmap/ship/source)
 	SIGNAL_HANDLER
 	UnregisterSignal(source, COMSIG_VOIDCREW_SHIP_UNDOCKED)
 	// Reset retry counter for this undock attempt
@@ -237,6 +240,9 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	map_generator = /datum/map_generator/planet_generator
 	static_lighting = TRUE
 	var/planet_type
+	/// Overmap zone band this planet sits in. Set before population so fauna scales to
+	/// how dangerous the planet's neighbourhood is - see planet_generator/populate_terrain.
+	var/zone_band
 
 /area/overmap_encounter/planet_ruin
 	name = "\improper Unknown Planetary Ruin"
@@ -258,7 +264,7 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 		var/list/turfs = list()
 		for(var/turf/T in contents)
 			turfs += T
-		map_generator.populate_terrain(turfs, src)
+		map_generator.populate_terrain(turfs, src, zone_band)
 
 // SURFACE AREAS
 /area/overmap_encounter/planetoid/lava

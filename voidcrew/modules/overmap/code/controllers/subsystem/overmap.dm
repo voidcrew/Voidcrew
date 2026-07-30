@@ -424,6 +424,9 @@ SUBSYSTEM_DEF(overmap)
 			log_mapping("SSovermap: Failed to place dynamic planet [marker_type] - no free overmap square")
 			continue
 		var/obj/structure/overmap/planet/planet_to_spawn = new marker_type(turf_for_planet)
+		// Remembered rather than re-derived, so the planet keeps its difficulty when it
+		// relocates after being abandoned
+		planet_to_spawn.zone_band = wanted_band
 
 		// SSovermap initializes before SSatoms, so the marker's Initialize() - which is
 		// what normally copies the planet datum's identity onto it - has not run yet and
@@ -816,9 +819,27 @@ SUBSYSTEM_DEF(overmap)
 /datum/controller/subsystem/overmap/proc/create_map_zone(new_name)
 	return new /datum/map_zone(new_name)
 
+/**
+ * A free single-z map zone for a flat encounter.
+ *
+ * Planet zones are skipped: they hold a surface + cave pair allocated back to back, and
+ * handing one to a single-z encounter would consume the surface and strand the cave.
+ */
 /datum/controller/subsystem/overmap/proc/find_free_mapzone()
 	. = null
 	for(var/datum/map_zone/mapzone as anything in map_zones)
+		if(mapzone.planet_pair)
+			continue
 		if(!mapzone.taken)
 			return(mapzone)
+
+/// A free surface + cave pair for a planet to rebuild itself into. See find_free_mapzone().
+/datum/controller/subsystem/overmap/proc/find_free_planet_mapzone()
+	. = null
+	for(var/datum/map_zone/mapzone as anything in map_zones)
+		if(!mapzone.planet_pair || mapzone.taken)
+			continue
+		if(length(mapzone.z_levels) < 2)
+			continue
+		return(mapzone)
 

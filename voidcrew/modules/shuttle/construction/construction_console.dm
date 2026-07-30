@@ -1095,34 +1095,16 @@
 	var/obj/docking_port/mobile/port = get_docking_port()
 	if(!port)
 		return FALSE
-
-	for(var/check_dir in GLOB.cardinals)
-		var/turf/adjacent = get_step(T, check_dir)
-		if(get_area(adjacent) in port.shuttle_areas)
-			return TRUE
-
-	return FALSE
+	// Kept as a method so the player outpost subtype can still override it (see
+	// outpost_construction.dm); the rule itself lives in hull_survey.dm.
+	return hull_claim_touches_port(T, port)
 
 /**
  * Checks if a turf is a valid area type for expansion building
  * (space or planetoid, not ruin, not other shuttle)
  */
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/is_valid_expansion_area(turf/T)
-	var/area/target_area = get_area(T)
-
-	// Must be space or planetoid area
-	if(!istype(target_area, /area/space) && !istype(target_area, /area/overmap_encounter/planetoid))
-		return FALSE
-
-	// NOT a ruin area
-	if(istype(target_area, /area/ruin))
-		return FALSE
-
-	// NOT another shuttle
-	if(isshuttleturf(T))
-		return FALSE
-
-	return TRUE
+	return hull_claim_area_valid(T)
 
 /**
  * Checks if the drone can move to a destination turf
@@ -1204,34 +1186,11 @@
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/check_expansion_dimensions(turf/new_turf, obj/docking_port/mobile/port)
 	if(!port)
 		return FALSE
-
-	// Get current shuttle bounds (normalize since return_coords order depends on direction)
-	var/list/bounds = port.return_coords()
-	var/x0 = min(bounds[1], bounds[3])
-	var/y0 = min(bounds[2], bounds[4])
-	var/x1 = max(bounds[1], bounds[3])
-	var/y1 = max(bounds[2], bounds[4])
-
-	// Calculate new bounds if we add this turf
-	var/new_x0 = min(x0, new_turf.x)
-	var/new_y0 = min(y0, new_turf.y)
-	var/new_x1 = max(x1, new_turf.x)
-	var/new_y1 = max(y1, new_turf.y)
-
-	// Calculate new dimensions
-	var/new_width = new_x1 - new_x0 + 1
-	var/new_height = new_y1 - new_y0 + 1
-
-	// Check against voidcrew dimension limits
-	// Neither dimension can exceed RESERVE_DOCK_MAX_SIZE_LONG (56)
-	if(new_width > RESERVE_DOCK_MAX_SIZE_LONG || new_height > RESERVE_DOCK_MAX_SIZE_LONG)
-		return FALSE
-
-	// Only one dimension can exceed RESERVE_DOCK_MAX_SIZE_SHORT (40)
-	if(new_width > RESERVE_DOCK_MAX_SIZE_SHORT && new_height > RESERVE_DOCK_MAX_SIZE_SHORT)
-		return FALSE
-
-	return TRUE
+	// The berth-fit rule lives in hull_survey.dm so the drone and the in-person survey
+	// can't drift apart. Same result as the old inline pair of comparisons: "neither axis
+	// over LONG, and not both over SHORT" is exactly "max <= LONG and min <= SHORT".
+	var/list/extents = hull_claim_bounds(list(new_turf), port)
+	return hull_dimensions_fit(extents[1], extents[2])
 
 /**
  * Cleans up empty shuttle turfs after deconstruction

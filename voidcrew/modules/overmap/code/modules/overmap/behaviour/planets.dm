@@ -11,12 +11,20 @@
 	/* Planet Generation */
 	///Planet spawn rate
 	var/spawn_rate = 20
+	///Size of the generated region on the planet's z-levels. The rest of each level is
+	///cordoned off - see /datum/space_level/set_bounds(). Clamped to PLANET_MIN_SIZE.
+	var/planet_size = 128
 	///The list of ruins that can spawn here
 	var/ruin_type
 	///The map generator to use
 	var/datum/map_generator/mapgen
 	///The area type to use on the planet
 	var/area/target_area
+	///The area type for the underground cave z-level. Planets with both this and
+	///surface_area set build as a surface + cave pair; anything else is a flat encounter.
+	var/area/cave_area
+	///The area type for the surface z-level
+	var/area/surface_area
 	///The surface turf
 	var/turf/surface = /turf/open/space/basic
 	///Weather controller for planet specific weather
@@ -42,6 +50,8 @@
 	ruin_type = ZTRAIT_LAVA_RUINS
 	mapgen = /datum/map_generator/planet_generator/lava
 	target_area = /area/overmap_encounter/planetoid/lava
+	cave_area = /area/overmap_encounter/planetoid/cave/lava
+	surface_area = /area/overmap_encounter/planetoid/lava
 	surface = /turf/open/misc/asteroid/basalt/lava_land_surface
 	weather_controller_type = /datum/weather/ash_storm
 	weather_trait = ZTRAIT_ASHSTORM
@@ -57,6 +67,8 @@
 	ruin_type = ZTRAIT_ICE_RUINS
 	mapgen = /datum/map_generator/planet_generator/snow
 	target_area = /area/overmap_encounter/planetoid/ice
+	cave_area = /area/overmap_encounter/planetoid/cave/ice
+	surface_area = /area/overmap_encounter/planetoid/ice
 	surface = /turf/open/misc/asteroid/snow/icemoon
 	weather_controller_type = /datum/weather/snow_storm
 	weather_trait = ZTRAIT_SNOWSTORM
@@ -72,6 +84,8 @@
 	ruin_type = ZTRAIT_BEACH_RUINS
 	mapgen = /datum/map_generator/planet_generator/beach
 	target_area = /area/overmap_encounter/planetoid/beach
+	cave_area = /area/overmap_encounter/planetoid/cave/beach
+	surface_area = /area/overmap_encounter/planetoid/beach
 	surface = /turf/open/misc/asteroid/sand/beach/lit
 	weather_controller_type = /datum/weather/rain_storm
 	weather_trait = ZTRAIT_RAINSTORM
@@ -86,6 +100,8 @@
 	ruin_type = ZTRAIT_JUNGLE_RUINS
 	mapgen = /datum/map_generator/planet_generator
 	target_area = /area/overmap_encounter/planetoid/jungle
+	cave_area = /area/overmap_encounter/planetoid/cave/jungle
+	surface_area = /area/overmap_encounter/planetoid/jungle
 	surface = /turf/open/misc/dirt/jungle
 	weather_controller_type = /datum/weather/rain_storm
 	weather_trait = ZTRAIT_RAINSTORM
@@ -100,6 +116,8 @@
 	ruin_type = ZTRAIT_WASTELAND_RUINS
 	mapgen = /datum/map_generator/planet_generator/lava
 	target_area = /area/overmap_encounter/planetoid/wasteland
+	cave_area = /area/overmap_encounter/planetoid/cave/wasteland
+	surface_area = /area/overmap_encounter/planetoid/wasteland
 	surface = /turf/open/misc/wasteland/lit
 	weather_controller_type = /datum/weather/sand_storm
 	weather_trait = ZTRAIT_SANDSTORM

@@ -5,6 +5,15 @@
 	var/taken = FALSE
 	/// List of all z levels this map zone contains
 	var/list/z_levels = list()
+	/**
+	 * TRUE if this zone holds a planet's surface + cave z-pair, allocated back to back
+	 * so cave_z == surface_z - 1 and the up/down traits actually line up.
+	 *
+	 * Zones are pooled and reused, and a single-z encounter that recycled half of a
+	 * pair would leave the other half stranded - so the two pools are kept apart:
+	 * find_free_mapzone() skips these, find_free_planet_mapzone() only returns these.
+	 */
+	var/planet_pair = FALSE
 
 /datum/map_zone/New(passed_name)
 	if(!isnull(passed_name))
@@ -59,14 +68,70 @@
 		if(living_mob.z == z_value)
 			. += living_mob
 
+/**
+ * Confines this z-level to a centred region of the given size. Everything that walks
+ * the level - terrain generation, population, ruin seeding, rivers, cleanup - goes
+ * through get_block(), so setting bounds is all it takes to make a small planet on a
+ * full-size z-level. Call place_cordon() afterwards to wall off the remainder.
+ */
+/datum/space_level/proc/set_bounds(width, height)
+	width = clamp(width, PLANET_MIN_SIZE, world.maxx)
+	height = clamp(height, PLANET_MIN_SIZE, world.maxy)
+	low_x = round((world.maxx - width) / 2) + 1
+	low_y = round((world.maxy - height) / 2) + 1
+	high_x = low_x + width - 1
+	high_y = low_y + height - 1
+
+/// Drops the bounds back to the whole z-level, so cleanup covers the cordon too
+/datum/space_level/proc/reset_bounds()
+	low_x = null
+	low_y = null
+	high_x = null
+	high_y = null
+
+/**
+ * Fills everything outside the bounded region with cordon turfs. No-op when the
+ * bounds already cover the whole level.
+ */
+/datum/space_level/proc/place_cordon()
+	if(isnull(low_x))
+		return
+	if(low_x <= 1 && low_y <= 1 && high_x >= world.maxx && high_y >= world.maxy)
+		return
+
+	// Bottom strip (below the planet)
+	if(low_y > 1)
+		for(var/turf/cordon_turf as anything in block(locate(1, 1, z_value), locate(world.maxx, low_y - 1, z_value)))
+			new /turf/cordon(cordon_turf)
+			CHECK_TICK
+	// Top strip (above the planet)
+	if(high_y < world.maxy)
+		for(var/turf/cordon_turf as anything in block(locate(1, high_y + 1, z_value), locate(world.maxx, world.maxy, z_value)))
+			new /turf/cordon(cordon_turf)
+			CHECK_TICK
+	// Left strip (beside the planet, between the top and bottom strips)
+	if(low_x > 1)
+		for(var/turf/cordon_turf as anything in block(locate(1, low_y, z_value), locate(low_x - 1, high_y, z_value)))
+			new /turf/cordon(cordon_turf)
+			CHECK_TICK
+	// Right strip
+	if(high_x < world.maxx)
+		for(var/turf/cordon_turf as anything in block(locate(high_x + 1, low_y, z_value), locate(world.maxx, high_y, z_value)))
+			new /turf/cordon(cordon_turf)
+			CHECK_TICK
+
 /datum/space_level/proc/get_block()
-	low_x = 1
-	low_y = 1
-	high_x = world.maxx
-	high_y = world.maxy
+	if(isnull(low_x))
+		low_x = 1
+		low_y = 1
+		high_x = world.maxx
+		high_y = world.maxy
 	return block(locate(low_x,low_y,z_value), locate(high_x,high_y,z_value))
 
 /datum/space_level/proc/clear_reservation()
+	// Cleanup has to cover the cordon as well as the planet, so drop the bounds first
+	reset_bounds()
+
 	var/area/space_area = GLOB.areas_by_type[world.area]
 
 	var/list/turf/block_turfs = get_block()
@@ -101,6 +166,9 @@
 /// Clears contents and resets turfs to uninitialized /turf/open/space/basic
 /// This bypasses ChangeTurf so turfs remain uninitialized and unbuildable
 /datum/space_level/proc/clear_to_uninitialized_space()
+	// Cleanup has to cover the cordon as well as the planet, so drop the bounds first
+	reset_bounds()
+
 	var/area/space_area = GLOB.areas_by_type[world.area]
 	var/list/turf/block_turfs = get_block()
 

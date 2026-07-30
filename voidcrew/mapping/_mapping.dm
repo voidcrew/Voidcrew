@@ -127,6 +127,73 @@
 		CHECK_TICK
 		A.RunTerrainGeneration()
 
+/// Minimum tiles between two cave entrances on the same planet
+#define CAVE_LADDER_SPACING 20
+/// How many candidate spots to throw before giving up on finding more
+#define CAVE_LADDER_ATTEMPTS 400
+
+/**
+ * Spawns linked ladder pairs between a planet's surface and cave z-levels.
+ *
+ * Cave entrances used to be a biome feature, which meant they clustered wherever the
+ * feature roll happened to land and had to guess at a partner turf. Instead this scatters
+ * them with a minimum spacing so they end up roughly evenly spread, and places both ends
+ * together so every entrance definitely goes somewhere.
+ *
+ * A pair is only placed where BOTH ends landed on walkable generated ground, so the count
+ * varies with how cavey the terrain came out - a planet whose caves are mostly solid rock
+ * gets fewer ways in.
+ *
+ * (rust_g exposes noise_poisson_map for exactly this, but the DLL in this repo predates
+ * the function - calling it just runtimes "specified procedure could not be found" and
+ * returns nothing. Rejection sampling is cheap enough at these counts.)
+ */
+/proc/spawn_cave_ladders_for_planet(surface_z, cave_z)
+	var/datum/space_level/surface_level = SSmapping.get_level(surface_z)
+	if(!surface_level || !cave_z)
+		return 0
+
+	var/spacing_squared = CAVE_LADDER_SPACING * CAVE_LADDER_SPACING
+	var/list/turf/placed_at = list()
+
+	for(var/attempt in 1 to CAVE_LADDER_ATTEMPTS)
+		CHECK_TICK
+		var/candidate_x = rand(surface_level.low_x, surface_level.high_x)
+		var/candidate_y = rand(surface_level.low_y, surface_level.high_y)
+
+		var/too_close = FALSE
+		for(var/turf/existing as anything in placed_at)
+			var/dx = existing.x - candidate_x
+			var/dy = existing.y - candidate_y
+			if((dx * dx) + (dy * dy) < spacing_squared)
+				too_close = TRUE
+				break
+		if(too_close)
+			continue
+
+		// Both ends have to be walkable generated ground, or the entrance goes into rock
+		var/turf/surface_turf = locate(candidate_x, candidate_y, surface_z)
+		if(!surface_turf?.generating_biome)
+			continue
+		if(!(surface_turf.type in surface_turf.generating_biome.open_turf_types))
+			continue
+
+		var/turf/cave_turf = locate(candidate_x, candidate_y, cave_z)
+		if(!cave_turf?.generating_biome)
+			continue
+		if(!(cave_turf.type in cave_turf.generating_biome.open_turf_types))
+			continue
+
+		var/obj/structure/ladder/cave/surface_ladder = new(surface_turf)
+		var/obj/structure/ladder/cave/cave_ladder = new(cave_turf)
+		surface_ladder.link_down(cave_ladder)
+		placed_at += surface_turf
+
+	return length(placed_at)
+
+#undef CAVE_LADDER_SPACING
+#undef CAVE_LADDER_ATTEMPTS
+
 /datum/controller/subsystem/mapping/preloadRuinTemplates()
 	/* This is all taken from parent */
 	// Still supporting bans by filename

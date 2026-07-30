@@ -86,7 +86,7 @@
 	to_chat(world, span_boldannounce("[message]"))
 	log_world(message)
 
-/datum/map_generator/planet_generator/proc/generate_overworld(heat, humidity_level, gen_turf, datum/planet/planet_type)
+/datum/map_generator/planet_generator/proc/generate_overworld(heat, humidity_level, turf/gen_turf, datum/planet/planet_type)
 	var/heat_level
 	var/datum/biome/selected_biome
 
@@ -106,8 +106,21 @@
 	selected_biome = heat_level[humidity_level]
 	selected_biome = SSmapping.biomes[selected_biome]
 	var/turf/picked_turf = pickweight(selected_biome.open_turf_types)
-	picked_turf = new picked_turf(gen_turf)
+	picked_turf = place_biome_turf(gen_turf, picked_turf)
 	picked_turf.generating_biome = selected_biome
+
+/**
+ * Lays one generated turf down over gen_turf.
+ *
+ * Raw `new turf_type(gen_turf)` is the fast path the roundstart map loader uses, but it
+ * bypasses ChangeTurf - and with it the lighting update. That is invisible when terrain
+ * generates before SSlighting comes up, and produces a black, unlit planet when it does
+ * not. Planets that generate on first visit are always in the second case.
+ */
+/datum/map_generator/planet_generator/proc/place_biome_turf(turf/gen_turf, turf/turf_type)
+	if(SSlighting.initialized)
+		return gen_turf.ChangeTurf(turf_type, flags = CHANGETURF_IGNORE_AIR)
+	return new turf_type(gen_turf)
 
 /datum/map_generator/planet_generator/proc/generate_cave(heat, humidity_level, string_gen, turf/gen_turf, cave_area, datum/planet/planet_type)
 	var/datum/biome/cave/selected_cave_biome
@@ -126,7 +139,7 @@
 	selected_cave_biome = SSmapping.biomes[selected_cave_biome]
 	var/closed = text2num(string_gen[world.maxx * (gen_turf.y - 1) + gen_turf.x])
 	var/turf/picked_turf = pickweight(closed ? selected_cave_biome.closed_turf_types : selected_cave_biome.open_turf_types)
-	picked_turf = new picked_turf(gen_turf)
+	picked_turf = place_biome_turf(gen_turf, picked_turf)
 	if(gen_turf.turf_flags & NO_RUINS)
 		picked_turf.turf_flags |= NO_RUINS
 	var/turf_area = get_area(picked_turf)
@@ -195,22 +208,12 @@
 						can_spawn = FALSE
 						break
 
-				// Spawn linked ladders after checks pass
-				if((picked_feature in typesof(/obj/structure/ladder)) && can_spawn)
-					var/turf/turf_below = GET_TURF_BELOW(target_turf)
-					var/turf/turf_above = GET_TURF_ABOVE(target_turf)
-					// Since we aren't doing triple z, no reason to spawn both above and below
-					if(turf_below)
-						// Don't create up/down ladders if the turfs don't exist in our whitelist)
-						if(!turf_below.generating_biome || !(turf_below.type in turf_below.generating_biome.open_turf_types))
-							can_spawn = FALSE
-						else
-							new /obj/structure/ladder/cave(turf_below)
-					else if(turf_above)
-						if(!turf_above.generating_biome || !(turf_above.type in turf_above.generating_biome.open_turf_types))
-							can_spawn = FALSE
-						else
-							new /obj/structure/ladder/cave(turf_above)
+				// Cave entrances are no longer a biome feature - they are placed as
+				// evenly-spaced surface/cave pairs afterwards, by
+				// spawn_cave_ladders_for_planet(). A ladder rolled here would be
+				// unlinked, and on a surface-only encounter it would lead nowhere.
+				if(ispath(picked_feature, /obj/structure/ladder))
+					can_spawn = FALSE
 
 				if(can_spawn)
 					new picked_feature(target_turf)
@@ -259,7 +262,14 @@
 					break
 
 			if(can_spawn)
-				new picked_mob(target_turf)
+				// Structure spawners (tendrils and friends) and megafauna are fixtures of
+				// the terrain and are placed now. Ordinary fauna is not: the turf is only
+				// registered as a candidate, and SSplanet_mobs populates it when players
+				// actually arrive and clears it out again after they leave. On a z-level
+				// SSplanet_mobs isn't tracking, register_spawn_turf() declines and the mob
+				// spawns here as it always did.
+				if(ispath(picked_mob, /obj/structure/spawner) || is_megafauna || !SSplanet_mobs.register_spawn_turf(target_turf))
+					new picked_mob(target_turf)
 				spawned_something = TRUE
 		CHECK_TICK
 
