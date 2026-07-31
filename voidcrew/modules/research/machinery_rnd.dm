@@ -25,6 +25,18 @@
 		return TRUE
 
 /**
+ * The destructive scanner is the only experiment-handler machine with no way to pick a server: it
+ * isn't an /obj/machinery/rnd, so the multitool handler above doesn't reach it, and upstream simply
+ * assumed it would auto-connect to the station techweb forever. It links itself to a server on its
+ * own z-level at build time and is adopted by a ship R&D server that comes online after it, but
+ * without this a scanner that misses both has no route back.
+ */
+/obj/machinery/destructive_scanner/multitool_act(mob/living/user, obj/item/multitool/tool)
+	if(voidcrew_multitool_link_experiment_handler(src, user, tool))
+		return TRUE
+	return ..()
+
+/**
  * Tied to Production
  */
 /obj/machinery/rnd/production/update_designs()

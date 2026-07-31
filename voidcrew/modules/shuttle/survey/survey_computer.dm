@@ -308,50 +308,19 @@
 	if(!object)
 		return
 
-	var/list/point_values = list(
-		nebula = list(
-			points = 50,
-			cash = 50
-		),
-		meteor = list(
-			points = 100,
-			cash = 100
-		),
-		electric = list(
-			points = 250,
-			cash = 250
-		),
-		emp = list(
-			points = 400,
-			cash = 400
-		),
-		planet = list(
-			points = 500,
-			cash = 500
-		),
-		star = list(
-			points = 1000,
-			cash = 1000
-		),
-		space_ruin = list(
-			points = 300,
-			cash = 300
-		),
-	)
-
 	var/point_list = list()
 
-	var/type_split = splittext("[object.type]", "/")
-	var/celestial_object_type = type_split[length(type_split)]
+	// The payout lives on the overmap object (survey_value, see _overmap.dm) rather than
+	// in a table keyed by type name here - almost nothing spawns as its family's base
+	// type, so storm severities, planet terrains, fixed-gas nebulas and star classes all
+	// used to fall through to nothing. 0 is anything that isn't a celestial body.
+	var/points = object.survey_value
+	var/cash = object.survey_value
 
-	// Check if the celestial type is invalid
-	if(!celestial_object_type || isnull(celestial_object_type) || !(celestial_object_type in point_values))
+	if(!points)
 		point_list["cash"] = 0
 		point_list["points"] = 0
 		return point_list
-
-	var/points = point_values[celestial_object_type]["points"]
-	var/cash = point_values[celestial_object_type]["cash"]
 
 	// Extra rewards for being the first to survey an object
 	if (!object.surveyed)

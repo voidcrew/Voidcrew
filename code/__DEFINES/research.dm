@@ -74,13 +74,22 @@
 
 ///Connects the 'server_var' to a valid research server on your Z level.
 ///Used for machines in LateInitialize, to ensure that RND servers are loaded first.
+// VOIDCREW EDIT CHANGE - the "no server found" fallback now honours no_default_techweb_link (TRUE here, see
+// voidcrew/edits/config.dm), leaving the machine UNLINKED instead of binding the global SCIENCE techweb.
+// There is no station in this fork: every ship owns a techweb created by its own R&D server's source code disk,
+// so the global web belongs to nobody and points paid into it are gone with no feedback. Every other
+// CONNECT_TO_RND_SERVER_ROUNDSTART call site already gates itself on that same flag; the experiment_handler
+// component (code/modules/experisci/experiment/handlers/experiment_handler.dm) does not, which is how
+// Experi-Scanners and operating computers built before the ship's R&D server ate their 2000-point payouts.
+// Upstream behaviour is untouched while the flag is FALSE, and the "server found" branch is unchanged - mapped
+// ruin servers that bind their own web (e.g. /obj/machinery/rnd/server/oldstation and its CHARLIE web) still work.
 #define CONNECT_TO_RND_SERVER_ROUNDSTART(server_var, holder) do { \
 	var/list/found_servers = SSresearch.get_available_servers(get_turf(holder)); \
 	var/obj/machinery/rnd/server/selected_server = length(found_servers) ? found_servers[1] : null; \
 	if (selected_server) { \
 		server_var = selected_server.stored_research; \
 	}; \
-	else { \
+	else if (!CONFIG_GET(flag/no_default_techweb_link)) { \
 		var/datum/techweb/station_fallback_web = locate(/datum/techweb/science) in SSresearch.techwebs; \
 		server_var = station_fallback_web; \
 	}; \

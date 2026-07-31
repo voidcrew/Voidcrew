@@ -34,6 +34,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	chain_rate = 4
 	chart_variant = "rock"
 	parallax_theme = PARALLAX_THEME_ASTEROIDS // crews over/inside the field see drifting asteroids
+	survey_value = 100
 	/// Notable minerals shown on the survey report — keep in sync with ore_weights
 	var/mineral_types = list(/datum/material/iron, /datum/material/plasma, /datum/material/silver, /datum/material/titanium, /datum/material/gold)
 
@@ -473,6 +474,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	spread_chance = 20
 	chain_rate = 2
 	chart_variant = "ion"
+	survey_value = 400
 	var/intensity = 1
 
 /obj/structure/overmap/event/emp/Initialize(mapload)
@@ -497,6 +499,7 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	spread_chance = 30
 	chain_rate = 3
 	chart_variant = "electrical"
+	survey_value = 250
 	var/intensity = 1
 
 /obj/structure/overmap/event/electric/Initialize(mapload)
@@ -579,6 +582,7 @@ GLOBAL_LIST_EMPTY(nebula_events)
 	spread_chance = 75
 	opacity = TRUE
 	parallax_theme = PARALLAX_THEME_SPACE_GAS // crews inside see space gas, tinted below
+	survey_value = 50
 	/// The /datum/gas typepath this nebula carries. Null rolls one from the
 	/// zone band's table on Init; the fixed subtypes below force a specific gas.
 	var/datum/gas/gas_type

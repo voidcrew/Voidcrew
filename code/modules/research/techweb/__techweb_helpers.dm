@@ -18,6 +18,13 @@
 /proc/techweb_item_point_check(obj/item/I)
 	if(SSresearch.techweb_point_items[I.type])
 		return SSresearch.techweb_point_items[I.type]
+	// VOIDCREW EDIT ADDITION BEGIN - subtype fallback. Entries are keyed by the base path (anomaly cores only
+	// ever exist as subtypes of /obj/item/assembly/signaler/anomaly), so the exact-type lookup above never
+	// matched a single real item and the payout was unreachable. First matching entry wins.
+	for(var/point_path in SSresearch.techweb_point_items)
+		if(istype(I, point_path))
+			return SSresearch.techweb_point_items[point_path]
+	// VOIDCREW EDIT ADDITION END
 	return FALSE
 
 /proc/techweb_point_display_generic(pointlist)

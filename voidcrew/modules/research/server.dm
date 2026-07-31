@@ -35,8 +35,46 @@
 		stored_research = source_code_hdd.stored_research
 		stored_research.techweb_servers |= src
 		balloon_alert(user, "disk uploaded!")
+		claim_unlinked_experiment_handlers()
 		return
 	return ..()
+
+/**
+ * Adopts every experiment handler aboard this ship that has no techweb link.
+ *
+ * Experiment handlers (Experi-Scanners, destructive scanners, operating computers) are the only
+ * research machinery that links itself, at Initialize, by looking for a server on its z-level. A crew
+ * that prints a scanner before assembling the R&D kit gets an unlinked one, and nothing would ever
+ * link it again - so run the same match from the other side the moment this server gets a techweb.
+ *
+ * Only null links are claimed: a handler someone deliberately multitooled to another web is left alone.
+ */
+/obj/machinery/rnd/server/ship/proc/claim_unlinked_experiment_handlers()
+	if(!stored_research)
+		return
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		return
+	// get_voidcrew_ship_for_turf() is the multi-z-aware "which ship is this inside" test
+	// (voidcrew/modules/overmap/code/modules/overmap/_overmap.dm). Servers standing somewhere that
+	// isn't a ship - an outpost, a ruin - fall back to plain z matching, which is what the
+	// self-link in CONNECT_TO_RND_SERVER_ROUNDSTART uses.
+	var/obj/structure/overmap/ship/our_ship = get_voidcrew_ship_for_turf(our_turf)
+	for(var/datum/component/experiment_handler/handler as anything in GLOB.experiment_handlers)
+		if(handler.linked_web)
+			continue
+		var/atom/holder = handler.parent
+		if(QDELETED(holder))
+			continue
+		var/turf/holder_turf = get_turf(holder)
+		if(!holder_turf)
+			continue
+		if(our_ship)
+			if(get_voidcrew_ship_for_turf(holder_turf) != our_ship)
+				continue
+		else if(!is_valid_z_level(holder_turf, our_turf))
+			continue
+		handler.link_techweb(stored_research, TRUE)
 
 /obj/machinery/rnd/server/ship/multitool_act(mob/living/user, obj/item/multitool/multi)
 	if(!source_code_hdd)

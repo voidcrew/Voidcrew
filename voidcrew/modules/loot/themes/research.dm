@@ -21,6 +21,7 @@
 		/obj/item/slime_extract/grey = 6,
 		/obj/item/petri_dish = 6,
 		/obj/item/experi_scanner = 5,
+		/obj/item/research_notes/loot/tiny = 5,
 		/obj/item/stack/ore/bluespace_crystal/artificial = 4,
 	)
 	loot_yellow = list(
@@ -31,6 +32,7 @@
 		/obj/item/slime_extract/metal = 6,
 		/obj/item/slime_extract/gold = 5,
 		/obj/item/clothing/glasses/night = 5,
+		/obj/item/research_notes/loot/small = 5,
 		/obj/item/reagent_containers/cup/beaker/noreact = 4,
 		/obj/item/raw_anomaly_core/random = 4,
 		/obj/item/blueprint/gun/laser_carbine = 3,
@@ -43,6 +45,7 @@
 		/obj/item/stock_parts/matter_bin/super = 7,
 		/obj/item/slime_extract/bluespace = 6,
 		/obj/item/slime_extract/adamantine = 5,
+		/obj/item/research_notes/loot/medium = 5,
 		/obj/item/clothing/shoes/bhop = 4,
 		/obj/item/gun/energy/temperature = 4,
 		/obj/item/reagent_containers/cup/beaker/bluespace = 3,
@@ -66,6 +69,7 @@
 		/obj/item/stock_parts/capacitor/super = 8,
 		/obj/item/slime_extract/bluespace = 6,
 		/obj/item/reagent_containers/cup/beaker/entangled = 4,
+		/obj/item/research_notes/loot/big = 4,
 		/obj/item/displacer_fork = 4,
 		/obj/item/gun/magic/wand/polymorph = 2,
 		/obj/item/book/granter/action/spell/charge = 2,
@@ -76,6 +80,7 @@
 		/obj/item/storage/backpack/holding = 5,
 		/obj/item/clothing/gloves/fingerless/chronal_splint = 4,
 		/obj/item/clothing/suit/toggle/labcoat/eventide_courier = 4,
+		/obj/item/research_notes/loot/genius = 2,
 		/obj/item/singularityhammer = 2,
 	)
 

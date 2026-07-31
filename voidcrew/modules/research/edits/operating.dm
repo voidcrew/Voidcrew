@@ -15,7 +15,13 @@
 		linked_techweb = null
 
 /obj/machinery/computer/operating/multitool_act(mob/living/user, obj/item/multitool/tool)
-	if(linked_techweb && !QDELETED(tool.buffer) && istype(tool.buffer, /datum/techweb)) //disconnect old one
+	// The parent proc returns TRUE whether or not it linked anything, so an empty buffer used to fall
+	// straight through to `linked_techweb.connected_machines` below on a null. Unlinked is the normal
+	// state for a ship's operating computer, so this is the click people will actually make by mistake.
+	if(QDELETED(tool.buffer) || !istype(tool.buffer, /datum/techweb))
+		balloon_alert(user, "no techweb in buffer!")
+		return TRUE
+	if(linked_techweb) //disconnect old one
 		linked_techweb.connected_machines -= src
 		experiment_handler.unlink_techweb()
 	. = ..()

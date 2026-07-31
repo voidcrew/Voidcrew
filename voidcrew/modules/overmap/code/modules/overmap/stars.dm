@@ -3,6 +3,7 @@
 	// the map centre (see HelmComputer.tsx); charting it as a generic contact too
 	// would put two marks on the same spot.
 	sensor_visible = FALSE
+	survey_value = 1000
 	/// Datum containing all of the information for the star
 	var/datum/overmap/star/star_datum = /datum/overmap/star
 	var/star_type = "basic"

@@ -87,22 +87,27 @@ SUBSYSTEM_DEF(research)
 
 /datum/controller/subsystem/research/fire()
 	for(var/datum/techweb/techweb_list as anything in techwebs)
-		if(!techweb_list.should_generate_points)
-			continue
-		var/list/bitcoins = list()
-		for(var/obj/machinery/rnd/server/miner as anything in techweb_list.techweb_servers)
-			if(miner.working)
-				bitcoins = single_server_income.Copy()
-				break //Just need one to work.
+		// voidcrew edit: this used to be `if(!techweb_list.should_generate_points) continue`,
+		// which skipped the research queue below along with the income. Every Voidcrew ship
+		// runs on its own base /datum/techweb (only SCIENCE and CHARLIE generate passive
+		// points, which is intended), so ship webs never processed their queue at all - the
+		// console's enqueue buttons were live but the nodes were silently never researched.
+		// Income generation stays gated exactly as before; the queue now runs for every web.
+		if(techweb_list.should_generate_points)
+			var/list/bitcoins = list()
+			for(var/obj/machinery/rnd/server/miner as anything in techweb_list.techweb_servers)
+				if(miner.working)
+					bitcoins = single_server_income.Copy()
+					break //Just need one to work.
 
-		if(!isnull(techweb_list.last_income))
-			var/income_time_difference = world.time - techweb_list.last_income
-			techweb_list.last_bitcoins = bitcoins  // Doesn't take tick drift into account
-			for(var/i in bitcoins)
-				bitcoins[i] *= (income_time_difference / 10) * techweb_list.income_modifier
-			techweb_list.add_point_list(bitcoins)
+			if(!isnull(techweb_list.last_income))
+				var/income_time_difference = world.time - techweb_list.last_income
+				techweb_list.last_bitcoins = bitcoins  // Doesn't take tick drift into account
+				for(var/i in bitcoins)
+					bitcoins[i] *= (income_time_difference / 10) * techweb_list.income_modifier
+				techweb_list.add_point_list(bitcoins)
 
-		techweb_list.last_income = world.time
+			techweb_list.last_income = world.time
 
 		if(length(techweb_list.research_queue_nodes))
 			techweb_list.research_node_id(techweb_list.research_queue_nodes[1]) // Attempt to research the first node in queue if possible

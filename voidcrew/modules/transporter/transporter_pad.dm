@@ -244,7 +244,10 @@
 	use_energy(active_power_usage / power_efficiency)
 
 	playsound(src, 'sound/machines/terminal/terminal_prompt_confirm.ogg', 40, TRUE)
-	playsound(source, 'sound/effects/magic/lightning_chargeup.ogg', 35, TRUE)
+	// The shimmering dissolve/appear pair, not the wizard thunder - both ends get
+	// the dissolve as the columns come down, so the arrival side hears it coming.
+	playsound(source, 'sound/effects/magic/teleport_diss.ogg', 40, TRUE)
+	playsound(destination, 'sound/effects/magic/teleport_diss.ogg', 30, TRUE)
 	new /obj/effect/temp_visual/transporter_beam(source, beam_time)
 	// The arrival side keeps its column up past the end of the cycle, so whatever
 	// comes through materialises inside the light rather than after it's gone.
@@ -306,8 +309,8 @@
 	new /obj/effect/temp_visual/transporter_flash(destination)
 	transporter_sparks(source)
 	transporter_sparks(destination)
-	playsound(source, 'sound/effects/phasein.ogg', 50, TRUE)
-	playsound(destination, 'sound/effects/phasein.ogg', 50, TRUE)
+	playsound(source, 'sound/effects/magic/teleport_app.ogg', 50, TRUE)
+	playsound(destination, 'sound/effects/magic/teleport_app.ogg', 50, TRUE)
 
 	for(var/atom/movable/thing as anything in arrived)
 		// Not forced. Encounter areas carry no blanket teleport block any more, so an

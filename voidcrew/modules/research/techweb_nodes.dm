@@ -252,24 +252,24 @@
 	design_ids = list("sleeper")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
 
-/datum/techweb_node/basic_mining/New()
+// Station-only supply and records consoles. A ship has no station cargo department
+// to file requests with and no station payroll to audit, so they come out of their
+// upstream nodes; the ship bank machine — already unlocked by the consoles node —
+// is what crews use instead.
+// These edits used to sit on /datum/techweb_node/basic_mining, /comptech and
+// /comp_recordkeeping. None of those types exist here, so DM quietly created them
+// with a null id, initialize_all_techweb_nodes() skipped them, and the removals
+// never happened.
+/datum/techweb_node/mining/New()
 	. = ..()
-	design_ids += list(
-		"bankmachine",
-	)
 	design_ids -= list(
 		"cargoexpress",
 	)
 
-/datum/techweb_node/comptech/New()
+/datum/techweb_node/consoles/New()
 	. = ..()
 	design_ids -= list(
 		"cargorequest",
-	)
-
-/datum/techweb_node/comp_recordkeeping/New()
-	. = ..()
-	design_ids -= list(
 		"account_console",
 	)
 
@@ -279,13 +279,16 @@
 		"bluespace_pod"
 	)
 
-/datum/techweb_node/adv_surgery/New()
+// The extra dissection tiers hang off the surgery ladder that gates the surgeries
+// beneath them. Same orphaned-parent story as above: these were on /adv_surgery and
+// /exp_surgery, which don't exist — the real node types are surgery_adv/surgery_exp.
+/datum/techweb_node/surgery_adv/New()
 	. = ..()
 	design_ids += list(
 		"surgery_oldstation_dissection_advanced",
 	)
 
-/datum/techweb_node/exp_surgery/New()
+/datum/techweb_node/surgery_exp/New()
 	. = ..()
 	design_ids += list(
 		"surgery_oldstation_dissection_superior",

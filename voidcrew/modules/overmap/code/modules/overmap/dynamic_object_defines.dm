@@ -70,9 +70,10 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 /obj/structure/overmap/planet/empty
 	planet = /datum/overmap/planet/empty
 	// Dock-in-empty-space placeholder, not a real celestial: neither scannable nor
-	// drawn on the chart when the ship is sitting on top of it.
+	// drawn on the chart when the ship is sitting on top of it, and nothing to survey.
 	sensor_detectable = FALSE
 	sensor_visible = FALSE
+	survey_value = 0
 	/// How many times we've tried to unload this level
 	var/unload_attempts = 0
 	/// Maximum number of unload retry attempts

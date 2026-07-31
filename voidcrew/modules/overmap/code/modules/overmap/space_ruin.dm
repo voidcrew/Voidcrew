@@ -16,6 +16,7 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	icon_state = "strange_event"
 	sensor_detectable = TRUE
 	sensor_category = "Ruins"
+	survey_value = 300
 
 	/// The ruin template this object will spawn
 	var/datum/map_template/ruin/space/ruin_template

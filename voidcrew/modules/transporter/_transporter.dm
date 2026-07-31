@@ -84,12 +84,36 @@ GLOBAL_LIST_INIT(transporter_mass_blacklist, typecacheof(list(
 	scale = generator(GEN_VECTOR, list(0.6, 0.6), list(1.1, 1.1), NORMAL_RAND)
 	spin = generator(GEN_NUM, list(-20, 20), NORMAL_RAND)
 
+/// The specks of light that stream up the inside of an open-sky beam column.
+/particles/transporter_stream
+	icon = 'icons/effects/particles/generic.dmi'
+	icon_state = list("dot" = 3, "cross" = 1)
+	width = 96
+	// Tall enough that risers reach the top of the screen of whoever is standing
+	// in the column before they leave the drawing region.
+	height = 480
+	count = 80
+	spawning = 5
+	lifespan = 1.8 SECONDS
+	fade = 0.6 SECONDS
+	fadein = 0.2 SECONDS
+	color = 0
+	color_change = 0.1
+	gradient = list("#8fe3ff", "#d8f6ff", "#ffffff")
+	position = generator(GEN_BOX, list(-7, -20, 0), list(7, 0, 0), UNIFORM_RAND)
+	velocity = generator(GEN_VECTOR, list(-0.5, 12, 0), list(0.5, 26, 0), UNIFORM_RAND)
+	drift = generator(GEN_VECTOR, list(-0.2, 0), list(0.2, 0.2), UNIFORM_RAND)
+	scale = generator(GEN_VECTOR, list(0.4, 0.4), list(0.9, 0.9), NORMAL_RAND)
+	spin = generator(GEN_NUM, list(-15, 15), NORMAL_RAND)
+
 /**
  * The column of light that stands on a turf for the whole length of a beam cycle.
  *
- * The icon is 32x96, so it draws three tiles up the screen from the turf it sits on
- * and reads as a shaft coming down from somewhere above. It is wide enough at the
- * bottom to enclose whoever is standing there. Spawned at both ends, so the people
+ * Under an open sky it uses the full-height state - a 32x320 shaft that runs ten
+ * tiles up the screen, so someone standing inside it sees it go all the way to the
+ * top of their view, with motes streaming up the inside. Indoors it swaps to the
+ * compact three-tile state, because a deck has a ceiling and the tall shaft would
+ * draw across every room north of the pad. Spawned at both ends, so the people
  * being left behind and the people about to be landed on both get warning.
  */
 /obj/effect/temp_visual/transporter_beam
@@ -99,17 +123,28 @@ GLOBAL_LIST_INIT(transporter_mass_blacklist, typecacheof(list(
 	icon_state = "transporter_column"
 	randomdir = FALSE
 	layer = ABOVE_ALL_MOB_LAYER
+	// The base atom flags include TILE_BOUND, which would cull the shaft for anyone
+	// whose screen doesn't include its base turf - fatal for a ten-tile icon.
+	appearance_flags = LONG_GLIDE
 	alpha = 0
 	light_range = 3
 	light_power = 2
 	light_color = COLOR_CYAN
 	duration = TRANSPORTER_BASE_BEAM_TIME
+	/// The mote stream rising inside an open-sky column. Null indoors.
+	var/obj/effect/abstract/particle_holder/stream
 
 /obj/effect/temp_visual/transporter_beam/Initialize(mapload, beam_duration)
 	if(beam_duration)
 		duration = beam_duration
 	. = ..()
 	SET_PLANE(src, ABOVE_GAME_PLANE, loc)
+	var/area/here = get_area(src)
+	if(here?.outdoors)
+		// The particle holder hooks our deletion, so it needs no cleanup of ours.
+		stream = new(src, /particles/transporter_stream)
+	else
+		icon_state = "transporter_column_short"
 	// Drops in from above rather than appearing, then breathes for the rest of the
 	// cycle. The loop on the second step carries through the rest of the chain.
 	transform = matrix().Translate(0, 72)
@@ -120,6 +155,9 @@ GLOBAL_LIST_INIT(transporter_mass_blacklist, typecacheof(list(
 
 /// Lifts the column back up into the sky instead of letting it blink off on expiry.
 /obj/effect/temp_visual/transporter_beam/proc/wind_down()
+	// Cut the stream first so no fresh motes spawn under a column that's leaving.
+	if(stream?.particles)
+		stream.particles.spawning = 0
 	animate(src, transform = matrix().Translate(0, 72), alpha = 0, time = TRANSPORTER_BEAM_WINDDOWN, easing = CUBIC_EASING | EASE_IN)
 
 /// The short flash at the end of a cycle, on the side something arrived at.
@@ -143,7 +181,7 @@ GLOBAL_LIST_INIT(transporter_mass_blacklist, typecacheof(list(
  */
 /proc/transporter_apply_filters(atom/movable/target, mask_y)
 	// Built once. icon() is expensive and this runs per passenger per beam.
-	var/static/icon/dissolve_mask = icon('voidcrew/modules/transporter/icons/transporter_beam.dmi', "transporter_dissolve")
+	var/static/icon/dissolve_mask = icon('voidcrew/modules/transporter/icons/transporter_mask.dmi', "transporter_dissolve")
 	target.add_filter("transporter_dissolve", 1, list(
 		"type" = "alpha",
 		"icon" = dissolve_mask,

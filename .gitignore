@@ -269,3 +269,4 @@ rust_g64.dll
 /_bench_previews/
 /vc/
 /unit_test_run.dme
+wiki/deploy.local.ps1

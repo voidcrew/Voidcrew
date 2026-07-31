@@ -253,8 +253,10 @@ SUBSYSTEM_DEF(overmap)
 		message_admins("Overmap failed to generate the map, this is a critical error.")
 		CRASH("Overmap did not generate correctly!")
 
-	var/obj/structure/overmap/star/big/star_to_spawn = pick(/obj/structure/overmap/star/big, /obj/structure/overmap/star/big/binary)
-	star_to_spawn = new
+	// Instantiate the PICKED type - a bare `new` here builds the declared type instead
+	// and the binary system could never roll
+	var/star_to_spawn_type = pick(/obj/structure/overmap/star/big, /obj/structure/overmap/star/big/binary)
+	var/obj/structure/overmap/star/big/star_to_spawn = new star_to_spawn_type
 	star_to_spawn.forceMove(centre_tile)
 
 	var/list/unsorted_turfs = get_area_turfs(/area/overmap, target_z = OVERMAP_Z_LEVEL)

@@ -69,7 +69,7 @@
 	suit = /obj/item/clothing/suit/armor/vest/capcarapace
 	backpack_contents = list(
 		/obj/item/melee/baton/telescopic/gold = 1,
-		/obj/item/station_charter = 1,
+		// VOIDCREW EDIT REMOVAL: /obj/item/station_charter - there is no station to charter
 		)
 	belt = /obj/item/modular_computer/pda/heads/captain
 	ears = /obj/item/radio/headset/heads/captain/alt

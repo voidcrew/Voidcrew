@@ -191,6 +191,11 @@
  * Attempts to perform the selected experiment given some arguments
  */
 /datum/component/experiment_handler/proc/action_experiment(datum/source, ...)
+	// VOIDCREW EDIT ADDITION - handlers with no server link no longer fall back to the global SCIENCE web
+	// (see CONNECT_TO_RND_SERVER_ROUNDSTART), so linked_web can legitimately be null; the ALWAYS_ACTIVE
+	// branch below reads linked_web.available_experiments and would runtime on it.
+	if (isnull(linked_web))
+		return FALSE
 	// Check if an experiment is selected
 	if (selected_experiment == null && !(config_flags & EXPERIMENT_CONFIG_ALWAYS_ACTIVE))
 		return FALSE
