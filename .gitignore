@@ -32,6 +32,8 @@
 *.rsc
 *.m.dme
 *.test.dme
+# Throwaway .dme copies used to compile-check while a DreamDaemon holds tgstation.rsc
+*_check.dme
 *.lk
 *.int
 *.backup

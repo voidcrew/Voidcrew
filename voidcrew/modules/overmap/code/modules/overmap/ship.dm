@@ -1777,6 +1777,16 @@
 	speed[1] += n_x
 	speed[2] += n_y
 
+	// Hard ceiling on velocity: the burn loop integrates thrust every 0.2s with no
+	// other bound, so light hulls (the pill masses 4 turfs) would otherwise sail to
+	// several times max_speed. Scaling both axes by the same positive factor keeps
+	// the heading — tick_move() only reads the SIGNs.
+	var/new_magnitude = MAGNITUDE(speed[1], speed[2])
+	if(new_magnitude > max_speed)
+		var/rescale = max_speed / new_magnitude
+		speed[1] *= rescale
+		speed[2] *= rescale
+
 	update_icon_state()
 	update_flight_parallax()
 

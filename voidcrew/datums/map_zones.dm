@@ -5,15 +5,6 @@
 	var/taken = FALSE
 	/// List of all z levels this map zone contains
 	var/list/z_levels = list()
-	/**
-	 * TRUE if this zone holds a planet's surface + cave z-pair, allocated back to back
-	 * so cave_z == surface_z - 1 and the up/down traits actually line up.
-	 *
-	 * Zones are pooled and reused, and a single-z encounter that recycled half of a
-	 * pair would leave the other half stranded - so the two pools are kept apart:
-	 * find_free_mapzone() skips these, find_free_planet_mapzone() only returns these.
-	 */
-	var/planet_pair = FALSE
 
 /datum/map_zone/New(passed_name)
 	if(!isnull(passed_name))
@@ -129,19 +120,23 @@
 	return block(locate(low_x,low_y,z_value), locate(high_x,high_y,z_value))
 
 /datum/space_level/proc/clear_reservation()
-	// Cleanup has to cover the cordon as well as the planet, so drop the bounds first
-	reset_bounds()
-
 	var/area/space_area = GLOB.areas_by_type[world.area]
 
-	var/list/turf/block_turfs = get_block()
-
-	for(var/turf/turf as anything in block_turfs)
+	// Contents only ever exist inside the bounded region - the cordon around a small
+	// planet is bare turf with nothing on it. The sweep below deliberately never yields,
+	// so it stays scoped to the bounds instead of grinding through ~48k empty cordon
+	// tiles that cannot possibly hold anything.
+	for(var/turf/turf as anything in get_block())
 		// don't waste time trying to qdelete the lighting object
 		for(var/datum/thing in (turf.contents - turf.lighting_object))
 			qdel(thing)
 			// DO NOT CHECK_TICK HERE. IT CAN CAUSE ITEMS TO GET LEFT BEHIND
 			// THIS IS REALLY IMPORTANT FOR CONSISTENCY. SORRY ABOUT THE LAG SPIKE
+
+	// Resetting turfs and areas does have to cover the cordon, and that loop yields, so
+	// widen to the whole level for it.
+	reset_bounds()
+	var/list/turf/block_turfs = get_block()
 
 	for(var/turf/turf as anything in block_turfs)
 		// Reset turf
@@ -166,21 +161,22 @@
 /// Clears contents and resets turfs to uninitialized /turf/open/space/basic
 /// This bypasses ChangeTurf so turfs remain uninitialized and unbuildable
 /datum/space_level/proc/clear_to_uninitialized_space()
-	// Cleanup has to cover the cordon as well as the planet, so drop the bounds first
-	reset_bounds()
-
 	var/area/space_area = GLOB.areas_by_type[world.area]
-	var/list/turf/block_turfs = get_block()
 
-	// Delete all contents (except lighting objects, dead mobs, landmarks)
+	// Contents live inside the bounds; the cordon outside them is bare turf. Same reason
+	// as clear_reservation() - this sweep doesn't yield, so don't widen it.
 	var/static/list/ignored_atoms = typecacheof(list(/mob/dead, /obj/effect/landmark, /obj/docking_port))
-	for(var/turf/T as anything in block_turfs)
+	for(var/turf/T as anything in get_block())
 		for(var/atom/movable/AM in T.contents)
 			if(AM == T.lighting_object)
 				continue
 			if(ignored_atoms[AM.type])
 				continue
 			qdel(AM)
+
+	// Turf replacement has to cover the cordon, and it yields, so widen for that
+	reset_bounds()
+	var/list/turf/block_turfs = get_block()
 
 	// Replace turfs with uninitialized space - bypass ChangeTurf entirely
 	for(var/turf/T as anything in block_turfs)

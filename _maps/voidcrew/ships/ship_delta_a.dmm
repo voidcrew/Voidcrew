@@ -23,21 +23,35 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/a)
-"ct" = (
+"dy" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 4
-	},
-/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/turf_decal/tile/blue/anticorner{
-	dir = 8
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/delta/bridge/a)
+"dC" = (
+/obj/structure/table,
+/obj/item/phone{
+	pixel_x = -3;
+	pixel_y = 3
 	},
-/obj/machinery/computer/bank_machine{
-	dir = 8
+/obj/item/cigbutt/cigarbutt{
+	pixel_x = 5;
+	pixel_y = -1
 	},
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/delta/hallway/central/a)
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/built,
+/obj/effect/turf_decal/tile/blue{
+	dir = 6
+	},
+/obj/item/storage/box/rndboards/all{
+	pixel_x = 0;
+	pixel_y = 10
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/delta/bridge/a)
 "dX" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
@@ -70,17 +84,6 @@
 	dir = 4
 	},
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/delta/engineering/a)
-"eC" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 4
-	},
-/turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/a)
 "eW" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -213,32 +216,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/delta/medbay/a)
-"km" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/machinery/firealarm/directional/east,
-/obj/machinery/light/small/built{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/mission_pad,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/delta/hallway/central/a)
-"kq" = (
-/obj/structure/frame/computer{
-	anchored = 1;
-	dir = 8
-	},
-/obj/item/shard,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/tile/blue/anticorner{
-	dir = 4
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/delta/bridge/a)
 "kz" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /obj/machinery/door/poddoor{
@@ -295,12 +272,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/a)
-"la" = (
-/obj/machinery/vending/coffee,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/delta/hallway/central/a)
 "lf" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -421,6 +392,13 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/delta/bridge/a)
+"oG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/turf_decal/tile/blue,
+/obj/machinery/mission_pad,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/delta/bridge/a)
 "oL" = (
 /obj/machinery/button/door{
 	id = "delta_cargo_hatch";
@@ -505,19 +483,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/medbay/a)
-"rJ" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/power/apc/auto_name/directional/east,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/obj/machinery/computer/mission_board{
-	dir = 4
-	},
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/delta/hallway/central/a)
 "sA" = (
 /obj/machinery/door/airlock/external,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
@@ -727,14 +692,6 @@
 "wG" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/delta/cafe/a)
-"wM" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/item/storage/box/rndboards/all,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/a)
 "xO" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/door/airlock/public/glass{
@@ -753,29 +710,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cargo/a)
-"xW" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 4
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/turf_decal/tile/blue/anticorner{
-	dir = 8
-	},
-/obj/machinery/computer/mission_board{
-	dir = 1
-	},
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/delta/hallway/central/a)
-"xY" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/mission_pad,
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/delta/hallway/central/a)
 "ys" = (
 /obj/machinery/light/small/built,
 /obj/effect/turf_decal/stripes/corner{
@@ -1065,13 +999,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/dorms/a)
-"Ia" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/delta/bridge/a)
 "Ie" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cargo/a)
@@ -1146,24 +1073,6 @@
 /obj/effect/turf_decal/trimline/neutral/warning,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/delta/airlock/port/a)
-"JV" = (
-/obj/structure/table,
-/obj/item/phone{
-	pixel_x = -3;
-	pixel_y = 3
-	},
-/obj/item/cigbutt/cigarbutt{
-	pixel_x = 5;
-	pixel_y = -1
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/light/small/built,
-/obj/effect/turf_decal/tile/blue{
-	dir = 6
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/delta/bridge/a)
 "Kl" = (
 /obj/machinery/door/airlock/engineering{
 	name = "Engineering"
@@ -1259,6 +1168,18 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/a)
+"NG" = (
+/obj/item/shard,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue/anticorner{
+	dir = 4
+	},
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/delta/bridge/a)
 "NK" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
@@ -1342,13 +1263,6 @@
 	},
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/delta/bridge/a)
-"QK" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/tile/blue/anticorner{
-	dir = 1
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/delta/bridge/a)
 "QX" = (
 /obj/machinery/light/small/built{
 	dir = 4
@@ -1365,6 +1279,12 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/airlock/port/a)
+"RP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/vending/coffee,
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/delta/hallway/central/a)
 "Sg" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
@@ -1372,19 +1292,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/delta/airlock/starboard/a)
-"Su" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/power/terminal{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/item/storage/box/rndboards/all,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/a)
 "SF" = (
 /obj/machinery/light/small/built{
 	dir = 1
@@ -1467,31 +1374,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cargo/a)
-"Vb" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/computer/bank_machine{
-	dir = 1
-	},
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/delta/hallway/central/a)
-"Vo" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/power/terminal{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/a)
 "VC" = (
 /obj/machinery/power/shuttle_engine/ship/fueled/plasma{
 	dir = 4
@@ -1529,6 +1411,13 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/delta/hallway/central/a)
+"WI" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "delta_windows"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/airlock/starboard/a)
 "WO" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/airlock/port/a)
@@ -1556,15 +1445,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/delta/bridge/a)
-"XP" = (
-/obj/structure/chair/comfy/shuttle{
-	dir = 4
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/blood/old,
-/obj/effect/turf_decal/tile/blue,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/delta/bridge/a)
 "YF" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
@@ -1589,14 +1469,6 @@
 "YU" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/hallway/central/a)
-"Zb" = (
-/obj/effect/spawner/structure/window/reinforced/shuttle,
-/obj/machinery/door/poddoor{
-	id = "delta_windows"
-	},
-/obj/machinery/door/firedoor,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/airlock/starboard/a)
 "Zd" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/light/small{
@@ -1624,6 +1496,16 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/engineering/a)
+"Zz" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue/anticorner{
+	dir = 1
+	},
+/obj/machinery/computer/mission_board{
+	dir = 8
+	},
+/turf/open/floor/iron/dark,
+/area/shuttle/voidcrew/delta/bridge/a)
 "ZZ" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
@@ -1715,14 +1597,14 @@ PO
 kD
 FW
 ip
-eC
+zJ
 ZZ
 zJ
 cr
 dX
 zJ
 kV
-wM
+ip
 iP
 zu
 PO
@@ -1774,7 +1656,7 @@ pA
 pB
 tP
 lj
-Ia
+dy
 wl
 Ph
 Jn
@@ -1795,8 +1677,8 @@ vy
 oD
 ft
 XJ
-XP
-JV
+oG
+dC
 vy
 TV
 TE
@@ -1812,9 +1694,9 @@ lf
 mF
 qY
 kz
-kq
+NG
 uv
-QK
+Zz
 kz
 qY
 qw
@@ -1835,7 +1717,7 @@ kz
 kz
 kz
 kz
-la
+RP
 qw
 uE
 et
@@ -1851,7 +1733,7 @@ xO
 Ao
 Ao
 AL
-ct
+WB
 AL
 Ao
 Ao
@@ -1870,8 +1752,8 @@ NK
 eW
 vE
 eW
-rJ
-xY
+Br
+eW
 hS
 eW
 kd
@@ -1949,7 +1831,7 @@ aa
 aa
 aa
 aa
-Zb
+WI
 Tv
 Sg
 Ew

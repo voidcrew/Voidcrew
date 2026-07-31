@@ -103,7 +103,9 @@ export const TransporterConsole = (props) => {
             multitool to unlock targeting and diagnostics.
           </NoticeBox>
         )}
-        {padLinked && diagnosticsUnlocked && (
+        {/* Both are BooleanLike (DM sends 0/1), so these need coercing - a bare
+            `a && b && <x/>` renders the literal 0 when b is 0. */}
+        {!!padLinked && !!diagnosticsUnlocked && (
           <IntegrityBox integrity={patternIntegrity} />
         )}
 

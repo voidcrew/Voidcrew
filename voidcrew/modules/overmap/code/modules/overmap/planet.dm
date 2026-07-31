@@ -66,6 +66,11 @@
 	loading = TRUE
 	if(is_terrain_planet())
 		build_planet()
+		// Terrain queues a light source per surface turf; until SSlighting drains that,
+		// the planet is pitch black. Hold the dock (callers show "survey in progress")
+		// so arrivals land on a lit surface. Short cap: mid-round the queues are
+		// near-empty besides our own build, and a stall shouldn't strand the ship.
+		SSovermap.wait_for_lighting_settle(cap = 90 SECONDS)
 	else
 		// Flat encounters - empty space, crashed ships, outpost-style stops. No terrain,
 		// no caves; the generic single-z encounter builder covers these.
@@ -78,86 +83,72 @@
 	SEND_SIGNAL(src, COMSIG_VOIDCREW_PLANET_LOADED, TRUE)
 
 /**
- * Builds this planet's interior: a surface z-level and the cave level beneath it, both
- * confined to a planet_size region and cordoned off outside it.
+ * Builds this planet's interior: one surface z-level, confined to a planet_size region
+ * with everything outside it cordoned off.
  *
- * This is the same sequence SSmapping used to run at boot for preloaded planets, so a
- * planet generated on arrival is content-identical to one that was sitting in memory
- * since roundstart - terrain, caves, linked entrances, budgeted ruins with ore vents,
- * rivers and weather. It just costs nothing until someone actually comes looking.
+ * This is the sequence SSmapping used to run at boot for preloaded planets - terrain,
+ * budgeted ruins with ore vents, rivers and weather - so a planet generated on arrival
+ * carries the same content as one that had been sitting in memory since roundstart. It
+ * just costs nothing until someone actually comes looking.
+ *
+ * Deliberately a SINGLE z-level. Planets used to build a surface + underground cave pair
+ * with linked entrances, which doubled generation time and made the load stall long
+ * enough to be felt server-wide. Rock and ore still appear on the surface as cave
+ * pockets, which is where the mining content lives now.
  */
 /obj/structure/overmap/planet/proc/build_planet()
 	var/datum/overmap/planet/planet_info = new planet
 	var/planet_size = planet_info.planet_size
 	var/ruin_trait = planet_info.ruin_type
 	var/weather_trait = planet_info.weather_trait
-	var/area/cave_area_type = planet_info.cave_area
 	var/area/surface_area_type = planet_info.surface_area
 	qdel(planet_info)
 
 	if(isnull(zone_band))
 		zone_band = SSovermap.get_zone_band_for_turf(get_turf(src))
 
-	var/list/cave_traits = list(ZTRAIT_MINING = TRUE, ZTRAIT_LINKAGE = UNAFFECTED, ZTRAIT_UP = 1)
-	var/list/surface_traits = list(ZTRAIT_MINING = TRUE, ZTRAIT_LINKAGE = UNAFFECTED, ZTRAIT_DOWN = 1)
+	var/list/surface_traits = list(ZTRAIT_MINING = TRUE, ZTRAIT_LINKAGE = UNAFFECTED)
 	if(ruin_trait)
-		cave_traits[ruin_trait] = TRUE
 		surface_traits[ruin_trait] = TRUE
 
-	var/datum/space_level/cave_level
 	var/datum/space_level/surface_level
-	var/datum/map_zone/zone = SSovermap.find_free_planet_mapzone()
+	var/datum/map_zone/zone = SSovermap.find_free_mapzone()
 	if(isnull(zone))
 		zone = SSovermap.create_map_zone("Planet")
-		zone.planet_pair = TRUE
-		// Allocated caves-first, because add_new_zlevel() hands out consecutive z values
-		// and the caves have to end up directly BELOW the surface for the up/down links
-		// and GET_TURF_BELOW to resolve.
-		cave_level = SSmapping.add_new_zlevel("Planet caves", cave_traits)
 		surface_level = SSmapping.add_new_zlevel("Planet surface", surface_traits)
-		// Registered surface-first, because z_levels[1] is what the rest of the codebase
-		// means by "the planet's z-level" - docking ports, ghost jumps, mission objective
-		// placement and drop pods all index it. Objectives underground would be a bad time.
 		zone.add_space_level(surface_level)
-		zone.add_space_level(cave_level)
-	else
-		// A recycled pair, still carrying the previous planet's traits
+	else if(length(zone.z_levels))
+		// A recycled zone, still carrying the previous occupant's traits
 		surface_level = zone.z_levels[1]
-		cave_level = zone.z_levels[2]
+	else
+		surface_level = SSmapping.add_new_zlevel("Planet surface", surface_traits)
+		zone.add_space_level(surface_level)
 	zone.taken = TRUE
 	mapzone = zone
 
-	apply_planet_level_traits(cave_level, cave_traits, null)
 	apply_planet_level_traits(surface_level, surface_traits, weather_trait)
 
-	// Confine both levels to the planet's footprint and wall off everything outside it
-	cave_level.set_bounds(planet_size, planet_size)
-	var/area/cave_area = cave_level.fill_in(area_override = cave_area_type)
-	cave_level.place_cordon()
-
+	// Confine the level to the planet's footprint and wall off everything outside it
 	surface_level.set_bounds(planet_size, planet_size)
 	var/area/surface_area = surface_level.fill_in(area_override = surface_area_type)
 	surface_level.place_cordon()
 
 	// Terrain first: this lays biome turfs down and tags each one with the biome it came
 	// from, which everything below reads.
-	cave_area?.RunTerrainGeneration()
 	surface_area?.RunTerrainGeneration()
 
 	// Register before populating - population hands its mob spawn turfs to SSplanet_mobs
 	planet_key = "[REF(src)]"
-	SSplanet_mobs.register_planet(planet_key, surface_level.z_value, cave_level.z_value)
+	SSplanet_mobs.register_planet(planet_key, surface_level.z_value)
 
-	populate_planet_level(cave_level)
 	populate_planet_level(surface_level)
 
-	var/cave_entrances = spawn_cave_ladders_for_planet(surface_level.z_value, cave_level.z_value)
 	seed_planet_ruins(surface_level, ruin_trait, surface_area_type)
-	spawn_planet_rivers_for(surface_level, ruin_trait, surface_area_type, cave_area_type)
+	spawn_planet_rivers_for(surface_level, ruin_trait, surface_area_type)
 
 	create_docking_ports()
 
-	log_mapping("SSovermap: Built planet '[name]' band [zone_band] on z [surface_level.z_value]/[cave_level.z_value], [planet_size]x[planet_size], [cave_entrances] cave entrance(s)")
+	log_mapping("SSovermap: Built planet '[name]' band [zone_band] on z [surface_level.z_value], [planet_size]x[planet_size]")
 
 /**
  * Points a z-level's traits at this planet, clearing whatever the last occupant left
@@ -226,7 +217,9 @@
 	)
 
 /// Lava and ice planets get their rivers, bounded to the planet's footprint.
-/obj/structure/overmap/planet/proc/spawn_planet_rivers_for(datum/space_level/surface_level, ruin_trait, area/surface_area_type, area/cave_area_type)
+/// The generic cave area is whitelisted too: terrain generation carves rock pockets out
+/// into one, and a river that stopped dead at every outcrop would look wrong.
+/obj/structure/overmap/planet/proc/spawn_planet_rivers_for(datum/space_level/surface_level, ruin_trait, area/surface_area_type)
 	var/river_turf
 	switch(ruin_trait)
 		if(ZTRAIT_LAVA_RUINS)
@@ -239,7 +232,7 @@
 		surface_level.z_value,
 		4,
 		river_turf,
-		list(surface_area_type, cave_area_type),
+		list(surface_area_type, /area/overmap_encounter/planetoid/cave),
 		surface_level.low_x,
 		surface_level.low_y,
 		surface_level.high_x,

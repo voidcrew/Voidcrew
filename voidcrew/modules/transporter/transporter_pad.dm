@@ -39,6 +39,10 @@
 
 	/// TRUE while a cycle is running.
 	var/transporting = FALSE
+	/// The in-flight cycle's manifest, kept so a pad that dies mid-beam can still
+	/// strip the effects off everyone it was holding. Without this the finish timer
+	/// never fires and they stay masked and half-transparent for good.
+	var/list/active_manifest
 
 	COOLDOWN_DECLARE(transport_recharge)
 
@@ -47,6 +51,7 @@
 	register_context()
 
 /obj/machinery/transporter_pad/Destroy()
+	release_manifest()
 	if(linked_console?.linked_pad == src)
 		linked_console.linked_pad = null
 	linked_console = null
@@ -158,6 +163,19 @@
 	return ..()
 
 /**
+ * Strips the beam effects off everything in the in-flight manifest and forgets it.
+ * Safe to call with no cycle running.
+ */
+/obj/machinery/transporter_pad/proc/release_manifest()
+	if(!active_manifest)
+		return
+	for(var/atom/movable/thing as anything in active_manifest)
+		var/list/record = active_manifest[thing]
+		qdel(record[3])
+		transporter_restore(thing, record[2])
+	active_manifest = null
+
+/**
  * Why this pad can't run a cycle right now, as a short string, or null if it can.
  */
 /obj/machinery/transporter_pad/proc/blocking_reason()
@@ -228,18 +246,22 @@
 	playsound(src, 'sound/machines/terminal/terminal_prompt_confirm.ogg', 40, TRUE)
 	playsound(source, 'sound/effects/magic/lightning_chargeup.ogg', 35, TRUE)
 	new /obj/effect/temp_visual/transporter_beam(source, beam_time)
-	new /obj/effect/temp_visual/transporter_beam(destination, beam_time)
+	// The arrival side keeps its column up past the end of the cycle, so whatever
+	// comes through materialises inside the light rather than after it's gone.
+	new /obj/effect/temp_visual/transporter_beam(destination, beam_time + TRANSPORTER_MATERIALISE_TIME + TRANSPORTER_BEAM_WINDDOWN)
 
-	// Atom to list(turf it must still be on, alpha to restore).
+	// Atom to list(turf it must still be on, alpha to restore, its mote emitter).
 	var/list/manifest = list()
 	for(var/atom/movable/thing as anything in payload)
-		manifest[thing] = list(get_turf(thing), transporter_shimmer_start(thing, beam_time))
+		var/obj/effect/abstract/particle_holder/motes = new(thing, /particles/transporter_motes, isliving(thing) ? PARTICLE_ATTACH_MOB : NONE)
+		manifest[thing] = list(get_turf(thing), transporter_dematerialise(thing, beam_time), motes)
 		if(isliving(thing))
 			var/mob/living/subject = thing
 			// Whatever they're dragging isn't in the buffer and won't come with them.
 			subject.stop_pulling()
-			to_chat(subject, span_notice("A column of light closes around you and your edges start to come apart. Stay inside it and it will take you. Step out and it won't."))
+			to_chat(subject, span_notice("A column of light comes down around you and your edges start to come apart. Stay inside it and it will take you. Step out and it won't."))
 
+	active_manifest = manifest
 	log_game("[key_name(user)] started a transporter cycle from [loc_name(source)] to [loc_name(destination)] using [src].")
 	addtimer(CALLBACK(src, PROC_REF(finish_transport), manifest, source, destination, user), beam_time)
 	return TRUE
@@ -247,6 +269,9 @@
 /// End of a beam cycle. Moves whatever stayed in the beam, if the pad survived.
 /obj/machinery/transporter_pad/proc/finish_transport(list/manifest, turf/source, turf/destination, mob/user)
 	transporting = FALSE
+	// This proc owns the teardown from here on, so the destruction path must not
+	// also try to run it.
+	active_manifest = null
 	update_appearance(UPDATE_ICON_STATE)
 
 	// A pad that lost power mid-cycle drops the whole pattern. Nobody moves.
@@ -255,11 +280,13 @@
 	var/list/arrived = list()
 	for(var/atom/movable/thing as anything in manifest)
 		var/list/record = manifest[thing]
-		transporter_shimmer_stop(thing, record[2])
-		if(dropped_lock || QDELETED(thing))
-			continue
-		if(get_turf(thing) != record[1])
-			if(isliving(thing))
+		// The outbound motes stop either way - the pattern is no longer being taken
+		// apart, whether that's because it left or because it stayed.
+		qdel(record[3])
+		if(dropped_lock || QDELETED(thing) || get_turf(thing) != record[1])
+			// Anything not making the trip goes straight back to how it looked.
+			transporter_restore(thing, record[2])
+			if(!dropped_lock && !QDELETED(thing) && isliving(thing))
 				to_chat(thing, span_warning("The light gutters out around you. You stepped clear of it in time."))
 			continue
 		arrived += thing
@@ -283,8 +310,18 @@
 	playsound(destination, 'sound/effects/phasein.ogg', 50, TRUE)
 
 	for(var/atom/movable/thing as anything in arrived)
+		// Not forced. Encounter areas carry no blanket teleport block any more, so an
+		// ordinary teleport reaches a planet surface on its own - which means the
+		// engine's own checks can stay switched on as a backstop under the console's.
+		// They cover TRAIT_NO_TELEPORT, shielded areas at both ends, and the
+		// reservation boundary, and they balloon-alert the passenger on refusal.
+		var/list/record = manifest[thing]
 		if(!do_teleport(thing, destination, channel = TELEPORT_CHANNEL_QUANTUM, no_effects = TRUE))
+			// Refused at the last moment - put it back the way it looked.
+			transporter_restore(thing, record[2])
 			continue
+		// It arrived, so knit it back together at the far end.
+		transporter_materialise(thing, record[2])
 		if(!isliving(thing))
 			continue
 		var/mob/living/passenger = thing

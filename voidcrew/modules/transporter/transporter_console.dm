@@ -212,9 +212,17 @@
 		return FALSE
 	return SSmapping.used_turfs[tile] == reservation
 
-/// TRUE for the open terrain a transporter can reach without precision targeting.
+/**
+ * TRUE for terrain with open sky above it, which is all a coarse pattern lock can
+ * find. Caves are roofed and planet ruins have a structure over them, so neither
+ * counts until the targeting node can thread a beam through one.
+ */
 /obj/machinery/computer/transporter/proc/is_open_ground(area/site_area)
-	return istype(site_area, /area/overmap_encounter) || istype(site_area, /area/space)
+	if(istype(site_area, /area/overmap_encounter/planetoid/cave))
+		return FALSE
+	if(istype(site_area, /area/overmap_encounter/planetoid))
+		return TRUE
+	return istype(site_area, /area/space)
 
 /// Whether a beam can terminate on this turf, as a TRANSPORTER_SITE_* code.
 /obj/machinery/computer/transporter/proc/validate_site(turf/tile)
@@ -222,7 +230,15 @@
 		return TRANSPORTER_SITE_NO_LOCK
 
 	var/area/site_area = get_area(tile)
-	if(!site_area || (site_area.area_flags & (NOTELEPORT|LOCAL_TELEPORT)))
+	if(!site_area)
+		return TRANSPORTER_SITE_NO_LOCK
+
+	// Planet surfaces and caves are ordinary ground and carry no teleport flags, so they
+	// need no exception here. Anything that does set NOTELEPORT - a shielded ruin
+	// interior, a lich lair, an arena - is a deliberately shielded place and stays that
+	// way, and LOCAL_TELEPORT always means "no beams in or out". Roofs are a separate
+	// problem, handled by the targeting node below.
+	if(site_area.area_flags & (LOCAL_TELEPORT | NOTELEPORT))
 		return TRANSPORTER_SITE_SHIELDED
 
 	// A raw pattern lock can only find open sky. Threading a beam through a roof is

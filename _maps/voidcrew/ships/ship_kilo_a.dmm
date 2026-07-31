@@ -92,6 +92,15 @@
 /obj/machinery/portable_atmospherics/scrubber/huge,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/a)
+"di" = (
+/obj/effect/decal/cleanable/greenglow,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/kilo/cargo/a)
 "dp" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/table,
@@ -127,6 +136,15 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/a)
+"dM" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/machinery/airalarm/directional/west,
+/obj/machinery/mission_pad,
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/a)
 "dQ" = (
 /obj/effect/turf_decal/stripes{
 	dir = 5
@@ -136,23 +154,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/showroomfloor,
 /area/shuttle/voidcrew/kilo/dorms/a)
-"gg" = (
-/obj/effect/turf_decal/box/corners,
-/obj/effect/turf_decal/box/corners{
-	dir = 4
-	},
-/obj/item/wrench,
-/obj/effect/decal/cleanable/blood/old,
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 8
-	},
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/kilo/cargo/a)
 "hb" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/components/tank/air{
@@ -176,6 +177,21 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/kilo/dorms/a)
+"hh" = (
+/obj/machinery/light,
+/obj/machinery/computer/security/telescreen{
+	dir = 1;
+	name = "NTMS-037 Monitor";
+	network = list("ntms");
+	pixel_y = -30
+	},
+/obj/effect/turf_decal/bot,
+/obj/item/stack/cable_coil,
+/obj/machinery/computer/bank_machine{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/a)
 "hi" = (
 /obj/structure/table/wood,
 /obj/item/storage/fancy/cigarettes/cigars/havana{
@@ -256,6 +272,19 @@
 /obj/machinery/cryopod,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/dorms/a)
+"kv" = (
+/obj/structure/table,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = 6
+	},
+/obj/item/stack/spacecash/c200,
+/obj/item/storage/box/rndboards/all{
+	pixel_x = 5;
+	pixel_y = -4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/a)
 "kD" = (
 /obj/effect/turf_decal/stripes/corner{
 	dir = 4
@@ -406,22 +435,6 @@
 /obj/item/clothing/head/utility/welding,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/a)
-"nV" = (
-/obj/structure/frame/computer{
-	anchored = 1;
-	dir = 1
-	},
-/obj/machinery/light,
-/obj/machinery/computer/security/telescreen{
-	dir = 1;
-	name = "NTMS-037 Monitor";
-	network = list("ntms");
-	pixel_y = -30
-	},
-/obj/effect/turf_decal/bot,
-/obj/item/stack/cable_coil,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/kilo/bridge/a)
 "ob" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /obj/machinery/door/poddoor{
@@ -489,32 +502,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/dorms/a)
-"qy" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/blood/old,
-/obj/effect/turf_decal/stripes,
-/obj/machinery/light_switch{
-	pixel_y = -23
-	},
-/obj/machinery/light/small/built,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/obj/machinery/computer/mission_board{
-	dir = 1
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/kilo/engineering/a)
-"rg" = (
-/obj/structure/frame/computer{
-	anchored = 1;
-	dir = 1
-	},
-/obj/effect/turf_decal/bot,
-/obj/effect/decal/cleanable/dirt,
-/obj/item/shard,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/kilo/bridge/a)
 "rC" = (
 /obj/effect/turf_decal/stripes/corner{
 	dir = 1
@@ -599,19 +586,6 @@
 	},
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/kilo/engineering/a)
-"ue" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/light{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
-/obj/item/storage/box/rndboards/all,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/a)
 "vM" = (
@@ -758,19 +732,6 @@
 	},
 /turf/open/floor/carpet,
 /area/shuttle/voidcrew/kilo/dorms/a)
-"yK" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/stripes/corner{
-	dir = 8
-	},
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/obj/machinery/computer/bank_machine{
-	dir = 1
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/kilo/engineering/a)
 "zp" = (
 /obj/effect/turf_decal/stripes{
 	dir = 1
@@ -906,14 +867,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/dorms/a)
-"DG" = (
-/obj/machinery/light{
-	dir = 8
-	},
-/obj/effect/turf_decal/bot,
-/obj/machinery/airalarm/directional/west,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/kilo/bridge/a)
 "DP" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 8
@@ -934,6 +887,14 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/a)
+"Eu" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/mission_board{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/a)
 "EE" = (
 /obj/machinery/door/poddoor{
 	id = "kilo_bay";
@@ -1141,15 +1102,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/cargo/a)
-"Mq" = (
-/obj/structure/table,
-/obj/effect/decal/cleanable/dirt,
-/obj/item/storage/toolbox/mechanical{
-	pixel_y = 6
-	},
-/obj/item/stack/spacecash/c200,
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/kilo/bridge/a)
 "Mu" = (
 /obj/effect/decal/cleanable/blood/old,
 /obj/effect/turf_decal/stripes{
@@ -1320,14 +1272,6 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/a)
-"SZ" = (
-/obj/effect/turf_decal/bot,
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/computer/helm{
-	dir = 4
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/voidcrew/kilo/bridge/a)
 "Tr" = (
 /obj/machinery/door/airlock/external{
 	name = "External Freight Airlock"
@@ -1340,12 +1284,15 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/cargo/a)
-"Tz" = (
-/obj/effect/decal/cleanable/greenglow,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/kilo/cargo/a)
+"Ty" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/shard,
+/obj/machinery/computer/helm{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/voidcrew/kilo/bridge/a)
 "TG" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/reagent_dispensers/watertank,
@@ -1375,22 +1322,6 @@
 /obj/machinery/holopad,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/kilo/bridge/a)
-"TN" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/power/terminal{
-	dir = 1
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/bot,
-/obj/effect/decal/cleanable/greenglow,
-/obj/effect/turf_decal/stripes/corner{
-	dir = 4
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/mission_pad,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/kilo/engineering/a)
 "TO" = (
 /obj/structure/bed,
 /obj/item/bedsheet/captain,
@@ -1652,8 +1583,8 @@ wA
 Ll
 jH
 sq
-DG
-SZ
+dM
+Eu
 IB
 IB
 aa
@@ -1685,7 +1616,7 @@ Yl
 sT
 vS
 YP
-rg
+Ty
 IB
 "}
 (6,1,1) = {"
@@ -1700,7 +1631,7 @@ CL
 TM
 xS
 pN
-nV
+hh
 jH
 "}
 (7,1,1) = {"
@@ -1715,7 +1646,7 @@ jH
 Jj
 Sg
 kY
-Mq
+kv
 IB
 "}
 (8,1,1) = {"
@@ -1754,7 +1685,7 @@ IM
 ZX
 NQ
 Ze
-Tz
+di
 Jc
 wK
 jn
@@ -1769,7 +1700,7 @@ MH
 Tr
 li
 sU
-gg
+MB
 PL
 UC
 jn
@@ -1874,7 +1805,7 @@ aa
 wD
 hb
 Xa
-qy
+lA
 Wm
 hi
 yk
@@ -1888,7 +1819,7 @@ aa
 aa
 Wm
 oS
-TN
+dD
 Ww
 aM
 Iq
@@ -1904,7 +1835,7 @@ aa
 Wm
 Wm
 bC
-yK
+FR
 vM
 Wm
 bc
@@ -1921,7 +1852,7 @@ OE
 rC
 KJ
 Yc
-ue
+ap
 Vi
 Pt
 wD

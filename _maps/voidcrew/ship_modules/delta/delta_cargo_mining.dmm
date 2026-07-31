@@ -1,9 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"a" = (
-/obj/effect/turf_decal/delivery,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/iron/dark,
-/area/template_noop)
 "b" = (
 /obj/modular_map_connector,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -60,6 +55,14 @@
 /area/template_noop)
 "s" = (
 /obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/iron/dark,
+/area/template_noop)
+"u" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 2
+	},
 /turf/open/floor/iron/dark,
 /area/template_noop)
 "y" = (
@@ -178,7 +181,7 @@ s
 S
 "}
 (3,1,1) = {"
-a
+u
 z
 T
 d

@@ -60,6 +60,11 @@ SUBSYSTEM_DEF(overmap)
 	var/list/spent_roundstart_hulls = list()
 	/// Whether the lobby pre-build pass has been kicked off. One-shot.
 	var/roundstart_planets_prebuilt = FALSE
+	/// TRUE once every roundstart planet is fully built AND its lighting has settled.
+	/// The pre-round countdown holds at zero until this flips - see SSticker's pregame gate.
+	var/roundstart_planets_ready = FALSE
+	/// When the prebuild pass started, for the ticker gate's failsafe cap.
+	var/prebuild_started_at = 0
 
 /datum/controller/subsystem/overmap/Initialize(start_timeofday)
 	create_map()
@@ -86,9 +91,16 @@ SUBSYSTEM_DEF(overmap)
 		if(QDELETED(ship))
 			simulated_ships -= ship
 
-	// First tick after init: start generating the roundstart planets in the background.
-	// Flag is set before the call so a long build can't be started twice.
-	if(!roundstart_planets_prebuilt)
+	// First tick after FULL world init: start generating the roundstart planets in the
+	// background. Flag is set before the call so a long build can't be started twice.
+	//
+	// The init_stage check is load-bearing: the MC opens the lobby and starts firing
+	// early-stage subsystems while later init stages are still running, so without it
+	// the prebuild generates terrain DURING world init. Any light source queued in that
+	// window gets stranded by the overlap between SSlighting.Initialize's direct
+	// fire() drain and the MC's regular fires (both non-resumed, each replacing
+	// current_sources) - the planet is then permanently unlit (probe rounds 768/769).
+	if(!roundstart_planets_prebuilt && Master.init_stage_completed == INITSTAGE_MAX)
 		roundstart_planets_prebuilt = TRUE
 		INVOKE_ASYNC(src, PROC_REF(prebuild_roundstart_planets))
 
@@ -106,6 +118,7 @@ SUBSYSTEM_DEF(overmap)
  * lag. Anything not finished by the time the round starts still builds on arrival.
  */
 /datum/controller/subsystem/overmap/proc/prebuild_roundstart_planets()
+	prebuild_started_at = world.time
 	var/built = 0
 	var/start = REALTIMEOFDAY
 	for(var/obj/structure/overmap/planet/marker as anything in GLOB.overmap_planets.Copy())
@@ -117,6 +130,52 @@ SUBSYSTEM_DEF(overmap)
 		built++
 	if(built)
 		log_mapping("SSovermap: Pre-built [built] roundstart planet(s) in [(REALTIMEOFDAY - start) / 10]s")
+		// Generation queues a light source per surface turf - six figures of lighting
+		// work across the fleet of planets that SSlighting chews through at its own
+		// pace. A planet is not "done" until that has settled: without this, the round
+		// starts onto pitch-black planets that slowly fade in over the next several
+		// minutes while SSlighting eats the whole roundstart tick budget.
+		wait_for_lighting_settle()
+	roundstart_planets_ready = TRUE
+	log_mapping("SSovermap: Roundstart planets ready ([(REALTIMEOFDAY - start) / 10]s total)")
+
+/// Sleeps until SSlighting's pipeline has fully drained (two consecutive empty checks,
+/// since sources feed corners feed objects between fires). Capped so a wedged queue
+/// can't hold the round hostage.
+/datum/controller/subsystem/overmap/proc/wait_for_lighting_settle(cap = 5 MINUTES)
+	var/started = world.time
+	var/consecutive_empty = 0
+	while(world.time < started + cap)
+		if(!length(SSlighting.sources_queue) && !length(SSlighting.corners_queue) && !length(SSlighting.objects_queue))
+			consecutive_empty++
+			if(consecutive_empty >= 2)
+				return TRUE
+		else
+			consecutive_empty = 0
+		sleep(1 SECONDS)
+	log_mapping("SSovermap: lighting settle wait hit its [cap / 600] minute cap (sources=[length(SSlighting.sources_queue)] corners=[length(SSlighting.corners_queue)] objects=[length(SSlighting.objects_queue)])")
+	return FALSE
+
+/**
+ * Whether the pre-round countdown should keep holding for planet generation.
+ * Failsafe: if the prebuild has been running for an unreasonable amount of time,
+ * something is wedged - let the round start rather than hold the lobby forever.
+ */
+/datum/controller/subsystem/overmap/proc/roundstart_planets_pending()
+	if(roundstart_planets_ready)
+		return FALSE
+	// A dead overmap will never run the prebuild - don't deadlock the lobby over it
+	if(!initialized || !can_fire)
+		return FALSE
+	// SSovermap hasn't had its first lobby fire yet - the prebuild is still coming
+	if(!roundstart_planets_prebuilt)
+		return TRUE
+	if(prebuild_started_at && world.time - prebuild_started_at > 10 MINUTES)
+		log_mapping("SSovermap: planet prebuild failsafe tripped - starting the round without it")
+		message_admins("Roundstart planet generation exceeded 10 minutes; the round is starting without waiting for it.")
+		roundstart_planets_ready = TRUE
+		return FALSE
+	return TRUE
 
 /*
  * Bluespace jump procs
@@ -855,27 +914,9 @@ SUBSYSTEM_DEF(overmap)
 /datum/controller/subsystem/overmap/proc/create_map_zone(new_name)
 	return new /datum/map_zone(new_name)
 
-/**
- * A free single-z map zone for a flat encounter.
- *
- * Planet zones are skipped: they hold a surface + cave pair allocated back to back, and
- * handing one to a single-z encounter would consume the surface and strand the cave.
- */
 /datum/controller/subsystem/overmap/proc/find_free_mapzone()
 	. = null
 	for(var/datum/map_zone/mapzone as anything in map_zones)
-		if(mapzone.planet_pair)
-			continue
 		if(!mapzone.taken)
 			return(mapzone)
-
-/// A free surface + cave pair for a planet to rebuild itself into. See find_free_mapzone().
-/datum/controller/subsystem/overmap/proc/find_free_planet_mapzone()
-	. = null
-	for(var/datum/map_zone/mapzone as anything in map_zones)
-		if(!mapzone.planet_pair || mapzone.taken)
-			continue
-		if(length(mapzone.z_levels) < 2)
-			continue
-		return(mapzone)
 

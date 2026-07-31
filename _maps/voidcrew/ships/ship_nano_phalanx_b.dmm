@@ -362,13 +362,6 @@
 	},
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/hallway/central/b)
-"dq" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/phalanx/bridge/b)
 "dt" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
 /obj/structure/fireaxecabinet/directional/east,
@@ -500,18 +493,26 @@
 /area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "eN" = (
 /obj/machinery/button/door{
-	id = "phalanx_bay_south_inner";
-	name = "Internal Hanger Blast Door Control";
-	pixel_y = 24
+	id = "phalanx_bridge_blast";
+	name = "Bridge Blastdoor Control";
+	pixel_x = -24;
+	pixel_y = -5
 	},
-/obj/machinery/light{
-	dir = 1
+/obj/machinery/button/door{
+	id = "phalanx_public_shutters";
+	name = "Public Area Shutters";
+	pixel_x = -24;
+	pixel_y = 5
 	},
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 1
+/obj/machinery/light/small{
+	dir = 8
 	},
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/phalanx/cargo/b)
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/machinery/mission_pad,
+/turf/open/floor/wood/large,
+/area/shuttle/voidcrew/phalanx/bridge/b)
 "eR" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/phalanx/dorms/b)
@@ -626,14 +627,6 @@
 	},
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/bridge/b)
-"gm" = (
-/obj/structure/table/reinforced,
-/obj/item/reagent_containers/cup/glass/coffee{
-	pixel_x = -5;
-	pixel_y = 6
-	},
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/phalanx/bridge/b)
 "gz" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/closed/wall/mineral/titanium/nodiagonal,
@@ -693,13 +686,6 @@
 	},
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/hallway/central/b)
-"gZ" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/obj/machinery/mission_pad,
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/phalanx/hallway/aft/b)
 "ha" = (
 /obj/structure/curtain/cloth,
 /obj/item/bedsheet/blue{
@@ -803,6 +789,10 @@
 	},
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/hallway/aft/b)
+"ir" = (
+/obj/machinery/computer/bank_machine,
+/turf/open/floor/wood/large,
+/area/shuttle/voidcrew/phalanx/bridge/b)
 "is" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -1130,21 +1120,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/titanium/tiled/blue,
 /area/shuttle/voidcrew/phalanx/hallway/aft/b)
-"mc" = (
-/obj/machinery/button/door{
-	id = "phalanx_bay_south_outer";
-	name = "External Hanger Blast Door Control";
-	pixel_y = -24
-	},
-/obj/machinery/camera{
-	dir = 10
-	},
-/obj/effect/turf_decal/siding/thinplating,
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 1
-	},
-/turf/open/floor/iron,
-/area/shuttle/voidcrew/phalanx/cargo/b)
 "md" = (
 /obj/structure/closet/secure_closet/freezer/kitchen{
 	req_access = null
@@ -1178,10 +1153,6 @@
 	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/chapel/b)
-"ne" = (
-/obj/item/kirbyplants/random,
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/phalanx/bridge/b)
 "nj" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
@@ -1483,14 +1454,6 @@
 /obj/structure/cable,
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/hallway/aft/b)
-"qC" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/structure/cable,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/item/storage/box/rndboards/all,
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/phalanx/hallway/aft/b)
 "qM" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
@@ -1506,17 +1469,6 @@
 /obj/machinery/light/directional/east,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/b)
-"qV" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/obj/machinery/computer/bank_machine{
-	dir = 4
-	},
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/phalanx/hallway/aft/b)
 "qX" = (
 /obj/structure/window/reinforced/spawner/directional/west,
 /obj/machinery/suit_storage_unit/atmos,
@@ -1738,27 +1690,6 @@
 /obj/machinery/light/directional/east,
 /turf/open/floor/engine,
 /area/shuttle/voidcrew/phalanx/engineering/storage/b)
-"tv" = (
-/obj/machinery/button/door{
-	id = "phalanx_bridge_blast";
-	name = "Bridge Blastdoor Control";
-	pixel_x = -24;
-	pixel_y = -5
-	},
-/obj/machinery/button/door{
-	id = "phalanx_public_shutters";
-	name = "Public Area Shutters";
-	pixel_x = -24;
-	pixel_y = 5
-	},
-/obj/machinery/light/small{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/phalanx/bridge/b)
 "tx" = (
 /obj/structure/table/reinforced,
 /obj/item/storage/toolbox/electrical,
@@ -2067,14 +1998,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/b)
-"xz" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible,
-/obj/machinery/power/apc/auto_name/directional/south,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/item/storage/box/rndboards/all,
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/phalanx/engineering/atmospherics/b)
 "xF" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -2254,6 +2177,18 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/phalanx/security/b)
+"AT" = (
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/cup/glass/coffee{
+	pixel_x = -5;
+	pixel_y = 6
+	},
+/obj/item/storage/box/rndboards/all{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/wood/large,
+/area/shuttle/voidcrew/phalanx/bridge/b)
 "AV" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -2319,10 +2254,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/titanium/tiled/purple,
 /area/shuttle/voidcrew/phalanx/hallway/aft/b)
-"BG" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/phalanx/hallway/aft/b)
 "BI" = (
 /turf/closed/wall/mineral/wood/nonmetal,
 /area/shuttle/voidcrew/phalanx/chapel/office/b)
@@ -2369,15 +2300,6 @@
 /obj/machinery/iv_drip,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/phalanx/medbay/storage/b)
-"Cb" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/structure/cable,
-/obj/machinery/computer/mission_board{
-	dir = 4
-	},
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/phalanx/hallway/aft/b)
 "Cc" = (
 /obj/machinery/power/apc/auto_name/directional/north,
 /obj/structure/cable,
@@ -2398,15 +2320,6 @@
 /obj/machinery/holopad,
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/bridge/b)
-"Cq" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/structure/cable,
-/obj/machinery/computer/bank_machine{
-	dir = 4
-	},
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/phalanx/hallway/aft/b)
 "Cs" = (
 /obj/machinery/vending/dinnerware,
 /turf/open/floor/iron/kitchen_coldroom/freezerfloor,
@@ -2465,6 +2378,12 @@
 /obj/effect/turf_decal/siding/wood,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/chapel/office/b)
+"CM" = (
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 2
+	},
+/turf/open/floor/iron,
+/area/shuttle/voidcrew/phalanx/cargo/b)
 "Db" = (
 /obj/structure/chair/sofa/right{
 	dir = 8
@@ -2507,10 +2426,6 @@
 /obj/machinery/light/directional/north,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/b)
-"DE" = (
-/obj/machinery/computer/atmos_alert,
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/phalanx/bridge/b)
 "DJ" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /obj/effect/turf_decal/siding/wood{
@@ -2641,6 +2556,13 @@
 "EX" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/phalanx/hallway/aft/b)
+"EY" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood/large,
+/area/shuttle/voidcrew/phalanx/bridge/b)
 "Fe" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
@@ -2771,19 +2693,6 @@
 /obj/machinery/light/directional/west,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/phalanx/medbay/storage/b)
-"Gi" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/obj/machinery/computer/mission_board{
-	dir = 1
-	},
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/phalanx/hallway/aft/b)
 "Gk" = (
 /turf/closed/wall/mineral/wood/nonmetal,
 /area/shuttle/voidcrew/phalanx/bridge/captain/b)
@@ -4026,16 +3935,6 @@
 "Vf" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/phalanx/cargo/b)
-"Vr" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/machinery/mission_pad,
-/turf/open/floor/wood/large,
-/area/shuttle/voidcrew/phalanx/hallway/aft/b)
 "Vw" = (
 /obj/structure/window/reinforced/spawner/directional/east,
 /obj/structure/closet/secure_closet/security,
@@ -4104,6 +4003,12 @@
 /obj/structure/chair/pew/right,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/chapel/b)
+"Wm" = (
+/obj/machinery/computer/mission_board{
+	dir = 1
+	},
+/turf/open/floor/wood/large,
+/area/shuttle/voidcrew/phalanx/bridge/b)
 "Wv" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/effect/turf_decal/siding/wood{
@@ -5011,7 +4916,7 @@ zt
 ES
 is
 Vf
-LC
+vi
 Bg
 Jm
 GJ
@@ -5030,20 +4935,20 @@ Rl
 qw
 DU
 qw
-Cq
-Cb
 qw
 qw
 qw
 qw
-qC
+qw
+qw
+YN
 DU
 qw
 qw
 jd
 aY
 Vf
-vi
+CM
 wH
 wH
 MP
@@ -5063,7 +4968,7 @@ nt
 EE
 Nx
 EE
-gZ
+Nx
 aV
 KV
 ho
@@ -5075,7 +4980,7 @@ Jf
 Gc
 CD
 Vf
-eN
+Zp
 wH
 wH
 wH
@@ -5395,7 +5300,7 @@ Va
 nj
 dA
 Vf
-vi
+LC
 ha
 lL
 XX
@@ -6154,7 +6059,7 @@ ky
 Ym
 Rx
 jL
-tv
+eN
 nO
 FP
 oZ
@@ -6182,12 +6087,12 @@ oZ
 oZ
 oZ
 FP
-DE
+ir
 cS
 nW
-dq
+EY
 Cp
-ne
+Wm
 FP
 oZ
 oZ
@@ -6218,7 +6123,7 @@ FP
 DZ
 ef
 Fs
-gm
+AT
 FP
 FP
 oZ

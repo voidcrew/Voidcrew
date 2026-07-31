@@ -740,7 +740,7 @@
 "Yd" = (
 /mob/living/basic/pet/penguin/emperor/shamebrero{
 	desc = "Weakest Clown Player.";
-	icon = 'icons/mob/clown_mobs.dmi';
+	icon = 'icons/mob/simple/clown_mobs.dmi';
 	icon_living = "chlown";
 	icon_state = "chlown";
 	name = "Chlowne"

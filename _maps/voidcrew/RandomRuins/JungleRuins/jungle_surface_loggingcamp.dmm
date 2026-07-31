@@ -152,8 +152,10 @@
 /area/ruin/powered)
 "nM" = (
 /mob/living/basic/tree{
+	base_pixel_x = -45;
+	base_pixel_y = -15;
 	health = 100;
-	icon = 'icons/obj/structure/flora/tree/jungle.dmi';
+	icon = 'icons/obj/fluff/flora/jungletrees.dmi';
 	icon_dead = "tree5";
 	icon_gib = "tree5";
 	icon_living = "tree5";
@@ -314,12 +316,14 @@
 /area/ruin/powered)
 "EU" = (
 /mob/living/basic/tree{
+	base_pixel_x = -50;
+	base_pixel_y = -10;
 	health = 100;
-	icon = 'icons/obj/structure/flora/tree/jungle.dmi';
-	icon_dead = "tree9";
-	icon_gib = "tree9";
-	icon_living = "tree9";
-	icon_state = "tree9";
+	icon = 'icons/obj/fluff/flora/jungletrees.dmi';
+	icon_dead = "tree6";
+	icon_gib = "tree6";
+	icon_living = "tree6";
+	icon_state = "tree6";
 	maxHealth = 100;
 	melee_damage_lower = 6;
 	melee_damage_upper = 8;
@@ -387,8 +391,10 @@
 "JT" = (
 /obj/structure/railing,
 /mob/living/basic/tree{
+	base_pixel_x = -45;
+	base_pixel_y = -15;
 	health = 100;
-	icon = 'icons/obj/structure/flora/tree/jungle.dmi';
+	icon = 'icons/obj/fluff/flora/jungletrees.dmi';
 	icon_dead = "tree5";
 	icon_gib = "tree5";
 	icon_living = "tree5";
@@ -410,8 +416,9 @@
 /area/ruin/powered)
 "Ll" = (
 /mob/living/basic/tree{
+	base_pixel_x = -30;
 	health = 100;
-	icon = 'icons/obj/structure/flora/tree/jungle/small.dmi';
+	icon = 'icons/obj/fluff/flora/jungletreesmall.dmi';
 	icon_dead = "tree2";
 	icon_gib = "tree2";
 	icon_living = "tree2";
@@ -558,8 +565,9 @@
 /area/ruin/unpowered)
 "SE" = (
 /mob/living/basic/tree{
+	base_pixel_x = -30;
 	health = 100;
-	icon = 'icons/obj/structure/flora/tree/jungle/small.dmi';
+	icon = 'icons/obj/fluff/flora/jungletreesmall.dmi';
 	icon_dead = "tree2";
 	icon_gib = "tree2";
 	icon_living = "tree2";
@@ -634,12 +642,14 @@
 /area/ruin/powered)
 "Zh" = (
 /mob/living/basic/tree{
+	base_pixel_x = -50;
+	base_pixel_y = -10;
 	health = 100;
-	icon = 'icons/obj/structure/flora/tree/jungle.dmi';
-	icon_dead = "tree9";
-	icon_gib = "tree9";
-	icon_living = "tree9";
-	icon_state = "tree9";
+	icon = 'icons/obj/fluff/flora/jungletrees.dmi';
+	icon_dead = "tree6";
+	icon_gib = "tree6";
+	icon_living = "tree6";
+	icon_state = "tree6";
 	maxHealth = 100;
 	melee_damage_lower = 6;
 	melee_damage_upper = 8;

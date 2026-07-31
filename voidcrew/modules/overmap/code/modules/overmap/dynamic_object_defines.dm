@@ -205,10 +205,27 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	dock.forceMove(home_turf)
 
 
+/**
+ * Base area for everything inside an encounter reservation - planet surfaces, caves
+ * and planetary ruins.
+ *
+ * Deliberately NOT NOTELEPORT. It used to be, inherited from the overmap port, which
+ * cost more than it bought: jaunt was unusable planetside (every phased step blocked,
+ * and the exit path treated you as an exploiter and scattered you), fulton packs died
+ * on the one kind of map that wants them, and both of our own orbit-to-surface systems
+ * had to bypass the flag with forced teleports to work at all. Nothing was actually
+ * gated by it either - process_teleport_locs() only lists station-level areas, so a
+ * teleporter console could never target a planet by name, and check_teleport_valid()
+ * already rejects imprecise teleports that would land outside the reservation. The
+ * remaining vector is a bluespace beacon someone physically carried down, which costs a
+ * landing anyway.
+ *
+ * Set NOTELEPORT on a specific subtype when that place is meant to be shielded.
+ */
 /area/overmap_encounter
 	name = "\improper Overmap Encounter"
 	icon_state = "away"
-	area_flags = HIDDEN_AREA | CAVES_ALLOWED | FLORA_ALLOWED | MOB_SPAWN_ALLOWED | NOTELEPORT
+	area_flags = HIDDEN_AREA | CAVES_ALLOWED | FLORA_ALLOWED | MOB_SPAWN_ALLOWED
 	flags_1 = CAN_BE_DIRTY_1
 	always_unpowered = TRUE
 	power_environ = FALSE
@@ -244,9 +261,18 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	/// how dangerous the planet's neighbourhood is - see planet_generator/populate_terrain.
 	var/zone_band
 
+/**
+ * Ruin interiors that want their front door to mean something. NOTELEPORT here is the
+ * deliberate exception to the base area's rule, so a beacon or a jaunt can't skip
+ * whatever the ruin puts between you and its loot.
+ *
+ * Note that most planetary ruins map their interiors with tg's own /area/ruin subtypes
+ * and have never carried this flag - only ruins tagged with this area are shielded.
+ */
 /area/overmap_encounter/planet_ruin
 	name = "\improper Unknown Planetary Ruin"
 	sound_environment = SOUND_ENVIRONMENT_MOUNTAINS
+	area_flags = HIDDEN_AREA | CAVES_ALLOWED | FLORA_ALLOWED | MOB_SPAWN_ALLOWED | NOTELEPORT
 	default_gravity = STANDARD_GRAVITY
 	always_unpowered = TRUE
 	map_generator = null

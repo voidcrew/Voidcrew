@@ -6,7 +6,7 @@
  * the turfs they would have used (see planet_generator/populate_terrain). This subsystem
  * then:
  *
- * 1. spawns mobs on those turfs when a player arrives on either of the planet's z-levels,
+ * 1. spawns mobs on those turfs when a player arrives on the planet,
  * 2. despawns them again once the planet has been empty for the grace period.
  *
  * Planets register themselves as they load and unregister as they unload, so a planet
@@ -25,7 +25,7 @@ SUBSYSTEM_DEF(planet_mobs)
 
 	/// Max managed mobs across ALL planets
 	var/global_mob_cap = 150
-	/// Max managed mobs per z-level (surface and cave each get this many)
+	/// Max managed mobs on any one planet
 	var/per_zlevel_mob_cap = 15
 	/// How long a planet must sit empty before its fauna is cleared out
 	var/despawn_grace_period = 3 MINUTES
@@ -39,18 +39,14 @@ SUBSYSTEM_DEF(planet_mobs)
 	/// Cache of biome type -> mob spawn list minus structure spawners and the megafauna sentinel
 	var/list/filtered_mob_cache = list()
 
-/// Tracks mob spawning state for a single planet (surface + cave z-levels).
+/// Tracks mob spawning state for a single planet.
 /datum/planet_mob_tracker
 	/// Planet identifier, unique per loaded planet
 	var/name
-	/// Surface z-level number
+	/// The planet's z-level number
 	var/surface_z = 0
-	/// Cave z-level number, 0 for surface-only planets
-	var/cave_z = 0
-	/// Pre-indexed candidate turfs for surface mob spawning
+	/// Pre-indexed candidate turfs for mob spawning
 	var/list/surface_spawn_turfs = list()
-	/// Pre-indexed candidate turfs for cave mob spawning
-	var/list/cave_spawn_turfs = list()
 	/// Whether mobs currently exist on this planet
 	var/populated = FALSE
 	/// Whether players are currently present
@@ -59,26 +55,23 @@ SUBSYSTEM_DEF(planet_mobs)
 	var/player_left_time = 0
 
 /**
- * Starts tracking a planet's z-levels. Called as the planet builds its terrain, BEFORE
+ * Starts tracking a planet's z-level. Called as the planet builds its terrain, BEFORE
  * population runs, so register_spawn_turf() has somewhere to file its turfs.
  */
-/datum/controller/subsystem/planet_mobs/proc/register_planet(planet_key, surface_z, cave_z)
+/datum/controller/subsystem/planet_mobs/proc/register_planet(planet_key, surface_z)
 	if(!planet_key || !surface_z)
 		return
 	var/datum/planet_mob_tracker/tracker = new
 	tracker.name = planet_key
 	tracker.surface_z = surface_z
-	tracker.cave_z = cave_z || 0
 	tracked_planets[planet_key] = tracker
 	z_to_planet["[surface_z]"] = planet_key
-	if(cave_z)
-		z_to_planet["[cave_z]"] = planet_key
 	return tracker
 
 /**
  * Stops tracking a planet and forgets its turfs. Called when a planet unloads - the
- * z-levels are about to be wiped and handed back to the pool, so nothing here may
- * outlive them. Mobs are not deleted; clearing the z-level does that.
+ * z-level is about to be wiped and handed back to the pool, so nothing here may outlive
+ * it. Mobs are not deleted; clearing the z-level does that.
  */
 /datum/controller/subsystem/planet_mobs/proc/unregister_planet(planet_key)
 	var/datum/planet_mob_tracker/tracker = tracked_planets[planet_key]
@@ -87,8 +80,6 @@ SUBSYSTEM_DEF(planet_mobs)
 	if(tracker.populated)
 		total_managed_mobs = max(0, total_managed_mobs - count_planet_mobs(tracker))
 	z_to_planet -= "[tracker.surface_z]"
-	if(tracker.cave_z)
-		z_to_planet -= "[tracker.cave_z]"
 	tracked_planets -= planet_key
 	qdel(tracker)
 
@@ -103,10 +94,7 @@ SUBSYSTEM_DEF(planet_mobs)
 	var/datum/planet_mob_tracker/tracker = tracked_planets[planet_key]
 	if(!tracker)
 		return FALSE
-	if(candidate.z == tracker.surface_z)
-		tracker.surface_spawn_turfs += candidate
-	else
-		tracker.cave_spawn_turfs += candidate
+	tracker.surface_spawn_turfs += candidate
 	return TRUE
 
 /datum/controller/subsystem/planet_mobs/fire(resumed)
@@ -127,20 +115,17 @@ SUBSYSTEM_DEF(planet_mobs)
 		if(tracker.populated && tracker.player_left_time && (world.time - tracker.player_left_time >= despawn_grace_period))
 			despawn_planet_mobs(tracker)
 
-/// Whether any player client is on either of the planet's z-levels.
+/// Whether any player client is on the planet's z-level.
 /datum/controller/subsystem/planet_mobs/proc/check_players(datum/planet_mob_tracker/tracker)
 	if(!islist(SSmobs.clients_by_zlevel))
 		return FALSE
 	if(tracker.surface_z <= length(SSmobs.clients_by_zlevel) && length(SSmobs.clients_by_zlevel[tracker.surface_z]))
 		return TRUE
-	if(tracker.cave_z && tracker.cave_z <= length(SSmobs.clients_by_zlevel) && length(SSmobs.clients_by_zlevel[tracker.cave_z]))
-		return TRUE
 	return FALSE
 
-/// Populates both z-levels from their pre-indexed spawn turfs.
+/// Populates the planet from its pre-indexed spawn turfs.
 /datum/controller/subsystem/planet_mobs/proc/spawn_planet_mobs(datum/planet_mob_tracker/tracker)
 	spawn_on_zlevel(tracker.surface_spawn_turfs)
-	spawn_on_zlevel(tracker.cave_spawn_turfs)
 	tracker.populated = TRUE
 
 /// Spawns up to per_zlevel_mob_cap mobs from the given candidate turfs.
@@ -202,7 +187,7 @@ SUBSYSTEM_DEF(planet_mobs)
 
 	var/despawned = 0
 	for(var/mob/living/candidate as anything in GLOB.mob_living_list)
-		if(candidate.z != tracker.surface_z && candidate.z != tracker.cave_z)
+		if(candidate.z != tracker.surface_z)
 			continue
 		if(!can_despawn(candidate))
 			continue
@@ -236,7 +221,7 @@ SUBSYSTEM_DEF(planet_mobs)
 /datum/controller/subsystem/planet_mobs/proc/count_planet_mobs(datum/planet_mob_tracker/tracker)
 	var/count = 0
 	for(var/mob/living/candidate as anything in GLOB.mob_living_list)
-		if(candidate.z != tracker.surface_z && candidate.z != tracker.cave_z)
+		if(candidate.z != tracker.surface_z)
 			continue
 		if(!can_despawn(candidate))
 			continue

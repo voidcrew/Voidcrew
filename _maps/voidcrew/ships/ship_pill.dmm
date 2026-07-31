@@ -32,6 +32,35 @@
 /turf/open/floor/carpet/neon/simple/red,
 /area/shuttle/voidcrew/pill)
 "c" = (
+/obj/structure/cable,
+/obj/machinery/light/floor,
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/structure/fans/tiny,
+/obj/machinery/door/window{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 8
+	},
+/obj/docking_port/mobile/voidcrew/pill{
+	dir = 2
+	},
+/obj/modular_map_root/ship_upgrade{
+	key = "pill_extra"
+	},
+/turf/open/floor/carpet/neon/simple/red,
+/area/shuttle/voidcrew/pill)
+"d" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/structure/window/reinforced/spawner/directional/east,
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/machinery/light/floor,
+/obj/structure/bed,
+/obj/machinery/computer/helm{
+	density = 0;
+	dir = 8;
+	pixel_x = 5
+	},
 /obj/item/pickaxe/drill,
 /obj/item/pickaxe/drill,
 /obj/item/pickaxe/drill,
@@ -52,43 +81,14 @@
 /obj/item/clothing/mask/gas,
 /obj/item/clothing/mask/gas,
 /obj/item/clothing/mask/gas,
-/obj/structure/cable,
-/obj/structure/bed,
-/obj/machinery/computer/helm{
-	density = 0;
-	dir = 8;
-	pixel_x = 5
-	},
 /obj/item/storage/medkit/toxin,
 /obj/item/storage/medkit/advanced,
 /obj/item/storage/backpack/duffelbag/sec/surgery,
 /obj/item/storage/medkit/o2,
-/obj/machinery/light/floor,
-/obj/structure/window/reinforced/spawner/directional/south,
-/obj/structure/fans/tiny,
-/obj/machinery/door/window{
-	dir = 1
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
-	dir = 8
-	},
 /obj/item/storage/toolbox/mechanical/old,
 /obj/item/storage/box/stockparts/basic,
 /obj/item/circuitboard/machine/autolathe,
 /obj/item/clothing/head/utility/welding,
-/obj/docking_port/mobile/voidcrew/pill{
-	dir = 2
-	},
-/turf/open/floor/carpet/neon/simple/red,
-/area/shuttle/voidcrew/pill)
-"d" = (
-/obj/structure/window/reinforced/spawner/directional/north,
-/obj/structure/window/reinforced/spawner/directional/east,
-/obj/structure/window/reinforced/spawner/directional/south,
-/obj/machinery/light/floor,
-/obj/modular_map_root/ship_upgrade{
-	key = "pill_extra"
-	},
 /turf/open/floor/carpet/neon/simple/red,
 /area/shuttle/voidcrew/pill)
 

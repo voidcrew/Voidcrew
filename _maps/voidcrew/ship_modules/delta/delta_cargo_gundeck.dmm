@@ -19,10 +19,6 @@
 /obj/item/gun/energy/disabler,
 /turf/open/floor/iron/dark,
 /area/template_noop)
-"g" = (
-/obj/effect/turf_decal/bot,
-/turf/open/floor/iron/dark,
-/area/template_noop)
 "j" = (
 /obj/modular_map_connector,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -90,6 +86,13 @@
 /obj/machinery/light/small/directional/south,
 /turf/open/floor/iron/dark,
 /area/template_noop)
+"N" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 2
+	},
+/turf/open/floor/iron/dark,
+/area/template_noop)
 "P" = (
 /obj/structure/closet/secure_closet/security,
 /turf/open/floor/iron/dark,
@@ -150,7 +153,7 @@ U
 P
 "}
 (3,1,1) = {"
-g
+N
 J
 v
 U

@@ -391,7 +391,7 @@
    "height": 1,
    "slots": {
     "pill_extra": [
-     4,
+     3,
      1
     ]
    }
@@ -1321,32 +1321,32 @@
    ],
    "png": "pill_pill_extra_empty.png"
   },
-  "pill/pill_extra_workshop.dmm": {
+  "pill/pill_extra_medical.dmm": {
    "width": 1,
    "height": 1,
    "connector": [
     1,
     1
    ],
-   "png": "pill_pill_extra_workshop.png"
+   "png": "pill_pill_extra_medical.png"
   },
-  "pill/pill_extra_ore.dmm": {
+  "pill/pill_extra_weapons.dmm": {
    "width": 1,
    "height": 1,
    "connector": [
     1,
     1
    ],
-   "png": "pill_pill_extra_ore.png"
+   "png": "pill_pill_extra_weapons.png"
   },
-  "pill/pill_extra_infirmary.dmm": {
+  "pill/pill_extra_engineering.dmm": {
    "width": 1,
    "height": 1,
    "connector": [
     1,
     1
    ],
-   "png": "pill_pill_extra_infirmary.png"
+   "png": "pill_pill_extra_engineering.png"
   },
   "scarab/scarab_med_basic.dmm": {
    "width": 3,

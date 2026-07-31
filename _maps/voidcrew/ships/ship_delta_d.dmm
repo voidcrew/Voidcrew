@@ -2,18 +2,6 @@
 "aa" = (
 /turf/template_noop,
 /area/template_noop)
-"bw" = (
-/obj/structure/cable,
-/obj/machinery/firealarm/directional/east,
-/obj/machinery/light/directional/east,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/effect/turf_decal/siding/red{
-	dir = 4
-	},
-/obj/machinery/mission_pad,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/delta/hallway/central/d)
 "cr" = (
 /obj/structure/plaque/static_plaque{
 	name = "Boiler Room";
@@ -67,23 +55,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
 /turf/open/floor/iron/white/textured,
 /area/shuttle/voidcrew/delta/engineering/d)
-"fI" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
-/obj/machinery/light/floor,
-/obj/effect/turf_decal/stripes/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/line{
-	dir = 4
-	},
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 4
-	},
-/turf/open/floor/iron/white/textured,
-/area/shuttle/voidcrew/delta/engineering/d)
 "gk" = (
 /obj/structure/closet/emcloset/anchored,
 /obj/machinery/light/directional/west,
@@ -118,43 +89,11 @@
 /obj/structure/sign/departments/medbay/alt,
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/medbay/d)
-"hj" = (
-/obj/structure/table,
-/obj/item/phone{
-	pixel_x = -3;
-	pixel_y = 3
-	},
-/obj/machinery/light/directional/south,
-/obj/effect/turf_decal/tile/dark_blue{
-	dir = 6
-	},
-/obj/item/flashlight{
-	pixel_x = 6;
-	pixel_y = -4
-	},
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/delta/bridge/d)
 "hl" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/delta/cargo/d)
 "hn" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
-/area/shuttle/voidcrew/delta/hallway/central/d)
-"hF" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/turf_decal/tile/dark_blue/anticorner{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/red{
-	dir = 8
-	},
-/obj/machinery/computer/mission_board{
-	dir = 1
-	},
-/turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/hallway/central/d)
 "ia" = (
 /obj/structure/cable,
@@ -242,6 +181,11 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cafe/d)
+"kP" = (
+/obj/machinery/light/directional/south,
+/obj/machinery/vending/coffee,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/delta/hallway/central/d)
 "kS" = (
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/south,
@@ -258,13 +202,6 @@
 "kY" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cargo/d)
-"lu" = (
-/obj/structure/chair/comfy/shuttle{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/dark_blue,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/delta/bridge/d)
 "lJ" = (
 /obj/machinery/atmospherics/components/tank/plasma{
 	dir = 1
@@ -310,9 +247,12 @@
 	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/airlock/port/d)
-"mP" = (
+"mR" = (
 /obj/effect/turf_decal/tile/dark_blue/anticorner{
-	dir = 4
+	dir = 1
+	},
+/obj/machinery/computer/mission_board{
+	dir = 8
 	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/bridge/d)
@@ -401,16 +341,6 @@
 /obj/effect/turf_decal/siding/red{
 	dir = 8
 	},
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/delta/hallway/central/d)
-"pC" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/effect/turf_decal/siding/red{
-	dir = 4
-	},
-/obj/machinery/mission_pad,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/hallway/central/d)
 "pS" = (
@@ -546,6 +476,15 @@
 /obj/machinery/light/directional/west,
 /turf/open/floor/circuit,
 /area/shuttle/voidcrew/delta/engineering/d)
+"tA" = (
+/obj/effect/turf_decal/tile/dark_blue/anticorner{
+	dir = 4
+	},
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/delta/bridge/d)
 "tF" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/light/small{
@@ -628,14 +567,6 @@
 /obj/effect/turf_decal/box/red/corners,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/airlock/port/d)
-"xm" = (
-/obj/effect/spawner/structure/window/reinforced/shuttle,
-/obj/machinery/door/poddoor{
-	id = "delta_windows"
-	},
-/obj/machinery/door/firedoor,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/airlock/starboard/d)
 "xK" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 4
@@ -806,18 +737,6 @@
 	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/bridge/d)
-"Aj" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/effect/turf_decal/siding/red{
-	dir = 4
-	},
-/obj/effect/turf_decal/siding/red{
-	dir = 8
-	},
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/delta/bridge/d)
 "Aq" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -826,22 +745,6 @@
 /obj/machinery/light/directional/north,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/d)
-"AF" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/power/apc/auto_name/directional/east,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/red{
-	dir = 4
-	},
-/obj/machinery/light/directional/east,
-/obj/machinery/computer/mission_board{
-	dir = 4
-	},
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/delta/hallway/central/d)
 "AL" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -965,9 +868,23 @@
 	},
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/delta/cargo/d)
-"DT" = (
-/obj/effect/turf_decal/tile/dark_blue/anticorner{
-	dir = 1
+"DQ" = (
+/obj/structure/table,
+/obj/item/phone{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/machinery/light/directional/south,
+/obj/effect/turf_decal/tile/dark_blue{
+	dir = 6
+	},
+/obj/item/flashlight{
+	pixel_x = 6;
+	pixel_y = -4
+	},
+/obj/item/storage/box/rndboards/all{
+	pixel_x = 0;
+	pixel_y = 10
 	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/bridge/d)
@@ -1092,22 +1009,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/d)
-"Go" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/turf_decal/tile/dark_blue/anticorner{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/red{
-	dir = 8
-	},
-/obj/machinery/computer/bank_machine{
-	dir = 8
-	},
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/delta/hallway/central/d)
 "Gs" = (
 /obj/structure/cable,
 /obj/machinery/firealarm/directional/east,
@@ -1134,33 +1035,6 @@
 /obj/structure/sign/poster/official/help_others,
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/cafe/d)
-"Hp" = (
-/obj/effect/turf_decal/stripes/line{
-	dir = 8
-	},
-/obj/machinery/power/terminal{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/d)
-"HB" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/turf_decal/stripes/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/line{
-	dir = 4
-	},
-/obj/item/storage/box/rndboards/all,
-/turf/open/floor/iron/white/textured,
-/area/shuttle/voidcrew/delta/engineering/d)
 "HW" = (
 /obj/structure/window/reinforced/spawner/directional/west,
 /obj/machinery/door/window/right/directional/north{
@@ -1230,18 +1104,6 @@
 	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/airlock/port/d)
-"JM" = (
-/obj/effect/turf_decal/stripes/line{
-	dir = 8
-	},
-/obj/machinery/power/terminal{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/item/storage/box/rndboards/all,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/d)
 "JT" = (
 /obj/machinery/door/airlock/external,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
@@ -1659,11 +1521,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/d)
-"Tv" = (
-/obj/machinery/vending/coffee,
-/obj/machinery/light/directional/south,
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/delta/hallway/central/d)
 "TD" = (
 /obj/structure/reagent_dispensers/fueltank,
 /obj/item/weldingtool/largetank,
@@ -1726,6 +1583,13 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/dorms/d)
+"WI" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "delta_windows"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/airlock/starboard/d)
 "WL" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -1753,10 +1617,27 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/d)
+"XK" = (
+/obj/effect/turf_decal/tile/dark_blue,
+/obj/machinery/mission_pad,
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/delta/bridge/d)
 "XM" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/engineering/d)
+"Yb" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/effect/turf_decal/siding/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/red{
+	dir = 8
+	},
+/turf/open/floor/iron/white,
+/area/shuttle/voidcrew/delta/bridge/d)
 "Yy" = (
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 8
@@ -1818,18 +1699,6 @@
 	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/delta/bridge/d)
-"ZM" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/effect/turf_decal/siding/red{
-	dir = 4
-	},
-/obj/machinery/computer/bank_machine{
-	dir = 1
-	},
-/turf/open/floor/iron/white,
-/area/shuttle/voidcrew/delta/hallway/central/d)
 "ZO" = (
 /obj/machinery/door/poddoor{
 	id = "delta_cargo_hatch";
@@ -1921,14 +1790,14 @@ iW
 nP
 td
 Da
-fI
+VU
 Mt
 VM
 fC
 Br
 VM
 CB
-HB
+Da
 td
 ec
 iW
@@ -1980,7 +1849,7 @@ oR
 Ji
 Qc
 Ab
-Aj
+Yb
 QD
 Qj
 jp
@@ -2001,8 +1870,8 @@ Ib
 yW
 xK
 ZC
-lu
-hj
+XK
+DQ
 Ib
 Cc
 oY
@@ -2018,9 +1887,9 @@ CS
 ON
 Uc
 LA
-mP
+tA
 jt
-DT
+mR
 LA
 Uc
 eR
@@ -2041,7 +1910,7 @@ LA
 LA
 LA
 LA
-Tv
+kP
 eR
 Lc
 xL
@@ -2057,7 +1926,7 @@ Lf
 po
 po
 rN
-Go
+PE
 rN
 po
 po
@@ -2076,8 +1945,8 @@ YU
 mx
 yk
 mx
-AF
-pC
+kg
+mx
 Gs
 mx
 Ga
@@ -2155,7 +2024,7 @@ aa
 aa
 aa
 aa
-xm
+WI
 Fk
 Iy
 EB

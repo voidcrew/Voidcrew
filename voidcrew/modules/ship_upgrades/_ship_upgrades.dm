@@ -309,12 +309,17 @@ GLOBAL_VAR_INIT(ship_upgrades_initialized, FALSE)
 /**
  * Check if a module is available for a specific theme
  *
- * Modules MUST have for_theme set to appear for themed ships.
- * for_theme can be a single string or a list of theme IDs.
+ * On a themed hull, modules MUST have for_theme set to appear, and it can be a single
+ * theme id or a list of them. On a hull with no themes the rule inverts: the modules
+ * that belong to it are exactly the ones declaring no theme, which is what
+ * get_modules_for_ship_theme() has always done for the same case.
  */
 /proc/is_module_available_for_theme(datum/ship_upgrade_module/module, theme_id)
 	if(!module)
 		return FALSE
+	// Themeless hull - a module earns its place by declaring no theme
+	if(!theme_id)
+		return !module.for_theme
 	// No theme specified = module doesn't appear for themed ships
 	if(!module.for_theme)
 		return FALSE

@@ -16,20 +16,6 @@
 /obj/structure/bookcase/random/nonfiction,
 /turf/open/floor/wood/walnut,
 /area/shuttle/voidcrew/delta/hallway/central/c)
-"aZ" = (
-/obj/structure/cable,
-/obj/machinery/firealarm/directional/east,
-/obj/machinery/light/small{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/obj/machinery/mission_pad,
-/turf/open/floor/wood/walnut,
-/area/shuttle/voidcrew/delta/hallway/central/c)
 "bl" = (
 /obj/machinery/door/airlock/medical/glass{
 	name = "Medbay"
@@ -43,19 +29,6 @@
 	},
 /turf/open/floor/wood/walnut,
 /area/shuttle/voidcrew/delta/medbay/c)
-"cn" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/power/terminal{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/item/storage/box/rndboards/all,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/c)
 "dp" = (
 /obj/machinery/door/airlock/public/glass{
 	name = "Crew Quarters"
@@ -131,20 +104,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/medbay/c)
-"fT" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/item/book/manual/wiki/security_space_law{
-	pixel_x = -6;
-	pixel_y = -7
-	},
-/obj/machinery/computer/mission_board{
-	dir = 1
-	},
-/turf/open/floor/wood/walnut,
-/area/shuttle/voidcrew/delta/hallway/central/c)
 "gi" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /obj/machinery/door/poddoor{
@@ -263,21 +222,6 @@
 	dir = 4
 	},
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/delta/engineering/c)
-"jZ" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/power/terminal{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 4
-	},
-/turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/c)
 "km" = (
 /obj/machinery/vending/cigarette,
@@ -455,6 +399,10 @@
 /obj/item/shard,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/delta/cafe/c)
+"ov" = (
+/obj/machinery/mission_pad,
+/turf/open/floor/wood/mahogany,
+/area/shuttle/voidcrew/delta/bridge/c)
 "oC" = (
 /obj/structure/sign/departments/medbay/alt,
 /turf/closed/wall/mineral/wood/nonmetal,
@@ -502,6 +450,12 @@
 /obj/structure/bookcase/manuals/engineering,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/c)
+"pX" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/wood/mahogany,
+/area/shuttle/voidcrew/delta/bridge/c)
 "qc" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/medbay/c)
@@ -586,24 +540,7 @@
 /obj/effect/turf_decal/trimline/neutral/warning,
 /turf/open/floor/wood/walnut,
 /area/shuttle/voidcrew/delta/airlock/starboard/c)
-"uw" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/firealarm/directional/east,
-/obj/structure/table,
-/obj/machinery/cell_charger,
-/obj/item/stack/cable_coil,
-/obj/item/stock_parts/power_store/cell/high,
-/obj/item/multitool,
-/obj/item/clipboard{
-	pixel_x = -7;
-	pixel_y = -5
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/c)
-"vp" = (
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/dorms/c)
-"wj" = (
+"uh" = (
 /obj/structure/table/wood,
 /obj/item/phone{
 	pixel_x = -3;
@@ -625,8 +562,29 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 2
 	},
+/obj/item/storage/box/rndboards/all{
+	pixel_x = 0;
+	pixel_y = 10
+	},
 /turf/open/floor/wood/mahogany,
 /area/shuttle/voidcrew/delta/bridge/c)
+"uw" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/firealarm/directional/east,
+/obj/structure/table,
+/obj/machinery/cell_charger,
+/obj/item/stack/cable_coil,
+/obj/item/stock_parts/power_store/cell/high,
+/obj/item/multitool,
+/obj/item/clipboard{
+	pixel_x = -7;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/engineering/c)
+"vp" = (
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/dorms/c)
 "wn" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 4
@@ -751,12 +709,6 @@
 /obj/effect/turf_decal/bot,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/c)
-"yS" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/open/floor/wood/mahogany,
-/area/shuttle/voidcrew/delta/bridge/c)
 "yV" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -820,20 +772,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/airlock/starboard/c)
-"Af" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/item/book/manual/wiki/security_space_law{
-	pixel_x = -6;
-	pixel_y = -7
-	},
-/obj/machinery/computer/bank_machine{
-	dir = 8
-	},
-/turf/open/floor/wood/walnut,
-/area/shuttle/voidcrew/delta/hallway/central/c)
 "As" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -920,15 +858,6 @@
 /obj/structure/sign/departments/engineering,
 /turf/closed/wall/mineral/wood/nonmetal,
 /area/shuttle/voidcrew/delta/engineering/c)
-"Cl" = (
-/obj/machinery/computer/libraryconsole/bookmanagement{
-	dir = 8
-	},
-/turf/open/floor/wood/mahogany,
-/area/shuttle/voidcrew/delta/bridge/c)
-"Cv" = (
-/turf/open/floor/wood/walnut,
-/area/shuttle/voidcrew/delta/hallway/central/c)
 "CB" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
@@ -975,14 +904,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cargo/c)
-"Dm" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/item/storage/box/rndboards/all,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/engineering/c)
 "Dr" = (
 /obj/structure/closet/wardrobe/mixed,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
@@ -1126,9 +1047,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/engineering/c)
-"Ft" = (
-/turf/open/floor/wood/mahogany,
-/area/shuttle/voidcrew/delta/bridge/c)
 "FD" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1223,6 +1141,16 @@
 "Ht" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/hallway/central/c)
+"Hy" = (
+/obj/effect/turf_decal/siding/wood{
+	dir = 2
+	},
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
+	},
+/obj/machinery/vending/coffee,
+/turf/open/floor/wood/walnut,
+/area/shuttle/voidcrew/delta/hallway/central/c)
 "Hz" = (
 /obj/machinery/door/poddoor{
 	id = "delta_cargo_hatch";
@@ -1279,21 +1207,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/c)
-"Le" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/power/apc/auto_name/directional/east,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/obj/machinery/computer/mission_board{
-	dir = 4
-	},
-/turf/open/floor/wood/walnut,
-/area/shuttle/voidcrew/delta/hallway/central/c)
 "LW" = (
 /turf/closed/wall/mineral/wood/nonmetal,
 /area/shuttle/voidcrew/delta/airlock/starboard/c)
@@ -1352,17 +1265,6 @@
 "Nj" = (
 /turf/closed/wall/mineral/wood/nonmetal,
 /area/shuttle/voidcrew/delta/medbay/c)
-"NY" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/item/paper{
-	pixel_x = 7;
-	pixel_y = -6
-	},
-/obj/machinery/mission_pad,
-/turf/open/floor/wood/walnut,
-/area/shuttle/voidcrew/delta/hallway/central/c)
 "On" = (
 /obj/machinery/light/small{
 	dir = 8
@@ -1417,6 +1319,12 @@
 	},
 /turf/open/floor/wood/walnut,
 /area/shuttle/voidcrew/delta/airlock/starboard/c)
+"OK" = (
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/turf/open/floor/wood/mahogany,
+/area/shuttle/voidcrew/delta/bridge/c)
 "OR" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1438,19 +1346,6 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/airlock/port/c)
-"PQ" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/item/paper{
-	pixel_x = 7;
-	pixel_y = -6
-	},
-/obj/machinery/computer/bank_machine{
-	dir = 1
-	},
-/turf/open/floor/wood/walnut,
-/area/shuttle/voidcrew/delta/hallway/central/c)
 "PX" = (
 /obj/machinery/light/small/built,
 /obj/effect/turf_decal/stripes/corner{
@@ -1468,6 +1363,12 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/engineering/c)
+"QF" = (
+/obj/machinery/computer/mission_board{
+	dir = 8
+	},
+/turf/open/floor/wood/mahogany,
+/area/shuttle/voidcrew/delta/bridge/c)
 "QH" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/dorms/c)
@@ -1565,16 +1466,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/c)
-"Up" = (
-/obj/machinery/vending/coffee,
-/obj/effect/turf_decal/siding/wood{
-	dir = 2
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/turf/open/floor/wood/walnut,
-/area/shuttle/voidcrew/delta/hallway/central/c)
 "UA" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cafe/c)
@@ -1674,6 +1565,13 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/c)
+"WI" = (
+/obj/effect/spawner/structure/window/reinforced/shuttle,
+/obj/machinery/door/poddoor{
+	id = "delta_windows"
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/delta/airlock/starboard/c)
 "WW" = (
 /turf/closed/wall/mineral/wood/nonmetal,
 /area/shuttle/voidcrew/delta/dorms/c)
@@ -1688,14 +1586,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/airlock/starboard/c)
-"Xe" = (
-/obj/effect/spawner/structure/window/reinforced/shuttle,
-/obj/machinery/door/poddoor{
-	id = "delta_windows"
-	},
-/obj/machinery/door/firedoor,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/delta/airlock/starboard/c)
 "XD" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /obj/machinery/door/poddoor{
@@ -1705,21 +1595,6 @@
 /area/shuttle/voidcrew/delta/medbay/c)
 "XE" = (
 /turf/closed/wall/mineral/titanium,
-/area/shuttle/voidcrew/delta/engineering/c)
-"XF" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/wood/walnut,
-/area/shuttle/voidcrew/delta/hallway/central/c)
-"XH" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 4
-	},
-/turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/c)
 "YD" = (
 /obj/effect/turf_decal/stripes{
@@ -1900,14 +1775,14 @@ rY
 Gr
 MS
 WF
-XH
+Ss
 eK
 Ss
 zz
 rw
 Ss
 kn
-Dm
+WF
 hH
 yL
 rY
@@ -1959,7 +1834,7 @@ Dd
 ql
 lf
 GW
-yS
+pX
 Au
 DG
 EJ
@@ -1980,8 +1855,8 @@ ob
 UY
 yi
 wn
-yi
-wj
+ov
+uh
 ob
 zR
 IR
@@ -1997,9 +1872,9 @@ As
 WW
 sU
 mW
-Cl
+OK
 ht
-Ft
+QF
 mW
 sU
 Nj
@@ -2020,7 +1895,7 @@ mW
 mW
 mW
 mW
-Up
+Hy
 Nj
 SS
 qc
@@ -2036,7 +1911,7 @@ dp
 ac
 Ou
 iW
-Af
+CY
 aS
 Ru
 ab
@@ -2055,8 +1930,8 @@ AK
 Ts
 Bj
 OB
-Le
-NY
+YT
+OR
 dD
 Ts
 bl
@@ -2134,7 +2009,7 @@ aa
 aa
 aa
 aa
-Xe
+WI
 ua
 FD
 Ac

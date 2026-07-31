@@ -248,9 +248,12 @@
 				balloon_alert(ui_user, "close doors first!")
 				to_chat(ui_user, text = "cannot use pod mapping as doors are not closed")
 				return
-			map_user = ui_user
+			// ui.close() nulls ui_user via ui_close - grab the user first. map_user is
+			// only claimed inside activate_map once the eye is actually granted, so a
+			// failed activation can't leave the pod flagged "in use" forever.
+			var/mob/living/eye_user = ui_user
 			ui.close()
-			activate_map(map_user)
+			activate_map(eye_user)
 		if("open")
 			open_pod(src, FALSE, FALSE)
 		if("close")
@@ -364,12 +367,9 @@
 		CreateEye()
 	if(!eyeobj) //Eye creation failed
 		return
+	map_user = L
 	if(!eye_initialized)
-		var/camera_location
-		var/turf/myturf = locate(1, 1, planet_z_level)
-
-		camera_location = myturf
-
+		var/turf/camera_location = get_map_start_turf(current_planet, planet_z_level)
 		if(camera_location)
 			eye_initialized = TRUE
 			give_eye_control(L)
@@ -379,6 +379,20 @@
 	else
 		give_eye_control(L)
 		eyeobj.setLoc(eyeobj.loc)
+
+/**
+ * Where the targeting camera starts. Dynamic planets occupy a bounded footprint
+ * centered in their z-level, with a dense cordon filling the rest - so (1,1) sits
+ * inside the cordon, not on the planet. The reserve dock is always on the surface;
+ * fall back to the center of the level's bounds if it's somehow gone.
+ */
+/obj/structure/closet/supplypod/drop_pod/proc/get_map_start_turf(obj/structure/overmap/planet/current_planet, planet_z_level)
+	if(current_planet.reserve_dock)
+		return get_turf(current_planet.reserve_dock)
+	var/datum/space_level/level = current_planet.mapzone.z_levels[1]
+	if(!isnull(level.low_x))
+		return locate(round((level.low_x + level.high_x) / 2), round((level.low_y + level.high_y) / 2), planet_z_level)
+	return locate(round(world.maxx / 2), round(world.maxy / 2), planet_z_level)
 
 /obj/structure/closet/supplypod/drop_pod/proc/choose_random_drop_location(mob/user)
 	if(used)
@@ -390,12 +404,11 @@
 	if(!planet_z_level)
 		return
 	var/list/area/planet_areas = list()
-	for (var/area/area in SSmapping.areas_in_z["[planet_z_level]"])
-		if(istype(area, /area/overmap_encounter/planetoid/cave))
+	for (var/area/candidate_area in SSmapping.areas_in_z["[planet_z_level]"])
+		if(istype(candidate_area, /area/overmap_encounter/planetoid/cave))
 			continue
-		// if(area.type in typesof(/area/overmap_encounter/planetoid))
-		if(istype(area, /area/overmap_encounter/planetoid))
-			planet_areas += area
+		if(istype(candidate_area, /area/overmap_encounter/planetoid))
+			planet_areas |= candidate_area
 	if(length(planet_areas) < 1)
 		if(debug_enabled && istype(current_planet, /obj/structure/overmap/planet/empty))
 			var/area/space/space_area = get_area_instance_from_text("/area/space")
@@ -404,12 +417,17 @@
 		if(length(planet_areas) < 1)
 			balloon_alert(user, "nowhere to land")
 			return
-	for (var/i in 1 to 5)
-		var/list/turf_list = get_area_turfs(pick(planet_areas), planet_z_level)
+	// Planet z-levels are recycled, and areas_in_z still lists areas from previous
+	// occupants that no longer hold any turfs here. Exhaust the list instead of a
+	// fixed number of tries so stale areas can't eat every attempt.
+	while (length(planet_areas))
+		var/area/chosen_area = pick(planet_areas)
+		planet_areas -= chosen_area
+		var/list/turf_list = get_area_turfs(chosen_area, planet_z_level)
 		var/turf/target
-		while (turf_list.len && !target)
-			var/I = rand(1, turf_list.len)
-			var/turf/checked_turf = turf_list[I]
+		while (length(turf_list) && !target)
+			var/list_index = rand(1, turf_list.len)
+			var/turf/checked_turf = turf_list[list_index]
 			if(debug_enabled)
 				target = checked_turf
 				break
@@ -422,13 +440,14 @@
 				if(clear)
 					target = checked_turf
 			if (!target)
-				turf_list.Cut(I, I + 1)
+				turf_list.Cut(list_index, list_index + 1)
 		if (target)
 			set_anchored(TRUE)
 			new /obj/effect/pod_landingzone/drop_pod(target, src)
 			used = TRUE
 			update_static_data(user)
 			return
+	balloon_alert(user, "nowhere to land")
 
 /mob/eye/camera/drop_pod
 	use_visibility = FALSE
@@ -544,6 +563,12 @@
 	. = SHUTTLE_DOCKER_LANDING_CLEAR
 
 	if(!T)
+		return SHUTTLE_DOCKER_BLOCKED
+
+	// Dense turfs are the planet cordon, mountains and unmined rock - a pod that
+	// lands in one entombs its passengers. Groundless turfs drop them into nothing.
+	// Dense objects stay targetable: supply pods crush what they land on.
+	if(T.density || isgroundlessturf(T))
 		return SHUTTLE_DOCKER_BLOCKED
 
 	var/allowed_mob = TRUE

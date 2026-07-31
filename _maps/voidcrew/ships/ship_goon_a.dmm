@@ -20,14 +20,6 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/medbay/a)
-"fI" = (
-/obj/structure/cable,
-/obj/machinery/power/apc/auto_name/directional/west,
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 4
-	},
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/goon/commons/a)
 "fV" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "goon_lounge"
@@ -106,6 +98,13 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/goon/engineering/a)
+"nX" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_cockpit"
+	},
+/obj/machinery/mission_pad,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/a)
 "ol" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -122,17 +121,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/goon/engineering/a)
-"pP" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
-	},
-/obj/machinery/airalarm/directional/west,
-/obj/machinery/computer/mission_board{
-	dir = 4
-	},
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/goon/commons/a)
 "qu" = (
 /obj/machinery/light,
 /obj/machinery/shower/directional/west,
@@ -149,6 +137,13 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/medbay/a)
+"ra" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/machinery/computer/bank_machine{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/bridge/a)
 "rt" = (
 /obj/structure/chair/comfy/brown{
 	dir = 4
@@ -199,11 +194,6 @@
 /obj/item/storage/toolbox/electrical,
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/east,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/goon/engineering/a)
-"vy" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/item/storage/box/rndboards/all,
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/goon/engineering/a)
 "vI" = (
@@ -267,16 +257,19 @@
 /obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/commons/a)
-"Ct" = (
-/obj/machinery/light{
-	dir = 8
+"Ca" = (
+/obj/structure/table/reinforced,
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/item/storage/toolbox/emergency{
+	pixel_x = -6;
+	pixel_y = -4
 	},
-/obj/structure/cable,
-/obj/machinery/computer/bank_machine{
-	dir = 4
+/obj/item/storage/box/rndboards/all{
+	pixel_x = 6;
+	pixel_y = 8
 	},
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/goon/commons/a)
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/goon/bridge/a)
 "CF" = (
 /obj/structure/fans/tiny,
 /obj/machinery/button/door{
@@ -288,6 +281,12 @@
 	},
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/goon/commons/a)
+"Ds" = (
+/obj/machinery/computer/mission_board{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/a)
 "Ei" = (
 /obj/structure/window/reinforced/spawner/directional/south,
 /obj/structure/window/reinforced/spawner/directional/west{
@@ -299,11 +298,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/a)
-"En" = (
-/obj/structure/table/reinforced,
-/obj/structure/window/reinforced/spawner/directional/south,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/goon/bridge/a)
 "Ex" = (
 /obj/machinery/atmospherics/components/binary/volume_pump{
 	dir = 8
@@ -313,14 +307,6 @@
 /obj/machinery/power/terminal,
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/goon/engineering/a)
-"EW" = (
-/obj/structure/cable,
-/obj/machinery/power/apc/auto_name/directional/west,
-/obj/machinery/computer/bank_machine{
-	dir = 4
-	},
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/goon/commons/a)
 "Ff" = (
 /obj/machinery/power/shuttle_engine/ship/fueled/plasma{
 	dir = 4
@@ -330,29 +316,11 @@
 "FT" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/goon/medbay/a)
-"GI" = (
-/obj/machinery/light{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/computer/mission_board{
-	dir = 4
-	},
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/goon/commons/a)
 "He" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/goon/commons/a)
-"Hw" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
-/obj/machinery/mission_pad,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/goon/commons/a)
 "HF" = (
@@ -456,32 +424,10 @@
 "PO" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/goon/engineering/a)
-"Qm" = (
-/obj/modular_map_root/ship_upgrade{
-	key = "goon_cockpit"
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/bridge/a)
-"Qn" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
-	},
-/obj/machinery/airalarm/directional/west,
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 4
-	},
-/turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/goon/commons/a)
 "Rx" = (
 /obj/structure/sign/nanotrasen,
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/goon/commons/a)
-"Ry" = (
-/obj/structure/cable,
-/obj/item/storage/box/rndboards/all,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/goon/engineering/a)
 "Us" = (
 /obj/machinery/door/poddoor{
 	id = "goon_bay"
@@ -504,12 +450,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/goon/commons/a)
-"VO" = (
-/obj/structure/table/reinforced,
-/obj/item/storage/toolbox/emergency,
-/obj/structure/window/reinforced/spawner/directional/north,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/goon/bridge/a)
 "WO" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /turf/open/floor/plating,
@@ -525,11 +465,14 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/a)
-"Yg" = (
+"Yf" = (
 /obj/machinery/light{
 	dir = 8
 	},
 /obj/structure/cable,
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 4
+	},
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/goon/commons/a)
 "Yp" = (
@@ -586,7 +529,7 @@ zs
 zs
 zs
 si
-vy
+zA
 nj
 lu
 Ex
@@ -662,9 +605,9 @@ Ph
 IK
 XJ
 VM
-pP
-fI
-Ct
+Yx
+IH
+Yf
 VM
 XJ
 iD
@@ -676,7 +619,7 @@ Yp
 IK
 He
 Pv
-Hw
+VM
 Pv
 Pv
 IK
@@ -752,11 +695,11 @@ IZ
 IZ
 IZ
 bj
-VO
+ra
 HF
 xj
 rt
-En
+Ca
 bj
 IZ
 IZ
@@ -768,7 +711,7 @@ gb
 gb
 OT
 OT
-Qm
+nX
 gb
 gb
 IZ
@@ -781,7 +724,7 @@ IZ
 bj
 OT
 OT
-OT
+Ds
 bj
 IZ
 IZ

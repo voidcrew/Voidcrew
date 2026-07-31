@@ -434,31 +434,50 @@
 	found_helm.attempt_ship_connection(last_resort = TRUE)
 	to_chat(src, span_notice("Survey complete. [vessel_name] is registered as a vessel."))
 
-/datum/action/innate/hull_survey
-	name = "Survey Hull"
+/**
+ * The survey button, as a persistent HUD screen object.
+ *
+ * Sits in the lower-right cluster alongside rest/pull/throw rather than in the action
+ * button palette, so it is always on screen and never competes with granted abilities.
+ */
+/atom/movable/screen/hull_survey
+	name = "survey hull"
 	desc = "Survey the sealed space you are standing in. If it adjoins a ship it becomes \
 		part of that hull; if it holds a helm console, it becomes a ship of its own."
-	button_icon = 'voidcrew/icons/obj/tools.dmi'
-	button_icon_state = "rcd_construct"
+	// icon is assigned from the hud's ui_style at construction, like every other button
+	// here, so it follows the player's chosen HUD skin instead of hardcoding one.
+	// act_survey exists in all nine sheets in GLOB.available_ui_styles.
+	icon = 'icons/hud/screen_midnight.dmi'
+	icon_state = "act_survey"
+	base_icon_state = "act_survey"
+	plane = HUD_PLANE
+	mouse_over_pointer = MOUSE_HAND_POINTER
 
-/datum/action/innate/hull_survey/Activate()
-	var/mob/living/living_owner = owner
-	if(!istype(living_owner))
+/atom/movable/screen/hull_survey/Click()
+	if(!isliving(usr))
 		return
-	living_owner.perform_hull_survey()
+	var/mob/living/living_user = usr
+	living_user.perform_hull_survey()
 
 /**
  * Everyone gets the button. Anyone who can seal a room can claim it, including someone
  * building a first ship from scratch who is not yet crew of anything.
  *
- * Defined as a second /mob/living/carbon/human/Initialize override rather than being
- * folded into an existing one - DM chains same-type overrides across files in include
+ * Defined as a second /datum/hud/human/New() rather than being folded into the one in
+ * code/_onclick/hud/human.dm - DM chains same-type overrides across files in include
  * order and ..() walks back up the chain, which is the pattern voice_barks and intents
- * already use for their own login/init hooks.
+ * already use for their own init/login hooks.
  */
-/mob/living/carbon/human/Initialize(mapload)
+/datum/hud/human/New(mob/living/carbon/human/owner)
 	. = ..()
-	GRANT_ACTION(/datum/action/innate/hull_survey)
+	// Free up the tile first - stock tg puts the pull icon here, invisible while idle but
+	// still clickable, so leaving it would stack two controls on one slot.
+	pull_icon?.screen_loc = ui_pull_displaced
+
+	var/atom/movable/screen/hull_survey/survey_button = new(null, src)
+	survey_button.icon = ui_style
+	survey_button.screen_loc = ui_hull_survey
+	static_inventory += survey_button
 
 #undef HULL_SURVEY_MAX_TILES
 #undef HULL_SURVEY_DURATION

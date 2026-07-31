@@ -154,6 +154,12 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/cargo/c)
+"in" = (
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
 "iv" = (
 /obj/machinery/porta_turret/centcom_shuttle/weak{
 	dir = 4;
@@ -284,14 +290,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/kilo/bridge/c)
-"nJ" = (
-/obj/structure/table,
-/obj/item/toy/plush/lizard_plushie{
-	pixel_y = 6
-	},
-/obj/item/stack/spacecash/c200,
-/turf/open/floor/iron/dollhouse/white,
-/area/shuttle/voidcrew/kilo/bridge/c)
 "nT" = (
 /obj/structure/tank_dispenser/oxygen,
 /obj/effect/turf_decal/trimline/neutral/warning,
@@ -316,19 +314,6 @@
 /obj/effect/turf_decal/trimline/neutral/warning,
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
-"oA" = (
-/obj/structure/table,
-/obj/item/toy/plush/pkplush{
-	pixel_x = -5;
-	pixel_y = 9
-	},
-/obj/item/folder/blue{
-	pixel_x = 3;
-	pixel_y = 3
-	},
-/obj/item/pen,
-/turf/open/floor/iron/dollhouse/white,
-/area/shuttle/voidcrew/kilo/bridge/c)
 "oM" = (
 /obj/machinery/door/poddoor{
 	id = "kilo_bay";
@@ -384,15 +369,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/c)
-"qL" = (
-/obj/machinery/light{
-	dir = 8
-	},
-/obj/effect/turf_decal/bot,
-/obj/machinery/airalarm/directional/west,
-/obj/item/kirbyplants/random,
-/turf/open/floor/iron/dollhouse/white,
-/area/shuttle/voidcrew/kilo/bridge/c)
 "rd" = (
 /obj/structure/plasticflaps,
 /obj/machinery/conveyor{
@@ -429,18 +405,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
 /obj/effect/turf_decal/stripes/corner{
 	dir = 8
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/kilo/engineering/c)
-"sl" = (
-/obj/effect/turf_decal/stripes/corner{
-	dir = 8
-	},
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/obj/machinery/computer/bank_machine{
-	dir = 1
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/c)
@@ -502,14 +466,6 @@
 /obj/machinery/power/apc/auto_name/directional/south,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/c)
-"ua" = (
-/obj/machinery/computer/security{
-	dir = 1;
-	network = list("ntms")
-	},
-/obj/effect/turf_decal/bot,
-/turf/open/floor/iron/dollhouse/white,
-/area/shuttle/voidcrew/kilo/bridge/c)
 "uc" = (
 /obj/effect/turf_decal/trimline/white/filled/line{
 	color = "#ff9ecd";
@@ -883,6 +839,13 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"Dm" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/computer/mission_board{
+	dir = 4
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
 "Dp" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /turf/open/floor/iron/dollhouse/white,
@@ -916,19 +879,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
-"Gf" = (
-/obj/machinery/power/terminal{
-	dir = 1
-	},
-/obj/effect/turf_decal/bot,
-/obj/effect/turf_decal/stripes/corner{
-	dir = 4
-	},
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/mission_pad,
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/kilo/engineering/c)
 "Gt" = (
 /obj/effect/turf_decal/stripes,
 /obj/structure/cable,
@@ -936,6 +886,22 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/dollhouse,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
+"GJ" = (
+/obj/structure/table,
+/obj/item/toy/plush/lizard_plushie{
+	pixel_y = 6
+	},
+/obj/item/stack/spacecash/c200,
+/obj/item/toy/plush/pkplush{
+	pixel_x = -5;
+	pixel_y = 9
+	},
+/obj/item/storage/box/rndboards/all{
+	pixel_x = 5;
+	pixel_y = -4
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
 "HM" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 8
@@ -958,20 +924,6 @@
 	},
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
-"Is" = (
-/obj/effect/turf_decal/stripes,
-/obj/machinery/light_switch{
-	pixel_y = -23
-	},
-/obj/machinery/light/small/built,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/obj/machinery/computer/mission_board{
-	dir = 1
-	},
-/turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/kilo/engineering/c)
 "IK" = (
 /obj/effect/turf_decal/stripes{
 	dir = 8
@@ -1014,11 +966,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/c)
-"JM" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/open/floor/iron/dollhouse,
-/area/shuttle/voidcrew/kilo/cargo/c)
 "Ks" = (
 /obj/effect/turf_decal/stripes/corner,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1039,6 +986,13 @@
 	},
 /turf/open/floor/carpet/neon/simple/pink/nodots,
 /area/shuttle/voidcrew/kilo/dorms/c)
+"KT" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/computer/helm{
+	dir = 1
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
 "Ls" = (
 /obj/structure/table,
 /obj/machinery/button/door{
@@ -1198,6 +1152,14 @@
 /obj/machinery/portable_atmospherics/scrubber/huge,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/c)
+"Sm" = (
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 1
+	},
+/turf/open/floor/iron/dollhouse,
+/area/shuttle/voidcrew/kilo/cargo/c)
 "SN" = (
 /obj/structure/chair/comfy/shuttle,
 /obj/effect/turf_decal/stripes{
@@ -1227,18 +1189,6 @@
 /area/shuttle/voidcrew/kilo/cargo/mining_dock/c)
 "TA" = (
 /turf/closed/wall/mineral/plastitanium,
-/area/shuttle/voidcrew/kilo/engineering/c)
-"TQ" = (
-/obj/effect/turf_decal/stripes{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/machinery/light{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/orange/visible,
-/obj/item/storage/box/rndboards/all,
-/turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/c)
 "Vd" = (
 /obj/effect/turf_decal/bot,
@@ -1305,21 +1255,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/kilo/cargo/c)
-"Xl" = (
-/obj/effect/turf_decal/box/corners,
-/obj/effect/turf_decal/box/corners{
-	dir = 4
-	},
-/obj/item/wrench,
-/obj/structure/cable,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 8
-	},
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 4
-	},
-/turf/open/floor/iron/dollhouse,
-/area/shuttle/voidcrew/kilo/cargo/c)
 "Xn" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -1360,6 +1295,15 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/iron/dollhouse,
 /area/shuttle/voidcrew/kilo/dorms/c)
+"XF" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/machinery/airalarm/directional/west,
+/obj/machinery/mission_pad,
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/kilo/bridge/c)
 "XJ" = (
 /obj/effect/turf_decal/stripes/corner{
 	dir = 4
@@ -1444,13 +1388,6 @@
 /obj/machinery/computer/security/telescreen/entertainment,
 /turf/closed/wall/mineral/titanium/dollhouse/nodiagonal,
 /area/shuttle/voidcrew/kilo/dorms/c)
-"ZX" = (
-/obj/effect/turf_decal/bot,
-/obj/machinery/computer/helm{
-	dir = 4
-	},
-/turf/open/floor/iron/dollhouse/white,
-/area/shuttle/voidcrew/kilo/bridge/c)
 
 (1,1,1) = {"
 aa
@@ -1491,8 +1428,8 @@ ll
 vw
 wy
 CA
-qL
-ZX
+XF
+Dm
 SZ
 SZ
 aa
@@ -1524,7 +1461,7 @@ sO
 lW
 sL
 SN
-ua
+KT
 SZ
 "}
 (6,1,1) = {"
@@ -1551,10 +1488,10 @@ Gt
 nT
 wy
 wy
-oA
+in
 aO
 Nq
-nJ
+GJ
 SZ
 "}
 (8,1,1) = {"
@@ -1593,7 +1530,7 @@ rd
 Xu
 AN
 tR
-JM
+Sm
 Ks
 zV
 CQ
@@ -1608,7 +1545,7 @@ Dp
 yQ
 di
 RK
-Xl
+yM
 LN
 Xa
 CQ
@@ -1713,7 +1650,7 @@ aa
 zD
 qx
 VH
-Is
+uL
 AJ
 AV
 ut
@@ -1727,7 +1664,7 @@ aa
 aa
 AJ
 XM
-Gf
+gO
 Qb
 dE
 Qs
@@ -1743,7 +1680,7 @@ aa
 AJ
 AJ
 ss
-sl
+Jw
 wl
 AJ
 VE
@@ -1760,7 +1697,7 @@ zl
 br
 KJ
 se
-TQ
+IK
 uY
 Ba
 zD

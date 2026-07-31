@@ -44,12 +44,7 @@
 /turf/open/floor/grass/fairy/reebe,
 /area/ruin/reebe)
 "V" = (
-/obj/structure/flora/tree/jungle{
-	icon = 'icons/obj/structure/flora/tree/jungle.dmi';
-	icon_state = "churchtree";
-	pixel_x = -16;
-	pixel_y = 0
-	},
+/obj/structure/flora/tree/jungle,
 /turf/open/floor/grass/fairy/reebe,
 /area/ruin/reebe)
 "Z" = (

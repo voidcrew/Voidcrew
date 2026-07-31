@@ -118,9 +118,17 @@
  * not. Planets that generate on first visit are always in the second case.
  */
 /datum/map_generator/planet_generator/proc/place_biome_turf(turf/gen_turf, turf/turf_type)
-	if(SSlighting.initialized)
-		return gen_turf.ChangeTurf(turf_type, flags = CHANGETURF_IGNORE_AIR)
-	return new turf_type(gen_turf)
+	if(!SSlighting.initialized)
+		return new turf_type(gen_turf)
+	var/turf/new_turf = gen_turf.ChangeTurf(turf_type, flags = CHANGETURF_IGNORE_AIR)
+	// ChangeTurf inherits the previous occupant's baseturfs - here that's the bare space
+	// the z-level was filled with, so anything that later removes a tile (a ruin's
+	// clear_below, an explosion, lava eating the ground) opens a hole into literal
+	// space. Rebuild the stack from the turf type's own definition, exactly like the
+	// raw-new boot path always produced. Every planet turf defines baseturfs as a
+	// single path, so initial() is safe; the type itself is the never-space fallback.
+	new_turf.assemble_baseturfs(initial(new_turf.baseturfs) || new_turf.type)
+	return new_turf
 
 /datum/map_generator/planet_generator/proc/generate_cave(heat, humidity_level, string_gen, turf/gen_turf, cave_area, datum/planet/planet_type)
 	var/datum/biome/cave/selected_cave_biome
@@ -208,10 +216,8 @@
 						can_spawn = FALSE
 						break
 
-				// Cave entrances are no longer a biome feature - they are placed as
-				// evenly-spaced surface/cave pairs afterwards, by
-				// spawn_cave_ladders_for_planet(). A ladder rolled here would be
-				// unlinked, and on a surface-only encounter it would lead nowhere.
+				// Planets are a single z-level, so a cave ladder has nothing to link to
+				// and would drop whoever used it into nowhere.
 				if(ispath(picked_feature, /obj/structure/ladder))
 					can_spawn = FALSE
 

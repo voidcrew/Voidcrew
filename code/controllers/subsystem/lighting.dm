@@ -48,6 +48,13 @@ SUBSYSTEM_DEF(lighting)
 		MC_SPLIT_TICK
 
 	if(!resumed)
+		// voidcrew edit: a non-resumed fire while current_sources still has entries means
+		// the previous drain was interrupted (a runtime mid-batch, or an overlapping
+		// fire(FALSE, TRUE) from Initialize racing the MC's ticks). Those sources sit
+		// with needs_update set but in no queue, so EFFECT_UPDATE refuses to requeue
+		// them and they stay dark forever. Salvage the remainder instead of leaking it.
+		if(length(current_sources))
+			sources_queue = current_sources + sources_queue
 		current_sources = sources_queue
 		sources_queue = list()
 

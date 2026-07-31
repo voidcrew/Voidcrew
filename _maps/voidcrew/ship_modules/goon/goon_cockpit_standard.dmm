@@ -1,17 +1,22 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"l" = (
-/obj/structure/table/reinforced,
+"a" = (
 /obj/structure/window/reinforced/spawner/directional/east,
 /obj/structure/window/reinforced/spawner/directional/south,
-/obj/item/storage/medkit/regular,
-/obj/item/storage/medkit/regular,
 /turf/open/floor/mineral/titanium/yellow,
 /area/template_noop)
-"p" = (
+"g" = (
 /obj/structure/window/reinforced/spawner/directional/east,
 /obj/structure/window/reinforced/spawner/directional/north,
 /obj/structure/table/reinforced,
 /obj/item/radio,
+/obj/item/storage/medkit/regular{
+	pixel_x = -5;
+	pixel_y = 8
+	},
+/obj/item/storage/medkit/regular{
+	pixel_x = 5;
+	pixel_y = 4
+	},
 /turf/open/floor/mineral/titanium/yellow,
 /area/template_noop)
 "q" = (
@@ -19,6 +24,12 @@
 /obj/machinery/computer/helm{
 	dir = 8
 	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/template_noop)
+"I" = (
+/obj/modular_map_connector,
+/obj/machinery/light/small,
+/obj/machinery/firealarm/directional/south,
 /turf/open/floor/mineral/titanium/yellow,
 /area/template_noop)
 "K" = (
@@ -31,15 +42,6 @@
 /obj/item/radio/intercom{
 	pixel_y = 28
 	},
-/turf/open/floor/mineral/titanium/yellow,
-/area/template_noop)
-"Q" = (
-/obj/modular_map_connector,
-/obj/structure/chair/comfy/brown{
-	dir = 4
-	},
-/obj/machinery/light/small,
-/obj/machinery/firealarm/directional/south,
 /turf/open/floor/mineral/titanium/yellow,
 /area/template_noop)
 "Y" = (
@@ -56,10 +58,10 @@
 (1,1,1) = {"
 K
 Y
-Q
+I
 "}
 (2,1,1) = {"
-p
+g
 q
-l
+a
 "}

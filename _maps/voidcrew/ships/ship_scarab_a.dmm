@@ -198,6 +198,14 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/scarab/bridge/a)
+"fm" = (
+/obj/structure/cable,
+/obj/effect/turf_decal/bot/right,
+/obj/machinery/computer/bank_machine{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge/a)
 "fA" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 4
@@ -205,12 +213,10 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/scarab/bridge/a)
-"fC" = (
-/obj/machinery/computer/mission_board{
-	dir = 2
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/commons/a)
+"fJ" = (
+/obj/machinery/mission_pad,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/bridge/a)
 "fL" = (
 /obj/machinery/airalarm/directional/north,
 /obj/item/radio/intercom/directional/west,
@@ -273,6 +279,16 @@
 /obj/structure/marker_beacon/cerulean,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/scarab/dormitories/a)
+"hT" = (
+/obj/structure/table,
+/obj/machinery/airalarm/directional/north,
+/obj/item/storage/fancy/donut_box,
+/obj/item/storage/box/rndboards/all{
+	pixel_x = -4;
+	pixel_y = 7
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge/a)
 "hU" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 10
@@ -292,10 +308,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/bridge/a)
-"iI" = (
-/obj/item/storage/box/rndboards/all,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engineering/a)
 "iW" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 4
@@ -338,12 +350,6 @@
 /obj/effect/turf_decal/bot,
 /obj/machinery/suit_storage_unit/standard_unit,
 /turf/open/floor/mineral/titanium,
-/area/shuttle/voidcrew/scarab/cargo_bay/a)
-"kC" = (
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 1
-	},
-/turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
 "kI" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
@@ -507,12 +513,6 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/pod/light,
 /area/shuttle/voidcrew/scarab/dormitories/a)
-"oT" = (
-/obj/structure/table,
-/obj/machinery/airalarm/directional/north,
-/obj/item/storage/fancy/donut_box,
-/turf/open/floor/mineral/titanium/white,
-/area/shuttle/voidcrew/scarab/bridge/a)
 "ps" = (
 /obj/structure/cable,
 /obj/structure/rack,
@@ -631,12 +631,6 @@
 	},
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/scarab/dormitories/a)
-"rw" = (
-/obj/effect/spawner/structure/window/reinforced/plasma,
-/obj/structure/cable,
-/obj/machinery/door/firedoor,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/cargo_bay/a)
 "rE" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/components/unary/portables_connector{
@@ -780,6 +774,12 @@
 /obj/structure/sign/poster/contraband/principles/directional/north,
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/scarab/dormitories/a)
+"tV" = (
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/cargo_bay/a)
 "tW" = (
 /obj/machinery/digital_clock/directional/south,
 /obj/machinery/suit_storage_unit/medical{
@@ -1018,6 +1018,13 @@
 /obj/structure/handrail,
 /turf/open/floor/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
+"Bw" = (
+/obj/effect/turf_decal/bot/right,
+/obj/machinery/computer/mission_board{
+	dir = 8
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/voidcrew/scarab/bridge/a)
 "BC" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 8
@@ -1060,6 +1067,11 @@
 	},
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/scarab/bridge/a)
+"CQ" = (
+/obj/effect/spawner/structure/window/reinforced/plasma,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/cargo_bay/a)
 "CZ" = (
 /obj/structure/cable,
 /obj/structure/handrail{
@@ -1128,12 +1140,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/a)
-"Fy" = (
-/obj/machinery/computer/bank_machine{
-	dir = 1
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/cargo_bay/a)
 "FX" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/scarab/medbay/a)
@@ -1175,13 +1181,6 @@
 	},
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
-"Hl" = (
-/obj/machinery/door/firedoor,
-/obj/machinery/door/airlock/engineering{
-	name = "Engine Access"
-	},
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/scarab/engines/a)
 "Ho" = (
 /obj/machinery/door/airlock{
 	name = "Bathroom"
@@ -1215,14 +1214,6 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/scarab/dormitories/a)
-"Hx" = (
-/obj/effect/turf_decal/bot/right,
-/obj/structure/frame/computer{
-	anchored = 1;
-	dir = 8
-	},
-/turf/open/floor/mineral/titanium/white,
-/area/shuttle/voidcrew/scarab/bridge/a)
 "HI" = (
 /turf/closed/wall/mineral/titanium/interior,
 /area/shuttle/voidcrew/scarab/cmos_office/a)
@@ -1363,36 +1354,9 @@
 	},
 /turf/open/floor/mineral/titanium/tiled/yellow,
 /area/shuttle/voidcrew/scarab/engines/a)
-"Lc" = (
-/obj/machinery/power/apc/auto_name/directional/north,
-/obj/structure/cable,
-/turf/open/floor/mineral/titanium/tiled/white,
-/area/shuttle/voidcrew/scarab/bridge/a)
 "Lu" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
-"LG" = (
-/obj/machinery/door/airlock/engineering{
-	name = "Engineering"
-	},
-/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
-	dir = 1
-	},
-/obj/machinery/door/firedoor,
-/turf/open/floor/mineral/titanium/yellow,
-/area/shuttle/voidcrew/scarab/engineering/a)
-"LT" = (
-/obj/structure/cable,
-/obj/effect/turf_decal/bot/right,
-/obj/structure/frame/computer{
-	anchored = 1;
-	dir = 8
-	},
-/turf/open/floor/mineral/titanium/white,
-/area/shuttle/voidcrew/scarab/bridge/a)
 "Mc" = (
 /obj/machinery/airalarm/directional/south,
 /obj/structure/closet{
@@ -1425,15 +1389,6 @@
 	},
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/voidcrew/scarab/cmos_office/a)
-"Mz" = (
-/obj/effect/spawner/structure/window/reinforced/plasma,
-/obj/machinery/atmospherics/pipe/smart/simple/dark/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/door/firedoor,
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/engines/a)
 "MI" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/closet/emcloset/anchored,
@@ -1582,6 +1537,12 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/cmos_office/a)
+"Qa" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Engine Access"
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/scarab/engines/a)
 "Qr" = (
 /obj/machinery/door/airlock/external/glass,
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -1624,16 +1585,6 @@
 	},
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/scarab/dormitories/a)
-"Sp" = (
-/obj/machinery/mission_pad,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/commons/a)
-"SE" = (
-/obj/structure/cable,
-/obj/effect/spawner/structure/window/reinforced/plasma,
-/obj/machinery/door/firedoor,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/scarab/cargo_bay/a)
 "SK" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/scarab/bridge/a)
@@ -1650,6 +1601,11 @@
 	},
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/voidcrew/scarab/cmos_office/a)
+"SY" = (
+/obj/structure/cable,
+/obj/effect/spawner/structure/window/reinforced/plasma,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/scarab/cargo_bay/a)
 "TJ" = (
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 4
@@ -1661,6 +1617,18 @@
 /obj/machinery/holopad,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/commons/a)
+"Uh" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Engineering"
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/voidcrew/scarab/engineering/a)
 "UM" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 1
@@ -1706,6 +1674,11 @@
 "We" = (
 /turf/open/floor/mineral/titanium/tiled,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
+"Wh" = (
+/obj/machinery/power/apc/auto_name/directional/north,
+/obj/structure/cable,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/shuttle/voidcrew/scarab/bridge/a)
 "Wy" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 6
@@ -1717,6 +1690,14 @@
 /obj/structure/extinguisher_cabinet/directional/north,
 /obj/machinery/suit_storage_unit/engine,
 /turf/open/floor/mineral/titanium/tiled/yellow,
+/area/shuttle/voidcrew/scarab/engines/a)
+"WI" = (
+/obj/effect/spawner/structure/window/reinforced/plasma,
+/obj/machinery/atmospherics/pipe/smart/simple/dark/hidden/layer2{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
 /area/shuttle/voidcrew/scarab/engines/a)
 "WW" = (
 /obj/item/radio/intercom/directional/west,
@@ -2004,14 +1985,14 @@ lw
 Eo
 Eo
 Eo
-Eo
+tV
 lw
 kq
 lw
 lw
-Hl
+Qa
 lw
-Mz
+WI
 lw
 lw
 lw
@@ -2034,7 +2015,7 @@ eW
 eW
 eW
 eW
-iI
+eW
 Nk
 hx
 pz
@@ -2048,10 +2029,10 @@ Eo
 Eo
 Eo
 Eo
-kC
+Eo
 sb
 qm
-rw
+CQ
 eW
 eW
 eW
@@ -2095,7 +2076,7 @@ Eo
 Eo
 eH
 ps
-SE
+SY
 eW
 eW
 eW
@@ -2114,7 +2095,7 @@ Eo
 Eo
 Eo
 Eo
-Fy
+Eo
 We
 sb
 Lu
@@ -2183,7 +2164,7 @@ Iz
 Iz
 Iz
 Iz
-LG
+Uh
 eW
 eW
 eW
@@ -2202,8 +2183,8 @@ iZ
 pF
 SO
 Iz
-Uc
 Iz
+Uc
 Iz
 xO
 xO
@@ -2223,8 +2204,8 @@ pz
 iZ
 SO
 SO
-fC
-Sp
+Iz
+Iz
 Iz
 Iz
 xO
@@ -2399,7 +2380,7 @@ NN
 ra
 sn
 mP
-Lc
+Wh
 aV
 Nq
 BC
@@ -2421,10 +2402,10 @@ ml
 cj
 Mc
 mP
-oT
+hT
 fA
 Cb
-Cb
+fJ
 fA
 zC
 kS
@@ -2446,8 +2427,8 @@ AH
 XS
 cs
 CO
-Hx
-LT
+Bw
+fm
 rQ
 kS
 Ow

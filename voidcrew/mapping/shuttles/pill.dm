@@ -3,7 +3,7 @@
 	suffix = "pill"
 	short_name = "Pill-class"
 	catalog_desc = "Three tiles, one engine, and a mining kit for each of the four bunks, \
-		plus a single bay on the nose you can fit out. No airlock and no medbay - you suit \
+		plus a single bay amidships you can fit out. No airlock and no medbay - you suit \
 		up in the cabin, drill rocks and carry them back in an ore bag. Free to take, and \
 		the smallest thing on the shelf that still flies."
 	force_purchasable = TRUE // free and on the shelf despite being four tiles of misery

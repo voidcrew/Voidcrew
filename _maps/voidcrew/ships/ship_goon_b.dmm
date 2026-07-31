@@ -34,12 +34,6 @@
 	color = "#6E63A8"
 	},
 /area/shuttle/voidcrew/goon/engineering/b)
-"bS" = (
-/obj/modular_map_root/ship_upgrade{
-	key = "goon_cockpit"
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/bridge/b)
 "bX" = (
 /obj/machinery/door/airlock/public/glass{
 	name = "Emergency Shuttle Cockpit"
@@ -104,16 +98,6 @@
 	color = "#4F4C88"
 	},
 /area/shuttle/voidcrew/goon/commons/b)
-"dQ" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
-/obj/machinery/mission_pad,
-/turf/open/floor/mineral/titanium{
-	color = "#4F4C88"
-	},
-/area/shuttle/voidcrew/goon/commons/b)
 "eI" = (
 /obj/machinery/camera/autoname/directional/west,
 /obj/structure/table,
@@ -158,47 +142,25 @@
 "fR" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/bridge/b)
-"ho" = (
-/obj/machinery/light/cold{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/effect/turf_decal/trimline/purple/filled/line{
-	dir = 8
-	},
-/obj/machinery/computer/mission_board{
+"hF" = (
+/obj/structure/window/reinforced/spawner/directional/north,
+/obj/machinery/light/cold/directional/east,
+/obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 4
-	},
-/turf/open/floor/mineral/titanium{
-	color = "#4F4C88"
-	},
-/area/shuttle/voidcrew/goon/commons/b)
-"hA" = (
-/obj/structure/cable,
-/obj/machinery/power/apc/auto_name/directional/west,
-/obj/effect/turf_decal/trimline/purple/filled/line{
-	dir = 8
-	},
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 4
-	},
-/turf/open/floor/mineral/titanium{
-	color = "#4F4C88"
-	},
-/area/shuttle/voidcrew/goon/commons/b)
-"nB" = (
-/obj/structure/cable,
-/obj/machinery/power/apc/auto_name/directional/west,
-/obj/effect/turf_decal/trimline/purple/filled/line{
-	dir = 8
 	},
 /obj/machinery/computer/bank_machine{
-	dir = 4
+	dir = 2
 	},
-/turf/open/floor/mineral/titanium{
-	color = "#4F4C88"
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
 	},
-/area/shuttle/voidcrew/goon/commons/b)
+/area/shuttle/voidcrew/goon/bridge/b)
+"jf" = (
+/obj/machinery/computer/mission_board{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/b)
 "nC" = (
 /obj/structure/closet/crate/engineering/electrical,
 /obj/item/clothing/gloves/color/yellow,
@@ -209,18 +171,6 @@
 /obj/machinery/power/apc/auto_name/directional/east,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/engineering/b)
-"oL" = (
-/obj/machinery/light/cold{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/effect/turf_decal/trimline/purple/filled/line{
-	dir = 8
-	},
-/turf/open/floor/mineral/titanium{
-	color = "#4F4C88"
-	},
-/area/shuttle/voidcrew/goon/commons/b)
 "oS" = (
 /obj/machinery/atmospherics/components/unary/shuttle/heater/tank{
 	dir = 4
@@ -254,11 +204,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/engineering/b)
-"sK" = (
-/obj/structure/cable,
-/obj/item/storage/box/rndboards/all,
-/turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/engineering/b)
 "sS" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -314,21 +259,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
-/turf/open/floor/mineral/titanium{
-	color = "#4F4C88"
-	},
-/area/shuttle/voidcrew/goon/commons/b)
-"xH" = (
-/obj/machinery/light/cold{
-	dir = 8
-	},
-/obj/structure/cable,
-/obj/effect/turf_decal/trimline/purple/filled/line{
-	dir = 8
-	},
-/obj/machinery/computer/bank_machine{
-	dir = 4
-	},
 /turf/open/floor/mineral/titanium{
 	color = "#4F4C88"
 	},
@@ -419,6 +349,21 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/hidden,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/b)
+"HE" = (
+/obj/machinery/light/cold{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/obj/machinery/computer/voidcrew_cargo{
+	dir = 4
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
 "HX" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -455,6 +400,13 @@
 /obj/machinery/power/terminal,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/engineering/b)
+"JH" = (
+/obj/modular_map_root/ship_upgrade{
+	key = "goon_cockpit"
+	},
+/obj/machinery/mission_pad,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/goon/bridge/b)
 "Ky" = (
 /obj/machinery/camera/autoname/directional/west,
 /obj/machinery/light/cold/directional/west,
@@ -511,41 +463,6 @@
 	key = "goon_lounge"
 	},
 /turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/commons/b)
-"Om" = (
-/obj/structure/table/reinforced,
-/obj/structure/window/reinforced/spawner/directional/south,
-/obj/machinery/light/cold/directional/east,
-/obj/item/disk/star_chart/green{
-	pixel_x = -5;
-	pixel_y = 4
-	},
-/obj/item/binoculars{
-	pixel_x = 6;
-	pixel_y = -2
-	},
-/obj/effect/turf_decal/trimline/blue/filled/line{
-	dir = 4
-	},
-/turf/open/floor/mineral/titanium/white{
-	color = "#7C68C6"
-	},
-/area/shuttle/voidcrew/goon/bridge/b)
-"Ot" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
-	},
-/obj/machinery/airalarm/directional/west,
-/obj/effect/turf_decal/trimline/purple/filled/line{
-	dir = 8
-	},
-/obj/machinery/computer/mission_board{
-	dir = 4
-	},
-/turf/open/floor/mineral/titanium{
-	color = "#4F4C88"
-	},
 /area/shuttle/voidcrew/goon/commons/b)
 "OT" = (
 /obj/machinery/camera/autoname/directional/north,
@@ -627,38 +544,6 @@
 	color = "#4F4C88"
 	},
 /area/shuttle/voidcrew/goon/commons/b)
-"RN" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
-	},
-/obj/machinery/airalarm/directional/west,
-/obj/effect/turf_decal/trimline/purple/filled/line{
-	dir = 8
-	},
-/obj/machinery/computer/voidcrew_cargo{
-	dir = 4
-	},
-/turf/open/floor/mineral/titanium{
-	color = "#4F4C88"
-	},
-/area/shuttle/voidcrew/goon/commons/b)
-"RQ" = (
-/obj/structure/table/reinforced,
-/obj/item/storage/toolbox/emergency,
-/obj/structure/window/reinforced/spawner/directional/north,
-/obj/machinery/light/cold/directional/east,
-/obj/item/reagent_containers/cup/glass/coffee{
-	pixel_x = -7;
-	pixel_y = 7
-	},
-/obj/effect/turf_decal/trimline/blue/filled/line{
-	dir = 4
-	},
-/turf/open/floor/mineral/titanium/white{
-	color = "#7C68C6"
-	},
-/area/shuttle/voidcrew/goon/bridge/b)
 "Th" = (
 /obj/machinery/firealarm/directional/west{
 	dir = 4
@@ -709,11 +594,6 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/b)
-"Wv" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
-/obj/item/storage/box/rndboards/all,
-/turf/open/floor/mineral/titanium/blue,
-/area/shuttle/voidcrew/goon/engineering/b)
 "XS" = (
 /obj/machinery/firealarm/directional/south,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/purple/visible,
@@ -742,6 +622,33 @@
 	color = "#4F4C88"
 	},
 /area/shuttle/voidcrew/goon/commons/b)
+"Zi" = (
+/obj/structure/table/reinforced,
+/obj/structure/window/reinforced/spawner/directional/south,
+/obj/machinery/light/cold/directional/east,
+/obj/item/disk/star_chart/green{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/binoculars{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/obj/item/storage/toolbox/emergency{
+	pixel_x = -6;
+	pixel_y = -4
+	},
+/obj/item/storage/box/rndboards/all{
+	pixel_x = 6;
+	pixel_y = 8
+	},
+/turf/open/floor/mineral/titanium/white{
+	color = "#7C68C6"
+	},
+/area/shuttle/voidcrew/goon/bridge/b)
 
 (1,1,1) = {"
 IZ
@@ -776,7 +683,7 @@ aa
 aa
 aa
 by
-Wv
+Qv
 Ie
 Ql
 Jk
@@ -852,9 +759,9 @@ dg
 uq
 Ky
 Vj
-Ot
-hA
-xH
+Pl
+Lv
+HE
 Vj
 ce
 Th
@@ -866,7 +773,7 @@ Rg
 sg
 wg
 rZ
-dQ
+Vj
 rZ
 rZ
 sg
@@ -942,11 +849,11 @@ IZ
 IZ
 IZ
 KM
-RQ
+hF
 cQ
 HX
 tE
-Om
+Zi
 KM
 IZ
 IZ
@@ -958,7 +865,7 @@ Tk
 AF
 fR
 fR
-bS
+JH
 Tk
 Tk
 IZ
@@ -971,7 +878,7 @@ IZ
 KM
 fR
 fR
-fR
+jf
 KM
 IZ
 IZ
