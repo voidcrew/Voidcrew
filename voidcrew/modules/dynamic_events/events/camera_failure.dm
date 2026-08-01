@@ -6,7 +6,7 @@
 /datum/round_event_control/voidcrew/camera_failure
 	name = "Ship Camera Failure"
 	typepath = /datum/round_event/voidcrew/camera_failure
-	weight = 100
+	weight = 25 // was 100 — one event owning 13% of every roster roll starved the rest of the table
 	max_occurrences = 20
 	alert_observers = FALSE
 	category = EVENT_CATEGORY_ENGINEERING

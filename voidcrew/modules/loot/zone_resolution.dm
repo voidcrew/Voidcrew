@@ -40,6 +40,12 @@
 	return ..()
 
 /datum/zone_resolver/proc/attempt()
+	// The consumer can be deleted mid-retry (create_and_destroy does exactly this);
+	// holding its callback for the rest of the retry chain keeps a hard ref on a
+	// deleted atom for up to a minute. Stop the moment the consumer is gone.
+	if(isnull(on_done) || (isdatum(on_done.object) && QDELETED(on_done.object)))
+		qdel(src)
+		return
 	var/zone_type = target ? SSovermap_zones.get_zone_type_anywhere(target) : null
 	if(!isnull(zone_type) || attempts_left-- <= 0)
 		on_done?.Invoke(zone_type)

@@ -6,19 +6,17 @@
 	volume = 50
 	list_reagents = list(/datum/reagent/medicine/molten_bubbles/sand = 50)
 	reagent_flags = null //Cap's on
-/*
+
 /obj/item/reagent_containers/cup/glass/bottle/sarsaparilla/attack_self(mob/user)
-	if(!is_drainable()) // Uses the reagents.flags cause reagent_flags is only the init value
-		playsound(src, 'whitesands/sound/items/openbottle.ogg', 30, 1)
-		user.visible_message("<span class='notice'>[user] takes the cap off \the [src].</span>", "<span class='notice'>You take the cap off [src].</span>")
-		reagents.flags |= OPENCONTAINER //Cap's off
-		if(prob(1)) //Lucky you
-			var/S = new /obj/item/sandstar(src)
-			user.put_in_hands(S)
-			to_chat(user, "<span class='notice'>You found a Sandblast Star!</span>")
-	else
-		. = ..()
-*/
+	if(is_drainable()) // reagents.flags is the live state; reagent_flags is only the init value
+		return ..()
+	playsound(src, SFX_CAN_OPEN, 30, TRUE) // the original whitesands bottle sound never shipped in this fork
+	user.visible_message(span_notice("[user] takes the cap off [src]."), span_notice("You take the cap off [src]."))
+	reagents.flags |= OPENCONTAINER //Cap's off
+	if(prob(1)) //Lucky you
+		var/obj/item/sandstar/star = new(get_turf(user))
+		user.put_in_hands(star)
+		to_chat(user, span_notice("You found a Sandblast Star!"))
 /obj/item/reagent_containers/cup/glass/bottle/sarsaparilla/examine(mob/user)
 	. = ..()
 	if(!is_drainable())

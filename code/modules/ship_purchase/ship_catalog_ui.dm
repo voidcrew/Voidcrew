@@ -312,8 +312,10 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 		if(total_parts == 0)
 			primary_class = "free"
 
-		// Faction (default to neutral - faction system not yet implemented on ships)
-		var/faction = FACTION_NEUTRAL
+		// Display string only — a ship faction system doesn't exist, so every card reads
+		// Neutral. (The mob-faction FACTION_NEUTRAL define is lowercase "neutral" and
+		// would mismatch the capitalized entries in data["factions"].)
+		var/faction = "Neutral"
 
 		// Build job list for display
 		var/list/jobs = list()
@@ -385,27 +387,9 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 
 	return data
 
-/**
- * Handle UI actions (filter, search)
- */
-/datum/ship_catalog_ui/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
-	if(..())
-		return TRUE
-
-	. = TRUE
-
-	switch(action)
-		if("set_faction_filter")
-			selected_faction = params["faction"]
-			if(selected_faction == "all")
-				selected_faction = null
-
-		if("set_search")
-			search_query = params["query"] || ""
-
-		if("clear_filters")
-			selected_faction = null
-			search_query = ""
+// The catalog is a read-only browser: purchasing and previews live in the shipyard
+// (ShipUpgradeSelector), and ShipCatalog.tsx sends no act() calls, so there is no
+// ui_act override — filtering and search happen client-side if they happen at all.
 
 /**
  * Generate a description for a ship based on its properties.
@@ -443,12 +427,11 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 	return "[ship_class] with capacity for [crew_count] crew members. Crew roles: [role_summary].[theme_info]"
 
 /**
- * Get ship preview image path
- * For now returns a placeholder - will be implemented later
+ * Ship preview identifier sent to the read-only catalog card. Real, per-configuration
+ * previews live in the shipyard (ShipUpgradeSelector + the baked previews manifest);
+ * the catalog keeps a stable placeholder so its card layout doesn't shift.
  */
 /datum/ship_catalog_ui/proc/get_ship_preview_path(datum/map_template/shuttle/voidcrew/template)
-	// TODO: Implement ship preview image system
-	// For now, return a generic placeholder
 	return "ship_preview_neutral.png"
 
 /**
@@ -478,19 +461,3 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 
 	open_ship_catalog()
 
-// Faction constants (if not already defined elsewhere)
-#ifndef FACTION_NEUTRAL
-#define FACTION_NEUTRAL "Neutral"
-#endif
-
-#ifndef FACTION_NT
-#define FACTION_NT "Nanotrasen"
-#endif
-
-#ifndef SYNDICATE_SHIP
-#define SYNDICATE_SHIP "Syndicate"
-#endif
-
-#ifndef NEUTRAL_SHIP
-#define NEUTRAL_SHIP "Independent"
-#endif

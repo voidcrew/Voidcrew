@@ -101,10 +101,12 @@
 	for(var/datum/lazy_template/virtual_domain/available as anything in subtypesof(/datum/lazy_template/virtual_domain))
 		var/init_cost = initial(available.cost)
 
+		// VOIDCREW EDIT: upper bound was COST_EXTREME — the repriced boss arenas (5/8)
+		// must never come out of the Randomize button; a boss dive is a deliberate purchase.
 		if(!initial(available.test_only) && \
 			init_cost <= points && \
 			init_cost > BITRUNNER_COST_NONE && \
-			init_cost < BITRUNNER_COST_EXTREME \
+			init_cost < BITRUNNER_COST_BOSS \
 		)
 			random_domains.Add(available)
 

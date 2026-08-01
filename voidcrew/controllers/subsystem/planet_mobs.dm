@@ -128,18 +128,28 @@ SUBSYSTEM_DEF(planet_mobs)
 
 /// Populates the planet from its pre-indexed spawn turfs.
 /datum/controller/subsystem/planet_mobs/proc/spawn_planet_mobs(datum/planet_mob_tracker/tracker)
-	spawn_on_zlevel(tracker.surface_spawn_turfs)
+	spawn_on_zlevel(tracker.surface_spawn_turfs, tracker.surface_z)
 	tracker.populated = TRUE
 
-/// Spawns up to per_zlevel_mob_cap mobs from the given candidate turfs.
-/datum/controller/subsystem/planet_mobs/proc/spawn_on_zlevel(list/spawn_turfs)
+/// Spawns up to the zone-scaled per-planet cap from the given candidate turfs.
+/datum/controller/subsystem/planet_mobs/proc/spawn_on_zlevel(list/spawn_turfs, surface_z)
 	if(!length(spawn_turfs))
 		return
+
+	// A flat cap muted the density half of danger scaling: deeper bands roll more
+	// spawns, then the cap threw the surplus away. Scale it modestly instead —
+	// the global cap still bounds the whole galaxy.
+	var/planet_cap = per_zlevel_mob_cap
+	switch(surface_z ? SSmapping.get_planet_zone_band_for_z(surface_z) : null)
+		if(ZONE_YELLOW)
+			planet_cap = round(per_zlevel_mob_cap * 1.2) // 18 at the default 15
+		if(ZONE_RED)
+			planet_cap = round(per_zlevel_mob_cap * 1.5) // 22 at the default 15
 
 	var/spawned = 0
 	var/list/available_turfs = spawn_turfs.Copy()
 
-	while(spawned < per_zlevel_mob_cap && total_managed_mobs < global_mob_cap && length(available_turfs))
+	while(spawned < planet_cap && total_managed_mobs < global_mob_cap && length(available_turfs))
 		var/turf/candidate = pick_n_take(available_turfs)
 		if(!isturf(candidate))
 			continue

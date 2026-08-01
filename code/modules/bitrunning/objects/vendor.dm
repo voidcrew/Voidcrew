@@ -11,6 +11,10 @@
 	cooldown_time = 10 SECONDS
 	cargo_cost_multiplier = 0.65
 	express_cost_multiplier = 1
+	// VOIDCREW EDIT: this fork's cargo system never reads SSshuttle.shopping_list, so
+	// the "arrives on the cargo shuttle" path would charge points and deliver nothing.
+	// Express-only: every order drop-pods straight to the buyer, at no surcharge.
+	forced_express = TRUE
 	purchase_tooltip = @{"Your purchases will arrive at cargo,
 	and hopefully get delivered by them.
 	35% cheaper than express delivery."}

@@ -77,6 +77,10 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	var/dock_index
 	/// Bottom-left turf of the field's padded generation footprint (set by load_level, cleared on unload)
 	var/turf/field_bottom_left
+	/// Whether this field's ore and caches have already been rolled once. The rock
+	/// regenerates on every dock (it is the hazard), but the payout does not - without
+	/// this, undocking for 20 seconds and re-docking re-rolled a fresh ore-seeded field.
+	var/field_mined = FALSE
 
 /obj/structure/overmap/event/meteor/Initialize(mapload)
 	. = ..()
@@ -206,8 +210,12 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 		var/area/centcom/asteroid/voidcrew/asteroid_area = GLOB.areas_by_type[/area/centcom/asteroid/voidcrew]
 		if(asteroid_area)
 			mapgen.populate_terrain(field_turfs, asteroid_area)
-		seed_asteroid_ore_block(field_bottom_left, field_top_right, ore_target_ratio, "hazard field '[name]'", ore_weights)
-		populate_field_extras(field_turfs)
+		// One payout per field per round: the rock (and the meteor hazard) come back on
+		// every dock, but the ore roll and the cache extras only happen the first time.
+		if(!field_mined)
+			field_mined = TRUE
+			seed_asteroid_ore_block(field_bottom_left, field_top_right, ore_target_ratio, "hazard field '[name]'", ore_weights)
+			populate_field_extras(field_turfs)
 
 	// Leftover turfs (vacuum between/around the blobs, and the docking buffer) are
 	// uninitialized /turf/open/space/basic - fix them up before anyone can reach them

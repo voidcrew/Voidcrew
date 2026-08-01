@@ -91,6 +91,7 @@
 		"quantum_console",
 		"netpod",
 		"quantum_server",
+		"bitrunning_order_console", // VOIDCREW EDIT: spends the points the loop pays out; upstream hand-places it
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_3_POINTS)
 	announce_channels = list(RADIO_CHANNEL_SUPPLY)
