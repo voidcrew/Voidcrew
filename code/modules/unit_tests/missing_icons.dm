@@ -10,11 +10,11 @@
 	if(!directory_path)
 		directory_path = "icons/obj/"
 	for(var/file_path in flist(directory_path))
-		if(findtext(file_path, ".dmi"))
+		if(copytext(file_path, -1) == "/") // only directories end in "/"; anything else is a loose file (.png smoothing sources etc.) we must not descend into
+			generate_possible_icon_states_list("[directory_path][file_path]")
+		else if(copytext(file_path, -4) == ".dmi")
 			for(var/sprite_icon in icon_states("[directory_path][file_path]", 1)) //2nd arg = 1 enables 64x64+ icon support, otherwise you'll end up with "sword0_1" instead of "sword"
 				possible_icon_states[sprite_icon] += list("[directory_path][file_path]")
-		else
-			possible_icon_states += generate_possible_icon_states_list("[directory_path][file_path]")
 
 /datum/unit_test/missing_icons/Run()
 	generate_possible_icon_states_list()

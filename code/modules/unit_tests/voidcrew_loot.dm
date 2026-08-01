@@ -180,7 +180,7 @@
 				TEST_FAIL("[map_file] places a /rare cache but no /boss marker or hand-placed setpiece — top loot must be guarded")
 
 	// ---- rumor charts point at real, stocked, guarded ruins ----
-	for(var/datum/rumor_chart/chart_path as anything in subtypesof(/datum/rumor_chart))
+	for(var/datum/shop_sku/ruin_chart/chart_path as anything in subtypesof(/datum/shop_sku/ruin_chart))
 		var/datum/map_template/ruin/space/template_path = initial(chart_path.ruin_template_path)
 		if(isnull(template_path))
 			continue

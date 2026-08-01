@@ -70,7 +70,7 @@
 		switch(state)
 			if(AIRLOCK_STATE_INOPEN)
 				if(target_state != state)
-					var/obj/machinery/door/airlock/interior_airlock = interior_door_ref.resolve()
+					var/obj/machinery/door/airlock/interior_airlock = interior_door_ref?.resolve()
 					if (isnull(interior_airlock))
 						continue
 
@@ -80,7 +80,7 @@
 					else
 						interior_airlock.secure_close()
 				else
-					var/obj/machinery/atmospherics/components/binary/dp_vent_pump/pump = pump_ref.resolve()
+					var/obj/machinery/atmospherics/components/binary/dp_vent_pump/pump = pump_ref?.resolve()
 
 					if(pump?.on)
 						pump.on = FALSE
@@ -93,7 +93,7 @@
 						continue
 
 					if(sensor_pressure >= ONE_ATMOSPHERE*0.95)
-						var/obj/machinery/door/airlock/interior_airlock = interior_door_ref.resolve()
+						var/obj/machinery/door/airlock/interior_airlock = interior_door_ref?.resolve()
 						if (isnull(interior_airlock))
 							continue
 
@@ -103,7 +103,7 @@
 							state = AIRLOCK_STATE_INOPEN
 							process_again = TRUE
 					else
-						var/obj/machinery/atmospherics/components/binary/dp_vent_pump/pump = pump_ref.resolve()
+						var/obj/machinery/atmospherics/components/binary/dp_vent_pump/pump = pump_ref?.resolve()
 						if (isnull(pump))
 							continue
 
@@ -119,7 +119,7 @@
 
 			if(AIRLOCK_STATE_CLOSED)
 				if(target_state == AIRLOCK_STATE_OUTOPEN)
-					var/obj/machinery/door/airlock/interior_airlock = interior_door_ref.resolve()
+					var/obj/machinery/door/airlock/interior_airlock = interior_door_ref?.resolve()
 					if (isnull(interior_airlock))
 						continue
 
@@ -129,7 +129,7 @@
 					else
 						interior_airlock?.secure_close()
 				else if(target_state == AIRLOCK_STATE_INOPEN)
-					var/obj/machinery/door/airlock/exterior_airlock = exterior_door_ref.resolve()
+					var/obj/machinery/door/airlock/exterior_airlock = exterior_door_ref?.resolve()
 					if (isnull(exterior_airlock))
 						continue
 
@@ -139,7 +139,7 @@
 					else
 						exterior_airlock?.secure_close()
 				else
-					var/obj/machinery/atmospherics/components/binary/dp_vent_pump/pump = pump_ref.resolve()
+					var/obj/machinery/atmospherics/components/binary/dp_vent_pump/pump = pump_ref?.resolve()
 					if (isnull(pump))
 						continue
 
@@ -158,7 +158,7 @@
 
 				if(sensor_pressure <= target_pressure)
 					if(target_state == AIRLOCK_STATE_OUTOPEN)
-						var/obj/machinery/door/airlock/exterior_airlock = exterior_door_ref.resolve()
+						var/obj/machinery/door/airlock/exterior_airlock = exterior_door_ref?.resolve()
 						if (isnull(exterior_airlock))
 							continue
 
@@ -173,7 +173,7 @@
 					state = AIRLOCK_STATE_CLOSED
 					process_again = TRUE
 				else
-					var/obj/machinery/atmospherics/components/binary/dp_vent_pump/pump = pump_ref.resolve()
+					var/obj/machinery/atmospherics/components/binary/dp_vent_pump/pump = pump_ref?.resolve()
 					if (isnull(pump))
 						continue
 
@@ -186,7 +186,7 @@
 
 			if(AIRLOCK_STATE_OUTOPEN) //state 2
 				if(target_state != AIRLOCK_STATE_OUTOPEN)
-					var/obj/machinery/door/airlock/exterior_airlock = exterior_door_ref.resolve()
+					var/obj/machinery/door/airlock/exterior_airlock = exterior_door_ref?.resolve()
 					if (isnull(exterior_airlock))
 						continue
 
@@ -200,7 +200,7 @@
 					else
 						exterior_airlock.secure_close()
 				else
-					var/obj/machinery/atmospherics/components/binary/dp_vent_pump/pump = pump_ref.resolve()
+					var/obj/machinery/atmospherics/components/binary/dp_vent_pump/pump = pump_ref?.resolve()
 					if (isnull(pump))
 						continue
 
@@ -221,19 +221,19 @@
 	var/sensor_pressure = sensor_pressure()
 	data["sensorPressure"] = isnull(sensor_pressure) ? "----" : round(sensor_pressure, 0.1)
 
-	var/obj/machinery/door/airlock/interior_airlock = interior_door_ref.resolve()
+	var/obj/machinery/door/airlock/interior_airlock = interior_door_ref?.resolve()
 	if (isnull(interior_airlock))
 		data["interiorStatus"] = "----"
 	else
 		data["interiorStatus"] = interior_airlock.density ? "closed" : "open"
 
-	var/obj/machinery/door/airlock/exterior_airlock = exterior_door_ref.resolve()
+	var/obj/machinery/door/airlock/exterior_airlock = exterior_door_ref?.resolve()
 	if (isnull(exterior_airlock))
 		data["exteriorStatus"] = "----"
 	else
 		data["exteriorStatus"] = exterior_airlock.density ? "closed" : "open"
 
-	var/obj/machinery/atmospherics/components/binary/dp_vent_pump/pump = pump_ref.resolve()
+	var/obj/machinery/atmospherics/components/binary/dp_vent_pump/pump = pump_ref?.resolve()
 	switch (pump?.pump_direction)
 		if (null)
 			data["pumpStatus"] = "----"
@@ -270,7 +270,7 @@
 
 /// Returns the pressure over the pump, or null if it is deleted
 /obj/machinery/airlock_controller/proc/sensor_pressure()
-	var/obj/machinery/airlock_sensor/sensor = sensor_ref.resolve()
+	var/obj/machinery/airlock_sensor/sensor = sensor_ref?.resolve()
 	if (!isnull(sensor) && !sensor.on)
 		return last_pressure
 

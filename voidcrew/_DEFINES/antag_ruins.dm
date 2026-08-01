@@ -13,7 +13,6 @@
 // ===== ASCENSION (endgame capstone boons — see modules/antag_ruins/ascension.dm) =====
 
 /// Round time before a patron will discuss ascension at all.
-/// TEST VALUE, matched to the 15-second ruin schedule above. PRODUCTION: (90 MINUTES).
 #define VESTIGE_ASCENSION_UNLOCK_TIME (90 MINUTES)
 /// Hard ceiling on one ascension run. Expiry returns a living supplicant home, failed.
 #define VESTIGE_ASCENSION_TIME_LIMIT (30 MINUTES)
