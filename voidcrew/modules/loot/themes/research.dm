@@ -22,6 +22,8 @@
 		/obj/item/petri_dish = 6,
 		/obj/item/experi_scanner = 5,
 		/obj/item/research_notes/loot/tiny = 5,
+		// containment sidearm: every lab that kept specimens kept one
+		/obj/item/gun/energy/e_gun/mini = 5,
 		/obj/item/stack/ore/bluespace_crystal/artificial = 4,
 	)
 	loot_yellow = list(
@@ -33,6 +35,8 @@
 		/obj/item/slime_extract/gold = 5,
 		/obj/item/clothing/glasses/night = 5,
 		/obj/item/research_notes/loot/small = 5,
+		/obj/item/gun/energy/laser/retro = 6,
+		/obj/item/gun/energy/recharge/ebow = 4,
 		/obj/item/reagent_containers/cup/beaker/noreact = 4,
 		/obj/item/raw_anomaly_core/random = 4,
 		/obj/item/blueprint/gun/laser_carbine = 3,
@@ -47,6 +51,9 @@
 		/obj/item/slime_extract/adamantine = 5,
 		/obj/item/research_notes/loot/medium = 5,
 		/obj/item/clothing/shoes/bhop = 4,
+		/obj/item/gun/energy/xray = 4,
+		// finished blueprint gun, red only: the annex built its own
+		/obj/item/gun/energy/laser/carbine = 4,
 		/obj/item/gun/energy/temperature = 4,
 		/obj/item/reagent_containers/cup/beaker/bluespace = 3,
 		/obj/item/assembly/signaler/anomaly/grav = 3,
@@ -58,6 +65,7 @@
 	rare_loot_green = list(
 		/obj/item/stack/sheet/mineral/plasma/thirty = 8,
 		/obj/item/stock_parts/capacitor/adv = 6,
+		/obj/item/gun/energy/e_gun/mini = 5,
 		/obj/item/clothing/glasses/science/calibration_prism = 4,
 		/obj/item/book/annex_notebook = 4,
 	)
@@ -68,6 +76,7 @@
 	rare_loot_yellow = list(
 		/obj/item/stock_parts/capacitor/super = 8,
 		/obj/item/slime_extract/bluespace = 6,
+		/obj/item/gun/energy/recharge/ebow = 5,
 		/obj/item/reagent_containers/cup/beaker/entangled = 4,
 		/obj/item/research_notes/loot/big = 4,
 		/obj/item/displacer_fork = 4,
@@ -78,6 +87,8 @@
 		/obj/item/stack/ore/bluespace_crystal/refined = 8,
 		/obj/item/stock_parts/matter_bin/bluespace = 6,
 		/obj/item/storage/backpack/holding = 5,
+		/obj/item/gun/energy/xray = 4,
+		/obj/item/gun/energy/lasercannon = 3,
 		/obj/item/clothing/gloves/fingerless/chronal_splint = 4,
 		/obj/item/clothing/suit/toggle/labcoat/eventide_courier = 4,
 		/obj/item/research_notes/loot/genius = 2,

@@ -20,6 +20,7 @@
 	loot_green = list(
 		/obj/item/clothing/suit/hooded/explorer = 10,
 		/obj/item/knife/combat/survival = 9,
+		/obj/item/gun/ballistic/rifle/boltaction/surplus = 8,
 		/obj/item/gps/mining = 8,
 		/obj/item/flashlight/flare = 8,
 		/obj/item/stack/marker_beacon/thirty = 6,
@@ -34,6 +35,9 @@
 		/obj/item/pickaxe/diamond = 7,
 		/obj/item/t_scanner/adv_mining_scanner/lesser = 6,
 		/obj/item/wormhole_jaunter = 6,
+		// wildlife stoppers: the KA is a mining tool first, these are not
+		/obj/item/gun/ballistic/shotgun/riot = 6,
+		/obj/item/gun/ballistic/rifle/boltaction = 5,
 		/obj/item/survivalcapsule = 5,
 		/obj/item/clothing/suit/hooded/cloak/goliath = 4,
 		/obj/item/gun/energy/plasmacutter = 4,
@@ -44,6 +48,8 @@
 		/obj/item/clothing/shoes/bhop = 7,
 		/obj/item/resonator = 7,
 		/obj/item/gun/energy/plasmacutter/adv = 6,
+		/obj/item/gun/ballistic/shotgun/automatic/combat = 6,
+		/obj/item/gun/energy/laser = 5,
 		/obj/item/kinetic_crusher = 5,
 		/obj/item/clothing/glasses/heat = 4,
 		/obj/item/clothing/suit/hooded/cloak/drake = 2,
@@ -54,17 +60,20 @@
 	rare_loot_green = list(
 		/obj/item/gun/energy/recharge/kinetic_accelerator = 8,
 		/obj/item/storage/belt/mining/alt = 6,
+		/obj/item/gun/ballistic/rifle/boltaction/surplus = 6,
 		/obj/item/pinpointer/old_hands_compass = 4,
 		/obj/item/claim_stake = 4,
 	)
 	rare_loot_yellow = list(
 		/obj/item/borg/upgrade/modkit/range = 8,
 		/obj/item/resonator = 6,
+		/obj/item/gun/ballistic/shotgun/riot = 5,
 		/obj/item/clothing/suit/hooded/explorer/second_season_duster = 4,
 		/obj/item/pickaxe/divining = 4,
 	)
 	rare_loot_red = list(
 		/obj/item/kinetic_crusher = 8,
+		/obj/item/gun/ballistic/rifle/boltaction/prime = 5,
 		/obj/item/clothing/suit/hooded/cloak/drake = 5,
 		/obj/item/deepwell_sampler = 4,
 		/obj/item/longwalk_rig = 4,

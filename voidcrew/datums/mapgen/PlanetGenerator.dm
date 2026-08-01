@@ -2,6 +2,11 @@
 
 /datum/map_generator/planet_generator
 	var/name = "Planet Generator"
+	/// Whether generation loops share the queued worldgen job's tick budget (see
+	/// worldgen_yield()). Planet builds under the worldgen queue leave this TRUE;
+	/// spawn_dynamic_encounter() clears it on the instances it drives - by design
+	/// rule, a survey must never slow the loading of a ruin or empty space.
+	var/throttled = TRUE
 	var/mountain_height = 0.85
 	var/perlin_zoom = 65
 	var/initial_closed_chance = 45
@@ -78,7 +83,7 @@
 		// Not CHECK_TICK: that yields only once the tick is nearly full, which still
 		// leaves this loop taking ~70% of every tick for its whole run. See
 		// worldgen_yield() in worldgen_queue.dm.
-		SSovermap.worldgen_yield()
+		SSovermap.worldgen_yield(throttled)
 	// Register cave areas
 	if(caves)
 		cave_area.reg_in_areas_in_z()
@@ -281,6 +286,6 @@
 		// The expensive half of a planet build - every iteration runs several range()
 		// scans - and the one that most needs to stop hogging the tick. See
 		// worldgen_yield() in worldgen_queue.dm.
-		SSovermap.worldgen_yield()
+		SSovermap.worldgen_yield(throttled)
 
 	log_world("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!")

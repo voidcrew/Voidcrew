@@ -32,6 +32,9 @@
 		/obj/item/storage/pill_bottle/multiver = 5,
 		/obj/item/healthanalyzer = 4,
 		/obj/item/reagent_containers/cup/bottle/salglu_solution = 4,
+		// the ward's own enforcement locker: a quarantine that stopped
+		// answering was a quarantine somebody had to hold by force
+		/obj/item/gun/energy/e_gun/mini = 5,
 	)
 	loot_yellow = list(
 		/obj/item/storage/medkit/advanced = 10,
@@ -45,6 +48,8 @@
 		/obj/item/reagent_containers/cup/bottle/atropine = 5,
 		/obj/item/storage/pill_bottle/penacid = 5,
 		/obj/item/defibrillator = 4,
+		/obj/item/gun/energy/laser = 5,
+		/obj/item/gun/ballistic/shotgun/riot = 4,
 		/obj/item/healthanalyzer/advanced = 4,
 		/obj/item/storage/medkit/tactical_lite = 4,
 		/obj/item/organ/eyes/robotic/basic = 3,
@@ -58,6 +63,8 @@
 		/obj/item/reagent_containers/hypospray/medipen/atropine = 7,
 		/obj/item/reagent_containers/hypospray/medipen/penthrite = 6,
 		/obj/item/defibrillator/compact = 6,
+		/obj/item/gun/ballistic/shotgun/automatic/combat = 5,
+		/obj/item/gun/energy/laser/scatter = 4,
 		/obj/item/storage/medkit/tactical = 5,
 		/obj/item/reagent_containers/hypospray/medipen/survival = 5,
 		/obj/item/organ/heart/cybernetic = 4,
@@ -73,18 +80,21 @@
 	rare_loot_green = list(
 		/obj/item/storage/medkit/advanced = 8,
 		/obj/item/storage/medkit/surgery = 6,
+		/obj/item/gun/energy/e_gun/mini = 5,
 		/obj/item/clothing/neck/night_sisters_watch = 4,
 		/obj/item/pen/red/triage = 4,
 	)
 	rare_loot_yellow = list(
 		/obj/item/storage/medkit/tactical_lite = 8,
 		/obj/item/defibrillator/compact = 6,
+		/obj/item/gun/energy/laser = 5,
 		/obj/item/meridian_drip = 4,
 		/obj/item/bedsheet/medical/hospice = 4,
 	)
 	rare_loot_red = list(
 		/obj/item/storage/medkit/tactical = 8,
 		/obj/item/reagent_containers/hypospray/medipen/penthrite = 6,
+		/obj/item/gun/energy/laser/scatter = 5,
 		/obj/item/organ/heart/cybernetic/meridian = 4,
 		/obj/item/reagent_containers/cup/tube/winterkiss = 4,
 		/obj/item/reagent_containers/syringe/lazarus_line = 3,

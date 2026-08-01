@@ -44,6 +44,7 @@
 /obj/structure/overmap/space_ruin/contested_cache
 	name = "bonded courier beacon"
 	desc = "A logistics beacon broadcasting a drop notice on every open channel. Every ship in the sector got the same message you did."
+	fleet_waypoint_name = "Contested Cache"
 
 	/// world.time at which the vault unseals. 0 until start_event().
 	var/unlock_at = 0
@@ -64,7 +65,7 @@
 	radio.recalculateChannels()
 
 /obj/structure/overmap/space_ruin/contested_cache/Destroy()
-	clear_waypoints()
+	clear_fleet_waypoint()
 	QDEL_NULL(radio)
 	return ..()
 
@@ -85,13 +86,9 @@
 	else if(unlock_at)
 		. += span_boldwarning("The vault is unsealed. Whoever cracks it first gets the cache.")
 
-/// Unique helm-waypoint key for this event site.
-/obj/structure/overmap/space_ruin/contested_cache/proc/waypoint_key()
-	return "contested_cache_[REF(src)]"
-
 /**
- * Kicks the event off: sets the unlock clock, reveals the site, pushes helm
- * waypoints to every crewed ship, broadcasts galaxy-wide and schedules the
+ * Kicks the event off: sets the unlock clock, reveals the site, charts a helm
+ * waypoint onto the whole fleet, broadcasts galaxy-wide and schedules the
  * unseal announcement plus the no-show hard timeout. Called once by the
  * scheduler right after set_ruin_template().
  */
@@ -108,10 +105,9 @@
 		"Contested Cache",
 	)
 
-	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
-		if(QDELETED(ship))
-			continue
-		ship.add_waypoint(waypoint_key(), "Contested Cache", coords ? coords[1] : 0, coords ? coords[2] : 0, "Events", track_target = src)
+	// Registers as well as pushes, so a ship built during the PvP window is told
+	// about the drop the same as everyone else.
+	broadcast_fleet_waypoint()
 
 	notify_ghosts("A contested cache has surfaced - its vault unseals in [pvp_window_minutes] minutes!", source = src, header = "Contested Cache")
 
@@ -158,7 +154,7 @@
 	if(QDELETED(src) || event_over)
 		return
 	event_over = TRUE
-	clear_waypoints()
+	clear_fleet_waypoint()
 	try_cleanup()
 
 /**
@@ -177,15 +173,6 @@
 			return
 	log_game("Contested cache site retired.")
 	qdel(src)
-
-/// Removes this event's waypoint from every ship's helm readout.
-/obj/structure/overmap/space_ruin/contested_cache/proc/clear_waypoints()
-	if(!SSovermap)
-		return
-	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
-		if(QDELETED(ship))
-			continue
-		ship.remove_waypoint(waypoint_key())
 
 // Re-link the vault (and re-sync its claimed/sealed state) every time the
 // interior loads - the template reloads fresh if crews leave and come back,

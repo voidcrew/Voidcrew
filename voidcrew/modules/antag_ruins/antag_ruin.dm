@@ -9,8 +9,9 @@
  * Vestige ruins never seed naturally (unpickable, like rare rumor ruins).
  * They surface one at a time as the round ages — the first at
  * VESTIGE_FIRST_SPAWN_TIME, another every VESTIGE_SPAWN_INTERVAL after, each
- * theme at most once per round — announced with a broadcast and shown as a
- * red "dread signal" on sensors (rare ruins are gold).
+ * theme at most once per round — announced with a broadcast and shown on
+ * sensors under its patron's name (patron_name below), colored red — distinct
+ * from the gold of a rare ruin.
  *
  * The signal persists all round: interiors unload when everyone leaves (same
  * as any space ruin) but the overmap object never respawn-cycles away, so
@@ -27,6 +28,10 @@
 	allow_duplicates = FALSE
 	/// Broadcast to everyone when this ruin surfaces mid-round
 	var/arrival_announcement = "A new signal has surfaced in the sector. Approach is not advised."
+	/// The patron's name (matches the vestige_patron mob mapped inside) — this is what
+	/// the overmap signal is called, both before and after survey. `name` above stays
+	/// the vessel's name, used for admin tooling and mapping logs, not shown to players.
+	var/patron_name
 
 // ===== INTERIOR AREAS =====
 // The offering rite (theme_cult.dm) refuses to work inside any vestige area,
@@ -87,6 +92,14 @@
 /obj/structure/overmap/space_ruin/vestige/Initialize(mapload, datum/map_template/ruin/space/template)
 	. = ..()
 	color = "#ff5964"
+
+// Vestige signals name themselves after their patron immediately, not just on
+// survey — you're meant to recognize your own patron from across the sector.
+/obj/structure/overmap/space_ruin/vestige/set_ruin_template(datum/map_template/ruin/space/vestige/template)
+	. = ..()
+	if(template.patron_name)
+		true_name = template.patron_name
+		name = true_name
 
 /obj/structure/overmap/space_ruin/vestige/categorize_ruin()
 	ruin_category = "vestige"

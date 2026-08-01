@@ -154,6 +154,13 @@ SUBSYSTEM_DEF(planet_mobs)
 		if(!isturf(candidate))
 			continue
 
+		// Landed ships copy their turfs over the surface; the candidate refs survive
+		// that and now point inside the hull. Skip them - takeoff scrapes the ship
+		// turfs away and the candidate becomes a valid surface turf again. Density
+		// covers walls raised over a candidate by ruins or construction.
+		if(candidate.density || istype(get_area(candidate), /area/shuttle))
+			continue
+
 		// The mob the terrain pass rolled for this turf, zone upgrade and all. Only
 		// turfs filed before this proc learned to carry one fall through to the
 		// biome table.

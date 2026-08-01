@@ -24,7 +24,7 @@ You can also plot a course: click a charted destination and the autopilot flies 
 | Nebulas | Harmless clouds of a specific gas that a ram scoop can harvest, and the only place a ship can hide itself. See [Gas Economy](gas-economy.md). |
 | Trader outposts | Three permanent markets, one in each ring. They broadcast sector-wide, so they are on your chart from the start. See [Trader Outposts](trader-outposts.md). |
 | Other ships | Player crews and [NPC ships](pirates-and-npc-ships.md), including pirates who will hail you and then interdict you. |
-| Dread signals | Vestige ruins, which surface one at a time as the round ages and are marked in red. See [Vestige Ruins](vestige-ruins.md). |
+| Dread signals | Vestige ruins, which surface one at a time as the round ages, marked in red and named for the patron inside. See [Vestige Ruins](vestige-ruins.md). |
 | Empty space | An empty tile can still be docked into, which is how two ships park next to each other. |
 
 Other things surface on a schedule rather than at roundstart — contested caches, the [Grand Colosseum](colosseum.md) and the lich's lair — and announce themselves on Wideband when they do.

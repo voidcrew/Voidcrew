@@ -47,6 +47,7 @@
 	dir = 8;
 	pixel_x = 5
 	},
+/obj/machinery/holopad,
 /obj/machinery/light/floor,
 /obj/structure/fans/tiny,
 /obj/machinery/door/window{

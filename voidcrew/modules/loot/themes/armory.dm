@@ -27,6 +27,7 @@
 		/obj/item/clothing/suit/armor/vest = 10,
 		/obj/item/clothing/head/helmet/sec = 10,
 		/obj/item/gun/energy/disabler = 7,
+		/obj/item/gun/ballistic/rifle/boltaction/surplus = 7,
 		/obj/item/flashlight/seclite = 7,
 		/obj/item/grenade/flashbang = 6,
 		/obj/item/clothing/glasses/hud/security/sunglasses = 5,
@@ -38,6 +39,8 @@
 		/obj/item/gun/ballistic/automatic/pistol/m1911 = 8,
 		/obj/item/ammo_box/magazine/m45 = 8,
 		/obj/item/gun/ballistic/shotgun/riot = 6,
+		/obj/item/gun/ballistic/automatic/ar = 6,
+		/obj/item/gun/ballistic/automatic/pistol/deagle = 5,
 		/obj/item/shield/riot = 6,
 		/obj/item/clothing/suit/armor/vest/marine = 5,
 		/obj/item/clothing/gloves/combat = 5,
@@ -50,6 +53,12 @@
 		/obj/item/clothing/suit/armor/riot = 9,
 		/obj/item/clothing/head/helmet/toggleable/riot = 8,
 		/obj/item/gun/energy/laser = 8,
+		/obj/item/gun/ballistic/shotgun/automatic/combat = 6,
+		/obj/item/gun/energy/laser/scatter = 6,
+		// finished blueprint guns, red only: the garrison's own issued
+		// hardware, not the schematics the shops sell
+		/obj/item/gun/ballistic/automatic/wt550 = 4,
+		/obj/item/gun/energy/laser/carbine = 4,
 		/obj/item/clothing/suit/armor/laserproof = 6,
 		/obj/item/clothing/head/helmet/marine = 6,
 		/obj/item/storage/belt/military/assault = 5,
@@ -64,18 +73,24 @@
 	rare_loot_green = list(
 		/obj/item/clothing/suit/armor/bulletproof = 8,
 		/obj/item/gun/ballistic/automatic/pistol/m1911 = 6,
+		/obj/item/gun/ballistic/rifle/boltaction/surplus = 6,
 		/obj/item/handloaders_vise = 4,
 		/obj/item/clothing/mask/whistle/sergeants = 4,
 	)
 	rare_loot_yellow = list(
 		/obj/item/clothing/suit/armor/riot = 8,
 		/obj/item/gun/energy/laser = 6,
+		/obj/item/gun/ballistic/automatic/ar = 6,
 		/obj/item/shield/riot/phalanx_buckler = 4,
 		/obj/item/clothing/glasses/sunglasses/marksmans_cant = 4,
 	)
 	rare_loot_red = list(
 		/obj/item/gun/energy/e_gun = 8,
 		/obj/item/clothing/suit/armor/heavy = 6,
+		// the deepest, boss-guarded slice of the theme: the anti-materiel
+		// rifle and the heavy laser, both otherwise long research projects
+		/obj/item/gun/ballistic/rifle/sniper_rifle = 3,
+		/obj/item/gun/energy/lasercannon = 3,
 		/obj/item/garrison_standard = 4,
 		/obj/item/clothing/gloves/knock_knock = 4,
 	)

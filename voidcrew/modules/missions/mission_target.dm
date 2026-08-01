@@ -193,9 +193,10 @@
 	var/obj/structure/overmap/planet/planet
 	/// Optional /datum/overmap/planet typepath filter: when set, resolve() only
 	/// accepts planets of exactly that type ("the lava planet"). Null = any
-	/// planet, the original behavior. NOTE: with one planet of each type per
-	/// round, a filtered RE-resolve (retarget) finds nothing — the previous
-	/// planet is excluded — so filtered missions should use the FAIL loss policy.
+	/// planet, the original behavior. NOTE: a filtered RE-resolve (retarget)
+	/// excludes the previous planet, so it only finds anything while the round
+	/// runs more than one planet of that type (SSovermap.dynamic_planets_per_type).
+	/// Filtered missions should still use the FAIL loss policy.
 	var/wanted_planet
 
 /datum/mission_target/planet/resolve()

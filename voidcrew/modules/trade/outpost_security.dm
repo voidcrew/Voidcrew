@@ -136,6 +136,21 @@ GLOBAL_DATUM_INIT(outpost_pvp_enforcement, /datum/outpost_pvp_enforcement, new)
 /obj/machinery/porta_turret/outpost/setup()
 	return
 
+// No ID unlocks the controls: the inherited ACCESS_SECURITY req_access would let
+// any captain or security crew swipe the enforcement offline. Keeping the swipe
+// denied also keeps `on` TRUE forever, which is what blocks the wrench-unanchor
+// path to walking off with an indestructible lethal turret.
+/obj/machinery/porta_turret/outpost/allowed(mob/accessor)
+	return FALSE
+
+// No settings UI at all — the power toggle in ui_act() isn't gated on `locked`,
+// so the panel must never open in the first place
+/obj/machinery/porta_turret/outpost/ui_interact(mob/user, datum/tgui/ui)
+	return
+
+/obj/machinery/porta_turret/outpost/emag_act(mob/user, obj/item/card/emag/emag_card)
+	return FALSE
+
 // Only marked aggressors are perps; everyone else shops in peace
 /obj/machinery/porta_turret/outpost/assess_perp(mob/living/carbon/human/perp)
 	if(outpost?.is_turret_target(perp))

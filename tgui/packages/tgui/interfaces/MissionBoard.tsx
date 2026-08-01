@@ -43,6 +43,7 @@ type Mission = {
   active: BooleanLike;
   requires_item?: BooleanLike;
   voucher_count?: number;
+  research_reward?: number;
   target_x?: number;
   target_y?: number;
   visited?: BooleanLike;
@@ -391,8 +392,9 @@ type MissionCardProps = {
 
 /**
  * Renders a mission's full payout — credits, each item in the reward bundle
- * (rare picks accented), and vouchers — as " + "-joined segments. `full` spells
- * out "credits" for the detail view; the compact form says "cr".
+ * (rare picks accented), research points and vouchers — as " + "-joined
+ * segments. `full` spells out "credits" for the detail view; the compact form
+ * says "cr".
  */
 const RewardSummary = (props: { mission: Mission; full?: boolean }) => {
   const { mission, full } = props;
@@ -422,6 +424,14 @@ const RewardSummary = (props: { mission: Mission; full?: boolean }) => {
           />
         )}
         {item.name}
+      </Box>,
+    );
+  }
+  if (mission.research_reward) {
+    segments.push(
+      <Box as="span" bold color="teal">
+        {mission.research_reward}
+        {full ? ' research points' : ' RP'}
       </Box>,
     );
   }

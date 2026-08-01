@@ -22,6 +22,11 @@
  * - The curse EXPIRES. TG's items are permanent for the round; these unstick after four
  *   minutes, which is the port spec's "nothing unrecoverable" rule. The items remain, named
  *   and grim, but wearable and removable.
+ * - The items do NOT outlive Ilthuun. Every piece is registered with
+ *   register_lich_leaving() (lich_loot.dm) and crumbles to dust when he dies. Without that
+ *   this rite is a free set of bone armour and a skull helmet for every crew in the galaxy,
+ *   six times over — a supply drop wearing a curse's clothes. If he dies while a curse is
+ *   still stuck on somebody, deleting the item is also what unsticks them.
  * - Item sets rewritten as grave goods. TG's six are a lit joint, boxing gloves, kitty ears
  *   with a forced gender change, a cursed katana, a chameleon mask, and a fake wizard outfit.
  *   Three of those are pure meme, one edits a player's gender, and one is literally a wizard
@@ -66,6 +71,12 @@
 	/// Which set was rolled.
 	var/item_set
 	/// Items this ritual created, so end() can release exactly them and nothing else.
+	///
+	/// Hard refs, and end() nulls the list — which is what keeps them from outliving a
+	/// crumble. If Ilthuun dies mid-curse the items are qdel'd under us and this list holds
+	/// dangling refs until end() runs, at most `end_when` later. That is fine only while
+	/// `end_when` stays under GC_CHECK_QUEUE (5 minutes, code/__DEFINES/qdel.dm:43);
+	/// lengthen the curse past that and every crumbled item starts logging a hard delete.
 	var/list/obj/item/cursed_items = list()
 	/// TRUE if the rolled set would displace a pressure-sealed garment on someone in vacuum.
 	var/ruins_spaceworthiness = FALSE
@@ -168,6 +179,10 @@
 		new_item.item_flags |= DROPDEL
 		new_item.name = "grave-cold [new_item.name]"
 		cursed_items += new_item
+		// Bone armour and a skull helmet are real armour, and the curse expiring is
+		// what would otherwise turn this rite into a free set for every crew in the
+		// galaxy. Registered so it goes to dust with him. See lich_loot.dm.
+		register_lich_leaving(new_item)
 		equipped_any = TRUE
 	return equipped_any
 

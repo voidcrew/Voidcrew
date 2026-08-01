@@ -35,6 +35,8 @@
 		/obj/item/reagent_containers/cup/glass/bottle/holywater = 6,
 		/obj/item/book/bible = 6,
 		/obj/item/coin/gold = 5,
+		// the grave-robber's rifle: old, ugly, still kills what walks
+		/obj/item/gun/ballistic/rifle/boltaction/surplus = 6,
 		/obj/item/toy/cards/deck/tarot = 5,
 		/obj/item/reagent_containers/cup/glass/bottle/wine = 4,
 	)
@@ -43,6 +45,7 @@
 		/obj/item/statuebust = 8,
 		/obj/item/flashlight/lantern = 7,
 		/obj/item/ectoplasm = 6,
+		/obj/item/gun/energy/laser/retro = 6,
 		/obj/item/clothing/suit/chaplainsuit/bishoprobe = 5,
 		/obj/item/clothing/head/chaplain/bishopmitre = 5,
 		/obj/item/toy/cards/deck/tarot/haunted = 4,
@@ -56,6 +59,7 @@
 		/obj/item/stack/sheet/mineral/silver/fifty = 6,
 		/obj/item/toy/cards/deck/tarot/haunted = 5,
 		/obj/item/clothing/suit/armor/riot/knight = 5,
+		/obj/item/gun/energy/laser/hellgun = 5,
 		/obj/item/coin/eldritch = 4,
 		/obj/item/knife/bloodletter = 3,
 		/obj/item/soulstone/anybody/purified = 3,
@@ -69,6 +73,7 @@
 	rare_loot_green = list(
 		/obj/item/statuebust = 8,
 		/obj/item/coin/gold = 6,
+		/obj/item/gun/ballistic/rifle/boltaction/surplus = 5,
 		/obj/item/flashlight/flare/candle/widows = 4,
 		/obj/item/clothing/gloves/color/black/pallbearer = 4,
 		/obj/item/book/granter/action/spell/sacredflame = 2,
@@ -76,6 +81,7 @@
 	rare_loot_yellow = list(
 		/obj/item/stack/sheet/mineral/diamond/five = 8,
 		/obj/item/clothing/suit/armor/riot/knight = 5,
+		/obj/item/gun/energy/laser/retro = 5,
 		/obj/item/flashlight/lantern/censer_quiet_parish = 4,
 		/obj/item/clothing/neck/scarf/purple/confessor_stole = 4,
 		/obj/item/mjollnir = 2,
@@ -84,6 +90,7 @@
 	rare_loot_red = list(
 		/obj/item/stack/sheet/mineral/gold/fifty = 8,
 		/obj/item/soulstone/anybody/purified = 6,
+		/obj/item/gun/energy/laser/hellgun = 5,
 		/obj/item/clothing/neck/beads/vow_ring = 4,
 		/obj/item/cane/shepherds_crook = 4,
 		/obj/item/gun/magic/staff/chaos = 2,

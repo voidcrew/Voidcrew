@@ -2,8 +2,8 @@
  * # Site Operation Objectives
  *
  * Field work inside (or defended against) a mission site: planting the quest
- * item, calibrating pylon chains, walking a survivor out, and holding a claim
- * beacon against the sector.
+ * item, calibrating pylon chains, containing an anomaly, walking a survivor
+ * out, and holding a claim beacon against the sector.
  */
 
 // =========================================================================
@@ -95,6 +95,98 @@
 		var/datum/mission_target/target = mission?.target
 		return target ? "Pylons at ([target.target_x], [target.target_y])" : "Awaiting a signal fix"
 	return "Calibrate pylon [points_done + 1]/[points_total]"
+
+// =========================================================================
+// CONTAIN ANOMALY — put it down the way science says, keep what falls out
+// =========================================================================
+
+/**
+ * Manifests a stabilized anomaly inside the target and waits for the crew to
+ * neutralize it (upstream loop: analyzer reads frequency + code, signaler
+ * matches them, anomalyNeutralize() drops the core and deletes the anomaly).
+ *
+ * The anomaly is deliberately NOT the mission's quest atom - the shell's
+ * destruction watch would read a successful neutralization as a lost objective.
+ * This objective keeps its own reference and hands the shell the CORE instead,
+ * which is what the beacon should point at and what the crew can actually lose.
+ */
+/datum/mission_objective/field/contain_anomaly
+	/// Anomaly typepath manifested at the site
+	var/anomaly_type = /obj/effect/anomaly/flux
+	/// Core typepath its neutralization sheds — also the delivery ask
+	var/core_type = /obj/item/assembly/signaler/anomaly/flux
+	/// Display name for progress text (the mission's rolled name)
+	var/anomaly_name = "anomaly"
+	/// The live anomaly
+	var/obj/effect/anomaly/anomaly
+
+/datum/mission_objective/field/contain_anomaly/deactivate()
+	if(anomaly)
+		UnregisterSignal(anomaly, COMSIG_QDELETING)
+		destabilize()
+		anomaly = null
+	return ..()
+
+/**
+ * Undoes the contract's stabilization. Whatever ended the objective that
+ * ISN'T a neutralization — timeout, abandon, retarget — has to hand the
+ * anomaly its clock back, or the site keeps a deathless anomaly parked in it
+ * for as long as the ruin stays loaded.
+ */
+/datum/mission_objective/field/contain_anomaly/proc/destabilize()
+	if(QDELETED(anomaly) || !anomaly.immortal)
+		return
+	anomaly.immortal = FALSE
+	anomaly.name = initial(anomaly.name)
+	anomaly.move_chance = initial(anomaly.move_chance)
+	anomaly.death_time = world.time + anomaly.lifespan
+	anomaly.countdown?.start()
+
+/datum/mission_objective/field/contain_anomaly/reset()
+	. = ..()
+	anomaly = null
+
+/datum/mission_objective/field/contain_anomaly/spawn_field_objects(turf/spawn_turf)
+	anomaly = new anomaly_type(spawn_turf)
+	// Contract anomalies do not expire on their own — the crew has to come and
+	// put it down, however long the flight takes. stabilize() kills the
+	// countdown's authority (immortal) and pins the anomaly so it can't wander
+	// out of the site; stopping the countdown effect keeps it from displaying a
+	// deadline that no longer applies.
+	anomaly.stabilize(anchor = TRUE)
+	anomaly.countdown?.stop()
+	RegisterSignal(anomaly, COMSIG_QDELETING, PROC_REF(on_anomaly_gone))
+	notify_crew("Containment target is live and holding at the site. Read its field with an analyzer, then match that frequency and code on a signaler to neutralize it.")
+
+/**
+ * The anomaly is gone. A proper neutralization has already dropped its core on
+ * the deck by the time this fires, so the core's presence is what separates a
+ * finished job from a bomb thrown at the problem.
+ */
+/datum/mission_objective/field/contain_anomaly/proc/on_anomaly_gone(datum/source)
+	SIGNAL_HANDLER
+	anomaly = null
+	if(completed || !active || !mission || mission.failed || mission.completed)
+		return
+	var/turf/where = get_turf(source)
+	var/obj/item/assembly/signaler/anomaly/core
+	if(where)
+		core = locate(core_type) in where
+	if(!core)
+		mission.handle_quest_loss("Containment target destabilized without shedding a core.")
+		return
+	core.desc += " Flagged for collection under a standing research contract."
+	mission.register_quest_atom(core)
+	notify_crew("Core shed and stable. Bring it to the mission pad.")
+	complete()
+
+/datum/mission_objective/field/contain_anomaly/get_progress_string()
+	if(!spawned)
+		var/datum/mission_target/target = mission?.target
+		return target ? "Containment target at ([target.target_x], [target.target_y])" : "Awaiting a signal fix"
+	if(QDELETED(anomaly))
+		return "Containment target lost"
+	return "Neutralize the [anomaly_name]"
 
 // =========================================================================
 // ESCORT — bring the survivor back breathing

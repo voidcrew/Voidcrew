@@ -54,8 +54,15 @@
 	)
 	flora_spawn_chance = 25
 
+/**
+ * Fallout zone. This is the only biome that seeds /obj/structure/radioactive, so it
+ * is the only part of a wasteland that will irradiate someone for standing in it.
+ * Its ground lights itself green (see /turf/open/misc/asteroid/sand/lit/nuclear) so
+ * the zone is identifiable from outside it - the surrounding wasteland biomes light
+ * neutral, and the boundary between them is the warning.
+ */
 /datum/biome/nuclear
-	open_turf_types = list(/turf/open/misc/asteroid/sand/lit = 5, /turf/open/misc/asteroid/sand/dark/lit = 1)
+	open_turf_types = list(/turf/open/misc/asteroid/sand/lit/nuclear = 5, /turf/open/misc/asteroid/sand/dark/lit/nuclear = 1)
 	feature_spawn_chance = 2.5
 	feature_spawn_list = list(
 		/obj/structure/radioactive = 10,

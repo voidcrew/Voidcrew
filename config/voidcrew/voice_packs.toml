@@ -14,7 +14,7 @@ name = "Miscellaneous"
 
 [misc.beep]
 name = "Beep"
-path = "sound/machines/terminal_select.ogg"
+path = "sound/machines/terminal/terminal_select.ogg"
 max_pitch = 0.7
 max_speed = 4
 volume = 0.1

@@ -35,6 +35,7 @@
 		/obj/item/storage/fancy/cigarettes/cigpack_syndicate = 10,
 		/obj/item/knife/combat = 8,
 		/obj/item/ammo_box/magazine/m9mm = 8,
+		/obj/item/gun/ballistic/automatic/pistol = 7,
 		/obj/item/suppressor = 6,
 		/obj/item/encryptionkey/syndicate = 6,
 		/obj/item/grenade/empgrenade = 5,
@@ -47,7 +48,9 @@
 		/obj/item/knife/combat = 6,
 		/obj/item/grenade/c4 = 6,
 		/obj/item/grenade/empgrenade = 6,
+		/obj/item/gun/ballistic/automatic/mini_uzi = 6,
 		/obj/item/ammo_box/a357 = 5,
+		/obj/item/gun/ballistic/automatic/pistol/deagle = 4,
 		/obj/item/gun/ballistic/revolver = 4,
 		/obj/item/card/id/advanced/chameleon = 4,
 		/obj/item/clothing/shoes/chameleon/noslip = 4,
@@ -65,7 +68,11 @@
 		/obj/item/clothing/glasses/thermal/syndi = 6,
 		/obj/item/clothing/shoes/chameleon/noslip = 6,
 		/obj/item/card/id/advanced/chameleon = 6,
+		/obj/item/gun/ballistic/shotgun/automatic/combat = 5,
 		/obj/item/melee/energy/sword/saber = 4,
+		// finished blueprint gun, red only: an operative's issued weapon,
+		// not the schematic the black market fences
+		/obj/item/gun/ballistic/automatic/c20r = 4,
 		/obj/item/pen/sleepy = 4,
 		/obj/item/grenade/syndieminibomb = 3,
 		/obj/item/card/emag = 2,
@@ -78,6 +85,7 @@
 	// (see voidcrew/modules/loot/uniques/syndicate.dm and the design doc)
 	rare_loot_green = list(
 		/obj/item/storage/medkit/tactical = 8,
+		/obj/item/gun/ballistic/automatic/pistol = 6,
 		/obj/item/suppressor = 6,
 		/obj/item/radio/listening_coin = 4,
 		/obj/item/clothing/gloves/courier = 4,
@@ -85,11 +93,16 @@
 	rare_loot_yellow = list(
 		/obj/item/gun/ballistic/revolver = 8,
 		/obj/item/clothing/glasses/thermal/syndi = 6,
+		/obj/item/gun/ballistic/automatic/mini_uzi = 5,
 		/obj/item/static_cuff = 4,
 		/obj/item/gun/ballistic/revolver/c38/housecall = 4,
 	)
 	rare_loot_red = list(
 		/obj/item/melee/energy/sword/saber = 8,
+		// the finished pair, boss-guarded: everywhere else these are
+		// schematics and a long trip to a protolathe
+		/obj/item/gun/ballistic/automatic/l6_saw = 3,
+		/obj/item/gun/ballistic/rifle/sniper_rifle = 3,
 		/obj/item/blueprint/gun/l6_saw = 5,
 		/obj/item/blueprint/gun/sniper_rifle = 5,
 		/obj/item/blueprint/gun/bulldog = 5,

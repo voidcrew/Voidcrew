@@ -6,7 +6,7 @@
  */
 
 // Debug logging toggle - set to TRUE to enable patrol debug messages
-#define PATROL_DEBUG TRUE
+#define PATROL_DEBUG FALSE
 
 #if PATROL_DEBUG
 #define PATROL_LOG(msg) log_shuttle("PATROL: [msg]")

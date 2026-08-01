@@ -54,6 +54,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 /obj/structure/overmap/space_ruin/lich_lair
 	name = "necrotic signal"
 	desc = "A voice transmitting on every band at once, in a language older than any charter in the sector. It uses your ship's name."
+	fleet_waypoint_name = "The Verdigris"
 
 	/// Rituals completed. Doubles as the potency of the last one, so the number
 	/// the crew hears announced is the number the roster filters on. Climbs one
@@ -106,7 +107,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	if(ritual_timer)
 		deltimer(ritual_timer)
 		ritual_timer = null
-	clear_waypoints()
+	clear_fleet_waypoint()
 	QDEL_NULL(radio)
 	ward_doors = null
 	area_turfs = null
@@ -133,13 +134,9 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 		else
 			. += span_boldwarning("Every ward is dark. Nothing stands between the breach and the sanctum.")
 
-/// Unique helm-waypoint key for this site.
-/obj/structure/overmap/space_ruin/lich_lair/proc/waypoint_key()
-	return "lich_lair_[REF(src)]"
-
 /**
  * Kicks the raid off: reveals the site (there is no mystery to survey — he
- * announces himself), pushes a helm waypoint to every crewed ship, tells the
+ * announces himself), charts a helm waypoint onto the whole fleet, tells the
  * galaxy who is calling and what is about to start happening to it, and starts
  * the ritual clock. Called once by the scheduler right after set_ruin_template().
  */
@@ -154,10 +151,9 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 		"The Verdigris",
 	)
 
-	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
-		if(QDELETED(ship))
-			continue
-		ship.add_waypoint(waypoint_key(), "The Verdigris", coords ? coords[1] : 0, coords ? coords[2] : 0, "Events", track_target = src)
+	// Registers as well as pushes: he is going to keep working for the rest of the
+	// round, so a hull commissioned an hour from now still needs to be told where.
+	broadcast_fleet_waypoint()
 
 	notify_ghosts("The Verdigris has surfaced — a lich has begun a galaxy-wide ritual!", source = src, header = "The Verdigris")
 
@@ -210,8 +206,8 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	schedule_ritual()
 
 /**
- * Fires exactly one ritual event at the given potency and returns the control
- * that ran, or null if nothing was eligible.
+ * Fires one ritual at the given potency and returns the control that ran, or null
+ * if nothing was eligible.
  *
  * **This is the hook the ritual roster plugs into.** Anything that subtypes
  * /datum/round_event_control/voidcrew/lich is a candidate; the band it declares
@@ -220,6 +216,9 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
  * at, and eligible candidates are rolled by their event weight. No roster
  * registry to keep in sync: SSevents instantiates one control per typepath at
  * init, so subtyping the base is the whole registration step.
+ *
+ * One ritual, one event TYPE — but a ship-scoped one lands on every crewed ship
+ * at once rather than on a rolled victim. See fire_ritual_on_every_ship().
  *
  * A null return is not a failure — it means nothing in the roster was willing to
  * run right now, and the ritual passes quietly. See get_ritual_roster().
@@ -230,12 +229,76 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 		log_game("LICH: ritual [potency] had no willing event in the roster; it passes quietly.")
 		return null
 
-	var/datum/round_event_control/chosen = pick_weight(roster)
+	var/datum/round_event_control/voidcrew/lich/chosen = pick_weight(roster)
 	if(!chosen)
 		return null
-	chosen.run_event(random = TRUE, event_cause = "a Verdigris ritual")
-	log_game("LICH: ritual [potency] fired [chosen.name] ([chosen.typepath]).")
+
+	if(chosen.event_scope != EVENT_SCOPE_SHIP)
+		chosen.run_event(random = TRUE, event_cause = "a Verdigris ritual")
+		log_game("LICH: ritual [potency] fired [chosen.name] ([chosen.typepath]) galaxy-wide.")
+		return chosen
+
+	if(!fire_ritual_on_every_ship(chosen, potency))
+		return null
 	return chosen
+
+/**
+ * Runs a ship-scoped ritual on EVERY crewed ship, one event instance per hull.
+ *
+ * The ambient framework rolls a single weighted victim ship per event, which is
+ * right for ambient noise and wrong for this: Ilthuun announces himself to the
+ * whole galaxy, names the price of ignoring him, and then — under the old
+ * behaviour — inconvenienced one crew at random while everyone else watched. A
+ * pressure system that only presses one hull is not a reason for anybody else to
+ * fly at the lair. So every crew that is flying with people aboard gets the rite.
+ *
+ * Implemented as N separate run_event() calls with `pending_target` set by hand,
+ * rather than by teaching the events to take a list. Each ship gets its own event
+ * instance with its own lifecycle, its own tracked objects and its own end() — so
+ * every existing per-ship event works unchanged, and one crew's curse expiring or
+ * one hull being destroyed mid-rite cannot touch another's.
+ *
+ * Two accounting details:
+ *
+ * - `occurrences` is restored to exactly one per ritual. The caps in
+ *   lich_events.dm are written as "how many rituals may be this event", and
+ *   letting a five-ship galaxy burn five occurrences would silently make every
+ *   cap population-dependent.
+ * - Deadchat is announced once, by the first instance. Ghosts do not need the
+ *   same line per hull.
+ *
+ * Ships docked at a trader outpost are still skipped, via the framework's
+ * `allow_in_safe_harbor` rule. That is a hard invariant about NPC outposts never
+ * taking collateral, not a mercy, and the docking bay is the one place a crew can
+ * legitimately sit out a rite.
+ *
+ * Returns the number of ships hit.
+ */
+/obj/structure/overmap/space_ruin/lich_lair/proc/fire_ritual_on_every_ship(datum/round_event_control/voidcrew/lich/chosen, potency)
+	var/list/targets = chosen.get_valid_target_ships()
+	if(!length(targets))
+		log_game("LICH: ritual [potency] rolled [chosen.name] but no crewed ship was targetable; it passes quietly.")
+		return 0
+
+	var/occurrences_before = chosen.occurrences
+	var/alert_observers_before = chosen.alert_observers
+	var/fired = 0
+
+	for(var/obj/structure/overmap/ship/victim as anything in targets)
+		if(QDELETED(victim))
+			continue
+		chosen.pending_target = victim
+		chosen.run_event(random = TRUE, event_cause = "a Verdigris ritual")
+		chosen.alert_observers = FALSE // the first instance already told deadchat
+		fired++
+
+	chosen.pending_target = null
+	chosen.alert_observers = alert_observers_before
+	if(fired)
+		chosen.occurrences = occurrences_before + 1
+
+	log_game("LICH: ritual [potency] fired [chosen.name] ([chosen.typepath]) on [fired] ship(s).")
+	return fired
 
 /**
  * Weighted candidate list for a ritual at the given potency.
@@ -247,8 +310,8 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
  *
  * can_spawn_event() is the ONLY authority on whether a candidate may run, and
  * there is deliberately no bypass around it. It is where an event's own refusals
- * live — the Summon Magic port's CONFIG_GET(flag/no_summon_magic) check, every
- * max_occurrences cap, the roster's own GLOB.lich_lair gate. An empty list is a
+ * live — every max_occurrences cap, the one-controller-only guards on the two
+ * Mockery events, the roster's own GLOB.lich_lair gate. An empty list is a
  * legitimate answer: at sustained maximum potency, once the one-shots in band
  * have all been spent, the correct behaviour is a ritual that costs the galaxy
  * nothing but a threat. Ilthuun still talks; see run_ritual().
@@ -337,10 +400,10 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	name = "the Verdigris"
 	desc = "A tomb-hulk with the light gone out of it. Whatever was working in there has stopped."
 	color = "#6c8f76"
-	clear_waypoints()
+	clear_fleet_waypoint()
 
 	broadcast_galaxy(
-		"...oh. Oh, that was well done. That was very well done. I had the whole of it in my hands, and you walked four halls and took it back off me. Remember that the next time something green comes calling. Ilthuun is finished. The rites are finished. Go and take what is left of me.",
+		"...oh. Oh, that was well done. That was very well done. I had the whole of it in my hands, and you walked four halls and took it back off me. Everything I made is going to dust on the way out, so check your pockets. You keep only what you take off my floor, and whatever of me has ended up in your head. Ilthuun is finished. The rites are finished.",
 		"The Verdigris",
 	)
 	notify_ghosts("Ilthuun has been slain — the Verdigris rituals have stopped.", source = src, header = "The Verdigris")
@@ -351,15 +414,6 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 /obj/structure/overmap/space_ruin/lich_lair/proc/on_boss_death(mob/living/source, gibbed)
 	SIGNAL_HANDLER
 	INVOKE_ASYNC(src, PROC_REF(on_lich_slain), source, null) // announcing sleeps
-
-/// Removes this site's waypoint from every ship's helm readout.
-/obj/structure/overmap/space_ruin/lich_lair/proc/clear_waypoints()
-	if(!SSovermap)
-		return
-	for(var/obj/structure/overmap/ship/ship as anything in SSovermap.simulated_ships)
-		if(QDELETED(ship))
-			continue
-		ship.remove_waypoint(waypoint_key())
 
 // ===== INTERIOR =====
 

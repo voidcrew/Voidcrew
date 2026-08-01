@@ -218,6 +218,16 @@
  * decreases and the frontier only ever scans forward. That keeps a re-plan cheap
  * enough to run on every tile crossing.
  *
+ * Every step costs 1 whatever its direction (diagonals are how tick_move()
+ * actually flies), so any two tiles are joined by many equal-cost courses and
+ * the expansion order is the tie-break that decides which of them gets flown.
+ * Neighbours are pushed worst-to-best against the destination bearing — the
+ * bucket pops its tail, so the step aimed straight at the destination is the
+ * first one explored — and every tie resolves into the line a pilot would draw.
+ * With a fixed push order here instead, the tail pop amounted to an absolute
+ * compass preference (NE, then E, then SE...) and every course in open space
+ * bowed north-east: a hop due east was plotted as a four-tile-tall arc.
+ *
  * Returns the course as a list of list(x, y), destination last and the starting
  * tile omitted. Returns an empty list when already there, or null if no route
  * exists inside the expansion budget.
@@ -279,8 +289,16 @@
 		if(expansions > AUTOPILOT_MAX_EXPANSIONS)
 			break
 
-		for(var/step_x in -1 to 1)
-			for(var/step_y in -1 to 1)
+		// The tie-breaking order (see the doc comment): each axis runs worst-to-
+		// best against the bearing so the bearing-matching step is pushed last and
+		// popped first. An already-aligned axis (bearing 0) puts its straight step
+		// last for the same reason.
+		var/bearing_x = SIGN(overmap_wrapped_delta(dest_x - current_x, OVERMAP_PATH_SPAN_X))
+		var/bearing_y = SIGN(overmap_wrapped_delta(dest_y - current_y, OVERMAP_PATH_SPAN_Y))
+		var/list/steps_x = bearing_x ? list(-bearing_x, 0, bearing_x) : list(-1, 1, 0)
+		var/list/steps_y = bearing_y ? list(-bearing_y, 0, bearing_y) : list(-1, 1, 0)
+		for(var/step_x in steps_x)
+			for(var/step_y in steps_y)
 				if(!step_x && !step_y)
 					continue
 				var/next_x = overmap_wrap_x(current_x + step_x)

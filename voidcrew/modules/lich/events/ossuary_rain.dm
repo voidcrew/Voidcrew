@@ -21,9 +21,12 @@
  * - Rain rate cut from 3/sec to 2/sec and the duration shortened, because a ship
  *   compartment is a handful of tiles rather than a station department.
  * - Reflavored from TG's four cosmetic variants (animals, food, cash, fish) to a single
- *   ossuary table. These are all real, craftable bone items already in the game, so the
- *   aftermath is loot and a mess rather than an unrecoverable state — the crew sweeps it
- *   up or keeps the bone axe.
+ *   ossuary table. These are all real bone items already in the game, so the aftermath is
+ *   a mess to sweep up rather than an unrecoverable state.
+ * - What falls is registered with register_lich_leaving() (lich_loot.dm) and goes to dust
+ *   when he dies. The table holds a skull helmet, bone armour and a bone axe, and a rite
+ *   is pressure — it is not allowed to double as a supply drop. Anything the crew CRAFTS
+ *   out of the bone sheets before then is theirs and survives; they did the work.
  * - The admin_setup listed-options datum is dropped, per the port spec: it exists to let
  *   an admin name a station department.
  */
@@ -106,7 +109,7 @@
 	var/bone_path = pick_weight(ossuary_table)
 	if(!bone_path)
 		return
-	podspawn(list(
+	var/obj/structure/closet/supplypod/pod = podspawn(list(
 		"target" = landing_turf,
 		"style" = /datum/pod_style/seethrough,
 		"spawn" = bone_path,
@@ -114,6 +117,11 @@
 		"effectStealth" = TRUE,
 		"effectQuiet" = TRUE,
 	))
+	// He is shedding this, not gifting it — the table holds a skull helmet, bone armour
+	// and a bone axe, and none of it is allowed to outlive him. podspawn() hands back the
+	// pod with the item already inside, which is the only moment there is a ref to catch.
+	for(var/obj/item/shed_bone in pod)
+		register_lich_leaving(shed_bone)
 
 /**
  * A live, unblocked open turf inside the rain area, or null.

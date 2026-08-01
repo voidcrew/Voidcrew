@@ -446,12 +446,8 @@
 	name = "capture crate"
 	desc = "A guild-issue xenofauna transport pod: reinforced shell, intake maw, suspension-field emitter. \
 		It only takes the survey-marked specimen, and only once it's been worn down. After it seals, nobody opens it but the client's assayer."
-	icon = 'icons/obj/pet_carrier.dmi'
-	icon_state = "biopod_open"
-	base_icon_state = "biopod"
-	inhand_icon_state = "biopod"
-	lefthand_file = 'icons/mob/inhands/items_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/items_righthand.dmi'
+	icon_state = "capture_crate"
+	base_icon_state = "capture_crate"
 	w_class = WEIGHT_CLASS_BULKY
 	throw_speed = 2
 	throw_range = 3
@@ -557,7 +553,7 @@
 	beast.apply_status_effect(/datum/status_effect/grouped/stasis, STASIS_CAPTURE_CRATE)
 	ADD_TRAIT(beast, TRAIT_AI_PAUSED, REF(src))
 	name = "sealed capture crate"
-	icon_state = "[base_icon_state]_occupied_locked"
+	icon_state = "[base_icon_state]_sealed"
 	playsound(src, 'sound/machines/airlock/boltsdown.ogg', 40, TRUE)
 
 /obj/item/mission_recovery/capture_crate/Exited(atom/movable/gone, direction)

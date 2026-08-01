@@ -207,6 +207,19 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	var/reserve_width = ruin_template.width + (RESERVE_DOCK_MAX_SIZE_LONG * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
 	var/reserve_height = ruin_template.height + (RESERVE_DOCK_MAX_SIZE_SHORT * 2) + (RESERVE_DOCK_DEFAULT_PADDING * 2)
 
+	// Asking for a block no reservation z-level can hold is not a retryable "full right
+	// now": request_turf_block_reservation() reads it that way, allocates a fresh
+	// 255x255 z-level, fails on that too and returns null while keeping the level - so
+	// every attempt leaks one. Bail before that. Templates this big are meant to be
+	// unpickable (see /datum/map_template/ruin/space/oldstation) and the
+	// voidcrew_ruin_reservation_fit unit test keeps them out of the spawn pools, so
+	// reaching here means one surfaced by chart, mission or admin spawn instead.
+	if(!SSmapping.reservation_can_ever_fit(reserve_width, reserve_height))
+		log_mapping("SPACE RUIN: '[ruin_template.name]' is [ruin_template.width]x[ruin_template.height], \
+			needing a [reserve_width]x[reserve_height] reservation - too large to ever fit. Ruin is unboardable.")
+		loading = FALSE
+		return
+
 	// Request a turf reservation instead of a full z-level
 	reservation = SSmapping.request_turf_block_reservation(reserve_width, reserve_height, 1)
 	if(!reservation)
@@ -301,6 +314,11 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	return "[name] (boarding)"
 
 /obj/structure/overmap/space_ruin/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
+	// dock() refuses interdicted ships only after the dock slot below is claimed
+	// and the ship is locked into ACTING - refuse up front instead
+	if(acting.is_interdicted)
+		to_chat(user, span_warning("Cannot dock while interdicted!"))
+		return
 	if(concerned)
 		to_chat(user, span_notice("Too much traffic, try again later!"))
 		return

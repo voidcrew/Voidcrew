@@ -58,6 +58,11 @@ SUBSYSTEM_DEF(overmap)
 	var/list/obj/structure/overmap/ship/initial_ships = list()
 	/// Hull types the roundstart fleet has already rolled, so a second hull is a different class
 	var/list/spent_roundstart_hulls = list()
+	/// How many planets of each terrain type the round gets. Only the FIRST of each type is
+	/// generated during the lobby - see prebuild_roundstart_planets(). The rest are charted
+	/// contacts with no interior until a ship goes there, so raising this adds places to go
+	/// without adding anything to the round-start wait.
+	var/dynamic_planets_per_type = 2
 	/// Whether the lobby pre-build pass has been kicked off. One-shot.
 	var/roundstart_planets_prebuilt = FALSE
 	/// TRUE once every roundstart planet is fully built AND its lighting has settled.
@@ -117,6 +122,11 @@ SUBSYSTEM_DEF(overmap)
  * still in the lobby picking characters, instead of stalling the first ship to try
  * landing somewhere.
  *
+ * Only one planet per type is prebuilt (marker.prebuild_at_roundstart), however many the
+ * round has. The lobby hold scales with whatever is built here, so the guarantee is "a
+ * lava/ice/jungle/beach/wasteland planet is ready the moment the round starts" - the
+ * spares are charted contacts that generate when somebody actually flies to one.
+ *
  * Sequential on purpose. Each build is already CHECK_TICK'd throughout and allocating
  * z-levels serialises anyway, so running them in parallel would just interleave the
  * lag. Anything not finished by the time the round starts still builds on arrival.
@@ -129,6 +139,8 @@ SUBSYSTEM_DEF(overmap)
 		if(QDELETED(marker) || marker.mapzone || marker.loading)
 			continue
 		if(!marker.is_terrain_planet())
+			continue
+		if(!marker.prebuild_at_roundstart)
 			continue
 		marker.load_level()
 		built++
@@ -424,14 +436,16 @@ SUBSYSTEM_DEF(overmap)
  *
  * Two supply models feed this. Anything SSmapping preloaded (the *_planet_count knobs
  * in _mapping.dm) already owns a generated z-level pair at boot and only needs a marker
- * wired to it. Every other planet type spawns as a DYNAMIC marker: an overmap contact
+ * wired to it. Every other planet type spawns as DYNAMIC markers: overmap contacts
  * with no interior at all - no map zone, no z-level, no docks - whose surface is
  * generated the first time a ship docks or a survey shuttle maps it
  * (planet/load_level() -> spawn_dynamic_encounter()).
  *
  * An unvisited dynamic planet costs nothing but its overmap tile, which is why the
  * preloaded counts are all zero: each of those is a full 255x255 z-pair sitting in
- * memory whether or not anyone ever goes there.
+ * memory whether or not anyone ever goes there. It is also why the round's planet count
+ * (dynamic_planets_per_type, one set of every type per pass) is free to be larger than
+ * the number generated up front - only the first of each type is prebuilt in the lobby.
  */
 /datum/controller/subsystem/overmap/proc/setup_planets()
 	// Init planets
@@ -470,12 +484,7 @@ SUBSYSTEM_DEF(overmap)
 		planet_to_spawn.forceMove(turf_for_planet)
 
 		// Transfer all of the data from the planet datum onto the planet object
-		var/datum/overmap/planet/planet_info = new planet_to_spawn.planet
-		planet_to_spawn.name = planet_info.name
-		planet_to_spawn.desc = planet_info.desc
-		planet_to_spawn.icon_state = planet_info.icon_state
-		planet_to_spawn.color = planet_info.color
-		qdel(planet_info)
+		planet_to_spawn.apply_planet_identity()
 
 		var/datum/map_zone/mapzone = find_free_mapzone()
 		var/datum/space_level/zlevel
@@ -495,11 +504,11 @@ SUBSYSTEM_DEF(overmap)
 		planet_to_spawn.mapzone = mapzone
 		planet_to_spawn.loaded = TRUE
 
-	// Dynamic planets: one marker per planet type SSmapping did not preload. They are
-	// full overmap contacts - named, charted, scannable - with no interior at all until
-	// someone visits. Bands come from the same shuffled pool the preloaded planets draw
-	// from, so the first three cover green, yellow and red instead of every planet
-	// piling into the safe outer ring.
+	// Dynamic planets: dynamic_planets_per_type markers of every planet type SSmapping did
+	// not preload. They are full overmap contacts - named, charted, scannable - with no
+	// interior at all until someone visits. Bands come from the same shuffled pool the
+	// preloaded planets draw from, so the first three cover green, yellow and red instead
+	// of every planet piling into the safe outer ring.
 	var/list/preloaded_types = list()
 	for(var/planet_key in planets)
 		preloaded_types |= planets[planet_key]["type"]
@@ -515,32 +524,57 @@ SUBSYSTEM_DEF(overmap)
 		if(initial(marker_type.planet) in preloaded_types)
 			dynamic_planet_markers -= marker_type
 
-	for(var/obj/structure/overmap/planet/marker_type as anything in dynamic_planet_markers)
-		var/wanted_band = SSmapping.next_planet_zone_band()
-		var/turf/turf_for_planet = get_unused_overmap_square_in_zone_band(wanted_band, tries = 80) // red band is ~9% of tiles, needs generous sampling
-		if(!turf_for_planet)
-			log_mapping("SSovermap: Failed to place dynamic planet [marker_type] in zone band [wanted_band], falling back to any free square")
-			turf_for_planet = get_unused_overmap_square()
-		if(!turf_for_planet)
-			log_mapping("SSovermap: Failed to place dynamic planet [marker_type] - no free overmap square")
-			continue
-		var/obj/structure/overmap/planet/planet_to_spawn = new marker_type(turf_for_planet)
-		// Remembered rather than re-derived, so the planet keeps its difficulty when it
-		// relocates after being abandoned
-		planet_to_spawn.zone_band = wanted_band
+	// One full set of types per pass, rather than all the lava planets and then all the
+	// ice ones. The first pass is what the lobby pre-build generates, so it has to be the
+	// pass that covers every type, and dealing bands in this order keeps each type's
+	// planets spread across green/yellow/red instead of clustered in one ring.
+	for(var/pass in 1 to max(dynamic_planets_per_type, 1))
+		for(var/obj/structure/overmap/planet/marker_type as anything in dynamic_planet_markers)
+			spawn_dynamic_planet(marker_type, pass)
 
-		// SSovermap initializes before SSatoms, so the marker's Initialize() - which is
-		// what normally copies the planet datum's identity onto it - has not run yet and
-		// will not until SSatoms drains its queue. Copy the identity across now so the
-		// contact is never briefly a nameless "weak energy signature".
-		var/datum/overmap/planet/planet_info = new planet_to_spawn.planet
-		planet_to_spawn.name = planet_info.name
-		planet_to_spawn.desc = planet_info.desc
-		planet_to_spawn.icon_state = planet_info.icon_state
-		planet_to_spawn.color = planet_info.color
-		qdel(planet_info)
+/**
+ * Places one unloaded planet contact on the overmap.
+ *
+ * * marker_type - the /obj/structure/overmap/planet subtype to place.
+ * * pass - which round of one-per-type this is. Pass 1 is generated during the lobby;
+ *   later passes are numbered in the contact's name and build on first visit.
+ */
+/datum/controller/subsystem/overmap/proc/spawn_dynamic_planet(obj/structure/overmap/planet/marker_type, pass = 1)
+	var/wanted_band = SSmapping.next_planet_zone_band()
+	var/turf/turf_for_planet = get_unused_overmap_square_in_zone_band(wanted_band, tries = 80) // red band is ~9% of tiles, needs generous sampling
+	if(!turf_for_planet)
+		log_mapping("SSovermap: Failed to place dynamic planet [marker_type] in zone band [wanted_band], falling back to any free square")
+		turf_for_planet = get_unused_overmap_square()
+	if(!turf_for_planet)
+		log_mapping("SSovermap: Failed to place dynamic planet [marker_type] - no free overmap square")
+		return
+	var/obj/structure/overmap/planet/planet_to_spawn = new marker_type(turf_for_planet)
+	// Remembered rather than re-derived, so the planet keeps its difficulty when it
+	// relocates after being abandoned
+	planet_to_spawn.zone_band = wanted_band
+	// One planet of each type is ready when the round starts; the spares are somewhere to
+	// go later, and pay for their own generation when a crew flies out to one.
+	planet_to_spawn.prebuild_at_roundstart = (pass == 1)
 
-		log_mapping("SSovermap: Spawned dynamic planet '[planet_to_spawn.name]' (unloaded) in zone band [wanted_band] at ([turf_for_planet.x], [turf_for_planet.y])")
+	// Several planets of a type in one round would otherwise be several identical
+	// contacts on the chart, with no way to say which one a mission or a helm order
+	// meant. Set before the identity copy, which is what stamps it onto the name.
+	if(dynamic_planets_per_type > 1)
+		planet_to_spawn.designation = planet_designation(pass)
+
+	// SSovermap initializes before SSatoms, so the marker's Initialize() - which is
+	// what normally copies the planet datum's identity onto it - has not run yet and
+	// will not until SSatoms drains its queue. Copy the identity across now so the
+	// contact is never briefly a nameless "weak energy signature".
+	planet_to_spawn.apply_planet_identity()
+
+	log_mapping("SSovermap: Spawned dynamic planet '[planet_to_spawn.name]' (unloaded[planet_to_spawn.prebuild_at_roundstart ? ", prebuilt" : ""]) in zone band [wanted_band] at ([turf_for_planet.x], [turf_for_planet.y])")
+
+/// Roman numeral for a planet's place in its type, so the chart reads "Lava Planet II"
+/// rather than a second "Lava Planet".
+/datum/controller/subsystem/overmap/proc/planet_designation(index)
+	var/static/list/numerals = list("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X")
+	return (index >= 1 && index <= length(numerals)) ? numerals[index] : "[index]"
 
 // TODO - MULTI-Z VLEVELS
 /datum/controller/subsystem/overmap/proc/calculate_turf_above(turf/T)
@@ -822,14 +856,21 @@ SUBSYSTEM_DEF(overmap)
 	var/datum/map_generator/mapgen
 	var/area/target_area
 	var/weather_trait
+	var/turf/ground_baseturf
 	var/datum/planet/planet_template
 	if(!isnull(planet_type))
 		planet_type = new planet_type
 		ruin_list = get_ruin_list(planet_type.ruin_type)
 		if(!isnull(planet_type.mapgen))
 			mapgen = new planet_type.mapgen
+			// This build is unqueued: it must never crawl behind a queued planet
+			// job's tick budget - see worldgen_yield() in worldgen_queue.dm
+			if(istype(mapgen, /datum/map_generator/planet_generator))
+				var/datum/map_generator/planet_generator/unqueued_gen = mapgen
+				unqueued_gen.throttled = FALSE
 		target_area = planet_type.target_area
 		weather_trait = planet_type.weather_trait
+		ground_baseturf = planet_type.baseturf
 		if(!(isnull(planet_type.planet_template)))
 			planet_template = new planet_type.planet_template
 		qdel(planet_type)
@@ -846,6 +887,11 @@ SUBSYSTEM_DEF(overmap)
 	var/list/zlevel_traits = list(ZTRAIT_MINING = TRUE, ZTRAIT_LINKAGE = UNAFFECTED)
 	if(weather_trait)
 		zlevel_traits[weather_trait] = TRUE
+	// Only ground encounters set this. Left null the level bottoms out in space, which is
+	// what empty space, crashed ships and player outposts want. See
+	// /datum/overmap/planet/baseturf.
+	if(ground_baseturf)
+		zlevel_traits[ZTRAIT_BASETURF] = ground_baseturf
 
 	if(isnull(mapzone))
 		mapzone = create_map_zone(encounter_name)
@@ -858,6 +904,10 @@ SUBSYSTEM_DEF(overmap)
 
 	if(mapzone.z_levels[1])
 		zlevel = mapzone.z_levels[1]
+		// A recycled level still holds the last occupant's traits. Reconcile the one that
+		// carries a value: left stale, a space encounter reusing a planet's level would
+		// bottom its turfs out in that planet's ground instead of space.
+		zlevel.set_trait(ZTRAIT_BASETURF, ground_baseturf)
 	else
 		zlevel = SSmapping.add_new_zlevel(encounter_name, zlevel_traits)
 		mapzone.add_space_level(zlevel)
@@ -867,7 +917,9 @@ SUBSYSTEM_DEF(overmap)
 	// the new planet's weather.
 	SSweather.set_z_level_weather_trait(zlevel, weather_trait)
 
-	var/area/filled_area = zlevel.fill_in(area_override = target_area)
+	// throttled = FALSE: encounter builds are unqueued and must never wait behind a
+	// queued planet job - see worldgen_yield() in worldgen_queue.dm
+	var/area/filled_area = zlevel.fill_in(area_override = target_area, throttled = FALSE)
 
 	if(ruin_type)
 		var/turf/ruin_turf = locate(rand(
@@ -876,7 +928,14 @@ SUBSYSTEM_DEF(overmap)
 			zlevel.high_y-ruin_type.height-6,
 			zlevel.z_value
 			)
-		ruin_type.load(ruin_turf)
+		if(ruin_turf)
+			ruin_type.load(ruin_turf)
+		else
+			// A template too large for the level's bounds. Passing null into load()
+			// would runtime and, through the callers' loading flags, brick the tile
+			// for the round - a ruinless encounter is the lesser failure.
+			log_mapping("SSovermap: dynamic encounter ruin '[ruin_type.name]' ([ruin_type.width]x[ruin_type.height]) \
+				does not fit z[zlevel.z_value] bounds - encounter spawned without its ruin")
 
 	if (!isnull(mapgen) && (istype(mapgen, /datum/map_generator/planet_generator)) && !isnull(planet_template))
 		mapgen.generate_terrain(zlevel.get_block(), planet_template, FALSE, FALSE)
@@ -904,6 +963,14 @@ SUBSYSTEM_DEF(overmap)
 		zlevel.low_y+RESERVE_DOCK_DEFAULT_PADDING+1,
 		zlevel.z_value
 		)
+	if(!primary_docking_turf)
+		// Deranged level bounds (a recycled zone gone wrong). A runtime here would
+		// unwind the caller mid-load and wedge its loading flag for the round, so
+		// fail loudly and cleanly instead. The zone is leaked as taken on purpose:
+		// its state is unknown and handing it to the next caller would be worse.
+		log_mapping("SSovermap: dynamic encounter build found no dock turf on z[zlevel.z_value] \
+			(bounds [zlevel.low_x],[zlevel.low_y] to [zlevel.high_x],[zlevel.high_y]) - encounter aborted")
+		return null
 	// now we need to offset to account for the first dock
 	var/turf/secondary_docking_turf = locate(
 		primary_docking_turf.x+RESERVE_DOCK_MAX_SIZE_LONG+RESERVE_DOCK_DEFAULT_PADDING,

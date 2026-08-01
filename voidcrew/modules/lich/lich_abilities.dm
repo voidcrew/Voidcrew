@@ -105,7 +105,7 @@
 			// And he stops pacing himself.
 			var/datum/action/cooldown/volley = ai_controller?.blackboard[BB_LICH_BONE_VOLLEY]
 			if(!QDELETED(volley))
-				volley.cooldown_time = 14 SECONDS
+				volley.cooldown_time = 10 SECONDS
 
 /// Destroys an ability he owns and clears it out of the blackboard, so the planning
 /// subtree that watches that key stops firing.
@@ -206,7 +206,7 @@
 	sound = 'sound/effects/magic/castsummon.ogg'
 
 	school = SCHOOL_NECROMANCY
-	cooldown_time = 18 SECONDS
+	cooldown_time = 12 SECONDS
 	invocation = "UP. ALL OF YOU. UP. YOU HAVE RESTED LONGER THAN YOU LIVED."
 	invocation_type = INVOCATION_SHOUT
 	spell_requirements = NONE
@@ -230,9 +230,9 @@
 	var/mob/living/basic/lich/ilthuun = owner
 	if(!istype(ilthuun))
 		return FALSE
-	// Room for the whole batch, or he does not start. Refusing to half-cast keeps the
-	// cap exact instead of approximately right.
-	return ilthuun.can_summon_more(summon_amount)
+	// Any room at all is enough — cast() clamps the batch to what is left under the
+	// cap, so a lone free slot still buys a skeleton instead of a silent turn.
+	return ilthuun.can_summon_more(1)
 
 /**
  * Recentres the summon on one of the map's summon spots before handing off to the base
@@ -244,6 +244,10 @@
 /datum/action/cooldown/spell/conjure/lich_raise_dead/cast(atom/cast_on)
 	var/mob/living/basic/lich/ilthuun = owner
 	var/turf/anchor = ilthuun?.pick_summon_anchor()
+	if(istype(ilthuun))
+		// Clamp the batch to the room left under the cap, so a partial batch keeps the
+		// cap exact. can_cast_spell guarantees at least one slot is free.
+		summon_amount = clamp(ilthuun.max_live_summons - length(ilthuun.live_summons), 1, initial(summon_amount))
 	// Passed explicitly rather than relying on DM aliasing the named parameter into args.
 	return ..(anchor || cast_on)
 
@@ -289,7 +293,7 @@
 	sound = 'sound/effects/magic/magic_missile.ogg'
 
 	school = SCHOOL_NECROMANCY
-	cooldown_time = 22 SECONDS
+	cooldown_time = 15 SECONDS
 	invocation = "COUNT YOURSELVES. I ALREADY HAVE."
 	invocation_type = INVOCATION_SHOUT
 	spell_requirements = NONE
@@ -335,7 +339,7 @@
 	sound = 'sound/effects/magic/curse.ogg'
 
 	school = SCHOOL_NECROMANCY
-	cooldown_time = 9 SECONDS
+	cooldown_time = 6 SECONDS
 	invocation = "LEND IT TO ME."
 	invocation_type = INVOCATION_WHISPER
 	spell_requirements = NONE
@@ -373,7 +377,7 @@
 	sound = 'sound/effects/magic/smoke.ogg'
 
 	school = SCHOOL_PSYCHIC // No illusion school exists in code/__DEFINES/magic.dm.
-	cooldown_time = 30 SECONDS
+	cooldown_time = 20 SECONDS
 	invocation = "WHICH OF ME WERE YOU HITTING?"
 	invocation_type = INVOCATION_SHOUT
 	spell_requirements = NONE
@@ -457,7 +461,7 @@
 	sound = 'sound/effects/magic/curse.ogg'
 
 	school = SCHOOL_PSYCHIC
-	cooldown_time = 45 SECONDS
+	cooldown_time = 35 SECONDS
 	invocation = "HOLD STILL. I ONLY NEED THE HANDS."
 	invocation_type = INVOCATION_SHOUT
 	spell_requirements = NONE

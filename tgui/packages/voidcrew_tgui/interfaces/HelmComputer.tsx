@@ -433,6 +433,42 @@ const Selection = createContext<{
   select: (key: string) => void;
 }>({ selected: null, select: () => {} });
 
+/**
+ * Where the right-click action menu is pinned and what it was opened on. `key`
+ * is the contact under the cursor where there was one; bare chart opens a menu
+ * on `tile` alone, since plotting a course is an action on a position.
+ */
+type MenuState = {
+  key: string | null;
+  tile: { x: number; y: number };
+  left: number;
+  top: number;
+};
+
+/**
+ * Approximate menu box, used only to keep it inside the console. Tracks the
+ * max-width and the text sizes of .Helm__menu in the stylesheet.
+ */
+const MENU_SIZE = { w: 260, h: 210 };
+
+/**
+ * The right-click action menu, opened from either the chart or the contact
+ * drawer and rendered once at the console root.
+ *
+ * At the root rather than inside the panel it was opened from, because every
+ * panel well is `overflow: hidden`: a menu owned by the chart gets clipped at
+ * the chart's edge, and the drawer is under 300px wide — too narrow to read one
+ * in at all. Anchored on the console it can open at the cursor wherever the
+ * cursor is.
+ */
+const MenuControl = createContext<
+  (
+    event: React.MouseEvent,
+    key: string | null,
+    tile: { x: number; y: number },
+  ) => void
+>(() => {});
+
 // ---------------------------------------------------------------- root
 
 export const HelmComputer = () => {
@@ -454,67 +490,118 @@ export const HelmComputer = () => {
 const Faceplate = () => {
   const { data } = useBackend<Data>();
   const { shipCrashed, repairCurrent, repairTotal } = data;
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [menu, setMenu] = useState<MenuState | null>(null);
+
+  const contacts = useContacts();
+  const menuContact = menu?.key
+    ? contacts.find((contact) => contactKey(contact) === menu.key)
+    : undefined;
+  // A contact that vanished takes its menu with it rather than leaving a menu
+  // pointing at nothing. A tile menu has no contact and is left alone.
+  if (menu?.key && !menuContact) setMenu(null);
+
+  const openMenu = (
+    event: React.MouseEvent,
+    key: string | null,
+    tile: { x: number; y: number },
+  ) => {
+    // Both callers would otherwise hand the BYOND client's own context menu to a
+    // player mid-manoeuvre.
+    event.preventDefault();
+    event.stopPropagation();
+    const box = rootRef.current?.getBoundingClientRect();
+    const width = box?.width ?? 0;
+    const height = box?.height ?? 0;
+    const cursorX = event.clientX - (box?.left ?? 0);
+    const cursorY = event.clientY - (box?.top ?? 0);
+    setMenu({
+      key,
+      tile,
+      // Flipped to the other side of the cursor rather than clamped back to the
+      // edge: the drawer sits against the right side of the console, so clamping
+      // would pin every menu opened from it to the same spot instead of to the
+      // row it came from.
+      left:
+        cursorX + MENU_SIZE.w <= width
+          ? cursorX
+          : Math.max(0, cursorX - MENU_SIZE.w),
+      top: clamp(cursorY, 0, Math.max(0, height - MENU_SIZE.h)),
+    });
+  };
 
   return (
-    <div className="Helm">
-      <div
-        className={`Helm__plate ${FACEPLATE_ASSET ? 'Helm__plate--art' : ''}`}
-        style={
-          FACEPLATE_ASSET
-            ? { backgroundImage: `url("${resolveAsset(FACEPLATE_ASSET)}")` }
-            : undefined
-        }
-      />
-      {!FACEPLATE_ASSET && <div className="Helm__hazard" />}
+    <MenuControl.Provider value={openMenu}>
+      <div className="Helm" ref={rootRef} onClick={() => setMenu(null)}>
+        <div
+          className={`Helm__plate ${FACEPLATE_ASSET ? 'Helm__plate--art' : ''}`}
+          style={
+            FACEPLATE_ASSET
+              ? { backgroundImage: `url("${resolveAsset(FACEPLATE_ASSET)}")` }
+              : undefined
+          }
+        />
+        {!FACEPLATE_ASSET && <div className="Helm__hazard" />}
 
-      <Panel rect={GEOMETRY.IDENT}>
-        <Ident />
-      </Panel>
-      <Panel rect={GEOMETRY.ZONE}>
-        <ZoneBadge />
-      </Panel>
-      <Panel rect={GEOMETRY.ALERT}>
-        <AlertStrip />
-      </Panel>
+        <Panel rect={GEOMETRY.IDENT}>
+          <Ident />
+        </Panel>
+        <Panel rect={GEOMETRY.ZONE}>
+          <ZoneBadge />
+        </Panel>
+        <Panel rect={GEOMETRY.ALERT}>
+          <AlertStrip />
+        </Panel>
 
-      <Panel rect={GEOMETRY.HULL} label="Hull" aux="integrity">
-        <HullGauge />
-      </Panel>
-      <Panel rect={GEOMETRY.FUEL} label="Fuel" aux="drive mass">
-        <FuelStack />
-      </Panel>
-      <Panel rect={GEOMETRY.DRIVE} label="Drive" aux="thrust">
-        <DriveGauge />
-      </Panel>
-      <Panel rect={GEOMETRY.SENSOR} label="Sensors" aux="array">
-        <SensorDial />
-      </Panel>
+        <Panel rect={GEOMETRY.HULL} label="Hull" aux="integrity">
+          <HullGauge />
+        </Panel>
+        <Panel rect={GEOMETRY.FUEL} label="Fuel" aux="drive mass">
+          <FuelStack />
+        </Panel>
+        <Panel rect={GEOMETRY.DRIVE} label="Drive" aux="thrust">
+          <DriveGauge />
+        </Panel>
+        <Panel rect={GEOMETRY.SENSOR} label="Sensors" aux="array">
+          <SensorDial />
+        </Panel>
 
-      <Panel rect={GEOMETRY.CHART} label="Navigation chart">
-        <Chart />
-      </Panel>
-      <Panel rect={GEOMETRY.DRAWER} label="Contacts">
-        <Drawer />
-      </Panel>
+        <Panel rect={GEOMETRY.CHART} label="Navigation chart">
+          <Chart />
+        </Panel>
+        <Panel rect={GEOMETRY.DRAWER} label="Contacts">
+          <Drawer />
+        </Panel>
 
-      <Panel rect={GEOMETRY.THROT} label="Throttle">
-        <Throttle />
-      </Panel>
-      <Panel rect={GEOMETRY.ROSE} label="Helm">
-        <HelmRose />
-      </Panel>
-      <Panel rect={GEOMETRY.VELOC} label="Velocity">
-        <VelocityCluster />
-      </Panel>
-      <Panel rect={GEOMETRY.OPS} label="Operations">
-        <OpsRow />
-      </Panel>
+        <Panel rect={GEOMETRY.THROT} label="Throttle">
+          <Throttle />
+        </Panel>
+        <Panel rect={GEOMETRY.ROSE} label="Helm">
+          <HelmRose />
+        </Panel>
+        <Panel rect={GEOMETRY.VELOC} label="Velocity">
+          <VelocityCluster />
+        </Panel>
+        <Panel rect={GEOMETRY.OPS} label="Operations">
+          <OpsRow />
+        </Panel>
 
-      {!!shipCrashed && (
-        <CrashOverlay current={repairCurrent} total={repairTotal} />
-      )}
-      {!shipCrashed && <AbandonedOverlay />}
-    </div>
+        {!!menu && (
+          <ContactMenu
+            contact={menuContact}
+            tile={menu.tile}
+            left={menu.left}
+            top={menu.top}
+            onClose={() => setMenu(null)}
+          />
+        )}
+
+        {!!shipCrashed && (
+          <CrashOverlay current={repairCurrent} total={repairTotal} />
+        )}
+        {!shipCrashed && <AbandonedOverlay />}
+      </div>
+    </MenuControl.Provider>
   );
 };
 
@@ -1080,27 +1167,18 @@ const Chart = () => {
   const { selected, select } = useContext(Selection);
   const locked = useLocked();
 
-  // Hover fills the readout below the chart; right-click pins an action menu at
-  // the cursor. The menu carries both the contact under the cursor (if there was
-  // one) and the tile it was over, because plotting a course is an action on the
-  // position rather than on any mark.
+  // Hover fills the readout below the chart; right-click pins the shared action
+  // menu at the cursor. The menu carries both the contact under the cursor (if
+  // there was one) and the tile it was over, because plotting a course is an
+  // action on the position rather than on any mark.
   const [hovered, setHovered] = useState<string | null>(null);
-  const [menu, setMenu] = useState<{
-    key: string | null;
-    tile: { x: number; y: number };
-    left: number;
-    top: number;
-  } | null>(null);
+  const openActionMenu = useContext(MenuControl);
   const viewportRef = useRef<HTMLDivElement>(null);
   const cameraRef = useRef<SVGGElement>(null);
 
   const byKey = (key: string | null) =>
     key ? waypoints.find((contact) => contactKey(contact) === key) : undefined;
   const hoveredContact = byKey(hovered);
-  const menuContact = byKey(menu?.key ?? null);
-  // A contact that vanished takes its menu with it rather than leaving a menu
-  // pointing at nothing. A tile menu has no contact and is left alone.
-  if (menu?.key && !menuContact) setMenu(null);
 
   // Docking, jumping and recovery move the ship a long way at once; sliding the
   // camera across half the sector for those reads as a bug, so they cut.
@@ -1290,8 +1368,6 @@ const Chart = () => {
   };
 
   const openMenu = (event: React.MouseEvent, key: string | null) => {
-    event.preventDefault();
-    event.stopPropagation();
     const contact = byKey(key);
     // A contact's own coordinates beat the cursor's: clicking the edge of a glyph
     // shouldn't plot a course to the tile next door.
@@ -1299,25 +1375,7 @@ const Chart = () => {
       ? { x: contact.x, y: contact.y }
       : tileFromEvent(event);
     if (!tile) return;
-    const box = viewportRef.current?.getBoundingClientRect();
-    // Kept inside the chart. Right-clicking a contact near the right or bottom
-    // edge would otherwise open the menu half-way under the contact drawer.
-    // Tracks the max-width and text sizes of .Helm__menu in the stylesheet.
-    const MENU = { w: 260, h: 210 };
-    setMenu({
-      key,
-      tile,
-      left: clamp(
-        event.clientX - (box?.left ?? 0),
-        0,
-        Math.max(0, (box?.width ?? 0) - MENU.w),
-      ),
-      top: clamp(
-        event.clientY - (box?.top ?? 0),
-        0,
-        Math.max(0, (box?.height ?? 0) - MENU.h),
-      ),
-    });
+    openActionMenu(event, key, tile);
   };
 
   const centre = chart?.centre ?? Math.round((size + 1) / 2);
@@ -1354,7 +1412,7 @@ const Chart = () => {
         didPan.current = false;
         event.stopPropagation();
       }}
-      onClick={() => setMenu(null)}
+      // Closing the menu is the console root's job — the click bubbles to it.
       onDoubleClick={() => setAnchor(null)}
     >
       <svg
@@ -1579,15 +1637,6 @@ const Chart = () => {
         </div>
       </div>
       {!!hoveredContact && <ContactReadout contact={hoveredContact} />}
-      {!!menu && (
-        <ChartMenu
-          contact={menuContact}
-          tile={menu.tile}
-          left={menu.left}
-          top={menu.top}
-          onClose={() => setMenu(null)}
-        />
-      )}
 
       <div className="Helm__hud Helm--bl">
         <div className="Helm__hudLine" style={{ color: '#3d6a76' }}>
@@ -1884,12 +1933,15 @@ const ContactReadout = (props: { contact: Contact }) => {
 };
 
 /**
- * Contextual actions for a position on the chart, opened by right-click. The menu
- * is anchored on a tile, not on a mark: plotting a course is an action on a
- * position, so bare chart gets the same menu a contact does, minus the actions
- * that need something to act on.
+ * Contextual actions for a contact, opened by right-click on its mark on the
+ * chart or on its row in the contact drawer — the two are the same list seen two
+ * ways, so they answer a right-click identically.
+ *
+ * The menu is anchored on a tile, not on a mark: plotting a course is an action
+ * on a position, so bare chart gets the same menu a contact does, minus the
+ * actions that need something to act on.
  */
-const ChartMenu = (props: {
+const ContactMenu = (props: {
   contact?: Contact;
   tile: { x: number; y: number };
   left: number;
@@ -2314,6 +2366,7 @@ const ContactList = () => {
   const waypoints = useContacts();
   const locked = useLocked();
   const { selected, select } = useContext(Selection);
+  const openActionMenu = useContext(MenuControl);
 
   if (!waypoints.length) {
     return <div className="Helm__empty">No contacts in range</div>;
@@ -2363,10 +2416,19 @@ const ContactList = () => {
                   } ${selected === key ? 'Helm--selected' : ''}`}
                   title={
                     contact.kind === 'ship' && !contact.identified
-                      ? 'Unidentified vessel — run a Ships scan to resolve it'
-                      : 'Highlight on the chart'
+                      ? 'Unidentified vessel — right-click for actions, or run a Ships scan to resolve it'
+                      : 'Highlight on the chart · right-click to set course'
                   }
                   onClick={() => select(key)}
+                  /*
+                   * The same menu the chart mark opens, on the same contact. A
+                   * course is plotted to the contact's own tile, so for a
+                   * collapsed field (see collapse() above) that is the nearest
+                   * tile of it — which is the one the row is reporting anyway.
+                   */
+                  onContextMenu={(event) =>
+                    openActionMenu(event, key, { x: contact.x, y: contact.y })
+                  }
                 >
                   <span className="Helm__rowGlyph">
                     <ContactBadge contact={contact} />

@@ -23,6 +23,8 @@
 		/obj/item/clothing/suit/hooded/wintercoat = 5,
 		/obj/item/clothing/suit/costume/hawaiian = 4,
 		/obj/item/clothing/neck/scarf/red = 4,
+		// what was in the coat pocket when the liner went down
+		/obj/item/gun/ballistic/revolver/c38/detective = 5,
 	)
 	loot_yellow = list(
 		/obj/item/clothing/suit/jacket/leather/biker = 10,
@@ -32,6 +34,8 @@
 		/obj/item/clothing/under/costume/soviet = 6,
 		/obj/item/clothing/suit/costume/judgerobe = 5,
 		/obj/item/clothing/gloves/tackler/combat = 5,
+		/obj/item/gun/ballistic/automatic/pistol/m1911 = 5,
+		/obj/item/gun/ballistic/automatic/tommygun = 4,
 		/obj/item/clothing/under/rank/prisoner = 4,
 		/obj/item/clothing/mask/gas/sechailer/swat = 4,
 		/obj/item/ship_parts/trade = 6,
@@ -41,6 +45,7 @@
 		/obj/item/clothing/suit/armor/vest/warden/alt = 8,
 		/obj/item/clothing/head/helmet/knight = 7,
 		/obj/item/clothing/head/cowboy/black/syndicate = 6,
+		/obj/item/gun/ballistic/automatic/pistol/deagle = 5,
 		/obj/item/clothing/suit/hooded/berserker = 4,
 		/obj/item/clothing/head/hooded/berserker = 4,
 		/obj/item/ship_parts/trade = 6,
@@ -54,12 +59,14 @@
 	rare_loot_green = list(
 		/obj/item/clothing/suit/jacket/leather/biker = 8,
 		/obj/item/clothing/head/cowboy/black = 6,
+		/obj/item/gun/ballistic/revolver/c38/detective = 5,
 		/obj/item/clothing/shoes/laceup/winters_loafers = 4,
 		/obj/item/megaphone/clown = 2,
 	)
 	rare_loot_yellow = list(
 		/obj/item/clothing/head/cowboy/bounty = 8,
 		/obj/item/clothing/suit/armor/vest/warden/alt = 6,
+		/obj/item/gun/ballistic/automatic/pistol/m1911 = 5,
 		/obj/item/clothing/head/stage_presence = 4,
 		/obj/item/third_hand_kit = 4,
 		/obj/item/clothing/shoes/clown_shoes/banana_shoes/combat = 2,
@@ -67,6 +74,7 @@
 	rare_loot_red = list(
 		/obj/item/clothing/head/cowboy/bounty = 6,
 		/obj/item/clothing/suit/hooded/berserker = 5,
+		/obj/item/gun/ballistic/automatic/pistol/deagle = 4,
 		/obj/item/clothing/suit/armor/hos/trenchcoat/heirloom_coat = 4,
 		/obj/item/clothing/suit/the_occasion = 4,
 		/obj/item/gun/magic/staff/honk = 2,

@@ -31,16 +31,7 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 /obj/structure/overmap/planet/Initialize(mapload)
 	. = ..()
 	GLOB.overmap_planets += src
-	if(planet)
-		var/datum/overmap/planet/planet_info = new planet
-		name = planet_info.name
-		desc = planet_info.desc
-		icon_state = planet_info.icon_state
-		color = planet_info.color
-		weather_type = planet_info.weather_controller_type
-		if(isnull(parallax_theme)) // context-aware parallax: the planet datum carries the theme
-			parallax_theme = planet_info.parallax_theme
-		qdel(planet_info)
+	apply_planet_identity()
 
 /obj/structure/overmap/planet/Destroy()
 	GLOB.overmap_planets -= src
@@ -164,7 +155,9 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	qdel(src)
 	return TRUE
 
-/obj/structure/overmap/planet/empty/remove_mapzone()
+// `throttled` unused: clear_to_uninitialized_space() is always unqueued bystander
+// work and never waits behind a planet job (see worldgen_yield())
+/obj/structure/overmap/planet/empty/remove_mapzone(throttled = TRUE)
 	if(mapzone)
 		mapzone.clear_to_uninitialized_space()
 		mapzone.taken = FALSE

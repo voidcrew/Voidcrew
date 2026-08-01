@@ -27,7 +27,52 @@
  * Contents roll WITHOUT replacement within one cache: a single cache can
  * never pay the same prize twice, which is what keeps the rare tables'
  * one-of-a-kind items unique per cache (see the uniques file headers).
+ *
+ * Ballistic guns ship with a spare reload beside them (see
+ * GLOB.loot_gun_spare_ammo below), so a gun roll is never a dead roll.
  */
+
+/**
+ * Ballistic loot guns -> one spare reload that spawns beside them.
+ *
+ * tg ballistics already spawn with a full magazine, so this is the SECOND
+ * one: without it a cache could pay a revolver whose six rounds are the
+ * whole prize, and the crew has no route to more .357 short of the outpost.
+ * Energy guns are deliberately absent — they recharge, so they need nothing.
+ *
+ * Internal-magazine guns (revolvers, bolt-actions, break-actions) can't take
+ * a spare magazine, so they get the matching loose ammo box or shell box
+ * instead. The bonus is spawned on top of the roll, not drawn from the
+ * table, so it never displaces a prize.
+ */
+GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
+	// detachable magazines
+	/obj/item/gun/ballistic/automatic/ar = /obj/item/ammo_box/magazine/m223,
+	/obj/item/gun/ballistic/automatic/c20r = /obj/item/ammo_box/magazine/smgm45,
+	/obj/item/gun/ballistic/automatic/gyropistol = /obj/item/ammo_box/magazine/m75,
+	/obj/item/gun/ballistic/automatic/l6_saw = /obj/item/ammo_box/magazine/m7mm,
+	/obj/item/gun/ballistic/automatic/m90 = /obj/item/ammo_box/magazine/m223,
+	/obj/item/gun/ballistic/automatic/mini_uzi = /obj/item/ammo_box/magazine/uzim9mm,
+	/obj/item/gun/ballistic/automatic/pistol = /obj/item/ammo_box/magazine/m9mm,
+	/obj/item/gun/ballistic/automatic/pistol/deagle = /obj/item/ammo_box/magazine/m50,
+	/obj/item/gun/ballistic/automatic/pistol/m1911 = /obj/item/ammo_box/magazine/m45,
+	/obj/item/gun/ballistic/automatic/proto = /obj/item/ammo_box/magazine/smgm9mm,
+	/obj/item/gun/ballistic/automatic/tommygun = /obj/item/ammo_box/magazine/tommygunm45,
+	/obj/item/gun/ballistic/automatic/wt550 = /obj/item/ammo_box/magazine/wt550m9,
+	/obj/item/gun/ballistic/rifle/sniper_rifle = /obj/item/ammo_box/magazine/sniper_rounds,
+	/obj/item/gun/ballistic/shotgun/bulldog = /obj/item/ammo_box/magazine/m12g,
+	// internal magazines: loose rounds instead
+	/obj/item/gun/ballistic/revolver = /obj/item/ammo_box/a357,
+	/obj/item/gun/ballistic/revolver/c38/detective = /obj/item/ammo_box/c38,
+	/obj/item/gun/ballistic/revolver/mateba = /obj/item/ammo_box/a357,
+	/obj/item/gun/ballistic/rifle/boltaction = /obj/item/ammo_box/strilka310,
+	/obj/item/gun/ballistic/rifle/boltaction/prime = /obj/item/ammo_box/strilka310,
+	/obj/item/gun/ballistic/rifle/boltaction/surplus = /obj/item/ammo_box/strilka310,
+	// break/pump actions: a box of shells
+	/obj/item/gun/ballistic/shotgun/automatic/combat = /obj/item/storage/box/lethalshot,
+	/obj/item/gun/ballistic/shotgun/doublebarrel = /obj/item/storage/box/lethalshot,
+	/obj/item/gun/ballistic/shotgun/riot = /obj/item/storage/box/lethalshot,
+))
 /obj/structure/closet/crate/zone_loot
 	name = "abandoned cache"
 	desc = "A scuffed cargo cache, sealed since whoever owned it stopped coming back."
@@ -85,6 +130,11 @@
 			break
 		table -= loot_path
 		new loot_path(src)
+		// a looted ballistic brings one spare reload with it; energy guns
+		// aren't in the map and need nothing
+		var/spare_ammo = GLOB.loot_gun_spare_ammo[loot_path]
+		if(spare_ammo)
+			new spare_ammo(src)
 
 /**
  * The weighted table for a zone, honoring the rare flag, read from the

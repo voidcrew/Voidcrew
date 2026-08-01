@@ -43,8 +43,11 @@
  *   and medical tools. These carry high caps and are what a long-lived lich actually runs
  *   on: grave_dirt (20), corpse_bloom (8), grave_goods (6). corpse_bloom and grave_goods
  *   both reach potency 7 specifically so the top band has more than one repeatable option.
+ *   Caps count RITUALS, not hulls: a ship-scoped rite fires one event instance per crewed
+ *   ship and fire_ritual_on_every_ship() puts `occurrences` back to one per ritual, so a
+ *   busy galaxy does not burn through a cap faster than an empty one.
  * - **Round-warping one-shots** — galaxy-scoped and permanent for the round:
- *   tongues_of_the_dead, summon_magic, mockery_of_heroes, mockery_of_treasure. These stay
+ *   tongues_of_the_dead, mockery_of_heroes, mockery_of_treasure. These stay
  *   at max_occurrences = 1 forever. Firing them twice is not more interesting, and two of
  *   them install global controllers that must not be duplicated at all (their
  *   can_spawn_event() overrides refuse a second instance outright).
@@ -52,13 +55,39 @@
  * If the top of the ramp ever feels thin, the correct fix is a new repeatable ship-scoped
  * event or another band widened upward — never a raised cap on a one-shot.
  *
- * ## Scoping
+ * ## What a ritual may never do: hand the crew power
  *
- * EVENT_SCOPE_SHIP events roll one crewed victim ship and resolve every location through
- * that ship's shuttle areas, so trader outposts, ruins and bystander ships are
- * structurally untouchable. EVENT_SCOPE_GALAXY events have no target ship and hit
- * everyone. Both are represented in the ramp deliberately: the low-potency rituals pick
- * one crew to torment, the high-potency ones stop pretending the galaxy is not his.
+ * Ilthuun does not arm his raiders. TG's wizard roster includes Summon Magic (a random
+ * magical item to every crewmember) and Summon Guns; a port of Summon Magic lived here and
+ * was removed, and Summon Guns was never ported. A ritual that gives the crew a working
+ * weapon or spell inverts the whole pressure system — the clock is supposed to make the
+ * galaxy worse until somebody goes and kills him, and the reward for reaching him is his
+ * hoard (lich_loot.dm). Handing out that power for free on the way there costs the raid its
+ * only payoff and hands every non-raiding crew a windfall for ignoring him.
+ *
+ * Rituals may take, curse, animate, rename, or maim. Items a ritual creates must be a
+ * liability (grave_goods' nodrop funeral dress) rather than a gain. Nothing on this roster
+ * should ever leave a crew stronger than it found them.
+ *
+ * ## Scoping — every ritual reaches every crew
+ *
+ * EVENT_SCOPE_SHIP events resolve every location through a target ship's shuttle areas,
+ * so trader outposts, ruins and bystander structures are structurally untouchable. In the
+ * ambient framework one victim ship is rolled per event. **The lich does not work that
+ * way**: fire_ritual_on_every_ship() (lich_site.dm) runs a ship-scoped rite once per
+ * crewed ship, one independent event instance each, so a rite lands on everybody flying
+ * with people aboard. EVENT_SCOPE_GALAXY events have no target ship and reach everyone by
+ * their own machinery. The two scopes are therefore a difference in plumbing, not in who
+ * gets hit — a crew three sectors from the lair is not a spectator.
+ *
+ * The only crews a ship-scoped rite skips are those docked at a trader outpost
+ * (`allow_in_safe_harbor = FALSE`, inherited): NPC outposts never take collateral, and
+ * hostiles or hazards spawned aboard a docked ship can walk off it.
+ *
+ * Consequence worth knowing: every instance stamps its ship's `last_dynamic_event`, so
+ * while Ilthuun is working the whole fleet is on ambient-event cooldown and
+ * SSdynamic_events goes quiet. That is the intended reading — the lich owns the pressure
+ * budget for as long as he is alive — and it reverses on its own when he dies.
  *
  * ## Voice
  *

@@ -47,6 +47,13 @@
 	var/requires_item = FALSE
 	/// Number of trade vouchers awarded on completion (spawned on the mission pad)
 	var/voucher_count = 0
+	/// Research points paid on completion, handed over as a research-notes
+	/// dossier at the turn-in point (the crew slots it into an R&D console).
+	/// Types set their GREEN-zone band; apply_zone_scaling() multiplies it up
+	/// alongside credits.
+	var/research_reward = 0
+	/// Field of study printed on that dossier ("notes of xenofauna")
+	var/research_origin = "field work"
 	/// Set TRUE during generation if the mission couldn't find a valid setup; the caller discards it
 	var/generation_failed = FALSE
 
@@ -210,6 +217,8 @@
 	difficulty = row["difficulty"]
 	value_min = round(value_min * row["value_mult"], 10)
 	value_max = round(value_max * row["value_mult"], 10)
+	if(research_reward > 0)
+		research_reward = round(research_reward * row["value_mult"], 50)
 	if(voucher_count > 0)
 		voucher_count += row["voucher_bonus"]
 
@@ -647,6 +656,8 @@
 			reward_parts += "[value] credits"
 		if(length(get_reward_types()))
 			reward_parts += get_reward_summary()
+		if(research_reward > 0)
+			reward_parts += "[research_reward] research points"
 		if(voucher_count > 0)
 			reward_parts += "[voucher_count] trade voucher[voucher_count > 1 ? "s" : ""]"
 		var/reward_text = length(reward_parts) ? reward_parts.Join(" + ") : "settled"
@@ -785,6 +796,14 @@
 			new reward_type(reward_turf)
 		flash_reward_anchor(reward_anchor)
 
+	// Research payouts are physical: a dossier the crew has to carry to an R&D
+	// console. A ship keeps its techweb on a server disk that may not be
+	// installed (or may have been pulled), so paying an atom is the only channel
+	// that works for every crew - and it can be stolen off the pad like any prize.
+	if(research_reward > 0 && reward_turf)
+		new /obj/item/research_notes(reward_turf, research_reward, research_origin)
+		flash_reward_anchor(reward_anchor)
+
 	// Spawn voucher rewards at the turn-in point
 	if(voucher_count > 0 && reward_turf)
 		new /obj/item/stack/trade_voucher(reward_turf, voucher_count)
@@ -906,5 +925,6 @@
 		"difficulty_color" = get_difficulty_color(),
 		"requires_item" = requires_item,
 		"voucher_count" = voucher_count,
+		"research_reward" = research_reward,
 		"archetype" = get_archetype(),
 	)

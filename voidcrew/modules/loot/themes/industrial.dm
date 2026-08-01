@@ -33,6 +33,8 @@
 		/obj/item/stock_parts/matter_bin/adv = 6,
 		/obj/item/storage/toolbox/mechanical = 5,
 		/obj/item/weldingtool/largetank = 5,
+		// the line's own prototype SMG, never finished, still fires
+		/obj/item/gun/ballistic/automatic/proto = 5,
 		/obj/item/stock_parts/power_store/cell/high = 4,
 		/obj/item/stack/sheet/plasteel/twenty = 4,
 	)
@@ -47,6 +49,10 @@
 		/obj/item/stock_parts/matter_bin/super = 6,
 		/obj/item/stock_parts/power_store/cell/super = 5,
 		/obj/item/storage/part_replacer = 4,
+		// asset-denial kit, and the answer to this theme's own hivebot
+		// guards: ion weapons wreck automation
+		/obj/item/gun/energy/ionrifle/carbine = 6,
+		/obj/item/gun/ballistic/automatic/proto = 5,
 		/obj/item/circuitboard/machine/autolathe = 4,
 		/obj/item/flamethrower/full = 3,
 		/obj/item/stack/sheet/mineral/gold/fifty = 3,
@@ -63,6 +69,7 @@
 		/obj/item/stock_parts/matter_bin/bluespace = 6,
 		/obj/item/stack/sheet/mineral/diamond/five = 6,
 		/obj/item/stock_parts/power_store/cell/hyper = 5,
+		/obj/item/gun/energy/ionrifle = 6,
 		/obj/item/stack/sheet/bluespace_crystal = 4,
 		/obj/item/construction/rcd = 3,
 		/obj/item/stack/sheet/mineral/diamond/fifty = 2,
@@ -73,18 +80,21 @@
 	rare_loot_green = list(
 		/obj/item/stack/sheet/plasteel/twenty = 8,
 		/obj/item/stock_parts/power_store/cell/high = 6,
+		/obj/item/gun/ballistic/automatic/proto = 5,
 		/obj/item/storage/toolbox/helios_lunch_pail = 4,
 		/obj/item/analyzer/honest_gauge = 4,
 	)
 	rare_loot_yellow = list(
 		/obj/item/stack/sheet/mineral/gold/fifty = 8,
 		/obj/item/stock_parts/power_store/cell/super = 6,
+		/obj/item/gun/energy/ionrifle/carbine = 5,
 		/obj/item/weldingtool/slagmaw = 4,
 		/obj/item/clothing/gloves/cargo_gauntlet/line_gauntlet = 4,
 	)
 	rare_loot_red = list(
 		/obj/item/stack/sheet/mineral/diamond/fifty = 8,
 		/obj/item/construction/rcd = 6,
+		/obj/item/gun/energy/ionrifle = 5,
 		/obj/item/stock_parts/power_store/cell/forge_heart = 4,
 		/obj/item/stamp/helios_pattern = 4,
 	)

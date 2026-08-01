@@ -18,10 +18,12 @@
 	return ..()
 
 /// Clears all of what's inside the z levels managed by the mapzone.
-/datum/map_zone/proc/clear_reservation()
+/// `throttled` = whether the sweep shares the queued worldgen job's tick budget;
+/// pass FALSE from unqueued (flat-encounter) teardowns - see worldgen_yield().
+/datum/map_zone/proc/clear_reservation(throttled = TRUE)
 	for(var/datum/space_level/zlevel as anything in z_levels)
 		SSweather.set_z_level_weather_trait(zlevel, null)
-		zlevel.clear_reservation()
+		zlevel.clear_reservation(throttled)
 
 /// Clears contents and resets turfs to uninitialized space (for empty space cleanup)
 /datum/map_zone/proc/clear_to_uninitialized_space()
@@ -73,6 +75,29 @@
 	high_x = low_x + width - 1
 	high_y = low_y + height - 1
 
+/**
+ * Sets or clears a single z-level trait, keeping SSmapping's reverse index in step.
+ *
+ * Map zones are recycled, and the levels in them are NOT re-minted between occupants -
+ * a reused level still carries whatever the last one registered. That is harmless for
+ * flag traits nothing reads twice, but not for value traits like ZTRAIT_BASETURF, where
+ * a leftover would leave a space encounter bottoming out in a previous planet's ground.
+ * Pass a null value to remove the trait outright.
+ */
+/datum/space_level/proc/set_trait(trait, value)
+	if(isnull(value))
+		traits -= trait
+		var/list/old_levels = SSmapping.z_trait_levels[trait]
+		if(old_levels)
+			old_levels -= z_value
+		return
+	traits[trait] = value
+	var/list/trait_levels = SSmapping.z_trait_levels[trait]
+	if(!trait_levels)
+		trait_levels = list()
+		SSmapping.z_trait_levels[trait] = trait_levels
+	trait_levels |= list(z_value)
+
 /// Drops the bounds back to the whole z-level, so cleanup covers the cordon too
 /datum/space_level/proc/reset_bounds()
 	low_x = null
@@ -123,7 +148,7 @@
 		high_y = world.maxy
 	return block(locate(low_x,low_y,z_value), locate(high_x,high_y,z_value))
 
-/datum/space_level/proc/clear_reservation()
+/datum/space_level/proc/clear_reservation(throttled = TRUE)
 	var/area/space_area = GLOB.areas_by_type[world.area]
 
 	// Contents only ever exist inside the bounded region - the cordon around a small
@@ -149,7 +174,7 @@
 		var/area/old_area = get_area(turf)
 		turf.change_area(old_area, space_area)
 		// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
-		SSovermap.worldgen_yield()
+		SSovermap.worldgen_yield(throttled)
 
 	for(var/turf/turf as anything in block_turfs)
 		turf.AfterChange(CHANGETURF_IGNORE_AIR)
@@ -162,7 +187,7 @@
 		QUEUE_SMOOTH(turf)
 		QUEUE_SMOOTH_NEIGHBORS(turf)
 		// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
-		SSovermap.worldgen_yield()
+		SSovermap.worldgen_yield(throttled)
 
 /// Clears contents and resets turfs to uninitialized /turf/open/space/basic
 /// This bypasses ChangeTurf so turfs remain uninitialized and unbuildable
@@ -192,8 +217,9 @@
 			T.change_area(old_area, space_area)
 		// Create uninitialized space turf directly (bypasses ChangeTurf which would init it)
 		new /turf/open/space/basic(T)
-		// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
-		SSovermap.worldgen_yield()
+		// Every caller is an unqueued flat-encounter/outpost teardown: never wait
+		// behind a queued planet job - see worldgen_yield() in worldgen_queue.dm
+		SSovermap.worldgen_yield(throttled = FALSE)
 
 /**
  * Force-initializes any uninitialized turfs in a block (i.e. /turf/open/space/basic,
@@ -248,7 +274,10 @@
 
 	return FALSE
 
-/datum/space_level/proc/fill_in(turf/turf_type, area/area_override)
+/// `throttled` = whether the fill shares the queued worldgen job's tick budget; the
+/// queued planet build leaves it TRUE, unqueued encounter builds (empty space, ruin
+/// signals via spawn_dynamic_encounter) pass FALSE - see worldgen_yield().
+/datum/space_level/proc/fill_in(turf/turf_type, area/area_override, throttled = TRUE)
 	var/area/area_to_use = null
 	if(area_override)
 		if(ispath(area_override))
@@ -261,7 +290,7 @@
 			var/area/old_area = get_area(iterated_turf)
 			iterated_turf.change_area(old_area, area_to_use)
 			// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
-			SSovermap.worldgen_yield()
+			SSovermap.worldgen_yield(throttled)
 			if(QDELETED(src))
 				return
 		area_to_use.reg_in_areas_in_z()
@@ -270,7 +299,7 @@
 		for(var/turf/iterated_turf as anything in get_block())
 			iterated_turf.ChangeTurf(turf_type, turf_type)
 			// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
-			SSovermap.worldgen_yield()
+			SSovermap.worldgen_yield(throttled)
 			if(QDELETED(src))
 				return
 

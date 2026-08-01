@@ -61,6 +61,7 @@
 	dir = 8;
 	pixel_x = 5
 	},
+/obj/machinery/holopad,
 /obj/item/pickaxe/drill,
 /obj/item/pickaxe/drill,
 /obj/item/pickaxe/drill,

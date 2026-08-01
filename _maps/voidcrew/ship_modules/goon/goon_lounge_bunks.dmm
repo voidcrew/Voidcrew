@@ -26,7 +26,6 @@
 /area/template_noop)
 "G" = (
 /obj/structure/window/reinforced/survival_pod/spawner/directional/north,
-/obj/machinery/holopad,
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
 "M" = (

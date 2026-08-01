@@ -125,7 +125,7 @@
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/examine(mob/user)
 	. = ..()
-	. += "It looks like the fuel source can be toggled with an alt-click."
+	. += "It is set to draw fuel from [use_tank ? "the attached tank" : "the atmospherics system"]. Looks like the fuel source can be toggled by hand."
 	. += "The engine heater's gas dial reads [return_gas()] moles of gas.<br>"
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/proc/return_gas(gas_type)
@@ -218,14 +218,25 @@
 		return
 	return ..()
 
-/obj/machinery/atmospherics/components/unary/shuttle/heater/click_alt(mob/living/L)
+/obj/machinery/atmospherics/components/unary/shuttle/heater/attack_hand(mob/living/user, list/modifiers)
 	. = ..()
 	if(panel_open)
-		return
+		balloon_alert(user, "close panel first!")
+		return TRUE
+	toggle_fuel_source(user)
+	return TRUE
+
+/**
+  * Flips the heater between drawing fuel from the pipe network and from an inserted tank,
+  * and repoints the icon states so the sprite matches the source it is set to.
+  */
+/obj/machinery/atmospherics/components/unary/shuttle/heater/proc/toggle_fuel_source(mob/user)
 	use_tank = !use_tank
-	to_chat(L, "<span class='notice'>You switch [src] to draw fuel from [use_tank ? "the attached tank" : "the atmospherics system"].")
 	icon_state_closed = use_tank ? "heater" : initial(icon_state)
 	icon_state_open = use_tank ? "heater_open" : "[initial(icon_state)]_open"
+	icon_state = panel_open ? icon_state_open : icon_state_closed
+	if(user)
+		to_chat(user, span_notice("You switch [src] to draw fuel from [use_tank ? "the attached tank" : "the atmospherics system"]."))
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/proc/update_adjacent_engines()
 	var/engine_turf
@@ -243,12 +254,9 @@
 	for(var/obj/machinery/power/shuttle_engine/ship/fueled/E in engine_turf)
 		E.update_icon_state()
 
-/obj/machinery/atmospherics/components/unary/shuttle/heater/tank/Initialize()
+/obj/machinery/atmospherics/components/unary/shuttle/heater/tank/Initialize(mapload)
 	. = ..()
+	// Ships pipe plasma to their heaters, so this starts drawing from the atmospherics
+	// system. The tank comes along as a backup for when the pipe line runs dry or breaks -
+	// click the heater by hand to switch it over.
 	fuel_tank = new /obj/item/tank/internals/plasma/full(src)
-	// Defaults to tank mode so pipe-less ships have working thrusters out of the box; alt-click to switch to atmos
-	use_tank = TRUE
-	icon_state_closed = "heater"
-	icon_state_open = "heater_open"
-	if(!panel_open)
-		icon_state = icon_state_closed

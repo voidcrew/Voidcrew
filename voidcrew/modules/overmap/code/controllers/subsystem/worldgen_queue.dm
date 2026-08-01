@@ -20,8 +20,11 @@
  * up for routine ship-to-ship and cargo docking, and making that queue behind somebody
  * else's planet would break ordinary docking to fix a stutter nobody reported.
  *
- * They are still *throttled* whenever a planet happens to be building - see
- * worldgen_yield() - so running alongside one costs the server less than it used to.
+ * Nor are they *throttled* while a planet happens to be building: their loops pass
+ * throttled = FALSE to worldgen_yield() and run at plain CHECK_TICK speed. Design rule:
+ * a survey may never slow a ruin or empty-space dock, in any amount. The cost is that
+ * generation work briefly stacks when an encounter loads mid-survey; the queue's budget
+ * only ever governed the queued job itself.
  *
  * ## The mapzone race is fixed at the source, not here
  *
@@ -201,16 +204,19 @@
  * tick?" - and if so it sleeps out the remainder whether the tick is full or not.
  *
  * The accounting lives on the subsystem rather than in each loop, which is exact for
- * the planet build holding the queue. Unqueued generation - a ruin, an outpost - shares
- * the same counter if it happens to run alongside one, so the two of them split a
- * budget rather than each getting their own. That is the behaviour we want: the point
- * is a ceiling on total generation cost, not fairness between generators.
+ * the planet build holding the queue.
+ *
+ * `throttled` says whether this loop belongs to (or is willing to wait behind) the
+ * queued job. Unqueued encounter work - a ruin, empty space, an outpost - passes FALSE
+ * and always gets plain CHECK_TICK: by design rule, a planetary build or survey may
+ * never slow the loading of a ruin or empty space. Only the queued job's own loops
+ * leave it TRUE and share the budget.
  *
  * Falls back to plain CHECK_TICK when no planet is building and before the round
  * starts, so an unqueued build on a quiet server is as fast as it ever was.
  */
-/datum/controller/subsystem/overmap/proc/worldgen_yield()
-	if(!worldgen_throttled || !worldgen_owner)
+/datum/controller/subsystem/overmap/proc/worldgen_yield(throttled = TRUE)
+	if(!throttled || !worldgen_throttled || !worldgen_owner)
 		CHECK_TICK
 		return
 

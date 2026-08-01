@@ -24,6 +24,7 @@
 		/obj/item/clothing/glasses/eyepatch = 6,
 		/obj/item/clothing/head/costume/pirate/bandana = 6,
 		/obj/item/coin/gold/doubloon = 5,
+		/obj/item/gun/ballistic/revolver/c38/detective = 5,
 		/obj/item/knife/combat = 4,
 		/obj/item/toy/cards/deck = 4,
 	)
@@ -33,6 +34,8 @@
 		/obj/item/gun/ballistic/shotgun/doublebarrel = 7,
 		/obj/item/storage/box/lethalshot = 7,
 		/obj/item/gun/ballistic/revolver = 6,
+		/obj/item/gun/ballistic/automatic/tommygun = 6,
+		/obj/item/gun/ballistic/automatic/mini_uzi = 5,
 		/obj/item/ammo_box/a357 = 6,
 		/obj/item/stack/sheet/mineral/gold = 5,
 		/obj/item/clothing/head/costume/pirate/armored = 4,
@@ -46,6 +49,11 @@
 		/obj/item/coin/gold/doubloon = 8,
 		/obj/item/gun/ballistic/shotgun/doublebarrel = 6,
 		/obj/item/gun/ballistic/revolver/mateba = 5,
+		/obj/item/gun/ballistic/shotgun/automatic/combat = 5,
+		/obj/item/gun/ballistic/automatic/pistol/deagle = 5,
+		// finished blueprint gun, red only: boarding hardware nobody
+		// filed a schematic for
+		/obj/item/gun/ballistic/shotgun/bulldog = 4,
 		/obj/item/melee/energy/sword/pirate = 4,
 		/obj/item/stack/sheet/mineral/diamond = 4,
 		/obj/item/reagent_containers/cup/glass/bottle/absinthe/premium = 4,
@@ -60,17 +68,20 @@
 	rare_loot_green = list(
 		/obj/item/coin/gold/doubloon = 8,
 		/obj/item/stack/spacecash/c500 = 6,
+		/obj/item/gun/ballistic/revolver/c38/detective = 5,
 		/obj/item/toy/cards/deck/cheats = 4,
 		/obj/item/reagent_containers/cup/glass/bottle/bottomless_ration = 4,
 	)
 	rare_loot_yellow = list(
 		/obj/item/gun/ballistic/shotgun/doublebarrel = 8,
 		/obj/item/stack/spacecash/c1000 = 6,
+		/obj/item/gun/ballistic/automatic/tommygun = 6,
 		/obj/item/gun/magic/hook/marlinspike = 4,
 		/obj/item/clothing/glasses/eyepatch/fences_eye = 4,
 	)
 	rare_loot_red = list(
 		/obj/item/gun/ballistic/revolver/mateba = 6,
+		/obj/item/gun/ballistic/shotgun/bulldog = 3,
 		/obj/item/stack/sheet/mineral/diamond = 5,
 		/obj/item/claymore/cutlass/parley = 4,
 		/obj/item/heave_ho = 4,

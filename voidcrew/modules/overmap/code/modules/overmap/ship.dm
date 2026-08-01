@@ -598,6 +598,10 @@
 	// here if a console ever needs a real camera feed of the overmap again.
 
 	SSovermap.simulated_ships += src
+	// Anything already broadcasting to the galaxy (the Verdigris, the Colosseum, a
+	// contested cache) charted itself onto the fleet before this hull existed;
+	// collect those now so a mid-round ship's helm isn't blind to them.
+	receive_fleet_waypoints()
 	survey_data = new()
 
 	// Initialize combat alarm system
