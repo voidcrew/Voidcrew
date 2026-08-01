@@ -1634,7 +1634,7 @@
 /area/shuttle/voidcrew/metis/dorms)
 "FQ" = (
 /obj/effect/decal/cleanable/vomit,
-/obj/item/circuitboard/computer/aiupload,
+/obj/item/circuitboard/machine/ai_law_rack/core,
 /turf/open/floor/carpet/purple,
 /area/shuttle/voidcrew/metis/eepsoffice)
 "FX" = (

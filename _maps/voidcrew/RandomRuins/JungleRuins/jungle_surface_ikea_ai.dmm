@@ -12,8 +12,7 @@
 /area/ruin/powered)
 "f" = (
 /obj/structure/table/wood,
-/obj/item/circuitboard/computer/borgupload,
-/obj/item/circuitboard/computer/aiupload,
+/obj/item/circuitboard/machine/ai_law_rack/core,
 /turf/open/floor/wood,
 /area/ruin/powered)
 "g" = (
@@ -53,7 +52,6 @@
 /obj/item/ai_module/law/core/full/hulkamania{
 	name = "Unknown AI Core Module"
 	},
-/obj/item/ai_module/law/reset/purge,
 /obj/item/ai_module/law/core/full/paladin_devotion{
 	name = "Unknown AI Core Module"
 	},

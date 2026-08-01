@@ -1,4 +1,13 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/cult,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/ruin/powered)
+"ab" = (
+/obj/effect/zone_mobs/cult,
+/turf/open/floor/plating/snowed/smoothed,
+/area/icemoon/underground/explored)
 "ay" = (
 /turf/open/floor/carpet,
 /area/ruin/powered)
@@ -73,11 +82,6 @@
 /turf/closed/mineral/snowmountain/icemoon,
 /area/icemoon/underground/explored)
 "jk" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/wood,
-/area/ruin/powered)
-"aa" = (
-/obj/effect/zone_mobs/cult,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
 /area/ruin/powered)
@@ -268,9 +272,6 @@
 "wQ" = (
 /turf/closed/wall,
 /area/ruin/powered)
-"xc" = (
-/turf/open/misc/ice/icemoon/breathable,
-/area/icemoon/underground/explored)
 "xN" = (
 /obj/structure/bed/dogbed{
 	pixel_y = 14
@@ -294,10 +295,6 @@
 /turf/open/floor/wood,
 /area/ruin/powered)
 "zT" = (
-/turf/open/floor/plating/snowed/smoothed,
-/area/icemoon/underground/explored)
-"ab" = (
-/obj/effect/zone_mobs/cult,
 /turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "AG" = (
@@ -363,9 +360,6 @@
 /obj/structure/barricade/wooden/crude,
 /turf/open/floor/wood,
 /area/ruin/powered)
-"Ei" = (
-/turf/closed/mineral/snowmountain/cavern/icemoon,
-/area/icemoon/underground/explored)
 "EF" = (
 /obj/effect/decal/cleanable/blood/gibs/torso,
 /obj/effect/decal/remains/human,
@@ -448,16 +442,6 @@
 /area/ruin/powered)
 "PQ" = (
 /obj/effect/decal/cleanable/blood/splatter,
-/mob/living/simple_animal/hostile/illusion{
-	death_message = "disperses into the air in a cloud of red mist, you feel slightly more at ease.";
-	desc = "You can't quite make out what you're seeing.";
-	faction = list("cult");
-	health = 500;
-	maxHealth = 500;
-	melee_damage_lower = 10;
-	melee_damage_upper = 30;
-	name = "Village Elder"
-	},
 /turf/open/floor/engine/cult,
 /area/ruin/powered)
 "Qh" = (
@@ -631,7 +615,7 @@ tN
 tN
 tN
 tN
-xc
+pc
 pc
 Og
 Og
@@ -664,20 +648,20 @@ tN
 pc
 Og
 Og
-Ei
+nR
 Ze
 iB
 ks
-Ei
+nR
 Ze
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
+nR
+nR
+nR
+nR
+nR
+nR
+nR
+nR
 Tc
 pc
 pc
@@ -694,23 +678,23 @@ Og
 Og
 Og
 Rv
-Ei
-Ei
-Ei
+nR
+nR
+nR
 FR
 pI
-Ei
-Ei
+nR
+nR
 Vn
 Vn
 Vn
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
+nR
+nR
+nR
+nR
+nR
+nR
+nR
 pc
 Og
 Og
@@ -723,14 +707,14 @@ pI
 Og
 Og
 bY
-Ei
-Ei
-Ei
+nR
+nR
+nR
 pI
 zT
 zT
 zT
-Ei
+nR
 Vn
 UI
 Vn
@@ -740,8 +724,8 @@ wQ
 QR
 QR
 wQ
-Ei
-Ei
+nR
+nR
 Og
 Rv
 Og
@@ -752,8 +736,8 @@ tN
 Og
 oF
 Og
-Ei
-Ei
+nR
+nR
 Vn
 Vn
 Vn
@@ -770,8 +754,8 @@ DI
 SN
 Qh
 wQ
-Ei
-Ei
+nR
+nR
 oF
 Og
 Og
@@ -782,8 +766,8 @@ tN
 Og
 Og
 Og
-Ei
-Ei
+nR
+nR
 Vn
 cj
 sY
@@ -801,8 +785,8 @@ tt
 Gr
 QR
 lg
-Ei
-Ei
+nR
+nR
 Og
 Og
 tN
@@ -811,8 +795,8 @@ tN
 tN
 Og
 Og
-Ei
-Ei
+nR
+nR
 la
 Vn
 rC
@@ -831,8 +815,8 @@ SN
 QR
 QR
 Og
-Ei
-Ei
+nR
+nR
 Og
 Og
 tN
@@ -841,8 +825,8 @@ tN
 tN
 Og
 Kd
-Ei
-Ei
+nR
+nR
 lo
 Vn
 li
@@ -861,8 +845,8 @@ pV
 wQ
 Og
 Tc
-Ei
-Ei
+nR
+nR
 Og
 Og
 tN
@@ -871,8 +855,8 @@ tN
 tN
 Og
 pc
-Ei
-Ei
+nR
+nR
 lo
 Vn
 Hx
@@ -891,8 +875,8 @@ zT
 tg
 Bq
 Og
-Ei
-Ei
+nR
+nR
 Og
 Og
 tN
@@ -901,8 +885,8 @@ tN
 tN
 Og
 pc
-Ei
-Ei
+nR
+nR
 lo
 Vn
 Vn
@@ -921,9 +905,9 @@ zT
 Ws
 Og
 Og
-Ei
-Ei
-Ei
+nR
+nR
+nR
 Og
 tN
 "}
@@ -931,8 +915,8 @@ tN
 tN
 Og
 pc
-Ei
-Ei
+nR
+nR
 us
 Sk
 Qt
@@ -951,19 +935,19 @@ Vn
 Vn
 Vn
 Vn
-Ei
-Ei
-Ei
+nR
+nR
+nR
 pI
 tN
 "}
 (14,1,1) = {"
 tN
 Og
-Ei
-Ei
-Ei
-Ei
+nR
+nR
+nR
+nR
 Bq
 pj
 mI
@@ -981,16 +965,16 @@ Vn
 LZ
 AN
 Vn
-Ei
-Ei
-Ei
+nR
+nR
+nR
 Og
 tN
 "}
 (15,1,1) = {"
 tN
 Og
-Ei
+nR
 Vn
 Vn
 Vn
@@ -1011,8 +995,8 @@ zR
 cB
 jH
 Vn
-Ei
-Ei
+nR
+nR
 bY
 Og
 tN
@@ -1020,7 +1004,7 @@ tN
 (16,1,1) = {"
 tN
 Og
-Ei
+nR
 Vn
 EF
 hD
@@ -1041,8 +1025,8 @@ Vn
 Vn
 Vn
 Vn
-Ei
-Ei
+nR
+nR
 Og
 Og
 tN
@@ -1050,7 +1034,7 @@ tN
 (17,1,1) = {"
 tN
 Og
-Ei
+nR
 Vn
 Cl
 PQ
@@ -1071,8 +1055,8 @@ Og
 Gy
 sG
 Vn
-Ei
-Ei
+nR
+nR
 Og
 Og
 tN
@@ -1080,7 +1064,7 @@ tN
 (18,1,1) = {"
 tN
 Og
-Ei
+nR
 Vn
 mi
 AM
@@ -1101,8 +1085,8 @@ Og
 Vn
 Vn
 Vn
-Ei
-Ei
+nR
+nR
 Og
 Og
 tN
@@ -1110,7 +1094,7 @@ tN
 (19,1,1) = {"
 tN
 Og
-Ei
+nR
 Vn
 Vn
 Vn
@@ -1131,8 +1115,8 @@ Og
 Og
 Og
 Bq
-Ei
-Ei
+nR
+nR
 Og
 Dm
 tN
@@ -1140,9 +1124,9 @@ tN
 (20,1,1) = {"
 tN
 Og
-Ei
-Ei
-Ei
+nR
+nR
+nR
 nR
 Vn
 xN
@@ -1152,17 +1136,17 @@ Vn
 TW
 Og
 pc
-xc
 pc
 pc
+pc
 Og
 Og
 Og
 Og
 Og
 Og
-Ei
-Ei
+nR
+nR
 Og
 Og
 tN
@@ -1172,8 +1156,8 @@ tN
 Og
 Og
 pj
-Ei
-Ei
+nR
+nR
 Vn
 Vn
 Vn
@@ -1182,17 +1166,17 @@ Vn
 Og
 Dm
 pc
-xc
-xc
-xc
+pc
+pc
+pc
 pc
 pj
 Og
 Og
 DM
-Ei
-Ei
-Ei
+nR
+nR
+nR
 Og
 Og
 tN
@@ -1202,26 +1186,26 @@ tN
 bY
 Og
 Og
-Ei
-Ei
-Ei
-Ei
+nR
+nR
+nR
+nR
 Bq
 Og
 Og
 Og
 pc
-xc
+pc
 Zw
 Zx
-xc
-xc
+pc
+pc
 pc
 pc
 Og
-Ei
-Ei
-Ei
+nR
+nR
+nR
 bY
 Og
 Og
@@ -1233,24 +1217,24 @@ tN
 pI
 Og
 Og
-Ei
-Ei
-Ei
-Ei
+nR
+nR
+nR
+nR
 DM
 Tc
 pc
 pc
-xc
-xc
-xc
-xc
-xc
-xc
-Ei
-Ei
-Ei
-Ei
+pc
+pc
+pc
+pc
+pc
+pc
+nR
+nR
+nR
+nR
 Og
 Og
 Og
@@ -1265,21 +1249,21 @@ pc
 Og
 Og
 Og
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-xc
-xc
-xc
-xc
-xc
-Ei
-Ei
-Ei
-Ei
+nR
+nR
+nR
+nR
+nR
+nR
+pc
+pc
+pc
+pc
+pc
+nR
+nR
+nR
+nR
 pI
 oF
 Og
@@ -1291,24 +1275,24 @@ tN
 tN
 tN
 tN
-xc
+pc
 pc
 pc
 Og
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
+nR
+nR
+nR
+nR
+nR
+nR
+nR
+nR
+nR
+nR
+nR
+nR
+nR
+nR
 Og
 Og
 Og
@@ -1321,22 +1305,22 @@ tN
 tN
 tN
 tN
-xc
+pc
 pc
 oF
 Og
 pI
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
-Ei
+nR
+nR
+nR
+nR
+nR
+nR
+nR
+nR
+nR
+nR
+nR
 pc
 Og
 Og

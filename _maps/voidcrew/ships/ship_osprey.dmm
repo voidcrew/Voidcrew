@@ -729,9 +729,8 @@
 	name = "spare parts crate"
 	},
 /obj/structure/closet/crate/science,
-/obj/item/circuitboard/computer/borgupload,
 /obj/item/circuitboard/machine/cyborgrecharger,
-/obj/item/circuitboard/computer/aiupload,
+/obj/item/circuitboard/machine/ai_law_rack/core,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/tile/red/diagonal_centre,
 /turf/open/floor/iron/white/diagonal,

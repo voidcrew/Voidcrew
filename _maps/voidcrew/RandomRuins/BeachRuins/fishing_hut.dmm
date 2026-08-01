@@ -1,4 +1,22 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ab" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/powered{
+	name = "\improper Dining Hall"
+	})
+"ac" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/carpet/red,
+/area/ruin/powered{
+	name = "\improper Dining Hall"
+	})
+"ad" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
+/area/ruin/powered{
+	name = "\improper Cold Storage"
+	})
 "ae" = (
 /obj/structure/window/fulltile,
 /turf/open/floor/carpet/royalblack,
@@ -26,7 +44,7 @@
 /obj/structure/chair/wood/wings{
 	dir = 5
 	},
-/obj/item/nullrod/carp,
+/obj/item/nullrod,
 /turf/open/floor/carpet/red,
 /area/ruin/powered{
 	name = "\improper Dining Hall"
@@ -80,11 +98,6 @@
 /turf/open/floor/iron/kitchen_coldroom/freezerfloor,
 /area/ruin/powered{
 	name = "\improper Cold Storage"
-	})
-"oE" = (
-/turf/open/floor/carpet/red,
-/area/ruin/powered{
-	name = "\improper Dining Hall"
 	})
 "pI" = (
 /obj/item/guardian_creator/carp,
@@ -335,24 +348,6 @@
 /area/ruin/powered{
 	name = "\improper Cold Storage"
 	})
-"ab" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/carpet/royalblack,
-/area/ruin/powered{
-	name = "\improper Dining Hall"
-	})
-"ac" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/carpet/red,
-/area/ruin/powered{
-	name = "\improper Dining Hall"
-	})
-"ad" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/iron/kitchen_coldroom/freezerfloor,
-/area/ruin/powered{
-	name = "\improper Cold Storage"
-	})
 
 (1,1,1) = {"
 Ko
@@ -422,9 +417,9 @@ ep
 ae
 ut
 hK
-oE
-oE
-oE
+hK
+hK
+hK
 hK
 ut
 jD
@@ -438,7 +433,7 @@ ep
 ae
 ut
 hK
-oE
+hK
 mr
 uD
 hK
@@ -520,7 +515,7 @@ ut
 hK
 ac
 tV
-oE
+hK
 hK
 ut
 ep
@@ -535,8 +530,8 @@ ae
 ut
 hK
 dd
-oE
-oE
+hK
+hK
 hK
 ut
 ep
