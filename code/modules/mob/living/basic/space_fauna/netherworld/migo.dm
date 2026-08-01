@@ -33,6 +33,8 @@
 	var/static/list/migo_sounds
 	/// Odds migo will dodge
 	var/dodge_prob = 10
+	/// Are we dodging an attack during this move?
+	var/dodging = FALSE
 
 /mob/living/basic/migo/Initialize(mapload)
 	. = ..()
@@ -54,21 +56,21 @@
 
 /mob/living/basic/migo/send_speech(message_raw, message_range, obj/source, bubble_type, list/spans, datum/language/message_language, list/message_mods, forced, tts_message, list/tts_filter)
 	. = ..()
-	if(stat != CONSCIOUS)
+	if(IS_UNCONSCIOUS_OR_CRIT(src))
 		return
 	make_migo_sound()
 
-/mob/living/basic/migo/Life(seconds_per_tick = SSMOBS_DT, times_fired)
+/mob/living/basic/migo/Life(seconds_per_tick = SSMOBS_DT)
 	. = ..()
 	if(!.) //dead or deleted
 		return
-	if(stat)
+	if(IS_UNCONSCIOUS_OR_CRIT(src))
 		return
 	if(SPT_PROB(5, seconds_per_tick))
 		make_migo_sound()
 
 /mob/living/basic/migo/Move(atom/newloc, dir, step_x, step_y)
-	if(!ckey && prob(dodge_prob) && moving_diagonally == 0 && isturf(loc) && isturf(newloc))
+	if(!dodging && !ckey && prob(dodge_prob) && moving_diagonally == 0 && isturf(loc) && isturf(newloc))
 		return dodge(newloc, dir)
 	else
 		return ..()
@@ -77,9 +79,11 @@
 	//Assuming we move towards the target we want to swerve toward them to get closer
 	var/cdir = turn(move_direction, 45)
 	var/ccdir = turn(move_direction, -45)
+	dodging = TRUE
 	. = Move(get_step(loc,pick(cdir, ccdir)))
 	if(!.)//Can't dodge there so we just carry on
 		. = Move(moving_to, move_direction)
+	dodging = FALSE
 
 /// The special hatsune miku themed mi-go.
 /mob/living/basic/migo/hatsune
@@ -97,5 +101,4 @@
 
 /mob/living/basic/migo/hatsune/Initialize(mapload)
 	. = ..()
-	var/static/list/death_loot = list(/obj/item/instrument/piano_synth)
-	AddElement(/datum/element/death_drops, death_loot)
+	AddElement(/datum/element/death_drops, /obj/item/instrument/piano_synth)

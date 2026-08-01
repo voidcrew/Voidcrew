@@ -30,7 +30,7 @@
 				return
 			if(intAI.deployed_shell) //Recall AI if shelled so it can be checked for a client
 				intAI.disconnect_shell()
-			if(intAI.stat || !intAI.client)
+			if(IS_UNCONSCIOUS_OR_CRIT(intAI) || !intAI.client)
 				balloon_alert(user, "ai unresponsive!")
 				return
 			balloon_alert(user, "transferring to unit...")
@@ -45,7 +45,7 @@
 
 /// Place an AI in control of your suit functions
 /obj/item/mod/control/proc/ai_enter_mod(mob/living/silicon/ai/new_ai)
-	new_ai.control_disabled = FALSE
+	new_ai.set_control_disabled(FALSE)
 	new_ai.radio_enabled = TRUE
 	new_ai.ai_restore_power()
 	new_ai.cancel_camera()
@@ -58,7 +58,7 @@
 /obj/item/mod/control/proc/ai_exit_mod(obj/item/aicard/card)
 	var/mob/living/silicon/ai/old_ai = ai_assistant
 	old_ai.ai_restore_power()//So the AI initially has power.
-	old_ai.control_disabled = TRUE
+	old_ai.set_control_disabled(TRUE)
 	old_ai.radio_enabled = FALSE
 	old_ai.disconnect_shell()
 	old_ai.forceMove(card)

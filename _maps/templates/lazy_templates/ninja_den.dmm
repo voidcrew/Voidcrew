@@ -532,9 +532,9 @@
 /area/centcom/central_command_areas/holding)
 "ni" = (
 /obj/structure/rack,
-/obj/item/nullrod/claymore/saber/red{
+/obj/item/melee/energy/sword/nullrod/red{
 	damtype = "stamina";
-	force = 30
+	active_force = 30
 	},
 /obj/item/nullrod/claymore/katana{
 	damtype = "stamina";
@@ -898,9 +898,9 @@
 /area/centcom/central_command_areas/holding)
 "vr" = (
 /obj/structure/rack,
-/obj/item/nullrod/claymore/saber{
+/obj/item/melee/energy/sword/nullrod{
 	damtype = "stamina";
-	force = 30;
+	active_force = 30;
 	pixel_x = 5;
 	pixel_y = -3
 	},
@@ -1033,7 +1033,7 @@
 /obj/item/food/grown/citrus/lime,
 /obj/item/food/grown/citrus/orange,
 /obj/item/food/grown/citrus/lemon,
-/obj/item/food/grown/watermelon,
+/obj/item/food/grown/melonlike/watermelon,
 /obj/machinery/light/small/directional/west,
 /turf/open/floor/carpet/black,
 /area/centcom/central_command_areas/holding)

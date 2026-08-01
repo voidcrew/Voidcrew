@@ -1,10 +1,3 @@
-#define GRADE_D "D"
-#define GRADE_C "C"
-#define GRADE_B "B"
-#define GRADE_A "A"
-#define GRADE_S "S"
-
-
 /// Handles calculating rewards based on number of players, parts, threats, etc
 /obj/machinery/quantum_server/proc/calculate_rewards()
 	var/rewards_base = 0.8
@@ -16,11 +9,36 @@
 
 	rewards_base += (length(spawned_threat_refs) * 2)
 
-	for(var/index in 2 to length(avatar_connection_refs))
-		rewards_base += multiplayer_bonus
+	rewards_base += get_multiplayer_bonus()
+
+	rewards_base += get_nohit_bouns()
 
 	return rewards_base
 
+/// Calculates total bonus from completing the domain in multiplayer
+/obj/machinery/quantum_server/proc/get_multiplayer_bonus()
+	var/total = 0
+	var/multiplayer = FALSE
+	for(var/datum/weakref/connection_ref as anything in avatar_connection_refs)
+		var/datum/component/avatar_connection/connection = connection_ref.resolve()
+		if(isnull(connection))
+			continue
+		if(multiplayer)
+			total += multiplayer_bonus
+		multiplayer = TRUE
+	return total
+
+/// Calculates total bonus from completing the domain without taking damage
+/obj/machinery/quantum_server/proc/get_nohit_bouns()
+	if(generated_domain.domain_flags & DOMAIN_NO_NOHIT_BONUS)
+		return 0
+
+	var/total = 0
+	for(var/datum/weakref/connection_ref as anything in avatar_connection_refs)
+		var/datum/component/avatar_connection/connection = connection_ref.resolve()
+		if(connection?.nohit)
+			total += nohit_bonus
+	return total
 
 /// Handles spawning the (new) crate and deleting the former
 /obj/machinery/quantum_server/proc/generate_loot(obj/cache, obj/machinery/byteforge/chosen_forge)
@@ -49,12 +67,16 @@
 	reward_cache.manifest = WEAKREF(certificate)
 	reward_cache.update_appearance()
 
+	generated_domain.submit_grade(grade)
+
 	if(can_generate_tech_disk(grade))
 		SSblackbox.record_feedback("tally", "bitrunning_bepis_rewarded", 1, generated_domain.key)
 		new /obj/item/disk/design_disk/bepis/remove_tech(reward_cache)
 		generated_domain.disk_reward_spawned = TRUE
 
 	chosen_forge.start_to_spawn(reward_cache)
+
+	domain_complete = TRUE
 	return TRUE
 
 
@@ -101,8 +123,13 @@
 	if(domain_randomized)
 		text += "- **Randomized:** + 0.2\n"
 
-	if(length(avatar_connection_refs) > 1)
-		text += "- **Multiplayer:** + [(length(avatar_connection_refs) - 1) * multiplayer_bonus]\n"
+	var/mp_bonus = get_multiplayer_bonus()
+	if(mp_bonus)
+		text += "- **Multiplayer:** + [mp_bonus]\n"
+
+	var/nohit_bonus = get_nohit_bouns()
+	if(nohit_bonus)
+		text += "- **No hit:** + [nohit_bonus]\n"
 
 	if(domain_threats > 0)
 		text += "- **Threats:** + [domain_threats * 2]\n"
@@ -127,7 +154,7 @@
 
 	var/static/list/passing_grades = list()
 	if(!passing_grades.len)
-		passing_grades = list(GRADE_A,GRADE_S)
+		passing_grades = list(BITRUNNING_GRADE_A,BITRUNNING_GRADE_S)
 
 	return  generated_domain.difficulty >= BITRUNNER_DIFFICULTY_MEDIUM && (grade in passing_grades)
 
@@ -158,18 +185,12 @@
 
 	switch(score)
 		if(1 to 4)
-			return GRADE_D
+			return BITRUNNING_GRADE_D
 		if(5 to 7)
-			return GRADE_C
+			return BITRUNNING_GRADE_C
 		if(8 to 10)
-			return GRADE_B
+			return BITRUNNING_GRADE_B
 		if(11 to 13)
-			return GRADE_A
+			return BITRUNNING_GRADE_A
 		else
-			return GRADE_S
-
-#undef GRADE_D
-#undef GRADE_C
-#undef GRADE_B
-#undef GRADE_A
-#undef GRADE_S
+			return BITRUNNING_GRADE_S

@@ -13,6 +13,12 @@
 	/// The kind of wallframe that this telescreen drops
 	var/frame_type = /obj/item/wallframe/telescreen
 	projectiles_pass_chance = 100
+	generate_map_preview = FALSE
+
+/obj/machinery/computer/security/telescreen/Initialize(mapload)
+	. = ..()
+	if(mapload)
+		find_and_mount_on_atom()
 
 /obj/item/wallframe/telescreen
 	name = "telescreen frame"
@@ -21,6 +27,7 @@
 	icon_state = "telescreen"
 	result_path = /obj/machinery/computer/security/telescreen
 	pixel_shift = 32
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 5, /datum/material/glass = SHEET_MATERIAL_AMOUNT * 2.5)
 
 /obj/machinery/computer/security/telescreen/on_deconstruction(disassembled)
 	new frame_type(loc)
@@ -52,9 +59,9 @@
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/computer/security/telescreen/entertainment/click_ctrl(mob/user)
-	. = ..()
 	balloon_alert(user, speakers.should_be_listening ? "muted" : "unmuted")
 	speakers.toggle_mute()
+	return CLICK_ACTION_SUCCESS
 
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/entertainment, 32)
 
@@ -70,7 +77,6 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/entertai
 
 /obj/machinery/computer/security/telescreen/entertainment/Initialize(mapload)
 	. = ..()
-	find_and_hang_on_wall()
 	register_context()
 	RegisterSignal(SSdcs, COMSIG_GLOB_NETWORK_BROADCAST_UPDATED, PROC_REF(on_network_broadcast_updated))
 	speakers = new(src)
@@ -83,7 +89,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/entertai
 /obj/machinery/computer/security/telescreen/entertainment/examine(mob/user)
 	. = ..()
 	. += length(network) ? span_notice("The TV is broadcasting something!") : span_notice("<i>There's nothing on TV.</i>")
-	. += span_notice("The volume is currently [speakers.should_be_listening ? "on" : "off"]")
+	. += span_notice("The volume is currently [speakers.should_be_listening ? "on" : "off"].")
 
 /obj/machinery/computer/security/telescreen/entertainment/ui_state(mob/user)
 	return GLOB.always_state
@@ -95,7 +101,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/entertai
 		return UI_CLOSE
 	if(!isliving(user))
 		return isAdminGhostAI(user) ? UI_INTERACTIVE : UI_UPDATE
-	if(user.stat >= SOFT_CRIT)
+	if(user.incapacitated)
 		return UI_UPDATE
 
 	var/can_range = FALSE
@@ -106,7 +112,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/entertai
 	if(HAS_SILICON_ACCESS(user) || (user.interaction_range && user.interaction_range >= get_dist(user, src)))
 		can_range = TRUE
 
-	if((can_range || user.CanReach(src)) && ISADVANCEDTOOLUSER(user))
+	if((can_range || IsReachableBy(user)) && ISADVANCEDTOOLUSER(user))
 		if(user.incapacitated)
 			return UI_UPDATE
 		if(!can_range && user.can_hold_items() && (user.usable_hands <= 0 || HAS_TRAIT(user, TRAIT_HANDS_BLOCKED)))
@@ -135,9 +141,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/entertai
 	else
 		if(!can_see(watcher, src, 7))
 			return FALSE
-	if(watcher.is_blind())
-		return FALSE
-	if(!isobserver(watcher) && watcher.stat >= UNCONSCIOUS)
+	if(watcher.is_blind() || IS_UNCONSCIOUS(watcher))
 		return FALSE
 	return TRUE
 
@@ -298,6 +302,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/ordnance
 /obj/item/wallframe/telescreen/engine
 	name = "engine telescreen frame"
 	result_path = /obj/machinery/computer/security/telescreen/engine
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 7)
 
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/engine, 32)
 
@@ -310,6 +315,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/engine, 
 /obj/item/wallframe/telescreen/turbine
 	name = "turbine telescreen frame"
 	result_path = /obj/machinery/computer/security/telescreen/turbine
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 7)
 
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/turbine, 32)
 
@@ -346,6 +352,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/prison, 
 /obj/item/wallframe/telescreen/auxbase
 	name = "auxiliary base telescreen frame"
 	result_path = /obj/machinery/computer/security/telescreen/auxbase
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 7)
 
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/auxbase, 32)
 
@@ -550,3 +557,15 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/deep_sto
 	say("The [tv_show_name] show has [is_show_active ? "begun" : "ended"]")
 	var/announcement = is_show_active ? pick(tv_starters) : pick(tv_enders)
 	set_network_broadcast_status(tv_network_id, is_show_active, announcement)
+
+/obj/machinery/computer/security/telescreen/monastery
+	name = "monastery monitor"
+	desc = "A telescreen that connects to the monastery's camera network."
+	network = list(CAMERANET_NETWORK_MONASTERY)
+	frame_type = /obj/item/wallframe/telescreen/monastery
+
+MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/security/telescreen/monastery, 32)
+
+/obj/item/wallframe/telescreen/monastery
+	name = "monastery telescreen frame"
+	result_path = /obj/machinery/computer/security/telescreen/monastery

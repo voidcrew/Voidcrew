@@ -5,20 +5,6 @@
 	// Use the new basic mobs system instead.
 	// If you are refactoring a simple_animal, REMOVE it from this list
 	var/list/allowed_types = list(
-		/mob/living/simple_animal/bot,
-		/mob/living/simple_animal/bot/mulebot,
-		/mob/living/simple_animal/bot/mulebot/paranormal,
-		/mob/living/simple_animal/bot/secbot,
-		/mob/living/simple_animal/bot/secbot/beepsky,
-		/mob/living/simple_animal/bot/secbot/beepsky/armsky,
-		/mob/living/simple_animal/bot/secbot/beepsky/jr,
-		/mob/living/simple_animal/bot/secbot/beepsky/officer,
-		/mob/living/simple_animal/bot/secbot/beepsky/ofitser,
-		/mob/living/simple_animal/bot/secbot/ed209,
-		/mob/living/simple_animal/bot/secbot/genesky,
-		/mob/living/simple_animal/bot/secbot/grievous,
-		/mob/living/simple_animal/bot/secbot/grievous/toy,
-		/mob/living/simple_animal/bot/secbot/pingsky,
 		/mob/living/simple_animal/hostile,
 		/mob/living/simple_animal/hostile/asteroid,
 		/mob/living/simple_animal/hostile/asteroid/elite,
@@ -39,18 +25,15 @@
 		/mob/living/simple_animal/hostile/asteroid/hermit/survivor,
 		/mob/living/simple_animal/hostile/asteroid/hermit/survivor/random,
 		/mob/living/simple_animal/hostile/asteroid/old_demon,
+		// Voidcrew: upstream refactored the polar bear into /mob/living/basic/mining/polarbear,
+		// but voidcrew/modules/mob/living/simple_animal/hostile/mining_mobs/polarbear.dm still
+		// declares the warbear and the random spawner as simple animals, which keeps the
+		// /asteroid/polarbear parent alive as an implicit type. Port that file onto the basic
+		// mob and then delete these three lines.
 		/mob/living/simple_animal/hostile/asteroid/polarbear,
-		/mob/living/simple_animal/hostile/asteroid/polarbear/lesser,
 		/mob/living/simple_animal/hostile/asteroid/polarbear/random,
 		/mob/living/simple_animal/hostile/asteroid/polarbear/warrior,
-		/mob/living/simple_animal/hostile/illusion,
-		/mob/living/simple_animal/hostile/illusion/escape,
-		/mob/living/simple_animal/hostile/illusion/mirage,
 		/mob/living/simple_animal/hostile/megafauna,
-		/mob/living/simple_animal/hostile/megafauna/blood_drunk_miner,
-		/mob/living/simple_animal/hostile/megafauna/blood_drunk_miner/doom,
-		/mob/living/simple_animal/hostile/megafauna/blood_drunk_miner/guidance,
-		/mob/living/simple_animal/hostile/megafauna/blood_drunk_miner/hunter,
 		/mob/living/simple_animal/hostile/megafauna/bubblegum,
 		/mob/living/simple_animal/hostile/megafauna/bubblegum/hallucination,
 		/mob/living/simple_animal/hostile/megafauna/clockwork_defender,

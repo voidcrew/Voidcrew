@@ -64,6 +64,7 @@
 	ai_controller = /datum/ai_controller/basic_controller/guarddog
 
 /datum/ai_controller/basic_controller/guarddog
+	behavior_tree_json = "code/modules/mob/living/basic/pets/dog/guarddog.bt.json"
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic,
 		BB_PET_TARGETING_STRATEGY = /datum/targeting_strategy/basic/not_friends,
@@ -72,12 +73,6 @@
 	)
 
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = /datum/idle_behavior/idle_random_walk
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/target_retaliate,
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
-	)
 
 /mob/living/basic/pet/dog/breaddog //Most of the code originates from Cak
 	name = "Kobun"
@@ -117,15 +112,15 @@
 		name = new_name
 		real_name = new_name
 
-/mob/living/basic/pet/dog/breaddog/Life(seconds_per_tick = SSMOBS_DT, times_fired)
+/mob/living/basic/pet/dog/breaddog/Life(seconds_per_tick = SSMOBS_DT)
 	. = ..()
 	if(!.) //dead or deleted
 		return
-	if(stat) // consciousness check
+	if(IS_UNCONSCIOUS_OR_CRIT(src)) // consciousness check
 		return
 
 	if(health < maxHealth)
-		adjustBruteLoss(-4 * seconds_per_tick) //Fast life regen
+		adjust_brute_loss(-4 * seconds_per_tick) //Fast life regen
 
 	for(var/mob/living/carbon/humanoid_entities in view(3, src)) //Mood aura which stay as long you do not wear Sanallite as hat or carry(I will try to make it work with hat someday(obviously weaker than normal one))
 		humanoid_entities.add_mood_event("kobun", /datum/mood_event/kobun)

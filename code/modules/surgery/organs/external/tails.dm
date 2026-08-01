@@ -7,7 +7,7 @@
 	zone = BODY_ZONE_PRECISE_GROIN
 	slot = ORGAN_SLOT_EXTERNAL_TAIL
 
-	dna_block = /datum/dna_block/feature/tail
+	dna_block = /datum/dna_block/feature/accessory/tail
 	restyle_flags = EXTERNAL_RESTYLE_FLESH
 
 	// defaults to cat, but the parent type shouldn't be created regardless
@@ -140,24 +140,22 @@
 
 ///Tail parent type, with wagging functionality
 /datum/bodypart_overlay/mutant/tail
-	layers = EXTERNAL_FRONT|EXTERNAL_BEHIND
+	layers = list(
+		EXTERNAL_FRONT = BODY_FRONT_LAYER,
+		EXTERNAL_BEHIND = BODY_BEHIND_LAYER,
+	)
 	dyable = TRUE
+	offset_location = ENTIRE_BODY
 	var/wagging = FALSE
 
 /datum/bodypart_overlay/mutant/tail/get_base_icon_state()
 	return "[wagging ? "wagging_" : ""][sprite_datum.icon_state]" //add the wagging tag if we be wagging
 
-/datum/bodypart_overlay/mutant/tail/can_draw_on_bodypart(obj/item/bodypart/bodypart_owner)
-	var/mob/living/carbon/human/human = bodypart_owner.owner
-	if(!istype(human))
-		return TRUE
-	if(human.wear_suit?.flags_inv & HIDEJUMPSUIT)
-		return FALSE
-	return TRUE
+/datum/bodypart_overlay/mutant/tail/can_draw_on_bodypart(obj/item/bodypart/bodypart_owner, mob/living/carbon/owner)
+	return ..() && !(bodypart_owner.owner?.obscured_slots & HIDEJUMPSUIT)
 
 /obj/item/organ/tail/cat
 	name = "tail"
-	preference = "feature_human_tail"
 
 	bodypart_overlay = /datum/bodypart_overlay/mutant/tail/cat
 	restyle_flags = EXTERNAL_RESTYLE_FLESH
@@ -169,15 +167,11 @@
 
 ///Cat tail bodypart overlay
 /datum/bodypart_overlay/mutant/tail/cat
-	feature_key = FEATURE_TAIL
+	feature_key = FEATURE_TAIL_CAT
 	color_source = ORGAN_COLOR_HAIR
-
-/datum/bodypart_overlay/mutant/tail/cat/get_global_feature_list()
-	return SSaccessories.tails_list_felinid
 
 /obj/item/organ/tail/monkey
 	name = "monkey tail"
-	preference = "feature_monkey_tail"
 	icon_state = "severedmonkeytail"
 	dna_block = null
 	bodypart_overlay = /datum/bodypart_overlay/mutant/tail/monkey
@@ -186,9 +180,6 @@
 /datum/bodypart_overlay/mutant/tail/monkey
 	color_source = NONE
 	feature_key = FEATURE_TAIL_MONKEY
-
-/datum/bodypart_overlay/mutant/tail/monkey/get_global_feature_list()
-	return SSaccessories.tails_list_monkey
 
 /obj/item/organ/tail/xeno
 	name = "alien tail"
@@ -229,6 +220,7 @@
 /datum/bodypart_overlay/mutant/tail/xeno
 	color_source = NONE
 	feature_key = FEATURE_TAIL_XENO
+	draw_on_husks = HUSK_OVERLAY_GRAYSCALE
 	imprint_on_next_insertion = FALSE
 	/// We don't want to bother writing this in DNA, just use this appearance
 	var/default_appearance = "Xeno"
@@ -236,9 +228,6 @@
 /datum/bodypart_overlay/mutant/tail/xeno/New()
 	. = ..()
 	set_appearance_from_name(default_appearance)
-
-/datum/bodypart_overlay/mutant/tail/xeno/get_global_feature_list()
-	return SSaccessories.tails_list_xeno
 
 /datum/bodypart_overlay/mutant/tail/xeno/randomize_appearance()
 	set_appearance_from_name(default_appearance)
@@ -249,19 +238,16 @@
 /obj/item/organ/tail/lizard
 	name = "lizard tail"
 	desc = "A severed lizard tail. Somewhere, no doubt, a lizard hater is very pleased with themselves."
-	preference = "feature_lizard_tail"
 
 	bodypart_overlay = /datum/bodypart_overlay/mutant/tail/lizard
 
 	wag_flags = WAG_ABLE
-	dna_block = /datum/dna_block/feature/tail_lizard
+	dna_block = /datum/dna_block/feature/accessory/tail_lizard
 
 ///Lizard tail bodypart overlay datum
 /datum/bodypart_overlay/mutant/tail/lizard
 	feature_key = FEATURE_TAIL_LIZARD
-
-/datum/bodypart_overlay/mutant/tail/lizard/get_global_feature_list()
-	return SSaccessories.tails_list_lizard
+	draw_on_husks = HUSK_OVERLAY_GRAYSCALE
 
 /obj/item/organ/tail/lizard/fake
 	name = "fabricated lizard tail"
@@ -269,26 +255,23 @@
 
 ///Bodypart overlay for tail spines. Handled by the tail - has no actual organ associated.
 /datum/bodypart_overlay/mutant/tail_spines
-	layers = EXTERNAL_ADJACENT|EXTERNAL_BEHIND
+	layers = list(
+		EXTERNAL_ADJACENT = BODY_ADJ_LAYER,
+		EXTERNAL_BEHIND = BODY_BEHIND_LAYER
+	)
 	feature_key = FEATURE_TAILSPINES
+	draw_on_husks = HUSK_OVERLAY_GRAYSCALE
+	offset_location = ENTIRE_BODY
 	///Spines wag when the tail does
 	var/wagging = FALSE
 	/// Key for tail spine states, depends on the shape of the tail. Defined in the tail sprite datum.
 	var/tail_spine_key = NONE
 
-/datum/bodypart_overlay/mutant/tail_spines/get_global_feature_list()
-	return SSaccessories.tail_spines_list
-
 /datum/bodypart_overlay/mutant/tail_spines/get_base_icon_state()
 	return (!isnull(tail_spine_key) ? "[tail_spine_key]_" : "") + (wagging ? "wagging_" : "") + sprite_datum.icon_state // Select the wagging state if appropriate
 
-/datum/bodypart_overlay/mutant/tail_spines/can_draw_on_bodypart(obj/item/bodypart/bodypart_owner)
-	var/mob/living/carbon/human/human = bodypart_owner.owner
-	if(!istype(human))
-		return TRUE
-	if(human.wear_suit?.flags_inv & HIDEJUMPSUIT)
-		return FALSE
-	return TRUE
+/datum/bodypart_overlay/mutant/tail_spines/can_draw_on_bodypart(obj/item/bodypart/bodypart_owner, mob/living/carbon/owner)
+	return ..() && !(bodypart_owner.owner?.obscured_slots & HIDEJUMPSUIT)
 
 /datum/bodypart_overlay/mutant/tail_spines/set_dye_color(new_color, obj/item/organ/organ)
 	dye_color = new_color //no update_body_parts() call, tail/set_dye_color will do it.

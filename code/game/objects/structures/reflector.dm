@@ -5,6 +5,7 @@
 	desc = "A base for reflector assemblies."
 	anchored = FALSE
 	density = FALSE
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 5)
 	var/deflector_icon_state
 	var/mutable_appearance/deflector_overlay
 	var/finished = FALSE
@@ -36,9 +37,7 @@
 	if(admin)
 		can_rotate = FALSE
 
-	AddComponent(/datum/component/usb_port, list(
-		/obj/item/circuit_component/reflector,
-	))
+	AddComponent(/datum/component/usb_port, typecacheof(list(/obj/item/circuit_component/reflector), only_root_path = TRUE))
 
 /obj/structure/reflector/examine(mob/user)
 	. = ..()
@@ -132,34 +131,42 @@
 
 	return ITEM_INTERACT_SUCCESS
 
-/obj/structure/reflector/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
+/obj/structure/reflector/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
 	if(admin)
-		return
+		return ITEM_INTERACT_BLOCKING
 	//Finishing the frame
-	else if(istype(W, /obj/item/stack/sheet))
-		if(finished)
-			return
-		var/obj/item/stack/sheet/S = W
-		if(istype(S, /obj/item/stack/sheet/glass))
-			if(S.use(5))
-				new /obj/structure/reflector/single(drop_location())
-				qdel(src)
-			else
-				to_chat(user, span_warning("You need five sheets of glass to create a reflector!"))
-				return
-		if(istype(S, /obj/item/stack/sheet/rglass))
-			if(S.use(10))
-				new /obj/structure/reflector/double(drop_location())
-				qdel(src)
-			else
-				to_chat(user, span_warning("You need ten sheets of reinforced glass to create a double reflector!"))
-				return
-		if(istype(S, /obj/item/stack/sheet/mineral/diamond))
-			if(S.use(1))
-				new /obj/structure/reflector/box(drop_location())
-				qdel(src)
-	else
-		return ..()
+	if(!istype(tool, /obj/item/stack/sheet))
+		return NONE
+
+	if(finished)
+		return ITEM_INTERACT_BLOCKING
+
+	var/obj/item/stack/sheet/using_stack = tool
+	if(istype(using_stack, /obj/item/stack/sheet/glass))
+		if(!using_stack.use(5))
+			to_chat(user, span_warning("You need five sheets of glass to create a reflector!"))
+			return ITEM_INTERACT_BLOCKING
+
+		new /obj/structure/reflector/single(drop_location())
+		qdel(src)
+		return ITEM_INTERACT_SUCCESS
+
+	if(istype(using_stack, /obj/item/stack/sheet/rglass))
+		if(!using_stack.use(10))
+			to_chat(user, span_warning("You need ten sheets of reinforced glass to create a double reflector!"))
+			return ITEM_INTERACT_BLOCKING
+
+		new /obj/structure/reflector/double(drop_location())
+		qdel(src)
+		return ITEM_INTERACT_SUCCESS
+
+	if(istype(using_stack, /obj/item/stack/sheet/mineral/diamond))
+		if(!using_stack.use(1))
+			return ITEM_INTERACT_BLOCKING
+
+		new /obj/structure/reflector/box(drop_location())
+		qdel(src)
+		return ITEM_INTERACT_SUCCESS
 
 /obj/structure/reflector/proc/rotate(mob/user)
 	if (!can_rotate || admin)
@@ -209,6 +216,7 @@
 	finished = TRUE
 	buildstacktype = /obj/item/stack/sheet/rglass
 	buildstackamount = 10
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 10, /datum/material/glass = SHEET_MATERIAL_AMOUNT * 10)
 
 /obj/structure/reflector/double/anchored
 	anchored = TRUE
@@ -234,6 +242,7 @@
 	finished = TRUE
 	buildstacktype = /obj/item/stack/sheet/mineral/diamond
 	buildstackamount = 1
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 10, /datum/material/diamond = SHEET_MATERIAL_AMOUNT)
 
 /obj/structure/reflector/box/anchored
 	anchored = TRUE
@@ -292,6 +301,7 @@
 		return
 	if(!can_rotate)
 		user.balloon_alert(user, "can't rotate!")
+		ui?.close()
 		return
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)

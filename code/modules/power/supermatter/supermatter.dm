@@ -292,7 +292,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	// Extra effects should always fire after the compositions are all finished
 	// Some extra effects like [/datum/sm_gas/carbon_dioxide/extra_effects]
 	// needs more than one gas and rely on a fully parsed gas_percentage.
-	for (var/gas_path in absorbed_gasmix.gases)
+	for (var/gas_path in absorbed_gasmix.moles)
 		var/datum/sm_gas/sm_gas = current_gas_behavior[gas_path]
 		sm_gas?.extra_effects(src)
 
@@ -340,8 +340,8 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	merged_gasmix.temperature += device_energy * waste_multiplier / THERMAL_RELEASE_MODIFIER
 	merged_gasmix.temperature = clamp(merged_gasmix.temperature, TCMB, 2500 * waste_multiplier)
 	merged_gasmix.assert_gases(/datum/gas/plasma, /datum/gas/oxygen)
-	merged_gasmix.gases[/datum/gas/plasma][MOLES] += max(device_energy * waste_multiplier / PLASMA_RELEASE_MODIFIER, 0)
-	merged_gasmix.gases[/datum/gas/oxygen][MOLES] += max(((device_energy + merged_gasmix.temperature * waste_multiplier) - T0C) / OXYGEN_RELEASE_MODIFIER, 0)
+	merged_gasmix.moles[/datum/gas/plasma] += max(device_energy * waste_multiplier / PLASMA_RELEASE_MODIFIER, 0)
+	merged_gasmix.moles[/datum/gas/oxygen] += max(((device_energy + merged_gasmix.temperature * waste_multiplier) - T0C) / OXYGEN_RELEASE_MODIFIER, 0)
 	merged_gasmix.garbage_collect()
 	env.merge(merged_gasmix)
 	air_update_turf(FALSE, FALSE)
@@ -366,6 +366,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	update_appearance()
 	delamination_strategy.lights(src)
 	delamination_strategy.filters(src)
+	absorption_ratio = clamp(absorption_ratio - 0.05, 0.15, 1)
 	return TRUE
 
 // SupermatterMonitor UI for ghosts only. Inherited attack_ghost will call this.
@@ -658,8 +659,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	var/total_moles = absorbed_gasmix.total_moles()
 	if(total_moles < MINIMUM_MOLE_COUNT) //it's not worth processing small amounts like these, total_moles can also be 0 in vacuume
 		return
-	for (var/gas_path in absorbed_gasmix.gases)
-		var/mole_count = absorbed_gasmix.gases[gas_path][MOLES]
+	for (var/gas_path, mole_count in absorbed_gasmix.moles)
 		if(mole_count < MINIMUM_MOLE_COUNT) //save processing power from small amounts like these
 			continue
 		gas_percentage[gas_path] = mole_count / total_moles
@@ -1098,6 +1098,54 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 /obj/machinery/power/supermatter_crystal/proc/holiday_hat_examine(atom/source, mob/user, list/examine_list)
 	SIGNAL_HANDLER
 	examine_list += span_info("There's a santa hat placed atop it. How it got there without being dusted is a mystery.")
+
+// Warp Effect //
+
+/atom/movable/warp_effect
+	plane = DISPLACEMENT_PLANE
+	appearance_flags = PIXEL_SCALE|LONG_GLIDE // no tile bound so you can see it around corners and so
+	icon = 'icons/effects/light_overlays/light_352.dmi'
+	icon_state = "light"
+	pixel_x = -176
+	pixel_y = -176
+
+/atom/movable/warp_effect/Initialize(mapload)
+	. = ..()
+	var/turf/new_turf = get_turf(src)
+	if(new_turf)
+		var/new_offset = GET_TURF_PLANE_OFFSET(new_turf)
+		ADD_TRAIT(GLOB, TRAIT_DISTORTION_IN_USE(new_offset), ref(src))
+
+/atom/movable/warp_effect/Destroy(force)
+	// Just in case I've forgotten how the movement api works
+	var/offset = GET_TURF_PLANE_OFFSET(loc)
+	REMOVE_TRAIT(GLOB, TRAIT_DISTORTION_IN_USE(offset), ref(src))
+	return ..()
+
+/atom/movable/warp_effect/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change)
+	. = ..()
+	var/turf/new_turf = get_turf(src)
+	var/turf/old_turf = get_turf(old_loc)
+	if(!new_turf)
+		var/old_offset = GET_TURF_PLANE_OFFSET(old_turf)
+		REMOVE_TRAIT(GLOB, TRAIT_DISTORTION_IN_USE(old_offset), ref(src))
+		return
+	else if(get_turf(old_loc))
+		return
+	// If we're in a thing on a turf we COUNT as a distortion source
+	var/new_offset = GET_TURF_PLANE_OFFSET(new_turf)
+	ADD_TRAIT(GLOB, TRAIT_DISTORTION_IN_USE(new_offset), ref(src))
+
+/atom/movable/warp_effect/on_changed_z_level(turf/old_turf, turf/new_turf, same_z_layer, notify_contents)
+	. = ..()
+	if(same_z_layer)
+		return
+	if(old_turf)
+		var/old_offset = GET_TURF_PLANE_OFFSET(old_turf)
+		REMOVE_TRAIT(GLOB, TRAIT_DISTORTION_IN_USE(old_offset), ref(src))
+	if(new_turf)
+		var/new_offset = GET_TURF_PLANE_OFFSET(new_turf)
+		ADD_TRAIT(GLOB, TRAIT_DISTORTION_IN_USE(new_offset), ref(src))
 
 #undef BIKE
 #undef COIL

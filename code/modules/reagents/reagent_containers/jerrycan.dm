@@ -11,6 +11,8 @@
 #define LABEL_ROBUST_HARVEST "robust"
 #define LABEL_LEFT_4_ZED "l4z"
 #define LABEL_SPACE_CLEANER "space_cleaner"
+#define LABEL_CONCRETE "concrete"
+#define LABEL_HEXACRETE "hexacrete"
 
 #define CAP_BLACK "black"
 #define CAP_WHITE "white"
@@ -50,7 +52,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	volume = 200
 	obj_flags = UNIQUE_RENAME
-	reagent_flags = OPENCONTAINER | SMART_CAP
+	initial_reagent_flags = OPENCONTAINER | NO_SPLASH
 	fill_icon_thresholds = list(0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200)
 	possible_transfer_amounts = list(5, 10, 15, 30, 50, 100, 200)
 	adjust_color_contrast = TRUE
@@ -67,6 +69,11 @@
 	///You can use this var to tone down the strength of the highlight for less shiny types of plastic.
 	var/highlight_strenght = 1.0
 
+/obj/item/reagent_containers/cup/jerrycan/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/cuffable_item)
+	update_appearance()
+
 /obj/item/reagent_containers/cup/jerrycan/update_overlays()
 	. = ..()
 
@@ -80,7 +87,7 @@
 	if(cap_type)
 		. += mutable_appearance(icon, "[base_icon_state]_cap_[cap_type]")
 
-/obj/item/reagent_containers/cup/jerrycan/worn_overlays(mutable_appearance/standing, isinhands, icon_file)
+/obj/item/reagent_containers/cup/jerrycan/worn_overlays(mutable_appearance/standing, isinhands, icon_file, bodyshape = NONE)
 	. = ..()
 	if(!isinhands)
 		return
@@ -91,13 +98,9 @@
 	if(cap_type)
 		. += mutable_appearance(icon_file, "[base_icon_state]_cap_[cap_type]")
 
-/obj/item/reagent_containers/cup/jerrycan/Initialize(mapload)
-	. = ..()
-	update_appearance()
-
 /obj/item/reagent_containers/cup/jerrycan/opaque
 	fill_icon_thresholds = null
-	reagent_flags = REFILLABLE | DRAINABLE | SMART_CAP
+	initial_reagent_flags = parent_type::initial_reagent_flags & ~TRANSPARENT
 	highlight_strenght = 0.75
 
 /obj/item/reagent_containers/cup/jerrycan/opaque/yellow
@@ -167,6 +170,19 @@
 	desc = "A jug of most wholesome milk."
 	list_reagents = list(/datum/reagent/consumable/milk = 200)
 
+/obj/item/reagent_containers/cup/jerrycan/concrete_mix
+	name = "concrete mix can"
+	label_type = LABEL_CONCRETE
+	cap_type = CAP_BLACK
+	desc = "A large can of ready-to-use concrete mix. Just add water."
+	list_reagents = list(/datum/reagent/concrete_mix = 200)
+
+/obj/item/reagent_containers/cup/jerrycan/hexacrete
+	name = "hexacrete can"
+	label_type = LABEL_HEXACRETE
+	cap_type = CAP_RED
+	desc = "A large canister of hexacrete."
+	list_reagents = list(/datum/reagent/concrete/hexacrete = 200)
 
 #undef LABEL_TEXT
 #undef LABEL_TEXT_OLD
@@ -181,6 +197,8 @@
 #undef LABEL_ROBUST_HARVEST
 #undef LABEL_LEFT_4_ZED
 #undef LABEL_SPACE_CLEANER
+#undef LABEL_CONCRETE
+#undef LABEL_HEXACRETE
 #undef CAP_BLACK
 #undef CAP_WHITE
 #undef CAP_RED

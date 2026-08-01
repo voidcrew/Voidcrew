@@ -118,17 +118,19 @@
 /obj/effect/spawner/random/techstorage/ai_all
 	name = "secure AI circuit board spawner"
 	loot = list(
-		/obj/item/circuitboard/computer/aiupload,
-		/obj/item/circuitboard/computer/borgupload,
+		/obj/item/circuitboard/machine/ai_law_rack/core,
+		/obj/item/circuitboard/machine/ai_law_rack/broadcaster,
+		/obj/item/circuitboard/machine/ai_law_rack/broadcaster,
 		/obj/item/circuitboard/aicore,
 	)
 
 /obj/effect/spawner/random/techstorage/command_all
 	name = "secure command circuit board spawner"
 	loot = list(
-		/obj/item/circuitboard/computer/crew,
-		/obj/item/circuitboard/computer/communications,
+		/obj/item/circuitboard/computer/accounting,
 		/obj/item/circuitboard/computer/bankmachine,
+		/obj/item/circuitboard/computer/communications,
+		/obj/item/circuitboard/computer/crew,
 	)
 
 /obj/effect/spawner/random/techstorage/rnd_secure_all

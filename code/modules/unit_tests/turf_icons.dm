@@ -1,9 +1,9 @@
 /// Makes sure turf icons actually exist. :)
-/datum/unit_test/turf_icons
+/datum/unit_test/maptest_turf_icons
 	var/modular_mineral_turf_file //= 'icons/turf/mining.dmi' //MODULARITY SUPPORT - insert your snowflake MAP_SWITCH icon file here if you use that define.
 
-/datum/unit_test/turf_icons/Run()
-	for(var/turf/turf_path as anything in (subtypesof(/turf) - typesof(/turf/closed/mineral)))
+/datum/unit_test/maptest_turf_icons/Run()
+	for(var/turf/turf_path as anything in (subtypesof(/turf) - typesof(/turf/closed/mineral, /turf/closed/indestructible/rock)))
 
 		var/icon_state = initial(turf_path.icon_state)
 		var/icon_file = initial(turf_path.icon)

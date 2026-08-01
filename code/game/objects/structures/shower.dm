@@ -87,7 +87,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/shower, (-16))
 	if(src.has_water_reclaimer)
 		reagents.add_reagent(reagent_id, reagent_capacity)
 	soundloop = new(src, FALSE)
-	AddComponent(/datum/component/plumbing/simple_demand, extend_pipe_to_edge = TRUE)
+	AddComponent(/datum/component/plumbing/simple_demand/extended)
 	var/static/list/loc_connections = list(
 		COMSIG_ATOM_ENTERED = PROC_REF(on_entered),
 		COMSIG_ATOM_EXITED = PROC_REF(on_exited),
@@ -130,23 +130,27 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/shower, (-16))
 
 /obj/machinery/shower/plunger_act(obj/item/plunger/attacking_plunger, mob/living/user, reinforced)
 	user.balloon_alert_to_viewers("furiously plunging...", "plunging shower...")
-	if(do_after(user, 3 SECONDS, target = src))
-		user.balloon_alert_to_viewers("finished plunging")
-		reagents.expose(get_turf(src), TOUCH) //splash on the floor
-		reagents.clear_reagents()
+	if(!do_after(user, 3 SECONDS, target = src))
+		return TRUE
+	user.balloon_alert_to_viewers("finished plunging")
+	reagents.expose(get_turf(src), TOUCH) //splash on the floor
+	reagents.clear_reagents()
+	begin_processing()
+	return TRUE
 
-/obj/machinery/shower/attackby(obj/item/tool, mob/user, list/modifiers, list/attack_modifiers)
-	if(istype(tool, /obj/item/stock_parts/water_recycler))
-		if(has_water_reclaimer)
-			to_chat(user, span_warning("There is already has a water recycler installed."))
-			return
+/obj/machinery/shower/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(!istype(tool, /obj/item/stock_parts/water_recycler))
+		return NONE
 
-		playsound(src, 'sound/machines/click.ogg', 20, TRUE)
-		qdel(tool)
-		has_water_reclaimer = TRUE
-		begin_processing()
+	if(has_water_reclaimer)
+		to_chat(user, span_warning("There is already has a water recycler installed."))
+		return ITEM_INTERACT_BLOCKING
 
-	return ..()
+	playsound(src, 'sound/machines/click.ogg', 20, TRUE)
+	qdel(tool)
+	has_water_reclaimer = TRUE
+	begin_processing()
+	return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/shower/multitool_act(mob/living/user, obj/item/tool)
 	. = ..()
@@ -249,7 +253,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/shower, (-16))
 /obj/machinery/shower/proc/on_exited(datum/source, atom/movable/exiter)
 	SIGNAL_HANDLER
 
-	if(!isliving(exiter))
+	if(!iscarbon(exiter))
 		return
 
 	var/obj/machinery/shower/locate_new_shower = locate() in get_turf(exiter)
@@ -271,8 +275,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/shower, (-16))
 	var/mob/living/living_target = target
 	check_heat(living_target)
 
-	living_target.apply_status_effect(/datum/status_effect/washing_regen, shower_reagent)
-	living_target.add_mood_event("shower", /datum/mood_event/shower, shower_reagent)
+	if(iscarbon(living_target))
+		living_target.apply_status_effect(/datum/status_effect/washing_regen, shower_reagent)
+		living_target.add_mood_event("shower", /datum/mood_event/shower, shower_reagent)
 
 /**
  * Toggle whether shower is actually on and outputting water.
@@ -303,7 +308,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/shower, (-16))
 		if(isopenturf(loc))
 			var/turf/open/tile = loc
 			tile.MakeSlippery(TURF_WET_WATER, min_wet_time = 5 SECONDS, wet_time_to_add = 1 SECONDS)
-		for(var/mob/living/showerer in loc)
+		for(var/mob/living/carbon/showerer in loc)
 			showerer.remove_status_effect(/datum/status_effect/washing_regen)
 	return TRUE
 
@@ -370,7 +375,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/shower, (-16))
 		to_chat(living, span_warning("[src] is freezing!"))
 	else if(current_temperature == SHOWER_BOILING)
 		living.adjust_bodytemperature(35, 0, 500)
-		living.adjustFireLoss(5)
+		living.adjust_fire_loss(5)
 		to_chat(living, span_danger("[src] is searing!"))
 
 
@@ -380,19 +385,21 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/shower, (-16))
 	icon_state = "shower_frame"
 	desc = "A shower frame, that needs a water recycler to finish construction."
 	anchored = FALSE
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 2)
 
 /obj/structure/showerframe/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/simple_rotation)
+	AddElement(/datum/element/simple_rotation)
 
-/obj/structure/showerframe/attackby(obj/item/tool, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(istype(tool, /obj/item/stock_parts/water_recycler))
-		qdel(tool)
-		var/obj/machinery/shower/shower = new(loc, REVERSE_DIR(dir), TRUE)
-		qdel(src)
-		playsound(shower, 'sound/machines/click.ogg', 20, TRUE)
-		return
-	return ..()
+/obj/structure/showerframe/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(!istype(tool, /obj/item/stock_parts/water_recycler))
+		return NONE
+
+	qdel(tool)
+	var/obj/machinery/shower/shower = new(loc, REVERSE_DIR(dir), TRUE)
+	qdel(src)
+	playsound(shower, 'sound/machines/click.ogg', 20, TRUE)
+	return ITEM_INTERACT_SUCCESS
 
 /obj/structure/showerframe/wrench_act(mob/living/user, obj/item/tool)
 	. = ..()
@@ -402,13 +409,6 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/shower, (-16))
 	qdel(src)
 
 	return TRUE
-
-/obj/structure/sinkframe/wrench_act_secondary(mob/living/user, obj/item/tool)
-	. = ..()
-	tool.play_tool_sound(src)
-	deconstruct()
-	return TRUE
-
 
 /obj/effect/mist
 	name = "mist"

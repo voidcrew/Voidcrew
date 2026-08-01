@@ -1,4 +1,5 @@
 /datum/ai_controller/basic_controller/fleshblob
+	behavior_tree_json = "code/modules/mob/living/basic/ruin_defender/fleshblob.bt.json"
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic,
 		BB_AGGRO_RANGE = 7,
@@ -6,11 +7,6 @@
 	)
 
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = /datum/idle_behavior/idle_random_walk
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
-	)
 
 /mob/living/basic/fleshblob
 	name = "mass of flesh"
@@ -40,7 +36,7 @@
 	. = ..()
 	grant_actions_by_list(list(/datum/action/consume/fleshblob))
 	ADD_TRAIT(src, TRAIT_STRONG_GRABBER, INNATE_TRAIT)
-	AddElement(/datum/element/death_drops, string_list(list(/obj/effect/gibspawner/generic)))
+	AddElement(/datum/element/death_drops, /obj/effect/gibspawner/generic)
 	AddComponent(\
 		/datum/component/blood_walk, \
 		blood_type = /obj/effect/decal/cleanable/blood/trail_holder, \

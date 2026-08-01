@@ -1,6 +1,7 @@
 /obj/machinery/computer/apc_control
 	name = "power flow control console"
 	desc = "Used to remotely control the flow of power to different parts of the station."
+	icon_state = MAP_SWITCH("computer", "/obj/machinery/computer/apc_control")
 	icon_screen = "solar"
 	icon_keyboard = "power_key"
 	req_access = list(ACCESS_CE)
@@ -48,7 +49,7 @@
 /obj/machinery/computer/apc_control/proc/log_activity(log_text)
 	if(!should_log)
 		return
-	LAZYADD(logs, "([station_time_timestamp()]): [auth_id] [log_text]")
+	LAZYADD(logs, "([round_timestamp()]): [auth_id] [log_text]")
 
 ///Resets the console's emagged state and re-enables logging of activity
 /obj/machinery/computer/apc_control/proc/restore_comp(mob/user)
@@ -102,7 +103,7 @@
 */
 
 /obj/machinery/computer/apc_control/proc/check_apc(obj/machinery/power/apc/checked_apc)
-	return (is_on_station ? is_station_level(checked_apc.z) : checked_apc.z == z) && !checked_apc.malfhack && !checked_apc.aidisabled && !(checked_apc.obj_flags & EMAGGED) && !checked_apc.machine_stat && !istype(checked_apc.area, /area/station/ai_monitored)
+	return (is_on_station ? is_station_level(checked_apc.z) : checked_apc.z == z) && !checked_apc.malfhack && !checked_apc.aidisabled && !(checked_apc.obj_flags & EMAGGED) && !checked_apc.machine_stat && !istype(checked_apc.area, /area/station/ai)
 
 /obj/machinery/computer/apc_control/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()

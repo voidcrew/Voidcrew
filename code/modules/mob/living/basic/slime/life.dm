@@ -1,5 +1,5 @@
 
-/mob/living/basic/slime/Life(seconds_per_tick = SSMOBS_DT, times_fired)
+/mob/living/basic/slime/Life(seconds_per_tick = SSMOBS_DT)
 	. = ..()
 	if(!.) //dead or deleted
 		return
@@ -7,9 +7,9 @@
 	if(!HAS_TRAIT(src, TRAIT_STASIS)) //No hunger in stasis
 		handle_nutrition(seconds_per_tick)
 
-	handle_slime_stasis(seconds_per_tick)
+	handle_slime_stasis()
 
-/mob/living/basic/slime/handle_environment(datum/gas_mixture/environment, seconds_per_tick, times_fired)
+/mob/living/basic/slime/handle_environment(datum/gas_mixture/environment, seconds_per_tick)
 	..()
 	if(bodytemperature <= (T0C - 40)) // stun temperature
 		apply_status_effect(/datum/status_effect/freon, SLIME_COLD)
@@ -17,13 +17,10 @@
 		remove_status_effect(/datum/status_effect/freon, SLIME_COLD)
 
 ///Handles if a slime's environment would cause it to enter stasis. Ignores TRAIT_STASIS
-/mob/living/basic/slime/proc/handle_slime_stasis(seconds_per_tick)
+/mob/living/basic/slime/proc/handle_slime_stasis()
 	var/datum/gas_mixture/environment = loc.return_air()
 
-	var/bz_percentage = 0
-
-	if(environment.gases[/datum/gas/bz])
-		bz_percentage = environment.gases[/datum/gas/bz][MOLES] / environment.total_moles()
+	var/bz_percentage = environment.moles[/datum/gas/bz] / environment.total_moles()
 
 	if(bz_percentage >= 0.05 && bodytemperature < (T0C + 100)) //Check if we should be in stasis
 		if(!has_status_effect(/datum/status_effect/grouped/stasis)) //Check if we don't have the status effect yet
@@ -59,7 +56,7 @@
 
 	if(nutrition == 0) //adjust nutrition ensures it can't go below 0
 		if(SPT_PROB(50, seconds_per_tick))
-			adjustBruteLoss(rand(0,5))
+			adjust_brute_loss(rand(0,5))
 		return
 
 	if (SLIME_GROW_NUTRITION <= nutrition)

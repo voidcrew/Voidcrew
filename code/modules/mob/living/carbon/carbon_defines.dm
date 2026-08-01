@@ -1,5 +1,6 @@
 /mob/living/carbon
-	blood_volume = BLOOD_VOLUME_NORMAL
+	abstract_type = /mob/living/carbon
+	default_blood_volume = BLOOD_VOLUME_NORMAL
 	gender = MALE
 	pressure_resistance = 15
 	hud_possible = list(HEALTH_HUD,STATUS_HUD,ANTAG_HUD,GLAND_HUD)
@@ -30,25 +31,12 @@
 	var/old_disgust = 0
 
 	//inventory slots
-	var/obj/item/back = null
-	var/obj/item/clothing/mask/wear_mask = null
-	var/obj/item/clothing/neck/wear_neck = null
 	/// Equipped air tank. Never set this manually.
 	var/obj/item/tank/internal = null
 	/// "External" air tank. Never set this manually. Not required to stay directly equipped on the mob (i.e. could be a machine or MOD suit module).
 	var/obj/item/tank/external = null
-	var/obj/item/clothing/head = null
 
-	///only used by humans
-	var/obj/item/clothing/gloves = null
-	///only used by humans.
-	var/obj/item/clothing/shoes/shoes = null
-	///only used by humans.
-	var/obj/item/clothing/glasses/glasses = null
-	///only used by humans.
-	var/obj/item/clothing/ears = null
-
-	/// Carbon, you should really only be accessing this through has_dna() but it's your life
+	/// DNA is carbon-only, and ideally you should be accessing it through has_dna(), but you can access it directly if you know you're working with a carbon mob
 	var/datum/dna/dna = null
 	///last mind to control this mob, for blood-based cloning
 	var/datum/mind/last_mind = null
@@ -76,6 +64,8 @@
 		/obj/item/bodypart/leg/right,
 		/obj/item/bodypart/leg/left,
 	)
+	/// Alist of (non-stump) bodyparts by their bodyzone for quick get_bodypart access
+	var/alist/real_bodypart_cache = alist()
 
 	/// A collection of arms (or actually whatever the fug /bodyparts you monsters use to wreck my systems)
 	var/list/hand_bodyparts = list()
@@ -125,3 +115,11 @@
 	var/bodyshape = BODYSHAPE_HUMANOID
 
 	COOLDOWN_DECLARE(bleeding_message_cd)
+
+	/// Obscured hide flags (hideflags that can't be seen AND can't be interacted with)
+	var/obscured_slots = NONE
+	/// Covered hide flags (hideflags that can be seen, BUT can't be interacted with)
+	var/covered_slots = NONE
+
+	/// Lazylist of all hair masks applied to this mob's hairstyles
+	var/list/hair_masks

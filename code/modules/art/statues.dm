@@ -7,6 +7,8 @@
 	desc = "Placeholder. Yell at Firecage if you SOMEHOW see this."
 	icon = 'icons/obj/art/statue.dmi'
 	icon_state = ""
+	/// Abstract root type
+	abstract_type = /obj/structure/statue
 	density = TRUE
 	anchored = FALSE
 	max_integrity = 100
@@ -18,14 +20,14 @@
 	var/impressiveness = 15
 	/// Art component subtype added to this statue
 	var/art_type = /datum/element/art
-	/// Abstract root type
-	var/abstract_type = /obj/structure/statue
+	/// Set to true to prevent it from being carved out of a block
+	var/uncarveable = FALSE
 
 /obj/structure/statue/Initialize(mapload)
 	. = ..()
 	AddElement(art_type, impressiveness)
 	AddElement(/datum/element/beauty, impressiveness * 75)
-	AddComponent(/datum/component/simple_rotation)
+	AddElement(/datum/element/simple_rotation)
 	AddComponent(/datum/component/marionette)
 
 /obj/structure/statue/wrench_act(mob/living/user, obj/item/tool)
@@ -33,22 +35,26 @@
 	default_unfasten_wrench(user, tool)
 	return ITEM_INTERACT_SUCCESS
 
-/obj/structure/statue/attackby(obj/item/W, mob/living/user, list/modifiers, list/attack_modifiers)
+/obj/structure/statue/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
 	add_fingerprint(user)
-	if(W.tool_behaviour == TOOL_WELDER)
-		if(!W.tool_start_check(user, amount=1, heat_required = HIGH_TEMPERATURE_REQUIRED))
-			return FALSE
-		user.balloon_alert(user, "slicing apart...")
-		if(W.use_tool(src, user, 40, volume=50))
-			deconstruct(TRUE)
-		return
 	return ..()
 
+/obj/structure/statue/welder_act(mob/living/user, obj/item/tool)
+	add_fingerprint(user)
+	if(!tool.tool_start_check(user, amount=1, heat_required = HIGH_TEMPERATURE_REQUIRED))
+		return ITEM_INTERACT_BLOCKING
+
+	user.balloon_alert(user, "slicing apart...")
+	if(!tool.use_tool(src, user, 4 SECONDS, volume = 50))
+		return ITEM_INTERACT_BLOCKING
+
+	deconstruct(TRUE)
+	return ITEM_INTERACT_SUCCESS
 
 /obj/structure/statue/atom_deconstruct(disassembled = TRUE)
 	var/amount_mod = disassembled ? 0 : -2
 	for(var/mat in custom_materials)
-		var/datum/material/custom_material = GET_MATERIAL_REF(mat)
+		var/datum/material/custom_material = SSmaterials.get_material(mat)
 		var/amount = max(0,round(custom_materials[mat]/SHEET_MATERIAL_AMOUNT) + amount_mod)
 		if(amount > 0)
 			new custom_material.sheet_type(drop_location(), amount)
@@ -277,10 +283,10 @@
 	name = "Elder Atmosian"
 	desc = "A statue of an Elder Atmosian, capable of bending the laws of thermodynamics to their will."
 	icon_state = "eng"
-	custom_materials = list(/datum/material/metalhydrogen = SHEET_MATERIAL_AMOUNT*10)
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 30, /datum/material/metalhydrogen = SHEET_MATERIAL_AMOUNT * 20, /datum/material/zaukerite = SHEET_MATERIAL_AMOUNT * 15)
 	max_integrity = 1000
 	impressiveness = 100
-	abstract_type = /obj/structure/statue/elder_atmosian //This one is uncarvable
+	uncarveable = TRUE
 
 ///////////Goliath//////////////////////////////////////////////////
 /obj/structure/statue/goliath
@@ -330,13 +336,16 @@
 	. = ..()
 	AddElement(/datum/element/eyestab)
 	AddElement(/datum/element/wall_engraver)
-	//deals 200 damage to statues, meaning you can actually kill one in ~250 hits
-	AddElement(/datum/element/bane, target_type = /mob/living/basic/statue, damage_multiplier = 40)
+	AddComponent(/datum/component/bane, damage_multiplier = 40, should_bane_callback = CALLBACK(src, PROC_REF(bane_check)), label_text = "statues")
 
 /obj/item/chisel/Destroy()
 	prepared_block = null
 	tracked_user = null
 	return ..()
+
+/// Bane component callback
+/obj/item/chisel/proc/bane_check(mob/living/target)
+	return istype(target, /mob/living/basic/statue)
 
 /*
 Hit the block to start
@@ -347,6 +356,7 @@ Moving interrupts
 /obj/item/chisel/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	if(sculpting)
 		return ITEM_INTERACT_BLOCKING
+
 	if(istype(interacting_with, /obj/structure/carving_block))
 		var/obj/structure/carving_block/sculpt_block = interacting_with
 
@@ -364,6 +374,10 @@ Moving interrupts
 	else if(prepared_block) //We're aiming at something next to us with block prepared
 		prepared_block.set_target(interacting_with, user)
 		return ITEM_INTERACT_SUCCESS
+
+	else if(istype(interacting_with, /turf/open/floor/concrete))
+		var/turf/open/floor/concrete/concrete_floor = interacting_with
+		return concrete_floor.handle_shape(user)
 
 	return NONE
 
@@ -388,7 +402,7 @@ Moving interrupts
 
 	var/datum/progressbar/total_progress_bar = new(user, sculpting_time, prepared_block)
 	while(remaining_time > 0 && !interrupted)
-		if(do_after(user, sculpting_period, target = prepared_block, progress = FALSE))
+		if(do_after(user, sculpting_period, target = prepared_block, show_progress = FALSE))
 			var/time_delay = !(remaining_time % SCULPT_SOUND_INCREMENT)
 			if(time_delay)
 				playsound(src, 'sound/effects/break_stone.ogg', 50, TRUE)
@@ -401,6 +415,10 @@ Moving interrupts
 	if(!interrupted && !QDELETED(prepared_block))
 		prepared_block.create_statue()
 		user.balloon_alert(user, "statue finished")
+		if(HAS_PERSONALITY(user, /datum/personality/creative))
+			user.add_mood_event("creative_sculpting", /datum/mood_event/creative_sculpting)
+		if(HAS_PERSONALITY(user, /datum/personality/unimaginative))
+			user.add_mood_event("unimaginative_sculpting", /datum/mood_event/unimaginative_sculpting)
 	stop_sculpting(silent = !interrupted)
 
 /// To setup the sculpting target for the carving block
@@ -439,15 +457,16 @@ Moving interrupts
 	for(var/statue_path in prepared_block.get_possible_statues())
 		var/obj/structure/statue/abstract_statue = statue_path
 		choices[statue_path] = image(icon = initial(abstract_statue.icon), icon_state = initial(abstract_statue.icon_state))
+
 	if(!choices.len)
-		user.balloon_alert(user, "no abstract statues for material!")
+		user.balloon_alert(user, "no statues for material!")
 
 	var/choice = show_radial_menu(user, prepared_block, choices, require_near = TRUE)
 	if(choice)
 		prepared_block.current_preset_type = choice
 		var/image/chosen_looks = choices[choice]
 		prepared_block.current_target = chosen_looks.appearance
-		user.balloon_alert(user, "abstract statue selected")
+		user.balloon_alert(user, "statue selected")
 
 /obj/structure/carving_block
 	name = "block"
@@ -568,11 +587,11 @@ Moving interrupts
 /obj/structure/carving_block/proc/build_statue_cost_table()
 	. = list()
 	for(var/statue_type in subtypesof(/obj/structure/statue) - /obj/structure/statue/custom)
-		var/obj/structure/statue/S = new statue_type()
-		if(!S.icon_state || S.abstract_type == S.type || !S.custom_materials)
+		var/obj/structure/statue/fake_statue = new statue_type()
+		if(!fake_statue.icon_state || fake_statue.abstract_type == fake_statue.type || fake_statue.uncarveable || !fake_statue.custom_materials)
 			continue
-		.[S.type] = S.custom_materials
-		qdel(S)
+		.[fake_statue.type] = fake_statue.custom_materials
+		qdel(fake_statue)
 
 /obj/structure/statue/custom
 	name = "custom statue"

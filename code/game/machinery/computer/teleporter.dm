@@ -4,6 +4,7 @@
 /obj/machinery/computer/teleporter
 	name = "teleporter control console"
 	desc = "Used to control a linked teleportation Hub and Station."
+	icon_state = MAP_SWITCH("computer", "/obj/machinery/computer/launchpad")
 	icon_screen = "teleport"
 	icon_keyboard = "teleport_key"
 	light_color = LIGHT_COLOR_BLUE
@@ -24,9 +25,7 @@
 	id = "[rand(1000, 9999)]"
 	link_power_station()
 
-	AddComponent(/datum/component/usb_port, list(
-		/obj/item/circuit_component/teleporter_control_console,
-	))
+	AddComponent(/datum/component/usb_port, typecacheof(list(/obj/item/circuit_component/teleporter_control_console), only_root_path = TRUE))
 
 /obj/machinery/computer/teleporter/Destroy()
 	if (power_station)

@@ -8,13 +8,18 @@ import {
 import { capitalizeFirst } from 'tgui-core/string';
 
 import { useBackend } from '../../backend';
-import { TraitTooltip } from '../SeedExtractor';
+import { TraitTooltip } from '../SeedTable';
 import { Fallback } from './Fallback';
 import type { PlantAnalyzerData } from './types';
 
 export function PlantAnalyzerGraft(props) {
   const { data } = useBackend<PlantAnalyzerData>();
   const { graft_data } = data;
+
+  if (!graft_data) {
+    // This shouldn't be rendered if graft_data is null
+    return null;
+  }
 
   return (
     <Section

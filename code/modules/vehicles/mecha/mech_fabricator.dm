@@ -1,6 +1,7 @@
 /obj/machinery/mecha_part_fabricator
 	icon = 'icons/obj/machines/robotics.dmi'
 	icon_state = "fab-idle"
+	base_icon_state = "fab"
 	name = "exosuit fabricator"
 	desc = "Nothing is being built."
 	density = TRUE
@@ -45,7 +46,7 @@
 	var/link_on_init = TRUE
 
 	/// Reference to a remote material inventory, such as an ore silo.
-	var/datum/component/remote_materials/rmat
+	var/datum/remote_materials/rmat
 
 	/// All designs in the techweb that can be fabricated by this machine, since the last update.
 	var/list/datum/design/cached_designs
@@ -53,20 +54,17 @@
 	/// Looping sound for printing items
 	var/datum/looping_sound/lathe_print/print_sound
 
-	/// Local designs that only this mechfab have(using when mechfab emaged so it's illegal designs).
-	var/list/datum/design/illegal_local_designs
-
 	/// Direction the produced items will drop (0 means on top of us)
 	var/drop_direction = SOUTH
 
 /obj/machinery/mecha_part_fabricator/Initialize(mapload)
 	print_sound = new(src,  FALSE)
-	rmat = AddComponent(/datum/component/remote_materials, mapload && link_on_init)
+	rmat = new (src, mapload && link_on_init)
 	cached_designs = list()
-	illegal_local_designs = list()
 	return ..()
 
 /obj/machinery/mecha_part_fabricator/Destroy()
+	QDEL_NULL(rmat)
 	QDEL_NULL(print_sound)
 	return ..()
 
@@ -153,27 +151,6 @@
 	drop_direction = direction
 	balloon_alert(user, "dropping [dir2text(drop_direction)]")
 
-/obj/machinery/mecha_part_fabricator/emag_act(mob/user, obj/item/card/emag/emag_card)
-	if(obj_flags & EMAGGED)
-		return FALSE
-	if(!HAS_TRAIT(user, TRAIT_KNOW_ROBO_WIRES))
-		to_chat(user, span_warning("You're unsure about [emag_card ? "where to swipe [emag_card] over" : "how to override"] [src] for any effect. Maybe if you had more knowledge of robotics..."))
-
-		return FALSE
-	obj_flags |= EMAGGED
-	for(var/found_illegal_mech_nods in SSresearch.techweb_nodes)
-		var/datum/techweb_node/illegal_mech_node = SSresearch.techweb_nodes[found_illegal_mech_nods]
-		if(!illegal_mech_node?.illegal_mech_node)
-			continue
-		for(var/id in illegal_mech_node.design_ids)
-			var/datum/design/illegal_mech_design = SSresearch.techweb_design_by_id(id)
-			illegal_local_designs |= illegal_mech_design
-			cached_designs |= illegal_mech_design
-	say("R$c!i&ed ERROR de#i$ns. C@n%ec$%ng to ~NULL~ se%ve$s.")
-	playsound(src, 'sound/machines/uplink/uplinkerror.ogg', 50, TRUE)
-	update_static_data_for_all_viewers()
-	return TRUE
-
 /**
  * Updates the `final_sets` and `buildable_parts` for the current mecha fabricator.
  */
@@ -186,9 +163,6 @@
 
 		if(design.build_type & MECHFAB)
 			cached_designs |= design
-
-	for(var/datum/design/illegal_disign in illegal_local_designs)
-		cached_designs |= illegal_disign
 
 	var/design_delta = cached_designs.len - previous_design_count
 
@@ -204,16 +178,17 @@
  * Adds the overlay to show the fab working and sets active power usage settings.
  */
 /obj/machinery/mecha_part_fabricator/proc/on_start_printing()
-	add_overlay("fab-active")
+	add_overlay("[base_icon_state]-active")
 	update_use_power(ACTIVE_POWER_USE)
 	print_sound.start()
+
 /**
  * Intended to be called when the exofab has stopped working and is no longer printing items.
  *
  * Removes the overlay to show the fab working and sets idle power usage settings. Additionally resets the description and turns off queue processing.
  */
 /obj/machinery/mecha_part_fabricator/proc/on_finish_printing()
-	cut_overlay("fab-active")
+	cut_overlay("[base_icon_state]-active")
 	update_use_power(IDLE_POWER_USE)
 	desc = initial(desc)
 	process_queue = FALSE
@@ -252,7 +227,7 @@
 	if(!D || length(D.reagents_list))
 		return FALSE
 
-	var/datum/component/material_container/materials = rmat.mat_container
+	var/datum/material_container/materials = rmat.mat_container
 	if (!materials)
 		if(verbose)
 			say("No access to material storage, please contact the quartermaster.")
@@ -264,7 +239,7 @@
 			say("Not enough resources. Processing stopped.")
 		return FALSE
 
-	rmat.use_materials(D.materials, component_coeff, 1, "built", "[D.name]", user_data)
+	rmat.use_materials(D.materials, component_coeff, 1, "processed", "[D.name]", user_data)
 	being_built = D
 	build_finish = world.time + get_construction_time_w_coeff(initial(D.construction_time))
 	build_start = world.time
@@ -308,7 +283,7 @@
  * * dispensed_design - Design datum to attempt to dispense.
  */
 /obj/machinery/mecha_part_fabricator/proc/dispense_built_part(datum/design/dispensed_design)
-	var/obj/item/built_part = new dispensed_design.build_path(src)
+	var/obj/item/built_part = dispensed_design.create_result(src)
 	SSblackbox.record_feedback("nested tally", "lathe_printed_items", 1, list("[type]", "[built_part.type]"))
 
 	being_built = null
@@ -458,7 +433,7 @@
 				if(!istext(design_id))
 					continue
 
-				if(!(stored_research.researched_designs.Find(design_id) || is_type_in_list(SSresearch.techweb_design_by_id(design_id), illegal_local_designs)))
+				if(!stored_research.researched_designs.Find(design_id))
 					continue
 
 				var/datum/design/design = SSresearch.techweb_design_by_id(design_id)
@@ -514,31 +489,33 @@
 			var/datum/material/material = locate(params["ref"])
 			var/amount = text2num(params["amount"])
 			// SAFETY: eject_sheets checks for valid mats
-			rmat.eject_sheets(material, amount)
+			rmat.eject_sheets(material, amount, user_data = ID_DATA(usr))
 			return
 
 	return FALSE
 
 /obj/machinery/mecha_part_fabricator/proc/AfterMaterialInsert(item_inserted, id_inserted, amount_inserted)
 	var/datum/material/M = id_inserted
-	add_overlay("fab-load-[M.name]")
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, cut_overlay), "fab-load-[M.name]"), 1 SECONDS)
+	add_overlay("[base_icon_state]-load-[M.name]")
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, cut_overlay), "[base_icon_state]-load-[M.name]"), 1 SECONDS)
+
+/obj/machinery/mecha_part_fabricator/update_icon_state()
+	. = ..()
+	icon_state = panel_open ? "[base_icon_state]-o" : "[base_icon_state]-idle"
 
 /obj/machinery/mecha_part_fabricator/screwdriver_act(mob/living/user, obj/item/I)
-	if(..())
-		return TRUE
 	if(being_built)
 		to_chat(user, span_warning("\The [src] is currently processing! Please wait until completion."))
-		return FALSE
-	return default_deconstruction_screwdriver(user, "fab-o", "fab-idle", I)
+		return NONE
+
+	return default_deconstruction_screwdriver(user, I)
 
 /obj/machinery/mecha_part_fabricator/crowbar_act(mob/living/user, obj/item/I)
-	if(..())
-		return TRUE
 	if(being_built)
 		to_chat(user, span_warning("\The [src] is currently processing! Please wait until completion."))
-		return FALSE
-	return default_deconstruction_crowbar(I)
+		return NONE
+
+	return default_deconstruction_crowbar(user, I)
 
 /obj/machinery/mecha_part_fabricator/maint
 	link_on_init = FALSE

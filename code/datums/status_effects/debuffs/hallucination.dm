@@ -54,10 +54,10 @@
 	))
 
 /// Signal proc for [COMSIG_LIVING_HEALTHSCAN]. Show we're hallucinating to (advanced) scanners.
-/datum/status_effect/hallucination/proc/on_health_scan(datum/source, list/render_list, advanced, mob/user, mode, tochat)
+/datum/status_effect/hallucination/proc/on_health_scan(datum/source, list/render_list, scanpower, mob/user, mode, tochat)
 	SIGNAL_HANDLER
 
-	if(!advanced)
+	if(scanpower <= SCANPOWER_BASIC)
 		return
 	render_list += "<span class='info ml-1'>"
 	render_list += conditional_tooltip("Subject is hallucinating.", "Supply antipsychotic medication, such as [/datum/reagent/medicine/haloperidol::name] or [/datum/reagent/medicine/synaptizine::name].", tochat)
@@ -93,8 +93,8 @@
 
 	var/lower_cd = lower_tick_interval
 	var/upper_cd = upper_tick_interval
-	if(!variable_tier)
-		var/seconds_left = (duration - world.time) / 10
+	if(variable_tier)
+		var/seconds_left = duration / 10
 		switch(seconds_left)
 			if(0 to 20)
 				max_hallucination_tier = HALLUCINATION_TIER_COMMON
@@ -166,7 +166,7 @@
 	strict_tier = TRUE
 	variable_tier = FALSE
 
-/datum/status_effect/hallucination/perceptomatrix/refresh(mob/living/refresh_owner, new_duration)
+/datum/status_effect/hallucination/perceptomatrix/refresh(effect, new_duration)
 	src.duration += new_duration
 
 /datum/status_effect/hallucination/perceptomatrix/on_creation(mob/living/new_owner, new_duration)

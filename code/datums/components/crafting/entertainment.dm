@@ -50,28 +50,28 @@
 	name = "Mixed bouquet"
 	result = /obj/item/bouquet
 	reqs = list(
-		/obj/item/food/grown/poppy/lily = 2,
-		/obj/item/food/grown/sunflower = 2,
-		/obj/item/food/grown/poppy/geranium = 2,
+		/obj/item/food/grown/flower/poppy/lily = 2,
+		/obj/item/food/grown/flower/sunflower = 2,
+		/obj/item/food/grown/flower/poppy/geranium = 2,
 	)
 	category = CAT_ENTERTAINMENT
 
 /datum/crafting_recipe/sunbouquet
 	name = "Sunflower bouquet"
 	result = /obj/item/bouquet/sunflower
-	reqs = list(/obj/item/food/grown/sunflower = 6)
+	reqs = list(/obj/item/food/grown/flower/sunflower = 6)
 	category = CAT_ENTERTAINMENT
 
 /datum/crafting_recipe/poppybouquet
 	name = "Poppy bouquet"
 	result = /obj/item/bouquet/poppy
-	reqs = list (/obj/item/food/grown/poppy = 6)
+	reqs = list (/obj/item/food/grown/flower/poppy = 6)
 	category = CAT_ENTERTAINMENT
 
 /datum/crafting_recipe/rosebouquet
 	name = "Rose bouquet"
 	result = /obj/item/bouquet/rose
-	reqs = list(/obj/item/food/grown/rose = 6)
+	reqs = list(/obj/item/food/grown/flower/rose = 6)
 	category = CAT_ENTERTAINMENT
 
 /datum/crafting_recipe/spooky_camera
@@ -190,6 +190,7 @@
 	steps = list(
 		"make sure the flamethrower has a plasma tank attached",
 	)
+	crafting_flags = parent_type::crafting_flags | CRAFT_COLLECT_REQUIREMENTS
 
 /datum/crafting_recipe/toiletbong/check_requirements(mob/user, list/collected_requirements)
 	var/obj/item/flamethrower/flamethrower = collected_requirements[/obj/item/flamethrower][1]
@@ -257,3 +258,15 @@
 	time = 30 SECONDS
 	category = CAT_ENTERTAINMENT
 	crafting_flags = CRAFT_CHECK_DENSITY | CRAFT_MUST_BE_LEARNED
+
+/datum/crafting_recipe/crackpipe
+	name = "Glass Pipe"
+	result = /obj/item/cigarette/pipe/crackpipe
+	time = 5 SECONDS
+	reqs = list(
+		/obj/item/stack/sheet/glass = 3,
+	)
+	tool_paths = list(
+		/obj/item/screwdriver,
+	)
+	category = CAT_ENTERTAINMENT

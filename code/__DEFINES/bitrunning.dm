@@ -9,6 +9,13 @@
 #define BITRUNNER_COST_APEX_BOSS 8
 #define BITRUNNER_COST_EXTREME 20
 
+#define BITRUNNING_GRADE_NONE "None"
+#define BITRUNNING_GRADE_D "D"
+#define BITRUNNING_GRADE_C "C"
+#define BITRUNNING_GRADE_B "B"
+#define BITRUNNING_GRADE_A "A"
+#define BITRUNNING_GRADE_S "S"
+
 /// Yay you did it
 #define BITRUNNER_REWARD_MIN 1
 /// You faced some decent odds
@@ -32,13 +39,14 @@
 /// Camera network bitrunner bodycams are on
 #define BITRUNNER_CAMERA_NET "bitrunner"
 
-/**
- * Bitrunner Domain External Load Restriction Bitflags
- */
 /// Domain forbids external sources from loading items onto avatars
 #define DOMAIN_FORBIDS_ITEMS (1<<0)
 /// Domain forbids external sources from loading abilities onto avatars
 #define DOMAIN_FORBIDS_ABILITIES (1<<1)
+/// Block nohit bonus from applying
+#define DOMAIN_NO_NOHIT_BONUS (1<<2)
+/// Test domain, don't let it be loaded normally
+#define DOMAIN_TEST_ONLY (1<<3)
 
 /// Combination flag for blocking anything from being loaded onto avatars by external sources
 #define DOMAIN_FORBIDS_ALL ALL

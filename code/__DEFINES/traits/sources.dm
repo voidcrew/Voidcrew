@@ -3,7 +3,6 @@
 
 // common trait sources
 #define TRAIT_GENERIC "generic"
-#define UNCONSCIOUS_TRAIT "unconscious"
 #define EYE_DAMAGE "eye_damage"
 #define EAR_DAMAGE "ear_damage"
 #define GENETIC_MUTATION "genetic"
@@ -26,8 +25,12 @@
 #define JOB_TRAIT "job"
 /// Any traits granted by quirks.
 #define QUIRK_TRAIT "quirk_trait"
+/// Trait source for personality traits
+#define PERSONALITY_TRAIT "personality_trait"
 /// (B)admins only.
 #define ADMIN_TRAIT "admin"
+/// Traits that were granted via modify_traits in vv or the mass_modify_traits verb
+#define TRAIT_ADMIN_GRANTED "adminabuse"
 /// Any traits given through a smite.
 #define SMITE_TRAIT "smite"
 #define CHANGELING_TRAIT "changeling"
@@ -57,13 +60,10 @@
 #define SHOES_TRAIT "shoes"
 /// Trait inherited by implants
 #define IMPLANT_TRAIT "implant"
-/// Traits given by the heretic arena spell
-#define HERETIC_ARENA_TRAIT "heretic_arena"
 #define GLASSES_TRAIT "glasses"
 /// inherited from riding vehicles
 #define VEHICLE_TRAIT "vehicle"
 #define INNATE_TRAIT "innate"
-#define CRIT_HEALTH_TRAIT "crit_health"
 #define OXYLOSS_TRAIT "oxyloss"
 /// Trait sorce for "was recently shocked by something"
 #define WAS_SHOCKED "was_shocked"
@@ -102,6 +102,10 @@
 /// Trait given by being recruited as a nuclear operative
 #define NUKE_OP_MINION_TRAIT "nuke-op-minion"
 
+//---- Heretic Traits Sources
+/// Traits given by the heretic arena spell
+#define HERETIC_ARENA_TRAIT "heretic_arena"
+
 /// Trait given to you by shapeshifting
 #define SHAPESHIFT_TRAIT "shapeshift_trait"
 
@@ -114,6 +118,7 @@
 #define GENETICS_SPELL "genetics_spell"
 #define EYES_COVERED "eyes_covered"
 #define NO_EYES "no_eyes"
+#define NO_EARS "no_ears"
 #define HYPNOCHAIR_TRAIT "hypnochair"
 #define FLASHLIGHT_EYES "flashlight_eyes"
 #define IMPURE_OCULINE "impure_oculine"
@@ -167,7 +172,6 @@
 #define STICKY_NODROP "sticky-nodrop"
 #define SKILLCHIP_TRAIT "skillchip"
 #define SKILL_TRAIT "skill"
-#define PULLED_WHILE_SOFTCRIT_TRAIT "pulled-while-softcrit"
 #define LOCKED_BORG_TRAIT "locked-borg"
 /// trait associated to not having locomotion appendages nor the ability to fly or float
 #define LACKING_LOCOMOTION_APPENDAGES_TRAIT "lacking-locomotion-appengades"
@@ -320,3 +324,27 @@
 
 /// Permanent trait from an overdose effect
 #define OVERDOSE_TRAIT "overdose"
+
+/// Trait from a blood worm being in a host
+#define BLOOD_WORM_HOST_TRAIT "blood_worm_host_trait"
+
+/// Trait from being under a door via [/datum/component/slide_under_doors]
+#define UNDER_DOOR_TRAIT "under_door_trait"
+
+/// Trait gained from bioware surgeries
+#define BIOWARE_TRAIT "bioware"
+
+/// Trait gained from skeleton "limbs", such as husking from a butchered chest
+#define SKELETON_TRAIT "skeleton"
+
+/// Trait gained by a guardian who is recalled
+#define GUARDIAN_RECALLED "guardian_recalled"
+
+/// Trait granted as a result of a mob being husked
+#define HUSK_TRAIT "husk"
+
+/// Trait granted from the metabolization of a reagent
+#define METABOLIZATION_TRAIT(type) "metabolize:[type]"
+
+/// Trait from a MODsuit theme
+#define MOD_THEME_TRAIT "mod_theme_trait"

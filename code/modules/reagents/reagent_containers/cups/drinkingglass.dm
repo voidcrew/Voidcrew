@@ -2,6 +2,7 @@
 	name = "drinking glass"
 	desc = "Your standard drinking glass."
 	icon_state = "glass_empty"
+	worn_icon_state = "bottle"
 	base_icon_state = "glass_empty"
 	amount_per_transfer_from_this = 10
 	fill_icon_thresholds = list(0)
@@ -9,7 +10,6 @@
 	volume = 50
 	custom_materials = list(/datum/material/glass=SMALL_MATERIAL_AMOUNT*5)
 	max_integrity = 20
-	spillable = TRUE
 	resistance_flags = ACID_PROOF
 	obj_flags = UNIQUE_RENAME
 	drop_sound = 'sound/items/handling/drinkglass_drop.ogg'

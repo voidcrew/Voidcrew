@@ -126,7 +126,7 @@
 /datum/action/cooldown/spell/touch/flesh_surgery/proc/register_held_organ(obj/item/organ/new_held_organ, obj/item/melee/touch_attack/hand)
 	hand.vis_contents += new_held_organ
 	held_organ = new_held_organ
-	new_held_organ.flags_1 |= IS_ONTOP_1
+	ADD_TRAIT(new_held_organ, TRAIT_SKIP_BASIC_REACH_CHECK, REF(src))
 	new_held_organ.vis_flags |= VIS_INHERIT_PLANE
 	RegisterSignal(new_held_organ, COMSIG_MOVABLE_MOVED, PROC_REF(unregister_held_organ))
 	RegisterSignal(new_held_organ, COMSIG_QDELETING, PROC_REF(unregister_held_organ))
@@ -139,7 +139,7 @@
 /datum/action/cooldown/spell/touch/flesh_surgery/proc/unregister_held_organ(obj/item/organ/removed_organ)
 	LAZYREMOVE(attached_hand.vis_contents, removed_organ)
 	held_organ = null
-	removed_organ.flags_1 &= ~IS_ONTOP_1
+	REMOVE_TRAIT(removed_organ, TRAIT_SKIP_BASIC_REACH_CHECK, REF(src))
 	removed_organ.vis_flags &= ~VIS_INHERIT_PLANE
 	UnregisterSignal(removed_organ, list(COMSIG_MOVABLE_MOVED, COMSIG_QDELETING))
 	// Reset item offsets
@@ -168,7 +168,7 @@
 	new /obj/effect/temp_visual/cult/sparks(get_turf(to_heal))
 	var/condition = (to_heal.damage > 0) ? "better" : "perfect"
 	caster.visible_message(
-		span_warning("[caster]'s hand glows a brilliant red as [caster.p_they()] restore \the [to_heal] to [condition] condition!"),
+		span_warning("[caster]'s hand glows a brilliant red as [caster.p_they()] restore[caster.p_s()] \the [to_heal] to [condition] condition!"),
 		span_notice("Your hand glows a brilliant red as you restore \the [to_heal] to [condition] condition!"),
 	)
 
@@ -274,7 +274,7 @@
 	carbon_victim.balloon_alert(caster, "[chosen_organ] removed")
 	carbon_victim.remove_atom_colour(TEMPORARY_COLOUR_PRIORITY, COLOR_DARK_RED)
 	playsound(victim, 'sound/effects/dismember.ogg', 50, TRUE)
-	if(carbon_victim.stat == CONSCIOUS)
+	if(!IS_UNCONSCIOUS_OR_CRIT(carbon_victim))
 		carbon_victim.adjust_timed_status_effect(15 SECONDS, /datum/status_effect/speech/slurring/heretic)
 		carbon_victim.emote("scream")
 
@@ -323,12 +323,12 @@
 
 	if(using_on_self)
 		caster.visible_message(
-			span_danger("[caster]'s hand glows a brilliant red as [caster.p_they()] begin[caster.p_es()] forcing [inserted_organ] into [caster.p_their()] [zone_organ_goes_in]!!"),
+			span_danger("[caster]'s hand glows a brilliant red as [caster.p_they()] begin[caster.p_s()] forcing [inserted_organ] into [caster.p_their()] [zone_organ_goes_in]!!"),
 			span_userdanger("You begin forcing [inserted_organ] into your [zone_organ_goes_in]!")
 		)
 	else
 		caster.visible_message(
-			span_danger("[caster]'s hand glows a brilliant red as [caster.p_they()] begin[caster.p_es()] forcing [inserted_organ] into [victim]'s [zone_organ_goes_in]!!"),
+			span_danger("[caster]'s hand glows a brilliant red as [caster.p_they()] begin[caster.p_s()] forcing [inserted_organ] into [victim]'s [zone_organ_goes_in]!!"),
 			span_notice("You begin forcing [inserted_organ] into [victim]'s [zone_organ_goes_in].")
 		)
 
@@ -358,7 +358,7 @@
 	victim.balloon_alert(caster, "[inserted_organ] inserted")
 	victim.remove_atom_colour(TEMPORARY_COLOUR_PRIORITY, COLOR_DARK_RED)
 	playsound(victim, 'sound/effects/dismember.ogg', 50, TRUE)
-	if(victim.stat == CONSCIOUS)
+	if(!IS_UNCONSCIOUS_OR_CRIT(victim))
 		victim.emote("scream")
 		if(!using_on_self)
 			victim.adjust_timed_status_effect(15 SECONDS, /datum/status_effect/speech/slurring/heretic)

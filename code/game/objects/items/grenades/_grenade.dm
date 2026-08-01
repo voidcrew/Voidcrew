@@ -64,7 +64,7 @@
 	ADD_TRAIT(src, TRAIT_ODD_CUSTOMIZABLE_FOOD_INGREDIENT, type)
 	RegisterSignal(src, COMSIG_ITEM_USED_AS_INGREDIENT, PROC_REF(on_used_as_ingredient))
 
-/obj/item/grenade/suicide_act(mob/living/carbon/user)
+/obj/item/grenade/suicide_act(mob/living/user)
 	user.visible_message(span_suicide("[user] primes [src], then eats it! It looks like [user.p_theyre()] trying to commit suicide!"))
 	playsound(src, 'sound/items/eatfood.ogg', 50, TRUE)
 	arm_grenade(user, det_time)
@@ -145,7 +145,7 @@
 
 /obj/item/grenade/proc/log_grenade(mob/user)
 	if(!type_cluster)
-		log_bomber(user, "has primed a", src, "for detonation", message_admins = dud_flags != NONE)
+		log_bomber(user, "has primed a", src, "for detonation", message_admins = dud_flags == NONE)
 
 /**
  * arm_grenade (formerly preprime) refers to when a grenade with a standard time fuze is activated, making it go beepbeepbeep and then detonate a few seconds later.
@@ -179,6 +179,13 @@
 		active = FALSE
 		update_appearance()
 		return FALSE
+
+	for(var/obj/effect/forcefield/cosmic_field/potential_field as anything in GLOB.active_cosmic_fields)
+		if(get_dist(potential_field, src) < 3)
+			new /obj/effect/temp_visual/revenant(get_turf(src))
+			active = FALSE
+			update_appearance()
+			return FALSE
 
 	dud_flags |= GRENADE_USED // Don't detonate if we have already detonated.
 	if(shrapnel_type && shrapnel_radius && !shrapnel_initialized) // add a second check for adding the component in case whatever triggered the grenade went straight to prime (badminnery for example)

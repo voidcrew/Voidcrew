@@ -21,10 +21,10 @@
 	var/static/list/damage_heal_order = list(BRUTE, BURN, OXY)
 
 /datum/armor/cloak_godslayer
-	melee = 50
-	bullet = 25
-	laser = 25
-	energy = 25
+	melee = 70
+	bullet = 50
+	laser = 30
+	energy = 40
 	bomb = 50
 	bio = 50
 	fire = 100
@@ -54,7 +54,7 @@
 
 /obj/item/clothing/suit/hooded/cloak/godslayer/proc/resurrect(mob/living/carbon/user, new_stat)
 	SIGNAL_HANDLER
-	if(new_stat > CONSCIOUS && new_stat < DEAD && COOLDOWN_FINISHED(src, effect_cooldown))
+	if(new_stat != STABLE && new_stat != DEAD && COOLDOWN_FINISHED(src, effect_cooldown))
 		COOLDOWN_START(src, effect_cooldown, effect_cooldown_time) //This needs to happen first, otherwise there's an infinite loop
 		user.heal_ordered_damage(heal_amount, damage_heal_order)
 		user.visible_message(span_notice("[user] suddenly revives, as their armor swirls with demonic energy!"), span_notice("You suddenly feel invigorated!"))

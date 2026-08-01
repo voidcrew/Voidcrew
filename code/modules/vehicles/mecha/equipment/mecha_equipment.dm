@@ -5,6 +5,7 @@
 /obj/item/mecha_parts/mecha_equipment
 	name = "mecha equipment"
 	icon = 'icons/obj/devices/mecha_equipment.dmi'
+	abstract_type = /obj/item/mecha_parts/mecha_equipment
 	icon_state = "mecha_equip"
 	force = 5
 	max_integrity = 300
@@ -36,6 +37,8 @@
 	var/harmful = FALSE
 	///Sound file: Sound to play when this equipment is destroyed while still attached to the mech
 	var/destroy_sound = 'sound/vehicles/mecha/critdestr.ogg'
+	///The action type to use for this equipment. Override for custom action buttons.
+	var/action_type = /datum/action/vehicle/sealed/mecha/equipment
 
 /obj/item/mecha_parts/mecha_equipment/Destroy()
 	if(chassis)
@@ -64,11 +67,13 @@
 		return
 	switch(action)
 		if("detach")
-			chassis.ui_selected_module_index = null
-			detach(get_turf(src))
+			if(detachable)
+				chassis.ui_selected_module_index = null
+				detach(get_turf(src))
 			. = TRUE
 		if("toggle")
-			set_active(!active)
+			if(can_be_toggled)
+				set_active(!active)
 			. = TRUE
 		if("repair")
 			ui.close() // allow watching for baddies and the ingame effects
@@ -85,6 +90,10 @@
 /// called after ui_act, for custom ui act handling
 /obj/item/mecha_parts/mecha_equipment/proc/handle_ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	SHOULD_CALL_PARENT(FALSE)
+
+
+/obj/item/mecha_parts/mecha_equipment/proc/get_equip_cooldown(atom/target)
+	return equip_cooldown
 
 /**
  * Checks whether this mecha equipment can be active
@@ -114,7 +123,7 @@
 	return TRUE
 
 /obj/item/mecha_parts/mecha_equipment/proc/action(mob/source, atom/target, list/modifiers)
-	TIMER_COOLDOWN_START(chassis, COOLDOWN_MECHA_EQUIPMENT(type), equip_cooldown)//Cooldown is on the MECH so people dont bypass it by switching equipment
+	TIMER_COOLDOWN_START(chassis, COOLDOWN_MECHA_EQUIPMENT(type), get_equip_cooldown(target))//Cooldown is on the MECH so people dont bypass it by switching equipment
 	SEND_SIGNAL(source, COMSIG_MOB_USED_MECH_EQUIPMENT, chassis)
 	chassis.use_energy(energy_drain)
 	return TRUE
@@ -132,7 +141,7 @@
 	if(!chassis)
 		return FALSE
 	chassis.use_energy(energy_drain)
-	return do_after(user, equip_cooldown, target, extra_checks = CALLBACK(src, PROC_REF(do_after_checks), target, flags), interaction_key = interaction_key)
+	return do_after(user, get_equip_cooldown(target), target, extra_checks = CALLBACK(src, PROC_REF(do_after_checks), target, flags), interaction_key = interaction_key)
 
 ///Do after wrapper for mecha equipment
 /obj/item/mecha_parts/mecha_equipment/proc/do_after_mecha(atom/target, mob/user, delay, flags)
@@ -151,8 +160,8 @@
 	if(flags & MECH_DO_AFTER_ADJACENCY_FLAG && !(chassis.Adjacent(target)))
 		return FALSE
 
-/obj/item/mecha_parts/mecha_equipment/proc/can_attach(obj/vehicle/sealed/mecha/M, attach_right = FALSE, mob/user)
-	return default_can_attach(M, attach_right, user)
+/obj/item/mecha_parts/mecha_equipment/proc/can_attach(obj/vehicle/sealed/mecha/mech, attach_right = FALSE, mob/user)
+	return default_can_attach(mech, attach_right, user)
 
 /obj/item/mecha_parts/mecha_equipment/proc/default_can_attach(obj/vehicle/sealed/mecha/mech, attach_right = FALSE, mob/user)
 	if(!(mech_flags & mech.mech_type))
@@ -211,6 +220,7 @@
 	SEND_SIGNAL(src, COMSIG_MECHA_EQUIPMENT_ATTACHED)
 	forceMove(new_mecha)
 	log_message("[src] initialized.", LOG_MECHA)
+	chassis.on_equipment_attach(src)
 
 /**
  * called to detach this equipment
@@ -218,6 +228,7 @@
  * * moveto: optional target to move this equipment to
  */
 /obj/item/mecha_parts/mecha_equipment/proc/detach(atom/moveto)
+	chassis.on_equipment_detach(src)
 	moveto = moveto || get_turf(chassis)
 	forceMove(moveto)
 	playsound(chassis, 'sound/items/weapons/tap.ogg', 50, TRUE)
@@ -265,3 +276,4 @@
 /// AI mech pilot: returns TRUE if the Ai should try to reload the mecha
 /obj/item/mecha_parts/mecha_equipment/proc/needs_rearm()
 	return FALSE
+

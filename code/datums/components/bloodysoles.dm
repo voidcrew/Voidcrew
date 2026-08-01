@@ -43,7 +43,7 @@
  * Returns true if the parent item is obscured by something else that the wielder is wearing
  */
 /datum/component/bloodysoles/proc/is_obscured()
-	return (wielder.check_covered_slots() & equipped_slot) || is_under_feet_covered()
+	return (hidden_slots_to_inventory_slots(wielder.covered_slots) & equipped_slot) || is_under_feet_covered()
 
 /**
  * Returns true if the parent item is worn in the ITEM_SLOT_ICLOTHING slot and the
@@ -56,7 +56,7 @@
 	if(!(equipped_slot & ITEM_SLOT_ICLOTHING))
 		return FALSE
 
-	return !isnull(wielder.shoes)
+	return !isnull(wielder.get_item_by_slot(ITEM_SLOT_FEET))
 
 /**
  * Run to update the icon of the parent
@@ -326,12 +326,12 @@
 		return
 
 	// Find any leg of our human and add that to the footprint, instead of the default which is to just add the human type
-	for(var/obj/item/bodypart/leg/affecting in wielder.bodyparts)
+	for(var/obj/item/bodypart/leg/affecting in wielder.get_bodyparts())
 		if(!affecting.bodypart_disabled)
 			LAZYSET(footprint.species_types, affecting.limb_id, TRUE)
 
 /datum/component/bloodysoles/feet/is_under_feet_covered()
-	return !isnull(wielder.shoes)
+	return !isnull(wielder.get_item_by_slot(ITEM_SLOT_FEET))
 
 /datum/component/bloodysoles/feet/on_moved(datum/source, OldLoc, Dir, Forced)
 	if(wielder.num_legs >= 2)

@@ -11,6 +11,10 @@
 	slot_flags = ITEM_SLOT_BELT
 	w_class = WEIGHT_CLASS_SMALL
 	worn_icon_state = "electronic"
+	sound_vary = TRUE
+	pickup_sound = SFX_GENERIC_DEVICE_PICKUP
+	drop_sound = SFX_GENERIC_DEVICE_DROP
+	custom_materials = list(/datum/material/iron = HALF_SHEET_MATERIAL_AMOUNT, /datum/material/glass = HALF_SHEET_MATERIAL_AMOUNT)
 
 	/// Spam alert prevention
 	var/alert_cooldown
@@ -28,15 +32,17 @@
 	SSpai.pai_card_list += src
 	ADD_TRAIT(src, TRAIT_CASTABLE_LOC, INNATE_TRAIT)
 
-/obj/item/pai_card/attackby(obj/item/used, mob/user, list/modifiers, list/attack_modifiers)
-	if(pai && istype(used, /obj/item/encryptionkey))
-		if(!pai.encrypt_mod)
-			to_chat(user, span_alert("Encryption Key ports not configured."))
-			return
-		pai.radio.attackby(used, user, modifiers)
-		to_chat(user, span_notice("You insert [used] into the [src]."))
-		return
-	return ..()
+/obj/item/pai_card/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(!pai || !istype(tool, /obj/item/encryptionkey))
+		return NONE
+
+	if(!pai.encrypt_mod)
+		to_chat(user, span_alert("Encryption Key ports not configured."))
+		return ITEM_INTERACT_BLOCKING
+
+	pai.radio.attackby(tool, user, modifiers)
+	to_chat(user, span_notice("You insert [tool] into the [src]."))
+	return ITEM_INTERACT_SUCCESS
 
 /obj/item/pai_card/attack_self(mob/user)
 	if(!in_range(src, user))
@@ -117,11 +123,12 @@
 		can_holo = pai.can_holo,
 		dna = pai.master_dna,
 		emagged = pai.emagged,
-		laws = pai.laws.supplied,
+		laws = pai.laws.inherent,
 		master = pai.master_name,
 		name = pai.name,
 		transmit = pai.can_transmit,
 		receive = pai.can_receive,
+		leashed = pai.leash,
 		range = pai.leash?.distance,
 	)
 	return data
@@ -155,6 +162,9 @@
 			return TRUE
 		if("toggle_holo")
 			pai.toggle_holo()
+			return TRUE
+		if("toggle_leash")
+			pai.toggle_leash()
 			return TRUE
 		if("toggle_radio")
 			pai.toggle_radio(params["option"])

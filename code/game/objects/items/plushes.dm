@@ -19,13 +19,12 @@
 	var/obj/item/toy/plush/plush_child
 	var/obj/item/toy/plush/paternal_parent //who initiated creation
 	var/obj/item/toy/plush/maternal_parent //who owns, see love()
-	var/static/list/breeding_blacklist = typecacheof(/obj/item/toy/plush/carpplushie/dehy_carp) // you cannot have sexual relations with this plush
 	var/list/scorned = list() //who the plush hates
 	var/list/scorned_by = list() //who hates the plush, to remove external references on Destroy()
 	var/heartbroken = FALSE
 	var/vowbroken = FALSE
 	var/young = FALSE
-///Prevents players from cutting stuffing out of a plushie if true
+	///Prevents players from cutting stuffing out of a plushie if true
 	var/divine = FALSE
 	var/mood_message
 	var/list/love_message
@@ -34,6 +33,9 @@
 	var/list/vowbroken_message
 	var/list/parent_message
 	var/normal_desc
+	/// The type of offspring this plush generates. If not set, it'll default to the type itself on init.
+	var/offspring_type
+
 	//--end of love :'(--
 
 /*
@@ -47,6 +49,7 @@
 	AddComponent(/datum/component/squeak, squeak_override)
 	AddElement(/datum/element/bed_tuckable, mapload, 6, -5, 90)
 	AddElement(/datum/element/toy_talk)
+	AddElement(/datum/element/cuffable_item)
 
 	//have we decided if Pinocchio goes in the blue or pink aisle yet?
 	if(gender == NEUTER)
@@ -54,6 +57,9 @@
 			gender = FEMALE
 		else
 			gender = MALE
+
+	if(!offspring_type)
+		offspring_type = type
 
 	love_message = list("\n[src] is so happy, \he could rip a seam!")
 	partner_message = list("\n[src] has a ring on \his finger! It says bound to my dear [partner].")
@@ -125,50 +131,54 @@
 	else
 		to_chat(user, span_notice("You try to pet [src], but it has no stuffing. Aww..."))
 
-/obj/item/toy/plush/attackby(obj/item/I, mob/living/user, list/modifiers, list/attack_modifiers)
-	if(I.get_sharpness())
-		if(!grenade)
-			if(!stuffed)
-				to_chat(user, span_warning("You already murdered it!"))
-				return
-			if(!divine)
-				user.visible_message(span_notice("[user] tears out the stuffing from [src]!"), span_notice("You rip a bunch of the stuffing from [src]. Murderer."))
-				I.play_tool_sound(src)
-				stuffed = FALSE
-			else
-				to_chat(user, span_notice("What a fool you are. [src] is a god, how can you kill a god? What a grand and intoxicating innocence."))
-				user.adjust_drunk_effect(20, up_to = 50)
-
-				var/turf/current_location = get_turf(user)
-				var/area/current_area = current_location.loc //copied from hand tele code
-				if(current_location && current_area && (current_area.area_flags & NOTELEPORT))
-					to_chat(user, span_notice("There is no escape. No recall or intervention can work in this place."))
-				else
-					to_chat(user, span_notice("There is no escape. Although recall or intervention can work in this place, attempting to flee from [src]'s immense power would be futile."))
-				user.visible_message(span_notice("[user] lays down their weapons and begs for [src]'s mercy!"), span_notice("You lay down your weapons and beg for [src]'s mercy."))
-				user.drop_all_held_items()
-		else
+/obj/item/toy/plush/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(tool.get_sharpness())
+		if(grenade)
 			to_chat(user, span_notice("You remove the grenade from [src]."))
 			user.put_in_hands(grenade)
-		return
-	if(isgrenade(I))
+			return ITEM_INTERACT_SUCCESS
+		if(!stuffed)
+			to_chat(user, span_warning("You already murdered it!"))
+			return ITEM_INTERACT_BLOCKING
+		if(!divine)
+			user.visible_message(span_notice("[user] tears out the stuffing from [src]!"), span_notice("You rip a bunch of the stuffing from [src]. Murderer."))
+			tool.play_tool_sound(src)
+			stuffed = FALSE
+			return ITEM_INTERACT_SUCCESS
+
+		to_chat(user, span_notice("What a fool you are. [src] is a god, how can you kill a god? What a grand and intoxicating innocence."))
+		user.adjust_drunk_effect(20, up_to = 50)
+
+		var/turf/current_location = get_turf(user)
+		var/area/current_area = current_location.loc //copied from hand tele code
+		if(current_location && current_area && (current_area.area_flags & NOTELEPORT))
+			to_chat(user, span_notice("There is no escape. No recall or intervention can work in this place."))
+		else
+			to_chat(user, span_notice("There is no escape. Although recall or intervention can work in this place, attempting to flee from [src]'s immense power would be futile."))
+		user.visible_message(span_notice("[user] lays down their weapons and begs for [src]'s mercy!"), span_notice("You lay down your weapons and beg for [src]'s mercy."))
+		user.drop_all_held_items()
+		return ITEM_INTERACT_SUCCESS
+
+	if(isgrenade(tool))
 		if(stuffed)
 			to_chat(user, span_warning("You need to remove some stuffing first!"))
-			return
+			return ITEM_INTERACT_BLOCKING
 		if(grenade)
 			to_chat(user, span_warning("[src] already has a grenade!"))
-			return
-		if(!user.transferItemToLoc(I, src))
-			return
+			return ITEM_INTERACT_BLOCKING
+		if(!user.transferItemToLoc(tool, src))
+			return ITEM_INTERACT_BLOCKING
 		user.visible_message(span_warning("[user] slides [grenade] into [src]."), \
-		span_danger("You slide [I] into [src]."))
-		grenade = I
-		user.log_message("added a grenade ([I.name]) to [src]", LOG_GAME)
-		return
-	if(istype(I, /obj/item/toy/plush))
-		love(I, user)
-		return
-	return ..()
+		span_danger("You slide [tool] into [src]."))
+		grenade = tool
+		user.log_message("added a grenade ([tool.name]) to [src]", LOG_GAME)
+		return ITEM_INTERACT_SUCCESS
+
+	if(istype(tool, /obj/item/toy/plush))
+		love(tool, user)
+		return ITEM_INTERACT_SUCCESS
+
+	return NONE
 
 /obj/item/toy/plush/proc/love(obj/item/toy/plush/Kisser, mob/living/user) //~<3
 	var/chance = 100 //to steal a kiss, surely there's a 100% chance no-one would reject a plush such as I?
@@ -290,19 +300,15 @@
 	mood_message = pick(partner_message)
 	update_desc()
 
-/obj/item/toy/plush/proc/plop(obj/item/toy/plush/Daddy)
-	if(partner != Daddy)
+/obj/item/toy/plush/proc/plop(obj/item/toy/plush/daddy)
+	if(partner != daddy)
 		return FALSE //we do not have bastards in our toyshop
 
-	if(is_type_in_typecache(Daddy, breeding_blacklist))
-		return FALSE // some love is forbidden
+	// Ask the RNG if it looks more like mommy or daddy.
+	var/chosen_type = pick(offspring_type, daddy.offspring_type)
 
-	if(prob(50)) //it has my eyes
-		plush_child = new type(get_turf(loc))
-	else //it has your eyes
-		plush_child = new Daddy.type(get_turf(loc))
-
-	plush_child.make_young(src, Daddy)
+	plush_child = new chosen_type(get_turf(loc))
+	plush_child.make_young(src, daddy)
 
 /obj/item/toy/plush/proc/make_young(obj/item/toy/plush/Mama, obj/item/toy/plush/Dada)
 	if(Mama == Dada)
@@ -390,6 +396,7 @@
 	desc = "An adorable stuffed toy that resembles a space carp."
 	icon = 'icons/map_icons/items/_item.dmi'
 	icon_state = "/obj/item/toy/plush/carpplushie"
+	worn_icon = "carp"
 	post_init_icon_state = "map_plushie_carp"
 	greyscale_config = /datum/greyscale_config/plush_carp
 	greyscale_colors = "#cc99ff#000000"
@@ -410,6 +417,7 @@
 	name = "\improper Ratvar plushie"
 	desc = "An adorable plushie of the clockwork justiciar himself with new and improved spring arm action."
 	icon_state = "plushvar"
+	worn_icon = "ratvar"
 	divine = TRUE
 	var/obj/item/toy/plush/narplush/clash_target
 	gender = MALE //he's a boy, right?
@@ -420,7 +428,7 @@
 		return
 	var/obj/item/toy/plush/narplush/P = locate() in range(1, src)
 	if(P && istype(P.loc, /turf/open) && !P.clashing)
-		clash_of_the_plushies(P)
+		INVOKE_ASYNC(src, PROC_REF(clash_of_the_plushies), P)
 
 /obj/item/toy/plush/ratplush/proc/clash_of_the_plushies(obj/item/toy/plush/narplush/P)
 	clash_target = P
@@ -497,6 +505,7 @@
 	name = "\improper Nar'Sie plushie"
 	desc = "A small stuffed doll of the elder goddess Nar'Sie. Who thought this was a good children's toy?"
 	icon_state = "narplush"
+	worn_icon = "narsie"
 	divine = TRUE
 	var/clashing
 	gender = FEMALE //it's canon if the toy is
@@ -505,7 +514,7 @@
 	. = ..()
 	var/obj/item/toy/plush/ratplush/P = locate() in range(1, src)
 	if(P && istype(P.loc, /turf/open) && !P.clash_target && !clashing)
-		P.clash_of_the_plushies(src)
+		INVOKE_ASYNC(P, TYPE_PROC_REF(/obj/item/toy/plush/ratplush, clash_of_the_plushies), src)
 
 /obj/item/toy/plush/lizard_plushie
 	name = "lizard plushie"

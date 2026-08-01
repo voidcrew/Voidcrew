@@ -26,6 +26,8 @@
 	worn_icon_state = "cutters"
 	toolspeed = 0.3
 	random_color = FALSE
+	greyscale_config = null
+	greyscale_colors = null
 
 /obj/item/crowbar/red/caravan
 	icon_state = "crowbar_caravan"
@@ -34,6 +36,7 @@
 	toolspeed = 0.3
 
 /obj/machinery/computer/shuttle/caravan
+	icon_state = MAP_SWITCH("computer", "/obj/machinery/computer/camera_advanced/shuttle_docker/syndicate")
 
 /obj/item/circuitboard/computer/caravan
 	build_path = /obj/machinery/computer/shuttle/caravan

@@ -10,7 +10,7 @@
 	var/list/items = ..()
 	if(!(include_flags & INCLUDE_POCKETS))
 		items -= list(l_store, r_store, s_store)
-	if((include_flags & INCLUDE_ACCESSORIES) && w_uniform)
+	if((include_flags & INCLUDE_ACCESSORIES) && istype(w_uniform, /obj/item/clothing/under))
 		var/obj/item/clothing/under/worn_under = w_uniform
 		items += worn_under.attached_accessories
 	return items
@@ -26,6 +26,8 @@
 
 /mob/living/carbon/human/get_item_by_slot(slot_id)
 	switch(slot_id)
+		if(ITEM_SLOT_BACK)
+			return back
 		if(ITEM_SLOT_BELT)
 			return belt
 		if(ITEM_SLOT_ID)
@@ -38,6 +40,12 @@
 			return gloves
 		if(ITEM_SLOT_FEET)
 			return shoes
+		if(ITEM_SLOT_MASK)
+			return wear_mask
+		if(ITEM_SLOT_NECK)
+			return wear_neck
+		if(ITEM_SLOT_HEAD)
+			return head
 		if(ITEM_SLOT_OCLOTHING)
 			return wear_suit
 		if(ITEM_SLOT_ICLOTHING)
@@ -52,6 +60,9 @@
 	return ..()
 
 /mob/living/carbon/human/get_slot_by_item(obj/item/looking_for)
+	if(looking_for == back)
+		return ITEM_SLOT_BACK
+
 	if(looking_for == belt)
 		return ITEM_SLOT_BELT
 
@@ -66,6 +77,15 @@
 
 	if(looking_for == gloves)
 		return ITEM_SLOT_GLOVES
+
+	if(looking_for == head)
+		return ITEM_SLOT_HEAD
+
+	if(looking_for == wear_mask)
+		return ITEM_SLOT_MASK
+
+	if(looking_for == wear_neck)
+		return ITEM_SLOT_NECK
 
 	if(looking_for == head)
 		return ITEM_SLOT_HEAD
@@ -90,40 +110,6 @@
 
 	return ..()
 
-/mob/living/carbon/human/proc/get_body_slots()
-	return list(
-		back,
-		s_store,
-		handcuffed,
-		legcuffed,
-		wear_suit,
-		gloves,
-		shoes,
-		belt,
-		wear_id,
-		l_store,
-		r_store,
-		w_uniform
-		)
-
-/mob/living/carbon/human/proc/get_head_slots()
-	return list(
-		head,
-		wear_mask,
-		wear_neck,
-		glasses,
-		ears,
-		)
-
-/mob/living/carbon/human/proc/get_storage_slots()
-	return list(
-		back,
-		belt,
-		l_store,
-		r_store,
-		s_store,
-		)
-
 /mob/living/carbon/human/get_visible_items()
 	var/list/visible_items = ..()
 	var/obj/item/clothing/under/under = w_uniform
@@ -139,6 +125,11 @@
 
 	var/not_handled = FALSE //Added in case we make this type path deeper one day
 	switch(slot)
+		if(ITEM_SLOT_BACK)
+			if(back)
+				return
+			back = equipping
+			update_worn_back()
 		if(ITEM_SLOT_BELT)
 			if(belt)
 				return
@@ -159,8 +150,6 @@
 			if(glasses)
 				return
 			glasses = equipping
-			if(glasses.vision_flags || glasses.invis_override || glasses.invis_view || !isnull(glasses.lighting_cutoff))
-				update_sight()
 			update_worn_glasses()
 		if(ITEM_SLOT_GLOVES)
 			if(gloves)
@@ -181,11 +170,25 @@
 				stop_pulling() //can't pull if restrained
 				update_mob_action_buttons() //certain action buttons will no longer be usable.
 			update_worn_oversuit()
+		if(ITEM_SLOT_MASK)
+			if(wear_mask)
+				return
+			wear_mask = equipping
+			update_worn_mask()
+		if(ITEM_SLOT_HEAD)
+			if(head)
+				return
+			head = equipping
+			update_worn_head()
+		if(ITEM_SLOT_NECK)
+			if(wear_neck)
+				return
+			wear_neck = equipping
+			update_worn_neck(equipping)
 		if(ITEM_SLOT_ICLOTHING)
 			if(w_uniform)
 				return
 			w_uniform = equipping
-			update_suit_sensors()
 			update_worn_undersuit()
 		if(ITEM_SLOT_LPOCKET)
 			l_store = equipping
@@ -208,14 +211,10 @@
 
 	return not_handled //For future deeper overrides
 
-/mob/living/carbon/human/get_equipped_speed_mod_items()
-	return ..() - list(l_store, r_store, s_store)
-
 /mob/living/carbon/human/doUnEquip(obj/item/item_dropping, force, newloc, no_move, invdrop = TRUE, silent = FALSE)
 	. = ..() //See mob.dm for an explanation on this and some rage about people copypasting instead of calling ..() like they should.
 	if(!. || !item_dropping)
 		return
-	var/not_handled = FALSE //if we actually unequipped an item, this is because we dont want to run this proc twice, once for carbons and once for humans
 	if(item_dropping == wear_suit)
 		if(s_store && invdrop)
 			dropItemToGround(s_store, TRUE) //It makes no sense for your suit storage to stay on you if you drop your suit.
@@ -228,7 +227,6 @@
 			update_worn_oversuit()
 	else if(item_dropping == w_uniform)
 		w_uniform = null
-		update_suit_sensors()
 		if(!QDELETED(src))
 			update_worn_undersuit()
 		if(invdrop)
@@ -240,15 +238,28 @@
 				dropItemToGround(wear_id)
 			if(belt && !can_equip(belt, ITEM_SLOT_BELT, TRUE, ignore_equipped = TRUE))
 				dropItemToGround(belt)
+	else if(item_dropping == back)
+		back = null
+		if(!QDELETED(src))
+			update_worn_back()
+	else if(item_dropping == head)
+		head = null
+		if(!QDELETED(src))
+			update_worn_head()
+	else if(item_dropping == wear_mask)
+		wear_mask = null
+		if(!QDELETED(src))
+			update_worn_mask()
+	else if(item_dropping == wear_neck)
+		wear_neck = null
+		if(!QDELETED(src))
+			update_worn_neck(item_dropping)
 	else if(item_dropping == gloves)
 		gloves = null
 		if(!QDELETED(src))
 			update_worn_gloves()
 	else if(item_dropping == glasses)
 		glasses = null
-		var/obj/item/clothing/glasses/old_glasses = item_dropping
-		if(old_glasses.vision_flags || old_glasses.invis_override || old_glasses.invis_view || !isnull(old_glasses.lighting_cutoff))
-			update_sight()
 		if(!QDELETED(src))
 			update_worn_glasses()
 	else if(item_dropping == ears)
@@ -280,33 +291,41 @@
 		s_store = null
 		if(!QDELETED(src))
 			update_suit_storage()
-	else
-		not_handled = TRUE
 
-	if(not_handled)
-		return
-
-	update_equipment_speed_mods()
-	update_obscured_slots(item_dropping.flags_inv)
-	hud_used?.update_locked_slots()
+/mob/living/carbon/human/item_coverage_changed(added_slots, removed_slots)
+	. = ..()
+	if((added_slots|removed_slots) & HIDEFACE)
+		sec_hud_set_security_status()
+		update_visible_name()
 
 /mob/living/carbon/human/toggle_internals(obj/item/tank, is_external = FALSE)
 	// Just close the tank if it's the one the mob already has open.
 	var/obj/item/existing_tank = is_external ? external : internal
 	if(tank == existing_tank)
 		return toggle_close_internals(is_external)
+
 	// Use breathing tube regardless of mask.
 	if(can_breathe_tube())
 		return toggle_open_internals(tank, is_external)
+
 	// Use mask in absence of tube.
-	if(isclothing(wear_mask) && ((wear_mask.visor_flags & MASKINTERNALS) || (wear_mask.clothing_flags & MASKINTERNALS)))
-		// Adjust dishevelled breathing mask back onto face unless it is exempt.
-		if ((wear_mask.up) && !(wear_mask.clothing_flags & INTERNALS_ADJUST_EXEMPT))
-			wear_mask.adjust_visor(src)
+	if(can_breathe_mask())
 		return toggle_open_internals(tank, is_external)
+	// We have a valid mask but it's pulled down
+	else if(isclothing(wear_mask))
+		var/obj/item/clothing/mask = wear_mask
+		if (mask.up && (mask.visor_flags & MASKINTERNALS) && !(mask.clothing_flags & INTERNALS_ADJUST_EXEMPT) && mask.adjust_visor(src))
+			return toggle_open_internals(tank, is_external)
+
 	// Use helmet in absence of tube or valid mask.
 	if(can_breathe_helmet())
 		return toggle_open_internals(tank, is_external)
+	// We have a valid helmet but its visor is up
+	else if(isclothing(head))
+		var/obj/item/clothing/helmet = head
+		if (helmet.up && (helmet.visor_flags & HEADINTERNALS) && !(helmet.clothing_flags & INTERNALS_ADJUST_EXEMPT) && helmet.adjust_visor(src))
+			return toggle_open_internals(tank, is_external)
+
 	// Notify user of missing valid breathing apparatus.
 	if (wear_mask)
 		// Invalid mask
@@ -355,7 +374,7 @@
 
 //delete all equipment without dropping anything
 /mob/living/carbon/human/proc/delete_equipment()
-	for(var/slot in get_equipped_items(INCLUDE_POCKETS))//order matters, dependant slots go first
+	for(var/slot in get_equipped_items(INCLUDE_POCKETS|INCLUDE_HELD))//order matters, dependant slots go first
 		qdel(slot)
 	for(var/obj/item/held_item in held_items)
 		qdel(held_item)
@@ -367,6 +386,9 @@
 		return
 	var/obj/item/thing = get_active_held_item()
 	var/obj/item/equipped_item = get_item_by_slot(slot_type)
+	var/thing_reject = NONE
+	if(thing)
+		thing_reject = SEND_SIGNAL(thing, COMSIG_HUMAN_NON_STORAGE_HOTKEY, src, equipped_item)
 	if(!equipped_item) // We also let you equip an item like this
 		if(!thing)
 			to_chat(src, span_warning("You have no [slot_item_name] to take something out of!"))
@@ -379,6 +401,8 @@
 		if(!thing)
 			equipped_item.attack_hand(src)
 		else
+			if(thing_reject & COMPONENT_STORAGE_HOTKEY_HANDLED)
+				return
 			to_chat(src, span_warning("You can't fit [thing] into your [equipped_item.name]!"))
 		return
 	if(!storage.supports_smart_equip)
@@ -417,12 +441,22 @@
 				new_bodypart = newBodyPart(BODY_ZONE_L_ARM)
 
 			new_bodypart.held_index = i
+			if(i >= 3) // start indexing them as right_arm2 and so on
+				new_bodypart.body_zone = "[new_bodypart.body_zone]_[ceil(i / 2)]"
 			new_bodypart.try_attach_limb(src, TRUE)
 			hand_bodyparts[i] = new_bodypart
 	..() //Don't redraw hands until we have organs for them
 
-/mob/living/carbon/human/update_equipment(obj/item/source)
-	. = ..()
-	// If the item we equipped/unequipped hides our face, we (potentially) need to update our name
-	if (source.flags_inv & HIDEFACE)
-		update_visible_name()
+/// Returns the helmet if an air tank compatible helmet is equipped.
+/mob/living/carbon/human/proc/can_breathe_helmet()
+	if (astype(head, /obj/item/clothing)?.clothing_flags & HEADINTERNALS)
+		return head
+
+/// Returns the mask if an air tank compatible mask is equipped.
+/mob/living/carbon/human/proc/can_breathe_mask()
+	if (astype(wear_mask, /obj/item/clothing)?.clothing_flags & MASKINTERNALS)
+		return wear_mask
+
+/// Returns the object that allows us to breathe internals - tube implant, mask or helmet
+/mob/living/carbon/human/can_breathe_internals()
+	return can_breathe_tube() || can_breathe_mask() || can_breathe_helmet()

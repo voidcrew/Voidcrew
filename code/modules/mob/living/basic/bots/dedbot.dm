@@ -39,43 +39,29 @@
 	var/exenteration_cooldown_duration = 0.5 SECONDS
 	//aoe slash ability
 	var/datum/action/cooldown/mob_cooldown/bot/exenterate
-	var/list/remains = list(/obj/effect/gibspawner/robot)
 
 /mob/living/basic/bot/dedbot/Initialize(mapload)
 	. = ..()
-	if(length(remains))
-		remains = string_list(remains)
-		AddElement(/datum/element/death_drops, remains)
+	AddElement(/datum/element/death_drops, /obj/effect/gibspawner/robot)
 	var/static/list/innate_actions = list(
 	SPIN_SLASH_ABILITY_TYPEPATH = BB_DEDBOT_SLASH,
 	)
 	grant_actions_by_list(innate_actions)
 
 /datum/ai_controller/basic_controller/bot/dedbot
+	behavior_tree_json = "code/modules/mob/living/basic/bots/dedbot.bt.json"
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic,
 		BB_TARGET_MINIMUM_STAT = DEAD,
 		BB_AGGRO_RANGE = 2,
 	)
 	ai_movement = /datum/ai_movement/jps/bot
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/targeted_mob_ability/exenterate,
-		/datum/ai_planning_subtree/respond_to_summon,
-		/datum/ai_planning_subtree/find_patrol_beacon,
-	)
 	max_target_distance = AI_BOT_PATH_LENGTH
-	///keys to be reset when the bot is reseted
 	reset_keys = list(
 		BB_BEACON_TARGET,
 		BB_PREVIOUS_BEACON_TARGET,
 		BB_BOT_SUMMON_TARGET,
 	)
-
-/datum/ai_planning_subtree/targeted_mob_ability/exenterate
-	ability_key = BB_DEDBOT_SLASH
-	finish_planning = FALSE
 
 /datum/action/cooldown/mob_cooldown/exenterate
 	name = "Exenterate"
@@ -112,7 +98,7 @@
 
 /datum/action/cooldown/mob_cooldown/exenterate/proc/slash_em(atom/caster)
 	for(var/mob/living/victim in range(ability_range, caster))
-		if(faction_check(victim.faction, immune_factions) && owner.CanReach(victim))
+		if(victim.has_faction(immune_factions) && victim.IsReachableBy(owner))
 			continue
 		to_chat(caster, span_warning("You slice [victim]!"))
 		to_chat(victim, span_warning("You are cut by [caster]'s blades!"))

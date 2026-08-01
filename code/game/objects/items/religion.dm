@@ -9,6 +9,8 @@
 	attack_verb_simple = list("forcefully inspire", "violently encourage", "relentlessly galvanize")
 	lefthand_file = 'icons/mob/inhands/equipment/banners_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/banners_righthand.dmi'
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT)
+	item_flags = NO_PIXEL_RANDOM_DROP
 	var/inspiration_available = TRUE //If this banner can be used to inspire crew
 	var/morale_time = 0
 	var/morale_cooldown = 600 //How many deciseconds between uses
@@ -66,8 +68,8 @@
 
 /obj/item/banner/proc/inspiration(mob/living/carbon/human/inspired_human)
 	var/need_mob_update = FALSE
-	need_mob_update += inspired_human.adjustBruteLoss(-15, updating_health = FALSE)
-	need_mob_update += inspired_human.adjustFireLoss(-15, updating_health = FALSE)
+	need_mob_update += inspired_human.adjust_brute_loss(-15, updating_health = FALSE)
+	need_mob_update += inspired_human.adjust_fire_loss(-15, updating_health = FALSE)
 	if(need_mob_update)
 		inspired_human.updatehealth()
 	inspired_human.AdjustStun(-4 SECONDS)
@@ -97,7 +99,7 @@
 /datum/crafting_recipe/security_banner
 	name = "Securistan Banner"
 	result = /obj/item/banner/security/mundane
-	time = 40
+	time = 4 SECONDS
 	reqs = list(/obj/item/stack/rods = 2,
 				/obj/item/clothing/under/rank/security/officer = 1)
 	category = CAT_MISC
@@ -122,15 +124,15 @@
 /datum/crafting_recipe/medical_banner
 	name = "Meditopia Banner"
 	result = /obj/item/banner/medical/mundane
-	time = 40
+	time = 4 SECONDS
 	reqs = list(/obj/item/stack/rods = 2,
 				/obj/item/clothing/under/rank/medical/doctor = 1)
 	category = CAT_MISC
 
 /obj/item/banner/medical/special_inspiration(mob/living/carbon/human/inspired_human)
 	var/need_mob_update = FALSE
-	need_mob_update += inspired_human.adjustToxLoss(-15, updating_health = FALSE)
-	need_mob_update += inspired_human.setOxyLoss(0, updating_health = FALSE)
+	need_mob_update += inspired_human.adjust_tox_loss(-15, updating_health = FALSE)
+	need_mob_update += inspired_human.set_oxy_loss(0, updating_health = FALSE)
 	if(need_mob_update)
 		inspired_human.updatehealth()
 	inspired_human.reagents.add_reagent(/datum/reagent/medicine/inaprovaline, 5)
@@ -155,7 +157,7 @@
 /datum/crafting_recipe/science_banner
 	name = "Sciencia Banner"
 	result = /obj/item/banner/science/mundane
-	time = 40
+	time = 4 SECONDS
 	reqs = list(/obj/item/stack/rods = 2,
 				/obj/item/clothing/under/rank/rnd/scientist = 1)
 	category = CAT_MISC
@@ -177,7 +179,7 @@
 /datum/crafting_recipe/cargo_banner
 	name = "Cargonia Banner"
 	result = /obj/item/banner/cargo/mundane
-	time = 40
+	time = 4 SECONDS
 	reqs = list(/obj/item/stack/rods = 2,
 				/obj/item/clothing/under/rank/cargo/tech = 1)
 	category = CAT_MISC
@@ -202,7 +204,7 @@
 /datum/crafting_recipe/engineering_banner
 	name = "Engitopia Banner"
 	result = /obj/item/banner/engineering/mundane
-	time = 40
+	time = 4 SECONDS
 	reqs = list(/obj/item/stack/rods = 2,
 				/obj/item/clothing/under/rank/engineering/engineer = 1)
 	category = CAT_MISC
@@ -226,7 +228,7 @@
 /datum/crafting_recipe/command_banner
 	name = "Command Banner"
 	result = /obj/item/banner/command/mundane
-	time = 40
+	time = 4 SECONDS
 	reqs = list(/obj/item/stack/rods = 2,
 				/obj/item/clothing/under/rank/captain/parade = 1)
 	category = CAT_MISC
@@ -299,6 +301,7 @@
 	icon_state = null
 	worn_icon = 'icons/mob/clothing/head/helmet.dmi'
 	inhand_icon_state = null
+	abstract_type = /obj/item/clothing/head/helmet/plate/crusader/prophet
 	flags_1 = 0
 	armor_type = /datum/armor/crusader_prophet
 	worn_y_offset = 6
@@ -333,6 +336,10 @@
 	var/conversion_color = "#ffffff"
 	var/staffcooldown = 0
 	var/staffwait = 30
+
+/obj/item/godstaff/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/walking_aid)
 
 /obj/item/godstaff/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
 	if(SHOULD_SKIP_INTERACTION(interacting_with, src, user))
@@ -403,8 +410,12 @@
 
 /obj/item/claymore/weak
 	desc = "This one is rusted."
-	force = 24
-	armour_penetration = 10
+	icon = 'icons/obj/weapons/sword.dmi'
+	icon_state = "claymore_old"
+	worn_icon = 'icons/mob/clothing/back.dmi'
+	worn_icon_state = "claymore"
+	force = 30
+	armour_penetration = 15
 
 /obj/item/claymore/weak/make_stabby()
 	AddComponent(/datum/component/alternative_sharpness, SHARP_POINTY, alt_continuous, alt_simple, -9)

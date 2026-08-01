@@ -6,9 +6,10 @@
 	density = FALSE
 	stat = DEAD
 	hud_type = /datum/hud/new_player
-	hud_possible = list()
 
-	var/ready = FALSE
+	/// String Values tied to Defines that state whether the new_player is ready to play or not.
+	/// Do try your best to compare this value directly against the defines for certainty but helper procs do exist in bulkier situations.
+	var/ready = PLAYER_NOT_READY
 	/// Referenced when you want to delete the new_player later on in the code.
 	var/spawning = FALSE
 	/// For instant transfer once the round is set up
@@ -33,7 +34,7 @@
 	. = ..()
 
 	GLOB.new_player_list += src
-	add_verb(src, /mob/dead/new_player/proc/reset_menu_hud)
+	ASSIGN_GAME_VERB(src, /mob/dead/new_player, reset_menu_hud)
 
 /mob/dead/new_player/Destroy()
 	GLOB.new_player_list -= src
@@ -63,6 +64,12 @@
 	if (href_list["votepollref"])
 		var/datum/poll_question/poll = locate(href_list["votepollref"]) in GLOB.polls
 		vote_on_poll_handler(poll, href_list)
+
+/// Quickly gets a boolean of whether the new_player is ready to play or not in places where we would like the boolean logic.
+/// The assertion is that readiness must be an opted in TRUE, while all other states (e.g. not ready, broken, etc) are FALSE.
+/// We organize it this way to ensure the system is extensible for other possible ready states.
+/mob/dead/new_player/proc/is_ready_to_play()
+	return ready == PLAYER_READY_TO_PLAY
 
 //When you cop out of the round (NB: this HAS A SLEEP FOR PLAYER INPUT IN IT)
 /mob/dead/new_player/proc/make_me_an_observer()
@@ -180,11 +187,13 @@
 		tgui_alert(usr, "There was an unexpected error putting you into your requested job. If you cannot join with any job, you should contact an admin.")
 		return FALSE
 
+	var/latejoin_period = CEILING(STATION_TIME_PASSED() / (5 MINUTES), 5)
+	SSblackbox.record_feedback("tally", "latejoin_time", 1, latejoin_period)
 	mind.late_joiner = TRUE
 	var/atom/destination = mind.assigned_role.get_latejoin_spawn_point()
 	if(!destination)
 		CRASH("Failed to find a latejoin spawn point.")
-	var/mob/living/character = create_character(destination)
+	var/mob/living/character = create_character(destination, forced_slot = client.prefs.default_slot)
 	if(!character)
 		CRASH("Failed to create a character for latejoin.")
 	transfer_character()
@@ -235,8 +244,12 @@
 	if(CONFIG_GET(flag/allow_latejoin_antagonists) && !EMERGENCY_PAST_POINT_OF_NO_RETURN && humanc) //Borgs aren't allowed to be antags. Will need to be tweaked if we get true latejoin ais.
 		SSdynamic.on_latejoin(humanc)
 
-	if((job.job_flags & JOB_ASSIGN_QUIRKS) && humanc && CONFIG_GET(flag/roundstart_traits))
-		SSquirks.AssignQuirks(humanc, humanc.client)
+	if(humanc)
+		if(job.job_flags & JOB_ASSIGN_QUIRKS)
+			if(CONFIG_GET(flag/roundstart_traits))
+				SSquirks.AssignQuirks(humanc, humanc.client)
+		else // clear any personalities the prefs added since our job clearly does not want them
+			humanc.clear_personalities()
 
 	if(humanc) // Quirks may change manifest datapoints, so inject only after assigning quirks
 		GLOB.manifest.inject(humanc)
@@ -253,24 +266,39 @@
 		if(!employmentCabinet.virgin)
 			employmentCabinet.addFile(employee)
 
-/// Creates, assigns and returns the new_character to spawn as. Assumes a valid mind.assigned_role exists.
-/mob/dead/new_player/proc/create_character(atom/destination)
+/**
+ * Creates, assigns and returns the new_character to spawn as.
+ * Assumes a valid mind.assigned_role exists.
+ *
+ * * destination - where to spawn the character
+ * * forced_slot - if provided, will load whatever character is in that slot instead of their active slot
+ */
+/mob/dead/new_player/proc/create_character(atom/destination, forced_slot)
 	spawning = TRUE
+
+	var/spawned_slot = isnum(forced_slot) ? forced_slot : LAZYACCESS(client.prefs.job_assigned_profiles, mind.assigned_role.title)
+	if(isnum(spawned_slot) && client.prefs.default_slot != spawned_slot)
+		client.prefs.load_character(spawned_slot) // if this fails, we will simply load their current slot anyways
 
 	mind.active = FALSE //we wish to transfer the key manually
 	var/mob/living/spawning_mob = mind.assigned_role.get_spawn_mob(client, destination)
-	if(QDELETED(src) || !HAS_CONNECTED_PLAYER(src))
-		return // Disconnected while checking for the appearance ban.
+	if(QDELETED(src))
+		return
+
+	// Annoyingly the AI mob yoinks our client on init so we have to check for it here
+	var/client/player_client = src.client || spawning_mob.client
+	if(isnull(player_client))
+		return
 
 	if(!isAI(spawning_mob)) // Unfortunately there's still snowflake AI code out there.
 		// transfer_to sets mind to null
 		var/datum/mind/preserved_mind = mind
-		preserved_mind.original_character_slot_index = client.prefs.default_slot
+		preserved_mind.original_character_slot_index = player_client.prefs.default_slot
 		preserved_mind.transfer_to(spawning_mob) //won't transfer key since the mind is not active
 		preserved_mind.set_original_character(spawning_mob)
 
-	LAZYADD(persistent_client.joined_as_slots, "[client.prefs.default_slot]")
-	client.init_verbs()
+	LAZYADD(player_client.persistent_client.joined_as_slots, "[player_client.prefs.default_slot]")
+	player_client.init_verbs()
 	. = spawning_mob
 	new_character = .
 
@@ -330,13 +358,11 @@
  */
 /mob/dead/new_player/proc/register_for_interview()
 	// First we detain them by removing all the verbs they have on client
-	for (var/v in client.verbs)
-		var/procpath/verb_path = v
+	for (var/procpath/verb_path as anything in client.verbs)
 		remove_verb(client, verb_path)
 
 	// Then remove those on their mob as well
-	for (var/v in verbs)
-		var/procpath/verb_path = v
+	for (var/procpath/verb_path as anything in verbs)
 		remove_verb(src, verb_path)
 
 	// Then we create the interview form and show it to the client
@@ -345,13 +371,11 @@
 		I.ui_interact(src)
 
 	// Add verb for re-opening the interview panel, fixing chat and re-init the verbs for the stat panel
-	add_verb(src, /mob/dead/new_player/proc/open_interview)
+	ASSIGN_GAME_VERB(src, /mob/dead/new_player, open_interview)
 	add_verb(client, /client/verb/fix_tgui_panel)
 
 ///Resets the Lobby Menu HUD, recreating and reassigning it to the new player
-/mob/dead/new_player/proc/reset_menu_hud()
-	set name = "Reset Lobby Menu HUD"
-	set category = "OOC"
+GAME_VERB_PROC(/mob/dead/new_player, reset_menu_hud, "Reset Lobby Menu HUD", "OOC")
 	var/mob/dead/new_player/new_player = usr
 	if(!COOLDOWN_FINISHED(new_player, reset_hud_cooldown))
 		to_chat(new_player, span_warning("You must wait <b>[DisplayTimeText(COOLDOWN_TIMELEFT(new_player, reset_hud_cooldown))]</b> before resetting the Lobby Menu HUD again!"))

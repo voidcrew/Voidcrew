@@ -6,6 +6,7 @@
 /obj/machinery/computer/crew
 	name = "crew monitoring console"
 	desc = "Used to monitor active health sensors built into most of the crew's uniforms."
+	icon_state = MAP_SWITCH("computer", "/obj/machinery/computer/crew")
 	icon_screen = "crew"
 	icon_keyboard = "med_key"
 	circuit = /obj/item/circuitboard/computer/crew
@@ -13,9 +14,7 @@
 
 /obj/machinery/computer/crew/Initialize(mapload, obj/item/circuitboard/C)
 	. = ..()
-	AddComponent(/datum/component/usb_port, list(
-		/obj/item/circuit_component/medical_console_data,
-	))
+	AddComponent(/datum/component/usb_port, typecacheof(list(/obj/item/circuit_component/medical_console_data), only_root_path = TRUE))
 
 /obj/item/circuit_component/medical_console_data
 	display_name = "Crew Monitoring Data"
@@ -76,6 +75,7 @@
 	records.set_output(new_table)
 
 /obj/machinery/computer/crew/syndie
+	icon_state = MAP_SWITCH("computer", "/obj/machinery/computer/crew/syndie")
 	icon_keyboard = "syndie_key"
 
 /obj/machinery/computer/crew/ui_interact(mob/user)
@@ -254,30 +254,29 @@ GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 			entry["burndam"] = rand(0,175)
 			entry["brutedam"] = rand(0,175)
 			entry["health"] = -50
-			entry["can_track"] = tracked_living_mob.can_track()
 			results[++results.len] = entry
 			continue
 
 		// Current status
-		if (sensor_mode >= SENSOR_LIVING)
+		if (sensor_mode >= SENSOR_VITALS)
 			entry["life_status"] = tracked_living_mob.stat
+		else if (sensor_mode == SENSOR_LIVING)
+			// binary sensors should only report alive or dead
+			entry["life_status"] = (tracked_living_mob.stat == DEAD) ? DEAD : STABLE
 
 		// Damage
 		if (sensor_mode >= SENSOR_VITALS)
 			entry += list(
-				"oxydam" = round(tracked_living_mob.getOxyLoss(), 1),
-				"toxdam" = round(tracked_living_mob.getToxLoss(), 1),
-				"burndam" = round(tracked_living_mob.getFireLoss(), 1),
-				"brutedam" = round(tracked_living_mob.getBruteLoss(), 1),
+				"oxydam" = round(tracked_living_mob.get_oxy_loss(), 1),
+				"toxdam" = round(tracked_living_mob.get_tox_loss(), 1),
+				"burndam" = round(tracked_living_mob.get_fire_loss(), 1),
+				"brutedam" = round(tracked_living_mob.get_brute_loss(), 1),
 				"health" = round(tracked_living_mob.health, 1),
 			)
 
 		// Location
 		if (sensor_mode >= SENSOR_COORDS)
 			entry["area"] = get_area_name(tracked_living_mob, format_text = TRUE)
-
-		// Trackability
-		entry["can_track"] = tracked_living_mob.can_track()
 
 		results[++results.len] = entry
 

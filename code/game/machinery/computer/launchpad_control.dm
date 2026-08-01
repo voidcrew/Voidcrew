@@ -1,6 +1,7 @@
 /obj/machinery/computer/launchpad
 	name = "launchpad control console"
 	desc = "Used to teleport objects to and from a launchpad."
+	icon_state = MAP_SWITCH("computer", "/obj/machinery/computer/launchpad")
 	icon_screen = "teleport"
 	icon_keyboard = "teleport_key"
 	circuit = /obj/item/circuitboard/computer/launchpad_console
@@ -12,9 +13,7 @@
 /obj/machinery/computer/launchpad/Initialize(mapload)
 	launchpads = list()
 	. = ..()
-	AddComponent(/datum/component/usb_port, list(
-		/obj/item/circuit_component/bluespace_launchpad/console,
-	))
+	AddComponent(/datum/component/usb_port, typecacheof(list(/obj/item/circuit_component/bluespace_launchpad/console), only_root_path = TRUE))
 
 /obj/item/circuit_component/bluespace_launchpad/console
 	display_name = "Bluespace Launchpad Console"

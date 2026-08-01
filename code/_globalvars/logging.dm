@@ -41,6 +41,8 @@ DECLARE_LOG_NAMED(harddel_log, "harddels", START_LOG)
 DECLARE_LOG_NAMED(test_log, "tests", START_LOG)
 #endif
 
+DECLARE_LOG_NAMED(reta_log, "reta", START_LOG)
+
 
 /// Picture logging
 GLOBAL_VAR(picture_log_directory)
@@ -75,6 +77,10 @@ GLOBAL_PROTECT(investigate_signaler)
 /// Stores who uploaded laws to which silicon-based lifeform, and what the law was
 GLOBAL_LIST_EMPTY(lawchanges)
 GLOBAL_PROTECT(lawchanges)
+
+/// Adds something to the law change log
+/proc/log_law_change(mob/living/changer, log_message)
+	GLOB.lawchanges += "[round_timestamp()] <b>:</b> [changer ? key_name(changer) : "(No mob)"] [log_message]"
 
 #undef DECLARE_LOG
 #undef DECLARE_LOG_NAMED

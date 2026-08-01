@@ -16,8 +16,7 @@
 	/// List of sources which prevent SIGHT_BYPASS from working
 	var/static/list/blocking_sources = list(
 		QUIRK_TRAIT, // Meant to be completely immutable
-		ECHOLOCATION_TRAIT, // Breaks the UI badly
-		UNCONSCIOUS_TRAIT, // Duh
+		TRAIT_STATUS_EFFECT(/datum/status_effect/knocked_out::id), // Duh
 	)
 
 /datum/status_effect/grouped/blindness/on_apply()
@@ -25,7 +24,6 @@
 		return FALSE
 
 	RegisterSignals(owner, update_signals, PROC_REF(update_blindness))
-	update_blindness()
 	return ..()
 
 /datum/status_effect/grouped/blindness/source_added(source, ...)
@@ -52,23 +50,43 @@
 	make_unblind()
 
 /datum/status_effect/grouped/blindness/proc/make_blind()
-	owner.overlay_fullscreen(id, /atom/movable/screen/fullscreen/blind)
+	if(!GET_CLIENT(owner))
+		RegisterSignal(owner, COMSIG_MOB_LOGIN, PROC_REF(make_blind_on_login), override = TRUE)
+		return
+
+	// have some extra logic to determine what overlay to use
+	// by default we use the noflicker overlay
+	// but if our one and only source is from "temp blindness", use flicker overlay
+	var/overlay_to_use = /atom/movable/screen/fullscreen/blind/noflicker
+	if(sources[1] == /datum/status_effect/temporary_blindness::id && length(sources) == 1)
+		overlay_to_use = /atom/movable/screen/fullscreen/blind
+
+	owner.overlay_fullscreen(id, overlay_to_use)
 	// You are blind - at most, able to make out shapes near you
-	owner.add_client_colour(/datum/client_colour/monochrome, REF(src))
+	owner.add_client_colour(/datum/client_colour/blindness, id)
+
+/datum/status_effect/grouped/blindness/proc/make_blind_on_login(mob/living/source)
+	SIGNAL_HANDLER
+
+	UnregisterSignal(owner, COMSIG_MOB_LOGIN)
+	make_blind()
 
 /datum/status_effect/grouped/blindness/proc/make_unblind()
+	UnregisterSignal(owner, COMSIG_MOB_LOGIN)
 	owner.clear_fullscreen(id)
-	owner.remove_client_colour(REF(src))
+	owner.remove_client_colour(id)
 
 /datum/status_effect/grouped/blindness/on_remove()
 	make_unblind()
 	UnregisterSignal(owner, update_signals)
+	UnregisterSignal(owner, COMSIG_MOB_LOGIN)
 	return ..()
 
 /atom/movable/screen/alert/status_effect/blind
 	name = "Blind"
 	desc = "You can't see! This may be caused by a genetic defect, eye trauma, being unconscious, or something covering your eyes."
-	icon_state = "blind"
+	use_user_hud_icon = USER_HUD_STYLE_INHERIT
+	overlay_state = "blind"
 
 /// This status effect handles applying a temporary blind to the mob.
 /datum/status_effect/temporary_blindness

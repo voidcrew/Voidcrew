@@ -48,6 +48,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	resistance_flags = FIRE_PROOF
 	item_flags = NO_MAT_REDEMPTION
+	custom_materials = list(/datum/material/gold = SHEET_MATERIAL_AMOUNT * 1.5, /datum/material/bluespace = SHEET_MATERIAL_AMOUNT, /datum/material/diamond = SHEET_MATERIAL_AMOUNT * 0.75, /datum/material/uranium = SMALL_MATERIAL_AMOUNT * 2.5)
 
 /obj/item/bag_of_holding_inert/Initialize(mapload)
 	. = ..()
@@ -60,11 +61,12 @@
 	icon_state = "bag_of_holding"
 	inhand_icon_state = "holdingpack"
 	resistance_flags = FIRE_PROOF
-	item_flags = NO_MAT_REDEMPTION
+	item_flags = NO_MAT_REDEMPTION | BLUESPACE_INTERFERENCE
 	armor_type = /datum/armor/backpack_holding
 	storage_type = /datum/storage/bag_of_holding
 	pickup_sound = null
 	drop_sound = null
+	custom_materials = list(/datum/material/gold = SHEET_MATERIAL_AMOUNT * 1.5, /datum/material/bluespace = SHEET_MATERIAL_AMOUNT, /datum/material/diamond = SMALL_MATERIAL_AMOUNT * 7.5, /datum/material/uranium = SMALL_MATERIAL_AMOUNT * 2.5)
 
 /datum/armor/backpack_holding
 	fire = 60
@@ -138,6 +140,12 @@
 	name = "medical backpack"
 	desc = "It's a backpack especially designed for use in a sterile environment."
 	icon_state = "backpack-medical"
+	inhand_icon_state = "medicalpack"
+
+/obj/item/storage/backpack/chief_medic
+	name = "chief medical officer's backpack"
+	desc = "A backpack with just enough pockets to carry the chief medical officer's equipment."
+	icon_state = "backpack-chiefmedical"
 	inhand_icon_state = "medicalpack"
 
 /obj/item/storage/backpack/coroner
@@ -243,16 +251,13 @@
 
 // MEAT MEAT MEAT MEAT MEAT
 
-///This nullifies the force malus from the meat material while not touching other stats.
-#define INVERSE_MEAT_STRENTGH (1 / /datum/material/meat::strength_modifier)
-
 /obj/item/storage/backpack/meat
 	name = "\improper MEAT"
 	desc = "MEAT MEAT MEAT MEAT MEAT MEAT"
 	icon_state = "meatmeatmeat"
 	inhand_icon_state = "meatmeatmeat"
-	force = 15 * INVERSE_MEAT_STRENTGH
-	throwforce = 15 * INVERSE_MEAT_STRENTGH
+	force = 15
+	throwforce = 15
 	material_flags = MATERIAL_EFFECTS | MATERIAL_AFFECT_STATISTICS
 	attack_verb_continuous = list("MEATS", "MEAT MEATS")
 	attack_verb_simple = list("MEAT", "MEAT MEAT")
@@ -278,7 +283,10 @@
 
 	AddComponent(/datum/component/squeak, meat_sounds)
 
-#undef INVERSE_MEAT_STRENTGH
+/obj/item/storage/backpack/meat/change_material_strength(datum/material/material, mat_amount, multiplier, remove)
+	// Our base 15 force includes the implied meat force
+	if (!istype(material, /datum/material/meat))
+		return ..()
 
 /*
  * Satchel Types
@@ -313,6 +321,12 @@
 	name = "medical satchel"
 	desc = "A sterile satchel used in medical departments."
 	icon_state = "satchel-medical"
+	inhand_icon_state = "satchel-med"
+
+/obj/item/storage/backpack/satchel/chief_medic
+	name = "chief medical officer's satchel"
+	desc = "A satchel with barely enough pockets to carry the chief medical officer's equipment."
+	icon_state = "satchel-chiefmedical"
 	inhand_icon_state = "satchel-med"
 
 /obj/item/storage/backpack/satchel/vir
@@ -418,6 +432,12 @@
 	name = "medical messenger bag"
 	desc = "A sterile messenger bag well loved by medics for its portability and sleek profile."
 	icon_state = "messenger_medical"
+	inhand_icon_state = "messenger_medical"
+
+/obj/item/storage/backpack/messenger/chief_medic
+	name = "chief medical officer's messenger bag"
+	desc = "A slim messenger bag appreciated by chief medical officers for staying out of their way while working - unlike their chemists."
+	icon_state = "messenger_chiefmedical"
 	inhand_icon_state = "messenger_medical"
 
 /obj/item/storage/backpack/messenger/vir

@@ -3,8 +3,8 @@
 //Misc mob defines
 
 //Ready states at roundstart for mob/dead/new_player
-#define PLAYER_NOT_READY 0
-#define PLAYER_READY_TO_PLAY 1
+#define PLAYER_NOT_READY "Not Ready"
+#define PLAYER_READY_TO_PLAY "Ready"
 
 //movement intent defines for the move_intent var
 #define MOVE_INTENT_WALK "walk"
@@ -13,10 +13,10 @@
 /// Amount of oxyloss that KOs a human
 #define OXYLOSS_PASSOUT_THRESHOLD 50
 //Blood levels
-#define BLOOD_VOLUME_MAX_LETHAL 2150
-#define BLOOD_VOLUME_EXCESS 2100
 #define BLOOD_VOLUME_MAXIMUM 2000
-#define BLOOD_VOLUME_SLIME_SPLIT 1120
+#define BLOOD_VOLUME_MAX_LETHAL (BLOOD_VOLUME_MAXIMUM * 1.075) // 2150 units if BLOOD_VOLUME_MAXIMUM is 2000
+#define BLOOD_VOLUME_EXCESS (BLOOD_VOLUME_MAXIMUM * 1.05) // 2100 units if BLOOD_VOLUME_MAXIMUM is 2000
+#define BLOOD_VOLUME_SLIME_SPLIT (BLOOD_VOLUME_MAXIMUM * 0.56) // 1120 units if BLOOD_VOLUME_MAXIMUM is 2000
 #define BLOOD_VOLUME_NORMAL 560
 #define BLOOD_VOLUME_SAFE (BLOOD_VOLUME_NORMAL * (1 - 0.15)) // Latter number is percentage of blood lost, for readability!
 #define BLOOD_VOLUME_OKAY (BLOOD_VOLUME_NORMAL * (1 - 0.30))
@@ -124,6 +124,28 @@
 #define MOB_MINING (1 << 13)
 ///The mob is a crustacean. Like crabs. Or lobsters.
 #define MOB_CRUSTACEAN (1 << 14)
+///The mob is all boney
+#define MOB_SKELETAL (1 << 15)
+
+/// Readable biotypes, keep this in the same order as the flags are
+#define MOB_BIOTYPES_READABLE list(\
+	"organic", \
+	"mineral", \
+	"robotic", \
+	"undead", \
+	"humanoid", \
+	"insectoid", \
+	"beast", \
+	"monstrous", \
+	"reptile", \
+	"spirit", \
+	"plant", \
+	"slime", \
+	"aquatic", \
+	"mining", \
+	"crustacean", \
+	"skeletal", \
+)
 
 //Lung respiration type flags
 #define RESPIRATION_OXYGEN (1 << 0)
@@ -150,6 +172,8 @@
 #define BODYTYPE_SHADOW (1<<7)
 //This limb is a ghost limb and can phase through walls.
 #define BODYTYPE_GHOST (1<<8)
+/// Analagous to BODYSHAPE_DIGITIGRADE, though this one is not removed if the mob's shape changed
+#define BODYTYPE_DIGITIGRADE (1<<9)
 
 // Bodyshape defines for how things can be worn, i.e., what "shape" the mob sprite is
 ///The limb fits the human mold. This is not meant to be literal, if the sprite "fits" on a human, it is "humanoid", regardless of origin.
@@ -160,9 +184,15 @@
 #define BODYSHAPE_DIGITIGRADE (1<<2)
 ///The limb is snouted.
 #define BODYSHAPE_SNOUTED (1<<3)
+/// Golem's wacky rocky limbs
+#define BODYSHAPE_GOLEM (1<<4)
 
-#define BODYTYPE_BIOSCRAMBLE_INCOMPATIBLE (BODYTYPE_ROBOTIC | BODYTYPE_LARVA_PLACEHOLDER | BODYTYPE_GOLEM | BODYTYPE_PEG)
-#define BODYTYPE_CAN_BE_BIOSCRAMBLED(bodytype) (!(bodytype & BODYTYPE_BIOSCRAMBLE_INCOMPATIBLE))
+/// Check to see if a bodypart limb can be bioscrambled
+#define BODYPART_CAN_BE_BIOSCRAMBLED(bodypart) ( \
+	!(bodypart.bodytype & (BODYTYPE_ROBOTIC | BODYTYPE_LARVA_PLACEHOLDER | BODYTYPE_GOLEM | BODYTYPE_PEG)) \
+	&& !(bodypart.flags_1 & HOLOGRAM_1) \
+	&& !(bodypart.bodypart_flags & BODYPART_STUMP) \
+)
 
 // Defines for Species IDs. Used to refer to the name of a species, for things like bodypart names or species preferences.
 #define SPECIES_ABDUCTOR "abductor"
@@ -195,6 +225,7 @@
 #define SPECIES_VAMPIRE "vampire"
 #define SPECIES_ZOMBIE "zombie"
 #define SPECIES_ZOMBIE_INFECTIOUS "memezombie"
+#define SPECIES_ZOMBIE_INFECTIOUS_MINDLESS "mindless_memezombie"
 #define SPECIES_ZOMBIE_KROKODIL "krokodil_zombie"
 #define SPECIES_VOIDWALKER "voidwalker"
 
@@ -206,6 +237,7 @@
 #define BODYPART_ID_PSYKER "psyker"
 #define BODYPART_ID_MEAT "meat"
 #define BODYPART_ID_PEG "peg"
+#define BODYPART_ID_BONE "bone"
 
 
 //See: datum/species/var/digitigrade_customization
@@ -233,12 +265,15 @@
 ///Heartbeat is gone... He's dead Jim :(
 #define BEAT_NONE 0
 
-#define HUMAN_MAX_OXYLOSS 3
-#define HUMAN_CRIT_MAX_OXYLOSS (SSMOBS_DT/3)
+/// Damage dealt every life tick on suffocation
+#define SUFFOCATION_OXYLOSS 3
+/// Modifier to damage dealt every life tick on suffocation when the suffocator is in crit
+#define SUFFOCATION_OXYLOSS_CRIT_MODIFIER 0.22
 
 /// Combined brute and burn damage states on a human's head after which they become disfigured
 #define HUMAN_DISFIGURATION_HEAD_DAMAGE_STATES 3
 
+/// Lung temperature defines
 #define HEAT_DAMAGE_LEVEL_1 1 //Amount of damage applied when your body temperature just passes the 360.15k safety point
 #define HEAT_DAMAGE_LEVEL_2 1.5 //Amount of damage applied when your body temperature passes the 400K point
 #define HEAT_DAMAGE_LEVEL_3 4 //Amount of damage applied when your body temperature passes the 460K point and you are on fire
@@ -255,6 +290,14 @@
 #define COLD_GAS_DAMAGE_LEVEL_1 0.5 //Amount of damage applied when the current breath's temperature just passes the 260.15k safety point
 #define COLD_GAS_DAMAGE_LEVEL_2 1.5 //Amount of damage applied when the current breath's temperature passes the 200K point
 #define COLD_GAS_DAMAGE_LEVEL_3 3 //Amount of damage applied when the current breath's temperature passes the 120K point
+
+/// These are for the default lungs
+#define COLD_LEVEL_1_THRESHOLD 260
+#define COLD_LEVEL_2_THRESHOLD 200
+#define COLD_LEVEL_3_THRESHOLD 120
+#define HEAT_LEVEL_1_THRESHOLD 360
+#define HEAT_LEVEL_2_THRESHOLD 400
+#define HEAT_LEVEL_3_THRESHOLD 1000
 
 //Brain Damage defines
 #define BRAIN_DAMAGE_MILD 20
@@ -301,6 +344,9 @@
 
 #define NUTRITION_LEVEL_START_MIN 250
 #define NUTRITION_LEVEL_START_MAX 400
+
+// After this amount of time overeating carbons become fat
+#define OVEREAT_TIME_LIMIT 200 SECONDS
 
 //Disgust levels for humans
 #define DISGUST_LEVEL_MAXEDOUT 150
@@ -476,11 +522,11 @@
 /// How much nutrition eating clothes as moth gives and drains
 #define CLOTHING_NUTRITION_GAIN 15
 #define REAGENTS_METABOLISM 0.2 //How many units of reagent are consumed per second, by default.
-#define REAGENTS_EFFECT_MULTIPLIER (REAGENTS_METABOLISM / 0.4) // By defining the effect multiplier this way, it'll exactly adjust all effects according to how they originally were with the 0.4 metabolism
+#define REAGENTS_EFFECT_MULTIPLIER (1 / (REAGENTS_METABOLISM * SSMOBS_DT)) // When multiplied with the volume of reagent metabolized you get an value from 0->1 to scale all reagent affects
 #define REM REAGENTS_EFFECT_MULTIPLIER //! Shorthand for the above define for ease of use in equations and the like
 
 // Eye protection
-// THese values are additive to determine your overall flash protection.
+// These values are additive to determine your overall flash protection.
 #define FLASH_PROTECTION_HYPER_SENSITIVE -2
 #define FLASH_PROTECTION_SENSITIVE -1
 #define FLASH_PROTECTION_NONE 0
@@ -488,6 +534,37 @@
 #define FLASH_PROTECTION_WELDER 2
 #define FLASH_PROTECTION_WELDER_SENSITIVE 3
 #define FLASH_PROTECTION_WELDER_HYPER_SENSITIVE 4
+
+/**
+ * Ear protection
+ * These values are additive to determine your overall ear/soundbang protection
+ */
+#define EAR_PROTECTION_NONE 0
+#define EAR_PROTECTION_NORMAL 1
+#define EAR_PROTECTION_HEAVY 2
+#define EAR_PROTECTION_VACUUM 3
+#define EAR_PROTECTION_FULL INFINITY
+
+/**
+ * EMP protection
+ * These values are additive to determine your overall emp protection
+ */
+#define EMP_PROTECTION_NONE 0
+#define EMP_PROTECTION_MODERATE 1
+#define EMP_PROTECTION_HIGH 2
+
+/**
+ * Soundbang defines
+ * These values are used as argument to determine the strength of the soundbang_act call
+ */
+///Soundbang strength for most things like flashbangs, honkblasts and harm control modules
+#define SOUNDBANG_NORMAL 1
+///Soundbang strength for things like flashbangs in proximity and emagged harm alarm megaphones, cannot be countered by standard ear protection equipment
+#define SOUNDBANG_STRONG 2
+///Soundbang strength for things like changeling shrieks, which can affect robots and aliens as well.
+#define SOUNDBANG_MASSIVE 3
+///Soundbang strength for anything that cannot be stopped unless you're stacked on multiple effects and equipment to counter it (or are simply deaf)
+#define SOUNDBANG_OVERWHELMING 4
 
 // AI Toggles
 #define AI_CAMERA_LUMINOSITY 5
@@ -554,9 +631,10 @@
 #define DEFIB_FAIL_NO_INTELLIGENCE (1<<8)
 #define DEFIB_FAIL_BLACKLISTED (1<<9)
 #define DEFIB_NOGRAB_AGHOST (1<<10)
+#define DEFIB_FAIL_GOLEM (1<<11)
 
 // Bit mask of possible return values by can_defib that would result in a revivable patient
-#define DEFIB_REVIVABLE_STATES (DEFIB_FAIL_NO_HEART | DEFIB_FAIL_FAILING_HEART | DEFIB_FAIL_HUSK | DEFIB_FAIL_TISSUE_DAMAGE | DEFIB_FAIL_FAILING_BRAIN | DEFIB_POSSIBLE)
+#define DEFIB_REVIVABLE_STATES (DEFIB_FAIL_NO_HEART | DEFIB_FAIL_FAILING_HEART | DEFIB_FAIL_HUSK | DEFIB_FAIL_TISSUE_DAMAGE | DEFIB_FAIL_FAILING_BRAIN | DEFIB_FAIL_GOLEM | DEFIB_POSSIBLE)
 
 #define SLEEP_CHECK_DEATH(X, A) \
 	sleep(X); \
@@ -580,6 +658,9 @@
 /// If you yawn while someone nearby has examined you within this time frame, it will force them to yawn as well. Tradecraft!
 #define YAWN_PROPAGATION_EXAMINE_WINDOW (2 SECONDS)
 
+// Priorities for examine overrides
+#define EXAMINE_OVERRIDE_PRIORITY_IFF 1
+
 /// How far away you can be to make eye contact with someone while examining
 #define EYE_CONTACT_RANGE 5
 
@@ -587,7 +668,7 @@
 #define SILENCE_RANGED_MESSAGE (1<<0)
 
 /// Returns whether or not the given mob can succumb
-#define CAN_SUCCUMB(target) (HAS_TRAIT(target, TRAIT_CRITICAL_CONDITION) && !HAS_TRAIT(target, TRAIT_NODEATH))
+#define CAN_SUCCUMB(target) ((target.stat == SOFT_CRIT || target.stat == HARD_CRIT) && !HAS_TRAIT(target, TRAIT_NODEATH))
 
 // Body position defines.
 /// Mob is standing up, usually associated with lying_angle value of 0.
@@ -623,7 +704,7 @@
 #define AI_EMOTION_UNSURE "Unsure"
 #define AI_EMOTION_CONFUSED "Confused"
 #define AI_EMOTION_SAD "Sad"
-#define AI_EMOTION_BSOD "BSOD"
+#define AI_EMOTION_BSOD "BSOD" //It is used only on EMP pulse displays.
 #define AI_EMOTION_BLANK "Blank"
 #define AI_EMOTION_PROBLEMS "Problems?"
 #define AI_EMOTION_AWESOME "Awesome"
@@ -633,6 +714,8 @@
 #define AI_EMOTION_DORFY "Dorfy"
 #define AI_EMOTION_BLUE_GLOW "Blue Glow"
 #define AI_EMOTION_RED_GLOW "Red Glow"
+#define AI_EMOTION_DEAD "Dead" //This one is used when deactivating the AI
+#define AI_EMOTION_DOWNLOAD "Download"
 
 // Defines for AI holograms
 #define AI_HOLOGRAM_CATEGORY_ANIMAL "Animal"
@@ -668,12 +751,22 @@
 #define GET_TARGETS_FROM(who) (who.targets_from ? who.get_targets_from() : who)
 
 //defines for grad_color and grad_styles list access keys
-#define GRADIENT_HAIR_KEY 1
-#define GRADIENT_FACIAL_HAIR_KEY 2
+#define GRADIENT_HAIR_KEY "1"
+#define GRADIENT_FACIAL_HAIR_KEY "2"
 
 // /datum/sprite_accessory/gradient defines
 #define GRADIENT_APPLIES_TO_HAIR (1<<0)
 #define GRADIENT_APPLIES_TO_FACIAL_HAIR (1<<1)
+
+// Used in applying height
+/// Used for overlays centered around the upper half of the human sprite
+#define UPPER_BODY "upper body"
+/// Used for overlays centered around the lower half of the human sprite
+#define LOWER_BODY "lower body"
+/// Used for overlays that should not offset at all
+#define NO_MODIFY "do not modify"
+/// Used for overlays that stretch the full body and thus need a filter
+#define ENTIRE_BODY "full body"
 
 // Height defines
 // - They are numbers so you can compare height values (x height < y height)
@@ -690,159 +783,130 @@
 #define HUMAN_HEIGHT_TALL 14
 #define HUMAN_HEIGHT_TALLER 16
 #define HUMAN_HEIGHT_TALLEST 18
+// If you add a height here update human_heights_to_offsets as well!
 
-/// Assoc list of all heights, cast to strings, to """"tuples"""""
-/// The first """tuple""" index is the upper body offset
-/// The second """tuple""" index is the lower body offset
-GLOBAL_LIST_INIT(human_heights_to_offsets, list(
-	"[MONKEY_HEIGHT_DWARF]" = list(-9, -3),
-	"[MONKEY_HEIGHT_MEDIUM]" = list(-7, -4),
-	"[HUMAN_HEIGHT_DWARF]" = list(-5, -4),
-	"[HUMAN_HEIGHT_SHORTEST]" = list(-2, -1),
-	"[HUMAN_HEIGHT_SHORT]" = list(-1, -1),
-	"[HUMAN_HEIGHT_MEDIUM]" = list(0, 0),
-	"[HUMAN_HEIGHT_TALL]" = list(1, 1),
-	"[HUMAN_HEIGHT_TALLER]" = list(2, 1),
-	"[HUMAN_HEIGHT_TALLEST]" = list(3, 2),
+/// Assoc list of all heights, to offset values
+GLOBAL_ALIST_INIT(human_heights_to_offsets, alist(
+	MONKEY_HEIGHT_DWARF   = list("[UPPER_BODY]" = -9, "[LOWER_BODY]" = -3),
+	MONKEY_HEIGHT_MEDIUM  = list("[UPPER_BODY]" = -7, "[LOWER_BODY]" = -4),
+	HUMAN_HEIGHT_DWARF    = list("[UPPER_BODY]" = -5, "[LOWER_BODY]" = -4),
+	HUMAN_HEIGHT_SHORTEST = list("[UPPER_BODY]" = -2, "[LOWER_BODY]" = -1),
+	HUMAN_HEIGHT_SHORT    = list("[UPPER_BODY]" = -1, "[LOWER_BODY]" = -1),
+	HUMAN_HEIGHT_MEDIUM   = list("[UPPER_BODY]" =  0, "[LOWER_BODY]" =  0),
+	HUMAN_HEIGHT_TALL     = list("[UPPER_BODY]" =  1, "[LOWER_BODY]" =  1),
+	HUMAN_HEIGHT_TALLER   = list("[UPPER_BODY]" =  2, "[LOWER_BODY]" =  1),
+	HUMAN_HEIGHT_TALLEST  = list("[UPPER_BODY]" =  3, "[LOWER_BODY]" =  2),
 ))
 
-// Mob Overlays Indexes
-/// Total number of layers for mob overlays
-/// KEEP THIS UP-TO-DATE OR SHIT WILL BREAK
-/// Also consider updating layers_to_offset
-#define TOTAL_LAYERS 38
-/// Mutations layer - Tk headglows, cold resistance glow, etc
-#define MUTATIONS_LAYER 37
-/// Mutantrace features (tail when looking south) that must appear behind the body parts
-#define BODY_BEHIND_LAYER 36
-/// Layer for bodyparts that should appear behind every other bodypart - Mostly, legs when facing WEST or EAST
-#define BODYPARTS_LOW_LAYER 35
-/// Layer for most bodyparts, appears above BODYPARTS_LOW_LAYER and below BODYPARTS_HIGH_LAYER
-#define BODYPARTS_LAYER 34
-/// Mutantrace features (snout, body markings) that must appear above the body parts
-#define BODY_ADJ_LAYER 33
-/// Underwear, undershirts, socks
-#define BODY_LAYER 32
-/// Eyes and eyelids
-#define EYES_LAYER 31
-/// Mutations that should appear above body, body_adj and bodyparts layer (e.g. laser eyes)
-#define FRONT_MUTATIONS_LAYER 30
-/// Damage indicators (cuts and burns)
-#define DAMAGE_LAYER 29
-/// Jumpsuit clothing layer
-#define UNIFORM_LAYER 28
-/// ID card layer
-#define ID_LAYER 27
-/// ID card layer (might be deprecated)
-#define ID_CARD_LAYER 26
-/// Layer for bodyparts that should appear above every other bodypart - Currently only used for hands
-#define BODYPARTS_HIGH_LAYER 25
-/// Gloves layer
-#define GLOVES_LAYER 24
-/// Shoes layer
-#define SHOES_LAYER 23
-/// Layer for masks that are worn below ears and eyes (like Balaclavas) (layers below hair, use flagsinv=HIDEHAIR as needed)
-#define LOW_FACEMASK_LAYER 22
-/// Ears layer (Spessmen have ears? Wow)
-#define EARS_LAYER 21
-/// Layer for neck apperal that should appear below the suit slot (like neckties)
-#define LOW_NECK_LAYER 20
-/// Suit layer (armor, coats, etc.)
-#define SUIT_LAYER 19
-/// Glasses layer
-#define GLASSES_LAYER 18
-/// Belt layer
-#define BELT_LAYER 17 //Possible make this an overlay of something required to wear a belt?
-/// Suit storage layer (tucking a gun or baton underneath your armor)
-#define SUIT_STORE_LAYER 16
-/// Neck layer (for wearing capes and bedsheets)
-#define NECK_LAYER 15
-/// Back layer (for backpacks and equipment on your back)
-#define BACK_LAYER 14
-/// Hair layer (mess with the fro and you got to go!)
-#define HAIR_LAYER 13 //TODO: make part of head layer?
-/// Facemask layer (gas masks, breath masks, etc.)
-#define FACEMASK_LAYER 12
-/// Head layer (hats, helmets, etc.)
-#define HEAD_LAYER 11
-/// Hair that layers out above clothing, including hats (high ponytails and such)
-#define OUTER_HAIR_LAYER 10
-/// Handcuff layer (when your hands are cuffed)
-#define HANDCUFF_LAYER 9
-/// Legcuff layer (when your feet are cuffed)
-#define LEGCUFF_LAYER 8
-/// Hands layer (for the actual hand, not the arm... I think?)
-#define HANDS_LAYER 7
-/// Body front layer. Usually used for mutant bodyparts that need to be in front of stuff (e.g. cat ears)
-#define BODY_FRONT_LAYER 6
-/// Special body layer that actually require to be above the hair (e.g. lifted welding goggles)
-#define ABOVE_BODY_FRONT_GLASSES_LAYER 5
-/// Special body layer for the rare cases where something on the head needs to be above everything else (e.g. flowers)
-#define ABOVE_BODY_FRONT_HEAD_LAYER 4
-/// Bleeding wound icons
-#define WOUND_LAYER 3
-/// Blood cult ascended halo layer, because there's currently no better solution for adding/removing
-#define HALO_LAYER 2
+/*
+ * Mob overlays
+ *
+ * Integers are standing overlays which are managed by the mob overlay system
+ * They're drawn in order from least to greatest, with the lowest layer drawn highest on the screen
+ *
+ * Decimals are sub-layers or alternate layers
+ * These are not managed by the mob overlay system, but still layer according to their value
+ *
+ * Please keep this organized and in order, to make it easier to see at a glance how mobs layer
+ * Don't be afraid to change the values of existing layers either, it won't break anything so long as order is the same
+ *
+ * If you want to add a new layer, make sure to update TOTAL_LAYERS and layers_to_offset as needed
+ * NOTE: You ONLY need to add standing layers if you're using the standing overlay system, ie. apply_overlay(YOUR_LAYER)!
+ * If you're NOT using this sytem just add it as a sub-layer where appropriate
+ */
+
 /// The highest most layer for mob overlays. Unused
 #define HIGHEST_LAYER 1
+	/// Blood cult ascended halo layer
+	#define HALO_LAYER 1.1
+/// Bleeding wound icons
+#define WOUND_LAYER 2
+	/// Special body layer for the rare cases where something on the head needs to be above everything else (e.g. flowers)
+	#define ABOVE_BODY_FRONT_HEAD_LAYER 2.3
+	/// The layer above mutant body parts
+	#define ABOVE_BODY_FRONT_LAYER 2.4
+	/// Body front layer. Usually used for mutant bodyparts that need to be in front of stuff (e.g. cat ears)
+	#define BODY_FRONT_LAYER 2.5
+/// Hands layer (for the actual hand, not the arm... I think?)
+#define HANDS_LAYER 3
+/// Legcuff layer (when your feet are cuffed)
+#define LEGCUFF_LAYER 4
+/// Handcuff layer (when your hands are cuffed)
+#define HANDCUFF_LAYER 5
+	/// Hair that layers out above clothing, including hats (high ponytails and such)
+	#define OUTER_HAIR_LAYER 5.9
+/// Head layer (hats, helmets, etc.)
+#define HEAD_LAYER 6
+	/// The layer underneath the head (for hats)
+	#define UNDER_HEAD_LAYER 6.1
+/// Facemask layer (gas masks, breath masks, etc.)
+#define FACEMASK_LAYER 7
+/// Hair layer (mess with the fro and you got to go!)
+#define HAIR_LAYER 8
+	/// Special layer for rendering beneath hair, for special facemasks
+	#define BENEATH_HAIR_LAYER 8.1
+/// Back layer (for backpacks and equipment on your back)
+#define BACK_LAYER 9
+/// Neck layer (for wearing capes and bedsheets)
+#define NECK_LAYER 10
+/// Suit storage layer (tucking a gun or baton underneath your armor)
+#define SUIT_STORE_LAYER 11
+/// Belt layer
+#define BELT_LAYER 12 //Possible make this an overlay of something required to wear a belt?
+/// Glasses layer
+#define GLASSES_LAYER 13
+/// Suit layer (armor, coats, etc.)
+#define SUIT_LAYER 14
+	/// The layer underneath the suit
+	#define UNDER_SUIT_LAYER 14.1
+	/// Layer for neck apperal that should appear below the suit slot (like neckties)
+	#define LOW_NECK_LAYER 14.2
+/// Ears layer (Spessmen have ears? Wow)
+#define EARS_LAYER 15
+	/// Layer for masks that are worn below ears and eyes (like Balaclavas) (layers below hair, use flagsinv=HIDEHAIR as needed)
+	#define LOW_FACEMASK_LAYER 15.1
+	/// The layer above shoes
+	#define ABOVE_SHOES_LAYER 15.9
+/// Shoes layer
+#define SHOES_LAYER 16
+/// Gloves layer
+#define GLOVES_LAYER 17
+	/// Layer for bodyparts that should appear above every other bodypart - Currently only used for hands
+	#define BODYPARTS_HIGH_LAYER 17.5
+/// ID card layer
+#define ID_LAYER 18
+/// Jumpsuit clothing layer
+#define UNIFORM_LAYER 19
+	/// The layer underneath the uniform
+	#define UNDER_UNIFORM_LAYER 19.1
+/// Damage indicators (cuts and burns)
+#define DAMAGE_LAYER 20
+	/// Mutations that should appear above everything else (e.g. laser eyes)
+	#define FRONT_MUTATIONS_LAYER 20.9
+/// Eyes and eyelids
+#define EYES_LAYER 21
+/// Underwear, undershirts, socks
+#define BODY_LAYER 22
+	/// Mutantrace features (snout, body markings) that must appear above the body parts
+	#define BODY_ADJ_LAYER 22.9
+/// Layer for most bodyparts, appears above BODYPARTS_LOW_LAYER and below BODYPARTS_HIGH_LAYER
+#define BODYPARTS_LAYER 23
+	/// Layer for bodyparts that should appear behind every other bodypart - Mostly, legs when facing WEST or EAST
+	#define BODYPARTS_LOW_LAYER 23.1
+	/// Mutantrace features (tail when looking south) that must appear behind the body parts
+	#define BODY_BEHIND_LAYER 23.2
+	/// Mutations layer - Tk headglows, cold resistance glow, etc. Very bottom of the mob
+	#define MUTATIONS_LAYER 23.9
+/// Total number of standing overlays.
+/// KEEP THIS UP-TO-DATE OR SHIT WILL BREAK.
+/// (You ONLY need to update this if you add a standing overlay, adding an integer.)
+#define TOTAL_LAYERS 23
 
-#define UPPER_BODY "upper body"
-#define LOWER_BODY "lower body"
-#define NO_MODIFY "do not modify"
-
-/// Used for human height overlay adjustments
-/// Certain standing overlay layers shouldn't have a filter applied and should instead just offset by a pixel y
-/// This list contains all the layers that must offset, with its value being whether it's a part of the upper half of the body (TRUE) or not (FALSE)
-GLOBAL_LIST_INIT(layers_to_offset, list(
-	// Weapons commonly cross the middle of the sprite so they get cut in half by the filter
-	"[HANDS_LAYER]" = LOWER_BODY,
-	// Very tall hats will get cut off by filter
-	"[HEAD_LAYER]" = UPPER_BODY,
-	// Hair will get cut off by filter
-	"[HAIR_LAYER]" = UPPER_BODY,
-	// Long belts (sabre sheathe) will get cut off by filter
-	"[BELT_LAYER]" = LOWER_BODY,
-	// Everything below looks fine with or without a filter, so we can skip it and just offset
-	// (In practice they'd be fine if they got a filter but we can optimize a bit by not.)
-	"[NECK_LAYER]" = UPPER_BODY,
-	"[GLASSES_LAYER]" = UPPER_BODY,
-	"[LOW_NECK_LAYER]" = UPPER_BODY,
-	"[ABOVE_BODY_FRONT_GLASSES_LAYER]" = UPPER_BODY, // currently unused
-	"[ABOVE_BODY_FRONT_HEAD_LAYER]" = UPPER_BODY, // only used for head stuff
-	"[GLOVES_LAYER]" = LOWER_BODY,
-	"[HALO_LAYER]" = UPPER_BODY, // above the head
-	"[HANDCUFF_LAYER]" = LOWER_BODY,
-	"[ID_CARD_LAYER]" = UPPER_BODY, // unused
-	"[ID_LAYER]" = UPPER_BODY,
-	"[FACEMASK_LAYER]" = UPPER_BODY,
-	"[LOW_FACEMASK_LAYER]" = UPPER_BODY,
-	// These two are cached, and have their appearance shared(?), so it's safer to just not touch it
-	"[MUTATIONS_LAYER]" = NO_MODIFY,
-	"[FRONT_MUTATIONS_LAYER]" = NO_MODIFY,
-	// These DO get a filter, I'm leaving them here as reference,
-	// to show how many filters are added at a glance
-	// BACK_LAYER (backpacks are big)
-	// BODYPARTS_HIGH_LAYER (arms)
-	// BODY_LAYER (body markings (full body), underwear (full body))
-	// EYES_LAYER,
-	// BODY_ADJ_LAYER (external organs like wings)
-	// BODY_BEHIND_LAYER (external organs like wings)
-	// BODY_FRONT_LAYER (external organs like wings)
-	// DAMAGE_LAYER (full body)
-	// HIGHEST_LAYER (full body)
-	// UNIFORM_LAYER (full body)
-	// WOUND_LAYER (full body)
-))
-
-//Bitflags for the layers a bodypart overlay can draw on (can be drawn on multiple layers)
-/// Draws overlay on the BODY_FRONT_LAYER
-#define EXTERNAL_FRONT (1 << 0)
-/// Draws overlay on the BODY_ADJ_LAYER
-#define EXTERNAL_ADJACENT (1 << 1)
-/// Draws overlay on the BODY_BEHIND_LAYER
-#define EXTERNAL_BEHIND (1 << 2)
-/// Draws organ on all EXTERNAL layers
-#define ALL_EXTERNAL_OVERLAYS EXTERNAL_FRONT | EXTERNAL_ADJACENT | EXTERNAL_BEHIND
+// Legacy mutant bodypart layering defines for icon states
+// Don't change these without updating all relevant icon states
+#define EXTERNAL_FRONT "FRONT"
+#define EXTERNAL_ADJACENT "ADJ"
+#define EXTERNAL_BEHIND "BEHIND"
 
 // Bitflags for external organs restylability
 #define EXTERNAL_RESTYLE_ALL ALL
@@ -852,20 +916,6 @@ GLOBAL_LIST_INIT(layers_to_offset, list(
 #define EXTERNAL_RESTYLE_FLESH (1 << 1)
 /// This organ allows restyling with enamel restyling (like a fucking file or something?). It's for horns and shit
 #define EXTERNAL_RESTYLE_ENAMEL (1 << 2)
-
-//Mob Overlay Index Shortcuts for alternate_worn_layer, layers
-//Because I *KNOW* somebody will think layer+1 means "above"
-//IT DOESN'T OK, IT MEANS "UNDER"
-/// The layer underneath the suit
-#define UNDER_SUIT_LAYER (SUIT_LAYER+1)
-/// The layer underneath the head (for hats)
-#define UNDER_HEAD_LAYER (HEAD_LAYER+1)
-
-//AND -1 MEANS "ABOVE", OK?, OK!?!
-/// The layer above shoes
-#define ABOVE_SHOES_LAYER (SHOES_LAYER-1)
-/// The layer above mutant body parts
-#define ABOVE_BODY_FRONT_LAYER (BODY_FRONT_LAYER-1)
 
 /// If gravity must be present to perform action (can't use pens without gravity)
 #define NEED_GRAVITY (1<<0)
@@ -922,6 +972,8 @@ GLOBAL_LIST_INIT(layers_to_offset, list(
 #define VOMIT_CATEGORY_DEFAULT (MOB_VOMIT_MESSAGE | MOB_VOMIT_HARM | MOB_VOMIT_STUN)
 /// The vomit you've all come to know and love, but with a little extra "spice" (blood)
 #define VOMIT_CATEGORY_BLOOD (VOMIT_CATEGORY_DEFAULT | MOB_VOMIT_BLOOD)
+/// The bloody vomit, but without the stunning
+#define VOMIT_CATEGORY_BLOOD_STUNLESS (VOMIT_CATEGORY_BLOOD & ~MOB_VOMIT_STUN)
 /// Another vomit variant that causes you to get knocked down instead of just only getting a stun. Standard otherwise.
 #define VOMIT_CATEGORY_KNOCKDOWN (MOB_VOMIT_MESSAGE | MOB_VOMIT_HARM | MOB_VOMIT_KNOCKDOWN)
 
@@ -929,6 +981,14 @@ GLOBAL_LIST_INIT(layers_to_offset, list(
 #define NO_BUCKLE_LYING -1
 /// Possible value of [/atom/movable/buckle_dir]. If set to a different (positive-or-zero) value than this, the buckling thing will force a dir on the buckled.
 #define BUCKLE_MATCH_DIR -1
+
+// Defines for [/datum/component/riding/var/other_unbuckle]
+/// Other mobs cannot force riders to unbuckle in any means
+#define CANNOT_FORCE_UNBUCKLE 0
+/// Other mobs can force riders to unbuckle by simply clicking on the parent
+#define CAN_FORCE_UNBUCKLE 1
+/// Other mobs can force riders to unbuckle by disarming the parent or the rider minimum twice
+#define CAN_DISARM_UNBUCKLE 2
 
 // Flags for fully_heal().
 
@@ -1021,7 +1081,16 @@ GLOBAL_LIST_INIT(layers_to_offset, list(
 #define MINING_MOB_PROJECTILE_VULNERABILITY list(BRUTE)
 
 /// Helper macro that determines if the mob is at the threshold to start vomitting due to high toxin levels
-#define AT_TOXIN_VOMIT_THRESHOLD(mob) (mob.getToxLoss() > 45 && mob.nutrition > 20)
+#define AT_TOXIN_VOMIT_THRESHOLD(mob) (mob.get_tox_loss() > 45 && mob.nutrition > 20)
+
+/// Shared cooldown for manually triggered emote audio
+#define MANUAL_GENERAL_EMOTE_AUDIO_COOLDOWN "manual_general_emote_audio_cooldown"
+/// Per emote cooldown for manually triggered emote audio
+#define MANUAL_SPECIFIC_EMOTE_AUDIO_COOLDOWN(type) "manual_specific_emote_audio_cooldown_[type]"
+/// Shared cooldown for forced emote audio
+#define FORCED_GENERAL_EMOTE_AUDIO_COOLDOWN "forced_general_emote_audio_cooldown"
+/// Per emote cooldown for forced emote audio
+#define FORCED_SPECIFIC_EMOTE_AUDIO_COOLDOWN(type) "forced_specific_emote_audio_cooldown_[type]"
 
 /// The duration of the flip emote animation
 #define FLIP_EMOTE_DURATION 0.7 SECONDS
@@ -1053,3 +1122,12 @@ GLOBAL_LIST_INIT(regal_rat_minion_commands, list(
 	/datum/pet_command/follow,
 	/datum/pet_command/attack/mouse
 ))
+
+/// Checks if the mob is unconscious (or in other words, has [TRAIT_KNOCKEDOUT]) - note dead mobs are considered unconscious
+#define IS_UNCONSCIOUS(mob) (HAS_TRAIT(mob, TRAIT_KNOCKEDOUT))
+/// Checks if the mob is in soft crit, hard crit, dead, or is otherwise unconscious (which hard crit and death apply anyways)
+#define IS_UNCONSCIOUS_OR_CRIT(mob) (IS_UNCONSCIOUS(mob) || mob.stat >= SOFT_CRIT)
+/// Checks if the mob is unconscious but not dead
+#define IS_UNCONSCIOUS_AND_ALIVE(mob) (IS_UNCONSCIOUS(mob) && mob.stat != DEAD)
+/// Checks if the mob is dead or faking death (via [TRAIT_FAKEDEATH])
+#define IS_DEAD_OR_FAKING(mob) (mob.stat == DEAD || HAS_TRAIT(mob, TRAIT_FAKEDEATH))

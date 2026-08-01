@@ -215,7 +215,7 @@ GLOBAL_LIST_INIT(bibleitemstates, list(
 		return BLESSING_FAILED
 
 	var/mob/living/carbon/human/built_in_his_image = blessed
-	for(var/obj/item/bodypart/bodypart as anything in built_in_his_image.bodyparts)
+	for(var/obj/item/bodypart/bodypart as anything in built_in_his_image.get_bodyparts())
 		if(!IS_ORGANIC_LIMB(bodypart))
 			balloon_alert(user, "can't heal inorganic!")
 			return BLESSING_IGNORED
@@ -235,7 +235,7 @@ GLOBAL_LIST_INIT(bibleitemstates, list(
 	built_in_his_image.add_mood_event("blessing", /datum/mood_event/blessing)
 	return BLESSING_SUCCESS
 
-/obj/item/book/bible/attack(mob/living/target_mob, mob/living/carbon/human/user, params, heal_mode = TRUE)
+/obj/item/book/bible/attack(mob/living/target_mob, mob/living/carbon/human/user, list/modifiers, list/attack_modifiers, heal_mode = TRUE)
 	if(!ISADVANCEDTOOLUSER(user))
 		balloon_alert(user, "not dextrous enough!")
 		return
@@ -274,11 +274,11 @@ GLOBAL_LIST_INIT(bibleitemstates, list(
 			SEND_SIGNAL(target_mob, COMSIG_LIVING_BLESSED, user, src, bless_result)
 			return
 
-	if(iscarbon(target_mob))
-		var/mob/living/carbon/carbon_target = target_mob
-		if(!istype(carbon_target.head, /obj/item/clothing/head/helmet))
-			carbon_target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 5, 60)
-			carbon_target.balloon_alert(carbon_target, "you feel dumber!")
+	if(ishuman(target_mob))
+		var/mob/living/carbon/human/human_target = target_mob
+		if(!istype(human_target.head, /obj/item/clothing/head/helmet))
+			human_target.adjust_organ_loss(ORGAN_SLOT_BRAIN, 5, 60)
+			human_target.balloon_alert(human_target, "you feel dumber!")
 	target_mob.visible_message(span_danger("[user] beats [target_mob] over the head with [src]!"), \
 			span_userdanger("[user] beats [target_mob] over the head with [src]!"))
 	playsound(target_mob, SFX_PUNCH, 25, TRUE, -1)
@@ -365,13 +365,13 @@ GLOBAL_LIST_INIT(bibleitemstates, list(
 /obj/item/book/bible/syndicate/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/anti_magic, MAGIC_RESISTANCE|MAGIC_RESISTANCE_HOLY)
+	AddComponent(/datum/component/bane, affected_biotypes = MOB_SPIRIT, added_damage = 25)
 	AddComponent(/datum/component/effect_remover, \
 		success_feedback = "You disrupt the magic of %THEEFFECT with %THEWEAPON.", \
 		success_forcesay = "BEGONE FOUL MAGIKS!!", \
 		tip_text = "Clear rune", \
 		effects_we_clear = list(/obj/effect/rune, /obj/effect/heretic_rune, /obj/effect/cosmic_rune), \
 	)
-	AddElement(/datum/element/bane, mob_biotypes = MOB_SPIRIT, damage_multiplier = 0, added_damage = 25, requires_combat_mode = FALSE)
 
 /obj/item/book/bible/syndicate/attack_self(mob/living/carbon/human/user, modifiers)
 	if(!uses || !istype(user))
@@ -393,7 +393,7 @@ GLOBAL_LIST_INIT(bibleitemstates, list(
 	if(uses)
 		return "Read"
 
-/obj/item/book/bible/syndicate/attack(mob/living/target_mob, mob/living/carbon/human/user, params, heal_mode = TRUE)
+/obj/item/book/bible/syndicate/attack(mob/living/target_mob, mob/living/carbon/human/user,  list/modifiers, list/attack_modifiers, heal_mode = TRUE)
 	if(!user.combat_mode)
 		return ..()
-	return ..(target_mob, user, heal_mode = FALSE)
+	return ..(target_mob, user, modifiers, attack_modifiers, heal_mode = FALSE)

@@ -1,14 +1,16 @@
 ///Subtype for any kind of ballistic gun
 ///This has a shitload of vars on it, and I'm sorry for that, but it does make making new subtypes really easy
 /obj/item/gun/ballistic
-	desc = "Now comes in flavors like GUN. Uses 10mm ammo, for some reason."
 	name = "projectile gun"
+	desc = "Now comes in flavors like GUN. Uses 10mm ammo, for some reason."
 	icon_state = "debug"
+	abstract_type = /obj/item/gun/ballistic
 	w_class = WEIGHT_CLASS_NORMAL
 	pickup_sound = 'sound/items/handling/gun/gun_pick_up.ogg'
 	drop_sound = 'sound/items/handling/gun/gun_drop.ogg'
 	sound_vary = TRUE
-	unique_reskin_changes_base_icon_state = TRUE
+
+	min_recoil = 0.1
 
 	///sound when inserting magazine
 	var/load_sound = 'sound/items/weapons/gun/general/magazine_insert_full.ogg'
@@ -139,6 +141,10 @@
 	var/burst_fire_selection = FALSE
 	/// If it has an icon for a selector switch indicating current firemode.
 	var/selector_switch_icon = FALSE
+	/// Suppressor attached to the gun, if any
+	var/obj/item/suppressor/suppressor = null
+	/// Sound played when the burst mode is changed
+	var/burst_select_sound = SFX_FIRE_MODE_SWITCH
 
 /obj/item/gun/ballistic/Initialize(mapload)
 	. = ..()
@@ -159,9 +165,51 @@
 	update_appearance()
 	RegisterSignal(src, COMSIG_ITEM_RECHARGED, PROC_REF(instant_reload))
 
-/obj/item/gun/ballistic/Destroy()
-	QDEL_NULL(magazine)
-	return ..()
+/obj/item/gun/ballistic/on_craft_completion(list/components, datum/crafting_recipe/current_recipe, atom/crafter)
+	. = ..()
+	var/replace_chamber = TRUE
+	var/replace_magazine = !magazine || !(magazine.item_flags & ABSTRACT) //don't replace abstract magazines
+	for(var/obj/item/gun/ballistic/gun in components)
+		if(gun.magazine?.item_flags & ABSTRACT) //we cannot insert an internal magazine into the new gun, so we insert the individual casings instead.
+			for(var/i in 1 to length(gun.magazine.stored_ammo))
+				var/obj/item/ammo_casing/round = gun.magazine.get_round()
+				if(!magazine.give_round(round))
+					round.forceMove(drop_location())
+		else if(gun.magazine && istype(gun.magazine, accepted_magazine_type)) //insert the new magazine into the gun
+			var/obj/item/ammo_box/magazine/new_magazine = gun.magazine //hold onto the reference since magazine is set to null once ejected
+			qdel(magazine)
+			new_magazine.forceMove(src)
+			magazine = new_magazine
+			replace_magazine = FALSE
+		else if(gun.magazine) //the magazine cannot be replaced
+			gun.magazine.forceMove(drop_location()) //drop the magazine on the floor so it doesn't get deleted alongside the gun components.
+		else if(replace_magazine && istype(gun.accepted_magazine_type, accepted_magazine_type)) //the gun we used for crafting lacked a magazine so this one should as well
+			qdel(magazine)
+
+		if(!gun.chambered)
+			continue
+
+		var/obj/item/ammo_casing/round = gun.chambered //hold onto the reference since chambered is set to null once the casing is ejected
+		if(!magazine?.is_compatible_round(round) || !replace_chamber)
+			round.forceMove(drop_location())
+			continue
+		qdel(chambered) //nulled when moved to null
+		round.forceMove(src)
+		chambered = round
+		replace_chamber = FALSE
+
+	update_appearance()
+
+/obj/item/gun/ballistic/Exited(atom/movable/gone, direction)
+	. = ..()
+	if(gone == suppressor)
+		clear_suppressor()
+	if(gone == magazine)
+		if(!QDELETED(magazine))
+			magazine.update_appearance()
+		magazine = null
+		if(!QDELETED(src))
+			update_appearance()
 
 /obj/item/gun/ballistic/add_weapon_description()
 	AddElement(/datum/element/weapon_description, attached_proc = PROC_REF(add_notes_ballistic))
@@ -209,11 +257,10 @@
 	. = ..()
 
 	if(selector_switch_icon)
-		switch(burst_fire_selection)
-			if(FALSE)
-				. += "[initial(icon_state)]_semi"
-			if(TRUE)
-				. += "[initial(icon_state)]_burst"
+		if(burst_fire_selection)
+			. += "[initial(icon_state)]_burst"
+		else
+			. += "[initial(icon_state)]_semi"
 
 	if(show_bolt_icon)
 		if (bolt_type == BOLT_TYPE_LOCKING)
@@ -275,14 +322,17 @@
 	burst_fire_selection = !burst_fire_selection
 	if(!burst_fire_selection)
 		burst_size = 1
-		fire_delay = 0
+		fire_delay = 0 SECONDS
 		balloon_alert(user, "switched to semi-automatic")
 	else
 		burst_size = initial(burst_size)
 		fire_delay = initial(fire_delay)
 		balloon_alert(user, "switched to [burst_size]-round burst")
 
-	playsound(user, 'sound/items/weapons/empty.ogg', 100, TRUE)
+	if(burst_select_sound)
+		playsound(user, burst_select_sound, 50, TRUE)
+	else
+		playsound(user, 'sound/items/weapons/empty.ogg', 100, TRUE)
 	update_appearance()
 	update_item_action_buttons()
 
@@ -473,21 +523,16 @@
 		playsound(src, eject_sound, eject_sound_volume, eject_sound_vary)
 	else
 		playsound(src, eject_empty_sound, eject_sound_volume, eject_sound_vary)
-	magazine.forceMove(drop_location())
 	var/obj/item/ammo_box/magazine/old_mag = magazine
+	magazine.forceMove(drop_location())
 	if (tac_load)
 		if (insert_magazine(user, tac_load, FALSE))
 			balloon_alert(user, "[magazine_wording] swapped")
 		else
 			to_chat(user, span_warning("You dropped the old [magazine_wording], but the new one doesn't fit. How embarassing."))
-			magazine = null
-	else
-		magazine = null
 	user.put_in_hands(old_mag)
-	old_mag.update_appearance()
 	if (display_message)
 		balloon_alert(user, "[magazine_wording] unloaded")
-	update_appearance()
 
 /obj/item/gun/ballistic/can_shoot()
 	return chambered?.loaded_projectile
@@ -528,7 +573,7 @@
 			return ITEM_INTERACT_FAILURE
 
 		if(suppressed)
-			balloon_alert(user, "already has a supressor!")
+			balloon_alert(user, "already has a suppressor!")
 			return ITEM_INTERACT_FAILURE
 
 		if(!user.transferItemToLoc(tool, src))
@@ -545,11 +590,11 @@
 /obj/item/gun/ballistic/proc/load_gun(obj/item/ammo, mob/living/user)
 	if (chambered && !chambered.loaded_projectile)
 		chambered.forceMove(drop_location())
-		if(chambered != magazine?.stored_ammo[1])
+		if(length(magazine?.stored_ammo) && chambered != magazine.stored_ammo[1])
 			magazine.stored_ammo -= chambered
 		chambered = null
 
-	var/num_loaded = magazine?.attackby(ammo, user, silent = TRUE)
+	var/num_loaded = magazine?.try_load(user, ammo, silent = TRUE)
 	if (!num_loaded)
 		return FALSE
 
@@ -589,27 +634,28 @@
 	return ..()
 
 ///Installs a new suppressor, assumes that the suppressor is already in the contents of src
-/obj/item/gun/ballistic/proc/install_suppressor(obj/item/suppressor/S)
-	suppressed = S
-	update_weight_class(w_class + S.w_class) //so pistols do not fit in pockets when suppressed
+/obj/item/gun/ballistic/proc/install_suppressor(obj/item/suppressor/new_suppressor)
+	suppressor = new_suppressor
+	suppressed = suppressor.suppression
+	update_weight_class(w_class + suppressor.w_class) //so pistols do not fit in pockets when suppressed
+	can_muzzle_flash = FALSE
 	update_appearance()
 
 /obj/item/gun/ballistic/clear_suppressor()
-	if(!can_unsuppress)
-		return
-	if(isitem(suppressed))
-		var/obj/item/I = suppressed
-		update_weight_class(w_class - I.w_class)
-	return ..()
+	suppressed = SUPPRESSED_NONE
+	if(suppressor)
+		update_weight_class(w_class - suppressor.w_class)
+		suppressor = null
+	can_muzzle_flash = initial(can_muzzle_flash)
+	update_appearance()
 
 /obj/item/gun/ballistic/click_alt(mob/user)
 	if(!suppressed || !can_unsuppress)
 		return CLICK_ACTION_BLOCKING
-	var/obj/item/suppressor/S = suppressed
 	if(!user.is_holding(src))
 		return CLICK_ACTION_BLOCKING
-	balloon_alert(user, "[S.name] removed")
-	user.put_in_hands(S)
+	balloon_alert(user, "[suppressor.name] removed")
+	user.put_in_hands(suppressor)
 	clear_suppressor()
 	return CLICK_ACTION_SUCCESS
 
@@ -689,7 +735,7 @@
 		. += "It does not seem to have a round chambered."
 	if (bolt_locked)
 		. += "The [bolt_wording] is locked back and needs to be released before firing or de-fouling."
-	if (suppressed)
+	if (suppressor)
 		. += "It has a suppressor [can_unsuppress ? "attached that can be removed with <b>alt+click</b>." : "that is integral or can't otherwise be removed."]"
 	if(can_misfire)
 		. += span_danger("You get the feeling this might explode if you fire it...")
@@ -856,7 +902,6 @@ GLOBAL_LIST_INIT(gun_saw_types, typecacheof(list(
 	if(!internal_magazine && magazine) //if a magazine is attached to the weapon, we remove it and throw it aside
 		magazine.forceMove(drop_location())
 		magazine.throw_at(get_edge_target_turf(src, pick(GLOB.alldirs)), 1, 1)
-		magazine = null
 		update_icon() //updating the sprite of weapons without a magazine
 	if(!isnull(chambered)) //if there is a cartridge in the chamber, we remove it
 		rack()
@@ -867,3 +912,6 @@ GLOBAL_LIST_INIT(gun_saw_types, typecacheof(list(
 	icon = 'icons/obj/weapons/guns/ballistic.dmi'
 	icon_state = "suppressor"
 	w_class = WEIGHT_CLASS_TINY
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT, /datum/material/silver = HALF_SHEET_MATERIAL_AMOUNT)
+	/// How quiet should the gun be when we're installed?
+	var/suppression = SUPPRESSED_QUIET

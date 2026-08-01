@@ -49,7 +49,7 @@
 	greyscale_config = null
 	greyscale_colors = null
 
-/obj/item/screwdriver/drone/separate_worn_overlays(mutable_appearance/standing, mutable_appearance/draw_target, isinhands = FALSE, icon_file)
+/obj/item/screwdriver/drone/separate_worn_overlays(mutable_appearance/standing, mutable_appearance/draw_target, isinhands = FALSE, icon_file, bodyshape = NONE)
 	. = ..()
 	if(!isinhands)
 		return
@@ -79,6 +79,8 @@
 	inhand_icon_state = "cutters"
 	item_flags = NO_MAT_REDEMPTION
 	random_color = FALSE
+	greyscale_config = null
+	greyscale_colors = null
 
 /obj/item/multitool/drone
 	name = "built-in multitool"

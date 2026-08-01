@@ -5,16 +5,6 @@ The original authors are: cogwerks, pistoleer, spyguy, angriestibm, marquesas, a
 If you make a derivative work from this code, you must include this notification header alongside it.
 */
 
-/mob/living/proc/wrestling_help()
-	set name = "Recall Teachings"
-	set desc = "Remember how to wrestle."
-	set category = "Wrestling"
-
-	to_chat(usr, "<b><i>You flex your muscles and have a revelation...</i></b>")
-	to_chat(usr, "[span_notice("Clinch")]: Grab. Passively gives you a chance to immediately aggressively grab someone. Not always successful.")
-	to_chat(usr, "[span_notice("Suplex")]: Shove someone you are grabbing. Suplexes your target to the floor. Greatly injures them and leaves both you and your target on the floor.")
-	to_chat(usr, "[span_notice("Advanced grab")]: Grab. Passively causes stamina damage when grabbing someone.")
-
 /datum/martial_art/wrestling
 	name = "Wrestling"
 	id = MARTIALART_WRESTLING
@@ -224,7 +214,7 @@ If you make a derivative work from this code, you must include this notification
 		playsound(attacker.loc, SFX_SWING_HIT, 50, TRUE)
 		var/turf/T = get_edge_target_turf(attacker, attacker.dir)
 		if (T && isturf(T))
-			if (!defender.stat)
+			if (!IS_UNCONSCIOUS_OR_CRIT(defender))
 				defender.emote("scream")
 			defender.throw_at(T, 10, 4, attacker, TRUE, TRUE, callback = CALLBACK(defender, TYPE_PROC_REF(/mob/living, Paralyze), 20))
 	log_combat(attacker, defender, "has thrown with wrestling")
@@ -324,17 +314,17 @@ If you make a derivative work from this code, you must include this notification
 						span_userdanger("You're [fluff]ed by [attacker]!"), span_hear("You hear a sickening sound of flesh hitting flesh!"), COMBAT_MESSAGE_RANGE, attacker)
 		to_chat(attacker, span_danger("You [fluff] [defender]!"))
 		playsound(attacker.loc, SFX_SWING_HIT, 50, TRUE)
-		if (!defender.stat)
+		if (!IS_UNCONSCIOUS_OR_CRIT(defender))
 			defender.emote("scream")
 			defender.Paralyze(4 SECONDS)
 
 			switch(rand(1,3))
 				if (2)
-					defender.adjustBruteLoss(rand(20,30))
+					defender.adjust_brute_loss(rand(20,30))
 				if (3)
 					EX_ACT(defender, EXPLODE_LIGHT)
 				else
-					defender.adjustBruteLoss(rand(10,20))
+					defender.adjust_brute_loss(rand(10,20))
 		else
 			EX_ACT(defender, EXPLODE_LIGHT)
 
@@ -368,7 +358,7 @@ If you make a derivative work from this code, you must include this notification
 		defender.visible_message(span_danger("[attacker] headbutts [defender]!"), \
 						span_userdanger("You're headbutted by [attacker]!"), span_hear("You hear a sickening sound of flesh hitting flesh!"), COMBAT_MESSAGE_RANGE, attacker)
 		to_chat(attacker, span_danger("You headbutt [defender]!"))
-		defender.adjustBruteLoss(rand(10,20))
+		defender.adjust_brute_loss(rand(10,20))
 		playsound(attacker.loc, SFX_SWING_HIT, 50, TRUE)
 		defender.Unconscious(2 SECONDS)
 	log_combat(attacker, defender, "headbutted")
@@ -384,7 +374,7 @@ If you make a derivative work from this code, you must include this notification
 					span_userdanger("You're roundhouse-kicked by [attacker]!"), span_hear("You hear a sickening sound of flesh hitting flesh!"), COMBAT_MESSAGE_RANGE, attacker)
 	to_chat(attacker, span_danger("You roundhouse-kick [defender]!"))
 	playsound(attacker.loc, SFX_SWING_HIT, 50, TRUE)
-	defender.adjustBruteLoss(rand(10,20))
+	defender.adjust_brute_loss(rand(10,20))
 
 	var/turf/T = get_edge_target_turf(attacker, get_dir(attacker, get_step_away(defender, attacker)))
 	if (T && isturf(T))
@@ -428,7 +418,7 @@ If you make a derivative work from this code, you must include this notification
 			if (falling == 1)
 				attacker.visible_message(span_danger("...and dives head-first into the ground, ouch!"), \
 								span_userdanger("...and dive head-first into the ground, ouch!"))
-				attacker.adjustBruteLoss(rand(10,20))
+				attacker.adjust_brute_loss(rand(10,20))
 				attacker.Paralyze(60)
 			to_chat(attacker, span_warning("[defender] is too far away!"))
 			return
@@ -453,12 +443,12 @@ If you make a derivative work from this code, you must include this notification
 		attacker.emote("scream")
 
 		if (falling == 1)
-			if (prob(33) || defender.stat)
+			if (prob(33) || IS_UNCONSCIOUS_OR_CRIT(defender))
 				EX_ACT(defender, EXPLODE_LIGHT)
 			else
-				defender.adjustBruteLoss(rand(20,30))
+				defender.adjust_brute_loss(rand(20,30))
 		else
-			defender.adjustBruteLoss(rand(20,30))
+			defender.adjust_brute_loss(rand(20,30))
 
 		defender.Paralyze(4 SECONDS)
 

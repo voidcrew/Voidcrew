@@ -6,6 +6,7 @@
 	inhand_icon_state = "greyscale_gloves"
 	lefthand_file = 'icons/mob/inhands/clothing/gloves_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/clothing/gloves_righthand.dmi'
+	abstract_type = /obj/item/clothing/gloves
 	greyscale_colors = null
 	greyscale_config_inhand_left = /datum/greyscale_config/gloves_inhand_left
 	greyscale_config_inhand_right = /datum/greyscale_config/gloves_inhand_right
@@ -16,8 +17,8 @@
 	pickup_sound = 'sound/items/handling/glove_pick_up.ogg'
 	attack_verb_continuous = list("challenges")
 	attack_verb_simple = list("challenge")
-	strip_delay = 20
-	equip_delay_other = 40
+	strip_delay = 2 SECONDS
+	equip_delay_other = 4 SECONDS
 	article = "a pair of"
 
 	// Path variable. If defined, will produced the type through interaction with wirecutters.
@@ -39,22 +40,22 @@
 		transfer_blood = 0
 		. |= COMPONENT_CLEANED|COMPONENT_CLEANED_GAIN_XP
 
-/obj/item/clothing/gloves/suicide_act(mob/living/carbon/user)
+/obj/item/clothing/gloves/suicide_act(mob/living/user)
 	user.visible_message(span_suicide("\the [src] are forcing [user]'s hands around [user.p_their()] neck! It looks like the gloves are possessed!"))
 	return OXYLOSS
 
-/obj/item/clothing/gloves/worn_overlays(mutable_appearance/standing, isinhands = FALSE)
+/obj/item/clothing/gloves/worn_overlays(mutable_appearance/standing, isinhands = FALSE, icon_file, bodyshape = NONE)
 	. = ..()
 	if(isinhands)
 		return
 	if(damaged_clothes)
 		. += mutable_appearance('icons/effects/item_damage.dmi', "damagedgloves")
 
-/obj/item/clothing/gloves/separate_worn_overlays(mutable_appearance/standing, mutable_appearance/draw_target, isinhands, icon_file)
+/obj/item/clothing/gloves/separate_worn_overlays(mutable_appearance/standing, mutable_appearance/draw_target, isinhands, icon_file, bodyshape = NONE)
 	. = ..()
 	if (isinhands)
 		return
-	var/blood_overlay = get_blood_overlay("glove")
+	var/blood_overlay = get_blood_overlay("glove", bodyshape)
 	if (blood_overlay)
 		. += blood_overlay
 
@@ -71,19 +72,23 @@
 		return FALSE // We don't want to cut dyed gloves.
 	return TRUE
 
-/obj/item/clothing/gloves/attackby(obj/item/tool, mob/user, list/modifiers, list/attack_modifiers)
+/obj/item/clothing/gloves/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
 	. = ..()
-	if(.)
-		return
+	if(ITEM_INTERACT_ANY_BLOCKER & .)
+		return .
+
 	if(tool.tool_behaviour != TOOL_WIRECUTTER && !tool.get_sharpness())
-		return
+		return .
+
 	if (!can_cut_with(tool))
-		return
+		return ITEM_INTERACT_BLOCKING
+
 	balloon_alert(user, "cutting off fingertips...")
 
 	if(!do_after(user, 3 SECONDS, target=src, extra_checks = CALLBACK(src, PROC_REF(can_cut_with), tool)))
-		return
+		return ITEM_INTERACT_BLOCKING
+
 	balloon_alert(user, "cut fingertips off")
 	qdel(src)
 	user.put_in_hands(new cut_type)
-	return TRUE
+	return ITEM_INTERACT_SUCCESS

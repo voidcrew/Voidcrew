@@ -3,6 +3,7 @@
 /obj/machinery/computer/security
 	name = "security camera console"
 	desc = "Used to access the various cameras on the station."
+	icon_state = MAP_SWITCH("computer", "/obj/machinery/computer/warrant")
 	icon_screen = "cameras"
 	icon_keyboard = "security_key"
 	circuit = /obj/item/circuitboard/computer/security
@@ -94,7 +95,7 @@
 	var/list/data = list()
 	data["network"] = network
 	data["mapRef"] = cam_screen.assigned_map
-	data["cameras"] = GLOB.cameranet.get_available_cameras_data(network)
+	data["cameras"] = SScameras.get_available_cameras_data(network)
 	return data
 
 /obj/machinery/computer/security/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -104,7 +105,7 @@
 
 	if(action == "switch_camera")
 		active_camera?.on_stop_watching(src)
-		var/obj/machinery/camera/selected_camera = locate(params["camera"]) in GLOB.cameranet.cameras
+		var/obj/machinery/camera/selected_camera = locate(params["camera"]) in SScameras.cameras
 		active_camera = selected_camera
 
 		if(isnull(active_camera))
@@ -195,7 +196,7 @@
 /obj/machinery/computer/security/wooden_tv
 	name = "security camera monitor"
 	desc = "An old TV hooked into the station's camera network."
-	icon_state = "television"
+	icon_state = MAP_SWITCH("television", "/obj/machinery/computer/security/wooden_tv")
 	icon_keyboard = null
 	icon_screen = "detective_tv"
 	pass_flags = PASSTABLE
@@ -203,6 +204,7 @@
 /obj/machinery/computer/security/mining
 	name = "outpost camera console"
 	desc = "Used to access the various cameras on the outpost."
+	icon_state = MAP_SWITCH("computer", "/obj/machinery/computer/security/mining")
 	icon_screen = "mining"
 	icon_keyboard = "mining_key"
 	network = list(CAMERANET_NETWORK_MINE, CAMERANET_NETWORK_AUXBASE)

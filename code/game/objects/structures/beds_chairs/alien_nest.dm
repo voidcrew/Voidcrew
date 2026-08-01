@@ -15,6 +15,10 @@
 	can_deconstruct = FALSE
 	var/static/mutable_appearance/nest_overlay = mutable_appearance('icons/mob/nonhuman-player/alien.dmi', "nestoverlay", LYING_MOB_LAYER)
 
+/obj/structure/bed/nest/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_DANGEROUS_BUCKLE, INNATE_TRAIT)
+
 /obj/structure/bed/nest/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	if(held_item?.tool_behaviour == TOOL_WRENCH)
 		return NONE
@@ -70,7 +74,7 @@
 		span_notice("You struggle to break free from the gelatinous resin... (Stay still for about a minute and a half.)"),
 		span_hear("You hear squelching..."))
 
-	if(!do_after(captive, 100 SECONDS, target = src, hidden = TRUE))
+	if(!do_after(captive, 100 SECONDS, target = src, cog_icon = null))
 		if(captive.buckled)
 			to_chat(captive, span_warning("You fail to unbuckle yourself!"))
 		return

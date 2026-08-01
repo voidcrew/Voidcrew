@@ -35,13 +35,13 @@ export function CargoStatus(props) {
             value={points}
             format={(value) => formatMoney(value)}
           />
-          {' credits'}
+          {data.displayed_currency_full_name}
         </Box>
       }
     >
       <LabeledList>
         <LabeledList.Item label="Shuttle">
-          {!!docked && !requestonly && !!can_send ? (
+          {docked && !requestonly && can_send ? (
             <Button
               color={grocery ? 'orange' : 'green'}
               tooltip={

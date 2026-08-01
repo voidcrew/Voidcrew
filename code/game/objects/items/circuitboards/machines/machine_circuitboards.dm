@@ -36,6 +36,18 @@
 		/datum/stock_part/servo/tier3 = 5,
 		/obj/item/stack/cable_coil = 2)
 
+/obj/item/circuitboard/machine/dna_vault/completion_requirements(obj/structure/frame/install_frame, mob/living/user)
+	var/turf/center = get_turf(install_frame)
+	var/blocked = FALSE
+	for(var/turf/potential_turf as anything in CORNER_BLOCK_OFFSET(center, 3, 3, -1, -2))
+		if(potential_turf.density)
+			new /obj/effect/temp_visual/point(potential_turf)
+			blocked = TRUE
+	if(blocked)
+		balloon_alert_to_viewers("no room! (3x3)")
+		return FALSE
+	return TRUE
+
 //Engineering
 
 /obj/item/circuitboard/machine/announcement_system
@@ -466,15 +478,6 @@
 		/obj/item/stack/sheet/glass = 10,
 		/obj/item/stack/sheet/plasteel = 5)
 
-/obj/item/circuitboard/machine/bluespace_sender
-	name = "Bluespace Sender"
-	greyscale_colors = CIRCUIT_COLOR_ENGINEERING
-	build_path = /obj/machinery/atmospherics/components/unary/bluespace_sender
-	req_components = list(
-		/obj/item/stack/cable_coil = 10,
-		/obj/item/stack/sheet/glass = 10,
-		/obj/item/stack/sheet/plasteel = 5)
-
 //Generic
 /obj/item/circuitboard/machine/component_printer
 	name = "\improper Component Printer"
@@ -668,18 +671,27 @@
 	if(!valid_vendor_names_paths)
 		valid_vendor_names_paths = list()
 		for(var/obj/machinery/vending/vendor_type as anything in subtypesof(/obj/machinery/vending))
-			if(vendor_type::allow_custom)
+			if(vendor_type::allow_custom && vendor_type::refill_canister)
 				valid_vendor_names_paths[vendor_type::name] = vendor_type
 
 /obj/item/circuitboard/machine/vendor/screwdriver_act(mob/living/user, obj/item/tool)
+	. = ITEM_INTERACT_FAILURE
+	if(all_products_free)
+		return
 	var/choice = tgui_input_list(user, "Choose a new brand", "Select an Item", sort_list(valid_vendor_names_paths))
 	if(isnull(choice))
 		return
-	if(isnull(valid_vendor_names_paths[choice]))
+	if(!user.can_perform_action(src, FORBID_TELEKINESIS_REACH))
 		return
 	set_type(valid_vendor_names_paths[choice])
-	return TRUE
+	return ITEM_INTERACT_SUCCESS
 
+/**
+ * Sets circuitboard details based on the vending machine type to create
+ *
+ * Arguments
+ * * obj/machinery/vending/typepath - the vending machine type to create
+*/
 /obj/item/circuitboard/machine/vendor/proc/set_type(obj/machinery/vending/typepath)
 	build_path = typepath
 	name = "[typepath::name] Vendor"
@@ -687,33 +699,8 @@
 	flatpack_components = list(initial(typepath.refill_canister))
 
 /obj/item/circuitboard/machine/vendor/apply_default_parts(obj/machinery/machine)
-	for(var/key in valid_vendor_names_paths)
-		// == instead of istype so subtypes don't pass check for their supertypes
-		if(machine.type == valid_vendor_names_paths[key])
-			set_type(valid_vendor_names_paths[key])
-			break
+	set_type(machine.type)
 	return ..()
-
-/obj/item/circuitboard/machine/vending/donksofttoyvendor
-	name = "Donksoft Toy Vendor"
-	build_path = /obj/machinery/vending/donksofttoyvendor
-	req_components = list(
-		/obj/item/stack/sheet/glass = 1,
-		/obj/item/vending_refill/donksoft = 1)
-
-/obj/item/circuitboard/machine/vending/syndicatedonksofttoyvendor
-	name = "Syndicate Donksoft Toy Vendor"
-	build_path = /obj/machinery/vending/toyliberationstation
-	req_components = list(
-		/obj/item/stack/sheet/glass = 1,
-		/obj/item/vending_refill/donksoft = 1)
-
-/obj/item/circuitboard/machine/vending/donksnackvendor
-	name = "Donk Co Snack Vendor"
-	build_path = /obj/machinery/vending/donksnack
-	req_components = list(
-		/obj/item/stack/sheet/glass = 1,
-		/obj/item/vending_refill/donksnackvendor = 1)
 
 /obj/item/circuitboard/machine/bountypad
 	name = "Civilian Bounty Pad"
@@ -1183,6 +1170,7 @@
 	build_path = /obj/machinery/recharger
 	req_components = list(/datum/stock_part/capacitor = 1)
 	needs_anchored = FALSE
+	custom_materials = list(/datum/material/gold = SHEET_MATERIAL_AMOUNT, /datum/material/glass = HALF_SHEET_MATERIAL_AMOUNT)
 
 /obj/item/circuitboard/machine/techfab/department/security
 	name = "\improper Departmental Techfab - Security"
@@ -1329,6 +1317,26 @@
 		/obj/item/stack/sheet/glass = 1)
 	needs_anchored = FALSE
 
+/obj/item/circuitboard/machine/hydroponics/proc/changeindicators(mob/living/user, obj/item/I)
+	if(build_path == /obj/machinery/hydroponics/constructable/oldstyle)
+		name = "Hydroponics Tray [name_extension]"
+		build_path = /obj/machinery/hydroponics/constructable
+		balloon_alert(user, "defaulting indicator location")
+	else
+		name = "Hydroponics Tray (Alt) [name_extension]"
+		build_path = /obj/machinery/hydroponics/constructable/oldstyle
+		balloon_alert(user, "moved indicators location")
+
+/obj/item/circuitboard/machine/hydroponics/item_interaction(mob/living/user, obj/item/I, list/modifiers)
+	if(istype(I, /obj/item/plant_analyzer))
+		changeindicators(user)
+		return ITEM_INTERACT_SUCCESS
+	return ..()
+
+/obj/item/circuitboard/machine/hydroponics/screwdriver_act(mob/living/user, obj/item/tool)
+	changeindicators(user)
+	return ITEM_INTERACT_SUCCESS
+
 /obj/item/circuitboard/machine/hydroponics/fullupgrade
 	build_path = /obj/machinery/hydroponics/constructable/fullupgrade
 	specific_parts = TRUE
@@ -1407,13 +1415,6 @@
 	name = "\improper Departmental Techfab - Service"
 	greyscale_colors = CIRCUIT_COLOR_SERVICE
 	build_path = /obj/machinery/rnd/production/techfab/department/service
-
-/obj/item/circuitboard/machine/vendatray
-	name = "Vend-A-Tray"
-	greyscale_colors = CIRCUIT_COLOR_SERVICE
-	build_path = /obj/structure/displaycase/forsale
-	req_components = list(
-		/datum/stock_part/card_reader = 1)
 
 /obj/item/circuitboard/machine/fishing_portal_generator
 	name = "Fishing Portal Generator"
@@ -1714,6 +1715,7 @@
 		/datum/stock_part/scanning_module = 1,
 		/datum/stock_part/micro_laser = 1,
 	)
+	custom_materials = list(/datum/material/glass = SHEET_MATERIAL_AMOUNT)
 
 /obj/item/circuitboard/machine/refinery
 	name = "Boulder Refinery"
@@ -1723,7 +1725,9 @@
 		/obj/item/assembly/igniter/condenser = 1,
 		/datum/stock_part/servo = 2,
 		/datum/stock_part/matter_bin = 2,
+		/obj/item/reagent_containers/cup/beaker = 1,
 	)
+	custom_materials = list(/datum/material/glass = SHEET_MATERIAL_AMOUNT, /datum/material/iron = SHEET_MATERIAL_AMOUNT)
 
 /obj/item/circuitboard/machine/smelter
 	name = "Boulder Smelter"
@@ -1733,7 +1737,9 @@
 		/obj/item/assembly/igniter = 1,
 		/datum/stock_part/servo = 2,
 		/datum/stock_part/matter_bin = 2,
+		/obj/item/reagent_containers/cup/beaker = 1,
 	)
+	custom_materials = list(/datum/material/glass = SHEET_MATERIAL_AMOUNT, /datum/material/iron = SHEET_MATERIAL_AMOUNT)
 
 /obj/item/circuitboard/machine/shieldwallgen
 	name = "Shield Wall Generator"
@@ -1889,6 +1895,28 @@
 	name = "Shuttle Engine Propulsion"
 	build_path = /obj/machinery/power/shuttle_engine/propulsion
 
+/obj/item/circuitboard/machine/ai_law_rack
+	name = "Standard Rack"
+	name_extension = "(Module Rack Board)"
+	build_path = /obj/machinery/ai_law_rack/base
+	req_components = list(
+		/datum/stock_part/amplifier = 1,
+		/datum/stock_part/transmitter = 1,
+		/obj/item/stack/cable_coil = 10,
+	)
+
+/obj/item/circuitboard/machine/ai_law_rack/small
+	name = "Portable Rack"
+	build_path = /obj/machinery/ai_law_rack/base/small
+
+/obj/item/circuitboard/machine/ai_law_rack/core
+	name = "Core Rack"
+	build_path = /obj/machinery/ai_law_rack/base/core
+
+/obj/item/circuitboard/machine/ai_law_rack/broadcaster
+	name = "Broadcaster Rack"
+	build_path = /obj/machinery/ai_law_rack/broadcaster
+
 /obj/item/circuitboard/machine/quantum_server
 	name = "Quantum Server"
 	greyscale_colors = CIRCUIT_COLOR_SUPPLY
@@ -1920,3 +1948,57 @@
 	req_components = list(
 		/datum/stock_part/micro_laser = 1,
 	)
+
+/obj/item/circuitboard/machine/washing_machine
+	name = "Washing Machine"
+	greyscale_colors = CIRCUIT_COLOR_SERVICE
+	build_path = /obj/machinery/washing_machine
+	req_components = list(
+		/obj/item/stack/sheet/glass = 1,
+		/obj/item/reagent_containers/cup/beaker = 2,
+		/datum/stock_part/water_recycler = 1,
+		/datum/stock_part/servo = 1,
+	)
+
+/obj/item/circuitboard/machine/wall_healer
+	name = "DeForest First Aid Station"
+	greyscale_colors = CIRCUIT_COLOR_MEDICAL
+	build_path = /obj/machinery/wall_healer
+	req_components = list(
+		/obj/item/healthanalyzer/simple = 1,
+		/obj/item/reagent_containers/syringe = 1,
+		/obj/item/hemostat = 1,
+		/obj/item/scalpel = 1,
+	)
+
+/obj/item/circuitboard/machine/wall_healer/examine(mob/user)
+	. = ..()
+	if(obj_flags & EMAGGED)
+		. += span_warning("The safety chip looks fried.")
+
+/obj/item/circuitboard/machine/wall_healer/emag_act(mob/user, obj/item/card/emag/emag_card)
+	if(obj_flags & EMAGGED)
+		return FALSE
+
+	playsound(src, SFX_SPARKS, 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+	visible_message(span_warning("Sparks fly out of [src]!"))
+	balloon_alert(user, "safeties disabled")
+	obj_flags |= EMAGGED
+	return TRUE
+
+// Someone please add generic support for constructing wall mounted objects thanks
+/obj/item/circuitboard/machine/wall_healer/completion_requirements(obj/structure/frame/install_frame, mob/living/user)
+	if(locate(/obj/machinery/wall_healer) in install_frame.loc) // for subtypes support
+		install_frame.balloon_alert(user, "identical machine present!")
+		return FALSE
+
+	var/turf/facing_wall = get_step(install_frame, user.dir)
+	if(!is_mountable_turf(facing_wall))
+		install_frame.balloon_alert(user, "no wall to install on!")
+		return FALSE
+
+	return TRUE
+
+/obj/item/circuitboard/machine/wall_healer/free
+	name = "DeForest Emergency First Aid Station"
+	build_path = /obj/machinery/wall_healer/free

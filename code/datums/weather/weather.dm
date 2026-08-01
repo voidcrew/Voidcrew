@@ -2,7 +2,7 @@
 /// the number of turfs determined by turf_weather_chance and turf_thunder_chance
 /// increasing this too high can result in severe lag so please be careful
 #define MAX_TURFS_PER_TICK 500
-/// VOIDCREW EDIT: containers-only weathers just top up open containers/trays — they don't
+/// VOIDCREW EDIT ADDITION: containers-only weathers just top up open containers/trays - they don't
 /// need 500 picks a second; six concurrent storms at that rate was >3000 turf picks/sec
 #define MAX_CONTAINER_ONLY_TURFS_PER_TICK 100
 
@@ -16,9 +16,10 @@
  */
 
 /datum/weather
-	/// name of weather
+	abstract_type = /datum/weather
+	/// Name of weather
 	var/name = "space wind"
-	/// description of weather
+	/// Description of weather
 	var/desc = "Heavy gusts of wind blanket the area, periodically knocking down anyone caught in the open."
 	/// The message displayed in chat to foreshadow the weather's beginning
 	var/telegraph_message = span_warning("The wind begins to pick up.")
@@ -45,6 +46,8 @@
 	var/weather_overlay
 	/// Color to apply to the area while weather is occuring
 	var/weather_color = null
+	/// Alpha of the weather overlay
+	var/weather_alpha = 255
 
 	/// Displayed once the weather is over
 	var/end_message = span_danger("The wind relents its assault.")
@@ -60,26 +63,27 @@
 	/// Types of area to affect
 	var/area_type = /area/space
 	/// Areas to be affected by the weather, calculated when the weather begins
-	var/list/impacted_areas = list()
-	/// Assoc mirror of impacted_areas (area = TRUE), for cheap membership checks in the per-mob hot path
-	var/list/impacted_areas_lookup = list()
+	VAR_FINAL/list/impacted_areas = list()
+	/// VOIDCREW EDIT ADDITION - assoc mirror of impacted_areas (area = TRUE), for cheap membership checks in the per-mob hot path
+	VAR_FINAL/list/impacted_areas_lookup = list()
 	/// A weighted list of areas impacted by weather, where weights reflect the total turf count in each area.
-	var/list/impacted_areas_weighted = list()
+	VAR_FINAL/list/impacted_areas_weighted = list()
 	/// The total number of turfs impacted by weather across all z-levels and areas.
-	var/total_impacted_turfs = 0
+	VAR_FINAL/total_impacted_turfs = 0
 	/// Areas affected by weather have their blend modes changed
-	var/list/impacted_areas_blend_modes = list()
+	VAR_FINAL/list/impacted_areas_blend_modes = list()
 	/// Areas that are protected and excluded from the affected areas.
 	var/list/protected_areas = list()
 	/// The list of z-levels that this weather is actively affecting
-	var/impacted_z_levels
+	VAR_FINAL/list/impacted_z_levels
 	/// A weighted list of z-levels impacted by weather, where weights reflect the total turf count on each level
-	var/list/impacted_z_levels_weighted = list()
+	VAR_FINAL/list/impacted_z_levels_weighted = list()
 
 	/// Since it's above everything else, this is the layer used by default.
 	var/overlay_layer = AREA_LAYER
-	/// Plane for the overlay
-	var/overlay_plane = WEATHER_PLANE
+	/// Planes for the overlay
+	/// Base visuals should always render to both particle and non-particle planes as to work regardless of the toggle
+	var/list/overlay_planes = list(WEATHER_PLANE, PARTICLE_WEATHER_PLANE)
 	/// Used by mobs (or movables containing mobs, such as enviro bags) to prevent them from being affected by the weather.
 	var/immunity_type
 	/// If this bit of weather should also draw an overlay that's uneffected by lighting onto the area
@@ -100,10 +104,12 @@
 	/// The chance, per tick, a turf will have weather effects applied to it. This is a decimal value, 1.00 = 100%, 0.50 = 50%, etc.
 	/// Recommend setting this low near 0.01 (results in 1 in 100 affected turfs having weather reagents applied per tick)
 	var/turf_weather_chance = 0.01
+	// VOIDCREW EDIT ADDITION BEGIN
 	/// If TRUE, weather_act_turf() only tops up open reagent containers (and waters hydroponics trays when
 	/// the reagent is water) instead of running full reagent exposure + washing on every struck turf.
-	/// Planet-scale weathers pick hundreds of turfs per second — full exposure at that rate eats whole ticks.
+	/// Planet-scale weathers pick hundreds of turfs per second - full exposure at that rate eats whole ticks.
 	var/turf_act_containers_only = FALSE
+	// VOIDCREW EDIT ADDITION END
 	/// The chance, per tick, a turf will have a thunder strike applied to it. This is a decimal value, 1.00 = 100%, 0.50 = 50%, etc.
 	/// Recommend setting this really low near 0.001 (results in 1 in 1000 affected turfs having thunder strikes applied per tick)
 	var/turf_thunder_chance = THUNDER_CHANCE_AVERAGE // does nothing without the WEATHER_THUNDER weather_flag
@@ -118,15 +124,15 @@
 	var/weather_flags = NONE
 
 	/// List of current mobs being processed by weather
-	var/list/current_mobs = list()
+	VAR_FINAL/list/current_mobs = list()
 	/// The weather turf counter to keep track of how many turfs we have processed so far
-	var/turf_iteration = 0
+	VAR_FINAL/turf_iteration = 0
 	/// The weather thunder counter to keep track of how much thunder we have processed so far
-	var/thunder_iteration = 0
+	VAR_FINAL/thunder_iteration = 0
 	/// Index of the current section our weather subsystem is processing from our subsystem_tasks
-	var/task_index = 1
+	VAR_FINAL/task_index = 1
 	/// The list of allowed tasks our weather subsystem is allowed to process (determined by weather_flags)
-	var/list/subsystem_tasks = list()
+	VAR_FINAL/list/subsystem_tasks = list()
 
 	/// The temperature of our weather that is applied to weather reagents and mobs using adjust_bodytemperature()
 	var/weather_temperature = T20C
@@ -142,25 +148,25 @@
 	/// The actual atom that holds our reagents that is held in nullspace
 	var/obj/effect/abstract/weather_reagent_holder
 
-/datum/weather/New(z_levels, list/weather_data)
+/datum/weather/New(list/z_levels, list/weather_data)
 	..()
+	impacted_z_levels = z_levels.Copy()
+	weather_flags = isnull(weather_data?[WEATHER_FORCED_FLAGS]) ? weather_flags : weather_data?[WEATHER_FORCED_FLAGS]
+	turf_thunder_chance = isnull(weather_data?[WEATHER_FORCED_THUNDER]) ? turf_thunder_chance : weather_data?[WEATHER_FORCED_THUNDER]
+	telegraph_duration = isnull(weather_data?[WEATHER_FORCED_TELEGRAPH]) ? telegraph_duration : weather_data?[WEATHER_FORCED_TELEGRAPH]
+	end_duration = isnull(weather_data?[WEATHER_FORCED_END]) ? end_duration : weather_data?[WEATHER_FORCED_END]
 
-	impacted_z_levels = z_levels
-	area_type = weather_data?["area"] || area_type
-	weather_flags = weather_data?["weather_flags"] || weather_flags
-	turf_thunder_chance = isnull(weather_data?["thunder_chance"]) ? turf_thunder_chance : weather_data?["thunder_chance"]
-
-	var/datum/reagent/custom_reagent = weather_data?["reagent"]
+	var/datum/reagent/custom_reagent = weather_data?[WEATHER_FORCED_REAGENT]
 	var/reagent_id
 	if(custom_reagent)
 		reagent_id = custom_reagent
 	else if(whitelist_weather_reagents)
 		reagent_id = pick_weight_recursive(whitelist_weather_reagents)
 	else if(blacklist_weather_reagents) // randomized
-		reagent_id = get_random_reagent_id(blacklist_weather_reagents)
+		reagent_id = get_random_reagent_id(blacklist = blacklist_weather_reagents)
 
 	if(reagent_id)
-		weather_reagent = find_reagent_object_from_type(reagent_id)
+		weather_reagent = GLOB.chemical_reagents_list[reagent_id]
 		weather_color = weather_reagent.color
 		weather_reagent_holder = new(null) // spawns in nullspace
 		weather_reagent_holder.create_reagents(WEATHER_REAGENT_VOLUME, NO_REACT)
@@ -174,7 +180,7 @@
 	if(weather_flags & (WEATHER_THUNDER))
 		subsystem_tasks += SSWEATHER_THUNDER
 
-	setup_weather_areas()
+	setup_weather_areas(weather_data?[WEATHER_FORCED_AREAS])
 	setup_weather_turfs()
 
 /datum/weather/Destroy()
@@ -188,26 +194,94 @@
  * Calculates duration and hit areas, and makes a callback for the actual weather to start
  *
  */
-/datum/weather/proc/telegraph()
+/datum/weather/proc/telegraph(list/weather_data)
 	if(stage == STARTUP_STAGE)
 		return
 	stage = STARTUP_STAGE
 	SEND_GLOBAL_SIGNAL(COMSIG_WEATHER_TELEGRAPH(type), src)
-
-	weather_duration = rand(weather_duration_lower, weather_duration_upper)
+	weather_duration = isnull(weather_data?[WEATHER_FORCED_DURATION]) ? rand(weather_duration_lower, weather_duration_upper) : weather_data?[WEATHER_FORCED_DURATION]
 	SSweather.processing |= src
 	update_areas()
 	if(telegraph_duration)
 		send_alert(telegraph_message, telegraph_sound, telegraph_sound_vol)
-	addtimer(CALLBACK(src, PROC_REF(start)), telegraph_duration)
+	addtimer(CALLBACK(src, PROC_REF(start)), telegraph_duration, TIMER_UNIQUE)
 
-/datum/weather/proc/setup_weather_areas()
-	var/list/affectareas = list()
-	for(var/area/selected_area as anything in get_areas(area_type))
-		affectareas += selected_area
-	for(var/area/protected_area as anything in protected_areas)
-		affectareas -= get_areas(protected_area)
-	for(var/area/affected_area as anything in affectareas)
+	// so /datum/element/weather_listener relies on z traits to determine when to set up sound managers
+	// thus if we force weather on a z level that doesn't match the target trait, we need to manually set up sound managers
+	if(target_trait)
+		manually_setup_sound_manager()
+
+/// Manually add a sound manager to all mobs
+/datum/weather/proc/manually_setup_sound_manager()
+	var/list/filtered_zs = get_impacted_zs_without_trait()
+	var/list/playlist = get_playlist_ref()
+	// we only need to manually handle sound managers if there are zs without the trait being affected, fortunately
+	if(!length(filtered_zs) || isnull(playlist))
+		return
+
+	// add in dead mobs so we can get observers covered too
+	for(var/mob/living/affected as anything in GLOB.mob_living_list | GLOB.dead_mob_list)
+		if(isnull(affected.client))
+			// this registers 400+ odd signals... maybe we should reconsider
+			RegisterSignal(affected, COMSIG_MOB_LOGIN, PROC_REF(handle_mob_log_in))
+			continue
+
+		manually_setup_sound_manager_on_mob(affected, playlist, filtered_zs)
+
+	RegisterSignal(SSdcs, COMSIG_GLOB_MOB_CREATED, PROC_REF(handle_new_mob_sound_manager))
+
+/// Returns a reference to the "sound playlist" for this weather type
+/datum/weather/proc/get_playlist_ref()
+	return null
+
+/// Returns a list of z-levels impacted that do not have the target trait
+/datum/weather/proc/get_impacted_zs_without_trait()
+	var/list/zs_without_trait = list()
+	for(var/z in impacted_z_levels)
+		if(!SSmapping.level_trait(z, target_trait))
+			zs_without_trait += z
+	return zs_without_trait
+
+/datum/weather/proc/handle_new_mob_sound_manager(datum/source, mob/the_mob)
+	SIGNAL_HANDLER
+
+	if(isnull(the_mob.client))
+		RegisterSignal(the_mob, COMSIG_MOB_LOGIN, PROC_REF(handle_mob_log_in))
+		return
+
+	manually_setup_sound_manager_on_mob(the_mob)
+
+/datum/weather/proc/handle_mob_log_in(mob/source)
+	SIGNAL_HANDLER
+
+	if(stage >= END_STAGE)
+		stack_trace("Attempted to add a sound manager to a mob after weather ended")
+		UnregisterSignal(source, COMSIG_MOB_LOGIN)
+		return
+
+	manually_setup_sound_manager_on_mob(source)
+
+/datum/weather/proc/manually_setup_sound_manager_on_mob(mob/living/affected, list/playlist = get_playlist_ref(), list/filtered_zs = get_impacted_zs_without_trait())
+	PRIVATE_PROC(TRUE)
+
+	var/list/sound_change_signals = list(
+		COMSIG_WEATHER_TELEGRAPH(type),
+		COMSIG_WEATHER_START(type),
+		COMSIG_WEATHER_WINDDOWN(type),
+	)
+
+	var/datum/component/our_comp = affected.AddComponent( \
+		/datum/component/area_sound_manager, \
+		area_loop_pairs = playlist, \
+		acceptable_zs = filtered_zs, \
+	)
+	our_comp.RegisterSignals(SSdcs, sound_change_signals, TYPE_PROC_REF(/datum/component/area_sound_manager, handle_change))
+	our_comp.RegisterSignal(SSdcs, COMSIG_WEATHER_END(type), TYPE_PROC_REF(/datum/component/area_sound_manager, handle_removal))
+
+/datum/weather/proc/setup_weather_areas(list/forced_areas)
+	for(var/area/affected_area as anything in (forced_areas || get_areas(area_type)))
+		if(is_type_in_list(affected_area, protected_areas))
+			continue
 		if(!(weather_flags & WEATHER_INDOORS) && !affected_area.outdoors)
 			continue
 
@@ -217,7 +291,7 @@
 				continue
 
 			impacted_areas |= affected_area
-			impacted_areas_lookup[affected_area] = TRUE
+			impacted_areas_lookup[affected_area] = TRUE // VOIDCREW EDIT ADDITION
 
 			if(!(weather_flags & (WEATHER_THUNDER|WEATHER_TURFS)))
 				continue
@@ -253,7 +327,7 @@
 
 	if(weather_flags & (WEATHER_TURFS))
 		weather_turfs_per_tick = total_impacted_turfs * turf_weather_chance
-		weather_turfs_per_tick = min(weather_turfs_per_tick, turf_act_containers_only ? MAX_CONTAINER_ONLY_TURFS_PER_TICK : MAX_TURFS_PER_TICK)
+		weather_turfs_per_tick = min(weather_turfs_per_tick, turf_act_containers_only ? MAX_CONTAINER_ONLY_TURFS_PER_TICK : MAX_TURFS_PER_TICK) // VOIDCREW EDIT - was MAX_TURFS_PER_TICK
 	if(weather_flags & (WEATHER_THUNDER))
 		thunder_turfs_per_tick = total_impacted_turfs * turf_thunder_chance
 		thunder_turfs_per_tick = min(thunder_turfs_per_tick, MAX_TURFS_PER_TICK)
@@ -267,15 +341,16 @@
  */
 /datum/weather/proc/start()
 	if(stage >= MAIN_STAGE)
-		return
+		return FALSE
 	SEND_GLOBAL_SIGNAL(COMSIG_WEATHER_START(type), src)
 	stage = MAIN_STAGE
 	update_areas()
 	send_alert(weather_message, weather_sound)
 	if(!(weather_flags & (WEATHER_ENDLESS)))
-		addtimer(CALLBACK(src, PROC_REF(wind_down)), weather_duration)
+		addtimer(CALLBACK(src, PROC_REF(wind_down)), weather_duration, TIMER_UNIQUE)
 	for(var/area/impacted_area as anything in impacted_areas)
 		SEND_SIGNAL(impacted_area, COMSIG_WEATHER_BEGAN_IN_AREA(type), src)
+	return TRUE
 
 /**
  * Weather enters the winding down phase, stops effects
@@ -286,12 +361,13 @@
  */
 /datum/weather/proc/wind_down()
 	if(stage >= WIND_DOWN_STAGE)
-		return
+		return FALSE
 	SEND_GLOBAL_SIGNAL(COMSIG_WEATHER_WINDDOWN(type), src)
 	stage = WIND_DOWN_STAGE
 	update_areas()
 	send_alert(end_message, end_sound, end_sound_vol)
-	addtimer(CALLBACK(src, PROC_REF(end)), end_duration)
+	addtimer(CALLBACK(src, PROC_REF(end)), end_duration, TIMER_UNIQUE)
+	return TRUE
 
 /**
  * Fully ends the weather
@@ -302,13 +378,19 @@
  */
 /datum/weather/proc/end()
 	if(stage == END_STAGE)
-		return
+		return FALSE
 	SEND_GLOBAL_SIGNAL(COMSIG_WEATHER_END(type), src)
+	UnregisterSignal(SSdcs, COMSIG_GLOB_MOB_CREATED)
 	stage = END_STAGE
 	SSweather.processing -= src
 	update_areas()
 	for(var/area/impacted_area as anything in impacted_areas)
 		SEND_SIGNAL(impacted_area, COMSIG_WEATHER_ENDED_IN_AREA(type), src)
+
+	if(target_trait)
+		for(var/mob/living/affected as anything in GLOB.mob_living_list | GLOB.dead_mob_list)
+			UnregisterSignal(affected, COMSIG_MOB_LOGIN)
+	return TRUE
 
 // handles sending all alerts
 /datum/weather/proc/send_alert(alert_msg, alert_sfx, alert_sfx_vol = 100)
@@ -325,13 +407,30 @@
 // the checks for if a mob should receive alerts, returns TRUE if can
 /datum/weather/proc/can_get_alert(mob/player)
 	var/turf/mob_turf = get_turf(player)
-	return !isnull(mob_turf)
+	if(isnull(mob_turf))
+		return FALSE
+
+	if((weather_flags & WEATHER_STRICT_ALERT) && !can_see_weather(player))
+		return FALSE
+
+	return TRUE
+
+/// Checks if the player is in or can see an area affected by the weather
+/datum/weather/proc/can_see_weather(mob/player)
+	if(HAS_MIND_TRAIT(player, TRAIT_DETECT_STORM))
+		return TRUE
+
+	for(var/area/nearby in view(player))
+		if(nearby in impacted_areas)
+			return TRUE
+
+	return FALSE
 
 /**
  * Returns TRUE if the living mob can be affected by the weather
  */
 /datum/weather/proc/can_weather_act_mob(mob/living/mob_to_check)
-	// Preserve effects on abandoned player bodies while excluding ordinary fauna.
+	// VOIDCREW EDIT ADDITION - preserve effects on abandoned player bodies while excluding ordinary fauna
 	if(!mob_to_check.mind && !mob_to_check.ever_had_mind)
 		return
 
@@ -343,7 +442,7 @@
 	if(!(mob_turf.z in impacted_z_levels))
 		return
 
-	if(!impacted_areas_lookup[mob_turf.loc])
+	if(!impacted_areas_lookup[mob_turf.loc]) // VOIDCREW EDIT - was `!(mob_turf.loc in impacted_areas)`
 		return
 
 	var/atom/to_check = mob_to_check
@@ -407,6 +506,7 @@
 	if(!weather_reagent || !weather_reagent_holder)
 		return
 
+	// VOIDCREW EDIT ADDITION BEGIN - planet-scale storms cannot afford full exposure + washing per turf
 	if(turf_act_containers_only)
 		for(var/atom/movable/thing as anything in weather_turf)
 			if(is_reagent_container(thing))
@@ -419,6 +519,7 @@
 				if(!tray.IsObscured())
 					tray.adjust_waterlevel(rand(5, 10))
 		return
+	// VOIDCREW EDIT ADDITION END
 
 	weather_reagent_holder.reagents.expose(weather_turf, TOUCH, TURF_REAGENT_VOLUME_MULTIPLIER)
 	for(var/atom/thing as anything in weather_turf)
@@ -451,26 +552,21 @@
 		thunder.color = thunder_color
 
 	for(var/mob/living/hit_mob in weather_turf)
-		if(!can_weather_act_mob(hit_mob))
+		if(!can_weather_act_mob(hit_mob)) // VOIDCREW EDIT ADDITION - lightning must honor the same eligibility as the rest of the storm
 			continue
 		to_chat(hit_mob, span_userdanger("You've been struck by lightning!"))
 		hit_mob.electrocute_act(50, "thunder", flags = SHOCK_TESLA|SHOCK_NOGLOVES)
 
-	for(var/obj/hit_thing in weather_turf)
-		if(QDELETED(hit_thing)) // stop, it's already dead
+	for(var/obj/item/stack/ore/hit_ore in weather_turf)
+		if(QDELETED(hit_ore))
 			continue
-		if(!hit_thing.uses_integrity)
-			continue
-		if(hit_thing.invisibility != INVISIBILITY_NONE)
-			continue
-		if(HAS_TRAIT(hit_thing, TRAIT_UNDERFLOOR))
-			continue
-		hit_thing.take_damage(20, BURN, ENERGY, FALSE)
+		// ores that get struck by thunder are smelted
+		// a bolt of lightning can reach temperatures of 30,000 Kelvin which is 5x hotter than the sun
+		hit_ore.fire_act(30000)
+
 	playsound(weather_turf, 'sound/effects/magic/lightningbolt.ogg', 100, extrarange = 10, falloff_distance = 10)
 	weather_turf.visible_message(span_danger("A thunderbolt strikes [weather_turf]!"))
-	// A generic explosion cannot honor can_weather_act_mob() and would queue damage
-	// against ordinary fauna on this and adjacent turfs. The direct strike above and
-	// object burn retain the intended lightning effects without bypassing eligibility.
+	new /obj/effect/hotspot(weather_turf)
 
 /**
  * Updates the overlays on impacted areas
@@ -519,14 +615,18 @@
 		// I prefer it to creating 2 extra plane masters however, so it's a cost I'm willing to pay
 		// LU
 		if(use_glow)
-			var/mutable_appearance/glow_overlay = mutable_appearance('icons/effects/glow_weather.dmi', weather_state, overlay_layer, null, WEATHER_GLOW_PLANE, 100, offset_const = offset)
+			var/mutable_appearance/glow_overlay = mutable_appearance('icons/effects/glow_weather.dmi', weather_state, overlay_layer, null, WEATHER_GLOW_PLANE, 100 / 255 * weather_alpha, offset_const = offset)
 			glow_overlay.color = weather_color
 			gen_overlay_cache += glow_overlay
 
-		var/mutable_appearance/new_weather_overlay = mutable_appearance('icons/effects/weather_effects.dmi', weather_state, overlay_layer, plane = overlay_plane, offset_const = offset)
-		new_weather_overlay.color = weather_color
-		gen_overlay_cache += new_weather_overlay
+		// By default we render ourselves to both particle and non-particle weather, as those are mutually exclusive
+		// So that particle weather can have full alpha overlays when the pref is disabled, but partially transparent overlays when its enabled
+		for (var/overlay_plane in overlay_planes)
+			var/mutable_appearance/new_weather_overlay = mutable_appearance('icons/effects/weather_effects.dmi', weather_state, overlay_layer, plane = overlay_plane, alpha = weather_alpha, offset_const = offset)
+			new_weather_overlay.color = weather_color
+			gen_overlay_cache += new_weather_overlay
 
 	return gen_overlay_cache
 
+#undef MAX_CONTAINER_ONLY_TURFS_PER_TICK // VOIDCREW EDIT ADDITION
 #undef MAX_TURFS_PER_TICK

@@ -36,6 +36,9 @@
 /datum/element/strippable/proc/mouse_drop_onto(datum/source, atom/over, mob/user)
 	SIGNAL_HANDLER
 
+	if(SEND_SIGNAL(source, COMSIG_MOB_STRIP_MENU_OPEN, over, user) & COMPONENT_BLOCK_STRIP_MENU_OPEN)
+		return
+
 	if (user == source)
 		return
 	if (over != user)
@@ -43,10 +46,10 @@
 	if(!user.can_perform_action(source, FORBID_TELEKINESIS_REACH | ALLOW_RESTING))
 		return
 
-	// Snowflake for cyborgs buckling people by dragging them onto them, unless in combat mode.
-	if (iscyborg(user))
-		var/mob/living/silicon/robot/cyborg_user = user
-		if (!cyborg_user.combat_mode)
+	// Snowflake for cyborgs and bots buckling people by dragging them onto them, unless in combat mode.
+	if(iscyborg(user) || isbot(user))
+		var/mob/living/bot_user = user
+		if (!bot_user.combat_mode)
 			return
 	// Snowflake for xeno consumption code
 	if (isalienadult(user))
@@ -56,12 +59,6 @@
 
 	if (!isnull(should_strip_proc_path) && !call(source, should_strip_proc_path)(user))
 		return
-
-	// Snowflake for mob scooping
-	if (isliving(source))
-		var/mob/living/mob = source
-		if (mob.can_be_held && (user.grab_state == GRAB_AGGRESSIVE) && (user.pulling == source))
-			return
 
 	var/datum/strip_menu/strip_menu = LAZYACCESS(strip_menus, source)
 
@@ -160,7 +157,7 @@
 	if(ishuman(source))
 		var/mob/living/carbon/human/victim_human = source
 		if(victim_human.key && !victim_human.client) // AKA braindead
-			if(victim_human.stat <= SOFT_CRIT && LAZYLEN(victim_human.afk_thefts) <= AFK_THEFT_MAX_MESSAGES)
+			if(!IS_UNCONSCIOUS(victim_human) && LAZYLEN(victim_human.afk_thefts) <= AFK_THEFT_MAX_MESSAGES)
 				var/list/new_entry = list(list(user.name, "tried unequipping your [item.name]", world.time))
 				LAZYADD(victim_human.afk_thefts, new_entry)
 
@@ -182,9 +179,14 @@
  * All string keys in the list must be inside tgui\packages\tgui\interfaces\StripMenu.tsx
  * You can also return null if there are no alternate actions.
  */
-/datum/strippable_item/proc/get_alternate_actions(atom/source, mob/user)
+/datum/strippable_item/proc/get_alternate_actions(atom/source, mob/user, obj/item/item)
 	RETURN_TYPE(/list)
-	return null
+	SHOULD_CALL_PARENT(TRUE)
+
+	var/list/alt_actions = list()
+	if(item)
+		SEND_SIGNAL(item, COMSIG_ITEM_GET_STRIPPABLE_ALT_ACTIONS, source, user, alt_actions)
+	return alt_actions
 
 /**
  * Performs an alternate action on this strippable_item.
@@ -193,9 +195,9 @@
  * - action_key: The key of the alternate action to perform.
  * Returns FALSE if unable to perform the action; whether it be due to the signal or some other factor.
  */
-/datum/strippable_item/proc/perform_alternate_action(atom/source, mob/user, action_key)
+/datum/strippable_item/proc/perform_alternate_action(atom/source, mob/user, action_key, obj/item/item)
 	SHOULD_CALL_PARENT(TRUE)
-	if(SEND_SIGNAL(user, COMSIG_TRY_ALT_ACTION, source, action_key) & COMPONENT_CANT_ALT_ACTION)
+	if(item && SEND_SIGNAL(item, COMSIG_ITEM_STRIPPABLE_ALT_ACTION, source, user, action_key) & COMPONENT_ALT_ACTION_DONE)
 		return FALSE
 	return TRUE
 
@@ -262,10 +264,10 @@
 		return STRIPPABLE_OBSCURING_NONE
 
 	var/mob/living/carbon/carbon_source = source
-	if (carbon_source.check_obscured_slots() & item_slot)
+	if (hidden_slots_to_inventory_slots(carbon_source.obscured_slots) & item_slot)
 		return STRIPPABLE_OBSCURING_COMPLETELY
 
-	if (carbon_source.check_covered_slots() & item_slot)
+	if (hidden_slots_to_inventory_slots(carbon_source.covered_slots) & item_slot)
 		return STRIPPABLE_OBSCURING_INACCESSIBLE
 
 	return STRIPPABLE_OBSCURING_NONE
@@ -298,7 +300,7 @@
 
 /// A utility function for `/datum/strippable_item`s to start unequipping an item from a mob.
 /proc/start_unequip_mob(obj/item/item, mob/source, mob/user, strip_delay, hidden = FALSE)
-	if (!do_after(user, strip_delay || item.strip_delay, source, interaction_key = REF(item), hidden = hidden))
+	if (!do_after(user, strip_delay || item.strip_delay, source, interaction_key = REF(item), cog_icon = hidden ? null : 'icons/effects/progressbar.dmi'))
 		return FALSE
 
 	return TRUE
@@ -373,12 +375,13 @@
 
 		LAZYINITLIST(result)
 
-		result["icon"] = icon2base64(icon(item.icon, item.icon_state))
+		result["icon"] = icon2base64(icon(item.icon, item.icon_state, frame = 1))
 		result["name"] = item.name
-		result["alternate"] = item_data.get_alternate_actions(owner, user)
+		result["alternate"] = item_data.get_alternate_actions(owner, user, item)
+		list_clear_nulls(result["alternate"])
 		var/static/list/already_cried = list()
-		if(length(result["alternate"]) > 2 && !(type in already_cried))
-			stack_trace("Too many alternate actions for [type]! Only two are supported at the moment! This will look bad!")
+		if(length(result["alternate"]) > 3 && !(type in already_cried))
+			stack_trace("Too many alternate actions for [type]! Only three are supported at the moment! This will look bad!")
 			already_cried += type
 
 		items[strippable_key] = result
@@ -486,16 +489,14 @@
 				return
 
 			var/item = strippable_item.get_item(owner)
-			if (isnull(item))
-				return
 
-			if (!(alt_action in strippable_item.get_alternate_actions(owner, user)))
+			if (!(alt_action in strippable_item.get_alternate_actions(owner, user, item)))
 				return
 
 			LAZYORASSOCLIST(interactions, user, key)
 
 			// Potentially yielding
-			strippable_item.perform_alternate_action(owner, user, alt_action)
+			strippable_item.perform_alternate_action(owner, user, alt_action, item)
 
 			LAZYREMOVEASSOC(interactions, user, key)
 

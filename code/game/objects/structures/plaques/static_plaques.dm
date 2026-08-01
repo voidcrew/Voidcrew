@@ -9,12 +9,19 @@
 		SET_PLANE_IMPLICIT(src, FLOOR_PLANE)
 		layer = HIGH_TURF_LAYER
 
+/obj/structure/plaque/static_plaque/get_mountable_objects()
+	return list()
+
+/obj/structure/plaque/static_plaque/find_and_mount_on_atom(mark_for_late_init, late_init)
+	if(isProbablyWallMounted(src))
+		return ..()
+
 /obj/structure/plaque/static_plaque/atmos
 	name = "\improper FEA Atmospherics Division plaque"
 	desc = "This plaque commemorates the fall of the Atmos FEA division. For all the charred, dizzy, and brittle men who have died in its hands."
 
 /obj/structure/plaque/static_plaque/thunderdome
-	name = "Thunderdome Plaque"
+	name = "\improper Thunderdome plaque"
 	desc = "This plaque commemorates those who have fallen in glorious combat.  For all the charred, dizzy, and beaten men who have died in its hands."
 
 /obj/structure/plaque/static_plaque/golden
@@ -31,16 +38,16 @@
 
 // Runtimestation: added Nov 11, 2016 (946ec1fec869eb59d6a84e32c90613af734fcd0e)
 /obj/structure/plaque/static_plaque/golden/commission
-	name = "Commission Plaque"
+	name = "commission plaque"
 	desc = "Spinward Sector Station SS-13\n'Runtime' Class Outpost\nCommissioned 03/11/2556\n'Dedicated to the Pioneers'"
 	icon_state = "commission_nt"
 	layer = BELOW_OPEN_DOOR_LAYER
 
 //Current stations
 
-// Birdshot: added Apr 29, 2023 (#74371)
-/obj/structure/plaque/static_plaque/golden/commission/birdshot
-	desc = "Spinward Sector Station SS-13\n'Birdshot' Class Outpost\nCommissioned 29/04/2563\n'Shooting for the Stars'"
+// Catwalk: added Apr 10, 2025 (#90532)
+/obj/structure/plaque/static_plaque/golden/commission/catwalk
+	desc = "Spinward Sector Station SS-13\n'Catwalk' Class Outpost\nCommissioned 10/04/2565\n'The New Level'"
 
 // Deltastation: added Dec 17, 2016 (#22066)
 /obj/structure/plaque/static_plaque/golden/commission/delta
@@ -62,9 +69,9 @@
 /obj/structure/plaque/static_plaque/golden/commission/tram
 	desc = "Spinward Sector Station SS-13\n'Tram' Class Outpost\nCommissioned 11/03/2561\n'Making Moves'"
 
-// Wawastation: added Jun 4, 2024 (#82298)
-/obj/structure/plaque/static_plaque/golden/commission/wawa
-	desc = "Spinward Sector Station SS-13\n'Wawa' Class Outpost\nCommissioned 04/06/2564\n'Forever Vertical'"
+// Kilostation: added Nov 13, 2019 (#46968), removed, readded Jul 7, 2026 (#96447)
+/obj/structure/plaque/static_plaque/golden/commission/kilo
+	desc = "Spinward Sector Station SS-13\n'Kilo' Class Outpost\nCommissioned 13/11/2559\nDecommissioned\nRecommissioned 7/7/2566'Forever Different'"
 
 //Removed stations
 
@@ -104,10 +111,6 @@
 /obj/structure/plaque/static_plaque/golden/commission/efficiency
 	desc = "Spinward Sector Station SS-07\n'Efficiency' Class Outpost\nCommissioned 28/01/2556\nDecommissioned 20/12/2556\n'Work Smarter, Not Harder'"
 
-// Kilostation: added Nov 13, 2019 (#46968), removed
-/obj/structure/plaque/static_plaque/golden/commission/kilo
-	desc = "Spinward Sector Station SS-13\n'Kilo' Class Outpost\nCommissioned 13/11/2559\nDecommissioned \n'Forever Different'"
-
 // Ministation: added Jan 29, 2014 (7a76e9456b782e6626bf81e27a912d8232c76b18), removed Dec 27, 2016 (#22453)- 2 years, 10 months, 28 days
 /obj/structure/plaque/static_plaque/golden/commission/mini
 	desc = "Spinward Sector Station SS-08\n'Mini' Class Outpost\nCommissioned 29/01/2554\nDecommissioned 27/12/2556\n'The Littlest Station'"
@@ -123,6 +126,14 @@
 // Uterusstation: added Sep 03, 2011 (bbd6db9ce2d6341892b89a620593fc8877f5a817), removed Jun 21, 2012 (72d72f7ce522c2d2ad4863f44ee9f5054413c489)- 9 months, 18 days
 /obj/structure/plaque/static_plaque/golden/commission/uterus
 	desc = "Spinward Sector Station SS-01\n'Uterus' Class Outpost\nCommissioned 03/09/2551\nDecommissioned 21/06/2552\n'Humanity's Vanguard'"
+
+// Birdshot: added Apr 29, 2023 (#74371), removed Jul 9, 2025 (#92022) — 2 years, 2 months, 10 days
+/obj/structure/plaque/static_plaque/golden/commission/birdshot
+	desc = "Spinward Sector Station SS-13\n'Birdshot' Class Outpost\nCommissioned 29/04/2563\nDecommissioned 09/07/2565\n'Shooting for the Stars'"
+
+// Wawastation: added Jun 4, 2024 (#82298), removed Jul 7, 2026 (#96447) - 2 years, 1 month, 3 days
+/obj/structure/plaque/static_plaque/golden/commission/wawa
+	desc = "Spinward Sector Station SS-13\n'Wawa' Class Outpost\nCommissioned 04/06/2564\nDecomissioned 9/07/2565\n'Forever Vertical'"
 
 // Other Stations
 

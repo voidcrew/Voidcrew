@@ -58,10 +58,10 @@
 	return
 
 /mob/living/brain/get_eye_protection()//no eyes
-	return 2
+	return FLASH_PROTECTION_WELDER
 
-/mob/living/brain/get_ear_protection()//no ears
-	return 2
+/mob/living/brain/get_ear_protection(ignore_deafness = FALSE)
+	return ..() + EAR_PROTECTION_HEAVY
 
 /mob/living/brain/flash_act(intensity = 1, override_blindness_check = 0, affect_silicon = 0, visual = 0, type = /atom/movable/screen/fullscreen/flash, length = 25)
 	return // no eyes, no flashing
@@ -71,10 +71,12 @@
 		return FALSE
 	return TRUE
 
-/mob/living/brain/fully_replace_character_name(oldname,newname)
-	..()
-	if(stored_dna)
-		stored_dna.real_name = real_name
+/mob/living/brain/fully_replace_character_name(oldname, newname, log_new_name = FALSE)
+	. = ..()
+	if(!.)
+		return
+
+	stored_dna?.real_name = real_name
 
 /mob/living/brain/forceMove(atom/destination)
 	if(container)

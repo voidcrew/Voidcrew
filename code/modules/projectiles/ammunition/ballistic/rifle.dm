@@ -2,10 +2,11 @@
 
 /obj/item/ammo_casing/strilka310
 	name = ".310 Strilka bullet casing"
-	desc = "A .310 Strilka bullet casing. Casing is a bit of a fib, there is no case, it's just a block of red powder."
+	desc = "A .310 Strilka bullet casing. Casing is a bit of a fib; there is no case, it's just a block of red powder."
 	icon_state = "310-casing"
 	caliber = CALIBER_STRILKA310
 	projectile_type = /obj/projectile/bullet/strilka310
+	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 3)
 
 /obj/item/ammo_casing/strilka310/Initialize(mapload)
 	. = ..()
@@ -14,7 +15,7 @@
 
 /obj/item/ammo_casing/strilka310/surplus
 	name = ".310 Strilka surplus bullet casing"
-	desc = "A surplus .310 Strilka bullet casing. Casing is a bit of a fib, there is no case, it's just a block of red powder. Damp red powder at that."
+	desc = parent_type::desc + " Damp red powder at that."
 	projectile_type = /obj/projectile/bullet/strilka310/surplus
 
 /obj/item/ammo_casing/strilka310/enchanted
@@ -22,13 +23,15 @@
 
 /obj/item/ammo_casing/strilka310/phasic
 	name = ".310 Strilka phasic bullet casing"
-	desc = "A phasic .310 Strilka bullet casing. "
+	desc = "A phasic .310 Strilka bullet casing."
 	projectile_type = /obj/projectile/bullet/strilka310/phasic
+
 // .223 (M-90gl Carbine)
 
 /obj/item/ammo_casing/a223
 	name = ".223 bullet casing"
 	desc = "A .223 bullet casing."
+	icon_state = "223-casing"
 	caliber = CALIBER_A223
 	projectile_type = /obj/projectile/bullet/a223
 
@@ -44,7 +47,7 @@
 
 /obj/item/ammo_casing/a40mm
 	name = "40mm HE shell"
-	desc = "A cased high explosive grenade that can only be activated once fired out of a grenade launcher."
+	desc = "A cased high explosive grenade that can only be activated once fired out of a ballistic grenade launcher."
 	caliber = CALIBER_40MM
 	icon_state = "40mmHE"
 	projectile_type = /obj/projectile/bullet/a40mm
@@ -52,8 +55,38 @@
 
 /obj/item/ammo_casing/a40mm/rubber
 	name = "40mm rubber shell"
-	desc = "A cased rubber slug. The big brother of the beanbag slug, this thing will knock someone out in one. Doesn't do so great against anyone in armor."
+	desc = "A cased rubber puck. The big brother of the beanbag slug. Made for stopping someone dead in their tracks."
 	projectile_type = /obj/projectile/bullet/shotgun_beanbag/a40mm
+	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 3, /datum/material/plastic = SMALL_MATERIAL_AMOUNT * 2)
+
+/obj/item/ammo_casing/a40mm/flak
+	name = "40mm titanium flak shell"
+	desc = "An oversized shotgun case. The big brother of buckshot, this shell launches dense titanium shells for immense damage to armor and flesh alike."
+	pellets = 8
+	variance = 10
+	projectile_type = /obj/projectile/bullet/pellet/shotgun_buckshot/milspec/flak
+
+/obj/item/ammo_casing/a40mm/incendiary
+	name = "40mm incendiary shell"
+	desc = "A cased incendiary explosive grenade that can only be activated once fired out of a ballistic grenade launcher. Creates a mighty conflagration. A favourite of inquisitors."
+	projectile_type = /obj/projectile/bullet/a40mm/incendiary
+
+/obj/item/ammo_casing/a40mm/tear_gas
+	name = "40mm tear gas shell"
+	desc = "A cased tear gas grenade that can only be activated once fired out of a ballistic grenade launcher. Spreads a large amount of tear gas into the air upon impact. \
+		Great for suppressing riots, protests and birthday parties!"
+	projectile_type = /obj/projectile/bullet/a40mm/tear_gas
+	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 3, /datum/material/plasma = SMALL_MATERIAL_AMOUNT * 2)
+
+/obj/item/disk/design_disk/tear_gas_40mm
+	name = "40mm riot suppression grenade shells design disk"
+
+/obj/item/disk/design_disk/liberator/Initialize(mapload)
+	. = ..()
+	blueprints += new /datum/design/tear_gas_40mm
+	blueprints += new /datum/design/rubber_40mm
+
+// Rebar Bolts
 
 /obj/item/ammo_casing/rebar
 	name = "Sharpened Iron Rod"
@@ -63,6 +96,7 @@
 	base_icon_state = "rod_sharp"
 	projectile_type = /obj/projectile/bullet/rebar
 	newtonian_force = 1.5
+	custom_materials = list(/datum/material/iron = HALF_SHEET_MATERIAL_AMOUNT)
 
 /obj/item/ammo_casing/rebar/Initialize(mapload)
 	. = ..()
@@ -79,6 +113,8 @@
 	icon_state = "rod_jagged"
 	base_icon_state = "rod_jagged"
 	projectile_type = /obj/projectile/bullet/rebar/syndie
+	custom_materials = list(/datum/material/alloy/plasteel = SHEET_MATERIAL_AMOUNT)
+
 
 /obj/item/ammo_casing/rebar/zaukerite
 	name = "zaukerite sliver"
@@ -103,6 +139,7 @@
 	icon_state = "rod_healium"
 	base_icon_state =  "rod_healium"
 	projectile_type = /obj/projectile/bullet/rebar/healium
+	custom_materials = null
 	/// How many seconds of healing/sleeping action we have left, once all are spent the bolt dissolves
 	var/heals_left = 6 SECONDS
 
@@ -129,7 +166,7 @@
 
 /datum/embedding/rebar_healium/on_successful_embed(mob/living/carbon/victim, obj/item/bodypart/target_limb)
 	. = ..()
-	for(var/obj/item/bodypart/limb as anything in victim.bodyparts)
+	for(var/obj/item/bodypart/limb as anything in victim.get_bodyparts())
 		for(var/obj/item/ammo_casing/rebar/healium/other_rebar in limb.embedded_objects)
 			if (other_rebar == parent)
 				continue
@@ -144,16 +181,16 @@
 	casing.heals_left -= seconds_per_tick * 1 SECONDS
 	var/update_health = FALSE
 	var/healing = -healing_per_second * seconds_per_tick
-	update_health += owner.adjustBruteLoss(healing, updating_health = FALSE, required_bodytype = BODYTYPE_ORGANIC)
-	update_health += owner.adjustFireLoss(healing, updating_health = FALSE, required_bodytype = BODYTYPE_ORGANIC)
-	update_health += owner.adjustToxLoss(healing, updating_health = FALSE, required_biotype = BODYTYPE_ORGANIC)
-	update_health += owner.adjustOxyLoss(healing, updating_health = FALSE, required_biotype = BODYTYPE_ORGANIC)
+	update_health += owner.adjust_brute_loss(healing, updating_health = FALSE, required_bodytype = BODYTYPE_ORGANIC)
+	update_health += owner.adjust_fire_loss(healing, updating_health = FALSE, required_bodytype = BODYTYPE_ORGANIC)
+	update_health += owner.adjust_tox_loss(healing, updating_health = FALSE, required_biotype = MOB_ORGANIC)
+	update_health += owner.adjust_oxy_loss(healing, updating_health = FALSE, required_biotype = MOB_ORGANIC)
 	if (update_health)
 		owner.updatehealth()
 	if (can_sleep && (owner.mob_biotypes & MOB_ORGANIC))
 		owner.adjust_drowsiness(drowsy_per_second * seconds_per_tick)
 		var/datum/status_effect/drowsiness/drowsiness = owner.has_status_effect(/datum/status_effect/drowsiness)
-		if (drowsiness?.duration - world.time >= drowsy_knockout)
+		if (drowsiness?.duration >= drowsy_knockout)
 			owner.Sleeping(3 SECONDS)
 	if (casing.heals_left <= 0)
 		fall_out()
@@ -180,3 +217,4 @@
 	base_icon_state = "paperball"
 	projectile_type = /obj/projectile/bullet/paperball
 	newtonian_force = 0.5
+	custom_materials = list(/datum/material/paper = HALF_SHEET_MATERIAL_AMOUNT / 2)

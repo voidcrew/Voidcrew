@@ -24,15 +24,24 @@
 	///lower numbers are harder. Used to determine the probability of a hulk smashing through.
 	var/hardness = 40
 	var/slicing_duration = 100  //default time taken to slice the wall
-	var/sheet_type = /obj/item/stack/sheet/iron
-	var/sheet_amount = 2
-	var/girder_type = /obj/structure/girder
 	/// A turf that will replace this turf when this turf is destroyed
 	var/decon_type
 	/// If we added a leaning component to ourselves
 	var/added_leaning = FALSE
-
 	var/list/dent_decals
+
+	/// The type of sheet this wall requires for construction and drops upon deconstruction.
+	var/sheet_type = /obj/item/stack/sheet/iron
+	/// The amount of sheets this wall requires for construction and drops upon deconstruction.
+	var/sheet_amount = 2
+	/// The type of girder this wall requires for construction and drops upon deconstruction.
+	var/girder_type = /obj/structure/girder
+	/// The girder state this wall requires for construction and drops upon deconstruction.
+	var/girder_state = GIRDER_NORMAL
+	/// How long this wall takes to make by using its sheet type on a girder.
+	var/make_delay = 4 SECONDS
+	/// Sound played when wall is dismantled
+	var/break_sound = 'sound/items/tools/welder.ogg'
 
 /turf/closed/wall/Initialize(mapload)
 	. = ..()
@@ -56,6 +65,9 @@
 	if(!isnull(held_item))
 		if((initial(smoothing_flags) & SMOOTH_DIAGONAL_CORNERS) && held_item.tool_behaviour == TOOL_WRENCH)
 			context[SCREENTIP_CONTEXT_LMB] = "Adjust Wall Corner"
+			return CONTEXTUAL_SCREENTIP_SET
+		else if(istype(held_item, /obj/structure/wall_support::rods_type))
+			context[SCREENTIP_CONTEXT_LMB] = "Build Wall Support"
 			return CONTEXTUAL_SCREENTIP_SET
 
 /turf/closed/wall/mouse_drop_receive(atom/dropping, mob/user, params)
@@ -87,15 +99,11 @@
 	if(devastated)
 		devastate_wall()
 	else
-		playsound(src, 'sound/items/tools/welder.ogg', 100, TRUE)
+		playsound(src, break_sound, 100, TRUE)
 		var/newgirder = break_wall()
 		if(newgirder) //maybe we don't /want/ a girder!
 			transfer_fingerprints_to(newgirder)
 
-	for(var/obj/O in src.contents) //Eject contents!
-		if(istype(O, /obj/structure/sign/poster))
-			var/obj/structure/sign/poster/P = O
-			INVOKE_ASYNC(P, TYPE_PROC_REF(/obj/structure/sign/poster, roll_and_drop), src)
 	if(decon_type)
 		ChangeTurf(decon_type, flags = CHANGETURF_INHERIT_AIR)
 	else
@@ -170,19 +178,17 @@
  *Deals damage back to the hulk's arm.
  *
  *When a hulk manages to break a wall using their hulk smash, this deals back damage to the arm used.
- *This is in its own proc just to be easily overridden by other wall types. Default allows for three
- *smashed walls per arm. Also, we use CANT_WOUND here because wounds are random. Wounds are applied
- *by hulk code based on arm damage and checked when we call break_an_arm().
+ *This is in its own proc just to be easily overridden by other wall types. Default will likely cause a
+ *critical bone wound in at least three punches.
  *Arguments:
  **arg1 is the arm to deal damage to.
  **arg2 is the hulk
  */
 /turf/closed/wall/proc/hulk_recoil(obj/item/bodypart/arm, mob/living/carbon/human/hulkman, damage = 20)
-	hulkman.apply_damage(damage, BRUTE, arm, wound_bonus = CANT_WOUND)
 	var/datum/mutation/hulk/smasher = locate(/datum/mutation/hulk) in hulkman.dna.mutations
-	if(!smasher || !damage) //sanity check but also snow and wood walls deal no recoil damage, so no arm breaky
+	if(!smasher || !damage || smasher.no_recoil) //sanity check but also snow and wood walls deal no recoil damage, so no arm breaky. Also, if our type of hulk doesn't cause recoil damage, return.
 		return
-	smasher.break_an_arm(arm)
+	hulkman.apply_damage(damage, BRUTE, arm, wound_bonus = 0) //enough damage to regularly result in at least a breakage.
 
 /turf/closed/wall/attack_hand(mob/user, list/modifiers)
 	. = ..()
@@ -201,7 +207,7 @@
 	add_fingerprint(user)
 
 	//the istype cascade has been spread among various procs for easy overriding
-	if(try_clean(tool, user) || try_wallmount(tool, user) || try_decon(tool, user))
+	if(try_clean(tool, user) || try_decon(tool, user) || try_build_support(tool, user))
 		return ITEM_INTERACT_SUCCESS
 
 	return NONE
@@ -224,20 +230,6 @@
 
 	return FALSE
 
-/turf/closed/wall/proc/try_wallmount(obj/item/W, mob/user)
-	//check for wall mounted frames
-	if(istype(W, /obj/item/wallframe))
-		var/obj/item/wallframe/F = W
-		if(F.try_build(src, user))
-			F.attach(src, user)
-			return TRUE
-		return FALSE
-	//Poster stuff
-	else if(istype(W, /obj/item/poster) && Adjacent(user)) //no tk memes.
-		return place_poster(W,user)
-
-	return FALSE
-
 /turf/closed/wall/proc/try_decon(obj/item/I, mob/user)
 	if(I.tool_behaviour == TOOL_WELDER)
 		if(!I.tool_start_check(user, amount=round(slicing_duration / 50), heat_required = HIGH_TEMPERATURE_REQUIRED))
@@ -250,6 +242,24 @@
 				dismantle_wall()
 			return TRUE
 
+	return FALSE
+
+///Helper for building wall_support on top of desired wall
+/turf/closed/wall/proc/try_build_support(obj/item/I, mob/user)
+	if(!isstack(I) || !istype(I, /obj/structure/wall_support::rods_type))
+		return FALSE
+	var/obj/item/stack/rods = I
+	var/amount_needed = /obj/structure/wall_support::rods_amount
+	if(rods.get_amount() < amount_needed)
+		to_chat(user, span_warning("You need at least [amount_needed] rods for that!"))
+		return FALSE
+	to_chat(user, span_notice("You start constructing wall support..."))
+	if(do_after(user, 2 SECONDS, target = src))
+		var/obj/structure/wall_support/WS = new(src)
+		rods.use(amount_needed)
+		rods.transfer_fingerprints_to(WS)
+		to_chat(user, span_notice("You place [WS] on [src]."))
+		return TRUE
 	return FALSE
 
 /turf/closed/wall/singularity_pull(atom/singularity, current_size)
@@ -285,11 +295,12 @@
 	return FALSE
 
 /turf/closed/wall/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, list/rcd_data)
-	switch(rcd_data["[RCD_DESIGN_MODE]"])
+	switch(rcd_data[RCD_DESIGN_MODE])
 		if(RCD_WALLFRAME)
-			var/obj/item/wallframe/wallmount = rcd_data["[RCD_DESIGN_PATH]"]
+			var/obj/item/wallframe/wallmount = rcd_data[RCD_DESIGN_PATH]
 			var/obj/item/wallframe/new_wallmount = new wallmount(user.drop_location())
-			return try_wallmount(new_wallmount, user, src)
+			if(new_wallmount.interact_with_atom(src, user) == ITEM_INTERACT_SUCCESS)
+				return TRUE
 		if(RCD_DECONSTRUCT)
 			ScrapeAway()
 			return TRUE
@@ -317,10 +328,10 @@
 
 	add_overlay(dent_decals)
 
-/turf/closed/wall/rust_turf()
+/turf/closed/wall/rust_turf(magic = FALSE)
 	if(HAS_TRAIT(src, TRAIT_RUSTY))
 		ScrapeAway()
-		return
+		return TRUE
 
 	return ..()
 

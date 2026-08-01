@@ -39,7 +39,7 @@
 		/datum/component/amputating_limbs,\
 		surgery_time = 0 SECONDS,\
 		surgery_verb = "tears",\
-		minimum_stat = CONSCIOUS,\
+		minimum_stat = STABLE,\
 		snip_chance = 10,\
 		target_zones = GLOB.arm_zones,\
 	)
@@ -111,8 +111,8 @@
 		back.on_arm_eaten()
 		return
 
-	adjustBruteLoss(-maxHealth * 0.5, FALSE)
-	adjustFireLoss(-maxHealth * 0.5, FALSE)
+	adjust_brute_loss(-maxHealth * 0.5, FALSE)
+	adjust_fire_loss(-maxHealth * 0.5, FALSE)
 
 	if(health < maxHealth * 0.8)
 		return

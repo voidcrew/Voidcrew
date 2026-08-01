@@ -11,6 +11,7 @@
 	incompatible_modules = list(/obj/item/mod/module/welding)
 	overlay_state_inactive = "module_welding"
 	required_slots = list(ITEM_SLOT_HEAD|ITEM_SLOT_EYES|ITEM_SLOT_MASK)
+	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 5, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 5)
 
 /obj/item/mod/module/welding/on_part_activation()
 	var/obj/item/clothing/head_cover = mod.get_part_from_slot(ITEM_SLOT_HEAD) || mod.get_part_from_slot(ITEM_SLOT_MASK) || mod.get_part_from_slot(ITEM_SLOT_EYES)
@@ -26,16 +27,35 @@
 		head_cover.flash_protect = initial(head_cover.flash_protect)
 
 /obj/item/mod/module/welding/syndicate
+	name = "MODsuit flash-protected optical suite"
 	complexity = 0
 	removable = FALSE
 	incompatible_modules = list(/obj/item/mod/module/welding, /obj/item/mod/module/welding/syndicate, /obj/item/mod/module/stealth/wraith)
-	overlay_state_inactive = "module_armorbooster_on"
+	overlay_state_inactive = "module_armorbooster_off"
 	use_mod_colors = TRUE
 	mask_worn_overlay = TRUE
 
 /obj/item/mod/module/welding/syndicate/generate_worn_overlay(obj/item/source, mutable_appearance/standing)
-	overlay_state_inactive = "[initial(overlay_state_inactive)]-[mod.skin]"
+	if(!mod.wearer || !mod.wearer.combat_mode)
+		overlay_state_inactive = "[initial(overlay_state_inactive)]-[mod.skin]"
+	else
+		overlay_state_inactive = "module_armorbooster_on-[mod.skin]"
 	return ..()
+
+
+/obj/item/mod/module/welding/syndicate/on_part_activation()
+	. = ..()
+	RegisterSignal(mod.wearer, COMSIG_COMBAT_MODE_TOGGLED, PROC_REF(on_combat_mode_toggle))
+
+/obj/item/mod/module/welding/syndicate/on_part_deactivation(deleting = FALSE)
+	. = ..()
+	UnregisterSignal(mod.wearer, COMSIG_COMBAT_MODE_TOGGLED)
+
+/// Changes which overlay state we're using depending on combat mode status.
+/obj/item/mod/module/welding/syndicate/proc/on_combat_mode_toggle(mob/living/carbon/human/toggler)
+	SIGNAL_HANDLER
+	playsound(src, 'sound/vehicles/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+	update_clothing_slots()
 
 ///T-Ray Scan - Scans the terrain for undertile objects.
 /obj/item/mod/module/t_ray
@@ -49,6 +69,7 @@
 	active_power_cost = DEFAULT_CHARGE_DRAIN * 0.5
 	incompatible_modules = list(/obj/item/mod/module/t_ray)
 	required_slots = list(ITEM_SLOT_HEAD|ITEM_SLOT_EYES|ITEM_SLOT_MASK)
+	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 5, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 5)
 	/// T-ray scan range.
 	var/range = 4
 
@@ -68,6 +89,7 @@
 	active_power_cost = DEFAULT_CHARGE_DRAIN * 0.5
 	incompatible_modules = list(/obj/item/mod/module/magboot, /obj/item/mod/module/atrocinator)
 	required_slots = list(ITEM_SLOT_FEET)
+	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 5, /datum/material/gold = SMALL_MATERIAL_AMOUNT * 5)
 	/// Slowdown added onto the suit.
 	var/slowdown_active = 0.5
 	/// A list of traits to add to the wearer when we're active (see: Magboots)
@@ -81,11 +103,11 @@
 	. = ..()
 	UnregisterSignal(mod, COMSIG_MOD_UPDATE_SPEED)
 
-/obj/item/mod/module/magboot/on_activation()
+/obj/item/mod/module/magboot/on_activation(mob/activator)
 	mod.wearer.add_traits(active_traits, REF(src))
 	mod.update_speed()
 
-/obj/item/mod/module/magboot/on_deactivation(display_message = TRUE, deleting = FALSE)
+/obj/item/mod/module/magboot/on_deactivation(mob/activator, display_message = TRUE, deleting = FALSE)
 	mod.wearer.remove_traits(active_traits, REF(src))
 	mod.update_speed()
 
@@ -113,6 +135,7 @@
 	incompatible_modules = list(/obj/item/mod/module/tether)
 	cooldown_time = 1.5 SECONDS
 	required_slots = list(ITEM_SLOT_GLOVES)
+	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 5, /datum/material/silver = SMALL_MATERIAL_AMOUNT * 5)
 
 /obj/item/mod/module/tether/used()
 	if(HAS_TRAIT_FROM(mod.wearer, TRAIT_TETHER_ATTACHED, REF(src)))
@@ -140,7 +163,7 @@
 	if (key == "cut_tethers")
 		SEND_SIGNAL(src, COMSIG_MOD_TETHER_SNAP)
 
-/obj/item/mod/module/tether/on_deactivation(display_message, deleting)
+/obj/item/mod/module/tether/on_deactivation(mob/activator, display_message = TRUE, deleting = FALSE)
 	SEND_SIGNAL(src, COMSIG_MOD_TETHER_SNAP)
 
 /obj/projectile/tether
@@ -222,6 +245,7 @@
 	anchor.pixel_x = hitx
 	anchor.pixel_y = hity
 	anchor.anchored = TRUE
+	anchor.reset_pixel_pos = TRUE
 	anchor.parent_module = parent_module
 	firer.AddComponent(/datum/component/tether, anchor, 7, "MODtether", parent_module = parent_module, tether_trait_source = REF(parent_module))
 
@@ -236,8 +260,11 @@
 	icon = 'icons/obj/clothing/modsuit/mod_modules.dmi'
 	max_integrity = 60
 	interaction_flags_atom = INTERACT_ATOM_ATTACK_HAND | INTERACT_ATOM_UI_INTERACT
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 6.15, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 1.5)
 	/// MODsuit tether module that created our projectile
 	var/obj/item/mod/module/tether/parent_module
+	/// Should we reset our pixel positions next time we move?
+	var/reset_pixel_pos = FALSE
 
 /obj/item/tether_anchor/Initialize(mapload)
 	. = ..()
@@ -255,11 +282,15 @@
 
 /obj/item/tether_anchor/wrench_act(mob/living/user, obj/item/tool)
 	. = ..()
-	default_unfasten_wrench(user, tool)
-	return ITEM_INTERACT_SUCCESS
+	if (default_unfasten_wrench(user, tool))
+		pixel_x = 0
+		pixel_y = 0
+		reset_pixel_pos = FALSE
+		return ITEM_INTERACT_SUCCESS
+	return ITEM_INTERACT_BLOCKING
 
 /obj/item/tether_anchor/attack_hand_secondary(mob/user, list/modifiers)
-	if (!can_interact(user) || !user.CanReach(src) || !isturf(loc))
+	if (!can_interact(user) || !IsReachableBy(user) || !isturf(loc))
 		return SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN
 
 	if(HAS_TRAIT_FROM(user, TRAIT_TETHER_ATTACHED, REF(src)))
@@ -274,11 +305,18 @@
 	user.AddComponent(/datum/component/tether, src, 7, "tether", tether_trait_source = REF(src))
 	return SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN
 
+/obj/item/tether_anchor/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change)
+	. = ..()
+	if (reset_pixel_pos)
+		pixel_x = 0
+		pixel_y = 0
+		reset_pixel_pos = FALSE
+
 /obj/item/tether_anchor/mouse_drop_receive(atom/target, mob/user, params)
-	if (!can_interact(user) || !user.CanReach(src) || !isturf(loc))
+	if (!can_interact(user) || !IsReachableBy(user) || !isturf(loc))
 		return
 
-	if (!isliving(target) || !target.CanReach(src))
+	if (!isliving(target) || !IsReachableBy(target))
 		return
 
 	if(HAS_TRAIT_FROM(target, TRAIT_TETHER_ATTACHED, REF(src)))
@@ -342,6 +380,7 @@
 	incompatible_modules = list(/obj/item/mod/module/rad_protection)
 	tgui_id = "rad_counter"
 	required_slots = list(ITEM_SLOT_HEAD|ITEM_SLOT_MASK, ITEM_SLOT_OCLOTHING|ITEM_SLOT_ICLOTHING, ITEM_SLOT_GLOVES, ITEM_SLOT_FEET)
+	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 5, /datum/material/uranium = SMALL_MATERIAL_AMOUNT * 5)
 	/// Radiation threat level being perceived.
 	var/perceived_threat_level
 
@@ -364,7 +403,7 @@
 	.["is_user_irradiated"] = mod.wearer ? HAS_TRAIT(mod.wearer, TRAIT_IRRADIATED) : FALSE
 	.["background_radiation_level"] = perceived_threat_level
 	.["health_max"] = mod.wearer?.getMaxHealth() || 0
-	.["loss_tox"] = mod.wearer?.getToxLoss() || 0
+	.["loss_tox"] = mod.wearer?.get_tox_loss() || 0
 
 /obj/item/mod/module/rad_protection/proc/on_pre_potential_irradiation(datum/source, datum/radiation_pulse_information/pulse_information, insulation_to_target)
 	SIGNAL_HANDLER
@@ -387,6 +426,7 @@
 	incompatible_modules = list(/obj/item/mod/module/constructor, /obj/item/mod/module/quick_carry)
 	cooldown_time = 11 SECONDS
 	required_slots = list(ITEM_SLOT_GLOVES)
+	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 5, /datum/material/titanium = SMALL_MATERIAL_AMOUNT * 5)
 
 /obj/item/mod/module/constructor/on_part_activation()
 	ADD_TRAIT(mod.wearer, TRAIT_QUICK_BUILD, REF(src))
@@ -394,7 +434,7 @@
 /obj/item/mod/module/constructor/on_part_deactivation(deleting = FALSE)
 	REMOVE_TRAIT(mod.wearer, TRAIT_QUICK_BUILD, REF(src))
 
-/obj/item/mod/module/constructor/on_use()
+/obj/item/mod/module/constructor/on_use(mob/activator)
 	rcd_scan(src, fade_time = 10 SECONDS)
 	drain_power(use_energy_cost)
 
@@ -410,6 +450,7 @@
 	complexity = 1
 	incompatible_modules = list(/obj/item/mod/module/welding/syndicate, /obj/item/mod/module/infiltrator)
 	required_slots = list(ITEM_SLOT_HEAD)
+	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 5, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 5)
 
 /obj/item/mod/module/headprotector/on_part_activation()
 	ADD_TRAIT(mod.wearer, TRAIT_HEAD_INJURY_BLOCKED, REF(src))
@@ -442,6 +483,7 @@
 	desc = "An atmospheric resin mister, able to fix up areas quickly."
 	device = /obj/item/extinguisher/mini/nozzle/mod
 	volume = 250
+	custom_materials = list(/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 0.75, /datum/material/glass = HALF_SHEET_MATERIAL_AMOUNT)
 
 /obj/item/mod/module/mister/atmos/Initialize(mapload)
 	. = ..()

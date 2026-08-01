@@ -3,6 +3,8 @@ GLOBAL_LIST_EMPTY(lobby_station_traits)
 
 ///Base class of station traits. These are used to influence rounds in one way or the other by influencing the levers of the station.
 /datum/station_trait
+	/// Trait should not be instantiated in a round if its type matches this type
+	abstract_type = /datum/station_trait
 	///Name of the trait
 	var/name = "unnamed station trait"
 	///The type of this trait. Used to classify how this trait influences the station
@@ -33,8 +35,6 @@ GLOBAL_LIST_EMPTY(lobby_station_traits)
 	var/list/lobby_buttons = list()
 	/// The ID that we look for in dynamic.json. Not synced with 'name' because I can already see this go wrong
 	var/dynamic_threat_id
-	/// Trait should not be instantiated in a round if its type matches this type
-	var/abstract_type = /datum/station_trait
 
 /datum/station_trait/New()
 	. = ..()
@@ -70,14 +70,6 @@ GLOBAL_LIST_EMPTY(lobby_station_traits)
 		REMOVE_TRAIT(SSstation, trait_to_give, STATION_TRAIT)
 
 	qdel(src)
-
-/// Called by decals if they can be colored, to see if we got some cool colors for them. Only takes the first station trait
-/proc/request_station_colors(atom/thing_to_color, pattern)
-	for(var/datum/station_trait/trait in SSstation.station_traits)
-		var/decal_color = trait.get_decal_color(thing_to_color, pattern || PATTERN_DEFAULT)
-		if(decal_color)
-			return decal_color
-	return null
 
 /// Return a color for the decals, if any
 /datum/station_trait/proc/get_decal_color(thing_to_color, pattern)

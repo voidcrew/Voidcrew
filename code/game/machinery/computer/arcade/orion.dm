@@ -3,7 +3,7 @@
 /obj/machinery/computer/arcade/orion_trail
 	name = "The Orion Trail"
 	desc = "Learn how our ancestors got to Orion, and have fun in the process!"
-	icon_state = "arcade"
+	icon_state = MAP_SWITCH("arcade", "/obj/machinery/computer/arcade")
 	circuit = /obj/item/circuitboard/computer/arcade/orion_trail
 
 	///List of all orion events, created on Initialize.
@@ -51,10 +51,10 @@
 /obj/machinery/computer/arcade/orion_trail/kobayashi
 	name = "Kobayashi Maru control computer"
 	desc = "A test for cadets."
-	icon = 'icons/obj/machines/particle_accelerator.dmi'
+	icon = MAP_SWITCH('icons/obj/machines/particle_accelerator.dmi', 'icons/obj/fluff/map_previews.dmi')
+	icon_state = MAP_SWITCH("control_boxp", "/obj/machinery/computer/arcade/orion_trail/kobayashi")
 	icon_keyboard = null
 	icon_screen = null
-	icon_state = "control_boxp"
 	//kobatashi has a smaller list of events, so we copy from the global list and cut whatever isn't here
 	var/list/event_whitelist = list(
 		/datum/orion_event/raiders,
@@ -470,8 +470,7 @@
 		message_admins("[ADMIN_LOOKUPFLW(user)] made it to Orion on an emagged machine and got an explosive toy ship.")
 		user.log_message("made it to Orion on an emagged machine and got an explosive toy ship.", LOG_GAME)
 	else
-		new /obj/item/stack/arcadeticket((get_turf(src)), 2)
-		to_chat(user, span_notice("[src] dispenses 2 tickets!"))
+		victory_tickets(2)
 	obj_flags &= ~EMAGGED
 	name = initial(name)
 	desc = initial(desc)
@@ -547,7 +546,7 @@
 
 /datum/aas_config_entry/orion_violent_behavior_alert
 	// Well we don't want to show that only Orion Trails reports violent behavior, eh-h?
-	name = "Violent Behavior Alert"
+	name = "Global: Violent Behavior Alert"
 	announcement_lines_map = list(
 		RADIO_CHANNEL_SECURITY = "SECURITY ALERT: Crewmember %PERSON recorded displaying antisocial tendencies in %LOCATION by %SOURCE. Please watch for violent behavior.",
 		RADIO_CHANNEL_MEDICAL = "PSYCH ALERT: Crewmember %PERSON recorded displaying antisocial tendencies in %LOCATION by %SOURCE. Please schedule psych evaluation.",

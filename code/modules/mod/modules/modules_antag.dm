@@ -29,6 +29,8 @@
 	var/shield_icon = "shield-red"
 	/// Charges the shield should start with.
 	var/charges
+	/// Whether or not we allow this shield to block overwhelming attacks, such as from mechs.
+	var/block_overwhelming_attacks = FALSE
 
 /obj/item/mod/module/energy_shield/Initialize(mapload)
 	. = ..()
@@ -43,6 +45,7 @@
 		charge_recovery = charge_recovery, \
 		lose_multiple_charges = lose_multiple_charges, \
 		starting_charges = charges, \
+		can_block_overwhelming = block_overwhelming_attacks, \
 		shield_icon_file = shield_icon_file, \
 		shield_icon = shield_icon)
 	RegisterSignal(mod.wearer, COMSIG_LIVING_CHECK_BLOCK, PROC_REF(shield_reaction))
@@ -64,7 +67,7 @@
 	SIGNAL_HANDLER
 
 	if(mod.hit_reaction(owner, hitby, attack_text, 0, damage, attack_type))
-		drain_power(use_energy_cost)
+		drain_power(use_energy_cost + use_energy_cost * (attack_type == OVERWHELMING_ATTACK ? (damage/100) : 0))
 		return SUCCESSFUL_BLOCK
 	return NONE
 
@@ -78,6 +81,9 @@
 	idle_power_cost = 0 //magic
 	use_energy_cost = 0 //magic too
 	max_charges = 5
+	recharge_start_delay = 20 SECONDS
+	charge_increment_delay = 3 SECONDS
+	block_overwhelming_attacks = TRUE // It's magic, bitch
 	shield_icon_file = 'icons/effects/magic.dmi'
 	shield_icon = "mageshield"
 	required_slots = list()
@@ -290,7 +296,7 @@
 	complexity = 2
 	incompatible_modules = list(/obj/item/mod/module/chameleon)
 	cooldown_time = 0.5 SECONDS
-	allow_flags = MODULE_ALLOW_INACTIVE
+	allow_flags = list(MODULE_ALLOW_INACTIVE|MODULE_ALLOW_UNWORN)
 	/// A list of all the items the suit can disguise as.
 	var/list/possible_disguises = list()
 	/// The path of the item we're disguised as.
@@ -312,17 +318,17 @@
 		return_look()
 	possible_disguises = null
 
-/obj/item/mod/module/chameleon/used()
+/obj/item/mod/module/chameleon/used(mob/activator)
 	if(mod.active || mod.activating)
-		balloon_alert(mod.wearer, "unit active!")
+		balloon_alert(activator, "unit active!")
 		return FALSE
 	return ..()
 
-/obj/item/mod/module/chameleon/on_use()
+/obj/item/mod/module/chameleon/on_use(mob/activator)
 	if(current_disguise)
 		return_look()
 		return
-	var/picked_name = tgui_input_list(mod.wearer, "Select look to change into", "Chameleon Settings", possible_disguises)
+	var/picked_name = tgui_input_list(activator, "Select look to change into", "Chameleon Settings", possible_disguises)
 	if(!possible_disguises[picked_name] || mod.active || mod.activating)
 		return
 	current_disguise = possible_disguises[picked_name]
@@ -384,7 +390,7 @@
 	var/datum/storage/holding_storage = mod.loc.atom_storage
 	if(!holding_storage || holding_storage.max_specific_storage >= mod.w_class)
 		return
-	mod.forceMove(drop_location())
+	mod.forceMove(mod.drop_location())
 
 /obj/item/mod/module/demoralizer
 	name = "MOD psi-echo demoralizer module"
@@ -417,7 +423,7 @@
 	incompatible_modules = list(/obj/item/mod/module/infiltrator, /obj/item/mod/module/welding/syndicate, /obj/item/mod/module/welding, /obj/item/mod/module/headprotector)
 	required_slots = list(ITEM_SLOT_FEET, ITEM_SLOT_HEAD, ITEM_SLOT_OCLOTHING)
 	/// List of traits added when the suit is activated
-	var/list/traits_to_add = list(TRAIT_SILENT_FOOTSTEPS, TRAIT_UNKNOWN, TRAIT_HEAD_INJURY_BLOCKED)
+	var/list/traits_to_add = list(TRAIT_SILENT_FOOTSTEPS, TRAIT_UNKNOWN_APPEARANCE, TRAIT_UNKNOWN_VOICE, TRAIT_HEAD_INJURY_BLOCKED)
 
 /obj/item/mod/module/infiltrator/on_install()
 	. = ..()
@@ -465,7 +471,7 @@
 	device = /obj/item/gun/medbeam/mod
 	incompatible_modules = list(/obj/item/mod/module/medbeam)
 	removable = TRUE
-	cooldown_time = 0.5
+	cooldown_time = 0.05 SECONDS
 	required_slots = list(ITEM_SLOT_BACK)
 
 /obj/item/gun/medbeam/mod
@@ -498,16 +504,16 @@
 	var/list/things_to_disrupt = list(target)
 	if(isliving(target))
 		var/mob/living/live_target = target
-		things_to_disrupt += live_target.get_all_gear()
+		things_to_disrupt += live_target.get_all_gear(INCLUDE_PROSTHETICS|INCLUDE_ABSTRACT|INCLUDE_ACCESSORIES)
 
 	for(var/atom/disrupted as anything in things_to_disrupt)
 		if(disrupted.on_saboteur(src, 1 MINUTES))
 			mod.add_charge(DEFAULT_CHARGE_DRAIN * 250)
 
-/obj/item/mod/module/stealth/wraith/on_activation()
+/obj/item/mod/module/stealth/wraith/on_activation(mob/activator)
 	return // Don't activate stealth when the module is activated because the stealth portion of the module is fully passive
 
-/obj/item/mod/module/stealth/wraith/on_deactivation(display_message = TRUE, deleting = FALSE)
+/obj/item/mod/module/stealth/wraith/on_deactivation(mob/activator, display_message = TRUE, deleting = FALSE)
 	. = ..()
 	UnregisterSignal(mod.wearer, list(COMSIG_LIVING_MOB_BUMP, COMSIG_ATOM_BUMPED, COMSIG_MOB_FIRED_GUN))
 
@@ -521,7 +527,7 @@
 
 /obj/item/mod/module/stealth/wraith/proc/start_stealth()
 	if(!COOLDOWN_FINISHED(src, recloak_timer)) // Prevents being able to bypass the cooldown by disabling and re-enabling the module
-		addtimer(CALLBACK(src, PROC_REF(start_stealth)), recloak_timer)
+		addtimer(CALLBACK(src, PROC_REF(start_stealth)), COOLDOWN_TIMELEFT(src, recloak_timer))
 		return
 	RegisterSignals(mod.wearer, list(COMSIG_LIVING_MOB_BUMP, COMSIG_ATOM_BUMPED, COMSIG_MOB_FIRED_GUN), PROC_REF(unstealth))
 	RegisterSignal(mod.wearer, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_unarmed_attack))
@@ -534,11 +540,16 @@
 /obj/item/mod/module/stealth/wraith/unstealth(datum/source)
 	if(!stealth_active)
 		return
-	. = ..()
-	if(mod.active)
-		COOLDOWN_START(src, recloak_timer, 20 SECONDS)
-		addtimer(CALLBACK(src, PROC_REF(start_stealth)), 20 SECONDS)
-		stealth_active = FALSE
+	to_chat(mod.wearer, span_warning("[src] gets discharged from contact!"))
+	do_sparks(2, TRUE, src)
+	drain_power(use_energy_cost)
+	// Don't deactivate() directly as the module may not be active in the first place when stealthing
+	on_deactivation()
+	if(!mod.active)
+		return
+	COOLDOWN_START(src, recloak_timer, 20 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(start_stealth)), 20 SECONDS)
+	stealth_active = FALSE
 
 /obj/item/mod/module/stealth/wraith/examine_more(mob/user)
 	. = ..()

@@ -10,6 +10,7 @@
 	lefthand_file = 'icons/mob/inhands/items/tiles_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/items/tiles_righthand.dmi'
 	icon = 'icons/obj/tiles.dmi'
+	worn_icon_state = null
 	w_class = WEIGHT_CLASS_NORMAL
 	force = 1
 	throwforce = 1
@@ -50,7 +51,7 @@
 		. += span_notice("Use while in your hand to change what type of [src] you want.")
 	if(throwforce && !is_cyborg) //do not want to divide by zero or show the message to borgs who can't throw
 		var/damage_value
-		switch(CEILING(MAX_LIVING_HEALTH / throwforce, 1)) //throws to crit a human
+		switch(ceil(MAX_LIVING_HEALTH / throwforce)) //throws to crit a human
 			if(1 to 3)
 				damage_value = "superb"
 			if(4 to 6)
@@ -87,7 +88,7 @@
 	return target_plating
 
 /obj/item/stack/tile/handle_openspace_click(turf/target, mob/user, list/modifiers)
-	target.attackby(src, user, list2params(modifiers))
+	target.base_item_interaction(user, src, list2params(modifiers))
 
 //Grass
 /obj/item/stack/tile/grass
@@ -137,6 +138,7 @@
 		/obj/item/stack/tile/wood/tile,
 		/obj/item/stack/tile/wood/parquet,
 	)
+	mats_per_unit = list(/datum/material/wood = HALF_SHEET_MATERIAL_AMOUNT / 2)
 
 /obj/item/stack/tile/wood/parquet
 	name = "parquet wood floor tile"
@@ -175,6 +177,7 @@
 		/obj/item/stack/tile/bamboo/tatami/purple,
 		/obj/item/stack/tile/bamboo/tatami/black,
 	)
+	mats_per_unit = list(/datum/material/bamboo = HALF_SHEET_MATERIAL_AMOUNT / 2)
 
 /obj/item/stack/tile/bamboo/tatami
 	name = "Tatami with green rim"
@@ -207,6 +210,7 @@
 	inhand_icon_state = "tile-basalt"
 	turf_type = /turf/open/floor/fakebasalt
 	merge_type = /obj/item/stack/tile/basalt
+	mats_per_unit = list(/datum/material/sand = SHEET_MATERIAL_AMOUNT * 2)
 
 //Carpets
 /obj/item/stack/tile/carpet
@@ -418,7 +422,7 @@
 	. += neon_overlay
 	. += emissive_appearance(neon_icon || icon, neon_icon_state || icon_state, src, alpha = emissive_alpha)
 
-/obj/item/stack/tile/carpet/neon/worn_overlays(mutable_appearance/standing, isinhands, icon_file)
+/obj/item/stack/tile/carpet/neon/worn_overlays(mutable_appearance/standing, isinhands, icon_file, bodyshape = NONE)
 	. = ..()
 	if(!isinhands || !neon_inhand_icon_state)
 		return
@@ -1079,6 +1083,7 @@
 		/obj/item/stack/tile/circuit/green,
 		/obj/item/stack/tile/circuit/red,
 	)
+	mats_per_unit = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 1.05, /datum/material/glass = SHEET_MATERIAL_AMOUNT * 1.05)
 
 /obj/item/stack/tile/circuit/green
 	name = "green circuit tile"
@@ -1106,43 +1111,12 @@
 	turf_type = /turf/open/floor/circuit/red/anim
 	merge_type = /obj/item/stack/tile/circuit/red/anim
 
-//Pod floor
-/obj/item/stack/tile/pod
-	name = "pod floor tile"
-	singular_name = "pod floor tile"
-	desc = "A grooved floor tile."
-	icon_state = "tile_pod"
-	inhand_icon_state = "tile-pod"
-	turf_type = /turf/open/floor/pod
-	merge_type = /obj/item/stack/tile/pod
-	tile_reskin_types = list(
-		/obj/item/stack/tile/pod,
-		/obj/item/stack/tile/pod/light,
-		/obj/item/stack/tile/pod/dark,
-		)
-
-/obj/item/stack/tile/pod/light
-	name = "light pod floor tile"
-	singular_name = "light pod floor tile"
-	desc = "A lightly colored grooved floor tile."
-	icon_state = "tile_podlight"
-	turf_type = /turf/open/floor/pod/light
-	merge_type = /obj/item/stack/tile/pod/light
-
-/obj/item/stack/tile/pod/dark
-	name = "dark pod floor tile"
-	singular_name = "dark pod floor tile"
-	desc = "A darkly colored grooved floor tile."
-	icon_state = "tile_poddark"
-	turf_type = /turf/open/floor/pod/dark
-	merge_type = /obj/item/stack/tile/pod/dark
-
 /obj/item/stack/tile/plastic
 	name = "plastic tile"
 	singular_name = "plastic floor tile"
 	desc = "A tile of cheap, flimsy plastic flooring."
 	icon_state = "tile_plastic"
-	mats_per_unit = list(/datum/material/plastic=SMALL_MATERIAL_AMOUNT*5)
+	mats_per_unit = list(/datum/material/plastic = HALF_SHEET_MATERIAL_AMOUNT / 2)
 	turf_type = /turf/open/floor/plastic
 	merge_type = /obj/item/stack/tile/plastic
 
@@ -1158,9 +1132,11 @@
 	merge_type = /obj/item/stack/tile/material
 
 /obj/item/stack/tile/material/place_tile(turf/open/target_plating, mob/user)
+	// Save refernce to the materials for the case when we place last tile in the stack
+	var/list/saved_mats_per_unit = mats_per_unit
 	. = ..()
 	var/turf/open/floor/material/floor = .
-	floor?.set_custom_materials(mats_per_unit)
+	floor?.set_custom_materials(saved_mats_per_unit)
 
 /obj/item/stack/tile/eighties
 	name = "retro tile"
@@ -1191,13 +1167,13 @@
 	desc = "A clangy tile made of high-quality bronze. Clockwork construction techniques allow the clanging to be minimized."
 	icon_state = "tile_brass"
 	turf_type = /turf/open/floor/bronze
-	mats_per_unit = list(/datum/material/bronze=SMALL_MATERIAL_AMOUNT*5)
+	mats_per_unit = list(/datum/material/bronze = HALF_SHEET_MATERIAL_AMOUNT / 2)
 	merge_type = /obj/item/stack/tile/bronze
 	tile_reskin_types = list(
 		/obj/item/stack/tile/bronze,
 		/obj/item/stack/tile/bronze/flat,
 		/obj/item/stack/tile/bronze/filled,
-		)
+	)
 
 /obj/item/stack/tile/bronze/flat
 	name = "flat bronze tile"
@@ -1234,7 +1210,7 @@
 	. = ..()
 	. += emissive_appearance(icon, icon_state, src, alpha = alpha)
 
-/obj/item/stack/tile/emissive_test/worn_overlays(mutable_appearance/standing, isinhands, icon_file)
+/obj/item/stack/tile/emissive_test/worn_overlays(mutable_appearance/standing, isinhands, icon_file, bodyshape = NONE)
 	. = ..()
 	. += emissive_appearance(standing.icon, standing.icon_state, src, alpha = standing.alpha)
 
@@ -1257,7 +1233,7 @@
 	desc = "Flooring that shows its contents underneath. Engineers love it!"
 	icon_state = "maint_catwalk"
 	inhand_icon_state = "tile-catwalk"
-	mats_per_unit = list(/datum/material/iron=SMALL_MATERIAL_AMOUNT)
+	mats_per_unit = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 1.2)
 	turf_type = /turf/open/floor/catwalk_floor
 	merge_type = /obj/item/stack/tile/catwalk_tile //Just to be cleaner, these all stack with each other
 	tile_reskin_types = list(
@@ -1324,7 +1300,7 @@
 	inhand_icon_state = "tile-rglass"
 	turf_type = /turf/open/floor/glass/reinforced
 	merge_type = /obj/item/stack/tile/rglass
-	mats_per_unit = list(/datum/material/iron=SHEET_MATERIAL_AMOUNT * 0.125, /datum/material/glass=SHEET_MATERIAL_AMOUNT * 0.25) // 4 tiles per sheet
+	mats_per_unit = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 0.125, /datum/material/glass=SHEET_MATERIAL_AMOUNT * 0.25) // 4 tiles per sheet
 
 /obj/item/stack/tile/rglass/sixty
 	amount = 60

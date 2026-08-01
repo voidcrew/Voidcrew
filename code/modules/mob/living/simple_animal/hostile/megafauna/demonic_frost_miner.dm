@@ -32,11 +32,11 @@ Difficulty: Extremely Hard
 	move_to_delay = 20
 	gps_name = "Bloodchilling Signal"
 	ranged = TRUE
-	crusher_loot = list(/obj/effect/decal/remains/plasma, /obj/item/crusher_trophy/ice_block_talisman, /obj/item/ice_energy_crystal)
+	crusher_loot = /obj/item/crusher_trophy/ice_block_talisman
 	loot = list(/obj/effect/decal/remains/plasma, /obj/item/ice_energy_crystal)
 	wander = FALSE
 	del_on_death = TRUE
-	blood_volume = BLOOD_VOLUME_NORMAL
+	default_blood_volume = BLOOD_VOLUME_NORMAL
 	achievement_type = /datum/award/achievement/boss/demonic_miner_kill
 	crusher_achievement_type = /datum/award/achievement/boss/demonic_miner_crusher
 	score_achievement_type = /datum/award/score/demonic_miner_score
@@ -81,7 +81,7 @@ Difficulty: Extremely Hard
 	AddElement(/datum/element/knockback, 7, FALSE, TRUE)
 	AddElement(/datum/element/lifesteal, 50)
 	ADD_TRAIT(src, TRAIT_NO_FLOATING_ANIM, INNATE_TRAIT)
-	AddComponent(/datum/component/boss_music, 'sound/music/boss/bdm_boss.ogg', 167 SECONDS)
+	AddComponent(/datum/component/boss_music, 'sound/music/boss/bdm_boss.ogg', COMSIG_HOSTILE_FOUND_TARGET) // change to COMSIG_AI_BLACKBOARD_KEY_SET(BB_CURRENT_TARGET) in basic conversion
 
 /mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/Destroy()
 	frost_orbs = null
@@ -158,7 +158,7 @@ Difficulty: Extremely Hard
 	adjustHealth(-maxHealth)
 
 /mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/ex_act(severity, target)
-	adjustBruteLoss(-30 * severity)
+	adjust_brute_loss(-30 * severity)
 	visible_message(span_danger("[src] absorbs the explosion!"), span_userdanger("You absorb the explosion!"))
 	return TRUE
 
@@ -177,7 +177,7 @@ Difficulty: Extremely Hard
 		return
 	return ..()
 
-/mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/death(gibbed, list/force_grant)
+/mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/death(gibbed)
 	if(health > 0)
 		return
 	var/turf/T = get_turf(src)
@@ -252,7 +252,7 @@ Difficulty: Extremely Hard
 
 /datum/status_effect/ice_block_talisman/on_apply()
 	RegisterSignal(owner, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(owner_moved))
-	if(!owner.stat)
+	if(!IS_UNCONSCIOUS_OR_CRIT(owner))
 		to_chat(owner, span_userdanger("You become frozen in a cube!"))
 	cube = icon('icons/effects/freeze.dmi', "ice_cube")
 	var/list/icon_dimensions = get_icon_dimensions(owner.icon)
@@ -271,7 +271,7 @@ Difficulty: Extremely Hard
 	return ..()
 
 /datum/status_effect/ice_block_talisman/on_remove()
-	if(!owner.stat)
+	if(!IS_UNCONSCIOUS_OR_CRIT(owner))
 		to_chat(owner, span_notice("The cube melts!"))
 	owner.cut_overlay(cube)
 	UnregisterSignal(owner, COMSIG_MOVABLE_PRE_MOVE)

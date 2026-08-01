@@ -1,6 +1,9 @@
-/datum/weather/rain_storm
+/datum/weather/particle/rain_storm
 	name = "rain"
 	desc = "Heavy thunderstorms rain down below, drenching anyone caught in it."
+
+	particle_type = /particles/weather/rain_storm
+	min_severity = 30
 
 	telegraph_message = span_danger("Thunder rumbles far above. You hear droplets drumming against the canopy.")
 	telegraph_overlay = "rain_low"
@@ -12,6 +15,9 @@
 	end_message = span_bolddanger("The downpour gradually slows to a light shower.")
 	end_overlay = "rain_low"
 	end_duration = 30 SECONDS
+
+	// Don't display overlays when using particle weather
+	overlay_planes = list(WEATHER_PLANE)
 
 	weather_duration_lower = 3 MINUTES
 	weather_duration_upper = 5 MINUTES
@@ -25,56 +31,101 @@
 	probability = 90
 
 	weather_flags = (WEATHER_TURFS | WEATHER_MOBS | WEATHER_THUNDER | WEATHER_BAROMETER)
+	// VOIDCREW EDIT ADDITION BEGIN
 	turf_act_containers_only = TRUE // planet-scale storms strike hundreds of turfs/second, full reagent exposure at that rate eats whole ticks
 	turf_thunder_chance = THUNDER_CHANCE_VERY_RARE // planet-wide areas are tens of thousands of turfs, anything above this is a constant barrage of strikes
+	// VOIDCREW EDIT ADDITION END
 	whitelist_weather_reagents = list(/datum/reagent/water)
 
+	// VOIDCREW EDIT ADDITION BEGIN - per-instance playlists, see telegraph() below
+	/// This storm's own area -> looping sound pairs, one set per stage.
 	var/list/start_sounds = list()
 	var/list/middle_sounds = list()
 	var/list/ending_sounds = list()
+	// VOIDCREW EDIT ADDITION END
 
-/datum/weather/rain_storm/telegraph()
+/datum/weather/particle/rain_storm/New(z_levels, list/weather_data)
+	. = ..()
+	if (isnull(weather_reagent) || istype(weather_reagent, /datum/reagent/water) || !weather_color)
+		return
+
+	// Non-water rain gets colored into their reagent's color
+	for (var/list/holder_list as anything in weather_objects)
+		for (var/obj/effect/abstract/weather_holder/holder as anything in holder_list)
+			holder.particles.color = weather_color
+
+/datum/weather/particle/rain_storm/get_playlist_ref()
+	return GLOB.rain_storm_sounds
+
+// VOIDCREW EDIT BEGIN - upstream Cut()s the shared playlist on every stage change, which
+// also wipes the entries of every other storm running at the same time. Planets run
+// concurrent storms on separate z-levels, so each instance owns its own area -> sound
+// sets and only adds and removes those. Note += / -= on a list mutate in place, so the
+// reference handed out by get_playlist_ref() stays valid.
+/datum/weather/particle/rain_storm/telegraph()
 	for(var/area/impacted_area as anything in impacted_areas)
 		start_sounds[impacted_area] = /datum/looping_sound/rain/start
 		middle_sounds[impacted_area] = /datum/looping_sound/rain/middle
 		ending_sounds[impacted_area] = /datum/looping_sound/rain/end
 	GLOB.rain_storm_sounds += start_sounds
+
+	// change the message for if rain is triggered inside the station (no canopy of course)
+	for(var/z in impacted_z_levels)
+		if(is_station_level(z))
+			telegraph_message = span_warning("Thunder rumbles from above. You hear droplets hitting the floor around you.")
+			break
+
 	return ..()
 
-/datum/weather/rain_storm/start()
+/datum/weather/particle/rain_storm/start()
 	GLOB.rain_storm_sounds -= start_sounds
 	GLOB.rain_storm_sounds += middle_sounds
 	return ..()
 
-/datum/weather/rain_storm/wind_down()
+/datum/weather/particle/rain_storm/wind_down()
 	GLOB.rain_storm_sounds -= middle_sounds
 	GLOB.rain_storm_sounds += ending_sounds
 	return ..()
 
-/datum/weather/rain_storm/end()
+/datum/weather/particle/rain_storm/end()
 	GLOB.rain_storm_sounds -= start_sounds
 	GLOB.rain_storm_sounds -= middle_sounds
 	GLOB.rain_storm_sounds -= ending_sounds
 	return ..()
+// VOIDCREW EDIT END
 
-/datum/weather/rain_storm/blood
+/particles/weather/rain_storm
+	icon = 'icons/effects/particles/generic.dmi'
+	icon_state = "drop"
+	color = "#ccffff"
+	position = generator(GEN_BOX, list(-510, -256, 0), list(400, 512, 0))
+	grow = list(-0.01, -0.01)
+	gravity = list(0, -10, 0.5)
+	drift = generator(GEN_CIRCLE, 0, 1)
+	friction = 0.3
+	min_spawn = 50
+	max_spawn = 300
+	wind_strength = 5
+	spin = 0
+
+/datum/weather/particle/rain_storm/blood
 	whitelist_weather_reagents = list(/datum/reagent/blood)
 	probability = 0 // admeme event
 
 // Fun fact - if you increase the weather_temperature higher than LIQUID_PLASMA_BP
 // the plasma rain will vaporize into a gas on whichever turf it lands on
-/datum/weather/rain_storm/plasma
+/datum/weather/particle/rain_storm/plasma
 	whitelist_weather_reagents = list(/datum/reagent/toxin/plasma)
 	probability = 0 // maybe for icebox maps one day?
 
-/datum/weather/rain_storm/deep_fried
+/datum/weather/particle/rain_storm/deep_fried
 	weather_temperature = 455 // just hot enough to apply the fried effect
 	whitelist_weather_reagents = list(/datum/reagent/consumable/nutriment/fat/oil)
 	weather_flags = (WEATHER_TURFS | WEATHER_INDOORS)
-	turf_act_containers_only = FALSE // admeme event on station z-levels, wants the full frying splash
+	turf_act_containers_only = FALSE // VOIDCREW EDIT ADDITION - admeme event on station z-levels, wants the full frying splash
 	probability = 0 // admeme event
 
-/datum/weather/rain_storm/acid
+/datum/weather/particle/rain_storm/acid
 	desc = "The planet's thunderstorms are by nature acidic, and will incinerate anyone standing beneath them without protection."
 
 	telegraph_duration = 40 SECONDS
@@ -96,19 +147,12 @@
 	)
 	probability = 0
 
-/datum/weather/rain_storm/wizard
+/datum/weather/particle/rain_storm/wizard
 	name = "magical rain"
 	desc = "A magical thunderstorm rains down below, drenching anyone caught in it with mysterious rain."
 
 	telegraph_message = span_danger("A magical rain cloud appears above. You hear droplets falling down.")
-	protected_areas = list(
-		/area/station/maintenance, /area/station/ai_monitored/turret_protected/ai_upload,
-		/area/station/ai_monitored/turret_protected/ai_upload_foyer, /area/station/ai_monitored/turret_protected/aisat/maint,
-		/area/station/ai_monitored/command/storage/satellite, /area/station/ai_monitored/turret_protected/ai,
-		/area/station/commons/storage/emergency/starboard, /area/station/commons/storage/emergency/port,
-		/area/shuttle, /area/station/security/prison/safe, /area/station/security/prison/toilet, /area/mine/maintenance,
-		/area/icemoon/underground, /area/ruin/comms_agent/maint
-	)
+	protected_areas = /datum/weather/rad_storm::protected_areas
 
 	// same time durations as floor_is_lava event
 	telegraph_duration = 15 SECONDS
@@ -121,9 +165,9 @@
 	whitelist_weather_reagents = list()
 	probability = 0 // shouldn't spawn normally
 	weather_flags = (WEATHER_TURFS | WEATHER_MOBS | WEATHER_INDOORS | WEATHER_BAROMETER)
-	turf_act_containers_only = FALSE // wizard event on the station z, the chaotic reagent splashing is the whole point
+	turf_act_containers_only = FALSE // VOIDCREW EDIT ADDITION - wizard event on the station z, the chaotic reagent splashing is the whole point
 
-/datum/weather/rain_storm/wizard/New(z_levels, list/weather_data)
+/datum/weather/particle/rain_storm/wizard/New(z_levels, list/weather_data)
 	if(length(GLOB.wizard_rain_reagents)) // the wizard event has already been run once and setup the whitelist
 		whitelist_weather_reagents = GLOB.wizard_rain_reagents
 		return ..()

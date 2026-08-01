@@ -93,12 +93,13 @@
 				break
 
 
-/obj/structure/transit_tube/station/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
-	if(W.tool_behaviour == TOOL_CROWBAR)
-		for(var/obj/structure/transit_tube_pod/P in loc)
-			P.deconstruct(FALSE, user)
-	else
-		return ..()
+/obj/structure/transit_tube/station/crowbar_act(mob/living/user, obj/item/tool)
+	var/anything_done = FALSE
+	for(var/obj/structure/transit_tube_pod/victim in loc)
+		victim.deconstruct(FALSE, user)
+		anything_done = TRUE
+	to_chat(user, span_notice("[anything_done ? "You empty \the [src]." : "\The [src] is already empty!"]"))
+	return ITEM_INTERACT_SUCCESS
 
 /obj/structure/transit_tube/station/proc/open_animation()
 	if(open_status == STATION_TUBE_CLOSED)
@@ -115,7 +116,7 @@
 				for(var/thing in pod)
 					if(ismob(thing))
 						var/mob/mob_content = thing
-						if(mob_content.client && mob_content.stat < UNCONSCIOUS)
+						if(mob_content.client && !IS_UNCONSCIOUS(mob_content))
 							continue // Let the mobs with clients decide what they want to do themselves.
 					var/atom/movable/movable_content = thing
 					movable_content.forceMove(loc) //Everything else is moved out of.
@@ -229,6 +230,8 @@
 	tube_construction = /obj/structure/c_transit_tube/station/dispenser
 	base_icon_state = "dispenser0"
 	open_status = STATION_TUBE_OPEN
+	COOLDOWN_DECLARE(freight_output)
+	COOLDOWN_DECLARE(freight_message)
 
 /obj/structure/transit_tube/station/dispenser/close_animation()
 	return
@@ -249,6 +252,14 @@
 /obj/structure/transit_tube/station/dispenser/Bumped(atom/movable/AM)
 	if(!(istype(AM) && AM.dir == boarding_dir) || AM.anchored)
 		return
+	if(!isliving(AM))
+		if(!COOLDOWN_FINISHED(src, freight_output))
+			if(COOLDOWN_FINISHED(src, freight_message))
+				AM.visible_message(span_notice("Freight pod dispenser is recharging. Please wait."))
+				COOLDOWN_START(src, freight_message, 10 SECONDS)
+			return
+		COOLDOWN_START(src, freight_output, 2 SECONDS)
+
 	var/obj/structure/transit_tube_pod/dispensed/pod = new(loc)
 	AM.visible_message(span_notice("[pod] forms around [AM]."), span_notice("[pod] materializes around you."))
 	playsound(src, 'sound/items/weapons/emitter2.ogg', 50, TRUE)

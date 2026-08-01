@@ -27,7 +27,7 @@
 
 	//Gondolas aren't affected by cold.
 	unsuitable_atmos_damage = 0
-	basic_mob_flags = DEL_ON_DEATH
+	basic_mob_flags = SENDS_DEATH_MOODLETS|DEL_ON_DEATH
 
 	///List of loot drops on death, since it deletes itself on death (like trooper).
 	var/list/loot = list(
@@ -69,13 +69,13 @@
 	add_overlay(moustache_overlay)
 
 /datum/ai_controller/basic_controller/gondola
+	behavior_tree_json = "code/modules/mob/living/basic/pets/gondolas/gondola.bt.json"
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic,
 	)
 
 	ai_traits = PASSIVE_AI_FLAGS
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = /datum/idle_behavior/idle_random_walk/less_walking
 
 #undef GONDOLA_HEIGHT
 #undef GONDOLA_COLOR

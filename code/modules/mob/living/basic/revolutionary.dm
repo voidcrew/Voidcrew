@@ -78,7 +78,7 @@
 	var/static/list/display_emote = list(
 		BB_EMOTE_SAY = phrases,
 		BB_EMOTE_SOUND = monkey_screeches,
-		BB_SPEAK_CHANCE = 5,
+		BB_SPEAK_CHANCE = 15,
 	)
 	ai_controller.set_blackboard_key(BB_BASIC_MOB_SPEAK_LINES, display_emote)
 	var/obj/item/weapon_of_choice = pick(possible_weapons)
@@ -86,8 +86,7 @@
 	attack_verb_simple = possible_weapons[weapon_of_choice]
 	attack_verb_continuous = "[attack_verb_simple]s"
 
-	var/static/list/death_loot = list(/obj/effect/mob_spawn/corpse/human/revolutionary)
-	AddElement(/datum/element/death_drops, death_loot)
+	AddElement(/datum/element/death_drops, /obj/effect/mob_spawn/corpse/human/revolutionary)
 	apply_dynamic_human_appearance(src, mob_spawn_path = /obj/effect/mob_spawn/corpse/human/revolutionary, l_hand = weapon_of_choice)
 
 	gender = pick(MALE, FEMALE, PLURAL)
@@ -108,6 +107,8 @@
 	shuffle_inplace(causes)
 	desc += span_notice("#[pick(causes)].")
 
+/mob/living/basic/revolutionary/get_unconscious_appearance()
+	return get_generic_humanoid_static_appearance()
 
 /obj/effect/mob_spawn/corpse/human/revolutionary
 	name = "Revolutionary"
@@ -124,24 +125,8 @@
 
 
 /datum/ai_controller/basic_controller/revolutionary
+	behavior_tree_json = "code/modules/mob/living/basic/revolutionary.bt.json"
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic,
 	)
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = /datum/idle_behavior/idle_random_walk/less_walking
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/random_speech/blackboard/revolutionary,
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
-	)
-
-
-/datum/ai_planning_subtree/random_speech/blackboard/revolutionary
-
-
-/datum/ai_planning_subtree/random_speech/blackboard/revolutionary/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	if(!controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
-		return
-
-	return ..()

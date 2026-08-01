@@ -5,7 +5,7 @@
 	icon = 'icons/mob/human/human.dmi'
 	icon_state = "human_basic"
 	appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE|LONG_GLIDE
-	hud_possible = list(HEALTH_HUD,STATUS_HUD,ID_HUD,WANTED_HUD,IMPLOYAL_HUD,IMPSEC_FIRST_HUD,IMPSEC_SECOND_HUD,ANTAG_HUD,GLAND_HUD,FAN_HUD)
+	hud_possible = list(HEALTH_HUD,STATUS_HUD,BLOOD_HUD,ID_HUD,WANTED_HUD,IMPLOYAL_HUD,IMPSEC_FIRST_HUD,IMPSEC_SECOND_HUD,ANTAG_HUD,GLAND_HUD,FAN_HUD)
 	hud_type = /datum/hud/human
 	pressure_resistance = 25
 	buckle_lying = 0
@@ -14,21 +14,16 @@
 	initial_language_holder = /datum/language_holder/empty // We get stuff from our species
 	flags_1 = PREVENT_CONTENTS_EXPLOSION_1
 	max_grab = GRAB_KILL
+	examine_thats = "This is"
 
 	//Hair colour and style
 	var/hair_color = COLOR_BLACK
 	var/hairstyle = "Bald"
 
 	///Colours used for hair and facial hair gradients.
-	var/list/grad_color = list(
-		COLOR_BLACK,	//Hair Gradient Color
-		COLOR_BLACK,	//Facial Hair Gradient Color
-	)
+	var/list/grad_color
 	///Styles used for hair and facial hair gradients.
-	var/list/grad_style = list(
-		"None",	//Hair Gradient Style
-		"None",	//Facial Hair Gradient Style
-	)
+	var/list/grad_style
 
 	//Facial hair colour and style
 	var/facial_hair_color = COLOR_BLACK
@@ -62,15 +57,24 @@
 	var/jumpsuit_style = PREF_SUIT //suit/skirt
 
 	//Equipment slots
-	var/obj/item/clothing/wear_suit = null
-	var/obj/item/clothing/w_uniform = null
+	var/obj/item/back = null
+	var/obj/item/head = null
+	var/obj/item/gloves = null
+	var/obj/item/ears = null
+	var/obj/item/glasses = null
+	var/obj/item/shoes = null
+	var/obj/item/wear_neck = null
+	var/obj/item/wear_mask = null
+	var/obj/item/wear_suit = null
+	var/obj/item/w_uniform = null
 	var/obj/item/belt = null
 	var/obj/item/wear_id = null
 	var/obj/item/r_store = null
 	var/obj/item/l_store = null
 	var/obj/item/s_store = null
 
-	var/special_voice = "" // For changing our voice. Used by a symptom.
+	/// Allows for special overrides of voice
+	var/override_voice = ""
 
 	var/datum/physiology/physiology
 
@@ -94,3 +98,15 @@
 	VAR_PRIVATE/base_mob_height = HUMAN_HEIGHT_MEDIUM
 	/// Actual height of the mob. Don't touch this one, it is set via update_mob_height()
 	VAR_FINAL/mob_height = HUMAN_HEIGHT_MEDIUM
+
+	/// Tracks how long in seconds we've been in a low pressure environment
+	VAR_FINAL/seconds_in_low_pressure = 0
+
+	/// Combined width of our body sprite
+	VAR_PRIVATE/cached_body_width = ICON_SIZE_X
+	/// Combined height of our body sprite
+	VAR_PRIVATE/cached_body_height = ICON_SIZE_Y
+	/// Leftmost offset of our overlays
+	var/cached_body_min_x_offset = 0
+	/// Rightmost offset of our overlays
+	var/cached_body_min_y_offset = 0

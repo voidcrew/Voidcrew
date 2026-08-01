@@ -69,7 +69,7 @@
 
 /obj/item/fish/jumpercable/get_export_price(price, elasticity_percent)
 	//without this, they'd sell for over 6000 each, minimum. That's a lot for a fish that requires no maintance nor partner to farm.
-	return ..() * 0.4
+	return ..() * 0.04
 
 /obj/item/fish/jumpercable/suicide_act(mob/living/user)
 	user.visible_message(span_suicide("[user] hooks both ends of [src] to their chest! It looks like [user.p_theyre()] trying to commit suicide!"))
@@ -201,7 +201,7 @@
 	toolspeed -= bonus_malus * 0.1
 
 // you suicide like a real chainsaw
-/obj/item/fish/chainsawfish/suicide_act(mob/living/carbon/user)
+/obj/item/fish/chainsawfish/suicide_act(mob/living/user)
 	if(status == FISH_DEAD)
 		user.visible_message(span_suicide("[user] smashes [src] into [user.p_their()] neck, destroying [user.p_their()] esophagus! It looks like [user.p_theyre()] trying to commit suicide!"))
 		playsound(src, 'sound/items/weapons/genhit1.ogg', 100, TRUE)

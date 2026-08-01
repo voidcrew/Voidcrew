@@ -10,8 +10,8 @@
  */
 /datum/heretic_knowledge/hunt_and_sacrifice
 	name = "Heartbeat of the Mansus"
-	desc = "Allows you to sacrifice targets to the Mansus by bringing them to a rune in critical (or worse) condition. \
-		If you have no targets, stand on a transmutation rune and invoke it to acquire some."
+	desc = "Allows you to sacrifice targets to the Mansus by bringing them to a rune in critical (or worse) condition."
+	notice = "If you have no targets, stand on a transmutation rune and invoke it to acquire some."
 	required_atoms = list(/mob/living/carbon/human = 1)
 	cost = 0
 	priority = MAX_KNOWLEDGE_PRIORITY // Should be at the top
@@ -26,7 +26,7 @@
 	/// A weakref to the mind of our heretic.
 	var/datum/mind/heretic_mind
 	/// Lazylist of minds that we won't pick as targets.
-	var/list/datum/mind/target_blacklist
+	var/static/list/datum/mind/target_blacklist
 	/// An assoc list of [ref] to [timers] - a list of all the timers of people in the shadow realm currently
 	var/list/return_timers
 	/// Evil organs we can put in people
@@ -39,10 +39,10 @@
 		/obj/item/organ/stomach/corrupt,
 		/obj/item/organ/tongue/corrupt,
 	)
+	var/backdoor_sacrifice_attempts = 0
 
 /datum/heretic_knowledge/hunt_and_sacrifice/Destroy(force)
 	heretic_mind = null
-	LAZYCLEARLIST(target_blacklist)
 	return ..()
 
 /datum/heretic_knowledge/hunt_and_sacrifice/on_research(mob/user, datum/antagonist/heretic/our_heretic)
@@ -79,6 +79,30 @@
 	if(!LAZYLEN(heretic_datum.sac_targets))
 		atoms += user
 		return TRUE
+
+	if(istype(get_area(loc), /area/centcom/heretic_backdoor))
+		loc.balloon_alert(user, "ritual failed, invalid location!")
+		switch(backdoor_sacrifice_attempts)
+			if(0)
+				to_chat(user, span_mansus("Attempting a sacrifice so close to the gods is risky..."))
+			if(1)
+				to_chat(user, span_mansus("<i>You hear a knocking sound[HAS_TRAIT(user, TRAIT_DEAF) ? ", despite your deafness" : ""]...</i>"))
+			if(2)
+				to_chat(user, span_mansus("<i>The knocking grows louder..."))
+				user.soundbang_act(SOUNDBANG_NORMAL, deafen_pwr = 10 SECONDS, stun_pwr = 1 SECONDS, damage_pwr = 10, ignore_deafness = TRUE)
+			if(3)
+				to_chat(user, span_mansus("<i>The knocking becomes deafening!</i>"))
+				user.soundbang_act(SOUNDBANG_OVERWHELMING, deafen_pwr = 20 SECONDS, stun_pwr = 4 SECONDS, damage_pwr = 20, ignore_deafness = TRUE)
+			if(4)
+				if(begin_sacrifice(user))
+					to_chat(user, span_mansus("<b><i>Your insolence is punished!</i></b>"))
+				else
+					to_chat(user, span_mansus("The knocking stops - but you can't help but feel like you've dodged a bullet, somehow."))
+			if(5 to INFINITY)
+				to_chat(user, span_mansus("You don't think trying it again would provide any more insight..."))
+
+		backdoor_sacrifice_attempts++
+		return FALSE
 
 	// If we have targets, we can check to see if we can do a sacrifice
 	// Let's remove any humans in our atoms list that aren't a sac target
@@ -136,7 +160,7 @@
 
 	if(!length(valid_targets))
 		if(!silent)
-			to_chat(user, span_hierophant_warning("No sacrifice targets could be found!"))
+			to_chat(user, span_mansus("No sacrifice targets could be found!"))
 		return FALSE
 
 	// Now, let's try to get four targets.
@@ -202,20 +226,21 @@
 
 	if(sacrifice.mind)
 		LAZYADD(target_blacklist, sacrifice.mind)
-	heretic_datum.remove_sacrifice_target(sacrifice)
-
+	for(var/datum/antagonist/heretic/all_heretic in GLOB.antagonists)
+		all_heretic.remove_sacrifice_target(sacrifice)
 
 	var/feedback = "Your patrons accept your offer"
 	var/sac_job_flag = sacrifice.mind?.assigned_role?.job_flags | sacrifice.last_mind?.assigned_role?.job_flags
 	var/datum/antagonist/cult/cultist_datum = GET_CULTIST(sacrifice)
 	// Heads give 3 points, cultists give 1 point (and a special reward), normal sacrifices give 2 points.
 	heretic_datum.total_sacrifices++
+	SEND_SIGNAL(heretic_datum, COMSIG_HERETIC_SACRIFICE, sacrifice, (sac_job_flag & JOB_HEAD_OF_STAFF))
 	if((sac_job_flag & JOB_HEAD_OF_STAFF))
-		heretic_datum.knowledge_points += 3
+		heretic_datum.adjust_knowledge_points(3)
 		heretic_datum.high_value_sacrifices++
 		feedback += " <i>graciously</i>"
 	if(cultist_datum)
-		heretic_datum.knowledge_points += 1
+		heretic_datum.adjust_knowledge_points(1)
 		grant_reward(user, sacrifice, loc)
 		// easier to read
 		var/rewards_given = heretic_datum.rewards_given
@@ -234,7 +259,7 @@
 			to_chat(user, non_flavor_warning)
 		return
 	else
-		heretic_datum.knowledge_points += 2
+		heretic_datum.adjust_knowledge_points(2)
 
 	to_chat(user, span_hypnophrase("[feedback]."))
 	if(!begin_sacrifice(sacrifice))
@@ -248,7 +273,7 @@
 
 	// Visible and audible encouragement!
 	to_chat(user, span_big(span_hypnophrase("A servant of the Sanguine Apostate!")))
-	to_chat(user, span_hierophant("Your patrons are rapturous!"))
+	to_chat(user, span_mansus("Your patrons are rapturous!"))
 	playsound(sacrifice, 'sound/effects/magic/disintegrate.ogg', 75, TRUE)
 
 	// Drop all items and splatter them around messily.
@@ -257,7 +282,7 @@
 		loot.throw_at(get_step_rand(sacrifice), 2, 4, user, TRUE)
 
 	// The loser is DUSTED.
-	sacrifice.dust(TRUE, TRUE)
+	sacrifice.dust(just_ash = TRUE, drop_items = TRUE)
 
 	// Increase reward counter
 	var/datum/antagonist/heretic/antag = GET_HERETIC(user)
@@ -333,16 +358,10 @@
 	var/turf/destination = get_turf(destination_landmark)
 
 	sac_target.visible_message(span_danger("[sac_target] begins to shudder violenty as dark tendrils begin to drag them into thin air!"))
-	sac_target.set_handcuffed(new /obj/item/restraints/handcuffs/energy/cult(sac_target))
-	sac_target.update_handcuffed()
+	sac_target.equip_to_slot_or_del(new /obj/item/restraints/handcuffs/cult, ITEM_SLOT_HANDCUFFED, indirect_action = TRUE)
+	sac_target.dropItemToGround(sac_target.legcuffed, TRUE)
 
-	if(sac_target.legcuffed)
-		sac_target.legcuffed.forceMove(sac_target.drop_location())
-		sac_target.legcuffed.dropped(sac_target)
-		sac_target.legcuffed = null
-		sac_target.update_worn_legcuffs()
-
-	sac_target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 85, 150)
+	sac_target.adjust_organ_loss(ORGAN_SLOT_BRAIN, 85, 150)
 	sac_target.do_jitter_animation()
 	log_combat(heretic_mind.current, sac_target, "sacrificed")
 
@@ -351,7 +370,7 @@
 
 	// If our target is dead, try to revive them
 	// and if we fail to revive them, don't proceede the chain
-	sac_target.adjustOxyLoss(-100, FALSE)
+	sac_target.adjust_oxy_loss(-100, FALSE)
 	if(!sac_target.heal_and_revive(50, span_danger("[sac_target]'s heart begins to beat with an unholy force as they return from death!")))
 		return
 
@@ -396,7 +415,7 @@
 	// If our target died during the (short) wait timer,
 	// and we fail to revive them (using a lower number than before),
 	// just disembowel them and stop the chain
-	sac_target.adjustOxyLoss(-100, FALSE)
+	sac_target.adjust_oxy_loss(-100, FALSE)
 	if(!sac_target.heal_and_revive(60, span_danger("[sac_target]'s heart begins to beat with an unholy force as they return from death!")))
 		disembowel_target(sac_target)
 		return
@@ -505,7 +524,7 @@
 	sac_target.clear_mood_event("shadow_realm")
 	if(IS_HERETIC(sac_target))
 		var/datum/antagonist/heretic/victim_heretic = sac_target.mind?.has_antag_datum(/datum/antagonist/heretic)
-		victim_heretic.knowledge_points -= 3
+		victim_heretic.adjust_knowledge_points(-3)
 
 	// Wherever we end up, we sure as hell won't be able to explain
 	sac_target.adjust_timed_status_effect(40 SECONDS, /datum/status_effect/speech/slurring/heretic)
@@ -544,7 +563,7 @@
 			composed_return_message += span_green("alive, but with a shattered mind. ")
 
 		composed_return_message += span_notice("You hear a whisper... ")
-		composed_return_message += span_hypnophrase(get_area_name(safe_turf, TRUE))
+		composed_return_message += span_mansus(get_area_name(safe_turf, TRUE))
 		to_chat(heretic_mind.current, composed_return_message)
 
 /**
@@ -587,7 +606,7 @@
 	sac_target.set_eye_blur_if_lower(100 SECONDS)
 	sac_target.set_dizzy_if_lower(1 MINUTES)
 	sac_target.AdjustKnockdown(80)
-	sac_target.adjustStaminaLoss(120)
+	sac_target.adjust_stamina_loss(120)
 
 	// Glad i'm outta there, though!
 	sac_target.add_mood_event("shadow_realm_survived", /datum/mood_event/shadow_realm_live)

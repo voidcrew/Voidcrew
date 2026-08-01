@@ -26,7 +26,7 @@
 			if(2)
 				to_chat(target, span_warning("You hear an annoying buzz in your head."))
 				target.adjust_confusion(15 SECONDS)
-				target.adjustOrganLoss(ORGAN_SLOT_BRAIN, 10, 160)
+				target.adjust_organ_loss(ORGAN_SLOT_BRAIN, 10, 160)
 			if(3)
 				target.adjust_hallucinations(150 SECONDS)
 
@@ -38,7 +38,7 @@
 		if(!ishuman(target_mob))
 			continue
 		var/mob/living/carbon/human/target_human = target_mob
-		if(target_human.stat)
+		if(IS_UNCONSCIOUS_OR_CRIT(target_human))
 			continue
 
 		if(HAS_MIND_TRAIT(target_human, TRAIT_UNCONVERTABLE))

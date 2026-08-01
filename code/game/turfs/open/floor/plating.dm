@@ -42,99 +42,111 @@
 
 #define PLATE_REINFORCE_COST 2
 
-/turf/open/floor/plating/attackby(obj/item/C, mob/user, list/modifiers)
-	if(..())
-		return
-	if(istype(C, /obj/item/stack/rods) && attachment_holes)
-		if(broken || burnt)
-			if(!iscyborg(user))
-				to_chat(user, span_warning("Repair the plating first! Use a welding tool to fix the damage."))
-			else
-				to_chat(user, span_warning("Repair the plating first! Use a welding tool or a plating repair tool to fix the damage.")) //we don't need to confuse humans by giving them a message about plating repair tools, since only janiborgs should have access to them outside of Christmas presents or admin intervention
-			return
-		var/obj/item/stack/rods/R = C
-		if (R.get_amount() < 2)
-			to_chat(user, span_warning("You need two rods to make a reinforced floor!"))
-			return
-		else
-			to_chat(user, span_notice("You begin reinforcing the floor..."))
-			if(do_after(user, 3 SECONDS, target = src))
-				if (R.get_amount() >= 2 && !istype(src, /turf/open/floor/engine))
-					place_on_top(/turf/open/floor/engine, flags = CHANGETURF_INHERIT_AIR)
-					playsound(src, 'sound/items/deconstruct.ogg', 80, TRUE)
-					R.use(2)
-					to_chat(user, span_notice("You reinforce the floor."))
-				return
-	else if(istype(C, /obj/item/stack/tile))
-		if(!broken && !burnt)
-			for(var/obj/O in src)
-				for(var/M in O.buckled_mobs)
-					to_chat(user, span_warning("Someone is buckled to \the [O]! Unbuckle [M] to move \him out of the way."))
-					return
-			var/obj/item/stack/tile/tile = C
-			tile.place_tile(src, user)
-		else
-			if(!iscyborg(user))
-				balloon_alert(user, "too damaged, use a welding tool!")
-			else
-				balloon_alert(user, "too damaged, use a welding or plating repair tool!")
-	else if(istype(C, /obj/item/cautery/prt)) //plating repair tool
-		if((broken || burnt) && C.use_tool(src, user, 0, volume=80))
-			to_chat(user, span_danger("You fix some dents on the broken plating."))
-			icon_state = base_icon_state
-			burnt = FALSE
-			broken = FALSE
-			update_appearance()
-	else if(istype(C, /obj/item/stack/sheet/plasteel) && upgradable) //Reinforcement!
-		if(!broken && !burnt)
-			var/obj/item/stack/sheet/sheets = C
-			if(sheets.get_amount() < PLATE_REINFORCE_COST)
-				return
-			balloon_alert(user, "reinforcing plating...")
-			if(do_after(user, 12 SECONDS, target = src))
-				if(sheets.get_amount() < PLATE_REINFORCE_COST)
-					return
-				sheets.use(PLATE_REINFORCE_COST)
-				playsound(src, 'sound/machines/creak.ogg', 100, vary = TRUE)
-				place_on_top(/turf/open/floor/plating/reinforced, CHANGETURF_INHERIT_AIR)
-		else
-			if(!iscyborg(user))
-				balloon_alert(user, "too damaged, use a welding tool!")
-			else
-				balloon_alert(user, "too damaged, use a welding or plating repair tool!")
-	else if(istype(C, /obj/item/stack/sheet/mineral/plastitanium) && attachment_holes)
-		if(broken || burnt)
-			if(!iscyborg(user))
-				to_chat(user, span_warning("Repair the plating first! Use a welding tool to fix the damage."))
-			else
-				to_chat(user, span_warning("Repair the plating first! Use a welding tool or a plating repair tool to fix the damage."))
-			return
-		var/obj/item/stack/sheet/mineral/plastitanium/sheet = C
-		if (sheet.get_amount() < 1)
-			to_chat(user, span_warning("You are literally holding nothing."))
-			return
-		else
-			balloon_alert(user, "insulating flooring...")
-			if(!do_after(user, 1.5 SECONDS, target = src))
-				return
-			if(sheet.get_amount() < 1 || istype(src, /turf/open/floor/engine/insulation))
-				return
-			place_on_top(/turf/open/floor/engine/insulation, flags = CHANGETURF_INHERIT_AIR)
-			playsound(src, 'sound/items/deconstruct.ogg', 80, TRUE)
-			sheet.use(1)
-			to_chat(user, span_notice("You insulate the floor."))
-			balloon_alert(user, "insulated!")
+/turf/open/floor/plating/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	. = ..()
+	if(ITEM_INTERACT_ANY_BLOCKER & .)
+		return .
 
-/turf/open/floor/plating/welder_act(mob/living/user, obj/item/I)
-	..()
-	if((broken || burnt) && I.use_tool(src, user, 0, volume=80))
+	if(istype(tool, /obj/item/stack/rods) && attachment_holes)
+		if(broken || burnt)
+			to_chat(user, span_warning("Repair the plating first! Use a welding tool[iscyborg(user) ? " or a plating repair tool" : ""] to fix the damage."))
+			return ITEM_INTERACT_BLOCKING
+
+		var/obj/item/stack/rods/material = tool
+		if (material.get_amount() < 2)
+			to_chat(user, span_warning("You need two rods to make a reinforced floor!"))
+			return ITEM_INTERACT_BLOCKING
+
+		to_chat(user, span_notice("You begin reinforcing the floor..."))
+		if(!do_after(user, 3 SECONDS, target = src))
+			return ITEM_INTERACT_BLOCKING
+
+		if (material.get_amount() < 2 || istype(src, /turf/open/floor/engine))
+			return ITEM_INTERACT_BLOCKING
+
+		place_on_top(/turf/open/floor/engine, flags = CHANGETURF_INHERIT_AIR)
+		playsound(src, 'sound/items/deconstruct.ogg', 80, TRUE)
+		material.use(2)
+		to_chat(user, span_notice("You reinforce the floor."))
+		return ITEM_INTERACT_SUCCESS
+
+	if(istype(tool, /obj/item/stack/tile))
+		if(broken || burnt)
+			balloon_alert(user, "too damaged, use a welding[iscyborg(user) ? "or plating repair " : ""] tool!")
+			return ITEM_INTERACT_BLOCKING
+
+		for(var/obj/blocker in src)
+			for(var/mob/sitter as anything in blocker.buckled_mobs)
+				to_chat(user, span_warning("Someone is buckled to \the [blocker]! Unbuckle [sitter] to move [sitter.p_them()] out of the way."))
+				return ITEM_INTERACT_BLOCKING
+
+		var/obj/item/stack/tile/tile = tool
+		tile.place_tile(src, user)
+		return ITEM_INTERACT_SUCCESS
+
+	if(istype(tool, /obj/item/cautery/prt)) //plating repair tool
+		if((!broken && !burnt) || !tool.use_tool(src, user, 0, volume=80))
+			return ITEM_INTERACT_BLOCKING
+
 		to_chat(user, span_danger("You fix some dents on the broken plating."))
 		icon_state = base_icon_state
 		burnt = FALSE
 		broken = FALSE
 		update_appearance()
+		return ITEM_INTERACT_SUCCESS
 
-	return TRUE
+	if(istype(tool, /obj/item/stack/sheet/plasteel) && upgradable) //Reinforcement!
+		if(broken || burnt)
+			balloon_alert(user, "too damaged, use a welding[iscyborg(user) ? "or plating repair " : ""] tool!")
+			return ITEM_INTERACT_BLOCKING
+
+		var/obj/item/stack/sheet/sheets = tool
+		if(sheets.get_amount() < PLATE_REINFORCE_COST)
+			return ITEM_INTERACT_BLOCKING
+
+		balloon_alert(user, "reinforcing plating...")
+		if(!do_after(user, 12 SECONDS, target = src))
+			return ITEM_INTERACT_BLOCKING
+		if(sheets.get_amount() < PLATE_REINFORCE_COST || istype(src, /turf/open/floor/plating/reinforced))
+			return ITEM_INTERACT_BLOCKING
+		sheets.use(PLATE_REINFORCE_COST)
+		playsound(src, 'sound/machines/creak.ogg', 100, vary = TRUE)
+		place_on_top(/turf/open/floor/plating/reinforced, CHANGETURF_INHERIT_AIR)
+		return ITEM_INTERACT_SUCCESS
+
+	if(istype(tool, /obj/item/stack/sheet/mineral/plastitanium) && attachment_holes)
+		if(broken || burnt)
+			to_chat(user, span_warning("Repair the plating first! Use a welding tool[iscyborg(user) ? " or a plating repair tool" : ""] to fix the damage."))
+			return ITEM_INTERACT_BLOCKING
+
+		var/obj/item/stack/sheet/mineral/plastitanium/sheet = tool
+		if (sheet.get_amount() < 1)
+			to_chat(user, span_warning("You are literally holding nothing.")) // finally a reasonable message
+			return ITEM_INTERACT_BLOCKING
+
+		balloon_alert(user, "insulating flooring...")
+		if(!do_after(user, 1.5 SECONDS, target = src))
+			return ITEM_INTERACT_BLOCKING
+
+		if(sheet.get_amount() < 1 || istype(src, /turf/open/floor/engine/insulation))
+			return ITEM_INTERACT_BLOCKING
+
+		place_on_top(/turf/open/floor/engine/insulation, flags = CHANGETURF_INHERIT_AIR)
+		playsound(src, 'sound/items/deconstruct.ogg', 80, TRUE)
+		sheet.use(1)
+		to_chat(user, span_notice("You insulate the floor."))
+		balloon_alert(user, "insulated!")
+		return ITEM_INTERACT_SUCCESS
+
+/turf/open/floor/plating/welder_act(mob/living/user, obj/item/tool)
+	if((!broken && !burnt) || !tool.use_tool(src, user, 0, volume=80))
+		return NONE
+	to_chat(user, span_danger("You fix some dents on the broken plating."))
+	icon_state = base_icon_state
+	burnt = FALSE
+	broken = FALSE
+	update_appearance()
+	return ITEM_INTERACT_SUCCESS
 
 #undef PLATE_REINFORCE_COST
 
@@ -150,25 +162,32 @@
 	upgradable = FALSE
 	attachment_holes = FALSE
 
+/turf/open/floor/plating/foam/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/tool_blocker, TOOL_WELDER, TOOL_ACT_PRIMARY)
+
 /turf/open/floor/plating/foam/burn_tile()
 	return //jetfuel can't melt steel foam
 
 /turf/open/floor/plating/foam/break_tile()
 	return //jetfuel can't break steel foam...
 
-/turf/open/floor/plating/foam/attackby(obj/item/attacking_item, mob/user, list/modifiers)
-	if(ismetaltile(attacking_item))
-		var/obj/item/stack/tile/tiles = attacking_item
-		if(!tiles.use(1))
-			return
-		var/obj/lattice = locate(/obj/structure/lattice) in src
-		if(lattice)
-			qdel(lattice)
-		to_chat(user, span_notice("You reinforce the foamed plating with tiling."))
-		playsound(src, 'sound/items/weapons/Genhit.ogg', 50, TRUE)
-		ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
-		return
+/turf/open/floor/plating/foam/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(!ismetaltile(tool))
+		return NONE
 
+	var/obj/item/stack/tile/tiles = tool
+	if(!tiles.use(1))
+		return ITEM_INTERACT_BLOCKING
+	var/obj/lattice = locate(/obj/structure/lattice) in src
+	if(lattice)
+		qdel(lattice)
+	to_chat(user, span_notice("You reinforce the foamed plating with tiling."))
+	playsound(src, 'sound/items/weapons/Genhit.ogg', 50, TRUE)
+	ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
+	return ITEM_INTERACT_SUCCESS
+
+/turf/open/floor/plating/foam/attackby(obj/item/attacking_item, mob/user, list/modifiers)
 	playsound(src, 'sound/items/weapons/tap.ogg', 100, TRUE) //The attack sound is muffled by the foam itself
 	user.changeNext_move(CLICK_CD_MELEE)
 	user.do_attack_animation(src)
@@ -184,7 +203,7 @@
 		return list("delay" = 0, "cost" = 1)
 
 /turf/open/floor/plating/foam/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, list/rcd_data)
-	if(rcd_data["[RCD_DESIGN_MODE]"] == RCD_TURF && rcd_data["[RCD_DESIGN_PATH]"] == /turf/open/floor/plating/rcd)
+	if(rcd_data[RCD_DESIGN_MODE] == RCD_TURF && rcd_data[RCD_DESIGN_PATH] == /turf/open/floor/plating/rcd)
 		ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
 		return TRUE
 	return FALSE
@@ -193,9 +212,6 @@
 	. = ..()
 	ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
 	return TRUE
-
-/turf/open/floor/plating/foam/welder_act(mob/living/user, obj/item/I)
-	return NONE // Fuck you
 
 //reinforced plating deconstruction states
 #define PLATE_INTACT 0
@@ -235,20 +251,21 @@
 	icon_state = "r_plate-[deconstruction_state]"
 	return ..()
 
-/turf/open/floor/plating/reinforced/attackby(obj/item/tool_used, mob/user, list/modifiers)
+/turf/open/floor/plating/reinforced/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
 	user.changeNext_move(CLICK_CD_MELEE)
 	if (!ISADVANCEDTOOLUSER(user))
 		to_chat(user, span_warning("You don't have the dexterity to do this!"))
-		return
+		return ITEM_INTERACT_BLOCKING
 
 	//get the user's location
 	if(!isturf(user.loc))
-		return //can't do this stuff whilst inside objects and such
+		return ITEM_INTERACT_BLOCKING//can't do this stuff whilst inside objects and such
 
 	add_fingerprint(user)
 
-	if(deconstruct_steps(tool_used, user))
-		return
+	if(deconstruct_steps(tool, user))
+		return ITEM_INTERACT_SUCCESS
+
 	return ..()
 
 /turf/open/floor/plating/reinforced/proc/deconstruct_steps(obj/item/tool_used, mob/user)

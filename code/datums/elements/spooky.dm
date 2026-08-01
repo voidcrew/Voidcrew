@@ -52,20 +52,20 @@
 	if(isskeleton(human))
 		return FALSE //undeads are unaffected by the spook-pocalypse.
 	var/bone_amount = 0
-	for(var/obj/item/bodypart/part as anything in human.bodyparts)
+	for(var/obj/item/bodypart/part as anything in human.get_bodyparts())
 		if((part.biological_state & BIO_FLESH_BONE) == BIO_FLESH_BONE)
 			bone_amount++
 	if(bone_amount)
 		human.set_jitter_if_lower(12 SECONDS * bone_amount)
 		human.set_stutter(6.5 SECONDS * bone_amount)
-		human.adjustStaminaLoss(3 * bone_amount * stam_dam_mult)
+		human.adjust_stamina_loss(3 * bone_amount * stam_dam_mult)
 	if(iszombie(human))
-		human.adjustStaminaLoss(25)
+		human.adjust_stamina_loss(25)
 		human.Paralyze(15) //zombies can't resist the doot
 	return bone_amount
 
 /datum/element/spooky/proc/spectral_change(mob/living/carbon/human/human, mob/living/user, obj/item/source)
-	if(human.getStaminaLoss() <= 95)
+	if(human.get_stamina_loss() <= 95)
 		return
 
 	if(single_use)
@@ -100,4 +100,4 @@
 	var/skeleton_name = spooked.client ? sanitize_name(tgui_input_text(spooked, "Enter your new skeleton name", "Spookifier", spooked.real_name, MAX_NAME_LEN)) : null
 	if(!skeleton_name)
 		skeleton_name = "\improper spooky skeleton"
-	spooked.fully_replace_character_name(null, skeleton_name)
+	spooked.fully_replace_character_name(null, skeleton_name, log_new_name = TRUE)

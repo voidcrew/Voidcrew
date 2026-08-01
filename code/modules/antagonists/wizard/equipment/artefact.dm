@@ -191,7 +191,6 @@
 		to_chat(current_owner, span_notice("Your otherworldly vision fades..."))
 
 		current_owner.remove_traits(list(TRAIT_SIXTHSENSE, TRAIT_XRAY_VISION), SCRYING_ORB)
-		current_owner.update_sight()
 
 		current_owner = null
 
@@ -201,7 +200,6 @@
 		to_chat(current_owner, span_notice("You can see...everything!"))
 
 		current_owner.add_traits(list(TRAIT_SIXTHSENSE, TRAIT_XRAY_VISION), SCRYING_ORB)
-		current_owner.update_sight()
 
 /obj/item/scrying/attack_self(mob/user)
 	visible_message(span_danger("[user] stares into [src], their eyes glazing over."))
@@ -284,7 +282,7 @@
 			continue
 		var/mob/living/carbon/human/H = X
 		if(H.stat == DEAD)
-			H.dust(TRUE)
+			H.dust(just_ash = TRUE)
 			spooky_scaries.Remove(X)
 			continue
 	list_clear_nulls(spooky_scaries)
@@ -304,7 +302,7 @@
 	uniform = /obj/item/clothing/under/costume/roman
 	shoes = /obj/item/clothing/shoes/roman
 	back = /obj/item/spear
-	r_hand = /obj/item/claymore
+	belt = /obj/item/storage/belt/sheath/gladius
 	l_hand = /obj/item/shield/roman
 
 /datum/outfit/roman/pre_equip(mob/living/carbon/human/H, visuals_only)

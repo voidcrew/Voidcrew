@@ -94,16 +94,14 @@
 	RegisterSignal(being, COMSIG_MOB_UPDATE_SIGHT, PROC_REF(update_user_sight))
 	to_chat(being, span_notice("The wisp enhances your vision."))
 	ADD_TRAIT(being, TRAIT_THERMAL_VISION, REF(src))
-	being.update_sight()
 
-/obj/effect/wisp/stop_orbit(datum/component/orbiter/orbits)
-	if(!ismob(orbit_target))
+/obj/effect/wisp/stop_orbit(datum/component/orbiter/orbits, refreshing = FALSE)
+	if(!ismob(orbit_target) || refreshing)
 		return ..()
 	var/mob/being = orbit_target
 	UnregisterSignal(being, COMSIG_MOB_UPDATE_SIGHT)
 	to_chat(being, span_notice("Your vision returns to normal."))
 	REMOVE_TRAIT(being, TRAIT_THERMAL_VISION, REF(src))
-	being.update_sight()
 	return ..()
 
 /obj/effect/wisp/proc/update_user_sight(mob/user)
@@ -219,8 +217,7 @@
 	var/list/radial_wings = list()
 	var/list/name2type = list()
 	for(var/obj/item/organ/wings/functional/possible_type as anything in wing_types)
-		var/datum/sprite_accessory/accessory = initial(possible_type.sprite_accessory_override) //get the type
-		accessory = SSaccessories.wings_list[initial(accessory.name)] //get the singleton instance
+		var/datum/sprite_accessory/accessory = SSaccessories.feature_list[FEATURE_WINGS][possible_type::sprite_accessory_override::name] //get the singleton instance
 		var/image/img = image(icon = accessory.icon, icon_state = "m_wingsopen_[accessory.icon_state]_BEHIND") //Process the HUD elements
 		img.transform *= 0.5
 		img.pixel_w = -32

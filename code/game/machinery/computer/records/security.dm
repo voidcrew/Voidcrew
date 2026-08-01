@@ -8,6 +8,7 @@
 /obj/machinery/computer/records/security
 	name = "security records console"
 	desc = "Used to view and edit personnel's security records."
+	icon_state = MAP_SWITCH("computer", "/obj/machinery/computer/warrant")
 	icon_screen = "security"
 	icon_keyboard = "security_key"
 	req_one_access = list(ACCESS_SECURITY, ACCESS_HOP)
@@ -17,13 +18,14 @@
 	var/printing = FALSE
 
 /obj/machinery/computer/records/security/syndie
+	icon_state = MAP_SWITCH("computer", "/obj/machinery/computer/records/security/syndie")
 	icon_keyboard = "syndie_key"
 	req_one_access = list(ACCESS_SYNDICATE)
 
 /obj/machinery/computer/records/security/laptop
 	name = "security laptop"
 	desc = "A cheap Nanotrasen security laptop, it functions as a security records console. It's bolted to the table."
-	icon_state = "laptop"
+	icon_state = MAP_SWITCH("laptop", "/obj/machinery/computer/records/security/laptop")
 	icon_screen = "seclaptop"
 	icon_keyboard = "laptop_key"
 	pass_flags = PASSTABLE
@@ -35,10 +37,12 @@
 
 /obj/machinery/computer/records/security/Initialize(mapload, obj/item/circuitboard/C)
 	. = ..()
-	AddComponent(/datum/component/usb_port, list(
-		/obj/item/circuit_component/arrest_console_data,
-		/obj/item/circuit_component/arrest_console_arrest,
-	))
+	AddComponent(/datum/component/usb_port, \
+		typecacheof(list(
+			/obj/item/circuit_component/arrest_console_data,
+			/obj/item/circuit_component/arrest_console_arrest,
+		), only_root_path = TRUE) \
+	)
 
 /obj/machinery/computer/records/security/emp_act(severity)
 	. = ..()
@@ -209,7 +213,7 @@
 
 	var/max = CONFIG_GET(number/maxfine)
 	if(params["fine"] > max)
-		to_chat(usr, span_warning("The maximum fine is [max] credits."))
+		to_chat(usr, span_warning("The maximum fine is [max] [MONEY_NAME]."))
 		playsound(src, 'sound/machines/terminal/terminal_error.ogg', 75, TRUE)
 		return FALSE
 
@@ -231,7 +235,7 @@
 	var/datum/crime/citation/new_citation = new(name = input_name, details = input_details, author = usr, fine = params["fine"])
 
 	target.citations += new_citation
-	new_citation.alert_owner(user, src, target.name, "You have been issued a [params["fine"]]cr citation for [input_name]. Fines are payable at Security.")
+	new_citation.alert_owner(user, src, target.name, "You have been issued a [params["fine"]][MONEY_SYMBOL] citation for [input_name]. Fines are payable at Security.")
 	investigate_log("New Citation: <strong>[input_name]</strong> Fine: [params["fine"]] | Added to [target.name] by [key_name(user)]", INVESTIGATE_RECORDS)
 	SSblackbox.ReportCitation(REF(new_citation), user.ckey, user.real_name, target.name, input_name, input_details, params["fine"])
 
@@ -383,7 +387,6 @@
 	addtimer(CALLBACK(src, PROC_REF(print_finish), printable), 2 SECONDS, TIMER_UNIQUE | TIMER_STOPPABLE)
 
 	return TRUE
-
 
 /**
  * Security circuit component

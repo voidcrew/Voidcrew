@@ -1,134 +1,76 @@
+/// Decides if parallax should be rendered or not, and sets things up accordingly
+/datum/hud/proc/check_parallax()
+	var/client/displaying_client = mymob.client
+	if(isnull(displaying_client.parallax_rock))
+		displaying_client.parallax_rock = new(null, null, displaying_client)
 
-/datum/hud/proc/create_parallax(mob/viewmob)
-	var/mob/screenmob = viewmob || mymob
-	var/client/C = screenmob.client
+	/// Applies our preferences to our existing display
+	apply_parallax_pref()
+	var/atom/movable/screen/parallax_home/rock = displaying_client?.parallax_rock
 
-	if (!apply_parallax_pref(viewmob)) //don't want shit computers to crash when specing someone with insane parallax, so use the viewer's pref
-		for(var/atom/movable/screen/plane_master/parallax as anything in get_true_plane_masters(PLANE_SPACE_PARALLAX))
-			parallax.hide_plane(screenmob)
-		return
+	// Because other parts of the code can just REMOVE US FROM THE SCREEN for no reason as a joke
+	if (rock.displaying_layers)
+		ADD_TRAIT(src, TRAIT_PARALLAX_DISPLAYED, TRAIT_GENERIC)
+		displaying_client.screen |= rock
+	else
+		REMOVE_TRAIT(src, TRAIT_PARALLAX_DISPLAYED, TRAIT_GENERIC)
+		displaying_client.screen -= rock
 
-	for(var/atom/movable/screen/plane_master/parallax as anything in get_true_plane_masters(PLANE_SPACE_PARALLAX))
-		parallax.unhide_plane(screenmob)
-
-	if(isnull(C.parallax_rock))
-		C.parallax_rock = new(null, src)
-	C.screen |= C.parallax_rock
-
-	if(!length(C.parallax_layers_cached))
-		C.parallax_layers_cached = list()
-		C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/layer_1(null, src)
-		C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/layer_2(null, src)
-		// VOIDCREW EDIT REMOVAL - the station planet backdrop keys off is_station_level(), which is
-		// TRUE for every player ship z-level here (link_to_z_level() flags them ZTRAIT_STATION), so
-		// every crew saw it. It isn't tiled by update_o(), so the in-transit scroll loop made it
-		// visibly race down the screen and snap back every loop. Voidcrew shows planet backdrops
-		// contextually instead (see "context-aware overmap parallax" in
-		// voidcrew/modules/overmap/code/modules/overmap/_overmap.dm).
-		// VOIDCREW EDIT ORIGINAL: C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/planet(null, src)
-		if(SSparallax.random_layer)
-			C.parallax_layers_cached += new SSparallax.random_layer.type(null, src, FALSE, SSparallax.random_layer)
-		C.parallax_layers_cached += new /atom/movable/screen/parallax_layer/layer_3(null, src)
-
-	C.parallax_layers = C.parallax_layers_cached.Copy()
-
-	if (length(C.parallax_layers) > C.parallax_layers_max)
-		C.parallax_layers.len = C.parallax_layers_max
-
-	// VOIDCREW EDIT ADDITION BEGIN - overmap-context layers (asteroid fields, nebulas, planet
-	// backdrops) ride above the pref-based layer cap: they ARE the scenery, not extra fluff
-	if(length(C.overmap_parallax_layers))
-		C.parallax_layers |= C.overmap_parallax_layers
-	// VOIDCREW EDIT ADDITION END
-
-	C.parallax_rock.vis_contents = C.parallax_layers
-	// We could do not do parallax for anything except the main plane group
-	// This could be changed, but it would require refactoring this whole thing
-	// And adding non client particular hooks for all the inputs, and I do not have the time I'm sorry :(
-	for(var/atom/movable/screen/plane_master/plane_master as anything in screenmob.hud_used.get_true_plane_masters(PLANE_SPACE))
-		if(screenmob != mymob)
-			C.screen -= locate(/atom/movable/screen/plane_master/parallax_white) in C.screen
-			C.screen += plane_master
-		// this color makes parallax not black
-		plane_master.color = list(
-			0, 0, 0, 0,
-			0, 0, 0, 0,
-			0, 0, 0, 0,
-			1, 1, 1, 1,
-			0, 0, 0, 0
-			)
-
-/datum/hud/proc/remove_parallax(mob/viewmob)
-	var/mob/screenmob = viewmob || mymob
-	var/client/C = screenmob.client
-	C.screen -= (C.parallax_rock)
-	for(var/atom/movable/screen/plane_master/plane_master as anything in screenmob.hud_used.get_true_plane_masters(PLANE_SPACE))
-		if(screenmob != mymob)
-			C.screen -= locate(/atom/movable/screen/plane_master/parallax_white) in C.screen
-			C.screen += plane_master
-		plane_master.color = initial(plane_master.color)
-	C.parallax_layers = null
-
-/datum/hud/proc/apply_parallax_pref(mob/viewmob)
-	var/mob/screenmob = viewmob || mymob
-	var/turf/screen_location = get_turf(screenmob)
+/datum/hud/proc/apply_parallax_pref()
+	var/turf/screen_location = get_turf(mymob)
+	var/client/displaying_client = mymob.client
+	var/atom/movable/screen/parallax_home/rock = displaying_client.parallax_rock
 
 	if(SSmapping.level_trait(screen_location?.z, ZTRAIT_NOPARALLAX))
-		for(var/atom/movable/screen/plane_master/white_space as anything in get_true_plane_masters(PLANE_SPACE))
-			white_space.hide_plane(screenmob)
-		return FALSE
+		rock.set_layer_settings(layers_to_draw = 0, draw_old_space = FALSE, animate_parallax = FALSE)
+		return
 
-	for(var/atom/movable/screen/plane_master/white_space as anything in get_true_plane_masters(PLANE_SPACE))
-		white_space.unhide_plane(screenmob)
+	if (SSlag_switch.measures[DISABLE_PARALLAX] && !HAS_TRAIT(mymob, TRAIT_BYPASS_MEASURES))
+		rock.set_layer_settings(layers_to_draw = 0, draw_old_space = FALSE, animate_parallax = FALSE)
+		return
 
-	if (SSlag_switch.measures[DISABLE_PARALLAX] && !HAS_TRAIT(viewmob, TRAIT_BYPASS_MEASURES))
-		return FALSE
-
-	var/client/C = screenmob.client
 	// Default to HIGH
-	var/parallax_selection = C?.prefs.read_preference(/datum/preference/choiced/parallax) || PARALLAX_HIGH
+	var/parallax_selection = displaying_client?.prefs.read_preference(/datum/preference/choiced/parallax) || PARALLAX_HIGH
 
 	switch(parallax_selection)
 		if (PARALLAX_INSANE)
-			C.parallax_layers_max = 5
-			C.do_parallax_animations = TRUE
-			return TRUE
+			rock.set_layer_settings(layers_to_draw = 5, draw_old_space = FALSE, animate_parallax = TRUE)
+			return
 
 		if(PARALLAX_HIGH)
-			C.parallax_layers_max = 4
-			C.do_parallax_animations = TRUE
-			return TRUE
+			rock.set_layer_settings(layers_to_draw = 4, draw_old_space = FALSE, animate_parallax = TRUE)
+			return
 
 		if (PARALLAX_MED)
-			C.parallax_layers_max = 3
-			C.do_parallax_animations = TRUE
-			return TRUE
+			rock.set_layer_settings(layers_to_draw = 3, draw_old_space = FALSE, animate_parallax = TRUE)
+			return
 
 		if (PARALLAX_LOW)
-			C.parallax_layers_max = 1
-			C.do_parallax_animations = FALSE
-			return TRUE
+			rock.set_layer_settings(layers_to_draw = 1, draw_old_space = FALSE, animate_parallax = FALSE)
+			return
+
+		if (PARALLAX_BOOMER)
+			rock.set_layer_settings(layers_to_draw = 0, draw_old_space = TRUE, animate_parallax = TRUE)
+			return
 
 		if (PARALLAX_DISABLE)
-			return FALSE
+			rock.set_layer_settings(layers_to_draw = 0, draw_old_space = FALSE, animate_parallax = FALSE)
+			return
 
-/datum/hud/proc/update_parallax_pref(mob/viewmob)
-	var/mob/screen_mob = viewmob || mymob
-	if(!screen_mob.client)
+/datum/hud/proc/update_parallax_pref()
+	if(!mymob.client)
 		return
-	remove_parallax(screen_mob)
-	create_parallax(screen_mob)
-	update_parallax(screen_mob)
+	check_parallax()
+	update_parallax()
 
 // This sets which way the current shuttle is moving (returns true if the shuttle has stopped moving so the caller can append their animation)
-/datum/hud/proc/set_parallax_movedir(new_parallax_movedir = NONE, skip_windups, mob/viewmob)
+/datum/hud/proc/set_parallax_movedir(new_parallax_movedir = NONE, skip_windups)
 	. = FALSE
-	var/mob/screenmob = viewmob || mymob
-	var/client/C = screenmob.client
-	if(new_parallax_movedir == C.parallax_movedir)
+	var/client/displaying_client = mymob.client
+	if(new_parallax_movedir == displaying_client.parallax_movedir)
 		return
 
-	var/animation_dir = new_parallax_movedir || C.parallax_movedir
+	var/animation_dir = new_parallax_movedir || displaying_client.parallax_movedir
 	var/matrix/new_transform
 	switch(animation_dir)
 		if(NORTH)
@@ -141,13 +83,13 @@
 			new_transform = matrix(1, 0,-480, 0, 1, 0)
 
 	var/longest_timer = 0
-	for(var/key in C.parallax_animate_timers)
-		deltimer(C.parallax_animate_timers[key])
-	C.parallax_animate_timers = list()
-	for(var/atom/movable/screen/parallax_layer/layer as anything in C.parallax_layers)
+	for(var/key in displaying_client.parallax_animate_timers)
+		deltimer(displaying_client.parallax_animate_timers[key])
+	displaying_client.parallax_animate_timers = list()
+	for(var/atom/movable/screen/parallax_layer/layer as anything in displaying_client.parallax_rock.parallax_layers)
 		// VOIDCREW EDIT ADDITION BEGIN - untiled backdrops (station planet, overmap planet
 		// backdrops) must sit still: the 480px wraparound jump below is only invisible on
-		// layers update_o() tiles at a 480px period, anything else visibly snaps every loop
+		// layers that tile at a 480px period, anything else visibly snaps every loop
 		if(!layer.scroll_loops)
 			continue
 		// VOIDCREW EDIT ADDITION END
@@ -157,7 +99,7 @@
 		longest_timer = max(longest_timer, scaled_time)
 
 		if(skip_windups)
-			update_parallax_motionblur(C, layer, new_parallax_movedir, new_transform)
+			update_parallax_motionblur(displaying_client, layer, new_parallax_movedir, new_transform)
 			continue
 
 		layer.transform = new_transform
@@ -167,15 +109,15 @@
 		//queue up another animate so lag doesn't create a shutter
 		animate(transform = new_transform, time = 0)
 		animate(transform = matrix(), time = scaled_time / 2)
-		C.parallax_animate_timers[layer] = addtimer(CALLBACK(src, PROC_REF(update_parallax_motionblur), C, layer, new_parallax_movedir, new_transform), scaled_time, TIMER_CLIENT_TIME|TIMER_STOPPABLE)
+		displaying_client.parallax_animate_timers[layer] = addtimer(CALLBACK(src, PROC_REF(update_parallax_motionblur), displaying_client, layer, new_parallax_movedir, new_transform), scaled_time, TIMER_CLIENT_TIME|TIMER_STOPPABLE)
 
-	C.dont_animate_parallax = world.time + min(longest_timer, PARALLAX_LOOP_TIME)
-	C.parallax_movedir = new_parallax_movedir
+	displaying_client.dont_animate_parallax = world.time + min(longest_timer, PARALLAX_LOOP_TIME)
+	displaying_client.parallax_movedir = new_parallax_movedir
 
-/datum/hud/proc/update_parallax_motionblur(client/C, atom/movable/screen/parallax_layer/layer, new_parallax_movedir, matrix/new_transform)
-	if(!C)
+/datum/hud/proc/update_parallax_motionblur(client/displaying_client, atom/movable/screen/parallax_layer/layer, new_parallax_movedir, matrix/new_transform)
+	if(!displaying_client)
 		return
-	C.parallax_animate_timers -= layer
+	displaying_client.parallax_animate_timers -= layer
 	if(!layer.scroll_loops) // VOIDCREW EDIT ADDITION - see set_parallax_movedir()
 		return
 
@@ -189,39 +131,35 @@
 	animate(layer, transform = new_transform, time = 0, loop = -1, flags = ANIMATION_END_NOW)
 	animate(transform = matrix(), time = scaled_time)
 
-/datum/hud/proc/update_parallax(mob/viewmob)
-	var/mob/screenmob = viewmob || mymob
-	var/client/C = screenmob.client
-	var/turf/posobj = get_turf(C.eye)
+/datum/hud/proc/update_parallax()
+	var/client/displaying_client = mymob.client
+	var/turf/posobj = get_turf(displaying_client.eye)
 	if(!posobj)
 		return
 
 	var/area/areaobj = posobj.loc
 	// Update the movement direction of the parallax if necessary (for shuttles)
-	set_parallax_movedir(areaobj.parallax_movedir, FALSE, screenmob)
+	set_parallax_movedir(areaobj.parallax_movedir, FALSE, mymob)
 
-	var/force = FALSE
-	if(!C.previous_turf || (C.previous_turf.z != posobj.z))
-		C.previous_turf = posobj
-		force = TRUE
-		update_overmap_parallax(screenmob) // VOIDCREW EDIT ADDITION - re-theme context parallax when the eye changes z (see voidcrew overmap _overmap.dm)
+	if(!displaying_client.previous_turf || (displaying_client.previous_turf.z != posobj.z))
+		displaying_client.previous_turf = posobj
+		update_overmap_parallax(mymob) // VOIDCREW EDIT ADDITION - re-theme context parallax when the eye changes z (see voidcrew overmap _overmap.dm)
 
 	//Doing it this way prevents parallax layers from "jumping" when you change Z-Levels.
-	var/offset_x = posobj.x - C.previous_turf.x
-	var/offset_y = posobj.y - C.previous_turf.y
+	var/offset_x = posobj.x - displaying_client.previous_turf.x
+	var/offset_y = posobj.y - displaying_client.previous_turf.y
 
-	if(!offset_x && !offset_y && !force)
-		return
-
-	var/glide_rate = round(ICON_SIZE_ALL / screenmob.glide_size * world.tick_lag, world.tick_lag)
-	C.previous_turf = posobj
+	var/glide_rate = round(ICON_SIZE_ALL / mymob.glide_size * world.tick_lag, world.tick_lag)
+	displaying_client.previous_turf = posobj
 
 	var/largest_change = max(abs(offset_x), abs(offset_y))
 	var/max_allowed_dist = (glide_rate / world.tick_lag) + 1
-	// If we aren't already moving/don't allow parallax, have made some movement, and that movement was smaller then our "glide" size, animate
-	var/run_parralax = (C.do_parallax_animations && glide_rate && !areaobj.parallax_movedir && C.dont_animate_parallax <= world.time && largest_change <= max_allowed_dist)
+	var/atom/movable/screen/parallax_home/rock = displaying_client.parallax_rock
 
-	for(var/atom/movable/screen/parallax_layer/parallax_layer as anything in C.parallax_layers)
+	// If we aren't already moving/don't allow parallax, have made some movement, and that movement was smaller then our "glide" size, animate
+	var/run_parralax = (rock.animate_parallax && glide_rate && !areaobj.parallax_movedir && displaying_client.dont_animate_parallax <= world.time && largest_change <= max_allowed_dist)
+
+	for(var/atom/movable/screen/parallax_layer/parallax_layer as anything in rock.parallax_layers)
 		var/our_speed = parallax_layer.speed
 		var/change_x
 		var/change_y
@@ -263,25 +201,167 @@
 
 /atom/movable/proc/update_parallax_contents()
 	for(var/mob/client_mob as anything in client_mobs_in_contents)
-		if(length(client_mob?.client?.parallax_layers) && client_mob.hud_used)
+		if(client_mob?.client?.parallax_rock?.displaying_layers && client_mob.hud_used)
 			client_mob.hud_used.update_parallax()
 
 /mob/proc/update_parallax_teleport() //used for arrivals shuttle
-	if(client?.eye && hud_used && length(client.parallax_layers))
+	if(client?.eye && hud_used && client?.parallax_rock?.displaying_layers)
 		var/area/areaobj = get_area(client.eye)
 		hud_used.set_parallax_movedir(areaobj.parallax_movedir, TRUE)
 
-// Root object for parallax, all parallax layers are drawn onto this
-INITIALIZE_IMMEDIATE(/atom/movable/screen/parallax_home)
+// Root object for parallax, all parallax layers are drawn onto this and it manages them
 /atom/movable/screen/parallax_home
 	icon = null
 	blend_mode = BLEND_ADD
 	plane = PLANE_SPACE_PARALLAX
 	screen_loc = "CENTER-7,CENTER-7"
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	/// Layers we are currently displaying
+	var/list/atom/movable/screen/parallax_layer/parallax_layers = list()
+	/// Pallet of layers we CAN display if we choose to, depending on our client's prefs
+	/// ensures quick removal/reinsertion doesn't cause cycling qdels
+	var/list/atom/movable/screen/parallax_layer/parallax_layers_cached = list()
+	/// How many normal space layers we want to draw, in increasing order of "depth"
+	var/layers_to_draw = 0
+	/// If we want to draw the old space layer
+	var/draw_old_space = FALSE
+	/// Are we currently displaying any layers?
+	var/displaying_layers = FALSE
+	/// Are we animating parallax?
+	var/animate_parallax = FALSE
+	/// The client that owns us
+	var/client/owner
+
+/atom/movable/screen/parallax_home/Initialize(mapload, datum/hud/hud_owner, client/owner)
+	. = ..()
+	src.owner = owner
+
+/atom/movable/screen/parallax_home/Destroy()
+	clear_layers()
+	owner = null
+	return ..()
+
+/atom/movable/screen/parallax_home/proc/display_layers()
+	if(displaying_layers || length(parallax_layers_cached) == 0)
+		return
+	// VOIDCREW EDIT CHANGE - was `parallax_layers = parallax_layers_cached`. Copy() instead of
+	// aliasing the cache, so the overmap context layers folded in below never end up inside
+	// parallax_layers_cached - clear_layers() QDEL_LISTs that, and those layers are owned by
+	// client.overmap_parallax_layers (voidcrew/modules/overmap/.../_overmap.dm), not by us.
+	parallax_layers = parallax_layers_cached.Copy()
+	vis_contents = parallax_layers_cached
+	displaying_layers = TRUE
+	apply_overmap_layers() // VOIDCREW EDIT ADDITION
+
+/atom/movable/screen/parallax_home/proc/hide_layers()
+	if(!displaying_layers)
+		return
+	parallax_layers = list()
+	vis_contents = list()
+	displaying_layers = FALSE
+
+/atom/movable/screen/parallax_home/proc/set_layer_settings(layers_to_draw, draw_old_space, animate_parallax)
+	src.animate_parallax = animate_parallax
+	if(src.layers_to_draw == layers_to_draw && src.draw_old_space == draw_old_space)
+		return
+	src.layers_to_draw = layers_to_draw
+	src.draw_old_space = draw_old_space
+	regenerate_layers()
+
+// VOIDCREW EDIT CHANGE BEGIN - the station planet backdrop keys off is_station_level(), which is
+// TRUE for every player ship z-level here (link_to_z_level() flags them ZTRAIT_STATION), so
+// every crew saw it. It isn't tiled by update_o(), so the in-transit scroll loop made it
+// visibly race down the screen and snap back every loop. Voidcrew shows planet backdrops
+// contextually instead (see "context-aware overmap parallax" in
+// voidcrew/modules/overmap/code/modules/overmap/_overmap.dm).
+// Upstream's index 3 was /atom/movable/screen/parallax_layer/planet; the remaining layers are
+// shifted up one so each parallax pref keeps the same layer *count* it had before the cut.
+// VOIDCREW EDIT ORIGINAL:
+//	switch(index)
+//		if(1)
+//			return new /atom/movable/screen/parallax_layer/layer_1(null, null, owner)
+//		if(2)
+//			return new /atom/movable/screen/parallax_layer/layer_2(null, null, owner)
+//		if(3)
+//			return new /atom/movable/screen/parallax_layer/planet(null, null, owner)
+//		if(4)
+//			if(SSparallax.random_layer)
+//				return new SSparallax.random_layer.type(null, null, owner, FALSE, SSparallax.random_layer)
+//			else
+//				return new /atom/movable/screen/parallax_layer/layer_3(null, null, owner)
+//		if(5)
+//			if(SSparallax.random_layer)
+//				return new /atom/movable/screen/parallax_layer/layer_3(null, null, owner)
+/atom/movable/screen/parallax_home/proc/generate_space_layer(index)
+	switch(index)
+		if(1)
+			return new /atom/movable/screen/parallax_layer/layer_1(null, null, owner)
+		if(2)
+			return new /atom/movable/screen/parallax_layer/layer_2(null, null, owner)
+		if(3)
+			if(SSparallax.random_layer)
+				return new SSparallax.random_layer.type(null, null, owner, FALSE, SSparallax.random_layer)
+			else
+				return new /atom/movable/screen/parallax_layer/layer_3(null, null, owner)
+		if(4)
+			if(SSparallax.random_layer)
+				return new /atom/movable/screen/parallax_layer/layer_3(null, null, owner)
+// VOIDCREW EDIT CHANGE END
+
+/atom/movable/screen/parallax_home/proc/regenerate_layers()
+	clear_layers()
+	if(layers_to_draw == 0 && !draw_old_space)
+		return
+
+	parallax_layers_cached = list()
+	for(var/space_layer in 1 to layers_to_draw)
+		var/atom/movable/screen/parallax_layer/parallax = generate_space_layer(space_layer)
+		if (parallax)
+			parallax_layers_cached += parallax
+
+	if(draw_old_space)
+		parallax_layers_cached += new /atom/movable/screen/parallax_layer/old(null, null, owner)
+
+	display_layers()
+
+/atom/movable/screen/parallax_home/proc/clear_layers()
+	hide_layers()
+	QDEL_LIST(parallax_layers_cached)
+
+// VOIDCREW EDIT ADDITION BEGIN - overmap-context layers (asteroid fields, nebulas, planet
+// backdrops) ride above the pref-based layer cap: they ARE the scenery, not extra fluff.
+// The source of truth is client.overmap_parallax_layers, resolved by
+// /datum/hud/proc/update_overmap_parallax() in
+// voidcrew/modules/overmap/code/modules/overmap/_overmap.dm; the rock just merges whatever
+// is on the client into whichever pref-capped base set it is currently displaying.
+
+/// Fold the client's live overmap context layers back into the displayed set.
+/// Called whenever the base layer set is (re)built, since that drops them.
+/atom/movable/screen/parallax_home/proc/apply_overmap_layers()
+	if(!displaying_layers)
+		return
+	for(var/atom/movable/screen/parallax_layer/layer as anything in owner?.overmap_parallax_layers)
+		if(QDELETED(layer))
+			continue
+		parallax_layers |= layer
+		vis_contents |= layer
+
+/// Attach one freshly built overmap context layer to the live display.
+/// Returns FALSE when there is nothing to attach to (parallax pref-disabled, NOPARALLAX z).
+/atom/movable/screen/parallax_home/proc/add_overmap_layer(atom/movable/screen/parallax_layer/layer)
+	if(!displaying_layers || QDELETED(layer))
+		return FALSE
+	parallax_layers |= layer
+	vis_contents |= layer
+	return TRUE
+
+/// Detach an overmap context layer. The caller still owns qdel()ing it.
+/atom/movable/screen/parallax_home/proc/remove_overmap_layer(atom/movable/screen/parallax_layer/layer)
+	parallax_layers -= layer
+	vis_contents -= layer
+// VOIDCREW EDIT ADDITION END
 
 // We need parallax to always pass its args down into initialize, so we immediate init it
-INITIALIZE_IMMEDIATE(/atom/movable/screen/parallax_layer)
 /atom/movable/screen/parallax_layer
 	icon = 'icons/effects/parallax.dmi'
 	var/speed = 1
@@ -289,15 +369,17 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/parallax_layer)
 	var/offset_y = 0
 	var/absolute = FALSE
 	// VOIDCREW EDIT ADDITION - whether this layer joins the shuttle-transit scroll loop.
-	// Only layers update_o() tiles at a 480px period can loop seamlessly; untiled
-	// backdrops (the station planet, voidcrew overmap_backdrop layers) must opt out
+	// Only layers that update_overlays() tiles at a 480px period can loop seamlessly;
+	// untiled backdrops (the station planet, voidcrew overmap_backdrop layers) must opt out
 	var/scroll_loops = TRUE
 	appearance_flags = APPEARANCE_UI | KEEP_TOGETHER
 	blend_mode = BLEND_ADD
 	plane = PLANE_SPACE_PARALLAX
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	/// View size we're being rendered with
+	var/working_view = ""
 
-/atom/movable/screen/parallax_layer/Initialize(mapload, datum/hud/hud_owner, template = FALSE)
+/atom/movable/screen/parallax_layer/Initialize(mapload, datum/hud/hud_owner, client/owner, template = FALSE)
 	. = ..()
 	// Parallax layers are independent of hud, they care about client
 	// Not doing this will just create a bunch of hard deletes
@@ -306,42 +388,48 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/parallax_layer)
 	if(template)
 		return
 
-	var/client/boss = hud_owner?.mymob?.canon_client
-
-	if(!boss) // If this typepath all starts to harddel your culprit is likely this
+	if(!owner) // If this typepath all starts to harddel your culprit is likely this
 		return INITIALIZE_HINT_QDEL
 
 	// I do not want to know bestie
-	var/view = boss.view || world.view
+	var/view = owner.view || world.view
 	update_o(view)
-	RegisterSignal(boss, COMSIG_VIEW_SET, PROC_REF(on_view_change))
+	RegisterSignal(owner, COMSIG_VIEW_SET, PROC_REF(on_view_change))
 
 /atom/movable/screen/parallax_layer/proc/on_view_change(datum/source, new_size)
 	SIGNAL_HANDLER
 	update_o(new_size)
 
-/atom/movable/screen/parallax_layer/proc/update_o(view)
-	if (!view)
-		view = world.view
-	var/static/pixel_grid_size = ICON_SIZE_ALL * 15
-	var/static/parallax_scaler = ICON_SIZE_ALL / pixel_grid_size
+/atom/movable/screen/parallax_layer/proc/update_o(new_view)
+	if(working_view == new_view)
+		return
+	working_view = new_view
+	update_appearance()
+
+/atom/movable/screen/parallax_layer/update_overlays()
+	. = ..()
+	var/overlay_view = working_view
+	if (!overlay_view)
+		overlay_view = world.view
+	var/pixel_grid_size = ICON_SIZE_ALL * 15
+	var/parallax_scaler = ICON_SIZE_ALL / pixel_grid_size
 
 	// Turn the view size into a grid of correctly scaled overlays
-	var/list/viewscales = getviewsize(view)
+	var/list/viewscales = getviewsize(overlay_view)
 	// This could be half the size but we need to provide space for parallax movement on mob movement, and movement on scroll from shuttles, so like this instead
 	var/countx = (CEILING((viewscales[1] / 2) * parallax_scaler, 1) + 1)
 	var/county = (CEILING((viewscales[2] / 2) * parallax_scaler, 1) + 1)
-	var/list/new_overlays = new
 	for(var/x in -countx to countx)
 		for(var/y in -county to county)
 			if(x == 0 && y == 0)
 				continue
-			var/mutable_appearance/texture_overlay = mutable_appearance(icon, icon_state)
+			var/mutable_appearance/texture_overlay = tileable_appearance()
 			texture_overlay.pixel_w += pixel_grid_size * x
 			texture_overlay.pixel_z += pixel_grid_size * y
-			new_overlays += texture_overlay
-	cut_overlays()
-	add_overlay(new_overlays)
+			. += texture_overlay
+
+/atom/movable/screen/parallax_layer/proc/tileable_appearance()
+	return mutable_appearance(icon, icon_state)
 
 /atom/movable/screen/parallax_layer/layer_1
 	icon_state = "layer1"
@@ -358,6 +446,34 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/parallax_layer)
 	speed = 1.4
 	layer = 3
 
+/atom/movable/screen/parallax_layer/old
+	icon = null
+	icon_state = null // dog there's gonna be so many overlays...
+	speed = 0.6
+	layer = 1 // Draws on its own
+
+/atom/movable/screen/parallax_layer/old/tileable_appearance()
+	var/mutable_appearance/copy = mutable_appearance(null, "")
+	// We have to use render targets to draw one of these flat and reuse it for this because FOR SOME REASON
+	// 16 (tile count) * (14 (animated state count) * 4 (frame count) + 1 (1 is not animated)) 480x480 states
+	// is TOO MUCH for the client. Whatever, see if I care.
+	copy.render_source = "*old_space_parallax"
+	return copy
+
+/atom/movable/screen/parallax_layer/old/update_overlays()
+	. = ..()
+	var/mutable_appearance/relayed_overlay = mutable_appearance('icons/effects/old_parallax.dmi', "1", appearance_flags = RESET_TRANSFORM|PIXEL_SCALE|KEEP_TOGETHER|KEEP_APART)
+	var/list/old_states = list("19", "21", "23", "24", "26", "29", "30", "31", "34", "35", "36", "37", "43", "46")
+	var/list/holder_overlays = list()
+	for(var/state in old_states)
+		holder_overlays += mutable_appearance('icons/effects/old_parallax.dmi', state)
+	relayed_overlay.overlays = holder_overlays
+	relayed_overlay.render_target = "*old_space_parallax"
+	// Renders the like, "input" appearance we draw to everything else
+	. += relayed_overlay
+	// The 0,0 appearance, can't reuse relayed_overlay for this because otherwise transforms would stack
+	. += tileable_appearance()
+
 /atom/movable/screen/parallax_layer/planet
 	icon_state = "planet"
 	blend_mode = BLEND_OVERLAY
@@ -366,17 +482,16 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/parallax_layer)
 	layer = 30
 	scroll_loops = FALSE // VOIDCREW EDIT ADDITION - untiled backdrop, must not join the transit scroll loop
 
-/atom/movable/screen/parallax_layer/planet/Initialize(mapload, datum/hud/hud_owner)
+/atom/movable/screen/parallax_layer/planet/Initialize(mapload, datum/hud/hud_owner, client/owner)
 	. = ..()
-	var/client/boss = hud_owner?.mymob?.canon_client
-	if(!boss)
+	if(!owner)
 		return
 	var/static/list/connections = list(
 		COMSIG_MOVABLE_Z_CHANGED = PROC_REF(on_z_change),
 		COMSIG_MOB_LOGOUT = PROC_REF(on_mob_logout),
 	)
-	AddComponent(/datum/component/connect_mob_behalf, boss, connections)
-	on_z_change(hud_owner?.mymob)
+	AddComponent(/datum/component/connect_mob_behalf, owner, connections)
+	on_z_change(owner.mob)
 
 /atom/movable/screen/parallax_layer/planet/proc/on_mob_logout(mob/source)
 	SIGNAL_HANDLER

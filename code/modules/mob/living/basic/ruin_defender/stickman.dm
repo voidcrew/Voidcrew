@@ -17,8 +17,7 @@
 	attack_sound = 'sound/items/weapons/punch1.ogg'
 	combat_mode = TRUE
 	faction = list(FACTION_STICKMAN)
-	unsuitable_atmos_damage = 7.5
-	unsuitable_cold_damage = 7.5
+	unsuitable_atmos_damage = 0
 	unsuitable_heat_damage = 7.5
 	damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 1, STAMINA = 0, OXY = 1)
 
@@ -33,16 +32,12 @@
 	new /obj/effect/temp_visual/paper_scatter(get_turf(src))
 
 /datum/ai_controller/basic_controller/stickman
+	behavior_tree_json = "code/modules/mob/living/basic/ruin_defender/stickman.bt.json"
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic,
 	)
 
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = /datum/idle_behavior/idle_random_walk
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree
-	)
 
 /mob/living/basic/stickman/dog
 	name = "Angry Stick Dog"
@@ -72,18 +67,8 @@
 
 /mob/living/basic/stickman/ranged/Initialize(mapload)
 	. = ..()
-	var/static/list/stickman_drops = list(/obj/item/gun/ballistic/automatic/pistol/stickman)
-	AddElement(/datum/element/death_drops, stickman_drops)
+	AddElement(/datum/element/death_drops, /obj/item/gun/ballistic/automatic/pistol/stickman)
 	AddComponent(/datum/component/ranged_attacks, casing_type = /obj/item/ammo_casing/c9mm, projectile_sound = 'sound/misc/bang.ogg', cooldown_time = 5 SECONDS)
 
 /datum/ai_controller/basic_controller/stickman/ranged
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/basic_ranged_attack_subtree/stickman
-	)
-
-/datum/ai_planning_subtree/basic_ranged_attack_subtree/stickman
-	ranged_attack_behavior = /datum/ai_behavior/basic_ranged_attack/stickman
-
-/datum/ai_behavior/basic_ranged_attack/stickman
-	action_cooldown = 5 SECONDS
+	behavior_tree_json = "code/modules/mob/living/basic/ruin_defender/stickman_ranged.bt.json"

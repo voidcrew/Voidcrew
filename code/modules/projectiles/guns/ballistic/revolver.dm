@@ -41,7 +41,7 @@
 	chamber_round()
 
 /obj/item/gun/ballistic/revolver/click_alt(mob/user)
-	spin()
+	spin_chamber(user)
 	return CLICK_ACTION_SUCCESS
 
 /obj/item/gun/ballistic/revolver/fire_sounds()
@@ -57,18 +57,16 @@
 		if(play_click)
 			playsound(src, 'sound/items/weapons/gun/general/ballistic_click.ogg', fire_sound_volume, vary_fire_sound, frequency = click_frequency_to_use)
 
-/obj/item/gun/ballistic/revolver/verb/spin()
-	set name = "Spin Chamber"
-	set category = "Object"
-	set desc = "Click to spin your revolver's chamber."
+GAME_VERB(/obj/item/gun/ballistic/revolver, spin, "Spin Chamber", null)
+	spin_chamber(usr)
 
-	var/mob/user = usr
-
-	if(user.stat || !in_range(user, src))
+/obj/item/gun/ballistic/revolver/verb/spin_chamber(mob/living/user)
+	if(!istype(user) || IS_UNCONSCIOUS_OR_CRIT(user) || !in_range(user, src))
 		return
 
 	if (recent_spin > world.time)
 		return
+
 	recent_spin = world.time + spin_delay
 
 	if(do_spin())
@@ -97,8 +95,7 @@
 	. = ..()
 	var/live_ammo = get_ammo(FALSE, FALSE)
 	. += "[live_ammo ? live_ammo : "None"] of those are live rounds."
-	if (current_skin)
-		. += span_notice("It can be spun with [EXAMINE_HINT("alt-click")].")
+	. += span_notice("It can be spun with [EXAMINE_HINT("alt-click")].")
 
 /obj/item/gun/ballistic/revolver/ignition_effect(atom/A, mob/user)
 	if(last_fire && last_fire + 15 SECONDS > world.time)
@@ -111,6 +108,47 @@
 	icon_state = "c38"
 	base_icon_state = "c38"
 	fire_sound = 'sound/items/weapons/gun/revolver/shot.ogg'
+
+// 38 special skins
+/datum/atom_skin/det_revolver
+	abstract_type = /datum/atom_skin/det_revolver
+	change_base_icon_state = TRUE
+
+/datum/atom_skin/det_revolver/default
+	preview_name = "Default"
+	new_icon_state = "c38"
+
+/datum/atom_skin/det_revolver/fitz_special
+	preview_name = "Fitz Special"
+	new_icon_state = "c38_fitz"
+
+/datum/atom_skin/det_revolver/police_positive_special
+	preview_name = "Police Positive Special"
+	new_icon_state = "c38_police"
+
+/datum/atom_skin/det_revolver/blued_steel
+	preview_name = "Blued Steel"
+	new_icon_state = "c38_blued"
+
+/datum/atom_skin/det_revolver/stainless_steel
+	preview_name = "Stainless Steel"
+	new_icon_state = "c38_stainless"
+
+/datum/atom_skin/det_revolver/gold_trim
+	preview_name = "Gold Trim"
+	new_icon_state = "c38_trim"
+
+/datum/atom_skin/det_revolver/golden
+	preview_name = "Golden"
+	new_icon_state = "c38_gold"
+
+/datum/atom_skin/det_revolver/peacemaker
+	preview_name = "The Peacemaker"
+	new_icon_state = "c38_peacemaker"
+
+/datum/atom_skin/det_revolver/black_panther
+	preview_name = "Black Panther"
+	new_icon_state = "c38_panther"
 
 /obj/item/gun/ballistic/revolver/c38/detective
 	name = "\improper Colt Detective Special"
@@ -126,17 +164,9 @@
 	misfire_percentage_increment = 25 //about 1 in 4 rounds, which increases rapidly every shot
 
 	obj_flags = UNIQUE_RENAME
-	unique_reskin = list(
-		"Default" = "c38",
-		"Fitz Special" = "c38_fitz",
-		"Police Positive Special" = "c38_police",
-		"Blued Steel" = "c38_blued",
-		"Stainless Steel" = "c38_stainless",
-		"Gold Trim" = "c38_trim",
-		"Golden" = "c38_gold",
-		"The Peacemaker" = "c38_peacemaker",
-		"Black Panther" = "c38_panther"
-	)
+
+/obj/item/gun/ballistic/revolver/c38/detective/setup_reskins()
+	AddComponent(/datum/component/reskinable_item, /datum/atom_skin/det_revolver)
 
 /obj/item/gun/ballistic/revolver/badass
 	name = "\improper Badass Revolver"
@@ -233,7 +263,7 @@
 
 /obj/item/gun/ballistic/revolver/russian/attack_self(mob/user)
 	if(!spun)
-		spin()
+		spin_chamber(user)
 		return TRUE
 	return ..()
 
@@ -330,12 +360,17 @@
 	user.visible_message(
 		span_danger("[user][is_target_face ? "": " cowardly"] aims \the [src] at [user.p_their()] [aimed_at_readable] as it goes off!"),
 		span_danger("You[is_target_face ? "": " cowardly"] aim \the [src] at your [aimed_at_readable] as it goes off![user.stat >= HARD_CRIT ? " <b>Everything suddenly goes black.</b>" : ""]"),
-		span_hear("You hear a grunt[user.stat == CONSCIOUS ? "" : ", followed by a thud"]!"),
+		span_hear("You hear a grunt[!IS_UNCONSCIOUS_OR_CRIT(user) ? "" : ", followed by a thud"]!"),
 		vision_distance = COMBAT_MESSAGE_RANGE,
 		visible_message_flags = ALWAYS_SHOW_SELF_MESSAGE,
 	)
 	shoot_self(user, check_zone(user.zone_selected))
 	return .
+
+/obj/item/gun/ballistic/revolver/russian/on_mail_unwrap(atom/source, mob/user, obj/item/mail/traitor/letter)
+	if((get_ammo(FALSE, FALSE) > 1) || (get_ammo(TRUE, TRUE) < 6))
+		return NONE
+	return ..()
 
 /// Called after successfully(if you can call it that) shooting ourselves
 /obj/item/gun/ballistic/revolver/russian/proc/shoot_self(mob/living/carbon/human/user, affecting = BODY_ZONE_HEAD)

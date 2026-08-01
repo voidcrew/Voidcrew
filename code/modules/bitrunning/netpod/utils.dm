@@ -47,7 +47,7 @@
 		return
 
 	mob_occupant.flash_act(override_blindness_check = TRUE, visual = TRUE)
-	mob_occupant.adjustOrganLoss(ORGAN_SLOT_BRAIN, disconnect_damage)
+	mob_occupant.adjust_organ_loss(ORGAN_SLOT_BRAIN, disconnect_damage)
 	INVOKE_ASYNC(mob_occupant, TYPE_PROC_REF(/mob/living, emote), "scream")
 	to_chat(mob_occupant, span_danger("You've been forcefully disconnected from your avatar! Your thoughts feel scrambled!"))
 
@@ -77,12 +77,21 @@
 		return
 
 	balloon_alert(neo, "establishing connection...")
-	if(!do_after(neo, 2 SECONDS, src))
+
+	// Prevent hand interactions during loading to stop smuggling exploits into virtual domain
+	ADD_TRAIT(neo, TRAIT_HANDS_BLOCKED, TRAIT_GENERIC)
+
+	var/connection_successful = do_after(neo, 2 SECONDS, src)
+
+	// Re-enable hand interactions after loading attempt
+	REMOVE_TRAIT(neo, TRAIT_HANDS_BLOCKED, TRAIT_GENERIC)
+
+	if(!connection_successful)
 		open_machine()
 		return
 
 	var/mob/living/carbon/current_avatar = avatar_ref?.resolve()
-	if(isnull(current_avatar) || current_avatar.stat != CONSCIOUS) // We need a viable avatar
+	if(isnull(current_avatar) || IS_UNCONSCIOUS_OR_CRIT(current_avatar)) // We need a viable avatar
 		current_avatar = server.start_new_connection(neo, netsuit)
 		if(isnull(current_avatar))
 			balloon_alert(neo, "out of bandwidth!")
@@ -102,6 +111,7 @@
 		server = server, \
 		pod = src, \
 		help_text = generated_domain.help_text, \
+		copy_body = copy_body, \
 	)
 
 	connected = TRUE
@@ -140,7 +150,7 @@
 		return FALSE
 
 	// Invalid
-	if(occupant != neo || isnull(neo.mind) || neo.stat > SOFT_CRIT || avatar.stat == DEAD)
+	if(occupant != neo || isnull(neo.mind) || IS_UNCONSCIOUS(neo) || avatar.stat == DEAD)
 		return FALSE
 
 	return TRUE

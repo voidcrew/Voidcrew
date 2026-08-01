@@ -15,8 +15,8 @@
 	transmittable = -4
 	level = 6
 	base_message_chance = 3
-	symptom_delay_min = 1
-	symptom_delay_max = 1
+	symptom_delay = 1
+	delay_variation = 0
 	required_organ = ORGAN_SLOT_LUNGS
 	threshold_descs = list(
 		"Resistance 8" = "Additionally regenerates lost blood."
@@ -39,11 +39,11 @@
 	switch(advanced_disease.stage)
 		if(4, 5)
 			infected_mob.losebreath = max(0, infected_mob.losebreath - 4)
-			infected_mob.adjustOxyLoss(-7)
+			infected_mob.adjust_oxy_loss(-7)
 			if(prob(base_message_chance))
 				to_chat(infected_mob, span_notice("You realize you haven't been breathing."))
-			if(regenerate_blood && infected_mob.blood_volume < BLOOD_VOLUME_NORMAL)
-				infected_mob.blood_volume += 1
+			if(regenerate_blood)
+				infected_mob.adjust_blood_volume(1, maximum = BLOOD_VOLUME_NORMAL)
 		else
 			if(prob(base_message_chance))
 				to_chat(infected_mob, span_notice("Your lungs feel great."))

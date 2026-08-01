@@ -12,6 +12,7 @@
 	anchored = TRUE
 	opacity = FALSE
 	density = FALSE
+	custom_materials = list(/datum/material/plastic = SHEET_MATERIAL_AMOUNT * 2, /datum/material/iron = HALF_SHEET_MATERIAL_AMOUNT)
 	/// used in making the icon state
 	var/icon_type = "bathroom"
 	var/open = TRUE
@@ -41,11 +42,11 @@
 	icon_state = "[icon_type]-[open ? "open" : "closed"]"
 	return ..()
 
-/obj/structure/curtain/attackby(obj/item/W, mob/user)
-	if (istype(W, /obj/item/toy/crayon))
-		color = input(user,"","Choose Color",color) as color
-	else
-		return ..()
+/obj/structure/curtain/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(!istype(tool, /obj/item/toy/crayon))
+		return NONE
+	color = tgui_color_picker(user, "", "Choose Color", color)
+	return ITEM_INTERACT_SUCCESS
 
 /obj/structure/curtain/wrench_act(mob/living/user, obj/item/tool)
 	. = ..()
@@ -107,6 +108,7 @@
 	color = null
 	alpha = 255
 	opaque_closed = TRUE
+	custom_materials = list(/datum/material/iron = HALF_SHEET_MATERIAL_AMOUNT)
 
 /obj/structure/curtain/cloth/atom_deconstruct(disassembled = TRUE)
 	new /obj/item/stack/sheet/cloth (loc, 4)

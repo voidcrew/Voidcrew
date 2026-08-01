@@ -19,6 +19,7 @@
 	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT)
 	clumsy_check = FALSE
 	fire_sound = 'sound/items/syringeproj.ogg'
+	can_muzzle_flash = FALSE
 	gun_flags = NOT_A_REAL_GUN
 	var/load_sound = 'sound/items/weapons/gun/shotgun/insert_shell.ogg'
 	var/list/syringes = list()
@@ -51,6 +52,7 @@
 	if(!syringes.len)
 		return
 	chambered.newshot()
+	return ..()
 
 /obj/item/gun/syringe/can_shoot()
 	return syringes.len
@@ -101,22 +103,25 @@
 	return SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN
 
 /obj/item/gun/syringe/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
-	if(istype(tool, /obj/item/reagent_containers/syringe/bluespace))
-		balloon_alert(user, "[tool.name] is too big!")
-		return ITEM_INTERACT_BLOCKING
-
 	if(!istype(tool, /obj/item/reagent_containers/syringe))
 		return NONE
+
+	return attempt_insert_syringe(user, tool)
+
+/obj/item/gun/syringe/proc/attempt_insert_syringe(mob/living/user, obj/item/reagent_containers/syringe/syringe)
+	if(istype(syringe, /obj/item/reagent_containers/syringe/bluespace))
+		balloon_alert(user, "[syringe.name] is too big!")
+		return ITEM_INTERACT_BLOCKING
 
 	if(syringes.len >= max_syringes)
 		balloon_alert(user, "it's full!")
 		return ITEM_INTERACT_BLOCKING
 
-	if(!user.transferItemToLoc(tool, src))
+	if(!user.transferItemToLoc(syringe, src))
 		return ITEM_INTERACT_BLOCKING
 
-	balloon_alert(user, "[tool.name] loaded")
-	syringes += tool
+	balloon_alert(user, "[syringe.name] loaded")
+	syringes += syringe
 	recharge_newshot()
 	update_appearance()
 	playsound(src, load_sound, 40)
@@ -145,6 +150,7 @@
 	pixel_x = 0
 	max_syringes = 6
 	force = 4
+	custom_materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 2.5, /datum/material/glass = HALF_SHEET_MATERIAL_AMOUNT)
 
 /obj/item/gun/syringe/syndicate
 	name = "dart pistol"
@@ -161,7 +167,7 @@
 	base_pixel_x = 0
 	pixel_x = 0
 	force = 2 //Also very weak because it's smaller
-	suppressed = TRUE //Softer fire sound
+	suppressed = SUPPRESSED_QUIET //Softer fire sound
 	can_unsuppress = FALSE //Permanently silenced
 	syringes = list(new /obj/item/reagent_containers/syringe())
 
@@ -223,11 +229,13 @@
 	pixel_x = 0
 	force = 4
 	trigger_guard = TRIGGER_GUARD_ALLOW_ALL
+	custom_materials = list(/datum/material/bamboo = SHEET_MATERIAL_AMOUNT * 10)
+	about_to_shoot_inside_mail_text = "The air in the envelope is rushing out!"
 
 /obj/item/gun/syringe/blowgun/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0)
 	. = ..()
 	if(!.)
 		return
 	visible_message(span_danger("[user] shoots the blowgun!"))
-	user.adjustStaminaLoss(20, updating_stamina = FALSE)
-	user.adjustOxyLoss(20)
+	user.adjust_stamina_loss(20, updating_stamina = FALSE)
+	user.adjust_oxy_loss(20)

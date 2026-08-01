@@ -42,6 +42,13 @@
 	SSaugury.register_doom(src, threat)
 	SpinAnimation()
 	chase_target(target)
+	setup_extra_drops()
+	AddComponent(
+		/datum/component/meteor_combat, \
+		CALLBACK(src, PROC_REF(redirect)), \
+		CALLBACK(src, PROC_REF(make_debris)), \
+		achievement_on = !istype(src, /obj/effect/meteor/sand), \
+	)
 
 /obj/effect/meteor/Destroy()
 	GLOB.meteor_list -= src
@@ -82,9 +89,13 @@
 	if(new_loop)
 		RegisterSignal(new_loop, COMSIG_MOVELOOP_STOP, PROC_REF(on_loop_stopped))
 
+/obj/effect/meteor/proc/setup_extra_drops()
+	return
+
 /obj/effect/meteor/proc/on_loop_stopped(datum/source)
 	SIGNAL_HANDLER
-	qdel(src)
+	if(!move_packet || !length(move_packet.existing_loops))
+		qdel(src)
 
 ///Deals with what happens when we stop moving, IE we die
 /obj/effect/meteor/proc/moved_off_z()
@@ -116,14 +127,14 @@
 /obj/effect/meteor/examine(mob/user)
 	. = ..()
 
+	if((user.mind?.get_skill_level(/datum/skill/athletics) >= SKILL_LEVEL_LEGENDARY))
+		. += span_notice("On second thought, it doesn't look too tough.")
 	check_examine_award(user)
 
-/obj/effect/meteor/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
-	if(I.tool_behaviour == TOOL_MINING)
-		make_debris()
-		qdel(src)
-	else
-		. = ..()
+///Called by component/meteor_combat to send us moving to the edge of the map away from whoever punched us
+/obj/effect/meteor/proc/redirect(mob/athlete)
+	dest = spaceDebrisStartLoc(get_cardinal_dir(athlete, src), z)
+	chase_target(dest)
 
 /obj/effect/meteor/proc/make_debris()
 	for(var/throws = dropamt, throws > 0, throws--)
@@ -158,6 +169,7 @@
 /obj/effect/meteor/proc/check_examine_award(mob/user)
 	if(!(flags_1 & ADMIN_SPAWNED_1) && isliving(user))
 		user.client.give_award(/datum/award/achievement/misc/meteor_examine, user)
+
 
 /**
  * Handles the meteor's interaction with meteor shields.
@@ -330,9 +342,9 @@
 	threat = 15
 	signature = "bluespace flux"
 
-/obj/effect/meteor/bluespace/Bump()
+/obj/effect/meteor/bluespace/Bump(atom/bumped_atom)
 	..()
-	if(prob(35))
+	if(!QDELETED(src) && prob(35))
 		do_teleport(src, get_turf(src), 6, asoundin = 'sound/effects/phasein.ogg', channel = TELEPORT_CHANNEL_BLUESPACE)
 
 /obj/effect/meteor/banana
@@ -376,7 +388,7 @@
 /obj/effect/meteor/emp/meteor_effect()
 	..()
 	playsound(src, 'sound/items/weapons/zapbang.ogg', 100, TRUE, -1)
-	empulse(src, 3, 8)
+	empulse(src, 3, 8, emp_source = src)
 
 //Meaty Ore
 /obj/effect/meteor/meaty
@@ -386,27 +398,18 @@
 	hits = 2
 	heavy = TRUE
 	meteorsound = 'sound/effects/blob/blobattack.ogg'
-	meteordrop = list(/obj/item/food/meat/slab/human, /obj/item/food/meat/slab/human/mutant, /obj/item/organ/heart, /obj/item/organ/lungs, /obj/item/organ/tongue, /obj/item/organ/appendix/)
+	meteordrop = list(/obj/item/food/meat/slab/human, /obj/item/organ/heart, /obj/item/organ/lungs, /obj/item/organ/appendix)
 	var/meteorgibs = /obj/effect/gibspawner/generic
 	threat = 2
 	signature = "culinary material"
 
-/obj/effect/meteor/meaty/Initialize(mapload)
-	for(var/path in meteordrop)
-		if(path == /obj/item/food/meat/slab/human/mutant)
-			meteordrop -= path
-			meteordrop += pick(subtypesof(path))
-
-	for(var/path in meteordrop)
-		if(path == /obj/item/organ/tongue)
-			meteordrop -= path
-			meteordrop += pick(typesof(path))
-	return ..()
+/obj/effect/meteor/meaty/setup_extra_drops()
+	meteordrop += pick(subtypesof(/obj/item/food/meat/slab/human/mutant))
+	meteordrop += pick(typesof(/obj/item/organ/tongue))
 
 /obj/effect/meteor/meaty/make_debris()
 	..()
 	new meteorgibs(get_turf(src))
-
 
 /obj/effect/meteor/meaty/ram_turf(turf/T)
 	if(!isspaceturf(T))
@@ -423,9 +426,8 @@
 	meteorgibs = /obj/effect/gibspawner/xeno
 	signature = "exotic culinary material"
 
-/obj/effect/meteor/meaty/xeno/Initialize(mapload)
+/obj/effect/meteor/meaty/xeno/setup_extra_drops()
 	meteordrop += subtypesof(/obj/item/organ/alien)
-	return ..()
 
 /obj/effect/meteor/meaty/xeno/ram_turf(turf/T)
 	if(!isspaceturf(T))

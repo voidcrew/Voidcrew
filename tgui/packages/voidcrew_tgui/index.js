@@ -3,8 +3,10 @@
  * taken from https://github.com/fulpstation/fulpstation/pull/612
  */
 
-const requireModularInterface = require.context('./interfaces');
-const requireTgInterface = require.context('../tgui/interfaces');
+// voidcrew edit - exclude *.test.tsx from the game bundle (matches upstream routes.tsx)
+const INTERFACE_FILES = /^(?!.*\.test\.(tsx?|jsx?)).*\.(tsx?|jsx?)$/;
+const requireModularInterface = require.context('./interfaces', true, INTERFACE_FILES);
+const requireTgInterface = require.context('../tgui/interfaces', true, INTERFACE_FILES);
 
 const getComponent = (interfacePath, requireInterface) => {
   let esModule = null;

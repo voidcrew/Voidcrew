@@ -67,7 +67,7 @@
 	desc = "A basic megacell that holds 1 MJ of energy."
 	id = "basic_battery"
 	build_type = PROTOLATHE | AWAY_LATHE | AUTOLATHE |MECHFAB
-	materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 12, /datum/material/glass =SMALL_MATERIAL_AMOUNT * 2)
+	materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 1.2, /datum/material/glass =SMALL_MATERIAL_AMOUNT * 2)
 	construction_time = 5 SECONDS
 	build_path = /obj/item/stock_parts/power_store/battery/empty
 	category = list(
@@ -80,7 +80,7 @@
 	desc = "A megacell that holds 10 MJ of energy."
 	id = "high_battery"
 	build_type = PROTOLATHE | AWAY_LATHE | AUTOLATHE | MECHFAB
-	materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 12, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 3)
+	materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 1.2, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 3)
 	construction_time = 5 SECONDS
 	build_path = /obj/item/stock_parts/power_store/battery/high/empty
 	category = list(
@@ -93,7 +93,7 @@
 	desc = "A megacell that holds 20 MJ of energy."
 	id = "super_battery"
 	build_type = PROTOLATHE | AWAY_LATHE | MECHFAB
-	materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 12, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 4)
+	materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 1.2, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 4)
 	construction_time = 5 SECONDS
 	build_path = /obj/item/stock_parts/power_store/battery/super/empty
 	category = list(
@@ -106,7 +106,7 @@
 	desc = "A megacell that holds 30 MJ of energy."
 	id = "hyper_battery"
 	build_type = PROTOLATHE | AWAY_LATHE | MECHFAB
-	materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 12, /datum/material/gold = SMALL_MATERIAL_AMOUNT * 1.5, /datum/material/silver = SMALL_MATERIAL_AMOUNT * 1.5, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 5)
+	materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 1.2, /datum/material/gold = SMALL_MATERIAL_AMOUNT * 1.5, /datum/material/silver = SMALL_MATERIAL_AMOUNT * 1.5, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 5)
 	construction_time = 5 SECONDS
 	build_path = /obj/item/stock_parts/power_store/battery/hyper/empty
 	category = list(
@@ -119,7 +119,7 @@
 	desc = "A megacell that holds 40 MJ of energy."
 	id = "bluespace_battery"
 	build_type = PROTOLATHE | AWAY_LATHE | MECHFAB
-	materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 12, /datum/material/gold = SMALL_MATERIAL_AMOUNT * 1.2, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 6, /datum/material/diamond = SMALL_MATERIAL_AMOUNT * 1.6, /datum/material/titanium =SMALL_MATERIAL_AMOUNT * 3, /datum/material/bluespace =SMALL_MATERIAL_AMOUNT)
+	materials = list(/datum/material/iron = SHEET_MATERIAL_AMOUNT * 1.2, /datum/material/gold = SMALL_MATERIAL_AMOUNT * 1.2, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 6, /datum/material/diamond = SMALL_MATERIAL_AMOUNT * 1.6, /datum/material/titanium =SMALL_MATERIAL_AMOUNT * 3, /datum/material/bluespace =SMALL_MATERIAL_AMOUNT)
 	construction_time = 5 SECONDS
 	build_path = /obj/item/stock_parts/power_store/battery/bluespace/empty
 	category = list(
@@ -212,3 +212,68 @@
 		RND_CATEGORY_STOCK_PARTS + RND_SUBCATEGORY_STOCK_PARTS_TURBINE
 	)
 	departmental_flags = DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design/diode_disk_stamina
+	name = "Electrodisruptive Diode Disk"
+	desc = "A stamina damaging and supermatter crystal healing Diode Disk."
+	id = "diode_disk_stamina"
+	build_type = PROTOLATHE | AWAY_LATHE
+	materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 0.5, /datum/material/glass =SMALL_MATERIAL_AMOUNT, /datum/material/gold =SMALL_MATERIAL_AMOUNT)
+	construction_time = 0.5 SECONDS
+	build_path = /obj/item/emitter_disk/stamina
+	category = list(
+		RND_CATEGORY_EQUIPMENT
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design/diode_disk_healing
+	name = "Bioregenerative Diode Disk"
+	desc = "A living creature healing Diode Disk."
+	id = "diode_disk_healing"
+	build_type = PROTOLATHE | AWAY_LATHE
+	materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 0.5, /datum/material/glass =SMALL_MATERIAL_AMOUNT, /datum/material/silver =SMALL_MATERIAL_AMOUNT) //silver is medical metal. Why? who knows.
+	construction_time = 0.5 SECONDS
+	build_path = /obj/item/emitter_disk/healing
+	category = list(
+		RND_CATEGORY_EQUIPMENT
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design/diode_disk_incendiary
+	name = "Conflagratory Diode Disk"
+	desc = "A high energy incendiary Diode Disk."
+	id = "diode_disk_incendiary"
+	build_type = PROTOLATHE | AWAY_LATHE
+	materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 0.5, /datum/material/glass =SMALL_MATERIAL_AMOUNT, /datum/material/diamond =SMALL_MATERIAL_AMOUNT * 0.5, /datum/material/plasma =SMALL_MATERIAL_AMOUNT * 2)
+	construction_time = 0.5 SECONDS
+	build_path = /obj/item/emitter_disk/incendiary
+	category = list(
+		RND_CATEGORY_EQUIPMENT
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design/diode_disk_sanity
+	name = "Psychosiphoning Diode Disk"
+	desc = "An supermatter comforting creature depressing Diode Disk."
+	id = "diode_disk_sanity"
+	build_type = PROTOLATHE | AWAY_LATHE
+	materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 0.5, /datum/material/glass =SMALL_MATERIAL_AMOUNT, /datum/material/uranium =SMALL_MATERIAL_AMOUNT * 0.5) //Uranium, the metal of love and warmth (from decay heat).
+	construction_time = 0.5 SECONDS
+	build_path = /obj/item/emitter_disk/sanity
+	category = list(
+		RND_CATEGORY_EQUIPMENT
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING
+
+/datum/design/diode_disk_magnetic
+	name = "Magnetogenerative Diode Disk"
+	desc = "A mol absorbing item attracting Diode Disk."
+	id = "diode_disk_magnetic"
+	build_type = PROTOLATHE | AWAY_LATHE
+	materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 0.5, /datum/material/glass =SMALL_MATERIAL_AMOUNT, /datum/material/titanium =SMALL_MATERIAL_AMOUNT * 0.5)
+	construction_time = 0.5 SECONDS
+	build_path = /obj/item/emitter_disk/magnetic
+	category = list(
+		RND_CATEGORY_EQUIPMENT
+	)
+	departmental_flags = DEPARTMENT_BITFLAG_SCIENCE | DEPARTMENT_BITFLAG_ENGINEERING

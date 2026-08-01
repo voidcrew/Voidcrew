@@ -1,4 +1,5 @@
 /mob/living/carbon/alien/adult
+	abstract_type = /mob/living/carbon/alien/adult
 	name = "alien"
 	icon_state = "alien"
 	pass_flags = PASSTABLE
@@ -13,7 +14,7 @@
 	var/alt_icon = 'icons/mob/nonhuman-player/alienleap.dmi' //used to switch between the two alien icon files.
 	var/leap_on_click = 0
 	var/pounce_cooldown = 0
-	var/pounce_cooldown_time = 30
+	var/pounce_cooldown_time = 3 SECONDS
 	death_sound = 'sound/mobs/non-humanoids/hiss/hiss6.ogg'
 	bodyparts = list(
 		/obj/item/bodypart/chest/alien,
@@ -52,10 +53,12 @@ GLOBAL_LIST_INIT(strippable_alien_humanoid_items, create_strippable_list(list(
 
 /mob/living/carbon/alien/adult/resist_grab(moving_resist)
 	if(pulledby.grab_state)
-		visible_message(span_danger("[src] breaks free of [pulledby]'s grip!"), \
-						span_danger("You break free of [pulledby]'s grip!"))
+		visible_message(
+			span_danger("[src] breaks free of [pulledby]'s grip!"),
+			span_danger("You break free of [pulledby]'s grip!"),
+		)
 	pulledby.stop_pulling()
-	. = 0
+	return TRUE
 
 /mob/living/carbon/alien/adult/alien_evolve(mob/living/carbon/alien/adult/new_xeno)
 	drop_all_held_items()
@@ -110,7 +113,7 @@ GLOBAL_LIST_INIT(strippable_alien_humanoid_items, create_strippable_list(list(
 /mob/living/carbon/alien/adult/proc/can_consume(atom/movable/poor_soul)
 	if(!isliving(poor_soul) || pulling != poor_soul)
 		return FALSE
-	if(incapacitated || grab_state < GRAB_AGGRESSIVE || stat != CONSCIOUS)
+	if(incapacitated || grab_state < GRAB_AGGRESSIVE)
 		return FALSE
 	if(get_dir(src, poor_soul) != dir) // Gotta face em 4head
 		return FALSE

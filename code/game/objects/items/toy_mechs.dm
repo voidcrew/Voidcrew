@@ -144,12 +144,12 @@
 /**
  * If you attack a mech with a mech, initiate combat between them
  */
-/obj/item/toy/mecha/attackby(obj/item/user_toy, mob/living/user)
-	if(istype(user_toy, /obj/item/toy/mecha))
-		var/obj/item/toy/mecha/P = user_toy
-		if(check_battle_start(user, P))
-			mecha_brawl(P, user)
-	..()
+/obj/item/toy/mecha/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(!istype(tool, /obj/item/toy/mecha))
+		return NONE
+	var/obj/item/toy/mecha/challenger = tool
+	if(check_battle_start(user, challenger))
+		mecha_brawl(challenger, user)
 
 /**
  * Attack is called from the user's toy, aimed at target(another human), checking for target's toy.
@@ -212,7 +212,7 @@
 /**
  * Starts a battle, toy mech vs player. Player... doesn't win.
  */
-/obj/item/toy/mecha/suicide_act(mob/living/carbon/user)
+/obj/item/toy/mecha/suicide_act(mob/living/user)
 	if(in_combat)
 		to_chat(user, span_notice("[src] is in battle, let it finish first."))
 		return
@@ -226,15 +226,15 @@
 			if(1, 3)
 				SpinAnimation(5, 0)
 				playsound(src, 'sound/vehicles/mecha/mechstep.ogg', 30, TRUE)
-				user.adjustBruteLoss(25)
-				user.adjustStaminaLoss(50)
+				user.adjust_brute_loss(25)
+				user.adjust_stamina_loss(50)
 			if(2)
 				user.SpinAnimation(5, 0)
 				playsound(user, 'sound/items/weapons/smash.ogg', 20, TRUE)
 				combat_health-- //we scratched it!
 			if(4)
 				say(special_attack_cry + "!!")
-				user.adjustStaminaLoss(25)
+				user.adjust_stamina_loss(25)
 
 		if(!combat_sleep(1 SECONDS, null, user))
 			say("PATHETIC.")
@@ -243,7 +243,7 @@
 			return SHAME
 
 	sleep(0.5 SECONDS)
-	user.adjustBruteLoss(450)
+	user.adjust_brute_loss(450)
 
 	in_combat = FALSE
 	say("AN EASY WIN. MY POWER INCREASES.") // steal a soul, become swole

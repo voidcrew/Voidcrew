@@ -409,14 +409,16 @@
 	nodes[nodes.Find(reference)] = null
 	update_appearance()
 
-/obj/machinery/atmospherics/attackby(obj/item/W, mob/user, list/modifiers, list/attack_modifiers)
-	if(istype(W, /obj/item/pipe)) //lets you autodrop
-		var/obj/item/pipe/pipe = W
-		if(user.dropItemToGround(pipe))
-			pipe.set_piping_layer(piping_layer) //align it with us
-			return TRUE
-	else
-		return ..()
+/obj/machinery/atmospherics/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(!istype(tool, /obj/item/pipe)) //lets you autodrop
+		return NONE
+
+	var/obj/item/pipe/pipe = tool
+	if(!user.dropItemToGround(pipe))
+		return ITEM_INTERACT_BLOCKING
+
+	pipe.set_piping_layer(piping_layer) //align it with us
+	return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/atmospherics/wrench_act(mob/living/user, obj/item/I)
 	if(!can_unwrench(user))
@@ -596,6 +598,9 @@
 		break
 
 	if(!target_move)
+		// If we couldn't find a target to move to and we're ventcrawling, try to exit if this vent allows it
+		if(HAS_TRAIT(user, TRAIT_MOVE_VENTCRAWLING) && (vent_movement & VENTCRAWL_ENTRANCE_ALLOWED))
+			user.handle_ventcrawl(src)
 		return
 
 	if(!(target_move.vent_movement & VENTCRAWL_ALLOWED))

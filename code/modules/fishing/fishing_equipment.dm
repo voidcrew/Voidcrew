@@ -13,11 +13,13 @@
 	icon_state = "reel_blue"
 	w_class = WEIGHT_CLASS_SMALL
 	///A bitfield of traits that this fishing line has, checked by fish traits and the minigame.
-	var/fishing_line_traits
+	var/fishing_line_traits = NONE
 	/// Color of the fishing line
 	var/line_color = COLOR_GRAY
 	///The description given to the autowiki
 	var/wiki_desc = "A generic fishing line. <b>Without one, the casting range of the rod will be significantly hampered.</b>"
+	///The amount of range this fishing line adds to casting
+	var/cast_range = 2
 
 /obj/item/fishing_line/reinforced
 	name = "reinforced fishing line reel"
@@ -55,6 +57,7 @@
 	fishing_line_traits = FISHING_LINE_BOUNCY
 	line_color = "#af221f"
 	wiki_desc = "It reduces the progression loss during the fishing minigame."
+	cast_range = 3
 
 /obj/item/fishing_line/sinew
 	name = "fishing sinew"
@@ -92,6 +95,7 @@
 	wiki_desc = "Automatically starts the minigame and helps guide the bait a little. It also spin fishing lures for you without need of an input. \
 		It can also be used to snag in objects from a distance and throw them in your direction.<br>\
 		<b>It requires the Advanced Fishing Technology Node to be researched to be printed.</b>"
+	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 4, /datum/material/gold = SMALL_MATERIAL_AMOUNT * 3, /datum/material/silver = SMALL_MATERIAL_AMOUNT * 3)
 
 /obj/item/fishing_line/auto_reel/Initialize(mapload)
 	. = ..()
@@ -140,6 +144,18 @@
 /obj/item/fishing_line/auto_reel/proc/clear_hitby_signal(obj/item/item)
 	UnregisterSignal(item, COMSIG_MOVABLE_PRE_IMPACT)
 
+/obj/item/fishing_line/bluespace
+	name = "bluespace fishing line"
+	icon_state = "reel_bluespace"
+	desc = "A fishing line capable of phasing through the very fabric of reality, along with any hook, bait or anything attached to it."
+	pass_flags = ALL //It can pass through anything :p
+	fishing_line_traits = FISHING_LINE_PHASE
+	line_color = COLOR_BLUE
+	cast_range = 6
+	wiki_desc = "It can be used to reach distant fishing spots as well as other things that a normal fishing line cannot, with the exception of reinforced walls. <br>\
+		<b>It requires the Marine Utility Node to be researched to be printed.</b>"
+	custom_materials = list(/datum/material/iron = SMALL_MATERIAL_AMOUNT * 4, /datum/material/gold = SMALL_MATERIAL_AMOUNT * 3, /datum/material/bluespace = SMALL_MATERIAL_AMOUNT * 3)
+
 // Hooks
 
 /obj/item/fishing_hook
@@ -148,6 +164,7 @@
 	icon = 'icons/obj/fishing.dmi'
 	icon_state = "hook"
 	w_class = WEIGHT_CLASS_TINY
+	custom_materials = list(/datum/material/titanium = SHEET_MATERIAL_AMOUNT, /datum/material/diamond = SHEET_MATERIAL_AMOUNT * 0.2)
 
 	/// A bitfield of traits that this fishing hook has, checked by fish traits and the minigame
 	var/fishing_hook_traits
@@ -165,7 +182,6 @@
  */
 /obj/item/fishing_hook/proc/get_hook_bonus_additive(fish_type)
 	return FISHING_DEFAULT_HOOK_BONUS_ADDITIVE
-
 
 /**
  * Simple getter proc for hooks to implement special hook bonuses for
@@ -238,13 +254,227 @@
 
 /obj/item/fishing_hook/shiny/proc/on_fishing_rod_slotted(datum/source, obj/item/fishing_rod/rod, slot)
 	SIGNAL_HANDLER
-	rod.material_fish_chance += 15 //Increases the chance of catching a shiny po... erh, material fish
 	ADD_TRAIT(rod, TRAIT_ROD_ATTRACT_SHINY_LOVERS, REF(src))
 
 /obj/item/fishing_hook/shiny/proc/on_fishing_rod_unslotted(datum/source, obj/item/fishing_rod/rod, slot)
 	SIGNAL_HANDLER
-	rod.material_fish_chance -= 15
 	REMOVE_TRAIT(rod, TRAIT_ROD_ATTRACT_SHINY_LOVERS, REF(src))
+
+/obj/item/fishing_hook/anomaly
+	name = "anomalous lure hook"
+	icon_state = "anom"
+	wiki_desc = "You can slot in an active anomaly core to add a variety of effects to the fishing rod. \
+		Most (but not all) cores will have a unique effect."
+	/// The actual anomaly core slotted in
+	var/obj/item/assembly/signaler/anomaly/core
+
+/obj/item/fishing_hook/anomaly/Initialize(mapload)
+	. = ..()
+	RegisterSignal(src, COMSIG_ITEM_FISHING_ROD_SLOTTED, PROC_REF(on_fishing_rod_slotted))
+	RegisterSignal(src, COMSIG_ITEM_FISHING_ROD_UNSLOTTED, PROC_REF(on_fishing_rod_unslotted))
+
+/obj/item/fishing_hook/anomaly/examine(mob/user)
+	. = ..()
+	if(!isnull(core))
+		. += span_info("There's \a [core] slotted into it.")
+
+/obj/item/fishing_hook/anomaly/examine_more(mob/user)
+	. = ..()
+	. += "&bull; A [/obj/item/assembly/signaler/anomaly/dimensional::name] adds a chance for your catch to have its materials altered."
+	. += "&bull; A [/obj/item/assembly/signaler/anomaly/bioscrambler::name] adds a chance for your catch to have its traits or stats altered."
+	. += "&bull; A [/obj/item/assembly/signaler/anomaly/pyro::name] adds a chance for your catch to be cooked."
+	. += "&bull; A [/obj/item/assembly/signaler/anomaly/ectoplasm::name] adds a chance to catch haunted fish."
+	. += "&bull; A [/obj/item/assembly/signaler/anomaly/hallucination::name] adds a chance to cause your catches to randomly grow or shrink in size."
+	. += "&bull; A [/obj/item/assembly/signaler/anomaly/grav::name] reduces the gravity of the bobber, causing it to fall slower."
+	. += "&bull; A [/obj/item/assembly/signaler/anomaly/vortex::name] reduces the bobber's overall bounciness."
+	. += "&bull; Unmentioned cores likely have no unique effect when applied."
+
+/obj/item/fishing_hook/anomaly/proc/on_fishing_rod_slotted(datum/source, obj/item/fishing_rod/rod, slot)
+	SIGNAL_HANDLER
+
+	switch(core?.type)
+		if(/obj/item/assembly/signaler/anomaly/dimensional)
+			RegisterSignal(rod, COMSIG_FISHING_ROD_CAUGHT_FISH, PROC_REF(dimensional_catch_bonus))
+		if(/obj/item/assembly/signaler/anomaly/bioscrambler)
+			RegisterSignal(rod, COMSIG_FISHING_ROD_CAUGHT_FISH, PROC_REF(bioscrambler_catch_bonus))
+		if(/obj/item/assembly/signaler/anomaly/pyro)
+			RegisterSignal(rod, COMSIG_FISHING_ROD_CAUGHT_FISH, PROC_REF(pyro_catch_effect))
+		if(/obj/item/assembly/signaler/anomaly/ectoplasm)
+			RegisterSignal(rod, COMSIG_FISHING_ROD_CAUGHT_FISH, PROC_REF(ectoplasm_catch_effect))
+		if(/obj/item/assembly/signaler/anomaly/hallucination)
+			RegisterSignal(rod, COMSIG_FISHING_ROD_CAUGHT_FISH, PROC_REF(hallucination_catch_effect))
+		if(/obj/item/assembly/signaler/anomaly/grav)
+			rod.gravity_mult *= 0.4
+		if(/obj/item/assembly/signaler/anomaly/vortex)
+			rod.bounciness_mult *= 0.2
+		else
+			rod.balloon_alert_to_viewers("no core effect!", vision_distance = 2)
+
+/obj/item/fishing_hook/anomaly/proc/on_fishing_rod_unslotted(datum/source, obj/item/fishing_rod/rod, slot)
+	SIGNAL_HANDLER
+
+	switch(core?.type)
+		if(/obj/item/assembly/signaler/anomaly/grav)
+			rod.gravity_mult /= 0.4
+		if(/obj/item/assembly/signaler/anomaly/vortex)
+			rod.bounciness_mult /= 0.2
+
+	UnregisterSignal(rod, COMSIG_FISHING_ROD_CAUGHT_FISH)
+
+/obj/item/fishing_hook/anomaly/proc/get_probability_bonuses(obj/item/fishing_rod/rod, mob/living/user)
+	var/skill_modifier = user.mind?.get_skill_level(/datum/skill/fishing) * 1.5
+	var/bait_modifier = 0
+	if(!isnull(rod.bait))
+		if(HAS_TRAIT(rod.bait, TRAIT_GREAT_QUALITY_BAIT))
+			bait_modifier += 16
+		else if(HAS_TRAIT(rod.bait, TRAIT_GOOD_QUALITY_BAIT))
+			bait_modifier += 8
+		else if(HAS_TRAIT(rod.bait, TRAIT_BASIC_QUALITY_BAIT))
+			bait_modifier += 4
+
+	// up to a ~25% bonus
+	return skill_modifier + bait_modifier
+
+/obj/item/fishing_hook/anomaly/proc/dimensional_catch_bonus(obj/item/fishing_rod/rod, obj/item/caught, mob/living/user)
+	SIGNAL_HANDLER
+
+	if(!isfish(caught) || !HAS_TRAIT(caught, TRAIT_FISH_JUST_SPAWNED))
+		return
+
+	if(!prob(25 + get_probability_bonuses(rod, user)))
+		return
+
+	var/obj/item/fish/caught_fish = caught
+	// number of materials applies to the fish
+	var/list/material_amounts = alist(
+		1 = 16,
+		2 = 3,
+		3 = 1,
+	)
+	// generic list of materials we may apply
+	var/list/material_weights = alist(
+		/datum/material/gold = 20,
+		/datum/material/silver = 20,
+		/datum/material/plastic = 10,
+		/datum/material/uranium = 5,
+		/datum/material/plasma = 5,
+	)
+
+	// adds chance of inheriting rod materials
+	if(rod.material_flags & MATERIAL_EFFECTS)
+		for(var/rod_material_type, rod_material_amount in rod.custom_materials)
+			material_weights[rod_material_type] = 40 * (rod_material_amount / values_sum(rod.custom_materials))
+
+	// select a number of materials, then select what materials to apply
+	var/num_materials = pick_weight(material_amounts)
+	var/list/material_setup = list()
+	for(var/i in 1 to num_materials)
+		material_setup[pick_weight(material_weights)] += round(caught_fish.weight * (1 / num_materials))
+
+	caught_fish.set_custom_materials(material_setup)
+
+/obj/item/fishing_hook/anomaly/proc/bioscrambler_catch_bonus(obj/item/fishing_rod/rod, obj/item/caught, mob/living/user)
+	SIGNAL_HANDLER
+
+	if(!isfish(caught) || !HAS_TRAIT(caught, TRAIT_FISH_JUST_SPAWNED) || !prob(25 + get_probability_bonuses(rod, user)))
+		return
+
+	var/list/random_pool = list()
+	for(var/datum/fish_trait/random_trait as anything in GLOB.fish_traits)
+		if(random_trait.bioscramble_weight > 0)
+			random_pool[random_trait.bioscramble_weight] = random_trait
+
+	var/obj/item/fish/caught_fish = caught
+	caught_fish.update_size_and_weight(new_weight = caught_fish.weight * pick(0.6, 0.8, 1, 1.2, 1.4))
+
+	var/datum/fish_trait/random_trait = pick_weight(random_pool)
+	random_trait.apply_to_fish(caught_fish)
+
+/obj/item/fishing_hook/anomaly/proc/pyro_catch_effect(obj/item/fishing_rod/rod, obj/item/caught, mob/living/user)
+	SIGNAL_HANDLER
+
+	if(!isfish(caught) || !HAS_TRAIT(caught, TRAIT_FISH_JUST_SPAWNED) || !prob(85 + get_probability_bonuses(rod, user)))
+		return
+
+	var/alist/fry_times = alist(
+		FRYING_TIME_FRIED = 2,
+		FRYING_TIME_PERFECT = 5,
+		FRYING_TIME_BURNT = 3,
+	)
+
+	caught.AddElement(/datum/element/fried_item, pick_weight(fry_times))
+
+/obj/item/fishing_hook/anomaly/proc/ectoplasm_catch_effect(obj/item/fishing_rod/rod, obj/item/caught, mob/living/user)
+	SIGNAL_HANDLER
+
+	if(!isfish(caught) || !HAS_TRAIT(caught, TRAIT_FISH_JUST_SPAWNED) || !prob(50 + get_probability_bonuses(rod, user)))
+		return
+
+	caught.AddComponent(/datum/component/haunted_item, \
+		haunt_color = "#52336e", \
+		haunt_duration = 6 MINUTES, \
+		spawn_message = span_revenwarning("[caught] slowly rises upward, flopping menacingly in the air..."), \
+		despawn_message = span_revenwarning("[caught] settles to the floor, looking like a normal fish again..."), \
+	)
+
+/obj/item/fishing_hook/anomaly/proc/hallucination_catch_effect(obj/item/fishing_rod/rod, obj/item/caught, mob/living/user)
+	SIGNAL_HANDLER
+
+	if(!isfish(caught) || !HAS_TRAIT(caught, TRAIT_FISH_JUST_SPAWNED) || !prob(50 + get_probability_bonuses(rod, user)))
+		return
+
+	caught.transform = caught.transform.Scale(pick(0.5, 0.75, 1, 1.25, 1.5))
+
+/obj/item/fishing_hook/anomaly/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(!istype(tool, /obj/item/assembly/signaler/anomaly))
+		return NONE
+	if(!isnull(core))
+		balloon_alert(user, "already has a core!")
+		return ITEM_INTERACT_BLOCKING
+	if(user.is_holding(tool))
+		if(!user.transferItemToLoc(tool, src))
+			return ITEM_INTERACT_BLOCKING
+	else
+		tool.forceMove(src)
+
+	core = tool
+	balloon_alert(user, "core installed")
+	playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
+	update_appearance(UPDATE_OVERLAYS)
+	return ITEM_INTERACT_SUCCESS
+
+/obj/item/fishing_hook/anomaly/attack_self(mob/user, modifiers)
+	. = ..()
+	if(.)
+		return .
+	if(isnull(core))
+		return .
+
+	if(user.is_holding(src))
+		user.put_in_hands(core)
+	else
+		core.forceMove(drop_location())
+
+	core = null
+	balloon_alert(user, "core removed")
+	playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
+	update_appearance(UPDATE_OVERLAYS)
+	return TRUE
+
+/obj/item/fishing_hook/anomaly/update_overlays()
+	. = ..()
+	if(isnull(core))
+		return
+
+	var/mutable_appearance/core_base = mutable_appearance(icon, "anom_overlay_base", alpha = src.alpha)
+	. += core_base
+
+	var/mutable_appearance/core_color = mutable_appearance(icon, "anom_overlay_light", alpha = src.alpha)
+	core_color.color = core.core_color
+	. += core_color
+
+	var/mutable_appearance/core_emissive = emissive_appearance(icon, "anom_overlay_light", src, alpha = src.alpha)
+	. += core_emissive
 
 /obj/item/fishing_hook/weighted
 	name = "weighted hook"
@@ -291,6 +521,7 @@
 	desc = "A simple hook carved from sharpened bone"
 	icon_state = "hook_bone"
 	wiki_desc = "A generic fishing hook carved out of sharpened bone. Bone fishing rods come pre-equipped with it."
+	custom_materials = list(/datum/material/bone = SHEET_MATERIAL_AMOUNT)
 
 /obj/item/fishing_hook/stabilized
 	name = "gyro-stabilized hook"
@@ -300,6 +531,7 @@
 	rod_overlay_icon_state = "hook_gyro_overlay"
 	wiki_desc = "It allows you to move both up (left-click) and down (right-click) during the minigame while negating gravity.<br>\
 		<b>It requires the Advanced Fishing Technology Node to be researched to be printed.</b>"
+	custom_materials = list(/datum/material/iron = HALF_SHEET_MATERIAL_AMOUNT, /datum/material/gold = SMALL_MATERIAL_AMOUNT * 3, /datum/material/titanium = SMALL_MATERIAL_AMOUNT * 2)
 
 /obj/item/fishing_hook/stabilized/examine(mob/user)
 	. = ..()
@@ -369,9 +601,7 @@
 	. = ..()
 	ADD_TRAIT(src, TRAIT_CONTRABAND, INNATE_TRAIT)
 	register_context()
-
-	if(SStts.tts_enabled) //This capsule informs you on why it cannot be deployed in a sliiiiightly different way.
-		voice = pick(SStts.available_speakers)
+	voice = SStts.random_tts_voice()
 
 /obj/item/survivalcapsule/fishing/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	if(!held_item || held_item == src)
@@ -468,7 +698,7 @@
 /obj/item/storage/bag/fishing/Initialize(mapload)
 	. = ..()
 
-	AddComponent(/datum/component/adjust_fishing_difficulty, fishing_modifier, ITEM_SLOT_HANDS)
+	AddElement(/datum/element/adjust_fishing_difficulty, fishing_modifier, ITEM_SLOT_HANDS)
 
 /obj/item/storage/bag/fishing/carpskin
 	name = "carpskin fishing bag"
@@ -479,3 +709,187 @@
 	storage_type = /datum/storage/carpskin_bag
 	fishing_modifier = -4
 
+///An item that allows the user to add and remove traits from a fish at their own discretion.
+/obj/item/fish_genegun
+	name = "fish gene-gun"
+	icon = 'icons/obj/fishing.dmi'
+	icon_state = "fish_gun"
+	base_icon_state = "fish_gun"
+	inhand_icon_state = "gun" //Oh, the laziness
+	worn_icon_state = "gun"
+	lefthand_file = 'icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/guns_righthand.dmi'
+	desc = "A device designed to inject or extract traits to and from fish. It takes an empty syringe, which is converted into a fish gene injector once the trait is extracted. Repeated applications may kill the fish."
+	w_class = WEIGHT_CLASS_SMALL
+	force = 7
+	throwforce = 5
+	attack_verb_continuous = list("pricked", "stabbed", "poked")
+	attack_verb_simple = list("prick", "stab", "poke")
+	hitsound = 'sound/items/hypospray.ogg'
+	custom_materials = list(/datum/material/iron = HALF_SHEET_MATERIAL_AMOUNT, /datum/material/glass = SMALL_MATERIAL_AMOUNT * 4, /datum/material/titanium = SMALL_MATERIAL_AMOUNT * 3, /datum/material/diamond = SMALL_MATERIAL_AMOUNT * 2)
+	//This can be an empty syringe or a gene injector
+	var/obj/item/loaded_injector
+
+/obj/item/fish_genegun/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/eyestab)
+
+/obj/item/fish_genegun/examine(mob/user)
+	. = ..()
+
+	if(!loaded_injector)
+		. += span_info("It's currently unloaded. Insert a syringe or fish gene injector.")
+		return
+	var/info =  span_info("It's currently loaded with [loaded_injector]. Use it to ")
+	if(istype(loaded_injector, /obj/item/reagent_containers/syringe))
+		info += span_info("[EXAMINE_HINT("extract")] a gene from a fish or aquatic lifeform.")
+	else
+		info += span_info("[EXAMINE_HINT("inject")] the gene in a fish or aquatic lifeform.")
+	. += info
+
+/obj/item/fish_genegun/update_icon_state()
+	. = ..()
+	icon_state = base_icon_state
+	if(!loaded_injector)
+		return
+	icon_state += istype(loaded_injector, /obj/item/reagent_containers/syringe) ? "_extract" : "_inject"
+
+/obj/item/fish_genegun/attack_self(mob/user)
+	if(!loaded_injector)
+		balloon_alert(user, "gene-gun is empty!")
+		return
+	var/obj/item/loaded = loaded_injector
+	loaded.forceMove(drop_location()) //this will unset the loaded_injector variable
+	if(IsReachableBy(user)) //check that the user can actually reach the loaded injector (telekinesis yadda yadda)
+		user.put_in_hands(loaded)
+	balloon_alert(user, "gene-gun unloaded")
+	playsound(src, 'sound/items/weapons/gun/general/magazine_remove_full.ogg', 30, TRUE)
+
+/obj/item/fish_genegun/Exited(atom/movable/gone)
+	. = ..()
+	if(gone == loaded_injector)
+		loaded_injector = null
+		update_appearance(UPDATE_ICON)
+
+/obj/item/fish_genegun/item_interaction(mob/living/user, obj/item/item, list/modifiers)
+	var/is_syringe = istype(item, /obj/item/reagent_containers/syringe)
+	if(!is_syringe && !istype(item, /obj/item/fish_gene))
+		return NONE
+	if(loaded_injector)
+		to_chat(user, span_warning("[src] already has [loaded_injector] loaded in it."))
+		return ITEM_INTERACT_BLOCKING
+	if(is_syringe && item.reagents.total_volume)
+		to_chat(user, span_warning("[src] cannot accept a syringe that isn't empty. Empty it first."))
+		return ITEM_INTERACT_BLOCKING
+	if(!user.transferItemToLoc(item, src))
+		to_chat(user, span_warning("[item] is stuck to your hands."))
+		return ITEM_INTERACT_BLOCKING
+	to_chat(user, span_info("You load [item] into [src]."))
+	loaded_injector = item
+	update_appearance(UPDATE_ICON)
+	playsound(src, 'sound/items/weapons/gun/general/magazine_insert_full.ogg', 30, TRUE)
+	return ITEM_INTERACT_SUCCESS
+
+/obj/item/fish_genegun/interact_with_atom(obj/interacting_with, mob/living/user, list/modifiers)
+	if(!isfish(interacting_with))
+		return NONE
+	if(!loaded_injector)
+		balloon_alert(user, "gene-gun is empty!")
+		return ITEM_INTERACT_BLOCKING
+	if(interacting_with.flags_1 & HOLOGRAM_1)
+		to_chat(user, span_warning("[interacting_with] is incompatible with [src]"))
+		return ITEM_INTERACT_BLOCKING
+	var/obj/item/fish/fish = interacting_with
+	var/is_syringe = istype(loaded_injector, /obj/item/reagent_containers/syringe)
+	if(fish.status == FISH_DEAD)
+		to_chat(user, span_warning("[src] cannot [is_syringe ? "extract traits from" : "inject traits into"] the deceased [fish.name]."))
+		return ITEM_INTERACT_BLOCKING
+	if(!is_syringe)
+		var/obj/item/fish_gene/injector = loaded_injector
+		return injector.inject_into_fish(fish, user, src)
+
+	if(!length(fish.fish_traits))
+		to_chat(user, span_warning("[fish] has no traits that can be extracted from!"))
+		return ITEM_INTERACT_BLOCKING
+
+	var/list/choices = list()
+	for(var/datum/fish_trait/trait_type as anything in fish.fish_traits)
+		choices[trait_type::name] = trait_type
+	var/choice = tgui_input_list(user, "Choose a trait to extract", "Fish Trait Extraction", choices)
+	if(!choice || QDELETED(fish) || !user.is_holding(src) || !fish.IsReachableBy(user))
+		return ITEM_INTERACT_BLOCKING
+
+	if(!istype(loaded_injector, /obj/item/reagent_containers/syringe)) //The syringe was taken out
+		to_chat(user, span_warning("[src] is not loaded with an syringe to extract fish traits with."))
+		return ITEM_INTERACT_BLOCKING
+	if(fish.status == FISH_DEAD)
+		to_chat(user, span_warning("[src] cannot extract traits from the deceased [fish.name]."))
+		return ITEM_INTERACT_BLOCKING
+	if(!(choices[choice] in fish.fish_traits))
+		to_chat(user, span_warning("[fish] doesn't seem to have the \"[choice]\" trait anymore."))
+		return ITEM_INTERACT_BLOCKING
+
+	QDEL_NULL(loaded_injector)
+	var/datum/fish_trait/trait_type = choices[choice]
+	var/datum/fish_trait/trait = GLOB.fish_traits[trait_type]
+	trait.remove_from_fish(fish)
+	loaded_injector = new /obj/item/fish_gene(src, trait_type)
+
+	user.visible_message(span_notice("[user] injects [fish] with [src]."), span_notice("You extract the \"[trait_type::name]\" trait into [fish]."))
+	if(HAS_TRAIT(fish, TRAIT_FISH_GENEGUNNED))
+		fish.set_status(FISH_DEAD)
+	ADD_TRAIT(fish, TRAIT_FISH_GENEGUNNED, TRAIT_GENERIC)
+	playsound(fish, 'sound/items/hypospray.ogg', 30, TRUE)
+	update_appearance(UPDATE_ICON)
+	return ITEM_INTERACT_SUCCESS
+
+///The injector for the fish trait. Can be used on its own without a fish gene-gun as well.
+/obj/item/fish_gene
+	name = "fish trait injector"
+	icon = 'icons/obj/fishing.dmi'
+	icon_state = "fish_trait_injector"
+	desc = "A single-use injector containing a specific trait that can be used on any (living) fish compatible with it."
+	w_class = WEIGHT_CLASS_TINY
+	inhand_icon_state = "dnainjector"
+	worn_icon_state = "pen"
+	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
+	throw_speed = 3
+	throw_range = 5
+	var/datum/fish_trait/trait_type
+
+/obj/item/fish_gene/Initialize(mapload, datum/fish_trait/trait_type)
+	. = ..()
+	if(trait_type)
+		src.trait_type = trait_type
+	if(src.trait_type)
+		update_appearance(UPDATE_NAME)
+
+/obj/item/fish_gene/update_name()
+	. = ..()
+	name = "fish trait injector ([trait_type::name])"
+
+/obj/item/fish_gene/interact_with_atom(obj/interacting_with, mob/living/user, list/modifiers)
+	if(!isfish(interacting_with))
+		return NONE
+	if(interacting_with.flags_1 & HOLOGRAM_1)
+		to_chat(user, span_warning("[interacting_with] is incompatible with [src]"))
+		return ITEM_INTERACT_BLOCKING
+	var/obj/item/fish/fish = interacting_with
+	if(fish.status == FISH_DEAD)
+		to_chat(user, span_warning("[src] cannot inject traits into the deceased [fish.name]."))
+		return ITEM_INTERACT_BLOCKING
+	return inject_into_fish(fish, user, src)
+
+/obj/item/fish_gene/proc/inject_into_fish(obj/item/fish/fish, mob/living/user, obj/item/tool = src)
+	var/datum/fish_trait/trait = GLOB.fish_traits[trait_type]
+	if(!trait.apply_to_fish(fish, initial = FALSE))
+		to_chat(user, span_warning("You can't inject the \"[trait_type::name]\" trait into [fish]. [fish.p_They()] either [fish.p_have()] it or [fish.p_are()] incompatible with it."))
+		return ITEM_INTERACT_BLOCKING
+	user.visible_message(span_notice("[user] injects [fish] with [tool]."), span_notice("You inject the \"[trait_type::name]\" trait into [fish]."))
+	qdel(src)
+	if(HAS_TRAIT(fish, TRAIT_FISH_GENEGUNNED))
+		fish.set_status(FISH_DEAD)
+	ADD_TRAIT(fish, TRAIT_FISH_GENEGUNNED, TRAIT_GENERIC)
+	playsound(fish, 'sound/items/hypospray.ogg', 25, TRUE)
+	return ITEM_INTERACT_SUCCESS

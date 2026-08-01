@@ -1,4 +1,4 @@
-#define PLATFORM_BASE_MATERIAL_AMOUNT 2000
+#define PLATFORM_BASE_MATERIAL_AMOUNT (2 * SHEET_MATERIAL_AMOUNT)
 
 /// A raised platform you can stand on top of
 /obj/structure/platform
@@ -18,10 +18,11 @@
 	anchored = TRUE
 	armor_type = /datum/armor/half_wall
 	material_flags = MATERIAL_EFFECTS | MATERIAL_AFFECT_STATISTICS
+	custom_materials = list(/datum/material/iron = PLATFORM_BASE_MATERIAL_AMOUNT)
 	/// Icon used for the frame
 	var/frame_icon = 'icons/obj/smooth_structures/platform/frame_faces/window_frame_normal.dmi'
 	/// Material used in our construction
-	var/sheet_type = /obj/item/stack/sheet/iron
+	var/sheet_type = null
 	/// Count of sheets used in our construction
 	var/sheet_amount = 2
 	/// What footstep do we use?
@@ -44,12 +45,12 @@
 
 	register_context()
 	update_appearance(UPDATE_OVERLAYS)
-	AddComponent(/datum/component/climb_walkable)
+	AddElement(/datum/element/climb_walkable)
 	AddElement(/datum/element/climbable)
 	AddElement(/datum/element/elevation, pixel_shift = 12)
 	AddElement(/datum/element/give_turf_traits, string_list(turf_traits))
 	AddElement(/datum/element/footstep_override, footstep = footstep, priority = STEP_SOUND_TABLE_PRIORITY)
-	AddComponent(/datum/component/table_smash)
+	AddElement(/datum/element/table_smash)
 
 /obj/structure/platform/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()

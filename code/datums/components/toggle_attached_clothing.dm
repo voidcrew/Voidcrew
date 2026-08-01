@@ -106,7 +106,7 @@
 		return COMPONENT_ITEM_ACTION_SLOT_INVALID
 
 /// Apply an overlay while the item is not deployed
-/datum/component/toggle_attached_clothing/proc/on_checked_overlays(obj/item/source, list/overlays, mutable_appearance/standing, isinhands, icon_file)
+/datum/component/toggle_attached_clothing/proc/on_checked_overlays(obj/item/source, list/overlays, mutable_appearance/standing, isinhands, icon_file, bodyshape)
 	SIGNAL_HANDLER
 	if (isinhands || currently_deployed)
 		return
@@ -140,7 +140,6 @@
 		parent_gear.icon_state = "[initial(parent_gear.post_init_icon_state) || initial(parent_gear.icon_state)][parent_icon_state_suffix]"
 		parent_gear.worn_icon_state = parent_gear.icon_state
 	parent_gear.update_slot_icon()
-	wearer.update_obscured_slots(deployable.flags_inv)
 	wearer.update_mob_action_buttons()
 
 /// Undeploy gear if it moves slots somehow

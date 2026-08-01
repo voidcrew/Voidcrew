@@ -128,11 +128,11 @@
 		to_chat(user, span_warning("You can't bring yourself to noogie [target]! You don't want to risk harming anyone..."))
 		return
 
-	if(!(target?.get_bodypart(BODY_ZONE_HEAD)) || user.pulling != target || user.grab_state < GRAB_AGGRESSIVE || user.getStaminaLoss() > 80)
+	if(!(target?.get_bodypart(BODY_ZONE_HEAD)) || user.pulling != target || user.grab_state < GRAB_AGGRESSIVE || user.get_stamina_loss() > 80)
 		return FALSE
 
 	var/obj/item/bodypart/head/the_head = target.get_bodypart(BODY_ZONE_HEAD)
-	if(!(the_head.biological_state & BIO_FLESH))
+	if(!(the_head.biological_state & (BIO_FLESH|BIO_CHITIN)))
 		to_chat(user, span_warning("You can't noogie [target], [target.p_they()] [target.p_have()] no skin on [target.p_their()] head!"))
 		return
 
@@ -174,7 +174,7 @@
 	if(!(target?.get_bodypart(BODY_ZONE_HEAD)) || user.pulling != target)
 		return FALSE
 
-	if(user.getStaminaLoss() > 80)
+	if(user.get_stamina_loss() > 80)
 		to_chat(user, span_warning("You're too tired to continue giving [target] a noogie!"))
 		to_chat(target, span_danger("[user] is too tired to continue giving you a noogie!"))
 		return
@@ -190,7 +190,7 @@
 
 	log_combat(user, target, "given a noogie to", addition = "([damage] brute before armor)")
 	target.apply_damage(damage, BRUTE, BODY_ZONE_HEAD)
-	user.adjustStaminaLoss(iteration + 5)
+	user.adjust_stamina_loss(iteration + 5)
 	playsound(get_turf(user), SFX_RUSTLE, 50)
 
 	if(prob(33))
@@ -245,7 +245,7 @@
 		shake_camera(slapped, 2, 2)
 		slapped.Paralyze(2.5 SECONDS)
 		slapped.adjust_confusion(7 SECONDS)
-		slapped.adjustStaminaLoss(40)
+		slapped.adjust_stamina_loss(40)
 	else if(user.zone_selected == BODY_ZONE_HEAD || user.zone_selected == BODY_ZONE_PRECISE_MOUTH)
 		if(user == slapped)
 			user.visible_message(
@@ -255,7 +255,7 @@
 			)
 
 		else
-			if(slapped.IsSleeping() || slapped.IsUnconscious())
+			if(IS_UNCONSCIOUS(slapped))
 				user.visible_message(
 					span_notice("[user] slaps [slapped] in the face, trying to wake [slapped.p_them()] up!"),
 					span_notice("You slap [slapped] in the face, trying to wake [slapped.p_them()] up!"),
@@ -461,7 +461,7 @@
 		return
 	if (user.body_position != LYING_DOWN)
 		return
-	var/obj/item/clothing/shoes/item_to_strip = target_human.shoes
+	var/obj/item/item_to_strip = target_human.shoes
 	user.visible_message(span_warning("[user] starts stealing [target_human]'s [item_to_strip.name]!"), \
 		span_danger("You start stealing [target_human]'s [item_to_strip.name]..."))
 	to_chat(target_human, span_userdanger("[user] starts stealing your [item_to_strip.name]!"))
@@ -616,7 +616,7 @@
 
 /obj/projectile/kiss/proc/try_fluster(mob/living/living_target)
 	// people with the social anxiety quirk can get flustered when hit by a kiss
-	if(!HAS_TRAIT(living_target, TRAIT_ANXIOUS) || (living_target.stat > SOFT_CRIT) || living_target.is_blind())
+	if(!HAS_TRAIT(living_target, TRAIT_ANXIOUS) || IS_UNCONSCIOUS_OR_CRIT(living_target) || living_target.is_blind())
 		return
 	if(HAS_TRAIT(living_target, TRAIT_FEARLESS) || prob(50)) // 50% chance for it to apply, also immune while on meds
 		return
@@ -724,7 +724,7 @@
 
 	// From here on, no message
 	suppressed = SUPPRESSED_VERY
-	if(!(kisser.mind && HAS_TRAIT_FROM(target, TRAIT_FOOD_CHEF_MADE, REF(kisser.mind))))
+	if(!(kisser.mind && HAS_TRAIT_FROM(target, TRAIT_HANDMADE, REF(kisser.mind))))
 		to_chat(firer, span_warning("Wait a second, you didn't make this [target.name]. How can you claim it as your own?"))
 		return
 	if(target.reagents.has_reagent(/datum/reagent/love))

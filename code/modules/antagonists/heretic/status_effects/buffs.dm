@@ -24,6 +24,7 @@
 	owner.alpha = initial(owner.alpha)
 	owner.pass_flags &= ~(PASSCLOSEDTURF | PASSGLASS | PASSGRILLE | PASSMACHINE | PASSSTRUCTURE | PASSTABLE | PASSMOB | PASSDOORS | PASSVEHICLE)
 	owner.forceMove(location)
+	owner.apply_status_effect(/datum/status_effect/crucible_soul_cooldown)
 	location = null
 
 /datum/status_effect/crucible_soul/get_examine_text()
@@ -43,6 +44,14 @@
 	target = active_effect
 	qdel(target)
 
+/datum/status_effect/crucible_soul_cooldown
+	id = "Crucible Soul Cooldown"
+	status_type = STATUS_EFFECT_UNIQUE
+	duration = 2 MINUTES
+	alert_type = /atom/movable/screen/alert/status_effect/crucible_soul/cooldown
+	show_duration = TRUE
+	remove_on_fullheal = TRUE
+
 // DUSK AND DAWN
 /datum/status_effect/duskndawn
 	id = "Blessing of Dusk and Dawn"
@@ -53,12 +62,10 @@
 
 /datum/status_effect/duskndawn/on_apply()
 	ADD_TRAIT(owner, TRAIT_XRAY_VISION, TRAIT_STATUS_EFFECT(id))
-	owner.update_sight()
 	return TRUE
 
 /datum/status_effect/duskndawn/on_remove()
 	REMOVE_TRAIT(owner, TRAIT_XRAY_VISION, TRAIT_STATUS_EFFECT(id))
-	owner.update_sight()
 
 // WOUNDED SOLDIER
 /datum/status_effect/marshal
@@ -78,7 +85,7 @@
 	if(!iscarbon(owner))
 		return
 	var/mob/living/carbon/drinker = owner
-	for(var/obj/item/bodypart/potentially_wounded as anything in drinker.bodyparts)
+	for(var/obj/item/bodypart/potentially_wounded as anything in drinker.get_bodyparts())
 		for(var/datum/wound/found_wound as anything in potentially_wounded.wounds)
 			found_wound.remove_wound()
 	if(length(drinker.get_missing_limbs()))
@@ -91,9 +98,9 @@
 		return
 	var/mob/living/carbon/carbie = owner
 
-	carbie.adjustBruteLoss(-0.5 * seconds_between_ticks, updating_health = FALSE)
-	carbie.adjustFireLoss(-0.5 * seconds_between_ticks, updating_health = FALSE)
-	for(var/BP in carbie.bodyparts)
+	carbie.adjust_brute_loss(-0.5 * seconds_between_ticks, updating_health = FALSE)
+	carbie.adjust_fire_loss(-0.5 * seconds_between_ticks, updating_health = FALSE)
+	for(var/BP in carbie.get_bodyparts())
 		var/obj/item/bodypart/part = BP
 		for(var/W in part.wounds)
 			var/datum/wound/wound = W
@@ -107,17 +114,21 @@
 				if(WOUND_SEVERITY_CRITICAL)
 					heal_amt = 6
 			var/datum/wound_pregen_data/pregen_data = GLOB.all_wound_pregen_data[wound.type]
-			if (pregen_data.wounding_types_valid(list(WOUND_BURN)))
-				carbie.adjustFireLoss(-heal_amt)
+			if (pregen_data.wounding_types_valid(WOUND_BURN))
+				carbie.adjust_fire_loss(-heal_amt)
 			else
-				carbie.adjustBruteLoss(-heal_amt)
-				carbie.blood_volume += carbie.blood_volume >= BLOOD_VOLUME_NORMAL ? 0 : heal_amt*3
+				carbie.adjust_brute_loss(-heal_amt)
+				carbie.adjust_blood_volume(heal_amt * 3, maximum = BLOOD_VOLUME_NORMAL)
 
 
 /atom/movable/screen/alert/status_effect/crucible_soul
 	name = "Blessing of Crucible Soul"
 	desc = "You phased through reality. You are halfway to your final destination..."
 	icon_state = "crucible"
+
+/atom/movable/screen/alert/status_effect/crucible_soul/cooldown
+	desc = "You have recently phased through reality. You must wait before you can do so once more."
+	icon_state = "crucible_cooldown"
 
 /atom/movable/screen/alert/status_effect/duskndawn
 	name = "Blessing of Dusk and Dawn"
@@ -216,6 +227,7 @@
 		return
 
 	SEND_SIGNAL(src, COMSIG_BLADE_BARRIER_TRIGGERED)
+	SEND_SIGNAL(source, COMSIG_MOB_BLADE_BARRIER_TRIGGERED, src)
 	ADD_TRAIT(source, TRAIT_BEING_BLADE_SHIELDED, TRAIT_STATUS_EFFECT(id))
 	addtimer(TRAIT_CALLBACK_REMOVE(source, TRAIT_BEING_BLADE_SHIELDED, TRAIT_STATUS_EFFECT(id)), 0.1 SECONDS)
 
@@ -285,7 +297,6 @@
 /datum/status_effect/caretaker_refuge/on_apply()
 	animate(owner, alpha = 45, time = 0.5 SECONDS)
 	owner.set_density(FALSE)
-	RegisterSignal(owner, SIGNAL_REMOVETRAIT(TRAIT_ALLOW_HERETIC_CASTING), PROC_REF(on_focus_lost))
 	RegisterSignal(owner, COMSIG_MOB_BEFORE_SPELL_CAST, PROC_REF(prevent_spell_usage))
 	RegisterSignal(owner, COMSIG_ATOM_HOLYATTACK, PROC_REF(nullrod_handler))
 	RegisterSignal(owner, COMSIG_CARBON_CUFF_ATTEMPTED, PROC_REF(prevent_cuff))
@@ -297,7 +308,6 @@
 	owner.remove_traits(caretaking_traits, TRAIT_STATUS_EFFECT(id))
 	owner.alpha = initial(owner.alpha)
 	owner.density = initial(owner.density)
-	UnregisterSignal(owner, SIGNAL_REMOVETRAIT(TRAIT_ALLOW_HERETIC_CASTING))
 	UnregisterSignal(owner, COMSIG_MOB_BEFORE_SPELL_CAST)
 	UnregisterSignal(owner, COMSIG_ATOM_HOLYATTACK)
 	UnregisterSignal(owner, COMSIG_CARBON_CUFF_ATTEMPTED)
@@ -315,11 +325,6 @@
 	playsound(get_turf(owner), 'sound/effects/curse/curse1.ogg', 80, TRUE)
 	owner.visible_message(span_warning("[weapon] repels the haze around [owner]!"))
 	owner.remove_status_effect(type)
-
-/datum/status_effect/caretaker_refuge/proc/on_focus_lost()
-	SIGNAL_HANDLER
-	to_chat(owner, span_danger("Without a focus, your refuge weakens and dissipates!"))
-	qdel(src)
 
 /datum/status_effect/caretaker_refuge/proc/no_strip(atom/source, mob/user, obj/item/equipping)
 	SIGNAL_HANDLER
@@ -345,13 +350,34 @@
 	alert_type = /atom/movable/screen/alert/status_effect/moon_grasp_hide
 
 /datum/status_effect/moon_grasp_hide/on_apply()
-	owner.add_traits(list(TRAIT_UNKNOWN, TRAIT_SILENT_FOOTSTEPS), TRAIT_STATUS_EFFECT(id))
+	owner.add_traits(list(TRAIT_UNKNOWN_APPEARANCE, TRAIT_UNKNOWN_VOICE, TRAIT_SILENT_FOOTSTEPS), TRAIT_STATUS_EFFECT(id))
 	return TRUE
 
 /datum/status_effect/moon_grasp_hide/on_remove()
-	owner.remove_traits(list(TRAIT_UNKNOWN, TRAIT_SILENT_FOOTSTEPS), TRAIT_STATUS_EFFECT(id))
+	owner.remove_traits(list(TRAIT_UNKNOWN_APPEARANCE, TRAIT_UNKNOWN_VOICE, TRAIT_SILENT_FOOTSTEPS), TRAIT_STATUS_EFFECT(id))
 
 /atom/movable/screen/alert/status_effect/moon_grasp_hide
 	name = "Blessing of The Moon"
 	desc = "The Moon clouds their vision, as the sun always has yours."
 	icon_state = "moon_hide"
+
+// Last Resort
+/datum/status_effect/heretic_lastresort
+	id = "heretic_lastresort"
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_lastresort
+	duration = 12 SECONDS
+	status_type = STATUS_EFFECT_REPLACE
+	tick_interval = STATUS_EFFECT_NO_TICK
+
+/atom/movable/screen/alert/status_effect/heretic_lastresort
+	name = "Last Resort"
+	desc = "Your head spins, heart pumping as fast as it can!"
+	icon_state = "lastresort"
+
+/datum/status_effect/heretic_lastresort/on_apply()
+	ADD_TRAIT(owner, TRAIT_IGNORESLOWDOWN, TRAIT_STATUS_EFFECT(id))
+	to_chat(owner, span_userdanger("You won't give up that easily!"))
+	return TRUE
+
+/datum/status_effect/heretic_lastresort/on_remove()
+	REMOVE_TRAIT(owner, TRAIT_IGNORESLOWDOWN, TRAIT_STATUS_EFFECT(id))

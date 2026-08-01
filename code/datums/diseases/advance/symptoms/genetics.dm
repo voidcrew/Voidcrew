@@ -18,8 +18,9 @@
 	level = 6
 	severity = 4
 	base_message_chance = 50
-	symptom_delay_min = 30
-	symptom_delay_max = 60
+	symptom_delay = 45
+	symptom_cure = /datum/reagent/acetaldehyde
+	cure_color = "orange"
 	var/excludemuts = NONE
 	var/no_reset = FALSE
 	var/mutadone_proof = NONE
@@ -37,8 +38,7 @@
 	if(A.totalStealth() >= 5) //only give them bad mutations
 		excludemuts = POSITIVE
 	if(A.totalStageSpeed() >= 10) //activate dormant mutations more often at around 1.5x the pace
-		symptom_delay_min = 20
-		symptom_delay_max = 40
+		symptom_delay = 30
 	if(A.totalResistance() >= 8) //mutadone won't save you now
 		mutadone_proof = (NEGATIVE | MINOR_NEGATIVE)
 	if(A.totalResistance() >= 14) //one does not simply escape Nurgle's grasp
@@ -57,7 +57,9 @@
 			var/datum/mutation/mutation = carbon.get_random_mutation_path((NEGATIVE|MINOR_NEGATIVE|POSITIVE) & ~excludemuts)
 			if(!mutation)
 				return
-			carbon.dna.add_mutation((mutation.quality & mutadone_proof) ? MUTATION_SOURCE_GENE_SYMPTOM : MUTATION_SOURCE_ACTIVATED)
+			carbon.dna.add_mutation(mutation, (mutation.quality & mutadone_proof) ? MUTATION_SOURCE_GENE_SYMPTOM : MUTATION_SOURCE_ACTIVATED)
+			var/datum/mutation/given_mutation = carbon.dna.get_mutation(mutation)
+			given_mutation?.scrambled = TRUE
 
 /datum/symptom/genetic_mutation/End(datum/disease/advance/A)
 	. = ..()

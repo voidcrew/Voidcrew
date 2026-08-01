@@ -46,8 +46,7 @@
 
 /mob/living/basic/ghost/Initialize(mapload)
 	. = ..()
-	var/static/list/death_loot = list(/obj/item/ectoplasm)
-	AddElement(/datum/element/death_drops, death_loot)
+	AddElement(/datum/element/death_drops, /obj/item/ectoplasm)
 	AddElement(/datum/element/simple_flying)
 	AddElement(/datum/element/ai_retaliate)
 
@@ -66,7 +65,7 @@
 /mob/living/basic/ghost/proc/give_identity()
 	if(random_identity)
 		ghost_hairstyle = random_hairstyle() //This only gives us the hairstyle name, not the icon_state (which we need).
-		ghost_hair_color = "#[random_color()]"
+		ghost_hair_color = random_hair_color()
 
 		if(prob(50)) //Only a chance at also getting facial hair
 			ghost_facial_hairstyle = random_facial_hairstyle()
@@ -95,18 +94,12 @@
 				name = "ghost of [pick(GLOB.first_names_female)] [pick(GLOB.last_names)]"
 
 /datum/ai_controller/basic_controller/ghost
+	behavior_tree_json = "code/modules/mob/living/basic/space_fauna/ghost.bt.json"
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic,
 	)
 
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = /datum/idle_behavior/idle_random_walk
-
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/target_retaliate,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
-	)
 
 /// Weaker variant of ghosts. Meant to be summoned in swarms via the ectoplasmic anomaly and associated ghost portal.
 /mob/living/basic/ghost/swarm

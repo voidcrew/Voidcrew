@@ -2,7 +2,7 @@ GENERAL_PROTECT_DATUM(/datum/controller/subsystem/admin_verbs)
 
 SUBSYSTEM_DEF(admin_verbs)
 	name = "Admin Verbs"
-	flags = SS_NO_FIRE
+	ss_flags = SS_NO_FIRE
 	init_stage = INITSTAGE_EARLY
 	/// A list of all admin verbs indexed by their type.
 	var/list/datum/admin_verb/admin_verbs_by_type = list()
@@ -132,6 +132,8 @@ SUBSYSTEM_DEF(admin_verbs)
 
 	// refresh their verbs
 	admin_visibility_flags[admin.ckey] ||= list()
+	if(admin.is_localhost())
+		admin_visibility_flags[admin.ckey] |= list(ADMIN_VERB_VISIBLITY_FLAG_LOCALHOST)
 	for(var/datum/admin_verb/verb_singleton as anything in get_valid_verbs_for_admin(admin))
 		verb_singleton.assign_to_client(admin)
 	admin.init_verbs()

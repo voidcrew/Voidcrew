@@ -16,9 +16,10 @@
 	transmittable = 2
 	level = 4
 	severity = 1
+	symptom_cure = /datum/reagent/barbers_aid
+	cure_color = "yellow"
 	base_message_chance = 50
-	symptom_delay_min = 45
-	symptom_delay_max = 90
+	symptom_delay = 67.5
 
 /datum/symptom/shedding/Activate(datum/disease/advance/disease)
 	. = ..()

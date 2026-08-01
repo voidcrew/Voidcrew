@@ -72,7 +72,7 @@
 /datum/market_item/misc/hat_stabilizer
 	name = "MOD Hat Stabilizer Module"
 	desc = "Don't sacrifice style for substance with this module! Hats not included."
-	item = /obj/item/mod/module/tanner
+	item = /obj/item/mod/module/hat_stabilizer
 	price_min = CARGO_CRATE_VALUE * 2
 	price_max = CARGO_CRATE_VALUE * 3
 	stock_max = 2
@@ -221,3 +221,32 @@
 	. = ..()
 	if(.)
 		availability_prob *= 0.5
+
+/datum/market_item/misc/tricktrickcigarettes
+	name = "Trick Trick Cigarettes"
+	desc = "Cigarettes filled with flash powder. Makes for a fun prank!"
+	item = /obj/item/storage/fancy/cigarettes/flash_powder
+	price_min = PAYCHECK_CREW
+	price_max = PAYCHECK_CREW * 3
+	stock_max = 3
+	availability_prob = 25
+
+/datum/market_item/misc/nutrient_pump
+	name = "Nutriment Pump Implant Plus Plus Plus"
+	desc = "We turned this thing up as far as it'll go, and then some. Guaranteed to keep you well fed at all times."
+	price_min = CARGO_CRATE_VALUE * 2
+	price_max = CARGO_CRATE_VALUE * 3
+	item = /obj/item/organ/cyberimp/chest/nutriment/black_market
+	stock_max = 2
+	availability_prob = 60
+
+/datum/market_item/misc/hexacrete
+	name = "Jerrycan of Hexacrete"
+	desc = "Need to make a blacksite in a jiffy? Skip the fuss with this 200u jerrycan of hexacrete!"
+	item = /obj/item/reagent_containers/cup/jerrycan/hexacrete
+
+	price_min = CARGO_CRATE_VALUE * 3
+	price_max = CARGO_CRATE_VALUE * 5
+	stock_min = 2
+	stock_max = 5
+	availability_prob = 100

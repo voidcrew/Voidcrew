@@ -36,7 +36,7 @@
 	if (QDELETED(src))
 		return
 	var/old = 0
-	if(suspect.gloves && istype(suspect.gloves, /obj/item/clothing))
+	if(suspect.gloves && isclothing(suspect.gloves))
 		var/obj/item/clothing/gloves/suspect_gloves = suspect.gloves
 		old = GET_ATOM_BLOOD_DNA_LENGTH(suspect_gloves)
 		if(suspect_gloves.transfer_blood > 1) //bloodied gloves transfer blood to touched objects
@@ -112,7 +112,7 @@
 	if (QDELETED(src))
 		return
 	. = ..()
-	if (isnull(blood_DNA_to_add))
+	if (isnull(blood_DNA_to_add) || !length(blood_DNA_to_add))
 		return .
 	if (!islist(blood_DNA_to_add))
 		CRASH("add_blood_DNA on [src] ([type]) has been passed a non-list blood_DNA_to_add ([blood_DNA_to_add])!")
@@ -200,7 +200,7 @@
 
 	var/dirty_hands = !!(target_flags & (ITEM_SLOT_GLOVES|ITEM_SLOT_HANDS))
 	var/dirty_feet = !!(target_flags & ITEM_SLOT_FEET)
-	var/slots_to_bloody = target_flags & ~check_covered_slots()
+	var/slots_to_bloody = target_flags & ~hidden_slots_to_inventory_slots(covered_slots)
 	var/list/all_worn = get_equipped_items()
 	for(var/obj/item/thing as anything in all_worn)
 		if(thing.slot_flags & slots_to_bloody)

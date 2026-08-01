@@ -4,6 +4,9 @@
 	icon = 'icons/turf/walls.dmi'
 	explosive_resistance = 50
 	rust_resistance = RUST_RESISTANCE_ABSOLUTE
+	turf_flags = IS_SOLID | NO_RUST
+	baseturfs = /turf/open/indestructible/plating
+
 
 /turf/closed/indestructible/TerraformTurf(path, new_baseturf, flags, defer_change = FALSE, ignore_air = FALSE)
 	return
@@ -17,12 +20,6 @@
 
 /turf/closed/indestructible/singularity_act()
 	return
-
-/turf/closed/indestructible/attackby(obj/item/attacking_item, mob/user, list/modifiers)
-	if(istype(attacking_item, /obj/item/poster) && Adjacent(user))
-		return place_poster(attacking_item, user)
-
-	return ..()
 
 /turf/closed/indestructible/oldshuttle
 	name = "strange shuttle wall"
@@ -137,12 +134,6 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 	smoothing_groups = SMOOTH_GROUP_WALLS + SMOOTH_GROUP_CLOSED_TURFS + SMOOTH_GROUP_SYNDICATE_WALLS
 	canSmoothWith = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS
 
-/turf/closed/indestructible/syndicate/nodiagonal
-	icon = 'icons/turf/walls/plastitanium_wall.dmi'
-	icon_state = "map-shuttle_nd"
-	base_icon_state = "plastitanium_wall"
-	smoothing_flags = SMOOTH_BITMASK
-
 /turf/closed/indestructible/riveted/uranium
 	icon = 'icons/turf/walls/uranium_wall.dmi'
 	icon_state = "uranium_wall-0"
@@ -160,7 +151,8 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 	canSmoothWith = SMOOTH_GROUP_PLASTINUM_WALLS
 
 /turf/closed/indestructible/riveted/plastinum/nodiagonal
-	icon_state = "map-shuttle_nd"
+	icon = MAP_SWITCH('icons/turf/walls/plastinum_wall.dmi', 'icons/turf/walls/misc_wall.dmi')
+	icon_state = MAP_SWITCH("plastinum_wall-0", "plastinum_nd")
 	smoothing_flags = SMOOTH_BITMASK
 
 /turf/closed/indestructible/wood
@@ -249,34 +241,59 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 /turf/closed/indestructible/fakedoor/engineering
 	icon = 'icons/obj/doors/airlocks/station/engineering.dmi'
 
+///These should look like normal rocks, however they cannot be mined
 /turf/closed/indestructible/rock
 	name = "dense rock"
 	desc = "An extremely densely-packed rock, most mining tools or explosives would never get through this."
-	icon = 'icons/turf/mining.dmi'
-	icon_state = "rock"
+	icon = MAP_SWITCH('icons/turf/smoothrocks.dmi', 'icons/turf/mining.dmi')
+	icon_state = "rock_indestructible"
+	base_icon_state = "smoothrocks"
+	smoothing_groups = SMOOTH_GROUP_CLOSED_TURFS + SMOOTH_GROUP_MINERAL_WALLS
+	canSmoothWith = SMOOTH_GROUP_MINERAL_WALLS
+	smoothing_flags = SMOOTH_BITMASK | SMOOTH_BORDER
+
+	// We're a BIG wall, larger then 32x32, so we need to be on the game plane
+	// Otherwise we'll draw under shit in weird ways
+	plane = GAME_PLANE
+	layer = EDGED_TURF_LAYER
+
+	// This is static
+	// Done like this to avoid needing to make it dynamic and save cpu time
+	// 4 to the left, 4 down
+	transform = MAP_SWITCH(TRANSLATE_MATRIX(-4, -4), matrix())
+
+	/// Wall plane overlay icon state
+	var/wall_icon_state = "rock"
+
+/turf/closed/indestructible/rock/Initialize(mapload)
+	. = ..()
+	add_large_wall_overlay('icons/turf/mining.dmi', wall_icon_state)
 
 /turf/closed/indestructible/rock/snow
-	name = "mountainside"
-	desc = "An extremely densely-packed rock, sheeted over with centuries worth of ice and snow."
-	icon = 'icons/turf/walls.dmi'
-	icon_state = "snowrock"
+	name = "mountain bedrock"
+	icon = MAP_SWITCH('icons/turf/walls/mountain_wall.dmi', 'icons/turf/mining.dmi')
+	icon_state = "mountainrock_indestructible"
+	base_icon_state = "mountain_wall"
+	wall_icon_state = "mountainrock"
+	canSmoothWith = SMOOTH_GROUP_CLOSED_TURFS
 	bullet_sizzle = TRUE
 	bullet_bounce_sound = null
 
-/turf/closed/indestructible/rock/snow/ice
-	name = "iced rock"
+/turf/closed/indestructible/rock/snow/ore
+	name = "iced_rock"
 	desc = "Extremely densely-packed sheets of ice and rock, forged over the years of the harsh cold."
-	icon = 'icons/turf/walls.dmi'
-	icon_state = "icerock"
-
-/turf/closed/indestructible/rock/snow/ice/ore
-	icon = 'icons/turf/walls/icerock_wall.dmi'
-	icon_state = "icerock_wall-0"
+	icon = MAP_SWITCH('icons/turf/walls/icerock_wall.dmi', 'icons/turf/mining.dmi')
+	icon_state = "icerock_indestructible"
 	base_icon_state = "icerock_wall"
+	wall_icon_state = "icerock"
 	smoothing_flags = SMOOTH_BITMASK | SMOOTH_BORDER
 	canSmoothWith = SMOOTH_GROUP_CLOSED_TURFS
-	pixel_x = -4
-	pixel_y = -4
+
+/turf/closed/indestructible/ice
+	name = "permafrost"
+	desc = "Extremely densely-packed, never-melting sheets of ice, somehow impervious to most mining tools."
+	icon = 'icons/turf/mining.dmi'
+	icon_state = "permafrost"
 
 /turf/closed/indestructible/paper
 	name = "thick paper wall"
