@@ -147,3 +147,124 @@
 	// Reschedule while themes remain; a failed placement retries next interval
 	if(length(spawned_vestige_templates) < VESTIGE_MAX_PER_ROUND && length(candidates) > (spawn_turf ? 1 : 0))
 		addtimer(CALLBACK(src, PROC_REF(spawn_next_vestige_ruin)), VESTIGE_SPAWN_INTERVAL)
+
+// =========================================================================
+// SHARED BEHAVIOR-TREE PIECES
+// =========================================================================
+
+/**
+ * VOIDCREW: the vestige bosses' ability rotation, as a behavior-tree subtree.
+ *
+ * Upstream replaced planning_subtrees/SelectBehaviors with behavior trees, so
+ * the three boss rotations (warframe, oracle, mutant) that used to be
+ * /datum/ai_planning_subtree types live here instead. The mapping is 1:1:
+ *
+ *   old `return` (nothing)                -> BT_FAILURE  (fall through to melee)
+ *   old `return SUBTREE_RETURN_FINISH_PLANNING` -> BT_RUNNING (nothing else this tick)
+ *   old `controller.queue_behavior(/datum/ai_behavior/targeted_mob_ability, ...)`
+ *                                         -> the cast leaf below, ticked directly
+ *
+ * queue_behavior no longer exists; a leaf performs its action itself. So the
+ * pick writes the chosen action to BB_GENERIC_ACTION and then hands the tick to
+ * `root`, which is a targeted_mob_ability leaf built from the descriptor below.
+ */
+/datum/bt_node/subtree/vestige_ability_rotation
+	/// Spends whatever the rotation picked. resolve_node_children() builds `root` from this.
+	behavior_nodes = list(
+		BT_DESC_TYPE = /datum/bt_node/ai_behavior/targeted_mob_ability,
+		"ability_key" = BB_GENERIC_ACTION,
+		"target_key" = BB_CURRENT_TARGET,
+	)
+	/// The boss this rotation belongs to. A pawn of any other type is not ours.
+	var/pawn_type = /mob/living/basic
+	/// Blackboard keys of the ability pool.
+	var/list/kit
+	/// Blackboard key holding the key we picked last, so we never pick it twice running.
+	var/last_ability_key
+	/// It will not spend a cooldown on somebody further away than this.
+	var/engagement_range = 9
+
+/datum/bt_node/subtree/vestige_ability_rotation/tick(datum/ai_controller/controller, seconds_per_tick)
+	if(isnull(root))
+		return BT_FAILURE
+	// Mid-cast. Let the leaf finish and keep everything else off the tick.
+	if(root.has_active_descendants())
+		return fire(controller, seconds_per_tick)
+
+	var/mob/living/pawn = controller.pawn
+	if(!istype(pawn, pawn_type))
+		return BT_FAILURE
+	// Committed to a move: no walking, no swinging, nothing queued on top.
+	if(is_locked(controller))
+		return BT_RUNNING
+	if(pawn.stat != STABLE)
+		return BT_FAILURE
+
+	var/atom/quarry = controller.blackboard[BB_CURRENT_TARGET]
+	if(QDELETED(quarry))
+		return BT_FAILURE
+	if(isliving(quarry))
+		var/mob/living/living_quarry = quarry
+		if(living_quarry.stat == DEAD)
+			return BT_FAILURE
+	if(get_dist(pawn, quarry) > engagement_range)
+		return BT_FAILURE
+
+	// Built fresh rather than filtered in place: removing from the list you are
+	// iterating skips entries in DM, and the pool is four long anyway.
+	var/last_used = isnull(last_ability_key) ? null : controller.blackboard[last_ability_key]
+	var/list/options = list()
+	for(var/ability_key as anything in kit)
+		if(ability_key == last_used)
+			continue
+		var/datum/action/cooldown/ability = controller.blackboard[ability_key]
+		if(QDELETED(ability) || !ability.IsAvailable())
+			continue
+		var/weight = weight_for(controller, ability_key, quarry)
+		if(weight <= 0)
+			continue
+		options[ability_key] = weight
+	if(!length(options))
+		return BT_FAILURE
+
+	var/chosen_key = pick_weight(options)
+	if(!isnull(last_ability_key))
+		controller.set_blackboard_key(last_ability_key, chosen_key)
+	controller.set_blackboard_key(BB_GENERIC_ACTION, controller.blackboard[chosen_key])
+	return fire(controller, seconds_per_tick)
+
+/**
+ * Runs the cast leaf. Anything but an outright refusal ends the tick the way
+ * the old SUBTREE_RETURN_FINISH_PLANNING did; a refusal falls through so the
+ * melee subtree behind us still gets its turn.
+ */
+/datum/bt_node/subtree/vestige_ability_rotation/proc/fire(datum/ai_controller/controller, seconds_per_tick)
+	return (root.tick(controller, seconds_per_tick) == BT_FAILURE) ? BT_FAILURE : BT_RUNNING
+
+/// TRUE while the boss is locked into a move and nothing at all may happen.
+/datum/bt_node/subtree/vestige_ability_rotation/proc/is_locked(datum/ai_controller/controller)
+	return FALSE
+
+/// Weight this ability gets in the pool. 0 or less drops it entirely.
+/datum/bt_node/subtree/vestige_ability_rotation/proc/weight_for(datum/ai_controller/controller, ability_key, atom/quarry)
+	return 1
+
+/**
+ * VOIDCREW: the old /datum/ai_planning_subtree/attack_obstacle_in_path, as the
+ * leaf upstream broke it into. Placed at controller root level, it fails
+ * instantly when the path is clear, so the melee subtree behind it still runs.
+ */
+/datum/bt_node/ai_behavior/attack_obstructions/vestige
+	target_key = BB_CURRENT_TARGET
+
+/**
+ * VOIDCREW: upstream's hostile combat with the idle wander switched off.
+ *
+ * The three arena bosses ran `idle_behavior = null` — they hold position until
+ * somebody walks in. simple_hostile_combat falls back to random_walk when it
+ * has no target, so bind that subtree's walk chance to zero. The key is the
+ * binding id from simple_hostile_combat.bt.json ("walk_chance"); if upstream
+ * re-saves that tree with a new id this silently reverts to wandering.
+ */
+/datum/bt_node/subtree/simple_hostile_combat/vestige_stationary
+	bindings = list("bp3p5vvb" = 0)

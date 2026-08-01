@@ -1,44 +1,28 @@
-/datum/surgery/advanced/experimental_dissection
-	name = "Dissection"
-	requires_tech = FALSE
-	replaced_by = /datum/surgery/advanced/experimental_dissection/advanced
+// VOIDCREW ADDITION: researched upgrade tiers for upstream's experimental dissection.
+// Each tier is faster than the last and yields far more research points.
+//
+// Ported from the pre-2026 surgery API (/datum/surgery + /datum/surgery_step) to the
+// operation API (/datum/surgery_operation). Old -> new mapping used here:
+//   requires_tech = TRUE   -> operation_flags | OPERATION_LOCKED
+//   requires_tech = FALSE  -> operation_flags without OPERATION_LOCKED
+//   replaced_by            -> replaced_by (unchanged, same semantics)
+//   steps + step time      -> the operation's own time (the step list is gone)
 
-/datum/surgery/advanced/experimental_dissection/advanced
-	name = "Advanced Dissection"
-	requires_tech = TRUE
-	replaced_by = /datum/surgery/advanced/experimental_dissection/superior
-	steps = list(
-		/datum/surgery_step/incise,
-		/datum/surgery_step/retract_skin,
-		/datum/surgery_step/experimental_dissection/advanced,
-		/datum/surgery_step/close,
-	)
+/datum/surgery_operation/basic/dissection
+	// VOIDCREW EDIT: the fork's base dissection needs no research (old API: requires_tech = FALSE).
+	// This is upstream's flag set minus OPERATION_LOCKED - resync if upstream changes the base flags.
+	operation_flags = OPERATION_ALWAYS_FAILABLE | OPERATION_MORBID | OPERATION_IGNORE_CLOTHES
+	replaced_by = /datum/surgery_operation/basic/dissection/advanced
 
-/datum/surgery/advanced/experimental_dissection/superior
-	name = "Superior Dissection"
-	requires_tech = TRUE
-	replaced_by = /datum/surgery/advanced/experimental_dissection/elite
-	steps = list(
-		/datum/surgery_step/incise,
-		/datum/surgery_step/retract_skin,
-		/datum/surgery_step/experimental_dissection/superior,
-		/datum/surgery_step/close,
-	)
-
-/datum/surgery/advanced/experimental_dissection/elite
-	name = "Elite Dissection"
-	requires_tech = TRUE
-	steps = list(
-		/datum/surgery_step/incise,
-		/datum/surgery_step/retract_skin,
-		/datum/surgery_step/experimental_dissection/elite,
-		/datum/surgery_step/close,
-	)
-
-/datum/surgery_step/experimental_dissection/advanced
+/datum/surgery_operation/basic/dissection/advanced
+	name = "advanced dissection"
+	rnd_name = "Advanced Experimental Dissection"
+	rnd_desc = "An advanced form of experimental dissection that generates a higher level of research points at R&D consoles."
+	operation_flags = parent_type::operation_flags | OPERATION_LOCKED
+	replaced_by = /datum/surgery_operation/basic/dissection/superior
 	time = 8 SECONDS
 
-/datum/surgery_step/experimental_dissection/advanced/check_value(mob/living/target)
+/datum/surgery_operation/basic/dissection/advanced/check_value(mob/living/target)
 	var/cost = 1000
 
 	if(ishuman(target))
@@ -61,10 +45,15 @@
 
 	return cost
 
-/datum/surgery_step/experimental_dissection/superior
+/datum/surgery_operation/basic/dissection/superior
+	name = "superior dissection"
+	rnd_name = "Superior Experimental Dissection"
+	rnd_desc = "An advanced form of experimental dissection that generates a higher level of research points at R&D consoles."
+	operation_flags = parent_type::operation_flags | OPERATION_LOCKED
+	replaced_by = /datum/surgery_operation/basic/dissection/elite
 	time = 4 SECONDS
 
-/datum/surgery_step/experimental_dissection/superior/check_value(mob/living/target)
+/datum/surgery_operation/basic/dissection/superior/check_value(mob/living/target)
 	var/cost = 1500
 
 	if(ishuman(target))
@@ -87,10 +76,14 @@
 
 	return cost
 
-/datum/surgery_step/experimental_dissection/elite
+/datum/surgery_operation/basic/dissection/elite
+	name = "elite dissection"
+	rnd_name = "Elite Experimental Dissection"
+	rnd_desc = "An advanced form of experimental dissection that generates a higher level of research points at R&D consoles."
+	operation_flags = parent_type::operation_flags | OPERATION_LOCKED
 	time = 1 SECONDS
 
-/datum/surgery_step/experimental_dissection/elite/check_value(mob/living/target)
+/datum/surgery_operation/basic/dissection/elite/check_value(mob/living/target)
 	var/cost = 2000
 
 	if(ishuman(target))

@@ -64,7 +64,7 @@ def parse_defines(repo_root: Path) -> dict:
     pending: list[tuple[str, str]] = []
     seen_names: set[str] = set(defines)
     defines_dir = repo_root / 'code'
-    for fpath in sorted(defines_dir.rglob('*.dm')):
+    for fpath in sorted(list(defines_dir.rglob('*.dm')) + list((repo_root / 'voidcrew').rglob('*.dm'))):  # VOIDCREW EDIT - fork defines resolve too
         for line in fpath.read_text(encoding='utf-8', errors='ignore').splitlines():
             line = line.strip()
             if not line.startswith('#define '):
@@ -265,6 +265,7 @@ def main() -> int:
 
     code_dirs = [
         repo_root / 'code',
+        repo_root / 'voidcrew', # VOIDCREW EDIT - fork behavior trees live here too
     ]
 
     for code_dir in code_dirs:

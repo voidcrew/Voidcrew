@@ -433,9 +433,7 @@
 	// Make lights spark and schedule lightning strikes
 	for(var/obj/machinery/light/light as anything in chosen_lights)
 		light.visible_message(span_boldwarning("[light] suddenly flares brightly and begins to spark!"))
-		var/datum/effect_system/spark_spread/light_sparks = new /datum/effect_system/spark_spread()
-		light_sparks.set_up(4, 0, light)
-		light_sparks.start()
+		do_sparks(4, FALSE, light)
 		light.flicker(10)
 		// Schedule the lightning strike from light
 		addtimer(CALLBACK(src, PROC_REF(electrical_storm_shock), light, intensity), rand(1 SECONDS, 2 SECONDS))
@@ -572,7 +570,7 @@
 		var/datum/gas_mixture/air = target.return_air()
 		if(air)
 			air.assert_gas(/datum/gas/plasma)
-			air.gases[/datum/gas/plasma][MOLES] += 0.5
+			air.moles[/datum/gas/plasma] += 0.5
 
 /**
  * Gets a random turf inside the ship for targeting effects
@@ -667,7 +665,7 @@
 			continue
 		if(!crew.client)
 			continue
-		if(!crew.can_hear())
+		if(HAS_TRAIT(crew, TRAIT_DEAF)) //VOIDCREW: upstream deleted /mob/proc/can_hear(); it was exactly this check
 			continue
 		// Default to 50 if preference not set
 		var/pref_volume = safe_read_pref(crew.client, /datum/preference/numeric/volume/sound_ai_vox) || 50

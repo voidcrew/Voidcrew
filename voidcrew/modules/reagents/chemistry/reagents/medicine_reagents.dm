@@ -147,7 +147,7 @@
 /datum/reagent/medicine/soulus/on_mob_life(mob/living/carbon/M)
 	M.adjust_fire_loss(-0.1*REM, 0)
 	M.adjust_brute_loss(-0.1*REM, 0)
-	M.adjustCloneLoss(clone_dam *REM, 0)
+	M.adjust_tox_loss(clone_dam *REM, 0) // VOIDCREW EDIT: was adjustCloneLoss - clone damage no longer exists upstream, necrosis reads closest as toxin damage
 	..()
 
 /datum/reagent/medicine/soulus/overdose_process(mob/living/M)

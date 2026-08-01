@@ -1,7 +1,8 @@
 /obj/machinery/power/shuttle_engine/connect_to_shuttle(mapload, obj/docking_port/mobile/port, obj/docking_port/stationary/dock)
 	if(!port)
 		return FALSE
-	connected_ship_ref = WEAKREF(port)
+	// VOIDCREW EDIT: upstream replaced the connected_ship_ref weakref with a hard connected_ship ref.
+	connected_ship = port
 	port.engine_list |= src
 	port.current_engine_power += engine_power
 	if(mapload)

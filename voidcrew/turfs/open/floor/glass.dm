@@ -19,7 +19,7 @@
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
 	clawfootstep = FOOTSTEP_HARD_CLAW
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = FALSE
+	tiled_turf = FALSE
 
 /turf/open/indestructible/glass/Initialize(mapload)
 	icon_state = "" // the smooth overlays carry the look, same as /turf/open/floor/glass

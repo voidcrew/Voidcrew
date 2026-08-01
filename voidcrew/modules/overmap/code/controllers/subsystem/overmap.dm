@@ -15,7 +15,7 @@ SUBSYSTEM_DEF(overmap)
 	name = "Overmap"
 	wait = 10 // Fires every 1 second (10 deciseconds)
 	init_order = INIT_ORDER_OVERMAP
-	flags = NONE
+	ss_flags = NONE
 	// LOBBY is in here so the roundstart planets can generate while players are still
 	// picking characters - see prebuild_roundstart_planets()
 	runlevels = RUNLEVEL_LOBBY | RUNLEVEL_SETUP | RUNLEVEL_GAME

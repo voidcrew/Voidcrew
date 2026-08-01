@@ -178,12 +178,20 @@
 	var/turf/below_where = get_turf(where)
 	if(!below_where)
 		return
-	var/datum/effect_system/fluid_spread/smoke/chem/gross_smoke = new()
-	gross_smoke.chemholder.add_reagent(/datum/reagent/toxin/polonium, 10)
-	gross_smoke.chemholder.add_reagent(/datum/reagent/toxin/mutagen, 10)
-	gross_smoke.attach(below_where)
-	gross_smoke.set_up(2, holder = where, location = below_where, silent = TRUE)
-	gross_smoke.start()
+	// VOIDCREW EDIT: upstream replaced fluid_spread's set_up()/start() pair with constructor args
+	// and a chemholder that is filled from a reagents datum, so the reagents have to be declared
+	// up front. do_chem_smoke() is the wrapper that builds them; silent = TRUE keeps this off the
+	// admin smoke log exactly as the old silent set_up() did.
+	do_chem_smoke(
+		range = 2,
+		holder = where,
+		location = below_where,
+		reagent_type = list(
+			/datum/reagent/toxin/polonium = 10,
+			/datum/reagent/toxin/mutagen = 10,
+		),
+		silent = TRUE,
+	)
 	playsound(below_where, 'sound/effects/smoke.ogg', 50, vary = TRUE)
 
 /// Signal catcher for the tool interactions that can cure the leak.

@@ -64,8 +64,8 @@
 /proc/item_export_value(obj/item/checked_item)
 	if(!istype(checked_item))
 		return 0
-	if(!length(GLOB.exports_list))
-		setupExports()
+	// VOIDCREW EDIT: setupExports() is gone - GLOB.exports_list is a GLOBAL_LIST_INIT built by
+	// init_Exports() (code/_globalvars/lists/cargo.dm), so it is always populated on first read.
 	for(var/datum/export/export as anything in GLOB.exports_list)
 		if(!export.applies_to(checked_item, FALSE, EXPORT_MARKET_STATION))
 			continue

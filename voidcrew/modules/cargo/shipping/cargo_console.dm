@@ -161,9 +161,10 @@
 		var/datum/supply_pack/pack = SSshuttle.supply_packs[pack_id]
 		if(pack.group != group)
 			continue
-		if((pack.hidden && !(obj_flags & EMAGGED)) || (pack.special && !pack.special_enabled) || pack.drop_pod_only)
+		// VOIDCREW: upstream collapsed the per-pack booleans into the order_flags bitfield
+		if(((pack.order_flags & ORDER_INVISIBLE) && !(obj_flags & EMAGGED)) || ((pack.order_flags & ORDER_SPECIAL) && !(pack.order_flags & ORDER_SPECIAL_ENABLED)) || (pack.order_flags & ORDER_POD_ONLY))
 			continue
-		if(pack.contraband && !contraband)
+		if((pack.order_flags & ORDER_CONTRABAND) && !contraband)
 			continue
 		var/obj/item/first_item = length(pack.contains) > 0 ? pack.contains[1] : null
 		packs += list(list(
@@ -173,9 +174,9 @@
 			"desc" = pack.desc || pack.name,
 			"first_item_icon" = first_item?.icon,
 			"first_item_icon_state" = first_item?.icon_state,
-			"goody" = pack.goody,
+			"goody" = !!(pack.order_flags & ORDER_GOODY),
 			"access" = pack.access,
-			"contraband" = pack.contraband,
+			"contraband" = !!(pack.order_flags & ORDER_CONTRABAND),
 			"small_item" = FALSE,
 			"contains" = pack.get_contents_ui_data(),
 		))
@@ -469,7 +470,7 @@
 	requisition_paper.name = "requisition form"
 	var/requisition_text = "<h2>[station_name()] Supply Requisition</h2>"
 	requisition_text += "<hr/>"
-	requisition_text += "Time of Order: [station_time_timestamp()]<br/>"
+	requisition_text += "Time of Order: [round_timestamp()]<br/>"
 	for(var/order_name in cart_list)
 		var/datum/supply_order/order = cart_list[order_name]["order"]
 		requisition_text += "[cart_list[order_name]["amount"]] [order.pack.name]("

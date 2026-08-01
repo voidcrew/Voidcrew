@@ -333,7 +333,7 @@
 	inert = planted
 	if(planted)
 		ADD_TRAIT(src, TRAIT_IMMOBILIZED, ORACLE_TRAIT)
-		ai_controller?.CancelActions()
+		ai_controller?.cancel_current_plan()
 		return
 	REMOVE_TRAIT(src, TRAIT_IMMOBILIZED, ORACLE_TRAIT)
 
@@ -474,13 +474,15 @@
 	)
 
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = null
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/target_retaliate,
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/oracle_rotation,
-		/datum/ai_planning_subtree/attack_obstacle_in_path,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree/oracle,
+	// The old planning_subtrees list one-for-one. It holds position rather than
+	// wandering (what `idle_behavior = null` used to buy) via the stationary
+	// combat subtree, whose walk chance is bound to zero.
+	behavior_nodes = list(
+		/datum/bt_node/subtree/pick_retaliate_target,
+		/datum/bt_node/subtree/basic_find_target,
+		/datum/bt_node/subtree/vestige_ability_rotation/oracle,
+		/datum/bt_node/ai_behavior/attack_obstructions/vestige,
+		/datum/bt_node/subtree/simple_hostile_combat/vestige_stationary,
 	)
 
 /**
@@ -501,64 +503,30 @@
 	set_blackboard_key(BB_ORACLE_ANTIPHON, antiphon)
 	set_blackboard_key(BB_ORACLE_CALLED_WORD, called_word)
 
-/datum/ai_planning_subtree/oracle_rotation
-	/// It will not spend a word on somebody this far away — the Antiphon falls
-	/// short and the rest are simply walked out of.
-	var/engagement_range = 8
-
-/datum/ai_planning_subtree/oracle_rotation/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/basic/vestige_oracle/oracle = controller.pawn
-	if(!istype(oracle))
-		return
-	if(oracle.inert)
-		// Planted for the Last Line. No casting, no swinging, no shuffling.
-		return SUBTREE_RETURN_FINISH_PLANNING
-	if(oracle.stat != STABLE)
-		return
-
-	var/atom/quarry = controller.blackboard[BB_CURRENT_TARGET]
-	if(QDELETED(quarry))
-		return
-	if(isliving(quarry))
-		var/mob/living/living_quarry = quarry
-		if(living_quarry.stat == DEAD)
-			return
-	if(get_dist(oracle, quarry) > engagement_range)
-		return
-
-	// Built fresh rather than filtered in place: removing from the list you are
-	// iterating skips entries in DM, and the pool is four long anyway.
-	var/static/list/kit = list(
+/**
+ * The rotation is an even pick across the whole kit, so every weight is 1 and
+ * pick_weight() lands on the same distribution the old pick(options) did.
+ */
+/datum/bt_node/subtree/vestige_ability_rotation/oracle
+	pawn_type = /mob/living/basic/vestige_oracle
+	kit = list(
 		BB_ORACLE_WORD_OF_FALLING,
 		BB_ORACLE_ANTIPHON,
 		BB_ORACLE_CALLED_WORD,
 		BB_ORACLE_LAST_LINE,
 	)
-	var/last_used = controller.blackboard[BB_ORACLE_LAST_ABILITY]
-	var/list/options = list()
-	for(var/ability_key as anything in kit)
-		if(ability_key == last_used)
-			continue
-		var/datum/action/cooldown/ability = controller.blackboard[ability_key]
-		if(!ability?.IsAvailable())
-			continue
-		options += ability_key
-	if(!length(options))
-		return
+	last_ability_key = BB_ORACLE_LAST_ABILITY
+	/// It will not spend a word on somebody this far away — the Antiphon falls
+	/// short and the rest are simply walked out of.
+	engagement_range = 8
 
-	var/chosen_key = pick(options)
-	controller.set_blackboard_key(BB_ORACLE_LAST_ABILITY, chosen_key)
-	controller.queue_behavior(/datum/ai_behavior/targeted_mob_ability, chosen_key, BB_CURRENT_TARGET)
-	return SUBTREE_RETURN_FINISH_PLANNING
-
-/// It does not swing while it is planted.
-/datum/ai_planning_subtree/basic_melee_attack_subtree/oracle
-
-/datum/ai_planning_subtree/basic_melee_attack_subtree/oracle/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+// Planted for the Last Line: no casting, no swinging, no shuffling. Returning
+// BT_RUNNING here ends the tick before the obstacle and melee nodes behind this
+// one are reached, which is what the old basic_melee_attack_subtree/oracle
+// override bought, so that override is no longer carried separately.
+/datum/bt_node/subtree/vestige_ability_rotation/oracle/is_locked(datum/ai_controller/controller)
 	var/mob/living/basic/vestige_oracle/oracle = controller.pawn
-	if(istype(oracle) && oracle.inert)
-		return
-	return ..()
+	return istype(oracle) && oracle.inert
 
 // =========================================================================
 // THE KIT

@@ -762,8 +762,9 @@
 /**
  * Chewer AI: the hivebot toolkit re-ordered around demolition. Same dumb
  * bump-movement — which is the point: a blocked chewer chews (the stock
- * attack_obstacle_in_path subtree smashes dense objects in its way), so every
- * wall the weaver lays is time bought, not a maze solved. The targeting
+ * obstacle-smashing branch of the combat tree below attacks dense objects in
+ * its way), so every wall the weaver lays is time bought, not a maze solved.
+ * The targeting
  * strategy below keeps the egg valid as a held target (the generic finder
  * only scans mobs and hostile machines; the egg assigns itself).
  */
@@ -772,11 +773,11 @@
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic/vestige_comb_chewer,
 	)
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = /datum/idle_behavior/idle_random_walk
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/attack_obstacle_in_path,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
+	// The old planning_subtrees list, which upstream now ships as one tree:
+	// find a target, smash what is in the way, swing, and wander when idle
+	// (that last part is what idle_behavior used to be).
+	behavior_nodes = list(
+		/datum/bt_node/subtree/simple_hostile_obstacles_combat,
 	)
 
 /**
@@ -784,12 +785,13 @@
  * target by the clutch itself (find_potential_targets only scans mobs and
  * GLOB.hostile_machines), so this strategy's job is to keep that assignment
  * VALID: both the target-finder's keep-current-target check and the melee
- * behavior's re-validation run through can_attack. (The Roost's brood carp
- * proved this pattern.)
+ * behavior's re-validation run through is_valid_target (upstream's rename of
+ * can_attack; it gained a trailing controller argument). (The Roost's brood
+ * carp proved this pattern.)
  */
 /datum/targeting_strategy/basic/vestige_comb_chewer
 
-/datum/targeting_strategy/basic/vestige_comb_chewer/can_attack(mob/living/living_mob, atom/the_target, vision_range)
+/datum/targeting_strategy/basic/vestige_comb_chewer/is_valid_target(mob/living/living_mob, atom/the_target, vision_range, datum/ai_controller/controller = null)
 	if(istype(the_target, /obj/structure/vestige_comb_egg))
 		if(QDELETED(the_target) || living_mob.z != the_target.z)
 			return FALSE

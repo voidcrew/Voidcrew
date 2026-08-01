@@ -5,10 +5,10 @@
 	icon_state = "sandbottle"
 	volume = 50
 	list_reagents = list(/datum/reagent/medicine/molten_bubbles/sand = 50)
-	reagent_flags = null //Cap's on
+	initial_reagent_flags = NONE //Cap's on
 
 /obj/item/reagent_containers/cup/glass/bottle/sarsaparilla/attack_self(mob/user)
-	if(is_drainable()) // reagents.flags is the live state; reagent_flags is only the init value
+	if(is_drainable()) // reagents.flags is the live state; initial_reagent_flags is only the init value
 		return ..()
 	playsound(src, SFX_CAN_OPEN, 30, TRUE) // the original whitesands bottle sound never shipped in this fork
 	user.visible_message(span_notice("[user] takes the cap off [src]."), span_notice("You take the cap off [src]."))

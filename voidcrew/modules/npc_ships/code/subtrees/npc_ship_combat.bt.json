@@ -1,0 +1,237 @@
+{
+	"dm_type": "/datum/bt_node/subtree/npc_ship_combat",
+	"type": "decorator",
+	"decorator": "/datum/bt_node/decorator/npc_ship_flying",
+	"child": {
+		"type": "selector",
+		"children": [
+			{
+				"type": "decorator",
+				"decorator": "/datum/bt_node/decorator/npc_combat_state/negotiating",
+				"child": {
+					"type": "leaf",
+					"behavior": "/datum/bt_node/ai_behavior/npc_ship/negotiation_hold"
+				}
+			},
+			{
+				"type": "decorator",
+				"decorator": "/datum/bt_node/decorator/npc_combat_state/hailing",
+				"child": {
+					"type": "parallel",
+					"children": [
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/hailing"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/check_disengage"
+						}
+					]
+				}
+			},
+			{
+				"type": "decorator",
+				"decorator": "/datum/bt_node/decorator/npc_combat_state/siphoning",
+				"child": {
+					"type": "parallel",
+					"children": [
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/use_interdictor"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/activate_siphon"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/check_disengage"
+						}
+					]
+				}
+			},
+			{
+				"type": "decorator",
+				"decorator": "/datum/bt_node/decorator/npc_combat_state/retreating",
+				"child": {
+					"type": "leaf",
+					"behavior": "/datum/bt_node/ai_behavior/npc_ship/retreat_escape"
+				}
+			},
+			{
+				"type": "decorator",
+				"decorator": "/datum/bt_node/decorator/npc_combat_state/boarding",
+				"child": {
+					"type": "parallel",
+					"children": [
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/use_interdictor"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/boarding_wave_monitor"
+						}
+					]
+				}
+			},
+			{
+				"type": "decorator",
+				"decorator": "/datum/bt_node/decorator/npc_combat_state/boarding_cooldown",
+				"child": {
+					"type": "parallel",
+					"children": [
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/use_interdictor"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/boarding_cooldown_monitor"
+						}
+					]
+				}
+			},
+			{
+				"type": "decorator",
+				"decorator": "/datum/bt_node/decorator/npc_combat_state/boss_phase",
+				"child": {
+					"type": "parallel",
+					"children": [
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/use_interdictor"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/boss_phase_monitor"
+						}
+					]
+				}
+			},
+			{
+				"type": "decorator",
+				"decorator": "/datum/bt_node/decorator/npc_combat_state/disabled",
+				"child": {
+					"type": "leaf",
+					"behavior": "/datum/bt_node/ai_behavior/npc_ship/disabled"
+				}
+			},
+			{
+				"type": "decorator",
+				"decorator": "/datum/bt_node/decorator/npc_combat_state/disengaging",
+				"child": {
+					"type": "leaf",
+					"behavior": "/datum/bt_node/ai_behavior/npc_ship/disengage"
+				}
+			},
+			{
+				"type": "decorator",
+				"decorator": "/datum/bt_node/decorator/npc_combat_state/scanning",
+				"child": {
+					"type": "parallel",
+					"children": [
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/scan_wealth"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/check_disengage"
+						}
+					]
+				}
+			},
+			{
+				"type": "decorator",
+				"decorator": "/datum/bt_node/decorator/npc_combat_state/idle",
+				"child": {
+					"type": "leaf",
+					"behavior": "/datum/bt_node/ai_behavior/npc_ship/scan_threats"
+				}
+			},
+			{
+				"type": "decorator",
+				"decorator": "/datum/bt_node/decorator/npc_combat_state/engaging",
+				"child": {
+					"type": "parallel",
+					"children": [
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/scan_threats"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/acquire_lock"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/check_weapons"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/check_disengage"
+						}
+					]
+				}
+			},
+			{
+				"type": "decorator",
+				"decorator": "/datum/bt_node/decorator/npc_combat_state/combat",
+				"child": {
+					"type": "parallel",
+					"children": [
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/scan_threats"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/composite/npc_combat_action",
+							"children": [
+								{
+									"type": "leaf",
+									"behavior": "/datum/bt_node/ai_behavior/npc_ship/fire_weapons"
+								},
+								{
+									"type": "leaf",
+									"behavior": "/datum/bt_node/ai_behavior/npc_ship/fire_boarding_pods"
+								},
+								{
+									"type": "leaf",
+									"behavior": "/datum/bt_node/ai_behavior/npc_ship/use_interdictor"
+								},
+								{
+									"type": "leaf",
+									"behavior": "/datum/bt_node/ai_behavior/npc_ship/activate_siphon"
+								}
+							]
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/check_weapons"
+						},
+						{
+							"type": "leaf",
+							"behavior": "/datum/bt_node/ai_behavior/npc_ship/check_disengage"
+						}
+					]
+				}
+			},
+			{
+				"type": "parallel",
+				"children": [
+					{
+						"type": "leaf",
+						"behavior": "/datum/bt_node/ai_behavior/npc_ship/scan_threats"
+					},
+					{
+						"type": "leaf",
+						"behavior": "/datum/bt_node/ai_behavior/npc_ship/check_disengage"
+					}
+				]
+			}
+		]
+	}
+}

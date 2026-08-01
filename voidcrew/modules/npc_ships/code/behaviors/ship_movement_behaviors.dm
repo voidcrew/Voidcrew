@@ -12,13 +12,13 @@
  * Helper proc to check if a turf has an obstacle.
  * Uses locate() for O(1) lookup instead of iterating.
  */
-/datum/ai_behavior/npc_ship/proc/turf_has_obstacle(turf/T)
+/datum/bt_node/ai_behavior/npc_ship/proc/turf_has_obstacle(turf/T)
 	return locate(/obj/structure/overmap/event) in T
 
 /**
  * Checks if there's an obstacle in a given direction within scan range.
  */
-/datum/ai_behavior/npc_ship/proc/direction_has_obstacle(turf/start, direction)
+/datum/bt_node/ai_behavior/npc_ship/proc/direction_has_obstacle(turf/start, direction)
 	var/turf/check_turf = start
 	for(var/i in 1 to NPC_SHIP_OBSTACLE_SCAN_RANGE)
 		check_turf = get_step(check_turf, direction)
@@ -32,7 +32,7 @@
  * Checks if moving in a direction would take the ship out of its spawn zone.
  * Returns TRUE if the direction is safe (stays in zone), FALSE if it would leave.
  */
-/datum/ai_behavior/npc_ship/proc/direction_stays_in_zone(turf/start, direction, spawn_zone)
+/datum/bt_node/ai_behavior/npc_ship/proc/direction_stays_in_zone(turf/start, direction, spawn_zone)
 	if(!spawn_zone)
 		return TRUE  // No zone restriction
 	var/turf/next_turf = get_step(start, direction)
@@ -46,7 +46,7 @@
  * Used by patrol, orbit, and return_home behaviors.
  * If completely stuck, will prioritize obstacle avoidance over zone (return_to_zone will fix it).
  */
-/datum/ai_behavior/npc_ship/proc/get_zone_safe_direction(obj/structure/overmap/ship/ship, direction, spawn_zone)
+/datum/bt_node/ai_behavior/npc_ship/proc/get_zone_safe_direction(obj/structure/overmap/ship/ship, direction, spawn_zone)
 	var/turf/start_loc = get_turf(ship)
 	if(!start_loc)
 		return direction
@@ -80,10 +80,10 @@
  * Discrete movement: moves one tile per tick (no momentum/physics).
  * Falls back to roaming if circuit generation fails.
  */
-/datum/ai_behavior/npc_ship/patrol
-	action_cooldown = 8 SECONDS  // 1/4 speed when out of combat
+/datum/bt_node/ai_behavior/npc_ship/patrol
+	time_between_perform = 8 SECONDS  // 1/4 speed when out of combat
 
-/datum/ai_behavior/npc_ship/patrol/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/patrol/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
@@ -179,10 +179,10 @@
  * Picks random directions and wanders the zone.
  * Discrete movement: moves one tile per tick (no momentum/physics).
  */
-/datum/ai_behavior/npc_ship/roaming
-	action_cooldown = 8 SECONDS  // 1/4 speed when out of combat
+/datum/bt_node/ai_behavior/npc_ship/roaming
+	time_between_perform = 8 SECONDS  // 1/4 speed when out of combat
 
-/datum/ai_behavior/npc_ship/roaming/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/roaming/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
@@ -210,7 +210,7 @@
 /**
  * Picks a random direction that avoids obstacles and stays in zone.
  */
-/datum/ai_behavior/npc_ship/roaming/proc/pick_random_safe_direction(turf/from, datum/overmap_zone/zone)
+/datum/bt_node/ai_behavior/npc_ship/roaming/proc/pick_random_safe_direction(turf/from, datum/overmap_zone/zone)
 	var/list/valid_dirs = list()
 	for(var/dir in GLOB.alldirs)
 		if(!direction_has_obstacle(from, dir) && direction_stays_in_zone(from, dir, zone))
@@ -227,10 +227,10 @@
  * Uses A* to path back to the nearest circuit waypoint.
  * Discrete movement: moves one tile per tick (no momentum/physics).
  */
-/datum/ai_behavior/npc_ship/return_to_route
-	action_cooldown = 8 SECONDS  // 1/4 speed when out of combat
+/datum/bt_node/ai_behavior/npc_ship/return_to_route
+	time_between_perform = 8 SECONDS  // 1/4 speed when out of combat
 
-/datum/ai_behavior/npc_ship/return_to_route/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/return_to_route/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
@@ -320,10 +320,10 @@
  * Players can bait NPC ships into meteor storms, ion storms, etc.
  * This is a core gameplay mechanic - don't add obstacle avoidance here!
  */
-/datum/ai_behavior/npc_ship/chase
-	action_cooldown = 2 SECONDS  // 1/2 speed when in combat
+/datum/bt_node/ai_behavior/npc_ship/chase
+	time_between_perform = 2 SECONDS  // 1/2 speed when in combat
 
-/datum/ai_behavior/npc_ship/chase/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/chase/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
@@ -377,10 +377,10 @@
  * With discrete movement this should rarely trigger, but kept as fallback.
  * Moves directly toward zone middle.
  */
-/datum/ai_behavior/npc_ship/return_to_zone
-	action_cooldown = 8 SECONDS  // 1/4 speed when out of combat
+/datum/bt_node/ai_behavior/npc_ship/return_to_zone
+	time_between_perform = 8 SECONDS  // 1/4 speed when out of combat
 
-/datum/ai_behavior/npc_ship/return_to_zone/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/return_to_zone/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
@@ -446,10 +446,10 @@
  * Moves away from the last known threat, staying within spawn zone.
  * Uses fast movement (same as chase) since the ship is urgently fleeing.
  */
-/datum/ai_behavior/npc_ship/retreat
-	action_cooldown = 2 SECONDS  // Same speed as chase - urgently fleeing
+/datum/bt_node/ai_behavior/npc_ship/retreat
+	time_between_perform = 2 SECONDS  // Same speed as chase - urgently fleeing
 
-/datum/ai_behavior/npc_ship/retreat/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/retreat/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)

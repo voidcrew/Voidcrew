@@ -131,6 +131,30 @@ GLOBAL_VAR_INIT(ship_upgrades_initialized, FALSE)
 		new theme_type()
 
 /**
+ * Resolves a typepath to its parent typepath.
+ *
+ * VOIDCREW EDIT: upstream deleted /proc/type2parent (code/__HELPERS/type2type.dm) in the
+ * 2026 upgrade and shipped no successor - type2top() answers a different question, and DM's
+ * `::` operator only reads a var off a compile-time type, not off a runtime path variable.
+ * This is the deleted helper's body, kept under a voidcrew-prefixed name so it cannot collide
+ * if upstream (or another fork file) ever reintroduces one.
+ */
+/proc/voidcrew_type2parent(child)
+	var/string_type = "[child]"
+	var/last_slash = findlasttext(string_type, "/")
+	if(last_slash == 1)
+		switch(child)
+			if(/datum)
+				return null
+			if(/obj, /mob)
+				return /atom/movable
+			if(/area, /turf)
+				return /atom
+			else
+				return /datum
+	return text2path(copytext(string_type, 1, last_slash))
+
+/**
  * Get all modules registered for a specific ship template type
  * Handles inheritance - if template is a subtype (themed variant), checks parent types too
  *
@@ -148,7 +172,7 @@ GLOBAL_VAR_INIT(ship_upgrades_initialized, FALSE)
 	while(check_type && check_type != /datum/map_template/shuttle/voidcrew)
 		if(GLOB.ship_upgrade_modules[check_type])
 			return GLOB.ship_upgrade_modules[check_type]
-		check_type = type2parent(check_type)
+		check_type = voidcrew_type2parent(check_type)
 
 	return list()
 
@@ -180,7 +204,7 @@ GLOBAL_VAR_INIT(ship_upgrades_initialized, FALSE)
 	while(check_type && check_type != /datum/map_template/shuttle/voidcrew)
 		if(GLOB.ship_themes[check_type])
 			return GLOB.ship_themes[check_type]
-		check_type = type2parent(check_type)
+		check_type = voidcrew_type2parent(check_type)
 
 	return list()
 

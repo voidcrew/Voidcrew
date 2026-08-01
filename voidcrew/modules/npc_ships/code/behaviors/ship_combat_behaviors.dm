@@ -3,31 +3,37 @@
  *
  * Parent class for all NPC ship combat behaviors.
  * These behaviors don't require movement (ships use overmap velocity).
+ *
+ * VOIDCREW: these all return a bare AI_BEHAVIOR_DELAY, i.e. they report BT_RUNNING
+ * forever and re-fire on their own time_between_perform. That is deliberate - it is what
+ * lets a parallel of them reproduce the old "queue this set of behaviors every planning
+ * tick" model exactly. Do not "fix" one into returning SUCCEEDED without checking what
+ * its parent node does with a completed child.
  */
-/datum/ai_behavior/npc_ship
-	/// Ships don't need movement but need to allow planning during execution
-	/// so SelectBehaviors can queue additional behaviors while we're running
-	behavior_flags = AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+/datum/bt_node/ai_behavior/npc_ship
 	/// Fast tick rate for responsive combat
-	action_cooldown = 0.5 SECONDS
+	time_between_perform = 0.5 SECONDS
+	/// NPC_ACTION_* constant, set only on the four offensive behaviors that the
+	/// npc_combat_action composite picks between. Null on everything else.
+	var/combat_action
 
 /**
  * Helper to get the ship from the controller.
  */
-/datum/ai_behavior/npc_ship/proc/get_ship(datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/proc/get_ship(datum/ai_controller/npc_ship/controller)
 	return controller?.get_ship()
 
 /**
  * Helper to get combat interface.
  */
-/datum/ai_behavior/npc_ship/proc/get_combat_interface(datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/proc/get_combat_interface(datum/ai_controller/npc_ship/controller)
 	return controller?.get_combat_interface()
 
 /**
  * Check if another pirate is already hailing or negotiating with the target.
  * Only one pirate can hail/negotiate with a ship at a time.
  */
-/datum/ai_behavior/npc_ship/proc/is_target_being_hailed(obj/structure/overmap/ship/target, obj/structure/overmap/ship/npc/self)
+/datum/bt_node/ai_behavior/npc_ship/proc/is_target_being_hailed(obj/structure/overmap/ship/target, obj/structure/overmap/ship/npc/self)
 	for(var/obj/structure/overmap/ship/npc/pirate/other_pirate as anything in SSnpc_ships.active_ships)
 		if(other_pirate == self)
 			continue
@@ -50,10 +56,10 @@
  * If a target is found in IDLE state, transitions to ENGAGING.
  * Only engages in zones where weapons are allowed.
  */
-/datum/ai_behavior/npc_ship/scan_threats
-	action_cooldown = 1 SECONDS
+/datum/bt_node/ai_behavior/npc_ship/scan_threats
+	time_between_perform = 1 SECONDS
 
-/datum/ai_behavior/npc_ship/scan_threats/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/scan_threats/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
@@ -179,10 +185,10 @@
  * Used by yellow zone pirates to check if target is worth robbing.
  * After scan completes, either engages (has money) or ignores (broke).
  */
-/datum/ai_behavior/npc_ship/scan_wealth
-	action_cooldown = 0.5 SECONDS
+/datum/bt_node/ai_behavior/npc_ship/scan_wealth
+	time_between_perform = 0.5 SECONDS
 
-/datum/ai_behavior/npc_ship/scan_wealth/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/scan_wealth/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
@@ -276,7 +282,7 @@
 	return AI_BEHAVIOR_DELAY
 
 /// Starts looping scan sound on the target ship
-/datum/ai_behavior/npc_ship/scan_wealth/proc/start_scan_sound(obj/structure/overmap/ship/target)
+/datum/bt_node/ai_behavior/npc_ship/scan_wealth/proc/start_scan_sound(obj/structure/overmap/ship/target)
 	if(!target?.shuttle?.shuttle_areas)
 		return
 	var/sound/scan_sound = sound('voidcrew/sound/econ_scan.ogg', repeat = TRUE, channel = CHANNEL_ECON_SCAN)
@@ -286,7 +292,7 @@
 				SEND_SOUND(M, scan_sound)
 
 /// Stops the looping scan sound on the target ship
-/datum/ai_behavior/npc_ship/scan_wealth/proc/stop_scan_sound(obj/structure/overmap/ship/target)
+/datum/bt_node/ai_behavior/npc_ship/scan_wealth/proc/stop_scan_sound(obj/structure/overmap/ship/target)
 	if(!target?.shuttle?.shuttle_areas)
 		return
 	var/sound/stop_sound = sound(null, channel = CHANNEL_ECON_SCAN)
@@ -307,10 +313,10 @@
  * - Player fires on pirate → immediate COMBAT
  * - 20 seconds pass without answer → COMBAT
  */
-/datum/ai_behavior/npc_ship/hailing
-	action_cooldown = 1 SECONDS
+/datum/bt_node/ai_behavior/npc_ship/hailing
+	time_between_perform = 1 SECONDS
 
-/datum/ai_behavior/npc_ship/hailing/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/hailing/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship(controller)
@@ -367,7 +373,7 @@
  * Escalate from HAILING to COMBAT - player ignored or aggressed.
  * If the ship uses boarding phases, starts phased boarding instead of ship combat.
  */
-/datum/ai_behavior/npc_ship/hailing/proc/escalate_to_combat(datum/ai_controller/npc_ship/controller, obj/structure/overmap/ship/npc/ship, obj/structure/overmap/ship/target, reason)
+/datum/bt_node/ai_behavior/npc_ship/hailing/proc/escalate_to_combat(datum/ai_controller/npc_ship/controller, obj/structure/overmap/ship/npc/ship, obj/structure/overmap/ship/target, reason)
 	// Clear hailing state
 	controller.clear_blackboard_key(BB_NPC_HAILING_START)
 	controller.clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
@@ -403,10 +409,10 @@
  * Works on acquiring a weapon lock on the target.
  * After NPC_SHIP_LOCK_TIME seconds, transitions to COMBAT state.
  */
-/datum/ai_behavior/npc_ship/acquire_lock
-	action_cooldown = 0.5 SECONDS
+/datum/bt_node/ai_behavior/npc_ship/acquire_lock
+	time_between_perform = 0.5 SECONDS
 
-/datum/ai_behavior/npc_ship/acquire_lock/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/acquire_lock/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
@@ -463,10 +469,11 @@
  * - If target has shields: use lasers (effective vs shields)
  * - If target shields are down: use missiles (effective vs hull)
  */
-/datum/ai_behavior/npc_ship/fire_weapons
-	action_cooldown = 2 SECONDS  // Increased from 1s for balance
+/datum/bt_node/ai_behavior/npc_ship/fire_weapons
+	time_between_perform = 2 SECONDS  // Increased from 1s for balance
+	combat_action = NPC_ACTION_FIRE_WEAPONS
 
-/datum/ai_behavior/npc_ship/fire_weapons/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/fire_weapons/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
@@ -497,7 +504,7 @@
 /**
  * Attempts to fire lasers at the target.
  */
-/datum/ai_behavior/npc_ship/fire_weapons/proc/try_fire_lasers(obj/structure/overmap/ship/npc/ship, datum/npc_combat_interface/combat, obj/structure/overmap/ship/target)
+/datum/bt_node/ai_behavior/npc_ship/fire_weapons/proc/try_fire_lasers(obj/structure/overmap/ship/npc/ship, datum/npc_combat_interface/combat, obj/structure/overmap/ship/target)
 	// Check global cooldown first - prevents spam across all weapon types
 	if(!COOLDOWN_FINISHED(ship, global_weapon_cooldown))
 		return FALSE
@@ -527,7 +534,7 @@
 /**
  * Attempts to fire missiles at the target.
  */
-/datum/ai_behavior/npc_ship/fire_weapons/proc/try_fire_missiles(obj/structure/overmap/ship/npc/ship, datum/npc_combat_interface/combat, obj/structure/overmap/ship/target, skip_laser_fallback = FALSE)
+/datum/bt_node/ai_behavior/npc_ship/fire_weapons/proc/try_fire_missiles(obj/structure/overmap/ship/npc/ship, datum/npc_combat_interface/combat, obj/structure/overmap/ship/target, skip_laser_fallback = FALSE)
 	// Check global cooldown first - prevents spam across all weapon types
 	if(!COOLDOWN_FINISHED(ship, global_weapon_cooldown))
 		return FALSE
@@ -561,10 +568,11 @@
  * Pods deliver hostile mobs directly onto the target ship.
  * Used as an alternative to missiles to add lethality without relying solely on ordnance.
  */
-/datum/ai_behavior/npc_ship/fire_boarding_pods
-	action_cooldown = 3 SECONDS
+/datum/bt_node/ai_behavior/npc_ship/fire_boarding_pods
+	time_between_perform = 3 SECONDS
+	combat_action = NPC_ACTION_FIRE_BOARDING_PODS
 
-/datum/ai_behavior/npc_ship/fire_boarding_pods/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/fire_boarding_pods/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship(controller)
@@ -624,7 +632,7 @@
  * Count hostile mobs (pirate troopers) currently on a target ship.
  * Used to enforce the max boarder cap during ship combat.
  */
-/datum/ai_behavior/npc_ship/fire_boarding_pods/proc/count_hostile_mobs_on_ship(obj/structure/overmap/ship/target)
+/datum/bt_node/ai_behavior/npc_ship/fire_boarding_pods/proc/count_hostile_mobs_on_ship(obj/structure/overmap/ship/target)
 	if(!target?.shuttle?.shuttle_areas)
 		return 0
 
@@ -641,10 +649,11 @@
  * Attempts to use the interdictor on the target.
  * NPCs will aggressively interdict to prevent escape.
  */
-/datum/ai_behavior/npc_ship/use_interdictor
-	action_cooldown = 3 SECONDS  // Increased from 2s for balance
+/datum/bt_node/ai_behavior/npc_ship/use_interdictor
+	time_between_perform = 3 SECONDS  // Increased from 2s for balance
+	combat_action = NPC_ACTION_USE_INTERDICTOR
 
-/datum/ai_behavior/npc_ship/use_interdictor/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/use_interdictor/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
@@ -677,10 +686,10 @@
  * Checks if the target has moved out of territory range, left our zone, or crashed.
  * If so, clears the target and returns to IDLE state.
  */
-/datum/ai_behavior/npc_ship/check_disengage
-	action_cooldown = 1 SECONDS
+/datum/bt_node/ai_behavior/npc_ship/check_disengage
+	time_between_perform = 1 SECONDS
 
-/datum/ai_behavior/npc_ship/check_disengage/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/check_disengage/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
@@ -754,10 +763,10 @@
  * If interdicted: tries to shield burst to break free.
  * If not interdicted (or just broke free): tries to cloak.
  */
-/datum/ai_behavior/npc_ship/retreat_escape
-	action_cooldown = 1 SECONDS
+/datum/bt_node/ai_behavior/npc_ship/retreat_escape
+	time_between_perform = 1 SECONDS
 
-/datum/ai_behavior/npc_ship/retreat_escape/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/retreat_escape/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
@@ -798,7 +807,7 @@
 	return AI_BEHAVIOR_DELAY
 
 /// Helper proc to transition retreating ship back to patrol
-/datum/ai_behavior/npc_ship/retreat_escape/proc/return_to_patrol(datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/retreat_escape/proc/return_to_patrol(datum/ai_controller/npc_ship/controller)
 	// Clear retreat state
 	controller.blackboard[BB_NPC_RETREAT_REASON] = null
 	controller.blackboard[BB_NPC_LAST_TARGET] = null
@@ -812,10 +821,11 @@
  * Activates the ship's data siphon when weapons lock is achieved.
  * Pirates use this to steal credits from locked targets.
  */
-/datum/ai_behavior/npc_ship/activate_siphon
-	action_cooldown = 3 SECONDS  // Increased from 2s for balance
+/datum/bt_node/ai_behavior/npc_ship/activate_siphon
+	time_between_perform = 3 SECONDS  // Increased from 2s for balance
+	combat_action = NPC_ACTION_ACTIVATE_SIPHON
 
-/datum/ai_behavior/npc_ship/activate_siphon/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/activate_siphon/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
@@ -850,10 +860,10 @@
  * Checks if the ship still has functional weapons.
  * If all weapons are destroyed, transitions to RETREATING state.
  */
-/datum/ai_behavior/npc_ship/check_weapons
-	action_cooldown = 2 SECONDS
+/datum/bt_node/ai_behavior/npc_ship/check_weapons
+	time_between_perform = 2 SECONDS
 
-/datum/ai_behavior/npc_ship/check_weapons/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/check_weapons/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	var/obj/structure/overmap/ship/npc/ship = get_ship(controller)
@@ -879,10 +889,10 @@
  * This behavior runs during NPC_COMBAT_BOARDING state.
  * Checks for escalation conditions: time limit, movement, player aggression.
  */
-/datum/ai_behavior/npc_ship/boarding_wave_monitor
-	action_cooldown = 2 SECONDS
+/datum/bt_node/ai_behavior/npc_ship/boarding_wave_monitor
+	time_between_perform = 2 SECONDS
 
-/datum/ai_behavior/npc_ship/boarding_wave_monitor/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/boarding_wave_monitor/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	// Verify we're still in boarding state
@@ -937,10 +947,10 @@
  * Monitors the cooldown between waves.
  * During cooldown, the pirate ship waits for the timer to expire.
  */
-/datum/ai_behavior/npc_ship/boarding_cooldown_monitor
-	action_cooldown = 1 SECONDS
+/datum/bt_node/ai_behavior/npc_ship/boarding_cooldown_monitor
+	time_between_perform = 1 SECONDS
 
-/datum/ai_behavior/npc_ship/boarding_cooldown_monitor/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/boarding_cooldown_monitor/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	// Verify we're in cooldown state
@@ -976,10 +986,10 @@
  * Monitors the boss phase.
  * During boss phase, we wait for the boss to be killed.
  */
-/datum/ai_behavior/npc_ship/boss_phase_monitor
-	action_cooldown = 2 SECONDS
+/datum/bt_node/ai_behavior/npc_ship/boss_phase_monitor
+	time_between_perform = 2 SECONDS
 
-/datum/ai_behavior/npc_ship/boss_phase_monitor/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/boss_phase_monitor/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	// Verify we're in boss phase
@@ -1015,10 +1025,10 @@
  * Handles the disengaging state after pirates win.
  * The pirate ship leaves the area.
  */
-/datum/ai_behavior/npc_ship/disengage
-	action_cooldown = 1 SECONDS
+/datum/bt_node/ai_behavior/npc_ship/disengage
+	time_between_perform = 1 SECONDS
 
-/datum/ai_behavior/npc_ship/disengage/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/disengage/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	// Verify we're in disengage state
@@ -1034,10 +1044,10 @@
  * Handles the disabled state.
  * Ship is dead in the water, waiting to be boarded.
  */
-/datum/ai_behavior/npc_ship/disabled
-	action_cooldown = 5 SECONDS
+/datum/bt_node/ai_behavior/npc_ship/disabled
+	time_between_perform = 5 SECONDS
 
-/datum/ai_behavior/npc_ship/disabled/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
+/datum/bt_node/ai_behavior/npc_ship/disabled/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	. = ..()
 
 	// Verify we're in disabled state
@@ -1047,4 +1057,19 @@
 	// Ship is disabled - nothing to do
 	// Players can now board and claim it
 
+	return AI_BEHAVIOR_DELAY
+
+/**
+ * Handles the negotiating state.
+ * Negotiating ships do no combat at all - the negotiation datum owns the timeout and
+ * resolution, and this behavior just holds the tick so nothing else runs.
+ *
+ * VOIDCREW: the old subtree expressed this as a bare `return` with nothing queued. In a
+ * behavior tree an empty branch has to still consume the tick (return BT_RUNNING), because
+ * a branch that FAILED would let the selector fall through to a lower-priority state.
+ */
+/datum/bt_node/ai_behavior/npc_ship/negotiation_hold
+	time_between_perform = 1 SECONDS
+
+/datum/bt_node/ai_behavior/npc_ship/negotiation_hold/perform(seconds_per_tick, datum/ai_controller/npc_ship/controller)
 	return AI_BEHAVIOR_DELAY

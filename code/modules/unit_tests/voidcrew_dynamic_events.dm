@@ -70,7 +70,7 @@
 			if(announcers[check_type])
 				announces = TRUE
 				break
-			check_type = type2parent(check_type)
+			check_type = voidcrew_type2parent(check_type)
 		if(!announces)
 			TEST_FAIL("[control_type] rolls at weight [weight] with alert_observers FALSE and no announce() override anywhere in [event_type]'s chain, so it fires completely invisibly. Give it an announcement (target_ship.ship_event_announce) or let it alert observers.")
 	TEST_ASSERT(controls_checked > 30, "only [controls_checked] dynamic-event controls were checked — the roster walk is not seeing the module")

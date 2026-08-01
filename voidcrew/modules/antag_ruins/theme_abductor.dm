@@ -276,7 +276,7 @@
 
 /// TRUE while the subject can be read: alive, out of collapse, and within the lens's reach
 /obj/structure/vestige_observation_lens/proc/focus_holds(mob/living/subject)
-	if(QDELETED(subject) || subject.stat == DEAD || HAS_TRAIT(subject, TRAIT_CRITICAL_CONDITION))
+	if(QDELETED(subject) || subject.stat >= SOFT_CRIT) // crit or dead
 		return FALSE
 	var/turf/here = get_turf(src)
 	var/turf/there = get_turf(subject)
@@ -307,7 +307,7 @@
 	if(!istype(subject))
 		balloon_alert(user, "no tagged subject!")
 		return
-	if(subject.stat == DEAD || HAS_TRAIT(subject, TRAIT_CRITICAL_CONDITION))
+	if(subject.stat >= SOFT_CRIT) // crit or dead
 		balloon_alert(user, "the subject must be alive and stable!")
 		return
 	if(!focus_holds(subject))
@@ -532,7 +532,7 @@
 	if(patient.stat == DEAD)
 		balloon_alert(user, "the protocol wants a living subject!")
 		return FALSE
-	if(HAS_TRAIT(patient, TRAIT_CRITICAL_CONDITION))
+	if(patient.stat >= SOFT_CRIT) // in crit; the dead case already returned above
 		balloon_alert(user, "stabilize the subject first!")
 		return FALSE
 	// Someone must be home to receive the gift (mind check — no monkey wards)
@@ -1046,7 +1046,9 @@
 	if(!do_after(user, VESTIGE_INSTRUMENT_CUFF_TIME, carbon_victim) || !carbon_victim.canBeHandcuffed() || carbon_victim.handcuffed)
 		to_chat(user, span_warning("You fail to restrain [carbon_victim]."))
 		return
-	carbon_victim.set_handcuffed(new /obj/item/restraints/handcuffs/energy/used(carbon_victim))
+	// The /used subtype is gone; the base energy cuff is now the thing you wear,
+	// and it deletes itself on uncuff. Upstream's own abductor baton does this.
+	carbon_victim.set_handcuffed(new /obj/item/restraints/handcuffs/energy(carbon_victim))
 	carbon_victim.update_handcuffed()
 	to_chat(user, span_notice("You restrain [carbon_victim]."))
 	log_combat(user, carbon_victim, "handcuffed", src.name)

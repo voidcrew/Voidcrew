@@ -104,7 +104,25 @@
 		balloon_alert(user, message)
 
 /// Override to bypass account check when using silo - ships use SILICON_OVERRIDE
-/obj/item/construction/rcd/internal/ship/useResource(amount, mob/user)
+/// VOIDCREW: upstream folded checkResource() into useResource()'s dry_run branch, so the
+/// old checkResource override lives on below as the dry_run half of this proc.
+/obj/item/construction/rcd/internal/ship/useResource(amount, mob/user, dry_run = FALSE)
+	if(dry_run)
+		if(!silo_mats || !silo_mats.mat_container || !silo_link)
+			return ..()
+
+		// Use SILICON_OVERRIDE to bypass account check for ship construction
+		var/list/check_data = ID_DATA(user)
+		check_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
+		if(!silo_mats.can_use_resource(user_data = check_data))
+			return FALSE
+		. = silo_mats.mat_container.has_enough_of_material(/datum/material/iron, amount * SHIP_RCD_SILO_USE_AMOUNT)
+		if(!. && user)
+			drone_alert(user, "low ammo!")
+			if(has_ammobar)
+				flick("[icon_state]_empty", src)
+		return .
+
 	if(!silo_mats || !silo_link)
 		return ..()
 
@@ -123,23 +141,6 @@
 	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
 	silo_mats.use_materials(list(/datum/material/iron = SHIP_RCD_SILO_USE_AMOUNT), multiplier = amount, action = "build", name = "ship construction", user_data = user_data)
 	return TRUE
-
-/// Override to bypass account check when checking resources
-/obj/item/construction/rcd/internal/ship/checkResource(amount, mob/user)
-	if(!silo_mats || !silo_mats.mat_container || !silo_link)
-		return ..()
-
-	// Use SILICON_OVERRIDE to bypass account check for ship construction
-	var/list/user_data = ID_DATA(user)
-	user_data[SILICON_OVERRIDE] = SILICON_OVERRIDE
-	if(!silo_mats.can_use_resource(user_data = user_data))
-		return FALSE
-	. = silo_mats.mat_container.has_enough_of_material(/datum/material/iron, amount * SHIP_RCD_SILO_USE_AMOUNT)
-	if(!. && user)
-		drone_alert(user, "low ammo!")
-		if(has_ammobar)
-			flick("[icon_state]_empty", src)
-	return .
 
 // ============================================
 // Ship RCD TGUI Interface
@@ -170,7 +171,7 @@
 		var/list/wall_info = wall_types[wall_name]
 		var/list/materials_data = list()
 		for(var/mat_path in wall_info["materials"])
-			var/datum/material/mat = GET_MATERIAL_REF(mat_path)
+			var/datum/material/mat = SSmaterials.get_material(mat_path)
 			materials_data += list(list(
 				"name" = mat ? mat.name : "Unknown",
 				"amount" = wall_info["materials"][mat_path]
@@ -187,7 +188,7 @@
 		var/list/floor_info = floor_types[floor_name]
 		var/list/materials_data = list()
 		for(var/mat_path in floor_info["materials"])
-			var/datum/material/mat = GET_MATERIAL_REF(mat_path)
+			var/datum/material/mat = SSmaterials.get_material(mat_path)
 			materials_data += list(list(
 				"name" = mat ? mat.name : "Unknown",
 				"amount" = floor_info["materials"][mat_path]
@@ -268,7 +269,7 @@
 		var/required = materials[mat_path]
 		if(!silo_mats.mat_container.has_enough_of_material(mat_path, required))
 			if(user)
-				var/datum/material/mat = GET_MATERIAL_REF(mat_path)
+				var/datum/material/mat = SSmaterials.get_material(mat_path)
 				drone_alert(user, "not enough [mat?.name || "material"]!")
 			return FALSE
 
@@ -417,10 +418,18 @@
 	name = "ship internal RPD"
 	/// Reference to the ship construction console for drone tracking
 	var/obj/machinery/computer/camera_advanced/base_construction/ship/ship_console
-	/// Reference to silo materials component
-	var/datum/component/remote_materials/silo_mats
+	/// Reference to the silo materials datum
+	var/datum/remote_materials/silo_mats
 	/// Whether silo link is enabled
 	var/silo_link = FALSE
+
+/// VOIDCREW: remote_materials is a plain datum now, not a component, so it is no longer
+/// torn down with its parent automatically. /obj/item/construction does this for the
+/// RCD/RTD/RLD; the RPD is not one, so it has to clean up after itself.
+/obj/item/pipe_dispenser/internal/Destroy()
+	QDEL_NULL(silo_mats)
+	ship_console = null
+	return ..()
 
 /// Always allow UI interaction for remote construction
 /obj/item/pipe_dispenser/internal/ui_state(mob/user)
@@ -644,7 +653,7 @@
 	internal_rcd.construction_upgrades |= RCD_UPGRADE_SILO_LINK
 	// Add the remote materials component to the RCD so it can link to a silo
 	// The silo_mats needs to be added after setting the upgrade flag
-	internal_rcd.silo_mats = internal_rcd.AddComponent(/datum/component/remote_materials, mapload, FALSE)
+	internal_rcd.silo_mats = new /datum/remote_materials(internal_rcd, mapload, FALSE)
 	. = ..()
 	// Console ambient sounds
 	console_ambience = new(src, get_console_ambience_sounds())
@@ -780,12 +789,12 @@
 			if(internal_rtd)
 				internal_rtd.construction_upgrades |= RCD_UPGRADE_SILO_LINK
 				if(!internal_rtd.silo_mats)
-					internal_rtd.silo_mats = internal_rtd.AddComponent(/datum/component/remote_materials, FALSE, FALSE)
+					internal_rtd.silo_mats = new /datum/remote_materials(internal_rtd, FALSE, FALSE)
 			// Forward to RLD
 			if(internal_rld)
 				internal_rld.construction_upgrades |= RCD_UPGRADE_SILO_LINK
 				if(!internal_rld.silo_mats)
-					internal_rld.silo_mats = internal_rld.AddComponent(/datum/component/remote_materials, FALSE, FALSE)
+					internal_rld.silo_mats = new /datum/remote_materials(internal_rld, FALSE, FALSE)
 		if(internal_rcd.install_upgrade(tool, user))
 			balloon_alert(user, "upgrade installed")
 		return ITEM_INTERACT_SUCCESS
@@ -813,14 +822,14 @@
 			internal_rtd = new(src)
 			internal_rtd.ship_console = src
 			// Enable silo link by default for RTD
-			internal_rtd.silo_mats = internal_rtd.AddComponent(/datum/component/remote_materials, FALSE, FALSE)
+			internal_rtd.silo_mats = new /datum/remote_materials(internal_rtd, FALSE, FALSE)
 			internal_rtd.silo_link = TRUE
 
 		if((upgrade_disk.upgrade_flags & SHIP_CONSTRUCTION_UPGRADE_RPD) && !internal_rpd)
 			internal_rpd = new(src)
 			internal_rpd.ship_console = src
 			// Enable silo link by default for RPD
-			internal_rpd.silo_mats = internal_rpd.AddComponent(/datum/component/remote_materials, FALSE, FALSE)
+			internal_rpd.silo_mats = new /datum/remote_materials(internal_rpd, FALSE, FALSE)
 			internal_rpd.silo_link = TRUE
 
 		if((upgrade_disk.upgrade_flags & SHIP_CONSTRUCTION_UPGRADE_RLD) && !internal_rld)
@@ -828,7 +837,7 @@
 			internal_rld.ship_console = src
 			// Enable silo link by default for RLD
 			internal_rld.construction_upgrades |= RCD_UPGRADE_SILO_LINK
-			internal_rld.silo_mats = internal_rld.AddComponent(/datum/component/remote_materials, FALSE, FALSE)
+			internal_rld.silo_mats = new /datum/remote_materials(internal_rld, FALSE, FALSE)
 			internal_rld.silo_link = TRUE
 
 		playsound(loc, 'sound/machines/click.ogg', 50, TRUE)
@@ -847,7 +856,7 @@
 	if(!internal_rcd?.silo_mats)
 		return .
 
-	// Forward the multitool interaction to the internal RCD's remote_materials component
+	// Forward the multitool interaction to the internal RCD's remote_materials datum
 	if(!QDELETED(M.buffer) && istype(M.buffer, /obj/machinery/ore_silo))
 		var/obj/machinery/ore_silo/silo = M.buffer
 		if(internal_rcd.silo_mats.silo == silo)

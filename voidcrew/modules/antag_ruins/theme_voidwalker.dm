@@ -733,10 +733,12 @@
 		if(lattice.is_shocked())
 			owner.balloon_alert(owner, "the grille is live!")
 			return . | SPELL_CANCEL_CAST
-	// The step itself: PASSWINDOW crosses window and grille borders; any other dense thing still refuses
-	passwindow_on(owner, REF(src))
+	// The step itself: PASSWINDOW crosses window and grille borders; any other dense thing still refuses.
+	// passwindow_on/off() are gone — the trait is the switch now, and living mobs
+	// fold it into pass_flags off the add/remove signals (see init_signals.dm).
+	ADD_TRAIT(owner, TRAIT_PASSWINDOW, REF(src))
 	var/moved = owner.Move(destination)
-	passwindow_off(owner, REF(src))
+	REMOVE_TRAIT(owner, TRAIT_PASSWINDOW, REF(src))
 	if(!moved)
 		owner.balloon_alert(owner, "something blocks the far side!")
 		return . | SPELL_CANCEL_CAST

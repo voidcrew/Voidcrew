@@ -23,9 +23,6 @@
 #define SUBLIMATOR_MAX_SHEETS 50
 /// Moles per second a rating-1 sublimator trickles into its pipenet
 #define SUBLIMATOR_BASE_RATE 2.5
-/// SSair calls process_atmos() with no time argument; machinery ticks roughly
-/// every SSair.wait (0.5s), so per-second rates get scaled by this per call
-#define HARVEST_SECONDS_PER_TICK 0.5
 
 /obj/machinery/atmospherics/components/unary/shuttle/scoop
 	name = "nebula ram scoop"
@@ -74,7 +71,7 @@
 	intake_open = !intake_open
 	balloon_alert(user, "intake [intake_open ? "opened" : "closed"]")
 
-/obj/machinery/atmospherics/components/unary/shuttle/scoop/process_atmos()
+/obj/machinery/atmospherics/components/unary/shuttle/scoop/process_atmos(seconds_per_tick)
 	if(!intake_open || panel_open || !anchored || !is_operational)
 		return
 	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
@@ -91,13 +88,13 @@
 	if(!air_contents || air_contents.return_pressure() >= MAX_OUTPUT_PRESSURE)
 		return
 
-	var/moles = cloud.get_scoop_rate() * efficiency_multiplier * HARVEST_SECONDS_PER_TICK
+	var/moles = cloud.get_scoop_rate() * efficiency_multiplier * seconds_per_tick
 	if(moles <= 0)
 		return
 	if(air_contents.temperature <= 0)
 		air_contents.temperature = T20C
 	air_contents.assert_gas(cloud.gas_type)
-	air_contents.gases[cloud.gas_type][MOLES] += moles
+	air_contents.moles[cloud.gas_type] += moles
 	update_parents()
 
 	// Harvesting is loud: this blocks/breaks nebula concealment on the ship
@@ -188,7 +185,7 @@
 	balloon_alert(user, "hopper emptied")
 	stored_sheets = 0
 
-/obj/machinery/atmospherics/components/unary/shuttle/sublimator/process_atmos()
+/obj/machinery/atmospherics/components/unary/shuttle/sublimator/process_atmos(seconds_per_tick)
 	if(panel_open || !anchored || !is_operational)
 		return
 	if(buffered_moles <= 0 && stored_sheets > 0)
@@ -201,14 +198,14 @@
 	if(!air_contents || air_contents.return_pressure() >= MAX_OUTPUT_PRESSURE)
 		return
 
-	var/moles = min(buffered_moles, SUBLIMATOR_BASE_RATE * efficiency_multiplier * HARVEST_SECONDS_PER_TICK)
+	var/moles = min(buffered_moles, SUBLIMATOR_BASE_RATE * efficiency_multiplier * seconds_per_tick)
 	if(moles <= 0)
 		return
 	buffered_moles -= moles
 	if(air_contents.temperature <= 0)
 		air_contents.temperature = T20C
 	air_contents.assert_gas(/datum/gas/plasma)
-	air_contents.gases[/datum/gas/plasma][MOLES] += moles
+	air_contents.moles[/datum/gas/plasma] += moles
 	update_parents()
 
 /obj/machinery/atmospherics/components/unary/shuttle/sublimator/screwdriver_act(mob/living/user, obj/item/tool)
@@ -235,4 +232,3 @@
 #undef SUBLIMATOR_MOLES_PER_SHEET
 #undef SUBLIMATOR_MAX_SHEETS
 #undef SUBLIMATOR_BASE_RATE
-#undef HARVEST_SECONDS_PER_TICK

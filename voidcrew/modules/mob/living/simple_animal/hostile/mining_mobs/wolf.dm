@@ -26,17 +26,19 @@
 	QDEL_NULL(lunge)
 	return ..()
 
+/**
+ * VOIDCREW: the alpha is the base wolf plus its lunge, minus the flinching.
+ *
+ * It gets its own tree rather than the stock wolf one because the fork's subtree list
+ * differed from the base wolf's in two ways, both preserved here:
+ * - it adds targeted_mob_ability, which fires the lunge stored in BB_TARGETED_ACTION
+ *   ahead of obstruction-smashing and plain melee
+ * - it has no run_away_from_target and no random_walk. A miniboss that flees at 30 tiles
+ *   would never fight, and the alpha holds its ground when idle instead of wandering.
+ * target_retaliate and simple_find_target are both folded into acquire_target now.
+ */
 /datum/ai_controller/basic_controller/wolf/alpha
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/pet_planning,
-		/datum/ai_planning_subtree/call_reinforcements/wolf,
-		/datum/ai_planning_subtree/target_retaliate,
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/targeted_mob_ability,
-		/datum/ai_planning_subtree/attack_obstacle_in_path,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
-	)
+	behavior_tree_json = "voidcrew/modules/mob/living/simple_animal/hostile/mining_mobs/wolf_alpha.bt.json"
 
 /mob/living/basic/mining/wolf/alpha/gib()
 	move_force = MOVE_FORCE_DEFAULT

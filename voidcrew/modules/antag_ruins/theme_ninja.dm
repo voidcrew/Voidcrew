@@ -476,9 +476,10 @@
 /datum/action/cooldown/spell/teleport/radius_turf/vestige_vanishing_smoke/cast(mob/living/cast_on)
 	var/turf/origin = get_turf(cast_on)
 	. = ..()
-	// The cloud stands where the student was; the student, pointedly, does not
-	var/datum/effect_system/fluid_spread/smoke/cover = new()
-	cover.set_up(3, holder = cast_on, location = origin) // same reach as the unmastered art's cloud
+	// The cloud stands where the student was; the student, pointedly, does not.
+	// set_up() is gone — the fluid systems take location/range/amount/holder on
+	// the constructor now. Same reach as the unmastered art's cloud.
+	var/datum/effect_system/fluid_spread/smoke/cover = new(origin, 3, holder = cast_on)
 	cover.start()
 
 /**

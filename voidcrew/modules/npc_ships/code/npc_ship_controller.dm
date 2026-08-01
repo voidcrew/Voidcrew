@@ -12,14 +12,12 @@
 	/// Ships don't use normal movement, they use overmap velocity
 	ai_movement = null
 
-	/// Combat and movement subtrees
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/npc_ship_combat,
-		/datum/ai_planning_subtree/npc_ship_movement,
-	)
+	/// Combat and movement subtrees, run concurrently every tick
+	behavior_tree_json = "voidcrew/modules/npc_ships/code/npc_ship_controller.bt.json"
 
-	/// Ships should always be active while in simulation
-	can_idle = FALSE
+	/// Ships should always be active while in simulation - they live on the overmap
+	/// z-level, which never has a client standing on it to keep them awake.
+	ai_traits = RUN_WHILE_UNWATCHED | ALWAYS_HIGH_PRIORITY
 
 	/// Ships always process (no player interaction needed)
 	continue_processing_when_client = TRUE
@@ -76,14 +74,14 @@
 
 	// Replicate parent cleanup (without ai_movement check which would crash)
 	SEND_SIGNAL(src, COMSIG_AI_CONTROLLER_UNPOSSESSED_PAWN)
+	reset_bt_tick_states()
 	set_ai_status(AI_STATUS_OFF)
 	UnregisterSignal(pawn, list(COMSIG_MOVABLE_Z_CHANGED, COMSIG_QDELETING))
 	clear_able_to_run()
 	// SKIP: ai_movement.moving_controllers check - we don't use ai_movement
 	var/turf/pawn_turf = get_turf(pawn)
 	if(pawn_turf)
-		GLOB.ai_controllers_by_zlevel[pawn_turf.z] -= src
-	remove_from_unplanned_controllers()
+		SSai_controllers.ai_controllers_by_zlevel[pawn_turf.z] -= src
 	pawn.ai_controller = null
 	pawn = null
 	if(destroy)
@@ -93,10 +91,14 @@
 /datum/ai_controller/npc_ship/Destroy(force)
 	UnpossessPawn(FALSE)
 	if(ai_status)
-		GLOB.ai_controllers_by_status[ai_status] -= src
+		SSai_controllers.ai_controllers_by_status[ai_status] -= src
+		for(var/datum/controller/subsystem/ai_controllers/controller_subsystem in Master.subsystems)
+			if(controller_subsystem.planning_status == ai_status)
+				controller_subsystem.currentrun -= src
+				break
 	our_cells = null
-	set_movement_target(type, null)
 	// SKIP: ai_movement.moving_controllers check - we don't use ai_movement
+	QDEL_LIST(behavior_nodes)
 	return ..()
 
 /**
@@ -114,7 +116,7 @@
 	// NPC ships should always be active when the game is running
 	// Unlike mobs, we don't check for nearby players since ships operate
 	// on the overmap z-level which has no clients (players are inside ships)
-	if(on_failed_planning_timeout || !able_to_run)
+	if(!able_to_run)
 		return AI_STATUS_OFF
 
 	return AI_STATUS_ON
@@ -138,7 +140,7 @@
 
 	var/turf/pawn_turf = get_turf(pawn)
 	if(pawn_turf)
-		GLOB.ai_controllers_by_zlevel[pawn_turf.z] += src
+		SSai_controllers.ai_controllers_by_zlevel[pawn_turf.z] += src
 
 	SEND_SIGNAL(src, COMSIG_AI_CONTROLLER_POSSESSED_PAWN)
 

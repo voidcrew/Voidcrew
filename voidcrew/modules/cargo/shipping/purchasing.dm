@@ -36,7 +36,8 @@
 		bank_account_holder.synced_bank_account.adjust_money(-price)
 
 		if(spawning_order.paying_account)
-			SSeconomy.track_purchase(bank_account_holder.synced_bank_account, price, spawning_order.pack.name)
+			// VOIDCREW EDIT: SSeconomy.track_purchase() was renamed add_audit_entry(); same args.
+			SSeconomy.add_audit_entry(bank_account_holder.synced_bank_account, price, spawning_order.pack.name)
 		value += price
 		checkout_list -= spawning_order
 		QDEL_NULL(spawning_order.applied_coupon)
@@ -52,7 +53,8 @@
 		SSblackbox.record_feedback("nested tally", "cargo_imports", 1, list("[price]", "[spawning_order.pack.name]"))
 
 		investigate_log("Order #[spawning_order.id] ([spawning_order.pack.name], placed by [key_name(spawning_order.orderer_ckey)]), paid by [bank_account_holder.synced_bank_account.account_holder] has shipped.", INVESTIGATE_CARGO)
-		if(spawning_order.pack.dangerous)
+		// VOIDCREW EDIT: supply_pack's dangerous/special/contraband bools collapsed into order_flags.
+		if(spawning_order.pack.order_flags & ORDER_DANGEROUS)
 			message_admins("\A [spawning_order.pack.name] ordered by [ADMIN_LOOKUPFLW(spawning_order.orderer_ckey)], paid by [bank_account_holder.synced_bank_account.account_holder] has shipped.")
 		purchases++
 
@@ -74,8 +76,8 @@
 
 	var/presale_points = bank_account_holder.synced_bank_account.account_balance
 
-	if(!GLOB.exports_list.len) // No exports list? Generate it!
-		setupExports()
+	// VOIDCREW EDIT: setupExports() is gone - GLOB.exports_list is a GLOBAL_LIST_INIT built by
+	// init_Exports() (code/_globalvars/lists/cargo.dm), so it is always populated on first read.
 
 	var/datum/export_report/ex = new
 

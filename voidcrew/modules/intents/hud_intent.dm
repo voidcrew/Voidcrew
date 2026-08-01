@@ -12,14 +12,22 @@
 	name = "intent selector"
 	icon = 'icons/obj/toys/intents.dmi'
 	icon_state = "help"
-	screen_loc = ui_combat_toggle
+	// upstream renamed ui_combat_toggle -> ui_acti; same "EAST-3:24,SOUTH:5" coordinates
+	screen_loc = ui_acti
 	mouse_over_pointer = MOUSE_HAND_POINTER
 	/// Reference to the intent component
 	var/datum/component/intents/intent_component
+	/// When recovering from minimizing our HUD, this is where we'll be set to. Set in Initialize.
+	/// We sit at the HUD_MOB_INTENTS key in place of the combat toggle, and show_hud() reads this
+	/// var off whatever object occupies that key -- so it has to exist here too or show_hud() runtimes.
+	var/default_screen_location
 
-/atom/movable/screen/intent_selector/Initialize(mapload, datum/hud/hud_owner)
+/atom/movable/screen/intent_selector/Initialize(mapload, datum/hud/hud_owner, default_screen_location)
 	. = ..()
 	update_appearance()
+	if(default_screen_location)
+		screen_loc = default_screen_location
+	src.default_screen_location = screen_loc
 
 /atom/movable/screen/intent_selector/Destroy()
 	intent_component = null

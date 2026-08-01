@@ -498,7 +498,7 @@
  * it actually breaks rock.
  *
  * "Hums when you're warm": examine() reads nearby /turf/closed/mineral
- * tiles' `mineralAmt` (the vanilla richness/yield var) and reports a hum
+ * tiles' `mineral_amt` (the vanilla richness/yield var) and reports a hum
  * intensity plus a compass direction toward the richest one.
  *
  * "Cracks the seam wider": while held, it listens on its wielder for
@@ -603,8 +603,8 @@
 	var/turf/closed/mineral/richest
 	var/best_amount = 0
 	for(var/turf/closed/mineral/nearby_rock in orange(5, here))
-		if(nearby_rock.mineralAmt > best_amount)
-			best_amount = nearby_rock.mineralAmt
+		if(nearby_rock.mineral_amt > best_amount)
+			best_amount = nearby_rock.mineral_amt
 			richest = nearby_rock
 	if(!richest)
 		. += span_notice("It sits quiet and cool.")
@@ -675,7 +675,7 @@
  * shared basic_targeting_strategy `can_attack()` proc to special-case a
  * new object type, which is out of scope for a single-new-file change).
  * The closest feasible substitute, and what's implemented here, is a
- * direct, repeating `ai_controller.set_movement_target()` ping on nearby
+ * direct, repeating `ai_movement.start_moving_towards()` ping on nearby
  * fauna — a pull, not a summon or a true noise mechanic. A fauna's own
  * planning tick can override it moments later (chasing something else,
  * fleeing, etc.), so the ping repeats periodically rather than being
@@ -849,7 +849,10 @@
 	for(var/mob/living/fauna in orange(attraction_range, src))
 		if(fauna.stat == DEAD || !fauna.ai_controller)
 			continue
-		fauna.ai_controller.set_movement_target(type, src, /datum/ai_movement/basic_avoidance)
+		// VOIDCREW EDIT: upstream deleted /datum/ai_controller/set_movement_target(); the movement
+		// datum now owns the target and starts the loop itself.
+		fauna.ai_controller.change_ai_movement_type(/datum/ai_movement/basic_avoidance)
+		fauna.ai_controller.ai_movement.start_moving_towards(fauna.ai_controller, src, min_distance = 1)
 
 /obj/machinery/deepwell_sampler/wrench_act(mob/living/user, obj/item/tool)
 	tool.play_tool_sound(src)

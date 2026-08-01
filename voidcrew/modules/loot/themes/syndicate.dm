@@ -47,7 +47,7 @@
 		/obj/item/knife/combat = 6,
 		/obj/item/grenade/c4 = 6,
 		/obj/item/grenade/empgrenade = 6,
-		/obj/item/ammo_box/a357 = 5,
+		/obj/item/ammo_box/speedloader/c357 = 5,
 		/obj/item/gun/ballistic/revolver = 4,
 		/obj/item/card/id/advanced/chameleon = 4,
 		/obj/item/clothing/shoes/chameleon/noslip = 4,
@@ -58,7 +58,7 @@
 		/obj/item/ship_parts/combat = 8,
 	)
 	loot_red = list(
-		/obj/item/ammo_box/a357 = 9,
+		/obj/item/ammo_box/speedloader/c357 = 9,
 		/obj/item/gun/ballistic/revolver = 8,
 		/obj/item/storage/medkit/tactical = 8,
 		/obj/item/grenade/c4 = 8,

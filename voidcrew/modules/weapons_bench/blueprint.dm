@@ -9,7 +9,7 @@
  *      physical copy — see voidcrew/modules/trade/blueprint_imprinter.dm).
  *
  * The availability gate lives in a //VOID EDIT inside
- * /datum/component/personal_crafting/is_recipe_available().
+ * /datum/component/personal_crafting/get_visible_recipes().
  *
  * The tension is deliberate: keep the physical copy and it's shareable,
  * resellable and stealable; imprint it and it's theft-proof but gone.
@@ -28,7 +28,7 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
 
 /**
  * The blueprint-recipe availability gate, called from the VOID EDIT in
- * personal_crafting/is_recipe_available(): carrying the schematic or holding
+ * personal_crafting/get_visible_recipes(): carrying the schematic or holding
  * its neural imprint unlocks the recipe.
  */
 /proc/is_blueprint_recipe_available(datum/crafting_recipe/blueprint/recipe, mob/user)
@@ -111,7 +111,7 @@ GLOBAL_LIST_EMPTY(blueprint_imprints)
  * # Blueprint recipes
  *
  * Availability of the whole /blueprint subtree is gated in
- * is_recipe_available (VOID EDIT) — no CRAFT_MUST_BE_LEARNED involved.
+ * get_visible_recipes (VOID EDIT) — no CRAFT_MUST_BE_LEARNED involved.
  */
 /datum/crafting_recipe/blueprint
 	time = 10 SECONDS

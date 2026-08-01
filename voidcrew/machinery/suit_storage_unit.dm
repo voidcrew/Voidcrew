@@ -1,6 +1,6 @@
 /obj/machinery/suit_storage_unit/ert
 	mask_type = /obj/item/clothing/mask/gas/atmos/centcom
-	storage_type = /obj/item/tank/jetpack/oxygen/captain
+	storage_type = /obj/item/tank/jetpack/captain
 	mod_type = /obj/item/mod/control/pre_equipped/responsory
 
 /obj/machinery/suit_storage_unit/ert/commander

@@ -142,7 +142,11 @@
 				program.timer_trigger_delay = timer
 			. = TRUE
 
-/obj/machinery/nanite_programmer/Hear(message, atom/movable/speaker, message_language, raw_message, radio_freq, list/spans, list/message_mods = list(), message_range = 0)
+// Realigned to the current /atom/movable/Hear() signature: the leading pre-rendered `message`
+// argument was removed upstream (tg #93020). This override was also missing radio_freq_name and
+// radio_freq_color before the merge, which silently shifted `spans` onto radio_freq_name; both
+// are restored here so ..() forwards the right values.
+/obj/machinery/nanite_programmer/Hear(atom/movable/speaker, message_language, raw_message, radio_freq, radio_freq_name, radio_freq_color, list/spans, list/message_mods = list(), message_range = 0)
 	. = ..()
 	var/static/regex/when = regex("(?:^\\W*when|when\\W*$)", "i") //starts or ends with when
 	if(findtext(raw_message, when) && !istype(speaker, /obj/machinery/nanite_programmer) && COOLDOWN_FINISHED(src, nanite_programmer))

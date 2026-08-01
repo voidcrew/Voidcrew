@@ -189,22 +189,21 @@
  *
  * It is the stock skeleton controller (skeleton.dm:163) with two differences:
  *
- *  - `/datum/ai_planning_subtree/pet_planning` is present. Pet commands are run
- *    from nowhere else in the codebase — `pet_planning/SelectBehaviors()` reads
- *    BB_ACTIVE_PET_COMMAND and delegates to the command datum
- *    (code/datums/ai/basic_mobs/pet_commands/pet_command_planning.dm:10) — so on
- *    the stock skeleton controller the `obeys_commands` component above was inert
+ *  - the pet-command branch is present. Pet commands are run from nowhere else in
+ *    the codebase — the branch reads BB_ACTIVE_PET_COMMAND and delegates to the
+ *    command datum (code/datums/ai/basic_mobs/pet_commands/pet_command_bt.dm) — so
+ *    on the stock skeleton controller the `obeys_commands` component above was inert
  *    and every order handed to a thrall, including its standing follow order, was
- *    silently dropped on the floor.
- *  - it is LAST in the list, which is the opposite of what tamed pets do (the wolf
- *    puts it second, wolf_ai.dm:24). `follow/execute_action` returns
- *    SUBTREE_RETURN_FINISH_PLANNING (pet_commands_basic.dm:62), so first place
- *    would mean a thrall that heels beautifully and never swings at anything.
- *    Running find-target and melee first costs nothing when there is no enemy —
- *    `basic_melee_attack_subtree` only finishes planning when a target actually
- *    exists (simple_attack_target.dm:9-13) — so planning falls through to `follow`
- *    exactly when the thrall has nothing better to do. Fight if there is something
- *    to fight, keep up otherwise.
+ *    silently dropped on the floor. Post-behavior-tree-rewrite it is the
+ *    `"override_id": "SUBPLAN_ID_PET_COMMAND"` subtree node, the same wiring
+ *    upstream's own `simple_goon` controller uses.
+ *  - it is LAST in the selector, which is the opposite of what tamed pets do.
+ *    A selector stops at its first non-FAILURE child, so putting the follow order
+ *    first would mean a thrall that heels beautifully and never swings at anything.
+ *    Running combat first costs nothing when there is no enemy — that branch fails
+ *    out when no target exists — so the selector falls through to `follow` exactly
+ *    when the thrall has nothing better to do. Fight if there is something to fight,
+ *    keep up otherwise.
  *
  * BB_PET_TARGETING_STRATEGY is not optional: `protect_owner/execute_action`
  * resolves it and immediately calls `can_attack()` on the result without a null
@@ -222,15 +221,10 @@
 	)
 
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = /datum/idle_behavior/idle_random_walk
-
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/run_emote,
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
-		/datum/ai_planning_subtree/pet_planning,
-	)
+	// Old priority order (escape captivity -> emote -> find target -> melee -> pet commands)
+	// now lives in verdigris_thrall.bt.json. `idle_behavior = /datum/idle_behavior/idle_random_walk`
+	// is carried by the random_walk fallback already inside simple_hostile_combat.
+	behavior_tree_json = "voidcrew/modules/lich/verdigris_thrall.bt.json"
 
 /mob/living/basic/skeleton/verdigris_thrall/examine(mob/user)
 	. = ..()
@@ -472,9 +466,9 @@
  *    whatever is already in the key for as long as that target is still legal
  *    (code/datums/ai/basic_mobs/basic_ai_behaviors/targeting.dm:28-30). So a mob
  *    holds onto its mirage until the mirage is popped or leaves its sight.
- *    `CancelActions()` is needed as well, or a swing already queued at the real
- *    caster still lands (the same reason `set_command_active` calls it,
- *    code/datums/components/pet_commands/pet_command.dm:159).
+ *    `cancel_current_plan()` (was `CancelActions()`) is needed as well, or a swing
+ *    already queued at the real caster still lands (the same reason
+ *    `set_command_active` calls it, code/datums/components/pet_commands/pet_command.dm).
  *  - Legacy `/mob/living/simple_animal/hostile` mobs are still present in this fork
  *    (code/modules/mob/living/simple_animal/hostile/hostile.dm:1) and keep a plain
  *    `target` var. They must be moved with `GiveTarget()`, which does the
@@ -507,7 +501,7 @@
 				instincts.set_blackboard_key(BB_CURRENT_HUNTING_TARGET, decoy)
 				moved = TRUE
 			if(moved)
-				instincts.CancelActions()
+				instincts.cancel_current_plan() // was CancelActions() before the behavior-tree rewrite
 				fooled++
 			continue
 
@@ -677,7 +671,8 @@
 /obj/item/book/granter/action/spell/raise_thrall/recoil(mob/living/user)
 	. = ..()
 	user.visible_message(span_warning("Something under [user]'s feet tries to stand up, thinks better of it, and settles."))
-	playsound(user, 'sound/effects/magic/RATTLEMEBONES2.ogg', 50, TRUE)
+	// upstream deleted RATTLEMEBONES2.ogg; RATTLEMEBONES.ogg is the only surviving variant
+	playsound(user, 'sound/effects/magic/RATTLEMEBONES.ogg', 50, TRUE)
 
 /obj/item/book/granter/action/spell/verdigris_bolt
 	name = "codex of the working green"

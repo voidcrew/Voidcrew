@@ -164,9 +164,9 @@
 	flick("lpad-idle", src)
 
 	// Spark effect
-	var/datum/effect_system/spark_spread/sparks = new
-	sparks.set_up(5, 1, loc)
-	sparks.start()
+	// VOIDCREW EDIT: upstream moved the spark system to /datum/effect_system/basic/spark_spread and
+	// replaced set_up()/start() with constructor args.
+	do_sparks(5, TRUE, loc)
 
 	// Sound effect
 	playsound(src, 'sound/effects/magic/teleport_diss.ogg', 50, TRUE)

@@ -1,8 +1,10 @@
 /**
  * NPC Ship Combat Subtree
  *
- * This planning subtree handles all combat decision-making for NPC ships.
- * It queues behaviors based on the current combat state:
+ * VOIDCREW: fork-specific combat AI for NPC ships flying the overmap.
+ *
+ * This is a state machine, not a priority cascade. The ship's combat state lives on the
+ * controller (get_combat_state()) and exactly one branch of the tree matches it at a time:
  * - IDLE: Just scan for threats
  * - SCANNING: Scanning target for wealth (yellow zone pirates)
  * - HAILING: Hailing target, waiting for them to answer (20 sec grace period)
@@ -18,111 +20,111 @@
  * - BOSS_PHASE: Boss has been spawned, awaiting outcome
  * - DISABLED: Ship disabled after boss killed, player can board
  * - DISENGAGING: Pirates won (all player crew dead), leaving area
+ *
+ * Each state's branch is a parallel of the behaviors that state used to queue. Every
+ * npc_ship behavior returns a bare AI_BEHAVIOR_DELAY, so it reports BT_RUNNING forever and
+ * re-fires on its own time_between_perform - the parallel reproduces the old queued set.
  */
-/datum/ai_planning_subtree/npc_ship_combat
+/datum/bt_node/subtree/npc_ship_combat
+	behavior_tree_json = "voidcrew/modules/npc_ships/code/subtrees/npc_ship_combat.bt.json"
 
-/datum/ai_planning_subtree/npc_ship_combat/SelectBehaviors(datum/ai_controller/npc_ship/controller, seconds_per_tick)
+// ========== STATE GATES ==========
+
+/**
+ * VOIDCREW: gates the whole combat tree on the ship actually being in flight.
+ * Docked/crashed ships run no combat AI at all.
+ */
+/datum/bt_node/decorator/npc_ship_flying
+	observer_abort = BT_ABORT_SELF
+
+/datum/bt_node/decorator/npc_ship_flying/check_condition(datum/ai_controller/npc_ship/controller)
 	if(!istype(controller))
-		return
-
-	// Don't run combat AI when the ship isn't flying (docked, crashed, etc.)
+		return FALSE
 	var/obj/structure/overmap/ship/npc/ship = controller.get_ship()
-	if(!ship || ship.state != OVERMAP_SHIP_FLYING)
-		return
+	return ship && ship.state == OVERMAP_SHIP_FLYING
 
-	var/combat_state = controller.get_combat_state()
+/**
+ * VOIDCREW: matches one NPC combat state. Subtypes below pin the state they answer for.
+ *
+ * These have no observer signals on purpose - set_combat_state() writes the blackboard key
+ * directly, so no COMSIG_AI_BLACKBOARD_KEY_SET fires. Falling back to the controller's
+ * polling loop re-evaluates every SelectBehaviors tick, which is exactly what the old
+ * SelectBehaviors() switch did.
+ */
+/datum/bt_node/decorator/npc_combat_state
+	observer_abort = BT_ABORT_SELF
+	/// The NPC_COMBAT_* constant this branch answers for.
+	var/state
 
-	// Negotiating ships don't do any combat - they just wait for negotiation outcome
-	if(combat_state == NPC_COMBAT_NEGOTIATING)
-		// No combat behaviors - negotiation datum handles timeout and resolution
-		return
+/datum/bt_node/decorator/npc_combat_state/check_condition(datum/ai_controller/npc_ship/controller)
+	if(!istype(controller))
+		return FALSE
+	return controller.get_combat_state() == state
 
-	// Hailing ships wait for player to answer - don't scan for other threats
-	if(combat_state == NPC_COMBAT_HAILING)
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/hailing)
-		// Still check disengage in case target escapes
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/check_disengage)
-		return
+/datum/bt_node/decorator/npc_combat_state/idle
+	state = NPC_COMBAT_IDLE
 
-	// Siphoning ships interdict + siphon only (yellow zone economic threat, no weapons/boarding)
-	if(combat_state == NPC_COMBAT_SIPHONING)
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/activate_siphon)
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/check_disengage)
-		return
+/datum/bt_node/decorator/npc_combat_state/scanning
+	state = NPC_COMBAT_SCANNING
 
-	// Retreating ships don't scan for threats or fight - they just try to escape
-	if(combat_state == NPC_COMBAT_RETREATING)
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/retreat_escape)
-		return
+/datum/bt_node/decorator/npc_combat_state/hailing
+	state = NPC_COMBAT_HAILING
 
-	// ========== BOARDING PHASE STATES ==========
+/datum/bt_node/decorator/npc_combat_state/engaging
+	state = NPC_COMBAT_ENGAGING
 
-	// Active boarding wave - monitor the wave
-	if(combat_state == NPC_COMBAT_BOARDING)
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/boarding_wave_monitor)
-		return
+/datum/bt_node/decorator/npc_combat_state/combat
+	state = NPC_COMBAT_COMBAT
 
-	// Cooldown between waves - wait for timer
-	if(combat_state == NPC_COMBAT_BOARDING_COOLDOWN)
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/boarding_cooldown_monitor)
-		return
+/datum/bt_node/decorator/npc_combat_state/siphoning
+	state = NPC_COMBAT_SIPHONING
 
-	// Boss phase - wait for boss to be killed
-	if(combat_state == NPC_COMBAT_BOSS_PHASE)
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/boss_phase_monitor)
-		return
+/datum/bt_node/decorator/npc_combat_state/retreating
+	state = NPC_COMBAT_RETREATING
 
-	// Ship disabled - do nothing, wait for players to board
-	if(combat_state == NPC_COMBAT_DISABLED)
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/disabled)
-		return
+/datum/bt_node/decorator/npc_combat_state/negotiating
+	state = NPC_COMBAT_NEGOTIATING
 
-	// Disengaging after pirate victory - leaving the area
-	if(combat_state == NPC_COMBAT_DISENGAGING)
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/disengage)
-		return
+/datum/bt_node/decorator/npc_combat_state/boarding
+	state = NPC_COMBAT_BOARDING
 
-	// Always scan for threats first (unless in special states)
-	if(combat_state != NPC_COMBAT_SCANNING)
-		controller.queue_behavior(/datum/ai_behavior/npc_ship/scan_threats)
+/datum/bt_node/decorator/npc_combat_state/boarding_cooldown
+	state = NPC_COMBAT_BOARDING_COOLDOWN
 
-	switch(combat_state)
-		if(NPC_COMBAT_IDLE)
-			return
+/datum/bt_node/decorator/npc_combat_state/boss_phase
+	state = NPC_COMBAT_BOSS_PHASE
 
-		if(NPC_COMBAT_SCANNING)
-			// Scanning target for wealth before engaging
-			controller.queue_behavior(/datum/ai_behavior/npc_ship/scan_wealth)
-			// Still check disengage in case target escapes during scan
-			controller.queue_behavior(/datum/ai_behavior/npc_ship/check_disengage)
-			return
+/datum/bt_node/decorator/npc_combat_state/disabled
+	state = NPC_COMBAT_DISABLED
 
-		if(NPC_COMBAT_ENGAGING)
-			controller.queue_behavior(/datum/ai_behavior/npc_ship/acquire_lock)
-			controller.queue_behavior(/datum/ai_behavior/npc_ship/check_weapons)
+/datum/bt_node/decorator/npc_combat_state/disengaging
+	state = NPC_COMBAT_DISENGAGING
 
-		if(NPC_COMBAT_COMBAT)
-			// ACTION PRIORITY SYSTEM: Pick ONE offensive action per tick instead of all three
-			// This prevents pirates from overwhelming players with simultaneous attacks
-			var/chosen_action = choose_combat_action(controller)
-			switch(chosen_action)
-				if(NPC_ACTION_FIRE_WEAPONS)
-					controller.queue_behavior(/datum/ai_behavior/npc_ship/fire_weapons)
-				if(NPC_ACTION_FIRE_BOARDING_PODS)
-					controller.queue_behavior(/datum/ai_behavior/npc_ship/fire_boarding_pods)
-				if(NPC_ACTION_USE_INTERDICTOR)
-					controller.queue_behavior(/datum/ai_behavior/npc_ship/use_interdictor)
-				if(NPC_ACTION_ACTIVATE_SIPHON)
-					controller.queue_behavior(/datum/ai_behavior/npc_ship/activate_siphon)
-			// Always check weapons status
-			controller.queue_behavior(/datum/ai_behavior/npc_ship/check_weapons)
+// ========== ACTION PRIORITY COMPOSITE ==========
 
-	// Always check if we should disengage (target out of range)
-	controller.queue_behavior(/datum/ai_behavior/npc_ship/check_disengage)
+/**
+ * VOIDCREW: picks ONE offensive action per tick instead of running all of them.
+ *
+ * This prevents pirates from overwhelming players with simultaneous attacks. It is a
+ * composite rather than a selector because the choice is a weighted roll with commitment
+ * delays, not a priority order - the roll happens once per tick and only the winning child
+ * is ticked. Children identify themselves by their combat_action var, so JSON ordering
+ * does not matter.
+ */
+/datum/bt_node/composite/npc_combat_action
+	label = "NPC COMBAT ACTION"
+
+/datum/bt_node/composite/npc_combat_action/tick(datum/ai_controller/controller, seconds_per_tick)
+	if(!istype(controller, /datum/ai_controller/npc_ship))
+		return BT_FAILURE
+
+	var/chosen_action = choose_combat_action(controller)
+	for(var/datum/bt_node/ai_behavior/npc_ship/action_node as anything in children)
+		if(action_node.combat_action != chosen_action)
+			continue
+		return action_node.tick(controller, seconds_per_tick)
+
+	return BT_FAILURE
 
 /**
  * Chooses which combat action to take this tick.
@@ -135,7 +137,7 @@
  *
  * Returns: NPC_ACTION_FIRE_WEAPONS, NPC_ACTION_FIRE_BOARDING_PODS, NPC_ACTION_USE_INTERDICTOR, or NPC_ACTION_ACTIVATE_SIPHON
  */
-/datum/ai_planning_subtree/npc_ship_combat/proc/choose_combat_action(datum/ai_controller/npc_ship/controller)
+/datum/bt_node/composite/npc_combat_action/proc/choose_combat_action(datum/ai_controller/npc_ship/controller)
 	var/obj/structure/overmap/ship/npc/pirate/ship = controller.get_ship()
 	var/obj/structure/overmap/ship/target = controller.get_target()
 

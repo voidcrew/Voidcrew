@@ -66,7 +66,9 @@
 	)
 	var/crate_path = pick_weight(crate_weights)
 	new crate_path(loc)
-	var/wave_path = wave_by_crate[crate_path] || wave_by_crate[type2parent(crate_path)]
+	// VOIDCREW EDIT: upstream deleted /proc/type2parent; voidcrew_type2parent() is its restored
+	// body (voidcrew/modules/ship_upgrades/_ship_upgrades.dm).
+	var/wave_path = wave_by_crate[crate_path] || wave_by_crate[voidcrew_type2parent(crate_path)]
 	if(!wave_path)
 		return
 	// guaranteed escort even in green; rare finds pull a bigger party

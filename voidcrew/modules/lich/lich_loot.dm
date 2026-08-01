@@ -154,7 +154,8 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 			remaining = scatter.Copy()
 		new hoard_type(pick_n_take(remaining))
 
-	playsound(hoard_turf, 'sound/effects/magic/RATTLEMEBONES2.ogg', 65, TRUE)
+	// VOIDCREW EDIT: RATTLEMEBONES2.ogg was deleted upstream for copyright (tg #96880).
+	playsound(hoard_turf, 'sound/effects/magic/RATTLEMEBONES.ogg', 65, TRUE)
 	hoard_turf.visible_message(span_boldnotice("The green goes out of the room, and leaves his things on the floor."))
 	log_game("LICH: hoard paid out at ([hoard_turf.x], [hoard_turf.y], [hoard_turf.z]).")
 	return hoard_turf

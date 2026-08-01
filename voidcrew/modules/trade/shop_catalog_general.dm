@@ -315,7 +315,7 @@
 
 /datum/shop_sku/general/gauze
 	category = "Medical"
-	item_path = /obj/item/stack/medical/gauze
+	item_path = /obj/item/stack/medical/wrap/gauze
 	price_credits = 120
 	stock_min = 4
 	stock_max = 8

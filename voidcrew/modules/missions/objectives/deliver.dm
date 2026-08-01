@@ -135,9 +135,9 @@
 		return FALSE
 	var/obj/item/tank/tank = item
 	var/datum/gas_mixture/mix = tank.return_air()
-	if(!mix || !(gas_type in mix.gases))
+	if(!mix || !(gas_type in mix.moles))
 		return FALSE
-	return mix.gases[gas_type][MOLES] >= required_moles
+	return mix.moles[gas_type] >= required_moles
 
 /datum/mission_objective/deliver/gas_tank/describe_turn_in_failure(obj/item/item)
 	if(!item)
@@ -146,7 +146,7 @@
 		return "The contract wants a gas tank."
 	var/obj/item/tank/tank = item
 	var/datum/gas_mixture/mix = tank.return_air()
-	var/carried = (mix && (gas_type in mix.gases)) ? mix.gases[gas_type][MOLES] : 0
+	var/carried = (mix && (gas_type in mix.moles)) ? mix.moles[gas_type] : 0
 	return "Tank holds [round(carried)]/[required_moles] mol of [required_name]."
 
 // =========================================================================

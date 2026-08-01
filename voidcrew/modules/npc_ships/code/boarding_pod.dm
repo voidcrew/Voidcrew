@@ -60,7 +60,7 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	/// This boarder's index in the spawn batch (for patrol distribution)
 	var/spawn_index = 0
 
-/obj/structure/closet/supplypod/boarding/preOpen()
+/obj/structure/closet/supplypod/boarding/pre_open()
 	. = ..()
 	// Play a distinctive sound when the pod lands
 	if(target_ship)
@@ -156,7 +156,7 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	// interpreted as single_order by the parent and forceMoved into the pod
 	. = ..(mapload, podParam)
 
-/obj/effect/pod_landingzone/boarding/playFallingSound()
+/obj/effect/pod_landingzone/boarding/play_falling_sound()
 	// Use ship-limited sound so it only plays on the target ship
 	if(target_ship)
 		playsound_ship(get_turf(src), pod.fallingSound, pod.soundVolume, TRUE, 6, target_ship)
@@ -205,7 +205,7 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	damage = 50  // More damage to anyone caught underneath
 	delays = list(POD_TRANSIT = 20, POD_FALLING = 5, POD_OPENING = 10, POD_LEAVING = 8)
 
-/obj/structure/closet/supplypod/boarding/boss/preOpen()
+/obj/structure/closet/supplypod/boarding/boss/pre_open()
 	. = ..()
 	// Extra dramatic sound for boss arrival
 	if(target_ship)

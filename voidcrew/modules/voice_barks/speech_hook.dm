@@ -10,7 +10,9 @@
 		return
 	if(HAS_TRAIT(src, TRAIT_SIGN_LANG))
 		return
-	if(HAS_TRAIT(src, TRAIT_UNKNOWN))
+	// VOIDCREW EDIT: upstream split TRAIT_UNKNOWN into TRAIT_UNKNOWN_APPEARANCE and
+	// TRAIT_UNKNOWN_VOICE. A bark is the speaker's voice, so the voice half is the one that gates it.
+	if(HAS_TRAIT(src, TRAIT_UNKNOWN_VOICE))
 		return
 
 	// Check if barking is enabled

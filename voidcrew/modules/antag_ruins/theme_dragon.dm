@@ -519,10 +519,14 @@
 	qdel(src)
 
 /**
- * Brood AI: the carp toolkit minus the cowardice and the snacking. Same
- * movement, same rift teleports, same obstacle-chewing — but no fleeing, no
- * food-hunting, no migration, and a targeting strategy that recognizes the
- * egg (the generic strategy only attacks mobs, mechs and turrets).
+ * Brood AI: the carp toolkit minus the cowardice. Same movement, same rift
+ * teleports, same obstacle-chewing, and a targeting strategy that recognizes
+ * the egg (the generic strategy only attacks mobs, mechs and turrets).
+ *
+ * The fleeing is switched off by blackboard, as before. The hand-pruned
+ * subtree list that also cut food-hunting and migration is gone: upstream now
+ * ships the carp brain as one compiled behavior tree on the parent controller,
+ * so we inherit that whole tree and tune it by blackboard only.
  */
 /datum/ai_controller/basic_controller/carp/vestige_brood
 	blackboard = list(
@@ -532,25 +536,18 @@
 		BB_TARGET_PRIORITY_TRAIT = TRAIT_SCARY_FISHERMAN,
 		BB_CARPS_FEAR_FISHERMAN = FALSE,
 	)
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/find_target_prioritize_traits,
-		/datum/ai_planning_subtree/attack_obstacle_in_path/carp,
-		/datum/ai_planning_subtree/shortcut_to_target_through_carp_rift,
-		/datum/ai_planning_subtree/make_carp_rift/aggressive_teleport,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
-	)
 
 /**
  * Standard basic targeting, plus the egg. The egg is assigned as a blackboard
  * target by the nest itself (find_potential_targets only scans mobs and
  * GLOB.hostile_machines), so this strategy's job is to keep that assignment
  * VALID: both the target-finder's keep-current-target check and the melee
- * behavior's re-validation run through can_attack.
+ * behavior's re-validation run through is_valid_target (upstream's rename of
+ * can_attack; it gained a trailing controller argument).
  */
 /datum/targeting_strategy/basic/vestige_brood
 
-/datum/targeting_strategy/basic/vestige_brood/can_attack(mob/living/living_mob, atom/the_target, vision_range)
+/datum/targeting_strategy/basic/vestige_brood/is_valid_target(mob/living/living_mob, atom/the_target, vision_range, datum/ai_controller/controller = null)
 	if(istype(the_target, /obj/structure/vestige_dragon_egg))
 		if(QDELETED(the_target) || living_mob.z != the_target.z)
 			return FALSE

@@ -516,10 +516,12 @@
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NO_REPLICATE, INNATE_TRAIT)
 
-// The paper spritesheet is keyed by icon_state and has no entry for our custom
+// The stamp spritesheet is keyed by icon_state and has no entry for our custom
 // sprite, so report the stock impression instead of a blank stamp on the page.
+// VOIDCREW EDIT: upstream split the old /paper spritesheet, and the stamp images now
+// live in /datum/asset/spritesheet/simple/stamps (code/modules/asset_cache/assets/paper.dm).
 /obj/item/stamp/helios_pattern/get_writing_implement_details()
-	var/datum/asset/spritesheet_batched/sheet = get_asset_datum(/datum/asset/spritesheet/simple/paper)
+	var/datum/asset/spritesheet_batched/sheet = get_asset_datum(/datum/asset/spritesheet/simple/stamps)
 	return list(
 		interaction_mode = MODE_STAMPING,
 		stamp_icon_state = "stamp-ok",
@@ -613,7 +615,8 @@
 		return FALSE
 	// custom_materials is keyed by material datum instances, not typepaths —
 	// convert the stack's material_type before indexing or nothing ever matches
-	var/datum/material/mat_ref = material_stack.material_type ? GET_MATERIAL_REF(material_stack.material_type) : null
+	// VOIDCREW EDIT: the GET_MATERIAL_REF() macro was replaced by SSmaterials.get_material().
+	var/datum/material/mat_ref = material_stack.material_type ? SSmaterials.get_material(material_stack.material_type) : null
 	var/needed = (mat_ref && memorized_materials[mat_ref]) ? (memorized_materials[mat_ref] - banked_materials[mat_ref]) : 0
 	if(needed <= 0)
 		balloon_alert(user, "won't take that")

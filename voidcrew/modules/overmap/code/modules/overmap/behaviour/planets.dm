@@ -50,7 +50,7 @@
 	target_area = /area/overmap_encounter/planetoid/lava
 	surface_area = /area/overmap_encounter/planetoid/lava
 	surface = /turf/open/misc/asteroid/basalt/lava_land_surface
-	weather_controller_type = /datum/weather/ash_storm
+	weather_controller_type = /datum/weather/particle/ash_storm // upstream reparented this under /particle
 	weather_trait = ZTRAIT_ASHSTORM
 	planet_template = /datum/planet/lava
 	parallax_theme = PARALLAX_THEME_PLANET
@@ -82,7 +82,7 @@
 	target_area = /area/overmap_encounter/planetoid/beach
 	surface_area = /area/overmap_encounter/planetoid/beach
 	surface = /turf/open/misc/asteroid/sand/beach/lit
-	weather_controller_type = /datum/weather/rain_storm
+	weather_controller_type = /datum/weather/particle/rain_storm // upstream reparented this under /particle
 	weather_trait = ZTRAIT_RAINSTORM
 	planet_template = /datum/planet/beach
 	chart_variant = "ocean"
@@ -97,7 +97,7 @@
 	target_area = /area/overmap_encounter/planetoid/jungle
 	surface_area = /area/overmap_encounter/planetoid/jungle
 	surface = /turf/open/misc/dirt/jungle
-	weather_controller_type = /datum/weather/rain_storm
+	weather_controller_type = /datum/weather/particle/rain_storm // upstream reparented this under /particle
 	weather_trait = ZTRAIT_RAINSTORM
 	planet_template = /datum/planet/jungle
 	chart_variant = "jungle"

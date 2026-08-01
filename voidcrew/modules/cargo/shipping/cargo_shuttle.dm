@@ -45,7 +45,9 @@
 		"name" = name,
 		"amount" = amount,
 		"value" = value,
-		"time" = station_time_timestamp()
+		// VOIDCREW EDIT: station_time_timestamp() was replaced by round_timestamp(), which is what
+		// SSeconomy's own audit log now uses.
+		"time" = round_timestamp()
 	)
 	transaction_history.Insert(1, list(entry)) // Insert at beginning (newest first)
 	if(length(transaction_history) > max_history)

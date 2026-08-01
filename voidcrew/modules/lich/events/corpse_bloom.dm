@@ -122,7 +122,9 @@
 	riser.desc = "The skeleton of [corpse.real_name || corpse.name], up and walking without the rest of them. \
 		There's a faint green light where the eyes should be."
 	rise_turf.visible_message(span_boldwarning("The bones tear their way out of [corpse] and stand up!"))
-	playsound(rise_turf, 'sound/effects/magic/RATTLEMEBONES2.ogg', 60, TRUE)
+	// VOIDCREW EDIT: RATTLEMEBONES2.ogg was deleted upstream for copyright (tg #96880); the
+	// surviving RATTLEMEBONES.ogg is the same bone-rattle cue used elsewhere in this module.
+	playsound(rise_turf, 'sound/effects/magic/RATTLEMEBONES.ogg', 60, TRUE)
 	do_smoke(0, holder = riser, location = rise_turf)
 
 	riser.AddComponent(\

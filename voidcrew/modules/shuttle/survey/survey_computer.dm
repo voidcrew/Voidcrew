@@ -730,7 +730,10 @@
 		floating_button.scale_to(scaling_integer, scaling_integer)
 
 	// Update the size of the toggle palette
-	user.hud_used.toggle_palette.scale_to(scaling_integer, scaling_integer)
+	// VOIDCREW EDIT: the direct hud.toggle_palette var is gone; HUD screen objects now live in
+	// hud.screen_objects, keyed by the HUD_MOB_* defines.
+	var/atom/movable/screen/button_palette/toggle_palette = user.hud_used.screen_objects[HUD_MOB_TOGGLE_PALETTE]
+	toggle_palette?.scale_to(scaling_integer, scaling_integer)
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/survey/give_eye_control(mob/user)
 	..()

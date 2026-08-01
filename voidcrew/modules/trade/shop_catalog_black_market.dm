@@ -232,7 +232,7 @@
 
 /datum/shop_sku/black_market/speedloader
 	category = "Weapons"
-	item_path = /obj/item/ammo_box/a357
+	item_path = /obj/item/ammo_box/speedloader/c357
 	price_credits = 1800
 	stock_min = 2
 	stock_max = 5

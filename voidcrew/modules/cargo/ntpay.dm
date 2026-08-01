@@ -28,22 +28,26 @@
 
 /datum/computer_file/program/nt_pay/ui_act(action, list/params, datum/tgui/ui)
 	. = ..()
+	//VOIDCREW: upstream replaced computer.computer_id_slot with computer.stored_id + GetID()
+	var/obj/item/card/id/computer_id = computer.stored_id?.GetID()
+	if(!computer_id?.registered_account)
+		return
 	switch(action)
 		if("add_account")
-			if(!inserted_id || (inserted_id.registered_account == computer.computer_id_slot.registered_account))
+			if(!inserted_id || (inserted_id.registered_account == computer_id.registered_account))
 				return
 			if(inserted_id.registered_account)
 				//disconnect from old account
 				inserted_id.registered_account.bank_cards -= src
-			inserted_id.registered_account = computer.computer_id_slot.registered_account
+			inserted_id.registered_account = computer_id.registered_account
 			inserted_id.registered_account.bank_cards += src
 		if("remove_account")
-			var/obj/item/card/id/card = locate(params["removed_account"]) in computer.computer_id_slot.registered_account.bank_cards
+			var/obj/item/card/id/card = locate(params["removed_account"]) in computer_id.registered_account.bank_cards
 			//don't remove yourself
-			if(!card || (card == computer.computer_id_slot))
+			if(!card || (card == computer_id))
 				return
 			//only the captain can edit
-			if(computer.computer_id_slot.assignment != computer.computer_id_slot.registered_account.account_job.title)
+			if(computer_id.assignment != computer_id.registered_account.account_job.title)
 				return
 			card.registered_account.bank_cards -= src
 			card.clear_account()

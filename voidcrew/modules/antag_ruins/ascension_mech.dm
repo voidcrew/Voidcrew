@@ -406,7 +406,7 @@
 	committed = locked
 	if(locked)
 		ADD_TRAIT(src, TRAIT_IMMOBILIZED, WARFRAME_TRAIT)
-		ai_controller?.CancelActions()
+		ai_controller?.cancel_current_plan()
 		return
 	REMOVE_TRAIT(src, TRAIT_IMMOBILIZED, WARFRAME_TRAIT)
 
@@ -520,7 +520,11 @@
 	playsound(src, 'sound/effects/empulse.ogg', 60, TRUE)
 	do_sparks(4, FALSE, src)
 	set_committed(TRUE)
-	ai_controller?.PauseAi(WARFRAME_BREAKER_STAGGER)
+	if(ai_controller) // PauseAi() is gone; paused_until is the surviving hook
+		ai_controller.paused_until = world.time + WARFRAME_BREAKER_STAGGER
+		// paused_until is only read through the able_to_run cache - refresh now and at expiry
+		ai_controller.update_able_to_run()
+		addtimer(CALLBACK(ai_controller, TYPE_PROC_REF(/datum/ai_controller, update_able_to_run)), WARFRAME_BREAKER_STAGGER + 1, TIMER_UNIQUE|TIMER_OVERRIDE)
 	addtimer(CALLBACK(src, PROC_REF(set_committed), FALSE), WARFRAME_BREAKER_STAGGER, TIMER_UNIQUE|TIMER_OVERRIDE)
 
 // =========================================================================
@@ -561,7 +565,11 @@
 
 	// Untouchable for the length of the bow, so nobody misses the tell.
 	add_traits(list(TRAIT_GODMODE, TRAIT_IMMOBILIZED), WARFRAME_TRAIT)
-	ai_controller?.PauseAi(WARFRAME_ROUND_CHANGE_TIME)
+	if(ai_controller) // PauseAi() is gone; paused_until is the surviving hook
+		ai_controller.paused_until = world.time + WARFRAME_ROUND_CHANGE_TIME
+		// paused_until is only read through the able_to_run cache - refresh now and at expiry
+		ai_controller.update_able_to_run()
+		addtimer(CALLBACK(ai_controller, TYPE_PROC_REF(/datum/ai_controller, update_able_to_run)), WARFRAME_ROUND_CHANGE_TIME + 1, TIMER_UNIQUE|TIMER_OVERRIDE)
 	addtimer(CALLBACK(src, PROC_REF(end_round_change)), WARFRAME_ROUND_CHANGE_TIME, TIMER_UNIQUE|TIMER_OVERRIDE)
 
 	melee_damage_lower = 28
@@ -644,9 +652,13 @@
 /**
  * Its controller.
  *
- * `idle_behavior` is null on purpose: it stands in the middle of the hall until somebody
- * walks in. The rotation subtree is where the whole personality lives — see
- * [/datum/ai_planning_subtree/warframe_rotation].
+ * It stands in the middle of the hall until somebody walks in — that used to be
+ * `idle_behavior = null`, and is now the stationary combat subtree (walk chance
+ * bound to zero). The rotation subtree is where the whole personality lives —
+ * see [/datum/bt_node/subtree/vestige_ability_rotation/warframe].
+ *
+ * The node list below is the old planning_subtrees list one-for-one: find a
+ * target, take a rotation turn, chew through anything in the way, then swing.
  */
 /datum/ai_controller/basic_controller/vestige_warframe
 	blackboard = list(
@@ -656,12 +668,11 @@
 		BB_WARFRAME_LAST_ABILITY = null,
 	)
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = null
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/warframe_rotation,
-		/datum/ai_planning_subtree/attack_obstacle_in_path,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree/warframe,
+	behavior_nodes = list(
+		/datum/bt_node/subtree/basic_find_target,
+		/datum/bt_node/subtree/vestige_ability_rotation/warframe,
+		/datum/bt_node/ai_behavior/attack_obstructions/vestige,
+		/datum/bt_node/subtree/simple_hostile_combat/vestige_stationary,
 	)
 
 /**
@@ -688,49 +699,21 @@
  * The weights are soft. Everything stays in the pool at [WARFRAME_BASE_WEIGHT] whatever
  * the read says, so the fight never becomes one move on a loop.
  */
-/datum/ai_planning_subtree/warframe_rotation
-	/// It will not spend a cooldown on somebody further away than this.
-	var/engagement_range = 9
+/datum/bt_node/subtree/vestige_ability_rotation/warframe
+	pawn_type = /mob/living/basic/vestige_warframe
+	kit = list(BB_WARFRAME_IAI, BB_WARFRAME_GUARD, BB_WARFRAME_SWEEP, BB_WARFRAME_LIVE_FLOOR)
+	last_ability_key = BB_WARFRAME_LAST_ABILITY
+	engagement_range = 9
 
-/datum/ai_planning_subtree/warframe_rotation/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+/datum/bt_node/subtree/vestige_ability_rotation/warframe/is_locked(datum/ai_controller/controller)
 	var/mob/living/basic/vestige_warframe/warframe = controller.pawn
-	if(!istype(warframe))
-		return
-	if(warframe.committed)
-		// Mid-move. No walking, no swinging, nothing queued on top.
-		return SUBTREE_RETURN_FINISH_PLANNING
-	if(warframe.stat != STABLE)
-		return
+	return istype(warframe) && warframe.committed
 
-	var/atom/opponent = controller.blackboard[BB_CURRENT_TARGET]
-	if(QDELETED(opponent))
-		return
-	if(isliving(opponent))
-		var/mob/living/living_opponent = opponent
-		if(living_opponent.stat == DEAD)
-			return
-	if(get_dist(warframe, opponent) > engagement_range)
-		return
-
-	var/last_used = controller.blackboard[BB_WARFRAME_LAST_ABILITY]
-	var/list/options = list()
-	for(var/ability_key as anything in list(BB_WARFRAME_IAI, BB_WARFRAME_GUARD, BB_WARFRAME_SWEEP, BB_WARFRAME_LIVE_FLOOR))
-		if(ability_key == last_used)
-			continue
-		var/datum/action/cooldown/ability = controller.blackboard[ability_key]
-		if(!ability?.IsAvailable())
-			continue
-		options[ability_key] = WARFRAME_BASE_WEIGHT + read_bonus(warframe, ability_key)
-	if(!length(options))
-		return
-
-	var/chosen_key = pick_weight(options)
-	controller.set_blackboard_key(BB_WARFRAME_LAST_ABILITY, chosen_key)
-	controller.queue_behavior(/datum/ai_behavior/targeted_mob_ability, chosen_key, BB_CURRENT_TARGET)
-	return SUBTREE_RETURN_FINISH_PLANNING
+/datum/bt_node/subtree/vestige_ability_rotation/warframe/weight_for(datum/ai_controller/controller, ability_key, atom/quarry)
+	return WARFRAME_BASE_WEIGHT + read_bonus(controller.pawn, ability_key)
 
 /// Extra weight this ability gets from the current read.
-/datum/ai_planning_subtree/warframe_rotation/proc/read_bonus(mob/living/basic/vestige_warframe/warframe, ability_key)
+/datum/bt_node/subtree/vestige_ability_rotation/warframe/proc/read_bonus(mob/living/basic/vestige_warframe/warframe, ability_key)
 	switch(ability_key)
 		if(BB_WARFRAME_IAI, BB_WARFRAME_LIVE_FLOOR)
 			return warframe.reads_far() ? WARFRAME_READ_WEIGHT : 0
@@ -738,14 +721,10 @@
 			return warframe.reads_close() ? WARFRAME_READ_WEIGHT : 0
 	return 0
 
-/// It does not swing while it is committed to something.
-/datum/ai_planning_subtree/basic_melee_attack_subtree/warframe
-
-/datum/ai_planning_subtree/basic_melee_attack_subtree/warframe/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/basic/vestige_warframe/warframe = controller.pawn
-	if(istype(warframe) && warframe.committed)
-		return
-	return ..()
+// It does not swing while it is committed to something: is_locked() above returns
+// BT_RUNNING for the whole commit, which ends the tick before the melee subtree
+// behind it is ever reached. That is what the old basic_melee_attack_subtree/warframe
+// override bought, so the override is no longer carried separately.
 
 // =========================================================================
 // IAI — THE DRAWN CUT
@@ -1442,7 +1421,11 @@
 		warframe.visible_message(span_boldwarning("[warframe] stops dead, one arm still out."))
 		do_sparks(3, FALSE, warframe)
 		warframe.set_committed(TRUE)
-		warframe.ai_controller?.PauseAi(WARFRAME_BREAKER_STAGGER)
+		if(warframe.ai_controller) // PauseAi() is gone; paused_until is the surviving hook
+			warframe.ai_controller.paused_until = world.time + WARFRAME_BREAKER_STAGGER
+			// paused_until is only read through the able_to_run cache - refresh now and at expiry
+			warframe.ai_controller.update_able_to_run()
+			addtimer(CALLBACK(warframe.ai_controller, TYPE_PROC_REF(/datum/ai_controller, update_able_to_run)), WARFRAME_BREAKER_STAGGER + 1, TIMER_UNIQUE|TIMER_OVERRIDE)
 		addtimer(CALLBACK(warframe, TYPE_PROC_REF(/mob/living/basic/vestige_warframe, set_committed), FALSE), WARFRAME_BREAKER_STAGGER, TIMER_UNIQUE|TIMER_OVERRIDE)
 	addtimer(CALLBACK(src, PROC_REF(reset_lever)), WARFRAME_BREAKER_RESET)
 
@@ -1752,7 +1735,6 @@ GLOBAL_LIST_EMPTY(warframe_gates)
 	background_icon_state = "bg_tech_blue"
 	overlay_icon_state = "bg_tech_blue_border"
 	ranged_mousepointer = 'icons/effects/mouse_pointers/override_machine_target.dmi'
-	panel = "Spells"
 	school = SCHOOL_TRANSMUTATION
 	sound = null
 	invocation_type = INVOCATION_NONE
@@ -1965,9 +1947,8 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 		/obj/machinery,
 		/obj/item/modular_computer,
 		/obj/item/radio/intercom,
-		/mob/living/basic/bot,
+		/mob/living/basic/bot, // upstream finished the simple_animal/bot -> basic/bot port, so this is now the only bot root
 		/mob/living/silicon,
-		/mob/living/simple_animal/bot,
 	)
 	if(!is_type_in_list(target, compatible))
 		return FALSE
@@ -2311,7 +2292,6 @@ GLOBAL_LIST_EMPTY(machine_quickhacks)
 	button_icon_state = "ai_core"
 	background_icon_state = "bg_tech_blue"
 	overlay_icon_state = "bg_tech_blue_border"
-	panel = "Spells"
 	school = SCHOOL_TRANSMUTATION
 	sound = null
 	invocation_type = INVOCATION_NONE
@@ -2721,27 +2701,23 @@ GLOBAL_LIST_EMPTY(machine_masshacks)
 /datum/ai_controller/basic_controller/mimic_copy/machine/communion
 	// not_friends is the whole point — see the file comment. It reads BB_FRIENDS_LIST,
 	// which is the half of befriend() that actually knows who woke this thing up.
+	// The lines used to be a random_speech/when_has_target subtree. Upstream moved
+	// mimic speech onto the blackboard and bakes the speech loop into the inherited
+	// mimic_copy tree, so the list lives here now and the node list is inherited too
+	// (that tree already covers escape_captivity, find target, obstacles and melee).
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic/not_friends,
-	)
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/attack_obstacle_in_path,
-		/datum/ai_planning_subtree/random_speech/when_has_target/communion_machine,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
-	)
-
-/datum/ai_planning_subtree/random_speech/when_has_target/communion_machine
-	speech_chance = 6
-	emote_hear = list()
-	speak = list(
-		"Clear the room.",
-		"You are not on the list.",
-		"Stand still.",
-		"Instruction received.",
-		"This is being logged.",
-		"Stop moving.",
+		BB_BASIC_MOB_SPEAK_LINES = list(
+			BB_SPEAK_CHANCE = 6,
+			BB_EMOTE_SAY = list(
+				"Clear the room.",
+				"You are not on the list.",
+				"Stand still.",
+				"Instruction received.",
+				"This is being logged.",
+				"Stop moving.",
+			),
+		),
 	)
 
 // The stat block is set by CopyObject inside the parent's Initialize, so the scaling has

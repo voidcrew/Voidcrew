@@ -68,7 +68,7 @@
 			open_pod(src, FALSE, FALSE)
 			return TRUE
 		else
-			setClosed()
+			set_closed()
 			return TRUE
 	if(I.tool_behaviour == TOOL_WRENCH)
 		set_anchored(!anchored)
@@ -129,9 +129,7 @@
 		CHECK_TICK
 
 /obj/structure/closet/supplypod/drop_pod/proc/sparks()
-	var/datum/effect_system/spark_spread/quantum/s = new /datum/effect_system/spark_spread/quantum
-	s.set_up(5, 1, get_turf(src))
-	s.start()
+	do_sparks(5, TRUE, src, spark_type = /datum/effect_system/basic/spark_spread/quantum)
 
 /obj/structure/closet/supplypod/drop_pod/Initialize(mapload, customStyle)
 	. = ..()
@@ -160,7 +158,7 @@
 	linked_pad = null
 	return ..()
 
-/obj/structure/closet/supplypod/drop_pod/setClosed()
+/obj/structure/closet/supplypod/drop_pod/set_closed()
 	if(opened == FALSE)
 		return
 	opened = FALSE
@@ -257,7 +255,7 @@
 		if("open")
 			open_pod(src, FALSE, FALSE)
 		if("close")
-			setClosed()
+			set_closed()
 		if("teleport")
 			teleport()
 		if("refresh")
@@ -513,7 +511,7 @@
 /obj/effect/pod_landingzone/drop_pod
 	var/leaving_sound = 'sound/effects/podwoosh.ogg'
 
-/obj/effect/pod_landingzone/drop_pod/endLaunch()
+/obj/effect/pod_landingzone/drop_pod/end_launch()
 	if(istype(pod, /obj/structure/closet/supplypod/drop_pod/advanced))
 		var/obj/structure/closet/supplypod/drop_pod/advanced/adv_pod = pod
 		adv_pod.ignore_next_open = TRUE
@@ -522,7 +520,7 @@
 /obj/effect/pod_landingzone/drop_pod/proc/playLeavingSound(obj/structure/closet/supplypod/pod)
 	playsound(get_turf(pod), leaving_sound, pod.soundVolume, TRUE, 6)
 
-/obj/effect/pod_landingzone/drop_pod/beginLaunch(effectCircle)
+/obj/effect/pod_landingzone/drop_pod/begin_launch(effectCircle)
 	if(!pod.effectQuiet)
 		playLeavingSound(pod)
 	. = ..()

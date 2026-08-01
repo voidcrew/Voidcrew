@@ -33,7 +33,7 @@
 		/obj/item/gun/ballistic/shotgun/doublebarrel = 7,
 		/obj/item/storage/box/lethalshot = 7,
 		/obj/item/gun/ballistic/revolver = 6,
-		/obj/item/ammo_box/a357 = 6,
+		/obj/item/ammo_box/speedloader/c357 = 6,
 		/obj/item/stack/sheet/mineral/gold = 5,
 		/obj/item/clothing/head/costume/pirate/armored = 4,
 		/obj/item/clothing/suit/costume/pirate/armored = 4,

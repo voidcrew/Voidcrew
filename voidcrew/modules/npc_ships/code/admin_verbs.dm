@@ -167,7 +167,7 @@ ADMIN_VERB(force_z_level_active, R_DEBUG, "Force Z-Level Active", "Keep a z-leve
 		GLOB.z_level_activator_dummies -= "[z_level]"
 		to_chat(user, span_adminnotice("Z-level [z_level] no longer forced active."))
 		// Put AI back to sleep
-		for(var/datum/ai_controller/controller as anything in GLOB.ai_controllers_by_zlevel[z_level])
+		for(var/datum/ai_controller/controller as anything in SSai_controllers.ai_controllers_by_zlevel[z_level])
 			controller.set_ai_status(controller.get_expected_ai_status())
 		return
 
@@ -186,7 +186,7 @@ ADMIN_VERB(force_z_level_active, R_DEBUG, "Force Z-Level Active", "Keep a z-leve
 	SSmobs.clients_by_zlevel[z_level] += dummy
 
 	// Wake up all AI on that z-level
-	for(var/datum/ai_controller/controller as anything in GLOB.ai_controllers_by_zlevel[z_level])
+	for(var/datum/ai_controller/controller as anything in SSai_controllers.ai_controllers_by_zlevel[z_level])
 		controller.set_ai_status(controller.get_expected_ai_status())
 
 	to_chat(user, span_adminnotice("Z-level [z_level] forced active. Run verb again to deactivate."))

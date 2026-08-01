@@ -18,7 +18,6 @@
 	layer = SPACE_LAYER
 	baseturfs = /turf/open/chasm/reebe_void
 	planetary_atmos = TRUE
-	tiled_dirt = FALSE
 	flags_1 = NOJAUNT
 	initial_gas_mix = REEBE_DEFAULT_ATMOS
 	light_range = 2
@@ -87,5 +86,5 @@
 		/obj/structure/lattice/catwalk/clockwork = 60)
 	feature_spawn_list = null
 
-	initial_closed_chance = 0
+	noise_percent = 100 // VOIDCREW: was initial_closed_chance = 0 (fully open arena)
 

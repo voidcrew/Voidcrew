@@ -133,14 +133,21 @@
 /**
  * Ilthuun's controller.
  *
- * Laid out like `/datum/ai_controller/basic_controller/paper_wizard` (paper_wizard.dm:51-71):
- * find a target, then walk the ability subtrees, then fall through to melee. Every
- * ability subtree sets `finish_planning = FALSE` so a queued spell does not stop him
- * swinging in the same tick — cooldowns, not planning order, are what pace the fight.
+ * Priority order (highest first) is preserved from the old `planning_subtrees` list:
+ * acquire a target, then corruption / mirror images / necrotic bolt / bone volley /
+ * raise dead, then fall through to melee. It now lives in `lich.bt.json` as a selector,
+ * which is the behavior-tree spelling of the same "first branch that can run, wins".
  *
- * `idle_behavior` is deliberately null. He does not wander; he stands in the sanctum
- * until someone walks in. The leash on the mob is the hard guarantee, but not moving in
- * the first place means the leash never has to drag him anywhere.
+ * He does not wander: the tree has no `random_walk` fallback, which is how the old
+ * `idle_behavior = null` reads under the new framework. He stands in the sanctum until
+ * someone walks in. The leash on the mob is the hard guarantee, but not moving in the
+ * first place means the leash never has to drag him anywhere.
+ *
+ * BEHAVIOUR NOTE: the old subtrees all set `finish_planning = FALSE`, so a single plan
+ * could queue every off-cooldown ability at once. A selector fires the highest-priority
+ * available one per pass and the enclosing subplan loops, so the next one lands on the
+ * following tick instead. This matches how upstream's own ability trees
+ * (simple_ability_combat.bt.json) pace a caster.
  */
 /datum/ai_controller/basic_controller/lich
 	blackboard = list(
@@ -148,40 +155,39 @@
 		BB_TARGET_MINIMUM_STAT = HARD_CRIT,
 	)
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = null
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/targeted_mob_ability/lich_corruption,
-		/datum/ai_planning_subtree/targeted_mob_ability/lich_mirror_images,
-		/datum/ai_planning_subtree/targeted_mob_ability/lich_necrotic_bolt,
-		/datum/ai_planning_subtree/use_mob_ability/lich_bone_volley,
-		/datum/ai_planning_subtree/use_mob_ability/lich_raise_dead,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
-	)
+	behavior_tree_json = "voidcrew/modules/lich/lich.bt.json"
 
-/datum/ai_planning_subtree/use_mob_ability/lich_raise_dead
+// The ability leaves below keep their blackboard keys on the DM side on purpose:
+// tools/build_bt.py only scans code/ for #defines, so a fork define written into a
+// .bt.json "vars" block resolves to its own literal name and silently never matches.
+// See .upgrade/BT_PORTING_GUIDE.md section 0.
+
+/datum/bt_node/ai_behavior/use_mob_ability/lich_raise_dead
 	ability_key = BB_LICH_RAISE_DEAD
-	finish_planning = FALSE
 
-/datum/ai_planning_subtree/use_mob_ability/lich_bone_volley
+/datum/bt_node/ai_behavior/use_mob_ability/lich_bone_volley
 	ability_key = BB_LICH_BONE_VOLLEY
-	finish_planning = FALSE
 
-/datum/ai_planning_subtree/targeted_mob_ability/lich_necrotic_bolt
+/datum/bt_node/ai_behavior/targeted_mob_ability/lich_necrotic_bolt
 	ability_key = BB_LICH_NECROTIC_BOLT
-	finish_planning = FALSE
+	target_key = BB_CURRENT_TARGET
 
-/datum/ai_planning_subtree/targeted_mob_ability/lich_mirror_images
+/datum/bt_node/ai_behavior/targeted_mob_ability/lich_mirror_images
 	ability_key = BB_LICH_MIRROR_IMAGES
-	finish_planning = FALSE
+	target_key = BB_CURRENT_TARGET
 
-/datum/ai_planning_subtree/targeted_mob_ability/lich_corruption
+/datum/bt_node/ai_behavior/targeted_mob_ability/lich_corruption
 	ability_key = BB_LICH_CORRUPTION
-	finish_planning = FALSE
+	target_key = BB_CURRENT_TARGET
 
 /// Don't bother trying to possess something that cannot be possessed — otherwise the
-/// ability burns its planning slot every tick on antimagic-carrying raiders.
-/datum/ai_planning_subtree/targeted_mob_ability/lich_corruption/additional_ability_checks(datum/ai_controller/controller, datum/action/cooldown/using_action)
+/// ability burns its tree slot every tick on antimagic-carrying raiders.
+/// Was `/datum/ai_planning_subtree/targeted_mob_ability/lich_corruption/additional_ability_checks()`;
+/// that hook has no equivalent on the new leaf, so the pure predicate becomes a decorator.
+/datum/bt_node/decorator/lich_can_thrall
+	var/target_key = BB_CURRENT_TARGET
+
+/datum/bt_node/decorator/lich_can_thrall/check_condition(datum/ai_controller/controller)
 	var/mob/living/target = controller.blackboard[target_key]
 	return can_be_lich_thralled(target) // defined in lich_thrall.dm
 

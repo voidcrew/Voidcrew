@@ -24,7 +24,9 @@
 /datum/map_generator/cave_generator/icemoon/surface
 	flora_spawn_chance = 6
 	mob_spawn_list = null
-	initial_closed_chance = 30
+	// VOIDCREW EDIT - ported to upstream's BSP+CA generator: initial_closed_chance 30 -> noise_percent 70
+	// (noise_percent is initial FLOOR density). ORIGINAL open-bias CA tuning birth_limit = 5 /
+	// death_limit = 4 dropped: thresholds aren't calibratable under the new generator (new defaults
+	// birth 6 / survival 4); recalibrate at playtest if icemoon surface feels too closed.
+	noise_percent = 70
 	mob_spawn_chance = 10//danger zone, highway to the danger zone
-	birth_limit = 5
-	death_limit = 4

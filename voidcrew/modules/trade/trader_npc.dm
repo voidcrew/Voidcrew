@@ -155,7 +155,9 @@
 /mob/living/basic/outpost_trader/proc/check_menu(mob/living/user)
 	if(!istype(user))
 		return FALSE
-	if(IS_DEAD_OR_INCAP(user) || !user.Adjacent(src))
+	// VOIDCREW EDIT: upstream deleted the IS_DEAD_OR_INCAP() macro along with mob.incapacitated;
+	// this is its old body with the trait-based incapacitated check.
+	if(HAS_TRAIT(user, TRAIT_INCAPACITATED) || user.stat || !user.Adjacent(src))
 		return FALSE
 	return TRUE
 

@@ -905,26 +905,76 @@
 
 	return TRUE
 
-/**
- * Planning subtree for door-to-door patrol behavior using JPS pathfinding.
- * Much simpler than the old door-hopping system - just set the movement target
- * and let the JPS movement system handle pathfinding.
- */
-/datum/ai_planning_subtree/patrol_path
+// ========== PATROL BEHAVIOR TREE ==========
 
-/datum/ai_planning_subtree/patrol_path/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+/**
+ * VOIDCREW: shared non-combat half of the boarding-party AI.
+ *
+ * Priority order, preserved from the old planning_subtrees list:
+ *   handle_blocking_door > explore_room > patrol_path > try_open_door_in_path > attack_patrol_door
+ *
+ * Each of those was a subtree that scanned, maybe queued a behavior, and either returned
+ * SUBTREE_RETURN_FINISH_PLANNING (consume the tick) or fell through to the next one. Here
+ * each becomes a selector branch: its gate decides whether the branch applies, a "resolve"
+ * leaf does the scan/bookkeeping and publishes which action to take, and gated action
+ * leaves run it. A resolve leaf that returns FAILED makes the branch fail, which is the
+ * old bare `return` - the selector moves on to the next branch in the same tick.
+ *
+ * The resolve leaf and the action leaf sit in a parallel, not a sequence, because the old
+ * subtrees re-ran their bookkeeping every planning tick even while a travel behavior was
+ * still running. A sequence would resume straight into the running action and never
+ * re-scan, which would (for example) stop patrol_path from ever noticing a door crossing.
+ */
+/datum/bt_node/subtree/mob_patrol_shared
+	behavior_tree_json = "voidcrew/modules/npc_ships/code/mob_patrol_shared.bt.json"
+
+/// Which action the patrol_path resolve leaf picked for this tick.
+#define BB_PATROL_STEP "_patrol_step"
+/// Move to and smash the door assembly left where our target door used to be.
+#define PATROL_STEP_ASSEMBLY "assembly"
+/// Target door is open and we're next to it - walk through to the far side.
+#define PATROL_STEP_WALK_THROUGH "walk_through"
+/// Travel to the target door.
+#define PATROL_STEP_TRAVEL "travel"
+
+/// Which action the blocking-obstruction resolve leaf picked for this tick.
+#define BB_PATROL_OBSTRUCTION "_patrol_obstruction"
+/// Bump the door open.
+#define PATROL_OBSTRUCTION_OPEN_DOOR "open_door"
+/// We already failed to open it - smash it.
+#define PATROL_OBSTRUCTION_ATTACK_DOOR "attack_door"
+/// Smash a door assembly.
+#define PATROL_OBSTRUCTION_ASSEMBLY "assembly"
+/// Smash some other dense structure or machine.
+#define PATROL_OBSTRUCTION_OBSTACLE "obstacle"
+
+// ========== PATROL PATH ==========
+
+/**
+ * VOIDCREW: door-to-door patrol bookkeeping, formerly
+ * /datum/ai_planning_subtree/patrol_path/SelectBehaviors().
+ *
+ * Runs the room-transition detection, patrol index advancement and stuck timeout, then
+ * publishes the action for this tick in BB_PATROL_STEP. Returns SUCCEEDED when it picked
+ * an action, FAILED when the old code would have fallen through to the door subtrees.
+ */
+/datum/bt_node/ai_behavior/patrol_resolve_step
+
+/datum/bt_node/ai_behavior/patrol_resolve_step/perform(seconds_per_tick, datum/ai_controller/controller)
+	controller.clear_blackboard_key(BB_PATROL_STEP)
+
 	var/mob/living/pawn = controller.pawn
 	if(!pawn)
-		return
+		return AI_BEHAVIOR_FAILED
 
 	// Don't patrol if we have a combat target
 	if(controller.blackboard_key_exists(BB_CURRENT_TARGET))
-		return
+		return AI_BEHAVIOR_FAILED
 
 	// Get patrol data
 	var/list/patrol_path = controller.blackboard[BB_MOB_PATROL_PATH]
 	if(!length(patrol_path))
-		return
+		return AI_BEHAVIOR_FAILED
 
 	var/patrol_index = controller.blackboard[BB_MOB_PATROL_INDEX] || 1
 	var/ship_ref = controller.blackboard[BB_MOB_PATROL_SHIP_REF]
@@ -955,8 +1005,8 @@
 					// Assembly still blocking - need to attack it
 					PATROL_LOG("[pawn] door destroyed but assembly [assembly.name] remains - attacking")
 					controller.set_blackboard_key("_patrol_assembly_to_attack", assembly)
-					controller.queue_behavior(/datum/ai_behavior/move_to_and_attack_assembly, "_patrol_assembly_to_attack")
-					return SUBTREE_RETURN_FINISH_PLANNING
+					controller.set_blackboard_key(BB_PATROL_STEP, PATROL_STEP_ASSEMBLY)
+					return AI_BEHAVIOR_SUCCEEDED
 
 		// No blocking assembly - safe to advance
 		patrol_index = (patrol_index % length(patrol_path)) + 1
@@ -968,7 +1018,7 @@
 			controller.clear_blackboard_key(BB_EXPLORED_ROOMS)
 			PATROL_LOG("[pawn] patrol wrapped after destroyed door, clearing explored rooms")
 		PATROL_LOG("[pawn] door destroyed (no assembly), advancing to [patrol_index]")
-		return
+		return AI_BEHAVIOR_FAILED
 
 	var/turf/pawn_turf = get_turf(pawn)
 	var/current_dist = get_dist(pawn, target_door)
@@ -1036,7 +1086,7 @@
 
 					// Trigger room exploration for the new room
 					maybe_start_room_exploration(controller, current_room, ship_ref)
-					return
+					return AI_BEHAVIOR_FAILED
 			else
 				// Origin is NOT one of the door's rooms - check if we just entered one
 				// This happens when the NPC approaches from a distant room
@@ -1061,7 +1111,7 @@
 		if(patrol_index == 1)
 			controller.clear_blackboard_key(BB_EXPLORED_ROOMS)
 		PATROL_LOG("[pawn] advancing to [patrol_index]")
-		return
+		return AI_BEHAVIOR_FAILED
 
 	// Simple timeout-based stuck detection
 	// If we've been trying to reach this door for too long, skip it
@@ -1085,7 +1135,7 @@
 			if(patrol_index == 1)
 				controller.clear_blackboard_key(BB_EXPLORED_ROOMS)
 			PATROL_LOG("[pawn] advancing to [patrol_index]")
-			return
+			return AI_BEHAVIOR_FAILED
 
 	// Set the door as our patrol target
 	controller.blackboard[BB_MOB_PATROL_TARGET] = target_door
@@ -1099,77 +1149,64 @@
 				// Find a walkable turf on the opposite side of the door from the pawn
 				var/turf/through_turf = get_turf_through_door(pawn_turf, door_turf)
 				if(through_turf)
-					// Store through turf and queue walk-through behavior
+					// Store through turf and hand off to the walk-through behavior
 					controller.set_blackboard_key(BB_MOB_PATROL_TARGET_TURF, through_turf)
-					controller.queue_behavior(/datum/ai_behavior/patrol_walk_through, BB_MOB_PATROL_TARGET_TURF)
+					controller.set_blackboard_key(BB_PATROL_STEP, PATROL_STEP_WALK_THROUGH)
 					PATROL_LOG("[pawn] door [target_door.name] is open, walking through to ([through_turf.x],[through_turf.y])")
-					return SUBTREE_RETURN_FINISH_PLANNING
+					return AI_BEHAVIOR_SUCCEEDED
 		// If door is closed, let door interaction subtrees handle opening it
-		return
+		return AI_BEHAVIOR_FAILED
 
-	// Queue travel behavior - this triggers the JPS movement system
-	// Only queue if we're not already moving to this target
-	var/turf/door_turf = get_turf(target_door)
-	if(door_turf && controller.current_movement_target != door_turf)
-		controller.queue_behavior(/datum/ai_behavior/patrol_travel, BB_MOB_PATROL_TARGET)
-		PATROL_LOG("[pawn] queued travel to [target_door.name] (dist=[current_dist])")
+	// Travel to the door - move_to_target drives the JPS movement system and retargets
+	// itself when BB_MOB_PATROL_TARGET changes, so the old "am I already moving there?"
+	// guard against current_movement_target is no longer needed.
+	controller.set_blackboard_key(BB_PATROL_STEP, PATROL_STEP_TRAVEL)
+	PATROL_LOG("[pawn] travelling to [target_door.name] (dist=[current_dist])")
+	return AI_BEHAVIOR_SUCCEEDED
+
+/// Gates one patrol action on the step the resolve leaf picked.
+/datum/bt_node/decorator/patrol_step
+	/// PATROL_STEP_* constant this branch answers for.
+	var/step
+
+/datum/bt_node/decorator/patrol_step/check_condition(datum/ai_controller/controller)
+	return controller.blackboard[BB_PATROL_STEP] == step
+
+/datum/bt_node/decorator/patrol_step/assembly
+	step = PATROL_STEP_ASSEMBLY
+
+/datum/bt_node/decorator/patrol_step/walk_through
+	step = PATROL_STEP_WALK_THROUGH
+
+/datum/bt_node/decorator/patrol_step/travel
+	step = PATROL_STEP_TRAVEL
 
 /**
  * Travel behavior for patrol movement.
- * Uses AI_BEHAVIOR_REQUIRE_MOVEMENT to trigger the JPS pathfinding system.
+ * move_to_target owns the JPS pathfinding that AI_BEHAVIOR_REQUIRE_MOVEMENT used to start.
  */
-/datum/ai_behavior/patrol_travel
-	required_distance = 1  // Stop when adjacent to door
-	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
-
-/datum/ai_behavior/patrol_travel/setup(datum/ai_controller/controller, target_key)
-	var/obj/machinery/door/target = controller.blackboard[target_key]
-	if(QDELETED(target))
-		return FALSE
-	var/turf/target_turf = get_turf(target)
-	if(!target_turf)
-		return FALSE
-	controller.set_movement_target(type, target_turf)
-	return TRUE
-
-/datum/ai_behavior/patrol_travel/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
-	var/obj/machinery/door/target = controller.blackboard[target_key]
-	if(QDELETED(target))
-		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-	// Only succeed when adjacent - we need to actually reach the door
-	if(get_dist(controller.pawn, target) <= 1)
-		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-	return AI_BEHAVIOR_DELAY
-
-/datum/ai_behavior/patrol_travel/finish_action(datum/ai_controller/controller, succeeded, target_key)
-	. = ..()
+/datum/bt_node/ai_behavior/move_to_target/patrol_travel
+	target_key = BB_MOB_PATROL_TARGET
+	required_dist = 1 // Stop when adjacent to door
 
 /**
  * Behavior for walking through an open door to a turf on the other side.
+ * VOIDCREW: keeps the fork's logging and clears the through-turf key when it ends.
  */
-/datum/ai_behavior/patrol_walk_through
-	required_distance = 0  // Must actually reach the turf
-	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+/datum/bt_node/ai_behavior/move_to_target/patrol_walk_through
+	target_key = BB_MOB_PATROL_TARGET_TURF
+	required_dist = 0 // Must actually reach the turf
 
-/datum/ai_behavior/patrol_walk_through/setup(datum/ai_controller/controller, target_key)
-	var/turf/target = controller.blackboard[target_key]
-	if(!target)
-		return FALSE
-	controller.set_movement_target(type, target)
-	return TRUE
-
-/datum/ai_behavior/patrol_walk_through/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
-	var/turf/target = controller.blackboard[target_key]
-	if(!target)
-		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-	// Succeed when we're on or adjacent to the target turf
-	var/dist = get_dist(controller.pawn, target)
-	if(dist <= 0)
-		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-	return AI_BEHAVIOR_DELAY
-
-/datum/ai_behavior/patrol_walk_through/finish_action(datum/ai_controller/controller, succeeded, target_key)
+/datum/bt_node/ai_behavior/move_to_target/patrol_walk_through/perform(seconds_per_tick, datum/ai_controller/controller)
 	. = ..()
+	if(. & AI_BEHAVIOR_SUCCEEDED)
+		PATROL_LOG("[controller.pawn] walk_through succeeded: reached target turf")
+	else if(. & AI_BEHAVIOR_FAILED)
+		PATROL_LOG("[controller.pawn] walk_through failed: no target turf or pathing gave up")
+
+/datum/bt_node/ai_behavior/move_to_target/patrol_walk_through/finish_action(datum/ai_controller/controller, succeeded)
+	. = ..()
+	PATROL_LOG("[controller.pawn] walk_through finish_action: succeeded=[succeeded]")
 	controller.clear_blackboard_key(target_key)
 
 /**
@@ -1213,59 +1250,70 @@
 
 	return null
 
-/**
- * Behavior for walking through an open door to the other side.
- */
-/datum/ai_behavior/patrol_walk_through
-	required_distance = 0  // Actually reach the target turf
-	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+// ========== BLOCKING OBSTRUCTIONS ==========
 
-/datum/ai_behavior/patrol_walk_through/setup(datum/ai_controller/controller, target_key)
-	var/turf/target = controller.blackboard[target_key]
-	if(!target)
-		PATROL_LOG("[controller.pawn] walk_through setup failed: no target turf")
+/**
+ * VOIDCREW: cheap gate for the blocking-obstruction branch.
+ *
+ * Answers "is there anything dense on an adjacent cardinal turf worth a closer look?" with
+ * no bookkeeping, so it is safe to poll. It is deliberately a superset of what the resolve
+ * leaf accepts - when it passes but the full scan finds nothing actionable, the resolve
+ * leaf fails and the selector moves on, exactly like the old bare `return` did.
+ *
+ * BT_ABORT_LOWER_PRIORITY is what replaces AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION here: it
+ * lets a door that appears while we are mid-travel preempt the running patrol branch,
+ * which a plain selector would never re-check.
+ */
+/datum/bt_node/decorator/patrol_obstruction_nearby
+	observer_abort = BT_ABORT_LOWER_PRIORITY
+	polling_rate = 1 SECONDS
+
+/datum/bt_node/decorator/patrol_obstruction_nearby/check_condition(datum/ai_controller/controller)
+	if(controller.blackboard_key_exists(BB_CURRENT_TARGET))
 		return FALSE
-	controller.set_movement_target(type, target)
-	return TRUE
-
-/datum/ai_behavior/patrol_walk_through/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
-	var/turf/target = controller.blackboard[target_key]
-	if(!target)
-		PATROL_LOG("[controller.pawn] walk_through perform failed: no target turf")
-		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
-	// Succeed when we reach the target turf
-	var/turf/pawn_turf = get_turf(controller.pawn)
-	if(pawn_turf == target)
-		PATROL_LOG("[controller.pawn] walk_through succeeded: reached target turf")
-		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-	PATROL_LOG("[controller.pawn] walk_through: dist=[get_dist(controller.pawn, target)] from target")
-	return AI_BEHAVIOR_DELAY
-
-/datum/ai_behavior/patrol_walk_through/finish_action(datum/ai_controller/controller, succeeded, target_key)
-	. = ..()
-	PATROL_LOG("[controller.pawn] walk_through finish_action: succeeded=[succeeded]")
-	controller.clear_blackboard_key(target_key)
-
-/**
- * Subtree that handles ANY blocking door in our path - not just the patrol target.
- * This ensures mobs don't get stuck behind intermediate doors (like windoors)
- * that aren't their current patrol target.
- */
-/datum/ai_planning_subtree/handle_blocking_door
-
-/datum/ai_planning_subtree/handle_blocking_door/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
 	var/mob/living/pawn = controller.pawn
 	if(!pawn)
-		return
+		return FALSE
+	var/turf/pawn_turf = get_turf(pawn)
+	if(!pawn_turf)
+		return FALSE
+	for(var/dir in GLOB.cardinals)
+		var/turf/adj = get_step(pawn_turf, dir)
+		if(!adj)
+			continue
+		for(var/obj/thing in adj)
+			if(!thing.density)
+				continue
+			if(istype(thing, /obj/machinery/door) || istype(thing, /obj/structure/door_assembly))
+				return TRUE
+			if(istype(thing, /obj/structure) || istype(thing, /obj/machinery))
+				return TRUE
+	return FALSE
 
-	// Don't handle patrol doors if we have a combat target - attack_obstacle_in_path handles combat obstacles
+/**
+ * VOIDCREW: handles ANY blocking obstruction in our path - not just the patrol target.
+ * Formerly /datum/ai_planning_subtree/handle_blocking_door/SelectBehaviors().
+ *
+ * This ensures mobs don't get stuck behind intermediate doors (like windoors) that aren't
+ * their current patrol target. Publishes the chosen action in BB_PATROL_OBSTRUCTION.
+ */
+/datum/bt_node/ai_behavior/patrol_resolve_obstruction
+
+/datum/bt_node/ai_behavior/patrol_resolve_obstruction/perform(seconds_per_tick, datum/ai_controller/controller)
+	controller.clear_blackboard_key(BB_PATROL_OBSTRUCTION)
+
+	var/mob/living/pawn = controller.pawn
+	if(!pawn)
+		return AI_BEHAVIOR_FAILED
+
+	// Don't handle patrol doors if we have a combat target - attack_obstructions handles combat obstacles
 	if(controller.blackboard_key_exists(BB_CURRENT_TARGET))
-		return
+		return AI_BEHAVIOR_FAILED
 
 	// Check all adjacent turfs for closed doors blocking our movement
 	var/turf/pawn_turf = get_turf(pawn)
 	if(!pawn_turf)
-		return
+		return AI_BEHAVIOR_FAILED
 
 	// Get our current patrol target from the path list (not from BB_MOB_PATROL_TARGET which may be cleared)
 	// This prevents us from treating our target door as a "blocking" door
@@ -1278,11 +1326,10 @@
 	// Get the door we just crossed through (if any) - don't re-open it from the other side
 	var/obj/machinery/door/last_crossed = controller.blackboard["_last_crossed_door"]
 
-	// Get our current movement target (patrol door or exploration target)
-	var/atom/movement_target = controller.current_movement_target
+	// Get our current movement destination (patrol door or exploration target)
+	var/atom/movement_target = controller.blackboard[BB_EXPLORATION_TARGET]
 	if(!movement_target)
-		// Also check exploration target
-		movement_target = controller.blackboard[BB_EXPLORATION_TARGET]
+		movement_target = controller.blackboard[BB_MOB_PATROL_TARGET]
 	if(!movement_target)
 		movement_target = patrol_target
 
@@ -1360,13 +1407,13 @@
 
 				// Already failed to open this door before - attack it directly
 				controller.set_blackboard_key("_blocking_door_to_attack", blocking_door)
-				controller.queue_behavior(/datum/ai_behavior/attack_blocking_door, "_blocking_door_to_attack")
-				return SUBTREE_RETURN_FINISH_PLANNING
+				controller.set_blackboard_key(BB_PATROL_OBSTRUCTION, PATROL_OBSTRUCTION_ATTACK_DOOR)
+				return AI_BEHAVIOR_SUCCEEDED
 
 			// Try to open it first
 			controller.set_blackboard_key("_blocking_door_to_open", blocking_door)
-			controller.queue_behavior(/datum/ai_behavior/try_open_blocking_door, "_blocking_door_to_open")
-			return SUBTREE_RETURN_FINISH_PLANNING
+			controller.set_blackboard_key(BB_PATROL_OBSTRUCTION, PATROL_OBSTRUCTION_OPEN_DOOR)
+			return AI_BEHAVIOR_SUCCEEDED
 
 	// Also check for door assemblies and other dense objects blocking our path
 	for(var/dir in GLOB.cardinals)
@@ -1384,8 +1431,8 @@
 
 			PATROL_LOG("[pawn] found blocking door assembly [assembly.name] at ([adj.x],[adj.y]) - attacking it")
 			controller.set_blackboard_key("_blocking_assembly_to_attack", assembly)
-			controller.queue_behavior(/datum/ai_behavior/attack_blocking_assembly, "_blocking_assembly_to_attack")
-			return SUBTREE_RETURN_FINISH_PLANNING
+			controller.set_blackboard_key(BB_PATROL_OBSTRUCTION, PATROL_OBSTRUCTION_ASSEMBLY)
+			return AI_BEHAVIOR_SUCCEEDED
 
 		// Check for other dense structures/machinery blocking the path (e.g. deployables, missile launchers)
 		for(var/obj/blocking_obj in adj)
@@ -1405,23 +1452,45 @@
 
 			PATROL_LOG("[pawn] found blocking object [blocking_obj.name] at ([adj.x],[adj.y]) - attacking it")
 			controller.set_blackboard_key("_blocking_obstacle_to_attack", blocking_obj)
-			controller.queue_behavior(/datum/ai_behavior/attack_blocking_obstacle, "_blocking_obstacle_to_attack")
-			return SUBTREE_RETURN_FINISH_PLANNING
+			controller.set_blackboard_key(BB_PATROL_OBSTRUCTION, PATROL_OBSTRUCTION_OBSTACLE)
+			return AI_BEHAVIOR_SUCCEEDED
+
+	return AI_BEHAVIOR_FAILED
+
+/// Gates one obstruction action on what the resolve leaf found.
+/datum/bt_node/decorator/patrol_obstruction
+	/// PATROL_OBSTRUCTION_* constant this branch answers for.
+	var/obstruction
+
+/datum/bt_node/decorator/patrol_obstruction/check_condition(datum/ai_controller/controller)
+	return controller.blackboard[BB_PATROL_OBSTRUCTION] == obstruction
+
+/datum/bt_node/decorator/patrol_obstruction/open_door
+	obstruction = PATROL_OBSTRUCTION_OPEN_DOOR
+
+/datum/bt_node/decorator/patrol_obstruction/attack_door
+	obstruction = PATROL_OBSTRUCTION_ATTACK_DOOR
+
+/datum/bt_node/decorator/patrol_obstruction/assembly
+	obstruction = PATROL_OBSTRUCTION_ASSEMBLY
+
+/datum/bt_node/decorator/patrol_obstruction/obstacle
+	obstruction = PATROL_OBSTRUCTION_OBSTACLE
 
 /**
  * Behavior that attacks a blocking door assembly (left behind when doors are destroyed)
  */
-/datum/ai_behavior/attack_blocking_assembly
-	action_cooldown = 1.2 SECONDS
-	behavior_flags = NONE
+/datum/bt_node/ai_behavior/attack_blocking_assembly
+	time_between_perform = 1.2 SECONDS
+	var/assembly_key = "_blocking_assembly_to_attack"
 
-/datum/ai_behavior/attack_blocking_assembly/setup(datum/ai_controller/controller, assembly_key)
+/datum/bt_node/ai_behavior/attack_blocking_assembly/setup(datum/ai_controller/controller)
 	var/obj/structure/door_assembly/assembly = controller.blackboard[assembly_key]
 	if(QDELETED(assembly) || !assembly.density)
 		return FALSE
 	return TRUE
 
-/datum/ai_behavior/attack_blocking_assembly/perform(seconds_per_tick, datum/ai_controller/controller, assembly_key)
+/datum/bt_node/ai_behavior/attack_blocking_assembly/perform(seconds_per_tick, datum/ai_controller/controller)
 	var/obj/structure/door_assembly/assembly = controller.blackboard[assembly_key]
 	var/mob/living/basic/pawn = controller.pawn
 
@@ -1438,24 +1507,24 @@
 	PATROL_LOG("[pawn] smashing door assembly [assembly.name]")
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
-/datum/ai_behavior/attack_blocking_assembly/finish_action(datum/ai_controller/controller, succeeded, assembly_key)
+/datum/bt_node/ai_behavior/attack_blocking_assembly/finish_action(datum/ai_controller/controller, succeeded)
 	. = ..()
 	controller.clear_blackboard_key(assembly_key)
 
 /**
  * Behavior that attacks a dense structure or machine blocking the patrol path
  */
-/datum/ai_behavior/attack_blocking_obstacle
-	action_cooldown = 1.2 SECONDS
-	behavior_flags = NONE
+/datum/bt_node/ai_behavior/attack_blocking_obstacle
+	time_between_perform = 1.2 SECONDS
+	var/obstacle_key = "_blocking_obstacle_to_attack"
 
-/datum/ai_behavior/attack_blocking_obstacle/setup(datum/ai_controller/controller, obstacle_key)
+/datum/bt_node/ai_behavior/attack_blocking_obstacle/setup(datum/ai_controller/controller)
 	var/obj/obstacle = controller.blackboard[obstacle_key]
 	if(QDELETED(obstacle) || !obstacle.density)
 		return FALSE
 	return TRUE
 
-/datum/ai_behavior/attack_blocking_obstacle/perform(seconds_per_tick, datum/ai_controller/controller, obstacle_key)
+/datum/bt_node/ai_behavior/attack_blocking_obstacle/perform(seconds_per_tick, datum/ai_controller/controller)
 	var/obj/obstacle = controller.blackboard[obstacle_key]
 	var/mob/living/basic/pawn = controller.pawn
 
@@ -1471,7 +1540,7 @@
 	PATROL_LOG("[pawn] smashing blocking obstacle [obstacle.name]")
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
-/datum/ai_behavior/attack_blocking_obstacle/finish_action(datum/ai_controller/controller, succeeded, obstacle_key)
+/datum/bt_node/ai_behavior/attack_blocking_obstacle/finish_action(datum/ai_controller/controller, succeeded)
 	. = ..()
 	controller.clear_blackboard_key(obstacle_key)
 
@@ -1479,17 +1548,17 @@
  * Behavior that moves to and attacks a door assembly (used when patrol target door is destroyed)
  * This combines pathfinding to the assembly with attacking it.
  */
-/datum/ai_behavior/move_to_and_attack_assembly
-	action_cooldown = 1.2 SECONDS
-	behavior_flags = NONE
+/datum/bt_node/ai_behavior/move_to_and_attack_assembly
+	time_between_perform = 1.2 SECONDS
+	var/assembly_key = "_patrol_assembly_to_attack"
 
-/datum/ai_behavior/move_to_and_attack_assembly/setup(datum/ai_controller/controller, assembly_key)
+/datum/bt_node/ai_behavior/move_to_and_attack_assembly/setup(datum/ai_controller/controller)
 	var/obj/structure/door_assembly/assembly = controller.blackboard[assembly_key]
 	if(QDELETED(assembly) || !assembly.density)
 		return FALSE
 	return TRUE
 
-/datum/ai_behavior/move_to_and_attack_assembly/perform(seconds_per_tick, datum/ai_controller/controller, assembly_key)
+/datum/bt_node/ai_behavior/move_to_and_attack_assembly/perform(seconds_per_tick, datum/ai_controller/controller)
 	var/obj/structure/door_assembly/assembly = controller.blackboard[assembly_key]
 	var/mob/living/basic/pawn = controller.pawn
 
@@ -1499,10 +1568,10 @@
 
 	var/assembly_dist = get_dist(pawn, assembly)
 
-	// If not adjacent, move toward it
+	// If not adjacent, walk to it. The old code poked current_movement_target directly;
+	// the movement datum is the supported way in now.
 	if(assembly_dist > 1)
-		// Queue movement to the assembly
-		controller.current_movement_target = assembly
+		controller.ai_movement.start_moving_towards(controller, assembly, 1)
 		PATROL_LOG("[pawn] moving to assembly [assembly.name] (dist=[assembly_dist])")
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED  // Keep running until adjacent
 
@@ -1511,8 +1580,9 @@
 	PATROL_LOG("[pawn] smashing patrol target assembly [assembly.name]")
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
-/datum/ai_behavior/move_to_and_attack_assembly/finish_action(datum/ai_controller/controller, succeeded, assembly_key)
+/datum/bt_node/ai_behavior/move_to_and_attack_assembly/finish_action(datum/ai_controller/controller, succeeded)
 	. = ..()
+	controller.ai_movement.stop_moving_towards(controller)
 	var/obj/structure/door_assembly/assembly = controller.blackboard[assembly_key]
 	// Only clear if assembly is actually gone
 	if(QDELETED(assembly) || !assembly.density)
@@ -1522,17 +1592,17 @@
 /**
  * Behavior that attempts to open a blocking door (not our patrol target)
  */
-/datum/ai_behavior/try_open_blocking_door
-	action_cooldown = 1 SECONDS
-	behavior_flags = NONE
+/datum/bt_node/ai_behavior/try_open_blocking_door
+	time_between_perform = 1 SECONDS
+	var/door_key = "_blocking_door_to_open"
 
-/datum/ai_behavior/try_open_blocking_door/setup(datum/ai_controller/controller, door_key)
+/datum/bt_node/ai_behavior/try_open_blocking_door/setup(datum/ai_controller/controller)
 	var/obj/machinery/door/door = controller.blackboard[door_key]
 	if(QDELETED(door) || !door.density)
 		return FALSE
 	return TRUE
 
-/datum/ai_behavior/try_open_blocking_door/perform(seconds_per_tick, datum/ai_controller/controller, door_key)
+/datum/bt_node/ai_behavior/try_open_blocking_door/perform(seconds_per_tick, datum/ai_controller/controller)
 	var/obj/machinery/door/door = controller.blackboard[door_key]
 	var/mob/living/pawn = controller.pawn
 
@@ -1570,24 +1640,24 @@
 	PATROL_LOG("[pawn] failed to open blocking door [door.name] - will attack")
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
-/datum/ai_behavior/try_open_blocking_door/finish_action(datum/ai_controller/controller, succeeded, door_key)
+/datum/bt_node/ai_behavior/try_open_blocking_door/finish_action(datum/ai_controller/controller, succeeded)
 	. = ..()
 	controller.clear_blackboard_key(door_key)
 
 /**
  * Behavior that attacks a blocking door (not our patrol target)
  */
-/datum/ai_behavior/attack_blocking_door
-	action_cooldown = 1.2 SECONDS
-	behavior_flags = NONE
+/datum/bt_node/ai_behavior/attack_blocking_door
+	time_between_perform = 1.2 SECONDS
+	var/door_key = "_blocking_door_to_attack"
 
-/datum/ai_behavior/attack_blocking_door/setup(datum/ai_controller/controller, door_key)
+/datum/bt_node/ai_behavior/attack_blocking_door/setup(datum/ai_controller/controller)
 	var/obj/machinery/door/door = controller.blackboard[door_key]
 	if(QDELETED(door) || !door.density)
 		return FALSE
 	return TRUE
 
-/datum/ai_behavior/attack_blocking_door/perform(seconds_per_tick, datum/ai_controller/controller, door_key)
+/datum/bt_node/ai_behavior/attack_blocking_door/perform(seconds_per_tick, datum/ai_controller/controller)
 	var/obj/machinery/door/door = controller.blackboard[door_key]
 	var/mob/living/basic/pawn = controller.pawn
 
@@ -1617,62 +1687,84 @@
 	PATROL_LOG("[pawn] smashing blocking door [door.name]")
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
-/datum/ai_behavior/attack_blocking_door/finish_action(datum/ai_controller/controller, succeeded, door_key)
+/datum/bt_node/ai_behavior/attack_blocking_door/finish_action(datum/ai_controller/controller, succeeded)
 	. = ..()
 	controller.clear_blackboard_key(door_key)
 
-/**
- * Door-opening subtree for patrol behavior.
- * When adjacent to target door, tries to open it before attacking.
- */
-/datum/ai_planning_subtree/try_open_door_in_path
-	var/target_key = BB_MOB_PATROL_TARGET
+// ========== PATROL TARGET DOOR ==========
 
-/datum/ai_planning_subtree/try_open_door_in_path/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+/**
+ * VOIDCREW: gate for "we're stood at our patrol target door and it's shut".
+ * Formerly the head of /datum/ai_planning_subtree/try_open_door_in_path.
+ */
+/datum/bt_node/decorator/patrol_door_blocked
+	/// Blackboard key holding the patrol target door.
+	var/target_key = BB_MOB_PATROL_TARGET
+	/// TRUE to pass only when we already know the door won't open (attack it instead).
+	var/require_failed = FALSE
+
+/datum/bt_node/decorator/patrol_door_blocked/check_condition(datum/ai_controller/controller)
 	// Don't do patrol door stuff if we have a combat target
 	if(controller.blackboard_key_exists(BB_CURRENT_TARGET))
-		return
+		return FALSE
 
 	var/obj/machinery/door/target_door = controller.blackboard[target_key]
 	if(QDELETED(target_door))
-		return
+		return FALSE
 
-	// Only try to open if door is closed
+	// Only interact if the door is closed
 	if(!target_door.density)
-		return
-
-	var/mob/living/pawn = controller.pawn
+		return FALSE
 
 	// Only interact when adjacent to the door
-	if(get_dist(pawn, target_door) > 1)
-		return
+	if(get_dist(controller.pawn, target_door) > 1)
+		return FALSE
 
-	// Check if we already tried and failed to open this door (persistent tracking)
+	// Persistent tracking of doors that refused to open
 	var/list/failed_doors = controller.blackboard["_failed_blocking_doors"]
-	if(failed_doors && failed_doors[REF(target_door)])
-		return  // Let attack subtree handle it - we already know this door won't open
+	var/already_failed = failed_doors && failed_doors[REF(target_door)]
+	if(require_failed && !already_failed)
+		return FALSE // Haven't tried to open it yet - let the open branch go first
+	if(!require_failed && already_failed)
+		return FALSE // We already know this door won't open - let the attack branch have it
 
-	// Try to open the door
+	if(require_failed)
+		PATROL_LOG("[controller.pawn] ATTACKING locked door [target_door.name]")
+	return TRUE
+
+/// Attack variant: only passes once we know the door refuses to open.
+/datum/bt_node/decorator/patrol_door_blocked/locked
+	require_failed = TRUE
+
+/**
+ * VOIDCREW: publishes the patrol target door into BB_DOOR_TO_OPEN for the door behaviors.
+ */
+/datum/bt_node/ai_behavior/mark_patrol_door
+	var/target_key = BB_MOB_PATROL_TARGET
+
+/datum/bt_node/ai_behavior/mark_patrol_door/perform(seconds_per_tick, datum/ai_controller/controller)
+	var/obj/machinery/door/target_door = controller.blackboard[target_key]
+	if(QDELETED(target_door))
+		return AI_BEHAVIOR_FAILED
 	controller.set_blackboard_key(BB_DOOR_TO_OPEN, target_door)
-	controller.queue_behavior(/datum/ai_behavior/try_open_door, BB_DOOR_TO_OPEN)
-	return SUBTREE_RETURN_FINISH_PLANNING
+	return AI_BEHAVIOR_SUCCEEDED
 
 /**
  * Behavior that attempts to open a door by bumping it.
  * If the door doesn't open (locked, no access, etc.), it stays closed
- * and attack_obstacle_in_path will handle breaking it down.
+ * and the attack branch will handle breaking it down.
  */
-/datum/ai_behavior/try_open_door
-	action_cooldown = 1 SECONDS
-	behavior_flags = NONE  // No movement required, we're adjacent
+/datum/bt_node/ai_behavior/try_open_door
+	time_between_perform = 1 SECONDS
+	var/door_key = BB_DOOR_TO_OPEN
 
-/datum/ai_behavior/try_open_door/setup(datum/ai_controller/controller, door_key)
+/datum/bt_node/ai_behavior/try_open_door/setup(datum/ai_controller/controller)
 	var/obj/machinery/door/door = controller.blackboard[door_key]
 	if(QDELETED(door) || !door.density)
 		return FALSE  // Door gone or already open
 	return TRUE
 
-/datum/ai_behavior/try_open_door/perform(seconds_per_tick, datum/ai_controller/controller, door_key)
+/datum/bt_node/ai_behavior/try_open_door/perform(seconds_per_tick, datum/ai_controller/controller)
 	var/obj/machinery/door/door = controller.blackboard[door_key]
 	var/mob/living/pawn = controller.pawn
 
@@ -1712,61 +1804,25 @@
 	PATROL_LOG("[pawn] failed to open door [door] - will attack it")
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
-/datum/ai_behavior/try_open_door/finish_action(datum/ai_controller/controller, succeeded, door_key)
+/datum/bt_node/ai_behavior/try_open_door/finish_action(datum/ai_controller/controller, succeeded)
 	. = ..()
 	controller.clear_blackboard_key(door_key)
 
 /**
- * Attack door subtree for patrol behavior.
- * When adjacent to a locked door (that failed to open), attack it.
+ * Behavior that attacks a door - uses melee, which is more reliable than ranged
+ * and saves ammo for actual combat.
  */
-/datum/ai_planning_subtree/attack_patrol_door
-	var/target_key = BB_MOB_PATROL_TARGET
+/datum/bt_node/ai_behavior/attack_door
+	time_between_perform = 1.2 SECONDS
+	var/door_key = BB_DOOR_TO_OPEN
 
-/datum/ai_planning_subtree/attack_patrol_door/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	// Don't do patrol door stuff if we have a combat target
-	if(controller.blackboard_key_exists(BB_CURRENT_TARGET))
-		return
-
-	var/obj/machinery/door/target_door = controller.blackboard[target_key]
-	if(QDELETED(target_door))
-		return
-
-	// Only attack if door is closed (locked)
-	if(!target_door.density)
-		return
-
-	var/mob/living/pawn = controller.pawn
-
-	// Only attack when adjacent
-	if(get_dist(pawn, target_door) > 1)
-		return
-
-	// Only attack if we know this door won't open (from failed list)
-	var/list/failed_doors = controller.blackboard["_failed_blocking_doors"]
-	if(!failed_doors || !failed_doors[REF(target_door)])
-		return  // Haven't tried to open it yet
-
-	// Attack the door
-	PATROL_LOG("[pawn] ATTACKING locked door [target_door.name]")
-	controller.set_blackboard_key(BB_DOOR_TO_OPEN, target_door)
-	controller.queue_behavior(/datum/ai_behavior/attack_door, BB_DOOR_TO_OPEN)
-	return SUBTREE_RETURN_FINISH_PLANNING
-
-/**
- * Behavior that attacks a door - uses ranged attack if available, otherwise melee
- */
-/datum/ai_behavior/attack_door
-	action_cooldown = 1.2 SECONDS
-	behavior_flags = NONE
-
-/datum/ai_behavior/attack_door/setup(datum/ai_controller/controller, door_key)
+/datum/bt_node/ai_behavior/attack_door/setup(datum/ai_controller/controller)
 	var/obj/machinery/door/door = controller.blackboard[door_key]
 	if(QDELETED(door) || !door.density)
 		return FALSE
 	return TRUE
 
-/datum/ai_behavior/attack_door/perform(seconds_per_tick, datum/ai_controller/controller, door_key)
+/datum/bt_node/ai_behavior/attack_door/perform(seconds_per_tick, datum/ai_controller/controller)
 	var/obj/machinery/door/door = controller.blackboard[door_key]
 	var/mob/living/basic/pawn = controller.pawn
 
@@ -1796,32 +1852,54 @@
 	PATROL_LOG("[pawn] smashing door [door.name]")
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
-/datum/ai_behavior/attack_door/finish_action(datum/ai_controller/controller, succeeded, door_key)
+/datum/bt_node/ai_behavior/attack_door/finish_action(datum/ai_controller/controller, succeeded)
 	. = ..()
 	controller.clear_blackboard_key(door_key)
 
-// ========== ROOM EXPLORATION SUBTREE ==========
+// ========== ROOM EXPLORATION ==========
 
 /**
- * Planning subtree for room exploration behavior.
- * When BB_EXPLORING_ROOM is set, visits targets (closets and waypoint turfs)
- * to simulate searching/exploring the room.
+ * VOIDCREW: gate for the room-exploration branch.
+ *
+ * Exploration is started by maybe_start_room_exploration() from inside the patrol resolve
+ * leaf, which is a LOWER priority branch, so this needs BT_ABORT_LOWER_PRIORITY to take
+ * over the tick that the flag goes up rather than waiting for patrol to release.
  */
-/datum/ai_planning_subtree/explore_room
+/datum/bt_node/decorator/exploring_room
+	observer_abort = BT_ABORT_LOWER_PRIORITY
 
-/datum/ai_planning_subtree/explore_room/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	// Not exploring? Skip
+/datum/bt_node/decorator/exploring_room/check_condition(datum/ai_controller/controller)
+	if(!controller.blackboard[BB_EXPLORING_ROOM])
+		return FALSE
+	// Don't explore if we have a combat target
+	if(controller.blackboard_key_exists(BB_CURRENT_TARGET))
+		return FALSE
+	return !isnull(controller.pawn)
+
+/**
+ * VOIDCREW: room-exploration bookkeeping, formerly
+ * /datum/ai_planning_subtree/explore_room/SelectBehaviors().
+ *
+ * Walks the exploration target list, skipping opened/deleted entries, and publishes the
+ * current target in BB_EXPLORATION_TARGET. Returns FAILED only when there is genuinely
+ * nothing to do; every other path consumed the tick in the old subtree, so index
+ * advancement returns SUCCEEDED with no action selected and the action selector's
+ * "nothing to do" branch holds the tick.
+ */
+/datum/bt_node/ai_behavior/explore_resolve_step
+
+/datum/bt_node/ai_behavior/explore_resolve_step/perform(seconds_per_tick, datum/ai_controller/controller)
 	var/exploring_room = controller.blackboard[BB_EXPLORING_ROOM]
 	if(!exploring_room)
-		return
+		return AI_BEHAVIOR_FAILED
 
 	// Don't explore if we have a combat target
 	if(controller.blackboard_key_exists(BB_CURRENT_TARGET))
-		return
+		return AI_BEHAVIOR_FAILED
 
 	var/mob/living/pawn = controller.pawn
 	if(!pawn)
-		return
+		return AI_BEHAVIOR_FAILED
 
 	// Get targets and current index
 	var/list/targets = controller.blackboard[BB_EXPLORATION_TARGETS]
@@ -1831,7 +1909,7 @@
 	if(!length(targets) || target_index > length(targets))
 		PATROL_LOG("[pawn] exploration of [exploring_room] complete")
 		clear_exploration_state(controller)
-		return
+		return AI_BEHAVIOR_FAILED
 
 	// Get current target
 	var/atom/current_target = targets[target_index]
@@ -1839,82 +1917,77 @@
 	// Validate target - if invalid, advance and block patrol from taking over
 	if(QDELETED(current_target))
 		controller.set_blackboard_key(BB_EXPLORATION_INDEX, target_index + 1)
-		return SUBTREE_RETURN_FINISH_PLANNING
+		controller.clear_blackboard_key(BB_EXPLORATION_TARGET)
+		return AI_BEHAVIOR_SUCCEEDED
 
 	// Skip already-opened closets
 	if(istype(current_target, /obj/structure/closet))
 		var/obj/structure/closet/closet = current_target
 		if(closet.opened)
 			controller.set_blackboard_key(BB_EXPLORATION_INDEX, target_index + 1)
-			return SUBTREE_RETURN_FINISH_PLANNING
+			controller.clear_blackboard_key(BB_EXPLORATION_TARGET)
+			return AI_BEHAVIOR_SUCCEEDED
 
 	// Set as current target for behaviors
 	controller.set_blackboard_key(BB_EXPLORATION_TARGET, current_target)
 
-	var/target_dist = get_dist(pawn, current_target)
+	// If adjacent to a plain waypoint we've arrived - advance. Closets and distant targets
+	// are handled by the action branches below.
+	if(get_dist(pawn, current_target) <= 1 && !istype(current_target, /obj/structure/closet))
+		PATROL_LOG("[pawn] reached waypoint in [exploring_room]")
+		controller.set_blackboard_key(BB_EXPLORATION_INDEX, target_index + 1)
+		controller.clear_blackboard_key(BB_EXPLORATION_TARGET)
 
-	// If adjacent to target, perform appropriate action
-	if(target_dist <= 1)
-		if(istype(current_target, /obj/structure/closet))
-			// Open the closet
-			controller.queue_behavior(/datum/ai_behavior/explore_open_closet, BB_EXPLORATION_TARGET)
-			return SUBTREE_RETURN_FINISH_PLANNING
-		else
-			// It's a turf waypoint - we reached it, advance
-			PATROL_LOG("[pawn] reached waypoint in [exploring_room]")
-			controller.set_blackboard_key(BB_EXPLORATION_INDEX, target_index + 1)
-			// IMPORTANT: Return FINISH_PLANNING to prevent patrol from taking over
-			return SUBTREE_RETURN_FINISH_PLANNING
-
-	// Not adjacent - travel to target
-	controller.queue_behavior(/datum/ai_behavior/explore_travel, BB_EXPLORATION_TARGET)
-	return SUBTREE_RETURN_FINISH_PLANNING
+	return AI_BEHAVIOR_SUCCEEDED
 
 /**
- * Clear exploration state from controller.
+ * VOIDCREW: passes when the exploration target is a closet we're stood next to.
  */
-/proc/clear_exploration_state(datum/ai_controller/controller)
-	controller.clear_blackboard_key(BB_EXPLORING_ROOM)
-	controller.clear_blackboard_key(BB_EXPLORATION_TARGETS)
-	controller.clear_blackboard_key(BB_EXPLORATION_INDEX)
-	controller.clear_blackboard_key(BB_EXPLORATION_TARGET)
+/datum/bt_node/decorator/exploration_at_closet
+
+/datum/bt_node/decorator/exploration_at_closet/check_condition(datum/ai_controller/controller)
+	var/atom/current_target = controller.blackboard[BB_EXPLORATION_TARGET]
+	if(!istype(current_target, /obj/structure/closet))
+		return FALSE
+	return get_dist(controller.pawn, current_target) <= 1
+
+/**
+ * VOIDCREW: passes when we have an exploration target we still have to walk to.
+ */
+/datum/bt_node/decorator/exploration_travelling
+
+/datum/bt_node/decorator/exploration_travelling/check_condition(datum/ai_controller/controller)
+	var/atom/current_target = controller.blackboard[BB_EXPLORATION_TARGET]
+	if(QDELETED(current_target))
+		return FALSE
+	return get_dist(controller.pawn, current_target) > 1
 
 /**
  * Travel behavior for exploration targets.
  * Uses JPS pathfinding to reach closets/waypoints.
  */
-/datum/ai_behavior/explore_travel
-	required_distance = 1
-	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+/datum/bt_node/ai_behavior/move_to_target/explore_travel
+	target_key = BB_EXPLORATION_TARGET
+	required_dist = 1
 
-/datum/ai_behavior/explore_travel/setup(datum/ai_controller/controller, target_key)
-	var/atom/target = controller.blackboard[target_key]
-	if(QDELETED(target))
-		return FALSE
-	var/turf/target_turf = get_turf(target)
-	if(!target_turf)
-		return FALSE
-	controller.set_movement_target(type, target_turf)
-	return TRUE
+/**
+ * VOIDCREW: holds the tick while exploration bookkeeping advances the index.
+ * The old subtree returned SUBTREE_RETURN_FINISH_PLANNING on those ticks, which stopped
+ * patrol from taking over mid-room; a failing branch here would hand the tick to patrol.
+ */
+/datum/bt_node/ai_behavior/exploration_hold
 
-/datum/ai_behavior/explore_travel/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
-	var/atom/target = controller.blackboard[target_key]
-	// Succeed if we're adjacent or target is gone
-	if(QDELETED(target) || get_dist(controller.pawn, target) <= 1)
-		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-	return AI_BEHAVIOR_DELAY
-
-/datum/ai_behavior/explore_travel/finish_action(datum/ai_controller/controller, succeeded, target_key)
-	. = ..()
+/datum/bt_node/ai_behavior/exploration_hold/perform(seconds_per_tick, datum/ai_controller/controller)
+	return AI_BEHAVIOR_INSTANT
 
 /**
  * Behavior that opens a closet during exploration.
  */
-/datum/ai_behavior/explore_open_closet
-	action_cooldown = 1.2 SECONDS
-	behavior_flags = NONE
+/datum/bt_node/ai_behavior/explore_open_closet
+	time_between_perform = 1.2 SECONDS
+	var/target_key = BB_EXPLORATION_TARGET
 
-/datum/ai_behavior/explore_open_closet/setup(datum/ai_controller/controller, target_key)
+/datum/bt_node/ai_behavior/explore_open_closet/setup(datum/ai_controller/controller)
 	var/obj/structure/closet/closet = controller.blackboard[target_key]
 	if(QDELETED(closet))
 		return FALSE
@@ -1922,7 +1995,7 @@
 		return FALSE
 	return TRUE
 
-/datum/ai_behavior/explore_open_closet/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
+/datum/bt_node/ai_behavior/explore_open_closet/perform(seconds_per_tick, datum/ai_controller/controller)
 	var/obj/structure/closet/closet = controller.blackboard[target_key]
 	var/mob/living/basic/pawn = controller.pawn
 
@@ -1962,96 +2035,90 @@
 
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 
-/datum/ai_behavior/explore_open_closet/finish_action(datum/ai_controller/controller, succeeded, target_key)
-	. = ..()
+/**
+ * Clear exploration state from controller.
+ */
+/proc/clear_exploration_state(datum/ai_controller/controller)
+	controller.clear_blackboard_key(BB_EXPLORING_ROOM)
+	controller.clear_blackboard_key(BB_EXPLORATION_TARGETS)
+	controller.clear_blackboard_key(BB_EXPLORATION_INDEX)
+	controller.clear_blackboard_key(BB_EXPLORATION_TARGET)
+
+// ========== TARGETING ==========
 
 /**
- * Aggressive target finding subtree that uses range() instead of hearers().
- * This bypasses TG's broken proximity field system.
+ * VOIDCREW: gathers candidates with range() instead of the hearers()-based default.
+ * TG's proximity/hearer field is unreliable on shuttles, which is where every boarding
+ * party lives, so troopers would simply never notice crew standing next to them.
  */
-/datum/ai_planning_subtree/aggressive_find_target
-	/// Range to scan for targets
-	var/scan_range = 9
+/datum/target_source/range_living
 
-/datum/ai_planning_subtree/aggressive_find_target/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/pawn = controller.pawn
-	if(!pawn || !isturf(pawn.loc))
-		return
-
-	// Already have a valid target? Validate it
-	var/atom/current_target = controller.blackboard[BB_CURRENT_TARGET]
-	if(!QDELETED(current_target))
-		// Check if target is a dead mob - if so, clear it and find a new one
-		if(isliving(current_target))
-			var/mob/living/living_target = current_target
-			if(living_target.stat == DEAD)
-				controller.clear_blackboard_key(BB_CURRENT_TARGET)
-				// Fall through to find new target
-			else if(get_dist(pawn, living_target) <= 1 && !pawn.CanReach(living_target))
-				// Adjacent but unreachable (behind windoor, etc) - clear and find new one
-				controller.clear_blackboard_key(BB_CURRENT_TARGET)
-				// Fall through to find new target
-			else
-				return  // Target is alive (and reachable if adjacent), keep it
-		else
-			return  // Non-mob target, keep it
-
-	var/datum/targeting_strategy/targeting_strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_TARGETING_STRATEGY])
-	if(!targeting_strategy)
-		PATROL_LOG("[pawn] aggressive_find_target: No targeting strategy!")
-		return
-
-	// Use range() instead of hearers() - more reliable on shuttles
-	var/list/potential_targets = list()
-	for(var/mob/living/potential_target in range(scan_range, pawn))
-		if(potential_target == pawn)
+// NOTE: the parent names its third arg `range`, which would shadow the range() builtin
+// we need here. DM parameters are positional, so rename it rather than fight that.
+/datum/target_source/range_living/collect_candidates(mob/living/pawn, datum/ai_controller/controller, search_range)
+	var/list/candidates = list()
+	for(var/mob/living/candidate in range(search_range, pawn))
+		if(candidate == pawn)
 			continue
 		// Skip dead mobs - don't waste time attacking corpses
-		if(potential_target.stat == DEAD)
+		if(candidate.stat == DEAD)
 			continue
-		if(targeting_strategy.can_attack(pawn, potential_target))
-			potential_targets += potential_target
-
-	if(!length(potential_targets))
-		return
-
-	// Pick closest target
-	var/mob/living/best_target
-	var/best_dist = INFINITY
-	for(var/mob/living/target as anything in potential_targets)
-		var/dist = get_dist(pawn, target)
-		if(dist < best_dist)
-			best_dist = dist
-			best_target = target
-
-	if(best_target)
-		controller.set_blackboard_key(BB_CURRENT_TARGET, best_target)
-		PATROL_LOG("[pawn] aggressive_find_target: Found target [best_target] at dist=[best_dist]")
+		candidates += candidate
+	return candidates
 
 /**
- * Override of attack_obstacle_in_path that includes mobs in blocking checks.
+ * VOIDCREW: aggressive target finding, formerly
+ * /datum/ai_planning_subtree/aggressive_find_target/SelectBehaviors().
+ *
+ * Same three fork deviations from the stock search: range() instead of hearers(), always
+ * take the closest candidate, and drop a target that is adjacent but unreachable (stood on
+ * the far side of a windoor) so we go find someone we can actually hit.
+ */
+/datum/bt_node/ai_behavior/acquire_target/update_combat_targets/aggressive
+	target_source = /datum/target_source/range_living
+	vision_range = 9
+
+/datum/bt_node/ai_behavior/acquire_target/update_combat_targets/aggressive/should_keep_target(datum/ai_controller/controller, datum/targeting_strategy/strategy, atom/current_target)
+	if(QDELETED(current_target))
+		return FALSE
+
+	if(isliving(current_target))
+		var/mob/living/living_target = current_target
+		// Dead target - go find a live one
+		if(living_target.stat == DEAD)
+			controller.clear_blackboard_key(BB_CURRENT_TARGET)
+			return FALSE
+		// Adjacent but unreachable (behind a windoor, etc) - clear and find a new one
+		if(get_dist(controller.pawn, living_target) <= 1 && !living_target.IsReachableBy(controller.pawn))
+			controller.clear_blackboard_key(BB_CURRENT_TARGET)
+			return FALSE
+		return TRUE
+
+	// Non-mob target, keep it
+	return TRUE
+
+/datum/bt_node/ai_behavior/acquire_target/update_combat_targets/aggressive/pick_final_target(datum/ai_controller/controller, list/filtered_targets)
+	// Pick closest target
+	var/atom/best_target
+	var/best_dist = INFINITY
+	for(var/atom/candidate as anything in filtered_targets)
+		var/dist = get_dist(controller.pawn, candidate)
+		if(dist < best_dist)
+			best_dist = dist
+			best_target = candidate
+	if(best_target)
+		PATROL_LOG("[controller.pawn] aggressive_find_target: Found target [best_target] at dist=[best_dist]")
+	return best_target
+
+/**
+ * Override of attack_obstructions that includes mobs in blocking checks.
  * Base TG uses exclude_mobs = TRUE which prevents attacking mobs blocking the path during chase.
  */
-/datum/ai_planning_subtree/attack_obstacle_in_path/trooper/include_mobs
-	attack_behaviour = /datum/ai_behavior/attack_obstructions/trooper/include_mobs
+/datum/bt_node/ai_behavior/attack_obstructions/trooper_include_mobs
+	time_between_perform = 1.2 SECONDS
+	can_ignore_step = TRUE // JPS movement, so don't second-guess with get_step_to
 
-/datum/ai_planning_subtree/attack_obstacle_in_path/trooper/include_mobs/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/atom/target = controller.blackboard[target_key]
-	if(QDELETED(target))
-		return
-
-	var/turf/next_step = get_step_towards(controller.pawn, target)
-	// Use exclude_mobs = FALSE to detect mobs blocking the path
-	if (!next_step.is_blocked_turf(exclude_mobs = FALSE, source_atom = controller.pawn))
-		return
-
-	controller.queue_behavior(attack_behaviour, target_key)
-	// Don't cancel future planning, maybe we can move now
-
-/datum/ai_behavior/attack_obstructions/trooper/include_mobs
-	action_cooldown = 1.2 SECONDS
-
-/datum/ai_behavior/attack_obstructions/trooper/include_mobs/attack_in_direction(datum/ai_controller/controller, mob/living/basic/basic_mob, direction)
+/datum/bt_node/ai_behavior/attack_obstructions/trooper_include_mobs/attack_in_direction(datum/ai_controller/controller, mob/living/basic/basic_mob, direction)
 	var/turf/next_step = get_step(basic_mob, direction)
 	// Use exclude_mobs = FALSE to detect mobs blocking the path
 	if (!next_step.is_blocked_turf(exclude_mobs = FALSE, source_atom = controller.pawn))
@@ -2077,6 +2144,8 @@
 		return TRUE
 	return FALSE
 
+// ========== PATROLLING CONTROLLERS ==========
+
 /**
  * Trooper AI controller variant that patrols door-to-door when not in combat.
  * Uses JPS pathfinding for reliable navigation through ship interiors.
@@ -2084,58 +2153,18 @@
  */
 /datum/ai_controller/basic_controller/trooper/patrolling
 	ai_movement = /datum/ai_movement/jps  // JPS pathfinding instead of basic_avoidance
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/aggressive_find_target,
-		/datum/ai_planning_subtree/attack_obstacle_in_path/trooper/include_mobs,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
-		/datum/ai_planning_subtree/handle_blocking_door,
-		/datum/ai_planning_subtree/explore_room,           // Room exploration - after door handling, before patrol
-		/datum/ai_planning_subtree/patrol_path,
-		/datum/ai_planning_subtree/try_open_door_in_path,
-		/datum/ai_planning_subtree/attack_patrol_door,
-	)
+	behavior_tree_json = "voidcrew/modules/npc_ships/code/mob_patrol_melee.bt.json"
 
 /datum/ai_controller/basic_controller/trooper/ranged/patrolling
 	ai_movement = /datum/ai_movement/jps
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/aggressive_find_target,
-		/datum/ai_planning_subtree/attack_obstacle_in_path/trooper/include_mobs,
-		/datum/ai_planning_subtree/basic_ranged_attack_subtree/trooper,
-		/datum/ai_planning_subtree/handle_blocking_door,
-		/datum/ai_planning_subtree/explore_room,           // Room exploration - after door handling, before patrol
-		/datum/ai_planning_subtree/patrol_path,
-		/datum/ai_planning_subtree/try_open_door_in_path,
-		/datum/ai_planning_subtree/attack_patrol_door,
-	)
+	behavior_tree_json = "voidcrew/modules/npc_ships/code/mob_patrol_ranged.bt.json"
 
 /// Patrolling version for melee boss mobs
 /datum/ai_controller/basic_controller/trooper/patrolling/boss
 	ai_movement = /datum/ai_movement/jps
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/aggressive_find_target,
-		/datum/ai_planning_subtree/attack_obstacle_in_path/trooper/include_mobs,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
-		/datum/ai_planning_subtree/handle_blocking_door,
-		/datum/ai_planning_subtree/explore_room,           // Room exploration - after door handling, before patrol
-		/datum/ai_planning_subtree/patrol_path,
-		/datum/ai_planning_subtree/try_open_door_in_path,
-		/datum/ai_planning_subtree/attack_patrol_door,
-	)
+	behavior_tree_json = "voidcrew/modules/npc_ships/code/mob_patrol_melee.bt.json"
 
 /// Patrolling version for ranged boss mobs
 /datum/ai_controller/basic_controller/trooper/ranged/patrolling/boss
 	ai_movement = /datum/ai_movement/jps
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/aggressive_find_target,
-		/datum/ai_planning_subtree/attack_obstacle_in_path/trooper/include_mobs,
-		/datum/ai_planning_subtree/basic_ranged_attack_subtree/trooper,
-		/datum/ai_planning_subtree/handle_blocking_door,
-		/datum/ai_planning_subtree/explore_room,           // Room exploration - after door handling, before patrol
-		/datum/ai_planning_subtree/patrol_path,
-		/datum/ai_planning_subtree/try_open_door_in_path,
-		/datum/ai_planning_subtree/attack_patrol_door,
-	)
+	behavior_tree_json = "voidcrew/modules/npc_ships/code/mob_patrol_ranged.bt.json"

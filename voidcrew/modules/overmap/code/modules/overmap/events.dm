@@ -466,8 +466,8 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	var/list/barren_rock = list()
 	for(var/turf/closed/mineral/rock in block(bottom_left, top_right))
 		mineral_turf_count++
-		// Already has ore, a boulder, or is gibtonite (mineralType-less but very much not barren)
-		if(rock.mineralType || rock.spawned_boulder || istype(rock, /turf/closed/mineral/gibtonite))
+		// Already has ore, a boulder, or is gibtonite (mineral_type-less but very much not barren)
+		if(rock.mineral_type || rock.spawned_boulder || istype(rock, /turf/closed/mineral/gibtonite))
 			ore_bearing_count++
 			continue
 		barren_rock += rock
@@ -477,8 +477,10 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	var/seeded = 0
 	while(to_seed > 0 && length(barren_rock))
 		var/turf/closed/mineral/rock = pick_n_take(barren_rock)
-		rock.Change_Ore(pick_weight(table))
-		rock.mineralAmt = rand(ASTEROID_ORE_AMOUNT_MIN, ASTEROID_ORE_AMOUNT_MAX)
+		// random = FALSE: upstream's change_ore() now defaults to randomising mineral_amt, and we
+		// set our own amount on the next line anyway.
+		rock.change_ore(pick_weight(table), random = FALSE)
+		rock.mineral_amt = rand(ASTEROID_ORE_AMOUNT_MIN, ASTEROID_ORE_AMOUNT_MAX)
 		to_seed--
 		seeded++
 

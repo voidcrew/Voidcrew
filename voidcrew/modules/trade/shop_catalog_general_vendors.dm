@@ -312,7 +312,9 @@
 	if(!..())
 		return FALSE
 	var/obj/item/graft/snip = offered
-	return !istype(snip.stored_trait, /datum/plant_gene/trait/repeated_harvest)
+	// VOIDCREW EDIT: a graft no longer carries a single stored_trait - upstream reworked it to hold
+	// a whole copy of the mother plant's seed (plant_dna), so the trait is read off that seed's genes.
+	return !snip.plant_dna?.get_gene(/datum/plant_gene/trait/repeated_harvest)
 
 /datum/shop_buyback/potting/ash_flora
 	name = "ash flora seeds (any)"

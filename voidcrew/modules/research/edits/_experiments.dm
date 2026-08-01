@@ -63,8 +63,14 @@
  * Handlers with no server link have no network to announce on. Without this they'd all match each
  * other (linked_web == null == linked_web) and a single published paper would make every unlinked
  * scanner in the galaxy read the announcement out loud.
+ *
+ * VOIDCREW EDIT: upstream moved announce_message_to_all() off /datum/component/experiment_handler
+ * and onto /datum/experiment, where it takes the target techweb as an argument
+ * (code/modules/experisci/experiment/types/experiment.dm). The guard moves with it - the loop
+ * inside still compares every handler's linked_web against this one, so a null web still matches
+ * every unlinked handler in the game.
  */
-/datum/component/experiment_handler/announce_message_to_all(message)
+/datum/experiment/announce_message_to_all(message, datum/techweb/linked_web)
 	if(isnull(linked_web))
 		return
 	return ..()

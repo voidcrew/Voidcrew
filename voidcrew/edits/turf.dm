@@ -99,8 +99,17 @@
 	if(SSlighting.initialized)
 		// Space tiles should never have lighting objects
 		if(!space_lit)
+			// VOIDCREW EDIT: upstream turned /datum/lighting_object into /atom/movable/lighting_object.
+			// It is constructed with a null loc and the turf as the second arg (a turf loc trips a
+			// stack_trace in its Initialize), it assigns turf.lighting_object itself, and it adds
+			// itself to vis_contents - so the reuse branch now has to do that part by hand. This is
+			// upstream's current body from code/game/turfs/change_turf.dm.
+			if(old_lighting_object)
+				lighting_object = old_lighting_object
+				vis_contents += lighting_object
 			// Should have a lighting object if we never had one
-			lighting_object = old_lighting_object || new /datum/lighting_object(src)
+			else
+				new /atom/movable/lighting_object(null, src)
 		else if (old_lighting_object)
 			qdel(old_lighting_object, force = TRUE)
 

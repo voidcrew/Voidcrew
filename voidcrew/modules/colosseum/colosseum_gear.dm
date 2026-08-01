@@ -270,7 +270,7 @@
 	new /obj/item/stack/medical/suture(src)
 	new /obj/item/stack/medical/mesh(src)
 	new /obj/item/stack/medical/mesh(src)
-	new /obj/item/stack/medical/gauze(src)
+	new /obj/item/stack/medical/wrap/gauze(src)
 	new /obj/item/stack/medical/bone_gel(src)
 	new /obj/item/reagent_containers/hypospray/medipen(src)
 

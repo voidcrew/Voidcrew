@@ -36,8 +36,8 @@
  * prospecting on dangerous planets stays luck-and-graft, not scanner sweeps.
  */
 /turf/closed/mineral/telecrystal
-	mineralType = /obj/item/stack/telecrystal_raw
-	mineralAmt = 2
+	mineral_type = /obj/item/stack/telecrystal_raw
+	mineral_amt = 2
 
 /turf/closed/mineral/telecrystal/volcanic
 	turf_type = /turf/open/misc/asteroid/basalt/lava_land_surface
@@ -91,8 +91,8 @@
 	base_icon_state = "icerock_wall"
 	smoothing_flags = SMOOTH_BITMASK | SMOOTH_BORDER
 	canSmoothWith = SMOOTH_GROUP_CLOSED_TURFS
-	mineralType = /obj/item/stack/glacial_core
-	mineralAmt = 2
+	mineral_type = /obj/item/stack/glacial_core
+	mineral_amt = 2
 	turf_type = /turf/open/misc/asteroid/snow/icemoon/breathable
 	baseturfs = /turf/open/misc/asteroid/snow/icemoon/breathable
 	initial_gas_mix = FROZEN_ATMOS

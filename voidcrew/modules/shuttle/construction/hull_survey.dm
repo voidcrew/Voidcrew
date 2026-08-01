@@ -459,25 +459,39 @@
 	var/mob/living/living_user = usr
 	living_user.perform_hull_survey()
 
+/// HUD key our survey button is filed under in /datum/hud.screen_objects.
+#define HUD_VOIDCREW_HULL_SURVEY "voidcrew_hull_survey"
+
 /**
  * Everyone gets the button. Anyone who can seal a room can claim it, including someone
  * building a first ship from scratch who is not yet crew of anything.
  *
- * Defined as a second /datum/hud/human/New() rather than being folded into the one in
- * code/_onclick/hud/human.dm - DM chains same-type overrides across files in include
- * order and ..() walks back up the chain, which is the pattern voice_barks and intents
+ * Defined as a second /datum/hud/human/initialize_screen_objects() rather than being folded
+ * into the one in code/_onclick/hud/human.dm - DM chains same-type overrides across files in
+ * include order and ..() walks back up the chain, which is the pattern voice_barks and intents
  * already use for their own init/login hooks.
+ *
+ * VOIDCREW EDIT: this used to hang off /datum/hud/human/New(). Upstream moved all screen-object
+ * construction into initialize_screen_objects() (called from /datum/hud/New()), replaced the
+ * direct pull_icon var with the screen_objects[HUD_MOB_PULL] lookup, and replaced the
+ * static_inventory list with add_screen_object(..., HUD_GROUP_STATIC, ...). Hooking the new proc
+ * keeps us inside the window where ui_style is set and the stock buttons already exist.
  */
-/datum/hud/human/New(mob/living/carbon/human/owner)
+/datum/hud/human/initialize_screen_objects()
 	. = ..()
 	// Free up the tile first - stock tg puts the pull icon here, invisible while idle but
 	// still clickable, so leaving it would stack two controls on one slot.
+	var/atom/movable/screen/pull_icon = screen_objects[HUD_MOB_PULL]
 	pull_icon?.screen_loc = ui_pull_displaced
 
-	var/atom/movable/screen/hull_survey/survey_button = new(null, src)
-	survey_button.icon = ui_style
-	survey_button.screen_loc = ui_hull_survey
-	static_inventory += survey_button
+	add_screen_object(
+		/atom/movable/screen/hull_survey,
+		HUD_VOIDCREW_HULL_SURVEY,
+		HUD_GROUP_STATIC,
+		ui_style,
+		ui_hull_survey,
+	)
 
+#undef HUD_VOIDCREW_HULL_SURVEY
 #undef HULL_SURVEY_MAX_TILES
 #undef HULL_SURVEY_DURATION

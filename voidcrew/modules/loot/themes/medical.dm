@@ -21,7 +21,7 @@
 	)
 	loot_green = list(
 		/obj/item/storage/medkit/regular = 10,
-		/obj/item/stack/medical/gauze = 10,
+		/obj/item/stack/medical/wrap/gauze = 10,
 		/obj/item/storage/medkit/brute = 8,
 		/obj/item/storage/medkit/fire = 8,
 		/obj/item/storage/medkit/o2 = 8,

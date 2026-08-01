@@ -144,7 +144,9 @@
 /mob/living/basic/vestige_patron/proc/check_menu(mob/living/user)
 	if(!istype(user))
 		return FALSE
-	if(IS_DEAD_OR_INCAP(user) || !user.Adjacent(src))
+	// IS_DEAD_OR_INCAP() was retired in favour of the incapacitated bitfield;
+	// upstream's own radial menus (see the trader component) read exactly this.
+	if(user.incapacitated || !user.Adjacent(src))
 		return FALSE
 	return TRUE
 

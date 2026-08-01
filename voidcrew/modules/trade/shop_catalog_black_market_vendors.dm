@@ -156,7 +156,7 @@
 	category = "House Cellar"
 	name = "party keg"
 	desc = "A full keg of the house beer, sold by the barrel. Dram does not do deposits, returns, or condolences."
-	item_path = /obj/structure/reagent_dispensers/beerkeg
+	item_path = /obj/structure/reagent_dispensers/keg/beer
 	price_credits = 400
 	stock_min = 1
 	stock_max = 2

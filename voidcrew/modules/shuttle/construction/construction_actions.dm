@@ -89,7 +89,7 @@
 	if(!rcd_results)
 		return
 	var/cost = rcd_results["cost"]
-	if(!base_console.internal_rcd.checkResource(cost, owner))
+	if(!base_console.internal_rcd.useResource(cost, owner, dry_run = TRUE))
 		remote_eye.balloon_alert(owner, "not enough resources!")
 		return
 
@@ -139,7 +139,7 @@
 		check_rcd()
 
 		// Check resources
-		if(!base_console.internal_rcd.checkResource(SHIP_RCD_AIRLOCK_DECONSTRUCT_COST, owner))
+		if(!base_console.internal_rcd.useResource(SHIP_RCD_AIRLOCK_DECONSTRUCT_COST, owner, dry_run = TRUE))
 			remote_eye.balloon_alert(owner, "not enough resources!")
 			return
 
@@ -187,7 +187,7 @@
 		return
 
 	var/cost = rcd_results["cost"]
-	if(!base_console.internal_rcd.checkResource(cost, owner))
+	if(!base_console.internal_rcd.useResource(cost, owner, dry_run = TRUE))
 		base_console.internal_rcd.mode = old_mode
 		remote_eye.balloon_alert(owner, "not enough resources!")
 		return
@@ -516,7 +516,7 @@
 			new_stick.throw_at(target_turf, 9, 3, owner)
 			new_stick.turn_on()
 			new_stick.update_brightness()
-			rld.activate()
+			playsound(rld.loc, 'sound/items/deconstruct.ogg', 50, TRUE) //VOIDCREW: upstream deleted activate(); this was its whole body
 
 		if(2) // LIGHT_MODE - place fixture
 			if(iswallturf(target_turf))
@@ -544,7 +544,7 @@
 				L.setDir(get_dir(light_turf, target_turf))
 				L.color = rld.color_choice
 				L.set_light_color(rld.color_choice)
-				rld.activate()
+				playsound(rld.loc, 'sound/items/deconstruct.ogg', 50, TRUE) //VOIDCREW: upstream deleted activate(); this was its whole body
 
 			else if(isfloorturf(target_turf))
 				// Floor light
@@ -560,7 +560,7 @@
 				var/obj/machinery/light/floor/FL = new(target_turf)
 				FL.color = rld.color_choice
 				FL.set_light_color(rld.color_choice)
-				rld.activate()
+				playsound(rld.loc, 'sound/items/deconstruct.ogg', 50, TRUE) //VOIDCREW: upstream deleted activate(); this was its whole body
 			else
 				remote_eye.balloon_alert(owner, "can't place light here!")
 
@@ -596,7 +596,7 @@
 		return
 
 	// Check resources (deconstruction costs 10 matter)
-	if(!rld.checkResource(10, owner))
+	if(!rld.useResource(10, owner, dry_run = TRUE))
 		remote_eye.balloon_alert(owner, "not enough resources!")
 		return
 

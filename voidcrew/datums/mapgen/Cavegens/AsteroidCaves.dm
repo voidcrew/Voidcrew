@@ -10,10 +10,11 @@
 		SPAWN_MEGAFAUNA = 4, /mob/living/basic/mining/goldgrub = 10)
 	//flora_spawn_list = list(/obj/structure/flora/ash/space/voidmelon = 2)
 
-	initial_closed_chance = 55
-	smoothing_iterations = 50
-	birth_limit = 4
-	death_limit = 3
+	// See LavalandGenerator.dm for the full rename table. initial_closed_chance -> noise_percent
+	// is an inversion (noise_percent is initial *floor* density), so 55% closed == 45% floor.
+	// This is the one real fork divergence here: asteroid fields are rockier than lavaland.
+	// VOIDCREW EDIT ORIGINAL: initial_closed_chance = 55 / smoothing_iterations = 50 / birth_limit = 4 / death_limit = 3
+	noise_percent = 45
 	mob_spawn_chance = 6
 
 /datum/map_generator/cave_generator/asteroid/generate_terrain(list/turfs)
@@ -77,10 +78,10 @@
 		/mob/living/basic/mining/hivelord = 25, /obj/structure/spawner/mining/hivelord = 30, \
 		/mob/living/basic/mining/goldgrub = 10)
 
-	initial_closed_chance = 55
-	smoothing_iterations = 50
-	birth_limit = 4
-	death_limit = 3
+	// Matches /datum/map_generator/cave_generator/asteroid above; see the rename table in
+	// LavalandGenerator.dm. 55% closed == 45% floor.
+	// VOIDCREW EDIT ORIGINAL: initial_closed_chance = 55 / smoothing_iterations = 50 / birth_limit = 4 / death_limit = 3
+	noise_percent = 45
 	// Sparse ambience only: the real danger comes from the zone-scaled mob packs
 	// the meteor event scatters after generation (events.dm populate_field_extras)
 	mob_spawn_chance = 1

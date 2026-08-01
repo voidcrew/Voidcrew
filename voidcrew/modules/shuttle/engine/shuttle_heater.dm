@@ -88,7 +88,7 @@
 	set_init_directions()
 	update_adjacent_engines()
 
-/obj/machinery/atmospherics/components/unary/shuttle/heater/process_atmos()
+/obj/machinery/atmospherics/components/unary/shuttle/heater/process_atmos(seconds_per_tick)
 	if(!use_tank)
 		update_parents()
 
@@ -134,7 +134,7 @@
 		return
 	if(gas_type)
 		air_contents.assert_gas(gas_type)
-		return air_contents.gases[gas_type][MOLES]
+		return air_contents.moles[gas_type]
 	else
 		return air_contents.total_moles()
 
@@ -156,7 +156,7 @@
 	if(!air_contents)
 		return
 	air_contents.assert_gas(gas_type)
-	return air_contents.gases[gas_type][MOLES] >= required
+	return air_contents.moles[gas_type] >= required
 
 /**
   * Burns a specific amount of one type of gas. Returns how much was actually used.
@@ -174,8 +174,9 @@
 		return removed.total_moles()
 	else
 		air_contents.assert_gas(gas_type)
-		var/starting_amt = air_contents.gases[gas_type][MOLES]
-		air_contents.gases[gas_type][MOLES] = clamp(air_contents.gases[gas_type][MOLES] + -amount,0,INFINITY)
+		var/starting_amt = air_contents.moles[gas_type]
+		air_contents.moles[gas_type] = clamp(air_contents.moles[gas_type] + -amount,0,INFINITY)
+		air_contents.garbage_collect() //VOIDCREW: the flat moles list requires a collect after subtracting
 		return min(starting_amt, amount)
 
 /obj/machinery/atmospherics/components/unary/shuttle/heater/screwdriver_act(mob/living/user, obj/item/tool)

@@ -291,10 +291,9 @@
 	// Tear down the previous context's layers
 	if(length(C.overmap_parallax_layers))
 		for(var/atom/movable/screen/parallax_layer/old_layer as anything in C.overmap_parallax_layers)
-			if(C.parallax_layers)
-				C.parallax_layers -= old_layer
-			if(C.parallax_rock)
-				C.parallax_rock.vis_contents -= old_layer
+			// upstream moved parallax ownership off the client onto the parallax_rock;
+			// remove_overmap_layer() drops it from both parallax_layers and vis_contents
+			C.parallax_rock?.remove_overmap_layer(old_layer)
 			qdel(old_layer)
 	C.overmap_parallax_layers = null
 
@@ -303,18 +302,20 @@
 	var/list/layer_types = get_overmap_parallax_layer_types(source.parallax_theme)
 	if(!length(layer_types))
 		return
-	if(isnull(C.parallax_rock) || isnull(C.parallax_layers))
+	if(isnull(C.parallax_rock) || !C.parallax_rock.displaying_layers)
 		return // parallax not built for this client (pref-disabled, NOPARALLAX z); nothing to attach to
 
 	C.overmap_parallax_layers = list()
 	for(var/layer_type in layer_types)
-		var/atom/movable/screen/parallax_layer/layer = new layer_type(null, src)
+		// the third arg is the owning client and is NOT optional: parallax_layer/Initialize
+		// returns INITIALIZE_HINT_QDEL when it is null, which would silently delete every
+		// context layer and read in-game as "context parallax just doesn't show up"
+		var/atom/movable/screen/parallax_layer/layer = new layer_type(null, null, C)
 		if(QDELETED(layer)) // no canon client - see parallax_layer/Initialize
 			continue
 		source.configure_parallax_layer(layer)
 		C.overmap_parallax_layers += layer
-		C.parallax_layers += layer
-		C.parallax_rock.vis_contents += layer
+		C.parallax_rock.add_overmap_layer(layer)
 
 	// If an in-transit scroll is already running, fold the new tiled layers into the
 	// same loop set_parallax_movedir()/update_parallax_motionblur() would have set up

@@ -10,7 +10,7 @@
 	//mineralSpawnChanceList = list(/obj/item/stack/ore/uranium = 7, /obj/item/stack/ore/diamond = 1, /obj/item/stack/ore/gold = 5,
 	//	/obj/item/stack/ore/silver = 7, /obj/item/stack/ore/plasma = 15, /obj/item/stack/ore/iron = 55, /obj/item/stack/ore/titanium = 6,
 	//	/turf/closed/mineral/gibtonite/rockplanet = 4, /obj/item/stack/ore/bluespace_crystal = 1)
-	mineralChance = 30
+	mineral_chance = 30
 
 /turf/closed/mineral/gibtonite/rockplanet
 	name = "iron rock"

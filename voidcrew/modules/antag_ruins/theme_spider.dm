@@ -1352,23 +1352,26 @@
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic/vestige_silk_thief,
 	)
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = /datum/idle_behavior/idle_random_walk
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/target_retaliate,
-		/datum/ai_planning_subtree/attack_obstacle_in_path,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree,
+	// The old planning_subtrees list one-for-one. simple_retaliate_combat is the
+	// retaliate-only combat tree — it picks targets from the retaliate list rather
+	// than hunting, which is the point of this mob — and it carries the melee
+	// swing and the idle random walk that used to be idle_behavior.
+	behavior_nodes = list(
+		/datum/bt_node/subtree/escape_captivity,
+		/datum/bt_node/ai_behavior/attack_obstructions/vestige,
+		/datum/bt_node/subtree/simple_retaliate_combat,
 	)
 
 /**
  * Standard basic targeting, plus the tremor-line. The line is assigned as a
  * blackboard target by the trial itself; this strategy's job is to keep that
  * assignment VALID — both the keep-current-target check and the melee
- * behavior's re-validation run through can_attack.
+ * behavior's re-validation run through is_valid_target (upstream's rename of
+ * can_attack; it gained a trailing controller argument).
  */
 /datum/targeting_strategy/basic/vestige_silk_thief
 
-/datum/targeting_strategy/basic/vestige_silk_thief/can_attack(mob/living/living_mob, atom/the_target, vision_range)
+/datum/targeting_strategy/basic/vestige_silk_thief/is_valid_target(mob/living/living_mob, atom/the_target, vision_range, datum/ai_controller/controller = null)
 	if(istype(the_target, /obj/structure/vestige_tremor_line))
 		if(QDELETED(the_target) || living_mob.z != the_target.z)
 			return FALSE
@@ -1742,22 +1745,22 @@
 /**
  * A snare that knows its weaver. Upstream webs wave through anyone with
  * TRAIT_WEB_SURFER and dice-roll everyone else; this subtype checks the
- * creator's mind first (and whoever the creator is dragging along, mirroring
- * the parent's pulledby clause), then falls back to the parent's exact rules
- * — surfers still surf, everyone else eats the same prob(stuck_chance) roll,
- * projectiles the same prob(projectile_stuck_chance).
+ * creator's mind first, then falls back to the parent's exact rules — surfers
+ * still surf, everyone else eats the same prob(stuck_chance) roll, projectiles
+ * the same prob(projectile_stuck_chance).
  *
- * genetic = TRUE reuses the parent's own bypass switch so its pass roll
- * doesn't fire ahead of ours — the same trick the genetic web itself uses,
- * and the flag is consulted nowhere else in the codebase (verified: only
- * spiderwebs.dm reads it). Everything the parent gives is kept: 15 integrity,
- * melee brute quartered, burn amplified, hot-atmos self-damage, weavable
- * into cloth by web-weavers.
+ * Upstream moved the sticking out of CanAllowThrough and into the on_entered
+ * signal handler, behind a single is_whitelisted() question, and turned the old
+ * `genetic` var into a subtype that answers that question its own way. So the
+ * creator check is an is_whitelisted() override now: the parent already waves
+ * through anyone whitelisted *and anyone they are pulling*, which is what the
+ * old pulledby clause did by hand. Everything else the parent gives is kept:
+ * 15 integrity, melee brute quartered, burn amplified, hot-atmos self-damage,
+ * weavable into cloth by web-weavers.
  */
 /obj/structure/spider/stickyweb/vestige
 	name = "woven snare"
 	desc = "Spider silk woven in a neat, regular pattern. Too tidy to be an animal's work."
-	genetic = TRUE
 	/// The mind of the weaver: this web's one welcome guest, wherever that soul is currently living
 	var/datum/weakref/creator_mind_ref
 
@@ -1769,25 +1772,13 @@
 	// to tell a Loom weave from wild webbing at a glance
 	add_filter("vestige_silk_tint", 10, list("type" = "outline", "color" = "#f5eed9ff", "size" = 0.1))
 
-/obj/structure/spider/stickyweb/vestige/CanAllowThrough(atom/movable/mover, border_dir)
-	. = ..() // the genetic flag makes the parent stop after base checks — no double roll
-	if(isliving(mover))
-		var/mob/living/living_mover = mover
-		var/datum/mind/creator = creator_mind_ref?.resolve()
-		if(creator && living_mover.mind == creator)
-			return TRUE
-		var/mob/living/puller = living_mover.pulledby
-		if(istype(puller) && ((creator && puller.mind == creator) || HAS_TRAIT(puller, TRAIT_WEB_SURFER)))
-			return TRUE
-		if(HAS_TRAIT(mover, TRAIT_WEB_SURFER))
-			return TRUE
-		if(prob(stuck_chance))
-			stuck_react(mover)
-			return FALSE
-		return .
-	if(isprojectile(mover))
-		return prob(projectile_stuck_chance)
-	return .
+/// The weaver walks their own weave. Everyone else falls back to the parent's
+/// TRAIT_WEB_SURFER check and, failing that, the parent's stuck roll.
+/obj/structure/spider/stickyweb/vestige/is_whitelisted(mob/candidate)
+	if(..())
+		return TRUE
+	var/datum/mind/creator = creator_mind_ref?.resolve()
+	return !isnull(creator) && candidate?.mind == creator
 
 /**
  * The master's weft: upstream's sealed web wearing the Loom's name. All

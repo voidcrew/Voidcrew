@@ -44,8 +44,8 @@
 	// BYOND falls back to that file's default state - in economy.dmi that's the
 	// magenta error sprite, which is what this used to render as. Headsets null
 	// them out for the same reason (code/game/objects/items/devices/radio/headset.dm).
+	// VOIDCREW EDIT: upstream deleted overlay_speaker_active; only these three remain.
 	overlay_speaker_idle = null
-	overlay_speaker_active = null
 	overlay_mic_idle = null
 	overlay_mic_active = null
 	// the inherited radio dog overlay would look for "credit_chit" in the corgi
@@ -745,8 +745,8 @@
  * loot item. Instead this copies the three independently real, lighter
  * levers this codebase exposes:
  *  - display name (mob/name)
- *  - "voice" identity used by GetVoice()/radio recognition, via the real
- *    SetSpecialVoice()/UnsetSpecialVoice() hooks on human mobs
+ *  - "voice" identity used by get_voice()/radio recognition, via the real
+ *    override_voice var on human mobs
  *    (code/modules/mob/living/carbon/human/human_say.dm)
  *  - visual appearance, via the same copy_appearance_filter_overlays()
  *    helper /datum/component/reflection uses.
@@ -859,7 +859,9 @@
 	old_name = actor.name
 	wear_appearance(actor, copied_from)
 	actor.name = copied_from.name
-	actor.SetSpecialVoice(copied_from.real_name)
+	// VOIDCREW EDIT: upstream deleted SetSpecialVoice()/UnsetSpecialVoice() and the special_voice
+	// var; get_voice() now reads override_voice directly, which is what the changeling uses too.
+	actor.override_voice = copied_from.real_name
 	copied_from = null // done with it, don't hold the ref for the full 10 minutes
 	return TRUE
 
@@ -930,7 +932,7 @@
 		return
 	var/mob/living/carbon/human/actor = owner
 	actor.name = old_name
-	actor.UnsetSpecialVoice()
+	actor.override_voice = "" // VOIDCREW EDIT: was UnsetSpecialVoice(), deleted upstream
 	// Full rebuild: the disguise replaced the whole appearance snapshot, and
 	// update_body() alone wouldn't restore worn gear / held item overlays
 	actor.regenerate_icons()

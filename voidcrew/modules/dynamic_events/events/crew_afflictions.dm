@@ -53,7 +53,7 @@
 		if(!ishuman(crew_member))
 			continue
 		var/mob/living/carbon/human/candidate = crew_member
-		if(HAS_TRAIT(candidate, TRAIT_CRITICAL_CONDITION) || !candidate.can_heartattack() || candidate.has_status_effect(/datum/status_effect/heart_attack) || candidate.undergoing_cardiac_arrest())
+		if(IS_UNCONSCIOUS_OR_CRIT(candidate) || !candidate.can_heartattack() || candidate.has_status_effect(/datum/status_effect/heart_attack) || candidate.undergoing_cardiac_arrest())
 			continue
 		if(!(candidate.mind?.assigned_role.job_flags & JOB_CREW_MEMBER)) // only crewmembers can get one, a bit unfair for some ghost roles and it wastes the event
 			continue

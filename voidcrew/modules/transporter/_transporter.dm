@@ -247,6 +247,6 @@ GLOBAL_LIST_INIT(transporter_mass_blacklist, typecacheof(list(
 	var/turf/spark_turf = get_turf(where)
 	if(!spark_turf)
 		return
-	var/datum/effect_system/spark_spread/quantum/sparks = new
-	sparks.set_up(5, 1, spark_turf)
-	sparks.start()
+	// VOIDCREW EDIT: upstream moved the spark system to /datum/effect_system/basic/spark_spread and
+	// replaced set_up()/start() with constructor args; do_sparks() is how the quantum pad does it now.
+	do_sparks(5, TRUE, spark_turf, spark_type = /datum/effect_system/basic/spark_spread/quantum)

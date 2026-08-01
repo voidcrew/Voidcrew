@@ -350,7 +350,13 @@
 
 	add_traits(list(TRAIT_GODMODE, TRAIT_IMMOBILIZED), LICH_TRAIT)
 	// Stop him planning while he is staggered, or he casts through his own tell.
-	ai_controller?.PauseAi(phase_transition_time)
+	// VOIDCREW EDIT: upstream deleted /datum/ai_controller/PauseAi() in the behaviour-tree
+	// rewrite, but paused_until is still honoured by get_able_to_run(). This is that proc's
+	// old body inlined (set the deadline, refresh now, refresh again when it lapses).
+	if(ai_controller)
+		ai_controller.paused_until = world.time + phase_transition_time
+		ai_controller.update_able_to_run()
+		addtimer(CALLBACK(ai_controller, TYPE_PROC_REF(/datum/ai_controller, update_able_to_run)), phase_transition_time)
 	addtimer(CALLBACK(src, PROC_REF(end_phase_transition)), phase_transition_time, TIMER_UNIQUE|TIMER_OVERRIDE)
 
 	// Pulsing green outline for the duration, the same trick the Thing uses for its
@@ -364,7 +370,8 @@
 	var/turf/our_turf = get_turf(src)
 	if(our_turf)
 		new /obj/effect/temp_visual/circle_wave/verdigris(our_turf)
-		playsound(our_turf, 'sound/effects/magic/RATTLEMEBONES2.ogg', 80, vary = TRUE, extrarange = SHORT_RANGE_SOUND_EXTRARANGE)
+		// VOIDCREW EDIT: RATTLEMEBONES2.ogg was deleted upstream for copyright (tg #96880).
+		playsound(our_turf, 'sound/effects/magic/RATTLEMEBONES.ogg', 80, vary = TRUE, extrarange = SHORT_RANGE_SOUND_EXTRARANGE)
 	for(var/mob/nearby in range(7, src))
 		shake_camera(nearby, duration = 1 SECONDS, strength = 1)
 

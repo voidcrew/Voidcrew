@@ -54,6 +54,32 @@
 	user.visible_message("<span class='suicide'>[user] is cutting [user.p_them()]self on [user.p_their()] own edge!")
 	return (BRUTELOSS) //appropriate
 
+/**
+ * VOIDCREW EDIT: upstream deleted /obj/item's unique_reskin assoc list. Reskins are now
+ * /datum/atom_skin singletons handed to /datum/component/reskinable_item
+ * (code/datums/components/reskinnable_atom.dm), so the three options become three types.
+ *
+ * change_worn_icon_state is FALSE because the new default is TRUE, whereas the old
+ * unique_reskin path only ever touched icon_state - items_and_weapons.dmi has no worn states
+ * for the alternate openers. The component is added non-infinite, matching the old behaviour
+ * for an item that did not carry the INFINITE_RESKIN obj_flag: one pick, then it sticks.
+ */
+/datum/atom_skin/letter_opener
+	abstract_type = /datum/atom_skin/letter_opener
+	change_worn_icon_state = FALSE
+
+/datum/atom_skin/letter_opener/traditional
+	preview_name = "Traditional"
+	new_icon_state = "letter_opener"
+
+/datum/atom_skin/letter_opener/boxcutter
+	preview_name = "Boxcutter"
+	new_icon_state = "letter_opener_b"
+
+/datum/atom_skin/letter_opener/corporate
+	preview_name = "Corporate"
+	new_icon_state = "letter_opener_a"
+
 /obj/item/knife/kitchen/letter_opener
 	name = "letter opener"
 	icon = 'voidcrew/icons/obj/items_and_weapons.dmi'
@@ -62,7 +88,7 @@
 	embed_type = /datum/embedding/combat_knife
 	force = 15
 	throwforce = 15
-	unique_reskin = list("Traditional" = "letter_opener",
-						"Boxcutter" = "letter_opener_b",
-						"Corporate" = "letter_opener_a"
-						)
+
+/obj/item/knife/kitchen/letter_opener/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/reskinable_item, /datum/atom_skin/letter_opener)

@@ -57,7 +57,9 @@
 	if(!stray_spawnable_supply_packs)
 		stray_spawnable_supply_packs = SSshuttle.supply_packs.Copy()
 		for(var/datum/supply_pack/pack_type as anything in stray_spawnable_supply_packs)
-			if(initial(pack_type.special))
+			// VOIDCREW EDIT: supply_pack's special bool collapsed into order_flags, same as
+			// upstream's own stray_cargo event does now.
+			if(initial(pack_type.order_flags) & ORDER_SPECIAL)
 				stray_spawnable_supply_packs -= pack_type
 	if(!length(stray_spawnable_supply_packs)) // Cargo subsystem somehow has nothing to give.
 		kill()
@@ -118,7 +120,7 @@
 
 /datum/round_event/voidcrew/stray_cargo/syndicate/make_pod()
 	var/obj/structure/closet/supplypod/pod = new
-	pod.setStyle(/datum/pod_style/syndicate)
+	pod.set_style(/datum/pod_style/syndicate)
 	return pod
 
 /datum/round_event_control/voidcrew/market_crash

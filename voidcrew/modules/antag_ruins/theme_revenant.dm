@@ -461,8 +461,9 @@
 		if(!light.on)
 			continue
 		light.visible_message(span_boldwarning("[light] suddenly flares brightly and begins to spark!"))
-		var/datum/effect_system/spark_spread/light_sparks = new /datum/effect_system/spark_spread()
-		light_sparks.set_up(4, 0, light)
+		// spark_spread moved under effect_system/basic and swapped set_up() for
+		// constructor args: (location, amount, cardinals_only).
+		var/datum/effect_system/basic/spark_spread/light_sparks = new(get_turf(light), 4, FALSE)
 		light_sparks.start()
 		new /obj/effect/temp_visual/revenant(get_turf(light))
 		addtimer(CALLBACK(src, PROC_REF(overload_shock), light, caster), 2 SECONDS)

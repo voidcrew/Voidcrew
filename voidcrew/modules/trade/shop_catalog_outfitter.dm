@@ -295,7 +295,7 @@
 
 /datum/shop_sku/outfitter/rifle_clip
 	category = "Firearms & Ammo"
-	item_path = /obj/item/ammo_box/strilka310
+	item_path = /obj/item/ammo_box/speedloader/strilka310
 	price_credits = 450
 	stock_min = 3
 	stock_max = 6

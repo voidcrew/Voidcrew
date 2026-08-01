@@ -226,9 +226,9 @@
 		return FALSE
 	var/obj/item/tank/tank = offered
 	var/datum/gas_mixture/mix = tank.return_air()
-	if(!mix || !(gas_type in mix.gases))
+	if(!mix || !(gas_type in mix.moles))
 		return FALSE
-	return mix.gases[gas_type][MOLES] >= required_moles
+	return mix.moles[gas_type] >= required_moles
 
 /datum/shop_buyback/exotic_gas/get_wanted_text()
 	return "[name] ([required_moles]+ mol in one tank)"

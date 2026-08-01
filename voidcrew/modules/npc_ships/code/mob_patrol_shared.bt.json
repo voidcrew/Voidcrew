@@ -1,0 +1,169 @@
+{
+	"dm_type": "/datum/bt_node/subtree/mob_patrol_shared",
+	"type": "selector",
+	"children": [
+		{
+			"type": "decorator",
+			"decorator": "/datum/bt_node/decorator/patrol_obstruction_nearby",
+			"child": {
+				"type": "parallel",
+				"success_policy": "BT_PARALLEL_SUCCESS_ALL",
+				"children": [
+					{
+						"type": "leaf",
+						"behavior": "/datum/bt_node/ai_behavior/patrol_resolve_obstruction"
+					},
+					{
+						"type": "selector",
+						"children": [
+							{
+								"type": "decorator",
+								"decorator": "/datum/bt_node/decorator/patrol_obstruction/open_door",
+								"child": {
+									"type": "leaf",
+									"behavior": "/datum/bt_node/ai_behavior/try_open_blocking_door"
+								}
+							},
+							{
+								"type": "decorator",
+								"decorator": "/datum/bt_node/decorator/patrol_obstruction/attack_door",
+								"child": {
+									"type": "leaf",
+									"behavior": "/datum/bt_node/ai_behavior/attack_blocking_door"
+								}
+							},
+							{
+								"type": "decorator",
+								"decorator": "/datum/bt_node/decorator/patrol_obstruction/assembly",
+								"child": {
+									"type": "leaf",
+									"behavior": "/datum/bt_node/ai_behavior/attack_blocking_assembly"
+								}
+							},
+							{
+								"type": "decorator",
+								"decorator": "/datum/bt_node/decorator/patrol_obstruction/obstacle",
+								"child": {
+									"type": "leaf",
+									"behavior": "/datum/bt_node/ai_behavior/attack_blocking_obstacle"
+								}
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"type": "decorator",
+			"decorator": "/datum/bt_node/decorator/exploring_room",
+			"child": {
+				"type": "parallel",
+				"success_policy": "BT_PARALLEL_SUCCESS_ALL",
+				"children": [
+					{
+						"type": "leaf",
+						"behavior": "/datum/bt_node/ai_behavior/explore_resolve_step"
+					},
+					{
+						"type": "selector",
+						"children": [
+							{
+								"type": "decorator",
+								"decorator": "/datum/bt_node/decorator/exploration_at_closet",
+								"child": {
+									"type": "leaf",
+									"behavior": "/datum/bt_node/ai_behavior/explore_open_closet"
+								}
+							},
+							{
+								"type": "decorator",
+								"decorator": "/datum/bt_node/decorator/exploration_travelling",
+								"child": {
+									"type": "leaf",
+									"behavior": "/datum/bt_node/ai_behavior/move_to_target/explore_travel"
+								}
+							},
+							{
+								"type": "leaf",
+								"behavior": "/datum/bt_node/ai_behavior/exploration_hold"
+							}
+						]
+					}
+				]
+			}
+		},
+		{
+			"type": "parallel",
+			"success_policy": "BT_PARALLEL_SUCCESS_ALL",
+			"children": [
+				{
+					"type": "leaf",
+					"behavior": "/datum/bt_node/ai_behavior/patrol_resolve_step"
+				},
+				{
+					"type": "selector",
+					"children": [
+						{
+							"type": "decorator",
+							"decorator": "/datum/bt_node/decorator/patrol_step/assembly",
+							"child": {
+								"type": "leaf",
+								"behavior": "/datum/bt_node/ai_behavior/move_to_and_attack_assembly"
+							}
+						},
+						{
+							"type": "decorator",
+							"decorator": "/datum/bt_node/decorator/patrol_step/walk_through",
+							"child": {
+								"type": "leaf",
+								"behavior": "/datum/bt_node/ai_behavior/move_to_target/patrol_walk_through"
+							}
+						},
+						{
+							"type": "decorator",
+							"decorator": "/datum/bt_node/decorator/patrol_step/travel",
+							"child": {
+								"type": "leaf",
+								"behavior": "/datum/bt_node/ai_behavior/move_to_target/patrol_travel"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "decorator",
+			"decorator": "/datum/bt_node/decorator/patrol_door_blocked",
+			"child": {
+				"type": "sequence",
+				"children": [
+					{
+						"type": "leaf",
+						"behavior": "/datum/bt_node/ai_behavior/mark_patrol_door"
+					},
+					{
+						"type": "leaf",
+						"behavior": "/datum/bt_node/ai_behavior/try_open_door"
+					}
+				]
+			}
+		},
+		{
+			"type": "decorator",
+			"decorator": "/datum/bt_node/decorator/patrol_door_blocked/locked",
+			"child": {
+				"type": "sequence",
+				"children": [
+					{
+						"type": "leaf",
+						"behavior": "/datum/bt_node/ai_behavior/mark_patrol_door"
+					},
+					{
+						"type": "leaf",
+						"behavior": "/datum/bt_node/ai_behavior/attack_door"
+					}
+				]
+			}
+		}
+	]
+}
