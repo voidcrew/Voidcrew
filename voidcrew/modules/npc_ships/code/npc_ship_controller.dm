@@ -514,6 +514,44 @@
  * Start the boarding phase after negotiation fails.
  * This initiates the wave-based combat system instead of immediate ship combat.
  */
+/**
+ * TRUE if this ship is currently raiding from the lawless (red) band.
+ * Red runs the full wave gauntlet plus a boss; everywhere else gets the
+ * lighter single-wave raid.
+ */
+/datum/ai_controller/npc_ship/proc/is_red_zone_raid()
+	var/obj/structure/overmap/ship/npc/ship = get_ship()
+	if(!ship)
+		return FALSE
+	var/datum/overmap_zone/zone = SSovermap_zones.get_zone(get_turf(ship))
+	return zone?.zone_type == ZONE_RED
+
+/**
+ * How many boarding waves to run before the boss phase, for the band we're
+ * fighting in.
+ */
+/datum/ai_controller/npc_ship/proc/get_boarding_wave_count()
+	return is_red_zone_raid() ? NPC_BOARDING_WAVE_COUNT : NPC_BOARDING_WAVE_COUNT_YELLOW
+
+/**
+ * End a yellow-zone raid. The single wave has been repelled, so the pirate
+ * writes this target off and leaves - there is no boss phase outside of red.
+ *
+ * clear_target() does the actual cleanup: it cancels interdiction, releases
+ * engaging_pirate_ref so other pirates can engage, and drops us back to IDLE
+ * so we resume patrolling. The scan memory set in scan_wealth keeps us off
+ * this ship for NPC_SCAN_MEMORY_TIME.
+ */
+/datum/ai_controller/npc_ship/proc/end_yellow_raid()
+	var/obj/structure/overmap/ship/npc/ship = get_ship()
+	var/obj/structure/overmap/ship/target = get_target()
+
+	if(target && !QDELETED(target))
+		target.ship_notify("Boarding party eliminated! [ship?.name || "The attacker"] is breaking off.", "COMBAT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+	ship?.ship_notify("Boarding party lost. Disengaging.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
+
+	clear_target()
+
 /datum/ai_controller/npc_ship/proc/start_boarding_phase()
 	var/obj/structure/overmap/ship/npc/pirate/ship = get_ship()
 	var/obj/structure/overmap/ship/target = get_target()
@@ -777,12 +815,17 @@
 	SEND_SIGNAL(src, COMSIG_BOARDING_WAVE_COMPLETE, current_wave)
 
 	// Check if this was the final wave
-	if(current_wave >= NPC_BOARDING_WAVE_COUNT)
-		// All waves defeated - start boss cooldown
-		start_boss_cooldown()
-	else
+	if(current_wave < get_boarding_wave_count())
 		// Start cooldown before next wave
 		start_wave_cooldown(current_wave)
+		return
+
+	// Final wave cleared. Red escalates to the faction boss; yellow raids have
+	// no boss, so the pirate gives up on this target and breaks off.
+	if(is_red_zone_raid())
+		start_boss_cooldown()
+	else
+		end_yellow_raid()
 
 /**
  * Start the cooldown period between waves.

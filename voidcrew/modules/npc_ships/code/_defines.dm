@@ -99,6 +99,9 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 
 // Boarding timing constants
 #define NPC_BOARDING_WAVE_COUNT 3                  // Number of waves before boss
+/// Yellow zone raids are a single crew-scaled wave with no boss - the pirate
+/// leaves once it's repelled. Red keeps the full gauntlet above.
+#define NPC_BOARDING_WAVE_COUNT_YELLOW 1
 #define NPC_BOARDING_WAVE_COOLDOWN (30 SECONDS)    // Time between waves
 #define NPC_BOARDING_DISENGAGE_DELAY (10 SECONDS)  // Time before pirates leave after victory
 #define NPC_BOARDING_WAVE_TIME_LIMIT (3 MINUTES)   // Max time per wave before escalation

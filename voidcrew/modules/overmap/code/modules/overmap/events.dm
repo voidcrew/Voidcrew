@@ -377,17 +377,26 @@ GLOBAL_LIST_EMPTY(meteor_fields)
  * Releases the field's reservation and docks when nobody's using it. Unlike space ruins,
  * the event itself is never deleted or moved - only its (lazily-loaded) interior is freed.
  */
-/obj/structure/overmap/event/meteor/proc/unload_level()
-	if(concerned || !reservation)
-		return
+/obj/structure/overmap/event/meteor/proc/can_release_interior()
+	if(!reservation)
+		return FALSE
 
 	// Check if any ships are still docked
 	for(var/obj/structure/overmap/ship/docked_ship in contents)
-		return
+		return FALSE
 
 	// Check for players within the reservation's own bounds - transit z-levels host many
 	// reservations side by side, so a level-wide check would false-positive on neighbours
 	if(turf_reservation_has_players(reservation))
+		return FALSE
+
+	return TRUE
+
+/obj/structure/overmap/event/meteor/proc/unload_level()
+	if(concerned)
+		return
+
+	if(!can_release_interior())
 		return
 
 	concerned = TRUE

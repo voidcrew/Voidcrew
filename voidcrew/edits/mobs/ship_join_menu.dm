@@ -8,6 +8,50 @@
 	/// The player using this menu
 	var/mob/dead/new_player/user
 
+/**
+ * Every ship the join menu is willing to show a player: it exists, it has somewhere to
+ * put them, it is accepting crew, and it is not an NPC hull nobody has claimed yet.
+ *
+ * Shared by the menu's ship list and the requisition gate so the two can never disagree
+ * about what counts as an available ship. Ships with no free positions are still in
+ * here - they're listed with the Join button disabled.
+ */
+/proc/get_joinable_ships()
+	var/list/obj/structure/overmap/ship/joinable = list()
+	for(var/obj/structure/overmap/ship/candidate as anything in SSovermap.simulated_ships)
+		if(isnull(candidate.shuttle))
+			continue
+		if(length(candidate.shuttle.spawn_points) <= 0 || !candidate.joining_allowed)
+			continue
+		var/obj/structure/overmap/ship/npc/npc_ship = candidate
+		if(istype(npc_ship) && !npc_ship.player_controlled)
+			continue
+		joinable += candidate
+	return joinable
+
+/// Whether a ship has any job with a position still open on it.
+/proc/ship_has_open_slots(obj/structure/overmap/ship/ship)
+	for(var/datum/job/job as anything in ship.job_slots)
+		if(ship.job_slots[job] > 0)
+			return TRUE
+	return FALSE
+
+/**
+ * Whether a free hull can be requisitioned right now.
+ *
+ * Requisition is the fleet's floor, not a way around it. It opens only when there is
+ * nowhere left in the fleet to sit - every ship full, or every ship destroyed. While
+ * any hull still has an open position the player joins that instead, which is what
+ * keeps a wiped crew regrouping onto one replacement rather than scattering onto a
+ * hull each, and keeps parts worth saving: they buy you the hull you want on demand,
+ * not access to a hull at all.
+ */
+/proc/can_requisition_hull()
+	for(var/obj/structure/overmap/ship/ship as anything in get_joinable_ships())
+		if(ship_has_open_slots(ship))
+			return FALSE
+	return TRUE
+
 /datum/ship_join_menu/New(mob/dead/new_player/player)
 	. = ..()
 	user = player
@@ -34,17 +78,7 @@
 
 	// Build list of active ships
 	var/list/ships = list()
-	for(var/obj/structure/overmap/ship/active_ship as anything in SSovermap.simulated_ships)
-		if(isnull(active_ship.shuttle))
-			continue
-		// Skip ships that aren't accepting crew or have no spawn points
-		if(length(active_ship.shuttle.spawn_points) <= 0 || !active_ship.joining_allowed)
-			continue
-		// Skip NPC ships unless they've been claimed by players
-		var/obj/structure/overmap/ship/npc/npc_ship = active_ship
-		if(istype(npc_ship) && !npc_ship.player_controlled)
-			continue
-
+	for(var/obj/structure/overmap/ship/active_ship as anything in get_joinable_ships())
 		var/crew_count = length(active_ship.manifest)
 		var/class_name = active_ship.source_template?.short_name || "Unknown Class"
 
@@ -68,6 +102,7 @@
 		))
 
 	data["ships"] = ships
+	data["can_requisition"] = can_requisition_hull()
 	return data
 
 /datum/ship_join_menu/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -84,6 +119,15 @@
 			var/datum/callback/cb = CALLBACK(user, TYPE_PROC_REF(/mob/dead/new_player, on_upgrades_confirmed))
 			var/datum/ship_upgrade_selector/selector = new(user, null, cb)
 			selector.ui_interact(user)
+
+		if("requisition_hull")
+			// Re-checked in requisition_free_hull() too - the UI is never the authority
+			// on this, and the fleet can fill up while the menu sits open
+			if(!can_requisition_hull())
+				to_chat(user, span_warning("There are still open positions in the fleet. Join one of those instead."))
+				return FALSE
+			ui.close()
+			user.requisition_free_hull()
 
 		if("select_ship")
 			var/ship_ref = params["ship_ref"]

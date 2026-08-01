@@ -1,4 +1,5 @@
 import { Box, Button, Icon, Section, Stack } from 'tgui-core/components';
+import type { BooleanLike } from 'tgui-core/react';
 
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
@@ -18,19 +19,25 @@ type ActiveShip = {
 type ShipJoinMenuData = {
   player_name: string;
   ships: ActiveShip[];
+  can_requisition: BooleanLike;
 };
 
 export const ShipJoinMenu = () => {
   const { data } = useBackend<ShipJoinMenuData>();
-  const { player_name, ships } = data;
+  const { player_name, ships, can_requisition } = data;
 
   return (
-    <Window title={`Welcome, ${player_name}`} width={500} height={450}>
+    <Window title={`Welcome, ${player_name}`} width={500} height={520}>
       <Window.Content>
         <Stack vertical fill>
           {/* Purchase Ship Section */}
           <Stack.Item>
             <PurchaseShipSection />
+          </Stack.Item>
+
+          {/* Free Hull Section */}
+          <Stack.Item>
+            <RequisitionSection canRequisition={!!can_requisition} />
           </Stack.Item>
 
           {/* Join Existing Ship Section */}
@@ -79,6 +86,50 @@ const PurchaseShipSection = () => {
   );
 };
 
+const RequisitionSection = (props: { canRequisition: boolean }) => {
+  const { act } = useBackend<ShipJoinMenuData>();
+  const { canRequisition } = props;
+
+  return (
+    <Section
+      title={
+        <Box inline>
+          <Icon name="life-ring" mr={1} />
+          Requisition a Hull
+        </Box>
+      }
+    >
+      <Stack vertical>
+        <Stack.Item>
+          <Box color="gray" fontSize="13px" mb={1}>
+            {canRequisition
+              ? 'No ship in the fleet has a position open for you, so the yard will issue you one at no cost. The class, theme and fittings are whatever is on the line — buy from the shipyard if you want to choose.'
+              : 'Available only when the fleet has no room left. There are still open positions below — join one of those.'}
+          </Box>
+        </Stack.Item>
+        <Stack.Item>
+          <Button
+            fluid
+            icon="wrench"
+            color={canRequisition ? 'good' : undefined}
+            disabled={!canRequisition}
+            fontSize="14px"
+            textAlign="center"
+            tooltip={
+              canRequisition
+                ? 'Spawns a free ship and makes you its officer'
+                : 'The fleet still has open positions'
+            }
+            onClick={() => act('requisition_hull')}
+          >
+            {canRequisition ? 'Requisition a Hull (Free)' : 'Fleet Has Room'}
+          </Button>
+        </Stack.Item>
+      </Stack>
+    </Section>
+  );
+};
+
 const JoinShipSection = (props: { ships: ActiveShip[] }) => {
   const { ships } = props;
 
@@ -102,7 +153,7 @@ const JoinShipSection = (props: { ships: ActiveShip[] }) => {
           <br />
           No ships are currently accepting crew.
           <br />
-          Purchase your own ship above!
+          Requisition a free hull above, or buy your own.
         </Box>
       ) : (
         <Stack vertical>

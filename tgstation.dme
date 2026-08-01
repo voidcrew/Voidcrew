@@ -7111,6 +7111,7 @@
 #include "voidcrew\modules\outfits\western.dm"
 #include "voidcrew\modules\overmap\code\controllers\subsystem\overmap.dm"
 #include "voidcrew\modules\overmap\code\controllers\subsystem\shuttle.dm"
+#include "voidcrew\modules\overmap\code\controllers\subsystem\worldgen_queue.dm"
 #include "voidcrew\modules\overmap\code\game\area\areas\overmap.dm"
 #include "voidcrew\modules\overmap\code\game\turfs\closed\overmap.dm"
 #include "voidcrew\modules\overmap\code\game\turfs\open\overmap.dm"

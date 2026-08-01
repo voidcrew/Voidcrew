@@ -253,7 +253,22 @@
 			target.ship_notify("Hostile vessel has completed scan and is engaging!", "SECURITY", SHIP_NOTIFY_DANGER)
 			controller.set_combat_state(NPC_COMBAT_ENGAGING)
 	else
-		// Target is broke - not worth it
+		// Target is broke. In yellow that isn't a reprieve - the pirate takes it
+		// out of their hold instead, with a single crew-scaled boarding wave and
+		// no boss. Only non-boarding ships walk away empty-handed now.
+		var/turf/broke_loc = get_turf(ship)
+		var/datum/overmap_zone/broke_zone = SSovermap_zones.get_zone(broke_loc)
+		var/obj/structure/overmap/ship/npc/pirate/pirate_ship = ship
+
+		if(broke_zone?.zone_type == ZONE_YELLOW && istype(pirate_ship) && pirate_ship.uses_boarding_phases)
+			if(length(pirate_ship.broke_lines))
+				var/line = pick(pirate_ship.broke_lines)
+				ship.ship_notify("[line]", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+				target.ship_notify("[ship.name]: \"[line]\"", "COMMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+			if(controller.start_boarding_phase())
+				return AI_BEHAVIOR_DELAY
+
+		// Can't board them, so there's genuinely nothing here worth stopping for.
 		ship.ship_notify("Scan complete. Target has insufficient funds ([target_wealth] credits). Disengaging.", "SCANNER", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		target.ship_notify("Hostile scan complete. They found nothing of value and are disengaging.", "BROKEY ALERT", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 		controller.clear_target()

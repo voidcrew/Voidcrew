@@ -170,18 +170,11 @@
 	if(QDELETED(src))
 		return
 	if(reservation)
-		if(concerned) // mid dock/undock - come back later
+		// Refused because someone is aboard or a dock is in flight - both fix
+		// themselves given a little time.
+		if(!release_interior())
 			addtimer(CALLBACK(src, PROC_REF(try_cleanup)), CONTESTED_CACHE_CLEANUP_RETRY)
 			return
-		for(var/obj/structure/overmap/ship/docked_ship in contents)
-			addtimer(CALLBACK(src, PROC_REF(try_cleanup)), CONTESTED_CACHE_CLEANUP_RETRY)
-			return
-		if(has_players_in_reservation())
-			addtimer(CALLBACK(src, PROC_REF(try_cleanup)), CONTESTED_CACHE_CLEANUP_RETRY)
-			return
-		remove_docks()
-		remove_reservation()
-		loaded = FALSE
 	log_game("Contested cache site retired.")
 	qdel(src)
 
@@ -225,33 +218,15 @@
 // everyone leaves, hold overmap position while the event runs, and retire fully
 // once the event is over.
 /obj/structure/overmap/space_ruin/contested_cache/check_and_respawn()
-	if(!reservation)
+	if(!release_interior())
 		return
-	for(var/obj/structure/overmap/ship/docked_ship in contents)
-		return
-	if(has_players_in_reservation())
-		return
-	remove_docks()
-	remove_reservation()
-	loaded = FALSE
 	if(event_over)
 		qdel(src)
 
 // Base proc would relocate the signal to a fresh overmap square; the cache
 // holds position (everyone was told where it is) until the event retires it.
 /obj/structure/overmap/space_ruin/contested_cache/unload_level()
-	if(concerned || !reservation)
-		return
-	for(var/obj/structure/overmap/ship/docked_ship in contents)
-		return
-	var/turf/bottom_left = reservation.bottom_left_turfs[1]
-	if(bottom_left && length(SSmobs.clients_by_zlevel[bottom_left.z]))
-		return
-	concerned = TRUE
-	remove_docks()
-	remove_reservation()
-	loaded = FALSE
-	concerned = FALSE
+	release_interior()
 
 // ===== THE VAULT =====
 
