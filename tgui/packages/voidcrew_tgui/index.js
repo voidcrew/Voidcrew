@@ -3,10 +3,19 @@
  * taken from https://github.com/fulpstation/fulpstation/pull/612
  */
 
-// voidcrew edit - exclude *.test.tsx from the game bundle (matches upstream routes.tsx)
-const INTERFACE_FILES = /^(?!.*\.test\.(tsx?|jsx?)).*\.(tsx?|jsx?)$/;
-const requireModularInterface = require.context('./interfaces', true, INTERFACE_FILES);
-const requireTgInterface = require.context('../tgui/interfaces', true, INTERFACE_FILES);
+// voidcrew edit - exclude *.test.tsx from the game bundle (matches upstream routes.tsx).
+// The regex MUST be a literal in each call: bundlers cannot statically evaluate a
+// variable here and silently fall back to the match-everything default.
+const requireModularInterface = require.context(
+  './interfaces',
+  true,
+  /^(?!.*\.test\.(tsx?|jsx?)).*\.(tsx?|jsx?)$/,
+);
+const requireTgInterface = require.context(
+  '../tgui/interfaces',
+  true,
+  /^(?!.*\.test\.(tsx?|jsx?)).*\.(tsx?|jsx?)$/,
+);
 
 const getComponent = (interfacePath, requireInterface) => {
   let esModule = null;
