@@ -26,10 +26,10 @@ kill_world() {
 	done
 }
 
-echo ">> Compiling: build.bat dm -DCIBUILDING"
+echo ">> Compiling: build.bat dm -DCIBUILDING -DRUNNING_LOCAL_TESTS"
 compile_ok=0
 for attempt in 1 2 3 4 5; do
-	if cmd //c "tools\\build\\build.bat dm -DCIBUILDING"; then
+	if cmd //c "tools\\build\\build.bat dm -DCIBUILDING -DRUNNING_LOCAL_TESTS"; then
 		compile_ok=1
 		break
 	fi

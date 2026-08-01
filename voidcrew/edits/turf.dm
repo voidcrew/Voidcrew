@@ -104,12 +104,24 @@
 			// stack_trace in its Initialize), it assigns turf.lighting_object itself, and it adds
 			// itself to vis_contents - so the reuse branch now has to do that part by hand. This is
 			// upstream's current body from code/game/turfs/change_turf.dm.
+			// VOIDCREW EDIT BEGIN - this block has to be idempotent. AfterChange() above can run an
+			// area transfer (transfer_area_lighting -> lighting_build_overlay), and this fork moves
+			// turfs between static_lighting TRUE/FALSE areas constantly during planet generation and
+			// ruin placement. When that happens the replacement turf already owns a lighting object
+			// by the time we get here, so the blind `new` below re-assigned one and tripped
+			// "a lighting object was assigned to a turf that already had a lighting object!".
+			// Reconcile instead: whatever we came in with wins, anything built mid-change is dropped
+			// (force = TRUE, since a plain qdel on a lighting object returns QDEL_HINT_LETMELIVE and
+			// would leave it orphaned in vis_contents).
 			if(old_lighting_object)
+				if(lighting_object && lighting_object != old_lighting_object)
+					qdel(lighting_object, force = TRUE)
 				lighting_object = old_lighting_object
 				vis_contents += lighting_object
 			// Should have a lighting object if we never had one
-			else
+			else if(!lighting_object)
 				new /atom/movable/lighting_object(null, src)
+			// VOIDCREW EDIT END
 		else if (old_lighting_object)
 			qdel(old_lighting_object, force = TRUE)
 

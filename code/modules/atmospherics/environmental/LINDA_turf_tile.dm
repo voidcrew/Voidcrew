@@ -103,8 +103,29 @@
 	air_update_turf(FALSE, FALSE)
 	return removed
 
+// VOIDCREW EDIT BEGIN - allocate this turf's gas mixture on demand.
+// /turf/open/Initialize is the only thing upstream that ever builds `air`, and it skips turfs
+// that were blocks_air at the time and never runs at all for turfs created while SSatoms is
+// mid-maploaded (which is exactly when ship templates dock on this fork). Anything that needs
+// to write air into a turf that may not have been through Initialize() calls this first.
+// Deliberately does NOT touch a turf that already has a mixture, so the shared immutable space
+// mix and any live atmos state are left alone.
+/turf/open/proc/mint_air_if_missing()
+	if(air)
+		return air
+	air = create_gas_mixture()
+	return air
+// VOIDCREW EDIT END
+
 /turf/open/proc/copy_air_with_tile(turf/open/target_turf)
 	if(istype(target_turf))
+		// VOIDCREW EDIT BEGIN - see mint_air_if_missing(); ship moves run this against turfs that
+		// have not been through Initialize(). If the tile we are reading from has no mixture there
+		// is genuinely nothing to move, so bail rather than runtime inside copy_from().
+		if(!target_turf.air)
+			return
+		mint_air_if_missing()
+		// VOIDCREW EDIT END
 		air.copy_from(target_turf.air)
 
 /turf/open/proc/copy_air(datum/gas_mixture/copy)

@@ -14,9 +14,16 @@
 	desc = "A disk capable of storing nanite programs. Can be customized using a Nanite Programming Console."
 	icon = 'voidcrew/modules/nanites/icons/diskette.dmi'
 	icon_state = "disk_map"
+	// We use our own sprite sheet, which has none of the "o_*" sticker states or the "datadisk*"
+	// reskins that /obj/item/disk overlays onto icons/obj/devices/floppy_disks.dmi. Same opt-out
+	// upstream uses for /obj/item/disk/nuclear and /obj/item/disk/bitrunning.
+	sticker_icon_state = null
 
 	///Typepath of the program on the disk. If set, this will be the path added in initialize.
 	var/datum/nanite_program/program
+
+/obj/item/disk/nanite_program/setup_reskins()
+	return
 
 /obj/item/disk/nanite_program/Initialize(mapload)
 	. = ..()

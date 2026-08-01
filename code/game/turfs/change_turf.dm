@@ -45,7 +45,20 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		var/datum/component/wet_floor/new_wet_floor_component = copy_to_turf.AddComponent(/datum/component/wet_floor)
 		new_wet_floor_component.InheritComponent(slip)
 	if (copy_air)
-		copy_to_turf.air.copy_from(air)
+		// VOIDCREW EDIT BEGIN - the destination can legitimately have no gas mixture yet.
+		// /turf/open/Initialize only allocates air when !blocks_air, and ship templates here are
+		// maploaded and then docked before SSatoms has initialized them (see the note on
+		// /obj/machinery/navbeacon/afterShuttleMove), so the turfs ChangeTurf just built above
+		// have not run Initialize() at all. Upstream assumes every open turf already has a
+		// mixture; on this fork that assumption breaks once per ship spawn and the ship's air
+		// was silently dropped on the floor along with a runtime. Materialise the mixture so the
+		// interior atmos actually moves with the hull. onShuttleMove sets blocks_air on the
+		// destination immediately after this, so a later deferred Initialize() will skip the
+		// !blocks_air branch and leave what we copied here intact.
+		if(air)
+			copy_to_turf.mint_air_if_missing()
+			copy_to_turf.air.copy_from(air)
+		// VOIDCREW EDIT END
 
 //wrapper for ChangeTurf()s that you want to prevent/affect without overriding ChangeTurf() itself
 /turf/proc/TerraformTurf(path, new_baseturf, flags)

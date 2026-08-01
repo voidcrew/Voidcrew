@@ -479,8 +479,9 @@ GLOBAL_LIST_INIT(channel_tokens, list(
 			LAZYSET(secure_radio_connections, ch_name, add_radio(src, GLOB.default_radio_channels[ch_name]))
 
 	// VOIDCREW EDIT ADDITION BEGIN - every headset carries the galaxy-wide Wideband channel
+	// secure_radio_connections is a lazylist upstream (null when empty) - must go through LAZYSET
 	LAZYSET(channels, RADIO_CHANNEL_WIDEBAND, TRUE)
-	secure_radio_connections[RADIO_CHANNEL_WIDEBAND] = add_radio(src, FREQ_WIDEBAND)
+	LAZYSET(secure_radio_connections, RADIO_CHANNEL_WIDEBAND, add_radio(src, FREQ_WIDEBAND))
 	if(!get_listening())
 		remove_radio_all(src)
 	// VOIDCREW EDIT ADDITION END

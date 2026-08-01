@@ -35,6 +35,15 @@
 	. = ..()
 	if(!needs_item_input || !anchored)
 		return
+	// VOIDCREW EDIT ADDITION BEGIN - ship templates are maploaded and then docked (a shuttle move,
+	// which abstract_move()s every movable and so fires Moved()) before SSatoms has initialized,
+	// so Moved() can run before Initialize(). Registering here first makes Initialize()'s own
+	// register_input_turf() a duplicate registration, and because shuttleRotate() re-aims
+	// input_dir in afterShuttleMove - i.e. after this - the registration made here is on the
+	// pre-rotation turf and is never unregistered. Initialize() registers the correct turf.
+	if(!(flags_1 & INITIALIZED_1))
+		return
+	// VOIDCREW EDIT ADDITION END
 	unregister_input_turf()
 	register_input_turf()
 

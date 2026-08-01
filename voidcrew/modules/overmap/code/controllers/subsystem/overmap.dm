@@ -19,9 +19,23 @@ SUBSYSTEM_DEF(overmap)
 	// LOBBY is in here so the roundstart planets can generate while players are still
 	// picking characters - see prebuild_roundstart_planets()
 	runlevels = RUNLEVEL_LOBBY | RUNLEVEL_SETUP | RUNLEVEL_GAME
+	// VOIDCREW EDIT BEGIN - must also depend on SSatoms.
+	// Initialize() -> spawn_initial_ship() loads and docks every roundstart hull. With only a
+	// mapping dependency the sort put us at #51 and SSatoms at #57, so all of that ran while
+	// SSatoms.initialized was still INITIALIZATION_INSSATOMS. In that state InitializeAtoms()
+	// early-returns and /atom/New skips InitAtom, which means initTemplateBounds() inside
+	// map_template.load() is a no-op and NOTHING on a roundstart ship is initialized until
+	// SSatoms' later world-wide sweep. Everything the docking code then touches is a half-built
+	// atom: /turf/open/Initialize never ran so turf.air is null (the "Cannot execute
+	// null.copy from()" storm out of copyTurf/copy_air_with_tile during takeoff), machinery
+	// Initialize never ran so /obj/machinery/rnd/production.materials is null ("Cannot read
+	// null.mat_container"), and navbeacons reach afterShuttleMove before set_codes() has built
+	// `codes` (already worked around in shuttle_move_callbacks.dm).
 	dependencies = list(
 		/datum/controller/subsystem/mapping,
+		/datum/controller/subsystem/atoms,
 	)
+	// VOIDCREW EDIT END
 
 	/// Centre of the overmap
 	var/turf/overmap_centre

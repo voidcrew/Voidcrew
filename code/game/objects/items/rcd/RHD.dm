@@ -75,7 +75,12 @@
 
 ///used for examining the RCD and for its UI
 /obj/item/construction/proc/get_silo_iron()
-	if(silo_link && silo_mats.mat_container && !silo_mats.on_hold())
+	// VOIDCREW EDIT - silo_mats can legitimately be null here: remote_materials is a plain datum
+	// now rather than a component, so it is only built when construction_upgrades already carries
+	// RCD_UPGRADE_SILO_LINK at Initialize() time. The ship consoles set that flag and attach the
+	// datum by hand *after* constructing their internal RCD, and Destroy() nulls it while leaving
+	// silo_link set. Guard it the same way the rest of this file already does (see useResource).
+	if(silo_link && silo_mats?.mat_container && !silo_mats.on_hold())
 		return silo_mats.mat_container.get_material_amount(/datum/material/iron) / SILO_USE_AMOUNT
 	return 0
 
@@ -87,7 +92,8 @@
 	. = ..()
 	. += "It currently holds [get_matter(user)]/[max_matter] matter-units."
 	if(construction_upgrades & RCD_UPGRADE_SILO_LINK)
-		. += "Remote storage link state: [silo_link ? "[silo_mats.on_hold() ? "ON HOLD" : "ON"]" : "OFF"]."
+		// VOIDCREW EDIT - see get_silo_iron(); silo_mats is not guaranteed to exist.
+		. += "Remote storage link state: [silo_link ? "[silo_mats?.on_hold() ? "ON HOLD" : "ON"]" : "OFF"]."
 		var/iron = get_silo_iron()
 		if(iron)
 			. += "Remote connection has iron in equivalent to [iron] RCD unit\s." //1 matter for 1 floor tile, as 4 tiles are produced from 1 iron

@@ -46,6 +46,14 @@
 
 /turf/open/floor/circuit/on_change_area(area/old_area, area/new_area)
 	. = ..()
+	// VOIDCREW EDIT ADDITION BEGIN - ship templates are maploaded and then docked before SSatoms
+	// has initialized, so a shuttle move can change our area before Initialize() has run.
+	// Doing any of the below then is wrong twice over: Initialize() registers on our (final) loc
+	// and would double-register, and `on` is still its initial -1 - truthy - so we would strip
+	// static power from an area we never added it to. Initialize() handles both correctly.
+	if(!(flags_1 & INITIALIZED_1))
+		return
+	// VOIDCREW EDIT ADDITION END
 	UnregisterSignal(old_area, COMSIG_AREA_POWER_CHANGE)
 	RegisterSignal(new_area, COMSIG_AREA_POWER_CHANGE, PROC_REF(handle_powerchange))
 	if(on)

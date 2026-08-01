@@ -297,19 +297,28 @@ All ShuttleMove procs go here
 
 /obj/machinery/navbeacon/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)
 	. = ..()
-	GLOB.navbeacons["[z]"] -= src
-	GLOB.deliverybeacons -= src
+
+	// VOIDCREW EDIT BEGIN - this was a hand-inlined glob_lists_deregister() missing its guard.
+	// GLOB.navbeacons is keyed by stringified z and a z only gets a list once a PATROL-mode
+	// beacon registers there (see glob_lists_register), so on a ship whose beacons are
+	// delivery-only the subscript is null and `null -= src` threw "type mismatch" once per
+	// beacon per move. Every other deregistration site in the codebase guards this; calling
+	// the shared proc matches them and also drops the GLOB.deliverybeacontags entry that
+	// afterShuttleMove unconditionally re-adds - the inlined version leaked one tag per move,
+	// which matters here because ships move constantly.
+	glob_lists_deregister()
+	// VOIDCREW EDIT END
 
 /obj/machinery/navbeacon/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
 	. = ..()
 
-	if(codes[NAVBEACON_PATROL_MODE])
-		if(!GLOB.navbeacons["[z]"])
-			GLOB.navbeacons["[z]"] = list()
-		GLOB.navbeacons["[z]"] += src //Register with the patrol list!
-	if(codes[NAVBEACON_DELIVERY_MODE])
-		GLOB.deliverybeacons += src
-		GLOB.deliverybeacontags += location
+	// VOIDCREW EDIT BEGIN - this hand-inlined glob_lists_register(init = TRUE) minus its
+	// `if(!codes) return` guard. Ship templates are maploaded and then docked before SSatoms has
+	// initialized, so this runs before Initialize() -> set_codes() has built `codes`, and indexing
+	// the null list threw "bad index" once per beacon per docking. Initialize() registers the
+	// beacon properly afterwards, so bailing out here is correct.
+	glob_lists_register(init = TRUE)
+	// VOIDCREW EDIT END
 
 /************************************Mob move procs************************************/
 
