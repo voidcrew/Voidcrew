@@ -10,5 +10,10 @@
  */
 #define PLANET_MIN_SIZE 123
 
+/// Turfs of breathing room left around the reserve docks that ruins may not be placed in.
+/// Matches EVENT_FIELD_DOCK_CLEARANCE - a ship parked flush against a ruin wall is as bad
+/// as one parked on top of it.
+#define PLANET_DOCK_RUIN_CLEARANCE 3
+
 /// How long after the last ship undocks before an abandoned planet releases its z-levels
 #define PLANET_DESPAWN_TIMER 5 MINUTES

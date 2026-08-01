@@ -1,25 +1,17 @@
 //Please use mob or src (not usr) in these procs. This way they can be called in the same fashion as procs.
 /client/verb/wiki()
-	set name = "wiki"
+	set name = "Wiki"
 	set desc = "Brings you to the Wiki"
-	set hidden = TRUE
+	set category = "OOC"
 
 	var/wikiurl = CONFIG_GET(string/wikiurl)
 	if(!wikiurl)
 		to_chat(src, span_danger("The wiki URL is not set in the server configuration."))
 		return
 
-	var/query = tgui_input_text(src,
-		"Type what you want to know about. This will open the wiki in your web browser. Type nothing to go to the main page.",
-		"Wiki",
-		max_length = MAX_MESSAGE_LEN,
-	)
-	if(isnull(query)) //cancelled out
-		return
-	var/output = wikiurl
-	if(query != "")
-		output += "?title=Special%3ASearch&profile=default&search=[query]"
-	DIRECT_OUTPUT(src, link(output))
+	//Voidcrew's wiki is a static site with its own search box on the page, so there is
+	//no MediaWiki search URL to build - just open it.
+	DIRECT_OUTPUT(src, link(wikiurl))
 
 /client/verb/forum()
 	set name = "forum"

@@ -28,7 +28,7 @@
  * behind is permanent. Every mob he conjures is registered in [live_summons], is hard
  * capped by [max_live_summons], and is destroyed in [dismiss_all_summons] when he dies
  * or is deleted. An uncapped or uncleaned summon loop in a map that never resets is an
- * unkillable skeleton fog for the remaining hour of the round. Any new ability that
+ * unkillable skeleton fog for the rest of the round. Any new ability that
  * creates a mob MUST route through [can_summon_more] and [register_summon].
  *
  * All summon types must also carry `DEL_ON_DEATH`, because the registry prunes on

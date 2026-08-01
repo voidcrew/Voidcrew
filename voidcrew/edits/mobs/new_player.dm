@@ -1,3 +1,29 @@
+/**
+ * Lobby button that opens the server wiki in the player's browser.
+ *
+ * Sits at the left end of the bottom button row, next to the poll button. New players
+ * spend their first minutes on this screen, so it is the one place a wiki link is
+ * guaranteed to be seen before they pick a ship.
+ */
+/atom/movable/screen/lobby/button/bottom/wiki
+	name = "Open the Wiki"
+	icon_state = "wiki"
+	base_icon_state = "wiki"
+	screen_loc = "TOP:-122,CENTER:-54"
+
+/atom/movable/screen/lobby/button/bottom/wiki/SlowInit()
+	. = ..()
+	//No URL configured means there is nothing to open - grey the button out instead of
+	//handing people a button that only ever errors at them.
+	if(!CONFIG_GET(string/wikiurl))
+		set_button_status(FALSE)
+
+/atom/movable/screen/lobby/button/bottom/wiki/Click(location, control, params)
+	. = ..()
+	if(!.)
+		return
+	usr.client?.wiki()
+
 /datum/latejoin_menu/ui_interact(mob/dead/new_player/user, datum/tgui/ui)
 	user.select_ship() //override ui_interact and send to our latejoin menu instead
 	return TRUE

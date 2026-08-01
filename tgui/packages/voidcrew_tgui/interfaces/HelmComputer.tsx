@@ -2563,21 +2563,68 @@ const Intel = () => {
 
 // ---------------------------------------------------------------- controls
 
+// One act() per pointermove is one BYOND Topic call per mouse pixel: a single
+// drag of this slider spends hundreds of them, and the client's per-minute topic
+// limit boots the pilot mid-flight. The knob tracks the cursor from local state
+// and the server hears at most one value per interval, plus the final one.
+const THROTTLE_SEND_MS = 200;
+
 const Throttle = () => {
   const { act, data } = useBackend<Data>();
-  const { burnPercentage } = data;
   const locked = useLocked();
   const trackRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
+  // Set while the local value is ahead of the backend's; null once it catches up.
+  const [dragValue, setDragValue] = useState<number | null>(null);
+  const lastSent = useRef({ value: -1, at: 0 });
+  const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const commit = (clientY: number) => {
+  const burnPercentage = dragValue ?? data.burnPercentage;
+
+  const send = (value: number, force: boolean) => {
+    if (pending.current) {
+      clearTimeout(pending.current);
+      pending.current = null;
+    }
+    if (value === lastSent.current.value) return;
+    const wait = THROTTLE_SEND_MS - (Date.now() - lastSent.current.at);
+    if (!force && wait > 0) {
+      // Superseded by the next move if one arrives first, so a long drag costs
+      // one call per interval rather than one per event.
+      pending.current = setTimeout(() => send(value, true), wait);
+      return;
+    }
+    lastSent.current = { value, at: Date.now() };
+    act('change_burn_percentage', { percentage: value });
+  };
+
+  // Hand the knob back to the backend only once it agrees, so releasing a drag
+  // doesn't snap the knob back for the length of a round trip — frames arrive
+  // every tile crossed and one of them would land mid-flight. If the backend
+  // never agrees the console refused the change, so stop lying about it.
+  useEffect(() => {
+    if (dragValue === null || dragging.current) return;
+    const settled = data.burnPercentage === dragValue;
+    const refused = !pending.current && Date.now() - lastSent.current.at > 1500;
+    if (settled || refused) setDragValue(null);
+  }, [data.burnPercentage, dragValue]);
+
+  useEffect(
+    () => () => {
+      if (pending.current) clearTimeout(pending.current);
+    },
+    [],
+  );
+
+  const commit = (clientY: number, force = false) => {
     const track = trackRef.current;
     if (!track) return;
     const rect = track.getBoundingClientRect();
     const value = Math.round(
       Math.min(100, Math.max(1, (1 - (clientY - rect.top) / rect.height) * 100)),
     );
-    act('change_burn_percentage', { percentage: value });
+    setDragValue(value);
+    send(value, force);
   };
 
   return (
@@ -2600,7 +2647,14 @@ const Throttle = () => {
         onPointerMove={(event) => {
           if (dragging.current) commit(event.clientY);
         }}
-        onPointerUp={() => {
+        onPointerUp={(event) => {
+          if (!dragging.current) return;
+          dragging.current = false;
+          // The value under the cursor at release is the one the pilot meant;
+          // it goes out immediately even if a throttled send is still pending.
+          commit(event.clientY, true);
+        }}
+        onPointerCancel={() => {
           dragging.current = false;
         }}
         onKeyDown={(event) => {
@@ -2609,9 +2663,10 @@ const Throttle = () => {
             event.key === 'ArrowUp' ? 5 : event.key === 'ArrowDown' ? -5 : 0;
           if (!step) return;
           event.preventDefault();
-          act('change_burn_percentage', {
-            percentage: Math.min(100, Math.max(1, burnPercentage + step)),
-          });
+          // Held arrow keys autorepeat, so these go through the same throttle.
+          const value = Math.min(100, Math.max(1, burnPercentage + step));
+          setDragValue(value);
+          send(value, false);
         }}
       >
         <div

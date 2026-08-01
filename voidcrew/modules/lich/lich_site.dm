@@ -580,7 +580,7 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	log_mapping("SSovermap: The Verdigris surfaced on the overmap.")
 	return site
 
-ADMIN_VERB(spawn_lich_lair, R_ADMIN, "Spawn The Verdigris", "Force-surface the lich lair raid site on the overmap and start its ritual clock, ignoring both the 60-minute gate and the minimum-player gate.", ADMIN_CATEGORY_EVENTS)
+ADMIN_VERB(spawn_lich_lair, R_ADMIN, "Spawn The Verdigris", "Force-surface the lich lair raid site on the overmap and start its ritual clock, ignoring both the 90-minute gate and the minimum-player gate.", ADMIN_CATEGORY_EVENTS)
 	if(GLOB.lich_lair)
 		var/list/coords = GLOB.lich_lair.get_relative_overmap_coords()
 		to_chat(user, span_warning("The Verdigris already exists this round[coords ? " (at grid [coords[1]], [coords[2]])" : ""]."))

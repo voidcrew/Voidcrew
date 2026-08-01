@@ -46,6 +46,12 @@
 /obj/structure/overmap/planet/proc/is_terrain_planet()
 	return planet && initial(planet.surface_area)
 
+/// Terrain planets pull a landed ship down with the surface areas' own gravity
+/// (/area/overmap_encounter/planetoid is STANDARD_GRAVITY). Flat encounters —
+/// empty space, crashed ships, weak signals — are just space with a dock in it.
+/obj/structure/overmap/planet/has_ambient_gravity()
+	return is_terrain_planet()
+
 /**
   * Load a level for a ship that's visiting the level.
   * * user - The mob that asked, if any. Told where it stands if the worldgen queue is
@@ -182,6 +188,10 @@
 
 	populate_planet_level(surface_level)
 
+	// Before ruins, not after: seedRuins() reads NO_RUINS while it picks placements, and a
+	// flag set afterwards would be too late to move anything.
+	reserve_dock_strip(surface_level)
+
 	seed_planet_ruins(surface_level, ruin_trait, surface_area_type)
 	generate_ruin_terrain(surface_level)
 	spawn_planet_rivers_for(surface_level, ruin_trait, surface_area_type)
@@ -235,6 +245,42 @@
 			var/area/overmap_encounter/planetoid/planetoid_area = planet_area
 			planetoid_area.zone_band = zone_band
 		planet_area.RunTerrainPopulation()
+
+/**
+ * Y coordinate of the top of the strip the reserve docks occupy, clearance included.
+ *
+ * Both docks sit side by side along the bottom edge of the footprint, anchored
+ * RESERVE_DOCK_DEFAULT_PADDING + 1 in from the corner - see create_docking_ports().
+ * adjust_dock_to_shuttle() may rotate a port to fit a shuttle, but every rotation case
+ * re-anchors on one of the port's own corners and swaps its height and width together, so
+ * a rotated port covers the same rectangle it started in. This line therefore bounds every
+ * turf a docked ship can end up on.
+ */
+/obj/structure/overmap/planet/proc/get_dock_strip_top_y(datum/space_level/zlevel)
+	return zlevel.low_y + RESERVE_DOCK_DEFAULT_PADDING + RESERVE_DOCK_MAX_SIZE_SHORT + PLANET_DOCK_RUIN_CLEARANCE
+
+/**
+ * Flags the docking strip along the bottom of the planet NO_RUINS, so ruins only seed
+ * above where ships park.
+ *
+ * try_to_place() rejects any placement whose footprint touches a NO_RUINS turf - the same
+ * mechanism ruins use to keep off each other. Without it a ruin can land squarely on a
+ * berth, and since an arriving shuttle overwrites the turfs it lands on, the ruin is
+ * destroyed by the first ship to visit, taking its loot and mobs with it.
+ *
+ * The full width of the strip is taken rather than the two dock rectangles alone. They run
+ * from low_x + 4 to low_x + 118 of a footprint that is at least PLANET_MIN_SIZE across, and
+ * the slivers left either side are a handful of turfs wide - nothing fits in them anyway.
+ */
+/obj/structure/overmap/planet/proc/reserve_dock_strip(datum/space_level/surface_level)
+	var/strip_top_y = min(get_dock_strip_top_y(surface_level), surface_level.high_y)
+	var/turf/strip_bottom_left = locate(surface_level.low_x, surface_level.low_y, surface_level.z_value)
+	var/turf/strip_top_right = locate(surface_level.high_x, strip_top_y, surface_level.z_value)
+	if(!strip_bottom_left || !strip_top_right)
+		return
+	for(var/turf/reserved as anything in block(strip_bottom_left, strip_top_right))
+		reserved.turf_flags |= NO_RUINS
+		CHECK_TICK
 
 /**
  * Seeds ruins on the surface, using the same budget and ore-vent preset the preloaded

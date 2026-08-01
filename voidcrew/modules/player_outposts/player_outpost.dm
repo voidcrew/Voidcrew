@@ -522,6 +522,11 @@ GLOBAL_LIST_EMPTY(player_outpost_founder_ckeys)
 	// button will ask, not that the outpost will say yes.
 	return "[name] (hangar berth)"
 
+/// Outpost shells are STANDARD_GRAVITY, and adopted turfs inherit that, so a berthed
+/// ship stays weighted regardless of what its own plating is doing.
+/obj/structure/overmap/dynamic/player_outpost/has_ambient_gravity()
+	return TRUE
+
 /obj/structure/overmap/dynamic/player_outpost/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
 	if(concerned)
 		to_chat(user, span_notice("Too much traffic, try again later!"))

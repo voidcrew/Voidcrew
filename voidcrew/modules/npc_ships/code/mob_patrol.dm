@@ -677,11 +677,12 @@
  * Markers persist until manually cleared with clear_patrol_visualization().
  *
  * @param target_ship The ship to visualize patrol path for
+ * @param mob/user Who to report to. Defaults to the caller - never broadcast this to the world.
  */
-/proc/visualize_patrol_path(obj/structure/overmap/ship/target_ship)
+/proc/visualize_patrol_path(obj/structure/overmap/ship/target_ship, mob/user = usr)
 	var/list/path = get_ship_patrol_path(target_ship)
 	if(!path || !length(path))
-		to_chat(world, span_warning("No patrol path for [target_ship]"))
+		to_chat(user, span_warning("No patrol path for [target_ship]"))
 		return
 
 	// Clear any existing markers for this ship first
@@ -719,7 +720,7 @@
 		GLOB.patrol_path_markers = list()
 	GLOB.patrol_path_markers[ship_ref] = markers
 
-	to_chat(world, span_notice("Visualizing door patrol path for [target_ship]: [path_length] doors (green=start, red=end). Use clear_patrol_visualization() to remove."))
+	to_chat(user, span_notice("Visualizing door patrol path for [target_ship]: [path_length] doors (green=start, red=end). Use clear_patrol_visualization() to remove."))
 
 /**
  * Clear patrol visualization markers for a specific ship or all ships.
@@ -780,7 +781,7 @@
 		if(!S.shuttle?.shuttle_areas)
 			continue
 		if(A in S.shuttle.shuttle_areas)
-			visualize_patrol_path(S)
+			visualize_patrol_path(S, M)
 			return
 
 	to_chat(M, span_warning("Couldn't find a ship for this location. Try standing on a ship."))

@@ -5,6 +5,9 @@
 	show_in_roundend = FALSE
 	show_in_antagpanel = FALSE
 	silent = TRUE
+	/// This is a faction/HUD marker handed to every member of a ship team, not a real antag role.
+	/// Without these flags every crewmember counts as an antagonist to is_antag() and the global antag lists.
+	antag_flags = ANTAG_FAKE|ANTAG_SKIP_GLOBAL_LIST
 	ui_name = null // No objectives button for regular crew
 	/// The specific ship team this antagonist datum is for (supports multi-crew)
 	var/datum/team/voidcrew/crew_team

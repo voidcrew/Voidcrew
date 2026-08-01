@@ -13,9 +13,9 @@
 /// Note the ramp tail this implies: potency caps at LICH_MAX_POTENCY roughly
 /// LICH_FIRST_RITUAL_DELAY + (LICH_MAX_POTENCY * LICH_RITUAL_INTERVAL) after the
 /// lair surfaces (~30 min), so the worst of the galaxy-wide pressure starts
-/// landing around the 90 minute mark. Pushing this define later shifts that whole
+/// landing around the two hour mark. Pushing this define later shifts that whole
 /// tail with it.
-#define LICH_FIRST_SPAWN_TIME (60 MINUTES)
+#define LICH_FIRST_SPAWN_TIME (90 MINUTES)
 /// Retry delay when the scheduler can't yet surface the lair (no free overmap
 /// square, or not enough players aboard — see LICH_MIN_PLAYERS).
 #define LICH_SPAWN_RETRY (5 MINUTES)

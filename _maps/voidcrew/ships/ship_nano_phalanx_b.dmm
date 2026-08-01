@@ -776,12 +776,6 @@
 "hZ" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/phalanx/security/armory/b)
-"il" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/phalanx/engineering/b)
 "iq" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/effect/turf_decal/siding/wood{
@@ -1070,6 +1064,13 @@
 /obj/item/kirbyplants/random,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/bridge/captain/b)
+"ln" = (
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/b)
 "lo" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /turf/open/floor/mineral/titanium/tiled/purple,
@@ -1252,16 +1253,12 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/phalanx/medbay/morgue/b)
 "on" = (
-/obj/effect/turf_decal/siding/thinplating{
-	icon_state = "danger"
-	},
+/obj/effect/turf_decal/stripes/line,
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_north_inner"
 	},
 /obj/machinery/door/firedoor/heavy,
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/mining/b)
 "oq" = (
 /obj/structure/sign/warning/electric_shock/directional/south,
@@ -1273,15 +1270,11 @@
 /area/shuttle/voidcrew/phalanx/engineering/storage/b)
 "oA" = (
 /obj/structure/fans/tiny,
-/obj/effect/turf_decal/siding/thinplating{
-	icon_state = "danger"
-	},
+/obj/effect/turf_decal/stripes/line,
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_north_outer"
 	},
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/mining/b)
 "oJ" = (
 /obj/structure/cable,
@@ -1590,14 +1583,6 @@
 /obj/item/tank/internals/emergency_oxygen/double/empty,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/mining/b)
-"sx" = (
-/obj/machinery/power/apc/auto_name/directional/north,
-/obj/structure/cable,
-/obj/machinery/power/terminal{
-	dir = 4
-	},
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/phalanx/engineering/storage/b)
 "sB" = (
 /obj/item/flashlight/lamp/green,
 /obj/structure/cable,
@@ -1767,16 +1752,13 @@
 /area/shuttle/voidcrew/phalanx/chapel/b)
 "vc" = (
 /obj/structure/fans/tiny,
-/obj/effect/turf_decal/siding/thinplating{
-	dir = 1;
-	icon_state = "danger"
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
 	},
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_south_outer"
 	},
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/b)
 "vd" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -1994,7 +1976,9 @@
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/bridge/captain/b)
 "xs" = (
-/obj/machinery/power/port_gen/pacman,
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/b)
@@ -2495,18 +2479,14 @@
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/hallway/aft/b)
 "Es" = (
-/obj/effect/turf_decal/siding/thinplating{
-	icon_state = "danger"
-	},
+/obj/effect/turf_decal/stripes/line,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_north_inner"
 	},
 /obj/machinery/door/firedoor/heavy,
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/mining/b)
 "Et" = (
 /turf/closed/wall/mineral/wood/nonmetal,
@@ -2857,6 +2837,11 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/chapel/office/b)
+"Ij" = (
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/b)
 "Ik" = (
 /obj/machinery/door/airlock/grunge{
 	name = "Morgue"
@@ -2949,6 +2934,13 @@
 	},
 /turf/open/floor/carpet,
 /area/shuttle/voidcrew/phalanx/dorms/b)
+"IX" = (
+/obj/machinery/power/smes/engineering,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/b)
 "Jf" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/wood/large,
@@ -3068,6 +3060,13 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/b)
+"Kt" = (
+/obj/effect/turf_decal/trimline/yellow/filled/warning{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/b)
 "Kw" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -3114,7 +3113,9 @@
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/bridge/captain/b)
 "Ld" = (
-/obj/machinery/power/port_gen/pacman/pre_loaded,
+/obj/machinery/power/port_gen/pacman/pre_loaded{
+	anchored = 1
+	},
 /obj/structure/cable,
 /obj/machinery/light/directional/east,
 /turf/open/floor/plating,
@@ -3171,6 +3172,16 @@
 /obj/structure/tank_dispenser/oxygen,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/b)
+"LP" = (
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/b)
 "LT" = (
 /obj/machinery/door/firedoor,
 /obj/effect/turf_decal/siding/wood{
@@ -3303,17 +3314,13 @@
 /turf/open/floor/engine,
 /area/shuttle/voidcrew/phalanx/engineering/storage/b)
 "Nk" = (
-/obj/effect/turf_decal/siding/thinplating{
-	icon_state = "danger"
-	},
+/obj/effect/turf_decal/stripes/line,
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_north_inner"
 	},
 /obj/machinery/door/firedoor/heavy,
 /obj/structure/cable,
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/mining/b)
 "Nl" = (
 /obj/machinery/suit_storage_unit/security,
@@ -3542,17 +3549,14 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/phalanx/medbay/morgue/b)
 "PP" = (
-/obj/effect/turf_decal/siding/thinplating{
-	dir = 1;
-	icon_state = "danger"
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
 	},
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_south_inner"
 	},
 /obj/machinery/door/firedoor/heavy,
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/b)
 "Qd" = (
 /obj/structure/closet/crate/freezer/blood,
@@ -3675,12 +3679,6 @@
 	},
 /turf/open/floor/carpet,
 /area/shuttle/voidcrew/phalanx/bridge/b)
-"Rz" = (
-/obj/effect/turf_decal/trimline/yellow/filled/warning{
-	dir = 8
-	},
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/phalanx/engineering/storage/b)
 "RD" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -3807,7 +3805,9 @@
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/phalanx/medbay/storage/b)
 "Th" = (
-/obj/machinery/power/port_gen/pacman/pre_loaded,
+/obj/machinery/power/port_gen/pacman/pre_loaded{
+	anchored = 1
+	},
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/b)
@@ -4138,18 +4138,14 @@
 /area/shuttle/voidcrew/phalanx/dorms/b)
 "Yf" = (
 /obj/structure/fans/tiny,
-/obj/effect/turf_decal/siding/thinplating{
-	icon_state = "danger"
-	},
+/obj/effect/turf_decal/stripes/line,
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_north_outer"
 	},
 /obj/docking_port/mobile/voidcrew/phalanx/b{
 	dir = 2
 	},
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/mining/b)
 "Ym" = (
 /obj/machinery/power/apc/auto_name/directional/west,
@@ -4264,18 +4260,15 @@
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/hallway/central/b)
 "Ze" = (
-/obj/effect/turf_decal/siding/thinplating{
-	dir = 1;
-	icon_state = "danger"
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
 	},
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_south_inner"
 	},
 /obj/machinery/door/firedoor/heavy,
 /obj/structure/cable,
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/b)
 "Zi" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -4330,9 +4323,8 @@
 /turf/open/floor/carpet,
 /area/shuttle/voidcrew/phalanx/hallway/central/b)
 "ZD" = (
-/obj/effect/turf_decal/siding/thinplating{
-	dir = 1;
-	icon_state = "danger"
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -4340,9 +4332,7 @@
 	id = "phalanx_bay_south_inner"
 	},
 /obj/machinery/door/firedoor/heavy,
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/b)
 "ZH" = (
 /obj/machinery/vending/clothing,
@@ -4520,8 +4510,8 @@ nG
 xs
 Th
 Ld
-xs
-il
+LP
+IX
 Fe
 dt
 qO
@@ -4622,7 +4612,7 @@ tM
 zi
 kK
 ew
-Rz
+Kt
 ks
 Gn
 oZ
@@ -4687,7 +4677,7 @@ sM
 Nj
 Ob
 vp
-Nj
+Ij
 rN
 Af
 oZ
@@ -4716,7 +4706,7 @@ rg
 Rn
 Pu
 zi
-sx
+ln
 PI
 BN
 oq

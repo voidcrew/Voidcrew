@@ -326,6 +326,7 @@
 #include "voidcrew_lich.dm"
 #include "voidcrew_loot.dm"
 #include "voidcrew_missions.dm"
+#include "voidcrew_ship_access.dm"
 #include "voidcrew_ship_hulls.dm"
 #include "voidcrew_ship_modules.dm"
 #include "voidcrew_shop_catalog.dm"

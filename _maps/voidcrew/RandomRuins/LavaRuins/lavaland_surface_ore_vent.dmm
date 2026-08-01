@@ -9,10 +9,6 @@
 /obj/effect/zone_mobs/wildlife,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
-"b" = (
-/obj/structure/closet/crate/zone_loot/expedition,
-/turf/open/misc/asteroid/basalt/lava_land_surface,
-/area/lavaland/surface/outdoors)
 "L" = (
 /obj/structure/ore_vent/random,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
@@ -24,7 +20,7 @@ l
 a
 "}
 (2,1,1) = {"
-b
+l
 L
 c
 "}

@@ -272,6 +272,11 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 /obj/structure/overmap/trader_outpost/get_dock_description()
 	return "Trader [shop?.trader_name || name] (hangar berth)"
 
+/// The hangar deck holds a berthed ship down on its own — /area/voidcrew/trader_outpost
+/// and its hangar are STANDARD_GRAVITY.
+/obj/structure/overmap/trader_outpost/has_ambient_gravity()
+	return TRUE
+
 /obj/structure/overmap/trader_outpost/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
 	if(concerned)
 		to_chat(user, span_notice("Too much traffic, try again later!"))

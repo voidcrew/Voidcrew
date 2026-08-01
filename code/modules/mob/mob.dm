@@ -802,8 +802,6 @@
 
 	usr.log_message("used the respawn button.", LOG_GAME)
 
-	to_chat(usr, span_boldnotice("Please roleplay correctly!"))
-
 	if(!client)
 		usr.log_message("respawn failed due to disconnect.", LOG_GAME)
 		return

@@ -342,7 +342,6 @@
 /obj/effect/turf_decal/stripes{
 	dir = 4
 	},
-/obj/item/blueprints/shuttle,
 /obj/structure/table,
 /obj/item/toy/plush/nukeplushie{
 	pixel_y = 5
@@ -812,7 +811,6 @@
 	pixel_y = 4
 	},
 /obj/machinery/firealarm/directional/north,
-/obj/item/blueprints/shuttle,
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/kilo/bridge/c)
 "CQ" = (

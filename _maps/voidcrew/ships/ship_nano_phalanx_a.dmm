@@ -106,16 +106,13 @@
 /area/shuttle/voidcrew/phalanx/bridge/a)
 "de" = (
 /obj/structure/fans/tiny,
-/obj/effect/turf_decal/siding/thinplating{
-	dir = 1;
-	icon_state = "danger"
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
 	},
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_south_outer"
 	},
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/a)
 "dn" = (
 /turf/closed/wall/mineral/titanium,
@@ -235,12 +232,6 @@
 /obj/machinery/vending/engivend,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/hallway/aft/a)
-"fI" = (
-/obj/effect/turf_decal/trimline/yellow/filled/warning{
-	dir = 8
-	},
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/phalanx/engineering/storage/a)
 "fL" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -252,7 +243,9 @@
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/phalanx/medbay/storage/a)
 "fU" = (
-/obj/machinery/power/port_gen/pacman/pre_loaded,
+/obj/machinery/power/port_gen/pacman/pre_loaded{
+	anchored = 1
+	},
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/a)
@@ -406,14 +399,6 @@
 "iD" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/phalanx/dorms/a)
-"iE" = (
-/obj/machinery/power/apc/auto_name/directional/north,
-/obj/structure/cable,
-/obj/machinery/power/terminal{
-	dir = 4
-	},
-/turf/open/floor/engine,
-/area/shuttle/voidcrew/phalanx/engineering/storage/a)
 "iM" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/cargo/mining/a)
@@ -671,12 +656,6 @@
 "mj" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/phalanx/dorms/a)
-"ml" = (
-/obj/structure/cable,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/phalanx/engineering/a)
 "mm" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -794,18 +773,14 @@
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/phalanx/medbay/storage/a)
 "nw" = (
-/obj/effect/turf_decal/siding/thinplating{
-	icon_state = "danger"
-	},
+/obj/effect/turf_decal/stripes/line,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_north_inner"
 	},
 /obj/machinery/door/firedoor/heavy,
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/mining/a)
 "nx" = (
 /obj/machinery/atmospherics/components/binary/pump{
@@ -865,7 +840,9 @@
 /turf/open/floor/engine,
 /area/shuttle/voidcrew/phalanx/engineering/atmospherics/a)
 "oy" = (
-/obj/machinery/power/port_gen/pacman/pre_loaded,
+/obj/machinery/power/port_gen/pacman/pre_loaded{
+	anchored = 1
+	},
 /obj/structure/cable,
 /obj/machinery/light/directional/east,
 /turf/open/floor/plating,
@@ -1026,15 +1003,11 @@
 /area/shuttle/voidcrew/phalanx/cafeteria/a)
 "rI" = (
 /obj/structure/fans/tiny,
-/obj/effect/turf_decal/siding/thinplating{
-	icon_state = "danger"
-	},
+/obj/effect/turf_decal/stripes/line,
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_north_outer"
 	},
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/mining/a)
 "rP" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
@@ -1106,17 +1079,13 @@
 /turf/open/floor/engine,
 /area/shuttle/voidcrew/phalanx/engineering/storage/a)
 "sN" = (
-/obj/effect/turf_decal/siding/thinplating{
-	icon_state = "danger"
-	},
+/obj/effect/turf_decal/stripes/line,
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_north_inner"
 	},
 /obj/machinery/door/firedoor/heavy,
 /obj/structure/cable,
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/mining/a)
 "sQ" = (
 /obj/machinery/light{
@@ -1126,17 +1095,14 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/hallway/aft/a)
 "ta" = (
-/obj/effect/turf_decal/siding/thinplating{
-	dir = 1;
-	icon_state = "danger"
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
 	},
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_south_inner"
 	},
 /obj/machinery/door/firedoor/heavy,
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/a)
 "tb" = (
 /obj/structure/closet/secure_closet/freezer/meat,
@@ -1191,6 +1157,13 @@
 "tZ" = (
 /turf/open/floor/carpet/red,
 /area/shuttle/voidcrew/phalanx/chapel/a)
+"uD" = (
+/obj/machinery/power/smes/engineering,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/a)
 "uF" = (
 /obj/structure/chair/stool/directional/west,
 /obj/machinery/airalarm/directional/west,
@@ -1635,9 +1608,8 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/mining/a)
 "CU" = (
-/obj/effect/turf_decal/siding/thinplating{
-	dir = 1;
-	icon_state = "danger"
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -1645,9 +1617,7 @@
 	id = "phalanx_bay_south_inner"
 	},
 /obj/machinery/door/firedoor/heavy,
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/a)
 "Dj" = (
 /obj/structure/sign/directions/science,
@@ -1729,6 +1699,16 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/mining/a)
+"Er" = (
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 2
+	},
+/turf/open/floor/plating,
+/area/shuttle/voidcrew/phalanx/engineering/a)
 "Ew" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1834,18 +1814,15 @@
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/phalanx/cargo/a)
 "Gu" = (
-/obj/effect/turf_decal/siding/thinplating{
-	dir = 1;
-	icon_state = "danger"
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
 	},
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_south_inner"
 	},
 /obj/machinery/door/firedoor/heavy,
 /obj/structure/cable,
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/a)
 "Gz" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
@@ -2032,16 +2009,12 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cafeteria/a)
 "IH" = (
-/obj/effect/turf_decal/siding/thinplating{
-	icon_state = "danger"
-	},
+/obj/effect/turf_decal/stripes/line,
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_north_inner"
 	},
 /obj/machinery/door/firedoor/heavy,
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/mining/a)
 "IJ" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -2268,6 +2241,11 @@
 /obj/machinery/door/airlock/public/glass,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/hallway/central/a)
+"LI" = (
+/obj/machinery/power/apc/auto_name/directional/south,
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/a)
 "LL" = (
 /obj/structure/bed/dogbed/renault,
 /mob/living/basic/pet/fox/renault,
@@ -2486,6 +2464,13 @@
 /obj/machinery/firealarm/directional/east,
 /turf/open/floor/carpet/black,
 /area/shuttle/voidcrew/phalanx/chapel/office/a)
+"OW" = (
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/a)
 "OY" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/phalanx/nanites/a)
@@ -3000,13 +2985,22 @@
 	},
 /turf/open/floor/carpet/red,
 /area/shuttle/voidcrew/phalanx/chapel/a)
+"Xt" = (
+/obj/effect/turf_decal/trimline/yellow/filled/warning{
+	dir = 8
+	},
+/obj/structure/cable,
+/turf/open/floor/engine,
+/area/shuttle/voidcrew/phalanx/engineering/storage/a)
 "Xz" = (
 /obj/structure/chair/stool/directional/west,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/phalanx/cafeteria/a)
 "XE" = (
-/obj/machinery/power/port_gen/pacman,
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
+	},
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/a)
@@ -3140,18 +3134,14 @@
 /area/shuttle/voidcrew/phalanx/chapel/office/a)
 "ZK" = (
 /obj/structure/fans/tiny,
-/obj/effect/turf_decal/siding/thinplating{
-	icon_state = "danger"
-	},
+/obj/effect/turf_decal/stripes/line,
 /obj/machinery/door/poddoor{
 	id = "phalanx_bay_north_outer"
 	},
 /obj/docking_port/mobile/voidcrew/phalanx/a{
 	dir = 2
 	},
-/turf/open/floor/iron{
-	icon_state = "steel_ridged"
-	},
+/turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/mining/a)
 "ZM" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
@@ -3317,8 +3307,8 @@ XY
 XE
 fU
 oy
-XE
-ml
+Er
+uD
 Gd
 JJ
 PS
@@ -3419,7 +3409,7 @@ Ya
 eL
 lX
 nZ
-fI
+Xt
 DS
 Ju
 oZ
@@ -3484,7 +3474,7 @@ DK
 tw
 wY
 iY
-tw
+LI
 DL
 Nj
 oZ
@@ -3513,7 +3503,7 @@ On
 uK
 kX
 eL
-iE
+OW
 yf
 sL
 wk

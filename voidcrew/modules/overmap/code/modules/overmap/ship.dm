@@ -212,6 +212,8 @@
 
 	/// Cooldown preventing undocking shortly after docking
 	COOLDOWN_DECLARE(undock_cooldown)
+	/// Rate limit on the "engines producing no thrust" crew warning
+	COOLDOWN_DECLARE(no_thrust_warning)
 	/// Timer ID for dock warmup
 	var/dock_warmup_timer
 	/// Timer ID for undock warmup
@@ -508,6 +510,11 @@
 				burn_engines(null, burn_percentage, seconds_per_tick)
 		else if(can_thrust())
 			burn_engines(burn_direction, burn_percentage, seconds_per_tick)
+		else if(!hidden_in_nebula)
+			// The crew is holding a heading and getting nothing. can_thrust() failing
+			// is invisible from the helm (the gauges can look healthy), so say so.
+			// Nebula concealment is excluded: refusing to thrust there is deliberate.
+			warn_no_thrust()
 
 	// Handle shield regeneration
 	if(shields_active && !shields_broken)
@@ -925,7 +932,7 @@
 		else
 			formatted = span_boldnotice("[message]")
 
-	for(var/datum/mind/shipmate as anything in ship_team.members)
+	for(var/datum/mind/shipmate as anything in ship_team?.members)
 		var/mob/crewmate = shipmate.current
 		if(!crewmate)
 			continue
@@ -2894,6 +2901,7 @@
 
 	// No thrust means no movement - engines need fuel/power to work
 	if(thrust_used <= 0)
+		warn_no_thrust()
 		return
 
 	thrust_used = thrust_used / max(mass * 100, 1) //do not know why this minimum check is here, but I clearly ran into an issue here before
@@ -2903,6 +2911,18 @@
 
 	if(n_dir)
 		accelerate(n_dir, thrust_used)
+
+/**
+ * Rate-limited crew warning for burn attempts that produce nothing (dead power grid,
+ * disabled/damaged engines, empty fuel). Without it the failure is silent: an ion
+ * engine's helm gauge reads stored SMES charge, but burns draw live wire power, so
+ * the display can sit at 100% while the ship refuses to move.
+ */
+/obj/structure/overmap/ship/proc/warn_no_thrust()
+	if(!COOLDOWN_FINISHED(src, no_thrust_warning))
+		return
+	COOLDOWN_START(src, no_thrust_warning, 15 SECONDS)
+	ship_notify("Engines are producing no thrust! Check engine power, fuel, and status.", "ENGINES", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 
 /**
  * Changes the burn direction for continuous thrust.

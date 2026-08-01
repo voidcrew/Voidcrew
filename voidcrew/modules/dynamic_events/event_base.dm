@@ -37,6 +37,12 @@
 	var/requires_flying = FALSE
 	/// If TRUE this event may hit ships docked at a trader outpost. Defaults off: outposts are safe harbors.
 	var/allow_in_safe_harbor = FALSE
+	/// If TRUE the target must be somewhere its own deck plating is the only thing holding
+	/// the crew down — free space, or docked at a wreck or another ship. A ship sitting on
+	/// a planet surface or in an outpost hangar stands in that location's gravity
+	/// (has_ambient_gravity()), so an event that cuts ship gravity there would float a crew
+	/// that is, visibly, parked on solid ground.
+	var/requires_zero_g = FALSE
 	/// If TRUE this event ignores the per-ship DYNAMIC_EVENT_SHIP_COOLDOWN when picking a
 	/// target. Reserved for events belonging to a driven pressure system with its own
 	/// cadence — the lich's rituals (voidcrew/modules/lich/) are the reason this exists:
@@ -82,6 +88,8 @@
 	if(!allow_in_safe_harbor && istype(ship.docked, /obj/structure/overmap/trader_outpost))
 		return FALSE
 	if(requires_flying && (ship.state != OVERMAP_SHIP_FLYING || ship.docked))
+		return FALSE
+	if(requires_zero_g && ship.docked?.has_ambient_gravity())
 		return FALSE
 	if(allowed_zones)
 		var/band = SSovermap.get_zone_band_for_turf(get_turf(ship))

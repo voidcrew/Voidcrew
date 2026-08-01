@@ -593,6 +593,11 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 /obj/structure/overmap/colosseum/get_dock_description()
 	return "[name] (arena berth)"
 
+/// The venue is carved into a bedrock shard and its areas are STANDARD_GRAVITY —
+/// a ship berthed here is held down by the rock, not by its own plating.
+/obj/structure/overmap/colosseum/has_ambient_gravity()
+	return TRUE
+
 /obj/structure/overmap/colosseum/ship_act(mob/user, obj/structure/overmap/ship/acting, obj/structure/overmap/ship/optional_partner)
 	if(concerned)
 		to_chat(user, span_notice("Too much traffic, try again later!"))

@@ -340,7 +340,6 @@
 /obj/effect/turf_decal/stripes{
 	dir = 4
 	},
-/obj/item/blueprints/shuttle,
 /obj/structure/table,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/kilo/engineering/d)
@@ -823,7 +822,6 @@
 	pixel_y = 4
 	},
 /obj/machinery/firealarm/directional/north,
-/obj/item/blueprints/shuttle,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/kilo/bridge/d)
 "CQ" = (
