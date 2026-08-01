@@ -258,7 +258,7 @@
 /turf/open/floor/carpet/neon/simple/red,
 /area/shuttle/voidcrew/geneva/dorms)
 "gC" = (
-/mob/living/simple_animal/bot/secbot/grievous/toy{
+/mob/living/basic/bot/secbot/grievous/toy{
 	name = "Protector of Doctors"
 	},
 /turf/open/floor/carpet/neon/simple/red,

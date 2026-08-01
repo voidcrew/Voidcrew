@@ -1,4 +1,16 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/floor/wood,
+/area/ruin/powered/golem_ship)
+"ab" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/wood,
+/area/ruin/powered/golem_ship)
+"ac" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/mineral/titanium,
+/area/ruin/powered/golem_ship)
 "am" = (
 /obj/structure/table,
 /obj/item/tape{
@@ -128,14 +140,6 @@
 "fk" = (
 /turf/open/floor/wood,
 /area/ruin/powered/golem_ship)
-"ab" = (
-/obj/effect/zone_mobs/robot,
-/turf/open/floor/wood,
-/area/ruin/powered/golem_ship)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/expedition,
-/turf/open/floor/wood,
-/area/ruin/powered/golem_ship)
 "fS" = (
 /obj/effect/turf_decal/siding/thinplating_new{
 	dir = 4
@@ -225,7 +229,7 @@
 /area/ruin/powered/golem_ship)
 "ok" = (
 /obj/structure/table,
-/obj/item/stack/sticky_tape{
+/obj/item/stack/medical/wrap/sticky_tape{
 	pixel_y = 12;
 	pixel_x = 4
 	},
@@ -309,10 +313,6 @@
 /turf/open/floor/mineral/titanium/purple,
 /area/ruin/powered/golem_ship)
 "sS" = (
-/turf/open/floor/mineral/titanium,
-/area/ruin/powered/golem_ship)
-"ac" = (
-/obj/effect/zone_mobs/robot,
 /turf/open/floor/mineral/titanium,
 /area/ruin/powered/golem_ship)
 "te" = (

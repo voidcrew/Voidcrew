@@ -341,7 +341,7 @@
 /area/voidcrew/trader_outpost)
 "dm" = (
 /obj/structure/table/glass,
-/obj/item/stack/sticky_tape/surgical{
+/obj/item/stack/medical/wrap/sticky_tape/surgical{
 	pixel_x = -6;
 	pixel_y = 4
 	},
@@ -696,7 +696,7 @@
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
 "vk" = (
-/obj/structure/reagent_dispensers/beerkeg,
+/obj/effect/spawner/random/food_or_drink/keg,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "vl" = (
@@ -886,7 +886,7 @@
 	pixel_x = -6;
 	pixel_y = 4
 	},
-/obj/item/stack/medical/gauze{
+/obj/item/stack/medical/wrap/gauze{
 	pixel_x = 6;
 	pixel_y = 5
 	},
@@ -992,10 +992,6 @@
 /obj/structure/table/optable,
 /obj/effect/turf_decal/tile/blue/fourcorners,
 /turf/open/indestructible/hoteltile,
-/area/voidcrew/trader_outpost)
-"KY" = (
-/obj/effect/turf_decal/bot,
-/turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "LB" = (
 /obj/effect/turf_decal/bot,
@@ -1194,9 +1190,6 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
-"Wy" = (
-/turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost)
 "WQ" = (
 /obj/structure/closet/crate/freezer/surplus_limbs,
 /obj/effect/turf_decal/delivery/white{
@@ -1228,15 +1221,6 @@
 	dir = 1
 	},
 /turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
-"YU" = (
-/obj/structure/table/reinforced/plastitaniumglass,
-/obj/machinery/door/poddoor/shutters/preopen{
-	id = "undertow_bar";
-	dir = 4;
-	name = "Bar Shutters"
-	},
-/turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
 "Zo" = (
 /obj/effect/turf_decal/delivery,
@@ -1825,7 +1809,7 @@ MG
 kM
 bL
 jt
-Wy
+aj
 sC
 KQ
 kM
@@ -1877,7 +1861,7 @@ aa
 Sp
 Il
 uC
-KY
+jE
 RM
 fL
 jE
@@ -2007,7 +1991,7 @@ aa
 zr
 fL
 aO
-YU
+Xr
 nG
 hH
 TD

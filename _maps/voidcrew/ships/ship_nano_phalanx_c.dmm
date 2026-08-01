@@ -219,7 +219,7 @@
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_y = -4
 	},
 /turf/open/floor/wood,
@@ -284,7 +284,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 5
 	},
-/obj/item/food/grown/poppy{
+/obj/item/food/grown/flower/poppy{
 	pixel_x = -8;
 	pixel_y = 4
 	},
@@ -976,7 +976,7 @@
 /area/shuttle/voidcrew/phalanx/cargo/c)
 "nL" = (
 /obj/structure/table/wood,
-/obj/item/food/grown/harebell{
+/obj/item/food/grown/flower/harebell{
 	pixel_x = -6;
 	pixel_y = 8
 	},
@@ -1259,7 +1259,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 9
 	},
-/obj/item/food/grown/poppy{
+/obj/item/food/grown/flower/poppy{
 	pixel_x = 8;
 	pixel_y = 4
 	},
@@ -1678,7 +1678,7 @@
 	pixel_x = 3;
 	pixel_y = 9
 	},
-/obj/item/food/grown/carrot{
+/obj/item/food/grown/carrotlike/carrot{
 	pixel_x = 7;
 	pixel_y = 2
 	},
@@ -1694,7 +1694,7 @@
 /area/shuttle/voidcrew/phalanx/bridge/captain/c)
 "yN" = (
 /obj/structure/table/wood,
-/obj/item/food/grown/poppy{
+/obj/item/food/grown/flower/poppy{
 	pixel_x = -5;
 	pixel_y = 9
 	},
@@ -1751,7 +1751,7 @@
 /obj/structure/table/wood,
 /obj/item/flashlight/lamp/green,
 /obj/structure/cable,
-/obj/item/food/grown/harebell{
+/obj/item/food/grown/flower/harebell{
 	pixel_x = 8;
 	pixel_y = 5
 	},
@@ -1799,7 +1799,7 @@
 /area/shuttle/voidcrew/phalanx/engineering/storage/c)
 "Aq" = (
 /obj/structure/table/wood,
-/obj/item/food/grown/sunflower{
+/obj/item/food/grown/flower/sunflower{
 	pixel_x = 5;
 	pixel_y = 9
 	},
@@ -2227,11 +2227,11 @@
 /obj/item/crowbar,
 /obj/item/storage/box/bodybags,
 /obj/structure/cable,
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_x = -7;
 	pixel_y = 8
 	},
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_x = 2;
 	pixel_y = 10
 	},
@@ -2899,7 +2899,7 @@
 /area/shuttle/voidcrew/phalanx/engineering/storage/c)
 "Rm" = (
 /obj/structure/table/wood,
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_x = 6;
 	pixel_y = 6
 	},

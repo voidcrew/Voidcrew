@@ -8,14 +8,6 @@
 "c" = (
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
-"x" = (
-/obj/effect/zone_mobs/undead,
-/turf/open/misc/asteroid/basalt/lava_land_surface,
-/area/lavaland/surface/outdoors)
-"w" = (
-/obj/structure/closet/crate/zone_loot/expedition,
-/turf/open/misc/asteroid/basalt/lava_land_surface,
-/area/lavaland/surface/outdoors)
 "d" = (
 /obj/structure/stone_tile/block{
 	dir = 8
@@ -112,7 +104,7 @@
 /obj/structure/stone_tile/block{
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/megafauna/blood_drunk_miner/hunter,
+/mob/living/basic/boss/blood_drunk_miner/hunter,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
 "o" = (
@@ -170,6 +162,14 @@
 	dir = 6
 	},
 /obj/structure/stone_tile/center,
+/turf/open/misc/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/outdoors)
+"w" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/misc/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/outdoors)
+"x" = (
+/obj/effect/zone_mobs/undead,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
 

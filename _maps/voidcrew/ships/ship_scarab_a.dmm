@@ -37,7 +37,7 @@
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 8
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
 "bG" = (
 /obj/structure/cable,
@@ -93,7 +93,7 @@
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 9
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/dormitories/a)
 "bT" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
@@ -257,7 +257,7 @@
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 4
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
 "hx" = (
 /obj/effect/turf_decal/stripes/line{
@@ -511,7 +511,7 @@
 	},
 /obj/machinery/door/airlock/external/glass,
 /obj/structure/fans/tiny,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/dormitories/a)
 "ps" = (
 /obj/structure/cable,
@@ -826,7 +826,7 @@
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 8
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
 "vb" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
@@ -891,7 +891,7 @@
 /obj/structure/handrail{
 	dir = 1
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
 "xO" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
@@ -937,7 +937,7 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
 	cycle_id = "scarab_rear_airlock_a"
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
 "zx" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -1017,7 +1017,7 @@
 	},
 /obj/machinery/light/small/directional/west,
 /obj/structure/handrail,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
 "Bw" = (
 /obj/effect/turf_decal/bot/right,
@@ -1102,7 +1102,7 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
 	cycle_id = "scarab_rear_airlock_a"
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
 "El" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -1268,7 +1268,7 @@
 /obj/structure/handrail{
 	dir = 1
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
 "Jm" = (
 /obj/effect/turf_decal/bot_red,
@@ -1290,7 +1290,7 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
 	cycle_id = "scarab_rear_airlock_a"
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
 "Ju" = (
 /obj/machinery/door/airlock{
@@ -1552,7 +1552,7 @@
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{
 	dir = 8
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/dormitories/a)
 "QP" = (
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
@@ -1578,7 +1578,7 @@
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 4
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
 "RF" = (
 /obj/machinery/cryopod{
@@ -1612,7 +1612,7 @@
 	dir = 4
 	},
 /obj/structure/handrail,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
 "Uc" = (
 /obj/machinery/holopad,
@@ -1780,7 +1780,7 @@
 /obj/structure/handrail,
 /obj/machinery/light/small/directional/north,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/scarab/dormitories/a)
 "YP" = (
 /obj/machinery/atmospherics/pipe/smart/simple/supply/hidden/layer4{

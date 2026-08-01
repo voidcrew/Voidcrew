@@ -2,18 +2,18 @@
 "a" = (
 /obj/machinery/door/airlock/survival_pod,
 /obj/structure/fans/tiny,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/ruin/powered)
 "d" = (
 /obj/effect/decal/cleanable/blood/old,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/ruin/powered)
 "j" = (
 /obj/effect/zone_mobs/undead,
 /turf/open/misc/asteroid/snow/breathable/lit,
 /area/template_noop)
 "k" = (
-/turf/closed/wall/mineral/titanium/survival/pod,
+/turf/closed/wall/mineral/plastitanium/survival/pod,
 /area/template_noop)
 "p" = (
 /obj/structure/flora/rock/pile/icy,
@@ -21,7 +21,7 @@
 /area/template_noop)
 "w" = (
 /obj/structure/closet/crate/zone_loot/medical,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/ruin/powered)
 "B" = (
 /obj/structure/girder/displaced,

@@ -10,7 +10,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -21,7 +21,7 @@
 	suit_type = /obj/item/clothing/suit/space/pirate/silverscale
 	},
 /obj/structure/cable,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -37,7 +37,7 @@
 /obj/machinery/door/airlock/silver,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -65,7 +65,7 @@
 /obj/machinery/door/airlock/external/glass/ruin{
 	id_tag = "pirateportexternal"
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -81,7 +81,7 @@
 	},
 /obj/structure/cable,
 /obj/effect/turf_decal/bot,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -117,7 +117,7 @@
 "es" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
 /obj/structure/cable,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -162,7 +162,7 @@
 /obj/machinery/airalarm/directional/east,
 /obj/effect/mapping_helpers/airalarm/all_access,
 /obj/machinery/ship_combat/shield_generator,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -189,7 +189,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/structure/cable,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -217,13 +217,13 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/trimline/blue,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
 "iS" = (
 /obj/machinery/ship_combat/shield_generator,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -246,7 +246,7 @@
 /obj/effect/turf_decal/caution/stand_clear{
 	dir = 4
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -260,7 +260,7 @@
 	dir = 8
 	},
 /obj/machinery/light/small/directional/north,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -351,7 +351,7 @@
 	id_tag = "pirateportexternal"
 	},
 /obj/structure/fans/tiny,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -378,7 +378,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -387,7 +387,7 @@
 	dir = 4
 	},
 /obj/structure/cable,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -458,7 +458,7 @@
 	})
 "wa" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -477,7 +477,7 @@
 	},
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /obj/structure/cable,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -521,14 +521,14 @@
 	},
 /obj/effect/turf_decal/bot,
 /obj/structure/cable,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
 "yv" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
 /obj/machinery/meter,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -559,7 +559,7 @@
 /obj/effect/turf_decal/caution/stand_clear{
 	dir = 4
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -574,7 +574,7 @@
 /obj/machinery/door/airlock/external/glass/ruin{
 	id_tag = "piratestarboardexternal"
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -619,7 +619,7 @@
 	dir = 8
 	},
 /obj/machinery/light/small/directional/south,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -636,7 +636,7 @@
 	id_tag = "piratestarboardexternal"
 	},
 /obj/structure/fans/tiny,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -678,7 +678,7 @@
 	name = "External Bolt Control";
 	id = "piratestarboardexternal"
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -686,7 +686,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -736,7 +736,7 @@
 	projectile_damage_multiplier = 1.30;
 	desc = "A laser gun modified to cost 20 credits to fire. Someone on the station should have an ID that works with this thing."
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -763,7 +763,7 @@
 	},
 /obj/machinery/light/directional/west,
 /obj/structure/cable,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -803,7 +803,7 @@
 /obj/structure/reagent_dispensers/watertank,
 /obj/effect/turf_decal/bot/right,
 /obj/machinery/light/directional/south,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -821,7 +821,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 6
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -830,7 +830,7 @@
 /obj/structure/cable,
 /obj/effect/turf_decal/bot,
 /obj/machinery/light/directional/north,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -917,7 +917,7 @@
 	dir = 4
 	},
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -956,7 +956,7 @@
 	dir = 8
 	},
 /obj/machinery/ship_combat/shield_generator,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -972,12 +972,12 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
 "Qm" = (
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -986,7 +986,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/bot,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -1011,7 +1011,7 @@
 /obj/item/multitool,
 /obj/effect/turf_decal/bot,
 /obj/effect/mapping_helpers/apc/cut_AI_wire,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -1040,18 +1040,18 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/bot,
-/obj/item/ammo_box/strilka310/phasic{
+/obj/item/ammo_box/speedloader/strilka310/phasic{
 	pixel_y = -5;
 	pixel_x = 5
 	},
-/obj/item/ammo_box/strilka310/phasic{
+/obj/item/ammo_box/speedloader/strilka310/phasic{
 	pixel_x = 5
 	},
-/obj/item/ammo_box/strilka310/phasic{
+/obj/item/ammo_box/speedloader/strilka310/phasic{
 	pixel_x = -5;
 	pixel_y = -5
 	},
-/obj/item/ammo_box/strilka310/phasic{
+/obj/item/ammo_box/speedloader/strilka310/phasic{
 	pixel_x = -5
 	},
 /obj/item/gun/ballistic/rifle/boltaction/prime{
@@ -1059,7 +1059,7 @@
 	},
 /obj/item/gun/ballistic/rifle/boltaction/prime,
 /obj/structure/cable,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -1087,7 +1087,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -1116,7 +1116,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 4
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -1177,7 +1177,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
 /obj/machinery/airalarm/directional/north,
 /obj/effect/mapping_helpers/airalarm/all_access,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -1198,7 +1198,7 @@
 	normaldoorcontrol = 1;
 	specialfunctions = 4
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -1212,7 +1212,7 @@
 "Wy" = (
 /obj/structure/reagent_dispensers/fueltank,
 /obj/effect/turf_decal/bot/left,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -1264,7 +1264,7 @@
 /obj/effect/turf_decal/bot,
 /obj/item/gun/ballistic/shotgun/doublebarrel/slugs,
 /obj/structure/cable,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})
@@ -1286,7 +1286,7 @@
 "ZD" = (
 /obj/machinery/door/airlock/silver/glass,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_silverscale{
 	requires_power = 0
 	})

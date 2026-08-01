@@ -40,15 +40,6 @@
 "k" = (
 /turf/open/floor/iron/vaporwave,
 /area/ruin/space/has_grav/powered/aesthetic)
-"N" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/iron/vaporwave,
-/area/ruin/space/has_grav/powered/aesthetic)
-"p" = (
-/obj/effect/zone_mobs/wildlife/boss,
-/obj/structure/closet/crate/zone_loot/wardrobe/rare,
-/turf/open/floor/iron/vaporwave,
-/area/ruin/space/has_grav/powered/aesthetic)
 "l" = (
 /obj/structure/chair/comfy/black{
 	dir = 4
@@ -68,6 +59,11 @@
 /area/ruin/space/has_grav/powered/aesthetic)
 "o" = (
 /obj/structure/window/spawner/directional/east,
+/turf/open/floor/iron/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
+"p" = (
+/obj/effect/zone_mobs/wildlife/boss,
+/obj/structure/closet/crate/zone_loot/wardrobe/rare,
 /turf/open/floor/iron/vaporwave,
 /area/ruin/space/has_grav/powered/aesthetic)
 "q" = (
@@ -91,10 +87,6 @@
 "u" = (
 /turf/open/floor/holofloor/beach/coast,
 /area/ruin/space/has_grav/powered/aesthetic)
-"M" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/holofloor/beach/coast,
-/area/ruin/space/has_grav/powered/aesthetic)
 "v" = (
 /obj/item/statuebust,
 /turf/open/floor/iron/vaporwave,
@@ -115,7 +107,7 @@
 "z" = (
 /obj/structure/fans/tiny,
 /obj/machinery/door/airlock/hatch,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/ruin/space/has_grav/powered/aesthetic)
 "A" = (
 /obj/effect/turf_decal/sand,
@@ -195,6 +187,14 @@
 	icon_state = "stairs-r"
 	},
 /area/ruin/space)
+"M" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/holofloor/beach/coast,
+/area/ruin/space/has_grav/powered/aesthetic)
+"N" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/iron/vaporwave,
+/area/ruin/space/has_grav/powered/aesthetic)
 "O" = (
 /obj/structure/chair/comfy/black{
 	dir = 8

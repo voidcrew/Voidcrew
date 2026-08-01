@@ -21,7 +21,7 @@
 	},
 /obj/effect/spawner/random/maintenance/three,
 /obj/item/folder/blue,
-/obj/item/stamp,
+/obj/item/stamp/granted,
 /obj/effect/turf_decal/delivery,
 /obj/machinery/light/cold{
 	dir = 4

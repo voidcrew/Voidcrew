@@ -1,4 +1,16 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/wildlife,
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/mineral/titanium{
+	initial_gas_mix = "LAVALAND_ATMOS"
+	},
+/area/ruin/unpowered)
+"ab" = (
+/obj/effect/zone_mobs/wildlife,
+/obj/item/stack/sheet/mineral/titanium,
+/turf/open/misc/asteroid/basalt/lava_land_surface,
+/area/ruin/unpowered)
 "bl" = (
 /obj/item/stack/sheet/iron/five,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
@@ -286,11 +298,6 @@
 /obj/item/stack/sheet/mineral/titanium,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/ruin/unpowered)
-"ab" = (
-/obj/effect/zone_mobs/wildlife,
-/obj/item/stack/sheet/mineral/titanium,
-/turf/open/misc/asteroid/basalt/lava_land_surface,
-/area/ruin/unpowered)
 "JD" = (
 /mob/living/basic/mining/goliath,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
@@ -303,7 +310,7 @@
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/ruin/unpowered)
 "KN" = (
-/obj/structure/spawner/lavaland/legion,
+/mob/living/basic/mining/tendril,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/ruin/unpowered)
 "Lz" = (
@@ -332,13 +339,6 @@
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/ruin/unpowered)
 "Om" = (
-/obj/effect/mapping_helpers/broken_floor,
-/turf/open/floor/mineral/titanium{
-	initial_gas_mix = "LAVALAND_ATMOS"
-	},
-/area/ruin/unpowered)
-"aa" = (
-/obj/effect/zone_mobs/wildlife,
 /obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/mineral/titanium{
 	initial_gas_mix = "LAVALAND_ATMOS"

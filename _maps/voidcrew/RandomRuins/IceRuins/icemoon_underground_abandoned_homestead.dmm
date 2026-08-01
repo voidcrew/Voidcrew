@@ -1,10 +1,26 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/floor/wood/large{
+	initial_gas_mix = "ICEMOON_ATMOS"
+	},
+/area/ruin/powered/shuttle)
+"ab" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/plating/snowed/smoothed,
+/area/icemoon/surface/outdoors/nospawn)
+"ac" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/wood/large{
+	initial_gas_mix = "ICEMOON_ATMOS"
+	},
+/area/ruin/powered/shuttle)
 "bf" = (
 /obj/machinery/hydroponics/soil,
 /turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "cP" = (
-/mob/living/simple_animal/hostile/asteroid/polarbear,
+/mob/living/basic/mining/polarbear,
 /turf/open/floor/wood/large{
 	initial_gas_mix = "ICEMOON_ATMOS"
 	},
@@ -48,18 +64,6 @@
 /turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
 "ng" = (
-/turf/open/floor/wood/large{
-	initial_gas_mix = "ICEMOON_ATMOS"
-	},
-/area/ruin/powered/shuttle)
-"ac" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/wood/large{
-	initial_gas_mix = "ICEMOON_ATMOS"
-	},
-/area/ruin/powered/shuttle)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/expedition,
 /turf/open/floor/wood/large{
 	initial_gas_mix = "ICEMOON_ATMOS"
 	},
@@ -180,10 +184,6 @@
 "zd" = (
 /turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/surface/outdoors/nospawn)
-"ab" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/plating/snowed/smoothed,
-/area/icemoon/surface/outdoors/nospawn)
 "zT" = (
 /obj/structure/bed/dogbed,
 /turf/open/floor/wood/large{
@@ -236,9 +236,6 @@
 /obj/structure/railing{
 	color = "#8a7453"
 	},
-/turf/open/misc/asteroid/snow/icemoon/breathable,
-/area/icemoon/surface/outdoors/nospawn)
-"Ht" = (
 /turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/surface/outdoors/nospawn)
 "Hv" = (
@@ -450,11 +447,11 @@ Cv
 Cv
 ol
 zd
-Ht
+sF
 ab
-Ht
-Ht
-Ht
+sF
+sF
+sF
 Sv
 "}
 (4,1,1) = {"
@@ -463,7 +460,7 @@ sF
 Sv
 Sv
 qd
-Ht
+sF
 Vf
 El
 zT
@@ -472,12 +469,12 @@ Iz
 QI
 QI
 wl
-Ht
+sF
 zd
-Ht
-Ht
-Ht
-Ht
+sF
+sF
+sF
+sF
 Sv
 "}
 (5,1,1) = {"
@@ -486,7 +483,7 @@ Sv
 sF
 sF
 sF
-Ht
+sF
 ol
 Nz
 ac
@@ -495,12 +492,12 @@ HF
 ym
 QI
 wl
-Ht
-Ht
-Ht
+sF
+sF
+sF
 FS
 yO
-Ht
+sF
 Sv
 "}
 (6,1,1) = {"
@@ -518,11 +515,11 @@ pU
 vI
 pU
 ol
-Ht
+sF
 bf
 bf
 Ez
-Ht
+sF
 tD
 Sv
 "}
@@ -546,7 +543,7 @@ bf
 bf
 Tf
 ht
-Ht
+sF
 Sv
 "}
 (8,1,1) = {"
@@ -564,12 +561,12 @@ ng
 ng
 ng
 ol
-Ht
+sF
 zd
-Ht
-Ht
-Ht
-Ht
+sF
+sF
+sF
+sF
 Sv
 "}
 (9,1,1) = {"
@@ -577,9 +574,9 @@ Sv
 Sv
 Sv
 Sv
-Ht
-Ht
-Ht
+sF
+sF
+sF
 ol
 XZ
 ol
@@ -587,11 +584,11 @@ fd
 uc
 Of
 ol
-Ht
+sF
 bf
 bf
 bf
-Ht
+sF
 Sv
 Sv
 "}
@@ -602,7 +599,7 @@ Sv
 Sv
 Sv
 VV
-Ht
+sF
 ol
 ol
 ol
@@ -610,7 +607,7 @@ Vf
 ol
 ol
 ol
-Ht
+sF
 TP
 bf
 Tf
@@ -624,19 +621,19 @@ Sv
 Sv
 Sv
 Sv
-Ht
-Ht
+sF
+sF
 Mf
 dy
 nq
 uG
 Rf
 ht
-Ht
-Ht
-Ht
-Ht
-Ht
+sF
+sF
+sF
+sF
+sF
 Sv
 Sv
 Sv
@@ -649,15 +646,15 @@ Sv
 Sv
 Sv
 Fg
-Ht
-Ht
-Ht
-Ht
-Ht
+sF
+sF
+sF
+sF
+sF
 kj
 kj
 kj
-Ht
+sF
 Sv
 Sv
 Sv

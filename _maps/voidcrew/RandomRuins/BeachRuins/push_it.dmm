@@ -1,4 +1,12 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/carpet/blue,
+/area/ruin/powered)
+"aA" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/light,
+/area/ruin/powered)
 "aD" = (
 /obj/structure/table/glass,
 /obj/item/research_notes/loot/medium,
@@ -16,16 +24,16 @@
 	},
 /turf/open/floor/carpet/royalblue,
 /area/ruin/powered)
+"aX" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/carpet/royalblue,
+/area/ruin/powered)
 "dd" = (
 /obj/structure/chair/sofa/left,
 /obj/item/stack/spacecash/c1000,
 /turf/open/floor/carpet/royalblue,
 /area/ruin/powered)
 "dh" = (
-/mob/living/basic/trooper/russian/ranged,
-/turf/open/floor/light,
-/area/ruin/powered)
-"ds" = (
 /mob/living/basic/trooper/russian/ranged,
 /turf/open/floor/light,
 /area/ruin/powered)
@@ -109,6 +117,10 @@
 /obj/item/seeds/cannabis/ultimate,
 /turf/open/floor/plastic,
 /area/ruin/powered)
+"qq" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/plastic,
+/area/ruin/powered)
 "qD" = (
 /obj/structure/chair/sofa/corner{
 	dir = 1
@@ -116,6 +128,10 @@
 /obj/machinery/light,
 /mob/living/basic/trooper/russian,
 /turf/open/floor/carpet/royalblue,
+/area/ruin/powered)
+"qZ" = (
+/obj/effect/zone_mobs/pirate/boss,
+/turf/open/floor/plastic,
 /area/ruin/powered)
 "rb" = (
 /obj/structure/chair/sofa/left{
@@ -134,10 +150,6 @@
 /area/ruin/powered)
 "sn" = (
 /turf/open/floor/carpet/blue,
-/area/ruin/powered)
-"sP" = (
-/mob/living/basic/trooper/russian/ranged,
-/turf/open/floor/light,
 /area/ruin/powered)
 "uC" = (
 /turf/open/floor/light,
@@ -260,10 +272,6 @@
 	},
 /turf/open/floor/light,
 /area/ruin/powered)
-"Mb" = (
-/mob/living/basic/trooper/russian/ranged,
-/turf/open/floor/plastic,
-/area/ruin/powered)
 "MB" = (
 /obj/machinery/light,
 /turf/open/floor/carpet/royalblue,
@@ -320,7 +328,7 @@
 /obj/item/stack/spacecash/c1000,
 /obj/item/stack/spacecash/c200,
 /obj/item/stack/medical/suture,
-/obj/item/stack/medical/gauze,
+/obj/item/stack/medical/wrap/gauze,
 /turf/open/floor/carpet/royalblue,
 /area/ruin/powered)
 "Sb" = (
@@ -399,26 +407,6 @@
 	dir = 4
 	},
 /turf/open/floor/carpet/royalblue,
-/area/ruin/powered)
-"aa" = (
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/carpet/blue,
-/area/ruin/powered)
-"aA" = (
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/light,
-/area/ruin/powered)
-"aX" = (
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/carpet/royalblue,
-/area/ruin/powered)
-"qq" = (
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/plastic,
-/area/ruin/powered)
-"qZ" = (
-/obj/effect/zone_mobs/pirate/boss,
-/turf/open/floor/plastic,
 /area/ruin/powered)
 
 (1,1,1) = {"
@@ -693,7 +681,7 @@ mf
 Px
 RS
 se
-ds
+dh
 uC
 uC
 uC
@@ -719,7 +707,7 @@ RS
 se
 Zo
 uC
-sP
+dh
 uC
 uC
 Cs
@@ -847,7 +835,7 @@ RS
 Df
 CI
 RS
-Mb
+Fr
 pG
 pG
 pG

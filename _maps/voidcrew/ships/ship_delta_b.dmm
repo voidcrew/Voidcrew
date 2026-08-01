@@ -965,7 +965,6 @@
 /area/shuttle/voidcrew/delta/hallway/central/b)
 "Ev" = (
 /obj/machinery/turretid{
-	icon_state = "control_kill";
 	lethal = 1;
 	locked = 0;
 	pixel_x = -28;
@@ -1279,7 +1278,7 @@
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/bridge/b)
 "MB" = (
-/obj/machinery/light/small/built,
+/obj/machinery/light/small/empty,
 /obj/effect/turf_decal/stripes/corner{
 	dir = 1
 	},

@@ -1,4 +1,8 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/syndicate,
+/turf/open/floor/mineral/plastitanium/red/airless,
+/area/ruin/space)
 "aj" = (
 /obj/item/ammo_casing/c357/spent{
 	pixel_x = 5;
@@ -37,7 +41,7 @@
 /area/ruin/space)
 "aC" = (
 /obj/effect/turf_decal/stripes/red/full,
-/obj/machinery/light/small/built,
+/obj/machinery/light/small/empty,
 /obj/item/light/bulb/broken,
 /turf/open/floor/iron/dark/smooth_large/airless,
 /area/ruin/space)
@@ -234,10 +238,6 @@
 /turf/open/floor/iron/dark/airless,
 /area/ruin/space)
 "gN" = (
-/turf/open/floor/mineral/plastitanium/red/airless,
-/area/ruin/space)
-"aa" = (
-/obj/effect/zone_mobs/syndicate,
 /turf/open/floor/mineral/plastitanium/red/airless,
 /area/ruin/space)
 "hl" = (
@@ -1062,7 +1062,7 @@
 "Ue" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/table/reinforced/plastitaniumglass,
-/obj/item/stack/sticky_tape/pointy/super,
+/obj/item/stack/medical/wrap/sticky_tape/pointy/super,
 /obj/structure/cable,
 /turf/open/floor/iron/dark/airless,
 /area/ruin/space)

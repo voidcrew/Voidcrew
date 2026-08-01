@@ -17,6 +17,21 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/syndielab)
+"ab" = (
+/obj/structure/closet/crate/zone_loot/syndicate,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/syndielab)
+"ac" = (
+/obj/effect/zone_mobs/syndicate,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/syndielab)
+"ad" = (
+/obj/effect/zone_mobs/syndicate,
+/obj/machinery/light/warm/directional/south,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/dark/hidden,
+/obj/structure/cable/layer1,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/syndielab)
 "aP" = (
 /obj/item/reagent_containers/condiment/milk,
 /obj/item/reagent_containers/cup/soda_cans/beer{
@@ -144,14 +159,6 @@
 	},
 /area/ruin/syndielab)
 "ey" = (
-/turf/open/floor/iron/dark/textured,
-/area/ruin/syndielab)
-"ac" = (
-/obj/effect/zone_mobs/syndicate,
-/turf/open/floor/iron/dark/textured,
-/area/ruin/syndielab)
-"ab" = (
-/obj/structure/closet/crate/zone_loot/syndicate,
 /turf/open/floor/iron/dark/textured,
 /area/ruin/syndielab)
 "gE" = (
@@ -388,7 +395,7 @@
 	},
 /obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/obj/effect/mapping_helpers/airlock/unres{
+/obj/effect/mapping_helpers/airlock/unres/delayed{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -524,13 +531,6 @@
 /turf/open/floor/iron/dark/textured,
 /area/ruin/syndielab)
 "FJ" = (
-/obj/machinery/light/warm/directional/south,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/dark/hidden,
-/obj/structure/cable/layer1,
-/turf/open/floor/iron/dark/textured,
-/area/ruin/syndielab)
-"ad" = (
-/obj/effect/zone_mobs/syndicate,
 /obj/machinery/light/warm/directional/south,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/dark/hidden,
 /obj/structure/cable/layer1,
@@ -687,8 +687,7 @@
 	},
 /obj/structure/flora/bush,
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored/oxygen_output{
-	dir = 1;
-	chamber_id = "syndielab_biodome"
+	dir = 1
 	},
 /turf/open/floor/grass{
 	initial_gas_mix = "o2=1000;n2=1100;TEMP=280"
@@ -696,7 +695,7 @@
 /area/ruin/syndielab)
 "QO" = (
 /obj/structure/table/reinforced/plastitaniumglass,
-/obj/item/computer_disk/syndicate/camera_app{
+/obj/item/disk/computer/syndicate/camera_app{
 	pixel_y = 4;
 	pixel_x = -5
 	},
@@ -782,7 +781,7 @@
 /obj/structure/fans/tiny,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/dark/hidden,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/obj/effect/mapping_helpers/airlock/unres{
+/obj/effect/mapping_helpers/airlock/unres/delayed{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,

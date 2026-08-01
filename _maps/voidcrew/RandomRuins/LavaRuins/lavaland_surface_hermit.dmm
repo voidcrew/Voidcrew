@@ -8,6 +8,10 @@
 "c" = (
 /turf/closed/wall/mineral/iron,
 /area/ruin/powered)
+"d" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/floor/mineral/plastitanium/pod/dark,
+/area/ruin/powered)
 "e" = (
 /obj/item/clothing/suit/space/orange,
 /turf/open/misc/asteroid/basalt,
@@ -66,10 +70,6 @@
 "o" = (
 /turf/open/floor/plating,
 /area/ruin/powered)
-"K" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/plating,
-/area/ruin/powered)
 "p" = (
 /obj/structure/rack,
 /obj/item/storage/bag/plants/portaseeder,
@@ -90,12 +90,8 @@
 "s" = (
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
-"N" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/misc/asteroid/basalt/lava_land_surface,
-/area/lavaland/surface/outdoors)
 "t" = (
-/turf/closed/wall/mineral/titanium/survival/pod,
+/turf/closed/wall/mineral/plastitanium/survival/pod,
 /area/ruin/powered)
 "u" = (
 /obj/structure/bed/pod,
@@ -104,22 +100,18 @@
 /area/ruin/powered)
 "v" = (
 /obj/structure/fans,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/ruin/powered)
 "w" = (
 /obj/machinery/smartfridge/survival_pod/preloaded,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/ruin/powered)
 "x" = (
 /obj/effect/mob_spawn/ghost_role/human/hermit,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/ruin/powered)
 "y" = (
-/turf/open/floor/pod/dark,
-/area/ruin/powered)
-"d" = (
-/obj/structure/closet/crate/zone_loot/expedition,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/ruin/powered)
 "z" = (
 /obj/machinery/light/small/directional/east,
@@ -133,13 +125,13 @@
 /area/ruin/powered)
 "B" = (
 /obj/structure/table/survival_pod,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/ruin/powered)
 "C" = (
 /obj/structure/tubes,
 /obj/item/crowbar,
 /obj/effect/decal/cleanable/blood/drip,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/ruin/powered)
 "D" = (
 /obj/effect/decal/cleanable/blood/footprints{
@@ -147,7 +139,7 @@
 	},
 /obj/machinery/door/airlock/survival_pod/glass,
 /obj/structure/fans/tiny,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/ruin/powered)
 "E" = (
 /obj/machinery/power/shuttle_engine/propulsion/burst{
@@ -179,6 +171,10 @@
 	initial_gas_mix = "LAVALAND_ATMOS"
 	},
 /area/ruin/powered)
+"K" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/plating,
+/area/ruin/powered)
 "L" = (
 /obj/machinery/hydroponics/soil,
 /obj/item/cultivator,
@@ -188,6 +184,10 @@
 /obj/machinery/portable_atmospherics/canister/oxygen,
 /turf/open/misc/asteroid/basalt,
 /area/ruin/powered)
+"N" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/misc/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/outdoors)
 "P" = (
 /turf/template_noop,
 /area/template_noop)

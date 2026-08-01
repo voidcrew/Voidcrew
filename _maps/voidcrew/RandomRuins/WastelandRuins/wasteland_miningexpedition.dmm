@@ -1,18 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"AA" = (
-/obj/structure/closet/crate/zone_loot/expedition,
-/turf/open/floor/iron/smooth_half{
-	dir = 1
-	},
-/area/ruin/unpowered)
-"AB" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/iron/smooth_large,
-/area/ruin/unpowered)
-"AC" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/misc/wasteland/lit,
-/area/overmap_encounter/planetoid/wasteland)
 "an" = (
 /obj/machinery/door/airlock,
 /turf/open/floor/iron/grimy,
@@ -151,6 +137,20 @@
 "yZ" = (
 /turf/closed/mineral/random/high_chance/wasteland,
 /area/overmap_encounter/planetoid/wasteland)
+"AA" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/floor/iron/smooth_half{
+	dir = 1
+	},
+/area/ruin/unpowered)
+"AB" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/iron/smooth_large,
+/area/ruin/unpowered)
+"AC" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/misc/wasteland/lit,
+/area/overmap_encounter/planetoid/wasteland)
 "BR" = (
 /turf/open/floor/iron/smooth_half{
 	dir = 1
@@ -267,7 +267,7 @@
 /turf/open/floor/iron/smooth_large,
 /area/ruin/unpowered)
 "QR" = (
-/mob/living/simple_animal/bot/mulebot,
+/mob/living/basic/bot/mulebot,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "Rk" = (

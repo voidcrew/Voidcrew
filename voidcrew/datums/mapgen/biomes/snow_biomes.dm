@@ -15,7 +15,7 @@
 		/mob/living/basic/mining/wolf/random = 40,
 		/obj/structure/spawner/ice_moon = 3,
 		/obj/structure/spawner/ice_moon/polarbear = 3,
-		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 35,
+		/mob/living/basic/mining/polarbear/random = 35,
 		/mob/living/basic/mining/legion/snow = 20,
 		/mob/living/basic/mining/goldgrub = 10,
 		/mob/living/basic/mining/ice_demon/random = 5,
@@ -25,7 +25,7 @@
 	dangerous_mob_spawn_list = list(
 		/mob/living/basic/mining/ice_demon/random = 2,
 		/mob/living/basic/mining/ice_whelp = 2,
-		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 1,
+		/mob/living/basic/mining/polarbear/random = 1,
 	)
 	feature_spawn_chance = 0.1
 	feature_spawn_list = list(
@@ -92,7 +92,7 @@
 		/mob/living/basic/mining/wolf/random = 15,
 		/obj/structure/spawner/ice_moon = 3,
 		/obj/structure/spawner/ice_moon/polarbear = 3,
-		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 15,
+		/mob/living/basic/mining/polarbear/random = 15,
 		/mob/living/basic/mining/legion/snow = 45,
 		/mob/living/basic/mining/goldgrub = 15,
 		/mob/living/basic/mining/ice_demon/random = 10,
@@ -102,7 +102,7 @@
 	dangerous_mob_spawn_list = list(
 		/mob/living/basic/mining/ice_demon/random = 2,
 		/mob/living/basic/mining/ice_whelp = 2,
-		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 1,
+		/mob/living/basic/mining/polarbear/random = 1,
 	)
 
 /datum/biome/arctic/rocky
@@ -118,7 +118,7 @@
 	// Frozen lakes are demon territory; things get worse the further out on the ice you go.
 	mob_spawn_list = list(
 		/mob/living/basic/mining/wolf/random = 10,
-		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 15,
+		/mob/living/basic/mining/polarbear/random = 15,
 		/mob/living/basic/mining/legion/snow = 15,
 		/mob/living/basic/mining/goldgrub = 10,
 		/mob/living/basic/mining/ice_demon/random = 30,
@@ -127,7 +127,7 @@
 	dangerous_mob_spawn_list = list(
 		/mob/living/basic/mining/ice_demon/random = 2,
 		/mob/living/basic/mining/ice_whelp = 2,
-		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 1,
+		/mob/living/basic/mining/polarbear/random = 1,
 	)
 	feature_spawn_chance = 0.2
 	feature_spawn_list = list(
@@ -162,7 +162,7 @@
 		/mob/living/basic/mining/wolf/random = 30,
 		/obj/structure/spawner/ice_moon = 3,
 		/obj/structure/spawner/ice_moon/polarbear = 3,
-		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 20,
+		/mob/living/basic/mining/polarbear/random = 20,
 		/mob/living/basic/mining/legion/snow = 20,
 		/mob/living/basic/mining/goldgrub = 25,
 		/mob/living/basic/mining/ice_demon/random = 10,
@@ -171,7 +171,7 @@
 	dangerous_mob_spawn_list = list(
 		/mob/living/basic/mining/ice_demon/random = 2,
 		/mob/living/basic/mining/ice_whelp = 2,
-		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 1,
+		/mob/living/basic/mining/polarbear/random = 1,
 	)
 	feature_spawn_chance = 0.1
 	feature_spawn_list = list(
@@ -195,7 +195,7 @@
 		/mob/living/basic/mining/wolf/random = 10,
 		/obj/structure/spawner/ice_moon = 3,
 		/obj/structure/spawner/ice_moon/polarbear = 3,
-		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 10,
+		/mob/living/basic/mining/polarbear/random = 10,
 		/mob/living/basic/mining/legion/snow = 15,
 		/mob/living/basic/mining/goldgrub = 15,
 		/mob/living/basic/mining/ice_demon/random = 25,
@@ -204,7 +204,7 @@
 	dangerous_mob_spawn_list = list(
 		/mob/living/basic/mining/ice_demon/random = 2,
 		/mob/living/basic/mining/ice_whelp = 2,
-		/mob/living/simple_animal/hostile/asteroid/polarbear/random = 1,
+		/mob/living/basic/mining/polarbear/random = 1,
 	)
 	flora_spawn_chance = 3
 	flora_spawn_list = list(

@@ -67,11 +67,20 @@
 /obj/structure/hedge/opaque,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/hellfactoryoffice)
+"ak" = (
+/obj/effect/zone_mobs/cult,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hellfactory)
 "al" = (
 /obj/structure/table/reinforced,
 /obj/item/storage/cans/sixbeer,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/hellfactoryoffice)
+"am" = (
+/obj/effect/zone_mobs/cult,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hellfactory)
 "an" = (
 /obj/effect/decal/remains/human,
 /obj/effect/decal/cleanable/blood/old,
@@ -348,7 +357,7 @@
 "bm" = (
 /obj/structure/table,
 /obj/item/stamp/denied,
-/obj/item/stamp{
+/obj/item/stamp/granted{
 	pixel_x = 6;
 	pixel_y = 6
 	},
@@ -418,10 +427,6 @@
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/hellfactory)
 "by" = (
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/hellfactory)
-"ak" = (
-/obj/effect/zone_mobs/cult,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/hellfactory)
 "bB" = (
@@ -644,11 +649,6 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/hellfactory)
 "cq" = (
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/hellfactory)
-"am" = (
-/obj/effect/zone_mobs/cult,
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/hellfactory)

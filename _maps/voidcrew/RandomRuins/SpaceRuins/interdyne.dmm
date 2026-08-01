@@ -1,4 +1,18 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/medical,
+/turf/open/floor/iron/smooth,
+/area/ruin/space/has_grav/interdyne)
+"ab" = (
+/obj/effect/zone_mobs/undead,
+/turf/open/misc/asteroid/airless,
+/area/ruin/space/has_grav/interdyne)
+"ac" = (
+/obj/effect/zone_mobs/undead,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/interdyne)
 "am" = (
 /obj/effect/mob_spawn/corpse/human/doctor,
 /obj/structure/cable,
@@ -111,7 +125,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/interdyne)
 "eL" = (
-/obj/item/infuser_book,
+/obj/item/tgui_book/manual/infuser,
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/interdyne)
@@ -464,7 +478,6 @@
 /area/ruin/space/has_grav/interdyne)
 "tm" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored{
-	chamber_id = "interdyne_atmos";
 	dir = 1;
 	pipe_color = "#0000FF"
 	},
@@ -711,10 +724,6 @@
 "EM" = (
 /turf/open/floor/iron/smooth,
 /area/ruin/space/has_grav/interdyne)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/medical,
-/turf/open/floor/iron/smooth,
-/area/ruin/space/has_grav/interdyne)
 "Fe" = (
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/north,
@@ -921,10 +930,6 @@
 	},
 /area/ruin/space/has_grav/interdyne)
 "Me" = (
-/turf/open/misc/asteroid/airless,
-/area/ruin/space/has_grav/interdyne)
-"ab" = (
-/obj/effect/zone_mobs/undead,
 /turf/open/misc/asteroid/airless,
 /area/ruin/space/has_grav/interdyne)
 "Mi" = (
@@ -1268,12 +1273,6 @@
 /turf/open/floor/iron/smooth,
 /area/ruin/space/has_grav/interdyne)
 "Yi" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/open/floor/mineral/plastitanium,
-/area/ruin/space/has_grav/interdyne)
-"ac" = (
-/obj/effect/zone_mobs/undead,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/mineral/plastitanium,

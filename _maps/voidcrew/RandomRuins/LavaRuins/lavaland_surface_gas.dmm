@@ -1,4 +1,14 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/asphalt/lavaland,
+/area/ruin/thelizardsgas_lavaland)
+"ab" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/iron{
+	baseturfs = /turf/open/misc/asteroid/basalt/lava_land_surface
+	},
+/area/ruin/thelizardsgas_lavaland)
 "aK" = (
 /obj/structure/table/reinforced,
 /obj/structure/window/reinforced/spawner/directional/south,
@@ -70,8 +80,7 @@
 "dC" = (
 /obj/structure/sign/warning/fire/directional/north,
 /obj/machinery/atmospherics/components/unary/outlet_injector/monitored/plasma_input{
-	dir = 4;
-	chamber_id = "lizardgaslava"
+	dir = 4
 	},
 /turf/open/floor/engine/plasma{
 	initial_gas_mix = "plasma=30000;TEMP=293.15"
@@ -110,10 +119,6 @@
 "fj" = (
 /turf/open/floor/asphalt/lavaland,
 /area/ruin/thelizardsgas_lavaland)
-"aa" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/asphalt/lavaland,
-/area/ruin/thelizardsgas_lavaland)
 "fl" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
@@ -138,8 +143,7 @@
 /area/ruin/thelizardsgas_lavaland)
 "fO" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored/plasma_output{
-	dir = 8;
-	chamber_id = "lizardgaslava"
+	dir = 8
 	},
 /turf/open/floor/engine/plasma{
 	initial_gas_mix = "plasma=30000;TEMP=293.15"
@@ -405,8 +409,7 @@
 "rv" = (
 /obj/structure/sign/warning/fire/directional/north,
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored/plasma_output{
-	dir = 8;
-	chamber_id = "lizardgaslava"
+	dir = 8
 	},
 /turf/open/floor/engine/plasma{
 	initial_gas_mix = "plasma=30000;TEMP=293.15"
@@ -573,12 +576,6 @@
 	baseturfs = /turf/open/misc/asteroid/basalt/lava_land_surface
 	},
 /area/ruin/thelizardsgas_lavaland)
-"ab" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/iron{
-	baseturfs = /turf/open/misc/asteroid/basalt/lava_land_surface
-	},
-/area/ruin/thelizardsgas_lavaland)
 "yH" = (
 /obj/structure/cable,
 /obj/machinery/duct,
@@ -659,8 +656,7 @@
 /area/ruin/thelizardsgas_lavaland)
 "BU" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/monitored/plasma_input{
-	dir = 4;
-	chamber_id = "lizardgaslava"
+	dir = 4
 	},
 /turf/open/floor/engine/plasma{
 	initial_gas_mix = "plasma=30000;TEMP=293.15"
@@ -892,8 +888,7 @@
 /area/ruin/thelizardsgas_lavaland)
 "JK" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored/plasma_output{
-	dir = 8;
-	chamber_id = "lizardgaslava"
+	dir = 8
 	},
 /obj/item/toy/plush/lizard_plushie/space/green{
 	desc = "A famous lizard, in plushy form.";

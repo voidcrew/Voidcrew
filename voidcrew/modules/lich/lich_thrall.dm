@@ -20,14 +20,15 @@
  * 2. **Attacks are forced through `ai_interact()`.**
  *    `/datum/ai_controller/proc/ai_interact` (`_ai_controller.dm:348-366`) sets combat
  *    mode and calls `living_pawn.ClickOn(target)` — i.e. it drives the mob through the
- *    same click path a player would. `/datum/ai_behavior/monkey_attack_mob/proc/monkey_attack`
- *    (`code/datums/ai/monkey/monkey_behaviors.dm:193, 202, 209`) is the precedent for
+ *    same click path a player would. `/datum/bt_node/ai_behavior/monkey_attack_mob/proc/monkey_attack`
+ *    (`code/datums/ai/monkey/monkey_bt_nodes.dm:273`) is the precedent for
  *    using it on a *carbon*, including firing a held gun and swinging a held weapon, and
- *    [/datum/ai_behavior/lich_thrall_strike/proc/strike] below is a compressed version of it.
+ *    [/datum/bt_node/ai_behavior/lich_thrall_strike/proc/strike] below is a compressed version of it.
  *
- * 3. **Movement is forced** by the standard behavior movement path — `set_movement_target`
- *    plus `AI_BEHAVIOR_REQUIRE_MOVEMENT`, which routes through `/datum/ai_movement` and
- *    `GLOB.move_manager`. Positional, so it works fine inside the lair's `NOTELEPORT` areas.
+ * 3. **Movement is forced** by a `move_to_target` leaf sitting beside the strike in the
+ *    controller's parallel (`lich_thrall.bt.json`), which routes through
+ *    `/datum/ai_movement` and `GLOB.move_manager`. Positional, so it works fine inside
+ *    the lair's `NOTELEPORT` areas.
  *
  * 4. **The player's own input is dropped on the floor.** Client movement is cancelled with
  *    `COMSIG_MOB_CLIENT_PRE_MOVE` → `COMSIG_MOB_CLIENT_BLOCK_PRE_MOVE`
@@ -309,7 +310,12 @@
 	puppet_controller = new /datum/ai_controller/lich_thrall(owner)
 	puppet_controller.thrall_ref = WEAKREF(src)
 	puppet_controller.continue_processing_when_client = TRUE
-	puppet_controller.can_idle = FALSE
+	// VOIDCREW: `can_idle = FALSE` is gone. It meant "never park this controller just
+	// because no player is watching", which is now the RUN_WHILE_UNWATCHED trait, and
+	// ALWAYS_HIGH_PRIORITY is what keeps it in the fast planning bucket while unwatched.
+	// Matters for thralls made out of non-player mobs; a possessed crewman would have
+	// kept its own client in range anyway.
+	puppet_controller.ai_traits |= RUN_WHILE_UNWATCHED | ALWAYS_HIGH_PRIORITY
 	puppet_controller.reset_ai_status()
 
 /// Hands the body back, and puts the victim's own controller back if they had one.
@@ -392,10 +398,7 @@
 /datum/ai_controller/lich_thrall
 	movement_delay = 0.3 SECONDS
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = null
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/lich_thrall_assault,
-	)
+	behavior_tree_json = "voidcrew/modules/lich/lich_thrall.bt.json"
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic,
 	)
@@ -426,35 +429,51 @@
 	movement_delay = living_pawn.cached_multiplicative_slowdown
 	return ..()
 
-/datum/ai_planning_subtree/lich_thrall_assault
+/**
+ * VOIDCREW: the old `/datum/ai_planning_subtree/lich_thrall_assault` in leaf form.
+ *
+ * It is the primary child of the tree's parallel, so its FAILURE fails the whole branch
+ * — which is exactly what the subtree's bare `return` used to do — while a SUCCESS lets
+ * the strike and the walk (the parallel's other two children, ticked every cycle
+ * regardless) get on with it. The blackboard clear stays here rather than in a decorator
+ * because decorators are polled and would fire the side effect several times a tick.
+ */
+/datum/bt_node/ai_behavior/lich_thrall_keep_target
+	/// Blackboard key holding whoever the curse is driving this body at.
+	var/target_key = BB_CURRENT_TARGET
 
-/datum/ai_planning_subtree/lich_thrall_assault/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/target = controller.blackboard[BB_CURRENT_TARGET]
+/datum/bt_node/ai_behavior/lich_thrall_keep_target/perform(seconds_per_tick, datum/ai_controller/controller)
+	var/mob/living/target = controller.blackboard[target_key]
 	if(QDELETED(target) || target.stat == DEAD)
-		controller.clear_blackboard_key(BB_CURRENT_TARGET)
-		return
-	controller.queue_behavior(/datum/ai_behavior/lich_thrall_strike, BB_CURRENT_TARGET)
-	return SUBTREE_RETURN_FINISH_PLANNING
+		controller.clear_blackboard_key(target_key)
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_SUCCEEDED
 
-/datum/ai_behavior/lich_thrall_strike
-	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_MOVE_AND_PERFORM | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
-	action_cooldown = 0.4 SECONDS
+/**
+ * VOIDCREW: the strike itself. The old `AI_BEHAVIOR_REQUIRE_MOVEMENT |
+ * AI_BEHAVIOR_MOVE_AND_PERFORM` pair is now a sibling `move_to_target` leaf in the same
+ * parallel, so this behavior no longer owns any movement — and the per-tick
+ * `set_movement_target()` re-issue it used to do ("shuttle floors move and so do
+ * people") is covered by `move_to_target`, which re-issues whenever the target changes
+ * or the movement loop drops out. `AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION` has no
+ * successor and needs none: a parallel ticks all of its children every cycle.
+ */
+/datum/bt_node/ai_behavior/lich_thrall_strike
+	time_between_perform = 0.4 SECONDS
+	/// Blackboard key holding whoever we are swinging at.
+	var/target_key = BB_CURRENT_TARGET
 
-/datum/ai_behavior/lich_thrall_strike/setup(datum/ai_controller/controller, target_key)
+/datum/bt_node/ai_behavior/lich_thrall_strike/setup(datum/ai_controller/controller)
 	. = ..()
 	var/atom/target = controller.blackboard[target_key]
 	if(QDELETED(target))
 		return FALSE
-	set_movement_target(controller, target)
 
-/datum/ai_behavior/lich_thrall_strike/perform(seconds_per_tick, datum/ai_controller/controller, target_key)
+/datum/bt_node/ai_behavior/lich_thrall_strike/perform(seconds_per_tick, datum/ai_controller/controller)
 	var/mob/living/target = controller.blackboard[target_key]
 	var/mob/living/puppet = controller.pawn
 	if(QDELETED(target) || QDELETED(puppet) || target.stat == DEAD)
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-
-	// Shuttle floors move and so do people; never trust a cached movement target.
-	set_movement_target(controller, target)
 
 	if(puppet.next_move > world.time)
 		return AI_BEHAVIOR_DELAY
@@ -466,8 +485,8 @@
 /**
  * Makes the victim attack, with whatever they happen to be holding.
  *
- * This is a compressed `/datum/ai_behavior/monkey_attack_mob/proc/monkey_attack`
- * (monkey_behaviors.dm:182-210): fire a held gun at range, otherwise close and swing.
+ * This is a compressed `/datum/bt_node/ai_behavior/monkey_attack_mob/proc/monkey_attack`
+ * (monkey_bt_nodes.dm:273): fire a held gun at range, otherwise close and swing.
  * The work is done by `controller.ai_interact()`, which sets combat mode and calls
  * `ClickOn()` on the pawn — the same code path a player's own click takes, which is
  * exactly why the possession looks and reads like the victim doing it.
@@ -476,7 +495,7 @@
  * [/datum/status_effect/lich_thrall/proc/block_own_clicks] lets this one click through
  * while still swallowing everything the player themselves tries.
  */
-/datum/ai_behavior/lich_thrall_strike/proc/strike(datum/ai_controller/controller, mob/living/puppet, mob/living/target, datum/status_effect/lich_thrall/thrall)
+/datum/bt_node/ai_behavior/lich_thrall_strike/proc/strike(datum/ai_controller/controller, mob/living/puppet, mob/living/target, datum/status_effect/lich_thrall/thrall)
 	var/obj/item/gun/held_gun = locate() in puppet.held_items
 	if(held_gun?.can_shoot())
 		if(held_gun != puppet.get_active_held_item())
@@ -485,13 +504,15 @@
 		return
 
 	var/obj/item/weapon = locate() in puppet.held_items
-	if(!puppet.CanReach(target, weapon))
+	// VOIDCREW: `puppet.CanReach(target, weapon)` inverted into `target.IsReachableBy()`;
+	// the tool argument became an explicit reach distance.
+	if(!target.IsReachableBy(puppet, weapon?.reach || 1))
 		return
 	if(weapon && weapon != puppet.get_active_held_item())
 		puppet.swap_hand(puppet.get_inactive_hand_index())
 	forced_interact(controller, target, thrall)
 
-/datum/ai_behavior/lich_thrall_strike/proc/forced_interact(datum/ai_controller/controller, mob/living/target, datum/status_effect/lich_thrall/thrall)
+/datum/bt_node/ai_behavior/lich_thrall_strike/proc/forced_interact(datum/ai_controller/controller, mob/living/target, datum/status_effect/lich_thrall/thrall)
 	thrall?.begin_puppet_action()
 	controller.ai_interact(target = target, combat_mode = TRUE)
 	thrall?.end_puppet_action()

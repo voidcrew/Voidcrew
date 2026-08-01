@@ -236,10 +236,10 @@
 "lD" = (
 /obj/machinery/door/airlock/medical/glass,
 /obj/machinery/door/firedoor,
-/turf/open/floor/pod,
+/turf/open/floor/mineral/plastitanium/pod,
 /area/shuttle/voidcrew/spitfire/medbay)
 "lN" = (
-/mob/living/simple_animal/bot/secbot/grievous/toy{
+/mob/living/basic/bot/secbot/grievous/toy{
 	name = "Protector of Doctors"
 	},
 /obj/structure/cable,
@@ -966,7 +966,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/door/firedoor,
-/turf/open/floor/pod,
+/turf/open/floor/mineral/plastitanium/pod,
 /area/shuttle/voidcrew/spitfire/bridge)
 "St" = (
 /obj/machinery/duct,

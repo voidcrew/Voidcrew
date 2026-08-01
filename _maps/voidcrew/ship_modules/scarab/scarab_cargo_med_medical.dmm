@@ -41,7 +41,7 @@
 	dir = 4
 	},
 /obj/structure/table,
-/obj/item/stack/medical/gauze/twelve{
+/obj/item/stack/medical/wrap/gauze/twelve{
 	pixel_y = 4
 	},
 /obj/modular_map_connector,

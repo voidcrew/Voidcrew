@@ -33,7 +33,7 @@
 	new /obj/item/storage/medkit/fire(src)
 	new /obj/item/reagent_containers/hypospray/medipen(src)
 	new /obj/item/reagent_containers/hypospray/medipen(src)
-	new /obj/item/stack/medical/gauze(src)
+	new /obj/item/stack/medical/wrap/gauze(src) // VOIDCREW: upstream moved gauze under /wrap
 	new /obj/item/stack/medical/suture(src)
 	new /obj/item/stack/medical/mesh(src)
 
@@ -119,9 +119,34 @@
 	balloon_alert(user, "the lock shrugs it off!")
 	return FALSE
 
-// No prying, cutting or deconstructing your way in either
-/obj/structure/closet/secure_closet/outpost_rental/tool_interact(obj/item/weapon, mob/living/user)
-	return FALSE
+/**
+ * No prying, cutting or deconstructing your way in either.
+ *
+ * VOIDCREW: this used to be one `tool_interact()` override returning FALSE. Upstream
+ * split that proc along two seams, so the single refusal became several:
+ * - `item_interaction()` inherited the airlock painter, the electronics install, the
+ *   card reader install and — load-bearing — the swipe-an-ID-to-toggle-the-lock branch.
+ *   Letting the parent run that last one would eat the swipe before
+ *   [/obj/structure/closet/secure_closet/outpost_rental/attackby] ever sees it, and the
+ *   locker could never be rented. NONE means "not handled", which is what lets the
+ *   attackby chain below run, exactly as `tool_interact() = FALSE` used to.
+ * - the electronics screwdriver, the card-reader crowbar and the weld/cut welder each
+ *   became their own `*_act()`, reached through `tool_act()` before `item_interaction()`.
+ */
+/obj/structure/closet/secure_closet/outpost_rental/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	return NONE
+
+/obj/structure/closet/secure_closet/outpost_rental/screwdriver_act(mob/living/user, obj/item/tool)
+	return NONE
+
+/obj/structure/closet/secure_closet/outpost_rental/crowbar_act(mob/living/user, obj/item/tool)
+	return NONE
+
+/obj/structure/closet/secure_closet/outpost_rental/welder_act(mob/living/user, obj/item/tool)
+	return NONE
+
+/obj/structure/closet/secure_closet/outpost_rental/multitool_act(mob/living/user, obj/item/tool)
+	return NONE
 
 /obj/structure/closet/secure_closet/outpost_rental/bust_open()
 	return
@@ -197,30 +222,45 @@
 	if(user.combat_mode)
 		bark_attacked()
 
+/**
+ * VOIDCREW: `idle_behavior` and the whole `/datum/idle_behavior` family are gone;
+ * idle wandering is now a behavior-tree leaf like everything else. These controllers
+ * are small enough (one or two leaves, no branching) that they use a flat
+ * `behavior_nodes` typepath list rather than a `.bt.json` — `SelectBehaviors()` walks
+ * that list in order and stops at the first node returning BT_RUNNING, which is all
+ * the structure a loiterer needs.
+ */
 /datum/ai_controller/basic_controller/outpost_loiterer
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic,
 	)
 	ai_traits = PASSIVE_AI_FLAGS
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = /datum/idle_behavior/idle_random_walk/outpost_loiterer
+	behavior_nodes = list(
+		/datum/bt_node/ai_behavior/idle_random_walk/outpost_loiterer,
+	)
 
 /// Loiterers never wander out of the sanctuary area (or out an airlock)
-/datum/idle_behavior/idle_random_walk/outpost_loiterer
+/datum/bt_node/ai_behavior/idle_random_walk/outpost_loiterer
 	walk_chance = 10
 
-/datum/idle_behavior/idle_random_walk/outpost_loiterer/perform_idle_behavior(seconds_per_tick, datum/ai_controller/controller)
-	var/mob/living/living_pawn = controller.pawn
+/**
+ * Upstream's `try_random_step()` verbatim, plus the area gate. It is copied rather
+ * than wrapped because the check has to land between picking the destination turf and
+ * moving onto it, and the parent does both in one go.
+ */
+/datum/bt_node/ai_behavior/idle_random_walk/outpost_loiterer/try_random_step(mob/living/living_pawn, seconds_per_tick, step_walk_chance)
 	if(LAZYLEN(living_pawn.do_afters))
 		return FALSE
-	if(SPT_PROB(walk_chance, seconds_per_tick) && (living_pawn.mobility_flags & MOBILITY_MOVE) && isturf(living_pawn.loc) && !living_pawn.pulledby)
-		var/move_dir = pick(GLOB.alldirs)
-		var/turf/destination_turf = get_step(living_pawn, move_dir)
-		if(!destination_turf?.can_cross_safely(living_pawn))
-			return FALSE
-		if(!istype(get_area(destination_turf), /area/voidcrew/trader_outpost))
-			return FALSE
-		living_pawn.Move(destination_turf, move_dir)
+	if(!SPT_PROB(step_walk_chance, seconds_per_tick) || !can_move(living_pawn))
+		return FALSE
+	var/move_dir = pick(GLOB.alldirs)
+	var/turf/destination_turf = get_step(living_pawn, move_dir)
+	if(!destination_turf?.can_cross_safely(living_pawn))
+		return FALSE
+	if(!istype(get_area(destination_turf), /area/voidcrew/trader_outpost))
+		return FALSE
+	living_pawn.Move(destination_turf, move_dir)
 	return TRUE
 
 // --- Green: the mechanic haunting Halcyon's repair bay ---
@@ -236,12 +276,19 @@
 	)
 	ai_controller = /datum/ai_controller/basic_controller/outpost_loiterer/mechanic
 
+/**
+ * The barks sit *after* the wander leaf on purpose: a `random_speech` leaf reports
+ * BT_RUNNING for its one-second cooldown after a successful line, and
+ * `SelectBehaviors()` stops at the first BT_RUNNING. Last in the list, that costs
+ * nothing; first, it would swallow a second of wandering every time they spoke.
+ */
 /datum/ai_controller/basic_controller/outpost_loiterer/mechanic
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/random_speech/outpost_mechanic,
+	behavior_nodes = list(
+		/datum/bt_node/ai_behavior/idle_random_walk/outpost_loiterer,
+		/datum/bt_node/ai_behavior/random_speech/outpost_mechanic,
 	)
 
-/datum/ai_planning_subtree/random_speech/outpost_mechanic
+/datum/bt_node/ai_behavior/random_speech/outpost_mechanic
 	speech_chance = 2
 	speak = list(
 		"Your port thruster sounds wrong. I can hear it from here. Through the hull.",
@@ -265,11 +312,12 @@
 	ai_controller = /datum/ai_controller/basic_controller/outpost_loiterer/dockhand
 
 /datum/ai_controller/basic_controller/outpost_loiterer/dockhand
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/random_speech/outpost_dockhand,
+	behavior_nodes = list(
+		/datum/bt_node/ai_behavior/idle_random_walk/outpost_loiterer,
+		/datum/bt_node/ai_behavior/random_speech/outpost_dockhand,
 	)
 
-/datum/ai_planning_subtree/random_speech/outpost_dockhand
+/datum/bt_node/ai_behavior/random_speech/outpost_dockhand
 	speech_chance = 2
 	speak = list(
 		"Rent a locker. Trust me. The yellow lanes eat cargo bays.",
@@ -294,11 +342,12 @@
 	ai_controller = /datum/ai_controller/basic_controller/outpost_loiterer/bartender
 
 /datum/ai_controller/basic_controller/outpost_loiterer/bartender
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/random_speech/outpost_bartender,
+	behavior_nodes = list(
+		/datum/bt_node/ai_behavior/idle_random_walk/outpost_loiterer,
+		/datum/bt_node/ai_behavior/random_speech/outpost_bartender,
 	)
 
-/datum/ai_planning_subtree/random_speech/outpost_bartender
+/datum/bt_node/ai_behavior/random_speech/outpost_bartender
 	speech_chance = 2
 	speak = list(
 		"Dram works the counter. I work the floor. Guess which of us breaks up the fights.",
@@ -322,11 +371,12 @@
 	ai_controller = /datum/ai_controller/basic_controller/outpost_loiterer/off_duty_pirate
 
 /datum/ai_controller/basic_controller/outpost_loiterer/off_duty_pirate
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/random_speech/outpost_pirate,
+	behavior_nodes = list(
+		/datum/bt_node/ai_behavior/idle_random_walk/outpost_loiterer,
+		/datum/bt_node/ai_behavior/random_speech/outpost_pirate,
 	)
 
-/datum/ai_planning_subtree/random_speech/outpost_pirate
+/datum/bt_node/ai_behavior/random_speech/outpost_pirate
 	speech_chance = 2
 	speak = list(
 		"Everyone's armed in the red zone. That's why it's polite here.",
@@ -353,7 +403,7 @@
 	footstep = FOOTSTEP_GRASS
 	barefootstep = FOOTSTEP_GRASS
 	clawfootstep = FOOTSTEP_GRASS
-	tiled_dirt = FALSE
+	tiled_turf = FALSE // VOIDCREW: tiled_dirt was renamed tiled_turf upstream
 
 // =========================================================================
 // FISHING POND

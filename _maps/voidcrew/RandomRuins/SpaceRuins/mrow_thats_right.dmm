@@ -135,7 +135,6 @@
 /obj/effect/decal/cleanable/blood/old,
 /obj/machinery/light/small/directional/north,
 /obj/machinery/atmospherics/components/unary/outlet_injector/monitored{
-	chamber_id = "catstation1";
 	dir = 1
 	},
 /turf/open/floor/plating,
@@ -151,7 +150,6 @@
 "aB" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/components/unary/outlet_injector/monitored{
-	chamber_id = "catstation2";
 	dir = 1
 	},
 /turf/open/floor/plating,
@@ -169,13 +167,11 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered/cat_man)
-"aF" = (
-/obj/item/kirbyplants/random,
-/obj/effect/turf_decal/tile/neutral/half/contrasted,
+"aE" = (
+/obj/structure/closet/crate/zone_loot/research,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/powered/cat_man)
-"bb" = (
-/obj/effect/zone_mobs/wildlife,
+"aF" = (
 /obj/item/kirbyplants/random,
 /obj/effect/turf_decal/tile/neutral/half/contrasted,
 /turf/open/floor/iron,
@@ -190,14 +186,6 @@
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/powered/cat_man)
 "aI" = (
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/powered/cat_man)
-"aY" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/powered/cat_man)
-"aE" = (
-/obj/structure/closet/crate/zone_loot/research,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/powered/cat_man)
 "aJ" = (
@@ -301,6 +289,10 @@
 /obj/machinery/light/small/directional/north,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered/cat_man)
+"aY" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/powered/cat_man)
 "aZ" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
@@ -309,6 +301,12 @@
 /obj/structure/table/wood,
 /obj/item/flashlight/lamp,
 /turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered/cat_man)
+"bb" = (
+/obj/effect/zone_mobs/wildlife,
+/obj/item/kirbyplants/random,
+/obj/effect/turf_decal/tile/neutral/half/contrasted,
+/turf/open/floor/iron,
 /area/ruin/space/has_grav/powered/cat_man)
 "bc" = (
 /obj/machinery/button/door/directional/west{
@@ -365,7 +363,6 @@
 "bk" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/components/unary/outlet_injector/monitored{
-	chamber_id = "catstation3";
 	dir = 4
 	},
 /turf/open/floor/plating,
@@ -491,7 +488,6 @@
 /obj/effect/decal/cleanable/blood/old,
 /obj/machinery/light/small/directional/south,
 /obj/machinery/atmospherics/components/unary/outlet_injector/monitored{
-	chamber_id = "catstation4";
 	dir = 4
 	},
 /turf/open/floor/plating,
@@ -552,9 +548,7 @@
 "bP" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/blood/old,
-/obj/machinery/atmospherics/components/unary/outlet_injector/monitored{
-	chamber_id = "catstation6"
-	},
+/obj/machinery/atmospherics/components/unary/outlet_injector/monitored,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered/cat_man)
 "bQ" = (
@@ -692,7 +686,6 @@
 /area/ruin/space/has_grav/powered/cat_man)
 "cl" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored{
-	chamber_id = "catstationsupply";
 	dir = 8
 	},
 /turf/open/floor/plating/airless,
@@ -731,17 +724,17 @@
 /obj/structure/closet/crate/freezer{
 	name = "cat hide"
 	},
-/obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/animalhide/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/powered/cat_man)
 "ct" = (
@@ -815,9 +808,7 @@
 /area/ruin/space/has_grav/powered/cat_man)
 "jc" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/components/unary/outlet_injector/monitored{
-	chamber_id = "catstation5"
-	},
+/obj/machinery/atmospherics/components/unary/outlet_injector/monitored,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered/cat_man)
 "lQ" = (

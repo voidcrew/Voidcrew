@@ -24,7 +24,7 @@
 /area/voidcrew/trader_outpost)
 "ae" = (
 /obj/structure/table/reinforced,
-/obj/item/ammo_box/strilka310{
+/obj/item/ammo_box/speedloader/strilka310{
 	pixel_y = 4
 	},
 /turf/open/indestructible/dark/textured,

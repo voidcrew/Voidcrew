@@ -57,7 +57,7 @@
 /area/ruin/space/has_grav/vestige/arena/mutant)
 "aj" = (
 /obj/item/restraints/handcuffs,
-/obj/item/stack/medical/gauze{
+/obj/item/stack/medical/wrap/gauze{
 	pixel_x = 6
 	},
 /turf/open/floor/mineral/abductor,

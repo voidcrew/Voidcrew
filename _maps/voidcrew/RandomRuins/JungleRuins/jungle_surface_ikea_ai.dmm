@@ -50,20 +50,20 @@
 /area/ruin/powered)
 "r" = (
 /obj/structure/table/wood,
-/obj/item/ai_module/core/full/hulkamania{
+/obj/item/ai_module/law/core/full/hulkamania{
 	name = "Unknown AI Core Module"
 	},
-/obj/item/ai_module/reset/purge,
-/obj/item/ai_module/core/full/paladin_devotion{
+/obj/item/ai_module/law/reset/purge,
+/obj/item/ai_module/law/core/full/paladin_devotion{
 	name = "Unknown AI Core Module"
 	},
-/obj/item/ai_module/core/full/reporter{
+/obj/item/ai_module/law/core/full/reporter{
 	name = "Unknown AI Core Module"
 	},
-/obj/item/ai_module/core/full/corp{
+/obj/item/ai_module/law/core/full/corp{
 	name = "Unknown AI Core Module"
 	},
-/obj/item/ai_module/core/full/asimov{
+/obj/item/ai_module/law/core/full/asimov{
 	name = "Unknown AI Core Module"
 	},
 /turf/open/floor/wood,
@@ -149,10 +149,6 @@
 "U" = (
 /turf/template_noop,
 /area/template_noop)
-"V" = (
-/obj/item/stack/cable_coil,
-/turf/open/floor/wood,
-/area/ruin/powered)
 "Y" = (
 /obj/item/bodypart/arm/right/robot,
 /turf/open/floor/wood,
@@ -212,7 +208,7 @@ z
 f
 u
 J
-V
+x
 y
 z
 "}

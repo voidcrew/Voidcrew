@@ -260,7 +260,10 @@
 	inert = planted
 	if(planted)
 		ADD_TRAIT(src, TRAIT_IMMOBILIZED, MEGAFAUNA_TRAIT)
-		ai_controller?.CancelActions()
+		// VOIDCREW: CancelActions() became cancel_current_plan(). It resets the whole
+		// tree rather than just the running behavior, which here is what we want -
+		// it also stops the movement leaf, which used to freeze for free.
+		ai_controller?.cancel_current_plan()
 		return
 	REMOVE_TRAIT(src, TRAIT_IMMOBILIZED, MEGAFAUNA_TRAIT)
 

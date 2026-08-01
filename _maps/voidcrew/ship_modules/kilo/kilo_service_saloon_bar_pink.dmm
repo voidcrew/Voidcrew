@@ -141,7 +141,7 @@
 /turf/open/floor/iron/dollhouse,
 /area/template_noop)
 "m" = (
-/obj/structure/reagent_dispensers/beerkeg,
+/obj/effect/spawner/random/food_or_drink/keg,
 /obj/machinery/firealarm/directional/east,
 /obj/structure/sign/poster/contraband/tipper_cream_soda{
 	pixel_y = 32

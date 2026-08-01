@@ -1,4 +1,9 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/bug,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/garbagetruck/toystore)
 "aj" = (
 /obj/machinery/power/smes,
 /obj/structure/cable,
@@ -620,11 +625,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/toystore)
-"aa" = (
-/obj/effect/zone_mobs/bug,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/garbagetruck/toystore)
 "Ja" = (
 /obj/structure/closet/crate/trashcart/filled,
 /obj/effect/decal/cleanable/plastic,
@@ -647,8 +647,8 @@
 "JI" = (
 /obj/item/dice/d10,
 /obj/structure/filingcabinet/chestdrawer,
-/obj/item/computer_disk/maintenance/modsuit_control,
-/obj/item/computer_disk/maintenance/modsuit_control,
+/obj/item/disk/computer/maintenance/modsuit_control,
+/obj/item/disk/computer/maintenance/modsuit_control,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/toystore)
 "KR" = (
@@ -753,7 +753,7 @@
 /obj/item/coin/plastic,
 /obj/structure/safe,
 /obj/structure/spider/stickyweb,
-/obj/item/tank/jetpack/oxygen{
+/obj/item/tank/jetpack{
 	desc = "A tank of compressed oxygen for use as propulsion in zero-gravity areas. It's blue, and has a triangle chiselled into the paint."
 	},
 /obj/item/switchblade,
@@ -773,7 +773,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/toystore)
 "Sb" = (
-/obj/structure/reagent_dispensers/beerkeg,
+/obj/effect/spawner/random/food_or_drink/keg,
 /obj/structure/spider/stickyweb,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/toystore)

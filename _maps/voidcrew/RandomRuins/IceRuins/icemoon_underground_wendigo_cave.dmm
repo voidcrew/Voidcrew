@@ -2,6 +2,12 @@
 "a" = (
 /turf/template_noop,
 /area/template_noop)
+"b" = (
+/obj/structure/closet/crate/zone_loot/expedition/rare,
+/turf/open/indestructible/necropolis{
+	initial_gas_mix = "ICEMOON_ATMOS"
+	},
+/area/icemoon/underground/explored)
 "c" = (
 /obj/structure/flora/rock/pile/icy/style_random,
 /turf/open/misc/asteroid/snow/icemoon/breathable,
@@ -18,6 +24,10 @@
 	initial_gas_mix = "ICEMOON_ATMOS"
 	},
 /area/icemoon/underground/explored)
+"f" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/misc/asteroid/snow/icemoon/breathable,
+/area/icemoon/underground/explored)
 "g" = (
 /obj/structure/flora/rock/pile/icy/style_random,
 /turf/open/misc/asteroid/snow/icemoon/breathable,
@@ -29,6 +39,12 @@
 /obj/effect/turf_decal/weather/snow/corner{
 	dir = 4
 	},
+/turf/open/indestructible/necropolis{
+	initial_gas_mix = "ICEMOON_ATMOS"
+	},
+/area/icemoon/underground/explored)
+"i" = (
+/obj/effect/zone_mobs/wildlife,
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "ICEMOON_ATMOS"
 	},
@@ -47,7 +63,7 @@
 /turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/unexplored)
 "l" = (
-/turf/closed/indestructible/rock/snow/ice/ore,
+/turf/closed/indestructible/rock/snow/ore,
 /area/icemoon/underground/explored)
 "m" = (
 /obj/effect/decal/cleanable/blood,
@@ -160,12 +176,8 @@
 "H" = (
 /turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
-"f" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/misc/asteroid/snow/icemoon/breathable,
-/area/icemoon/underground/explored)
 "I" = (
-/turf/closed/indestructible/rock/snow/ice/ore,
+/turf/closed/indestructible/rock/snow/ore,
 /area/icemoon/underground/unexplored)
 "J" = (
 /obj/effect/turf_decal/weather/snow/corner{
@@ -176,18 +188,6 @@
 	},
 /area/icemoon/underground/unexplored)
 "K" = (
-/turf/open/indestructible/necropolis{
-	initial_gas_mix = "ICEMOON_ATMOS"
-	},
-/area/icemoon/underground/explored)
-"i" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/indestructible/necropolis{
-	initial_gas_mix = "ICEMOON_ATMOS"
-	},
-/area/icemoon/underground/explored)
-"b" = (
-/obj/structure/closet/crate/zone_loot/expedition/rare,
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "ICEMOON_ATMOS"
 	},
@@ -254,7 +254,7 @@
 /area/icemoon/underground/explored)
 "S" = (
 /obj/structure/flora/grass/brown/style_random,
-/turf/closed/indestructible/rock/snow/ice/ore,
+/turf/closed/indestructible/rock/snow/ore,
 /area/icemoon/underground/explored)
 "T" = (
 /obj/structure/flora/rock/pile/icy/style_3,

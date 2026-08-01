@@ -260,7 +260,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/box/engine)
 "bh" = (
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/orange,
@@ -551,7 +551,7 @@
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/box/medbay)
 "cl" = (
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 4
 	},
 /obj/item/kirbyplants/random,
@@ -561,7 +561,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/box/medbay)
 "cm" = (
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 8
 	},
 /obj/machinery/button/door{
@@ -745,7 +745,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/box/cargo)
 "cI" = (
-/obj/machinery/light/built,
+/obj/machinery/light/empty,
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/south,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4,
@@ -987,7 +987,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/box/crew_quarters)
 "dv" = (
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 8
 	},
 /obj/structure/cable,
@@ -1330,7 +1330,7 @@
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/box/medbay)
 "Lt" = (
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 4
 	},
 /obj/item/kirbyplants/random,
@@ -1393,7 +1393,7 @@
 /obj/machinery/computer/operating{
 	dir = 8
 	},
-/obj/machinery/light/built,
+/obj/machinery/light/empty,
 /obj/machinery/defibrillator_mount/charging{
 	pixel_y = -32
 	},

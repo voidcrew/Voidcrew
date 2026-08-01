@@ -169,7 +169,7 @@
 /turf/open/floor/wood,
 /area/template_noop)
 "F" = (
-/obj/machinery/light/small/built/directional/north,
+/obj/machinery/light/small/empty/directional/north,
 /obj/structure/closet/crate,
 /obj/item/stack/sheet/cloth,
 /obj/effect/spawner/random/food_or_drink/condiment,

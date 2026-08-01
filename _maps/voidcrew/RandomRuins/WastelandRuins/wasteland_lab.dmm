@@ -1,14 +1,30 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/robot,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/rust,
+/area/ruin/powered)
 "av" = (
 /obj/effect/turf_decal/tile/purple/anticorner{
 	dir = 9
 	},
 /turf/open/floor/iron/white,
 /area/ruin/powered)
+"aA" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/iron,
+/area/ruin/powered)
 "aW" = (
 /obj/structure/table,
 /obj/item/flashlight/lamp,
 /turf/open/floor/plating/rust,
+/area/ruin/powered)
+"aX" = (
+/obj/effect/zone_mobs/robot,
+/obj/effect/turf_decal/tile/red/half{
+	dir = 1
+	},
+/turf/open/floor/iron,
 /area/ruin/powered)
 "bi" = (
 /obj/structure/chair{
@@ -217,12 +233,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/powered)
-"iE" = (
-/obj/structure/displaycase/noalert{
-	start_showpiece_type = /obj/item/ammo_box/magazine/sniper_rounds
-	},
-/turf/open/floor/iron,
-/area/ruin/powered)
 "jn" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
@@ -370,6 +380,22 @@
 /obj/structure/railing,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/white,
+/area/ruin/powered)
+"qq" = (
+/obj/effect/zone_mobs/robot,
+/obj/structure/fluff/paper/stack{
+	dir = 5
+	},
+/obj/item/paper,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/powered)
+"qZ" = (
+/obj/effect/zone_mobs/robot/boss,
+/obj/structure/fluff/paper/stack{
+	dir = 9
+	},
+/turf/open/floor/iron/dark,
 /area/ruin/powered)
 "re" = (
 /obj/effect/turf_decal/tile/neutral/diagonal_edge,
@@ -540,14 +566,8 @@
 "xo" = (
 /obj/structure/window/reinforced,
 /obj/structure/table/wood/fancy,
-/obj/item/stack/sheet/animalhide/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
 /obj/item/stack/sheet/mineral/titanium,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/rust,
-/area/ruin/powered)
-"xz" = (
-/obj/structure/rack,
-/obj/item/stock_parts/power_store/cell/empty,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
@@ -561,16 +581,6 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
-/area/ruin/powered)
-"yv" = (
-/obj/structure/table,
-/obj/effect/turf_decal/tile/green{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/green{
-	dir = 1
-	},
-/turf/open/floor/iron,
 /area/ruin/powered)
 "yY" = (
 /obj/structure/closet/cardboard,
@@ -713,11 +723,6 @@
 "GR" = (
 /turf/closed/wall/rust,
 /area/ruin/powered)
-"GT" = (
-/obj/structure/closet/cardboard,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
 "HL" = (
 /obj/effect/spawner/structure/window,
 /turf/open/floor/plating/rust,
@@ -808,10 +813,6 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/neutral/diagonal_edge,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
-"MS" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
@@ -919,9 +920,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
-"WL" = (
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
 "Xf" = (
 /obj/effect/turf_decal/tile/neutral/diagonal_edge,
 /obj/effect/turf_decal/tile/blue/diagonal_edge{
@@ -993,38 +991,6 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
-/area/ruin/powered)
-"aa" = (
-/obj/effect/zone_mobs/robot,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/rust,
-/area/ruin/powered)
-"aA" = (
-/obj/effect/zone_mobs/robot,
-/turf/open/floor/iron,
-/area/ruin/powered)
-"aX" = (
-/obj/effect/zone_mobs/robot,
-/obj/effect/turf_decal/tile/red/half{
-	dir = 1
-	},
-/turf/open/floor/iron,
-/area/ruin/powered)
-"qq" = (
-/obj/effect/zone_mobs/robot,
-/obj/structure/fluff/paper/stack{
-	dir = 5
-	},
-/obj/item/paper,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
-"qZ" = (
-/obj/effect/zone_mobs/robot/boss,
-/obj/structure/fluff/paper/stack{
-	dir = 9
-	},
-/turf/open/floor/iron/dark,
 /area/ruin/powered)
 
 (1,1,1) = {"
@@ -1171,9 +1137,9 @@ qg
 vq
 vq
 Gj
-MS
-WL
-MS
+GP
+hl
+GP
 cz
 QR
 re
@@ -1208,7 +1174,7 @@ Rw
 Rw
 Rw
 Ta
-iE
+hL
 wf
 GR
 tD
@@ -1342,11 +1308,11 @@ bz
 bz
 bz
 GR
-xz
+pf
 aA
 cz
 ii
-yv
+cr
 Zi
 xH
 GR
@@ -1400,7 +1366,7 @@ pf
 cz
 cz
 bz
-yv
+cr
 iy
 Zi
 oN
@@ -1610,7 +1576,7 @@ Ea
 Kk
 Yv
 ZS
-GT
+CN
 Rw
 Rw
 tD
@@ -1637,7 +1603,7 @@ sN
 tr
 tr
 mo
-GT
+CN
 Rw
 Rw
 tD
@@ -1663,7 +1629,7 @@ Ae
 Ua
 tr
 tp
-GT
+CN
 lM
 Rw
 Rw

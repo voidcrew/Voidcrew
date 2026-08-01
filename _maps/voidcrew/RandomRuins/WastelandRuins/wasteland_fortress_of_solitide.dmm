@@ -416,7 +416,7 @@
 /area/ruin/powered)
 "dU" = (
 /obj/structure/table,
-/obj/item/stack/sticky_tape,
+/obj/item/stack/medical/wrap/sticky_tape,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/ruin/powered)
@@ -3568,7 +3568,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/powered)
 "Kg" = (
-/obj/structure/reagent_dispensers/beerkeg{
+/obj/effect/spawner/random/food_or_drink/keg{
 	desc = "For drunk science."
 	},
 /turf/open/floor/plating,

@@ -8,7 +8,7 @@
 /obj/effect/mapping_helpers/airalarm/all_access,
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -89,7 +89,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/small/directional/south,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -166,7 +166,7 @@
 /obj/effect/mapping_helpers/airalarm/all_access,
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -177,7 +177,7 @@
 /obj/structure/barricade/wooden/crude,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -246,7 +246,7 @@
 /obj/structure/barricade/wooden/crude,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -342,7 +342,7 @@
 /obj/machinery/ship_combat/laser_turret{
 	dir = 1
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -487,7 +487,6 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/turretid{
-	icon_state = "control_kill";
 	lethal = 1;
 	locked = 0;
 	pixel_y = -24;
@@ -512,7 +511,7 @@
 	pixel_y = 3
 	},
 /obj/machinery/recharger,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -538,13 +537,13 @@
 /obj/structure/table,
 /obj/machinery/cell_charger,
 /obj/item/stock_parts/power_store/cell/high,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
 "bm" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -594,7 +593,7 @@
 	pixel_x = 13;
 	pixel_y = 6
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -631,7 +630,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/piratepad,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -639,7 +638,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -690,7 +689,7 @@
 /obj/machinery/computer/piratepad_control{
 	dir = 1
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -841,7 +840,7 @@
 	pixel_x = 5
 	},
 /obj/structure/sign/poster/contraband/bountyhunters/directional/north,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -855,7 +854,7 @@
 "er" = (
 /obj/structure/grille,
 /obj/machinery/ship_combat/shield_generator,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -919,7 +918,7 @@
 	anchored = 1
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -941,7 +940,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -950,7 +949,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -978,7 +977,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -1018,7 +1017,7 @@
 	pixel_x = -2;
 	pixel_y = 2
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -1052,7 +1051,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})
@@ -1112,7 +1111,7 @@
 	pixel_x = 2;
 	pixel_y = -1
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_default{
 	requires_power = 0
 	})

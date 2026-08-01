@@ -1,0 +1,31 @@
+{
+	"dm_type": "/datum/ai_controller/lich_thrall",
+	"type": "parallel",
+	"failure_policy": "BT_PARALLEL_FAILURE_CHILD_ONE",
+	"success_policy": "BT_PARALLEL_SUCCESS_ALL",
+	"children": [
+		{
+			"type": "leaf",
+			"behavior": "/datum/bt_node/ai_behavior/lich_thrall_keep_target",
+			"vars": {
+				"target_key": "BB_CURRENT_TARGET"
+			}
+		},
+		{
+			"type": "leaf",
+			"behavior": "/datum/bt_node/ai_behavior/lich_thrall_strike",
+			"vars": {
+				"target_key": "BB_CURRENT_TARGET"
+			}
+		},
+		{
+			"type": "leaf",
+			"behavior": "/datum/bt_node/ai_behavior/move_to_target",
+			"vars": {
+				"target_key": "BB_CURRENT_TARGET",
+				"required_dist": 1,
+				"finish_on_arrival": false
+			}
+		}
+	]
+}

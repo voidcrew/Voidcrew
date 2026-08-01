@@ -1,4 +1,16 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/robot/boss,
+/obj/structure/closet/crate/zone_loot/research/rare,
+/obj/effect/turf_decal/siding/purple{
+	dir = 5
+	},
+/turf/open/floor/iron/dark,
+/area/misc/anomaly_research)
+"ab" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/iron/smooth,
+/area/misc/anomaly_research)
 "aw" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -269,7 +281,7 @@
 	dir = 4
 	},
 /obj/structure/table/wood,
-/obj/item/computer_disk/ordnance,
+/obj/item/disk/computer/ordnance,
 /turf/open/floor/iron/dark,
 /area/misc/anomaly_research)
 "iq" = (
@@ -502,14 +514,6 @@
 	},
 /turf/open/floor/iron/dark,
 /area/misc/anomaly_research)
-"aa" = (
-/obj/effect/zone_mobs/robot/boss,
-/obj/structure/closet/crate/zone_loot/research/rare,
-/obj/effect/turf_decal/siding/purple{
-	dir = 5
-	},
-/turf/open/floor/iron/dark,
-/area/misc/anomaly_research)
 "nW" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -690,7 +694,7 @@
 /turf/open/floor/iron/white,
 /area/misc/anomaly_research)
 "sX" = (
-/obj/machinery/light/small/built/directional/north,
+/obj/machinery/light/small/empty/directional/north,
 /obj/effect/spawner/random/environmentally_safe_anomaly/bioscramblerless,
 /obj/item/reagent_containers/cup/bottle/wittel,
 /obj/effect/spawner/random/trash/grime,
@@ -1816,7 +1820,7 @@
 /turf/closed/mineral/snowmountain/cavern,
 /area/misc/anomaly_research)
 "Yo" = (
-/obj/machinery/light/small/built/directional/east,
+/obj/machinery/light/small/empty/directional/east,
 /obj/effect/spawner/random/trash/garbage,
 /obj/effect/spawner/random/trash/mopbucket,
 /obj/effect/decal/cleanable/dirt,
@@ -1833,10 +1837,6 @@
 /turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "Zh" = (
-/turf/open/floor/iron/smooth,
-/area/misc/anomaly_research)
-"ab" = (
-/obj/effect/zone_mobs/robot,
 /turf/open/floor/iron/smooth,
 /area/misc/anomaly_research)
 "Zp" = (
@@ -1874,9 +1874,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron/white,
-/area/misc/anomaly_research)
-"ZM" = (
-/turf/open/misc/asteroid/snow/airless,
 /area/misc/anomaly_research)
 "ZO" = (
 /obj/structure/table/reinforced,
@@ -2643,9 +2640,9 @@ xE
 xE
 Ya
 Ya
-ZM
+ZJ
 RT
-ZM
+ZJ
 Ya
 Ya
 Ya
@@ -2681,7 +2678,7 @@ xE
 xE
 Ya
 Ya
-ZM
+ZJ
 kp
 RT
 RT
@@ -2908,7 +2905,7 @@ xE
 xE
 xE
 Ya
-ZM
+ZJ
 RT
 RT
 RT
@@ -2946,9 +2943,9 @@ xE
 xE
 xE
 Ya
-ZM
-ZM
-ZM
+ZJ
+ZJ
+ZJ
 RT
 RT
 RT
@@ -2986,8 +2983,8 @@ xE
 Ya
 Ya
 Ya
-ZM
-ZM
+ZJ
+ZJ
 RT
 RT
 RT

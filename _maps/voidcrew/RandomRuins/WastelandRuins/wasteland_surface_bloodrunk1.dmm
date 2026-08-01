@@ -112,7 +112,7 @@
 /obj/structure/stone_tile/surrounding/cracked{
 	dir = 6
 	},
-/mob/living/simple_animal/hostile/megafauna/blood_drunk_miner{
+/mob/living/basic/boss/blood_drunk_miner{
 	dir = 1
 	},
 /turf/open/misc/dust/lit,
@@ -151,6 +151,16 @@
 /obj/structure/stone_tile/cracked,
 /turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
+"z" = (
+/obj/structure/stone_tile{
+	dir = 4
+	},
+/obj/structure/stone_tile{
+	dir = 1
+	},
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/misc/dust/lit,
+/area/overmap_encounter/planetoid/wasteland)
 "P" = (
 /obj/structure/stone_tile,
 /turf/open/misc/wasteland/lit,
@@ -169,16 +179,6 @@
 	dir = 1
 	},
 /turf/open/misc/wasteland/lit,
-/area/overmap_encounter/planetoid/wasteland)
-"z" = (
-/obj/structure/stone_tile{
-	dir = 4
-	},
-/obj/structure/stone_tile{
-	dir = 1
-	},
-/obj/structure/closet/crate/zone_loot/expedition,
-/turf/open/misc/dust/lit,
 /area/overmap_encounter/planetoid/wasteland)
 
 (1,1,1) = {"

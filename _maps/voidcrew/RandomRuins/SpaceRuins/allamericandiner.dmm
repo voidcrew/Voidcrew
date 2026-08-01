@@ -4,6 +4,27 @@
 /obj/structure/marker_beacon/teal,
 /turf/template_noop,
 /area/ruin/space)
+"ab" = (
+/obj/structure/closet/crate/zone_loot/plunder,
+/obj/effect/turf_decal/siding/dark_green{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/allamericandiner)
+"ac" = (
+/obj/effect/zone_mobs/undead,
+/obj/effect/turf_decal/siding/brown{
+	dir = 4
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/allamericandiner)
+"ad" = (
+/obj/effect/zone_mobs/undead,
+/obj/effect/turf_decal/trimline/dark_green/filled/line{
+	dir = 1
+	},
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/allamericandiner)
 "aA" = (
 /obj/effect/turf_decal/trimline/dark_green/filled/line{
 	dir = 4
@@ -27,13 +48,6 @@
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/allamericandiner)
 "ck" = (
-/obj/effect/turf_decal/trimline/dark_green/filled/line{
-	dir = 1
-	},
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/allamericandiner)
-"ad" = (
-/obj/effect/zone_mobs/undead,
 /obj/effect/turf_decal/trimline/dark_green/filled/line{
 	dir = 1
 	},
@@ -382,7 +396,7 @@
 /turf/open/floor/iron/kitchen,
 /area/ruin/space/has_grav/allamericandiner)
 "rV" = (
-/obj/structure/reagent_dispensers/beerkeg,
+/obj/effect/spawner/random/food_or_drink/keg,
 /obj/effect/turf_decal/bot,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/allamericandiner)
@@ -641,13 +655,6 @@
 	},
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/allamericandiner)
-"ac" = (
-/obj/effect/zone_mobs/undead,
-/obj/effect/turf_decal/siding/brown{
-	dir = 4
-	},
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/allamericandiner)
 "DZ" = (
 /obj/machinery/door/window/left/directional/east{
 	name = "Kitchen"
@@ -694,13 +701,6 @@
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/allamericandiner)
 "Go" = (
-/obj/effect/turf_decal/siding/dark_green{
-	dir = 1
-	},
-/turf/open/floor/wood,
-/area/ruin/space/has_grav/allamericandiner)
-"ab" = (
-/obj/structure/closet/crate/zone_loot/plunder,
 /obj/effect/turf_decal/siding/dark_green{
 	dir = 1
 	},
@@ -777,7 +777,7 @@
 	pixel_x = -6;
 	pixel_y = 4
 	},
-/obj/item/stamp{
+/obj/item/stamp/granted{
 	pixel_x = 7;
 	pixel_y = 9
 	},

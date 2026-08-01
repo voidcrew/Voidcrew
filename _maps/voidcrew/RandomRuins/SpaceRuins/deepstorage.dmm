@@ -1,7 +1,20 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/armory/rare,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/deepstorage/armory)
 "ab" = (
 /turf/closed/mineral/random/low_chance,
 /area/ruin/space)
+"ac" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/misc/asteroid/airless,
+/area/ruin/space)
+"ad" = (
+/obj/effect/zone_mobs/robot,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/deepstorage)
 "ae" = (
 /obj/structure/table/reinforced,
 /obj/machinery/reagentgrinder,
@@ -74,7 +87,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 8
 	},
-/obj/structure/reagent_dispensers/beerkeg,
+/obj/effect/spawner/random/food_or_drink/keg,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/deepstorage/kitchen)
 "as" = (
@@ -645,8 +658,8 @@
 /obj/structure/table,
 /obj/item/healthanalyzer,
 /obj/item/healthanalyzer,
-/obj/item/stack/medical/gauze,
-/obj/item/stack/medical/gauze,
+/obj/item/stack/medical/wrap/gauze,
+/obj/item/stack/medical/wrap/gauze,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/deepstorage/armory)
 "de" = (
@@ -661,10 +674,6 @@
 /area/ruin/space/has_grav/deepstorage/storage)
 "dt" = (
 /obj/effect/zone_mobs/robot/boss,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/deepstorage/armory)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/armory/rare,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/deepstorage/armory)
 "du" = (
@@ -1053,7 +1062,6 @@
 /area/ruin/space/has_grav/deepstorage/power)
 "fC" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored{
-	chamber_id = "deepo2";
 	dir = 8
 	},
 /turf/open/floor/plating/airless,
@@ -1116,11 +1124,6 @@
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/deepstorage/dorm)
 "fT" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/deepstorage)
-"ad" = (
-/obj/effect/zone_mobs/robot,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/deepstorage)
@@ -1206,13 +1209,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/deepstorage/power)
-"gv" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored{
-	chamber_id = "deepn2";
-	dir = 8
-	},
-/turf/open/floor/plating/airless,
-/area/ruin/space/has_grav/deepstorage/power)
 "gw" = (
 /obj/machinery/sleeper{
 	dir = 4
@@ -1296,7 +1292,6 @@
 /area/ruin/space/has_grav/deepstorage/power)
 "gP" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/monitored{
-	chamber_id = "deepn2";
 	dir = 8
 	},
 /turf/open/floor/plating/airless,
@@ -1591,13 +1586,6 @@
 /obj/machinery/light/directional/north,
 /turf/open/floor/iron/cafeteria,
 /area/ruin/space/has_grav/deepstorage/kitchen)
-"qm" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/monitored{
-	chamber_id = "deepo2";
-	dir = 8
-	},
-/turf/open/floor/plating/airless,
-/area/ruin/space/has_grav/deepstorage/power)
 "qq" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4{
 	dir = 1
@@ -2284,10 +2272,6 @@
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/deepstorage/pharmacy)
 "Iy" = (
-/turf/open/misc/asteroid/airless,
-/area/ruin/space)
-"ac" = (
-/obj/effect/zone_mobs/robot,
 /turf/open/misc/asteroid/airless,
 /area/ruin/space)
 "Jz" = (
@@ -4521,9 +4505,9 @@ fb
 fp
 fC
 fL
-qm
+gP
 fp
-gv
+fC
 gD
 gP
 fp

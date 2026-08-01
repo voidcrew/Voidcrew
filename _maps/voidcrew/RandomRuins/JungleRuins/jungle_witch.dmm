@@ -10,9 +10,17 @@
 /obj/effect/decal/cleanable/blood/gibs/up,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
+"c" = (
+/obj/structure/closet/crate/zone_loot/occult,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
 "d" = (
 /obj/structure/closet/secure_closet/freezer/meat,
 /obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"e" = (
+/obj/effect/zone_mobs/cult,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
 "f" = (
@@ -26,7 +34,7 @@
 "l" = (
 /obj/structure/table/wood,
 /obj/item/slimepotion/lovepotion,
-/obj/item/slimepotion/slime/sentience,
+/obj/item/slimepotion/sentience,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
@@ -64,9 +72,6 @@
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/wood,
 /area/ruin/unpowered)
-"y" = (
-/turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
 "z" = (
 /obj/structure/bonfire/prelit,
 /turf/open/misc/dirt/jungle/dark,
@@ -74,9 +79,6 @@
 "A" = (
 /obj/structure/flora/grass/jungle/b,
 /turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
-"B" = (
-/turf/open/floor/wood,
 /area/ruin/unpowered)
 "E" = (
 /obj/effect/decal/remains/human,
@@ -153,18 +155,10 @@
 /obj/structure/flora/rock/jungle,
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
-"c" = (
-/obj/structure/closet/crate/zone_loot/occult,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"e" = (
-/obj/effect/zone_mobs/cult,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
 
 (1,1,1) = {"
 T
-y
+t
 f
 f
 U
@@ -220,7 +214,7 @@ O
 V
 P
 V
-B
+p
 "}
 (6,1,1) = {"
 f
@@ -280,5 +274,5 @@ f
 L
 f
 E
-y
+t
 "}

@@ -1,4 +1,12 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/medical,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/garbagetruck/medicalwaste)
+"ac" = (
+/obj/effect/zone_mobs/syndicate,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "bb" = (
 /obj/item/organ/wings/moth,
 /obj/structure/closet/crate/trashcart,
@@ -7,7 +15,7 @@
 /obj/item/evidencebag,
 /obj/item/organ/heart/cybernetic/tier2,
 /obj/structure/broken_flooring/pile,
-/obj/item/stack/sheet/animalhide/human/five,
+/obj/item/stack/sheet/animalhide/carbon/human/five,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "bv" = (
@@ -306,8 +314,8 @@
 "zH" = (
 /obj/structure/closet/cardboard,
 /obj/item/stack/medical/suture,
-/obj/item/stack/medical/gauze,
-/obj/item/stack/sticky_tape/surgical,
+/obj/item/stack/medical/wrap/gauze,
+/obj/item/stack/medical/wrap/sticky_tape/surgical,
 /obj/structure/broken_flooring/corner,
 /obj/item/organ/cyberimp/arm/toolkit/surgery,
 /obj/item/organ/cyberimp/eyes/hud/medical,
@@ -378,18 +386,6 @@
 "CJ" = (
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
-"ac" = (
-/obj/effect/zone_mobs/syndicate,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/garbagetruck/medicalwaste)
-"ab" = (
-/obj/effect/zone_mobs/syndicate,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/garbagetruck/medicalwaste)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/medical,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "CM" = (
 /obj/item/toy/braintoy,
 /obj/effect/decal/cleanable/dirt,
@@ -422,7 +418,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "EJ" = (
-/obj/item/stack/sticky_tape/surgical,
+/obj/item/stack/medical/wrap/sticky_tape/surgical,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "Go" = (
@@ -682,7 +678,7 @@
 /turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/garbagetruck/medicalwaste)
 "XD" = (
-/obj/structure/sinkframe,
+/obj/item/wallframe/sinkframe,
 /obj/structure/broken_flooring/pile,
 /obj/effect/decal/cleanable/blood/gibs/old,
 /obj/item/rag{
@@ -786,7 +782,7 @@ Dj
 XR
 Al
 ue
-ab
+ac
 Um
 zb
 tI

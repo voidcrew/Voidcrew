@@ -1,4 +1,9 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/wildlife,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/dumpsterair,
+/area/ruin/space/has_grav/garbagetruck/foodwaste)
 "aF" = (
 /obj/item/trash/can/food/envirochow{
 	pixel_x = 2
@@ -501,8 +506,8 @@
 /obj/item/knife/kitchen,
 /obj/item/storage/box/mousetraps,
 /obj/structure/broken_flooring/pile,
-/obj/item/food/grown/parsnip,
-/obj/item/food/grown/parsnip,
+/obj/item/food/grown/carrotlike/parsnip,
+/obj/item/food/grown/carrotlike/parsnip,
 /obj/item/food/cheese/wedge,
 /turf/open/floor/plating/dumpsterair,
 /area/ruin/space/has_grav/garbagetruck/foodwaste)
@@ -910,7 +915,7 @@
 /obj/item/stack/tile/bamboo/tatami{
 	amount = 40
 	},
-/obj/item/stack/sticky_tape{
+/obj/item/stack/medical/wrap/sticky_tape{
 	pixel_y = -2
 	},
 /obj/effect/decal/cleanable/plastic,
@@ -1139,11 +1144,6 @@
 /turf/open/floor/plating/dumpsterair,
 /area/ruin/space/has_grav/garbagetruck/foodwaste)
 "TX" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating/dumpsterair,
-/area/ruin/space/has_grav/garbagetruck/foodwaste)
-"aa" = (
-/obj/effect/zone_mobs/wildlife,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/dumpsterair,
 /area/ruin/space/has_grav/garbagetruck/foodwaste)

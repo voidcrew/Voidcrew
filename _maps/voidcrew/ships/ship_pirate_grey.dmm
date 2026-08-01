@@ -260,7 +260,7 @@
 /obj/effect/turf_decal/caution/stand_clear{
 	dir = 4
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_grey)
 "jS" = (
 /obj/effect/spawner/random/trash/mess,
@@ -360,7 +360,7 @@
 	},
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/structure/fans/tiny,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_grey)
 "os" = (
 /obj/structure/rack,
@@ -820,7 +820,7 @@
 /obj/effect/turf_decal/caution/stand_clear{
 	dir = 4
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_grey)
 "zQ" = (
 /obj/structure/cable,
@@ -882,7 +882,7 @@
 	},
 /obj/machinery/light/small/directional/south,
 /obj/item/reagent_containers/cup/glass/coffee,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_grey)
 "AZ" = (
 /obj/effect/decal/cleanable/dirt,
@@ -911,7 +911,7 @@
 	dir = 4
 	},
 /obj/structure/fans/tiny,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/pirate_grey)
 "Bu" = (
 /obj/machinery/power/apc/auto_name/directional/north{
@@ -1023,9 +1023,6 @@
 /obj/effect/spawner/random/trash/graffiti,
 /obj/effect/turf_decal/tile/neutral/fourcorners,
 /turf/open/floor/iron,
-/area/shuttle/voidcrew/pirate_grey)
-"EA" = (
-/turf/closed/wall/r_wall/rust,
 /area/shuttle/voidcrew/pirate_grey)
 "EC" = (
 /obj/effect/spawner/structure/window,
@@ -1324,9 +1321,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_grey)
-"Pn" = (
-/turf/closed/wall,
-/area/shuttle/voidcrew/pirate_grey)
 "PM" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/spawner/random/trash/grille_or_waste,
@@ -1441,7 +1435,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 4
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/pirate_grey)
 "TV" = (
 /obj/effect/turf_decal/trimline/yellow/warning{
@@ -1799,7 +1793,7 @@ Yj
 rV
 Tq
 uE
-Pn
+yN
 HD
 "}
 (11,1,1) = {"
@@ -1818,7 +1812,7 @@ wX
 Oa
 Tq
 Lo
-Pn
+yN
 ei
 "}
 (12,1,1) = {"
@@ -1827,7 +1821,7 @@ sB
 GE
 Yj
 Nu
-Pn
+yN
 am
 Eq
 yN
@@ -1844,7 +1838,7 @@ HD
 HD
 XX
 vJ
-Pn
+yN
 SB
 Nm
 Vw
@@ -1856,14 +1850,14 @@ Sh
 gQ
 dd
 xy
-Pn
+yN
 HD
 "}
 (14,1,1) = {"
 pk
 pS
 pU
-Pn
+yN
 AL
 Ac
 Wc
@@ -1879,10 +1873,10 @@ Sh
 zB
 "}
 (15,1,1) = {"
-Pn
+yN
 dI
 Sv
-Pn
+yN
 Bu
 xO
 yf
@@ -1901,7 +1895,7 @@ zB
 zB
 vM
 lO
-Pn
+yN
 tJ
 xO
 ax
@@ -1952,7 +1946,7 @@ Bh
 Uf
 DP
 zB
-Pn
+yN
 "}
 (19,1,1) = {"
 je
@@ -1965,17 +1959,17 @@ sm
 CY
 fj
 DG
-Pn
+yN
 Ci
 Sh
 Gb
 xm
-Pn
+yN
 je
 "}
 (20,1,1) = {"
 je
-Pn
+yN
 ia
 NI
 yU
@@ -1984,18 +1978,18 @@ bv
 aD
 cJ
 tU
-Pn
+yN
 xl
 Sh
 AR
 lO
-Pn
+yN
 je
 "}
 (21,1,1) = {"
 je
 mr
-Pn
+yN
 xm
 yU
 OG
@@ -2003,30 +1997,30 @@ qo
 pT
 De
 sh
-Pn
+yN
 Zc
-Pn
+yN
 pB
-Pn
+yN
 Bk
 je
 "}
 (22,1,1) = {"
 je
 je
-Pn
-EA
+yN
+pk
 ll
 FI
 Hh
-Pn
-Pn
+yN
+yN
 Hh
-Pn
+yN
 gz
-Pn
+yN
 RX
-Pn
+yN
 je
 je
 "}
@@ -2043,8 +2037,8 @@ ti
 Yf
 FI
 aV
-Pn
-Pn
+yN
+yN
 je
 je
 je
@@ -2062,7 +2056,7 @@ Am
 FT
 pk
 pk
-Pn
+yN
 je
 je
 je
@@ -2075,8 +2069,8 @@ je
 je
 pk
 zB
-Pn
-Pn
+yN
+yN
 zB
 pk
 pk

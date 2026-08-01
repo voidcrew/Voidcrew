@@ -9,6 +9,18 @@
 /obj/item/trash/sosjerky,
 /turf/template_noop,
 /area/template_noop)
+"ad" = (
+/obj/structure/closet/crate/zone_loot/wardrobe,
+/obj/structure/fluff/bus/passable,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark/airless{
+	icon_state = "bus"
+	},
+/area/ruin/space)
+"ae" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/misc/asteroid/airless,
+/area/ruin/space)
 "am" = (
 /obj/structure/fluff/bus/passable/seat,
 /obj/effect/decal/cleanable/dirt,
@@ -65,7 +77,7 @@
 	pixel_y = 1;
 	anchored = 1
 	},
-/obj/item/food/grown/watermelon{
+/obj/item/food/grown/melonlike/watermelon{
 	offset_at_init = 0;
 	pixel_z = 17;
 	anchored = 1
@@ -97,14 +109,6 @@
 	},
 /area/ruin/space)
 "ax" = (
-/obj/structure/fluff/bus/passable,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron/dark/airless{
-	icon_state = "bus"
-	},
-/area/ruin/space)
-"ad" = (
-/obj/structure/closet/crate/zone_loot/wardrobe,
 /obj/structure/fluff/bus/passable,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark/airless{
@@ -267,10 +271,6 @@
 /turf/open/misc/asteroid/airless,
 /area/ruin/space)
 "yY" = (
-/turf/open/misc/asteroid/airless,
-/area/ruin/space)
-"ae" = (
-/obj/effect/zone_mobs/wildlife,
 /turf/open/misc/asteroid/airless,
 /area/ruin/space)
 "CO" = (

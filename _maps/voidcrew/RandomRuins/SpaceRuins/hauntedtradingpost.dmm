@@ -1,4 +1,12 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/hauntedtradingpost/aicore)
+"ac" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/carpet/orange,
+/area/ruin/space/has_grav/hauntedtradingpost/public/corridor)
 "ad" = (
 /obj/structure/table/wood,
 /obj/item/c_tube{
@@ -14,6 +22,10 @@
 	},
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/space/has_grav/hauntedtradingpost/employees)
+"ae" = (
+/obj/effect/zone_mobs/robot/boss,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/hauntedtradingpost/aicore)
 "ah" = (
 /obj/structure/cable/layer1,
 /obj/machinery/camera/xray/directional/north,
@@ -811,7 +823,7 @@
 "hf" = (
 /obj/structure/cable/layer1,
 /obj/structure/sign/poster/contraband/syndicate_pistol/directional/west,
-/mob/living/simple_animal/bot/secbot{
+/mob/living/basic/bot/secbot{
 	faction = list("Syndicate");
 	bot_cover_flags = 4;
 	baton_type = /obj/item/melee/baton/security/cattleprod;
@@ -879,7 +891,6 @@
 	},
 /obj/item/coin/gold,
 /obj/item/vending_refill/donksnackvendor,
-/obj/item/circuitboard/machine/vending/donksnackvendor,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/space/has_grav/hauntedtradingpost/public)
 "hL" = (
@@ -1426,12 +1437,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4,
 /turf/open/floor/carpet/orange,
 /area/ruin/space/has_grav/hauntedtradingpost/public/corridor)
-"mh" = (
-/obj/item/circuitboard/machine/vendatray{
-	pixel_y = 15
-	},
-/turf/open/floor/carpet/orange,
-/area/ruin/space/has_grav/hauntedtradingpost/public)
 "mn" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/airalarm/directional/south,
@@ -1730,7 +1735,7 @@
 /obj/item/sticker/syndicate/apc,
 /obj/item/grenade/empgrenade,
 /obj/item/book/granter/crafting_recipe/donk_secret_recipe,
-/obj/item/ai_module/core/full/cybersun,
+/obj/item/ai_module/law/core/full/cybersun,
 /obj/item/reagent_containers/condiment/donksauce,
 /mob/living/basic/cybersun_ai_core{
 	donk_ai_master = 1
@@ -1943,7 +1948,7 @@
 /turf/template_noop,
 /area/template_noop)
 "qY" = (
-/obj/item/tank/jetpack/oxygen/security{
+/obj/item/tank/jetpack/security{
 	name = "red jetpack (oxygen)"
 	},
 /obj/item/tank/internals/oxygen/red,
@@ -3370,14 +3375,6 @@
 "DM" = (
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/hauntedtradingpost/aicore)
-"ae" = (
-/obj/effect/zone_mobs/robot/boss,
-/turf/open/floor/mineral/plastitanium,
-/area/ruin/space/has_grav/hauntedtradingpost/aicore)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/plunder,
-/turf/open/floor/mineral/plastitanium,
-/area/ruin/space/has_grav/hauntedtradingpost/aicore)
 "DP" = (
 /obj/structure/cable/layer1,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer4,
@@ -4098,9 +4095,7 @@
 	pixel_y = -2;
 	pixel_x = -8
 	},
-/obj/structure/sinkframe{
-	pixel_x = 2
-	},
+/obj/item/wallframe/sinkframe,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/hauntedtradingpost/maint)
 "Jw" = (
@@ -4305,7 +4300,7 @@
 "Lz" = (
 /obj/structure/cable/layer1,
 /obj/structure/table/reinforced/plastitaniumglass,
-/obj/item/ai_module/supplied/protect_station{
+/obj/item/ai_module/law/supplied/protect_station{
 	pixel_x = 2;
 	pixel_y = 5
 	},
@@ -4353,10 +4348,6 @@
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/hauntedtradingpost/public/corridor)
 "LI" = (
-/obj/item/circuitboard/machine/vending/donksofttoyvendor{
-	pixel_y = -2;
-	pixel_x = -6
-	},
 /obj/effect/decal/cleanable/glass,
 /turf/open/floor/carpet/donk,
 /area/ruin/space/has_grav/hauntedtradingpost/employees)
@@ -4897,14 +4888,6 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/hauntedtradingpost/aicore)
 "QF" = (
-/turf/open/floor/carpet/orange,
-/area/ruin/space/has_grav/hauntedtradingpost/public/corridor)
-"ac" = (
-/obj/effect/zone_mobs/robot,
-/turf/open/floor/carpet/orange,
-/area/ruin/space/has_grav/hauntedtradingpost/public/corridor)
-"ab" = (
-/obj/effect/zone_mobs/robot,
 /turf/open/floor/carpet/orange,
 /area/ruin/space/has_grav/hauntedtradingpost/public/corridor)
 "QM" = (
@@ -6284,7 +6267,7 @@ bU
 Gq
 hW
 Pv
-ab
+ac
 be
 Lt
 QF
@@ -6772,7 +6755,7 @@ tl
 Ht
 uZ
 eE
-mh
+Ip
 He
 TY
 RX

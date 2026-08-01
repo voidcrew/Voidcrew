@@ -1,7 +1,20 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/plating/dumpsterair,
+/area/ruin/space/has_grav/garbagetruck/squat)
+"ab" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/plating/dumpsterair,
+/area/ruin/space/has_grav/garbagetruck/squat)
 "ac" = (
 /obj/item/trash/semki/healthy,
 /obj/effect/decal/cleanable/fuel_pool,
+/turf/open/floor/plating/dumpsterair,
+/area/ruin/space/has_grav/garbagetruck/squat)
+"ad" = (
+/obj/effect/zone_mobs/pirate,
+/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/dumpsterair,
 /area/ruin/space/has_grav/garbagetruck/squat)
 "ap" = (
@@ -333,7 +346,7 @@
 /obj/item/boxcutter{
 	pixel_x = 10
 	},
-/obj/item/stack/sticky_tape{
+/obj/item/stack/medical/wrap/sticky_tape{
 	pixel_x = -5
 	},
 /obj/structure/closet/crate/preopen,
@@ -899,20 +912,7 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/dumpsterair,
 /area/ruin/space/has_grav/garbagetruck/squat)
-"ad" = (
-/obj/effect/zone_mobs/pirate,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/dumpsterair,
-/area/ruin/space/has_grav/garbagetruck/squat)
 "Xt" = (
-/turf/open/floor/plating/dumpsterair,
-/area/ruin/space/has_grav/garbagetruck/squat)
-"ab" = (
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/plating/dumpsterair,
-/area/ruin/space/has_grav/garbagetruck/squat)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/plunder,
 /turf/open/floor/plating/dumpsterair,
 /area/ruin/space/has_grav/garbagetruck/squat)
 "Xv" = (

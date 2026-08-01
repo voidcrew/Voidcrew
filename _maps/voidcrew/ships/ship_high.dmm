@@ -343,7 +343,7 @@
 /area/shuttle/voidcrew/high/engineering)
 "gN" = (
 /obj/effect/turf_decal/bot,
-/obj/structure/reagent_dispensers/beerkeg,
+/obj/effect/spawner/random/food_or_drink/keg,
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron/dark,

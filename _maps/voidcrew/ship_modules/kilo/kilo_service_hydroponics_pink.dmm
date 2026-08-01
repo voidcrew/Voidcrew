@@ -67,11 +67,11 @@
 /turf/open/floor/grass/dollhouse,
 /area/template_noop)
 "h" = (
-/obj/item/food/grown/rose{
+/obj/item/food/grown/flower/rose{
 	pixel_x = -7;
 	pixel_y = 6
 	},
-/obj/item/food/grown/sunflower{
+/obj/item/food/grown/flower/sunflower{
 	pixel_x = 7;
 	pixel_y = 3
 	},

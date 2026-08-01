@@ -25,14 +25,6 @@
 		/mob/living/simple_animal/hostile/asteroid/hermit/survivor,
 		/mob/living/simple_animal/hostile/asteroid/hermit/survivor/random,
 		/mob/living/simple_animal/hostile/asteroid/old_demon,
-		// Voidcrew: upstream refactored the polar bear into /mob/living/basic/mining/polarbear,
-		// but voidcrew/modules/mob/living/simple_animal/hostile/mining_mobs/polarbear.dm still
-		// declares the warbear and the random spawner as simple animals, which keeps the
-		// /asteroid/polarbear parent alive as an implicit type. Port that file onto the basic
-		// mob and then delete these three lines.
-		/mob/living/simple_animal/hostile/asteroid/polarbear,
-		/mob/living/simple_animal/hostile/asteroid/polarbear/random,
-		/mob/living/simple_animal/hostile/asteroid/polarbear/warrior,
 		/mob/living/simple_animal/hostile/megafauna,
 		/mob/living/simple_animal/hostile/megafauna/bubblegum,
 		/mob/living/simple_animal/hostile/megafauna/bubblegum/hallucination,

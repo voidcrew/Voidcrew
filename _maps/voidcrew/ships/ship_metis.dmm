@@ -2097,7 +2097,7 @@
 /area/shuttle/voidcrew/metis/science)
 "OM" = (
 /obj/effect/decal/cleanable/blood/oil,
-/obj/machinery/light/built{
+/obj/machinery/light/empty{
 	dir = 4
 	},
 /turf/open/floor/mineral/titanium/tiled/white,

@@ -1,4 +1,12 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/syndicate,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/unpowered)
+"ac" = (
+/obj/effect/zone_mobs/syndicate,
+/turf/open/floor/mineral/plastitanium/red/airless,
+/area/ruin/space/unpowered)
 "am" = (
 /obj/structure/frame/machine,
 /obj/item/stack/cable_coil/five,
@@ -215,7 +223,7 @@
 	pixel_y = -4;
 	pixel_x = -7
 	},
-/obj/item/computer_disk/syndicate/camera_app{
+/obj/item/disk/computer/syndicate/camera_app{
 	pixel_x = -5;
 	pixel_y = 9
 	},
@@ -458,14 +466,6 @@
 /turf/open/floor/mineral/plastitanium/red/airless,
 /area/ruin/space/unpowered)
 "DM" = (
-/turf/open/floor/mineral/plastitanium/red/airless,
-/area/ruin/space/unpowered)
-"ac" = (
-/obj/effect/zone_mobs/syndicate,
-/turf/open/floor/mineral/plastitanium/red/airless,
-/area/ruin/space/unpowered)
-"ab" = (
-/obj/effect/zone_mobs/syndicate,
 /turf/open/floor/mineral/plastitanium/red/airless,
 /area/ruin/space/unpowered)
 "EK" = (
@@ -724,10 +724,6 @@
 /turf/open/floor/mineral/plastitanium/red/airless,
 /area/ruin/space/unpowered)
 "Yj" = (
-/turf/open/floor/mineral/plastitanium/red,
-/area/ruin/space/unpowered)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/syndicate,
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/space/unpowered)
 "YN" = (
@@ -1098,7 +1094,7 @@ mg
 Yj
 Cv
 en
-ab
+ac
 EK
 DM
 Ix

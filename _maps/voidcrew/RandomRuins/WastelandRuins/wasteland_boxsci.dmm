@@ -609,7 +609,7 @@
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 8
 	},
-/obj/machinery/light/built{
+/obj/machinery/light/empty{
 	dir = 8
 	},
 /turf/open/floor/iron,

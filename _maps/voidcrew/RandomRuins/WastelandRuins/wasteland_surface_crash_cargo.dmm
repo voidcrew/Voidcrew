@@ -322,7 +322,7 @@
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "ze" = (
-/obj/machinery/light/built{
+/obj/machinery/light/empty{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -466,7 +466,7 @@
 	pixel_y = 32
 	},
 /obj/structure/cable,
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 1
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump{
@@ -589,7 +589,7 @@
 	},
 /area/ruin/unpowered)
 "OM" = (
-/obj/machinery/light/built{
+/obj/machinery/light/empty{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -605,7 +605,7 @@
 /obj/machinery/airalarm{
 	pixel_y = 24
 	},
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 1
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on{

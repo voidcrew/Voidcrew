@@ -219,9 +219,11 @@
 		current_item = H.wear_id
 		if(current_item)
 			new_access += current_item.GetAccess()
-	else if(isanimal(host_mob))
-		var/mob/living/simple_animal/A = host_mob
-		current_item = A.access_card
+	// VOIDCREW: bots finished their move to /mob/living/basic/bot, so isanimal() no longer
+	// catches them and access_card lives on the basic type now.
+	else if(isbot(host_mob))
+		var/mob/living/basic/bot/bot_host = host_mob
+		current_item = bot_host.access_card
 		if(current_item)
 			new_access += current_item.GetAccess()
 	access = new_access

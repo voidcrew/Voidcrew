@@ -3,13 +3,13 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/box,
 /obj/machinery/modular_computer/console/preset/id,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/bridge)
 "az" = (
 /obj/machinery/computer/helm,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/box,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/bridge)
 "aW" = (
 /obj/machinery/holopad,
@@ -32,7 +32,7 @@
 	dir = 8;
 	pixel_y = -10
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/bridge)
 "bb" = (
 /obj/structure/chair/comfy/shuttle{
@@ -51,13 +51,13 @@
 	},
 /obj/effect/landmark/start/captain,
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/bridge)
 "br" = (
 /obj/structure/closet/crate/critter{
 	name = "DANGER: DO NOT OPEN"
 	},
-/mob/living/simple_animal/bot/secbot/genesky{
+/mob/living/basic/bot/secbot/genesky{
 	desc = "A little security robot. He looks downright furious!";
 	name = "\improper Officer Berzerksky"
 	},
@@ -96,7 +96,7 @@
 /obj/item/storage/belt/sabre,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/gun/ballistic/revolver/c38,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/bridge)
 "ci" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
@@ -127,7 +127,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/airalarm/directional/west,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/bridge)
 "fp" = (
 /obj/structure/chair/comfy/shuttle{
@@ -146,7 +146,7 @@
 /obj/item/gun/energy/e_gun/mini{
 	name = "first mate's derringer"
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/bridge)
 "fq" = (
 /turf/open/floor/engine/hull,
@@ -189,7 +189,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
 /obj/machinery/door/firedoor,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/libertatia/bridge)
 "jD" = (
 /obj/structure/window/reinforced/spawner/directional/south,
@@ -254,13 +254,13 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 4
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/armory)
 "mU" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/armory)
 "nv" = (
 /obj/structure/railing,
@@ -270,7 +270,7 @@
 /obj/structure/fireaxecabinet{
 	pixel_y = 32
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/armory)
 "nB" = (
 /obj/structure/railing,
@@ -279,7 +279,7 @@
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/landmark/start/security_officer,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/armory)
 "nC" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -328,7 +328,7 @@
 /area/shuttle/voidcrew/libertatia/maintenance/port)
 "oo" = (
 /obj/structure/tank_dispenser/oxygen,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "oQ" = (
 /obj/machinery/atmospherics/components/unary/passive_vent/layer2{
@@ -494,7 +494,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
 /obj/machinery/door/firedoor,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/libertatia/armory)
 "uc" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
@@ -504,7 +504,7 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 4
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "uo" = (
 /obj/machinery/light/small,
@@ -516,7 +516,7 @@
 /obj/effect/turf_decal/stripes{
 	dir = 8
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "ut" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/layer2{
@@ -527,7 +527,7 @@
 /obj/effect/turf_decal/stripes{
 	dir = 4
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "vo" = (
 /obj/machinery/door/airlock/hatch,
@@ -537,7 +537,7 @@
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "vx" = (
 /obj/structure/cable,
@@ -577,7 +577,7 @@
 /obj/machinery/status_display/shuttle{
 	pixel_y = 32
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "wq" = (
 /obj/structure/toilet,
@@ -587,7 +587,7 @@
 /obj/machinery/door/window/right/directional/south,
 /obj/structure/curtain/bounty,
 /obj/effect/decal/cleanable/vomit/old,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "wP" = (
 /obj/machinery/shower/directional/south,
@@ -598,7 +598,7 @@
 /obj/structure/curtain/bounty,
 /obj/item/soap,
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "wZ" = (
 /obj/machinery/vending/boozeomat/all_access,
@@ -625,7 +625,7 @@
 "yU" = (
 /obj/structure/sink/directional/west,
 /obj/effect/decal/cleanable/vomit/old,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "zi" = (
 /obj/structure/table/reinforced,
@@ -641,7 +641,7 @@
 /obj/machinery/light/small{
 	dir = 8
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "zR" = (
 /obj/structure/rack,
@@ -658,7 +658,7 @@
 /obj/effect/turf_decal/siding{
 	dir = 4
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "AL" = (
 /obj/structure/table,
@@ -712,13 +712,13 @@
 /obj/item/clothing/under/costume/sailor,
 /obj/item/clothing/under/costume/sailor,
 /obj/machinery/airalarm/directional/east,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "By" = (
 /obj/structure/bed/roller,
 /obj/machinery/iv_drip,
 /obj/effect/decal/cleanable/blood/old,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "Ce" = (
 /obj/effect/landmark/start/medical_doctor,
@@ -728,7 +728,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
 /obj/machinery/door/window/right/directional/east,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "Cg" = (
 /obj/structure/cable,
@@ -761,11 +761,11 @@
 	dir = 4;
 	pixel_x = -22
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "DG" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "DP" = (
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
@@ -817,7 +817,7 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/bot_white,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "Ef" = (
 /obj/structure/closet/crate/freezer/blood,
@@ -837,14 +837,14 @@
 	},
 /obj/machinery/power/apc/auto_name/directional/south,
 /obj/structure/cable,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "Ey" = (
 /obj/structure/mirror{
 	pixel_y = -28
 	},
 /obj/structure/dresser,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "EG" = (
 /obj/machinery/cryopod{
@@ -854,7 +854,7 @@
 /obj/machinery/computer/cryopod{
 	pixel_y = -24
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "EH" = (
 /obj/structure/bed,
@@ -864,7 +864,7 @@
 /obj/machinery/firealarm/directional/west{
 	dir = 4
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/crew_lounge)
 "FH" = (
 /obj/machinery/door/airlock/grunge{
@@ -874,7 +874,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
 /obj/machinery/door/firedoor,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "Gd" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
@@ -885,20 +885,20 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/power/apc/auto_name/directional/north,
 /obj/structure/cable,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "Hh" = (
 /obj/structure/railing,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "Hw" = (
 /obj/structure/railing,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "HU" = (
 /obj/structure/railing,
@@ -906,7 +906,7 @@
 	pixel_y = 32
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "HY" = (
 /obj/effect/turf_decal/stripes{
@@ -919,13 +919,13 @@
 /obj/item/radio/intercom{
 	pixel_y = 22
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "Ie" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/extinguisher_cabinet/directional/south,
 /obj/machinery/airalarm/directional/north,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "IV" = (
 /obj/machinery/power/port_gen/pacman/pre_loaded,
@@ -970,19 +970,19 @@
 /obj/item/stock_parts/cell/high,
 /obj/item/stock_parts/cell/high,
 /obj/structure/table,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "Ko" = (
 /obj/machinery/mineral/ore_redemption,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "Ks" = (
 /obj/machinery/autolathe,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "KD" = (
 /obj/effect/turf_decal/box,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "KS" = (
 /obj/machinery/button/door{
@@ -1044,7 +1044,7 @@
 /obj/machinery/light/small{
 	dir = 8
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "Nq" = (
 /obj/structure/cable,
@@ -1081,7 +1081,7 @@
 /obj/machinery/light/small{
 	dir = 4
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "Ol" = (
 /obj/machinery/power/apc/auto_name/directional/west,
@@ -1157,7 +1157,7 @@
 /obj/structure/cable,
 /obj/machinery/door/firedoor,
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/libertatia/maintenance/port)
 "Rn" = (
 /obj/structure/window/reinforced/spawner/directional/south,
@@ -1179,7 +1179,7 @@
 	codes_txt = "patrol;next_patrol=starboard";
 	location = "port"
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "Sc" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -1262,7 +1262,7 @@
 	codes_txt = "patrol;next_patrol=forward";
 	location = "starboard"
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "Ty" = (
 /obj/machinery/door/airlock/maintenance_hatch{
@@ -1273,7 +1273,7 @@
 /obj/structure/cable,
 /obj/machinery/door/firedoor,
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/libertatia/maintenance/starboard)
 "TP" = (
 /obj/machinery/door/poddoor/shutters{
@@ -1352,7 +1352,7 @@
 /area/shuttle/voidcrew/libertatia/maintenance/port)
 "VO" = (
 /obj/structure/reagent_dispensers/fueltank,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "Wa" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
@@ -1404,7 +1404,7 @@
 /obj/item/clothing/suit/hazardvest,
 /obj/item/pickaxe/improvised,
 /obj/item/pickaxe/improvised,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/libertatia/cargo_bay)
 "XB" = (
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,

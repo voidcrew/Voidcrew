@@ -558,7 +558,7 @@
 /obj/structure/closet/crate/large,
 /obj/item/mecha_parts/mecha_equipment/drill,
 /obj/item/mecha_parts/mecha_equipment/mining_scanner,
-/mob/living/simple_animal/bot/secbot/grievous/toy,
+/mob/living/basic/bot/secbot/grievous/toy,
 /obj/effect/decal/cleanable/blood/old,
 /obj/item/hand_labeler_refill,
 /obj/effect/turf_decal/tile/brown/anticorner{

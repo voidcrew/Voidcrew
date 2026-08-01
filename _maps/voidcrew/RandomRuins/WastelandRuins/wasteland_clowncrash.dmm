@@ -46,7 +46,7 @@
 /turf/open/misc/wasteland/lit,
 /area/ruin/unpowered)
 "j" = (
-/mob/living/basic/bot/honkbot,
+/mob/living/basic/bot/secbot/honkbot,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
 "k" = (
@@ -152,11 +152,6 @@
 "H" = (
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"J" = (
-/obj/machinery/power/floodlight,
-/obj/structure/cable,
-/turf/open/misc/wasteland/lit,
-/area/overmap_encounter/planetoid/wasteland)
 "K" = (
 /obj/structure/closet/crate/trashcart,
 /obj/effect/spawner/random/maintenance/seven,
@@ -187,10 +182,6 @@
 /area/template_noop)
 "R" = (
 /obj/machinery/power/port_gen/pacman,
-/obj/structure/cable,
-/turf/open/misc/wasteland/lit,
-/area/overmap_encounter/planetoid/wasteland)
-"S" = (
 /obj/structure/cable,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
@@ -286,7 +277,7 @@ N
 H
 H
 H
-S
+G
 g
 "}
 (5,1,1) = {"
@@ -312,7 +303,7 @@ P
 e
 E
 i
-S
+G
 F
 "}
 (7,1,1) = {"
@@ -325,7 +316,7 @@ P
 V
 E
 i
-S
+G
 F
 "}
 (8,1,1) = {"
@@ -338,7 +329,7 @@ h
 B
 B
 K
-S
+G
 F
 "}
 (9,1,1) = {"
@@ -363,7 +354,7 @@ O
 j
 H
 H
-J
+c
 T
 m
 "}

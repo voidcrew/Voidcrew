@@ -51,7 +51,7 @@
 	pixel_x = -4;
 	pixel_y = 4
 	},
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_x = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -75,15 +75,15 @@
 /area/ruin/space/has_grav/vestige/wake)
 "al" = (
 /obj/structure/table/wood,
-/obj/item/food/grown/poppy{
+/obj/item/food/grown/flower/poppy{
 	pixel_x = -4;
 	pixel_y = 5
 	},
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_x = 4;
 	pixel_y = 2
 	},
-/obj/item/food/grown/poppy/geranium{
+/obj/item/food/grown/flower/poppy/geranium{
 	pixel_y = -3
 	},
 /turf/open/floor/iron/white,
@@ -114,7 +114,7 @@
 /turf/closed/wall,
 /area/ruin/space/has_grav/vestige/wake)
 "as" = (
-/obj/item/food/grown/poppy,
+/obj/item/food/grown/flower/poppy,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/vestige/wake)
@@ -358,7 +358,7 @@
 	pixel_x = -2;
 	pixel_y = 3
 	},
-/obj/item/food/grown/poppy{
+/obj/item/food/grown/flower/poppy{
 	pixel_x = 4;
 	pixel_y = -2
 	},
@@ -453,7 +453,7 @@
 	pixel_x = 3;
 	pixel_y = 2
 	},
-/obj/item/food/grown/poppy{
+/obj/item/food/grown/flower/poppy{
 	pixel_x = -4;
 	pixel_y = -2
 	},
@@ -523,11 +523,11 @@
 /area/ruin/space/has_grav/vestige/wake)
 "sl" = (
 /obj/structure/table/wood/fancy/black,
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_x = -3;
 	pixel_y = 3
 	},
-/obj/item/food/grown/poppy{
+/obj/item/food/grown/flower/poppy{
 	pixel_x = 4;
 	pixel_y = -1
 	},
@@ -609,7 +609,7 @@
 "xi" = (
 /obj/structure/bed,
 /obj/item/bedsheet/medical/double,
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_y = 5
 	},
 /turf/open/floor/wood,
@@ -698,7 +698,7 @@
 /area/ruin/space/has_grav/vestige/wake)
 "ET" = (
 /obj/structure/table/wood/fancy/black,
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_y = 2
 	},
 /turf/open/floor/iron/chapel,
@@ -720,10 +720,10 @@
 	pixel_x = -4;
 	pixel_y = 4
 	},
-/obj/item/food/grown/poppy{
+/obj/item/food/grown/flower/poppy{
 	pixel_x = 4
 	},
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_x = 6;
 	pixel_y = -3
 	},
@@ -851,7 +851,7 @@
 /area/ruin/space/has_grav/vestige/wake)
 "XO" = (
 /obj/structure/table,
-/obj/item/food/grown/poppy/lily{
+/obj/item/food/grown/flower/poppy/lily{
 	pixel_y = 3
 	},
 /obj/item/trash/candle{

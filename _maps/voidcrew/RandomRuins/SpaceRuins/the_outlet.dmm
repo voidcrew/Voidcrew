@@ -1,4 +1,12 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/wardrobe,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/the_outlet/cultinfluence)
+"ac" = (
+/obj/effect/zone_mobs/cult,
+/turf/open/floor/cult,
+/area/ruin/space/has_grav/the_outlet/cultinfluence)
 "ad" = (
 /obj/structure/chair/sofa/bench/right,
 /turf/open/floor/eighties,
@@ -215,11 +223,11 @@
 /area/ruin/space/has_grav/the_outlet/researchrooms)
 "fX" = (
 /obj/structure/table/reinforced,
-/obj/item/stack/sheet/animalhide/lizard,
-/obj/item/stack/sheet/animalhide/lizard,
-/obj/item/stack/sheet/animalhide/lizard,
-/obj/item/stack/sheet/animalhide/lizard,
-/obj/item/stack/sheet/animalhide/lizard,
+/obj/item/stack/sheet/animalhide/carbon/lizard,
+/obj/item/stack/sheet/animalhide/carbon/lizard,
+/obj/item/stack/sheet/animalhide/carbon/lizard,
+/obj/item/stack/sheet/animalhide/carbon/lizard,
+/obj/item/stack/sheet/animalhide/carbon/lizard,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/the_outlet/researchrooms)
 "gc" = (
@@ -940,11 +948,11 @@
 /area/ruin/space/has_grav/the_outlet/storefront)
 "wK" = (
 /obj/structure/table/reinforced,
-/obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/animalhide/human,
-/obj/item/stack/sheet/animalhide/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
+/obj/item/stack/sheet/animalhide/carbon/human,
 /obj/item/knife/butcher,
 /turf/open/floor/iron/freezer,
 /area/ruin/space/has_grav/the_outlet/researchrooms)
@@ -1367,18 +1375,6 @@
 /turf/open/floor/eighties,
 /area/ruin/space/has_grav/the_outlet/storefront)
 "Gu" = (
-/turf/open/floor/cult,
-/area/ruin/space/has_grav/the_outlet/cultinfluence)
-"ac" = (
-/obj/effect/zone_mobs/cult,
-/turf/open/floor/cult,
-/area/ruin/space/has_grav/the_outlet/cultinfluence)
-"ab" = (
-/obj/effect/zone_mobs/cult,
-/turf/open/floor/cult,
-/area/ruin/space/has_grav/the_outlet/cultinfluence)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/wardrobe,
 /turf/open/floor/cult,
 /area/ruin/space/has_grav/the_outlet/cultinfluence)
 "GG" = (
@@ -3192,7 +3188,7 @@ DQ
 OL
 FO
 zd
-ab
+ac
 Gu
 NA
 Gu

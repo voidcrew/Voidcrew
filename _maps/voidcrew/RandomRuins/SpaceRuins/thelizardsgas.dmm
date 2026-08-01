@@ -1,4 +1,15 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/industrial,
+/turf/open/floor/engine/plasma{
+	initial_gas_mix = "plasma=35000;TEMP=293.15"
+	},
+/area/ruin/space/has_grav/thelizardsgas)
+"ab" = (
+/obj/effect/zone_mobs/wildlife,
+/obj/structure/cable,
+/turf/open/floor/iron/white/side,
+/area/ruin/space/has_grav/thelizardsgas)
 "ak" = (
 /obj/structure/rack,
 /obj/effect/spawner/random/food_or_drink/seed,
@@ -88,11 +99,6 @@
 /obj/structure/cable,
 /turf/open/floor/iron/white/side,
 /area/ruin/space/has_grav/thelizardsgas)
-"ab" = (
-/obj/effect/zone_mobs/wildlife,
-/obj/structure/cable,
-/turf/open/floor/iron/white/side,
-/area/ruin/space/has_grav/thelizardsgas)
 "ig" = (
 /obj/structure/table/wood,
 /turf/open/misc/asteroid/airless,
@@ -132,9 +138,7 @@
 /turf/open/floor/iron/white/side,
 /area/ruin/space/has_grav/thelizardsgas)
 "kS" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored{
-	chamber_id = "lizardgas"
-	},
+/obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored,
 /turf/open/floor/engine/plasma{
 	initial_gas_mix = "plasma=35000;TEMP=293.15"
 	},
@@ -291,12 +295,6 @@
 /turf/template_noop,
 /area/template_noop)
 "DG" = (
-/turf/open/floor/engine/plasma{
-	initial_gas_mix = "plasma=35000;TEMP=293.15"
-	},
-/area/ruin/space/has_grav/thelizardsgas)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/industrial,
 /turf/open/floor/engine/plasma{
 	initial_gas_mix = "plasma=35000;TEMP=293.15"
 	},
@@ -490,7 +488,6 @@
 /area/ruin/space/has_grav/thelizardsgas)
 "Uh" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/monitored{
-	chamber_id = "lizardgas";
 	dir = 4
 	},
 /turf/open/floor/engine/plasma{

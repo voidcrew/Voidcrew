@@ -148,7 +148,9 @@
 /turf/open/floor/iron,
 /area/ruin/unpowered)
 "iE" = (
-/obj/structure/ai_core/deactivated,
+/obj/structure/ai_core{
+	state = 5
+	},
 /turf/open/floor/mineral/titanium/white,
 /area/ruin/unpowered)
 "jp" = (

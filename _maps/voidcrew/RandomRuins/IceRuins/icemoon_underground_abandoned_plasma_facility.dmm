@@ -199,12 +199,12 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/light/small/built/directional/east,
+/obj/machinery/light/small/empty/directional/east,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
 /turf/open/floor/iron,
 /area/ruin/plasma_facility/operations)
 "dB" = (
-/mob/living/simple_animal/hostile/asteroid/polarbear{
+/mob/living/basic/mining/polarbear{
 	name = "Baloo"
 	},
 /turf/open/misc/asteroid/snow/icemoon/breathable,
@@ -325,7 +325,7 @@
 /turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "fx" = (
-/obj/machinery/light/small/built/directional/west,
+/obj/machinery/light/small/empty/directional/west,
 /turf/open/lava/plasma/planetary,
 /area/ruin/plasma_facility/operations)
 "fJ" = (
@@ -399,7 +399,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/light/small/built/directional/north,
+/obj/machinery/light/small/empty/directional/north,
 /turf/open/floor/iron/grimy,
 /area/ruin/plasma_facility/commons)
 "gH" = (
@@ -760,7 +760,7 @@
 "lX" = (
 /obj/structure/table/reinforced,
 /obj/item/flashlight/lantern,
-/obj/machinery/light/small/built/directional/west,
+/obj/machinery/light/small/empty/directional/west,
 /turf/open/floor/iron/smooth{
 	initial_gas_mix = "ICEMOON_ATMOS"
 	},
@@ -1184,7 +1184,7 @@
 /turf/open/floor/plating/icemoon,
 /area/ruin/plasma_facility/commons)
 "sP" = (
-/obj/machinery/light/small/built/directional/east,
+/obj/machinery/light/small/empty/directional/east,
 /turf/open/floor/plating/snowed/smoothed,
 /area/ruin/plasma_facility/operations)
 "sX" = (
@@ -1411,7 +1411,7 @@
 "yp" = (
 /obj/structure/closet/secure_closet/freezer/fridge/open,
 /obj/item/knife/kitchen,
-/obj/item/food/grown/carrot,
+/obj/item/food/grown/carrotlike/carrot,
 /obj/item/food/grown/potato,
 /obj/item/food/meat/slab/human/mutant/zombie,
 /obj/item/food/meat/slab/human/mutant/zombie,
@@ -1931,7 +1931,7 @@
 /area/icemoon/underground/explored)
 "Jn" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/light/small/built/directional/west,
+/obj/machinery/light/small/empty/directional/west,
 /turf/open/floor/iron/smooth{
 	initial_gas_mix = "ICEMOON_ATMOS"
 	},
@@ -2080,7 +2080,7 @@
 /turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "KY" = (
-/obj/machinery/light/small/built/directional/south,
+/obj/machinery/light/small/empty/directional/south,
 /turf/open/floor/plating/snowed/smoothed,
 /area/ruin/plasma_facility/commons)
 "Lh" = (
@@ -2129,7 +2129,7 @@
 /turf/open/floor/wood/large,
 /area/ruin/plasma_facility/commons)
 "LY" = (
-/obj/machinery/light/small/built/directional/north,
+/obj/machinery/light/small/empty/directional/north,
 /turf/open/floor/plating,
 /area/ruin/plasma_facility/commons)
 "LZ" = (
@@ -2916,7 +2916,7 @@
 /area/ruin/plasma_facility/commons)
 "ZC" = (
 /obj/effect/decal/cleanable/glass,
-/obj/machinery/light/small/built/directional/east,
+/obj/machinery/light/small/empty/directional/east,
 /turf/open/floor/plating/snowed,
 /area/icemoon/underground/explored)
 "ZH" = (

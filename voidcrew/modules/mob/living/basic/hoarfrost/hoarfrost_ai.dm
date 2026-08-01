@@ -31,15 +31,16 @@
 	)
 
 	ai_movement = /datum/ai_movement/basic_avoidance
-	idle_behavior = /datum/idle_behavior/idle_random_walk
-	planning_subtrees = list(
-		/datum/ai_planning_subtree/escape_captivity,
-		/datum/ai_planning_subtree/target_retaliate,
-		/datum/ai_planning_subtree/simple_find_target,
-		/datum/ai_planning_subtree/hoarfrost_rotation,
-		/datum/ai_planning_subtree/attack_obstacle_in_path,
-		/datum/ai_planning_subtree/basic_melee_attack_subtree/hoarfrost,
-	)
+	/**
+	 * VOIDCREW: the old `planning_subtrees` list, as a behavior tree. Mapping:
+	 * `escape_captivity` keeps its name; `target_retaliate` and `simple_find_target`
+	 * both fold into the `acquire_target/update_combat_targets` leaf; the rotation is
+	 * the subtree below; `attack_obstacle_in_path` is the `attack_obstructions` leaf;
+	 * `basic_melee_attack_subtree/hoarfrost` is the melee leaf's subtype below; and
+	 * `idle_behavior = /datum/idle_behavior/idle_random_walk` is the `random_walk`
+	 * subtree, whose default walk chance of 25 is the value that idle behavior had.
+	 */
+	behavior_tree_json = "voidcrew/modules/mob/living/basic/hoarfrost/hoarfrost_matriarch.bt.json"
 
 /**
  * Publishes her kit onto the blackboard.
@@ -60,33 +61,55 @@
 /**
  * The rotation. One ability per plan at most, never the same one twice running,
  * and nothing at all while she is planted for Killing Cold.
+ *
+ * VOIDCREW: this was `/datum/ai_planning_subtree/hoarfrost_rotation`. The pick itself is
+ * unchanged; only the way it gets spent moved. `queue_behavior()` has no successor - a
+ * leaf performs its own action now - so the roll writes the winner to BB_GENERIC_ACTION
+ * and then hands the tick to [root], a `targeted_mob_ability` leaf built from the DM
+ * descriptor below. The old returns map straight across:
+ *
+ *   bare `return`                          -> BT_FAILURE (fall through to the leaves behind us)
+ *   `return SUBTREE_RETURN_FINISH_PLANNING` -> BT_RUNNING (nothing else happens this tick)
  */
-/datum/ai_planning_subtree/hoarfrost_rotation
+/datum/bt_node/subtree/hoarfrost_rotation
+	/// Spends whatever the rotation picked. resolve_node_children() builds `root` from this.
+	behavior_nodes = list(
+		BT_DESC_TYPE = /datum/bt_node/ai_behavior/targeted_mob_ability,
+		"ability_key" = BB_GENERIC_ACTION,
+		"target_key" = BB_CURRENT_TARGET,
+	)
 	/// She will not spend a cooldown on someone this far away - Rimebreath
 	/// would fall short and the two self-centred abilities would simply be
 	/// walked out of.
 	var/engagement_range = 8
 
-/datum/ai_planning_subtree/hoarfrost_rotation/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+/datum/bt_node/subtree/hoarfrost_rotation/tick(datum/ai_controller/controller, seconds_per_tick)
+	if(isnull(root))
+		return BT_FAILURE
+	// Mid-cast: the leaf casts asynchronously, so let it finish and keep everything
+	// else off the tick until it does.
+	if(root.has_active_descendants())
+		return fire(controller, seconds_per_tick)
+
 	var/mob/living/basic/hoarfrost_matriarch/matriarch = controller.pawn
 	if(!istype(matriarch))
-		return
+		return BT_FAILURE
 	if(matriarch.inert)
 		// Planted. No casting, no swinging, no shuffling - that is the whole
 		// bargain that makes standing next to her a safe place to be.
-		return SUBTREE_RETURN_FINISH_PLANNING
+		return BT_RUNNING
 	if(matriarch.stat != STABLE)
-		return
+		return BT_FAILURE
 
 	var/atom/quarry = controller.blackboard[BB_CURRENT_TARGET]
 	if(QDELETED(quarry))
-		return
+		return BT_FAILURE
 	if(isliving(quarry))
 		var/mob/living/living_quarry = quarry
 		if(living_quarry.stat == DEAD)
-			return
+			return BT_FAILURE
 	if(get_dist(matriarch, quarry) > engagement_range)
-		return
+		return BT_FAILURE
 
 	// Built fresh rather than filtered in place: removing from the list you are
 	// iterating skips entries in DM, and the pool is three long anyway.
@@ -101,20 +124,45 @@
 			continue
 		options += ability_key
 	if(!length(options))
-		return
+		return BT_FAILURE
 
 	var/chosen_key = pick(options)
 	controller.set_blackboard_key(BB_HOARFROST_LAST_ABILITY, chosen_key)
-	controller.queue_behavior(/datum/ai_behavior/targeted_mob_ability, chosen_key, BB_CURRENT_TARGET)
-	return SUBTREE_RETURN_FINISH_PLANNING
+	controller.set_blackboard_key(BB_GENERIC_ACTION, controller.blackboard[chosen_key])
+	return fire(controller, seconds_per_tick)
+
+/**
+ * Runs the cast leaf. Anything short of an outright refusal ends the tick the way the
+ * old FINISH_PLANNING did; a refusal falls through so the obstruction and melee leaves
+ * behind us still get their turn, which is what the old bare `return` bought.
+ */
+/datum/bt_node/subtree/hoarfrost_rotation/proc/fire(datum/ai_controller/controller, seconds_per_tick)
+	return (root.tick(controller, seconds_per_tick) == BT_FAILURE) ? BT_FAILURE : BT_RUNNING
 
 /// She does not swing while she is planted.
-/datum/ai_planning_subtree/basic_melee_attack_subtree/hoarfrost
+/datum/bt_node/ai_behavior/basic_melee_attack/hoarfrost
 
-/datum/ai_planning_subtree/basic_melee_attack_subtree/hoarfrost/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
+/datum/bt_node/ai_behavior/basic_melee_attack/hoarfrost/perform(seconds_per_tick, datum/ai_controller/controller)
 	var/mob/living/basic/hoarfrost_matriarch/matriarch = controller.pawn
 	if(istype(matriarch) && matriarch.inert)
-		return
+		return AI_BEHAVIOR_INSTANT | AI_BEHAVIOR_FAILED
+	return ..()
+
+/**
+ * ...and she does not shuffle towards you either.
+ *
+ * VOIDCREW: movement used to ride inside the melee subtree, so the rotation's
+ * FINISH_PLANNING froze it for free. It is a parallel sibling of the attack branch now,
+ * ticked every cycle regardless, so the planted check has to be repeated here. Holding
+ * the tick (bare INSTANT) rather than failing is deliberate: a failure would fail the
+ * whole combat branch and drop her into the idle wander branch instead.
+ */
+/datum/bt_node/ai_behavior/move_to_target/hoarfrost
+
+/datum/bt_node/ai_behavior/move_to_target/hoarfrost/perform(seconds_per_tick, datum/ai_controller/controller)
+	var/mob/living/basic/hoarfrost_matriarch/matriarch = controller.pawn
+	if(istype(matriarch) && matriarch.inert)
+		return AI_BEHAVIOR_INSTANT
 	return ..()
 
 #undef BB_HOARFROST_RIMEBREATH

@@ -318,7 +318,7 @@
 /obj/item/clothing/gloves/combat,
 /obj/item/clothing/glasses/thermal/eyepatch,
 /obj/item/gun/ballistic/revolver,
-/obj/item/ammo_box/a357/match,
+/obj/item/ammo_box/speedloader/c357/match,
 /obj/item/pen/edagger,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/closet/secure_closet/hos,

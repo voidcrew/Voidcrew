@@ -540,7 +540,7 @@
 "HM" = (
 /obj/machinery/airalarm/directional/south,
 /obj/structure/rack,
-/obj/item/tank/jetpack/oxygen/security,
+/obj/item/tank/jetpack/security,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/thunderbird/security)
 "Ij" = (

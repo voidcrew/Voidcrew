@@ -26,14 +26,6 @@
 "f" = (
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
-"B" = (
-/obj/effect/zone_mobs/undead,
-/turf/open/misc/asteroid/basalt/lava_land_surface,
-/area/lavaland/surface/outdoors)
-"r" = (
-/obj/structure/closet/crate/zone_loot/expedition,
-/turf/open/misc/asteroid/basalt/lava_land_surface,
-/area/lavaland/surface/outdoors)
 "g" = (
 /obj/structure/stone_tile{
 	dir = 4
@@ -104,8 +96,12 @@
 	},
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
+"r" = (
+/obj/structure/closet/crate/zone_loot/expedition,
+/turf/open/misc/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/outdoors)
 "s" = (
-/mob/living/simple_animal/hostile/megafauna/blood_drunk_miner/guidance{
+/mob/living/basic/boss/blood_drunk_miner/guidance{
 	dir = 8
 	},
 /turf/open/misc/asteroid/basalt/lava_land_surface,
@@ -156,6 +152,10 @@
 /obj/structure/stone_tile/cracked{
 	dir = 8
 	},
+/turf/open/misc/asteroid/basalt/lava_land_surface,
+/area/lavaland/surface/outdoors)
+"B" = (
+/obj/effect/zone_mobs/undead,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
 "M" = (

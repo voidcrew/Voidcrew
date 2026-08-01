@@ -1,4 +1,16 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/industrial,
+/turf/open/floor/iron/showroomfloor{
+	initial_gas_mix = "ICEMOON_ATMOS"
+	},
+/area/ruin/powered/shuttle)
+"ab" = (
+/obj/effect/zone_mobs/wildlife,
+/turf/open/floor/iron/showroomfloor{
+	initial_gas_mix = "ICEMOON_ATMOS"
+	},
+/area/ruin/powered/shuttle)
 "aD" = (
 /obj/structure/fence/cut/medium,
 /turf/open/misc/asteroid/snow/icemoon/breathable,
@@ -75,18 +87,6 @@
 	},
 /area/ruin/powered/shuttle)
 "oT" = (
-/turf/open/floor/iron/showroomfloor{
-	initial_gas_mix = "ICEMOON_ATMOS"
-	},
-/area/ruin/powered/shuttle)
-"ab" = (
-/obj/effect/zone_mobs/wildlife,
-/turf/open/floor/iron/showroomfloor{
-	initial_gas_mix = "ICEMOON_ATMOS"
-	},
-/area/ruin/powered/shuttle)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/industrial,
 /turf/open/floor/iron/showroomfloor{
 	initial_gas_mix = "ICEMOON_ATMOS"
 	},
@@ -324,7 +324,7 @@
 /obj/structure/rack,
 /obj/item/wrench,
 /obj/item/crowbar/large/twenty_force,
-/obj/machinery/light/small/built/directional/south,
+/obj/machinery/light/small/empty/directional/south,
 /turf/open/floor/plating/icemoon,
 /area/ruin/powered/shuttle)
 "Kr" = (

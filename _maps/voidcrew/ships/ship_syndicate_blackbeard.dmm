@@ -427,7 +427,7 @@
 /area/shuttle/voidcrew/blackbeard/engineering)
 "xi" = (
 /obj/structure/closet/syndicate,
-/obj/item/clothing/gloves/krav_maga/combatglovesplus,
+/obj/item/clothing/gloves/kaza_ruk/combatglovesplus,
 /obj/item/clothing/glasses/sunglasses,
 /obj/item/clothing/shoes/combat,
 /obj/item/melee/baton/telescopic,
@@ -510,9 +510,9 @@
 /obj/item/storage/medkit/brute,
 /obj/item/storage/medkit/fire,
 /obj/item/storage/medkit,
-/obj/item/stack/medical/gauze/twelve,
-/obj/item/stack/medical/gauze/twelve,
-/obj/item/stack/medical/gauze/twelve,
+/obj/item/stack/medical/wrap/gauze/twelve,
+/obj/item/stack/medical/wrap/gauze/twelve,
+/obj/item/stack/medical/wrap/gauze/twelve,
 /obj/item/mod/control/pre_equipped/traitor,
 /obj/item/storage/belt/medical,
 /obj/structure/closet/syndicate,

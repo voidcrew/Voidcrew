@@ -7,7 +7,7 @@
 /obj/machinery/airalarm/directional/west,
 /obj/effect/mapping_helpers/airalarm/all_access,
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -82,7 +82,7 @@
 	dir = 1
 	},
 /obj/machinery/light/small/directional/south,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -155,7 +155,7 @@
 /obj/machinery/airalarm/directional/east,
 /obj/effect/mapping_helpers/airalarm/all_access,
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -165,7 +165,7 @@
 	},
 /obj/structure/barricade/security,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -230,7 +230,7 @@
 	},
 /obj/structure/barricade/security,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -318,7 +318,7 @@
 /obj/machinery/ship_combat/laser_turret{
 	dir = 1
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -352,14 +352,6 @@
 	pixel_y = 1
 	},
 /turf/open/floor/plating/airless,
-/area/shuttle/voidcrew/nt_patrol{
-	requires_power = 0
-	})
-"aL" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
-	dir = 4
-	},
-/turf/open/floor/plating,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -453,7 +445,6 @@
 	dir = 8
 	},
 /obj/machinery/turretid{
-	icon_state = "control_kill";
 	lethal = 1;
 	locked = 0;
 	pixel_y = -24;
@@ -477,7 +468,7 @@
 	pixel_y = 3
 	},
 /obj/machinery/recharger,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -501,13 +492,13 @@
 /obj/structure/table,
 /obj/machinery/cell_charger,
 /obj/item/stock_parts/power_store/cell/high,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
 "bm" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -554,7 +545,7 @@
 	pixel_x = 13;
 	pixel_y = 6
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -587,7 +578,7 @@
 "by" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
 /obj/structure/filingcabinet/security,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -595,7 +586,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -642,7 +633,7 @@
 /obj/machinery/computer/records/security{
 	dir = 1
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -783,7 +774,7 @@
 	pixel_x = 5
 	},
 /obj/structure/sign/poster/official/enlist/directional/north,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -797,7 +788,7 @@
 "er" = (
 /obj/structure/grille,
 /obj/machinery/ship_combat/shield_generator,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -860,7 +851,7 @@
 /obj/structure/frame/computer{
 	anchored = 1
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -881,15 +872,7 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/pod/dark,
-/area/shuttle/voidcrew/nt_patrol{
-	requires_power = 0
-	})
-"gY" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden{
-	dir = 4
-	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -914,7 +897,7 @@
 	name = "Engineering"
 	},
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -951,7 +934,7 @@
 	pixel_x = -2;
 	pixel_y = 2
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -983,7 +966,7 @@
 	name = "Armory Access"
 	},
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -1039,7 +1022,7 @@
 	pixel_x = 2;
 	pixel_y = -1
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -1065,13 +1048,6 @@
 /obj/structure/sign/poster/official/random/directional/east,
 /obj/effect/turf_decal/tile/neutral/fourcorners,
 /turf/open/floor/iron/dark,
-/area/shuttle/voidcrew/nt_patrol{
-	requires_power = 0
-	})
-"OL" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden,
-/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
-/turf/open/floor/iron,
 /area/shuttle/voidcrew/nt_patrol{
 	requires_power = 0
 	})
@@ -1174,7 +1150,7 @@ er
 ey
 ay
 Oe
-OL
+Oe
 zw
 dy
 br
@@ -1227,7 +1203,7 @@ aC
 aW
 aj
 bg
-gY
+bA
 JT
 aj
 km
@@ -1266,7 +1242,7 @@ bm
 by
 bm
 mU
-aL
+aD
 bP
 bX
 ep
@@ -1281,7 +1257,7 @@ ah
 an
 aj
 bt
-gY
+bA
 bI
 aj
 bO

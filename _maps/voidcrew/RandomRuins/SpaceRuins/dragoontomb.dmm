@@ -1,4 +1,11 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/wildlife,
+/obj/structure/stone_tile{
+	dir = 8
+	},
+/turf/open/misc/asteroid/basalt/airless,
+/area/ruin/unpowered/no_grav)
 "bM" = (
 /obj/structure/flora/ash/stem_shroom,
 /turf/open/misc/asteroid/basalt/airless,
@@ -28,7 +35,6 @@
 /obj/item/clothing/shoes/workboots/mining,
 /obj/item/clothing/gloves/color/black,
 /obj/effect/mob_spawn/corpse/human/charredskeleton,
-/obj/item/borg/sight/meson,
 /obj/item/pickaxe/improvised,
 /turf/open/misc/asteroid/basalt/airless,
 /area/ruin/unpowered/no_grav)
@@ -904,13 +910,6 @@
 /turf/closed/mineral/gibtonite/volcanic/airless,
 /area/ruin/unpowered/no_grav)
 "Zm" = (
-/obj/structure/stone_tile{
-	dir = 8
-	},
-/turf/open/misc/asteroid/basalt/airless,
-/area/ruin/unpowered/no_grav)
-"aa" = (
-/obj/effect/zone_mobs/wildlife,
 /obj/structure/stone_tile{
 	dir = 8
 	},

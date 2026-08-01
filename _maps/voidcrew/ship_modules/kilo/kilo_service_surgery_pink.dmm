@@ -86,7 +86,7 @@
 	pixel_y = -3
 	},
 /obj/item/clothing/mask/breath/muzzle,
-/obj/item/food/grown/rose{
+/obj/item/food/grown/flower/rose{
 	pixel_x = -7;
 	pixel_y = 10
 	},

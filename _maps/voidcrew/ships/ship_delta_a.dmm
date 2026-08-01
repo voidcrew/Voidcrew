@@ -42,7 +42,7 @@
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/light/small/built,
+/obj/machinery/light/small/empty,
 /obj/effect/turf_decal/tile/blue{
 	dir = 6
 	},
@@ -152,7 +152,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
 /obj/machinery/firealarm/directional/east,
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -287,7 +287,6 @@
 /area/shuttle/voidcrew/delta/engineering/a)
 "lj" = (
 /obj/machinery/turretid{
-	icon_state = "control_kill";
 	lethal = 1;
 	locked = 0;
 	pixel_x = -28;
@@ -312,7 +311,7 @@
 /area/shuttle/voidcrew/delta/hallway/central/a)
 "mu" = (
 /obj/structure/sign/warning/vacuum/external/directional/east,
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -384,7 +383,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/recharger,
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/blue{
@@ -432,7 +431,7 @@
 "pB" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 8
 	},
 /obj/structure/cable,
@@ -510,7 +509,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/delta/airlock/starboard/a)
 "sH" = (
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -644,7 +643,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -711,7 +710,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/cargo/a)
 "ys" = (
-/obj/machinery/light/small/built,
+/obj/machinery/light/small/empty,
 /obj/effect/turf_decal/stripes/corner{
 	dir = 1
 	},
@@ -907,7 +906,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 8
 	},
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 4
 	},
 /obj/machinery/autolathe,
@@ -1085,7 +1084,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/delta/engineering/a)
 "Ln" = (
-/obj/machinery/light/small/built,
+/obj/machinery/light/small/empty,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1094,7 +1093,7 @@
 /area/shuttle/voidcrew/delta/airlock/starboard/a)
 "Lr" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 8
 	},
 /obj/structure/cable,
@@ -1215,7 +1214,7 @@
 /area/shuttle/voidcrew/delta/engineering/a)
 "OI" = (
 /obj/structure/sign/warning/vacuum/external/directional/east,
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 4
 	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
@@ -1264,7 +1263,7 @@
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/delta/bridge/a)
 "QX" = (
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1293,7 +1292,7 @@
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/delta/airlock/starboard/a)
 "SF" = (
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 1
 	},
 /obj/effect/turf_decal/stripes/corner{
@@ -1422,7 +1421,7 @@
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/airlock/port/a)
 "WW" = (
-/obj/machinery/light/small/built{
+/obj/machinery/light/small/empty{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,

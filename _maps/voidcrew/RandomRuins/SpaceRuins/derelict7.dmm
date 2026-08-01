@@ -1,4 +1,13 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/undead,
+/obj/effect/mapping_helpers/broken_floor,
+/turf/open/floor/plating/airless,
+/area/ruin/space/has_grav)
+"ab" = (
+/obj/effect/zone_mobs/undead,
+/turf/open/floor/iron/airless,
+/area/ruin/space/has_grav)
 "aE" = (
 /obj/effect/spawner/random/structure/tank_holder,
 /turf/open/floor/plating/airless,
@@ -22,11 +31,6 @@
 /turf/template_noop,
 /area/ruin/space/has_grav)
 "dy" = (
-/obj/effect/mapping_helpers/broken_floor,
-/turf/open/floor/plating/airless,
-/area/ruin/space/has_grav)
-"aa" = (
-/obj/effect/zone_mobs/undead,
 /obj/effect/mapping_helpers/broken_floor,
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav)
@@ -120,10 +124,6 @@
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav)
 "nf" = (
-/turf/open/floor/iron/airless,
-/area/ruin/space/has_grav)
-"ab" = (
-/obj/effect/zone_mobs/undead,
 /turf/open/floor/iron/airless,
 /area/ruin/space/has_grav)
 "or" = (
@@ -277,7 +277,7 @@
 /obj/effect/turf_decal/trimline/neutral/warning{
 	dir = 1
 	},
-/obj/item/computer_disk/ordnance,
+/obj/item/disk/computer/ordnance,
 /turf/open/floor/iron/dark/side/airless{
 	dir = 1
 	},

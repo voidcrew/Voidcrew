@@ -375,7 +375,7 @@
 /obj/machinery/light_switch{
 	pixel_y = -23
 	},
-/obj/machinery/light/small/built,
+/obj/machinery/light/small/empty,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 1
 	},

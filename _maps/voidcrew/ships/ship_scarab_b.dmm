@@ -68,7 +68,7 @@
 /obj/docking_port/mobile/voidcrew/scarab/b{
 	dir = 8
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/dormitories/b)
 "ew" = (
 /obj/machinery/door/airlock/external,
@@ -79,7 +79,7 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
 	cycle_id = "scarab_rear_airlock_b"
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay/b)
 "eX" = (
 /obj/machinery/firealarm/directional/south,
@@ -250,7 +250,7 @@
 	dir = 4
 	},
 /obj/structure/handrail,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay/b)
 "kG" = (
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
@@ -306,7 +306,7 @@
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/dormitories/b)
 "ma" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
@@ -573,7 +573,7 @@
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 8
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay/b)
 "tv" = (
 /obj/effect/turf_decal/stripes/line{
@@ -705,7 +705,7 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
 	cycle_id = "scarab_rear_airlock_b"
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay/b)
 "yo" = (
 /turf/closed/wall/mineral/plastitanium,
@@ -836,7 +836,7 @@
 /obj/structure/handrail,
 /obj/machinery/light/small/directional/north,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/dormitories/b)
 "CQ" = (
 /obj/effect/spawner/structure/window/reinforced/plasma,
@@ -858,7 +858,7 @@
 	},
 /obj/machinery/light/small/directional/west,
 /obj/structure/handrail,
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay/b)
 "Di" = (
 /obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
@@ -949,7 +949,7 @@
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 8
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay/b)
 "FG" = (
 /obj/structure/cable,
@@ -1117,7 +1117,7 @@
 /obj/structure/handrail{
 	dir = 1
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay/b)
 "JC" = (
 /turf/closed/wall/mineral/plastitanium,
@@ -1148,7 +1148,7 @@
 /obj/machinery/atmospherics/pipe/smart/simple/scrubbers/hidden/layer2{
 	dir = 9
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/dormitories/b)
 "JX" = (
 /obj/machinery/atmospherics/pipe/smart/simple/purple/hidden{
@@ -1315,7 +1315,7 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
 	cycle_id = "scarab_rear_airlock_b"
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay/b)
 "Nx" = (
 /obj/effect/turf_decal/tile/dark_blue/full,
@@ -1416,7 +1416,7 @@
 /obj/structure/handrail{
 	dir = 1
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay/b)
 "Qa" = (
 /obj/machinery/door/airlock/engineering{
@@ -1431,7 +1431,7 @@
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 4
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay/b)
 "QE" = (
 /obj/structure/table/wood,
@@ -1668,7 +1668,7 @@
 /obj/effect/turf_decal/stripes/red/line{
 	dir = 4
 	},
-/turf/open/floor/pod/dark,
+/turf/open/floor/mineral/plastitanium/pod/dark,
 /area/shuttle/voidcrew/scarab/cargo_bay/b)
 "WA" = (
 /obj/machinery/airalarm/directional/north,

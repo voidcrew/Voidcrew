@@ -6,6 +6,10 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron/white,
 /area/ruin/space/has_grav/dangerous_research)
+"ab" = (
+/obj/effect/zone_mobs/cult,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/dangerous_research/medical)
 "ae" = (
 /obj/structure/table,
 /obj/machinery/light/small/directional/west,
@@ -1074,7 +1078,7 @@
 /area/ruin/space/has_grav/dangerous_research/lab)
 "oJ" = (
 /obj/item/stack/medical/bandage,
-/obj/item/stack/medical/gauze/twelve,
+/obj/item/stack/medical/wrap/gauze/twelve,
 /obj/item/reagent_containers/hypospray/medipen/blood_loss,
 /obj/effect/spawner/random/medical/injector,
 /obj/effect/turf_decal/tile/dark_red/anticorner{
@@ -1375,7 +1379,6 @@
 /area/ruin/space/has_grav/dangerous_research/lab)
 "rA" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored{
-	chamber_id = "asrc_b";
 	dir = 8
 	},
 /turf/open/floor/engine/air,
@@ -1645,8 +1648,8 @@
 /obj/structure/rack,
 /obj/effect/decal/cleanable/dirt,
 /obj/item/storage/toolbox/mechanical,
-/obj/item/ammo_box/c38,
-/obj/item/ammo_box/c38,
+/obj/item/ammo_box/speedloader/c38,
+/obj/item/ammo_box/speedloader/c38,
 /obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
 	dir = 1
 	},
@@ -1810,10 +1813,6 @@
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/dangerous_research/maint)
 "xd" = (
-/turf/open/floor/plating/rust,
-/area/ruin/space/has_grav/dangerous_research/medical)
-"ab" = (
-/obj/effect/zone_mobs/cult,
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/dangerous_research/medical)
 "xo" = (
@@ -3674,7 +3673,7 @@
 /obj/structure/window/reinforced/spawner/directional/south,
 /obj/effect/spawner/random/contraband/permabrig_weapon,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/item/ammo_box/c38,
+/obj/item/ammo_box/speedloader/c38,
 /obj/effect/turf_decal/tile/dark_red/anticorner,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/dangerous_research)
@@ -3726,7 +3725,6 @@
 /area/ruin/space/has_grav/dangerous_research)
 "Xb" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/monitored{
-	chamber_id = "asrc_a";
 	dir = 8
 	},
 /turf/open/floor/engine/airless,

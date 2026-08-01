@@ -8,7 +8,7 @@
 "bY" = (
 /obj/structure/closet/crate/engineering,
 /obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/ruin/unpowered)
 "ch" = (
 /obj/effect/decal/cleanable/plasma,
@@ -70,7 +70,7 @@
 "kU" = (
 /obj/structure/table/reinforced,
 /obj/item/gun/energy/laser/retro,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/ruin/unpowered)
 "kW" = (
 /obj/machinery/power/shuttle_engine/propulsion{
@@ -141,7 +141,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "tp" = (
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/ruin/unpowered)
 "tU" = (
 /obj/structure/closet/crate,
@@ -151,7 +151,7 @@
 /area/overmap_encounter/planetoid/wasteland)
 "uc" = (
 /obj/machinery/door/airlock/shuttle,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/ruin/unpowered)
 "un" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -159,7 +159,7 @@
 /area/ruin/unpowered)
 "wA" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/ruin/unpowered)
 "wB" = (
 /obj/effect/decal/cleanable/garbage,
@@ -181,21 +181,26 @@
 /obj/structure/cable,
 /turf/open/misc/wasteland/lit,
 /area/overmap_encounter/planetoid/wasteland)
-"ze" = (
-/obj/structure/cable,
-/turf/open/floor/plating,
-/area/ruin/unpowered)
 "zq" = (
 /obj/machinery/modular_computer/preset/civilian,
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
+/area/ruin/unpowered)
+"zz" = (
+/obj/effect/spawner/random/ship_parts/trade_post,
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/carpet/red,
 /area/ruin/unpowered)
 "zY" = (
 /obj/structure/closet/crate,
 /obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/ruin/unpowered)
+"zZ" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/misc/wasteland/lit,
+/area/overmap_encounter/planetoid/wasteland)
 "Ag" = (
 /obj/effect/decal/cleanable/blood/oil,
 /turf/open/misc/wasteland/lit,
@@ -258,7 +263,7 @@
 "IN" = (
 /obj/structure/grille,
 /obj/structure/window/reinforced/shuttle,
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/ruin/unpowered)
 "IU" = (
 /obj/machinery/power/floodlight,
@@ -296,7 +301,7 @@
 /obj/structure/chair/comfy/shuttle{
 	dir = 1
 	},
-/turf/open/floor/pod/light,
+/turf/open/floor/mineral/plastitanium/pod/light,
 /area/ruin/unpowered)
 "OY" = (
 /obj/structure/chair/office{
@@ -391,15 +396,6 @@
 /obj/item/storage/pill_bottle/zoom,
 /turf/open/floor/carpet/red,
 /area/ruin/unpowered)
-"zz" = (
-/obj/effect/spawner/random/ship_parts/trade_post,
-/obj/structure/closet/crate/zone_loot/plunder,
-/turf/open/floor/carpet/red,
-/area/ruin/unpowered)
-"zZ" = (
-/obj/effect/zone_mobs/pirate,
-/turf/open/misc/wasteland/lit,
-/area/overmap_encounter/planetoid/wasteland)
 
 (1,1,1) = {"
 Ue
@@ -525,7 +521,7 @@ Ue
 em
 nw
 cL
-ze
+cL
 BE
 Hm
 Hm

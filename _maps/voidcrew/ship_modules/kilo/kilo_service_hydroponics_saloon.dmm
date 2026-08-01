@@ -117,7 +117,7 @@
 	pixel_x = -7;
 	pixel_y = 5
 	},
-/obj/item/food/grown/carrot{
+/obj/item/food/grown/carrotlike/carrot{
 	pixel_x = 6;
 	pixel_y = -3
 	},
