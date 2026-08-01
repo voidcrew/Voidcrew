@@ -13,10 +13,10 @@ Everything below is the "why".**
 |---|---|
 | One-shot runner | `tools/run_unit_tests_local.sh [port=1342] [boot_timeout=25m] [suite_timeout=25m]` |
 | Compile | `tools\build\build.bat dm -DCIBUILDING` (~35 s) |
-| Run | `cmd //c start "" //min "C:\Program Files (x86)\BYOND\bin\dreamdaemon.exe" tgstation.dmb <port> -close -trusted -params "log-directory=ci"` |
+| Run | `cmd //c start "" //min //low "C:\Program Files (x86)\BYOND\bin\dd.exe" tgstation.dmb -port <port> -close -trusted -invisible -params "log-directory=ci"` |
 | Results | `data/unit_tests.json` — per-test `status`: **0 = passed, 1 = failed, 2 = skipped** |
 | Overall verdict | `data/logs/ci/clean_run.lk` exists **only** if the run was fully clean |
-| Duration | ~35s compile; suite ~13 min idle-machine, much longer under load (trap #9). **As of 2026-07-24 the full suite never completes at all — see trap #12** |
+| Duration | ~35s compile; suite ~13 min idle-machine, much longer under load (trap #9). Trap #12 (`missing_icons` hang) was FIXED 2026-07-31 — full runs complete again |
 
 ## How the suite is wired (for debugging)
 
@@ -102,6 +102,16 @@ Everything below is the "why".**
    recursion, which treats every non-`.dmi` entry as a directory and so descends into the
    thousands of `.png`/`.png.toml` icon-cutter sources under those roots. **Until it is
    fixed, the only way to get any test signal locally is a focused run.**
+13a. **Use `dd.exe`, not `dreamdaemon.exe`, while a Dream Daemon panel window is open**
+   (observed 2026-07-31, three times in a row): with an idle DD control panel running,
+   every `dreamdaemon.exe <dmb>` launch parked at ~21 MB with **zero CPU ever** — not slow,
+   never started; it appears to wait on the panel's single-instance management. The
+   standalone `dd.exe` daemon is immune (it's how a second local world coexists with the
+   panel at all). The runner script now launches `dd.exe` with `-port <port>` for exactly
+   this reason. Diagnosis that proved it: sample the process twice
+   (`Get-Process` `TotalProcessorTime`) — a booting world accumulates CPU continuously; a
+   parked one stays at 0.00 from birth.
+
 13. **Running a subset: `TEST_FOCUS`.** Append `TEST_FOCUS(/datum/unit_test/foo)` lines to
    the **end** of `code/modules/unit_tests/_unit_tests.dm`, after the final `#endif` —
    `TEST_FOCUS` is deliberately left un-`#undef`ed for exactly this (see the comment at

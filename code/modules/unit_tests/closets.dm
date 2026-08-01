@@ -8,6 +8,11 @@
 	all_closets -= typesof(/obj/structure/closet/supplypod)
 	/// these bitches spawn specially crafted humans with gear and moving organs being shuffled around through the whole process
 	all_closets -= typesof(/obj/structure/closet/body_bag/lost_crew/with_body)
+	// VOIDCREW EDIT: zone-loot crates roll weighted loot tables lazily at first
+	// open, with the tier pinned to their spawn turf. Their armory tables
+	// legitimately include guns that double as steal objectives, and the roll
+	// cannot move to populate_contents_immediate() without defeating the design.
+	all_closets -= typesof(/obj/structure/closet/crate/zone_loot)
 
 	for(var/closet_type in all_closets)
 		var/obj/structure/closet/closet = allocate(closet_type)

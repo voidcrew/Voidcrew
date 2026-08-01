@@ -14,7 +14,7 @@ cd "$(dirname "$0")/.."
 PORT="${1:-1342}"
 BOOT_TIMEOUT_MIN="${2:-25}"
 SUITE_TIMEOUT_MIN="${3:-25}"
-DD='C:\Program Files (x86)\BYOND\bin\dreamdaemon.exe'
+DD='C:\Program Files (x86)\BYOND\bin\dd.exe'
 CI_LOGS="data/logs/ci"
 JSON="data/unit_tests.json"
 LOCKFILE="$CI_LOGS/clean_run.lk"
@@ -49,7 +49,7 @@ JSON_BEFORE=0
 
 echo ">> Launching DreamDaemon on port $PORT (detached, minimized)."
 echo ">> Do NOT close the DreamDaemon window and do NOT connect a client to it."
-cmd //c start "" //min "$DD" tgstation.dmb "$PORT" -close -trusted -params "log-directory=ci"
+cmd //c start "" //min //low "$DD" tgstation.dmb -port "$PORT" -close -trusted -invisible -params "log-directory=ci"
 
 echo ">> Phase 1: waiting for the world to boot (up to ${BOOT_TIMEOUT_MIN}m; can be slow under load — trap #9)..."
 BOOT_START=$(date +%s)

@@ -10,7 +10,9 @@
 	typepath = /datum/round_event/voidcrew/anomaly
 	min_players = 1
 	max_occurrences = 0
-	weight = 15
+	// Abstract base: subtypes carry real weights. A non-zero weight here would sit
+	// in the weighted roster draining rolls onto an event that can never fire.
+	weight = 0
 	category = EVENT_CATEGORY_ANOMALIES
 	description = "This anomaly shocks and explodes. This is the base type."
 	allowed_zones = list(ZONE_RED)

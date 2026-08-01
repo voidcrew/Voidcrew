@@ -184,6 +184,22 @@
 		var/datum/map_template/ruin/space/template_path = initial(chart_path.ruin_template_path)
 		if(isnull(template_path))
 			continue
+		// reveal() finds the template by walking SSmapping.space_ruins_templates
+		// (rumor_charts.dm): an unregistered one only stack_traces, after the
+		// crew has already paid for the tip and pressed the helm's reveal button.
+		var/registered = FALSE
+		for(var/template_name in SSmapping.space_ruins_templates)
+			var/datum/map_template/ruin/space/candidate = SSmapping.space_ruins_templates[template_name]
+			if(candidate.type == template_path)
+				registered = TRUE
+				break
+		if(!registered)
+			TEST_FAIL("[chart_path] points at [template_path], which is not registered in SSmapping.space_ruins_templates — reveal() logs and spawns nothing")
+		// Literals 1/2/3 = ZONE_GREEN/ZONE_YELLOW/ZONE_RED
+		// (voidcrew/_DEFINES/overmap_zones.dm); unit tests compile before voidcrew/_DEFINES
+		var/spawn_zone = initial(chart_path.spawn_zone)
+		if(spawn_zone != 1 && spawn_zone != 2 && spawn_zone != 3)
+			TEST_FAIL("[chart_path] has spawn_zone [spawn_zone]; get_unused_overmap_square_in_zone_band() only knows 1 (green), 2 (yellow) and 3 (red), so the ruin has nowhere to surface")
 		var/map_path = "[initial(template_path.prefix)][initial(template_path.suffix)]"
 		var/text = map_texts[map_path]
 		TEST_ASSERT_NOTNULL(text, "[chart_path] points at [map_path], which the map scan never found")
