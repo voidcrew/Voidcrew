@@ -545,7 +545,7 @@
 		// mend_the_dead() in lich_spells.dm.
 		victim.heal_overall_damage(brute = 10, burn = 10, forced = TRUE)
 		return
-	victim.adjustToxLoss(8, forced = TRUE)
+	victim.adjust_tox_loss(8, forced = TRUE)
 	to_chat(victim, span_danger("Something starts rotting where the bolt went in."))
 
 #undef VERDIGRIS_TINT

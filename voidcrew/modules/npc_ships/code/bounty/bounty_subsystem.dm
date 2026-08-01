@@ -7,7 +7,7 @@
 SUBSYSTEM_DEF(bounty)
 	name = "Bounty"
 	init_order = INIT_ORDER_OVERMAP + 3  // After NPC ships spawn
-	flags = SS_NO_FIRE  // No periodic firing - event-driven
+	ss_flags = SS_NO_FIRE  // No periodic firing - event-driven
 	runlevels = RUNLEVEL_GAME
 	dependencies = list(
 		/datum/controller/subsystem/npc_ships,  // Pirates must exist before we create bounties

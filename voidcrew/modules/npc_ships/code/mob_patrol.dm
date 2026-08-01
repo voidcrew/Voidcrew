@@ -918,7 +918,7 @@
 		return
 
 	// Don't patrol if we have a combat target
-	if(controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+	if(controller.blackboard_key_exists(BB_CURRENT_TARGET))
 		return
 
 	// Get patrol data
@@ -1259,7 +1259,7 @@
 		return
 
 	// Don't handle patrol doors if we have a combat target - attack_obstacle_in_path handles combat obstacles
-	if(controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+	if(controller.blackboard_key_exists(BB_CURRENT_TARGET))
 		return
 
 	// Check all adjacent turfs for closed doors blocking our movement
@@ -1630,7 +1630,7 @@
 
 /datum/ai_planning_subtree/try_open_door_in_path/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
 	// Don't do patrol door stuff if we have a combat target
-	if(controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+	if(controller.blackboard_key_exists(BB_CURRENT_TARGET))
 		return
 
 	var/obj/machinery/door/target_door = controller.blackboard[target_key]
@@ -1725,7 +1725,7 @@
 
 /datum/ai_planning_subtree/attack_patrol_door/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
 	// Don't do patrol door stuff if we have a combat target
-	if(controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+	if(controller.blackboard_key_exists(BB_CURRENT_TARGET))
 		return
 
 	var/obj/machinery/door/target_door = controller.blackboard[target_key]
@@ -1816,7 +1816,7 @@
 		return
 
 	// Don't explore if we have a combat target
-	if(controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+	if(controller.blackboard_key_exists(BB_CURRENT_TARGET))
 		return
 
 	var/mob/living/pawn = controller.pawn
@@ -1952,7 +1952,7 @@
 		for(var/mob/living/carbon/hiding_crew in range(1, closet_turf))
 			if(hiding_crew.stat != DEAD)
 				// Found a live crew member! Target them immediately
-				controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, hiding_crew)
+				controller.set_blackboard_key(BB_CURRENT_TARGET, hiding_crew)
 				PATROL_LOG("[pawn] found [hiding_crew] hiding in closet! Targeting!")
 				break
 
@@ -1979,17 +1979,17 @@
 		return
 
 	// Already have a valid target? Validate it
-	var/atom/current_target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	var/atom/current_target = controller.blackboard[BB_CURRENT_TARGET]
 	if(!QDELETED(current_target))
 		// Check if target is a dead mob - if so, clear it and find a new one
 		if(isliving(current_target))
 			var/mob/living/living_target = current_target
 			if(living_target.stat == DEAD)
-				controller.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+				controller.clear_blackboard_key(BB_CURRENT_TARGET)
 				// Fall through to find new target
 			else if(get_dist(pawn, living_target) <= 1 && !pawn.CanReach(living_target))
 				// Adjacent but unreachable (behind windoor, etc) - clear and find new one
-				controller.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+				controller.clear_blackboard_key(BB_CURRENT_TARGET)
 				// Fall through to find new target
 			else
 				return  // Target is alive (and reachable if adjacent), keep it
@@ -2025,7 +2025,7 @@
 			best_target = target
 
 	if(best_target)
-		controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, best_target)
+		controller.set_blackboard_key(BB_CURRENT_TARGET, best_target)
 		PATROL_LOG("[pawn] aggressive_find_target: Found target [best_target] at dist=[best_dist]")
 
 /**

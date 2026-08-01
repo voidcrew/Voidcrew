@@ -400,7 +400,7 @@
 	// The lifespan rides the CARP, not the egg — orphans always clean themselves up
 	addtimer(CALLBACK(hunter, TYPE_PROC_REF(/mob/living/basic/carp/vestige_brood, dissolve)), VESTIGE_BROOD_LIFESPAN)
 	if(egg_bound)
-		hunter.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, src)
+		hunter.ai_controller?.set_blackboard_key(BB_CURRENT_TARGET, src)
 
 /// Strikes a carp from the roster. Safe to call twice (death then deletion).
 /obj/structure/vestige_dragon_egg/proc/muster_out(mob/living/hunter)
@@ -429,11 +429,11 @@
 		return
 	for(var/mob/living/basic/carp/vestige_brood/hunter as anything in brood)
 		var/datum/ai_controller/instincts = hunter.ai_controller
-		if(!instincts || instincts.blackboard[BB_BASIC_MOB_CURRENT_TARGET])
+		if(!instincts || instincts.blackboard[BB_CURRENT_TARGET])
 			continue
 		if(hunter.z != z || get_dist(hunter, src) > 9)
 			continue
-		instincts.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, src)
+		instincts.set_blackboard_key(BB_CURRENT_TARGET, src)
 	if(SPT_PROB(3, seconds_per_tick))
 		visible_message(span_warning("Something taps, once, from inside [src]."))
 
@@ -711,7 +711,7 @@
 
 /// One mouthful of the fire: burn, ignite, and — for honest quarry — a mark for the feast's ledger
 /obj/item/vestige_ember_jaw/proc/sear(mob/living/prey, mob/living/hunter)
-	prey.adjustFireLoss(VESTIGE_EMBER_BURN)
+	prey.adjust_fire_loss(VESTIGE_EMBER_BURN)
 	prey.adjust_fire_stacks(VESTIGE_EMBER_FIRE_STACKS)
 	prey.ignite_mob()
 	to_chat(prey, span_userdanger("You are engulfed by [hunter]'s gout of dragonfire!"))
@@ -884,12 +884,12 @@
 /obj/item/vestige_gust_charm/proc/is_lunging_menace(mob/living/menace, mob/living/keeper)
 	if(!vestige_is_wild_quarry(menace, keeper))
 		return FALSE
-	if(menace.stat != CONSCIOUS)
+	if(menace.stat != STABLE)
 		return FALSE
 	var/atom/quarry
 	var/datum/ai_controller/instincts = menace.ai_controller
 	if(instincts)
-		quarry = instincts.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+		quarry = instincts.blackboard[BB_CURRENT_TARGET]
 	if(isnull(quarry) && istype(menace, /mob/living/simple_animal/hostile))
 		var/mob/living/simple_animal/hostile/old_beast = menace
 		quarry = old_beast.target
@@ -1321,7 +1321,7 @@
 	. = ..()
 	// The mark comes first: one body, one feeding, ever — no farming a freezer
 	ADD_TRAIT(meal, TRAIT_VESTIGE_DEVOURED, TRAIT_GENERIC)
-	meal.adjustBruteLoss(VESTIGE_FEAST_MAULING, forced = TRUE)
+	meal.adjust_brute_loss(VESTIGE_FEAST_MAULING, forced = TRUE)
 	new /obj/effect/decal/cleanable/blood/gibs(get_turf(meal))
 	meal.visible_message(
 		span_boldwarning("[owner] tears [meal] open and eats [meal.p_their()] fill!"),
@@ -1350,7 +1350,7 @@
 	// Top up, never overfill — and never bother a bloodless species about it
 	if(!HAS_TRAIT(feaster, TRAIT_NOBLOOD) && feaster.blood_volume < BLOOD_VOLUME_NORMAL)
 		feaster.blood_volume = min(feaster.blood_volume + VESTIGE_MARROW_BLOOD, BLOOD_VOLUME_NORMAL)
-	feaster.adjustStaminaLoss(-VESTIGE_MARROW_STAMINA)
+	feaster.adjust_stamina_loss(-VESTIGE_MARROW_STAMINA)
 	feaster.apply_status_effect(/datum/status_effect/vestige_fed_dragon)
 
 /**

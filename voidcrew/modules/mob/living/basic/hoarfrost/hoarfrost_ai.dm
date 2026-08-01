@@ -75,10 +75,10 @@
 		// Planted. No casting, no swinging, no shuffling - that is the whole
 		// bargain that makes standing next to her a safe place to be.
 		return SUBTREE_RETURN_FINISH_PLANNING
-	if(matriarch.stat != CONSCIOUS)
+	if(matriarch.stat != STABLE)
 		return
 
-	var/atom/quarry = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	var/atom/quarry = controller.blackboard[BB_CURRENT_TARGET]
 	if(QDELETED(quarry))
 		return
 	if(isliving(quarry))
@@ -105,7 +105,7 @@
 
 	var/chosen_key = pick(options)
 	controller.set_blackboard_key(BB_HOARFROST_LAST_ABILITY, chosen_key)
-	controller.queue_behavior(/datum/ai_behavior/targeted_mob_ability, chosen_key, BB_BASIC_MOB_CURRENT_TARGET)
+	controller.queue_behavior(/datum/ai_behavior/targeted_mob_ability, chosen_key, BB_CURRENT_TARGET)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 /// She does not swing while she is planted.

@@ -30,10 +30,12 @@
 	// snowstorms temperature ignores any clothing insulation
 	weather_flags = (WEATHER_MOBS | WEATHER_BAROMETER | WEATHER_TEMPERATURE_BYPASS_CLOTHING | WEATHER_STRICT_ALERT)
 
+	// VOIDCREW EDIT ADDITION - this storm's own area -> looping sound pairs; concurrent
+	// planet storms each own only their entries in the shared playlist (see rain_storm.dm)
+	var/list/active_sounds = list()
+
 /datum/weather/snow_storm/get_playlist_ref()
 	return GLOB.snowstorm_sounds
-
-	var/list/active_sounds = list()
 
 /datum/weather/snow_storm/start()
 	for(var/area/impacted_area as anything in impacted_areas)

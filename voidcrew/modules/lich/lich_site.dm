@@ -663,7 +663,7 @@ ADMIN_VERB(lich_ritual_control, R_ADMIN, "Verdigris Ritual Control", "Drive the 
 				to_chat(user, span_warning("No live Ilthuun found — resolved the event on the site directly (no loot will drop)."))
 			else
 				boss.investigate_log("was admin-slain by [key_name(user)].", INVESTIGATE_DEATHS)
-				boss.adjustBruteLoss(boss.maxHealth * 2)
+				boss.adjust_brute_loss(boss.maxHealth * 2)
 				if(boss.stat != DEAD)
 					boss.death()
 				to_chat(user, span_notice("Ilthuun killed; rituals stop and the hoard drops in the sanctum."))

@@ -238,7 +238,7 @@
  * question, the same way the drake's swoop chains into cone and meteors.
  */
 /mob/living/basic/hoarfrost_matriarch/proc/on_avalanche_landed()
-	if(!calved || inert || stat != CONSCIOUS)
+	if(!calved || inert || stat != STABLE)
 		return
 	if(!killing_cold?.IsAvailable())
 		return
@@ -332,7 +332,7 @@
 /mob/living/basic/hoarfrost_matriarch/proc/handle_disengagement(seconds_per_tick)
 	var/atom/quarry
 	if(ai_controller)
-		quarry = ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+		quarry = ai_controller.blackboard[BB_CURRENT_TARGET]
 	if(is_engaged(quarry))
 		COOLDOWN_START(src, disengage_timer, disengage_grace)
 		return

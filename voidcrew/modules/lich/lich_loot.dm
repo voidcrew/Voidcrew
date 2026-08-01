@@ -484,9 +484,9 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 
 	COOLDOWN_START(src, siphon_cooldown, LICH_SIPHON_COOLDOWN)
 	draughts_taken++
-	target_mob.adjustToxLoss(LICH_SIPHON_DRAIN, forced = TRUE)
-	user.adjustBruteLoss(-LICH_SIPHON_HEAL)
-	user.adjustFireLoss(-LICH_SIPHON_HEAL)
+	target_mob.adjust_tox_loss(LICH_SIPHON_DRAIN, forced = TRUE)
+	user.adjust_brute_loss(-LICH_SIPHON_HEAL)
+	user.adjust_fire_loss(-LICH_SIPHON_HEAL)
 	new /obj/effect/temp_visual/small_smoke/halfsecond(get_turf(target_mob))
 	playsound(target_mob, 'sound/effects/magic/demon_consume.ogg', 35, TRUE)
 	user.visible_message(

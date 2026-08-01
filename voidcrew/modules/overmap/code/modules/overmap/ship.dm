@@ -1765,8 +1765,8 @@
 		movement_callback_id = null
 		return
 
-	var/new_x = x + SIGN(speed[1])
-	var/new_y = y + SIGN(speed[2])
+	var/new_x = x + sign(speed[1])
+	var/new_y = y + sign(speed[2])
 
 	// Handle wraparound at edges
 	var/low_x = OVERMAP_LEFT_SIDE_COORD + 1  // 2
@@ -2743,11 +2743,11 @@
   */
 /obj/structure/overmap/ship/proc/decelerate(acceleration)
 	if(speed[1] && speed[2]) //another check to make sure that deceleration isn't 2x as fast when moving diagonally
-		adjust_speed(-SIGN(speed[1]) * min(acceleration * 0.5, abs(speed[1])), -SIGN(speed[2]) * min(acceleration * 0.5, abs(speed[2])))
+		adjust_speed(-sign(speed[1]) * min(acceleration * 0.5, abs(speed[1])), -sign(speed[2]) * min(acceleration * 0.5, abs(speed[2])))
 	else if(speed[1])
-		adjust_speed(-SIGN(speed[1]) * min(acceleration, abs(speed[1])), 0)
+		adjust_speed(-sign(speed[1]) * min(acceleration, abs(speed[1])), 0)
 	else if(speed[2])
-		adjust_speed(0, -SIGN(speed[2]) * min(acceleration, abs(speed[2])))
+		adjust_speed(0, -sign(speed[2]) * min(acceleration, abs(speed[2])))
 
 /**
  * Kills all velocity in one call, rather than shedding it a tick at a time.

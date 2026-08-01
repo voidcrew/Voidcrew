@@ -390,9 +390,9 @@
 	last_attacker_ref = WEAKREF(attacker)
 	if(isnull(ai_controller) || stat)
 		return
-	if(ai_controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+	if(ai_controller.blackboard_key_exists(BB_CURRENT_TARGET))
 		return
-	ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, attacker)
+	ai_controller.set_blackboard_key(BB_CURRENT_TARGET, attacker)
 
 /// The eyes keep burning until he stops. Harmless if track F has not shipped the
 /// `lich_eyes` state yet — BYOND renders a missing icon_state as nothing.
@@ -491,7 +491,7 @@
 	SIGNAL_HANDLER
 	if(attack_flags & (ATTACKER_STAMINA_ATTACK|ATTACKER_SHOVING))
 		return
-	attacker.adjustFireLoss(15)
+	attacker.adjust_fire_loss(15)
 	to_chat(attacker, span_warning("The image bursts, and something cold pours down your arm!"))
 
 /mob/living/basic/lich/mirror_image/examine(mob/user)

@@ -365,7 +365,7 @@
 /obj/machinery/transporter_pad/proc/apply_transport_trauma(mob/living/passenger)
 	if(!biofilter_gap || has_biofilter())
 		return
-	passenger.adjustFireLoss(biofilter_gap * 4, forced = TRUE)
+	passenger.adjust_fire_loss(biofilter_gap * 4, forced = TRUE)
 	to_chat(passenger, span_warning("You come back together a beat behind yourself, and your skin stings where the filter missed."))
 
 /**
@@ -390,9 +390,9 @@
 		span_boldwarning("[victim] rematerialises wrong, and keeps rematerialising."),
 		span_userdanger("Something takes you apart and puts you back together in the wrong order. It does not stop when you are whole."),
 	)
-	victim.adjustFireLoss(85, forced = TRUE)
-	victim.adjustToxLoss(60, forced = TRUE)
-	victim.adjustOrganLoss(ORGAN_SLOT_BRAIN, 60)
+	victim.adjust_fire_loss(85, forced = TRUE)
+	victim.adjust_tox_loss(60, forced = TRUE)
+	victim.adjust_organ_loss(ORGAN_SLOT_BRAIN, 60)
 
 /**
  * Circuit board. Bluespace crystals are the expensive half - a pad can't be improvised

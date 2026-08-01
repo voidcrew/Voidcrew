@@ -342,7 +342,7 @@
 	SIGNAL_HANDLER
 	if(!lifting || QDELETED(target) || !isliving(source))
 		return NONE
-	if(source.stat != CONSCIOUS)
+	if(source.stat != STABLE)
 		return NONE
 	// Never swallow the HUD, and never swallow the clicks players use to look at things.
 	if(istype(target, /atom/movable/screen))
@@ -598,7 +598,7 @@
 	if(QDELETED(thing))
 		return
 	var/mob/living/source = owner
-	if(!lifting || !isliving(source) || source.stat != CONSCIOUS)
+	if(!lifting || !isliving(source) || source.stat != STABLE)
 		end_pull_visuals(thing)
 		return
 	if(isturf(thing.loc) && thing.z == source.z && get_dist(source, thing) <= 1 && can_lift(thing) && used_slots() + slot_cost(thing) <= GREATER_TK_MAX_HELD)
@@ -1012,7 +1012,7 @@
 /mob/living/basic/vestige_mutant/proc/handle_disengagement(seconds_per_tick)
 	var/atom/quarry
 	if(ai_controller)
-		quarry = ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+		quarry = ai_controller.blackboard[BB_CURRENT_TARGET]
 	if(is_engaged(quarry))
 		COOLDOWN_START(src, disengage_timer, MUTANT_DISENGAGE_GRACE)
 		return
@@ -1603,10 +1603,10 @@
 
 /datum/ai_planning_subtree/vestige_mutant_rotation/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
 	var/mob/living/basic/vestige_mutant/specimen = controller.pawn
-	if(!istype(specimen) || specimen.stat != CONSCIOUS)
+	if(!istype(specimen) || specimen.stat != STABLE)
 		return
 
-	var/atom/quarry = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	var/atom/quarry = controller.blackboard[BB_CURRENT_TARGET]
 	if(QDELETED(quarry))
 		return
 	if(isliving(quarry))
@@ -1635,7 +1635,7 @@
 
 	var/chosen_key = pick(options)
 	controller.set_blackboard_key(BB_MUTANT_LAST_ABILITY, chosen_key)
-	controller.queue_behavior(/datum/ai_behavior/targeted_mob_ability, chosen_key, BB_BASIC_MOB_CURRENT_TARGET)
+	controller.queue_behavior(/datum/ai_behavior/targeted_mob_ability, chosen_key, BB_CURRENT_TARGET)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 // =========================================================================

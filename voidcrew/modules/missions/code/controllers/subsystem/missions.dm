@@ -7,7 +7,7 @@
 SUBSYSTEM_DEF(missions)
 	name = "Missions"
 	wait = 30 SECONDS
-	flags = SS_BACKGROUND
+	ss_flags = SS_BACKGROUND
 
 	/// List of all currently active missions across all ships
 	var/list/datum/mission/all_active_missions = list()

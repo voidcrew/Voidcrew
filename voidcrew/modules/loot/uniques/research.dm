@@ -600,11 +600,11 @@
 		return
 	snapshots += list(list(
 		"turf" = wearer_turf,
-		"brute" = wearer.getBruteLoss(),
-		"fire" = wearer.getFireLoss(),
-		"tox" = wearer.getToxLoss(),
-		"oxy" = wearer.getOxyLoss(),
-		"stamina" = wearer.getStaminaLoss(),
+		"brute" = wearer.get_brute_loss(),
+		"fire" = wearer.get_fire_loss(),
+		"tox" = wearer.get_tox_loss(),
+		"oxy" = wearer.get_oxy_loss(),
+		"stamina" = wearer.get_stamina_loss(),
 	))
 	if(length(snapshots) > max_snapshots)
 		snapshots.Cut(1, 2)
@@ -634,11 +634,11 @@
 	// Restore the snapshot's damage BEFORE reviving — revive() with no heal
 	// flags leaves current damage in place, and a still-lethal total would
 	// just kill the wearer again on the next health update
-	user.setBruteLoss(snap["brute"])
-	user.setFireLoss(snap["fire"])
-	user.setToxLoss(snap["tox"])
-	user.setOxyLoss(snap["oxy"])
-	user.setStaminaLoss(snap["stamina"])
+	user.set_brute_loss(snap["brute"])
+	user.set_fire_loss(snap["fire"])
+	user.set_tox_loss(snap["tox"])
+	user.set_oxy_loss(snap["oxy"])
+	user.set_stamina_loss(snap["stamina"])
 	if(user.stat == DEAD)
 		user.revive(NONE)
 
@@ -754,7 +754,7 @@
 		return FALSE
 	if(isliving(target))
 		var/mob/living/living_target = target
-		if(living_target.stat == CONSCIOUS)
+		if(living_target.stat == STABLE)
 			to_chat(user, span_warning("[living_target] isn't going to just climb in there."))
 			return FALSE
 	return TRUE

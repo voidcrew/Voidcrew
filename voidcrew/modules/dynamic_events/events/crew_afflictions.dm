@@ -195,7 +195,7 @@
 		if(!ishuman(crew_member))
 			continue
 		var/mob/living/carbon/human/victim = crew_member
-		if(victim.stat != CONSCIOUS || HAS_TRAIT(victim, TRAIT_VIRUSIMMUNE))
+		if(victim.stat != STABLE || HAS_TRAIT(victim, TRAIT_VIRUSIMMUNE))
 			continue
 		if(!(victim.mind?.assigned_role.job_flags & JOB_CREW_MEMBER))
 			continue

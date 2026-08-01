@@ -11,7 +11,7 @@
 SUBSYSTEM_DEF(npc_ships)
 	name = "NPC Ships"
 	init_order = INIT_ORDER_OVERMAP + 2 // After SSovermap and SSovermap_zones
-	flags = SS_NO_FIRE  // No periodic firing - we spawn on events
+	ss_flags = SS_NO_FIRE  // No periodic firing - we spawn on events
 	runlevels = RUNLEVEL_GAME
 	dependencies = list(
 		/datum/controller/subsystem/shuttle,  // Need SSshuttle to load ship templates

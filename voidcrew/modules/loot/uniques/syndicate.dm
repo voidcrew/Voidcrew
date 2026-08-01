@@ -86,7 +86,7 @@
 	var/mob/living/user = usr
 	if(!istype(user) || being_searched)
 		return
-	if(user.stat != CONSCIOUS)
+	if(user.stat != STABLE)
 		return
 	being_searched = TRUE
 	to_chat(user, span_notice("You start prying at the chit's seam..."))
@@ -792,11 +792,11 @@
 		. += span_notice("[marked]'s face is still fresh enough to copy. Use this in your hand to take it.")
 
 /obj/item/knife/understudy/attack(mob/living/target_mob, mob/living/user, list/modifiers, list/attack_modifiers)
-	var/was_downed = istype(target_mob) && target_mob.stat != DEAD && target_mob.stat < UNCONSCIOUS
+	var/was_downed = istype(target_mob) && target_mob.stat != DEAD && target_mob.stat < HARD_CRIT
 	. = ..()
 	if(!istype(target_mob) || !ishuman(target_mob))
 		return .
-	if(target_mob.stat == DEAD || (was_downed && target_mob.stat >= UNCONSCIOUS))
+	if(target_mob.stat == DEAD || (was_downed && target_mob.stat >= HARD_CRIT))
 		mark_target(target_mob)
 	return .
 

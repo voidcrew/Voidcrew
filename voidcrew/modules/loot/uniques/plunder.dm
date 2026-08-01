@@ -164,8 +164,8 @@
 			addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cheats_deck_clear_stunimmune), user), 4 SECONDS)
 		if("heal")
 			to_chat(user, span_notice("Old aches ease off."))
-			user.adjustBruteLoss(-5)
-			user.adjustStaminaLoss(-15)
+			user.adjust_brute_loss(-5)
+			user.adjust_stamina_loss(-15)
 		if("windfall")
 			to_chat(user, span_notice("You find a coin in your pocket you don't remember putting there."))
 			var/obj/item/stack/spacecash/c10/found_coin = new(get_turf(user))
@@ -238,7 +238,7 @@
 /// repeat swigs inside a minute for flavor (the drunkenness itself stacks
 /// naturally from the real rum being re-dosed each time).
 /obj/item/reagent_containers/cup/glass/bottle/bottomless_ration/proc/grant_liquid_courage(mob/living/target_mob)
-	target_mob.adjustBruteLoss(-3)
+	target_mob.adjust_brute_loss(-3)
 	ADD_TRAIT(target_mob, TRAIT_ANALGESIA, RATION_TRAIT_SOURCE)
 	addtimer(CALLBACK(src, PROC_REF(clear_liquid_courage), target_mob), RATION_PAIN_FREE_TIME, TIMER_OVERRIDE|TIMER_UNIQUE)
 	// Log the swig NOW — the repeat-swig warnings have to land as you drink,

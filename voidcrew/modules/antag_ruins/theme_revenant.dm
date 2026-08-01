@@ -270,7 +270,7 @@
 	if(!body_turf || body_turf.z != here.z || get_dist(here, body_turf) > 1)
 		return FALSE
 	var/mob/living/keeper_body = keeper?.current
-	if(!istype(keeper_body) || keeper_body.stat != CONSCIOUS)
+	if(!istype(keeper_body) || keeper_body.stat != STABLE)
 		return FALSE
 	var/turf/keeper_turf = get_turf(keeper_body)
 	if(!keeper_turf || keeper_turf.z != here.z || get_dist(here, keeper_turf) > 1)
@@ -370,7 +370,7 @@
 	if(patient.stat == DEAD) // they slipped away mid-sitting; that grief belongs to the lantern now
 		balloon_alert(user, "they slipped away...")
 		return ITEM_INTERACT_BLOCKING
-	patient.adjustStaminaLoss(-VESTIGE_TENDED_STAMINA_HEAL)
+	patient.adjust_stamina_loss(-VESTIGE_TENDED_STAMINA_HEAL)
 	patient.adjust_jitter(-1 MINUTES)
 	patient.adjust_dizzy(-1 MINUTES)
 	patient.add_mood_event("vestige_tended", /datum/mood_event/vestige_tended)
@@ -384,7 +384,7 @@
 
 /// Everything that hurts, totaled — the cloth answers to pain of every kind
 /obj/item/vestige_cloth/proc/get_suffering(mob/living/patient)
-	return patient.getBruteLoss() + patient.getFireLoss() + patient.getToxLoss() + patient.getOxyLoss() + patient.getStaminaLoss()
+	return patient.get_brute_loss() + patient.get_fire_loss() + patient.get_tox_loss() + patient.get_oxy_loss() + patient.get_stamina_loss()
 
 /datum/mood_event/vestige_tended
 	description = "Someone stayed until the shaking stopped."

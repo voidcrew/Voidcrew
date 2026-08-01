@@ -168,7 +168,7 @@
 		var/mob/living/basic/beast = onlooker
 		if(!beast.ai_controller || faction_check(wearer.faction, beast.faction))
 			continue
-		beast.ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, wearer)
+		beast.ai_controller.set_blackboard_key(BB_CURRENT_TARGET, wearer)
 
 	RegisterSignal(wearer, COMSIG_MOB_SAY, PROC_REF(amplify_speech), override = TRUE)
 	addtimer(CALLBACK(src, PROC_REF(end_amplify), wearer), amplify_duration)

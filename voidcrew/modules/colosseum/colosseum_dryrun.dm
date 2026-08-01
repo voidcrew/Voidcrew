@@ -16,7 +16,7 @@
 
 SUBSYSTEM_DEF(colosseum_dryrun)
 	name = "Colosseum Dryrun"
-	flags = SS_NO_FIRE
+	ss_flags = SS_NO_FIRE
 	var/failures = 0
 
 /datum/controller/subsystem/colosseum_dryrun/Initialize()

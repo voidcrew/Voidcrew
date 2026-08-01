@@ -495,7 +495,7 @@
  * to get there (NONE when the drift already does the job).
  *
  * This is the part that makes course-following work at speed. `tick_move()` steps
- * the ship by `SIGN(speed[1])` and `SIGN(speed[2])`, so the direction of travel is
+ * the ship by `sign(speed[1])` and `sign(speed[2])`, so the direction of travel is
  * decided purely by the SIGNS of the velocity vector — magnitude only sets how
  * often a tile is crossed. A hair of leftover speed on the wrong axis therefore
  * doesn't nudge the ship slightly off course, it sends it diagonally, every tick,
@@ -514,14 +514,14 @@
  * The axis already carrying the ship the right way is never touched by either.
  */
 /obj/structure/overmap/ship/proc/autopilot_aim_drift(want_x, want_y)
-	var/drift_x = SIGN(speed[1])
-	var/drift_y = SIGN(speed[2])
+	var/drift_x = sign(speed[1])
+	var/drift_y = sign(speed[2])
 	kill_drift(drift_x && drift_x != want_x, drift_y && drift_y != want_y)
 
 	var/burn = NONE
-	if(want_x && SIGN(speed[1]) != want_x)
+	if(want_x && sign(speed[1]) != want_x)
 		burn |= (want_x > 0) ? EAST : WEST
-	if(want_y && SIGN(speed[2]) != want_y)
+	if(want_y && sign(speed[2]) != want_y)
 		burn |= (want_y > 0) ? NORTH : SOUTH
 	return burn
 
@@ -700,7 +700,7 @@
  * autopilot_course_has_danger, which looks a full six ahead).
  *
  * Taken from the velocity rather than from the plotted course. The plan is where we
- * mean to go; `SIGN(speed)` is where we are actually going, and when those disagree
+ * mean to go; `sign(speed)` is where we are actually going, and when those disagree
  * is exactly when a collision happens.
  *
  * **This used to look further and it deadlocked the autopilot outright.** The probe
@@ -715,8 +715,8 @@
 /obj/structure/overmap/ship/proc/autopilot_imminent_hazard(list/danger)
 	if(is_still())
 		return FALSE
-	var/step_x = SIGN(speed[1])
-	var/step_y = SIGN(speed[2])
+	var/step_x = sign(speed[1])
+	var/step_y = sign(speed[2])
 	if(!step_x && !step_y)
 		return FALSE
 	// Already inside one. Stopping doesn't help and every way out crosses more of

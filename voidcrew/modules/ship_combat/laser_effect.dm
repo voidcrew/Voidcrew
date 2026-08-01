@@ -353,7 +353,7 @@
 		for(var/atom/movable/AM in T)
 			if(isliving(AM))
 				var/mob/living/victim = AM
-				victim.adjustFireLoss(damage * 0.5)
+				victim.adjust_fire_loss(damage * 0.5)
 				to_chat(victim, span_userdanger("A ship laser burns through you!"))
 			else if(isobj(AM))
 				var/obj/O = AM
@@ -378,7 +378,7 @@
 	for(var/atom/movable/AM in impact_loc)
 		if(isliving(AM))
 			var/mob/living/victim = AM
-			victim.adjustFireLoss(damage * 0.5)
+			victim.adjust_fire_loss(damage * 0.5)
 			to_chat(victim, span_userdanger("You're hit by a ship laser!"))
 		else if(isobj(AM))
 			var/obj/O = AM

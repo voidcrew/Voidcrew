@@ -103,7 +103,7 @@
 	for(var/mob/living/victim as anything in target_ship.get_all_mobs_aboard())
 		if(QDELETED(victim) || !can_burn(victim))
 			continue
-		victim.adjustFireLoss(burn_per_tick)
+		victim.adjust_fire_loss(burn_per_tick)
 
 /datum/round_event/voidcrew/lich/grave_dirt/end()
 	// Runs whether or not the ship survived — the overlays are tracked against the areas.

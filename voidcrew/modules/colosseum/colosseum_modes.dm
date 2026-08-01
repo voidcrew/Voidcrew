@@ -294,7 +294,7 @@
 		return
 	var/datum/colosseum_contestant/holder
 	for(var/datum/colosseum_contestant/entry as anything in controller.live_entries())
-		if(!isliving(entry.body) || entry.body.stat != CONSCIOUS)
+		if(!isliving(entry.body) || entry.body.stat != STABLE)
 			continue
 		if(!(get_turf(entry.body) in dais_turfs))
 			continue

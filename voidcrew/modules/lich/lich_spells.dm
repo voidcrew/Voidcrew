@@ -332,7 +332,7 @@
 		mend_the_dead(victim)
 		return
 
-	victim.adjustToxLoss(VERDIGRIS_BOLT_ROT, forced = TRUE)
+	victim.adjust_tox_loss(VERDIGRIS_BOLT_ROT, forced = TRUE)
 	victim.visible_message(
 		span_danger("The green soaks into [victim] and starts to rot [victim.p_them()]."),
 		span_userdanger("Something green gets under your skin and starts rotting you."),
@@ -342,7 +342,7 @@
  * The mend, split by mob class because the two classes do not agree on what a
  * damage type is.
  *
- * `/mob/living/basic` keeps ONE pool: its `adjustBruteLoss` and `adjustFireLoss`
+ * `/mob/living/basic` keeps ONE pool: its `adjust_brute_loss` and `adjust_fire_loss`
  * both funnel into `adjust_health()`, which reads and writes the same `bruteloss`
  * var (code/modules/mob/living/basic/health_adjustment.dm:10-40). Healing brute
  * *and* burn on a skeleton — or on one of our own thralls — would therefore quietly
@@ -355,10 +355,10 @@
  */
 /obj/projectile/magic/verdigris_bolt/proc/mend_the_dead(mob/living/victim)
 	if(iscarbon(victim))
-		victim.adjustBruteLoss(-VERDIGRIS_BOLT_MEND * 0.5, forced = TRUE)
-		victim.adjustFireLoss(-VERDIGRIS_BOLT_MEND * 0.5, forced = TRUE)
+		victim.adjust_brute_loss(-VERDIGRIS_BOLT_MEND * 0.5, forced = TRUE)
+		victim.adjust_fire_loss(-VERDIGRIS_BOLT_MEND * 0.5, forced = TRUE)
 	else
-		victim.adjustBruteLoss(-VERDIGRIS_BOLT_MEND, forced = TRUE)
+		victim.adjust_brute_loss(-VERDIGRIS_BOLT_MEND, forced = TRUE)
 	new /obj/effect/temp_visual/heal(get_turf(victim), COLOR_GREEN)
 	victim.visible_message(
 		span_green("The grave-light soaks into [victim], and the damage closes over."),
@@ -464,7 +464,7 @@
  *
  *  - Modern `/mob/living/basic` mobs keep their victim on the AI blackboard, and the
  *    established way to move one from outside is
- *    `ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, thing)` — the
+ *    `ai_controller.set_blackboard_key(BB_CURRENT_TARGET, thing)` — the
  *    same call the vestige ruins use to steer their own garrisons
  *    (voidcrew/modules/antag_ruins/theme_dragon.dm:403, theme_spider.dm:630).
  *    Crucially the retarget STICKS rather than being overwritten on the next
@@ -500,8 +500,8 @@
 		var/datum/ai_controller/instincts = hunter.ai_controller
 		if(instincts)
 			var/moved = FALSE
-			if(instincts.blackboard[BB_BASIC_MOB_CURRENT_TARGET] == caster)
-				instincts.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, decoy)
+			if(instincts.blackboard[BB_CURRENT_TARGET] == caster)
+				instincts.set_blackboard_key(BB_CURRENT_TARGET, decoy)
 				moved = TRUE
 			if(instincts.blackboard[BB_CURRENT_HUNTING_TARGET] == caster)
 				instincts.set_blackboard_key(BB_CURRENT_HUNTING_TARGET, decoy)
@@ -633,7 +633,7 @@
 		return
 
 	stung = TRUE
-	attacker.adjustBruteLoss(VERDIGRIS_MIRAGE_STING)
+	attacker.adjust_brute_loss(VERDIGRIS_MIRAGE_STING)
 	to_chat(attacker, span_userdanger("The mirage bursts, spraying green light through your arm!"))
 	new /obj/effect/temp_visual/small_smoke/halfsecond(get_turf(src))
 	QDEL_IN(src, 0)
@@ -698,7 +698,7 @@
 /obj/item/book/granter/action/spell/verdigris_bolt/recoil(mob/living/user)
 	. = ..()
 	user.visible_message(span_warning("[src] coughs out a wash of green, and the air around [user] starts to smell like wet soil."))
-	user.adjustToxLoss(15, forced = TRUE)
+	user.adjust_tox_loss(15, forced = TRUE)
 
 /obj/item/book/granter/action/spell/grave_mirage
 	name = "codex of the fourth corpse"

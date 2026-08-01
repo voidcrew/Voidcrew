@@ -678,18 +678,18 @@
 		return
 
 	var/pulled = 0
-	var/brute_pull = min(VOW_PULL_CAP, other.getBruteLoss())
+	var/brute_pull = min(VOW_PULL_CAP, other.get_brute_loss())
 	if(brute_pull > 0)
-		other.adjustBruteLoss(-brute_pull, updating_health = TRUE)
-		user.adjustBruteLoss(brute_pull, updating_health = TRUE)
+		other.adjust_brute_loss(-brute_pull, updating_health = TRUE)
+		user.adjust_brute_loss(brute_pull, updating_health = TRUE)
 		pulled += brute_pull
 
 	var/remaining_cap = VOW_PULL_CAP - pulled
 	if(remaining_cap > 0)
-		var/burn_pull = min(remaining_cap, other.getFireLoss())
+		var/burn_pull = min(remaining_cap, other.get_fire_loss())
 		if(burn_pull > 0)
-			other.adjustFireLoss(-burn_pull, updating_health = TRUE)
-			user.adjustFireLoss(burn_pull, updating_health = TRUE)
+			other.adjust_fire_loss(-burn_pull, updating_health = TRUE)
+			user.adjust_fire_loss(burn_pull, updating_health = TRUE)
 			pulled += burn_pull
 
 	if(!pulled)

@@ -19,7 +19,7 @@
 // Hook into world initialization
 SUBSYSTEM_DEF(voidcrew_store)
 	name = "Voidcrew Store"
-	flags = SS_NO_FIRE
+	ss_flags = SS_NO_FIRE
 
 /datum/controller/subsystem/voidcrew_store/Initialize()
 	initialize_voidcrew_store()

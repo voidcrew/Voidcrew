@@ -458,7 +458,7 @@
 		balloon_alert(user, "too simple a costume!")
 		return ITEM_INTERACT_BLOCKING
 	var/mob/living/carbon/human/quarry = target
-	if(quarry.stat != CONSCIOUS)
+	if(quarry.stat != STABLE)
 		balloon_alert(user, "they need to be awake!")
 		return ITEM_INTERACT_BLOCKING
 	if(!quarry.mind)
@@ -479,7 +479,7 @@
 	tail_trial = user.mind?.active_vestige_trial
 	if(!istype(tail_trial))
 		return ITEM_INTERACT_BLOCKING
-	if(form != SKIN_FORM_NONE || quarry.stat != CONSCIOUS)
+	if(form != SKIN_FORM_NONE || quarry.stat != STABLE)
 		return ITEM_INTERACT_BLOCKING
 	user.visible_message(
 		span_warning("[user]'s outline runs like tallow and sets again as [quarry]'s exact double!"),
@@ -532,7 +532,7 @@
 	var/mob/living/carbon/human/credit_victim
 	var/startled_anyone = FALSE
 	for(var/mob/living/carbon/human/victim in range(1, user))
-		if(victim == user || victim.stat != CONSCIOUS || !victim.mind)
+		if(victim == user || victim.stat != STABLE || !victim.mind)
 			continue
 		startled_anyone = TRUE
 		to_chat(victim, span_userdanger("The [shape_name] beside you tears open and something bursts out at you!"))
@@ -592,7 +592,7 @@
 	if(spot_key != quarry_last_spot)
 		quarry_last_spot = spot_key
 		quarry_last_moved = world.time
-	if(wearer.stat != CONSCIOUS || quarry.stat != CONSCIOUS)
+	if(wearer.stat != STABLE || quarry.stat != STABLE)
 		return
 	if(wearer.z != quarry.z || get_dist(wearer, quarry) > VESTIGE_SHADOW_RANGE)
 		if(SPT_PROB(4, seconds_per_tick))
@@ -1362,7 +1362,7 @@
 
 /// Menu validity for the regurgitation radial
 /datum/action/cooldown/spell/vestige_devour/proc/gullet_menu_check()
-	return !QDELETED(src) && !QDELETED(owner) && owner.stat == CONSCIOUS
+	return !QDELETED(src) && !QDELETED(owner) && owner.stat == STABLE
 
 /datum/action/cooldown/spell/vestige_devour/cast(atom/cast_on)
 	. = ..()

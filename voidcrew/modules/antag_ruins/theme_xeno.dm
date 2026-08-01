@@ -463,7 +463,7 @@
 	// The lifespan rides the CHEWER, not the egg — orphans always clean themselves up
 	addtimer(CALLBACK(vermin, TYPE_PROC_REF(/mob/living/basic/hivebot/vestige_comb_chewer, wind_down)), VESTIGE_WARM_CHEWER_LIFESPAN)
 	if(egg_bound)
-		vermin.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, src)
+		vermin.ai_controller?.set_blackboard_key(BB_CURRENT_TARGET, src)
 
 /// Strikes a chewer from the roster. Safe to call twice (death then deletion).
 /obj/structure/vestige_comb_egg/proc/muster_out(mob/living/vermin)
@@ -497,11 +497,11 @@
 		return
 	for(var/mob/living/basic/hivebot/vestige_comb_chewer/vermin as anything in chewers)
 		var/datum/ai_controller/directive = vermin.ai_controller
-		if(!directive || directive.blackboard[BB_BASIC_MOB_CURRENT_TARGET])
+		if(!directive || directive.blackboard[BB_CURRENT_TARGET])
 			continue
 		if(vermin.z != z || get_dist(vermin, src) > 9)
 			continue
-		directive.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, src)
+		directive.set_blackboard_key(BB_CURRENT_TARGET, src)
 	if(SPT_PROB(25, seconds_per_tick))
 		var/datum/vestige_trial/warm_season/trial = get_bound_trial()
 		trial?.refresh_tracker()
@@ -1024,7 +1024,7 @@
 /datum/status_effect/vestige_kiss_corrosion/tick(seconds_between_ticks)
 	if(owner.stat == DEAD)
 		return
-	owner.adjustFireLoss(bite)
+	owner.adjust_fire_loss(bite)
 	bite = min(bite + 1, VESTIGE_KISS_BITE_CAP)
 	if(prob(40))
 		playsound(owner, 'sound/effects/wounds/sizzle1.ogg', 12, TRUE)
@@ -1185,12 +1185,12 @@
  * theirs on a target var. (Quarry-ness is checked separately, above.)
  */
 /obj/item/vestige_census_stinger/proc/is_declared_hunter(mob/living/subject, mob/living/hunter)
-	if(subject.stat != CONSCIOUS)
+	if(subject.stat != STABLE)
 		return FALSE
 	var/atom/mark
 	var/datum/ai_controller/instincts = subject.ai_controller
 	if(instincts)
-		mark = instincts.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+		mark = instincts.blackboard[BB_CURRENT_TARGET]
 	if(isnull(mark) && istype(subject, /mob/living/simple_animal/hostile))
 		var/mob/living/simple_animal/hostile/old_beast = subject
 		mark = old_beast.target
@@ -1588,7 +1588,7 @@
 /obj/effect/vestige_vitriol_residue/proc/scald(mob/living/bather, burn)
 	if(bather.stat == DEAD || HAS_TRAIT(bather, TRAIT_GODMODE))
 		return
-	bather.adjustFireLoss(burn)
+	bather.adjust_fire_loss(burn)
 	if(COOLDOWN_FINISHED(src, sizzle_warning))
 		COOLDOWN_START(src, sizzle_warning, 2 SECONDS)
 		to_chat(bather, span_danger("The vitriol sizzles against you!"))
@@ -1640,7 +1640,7 @@
 /datum/status_effect/vestige_vitriol_coating/tick(seconds_between_ticks)
 	if(owner.stat == DEAD || HAS_TRAIT(owner, TRAIT_GODMODE))
 		return
-	owner.adjustFireLoss(VESTIGE_SPIT_COATING_BURN * seconds_between_ticks)
+	owner.adjust_fire_loss(VESTIGE_SPIT_COATING_BURN * seconds_between_ticks)
 
 /// Anything that washes the victim takes the coat with it
 /datum/status_effect/vestige_vitriol_coating/proc/on_washed(datum/source, clean_types)
@@ -1706,7 +1706,7 @@
  * The paralytic tier: two darts per cooldown (the pointed projectile base's
  * own charge machinery — clicking twice fires both, deactivating with one
  * banked part-refunds the cooldown), and a knockdown rider against targets
- * already winded. The threshold reads getStaminaLoss() in on_hit, which runs
+ * already winded. The threshold reads get_stamina_loss() in on_hit, which runs
  * BEFORE this dart's own damage is applied (bullet_act calls proj.on_hit
  * first, then the living target applies damage/effects — atom_act.dm 116,
  * living_defense.dm 94) — so "already winded" honestly means damage carried
@@ -1730,7 +1730,7 @@
 	var/mob/living/stung = target
 	if(stung.mob_biotypes & MOB_ROBOTIC)
 		return
-	if(stung.getStaminaLoss() < VESTIGE_LASH_FLOOR_THRESHOLD)
+	if(stung.get_stamina_loss() < VESTIGE_LASH_FLOOR_THRESHOLD)
 		return
 	stung.Knockdown(VESTIGE_LASH_FLOOR_KNOCKDOWN)
 	stung.visible_message(
@@ -1988,7 +1988,7 @@
 			burn = VESTIGE_RESIN_CRADLE_HEAL * seconds_per_tick,
 			required_bodytype = BODYTYPE_ORGANIC,
 		)
-		resting.adjustStaminaLoss(-VESTIGE_RESIN_CRADLE_STAMINA * seconds_per_tick)
+		resting.adjust_stamina_loss(-VESTIGE_RESIN_CRADLE_STAMINA * seconds_per_tick)
 		if(SPT_PROB(3, seconds_per_tick))
 			to_chat(resting, span_notice("The cradle shifts around you, settling closer."))
 

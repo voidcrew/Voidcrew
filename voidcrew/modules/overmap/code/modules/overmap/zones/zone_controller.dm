@@ -8,7 +8,7 @@ SUBSYSTEM_DEF(overmap_zones)
 	name = "Overmap Zones"
 	wait = 1 SECONDS
 	init_order = INIT_ORDER_OVERMAP + 1 // Initialize after SSovermap (higher = later)
-	flags = SS_BACKGROUND
+	ss_flags = SS_BACKGROUND
 	runlevels = RUNLEVEL_SETUP | RUNLEVEL_GAME
 	dependencies = list(
 		/datum/controller/subsystem/overmap,

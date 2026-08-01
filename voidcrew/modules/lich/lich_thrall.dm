@@ -96,7 +96,7 @@
 /proc/can_be_lich_thralled(mob/living/target)
 	if(!isliving(target) || QDELETED(target))
 		return FALSE
-	if(target.stat != CONSCIOUS) // never a corpse, never a crit victim
+	if(target.stat != STABLE) // never a corpse, never a crit victim
 		return FALSE
 	if(HAS_TRAIT(target, TRAIT_LICH_THRALL_SPENT))
 		return FALSE
@@ -224,7 +224,7 @@
 		qdel(src)
 		return
 	// And it never rides a body that has stopped being a person.
-	if(owner.stat != CONSCIOUS)
+	if(owner.stat != STABLE)
 		qdel(src)
 		return
 
@@ -374,9 +374,9 @@
 		best_target = candidate
 
 	if(QDELETED(best_target))
-		puppet_controller?.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+		puppet_controller?.clear_blackboard_key(BB_CURRENT_TARGET)
 		return
-	puppet_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, best_target)
+	puppet_controller?.set_blackboard_key(BB_CURRENT_TARGET, best_target)
 
 // ===== THE PUPPET AI =====
 
@@ -414,7 +414,7 @@
 	var/mob/living/living_pawn = pawn
 	if(!isliving(living_pawn))
 		return AI_UNABLE_TO_RUN
-	if(living_pawn.stat > CONSCIOUS || INCAPACITATED_IGNORING(living_pawn, INCAPABLE_GRAB))
+	if(living_pawn.stat > STABLE || INCAPACITATED_IGNORING(living_pawn, INCAPABLE_GRAB))
 		return AI_UNABLE_TO_RUN
 	return ..()
 
@@ -429,11 +429,11 @@
 /datum/ai_planning_subtree/lich_thrall_assault
 
 /datum/ai_planning_subtree/lich_thrall_assault/SelectBehaviors(datum/ai_controller/controller, seconds_per_tick)
-	var/mob/living/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	var/mob/living/target = controller.blackboard[BB_CURRENT_TARGET]
 	if(QDELETED(target) || target.stat == DEAD)
-		controller.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+		controller.clear_blackboard_key(BB_CURRENT_TARGET)
 		return
-	controller.queue_behavior(/datum/ai_behavior/lich_thrall_strike, BB_BASIC_MOB_CURRENT_TARGET)
+	controller.queue_behavior(/datum/ai_behavior/lich_thrall_strike, BB_CURRENT_TARGET)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 /datum/ai_behavior/lich_thrall_strike

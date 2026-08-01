@@ -490,7 +490,7 @@
 /obj/item/mission_recovery/capture_crate/proc/is_subdued(mob/living/beast)
 	if(beast.health <= beast.maxHealth * CAPTURE_HEALTH_FRACTION)
 		return TRUE
-	if(beast.stat == UNCONSCIOUS || beast.stat == HARD_CRIT)
+	if(beast.stat == HARD_CRIT || HAS_TRAIT(beast, TRAIT_KNOCKEDOUT))
 		return TRUE
 	if(HAS_TRAIT(beast, TRAIT_INCAPACITATED))
 		return TRUE

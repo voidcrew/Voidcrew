@@ -384,9 +384,9 @@
 	SIGNAL_HANDLER
 	if(!isliving(attacker) || isnull(ai_controller) || stat)
 		return
-	if(ai_controller.blackboard_key_exists(BB_BASIC_MOB_CURRENT_TARGET))
+	if(ai_controller.blackboard_key_exists(BB_CURRENT_TARGET))
 		return
-	ai_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, attacker)
+	ai_controller.set_blackboard_key(BB_CURRENT_TARGET, attacker)
 
 // =========================================================================
 // COMMITTING
@@ -423,7 +423,7 @@
 	. = ..()
 	if(stat == DEAD)
 		return
-	var/atom/opponent = ai_controller?.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	var/atom/opponent = ai_controller?.blackboard[BB_CURRENT_TARGET]
 	take_a_read(opponent)
 	handle_disengagement(opponent, seconds_per_tick)
 
@@ -699,10 +699,10 @@
 	if(warframe.committed)
 		// Mid-move. No walking, no swinging, nothing queued on top.
 		return SUBTREE_RETURN_FINISH_PLANNING
-	if(warframe.stat != CONSCIOUS)
+	if(warframe.stat != STABLE)
 		return
 
-	var/atom/opponent = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	var/atom/opponent = controller.blackboard[BB_CURRENT_TARGET]
 	if(QDELETED(opponent))
 		return
 	if(isliving(opponent))
@@ -726,7 +726,7 @@
 
 	var/chosen_key = pick_weight(options)
 	controller.set_blackboard_key(BB_WARFRAME_LAST_ABILITY, chosen_key)
-	controller.queue_behavior(/datum/ai_behavior/targeted_mob_ability, chosen_key, BB_BASIC_MOB_CURRENT_TARGET)
+	controller.queue_behavior(/datum/ai_behavior/targeted_mob_ability, chosen_key, BB_CURRENT_TARGET)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 /// Extra weight this ability gets from the current read.

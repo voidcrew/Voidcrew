@@ -208,7 +208,7 @@
 	var/mob/holder = pen.loc
 	if(!ismob(holder))
 		return
-	to_chat(holder, span_notice("[pen] streams: [owner.name] - [round(owner.health)]/[owner.maxHealth] health (brute [round(owner.getBruteLoss())], burn [round(owner.getFireLoss())], tox [round(owner.getToxLoss())], oxy [round(owner.getOxyLoss())])."))
+	to_chat(holder, span_notice("[pen] streams: [owner.name] - [round(owner.health)]/[owner.maxHealth] health (brute [round(owner.get_brute_loss())], burn [round(owner.get_fire_loss())], tox [round(owner.get_tox_loss())], oxy [round(owner.get_oxy_loss())])."))
 
 /datum/status_effect/triage_marked/on_remove()
 	var/obj/item/pen/red/triage/pen = pen_ref?.resolve()
@@ -282,10 +282,10 @@
 
 /// Picks the healer reagent matching the patient's single worst damage type.
 /obj/machinery/iv_drip/meridian_drip/proc/get_target_healer(mob/living/patient)
-	var/brute = patient.getBruteLoss()
-	var/burn = patient.getFireLoss()
-	var/tox = patient.getToxLoss()
-	var/oxy = patient.getOxyLoss()
+	var/brute = patient.get_brute_loss()
+	var/burn = patient.get_fire_loss()
+	var/tox = patient.get_tox_loss()
+	var/oxy = patient.get_oxy_loss()
 	var/worst = max(brute, burn, tox, oxy)
 	if(worst <= 0)
 		return null
@@ -420,9 +420,9 @@
 	if(!patient_turf || !(locate(/obj/item/bedsheet/medical/hospice) in patient_turf))
 		qdel(src)
 		return
-	var/mending = owner.getBruteLoss() || owner.getFireLoss()
-	owner.adjustBruteLoss(-1 * seconds_between_ticks, updating_health = FALSE)
-	owner.adjustFireLoss(-1 * seconds_between_ticks, updating_health = FALSE)
+	var/mending = owner.get_brute_loss() || owner.get_fire_loss()
+	owner.adjust_brute_loss(-1 * seconds_between_ticks, updating_health = FALSE)
+	owner.adjust_fire_loss(-1 * seconds_between_ticks, updating_health = FALSE)
 	owner.updatehealth()
 	// Visible sign that the blanket is doing something - same pulse the lightgeist
 	// and healing-touch effects use. Only while there's actually damage to mend.
@@ -521,18 +521,18 @@
 
 	// Same health redistribution as a normal defib "help" revival (defib.dm do_help()).
 	var/target_health = (HEALTH_THRESHOLD_CRIT + HEALTH_THRESHOLD_DEAD) * 0.5
-	var/total_brute = patient.getBruteLoss()
-	var/total_burn = patient.getFireLoss()
+	var/total_brute = patient.get_brute_loss()
+	var/total_burn = patient.get_fire_loss()
 	if(patient.health > target_health)
-		patient.adjustOxyLoss(patient.health - target_health, updating_health = FALSE)
+		patient.adjust_oxy_loss(patient.health - target_health, updating_health = FALSE)
 	else
-		var/overall_damage = total_brute + total_burn + patient.getToxLoss() + patient.getOxyLoss()
+		var/overall_damage = total_brute + total_burn + patient.get_tox_loss() + patient.get_oxy_loss()
 		if(overall_damage > 0)
 			var/mobhealth = patient.health
-			patient.adjustOxyLoss((mobhealth - target_health) * (patient.getOxyLoss() / overall_damage), updating_health = FALSE)
-			patient.adjustToxLoss((mobhealth - target_health) * (patient.getToxLoss() / overall_damage), updating_health = FALSE, forced = TRUE)
-			patient.adjustFireLoss((mobhealth - target_health) * (total_burn / overall_damage), updating_health = FALSE)
-			patient.adjustBruteLoss((mobhealth - target_health) * (total_brute / overall_damage), updating_health = FALSE)
+			patient.adjust_oxy_loss((mobhealth - target_health) * (patient.get_oxy_loss() / overall_damage), updating_health = FALSE)
+			patient.adjust_tox_loss((mobhealth - target_health) * (patient.get_tox_loss() / overall_damage), updating_health = FALSE, forced = TRUE)
+			patient.adjust_fire_loss((mobhealth - target_health) * (total_burn / overall_damage), updating_health = FALSE)
+			patient.adjust_brute_loss((mobhealth - target_health) * (total_brute / overall_damage), updating_health = FALSE)
 
 	patient.updatehealth()
 	patient.set_heartattack(FALSE)

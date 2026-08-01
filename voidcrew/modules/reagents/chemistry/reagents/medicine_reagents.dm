@@ -5,12 +5,12 @@
 	overdose_threshold = 20
 
 /datum/reagent/medicine/trophazole/on_mob_life(mob/living/carbon/M)
-	M.adjustBruteLoss(-1.5*REM, 0.) // heals 3 brute & 0.5 burn if taken with food. compared to 2.5 brute from bicard + nutriment
+	M.adjust_brute_loss(-1.5*REM, 0.) // heals 3 brute & 0.5 burn if taken with food. compared to 2.5 brute from bicard + nutriment
 	..()
 	. = 1
 
 /datum/reagent/medicine/trophazole/overdose_process(mob/living/M)
-	M.adjustBruteLoss(3*REM, 0)
+	M.adjust_brute_loss(3*REM, 0)
 	..()
 	. = 1
 
@@ -30,7 +30,7 @@
 	reagent_weight = 0.6
 
 /datum/reagent/medicine/rhigoxane/on_mob_life(mob/living/carbon/M)
-	M.adjustFireLoss(-2*REM, 0.)
+	M.adjust_fire_loss(-2*REM, 0.)
 	M.adjust_bodytemperature(-20 * TEMPERATURE_DAMAGE_COEFFICIENT, BODYTEMP_NORMAL)
 	..()
 	. = 1
@@ -47,7 +47,7 @@
 	..()
 
 /datum/reagent/medicine/rhigoxane/overdose_process(mob/living/carbon/M)
-	M.adjustFireLoss(3*REM, 0.)
+	M.adjust_fire_loss(3*REM, 0.)
 	M.adjust_bodytemperature(-35 * TEMPERATURE_DAMAGE_COEFFICIENT, 50)
 	..()
 
@@ -65,18 +65,18 @@
 		return
 	var/mob/living/carbon/C = A
 	if(trans_volume >= 0.6) //prevents cheesing with ultralow doses.
-		C.adjustToxLoss(-1.5 * min(2, trans_volume) * REM, 0)	  //This is to promote iv pole use for that chemotherapy feel.
+		C.adjust_tox_loss(-1.5 * min(2, trans_volume) * REM, 0)	  //This is to promote iv pole use for that chemotherapy feel.
 	var/obj/item/organ/internal/liver/L = C.internal_organs_slot[ORGAN_SLOT_LIVER]
 	if((L.organ_flags & ORGAN_FAILING) || !L)
 		return
-	conversion_amount = trans_volume * (min(100 -C.getOrganLoss(ORGAN_SLOT_LIVER), 80) / 100) //the more damaged the liver the worse we metabolize.
+	conversion_amount = trans_volume * (min(100 -C.get_organ_loss(ORGAN_SLOT_LIVER), 80) / 100) //the more damaged the liver the worse we metabolize.
 	C.reagents.remove_reagent(/datum/reagent/medicine/thializid, conversion_amount)
 	C.reagents.add_reagent(/datum/reagent/medicine/oxalizid, conversion_amount)
 	..()
 */
 /datum/reagent/medicine/thializid/on_mob_life(mob/living/carbon/M)
-	M.adjustOrganLoss(ORGAN_SLOT_LIVER, 0.8)
-	M.adjustToxLoss(-1*REM, 0)
+	M.adjust_organ_loss(ORGAN_SLOT_LIVER, 0.8)
+	M.adjust_tox_loss(-1*REM, 0)
 	for(var/datum/reagent/toxin/R in M.reagents.reagent_list)
 		M.reagents.remove_reagent(R.type,1)
 
@@ -84,7 +84,7 @@
 	. = 1
 
 /datum/reagent/medicine/thializid/overdose_process(mob/living/carbon/M)
-	M.adjustOrganLoss(ORGAN_SLOT_LIVER, 1.5)
+	M.adjust_organ_loss(ORGAN_SLOT_LIVER, 1.5)
 	M.adjust_disgust(3)
 	M.reagents.add_reagent(/datum/reagent/medicine/oxalizid, 0.225 * REM)
 	..()
@@ -99,8 +99,8 @@
 	var/datum/brain_trauma/mild/muscle_weakness/U
 
 /datum/reagent/medicine/oxalizid/on_mob_life(mob/living/carbon/M)
-	M.adjustOrganLoss(ORGAN_SLOT_LIVER, 0.1)
-	M.adjustToxLoss(-1*REM, 0)
+	M.adjust_organ_loss(ORGAN_SLOT_LIVER, 0.1)
+	M.adjust_tox_loss(-1*REM, 0)
 	for(var/datum/reagent/toxin/R in M.reagents.reagent_list)
 		M.reagents.remove_reagent(R.type,1)
 	..()
@@ -117,7 +117,7 @@
 	return ..()
 
 /datum/reagent/medicine/oxalizid/overdose_process(mob/living/carbon/M)
-	M.adjustOrganLoss(ORGAN_SLOT_LIVER, 1.5)
+	M.adjust_organ_loss(ORGAN_SLOT_LIVER, 1.5)
 	M.adjust_disgust(3)
 	..()
 	. = 1
@@ -134,10 +134,10 @@
 	if(iscarbon(M) && M.stat != DEAD)
 		if(method in list(INGEST, INJECT))
 			M.jitteriness += reac_volume
-			if(M.getFireLoss())
-				M.adjustFireLoss(-reac_volume*1.2)
-			if(M.getBruteLoss())
-				M.adjustBruteLoss(-reac_volume*1.2)
+			if(M.get_fire_loss())
+				M.adjust_fire_loss(-reac_volume*1.2)
+			if(M.get_brute_loss())
+				M.adjust_brute_loss(-reac_volume*1.2)
 	if(prob(50))
 		SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "legion", /datum/mood_event/legion_good, name)
 	else
@@ -145,8 +145,8 @@
 	..()
 
 /datum/reagent/medicine/soulus/on_mob_life(mob/living/carbon/M)
-	M.adjustFireLoss(-0.1*REM, 0)
-	M.adjustBruteLoss(-0.1*REM, 0)
+	M.adjust_fire_loss(-0.1*REM, 0)
+	M.adjust_brute_loss(-0.1*REM, 0)
 	M.adjustCloneLoss(clone_dam *REM, 0)
 	..()
 
@@ -174,7 +174,7 @@
 	overdose_threshold = 30
 
 /datum/reagent/medicine/puce_essence/on_mob_life(mob/living/carbon/M)
-	M.adjustToxLoss(-1*REM, 0)
+	M.adjust_tox_loss(-1*REM, 0)
 	for(var/datum/reagent/toxin/R in M.reagents.reagent_list)
 		M.reagents.remove_reagent(R.type, 0.25)
 	if(holder.has_reagent(/datum/reagent/medicine/soulus))				// No, you can't chemstack with soulus dust
@@ -204,7 +204,7 @@
 
 /datum/reagent/medicine/chartreuse/on_mob_life(mob/living/carbon/M)		// Yes, you can chemstack with soulus dust
 	if(prob(80))
-		M.adjustToxLoss(-2*REM, 0)
+		M.adjust_tox_loss(-2*REM, 0)
 	for(var/datum/reagent/toxin/R in M.reagents.reagent_list)
 		M.reagents.remove_reagent(R.type, 1)
 	M.add_atom_colour(color, TEMPORARY_COLOUR_PRIORITY)		// Changes color to chartreuse
@@ -240,11 +240,11 @@
 	..()
 
 /datum/reagent/medicine/lavaland_extract/on_mob_life(mob/living/carbon/M)
-	M.adjustFireLoss(-1*REM, 0)
-	M.adjustBruteLoss(-1*REM, 0)
-	M.adjustToxLoss(-1*REM, 0)
+	M.adjust_fire_loss(-1*REM, 0)
+	M.adjust_brute_loss(-1*REM, 0)
+	M.adjust_tox_loss(-1*REM, 0)
 	if(M.health <= M.crit_threshold)
-		M.adjustOxyLoss(-1*REM, 0)
+		M.adjust_oxy_loss(-1*REM, 0)
 	..()
 	return TRUE
 

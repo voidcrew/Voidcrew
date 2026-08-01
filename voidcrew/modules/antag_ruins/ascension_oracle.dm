@@ -405,7 +405,7 @@
 /mob/living/basic/vestige_oracle/proc/handle_disengagement(seconds_per_tick)
 	var/atom/quarry
 	if(ai_controller)
-		quarry = ai_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+		quarry = ai_controller.blackboard[BB_CURRENT_TARGET]
 	if(is_engaged(quarry))
 		COOLDOWN_START(src, disengage_timer, ORACLE_DISENGAGE_GRACE)
 		return
@@ -513,10 +513,10 @@
 	if(oracle.inert)
 		// Planted for the Last Line. No casting, no swinging, no shuffling.
 		return SUBTREE_RETURN_FINISH_PLANNING
-	if(oracle.stat != CONSCIOUS)
+	if(oracle.stat != STABLE)
 		return
 
-	var/atom/quarry = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	var/atom/quarry = controller.blackboard[BB_CURRENT_TARGET]
 	if(QDELETED(quarry))
 		return
 	if(isliving(quarry))
@@ -548,7 +548,7 @@
 
 	var/chosen_key = pick(options)
 	controller.set_blackboard_key(BB_ORACLE_LAST_ABILITY, chosen_key)
-	controller.queue_behavior(/datum/ai_behavior/targeted_mob_ability, chosen_key, BB_BASIC_MOB_CURRENT_TARGET)
+	controller.queue_behavior(/datum/ai_behavior/targeted_mob_ability, chosen_key, BB_CURRENT_TARGET)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
 /// It does not swing while it is planted.
@@ -960,7 +960,7 @@
 	if(get_dist(owner, summoner) > call_range || !can_see(owner, summoner, call_range))
 		qdel(src)
 		return
-	if(owner.stat != CONSCIOUS || owner.buckled || HAS_TRAIT(owner, TRAIT_IMMOBILIZED))
+	if(owner.stat != STABLE || owner.buckled || HAS_TRAIT(owner, TRAIT_IMMOBILIZED))
 		return
 	step_towards(owner, summoner)
 
@@ -1167,7 +1167,7 @@
 		// People get to keep their own legs. See the item's header.
 		if(listener.client || listener.mind)
 			continue
-		if(listener.stat != CONSCIOUS)
+		if(listener.stat != STABLE)
 			continue
 		listener.apply_status_effect(/datum/status_effect/oracle_called, src, pull_duration)
 
@@ -1555,9 +1555,9 @@
 		best_target = candidate
 
 	if(QDELETED(best_target))
-		puppet_controller?.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+		puppet_controller?.clear_blackboard_key(BB_CURRENT_TARGET)
 		return
-	puppet_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, best_target)
+	puppet_controller?.set_blackboard_key(BB_CURRENT_TARGET, best_target)
 
 /// Violet, not verdigris. Same two layers as the parent (outline for a glance,
 /// colour wash for when the outline is off the screen edge), so the removal

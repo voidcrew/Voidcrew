@@ -444,7 +444,7 @@
 		span_warning("[lurker] draws a palm along an edge and shakes the price onto the floor."),
 		span_notice("No pool in reach, so the door comes out of you. [VESTIGE_TRAPDOOR_TOLL] brute, shop price."),
 	)
-	lurker.adjustBruteLoss(VESTIGE_TRAPDOOR_TOLL)
+	lurker.adjust_brute_loss(VESTIGE_TRAPDOOR_TOLL)
 	// The lurker's own blood where the engine gives them any...
 	lurker.add_splatter_floor(floor)
 	var/obj/effect/decal/cleanable/door = find_wet_door(floor)

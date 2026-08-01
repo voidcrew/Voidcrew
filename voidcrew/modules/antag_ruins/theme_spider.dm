@@ -113,12 +113,12 @@
  * of one) counts — the Snare pays for interrupted hunts, not for wanderers.
  */
 /proc/vestige_loom_hunted_prey(mob/living/menace)
-	if(menace.stat != CONSCIOUS)
+	if(menace.stat != STABLE)
 		return null
 	var/atom/quarry
 	var/datum/ai_controller/instincts = menace.ai_controller
 	if(instincts)
-		quarry = instincts.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+		quarry = instincts.blackboard[BB_CURRENT_TARGET]
 	if(isnull(quarry) && istype(menace, /mob/living/simple_animal/hostile))
 		var/mob/living/simple_animal/hostile/old_beast = menace
 		quarry = old_beast.target
@@ -138,7 +138,7 @@
  * wrap channel: the moment the beast shakes loose, the wrap tears.
  */
 /proc/vestige_loom_is_held_fast(mob/living/beast)
-	if(beast.stat != CONSCIOUS)
+	if(beast.stat != STABLE)
 		return TRUE
 	if(beast.IsStun() || beast.IsParalyzed() || beast.IsKnockdown() || beast.IsImmobilized())
 		return TRUE
@@ -627,7 +627,7 @@
 			REMOVE_TRAIT(beast, TRAIT_AI_PAUSED, REF(src))
 			// It remembers who wrapped it
 			if(isliving(wrangler) && wrangler.z == beast.z && get_dist(wrangler, beast) <= 9)
-				beast.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, wrangler)
+				beast.ai_controller?.set_blackboard_key(BB_CURRENT_TARGET, wrangler)
 	var/datum/vestige_trial/loom_pantry/trial = bound_mind?.active_vestige_trial
 	if(istype(trial) && !QDELETED(trial))
 		trial.cocoons -= src
@@ -983,10 +983,10 @@
 	for(var/mob/living/basic/vestige_silk_thief/filcher as anything in thieves)
 		var/obj/structure/vestige_tremor_line/errand = thieves[filcher]
 		var/datum/ai_controller/instincts = filcher.ai_controller
-		if(!instincts || instincts.blackboard[BB_BASIC_MOB_CURRENT_TARGET])
+		if(!instincts || instincts.blackboard[BB_CURRENT_TARGET])
 			continue
 		if(istype(errand) && !QDELETED(errand) && errand.z == filcher.z)
-			instincts.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, errand)
+			instincts.set_blackboard_key(BB_CURRENT_TARGET, errand)
 	if(length(thieves) || world.time < next_send_at)
 		return
 	if(length(lines) < VESTIGE_TREMOR_MIN_LINES)
@@ -1024,7 +1024,7 @@
 	RegisterSignal(filcher, COMSIG_QDELETING, PROC_REF(on_thief_gone))
 	// The lifespan rides the THIEF, not the trial — orphans always clean themselves up
 	addtimer(CALLBACK(filcher, TYPE_PROC_REF(/mob/living/basic/vestige_silk_thief, dissolve)), VESTIGE_TREMOR_THIEF_LIFESPAN)
-	filcher.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, line)
+	filcher.ai_controller?.set_blackboard_key(BB_CURRENT_TARGET, line)
 	if(isliving(keeper))
 		to_chat(keeper, span_warning("The web shivers. Something small is moving near your line to the [dir2text(get_dir(keeper, line)) || "very spot you stand on"]."))
 		playsound(keeper, 'sound/effects/snap.ogg', 25, TRUE)

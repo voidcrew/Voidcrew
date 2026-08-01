@@ -7,7 +7,7 @@
 	rogue_types = list(/datum/nanite_program/necrotic)
 
 /datum/nanite_program/regenerative/check_conditions()
-	if(!host_mob.getBruteLoss() && !host_mob.getFireLoss())
+	if(!host_mob.get_brute_loss() && !host_mob.get_fire_loss())
 		return FALSE
 	if(iscarbon(host_mob))
 		var/mob/living/carbon/C = host_mob
@@ -26,8 +26,8 @@
 			if(L.heal_damage(0.5 / parts.len, 0.5 / parts.len, null, BODYTYPE_ORGANIC))
 				host_mob.update_damage_overlays()
 	else
-		host_mob.adjustBruteLoss(-0.5, TRUE)
-		host_mob.adjustFireLoss(-0.5, TRUE)
+		host_mob.adjust_brute_loss(-0.5, TRUE)
+		host_mob.adjust_fire_loss(-0.5, TRUE)
 
 /datum/nanite_program/temperature
 	name = "Temperature Adjustment"
@@ -54,12 +54,12 @@
 
 /datum/nanite_program/purging/check_conditions()
 	var/foreign_reagent = length(host_mob.reagents?.reagent_list)
-	if(!host_mob.getToxLoss() && !foreign_reagent)
+	if(!host_mob.get_tox_loss() && !foreign_reagent)
 		return FALSE
 	return ..()
 
 /datum/nanite_program/purging/active_effect()
-	host_mob.adjustToxLoss(-1)
+	host_mob.adjust_tox_loss(-1)
 	for(var/datum/reagent/R in host_mob.reagents.reagent_list)
 		host_mob.reagents.remove_reagent(R.type,1)
 
@@ -80,7 +80,7 @@
 	return problems ? ..() : FALSE
 
 /datum/nanite_program/brain_heal/active_effect()
-	host_mob.adjustOrganLoss(ORGAN_SLOT_BRAIN, -1)
+	host_mob.adjust_organ_loss(ORGAN_SLOT_BRAIN, -1)
 	if(iscarbon(host_mob) && prob(10))
 		var/mob/living/carbon/C = host_mob
 		C.cure_trauma_type(resilience = TRAUMA_RESILIENCE_BASIC)
@@ -112,7 +112,7 @@
 	rogue_types = list(/datum/nanite_program/necrotic)
 
 /datum/nanite_program/repairing/check_conditions()
-	if(!host_mob.getBruteLoss() && !host_mob.getFireLoss())
+	if(!host_mob.get_brute_loss() && !host_mob.get_fire_loss())
 		return FALSE
 
 	if(iscarbon(host_mob))
@@ -138,8 +138,8 @@
 		if(update)
 			host_mob.update_damage_overlays()
 	else
-		host_mob.adjustBruteLoss(-1.5, TRUE)
-		host_mob.adjustFireLoss(-1.5, TRUE)
+		host_mob.adjust_brute_loss(-1.5, TRUE)
+		host_mob.adjust_fire_loss(-1.5, TRUE)
 
 /datum/nanite_program/purging_advanced
 	name = "Selective Blood Purification"
@@ -153,12 +153,12 @@
 	for(var/datum/reagent/toxin/R in host_mob.reagents.reagent_list)
 		foreign_reagent = TRUE
 		break
-	if(!host_mob.getToxLoss() && !foreign_reagent)
+	if(!host_mob.get_tox_loss() && !foreign_reagent)
 		return FALSE
 	return ..()
 
 /datum/nanite_program/purging_advanced/active_effect()
-	host_mob.adjustToxLoss(-1)
+	host_mob.adjust_tox_loss(-1)
 	for(var/datum/reagent/toxin/R in host_mob.reagents.reagent_list)
 		host_mob.reagents.remove_reagent(R.type,1)
 
@@ -182,8 +182,8 @@
 		if(update)
 			host_mob.update_damage_overlays()
 	else
-		host_mob.adjustBruteLoss(-3, TRUE)
-		host_mob.adjustFireLoss(-3, TRUE)
+		host_mob.adjust_brute_loss(-3, TRUE)
+		host_mob.adjust_fire_loss(-3, TRUE)
 
 /datum/nanite_program/brain_heal_advanced
 	name = "Neural Reimaging"
@@ -202,7 +202,7 @@
 	return problems ? ..() : FALSE
 
 /datum/nanite_program/brain_heal_advanced/active_effect()
-	host_mob.adjustOrganLoss(ORGAN_SLOT_BRAIN, -2)
+	host_mob.adjust_organ_loss(ORGAN_SLOT_BRAIN, -2)
 	if(iscarbon(host_mob) && prob(10))
 		var/mob/living/carbon/C = host_mob
 		C.cure_trauma_type(resilience = TRAUMA_RESILIENCE_LOBOTOMY)
