@@ -1,15 +1,31 @@
 #define RESEARCH_POINTS_PER_EXPERIMENT 2000
 
-/datum/experiment/finish_experiment(datum/component/experiment_handler/experiment_handler)
+/**
+ * VOIDCREW EDIT: upstream added a second `linked_web_override` parameter and now routes
+ * published papers through here from /datum/techweb/add_scientific_paper() as
+ * `finish_experiment(linked_web_override = src)` - with NO experiment_handler at all.
+ * (At the merge base that proc completed the experiment inline instead, which is why the
+ * override below exists.) The old one-parameter override dereferenced experiment_handler
+ * unconditionally, so every published ordnance paper runtimed on a null handler.
+ *
+ * The paper route is already paid exactly once by the add_scientific_paper() override
+ * below, so this only pays for the scanner route. Do not also pay on the override path
+ * or a published paper banks the flat bonus twice.
+ */
+/datum/experiment/finish_experiment(datum/component/experiment_handler/experiment_handler, datum/techweb/linked_web_override)
 	. = ..()
-	experiment_handler.linked_web.add_point_list(list(
+	if(isnull(experiment_handler))
+		return
+	experiment_handler.linked_web?.add_point_list(list(
 		TECHWEB_POINT_TYPE_GENERIC = RESEARCH_POINTS_PER_EXPERIMENT),
 	)
 
 /**
- * Ordnance experiments never pass through finish_experiment() - they are finished off from
- * /datum/techweb/add_scientific_paper(), which flips the experiment's completed flag and calls
- * complete_experiment() on us directly, so publishing a paper paid none of the flat experiment bonus above.
+ * Ordnance experiments are finished off from /datum/techweb/add_scientific_paper() rather than by a
+ * scanner, so publishing a paper paid none of the flat experiment bonus above. (At the merge base that
+ * proc flipped the experiment's completed flag and called complete_experiment() directly; upstream now
+ * routes it through finish_experiment(linked_web_override = src) instead. Either way there is no
+ * experiment_handler on this path, so the bonus above does not fire for it - it is paid here.)
  *
  * Pay it here when (and only when) the publication is what actually completed the experiment. Papers that
  * complete nothing pay nothing: publishing a further tier of an already-completed experiment finds it in

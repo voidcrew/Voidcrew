@@ -10,7 +10,11 @@
 	description = "Withdraw ship parts from your account."
 	keybind_signal = COMSIG_KB_CARBON_TAKESHIPPART_DOWN
 
-/datum/keybinding/carbon/remove_ship_part/down(client/user)
+// VOIDCREW: signature must track /datum/keybinding/proc/down(), which upstream widened from
+// (client/user, turf/target) to (client/user, turf/target, mousepos_x, mousepos_y). We use none
+// of the extra args, but declaring them keeps this override from truncating a positional call
+// and keeps the bare ..() below forwarding the full set.
+/datum/keybinding/carbon/remove_ship_part/down(client/user, turf/target, mousepos_x, mousepos_y)
 	. = ..()
 	if(.)
 		return

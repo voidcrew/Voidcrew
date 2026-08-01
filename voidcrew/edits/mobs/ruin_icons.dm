@@ -28,7 +28,10 @@
 /mob/living/basic/mining/legion
 	icon_gib = null
 
-/mob/living/basic/legion_brood
+// VOIDCREW: upstream moved this type from /mob/living/basic/legion_brood to
+// /mob/living/basic/mining/legion_brood. The old path silently became an orphan type
+// nothing spawns, so the real brood went back to its declared icon_gib = "syndicate_gib".
+/mob/living/basic/mining/legion_brood
 	icon_gib = null
 
 // The base clown drops a generated corpse and is deleted on death; its old

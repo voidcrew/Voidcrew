@@ -41,7 +41,13 @@
 	return TRUE
 
 // Hook into load_character to load ship category preferences
-/datum/preferences/load_character(slot)
+// VOIDCREW: the `slot = default_slot` default MUST be repeated here. Upstream used to
+// fall back with an in-body `if(!slot) slot = default_slot`; that fallback was deleted
+// and replaced by the parameter default. An override declaring plain `slot` shadows the
+// default, so the two no-arg callers (preferences.dm and preferences_savefile.dm) would
+// pass null, which sanitize_integer() rewrites to initial(default_slot) == 1 - loading
+// slot 1 over the player's real slot and persisting that to their savefile.
+/datum/preferences/load_character(slot = default_slot)
 	. = ..()
 	if(!.)
 		return FALSE
