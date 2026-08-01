@@ -104,7 +104,7 @@
 	var/added_new_trait = test_level.traits[ZTRAIT_SANDSTORM]
 	var/added_new_index = (test_level.z_value in SSmapping.z_trait_levels[ZTRAIT_SANDSTORM])
 	var/list/new_weather_weights = test_subsystem.weather_types_by_zlevel["[test_level.z_value]"]
-	var/replaced_weather_weights = length(new_weather_weights) && new_weather_weights[/datum/weather/sand_storm] && !new_weather_weights[/datum/weather/ash_storm]
+	var/replaced_weather_weights = length(new_weather_weights) && new_weather_weights[/datum/weather/sand_storm] && !new_weather_weights[/datum/weather/particle/ash_storm]
 
 	// Restore the global trait index before making assertions that may return early.
 	test_subsystem.set_z_level_weather_trait(test_level, null)

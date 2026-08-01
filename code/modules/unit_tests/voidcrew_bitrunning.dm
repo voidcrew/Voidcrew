@@ -38,7 +38,7 @@
 
 	var/checked = 0
 	for(var/datum/lazy_template/virtual_domain/domain_type as anything in subtypesof(/datum/lazy_template/virtual_domain))
-		if(initial(domain_type.test_only))
+		if(initial(domain_type.domain_flags) & DOMAIN_TEST_ONLY)
 			continue
 		checked++
 		var/cost = initial(domain_type.cost)
