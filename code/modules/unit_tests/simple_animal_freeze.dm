@@ -29,8 +29,20 @@
 		/mob/living/simple_animal/hostile/asteroid/elite/legionnaire,
 		/mob/living/simple_animal/hostile/asteroid/elite/legionnairehead,
 		/mob/living/simple_animal/hostile/asteroid/elite/pandora,
+		// Voidcrew: mining and wasteland fauna carried over from the fork's original
+		// mob set, grandfathered here so the freeze still catches genuinely new
+		// simple animals. They are queued for the basic mob refactor like the rest.
+		/mob/living/simple_animal/hostile/asteroid/hermit,
+		/mob/living/simple_animal/hostile/asteroid/hermit/ranged,
+		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/gunslinger,
+		/mob/living/simple_animal/hostile/asteroid/hermit/ranged/hunter,
+		/mob/living/simple_animal/hostile/asteroid/hermit/survivor,
+		/mob/living/simple_animal/hostile/asteroid/hermit/survivor/random,
+		/mob/living/simple_animal/hostile/asteroid/old_demon,
 		/mob/living/simple_animal/hostile/asteroid/polarbear,
 		/mob/living/simple_animal/hostile/asteroid/polarbear/lesser,
+		/mob/living/simple_animal/hostile/asteroid/polarbear/random,
+		/mob/living/simple_animal/hostile/asteroid/polarbear/warrior,
 		/mob/living/simple_animal/hostile/illusion,
 		/mob/living/simple_animal/hostile/illusion/escape,
 		/mob/living/simple_animal/hostile/illusion/mirage,
@@ -58,6 +70,7 @@
 		/mob/living/simple_animal/hostile/ooze,
 		/mob/living/simple_animal/hostile/ooze/gelatinous,
 		/mob/living/simple_animal/hostile/ooze/grapes,
+		/mob/living/simple_animal/sea_crystal, // Voidcrew: see the note above
 		// DO NOT ADD NEW ENTRIES TO THIS LIST
 		// READ THE COMMENT ABOVE
 	)

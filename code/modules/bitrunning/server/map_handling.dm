@@ -83,13 +83,26 @@
 
 /// Initializes a new domain if the given key is valid and the user has enough points
 /obj/machinery/quantum_server/proc/load_domain(map_key)
+	var/datum/lazy_template/virtual_domain/target_domain
 	for(var/datum/lazy_template/virtual_domain/available in SSbitrunning.all_domains)
 		if(map_key == available.key && points >= available.cost)
-			generated_domain = available
+			target_domain = available
 			break
 
-	if(!generated_domain)
+	if(!target_domain)
 		return FALSE
+
+	// Domain datums are one instance for the whole fleet, and their reservation
+	// list and loot counters go with them. A second server booting the same key
+	// would read the first one's reservation, match no landmarks at all and take
+	// itself offline for the round, so one holder per domain at a time.
+	if(!SSbitrunning.claim_domain(map_key, src))
+		balloon_alert_to_viewers("domain in use!")
+		say("[target_domain.name] is already running on another server. Pick a different domain.")
+		playsound(src, "sound/machines/buzz-[pick("sigh", "two")].ogg", 50, TRUE)
+		return FALSE
+
+	generated_domain = target_domain
 
 	if(generated_domain.mission_min_candidates && (!COOLDOWN_FINISHED(src, polling_cooldown)))
 		say("Advanced NPC algorithms resetting, please wait [DisplayTimeText(polling_cooldown)] or load a different domain.")
@@ -176,10 +189,14 @@
 
 			new /obj/structure/hololadder(tile)
 
+	// Logged rather than thrown: an unwound cold_boot_map never restores is_ready,
+	// which leaves the server dark for the rest of the round.
 	if(!length(exit_turfs))
-		CRASH("Failed to find exit turfs on generated domain.")
+		stack_trace("Failed to find exit turfs on generated domain.")
+		return FALSE
 	if(!length(goal_turfs))
-		CRASH("Failed to find send turfs on generated domain.")
+		stack_trace("Failed to find send turfs on generated domain.")
+		return FALSE
 	if(!attempt_spawn_cache(cache_turfs))
 		return FALSE
 
@@ -220,16 +237,22 @@
 	sever_connections() /// just in case someone's connected
 	SEND_SIGNAL(src, COMSIG_BITRUNNER_DOMAIN_SCRUBBED) // avatar cleanup just in case
 
-	// Drop the reservation from the domain before releasing it. lazy_load() appends to
-	// this list and nothing else ever removes from it, so leaving spent entries behind
-	// means index 1 is the first reservation the domain ever made - already released,
-	// with its corner turfs cut. Every later run would then release the wrong (dead)
-	// reservation and, because load_map_items() scopes landmark claiming to index 1,
-	// find no landmarks at all and CRASH on "Failed to find exit turfs".
-	if(length(generated_domain.reservations))
-		var/datum/turf_reservation/res = generated_domain.reservations[1]
-		generated_domain.reservations -= res
-		res.Release()
+	// A boot that failed before a domain was picked still lands here, so nothing
+	// below may assume there is one.
+	if(generated_domain)
+		// Drop the reservation from the domain before releasing it. lazy_load() appends to
+		// this list and nothing else ever removes from it, so leaving spent entries behind
+		// means index 1 is the first reservation the domain ever made - already released,
+		// with its corner turfs cut. Every later run would then release the wrong (dead)
+		// reservation and, because load_map_items() scopes landmark claiming to index 1,
+		// find no landmarks at all and fail on "Failed to find exit turfs".
+		if(length(generated_domain.reservations))
+			var/datum/turf_reservation/res = generated_domain.reservations[1]
+			generated_domain.reservations -= res
+			res.Release()
+
+		generated_domain.secondary_loot_generated = 0
+		SSbitrunning.release_domain(generated_domain.key, src)
 
 	var/list/creatures = spawned_threat_refs + mutation_candidate_refs
 	for(var/datum/weakref/creature_ref as anything in creatures)
@@ -238,8 +261,6 @@
 			continue
 
 		qdel(creature)
-
-	generated_domain.secondary_loot_generated = 0
 
 	avatar_connection_refs.Cut()
 	exit_turfs = list()

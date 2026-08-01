@@ -88,9 +88,7 @@
 	/**
 	 * Movement stuff
 	 */
-	var/y_thrust = 0
-	var/x_thrust = 0
-		///Max possible speed (1 tile per second)
+	///Max possible speed (1 tile per second)
 	var/static/max_speed = 1/(1 SECONDS)
 	///Minimum speed. Any lower is rounded down. (0.5 tiles per minute)
 	var/static/min_speed = 1/(2 MINUTES)
@@ -707,51 +705,6 @@
 	cam_screen.show_camera(visible_turfs, size_x, size_y)
 
 
-/// Resets the ships thrust back to zero
-/obj/structure/overmap/ship/proc/reset_thrust()
-	if (abs(x_thrust) > 1)
-		x_thrust += (1 * ((x_thrust > 0) ? -1 : 1))
-	else
-		x_thrust = 0
-
-	if (abs(y_thrust) > 1)
-		y_thrust += (1 * ((y_thrust > 0) ? -1 : 1))
-	else
-		y_thrust = 0
-
-// NOTE: try_move / apply_thrust / do_move / calculate_thrust below are legacy and
-// dead — real movement runs through adjust_speed() -> tick_move(), and the only
-// caller of apply_thrust() is the commented-out ui_act block in _helm.dm. Because
-// nothing sets x_thrust/y_thrust any more, calculate_thrust() always returns 0.
-// Don't hang new behaviour off them.
-
-/// Move the ship object
-/obj/structure/overmap/ship/proc/try_move()
-	var/x_dir = (x_thrust > 0) ? 1 : -1
-	var/y_dir = (y_thrust > 0) ? 1 : -1
-	if (!x_thrust)
-		x_dir = 0
-	if (!y_thrust)
-		y_dir = 0
-
-	Move(locate(x + x_dir, y + y_dir, z))
-
-/// Apply thrust to the ship object
-/obj/structure/overmap/ship/proc/apply_thrust(x = 0, y = 0)
-	if (x_thrust == 0 && y_thrust == 0)
-		addtimer(CALLBACK(src, PROC_REF(do_move)), 0.5 SECONDS)
-	x_thrust += x
-	y_thrust += y
-
-/// Fires the ship move loop
-/obj/structure/overmap/ship/proc/do_move()
-	if (x_thrust == 0 && y_thrust == 0)
-		return
-
-	try_move()
-	update_screen()
-	addtimer(CALLBACK(src, PROC_REF(do_move)), (1 / calculate_thrust()) SECONDS)
-
 /**
  * Pushes a UI frame to every helm bound to this ship, so the chart starts a fresh
  * glide the instant the ship crosses a tile.
@@ -763,10 +716,6 @@
 /obj/structure/overmap/ship/proc/push_helm_frame()
 	for(var/obj/machinery/computer/helm/console as anything in helm_consoles)
 		SStgui.update_uis(console)
-
-/// Calculates the current thrust of the ship
-/obj/structure/overmap/ship/proc/calculate_thrust()
-	return sqrt((x_thrust ** 2) + (y_thrust ** 2))
 
 /obj/structure/overmap/ship/newtonian_move(direction, instant, start_delay)
 	return // we don't want ships to endlessly drift in space
@@ -2989,6 +2938,11 @@
 		return "Maximum active missions reached ([max_missions])."
 	if(mission.active)
 		return "Mission already accepted."
+	// Boards can hold more copies of a capped contract than the cap allows (the
+	// roll only counts live missions), so the cap has to hold here too or N ships
+	// run the same "limit 1" job at once.
+	if(!mission_type_within_limit(mission.type, mission))
+		return "Contract limit reached for this type."
 
 	if(!mission.start_mission(src))
 		return "Failed to start mission."

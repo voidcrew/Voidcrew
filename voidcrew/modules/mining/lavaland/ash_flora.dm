@@ -2,7 +2,7 @@
 	if(harvested)
 		return 0
 
-	icon_state = "[initial(icon)]p"
+	icon_state = "[initial(icon_state)]p"
 	name = harvested_name
 	desc = harvested_desc
 	harvested = TRUE
@@ -11,11 +11,15 @@
 
 /obj/structure/flora/ash/whitesands
 	icon = 'voidcrew/icons/obj/lavaland/newlavalandplants.dmi'
+	// Abstract parent: every subtype sets its own state. The inherited ash-flora
+	// state ("l_mushroom1") does not exist in this icon file, so point it at one
+	// that does.
+	icon_state = "fern"
 
 /obj/structure/flora/ash/whitesands/fern
 	name = "cave fern"
 	desc = "A species of fern with highly fibrous leaves."
-	icon_state = "fern" //needs new sprites.
+	icon_state = "fern1" // fern1 has the harvested pair state (fern1p); bare "fern" does not
 	harvested_name = "cave fern stems"
 	harvested_desc = "A few cave fern stems, missing their leaves."
 	harvest_amount_high = 4
@@ -28,7 +32,7 @@
 /obj/structure/flora/ash/whitesands/fireblossom
 	name = "fire blossom"
 	desc = "An odd flower that grows commonly near bodies of lava. The leaves can be ground up for a substance resembling capsaicin."
-	icon_state = "fireblossom"
+	icon_state = "fireblossom1" // fireblossom1 has the harvested pair state (fireblossom1p)
 	harvested_name = "fire blossom stems"
 	harvested_desc = "A few fire blossom stems, missing their flowers."
 	harvest_amount_high = 3
@@ -41,7 +45,7 @@
 /obj/structure/flora/ash/whitesands/puce
 	name = "Pucestal Growth"
 	desc = "A collection of puce colored crystal growths."
-	icon_state = "puce"
+	icon_state = "puce1" // puce1 has the harvested pair state (puce1p)
 	harvested_name = "Pucestal fragments"
 	harvested_desc = "A few pucestal fragments, slowly regrowing."
 	harvest_amount_high = 6
@@ -80,6 +84,9 @@
 /obj/item/seeds/lavaland/whitesands
 	icon = 'voidcrew/icons/obj/lavaland/newlavalandplants.dmi'
 	growing_icon = 'voidcrew/icons/obj/lavaland/newlavalandplants.dmi'
+	// Abstract parent: every subtype sets its own state. The inherited seed state
+	// ("seed") does not exist in this icon file, so point it at one that does.
+	icon_state = "seed_fern"
 	species = "fern" // begone test
 	growthstages = 2
 

@@ -156,10 +156,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump{
 	dir = 1
 	},
-/obj/machinery/airlock_controller{
-	dir = 8;
-	pixel_x = 24
-	},
 /obj/item/flashlight/glowstick/red{
 	on = 1
 	},
@@ -805,10 +801,6 @@
 /area/overmap_encounter/planetoid/wasteland)
 "Bz" = (
 /obj/machinery/atmospherics/components/unary/vent_pump,
-/obj/machinery/airlock_controller{
-	dir = 8;
-	pixel_x = 24
-	},
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "BC" = (

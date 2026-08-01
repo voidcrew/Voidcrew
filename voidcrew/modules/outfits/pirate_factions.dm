@@ -117,6 +117,7 @@
 	shoes = /obj/item/clothing/shoes/laceup
 	glasses = /obj/item/clothing/glasses/sunglasses
 	head = /obj/item/clothing/head/costume/irs
+	suit_store = null // an IRS jacket has nowhere to hang the inherited disabler
 
 /datum/outfit/job/assistant/irs
 	name = "Assistant (IRS)"
@@ -168,6 +169,7 @@
 	gloves = /obj/item/clothing/gloves/color/brown
 	head = /obj/item/clothing/head/helmet/military
 	mask = /obj/item/clothing/mask/balaclava
+	suit_store = null // the chestplate only takes melee arms, not the inherited disabler
 
 /datum/outfit/job/assistant/medieval
 	name = "Assistant (Medieval)"

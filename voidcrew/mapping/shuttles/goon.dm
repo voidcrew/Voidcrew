@@ -42,6 +42,10 @@
 /obj/docking_port/mobile/voidcrew/goon // Brewing up something awful here
 	name = "Goon-class Repurposed Emergency Shuttle"
 	area_type = /area/shuttle/voidcrew/goon
+	// The hull is 19x11 with its port mapped facing west, so the shuttle measures 19 fore
+	// to aft against 11 abeam and the aspect-ratio guess in adjust_reserve_dock_to_shuttle
+	// comes out EAST. This must match it or the ship spins 90 degrees on every dock.
+	preferred_direction = 4
 
 /obj/docking_port/mobile/voidcrew/goon/a
 	name = "Goon-class Repurposed Emergency Shuttle A"

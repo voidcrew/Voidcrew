@@ -145,6 +145,7 @@
 	populate_planet_level(surface_level)
 
 	seed_planet_ruins(surface_level, ruin_trait, surface_area_type)
+	generate_ruin_terrain(surface_level)
 	spawn_planet_rivers_for(surface_level, ruin_trait, surface_area_type)
 
 	create_docking_ports()
@@ -216,6 +217,35 @@
 		mineral_budget = 15,
 		mineral_budget_update = OREGEN_PRESET_LAVALAND,
 	)
+
+/**
+ * Runs terrain generation over the areas a ruin brought with it.
+ *
+ * Several mining ruins ship /turf/open/genturf tiles and leave their own area's
+ * generator to fill them in. Roundstart gets that for free — ruins are seeded before
+ * the world-wide generation sweep, which is why SSmapping runs them in that order.
+ * A planet is built the other way round: its terrain is already down before a ruin
+ * lands on it, so a ruin's own areas have to be generated here or those tiles sit
+ * there as bare genturf for the rest of the round.
+ *
+ * The planet's own areas are skipped — they generated at build time, and a second
+ * pass would rewrite the surface out from under everything standing on it. So is any
+ * area whose generator has already run: map_generator stops being a typepath the
+ * moment RunTerrainGeneration() instantiates it.
+ */
+/obj/structure/overmap/planet/proc/generate_ruin_terrain(datum/space_level/level)
+	var/list/generated_areas = list()
+	for(var/turf/tile as anything in level.get_block())
+		var/area/tile_area = tile.loc
+		if(isnull(tile_area) || generated_areas[tile_area])
+			continue
+		generated_areas[tile_area] = TRUE
+		if(istype(tile_area, /area/overmap_encounter/planetoid))
+			continue
+		if(!ispath(tile_area.map_generator))
+			continue
+		tile_area.RunTerrainGeneration()
+		CHECK_TICK
 
 /// Lava and ice planets get their rivers, bounded to the planet's footprint.
 /// The generic cave area is whitelisted too: terrain generation carves rock pockets out

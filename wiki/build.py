@@ -83,7 +83,11 @@ class Page:
             self.body_html,
         )
         self.toc_html = md.toc if getattr(md, "toc_tokens", None) and len(md.toc_tokens) > 1 else ""
-        self.search_text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", self.body_html)).strip()
+        # Tags first, then entities. search_text is plain text: the client
+        # escapes it again before putting a snippet on the page, so an "&amp;"
+        # left in here reaches the reader as a literal "&amp;".
+        stripped = re.sub(r"<[^>]+>", " ", self.body_html)
+        self.search_text = re.sub(r"\s+", " ", html.unescape(stripped)).strip()
 
     @property
     def url(self) -> str:

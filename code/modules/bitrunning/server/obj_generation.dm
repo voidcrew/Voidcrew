@@ -103,7 +103,15 @@
 	var/current_index = 1
 	shuffle_inplace(generated_domain.mob_modules)
 
+	// Same reason load_map_items() scopes its sweep: GLOB.landmarks_list is global
+	// and a fleet can have a server on every ship, so only claim the landmarks
+	// standing inside our own reservation.
+	var/datum/turf_reservation/our_reservation = LAZYACCESS(generated_domain.reservations, 1)
+
 	for(var/obj/effect/landmark/bitrunning/mob_segment/landmark in GLOB.landmarks_list)
+		if(our_reservation && !our_reservation.contains_turf(get_turf(landmark)))
+			continue
+
 		if(current_index > length(generated_domain.mob_modules))
 			stack_trace("vdom: mobs segments are set to unique, but there are more landmarks than available segments")
 			return FALSE

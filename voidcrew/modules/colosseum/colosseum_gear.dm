@@ -154,8 +154,10 @@
 	armor_type = /datum/armor/sandal_sandstrider
 	resistance_flags = NONE
 
+// Feet-only clothing may only carry bio/fire/acid armor (see the
+// gloves_and_shoes_armor unit test) — anything else would need the sandals to
+// cover the legs, which they plainly do not.
 /datum/armor/sandal_sandstrider
-	melee = 10
 	bio = 10
 	fire = 50
 	acid = 30
@@ -184,6 +186,8 @@
 	base_icon_state = "bestiarius0"
 	icon_prefix = "bestiarius"
 	inhand_icon_state = "bamboo_spear0"
+	// No bespoke back sprite in gear.dmi; reuse the bamboo spear's, same as inhands.
+	worn_icon_state = "bamboo_spear0"
 	force_unwielded = 11
 	force_wielded = 19
 	throwforce = 21
@@ -229,6 +233,8 @@
 	desc = "A small round parrying shield: hide over cork over a bronze rim. Light enough to box with, tough enough to stop a saber."
 	icon_state = "parmula"
 	icon = 'voidcrew/modules/colosseum/icons/gear.dmi'
+	// No bespoke back sprite in gear.dmi; reuse the wooden buckler's, same as inhands.
+	worn_icon_state = "buckler"
 	block_chance = 35
 	max_integrity = 90
 	resistance_flags = NONE

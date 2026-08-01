@@ -440,9 +440,6 @@
 	dir = 8
 	},
 /obj/item/oar,
-/obj/machinery/airlock_controller{
-	pixel_y = -24
-	},
 /obj/structure/closet/emcloset/anchored{
 	pixel_x = 32
 	},

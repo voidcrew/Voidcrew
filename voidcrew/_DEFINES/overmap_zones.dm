@@ -26,14 +26,9 @@
 
 // ========== ZONE CONFIGURATION ==========
 
-/// How often zones rotate (in deciseconds) - default 30 minutes
-#define ZONE_ROTATION_INTERVAL (2 MINUTES) // TODO: Change back to 30 MINUTES for production
-
-/// How long before a zone shift to warn players (in deciseconds) - default 5 minutes
-#define ZONE_SHIFT_WARNING_TIME (30 SECONDS) // TODO: Change back to 5 MINUTES for production
-
-/// Additional warning at 1 minute
-#define ZONE_SHIFT_FINAL_WARNING_TIME (10 SECONDS) // TODO: Change back to 1 MINUTES for production
+// Zones are dealt once at roundstart and never move, so there are no rotation
+// or shift-warning knobs here - the defines that used to sit above this line
+// were left over from a rotating-zone design and nothing read them.
 
 /// Time required to cross between zones (in deciseconds) - 10 seconds
 #define ZONE_TRANSITION_TIME (10 SECONDS)
@@ -59,9 +54,6 @@
 
 /// Sent when a ship enters a new zone type: (old_zone_type, new_zone_type)
 #define COMSIG_SHIP_ZONE_CHANGED "ship_zone_changed"
-
-/// Sent when zone rotation completes
-#define COMSIG_GLOB_ZONE_ROTATION_COMPLETE "!zone_rotation_complete"
 
 // ========== ZONE WEAPON RESTRICTIONS ==========
 

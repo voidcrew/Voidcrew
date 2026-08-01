@@ -30,6 +30,9 @@ GLOBAL_LIST_INIT(pirate_item_demands, list(
 	// Medical - bulk supplies
 	list(/obj/item/storage/medkit, 5, "medkits"),
 	list(/obj/item/reagent_containers/hypospray/medipen, 15, "medipens"),
+
+	// Trade vouchers - small counts, they don't come cheap
+	list(/obj/item/stack/trade_voucher, 3, "trade vouchers"),
 ))
 
 /**

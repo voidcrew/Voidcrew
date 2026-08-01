@@ -124,13 +124,17 @@
 		to_chat(user, span_warning("The lanes are quiet — no fresh rumors this shift."))
 		return FALSE
 
+	// Validate the credit half before consuming any vouchers
 	var/credit_price = get_credit_price()
 	var/datum/bank_account/account
 	if(credit_price > 0)
 		account = get_account(user)
-		if(!account || !account.adjust_money(-credit_price, "Trader Outpost: [name]"))
+		if(!account || !account.has_money(credit_price))
 			return FALSE
+
 	if(price_vouchers > 0 && !consume_trade_vouchers(user, price_vouchers))
+		return FALSE
+	if(credit_price > 0 && !account.adjust_money(-credit_price, "Trader Outpost: [name]"))
 		return FALSE
 
 	stock--

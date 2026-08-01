@@ -122,7 +122,7 @@
 /obj/machinery/transporter_pad/examine(mob/user)
 	. = ..()
 	. += span_notice("It is [linked_console ? "slaved to a control console" : "waiting for a control console"].")
-	. += span_notice("Pattern buffer holds <b>[pattern_buffer]</b> object[pattern_buffer == 1 ? "" : "s"] per cycle. A cycle runs <b>[DisplayTimeText(beam_time)]</b>, then recharges for <b>[DisplayTimeText(get_cooldown())]</b>.")
+	. += span_notice("Pattern buffer holds <b>[pattern_buffer]</b> object[pattern_buffer == 1 ? "" : "s"] per cycle, and anything alive inside a container takes a slot of its own. A cycle runs <b>[DisplayTimeText(beam_time)]</b>, then recharges for <b>[DisplayTimeText(get_cooldown())]</b>.")
 	if(biofilter_gap && !has_biofilter())
 		. += span_warning("The biofilter is undersized for the buffer. Anything living that rides this pad is going to feel it.")
 	if(!COOLDOWN_FINISHED(src, transport_recharge))
@@ -188,6 +188,19 @@
 	return null
 
 /**
+ * Everyone riding inside the given atom. A crate is one object to a pattern buffer, but
+ * the people in it are still people: they take up buffer space and they come out the
+ * far end in whatever condition the pad leaves its passengers.
+ *
+ * Only containers are walked. A mob's own contents are its organs and its gear, and
+ * riding in a closet is the loophole this closes.
+ */
+/obj/machinery/transporter_pad/proc/get_contained_passengers(atom/movable/thing)
+	if(QDELETED(thing) || isliving(thing) || !length(thing.contents))
+		return list()
+	return thing.get_all_contents_type(/mob/living)
+
+/**
  * Everything on the given turf that a pattern buffer can hold, living things first so
  * a pile of crates can't crowd a person out of a small buffer.
  *
@@ -205,6 +218,7 @@
 	for(var/obj/thing in source)
 		candidates += thing
 
+	var/slots_used = 0
 	for(var/atom/movable/thing as anything in candidates)
 		if(QDELETED(thing) || thing == src)
 			continue
@@ -219,8 +233,16 @@
 			// Someone strapped to a bolted chair isn't going anywhere.
 			if(subject.buckled?.anchored)
 				continue
+		// A container costs a slot for itself and one for everybody inside it, so a
+		// locker full of people can't ride a two-slot buffer as a single object. One
+		// that won't fit is skipped rather than ending the sweep, so whatever else is
+		// on the pad can still use the slots that are left.
+		var/cost = 1 + length(get_contained_passengers(thing))
+		if(slots_used + cost > pattern_buffer)
+			continue
 		payload += thing
-		if(length(payload) >= pattern_buffer)
+		slots_used += cost
+		if(slots_used >= pattern_buffer)
 			break
 
 	return payload
@@ -325,13 +347,16 @@
 			continue
 		// It arrived, so knit it back together at the far end.
 		transporter_materialise(thing, record[2])
-		if(!isliving(thing))
-			continue
-		var/mob/living/passenger = thing
-		if(obj_flags & EMAGGED)
-			scramble_pattern(passenger, user)
-		else
-			apply_transport_trauma(passenger)
+		// Anyone who rode inside a container went through the same beam and the same
+		// buffer as someone standing on the plating, and gets the same treatment.
+		var/list/passengers = get_contained_passengers(thing)
+		if(isliving(thing))
+			passengers += thing
+		for(var/mob/living/passenger as anything in passengers)
+			if(obj_flags & EMAGGED)
+				scramble_pattern(passenger, user)
+			else
+				apply_transport_trauma(passenger)
 
 /**
  * Residual damage from a buffer the biofilter can't keep up with. A stock pad stings,

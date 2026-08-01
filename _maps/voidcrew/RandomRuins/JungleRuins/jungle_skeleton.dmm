@@ -196,7 +196,7 @@
 /area/ruin/unpowered)
 "Y" = (
 /obj/structure/sacrificealtar,
-/obj/effect/mob_spawn/human/corpse,
+/obj/effect/mob_spawn/corpse/human,
 /obj/item/clothing/suit/armor/bone,
 /turf/open/misc/dirt/jungle,
 /area/ruin/unpowered)

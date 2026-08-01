@@ -389,9 +389,14 @@ for a casual one, with modules and themes soaking up the surplus in between.
 Themes and modules are priced off the hull they sit on - the same greenhouse is
 worth more bolted to a battlecruiser than to a shuttle:
 
-| Hull | Goon | Kilo | Delta | Scarab | Phalanx |
-|------|------|------|-------|--------|---------|
-| Multiplier | 1.0 | 1.25 | 1.5 | 2.0 | 2.0 |
+| Hull | Pill | Goon | Kilo | Delta | Scarab | Phalanx |
+|------|------|------|------|-------|--------|---------|
+| Multiplier | 1.0 | 1.0 | 1.25 | 1.5 | 2.0 | 2.0 |
+
+The Pill sits at 1.0 rather than below it because there is no room under the T1
+base of 2 to put anything - its single bay is the only fitout the hull has, so
+each of its three modules is a T2 capability add at 4 parts. The hull itself is
+free, which is where the joke is paid for.
 
 The Phalanx shares the Scarab's multiplier despite being 2.5x its size. That is
 deliberate (owner call, 2026-07-30): its hull was hand-cut to 60, and leaving the
@@ -419,11 +424,18 @@ module = tier_base * multiplier
 | Default | 0 | The slot's baseline fitout. Always free. |
 | T1 - sidegrade | 2 | Different flavour, same capability. Mess hall, den, gym, vault. |
 | T2 - capability | 4 | Adds a real department or machine, usually a job slot. Chem lab, surgery, brig, greenhouse. |
-| T3 - power spike | 7 | Raises the ship's ceiling outright. TEG, mech garage, xenobiology, full armory, onboard ore redemption. |
+| T3 - power spike | 7 | Raises the ship's ceiling outright. TEG, mech garage, xenobiology, full armory. |
 
 Tier by what the module *does*, not by how much map it fills. The Goon's TEG
 ships unplumbed and is a project rather than a working plant, so it is T2 while
 the Scarab's working TEG is T3.
+
+Ore redemption is tiered by what the hull already has, not by the machine. On the
+Goon and the Phalanx the ORM sits in the slot's free default, because both hulls
+are expected to mine and the slot's other options trade that away. The Delta's
+Mining Bay adds redemption to a hull that had none, so it is T2 at trade 6; the
+Kilo's Ore Refinery adds it on top of a hull already built around mining, so it
+is T3 at trade 9.
 
 ### Upgrade Slot Marker
 

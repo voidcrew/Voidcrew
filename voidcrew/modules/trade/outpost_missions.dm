@@ -184,19 +184,21 @@
  * mission_limit: counts live accepted missions plus every outpost board's
  * unaccepted offers, so a capped contract can't be double-posted (or posted
  * while one is already being run). Limit 0 = uncapped.
+ * * excluding - a mission datum that shouldn't count against itself, so the
+ *   accept-time check can be run on an offer that is still sitting on a board.
  */
-/proc/mission_type_within_limit(mission_type)
+/proc/mission_type_within_limit(mission_type, datum/mission/excluding)
 	var/datum/mission/mission_cast = mission_type
 	var/limit = initial(mission_cast.mission_limit)
 	if(limit <= 0)
 		return TRUE
 	var/count = 0
 	for(var/datum/mission/active as anything in SSmissions.all_active_missions)
-		if(active.type == mission_type)
+		if(active.type == mission_type && active != excluding)
 			count++
 	for(var/obj/structure/overmap/trader_outpost/outpost as anything in GLOB.trader_outposts)
 		for(var/datum/mission/offer as anything in outpost.shop_offers)
-			if(!QDELETED(offer) && offer.type == mission_type)
+			if(!QDELETED(offer) && offer.type == mission_type && offer != excluding)
 				count++
 	return count < limit
 

@@ -750,7 +750,7 @@
 /obj/effect/patrol_marker
 	name = "patrol waypoint"
 	icon = 'icons/effects/effects.dmi'
-	icon_state = "yourturftarget"  // Green target reticle
+	icon_state = "launchpad_target"  // Bracketed target reticle
 	layer = ABOVE_MOB_LAYER
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	alpha = 180

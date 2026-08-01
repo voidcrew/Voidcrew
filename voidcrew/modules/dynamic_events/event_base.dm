@@ -116,10 +116,16 @@
 	pending_target = null
 
 /datum/round_event_control/voidcrew/Topic(href, href_list)
+	// The parent clears `triggering` while handling the reroll, so record whether this
+	// click was the one that caught the pending event before handing over.
+	var/was_pending = triggering
 	..()
 	// The parent's "SOMETHING ELSE" reroll goes through SSevents.spawnEvent, which is a
 	// no-op while allow_random_events is off — reroll through our scheduler instead.
-	if(href_list["different_event"] && !triggering)
+	// Only the click that actually stood the pending event down gets to do it: every
+	// later click on the same link still satisfies `!triggering`, and each one used to
+	// roll another event.
+	if(href_list["different_event"] && was_pending && !triggering)
 		SSdynamic_events.spawn_dynamic_event(excluded_event = src)
 
 /datum/round_event/voidcrew

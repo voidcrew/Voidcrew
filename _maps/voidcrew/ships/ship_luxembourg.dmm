@@ -360,7 +360,7 @@
 "hx" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/luxembourg/cargo/mining)
 "hE" = (
@@ -761,7 +761,7 @@
 	name = "Donk! Co. Powerloader In a Box"
 	},
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/turf_decal/tile/brown{
 	dir = 6
 	},
@@ -1009,7 +1009,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/luxembourg/engineering)
 "By" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/turf_decal/tile/brown{
 	dir = 9
 	},

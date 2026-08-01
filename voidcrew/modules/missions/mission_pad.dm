@@ -37,6 +37,24 @@
 	)
 	AddElement(/datum/element/connect_loc, loc_connections)
 
+/obj/machinery/mission_pad/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
+	. = ..()
+	if(!istype(port))
+		return
+	if(port.current_ship)
+		link_to_ship(port.current_ship)
+		return
+	// At roundstart this hook fires inside action_load(), before the subsystem
+	// assigns port.current_ship - finish the link when the ship load completes.
+	// The Initialize() timer stays as the fallback for in-round construction.
+	RegisterSignal(port, COMSIG_VOIDCREW_SHIP_LOADED, PROC_REF(on_ship_loaded), override = TRUE)
+
+/obj/machinery/mission_pad/proc/on_ship_loaded(obj/docking_port/mobile/voidcrew/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_VOIDCREW_SHIP_LOADED)
+	if(!linked_ship && source.current_ship)
+		link_to_ship(source.current_ship)
+
 /obj/machinery/mission_pad/Destroy()
 	if(linked_console)
 		linked_console.linked_pad = null

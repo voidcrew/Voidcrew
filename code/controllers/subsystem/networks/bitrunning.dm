@@ -5,6 +5,10 @@ SUBSYSTEM_DEF(bitrunning)
 	flags = SS_NO_FIRE
 
 	var/list/all_domains = list()
+	/// Domain key -> weakref of the quantum server currently running it. Domain
+	/// datums are fleet-wide singletons and a fleet can have a server on every
+	/// ship, so only one holder at a time is allowed per key.
+	var/list/domains_in_use = list()
 
 /datum/controller/subsystem/bitrunning/Initialize()
 	InitializeDomains()
@@ -37,6 +41,43 @@ SUBSYSTEM_DEF(bitrunning)
 		))
 
 	return levels
+
+/// The quantum server currently running the given domain key, if any. Clears the
+/// entry if its holder has since been destroyed.
+/datum/controller/subsystem/bitrunning/proc/get_domain_holder(key)
+	var/datum/weakref/holder_ref = domains_in_use[key]
+	if(isnull(holder_ref))
+		return null
+
+	var/obj/machinery/quantum_server/holder = holder_ref.resolve()
+	if(isnull(holder))
+		domains_in_use -= key
+		return null
+
+	return holder
+
+/// Marks a domain key as running on the given server. FALSE if another server holds it.
+/datum/controller/subsystem/bitrunning/proc/claim_domain(key, obj/machinery/quantum_server/server)
+	if(isnull(key) || isnull(server))
+		return FALSE
+
+	var/obj/machinery/quantum_server/holder = get_domain_holder(key)
+	if(holder && holder != server)
+		return FALSE
+
+	domains_in_use[key] = WEAKREF(server)
+	return TRUE
+
+/// Frees a domain key, provided the given server is the one holding it.
+/datum/controller/subsystem/bitrunning/proc/release_domain(key, obj/machinery/quantum_server/server)
+	if(isnull(key))
+		return
+
+	var/obj/machinery/quantum_server/holder = get_domain_holder(key)
+	if(holder && holder != server)
+		return
+
+	domains_in_use -= key
 
 /datum/controller/subsystem/bitrunning/proc/pick_secondary_loot(completed_domain)
 	var/datum/lazy_template/virtual_domain/domain = completed_domain

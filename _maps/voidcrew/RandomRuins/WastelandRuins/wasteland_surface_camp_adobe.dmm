@@ -183,7 +183,7 @@
 /area/ruin/unpowered)
 "I" = (
 /obj/structure/falsewall,
-/turf/open/space/basic,
+/turf/open/floor/plating/rust,
 /area/ruin/unpowered)
 "J" = (
 /obj/structure/sign/poster/contraband/communist_state,

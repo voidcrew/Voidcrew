@@ -348,12 +348,14 @@
  * the heretic's own passage keeps upstream's numbers.
  */
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/ash/vestige
+	name = "Ashen Drift"
 	cooldown_time = 90 SECONDS
 	sound = 'sound/effects/magic/ethereal_enter.ogg'
 	exit_jaunt_sound = 'sound/effects/magic/ethereal_exit.ogg'
 
 /// The long drift, on the same terms: the recharge relaxes to a minute.
 /datum/action/cooldown/spell/jaunt/ethereal_jaunt/ash/long/vestige
+	name = "Ashen Crossing"
 	cooldown_time = 60 SECONDS
 	sound = 'sound/effects/magic/ethereal_enter.ogg'
 	exit_jaunt_sound = 'sound/effects/magic/ethereal_exit.ogg'

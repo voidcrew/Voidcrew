@@ -193,6 +193,27 @@ SUBSYSTEM_DEF(overmap_zones)
 	return SSovermap.get_zone_band_for_turf(T)
 
 /**
+ * Zone type for a z-level that belongs to a planet, or null for anything else.
+ *
+ * Narrower than get_zone_type_anywhere() on purpose: effects tuned for planet
+ * surfaces (ore yields, fauna) must not leak onto the space ruins, asteroid
+ * fields and trader outposts that also resolve to a zone. Falls back to the
+ * band SSmapping dealt a pre-generated roundstart planet pair, which is the only
+ * thing that answers before a dynamic planet has an overmap marker.
+ */
+/datum/controller/subsystem/overmap_zones/proc/planet_zone_type_for_z_level(z)
+	if(!z)
+		return null
+	// Planets own whole z-levels, so any turf on one identifies it.
+	var/turf/probe = locate(1, 1, z)
+	var/obj/structure/overmap/holder = probe ? get_overmap_object_for_turf(probe) : null
+	if(istype(holder, /obj/structure/overmap/planet))
+		var/turf/overmap_turf = get_turf(holder)
+		if(istype(overmap_turf, /turf/open/overmap))
+			return resolve_zone_for_overmap_turf(overmap_turf)
+	return SSmapping.get_planet_zone_band_for_z(z)
+
+/**
  * Finds the overmap object whose loaded interior contains the given turf.
  */
 /datum/controller/subsystem/overmap_zones/proc/get_overmap_object_for_turf(turf/T)

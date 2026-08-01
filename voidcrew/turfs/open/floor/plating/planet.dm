@@ -85,7 +85,9 @@
 	icon_state = "grass"
 	base_icon_state = "grass"
 	planetary_atmos = TRUE
-	icon = 'voidcrew/icons/turf/floors/lava_grass_red.dmi'
+	// icon stays the stock floors.dmi (which has the plain "grass" state); the
+	// coloured sheets are smoothing-only ("grass-0".."grass-255") and get swapped
+	// in by /turf/open/misc/grass/Initialize().
 	smooth_icon = 'voidcrew/icons/turf/floors/lava_grass_red.dmi'
 	// light_power = 1
 	// light_range = 2
@@ -93,12 +95,10 @@
 
 /turf/open/misc/grass/lava/orange
 	baseturfs = /turf/open/misc/grass/lava/orange
-	icon = 'voidcrew/icons/turf/floors/lava_grass_orange.dmi'
 	smooth_icon = 'voidcrew/icons/turf/floors/lava_grass_orange.dmi'
 
 /turf/open/misc/grass/lava/purple
 	baseturfs = /turf/open/misc/grass/lava/purple
-	icon = 'voidcrew/icons/turf/floors/lava_grass_purple.dmi'
 	smooth_icon = 'voidcrew/icons/turf/floors/lava_grass_purple.dmi'
 
 /turf/open/misc/wasteland

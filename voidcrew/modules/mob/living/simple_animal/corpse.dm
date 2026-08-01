@@ -1,3 +1,8 @@
+/// Shared parent of the SolGov corpse outfits. Named so it doesn't show up as a
+/// nameless entry in the admin outfit list.
+/datum/outfit/solgov
+	name = "SolGov"
+
 /obj/effect/mob_spawn/corpse/human/solgov/infantry
 	name = "SolGov Infantryman"
 	outfit = /datum/outfit/solgov/infantrymancorpse

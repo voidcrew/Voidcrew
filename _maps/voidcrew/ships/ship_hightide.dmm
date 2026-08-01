@@ -529,7 +529,7 @@
 /turf/closed/wall,
 /area/shuttle/voidcrew/hightide/maintenance/kitchen)
 "vY" = (
-/obj/effect/decal/cleanable/oil/slippery,
+/obj/effect/decal/cleanable/blood/oil/slippery,
 /obj/machinery/atmospherics/components/tank/air,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hightide/maintenance)
@@ -600,7 +600,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hightide/maintenance)
 "yo" = (
-/obj/effect/decal/cleanable/oil/slippery,
+/obj/effect/decal/cleanable/blood/oil/slippery,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -1069,7 +1069,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hightide/maintenance/starboard)
 "Vr" = (
-/obj/effect/decal/cleanable/oil/slippery,
+/obj/effect/decal/cleanable/blood/oil/slippery,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hightide/maintenance)
@@ -1121,7 +1121,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/hightide/maintenance/starboard)
 "WH" = (
-/obj/effect/decal/cleanable/oil/slippery,
+/obj/effect/decal/cleanable/blood/oil/slippery,
 /obj/structure/closet/crate,
 /obj/effect/spawner/random/maintenance/five,
 /obj/effect/spawner/random/decoration/glowstick,

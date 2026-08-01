@@ -265,7 +265,6 @@
 	})
 "aK" = (
 /obj/machinery/door/airlock/external/glass/ruin{
-	cyclelinkeddir = 666666;
 	id_tag = "pirateportexternal";
 	req_access = null
 	},
@@ -286,7 +285,6 @@
 	})
 "aL" = (
 /obj/machinery/door/airlock/external/glass/ruin{
-	cyclelinkeddir = 666666;
 	id_tag = "pirateportexternal";
 	req_access = null
 	},

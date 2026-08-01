@@ -18,16 +18,18 @@
  * a ward that could be skipped).
  */
 
-/// Factions a ward refuses to count as garrison. Crew pets, borrowed bots and
-/// anything else a raiding party might drag in with them must never be the
-/// reason a hall reads as "not yet cleared" — that failure mode is invisible
-/// and unfixable from inside the lair.
-GLOBAL_LIST_INIT(lich_ward_ignored_factions, list(
-	FACTION_NEUTRAL,
-	FACTION_SILICON,
-	FACTION_CAT,
-	FACTION_MONKEY,
-	FACTION_TURRET,
+/// Factions a ward counts as garrison, listed rather than excluded. Ilthuun and
+/// everything he raises carry FACTION_LICH; the lair's mapped spawners fill the
+/// halls with skeletons (FACTION_SKELETON), zombies (FACTION_HOSTILE) and
+/// constructs (FACTION_CULT). Counting by an allowlist means a crew pet, a
+/// borrowed bot or anything else a raiding party drags in cannot be the reason a
+/// hall reads as "not yet cleared" — that failure mode is invisible from inside
+/// the lair and there is no console, no hack and no welder to undo it.
+GLOBAL_LIST_INIT(lich_ward_garrison_factions, list(
+	FACTION_LICH,
+	FACTION_SKELETON,
+	FACTION_CULT,
+	FACTION_HOSTILE,
 ))
 
 /obj/machinery/lich_ward
@@ -134,8 +136,8 @@ GLOBAL_LIST_INIT(lich_ward_ignored_factions, list(
  * Walks GLOB.mob_living_list rather than the layer's turfs: the living list is
  * short and the turf list is not, and this runs every LICH_WARD_SCAN_INTERVAL
  * on a permanently loaded interior. Players never count (a raider standing in
- * the hall must not hold their own gate shut), and neither does anything dead,
- * nor anything from the ignored factions above.
+ * the hall must not hold their own gate shut), nor does anything dead, nor
+ * anything outside the garrison factions above.
  */
 /obj/machinery/lich_ward/proc/garrison_remaining()
 	var/area/watched = get_layer_area()
@@ -147,7 +149,7 @@ GLOBAL_LIST_INIT(lich_ward_ignored_factions, list(
 			continue
 		if(candidate.client || candidate.mind) // players and player-controlled mobs are raiders, not garrison
 			continue
-		if(faction_check(candidate.faction, GLOB.lich_ward_ignored_factions))
+		if(!faction_check(candidate.faction, GLOB.lich_ward_garrison_factions))
 			continue
 		if(get_area(candidate) != watched)
 			continue

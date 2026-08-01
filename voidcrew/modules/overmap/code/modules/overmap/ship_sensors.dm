@@ -192,6 +192,19 @@
 	return TECHWEB_NODE_RADAR_ARRAY_ELITE in web.researched_nodes
 
 /**
+ * The categories a helm may ask an active scan for, and the only values the
+ * console will pass through. Mirrors SCAN_TYPES in HelmComputer.tsx. Every other
+ * sensor_category in use is deliberately not offered: hazards and nebulas are
+ * `sensor_detectable = FALSE` (star charts are the only way to learn them) and
+ * trader outposts are already permanently on every chart.
+ *
+ * An unfiltered scan is not one of the options. Passing no category at all makes
+ * active_scan() sweep every category at once for a single cooldown, which is why
+ * the console validates against this list rather than forwarding what it is given.
+ */
+GLOBAL_LIST_INIT(overmap_scan_categories, list("Planets", "Ruins", "Ships"))
+
+/**
  * Active scan: sweeps for static objects in the given category within sensor
  * range and adds each as a waypoint. Returns the count of newly-added contacts
  * (already-charted ones are refreshed in place, not recounted), or -1 if the

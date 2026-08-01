@@ -120,7 +120,7 @@
 /area/ruin/powered)
 "lz" = (
 /obj/structure/railing,
-/obj/effect/mob_spawn/human/corpse/solgov/officer,
+/obj/effect/mob_spawn/corpse/human/solgov/officer,
 /obj/item/organ/heart,
 /obj/item/organ/liver,
 /obj/item/organ/stomach,
@@ -250,7 +250,7 @@
 /area/ruin/unpowered)
 "yF" = (
 /obj/structure/railing,
-/obj/effect/mob_spawn/human/corpse/solgov/officer,
+/obj/effect/mob_spawn/corpse/human/solgov/officer,
 /obj/effect/decal/cleanable/blood,
 /obj/item/organ/heart,
 /obj/item/organ/liver,

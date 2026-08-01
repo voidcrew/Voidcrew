@@ -48,7 +48,10 @@
 	if(length(random_loot_2))
 		death_loot += pick(random_loot_2)
 	if(length(death_loot))
-		AddElement(/datum/element/death_drops, death_loot)
+		// Cached by contents: death_drops is a bespoke element keyed on its arguments, so
+		// handing it a fresh list per pirate would spin up a new element for every mob
+		// that rolls the same two items.
+		AddElement(/datum/element/death_drops, string_list(death_loot))
 
 /// Drops plunder_credits as a holochip on death
 /mob/living/basic/trooper/pirate/faction/proc/on_death_drop_credits(mob/living/source)
@@ -491,8 +494,9 @@
 	// Medieval footsoldiers hate guns and throw them hard
 	ADD_TRAIT(src, TRAIT_NOGUNS, INNATE_TRAIT)
 	ADD_TRAIT(src, TRAIT_TOSS_GUN_HARD, INNATE_TRAIT)
-	// Unbreakable spirit - harder to keep down
-	AddComponent(/datum/component/unbreakable)
+	// No unbreakable component here: it refuses any parent that isn't a human and
+	// its crit surge only means anything to a carbon, so on a basic mob it did
+	// nothing but throw an "incompatible component" runtime on every spawn.
 
 /mob/living/basic/trooper/pirate/faction/medieval/ranged
 	name = "Medieval Crossbowman"

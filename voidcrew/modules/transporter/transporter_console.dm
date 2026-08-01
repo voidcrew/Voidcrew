@@ -316,9 +316,17 @@
 	if(!length(candidate_areas))
 		return null
 
+	// One turf list per area type, reused across attempts. get_area_turfs() copies every
+	// turf of the area on that z - roughly 16,000 on a 128x128 surface - and re-picking
+	// the same area used to pay for that again. Reusing the list also carries the Cut()s
+	// forward, so a later attempt never re-tests a turf an earlier one already rejected.
+	var/list/turfs_by_area = list()
 	for(var/attempt in 1 to 5)
 		var/chosen = pick(candidate_areas)
-		var/list/turf/tiles = get_area_turfs(chosen, candidate_areas[chosen])
+		var/list/turf/tiles = turfs_by_area[chosen]
+		if(isnull(tiles))
+			tiles = get_area_turfs(chosen, candidate_areas[chosen])
+			turfs_by_area[chosen] = tiles
 		for(var/sample in 1 to 40)
 			if(!length(tiles))
 				break
@@ -375,6 +383,13 @@
 /obj/machinery/computer/transporter/proc/beam_down(mob/user, use_lock = TRUE)
 	if(!linked_pad)
 		return "no transporter pad linked"
+	// The pad's own gate first. get_random_site() copies whole planet surface areas
+	// turf by turf, and the button that reaches this stays clickable for the entire
+	// recharge - searching for a landing site the pad can't use yet is work nobody
+	// asked for, repeatable as fast as the operator can click.
+	var/reason = linked_pad.blocking_reason()
+	if(reason)
+		return reason
 	var/turf/destination = use_lock ? get_locked_site() : get_random_site()
 	if(!destination && use_lock)
 		destination = get_random_site()

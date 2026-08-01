@@ -84,7 +84,7 @@
 	mob_biotypes = MOB_UNDEAD|MOB_HUMANOID
 	// FACTION_LICH is track A's shared define ("verdigris"). It has to be on him and on
 	// everything he raises, because the ward machines count anything alive, clientless,
-	// mindless and not in GLOB.lich_ward_ignored_factions as that layer's garrison — so
+	// mindless and in GLOB.lich_ward_garrison_factions as that layer's garrison — so
 	// the faction is what makes the layer gates open at the right moment.
 	// FACTION_SKELETON is kept as well so `/mob/living/basic/skeleton` summons never turn
 	// on him, and FACTION_HOSTILE so generic hostile ruin fauna in the lair leave him be.

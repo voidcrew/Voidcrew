@@ -782,8 +782,6 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/pirate_grey)
 "yN" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/mapping_helpers/burnt_floor,
 /turf/closed/wall,
 /area/shuttle/voidcrew/pirate_grey)
 "yU" = (
@@ -1027,7 +1025,6 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/pirate_grey)
 "EA" = (
-/obj/effect/decal/cleanable/dirt,
 /turf/closed/wall/r_wall/rust,
 /area/shuttle/voidcrew/pirate_grey)
 "EC" = (

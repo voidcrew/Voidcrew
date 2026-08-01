@@ -531,7 +531,7 @@ Possible to do for anyone motivated enough:
 	if(outgoing_call)
 		outgoing_call.Check()
 
-	var/are_ringing = FALSE
+	var/are_ringing = incoming_hail // VOIDCREW EDIT CHANGE - was `FALSE`; a pirate hail rings the pad with no holocall behind it, and this proc would clear the icon two seconds later (pirate_comms_holopad.dm)
 
 	for(var/datum/holocall/holocall as anything in holo_calls)
 		if(holocall.connected_holopad == src)

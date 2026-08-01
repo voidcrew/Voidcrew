@@ -202,7 +202,7 @@
 	},
 /obj/effect/decal/cleanable/greenglow,
 /obj/effect/decal/cleanable/dirt,
-/obj/item/areaeditor/shuttle,
+/obj/item/blueprints/shuttle,
 /obj/structure/table,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/b)
@@ -412,7 +412,7 @@
 /area/shuttle/voidcrew/kilo/bridge/b)
 "qa" = (
 /obj/effect/turf_decal/stripes/corner,
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -614,7 +614,7 @@
 /obj/structure/table,
 /obj/machinery/cell_charger,
 /obj/item/stack/cable_coil,
-/obj/item/stock_parts/cell/high,
+/obj/item/stock_parts/power_store/cell/high,
 /obj/effect/decal/cleanable/cobweb,
 /obj/effect/decal/cleanable/blood/old,
 /obj/effect/turf_decal/stripes,
@@ -738,7 +738,7 @@
 	pixel_y = 4
 	},
 /obj/machinery/firealarm/directional/north,
-/obj/item/areaeditor/shuttle,
+/obj/item/blueprints/shuttle,
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/kilo/bridge/b)
 "Ar" = (
@@ -1538,7 +1538,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/engineering/b)
 "XS" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,

@@ -5,6 +5,11 @@
 #define JUMP_STATE_FINALIZED 4
 #define JUMP_CHARGE_DELAY (20 SECONDS)
 #define JUMP_CHARGEUP_TIME (3 MINUTES)
+/// Minimum gap between hails sent from one console. A hail fans out to every helm
+/// in the view ring and lands in each one's comms log, so it needs a floor.
+#define HAIL_SEND_COOLDOWN (3 SECONDS)
+/// Minimum gap between keystroke sounds. The comms field asks for one per keypress.
+#define TYPING_SOUND_COOLDOWN (0.4 SECONDS)
 
 /datum/armor/computer_helm
 	melee = 50
@@ -49,6 +54,9 @@
 	var/played_55_alert = FALSE
 	/// Console ambient sounds
 	var/datum/console_ambience/console_ambience
+
+	COOLDOWN_DECLARE(hail_send_cooldown)
+	COOLDOWN_DECLARE(typing_sound_cooldown)
 
 /obj/machinery/computer/helm/Initialize(mapload)
 	. = ..()
@@ -221,32 +229,9 @@
 		ui.open()
 		// The chart is drawn client-side from contact data, so the helm no longer
 		// needs the ship's camera map instance. Autoupdate is the idle heartbeat;
-		// while under thrust the ship pushes a frame per tile from do_move().
+		// while under way the ship pushes a frame per tile from tick_move().
 		ui.set_autoupdate(TRUE)
-/*
-/obj/machinery/computer/helm/ui_act(action, list/params)
-	. = ..()
 
-	switch(action)
-		if ("north")
-			current_ship.apply_thrust(y = 1)
-		if ("northeast")
-			current_ship.apply_thrust(x = 1, y = 1)
-		if ("east")
-			current_ship.apply_thrust(x = 1)
-		if ("southeast")
-			current_ship.apply_thrust(x = 1, y = -1)
-		if ("south")
-			current_ship.apply_thrust(y = -1)
-		if ("southwest")
-			current_ship.apply_thrust(x = -1, y = -1)
-		if ("west")
-			current_ship.apply_thrust(x = -1)
-		if ("northwest")
-			current_ship.apply_thrust(x = -1, y = 1)
-		if ("reset")
-			current_ship.reset_thrust()
-*/
 /obj/machinery/computer/helm/ui_data(mob/user)
 	// var/list/data = list()
 	var/list/data = ..()
@@ -660,7 +645,8 @@
 	if(current_ship)
 		RegisterSignal(current_ship, COMSIG_SHIP_INTEGRITY_CHANGED, PROC_REF(on_ship_integrity_changed))
 		// The ship pushes a UI frame to every linked console as it crosses a tile,
-		// so the chart's glide stays in step with the move loop (see do_move).
+		// so the chart's glide stays in step with the move loop
+		// (adjust_speed() -> tick_move() -> push_helm_frame()).
 		LAZYOR(current_ship.helm_consoles, src)
 
 /**
@@ -752,15 +738,27 @@
 			current_ship.refresh_engines()
 			return
 		if("typing_sound")
+			// The comms field asks for this on every keypress, so the console decides
+			// how often it actually makes a noise.
+			if(!COOLDOWN_FINISHED(src, typing_sound_cooldown))
+				return
+			COOLDOWN_START(src, typing_sound_cooldown, TYPING_SOUND_COOLDOWN)
 			playsound(src, pick('sound/machines/terminal/terminal_button01.ogg', 'sound/machines/terminal/terminal_button02.ogg', 'sound/machines/terminal/terminal_button03.ogg', 'sound/machines/terminal/terminal_button04.ogg', 'sound/machines/terminal/terminal_button05.ogg', 'sound/machines/terminal/terminal_button06.ogg', 'sound/machines/terminal/terminal_button07.ogg', 'sound/machines/terminal/terminal_button08.ogg'), 10, TRUE)
 			return
 		if("broadcast")
-			var/message = params["message"]
-			if(!message)
+			if(!COOLDOWN_FINISHED(src, hail_send_cooldown))
+				// Balloon rather than say(): the refusal is for whoever pressed the
+				// button, and say() would let a held key talk over the whole bridge.
+				balloon_alert(usr, "transmitter still cycling")
 				return
-			message = trim(message)
+			// A hail is filed on every receiving ship and read back by each of their
+			// helms, so it gets the same handling the communications console gives an
+			// outgoing message: encoded, trimmed and capped.
+			var/message = trim(html_encode(params["message"]), MAX_BROADCAST_LEN)
 			if(!length(message))
 				return
+			COOLDOWN_START(src, hail_send_cooldown, HAIL_SEND_COOLDOWN)
+			log_game("[key_name(usr)] hailed from [current_ship.name] at [AREACOORD(src)]: \"[message]\"")
 			current_ship.ship_broadcast_runechat(message)
 			return
 		if("claim_abandoned")
@@ -787,6 +785,11 @@
 			switch(action)
 				if("active_scan")
 					var/category = params["category"]
+					// active_scan() treats an unrecognised category as "no filter" and
+					// sweeps everything for one cooldown, so only the categories the
+					// console actually offers get through.
+					if(!(category in GLOB.overmap_scan_categories))
+						return
 					var/found = current_ship.active_scan(category)
 					var/label = lowertext(category) || "object"
 					// Vessels are identified where they float rather than charted, and
@@ -819,7 +822,10 @@
 					return
 				if("toggle_engine")
 					var/obj/machinery/power/shuttle_engine/ship/E = locate(params["engine"])
-					if(!istype(E))
+					// locate() reaches any engine in the world off a ref, and the ref
+					// came from the client. Only engines this console's own ship lists
+					// are ours to switch.
+					if(!istype(E) || !(E in current_ship.shuttle?.engine_list))
 						return
 					E.enabled = !E.enabled
 					current_ship.refresh_engines()
@@ -947,3 +953,5 @@
 #undef JUMP_STATE_FINALIZED
 #undef JUMP_CHARGE_DELAY
 #undef JUMP_CHARGEUP_TIME
+#undef HAIL_SEND_COOLDOWN
+#undef TYPING_SOUND_COOLDOWN

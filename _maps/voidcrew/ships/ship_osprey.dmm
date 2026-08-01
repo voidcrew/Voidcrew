@@ -1270,7 +1270,7 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/osprey/hallway/aft)
 "mk" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/turf_decal/tile/red/half/contrasted,
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 1
@@ -1455,7 +1455,7 @@
 /obj/structure/closet/cardboard{
 	name = "forgotten IKEA box"
 	},
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/structure/cable,
 /obj/item/robot_suit,
 /obj/item/bodypart/leg/left/robot,
@@ -1481,7 +1481,7 @@
 /obj/structure/closet/crate,
 /obj/item/stack/sheet/glass/fifty,
 /obj/item/stack/sheet/iron/fifty,
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/turf_decal/bot,
 /turf/open/floor/iron/smooth,
 /area/shuttle/voidcrew/osprey/cargo/warehouse)
@@ -1613,7 +1613,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/osprey/service/cafeteria)
 "oO" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/item/radio/intercom/directional/west{
 	pixel_y = -6
 	},
@@ -2282,7 +2282,7 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/osprey/hallway/port)
 "uY" = (
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/splatter/oil,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 4
 	},
@@ -3377,7 +3377,7 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/osprey/hallway/starboard)
 "Gn" = (
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/splatter/oil,
 /obj/effect/turf_decal/tile/red/half/contrasted{
 	dir = 4
 	},
@@ -3443,7 +3443,7 @@
 /obj/effect/turf_decal/tile/yellow{
 	dir = 8
 	},
-/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/blood/splatter/oil,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/osprey/engineering)
@@ -5020,7 +5020,7 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/osprey/hallway/starboard)
 "XR" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/iron/dark/textured,
 /area/shuttle/voidcrew/osprey/engineering)
 "XS" = (

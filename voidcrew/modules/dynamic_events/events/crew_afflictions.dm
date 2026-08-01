@@ -64,6 +64,9 @@
 	return candidates
 
 /datum/round_event/voidcrew/heart_attack
+	// No announcement anywhere in this chain, so a faked one is silent — it would
+	// spend a False Alarm occurrence and produce nothing.
+	fakeable = FALSE
 	/// A list of prime candidates for heart attacking, assoc victim = weight.
 	var/list/victims = list()
 	/// Number of heart attacks to distribute.
@@ -178,6 +181,11 @@
 	category = EVENT_CATEGORY_HEALTH
 	description = "Some crewmembers suffer from temporary hypochondria."
 	min_crew_aboard = 1
+
+/datum/round_event/voidcrew/fake_virus
+	// Same as the heart attack: nothing in this chain announces, so faking it is
+	// a silent False Alarm.
+	fakeable = FALSE
 
 /datum/round_event/voidcrew/fake_virus/start()
 	if(!target_valid())

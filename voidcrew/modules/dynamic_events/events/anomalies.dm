@@ -28,6 +28,11 @@
 /datum/round_event/voidcrew/anomaly
 	start_when = ANOMALY_START_HARMFUL_TIME
 	announce_when = ANOMALY_ANNOUNCE_HARMFUL_TIME
+	// Our announcement names the area the anomaly picked, which setup() chooses. False
+	// Alarm builds its borrowed event without ever calling setup(), so a faked anomaly
+	// has no spawn turf and announce() bails on the first line — it would burn a False
+	// Alarm occurrence and say nothing at all.
+	fakeable = FALSE
 	/// Area containing the selected spawn turf, used for the rough-location warning.
 	var/area/impact_area
 	/// Open floor turf selected from the target ship during setup.

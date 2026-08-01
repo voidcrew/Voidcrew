@@ -12,9 +12,7 @@
 /datum/map_generator/planet_generator/generate_terrain(list/turf/turfs, datum/planet/planet_type, is_cave, init_planet)
 	. = ..()
 	if(!planet_type)
-		var/message = "[name] planet generation failed!"
-		to_chat(world, span_boldannounce("[message]"))
-		log_world(message)
+		log_world("[name] planet generation failed!")
 		return
 	var/start_time = REALTIMEOFDAY
 
@@ -82,9 +80,9 @@
 	if(caves)
 		cave_area.reg_in_areas_in_z()
 
-	var/message = "[name] planet generation finished in [(REALTIMEOFDAY - start_time)/10]s!"
-	to_chat(world, span_boldannounce("[message]"))
-	log_world(message)
+	// Logged, not announced: planets regenerate mid-round, and a world-wide bold
+	// line every time one builds is a debug leftover from bring-up.
+	log_world("[name] planet generation finished in [(REALTIMEOFDAY - start_time)/10]s!")
 
 /datum/map_generator/planet_generator/proc/generate_overworld(heat, humidity_level, turf/gen_turf, datum/planet/planet_type)
 	var/heat_level
@@ -274,11 +272,9 @@
 				// actually arrive and clears it out again after they leave. On a z-level
 				// SSplanet_mobs isn't tracking, register_spawn_turf() declines and the mob
 				// spawns here as it always did.
-				if(ispath(picked_mob, /obj/structure/spawner) || is_megafauna || !SSplanet_mobs.register_spawn_turf(target_turf))
+				if(ispath(picked_mob, /obj/structure/spawner) || is_megafauna || !SSplanet_mobs.register_spawn_turf(target_turf, picked_mob))
 					new picked_mob(target_turf)
 				spawned_something = TRUE
 		CHECK_TICK
 
-	var/message = "[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!"
-	to_chat(world, span_boldannounce("[message]"))
-	log_world(message)
+	log_world("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!")

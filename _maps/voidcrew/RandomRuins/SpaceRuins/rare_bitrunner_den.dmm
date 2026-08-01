@@ -553,7 +553,7 @@
 /turf/open/floor/iron/dark/textured_large,
 /area/ruin/space/has_grav/powered)
 "oU" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "pl" = (
@@ -1105,7 +1105,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "YC" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark/textured_large,
 /area/ruin/space/has_grav/powered)

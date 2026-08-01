@@ -30,15 +30,13 @@
 	// trade-good veins keep their tuned yields — see block comment
 	if(istype(src, /turf/closed/mineral/telecrystal) || istype(src, /turf/closed/mineral/glacial))
 		return amount
-	// Bands are dealt once at roundstart and never move (zones are static),
-	// so cache the per-z answer instead of re-walking SSmapping.planets on
-	// every mined wall. 0 = "looked up, not a planet z".
-	var/static/list/band_by_z = list()
-	var/band = band_by_z["[z]"]
-	if(isnull(band))
-		band = SSmapping.get_planet_zone_band_for_z(z) || 0
-		band_by_z["[z]"] = band
-	switch(band)
+	// Resolved live, per wall. SSmapping.get_planet_zone_band_for_z() alone only
+	// answers for pre-generated roundstart planets, and every planet this round
+	// is dynamic, so it always came back null; planet_zone_type_for_z_level()
+	// asks the overmap first and falls back to it. Not cached per z either -
+	// dynamic planet z-levels are recycled, so a cached band would follow the
+	// z-level onto the next planet to inherit it.
+	switch(SSovermap_zones?.planet_zone_type_for_z_level(z))
 		if(ZONE_YELLOW)
 			return round(amount * ZONE_PLANET_ORE_MULT_YELLOW)
 		if(ZONE_RED)

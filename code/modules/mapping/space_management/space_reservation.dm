@@ -237,14 +237,20 @@
 		cordon_turf.turf_flags &= ~UNUSED_RESERVATION_TURF
 		SSmapping.used_turfs[cordon_turf] = src
 
+	// Record the corners as part of claiming, not after the conversion below. The
+	// turfs are already flagged RESERVATION_TURF and pointed at us in used_turfs, so
+	// GET_TURF_ABOVE/BELOW route through this reservation from here on - and those
+	// read the corner lists. Publishing them after a pass that yields left a window
+	// where a turf claimed by us had no bounds to look up.
+	bottom_left_turfs += BL
+	top_right_turfs += TR
+
 	// The actual turf conversion is by far the expensive part (a full ChangeTurf per
 	// turf) - now that everything is claimed it can safely spread over multiple ticks
 	for(var/turf/T as anything in final)
 		T.empty(turf_type, turf_type_is_baseturf ? turf_type : null)
 		CHECK_TICK
 
-	bottom_left_turfs += BL
-	top_right_turfs += TR
 	return TRUE
 
 /datum/turf_reservation/proc/reserve(width, height, z_size, z_reservation)
@@ -264,7 +270,9 @@
 
 /// Calculates the effective bounds information for the given turf. Returns a list of the information, or null if not applicable.
 /datum/turf_reservation/proc/calculate_turf_bounds_information(turf/target)
-	for(var/z_idx in 1 to z_size)
+	// Bounded by the corner lists rather than z_size, same as contains_turf(): a
+	// half-built or already-released reservation still has its z_size set.
+	for(var/z_idx in 1 to length(bottom_left_turfs))
 		var/turf/bottom_left = bottom_left_turfs[z_idx]
 		var/turf/top_right = top_right_turfs[z_idx]
 		var/bl_x = bottom_left.x
@@ -299,7 +307,7 @@
 
 	var/z_idx = bounds_info["z_idx"]
 	// check what z level, if its the max, then there is no turf below
-	if(z_idx == z_size)
+	if(z_idx >= length(bottom_left_turfs))
 		return null
 
 	var/offset_x = bounds_info["offset_x"]

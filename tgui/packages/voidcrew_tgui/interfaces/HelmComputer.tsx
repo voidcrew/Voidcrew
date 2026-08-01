@@ -2458,6 +2458,9 @@ const Comms = () => {
   const { transmissions = [] } = data;
   const locked = useLocked();
   const [message, setMessage] = useState('');
+  // The keystroke sound is cosmetic, so it doesn't get a round trip per keypress.
+  // The console keeps its own floor as well; this just stops us asking.
+  const lastKeySound = useRef(0);
 
   const send = () => {
     if (!message.trim()) return;
@@ -2478,7 +2481,11 @@ const Comms = () => {
         disabled={locked}
         onChange={(value) => {
           setMessage(value);
-          act('typing_sound');
+          const now = Date.now();
+          if (now - lastKeySound.current >= 400) {
+            lastKeySound.current = now;
+            act('typing_sound');
+          }
         }}
         onEnter={send}
       />

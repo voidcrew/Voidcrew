@@ -66,6 +66,12 @@
 		),
 	)
 
+/// The console owns us and we point back at it; drop that back-reference on the way
+/// out, or console and RCD keep each other alive and both hard delete.
+/obj/item/construction/rcd/internal/ship/Destroy()
+	ship_console = null
+	return ..()
+
 /// Override build_delay to cancel if the drone moves
 /obj/item/construction/rcd/internal/ship/build_delay(mob/user, delay, atom/target)
 	if(delay <= 0)
@@ -646,6 +652,9 @@
 
 /obj/machinery/computer/camera_advanced/base_construction/ship/Destroy()
 	QDEL_NULL(console_ambience)
+	// The parent qdels the RCD but leaves the var pointing at it; null it here so the
+	// two don't hold each other up.
+	QDEL_NULL(internal_rcd)
 	QDEL_NULL(internal_rtd)
 	QDEL_NULL(internal_rpd)
 	QDEL_NULL(internal_rld)

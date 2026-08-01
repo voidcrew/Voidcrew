@@ -451,6 +451,7 @@
  * boon has no spellbook to level.
  */
 /datum/action/cooldown/spell/pointed/projectile/fireball/vestige
+	name = "Crude Fireball"
 	cooldown_time = 45 SECONDS
 	cooldown_reduction_per_rank = 0 SECONDS
 

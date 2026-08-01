@@ -1793,7 +1793,7 @@
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/b)
 "vp" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/engine,
 /area/shuttle/voidcrew/phalanx/engineering/storage/b)
 "vs" = (

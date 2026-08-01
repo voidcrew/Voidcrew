@@ -28,26 +28,41 @@
 
 /obj/machinery/computer/voidcrew_cargo/LateInitialize()
 	. = ..()
-	if(bank_account_holder)
-		return
-	var/obj/machinery/computer/bank_machine/bank = find_ship_bank()
-	if(!bank)
-		return
-	bank_account_holder = bank
-	RegisterSignal(bank, COMSIG_QDELETING, PROC_REF(on_bank_deletion))
+	// Consoles built in-round are on an already-registered ship, so this finds the bank
+	// straight away. Map-placed ones aren't - the hull hasn't been registered yet when
+	// its atoms initialize - and are caught by connect_to_shuttle() instead.
+	link_ship_bank(find_ship_bank())
+
+/**
+ * Called on every atom aboard a shuttle once its map has finished loading, with the
+ * port handed to us directly. This is the hook that links map-placed consoles: at
+ * LateInitialize() the ship isn't in SSshuttle.mobile_docking_ports yet, so
+ * get_containing_shuttle() can't find it. Mirrors the bank machine's own override.
+ */
+/obj/machinery/computer/voidcrew_cargo/connect_to_shuttle(mapload, obj/docking_port/mobile/port, obj/docking_port/stationary/dock)
+	. = ..()
+	link_ship_bank(find_ship_bank(port))
 
 /**
  * Finds a bank machine aboard the same shuttle as this console.
  * Used to auto-link mapped-in consoles; a multitool still overrides the choice.
  */
-/obj/machinery/computer/voidcrew_cargo/proc/find_ship_bank()
-	var/obj/docking_port/mobile/port = SSshuttle.get_containing_shuttle(src)
+/obj/machinery/computer/voidcrew_cargo/proc/find_ship_bank(obj/docking_port/mobile/port)
+	if(!port)
+		port = SSshuttle.get_containing_shuttle(src)
 	if(!port)
 		return null
 	for(var/area/shuttle_area as anything in port.shuttle_areas)
 		for(var/obj/machinery/computer/bank_machine/bank in shuttle_area)
 			return bank
 	return null
+
+/// Adopts a bank machine as this console's account holder, unless one is already set.
+/obj/machinery/computer/voidcrew_cargo/proc/link_ship_bank(obj/machinery/computer/bank_machine/bank)
+	if(bank_account_holder || !bank)
+		return
+	bank_account_holder = bank
+	RegisterSignal(bank, COMSIG_QDELETING, PROC_REF(on_bank_deletion))
 
 /obj/machinery/computer/voidcrew_cargo/Destroy()
 	if(bank_account_holder)

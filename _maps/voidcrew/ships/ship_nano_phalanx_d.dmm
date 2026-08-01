@@ -2842,7 +2842,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/d)
 "PV" = (
-/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/engine,
 /area/shuttle/voidcrew/phalanx/engineering/storage/d)
 "Qi" = (

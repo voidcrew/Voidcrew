@@ -342,7 +342,7 @@
 /obj/effect/turf_decal/stripes{
 	dir = 4
 	},
-/obj/item/areaeditor/shuttle,
+/obj/item/blueprints/shuttle,
 /obj/structure/table,
 /obj/item/toy/plush/nukeplushie{
 	pixel_y = 5
@@ -573,7 +573,7 @@
 "ys" = (
 /obj/structure/table,
 /obj/machinery/cell_charger,
-/obj/item/stock_parts/cell/high,
+/obj/item/stock_parts/power_store/cell/high,
 /obj/effect/turf_decal/stripes,
 /obj/machinery/light{
 	dir = 1
@@ -812,7 +812,7 @@
 	pixel_y = 4
 	},
 /obj/machinery/firealarm/directional/north,
-/obj/item/areaeditor/shuttle,
+/obj/item/blueprints/shuttle,
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/kilo/bridge/c)
 "CQ" = (

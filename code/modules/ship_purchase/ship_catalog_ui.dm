@@ -95,6 +95,9 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
 		return FALSE
 	if(initial(hull_type.player_hidden))
 		return FALSE
+	// Curated back onto the shelf by hand, so it never earned a place on the starting line
+	if(initial(hull_type.force_purchasable))
+		return FALSE
 	return initial(hull_type.has_upgrade_slots)
 
 /// Every hull the roundstart fleet is allowed to roll

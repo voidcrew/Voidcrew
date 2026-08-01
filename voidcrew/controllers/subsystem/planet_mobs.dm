@@ -45,7 +45,7 @@ SUBSYSTEM_DEF(planet_mobs)
 	var/name
 	/// The planet's z-level number
 	var/surface_z = 0
-	/// Pre-indexed candidate turfs for mob spawning
+	/// Pre-indexed candidate turfs for mob spawning: turf -> the mob type rolled for it
 	var/list/surface_spawn_turfs = list()
 	/// Whether mobs currently exist on this planet
 	var/populated = FALSE
@@ -84,17 +84,20 @@ SUBSYSTEM_DEF(planet_mobs)
 	qdel(tracker)
 
 /**
- * Files a turf as a candidate mob spawn point. Returns TRUE if it was taken, FALSE if
- * this z-level isn't tracked - in which case the caller should spawn its mob directly.
+ * Files a turf as a candidate mob spawn point, along with the mob the terrain pass
+ * rolled for it. The pick has to be carried: zone danger scaling can upgrade it to the
+ * biome's meaner tier, and re-rolling from the base table later would throw that away.
+ * Returns TRUE if it was taken, FALSE if this z-level isn't tracked - in which case the
+ * caller should spawn its mob directly.
  */
-/datum/controller/subsystem/planet_mobs/proc/register_spawn_turf(turf/candidate)
+/datum/controller/subsystem/planet_mobs/proc/register_spawn_turf(turf/candidate, mob_type)
 	var/planet_key = z_to_planet["[candidate.z]"]
 	if(!planet_key)
 		return FALSE
 	var/datum/planet_mob_tracker/tracker = tracked_planets[planet_key]
 	if(!tracker)
 		return FALSE
-	tracker.surface_spawn_turfs += candidate
+	tracker.surface_spawn_turfs[candidate] = mob_type
 	return TRUE
 
 /datum/controller/subsystem/planet_mobs/fire(resumed)
@@ -141,15 +144,21 @@ SUBSYSTEM_DEF(planet_mobs)
 		if(!isturf(candidate))
 			continue
 
-		var/datum/biome/biome = candidate.generating_biome
-		if(!length(biome?.mob_spawn_list))
-			continue
+		// The mob the terrain pass rolled for this turf, zone upgrade and all. Only
+		// turfs filed before this proc learned to carry one fall through to the
+		// biome table.
+		var/mob_type = spawn_turfs[candidate]
+		if(!mob_type)
+			var/datum/biome/biome = candidate.generating_biome
+			if(!length(biome?.mob_spawn_list))
+				continue
 
-		var/list/mob_list = get_filtered_mob_list(biome)
-		if(!length(mob_list))
-			continue
+			var/list/mob_list = get_filtered_mob_list(biome)
+			if(!length(mob_list))
+				continue
 
-		var/mob_type = pickweight(mob_list)
+			mob_type = pickweight(mob_list)
+
 		if(!mob_type)
 			continue
 

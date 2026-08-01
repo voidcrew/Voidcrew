@@ -22,6 +22,16 @@
 /datum/round_event/voidcrew/camera_failure
 	fakeable = FALSE
 
+/**
+ * start() runs first on the same tick, so by the time this speaks the feeds are
+ * already down. Without it the event is invisible: cameras nobody was watching
+ * switch off, with no announcement and no ghost notification.
+ */
+/datum/round_event/voidcrew/camera_failure/announce(fake)
+	if(!target_valid())
+		return
+	target_ship.ship_event_announce("Several of the ship's cameras have dropped off the surveillance network. Those feeds are dark until someone resets them by hand.", "Surveillance Alert")
+
 /datum/round_event/voidcrew/camera_failure/start()
 	if(!target_valid())
 		return

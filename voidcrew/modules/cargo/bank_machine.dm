@@ -48,8 +48,20 @@
 
 /obj/machinery/computer/bank_machine/connect_to_shuttle(mapload, obj/docking_port/mobile/voidcrew/port, obj/docking_port/stationary/dock)
 	. = ..()
-	if(istype(port) && port.current_ship && port.current_ship.ship_account)
+	if(!istype(port))
+		return
+	if(port.current_ship?.ship_account)
 		synced_bank_account = port.current_ship.ship_account
+		return
+	// At roundstart this hook fires inside action_load(), before the subsystem
+	// assigns port.current_ship - finish the link when the ship load completes.
+	RegisterSignal(port, COMSIG_VOIDCREW_SHIP_LOADED, PROC_REF(on_ship_loaded), override = TRUE)
+
+/obj/machinery/computer/bank_machine/proc/on_ship_loaded(obj/docking_port/mobile/voidcrew/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_VOIDCREW_SHIP_LOADED)
+	if(!synced_bank_account && source.current_ship?.ship_account)
+		synced_bank_account = source.current_ship.ship_account
 
 /**
  * CIRCUIT BOARD

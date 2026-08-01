@@ -256,6 +256,19 @@
 	cross_site_pads = null
 	return ..()
 
+/**
+ * A dialed pad that drops out mid-ring is only pruned from `dialed_holopads` by the
+ * parent; our two lists would keep hard-referencing it for the rest of the call, which
+ * is a harddel if the pad was destroyed. Every teardown path — Disconnect(), a pad
+ * going non-operational in Check(), Answer() dropping the pads that lost the race —
+ * funnels through here, so this is the one place that needs to forget it.
+ */
+/datum/holocall/voidcrew/ConnectionFailure(obj/machinery/holopad/disconnected_holopad, graceful = FALSE)
+	if(endpoint_turfs)
+		endpoint_turfs -= disconnected_holopad
+	LAZYREMOVE(cross_site_pads, disconnected_holopad)
+	return ..()
+
 /datum/holocall/voidcrew/Check()
 	. = ..()
 	if(!. || QDELETED(src) || !LAZYLEN(cross_site_pads))

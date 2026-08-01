@@ -17,7 +17,9 @@
 	name = "pirate laser cache"
 	desc = "A crate of laser weapons recovered from a pirate vessel."
 
-/obj/structure/closet/crate/secure/weapon/pirate_loot/lasers/PopulateContents()
+// Steal-objective items have to exist before the crate is first opened, so the
+// objective can track them — see the closets unit test.
+/obj/structure/closet/crate/secure/weapon/pirate_loot/lasers/populate_contents_immediate()
 	. = ..()
 	new /obj/item/gun/energy/laser(src)
 	new /obj/item/gun/energy/laser(src)
@@ -27,7 +29,8 @@
 	name = "pirate disabler cache"
 	desc = "A crate of disabler weapons recovered from a pirate vessel."
 
-/obj/structure/closet/crate/secure/weapon/pirate_loot/disablers/PopulateContents()
+// Same as the laser cache: steal objective, so populate before first open.
+/obj/structure/closet/crate/secure/weapon/pirate_loot/disablers/populate_contents_immediate()
 	. = ..()
 	new /obj/item/gun/energy/disabler(src)
 	new /obj/item/gun/energy/disabler(src)
@@ -78,7 +81,8 @@
 	name = "pirate energy gun cache"
 	desc = "A crate of high-end energy guns recovered from a pirate vessel."
 
-/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/energy_guns/PopulateContents()
+// Same as the laser cache: steal objective, so populate before first open.
+/obj/structure/closet/crate/secure/weapon/pirate_loot/heavy/energy_guns/populate_contents_immediate()
 	. = ..()
 	new /obj/item/gun/energy/e_gun(src)
 	new /obj/item/gun/energy/e_gun(src)

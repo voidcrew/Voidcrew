@@ -964,6 +964,8 @@
 	status_type = STATUS_EFFECT_REPLACE
 	show_duration = TRUE
 	remove_on_fullheal = FALSE
+	// Only ever applied through a subtype, and each of those brings its own alert.
+	alert_type = null
 	/// Printed to the owner when the countdown runs out.
 	var/ready_message = "Your gear is ready again."
 

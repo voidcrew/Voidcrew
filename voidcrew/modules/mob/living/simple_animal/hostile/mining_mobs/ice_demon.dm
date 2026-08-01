@@ -12,7 +12,10 @@
 	icon = 'voidcrew/icons/mob/icemoon/icemoon_monsters.dmi'
 	icon_state = "old_demon"
 	icon_living = "old_demon"
-	icon_dead = "ice_demon_dead"
+	// icemoon_monsters.dmi has no dead sprite for this one, and del_on_death means
+	// the corpse never renders anyway. Point at the living state so nothing can end
+	// up with a blank icon.
+	icon_dead = "old_demon"
 	icon_gib = null
 	mob_biotypes = MOB_ORGANIC|MOB_BEAST
 	mouse_opacity = MOUSE_OPACITY_ICON

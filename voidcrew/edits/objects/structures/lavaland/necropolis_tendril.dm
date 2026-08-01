@@ -108,7 +108,10 @@ GLOBAL_LIST_INIT(planetary_tendrils, list())
 	collected += WEAKREF(collector)
 
 /obj/effect/tendril_collapse/Destroy()
-	QDEL_NULL(collected)
+	// Just drop the list. Its weakrefs are cached on the mobs they point at and
+	// shared with everything else holding one, so they are not ours to delete —
+	// and qdel() refuses lists outright.
+	collected = null
 	QDEL_NULL(emitted_light)
 	return ..()
 

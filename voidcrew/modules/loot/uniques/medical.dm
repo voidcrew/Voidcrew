@@ -569,6 +569,9 @@
 	icon_state = "winterkiss"
 	fill_icon_thresholds = null
 	volume = 15
+	// The ampoule is one dose, so it pours all 15 by default; 5 is there for anyone
+	// splitting it across syringes.
+	amount_per_transfer_from_this = 15
 	possible_transfer_amounts = list(5, 15)
 	list_reagents = list(/datum/reagent/winterkiss = 15)
 
@@ -671,6 +674,7 @@
 	volume = 5
 	amount_per_transfer_from_this = 5
 	possible_transfer_amounts = list()
+	has_variable_transfer_amount = FALSE // one fixed dose, like the other single-use syringes
 	/// Whether this syringe has already been used. One-shot only.
 	var/spent = FALSE
 

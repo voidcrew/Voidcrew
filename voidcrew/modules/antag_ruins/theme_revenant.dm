@@ -438,7 +438,7 @@
  * owner and spends essence in before_cast, so it can't be granted directly.
  */
 /datum/action/cooldown/spell/aoe/vestige_overload
-	name = "Overload Lights"
+	name = "Overcharge the Lights"
 	desc = "Overloads all lights nearby, making them flare and shock anyone close to them."
 	button_icon = 'icons/mob/actions/actions_revenant.dmi'
 	button_icon_state = "overload_lights"

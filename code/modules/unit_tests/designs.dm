@@ -38,6 +38,36 @@
 	var/list/all_designs = list()
 	var/list/exceptions = list(
 		/datum/design/surgery/healing, // Ignored due to the above test
+		// Voidcrew: station-only supply and records consoles. A ship has no station
+		// cargo department to file requests with and no station payroll to audit, so
+		// these are pulled out of their upstream nodes in
+		// voidcrew/modules/research/techweb_nodes.dm. The designs stay behind for the
+		// consoles that are already mapped in; nothing researches them.
+		/datum/design/board/cargorequest,
+		/datum/design/board/accounting_console,
+		/datum/design/cargo_express,
+		/datum/design/bluespace_pod,
+		// Voidcrew: the void thruster board is a Quartermain depot contract reward and
+		// is never sold or printed (see exclusive_rewards in
+		// voidcrew/modules/trade/shop_catalog_outfitter.dm), so unlike the plasma and
+		// expulsion thrusters it is deliberately off the shuttle research ladder.
+		/datum/design/board/engine/void,
+		// Voidcrew: the base nanite design is a template the real programs inherit
+		// from, not a program anyone can print.
+		/datum/design/nanites,
+		// Voidcrew: defective nanite programs are what working programs decay into,
+		// and the heart-stopper is contraband. All of them are reached through nanite
+		// program disks (voidcrew/modules/nanites/code/items/items.dm) rather than
+		// research, which is how the nanite nodes have always been laid out.
+		/datum/design/nanites/glitch,
+		/datum/design/nanites/necrotic,
+		/datum/design/nanites/toxic,
+		/datum/design/nanites/suffocating,
+		/datum/design/nanites/brain_misfire,
+		/datum/design/nanites/skin_decay,
+		/datum/design/nanites/nerve_decay,
+		/datum/design/nanites/brain_decay,
+		/datum/design/nanites/heart_stop,
 	)
 
 	for (var/datum/design/design as anything in subtypesof(/datum/design))

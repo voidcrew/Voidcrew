@@ -220,7 +220,6 @@
 /area/shuttle/pirate)
 "aK" = (
 /obj/machinery/door/airlock/external/glass/ruin{
-	cyclelinkeddir = 666666;
 	id_tag = "pirateportexternal";
 	req_access = null
 	},
@@ -248,7 +247,6 @@
 /area/shuttle/pirate)
 "aL" = (
 /obj/machinery/door/airlock/external/glass/ruin{
-	cyclelinkeddir = 666666;
 	id_tag = "pirateportexternal";
 	req_access = null
 	},

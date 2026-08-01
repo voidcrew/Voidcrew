@@ -21,7 +21,7 @@
 	name = "\improper robotics access card"
 	desc = "A tiny chip that attaches to any standard ID card. This one is configured to access robotics equipment."
 	icon = 'icons/obj/card.dmi'
-	icon_state = "data_4"
+	icon_state = "data_3"
 
 /obj/item/card/robo_access_card/afterattack(atom/movable/AM, mob/user, proximity)
 	. = ..()

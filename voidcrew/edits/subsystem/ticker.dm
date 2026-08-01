@@ -118,6 +118,12 @@
  */
 /datum/controller/subsystem/ticker/proc/deal_roundstart_crews(list/players, count)
 	var/list/crews = list()
+	// No hulls to deal to: the round-robin step would divide by zero. The caller
+	// already refuses to get here, so shout about it rather than fail silently.
+	if(count <= 0)
+		stack_trace("deal_roundstart_crews() called with no hulls - [length(players)] ready player(s) have nowhere to go")
+		return crews
+
 	for(var/i in 1 to count)
 		crews += list(list())
 

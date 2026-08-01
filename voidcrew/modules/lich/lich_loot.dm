@@ -431,6 +431,8 @@ GLOBAL_LIST_INIT(lich_hoard_contents, list(
 	lefthand_file = 'voidcrew/modules/lich/icons/lich_garb.dmi'
 	righthand_file = 'voidcrew/modules/lich/icons/lich_garb.dmi'
 	inhand_icon_state = "lich_staff_inhand"
+	// No bespoke back sprite in lich_garb.dmi, so borrow the necro staff's.
+	worn_icon_state = "necrostaff"
 	icon_angle = -45
 	force = 18
 	throwforce = 12
