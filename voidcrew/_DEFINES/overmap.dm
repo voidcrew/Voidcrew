@@ -86,3 +86,9 @@
 #define ELECTRICAL_STORM_SMES_CHARGE (150 KILO JOULES)
 /// Charge multiplier for minor electrical storms (moderate uses intensity 1, majour intensity 2)
 #define ELECTRICAL_STORM_SMES_CHARGE_MULT_MINOR 0.5
+
+// Worldgen queue (voidcrew/modules/overmap/code/controllers/subsystem/worldgen_queue.dm)
+/// Pass as a load_level() queue timeout to mean "build it only if the queue is free
+/// right now, otherwise give up". For UI paths that must answer immediately rather
+/// than hold a player's interface open while somebody else's planet finishes.
+#define WORLDGEN_QUEUE_NO_WAIT 0

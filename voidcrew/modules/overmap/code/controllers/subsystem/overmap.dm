@@ -91,6 +91,10 @@ SUBSYSTEM_DEF(overmap)
 		if(QDELETED(ship))
 			simulated_ships -= ship
 
+	// A build or teardown that runtimed partway through never released the worldgen
+	// queue, and everything waiting on it would sit there for the rest of the round.
+	worldgen_watchdog()
+
 	// First tick after FULL world init: start generating the roundstart planets in the
 	// background. Flag is set before the call so a long build can't be started twice.
 	//
@@ -700,19 +704,25 @@ SUBSYSTEM_DEF(overmap)
 #endif
 
 /**
- * Rolls and spawns one roundstart hull: a random modular hull, a random theme on it,
+ * Rolls and spawns one free hull: a random modular hull, a random theme on it,
  * and a random module in every one of its upgrade slots.
  *
  * Costs are ignored throughout - nobody is paying for these. Hull classes are drawn
  * without replacement while the pool lasts, so a three-ship round is three different
  * classes rather than three Scarabs.
  *
+ * Arguments:
+ * * track_as_initial - TRUE for the roundstart fleet, which SSticker deals crews into
+ * and which reports its own losses to admins. FALSE for hulls requisitioned mid-round
+ * from the join menu: those are ordinary player ships from the moment they exist, and
+ * counting them as roundstart hulls would make the fleet look like it never shrank.
+ *
  * Returns the spawned ship, or null on failure.
  */
-/datum/controller/subsystem/overmap/proc/spawn_roundstart_hull()
+/datum/controller/subsystem/overmap/proc/spawn_free_hull(track_as_initial = TRUE)
 	var/list/pool = get_roundstart_hull_templates()
 	if(!length(pool))
-		CRASH("No modular hulls are eligible to spawn at round start.")
+		CRASH("No modular hulls are eligible to spawn for free.")
 
 	var/list/unused = pool - spent_roundstart_hulls
 	var/datum/map_template/shuttle/voidcrew/hull = pick(length(unused) ? unused : pool)
@@ -724,23 +734,29 @@ SUBSYSTEM_DEF(overmap)
 	// mappath on whatever template object it's handed
 	var/obj/structure/overmap/ship/spawned = SSshuttle.create_ship(hull.type, selections, theme)
 	if(!spawned)
-		stack_trace("Failed to spawn roundstart ship: [hull.type]")
+		stack_trace("Failed to spawn free hull: [hull.type]")
 		return null
 
 	spent_roundstart_hulls += hull
-	initial_ships += spawned
-	if(!initial_ship)
-		initial_ship = spawned
-	RegisterSignal(spawned, COMSIG_QDELETING, PROC_REF(handle_initial_ship_deletion))
+	if(track_as_initial)
+		initial_ships += spawned
+		if(!initial_ship)
+			initial_ship = spawned
+		RegisterSignal(spawned, COMSIG_QDELETING, PROC_REF(handle_initial_ship_deletion))
 
 	var/list/rolled = list()
 	for(var/slot_key in selections)
 		var/datum/ship_upgrade_module/module = selections[slot_key]
 		rolled += "[slot_key]=[module.id]"
-	log_mapping("SSovermap: roundstart hull [hull.name] spawned as '[spawned.name]' \
-		(theme: [theme?.id || "none"], modules: [length(rolled) ? rolled.Join(", ") : "defaults"])")
+	log_mapping("SSovermap: free hull [hull.name] spawned as '[spawned.name]' \
+		(theme: [theme?.id || "none"], modules: [length(rolled) ? rolled.Join(", ") : "defaults"], \
+		[track_as_initial ? "roundstart fleet" : "requisitioned"])")
 
 	return spawned
+
+/// One hull for the roundstart fleet. See spawn_free_hull().
+/datum/controller/subsystem/overmap/proc/spawn_roundstart_hull()
+	return spawn_free_hull(track_as_initial = TRUE)
 
 /**
  * Grows the roundstart fleet to match how many players actually readied up.
@@ -833,21 +849,23 @@ SUBSYSTEM_DEF(overmap)
 
 	if(isnull(mapzone))
 		mapzone = create_map_zone(encounter_name)
+
+	// Claimed before anything below can sleep, not after the level is minted -
+	// add_new_zlevel() blocks on its own spinlock, and a zone left unclaimed across that
+	// sleep gets handed to the next caller of find_free_mapzone() as well. Two encounters
+	// then share one map zone, and the first to be abandoned clears the other's level.
+	mapzone.taken = TRUE
+
+	if(mapzone.z_levels[1])
+		zlevel = mapzone.z_levels[1]
+	else
 		zlevel = SSmapping.add_new_zlevel(encounter_name, zlevel_traits)
 		mapzone.add_space_level(zlevel)
-	else
-		if(mapzone.z_levels[1])
-			zlevel = mapzone.z_levels[1]
-		else
-			zlevel = SSmapping.add_new_zlevel(encounter_name, zlevel_traits)
-			mapzone.add_space_level(zlevel)
 
 	// Dynamic levels appear after SSweather.Initialize and map zones are recycled.
 	// Replace any prior encounter's trait, active storm, and cooldown before registering
 	// the new planet's weather.
 	SSweather.set_z_level_weather_trait(zlevel, weather_trait)
-
-	mapzone.taken = TRUE
 
 	var/area/filled_area = zlevel.fill_in(area_override = target_area)
 

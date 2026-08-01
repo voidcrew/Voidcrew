@@ -20,7 +20,7 @@
 	var/hostile = TRUE
 
 	/// How close player ships need to be to trigger aggression (in tiles)
-	var/territory_range = 2
+	var/territory_range = 3
 	/// Whether this ship is confined to the zone it spawned in. Hunter-type
 	/// ships (customs patrols) clear this to chase a quarry across the map.
 	var/zone_confined = TRUE
@@ -545,7 +545,7 @@
 
 	// Pirates are hostile and attack on sight
 	hostile = TRUE
-	territory_range = 2
+	territory_range = 3
 
 	// Red color for pirate faction
 	ship_color = NPC_COLOR_PIRATE
@@ -618,6 +618,12 @@
 	var/boss_type
 	/// Minimum crew on target ship to bother attacking (small ship protection)
 	var/min_target_crew = 1
+	/// Said over comms when a yellow-zone wealth scan comes back empty and the
+	/// pirate boards for cargo instead of credits.
+	var/list/broke_lines = list(
+		"No money, huh? Let's see if my boys can find something to steal on your ship then. Maybe your life?",
+		"Empty accounts. Fine - we'll take it out of your hold. Stand by to be boarded.",
+	)
 	/// Wave taunts - played during cooldown between waves
 	var/list/wave_taunts = list(
 		list(  // Wave 1 -> 2 cooldown

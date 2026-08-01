@@ -796,9 +796,12 @@
 		if (!planet || isnull(planet))
 			remove_old_ports()
 			return
-		// Ensure planet has docking ports created
-		planet.load_level()
+		// Ensure planet has docking ports created. Refreshing a camera view is no reason
+		// to hold the worldgen queue, so if something else is mid-build we say so and let
+		// the player try again rather than freezing the console until it finishes.
+		planet.load_level(queue_timeout = WORLDGEN_QUEUE_NO_WAIT)
 		if(!planet.mapzone)
+			to_chat(user, span_warning("Survey systems are busy resolving another location. Try again in a moment."))
 			return
 		// Use the reserve dock location for camera placement
 		if(planet.reserve_dock)

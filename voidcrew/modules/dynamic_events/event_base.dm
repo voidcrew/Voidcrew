@@ -40,9 +40,9 @@
 	/// If TRUE this event ignores the per-ship DYNAMIC_EVENT_SHIP_COOLDOWN when picking a
 	/// target. Reserved for events belonging to a driven pressure system with its own
 	/// cadence — the lich's rituals (voidcrew/modules/lich/) are the reason this exists:
-	/// LICH_RITUAL_INTERVAL and DYNAMIC_EVENT_SHIP_COOLDOWN are both 4 minutes, so on a
-	/// single-crewed-ship server the ambient cooldown would eat nearly every ritual, and
-	/// an unrelated ambient event landing first would silently swallow the next one.
+	/// LICH_RITUAL_INTERVAL is 4 minutes and the ambient ship cooldown is longer than
+	/// that, so on a single-crewed-ship server the cooldown would eat nearly every
+	/// ritual, and an unrelated ambient event landing first would swallow the next one.
 	/// Events that set this still STAMP last_dynamic_event (see /datum/round_event/voidcrew/New),
 	/// so ambient events keep backing off a ship a driven system just hit — the exemption
 	/// is one-directional on purpose. Do not set this on ambient events; the cooldown is
@@ -77,7 +77,7 @@
 		return FALSE
 	if(min_ship_mass > SHIP_MASS_ANY && ship.mass < min_ship_mass)
 		return FALSE
-	if(!ignores_ship_cooldown && world.time < ship.last_dynamic_event + DYNAMIC_EVENT_SHIP_COOLDOWN)
+	if(!ignores_ship_cooldown && world.time < ship.last_dynamic_event + SSdynamic_events.ship_cooldown)
 		return FALSE
 	if(!allow_in_safe_harbor && istype(ship.docked, /obj/structure/overmap/trader_outpost))
 		return FALSE

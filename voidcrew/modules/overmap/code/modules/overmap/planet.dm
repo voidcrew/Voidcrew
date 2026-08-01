@@ -48,33 +48,66 @@
 
 /**
   * Load a level for a ship that's visiting the level.
-  * * visiting shuttle - The docking port of the shuttle visiting the level.
+  * * user - The mob that asked, if any. Told where it stands if the worldgen queue is
+  *   busy; a build can hold for minutes and a silent wait just looks like a locked helm.
+  * * queue_timeout - How long to wait for the worldgen queue. Null takes the default;
+  *   UI callers that cannot hold an interface open pass WORLDGEN_QUEUE_NO_WAIT.
   */
-/obj/structure/overmap/planet/proc/load_level()
+/obj/structure/overmap/planet/proc/load_level(mob/user, queue_timeout)
+	// Busy. Returning truthy aborts the caller's docking attempt cleanly - falling
+	// through would hand it a null reserve_dock. Planets are pre-built during the lobby
+	// and rebuilt after being abandoned, so arriving mid-build is a real possibility.
+	//
+	// These are tested ahead of the mapzone checks below because both in-progress states
+	// pass through a window where mapzone is set and reserve_dock is not: build_planet()
+	// claims its zone long before it stands up the docks, and unload_level() removes the
+	// docks before it drops the zone. In the other order, anything arriving in either
+	// window falls into the create_docking_ports() branch and builds ports onto a level
+	// that is still half-generated, or already half-deleted.
+	if(loading)
+		return "Planetary survey in progress, stand by."
+	if(unloading)
+		return "Orbit is being recalculated, stand by."
 	// If mapzone exists but docks don't (pre-configured planets), create docks
 	if(mapzone && !reserve_dock)
 		create_docking_ports()
 		return
 	if(mapzone)
 		return
-	// Busy. Returning truthy aborts the caller's docking attempt cleanly - falling
-	// through would hand it a null reserve_dock. Planets are pre-built during the lobby
-	// and rebuilt after being abandoned, so arriving mid-build is a real possibility.
-	if(loading)
-		return "Planetary survey in progress, stand by."
-	if(unloading)
-		return "Orbit is being recalculated, stand by."
+
+	// Flagged before queueing rather than after: from here on this planet is loading,
+	// it is simply waiting its turn, and every other caller has to see that instead of
+	// starting a second build behind our back.
 	loading = TRUE
+
 	if(is_terrain_planet())
+		// Terrain generation is the only job heavy enough to be worth queueing - see the
+		// scope note in worldgen_queue.dm. The flat-encounter branch below is not.
+		if(!SSovermap.worldgen_claim(src, "planet build ([display_name || name])", user, queue_timeout))
+			loading = FALSE
+			return "Survey queue is backed up, try again shortly."
+
+		// Generation is throttled to a slice of each tick now, so this is the better part
+		// of a minute during which the helm sits locked and nothing visibly happens. Say
+		// what is going on, and why the controls are not responding.
+		if(user)
+			to_chat(user, span_notice("Orbital survey of [display_name || name] underway. Mapping a surface takes about a minute; helm control returns when it finishes."))
 		build_planet()
 		// Terrain queues a light source per surface turf; until SSlighting drains that,
 		// the planet is pitch black. Hold the dock (callers show "survey in progress")
 		// so arrivals land on a lit surface. Short cap: mid-round the queues are
 		// near-empty besides our own build, and a stall shouldn't strand the ship.
+		//
+		// Deliberately inside the worldgen claim. Releasing first would let the next
+		// build start pouring its own light sources into the same queue, and this wait
+		// would never see the bottom of it.
 		SSovermap.wait_for_lighting_settle(cap = 90 SECONDS)
+		SSovermap.worldgen_release(src)
 	else
 		// Flat encounters - empty space, crashed ships, outpost-style stops. No terrain,
-		// no caves; the generic single-z encounter builder covers these.
+		// no caves; the generic single-z encounter builder covers these. Unqueued: empty
+		// space is stood up for routine ship-to-ship and cargo docking, and making that
+		// wait behind somebody else's planet would be far worse than the work it saves.
 		var/list/dynamic_encounter_values = SSovermap.spawn_dynamic_encounter(planet, TRUE, ruin_type = template, zone_band = SSovermap.get_zone_band_for_turf(get_turf(src)))
 		mapzone = dynamic_encounter_values[1]
 		reserve_dock = dynamic_encounter_values[2]
@@ -116,16 +149,21 @@
 	var/datum/map_zone/zone = SSovermap.find_free_mapzone()
 	if(isnull(zone))
 		zone = SSovermap.create_map_zone("Planet")
-		surface_level = SSmapping.add_new_zlevel("Planet surface", surface_traits)
-		zone.add_space_level(surface_level)
-	else if(length(zone.z_levels))
+
+	// Claimed here, before anything below is allowed to sleep, and not after the level
+	// is minted. add_new_zlevel() blocks on its own spinlock whenever another level is
+	// being made, and an unclaimed zone held across that sleep is exactly what
+	// find_free_mapzone() hands to the next caller - two encounters on one map zone,
+	// and whichever is abandoned first wipes the other's live surface.
+	zone.taken = TRUE
+	mapzone = zone
+
+	if(length(zone.z_levels))
 		// A recycled zone, still carrying the previous occupant's traits
 		surface_level = zone.z_levels[1]
 	else
 		surface_level = SSmapping.add_new_zlevel("Planet surface", surface_traits)
 		zone.add_space_level(surface_level)
-	zone.taken = TRUE
-	mapzone = zone
 
 	apply_planet_level_traits(surface_level, surface_traits, weather_trait)
 
@@ -189,7 +227,8 @@
 		if(!tile_area || areas_on_level[tile_area])
 			continue
 		areas_on_level[tile_area] = TRUE
-		CHECK_TICK
+		// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
+		SSovermap.worldgen_yield()
 
 	for(var/area/planet_area as anything in areas_on_level)
 		if(istype(planet_area, /area/overmap_encounter/planetoid))
@@ -347,7 +386,7 @@
 	var/prev_state = acting.state
 	acting.state = OVERMAP_SHIP_ACTING //This is so the controls are locked while loading the level to give both a sense of confirmation and to prevent people from moving the ship
 	balloon_alert(user, "starting docking process..")
-	. = load_level(acting.shuttle)
+	. = load_level(user)
 	if(.)
 		to_chat(user, span_notice("[.]"))
 		acting.state = prev_state
@@ -383,24 +422,58 @@
 		ship_act(user, optional_partner)
 
 /**
-  * Unloads the reserve, deletes the linked docking port, and moves to a random location if there's no client-having, alive mobs.
-  */
-/obj/structure/overmap/planet/proc/unload_level()
-	if(preserve_level || concerned || unloading || !mapzone)
-		return
+ * Whether this planet's interior is genuinely abandoned and safe to delete, ignoring
+ * the in-progress flags the caller manages itself.
+ *
+ * Split out because it has to be asked twice: once before joining the worldgen queue,
+ * and again once the claim comes back. Waiting in that queue takes real time, and a
+ * planet that was empty when it got in line need not still be empty at the front of it.
+ */
+/obj/structure/overmap/planet/proc/can_release_interior()
+	if(preserve_level || !mapzone)
+		return FALSE
 
 	if(first_dock_taken || second_dock_taken)
-		return
+		return FALSE
 
 	// Check if any ships are still docked inside (catches race conditions with async unload)
 	for(var/obj/structure/overmap/ship/docked_ship in contents)
-		return
+		return FALSE
 
 	if(length(mapzone.get_mind_mobs()))
-		return //Dont fuck over stranded people? tbh this shouldn't be called on this condition, instead of bandaiding it inside
+		return FALSE //Dont fuck over stranded people? tbh this shouldn't be called on this condition, instead of bandaiding it inside
+
+	return TRUE
+
+/**
+  * Unloads the reserve, deletes the linked docking port, and moves to a random location if there's no client-having, alive mobs.
+  */
+/obj/structure/overmap/planet/proc/unload_level()
+	if(concerned || unloading)
+		return
+
+	if(!can_release_interior())
+		return
 
 	unloading = TRUE
 	concerned = TRUE //Prevent someone to act with this while it reloads
+
+	// Teardown is as expensive as generation and just as unwelcome alongside it: the
+	// contents sweep in clear_reservation() cannot yield, so landing it in the middle
+	// of somebody else's build stalls both.
+	if(!SSovermap.worldgen_claim(src, "planet teardown ([display_name || name])"))
+		unloading = FALSE
+		concerned = FALSE
+		return
+
+	// No ship can have docked while we queued - ship_act() bails on unloading - but a
+	// ghost role, a drop pod or a transporter beam is enough to put someone back down
+	// there, and we are about to delete every atom on the level.
+	if(!can_release_interior())
+		SSovermap.worldgen_release(src)
+		unloading = FALSE
+		concerned = FALSE
+		return
 
 	if(planet_key)
 		SSplanet_mobs.unregister_planet(planet_key)
@@ -408,6 +481,10 @@
 
 	remove_docks()
 	remove_mapzone() //Take a lot of time
+
+	// Released here rather than at the end: the relocation below only moves a token
+	// around the overmap grid and has no business holding up the next build.
+	SSovermap.worldgen_release(src)
 
 	// Back to an undiscovered contact somewhere else in the same band. The band is kept
 	// so a planet the crew rated as red-zone dangerous doesn't quietly turn into a green
@@ -423,6 +500,13 @@
 	unloading = FALSE
 	concerned = FALSE //Now it can be raided again
 	return TRUE
+
+/// A wedged build or teardown leaves these set, and every entry point to the planet
+/// tests them - the contact would stay "survey in progress" for the rest of the round.
+/obj/structure/overmap/planet/on_worldgen_timeout()
+	loading = FALSE
+	unloading = FALSE
+	concerned = FALSE
 
 /obj/structure/overmap/planet/proc/remove_mapzone()
 	if(mapzone)

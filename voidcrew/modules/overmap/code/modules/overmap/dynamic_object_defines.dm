@@ -128,20 +128,34 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	if(unload_attempts < max_unload_attempts)
 		addtimer(CALLBACK(src, PROC_REF(try_unload_level)), unload_retry_delay)
 
-/obj/structure/overmap/planet/empty/unload_level()
-	if(preserve_level)
-		return TRUE // Return TRUE to stop retries - this is intentional
-
+/// Same contract as the parent's, minus its mapzone requirement: an empty-space
+/// encounter that never got as far as allocating one still needs cleaning up.
+/// preserve_level is handled by unload_level() itself, which has to stop the retries.
+/obj/structure/overmap/planet/empty/can_release_interior()
 	// Don't unload if any ships are still docked here
 	if(first_dock_taken || second_dock_taken)
 		return FALSE
 
 	// Check if any ships are still inside (catches race conditions with async unload)
 	for(var/obj/structure/overmap/ship/docked_ship in contents)
-		return
+		return FALSE
 
 	if(length(mapzone?.get_mind_mobs()))
 		return FALSE
+
+	return TRUE
+
+/obj/structure/overmap/planet/empty/unload_level()
+	if(preserve_level)
+		return TRUE // Return TRUE to stop retries - this is intentional
+
+	if(unloading)
+		return FALSE
+
+	if(!can_release_interior())
+		return FALSE
+
+	unloading = TRUE
 
 	// Delete the reserve docks explicitly - clear_to_uninitialized_space() skips
 	// /obj/docking_port, so they'd otherwise be orphaned on the recycled map zone

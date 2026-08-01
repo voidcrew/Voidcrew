@@ -438,9 +438,14 @@
 	if(!target)
 		return null
 
+	// Targeting a planet forces a build of somewhere the ship never docked at, which is
+	// the whole point of the scanner - but it opens an interface, so it takes the worldgen
+	// queue only if the queue is free. Behind somebody else's planet it reports no target
+	// rather than holding the window open until they are finished. Ruins and hazard fields
+	// are not queued at all, so they just load.
 	if(istype(target, /obj/structure/overmap/planet))
 		var/obj/structure/overmap/planet/planet = target
-		planet.load_level()
+		planet.load_level(queue_timeout = WORLDGEN_QUEUE_NO_WAIT)
 		if(!planet.mapzone)
 			return null
 		if(planet.reserve_dock)

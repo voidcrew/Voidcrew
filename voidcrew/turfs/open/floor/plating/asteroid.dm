@@ -23,6 +23,12 @@
 	// scrape or dig would spawn a chasm turf whose atmos fights the FROZEN planet forever
 	baseturfs = /turf/open/misc/asteroid/snow/icemoon/breathable
 
+// Surface ruin exteriors: matches the mapgen-lit snow (/turf/open/misc/asteroid/snow/breathable/lit)
+// so ruin ground isn't a dark patch on an otherwise bright planet.
+/turf/open/misc/asteroid/snow/icemoon/breathable/lit
+	light_range = 2
+	light_power = 1
+
 /turf/open/misc/ice/icemoon/breathable
 	initial_gas_mix = FROZEN_ATMOS
 	planetary_atmos = TRUE

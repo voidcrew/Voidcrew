@@ -51,6 +51,44 @@
 		if(!(part_class in part_requirements))
 			part_requirements[part_class] = 0
 
+/**
+ * Upgrade modules load asynchronously - /obj/modular_map_root fires its map load from an
+ * INVOKE_ASYNC while the hull is still being read, so a module's cables can be created after
+ * /datum/map_template/load() has already run its setup_template_powernets() pass. Those cables
+ * still link to their neighbours (Connect_cable() runs on Initialize, so the icons join up
+ * normally), but nothing ever propagates a powernet through them - the module's APC then sits
+ * dead on a wire that looks perfectly connected.
+ *
+ * dispatch() waits out every marker before returning, so it is the first point where the whole
+ * ship - hull and modules - is on the map. Rebuild the powernets from scratch here.
+ */
+/datum/map_template/shuttle/voidcrew/dispatch(list/turfs, register = TRUE)
+	. = ..()
+	rebuild_ship_powernets(turfs)
+
+/// Rebuilds every powernet touching the given turfs as one pass. See dispatch() for why.
+/datum/map_template/shuttle/voidcrew/proc/rebuild_ship_powernets(list/turfs)
+	var/list/cables = list()
+	for(var/turf/place as anything in turfs)
+		for(var/obj/structure/cable/cable in place)
+			cables += cable
+
+	if(!length(cables))
+		return
+
+	// Drop the nets these cables ended up on first. A module that raced the hull's pass can
+	// leave an entire run sitting on its own sourceless powernet, and setup_template_powernets()
+	// only ever touches cables that have none - so without this the orphan net survives.
+	// Destroying a powernet nulls the reference on every cable in it, so nets shared between
+	// several of our cables are only torn down once.
+	for(var/obj/structure/cable/cable as anything in cables)
+		if(cable.powernet)
+			qdel(cable.powernet)
+
+	// Propagation walks the full linked-cable graph, so this pulls the hull and every module
+	// back together into a single net and reconnects the machines hanging off it.
+	SSmachines.setup_template_powernets(cables)
+
 /datum/map_template/shuttle/voidcrew/proc/assemble_job_slots()
 	// Themed ships keep their jobs on the default theme, not the template
 	if(!length(job_slots) && length(available_themes))

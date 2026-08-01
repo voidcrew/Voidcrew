@@ -102,31 +102,12 @@
 // stay on the overmap and never spawn a replacement — crews come back for
 // their patron.
 /obj/structure/overmap/space_ruin/vestige/check_and_respawn()
-	if(!reservation)
-		return
-	for(var/obj/structure/overmap/ship/docked_ship in contents)
-		return
-	if(has_players_in_reservation())
-		return
-	remove_docks()
-	remove_reservation()
-	loaded = FALSE
+	release_interior()
 
 // The base proc relocates the signal to a fresh overmap square on unload;
 // vestige signals hold position so known patrons stay findable.
 /obj/structure/overmap/space_ruin/vestige/unload_level()
-	if(concerned || !reservation)
-		return
-	for(var/obj/structure/overmap/ship/docked_ship in contents)
-		return
-	var/turf/bottom_left = reservation.bottom_left_turfs[1]
-	if(bottom_left && length(SSmobs.clients_by_zlevel[bottom_left.z]))
-		return
-	concerned = TRUE
-	remove_docks()
-	remove_reservation()
-	loaded = FALSE
-	concerned = FALSE
+	release_interior()
 
 // ===== PROGRESSIVE ARRIVAL SCHEDULE =====
 

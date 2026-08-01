@@ -86,9 +86,9 @@
 	/**
 	 * Exempt from the ambient per-ship cooldown (framework flag, event_base.dm).
 	 *
-	 * LICH_RITUAL_INTERVAL and DYNAMIC_EVENT_SHIP_COOLDOWN are both 4 minutes, so on a
-	 * single-crewed-ship server the ambient cooldown sits exactly at the edge of refusing
-	 * every ship-scoped ritual, and an unrelated SSdynamic_events event landing on that
+	 * LICH_RITUAL_INTERVAL is 4 minutes and the ambient per-ship cooldown is longer than
+	 * that, so on a single-crewed-ship server the ambient cooldown would refuse most
+	 * ship-scoped rituals, and an unrelated SSdynamic_events event landing on that
 	 * ship first would silently swallow the next one. The ritual clock is a driven
 	 * pressure system with its own cadence and its own escalation ceiling, so the ambient
 	 * anti-spam throttle is the wrong governor for it.

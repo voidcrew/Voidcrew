@@ -93,6 +93,47 @@
 		to_chat(src, span_danger("Ship spawned, but you were unable to be spawned. You can likely try to spawn in the ship through joining normally, but if not, please contact an admin."))
 
 /**
+ * Spawns a free hull for a player the fleet has no room for, and seats them on it as
+ * its officer.
+ *
+ * This is the same roll the roundstart fleet uses - a real modular hull with a theme
+ * and a module in every slot, not a Pill - because someone who joins after the fleet
+ * filled up or got destroyed should not be flying something worse than the round
+ * started on. Nobody pays for it: on a fresh server nobody has the parts to, and a
+ * player with no seat and no hull has no round.
+ *
+ * The gate is re-checked here rather than trusted from ui_act, since the fleet can
+ * open up in the time it takes someone to read the menu.
+ */
+/mob/dead/new_player/proc/requisition_free_hull()
+	if(!SSticker?.IsRoundInProgress())
+		to_chat(src, span_danger("The round is either not ready, or has already finished..."))
+		return
+
+	if(!can_requisition_hull())
+		to_chat(src, span_warning("A position opened up in the fleet while you were deciding. Join a crew instead."))
+		return select_ship()
+
+	// Prevent double-click spawning
+	if(spawning_ship)
+		to_chat(src, span_warning("Your ship is already being prepared. Please wait..."))
+		return
+	spawning_ship = TRUE
+
+	to_chat(src, span_notice("No ship in the fleet has room for you. A hull is being prepared - please be patient!"))
+	var/obj/structure/overmap/ship/target = SSovermap.spawn_free_hull(track_as_initial = FALSE)
+	if(!istype(target))
+		spawning_ship = FALSE
+		to_chat(src, span_danger("There was an error loading the ship. Please contact admins!"))
+		return select_ship()
+
+	SSblackbox.record_feedback("tally", "ship_requisitioned", 1, target.source_template?.name || "[target.type]")
+	log_shuttle("[key_name(src)] requisitioned a free hull: [target.name]")
+
+	if(!AttemptSpawnOnShip(target.job_slots[1], target))
+		to_chat(src, span_danger("Ship spawned, but you were unable to be spawned. You can likely try to spawn in the ship through joining normally, but if not, please contact an admin."))
+
+/**
  * Join as the given job
  */
 /mob/dead/new_player/proc/AttemptSpawnOnShip(datum/job/job, obj/structure/overmap/ship/joined_ship)

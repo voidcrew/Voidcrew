@@ -6,8 +6,11 @@
 /// Event has no single victim — it touches galaxy-wide systems (economy, comms, fluff).
 #define EVENT_SCOPE_GALAXY "galaxy"
 
-/// Immunity window after a ship is hit by a dynamic event, so one crew isn't hammered back to back.
-#define DYNAMIC_EVENT_SHIP_COOLDOWN (4 MINUTES)
+/// Default immunity window after a ship is hit by a dynamic event, so one crew isn't
+/// hammered back to back. This is a hard floor under the per-crew cadence, not the
+/// cadence itself — SSdynamic_events.frequency_lower/upper set the intended spacing.
+/// The live value is SSdynamic_events.ship_cooldown, which admins can tune mid-round.
+#define DYNAMIC_EVENT_SHIP_COOLDOWN (8 MINUTES)
 
 /**
  * Size bands for /datum/round_event_control/voidcrew/var/min_ship_mass.

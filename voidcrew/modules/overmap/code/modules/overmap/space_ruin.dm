@@ -374,28 +374,61 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	adjust_reserve_dock_to_shuttle(dock_to_adjust, shuttle)
 
 /**
- * Unloads the ruin level when no longer needed
+ * Whether the ruin's reservation is genuinely abandoned, ignoring the in-progress flag
+ * the caller manages itself. Asked once before joining the worldgen queue and again on
+ * the way out of it, because the wait is long enough for the answer to change.
  */
-/obj/structure/overmap/space_ruin/proc/unload_level()
-	if(concerned || !reservation)
-		return
+/obj/structure/overmap/space_ruin/proc/can_release_interior()
+	if(!reservation)
+		return FALSE
 
-	// Check if any ships are still docked
+	// Check if any ships are still docked here (docked ships move INTO the ruin, so check contents)
 	for(var/obj/structure/overmap/ship/docked_ship in contents)
-		return
+		return FALSE
 
-	// Check for players in the reservation's z-level
-	var/turf/bottom_left = reservation.bottom_left_turfs[1]
-	if(bottom_left && length(SSmobs.clients_by_zlevel[bottom_left.z]))
-		return
+	// Check for players within the reservation bounds (not the whole z-level since reservations share z-levels)
+	if(has_players_in_reservation())
+		return FALSE
+
+	return TRUE
+
+/**
+ * Frees the ruin's interior, under the worldgen queue, if it is genuinely abandoned.
+ *
+ * Every teardown path funnels through here - undock recycling, mission cleanup, event
+ * retirement, and the subtypes that keep their own variants. They differ only in what
+ * happens *after* the reservation is gone (relocate, hold position, respawn a
+ * replacement, delete the signal), so the guarding, queueing and re-checking are done
+ * once, here, rather than in four copies that each have to remember all three.
+ *
+ * Returns TRUE if the interior was released. Returns FALSE if the ruin was busy, if
+ * somebody is still inside, or if the queue timed out - callers must not run their
+ * tail behaviour on FALSE, and should retry later if they have somewhere to retry from.
+ */
+/obj/structure/overmap/space_ruin/proc/release_interior()
+	if(concerned)
+		return FALSE
+
+	if(!can_release_interior())
+		return FALSE
 
 	concerned = TRUE
 
 	remove_docks()
 	remove_reservation()
+	loaded = FALSE
+
+	concerned = FALSE
+	return TRUE
+
+/**
+ * Unloads the ruin level when no longer needed
+ */
+/obj/structure/overmap/space_ruin/proc/unload_level()
+	if(!release_interior())
+		return
 
 	forceMove(SSovermap.get_unused_overmap_square())
-	concerned = FALSE
 
 /**
  * Sweeps the reservation for uninitialized turfs (leftover /turf/open/space/basic)
@@ -464,28 +497,15 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	if(mission_locked)
 		return
 
-	// Don't do anything if reservation doesn't exist (never loaded)
-	if(!reservation)
-		return
-
-	// Check if any ships are still docked here (docked ships move INTO the ruin, so check contents)
-	for(var/obj/structure/overmap/ship/docked_ship in contents)
-		return // A ship is still docked here, don't clean up
-
-	// Check for players within the reservation bounds (not the whole z-level since reservations share z-levels)
-	if(has_players_in_reservation())
-		return // Someone's still there, don't clean up
-
-	// No one left - clean up and respawn
-	log_mapping("SSovermap: Space ruin '[name]' is empty, unloading and respawning")
-
 	// Store the ruin template before we clean up
 	var/datum/map_template/ruin/space/old_template = ruin_template
 
-	// Clean up the reservation
-	remove_docks()
-	remove_reservation()
-	loaded = FALSE
+	// Guards, queues and frees the reservation, or refuses because somebody is still
+	// aboard. Nothing below may run unless it actually went through.
+	if(!release_interior())
+		return
+
+	log_mapping("SSovermap: Space ruin '[name]' was empty, unloaded and respawning")
 
 	// Spawn a new ruin somewhere else on the overmap BEFORE we delete ourselves.
 	// Rare rumor ruins are one-shots: clearing one doesn't seed anything new.

@@ -75,7 +75,10 @@
 				generate_cave(heat, humidity_level, string_gen, gen_turf, cave_area, planet_type)
 			else
 				generate_overworld(heat, humidity_level, gen_turf, planet_type)
-		CHECK_TICK
+		// Not CHECK_TICK: that yields only once the tick is nearly full, which still
+		// leaves this loop taking ~70% of every tick for its whole run. See
+		// worldgen_yield() in worldgen_queue.dm.
+		SSovermap.worldgen_yield()
 	// Register cave areas
 	if(caves)
 		cave_area.reg_in_areas_in_z()
@@ -275,6 +278,9 @@
 				if(ispath(picked_mob, /obj/structure/spawner) || is_megafauna || !SSplanet_mobs.register_spawn_turf(target_turf, picked_mob))
 					new picked_mob(target_turf)
 				spawned_something = TRUE
-		CHECK_TICK
+		// The expensive half of a planet build - every iteration runs several range()
+		// scans - and the one that most needs to stop hogging the tick. See
+		// worldgen_yield() in worldgen_queue.dm.
+		SSovermap.worldgen_yield()
 
 	log_world("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!")

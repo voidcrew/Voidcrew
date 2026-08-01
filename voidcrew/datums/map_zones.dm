@@ -94,22 +94,26 @@
 	if(low_y > 1)
 		for(var/turf/cordon_turf as anything in block(locate(1, 1, z_value), locate(world.maxx, low_y - 1, z_value)))
 			new /turf/cordon(cordon_turf)
-			CHECK_TICK
+			// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
+			SSovermap.worldgen_yield()
 	// Top strip (above the planet)
 	if(high_y < world.maxy)
 		for(var/turf/cordon_turf as anything in block(locate(1, high_y + 1, z_value), locate(world.maxx, world.maxy, z_value)))
 			new /turf/cordon(cordon_turf)
-			CHECK_TICK
+			// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
+			SSovermap.worldgen_yield()
 	// Left strip (beside the planet, between the top and bottom strips)
 	if(low_x > 1)
 		for(var/turf/cordon_turf as anything in block(locate(1, low_y, z_value), locate(low_x - 1, high_y, z_value)))
 			new /turf/cordon(cordon_turf)
-			CHECK_TICK
+			// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
+			SSovermap.worldgen_yield()
 	// Right strip
 	if(high_x < world.maxx)
 		for(var/turf/cordon_turf as anything in block(locate(high_x + 1, low_y, z_value), locate(world.maxx, high_y, z_value)))
 			new /turf/cordon(cordon_turf)
-			CHECK_TICK
+			// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
+			SSovermap.worldgen_yield()
 
 /datum/space_level/proc/get_block()
 	if(isnull(low_x))
@@ -144,7 +148,8 @@
 		// Reset area
 		var/area/old_area = get_area(turf)
 		turf.change_area(old_area, space_area)
-		CHECK_TICK
+		// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
+		SSovermap.worldgen_yield()
 
 	for(var/turf/turf as anything in block_turfs)
 		turf.AfterChange(CHANGETURF_IGNORE_AIR)
@@ -156,7 +161,8 @@
 
 		QUEUE_SMOOTH(turf)
 		QUEUE_SMOOTH_NEIGHBORS(turf)
-		CHECK_TICK
+		// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
+		SSovermap.worldgen_yield()
 
 /// Clears contents and resets turfs to uninitialized /turf/open/space/basic
 /// This bypasses ChangeTurf so turfs remain uninitialized and unbuildable
@@ -186,7 +192,8 @@
 			T.change_area(old_area, space_area)
 		// Create uninitialized space turf directly (bypasses ChangeTurf which would init it)
 		new /turf/open/space/basic(T)
-		CHECK_TICK
+		// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
+		SSovermap.worldgen_yield()
 
 /**
  * Force-initializes any uninitialized turfs in a block (i.e. /turf/open/space/basic,
@@ -253,7 +260,8 @@
 		for(var/turf/iterated_turf as anything in get_block())
 			var/area/old_area = get_area(iterated_turf)
 			iterated_turf.change_area(old_area, area_to_use)
-			CHECK_TICK
+			// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
+			SSovermap.worldgen_yield()
 			if(QDELETED(src))
 				return
 		area_to_use.reg_in_areas_in_z()
@@ -261,7 +269,8 @@
 	if(turf_type)
 		for(var/turf/iterated_turf as anything in get_block())
 			iterated_turf.ChangeTurf(turf_type, turf_type)
-			CHECK_TICK
+			// Throttled yield, not CHECK_TICK - see worldgen_yield() in worldgen_queue.dm
+			SSovermap.worldgen_yield()
 			if(QDELETED(src))
 				return
 

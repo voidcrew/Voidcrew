@@ -287,6 +287,17 @@
 		return
 	set_holder(null)
 
+/**
+ * Re-runs the holder check from outside the component.
+ *
+ * We only re-check the holder when our own parent moves, so a light sitting in someone's
+ * pocket keeps whatever holder it resolved to when it was last moved. If that mob then
+ * leaves a container the light was never told about it, and stays dark. Anything that
+ * dumps a mob out of itself should poke this - see [/atom/movable/proc/recheck_contained_lights].
+ */
+/datum/component/overlay_lighting/proc/recheck_holder()
+	check_holder()
+
 
 ///Called when the current_holder is qdeleted, to remove the light effect.
 /datum/component/overlay_lighting/proc/on_holder_qdel(atom/movable/source, force)
@@ -458,6 +469,10 @@
 /datum/component/overlay_lighting/proc/turn_on()
 	if(overlay_lighting_flags & LIGHTING_ON)
 		return
+	// Our holder can be stale: whatever the parent is inside can move without the parent
+	// itself moving, and only the parent moving re-runs this. Must happen before we set
+	// LIGHTING_ON, or set_holder() applies the light and we then apply it a second time.
+	check_holder()
 	overlay_lighting_flags |= LIGHTING_ON
 	if(current_holder)
 		add_dynamic_lumi()
