@@ -671,21 +671,58 @@
 		est_thrust = 0
 		return
 	var/calculated_thrust = 0
+	// Cutting from engine_list mid-loop shifts the loop's internal index down and makes
+	// it skip the next entry, so a live engine sitting behind a dropped one silently
+	// stops counting toward thrust for that pass. Collect first, cut after.
+	var/list/obj/machinery/power/shuttle_engine/ship/dropped = list()
 	for(var/obj/machinery/power/shuttle_engine/ship/E in shuttle.engine_list)
 		// Remove deleted engines
 		if(QDELETED(E))
-			shuttle.engine_list -= E
+			dropped += E
 			continue
-		// Remove engines that are no longer on the ship
+		// Membership is judged the way reconnection judges it - geometry (bounding box +
+		// z, see get_containing_shuttle()) - NOT area bookkeeping. Turf areas go
+		// transiently wrong while another shuttle's footprint overlaps ours (its landing
+		// reassigns our turfs into its area until it leaves), and this proc runs every
+		// helm UI tick, so testing areas here turned any one bad frame into an engine
+		// that was unbound for the rest of the round.
+		if(!shuttle.is_in_shuttle_bounds(E))
+			dropped += E
+			continue
 		var/area/engine_area = get_area(E)
 		if(!(engine_area in shuttle.shuttle_areas))
-			shuttle.engine_list -= E
-			E.unsync_ship()
-			continue
+			// Aboard geometrically, so keep it working - but this state is the trigger
+			// behind every engine-disconnect report, so name the foreign area once per
+			// episode rather than every UI tick.
+			if(!E.logged_area_mismatch)
+				E.logged_area_mismatch = TRUE
+				log_shuttle("[name]: engine [E] at [AREACOORD(E)] is inside ship bounds but its area ([engine_area_name(E)]) is not one of the ship's areas - keeping it connected")
+		else
+			E.logged_area_mismatch = FALSE
 		E.update_engine()
 		if(E.enabled)
 			calculated_thrust += E.engine_power
+	for(var/obj/machinery/power/shuttle_engine/ship/E as anything in dropped)
+		shuttle.engine_list -= E
+		if(QDELETED(E))
+			continue
+		E.unsync_ship()
+		// Off our hull for real. If it stands on some other ship's deck now (wrong-bind
+		// while docked ship-to-ship, hull sections traded away), hand it over instead of
+		// leaving it orphaned - the connect_loc relink unsync_ship() arms only fires on
+		// admin/blueprint hull expansion, never in normal play.
+		var/obj/docking_port/mobile/new_home = SSshuttle.get_containing_shuttle(E)
+		if(new_home)
+			E.connect_to_shuttle(port = new_home)
+			log_shuttle("[name]: engine [E] at [AREACOORD(E)] left ship bounds - rebound to [new_home.name]")
+		else
+			log_shuttle("[name]: engine [E] at [AREACOORD(E)] left ship bounds - unsynced")
 	est_thrust = calculated_thrust
+
+/// Area name for the drop log above, kept separate so the log line stays readable.
+/obj/structure/overmap/ship/proc/engine_area_name(obj/machinery/power/shuttle_engine/ship/E)
+	var/area/engine_area = get_area(E)
+	return engine_area ? "[engine_area.type]" : "nullspace"
 
 /// Updates the screen for the helm console
 /obj/structure/overmap/ship/proc/update_screen()
@@ -1310,6 +1347,11 @@
 /obj/structure/overmap/ship/proc/dock(obj/structure/overmap/to_dock, obj/docking_port/stationary/dock_to_use, instant = FALSE)
 	// Can't dock while being interdicted (unless it's a force dock)
 	if(is_interdicted && !instant)
+		// ship_act() callers pre-check interdiction, but if a refused dock still
+		// reaches here with the ship locked into ACTING, restore it - a ship left
+		// in ACTING can never move, dock, or undock again
+		if(state == OVERMAP_SHIP_ACTING)
+			state = OVERMAP_SHIP_FLYING
 		ship_notify("DOCKING ABORTED: Interdiction field preventing dock sequence!", "NAVIGATION", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn.ogg', 25)
 		return "Cannot dock while interdicted!"
 
@@ -1528,7 +1570,6 @@
 			if(!isturf(loc))
 				if(istype(loc, /obj/structure/overmap/ship)) //Even more hardcoded, even more bad
 					var/obj/structure/overmap/ship/S = loc
-					S.shuttle.shuttle_areas -= shuttle.shuttle_areas
 					adjust_speed(S.speed[1], S.speed[2])
 					// Notify the target ship that we undocked from them
 					SEND_SIGNAL(S, COMSIG_VOIDCREW_SHIP_UNDOCKED_BY, src)
@@ -1537,6 +1578,19 @@
 				forceMove(target_turf)
 			else
 				log_shuttle("complete_dock UNDOCKING: Ship [src] already on turf [loc]")
+
+			// Hand our areas back. complete_dock() used to do this only while we were still
+			// inside the host's contents, so an undock that found us already on a turf left
+			// the host holding our areas in its shuttle_areas forever. That list decides
+			// what the host's shuttle moves carry (area/beforeShuttleMove() grants
+			// MOVE_AREA from it) and what refresh_engines() treats as aboard, so stale
+			// entries make the host claim our decks in every later move and teardown.
+			// Removing areas that were never added is a no-op, so reconcile
+			// unconditionally against the host.
+			if(istype(old_docked_location, /obj/structure/overmap/ship))
+				var/obj/structure/overmap/ship/old_host = old_docked_location
+				if(old_host.shuttle && old_host.shuttle != shuttle)
+					old_host.shuttle.shuttle_areas -= shuttle.shuttle_areas
 
 			// Now that the ship has moved, clear dock flags on the old location
 			// This must happen AFTER move but BEFORE unload_level check

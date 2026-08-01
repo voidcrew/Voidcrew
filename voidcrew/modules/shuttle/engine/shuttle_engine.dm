@@ -6,6 +6,36 @@
 	port.current_engine_power += engine_power
 	if(mapload)
 		port.initial_engine_power += engine_power
+	// We are on a ship again, so stop listening for one. Leaving the element on would
+	// re-run this proc on the next COMSIG_TURF_ADDED_TO_SHUTTLE and double-count power.
+	RemoveElement(/datum/element/connect_loc, connections)
+
+/**
+ * Full replacement for tg's unsync_ship() (code/game/shuttle_engines.dm) - this file is
+ * included after it, so this body is the one that runs.
+ *
+ * tg only unsyncs on Destroy() or when a player unwrenches an engine, where leaving it
+ * orphaned is correct. Voidcrew also unsyncs from /obj/structure/overmap/ship/refresh_engines(),
+ * which runs on *every burn* - and tg's version removes the connect_loc element that is the
+ * only automatic path back onto a ship. A mapped engine never had that element to begin with
+ * (it is only added when a freshly built engine fails to find a shuttle), so one bad frame
+ * used to unbind a thruster for the rest of the round, with no message and no way back short
+ * of a player unwrenching and re-wrenching it.
+ *
+ * Re-arm the listener instead, so the engine rejoins the moment its turf belongs to a ship
+ * again - which is exactly what tg does for a new engine that found no shuttle.
+ */
+/obj/machinery/power/shuttle_engine/unsync_ship()
+	var/obj/docking_port/mobile/port = connected_ship_ref?.resolve()
+	if(port)
+		port.engine_list -= src
+		port.current_engine_power -= initial(engine_power)
+	connected_ship_ref = null
+	// Not while being deleted, and not for an engine a player has deliberately unbolted.
+	if(QDELETED(src) || !anchored)
+		RemoveElement(/datum/element/connect_loc, connections)
+		return
+	AddElement(/datum/element/connect_loc, connections)
 
 /**
   * ## Engine Thrusters
@@ -26,6 +56,8 @@
 	var/enabled = TRUE
 	///I don't really know what this is but it's used a lot
 	var/thruster_active = FALSE
+	///One-shot latch so refresh_engines() logs an area/bounds mismatch once per episode, not every helm UI tick.
+	var/logged_area_mismatch = FALSE
 
 	///Icon when the machine is screwdrivered open, takes priority over the other two
 	var/icon_state_open = "burst_plasma_open"
