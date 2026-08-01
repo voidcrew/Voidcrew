@@ -38,9 +38,6 @@ export type LoadoutItem = {
   buttons: LoadoutButton[];
   reskins: ReskinOption[] | null;
   information: LoadoutTooltip[];
-  // Voidcrew purchase system
-  requires_purchase?: boolean;
-  purchase_cost?: number;
 };
 
 // Category of items in the loadout
@@ -53,7 +50,4 @@ export type LoadoutCategory = {
 
 export type LoadoutManagerData = PreferencesMenuData & {
   job_clothes: BooleanLike;
-  // Voidcrew purchase system
-  ship_credits?: number;
-  owned_loadout_items?: string[];
 };

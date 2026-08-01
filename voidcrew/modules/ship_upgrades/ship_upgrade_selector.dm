@@ -116,6 +116,13 @@
 		unlocked_upgrade_ids = list()
 		return
 
+	// FREE_SHIPS config: everything is unlocked, no purchase step
+	if(CONFIG_GET(flag/free_ships))
+		unlocked_upgrade_ids = list()
+		for(var/module_id in available_modules)
+			unlocked_upgrade_ids += module_id
+		return
+
 	var/ckey = user.client.ckey
 	unlocked_upgrade_ids = GLOB.ship_economy_db?.get_unlocked_upgrades_for_ship(ckey, "[template.type]") || list()
 
@@ -125,6 +132,13 @@
 /datum/ship_upgrade_selector/proc/refresh_unlocked_themes()
 	if(!user?.client)
 		unlocked_theme_ids = list()
+		return
+
+	// FREE_SHIPS config: everything is unlocked, no purchase step
+	if(CONFIG_GET(flag/free_ships))
+		unlocked_theme_ids = list()
+		for(var/theme_id in available_themes)
+			unlocked_theme_ids += theme_id
 		return
 
 	var/ckey = user.client.ckey
@@ -159,6 +173,8 @@
 	// Default modules are always unlocked
 	if(module.is_default)
 		return TRUE
+	if(CONFIG_GET(flag/free_ships))
+		return TRUE
 	// Check if purchased
 	return (module.id in unlocked_upgrade_ids)
 
@@ -170,6 +186,8 @@
 		return FALSE
 	// Default themes are always unlocked
 	if(theme.is_default)
+		return TRUE
+	if(CONFIG_GET(flag/free_ships))
 		return TRUE
 	// Check if purchased
 	return (theme.id in unlocked_theme_ids)
@@ -637,6 +655,9 @@
 	if(theme.is_default)
 		return TRUE
 
+	if(CONFIG_GET(flag/free_ships))
+		return TRUE
+
 	// No cost defined = free
 	if(!length(theme.part_cost))
 		return TRUE
@@ -670,8 +691,8 @@
 			if(amount > 0)
 				cost[part_class] = amount
 
-	// Spend parts if there's a cost
-	if(length(cost))
+	// Spend parts if there's a cost (FREE_SHIPS config waives it)
+	if(length(cost) && !CONFIG_GET(flag/free_ships))
 		if(!GLOB.ship_economy_db?.spend_parts(ckey, cost))
 			return FALSE
 
@@ -693,6 +714,9 @@
 
 	// Default modules are free
 	if(module.is_default)
+		return TRUE
+
+	if(CONFIG_GET(flag/free_ships))
 		return TRUE
 
 	// No cost defined = free
@@ -728,8 +752,8 @@
 			if(amount > 0)
 				cost[part_class] = amount
 
-	// Spend parts if there's a cost
-	if(length(cost))
+	// Spend parts if there's a cost (FREE_SHIPS config waives it)
+	if(length(cost) && !CONFIG_GET(flag/free_ships))
 		if(!GLOB.ship_economy_db?.spend_parts(ckey, cost))
 			return FALSE
 

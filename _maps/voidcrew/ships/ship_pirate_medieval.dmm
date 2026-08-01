@@ -36,7 +36,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/spawner/random/trash/botanical_waste,
 /obj/effect/spawner/random/trash/garbage,
-/obj/effect/mob_spawn/ghost_role/human/pirate/medieval,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_medieval{
 	requires_power = 0
@@ -121,7 +120,6 @@
 	},
 /obj/effect/spawner/random/trash/cigbutt,
 /obj/effect/spawner/random/trash/botanical_waste,
-/obj/effect/mob_spawn/ghost_role/human/pirate/medieval,
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 8
 	},
@@ -143,7 +141,6 @@
 	},
 /obj/effect/spawner/random/trash/mess,
 /obj/effect/spawner/random/trash/garbage,
-/obj/effect/mob_spawn/ghost_role/human/pirate/medieval,
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 4
 	},
@@ -161,7 +158,6 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/spawner/random/trash/garbage,
-/obj/effect/mob_spawn/ghost_role/human/pirate/medieval,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/pirate_medieval{
 	requires_power = 0
@@ -522,7 +518,6 @@
 /turf/open/floor/plating,
 /area/template_noop)
 "HQ" = (
-/obj/effect/mob_spawn/ghost_role/human/pirate/medieval/warlord,
 /turf/open/floor/stone,
 /area/shuttle/voidcrew/pirate_medieval{
 	requires_power = 0

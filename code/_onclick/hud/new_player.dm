@@ -748,8 +748,7 @@
 	var/new_maptext
 	var/round_started = SSticker.HasRoundStarted()
 	if(round_started)
-		new_maptext = "<span style='text-align: center; vertical-align: middle'>[SSmapping.current_map.map_name]<br /> \
-			[LAZYLEN(GLOB.clients)] player\s online<br /> \
+		new_maptext = "<span style='text-align: center; vertical-align: middle'>[LAZYLEN(GLOB.clients)] player\s online<br /> \
 			[ROUND_TIME()] in<br />"
 		var/datum/station_trait/overflow_job_bureaucracy/overflow = locate() in SSstation.station_traits
 		if(overflow)

@@ -5,8 +5,6 @@ import { exhaustiveCheck } from 'tgui-core/exhaustive';
 
 import { PageButton } from '../components/PageButton';
 import type { PreferencesMenuData } from '../types';
-import { AntagsPage } from './AntagsPage';
-import { CustomSlotsPage } from './CustomSlotsPage';
 import { LoadoutPage } from './loadout';
 import { MainPage } from './MainPage';
 import { QuirksPage } from './QuirksPage';
@@ -14,13 +12,11 @@ import { ShipCategoriesPage } from './ShipCategoriesPage';
 import { SpeciesPage } from './SpeciesPage';
 
 enum Page {
-  Antags,
   Main,
   ShipCategories,
   Species,
   Quirks,
   Loadout,
-  CustomSlots,
 }
 
 type ProfileProps = {
@@ -59,9 +55,6 @@ export function CharacterPreferenceWindow(props) {
   let pageContents;
 
   switch (currentPage) {
-    case Page.Antags:
-      pageContents = <AntagsPage />;
-      break;
     case Page.ShipCategories:
       pageContents = <ShipCategoriesPage />;
       break;
@@ -83,10 +76,6 @@ export function CharacterPreferenceWindow(props) {
 
     case Page.Loadout:
       pageContents = <LoadoutPage />;
-      break;
-
-    case Page.CustomSlots:
-      pageContents = <CustomSlotsPage />;
       break;
 
     default:
@@ -148,30 +137,10 @@ export function CharacterPreferenceWindow(props) {
           <Stack.Item grow>
             <PageButton
               currentPage={currentPage}
-              page={Page.Antags}
-              setPage={setCurrentPage}
-            >
-              Antagonists
-            </PageButton>
-          </Stack.Item>
-
-          <Stack.Item grow>
-            <PageButton
-              currentPage={currentPage}
               page={Page.Quirks}
               setPage={setCurrentPage}
             >
               Quirks
-            </PageButton>
-          </Stack.Item>
-
-          <Stack.Item grow>
-            <PageButton
-              currentPage={currentPage}
-              page={Page.CustomSlots}
-              setPage={setCurrentPage}
-            >
-              Custom Slots
             </PageButton>
           </Stack.Item>
         </Stack>

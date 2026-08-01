@@ -2,6 +2,7 @@
 
 ALLOW_VOTE_TRANSFER
 
-## free ships
+## Makes all ship hulls, themes, and modules free: everything shows as unlocked
+## in the shipyard and no ship parts are ever charged. Uncomment to enable.
 
 # FREE_SHIPS

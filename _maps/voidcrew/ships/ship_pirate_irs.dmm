@@ -247,9 +247,6 @@
 	requires_power = 0
 	})
 "hS" = (
-/obj/effect/mob_spawn/ghost_role/human/pirate/irs/auditor{
-	dir = 4
-	},
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/pirate_irs{
 	requires_power = 0

@@ -11,7 +11,6 @@ import {
   Section,
   Stack,
   Tabs,
-  Tooltip,
 } from 'tgui-core/components';
 
 import { useServerPrefs } from '../../useServerPrefs';
@@ -283,7 +282,6 @@ function LoadoutSelectedSection(props: LoadoutSelectedSectionProps) {
 
 function LoadoutPreviewSection() {
   const { act, data } = useBackend<LoadoutManagerData>();
-  const shipCredits = data.ship_credits || 0;
 
   return (
     <Section
@@ -327,15 +325,6 @@ function LoadoutPreviewSection() {
               />
             </Stack.Item>
           </Stack>
-        </Stack.Item>
-        <Stack.Divider />
-        <Stack.Item align="center">
-          <Tooltip content="Ship credits available for purchasing loadout items">
-            <Box color="gold" bold>
-              <Icon name="coins" mr={1} />
-              {shipCredits.toLocaleString()} Credits
-            </Box>
-          </Tooltip>
         </Stack.Item>
       </Stack>
     </Section>

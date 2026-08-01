@@ -121,10 +121,14 @@ GLOBAL_VAR_INIT(ship_catalog_initialized, FALSE)
  *
  * Free hulls are owned by everyone from the start - there's no purchase step and
  * nothing is written to the database for them.
+ *
+ * The FREE_SHIPS config flag makes every hull free.
  */
 /proc/is_ship_free(datum/map_template/shuttle/voidcrew/template)
 	if(!istype(template))
 		return FALSE
+	if(CONFIG_GET(flag/free_ships))
+		return TRUE
 	return !ship_template_total_part_cost(template)
 
 /**
