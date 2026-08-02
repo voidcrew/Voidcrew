@@ -113,9 +113,12 @@
  * leaving made the job disappear.
  *
  * `loaded` is the tell — a ruin is only ever loaded because somebody is there or
- * has just left — so a loaded ruin drops out of the preferred set. It stays in
- * the fallback set, since sending a crew somewhere awkward still beats failing
- * generation outright.
+ * has just left. All three tiers of the pick are exercised here, because the two
+ * preferences are not interchangeable and the first attempt at this fix folded
+ * them into one set: with the boards holding enough offers to keep most of the
+ * sector claimed, a combined "cold AND unclaimed" set empties out routinely and
+ * falls through to picking anything at all, occupied berth included. Avoiding an
+ * occupied site has to outrank avoiding a double-booked one.
  */
 /datum/unit_test/voidcrew_mission_ruin_target_picker
 
@@ -132,26 +135,44 @@
 
 	// Remember what we are about to lie about, so the round gets it back
 	var/list/saved_loaded = list()
+	var/list/saved_claims = list()
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
 		saved_loaded[ruin] = ruin.loaded
+		saved_claims[ruin] = ruin.mission_claims
 
 	var/obj/structure/overmap/space_ruin/occupied = live_ruins[1]
 	occupied.loaded = TRUE
 	for(var/i in 2 to length(live_ruins))
 		var/obj/structure/overmap/space_ruin/cold = live_ruins[i]
 		cold.loaded = FALSE
+		cold.mission_claims = 0
 
 	var/datum/mission_target/space_ruin/target = new(null)
-	for(var/_ in 1 to 60)
+
+	// Tier 1: cold and unclaimed sites exist, so one of those is the pick
+	for(var/_ in 1 to 40)
 		if(!target.resolve())
 			TEST_FAIL("space_ruin target resolve() found nothing with [length(live_ruins)] ruins on the overmap")
 			break
 		if(target.ruin == occupied)
-			TEST_FAIL("a ruin contract targeted a loaded (occupied) ruin while [length(live_ruins) - 1] cold ruins were available. Accepting that contract while docked there arms the objective inside the site the crew is standing in, and undocking recycles the site out from under it (see check_and_respawn).")
+			TEST_FAIL("a ruin contract targeted a loaded (occupied) ruin while [length(live_ruins) - 1] cold, unclaimed ruins were available")
 			break
 
-	// Nowhere cold left: the picker must still hand something back rather than
-	// fail generation and drop the contract off the board
+	// Tier 2: every cold site is already spoken for. Double-booking one of them
+	// is still correct - the loaded ruin is the one pick that voids itself.
+	for(var/i in 2 to length(live_ruins))
+		var/obj/structure/overmap/space_ruin/cold = live_ruins[i]
+		cold.mission_claims = 1
+	for(var/_ in 1 to 40)
+		if(!target.resolve())
+			TEST_FAIL("space_ruin target resolve() found nothing once every cold ruin was claimed")
+			break
+		if(target.ruin == occupied)
+			TEST_FAIL("with every cold ruin already claimed, the picker fell back to a loaded (occupied) ruin instead of double-booking a cold one. Accepting that contract while docked there arms the objective inside the site the crew is standing in, and undocking recycles the site out from under it (see check_and_respawn). Avoiding an occupied site outranks avoiding a double-booking.")
+			break
+
+	// Tier 3: nowhere cold left. The picker must still hand something back rather
+	// than fail generation and drop the contract off the board entirely.
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
 		ruin.loaded = TRUE
 	TEST_ASSERT(target.resolve(), "with every ruin loaded, the picker refused to pick any of them instead of falling back — recovery contracts stop generating entirely")
@@ -159,3 +180,4 @@
 	qdel(target)
 	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
 		ruin.loaded = saved_loaded[ruin]
+		ruin.mission_claims = saved_claims[ruin]

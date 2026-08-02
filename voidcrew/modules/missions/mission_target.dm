@@ -95,8 +95,15 @@
 /datum/mission_target/space_ruin/resolve()
 	var/obj/structure/overmap/space_ruin/previous = ruin
 	unhook()
-	var/list/candidates = list()
-	var/list/preferred = list()
+	// Three tiers, worst case last. The two preferences are NOT equally weighted,
+	// which an earlier version of this got wrong by folding them into one set:
+	// double-booking a ruin is cosmetic, but pointing a contract at a site that
+	// is currently occupied is self-destructing, and the boards hold enough
+	// offers to keep most of the sector claimed at any moment - so a combined
+	// set empties out constantly and drops straight through to "anything".
+	var/list/candidates = list() // legal at all
+	var/list/cold = list() // ...and nobody is standing in it
+	var/list/cold_unclaimed = list() // ...and no other contract wants it
 	for(var/obj/structure/overmap/space_ruin/candidate as anything in GLOB.space_ruin_signals)
 		if(QDELETED(candidate))
 			continue
@@ -109,20 +116,24 @@
 		if(!istype(get_turf(candidate), /turf/open/overmap))
 			continue
 		candidates += candidate
-		// A cold site: nobody is pointed at it and nobody is standing in it.
-		//
-		// The loaded check is the important half. A contract that picks the ruin
-		// the accepting crew is docked at spawns its objective into the deck they
-		// are already standing on, and then the undock recycle tears that site
-		// down behind them - so the job is to fly nowhere, and leaving voids it.
-		// A ruin is only ever loaded because somebody is there or just left.
-		if(candidate.mission_claims <= 0 && !candidate.loaded)
-			preferred += candidate
+		// A ruin is only ever loaded because somebody is there or has just left.
+		// Picking one spawns the objective into the deck the accepting crew is
+		// already standing on, and then their undock runs the recycle that tears
+		// that site down behind them - the job is to fly nowhere, and leaving
+		// voids it.
+		if(candidate.loaded)
+			continue
+		cold += candidate
+		if(candidate.mission_claims <= 0)
+			cold_unclaimed += candidate
 	if(!length(candidates))
 		return FALSE
-	// Double-book, or send a crew somewhere they are already standing, only when
-	// every ruin in the sector is spoken for
-	ruin = pick(length(preferred) ? preferred : candidates)
+	var/list/pool = candidates
+	if(length(cold_unclaimed))
+		pool = cold_unclaimed
+	else if(length(cold))
+		pool = cold
+	ruin = pick(pool)
 	ruin.mission_claims++
 	cache_coords_from(ruin)
 	RegisterSignal(ruin, COMSIG_QDELETING, PROC_REF(on_ruin_deleted))
