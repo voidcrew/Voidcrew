@@ -684,13 +684,15 @@
 		if(QDELETED(E))
 			dropped += E
 			continue
-		// Membership is judged the way reconnection judges it - geometry (bounding box +
-		// z, see get_containing_shuttle()) - NOT area bookkeeping. Turf areas go
-		// transiently wrong while another shuttle's footprint overlaps ours (its landing
-		// reassigns our turfs into its area until it leaves), and this proc runs every
-		// helm UI tick, so testing areas here turned any one bad frame into an engine
-		// that was unbound for the rest of the round.
-		if(!shuttle.is_in_shuttle_bounds(E))
+		// Membership is judged purely geometrically (bounding box + z). Deliberately NOT
+		// is_in_shuttle_bounds(): the mobile override layers a shuttle_areas instance
+		// test on top, and turf-area bookkeeping can go wrong while the hull itself is
+		// fine - another shuttle's footprint overlapping ours reassigns turfs into its
+		// area until it leaves, and round 803 lost all four Delta thrusters to hull
+		// tiles stranded in an orphaned same-type area instance. This proc runs every
+		// helm UI tick, so an area test here turns any one bad frame into an engine
+		// unbound for the rest of the round.
+		if(!shuttle.is_in_shuttle_bounds_geometric(E))
 			dropped += E
 			continue
 		var/area/engine_area = get_area(E)

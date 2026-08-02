@@ -78,6 +78,62 @@
 	if(assigned_transit?.assigned_area)
 		assigned_transit.assigned_area.parallax_movedir = preferred_direction
 
+/obj/docking_port/mobile/voidcrew/initiate_docking(obj/docking_port/stationary/new_dock, movement_direction, force = FALSE)
+	reconcile_hull_before_move()
+	return ..()
+
+/**
+ * Pre-move audit of every turf inside our own footprint, run before initiate_docking()'s
+ * preflight so repairs land before any per-turf move decisions are made. Two corruption
+ * classes get repaired and logged, both of which otherwise leave hull tiles - and the
+ * engines standing on them - behind at the old location when the ship moves (round 803,
+ * 2026-08-01: all four Delta thrusters stranded on an unloading ruin z this way):
+ *
+ * 1. Area split: a tile sitting in a /area/shuttle/voidcrew instance whose TYPE we own
+ *    but which is not the instance registered in shuttle_areas. area/beforeShuttleMove()
+ *    grants MOVE_AREA purely by instance membership, so a split tile fails every
+ *    membership test while stringifying identically in logs ("Engineering"). Reassign it
+ *    to our instance. Tiles owned by a LIVE other ship (their area's shuttle_port
+ *    resolves to a different port) are left alone - ship-to-ship docking legitimately
+ *    nests one hull inside another's footprint.
+ *
+ * 2. Missing shuttle skipover: fromShuttleMove() refuses to move any turf without
+ *    /turf/baseturf_skipover/shuttle in its baseturfs. Restore the marker the same way
+ *    /datum/map_template/shuttle/load() stamps it at ship load.
+ */
+/obj/docking_port/mobile/voidcrew/proc/reconcile_hull_before_move()
+	if(!length(shuttle_areas)) // initial load placement, nothing registered to reconcile against
+		return
+	var/list/own_area_by_type
+	for(var/turf/hull_turf as anything in return_ordered_turfs(x, y, z, dir))
+		if(!hull_turf || isspaceturf(hull_turf))
+			continue
+		var/area/turf_area = hull_turf.loc
+		if(!shuttle_areas[turf_area])
+			if(!istype(turf_area, /area/shuttle/voidcrew))
+				continue
+			var/area/shuttle/voidcrew/foreign = turf_area
+			if(foreign.shuttle_port && foreign.shuttle_port != src)
+				continue // live area of another ship - not ours to take
+			if(isnull(own_area_by_type))
+				own_area_by_type = list()
+				for(var/area/own_area as anything in shuttle_areas)
+					own_area_by_type[own_area.type] = own_area
+			var/area/replacement = own_area_by_type[foreign.type]
+			if(!replacement)
+				continue
+			log_shuttle("[name]: hull turf [hull_turf] at [AREACOORD(hull_turf)] was in orphaned area instance [REF(foreign)] of [foreign.type] - reunified into [REF(replacement)] before move")
+			hull_turf.change_area(foreign, replacement)
+			turf_area = replacement
+		if(!shuttle_areas[turf_area])
+			continue
+		if(!isnull(hull_turf.depth_to_find_baseturf(/turf/baseturf_skipover/shuttle)))
+			continue
+		if(!islist(hull_turf.baseturfs))
+			hull_turf.assemble_baseturfs()
+		hull_turf.insert_baseturf(min(3, hull_turf.count_baseturfs() + 1), /turf/baseturf_skipover/shuttle)
+		log_shuttle("[name]: hull turf [hull_turf] ([hull_turf.type]) at [AREACOORD(hull_turf)] had no shuttle skipover baseturf - restored before move")
+
 /obj/docking_port/mobile/voidcrew/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)
 	old_z_level = z
 	return ..()
