@@ -238,6 +238,9 @@
 /datum/unit_test/voidcrew_hull_mount_integrity/Run()
 	ensure_ship_upgrades_initialized()
 	for(var/datum/map_template/shuttle/voidcrew/hull as anything in get_purchasable_ship_templates())
+		// Full preview lifecycle both sides of the load: leftover preview state from
+		// a previous iteration (or anything else) wedges load_template forever.
+		SSshuttle.unload_preview()
 		SSshuttle.load_template(hull)
 		var/obj/docking_port/mobile/port = SSshuttle.preview_shuttle
 		if(!port)
@@ -260,7 +263,6 @@
 					TEST_FAIL("[hull.type]: [engine.name] loads at ([hull_turf.x],[hull_turf.y]) in unregistered area [tile_area.type]")
 		if(!engines_seen && !hull.force_purchasable)
 			TEST_FAIL("[hull.type] loaded with no mapped engines anywhere in its footprint")
-		port.jumpToNullSpace()
-		SSshuttle.preview_shuttle = null
+		SSshuttle.unload_preview()
 
 #undef SHIP_MODULE_MAP_ROOT
