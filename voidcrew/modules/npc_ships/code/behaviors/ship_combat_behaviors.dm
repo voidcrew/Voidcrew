@@ -253,11 +253,13 @@
 			target.ship_notify("Hostile vessel has completed scan and is engaging!", "SECURITY", SHIP_NOTIFY_DANGER)
 			controller.set_combat_state(NPC_COMBAT_ENGAGING)
 	else
-		// Target is broke. In yellow that isn't a reprieve - the pirate takes it
-		// out of their hold instead, with a single crew-scaled boarding wave and
-		// no boss. Only non-boarding ships walk away empty-handed now.
-		var/turf/broke_loc = get_turf(ship)
-		var/datum/overmap_zone/broke_zone = SSovermap_zones.get_zone(broke_loc)
+		// Target is broke. In yellow that isn't a reprieve - the pirate opens a
+		// channel anyway and barters for cargo instead of credits. Refuse or ignore
+		// them and a single crew-scaled boarding wave comes aboard (no boss).
+		// Zone is read off the TARGET, not us: we sit up to territory_range tiles
+		// away and would otherwise call off the raid every time we drifted over a
+		// band line mid-scan.
+		var/datum/overmap_zone/broke_zone = controller.get_raid_zone(target)
 		var/obj/structure/overmap/ship/npc/pirate/pirate_ship = ship
 
 		if(broke_zone?.zone_type == ZONE_YELLOW && istype(pirate_ship) && pirate_ship.uses_boarding_phases)
@@ -265,6 +267,20 @@
 				var/line = pick(pirate_ship.broke_lines)
 				ship.ship_notify("[line]", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 				target.ship_notify("[ship.name]: \"[line]\"", "COMMS", SHIP_NOTIFY_DANGER, 'voidcrew/sound/alert3.ogg', 25)
+
+			// Hail them for a cargo tribute. Answering the holopad opens a normal
+			// negotiation that demands goods rather than money; ignoring the hail
+			// runs out the grace period and drops boarders, same as red.
+			if(pirate_ship.accepts_negotiation && !is_target_being_hailed(target, ship))
+				controller.set_blackboard_key(BB_NPC_BROKE_BARTER, TRUE)
+				controller.set_combat_state(NPC_COMBAT_HAILING)
+				controller.clear_blackboard_key(BB_NPC_HAILING_START)
+				controller.clear_blackboard_key(BB_NPC_HAILING_ANNOUNCED)
+				controller.clear_blackboard_key("hailing_reminder_sent")
+				return AI_BEHAVIOR_DELAY
+
+			// No channel available (won't parley, or someone else has them on the
+			// line) - skip the courtesy and board.
 			if(controller.start_boarding_phase())
 				return AI_BEHAVIOR_DELAY
 
@@ -336,7 +352,13 @@
 		ship.ship_notify("Hailing [target.name]. Awaiting response.", "COMMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
 
 		// Announce to player ship - this is the key notification!
-		target.ship_notify("INCOMING HAIL from [ship.name]! Report to comms array to respond. 20 seconds before they open fire!", "PRIORITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
+		// A broke target is being hailed for cargo, so the threat on the other end
+		// of the timer is a boarding party rather than a broadside.
+		var/grace_seconds = round(NPC_HAILING_GRACE_PERIOD / 10)
+		if(controller.blackboard[BB_NPC_BROKE_BARTER])
+			target.ship_notify("INCOMING HAIL from [ship.name]! Report to comms array to respond. [grace_seconds] seconds before they board!", "PRIORITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
+		else
+			target.ship_notify("INCOMING HAIL from [ship.name]! Report to comms array to respond. [grace_seconds] seconds before they open fire!", "PRIORITY", SHIP_NOTIFY_DANGER, 'voidcrew/sound/warn3.ogg', 25)
 
 		// Make every holopad on the target ship ring
 		target.start_hail_ringing()
@@ -354,7 +376,11 @@
 		// Only send once (check if we're in the 2-second window after halfway)
 		if(!controller.blackboard["hailing_reminder_sent"])
 			controller.set_blackboard_key("hailing_reminder_sent", TRUE)
-			target.ship_notify("[ship.name] is losing patience! 10 seconds until they open fire!", "URGENT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg', 25)
+			var/remaining_seconds = round(NPC_HAILING_GRACE_PERIOD / 2 / 10)
+			if(controller.blackboard[BB_NPC_BROKE_BARTER])
+				target.ship_notify("[ship.name] is losing patience! [remaining_seconds] seconds until they board!", "URGENT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg', 25)
+			else
+				target.ship_notify("[ship.name] is losing patience! [remaining_seconds] seconds until they open fire!", "URGENT", SHIP_NOTIFY_WARNING, 'voidcrew/sound/warn4.ogg', 25)
 
 	// Check if grace period expired
 	if(elapsed >= NPC_HAILING_GRACE_PERIOD)
@@ -377,7 +403,11 @@
 	target.stop_hail_ringing()
 
 	// Announce escalation
-	if(reason == "ignored")
+	var/barter_hail = controller.blackboard[BB_NPC_BROKE_BARTER]
+	if(reason == "ignored" && barter_hail)
+		ship.ship_notify("No response from target. Send the boarding party.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
+		target.ship_notify("[ship.name] got no answer and is moving to board!", "COMBAT", SHIP_NOTIFY_DANGER)
+	else if(reason == "ignored")
 		ship.ship_notify("No response from target. Engaging.", "COMMS", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify.ogg', 50)
 		target.ship_notify("[ship.name] has received no response and is engaging!", "COMBAT", SHIP_NOTIFY_DANGER)
 	else if(reason == "aggression")
@@ -416,12 +446,10 @@
 		controller.clear_target()
 		return AI_BEHAVIOR_DELAY
 
-	// Check if target escaped to a different zone - abort lock
-	var/turf/ship_loc = get_turf(ship)
-	var/turf/target_loc = get_turf(target)
-	var/datum/overmap_zone/ship_zone = SSovermap_zones.get_zone(ship_loc)
-	var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_loc)
-	if(ship_zone != target_zone)
+	// Check if target escaped somewhere we can't shoot them - abort lock.
+	// Their band, not ours: we sit up to territory_range tiles off and would
+	// otherwise drop the lock every time the two of us straddle a boundary.
+	if(controller.target_reached_sanctuary(target))
 		controller.clear_target()
 		return AI_BEHAVIOR_DELAY
 
@@ -442,8 +470,8 @@
 		// Lock acquired!
 		controller.set_blackboard_key(BB_NPC_TARGET_LOCKED, TRUE)
 
-		// Branch based on zone: yellow zone -> siphon, red zone -> full combat
-		if(ship_zone?.zone_type != ZONE_RED)
+		// Branch based on the target's band: yellow -> siphon, red -> full combat
+		if(!controller.is_red_zone_raid())
 			controller.set_combat_state(NPC_COMBAT_SIPHONING)
 		else
 			controller.set_combat_state(NPC_COMBAT_COMBAT)
@@ -895,16 +923,14 @@
 	if(!ship || !target || QDELETED(target))
 		return AI_BEHAVIOR_DELAY
 
-	// Check 0: Target escaped to a different zone - fully disengage
-	var/turf/ship_turf = get_turf(ship)
-	var/turf/target_turf = get_turf(target)
-	if(ship_turf && target_turf)
-		var/datum/overmap_zone/ship_zone = SSovermap_zones.get_zone(ship_turf)
-		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
-		if(ship_zone != target_zone)
-			ship.ship_notify("Target has escaped to another sector. Aborting boarding operation.", "COMBAT", SHIP_NOTIFY_NOTICE)
-			controller.abort_boarding()
-			return AI_BEHAVIOR_DELAY
+	// Check 0: Target escaped somewhere we can't follow - fully disengage.
+	// Judged on the target's own band, not on ship-vs-target equality: the two
+	// straddle a boundary constantly at these engagement ranges, and aborting on
+	// that killed raids seconds after they started.
+	if(controller.target_reached_sanctuary(target))
+		ship.ship_notify("Target has escaped to a patrolled sector. Aborting boarding operation.", "COMBAT", SHIP_NOTIFY_NOTICE)
+		controller.abort_boarding()
+		return AI_BEHAVIOR_DELAY
 
 	// Check 1: Wave time limit exceeded (cheesing by walling off boarders)
 	// Instead of escalating to combat, advance to the next wave
@@ -953,16 +979,12 @@
 	if(!ship || !target || QDELETED(target))
 		return AI_BEHAVIOR_DELAY
 
-	// Check if target escaped to a different zone - fully disengage
-	var/turf/ship_turf = get_turf(ship)
-	var/turf/target_turf = get_turf(target)
-	if(ship_turf && target_turf)
-		var/datum/overmap_zone/ship_zone = SSovermap_zones.get_zone(ship_turf)
-		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
-		if(ship_zone != target_zone)
-			ship.ship_notify("Target has escaped to another sector. Aborting boarding operation.", "COMBAT", SHIP_NOTIFY_NOTICE)
-			controller.abort_boarding()
-			return AI_BEHAVIOR_DELAY
+	// Check if target escaped somewhere we can't follow - fully disengage.
+	// Their band, not ship-vs-target equality (see boarding_wave_monitor).
+	if(controller.target_reached_sanctuary(target))
+		ship.ship_notify("Target has escaped to a patrolled sector. Aborting boarding operation.", "COMBAT", SHIP_NOTIFY_NOTICE)
+		controller.abort_boarding()
+		return AI_BEHAVIOR_DELAY
 
 	// Check if cooldown has expired (timer handles the actual transition)
 	var/cooldown_end = controller.blackboard[BB_NPC_BOARDING_COOLDOWN_END]
@@ -992,16 +1014,12 @@
 	if(!ship || !target || QDELETED(target))
 		return AI_BEHAVIOR_DELAY
 
-	// Check if target escaped to a different zone - fully disengage
-	var/turf/ship_turf = get_turf(ship)
-	var/turf/target_turf = get_turf(target)
-	if(ship_turf && target_turf)
-		var/datum/overmap_zone/ship_zone = SSovermap_zones.get_zone(ship_turf)
-		var/datum/overmap_zone/target_zone = SSovermap_zones.get_zone(target_turf)
-		if(ship_zone != target_zone)
-			ship.ship_notify("Target has escaped to another sector. Aborting boarding operation.", "COMBAT", SHIP_NOTIFY_NOTICE)
-			controller.abort_boarding()
-			return AI_BEHAVIOR_DELAY
+	// Check if target escaped somewhere we can't follow - fully disengage.
+	// Their band, not ship-vs-target equality (see boarding_wave_monitor).
+	if(controller.target_reached_sanctuary(target))
+		ship.ship_notify("Target has escaped to a patrolled sector. Aborting boarding operation.", "COMBAT", SHIP_NOTIFY_NOTICE)
+		controller.abort_boarding()
+		return AI_BEHAVIOR_DELAY
 
 	// Check if boss still exists
 	var/mob/living/boss = controller.blackboard[BB_NPC_BOARDING_BOSS]

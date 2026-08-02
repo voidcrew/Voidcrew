@@ -364,6 +364,16 @@
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/medbay/d)
+"vc" = (
+/obj/machinery/door/airlock/titanium{
+	name = "Emergency Shuttle Airlock"
+	},
+/obj/structure/fans/tiny,
+/obj/docking_port/mobile/voidcrew/goon/d{
+	dir = 2
+	},
+/turf/open/floor/iron/dollhouse/white,
+/area/shuttle/voidcrew/goon/commons/d)
 "vn" = (
 /obj/item/pillow/random{
 	pixel_x = 5;
@@ -489,13 +499,6 @@
 /obj/structure/window/reinforced/plasma/spawner,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/d)
-"Cm" = (
-/obj/effect/spawner/structure/window/reinforced/shuttle,
-/obj/docking_port/mobile/voidcrew/goon/d{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/bridge/d)
 "CD" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "goon_lounge"
@@ -958,7 +961,7 @@ Om
 Mx
 "}
 (10,1,1) = {"
-Mx
+vc
 Un
 ZV
 hZ
@@ -1080,7 +1083,7 @@ IZ
 IZ
 EB
 fe
-Cm
+fe
 fe
 EB
 IZ

@@ -1,5 +1,11 @@
 #define COMSIG_VOIDCREW_PLANET_LOADED "voidcrew_planet_loaded"
 
+/// Sent on a space ruin as its interior is torn down, BEFORE the reservation is
+/// freed and while the signal object itself lives on. Anything holding a claim on
+/// the site (a live contract with an objective standing in there) gets its chance
+/// to let go of what is about to be wiped, instead of reading the wipe as a loss.
+#define COMSIG_VOIDCREW_RUIN_UNLOADING "voidcrew_ruin_unloading"
+
 /**
  * Smallest a planet's bounded region may be.
  *

@@ -332,6 +332,7 @@
 #include "voidcrew_ship_hulls.dm"
 #include "voidcrew_ship_modules.dm"
 #include "voidcrew_shop_catalog.dm"
+#include "voidcrew_simple_mob_ai.dm"
 #include "voidcrew_vestige.dm"
 #include "washing.dm"
 #include "weather_mob_targeting.dm"

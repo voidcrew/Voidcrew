@@ -24,6 +24,9 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 		qdel(pod)
 		return null
 
+	// Boarders are tougher than the same mob type is out in a ruin
+	scale_npc_ship_pirate_health(boarder)
+
 	// Store references for the pod
 	pod.target_ship = target_ship
 	pod.source_ship = source_ship
@@ -179,6 +182,10 @@ GLOBAL_VAR_INIT(boarding_spawn_total, 1)
 	if(!boss)
 		qdel(pod)
 		return null
+
+	// Scaled after Initialize() so bosses that set their health there (silverscale)
+	// are multiplied off their real pool, not the var default
+	scale_npc_ship_pirate_health(boss, NPC_PIRATE_BOSS_HEALTH_MULT)
 
 	// Set up boss-specific properties
 	boss.parent_ship = source_ship

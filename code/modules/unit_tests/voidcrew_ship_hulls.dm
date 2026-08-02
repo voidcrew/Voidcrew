@@ -221,6 +221,68 @@
 	TEST_ASSERT(checked >= 15, "only [checked] hull/theme maps were checked for starting equipment")
 
 /**
+ * # The docking port's own tile
+ *
+ * /datum/map_template/shuttle/dispatch() walks the loaded block and skips space
+ * turfs before it stamps baseturfs. A hull that maps its mobile port onto space
+ * therefore never gets its port tile stamped with the shuttle skipover, so that
+ * tile does not travel with the ship.
+ *
+ * It used to be far worse: the port setup lived below that skip, so such a hull
+ * also never got calculate_docking_port_information() - no dimensions, no
+ * shuttle_areas - and linkup() then walked zero areas, leaving every machine
+ * that binds through connect_to_shuttle() unbound. Round 809's Scarab-C reached
+ * roundstart with no cryopod spawn points at all and could not be joined.
+ * dispatch() now hoists the port setup above the skip, but the tile is still
+ * wrong, so keep it mapped as real deck.
+ *
+ * Checked per theme, not per template: a hull's themes are separate .dmm files
+ * and only the default one is reachable through `mappath`.
+ */
+/datum/unit_test/voidcrew_hull_port_tile
+
+/datum/unit_test/voidcrew_hull_port_tile/Run()
+	ensure_ship_upgrades_initialized()
+	var/checked = 0
+	var/list/hulls = vc_test_voidcrew_hull_templates() // keyed by typepath, templates are the values
+	for(var/hull_type in hulls)
+		var/datum/map_template/shuttle/voidcrew/hull = hulls[hull_type]
+		var/list/map_paths = list(hull.mappath)
+		var/list/themes = GLOB.ship_themes[hull_type]
+		for(var/theme_id in themes)
+			var/datum/ship_theme/theme = themes[theme_id]
+			map_paths |= "[hull.prefix]ship_[theme.template_suffix].dmm"
+		for(var/map_path in map_paths)
+			var/text = vc_test_file_text(map_path)
+			if(!text)
+				continue // missing theme maps are the module-map test's business
+			var/port_at = findtext(text, "/obj/docking_port/mobile/")
+			if(!port_at)
+				continue // the dock rotation test owns portless hulls
+			checked++
+			// TGM lists every obj on a tile before the tile's single /turf line, so
+			// the first /turf after the port entry is the turf the port stands on.
+			var/turf_at = findtext(text, "\n/turf/", port_at)
+			if(!turf_at)
+				TEST_FAIL("[map_path] has a mobile docking port entry with no turf")
+				continue
+			turf_at++ // step over the newline
+			var/index = turf_at
+			var/limit = length(text)
+			while(index <= limit)
+				var/char = copytext(text, index, index + 1)
+				if(char == "," || char == "{" || char == "\n" || char == ascii2text(13)) // 13 = carriage return; DM has no \r escape
+					break
+				index++
+			var/turf/tile_type = text2path(trim(copytext(text, turf_at, index)))
+			if(!ispath(tile_type, /turf))
+				TEST_FAIL("[map_path]'s docking port tile did not resolve to a turf type")
+				continue
+			if(ispath(tile_type, /turf/open/space) || ispath(tile_type, /turf/template_noop))
+				TEST_FAIL("[map_path] maps its mobile docking port onto [tile_type]. The port tile must be real deck - dispatch() skips space turfs when it stamps the shuttle skipover baseturf, so this tile does not move with the ship.")
+	TEST_ASSERT(checked >= 15, "only [checked] hull/theme maps were checked for their docking port tile")
+
+/**
  * # Hull mount integrity at load
  *
  * Loads every purchasable hull as a real template (no placement move, no

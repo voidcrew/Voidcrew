@@ -118,7 +118,7 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 8
 	},
-/turf/open/space/basic,
+/turf/open/floor/pod,
 /area/shuttle/voidcrew/scarab/dormitories/c)
 "dU" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{

@@ -96,7 +96,7 @@
 	var/obj/structure/overmap/space_ruin/previous = ruin
 	unhook()
 	var/list/candidates = list()
-	var/list/unclaimed = list()
+	var/list/preferred = list()
 	for(var/obj/structure/overmap/space_ruin/candidate as anything in GLOB.space_ruin_signals)
 		if(QDELETED(candidate))
 			continue
@@ -109,16 +109,24 @@
 		if(!istype(get_turf(candidate), /turf/open/overmap))
 			continue
 		candidates += candidate
-		if(candidate.mission_claims <= 0)
-			unclaimed += candidate
+		// A cold site: nobody is pointed at it and nobody is standing in it.
+		//
+		// The loaded check is the important half. A contract that picks the ruin
+		// the accepting crew is docked at spawns its objective into the deck they
+		// are already standing on, and then the undock recycle tears that site
+		// down behind them - so the job is to fly nowhere, and leaving voids it.
+		// A ruin is only ever loaded because somebody is there or just left.
+		if(candidate.mission_claims <= 0 && !candidate.loaded)
+			preferred += candidate
 	if(!length(candidates))
 		return FALSE
-	// Prefer ruins no other mission is already pointed at; double-book only when
-	// every candidate is taken
-	ruin = pick(length(unclaimed) ? unclaimed : candidates)
+	// Double-book, or send a crew somewhere they are already standing, only when
+	// every ruin in the sector is spoken for
+	ruin = pick(length(preferred) ? preferred : candidates)
 	ruin.mission_claims++
 	cache_coords_from(ruin)
 	RegisterSignal(ruin, COMSIG_QDELETING, PROC_REF(on_ruin_deleted))
+	RegisterSignal(ruin, COMSIG_VOIDCREW_RUIN_UNLOADING, PROC_REF(on_ruin_unloading))
 	return TRUE
 
 /datum/mission_target/space_ruin/is_valid()
@@ -127,7 +135,7 @@
 /datum/mission_target/space_ruin/unhook()
 	if(ruin)
 		ruin.mission_claims = max(ruin.mission_claims - 1, 0)
-		UnregisterSignal(ruin, list(COMSIG_QDELETING, COMSIG_VOIDCREW_PLANET_LOADED))
+		UnregisterSignal(ruin, list(COMSIG_QDELETING, COMSIG_VOIDCREW_PLANET_LOADED, COMSIG_VOIDCREW_RUIN_UNLOADING))
 		ruin = null
 
 /datum/mission_target/space_ruin/get_zone_type()
@@ -179,6 +187,15 @@
 		bottom_left.y + reservation.height - 1,
 		bottom_left.z,
 	)
+
+/**
+ * The ruin emptied out and gave its interior back, but the signal is still on
+ * the chart at the same coordinates. Distinct from on_ruin_deleted(): the
+ * target is intact, so the mission rewinds instead of re-rolling.
+ */
+/datum/mission_target/space_ruin/proc/on_ruin_unloading(datum/source)
+	SIGNAL_HANDLER
+	mission?.on_target_interior_unloaded()
 
 /// The ruin was abandoned and is respawning elsewhere
 /datum/mission_target/space_ruin/proc/on_ruin_deleted(datum/source)
@@ -266,6 +283,14 @@
  * in that strip is destroyed by the very ship that came to collect it. Ruins
  * are already kept out of it (reserve_dock_strip() -> NO_RUINS); objective
  * spawns need the same clearance.
+ *
+ * Shuttle areas are rejected for the mirror-image reason. A landed ship copies
+ * its turfs over the surface, and those tiles are open, undense and perfectly
+ * samplable — so with somebody else already parked on the planet the specimen
+ * can materialise inside their hull, and their takeoff carries it off the world
+ * (/mob/onShuttleMove). Nothing dies and nothing fails: the beacon simply stops
+ * being on the crew's z-level, and the surface has nothing on it. SSplanet_mobs
+ * skips these turfs for its own spawns already.
  */
 /datum/mission_target/planet/get_spawn_turf()
 	if(!planet?.mapzone || !length(planet.mapzone.z_levels))
@@ -287,6 +312,8 @@
 	for(var/_ in 1 to 40)
 		var/turf/candidate = locate(rand(min_x, max_x), rand(min_y, max_y), level.z_value)
 		if(!candidate || !isopenturf(candidate) || isspaceturf(candidate))
+			continue
+		if(istype(get_area(candidate), /area/shuttle))
 			continue
 		if(candidate.is_blocked_turf(exclude_mobs = TRUE))
 			continue

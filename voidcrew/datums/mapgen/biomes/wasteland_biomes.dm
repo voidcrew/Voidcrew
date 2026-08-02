@@ -190,8 +190,20 @@
 		/obj/structure/spawner/ice_moon/demonic_portal/hivebot = 1
 	)
 
+/**
+ * The one wasteland cave biome that never declared its own walls, so it inherited
+ * /datum/biome/cave's lavaland default. Those walls mine into
+ * /turf/open/misc/asteroid/basalt/lava_land_surface: LAVALAND_DEFAULT_ATMOS is
+ * rolled between 30 and 49 kPa, always under WARNING_LOW_PRESSURE, and the turf is
+ * planetary, so every tile mined here read as depressurized forever and fought the
+ * surrounding 101 kPa ground for air. It also mined poorly (the volcanic wall is
+ * proximity_based with mineralChance 5, and a planet has no vents when its terrain
+ * generates) and it sat on a lava baseturf, so anything that broke the new floor
+ * opened a lava tile on a wasteland.
+ */
 /datum/biome/cave/mossy_stone
 	open_turf_types = list(/turf/open/floor/plating/mossy_stone = 5, /turf/open/misc/dirt/dry = 1)
+	closed_turf_types = list(/turf/closed/mineral/random/high_chance/wasteland = 1)
 	feature_spawn_list = list(
 		/obj/effect/decal/cleanable/greenglow = 30,
 		/obj/machinery/portable_atmospherics/canister/plasma = 15,

@@ -1,8 +1,7 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "b" = (
 /obj/structure/window/reinforced/survival_pod/spawner/directional/north,
-/obj/structure/table,
-/obj/machinery/coffeemaker,
+/obj/machinery/griddle,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
@@ -17,7 +16,6 @@
 /area/template_noop)
 "v" = (
 /obj/structure/window/reinforced/survival_pod/spawner/directional/north,
-/obj/machinery/griddle,
 /turf/open/floor/mineral/titanium/purple,
 /area/template_noop)
 "x" = (
@@ -27,6 +25,7 @@
 /obj/item/reagent_containers/condiment/saltshaker,
 /obj/item/reagent_containers/condiment/peppermill,
 /obj/effect/spawner/random/food_or_drink/snack,
+/obj/machinery/coffeemaker,
 /obj/machinery/light{
 	dir = 4
 	},

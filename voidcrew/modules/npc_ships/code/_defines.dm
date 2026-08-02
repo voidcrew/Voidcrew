@@ -56,6 +56,9 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 #define BB_NPC_NEGOTIATION_START "npc_negotiation_start"
 #define BB_NPC_PAID_TRIBUTE_SHIPS "npc_paid_tribute_ships"
 #define BB_NPC_FAILED_NEGOTIATION_SHIPS "npc_failed_negotiation_ships"  // Ships that refused/failed negotiation - no second chances
+/// TRUE while hailing a target whose accounts came back empty. The resulting
+/// negotiation demands cargo instead of credits - see /datum/pirate_negotiation/barter_only.
+#define BB_NPC_BROKE_BARTER "npc_broke_barter"
 
 // Negotiation states
 #define NEGOTIATION_PENDING "pending"
@@ -75,6 +78,11 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 #define NEGOTIATION_IMMUNITY_TIME (5 MINUTES)
 #define NEGOTIATION_IMMUNITY_DURATION (5 MINUTES)
 #define NEGOTIATION_WARNING_TIMES list(60, 30, 10)  // Seconds before timeout to warn
+/// Which impatience warning escalates a barter demand. 1 = the first warning, so 2
+/// means "you stalled past the first warning and still haven't put anything on the pad".
+#define NEGOTIATION_BARTER_ESCALATE_WARNING 2
+/// How many extra units get added to a barter demand when it escalates.
+#define NEGOTIATION_BARTER_ESCALATE_AMOUNT 1
 
 // Negotiation payment signal
 #define COMSIG_NEGOTIATION_PAYMENT "negotiation_payment"
@@ -110,6 +118,16 @@ GLOBAL_LIST_EMPTY(patrol_stagger_counter)
 // Ship combat boarding pod constants
 #define NPC_SHIP_COMBAT_MAX_BOARDERS 10            // Max hostile mobs during ship combat phase
 #define NPC_SHIP_COMBAT_POD_COOLDOWN (15 SECONDS)  // Cooldown between boarding pod volleys
+
+// Boarding difficulty
+/// Health multiplier for crew aboard an NPC ship and for anything it drops on you
+/// in a boarding pod. Applied at the spawn site by scale_npc_ship_pirate_health()
+/// rather than on the mob definitions, because ruin zone spawners, planet spawns
+/// and bounty missions reuse the same faction pirate types and are tuned for their
+/// own zone bands.
+#define NPC_PIRATE_CREW_HEALTH_MULT 1.8
+/// Same, for the faction boss that drops in after the last wave is repelled.
+#define NPC_PIRATE_BOSS_HEALTH_MULT 1.6
 
 // Additional boarding blackboard keys
 #define BB_NPC_BOARDING_LAST_SPACE_CHECK "npc_boarding_space_check"  // Last time we checked for boarders in space

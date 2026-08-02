@@ -199,6 +199,23 @@ GLOBAL_LIST_EMPTY(overmap_planets)
 	if(!second_dock_taken)
 		reset_reserve_dock(reserve_dock_secondary, secondary_docking_turf)
 
+/**
+ * The encounter's other reserve dock, when something is physically parked on it.
+ *
+ * A ship arriving into an encounter someone else is already sitting in has no way to
+ * reach the ship-to-ship handshake - a docked ship leaves the overmap tile, so it is no
+ * longer a contact anyone can act on - and would otherwise be berthed at the default
+ * port on the far side of the level. This is what lets that arrival dock against them.
+ *
+ * * excluding - The dock the arriving ship has already claimed.
+ */
+/obj/structure/overmap/planet/empty/proc/get_occupied_reserve_dock(obj/docking_port/stationary/excluding)
+	if(reserve_dock && reserve_dock != excluding && reserve_dock.get_docked())
+		return reserve_dock
+	if(reserve_dock_secondary && reserve_dock_secondary != excluding && reserve_dock_secondary.get_docked())
+		return reserve_dock_secondary
+	return null
+
 /// Restores a single free reserve dock to its default size/orientation at the given turf
 /obj/structure/overmap/planet/empty/proc/reset_reserve_dock(obj/docking_port/stationary/dock, turf/home_turf)
 	if(!dock || QDELETED(dock) || !home_turf)

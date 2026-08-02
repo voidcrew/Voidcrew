@@ -75,14 +75,13 @@
 
 	for(var/i in 1 to turfs.len)
 		var/turf/place = turfs[i]
-		if(isspaceturf(place)) // This assumes all shuttles are loaded in a single spot then moved to their real destination.
-			continue
 
-		if (place.count_baseturfs() < 2) // Some snowflake shuttle shit
-			continue
-
-		place.insert_baseturf(3, /turf/baseturf_skipover/shuttle)
-
+		// The port has to be set up wherever it was mapped, including on turfs the
+		// baseturf pass below skips. A hull whose port tile is space (or has a shallow
+		// baseturf stack) otherwise never gets calculate_docking_port_information(), so
+		// its dimensions and shuttle_areas stay empty - linkup() then walks no areas at
+		// all and every machine that binds through connect_to_shuttle() (cryopod spawn
+		// points, airlock ids, cameras) is silently left unbound.
 		for(var/obj/docking_port/mobile/port in place)
 			port.calculate_docking_port_information(src)
 			// initTemplateBounds explicitly ignores the shuttle's docking port, to ensure that it calculates the bounds of the shuttle correctly
@@ -90,6 +89,14 @@
 			SSatoms.InitializeAtoms(list(port))
 			if(register)
 				port.register()
+
+		if(isspaceturf(place)) // This assumes all shuttles are loaded in a single spot then moved to their real destination.
+			continue
+
+		if (place.count_baseturfs() < 2) // Some snowflake shuttle shit
+			continue
+
+		place.insert_baseturf(3, /turf/baseturf_skipover/shuttle)
 
 //Whatever special stuff you want
 /datum/map_template/shuttle/post_load(obj/docking_port/mobile/M)

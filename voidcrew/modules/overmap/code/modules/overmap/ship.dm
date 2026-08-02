@@ -2141,6 +2141,17 @@
 		// Set port destinations for helm UI
 		shuttle.port_destinations = dock_to_use
 
+		// Someone is still parked in here - typically an NPC hulk the crew boarded,
+		// undocked from, and came straight back to. Once a ship docks it leaves the
+		// overmap tile for the placeholder's contents, so it stops being a contact and
+		// ship_act()'s exit-to-exit handshake is unreachable on the way back in; this
+		// button is all the crew has. Berth them against that ship rather than dropping
+		// them at the encounter's default port, a map away from the airlock they were
+		// just using.
+		var/obj/docking_port/stationary/occupied_dock = E.get_occupied_reserve_dock(dock_to_use)
+		if(occupied_dock && position_dock_across_from(E, occupied_dock, dock_to_use, shuttle))
+			return dock(E, dock_to_use)
+
 		// Adjust dock to shuttle size and immediately start docking
 		E.adjust_dock_to_shuttle(dock_to_use, shuttle)
 		return dock(E, dock_to_use)
@@ -2326,42 +2337,84 @@
 	dock_a.forceMove(locate(center_x, center_y, zlevel.z_value))
 	empty_planet.adjust_dock_to_shuttle(dock_a, shuttle_a)
 
-	// For exit-to-exit docking, dock_b faces OPPOSITE to dock_a
-	// Set direction first so the shuttle body extends correctly
-	dock_b.dir = REVERSE_DIR(dock_a.dir)
+	// Put dock_b right across from it so the two shuttles end up exit-to-exit
+	position_dock_across_from(empty_planet, dock_a, dock_b, shuttle_b)
 
-	// Size dock_b to fit shuttle_b (use max of dimensions for safety)
-	var/shuttle_max_dim = max(shuttle_b.width, shuttle_b.height)
-	dock_b.width = shuttle_max_dim
-	dock_b.height = shuttle_max_dim
+/**
+  * Places a free stationary dock exit-to-exit against another dock, so a shuttle sent
+  * to it ends up with its airlock touching whatever is parked on the anchor.
+  *
+  * anchor_dock.dir points INTO the ship parked there, so that ship's exit - and the
+  * berth we want - is one tile away in REVERSE_DIR. Facing the placed dock the same
+  * way puts the two shuttle bodies back to back with their exits meeting in between.
+  *
+  * Used both when pairing two ships up front and when a ship arrives into an
+  * encounter someone else is already sitting in.
+  *
+  * * empty_planet - The encounter, for its z-level bounds. Optional; skips the fit check.
+  * * anchor_dock - The dock to berth against. Never moved: something is parked on it.
+  * * dock_to_place - The free dock to reposition.
+  * * shuttle_to_place - The mobile port that will dock at dock_to_place.
+  *
+  * Returns TRUE if the dock was placed, FALSE (leaving it untouched) if the berth
+  * would fall outside the encounter.
+  */
+/obj/structure/overmap/ship/proc/position_dock_across_from(obj/structure/overmap/planet/empty/empty_planet, obj/docking_port/stationary/anchor_dock, obj/docking_port/stationary/dock_to_place, obj/docking_port/mobile/shuttle_to_place)
+	if(!anchor_dock || !dock_to_place || !shuttle_to_place)
+		return FALSE
 
-	// Calculate offsets to center shuttle_b within dock area
-	dock_b.dwidth = round((dock_b.width - shuttle_b.width) / 2) + shuttle_b.dwidth
-	dock_b.dheight = round((dock_b.height - shuttle_b.height) / 2) + shuttle_b.dheight
-
-	// Position dock_b adjacent to dock_a (exit-to-exit docking)
-	// dock_a.dir points INTO shuttle_a, shuttle_a extends in REVERSE_DIR(dock_a.dir)
-	// dock_b should be in that direction so shuttles face each other
-	// The +1 offset puts the docking ports adjacent - shuttle bodies extend away from each other
-	var/offset_dir = REVERSE_DIR(dock_a.dir)
-	var/dock_b_x = dock_a.x
-	var/dock_b_y = dock_a.y
-
-	switch(offset_dir)
+	var/new_dir = REVERSE_DIR(anchor_dock.dir)
+	var/new_x = anchor_dock.x
+	var/new_y = anchor_dock.y
+	switch(new_dir)
 		if(NORTH)
-			dock_b_y = dock_a.y + 1
+			new_y = anchor_dock.y + 1
 		if(SOUTH)
-			dock_b_y = dock_a.y - 1
+			new_y = anchor_dock.y - 1
 		if(EAST)
-			dock_b_x = dock_a.x + 1
+			new_x = anchor_dock.x + 1
 		if(WEST)
-			dock_b_x = dock_a.x - 1
+			new_x = anchor_dock.x - 1
 
-	var/turf/new_loc = locate(dock_b_x, dock_b_y, dock_a.z)
-	if(new_loc)
-		dock_b.forceMove(new_loc)
-	else
-		log_shuttle("WARNING: Could not position dock_b at ([dock_b_x], [dock_b_y]) for ship-to-ship docking")
+	var/turf/new_loc = locate(new_x, new_y, anchor_dock.z)
+	if(!new_loc)
+		log_shuttle("WARNING: Could not position [dock_to_place] at ([new_x], [new_y], [anchor_dock.z]) for ship-to-ship docking")
+		return FALSE
+
+	// Square footprint: the dock gets rotated to face the anchor rather than sized along
+	// a fixed axis, so its long side has to clear the shuttle whichever way it lands
+	var/new_size = max(shuttle_to_place.width, shuttle_to_place.height)
+
+	// return_coords() reads the port's own footprint, so these have to be in place before
+	// we can ask where the berth would actually land. Snapshot them: a berth that turns
+	// out not to fit leaves the dock exactly as we found it for the caller's fallback.
+	var/old_width = dock_to_place.width
+	var/old_height = dock_to_place.height
+	var/old_dwidth = dock_to_place.dwidth
+	var/old_dheight = dock_to_place.dheight
+
+	dock_to_place.width = new_size
+	dock_to_place.height = new_size
+	dock_to_place.dwidth = round((new_size - shuttle_to_place.width) / 2) + shuttle_to_place.dwidth
+	dock_to_place.dheight = round((new_size - shuttle_to_place.height) / 2) + shuttle_to_place.dheight
+
+	var/datum/space_level/zlevel
+	if(empty_planet?.mapzone && length(empty_planet.mapzone.z_levels))
+		zlevel = empty_planet.mapzone.z_levels[1]
+	if(zlevel)
+		var/list/corners = dock_to_place.return_coords(new_x, new_y, new_dir)
+		if(min(corners[1], corners[3]) < zlevel.low_x || max(corners[1], corners[3]) > zlevel.high_x \
+			|| min(corners[2], corners[4]) < zlevel.low_y || max(corners[2], corners[4]) > zlevel.high_y)
+			dock_to_place.width = old_width
+			dock_to_place.height = old_height
+			dock_to_place.dwidth = old_dwidth
+			dock_to_place.dheight = old_dheight
+			log_shuttle("WARNING: berth for [shuttle_to_place] beside [anchor_dock] falls outside the encounter, using the default port instead")
+			return FALSE
+
+	dock_to_place.dir = new_dir
+	dock_to_place.forceMove(new_loc)
+	return TRUE
 
 /**
   * Ship-to-ship interaction. Creates shared empty space and docks both ships together.

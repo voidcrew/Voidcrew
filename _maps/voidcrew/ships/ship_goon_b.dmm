@@ -114,6 +114,21 @@
 /obj/machinery/light/cold/directional/west,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/engineering/b)
+"eT" = (
+/obj/machinery/door/airlock/titanium{
+	name = "Emergency Shuttle Airlock"
+	},
+/obj/structure/fans/tiny,
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 1
+	},
+/obj/docking_port/mobile/voidcrew/goon/b{
+	dir = 2
+	},
+/turf/open/floor/mineral/titanium{
+	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
 "fh" = (
 /obj/machinery/door/airlock/public/glass{
 	name = "Emergency Shuttle Infirmary"
@@ -286,13 +301,6 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/commons/b)
-"zO" = (
-/obj/effect/spawner/structure/window/reinforced/shuttle,
-/obj/docking_port/mobile/voidcrew/goon/b{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/bridge/b)
 "AC" = (
 /obj/machinery/atmospherics/components/binary/volume_pump{
 	dir = 8
@@ -769,7 +777,7 @@ Th
 Dq
 "}
 (10,1,1) = {"
-dg
+eT
 Rg
 sg
 wg
@@ -891,7 +899,7 @@ IZ
 IZ
 Tk
 KM
-zO
+KM
 KM
 Tk
 IZ

@@ -220,6 +220,7 @@
 	QDEL_NULL(access_card)
 	GLOB.simple_animals[AIStatus] -= src
 	SSnpcpool.currentrun -= src
+	SSidlenpcpool.currentrun -= src // voidcrew: same deal, an in-flight idle scan would hold us past Destroy
 
 	return ..()
 

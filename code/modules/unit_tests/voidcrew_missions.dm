@@ -100,3 +100,62 @@
 			TEST_FAIL("[objective_type].required_type [required] is not an item path, so can_turn_in() can never match anything")
 		if(initial(objective_type.required_amount) < 1)
 			TEST_FAIL("[objective_type] asks for [initial(objective_type.required_amount)] of something — it can never be satisfied by handing anything over")
+
+/**
+ * # Ruin contracts never point at an occupied site
+ *
+ * A recovery-family contract picks a live ruin signal out of
+ * GLOB.space_ruin_signals. Nothing used to stop it picking the ruin the
+ * accepting crew was docked at that second, and that pick is self-destructing:
+ * the field objective arms immediately (the interior is loaded, because they
+ * are standing in it), and then undocking runs check_and_respawn(), which frees
+ * the interior out from under the contract. From the helm, taking a job and
+ * leaving made the job disappear.
+ *
+ * `loaded` is the tell — a ruin is only ever loaded because somebody is there or
+ * has just left — so a loaded ruin drops out of the preferred set. It stays in
+ * the fallback set, since sending a crew somewhere awkward still beats failing
+ * generation outright.
+ */
+/datum/unit_test/voidcrew_mission_ruin_target_picker
+
+/datum/unit_test/voidcrew_mission_ruin_target_picker/Run()
+	var/list/obj/structure/overmap/space_ruin/live_ruins = list()
+	for(var/obj/structure/overmap/space_ruin/ruin as anything in GLOB.space_ruin_signals)
+		if(QDELETED(ruin) || ruin.mission_locked)
+			continue
+		if(!istype(get_turf(ruin), /turf/open/overmap))
+			continue
+		live_ruins += ruin
+	if(length(live_ruins) < 2)
+		return // no overmap worth testing against in this world
+
+	// Remember what we are about to lie about, so the round gets it back
+	var/list/saved_loaded = list()
+	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
+		saved_loaded[ruin] = ruin.loaded
+
+	var/obj/structure/overmap/space_ruin/occupied = live_ruins[1]
+	occupied.loaded = TRUE
+	for(var/i in 2 to length(live_ruins))
+		var/obj/structure/overmap/space_ruin/cold = live_ruins[i]
+		cold.loaded = FALSE
+
+	var/datum/mission_target/space_ruin/target = new(null)
+	for(var/_ in 1 to 60)
+		if(!target.resolve())
+			TEST_FAIL("space_ruin target resolve() found nothing with [length(live_ruins)] ruins on the overmap")
+			break
+		if(target.ruin == occupied)
+			TEST_FAIL("a ruin contract targeted a loaded (occupied) ruin while [length(live_ruins) - 1] cold ruins were available. Accepting that contract while docked there arms the objective inside the site the crew is standing in, and undocking recycles the site out from under it (see check_and_respawn).")
+			break
+
+	// Nowhere cold left: the picker must still hand something back rather than
+	// fail generation and drop the contract off the board
+	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
+		ruin.loaded = TRUE
+	TEST_ASSERT(target.resolve(), "with every ruin loaded, the picker refused to pick any of them instead of falling back — recovery contracts stop generating entirely")
+
+	qdel(target)
+	for(var/obj/structure/overmap/space_ruin/ruin as anything in live_ruins)
+		ruin.loaded = saved_loaded[ruin]

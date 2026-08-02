@@ -169,6 +169,23 @@
 			// and rebuild them as standard turrets
 			for(var/obj/machinery/porta_turret/syndicate/turret in shuttle_area)
 				turret.toggle_on(FALSE)
+			// Top up the SMES and APC cells. NPC hulls run on free power, so
+			// whatever charge theirs were sitting at is meaningless - and the
+			// requires_power flip above is the moment that stops being true.
+			// Handing over drained buffers would leave the claimer with a dark ship.
+			for(var/obj/machinery/power/smes/unit in shuttle_area)
+				if(QDELETED(unit) || (unit.machine_stat & (BROKEN | EMPED)))
+					continue
+				unit.fill_charge()
+			for(var/obj/machinery/power/apc/apc in shuttle_area)
+				if(QDELETED(apc) || !apc.cell || (apc.machine_stat & (BROKEN | EMPED)))
+					continue
+				apc.set_full_charge()
+				// set_full_charge() only writes the cell; without this the readout
+				// sits on whatever charging state it was last left in until the
+				// APC's own process ticks, which never re-evaluates a full cell.
+				apc.charging = APC_FULLY_CHARGED
+				apc.update_appearance()
 
 	// Remove access requirements from all doors (player ships have open access)
 	npc_ship.clear_door_access()

@@ -49,7 +49,11 @@
  *   busy galaxy does not burn through a cap faster than an empty one.
  * - **Round-warping one-shots** — galaxy-scoped and lasting for the round:
  *   tongues_of_the_dead, mockery_of_heroes, restless_dead, unquiet_menagerie. These stay
- *   at max_occurrences = 1 forever. Firing them twice is not more interesting, and two of
+ *   at max_occurrences = 1 forever. They are the last things on the roster that outlive
+ *   their own firing, and they survive rule 2 on the grounds that none of them costs a
+ *   player an item, a limb or a brain: a scrambled language, a title under your feet, ghosts
+ *   you can see, more cats than you had. If one of them starts reading as a chore rather
+ *   than a round-long joke, it goes the same way the other four did. Firing them twice is not more interesting, and two of
  *   them install global controllers that must not be duplicated at all (their
  *   can_spawn_event() overrides refuse a second instance outright).
  *
@@ -67,14 +71,18 @@
  * Handing that out for free on the way there costs the raid its only payoff and rewards
  * every crew that ignored him.
  *
- * **2. A ritual never touches the crew's property.** No curses on items, no permanent marks
- * on gear, no renaming or re-rolling what people already own. Three rites used to and all
- * three are gone: grave_goods (nodrop cursed clothing forced onto everyone), grasping_bones
- * (every item aboard permanently barbed and renamed), mockery_of_treasure (every item in the
- * galaxy renamed and stat-rolled for the round). They were not dangerous, they were
- * *annoying* — a crew spends the rest of the round managing the leftovers of a rite that
- * stopped being a threat forty seconds after it fired, and none of it can be undone by
- * playing well.
+ * **2. A ritual never leaves a permanent mark — on the crew's property or on the crew.**
+ * No curses on items, no renaming or re-rolling what people own, and no lasting damage to a
+ * body or a mind that outlives the rite. Four rites used to, and all four are gone:
+ * grave_goods (nodrop cursed clothing forced onto everyone), grasping_bones (every item
+ * aboard permanently barbed and renamed), mockery_of_treasure (every item in the galaxy
+ * renamed and stat-rolled for the round), and whispers_of_the_green (brain traumas at
+ * TRAUMA_RESILIENCE_LOBOTOMY — surgery or nothing, for the rest of the round).
+ *
+ * None of those were dangerous. They were *annoying*, which is worse: a crew spends the rest
+ * of the round managing the leftovers of a rite that stopped being a threat forty seconds
+ * after it fired, and no amount of playing well undoes any of it. A rite that is over should
+ * be over.
  *
  * What is left is the shape the roster wants: **temporary hazards with a verb attached.**
  * The deck burns and you get on top of something (grave_dirt); the hull goes cold and you

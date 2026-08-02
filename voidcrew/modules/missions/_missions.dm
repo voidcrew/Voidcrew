@@ -497,6 +497,40 @@
 		objective.on_interior_loaded()
 
 /**
+ * The target's interior is being torn down while the target itself lives on -
+ * an emptied ruin handing its reservation back. Everything this mission put in
+ * there is about to go with the turfs, but that is not the same event as losing
+ * the objective: the site is still on the chart at the same coordinates and the
+ * crew can fly back to it.
+ *
+ * So this rewinds rather than retargets. The watch on whatever is standing in
+ * the dead site is dropped before the wipe can fire it (otherwise the wipe reads
+ * as a destroyed objective and burns a retarget re-rolling to a ruin the crew
+ * has no reason to be at), the objective chain resets, and the field step
+ * re-arms on the load signal - so docking there again lays the job out fresh.
+ *
+ * Anything the crew already carried out is untouched: it isn't in the site, so
+ * the contract is still on its delivery step and nothing here applies.
+ */
+/datum/mission/proc/on_target_interior_unloaded()
+	if(failed || completed || !active)
+		return
+	if(!quest_atom || !is_quest_atom_stranded())
+		return
+
+	UnregisterSignal(quest_atom, COMSIG_QDELETING)
+	quest_atom = null
+	quest_atom_bounds = null
+
+	deactivate_objectives()
+	for(var/datum/mission_objective/objective as anything in objectives)
+		objective.reset()
+	objective_index = 1
+	activate_current_objective()
+	push_waypoint()
+	servant?.ship_notify("[name]: the site powered down before we recovered anything, and our gear went with it. The contract stands - it will be set up again next time you dock at ([target.target_x], [target.target_y]).", "MISSION UPDATE", SHIP_NOTIFY_WARNING, 'voidcrew/sound/notify2.ogg', 50)
+
+/**
  * Re-picks the target and restarts the objective chain from step one.
  * Free while the mission sits on the board; budgeted while active.
  */

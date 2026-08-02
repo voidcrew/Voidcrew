@@ -212,13 +212,6 @@
 "mV" = (
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/medbay/c)
-"nN" = (
-/obj/effect/spawner/structure/window/reinforced/plasma/plastitanium,
-/obj/docking_port/mobile/voidcrew/goon/c{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/shuttle/voidcrew/goon/bridge/c)
 "og" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /obj/effect/turf_decal/stripes/white/line{
@@ -620,6 +613,16 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/bridge/c)
+"YR" = (
+/obj/machinery/door/airlock/titanium{
+	name = "Boarding Airlock"
+	},
+/obj/structure/fans/tiny,
+/obj/docking_port/mobile/voidcrew/goon/c{
+	dir = 2
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/shuttle/voidcrew/goon/commons/c)
 
 (1,1,1) = {"
 IZ
@@ -739,7 +742,7 @@ JO
 MU
 "}
 (10,1,1) = {"
-MU
+YR
 qO
 bf
 iR
@@ -861,7 +864,7 @@ IZ
 IZ
 Vs
 vK
-nN
+vK
 vK
 Vs
 IZ
