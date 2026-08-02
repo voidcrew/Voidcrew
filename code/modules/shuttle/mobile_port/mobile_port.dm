@@ -126,13 +126,16 @@
 		var/max_x = -1
 		var/max_y = -1
 		for(var/area/shuttle_area as anything in shuttle_areas)
-			for (var/list/zlevel_turfs as anything in shuttle_area.get_zlevel_turf_lists())
-				for(var/turf/turf as anything in zlevel_turfs)
-					min_x = min(turf.x, min_x)
-					max_x = max(turf.x, max_x)
-					min_y = min(turf.y, min_y)
-					max_y = max(turf.y, max_y)
-				CHECK_TICK
+			// Voidcrew: only turfs on our own z. A tile stranded at a previously
+			// visited location otherwise stretches the extents across two map sites
+			// and poisons every dimension derived below, so each later move scans a
+			// garbage rectangle and strands more of the hull.
+			for(var/turf/turf as anything in shuttle_area.get_turfs_by_zlevel(z))
+				min_x = min(turf.x, min_x)
+				max_x = max(turf.x, max_x)
+				min_y = min(turf.y, min_y)
+				max_y = max(turf.y, max_y)
+			CHECK_TICK
 
 		if(min_x == WORLDMAXX_CUTOFF || max_x == -1)
 			CRASH("Failed to locate shuttle boundaries when iterating through shuttle areas, somehow.")

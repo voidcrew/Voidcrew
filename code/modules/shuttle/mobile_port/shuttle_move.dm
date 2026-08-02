@@ -132,6 +132,13 @@
 				underlying_areas[underlying_area] = TRUE
 			areas_to_move[old_area] = TRUE
 
+		// Voidcrew: a registered hull tile that will not travel is how ships lose
+		// engines and deck sections (rounds 803/804) - say exactly why before it
+		// happens. Only fires for the moving port's own registered areas, so an
+		// overlapping shuttle's padding never spams this.
+		if(!(move_mode & MOVE_TURF) && !isspaceturf(oldT) && shuttle_areas[old_area])
+			log_shuttle("[name]: preflight will leave hull turf [oldT] ([oldT.type]) at [AREACOORD(oldT)] behind - move_mode=[move_mode], baseturfs=[islist(oldT.baseturfs) ? jointext(oldT.baseturfs, " > ") : "[oldT.baseturfs]"]")
+
 		old_turfs[oldT] = move_mode
 
 /obj/docking_port/mobile/proc/takeoff(list/old_turfs, list/new_turfs, list/moved_atoms, rotation, movement_direction, old_dock, area/fallback_area)

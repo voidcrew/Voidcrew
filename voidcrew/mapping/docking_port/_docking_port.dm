@@ -111,10 +111,16 @@
 		var/area/turf_area = hull_turf.loc
 		if(!shuttle_areas[turf_area])
 			if(!istype(turf_area, /area/shuttle/voidcrew))
+				// A non-ship shuttle area (transit, another port's area) holding a real
+				// floor inside our footprint = a previously stranded tile we re-landed
+				// on. Not repairable from here, and it will not travel - log it.
+				if(istype(turf_area, /area/shuttle))
+					log_shuttle("[name]: hull-rect turf [hull_turf] ([hull_turf.type]) at [AREACOORD(hull_turf)] sits in unregistered [turf_area.type] [REF(turf_area)] - it will not move with the ship")
 				continue
 			var/area/shuttle/voidcrew/foreign = turf_area
 			if(foreign.shuttle_port && foreign.shuttle_port != src)
-				continue // live area of another ship - not ours to take
+				log_shuttle("[name]: hull-rect turf [hull_turf] at [AREACOORD(hull_turf)] belongs to live foreign ship area [foreign.type] [REF(foreign)] ([foreign.shuttle_port.name]) - leaving it alone")
+				continue
 			if(isnull(own_area_by_type))
 				own_area_by_type = list()
 				for(var/area/own_area as anything in shuttle_areas)
@@ -140,6 +146,10 @@
 			hull_turf.assemble_baseturfs()
 		hull_turf.insert_baseturf(min(3, hull_turf.count_baseturfs() + 1), /turf/baseturf_skipover/shuttle)
 		log_shuttle("[name]: hull turf [hull_turf] ([hull_turf.type]) at [AREACOORD(hull_turf)] had no shuttle skipover baseturf - restored before move")
+	// One line per move so a mangled rectangle (transposed dims, drifted offsets) is
+	// visible next to whatever strands: compare stranded coords against this rect.
+	var/list/rect = return_coords()
+	log_shuttle("[name]: pre-move footprint pos=([x],[y],[z]) dir=[dir] w=[width] h=[height] dw=[dwidth] dh=[dheight] rect=([rect[1]],[rect[2]])-([rect[3]],[rect[4]])")
 
 /obj/docking_port/mobile/voidcrew/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)
 	old_z_level = z
@@ -149,6 +159,16 @@
 	unlink_from_z_level()
 	link_to_z_level()
 	recalculate_shuttle_areas() // this also readds VALID_TERRITORY
+	// Stranded-tile census: any registered area still holding turfs on a z we just
+	// left is the seed of the next thruster loss - name the seed move while the
+	// trail is warm (rounds 803/804: engines died with the site the tiles stayed on).
+	for(var/area/shuttle_area as anything in shuttle_areas)
+		for(var/census_z in 1 to length(shuttle_area.turfs_by_zlevel))
+			if(census_z == z)
+				continue
+			var/stranded_count = length(shuttle_area.get_turfs_by_zlevel(census_z))
+			if(stranded_count)
+				log_shuttle("[name]: [stranded_count] turf(s) of [shuttle_area.type] left stranded on z=[census_z] after moving to z=[z]")
 	// Moving into transit asserts a preferred_direction scroll on our areas
 	// (shuttle_move.dm); reconcile it with the ship's real speed - a ship with no
 	// thrust should show a still starfield, not a drifting one
