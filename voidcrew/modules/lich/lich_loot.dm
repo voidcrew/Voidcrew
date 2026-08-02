@@ -275,14 +275,15 @@ GLOBAL_LIST_INIT(lich_dispersal_spells, list(
 /**
  * Weakrefs to every item a ritual has left lying in the galaxy.
  *
- * The rites drop real gear — bone armour and skull helmets welded onto a whole
- * crew by Grave Goods, an ossuary's worth of bone kit rained into a compartment —
- * and none of it is meant to be a payout. A rite is pressure; it is not allowed to
- * quietly function as a supply drop, which is what it becomes the moment the curse
- * expires and the crew is left wearing free armour. So everything a rite creates is
- * registered here and crumbles the moment Ilthuun stops. The only thing of his that
- * outlives him is what the raiding party takes off the sanctum floor, and the spell
- * the dispersal puts in your head.
+ * Ossuary Rain drops an ossuary's worth of real gear into a compartment — the table
+ * has a skull helmet, bone armour and a bone axe in it — and none of it is meant to
+ * be a payout. A rite is pressure; it is not allowed to quietly function as a supply
+ * drop. So everything a rite leaves in the world is registered here and crumbles the
+ * moment Ilthuun stops. The only things of his that outlive him are what the raiding
+ * party takes off the sanctum floor and the spell the dispersal puts in your head.
+ *
+ * Any future rite that spawns an item must register it here. That is the whole of the
+ * bookkeeping, and it is why the roster can afford rites that drop things at all.
  *
  * Weakrefs, not hard refs: an item registered here may be eaten by a fire, a
  * recycler or a hull breach long before he dies, and the registry must never be the
@@ -300,8 +301,8 @@ GLOBAL_LIST_EMPTY(lich_leavings)
  * Crumbles every registered leaving to dust. Called from the boss's death path.
  *
  * Deletes rather than unequips: `/obj/item/Destroy()` takes an item out of whatever
- * slot or hand is holding it (items.dm:290-296), so a crewmember welded into a skull
- * helmet by an unexpired Grave Goods curse is freed by this rather than trapped.
+ * slot or hand is holding it (items.dm:290-296), so an item someone is wearing or
+ * carrying goes to dust cleanly instead of being left in a broken slot.
  *
  * Only the wearer is told, individually. A rain of sixty bones going at once would
  * bury a compartment's chat in identical lines, so items lying on the floor leave

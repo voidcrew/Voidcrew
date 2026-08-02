@@ -425,8 +425,8 @@
  *   power, and it fires on his death by design; see the roster note in
  *   events/lich_events.dm.
  * - `crumble_lich_leavings()` takes back everything his rituals left in the galaxy — the
- *   Grave Goods armour, the ossuary's bone kit — so no rite doubles as a supply drop.
- *   Idempotent by construction: the registry is emptied as it is swept.
+ *   ossuary's bone kit, and anything a future rite drops — so no rite doubles as a supply
+ *   drop. Idempotent by construction: the registry is emptied as it is swept.
  * - `on_lich_slain()` is track A's site hook — stops the ritual clock, broadcasts the
  *   victory line, retires the helm waypoints. Guarded on the site's `spent` flag, and the
  *   site also registers COMSIG_LIVING_DEATH on the bound lich as its own backstop

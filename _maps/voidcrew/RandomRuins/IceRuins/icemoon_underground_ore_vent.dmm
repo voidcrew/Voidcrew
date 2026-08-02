@@ -3,15 +3,15 @@
 /turf/template_noop,
 /area/template_noop)
 "l" = (
-/turf/open/misc/asteroid/snow/icemoon/breathable,
+/turf/open/misc/asteroid/snow/icemoon/breathable/lit,
 /area/icemoon/underground/unexplored)
 "c" = (
 /obj/effect/zone_mobs/wildlife,
-/turf/open/misc/asteroid/snow/icemoon/breathable,
+/turf/open/misc/asteroid/snow/icemoon/breathable/lit,
 /area/icemoon/underground/unexplored)
 "L" = (
 /obj/structure/ore_vent/random/icebox/lower,
-/turf/open/misc/asteroid/snow/icemoon/breathable,
+/turf/open/misc/asteroid/snow/icemoon/breathable/lit,
 /area/icemoon/underground/unexplored)
 
 (1,1,1) = {"

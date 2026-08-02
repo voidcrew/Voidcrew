@@ -8,6 +8,13 @@
  * another. Rather than fake it with a per-ship overlay, it is honest about being weather:
  * a cloud drifts through the sector and everyone gets the show.
  *
+ * The colour is still one global — GLOB.starlight_color and the shared space overlays
+ * move for the whole sector on every step. What is scoped is the per-turf relight:
+ * TG's map is one station z, but this fork runs dozens of space z-levels, and relighting
+ * every starlight turf on all of them per colour step floods SSlighting for the whole
+ * event. Each sweep therefore only relights z-stacks that currently hold a player, and
+ * the fade-out ends with one flat restore over every z the event ever tinted.
+ *
  * Dropped from the original: the kitchen. TG's version has a 1% chance to ignite an oven
  * in `/area/station/service/kitchen` and make the cook scream about a ruined roast. There
  * is no station kitchen area here, and chasing the gag onto ship galleys would mean
@@ -34,6 +41,9 @@
 	announce_when = 1
 	start_when = 21
 	end_when = 80
+	/// Every z-level a sweep has actually tinted; the fade-out's final restore
+	/// covers these even after their crews have flown elsewhere.
+	var/list/tinted_zs = list()
 
 /datum/round_event/voidcrew/aurora_caelus/announce(fake)
 	priority_announce(
@@ -56,7 +66,13 @@
 /datum/round_event/voidcrew/aurora_caelus/tick()
 	if(activeFor % 8)
 		return
-	set_starlight(hsl_gradient((activeFor - start_when) / (end_when - start_when), 0, "#A2FF80", 1, "#A2FFEE"))
+	// Range/power ride along so a z-stack first watched mid-event comes up at full
+	// aurora brightness, not just the colour; already-boosted turfs no-op on them.
+	sweep_starlight(
+		hsl_gradient((activeFor - start_when) / (end_when - start_when), 0, "#A2FF80", 1, "#A2FFEE"),
+		GLOB.starlight_range * 1.75,
+		GLOB.starlight_power * 0.6,
+	)
 
 /datum/round_event/voidcrew/aurora_caelus/end()
 	fade_starlight()
@@ -90,9 +106,35 @@
 		start_power = GLOB.starlight_power
 
 	for(var/i in 1 to 5)
-		set_starlight(
+		sweep_starlight(
 			hsl_gradient(i / 5, 0, start_color, 1, end_color),
 			LERP(start_range, end_range, i / 5),
 			LERP(start_power, end_power, i / 5),
 		)
 		sleep(2 SECONDS)
+
+	if(fade_in)
+		return
+	// Crews can fly off a tinted z-level mid-event, taking it out of every later
+	// sweep while its turfs still hold some step of the gradient. One flat restore
+	// over everything ever tinted trues the sector back up.
+	set_starlight(end_color, end_range, end_power, tinted_zs)
+
+/// Z-stacks with at least one player in them — the only turfs whose relight anyone can see.
+/datum/round_event/voidcrew/aurora_caelus/proc/get_watched_zs()
+	var/list/watched = list()
+	for(var/mob/watcher as anything in GLOB.player_list)
+		var/turf/watched_turf = get_turf(watcher)
+		if(!watched_turf)
+			continue
+		if(watched_turf.z in watched)
+			continue
+		watched |= SSmapping.get_connected_levels(watched_turf) || list(watched_turf.z)
+	return watched
+
+/// One aurora colour step: pays the per-turf relight only on watched z-stacks, and
+/// remembers every z it has tinted so the fade-out can restore them all.
+/datum/round_event/voidcrew/aurora_caelus/proc/sweep_starlight(star_color, range, power)
+	var/list/watched = get_watched_zs()
+	tinted_zs |= watched
+	set_starlight(star_color, range, power, watched)

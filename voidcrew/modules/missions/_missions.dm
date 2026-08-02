@@ -111,6 +111,10 @@
 	var/gps_tag_prefix
 	/// Weakrefs of /datum/component/gps/item units this mission's beacon was uploaded to
 	var/list/datum/weakref/linked_gps_units = list()
+	/// Secondary beacons (tag -> weakref) pushed alongside gps_tag by objectives
+	/// that put several marks in the field at once. Held on the shell so a GPS
+	/// linked later still gets the full set and cleanup drops every tag.
+	var/list/aux_gps_beacons
 
 /datum/mission/New(datum/outpost_shop/shop)
 	. = ..()
@@ -712,7 +716,37 @@
 	linked_gps_units |= WEAKREF(gps_unit)
 	if(quest_atom && !QDELETED(quest_atom))
 		gps_unit.add_mission_signal(gps_tag, quest_atom)
+	for(var/beacon_tag in aux_gps_beacons)
+		var/datum/weakref/beacon_ref = aux_gps_beacons[beacon_tag]
+		var/atom/movable/beacon_target = beacon_ref?.resolve()
+		if(beacon_target)
+			gps_unit.add_mission_signal(beacon_tag, beacon_target)
 	return TRUE
+
+/**
+ * Adds (or re-points) a secondary beacon on every linked GPS unit. Objectives
+ * with several marks in the field at once use this so the crew sees all of
+ * them, instead of one dot that hops between them without saying so.
+ */
+/datum/mission/proc/add_gps_beacon(beacon_tag, atom/movable/beacon_target)
+	if(!beacon_tag || QDELETED(beacon_target))
+		return
+	LAZYSET(aux_gps_beacons, beacon_tag, WEAKREF(beacon_target))
+	for(var/datum/weakref/unit_ref as anything in linked_gps_units)
+		var/datum/component/gps/item/unit = unit_ref.resolve()
+		if(!unit)
+			linked_gps_units -= unit_ref
+			continue
+		unit.add_mission_signal(beacon_tag, beacon_target)
+
+/// Drops one secondary beacon from every linked GPS unit
+/datum/mission/proc/remove_gps_beacon(beacon_tag)
+	if(!beacon_tag)
+		return
+	LAZYREMOVE(aux_gps_beacons, beacon_tag)
+	for(var/datum/weakref/unit_ref as anything in linked_gps_units)
+		var/datum/component/gps/item/unit = unit_ref.resolve()
+		unit?.remove_mission_signal(beacon_tag)
 
 /**
  * (Re)points the beacon at the current quest atom on every linked GPS unit.
@@ -728,14 +762,19 @@
 		unit.add_mission_signal(gps_tag, quest_atom)
 
 /**
- * Removes this mission's beacon from every linked GPS unit.
+ * Removes every beacon this mission pushed - its own and any secondaries -
+ * from every linked GPS unit.
  */
 /datum/mission/proc/clear_gps_signals()
-	if(!gps_tag)
-		return
 	for(var/datum/weakref/unit_ref as anything in linked_gps_units)
 		var/datum/component/gps/item/unit = unit_ref.resolve()
-		unit?.remove_mission_signal(gps_tag)
+		if(!unit)
+			continue
+		if(gps_tag)
+			unit.remove_mission_signal(gps_tag)
+		for(var/beacon_tag in aux_gps_beacons)
+			unit.remove_mission_signal(beacon_tag)
+	aux_gps_beacons = null
 	linked_gps_units.Cut()
 
 // =========================================================================

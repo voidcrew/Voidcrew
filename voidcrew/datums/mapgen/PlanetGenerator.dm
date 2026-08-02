@@ -174,6 +174,10 @@
 	// Decided once here so it costs nothing at runtime. Loot is never scaled.
 	var/mob_chance_mult = 1
 	var/mob_upgrade_prob = 0
+	var/spawner_budget = ZONE_PLANET_SPAWNER_BUDGET_GREEN
+	// Megafauna are apex content and stay out of the shallow end entirely - a green-zone
+	// planet is where a crew takes its first landing.
+	var/megafauna_allowed = FALSE
 	if(isnull(zone_band) && length(turfs))
 		var/turf/zone_sample = turfs[1]
 		zone_band = SSmapping.get_planet_zone_band_for_z(zone_sample.z)
@@ -181,9 +185,20 @@
 		if(ZONE_YELLOW)
 			mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_YELLOW
 			mob_upgrade_prob = ZONE_PLANET_MOB_UPGRADE_PROB_YELLOW
+			spawner_budget = ZONE_PLANET_SPAWNER_BUDGET_YELLOW
+			megafauna_allowed = TRUE
 		if(ZONE_RED)
 			mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_RED
 			mob_upgrade_prob = ZONE_PLANET_MOB_UPGRADE_PROB_RED
+			spawner_budget = ZONE_PLANET_SPAWNER_BUDGET_RED
+			megafauna_allowed = TRUE
+
+	// Structure spawners and megafauna are placed after the pass, not during it. Both are
+	// permanent terrain outside SSplanet_mobs' cap, so both need a budget - and picking
+	// them as we go would bunch them into the low corner of the map, because get_block()
+	// hands us turfs in row-major order. Gather candidates, then choose from the whole set.
+	var/list/spawner_candidates = list()
+	var/list/megafauna_candidates = list()
 
 	for(var/turf/target_turf as anything in turfs)
 
@@ -236,51 +251,46 @@
 			var/atom/picked_mob = pickweight(selected_biome.mob_spawn_list)
 			if(!picked_mob)
 				continue
-			var/is_megafauna = FALSE
 
-			if(picked_mob == SPAWN_MEGAFAUNA && !megafauna_spawned)
-				picked_mob = pickweight(selected_biome.megafauna_spawn_list)
-				is_megafauna = TRUE
-				megafauna_spawned = TRUE
-			else if(picked_mob == SPAWN_MEGAFAUNA && megafauna_spawned )
-				while(picked_mob == SPAWN_MEGAFAUNA)
+			if(picked_mob == SPAWN_MEGAFAUNA)
+				// Banked as a candidate rather than placed - see megafauna_candidates.
+				// Green zones bank nothing, so the roll falls through to ordinary fauna.
+				if(megafauna_allowed && length(selected_biome.megafauna_spawn_list))
+					megafauna_candidates[target_turf] = pickweight(selected_biome.megafauna_spawn_list)
+					continue
+				// Re-roll off the sentinel. Bounded: a table that is nothing but
+				// SPAWN_MEGAFAUNA would spin here forever otherwise.
+				for(var/attempt in 1 to 10)
 					picked_mob = pickweight(selected_biome.mob_spawn_list)
+					if(picked_mob != SPAWN_MEGAFAUNA)
+						break
+				if(picked_mob == SPAWN_MEGAFAUNA)
+					continue
 
 			// Zone danger scaling: some rolls upgrade to the biome's meaner tier.
 			// Megafauna rolls are explicitly exempt — apex content stays untouched.
-			if(!is_megafauna && mob_upgrade_prob && length(selected_biome.dangerous_mob_spawn_list) && prob(mob_upgrade_prob))
+			if(mob_upgrade_prob && length(selected_biome.dangerous_mob_spawn_list) && prob(mob_upgrade_prob))
 				picked_mob = pickweight(selected_biome.dangerous_mob_spawn_list)
 
+			// Structure spawners are permanent terrain and are budgeted, so they are only
+			// banked here. Everything else is ordinary fauna: the turf is registered as a
+			// candidate and SSplanet_mobs populates it when players actually arrive, then
+			// clears it again after they leave. On a z-level SSplanet_mobs isn't tracking,
+			// register_spawn_turf() declines and the mob spawns here as it always did.
+			// (This used to be istype(), which is always FALSE on a type path - so the
+			// spawner branch never ran and tendrils placed themselves unbudgeted.)
+			if(ispath(picked_mob, /obj/structure/spawner))
+				spawner_candidates[target_turf] = picked_mob
+				continue
+
+			// Avoid clumping: skip if another mob is already standing within 12 tiles.
 			var/can_spawn = TRUE
-
-			// prevents spawners being created in each other's collapse range
-			if(istype(picked_mob, /obj/structure/spawner))
-				for(var/obj/structure/spawner/spawn_blocker in range(2, target_turf))
-					can_spawn = FALSE
-					break
-			// if the random is not a tendril (hopefully meaning it is a mob), avoid spawning if there's another one within 12 tiles
-			else
-				var/list/things_in_range = range(12, target_turf)
-				for(var/mob/living/mob_blocker in things_in_range)
-					can_spawn = FALSE
-					break
-				// Also block spawns if there's a random lavaland mob spawner nearby and it's not a mega
-				if(!is_megafauna)
-					can_spawn = can_spawn && !(locate(/obj/effect/spawner) in things_in_range)
-			//if there's a megafauna within standard view don't spawn anything at all (This isn't really consistent, I don't know why we do this. you do you tho)
-			if(can_spawn)
-				for(var/mob/living/simple_animal/hostile/megafauna/found_fauna in range(7, target_turf))
-					can_spawn = FALSE
-					break
+			for(var/mob/living/mob_blocker in range(12, target_turf))
+				can_spawn = FALSE
+				break
 
 			if(can_spawn)
-				// Structure spawners (tendrils and friends) and megafauna are fixtures of
-				// the terrain and are placed now. Ordinary fauna is not: the turf is only
-				// registered as a candidate, and SSplanet_mobs populates it when players
-				// actually arrive and clears it out again after they leave. On a z-level
-				// SSplanet_mobs isn't tracking, register_spawn_turf() declines and the mob
-				// spawns here as it always did.
-				if(ispath(picked_mob, /obj/structure/spawner) || is_megafauna || !SSplanet_mobs.register_spawn_turf(target_turf, picked_mob))
+				if(!SSplanet_mobs.register_spawn_turf(target_turf, picked_mob))
 					new picked_mob(target_turf)
 				spawned_something = TRUE
 		// The expensive half of a planet build - every iteration runs several range()

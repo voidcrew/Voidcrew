@@ -47,10 +47,9 @@
  *   patch excludes ordinary fauna for performance across whole planets; a ship holds a
  *   handful of mobs and "the floor burns everything standing on it" is the legible rule.
  * - The paint is re-asserted every tick rather than applied once at start(), and the area list
- *   is re-read from the shuttle every tick rather than cached. See refresh_dirt_overlays().
- * - Overlays are tracked against the area datums they were applied to, so end() can strip
- *   exactly what it added even if the ship has been destroyed in the meantime. Shuttle areas
- *   persist and travel with the ship; their turfs do not, which is why nothing here caches a turf.
+ *   is re-read from the shuttle every tick rather than cached. That machinery now lives on the
+ *   base event as build/refresh/remove_rite_overlays() (lich_events.dm), shared with the other
+ *   hazard rites, and the argument for it is written up there.
  */
 /datum/round_event_control/voidcrew/lich/grave_dirt
 	name = "Ritual: The Floor Is Grave-Dirt"
@@ -78,11 +77,6 @@
 	end_when = 38
 	/// Fire damage per application. The weather datum's figure.
 	var/burn_per_tick = 3
-	/// Areas the overlay has been applied to, assoc area -> TRUE, so removal is exact and a
-	/// compartment painted late in the rite is still stripped at the end.
-	var/list/area/dirtied_areas = list()
-	/// The appearances added, one per plane offset, so removal is exact.
-	var/list/mutable_appearance/dirt_overlays = list()
 
 /datum/round_event/voidcrew/lich/grave_dirt/announce(fake)
 	if(!target_valid())
@@ -101,15 +95,15 @@
 	if(!target_valid())
 		kill()
 		return
-	build_dirt_overlays()
-	refresh_dirt_overlays()
+	build_rite_overlays("lava", COLOR_VIBRANT_LIME, overlay_layer = ABOVE_OPEN_TURF_LAYER, overlay_plane = FLOOR_PLANE)
+	refresh_rite_overlays()
 	for(var/mob/living/victim as anything in target_ship.get_all_mobs_aboard())
 		to_chat(victim, span_userdanger("The floor is grave-dirt! Get on top of something!"))
 
 /datum/round_event/voidcrew/lich/grave_dirt/tick()
 	if(!target_valid())
 		return
-	refresh_dirt_overlays()
+	refresh_rite_overlays()
 	for(var/mob/living/victim as anything in target_ship.get_all_mobs_aboard())
 		if(QDELETED(victim) || !can_burn(victim))
 			continue
@@ -117,7 +111,7 @@
 
 /datum/round_event/voidcrew/lich/grave_dirt/end()
 	// Runs whether or not the ship survived — the overlays are tracked against the areas.
-	remove_dirt_overlays()
+	remove_rite_overlays()
 	if(!target_valid())
 		return
 	for(var/mob/living/victim as anything in target_ship.get_all_mobs_aboard())
@@ -151,59 +145,3 @@
 		if(blocker.density)
 			return FALSE // They got on top of something. That is the counterplay.
 	return TRUE
-
-/// Builds one green dirt appearance per plane offset. Called once, at start().
-/datum/round_event/voidcrew/lich/grave_dirt/proc/build_dirt_overlays()
-	dirt_overlays = list()
-	for(var/offset in 0 to SSmapping.max_plane_offset)
-		var/mutable_appearance/dirt = mutable_appearance(
-			'icons/effects/weather_effects.dmi',
-			"lava",
-			ABOVE_OPEN_TURF_LAYER,
-			plane = FLOOR_PLANE,
-			offset_const = offset,
-		)
-		dirt.color = COLOR_VIBRANT_LIME
-		dirt_overlays += dirt
-
-/**
- * Paints every one of the ship's areas, and repaints the ones already painted.
- *
- * Called every tick, not once at start(), and it re-reads `shuttle.shuttle_areas` each time
- * rather than a list cached when the rite began. Both are deliberate, and both address the
- * same reported bug: a compartment showing no dirt for the whole minute while the rooms next
- * to it burn.
- *
- * - Re-adding heals a room that lost the paint. `overlays` is a raw appearance list with no
- *   owner; anything that rebuilds an area's appearance drops whatever it did not put there,
- *   and a one-shot paint has no way to notice or recover. TG's weather has the same exposure
- *   and papers over it by re-running update_areas() at every stage transition — the same
- *   trick, just at a coarser interval.
- * - Re-reading the area list picks up a compartment that joined the hull after the rite began
- *   (blueprints, hull construction, a shuttle expansion), which the cached list never could.
- *
- * The remove-then-add is what makes it idempotent: `overlays -= dirt_overlays` is a no-op on
- * an area that does not have them and strips exactly one copy from one that does, so
- * repainting 30 times never stacks 30 copies. Cost is two list ops per area per second on one
- * hull, which is nothing.
- */
-/datum/round_event/voidcrew/lich/grave_dirt/proc/refresh_dirt_overlays()
-	if(!length(dirt_overlays) || !target_valid())
-		return
-	for(var/area/ship_area as anything in target_ship.shuttle.shuttle_areas)
-		if(QDELETED(ship_area))
-			continue
-		ship_area.overlays -= dirt_overlays
-		ship_area.overlays += dirt_overlays
-		dirtied_areas[ship_area] = TRUE
-
-/// Strips exactly the overlays this event added, from exactly the areas it added them to.
-/datum/round_event/voidcrew/lich/grave_dirt/proc/remove_dirt_overlays()
-	if(!length(dirt_overlays))
-		return
-	for(var/area/ship_area as anything in dirtied_areas)
-		if(QDELETED(ship_area))
-			continue
-		ship_area.overlays -= dirt_overlays
-	dirtied_areas = null
-	dirt_overlays = null

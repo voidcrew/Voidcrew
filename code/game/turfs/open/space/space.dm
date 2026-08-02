@@ -22,13 +22,19 @@ GLOBAL_VAR_INIT(starlight_power, default_starlight_power())
 	GLOB.base_starlight_color = star_color
 	set_starlight(star_color, range, power)
 
-/proc/set_starlight(star_color = null, range = null, power = null)
+/proc/set_starlight(star_color = null, range = null, power = null, list/restrict_z = null)
 	if(isnull(star_color))
 		star_color = GLOB.starlight_color
 	var/old_star_color = GLOB.starlight_color
 	GLOB.starlight_color = star_color
 	// set light color on all lit turfs
+	// voidcrew edit: restrict_z scopes the per-turf relight to those z-levels only.
+	// The colour itself stays global state: GLOB.starlight_color, the shared
+	// overlay objects and the signal below always update, so unswept z-levels
+	// light correctly the next time anything relights them.
 	for(var/turf/open/space/spess as anything in GLOB.starlight)
+		if(restrict_z && !(spess.z in restrict_z))
+			continue
 		spess.set_light(l_range = range, l_power = power, l_color = star_color)
 
 	if(star_color == old_star_color)

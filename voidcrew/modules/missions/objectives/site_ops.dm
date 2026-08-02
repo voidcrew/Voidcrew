@@ -36,6 +36,22 @@
 // PYLON CHAIN — calibrate N pylons, each one answered by a wave
 // =========================================================================
 
+/// How far the survey points scatter from the first one
+#define PYLON_SCATTER_RADIUS 14
+/// Closest two survey points may sit, so the site reads as a spread
+#define PYLON_MIN_SPACING 5
+
+/**
+ * Every survey point goes down at once, clustered around one spot, each with
+ * its own GPS beacon.
+ *
+ * This used to place a single pylon and only spawn the next one when that one
+ * finished, at a fresh get_spawn_turf() - which is uniformly random across the
+ * whole site. On a planet target that put the next probe anywhere on a 128x128
+ * surface, and the only thing pointing at it was one GPS mark that moved
+ * without announcing where to. From the crew's side, calibrating a pylon
+ * looked like it spawned nothing at all.
+ */
 /datum/mission_objective/field/pylon_chain
 	/// Pylons to calibrate before the core prints
 	var/points_total = 3
@@ -43,25 +59,102 @@
 	var/points_done = 0
 	/// zone_mobs theme path answering each calibration (set by the mission)
 	var/wave_theme
+	/// Every pylon placed at the current target, in placement order
+	var/list/pylons
+
+/datum/mission_objective/field/pylon_chain/Destroy()
+	drop_beacons()
+	pylons = null
+	return ..()
+
+/datum/mission_objective/field/pylon_chain/deactivate()
+	drop_beacons()
+	return ..()
 
 /datum/mission_objective/field/pylon_chain/reset()
 	. = ..()
 	points_done = 0
+	pylons = null
 
 /datum/mission_objective/field/pylon_chain/spawn_field_objects(turf/spawn_turf)
-	place_pylon(spawn_turf)
+	pylons = list()
+	for(var/turf/spot as anything in pick_spawn_spots(spawn_turf))
+		place_pylon(spot)
+	light_beacons()
 
-/// Drops the next pylon and points the mission beacon at it
+/**
+ * Turfs for the whole set: the site's own spawn turf, then open ground around
+ * it, spaced out and kept inside the target. Falls back to crowding them near
+ * the anchor rather than returning short - a chain with fewer pylons than
+ * points_total can never be finished.
+ */
+/datum/mission_objective/field/pylon_chain/proc/pick_spawn_spots(turf/anchor)
+	var/list/spots = list(anchor)
+	var/datum/mission_target/target = mission?.target
+	var/list/candidates = list()
+	for(var/turf/open/tile in RANGE_TURFS(PYLON_SCATTER_RADIUS, anchor))
+		if(isspaceturf(tile) || tile.is_blocked_turf(exclude_mobs = TRUE))
+			continue
+		if(target && !target.contains_turf(tile))
+			continue
+		candidates += tile
+	while(length(spots) < points_total && length(candidates))
+		var/turf/candidate = pick_n_take(candidates)
+		var/too_close = FALSE
+		for(var/turf/taken as anything in spots)
+			if(get_dist(candidate, taken) < PYLON_MIN_SPACING)
+				too_close = TRUE
+				break
+		if(too_close)
+			continue
+		spots += candidate
+	// Cramped site: take whatever's open rather than hand back a short set
+	while(length(spots) < points_total)
+		spots += get_nearby_open_turf(anchor, 3)
+	return spots
+
+/// Puts one survey pylon down and files it under the chain
 /datum/mission_objective/field/pylon_chain/proc/place_pylon(turf/spawn_turf)
 	if(!spawn_turf)
 		return
 	var/obj/structure/mission_survey_pylon/pylon = new(spawn_turf)
-	pylon.name = "survey pylon ([points_done + 1]/[points_total])"
+	pylon.name = "survey pylon [length(pylons) + 1] of [points_total]"
 	pylon.objective_ref = WEAKREF(src)
-	mission.register_quest_atom(pylon)
+	pylons += pylon
+
+/// The first pylon still waiting on calibration
+/datum/mission_objective/field/pylon_chain/proc/next_pylon()
+	for(var/obj/structure/mission_survey_pylon/pylon as anything in pylons)
+		if(!QDELETED(pylon) && !pylon.calibrated)
+			return pylon
+	return null
 
 /**
- * A pylon finished calibrating: the ruin answers, and the survey advances.
+ * Points the mission's own beacon at the next pylon (that one is also the
+ * quest atom the shell watches) and gives every other uncalibrated pylon a
+ * beacon of its own, so the GPS shows the whole site at once.
+ */
+/datum/mission_objective/field/pylon_chain/proc/light_beacons()
+	drop_beacons()
+	var/obj/structure/mission_survey_pylon/lead = next_pylon()
+	if(!lead || !mission)
+		return
+	mission.register_quest_atom(lead)
+	for(var/i in 1 to length(pylons))
+		var/obj/structure/mission_survey_pylon/pylon = pylons[i]
+		if(QDELETED(pylon) || pylon.calibrated || pylon == lead)
+			continue
+		mission.add_gps_beacon("[mission.gps_tag]-[i]", pylon)
+
+/// Drops every secondary pylon beacon this objective pushed
+/datum/mission_objective/field/pylon_chain/proc/drop_beacons()
+	if(!mission?.gps_tag)
+		return
+	for(var/i in 1 to length(pylons))
+		mission.remove_gps_beacon("[mission.gps_tag]-[i]")
+
+/**
+ * A pylon finished calibrating: the site answers, and the survey advances.
  * Called by the pylon structure.
  */
 /datum/mission_objective/field/pylon_chain/proc/on_pylon_calibrated(obj/structure/mission_survey_pylon/pylon, mob/living/user)
@@ -76,11 +169,12 @@
 	mission.forget_quest_atom(pylon)
 
 	if(points_done < points_total)
-		place_pylon(mission.target?.get_spawn_turf() || get_turf(pylon))
+		light_beacons()
 		mission.push_waypoint()
-		notify_crew("Pylon [points_done]/[points_total] calibrated. Next pylon's beacon is live ([mission.gps_tag]).")
+		notify_crew("Pylon [points_done]/[points_total] calibrated. [points_total - points_done] still standing on the site ([mission.gps_tag]).")
 		return
 
+	drop_beacons()
 	// Survey complete: the last pylon prints the core
 	var/obj/item/mission_recovery/core = new(pylon.drop_location())
 	core.name = "[mission.objective_name] core"
@@ -94,7 +188,10 @@
 	if(!spawned)
 		var/datum/mission_target/target = mission?.target
 		return target ? "Pylons at ([target.target_x], [target.target_y])" : "Awaiting a signal fix"
-	return "Calibrate pylon [points_done + 1]/[points_total]"
+	return "Calibrate the survey pylons ([points_done]/[points_total])"
+
+#undef PYLON_SCATTER_RADIUS
+#undef PYLON_MIN_SPACING
 
 // =========================================================================
 // CONTAIN ANOMALY — put it down the way science says, keep what falls out
