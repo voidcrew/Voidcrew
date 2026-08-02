@@ -31,6 +31,16 @@
 /// How many times a retargeting mission may re-pick its target while active
 #define MAX_MISSION_RETARGETS 2
 
+/// How many times a field objective asks its site for a spawn turf before giving up
+#define MISSION_FIELD_SPAWN_TRIES 6
+/// Gap between those attempts
+#define MISSION_FIELD_SPAWN_RETRY_DELAY (15 SECONDS)
+
+/// Mobs a contract depends on. SSplanet_mobs sweeps every unclaimed living mob
+/// off an empty planet after its grace period; without this it takes the marked
+/// specimen, the poacher squad and the stranded survivor with it.
+#define TRAIT_MISSION_FIELD_MOB "mission_field_mob"
+
 // Results of offering an item to a mission's current objective
 #define MISSION_ITEM_REFUSED 0
 #define MISSION_ITEM_PROGRESS 1

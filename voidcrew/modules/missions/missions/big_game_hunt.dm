@@ -311,6 +311,7 @@
 		beast.maxHealth = health_override
 		beast.health = health_override
 	target_mob = beast
+	protect_field_mob(beast)
 	RegisterSignal(beast, COMSIG_LIVING_DEATH, PROC_REF(on_target_death))
 	mission.register_quest_atom(beast)
 	// The entourage: lesser fauna drawn in by the blood on the wind. Killing

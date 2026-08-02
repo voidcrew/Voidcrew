@@ -138,10 +138,12 @@
 /datum/mission_target/space_ruin/is_interior_loaded()
 	return ruin?.loaded
 
+/// override: see the planet target's copy - a re-arming field objective can hook
+/// this a second time
 /datum/mission_target/space_ruin/notify_when_loaded()
 	if(!ruin)
 		return
-	RegisterSignal(ruin, COMSIG_VOIDCREW_PLANET_LOADED, PROC_REF(on_ruin_loaded))
+	RegisterSignal(ruin, COMSIG_VOIDCREW_PLANET_LOADED, PROC_REF(on_ruin_loaded), override = TRUE)
 
 /datum/mission_target/space_ruin/proc/on_ruin_loaded(datum/source)
 	SIGNAL_HANDLER
@@ -239,10 +241,12 @@
 /datum/mission_target/planet/is_interior_loaded()
 	return planet?.loaded && planet.mapzone
 
+/// override: a field objective that couldn't place its spawn re-hooks this, and
+/// the hook may or may not still be live from the first arm()
 /datum/mission_target/planet/notify_when_loaded()
 	if(!planet)
 		return
-	RegisterSignal(planet, COMSIG_VOIDCREW_PLANET_LOADED, PROC_REF(on_planet_loaded))
+	RegisterSignal(planet, COMSIG_VOIDCREW_PLANET_LOADED, PROC_REF(on_planet_loaded), override = TRUE)
 
 /datum/mission_target/planet/proc/on_planet_loaded(datum/source)
 	SIGNAL_HANDLER
@@ -252,6 +256,16 @@
 /**
  * A random clear surface turf, sampled from the planet's z-level with a
  * margin so objectives never land in the map border or the dock aprons.
+ *
+ * The southern floor is the important one. Both reserve docks sit along the
+ * bottom of the footprint, and a shuttle landing GIBS every living thing
+ * standing on the turfs it lands on (/turf/proc/toShuttleMove) and deletes
+ * anything anchored. Field objectives spawn BEFORE the crew touches down —
+ * either at approach on an already-loaded planet, or from the interior-loaded
+ * signal that load_level() fires before the dock move — so a specimen placed
+ * in that strip is destroyed by the very ship that came to collect it. Ruins
+ * are already kept out of it (reserve_dock_strip() -> NO_RUINS); objective
+ * spawns need the same clearance.
  */
 /datum/mission_target/planet/get_spawn_turf()
 	if(!planet?.mapzone || !length(planet.mapzone.z_levels))
@@ -260,12 +274,18 @@
 	if(!level)
 		return null
 	var/margin = 12
+	var/min_x = level.low_x + margin
+	var/max_x = level.high_x - margin
+	var/min_y = level.low_y + margin
+	var/max_y = level.high_y - margin
+	// Clear the berths, but never at the cost of leaving nothing to sample
+	var/above_docks = planet.get_dock_strip_top_y(level) + 1
+	if(above_docks < max_y)
+		min_y = max(min_y, above_docks)
+	if(min_x > max_x || min_y > max_y)
+		return null
 	for(var/_ in 1 to 40)
-		var/turf/candidate = locate(
-			rand(level.low_x + margin, level.high_x - margin),
-			rand(level.low_y + margin, level.high_y - margin),
-			level.z_value,
-		)
+		var/turf/candidate = locate(rand(min_x, max_x), rand(min_y, max_y), level.z_value)
 		if(!candidate || !isopenturf(candidate) || isspaceturf(candidate))
 			continue
 		if(candidate.is_blocked_turf(exclude_mobs = TRUE))

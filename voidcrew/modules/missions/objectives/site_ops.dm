@@ -316,6 +316,7 @@
 
 /datum/mission_objective/field/escort/spawn_field_objects(turf/spawn_turf)
 	survivor = new survivor_type(spawn_turf)
+	protect_field_mob(survivor)
 	RegisterSignal(survivor, COMSIG_LIVING_DEATH, PROC_REF(on_survivor_death))
 	mission.register_quest_atom(survivor)
 	notify_crew("Survivor beacon locked ([mission.gps_tag]). They're alive - go get them.")

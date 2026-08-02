@@ -257,6 +257,7 @@
 	beast.name = "marked [beast.name]"
 	beast.desc += " It's wearing a guild survey tag. This is the contracted specimen, and it's worth nothing dead."
 	target_mob = beast
+	protect_field_mob(beast)
 	RegisterSignal(beast, COMSIG_LIVING_DEATH, PROC_REF(on_target_death))
 	mission.register_quest_atom(beast)
 	notify_crew("Survey tag live - the marked specimen is on the surface ([mission.gps_tag]). Wear it down and crate it breathing.", type = SHIP_NOTIFY_WARNING, sound = 'voidcrew/sound/notify2.ogg')

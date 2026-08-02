@@ -26,16 +26,52 @@
 		return FALSE
 	return TRUE
 
+/**
+ * Walks the line from the owner to `destination` and returns the last turf the skull can
+ * actually reach, or null if it cannot leave the owner's tile at all.
+ *
+ * Targeting is done with can_see(), which passes through anything non-opaque. A window is
+ * transparent and solid at the same time, so without this the launcher happily deposits
+ * brood on the other side of a hull - the "skulls spawned inside my ship" case. Dense mobs
+ * are not obstacles; a thrown skull goes over them.
+ */
+/datum/action/cooldown/mob_cooldown/skull_launcher/proc/clamp_to_reachable_turf(turf/destination)
+	var/turf/origin = get_turf(owner)
+	if (isnull(destination) || destination == origin)
+		return destination
+
+	var/turf/furthest = null
+	// get_line()'s first entry is the origin itself, which is not a candidate landing spot.
+	var/list/path = get_line(origin, destination)
+	for (var/i in 2 to length(path))
+		var/turf/step = path[i]
+		if (step.is_blocked_turf(exclude_mobs = TRUE, source_atom = owner))
+			break
+		furthest = step
+
+	return furthest
+
 /datum/action/cooldown/mob_cooldown/skull_launcher/Activate(atom/target)
 	var/turf/target_turf = get_turf(target)
 
 	if (get_dist(owner, target_turf) > max_range)
 		target_turf = get_ranged_target_turf_direct(owner, target_turf, max_range)
 
+	// The skull is thrown, so it has to be able to physically get there. Targeting only
+	// needs line of sight, and glass is transparent but solid - without this a legion
+	// stood outside a window drops brood on the far side of the hull.
+	target_turf = clamp_to_reachable_turf(target_turf)
+	if (isnull(target_turf))
+		owner.balloon_alert(owner, "no room!")
+		StartCooldown(0.5 SECONDS)
+		return
+
+	// Only a dense mob can be in the way now - clamp_to_reachable_turf() already rejected
+	// anything solid. Shuffle off it if there's a free neighbour we can also reach.
 	if (target_turf.is_blocked_turf())
 		var/list/near_turfs = RANGE_TURFS(1, target_turf) - target_turf
 		for (var/turf/check_turf as anything in near_turfs)
-			if (check_turf.is_blocked_turf())
+			if (check_turf.is_blocked_turf() || clamp_to_reachable_turf(check_turf) != check_turf)
 				near_turfs -= check_turf
 		if (length(near_turfs))
 			target_turf = pick(near_turfs)

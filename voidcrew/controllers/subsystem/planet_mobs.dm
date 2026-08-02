@@ -227,8 +227,14 @@ SUBSYSTEM_DEF(planet_mobs)
 
 /**
  * Whether a mob may be despawned. Anything a player is attached to, anything dead
- * (bodies are evidence and loot), anything inside something else, and megafauna are
- * all off limits.
+ * (bodies are evidence and loot), anything inside something else, megafauna and
+ * contract mobs are all off limits.
+ *
+ * This sweep is indiscriminate by design — it walks every living mob on the
+ * z-level, not a list of the ones it spawned — so anything else that puts a mob
+ * on a planet is caught in it. A mission's marked specimen is exactly that: it
+ * spawns from the objective chain, not from the biome tables, and deleting it
+ * voids the contract three minutes after the crew steps off the surface.
  */
 /datum/controller/subsystem/planet_mobs/proc/can_despawn(mob/living/candidate)
 	if(candidate.ckey)
@@ -240,6 +246,8 @@ SUBSYSTEM_DEF(planet_mobs)
 	if(!isturf(candidate.loc))
 		return FALSE
 	if(istype(candidate, /mob/living/simple_animal/hostile/megafauna))
+		return FALSE
+	if(HAS_TRAIT(candidate, TRAIT_MISSION_FIELD_MOB))
 		return FALSE
 	return TRUE
 

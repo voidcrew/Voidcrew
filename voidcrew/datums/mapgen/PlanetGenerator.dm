@@ -164,7 +164,6 @@
 /datum/map_generator/planet_generator/populate_terrain(list/turfs, area/generate_in, zone_band)
 
 	var/start_time = REALTIMEOFDAY
-	var/megafauna_spawned = FALSE
 
 	// Zone danger scaling: planets in dangerous overmap zones spawn denser and
 	// meaner fauna. Preloaded planets populate during SSmapping init (before
@@ -242,6 +241,13 @@
 				if(ispath(picked_feature, /obj/structure/ladder))
 					can_spawn = FALSE
 
+				// Some biomes seed nests through the feature list rather than the mob list
+				// (snow's demonic portals, wasteland's hivebot portals). They are the same
+				// permanent, uncapped fauna source, so they share the same budget.
+				if(can_spawn && ispath(picked_feature, /obj/structure/spawner))
+					spawner_candidates[target_turf] = picked_feature
+					continue
+
 				if(can_spawn)
 					new picked_feature(target_turf)
 					spawned_something = TRUE
@@ -267,8 +273,8 @@
 				if(picked_mob == SPAWN_MEGAFAUNA)
 					continue
 
-			// Zone danger scaling: some rolls upgrade to the biome's meaner tier.
-			// Megafauna rolls are explicitly exempt — apex content stays untouched.
+			// Zone danger scaling: some rolls upgrade to the biome's meaner tier. Megafauna
+			// never reach this - they were banked above - so apex content stays untouched.
 			if(mob_upgrade_prob && length(selected_biome.dangerous_mob_spawn_list) && prob(mob_upgrade_prob))
 				picked_mob = pickweight(selected_biome.dangerous_mob_spawn_list)
 
@@ -283,19 +289,85 @@
 				spawner_candidates[target_turf] = picked_mob
 				continue
 
-			// Avoid clumping: skip if another mob is already standing within 12 tiles.
-			var/can_spawn = TRUE
-			for(var/mob/living/mob_blocker in range(12, target_turf))
-				can_spawn = FALSE
-				break
-
-			if(can_spawn)
-				if(!SSplanet_mobs.register_spawn_turf(target_turf, picked_mob))
-					new picked_mob(target_turf)
+			// On a tracked z-level the turf is only registered, and SSplanet_mobs populates
+			// it when players actually arrive. Otherwise (asteroid fields take this path)
+			// the mob is placed here and now, and can clump - so that case, and only that
+			// case, pays for the anti-clump scan. Nothing is standing on a planet
+			// mid-build for it to find anyway, and range() over 450 turfs per roll is the
+			// most expensive thing in this loop.
+			if(SSplanet_mobs.register_spawn_turf(target_turf, picked_mob))
 				spawned_something = TRUE
+			else
+				var/can_spawn = TRUE
+				for(var/mob/living/mob_blocker in range(12, target_turf))
+					can_spawn = FALSE
+					break
+
+				if(can_spawn)
+					new picked_mob(target_turf)
+					spawned_something = TRUE
 		// The expensive half of a planet build - every iteration runs several range()
 		// scans - and the one that most needs to stop hogging the tick. See
 		// worldgen_yield() in worldgen_queue.dm.
 		SSovermap.worldgen_yield(throttled)
 
-	log_world("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s!")
+	var/spawners_placed = place_budgeted_spawners(spawner_candidates, spawner_budget)
+	var/megafauna_placed = place_planet_megafauna(megafauna_candidates)
+
+	log_world("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s! \
+		spawners [spawners_placed]/[length(spawner_candidates)] (budget [spawner_budget]), \
+		megafauna [megafauna_placed]/[length(megafauna_candidates)]")
+
+/**
+ * Places up to `budget` structure spawners from the candidate turfs the terrain pass
+ * banked, keeping them ZONE_PLANET_SPAWNER_SPACING apart.
+ *
+ * Candidates are drawn at random rather than in order: get_block() hands out turfs
+ * row-major, so taking the first N would put every tendril on the planet in the same
+ * corner. Returns how many were placed.
+ */
+/datum/map_generator/planet_generator/proc/place_budgeted_spawners(list/candidates, budget)
+	if(!length(candidates) || budget <= 0)
+		return 0
+
+	var/list/available = candidates.Copy()
+	var/list/placed_at = list()
+	var/placed = 0
+
+	while(placed < budget && length(available))
+		var/turf/candidate = pick_n_take(available)
+		if(!isturf(candidate) || candidate.density)
+			continue
+
+		var/too_close = FALSE
+		for(var/turf/taken as anything in placed_at)
+			if(get_dist(candidate, taken) < ZONE_PLANET_SPAWNER_SPACING)
+				too_close = TRUE
+				break
+		if(too_close)
+			continue
+
+		var/spawner_type = candidates[candidate]
+		new spawner_type(candidate)
+		placed_at += candidate
+		placed++
+		CHECK_TICK
+
+	return placed
+
+/// Places a single megafauna from the banked candidates. One per planet, and only where
+/// the zone band allows them at all - see megafauna_allowed in populate_terrain().
+/datum/map_generator/planet_generator/proc/place_planet_megafauna(list/candidates)
+	if(!length(candidates))
+		return 0
+
+	var/list/available = candidates.Copy()
+	while(length(available))
+		var/turf/candidate = pick_n_take(available)
+		if(!isturf(candidate) || candidate.density)
+			continue
+		var/megafauna_type = candidates[candidate]
+		new megafauna_type(candidate)
+		return 1
+
+	return 0

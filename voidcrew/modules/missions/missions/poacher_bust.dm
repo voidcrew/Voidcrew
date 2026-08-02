@@ -330,6 +330,7 @@
 		// Outfitted expedition: cold-weather gear keeps an ice-planet camp
 		// from freezing to death before the crew arrives
 		poacher.minbodytemp = 0
+		protect_field_mob(poacher)
 		RegisterSignal(poacher, COMSIG_LIVING_DEATH, PROC_REF(on_poacher_death))
 		RegisterSignal(poacher, COMSIG_QDELETING, PROC_REF(on_poacher_removed))
 		squad += poacher
