@@ -106,7 +106,10 @@
 		return
 	var/list/own_area_by_type
 	for(var/turf/hull_turf as anything in return_ordered_turfs(x, y, z, dir))
-		if(!hull_turf || isspaceturf(hull_turf))
+		if(!hull_turf)
+			continue
+		if(isspaceturf(hull_turf))
+			restore_collapsed_mount(hull_turf)
 			continue
 		var/area/turf_area = hull_turf.loc
 		if(!shuttle_areas[turf_area])
@@ -150,6 +153,39 @@
 	// visible next to whatever strands: compare stranded coords against this rect.
 	var/list/rect = return_coords()
 	log_shuttle("[name]: pre-move footprint pos=([x],[y],[z]) dir=[dir] w=[width] h=[height] dw=[dwidth] dh=[dheight] rect=([rect[1]],[rect[2]])-([rect[3]],[rect[4]])")
+
+/**
+ * An engine of ours standing on bare space inside our own footprint is a collapsed
+ * hull mount: a previous move carried the area and the engine (the engine's
+ * beforeShuttleMove() grants MOVE_CONTENTS whenever MOVE_AREA is set) while the tile
+ * itself failed isshuttleturf() and stayed behind, so the engine arrived standing on
+ * the destination's raw space. It flies fine in that state - round 804 found Kilo,
+ * Goon and CCU engines living in /area/space/nearstation and /area/shuttle/transit -
+ * but the first time the area bookkeeping hiccups too, the engine strands for good.
+ * Rebuild the mount: adopt a neighbouring registered area, then lay plating -
+ * /area/shuttle/place_on_top_react() stamps the shuttle skipover during the
+ * place_on_top(), which is exactly the state a mapped mount loads with.
+ */
+/obj/docking_port/mobile/voidcrew/proc/restore_collapsed_mount(turf/space_turf)
+	var/obj/machinery/power/shuttle_engine/mounted
+	for(var/obj/machinery/power/shuttle_engine/engine in space_turf)
+		if(engine.connected_ship_ref?.resolve() == src)
+			mounted = engine
+			break
+	if(!mounted)
+		return
+	var/area/new_home
+	for(var/check_dir in GLOB.cardinals)
+		var/turf/neighbour = get_step(space_turf, check_dir)
+		var/area/neighbour_area = neighbour?.loc
+		if(neighbour_area && shuttle_areas[neighbour_area])
+			new_home = neighbour_area
+			break
+	if(!new_home)
+		return
+	log_shuttle("[name]: engine [mounted] at [AREACOORD(space_turf)] was standing on bare space inside the footprint - rebuilding its mount into [new_home.type]")
+	space_turf.change_area(space_turf.loc, new_home)
+	space_turf.place_on_top(/turf/open/floor/plating/airless)
 
 /obj/docking_port/mobile/voidcrew/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)
 	old_z_level = z
