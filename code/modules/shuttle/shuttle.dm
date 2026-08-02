@@ -181,7 +181,7 @@
 /// area bookkeeping (voidcrew refresh_engines()) must use this directly.
 /obj/docking_port/proc/is_in_shuttle_bounds_geometric(atom/A)
 	var/turf/T = get_turf(A)
-	if(T.z != z)
+	if(!T || T.z != z)
 		return FALSE
 	var/list/bounds = return_coords()
 	var/x0 = bounds[1]

@@ -118,6 +118,13 @@
 			if(isnull(own_area_by_type))
 				own_area_by_type = list()
 				for(var/area/own_area as anything in shuttle_areas)
+					// Ship-to-ship docking absorbs the guest's areas into the host's
+					// shuttle_areas; with two same-class hulls docked, the guest's
+					// instance must never win this map and steal reunified tiles.
+					if(istype(own_area, /area/shuttle/voidcrew))
+						var/area/shuttle/voidcrew/own_voidcrew_area = own_area
+						if(own_voidcrew_area.shuttle_port && own_voidcrew_area.shuttle_port != src)
+							continue
 					own_area_by_type[own_area.type] = own_area
 			var/area/replacement = own_area_by_type[foreign.type]
 			if(!replacement)
