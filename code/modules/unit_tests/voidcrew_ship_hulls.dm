@@ -220,4 +220,47 @@
 				TEST_FAIL("[theme.template_suffix] ships without a [required_equipment[equipment_path]] ([equipment_path]), and no upgrade slot guarantees one. Every purchasable hull launches with a mission board and pad, a bank machine, a cargo console and an R&D board kit — either on the hull, or on every module that can fill one of its slots.")
 	TEST_ASSERT(checked >= 15, "only [checked] hull/theme maps were checked for starting equipment")
 
+/**
+ * # Hull mount integrity at load
+ *
+ * Loads every purchasable hull as a real template (no placement move, no
+ * reconcile pass - the pure state the map loader and the skipover stamping in
+ * /datum/map_template/shuttle/load() produce) and asserts the two properties a
+ * shuttle move needs to carry a tile: the shuttle skipover baseturf, and a
+ * registered area. A mount tile born without either survives its first moves
+ * only by the engine's MOVE_CONTENTS ride (the tile stays behind, the engine
+ * hops onto the destination's raw ground) and eventually strands the engine at
+ * whatever site unloads next - rounds 803/804's recurring thruster losses.
+ */
+/datum/unit_test/voidcrew_hull_mount_integrity
+	priority = TEST_LONGER
+
+/datum/unit_test/voidcrew_hull_mount_integrity/Run()
+	ensure_ship_upgrades_initialized()
+	for(var/datum/map_template/shuttle/voidcrew/hull as anything in get_purchasable_ship_templates())
+		SSshuttle.load_template(hull)
+		var/obj/docking_port/mobile/port = SSshuttle.preview_shuttle
+		if(!port)
+			TEST_FAIL("[hull.type] failed to load as a preview template")
+			continue
+		var/engines_seen = 0
+		for(var/turf/hull_turf as anything in port.return_ordered_turfs(port.x, port.y, port.z, port.dir))
+			if(!hull_turf)
+				continue
+			var/area/tile_area = hull_turf.loc
+			var/registered = port.shuttle_areas[tile_area]
+			var/is_hull_tile = isshuttleturf(hull_turf)
+			if(registered && !is_hull_tile && !isspaceturf(hull_turf))
+				TEST_FAIL("[hull.type]: [hull_turf.type] at ([hull_turf.x],[hull_turf.y]) loads in registered [tile_area.type] without the shuttle skipover - a move will leave it behind")
+			for(var/obj/machinery/power/shuttle_engine/engine in hull_turf)
+				engines_seen++
+				if(!is_hull_tile)
+					TEST_FAIL("[hull.type]: [engine.name] loads at ([hull_turf.x],[hull_turf.y]) on [hull_turf.type] without the shuttle skipover - its mount will be left behind by a move")
+				else if(!registered)
+					TEST_FAIL("[hull.type]: [engine.name] loads at ([hull_turf.x],[hull_turf.y]) in unregistered area [tile_area.type]")
+		if(!engines_seen && !hull.force_purchasable)
+			TEST_FAIL("[hull.type] loaded with no mapped engines anywhere in its footprint")
+		port.jumpToNullSpace()
+		SSshuttle.preview_shuttle = null
+
 #undef SHIP_MODULE_MAP_ROOT

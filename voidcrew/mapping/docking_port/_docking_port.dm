@@ -108,8 +108,12 @@
 	for(var/turf/hull_turf as anything in return_ordered_turfs(x, y, z, dir))
 		if(!hull_turf)
 			continue
+		// Collapsed mount: one of our own engines standing on a tile a move cannot
+		// carry - bare space, or foreign ground adopted at a dock (wasteland dirt,
+		// ruin space). Rebuild it into real hull before the move wedges them apart.
+		if(!isshuttleturf(hull_turf) && restore_collapsed_mount(hull_turf))
+			continue
 		if(isspaceturf(hull_turf))
-			restore_collapsed_mount(hull_turf)
 			continue
 		var/area/turf_area = hull_turf.loc
 		if(!shuttle_areas[turf_area])
@@ -166,26 +170,38 @@
  * /area/shuttle/place_on_top_react() stamps the shuttle skipover during the
  * place_on_top(), which is exactly the state a mapped mount loads with.
  */
-/obj/docking_port/mobile/voidcrew/proc/restore_collapsed_mount(turf/space_turf)
+/obj/docking_port/mobile/voidcrew/proc/restore_collapsed_mount(turf/mount_turf)
 	var/obj/machinery/power/shuttle_engine/mounted
-	for(var/obj/machinery/power/shuttle_engine/engine in space_turf)
+	for(var/obj/machinery/power/shuttle_engine/engine in mount_turf)
 		if(engine.connected_ship_ref?.resolve() == src)
 			mounted = engine
 			break
 	if(!mounted)
-		return
-	var/area/new_home
-	for(var/check_dir in GLOB.cardinals)
-		var/turf/neighbour = get_step(space_turf, check_dir)
-		var/area/neighbour_area = neighbour?.loc
-		if(neighbour_area && shuttle_areas[neighbour_area])
-			new_home = neighbour_area
-			break
-	if(!new_home)
-		return
-	log_shuttle("[name]: engine [mounted] at [AREACOORD(space_turf)] was standing on bare space inside the footprint - rebuilding its mount into [new_home.type]")
-	space_turf.change_area(space_turf.loc, new_home)
-	space_turf.place_on_top(/turf/open/floor/plating/airless)
+		return FALSE
+	var/area/home = mount_turf.loc
+	if(!shuttle_areas[home])
+		home = null
+		for(var/check_dir in GLOB.cardinals)
+			var/turf/neighbour = get_step(mount_turf, check_dir)
+			var/area/neighbour_area = neighbour?.loc
+			if(neighbour_area && shuttle_areas[neighbour_area])
+				home = neighbour_area
+				break
+		if(!home)
+			return FALSE
+		mount_turf.change_area(mount_turf.loc, home)
+	if(isfloorturf(mount_turf))
+		// A real deck tile that merely lost its skipover marker - keep it, restamp.
+		if(!islist(mount_turf.baseturfs))
+			mount_turf.assemble_baseturfs()
+		mount_turf.insert_baseturf(min(3, mount_turf.count_baseturfs() + 1), /turf/baseturf_skipover/shuttle)
+		log_shuttle("[name]: engine [mounted] at [AREACOORD(mount_turf)] stood on [mount_turf.type] with no skipover - restamped its mount")
+	else
+		// Bare space or adopted foreign ground - rebuild the mount plating;
+		// /area/shuttle/place_on_top_react() stamps the skipover for us.
+		log_shuttle("[name]: engine [mounted] at [AREACOORD(mount_turf)] stood on [mount_turf.type] - rebuilding its mount into [home.type]")
+		mount_turf.place_on_top(/turf/open/floor/plating/airless)
+	return TRUE
 
 /obj/docking_port/mobile/voidcrew/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)
 	old_z_level = z
