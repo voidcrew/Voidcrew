@@ -408,6 +408,42 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	if(has_players_in_reservation())
 		return FALSE
 
+	// No ship hull may overlap the reservation. The overmap token leaves a full second
+	// before the interior physically moves (complete_undock_warmup schedules both), and
+	// the undock recycling fires 0.5s after the token leaves - so both checks above are
+	// blind to an interior still mid-departure, and a teardown landing in that window
+	// resets turfs out from under the transplant, or deletes whatever a bad move
+	// stranded (round 803: Delta's four thrusters died to exactly this).
+	var/turf/reservation_bottom_left = reservation.bottom_left_turfs[1]
+	var/turf/reservation_top_right = reservation.top_right_turfs[1]
+	if(reservation_bottom_left && reservation_top_right)
+		var/res_z = reservation_bottom_left.z
+		for(var/obj/docking_port/mobile/port as anything in SSshuttle.mobile_docking_ports)
+			if(port.z == res_z)
+				var/list/port_rect = port.return_coords()
+				if(max(port_rect[1], port_rect[3]) >= reservation_bottom_left.x \
+					&& min(port_rect[1], port_rect[3]) <= reservation_top_right.x \
+					&& max(port_rect[2], port_rect[4]) >= reservation_bottom_left.y \
+					&& min(port_rect[2], port_rect[4]) <= reservation_top_right.y)
+					log_mapping("SSovermap: Space ruin '[name]' teardown refused - [port.name] still overlaps the reservation (parked or mid-departure)")
+					return FALSE
+			// Stranded hull: a registered ship area still holding turfs inside our block
+			for(var/area/ship_area as anything in port.shuttle_areas)
+				for(var/turf/held_turf as anything in ship_area.get_turfs_by_zlevel(res_z))
+					if(held_turf.x >= reservation_bottom_left.x && held_turf.x <= reservation_top_right.x \
+						&& held_turf.y >= reservation_bottom_left.y && held_turf.y <= reservation_top_right.y)
+						log_mapping("SSovermap: Space ruin '[name]' teardown refused - [port.name]'s [ship_area.type] still holds [held_turf] at [AREACOORD(held_turf)]")
+						return FALSE
+			// Stranded engines: connected thrusters standing in our block (their tile may
+			// sit in an orphaned area the sweep above can't see)
+			for(var/obj/machinery/power/shuttle_engine/engine as anything in port.engine_list)
+				var/turf/engine_turf = get_turf(engine)
+				if(engine_turf?.z == res_z \
+					&& engine_turf.x >= reservation_bottom_left.x && engine_turf.x <= reservation_top_right.x \
+					&& engine_turf.y >= reservation_bottom_left.y && engine_turf.y <= reservation_top_right.y)
+					log_mapping("SSovermap: Space ruin '[name]' teardown refused - [port.name]'s [engine] is standing at [AREACOORD(engine_turf)]")
+					return FALSE
+
 	return TRUE
 
 /**
@@ -528,8 +564,12 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 	var/datum/map_template/ruin/space/old_template = ruin_template
 
 	// Guards, queues and frees the reservation, or refuses because somebody is still
-	// aboard. Nothing below may run unless it actually went through.
+	// aboard. Nothing below may run unless it actually went through. A refusal is
+	// usually the departing ship's interior still mid-move (the hull-overlap guard in
+	// can_release_interior()), so try again once the departure has finished rather
+	// than holding the reservation until the next visitor undocks.
 	if(!release_interior())
+		addtimer(CALLBACK(src, PROC_REF(check_and_respawn)), 30 SECONDS, TIMER_UNIQUE)
 		return
 
 	// A live contract is pointed here. The interior is gone either way - it was

@@ -494,7 +494,9 @@ SUBSYSTEM_DEF(overmap)
 			zlevel = SSmapping.get_level(planets[planet]["z"])
 			mapzone.add_space_level(zlevel)
 		else
-			if(mapzone.z_levels[1])
+			// length() guard - indexing an empty z_levels list runtimes (see
+			// spawn_dynamic_encounter for the round-killing version of this mistake)
+			if(length(mapzone.z_levels))
 				zlevel = mapzone.z_levels[1]
 			else
 				zlevel = SSmapping.get_level(planets[planet]["z"])
@@ -902,7 +904,11 @@ SUBSYSTEM_DEF(overmap)
 	// then share one map zone, and the first to be abandoned clears the other's level.
 	mapzone.taken = TRUE
 
-	if(mapzone.z_levels[1])
+	// length() guard, not [1]: a fresh zone from create_map_zone() has an EMPTY z_levels
+	// list, and indexing it runtimes. That runtime aborted every encounter spawn once the
+	// free-zone pool ran dry AND leaked the zone with taken = TRUE, so the pool never
+	// recovered - round 811 lost all dynamic encounters from 18:03 onward this way.
+	if(length(mapzone.z_levels))
 		zlevel = mapzone.z_levels[1]
 		// A recycled level still holds the last occupant's traits. Reconcile the one that
 		// carries a value: left stale, a space encounter reusing a planet's level would
