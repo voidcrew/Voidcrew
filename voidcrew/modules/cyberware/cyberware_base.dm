@@ -149,6 +149,66 @@
 		owner.balloon_alert(owner, "[name] glitches out!")
 		do_sparks(2, TRUE, owner)
 
+/**
+ * # Cyberware deployable-arm base
+ *
+ * The arm-weapon twin, for chrome that extends/retracts a held item — Mantis
+ * Blades, Widowline Monowire, the Popup Ronin, Bunker Buster, Icepick Jack,
+ * Skyhook, Graverobber, Angler, Fixer's Fingers, Rockjaw. It rides tg's
+ * /obj/item/organ/cyberimp/arm/toolkit for the whole extend/retract/radial/
+ * NODROP dance and layers the same chrome gate on top. Load splits across the
+ * two arms for paired ware: each arm organ carries half, so the per-slot
+ * incumbent netting Just Works with no pair-aware override.
+ */
+/obj/item/organ/cyberimp/arm/toolkit/cyberware
+	name = "arm cyberware"
+	desc = "Aftermarket arm hardware. Folds away until you want it."
+	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	/// Neural load this ware puts on its bearer.
+	var/chrome_load = 1
+	/// CYBERWARE_TIER_*, drives accent colours and the parlor experience.
+	var/tier = CYBERWARE_TIER_1
+	/// Chrome capacity this ware grants while installed.
+	var/chrome_capacity_bonus = 0
+
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/cyberware, chrome_load, tier, chrome_capacity_bonus)
+
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/examine(mob/user)
+	. = ..()
+	. += span_notice("Neural load: <b>[chrome_load]</b>. Tier [tier] chrome — install at a Chrome Cradle or through organ-manipulation surgery.")
+
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/Insert(mob/living/carbon/receiver, special = FALSE, movement_flags)
+	if(!special && !cyberware_can_insert(src, receiver))
+		return FALSE
+	return ..()
+
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/pre_surgical_insertion(mob/living/user, mob/living/carbon/new_owner, target_zone)
+	if(!cyberware_insert_check(src, new_owner, feedback_to = user))
+		return FALSE
+	. = ..()
+	if(!.)
+		return
+	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
+	chrome?.grant_install_context(new_owner)
+
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/on_mob_insert(mob/living/carbon/arm_owner, special = FALSE, movement_flags)
+	. = ..()
+	if(!special)
+		cyberware_boot_splash(arm_owner, src)
+
+/obj/item/organ/cyberimp/arm/toolkit/cyberware/emp_act(severity)
+	. = ..() // toolkit's own EMP retract fires first
+	if(. & EMP_PROTECT_SELF)
+		return
+	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
+	if(!chrome || chrome.emp_down)
+		return
+	chrome.start_emp_reboot(severity)
+	if(owner)
+		owner.balloon_alert(owner, "[name] glitches out!")
+
 // ---- Shared insert gate ------------------------------------------------
 
 /**

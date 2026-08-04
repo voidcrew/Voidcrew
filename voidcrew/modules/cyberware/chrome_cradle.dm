@@ -609,10 +609,13 @@
 			return TRUE
 
 		if("configure")
-			// TODO(W2 — Chromatic Dermis): pattern + colour picker for
-			// configurable ware lands on this branch. Validate the ref against
-			// get_installed_cyberware(patient), then hand off to the ware.
-			balloon_alert(patient, "nothing to configure!")
+			var/obj/item/organ/ware = locate(params["ref"]) in get_installed_cyberware(patient)
+			if(!istype(ware, /obj/item/organ/cyberimp/cyberware/chromatic_dermis))
+				balloon_alert(patient, "nothing to configure!")
+				return TRUE
+			var/obj/item/organ/cyberimp/cyberware/chromatic_dermis/dermis = ware
+			// The picker blocks on input(); never sleep in ui_act.
+			INVOKE_ASYNC(dermis, TYPE_PROC_REF(/obj/item/organ/cyberimp/cyberware/chromatic_dermis, configure), patient)
 			return TRUE
 
 	return TRUE
