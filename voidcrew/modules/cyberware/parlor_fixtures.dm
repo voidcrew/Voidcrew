@@ -11,8 +11,10 @@
 	desc = "A neon board buzzing over the ripperdoc's counter. One letter flickers on a bad ballast; nobody's ever fixed it, and nobody ever will."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware_signs.dmi'
 	icon_state = "chrome_sign"
-	// 64x32 art: sits on one wall tile and reads across the two above the door.
-	pixel_x = -16
+	// 64x32 art: map it on the LEFT tile of a two-tile blank wall stretch —
+	// it reads across that tile and the one to its right. Keep doors and
+	// windows out from under it.
+	pixel_x = 0
 	layer = ABOVE_WINDOW_LAYER
 	density = FALSE
 	anchored = TRUE

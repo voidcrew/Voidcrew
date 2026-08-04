@@ -506,15 +506,6 @@
 	},
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
-"il" = (
-/obj/structure/showcase{
-	desc = "A pair of massive chrome fists behind scratched glass. The tag says ASK SPLICE. The glass says someone already tried not asking.";
-	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi';
-	icon_state = "gorilla";
-	name = "display case: GORILLA ARMS"
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
 "ip" = (
 /obj/structure/rack,
 /obj/item/clothing/mask/breath,
@@ -630,6 +621,10 @@
 /obj/machinery/iv_drip,
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
+"nw" = (
+/obj/machinery/light/blacklight/directional/north,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "nA" = (
 /obj/machinery/iv_drip/saline,
 /obj/effect/turf_decal/tile/blue/half/contrasted{
@@ -637,20 +632,17 @@
 	},
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
-"nE" = (
-/obj/structure/showcase{
-	desc = "A segmented chrome spine floating in a suspension jar. The whole shop is arranged so you end up looking at it.";
-	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi';
-	icon_state = "cascade";
-	name = "display case: CASCADE LATTICE"
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
 "nG" = (
 /obj/structure/chair/stool/bar{
 	dir = 1
 	},
 /turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"nU" = (
+/obj/machinery/door/airlock/outpost/glass{
+	name = "The Chop Shop"
+	},
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "om" = (
 /mob/living/basic/outpost_trader/ripperdoc,
@@ -710,10 +702,6 @@
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/indestructible/dark,
-/area/voidcrew/trader_outpost)
-"tI" = (
-/obj/machinery/light/blacklight/directional/south,
-/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "tP" = (
 /mob/living/basic/outpost_trader/dregs_barkeep,
@@ -775,12 +763,6 @@
 /obj/structure/table/reinforced,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
-"vy" = (
-/obj/machinery/door/airlock/outpost{
-	name = "The Chop Shop"
-	},
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
 "vB" = (
 /obj/structure/showcase/cyborg/old,
 /turf/open/indestructible/plating,
@@ -801,6 +783,16 @@
 	pixel_y = 4
 	},
 /turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"ww" = (
+/obj/structure/table/reinforced,
+/obj/structure/showcase{
+	desc = "A pair of massive chrome fists behind scratched glass. The tag says ASK SPLICE. The glass says someone already tried not asking.";
+	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi';
+	icon_state = "gorilla";
+	name = "display case: GORILLA ARMS"
+	},
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "wK" = (
 /obj/effect/spawner/random/trash/grime,
@@ -915,6 +907,10 @@
 /obj/machinery/light/blacklight/directional/east,
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
+"Cb" = (
+/obj/machinery/light/red/dim/directional/north,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "Cj" = (
 /obj/machinery/vending/hotdog,
 /turf/open/indestructible/hotelwood,
@@ -932,6 +928,16 @@
 	},
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
+"DM" = (
+/obj/structure/table/reinforced,
+/obj/structure/showcase{
+	desc = "A segmented chrome spine floating in a suspension jar. The whole shop is arranged so you end up looking at it.";
+	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi';
+	icon_state = "cascade";
+	name = "display case: CASCADE LATTICE"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "DU" = (
 /obj/effect/turf_decal/caution{
 	dir = 2
@@ -941,6 +947,16 @@
 "Eu" = (
 /obj/effect/turf_decal/arrows/red{
 	dir = 8
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
+"EN" = (
+/obj/structure/table/reinforced,
+/obj/structure/showcase{
+	desc = "A folded blade housing under glass, edge glowing faintly. The price tag is turned face-down.";
+	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi';
+	icon_state = "mantis";
+	name = "display case: MANTIS BLADES"
 	},
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
@@ -1014,10 +1030,6 @@
 	},
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
-"Hi" = (
-/obj/machinery/light/red/dim/directional/south,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
 "Ih" = (
 /obj/structure/closet/outpost_medical,
 /obj/effect/turf_decal/bot,
@@ -1057,15 +1069,6 @@
 	},
 /obj/effect/turf_decal/delivery,
 /turf/open/indestructible/plating,
-/area/voidcrew/trader_outpost)
-"Kz" = (
-/obj/structure/showcase{
-	desc = "A folded blade housing under glass, edge glowing faintly. The price tag is turned face-down.";
-	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi';
-	icon_state = "mantis";
-	name = "display case: MANTIS BLADES"
-	},
-/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "KQ" = (
 /obj/effect/turf_decal/tile/dark_red/half/contrasted{
@@ -1234,11 +1237,6 @@
 /area/voidcrew/trader_outpost)
 "Uq" = (
 /obj/effect/spawner/random/trash/mess,
-/turf/open/indestructible/dark/textured,
-/area/voidcrew/trader_outpost)
-"UG" = (
-/obj/effect/spawner/random/trash/cigbutt,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "UL" = (
@@ -2087,12 +2085,12 @@ aO
 aO
 Pi
 ut
-aa
-il
-FI
-nE
+Zf
 au
 FI
+as
+aV
+ww
 aa
 "}
 (30,1,1) = {"
@@ -2114,11 +2112,11 @@ aO
 aO
 ji
 aa
-Kz
+FI
 Mu
 ar
-as
-Hi
+aV
+Cb
 aa
 "}
 (31,1,1) = {"
@@ -2143,8 +2141,8 @@ aV
 au
 SI
 dq
-ar
-ar
+aV
+EN
 aa
 "}
 (32,1,1) = {"
@@ -2169,8 +2167,8 @@ aV
 ar
 cL
 mx
-ar
-UG
+aV
+DM
 aa
 "}
 (33,1,1) = {"
@@ -2194,9 +2192,9 @@ aO
 aV
 ar
 dq
+SI
+vn
 om
-ar
-ar
 aa
 "}
 (34,1,1) = {"
@@ -2217,12 +2215,12 @@ Pi
 dW
 aO
 Pi
-Zf
+aa
 NP
-vn
-vn
-vn
-tI
+ar
+ar
+aV
+nw
 aa
 "}
 (35,1,1) = {"
@@ -2243,11 +2241,11 @@ MJ
 BP
 gK
 Tt
-vy
+nU
 ao
 ar
 ar
-ar
+aV
 au
 aa
 "}
@@ -2273,7 +2271,7 @@ aa
 jn
 WW
 WO
-aN
+aV
 ps
 aa
 "}

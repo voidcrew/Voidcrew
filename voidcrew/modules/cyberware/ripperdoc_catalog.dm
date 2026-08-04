@@ -18,11 +18,30 @@
  * Catalog only — the organs live in ware_*.dm, the cradle in chrome_cradle.dm,
  * the NPC subtype in trade/trader_npc.dm, the parlor room on the Undertow map.
  */
+/**
+ * Splice's look: surgical scrubs and cap in wine-dark and black instead of
+ * sterile blue (he operates, just not on the books), street leather over the
+ * top, black no-bloodstain coroner latex, a diagnostic HUD because he scans
+ * chrome rather than flesh, and a toolbelt because installing ware is shop
+ * work. Purely cosmetic — the NPC snapshot only copies appearance.
+ */
+/datum/outfit/ripperdoc_splice
+	name = "Ripperdoc"
+	uniform = /obj/item/clothing/under/syndicate/scrubs
+	suit = /obj/item/clothing/suit/jacket/leather
+	gloves = /obj/item/clothing/gloves/latex/coroner
+	shoes = /obj/item/clothing/shoes/jackboots
+	head = /obj/item/clothing/head/utility/surgerycap/black
+	glasses = /obj/item/clothing/glasses/hud/diagnostic
+	neck = /obj/item/clothing/neck/stethoscope
+	belt = /obj/item/storage/belt/utility/full
+	mask = /obj/item/cigarette
+
 /datum/outpost_shop/vendor/ripperdoc
 	outpost_name = "\improper The Chop Shop"
 	outpost_desc = "The Undertow's ripperdoc parlor. Chrome in, credits out, questions never."
 	trader_name = "Splice"
-	trader_outfit = /datum/outfit/job/scientist
+	trader_outfit = /datum/outfit/ripperdoc_splice
 	trader_gender = NEUTER
 	trader_voice_pack = "goon.speak_2"
 	trader_voice_pitch = 1.04
