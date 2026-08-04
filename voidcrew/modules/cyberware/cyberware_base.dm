@@ -1,0 +1,281 @@
+/**
+ * # Cyberware organ bases
+ *
+ * Two bases, one behavior. Most ware extends /obj/item/organ/cyberimp/cyberware;
+ * the optics ladder extends /obj/item/organ/eyes/robotic/cyberware instead so
+ * it inherits the robotic eyes' nightvision/flash/EMP-static plumbing (and
+ * evicting it costs you your meat eyes — that flavor is kept on purpose).
+ * Single inheritance forces the split, so both bases carry the same thin set
+ * of overrides and delegate everything real to /datum/component/cyberware and
+ * the shared procs below.
+ *
+ * The install rules, enforced at the ORGAN so this fork's universal
+ * TRAIT_SELF_SURGERY hits the same wall as everyone else:
+ * - Capacity: net load after the swap must fit — the check nets out whatever
+ *   incumbent the insert would replace, so ladder upgrades work at high load.
+ * - Context: Insert() outside organ-manipulation surgery, the Chrome Cradle
+ *   or special = TRUE (init/admin) is refused. Bare autosurgeons choke.
+ * On refusal the organ always survives where it was: Insert() returns FALSE
+ * before ..(), and the autosurgeon keeps its stored organ on a FALSE return
+ * (autosurgeon.dm's "insertion failed!" path).
+ */
+/obj/item/organ/cyberimp/cyberware
+	name = "cyberware"
+	desc = "Aftermarket chrome. Someone sat in a parlor chair for this."
+	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	organ_flags = ORGAN_ROBOTIC
+	failing_desc = "is dark and inert — browned out, EMP-scrambled, or plain broken."
+	/// Neural load this ware puts on its bearer. 0-12; see the tier bands.
+	var/chrome_load = 1
+	/// CYBERWARE_TIER_*, drives accent colours and the parlor experience.
+	var/tier = CYBERWARE_TIER_1
+	/// Chrome capacity this ware grants while installed (the Governor hook).
+	var/chrome_capacity_bonus = 0
+
+/obj/item/organ/cyberimp/cyberware/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/cyberware, chrome_load, tier, chrome_capacity_bonus)
+
+/obj/item/organ/cyberimp/cyberware/Destroy()
+	// Never silently eat contents: the Cargo Cavity keeps a player's stash in
+	// here, and anything else a subtype stores deserves the same courtesy.
+	// No turf (nullspace deletion) means there is genuinely nowhere to drop.
+	var/turf/drop_turf = get_turf(src)
+	if(drop_turf)
+		for(var/obj/item/held in src)
+			held.forceMove(drop_turf)
+	return ..()
+
+/obj/item/organ/cyberimp/cyberware/examine(mob/user)
+	. = ..()
+	. += span_notice("Neural load: <b>[chrome_load]</b>[chrome_capacity_bonus ? ", grants +[chrome_capacity_bonus] chrome capacity" : ""]. Tier [tier] chrome — install at a Chrome Cradle or through organ-manipulation surgery.")
+
+/obj/item/organ/cyberimp/cyberware/Insert(mob/living/carbon/receiver, special = FALSE, movement_flags)
+	if(!special && !cyberware_can_insert(src, receiver))
+		return FALSE
+	return ..()
+
+/obj/item/organ/cyberimp/cyberware/pre_surgical_insertion(mob/living/user, mob/living/carbon/new_owner, target_zone)
+	// Capacity refusal happens up front, before the parent gets a say, so the
+	// surgeon hears why the step failed instead of fumbling a full operation.
+	if(!cyberware_insert_check(src, new_owner, feedback_to = user))
+		return FALSE
+	. = ..()
+	if(!.)
+		return
+	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
+	chrome?.grant_install_context(new_owner)
+
+/obj/item/organ/cyberimp/cyberware/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
+	. = ..()
+	if(!special)
+		cyberware_boot_splash(organ_owner, src)
+
+/obj/item/organ/cyberimp/cyberware/emp_act(severity)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
+	if(!chrome || chrome.emp_down)
+		return
+	chrome.start_emp_reboot(severity)
+	if(owner)
+		owner.balloon_alert(owner, "[name] glitches out!")
+		do_sparks(2, TRUE, owner)
+
+/**
+ * # Cyberware optics base
+ *
+ * The eyes-side twin of the base above, for the Nightshade -> Deadeye /
+ * Prospector ladder. Uses tg's ORGAN_SLOT_EYES — the design's
+ * `cyberware_optics` slot is dead — so installing chrome optics replaces
+ * your eyes outright. Robotic-eyes EMP static still fires through ..();
+ * our reboot downtime stacks on top of it.
+ */
+/obj/item/organ/eyes/robotic/cyberware
+	name = "cyberware optics"
+	desc = "Aftermarket eyes. The irises catch the light in a way meat never does."
+	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	/// Neural load this ware puts on its bearer.
+	var/chrome_load = 1
+	/// CYBERWARE_TIER_*, drives accent colours and the parlor experience.
+	var/tier = CYBERWARE_TIER_1
+	/// Chrome capacity this ware grants while installed (the Governor hook).
+	var/chrome_capacity_bonus = 0
+
+/obj/item/organ/eyes/robotic/cyberware/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/cyberware, chrome_load, tier, chrome_capacity_bonus)
+
+/obj/item/organ/eyes/robotic/cyberware/Destroy()
+	var/turf/drop_turf = get_turf(src)
+	if(drop_turf)
+		for(var/obj/item/held in src)
+			held.forceMove(drop_turf)
+	return ..()
+
+/obj/item/organ/eyes/robotic/cyberware/examine(mob/user)
+	. = ..()
+	. += span_notice("Neural load: <b>[chrome_load]</b>. Tier [tier] chrome — install at a Chrome Cradle or through organ-manipulation surgery.")
+
+/obj/item/organ/eyes/robotic/cyberware/Insert(mob/living/carbon/receiver, special = FALSE, movement_flags)
+	if(!special && !cyberware_can_insert(src, receiver))
+		return FALSE
+	return ..()
+
+/obj/item/organ/eyes/robotic/cyberware/pre_surgical_insertion(mob/living/user, mob/living/carbon/new_owner, target_zone)
+	if(!cyberware_insert_check(src, new_owner, feedback_to = user))
+		return FALSE
+	. = ..()
+	if(!.)
+		return
+	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
+	chrome?.grant_install_context(new_owner)
+
+/obj/item/organ/eyes/robotic/cyberware/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
+	. = ..()
+	if(!special)
+		cyberware_boot_splash(organ_owner, src)
+
+/obj/item/organ/eyes/robotic/cyberware/emp_act(severity)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	var/datum/component/cyberware/chrome = GetComponent(/datum/component/cyberware)
+	if(!chrome || chrome.emp_down)
+		return
+	chrome.start_emp_reboot(severity)
+	if(owner)
+		owner.balloon_alert(owner, "[name] glitches out!")
+		do_sparks(2, TRUE, owner)
+
+// ---- Shared insert gate ------------------------------------------------
+
+/**
+ * The organs this insert would replace on the target — the incumbent
+ * occupying our slot. THE netting extension point: paired arm ware (Gorilla
+ * Arms, Mantis Blades) overrides this on its own type to return both arms'
+ * incumbents, so a full-pair swap nets out both sides of the ladder rung.
+ */
+/obj/item/organ/proc/cyberware_get_incumbents(mob/living/carbon/target)
+	RETURN_TYPE(/list)
+	. = list()
+	var/obj/item/organ/incumbent = target?.get_organ_slot(slot)
+	if(incumbent && incumbent != src)
+		. += incumbent
+
+/**
+ * Capacity half of the gate: would the target's chrome still fit after this
+ * insert? Nets out the incumbent's load AND capacity bonus (swapping a
+ * Governor for a Governor must not double-count), never a naive sum.
+ * Feedback goes to the patient, plus the surgeon when that's someone else.
+ */
+/proc/cyberware_insert_check(obj/item/organ/ware, mob/living/carbon/target, silent = FALSE, mob/feedback_to)
+	if(!iscarbon(target))
+		return FALSE
+	var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
+	if(!chrome)
+		return TRUE
+	var/projected_load = get_chrome_load(target) + chrome.chrome_load
+	var/projected_capacity = get_chrome_capacity(target) + chrome.capacity_bonus
+	for(var/obj/item/organ/incumbent as anything in ware.cyberware_get_incumbents(target))
+		var/datum/component/cyberware/incumbent_chrome = incumbent.GetComponent(/datum/component/cyberware)
+		if(!incumbent_chrome)
+			continue
+		projected_load -= incumbent_chrome.chrome_load
+		projected_capacity -= incumbent_chrome.capacity_bonus
+	if(projected_load <= projected_capacity)
+		return TRUE
+	if(!silent)
+		target.balloon_alert(target, "no neural headroom!")
+		to_chat(target, span_warning("Your nervous system is screaming already — [ware] needs [projected_load - projected_capacity] more chrome capacity."))
+		if(feedback_to && feedback_to != target)
+			to_chat(feedback_to, span_warning("[target]'s nervous system can't take [ware] — [projected_load - projected_capacity] over capacity."))
+	return FALSE
+
+/**
+ * Full gate for a live (non-special) Insert(): a legit install context must
+ * be open for this receiver, and the netted capacity must fit. The context
+ * is consumed only on a pass, so a capacity refusal doesn't strand a surgery
+ * that shed load and tried again within the window.
+ */
+/proc/cyberware_can_insert(obj/item/organ/ware, mob/living/carbon/receiver)
+	var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
+	if(!chrome)
+		return TRUE
+	if(!chrome.has_install_context(receiver))
+		if(receiver)
+			receiver.balloon_alert(receiver, "needs a real rig!")
+			to_chat(receiver, span_warning("The autosurgeon chokes — this needs a real rig."))
+		return FALSE
+	if(!cyberware_insert_check(ware, receiver))
+		return FALSE
+	chrome.clear_install_context()
+	return TRUE
+
+// ---- BIOS boot splash --------------------------------------------------
+
+/**
+ * Three staged chat lines in the ware's tier accent plus a synth chime —
+ * fires on every non-special install, Cradle or DIY table alike. Doubles as
+ * the "your chrome is live" tutorial beat.
+ */
+/proc/cyberware_boot_splash(mob/living/target, obj/item/organ/ware)
+	if(!istype(target) || QDELETED(ware))
+		return
+	var/datum/component/cyberware/chrome = ware.GetComponent(/datum/component/cyberware)
+	var/accent = cyberware_tier_color(chrome ? chrome.tier : CYBERWARE_TIER_1)
+	playsound(target, 'sound/machines/synth/synth_yes.ogg', 40, TRUE)
+	cyberware_boot_line(target, accent, "CORTEX HANDSHAKE... OK")
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_boot_line), target, accent, "CALIBRATING..."), CYBERWARE_BOOT_LINE_DELAY)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cyberware_boot_line), target, accent, "CHROME ONLINE — [uppertext(ware.name)]"), CYBERWARE_BOOT_LINE_DELAY * 2)
+
+/// One BIOS line, monospace in the tier accent. Split out so the staged
+/// timers survive the target logging off mid-boot.
+/proc/cyberware_boot_line(mob/living/target, accent, line)
+	if(QDELETED(target))
+		return
+	to_chat(target, "<span style='color: [accent]; font-weight: bold; font-family: \"Courier New\", monospace;'>[line]</span>")
+
+// ---- Cooldown action bridge --------------------------------------------
+
+/**
+ * The one cooldown action chrome abilities hang off. Raw /datum/action/cooldown
+ * lacks the organ_action owner guard, so this adds it, plus an ORGAN_FAILING
+ * gate — a browned-out or EMP-scrambled ware's buttons go dark.
+ *
+ * Works for both shapes of ability: leave click_to_activate off and override
+ * Activate(target) for an instant pulse (target is the owner), or set
+ * click_to_activate = TRUE for a targeted ability (target is what they
+ * clicked). Either way StartCooldown() is YOURS to call inside Activate() —
+ * the base never starts it for you.
+ */
+/datum/action/cooldown/cyberware
+	check_flags = AB_CHECK_CONSCIOUS
+	/// The chrome this button belongs to. Typed loosely because both organ
+	/// bases use this bridge.
+	var/obj/item/organ/organ
+
+/datum/action/cooldown/cyberware/New(Target, original = TRUE)
+	. = ..()
+	if(isorgan(Target))
+		organ = Target
+	else
+		var/datum/target_datum = Target
+		stack_trace("cyberware cooldown action created on non-organ target [Target] ([target_datum ? target_datum.type : "null"])")
+
+/datum/action/cooldown/cyberware/Destroy()
+	organ = null
+	return ..()
+
+/datum/action/cooldown/cyberware/IsAvailable(feedback = FALSE)
+	. = ..()
+	if(!.)
+		return
+	if(!organ?.owner)
+		return FALSE
+	if(organ.organ_flags & ORGAN_FAILING)
+		if(feedback)
+			organ.owner.balloon_alert(organ.owner, "chrome offline!")
+		return FALSE
+	return TRUE
