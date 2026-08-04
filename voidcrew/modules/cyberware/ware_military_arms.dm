@@ -94,10 +94,12 @@
 #define DOAFTER_SOURCE_GORILLA_PRY "cyberware_gorilla_pry"
 
 /**
- * # Gorilla Arms (T3, arms, muscle slots, load 3 per arm / 6 the pair)
+ * # Gorilla Arms (T3, arms, arm hardware slots, load 3 per arm / 6 the pair)
  *
  * Myomer muscle lattices woven through both arms — the top rung of the
- * muscle ladder, evicting Scrapper's Knuckles. Each arm's empowered punch is
+ * ladder that starts at Scrapper's Knuckles. Like every piece of arm-mounted
+ * chrome it claims the arm's ONE hardware slot: installing it evicts
+ * whatever the arm carried (knuckles, blades, launchers) and vice versa. Each arm's empowered punch is
  * a flat ~20 brute with a wound bonus and a one-tile knockback; punch
  * someone you have in an aggressive grab and they go across the room
  * instead. Fists also break rock like a mining tool and cave in structures
@@ -115,21 +117,23 @@
 	desc = "A myomer weave anchored bone-deep through the arm. It doesn't make you look stronger. It makes doors stop being load-bearing."
 	icon_state = "gorilla"
 	zone = BODY_ZONE_R_ARM
-	slot = ORGAN_SLOT_RIGHT_ARM_MUSCLE
+	slot = ORGAN_SLOT_RIGHT_ARM_AUG
 	valid_zones = list(
-		BODY_ZONE_R_ARM = ORGAN_SLOT_RIGHT_ARM_MUSCLE,
-		BODY_ZONE_L_ARM = ORGAN_SLOT_LEFT_ARM_MUSCLE,
+		BODY_ZONE_R_ARM = ORGAN_SLOT_RIGHT_ARM_AUG,
+		BODY_ZONE_L_ARM = ORGAN_SLOT_LEFT_ARM_AUG,
 	)
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 3
 	tier = CYBERWARE_TIER_3
+	aug_overlay = "gorilla_right"
 	/// Rate limit on this arm's empowered hits.
 	COOLDOWN_DECLARE(slam_cooldown)
 
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/left
 	name = "\improper Gorilla Arms myomer lattice (left)"
 	zone = BODY_ZONE_L_ARM
-	slot = ORGAN_SLOT_LEFT_ARM_MUSCLE
+	slot = ORGAN_SLOT_LEFT_ARM_AUG
+	aug_overlay = "gorilla_left"
 
 /obj/item/organ/cyberimp/cyberware/gorilla_arms/Initialize(mapload)
 	. = ..()
@@ -294,6 +298,7 @@
 	icon_state = "mantis"
 	chrome_load = 3
 	tier = CYBERWARE_TIER_3
+	aug_overlay = "mantis"
 	items_to_create = list(/obj/item/melee/energy/blade/hardlight/cyberware_mantis)
 	extend_sound = 'sound/items/weapons/batonextend.ogg'
 	actions_types = list(
@@ -543,6 +548,7 @@
 	icon_state = "ronin"
 	chrome_load = 5
 	tier = CYBERWARE_TIER_3
+	aug_overlay = "ronin"
 	items_to_create = list(/obj/item/gun/ballistic/automatic/cyberware_ronin)
 	extend_sound = 'sound/items/weapons/batonextend.ogg'
 
@@ -646,6 +652,7 @@
 	icon_state = "bunker_buster"
 	chrome_load = 5
 	tier = CYBERWARE_TIER_3
+	aug_overlay = "buster"
 	items_to_create = list(/obj/item/gun/ballistic/revolver/cyberware_buster)
 	extend_sound = 'sound/items/weapons/batonextend.ogg'
 

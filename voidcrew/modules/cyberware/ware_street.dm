@@ -173,12 +173,14 @@
 // ---- 3. Scrapper's Knuckles -------------------------------------------
 
 /**
- * # Scrapper's Knuckles (T1, arm muscle slots, load 1 per arm)
+ * # Scrapper's Knuckles (T1, arm hardware slots, load 1 per arm)
  *
- * Reinforced knuckle plating on the arm's muscle slot — the first rung of
- * the muscle ladder Gorilla Arms evicts. Sold as a cased pair; each arm
- * carries half the pair's load, so the incumbent netting works per-arm
- * with no special casing.
+ * Reinforced knuckle plating in the arm's one hardware slot — the first rung
+ * of the ladder Gorilla Arms evicts. One slot per arm is the rule for ALL
+ * arm-mounted chrome (knuckles, myomer, blades, launchers): a new piece
+ * evicts whatever the arm already carries, never stacks with it. Sold as a
+ * cased pair; each arm carries half the pair's load, so the incumbent
+ * netting works per-arm with no special casing.
  *
  * The punch hook is the strongarm implant's EARLY_UNARMED_ATTACK pattern
  * (augments_arms.dm) with our own damage line: flat +4 on the bodypart's
@@ -192,19 +194,21 @@
 	desc = "Milled knuckle caps grafted along the metacarpals, right-arm fit. Hits from a fist you were already swinging just land harder — and against plating and machine housings they land twice as hard."
 	icon_state = "scrapper"
 	zone = BODY_ZONE_R_ARM
-	slot = ORGAN_SLOT_RIGHT_ARM_MUSCLE
+	slot = ORGAN_SLOT_RIGHT_ARM_AUG
 	valid_zones = list(
-		BODY_ZONE_R_ARM = ORGAN_SLOT_RIGHT_ARM_MUSCLE,
-		BODY_ZONE_L_ARM = ORGAN_SLOT_LEFT_ARM_MUSCLE,
+		BODY_ZONE_R_ARM = ORGAN_SLOT_RIGHT_ARM_AUG,
+		BODY_ZONE_L_ARM = ORGAN_SLOT_LEFT_ARM_AUG,
 	)
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 1
 	tier = CYBERWARE_TIER_1
+	aug_overlay = "scrapper_right"
 
 /obj/item/organ/cyberimp/cyberware/scrapper/left
 	desc = "Milled knuckle caps grafted along the metacarpals, left-arm fit. Hits from a fist you were already swinging just land harder — and against plating and machine housings they land twice as hard."
 	zone = BODY_ZONE_L_ARM
-	slot = ORGAN_SLOT_LEFT_ARM_MUSCLE
+	slot = ORGAN_SLOT_LEFT_ARM_AUG
+	aug_overlay = "scrapper_left"
 
 /obj/item/organ/cyberimp/cyberware/scrapper/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -311,6 +315,7 @@
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 1
 	tier = CYBERWARE_TIER_1
+	aug_overlay = "shock_coils"
 	organ_traits = list(TRAIT_NO_SLIP_WATER)
 
 /obj/item/organ/cyberimp/cyberware/shock_coils/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
@@ -486,6 +491,7 @@
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 2
 	tier = CYBERWARE_TIER_1
+	aug_overlay = "dermal_mesh"
 	/// Armor mixed into the bearer's physiology while installed.
 	var/datum/armor/mesh_armor = /datum/armor/cyberware_dermal_mesh
 

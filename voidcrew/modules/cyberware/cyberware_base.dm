@@ -23,6 +23,10 @@
 	name = "cyberware"
 	desc = "Aftermarket chrome. Someone sat in a parlor chair for this."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	// Worn look: ware that reads from outside the body sets aug_overlay to a
+	// state in this sheet and tg's bodypart-overlay pipeline draws it ON the
+	// bearer, under clothing — stack enough chrome and you stop looking human.
+	aug_icon = 'voidcrew/modules/cyberware/icons/cyberware_worn.dmi'
 	organ_flags = ORGAN_ROBOTIC
 	failing_desc = "is dark and inert — browned out, EMP-scrambled, or plain broken."
 	/// Neural load this ware puts on its bearer. 0-12; see the tier bands.
@@ -164,6 +168,11 @@
 	name = "arm cyberware"
 	desc = "Aftermarket arm hardware. Folds away until you want it."
 	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi'
+	// Worn look (see the cyberware base above): the arm pipeline derives
+	// "[aug_overlay]_left/_right" from the installed zone on its own. No
+	// separate hand states in our sheet, so the hand overlay stays off.
+	aug_icon = 'voidcrew/modules/cyberware/icons/cyberware_worn.dmi'
+	hand_state = FALSE
 	/// Neural load this ware puts on its bearer.
 	var/chrome_load = 1
 	/// CYBERWARE_TIER_*, drives accent colours and the parlor experience.

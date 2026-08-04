@@ -446,6 +446,7 @@
 	w_class = WEIGHT_CLASS_SMALL
 	chrome_load = 3
 	tier = CYBERWARE_TIER_2
+	aug_overlay = "hopper"
 	actions_types = list(/datum/action/cooldown/cyberware/hopper_leap)
 
 /datum/action/cooldown/cyberware/hopper_leap

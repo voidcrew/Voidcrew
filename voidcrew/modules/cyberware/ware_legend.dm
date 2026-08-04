@@ -49,6 +49,8 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	chrome_load = 12
 	tier = CYBERWARE_TIER_4
+	aug_overlay = "cascade"
+	emissive_overlay = TRUE
 	actions_types = list(/datum/action/cooldown/cyberware/cascade_surge)
 
 /obj/item/organ/cyberimp/cyberware/cascade/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
@@ -237,6 +239,8 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	chrome_load = 10
 	tier = CYBERWARE_TIER_4
+	aug_overlay = "redline"
+	emissive_overlay = TRUE
 	actions_types = list(/datum/action/cooldown/cyberware/redline_burn)
 
 /obj/item/organ/cyberimp/cyberware/redline/on_mob_remove(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
@@ -439,6 +443,7 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	chrome_load = 8
 	tier = CYBERWARE_TIER_4
+	aug_overlay = "piledriver"
 	actions_types = list(/datum/action/cooldown/cyberware/piledriver_leap)
 
 /// The landing shadow: the skyfall indicator pattern, sized for our impact

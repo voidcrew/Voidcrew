@@ -3,7 +3,8 @@
  *
  * Live-mob tests for the chrome load system (voidcrew/modules/cyberware/):
  * the netted capacity gate, the install-context gate, the all-or-nothing
- * over-cap brownout, and the Second Wind Bladder's breath interception.
+ * over-cap brownout, the one-hardware-slot-per-arm invariant, and the
+ * Second Wind Bladder's breath interception.
  *
  * NOTE: unit-test files compile before voidcrew/_DEFINES/, so every fork
  * define is written as a literal with a comment naming it —
@@ -129,7 +130,27 @@
 	TEST_ASSERT(!(heavy.organ_flags & ORGAN_FAILING), "Load dropped back under capacity but the remaining ware is still browned out")
 	TEST_ASSERT(!(overflow.organ_flags & ORGAN_FAILING), "Removed ware kept its brownout outside the body")
 
-/// (d) Second Wind Bladder: blocks suffocation while reserve lasts, runs
+/// (d) One-hardware-per-arm: every piece of arm-zone chrome must claim that
+/// arm's ONE hardware slot (tg's ARM_AUG), so knuckles, myomer lattices,
+/// blades and launchers can never stack on the same arm — a new install
+/// evicts the incumbent instead. Gecko Grip is the deliberate exception:
+/// palm-surface pads, not arm chassis, on its own slot.
+/datum/unit_test/voidcrew_cyberware_arm_slots
+
+/datum/unit_test/voidcrew_cyberware_arm_slots/Run()
+	var/list/exempt = list(/obj/item/organ/cyberimp/cyberware/gecko)
+	var/list/arm_ware = typesof(/obj/item/organ/cyberimp/cyberware) + typesof(/obj/item/organ/cyberimp/arm/toolkit/cyberware)
+	for(var/organ_path in arm_ware)
+		if(organ_path in exempt)
+			continue
+		var/obj/item/organ/ware = organ_path
+		switch(initial(ware.zone))
+			if(BODY_ZONE_R_ARM)
+				TEST_ASSERT_EQUAL(initial(ware.slot), ORGAN_SLOT_RIGHT_ARM_AUG, "[organ_path] is right-arm chrome off the arm hardware slot — it would stack with blades/launchers on the same arm")
+			if(BODY_ZONE_L_ARM)
+				TEST_ASSERT_EQUAL(initial(ware.slot), ORGAN_SLOT_LEFT_ARM_AUG, "[organ_path] is left-arm chrome off the arm hardware slot — it would stack with blades/launchers on the same arm")
+
+/// (e) Second Wind Bladder: blocks suffocation while reserve lasts, runs
 /// dry, and refills in breathable air. Nullspace stands in for hard vacuum —
 /// breathe() sees no environment either way.
 /datum/unit_test/voidcrew_cyberware_second_wind

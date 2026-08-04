@@ -205,6 +205,7 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	chrome_load = 6
 	tier = CYBERWARE_TIER_3
+	aug_overlay = "slabskin"
 
 /obj/item/organ/cyberimp/cyberware/slabskin/on_mob_insert(mob/living/carbon/organ_owner, special = FALSE, movement_flags)
 	. = ..()
@@ -481,6 +482,7 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	chrome_load = 6
 	tier = CYBERWARE_TIER_3
+	aug_overlay = "void_chassis"
 	organ_traits = list(TRAIT_RESISTLOWPRESSURE, TRAIT_RESISTCOLD)
 	actions_types = list(/datum/action/item_action/organ_action/toggle)
 	/// Breathable reserve remaining, in deciseconds of breathing covered.
