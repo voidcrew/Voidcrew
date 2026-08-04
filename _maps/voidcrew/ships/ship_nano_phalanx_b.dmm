@@ -252,6 +252,12 @@
 	},
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/chapel/b)
+"cm" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/bridge/captain/b)
 "cs" = (
 /obj/machinery/button/door{
 	id = "phalanx_bay_north_inner";
@@ -266,6 +272,12 @@
 	},
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/hallway/aft/b)
+"cx" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/cargo/mining/b)
 "cC" = (
 /obj/structure/closet/secure_closet/medical3,
 /turf/open/floor/mineral/titanium/blue,
@@ -367,6 +379,12 @@
 /obj/structure/fireaxecabinet/directional/east,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/b)
+"du" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/cargo/b)
 "dv" = (
 /obj/machinery/door/airlock/medical,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -1145,6 +1163,12 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/phalanx/security/b)
+"mS" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 8
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/medbay/storage/b)
 "nb" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/medbay/b)
@@ -1887,6 +1911,12 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/wood/large,
 /area/shuttle/voidcrew/phalanx/hallway/central/b)
+"wG" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/engineering/b)
 "wH" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/cargo/b)
@@ -2055,6 +2085,12 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/mining/b)
+"yt" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/security/armory/b)
 "yu" = (
 /obj/structure/sign/directions/science{
 	dir = 4
@@ -4390,7 +4426,7 @@ Bq
 Bq
 Bq
 Bq
-oV
+wG
 oZ
 oZ
 oZ
@@ -4761,7 +4797,7 @@ oZ
 oZ
 oZ
 oZ
-MQ
+mS
 Sv
 cb
 jN
@@ -5265,7 +5301,7 @@ wH
 vc
 "}
 (29,1,1) = {"
-ls
+cx
 bb
 FO
 pX
@@ -5294,7 +5330,7 @@ LC
 ha
 lL
 XX
-Vf
+du
 "}
 (30,1,1) = {"
 Rs
@@ -5847,7 +5883,7 @@ oZ
 oZ
 oZ
 oZ
-zo
+cm
 lm
 zc
 xr
@@ -5993,7 +6029,7 @@ Lf
 Lf
 Lf
 Lf
-OO
+yt
 oZ
 oZ
 oZ

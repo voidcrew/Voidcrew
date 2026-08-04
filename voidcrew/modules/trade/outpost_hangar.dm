@@ -35,6 +35,9 @@ GLOBAL_DATUM(outpost_hangar_template, /datum/map_template/outpost_hangar)
 	area_flags = NOTELEPORT
 	flags_1 = NONE
 	ambience_index = AMBIENCE_AWAY
+	// The hangar deck is where a beast that stowed away aboard a docking ship
+	// would step out; see voidcrew/area/megafauna_ban.dm
+	repels_megafauna = TRUE
 
 /// Marks the bottom-left tile of a berth's 56x40 landing rect; consumed at load
 /obj/effect/landmark/outpost_berth_dock

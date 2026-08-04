@@ -378,7 +378,11 @@ GLOBAL_LIST_EMPTY(space_ruin_signals)
 		second_dock_taken = TRUE
 		acting.dock_index = 2
 
-	to_chat(user, span_notice("[acting.dock(src, dock_to_use)]"))
+	// dock() only returns a string when it refuses; a successful start is announced
+	// to the whole crew by ship_notify()
+	var/dock_result = acting.dock(src, dock_to_use)
+	if(dock_result)
+		to_chat(user, span_notice("[dock_result]"))
 
 	concerned = FALSE
 

@@ -327,4 +327,50 @@
 			TEST_FAIL("[hull.type] loaded with no mapped engines anywhere in its footprint")
 		SSshuttle.unload_preview()
 
+/**
+ * # Hull does not stand proud of its docking port
+ *
+ * Loads every purchasable hull and asserts nothing on it sits outward of the mobile
+ * docking port's facing plane.
+ *
+ * Exit-to-exit berths are laid exactly one tile off the anchor - position_dock_across_from()
+ * for ship-to-ship, position_cargo_dock_next_to_ship() for cargo deliveries - and docking
+ * plants the mobile port's origin on that berth tile. So every tile of hull past the port
+ * lands inside the ship being docked with and overwrites it. canDock() is blind to this:
+ * both berth-placement procs derive the stationary port's dwidth/dheight from the mobile
+ * port's own, so the bounds test compares a number against itself.
+ *
+ * The whole face is measured, not just the tile ahead of the port, because a room bolted to
+ * one corner of the bow leaves that tile clear while its far corner still rams the neighbour.
+ *
+ * Players can reach this state by expanding a hull; hull_survey.dm refuses a claim that
+ * would overhang with no door to reseat the port onto, and reseats it automatically when
+ * there is one. A hull that ships this way out of its .dmm has no such recovery, so it is
+ * caught here instead.
+ */
+/datum/unit_test/voidcrew_hull_port_overhang
+	priority = TEST_LONGER
+
+/datum/unit_test/voidcrew_hull_port_overhang/Run()
+	ensure_ship_upgrades_initialized()
+	var/checked = 0
+	for(var/datum/map_template/shuttle/voidcrew/hull as anything in get_purchasable_ship_templates())
+		// Full preview lifecycle both sides of the load: leftover preview state from a
+		// previous iteration (or anything else) wedges load_template forever.
+		SSshuttle.unload_preview()
+		SSshuttle.load_template(hull)
+		var/obj/docking_port/mobile/port = SSshuttle.preview_shuttle
+		if(!port)
+			TEST_FAIL("[hull.type] failed to load as a preview template")
+			continue
+		checked++
+		var/list/overhang = hull_port_overhang(port, null)
+		if(overhang[1] > 0)
+			var/turf/worst = overhang[2]
+			TEST_FAIL("[hull.type]: [overhang[1]] tile\s of hull stand out past the docking port, \
+				worst at ([worst?.x],[worst?.y]) ([worst?.type]). Move the mapped port onto the \
+				outermost hull door, or this ship overwrites whatever it docks with.")
+		SSshuttle.unload_preview()
+	TEST_ASSERT(checked >= 5, "only [checked] purchasable hulls were checked for port overhang")
+
 #undef SHIP_MODULE_MAP_ROOT

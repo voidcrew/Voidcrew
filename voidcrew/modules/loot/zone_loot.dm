@@ -1,11 +1,17 @@
 /**
  * # Zone-Aware Loot Cache
  *
- * One generic container that rolls its contents from a per-zone loot table
- * when it spawns: the same cache type gives mild pickings in the safe outer
- * ring and the good stuff deep in the red. Loot tiers by where it *drops*
- * (source danger), so the zone is locked in at spawn — hauling an unopened
- * cache somewhere else doesn't change what's inside.
+ * One generic container that rolls its contents when it spawns. Every cache
+ * of a theme draws from the SAME four-tier pool no matter where it sits; the
+ * overmap zone decides only how many draws it gets and how the odds lean
+ * across those tiers. A green cache can pay the top of its theme, it just
+ * rarely does; a red cache pays more items and reaches the top constantly.
+ *
+ * This is the same contract zones already have with planet ore, fauna and
+ * weather (voidcrew/_DEFINES/overmap_zones.dm): deeper bands scale AMOUNTS
+ * and ODDS, never the kinds on offer. There is no band-locked content and no
+ * separate "rare" cache variant — a crew in safe space is on the same table
+ * as everyone else, playing it at longer odds.
  *
  * Caches are placed by MAPPING ruin templates by hand (no automatic
  * spawning), and their value is pinned to where the mapper put them: the
@@ -17,20 +23,24 @@
  * outpost reservations, planet z-levels) back to their overmap tile and
  * retries while the level finishes registering. The closet's lazy
  * PopulateContents() (first open or break) is the last chance, after which
- * an unresolved cache counts as green — the weakest table.
+ * an unresolved cache counts as green — the shortest, longest-odds profile.
  *
  * Subtypes are one-liner configs: each points at a /datum/loot_theme
- * (themes/<theme>.dm) that owns the six tables, the guard-marker pairing
- * and the shop-SKU cross-references. /rare variants read the theme's rare
- * tables ("the top of the zone's table").
+ * (themes/<theme>.dm) that owns the four tier tables, the guard-marker
+ * pairing and the shop-SKU cross-references.
  *
  * Contents roll WITHOUT replacement within one cache: a single cache can
- * never pay the same prize twice, which is what keeps the rare tables'
- * one-of-a-kind items unique per cache (see the uniques file headers).
+ * never pay the same prize twice. Uniqueness is per-cache only — there is
+ * deliberately no global already-dropped registry, so a long round can hand
+ * two crews the same one-of-a-kind item.
  *
  * Ballistic guns ship with a spare reload beside them (see
  * GLOB.loot_gun_spare_ammo below), so a gun roll is never a dead roll.
  */
+
+// Tier keys, per-band draw counts and tier odds all live in
+// voidcrew/_DEFINES/loot.dm — the balance surface is one screen there, and it
+// has to be defined before the admin preview verb that reads it back.
 
 /**
  * Ballistic loot guns -> one spare reload that spawns beside them.
@@ -82,11 +92,10 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 	var/loot_zone
 	/// The turf the cache spawned on — zone resolution is pinned to this, never the current position
 	var/turf/spawn_turf
-	/// How many loot rolls the cache gets
-	var/loot_rolls_min = 2
-	var/loot_rolls_max = 3
-	/// Rare variants roll from the theme's rare tables instead (falling back to the normal table)
-	var/rare = FALSE
+	/// Extra draws on top of the band's roll, for caches that are a deliberate
+	/// prize rather than scenery (a bought premium cache, a jackpot drop).
+	/// Scales AMOUNT only — a bonus cache reaches no content a plain one can't.
+	var/bonus_draws = 0
 
 /obj/structure/closet/crate/zone_loot/Destroy()
 	spawn_turf = null
@@ -111,24 +120,44 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 	. = ..()
 	// Last chance: resolve against the spawn point (NOT the current
 	// position — moving the cache must never change its value), else it
-	// counts as the safe ring's weakest table
+	// falls back to green: the fewest draws at the longest odds
 	if(isnull(loot_zone))
 		loot_zone = SSovermap_zones.get_zone_type_anywhere(spawn_turf)
 	if(isnull(loot_zone))
 		loot_zone = ZONE_GREEN
 	spawn_turf = null
-	var/list/table = get_loot_table(loot_zone)
-	if(!length(table))
+
+	var/datum/loot_theme/loot_theme = GLOB.loot_themes[theme]
+	if(!loot_theme)
 		return
-	// draw without replacement: one cache never rolls the same entry twice
-	table = table.Copy()
-	for(var/_ in 1 to rand(loot_rolls_min, loot_rolls_max))
-		if(!length(table))
-			break
-		var/loot_path = pick_weight(table)
+
+	// Draw without replacement, per tier: one cache never pays the same entry
+	// twice. Each tier keeps its own working copy so exhausting the uniques
+	// shelf can't eat into the tier below it.
+	var/list/pools = list(
+		"[LOOT_TIER_COMMON]" = loot_theme.loot_common?.Copy(),
+		"[LOOT_TIER_UNCOMMON]" = loot_theme.loot_uncommon?.Copy(),
+		"[LOOT_TIER_PRIME]" = loot_theme.loot_prime?.Copy(),
+		"[LOOT_TIER_UNIQUE]" = loot_theme.loot_uniques?.Copy(),
+	)
+
+	var/draws_min = ZONE_LOOT_DRAWS_MIN_GREEN
+	var/draws_max = ZONE_LOOT_DRAWS_MAX_GREEN
+	var/list/tier_odds = ZONE_LOOT_ODDS_GREEN
+	switch(loot_zone)
+		if(ZONE_RED)
+			draws_min = ZONE_LOOT_DRAWS_MIN_RED
+			draws_max = ZONE_LOOT_DRAWS_MAX_RED
+			tier_odds = ZONE_LOOT_ODDS_RED
+		if(ZONE_YELLOW)
+			draws_min = ZONE_LOOT_DRAWS_MIN_YELLOW
+			draws_max = ZONE_LOOT_DRAWS_MAX_YELLOW
+			tier_odds = ZONE_LOOT_ODDS_YELLOW
+
+	for(var/_ in 1 to rand(draws_min, draws_max) + bonus_draws)
+		var/loot_path = draw_from_tier(pools, pick_weight(tier_odds))
 		if(!loot_path)
 			break
-		table -= loot_path
 		new loot_path(src)
 		// a looted ballistic brings one spare reload with it; energy guns
 		// aren't in the map and need nothing
@@ -137,16 +166,24 @@ GLOBAL_LIST_INIT(loot_gun_spare_ammo, list(
 			new spare_ammo(src)
 
 /**
- * The weighted table for a zone, honoring the rare flag, read from the
- * cache's loot theme.
+ * Pulls one entry out of `pools` at the requested tier, removing it so the
+ * cache can't roll it again.
+ *
+ * A tier that has been drawn dry (or that a theme never authored) walks DOWN
+ * to the next tier rather than wasting the draw — a cache always pays what it
+ * promised, and the failure direction is toward the commoner item, never a
+ * free upgrade. Returns null only when every tier is empty.
  */
-/obj/structure/closet/crate/zone_loot/proc/get_loot_table(zone_type)
-	var/datum/loot_theme/loot_theme = GLOB.loot_themes[theme]
-	if(!loot_theme)
-		return null
-	switch(zone_type)
-		if(ZONE_RED)
-			return (rare && length(loot_theme.rare_loot_red)) ? loot_theme.rare_loot_red : loot_theme.loot_red
-		if(ZONE_YELLOW)
-			return (rare && length(loot_theme.rare_loot_yellow)) ? loot_theme.rare_loot_yellow : loot_theme.loot_yellow
-	return (rare && length(loot_theme.rare_loot_green)) ? loot_theme.rare_loot_green : loot_theme.loot_green
+/obj/structure/closet/crate/zone_loot/proc/draw_from_tier(list/pools, tier)
+	if(isnull(tier))
+		tier = LOOT_TIER_COMMON
+	for(var/attempt in text2num(tier) to 1 step -1)
+		var/list/pool = pools["[attempt]"]
+		if(!length(pool))
+			continue
+		var/loot_path = pick_weight(pool)
+		if(!loot_path)
+			continue
+		pool -= loot_path
+		return loot_path
+	return null

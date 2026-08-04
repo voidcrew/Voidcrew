@@ -1185,6 +1185,9 @@
 	var/list/turfs = list()
 	turfs[T] = TRUE
 	expand_shuttle(user, port, turfs, list())
+	// Every drone-built tile is credited as weightless without this - see
+	// recount_hull_after_expansion() in hull_survey.dm for why.
+	recount_hull_after_expansion(port)
 
 	return TRUE
 
@@ -1216,70 +1219,87 @@
 // ============================================
 
 /**
- * Checks if an airlock is on the edge of the shuttle (has adjacent non-shuttle turf)
+ * Checks if a door is on the edge of the shuttle (has adjacent non-shuttle turf)
  */
-/obj/machinery/computer/camera_advanced/base_construction/ship/proc/is_edge_airlock(obj/machinery/door/airlock/airlock, obj/docking_port/mobile/port)
-	var/turf/airlock_turf = get_turf(airlock)
-	if(!airlock_turf)
-		return FALSE
-
-	// Check cardinal directions for non-shuttle areas
-	for(var/check_dir in GLOB.cardinals)
-		var/turf/adjacent = get_step(airlock_turf, check_dir)
-		if(!adjacent)
-			continue
-		var/area/adj_area = get_area(adjacent)
-		if(!(adj_area in port.shuttle_areas))
-			return TRUE // This airlock is on the edge
-
-	return FALSE
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/is_edge_airlock(obj/machinery/door/door, obj/docking_port/mobile/port)
+	// Shared with the fan bookkeeping in hull_survey.dm, which has to make the same
+	// edge-or-interior call about the tile a relocated port just left.
+	return hull_turf_on_edge(get_turf(door), port)
 
 /**
- * Checks if the docking port is on the edge of the shuttle
- * The docking port must have non-shuttle area in the direction it faces for docking to work
+ * Checks that no part of the hull stands proud of the docking port.
+ *
+ * This is the whole docking face, not just the tile ahead of the port: hull_port_overhang()
+ * in hull_survey.dm explains why any tile past the port's plane - at any lateral offset -
+ * lands inside whatever the ship berths against. The old single-tile test passed happily
+ * on an L-shaped extension bolted to one corner of the bow while the far corner was already
+ * set up to drive through the other ship.
  */
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/is_docking_port_on_edge()
+	return get_port_overhang() <= 0
+
+/// Tiles of hull standing out past the docking port. 0 is the healthy state.
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_port_overhang()
 	var/obj/docking_port/mobile/port = get_docking_port()
 	if(!port)
-		return FALSE
-
-	var/turf/port_turf = get_turf(port)
-	if(!port_turf)
-		return FALSE
-
-	// The docking port's dir points INTO the ship
-	// So the docking entrance is in the REVERSE direction
-	var/docking_dir = REVERSE_DIR(port.dir)
-
-	// Check if the tile in the docking direction is outside the shuttle
-	var/turf/dock_facing_turf = get_step(port_turf, docking_dir)
-	if(!dock_facing_turf)
-		return TRUE // Edge of map, technically on edge
-
-	var/area/facing_area = get_area(dock_facing_turf)
-	return !(facing_area in port.shuttle_areas)
+		return 0
+	var/list/overhang = hull_port_overhang(port, null)
+	return overhang[1]
 
 /**
- * Gets a list of all valid edge airlocks on this ship
+ * Gets a list of all doors on the edge of the hull that the docking port could sit on.
+ *
+ * Airlocks and firelocks both count - see hull_port_door() for why, and for why blast doors
+ * do not.
  */
-/obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_valid_airlocks()
-	var/list/valid_airlocks = list()
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_valid_port_doors()
+	var/list/valid_doors = list()
 
 	var/obj/docking_port/mobile/port = get_docking_port()
 	if(!port)
-		return valid_airlocks
+		return valid_doors
 
-	// Iterate through shuttle areas to find airlocks
+	// Iterate through shuttle areas to find doors
 	for(var/area/shuttle_area as anything in port.shuttle_areas)
-		for(var/obj/machinery/door/airlock/airlock in shuttle_area)
-			// Check if airlock is on the edge (has adjacent non-shuttle turf)
-			if(is_edge_airlock(airlock, port))
-				valid_airlocks += airlock
+		for(var/obj/machinery/door/door in shuttle_area)
+			if(!is_hull_port_door(door))
+				continue
+			// Check if the door is on the edge (has adjacent non-shuttle turf)
+			if(is_edge_airlock(door, port))
+				valid_doors += door
 
-	return valid_airlocks
+	return valid_doors
 
 /**
- * Resets tiny fans - removes all existing fans and adds new ones to all edge airlocks
+ * Every turf a tiny fan belongs on: the edge doors, plus the docking port's own tile.
+ *
+ * The port tile is included whatever door is standing on it. A hull that grew past its old
+ * airlock has its port reseated onto whichever door the crew put on the new outer face (see
+ * hull_port_reseat_target()), and that tile is exactly where the ship's air meets vacuum
+ * when it berths - so it needs a fan even when the door is a firelock rather than an airlock.
+ */
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/get_fan_turfs()
+	var/list/fan_turfs = list()
+
+	for(var/obj/machinery/door/door as anything in get_valid_port_doors())
+		var/turf/door_turf = get_turf(door)
+		if(door_turf)
+			fan_turfs |= door_turf
+
+	var/obj/docking_port/mobile/port = get_docking_port()
+	var/turf/port_turf = get_turf(port)
+	if(port_turf && hull_port_door(port_turf))
+		fan_turfs |= port_turf
+
+	return fan_turfs
+
+/**
+ * Resets tiny fans - removes all existing fans and adds new ones to every fan turf.
+ *
+ * Refuses outright when there is nowhere to put a fan. The removal pass used to run first
+ * unconditionally, so a hull with no edge door left - which is exactly the state an
+ * expansion over the old airlock produces - was stripped of every fan it had and told the
+ * operation succeeded.
  */
 /obj/machinery/computer/camera_advanced/base_construction/ship/proc/reset_fans()
 	if(!can_operate())
@@ -1290,6 +1310,14 @@
 	var/obj/docking_port/mobile/port = get_docking_port()
 	if(!port)
 		last_operation_message = "No shuttle detected."
+		last_operation_success = FALSE
+		return FALSE
+
+	var/list/fan_turfs = get_fan_turfs()
+	if(!length(fan_turfs))
+		last_operation_message = "No hull doors to fan. Fit an airlock or firelock on the outer \
+			hull before resetting - clearing the fans without replacing them would leave the ship \
+			venting through every opening."
 		last_operation_success = FALSE
 		return FALSE
 
@@ -1312,22 +1340,18 @@
 			qdel(fan)
 			fans_removed++
 
-	// Add new tiny fans to all edge airlocks
-	for(var/obj/machinery/door/airlock/airlock in get_valid_airlocks())
-		var/turf/airlock_turf = get_turf(airlock)
-		if(!airlock_turf)
-			continue
+	for(var/turf/fan_turf as anything in fan_turfs)
 		// Check if there's already a fan here (shouldn't be after removal, but safety check)
 		var/has_fan = FALSE
-		for(var/obj/structure/fans/tiny/existing in airlock_turf)
+		for(var/obj/structure/fans/tiny/existing in fan_turf)
 			has_fan = TRUE
 			break
 		if(!has_fan)
-			new /obj/structure/fans/tiny(airlock_turf)
+			new /obj/structure/fans/tiny(fan_turf)
 			fans_added++
 
 	var/preserved_msg = fans_preserved ? ", [fans_preserved] preserved on blast doors" : ""
-	last_operation_message = "Fans reset: [fans_removed] removed, [fans_added] added to edge airlocks[preserved_msg]."
+	last_operation_message = "Fans reset: [fans_removed] removed, [fans_added] added to hull doors[preserved_msg]."
 	last_operation_success = TRUE
 	return TRUE
 
@@ -1349,9 +1373,9 @@
 	)
 
 /**
- * Relocates the docking port to a new airlock
+ * Relocates the docking port to a new hull door
  */
-/obj/machinery/computer/camera_advanced/base_construction/ship/proc/relocate_docking_port(obj/machinery/door/airlock/new_airlock)
+/obj/machinery/computer/camera_advanced/base_construction/ship/proc/relocate_docking_port(obj/machinery/door/new_door)
 	if(!can_operate())
 		last_operation_message = "Cannot modify ship while in flight."
 		last_operation_success = FALSE
@@ -1363,25 +1387,30 @@
 		last_operation_success = FALSE
 		return FALSE
 
-	// Validate the airlock is in our shuttle
-	var/area/airlock_area = get_area(new_airlock)
-	if(!(airlock_area in port.shuttle_areas))
-		last_operation_message = "Airlock is not part of this ship."
+	if(!is_hull_port_door(new_door))
+		last_operation_message = "The docking port can only sit on an airlock or a firelock."
 		last_operation_success = FALSE
 		return FALSE
 
-	// Validate it's an edge airlock
-	if(!is_edge_airlock(new_airlock, port))
-		last_operation_message = "Airlock must be on the edge of the ship."
+	// Validate the door is in our shuttle
+	var/area/door_area = get_area(new_door)
+	if(!(door_area in port.shuttle_areas))
+		last_operation_message = "That door is not part of this ship."
+		last_operation_success = FALSE
+		return FALSE
+
+	// Validate it's an edge door
+	if(!is_edge_airlock(new_door, port))
+		last_operation_message = "The door must be on the edge of the ship."
 		last_operation_success = FALSE
 		return FALSE
 
 	// Calculate new direction based on adjacent tiles
-	var/turf/airlock_turf = get_turf(new_airlock)
+	var/turf/door_turf = get_turf(new_door)
 	var/outside_dir
 
 	for(var/check_dir in GLOB.cardinals)
-		var/turf/adjacent = get_step(airlock_turf, check_dir)
+		var/turf/adjacent = get_step(door_turf, check_dir)
 		var/area/adj_area = get_area(adjacent)
 		if(!(adj_area in port.shuttle_areas))
 			outside_dir = check_dir
@@ -1406,25 +1435,17 @@
 	var/angle_diff = SIMPLIFY_DEGREES(dir2angle(new_dir) - dir2angle(port.dir) + dir2angle(port.port_direction))
 	var/new_port_direction = angle2dir(angle_diff)
 
-	// Get the current stationary dock before moving (if docked)
-	var/obj/docking_port/stationary/current_dock = port.get_docked()
+	// Moves the port, drags the stationary dock we are sitting on with it, recalculates
+	// dimensions and drops the stale transit berth. Shared with the survey's reseat.
+	hull_reseat_port(port, door_turf, new_dir, new_port_direction)
 
-	// Move the port and update variables
-	port.forceMove(airlock_turf)
-	port.dir = new_dir
-	port.port_direction = new_port_direction
-
-	// Move the stationary dock to the new location to maintain docking relationship
-	if(current_dock)
-		current_dock.forceMove(airlock_turf)
-
-	// Recalculate dimensions
-	port.calculate_docking_port_information()
-
-	// Clear cached transit dock so it regenerates with new orientation
-	if(!QDELETED(port.assigned_transit))
-		qdel(port.assigned_transit, force = TRUE)
-		port.assigned_transit = null
+	var/overhang = get_port_overhang()
+	if(overhang > 0)
+		last_operation_message = "Docking port relocated, but [overhang] metre\s of hull still \
+			stands out past it. Move the port to a door on the outermost plating, or the ship \
+			will drive that section through anything it berths against."
+		last_operation_success = FALSE
+		return TRUE
 
 	last_operation_message = "Docking port relocated successfully. Changes will take effect on next dock."
 	last_operation_success = TRUE
@@ -1498,28 +1519,36 @@
 		data["integrity"] = 100
 		data["overhealth"] = 0
 
-	// Current docking port info
+	// Current docking port info. The overhang scan walks every hull turf, and this runs on
+	// autoupdate, so measure once and derive the rest from it.
+	var/overhang = get_port_overhang()
 	data["currentPort"] = get_current_docking_port_info()
-	data["dockingPortOnEdge"] = is_docking_port_on_edge()
+	data["portOverhang"] = overhang
+	data["dockingPortOnEdge"] = (overhang <= 0)
 
 	// Get the current port turf for comparison
 	var/turf/current_port_turf = get_turf(port)
+	var/outward_dir = port ? REVERSE_DIR(port.dir) : 0
 
-	// Available airlocks
-	var/list/airlock_data = list()
-	for(var/obj/machinery/door/airlock/airlock in get_valid_airlocks())
-		var/turf/T = get_turf(airlock)
+	// Available hull doors the port can be moved to
+	var/list/door_data = list()
+	for(var/obj/machinery/door/door as anything in get_valid_port_doors())
+		var/turf/T = get_turf(door)
 		var/is_current = (T == current_port_turf)
-		var/area/airlock_area = get_area(airlock)
-		airlock_data += list(list(
-			"name" = airlock.name,
-			"ref" = REF(airlock),
+		var/area/door_area = get_area(door)
+		// A door clears the overhang only if it stands on the outermost plane - moving the
+		// port anywhere short of that leaves everything beyond it still sticking out.
+		var/clears_overhang = overhang > 0 && T && hull_port_offset(T, current_port_turf, outward_dir) == overhang
+		door_data += list(list(
+			"name" = door.name,
+			"ref" = REF(door),
 			"x" = T ? T.x : 0,
 			"y" = T ? T.y : 0,
 			"isCurrent" = is_current,
-			"areaName" = airlock_area ? airlock_area.name : "Unknown"
+			"clearsOverhang" = clears_overhang,
+			"areaName" = door_area ? door_area.name : "Unknown"
 		))
-	data["airlocks"] = airlock_data
+	data["portDoors"] = door_data
 
 	// Check if user is in construction mode (controlling drone)
 	data["isInConstructionMode"] = (eyeobj && user.remote_control == eyeobj)
@@ -1548,9 +1577,9 @@
 
 	switch(action)
 		if("relocate_port")
-			var/obj/machinery/door/airlock/target = locate(params["airlock_ref"])
+			var/obj/machinery/door/target = locate(params["door_ref"])
 			if(!target)
-				last_operation_message = "Invalid airlock selected."
+				last_operation_message = "Invalid door selected."
 				last_operation_success = FALSE
 				return TRUE
 			relocate_docking_port(target)

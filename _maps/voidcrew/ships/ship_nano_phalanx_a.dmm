@@ -90,6 +90,12 @@
 /obj/machinery/suit_storage_unit/engine,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/a)
+"cR" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/bridge/captain/a)
 "cS" = (
 /obj/machinery/computer/monitor,
 /turf/open/floor/carpet/executive,
@@ -936,6 +942,12 @@
 "qk" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/phalanx/chapel/a)
+"qx" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 8
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/medbay/storage/a)
 "qC" = (
 /obj/structure/chair/stool,
 /turf/open/floor/iron,
@@ -967,6 +979,12 @@
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/phalanx/medbay/morgue/a)
+"qP" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/security/armory/a)
 "qQ" = (
 /obj/machinery/mass_driver{
 	id = "phalanx_massdriver"
@@ -1449,6 +1467,18 @@
 /obj/effect/mapping_helpers/airlock/access/any/engineering/general,
 /turf/open/floor/engine,
 /area/shuttle/voidcrew/phalanx/engineering/storage/a)
+"zY" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/engineering/a)
+"Ab" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/cargo/mining/a)
 "Af" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -3088,6 +3118,12 @@
 /obj/machinery/light,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/hallway/aft/a)
+"Ze" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/cargo/a)
 "Zi" = (
 /obj/structure/chair/sofa/right{
 	dir = 8
@@ -3187,7 +3223,7 @@ Pu
 Pu
 Pu
 Pu
-YQ
+zY
 oZ
 oZ
 oZ
@@ -3558,7 +3594,7 @@ oZ
 oZ
 oZ
 oZ
-hH
+qx
 lP
 jc
 sA
@@ -4062,7 +4098,7 @@ xM
 de
 "}
 (29,1,1) = {"
-GR
+Ab
 Eq
 WG
 UU
@@ -4091,7 +4127,7 @@ ib
 CM
 Dx
 Zs
-Gk
+Ze
 "}
 (30,1,1) = {"
 dn
@@ -4644,7 +4680,7 @@ oZ
 oZ
 oZ
 oZ
-KT
+cR
 mf
 SZ
 co
@@ -4790,7 +4826,7 @@ vl
 vl
 vl
 vl
-UE
+qP
 oZ
 oZ
 oZ

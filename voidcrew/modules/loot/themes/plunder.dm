@@ -1,10 +1,10 @@
 // =========================================================================
 // PLUNDER THEME — The Scuppers Freeport config (rare_pirate_cove ruin) and
-// every crash site, cove and freeport. Pirate plunder: green =
-// trinkets/booze/small cash, yellow = valuables and serviceable weapons,
-// red = treasure (big cash, precious mats, prize gear). Guarded by pirate
+// every crash site, cove and freeport. Pirate plunder: common =
+// trinkets/booze/small cash, uncommon = valuables and serviceable weapons,
+// prime = treasure (big cash, precious mats, prize gear). Guarded by pirate
 // crews.
-// TODO: review/balance-pass all six tables — first-draft weights and
+// TODO: review/balance-pass all four tiers — first-draft weights and
 // contents, never playtested.
 // =========================================================================
 
@@ -16,7 +16,7 @@
 		/datum/shop_sku/black_market/bulldog_blueprint,
 		/datum/shop_sku/outfitter/carbine_blueprint,
 	)
-	loot_green = list(
+	loot_common = list(
 		/obj/item/stack/spacecash/c100 = 10,
 		/obj/item/reagent_containers/cup/glass/bottle/rum = 10,
 		/obj/item/coin/silver/doubloon = 8,
@@ -28,9 +28,8 @@
 		/obj/item/knife/combat = 4,
 		/obj/item/toy/cards/deck = 4,
 	)
-	loot_yellow = list(
+	loot_uncommon = list(
 		/obj/item/stack/spacecash/c500 = 10,
-		/obj/item/coin/gold/doubloon = 8,
 		/obj/item/gun/ballistic/shotgun/doublebarrel = 7,
 		/obj/item/storage/box/lethalshot = 7,
 		/obj/item/gun/ballistic/revolver = 6,
@@ -44,14 +43,12 @@
 		/obj/item/blueprint/gun/laser_carbine = 3,
 		/obj/item/ship_parts/combat = 7,
 	)
-	loot_red = list(
+	loot_prime = list(
 		/obj/item/stack/spacecash/c1000 = 9,
-		/obj/item/coin/gold/doubloon = 8,
-		/obj/item/gun/ballistic/shotgun/doublebarrel = 6,
 		/obj/item/gun/ballistic/revolver/mateba = 5,
 		/obj/item/gun/ballistic/shotgun/automatic/combat = 5,
 		/obj/item/gun/ballistic/automatic/pistol/deagle = 5,
-		// finished blueprint gun, red only: boarding hardware nobody
+		// finished blueprint gun, prime only: boarding hardware nobody
 		// filed a schematic for
 		/obj/item/gun/ballistic/shotgun/bulldog = 4,
 		/obj/item/melee/energy/sword/pirate = 4,
@@ -61,31 +58,18 @@
 		/obj/item/clothing/head/costume/pirate/captain = 3,
 		/obj/item/blueprint/gun/bulldog = 3,
 		/obj/item/stack/spacecash/c10000 = 2,
-		/obj/item/ship_parts/combat = 8,
 	)
-	// Rare tables: surviving stock entries + this theme's uniques at ~4
-	// (see voidcrew/modules/loot/uniques/plunder.dm and the design doc)
-	rare_loot_green = list(
-		/obj/item/coin/gold/doubloon = 8,
-		/obj/item/stack/spacecash/c500 = 6,
-		/obj/item/gun/ballistic/revolver/c38/detective = 5,
-		/obj/item/toy/cards/deck/cheats = 4,
-		/obj/item/reagent_containers/cup/glass/bottle/bottomless_ration = 4,
-	)
-	rare_loot_yellow = list(
-		/obj/item/gun/ballistic/shotgun/doublebarrel = 8,
-		/obj/item/stack/spacecash/c1000 = 6,
-		/obj/item/gun/ballistic/automatic/tommygun = 6,
-		/obj/item/gun/magic/hook/marlinspike = 4,
-		/obj/item/clothing/glasses/eyepatch/fences_eye = 4,
-	)
-	rare_loot_red = list(
-		/obj/item/gun/ballistic/revolver/mateba = 6,
-		/obj/item/gun/ballistic/shotgun/bulldog = 3,
-		/obj/item/stack/sheet/mineral/diamond = 5,
-		/obj/item/claymore/cutlass/parley = 4,
-		/obj/item/heave_ho = 4,
-		/obj/item/gun/ballistic/shotgun/musket/no_quarter = 3,
+	// One-of-a-kind authored prizes, drawn as the fourth tier from any
+	// band (weight = how shallow the item used to sit: 3 was reachable
+	// early, 1 was the bottom of the deepest cache).
+	loot_uniques = list(
+		/obj/item/reagent_containers/cup/glass/bottle/bottomless_ration = 3,
+		/obj/item/toy/cards/deck/cheats = 3,
+		/obj/item/clothing/glasses/eyepatch/fences_eye = 2,
+		/obj/item/gun/magic/hook/marlinspike = 2,
+		/obj/item/claymore/cutlass/parley = 1,
+		/obj/item/gun/ballistic/shotgun/musket/no_quarter = 1,
+		/obj/item/heave_ho = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/plunder
@@ -94,11 +78,6 @@
 	icon_state = "wooden"
 	base_icon_state = "wooden"
 	theme = /datum/loot_theme/plunder
-
-/obj/structure/closet/crate/zone_loot/plunder/rare
-	name = "quartermaster's strongbox"
-	desc = "A strongbox that never made it onto any quartermaster's books. Nobody splits shares on cargo nobody declared."
-	rare = TRUE
 
 /// Pirate crews: scattered faction pirates. Fits crash sites, coves, freeports.
 /obj/effect/zone_mobs/pirate

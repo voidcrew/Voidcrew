@@ -1,14 +1,14 @@
 // =========================================================================
-// SYNDICATE THEME — contraband tiered by spawn zone. Tables follow the
+// SYNDICATE THEME — contraband tiered by what it's worth. Tables follow the
 // black-market shop's price ladder (modules/trade/shop.dm and the SKUs in
 // theme_skus below) so the gamble channel and the certainty channel stay on
 // one curve.
-// TODO: review/balance-pass all six tables — first-draft weights and
+// TODO: review/balance-pass all four tiers — first-draft weights and
 // contents, never playtested. Tune weights against the black-market voucher
 // prices in shop_catalog_black_market.dm.
 // Weapon blueprints are seeded across both channels: the outfitter sells the
-// c20r/wt550/carbine schematics (yellow-tier), the black market sells the
-// l6_saw/sniper/bulldog three (red-tier) — the same blueprints ride these
+// c20r/wt550/carbine schematics (uncommon-tier), the black market sells the
+// l6_saw/sniper/bulldog three (prime-tier) — the same blueprints ride these
 // cache tables at matching tiers. Craft them from the recipe anywhere, once
 // you have the part and a firing pin (modules/weapons_bench/blueprint.dm).
 // =========================================================================
@@ -30,7 +30,7 @@
 		/datum/shop_sku/outfitter/wt550_blueprint,
 		/datum/shop_sku/outfitter/carbine_blueprint,
 	)
-	loot_green = list(
+	loot_common = list(
 		/obj/item/soap/syndie = 10,
 		/obj/item/storage/fancy/cigarettes/cigpack_syndicate = 10,
 		/obj/item/knife/combat = 8,
@@ -41,13 +41,8 @@
 		/obj/item/grenade/empgrenade = 5,
 		/obj/item/storage/medkit/tactical = 4,
 	)
-	loot_yellow = list(
-		/obj/item/ammo_box/magazine/m9mm = 10,
-		/obj/item/gun/ballistic/automatic/pistol = 8,
-		/obj/item/storage/medkit/tactical = 7,
-		/obj/item/knife/combat = 6,
+	loot_uncommon = list(
 		/obj/item/grenade/c4 = 6,
-		/obj/item/grenade/empgrenade = 6,
 		/obj/item/gun/ballistic/automatic/mini_uzi = 6,
 		/obj/item/ammo_box/a357 = 5,
 		/obj/item/gun/ballistic/automatic/pistol/deagle = 4,
@@ -60,17 +55,10 @@
 		/obj/item/blueprint/gun/laser_carbine = 3,
 		/obj/item/ship_parts/combat = 8,
 	)
-	loot_red = list(
-		/obj/item/ammo_box/a357 = 9,
-		/obj/item/gun/ballistic/revolver = 8,
-		/obj/item/storage/medkit/tactical = 8,
-		/obj/item/grenade/c4 = 8,
-		/obj/item/clothing/glasses/thermal/syndi = 6,
-		/obj/item/clothing/shoes/chameleon/noslip = 6,
-		/obj/item/card/id/advanced/chameleon = 6,
+	loot_prime = list(
 		/obj/item/gun/ballistic/shotgun/automatic/combat = 5,
 		/obj/item/melee/energy/sword/saber = 4,
-		// finished blueprint gun, red only: an operative's issued weapon,
+		// finished blueprint gun, prime only: an operative's issued weapon,
 		// not the schematic the black market fences
 		/obj/item/gun/ballistic/automatic/c20r = 4,
 		/obj/item/pen/sleepy = 4,
@@ -79,35 +67,21 @@
 		/obj/item/blueprint/gun/l6_saw = 3,
 		/obj/item/blueprint/gun/sniper_rifle = 3,
 		/obj/item/blueprint/gun/bulldog = 3,
-		/obj/item/ship_parts/combat = 12,
-	)
-	// Rare tables: 2-3 surviving stock entries + this theme's uniques at ~4
-	// (see voidcrew/modules/loot/uniques/syndicate.dm and the design doc)
-	rare_loot_green = list(
-		/obj/item/storage/medkit/tactical = 8,
-		/obj/item/gun/ballistic/automatic/pistol = 6,
-		/obj/item/suppressor = 6,
-		/obj/item/radio/listening_coin = 4,
-		/obj/item/clothing/gloves/courier = 4,
-	)
-	rare_loot_yellow = list(
-		/obj/item/gun/ballistic/revolver = 8,
-		/obj/item/clothing/glasses/thermal/syndi = 6,
-		/obj/item/gun/ballistic/automatic/mini_uzi = 5,
-		/obj/item/static_cuff = 4,
-		/obj/item/gun/ballistic/revolver/c38/housecall = 4,
-	)
-	rare_loot_red = list(
-		/obj/item/melee/energy/sword/saber = 8,
-		// the finished pair, boss-guarded: everywhere else these are
-		// schematics and a long trip to a protolathe
+		// the deepest slice of the theme, previously reachable only through
+		// a sealed cache: now the long tail of prime, open to any band
 		/obj/item/gun/ballistic/automatic/l6_saw = 3,
 		/obj/item/gun/ballistic/rifle/sniper_rifle = 3,
-		/obj/item/blueprint/gun/l6_saw = 5,
-		/obj/item/blueprint/gun/sniper_rifle = 5,
-		/obj/item/blueprint/gun/bulldog = 5,
-		/obj/item/clothing/suit/hooded/cloak/second_shadow = 4,
-		/obj/item/knife/understudy = 4,
+	)
+	// One-of-a-kind authored prizes, drawn as the fourth tier from any
+	// band (weight = how shallow the item used to sit: 3 was reachable
+	// early, 1 was the bottom of the deepest cache).
+	loot_uniques = list(
+		/obj/item/clothing/gloves/courier = 3,
+		/obj/item/radio/listening_coin = 3,
+		/obj/item/gun/ballistic/revolver/c38/housecall = 2,
+		/obj/item/static_cuff = 2,
+		/obj/item/clothing/suit/hooded/cloak/second_shadow = 1,
+		/obj/item/knife/understudy = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/syndicate
@@ -117,10 +91,13 @@
 	base_icon_state = "syndicrate"
 	theme = /datum/loot_theme/syndicate
 
-/obj/structure/closet/crate/zone_loot/syndicate/rare
+/// The black market's premium cache SKU (shop_catalog_black_market.dm). Same
+/// tables as any other syndicate cache — it is simply packed fuller, which is
+/// what the extra vouchers buy.
+/obj/structure/closet/crate/zone_loot/syndicate/reinforced
 	name = "reinforced syndicate cache"
 	desc = "A matte-black drop crate in an extra layer of plating. Whatever's inside, somebody thought it was worth the postage."
-	rare = TRUE
+	bonus_draws = 2
 
 /// Syndicate holdouts: operatives left guarding whatever the base was for.
 /obj/effect/zone_mobs/syndicate

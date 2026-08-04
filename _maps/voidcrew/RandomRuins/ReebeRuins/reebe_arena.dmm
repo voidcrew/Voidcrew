@@ -8,7 +8,7 @@
 /turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "ac" = (
-/obj/structure/closet/crate/zone_loot/armory/rare,
+/obj/structure/closet/crate/zone_loot/armory,
 /turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
 "ai" = (
@@ -254,10 +254,6 @@
 /obj/effect/mob_spawn/corpse/human/nanotrasensoldier,
 /turf/open/floor/bronze/reebe,
 /area/ruin/reebe)
-"Yz" = (
-/obj/structure/lattice/clockwork,
-/turf/template_noop,
-/area/template_noop)
 "Zx" = (
 /obj/structure/mirror/magic/lesser{
 	pixel_x = 32
@@ -475,7 +471,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 vP
 pm
 pm
@@ -485,7 +481,7 @@ pm
 pm
 pm
 FK
-Yz
+bi
 IC
 IC
 IC
@@ -529,15 +525,15 @@ IC
 IC
 IC
 ai
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
+bi
+bi
+bi
+bi
+bi
+bi
+bi
+bi
+bi
 vP
 pm
 pm
@@ -547,15 +543,15 @@ pm
 pm
 pm
 FK
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
+bi
+bi
+bi
+bi
+bi
+bi
+bi
+bi
+bi
 ai
 IC
 IC
@@ -599,7 +595,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 vP
 pm
 pm
@@ -609,7 +605,7 @@ pm
 pm
 pm
 FK
-Yz
+bi
 IC
 IC
 IC
@@ -1939,7 +1935,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -2001,7 +1997,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -2063,7 +2059,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -2125,7 +2121,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -2187,7 +2183,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -2249,7 +2245,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -2311,7 +2307,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -2373,7 +2369,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -3117,7 +3113,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -3179,7 +3175,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -3241,7 +3237,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -3303,7 +3299,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -3365,7 +3361,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -3427,7 +3423,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -3489,7 +3485,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -3551,7 +3547,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 IC
 IC
 IC
@@ -4815,7 +4811,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 vP
 pm
 pm
@@ -4825,7 +4821,7 @@ pm
 pm
 pm
 FK
-Yz
+bi
 IC
 IC
 IC
@@ -4869,15 +4865,15 @@ IC
 IC
 IC
 ai
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
+bi
+bi
+bi
+bi
+bi
+bi
+bi
+bi
+bi
 vP
 pm
 pm
@@ -4887,15 +4883,15 @@ Em
 pm
 pm
 FK
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
-Yz
+bi
+bi
+bi
+bi
+bi
+bi
+bi
+bi
+bi
 FT
 IC
 IC
@@ -4939,7 +4935,7 @@ IC
 IC
 IC
 IC
-Yz
+bi
 vP
 pm
 pm
@@ -4949,7 +4945,7 @@ pm
 pm
 pm
 FK
-Yz
+bi
 IC
 IC
 IC

@@ -508,7 +508,11 @@
 /turf/open/floor/carpet/neon/Initialize(mapload)
 	. = ..()
 	AddElement(/datum/element/decal, neon_icon || icon, neon_icon_state || base_icon_state, dir, null, null, alpha, neon_color, smoothing_junction)
-	AddElement(/datum/element/decal, neon_icon || icon, neon_icon_state || base_icon_state, dir, EMISSIVE_PLANE, null, emissive_alpha, GLOB.emissive_color, smoothing_junction)
+	// The emissive needs an explicit layer. We live on the floor plane, which is topdown, so our layer is ~10000.
+	// A FLOAT_LAYER decal would inherit that layer while sitting on the emissive plane, where it would draw above
+	// every emissive blocker in the world and glow straight through mobs, items and walls.
+	// emissive_appearance() remaps floor plane layers into the FLOOR_EMISSIVE band for this exact reason.
+	AddElement(/datum/element/decal, neon_icon || icon, neon_icon_state || base_icon_state, dir, EMISSIVE_PLANE, FLOOR_EMISSIVE_START_LAYER, emissive_alpha, GLOB.emissive_color, smoothing_junction)
 
 /turf/open/floor/carpet/neon/simple
 	name = "simple neon carpet"

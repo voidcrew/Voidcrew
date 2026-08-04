@@ -153,7 +153,9 @@
 		list("type" = /obj/item/stack/sheet/plasteel, "name" = "plasteel sheets", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/stack/ore/titanium, "name" = "titanium ore", "amount" = 12, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/stack/ore/silver, "name" = "silver ore", "amount" = 10, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
-		list("type" = /obj/item/stack/cable_coil, "name" = "cable coil", "amount" = 60, "difficulty" = MISSION_DIFFICULTY_EASY),
+		// Stack asks are settled from ONE stack, so never ask above max_amount -
+		// cable coil caps at MAXCOIL (30) and a bigger ask can never be paid
+		list("type" = /obj/item/stack/cable_coil, "name" = "cable coil", "amount" = 30, "difficulty" = MISSION_DIFFICULTY_EASY),
 		list("type" = /obj/item/stack/sheet/animalhide/goliath_hide, "name" = "goliath hide plates", "amount" = 4, "difficulty" = MISSION_DIFFICULTY_HARD),
 		list("type" = /obj/item/stack/sheet/sinew, "name" = "beast sinew", "amount" = 4, "difficulty" = MISSION_DIFFICULTY_MEDIUM),
 		list("type" = /obj/item/stack/glacial_core, "name" = "glacial cores", "amount" = 5, "difficulty" = MISSION_DIFFICULTY_MEDIUM),

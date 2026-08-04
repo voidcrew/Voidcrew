@@ -105,6 +105,19 @@
 	if(!length(job_slot_definitions))
 		return list()
 
+	// The rest of the crew answers to the ship's officer - the captain-tier slot. Found by
+	// flag rather than by position: modules append slots of their own, and the roundstart
+	// job pool splices several themes together, so index 1 is not reliably the captain.
+	var/supervisor_name
+	for(var/list/job_definition as anything in job_slot_definitions)
+		if(islist(job_definition) && job_definition["officer"])
+			supervisor_name = job_definition["name"]
+			break
+	if(!supervisor_name)
+		var/list/first_definition = job_slot_definitions[1]
+		if(islist(first_definition))
+			supervisor_name = first_definition["name"]
+
 	var/list/job_list = list()
 	for(var/list/job_definition as anything in job_slot_definitions)
 		// Skip malformed job definitions
@@ -127,7 +140,13 @@
 		job_slot.officer = !!job_definition["officer"]
 		job_slot.outfit = job_outfit
 		job_slot.job_flags = JOB_CREW_MANIFEST|JOB_EQUIP_RANK|JOB_NEW_PLAYER_JOINABLE|JOB_CREW_MEMBER|JOB_ASSIGN_QUIRKS|JOB_CAN_BE_INTERN
-		job_slot.supervisors = "\the [job_slot_definitions[1]["name"] || "Captain"]"
+		// A captain-tier job sits at the top of the ship's chain of command and answers to
+		// nobody. Null supervisors makes get_spawn_message_information() drop the "you answer
+		// directly to ..." line rather than pointing the officer at themselves.
+		// The title check covers definitions that never set the flag: get_captain_job() falls
+		// back to the first slot, so the first slot is captain-tier there too.
+		var/is_captain_tier = job_slot.officer || (supervisor_name && job_slot.title == supervisor_name)
+		job_slot.supervisors = is_captain_tier ? null : "\the [supervisor_name || "Captain"]"
 		job_slot.job_category = job_definition["category"]
 
 		var/initial_slots = job_definition["slots"] || 1

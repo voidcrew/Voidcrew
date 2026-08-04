@@ -1,12 +1,12 @@
 // =========================================================================
 // INDUSTRIAL THEME — the Helios-Betna Forgeworks config (rare_foundry ruin)
-// and every dead factory and freight depot. Foundry output: green = common
-// material stacks and tier-2 parts, yellow = good alloys and tier-3 parts,
-// red = premium materials and tier-4 parts, with the RPED/loader-suit prize
-// gear living in the rare tables. Guarded by malfunctioning automation.
+// and every dead factory and freight depot. Foundry output: common =
+// material stacks and tier-2 parts, uncommon = good alloys and tier-3 parts,
+// prime = premium materials and tier-4 parts, with the RPED/loader-suit
+// prize gear on the uniques shelf. Guarded by malfunctioning automation.
 //  - flamethrower/full came over from the retired icemoon-portal jackpot
-//    (see cave_entrance.dm): industrial plant equipment, yellow-tier.
-// TODO: review/balance-pass all six tables — first-draft weights and
+//    (see cave_entrance.dm): industrial plant equipment, uncommon-tier.
+// TODO: review/balance-pass all four tiers — first-draft weights and
 // contents, never playtested. Tune against outpost shop material prices and
 // the Boffin stall parts SKUs in theme_skus.
 // =========================================================================
@@ -22,7 +22,7 @@
 		/datum/shop_sku/skunk/high_cell,
 		/datum/shop_sku/skunk/rped,
 	)
-	loot_green = list(
+	loot_common = list(
 		/obj/item/stack/sheet/iron/fifty = 10,
 		/obj/item/stack/sheet/glass/fifty = 10,
 		/obj/item/stack/rods/fifty = 8,
@@ -38,8 +38,7 @@
 		/obj/item/stock_parts/power_store/cell/high = 4,
 		/obj/item/stack/sheet/plasteel/twenty = 4,
 	)
-	loot_yellow = list(
-		/obj/item/stack/sheet/plasteel/twenty = 10,
+	loot_uncommon = list(
 		/obj/item/stack/sheet/mineral/titanium/fifty = 8,
 		/obj/item/stack/sheet/mineral/plasma/thirty = 7,
 		/obj/item/stack/sheet/mineral/silver/fifty = 6,
@@ -52,16 +51,14 @@
 		// asset-denial kit, and the answer to this theme's own hivebot
 		// guards: ion weapons wreck automation
 		/obj/item/gun/energy/ionrifle/carbine = 6,
-		/obj/item/gun/ballistic/automatic/proto = 5,
 		/obj/item/circuitboard/machine/autolathe = 4,
 		/obj/item/flamethrower/full = 3,
 		/obj/item/stack/sheet/mineral/gold/fifty = 3,
 		/obj/item/weldingtool/experimental = 3,
 		/obj/item/ship_parts/trade = 8,
 	)
-	loot_red = list(
+	loot_prime = list(
 		/obj/item/stack/sheet/plasteel/fifty = 9,
-		/obj/item/stack/sheet/mineral/gold/fifty = 8,
 		/obj/item/stack/sheet/mineral/uranium/fifty = 7,
 		/obj/item/stock_parts/capacitor/quadratic = 6,
 		/obj/item/stock_parts/scanning_module/triphasic = 6,
@@ -73,30 +70,17 @@
 		/obj/item/stack/sheet/bluespace_crystal = 4,
 		/obj/item/construction/rcd = 3,
 		/obj/item/stack/sheet/mineral/diamond/fifty = 2,
-		/obj/item/ship_parts/trade = 11,
 	)
-	// Rare tables: surviving stock entries + this theme's uniques at ~4
-	// (see voidcrew/modules/loot/uniques/industrial.dm and the design doc)
-	rare_loot_green = list(
-		/obj/item/stack/sheet/plasteel/twenty = 8,
-		/obj/item/stock_parts/power_store/cell/high = 6,
-		/obj/item/gun/ballistic/automatic/proto = 5,
-		/obj/item/storage/toolbox/helios_lunch_pail = 4,
-		/obj/item/analyzer/honest_gauge = 4,
-	)
-	rare_loot_yellow = list(
-		/obj/item/stack/sheet/mineral/gold/fifty = 8,
-		/obj/item/stock_parts/power_store/cell/super = 6,
-		/obj/item/gun/energy/ionrifle/carbine = 5,
-		/obj/item/weldingtool/slagmaw = 4,
-		/obj/item/clothing/gloves/cargo_gauntlet/line_gauntlet = 4,
-	)
-	rare_loot_red = list(
-		/obj/item/stack/sheet/mineral/diamond/fifty = 8,
-		/obj/item/construction/rcd = 6,
-		/obj/item/gun/energy/ionrifle = 5,
-		/obj/item/stock_parts/power_store/cell/forge_heart = 4,
-		/obj/item/stamp/helios_pattern = 4,
+	// One-of-a-kind authored prizes, drawn as the fourth tier from any
+	// band (weight = how shallow the item used to sit: 3 was reachable
+	// early, 1 was the bottom of the deepest cache).
+	loot_uniques = list(
+		/obj/item/analyzer/honest_gauge = 3,
+		/obj/item/storage/toolbox/helios_lunch_pail = 3,
+		/obj/item/clothing/gloves/cargo_gauntlet/line_gauntlet = 2,
+		/obj/item/weldingtool/slagmaw = 2,
+		/obj/item/stamp/helios_pattern = 1,
+		/obj/item/stock_parts/power_store/cell/forge_heart = 1,
 	)
 
 /obj/structure/closet/crate/zone_loot/industrial
@@ -105,11 +89,6 @@
 	icon_state = "engi_crate"
 	base_icon_state = "engi_crate"
 	theme = /datum/loot_theme/industrial
-
-/obj/structure/closet/crate/zone_loot/industrial/rare
-	name = "certified goods cache"
-	desc = "A freight cache stamped CERTIFIED — FINAL INSPECTION PASSED. The line never shipped a finer batch."
-	rare = TRUE
 
 /// Malfunctioning automation: hivebots and shredders in dead facilities.
 /obj/effect/zone_mobs/robot

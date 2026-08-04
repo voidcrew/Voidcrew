@@ -23,6 +23,7 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 	area_flags = UNIQUE_AREA | NOTELEPORT
 	flags_1 = NONE
 	ambience_index = AMBIENCE_AWAY
+	repels_megafauna = TRUE // voidcrew/area/megafauna_ban.dm
 
 // Each zone variant loads its own interior (split from the old shared
 // trader_outpost.dmm on 2026-07-06). Base type is abstract: no mappath.
@@ -332,7 +333,11 @@ GLOBAL_LIST_EMPTY(trader_outposts)
 		to_chat(user, span_warning("Ship is too large to dock at this location."))
 		return
 
-	to_chat(user, span_notice("[acting.dock(src, dock_to_use)]"))
+	// dock() only returns a string when it refuses; a successful start is announced
+	// to the whole crew by ship_notify()
+	var/dock_result = acting.dock(src, dock_to_use)
+	if(dock_result)
+		to_chat(user, span_notice("[dock_result]"))
 
 	concerned = FALSE
 

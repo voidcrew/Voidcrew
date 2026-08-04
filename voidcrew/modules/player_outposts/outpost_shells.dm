@@ -35,6 +35,7 @@
 	area_flags = NOTELEPORT
 	flags_1 = NONE
 	ambience_index = AMBIENCE_AWAY
+	repels_megafauna = TRUE // voidcrew/area/megafauna_ban.dm
 
 /// Marks where visitors and the construction drone arrive; consumed at load
 /obj/effect/landmark/player_outpost_arrival

@@ -576,6 +576,10 @@
 /obj/item/stack/spacecash/c1000,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
+"VV" = (
+/obj/effect/zone_mobs/cult,
+/turf/open/misc/dirt/jungle/dark,
+/area/ruin/unpowered)
 "Wa" = (
 /obj/structure/ore_box,
 /turf/open/floor/iron/dark,
@@ -584,12 +588,21 @@
 /obj/item/kirbyplants/random,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
+"WW" = (
+/obj/effect/zone_mobs/cult,
+/turf/open/floor/iron/dark,
+/area/ruin/powered)
 "XB" = (
 /obj/effect/decal/remains/xeno,
 /turf/open/misc/dirt/jungle/dark,
 /area/ruin/unpowered)
 "XS" = (
 /obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron/dark,
+/area/ruin/powered)
+"XX" = (
+/obj/effect/zone_mobs/cult/boss,
+/obj/effect/decal/cleanable/blood,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 "Yp" = (
@@ -606,21 +619,8 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
-"VV" = (
-/obj/effect/zone_mobs/cult,
-/turf/open/misc/dirt/jungle/dark,
-/area/ruin/unpowered)
-"WW" = (
-/obj/effect/zone_mobs/cult,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
-"XX" = (
-/obj/effect/zone_mobs/cult/boss,
-/obj/effect/decal/cleanable/blood,
-/turf/open/floor/iron/dark,
-/area/ruin/powered)
 "YY" = (
-/obj/structure/closet/crate/zone_loot/occult/rare,
+/obj/structure/closet/crate/zone_loot/occult,
 /turf/open/floor/iron/dark,
 /area/ruin/powered)
 

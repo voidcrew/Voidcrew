@@ -1,10 +1,30 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/indestructible/meat,
+/area/ruin/space/has_grav/powered/biooutpost/vault)
 "ab" = (
 /obj/effect/turf_decal/tile/yellow/fourcorners,
 /obj/machinery/door/airlock/engineering,
 /obj/structure/cable,
 /turf/open/indestructible,
 /area/ruin/space/has_grav/powered/biooutpost)
+"ac" = (
+/obj/effect/zone_mobs/bug,
+/obj/effect/turf_decal/tile/neutral/opposingcorners,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/dark,
+/area/ruin/space/has_grav/powered/biooutpost)
+"ad" = (
+/obj/effect/zone_mobs/bug,
+/obj/effect/turf_decal/tile/purple/opposingcorners,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/indestructible/white,
+/area/ruin/space/has_grav/powered/biooutpost)
+"ae" = (
+/obj/effect/zone_mobs/bug/boss,
+/turf/open/indestructible/meat,
+/area/ruin/space/has_grav/powered/biooutpost/vault)
 "af" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle/indestructible,
 /turf/open/indestructible/plating,
@@ -1128,12 +1148,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/indestructible/dark,
 /area/ruin/space/has_grav/powered/biooutpost)
-"ac" = (
-/obj/effect/zone_mobs/bug,
-/obj/effect/turf_decal/tile/neutral/opposingcorners,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/indestructible/dark,
-/area/ruin/space/has_grav/powered/biooutpost)
 "vF" = (
 /obj/structure/fluff/empty_cryostasis_sleeper{
 	name = "broken genetics device";
@@ -1631,14 +1645,6 @@
 "EN" = (
 /turf/open/indestructible/meat,
 /area/ruin/space/has_grav/powered/biooutpost/vault)
-"ae" = (
-/obj/effect/zone_mobs/bug/boss,
-/turf/open/indestructible/meat,
-/area/ruin/space/has_grav/powered/biooutpost/vault)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/research/rare,
-/turf/open/indestructible/meat,
-/area/ruin/space/has_grav/powered/biooutpost/vault)
 "EQ" = (
 /obj/structure/broken_flooring/side/always_floorplane{
 	dir = 1
@@ -1690,12 +1696,6 @@
 /turf/open/indestructible/dark,
 /area/ruin/space/has_grav/powered/biooutpost)
 "Gb" = (
-/obj/effect/turf_decal/tile/purple/opposingcorners,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/indestructible/white,
-/area/ruin/space/has_grav/powered/biooutpost)
-"ad" = (
-/obj/effect/zone_mobs/bug,
 /obj/effect/turf_decal/tile/purple/opposingcorners,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/indestructible/white,

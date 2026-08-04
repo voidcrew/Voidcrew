@@ -66,6 +66,17 @@
 	if(!incoming_hail || active_negotiation)
 		stop_hail_ringing()
 		return
+
+	// Nobody left on the other end. The caller that started this ring is supposed to
+	// silence it, but the ring is a TIMER_LOOP with no upper bound, so any path that
+	// forgets leaves a pad beeping and flashing for the rest of the round with an
+	// empty answer list - unanswerable, because answering needs a pirate still in
+	// HAILING. Re-checking our own premise each loop makes that unrecoverable state
+	// impossible regardless of which caller dropped the ball.
+	if(!length(get_hailing_pirates()))
+		stop_hail_ringing()
+		return
+
 	playsound(src, 'sound/machines/beep/twobeep.ogg', 75, FALSE)
 
 // Ship-wide ring control: the pirate AI rings/silences the whole ship, not one pad.

@@ -4,6 +4,20 @@
  * Each event selects one open floor turf from its target ship, announces the
  * containing area to that ship's crew, and spawns the upstream anomaly object
  * only if the selected turf still belongs to the target ship.
+ *
+ * ALL OF THESE ARE ADMIN-ONLY. Every control below is weight 0 / max_occurrences 0, and
+ * none of them roll naturally. Anomalies now generate on planet surfaces instead — see
+ * voidcrew/datums/mapgen/planet_anomalies.dm and the ZONE_PLANET_ANOMALY_BUDGET_* defines.
+ *
+ * The reason is that a shuttle is the worst possible venue for one. A ship has a single
+ * route between compartments, so an anomaly spawned in a corridor is not a hazard the
+ * crew can route around — it is a toll on reaching engineering, payable in burns, for as
+ * long as the event runs. The crew did nothing to invite it and can do nothing to end it
+ * short of a neutralizer they probably have not researched yet.
+ *
+ * On open planet ground the identical object reads as content: stationary, lit, visible
+ * from outside its reach, and encountered only because somebody walked toward it. The
+ * code here is kept intact so admins can still place one deliberately.
  */
 /datum/round_event_control/voidcrew/anomaly
 	name = "Anomaly: Energetic Flux"
@@ -85,8 +99,11 @@
 	name = "Anomaly: Bioscrambler"
 	typepath = /datum/round_event/voidcrew/anomaly/anomaly_bioscrambler
 	min_players = 1
-	max_occurrences = 5
-	weight = 20
+	// Admin-only. The announcement names a compartment, but the anomaly wanders out of it
+	// and a swapped limb needs surgery to put right — the crew eats a permanent injury for
+	// walking down the wrong corridor. Every other anomaly's damage ends when it does.
+	max_occurrences = 0
+	weight = 0
 	description = "This anomaly replaces the limbs of nearby people."
 	min_wizard_trigger_potency = 0
 	max_wizard_trigger_potency = 2
@@ -103,8 +120,8 @@
 /datum/round_event_control/voidcrew/anomaly/anomaly_bluespace
 	name = "Anomaly: Bluespace"
 	typepath = /datum/round_event/voidcrew/anomaly/anomaly_bluespace
-	max_occurrences = 1
-	weight = 15
+	max_occurrences = 0
+	weight = 0
 	description = "This anomaly randomly teleports all items and mobs in a large area."
 	min_wizard_trigger_potency = 0
 	max_wizard_trigger_potency = 2
@@ -121,8 +138,8 @@
 	name = "Anomaly: Dimensional"
 	typepath = /datum/round_event/voidcrew/anomaly/anomaly_dimensional
 	min_players = 1
-	max_occurrences = 5
-	weight = 20
+	max_occurrences = 0
+	weight = 0
 	description = "This anomaly replaces the materials of the surrounding area."
 	min_wizard_trigger_potency = 0
 	max_wizard_trigger_potency = 2
@@ -146,8 +163,8 @@
 	name = "Anomaly: Ectoplasmic Outburst"
 	typepath = /datum/round_event/voidcrew/anomaly/anomaly_ectoplasm
 	min_players = 2
-	max_occurrences = 2
-	weight = 4
+	max_occurrences = 0
+	weight = 0
 	description = "Anomaly that produces an effect of varying intensity based on how many ghosts are orbiting it."
 	min_wizard_trigger_potency = 0
 	max_wizard_trigger_potency = 3
@@ -176,8 +193,8 @@
 	name = "Anomaly: Hyper-Energetic Flux"
 	typepath = /datum/round_event/voidcrew/anomaly/anomaly_flux
 	min_players = 1
-	max_occurrences = 5
-	weight = 20
+	max_occurrences = 0
+	weight = 0
 	description = "This anomaly shocks and explodes."
 	min_wizard_trigger_potency = 1
 	max_wizard_trigger_potency = 4
@@ -193,8 +210,8 @@
 /datum/round_event_control/voidcrew/anomaly/anomaly_grav
 	name = "Anomaly: Gravitational"
 	typepath = /datum/round_event/voidcrew/anomaly/anomaly_grav
-	max_occurrences = 5
-	weight = 25
+	max_occurrences = 0
+	weight = 0
 	description = "This anomaly throws things around."
 	min_wizard_trigger_potency = 1
 	max_wizard_trigger_potency = 3
@@ -211,8 +228,8 @@
 /datum/round_event_control/voidcrew/anomaly/anomaly_grav/high
 	name = "Anomaly: Gravitational (High Intensity)"
 	typepath = /datum/round_event/voidcrew/anomaly/anomaly_grav/high
-	weight = 15
-	max_occurrences = 1
+	weight = 0
+	max_occurrences = 0
 	earliest_start = 20 MINUTES
 	description = "This anomaly has an intense gravitational field, and can disable the gravity generator."
 
@@ -226,8 +243,8 @@
 	name = "Anomaly: Hallucination"
 	typepath = /datum/round_event/voidcrew/anomaly/anomaly_hallucination
 	min_players = 1
-	max_occurrences = 5
-	weight = 20
+	max_occurrences = 0
+	weight = 0
 	description = "This anomaly causes you to hallucinate."
 	min_wizard_trigger_potency = 0
 	max_wizard_trigger_potency = 2
@@ -243,8 +260,8 @@
 /datum/round_event_control/voidcrew/anomaly/anomaly_pyro
 	name = "Anomaly: Pyroclastic"
 	typepath = /datum/round_event/voidcrew/anomaly/anomaly_pyro
-	max_occurrences = 5
-	weight = 10
+	max_occurrences = 0
+	weight = 0
 	description = "This anomaly sets things on fire, and creates a pyroclastic slime."
 	min_wizard_trigger_potency = 1
 	max_wizard_trigger_potency = 4
@@ -263,8 +280,10 @@
 	name = "Anomaly: Vortex"
 	typepath = /datum/round_event/voidcrew/anomaly/anomaly_vortex
 	min_players = 2
-	max_occurrences = 2
-	weight = 5
+	// Admin-only. It eats whatever it reaches, crew and cargo alike, and there is nothing
+	// to do about it but be elsewhere — which the announcement does not give you time for.
+	max_occurrences = 0
+	weight = 0
 	description = "This anomaly sucks in and detonates items."
 	min_wizard_trigger_potency = 3
 	max_wizard_trigger_potency = 7

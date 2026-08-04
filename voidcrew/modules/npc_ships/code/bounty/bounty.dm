@@ -64,9 +64,11 @@
 	target_key_ref = WEAKREF(captain_key)
 	ship_type_path = target_ship.type
 
-	// Generate bounty details from ship
-	name = target_ship.name
-	desc = "Eliminate the crew of [target_ship.name] and return their command authorization key."
+	// Generate bounty details from ship. Ship names are lowercase like every
+	// other atom name, so capitalize for the headline the UI and the bounty
+	// announcements print it as.
+	name = capitalize(target_ship.name)
+	desc = "Eliminate the crew of the [target_ship.name] and return their command authorization key."
 	reward = calculate_reward(target_ship)
 
 	// Register for key destruction signal

@@ -320,6 +320,10 @@
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
+"fa" = (
+/obj/structure/closet/crate/zone_loot/industrial,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
 "hY" = (
 /obj/effect/turf_decal/bot,
 /obj/structure/rack,
@@ -454,6 +458,10 @@
 	},
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
+"xN" = (
+/obj/structure/closet/crate/zone_loot/industrial,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
 "xO" = (
 /obj/effect/turf_decal/box,
 /obj/item/stack/sheet/mineral/silver{
@@ -509,7 +517,7 @@
 "Ec" = (
 /obj/effect/turf_decal/delivery,
 /obj/effect/zone_mobs/robot/boss,
-/obj/structure/closet/crate/zone_loot/industrial/rare,
+/obj/structure/closet/crate/zone_loot/industrial,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "Ei" = (
@@ -799,6 +807,11 @@
 	name = "maintenance notice 11,209";
 	default_raw_text = "TO: WHOEVER IS LEFT. Line two nominal. Vault at 97 percent capacity. The custodians re-plated the catwalks again - they do not know how to stop, and I have stopped telling them. If nobody reads these, at least the machines watch me write them. - V."
 	},
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"ZI" = (
+/obj/effect/decal/cleanable/blood/oil,
+/obj/structure/closet/crate/zone_loot/industrial,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "ZZ" = (
@@ -1204,7 +1217,7 @@ ar
 aU
 iL
 an
-an
+xN
 an
 FS
 aN
@@ -1399,7 +1412,7 @@ aN
 XH
 aU
 ag
-az
+fa
 ax
 aU
 aZ
@@ -1664,7 +1677,7 @@ an
 LB
 an
 WC
-DT
+ZI
 an
 aU
 ar

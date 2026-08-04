@@ -56,8 +56,6 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	var/ore_target_ratio = EVENT_FIELD_ORE_TARGET_RATIO
 	/// Chance (0-100) the field hides a zone-scaled expedition cache (zone_loot.dm)
 	var/crate_chance = 40
-	/// Chance (0-100) that a spawned cache upgrades to the rare variant
-	var/rare_crate_chance = 15
 	/// How many roaming zone-scaled mob packs guard the field: list(min, max)
 	var/list/mob_pack_count = list(2, 3)
 	/// Turf reservation backing the landable rock field, once loaded
@@ -108,7 +106,6 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	)
 	ore_target_ratio = 0.25
 	crate_chance = 20
-	rare_crate_chance = 0
 	mob_pack_count = list(1, 2)
 
 /obj/structure/overmap/event/meteor/majour
@@ -132,7 +129,6 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	)
 	ore_target_ratio = 0.4
 	crate_chance = 65
-	rare_crate_chance = 30
 	mob_pack_count = list(3, 4)
 
 /**
@@ -341,7 +337,11 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 		second_dock_taken = TRUE
 		acting.dock_index = 2
 
-	to_chat(user, span_notice("[acting.dock(src, dock_to_use)]"))
+	// dock() only returns a string when it refuses; a successful start is announced
+	// to the whole crew by ship_notify()
+	var/dock_result = acting.dock(src, dock_to_use)
+	if(dock_result)
+		to_chat(user, span_notice("[dock_result]"))
 
 	concerned = FALSE
 
@@ -371,13 +371,12 @@ GLOBAL_LIST_EMPTY(meteor_fields)
 	if(!length(open_turfs))
 		return
 
-	// The prize: a zone-scaled cache, never left unguarded
+	// The prize: a zone-scaled cache, never left unguarded. A field deep in
+	// the red pays more and reaches higher out of the same table — that is
+	// the whole of the scaling, so there is no separate rare crate to roll.
 	if(prob(crate_chance))
 		var/turf/crate_turf = pick_n_take(open_turfs)
-		var/crate_type = prob(rare_crate_chance) \
-			? /obj/structure/closet/crate/zone_loot/expedition/rare \
-			: /obj/structure/closet/crate/zone_loot/expedition
-		new crate_type(crate_turf)
+		new /obj/structure/closet/crate/zone_loot/expedition(crate_turf)
 		new /obj/effect/zone_mobs/asteroid(crate_turf)
 
 	// Roaming packs scattered across the blobs

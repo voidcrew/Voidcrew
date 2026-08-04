@@ -50,6 +50,8 @@ type Mission = {
   difficulty: number;
   difficulty_name: string;
   difficulty_color: string;
+  zone_name: string | null;
+  zone_color: string;
 };
 
 type PadItem = {
@@ -474,9 +476,15 @@ const MissionCard = (props: MissionCardProps) => {
 
   return (
     <Section
+      className="MissionBoard__card"
       title={mission.name}
       buttons={
         <Box inline>
+          {!!mission.zone_name && (
+            <Box inline color={mission.zone_color} mr={1}>
+              [{mission.zone_name}]
+            </Box>
+          )}
           <Box inline color={mission.difficulty_color} mr={1}>
             [{mission.difficulty_name}]
           </Box>
@@ -603,6 +611,7 @@ const BountyCard = (props: BountyCardProps) => {
 
   return (
     <Section
+      className="MissionBoard__card"
       title={
         <Box inline color={bounty.was_abandoned ? 'gray' : undefined}>
           <Box as="span" color={bounty.was_abandoned ? 'gray' : 'red'} mr={1}>
@@ -904,6 +913,7 @@ const PlayerBountyStatus = (props: PlayerBountyStatusProps) => {
                   {createdBounty.pending_offers.map((offer) => (
                     <Stack.Item key={offer.ship_ref}>
                       <Section
+                        className="MissionBoard__card"
                         title={offer.ship_name}
                         buttons={
                           <Stack>
@@ -1068,6 +1078,7 @@ const PlayerBountyCard = (props: PlayerBountyCardProps) => {
 
   return (
     <Section
+      className="MissionBoard__card"
       title={
         <Box inline color={bounty.was_abandoned ? 'gray' : undefined}>
           {bounty.name}

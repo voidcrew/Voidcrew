@@ -11,7 +11,7 @@
 /area/ruin/powered)
 "ac" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/structure/closet/crate/zone_loot/industrial/rare,
+/obj/structure/closet/crate/zone_loot/industrial,
 /turf/open/floor/plating,
 /area/ruin/powered)
 "ad" = (

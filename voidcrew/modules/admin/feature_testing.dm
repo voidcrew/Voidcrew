@@ -363,7 +363,7 @@ ADMIN_VERB(spawn_zone_loot_cache, R_ADMIN|R_DEBUG, "Loot: Spawn Zone Cache", "Sp
 			cache.loot_zone = ZONE_YELLOW
 		if("Green (weakest)")
 			cache.loot_zone = ZONE_GREEN
-	to_chat(user, span_notice("[cache] spawned ([zone_label] tier[cache.rare ? ", rare tables" : ""]). Open it to roll [cache.loot_rolls_min]-[cache.loot_rolls_max] items."))
+	to_chat(user, span_notice("[cache] spawned ([zone_label] band[cache.bonus_draws ? ", +[cache.bonus_draws] bonus draws" : ""]). Open it to roll its contents."))
 	message_admins("[key_name_admin(user)] spawned a [choice] zone loot cache ([zone_label]) at [ADMIN_VERBOSEJMP(drop_turf)].")
 	log_admin("[key_name(user)] spawned a [choice] zone loot cache ([zone_label]).")
 	BLACKBOX_LOG_ADMIN_VERB("Spawn Zone Loot Cache")
@@ -385,14 +385,36 @@ ADMIN_VERB(preview_zone_loot_tables, R_ADMIN|R_DEBUG, "Loot: Preview Zone Tables
 		qdel(sample)
 		return
 	var/list/sections = list(
-		"Green" = theme.loot_green,
-		"Yellow" = theme.loot_yellow,
-		"Red" = theme.loot_red,
-		"Rare green" = theme.rare_loot_green,
-		"Rare yellow" = theme.rare_loot_yellow,
-		"Rare red" = theme.rare_loot_red,
+		"Common" = theme.loot_common,
+		"Uncommon" = theme.loot_uncommon,
+		"Prime" = theme.loot_prime,
+		"Uniques" = theme.loot_uniques,
 	)
-	var/list/html = list("<h2>[sample.name]</h2><p>[sample.loot_rolls_min]-[sample.loot_rolls_max] rolls per open[sample.rare ? "; this variant reads the rare tables first" : ""].</p>")
+	// Zone never picks a table any more: it picks how many draws and how those
+	// draws lean across the four tiers. Show that first, because it is the part
+	// that decides what a band actually feels like.
+	var/list/html = list(
+		"<h2>[sample.name]</h2>",
+		"<p>Every band draws from all four tiers below. The band sets the draw count and the odds\
+		[sample.bonus_draws ? ", and this crate adds [sample.bonus_draws] bonus draws on top" : ""].</p>",
+		"<table border='1' cellpadding='4'><tr><th>Band</th><th>Draws</th><th>Common</th><th>Uncommon</th><th>Prime</th><th>Unique</th></tr>",
+	)
+	var/list/bands = list(
+		"Green" = list(ZONE_LOOT_DRAWS_MIN_GREEN, ZONE_LOOT_DRAWS_MAX_GREEN, ZONE_LOOT_ODDS_GREEN),
+		"Yellow" = list(ZONE_LOOT_DRAWS_MIN_YELLOW, ZONE_LOOT_DRAWS_MAX_YELLOW, ZONE_LOOT_ODDS_YELLOW),
+		"Red" = list(ZONE_LOOT_DRAWS_MIN_RED, ZONE_LOOT_DRAWS_MAX_RED, ZONE_LOOT_ODDS_RED),
+	)
+	for(var/band in bands)
+		var/list/spec = bands[band]
+		var/list/odds = spec[3]
+		var/odds_total = 0
+		for(var/tier in odds)
+			odds_total += odds[tier]
+		html += "<tr><td>[band]</td><td>[spec[1]]-[spec[2]][sample.bonus_draws ? " (+[sample.bonus_draws])" : ""]</td>"
+		for(var/tier in list(LOOT_TIER_COMMON, LOOT_TIER_UNCOMMON, LOOT_TIER_PRIME, LOOT_TIER_UNIQUE))
+			html += "<td>[round(odds[tier] / odds_total * 100, 0.1)]%</td>"
+		html += "</tr>"
+	html += "</table>"
 	for(var/section in sections)
 		var/list/table = sections[section]
 		if(!length(table))
@@ -412,17 +434,17 @@ ADMIN_VERB(preview_zone_loot_tables, R_ADMIN|R_DEBUG, "Loot: Preview Zone Tables
 	popup.open()
 	BLACKBOX_LOG_ADMIN_VERB("Preview Zone Loot Tables")
 
-ADMIN_VERB(spawn_all_uniques, R_ADMIN|R_DEBUG, "Loot: Spawn All Uniques", "Spawn every rare-loot unique in rows south of you, one row per cache theme.", ADMIN_CATEGORY_DEBUG)
+ADMIN_VERB(spawn_all_uniques, R_ADMIN|R_DEBUG, "Loot: Spawn All Uniques", "Spawn every loot unique in rows south of you, one row per cache theme.", ADMIN_CATEGORY_DEBUG)
 	var/turf/origin = get_turf(user.mob)
 	if(!origin)
 		to_chat(user, span_warning("You need a physical location to spawn the uniques at."))
 		return
-	// The rare tables mix uniques with stock filler, and "unique" is defined by
-	// the trait rather than a hand-kept list: spawn each table entry and keep it
-	// only if it carries TRAIT_NO_REPLICATE (every unique ADD_TRAITs it in
-	// Initialize, so this never drifts when items are added or cut). Companion
-	// spawns (the Vow's twin ring, No Quarter's ammo kit) ride along with their
-	// owner automatically.
+	// "Unique" is defined by the trait rather than a hand-kept list: spawn each
+	// entry and keep it only if it carries TRAIT_NO_REPLICATE (every unique
+	// ADD_TRAITs it in Initialize, so this never drifts when items are added or
+	// cut). The loot_uniques shelf should be all uniques by construction, but
+	// the trait check stays as the actual authority. Companion spawns (the Vow's
+	// twin ring, No Quarter's ammo kit) ride along with their owner.
 	var/list/seen_types = list()
 	var/list/summary = list()
 	var/total = 0
@@ -430,7 +452,7 @@ ADMIN_VERB(spawn_all_uniques, R_ADMIN|R_DEBUG, "Loot: Spawn All Uniques", "Spawn
 	for(var/theme_path in GLOB.loot_themes)
 		var/datum/loot_theme/theme = GLOB.loot_themes[theme_path]
 		var/col = 0
-		for(var/list/table in list(theme.rare_loot_green, theme.rare_loot_yellow, theme.rare_loot_red))
+		for(var/list/table in list(theme.loot_uniques))
 			for(var/entry in table)
 				if(seen_types[entry])
 					continue

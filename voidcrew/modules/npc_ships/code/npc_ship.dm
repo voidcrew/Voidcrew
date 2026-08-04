@@ -9,6 +9,8 @@
 /obj/structure/overmap/ship/npc
 	name = "unidentified vessel"
 	desc = "An AI-controlled vessel."
+	/// The commissioning grant is for player crews; an NPC hull's account stays empty.
+	starting_credits = 0
 
 	/// Combat interface for firing weapons
 	var/datum/npc_combat_interface/combat_interface
@@ -502,6 +504,18 @@
 		speed[2] *= scale
 
 // ========== MASS CALCULATION OVERRIDE ==========
+
+/**
+ * NPC hulls never remodel themselves, so nothing they lose is construction.
+ *
+ * Without this an NPC pirate would heal as it was taken apart: interdicting one leaves it
+ * docked and IDLE, which is precisely the state a boarding party wrecks it in, and the base
+ * rule would read every breached wall as the owners choosing to have less ship. Its baseline
+ * would track the damage down, integrity would sit at 100%, and update_boarding_state() would
+ * pull can_board back to FALSE with the boarders already aboard.
+ */
+/obj/structure/overmap/ship/npc/hull_baseline_follows_losses()
+	return FALSE
 
 /**
  * Override calculate_mass to use cached value for performance.

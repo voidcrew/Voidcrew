@@ -24,11 +24,11 @@ SUBSYSTEM_DEF(dynamic_events)
 	/// the number of crewed ships (see reschedule()), because each firing only hits one
 	/// of them — so a solo player and a six-ship fleet each get hit at about the same
 	/// rate, instead of the solo player absorbing the entire fleet's event budget.
-	var/frequency_lower = 10 MINUTES
-	var/frequency_upper = 20 MINUTES
+	var/frequency_lower = 25 MINUTES
+	var/frequency_upper = 45 MINUTES
 	/// Floor on the global cadence however large the fleet grows, so a busy server
 	/// doesn't turn into a continuous stream of events.
-	var/minimum_interval = 90 SECONDS
+	var/minimum_interval = 5 MINUTES
 	/// Live per-ship immunity window (see is_valid_target). A var rather than the bare
 	/// define so it can be tuned mid-round without a recompile.
 	var/ship_cooldown = DYNAMIC_EVENT_SHIP_COOLDOWN

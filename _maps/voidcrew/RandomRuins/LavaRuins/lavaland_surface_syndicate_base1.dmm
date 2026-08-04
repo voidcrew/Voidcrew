@@ -5,6 +5,10 @@
 "ab" = (
 /turf/open/lava/smooth/lava_land_surface,
 /area/lavaland/surface/outdoors)
+"ac" = (
+/obj/effect/zone_mobs/syndicate/boss,
+/turf/open/floor/wood,
+/area/ruin/syndicate_lava_base/bar)
 "ae" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/ruin/syndicate_lava_base/testlab)
@@ -1492,10 +1496,6 @@
 "lA" = (
 /turf/open/floor/wood,
 /area/ruin/syndicate_lava_base/bar)
-"ac" = (
-/obj/effect/zone_mobs/syndicate/boss,
-/turf/open/floor/wood,
-/area/ruin/syndicate_lava_base/bar)
 "lC" = (
 /obj/structure/table/wood,
 /obj/machinery/reagentgrinder,
@@ -2522,7 +2522,7 @@
 /turf/open/floor/iron,
 /area/ruin/syndicate_lava_base/engineering)
 "yv" = (
-/obj/structure/closet/crate/zone_loot/syndicate/rare,
+/obj/structure/closet/crate/zone_loot/syndicate,
 /turf/open/floor/circuit/red,
 /area/ruin/syndicate_lava_base/main)
 "yA" = (

@@ -270,7 +270,7 @@
 			)
 		)
 	data["banned_users"] = banned_users
-	data["ID_required"] = ID_required
+	data["id_required"] = ID_required
 
 	return data
 
@@ -335,6 +335,7 @@
 
 		if("toggle_restrict")
 			attempt_toggle_restrict(usr)
+			return TRUE
 /**
  * Called from the ore silo's UI, when someone attempts to (un)ban a user from using the ore silo.
  * The person doing the banning should have at least QM access. Unless this is emagged. Not modifiable by silicons unless emagged.

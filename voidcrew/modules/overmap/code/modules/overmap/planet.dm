@@ -269,6 +269,34 @@
 
 	SSweather.set_z_level_weather_trait(level, weather_trait)
 
+	// Red-band planets carry radiation storms on top of their own climate, so both sit in
+	// the level's random-weather rotation and SSweather picks between them by probability
+	// (see /datum/weather/rad_storm/planetary).
+	//
+	// This has to run AFTER set_z_level_weather_trait(): that proc strips every
+	// random-weather trait off the level before setting the one it was handed, which is
+	// also what clears this trait from a recycled z-level that used to be a red planet.
+	if(zone_band == ZONE_RED)
+		add_random_weather_trait(level, ZTRAIT_RADSTORM)
+
+/**
+ * Adds one more random-weather trait to a level that already has its climate trait set,
+ * and re-registers the level so SSweather picks the new type up.
+ *
+ * set_z_level_weather_trait() only handles the single climate trait; anything a planet
+ * carries in addition to that goes through here.
+ */
+/obj/structure/overmap/planet/proc/add_random_weather_trait(datum/space_level/level, weather_trait)
+	if(!weather_trait)
+		return
+	level.traits[weather_trait] = TRUE
+	var/list/trait_levels = SSmapping.z_trait_levels[weather_trait]
+	if(!trait_levels)
+		trait_levels = list()
+		SSmapping.z_trait_levels[weather_trait] = trait_levels
+	trait_levels |= list(level.z_value)
+	SSweather.update_z_level(level)
+
 /**
  * Runs terrain population over every area on a planet z-level.
  *
@@ -513,7 +541,11 @@
 
 		if(!is_survey)
 			adjust_dock_to_shuttle(dock_to_use, acting.shuttle)
-		to_chat(user, "<span class='notice'>[acting.dock(src, dock_to_use)]</span>") //If a value is returned from load_level(), say that, otherwise, commence docking
+		// dock() only returns a string when it refuses; a successful start is
+		// announced to the whole crew by ship_notify()
+		var/dock_result = acting.dock(src, dock_to_use)
+		if(dock_result)
+			to_chat(user, span_notice("[dock_result]"))
 	concerned = FALSE
 	// For request docking
 	if (optional_partner)

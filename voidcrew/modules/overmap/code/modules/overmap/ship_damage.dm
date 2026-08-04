@@ -19,8 +19,14 @@
 /obj/structure/overmap/ship
 	/// Cooldown for hazard damage ticks
 	COOLDOWN_DECLARE(hazard_damage_cooldown)
+	/// Cooldown preventing undocking after a hull failure. See enter_integrity_failure().
+	COOLDOWN_DECLARE(integrity_undock_lockout)
 	/// Whether ship integrity has been initialized from mass
 	var/integrity_initialized = FALSE
+	/// Latched alarm band - one of the SHIP_INTEGRITY_* states. See evaluate_integrity().
+	var/integrity_state = SHIP_INTEGRITY_NOMINAL
+	/// TRUE while a threshold evaluation is already scheduled for the end of this tick.
+	var/integrity_eval_queued = FALSE
 	/// DEPRECATED - No longer used. max_integrity now scales with ship expansion.
 	var/overhealth = 0
 	/// Whether the ship has already crash landed (prevents multiple crashes)
@@ -76,12 +82,41 @@
 		critical_alert_timer = null
 
 /**
- * Called when ship integrity is restored above 50% after a crash
- * Plays boot up sound and announces recovery
+ * Called once, on the transition out of SHIP_INTEGRITY_DISABLED.
+ *
+ * Clearing has_crash_landed here is what lets the ship be lost again later. It used to be
+ * cleared only on undock, which left a repaired-but-still-docked hull permanently flagged as
+ * crashed: on_ship_destroyed() would refuse to run a second time, and the helm kept reporting
+ * a wreck the crew had already rebuilt.
  */
 /obj/structure/overmap/ship/proc/on_ship_recovered()
+	has_crash_landed = FALSE
+	crashed_at_integrity = 0
 	play_ship_sound('sound/machines/computer/computer_start.ogg', 15)
-	ship_notify("Hull integrity restored. Ship systems operational.", "SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+
+	// "Systems operational" on its own sends the crew straight to a refused undock, because the
+	// post-failure lockout outlives the damage that armed it. Say so in the same breath.
+	var/restored = "Hull integrity restored. Ship systems operational."
+	if(!COOLDOWN_FINISHED(src, integrity_undock_lockout))
+		restored += " Docking clamps remain locked for structural recertification - [DisplayTimeText(COOLDOWN_TIMELEFT(src, integrity_undock_lockout))] remaining."
+	ship_notify(restored, "SYSTEMS", SHIP_NOTIFY_NOTICE, 'voidcrew/sound/notify.ogg', 50)
+
+/**
+ * The single entry point into SHIP_INTEGRITY_DISABLED.
+ *
+ * Everything that can lose a hull goes through here so the post-failure undock lockout is
+ * armed by the same act that latches the state, rather than by each caller remembering to.
+ *
+ * The lockout runs from the failure, not from the repair. A hull that fails is grounded for
+ * SHIP_INTEGRITY_UNDOCK_LOCKOUT whatever the crew does to it in the meantime - welding the
+ * last breach shut brings the ship back to 100% and still does not open the clamps. Repairs
+ * that take longer than the lockout cost nothing extra; the timer has simply already run.
+ */
+/obj/structure/overmap/ship/proc/enter_integrity_failure()
+	integrity_state = SHIP_INTEGRITY_DISABLED
+	COOLDOWN_START(src, integrity_undock_lockout, SHIP_INTEGRITY_UNDOCK_LOCKOUT)
+	stop_critical_alert()
+	on_ship_destroyed()
 
 /**
  * Called when ship integrity reaches 0

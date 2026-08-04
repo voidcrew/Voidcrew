@@ -48,7 +48,7 @@
 	if(!refined_type)
 		return TRUE
 
-	if(I.use_tool(src, user, 0, volume=50))
+	if(I.use_tool(src, user, 0, volume=50, amount=1)) //one fuel per chunk, otherwise a self-refuelling welder smelts for free
 		new refined_type(drop_location())
 		use(1)
 

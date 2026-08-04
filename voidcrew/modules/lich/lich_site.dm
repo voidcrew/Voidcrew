@@ -380,10 +380,10 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
  * Called by Ilthuun when he dies (and, as a backstop, by the death signal the
  * site registers at link time — the guard makes both paths idempotent).
  *
- * Stops the clock, tells the galaxy, retires the helm markers. Deliberately
- * does NOT qdel the site or drop the interior: the sanctum still has his garb
- * and his gear in it, and the raiders still have to carry all of that back to a
- * ship and fly it home.
+ * Stops the clock, lifts the curses that outlive their own firing, tells the
+ * galaxy, retires the helm markers. Deliberately does NOT qdel the site or drop
+ * the interior: the sanctum still has his garb and his gear in it, and the
+ * raiders still have to carry all of that back to a ship and fly it home.
  */
 /obj/structure/overmap/space_ruin/lich_lair/proc/on_lich_slain(mob/living/slain, mob/living/killer)
 	if(spent)
@@ -396,6 +396,13 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	if(slain)
 		UnregisterSignal(slain, COMSIG_LIVING_DEATH)
 	lich_ref = null
+
+	// Stopping the clock only stops FUTURE rites. Tongues of the Dead installs a
+	// permanent global curse that would otherwise outlast him for the whole round,
+	// so his death has to reach back and undo it — see end_lich_babel() and rule 2
+	// in the lich_events.dm header. Runs before the broadcast below, which tells
+	// the galaxy it has happened.
+	end_lich_babel()
 
 	name = "the Verdigris"
 	desc = "A tomb-hulk with the light gone out of it. Whatever was working in there has stopped."
@@ -581,8 +588,19 @@ GLOBAL_DATUM(lich_lair, /obj/structure/overmap/space_ruin/lich_lair)
 	/// Whether this round's lich lair has already surfaced (or is being placed).
 	var/lich_lair_spawned = FALSE
 
-/// Arms the once-per-round lich arrival. Called once from Initialize.
+/**
+ * Arms the once-per-round lich arrival. Called once from Initialize.
+ *
+ * Rolls LICH_SPAWN_CHANCE here rather than at fire time so a round that isn't
+ * getting a lich never arms the timer at all — the retry loop below would
+ * otherwise have to re-roll on every attempt, which compounds into a much higher
+ * effective chance the longer a round runs. One roll, one round, logged either way
+ * so a quiet round is distinguishable from a broken one.
+ */
 /datum/controller/subsystem/overmap/proc/schedule_lich_lair()
+	if(!prob(LICH_SPAWN_CHANCE))
+		log_mapping("LICH: spawn roll failed ([LICH_SPAWN_CHANCE]% chance) — no lich this round.")
+		return
 	addtimer(CALLBACK(src, PROC_REF(spawn_scheduled_lich_lair)), LICH_FIRST_SPAWN_TIME)
 
 /// Surfaces the lair, retrying on the interval if the overmap had no room.

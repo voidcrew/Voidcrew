@@ -490,6 +490,12 @@
 	},
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/c)
+"fR" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/engineering/c)
 "gd" = (
 /obj/structure/chair/wood{
 	dir = 2
@@ -726,6 +732,12 @@
 /obj/machinery/door/firedoor/heavy,
 /turf/open/floor/iron/textured_large,
 /area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"jo" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/bridge/captain/c)
 "js" = (
 /obj/structure/closet/secure_closet/medical3,
 /turf/open/floor/mineral/titanium/blue,
@@ -924,6 +936,12 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /turf/open/floor/iron/kitchen_coldroom/freezerfloor,
 /area/shuttle/voidcrew/phalanx/kitchen/c)
+"mu" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 8
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/medbay/storage/c)
 "my" = (
 /obj/machinery/vending/wardrobe/medi_wardrobe,
 /turf/open/floor/mineral/titanium/blue,
@@ -1711,6 +1729,12 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/iron,
 /area/shuttle/voidcrew/phalanx/cargo/mining/c)
+"yT" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/security/armory/c)
 "yW" = (
 /obj/structure/cable,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -2684,6 +2708,12 @@
 /obj/item/kirbyplants/random,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/cafeteria/c)
+"Ow" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/cargo/c)
 "Oy" = (
 /obj/machinery/light{
 	dir = 8
@@ -3188,6 +3218,12 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/iron/white,
 /area/shuttle/voidcrew/phalanx/cafeteria/c)
+"UY" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/cargo/mining/c)
 "Vf" = (
 /obj/structure/table/wood,
 /obj/effect/turf_decal/siding/wood,
@@ -3592,7 +3628,7 @@ gj
 gj
 gj
 gj
-rj
+fR
 oZ
 oZ
 oZ
@@ -3963,7 +3999,7 @@ oZ
 oZ
 oZ
 oZ
-aQ
+mu
 ln
 SF
 CE
@@ -4467,7 +4503,7 @@ DC
 dL
 "}
 (29,1,1) = {"
-mP
+UY
 iS
 So
 il
@@ -4496,7 +4532,7 @@ nE
 gC
 wE
 EX
-mT
+Ow
 "}
 (30,1,1) = {"
 um
@@ -5049,7 +5085,7 @@ oZ
 oZ
 oZ
 oZ
-EN
+jo
 UP
 Dc
 Gs
@@ -5195,7 +5231,7 @@ zH
 zH
 zH
 zH
-do
+yT
 oZ
 oZ
 oZ

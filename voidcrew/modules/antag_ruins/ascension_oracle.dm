@@ -1178,9 +1178,7 @@
 /datum/vestige_boon/spell/voice_of_the_word
 	name = "Voice of the Word"
 	// Keep these numbers in sync with the defines at the top of this file.
-	desc = "Shout an order and everything alive within nine tiles that can see you obeys it, at eight times the strength of Voice of God. Deafness, ear protection and magic resistance \
-		make no difference. Using it offers you the full list of orders it knows - about forty of them, from KNOCK EVERYONE DOWN to SET THE ROOM ON FIRE to TURN ON EACH OTHER - with \
-		a note on what each one does; you can also right-click the ability to read that list without shouting anything. Three minutes between shouts, whatever you shouted."
+	desc = "Shout an order and everything alive that can see you obeys it. Deafness, ear protection and magic resistance make no difference. Casting offers the full list of orders, from KNOCK EVERYONE DOWN to TURN ON EACH OTHER; right-click to read it without shouting."
 	grant_text = "Your throat feels wrong. There is a much bigger voice in it than there was this morning."
 	spell_type = /datum/action/cooldown/spell/voice_of_the_word
 
@@ -1196,8 +1194,7 @@
 /datum/action/cooldown/spell/voice_of_the_word
 	name = "Voice of the Word"
 	// Keep these numbers in sync with the defines at the top of this file.
-	desc = "Shout an order at the room, once every three minutes. Everything alive within nine tiles that can see you obeys it, at eight times the strength of Voice of God. Deafness, \
-		ear protection and magic resistance make no difference. Casting offers the full list of orders and what each one does; right-click to read that list without shouting."
+	desc = "Shout an order at the room. Everything alive nearby that can see you obeys, and nothing blocks it. Right-click to read the list of orders."
 	button_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "voice_of_god"
 	sound = 'sound/effects/magic/clockwork/invoke_general.ogg'

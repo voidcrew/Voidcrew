@@ -424,6 +424,17 @@
 		if(target.engaging_pirate_ref?.resolve() == our_ship)
 			target.engaging_pirate_ref = null
 
+	// Silence the holopads if we drop a target mid-hail. Every way an encounter can
+	// fall apart - out of range, line of sight lost, target cloaked or crashed,
+	// another pirate taking over - funnels through here, and only the escalate and
+	// zone-transition paths silenced the ring themselves. Anything else left every
+	// pad aboard ringing with no pirate left to answer, since get_hailing_pirates()
+	// only lists ships still in HAILING and still targeting them.
+	// Two pirates can't hail the same ship at once (see is_target_being_hailed), so
+	// our own state is enough to know the ring is ours to stop.
+	if(target && !QDELETED(target) && get_combat_state() == NPC_COMBAT_HAILING)
+		target.stop_hail_ringing()
+
 	// Barter mode is a property of one encounter, not of us - don't carry an empty
 	// wallet finding over onto whoever we target next.
 	clear_blackboard_key(BB_NPC_BROKE_BARTER)

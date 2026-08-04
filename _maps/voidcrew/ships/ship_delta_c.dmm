@@ -89,7 +89,7 @@
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/delta/engineering/c)
 "fw" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4
 	},
 /turf/closed/wall/mineral/titanium,

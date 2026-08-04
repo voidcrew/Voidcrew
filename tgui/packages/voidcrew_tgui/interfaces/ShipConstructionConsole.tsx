@@ -14,14 +14,16 @@ import {
   Table,
   Tabs,
 } from 'tgui-core/components';
+import { type BooleanLike } from 'tgui-core/react';
 import { Window } from '../../tgui/layouts';
 
-interface AirlockData {
+interface PortDoorData {
   name: string;
   ref: string;
   x: number;
   y: number;
-  isCurrent: boolean;
+  isCurrent: BooleanLike;
+  clearsOverhang: BooleanLike;
   areaName: string;
 }
 
@@ -40,8 +42,9 @@ interface Data {
   lastMessage: string;
   lastSuccess: boolean;
   currentPort: PortData | null;
-  dockingPortOnEdge: boolean;
-  airlocks: AirlockData[];
+  dockingPortOnEdge: BooleanLike;
+  portOverhang: number;
+  portDoors: PortDoorData[];
   isInConstructionMode: boolean;
   shipWidth: number;
   shipHeight: number;
@@ -64,7 +67,8 @@ export const ShipConstructionConsole = () => {
     lastMessage,
     lastSuccess,
     currentPort,
-    airlocks,
+    portDoors,
+    portOverhang,
     isInConstructionMode,
     shipWidth,
     shipHeight,
@@ -144,7 +148,8 @@ export const ShipConstructionConsole = () => {
                 canOperate={canOperate}
                 isNotCrew={isNotCrew}
                 currentPort={currentPort}
-                airlocks={airlocks}
+                portDoors={portDoors}
+                portOverhang={portOverhang}
               />
             )}
             {activeTab === 'settings' && <SettingsTab />}
@@ -301,15 +306,34 @@ interface RelocationTabProps {
   canOperate: boolean;
   isNotCrew: boolean;
   currentPort: PortData | null;
-  airlocks: AirlockData[];
+  portDoors: PortDoorData[];
+  portOverhang: number;
 }
 
 const RelocationTab = (props: RelocationTabProps) => {
   const { act } = useBackend();
-  const { canOperate, isNotCrew, currentPort, airlocks } = props;
+  const { canOperate, isNotCrew, currentPort, portDoors, portOverhang } = props;
+
+  const overhanging = portOverhang > 0;
+  const canFixOverhang = portDoors.some((door) => !!door.clearsOverhang);
 
   return (
     <Stack vertical fill>
+      {/* Hull built out past the port lands inside whatever the ship berths against */}
+      {portOverhang > 0 && (
+        <Stack.Item>
+          <NoticeBox danger>
+            {portOverhang} {portOverhang === 1 ? 'metre' : 'metres'} of hull
+            stands out past the docking port. Ship-to-ship docking and cargo
+            deliveries are refused until the port sits on the outermost hull
+            door, because that section would be driven through whatever the ship
+            berths against.
+            {!canFixOverhang &&
+              ' No door on the outermost plating yet — fit an airlock or firelock there.'}
+          </NoticeBox>
+        </Stack.Item>
+      )}
+
       {/* Current Port Info - Compact */}
       <Stack.Item>
         <Section
@@ -318,7 +342,7 @@ const RelocationTab = (props: RelocationTabProps) => {
             <Button
               icon="fan"
               content="Reset Fans"
-              tooltip="Removes all tiny fans and adds new ones to all edge airlocks"
+              tooltip="Removes all tiny fans and adds new ones to every hull door, plus the docking port's own tile"
               disabled={!canOperate || isNotCrew}
               onClick={() => act('reset_fans')}
             />
@@ -335,47 +359,54 @@ const RelocationTab = (props: RelocationTabProps) => {
         </Section>
       </Stack.Item>
 
-      {/* Airlocks Table */}
+      {/* Hull doors the port can be moved to */}
       <Stack.Item grow>
-        <Section title="Available Airlocks" fill scrollable>
+        <Section title="Available Hull Doors" fill scrollable>
           <Table>
             <Table.Row header>
-              <Table.Cell>Airlock</Table.Cell>
+              <Table.Cell>Door</Table.Cell>
               <Table.Cell>Area</Table.Cell>
               <Table.Cell>Action</Table.Cell>
             </Table.Row>
-            {airlocks.map((airlock) => (
+            {portDoors.map((door) => (
               <Table.Row
-                key={airlock.ref}
-                className={airlock.isCurrent ? 'Table__row--selected' : ''}
+                key={door.ref}
+                className={door.isCurrent ? 'Table__row--selected' : ''}
               >
                 <Table.Cell>
-                  {airlock.name}
-                  {airlock.isCurrent && (
+                  {door.name}
+                  {!!door.isCurrent && (
                     <Box as="span" color="good" ml={1}>
                       (Current)
                     </Box>
                   )}
+                  {overhanging && !door.isCurrent && !!door.clearsOverhang && (
+                    <Box as="span" color="good" ml={1}>
+                      (clears the overhang)
+                    </Box>
+                  )}
                 </Table.Cell>
-                <Table.Cell color="label">{airlock.areaName}</Table.Cell>
+                <Table.Cell color="label">{door.areaName}</Table.Cell>
                 <Table.Cell collapsing>
                   <Button
                     icon="crosshairs"
                     content="Set"
-                    disabled={!canOperate || isNotCrew || airlock.isCurrent}
+                    disabled={!canOperate || isNotCrew || !!door.isCurrent}
                     onClick={() =>
                       act('relocate_port', {
-                        airlock_ref: airlock.ref,
+                        door_ref: door.ref,
                       })
                     }
                   />
                 </Table.Cell>
               </Table.Row>
             ))}
-            {airlocks.length === 0 && (
+            {portDoors.length === 0 && (
               <Table.Row>
                 <Table.Cell colSpan={3}>
-                  <NoticeBox>No valid edge airlocks found.</NoticeBox>
+                  <NoticeBox>
+                    No airlocks or firelocks on the outer hull.
+                  </NoticeBox>
                 </Table.Cell>
               </Table.Row>
             )}

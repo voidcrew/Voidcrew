@@ -30,26 +30,19 @@
  */
 /obj/effect/collapsing_demonic_portal/drop_loot()
 	visible_message(span_warning("Something slips out of [src]!"))
-	// One themed cache; a slim slice of collapses cough up a rare variant
+	// One themed cache. There is no separate jackpot variant any more: what
+	// makes a portal cache good is the band the portal collapsed in, same as
+	// every other cache in the game.
 	var/static/list/crate_weights = list(
-		/obj/structure/closet/crate/zone_loot/expedition = 18,
-		/obj/structure/closet/crate/zone_loot/industrial = 13,
-		/obj/structure/closet/crate/zone_loot/occult = 12,
-		/obj/structure/closet/crate/zone_loot/research = 12,
-		/obj/structure/closet/crate/zone_loot/medical = 10,
-		/obj/structure/closet/crate/zone_loot/plunder = 8,
-		/obj/structure/closet/crate/zone_loot/armory = 7,
-		/obj/structure/closet/crate/zone_loot/wardrobe = 7,
-		/obj/structure/closet/crate/zone_loot/syndicate = 5,
-		/obj/structure/closet/crate/zone_loot/expedition/rare = 2,
-		/obj/structure/closet/crate/zone_loot/industrial/rare = 1,
-		/obj/structure/closet/crate/zone_loot/occult/rare = 1,
-		/obj/structure/closet/crate/zone_loot/research/rare = 1,
-		/obj/structure/closet/crate/zone_loot/medical/rare = 1,
-		/obj/structure/closet/crate/zone_loot/plunder/rare = 1,
-		/obj/structure/closet/crate/zone_loot/armory/rare = 1,
-		/obj/structure/closet/crate/zone_loot/wardrobe/rare = 1,
-		/obj/structure/closet/crate/zone_loot/syndicate/rare = 1,
+		/obj/structure/closet/crate/zone_loot/expedition = 20,
+		/obj/structure/closet/crate/zone_loot/industrial = 14,
+		/obj/structure/closet/crate/zone_loot/occult = 13,
+		/obj/structure/closet/crate/zone_loot/research = 13,
+		/obj/structure/closet/crate/zone_loot/medical = 11,
+		/obj/structure/closet/crate/zone_loot/plunder = 9,
+		/obj/structure/closet/crate/zone_loot/armory = 8,
+		/obj/structure/closet/crate/zone_loot/wardrobe = 8,
+		/obj/structure/closet/crate/zone_loot/syndicate = 6,
 	)
 	// cache theme -> the guard wave that fits it (same pairings as the
 	// guard_themes lists on the loot theme datums)
@@ -69,6 +62,5 @@
 	var/wave_path = wave_by_crate[crate_path] || wave_by_crate[type2parent(crate_path)]
 	if(!wave_path)
 		return
-	// guaranteed escort even in green; rare finds pull a bigger party
-	var/obj/structure/closet/crate/zone_loot/crate_typecheck = crate_path
-	new wave_path(loc, initial(crate_typecheck.rare) ? list(2, 3) : list(1, 2))
+	// guaranteed escort even in green; the marker scales the wave by band
+	new wave_path(loc, list(1, 2))

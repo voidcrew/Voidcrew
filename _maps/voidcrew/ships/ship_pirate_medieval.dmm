@@ -222,7 +222,7 @@
 	requires_power = 0
 	})
 "ay" = (
-/obj/machinery/shuttle_scrambler,
+/obj/machinery/shuttle_scrambler/ship_siphon,
 /turf/open/floor/stone,
 /area/shuttle/voidcrew/pirate_medieval{
 	requires_power = 0

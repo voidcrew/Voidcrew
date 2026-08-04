@@ -8,7 +8,7 @@
  * Every item ADD_TRAITs TRAIT_NO_REPLICATE on itself so the Helios pattern
  * stamp (and any future duplicator) refuses to copy it.
  *
- * Not yet wired into any loot table — see zone_loot.dm's rare_loot_* lists.
+ * Not yet wired into any loot table — see the `loot_uniques` shelf in voidcrew/modules/loot/themes/.
  */
 
 /// Bespoke, non-public radio frequency for the Ferryman coin/earpiece pair.

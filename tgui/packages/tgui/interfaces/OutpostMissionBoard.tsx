@@ -30,6 +30,8 @@ type Offer = {
   voucher_count: number;
   difficulty_name: string;
   difficulty_color: string;
+  zone_name: string | null;
+  zone_color: string;
   progress: string;
   wanted_text: string;
   archetype: string;
@@ -140,6 +142,11 @@ const OfferCard = (props: { offer: Offer; canAccept: boolean }) => {
           <Stack vertical>
             <Stack.Item bold>
               {offer.name}{' '}
+              {!!offer.zone_name && (
+                <Box inline color={offer.zone_color}>
+                  [{offer.zone_name}]{' '}
+                </Box>
+              )}
               <Box inline color={offer.difficulty_color}>
                 [{offer.difficulty_name}]
               </Box>

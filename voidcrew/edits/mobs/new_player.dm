@@ -241,6 +241,10 @@
 	if(joined_ship.memo && humanc)
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(show_ship_memo_to_player), humanc, joined_ship), 3 SECONDS)
 
+	// First spawn of the round gets the orientation briefing, a beat after the
+	// memo (voidcrew/modules/onboarding/orientation.dm)
+	try_show_orientation_briefing(character)
+
 	return TRUE
 
 /**

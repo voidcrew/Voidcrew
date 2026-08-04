@@ -1,7 +1,20 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/armory,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/deepstorage/armory)
 "ab" = (
 /turf/closed/mineral/random/low_chance,
 /area/ruin/space)
+"ac" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/misc/asteroid/airless,
+/area/ruin/space)
+"ad" = (
+/obj/effect/zone_mobs/robot,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/deepstorage)
 "ae" = (
 /obj/structure/table/reinforced,
 /obj/machinery/reagentgrinder,
@@ -663,10 +676,6 @@
 /obj/effect/zone_mobs/robot/boss,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/deepstorage/armory)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/armory/rare,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/deepstorage/armory)
 "du" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/iron/dark,
@@ -1116,11 +1125,6 @@
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/deepstorage/dorm)
 "fT" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/deepstorage)
-"ad" = (
-/obj/effect/zone_mobs/robot,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/deepstorage)
@@ -2284,10 +2288,6 @@
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/deepstorage/pharmacy)
 "Iy" = (
-/turf/open/misc/asteroid/airless,
-/area/ruin/space)
-"ac" = (
-/obj/effect/zone_mobs/robot,
 /turf/open/misc/asteroid/airless,
 /area/ruin/space)
 "Jz" = (

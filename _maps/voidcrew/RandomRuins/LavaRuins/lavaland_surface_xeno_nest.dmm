@@ -7,6 +7,12 @@
 /obj/structure/alien/resin/wall,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/ruin/unpowered/xenonest)
+"c" = (
+/obj/effect/zone_mobs/bug/boss,
+/obj/structure/closet/crate/zone_loot/research,
+/obj/structure/alien/weeds,
+/turf/open/misc/asteroid/basalt/lava_land_surface,
+/area/ruin/unpowered/xenonest)
 "d" = (
 /obj/structure/alien/resin/wall,
 /obj/structure/alien/weeds,
@@ -26,22 +32,6 @@
 /obj/structure/alien/weeds,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/ruin/unpowered/xenonest)
-"k" = (
-/obj/effect/zone_mobs/bug,
-/obj/structure/alien/weeds,
-/turf/open/misc/asteroid/basalt/lava_land_surface,
-/area/ruin/unpowered/xenonest)
-"h" = (
-/obj/effect/zone_mobs/bug,
-/obj/structure/alien/weeds,
-/turf/open/misc/asteroid/basalt/lava_land_surface,
-/area/ruin/unpowered/xenonest)
-"c" = (
-/obj/effect/zone_mobs/bug/boss,
-/obj/structure/closet/crate/zone_loot/research/rare,
-/obj/structure/alien/weeds,
-/turf/open/misc/asteroid/basalt/lava_land_surface,
-/area/ruin/unpowered/xenonest)
 "i" = (
 /obj/structure/alien/weeds,
 /obj/structure/bed/nest,
@@ -50,6 +40,11 @@
 "j" = (
 /obj/structure/alien/weeds,
 /mob/living/basic/alien,
+/turf/open/misc/asteroid/basalt/lava_land_surface,
+/area/ruin/unpowered/xenonest)
+"k" = (
+/obj/effect/zone_mobs/bug,
+/obj/structure/alien/weeds,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
 /area/ruin/unpowered/xenonest)
 "l" = (
@@ -1510,7 +1505,7 @@ a
 a
 b
 e
-h
+k
 g
 i
 i

@@ -277,6 +277,11 @@
 	},
 /turf/open/floor/wood/large,
 /area/ruin/space/has_grav/powered)
+"bz" = (
+/obj/structure/closet/crate/zone_loot/wardrobe,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet,
+/area/ruin/space/has_grav/powered)
 "bJ" = (
 /obj/effect/turf_decal/bot,
 /turf/open/floor/plating,
@@ -737,6 +742,10 @@
 /obj/item/radio/intercom/directional/north,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
+"Hh" = (
+/obj/structure/closet/crate/zone_loot/wardrobe,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
 "Hs" = (
 /obj/structure/chair/wood{
 	dir = 8
@@ -793,7 +802,7 @@
 /turf/open/floor/wood/large,
 /area/ruin/space/has_grav/powered)
 "Pj" = (
-/obj/structure/closet/crate/zone_loot/wardrobe/rare,
+/obj/structure/closet/crate/zone_loot/wardrobe,
 /obj/effect/turf_decal/box,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
@@ -1038,7 +1047,7 @@ av
 av
 al
 xm
-ae
+bz
 al
 aV
 aw
@@ -1510,7 +1519,7 @@ al
 al
 al
 GP
-aR
+Hh
 al
 av
 av
@@ -1719,7 +1728,7 @@ Gs
 IR
 as
 sc
-aR
+Hh
 EF
 al
 Da

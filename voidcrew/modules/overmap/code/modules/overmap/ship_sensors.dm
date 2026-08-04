@@ -192,6 +192,22 @@
 	return TECHWEB_NODE_RADAR_ARRAY_ELITE in web.researched_nodes
 
 /**
+ * How the helm's Dock button should name another vessel sharing our tile.
+ *
+ * Docking with a ship is still the request/accept handshake ship_act() runs on
+ * /obj/structure/overmap/ship (see ship.dm) — this only decides what the button
+ * calls the option, and it keeps the same anonymity an unidentified contact has
+ * everywhere else on the chart (see identify_vessels() above): sharing a tile
+ * doesn't reveal a hull the crew hasn't scanned or tracked.
+ */
+/obj/structure/overmap/ship/proc/describe_dock_target(obj/structure/overmap/ship/other)
+	if(!other || other == src)
+		return null
+	var/known = can_scan_ships() || !!identified_ships[REF(other)]
+	var/label = known ? other.display_name : "unknown vessel"
+	return "[label] (request docking)"
+
+/**
  * The categories a helm may ask an active scan for, and the only values the
  * console will pass through. Mirrors SCAN_TYPES in HelmComputer.tsx. Every other
  * sensor_category in use is deliberately not offered: hazards and nebulas are

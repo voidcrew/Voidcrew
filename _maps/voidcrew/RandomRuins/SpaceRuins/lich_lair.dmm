@@ -915,11 +915,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/indestructible/dark/textured,
 /area/ruin/space/has_grav/powered/lich_lair/atrium)
-"Sv" = (
-/obj/structure/closet/crate/zone_loot/occult/rare,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/vault/sandstone,
-/area/ruin/space/has_grav/powered/lich_lair)
 "SB" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/indestructible/necropolis/air,
@@ -2835,13 +2830,13 @@ ek
 PC
 ek
 ek
-Sv
+nN
 ek
 Ha
 pX
 Ha
 ek
-Sv
+nN
 ek
 ek
 ek

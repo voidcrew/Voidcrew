@@ -102,6 +102,36 @@
 	loan_accepted = FALSE
 
 /**
+ * Marks one of the encounter's two reserve docks as ours.
+ *
+ * Claimed when the order is placed rather than on arrival: the dock used to sit unclaimed
+ * through the whole warmup, so a ship arriving at this encounter mid-flight could take the
+ * berth and the delivery would only discover it at the last moment. Holding the flag turns
+ * that into an ordinary "no free dock" refusal for the arriving ship, which every docking
+ * path already handles.
+ */
+/datum/voidcrew_cargo_shuttle/proc/claim_berth(index)
+	release_berth()
+	if(!docked_at || !index)
+		return
+	cargo_dock_index = index
+	if(index == 1)
+		docked_at.first_dock_taken = TRUE
+	else if(index == 2)
+		docked_at.second_dock_taken = TRUE
+
+/// Hands our reserve dock back. Safe to call when we never claimed one.
+/datum/voidcrew_cargo_shuttle/proc/release_berth()
+	if(!docked_at || !cargo_dock_index)
+		cargo_dock_index = 0
+		return
+	if(cargo_dock_index == 1)
+		docked_at.first_dock_taken = FALSE
+	else if(cargo_dock_index == 2)
+		docked_at.second_dock_taken = FALSE
+	cargo_dock_index = 0
+
+/**
  * Cleans up all shuttle resources (for error states, not normal departure)
  */
 /datum/voidcrew_cargo_shuttle/proc/cleanup_shuttle()
@@ -110,13 +140,7 @@
 		warmup_timer = null
 	warmup_started = null
 
-	// Release the reserve dock
-	if(docked_at && cargo_dock_index)
-		if(cargo_dock_index == 1)
-			docked_at.first_dock_taken = FALSE
-		else if(cargo_dock_index == 2)
-			docked_at.second_dock_taken = FALSE
-		cargo_dock_index = 0
+	release_berth()
 
 	// Don't move to transit before destroying - just destroy where it is
 	// Moving causes baseturfs accumulation issues
@@ -248,27 +272,54 @@
 	return round(remaining / 10) // Convert to seconds
 
 /**
- * Calls the cargo shuttle to dock next to the player's ship
+ * Calls the cargo shuttle to dock next to the player's ship.
+ *
+ * Returns null when the shuttle is on its way, or a crew-facing reason for the refusal -
+ * the same contract /obj/structure/overmap/ship/dock() uses. Everything it can refuse for
+ * costs the crew a 30-second warmup if it is left to complete_arrival() to discover.
  */
 /datum/voidcrew_cargo_shuttle/proc/call_shuttle(obj/structure/overmap/ship/ship)
 	if(state != CARGO_SHUTTLE_AWAY)
-		return FALSE
+		return "Cargo shuttle is not available"
 
 	if(!istype(ship?.docked, /obj/structure/overmap/planet/empty))
-		return FALSE
+		return "Must be docked in space"
 
 	target_ship = ship
 	docked_at = ship.docked
 
+	// The shuttle berths one tile off the ship's own docking port, so any hull built out
+	// past that port is exactly where it lands. complete_arrival() checks this again at
+	// the berth itself, but the scan walks every hull turf - too heavy for the console's
+	// per-tick error message - so placing the order is the first cheap place to catch it.
+	if(hull_overhangs_port(ship.shuttle))
+		target_ship = null
+		docked_at = null
+		return "Ship hull extends past its docking port. Move the docking port to the \
+			outermost hull door before ordering a delivery"
+
 	// Spawn shuttle fresh
 	if(!spawn_shuttle())
-		return FALSE
+		target_ship = null
+		docked_at = null
+		return "Could not prepare a cargo shuttle"
+
+	// Claim the berth now and hold it for the whole flight. Re-checked here rather than
+	// trusting the console's pre-click check because spawn_shuttle() yields while it
+	// loads the template, which is time enough for another ship to arrive.
+	var/list/berth = docked_at.get_cargo_berth(ship.shuttle)
+	var/berth_error = berth["error"]
+	if(berth_error)
+		cleanup_shuttle() // tears the fresh shuttle back down; we hold no berth to release
+		target_ship = null
+		return berth_error
+	claim_berth(berth["index"])
 
 	// Start warmup
 	state = CARGO_SHUTTLE_ARRIVING
 	warmup_started = world.time
 	warmup_timer = addtimer(CALLBACK(src, PROC_REF(complete_arrival)), CARGO_SHUTTLE_WARMUP, TIMER_STOPPABLE)
-	return TRUE
+	return null
 
 /**
  * Timer callback - docks the shuttle after warmup using ship-to-ship docking system
@@ -299,33 +350,34 @@
 		cleanup_shuttle()
 		return FALSE
 
-	// Find which reserve dock the player ship is using, and get the other one
-	var/obj/docking_port/stationary/ship_dock
-	var/obj/docking_port/stationary/cargo_dock
-
-	if(docked_at.first_dock_taken && docked_at.reserve_dock?.get_docked() == ship_shuttle)
-		ship_dock = docked_at.reserve_dock
-		cargo_dock = docked_at.reserve_dock_secondary
-		if(docked_at.second_dock_taken)
-			state = CARGO_SHUTTLE_AWAY
-			linked_console?.say("Error: No available docking ports.")
-			cleanup_shuttle()
-			return FALSE
-		docked_at.second_dock_taken = TRUE
-		cargo_dock_index = 2
-	else if(docked_at.second_dock_taken && docked_at.reserve_dock_secondary?.get_docked() == ship_shuttle)
-		ship_dock = docked_at.reserve_dock_secondary
-		cargo_dock = docked_at.reserve_dock
-		if(docked_at.first_dock_taken)
-			state = CARGO_SHUTTLE_AWAY
-			linked_console?.say("Error: No available docking ports.")
-			cleanup_shuttle()
-			return FALSE
-		docked_at.first_dock_taken = TRUE
-		cargo_dock_index = 1
-	else
+	// Re-check the berth we claimed back at call_shuttle(). Passing our own claim keeps it
+	// from reading as another ship's; an error here means the ship we are delivering to
+	// moved off its dock during the warmup, not that somebody took ours.
+	var/list/berth = docked_at.get_cargo_berth(ship_shuttle, cargo_dock_index)
+	var/berth_error = berth["error"]
+	if(berth_error)
 		state = CARGO_SHUTTLE_AWAY
-		linked_console?.say("Error: Ship docking port not found.")
+		linked_console?.say("Error: [berth_error].")
+		cleanup_shuttle()
+		return FALSE
+
+	var/obj/docking_port/stationary/ship_dock = berth["ship_dock"]
+	var/obj/docking_port/stationary/cargo_dock = berth["cargo_dock"]
+	// Normally the dock we are already holding. Re-assert rather than assume, so a ship
+	// that undocked and re-berthed on the other port mid-warmup can't leave us holding a
+	// claim on a dock we no longer use.
+	if(cargo_dock_index != berth["index"])
+		claim_berth(berth["index"])
+
+	// The cargo shuttle berths one tile off the ship's own docking port, so any plating the
+	// ship has built out past that port is exactly where the shuttle lands - it would be
+	// overwritten (see hull_port_overhang() in hull_survey.dm). Refuse the delivery instead.
+	// call_shuttle() already refused the order for this, so reaching it here means the hull
+	// grew during the warmup; cleanup_shuttle() hands the berth back off cargo_dock_index.
+	if(!ship_port_clear_to_berth(ship_shuttle, "cargo delivery to [target_ship]"))
+		state = CARGO_SHUTTLE_AWAY
+		linked_console?.say("Error: Ship hull extends past its docking port. Move the docking port \
+			to the outermost hull door before ordering a delivery.")
 		cleanup_shuttle()
 		return FALSE
 
@@ -426,12 +478,7 @@
 		return FALSE
 
 	// Release the reserve dock first
-	if(docked_at && cargo_dock_index)
-		if(cargo_dock_index == 1)
-			docked_at.first_dock_taken = FALSE
-		else if(cargo_dock_index == 2)
-			docked_at.second_dock_taken = FALSE
-		cargo_dock_index = 0
+	release_berth()
 
 	// Export cargo while shuttle is still docked (sell() uses shuttle_areas, doesn't need transit)
 	linked_console?.sell()

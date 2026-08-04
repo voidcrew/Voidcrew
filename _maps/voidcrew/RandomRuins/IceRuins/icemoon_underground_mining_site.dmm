@@ -1,13 +1,20 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"ah" = (
+"aa" = (
+/obj/structure/closet/crate/zone_loot/expedition,
 /turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "ab" = (
 /obj/effect/zone_mobs/wildlife,
 /turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/expedition/rare,
+"ac" = (
+/obj/effect/zone_mobs/wildlife,
+/obj/effect/turf_decal/weather/snow/corner{
+	dir = 4
+	},
+/turf/open/misc/ice/icemoon/breathable,
+/area/icemoon/underground/explored)
+"ah" = (
 /turf/open/misc/asteroid/snow/icemoon/breathable,
 /area/icemoon/underground/explored)
 "au" = (
@@ -254,13 +261,6 @@
 /turf/open/floor/plating/snowed/smoothed,
 /area/icemoon/underground/explored)
 "Gd" = (
-/obj/effect/turf_decal/weather/snow/corner{
-	dir = 4
-	},
-/turf/open/misc/ice/icemoon/breathable,
-/area/icemoon/underground/explored)
-"ac" = (
-/obj/effect/zone_mobs/wildlife,
 /obj/effect/turf_decal/weather/snow/corner{
 	dir = 4
 	},

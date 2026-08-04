@@ -167,10 +167,12 @@ type Autopilot = {
   path: [number, number][];
 };
 
-/** What the Dock button will do from the tile the ship is on. */
-type DockTarget = {
+/** One thing the Dock button could do from the tile the ship is on. */
+type DockOption = {
   /** "empty space", or a description of the thing we'd dock into. */
   name: string;
+  /** REF() of the overmap object to dock with, or null for empty space. */
+  ref: string | null;
   isEmpty: BooleanLike;
 };
 
@@ -205,6 +207,12 @@ type Data = {
   docked: BooleanLike;
   speed: number;
   heading: string;
+  /**
+   * The dir the velocity itself carries the ship in, set whether or not the
+   * engines are lit. `burnDirection` is where the crew is pushing; this is where
+   * the ship goes if they stop. See useDrift().
+   */
+  driftDirection: number;
   eta: number;
   moveIntervalMs: number;
   burnDirection: number;
@@ -229,12 +237,17 @@ type Data = {
   zone_transition_progress: number;
   zone_transition_remaining: number;
   zone_transition_target: string | null;
+  /** Set while the ship is in (or crossing into) a band it has no warfare
+   * research to meet. Null the rest of the time. */
+  zone_advisory: { label: string; critical: BooleanLike } | null;
 
   calibrating: BooleanLike;
   undockCooldown: BooleanLike;
   undockCooldownRemaining: number;
   undockLocked: BooleanLike;
   undockLockoutRemaining: number;
+  integrityLockout: BooleanLike;
+  integrityLockoutRemaining: number;
   dockWarmup: BooleanLike;
   dockWarmupRemaining: number;
   undockWarmup: BooleanLike;
@@ -247,7 +260,7 @@ type Data = {
   nebulaHideWarmup: BooleanLike;
   nebulaHideRemaining: number;
   canLand: BooleanLike;
-  dockTarget: DockTarget;
+  dockOptions: DockOption[];
   autopilot: Autopilot;
 };
 
@@ -371,6 +384,15 @@ const SCAN_TYPES = ['Planets', 'Ruins', 'Ships'];
 
 const deciToSeconds = (ds: number) => Math.ceil(ds / 10);
 
+/** m:ss, matching the ETA the ship formats for the readouts. */
+const clockOf = (ms: number) => {
+  const total = Math.round(ms / 1000);
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+};
+
+/** Deciseconds as m:ss. The hull-failure lockout runs minutes, where a bare second count reads badly. */
+const deciToClock = (ds: number) => clockOf(deciToSeconds(ds) * 1000);
+
 /** Contacts are keyed by ref where they have one; live ship tracks don't. */
 const contactKey = (contact: Pick<Contact, 'ref' | 'name' | 'x' | 'y'>) =>
   contact.ref ?? `${contact.name}-${contact.x}-${contact.y}`;
@@ -469,6 +491,18 @@ const MenuControl = createContext<
   ) => void
 >(() => {});
 
+/**
+ * Where the Dock button's option picker is pinned. A separate context from
+ * MenuControl above because its contents come straight from `dockOptions`
+ * rather than from a selected contact — but it needs the same
+ * rendered-at-the-root treatment, for the same reason: the OPS panel is
+ * `overflow: hidden` and only 152px tall, nowhere near enough to hold a list
+ * of options without clipping it.
+ */
+const DockMenuControl = createContext<(event: React.MouseEvent) => void>(
+  () => {},
+);
+
 // ---------------------------------------------------------------- root
 
 export const HelmComputer = () => {
@@ -492,6 +526,10 @@ const Faceplate = () => {
   const { shipCrashed, repairCurrent, repairTotal } = data;
   const rootRef = useRef<HTMLDivElement>(null);
   const [menu, setMenu] = useState<MenuState | null>(null);
+  const [dockMenu, setDockMenu] = useState<{
+    left: number;
+    top: number;
+  } | null>(null);
 
   const contacts = useContacts();
   const menuContact = menu?.key
@@ -530,77 +568,109 @@ const Faceplate = () => {
     });
   };
 
+  const openDockPicker = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    const box = rootRef.current?.getBoundingClientRect();
+    const width = box?.width ?? 0;
+    const height = box?.height ?? 0;
+    const cursorX = event.clientX - (box?.left ?? 0);
+    const cursorY = event.clientY - (box?.top ?? 0);
+    setDockMenu({
+      left:
+        cursorX + MENU_SIZE.w <= width
+          ? cursorX
+          : Math.max(0, cursorX - MENU_SIZE.w),
+      top: clamp(cursorY, 0, Math.max(0, height - MENU_SIZE.h)),
+    });
+  };
+
   return (
     <MenuControl.Provider value={openMenu}>
-      <div className="Helm" ref={rootRef} onClick={() => setMenu(null)}>
+      <DockMenuControl.Provider value={openDockPicker}>
         <div
-          className={`Helm__plate ${FACEPLATE_ASSET ? 'Helm__plate--art' : ''}`}
-          style={
-            FACEPLATE_ASSET
-              ? { backgroundImage: `url("${resolveAsset(FACEPLATE_ASSET)}")` }
-              : undefined
-          }
-        />
-        {!FACEPLATE_ASSET && <div className="Helm__hazard" />}
-
-        <Panel rect={GEOMETRY.IDENT}>
-          <Ident />
-        </Panel>
-        <Panel rect={GEOMETRY.ZONE}>
-          <ZoneBadge />
-        </Panel>
-        <Panel rect={GEOMETRY.ALERT}>
-          <AlertStrip />
-        </Panel>
-
-        <Panel rect={GEOMETRY.HULL} label="Hull" aux="integrity">
-          <HullGauge />
-        </Panel>
-        <Panel rect={GEOMETRY.FUEL} label="Fuel" aux="drive mass">
-          <FuelStack />
-        </Panel>
-        <Panel rect={GEOMETRY.DRIVE} label="Drive" aux="thrust">
-          <DriveGauge />
-        </Panel>
-        <Panel rect={GEOMETRY.SENSOR} label="Sensors" aux="array">
-          <SensorDial />
-        </Panel>
-
-        <Panel rect={GEOMETRY.CHART} label="Navigation chart">
-          <Chart />
-        </Panel>
-        <Panel rect={GEOMETRY.DRAWER} label="Contacts">
-          <Drawer />
-        </Panel>
-
-        <Panel rect={GEOMETRY.THROT} label="Throttle">
-          <Throttle />
-        </Panel>
-        <Panel rect={GEOMETRY.ROSE} label="Helm">
-          <HelmRose />
-        </Panel>
-        <Panel rect={GEOMETRY.VELOC} label="Velocity">
-          <VelocityCluster />
-        </Panel>
-        <Panel rect={GEOMETRY.OPS} label="Operations">
-          <OpsRow />
-        </Panel>
-
-        {!!menu && (
-          <ContactMenu
-            contact={menuContact}
-            tile={menu.tile}
-            left={menu.left}
-            top={menu.top}
-            onClose={() => setMenu(null)}
+          className="Helm"
+          ref={rootRef}
+          onClick={() => {
+            setMenu(null);
+            setDockMenu(null);
+          }}
+        >
+          <div
+            className={`Helm__plate ${FACEPLATE_ASSET ? 'Helm__plate--art' : ''}`}
+            style={
+              FACEPLATE_ASSET
+                ? { backgroundImage: `url("${resolveAsset(FACEPLATE_ASSET)}")` }
+                : undefined
+            }
           />
-        )}
+          {!FACEPLATE_ASSET && <div className="Helm__hazard" />}
 
-        {!!shipCrashed && (
-          <CrashOverlay current={repairCurrent} total={repairTotal} />
-        )}
-        {!shipCrashed && <AbandonedOverlay />}
-      </div>
+          <Panel rect={GEOMETRY.IDENT}>
+            <Ident />
+          </Panel>
+          <Panel rect={GEOMETRY.ZONE}>
+            <ZoneBadge />
+          </Panel>
+          <Panel rect={GEOMETRY.ALERT}>
+            <AlertStrip />
+          </Panel>
+
+          <Panel rect={GEOMETRY.HULL} label="Hull" aux="integrity">
+            <HullGauge />
+          </Panel>
+          <Panel rect={GEOMETRY.FUEL} label="Fuel" aux="drive mass">
+            <FuelStack />
+          </Panel>
+          <Panel rect={GEOMETRY.DRIVE} label="Drive" aux="thrust">
+            <DriveGauge />
+          </Panel>
+          <Panel rect={GEOMETRY.SENSOR} label="Sensors" aux="array">
+            <SensorDial />
+          </Panel>
+
+          <Panel rect={GEOMETRY.CHART} label="Navigation chart">
+            <Chart />
+          </Panel>
+          <Panel rect={GEOMETRY.DRAWER} label="Contacts">
+            <Drawer />
+          </Panel>
+
+          <Panel rect={GEOMETRY.THROT} label="Throttle">
+            <Throttle />
+          </Panel>
+          <Panel rect={GEOMETRY.ROSE} label="Helm">
+            <HelmRose />
+          </Panel>
+          <Panel rect={GEOMETRY.VELOC} label="Velocity">
+            <VelocityCluster />
+          </Panel>
+          <Panel rect={GEOMETRY.OPS} label="Operations">
+            <OpsRow />
+          </Panel>
+
+          {!!menu && (
+            <ContactMenu
+              contact={menuContact}
+              tile={menu.tile}
+              left={menu.left}
+              top={menu.top}
+              onClose={() => setMenu(null)}
+            />
+          )}
+          {!!dockMenu && (
+            <DockPickerMenu
+              left={dockMenu.left}
+              top={dockMenu.top}
+              onClose={() => setDockMenu(null)}
+            />
+          )}
+
+          {!!shipCrashed && (
+            <CrashOverlay current={repairCurrent} total={repairTotal} />
+          )}
+          {!shipCrashed && <AbandonedOverlay />}
+        </div>
+      </DockMenuControl.Provider>
     </MenuControl.Provider>
   );
 };
@@ -803,6 +873,7 @@ const ZoneBadge = () => {
  */
 const AlertStrip = () => {
   const { data } = useBackend<Data>();
+  const drift = useDrift(useContacts());
   const alerts: [string, string][] = [];
 
   if (data.isNotCrew && !data.isAbandoned) {
@@ -819,6 +890,24 @@ const AlertStrip = () => {
   }
   if (data.state === 'flying' && !data.canThrust) {
     alerts.push(['crit', 'No engine power']);
+  }
+  // Only a hazard earns the rail. Everything else the drift runs over is on the
+  // chart and in the ENDS readout, and none of it changes what you do next.
+  if (drift?.intercept && drift.intercept.contact.kind === 'hazard') {
+    alerts.push([
+      drift.intercept.ms <= 15000 ? 'crit' : 'warn',
+      // "Heading into" rather than "drifting into": the track is the velocity,
+      // so it is just as true of a ship burning straight at the thing.
+      `Heading into ${drift.intercept.contact.name} — ${clockOf(drift.intercept.ms)}`,
+    ]);
+  }
+  // Sits above the transition line: a crew that can't survive where they're
+  // going needs to read that before the countdown they're reading it during.
+  if (data.zone_advisory) {
+    alerts.push([
+      data.zone_advisory.critical ? 'crit' : 'warn',
+      data.zone_advisory.label,
+    ]);
   }
   if (data.zone_transitioning) {
     alerts.push([
@@ -1123,6 +1212,31 @@ const SensorDial = () => {
 const UNIT = 10;
 
 /**
+ * How far inside its tile a projected cell is drawn.
+ *
+ * The chart is smooth and the overmap is not: the ship moves in whole-tile hops,
+ * but a projection drawn as a polyline is a diagonal-free straight edge that
+ * lines up with nothing, so the crew can read a heading off it and not the tiles
+ * it actually passes through. The fix is to mark the tiles themselves — but at
+ * full tile size, consecutive cells on a straight track share their edges and
+ * merge back into one unbroken corridor. The inset is the gap that keeps them
+ * reading as separate hops.
+ *
+ * Drift sits inside the plotted course rather than on top of it, so where the
+ * autopilot is flying the ship and the two tracks coincide, they nest instead of
+ * covering each other.
+ */
+const PLOT_INSET = 1.2;
+const DRIFT_INSET = 2.2;
+
+/**
+ * Widest zoom, in tiles across the chart, that still leaves a projected cell big
+ * enough to hold its arrival clock, and fine enough for a per-tile grid to be a
+ * grid rather than a wash. Past it the marks stay and the text goes.
+ */
+const TILE_DETAIL_SPAN = 17;
+
+/**
  * Zoom is continuous, measured in overmap tiles visible across the chart, and
  * driven by the wheel or the slider under it. It replaced three preset buttons
  * (tactical / sector / whole chart) — the presets were always either too tight to
@@ -1145,6 +1259,177 @@ const PAN_THRESHOLD = 4;
 const clamp = (value: number, low: number, high: number) =>
   Math.max(low, Math.min(high, value));
 
+/**
+ * Ceiling on how far ahead a coasting ship is projected. A minute out, at the
+ * speeds a slow hull crosses tiles, the projection is stale long before the ship
+ * arrives — something will have moved or been steered around.
+ */
+const DRIFT_HORIZON_MS = 60000;
+
+/** ZONE_TRANSITION_TIME, for the hold the chart draws at a zone line. */
+const ZONE_TRANSITION_MS = 10000;
+
+/**
+ * Which concentric band a tile falls in, as calculate_zone_for_turf() decides it:
+ * distance from the sun over the map's max radius, against the two ring ratios.
+ *
+ * Every input is server-supplied — `centre` is SSovermap.overmap_centre, the
+ * ratios are ZONE_INNER/MIDDLE_RING_RATIO — so this is the same arithmetic the
+ * ship runs rather than a client-side guess at it. Only the band index matters;
+ * which colour it is doesn't.
+ */
+const bandOf = (
+  tileX: number,
+  tileY: number,
+  centre: number,
+  maxRadius: number,
+  ringInner: number,
+  ringMiddle: number,
+) => {
+  const normalized = Math.hypot(tileX - centre, tileY - centre) / maxRadius;
+  if (normalized < ringInner) return 2;
+  if (normalized < ringMiddle) return 1;
+  return 0;
+};
+
+type DriftTile = { x: number; y: number; step: number };
+
+type Drift = {
+  vector: [number, number];
+  /** Tiles the ship crosses from where it is now, nearest first. */
+  tiles: DriftTile[];
+  /** Where it ends up if nobody touches the controls, and how long that takes. */
+  end: DriftTile;
+  endMs: number;
+  /** One tile crossing, so a cell can label the clock it is reached at. */
+  stepMs: number;
+  /** The first thing the ship already knows about that the track runs over. */
+  intercept: { contact: Contact; step: number; ms: number } | null;
+  /**
+   * Set when a zone line cuts the projection short. The ship coasts to the last
+   * tile on this side of it and stops there for the crossing rather than
+   * carrying on — so `tiles` ends at the hold, and this is the tile beyond it.
+   * When it is reached is `endMs`, the same as any other end of the projection.
+   */
+  hold: { x: number; y: number } | null;
+};
+
+/** Which contact a tile holding several is named by. Danger outranks scenery. */
+const interceptRank = (contact: Contact) =>
+  contact.kind === 'hazard' ? 2 : contact.kind === 'nebula' ? 1 : 0;
+
+/**
+ * Where the ship ends up with the engines cold.
+ *
+ * Nothing out here slows a hull down: cut thrust and the velocity you have is
+ * the velocity you keep, so "coasting" is a course rather than a pause. The helm
+ * used to say nothing at all about it — the chart drew its heading tick off
+ * `burnDirection`, so the moment the crew stopped burning the only thing on
+ * screen pointing anywhere vanished, while the ship carried on crossing a tile
+ * every few seconds.
+ *
+ * `driftDirection` is taken from the velocity signs rather than the burn, so the
+ * steps here are exactly the ones tick_move() will take, wraparound included.
+ *
+ * The track runs as far as the sensor ring and no further. The console has no
+ * business drawing a course through space this hull has no way of knowing
+ * anything about — the same reason hazards are never charted beyond sight — and
+ * it keeps the projection inside the chart at the zoom the crew actually flies
+ * at, so the ghost at the end of it is on screen rather than somewhere off past
+ * the edge. It also means the radar tree buys reach on this too: base sensors
+ * project the four tiles the crew can already see, tier 3 projects ten.
+ */
+const useDrift = (contacts: Contact[]): Drift | null => {
+  const { data } = useBackend<Data>();
+  const {
+    x,
+    y,
+    chart,
+    driftDirection,
+    moveIntervalMs,
+    state,
+    burnDirection,
+    sensorRange,
+  } = data;
+
+  const vector = DIR_VECTOR[driftDirection];
+  if (!vector || !moveIntervalMs || state !== 'flying') return null;
+  // Nothing to project while the brake is on: decelerate() sheds the whole
+  // velocity in about a second, so a minute of coasting is a course the ship is
+  // in the middle of cancelling. The readouts say BRAKING there instead.
+  if (burnDirection === BURN_STOP) return null;
+
+  const size = chart?.size ?? 51;
+  // tick_move()'s own wraparound, in the chart's relative coordinates: the ship
+  // flies the band 2..size-1, and a step off either end lands on the far side.
+  const wrap = (value: number) =>
+    value <= 1 ? size - 1 : value >= size ? 2 : value;
+
+  const steps = clamp(
+    Math.round(DRIFT_HORIZON_MS / moveIntervalMs),
+    1,
+    Math.max(chart?.viewRange ?? 4, sensorRange ?? 4),
+  );
+
+  const onTile = new Map<string, Contact>();
+  for (const contact of contacts) {
+    const key = `${contact.x},${contact.y}`;
+    const held = onTile.get(key);
+    if (!held || interceptRank(contact) > interceptRank(held)) {
+      onTile.set(key, contact);
+    }
+  }
+
+  const centre = chart?.centre ?? (size - 1) / 2;
+  const maxRadius = (size - 1) / 2;
+  const ringInner = chart?.ringInner ?? 0.33;
+  const ringMiddle = chart?.ringMiddle ?? 0.66;
+  const bandAt = (tileX: number, tileY: number) =>
+    bandOf(tileX, tileY, centre, maxRadius, ringInner, ringMiddle);
+
+  const tiles: DriftTile[] = [];
+  let intercept: Drift['intercept'] = null;
+  let hold: Drift['hold'] = null;
+  let tileX = x;
+  let tileY = y;
+  for (let step = 1; step <= steps; step++) {
+    const nextX = wrap(tileX + vector[0]);
+    const nextY = wrap(tileY + vector[1]);
+
+    // A zone line is a full stop, not a tile the ship passes over: tick_move()
+    // hands the step to start_zone_transition(), which kills the velocity and
+    // parks the hull on this side for ZONE_TRANSITION_TIME. Projecting straight
+    // through would promise a position the ship has no way of reaching on the
+    // velocity it currently has.
+    if (bandAt(nextX, nextY) !== bandAt(tileX, tileY)) {
+      hold = { x: nextX, y: nextY };
+      break;
+    }
+
+    tileX = nextX;
+    tileY = nextY;
+    tiles.push({ x: tileX, y: tileY, step });
+    const contact = onTile.get(`${tileX},${tileY}`);
+    if (contact && !intercept) {
+      intercept = { contact, step, ms: step * moveIntervalMs };
+    }
+  }
+
+  // Falls back to the ship's own tile for a crossing that is one step away —
+  // there the projection is "you stop where you are", which is the truth.
+  const end = tiles.length ? tiles[tiles.length - 1] : { x, y, step: 0 };
+
+  return {
+    vector,
+    tiles,
+    end,
+    endMs: end.step * moveIntervalMs,
+    stepMs: moveIntervalMs,
+    intercept,
+    hold,
+  };
+};
+
 const Chart = () => {
   const { act, data } = useBackend<Data>();
   const {
@@ -1154,6 +1439,7 @@ const Chart = () => {
     sensorRange,
     transmissions = [],
     burnDirection,
+    driftDirection,
     speed,
     heading,
     eta,
@@ -1164,6 +1450,7 @@ const Chart = () => {
 
   const viewRange = chart?.viewRange ?? 4;
   const waypoints = useContacts();
+  const drift = useDrift(waypoints);
   const { selected, select } = useContext(Selection);
   const locked = useLocked();
 
@@ -1387,12 +1674,26 @@ const Chart = () => {
   ];
 
   const vector = DIR_VECTOR[burnDirection];
-  const heeling = vector
-    ? (Math.atan2(vector[0], vector[1]) * 180) / Math.PI
-    : 0;
+  // The nose follows the burn while the engines are lit and the direction of
+  // travel once they are cold. Off `burnDirection` alone, a coasting or braking
+  // ship's token swung back to due north and sat there pointing the wrong way
+  // for the whole crossing. Read straight off the dir rather than off the drift
+  // projection, which is deliberately absent under braking.
+  const nose = vector ?? DIR_VECTOR[driftDirection];
+  const heeling = nose ? (Math.atan2(nose[0], nose[1]) * 180) / Math.PI : 0;
 
   const gridLines: number[] = [];
   for (let i = 0; i <= size; i += 5) gridLines.push(i);
+
+  // The overmap moves in whole tiles, so the projection marks are tile-shaped —
+  // and a tile-shaped mark on a five-tile grid reads as an arbitrary rectangle
+  // floating in open space. The fine grid is the lattice it sits on. Only drawn
+  // once zoomed in far enough for the lines to be distinguishable from each
+  // other, since at full zoom-out fifty-one of them per axis is a flat wash.
+  const fineGrid: number[] = [];
+  if (zoomSpan <= TILE_DETAIL_SPAN) {
+    for (let i = 0; i <= size; i++) fineGrid.push(i);
+  }
 
   return (
     <div
@@ -1462,6 +1763,27 @@ const Chart = () => {
             </g>
           ))}
 
+          <g stroke="#74c8dd" strokeOpacity={0.028} strokeWidth={0.4}>
+            {fineGrid.map((i) => (
+              <line
+                key={`fv${i}`}
+                x1={i * UNIT}
+                y1={0}
+                x2={i * UNIT}
+                y2={extent}
+              />
+            ))}
+            {fineGrid.map((i) => (
+              <line
+                key={`fh${i}`}
+                x1={0}
+                y1={i * UNIT}
+                x2={extent}
+                y2={i * UNIT}
+              />
+            ))}
+          </g>
+
           <g stroke="#74c8dd" strokeOpacity={0.055} strokeWidth={0.6}>
             {gridLines.map((i) => (
               <line
@@ -1501,6 +1823,23 @@ const Chart = () => {
           />
           <circle cx={toX(centre)} cy={toY(centre)} r={7} fill="#f2a341" />
           </g>
+
+          {/*
+            Under the plotted course: where a course is flying the ship, the
+            drift is only ever a step behind it, and the two lines lie on top of
+            each other. Amber, because this is the ship's own state — the green
+            line is where it means to go, the amber one is where it is going.
+          */}
+          {!!drift && (
+            <DriftTrack
+              drift={drift}
+              from={[x, y]}
+              toX={toX}
+              toY={toY}
+              scale={markScale}
+              span={zoomSpan}
+            />
+          )}
 
           {!!autopilot?.engaged && (
             <PlottedCourse
@@ -1621,14 +1960,40 @@ const Chart = () => {
           <span className="Helm__hudKey">HDG</span>{' '}
           {burnDirection === BURN_STOP
             ? 'BRAKING'
-            : burnDirection === BURN_NONE
-              ? 'HOLDING'
-              : heading}
+            : burnDirection !== BURN_NONE
+              ? heading
+              : drift
+                ? // Cold engines and a moving ship is a course, not a stop, and
+                  // this line called it HOLDING either way.
+                  `DRIFT ${bearingOf(drift.vector[0], drift.vector[1])}`
+                : 'HOLDING'}
         </div>
         <div className="Helm__hudLine">
           <span className="Helm__hudKey">POS</span> {String(x).padStart(2, '0')}{' '}
           / {String(y).padStart(2, '0')}
         </div>
+        {!!drift && (
+          // Where the ship ends up on the velocity it already has, engines or
+          // no engines. The track on the chart says which way; this says where.
+          <div className="Helm__hudLine Helm--drift">
+            <span className="Helm__hudKey">ENDS</span>{' '}
+            {String(drift.end.x).padStart(2, '0')} /{' '}
+            {String(drift.end.y).padStart(2, '0')} · {clockOf(drift.endMs)}
+          </div>
+        )}
+        {!!drift?.intercept && (
+          <div
+            className={`Helm__hudLine ${
+              drift.intercept.contact.kind === 'hazard'
+                ? 'Helm--driftHazard'
+                : 'Helm--drift'
+            }`}
+          >
+            <span className="Helm__hudKey">PATH</span>{' '}
+            {drift.intercept.contact.name.toUpperCase()} ·{' '}
+            {clockOf(drift.intercept.ms)}
+          </div>
+        )}
       </div>
       <div className="Helm__hud Helm--tr">
         <div className="Helm__hudBig">{speed?.toFixed(1) ?? '0.0'}</div>
@@ -1710,6 +2075,227 @@ const Chart = () => {
 };
 
 /**
+ * The drift track: the tiles the ship crosses from here on the velocity it
+ * already has, and a ghost of it at the end of the horizon.
+ *
+ * Segments split on wraparound for the same reason PlottedCourse's do — a drift
+ * that leaves one edge and re-enters the other would otherwise draw one line
+ * straight back across the whole chart.
+ */
+const DriftTrack = (props: {
+  drift: Drift;
+  from: [number, number];
+  toX: (tile: number) => number;
+  toY: (tile: number) => number;
+  scale: number;
+  span: number;
+}) => {
+  const { drift, from, toX, toY, scale, span } = props;
+  const { tiles, end, intercept, hold } = drift;
+  // A crossing one step away leaves no tiles to draw, but the hold still has to
+  // be marked — that case is precisely the one the crew most needs to see.
+  if (!tiles.length && !hold) return null;
+
+  const segments: string[][] = [];
+  let current: string[] = [`${toX(from[0])},${toY(from[1])}`];
+  let previous = from;
+  for (const tile of tiles) {
+    if (
+      Math.abs(tile.x - previous[0]) > 1 ||
+      Math.abs(tile.y - previous[1]) > 1
+    ) {
+      if (current.length > 1) segments.push(current);
+      current = [];
+    }
+    current.push(`${toX(tile.x)},${toY(tile.y)}`);
+    previous = [tile.x, tile.y];
+  }
+  if (current.length > 1) segments.push(current);
+
+  const heeling =
+    (Math.atan2(drift.vector[0], drift.vector[1]) * 180) / Math.PI;
+  const hazard = intercept?.contact.kind === 'hazard';
+
+  const detailed = span <= TILE_DETAIL_SPAN;
+
+  return (
+    <g className="Helm__drift" pointerEvents="none">
+      {/*
+        The thread between the cells. It carries the whole reading when the tiles
+        are too small to mark individually, and drops back to a hint once they
+        aren't — at that zoom the cells say everything it does, and a dashed line
+        run through the middle of each of them only fights their clocks.
+      */}
+      {segments.map((segment) => (
+        <polyline
+          key={segment[0]}
+          points={segment.join(' ')}
+          fill="none"
+          stroke="#f2a341"
+          strokeWidth={1.2}
+          strokeOpacity={detailed ? 0.18 : 0.42}
+          strokeDasharray="3 6"
+          vectorEffect="non-scaling-stroke"
+        />
+      ))}
+
+      {/*
+        One cell per tile the ship crosses.
+
+        Drawn in map space at tile size rather than counter-scaled like the
+        glyphs: a mark that means "this tile" has to be the size of the tile at
+        every zoom, or it stops being an answer to which tile. Zoomed in far
+        enough for the cell to hold it, each one is labelled with the clock the
+        ship reaches it at — the per-tile version of the single endpoint ETA the
+        HUD line carries.
+
+        The track fades along its length. The near tiles are the ones a crew
+        still has time to steer on, and the middle of a minute-long projection
+        is the part most likely to be wrong by the time it arrives. The last
+        tile is exempt: it is the answer to where the ship ends up, which is the
+        question the whole track exists to answer, and fading it hardest for
+        being furthest away buries exactly that.
+      */}
+      {tiles.map((tile) => {
+        const struck = intercept?.step === tile.step;
+        const colour = struck && hazard ? '#cf4a38' : '#f2a341';
+        const fade =
+          tile.step === end.step
+            ? 1
+            : 1 - (0.5 * (tile.step - 1)) / Math.max(tiles.length - 1, 1);
+        return (
+          <g key={`cell-${tile.x}-${tile.y}-${tile.step}`}>
+            <rect
+              x={toX(tile.x) - UNIT / 2 + DRIFT_INSET}
+              y={toY(tile.y) - UNIT / 2 + DRIFT_INSET}
+              width={UNIT - DRIFT_INSET * 2}
+              height={UNIT - DRIFT_INSET * 2}
+              rx={0.7}
+              fill={colour}
+              fillOpacity={(struck ? 0.22 : 0.08) * fade}
+              stroke={colour}
+              strokeOpacity={(struck ? 0.95 : 0.5) * fade}
+              strokeWidth={struck ? 1.4 : 1}
+              vectorEffect="non-scaling-stroke"
+            />
+            {/*
+              Along the bottom edge rather than through the middle: a contact
+              glyph sits at the centre of its tile, and the tile the crew most
+              wants the clock for is the one with something on it.
+            */}
+            {!!detailed && (
+              <text
+                x={toX(tile.x)}
+                y={toY(tile.y) + UNIT / 2 - DRIFT_INSET - 0.5}
+                textAnchor="middle"
+                fill={colour}
+                fillOpacity={0.8 * fade}
+                fontSize={UNIT * 0.28}
+                fontFamily="ui-monospace, monospace"
+              >
+                {clockOf(tile.step * drift.stepMs)}
+              </text>
+            )}
+          </g>
+        );
+      })}
+
+      {/*
+        The zone line the track stops at. Drawn as a barred cell on the far side
+        rather than as another step: the ship does not go there on the velocity
+        it has, it stops short and spends ZONE_TRANSITION_TIME sitting still
+        first. Without this the projection just ended in open space for no
+        visible reason.
+      */}
+      {!!hold && (
+        <g>
+          <rect
+            x={toX(hold.x) - UNIT / 2 + DRIFT_INSET}
+            y={toY(hold.y) - UNIT / 2 + DRIFT_INSET}
+            width={UNIT - DRIFT_INSET * 2}
+            height={UNIT - DRIFT_INSET * 2}
+            rx={0.7}
+            fill="none"
+            stroke="#74c8dd"
+            strokeOpacity={0.65}
+            strokeWidth={1.1}
+            strokeDasharray="2 2"
+            vectorEffect="non-scaling-stroke"
+          />
+          {!!detailed && (
+            <text
+              x={toX(hold.x)}
+              y={toY(hold.y) + UNIT / 2 - DRIFT_INSET - 0.5}
+              textAnchor="middle"
+              fill="#74c8dd"
+              fillOpacity={0.85}
+              fontSize={UNIT * 0.26}
+              fontFamily="ui-monospace, monospace"
+            >
+              +{ZONE_TRANSITION_MS / 1000}s
+            </text>
+          )}
+        </g>
+      )}
+
+      {!!intercept && (
+        <g
+          transform={`translate(${toX(intercept.contact.x)},${toY(intercept.contact.y)})`}
+        >
+          <g style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}>
+            <circle
+              r={11}
+              fill="none"
+              stroke={hazard ? '#cf4a38' : '#f2a341'}
+              strokeWidth={1.2}
+              strokeOpacity={hazard ? 0.9 : 0.5}
+              strokeDasharray="4 3"
+            />
+          </g>
+        </g>
+      )}
+
+      {/*
+        The ghost: the hull's own silhouette, hollow, where it ends up. Skipped
+        when the crossing is the very next step, since "where it ends up" is the
+        tile it is already on and the ghost would sit on top of the real token.
+      */}
+      {!!tiles.length && (
+      <g transform={`translate(${toX(end.x)},${toY(end.y)})`}>
+        <g style={{ ...SVG_ORIGIN, transform: `scale(${1 / scale})` }}>
+          <path
+            d="M0,-7 L5,6 L0,3 L-5,6 Z"
+            fill="none"
+            stroke="#f2a341"
+            strokeWidth={1.2}
+            strokeOpacity={0.55}
+            transform={`rotate(${heeling})`}
+          />
+          {/*
+            Zoomed out past the per-tile clocks, the ghost carries the endpoint
+            one on its own — otherwise the whole projection loses its timing at
+            exactly the zoom where the crew is looking furthest ahead.
+          */}
+          {span > TILE_DETAIL_SPAN && (
+            <text
+              y={17}
+              textAnchor="middle"
+              fill="#f2a341"
+              fillOpacity={0.6}
+              fontSize={9}
+              fontFamily="ui-monospace, monospace"
+            >
+              {clockOf(drift.endMs)}
+            </text>
+          )}
+        </g>
+      </g>
+      )}
+    </g>
+  );
+};
+
+/**
  * The plotted course, drawn from the ship along the remaining path.
  *
  * Split into segments wherever consecutive steps aren't adjacent: the overmap
@@ -1759,6 +2345,34 @@ const PlottedCourse = (props: {
           vectorEffect="non-scaling-stroke"
         />
       ))}
+
+      {/*
+        The route's own tiles, on the same footing as the drift's: a course is
+        a list of tiles the ship will stand on, and the line between them is a
+        drawing convenience rather than anything the overmap does.
+
+        No clocks here. A plotted course runs as far as the crew asked for
+        rather than to the sensor horizon, so labelling every step of a
+        sector-crossing route buries the chart it is drawn on; the remaining
+        count and the destination ETA live in the autopilot readout instead.
+      */}
+      {path.map((point, index) => (
+        <rect
+          key={`plot-${point[0]}-${point[1]}-${index}`}
+          x={toX(point[0]) - UNIT / 2 + PLOT_INSET}
+          y={toY(point[1]) - UNIT / 2 + PLOT_INSET}
+          width={UNIT - PLOT_INSET * 2}
+          height={UNIT - PLOT_INSET * 2}
+          rx={0.7}
+          fill="#59b871"
+          fillOpacity={0.06}
+          stroke="#59b871"
+          strokeOpacity={0.45}
+          strokeWidth={1}
+          vectorEffect="non-scaling-stroke"
+        />
+      ))}
+
       <g
         transform={`translate(${toX(destination[0])},${toY(destination[1])})`}
       >
@@ -2049,6 +2663,53 @@ const ContactMenu = (props: {
           >
             <span className="Helm__menuLabel">{item.label}</span>
             {!!item.hint && <span className="Helm__menuHint">{item.hint}</span>}
+          </button>
+        ))
+      )}
+    </div>
+  );
+};
+
+/**
+ * The Dock button's option picker, opened only when `dockOptions` holds more
+ * than one entry (OpsRow dispatches straight to `act('dock', ...)` otherwise —
+ * see runDock() there). Rendered at the console root for the same clipping
+ * reason as ContactMenu above.
+ */
+const DockPickerMenu = (props: {
+  left: number;
+  top: number;
+  onClose: () => void;
+}) => {
+  const { left, top, onClose } = props;
+  const { act, data } = useBackend<Data>();
+  const options = data.dockOptions ?? [];
+
+  return (
+    <div
+      className="Helm__menu"
+      style={{ left: `${left}px`, top: `${top}px` }}
+      onClick={(event) => event.stopPropagation()}
+      onContextMenu={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+    >
+      <div className="Helm__menuHead">Dock with…</div>
+      {options.length === 0 ? (
+        <div className="Helm__menuEmpty">Nothing to dock with</div>
+      ) : (
+        options.map((option) => (
+          <button
+            key={option.ref ?? 'empty'}
+            type="button"
+            className="Helm__menuItem"
+            onClick={() => {
+              act('dock', option.ref ? { target: option.ref } : {});
+              onClose();
+            }}
+          >
+            <span className="Helm__menuLabel">{option.name}</span>
           </button>
         ))
       )}
@@ -2831,6 +3492,7 @@ const HelmRose = () => {
 const VelocityCluster = () => {
   const { data } = useBackend<Data>();
   const { speed = 0, heading, eta, burnPercentage, burnDirection } = data;
+  const drift = useDrift(useContacts());
 
   return (
     <div className="Helm__velocity">
@@ -2844,9 +3506,11 @@ const VelocityCluster = () => {
           <span className="Helm__v" style={{ fontSize: '1cqw' }}>
             {burnDirection === BURN_STOP
               ? 'Brake'
-              : burnDirection === BURN_NONE
-                ? 'Hold'
-                : heading}
+              : burnDirection !== BURN_NONE
+                ? heading
+                : drift
+                  ? `Coast ${bearingOf(drift.vector[0], drift.vector[1])}`
+                  : 'Hold'}
           </span>
         </div>
         <div className="Helm__metric">
@@ -2873,7 +3537,7 @@ const OpsButton = (props: {
   disabled?: boolean;
   state?: 'armed' | 'active';
   title: string;
-  onClick: () => void;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }) => (
   <button
     type="button"
@@ -2906,6 +3570,8 @@ const OpsRow = () => {
     undockCooldownRemaining,
     undockLocked,
     undockLockoutRemaining,
+    integrityLockout,
+    integrityLockoutRemaining,
     dockWarmup,
     dockWarmupRemaining,
     undockWarmup,
@@ -2917,13 +3583,20 @@ const OpsRow = () => {
     nebulaHideRemaining,
     zone_transitioning,
     calibrating,
-    dockTarget,
+    dockOptions,
     speed,
   } = data;
   const locked = useLocked();
+  const openDockPicker = useContext(DockMenuControl);
   const flyable = state === 'flying' && !shipDisabled && !locked;
-  const dockName = dockTarget?.name ?? 'empty space';
   const moving = !!speed;
+
+  const options = dockOptions ?? [];
+  const multipleDockOptions = options.length > 1;
+  const primaryDockOption = options[0];
+  const dockName = primaryDockOption?.name ?? 'empty space';
+  const runDock = (option?: DockOption) =>
+    act('dock', option?.ref ? { target: option.ref } : {});
 
   const undockDisabled =
     (state !== 'idle' && state !== 'undocking') ||
@@ -2931,8 +3604,22 @@ const OpsRow = () => {
     locked ||
     !!undockCooldown ||
     !!undockLocked ||
+    !!integrityLockout ||
     !!undockWarmup ||
     !!cargoShuttlePresent;
+
+  // 'docking', 'undocking' and 'acting' disable every control on this panel, so the ship
+  // looks neither docked nor flying and no button reacts. Name the state instead of
+  // shrugging with "Already underway" — a crew that can see "docking sequence in progress"
+  // knows to wait (or to call it in) rather than assuming the console is dead.
+  const manoeuvring =
+    state === 'docking' || state === 'undocking' || state === 'acting';
+  const manoeuvringLabel =
+    state === 'docking'
+      ? 'Docking sequence in progress'
+      : state === 'undocking'
+        ? 'Undocking sequence in progress'
+        : 'Plotting approach vector';
 
   const undockReason = () => {
     if (undockWarmup)
@@ -2942,6 +3629,12 @@ const OpsRow = () => {
       return `Systems stabilising — ${deciToSeconds(undockCooldownRemaining)}s`;
     if (undockLocked)
       return `Interdiction lockout — ${deciToSeconds(undockLockoutRemaining)}s`;
+    // Says "hull failure", not "hull damaged" — by the time a crew reads this the breach is
+    // usually welded and the integrity gauge is back on 100%, and a reason phrased in the
+    // present tense would look like the console arguing with its own readout.
+    if (integrityLockout)
+      return `Hull failure — recertification ${deciToClock(integrityLockoutRemaining)}`;
+    if (manoeuvring) return manoeuvringLabel;
     if (state !== 'idle' && state !== 'undocking') return 'Already underway';
     return 'Clear moorings and get underway';
   };
@@ -2959,9 +3652,13 @@ const OpsRow = () => {
               ? `hold ${deciToSeconds(undockCooldownRemaining)}s`
               : undockLocked
                 ? `locked ${deciToSeconds(undockLockoutRemaining)}s`
-                : cargoShuttlePresent
-                  ? 'shuttle aboard'
-                  : 'moorings'
+                : integrityLockout
+                  ? `recert ${deciToClock(integrityLockoutRemaining)}`
+                  : cargoShuttlePresent
+                    ? 'shuttle aboard'
+                    : manoeuvring
+                      ? `${state}…`
+                      : 'moorings'
         }
         path="M9 4h6v4h5v12H4V8h5V4zm3 5v7m0 0l-3-3m3 3l3-3"
         disabled={undockDisabled}
@@ -2972,9 +3669,18 @@ const OpsRow = () => {
       <OpsButton
         label="Dock"
         // Says what is actually under the ship. This button used to only ever dock
-        // into empty space and refused outright when anything shared the tile.
+        // into empty space and refused outright when anything shared the tile, then
+        // only ever offered the first real candidate found — now it lists every
+        // dockable thing sharing the tile and only asks the crew to choose when
+        // there's more than one.
         sub={
-          dockWarmup ? `${deciToSeconds(dockWarmupRemaining)}s` : dockName
+          dockWarmup
+            ? `${deciToSeconds(dockWarmupRemaining)}s`
+            : manoeuvring
+              ? `${state}…`
+              : multipleDockOptions
+                ? `${options.length} options`
+                : dockName
         }
         path="M12 3v10m0 0l-3-3m3 3l3-3M4 17h16v4H4z"
         disabled={
@@ -2988,13 +3694,21 @@ const OpsRow = () => {
         title={
           dockWarmup
             ? `Docking in ${deciToSeconds(dockWarmupRemaining)}s`
-            : moving
-              ? `Come to a full stop to dock with ${dockName}`
-              : dockTarget?.isEmpty
-                ? 'Hold position here in empty space'
-                : `Dock with ${dockName}`
+            : manoeuvring
+              ? manoeuvringLabel
+              : moving
+                ? multipleDockOptions
+                  ? 'Come to a full stop to dock'
+                  : `Come to a full stop to dock with ${dockName}`
+                : multipleDockOptions
+                  ? `Choose from ${options.length} docking options here`
+                  : primaryDockOption?.isEmpty
+                    ? 'Hold position here in empty space'
+                    : `Dock with ${dockName}`
         }
-        onClick={() => act('dock')}
+        onClick={(event) =>
+          multipleDockOptions ? openDockPicker(event) : runDock(primaryDockOption)
+        }
       />
       <OpsButton
         label={hiddenInNebula ? 'Emerge' : 'Cloak'}

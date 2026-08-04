@@ -1,4 +1,17 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/robot/boss,
+/obj/structure/closet/crate/zone_loot/wardrobe,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/hotel)
+"ab" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/iron/grimy,
+/area/ruin/space/has_grav/hotel)
+"ac" = (
+/obj/effect/zone_mobs/robot,
+/turf/open/floor/iron/dark/side,
+/area/ruin/space/has_grav/hotel/dock)
 "ae" = (
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/south,
@@ -224,15 +237,6 @@
 /turf/open/floor/iron/showroomfloor,
 /area/ruin/space/has_grav/hotel/guestroom/room_6)
 "cf" = (
-/turf/open/floor/iron/grimy,
-/area/ruin/space/has_grav/hotel)
-"ab" = (
-/obj/effect/zone_mobs/robot,
-/turf/open/floor/iron/grimy,
-/area/ruin/space/has_grav/hotel)
-"aa" = (
-/obj/effect/zone_mobs/robot/boss,
-/obj/structure/closet/crate/zone_loot/wardrobe/rare,
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/hotel)
 "ch" = (
@@ -2912,10 +2916,6 @@
 /turf/template_noop,
 /area/template_noop)
 "FT" = (
-/turf/open/floor/iron/dark/side,
-/area/ruin/space/has_grav/hotel/dock)
-"ac" = (
-/obj/effect/zone_mobs/robot,
 /turf/open/floor/iron/dark/side,
 /area/ruin/space/has_grav/hotel/dock)
 "FV" = (

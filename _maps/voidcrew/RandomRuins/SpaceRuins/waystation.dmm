@@ -1,4 +1,22 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/structure/closet/crate/zone_loot/syndicate,
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/red/line{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered/waystation/assaultpod)
+"ab" = (
+/obj/effect/zone_mobs/syndicate/boss,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/waystation/cargooffice)
+"ac" = (
+/obj/effect/zone_mobs/syndicate,
+/turf/open/floor/iron,
+/area/ruin/space/has_grav/waystation/cargobay)
 "ar" = (
 /obj/machinery/vending/coffee,
 /obj/effect/turf_decal/siding/green,
@@ -90,10 +108,6 @@
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/waystation/cargooffice)
 "bW" = (
-/turf/open/floor/iron,
-/area/ruin/space/has_grav/waystation/cargobay)
-"ac" = (
-/obj/effect/zone_mobs/syndicate,
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/waystation/cargobay)
 "cn" = (
@@ -2735,16 +2749,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered/waystation/assaultpod)
-"aa" = (
-/obj/structure/closet/crate/zone_loot/syndicate/rare,
-/obj/effect/turf_decal/stripes/red/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/red/line{
-	dir = 4
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/ruin/space/has_grav/powered/waystation/assaultpod)
 "WF" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
@@ -2924,10 +2928,6 @@
 /turf/open/floor/iron,
 /area/ruin/space/has_grav/waystation/cargobay)
 "Ze" = (
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/waystation/cargooffice)
-"ab" = (
-/obj/effect/zone_mobs/syndicate/boss,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/waystation/cargooffice)
 "Zf" = (

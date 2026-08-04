@@ -174,6 +174,7 @@
 	var/mob_chance_mult = 1
 	var/mob_upgrade_prob = 0
 	var/spawner_budget = ZONE_PLANET_SPAWNER_BUDGET_GREEN
+	var/anomaly_budget = ZONE_PLANET_ANOMALY_BUDGET_GREEN
 	// Megafauna are apex content and stay out of the shallow end entirely - a green-zone
 	// planet is where a crew takes its first landing.
 	var/megafauna_allowed = FALSE
@@ -185,11 +186,13 @@
 			mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_YELLOW
 			mob_upgrade_prob = ZONE_PLANET_MOB_UPGRADE_PROB_YELLOW
 			spawner_budget = ZONE_PLANET_SPAWNER_BUDGET_YELLOW
+			anomaly_budget = ZONE_PLANET_ANOMALY_BUDGET_YELLOW
 			megafauna_allowed = TRUE
 		if(ZONE_RED)
 			mob_chance_mult = ZONE_PLANET_MOB_CHANCE_MULT_RED
 			mob_upgrade_prob = ZONE_PLANET_MOB_UPGRADE_PROB_RED
 			spawner_budget = ZONE_PLANET_SPAWNER_BUDGET_RED
+			anomaly_budget = ZONE_PLANET_ANOMALY_BUDGET_RED
 			megafauna_allowed = TRUE
 
 	// Structure spawners and megafauna are placed after the pass, not during it. Both are
@@ -313,10 +316,12 @@
 
 	var/spawners_placed = place_budgeted_spawners(spawner_candidates, spawner_budget)
 	var/megafauna_placed = place_planet_megafauna(megafauna_candidates)
+	var/anomalies_placed = place_budgeted_anomalies(turfs, anomaly_budget)
 
 	log_world("[name] terrain population finished in [(REALTIMEOFDAY - start_time)/10]s! \
 		spawners [spawners_placed]/[length(spawner_candidates)] (budget [spawner_budget]), \
-		megafauna [megafauna_placed]/[length(megafauna_candidates)]")
+		megafauna [megafauna_placed]/[length(megafauna_candidates)], \
+		anomalies [anomalies_placed] (budget [anomaly_budget])")
 
 /**
  * Places up to `budget` structure spawners from the candidate turfs the terrain pass
@@ -349,6 +354,61 @@
 
 		var/spawner_type = candidates[candidate]
 		new spawner_type(candidate)
+		placed_at += candidate
+		placed++
+		CHECK_TICK
+
+	return placed
+
+/**
+ * Seeds up to `budget` anomalies on the planet's open ground, keeping them
+ * ZONE_PLANET_ANOMALY_SPACING apart. Returns how many were placed.
+ *
+ * Unlike spawners and megafauna this banks no candidates during the terrain pass. It
+ * needs no biome table - any open ground will do - and that loop is already the expensive
+ * half of a planet build, so it gets no extra work per turf. Turfs are drawn at random
+ * instead: pick() is O(1), where walking the list in order would put every anomaly in the
+ * low corner of the map, get_block() handing out turfs row-major.
+ *
+ * The draw is attempt-bounded rather than exhaustive. A planet whose open ground is
+ * nearly all spoken for seeds fewer anomalies than its budget, which is the right way to
+ * fail: this is optional scenery, not something worth stalling a build over.
+ */
+/datum/map_generator/planet_generator/proc/place_budgeted_anomalies(list/turfs, budget)
+	if(!length(turfs) || budget <= 0)
+		return 0
+
+	var/list/placed_at = list()
+	var/placed = 0
+
+	for(var/attempt in 1 to PLANET_ANOMALY_PLACEMENT_ATTEMPTS)
+		if(placed >= budget)
+			break
+
+		var/turf/candidate = pick(turfs)
+		if(!isturf(candidate) || candidate.density)
+			continue
+
+		// The same rule the terrain pass uses for flora, features and fauna: only ground
+		// this generator actually laid down. Keeps anomalies off rivers, lava and walls.
+		var/datum/biome/candidate_biome = candidate.generating_biome
+		if(!candidate_biome || !(candidate.type in candidate_biome.open_turf_types))
+			continue
+
+		// Don't bury one under a rock, a tendril or anything else the pass already placed.
+		if((locate(/obj/structure) in candidate) || (locate(/mob/living) in candidate))
+			continue
+
+		var/too_close = FALSE
+		for(var/turf/taken as anything in placed_at)
+			if(get_dist(candidate, taken) < ZONE_PLANET_ANOMALY_SPACING)
+				too_close = TRUE
+				break
+		if(too_close)
+			continue
+
+		var/anomaly_type = pickweight(GLOB.voidcrew_planet_anomalies)
+		new anomaly_type(candidate)
 		placed_at += candidate
 		placed++
 		CHECK_TICK

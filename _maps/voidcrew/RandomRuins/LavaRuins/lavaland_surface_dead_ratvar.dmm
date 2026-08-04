@@ -27,15 +27,6 @@
 "h" = (
 /turf/open/floor/bronze/filled/lavaland,
 /area/ruin/unpowered/ratvar)
-"I" = (
-/obj/effect/zone_mobs/cult,
-/turf/open/floor/bronze/filled/lavaland,
-/area/ruin/unpowered/ratvar)
-"q" = (
-/obj/effect/zone_mobs/cult/boss,
-/obj/structure/closet/crate/zone_loot/occult/rare,
-/turf/open/floor/bronze/filled/lavaland,
-/area/ruin/unpowered/ratvar)
 "i" = (
 /obj/structure/grille/broken,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
@@ -48,10 +39,6 @@
 /turf/open/floor/bronze/filled/lavaland,
 /area/ruin/unpowered/ratvar)
 "l" = (
-/turf/open/lava/smooth/lava_land_surface,
-/area/ruin/unpowered/ratvar)
-"H" = (
-/obj/effect/zone_mobs/cult,
 /turf/open/lava/smooth/lava_land_surface,
 /area/ruin/unpowered/ratvar)
 "m" = (
@@ -68,6 +55,11 @@
 /area/ruin/unpowered/ratvar)
 "p" = (
 /obj/structure/fluff/clockwork/alloy_shards/medium,
+/turf/open/floor/bronze/filled/lavaland,
+/area/ruin/unpowered/ratvar)
+"q" = (
+/obj/effect/zone_mobs/cult/boss,
+/obj/structure/closet/crate/zone_loot/occult,
 /turf/open/floor/bronze/filled/lavaland,
 /area/ruin/unpowered/ratvar)
 "r" = (
@@ -135,6 +127,14 @@
 "G" = (
 /obj/item/stack/sheet/bronze/thirty,
 /turf/open/misc/asteroid/basalt/lava_land_surface,
+/area/ruin/unpowered/ratvar)
+"H" = (
+/obj/effect/zone_mobs/cult,
+/turf/open/lava/smooth/lava_land_surface,
+/area/ruin/unpowered/ratvar)
+"I" = (
+/obj/effect/zone_mobs/cult,
+/turf/open/floor/bronze/filled/lavaland,
 /area/ruin/unpowered/ratvar)
 
 (1,1,1) = {"

@@ -252,7 +252,7 @@
 
 	// Not an else-if because we're probably equipped in another slot
 	if(item_dropping == internal && (QDELETED(src) || QDELETED(item_dropping) || item_dropping.loc != src))
-		cutoff_internals()
+		cutoff_internals("tank unequipped from slot, newloc=[item_dropping.loc]")
 		if(!QDELETED(src))
 			update_mob_action_buttons(UPDATE_BUTTON_STATUS)
 
@@ -384,11 +384,24 @@
 	return close_internals(is_external)
 
 /// Prepares emergency disconnect from open air tanks and notifies in chat. Usually called after mob suddenly unequips breathing apparatus.
-/mob/living/carbon/proc/cutoff_internals()
+/// reason names the call site so intermittent cutoffs can be traced - see log_internals_cutoff().
+/mob/living/carbon/proc/cutoff_internals(reason = "unspecified")
 	if (!external && !internal)
 		return
+	log_internals_cutoff(reason)
 	to_chat(src, span_notice("Your internals disconnect from [external || internal] and the valve closes."))
 	close_all_airtanks()
+
+/**
+ * Records why an open air tank was cut off, plus everything invalid_internals() reads.
+ * Cutoffs have been reported during shuttle docking with the tank still slotted and the mask
+ * still worn, which no call path explains - this dumps the state at the moment it happens.
+ * Goes to the shuttle log so it lands next to the dock entries for the same tick.
+ */
+/mob/living/carbon/proc/log_internals_cutoff(reason)
+	var/obj/item/tank/closing = external || internal
+	var/atom/tank_loc = closing.loc
+	log_shuttle("INTERNALS CUTOFF: [key_name(src)] at [AREACOORD(src)] reason=[reason] tank=[closing.type] ([external ? "external" : "internal"]) tank_loc=[tank_loc] ([tank_loc?.type]) loc_is_mob=[tank_loc == src ? "yes" : "NO"] apparatus=[can_breathe_internals() || "NONE"] mask=[wear_mask ? "[wear_mask.type] up=[wear_mask.up] flags=[wear_mask.clothing_flags]" : "NONE"] head=[head ? "[head.type] flags=[head.clothing_flags]" : "NONE"] tube=[can_breathe_tube() ? "yes" : "no"] stat=[stat]")
 
 /**
  * Toggles the given internal air tank open, or close the currently open one, if a compatible breathing apparatus is found.

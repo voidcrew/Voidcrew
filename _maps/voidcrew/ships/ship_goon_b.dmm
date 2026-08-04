@@ -157,6 +157,14 @@
 "fR" = (
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/bridge/b)
+"gR" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium{
+	color = "#6E63A8"
+	},
+/area/shuttle/voidcrew/goon/medbay/b)
 "hF" = (
 /obj/structure/window/reinforced/spawner/directional/north,
 /obj/machinery/light/cold/directional/east,
@@ -212,6 +220,15 @@
 "sg" = (
 /turf/open/floor/mineral/titanium{
 	color = "#4F4C88"
+	},
+/area/shuttle/voidcrew/goon/commons/b)
+"so" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 8
+	},
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall/mineral/titanium{
+	color = "#6E63A8"
 	},
 /area/shuttle/voidcrew/goon/commons/b)
 "ss" = (
@@ -305,7 +322,9 @@
 /obj/machinery/atmospherics/components/binary/volume_pump{
 	dir = 8
 	},
-/obj/machinery/power/terminal,
+/obj/machinery/power/terminal{
+	dir = 1
+	},
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/medbay/b)
@@ -536,6 +555,14 @@
 /obj/structure/window/reinforced/plasma/spawner,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/engineering/b)
+"PC" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 4
+	},
+/turf/closed/wall/mineral/titanium{
+	color = "#6E63A8"
+	},
+/area/shuttle/voidcrew/goon/bridge/b)
 "Ql" = (
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/blue,
@@ -726,7 +753,7 @@ aX
 "}
 (6,1,1) = {"
 IZ
-cm
+gR
 aa
 ui
 aa
@@ -876,7 +903,7 @@ fR
 fR
 JH
 Tk
-Tk
+PC
 IZ
 IZ
 "}

@@ -607,7 +607,7 @@
 /area/ruin/space/has_grav/powered)
 "BG" = (
 /obj/effect/zone_mobs/cult/boss,
-/obj/structure/closet/crate/zone_loot/occult/rare,
+/obj/structure/closet/crate/zone_loot/occult,
 /turf/open/floor/engine/cult,
 /area/ruin/space/has_grav/powered)
 "Db" = (
@@ -770,6 +770,11 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/powered)
+"PR" = (
+/obj/structure/closet/crate/zone_loot/occult,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
 "QF" = (
 /obj/structure/table/wood,
 /obj/item/reagent_containers/cup/glass/bottle/wine{
@@ -828,6 +833,12 @@
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
+/area/ruin/space/has_grav/powered)
+"XJ" = (
+/obj/structure/closet/crate/zone_loot/occult,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/royalblack,
 /area/ruin/space/has_grav/powered)
 "XO" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -991,7 +1002,7 @@ Ni
 Kk
 Db
 aJ
-Jw
+XJ
 VO
 tT
 fO
@@ -1080,7 +1091,7 @@ aO
 rr
 aV
 aV
-aV
+PR
 aO
 rr
 wA
@@ -1530,7 +1541,7 @@ aO
 of
 aV
 aV
-aV
+PR
 aO
 aU
 aU

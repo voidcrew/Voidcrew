@@ -441,7 +441,7 @@
 
 /datum/vestige_boon/spell/held_breath/long_exposure
 	name = "Long Exposure"
-	desc = "For seventy-five seconds, cold, low pressure and lack of air all stop hurting you, and empty space holds your feet like floor. Long enough to work out there instead of counting down to the nearest airlock."
+	desc = "For much longer, cold, low pressure and lack of air all stop hurting you, and empty space holds your feet like floor. Long enough to work out there instead of counting down to the nearest airlock."
 	grant_text = "The void has stopped treating you as a visitor."
 	upgrades_from = /datum/vestige_boon/spell/held_breath
 	spell_type = /datum/action/cooldown/spell/vestige_held_breath/long_exposure
@@ -488,7 +488,7 @@
  */
 /datum/action/cooldown/mob_cooldown/charge/vestige_dash/unbroken
 	name = "Unbroken Dash"
-	desc = "Charge at a target and pass straight through. Whoever you hit gets knocked down and left behind you."
+	desc = "Charge at a target and pass straight through. They're knocked down and left behind you."
 	cooldown_time = 15 SECONDS
 	charge_distance = 9
 	charge_past = 1
@@ -522,7 +522,7 @@
 
 /datum/action/cooldown/spell/vestige_held_breath/long_exposure
 	name = "Long Exposure"
-	desc = "For longer, cold, low pressure and lack of air all stop hurting you, and empty space holds you up like floor."
+	desc = "For longer, cold, low pressure and lack of air all stop hurting you, and you can walk on empty space."
 	cooldown_time = 2 MINUTES
 	adaptation_type = /datum/status_effect/vestige_held_breath/long_exposure
 
@@ -575,7 +575,7 @@
  */
 /datum/action/cooldown/spell/pointed/vestige_beckon
 	name = "Come to the Window"
-	desc = "Mark someone at a distance; a moment later they are dragged several tiles toward you. Breaking your line of sight or being buckled down defeats the pull."
+	desc = "Mark someone at a distance; a moment later they're dragged several tiles toward you. Breaking line of sight or being buckled down stops it."
 	button_icon = 'icons/mob/actions/actions_ecult.dmi'
 	button_icon_state = "voidpull"
 	background_icon_state = "bg_void"
@@ -651,7 +651,7 @@
  */
 /datum/action/cooldown/spell/pointed/vestige_glass_phase
 	name = "Through the Pane"
-	desc = "Press against an adjacent window or grille and slowly pass through to the far side. Electrified grilles will stop you."
+	desc = "Slowly push through an adjacent window or grille to the far side. Electrified grilles stop you."
 	button_icon = 'icons/mob/actions/actions_minor_antag.dmi'
 	button_icon_state = "ninja_phase"
 	background_icon_state = "bg_void"

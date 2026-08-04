@@ -103,6 +103,15 @@
 	return "That item doesn't satisfy this contract."
 
 /**
+ * Whether the item is the RIGHT KIND for this ask, ignoring every quantity or
+ * quality gate. Turn-in points use it to tell "you're holding nothing like it"
+ * apart from "you're holding it but it falls short", so the refusal can name
+ * the real shortfall instead of telling someone to hold what they're holding.
+ */
+/datum/mission_objective/proc/matches_ask(obj/item/item)
+	return FALSE
+
+/**
  * Consumes an accepted item and advances the objective. Only called after
  * can_turn_in() passed. Returns MISSION_ITEM_COMPLETE when the objective is
  * finished, MISSION_ITEM_PROGRESS when it still wants more.

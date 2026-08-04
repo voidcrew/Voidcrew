@@ -1,6 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aa" = (
-/obj/structure/closet/crate/zone_loot/syndicate/rare,
+/obj/structure/closet/crate/zone_loot/syndicate,
 /turf/open/floor/plating,
 /area/ruin/unpowered)
 "ab" = (
@@ -11,6 +11,12 @@
 /obj/effect/zone_mobs/syndicate,
 /turf/open/floor/engine,
 /area/ruin/unpowered)
+"ad" = (
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 4
+	},
+/turf/open/floor/iron/dark,
+/area/ruin/unpowered)
 "ae" = (
 /obj/effect/mapping_helpers/burnt_floor,
 /obj/effect/zone_mobs/syndicate,
@@ -19,12 +25,6 @@
 "af" = (
 /obj/effect/zone_mobs/syndicate,
 /turf/open/floor/plating,
-/area/ruin/unpowered)
-"ad" = (
-/obj/machinery/atmospherics/components/unary/portables_connector/visible{
-	dir = 4
-	},
-/turf/open/floor/iron/dark,
 /area/ruin/unpowered)
 "bl" = (
 /turf/open/misc/wasteland/lit,
@@ -231,6 +231,7 @@
 "IY" = (
 /obj/machinery/power/smes,
 /turf/open/floor/plating{
+	
 	})
 "Jn" = (
 /turf/open/floor/pod/dark,
@@ -249,6 +250,7 @@
 /obj/item/ammo_box/magazine/smgm45,
 /obj/effect/mapping_helpers/burnt_floor,
 /turf/open/floor/plating{
+	
 	},
 /area/ruin/unpowered)
 "NA" = (

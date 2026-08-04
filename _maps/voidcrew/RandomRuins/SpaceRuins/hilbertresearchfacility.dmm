@@ -1,4 +1,17 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/effect/zone_mobs/bug/boss,
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/floor/circuit/green/anim,
+/area/ruin/space/has_grav/powered/hilbertresearchfacility/secretroom)
+"ab" = (
+/obj/effect/zone_mobs/bug,
+/turf/open/floor/glass,
+/area/ruin/space/has_grav/powered/hilbertresearchfacility)
+"ac" = (
+/obj/effect/zone_mobs/bug,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/powered/hilbertresearchfacility)
 "ae" = (
 /obj/structure/holosign/barrier/atmos/tram,
 /turf/open/floor/engine,
@@ -723,11 +736,6 @@
 "sj" = (
 /turf/open/floor/circuit/green/anim,
 /area/ruin/space/has_grav/powered/hilbertresearchfacility/secretroom)
-"aa" = (
-/obj/effect/zone_mobs/bug/boss,
-/obj/structure/closet/crate/zone_loot/research/rare,
-/turf/open/floor/circuit/green/anim,
-/area/ruin/space/has_grav/powered/hilbertresearchfacility/secretroom)
 "sz" = (
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/space/has_grav/powered/hilbertresearchfacility)
@@ -1234,10 +1242,6 @@
 "CO" = (
 /turf/open/floor/glass,
 /area/ruin/space/has_grav/powered/hilbertresearchfacility)
-"ab" = (
-/obj/effect/zone_mobs/bug,
-/turf/open/floor/glass,
-/area/ruin/space/has_grav/powered/hilbertresearchfacility)
 "CP" = (
 /obj/machinery/door/airlock/science{
 	name = "Botany"
@@ -1608,10 +1612,6 @@
 /turf/open/floor/iron/grimy,
 /area/ruin/space/has_grav/powered/hilbertresearchfacility)
 "La" = (
-/turf/open/floor/mineral/plastitanium,
-/area/ruin/space/has_grav/powered/hilbertresearchfacility)
-"ac" = (
-/obj/effect/zone_mobs/bug,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered/hilbertresearchfacility)
 "Lh" = (

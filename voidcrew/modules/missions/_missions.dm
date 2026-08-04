@@ -85,8 +85,13 @@
 	// ===== TARGET =====
 	/// Where the mission points on the overmap, if anywhere
 	var/datum/mission_target/target
+	/// Zone band (ZONE_*) this offer would rather point at, or null for no
+	/// preference. Set by whoever posts the offer - SSmissions steers boards on
+	/// ships with no combat research toward Neutral space. The target honours it
+	/// where it can and ignores it where it can't, so it never fails generation.
+	var/preferred_zone
 	/// Display name of the target's zone at generation time
-	var/target_zone_name = "Unknown Zone"
+	var/target_zone_name = MISSION_ZONE_UNKNOWN
 	/// Flavor name of the thing being recovered/hunted/planted, if any
 	var/objective_name
 
@@ -116,9 +121,12 @@
 	/// linked later still gets the full set and cleanup drops every tag.
 	var/list/aux_gps_beacons
 
-/datum/mission/New(datum/outpost_shop/shop)
+/datum/mission/New(datum/outpost_shop/shop, preferred_zone)
 	. = ..()
 	src.shop = shop
+	// Has to land before generate_mission_details(): setup_target() builds the
+	// target datum, which copies this off us in its own New().
+	src.preferred_zone = preferred_zone
 	posted_at = world.time
 	generate_mission_details()
 
@@ -610,6 +618,27 @@
 	return "This contract can't be turned in here."
 
 /**
+ * The best item in the user's hands to offer this contract: the first that
+ * satisfies the ask outright, or failing that the first that is the right KIND
+ * of goods. The near-miss matters — it lets a refusal name the real shortfall
+ * ("Need 30, only have 12") instead of telling someone holding the goods to go
+ * hold the goods. Returns null when nothing in hand is even close.
+ *
+ * Callers must re-check can_turn_in() on the result; a near-miss comes back too.
+ */
+/datum/mission/proc/pick_offered_item(mob/living/user)
+	if(!isliving(user) || !requires_item)
+		return null
+	var/datum/mission_objective/objective = current_objective()
+	var/obj/item/near_miss
+	for(var/obj/item/held in user.held_items)
+		if(can_turn_in(held))
+			return held
+		if(!near_miss && objective?.matches_ask(held))
+			near_miss = held
+	return near_miss
+
+/**
  * Short archetype tag for UI iconography ("procurement", "bounty", ...).
  */
 /datum/mission/proc/get_archetype()
@@ -922,6 +951,20 @@
 	return "label"
 
 /**
+ * Returns the UI color for the band the target sits in. Same scale as the
+ * difficulty tag, since zone and difficulty move together.
+ */
+/datum/mission/proc/get_zone_color()
+	switch(target_zone_name)
+		if(ZONE_NAME_GREEN)
+			return "good"
+		if(ZONE_NAME_YELLOW)
+			return "average"
+		if(ZONE_NAME_RED)
+			return "bad"
+	return "label"
+
+/**
  * Returns the time remaining until mission timeout in deciseconds.
  */
 /datum/mission/proc/get_time_remaining()
@@ -996,6 +1039,8 @@
 		"difficulty" = difficulty,
 		"difficulty_name" = get_difficulty_name(),
 		"difficulty_color" = get_difficulty_color(),
+		"zone_name" = (target_zone_name == MISSION_ZONE_UNKNOWN) ? null : target_zone_name,
+		"zone_color" = get_zone_color(),
 		"requires_item" = requires_item,
 		"voucher_count" = voucher_count,
 		"research_reward" = research_reward,

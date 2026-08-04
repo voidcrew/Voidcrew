@@ -339,7 +339,7 @@
 /area/ruin/space/has_grav/powered)
 "jR" = (
 /obj/effect/zone_mobs/bug/boss,
-/obj/structure/closet/crate/zone_loot/research/rare,
+/obj/structure/closet/crate/zone_loot/research,
 /obj/effect/turf_decal/box,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
@@ -362,6 +362,10 @@
 "kN" = (
 /obj/structure/filingcabinet,
 /turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
+"lf" = (
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/floor/iron/white,
 /area/ruin/space/has_grav/powered)
 "ll" = (
 /obj/structure/table/reinforced,
@@ -510,6 +514,10 @@
 /obj/effect/spawner/random/trash/garbage,
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
+"wd" = (
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/floor/iron/dark/textured,
+/area/ruin/space/has_grav/powered)
 "wm" = (
 /obj/machinery/shower/directional/south,
 /turf/open/floor/iron/white,
@@ -519,6 +527,10 @@
 /obj/effect/decal/cleanable/glass,
 /obj/item/shard,
 /turf/open/floor/iron/white,
+/area/ruin/space/has_grav/powered)
+"xx" = (
+/obj/structure/closet/crate/zone_loot/research,
+/turf/open/floor/carpet,
 /area/ruin/space/has_grav/powered)
 "xH" = (
 /obj/structure/spider/stickyweb,
@@ -1331,7 +1343,7 @@ at
 aj
 aj
 aw
-aw
+xx
 aw
 at
 aD
@@ -1382,7 +1394,7 @@ SQ
 DH
 af
 af
-af
+lf
 hx
 yb
 af
@@ -1602,7 +1614,7 @@ Io
 aU
 pp
 aU
-aU
+wd
 at
 aD
 "}

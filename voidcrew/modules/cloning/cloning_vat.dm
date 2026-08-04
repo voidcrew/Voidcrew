@@ -448,7 +448,7 @@
 	description = "Grows a mindless spare body from a genetic imprint, ready to wake up in when you die. The imprint has to be taken while you're still alive."
 	prereq_ids = list(TECHWEB_NODE_MEDBAY_EQUIP_ADV)
 	design_ids = list("cloning_vat")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = TECHWEB_TIER_4_POINTS)
 
 #undef CLONING_VAT_GROWTH_TIME
 #undef CLONING_VAT_DECAY_MULT

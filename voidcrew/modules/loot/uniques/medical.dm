@@ -2,7 +2,7 @@
  * # Medical uniques — cold-chain pharmacy cache
  *
  * Rare-tier prizes for the medical loot cache (voidcrew/modules/loot/zone_loot.dm,
- * `/obj/structure/closet/crate/zone_loot/medical/rare`). Not wired into any loot
+ * `loot_uniques` on /datum/loot_theme/medical). Not wired into any loot
  * table here — that's the coordinator's job once these are added to the .dme.
  *
  * Every item below carries TRAIT_NO_REPLICATE (voidcrew/_DEFINES/loot.dm) so

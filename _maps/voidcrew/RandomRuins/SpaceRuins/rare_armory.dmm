@@ -344,6 +344,10 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
+"lj" = (
+/obj/structure/closet/crate/zone_loot/armory,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
 "na" = (
 /obj/structure/reagent_dispensers/fueltank,
 /turf/open/floor/plating,
@@ -369,6 +373,10 @@
 /obj/structure/sign/warning/electric_shock,
 /turf/closed/wall,
 /area/ruin/space/has_grav/powered)
+"sZ" = (
+/obj/structure/closet/crate/zone_loot/armory,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
 "uP" = (
 /obj/structure/frame/machine,
 /obj/effect/decal/cleanable/dirt,
@@ -377,6 +385,21 @@
 "xg" = (
 /mob/living/basic/hivebot/rapid,
 /obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"xh" = (
+/obj/effect/zone_mobs/robot/boss,
+/obj/structure/closet/crate/zone_loot/armory,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"xi" = (
+/obj/effect/zone_mobs/robot,
+/obj/structure/closet/crate/zone_loot/armory,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
+"xj" = (
+/obj/effect/zone_mobs/robot,
+/obj/structure/closet/crate/zone_loot/armory,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 "CF" = (
@@ -408,6 +431,11 @@
 /obj/effect/spawner/random/trash,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
+"PR" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/zone_loot/armory,
+/turf/open/floor/iron/dark,
+/area/ruin/space/has_grav/powered)
 "Ta" = (
 /obj/machinery/door/airlock/maintenance,
 /turf/open/floor/plating,
@@ -434,21 +462,6 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered)
 
-"xh" = (
-/obj/effect/zone_mobs/robot/boss,
-/obj/structure/closet/crate/zone_loot/armory/rare,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"xi" = (
-/obj/effect/zone_mobs/robot,
-/obj/structure/closet/crate/zone_loot/armory,
-/turf/open/floor/iron/dark,
-/area/ruin/space/has_grav/powered)
-"xj" = (
-/obj/effect/zone_mobs/robot,
-/obj/structure/closet/crate/zone_loot/armory,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/powered)
 (1,1,1) = {"
 aB
 aB
@@ -535,7 +548,7 @@ aR
 ab
 af
 aI
-af
+PR
 at
 ao
 aR
@@ -748,7 +761,7 @@ aR
 aZ
 aZ
 aZ
-aZ
+lj
 aZ
 aR
 aZ
@@ -898,7 +911,7 @@ aB
 aL
 ax
 ax
-ax
+sZ
 aL
 aR
 aR
@@ -1112,7 +1125,7 @@ aL
 aZ
 aZ
 aZ
-aZ
+lj
 aZ
 aR
 KO

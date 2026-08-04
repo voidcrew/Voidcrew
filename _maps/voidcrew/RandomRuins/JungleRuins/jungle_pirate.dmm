@@ -1,4 +1,26 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ab" = (
+/obj/structure/closet/crate/zone_loot/plunder,
+/turf/open/floor/carpet/red,
+/area/ruin/unpowered)
+"ac" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/pirate/boss,
+/turf/open/floor/carpet/red,
+/area/ruin/unpowered)
+"ad" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/carpet/red,
+/area/ruin/unpowered)
+"ae" = (
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/wood,
+/area/ruin/unpowered)
+"af" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/zone_mobs/pirate,
+/turf/open/floor/pod/dark,
+/area/ruin/unpowered)
 "ay" = (
 /obj/structure/statue/sandstone/venus{
 	dir = 1
@@ -386,28 +408,6 @@
 /obj/structure/closet/crate/goldcrate,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/wood,
-/area/ruin/unpowered)
-"ab" = (
-/obj/structure/closet/crate/zone_loot/plunder/rare,
-/turf/open/floor/carpet/red,
-/area/ruin/unpowered)
-"ac" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/zone_mobs/pirate/boss,
-/turf/open/floor/carpet/red,
-/area/ruin/unpowered)
-"ad" = (
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/carpet/red,
-/area/ruin/unpowered)
-"ae" = (
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/wood,
-/area/ruin/unpowered)
-"af" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/zone_mobs/pirate,
-/turf/open/floor/pod/dark,
 /area/ruin/unpowered)
 
 (1,1,1) = {"

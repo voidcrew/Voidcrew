@@ -11,7 +11,7 @@
  * ## Power calibration
  *
  * The occult theme's ceiling is `/obj/item/his_grace` at weight 1 in
- * `rare_loot_red` (voidcrew/modules/loot/themes/occult.dm:89) — a deliberate
+ * `loot_prime` (voidcrew/modules/loot/themes/occult.dm) — a deliberate
  * crown-jewel jackpot, and a permanent, escalating, round-warping one. Nothing
  * here is that. Everything here is:
  *  - bounded (the phylactery is one draught and then it is glass),
@@ -19,8 +19,8 @@
  *    the wearer — it is a hat that skeletons ignore, not a licence),
  *  - or a retune of gear that already sits in this theme's tables (the robe and
  *    crown are wizard garb with a modest armour bump and real cold protection;
- *    `/obj/item/clothing/suit/armor/riot/knight` is already loot_red weight 5,
- *    and `/obj/item/gun/magic/staff/chaos` is already rare_loot_red weight 2).
+ *    `/obj/item/clothing/suit/armor/riot/knight` is already loot_prime weight 5,
+ *    and `/obj/item/gun/magic/staff/chaos` is already loot_prime weight 2).
  * The staff's siphon is the one genuinely new capability, and it is capped, on a
  * cooldown, and does nothing at all against the undead — which is to say it does
  * nothing on four fifths of the map it drops in.

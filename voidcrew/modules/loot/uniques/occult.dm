@@ -1,7 +1,7 @@
 /**
  * # Occult uniques — the reliquary casket
  *
- * The six named prizes for `/obj/structure/closet/crate/zone_loot/occult/rare`
+ * The six named prizes for `loot_uniques` on /datum/loot_theme/occult
  * (see `voidcrew/modules/loot/zone_loot.dm`). Each item subtypes an existing
  * item for its behavior; the candle, gloves and crook carry custom sprites in
  * `voidcrew/modules/loot/icons/uniques.dmi` (plus a worn glove state in

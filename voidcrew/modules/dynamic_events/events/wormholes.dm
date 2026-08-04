@@ -9,7 +9,7 @@
 	name = "Wormholes"
 	typepath = /datum/round_event/voidcrew/wormholes
 	max_occurrences = 3
-	weight = 2
+	weight = 1
 	min_players = 2
 	category = EVENT_CATEGORY_SPACE
 	description = "Space-time anomalies appear aboard the target ship, randomly teleporting anything that enters them."

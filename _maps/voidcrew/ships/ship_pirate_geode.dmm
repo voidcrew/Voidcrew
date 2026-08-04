@@ -815,7 +815,7 @@
 	requires_power = 0
 	})
 "HJ" = (
-/obj/machinery/shuttle_scrambler,
+/obj/machinery/shuttle_scrambler/ship_siphon,
 /turf/open/misc/dirt/station,
 /area/shuttle/voidcrew/pirate_geode{
 	requires_power = 0

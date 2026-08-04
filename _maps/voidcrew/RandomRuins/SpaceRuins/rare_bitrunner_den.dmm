@@ -908,7 +908,7 @@
 /turf/open/floor/iron/dark,
 /area/ruin/space/has_grav/powered)
 "Ng" = (
-/obj/structure/closet/crate/zone_loot/research/rare,
+/obj/structure/closet/crate/zone_loot/research,
 /turf/open/floor/iron/dark/textured_large,
 /area/ruin/space/has_grav/powered)
 "Nh" = (
@@ -1241,7 +1241,7 @@ ap
 ap
 az
 Wo
-aZ
+eD
 Bd
 KV
 Nf
@@ -1326,7 +1326,7 @@ ap
 az
 Ye
 EL
-aZ
+eD
 lj
 aQ
 az
@@ -1857,7 +1857,7 @@ ap
 ap
 az
 Fv
-aZ
+eD
 KV
 mD
 Gs

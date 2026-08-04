@@ -16,7 +16,7 @@
 /datum/round_event_control/voidcrew/comms_blackout
 	name = "Communications Blackout"
 	typepath = /datum/round_event/voidcrew/comms_blackout
-	weight = 25
+	weight = 10
 	max_occurrences = 4
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_ENGINEERING

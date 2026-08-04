@@ -195,15 +195,7 @@
 	name = "Greater Telekinesis"
 	// Keep the numbers in sync with the defines above (initial values must be
 	// compile-time constant, so no define interpolation here).
-	desc = "Lift what is around you — loose objects, furniture, machines, even people — and hold up to five \
-		slots' worth in the air out to nine tiles; a person is heavy enough to take two slots. With combat \
-		mode off, clicking something you can see drags it across the floor to you — it has to actually make \
-		the trip, so walls, closed doors and quick-handed bystanders can keep it, and a person can wrench \
-		free by resisting. Anything bolted down can be had too: hold your grip on it for five seconds and it \
-		comes up, deck bolts and all. Clicking a held thing sets it down. With combat mode on, left-click \
-		throws one held thing at what you clicked and right-click throws everything. Each impact deals 25 \
-		brute on top of whatever the thrown thing does on its own, and everything you hold gives a \
-		one-in-ten chance that a melee or thrown hit is knocked aside — at the cost of dropping it."
+	desc = "Hold an armful of loose objects, furniture, machines, even people in the air around you — bolted-down things come up too if you hold your grip on them. Combat mode off: click to drag something to you, click a held thing to set it down. Combat mode on: left-click throws one, right-click throws everything. What you're holding will sometimes turn a hit aside."
 	grant_text = "Everything loose in the room is suddenly within arm's reach, and your arms have nothing to do with it."
 	spell_type = /datum/action/cooldown/spell/greater_telekinesis
 
@@ -232,15 +224,7 @@
  */
 /datum/action/cooldown/spell/greater_telekinesis
 	name = "Greater Telekinesis"
-	desc = "Lift objects, furniture, machines and people, and hold up to five slots' worth in the air around \
-		you, out to nine tiles — a person takes two slots. Combat mode off: click something you can see to \
-		pull it to you. It crosses the room like a thrown object and anything that stops it keeps it; people \
-		can resist their way loose. Bolted-down things need your grip held on them for five seconds first, \
-		then tear free. Click a held thing to set it down. Combat mode on: left-click throws one held thing \
-		at what you clicked, right-click throws everything. Each impact deals 25 brute on top of the thrown \
-		thing's own damage, and anything heavy — bulky gear, furniture, a person — knocks its target off \
-		their feet. Everything in orbit gives a ten percent chance to block a melee or thrown hit; a block \
-		drops the thing that took it."
+	desc = "Hold an armful of objects, furniture or people in the air around you, anywhere in sight. Combat mode off: click to pull things in, click a held thing to set it down. Combat mode on: left-click throws one, right-click throws everything. Heavy throws knock people over."
 	button_icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	button_icon_state = "greater_telekinesis"
 	school = SCHOOL_PSYCHIC

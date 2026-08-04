@@ -562,7 +562,7 @@ BLIND     // can't see anything
 	if(visor_vars_to_toggle & VISOR_TINT)
 		carbon_user.update_tint()
 	if((visor_flags & (MASKINTERNALS|HEADINTERNALS)) && carbon_user.invalid_internals())
-		carbon_user.cutoff_internals()
+		carbon_user.cutoff_internals("visor adjusted on [type], up=[up]")
 	return TRUE
 
 /obj/item/clothing/proc/visor_toggling() //handles all the actual toggling of flags

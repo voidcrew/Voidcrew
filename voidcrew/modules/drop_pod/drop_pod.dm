@@ -11,7 +11,8 @@
 	var/datum/techweb/linked_techweb
 	var/mob/living/ui_user = null
 	var/mob/living/map_user = null
-	var/list/blacklisted_mob_types = list(/mob/living/simple_animal/hostile/megafauna)
+	// Both halves of ismegafauna() — /mob/living/basic/boss is this fork's tier
+	var/list/blacklisted_mob_types = list(/mob/living/simple_animal/hostile/megafauna, /mob/living/basic/boss)
 	var/list/whitelisted_areas = list(/area/overmap_encounter, /area/space)
 	var/mob/eye/camera/drop_pod/eyeobj
 	var/eye_initialized = FALSE

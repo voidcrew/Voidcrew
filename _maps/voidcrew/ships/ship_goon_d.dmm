@@ -186,6 +186,16 @@
 	},
 /turf/open/floor/iron/dollhouse/checker,
 /area/shuttle/voidcrew/goon/commons/d)
+"lV" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 8
+	},
+/obj/structure/sign/nanotrasen,
+/turf/closed/wall/mineral/titanium/dollhouse{
+	name = "cream wall";
+	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
+	},
+/area/shuttle/voidcrew/goon/commons/d)
 "mv" = (
 /obj/structure/cable,
 /obj/machinery/power/apc/auto_name/directional/west,
@@ -467,6 +477,15 @@
 	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
 	},
 /area/shuttle/voidcrew/goon/engineering/d)
+"zk" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 4
+	},
+/turf/closed/wall/mineral/titanium/dollhouse{
+	name = "cream wall";
+	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
+	},
+/area/shuttle/voidcrew/goon/bridge/d)
 "zs" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
@@ -536,6 +555,15 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/commons/d)
+"Ep" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium/dollhouse{
+	name = "cream wall";
+	desc = "Titanium panelling repainted in cream and pink. Someone has taped fairy lights along the top of it."
+	},
+/area/shuttle/voidcrew/goon/medbay/d)
 "EB" = (
 /turf/closed/wall/mineral/titanium/dollhouse{
 	name = "cream wall";
@@ -722,7 +750,9 @@
 /obj/machinery/atmospherics/components/binary/volume_pump{
 	dir = 8
 	},
-/obj/machinery/power/terminal,
+/obj/machinery/power/terminal{
+	dir = 1
+	},
 /obj/structure/cable,
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/goon/medbay/d)
@@ -910,7 +940,7 @@ mL
 "}
 (6,1,1) = {"
 IZ
-GR
+Ep
 Eh
 IG
 Eh
@@ -1060,7 +1090,7 @@ ga
 ga
 jI
 EB
-EB
+zk
 IZ
 IZ
 "}

@@ -972,13 +972,13 @@
 // The consume-victims subtype is never granted by anything in this file.
 /datum/vestige_boon/spell/blood_crawl
 	name = "Blood Crawl"
-	desc = "The trade's front door. Step into any decent pool of blood and stop existing until you step back out. Going under is instant; coming up takes a two-second boil that everyone nearby can watch. You drop whatever you're holding at the edge of the pool."
+	desc = "The trade's front door. Step into any decent pool of blood and stop existing until you step back out. Going under is instant; coming up takes a boil that everyone nearby can watch. You drop whatever you're holding at the edge of the pool."
 	grant_text = "The Stain claps you on the back, fondly. \"First lesson, apprentice: never track blood THROUGH a room when you can travel AS it.\""
 	spell_type = /datum/action/cooldown/spell/jaunt/bloodcrawl
 
 /datum/vestige_boon/spell/blood_crawl/red_undertow
 	name = "Red Undertow"
-	desc = "The crawl, finished properly. Surface with your whole weight behind it and anyone standing within a tile of the pool gets knocked flat for a second and a half. The pool still boils for two seconds first, so a patient audience keeps its footing."
+	desc = "The crawl, finished properly. Surface with your whole weight behind it and anyone standing beside the pool is knocked flat. It still boils first, so a patient audience keeps its footing."
 	grant_text = "\"Second lesson: the pool is not the trick. The ARRIVAL is the trick.\" The Stain mimes surfacing, with tremendous theatre."
 	upgrades_from = /datum/vestige_boon/spell/blood_crawl
 	spell_type = /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_undertow
@@ -987,13 +987,13 @@
 
 /datum/vestige_boon/spell/rending_claws
 	name = "Rending Claws"
-	desc = "Grow the trade's own knives out of your hand: force 21, and 8 more against anything that's already bleeding. Fold them away whenever you need the hand back. They butcher carcasses too, obviously."
+	desc = "Grow the trade's own knives out of your hand, and fold them away whenever you need the hand back. They bite deeper into anything already bleeding, and they butcher carcasses too, obviously."
 	grant_text = "Your knuckles ache, then split, then settle. \"Mind the edge, apprentice. It minds you.\""
 	spell_type = /datum/action/cooldown/spell/vestige_rending_claws
 
 /datum/vestige_boon/spell/rending_claws/butchers_rhythm
 	name = "Butcher's Rhythm"
-	desc = "The claws with the tempo taught in: force 23, and every consecutive hit on the same living target wounds deeper than the last — five points a stroke, up to fifteen. Once they're bleeding, the rend bonus starts paying too. Switch targets and the rhythm resets."
+	desc = "The claws with the tempo taught in. They hit harder, and every consecutive strike on the same living target wounds deeper than the last. Switch targets and the rhythm resets."
 	grant_text = "\"One-two-THREE, one-two-THREE. It is a waltz, apprentice. The partner just objects more.\""
 	upgrades_from = /datum/vestige_boon/spell/rending_claws
 	spell_type = /datum/action/cooldown/spell/vestige_rending_claws/butchers
@@ -1002,7 +1002,7 @@
 
 /datum/vestige_boon/spell/slaughters_mirth
 	name = "Slaughter's Mirth"
-	desc = "Laugh the way the trade laughs. Everyone in earshot — five tiles, line of sight — is staggered for four seconds, humans get hit with raw dread (shaking, stuttering, a racing heart, but never a stun), and simple creatures cower on the deck for three seconds. Forty-second cooldown, and there is no subtle way to do it."
+	desc = "Laugh the way the trade laughs. Everyone in sight nearby is staggered, people get hit with raw dread — shaking, stuttering, a racing heart, but never a stun — and simple creatures cower on the deck. There is no subtle way to do it."
 	grant_text = "Something in your chest learns a new way to breathe, though breathing isn't quite what it's doing."
 	spell_type = /datum/action/cooldown/spell/aoe/vestige_mirth
 
@@ -1010,7 +1010,7 @@
 
 /datum/vestige_boon/spell/scent_of_blood
 	name = "Scent of Blood"
-	desc = "Open the trade's nose. A compass on your HUD swings toward the nearest bleeding or badly wounded creature within ten tiles, walls or no walls, refreshed every two seconds. You also move a little quicker while standing on blood-wet flooring. Use it again to close it."
+	desc = "Open the trade's nose. A compass on your HUD swings toward the nearest bleeding or badly wounded creature, walls or no walls, and you move a little quicker on blood-wet flooring. Use it again to close it."
 	grant_text = "\"Last lesson, apprentice, and the most important: the wounded are never lost. Only mislaid.\""
 	spell_type = /datum/action/cooldown/spell/vestige_blood_scent
 
@@ -1026,7 +1026,7 @@
  */
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_undertow
 	name = "Red Undertow"
-	desc = "Phase in and out of existence via pools of blood. Rising from a pool bowls over anyone standing beside it."
+	desc = "Dive into a pool of blood and surface from another one. Anyone standing beside you when you come up is knocked over."
 
 /datum/action/cooldown/spell/jaunt/bloodcrawl/vestige_undertow/try_exit_jaunt(obj/effect/decal/cleanable/blood, mob/living/jaunter, forced = FALSE)
 	. = ..()
@@ -1067,7 +1067,7 @@
  */
 /datum/action/cooldown/spell/vestige_rending_claws
 	name = "Form Rending Claws"
-	desc = "Split your hand into the trade's knives, or fold them away again."
+	desc = "Turn your hand into a set of claws. Use again to put them away."
 	button_icon = 'icons/mob/actions/actions_ecult.dmi'
 	button_icon_state = "cleave"
 	background_icon_state = "bg_demon"
@@ -1081,7 +1081,7 @@
 
 /datum/action/cooldown/spell/vestige_rending_claws/butchers
 	name = "Form Butcher's Claws"
-	desc = "Split your hand into the trade's knives — the ones that keep time — or fold them away again."
+	desc = "Turn your hand into a stronger set of claws. Use again to put them away."
 	button_icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	button_icon_state = "butcher_claws"
 	claw_type = /obj/item/vestige_rending_claw/butchers
@@ -1229,7 +1229,7 @@
  */
 /datum/action/cooldown/spell/aoe/vestige_mirth
 	name = "Slaughter's Mirth"
-	desc = "Laugh the trade's laugh: everyone in sight nearby is staggered, humans are flooded with dread, and simple creatures cower. Never a stun, never quiet."
+	desc = "Laugh. Everyone nearby who can see you is staggered, people are badly frightened, and animals cower. Loud, and never a stun."
 	button_icon = 'icons/mob/actions/actions_ecult.dmi'
 	button_icon_state = "moon_smile"
 	background_icon_state = "bg_demon"
@@ -1333,7 +1333,7 @@
  */
 /datum/action/cooldown/spell/vestige_blood_scent
 	name = "Scent of Blood"
-	desc = "Open the trade's nose: a compass toward the nearest bleeding or badly wounded creature, and quicker footing on blood-wet floors. Use again to close it."
+	desc = "Points you at the nearest bleeding or badly hurt creature and keeps you sure-footed on bloody floors. Use again to turn it off."
 	button_icon = 'voidcrew/modules/antag_ruins/icons/vestige.dmi'
 	button_icon_state = "scent_of_blood"
 	background_icon_state = "bg_demon"

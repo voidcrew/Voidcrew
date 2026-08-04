@@ -1,4 +1,6 @@
-#define RESEARCH_POINTS_PER_EXPERIMENT 2000
+/// Points paid out for completing an experiment. Sized against the node ladder in
+/// code/__DEFINES/research.dm: one experiment funds exactly one tier-5 node.
+#define RESEARCH_POINTS_PER_EXPERIMENT 200
 
 /datum/experiment/finish_experiment(datum/component/experiment_handler/experiment_handler)
 	. = ..()

@@ -15,8 +15,13 @@
 /datum/round_event_control/voidcrew/radiation_leak
 	name = "Radiation Leak"
 	typepath = /datum/round_event/voidcrew/radiation_leak
-	weight = 15
-	max_occurrences = 3
+	// Admin-only. Cut from the ambient roster by design decision, not because the event is
+	// badly built — it telegraphs its compartment, its examine text names the tool that
+	// fixes it, and thirty seconds of work ends it early. What it does not have is a way
+	// to not happen: the radiation is already in the room the crew works in, and the toxin
+	// damage and mutations it hands out on the way to the fix outlast the event itself.
+	weight = 0
+	max_occurrences = 0
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_ENGINEERING
 	description = "A machine aboard the target ship starts leaking radiation until it is repaired."

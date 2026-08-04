@@ -127,6 +127,12 @@
 /obj/structure/cable,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/scarab/bridge/c)
+"es" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium/survival,
+/area/shuttle/voidcrew/scarab/cargo_bay/c)
 "ez" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "scarab_med"
@@ -516,6 +522,12 @@
 	hide = 1
 	},
 /turf/open/floor/catwalk_floor/iron_smooth,
+/area/shuttle/voidcrew/scarab/engines/c)
+"ml" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium/survival/nodiagonal,
 /area/shuttle/voidcrew/scarab/engines/c)
 "mo" = (
 /obj/effect/turf_decal/stripes/red/line{
@@ -1358,6 +1370,12 @@
 "Kx" = (
 /turf/closed/wall/mineral/titanium/survival,
 /area/shuttle/voidcrew/scarab/commons/c)
+"KA" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium/survival,
+/area/shuttle/voidcrew/scarab/dormitories/c)
 "KD" = (
 /obj/item/radio/intercom/directional/north,
 /obj/effect/turf_decal/stripes/red/line{
@@ -1743,6 +1761,12 @@
 	},
 /turf/open/floor/pod,
 /area/shuttle/voidcrew/scarab/cargo_bay/c)
+"Uv" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium/survival,
+/area/shuttle/voidcrew/scarab/engines/c)
 "UM" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /obj/item/radio/intercom/directional/east,
@@ -1970,7 +1994,7 @@ gD
 bT
 Vh
 Vh
-bT
+ml
 gD
 "}
 (3,1,1) = {"
@@ -2063,7 +2087,7 @@ gD
 "}
 (7,1,1) = {"
 gD
-Qt
+Uv
 UM
 Mb
 bT
@@ -2614,7 +2638,7 @@ gD
 (32,1,1) = {"
 gD
 gD
-le
+KA
 yL
 dw
 le

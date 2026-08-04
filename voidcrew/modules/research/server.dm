@@ -1,4 +1,7 @@
-#define RESEARCH_STOLEN_PER_THEFT 2500
+/// Points siphoned out of a victim's techweb per successful theft. A theft no longer needs the
+/// server to be holding some large minimum - the thief just keeps pulling, one siphon at a time,
+/// and each pull takes this much or whatever is actually left if that's less.
+#define RESEARCH_STOLEN_PER_THEFT 100
 
 /obj/machinery/rnd/server/ship
 	desc = "A computer system that hosts a source R&D server drive, allowing research to be loaded and saved onto a disk, and shared within a vessel."
@@ -105,16 +108,41 @@
 	INVOKE_ASYNC(src, PROC_REF(steal_research), user)
 	return COMPONENT_SECONDARY_CANCEL_ATTACK_CHAIN
 
+/**
+ * Siphons a slice of the victim's actual point balance into a research-notes item.
+ *
+ * The theft is drawn from what the server is really holding rather than paid out as a flat grant,
+ * so a ship that has already spent its research is not worth robbing, and a rich one can be milked
+ * repeatedly - each right-click is one siphon.
+ */
 /obj/machinery/rnd/server/ship/proc/steal_research(mob/thief)
-	if(!source_code_hdd.stored_research.can_afford(list(TECHWEB_POINT_TYPE_GENERIC = RESEARCH_STOLEN_PER_THEFT)))
-		balloon_alert(thief, "not enough points to steal!")
+	// A server with no disk holds no techweb at all. The old code walked straight through
+	// source_code_hdd.stored_research and runtimed on any empty server.
+	if(isnull(source_code_hdd))
+		balloon_alert(thief, "no disk!")
 		return
-	balloon_alert(thief, "attempting to steal research points!")
+	var/datum/techweb/victim_web = source_code_hdd.stored_research
+	if(isnull(victim_web))
+		balloon_alert(thief, "no research!")
+		return
+	if(victim_web.research_points[TECHWEB_POINT_TYPE_GENERIC] < 1)
+		balloon_alert(thief, "no points to steal!")
+		return
+	balloon_alert(thief, "siphoning research points!")
 	if(!do_after(thief, (10 SECONDS), src))
 		balloon_alert(thief, "interrupted!")
 		return
-	source_code_hdd.stored_research.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = RESEARCH_STOLEN_PER_THEFT))
-	new /obj/item/research_notes(loc, RESEARCH_STOLEN_PER_THEFT, "thievery")
+	// Re-read the balance after the do_after rather than trusting the pre-check: the crew can spend
+	// or bank points during those ten seconds. Taking the minimum means a server drained mid-theft
+	// pays out nothing instead of minting points the web never had.
+	var/available = victim_web.research_points[TECHWEB_POINT_TYPE_GENERIC] || 0
+	var/stolen = FLOOR(min(RESEARCH_STOLEN_PER_THEFT, available), 1)
+	if(stolen < 1)
+		balloon_alert(thief, "no points to steal!")
+		return
+	victim_web.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = stolen))
+	new /obj/item/research_notes(loc, stolen, "thievery")
+	balloon_alert(thief, "siphoned [stolen] points!")
 
 #undef RESEARCH_STOLEN_PER_THEFT
 

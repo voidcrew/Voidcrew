@@ -775,6 +775,17 @@ $caption: 1.6cqw;
 .Helm__hudLine {
   color: $ice;
   font-size: 1.05cqw;
+
+  // The projected drift is the ship's own state rather than something outside
+  // it, so it takes the amber side of the console's colour split — and matches
+  // the track the chart draws for it.
+  &.Helm--drift {
+    color: $amber;
+  }
+
+  &.Helm--driftHazard {
+    color: $crit;
+  }
 }
 
 .Helm__hudKey {

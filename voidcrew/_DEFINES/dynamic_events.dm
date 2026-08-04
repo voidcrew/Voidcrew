@@ -10,7 +10,7 @@
 /// hammered back to back. This is a hard floor under the per-crew cadence, not the
 /// cadence itself — SSdynamic_events.frequency_lower/upper set the intended spacing.
 /// The live value is SSdynamic_events.ship_cooldown, which admins can tune mid-round.
-#define DYNAMIC_EVENT_SHIP_COOLDOWN (8 MINUTES)
+#define DYNAMIC_EVENT_SHIP_COOLDOWN (20 MINUTES)
 
 /**
  * Size bands for /datum/round_event_control/voidcrew/var/min_ship_mass.

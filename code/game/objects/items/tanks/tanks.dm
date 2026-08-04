@@ -78,14 +78,14 @@
 		return
 	// Close open air tank if it got dropped by its current user.
 	if (loc != breathing_mob)
-		breathing_mob.cutoff_internals()
+		breathing_mob.cutoff_internals("tank dropped by [user], now in [loc] ([loc?.type])")
 
 /// Closes the tank if given to another mob while open.
 /obj/item/tank/equipped(mob/living/user, slot, initial)
 	. = ..()
 	// Close open air tank if it was equipped by a mob other than the current user.
 	if (breathing_mob && (user != breathing_mob))
-		breathing_mob.cutoff_internals()
+		breathing_mob.cutoff_internals("tank equipped to slot [slot] by [user || "NULL USER"]")
 
 /// Called by carbons after they connect the tank to their breathing apparatus.
 /obj/item/tank/proc/after_internals_opened(mob/living/carbon/carbon_target)

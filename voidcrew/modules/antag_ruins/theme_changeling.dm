@@ -221,7 +221,7 @@
 
 /datum/vestige_boon/spell/armblade
 	name = "Armblade"
-	desc = "Reshape your arm into a blade of bone and flesh, and fold it away again when you're done with it."
+	desc = "Reshape your arm into a blade of bone and flesh, and fold it away when you are done with it."
 	grant_text = "Your right arm itches, deep in the bone. There's something new folded in there."
 	spell_type = /datum/action/cooldown/spell/vestige_armblade
 
@@ -234,20 +234,20 @@
 
 /datum/vestige_boon/spell/fleshmend
 	name = "Fleshmend"
-	desc = "Knit your wounds closed with the hive's old trick. Useless while you are on fire."
+	desc = "Knit your wounds closed. Useless while you are on fire."
 	grant_text = "Your flesh learns the old hive trick of forgetting its injuries."
 	spell_type = /datum/action/cooldown/spell/vestige_fleshmend
 
 /datum/vestige_boon/spell/fleshmend/deep
 	name = "Deep Fleshmend"
-	desc = "Knit your wounds closed with the hive's old trick, ready twice as often — one minute between mendings instead of two. Still useless while you are on fire."
+	desc = "The same mending, ready twice as often. Still useless while you are on fire."
 	grant_text = "The hive's trick sinks deeper, past flesh and into the bone."
 	upgrades_from = /datum/vestige_boon/spell/fleshmend
 	spell_type = /datum/action/cooldown/spell/vestige_fleshmend/deep
 
 /datum/action/cooldown/spell/vestige_armblade
 	name = "Form Armblade"
-	desc = "Reshape your arm into a grotesque blade of bone and flesh, or fold it away again."
+	desc = "Turn your arm into a blade of bone and flesh. Use again to put it away."
 	button_icon = 'icons/mob/actions/actions_changeling.dmi'
 	button_icon_state = "armblade"
 	school = SCHOOL_TRANSMUTATION
@@ -259,7 +259,7 @@
 
 /datum/action/cooldown/spell/vestige_armblade/perfected
 	name = "Form Perfected Armblade"
-	desc = "Reshape your arm into the hive's masterwork blade, or fold it away again."
+	desc = "Turn your arm into a stronger blade of bone and flesh. Use again to put it away."
 	cooldown_time = 6 SECONDS
 	blade_type = /obj/item/melee/arm_blade/vestige_perfected
 
@@ -312,7 +312,7 @@
 
 /datum/action/cooldown/spell/vestige_fleshmend
 	name = "Fleshmend"
-	desc = "Knit your wounds closed with the hive's old trick. Useless while you are on fire."
+	desc = "Heal your wounds. Won't work while you're on fire."
 	button_icon = 'icons/mob/actions/actions_changeling.dmi'
 	button_icon_state = "fleshmend"
 	school = SCHOOL_TRANSMUTATION

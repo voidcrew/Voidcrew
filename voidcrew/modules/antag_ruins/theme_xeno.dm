@@ -1360,13 +1360,13 @@
 
 /datum/vestige_boon/spell/caustic_spit
 	name = "Caustic Spit"
-	desc = "Spit acid up to 7 tiles, once every 12 seconds. The glob clings to whatever object it hits and eats for about ten seconds — three or four of them open a standard airlock, machines and clutter go faster, and glass shrugs it off entirely. Against people it is only a 10 burn scald; this is a tool for property, not flesh. Your mouth has to be uncovered, and it will not touch floors or hull."
+	desc = "Spit acid across the room. The glob clings to whatever object it hits and eats away at it — a few will open a standard airlock, though glass shrugs it off entirely. Against people it is only a light scald: this is a tool for property, not flesh. Needs a bare mouth, and it will not touch floors or hull."
 	grant_text = "A new gland settles in behind your back teeth."
 	spell_type = /datum/action/cooldown/spell/pointed/projectile/vestige_spit/caustic
 
 /datum/vestige_boon/spell/caustic_spit/vitriol
 	name = "Vitriol"
-	desc = "The acid, matured. The glob now hits the object it strikes for 60 damage through 50 points of armor, which is enough for the glass and riot-grade property the young acid could not touch. The corrosion runs deeper too, about two globs per airlock, and the splash leaves a sizzling pool for 8 seconds that burns anyone standing in it for 5 a second, you included. Anyone it catches directly takes 15 burn and wears the acid for another ten seconds at 2 a second, unless they wash it off. Every 10 seconds, mouth uncovered, and still no floors."
+	desc = "The acid, matured. It bites through the glass and riot-grade property the young acid could not touch, the corrosion runs deeper, and the splash leaves a sizzling pool that burns anyone standing in it, you included. Anyone it catches directly wears the acid until they wash it off."
 	grant_text = "The gland deepens. Whatever it makes now bites harder."
 	upgrades_from = /datum/vestige_boon/spell/caustic_spit
 	spell_type = /datum/action/cooldown/spell/pointed/projectile/vestige_spit/caustic/vitriol
@@ -1375,13 +1375,13 @@
 
 /datum/vestige_boon/spell/neuro_lash
 	name = "Neurotoxic Lash"
-	desc = "Spit a neurotoxin dart up to 7 tiles, every 12 seconds, mouth uncovered. 40 stamina damage through 30 armor, plus 4 seconds of stagger, 6 seconds of slurred speech and 2 seconds of blurred vision. It opens a fight. It does not finish one."
+	desc = "Spit a neurotoxin dart across the room, mouth uncovered. It heavily saps stamina and leaves them staggered, slurring and blurry-eyed. It opens a fight. It does not finish one."
 	grant_text = "Something coils up at the hinge of your jaw."
 	spell_type = /datum/action/cooldown/spell/pointed/projectile/vestige_spit/neuro
 
 /datum/vestige_boon/spell/neuro_lash/paralytic
 	name = "Paralytic Lash"
-	desc = "Two darts per cooldown now, fired one click at a time, 16 seconds to recharge. Each is the full 40-stamina sting, and any dart that lands on someone already carrying 35 or more stamina damage knocks them down for a second and a half. Land both and the second one always drops them. It is a knockdown, not a stunlock — they get straight back up."
+	desc = "Two darts per cooldown now, fired one click at a time. Any dart that lands on someone already winded knocks them down, so landing both always drops them. It is a knockdown, not a stunlock — they get straight back up."
 	grant_text = "The sting learns a second shot."
 	upgrades_from = /datum/vestige_boon/spell/neuro_lash
 	spell_type = /datum/action/cooldown/spell/pointed/projectile/vestige_spit/neuro/paralytic
@@ -1390,13 +1390,13 @@
 
 /datum/vestige_boon/spell/resin_weaver
 	name = "Resin Weaving"
-	desc = "Pick bare floor next to you and work your throat for 3 seconds to raise either a resin wall — blunt hits glance off it, fire eats it twice as fast — or a membrane you can see through. One every 20 seconds, six standing at a time; raise a seventh and the oldest sloughs away. It will not build on top of someone standing there, and it needs real floor, not open space."
+	desc = "Pick bare floor next to you and work your throat to raise a resin wall — blunt hits glance off it, fire eats it twice as fast — or a membrane you can see through. Only so many stand at once; raise another and the oldest sloughs away. It needs real floor, and will not build on someone standing there."
 	grant_text = "Your throat learns the old craft."
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_resin_weaver
 
 /datum/vestige_boon/spell/resin_weaver/architect
 	name = "Brood Architecture"
-	desc = "A second and a half to raise now, 10 seconds between works, ten standing at a time. You can also build a brood cradle: lie into it willingly and it swaddles your hands useless while it mends 2 brute, 2 burn and 5 stamina every second you rest. Resist to get out; it never argues. It only ever takes the willing."
+	desc = "Much faster to raise now, and more of them stand at once. You can also build a brood cradle: lie into it willingly and it swaddles your hands useless while it mends you as you rest. Resist to get out; it never argues. It only ever takes the willing."
 	grant_text = "The craft matures in your throat."
 	upgrades_from = /datum/vestige_boon/spell/resin_weaver
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_resin_weaver/architect
@@ -1446,7 +1446,7 @@
 
 /datum/action/cooldown/spell/pointed/projectile/vestige_spit/caustic
 	name = "Caustic Spit"
-	desc = "Spit a glob of corrosive acid up to 7 tiles. Objects it strikes are eaten by clinging acid; living things are lightly scalded. Needs a bare mouth."
+	desc = "Spit a glob of corrosive acid across the room. Eats through objects and lightly scalds people. Needs a bare mouth."
 	button_icon_state = "alien_acid"
 	cooldown_time = VESTIGE_SPIT_COOLDOWN
 	active_msg = "You work your tongue against a gland that was not there yesterday..."
@@ -1492,7 +1492,7 @@
 
 /datum/action/cooldown/spell/pointed/projectile/vestige_spit/caustic/vitriol
 	name = "Vitriol"
-	desc = "Spit a glob of matured acid up to 7 tiles: heavy impact damage to objects (armor-piercing), deeper corrosion, a sizzling pool where it lands, and a clinging coat on anyone it catches that keeps burning until they wash it off. Needs a bare mouth."
+	desc = "Spit a glob of matured acid across the room. Wrecks objects through their armor, leaves a sizzling pool, and keeps burning anyone it catches until they wash it off. Needs a bare mouth."
 	cooldown_time = VESTIGE_SPIT_VITRIOL_COOLDOWN
 	projectile_type = /obj/projectile/vestige_caustic_spit/vitriol
 	spit_message = "spits a seething rope of vitriol!"
@@ -1673,7 +1673,7 @@
  */
 /datum/action/cooldown/spell/pointed/projectile/vestige_spit/neuro
 	name = "Neurotoxic Lash"
-	desc = "Spit a neurotoxin dart up to 7 tiles: heavy stamina damage plus a few seconds of stagger, slur and watering eyes. Needs a bare mouth."
+	desc = "Spit a neurotoxin dart across the room. Heavily saps stamina, and leaves them staggered and slurring for a few seconds. Needs a bare mouth."
 	button_icon_state = "alien_neurotoxin_0"
 	cooldown_time = VESTIGE_LASH_COOLDOWN
 	active_msg = "Your jaw aches as the sting seats itself..."
@@ -1715,7 +1715,7 @@
  */
 /datum/action/cooldown/spell/pointed/projectile/vestige_spit/neuro/paralytic
 	name = "Paralytic Lash"
-	desc = "Spit up to two neurotoxin darts per cooldown. A dart that hits someone already winded (35+ stamina damage) also floors them for 1.5 seconds. Needs a bare mouth."
+	desc = "Spit a pair of neurotoxin darts before it needs to recharge. A dart that hits someone already winded also floors them briefly. Needs a bare mouth."
 	cooldown_time = VESTIGE_LASH_PARALYTIC_COOLDOWN
 	projectile_amount = VESTIGE_LASH_PARALYTIC_VOLLEY
 	projectile_type = /obj/projectile/vestige_neuro_lash/paralytic
@@ -1762,7 +1762,7 @@
  */
 /datum/action/cooldown/spell/pointed/vestige_resin_weaver
 	name = "Resin Weaving"
-	desc = "Channel for a few seconds over adjacent bare floor to raise a resin wall or membrane. Blunt blows glance off resin; fire eats it double. Only so many works stand at once — the eldest crumbles for the newest."
+	desc = "Channel a few seconds over bare floor next to you to raise a resin wall or membrane. Blunt hits glance off resin, fire eats it. Only so many stand at once; the eldest crumbles for the newest."
 	button_icon = 'icons/mob/actions/actions_xeno.dmi'
 	button_icon_state = "alien_resin"
 	background_icon_state = "bg_alien"
@@ -1907,7 +1907,7 @@
 
 /datum/action/cooldown/spell/pointed/vestige_resin_weaver/architect
 	name = "Brood Architecture"
-	desc = "Channel briefly over adjacent bare floor to raise a resin wall, a membrane, or a brood cradle that slowly mends whoever willingly rests in it."
+	desc = "Channel briefly over bare floor next to you to raise a resin wall, a membrane, or a cradle that slowly heals whoever rests in it."
 	cooldown_time = VESTIGE_RESIN_ARCHITECT_COOLDOWN
 	channel_time = VESTIGE_RESIN_ARCHITECT_CHANNEL
 	works_cap = VESTIGE_RESIN_ARCHITECT_CAP

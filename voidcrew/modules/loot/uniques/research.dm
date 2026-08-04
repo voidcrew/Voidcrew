@@ -2,7 +2,7 @@
  * # Research uniques — priority specimen cache
  *
  * Six unique prizes for the RESEARCH loot theme (see the "priority specimen
- * cache" rare_loot tables in voidcrew/modules/loot/zone_loot.dm — this file
+ * cache" `loot_uniques` shelf in voidcrew/modules/loot/themes/ — this file
  * does not touch those tables; slotting these in is a separate pass).
  * Design source: obsidian vault `Rare-loot-uniques.md`, "RESEARCH — priority
  * specimen cache" section.

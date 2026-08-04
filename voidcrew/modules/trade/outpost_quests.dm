@@ -187,6 +187,9 @@
 	var/obj/item/freight_pod/offered = item
 	return offered.mission_ref?.resolve() == mission
 
+/datum/mission_objective/deliver/courier_pod/matches_ask(obj/item/item)
+	return istype(item, /obj/item/freight_pod)
+
 /datum/mission_objective/deliver/courier_pod/describe_turn_in_failure(obj/item/item)
 	if(!item)
 		return "No item provided."

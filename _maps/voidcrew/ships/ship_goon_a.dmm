@@ -9,6 +9,12 @@
 	},
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/goon/commons/a)
+"aC" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/goon/medbay/a)
 "bj" = (
 /obj/effect/spawner/structure/window/reinforced/shuttle,
 /turf/open/floor/plating,
@@ -16,6 +22,12 @@
 "bY" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/goon/engineering/a)
+"cI" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 4
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/goon/bridge/a)
 "dC" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "goon_port"
@@ -26,7 +38,9 @@
 /obj/machinery/atmospherics/components/binary/volume_pump{
 	dir = 8
 	},
-/obj/machinery/power/terminal,
+/obj/machinery/power/terminal{
+	dir = 1
+	},
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/voidcrew/goon/medbay/a)
@@ -87,6 +101,13 @@
 /obj/structure/cable,
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/voidcrew/goon/engineering/a)
+"lJ" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 8
+	},
+/obj/structure/sign/nanotrasen,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/goon/commons/a)
 "lX" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /obj/machinery/atmospherics/pipe/smart/manifold4w/supply/hidden/layer4,
@@ -567,7 +588,7 @@ PO
 "}
 (6,1,1) = {"
 IZ
-FT
+aC
 zs
 VA
 zs
@@ -717,7 +738,7 @@ OT
 OT
 nX
 gb
-gb
+cI
 IZ
 IZ
 "}

@@ -496,7 +496,7 @@ GLOBAL_LIST_EMPTY(shuttle_frames_by_turf)
 	shuttle.underlying_areas_by_turf += underlying_areas
 	SEND_SIGNAL(shuttle, COMSIG_SHUTTLE_EXPANDED, turfs)
 	if(bounds_need_recalculation)
-		QDEL_NULL(shuttle.assigned_transit)
+		release_assigned_transit(shuttle) //VOID EDIT - was QDEL_NULL, which leaks the reservation
 		shuttle.calculate_docking_port_information()
 	shuttle.initiate_docking(shuttle.get_docked(), force = TRUE)
 
@@ -556,5 +556,5 @@ GLOBAL_LIST_EMPTY(shuttle_frames_by_turf)
 	if(docking_port_needs_relocated)
 		shuttle.forceMove(pick(shuttle.underlying_areas_by_turf))
 	if(bounds_need_recalculation)
-		QDEL_NULL(shuttle.assigned_transit)
+		release_assigned_transit(shuttle) //VOID EDIT - was QDEL_NULL, which leaks the reservation
 		shuttle.calculate_docking_port_information()

@@ -18,7 +18,7 @@
 /datum/round_event_control/voidcrew/gravity_failure
 	name = "Gravity Generator Failure"
 	typepath = /datum/round_event/voidcrew/gravity_failure
-	weight = 25
+	weight = 10
 	max_occurrences = 3
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_ENGINEERING

@@ -3,7 +3,7 @@
 /turf/template_noop,
 /area/template_noop)
 "aA" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4;
 	name = "Guardian Angel"
 	},
@@ -161,7 +161,7 @@
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/kilo/bridge/c)
 "iv" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4;
 	name = "Guardian Angel"
 	},
@@ -195,7 +195,7 @@
 /turf/open/floor/iron/dollhouse/white,
 /area/shuttle/voidcrew/kilo/bridge/c)
 "jh" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4;
 	name = "Guardian Angel"
 	},

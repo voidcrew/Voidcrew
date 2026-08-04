@@ -13,9 +13,19 @@
 /// Note the ramp tail this implies: potency caps at LICH_MAX_POTENCY roughly
 /// LICH_FIRST_RITUAL_DELAY + (LICH_MAX_POTENCY * LICH_RITUAL_INTERVAL) after the
 /// lair surfaces (~30 min), so the worst of the galaxy-wide pressure starts
-/// landing around the two hour mark. Pushing this define later shifts that whole
-/// tail with it.
-#define LICH_FIRST_SPAWN_TIME (90 MINUTES)
+/// landing around the two and a half hour mark. Pushing this define later shifts
+/// that whole tail with it.
+#define LICH_FIRST_SPAWN_TIME (120 MINUTES)
+/// Percent chance, rolled ONCE per round at overmap init, that the lich happens at
+/// all. He is a round-defining set piece — a galaxy-wide pressure ramp plus a raid
+/// nobody can ignore — and a set piece that shows up every single round stops being
+/// one. At 30% a crew sees him occasionally rather than as a scheduled fixture, and
+/// the rounds he skips are quieter on purpose.
+///
+/// The roll is a one-shot: lose it and the scheduler is never armed, so no amount of
+/// waiting or repopulating brings him back. It does NOT gate the admin verb
+/// (surface_lich_lair()), which force-surfaces him regardless.
+#define LICH_SPAWN_CHANCE 30
 /// Retry delay when the scheduler can't yet surface the lair (no free overmap
 /// square, or not enough players aboard — see LICH_MIN_PLAYERS).
 #define LICH_SPAWN_RETRY (5 MINUTES)

@@ -1,4 +1,29 @@
 /**
+ * Frees a shuttle's transit reservation and clears its assignment.
+ *
+ * Every docking port answers a non-forced qdel() with QDEL_HINT_LETMELIVE
+ * (/obj/docking_port/Destroy), and /obj/docking_port/stationary/transit does ALL of
+ * its cleanup - unregistering from SSshuttle.transit_docking_ports, dropping `owner`,
+ * qdel'ing the turf reservation - inside `if(force)`. So the QDEL_NULL() that
+ * expand_shuttle()/remove_shuttle_turfs() used to call here deleted nothing: it nulled
+ * the shuttle's reference and left a live, still-owned transit port sitting on its
+ * reservation. `transit_utilized` is only decremented by the reservation's own
+ * COMSIG_QDELETING handler, so every hull expansion past the bounding box burned
+ * 3-6k turfs of the 22.5k global transit budget permanently, and SSshuttle's orphan
+ * sweep never collected the port because `owner` was still set.
+ *
+ * That budget is what gates check_transit_zone(). Exhaust it and a ship can never
+ * enter transit again - which on the overmap reads as an undock that leaves the hull
+ * parked at the dock it just "left" (see complete_dock() in ship.dm).
+ */
+/proc/release_assigned_transit(obj/docking_port/mobile/shuttle)
+	if(!shuttle)
+		return
+	if(!QDELETED(shuttle.assigned_transit))
+		qdel(shuttle.assigned_transit, force = TRUE) // transit/Destroy() nulls our ref for us
+	shuttle.assigned_transit = null
+
+/**
  * The main docking port that all voidcrew ships should be using.
  */
 /obj/docking_port/mobile/voidcrew

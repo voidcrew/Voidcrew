@@ -174,7 +174,6 @@
 			"first_item_icon" = first_item?.icon,
 			"first_item_icon_state" = first_item?.icon_state,
 			"goody" = pack.goody,
-			"access" = pack.access,
 			"contraband" = pack.contraband,
 			"small_item" = FALSE,
 			"contains" = pack.get_contents_ui_data(),
@@ -277,14 +276,7 @@
  * Check if the cargo shuttle can be called
  */
 /obj/machinery/computer/voidcrew_cargo/proc/can_call_cargo_shuttle()
-	var/obj/structure/overmap/ship/ship = get_ship_from_atom(src)
-	if(!ship)
-		return FALSE
-	if(!istype(ship.docked, /obj/structure/overmap/planet/empty))
-		return FALSE
-	if(ship.state != OVERMAP_SHIP_IDLE)
-		return FALSE
-	return TRUE
+	return !get_shuttle_error_message()
 
 /**
  * Get error message for shuttle restrictions
@@ -298,7 +290,19 @@
 		return "Must be docked in space"
 	if(ship.state != OVERMAP_SHIP_IDLE)
 		return "Ship cannot be moving"
-	return null
+	// Everything past here gates CALLING the shuttle only. Once it has arrived it is
+	// itself holding the encounter's other reserve dock, and the berth check below would
+	// refuse to let the crew send it away again - ui_act("send") runs this proc before
+	// its own state switch, so a refusal here blocks the departure button too.
+	var/datum/voidcrew_cargo_shuttle/cargo_shuttle = get_cargo_shuttle()
+	if(cargo_shuttle && cargo_shuttle.state != CARGO_SHUTTLE_AWAY)
+		return null
+	// The shuttle berths on the encounter's other reserve dock, and a ship docked
+	// alongside us is sitting on it. Refuse now rather than after complete_arrival() has
+	// spent the warmup building a shuttle it has nowhere to put.
+	var/obj/structure/overmap/planet/empty/berth_at = ship.docked
+	var/list/berth = berth_at.get_cargo_berth(ship.shuttle)
+	return berth["error"]
 
 /**
  * Calculate total cost of all items in the checkout cart
@@ -422,11 +426,13 @@
 						return TRUE
 
 					// Call the shuttle - buy() will be called after successful docking
-					if(cargo_shuttle.call_shuttle(ship))
+					var/call_error = cargo_shuttle.call_shuttle(ship)
+					if(call_error)
+						say("Error: [call_error].")
+						usr.playsound_local(src, 'sound/machines/buzz/buzz-sigh.ogg', 50, TRUE, -1)
+					else
 						say("Cargo shuttle called. ETA 30 seconds.")
 						usr.investigate_log("called the [bank_account_holder.synced_bank_account.account_holder] cargo shuttle.", INVESTIGATE_CARGO)
-					else
-						say("Error: Could not call cargo shuttle.")
 
 				if(CARGO_SHUTTLE_DOCKED)
 					// Check for living mobs before sending
@@ -472,8 +478,7 @@
 	requisition_text += "Time of Order: [station_time_timestamp()]<br/>"
 	for(var/order_name in cart_list)
 		var/datum/supply_order/order = cart_list[order_name]["order"]
-		requisition_text += "[cart_list[order_name]["amount"]] [order.pack.name]("
-		requisition_text += "Access Restrictions: [SSid_access.get_access_desc(order.pack.access)])</br>"
+		requisition_text += "[cart_list[order_name]["amount"]] [order.pack.name]</br>"
 	requisition_paper.add_raw_text(requisition_text)
 	requisition_paper.update_appearance()
 
@@ -512,12 +517,17 @@
 				coupon_check.inserted_console = null
 				break
 
+		// No paying_account: that field means "bought privately out of one person's
+		// pocket", and supply_pack/generate() answers it with a privacy-locked crate
+		// that only the buyer's own ID opens. Every ship order is paid by the ship,
+		// so buy() charges the bank machine's account directly and the crate arrives
+		// open to the whole crew. It also keeps get_final_cost() off the 1.1x private
+		// surcharge, which the cart was showing but buy() never actually charged.
 		var/datum/supply_order/new_order = new(
 			pack = pack,
 			orderer = name,
 			orderer_rank = rank,
 			orderer_ckey = usr.ckey,
-			paying_account = bank_account_holder.synced_bank_account,
 			coupon = applied_coupon,
 		)
 		checkout_list += new_order

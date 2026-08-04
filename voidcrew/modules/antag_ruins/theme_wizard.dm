@@ -399,13 +399,13 @@
 // (GARB|NO_ANTIMAGIC), so its local subtype below relaxes the garb half.
 /datum/vestige_boon/spell/fireball
 	name = "Fireball"
-	desc = "Point at something and throw a ball of fire at it, once every forty-five seconds. Don't stand next to whatever you're pointing at."
+	desc = "Point at something and throw a ball of fire at it. Don't stand next to whatever you're pointing at."
 	grant_text = "A word settles in behind your teeth, hot as a swallowed coal."
 	spell_type = /datum/action/cooldown/spell/pointed/projectile/fireball/vestige
 
 /datum/vestige_boon/spell/fireball/refined
 	name = "Refined Fireball"
-	desc = "The same fireball every thirty seconds instead of forty-five, cast with a whisper instead of a shout, and with a tighter blast that wrecks less of what's around the target."
+	desc = "The same fireball on a shorter cooldown, cast with a whisper instead of a shout, and with a tighter blast that wrecks less of what's around the target."
 	grant_text = "The coal behind your teeth settles and stops crackling."
 	upgrades_from = /datum/vestige_boon/spell/fireball
 	spell_type = /datum/action/cooldown/spell/pointed/projectile/fireball/vestige/refined
@@ -431,7 +431,7 @@
 
 /datum/vestige_boon/spell/word_of_denial
 	name = "Word of Denial"
-	desc = "Raise a three-tile barrier that nobody but you can walk through. It holds for half a minute."
+	desc = "Raise a short barrier that nobody but you can walk through. It holds for a while."
 	grant_text = "A word settles in behind your teeth, flat and immovable."
 	spell_type = /datum/action/cooldown/spell/forcewall/vestige_denial
 
@@ -462,7 +462,7 @@
  */
 /datum/action/cooldown/spell/pointed/projectile/fireball/vestige/refined
 	name = "Refined Fireball"
-	desc = "Throw a fireball. Thirty seconds between casts, whispered instead of shouted, and a tighter blast."
+	desc = "Throw a fireball. A shorter wait between casts, whispered instead of shouted, and a tighter blast."
 	cooldown_time = 30 SECONDS
 	invocation = "oni soma."
 	invocation_type = INVOCATION_WHISPER
@@ -484,7 +484,7 @@
  */
 /datum/action/cooldown/spell/aoe/knock/vestige_greater
 	name = "Greater Knock"
-	desc = "This spell opens nearby doors and closets, and throws the bolts of bolted airlocks."
+	desc = "Opens nearby doors and closets, and throws the bolts on bolted airlocks."
 	cooldown_time = 8 SECONDS // upstream 10
 	invocation = "AULIE OXIN FIERA, OMNE!"
 	aoe_radius = 4 // upstream 3
@@ -506,7 +506,7 @@
  */
 /datum/action/cooldown/spell/teleport/radius_turf/blink/vestige_passage
 	name = "Word of Passage"
-	desc = "This spell teleports you a short distance in a random direction."
+	desc = "Teleports you a short distance in a random direction."
 	cooldown_time = 10 SECONDS
 	invocation = "sic itur."
 	invocation_type = INVOCATION_WHISPER
@@ -522,7 +522,7 @@
  */
 /datum/action/cooldown/spell/forcewall/vestige_denial
 	name = "Word of Denial"
-	desc = "Create a magical barrier that only you can pass through. It holds for half a minute."
+	desc = "Raise a barrier only you can pass through. It holds for a while."
 	cooldown_time = 30 SECONDS // upstream 10; matched to the wall's 30 second lifetime
 
 #undef VESTIGE_TONGUE_VERSES_NEEDED

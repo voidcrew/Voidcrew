@@ -78,6 +78,12 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/engineering/c)
+"dg" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/goon/medbay/c)
 "eu" = (
 /obj/machinery/cryopod,
 /obj/machinery/computer/cryopod{
@@ -332,6 +338,13 @@
 "AX" = (
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/shuttle/voidcrew/goon/commons/c)
+"Bj" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 8
+	},
+/obj/structure/sign/nanotrasen,
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/goon/commons/c)
 "Br" = (
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
@@ -350,7 +363,9 @@
 /obj/machinery/atmospherics/components/binary/volume_pump{
 	dir = 8
 	},
-/obj/machinery/power/terminal,
+/obj/machinery/power/terminal{
+	dir = 1
+	},
 /obj/structure/cable,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/voidcrew/goon/medbay/c)
@@ -378,6 +393,12 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/goon/medbay/c)
+"GS" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 4
+	},
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/voidcrew/goon/bridge/c)
 "HT" = (
 /obj/machinery/atmospherics/components/tank/plasma{
 	dir = 4
@@ -691,7 +712,7 @@ Pm
 "}
 (6,1,1) = {"
 IZ
-mV
+dg
 DI
 Og
 DI
@@ -841,7 +862,7 @@ iY
 iY
 aA
 Vs
-Vs
+GS
 IZ
 IZ
 "}

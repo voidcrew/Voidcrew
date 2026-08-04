@@ -17,7 +17,7 @@
 /datum/round_event_control/voidcrew/spacevine
 	name = "Space Vines"
 	typepath = /datum/round_event/voidcrew/spacevine
-	weight = 12
+	weight = 5
 	max_occurrences = 2
 	earliest_start = 15 MINUTES
 	category = EVENT_CATEGORY_ENTITIES

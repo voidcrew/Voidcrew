@@ -639,7 +639,11 @@ GLOBAL_DATUM(colosseum_site, /obj/structure/overmap/colosseum)
 		to_chat(user, span_warning("Ship is too large to dock at this location."))
 		return
 
-	to_chat(user, span_notice("[acting.dock(src, dock_to_use)]"))
+	// dock() only returns a string when it refuses; a successful start is announced
+	// to the whole crew by ship_notify()
+	var/dock_result = acting.dock(src, dock_to_use)
+	if(dock_result)
+		to_chat(user, span_notice("[dock_result]"))
 
 	concerned = FALSE
 

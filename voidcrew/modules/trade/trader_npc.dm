@@ -497,20 +497,18 @@
 			mission_data["from_this_shop"] = (mission.shop == outpost?.shop)
 			var/location_ok = mission.can_turn_in_at(npc)
 			mission_data["location_ok"] = location_ok
-			var/obj/item/match
-			if(isliving(user) && mission.requires_item)
-				for(var/obj/item/held in user.held_items)
-					if(mission.can_turn_in(held))
-						match = held
-						break
-			mission_data["holding_valid_item"] = !!match
+			// A near-miss (right goods, wrong count) comes back too, so the
+			// tooltip can say why rather than "hold the goods" at someone who is
+			var/obj/item/offered = mission.pick_offered_item(user)
+			var/holding_valid = offered && mission.can_turn_in(offered)
+			mission_data["holding_valid_item"] = !!holding_valid
 			var/turn_in_hint
 			if(!mission.requires_item)
 				turn_in_hint = "Not an item contract."
 			else if(!location_ok)
 				turn_in_hint = mission.get_wrong_location_reason(npc)
-			else if(!match)
-				turn_in_hint = "Hold the contract goods in hand."
+			else if(!holding_valid)
+				turn_in_hint = offered ? mission.get_failure_reason(offered) : "Hold the contract goods in hand."
 			mission_data["turn_in_hint"] = turn_in_hint
 			ship_missions += list(mission_data)
 	data["ship_missions"] = ship_missions
@@ -571,11 +569,9 @@
 			if(!mission || QDELETED(mission))
 				npc.balloon_alert(user, "contract not found!")
 				return TRUE
-			var/obj/item/offered
-			for(var/obj/item/held in user.held_items)
-				if(mission.can_turn_in(held))
-					offered = held
-					break
+			// Passes the near-miss through on failure so the balloon names the
+			// shortfall instead of "No item provided."
+			var/obj/item/offered = mission.pick_offered_item(user)
 			var/result = ship.complete_mission(mission, npc, offered)
 			if(result != TRUE)
 				npc.balloon_alert(user, "[result]")

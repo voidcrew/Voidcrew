@@ -17,10 +17,15 @@
 	/// Cached relative overmap coordinates of the target
 	var/target_x = 0
 	var/target_y = 0
+	/// Zone band (ZONE_*) this target prefers to sit in, copied off the mission.
+	/// Null = no preference, which is what every target that isn't generated for
+	/// a specific ship's board gets.
+	var/preferred_zone
 
 /datum/mission_target/New(datum/mission/mission)
 	..()
 	src.mission = mission
+	preferred_zone = mission?.preferred_zone
 
 /datum/mission_target/Destroy()
 	unhook()
@@ -76,6 +81,25 @@
 /// Recaches target_x/target_y from the live object
 /datum/mission_target/proc/refresh_coords()
 	return
+
+/**
+ * Narrows a resolved candidate list down to the objects sitting in
+ * preferred_zone, if a preference was asked for and anything matches.
+ *
+ * This is a preference and never a filter that can fail: with no preference set,
+ * no live zone controller, or nothing in the wanted band, the full list comes
+ * back untouched. A board offer would rather point somewhere dangerous than not
+ * exist, and the shallow-band bias is there to shape what a new crew usually
+ * sees, not to guarantee it.
+ */
+/datum/mission_target/proc/filter_by_preferred_zone(list/candidates)
+	if(isnull(preferred_zone) || !length(candidates) || !SSovermap_zones?.zones_active)
+		return candidates
+	var/list/matching = list()
+	for(var/atom/movable/candidate as anything in candidates)
+		if(SSovermap_zones.get_zone_type(get_turf(candidate)) == preferred_zone)
+			matching += candidate
+	return length(matching) ? matching : candidates
 
 /// Helper: relative overmap coords of an overmap object
 /datum/mission_target/proc/cache_coords_from(atom/movable/object)
@@ -133,6 +157,9 @@
 		pool = cold_unclaimed
 	else if(length(cold))
 		pool = cold
+	// Applied last, to the pool the occupancy tiers already settled on: a cold
+	// unclaimed ruin in the wrong band still beats a hot one in the right band.
+	pool = filter_by_preferred_zone(pool)
 	ruin = pick(pool)
 	ruin.mission_claims++
 	cache_coords_from(ruin)
@@ -245,7 +272,7 @@
 		candidates += candidate
 	if(!length(candidates))
 		return FALSE
-	planet = pick(candidates)
+	planet = pick(filter_by_preferred_zone(candidates))
 	cache_coords_from(planet)
 	RegisterSignal(planet, COMSIG_QDELETING, PROC_REF(on_planet_deleted))
 	// Planets never delete on unload - they relocate. Track the move so the
@@ -382,7 +409,7 @@
 /datum/mission_target/coords/resolve()
 	if(!SSovermap_zones)
 		return FALSE
-	zone_type = text2num(pick_weight(zone_weights)) || ZONE_GREEN
+	zone_type = pick_zone_band()
 	var/datum/overmap_zone/zone = SSovermap_zones.get_zone_datum(zone_type)
 	if(!zone || !length(zone.turfs))
 		return FALSE
@@ -400,6 +427,19 @@
 		target_y = rel_y
 		return TRUE
 	return FALSE
+
+/**
+ * The band this contract points at. A coordinate target has no object to filter,
+ * so the preference is applied to the roll instead: take the preferred band
+ * outright when the type's own table lists it, otherwise roll the table as
+ * normal. Types that deliberately never offer a band (a deep-space survey with
+ * no Neutral entry) keep that shape - the preference can only pick from what the
+ * type already advertises.
+ */
+/datum/mission_target/coords/proc/pick_zone_band()
+	if(!isnull(preferred_zone) && zone_weights["[preferred_zone]"] > 0)
+		return preferred_zone
+	return text2num(pick_weight(zone_weights)) || ZONE_GREEN
 
 /datum/mission_target/coords/get_zone_type()
 	return zone_type
@@ -424,7 +464,7 @@
 	outpost = null
 	if(!length(candidates))
 		return FALSE
-	outpost = pick(candidates)
+	outpost = pick(filter_by_preferred_zone(candidates))
 	cache_coords_from(outpost)
 	RegisterSignal(outpost, COMSIG_QDELETING, PROC_REF(on_outpost_deleted))
 	return TRUE

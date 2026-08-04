@@ -523,13 +523,17 @@
 /area/ruin/space/has_grav/powered)
 "BR" = (
 /obj/effect/turf_decal/box,
-/obj/structure/closet/crate/zone_loot/syndicate/rare,
+/obj/structure/closet/crate/zone_loot/syndicate,
 /obj/effect/zone_mobs/syndicate/boss,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered)
 "Cm" = (
 /obj/effect/decal/cleanable/blood/oil,
 /turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
+"Cp" = (
+/obj/structure/closet/crate/zone_loot/syndicate,
+/turf/open/floor/iron,
 /area/ruin/space/has_grav/powered)
 "CK" = (
 /obj/machinery/light/directional/south,
@@ -737,6 +741,10 @@
 /obj/machinery/light/directional/south,
 /turf/open/floor/iron/dark/textured,
 /area/ruin/space/has_grav/powered)
+"XJ" = (
+/obj/structure/closet/crate/zone_loot/syndicate,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/powered)
 "XK" = (
 /obj/structure/reagent_dispensers/fueltank,
 /turf/open/floor/plating,
@@ -829,7 +837,7 @@ Oe
 aE
 jK
 Cm
-aw
+XJ
 uI
 aE
 aC
@@ -979,7 +987,7 @@ aC
 aC
 aE
 aJ
-aN
+Cp
 aN
 ay
 aN
@@ -1277,7 +1285,7 @@ ap
 aE
 aw
 Kx
-aw
+XJ
 uI
 aE
 aC

@@ -23,6 +23,7 @@
  *   handles the antimagic check and the silicon exemption, and owns the status effect.
  * - The deadchat line and announcement are reflavored. Nobody is immune, including him —
  *   he simply has nothing left to say that requires a tongue.
+ * - It ends when he does. See end_lich_babel() at the bottom of this file.
  */
 
 /**
@@ -81,3 +82,32 @@
 		The dead have managed for centuries without it.",
 		"Tongues of the Dead",
 	)
+
+/**
+ * Lifts the curse. Called from the site's victory path (on_lich_slain(), lich_site.dm).
+ *
+ * This rite is one of the four that outlive their own firing, and rule 2 in
+ * lich_events.dm's header says nothing Ilthuun does outlives Ilthuun. Without this the
+ * galaxy stays mute for the rest of the round no matter how well the raid went, and the
+ * only cure is an admin verb — exactly the "no amount of playing well undoes any of it"
+ * failure the four deleted rites were deleted for.
+ *
+ * The cure is entirely the parent's Destroy(): it unregisters the latejoin signal and
+ * walks GLOB.player_list calling cure_curse_of_babel() on every carbon, dead or alive
+ * and wherever they are standing. QDEL_NULL is what the admin undo verb does, for the
+ * same reason — the global slot has to be emptied as well as the datum destroyed, or
+ * can_spawn_event() keeps refusing a future instance.
+ *
+ * The type check is load-bearing rather than defensive. GLOB.tower_of_babel is a single
+ * global slot shared with upstream's wizard event and with /client/proc/tower_of_babel;
+ * if an admin cast their own Babel over the top of the rite, theirs is what is sitting
+ * in the slot, and killing the lich must not quietly undo an admin's work.
+ */
+/proc/end_lich_babel()
+	if(!istype(GLOB.tower_of_babel, /datum/tower_of_babel/lich))
+		return
+	deadchat_broadcast(
+		"Ilthuun's hold on the galaxy's tongues has broken. The living can understand each other again.",
+		message_type = DEADCHAT_ANNOUNCEMENT,
+	)
+	QDEL_NULL(GLOB.tower_of_babel)

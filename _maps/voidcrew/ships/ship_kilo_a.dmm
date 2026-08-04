@@ -34,7 +34,7 @@
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/kilo/engineering/a)
 "aR" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4;
 	name = "Old Mining Turret"
 	},
@@ -1026,7 +1026,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/bridge/a)
 "IE" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4;
 	name = "Old Mining Turret"
 	},
@@ -1151,7 +1151,7 @@
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/kilo/cargo/a)
 "Oh" = (
-/obj/machinery/porta_turret/centcom_shuttle/weak{
+/obj/machinery/porta_turret/ship_defense{
 	dir = 4;
 	name = "Old Mining Turret"
 	},

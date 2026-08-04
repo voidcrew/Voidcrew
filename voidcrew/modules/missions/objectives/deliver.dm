@@ -40,6 +40,9 @@
 			return FALSE
 	return TRUE
 
+/datum/mission_objective/deliver/matches_ask(obj/item/item)
+	return item && required_type && istype(item, required_type)
+
 /datum/mission_objective/deliver/describe_turn_in_failure(obj/item/item)
 	if(!item)
 		return "No item provided."
@@ -95,6 +98,9 @@
 	if(bound_item.mission_ref?.resolve() != mission)
 		return FALSE
 	return bound_item.binding_serial == mission.binding_serial
+
+/datum/mission_objective/deliver/bound/matches_ask(obj/item/item)
+	return istype(item, /obj/item/mission_recovery)
 
 /datum/mission_objective/deliver/bound/describe_turn_in_failure(obj/item/item)
 	if(!item)

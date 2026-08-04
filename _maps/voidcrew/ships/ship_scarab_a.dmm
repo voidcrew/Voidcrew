@@ -269,6 +269,12 @@
 /obj/structure/marker_beacon/cerulean,
 /turf/open/floor/plating/airless,
 /area/shuttle/voidcrew/scarab/engineering/a)
+"hC" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/scarab/cargo_bay/a)
 "hI" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 9
@@ -874,6 +880,12 @@
 /obj/machinery/suit_storage_unit/standard_unit,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/scarab/cargo_bay/a)
+"wH" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/scarab/engines/a)
 "xe" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 8
@@ -1452,6 +1464,12 @@
 	},
 /turf/open/floor/mineral/titanium,
 /area/shuttle/voidcrew/scarab/dormitories/a)
+"NV" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/scarab/dormitories/a)
 "Ok" = (
 /obj/structure/window/reinforced/spawner/directional/east,
 /obj/structure/cable,
@@ -1799,6 +1817,12 @@
 "YV" = (
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/voidcrew/scarab/cmos_office/a)
+"Zw" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/scarab/engines/a)
 "ZH" = (
 /obj/effect/turf_decal/stripes/line{
 	dir = 4
@@ -1864,7 +1888,7 @@ pz
 lw
 xe
 xe
-lw
+wH
 pz
 "}
 (3,1,1) = {"
@@ -1957,7 +1981,7 @@ pz
 "}
 (7,1,1) = {"
 pz
-ai
+Zw
 XO
 co
 lw
@@ -2508,7 +2532,7 @@ pz
 (32,1,1) = {"
 pz
 pz
-mP
+NV
 MW
 od
 mP

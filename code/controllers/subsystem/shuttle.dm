@@ -1,9 +1,19 @@
 #define MAX_TRANSIT_REQUEST_RETRIES 10
+//VOID EDIT - transit budget sized for a fleet, not a station
 /// How many turfs to allow before we stop blocking transit requests
-#define MAX_TRANSIT_TILE_COUNT (150 ** 2)
+///
+/// Upstream's (150 ** 2) assumes one or two shuttles are in hyperspace at a time. Here
+/// every ship flying the overmap is permanently parked on a transit dock, and each one
+/// costs (width + 34) * (height + 34) - roughly 3,000 turfs for a Goon and 5,760 for a
+/// Phalanx. Four mid-sized hulls in flight was enough to spend the whole upstream budget,
+/// at which point generate_transit_dock() is not even attempted and any ship that needs a
+/// NEW reservation (one that expanded its hull, or relocated its docking port) can never
+/// enter transit again - it can neither dock nor undock for the rest of the round.
+#define MAX_TRANSIT_TILE_COUNT (400 ** 2)
 /// How many turfs to allow before we start freeing up existing "soft reserved" transit docks
 /// If we're under load we want to allow for cycling, but if not we want to preserve already generated docks for use
-#define SOFT_TRANSIT_RESERVATION_THRESHOLD (100 ** 2)
+#define SOFT_TRANSIT_RESERVATION_THRESHOLD (300 ** 2)
+//END VOID EDIT
 
 
 SUBSYSTEM_DEF(shuttle)

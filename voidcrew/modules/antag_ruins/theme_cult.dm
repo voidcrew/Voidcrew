@@ -252,14 +252,14 @@
 	name = "Crimson Step"
 	// Keep the numbers in sync with VESTIGE_STEP_BLOOD_COST / VESTIGE_STEP_RANGE
 	// (initial values must be constant, so no define interpolation here)
-	desc = "Teleport to any open ground you can see, up to five tiles away. Each use costs fifteen units of your own blood and leaves a pool of it where you were standing. It won't work if you're already low on blood."
+	desc = "Teleport to any open ground you can see a short way off. Each use costs your own blood and leaves a pool of it where you were standing. It won't work if you're already low."
 	grant_text = "The space behind your eyes folds. Distance costs blood now."
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_crimson_step
 
 /datum/vestige_boon/spell/crimson_step/surge
 	name = "Crimson Surge"
 	// Keep the numbers in sync with VESTIGE_SURGE_RANGE
-	desc = "The same step, but it reaches seven tiles and comes back much faster. The blood cost doesn't change."
+	desc = "The same step, reaching further and coming back much faster. The blood cost doesn't change."
 	grant_text = "The red place behind your eyes widens. It opens the moment you ask now."
 	upgrades_from = /datum/vestige_boon/spell/crimson_step
 	spell_type = /datum/action/cooldown/spell/pointed/vestige_crimson_step/surge
@@ -282,7 +282,7 @@
  */
 /datum/action/cooldown/spell/pointed/vestige_crimson_step
 	name = "Crimson Step"
-	desc = "Teleport to a spot you can see a few tiles away. Costs blood and leaves a pool of it behind. Won't work if you're already low."
+	desc = "Teleport a few tiles to somewhere you can see. Costs blood and leaves a pool behind. Won't work if you're low."
 	button_icon = 'icons/mob/actions/actions_cult.dmi'
 	button_icon_state = "tele"
 	school = SCHOOL_FORBIDDEN
@@ -298,7 +298,7 @@
 
 /datum/action/cooldown/spell/pointed/vestige_crimson_step/surge
 	name = "Crimson Surge"
-	desc = "Teleport to a spot you can see, further out and on a shorter cooldown. Costs blood and leaves a pool of it behind. Won't work if you're already low."
+	desc = "Teleport to somewhere you can see, further out and on a shorter cooldown. Costs blood and leaves a pool behind. Won't work if you're low."
 	cooldown_time = 8 SECONDS
 	cast_range = VESTIGE_SURGE_RANGE
 
@@ -357,21 +357,21 @@
 /datum/vestige_boon/spell/sanguine_blade
 	name = "Sanguine Blade"
 	// Keep the number in sync with VESTIGE_BLADE_ALTAR_BONUS
-	desc = "Summon the Sepulcher's knife into your hand from anywhere, and dismiss it when you're done. It hits six points harder against anyone already lying on the floor."
+	desc = "Summon the Sepulcher's knife into your hand from anywhere, and dismiss it when you're done. It hits harder against anyone already lying on the floor."
 	grant_text = "A knife-shaped weight settles against your palm. It comes when you call."
 	spell_type = /datum/action/cooldown/spell/vestige_sanguine_blade
 
 /datum/vestige_boon/spell/sanguine_blade/fang
 	name = "Sanguine Fang"
 	// Keep the number in sync with VESTIGE_FANG_ALTAR_BONUS
-	desc = "A longer, meaner version of the knife. It cuts through armor, comes back twice as fast, and hits ten points harder against anyone lying down."
+	desc = "A longer, meaner version of the knife. It cuts through armor, comes back twice as fast, and hits harder still against anyone lying down."
 	grant_text = "The weight against your palm grows teeth."
 	upgrades_from = /datum/vestige_boon/spell/sanguine_blade
 	spell_type = /datum/action/cooldown/spell/vestige_sanguine_blade/fang
 
 /datum/action/cooldown/spell/vestige_sanguine_blade
 	name = "Sanguine Blade"
-	desc = "Call the Sepulcher's knife into your hand, or send it back."
+	desc = "Summon a blood-forged knife into your hand. Use again to send it back."
 	// The knife's own world sprite, so the button and the thing in your hand are
 	// recognisably the same object (/obj/item/knife/ritual, knives.dm)
 	button_icon = 'icons/obj/weapons/khopesh.dmi'
@@ -385,7 +385,7 @@
 
 /datum/action/cooldown/spell/vestige_sanguine_blade/fang
 	name = "Sanguine Fang"
-	desc = "Call the Sepulcher's fang into your hand, or send it back."
+	desc = "Summon a stronger blood-forged knife into your hand. Use again to send it back."
 	cooldown_time = 5 SECONDS
 	blade_type = /obj/item/knife/ritual/vestige/bound/fang
 

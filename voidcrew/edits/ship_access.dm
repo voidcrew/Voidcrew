@@ -60,3 +60,24 @@
  */
 /obj/structure/closet/check_access_list(list/access_list)
 	return TRUE
+
+/**
+ * Ore silos hand out materials without checking for an ID.
+ *
+ * Upstream ships silos with ID_required set, which makes every lathe print and every
+ * sheet withdrawal check that the user is wearing an ID card carrying a registered
+ * bank account. That gate assumes a station: an HoP who can reissue a broken card, and
+ * a Quartermaster who can switch the requirement off from the silo's own interface.
+ *
+ * A hull has neither. Most themes spawn no quartermaster at all, and ACCESS_QM is the
+ * only key that opens the toggle, so on those ships the requirement is permanent and
+ * the silo simply refuses everyone - a miner who left their ID in their bunk gets
+ * "ID interface failure" from the protolathe and no way to clear it. Defaulting it off
+ * matches how the rest of a ship interior behaves.
+ *
+ * The logs are unaffected and still record the name and account behind every action, so
+ * a ship that does field a quartermaster can turn the requirement back on and ban
+ * individual accounts from the same interface.
+ */
+/obj/machinery/ore_silo
+	ID_required = FALSE

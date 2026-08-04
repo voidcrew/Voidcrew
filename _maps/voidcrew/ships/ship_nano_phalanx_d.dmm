@@ -943,6 +943,12 @@
 /obj/machinery/light/warm/directional/north,
 /turf/open/floor/wood,
 /area/shuttle/voidcrew/phalanx/hallway/central/d)
+"oM" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/bridge/captain/d)
 "oO" = (
 /obj/machinery/portable_atmospherics/canister/nitrogen,
 /turf/open/floor/engine/n2,
@@ -1008,6 +1014,12 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/mineral/titanium/tiled/purple,
 /area/shuttle/voidcrew/phalanx/hallway/central/d)
+"pJ" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/engineering/d)
 "pN" = (
 /turf/open/floor/bamboo/tatami,
 /area/shuttle/voidcrew/phalanx/cafeteria/d)
@@ -1515,6 +1527,12 @@
 /obj/machinery/light/directional/north,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/d)
+"wF" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 1
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/cargo/mining/d)
 "wG" = (
 /obj/modular_map_root/ship_upgrade{
 	key = "phalanx_bay_south"
@@ -1590,6 +1608,12 @@
 /obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plating,
 /area/shuttle/voidcrew/phalanx/engineering/d)
+"ya" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/voidcrew/phalanx/cargo/d)
 "ye" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/wood,
@@ -3030,6 +3054,12 @@
 /obj/effect/mapping_helpers/airlock/access/any/service/crematorium,
 /turf/open/floor/iron/dark,
 /area/shuttle/voidcrew/phalanx/medbay/morgue/d)
+"SQ" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 2
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/voidcrew/phalanx/security/armory/d)
 "SR" = (
 /turf/open/water/hot_spring,
 /area/shuttle/voidcrew/phalanx/hallway/aft/d)
@@ -3174,6 +3204,12 @@
 "UW" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /turf/open/floor/mineral/titanium/blue,
+/area/shuttle/voidcrew/phalanx/medbay/storage/d)
+"UX" = (
+/obj/machinery/porta_turret/ship_defense{
+	dir = 8
+	},
+/turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/voidcrew/phalanx/medbay/storage/d)
 "UZ" = (
 /obj/structure/cable,
@@ -3602,7 +3638,7 @@ JD
 JD
 JD
 JD
-BX
+pJ
 oZ
 oZ
 oZ
@@ -3973,7 +4009,7 @@ oZ
 oZ
 oZ
 oZ
-As
+UX
 zZ
 Ex
 Zd
@@ -4477,7 +4513,7 @@ FD
 mm
 "}
 (29,1,1) = {"
-dJ
+wF
 Cu
 Lm
 IF
@@ -4506,7 +4542,7 @@ wQ
 mB
 Tr
 JV
-YH
+ya
 "}
 (30,1,1) = {"
 aZ
@@ -5059,7 +5095,7 @@ oZ
 oZ
 oZ
 oZ
-Ub
+oM
 bk
 cs
 Ht
@@ -5205,7 +5241,7 @@ EN
 EN
 EN
 EN
-rU
+SQ
 oZ
 oZ
 oZ
