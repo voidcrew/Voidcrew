@@ -335,6 +335,12 @@
 /obj/machinery/light/warm/directional/north,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"cL" = (
+/obj/machinery/chrome_cradle,
+/turf/open/indestructible/light{
+	light_color = "#ff2079"
+	},
+/area/voidcrew/trader_outpost)
 "dk" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/indestructible/dark,
@@ -356,6 +362,10 @@
 	dir = 1
 	},
 /turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
+"dq" = (
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "dw" = (
 /obj/structure/rack{
@@ -496,6 +506,15 @@
 	},
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
+"il" = (
+/obj/structure/showcase{
+	desc = "A pair of massive chrome fists behind scratched glass. The tag says ASK SPLICE. The glass says someone already tried not asking.";
+	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi';
+	icon_state = "gorilla";
+	name = "display case: GORILLA ARMS"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "ip" = (
 /obj/structure/rack,
 /obj/item/clothing/mask/breath,
@@ -531,6 +550,11 @@
 	pixel_y = 4
 	},
 /turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"jn" = (
+/obj/machinery/space_heater,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "jt" = (
 /obj/structure/noticeboard/directional/east{
@@ -576,6 +600,15 @@
 	},
 /turf/open/indestructible/hotelwood,
 /area/voidcrew/trader_outpost)
+"mx" = (
+/obj/effect/light_emitter{
+	light_color = "#ff2079";
+	set_cap = 2;
+	set_luminosity = 4
+	},
+/obj/effect/decal/cleanable/blood/oil,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "mG" = (
 /obj/machinery/vending/boozeomat/syndicate,
 /turf/open/indestructible/hotelwood,
@@ -604,11 +637,24 @@
 	},
 /turf/open/indestructible/hoteltile,
 /area/voidcrew/trader_outpost)
+"nE" = (
+/obj/structure/showcase{
+	desc = "A segmented chrome spine floating in a suspension jar. The whole shop is arranged so you end up looking at it.";
+	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi';
+	icon_state = "cascade";
+	name = "display case: CASCADE LATTICE"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "nG" = (
 /obj/structure/chair/stool/bar{
 	dir = 1
 	},
 /turf/open/indestructible/hotelwood,
+/area/voidcrew/trader_outpost)
+"om" = (
+/mob/living/basic/outpost_trader/ripperdoc,
+/turf/open/indestructible/light,
 /area/voidcrew/trader_outpost)
 "pr" = (
 /obj/machinery/smartfridge/organ,
@@ -616,6 +662,11 @@
 	dir = 1
 	},
 /turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
+"ps" = (
+/obj/structure/closet/crate,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "pB" = (
 /obj/structure/filingcabinet{
@@ -659,6 +710,10 @@
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/indestructible/dark,
+/area/voidcrew/trader_outpost)
+"tI" = (
+/obj/machinery/light/blacklight/directional/south,
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "tP" = (
 /mob/living/basic/outpost_trader/dregs_barkeep,
@@ -715,6 +770,16 @@
 	dir = 1
 	},
 /turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
+"vn" = (
+/obj/structure/table/reinforced,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
+"vy" = (
+/obj/machinery/door/airlock/outpost{
+	name = "The Chop Shop"
+	},
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "vB" = (
 /obj/structure/showcase/cyborg/old,
@@ -884,6 +949,10 @@
 /obj/effect/spawner/random/trash/cigbutt,
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"FI" = (
+/obj/effect/spawner/random/trash/grime,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "Ge" = (
 /obj/structure/table/glass,
 /obj/item/storage/medkit/regular{
@@ -945,6 +1014,10 @@
 	},
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
+"Hi" = (
+/obj/machinery/light/red/dim/directional/south,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "Ih" = (
 /obj/structure/closet/outpost_medical,
 /obj/effect/turf_decal/bot,
@@ -985,6 +1058,15 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/indestructible/plating,
 /area/voidcrew/trader_outpost)
+"Kz" = (
+/obj/structure/showcase{
+	desc = "A folded blade housing under glass, edge glowing faintly. The price tag is turned face-down.";
+	icon = 'voidcrew/modules/cyberware/icons/cyberware.dmi';
+	icon_state = "mantis";
+	name = "display case: MANTIS BLADES"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "KQ" = (
 /obj/effect/turf_decal/tile/dark_red/half/contrasted{
 	dir = 4
@@ -1007,6 +1089,10 @@
 	name = "claim rack";
 	desc = "Only numbered claim tags remain."
 	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
+"Mu" = (
+/obj/machinery/iv_drip,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "My" = (
@@ -1044,6 +1130,11 @@
 /obj/item/kirbyplants/random,
 /obj/machinery/light/cold/directional/east,
 /turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
+"NP" = (
+/obj/machinery/light/blacklight/directional/north,
+/obj/effect/decal/cleanable/blood/oil,
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "Oz" = (
 /obj/effect/turf_decal/tile/blue/fourcorners,
@@ -1145,6 +1236,11 @@
 /obj/effect/spawner/random/trash/mess,
 /turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
+"UG" = (
+/obj/effect/spawner/random/trash/cigbutt,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "UL" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
@@ -1194,12 +1290,22 @@
 	},
 /turf/open/indestructible/dark,
 /area/voidcrew/trader_outpost)
+"WO" = (
+/obj/machinery/light/small/directional/east{
+	bulb_colour = "#ff2079"
+	},
+/turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
 "WQ" = (
 /obj/structure/closet/crate/freezer/surplus_limbs,
 /obj/effect/turf_decal/delivery/white{
 	color = "#52B4E9"
 	},
 /turf/open/indestructible/hoteltile,
+/area/voidcrew/trader_outpost)
+"WW" = (
+/obj/structure/mirror/directional/east,
+/turf/open/indestructible/dark/textured,
 /area/voidcrew/trader_outpost)
 "Xr" = (
 /obj/structure/table/reinforced/plastitaniumglass,
@@ -1225,6 +1331,10 @@
 	dir = 1
 	},
 /turf/open/indestructible/dark/textured,
+/area/voidcrew/trader_outpost)
+"Zf" = (
+/obj/machinery/chrome_sign,
+/turf/closed/indestructible/syndicate/outpost,
 /area/voidcrew/trader_outpost)
 "Zo" = (
 /obj/effect/turf_decal/delivery,
@@ -1953,11 +2063,11 @@ aO
 CO
 aa
 aa
+ag
 aa
 aa
 aa
-aC
-aC
+aa
 "}
 (29,1,1) = {"
 aC
@@ -1978,12 +2088,12 @@ aO
 Pi
 ut
 aa
-aC
-aC
-aC
-aC
-aC
-aC
+il
+FI
+nE
+au
+FI
+aa
 "}
 (30,1,1) = {"
 aC
@@ -2004,12 +2114,12 @@ aO
 aO
 ji
 aa
-aC
-aC
-aC
-aC
-aC
-aC
+Kz
+Mu
+ar
+as
+Hi
+aa
 "}
 (31,1,1) = {"
 aC
@@ -2030,12 +2140,12 @@ aO
 RM
 aO
 aV
-aC
-aC
-aC
-aC
-aC
-aC
+au
+SI
+dq
+ar
+ar
+aa
 "}
 (32,1,1) = {"
 aC
@@ -2056,12 +2166,12 @@ hH
 aO
 aO
 aV
-aC
-aC
-aC
-aC
-aC
-aC
+ar
+cL
+mx
+ar
+UG
+aa
 "}
 (33,1,1) = {"
 aC
@@ -2082,12 +2192,12 @@ VM
 kU
 aO
 aV
-aC
-aC
-aC
-aC
-aC
-aC
+ar
+dq
+om
+ar
+ar
+aa
 "}
 (34,1,1) = {"
 aC
@@ -2107,13 +2217,13 @@ Pi
 dW
 aO
 Pi
+Zf
+NP
+vn
+vn
+vn
+tI
 aa
-aC
-aC
-aC
-aC
-aC
-aC
 "}
 (35,1,1) = {"
 aC
@@ -2133,13 +2243,13 @@ MJ
 BP
 gK
 Tt
+vy
+ao
+ar
+ar
+ar
+au
 aa
-aC
-aC
-aC
-aC
-aC
-aC
 "}
 (36,1,1) = {"
 aC
@@ -2159,13 +2269,13 @@ aa
 aa
 aa
 aa
-aC
-aC
-aC
-aC
-aC
-aC
-aC
+aa
+jn
+WW
+WO
+aN
+ps
+aa
 "}
 (37,1,1) = {"
 aC
@@ -2185,13 +2295,13 @@ aC
 aC
 aC
 aC
-aC
-aC
-aC
-aC
-aC
-aC
-aC
+aa
+aa
+aa
+aa
+aa
+aa
+aa
 "}
 (38,1,1) = {"
 aC
